@@ -1,0 +1,71 @@
+   Compiling os-control v0.1.0 (/workspace/scratch/629ae4947f18/trillionnium-os-desktop/libs/os-control)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.31s
+     Running ../../tests/control/resource_lifecycle.rs (libs/os-control/target/debug/deps/resource_lifecycle-d6c825de12c21a66)
+
+running 8 tests
+test ordinary_clone_drop_preserves_constraint_until_the_last_handle_drops ... FAILED
+test child_destruction_does_not_refund_already_consumed_parent_cpu ... FAILED
+test final_descendant_drop_releases_the_whole_unreferenced_parent_chain ... FAILED
+test destroyed_child_releases_only_active_cap_metadata_not_identity_tombstones ... FAILED
+test a_retired_reservation_token_still_preserves_its_resource_memory_lifetime ... FAILED
+test last_child_drop_and_parent_reduction_have_one_legal_serial_order ... FAILED
+test terminal_history_retains_the_target_until_contiguous_retirement ... FAILED
+test retained_grant_keeps_the_child_constraint_until_the_grant_drops ... FAILED
+
+failures:
+
+---- ordinary_clone_drop_preserves_constraint_until_the_last_handle_drops stdout ----
+
+thread 'ordinary_clone_drop_preserves_constraint_until_the_last_handle_drops' (88) panicked at ../../tests/control/resource_lifecycle.rs:37:10:
+called `Result::unwrap()` on an `Err` value: ParentConstraint
+
+---- child_destruction_does_not_refund_already_consumed_parent_cpu stdout ----
+
+thread 'child_destruction_does_not_refund_already_consumed_parent_cpu' (84) panicked at ../../tests/control/resource_lifecycle.rs:153:10:
+called `Result::unwrap()` on an `Err` value: ParentConstraint
+
+---- final_descendant_drop_releases_the_whole_unreferenced_parent_chain stdout ----
+
+thread 'final_descendant_drop_releases_the_whole_unreferenced_parent_chain' (86) panicked at ../../tests/control/resource_lifecycle.rs:37:10:
+called `Result::unwrap()` on an `Err` value: ParentConstraint
+
+---- destroyed_child_releases_only_active_cap_metadata_not_identity_tombstones stdout ----
+
+thread 'destroyed_child_releases_only_active_cap_metadata_not_identity_tombstones' (85) panicked at ../../tests/control/resource_lifecycle.rs:37:10:
+called `Result::unwrap()` on an `Err` value: ParentConstraint
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- a_retired_reservation_token_still_preserves_its_resource_memory_lifetime stdout ----
+
+thread 'a_retired_reservation_token_still_preserves_its_resource_memory_lifetime' (83) panicked at ../../tests/control/resource_lifecycle.rs:37:10:
+called `Result::unwrap()` on an `Err` value: ParentConstraint
+
+---- last_child_drop_and_parent_reduction_have_one_legal_serial_order stdout ----
+
+thread 'last_child_drop_and_parent_reduction_have_one_legal_serial_order' (87) panicked at ../../tests/control/resource_lifecycle.rs:37:10:
+called `Result::unwrap()` on an `Err` value: ParentConstraint
+
+---- terminal_history_retains_the_target_until_contiguous_retirement stdout ----
+
+thread 'terminal_history_retains_the_target_until_contiguous_retirement' (91) panicked at ../../tests/control/resource_lifecycle.rs:37:10:
+called `Result::unwrap()` on an `Err` value: ParentConstraint
+
+---- retained_grant_keeps_the_child_constraint_until_the_grant_drops stdout ----
+
+thread 'retained_grant_keeps_the_child_constraint_until_the_grant_drops' (89) panicked at ../../tests/control/resource_lifecycle.rs:37:10:
+called `Result::unwrap()` on an `Err` value: ParentConstraint
+
+
+failures:
+    a_retired_reservation_token_still_preserves_its_resource_memory_lifetime
+    child_destruction_does_not_refund_already_consumed_parent_cpu
+    destroyed_child_releases_only_active_cap_metadata_not_identity_tombstones
+    final_descendant_drop_releases_the_whole_unreferenced_parent_chain
+    last_child_drop_and_parent_reduction_have_one_legal_serial_order
+    ordinary_clone_drop_preserves_constraint_until_the_last_handle_drops
+    retained_grant_keeps_the_child_constraint_until_the_grant_drops
+    terminal_history_retains_the_target_until_contiguous_retirement
+
+test result: FAILED. 0 passed; 8 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--test resource_lifecycle`
