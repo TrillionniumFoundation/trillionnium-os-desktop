@@ -61,12 +61,45 @@ jobs:
           if report.get("passed") is not True:
               raise SystemExit("A06 ktest report is not passed")
           crates = report.get("crates")
-          if not isinstance(crates, list) or {item.get("crate") for item in crates} != {"ostd", "aster-core"}:
+          if not isinstance(crates, list) or len(crates) != 2:
               raise SystemExit("A06 ktest report does not contain both required crates")
+          seen = set()
           for item in crates:
               if item.get("passed") is not True or not item.get("guests"):
                   raise SystemExit(f"A06 ktest crate is incomplete: {item!r}")
+              seen.update(guest.get("crate") for guest in item["guests"])
+          if seen != {"ostd", "aster-core"}:
+              raise SystemExit(f"A06 ktest guest crate set is incomplete: {seen!r}")
           PY
+
+      - name: Build exact A06 SMP=2 candidate kernel
+        shell: bash
+        env:
+          A01_SMP: "2"
+          A01_RUN_DIR: ${{ runner.temp }}/a06-kernel-build
+          CARGO_TARGET_DIR: ${{ runner.temp }}/a06-target
+        run: |
+          set -euo pipefail
+          bash support/build/kernel.sh kernel
+          kernel="${CARGO_TARGET_DIR}/x86_64-unknown-none/release/asterinas"
+          test -f "$kernel" && test -x "$kernel"
+          sha256sum "$kernel" | tee "${RUNNER_TEMP}/a06-kernel.sha256"
+
+      - name: Run bounded one-vCPU quota and two-vCPU exit-lifecycle probes
+        shell: bash
+        env:
+          KERNEL: ${{ runner.temp }}/a06-target/x86_64-unknown-none/release/asterinas
+        run: |
+          set -euo pipefail
+          sha=$(cut -d' ' -f1 "${RUNNER_TEMP}/a06-kernel.sha256")
+          python3 -I tests/organ_backend/run_candidate_matrix.py \
+            --a01-tree "$GITHUB_WORKSPACE" --kernel "$KERNEL" --expected-sha256 "$sha" \
+            --out "${RUNNER_TEMP}/a06-probe-1vcpu" --quota-us 1000 --mode leaf \
+            --repeat 2 --duration-seconds 1 --max-cpu-percent 3
+          python3 -I tests/organ_backend/smp2/run_parallel_candidate.py \
+            --a01-tree "$GITHUB_WORKSPACE" --kernel "$KERNEL" --expected-sha256 "$sha" \
+            --out "${RUNNER_TEMP}/a06-probe-2vcpu" --quota-us 1000 --mode leaf \
+            --repeat 2 --duration-seconds 1 --max-cpu-percent 3
 
       - name: Upload exact A06 kernel and raw QEMU evidence
         if: ${{ always() }}
@@ -75,5 +108,9 @@ jobs:
           name: a06-exact-kernel-ktest-${{ github.run_id }}
           path: |
             ${{ runner.temp }}/a06-ktest
+            ${{ runner.temp }}/a06-kernel-build
+            ${{ runner.temp }}/a06-probe-1vcpu
+            ${{ runner.temp }}/a06-probe-2vcpu
+            ${{ runner.temp }}/a06-kernel.sha256
             support/build/ktest/locks
           if-no-files-found: error
