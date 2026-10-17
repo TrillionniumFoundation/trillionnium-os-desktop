@@ -13,6 +13,7 @@ import tomllib
 TOOLCHAIN = "nightly-2026-07-21"
 SEED_SHA256 = "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316"
 CRATES = {"ostd": "ostd", "aster-core": "kernel/core"}
+FAILURE_REPORT = "preflight-failure.json"
 
 
 def digest(path):
@@ -60,21 +61,56 @@ def generated_manifest(upstream, crate):
     return '\n'.join(text) + '\n'
 
 
+class CargoFailure(SystemExit):
+    """Fail closed while retaining bounded Cargo diagnostics for CI artifacts."""
+
+    def __init__(self, label, command, cwd, returncode, stdout="", stderr="", error=None):
+        self.label = label
+        self.command = list(command)
+        self.cwd = str(cwd)
+        self.returncode = returncode
+        self.stdout = stdout or ""
+        self.stderr = stderr or ""
+        self.error = error
+        message = f"{label}: cannot start Cargo: {error}" if error else (
+            f"{label}: Cargo exit {returncode}, command={command!r}\n"
+            f"stdout (last 8192 chars):\n{self.stdout}\n"
+            f"stderr (last 16384 chars):\n{self.stderr}"
+        )
+        super().__init__(message)
+
+
+def write_failure_report(output_dir, failure, *, phase, crate=None):
+    """Write a bounded, machine-readable failure receipt before propagating red."""
+    output_dir.mkdir(parents=True, exist_ok=True)
+    report = {
+        "schema": 1,
+        "passed": False,
+        "phase": phase,
+        "crate": crate,
+        "label": failure.label,
+        "command": failure.command,
+        "cwd": failure.cwd,
+        "returncode": failure.returncode,
+        "stdout": failure.stdout,
+        "stderr": failure.stderr,
+    }
+    if failure.error:
+        report["error"] = failure.error
+    (output_dir / FAILURE_REPORT).write_text(json.dumps(report, indent=2) + "\n")
+
+
 def checked_cargo(command, *, cwd, label):
     """Preserve Cargo stderr when a cold-runner preflight fails."""
     try:
         result = subprocess.run(command, cwd=cwd, check=False,
                                 capture_output=True, text=True)
     except OSError as error:
-        raise SystemExit(f"{label}: cannot start Cargo: {error}") from error
+        raise CargoFailure(label, command, cwd, None, error=str(error)) from error
     if result.returncode:
         stdout = (result.stdout or "")[-8192:]
         stderr = (result.stderr or "")[-16384:]
-        raise SystemExit(
-            f"{label}: Cargo exit {result.returncode}, command={command!r}\n"
-            f"stdout (last 8192 chars):\n{stdout}\n"
-            f"stderr (last 16384 chars):\n{stderr}"
-        )
+        raise CargoFailure(label, command, cwd, result.returncode, stdout, stderr)
     return result
 
 
@@ -102,10 +138,16 @@ def main():
     seed_packages = tomllib.loads(seed_bytes.decode())["package"]
     key = lambda p: (p["name"], p["version"], p.get("source", ""), p.get("checksum", ""))
     seed_set = {key(p) for p in seed_packages}
+    args.output_dir.mkdir(parents=True, exist_ok=True)
+    failure_report = args.output_dir / FAILURE_REPORT
+    failure_report.unlink(missing_ok=True)
     # Fresh GitHub-hosted runners have no guaranteed Cargo registry cache.
     # The seed was SHA-256 checked before this online, --locked prefetch.
-    prefetch_locked_upstream(upstream)
-    args.output_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        prefetch_locked_upstream(upstream)
+    except CargoFailure as failure:
+        write_failure_report(args.output_dir, failure, phase="prefetch")
+        raise
     for crate in args.crate or CRATES:
         manifest = generated_manifest(upstream, crate)
         with tempfile.TemporaryDirectory(prefix=f"a01-ktest-{crate}-lock-") as temporary:
@@ -116,10 +158,14 @@ def main():
             (work / "Cargo.lock").write_bytes(seed_bytes)
             command = ["cargo", f"+{TOOLCHAIN}", "metadata", "--offline",
                        "--format-version", "1", "--filter-platform", "x86_64-unknown-none"]
-            result = checked_cargo(command, cwd=work,
-                                   label=f"{crate} offline metadata normalization")
-            locked = checked_cargo([*command, "--locked"], cwd=work,
-                                   label=f"{crate} locked offline metadata audit")
+            try:
+                result = checked_cargo(command, cwd=work,
+                                       label=f"{crate} offline metadata normalization")
+                locked = checked_cargo([*command, "--locked"], cwd=work,
+                                       label=f"{crate} locked offline metadata audit")
+            except CargoFailure as failure:
+                write_failure_report(args.output_dir, failure, phase="metadata", crate=crate)
+                raise
             normalized = (work / "Cargo.lock").read_bytes()
             packages = tomllib.loads(normalized.decode())["package"]
             added = sorted({key(p) for p in packages} - seed_set)
