@@ -16,8 +16,8 @@ class AcceptanceTests(unittest.TestCase):
     def setUp(self):
         # Both serial transcripts must independently bind the same VM boot.
         nonce_tag = b"A09_VM_NONCE=" + b"ab" * 16
-        self.hostlog = b"ASTERINAS-BOOT-A09-MARKER guest spawned " + nonce_tag + b"\n"
-        self.guestlog = b"LINUX-GUEST-A09-MARKER CUDA program started " + nonce_tag + b"\n"
+        self.hostlog = b"ASTERINAS-BOOT-A09-MARKER guest spawned\n" + nonce_tag + b"\n"
+        self.guestlog = b"LINUX-GUEST-A09-MARKER CUDA program started\n" + nonce_tag + b"\n"
         self.host = {
             "schema": "a09.asterinas-host-vmm-evidence.v1",
             "host_kernel": "asterinas-derived",
@@ -430,6 +430,44 @@ class AcceptanceTests(unittest.TestCase):
         self.host["vm"]["guest_linux_booted"] = False
         self.assertIn("linux_guest_not_booted", self.reasons())
 
+
+    def test_embedded_nonce_substring_is_not_a_serial_record(self):
+        tag = b"A09_VM_NONCE=" + b"ab" * 16
+        self.hostlog = self.hostlog.replace(tag + b"\n", b"prefix-" + tag + b"\n")
+        self.host["host_boot_log_sha256"] = hashlib.sha256(self.hostlog).hexdigest()
+        self.assertIn("boot_nonce_missing_from_raw_logs", self.reasons())
+
+    def test_duplicate_serial_nonce_records_are_not_one_boot(self):
+        tag = b"A09_VM_NONCE=" + b"ab" * 16 + b"\n"
+        self.guestlog += tag
+        self.guest["guest_boot_log_sha256"] = hashlib.sha256(self.guestlog).hexdigest()
+        self.assertIn("boot_nonce_missing_from_raw_logs", self.reasons())
+
+    def test_conflicting_serial_nonce_records_are_not_one_boot(self):
+        self.guestlog += b"A09_VM_NONCE=" + b"cd" * 16 + b"\n"
+        self.guest["guest_boot_log_sha256"] = hashlib.sha256(self.guestlog).hexdigest()
+        self.assertIn("boot_nonce_missing_from_raw_logs", self.reasons())
+
+    def test_nonce_record_with_suffix_is_rejected(self):
+        tag = b"A09_VM_NONCE=" + b"ab" * 16 + b"\n"
+        self.hostlog = self.hostlog.replace(tag, tag[:-1] + b"EXTRA\n")
+        self.host["host_boot_log_sha256"] = hashlib.sha256(self.hostlog).hexdigest()
+        self.assertIn("boot_nonce_missing_from_raw_logs", self.reasons())
+
+    def test_output_is_immutable_and_existing_file_not_truncated(self):
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / "acceptance.json"
+            target.write_text("previous-evidence", encoding="utf-8")
+            with self.assertRaises(FileExistsError):
+                acceptance.write_output(target, "{}\n")
+            self.assertEqual(target.read_text(), "previous-evidence")
+
+    def test_output_fifo_is_not_opened_or_modified(self):
+        with tempfile.TemporaryDirectory() as directory:
+            pipe = Path(directory) / "output"
+            os.mkfifo(pipe)
+            with self.assertRaises(OSError):
+                acceptance.write_output(pipe, "{}\n")
 
 if __name__ == "__main__":
     unittest.main()

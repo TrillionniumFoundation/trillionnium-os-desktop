@@ -99,7 +99,10 @@ def write_output(path, raw):
     if path == "-":
         print(raw, end="")
         return
-    flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_CLOEXEC | os.O_NOFOLLOW
+    # Evidence is append-only by filename: do not truncate an earlier
+    # review record, an aliased hardlink, or a special output file.
+    flags = (os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NONBLOCK |
+             os.O_CLOEXEC | os.O_NOFOLLOW)
     fd = os.open(path, flags, 0o600)
     try:
         info = os.fstat(fd)
@@ -112,8 +115,22 @@ def write_output(path, raw):
             if written <= 0:
                 raise OSError("acceptance output write made no progress")
             offset += written
+        os.fsync(fd)
     finally:
         os.close(fd)
+
+def unique_boot_nonce_record(raw_log, nonce):
+    """Require precisely one complete nonce record, never an embedded prefix.
+
+    Reject logs mixing two boots or duplicating the same boot record, even
+    when an untrusted manifest is rewritten with a matching new log digest.
+    """
+    if not isinstance(raw_log, bytes) or not isinstance(nonce, bytes):
+        return False
+    records = [line for line in raw_log.splitlines()
+               if line.startswith(b"A09_VM_NONCE=")]
+    return records == [b"A09_VM_NONCE=" + nonce]
+
 
 def validate(host, guest, host_log, guest_log):
     failures = []
@@ -153,14 +170,14 @@ def validate(host, guest, host_log, guest_log):
     # A nonce repeated only in two JSON records is not proof that the raw
     # host and guest captures belong to the same boot. The VM owner must
     # print the exact boot nonce in BOTH independent serial transcripts.
-    nonce_marker = (
-        b"A09_VM_NONCE=" + nonce.encode("ascii")
+    nonce_bytes = (
+        nonce.encode("ascii")
         if isinstance(nonce, str) and NONCE.fullmatch(nonce) is not None
         else None
     )
-    check(nonce_marker is not None and isinstance(host_log, bytes) and
-          isinstance(guest_log, bytes) and nonce_marker in host_log and
-          nonce_marker in guest_log, "boot_nonce_missing_from_raw_logs")
+    check(unique_boot_nonce_record(host_log, nonce_bytes) and
+          unique_boot_nonce_record(guest_log, nonce_bytes),
+          "boot_nonce_missing_from_raw_logs")
 
     physical = host.get("device") if isinstance(host.get("device"), dict) else {}
     guest_dev = guest.get("device") if isinstance(guest.get("device"), dict) else {}
