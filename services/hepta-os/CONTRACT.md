@@ -135,6 +135,13 @@ idempotent. It drops context/fence digests, cancellation details, and deadlines.
 The receipt's original generation can be older than the currently serving
 daemon; observation does not renew that generation.
 
+The original [RunStatus handler](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-agentd/src/state_control.rs#L523-L531)
+reads the current in-memory run projection. A `null` result means this lookup
+found no projected runtime receipt; it does **not** prove that an earlier
+objective was not durably published. The fixed protocol has no separate
+objective-publication status method. A caller must not clear a submission's
+unknown state or create a new run because this lookup returns `null`.
+
 The current upstream run-state owner computes `terminal_observed` for cancelled,
 succeeded, and failed phases. An inconsistent flag is rejected. A consistent
 run state is still not evidence that a specific OS/device operation took
@@ -161,3 +168,23 @@ authenticated objective provider and a restricted HOS2 effect adapter, with the
 original durable operation owner responsible for K/D binding, uncertainty,
 fencing, acknowledgement and retirement. That work requires separate real
 admission/effect/revoke/restart evidence.
+
+The compiled original route is
+[state_control.rs:206–228](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-agentd/src/state_control.rs#L206-L228)
+calling `ObjectiveRuntimeHost::submit`; the original module declarations select
+`objective_runtime`, not the undeclared file named `objective_ingress.rs`.
+The existing owner
+[publishes durably before its later trust and runtime checks](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-agentd/src/objective_runtime.rs#L206-L327).
+Once a request may have reached that owner, a timeout, connection loss or error
+without authoritative non-admission evidence is **SubmitUnknown**. `Admitted`
+and `Conflict` are publication receipts; neither establishes a final device
+effect. Even an admitted explicit abstention need not create a runtime run.
+
+The owner permits an already-used sequence only for the exact recorded
+authentication and run ID; signature expiry, revocation, readiness and spawn
+fencing remain enforced. A future adapter must not refresh credentials, allocate
+another run ID or rebind to another spawn to retry an unknown outcome. The
+[live-source and trusted-ingress review](../../tests/integration/hepta/LIVE_SOURCE_REVIEW.md)
+records the fixed source and the minimum external trust/profile/checkpoint
+assembly. It supplies no signer or submission implementation, and does not
+change this observer's read-only method set.

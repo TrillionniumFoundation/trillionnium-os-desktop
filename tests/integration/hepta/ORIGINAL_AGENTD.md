@@ -1,7 +1,17 @@
 # Original Agentd read-only qualification gate
 
-**Current result: blocked before build; original Agentd was not run.** The
-11:12:19 UTC snapshot on 2026-10-17 found 29,278,208 free bytes, only Rust 1.88
+**Latest archived result: the original-owner probe and original Agentd passed
+their Rust 1.95 compiler checks; executable linking and original-process
+assertions remain `not_run`.** The real metadata/check commands, failed attempts,
+source/lock bindings and raw logs are in
+[BUILD_REVIEW.md](BUILD_REVIEW.md#real-resolution-and-compiler-checks) and
+[the original-probe evidence archive](evidence/2026-10-17-original-probe/README.md).
+`cargo check` does not produce the runnable binaries or pass the live gate.
+The separate [live-source review](LIVE_SOURCE_REVIEW.md) records the startup,
+Session and trusted-objective contracts checked before the first process run.
+
+**Historical preflight result, 11:12:19 UTC on 2026-10-17:** that snapshot found
+29,278,208 free bytes, only Rust 1.88
 installed, and no `cmake` on PATH. The gate returned exit **2**, with both
 `large_build_attempted` and `runtime_probe_attempted` false. The machine-readable
 record is [original_agentd_preflight_2026-10-17.json](original_agentd_preflight_2026-10-17.json).
@@ -12,9 +22,10 @@ was changed to work around these limits.
 `run_original_agentd.py` and `original_agentd_probe.rs` make the next original
 process check reproducible. The Python syntax, runner manifest/patch generation,
 seed-lock validation and rejection of a deliberately changed dependency
-identity were exercised. Rust 1.88 `rustfmt --edition 2024` parsed/formatted the
-probe. **The probe's original-library dependency graph has not been compiled,
-and none of its process assertions is recorded as passed.** A build or startup
+identity were exercised. The later Rust 1.95 check compiled/type-checked the
+unchanged probe against the original owner libraries, and a separate check
+passed for the original Agentd binary selection. **None of the original-process
+assertions is recorded as passed by those compiler checks.** A link or startup
 incompatibility remains a real gate failure to fix and report, never a reason
 to relabel a fixture as Agentd.
 

@@ -20,7 +20,7 @@ system/device changes.
 
 ## Source-derived conformance
 
-Use an authorized local checkout of the fixed private Hepta revision. The first
+Use an authorized local checkout of the fixed Hepta revision. The first
 command verifies its exact commit and the twelve reviewed source-file hashes,
 then extracts the original wire declarations and original EventBuffer code
 into a **new, previously nonexistent** small verifier directory. It copies no
@@ -96,6 +96,14 @@ now provides fixed-source build/launch commands, original-owner process
 assertions, and the actual resource/artifact blockers. Its default preflight
 does not compile or launch Agentd and cannot satisfy live acceptance.
 
+The archived Rust 1.95 compiler checks for the original owner-library probe and
+the original Agentd binary selection passed; executable linking and original
+process assertions remain `not_run` in those records. See the
+[build review and raw evidence](../../tests/integration/hepta/BUILD_REVIEW.md).
+The [live-source review](../../tests/integration/hepta/LIVE_SOURCE_REVIEW.md)
+checks the actual Supervisor/Agentd startup and Session handoff against the
+fixed source. It is not another executed process result.
+
 For a live run, separately record the fixed Hepta executable/build features,
 launcher command, trusted identity/generation/UID source, configured owners and
 providers, and actual capability response. First verify only the four supported
@@ -104,6 +112,16 @@ and Session freshness. Do not count `--help`, the Python fixture, or source
 conformance as this evidence. Authenticated objective submission and HOS2
 effects require their own owner-approved provider/adapter and durable-result
 acceptance, not changes to this observer's method allowlist.
+
+The read-only original-process profile needs no AuthBus issuer or objective
+profile. A future `ObjectiveStart` deployment needs independently installed
+owner trust, a frozen objective profile and the separate replay checkpoint.
+The running route is the original `objective_runtime` host reached through
+`state_control`; it does not come from the undeclared `objective_ingress.rs`
+file. Follow the [submission contract](CONTRACT.md#errors-freshness-and-unsupported-submission):
+an unknown submission is not resolved by a `RunStatus` response of `null`, and
+an admission receipt is not a completed HOS2/device effect. These documents do
+not generate keys, enroll an issuer or provide an alternative authority path.
 
 Normal lifecycle advancement keeps the same source and its historical events.
 A promotion race between the original runtime snapshot and event-buffer lock
