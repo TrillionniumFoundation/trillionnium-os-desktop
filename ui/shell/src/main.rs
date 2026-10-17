@@ -138,6 +138,9 @@ fn observed_host_line(task: &TaskRecord) -> String {
     let first_layout = task
         .ui_first_frame_unix_ms
         .map_or("UNOBSERVED".to_owned(), |time| time.to_string());
+    let launch_socket_epoch = task
+        .wayland_socket_epoch_at_launch
+        .map_or("UNOBSERVED".to_owned(), |epoch| epoch.to_string());
     format!(
         "{} | {} | #{} {} | HOST_PROCESS={} | PID={} | FIRST_EGUI_LAYOUT={} | WAYLAND_AT_LAUNCH={} | {}",
         task.updated_unix_ms,
@@ -147,10 +150,7 @@ fn observed_host_line(task: &TaskRecord) -> String {
         task.state.label(),
         task.pid.map_or("-".into(), |pid| pid.to_string()),
         first_layout,
-        task.wayland_socket_epoch_at_launch.map_or(
-            "UNOBSERVED".to_owned(),
-            |epoch| epoch.to_string()
-        ),
+        launch_socket_epoch,
         task.detail,
     )
 }
