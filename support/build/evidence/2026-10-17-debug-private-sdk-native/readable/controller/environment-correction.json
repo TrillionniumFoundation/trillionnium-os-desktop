@@ -1,0 +1,11 @@
+{
+  "failed_outer_observed_exit": 1,
+  "failed_actual_debug_exit": 1,
+  "failed_command_receipts": "native-followup/debug/controller/commands.json",
+  "failure": "GDB and nm must be available",
+  "cause": "controller requested nonexistent private-prefix usr/bin/nm; actual nm exists in host /usr/bin",
+  "old_controller_sha256": "7638d540c2d81ffa442296103fe73db0e65509a03cafbfa5cd143697ce7049ee",
+  "new_controller_sha256": "1e1a2d51978ed0dec79ca105c746e4ad7daa743dbd47c4b9490c0dc9fd9bb25c",
+  "correction": "select actual nm through the explicit restored PATH; fresh debug-retry1 output; source unchanged",
+  "no_kernel_or_qemu_in_failed_prepare": true
+}

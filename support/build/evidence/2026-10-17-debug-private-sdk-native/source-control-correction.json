@@ -1,0 +1,31 @@
+{
+  "scope": "Unpublished offline source-closure packaging correction only; original actual debug run and binary inputs unchanged",
+  "failed_commands": [
+    [
+      "python3",
+      "-I",
+      "support/build/evidence/2026-10-17-debug-private-sdk-native/verify.py"
+    ],
+    [
+      "python3",
+      "-I",
+      "-O",
+      "support/build/evidence/2026-10-17-debug-private-sdk-native/verify.py"
+    ]
+  ],
+  "observed_exit_codes": [
+    1,
+    1
+  ],
+  "output": "verification failed: 'source/kernel/asterinas/ostd/src/boot/mod.rs'\n",
+  "cause": "The reused ordinary-runtime source selection omitted one file additionally observed by the debug runner.",
+  "fixed_paths": [
+    "kernel/asterinas/ostd/src/boot/mod.rs"
+  ],
+  "binding": "Added the exact D Git blob, required its SHA256 to match actual debug environment.source_sha256, and preserved new parent Merkle tree objects.",
+  "initial_source_controls": 83,
+  "final_source_controls": 84,
+  "original_target_reopened": false,
+  "original_run_files_or_binary_inputs_changed": false,
+  "future_prevention": "The corrected capture selects the full actual debug source_sha256 path set in addition to the baseline runtime selection."
+}
