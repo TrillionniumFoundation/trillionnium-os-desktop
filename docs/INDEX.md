@@ -34,7 +34,7 @@
 
 ## 按模块开始开发
 
-核对主干基线为 `146dedf75c5729ef1930c845eeb60e31e8111c60`。下表将开发入口、技术契约和验收来源放在一起；标为候选的代码及文档尚未合入 main，不能从主干的相对路径假定它们已存在。
+本次集成的主干基线为 `18d9fca65381f0e84f130c76fa289d5186894d85`，A08 源码组合与实际执行身份见 [组合收据](../results/integration/a08-host-main-20261017/README.md)。下表将开发入口、技术契约和验收来源放在一起；标为候选的代码及文档尚未合入 main，不能从主干的相对路径假定它们已存在。
 
 | 模块 / owner | 开发与验证入口 | 技术契约 / 实际范围 |
 | --- | --- | --- |
@@ -46,7 +46,7 @@
 | A05 内核控制 | [实现、构建与调试手册](agents/handoffs/A05_KERNEL_CONTROL.md) | [NATIVE_ABI](NATIVE_ABI.md)；main 已有 QueryAbi 的 Process / exec 镜像身份隔离；能力授予和其余四操作未闭合 |
 | A06 CPU 预算 | [CPU 实现及客体验证](ASTERINAS_CPU_BANDWIDTH_N0.md)、[已集成收据](../results/organ-backend/2026-10-17/a05-a06-integrated-acceptance.json) | [资源 backend 接合](ASTERINAS_ORGAN_BACKEND.md)；N0 配额已执行，最终计费 / IRQ / SMP 不能继承有限样本资格 |
 | A07 Hepta 用户态接合 | [client 开发入口](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/dfffb4a89b2094d08ea89210097fcc208e98ff68/services/hepta-os/README.md)、[技术契约](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/dfffb4a89b2094d08ea89210097fcc208e98ff68/services/hepta-os/CONTRACT.md)、[运行与验证](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/dfffb4a89b2094d08ea89210097fcc208e98ff68/services/hepta-os/RUN.md)，[候选 #157](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/157) | [HEPTA_INTEGRATION](HEPTA_INTEGRATION.md)；新增只读 client 候选，原 durable owner 的效果接合仍未完成 |
-| A08 Android | [恢复后的开发手册](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/3ac85d8672e3afcfb70c0ee323108294ef883239/support/android/README.md)、[恢复与验证证据](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/tree/3ac85d8672e3afcfb70c0ee323108294ef883239/tests/workloads/android/evidence/2026-10-17-source-integrity)，[候选 #156](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/156) | [ANDROID_COMPATIBILITY](ANDROID_COMPATIBILITY.md)；恢复源码与 host 回归，不表示 Android guest 已启动 |
+| A08 Android | [开发手册](../support/android/README.md)、[来源绑定与 184 项回归](../tests/workloads/android/evidence/2026-10-17-commit-bound-audit/README.md)、[main 组合实际验收](../results/integration/a08-host-main-20261017/README.md) | [ANDROID_COMPATIBILITY](ANDROID_COMPATIBILITY.md)、[接口技术契约](../compat/android/INTERFACES.md)、[内核缺口](../compat/android/kernel-gaps.json)；已整合源码和 Linux host 工具，Binder/seccomp/MAC 与 Android guest 资格未通过 |
 | A09 硬件 / VMM | [device lifecycle 开发手册](../support/vmm/device_lifecycle/README.md)、[GATES](../support/vmm/GATES.md) | [HARDWARE_AND_DRIVERS](HARDWARE_AND_DRIVERS.md)、[来源](../support/vmm/PROVENANCE.md)；宿主元数据模型不等于真实 DMA/GPU |
 | A10 Rust UI | [运行手册](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/dfffb4a89b2094d08ea89210097fcc208e98ff68/support/ui/RUN.md)、[Session/Hepta 接合手册](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/dfffb4a89b2094d08ea89210097fcc208e98ff68/support/ui/HEPTA_OBSERVER.md)、[验证结果](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/tree/dfffb4a89b2094d08ea89210097fcc208e98ff68/tests/ui/evidence/2026-10-17-hepta-observer)，[候选 #157](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/157) | [DESKTOP_UX](DESKTOP_UX.md)；Linux host 原型、Session 只读观测，不是已移植的 Asterinas 桌面或移动端 |
 

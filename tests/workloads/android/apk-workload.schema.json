@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schema_version", "execution_class", "native_android_claim", "apk", "scenarios"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "execution_class": {"enum": ["apk-host-inventory", "android-guest-reference"]},
+    "native_android_claim": {"const": false},
+    "execution": {
+      "type": "object",
+      "required": ["adb", "serial", "status"],
+      "properties": {
+        "adb": {"type": "string"},
+        "serial": {"type": ["string", "null"]},
+        "status": {"enum": ["passed", "failed", "blocked"]}
+      }
+    },
+    "apk": {
+      "type": "object",
+      "required": ["path", "sha256", "size_bytes", "metadata"],
+      "properties": {
+        "path": {"type": "string"},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "size_bytes": {"type": "integer", "minimum": 1},
+        "metadata": {"type": "object"}
+      }
+    },
+    "scenarios": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "status"],
+        "properties": {
+          "name": {"type": "string"},
+          "status": {"enum": ["not_run", "passed", "failed", "blocked_missing_package_metadata", "blocked_prior_failure", "blocked_missing_serial", "blocked_wrong_reference"]}
+        }
+      }
+    }
+  }
+}

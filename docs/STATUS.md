@@ -1,5 +1,23 @@
 # 当前状态
 
+## 2026-10-17：A08 源码及主机工具整合到 main
+
+本次 A00 集成以实际 main `18d9fca65381f0e84f130c76fa289d5186894d85` 为父提交，纳入 A08 已发布修复 `25c76c1f294a3bf0ccf541f0063b0278899bf979`。整合源码提交为 `194c41d0b2c8f1fabb7b6de4fac8967b862518a6`，与本地实际执行提交 `5a5f03390901c8393d0336f6b5e194e2dfc5eb3e` 的完整 Git tree 同为 `836d3907854eb125eba1fdb492e6baff65ad4c45`。采用独立 A00 主干集成路径，保留两边历史，未改写 A08 owner 分支。
+
+| 本轮闭合项 | 实际结果与证据 |
+| --- | --- |
+| 来源审计绑定 | 指定 `--project-ref` 后从该 Git tree 读取不可变 blob，忽略工作区脏文件与后续提交；每项记录 Git blob、SHA-256、大小、mode，并给出完整 Rust 清单摘要 |
+| 实际锁文件核验 | schema 3 分开记录预期 pin 与被审计提交内的真实 `support/upstream-lock.json`；缺失、损坏、tag/commit/reuse 不符均明确阻断，不能靠复述常量得到通过 |
+| main 组合验收 | 完整 host 聚合 exit0 / `host_passed_only`，normal 184 项与 optimized 184 项通过；63 必需 / 71 检查文件通过；真实 OpenJDK 17 Java/JNI 编译与加载成功 |
+| 固定源码检查 | main 组合的 `support/build/verify-source.py` exit0，118 项输入核验通过；root README 严格 0 字节，两个上游 pin 与内核源码均未由本集成改变 |
+| 证据与开发入口 | [组合收据及原始日志](../results/integration/a08-host-main-20261017/README.md)、[A08 开发手册](../support/android/README.md)、[184 项及来源绑定负例](../tests/workloads/android/evidence/2026-10-17-commit-bound-audit/README.md) |
+
+**资格仍为 Linux host 工具。** 实际 Binder device probe 返回 77 / BLOCKED；Asterinas 源码审计仍有 Binder、seccomp、MAC 三项阻塞。没有 AOSP 产品构建、Android guest/APK、新内核或移动端运行资格。云端排队不作为通过依据；上表来自本轮实际执行。A07/A10 的后续主机与 Weston 验证仍在独立候选中收口，原版 Agentd 运行状态须单独核对。
+
+下面保留此前审计修复快照；其中 176 项、旧 HEAD 和“A08 未合 main”只描述当时版本。
+
+---
+
 ## 2026-10-17：审计修复与 Hepta 只读 UI 接合
 
 本节记录本轮实际增量。起始核对 main 为 `88f859bd2da13aa9e43a321edd172bdf0f7bfcf8`；发布前整合到 `146dedf75c5729ef1930c845eeb60e31e8111c60`，保留期间已合入的 G0 [#105](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/105)、A09 [#142](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/142) 与 A05 [#148](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/148)；A05 的新进程 / 镜像隔离实证完整保留在下段。本轮没有重新编译或启动 Asterinas，既有 kernel/QEMU 结果仍绑定其原始源码。

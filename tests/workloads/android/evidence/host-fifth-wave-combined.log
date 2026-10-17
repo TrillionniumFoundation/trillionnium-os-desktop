@@ -1,0 +1,28 @@
+test_incompatible_32bit_binder_mode_is_rejected (test_binder_uapi_layout.BinderLayoutTests.test_incompatible_32bit_binder_mode_is_rejected) ... ok
+test_layout_source_never_opens_device_or_reports_runtime_success (test_binder_uapi_layout.BinderLayoutTests.test_layout_source_never_opens_device_or_reports_runtime_success) ... ok
+test_native_uapi_layout_compiles_and_matches_constants (test_binder_uapi_layout.BinderLayoutTests.test_native_uapi_layout_compiles_and_matches_constants) ... ok
+test_absent_sources_fails_closed (test_kernel_contract.KernelContractTests.test_absent_sources_fails_closed) ... ok
+test_candidate_sources_still_not_runtime_pass (test_kernel_contract.KernelContractTests.test_candidate_sources_still_not_runtime_pass) ... ok
+test_cli_bad_lock_exit_three (test_kernel_contract.KernelContractTests.test_cli_bad_lock_exit_three) ... ok
+test_cli_red_gate_and_json_output (test_kernel_contract.KernelContractTests.test_cli_red_gate_and_json_output) ... ok
+test_comments_without_implementation_not_success (test_kernel_contract.KernelContractTests.test_comments_without_implementation_not_success) ... ok
+test_fixed_kernel_sources_report_three_real_blockers (test_kernel_contract.KernelContractTests.test_fixed_kernel_sources_report_three_real_blockers) ... ok
+test_kernel_lock_absent (test_kernel_contract.KernelContractTests.test_kernel_lock_absent) ... ok
+test_wrong_kernel_pin_fails_before_scan (test_kernel_contract.KernelContractTests.test_wrong_kernel_pin_fails_before_scan) ... ok
+test_cli_check_only_no_adb (test_verified_artifacts.VerifiedArtifactsTests.test_cli_check_only_no_adb) ... ok
+test_dex_only_artifact_cannot_embed_native_lib (test_verified_artifacts.VerifiedArtifactsTests.test_dex_only_artifact_cannot_embed_native_lib) ... ok
+test_escape_outside_build_out_is_forbidden (test_verified_artifacts.VerifiedArtifactsTests.test_escape_outside_build_out_is_forbidden) ... ok
+test_hash_tamper_fails (test_verified_artifacts.VerifiedArtifactsTests.test_hash_tamper_fails) ... ok
+test_missing_artifact_and_invalid_badging (test_verified_artifacts.VerifiedArtifactsTests.test_missing_artifact_and_invalid_badging) ... ok
+test_native_elf_machine_must_be_x86_64 (test_verified_artifacts.VerifiedArtifactsTests.test_native_elf_machine_must_be_x86_64) ... ok
+test_positive_fixture_is_only_artifact_provenance (test_verified_artifacts.VerifiedArtifactsTests.test_positive_fixture_is_only_artifact_provenance) ... ok
+test_swapped_artifacts_rejected_by_package_identity (test_verified_artifacts.VerifiedArtifactsTests.test_swapped_artifacts_rejected_by_package_identity) ... ok
+test_wrong_kernel_scope_refused (test_verified_artifacts.VerifiedArtifactsTests.test_wrong_kernel_scope_refused) ... ok
+
+----------------------------------------------------------------------
+Ran 20 tests in 3.908s
+
+OK
+{"blockers": ["pinned_lock"], "runtime_verified": false, "status": "lock_unavailable"}
+{"blockers": ["binder", "seccomp", "mac"], "runtime_verified": false, "status": "source_review_blocked"}
+{"status": "artifacts_verified_no_guest_execution", "scope": "Linux Cuttlefish reference, NOT Asterinas", "asterinas_runtime_passed": false, "evidence": "/tmp/tmpmetnftvy/evidence/result.json"}

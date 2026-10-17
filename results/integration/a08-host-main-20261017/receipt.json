@@ -1,0 +1,57 @@
+{
+  "source_commit": "5a5f03390901c8393d0336f6b5e194e2dfc5eb3e",
+  "source_tree": "836d3907854eb125eba1fdb492e6baff65ad4c45",
+  "root_readme_bytes": 0,
+  "checks": [
+    {
+      "command": [
+        "python3",
+        "support/android/verify_source_integrity.py"
+      ],
+      "exit": 0,
+      "seconds": 0.096,
+      "log": "check-01.log",
+      "sha256": "8ca3f1c5740a5bfd7a8cc9709912b414e11b504e009153d7d2ef442c109425af"
+    },
+    {
+      "command": [
+        "python3",
+        "support/android/verify_host.py",
+        "--out",
+        "/workspace/scratch/98f315e377b2/next-tools/r2-evidence/a08-main/host-gates.json"
+      ],
+      "exit": 0,
+      "seconds": 8.453,
+      "log": "check-02.log",
+      "sha256": "e27e9c23b4f6cde3b961ad75a19d117be1ced0f3b472a223b7eb86c22ed41b4c"
+    },
+    {
+      "command": [
+        "python3",
+        "-O",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/workloads/android",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "exit": 0,
+      "seconds": 7.541,
+      "log": "check-03.log",
+      "sha256": "1afae5509886c8e16002f7e915d65e3a4c208831cd02ec7b6442409acd32dc6e"
+    },
+    {
+      "command": [
+        "python3",
+        "support/build/verify-source.py"
+      ],
+      "exit": 0,
+      "seconds": 0.042,
+      "log": "check-04.log",
+      "sha256": "5134613ae9a179a850327beb238d0433f3bb18e14dff8a24a1a0f5abf9db267e"
+    }
+  ]
+}

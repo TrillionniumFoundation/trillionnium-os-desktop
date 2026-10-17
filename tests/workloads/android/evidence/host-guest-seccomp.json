@@ -1,0 +1,60 @@
+{
+  "blocked_by_environment": {
+    "A01_kernel_ELF": "not_available_in_container",
+    "KVM": "not_available",
+    "full_AOSP_checkout": "not_available",
+    "qemu_system_x86_64": "not_installed"
+  },
+  "guest_contract": {
+    "Android_runtime_executed": false,
+    "Asterinas_guest_executed": false,
+    "Binder_guest_executed": false,
+    "Binder_primitives_status_separate": true,
+    "Linux_syscall_status_separate": true,
+    "missing_seccomp_rejects_guest_cli_green": true,
+    "seccomp_BPF_enforcement_separate": true,
+    "seccomp_guest_executed": false
+  },
+  "host": {
+    "compiler": "cc (Debian 14.2.0-19) 14.2.0",
+    "platform": "Linux-6.18.44-x86_64-with-glibc2.41",
+    "python": "3.13.5"
+  },
+  "observed_date_utc": "2026-10-16",
+  "real_host_seccomp": {
+    "allow_getppid": "pass",
+    "android_filter_rules": "not_tested",
+    "compiled": "gcc -std=c11 -O2 -Wall -Wextra -Werror -static tests/workloads/android/seccomp_abi_probe.c",
+    "deny_getpid": "pass",
+    "filter_install": "pass",
+    "no_new_privs": "pass",
+    "run_exit": 0,
+    "stdout_sha256": "ee8c1103eb6f1bf833d908f44329c478741de68e14c8189fbd81171e26d13c82",
+    "thread_TSYNC": "not_tested"
+  },
+  "schema": 1,
+  "scope": "LINUX_HOST_AND_SYNTHETIC_GUEST_TRANSCRIPTS_ONLY",
+  "source_git_blob_sha1": {
+    "support/android/build_asterinas_abi.sh": "a2bbc9ac98b327e4b2f3ed4d342b75e8be02adc7",
+    "support/android/prepare_asterinas_abi.py": "09c56b097c939238a279ea4a544364c55f568918",
+    "support/android/run_asterinas_abi.py": "f18c33f21c5873a4d8512f2d523664fb3faddda7",
+    "tests/workloads/android/seccomp_abi_probe.c": "17b6ff45792dec2ffc781233abec804f75226720",
+    "tests/workloads/android/test_abi_result_parser.py": "5b8f753f1d2f038d55599766b2536e1a016622d8",
+    "tests/workloads/android/test_asterinas_abi_guest.py": "29d6f662d7321c2b08edb67daf0918ff915959b5",
+    "tests/workloads/android/test_seccomp_guest_contract.py": "efa25261b55b619b477ead20eff06f7eb9031bfe"
+  },
+  "tests": {
+    "command": "python3 -m unittest discover -s /mnt/data/a08-seccomp-next/tests/workloads/android -p 'test_*.py' -v",
+    "errors": 0,
+    "failed": 0,
+    "log_sha256": "0f094b257f6bb50b3def8c1913b81ea7dc3e25d6e33331b7accc8e729aa89a0c",
+    "passed": 53,
+    "ran": 53,
+    "skipped": 0,
+    "suite": "isolated A08 guest ABI/Binder/seccomp subset"
+  },
+  "warnings": [
+    "Only the static C seccomp probe ran on Linux host. Fake-QEMU transcript tests DO NOT boot Asterinas.",
+    "A seccomp primitive proof does not qualify TSYNC, Android process filters or SELinux MAC."
+  ]
+}
