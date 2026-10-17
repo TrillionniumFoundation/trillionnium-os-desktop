@@ -5,6 +5,7 @@ import sys
 import tempfile
 import time
 import unittest
+from unittest.mock import Mock, patch
 
 import cuda_process_supervisor as supervisor
 
@@ -72,6 +73,30 @@ int main(int argc, char **argv) {
         self.assertNotEqual(code, 0)
         self.assertFalse(info['timed_out'])
         self.assertTrue(info['worker_reaped'])
+
+    def test_externally_reaped_worker_pid_is_never_signalled_or_credited(self):
+        # A competing SIGCHLD reaper / SIG_IGN may make waitid raise ECHILD.
+        # In that case the PID/PGID is no longer pinned by an unreaped child
+        # and can be reused; touching it could signal an unrelated process.
+        simulated = Mock()
+        simulated.pid = 999999
+        simulated.args = ["disposable-worker"]
+        with patch.object(supervisor, "available", return_value=True), \
+             patch.object(supervisor.subprocess, "Popen", return_value=simulated), \
+             patch.object(supervisor, "_wait_unreaped",
+                          side_effect=ChildProcessError("ECHILD")), \
+             patch.object(supervisor, "_kill_anchored_group") as kill_group, \
+             patch.object(supervisor, "_reap") as reap:
+            code, record = supervisor.run_worker(["disposable-worker"], 1.0)
+        self.assertEqual(code, 125)
+        self.assertTrue(record["worker_identity_lost"])
+        self.assertTrue(record["unreaped_worker_may_remain"])
+        self.assertFalse(record["worker_reaped"])
+        self.assertFalse(record["effect_result_known"])
+        self.assertFalse(record["device_reset_verified"])
+        kill_group.assert_not_called()
+        simulated.kill.assert_not_called()
+        reap.assert_not_called()
 
     def test_invalid_command_or_timeout_fails_before_spawn(self):
         with self.assertRaises(ValueError):
