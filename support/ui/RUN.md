@@ -44,8 +44,11 @@ one completed Shell egui layout before AND after restarting the Shell.
 These are process-local Rust layout observations, not compositor surface
 mapping or actual GPU-buffer presentation. It also launches a separately owned Weston, kills and restarts that test-only
 compositor while the same Session stays alive, and verifies that a new
-Wayland client reaches its first Rust layout. The original client is recorded
-without any claim of lossless window reattachment. Real Chinese IME, physical
+Wayland client reaches its first Rust layout. The Session separately observes
+the test socket disappear and reappear with a monotonically increasing
+host-only observation epoch; the Shell surfaces uncertain display health.
+The original client is recorded without any claim of lossless window
+reattachment. Real Chinese IME, physical
 GPU reset and target kernel boot remain separate gates.
 
 The session MUST be independently supervised or kept running in terminal #1.

@@ -8,7 +8,8 @@ use std::io::{self, Write};
 use std::sync::mpsc::{self, Receiver, SyncSender, TryRecvError};
 use std::time::{Duration, Instant};
 use trill_ui_core::{
-    request, AppKind, HostResources, Request, Response, TaskRecord, TaskState, Workspace,
+    request, AppKind, HostResources, Request, Response, TaskRecord, TaskState,
+    WaylandSocketStatus, Workspace,
 };
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -281,6 +282,15 @@ impl Desktop {
                         self.tasks.clear();
                         self.selected = None;
                         self.notice("Host session restarted: previous child history cannot be reattached or trusted.");
+                    }
+                    if self.session_instance.as_deref() == Some(&session_instance) {
+                        if let Some(previous) = &self.resources {
+                            if previous.wayland.socket_observation_epoch !=
+                                resources.wayland.socket_observation_epoch
+                            {
+                                self.notice("Wayland socket identity changed or disappeared: older application surfaces NOT verified; process states remain separate.");
+                            }
+                        }
                     }
                     self.session_instance = Some(session_instance);
                     self.connected = true;
@@ -697,6 +707,21 @@ impl Desktop {
                 ui.label("Host load: unknown");
             }
             ui.small(format!("Observed unix ms: {}", sample.sampled_unix_ms));
+            ui.separator();
+            ui.label(RichText::new("Wayland socket (host-only)").strong());
+            ui.label(format!(
+                "{} · observation epoch {}",
+                sample.wayland.status.label(),
+                sample.wayland.socket_observation_epoch
+            ));
+            ui.small(format!("Socket observed unix ms: {}", sample.wayland.sampled_unix_ms));
+            if sample.wayland.status != WaylandSocketStatus::SocketObserved {
+                ui.colored_label(
+                    warning(),
+                    "No observed Wayland socket: RUNNING means host process only",
+                );
+            }
+            ui.small("Socket presence does NOT prove protocol readiness, compositor health, window attachment or GPU presentation.");
         } else {
             ui.label("Resource snapshot unavailable");
         }

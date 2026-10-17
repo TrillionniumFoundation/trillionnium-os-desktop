@@ -164,6 +164,38 @@ impl TaskRecord {
     }
 }
 
+/// Host-only Unix socket metadata, not a Wayland protocol handshake or a
+/// claim that an application's surface is mapped or recoverable.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum WaylandSocketStatus {
+    #[default]
+    Unconfigured,
+    Missing,
+    NotSocket,
+    SocketObserved,
+}
+
+impl WaylandSocketStatus {
+    pub const fn label(self) -> &'static str {
+        match self {
+            Self::Unconfigured => "NOT CONFIGURED",
+            Self::Missing => "SOCKET MISSING",
+            Self::NotSocket => "UNTRUSTED SOCKET PATH",
+            Self::SocketObserved => "SOCKET PRESENT (UNVERIFIED)",
+        }
+    }
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct HostWaylandObservation {
+    pub status: WaylandSocketStatus,
+    /// Monotone within this unprivileged host Session only. No A05/A07 trust.
+    pub socket_observation_epoch: u64,
+    pub sampled_unix_ms: u64,
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct HostResources {
@@ -172,6 +204,10 @@ pub struct HostResources {
     pub mem_available_kib: Option<u64>,
     pub load_average_1m: Option<f32>,
     pub source: String,
+    /// Older host snapshots must default to unknown rather than implying a
+    /// live compositor or restored Wayland surface.
+    #[serde(default)]
+    pub wayland: HostWaylandObservation,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -280,6 +316,15 @@ pub fn request_at(socket: &Path, req: &Request) -> io::Result<Response> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn old_host_snapshot_defaults_to_unconfigured_wayland() {
+        let old = r#"{"sampled_unix_ms":5,"mem_total_kib":null,"mem_available_kib":null,"load_average_1m":null,"source":"old host"}"#;
+        let resources: HostResources = serde_json::from_str(old).unwrap();
+        assert_eq!(resources.wayland.status, WaylandSocketStatus::Unconfigured);
+        assert_eq!(resources.wayland.socket_observation_epoch, 0);
+        assert_eq!(resources.wayland.status.label(), "NOT CONFIGURED");
+    }
 
     #[test]
     fn real_terminal_state_requires_prior_running() {

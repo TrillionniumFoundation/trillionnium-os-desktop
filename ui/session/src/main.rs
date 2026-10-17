@@ -4,16 +4,19 @@ use std::collections::BTreeMap;
 use std::fs::{self, File, OpenOptions, Permissions};
 use std::io::{self, Read};
 use std::os::fd::AsRawFd;
-use std::os::unix::fs::{DirBuilderExt, FileTypeExt, OpenOptionsExt, PermissionsExt};
+use std::os::unix::fs::{
+    DirBuilderExt, FileTypeExt, MetadataExt, OpenOptionsExt, PermissionsExt,
+};
 use std::os::unix::net::{UnixListener, UnixStream};
 use std::os::unix::process::ExitStatusExt;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::{Child, Command, ExitStatus, Stdio};
 use std::sync::mpsc::{self, Receiver, Sender};
 
 use trill_ui_core::{
-    read_frame, socket_path, unix_ms, write_frame, AppKind, HostResources, Request, Response,
-    TaskRecord, TaskState, Workspace, MAX_ACTIVE_TASKS, MAX_TRACKED_TASKS,
+    read_frame, socket_path, unix_ms, write_frame, AppKind, HostResources,
+    HostWaylandObservation, Request, Response, TaskRecord, TaskState, WaylandSocketStatus,
+    Workspace, MAX_ACTIVE_TASKS, MAX_TRACKED_TASKS,
 };
 
 // Linux flock(2) is advisory; it provides a crash-released startup mutex,
@@ -38,7 +41,80 @@ fn observe_first_frame<R: Read + Send + 'static>(id: u64, mut from_child: R, sen
     });
 }
 
+#[derive(Clone, Debug, PartialEq, Eq)]
+enum DisplayProbe {
+    Unconfigured,
+    Missing,
+    NotSocket,
+    Socket { device: u64, inode: u64 },
+}
+
+impl DisplayProbe {
+    const fn status(&self) -> WaylandSocketStatus {
+        match self {
+            Self::Unconfigured => WaylandSocketStatus::Unconfigured,
+            Self::Missing => WaylandSocketStatus::Missing,
+            Self::NotSocket => WaylandSocketStatus::NotSocket,
+            Self::Socket { .. } => WaylandSocketStatus::SocketObserved,
+        }
+    }
+}
+
+/// Read-only metadata. No connection is made and no assertion about
+/// compositor health, mapped surfaces, focus, or a successful GPU frame.
+fn probe_wayland_path(path: Option<&Path>) -> DisplayProbe {
+    let Some(path) = path else {
+        return DisplayProbe::Unconfigured;
+    };
+    match fs::symlink_metadata(path) {
+        Ok(metadata) if metadata.file_type().is_socket() => DisplayProbe::Socket {
+            device: metadata.dev(),
+            inode: metadata.ino(),
+        },
+        Ok(_) => DisplayProbe::NotSocket, // never follow a fake socket symlink
+        Err(error) if error.kind() == io::ErrorKind::NotFound => DisplayProbe::Missing,
+        Err(_) => DisplayProbe::NotSocket,
+    }
+}
+
+fn probe_host_wayland() -> DisplayProbe {
+    let Some(name) = std::env::var_os("WAYLAND_DISPLAY") else {
+        return DisplayProbe::Unconfigured;
+    };
+    let display = PathBuf::from(name);
+    let resolved = if display.is_absolute() {
+        display
+    } else {
+        let Some(runtime) = std::env::var_os("XDG_RUNTIME_DIR") else {
+            return DisplayProbe::Unconfigured;
+        };
+        PathBuf::from(runtime).join(display)
+    };
+    probe_wayland_path(Some(&resolved))
+}
+
+#[derive(Default)]
+struct DisplayTracker {
+    last: Option<DisplayProbe>,
+    epoch: u64,
+}
+
+impl DisplayTracker {
+    fn observe(&mut self, probe: DisplayProbe) -> HostWaylandObservation {
+        if self.last.as_ref() != Some(&probe) {
+            self.last = Some(probe.clone());
+            self.epoch = self.epoch.saturating_add(1);
+        }
+        HostWaylandObservation {
+            status: probe.status(),
+            socket_observation_epoch: self.epoch,
+            sampled_unix_ms: unix_ms(),
+        }
+    }
+}
+
 struct Session {
+    display: DisplayTracker,
     instance: String,
     app_binary: PathBuf,
     next_id: u64,
@@ -58,6 +134,7 @@ impl Session {
         let instance = random.iter().map(|byte| format!("{byte:02x}")).collect();
         let (first_frame_tx, first_frame_rx) = mpsc::channel();
         Ok(Self {
+            display: DisplayTracker::default(),
             instance,
             app_binary,
             next_id: 1,
@@ -220,11 +297,14 @@ impl Session {
     fn handle(&mut self, request: Request) -> Response {
         self.refresh();
         match request {
-            Request::Snapshot => Response::Snapshot {
-                tasks: self.tasks.values().rev().cloned().collect(),
-                resources: host_resources(),
-                session_instance: self.instance.clone(),
-            },
+            Request::Snapshot => {
+                let observation = self.display.observe(probe_host_wayland());
+                Response::Snapshot {
+                    tasks: self.tasks.values().rev().cloned().collect(),
+                    resources: host_resources(observation),
+                    session_instance: self.instance.clone(),
+                }
+            }
             Request::Launch {
                 workspace,
                 app,
@@ -278,7 +358,7 @@ fn settle_exit(task: &mut TaskRecord, exit: ExitStatus) {
     };
 }
 
-fn host_resources() -> HostResources {
+fn host_resources(wayland: HostWaylandObservation) -> HostResources {
     let meminfo = fs::read_to_string("/proc/meminfo").unwrap_or_default();
     let extract = |key: &str| -> Option<u64> {
         meminfo.lines().find_map(|line| {
@@ -297,7 +377,8 @@ fn host_resources() -> HostResources {
         mem_total_kib: extract("MemTotal:"),
         mem_available_kib: extract("MemAvailable:"),
         load_average_1m,
-        source: "Linux host /proc (NOT HOS2)".into(),
+        source: "Linux host /proc and Wayland socket metadata (NOT HOS2)".into(),
+        wayland,
     }
 }
 
@@ -475,6 +556,66 @@ mod tests {
     use super::*;
     use std::os::unix::process::ExitStatusExt;
     use std::{thread, time::Duration};
+
+    #[test]
+    fn display_probe_is_fail_closed_and_socket_epochs_track_observed_changes() {
+        let dir = std::env::temp_dir().join(format!(
+            "trill-wayland-observe-{}-{}",
+            std::process::id(),
+            unix_ms()
+        ));
+        fs::create_dir(&dir).unwrap();
+        let socket = dir.join("test-wayland");
+        let mut tracker = DisplayTracker::default();
+        let initial = tracker.observe(probe_wayland_path(None));
+        assert_eq!(initial.status, WaylandSocketStatus::Unconfigured);
+        let missing = tracker.observe(probe_wayland_path(Some(&socket)));
+        assert_eq!(missing.status, WaylandSocketStatus::Missing);
+        assert!(missing.socket_observation_epoch > initial.socket_observation_epoch);
+
+        fs::write(&socket, b"not a socket").unwrap();
+        let invalid = tracker.observe(probe_wayland_path(Some(&socket)));
+        assert_eq!(invalid.status, WaylandSocketStatus::NotSocket);
+        fs::remove_file(&socket).unwrap();
+
+        let listener = UnixListener::bind(&socket).unwrap();
+        let present = tracker.observe(probe_wayland_path(Some(&socket)));
+        assert_eq!(present.status, WaylandSocketStatus::SocketObserved);
+        assert_eq!(
+            tracker.observe(probe_wayland_path(Some(&socket))).socket_observation_epoch,
+            present.socket_observation_epoch,
+            "an unchanged socket must not generate false restart events"
+        );
+        drop(listener);
+        fs::remove_file(&socket).unwrap();
+        let gone = tracker.observe(probe_wayland_path(Some(&socket)));
+        assert_eq!(gone.status, WaylandSocketStatus::Missing);
+        assert!(gone.socket_observation_epoch > present.socket_observation_epoch);
+
+        let listener = UnixListener::bind(&socket).unwrap();
+        let recreated = tracker.observe(probe_wayland_path(Some(&socket)));
+        assert_eq!(recreated.status, WaylandSocketStatus::SocketObserved);
+        assert!(recreated.socket_observation_epoch > gone.socket_observation_epoch);
+        drop(listener);
+        fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn display_path_symlink_is_not_interpreted_as_a_socket() {
+        let dir = std::env::temp_dir().join(format!(
+            "trill-wayland-symlink-{}-{}",
+            std::process::id(),
+            unix_ms()
+        ));
+        fs::create_dir(&dir).unwrap();
+        let socket = dir.join("socket");
+        let alias = dir.join("alias");
+        let listener = UnixListener::bind(&socket).unwrap();
+        std::os::unix::fs::symlink(&socket, &alias).unwrap();
+        assert_eq!(probe_wayland_path(Some(&alias)), DisplayProbe::NotSocket);
+        drop(listener);
+        fs::remove_dir_all(&dir).unwrap();
+    }
 
     #[test]
     fn session_startup_is_exclusive_and_recovers_a_crashed_lock_owner() {

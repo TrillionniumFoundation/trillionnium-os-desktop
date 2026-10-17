@@ -113,6 +113,13 @@ for _ in {1..100}; do
 done
 [[ -n "$initial" ]] || { echo "Host Session start timeout" >&2; exit 1; }
 instance="$(printf '%s' "$initial" | python3 -c 'import json,sys;print(json.load(sys.stdin)["session_instance"])')"
+initial_socket_epoch="$(printf '%s' "$initial" | python3 -c '
+import json,sys
+o=json.load(sys.stdin)["resources"]["wayland"]
+assert o["status"] == "socket_observed", o
+assert o["socket_observation_epoch"] >= 1, o
+print(o["socket_observation_epoch"])
+')"
 
 old_response="$("$ctl" launch personal notes)"
 read -r old_id old_pid <<<"$(printf '%s' "$old_response" | python3 -c '
@@ -147,7 +154,24 @@ print(t["state"])
 # Remove only the dead private compositors own stale socket/lock paths. The
 # old Weston has exited and registry probing has already failed closed.
 rm -f -- "$runtime/$WAYLAND_DISPLAY" "$runtime/$WAYLAND_DISPLAY.lock"
+missing_snapshot="$("$ctl" snapshot)"
+missing_epoch="$(printf '%s' "$missing_snapshot" | python3 -c '
+import json,sys
+o=json.load(sys.stdin)["resources"]["wayland"]
+assert o["status"] == "missing", o
+assert o["socket_observation_epoch"] > int(sys.argv[1]), o
+print(o["socket_observation_epoch"])
+' "$initial_socket_epoch")"
 start_owned_weston "$runtime/weston-after.log"
+reconnected="$("$ctl" snapshot)"
+printf '%s' "$reconnected" | python3 -c '
+import json,sys
+s=json.load(sys.stdin)
+o=s["resources"]["wayland"]
+assert s["session_instance"] == sys.argv[1]
+assert o["status"] == "socket_observed", o
+assert o["socket_observation_epoch"] > int(sys.argv[2]), o
+' "$instance" "$missing_epoch"
 host_process_alive "$session_pid" || { echo "Session did not survive compositor restart" >&2; exit 1; }
 
 new_response="$("$ctl" launch research calculator)"
@@ -178,6 +202,6 @@ done
     echo "New client cancellation was not confirmed by observed SIGKILL: $new_state" >&2
     exit 1
 }
-echo "Compositor crash/restart PASS: same Session, new Wayland client first layout, confirmed cancellation"
+echo "Compositor crash/restart PASS: same Session, socket epoch change, new Wayland client first layout, confirmed cancellation"
 echo "Old client process after compositor loss: $old_state (NOT proof of surface reattach)"
 echo "NOT VERIFIED: pre-crash client window continuity, CJK candidates, GPU reset or target OS"
