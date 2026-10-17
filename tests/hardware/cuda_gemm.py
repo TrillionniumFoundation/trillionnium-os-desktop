@@ -14,12 +14,18 @@ import math
 import os
 import platform
 import stat
+from pathlib import Path
 import struct
 import sys
 import tempfile
 import time
 
 import cuda_process_supervisor as process_supervisor
+
+# Reuse one exact PCI/model identity representation in both the CUDA client
+# and the Asterinas/Linux cross-kernel acceptance checker.
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "support/hardware"))
+from pci_identity import canonical_bdf, matches_target_model
 
 N = 16
 MAX_CUDA_ENUM_DEVICES = 64
@@ -155,6 +161,15 @@ class Api:
 
 def gpu_gemm(required_name, required_bdf, stages=None):
     stages = new_stage_status() if stages is None else stages
+    target_bdf = canonical_bdf(required_bdf)
+    if target_bdf is None:
+        stages["enumerate_device"] = "blocked"
+        raise Blocked("explicit valid physical/guest PCI BDF required before CUDA device access")
+    # A09 Route C is deliberately pinned to the discrete RTX 4060; do not
+    # silently turn RTX 4060 Ti or an unrelated RTX GPU into the lab target.
+    if not matches_target_model(required_name, "RTX 4060"):
+        stages["enumerate_device"] = "blocked"
+        raise Blocked("A09 lab compute target must be the exact RTX 4060 model")
     cuda = Api(library(["libcuda.so.1", find_library("cuda")]), "CUDA")
     # Driver API is mandatory; a software rendering backend cannot satisfy these calls.
     stages["enumerate_device"] = "in_progress"
@@ -181,8 +196,7 @@ def gpu_gemm(required_name, required_bdf, stages=None):
                   pci_buf, len(pci_buf), handle)
         bdf = pci_buf.value.decode("ascii", "replace")
         seen.append({"name": name, "bdf": bdf})
-        if (required_name.lower() in name.lower() and
-                (not required_bdf or required_bdf.lower() == bdf.lower())):
+        if matches_target_model(name, required_name) and canonical_bdf(bdf) == target_bdf:
             selected = (handle, name, bdf, index)
             break
     if selected is None:
@@ -196,6 +210,9 @@ def gpu_gemm(required_name, required_bdf, stages=None):
         cuda.call("cuDeviceGetAttribute", [C.POINTER(C.c_int), C.c_int, C.c_int],
                   C.byref(destination), attribute, device)
     cuda.call("cuDriverGetVersion", [C.POINTER(C.c_int)], C.byref(version))
+    if (cc_major.value, cc_minor.value) != (8, 9):
+        stages["enumerate_device"] = "blocked"
+        raise Blocked("selected GPU is not RTX 4060 CUDA compute capability 8.9")
     nvrtc = Api(library(["libnvrtc.so", find_library("nvrtc")]), "NVRTC")
     nv_major, nv_minor = C.c_int(), C.c_int()
     nvrtc.call("nvrtcVersion", [C.POINTER(C.c_int), C.POINTER(C.c_int)],

@@ -15,6 +15,10 @@ import os
 from pathlib import Path
 import re
 import stat
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "hardware"))
+from pci_identity import canonical_bdf, matches_target_model
 
 KERNEL_PIN = "c4b7ed575b7b32773475b194d2ad41fb6d03765b"
 SHA = re.compile(r"^[0-9a-f]{64}$")
@@ -29,11 +33,11 @@ GOLDEN_C = "5bf61d6bb17edb58d70dd37589eeab5a02f5cc5d0c5aae5d142b06678416d847"
 
 
 def valid_bdf(value):
-    return isinstance(value, str) and BDF.fullmatch(value) is not None
+    return canonical_bdf(value) is not None
 
 
 def bdf_lower(value):
-    return value.lower() if valid_bdf(value) else None
+    return canonical_bdf(value)
 
 
 def read_untrusted_regular_file(path, max_bytes):
@@ -242,13 +246,8 @@ def validate(host, guest, host_log, guest_log):
           re.fullmatch(r"[1-9][0-9]*\.[0-9]+", nvrtc_version) is not None,
           "cuda_runtime_identity_missing_or_inconsistent")
     model = cuda_dev.get("device_name")
-    if isinstance(model, str):
-        model = " ".join(model.casefold().split())
-        for prefix in ("nvidia geforce ", "nvidia ", "geforce "):
-            if model.startswith(prefix):
-                model = model[len(prefix):]
-                break
-    check(model == "rtx 4060", "guest_cuda_gpu_model_not_rtx4060")
+    check(matches_target_model(model, "RTX 4060"),
+          "guest_cuda_gpu_model_not_rtx4060")
     check(bdf_lower(cuda_dev.get("device_bdf")) is not None and
           bdf_lower(cuda_dev.get("device_bdf")) == bdf_lower(guest_dev.get("guest_bdf")),
           "guest_cuda_pci_identity_mismatch")
