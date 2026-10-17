@@ -59,14 +59,18 @@ fn every_fixed_success_and_error_response_accepts_its_own_transport_bounds() {
         // A caller may own the full response buffer even when copyout wrote
         // only the declared HOSR frame.
         let mut copied = response_bytes.clone();
-        copied.extend_from_slice(&[0xa5; 17]);
+        let required = response_frame_len(request.opcode, Status::Ok);
+        copied.resize((response_bytes.len() + 17).max(required), 0xa5);
         let transport = descriptor(request_bytes.len(), copied.len());
         let (decoded, length) = transport
             .decode_response_snapshot_for(&copied, &request)
             .unwrap();
         assert_eq!(decoded, expected, "{response_name}");
         assert_eq!(length, response_bytes.len(), "{response_name}");
-        assert_eq!(&copied[length..], &[0xa5; 17], "{response_name}");
+        assert!(
+            copied[length..].iter().all(|byte| *byte == 0xa5),
+            "{response_name}"
+        );
 
         // Errors still need capacity for the opcode's successful result,
         // though the actual copied frame is only a 64-byte HOSR header.
