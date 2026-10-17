@@ -16,12 +16,19 @@ HERE = Path(__file__).resolve().parent
 spec = importlib.util.spec_from_file_location("a01_repro_profile", HERE / "profile.py")
 profile = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(profile)
+PROOF_CARGO_JOBS = 1
 
 
 def fixed_rustc_version(cargo_home):
     # Match kernel.sh even when this launcher's caller defaults to stable.
     return subprocess.run([str(cargo_home / "bin/rustc"), "+nightly-2026-07-21", "-vV"],
                           check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout
+
+
+def proof_environment(environment):
+    # Cargo always pipelines metadata. One active unit preserves the strict
+    # completed-producer gate without accepting unfinished dependencies.
+    return dict(environment, CARGO_BUILD_JOBS=str(PROOF_CARGO_JOBS))
 
 
 def main():
@@ -86,13 +93,16 @@ def main():
         policy = dict(owner, real_root=str(source), virtual_root=str(virtual),
                       output=str(output), real_cargo=real_cargo,
                       rustc_identity=profile.digest(rustc_version), rustc_version=rustc_version.decode(),
+                      execution={"cargo_build_jobs": PROOF_CARGO_JOBS,
+                                 "caller_cargo_build_jobs": os.environ.get("CARGO_BUILD_JOBS"),
+                                 "reason": "strict completed-producer provenance; Cargo metadata pipelining is always enabled"},
                       profile_snapshot=before, source_components_identity=component_identity,
                       target_absent_at_prelaunch=True, actual_host={"hostname": socket.gethostname(),
                       "username": pwd.getpwuid(os.getuid()).pw_name, "uid": os.getuid(),
                       "uname": list(os.uname())})
         policy_path = output / "policy.json"
         profile.exclusive(policy_path, (json.dumps(policy, indent=2) + "\n").encode())
-        env = os.environ.copy()
+        env = proof_environment(os.environ)
         env.update(A01_REPRO_POLICY=str(policy_path), RUSTC_WRAPPER=str(root / "helpers/rustc-wrapper.py"),
                    CARGO_TARGET_DIR=str(source / "target"), CARGO_INCREMENTAL="0",
                    RUSTFLAGS=f"--remap-path-prefix={source}={virtual}",

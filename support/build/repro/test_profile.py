@@ -235,6 +235,19 @@ class CompilerMetadata(unittest.TestCase):
                 os.environ["RUSTUP_TOOLCHAIN"] = original
         self.assertEqual(observed, {"argv": ["+nightly-2026-07-21", "-vV"], "caller": "stable"})
 
+    def test_opt_in_launcher_overrides_parallel_caller_without_mutating_it(self):
+        spec = importlib.util.spec_from_file_location("a01_repro_run", HERE / "run.py")
+        launcher = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(launcher)
+        caller = dict(os.environ, CARGO_BUILD_JOBS="2", A01_FIXTURE_UNRELATED="kept")
+        effective = launcher.proof_environment(caller)
+        result = subprocess.run([sys.executable, "-I", "-c",
+                                 'import json,os;print(json.dumps([os.environ["CARGO_BUILD_JOBS"],os.environ["A01_FIXTURE_UNRELATED"]]))'],
+                                env=effective, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+        self.assertEqual(json.loads(result.stdout), ["1", "kept"])
+        self.assertEqual(caller["CARGO_BUILD_JOBS"], "2")
+        self.assertEqual(launcher.PROOF_CARGO_JOBS, 1)
+
 
 class Custody(unittest.TestCase):
     def test_fifo_input_is_rejected_without_blocking(self):

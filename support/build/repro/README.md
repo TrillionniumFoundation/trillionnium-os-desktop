@@ -55,6 +55,21 @@ only the metadata salt for Cargo packages inside this source root. Cargo's
 `-Cextra-filename`, output names and real `--extern` paths remain untouched.
 Registry and toolchain crates retain their original metadata salts.
 
+The first full schema-3 build failed before QEMU: a library consumer started
+before its dependency's successful producer receipt was recorded. Metadata
+pipelining is supported as the explanation by the controlled actual-Cargo
+experiment. The retained A3 logs do not provide a code-generation phase clock;
+the controlled experiment delays wrapper completion after real rustc exits.
+The strict producer gate rejected the producer without a completed receipt.
+Cargo's `build.pipelining=false` option is
+deprecated and ignored. Schema 4 therefore fixes `CARGO_BUILD_JOBS=1` only in
+this opt-in launcher, recording both the caller's value and actual selected
+value in `policy.json`. The public kernel entry inherits that value; normal
+build defaults are unchanged. A controlled actual-Cargo metadata-ready/delayed
+producer experiment fails with two jobs, still fails with the deprecated
+disable setting, and builds/runs successfully with one job. No producer check
+is relaxed and no wait-on-producer loop is introduced.
+
 Each replacement is a SHA256 of the canonical package name, version, manifest
 path and parsed manifest (only dependency/workspace path prefixes are projected),
 crate name/type, target, working directory, fixed compiler version identity and

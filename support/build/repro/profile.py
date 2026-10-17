@@ -7,7 +7,7 @@ from pathlib import Path
 import re
 import stat
 
-SCHEMA = "a01-component-path-projection/3"
+SCHEMA = "a01-component-path-projection/4"
 FILES = ("profile.py", "run.py", "rustc-wrapper.py", "cargo-metadata-wrapper.py")
 HELPERS = ("profile.py", "rustc-wrapper.py", "cargo-metadata-wrapper.py")
 
