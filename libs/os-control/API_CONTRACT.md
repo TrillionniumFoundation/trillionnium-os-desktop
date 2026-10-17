@@ -596,8 +596,9 @@ an actual kernel driver or the persistent Hepta owner.
 
 An active child cap constraint follows the **last strong reference** to its
 ResourceDomainInner. Dropping an ordinary cloned ResourceDomain does not
-remove it: grants, descendants, reservation tokens and retained result slots
-can still preserve the domain. Once the final reference disappears, Drop
+remove it: grants, descendants and retained result slots can still preserve
+the domain. A token alone does not retain a retired result or domain. Once
+the final reference disappears, Drop
 removes only the corresponding entry from the immediate parent's active-child
 cap map. It takes only that short map lock, not the family mutation gate.
 Identity tombstones, parent CPU usage and family clock are never refunded or
@@ -610,3 +611,20 @@ advancing clocks. This bounds ancestry walks and recursive parent-handle drop.
 A host 64KiB-stack regression exercises destruction at the permitted depth;
 it is not a native-kernel stack, IRQ or deferred-reclamation proof. A05/A06
 must verify their actual object ownership, residual charges and kernel stack.
+
+## Retired token ownership
+
+The bounded namespace window owns each complete request, grant and result
+slot. ReserveToken caches immutable delivery metadata and holds only a weak
+namespace reference; it holds neither Arc nor Weak to a result slot. This
+also avoids retaining the slot's backing allocation through obsolete Weak
+handles. Each operation resolves the token against the exact namespace
+instance/generation, non-reusing sequence and complete request binding, pins
+the live slot transiently, then rechecks it after taking the execution gate.
+
+Retirement, explicit history loss or destruction of the last namespace owner
+releases result/resource storage even if old tokens remain in caller memory.
+Those tokens cannot execute or publish again; their cached ID/binding remain
+readable. A DeliveryView or original-owner authority still intentionally
+retains namespace history. Callers must bound their own collections of token
+metadata; the window quota is not a quota on arbitrary caller allocations.

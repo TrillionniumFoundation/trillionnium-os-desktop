@@ -24,7 +24,7 @@ use alloc::vec::Vec;
 use core::fmt;
 
 mod sync;
-use sync::{lock_unpoisoned, Arc, Mutex};
+use sync::{lock_unpoisoned, Arc, Mutex, Weak};
 
 pub const CPU_PERIOD_NS: u64 = 100_000_000;
 pub const DEFAULT_WINDOW_CAPACITY: usize = 1024;
@@ -1287,6 +1287,8 @@ pub enum PublishOutcome {
 }
 
 struct Slot {
+    // The bounded window owns the canonical request and its resource pin.
+    request: DeliveryRequest,
     // Long executor serialization is separate from short observation state.
     // Namespace-table readers never acquire this gate.
     execution_gate: Mutex<()>,
@@ -1326,9 +1328,8 @@ struct PublishedResult {
 
 pub struct Reservation {
     id: DeliveryId,
-    request: DeliveryRequest,
-    slot: Arc<Slot>,
-    namespace: Arc<NamespaceState>,
+    binding: RequestBinding,
+    namespace: Weak<NamespaceState>,
     generation: u64,
 }
 
@@ -1338,11 +1339,11 @@ impl Reservation {
     }
 
     pub fn binding(&self) -> RequestBinding {
-        self.request.binding()
+        self.binding
     }
 
     pub fn publisher(&self) -> PublisherId {
-        self.slot.publisher
+        self.binding.publisher
     }
 }
 
@@ -1681,9 +1682,10 @@ impl ControlCore {
             publisher,
             target_instance: Arc::clone(&request.grant.domain.inner),
             ancestor_epochs: request.grant.ancestor_epochs.clone(),
+            request,
             state: Mutex::new(SlotState::Reserved),
         });
-        ns.slots.insert(request.sequence, Arc::clone(&slot));
+        ns.slots.insert(id.sequence, Arc::clone(&slot));
         ns.next_sequence = ns
             .next_sequence
             .checked_add(1)
@@ -1691,9 +1693,8 @@ impl ControlCore {
         Ok(ReserveToken {
             reservation: Reservation {
                 id,
-                request,
-                slot,
-                namespace: Arc::clone(&self.namespace),
+                binding: slot.binding,
+                namespace: Arc::downgrade(&self.namespace),
                 generation: ns.generation,
             },
         })
@@ -1946,7 +1947,36 @@ impl ControlCore {
         Ok(())
     }
 
-    fn token_is_live(&self, token: &ReserveToken) -> bool {
+    fn token_slot(
+        &self,
+        token: &ReserveToken,
+        publisher: PublisherId,
+    ) -> Result<Arc<Slot>, DeliveryError> {
+        if !Weak::ptr_eq(
+            &token.reservation.namespace,
+            &Arc::downgrade(&self.namespace),
+        ) || token.reservation.id.namespace != self.identity()
+            || publisher != token.publisher()
+        {
+            return Err(DeliveryError::PermissionDenied);
+        }
+        let ns = lock_unpoisoned(&self.namespace.state);
+        if ns.history_lost || ns.closing || ns.generation != token.reservation.generation {
+            return Err(DeliveryError::HistoryLost);
+        }
+        let slot = ns
+            .slots
+            .get(&token.id().sequence)
+            .ok_or(DeliveryError::HistoryLost)?;
+        if slot.binding != token.binding() {
+            return Err(DeliveryError::Conflict);
+        }
+        // Sequences never reuse a retired slot. Tokens retain no Arc or Weak
+        // to individual result allocations, only this namespace identity.
+        Ok(Arc::clone(slot))
+    }
+
+    fn token_is_live(&self, token: &ReserveToken, pinned: &Arc<Slot>) -> bool {
         let ns = lock_unpoisoned(&self.namespace.state);
         !ns.history_lost
             && !ns.closing
@@ -1954,7 +1984,7 @@ impl ControlCore {
             && ns
                 .slots
                 .get(&token.id().sequence)
-                .map(|slot| Arc::ptr_eq(slot, &token.reservation.slot))
+                .map(|slot| Arc::ptr_eq(slot, pinned))
                 .unwrap_or(false)
     }
 }
@@ -1990,17 +2020,12 @@ impl ControlCore {
         publisher: PublisherId,
         outcome: PublishOutcome,
     ) -> Result<DeliveryObservation, DeliveryError> {
-        if !Arc::ptr_eq(&token.reservation.namespace, &self.namespace)
-            || token.reservation.id.namespace != self.identity()
-            || publisher != token.publisher()
-        {
-            return Err(DeliveryError::PermissionDenied);
-        }
-        let _execution = lock_unpoisoned(&token.reservation.slot.execution_gate);
-        if !self.token_is_live(token) {
+        let slot = self.token_slot(token, publisher)?;
+        let _execution = lock_unpoisoned(&slot.execution_gate);
+        if !self.token_is_live(token, &slot) {
             return Err(DeliveryError::HistoryLost);
         }
-        let mut slot_state = lock_unpoisoned(&token.reservation.slot.state);
+        let mut slot_state = lock_unpoisoned(&slot.state);
         match *slot_state {
             SlotState::Fenced => return Err(DeliveryError::HistoryLost),
             SlotState::Terminal(result) => {
@@ -2046,17 +2071,12 @@ impl ControlCore {
     where
         F: FnOnce(RequestBinding) -> PublishOutcome,
     {
-        if !Arc::ptr_eq(&token.reservation.namespace, &self.namespace)
-            || token.reservation.id.namespace != self.identity()
-            || publisher != token.publisher()
-        {
-            return Err(DeliveryError::PermissionDenied);
-        }
-        let _execution = lock_unpoisoned(&token.reservation.slot.execution_gate);
-        if !self.token_is_live(token) {
+        let slot = self.token_slot(token, publisher)?;
+        let _execution = lock_unpoisoned(&slot.execution_gate);
+        if !self.token_is_live(token, &slot) {
             return Err(DeliveryError::HistoryLost);
         }
-        let mut slot_state = lock_unpoisoned(&token.reservation.slot.state);
+        let mut slot_state = lock_unpoisoned(&slot.state);
         match *slot_state {
             SlotState::Fenced => return Err(DeliveryError::HistoryLost),
             SlotState::Executing => return Err(DeliveryError::Busy),
@@ -2076,7 +2096,7 @@ impl ControlCore {
         drop(slot_state);
         let outcome = execute(binding);
         let result = published_result_from_outcome(binding, outcome)?;
-        *lock_unpoisoned(&token.reservation.slot.state) = SlotState::Terminal(result);
+        *lock_unpoisoned(&slot.state) = SlotState::Terminal(result);
         Ok(observation_from_published(
             self.identity(),
             token.id().sequence,
@@ -2092,9 +2112,10 @@ impl ControlCore {
         publisher: PublisherId,
         now_ns: u64,
     ) -> Result<DeliveryObservation, DeliveryError> {
+        let slot = self.token_slot(token, publisher)?;
         self.execute_reserved(token, publisher, |binding| {
-            match token.reservation.request.grant.domain.apply_budget(
-                &token.reservation.request.grant,
+            match slot.request.grant.domain.apply_budget(
+                &slot.request.grant,
                 binding.expected_revision,
                 binding.period_ns,
                 binding.cap_ns,
@@ -2231,6 +2252,45 @@ fn observation_from_published(
 mod tests {
     use super::*;
 
+    #[test]
+    fn retired_tokens_release_result_slots_and_namespace_storage() {
+        let (boot, space, domain_id, object, publisher, owner) = ids(8001);
+        let (core, authority) =
+            ControlCore::with_capacity_for_owner(boot, space, 1, owner).unwrap();
+        let target = ResourceDomain::new(domain_id, object, None, 50).unwrap();
+        let token = core
+            .reserve(
+                DeliveryRequest::new(1, target.grant(publisher).unwrap(), 1, 25),
+                publisher,
+            )
+            .unwrap();
+        let slot_weak = {
+            let ns = lock_unpoisoned(&core.namespace.state);
+            Arc::downgrade(ns.slots.get(&1).unwrap())
+        };
+        let namespace_weak = Arc::downgrade(&core.namespace);
+        let cached = token.binding();
+        core.commit(&token, publisher, 1).unwrap();
+        let view = core.delivery_view_for(owner).unwrap();
+        let ack =
+            HistoryAck::from_owner_receipt(core.identity(), 1, OwnerReceipt::new(owner, [1; 32]))
+                .unwrap();
+        core.retire_through(&view, ack, &authority).unwrap();
+        assert!(
+            slot_weak.upgrade().is_none(),
+            "retired token pins result slot"
+        );
+        drop(view);
+        drop(authority);
+        drop(core);
+        assert!(
+            namespace_weak.upgrade().is_none(),
+            "old token pins namespace"
+        );
+        assert_eq!(token.binding(), cached);
+        assert_eq!(token.publisher(), publisher);
+    }
+
     fn ids(
         n: u128,
     ) -> (
@@ -2365,6 +2425,7 @@ mod tests {
         let grant = domain.grant(publisher).unwrap();
         let request = DeliveryRequest::from_wire(1, grant, 1, 25, 9, 3).unwrap();
         let token = core.reserve(request, publisher).unwrap();
+        let original_slot = core.token_slot(&token, publisher).unwrap();
         assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
 
         let mut corrupted = token.binding();
@@ -2373,7 +2434,8 @@ mod tests {
             execution_gate: Mutex::new(()),
             binding: corrupted,
             publisher,
-            target_instance: Arc::clone(&token.reservation.slot.target_instance),
+            request: original_slot.request.clone(),
+            target_instance: Arc::clone(&original_slot.target_instance),
             ancestor_epochs: Vec::new(),
             state: Mutex::new(SlotState::Reserved),
         });
@@ -2389,7 +2451,8 @@ mod tests {
             execution_gate: Mutex::new(()),
             binding: corrupted,
             publisher,
-            target_instance: Arc::clone(&token.reservation.slot.target_instance),
+            request: original_slot.request.clone(),
+            target_instance: Arc::clone(&original_slot.target_instance),
             ancestor_epochs: Vec::new(),
             state: Mutex::new(SlotState::Reserved),
         });
@@ -2411,7 +2474,8 @@ mod tests {
             .unwrap();
 
         {
-            let mut state = lock_unpoisoned(&token.reservation.slot.state);
+            let slot = core.token_slot(&token, publisher).unwrap();
+            let mut state = lock_unpoisoned(&slot.state);
             *state = SlotState::Terminal(PublishedResult {
                 status: DeliveryStatus::Ok,
                 stable_object_id: None,
@@ -2427,7 +2491,8 @@ mod tests {
         );
 
         {
-            let mut state = lock_unpoisoned(&token.reservation.slot.state);
+            let slot = core.token_slot(&token, publisher).unwrap();
+            let mut state = lock_unpoisoned(&slot.state);
             *state = SlotState::Fenced;
         }
         assert_eq!(

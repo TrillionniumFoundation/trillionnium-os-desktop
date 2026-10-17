@@ -113,7 +113,7 @@ fn terminal_history_retains_the_target_until_contiguous_retirement() {
 }
 
 #[test]
-fn a_retired_reservation_token_still_preserves_its_resource_memory_lifetime() {
+fn a_retired_reservation_token_does_not_extend_resource_memory_lifetime() {
     let parent = root(805_000, 20);
     let leaf = child(&parent, 805_001, 10);
     let who = PublisherId::from_u128(805_002);
@@ -133,12 +133,15 @@ fn a_retired_reservation_token_still_preserves_its_resource_memory_lifetime() {
         .unwrap();
     core.commit(&token, who, 10).unwrap();
     drop(leaf);
+    assert_child_constraint(&parent, 9, 10);
     let ack = HistoryAck::from_owner_receipt(core.identity(), 1, OwnerReceipt::new(owner, [1; 32]))
         .unwrap();
     core.retire_through(&view, ack, &authority).unwrap();
-    assert_child_constraint(&parent, 9, 10);
-    drop(token);
     reduce(&parent, 1, 9, 10);
+    assert_eq!(
+        core.commit(&token, who, 10),
+        Err(os_control::DeliveryError::HistoryLost)
+    );
 }
 
 #[test]
