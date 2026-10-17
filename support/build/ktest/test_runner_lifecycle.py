@@ -56,6 +56,12 @@ if stage == os.environ.get('FIXTURE_STAGE'):
     (root/'ready.json').write_text(json.dumps(info))
     while not (root/'proceed').exists(): time.sleep(.01)
     raise SystemExit(int(os.environ.get('FIXTURE_EXIT_CODE', '0')))
+if stage == 'install':
+    prefix = Path(sys.argv[sys.argv.index('--root') + 1])
+    installed = prefix/'bin/cargo-osdk'
+    installed.parent.mkdir(parents=True)
+    shutil.copyfile(__file__, installed)
+    installed.chmod(0o755)
 if stage == 'cargo-test':
     target = Path(os.environ['CARGO_TARGET_DIR'])/'osdk'/(os.environ['A01_KTEST_CRATE']+'-test-base')
     target.mkdir(parents=True, exist_ok=True)
@@ -148,7 +154,6 @@ class RunnerLifecycleTests(unittest.TestCase):
             executable = bin_path / name
             executable.write_text("#!" + sys.executable + "\n" + FIXTURE)
             executable.chmod(0o755)
-        (bin_path / "cargo-osdk").write_text("fixture source-built marker\n")
         vdso = root / "vdso"
         vdso.mkdir()
         (vdso / "vdso_x86_64.so").write_text("fixture vdso\n")

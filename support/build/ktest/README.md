@@ -32,16 +32,29 @@ The runner installs OSDK from the vendored source with `--locked`, then invokes
 corresponding fixed test-base lock. The installed downstream OSDK lock patch
 copies it into the generated workspace and passes `--locked` to Cargo. The
 runner checks the resulting generated lock against the selected input again.
-`--skip-osdk-install` can reuse a source-built patched OSDK only from the same
-actual absolute upstream checkout root used by this run, not merely the same
-Git commit. With `OSDK_LOCAL_DEV=1`, OSDK binds local OSTD and helper paths through
-its compile-time `CARGO_MANIFEST_DIR`; runtime environment changes cannot rebind
-those paths. After moving the source or creating another worktree, omit the flag
-so the runner installs OSDK from that checkout before testing. Reusing a binary
-from another root can mix local package identities and cause lockfile collisions;
-an OSTD-only success can also refer to that other root. The separate OSDK
-integration runner builds and executes its own source-bound OSDK in its isolated
-target directory, rather than reusing this globally installed ktest binary.
+Each run installs the patched OSDK from its actual upstream checkout into the
+exclusive new output's `osdk/` directory using `cargo install --root`. Tests call
+that absolute `osdk/bin/cargo-osdk` path with `osdk test` arguments. They do not
+use Cargo's external-subcommand lookup or install into the global Cargo bin.
+The environment receipt records the private executable, installation root,
+source root and executable SHA256; the install/test command receipts retain the
+actual arguments. Missing, linked or nonexecutable private SDKs and installation
+failures stop the run without selecting a different SDK.
+
+`--skip-osdk-install` is retained only to provide a clear error: it exits2 before
+creating any output or acquiring the workspace lock. Remove the flag for a new
+run. No global or previous-output SDK reuse is accepted. With `OSDK_LOCAL_DEV=1`,
+OSDK binds local OSTD and helper paths through compile-time `CARGO_MANIFEST_DIR`;
+runtime environment changes cannot rebind them. Even the same Git commit in a
+different worktree therefore requires its own installation. Rust dependency and
+kernel target caches retain their existing behavior.
+
+`test_sdk_isolation_mock.py` checks prefix/argv/receipts, failure propagation and
+the early deprecated-option guard entirely in-process with `unittest.mock`.
+These tests execute no SDK/helper binary and no Rust or QEMU. The existing
+process lifecycle fixture was statically adjusted to its new private install
+location; its subprocess tests and real kernel-mode suites require separate
+execution records and are not implied by passing the new mock tests.
 
 No upstream OSDK manifest is rewritten. The original upstream manifest expands
 its ordinary test arguments, and `record-qemu.py` records those requested

@@ -192,7 +192,7 @@ def main():
     parser.add_argument("--output", type=Path, help="must not already exist")
     parser.add_argument("--test-name", help="optional complete test-path suffix, not a substring or crate selector")
     parser.add_argument("--skip-osdk-install", action="store_true",
-                        help="reuse an already source-built OSDK carrying the explicit-lock patch")
+                        help="deprecated and rejected; each run installs its own source-bound private OSDK")
     args = parser.parse_args()
     with interruption_handlers() as shutdown:
         try:
@@ -211,6 +211,10 @@ def main():
 
 
 def run_main(args, shutdown):
+    if getattr(args, "skip_osdk_install", False):
+        print("remove --skip-osdk-install: each ktest run requires a fresh private "
+              "source-bound OSDK; global or previous-output SDK reuse is unsupported", file=sys.stderr)
+        raise SystemExit(2)
     if "CARGO_ENCODED_RUSTFLAGS" in os.environ:
         print("CARGO_ENCODED_RUSTFLAGS overrides mandatory OSDK kernel flags; "
               "unset CARGO_ENCODED_RUSTFLAGS and retry", file=sys.stderr)
@@ -270,15 +274,17 @@ def run_locked(args, here, project, upstream, env, cargo_home, output):
     if run(verify, project, env, output / "source-inputs.json"):
         raise SystemExit(f"source verification failed; see {output}")
     commands = []
-    if not args.skip_osdk_install:
-        command = ["cargo", f"+{TOOLCHAIN}", "install", "--locked", "cargo-osdk", "--path", "osdk"]
-        commands.append({"argv": command, "cwd": str(upstream)})
-        (output / "commands.json").write_text(json.dumps(commands, indent=2) + "\n")
-        if run(command, upstream, env, output / "osdk-install.log"):
-            raise SystemExit(f"OSDK installation failed; see {output}")
-    osdk = cargo_home / "bin/cargo-osdk"
-    if not osdk.is_file():
-        raise SystemExit("source-built cargo-osdk is missing")
+    osdk_install_root = output / "osdk"
+    osdk_install_root.mkdir(mode=0o700)
+    command = ["cargo", f"+{TOOLCHAIN}", "install", "--locked", "cargo-osdk", "--path", "osdk",
+               "--root", str(osdk_install_root)]
+    commands.append({"argv": command, "cwd": str(upstream)})
+    (output / "commands.json").write_text(json.dumps(commands, indent=2) + "\n")
+    if run(command, upstream, env, output / "osdk-install.log"):
+        raise SystemExit(f"OSDK installation failed; see {output}")
+    osdk = osdk_install_root / "bin/cargo-osdk"
+    if not osdk.is_file() or osdk.is_symlink() or not os.access(osdk, os.X_OK):
+        raise SystemExit("private source-built cargo-osdk is missing, linked, or not executable")
     version = checked_output(["rustc", f"+{TOOLCHAIN}", "-Vv"], project, env, output / "rustc-version.log")
     cargo_version = checked_output(["cargo", f"+{TOOLCHAIN}", "-Vv"], project, env, output / "cargo-version.log")
     environment = {"toolchain": TOOLCHAIN, "rustc": version, "cargo": cargo_version,
@@ -292,9 +298,11 @@ def run_locked(args, here, project, upstream, env, cargo_home, output):
                            *[path for path in here.rglob("*") if path.is_file() and "__pycache__" not in path.parts],
                        ])
                    },
-                   "osdk_sha256": digest(osdk), "vdso_sha256": digest(Path(env["VDSO_LIBRARY_DIR"]) / "vdso_x86_64.so"),
+                   "osdk_sha256": digest(osdk), "osdk_executable": str(osdk),
+                   "osdk_install_root": str(osdk_install_root), "osdk_source_root": str(upstream.resolve()),
+                   "vdso_sha256": digest(Path(env["VDSO_LIBRARY_DIR"]) / "vdso_x86_64.so"),
                    "cargo_build_jobs": env["CARGO_BUILD_JOBS"], "test_name": args.test_name,
-                   "osdk_install_skipped": args.skip_osdk_install}
+                   "osdk_install_skipped": False}
     (output / "environment.json").write_text(json.dumps(environment, indent=2) + "\n")
     env["CARGO_TARGET_DIR"] = str(upstream / "target")
     results = []
@@ -307,7 +315,7 @@ def run_locked(args, here, project, upstream, env, cargo_home, output):
         env["OSDK_CARGO_LOCK"] = str(lock_path)
         env["A01_KTEST_GUESTS"] = str(target / "guests")
         env["A01_KTEST_CRATE"] = crate
-        command = ["cargo", f"+{TOOLCHAIN}", "osdk", "test", "--release", "--boot-method=vmm-direct",
+        command = [str(osdk), "osdk", "test", "--release", "--boot-method=vmm-direct",
                    "--grub-boot-protocol=multiboot", "--qemu-exe=" + str(here / "record-qemu.py"),
                    "--kcmd-args=loglevel=error", "--kcmd-args=earlycon", "--kcmd-args=console=ttyS0"]
         if args.test_name:
