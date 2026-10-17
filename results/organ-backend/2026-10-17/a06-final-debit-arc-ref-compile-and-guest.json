@@ -1,0 +1,74 @@
+{
+  "schema": "trillionnium.a06.final-debit-rcu-clone.verification.v1",
+  "date": "2026-10-17",
+  "base_source_commit": "f6d38bcdba38e7056c15f7303cee4cd19b4ee228",
+  "patch_commit": "f8e60c5db7c79e49efdb864dffd8ce55a5cf4b5d",
+  "patch": [
+    "kernel/asterinas/kernel/core/src/process/clone.rs: Option<ArcRef<CgroupNode>>.cloned() -> .map(|value| (*value).clone())",
+    "kernel/asterinas/kernel/core/src/process/posix_thread/mod.rs: Option<ArcRef<CpuCgroupLease>>.cloned() -> .map(|value| (*value).clone())"
+  ],
+  "original_build": {
+    "result": "failed",
+    "errors": [
+      "E0599 clone.rs:385 Option<ArcRef<CgroupNode>> lacks cloned()",
+      "E0599 posix_thread/mod.rs:129 Option<ArcRef<CpuCgroupLease>> lacks cloned()"
+    ],
+    "source_contract_tests_passed": 4
+  },
+  "patched_build": {
+    "result": "passed",
+    "exit_code": 0,
+    "toolchain": "nightly-2026-07-21",
+    "kernel_elf_sha256": "48bea33a39614004a17aeae9159f0ea57a73a6fd4db64c3c3b2fd43c6dee934f"
+  },
+  "guest_quota": {
+    "profile": "QEMU q35 TCG x86_64 1-vCPU 512MiB, original full cpu.stat probe, no host cgroup/network/data disk modifications",
+    "exit_codes": [
+      33,
+      33,
+      33,
+      33
+    ],
+    "runs": [
+      {
+        "case": "leaf1",
+        "quota_percent": 1,
+        "observed_cpu_percent": 1
+      },
+      {
+        "case": "leaf1",
+        "quota_percent": 1,
+        "observed_cpu_percent": 1.1
+      },
+      {
+        "case": "rt10",
+        "quota_percent": 10,
+        "observed_cpu_percent": 9.965
+      },
+      {
+        "case": "parent10",
+        "quota_percent": 10,
+        "observed_cpu_percent": 10.096
+      }
+    ],
+    "completed": 4
+  },
+  "kernel_ktest": {
+    "crate": "aster-core",
+    "executed": 153,
+    "passed": 153,
+    "failed": 0,
+    "filtered": 0,
+    "soft_skipped": 0,
+    "raw_qemu_exit": 33,
+    "passed_genuine_qemu": true
+  },
+  "limitations": [
+    "No focused guest exit/reap final CPU debit accounting proof",
+    "No SMP lifecycle/migration lock-order qualification",
+    "No exact per-period CPU hard cap",
+    "No effectful HOS2 opcodes or Hepta durable K-D integration",
+    "Do not release parent Draft #132 to main from these results"
+  ],
+  "raw_logs_location": "Authorized isolated execution host: /home/qian-qi/.local/state/trillionnium-os-organ-next-20261016/evidence/a06-final-debit-audit-20261017/"
+}
