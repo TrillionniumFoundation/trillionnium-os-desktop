@@ -1,0 +1,296 @@
+{
+  "reviewer": "/root/r6_review_ci",
+  "reviewed_utc": "2026-10-17T23:21:23.908023+00:00",
+  "status": "passed",
+  "source_commit": "84e08165d2e753fe1fc780e1972dbab4317e8499",
+  "source_tree": "e55a0e15e01f55f98f0a9213e67d2a5792776764",
+  "run_id": 39075838558,
+  "job_id": 117522688063,
+  "run_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39075838558",
+  "started_at": "2026-10-17T22:47:51Z",
+  "completed_at": "2026-10-17T23:11:50Z",
+  "original_acceptance": {
+    "checks": [
+      "original_starting",
+      "original_running",
+      "bounded_capabilities_events",
+      "missing_run_read",
+      "same_process_draining",
+      "original_restart",
+      "old_spawn_rejected",
+      "controlled_stop"
+    ],
+    "device_effect": false,
+    "event": "acceptance_pass",
+    "evidence_class": "original_agentd_process_readonly_observer",
+    "model_turn": false,
+    "new_spawn": 5,
+    "objective_submission": false,
+    "old_spawn": 1
+  },
+  "persistent_session_acceptance": {
+    "checks": [
+      "persistent_session_starting",
+      "persistent_session_running",
+      "persistent_session_draining",
+      "same_worker_same_instance",
+      "old_spawn_stale_ipc_responsive",
+      "explicit_session_replacement",
+      "replacement_running",
+      "stopped_stale_ipc_responsive"
+    ],
+    "device_effect": false,
+    "event": "session_acceptance_pass",
+    "evidence_class": "original_agentd_persistent_session_readonly",
+    "first_session_instance": "76469cb10ca8008caf35317d707730e4",
+    "first_session_pid": 23499,
+    "model_turn": false,
+    "objective_submission": false,
+    "replacement_session_instance": "0fc1c3adccb88b374c11ee06ba90f3c9",
+    "replacement_session_pid": 23696,
+    "shell_capture_qualified_by_this_record": false
+  },
+  "actual_phases": [
+    {
+      "sequence": 1,
+      "phase": "starting",
+      "session_pid": 23499,
+      "session_instance": "76469cb10ca8008caf35317d707730e4",
+      "worker_tid": 23501,
+      "connection": "observed",
+      "error_code": null,
+      "spawn_generation": 1,
+      "current_generation": 1,
+      "health": {
+        "fenced": false,
+        "lifecycle": "starting",
+        "process_id": 23475,
+        "promotion_ready": false,
+        "ready": false
+      },
+      "sampled_unix_ms": 1792278675046,
+      "first_stale_then_later_failed_retention_verified": false
+    },
+    {
+      "sequence": 2,
+      "phase": "running",
+      "session_pid": 23499,
+      "session_instance": "76469cb10ca8008caf35317d707730e4",
+      "worker_tid": 23501,
+      "connection": "observed",
+      "error_code": null,
+      "spawn_generation": 1,
+      "current_generation": 2,
+      "health": {
+        "fenced": false,
+        "lifecycle": "running",
+        "process_id": 23475,
+        "promotion_ready": true,
+        "ready": true
+      },
+      "sampled_unix_ms": 1792278676049,
+      "first_stale_then_later_failed_retention_verified": false
+    },
+    {
+      "sequence": 3,
+      "phase": "draining",
+      "session_pid": 23499,
+      "session_instance": "76469cb10ca8008caf35317d707730e4",
+      "worker_tid": 23501,
+      "connection": "observed",
+      "error_code": null,
+      "spawn_generation": 1,
+      "current_generation": 3,
+      "health": {
+        "fenced": false,
+        "lifecycle": "draining",
+        "process_id": 23475,
+        "promotion_ready": false,
+        "ready": false
+      },
+      "sampled_unix_ms": 1792278677053,
+      "first_stale_then_later_failed_retention_verified": false
+    },
+    {
+      "sequence": 4,
+      "phase": "old_spawn_stale",
+      "session_pid": 23499,
+      "session_instance": "76469cb10ca8008caf35317d707730e4",
+      "worker_tid": 23501,
+      "connection": "stale",
+      "error_code": "protocol_mismatch",
+      "spawn_generation": 1,
+      "current_generation": 3,
+      "health": {
+        "fenced": false,
+        "lifecycle": "draining",
+        "process_id": 23475,
+        "promotion_ready": false,
+        "ready": false
+      },
+      "sampled_unix_ms": 1792278677053,
+      "first_stale_then_later_failed_retention_verified": true
+    },
+    {
+      "sequence": 5,
+      "phase": "recovered_running",
+      "session_pid": 23696,
+      "session_instance": "0fc1c3adccb88b374c11ee06ba90f3c9",
+      "worker_tid": 23698,
+      "connection": "observed",
+      "error_code": null,
+      "spawn_generation": 5,
+      "current_generation": 6,
+      "health": {
+        "fenced": false,
+        "lifecycle": "running",
+        "process_id": 23599,
+        "promotion_ready": true,
+        "ready": true
+      },
+      "sampled_unix_ms": 1792278679258,
+      "first_stale_then_later_failed_retention_verified": false
+    },
+    {
+      "sequence": 6,
+      "phase": "stopped_stale",
+      "session_pid": 23696,
+      "session_instance": "0fc1c3adccb88b374c11ee06ba90f3c9",
+      "worker_tid": 23698,
+      "connection": "stale",
+      "error_code": "unavailable",
+      "spawn_generation": 5,
+      "current_generation": 6,
+      "health": {
+        "fenced": false,
+        "lifecycle": "running",
+        "process_id": 23599,
+        "promotion_ready": true,
+        "ready": true
+      },
+      "sampled_unix_ms": 1792278679258,
+      "first_stale_then_later_failed_retention_verified": true
+    }
+  ],
+  "recorded_session_stops": [
+    {
+      "event": "session_stopped",
+      "exit_code": null,
+      "session_instance": "76469cb10ca8008caf35317d707730e4",
+      "session_pid": 23499,
+      "signal": 9,
+      "worker_tid": 23501
+    },
+    {
+      "event": "session_stopped",
+      "exit_code": null,
+      "session_instance": "0fc1c3adccb88b374c11ee06ba90f3c9",
+      "session_pid": 23696,
+      "signal": 9,
+      "worker_tid": 23698
+    }
+  ],
+  "source_and_original_checkout_clean_before_and_after": true,
+  "consumer_build": "Rust 1.88.0 actually built locked ui/session manifest into fresh session-target; source ui and external hepta-os closure bound in identity records and workflow Git blob",
+  "original_build": "Rust 1.95.0 actual locked dev-small Agentd, no default features, one job; full 8GiB admission passed with 114027397120 bytes free",
+  "external_probe_lock": {
+    "sha256": "72cb7346158f4c3514922cc7b9020f9b9d290aec78e047264a738d52afe6ed68",
+    "locked_metadata_passes": 2,
+    "package_entries": 733,
+    "unused_patches": 5,
+    "original_lock_unchanged": true
+  },
+  "compiled_executables": [
+    {
+      "name": "agentd",
+      "file": "codex-hepta-agentd",
+      "bytes": 268391592,
+      "sha256": "911606fdb19d696a7d66ac3deccfdde492b83cb040eff0a00e92a8f1f28125d1",
+      "elf_class": 64,
+      "elf_machine": 183,
+      "architecture": "aarch64",
+      "matches_report_and_manifest": true,
+      "streamed_without_extracting_or_executing": true
+    },
+    {
+      "name": "probe",
+      "file": "hepta-original-observer-probe",
+      "bytes": 22506736,
+      "sha256": "d4cd885e0c906cd3f5884db7759d80dad3ff99a3f138c62fbe69ccd154a686de",
+      "elf_class": 64,
+      "elf_machine": 183,
+      "architecture": "aarch64",
+      "matches_report_and_manifest": true,
+      "streamed_without_extracting_or_executing": true
+    },
+    {
+      "name": "observer",
+      "file": "hepta-observe",
+      "bytes": 13681224,
+      "sha256": "d90f2e3c3c7e0ea1693c9ba664c5d5f65fa195486f451b4fdbdd77de080310bf",
+      "elf_class": 64,
+      "elf_machine": 183,
+      "architecture": "aarch64",
+      "matches_report_and_manifest": true,
+      "streamed_without_extracting_or_executing": true
+    },
+    {
+      "name": "session",
+      "file": "trill-session",
+      "bytes": 17863664,
+      "sha256": "d4468eba740a1461c3955d5dd89c94cca306d759b07c41f3dc844718d9af3264",
+      "elf_class": 64,
+      "elf_machine": 183,
+      "architecture": "aarch64",
+      "matches_report_and_manifest": true,
+      "streamed_without_extracting_or_executing": true
+    },
+    {
+      "name": "ctl",
+      "file": "trill-ctl",
+      "bytes": 7411560,
+      "sha256": "de1e5acaaf6220142664f0b8838d4207acba581a9454aadace525a1661167ef4",
+      "elf_class": 64,
+      "elf_machine": 183,
+      "architecture": "aarch64",
+      "matches_report_and_manifest": true,
+      "streamed_without_extracting_or_executing": true
+    }
+  ],
+  "artifact_zip_checks": [
+    {
+      "id": 12117204874,
+      "bytes": 1039630,
+      "sha256": "49260eacf8674f8fb8f691d46827f5102b2a98b714bb9180f6a33a380a09e7d9"
+    },
+    {
+      "id": 12118215311,
+      "bytes": 87221657,
+      "sha256": "f9f4001ed1e5e8a62963cc331e6b3d15e1d669b89daa4ded9ce4577d3754d17f"
+    }
+  ],
+  "inner_elf_tar": {
+    "bytes": 88006928,
+    "sha256": "a02e728e59f78e42f1156ba406f2c022dfd8e430f0589165c086246740200bf9",
+    "included_in_git_archive": false
+  },
+  "small_original_evidence_zip_included": true,
+  "raw_job_log": {
+    "bytes": 144432,
+    "sha256": "7ed0565e22d345c209600b9ec520b2cae8f4a9210af224960a18c3d7412ee53e",
+    "matches_retrieved_connector_content": true
+  },
+  "scope_limits": [
+    "This exact-head ARM gate executed real original Agentd and persistent Session, including strict old-spawn stale and explicit Session replacement.",
+    "No Shell was launched and no original Shell pixels were captured by this ARM job.",
+    "No objective, model turn, device effect, mobile OS, physical input/display or HOS2 qualification.",
+    "The eight original checks and eight persistent Session checks belong to this head; do not aggregate prior heads into this result.",
+    "CI runner process cleanup is supported by owner stop records and workflow completion; reviewer cannot inspect the now-finished remote /proc."
+  ],
+  "other_workflows_snapshot_2312_utc": {
+    "G0": "success",
+    "A10_source_guard": "success",
+    "A10_native": "queued",
+    "future_completion_not_inferred": true
+  }
+}
