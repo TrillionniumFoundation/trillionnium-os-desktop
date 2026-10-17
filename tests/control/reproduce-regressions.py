@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Reproduce A03 failures and fixes with the pinned compiler, on a host only.
 
-The token and native-context baselines are genuine named commits. The Drop
-baseline is an explicitly synthetic mutation of CURRENT source, not a claimed
-historical commit. Expected Rust assertion failures retain their raw exit 101
+The token and native-context baselines are genuine named commits. Drop cleanup
+and management-origin controls are explicitly synthetic mutations of CURRENT
+source, not claimed historical commits. Expected assertion failures retain exit 101
 and logs; this script exits zero only when every negative control and fixed
 suite matches its exact expectations. Temporary Rust sources
 and binaries stay outside the repository and are removed after execution.
@@ -31,11 +31,15 @@ SOURCES = (
     "libs/os-control/src/lib.rs",
     "libs/os-control/src/native.rs",
     "libs/os-control/src/sync.rs",
+    "libs/os-control/src/management.rs",
     "tests/control/token_retirement.rs",
     "tests/control/native_handoff.rs",
     "tests/control/native_context_negative.rs",
     "tests/control/native_bound_execution.rs",
     "tests/control/native_lifetime.rs",
+    "tests/control/management_authority.rs",
+    "tests/control/management_identity.rs",
+    "tests/control/native_failure_recovery.rs",
 )
 RETIRE_FIXED = """        let mut reclaimed = Vec::new();
         for sequence in (ns.retired_through + 1)..=ack.through {
@@ -88,6 +92,12 @@ DROP_FAILURES = {
 NATIVE_CONTEXT_FAILURES = {
     "generic_native_callback_cannot_apply_a_different_owner_with_the_same_public_ids",
     "generic_native_callback_cannot_replace_reserved_ancestry_with_fresh_context",
+}
+ORIGIN_FAILURES = {
+    "independent_states_with_identical_config_cannot_use_each_others_snapshots",
+    "revoke_then_reconstruct_same_config_does_not_reactivate_the_old_snapshot",
+    "snapshot_after_state_destruction_is_metadata_and_cannot_authorize_a_new_state",
+    "replacing_state_inside_the_same_owner_cannot_reauthorize_a_reserved_old_d",
 }
 
 
@@ -237,6 +247,7 @@ def main() -> int:
         "baseline_commit": BASELINE_COMMIT,
         "native_baseline_commit": NATIVE_BASELINE_COMMIT,
         "synthetic_drop_control": "current source with two exact reclamation blocks reverted; not a historical commit",
+        "synthetic_origin_control": "current source with only the two management origin comparisons removed; not historical",
         "rustup_toolchain": PINNED_TOOLCHAIN,
         "commands": recorder.commands,
         "checks": [],
@@ -285,10 +296,21 @@ def main() -> int:
                 raise RuntimeError(f"{name}: expected exactly one current block; refusing approximate mutation")
             mutated = mutated.replace(fixed, old, 1)
         report["synthetic_lib_sha256"] = sha256(mutated.encode("utf-8"))
+        origin_mutated = current["libs/os-control/src/management.rs"].decode("utf-8")
+        for fixed, old in [
+            ("self.config == other.config && Arc::ptr_eq(&self.origin, &other.origin)",
+             "self.config == other.config"),
+            ("snapshot.config != self.config || !Arc::ptr_eq(&snapshot.origin, &self.origin)",
+             "snapshot.config != self.config"),
+        ]:
+            if origin_mutated.count(fixed) != 1:
+                raise RuntimeError("management origin control requires one exact comparison; refusing approximate mutation")
+            origin_mutated = origin_mutated.replace(fixed, old, 1)
+        report["synthetic_management_sha256"] = sha256(origin_mutated.encode("utf-8"))
         with tempfile.TemporaryDirectory(prefix="a03-regressions-") as temporary:
             temporary_root = Path(temporary)
             roots = {name: temporary_root / name for name in
-                     ("historical-token", "historical-native", "synthetic-drop", "fixed")}
+                     ("historical-token", "historical-native", "synthetic-drop", "synthetic-origin", "fixed")}
             for name, root in roots.items():
                 root.mkdir()
                 inputs = (baseline if name == "historical-token" else
@@ -298,6 +320,7 @@ def main() -> int:
                 for source in SOURCES[3:]:
                     (root / Path(source).name).write_bytes(current[source])
             (roots["synthetic-drop"] / "lib.rs").write_text(mutated)
+            (roots["synthetic-origin"] / "management.rs").write_text(origin_mutated)
             root = roots["historical-token"]
             library = compile_library(recorder, rustc, "historical-token", root)
             executable = compile_tests(recorder, rustc, "historical-token", root, library, "token_retirement.rs")
@@ -312,11 +335,18 @@ def main() -> int:
             library = compile_library(recorder, rustc, "synthetic-drop", root)
             executable = compile_tests(recorder, rustc, "synthetic-drop", root, library, "native_handoff.rs")
             report["checks"].append(verify_tests(recorder, "synthetic-drop-run", executable, 0, 2, 13, DROP_FAILURES, "native_owner_drop_"))
+            root = roots["synthetic-origin"]
+            library = compile_library(recorder, rustc, "synthetic-origin", root)
+            executable = compile_tests(recorder, rustc, "synthetic-origin", root, library,
+                                       "management_identity.rs")
+            report["checks"].append(verify_tests(recorder, "synthetic-origin-run", executable,
+                                                 2, 4, 0, ORIGIN_FAILURES))
             root = roots["fixed"]
             library = compile_library(recorder, rustc, "fixed", root)
             for suite, count in [("token_retirement", 5), ("native_handoff", 15),
                                  ("native_context_negative", 2), ("native_bound_execution", 11),
-                                 ("native_lifetime", 5)]:
+                                 ("native_lifetime", 5), ("management_authority", 15),
+                                 ("management_identity", 6), ("native_failure_recovery", 3)]:
                 executable = compile_tests(recorder, rustc, "fixed-" + suite, root, library, suite + ".rs")
                 report["checks"].append(verify_tests(recorder, "fixed-" + suite + "-run", executable, count, 0, 0, set()))
         after = {source: sha256((repo / source).read_bytes()) for source in SOURCES}

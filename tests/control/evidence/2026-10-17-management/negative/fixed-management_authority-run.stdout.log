@@ -1,0 +1,19 @@
+
+running 15 tests
+test destroyed_state_cannot_be_recreated_to_accept_its_old_snapshot ... ok
+test every_management_term_is_immutable_in_a_saved_snapshot ... ok
+test expired_terminal_requires_a_new_d_and_fresh_owner_authority_to_apply ... ok
+test fresh_state_with_identical_config_cannot_revive_a_revoked_snapshot ... ok
+test invalid_lease_ranges_and_cap_envelopes_are_rejected ... ok
+test malformed_management_identities_are_rejected_before_state_creation ... ok
+test management_admission_rejects_changed_binding_and_cap_outside_envelope ... ok
+test management_admission_uses_inclusive_issue_and_exclusive_expiry_boundaries ... ok
+test management_epoch_max_revocation_never_wraps_or_reactivates ... ok
+test management_errors_map_only_to_existing_hos2_refusal_statuses ... ok
+test management_only_revoke_preserves_accounting_and_an_independent_manager ... ok
+test management_revocation_is_idempotent_and_rejects_every_old_snapshot_clone ... ok
+test management_snapshot_preserves_all_trusted_terms_and_accepts_boundary_caps ... ok
+test new_management_state_cannot_authorize_an_old_reserved_native_snapshot ... ok
+test same_d_binds_management_origin_terms_and_presence_beyond_request_binding ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s

@@ -29,6 +29,12 @@ use sync::{lock_unpoisoned, Arc, Mutex, Weak};
 mod native;
 pub use native::{NativeDeliveryRequest, NativeExecution, NativeGrant, NativeTarget};
 
+mod management;
+pub use management::{
+    ManagementError, ManagementGrantConfig, ManagementGrantSnapshot, ManagementGrantState,
+    ManagementRevokeReceipt,
+};
+
 pub const CPU_PERIOD_NS: u64 = 100_000_000;
 pub const DEFAULT_WINDOW_CAPACITY: usize = 1024;
 /// Host-model resource family identity tombstones. Kernel integration must
@@ -116,6 +122,7 @@ id_type!(ResourceDomainId);
 id_type!(StableObjectId);
 id_type!(PublisherId);
 id_type!(OwnerId);
+id_type!(ManagementGrantId);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct NamespaceIdentity {
@@ -1323,6 +1330,7 @@ impl ReservedRequest {
             (Self::Native(left), Self::Native(right)) => {
                 left.grant().target().same_instance(right.grant().target())
                     && left.grant().ancestor_epochs() == right.grant().ancestor_epochs()
+                    && left.grant().management_snapshot() == right.grant().management_snapshot()
             }
             _ => false,
         }
@@ -2149,6 +2157,7 @@ impl ControlCore {
                 token.id(),
                 binding,
                 request.grant().ancestor_epochs(),
+                request.grant().management_snapshot(),
             ))
         })
     }

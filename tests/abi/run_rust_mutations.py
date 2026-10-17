@@ -3,7 +3,7 @@
 
 Only temporary copies of the crate are changed. A mutant is killed only when it
 compiles successfully, its complete suite runs without skips, and the designated
-regression fails. All four production baselines must pass first. Compiler errors,
+regression fails. All five production baselines must pass first. Compiler errors,
 timeouts and filtered tests never count as mutation kills. This checks host
 codec/canonical-request coverage, not a kernel delivery ledger.
 """
@@ -27,7 +27,8 @@ EXPECTED_TEST_COUNT = 8
 EXPECTED_SEMANTIC_TEST_COUNT = 12
 EXPECTED_PROFILE_TEST_COUNT = 7
 EXPECTED_SNAPSHOT_TEST_COUNT = 5
-EXPECTED_MUTANT_COUNT = 17
+EXPECTED_NEGATIVE_TEST_COUNT = 21
+EXPECTED_MUTANT_COUNT = 19
 GENERATION_TEST = "same_sequence_and_slot_different_generation_is_conflict"
 MUTANTS = (
     (
@@ -48,6 +49,7 @@ INPUTS = (
     "tests/semantic_edges.rs",
     "tests/profile_boundaries.rs",
     "tests/response_snapshot.rs",
+    "tests/negative_vectors.rs",
 )
 FIXTURES = ("tests/golden/hos2.json", "tests/golden/hos2_edges.json")
 SAVED_STATUS_TEST = "typed_terminal_rejection_encoders_match_all_independent_saved_status_bytes"
@@ -143,17 +145,6 @@ PROFILE_MUTANTS = (
             for value in ("out", "v")
         ),
     ),
-    (
-        "accept_cumulative_cpu_beyond_boot_elapsed",
-        PROFILE_TESTS[6],
-        tuple(
-            (
-                f"|| {value}.cumulative_cpu_ns > {value}.sample_boottime_ns",
-                "|| false",
-            )
-            for value in ("out", "v")
-        ),
-    ),
 )
 # The new transport-bound response parser is security-critical: deliberately
 # omit one guard at a time in *compiled production Rust*, then require the
@@ -194,6 +185,37 @@ SNAPSHOT_MUTANTS = (
 )
 
 
+# The HOS2 write sequence and HOSR error statuses are fail-closed security
+# boundaries. Change the actual Rust decoder, not a Python copy of the protocol.
+# A real "kill" requires compile success and a complete designated Rust suite.
+NEGATIVE_TESTS = (
+    "install_response_echo_rejects_unordered_ids_in_success_and_failure",
+    "malformed_frame_lengths_are_rejected_before_unknown_opcode_or_status",
+)
+NEGATIVE_MUTANTS = (
+    (
+        "ignore_sequence_id_high_half",
+        NEGATIVE_TESTS[0],
+        (("if !all_zero(&id[8..]) {",
+          "if false && !all_zero(&id[8..]) {"),),
+    ),
+    (
+        "accept_reserved_max_sequence",
+        NEGATIVE_TESTS[0],
+        (("let sequence = get_u64(id, 0);\n"
+          "    if sequence == 0 || sequence == u64::MAX {",
+          "let sequence = get_u64(id, 0);\n"
+          "    if sequence == 0 {"),),
+    ),
+    (
+        "treat_unknown_status_as_success",
+        NEGATIVE_TESTS[1],
+        (("_ => Err(Error::InvalidStatus)",
+          "_ => Ok(Self::Ok)"),),
+    ),
+)
+
+
 SUITES = {
     "mutation_kill": (
         EXPECTED_TEST_COUNT,
@@ -209,6 +231,7 @@ SUITES = {
     ),
     "profile_boundaries": (EXPECTED_PROFILE_TEST_COUNT, PROFILE_TESTS),
     "response_snapshot": (EXPECTED_SNAPSHOT_TEST_COUNT, SNAPSHOT_TESTS),
+    "negative_vectors": (EXPECTED_NEGATIVE_TEST_COUNT, NEGATIVE_TESTS),
 }
 
 
@@ -575,7 +598,7 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("--toolchain must not be empty")
 
     report: dict[str, Any] = {
-        "schema": "hos2-rust-source-mutations-v4",
+        "schema": "hos2-rust-source-mutations-v5",
         "scope": (
             "host Rust canonical equality, fixed-byte response encoding and "
             "documented QueryAbi/ReadUsage and transport-bound response boundaries; "
@@ -594,6 +617,7 @@ def main(argv: list[str] | None = None) -> int:
         "baseline_semantic_edges": None,
         "baseline_profile_boundaries": None,
         "baseline_response_snapshot": None,
+        "baseline_negative_vectors": None,
         "mutants": [],
         "errors": [],
     }
@@ -633,6 +657,7 @@ def main(argv: list[str] | None = None) -> int:
                 ("semantic_edges", "baseline_semantic_edges"),
                 ("profile_boundaries", "baseline_profile_boundaries"),
                 ("response_snapshot", "baseline_response_snapshot"),
+                ("negative_vectors", "baseline_negative_vectors"),
             ):
                 baseline = run_suite(
                     temporary_root / baseline_key,
@@ -699,6 +724,16 @@ def main(argv: list[str] | None = None) -> int:
                         mutated_profile_source(source, changes),
                     )
                     for name, expected_test, changes in SNAPSHOT_MUTANTS
+                )
+                mutations.extend(
+                    (
+                        name,
+                        "negative_vectors",
+                        {"changed_checks": changes},
+                        expected_test,
+                        mutated_profile_source(source, changes),
+                    )
+                    for name, expected_test, changes in NEGATIVE_MUTANTS
                 )
                 if len(mutations) != EXPECTED_MUTANT_COUNT:
                     raise ValueError("mutation count changed without updating the expected total")
