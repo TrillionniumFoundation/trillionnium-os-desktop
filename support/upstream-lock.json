@@ -1325,6 +1325,244 @@
       ],
       "source_verifier": "support/build/verify-source.py",
       "pristine_verification_accepts_derivations": false
+    },
+    "cloud_main_n0_validation_2026_10_17": {
+      "schema": 1,
+      "evidence": "support/build/evidence/2026-10-17-main-n0-review/REPORT.md",
+      "handoff": "support/build/evidence/2026-10-17-main-n0-review/HANDOFF.md",
+      "blocker_ledger": "support/build/evidence/2026-10-17-main-n0-review/blockers.json",
+      "offline_verifier": "support/build/evidence/2026-10-17-main-n0-review/verify.py",
+      "producer_commit": "fd0a5ed637312b13efdbfb6b670d4af52bd2c2b0",
+      "producer_tree": "676fcaf53cc094bdd5d1ede25b8f13c8221b5e6d",
+      "imported_main_commit": "dfe0ed04b4789d37d41854191126e710782baa3a",
+      "kernel_core_subtree": "d76da7294b51cfa591e7af1ccd99616b29637ca7",
+      "kernel_core_bytes_equal_imported_main": true,
+      "fixed_upstream_commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+      "fixed_upstream_tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+      "toolchain": "nightly-2026-07-21",
+      "rustc_commit": "87e5904f5eb6398af6b22eac2802c78934260c48",
+      "native_dependencies": "57 checksum-verified packages privately extracted; 19 native executable checks passed; no host package/service/security-policy change",
+      "ordinary": {
+        "outer_tool_session": 10868,
+        "outer_exit": 0,
+        "kernel_target_initially_absent": true,
+        "kernel_command_exit": 0,
+        "kernel_compiling_log_lines": 284,
+        "run_kernel_command_exit": 0,
+        "warm_run_compiling_log_lines": 0,
+        "live_artifact_check_exit": 0,
+        "raw_qemu_exit": 33,
+        "kernel_sha256": "ed469d2ff7636b7d60c52a011b1d9685d8b3096bd79f7c94ef813bdb023e6dc9",
+        "kernel_bytes": 8266592,
+        "first_and_loaded_bytes_equal": true,
+        "complete_serial_sha256": "72892ac2510c257a0c23c057222e763633a81bb231811c24102b69c39f32a2dd",
+        "post_source_status": ""
+      },
+      "queryabi": {
+        "accepted_guests": 3,
+        "raw_qemu_exits": [
+          33,
+          33,
+          33
+        ],
+        "owner_probe_unchanged": true,
+        "phase_command_exit": 0,
+        "phase_passed": true,
+        "enclosing_tool_session": 44537,
+        "enclosing_tool_exit": 1,
+        "enclosing_exit_scope": "The later first CPU probe failed before kernel boot; QueryAbi retry phase passed and source postcheck was clean.",
+        "trusted_capspace_or_effect_ops_accepted": false
+      },
+      "debug": {
+        "outer_tool_session": 95779,
+        "outer_exit": 0,
+        "gdb_exit": 0,
+        "entry_bytes_compared": 32,
+        "detached": true,
+        "raw_qemu_exit": 33,
+        "full_symbol_sha256": "e14bcc8b93ab47c29e9676c5c6f98e717d528780cf3b9cc339b9124ad8f48762",
+        "loaded_kernel_sha256": "929c7b652e8bee198e8eca40bc13fd4426e0adff35fa93a69868bca6888b7b73",
+        "post_source_status": ""
+      },
+      "kernel_mode_regression": {
+        "outer_tool_session": 12879,
+        "outer_exit": 1,
+        "runner_exit": 1,
+        "passed": false,
+        "ostd_reported_passed": 221,
+        "ostd_soft_skipped": 3,
+        "ostd_exercised_passed_lower_bound": 218,
+        "ostd_raw_qemu_exit": 33,
+        "core_passed": 151,
+        "core_failed": 2,
+        "core_raw_qemu_exit": 65,
+        "post_source_guard_executed": false,
+        "failure": "Two A06 test oracles lose one TSC clock tick for an odd period; production end-from interval is consistent with ceil(P/2). Exact tests-only proposal is retained for A00/A06, not applied.",
+        "failure_is_nanoseconds": false,
+        "owner_core_modified_by_A01": false
+      },
+      "osdk_integration": {
+        "outer_tool_session": 36760,
+        "outer_exit": 0,
+        "profile": "osdk-native-local-tcp-gdb-capture-v2",
+        "selected": 22,
+        "passed": 22,
+        "failed": 0,
+        "blocked": 0,
+        "soft_skipped": 1,
+        "actual_example_guests": 11,
+        "raw_qemu_exits": [
+          33,
+          33,
+          33,
+          33,
+          33,
+          33,
+          33,
+          33,
+          33,
+          33,
+          33
+        ],
+        "scope": "Upstream OSDK tooling and example kernels; separate from full Asterinas kernel acceptance.",
+        "post_source_status": ""
+      },
+      "cpu_diagnostic": {
+        "outer_tool_session": 98994,
+        "outer_exit": 0,
+        "owner_source_and_assertions_unchanged": true,
+        "configured_quota_percent": 1,
+        "finite_sample_bound_percent": 3,
+        "single_vcpu_percent": [
+          1.001,
+          1.1
+        ],
+        "two_vcpu_percent": [
+          0.822,
+          0.9
+        ],
+        "raw_qemu_exits": [
+          33,
+          33,
+          33,
+          33
+        ],
+        "all_four_explicit_qemu_resource_launch_receipts": true,
+        "post_source_status": "",
+        "strict_1_percent_or_full_matrix_or_final_debit_accepted": false,
+        "requested_duration_seconds": 1,
+        "observed_restricted_wall_ns": {
+          "single_vcpu": [
+            1099269967,
+            1000225763
+          ],
+          "two_vcpu": [
+            2797054263,
+            1999040082
+          ]
+        },
+        "actual_fixed_one_second_window_established": false
+      },
+      "preserved_failed_attempts": [
+        "initial build succeeded but root artifact capture used a wrong filename",
+        "initial QueryAbi guests passed but source guard rejected generated bytecode",
+        "first CPU attempt lacked explicit private QEMU resource data",
+        "second CPU attempt lost adapter executable permission and did not retain its second actual argv; owner reported timeout sentinel124, raw child exit unavailable",
+        "current core ktest151 passed and2 failed, raw65"
+      ],
+      "immutable_execution_established": false,
+      "arbitrary_host_reproduction_established": false,
+      "default_af_unix_verified": false,
+      "kvm_or_vmx_verified": false,
+      "all_project_blockers_closed": false,
+      "owner_handoff_comment": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/22#issuecomment-6230648819"
+    },
+    "cloud_gdb_listener_validation_2026_10_17": {
+      "schema": 1,
+      "evidence": "support/build/evidence/2026-10-17-gdb-listener-followup/REPORT.md",
+      "handoff": "support/build/evidence/2026-10-17-gdb-listener-followup/HANDOFF.md",
+      "offline_verifier": "support/build/evidence/2026-10-17-gdb-listener-followup/verify.py",
+      "source_commit": "f57d12f218223ce8287901652565f428941865d9",
+      "source_tree": "c9e7c8a0db9dfa9127fee01869a39cf6dc62c8ae",
+      "sole_parent": "fd0a5ed637312b13efdbfb6b670d4af52bd2c2b0",
+      "changed_paths": [
+        "support/build/osdk-integration/record-qemu.py",
+        "support/build/osdk-integration/run.py",
+        "support/build/osdk-integration/test_profiles.py",
+        "support/build/osdk-integration/test_record_qemu.py"
+      ],
+      "whole_kernel_tree": "d83c7720e8c5857cbfa4622e61e3b671a892ced0",
+      "whole_kernel_tree_equal_baseline": true,
+      "all_other_source_paths_equal_baseline": true,
+      "baseline_native_product_producer": "fd0a5ed637312b13efdbfb6b670d4af52bd2c2b0",
+      "baseline_evidence_root_checksum_sha256": "d47611f1f3ce6f0ab3bfd34104231614c56195ea23c6505aebe1f62f98ad75ff",
+      "fix": "Ordinary and VSCode local-TCP test adapters request port0. The recorder holds the listener through QEMU inherited-FD handoff; the original Rust test reads its actual endpoint from the owned readiness record.",
+      "host_commands_passed": 18,
+      "host_test_executions_passed": 220,
+      "actual_generated_rust_reader_cases_passed": 44,
+      "independent_focused_host_passed": 12,
+      "native": {
+        "tool_session": 99138,
+        "actual_outer_exit": 0,
+        "runner_exit": 0,
+        "controller_passed": true,
+        "controller_sha256": "0b628db76d266d48277aa97f84ab3354c6067b341c252f9b243659cbb39d22fd",
+        "selected_cases": 22,
+        "passed": 22,
+        "failed": 0,
+        "blocked": 0,
+        "soft_skipped": 1,
+        "actual_example_guests": 11,
+        "raw_qemu_exits": [
+          33,
+          33,
+          33,
+          33,
+          33,
+          33,
+          33,
+          33,
+          33,
+          33,
+          33
+        ],
+        "post_source_status": "",
+        "cargo_cache_directory_reused": true,
+        "cache_custody_migration_receipt": "round-current/gdb-cache-custody-migration.json",
+        "empty_target_build": false,
+        "scope": "OSDK tooling/examples; full Asterinas cold build remains the fd0 baseline evidence.",
+        "actual_sdk_sha256": "039f795794fe18ef091f7375859bc4bae90edde6a4d9b021bd815feb741a2e70",
+        "actual_sdk_matches_baseline": true,
+        "actual_harness_sha256": "946c704f7e720f108abb90398dba3882865156916b362af8397d69e265065501",
+        "affected_gdb_cases": [
+          {
+            "case_index": 1,
+            "requested_port": 0,
+            "actual_port": 59717,
+            "listener_fd": 3,
+            "held_until_qemu_spawn": true,
+            "parent_copy_closed_after_spawn": true,
+            "raw_qemu_exit": 33,
+            "qemu_record_sha256": "81313a163abdb4f8df833f33a2f5aabf61f4a530ae79c84358f220c7edffd03f"
+          },
+          {
+            "case_index": 2,
+            "requested_port": 0,
+            "actual_port": 43773,
+            "listener_fd": 3,
+            "held_until_qemu_spawn": true,
+            "parent_copy_closed_after_spawn": true,
+            "raw_qemu_exit": 33,
+            "qemu_record_sha256": "fded84c0f59f39d588a5dd495c220ea5372a08aca0413ee68145e5525b5469be"
+          }
+        ]
+      },
+      "preserved_failed_setup": "First followup attempt was refused before compilation/QEMU because its prior cache path lay outside the required private output prefix. The actual cache directory was migrated without weakening the guard; v7 failure and v8 retry are retained.",
+      "core_ktest_oracle_proposal_applied": false,
+      "core_ktest_failure_151_passed_2_failed_still_open": true,
+      "strict_cpu_or_final_debit_or_effect_operations_accepted": false,
+      "immutable_execution_established": false,
+      "all_project_blockers_closed": false
     }
   },
   "hepta": {
