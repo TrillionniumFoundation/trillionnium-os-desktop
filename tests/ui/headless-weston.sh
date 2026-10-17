@@ -57,7 +57,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-weston --backend=headless-backend.so --socket="$WAYLAND_DISPLAY" \
+weston --backend=headless-backend.so --renderer=pixman --no-config --socket="$WAYLAND_DISPLAY" \
     --idle-time=0 --log="$runtime/weston.log" \
     >"$runtime/weston.stdout" 2>&1 &
 weston_pid=$!

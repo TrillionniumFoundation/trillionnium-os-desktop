@@ -17,6 +17,10 @@ read-only UI behavior and its separate acceptance limits, see
 [`HEPTA_OBSERVER.md`](HEPTA_OBSERVER.md). Authenticated objective submission
 is not configured; Conversation remains a local draft.
 
+For explicit host font selection, shared proportional/monospace CJK fallback,
+actual Pixman screenshots and the separate live-IME gate, see
+[`CJK_RENDERING.md`](CJK_RENDERING.md).
+
 From the repository root:
 
 ~~~sh

@@ -62,7 +62,7 @@ trap cleanup EXIT
 
 start_owned_weston() {
     local log="$1" ready=0
-    weston --backend=headless-backend.so --socket="$WAYLAND_DISPLAY" \
+    weston --backend=headless-backend.so --renderer=pixman --no-config --socket="$WAYLAND_DISPLAY" \
         --idle-time=0 --log="$log" >"${log%.log}.stdout" 2>&1 &
     weston_pid=$!
     for _ in {1..100}; do

@@ -1,5 +1,7 @@
 //! Rust AI-workspace shell for a Linux/Wayland host, not for the target kernel.
 mod hepta_panel;
+#[path = "../../host_fonts.rs"]
+mod host_fonts;
 mod local_drafts;
 
 use eframe::egui::{self, Color32, RichText};
@@ -192,10 +194,12 @@ fn can_offer_fresh_window(
         && task.pid.is_some_and(|pid| pid != 0)
         && task.ui_first_frame_unix_ms.is_some()
         && display.is_some_and(|sample| {
-            task.wayland_socket_epoch_at_launch.is_some_and(|launch_epoch| {
-                sample.socket_observation_epoch > launch_epoch
-                    && task.host_window_observation(sample) == HostWindowObservation::SocketChanged
-            })
+            task.wayland_socket_epoch_at_launch
+                .is_some_and(|launch_epoch| {
+                    sample.socket_observation_epoch > launch_epoch
+                        && task.host_window_observation(sample)
+                            == HostWindowObservation::SocketChanged
+                })
         })
 }
 
@@ -264,7 +268,7 @@ struct Desktop {
 impl Desktop {
     fn new(ctx: &egui::Context, options: StartupOptions) -> Self {
         ctx.set_visuals(egui::Visuals::dark());
-        install_host_cjk_font(ctx);
+        host_fonts::install(ctx);
         let bridge = Bridge::new();
         bridge.poll();
         Self {
@@ -533,7 +537,7 @@ impl Desktop {
                 }
             });
         ui.separator();
-        ui.label("Message / 消息 (Chinese IME supported by host; manual validation required)");
+        ui.label("Message / 消息 (Chinese IME requires host support; not yet verified)");
         ui.add(
             egui::TextEdit::multiline(&mut self.composer)
                 .id(egui::Id::new("hepta-local-composer"))
@@ -750,6 +754,8 @@ impl Desktop {
         ui.separator();
         ui.label("Platform: Linux host Rust/egui desktop prototype");
         ui.label("Graphics: eframe/glow; actual GPU/driver not attested");
+        ui.label(host_fonts::status_label(ctx));
+        ui.small("Set TRILL_UI_CJK_FONT to an absolute host font path; font coverage does not verify an input method.");
         hepta_panel::status(ui, &self.hepta);
         ui.label("Hepta objective submission: unavailable; local drafts only");
         ui.label("Native HOS2 resource revision: unavailable");
@@ -888,7 +894,9 @@ impl Desktop {
             }
             if self.connected
                 && !task.state.is_terminal()
-                && ui.button("Request termination").clicked_by(egui::PointerButton::Primary)
+                && ui
+                    .button("Request termination")
+                    .clicked_by(egui::PointerButton::Primary)
             {
                 if let Some(expected_instance) = self.session_instance.clone() {
                     self.submit(Request::Cancel {
@@ -1043,33 +1051,6 @@ fn state_color(state: TaskState) -> Color32 {
         TaskState::Unknown | TaskState::Partial | TaskState::CancelRequested => warning(),
         _ => Color32::from_gray(185),
     }
-}
-
-fn install_host_cjk_font(ctx: &egui::Context) {
-    // Loading a local font is a display fallback, not bundling a proprietary font.
-    for path in [
-        "/usr/share/fonts/opentype/noto/NotoSansCJKsc-Regular.otf",
-        "/usr/share/fonts/truetype/noto/NotoSansSC-Regular.ttf",
-        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
-        "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",
-        "/usr/share/fonts/truetype/arphic/ukai.ttc",
-    ] {
-        if let Ok(bytes) = std::fs::read(path) {
-            let mut fonts = egui::FontDefinitions::default();
-            fonts
-                .font_data
-                .insert("host-cjk".into(), egui::FontData::from_owned(bytes).into());
-            if let Some(family) = fonts.families.get_mut(&egui::FontFamily::Proportional) {
-                family.insert(0, "host-cjk".into());
-            }
-            if let Some(family) = fonts.families.get_mut(&egui::FontFamily::Monospace) {
-                family.push("host-cjk".into());
-            }
-            ctx.set_fonts(fonts);
-            return;
-        }
-    }
-    eprintln!("No supported host CJK font found: install Noto Sans CJK to render Chinese.");
 }
 
 fn main() -> eframe::Result {
