@@ -113,6 +113,7 @@ def phase_projection(value, phase):
     require(lifecycle in lifecycles, "wrong retained/observed lifecycle")
     require(all(type(health[key]) is bool for key in ("ready", "promotion_ready", "fenced")),
         "runtime health flags must be exact booleans")
+    require(health["fenced"] is False, "held original lifecycle must remain unfenced")
     require(health["ready"] == (lifecycle == "running"),
         "runtime readiness does not match lifecycle")
     if lifecycle in ("running", "draining"):

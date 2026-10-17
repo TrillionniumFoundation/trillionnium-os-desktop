@@ -112,10 +112,11 @@ Its raw before/after frames showed exactly this legitimate progression; that
 failed attempt remains separate from a successful six-phase result.
 
 The live oracle therefore fixes AgentId, process ID, spawn/current generation,
-lifecycle, `ready` and `fenced`, while allowing only Starting's monotonic
+lifecycle and `ready`, with `fenced` strictly false, while allowing only Starting's monotonic
 false-to-true promotion readiness. A ready Running sample must have promotion
-readiness true; Draining must have it false. Health and Events are separate
-original RPCs, so their changes may appear in different observations. The
+readiness true; Draining must have it false. The original client reads Health,
+Capabilities, Events, then Health again. Its final Health can already show
+promotion readiness while the preceding Events page has not caught up. The
 sample time and event cursors must not regress; the bounded event window must
 retain its exact prefix. Capability/truncation metadata remains fixed, source
 changes and history gaps are false, and actual Session tasks remain empty.
@@ -161,8 +162,10 @@ python3 -B -m unittest discover -s tests/ui \
   -p test_original_hepta_shell.py -v
 ```
 
-These accept the real Starting readiness/event progression and both legitimate
-intermediate RPC orderings. They reject regression from the actual before
+These accept the real Starting readiness/event progression and conservatively
+tolerate independently sampled field combinations. The two synthetic
+intermediate combinations do not claim two observed original-runtime orders.
+The checks reject regression from the actual before
 sample, substituted identities, incorrect lifecycle/freshness,
 replacement outside phase 5, mutated stale data, public/symlink/oversized
 phase files and acknowledgment overwrite. Their success is a harness result
