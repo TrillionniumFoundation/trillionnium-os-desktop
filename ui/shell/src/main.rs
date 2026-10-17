@@ -798,7 +798,7 @@ impl Desktop {
             }
             ui.small(format!("Observed: {}", task.updated_unix_ms));
             ui.separator();
-            ui.label(task.detail);
+            ui.label(&task.detail);
             if can_offer_fresh_window(
                 &task,
                 self.resources.as_ref().map(|sample| &sample.wayland),
