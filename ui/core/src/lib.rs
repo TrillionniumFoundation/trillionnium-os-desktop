@@ -1,6 +1,8 @@
 //! Host-only desktop prototype messages. These are NOT HOS2, a kernel permission
 //! protocol, or a trusted Hepta operation ledger.
 use serde::{Deserialize, Serialize};
+
+pub mod host_peer;
 use std::io::{self, BufRead, BufReader, Read, Write};
 use std::path::{Path, PathBuf};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
@@ -422,6 +424,9 @@ pub fn request(req: &Request) -> io::Result<Response> {
 pub fn request_at(socket: &Path, req: &Request) -> io::Result<Response> {
     use std::os::unix::net::UnixStream;
     let mut stream = UnixStream::connect(socket)?;
+    // Verify the kernel's server UID BEFORE sending a request or trusting a
+    // snapshot. A forged cross-UID socket must not supply fake host tasks.
+    host_peer::require_same_uid_peer(&stream)?;
     stream.set_read_timeout(Some(Duration::from_secs(2)))?;
     stream.set_write_timeout(Some(Duration::from_secs(2)))?;
     write_frame(&mut stream, req)?;

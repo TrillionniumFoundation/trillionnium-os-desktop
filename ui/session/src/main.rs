@@ -11,6 +11,9 @@ use std::path::{Path, PathBuf};
 use std::process::{Child, Command, ExitStatus, Stdio};
 use std::sync::mpsc::{self, Receiver, Sender};
 
+use trill_ui_core::host_peer::{
+    self, linux_socket_peer_credentials, require_same_uid_peer, validate_same_uid,
+};
 use trill_ui_core::{
     parse_host_request, read_frame, socket_path, unix_ms, write_frame, AppKind, HostResources, HostWaylandObservation,
     Request, Response, TaskRecord, TaskState, WaylandSocketStatus, Workspace, MAX_ACTIVE_TASKS,
@@ -22,14 +25,6 @@ use trill_ui_core::{
 #[cfg(target_os = "linux")]
 unsafe extern "C" {
     fn flock(fd: i32, operation: i32) -> i32;
-    fn getsockopt(
-        fd: i32,
-        level: i32,
-        optname: i32,
-        value: *mut std::ffi::c_void,
-        length: *mut u32,
-    ) -> i32;
-    fn geteuid() -> u32;
 }
 
 #[cfg(target_os = "linux")]
@@ -467,78 +462,6 @@ fn acquire_session_lock(socket: &std::path::Path) -> io::Result<File> {
     }
 }
 
-/// Linux's SO_PEERCRED is a host socket boundary, not a trusted HOS2
-/// CapSpace, broker identity or authorization for Hepta effects. It rejects
-/// a leaked/mispermissioned cross-UID socket before accepting a request.
-#[cfg(target_os = "linux")]
-#[repr(C)]
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-struct LinuxPeerCred {
-    pid: i32,
-    uid: u32,
-    gid: u32,
-}
-
-#[cfg(target_os = "linux")]
-fn linux_socket_peer_credentials(stream: &UnixStream) -> io::Result<LinuxPeerCred> {
-    // SOL_SOCKET=1, SO_PEERCRED=17 on Linux. No extra libc dependency or
-    // second permission protocol is introduced by these ABI constants.
-    const SOL_SOCKET: i32 = 1;
-    const SO_PEERCRED: i32 = 17;
-    let mut cred = LinuxPeerCred {
-        pid: 0,
-        uid: u32::MAX,
-        gid: u32::MAX,
-    };
-    let mut length = std::mem::size_of::<LinuxPeerCred>() as u32;
-    let rc = unsafe {
-        getsockopt(
-            stream.as_raw_fd(),
-            SOL_SOCKET,
-            SO_PEERCRED,
-            std::ptr::addr_of_mut!(cred).cast(),
-            &mut length,
-        )
-    };
-    if rc != 0 {
-        return Err(io::Error::last_os_error());
-    }
-    if length != std::mem::size_of::<LinuxPeerCred>() as u32 || cred.pid <= 0 {
-        return Err(io::Error::new(
-            io::ErrorKind::PermissionDenied,
-            "Invalid Linux IPC peer credentials",
-        ));
-    }
-    Ok(cred)
-}
-
-#[cfg(target_os = "linux")]
-fn validate_same_uid(cred: LinuxPeerCred, expected_uid: u32) -> io::Result<()> {
-    // Kernel-derived UID match only, not security among processes sharing
-    // one UID and not a trusted A05 authority or Hepta capability.
-    if cred.uid != expected_uid {
-        return Err(io::Error::new(
-            io::ErrorKind::PermissionDenied,
-            "Cross-UID host UI IPC request refused",
-        ));
-    }
-    Ok(())
-}
-
-#[cfg(target_os = "linux")]
-fn require_same_uid_peer(stream: &UnixStream) -> io::Result<()> {
-    let cred = linux_socket_peer_credentials(stream)?;
-    validate_same_uid(cred, unsafe { geteuid() })
-}
-
-#[cfg(not(target_os = "linux"))]
-fn require_same_uid_peer(_stream: &UnixStream) -> io::Result<()> {
-    Err(io::Error::new(
-        io::ErrorKind::Unsupported,
-        "A10 host UI IPC requires Linux SO_PEERCRED",
-    ))
-}
-
 fn serve_connection(mut stream: UnixStream, session: &mut Session) -> io::Result<()> {
     require_same_uid_peer(&stream)?;
     // Invalid/malformed peers must not prevent reaping independent apps.
@@ -647,7 +570,7 @@ mod tests {
     fn connected_host_peer_uses_kernel_credentials_not_claimed_session_id() {
         let (session_side, _client_side) = UnixStream::pair().unwrap();
         let observed = linux_socket_peer_credentials(&session_side).unwrap();
-        assert_eq!(observed.uid, unsafe { geteuid() });
+        assert_eq!(observed.uid, host_peer::current_effective_uid());
         assert_eq!(observed.pid, std::process::id() as i32);
         assert!(require_same_uid_peer(&session_side).is_ok());
 
