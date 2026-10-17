@@ -166,8 +166,16 @@ The source must be a nonempty directory and the destination must be new and
 outside it. Reads use the opened root directory and no-follow file descriptors;
 selected symlinks, hardlinks, special files, identity changes and index-name
 collisions fail closed. Limits are 128 MiB per selected file and 1 GiB total.
-The destination parent must be trusted; per-file checks do not establish an
-atomic snapshot of a concurrently changing entire run directory.
+Output directories are opened without following links. Files and both indexes
+are created exclusively relative to those pinned directory descriptors; index
+digests come from the exact written payloads. Completion verifies directory and
+file identities before removing `.archive-incomplete`. A failed new archive
+retains that marker and its partial evidence for diagnosis; it never recursively
+deletes a destination pathname. An existing destination remains untouched.
+The destination parent must be trusted; these checks do not establish an atomic
+snapshot of an entire concurrently changing run or a sandbox against same-user
+writers. A directory moved during output can retain partial custody at its new
+location, and the original destination may have been replaced by another writer.
 
 Pure profile checks (no VM):
 

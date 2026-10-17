@@ -9,7 +9,6 @@ import hashlib
 import json
 import os
 from pathlib import Path
-import shutil
 import stat
 
 EXCLUDED_DIRS = frozenset({"target", "harness", "work", "tmp", "bin", "fixed-tmp", "__pycache__"})
@@ -18,6 +17,98 @@ MAX_FILE_BYTES = 128 * 1024 * 1024
 MAX_TOTAL_BYTES = 1024 * 1024 * 1024
 OPEN_FLAGS = os.O_RDONLY | os.O_CLOEXEC | os.O_NONBLOCK | os.O_NOFOLLOW
 DIRECTORY_FLAGS = OPEN_FLAGS | os.O_DIRECTORY
+INCOMPLETE = ".archive-incomplete"
+
+
+def identity(info):
+    return info.st_dev, info.st_ino
+
+
+def file_identity(info):
+    return (info.st_dev, info.st_ino, info.st_mode, info.st_nlink,
+            info.st_size, info.st_mtime_ns, info.st_ctime_ns)
+
+
+class ArchiveOutput:
+    """Keep writes and failure custody on opened directories, never path cleanup."""
+
+    def __init__(self, destination):
+        self.descriptors, self.links, self.files, self.digests = [], [], [], {}
+        self.directories = {}
+        try:
+            parent = os.open(destination.anchor, DIRECTORY_FLAGS)
+            self.descriptors.append(parent)
+            for name in destination.parts[1:-1]:
+                try:
+                    os.mkdir(name, mode=0o700, dir_fd=parent)
+                except FileExistsError:
+                    pass
+                child = os.open(name, DIRECTORY_FLAGS, dir_fd=parent)
+                self.descriptors.append(child)
+                self.links.append((parent, name, child))
+                parent = child
+            os.mkdir(destination.name, mode=0o700, dir_fd=parent)
+            created = os.stat(destination.name, dir_fd=parent, follow_symlinks=False)
+            self.root_fd = os.open(destination.name, DIRECTORY_FLAGS, dir_fd=parent)
+            self.descriptors.append(self.root_fd)
+            self.links.append((parent, destination.name, self.root_fd))
+            if identity(created) != identity(os.fstat(self.root_fd)):
+                raise ValueError("archive destination changed during open")
+            self.directories[()] = self.root_fd
+            self.write(Path(INCOMPLETE), b"Archive incomplete; success requires this marker to be absent.\n",
+                       indexed=False)
+        except BaseException:
+            self.close()
+            raise
+
+    def directory(self, parts):
+        current = self.root_fd
+        for index, name in enumerate(parts):
+            key = parts[:index + 1]
+            child = self.directories.get(key)
+            if child is None:
+                try:
+                    os.mkdir(name, mode=0o700, dir_fd=current)
+                except FileExistsError:
+                    pass
+                child = os.open(name, DIRECTORY_FLAGS, dir_fd=current)
+                self.descriptors.append(child)
+                self.links.append((current, name, child))
+                self.directories[key] = child
+            if identity(os.stat(name, dir_fd=current, follow_symlinks=False)) != identity(os.fstat(child)):
+                raise ValueError("archive destination directory changed")
+            current = child
+        return current
+
+    def write(self, relative, payload, indexed=True):
+        if relative.is_absolute() or not relative.parts or any(part in {".", ".."} for part in relative.parts):
+            raise ValueError(f"invalid archive output path: {relative}")
+        parent = self.directory(relative.parts[:-1])
+        flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_CLOEXEC | os.O_NOFOLLOW
+        descriptor = os.open(relative.name, flags, mode=0o600, dir_fd=parent)
+        with os.fdopen(descriptor, "wb") as stream:
+            stream.write(payload)
+            stream.flush()
+            captured = os.fstat(stream.fileno())
+            if not stat.S_ISREG(captured.st_mode) or captured.st_nlink != 1 or captured.st_size != len(payload):
+                raise ValueError(f"archive output changed during write: {relative}")
+        self.files.append((parent, relative.name, file_identity(captured)))
+        if indexed:
+            self.digests[relative.as_posix()] = hashlib.sha256(payload).hexdigest()
+
+    def finish(self):
+        for parent, name, child in self.links:
+            if identity(os.stat(name, dir_fd=parent, follow_symlinks=False)) != identity(os.fstat(child)):
+                raise ValueError("archive destination directory changed before completion")
+        for parent, name, expected in self.files:
+            if file_identity(os.stat(name, dir_fd=parent, follow_symlinks=False)) != expected:
+                raise ValueError(f"archive output changed before completion: {name}")
+        os.unlink(INCOMPLETE, dir_fd=self.root_fd)
+
+    def close(self):
+        for descriptor in reversed(self.descriptors):
+            os.close(descriptor)
+        self.descriptors.clear()
 
 
 def read_regular(directory_fd, name):
@@ -109,7 +200,7 @@ def archive(source, destination):
     records = []
     total = 0
     archived_names = set()
-    created = None
+    output = None
     try:
         opened_root = os.fstat(root_fd)
         if (opened_root.st_dev, opened_root.st_ino) != (source_identity.st_dev,
@@ -121,7 +212,9 @@ def archive(source, destination):
             else:
                 archived, data = item
                 original = str(archived)
-            if archived.parts[0] in {"archive.json", "evidence.sha256"}:
+            if archived.is_absolute() or not archived.parts or ".." in archived.parts:
+                raise ValueError(f"invalid archive evidence path: {archived}")
+            if archived.parts[0] in {"archive.json", "evidence.sha256", INCOMPLETE}:
                 raise ValueError(f"evidence collides with archive index: {archived}")
             if archived in archived_names:
                 raise ValueError(f"duplicate archive destination: {archived}")
@@ -129,35 +222,30 @@ def archive(source, destination):
             total += len(data)
             if total > MAX_TOTAL_BYTES:
                 raise ValueError("evidence archive exceeds total size limit")
-            if created is None:
+            if output is None:
                 # Delayed allocation: empty/invalid sources never create a fake bundle.
-                destination.mkdir(mode=0o700, parents=True, exist_ok=False)
-                created = destination.stat()
-            target = destination / archived
-            target.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+                output = ArchiveOutput(destination)
+            target = archived
             if str(archived).endswith(".log") or str(archived).endswith(".metadata.json"):
                 target = target.with_name(target.name + ".gz")
-                target.write_bytes(gzip.compress(data, mtime=0))
+                payload = gzip.compress(data, mtime=0)
             else:
-                target.write_bytes(data)
-            records.append({"source": original, "archived": str(target.relative_to(destination)),
+                payload = data
+            output.write(target, payload)
+            records.append({"source": original, "archived": str(target),
                             "source_size": len(data), "source_sha256": hashlib.sha256(data).hexdigest()})
         if not records:
             raise ValueError("no permitted evidence files found (archive cannot be empty)")
-        (destination / "archive.json").write_text(json.dumps({"schema": 1, "source": str(source),
-            "excluded": sorted(EXCLUDED_DIRS), "files": records}, indent=2) + "\n")
-        rows = [hashlib.sha256(path.read_bytes()).hexdigest() + "  " + str(path.relative_to(destination))
-                for path in sorted(destination.rglob("*")) if path.is_file()]
-        (destination / "evidence.sha256").write_text("\n".join(rows) + "\n")
-    except BaseException:
-        # Only clean the exact directory inode created by this invocation.
-        # Never delete a pre-existing or concurrently replaced destination.
-        if created is not None and not destination.is_symlink():
-            current = destination.stat() if destination.exists() else None
-            if current and (current.st_dev, current.st_ino) == (created.st_dev, created.st_ino):
-                shutil.rmtree(destination)
-        raise
+        output.write(Path("archive.json"), (json.dumps({"schema": 1, "source": str(source),
+            "excluded": sorted(EXCLUDED_DIRS), "files": records}, indent=2) + "\n").encode())
+        rows = [digest + "  " + name for name, digest in sorted(output.digests.items())]
+        output.write(Path("evidence.sha256"), ("\n".join(rows) + "\n").encode())
+        output.finish()
     finally:
+        # A failed new archive retains its opened custody and incomplete marker.
+        # Never recursively delete a pathname that another writer can replace.
+        if output is not None:
+            output.close()
         os.close(root_fd)
     return len(records)
 
