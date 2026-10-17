@@ -101,7 +101,7 @@ or `PublishOutcome::Failure` with the immutable refusal. Revoke and this
 commit must share that lock. The synthetic native-owner tests demonstrate
 this API shape, not actual A06 integration.
 
-The current A06 controller type is private to its scheduler module. A06 must
+The A06 candidate branch's controller type is private to its scheduler module. A06 must
 provide an owner-module adapter that invokes the typed entry with its actual
 `SubController<CpuController>` type under the existing mutation lock. A05
 passes token/publisher to that adapter; it must not pin a Process or a new
