@@ -41,6 +41,13 @@ macro_rules! __log_prefix {
 #[cfg_attr(target_arch = "aarch64", path = "arch/arm/mod.rs")]
 mod arch;
 
+// Single-source bridge to the experimental no_std HOS2 codec. This is
+// deliberately NOT a second wire implementation. A01 can replace the path
+// module with a locked Cargo path-dependency when the derived lock is updated.
+#[path = "../../../../../libs/os-abi/src/lib.rs"]
+#[allow(unused_attributes)]
+pub(crate) mod hos2_os_abi;
+
 pub mod context;
 mod cpu;
 pub mod device;
