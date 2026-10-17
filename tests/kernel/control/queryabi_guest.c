@@ -139,18 +139,30 @@ int main(int argc, char **argv){
         fail("dup_session_mismatch"); return 19;
     }
     close(dupfd);
-    /* Keep one control fd across execve. The image-generation fence must
-     * invalidate it even though O_CLOEXEC is intentionally absent here. */
-    int execfd = open("/dev/hepta-control", O_RDWR);
-    if (execfd < 0) { fail("exec_open"); return 28; }
-    char execfd_text[32];
-    snprintf(execfd_text, sizeof execfd_text, "%d", execfd);
-    if (setenv("HEPTA_INHERITED_FD", execfd_text, 1) != 0) {
-        fail("exec_fd_env_set"); return 29;
-    }
+    /* Exec-epoch isolation MUST be tested on a session which was valid
+     * immediately before execve in the SAME process. A parent-opened fd
+     * inherited through fork is already rejected by process_start_id with
+     * EPERM; that would not exercise the exec-epoch ESTALE path. */
     pid_t exec_child = fork();
     if (exec_child < 0) { fail("exec_fork"); return 30; }
     if (exec_child == 0) {
+        /* Open inside the child so the fd binds to this process lifetime.
+         * O_CLOEXEC is intentionally absent: the same descriptor survives
+         * execve and must then be rejected only by the image-generation fence. */
+        int execfd = open("/dev/hepta-control", O_RDWR);
+        if (execfd < 0) { fail("exec_child_open"); _exit(28); }
+        unsigned char fresh_q[64], fresh_r[112];
+        prep(fresh_q, 12);
+        if (run_query(execfd, fresh_q, fresh_r, sizeof fresh_r) != 0 ||
+            !valid_reply(fresh_r, fresh_q)) {
+            fail("exec_child_preimage_not_valid"); _exit(33);
+        }
+        puts("HEPTA_EXEC_PREIMAGE_QUERYABI_OK");
+        char execfd_text[32];
+        snprintf(execfd_text, sizeof execfd_text, "%d", execfd);
+        if (setenv("HEPTA_INHERITED_FD", execfd_text, 1) != 0) {
+            fail("exec_fd_env_set"); _exit(29);
+        }
         execl("/bin/hos2-queryabi", "hos2-queryabi", "--exec-epoch-check", NULL);
         fail("execve_probe"); _exit(31);
     }
@@ -159,7 +171,6 @@ int main(int argc, char **argv){
         !WIFEXITED(exec_status) || WEXITSTATUS(exec_status) != 0) {
         fail("exec_epoch_child_error"); return 32;
     }
-    close(execfd);
     pid_t child = fork();
     if (child < 0) { fail("fork_guest"); return 20; }
     if (child == 0) {
