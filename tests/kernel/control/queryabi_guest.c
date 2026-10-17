@@ -33,13 +33,15 @@ static int run_query(int fd, unsigned char *request, unsigned char *response, un
 static int valid_reply(const unsigned char *r,const unsigned char *q){
     static const unsigned char zeros[16]={0};
     return memcmp(r,"HOSR",4)==0 && r[4]==2 && r[5]==0 &&
+        r[6]==0 && r[7]==0 && /* experimental major=2, minor=0 */
         r[8]==1 && r[9]==0 && r[10]==0 && r[11]==0 &&
-        read32(r+12)==64 && read32(r+16)==48 &&
+        read32(r+12)==64 && read32(r+16)==48 && read32(r+20)==0 &&
         memcmp(r+24,q+24,16)==0 &&
         memcmp(r+40,zeros,16)!=0 &&
         read64(r+56)==0 && memcmp(r+64,zeros,16)!=0 &&
         read32(r+80)==4096 && read32(r+84)==0 &&
-        read32(r+88)==48 && read64(r+96)==2 && read64(r+104)==0;
+        read32(r+88)==48 && read32(r+92)==0 && /* HOS2 payload reserved */
+        read64(r+96)==2 && read64(r+104)==0;
 }
 int main(void){
     setvbuf(stdout,NULL,_IONBF,0);
