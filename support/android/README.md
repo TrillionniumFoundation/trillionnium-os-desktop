@@ -20,11 +20,18 @@ Python**, with no skipped tests. Provenance, commands and raw output are in
 omitted tests cannot silently reduce discovery. It checks required files,
 UTF-8, Python/JSON/XML syntax, shell syntax one script at a time, and shell
 entry-point modes. `verify_host.py` runs this check before host regressions.
-The complete host gate currently returns **host_failed_or_blocked** because
-this host lacks Java/JNI tools. Linux ABI, Binder UAPI layout and child-only
-seccomp probes passed; opening Binder returned **BLOCKED / exit 77** because
-there is no Binder device. The Asterinas source scan still reports Binder,
-seccomp and MAC blockers. Historical 2026-10-16 receipts remain historical.
+The initial complete host gate returned **host_failed_or_blocked** because
+the host lacked Java/JNI development tools. A subsequent single rerun using
+isolated official `javac`/JNI headers with the host's existing OpenJDK 17.0.20
+runtime/compiler modules returned **host_passed_only / exit 0**. The actual
+JNI library and Java harness compiled, and host JNI loading produced
+`HOST_JNI_INTEGRATION_PASS`; this was not a newly installed full JDK.
+Linux ABI, Binder UAPI layout and child-only seccomp probes passed. Opening
+Binder remained **BLOCKED / exit 77** because there is no Binder device.
+The Asterinas source scan still reports Binder, seccomp and MAC blockers.
+Both initial and subsequent reports are retained in the evidence directory;
+the JDK source, digest and composition are in `jdk-installation.json`.
+Historical 2026-10-16 receipts remain historical.
 
 The Android15 Cuttlefish source lock is preserved. The generic APK runner
 requires an explicit disposable serial and
@@ -147,7 +154,8 @@ Cuttlefish reference boot: NOT RUN. Rust-kernel Android: NOT RUN.
 APK: first-party source and automated scenario exist, APK build and execution
 NOT RUN. Native ABI x86_64/ARM64/32-bit: NOT RUN; no translator assumed.
 Current host Python suite: 176/176 passed in normal and optimized Python,
-with no skips. The broader host gate remains blocked without Java/JNI tools.
+with no skips. The broader host gate passed with the documented isolated
+Java/JNI tool configuration; its earlier missing-tools failure is retained.
 Linux ABI probe: mmap, memfd,
 SCM_RIGHTS, futex, signals PASS; Binder device missing ENOENT. This means only
 the Linux host probe has passed. Binder protocol probe exits 77 with ENOENT; no
