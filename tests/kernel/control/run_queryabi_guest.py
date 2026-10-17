@@ -6,6 +6,7 @@ Hepta durability proof, or hardware sign-off. It never changes a host cgroup,
 device driver, data disk, network stack, firmware, or production service.
 """
 import argparse
+from contextlib import ExitStack
 import gzip
 import io
 import hashlib
@@ -18,6 +19,8 @@ import subprocess
 import sys
 import time
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from pinned_memfd import sealed_input
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "organ_backend"))
 from run_guest_probe import pack, unpack  # already shipped A01 newc parser
 
@@ -157,28 +160,40 @@ def main(argv=None):
     compiled = guest_elf.read_bytes()
     initrd = build_guest_initramfs(original, compiled)
     (output / "initramfs.cpio.gz").write_bytes(initrd)
-    # Kernel and BIOS inputs remain at their original, independently hashed paths.
-    args_qemu = [
-        args.qemu, "-kernel", str(args.kernel_elf.absolute()),
-        "-initrd", str((output / "initramfs.cpio.gz").absolute()),
-        "-append", "earlycon console=ttyS0 loglevel=info SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --",
-        "-machine", "q35", "-accel", "tcg", "-cpu", "max",
-        "-bios", str(args.bios.absolute()), "-m", "512M", "-smp", "1",
-        "-nodefaults", "-no-user-config", "-no-reboot", "-nographic",
-        "-display", "none", "-monitor", "none", "-serial", "stdio",
-        "-device", "isa-debug-exit,iobase=0xf4,iosize=0x04",
-    ]
+    # Open sealed anonymous snapshots of the already SHA256-validated bytes.
+    # QEMU must not reopen caller-controlled kernel/BIOS/initramfs paths: a
+    # pathname could be swapped after our original fstat/hash verification.
+    serial = output / "serial.log"
     start = time.monotonic()
     timed_out = False
-    serial = output / "serial.log"
-    with serial.open("xb") as writer:
-        try:
-            completed = subprocess.run(args_qemu, stdin=subprocess.DEVNULL,
-                                       stdout=writer, stderr=subprocess.STDOUT,
-                                       timeout=args.timeout, check=False)
-            code = completed.returncode
-        except subprocess.TimeoutExpired:
-            timed_out, code = True, None
+    with ExitStack() as inputs:
+        kernel_fd = sealed_input("kernel", kernel)
+        inputs.callback(os.close, kernel_fd)
+        initrd_fd = sealed_input("initramfs", initrd)
+        inputs.callback(os.close, initrd_fd)
+        bios_fd = sealed_input("bios", bios)
+        inputs.callback(os.close, bios_fd)
+        qemu_fds = (kernel_fd, initrd_fd, bios_fd)
+        args_qemu = [
+            args.qemu, "-kernel", f"/proc/self/fd/{kernel_fd}",
+            "-initrd", f"/proc/self/fd/{initrd_fd}",
+            "-append", "earlycon console=ttyS0 loglevel=info SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --",
+            "-machine", "q35", "-accel", "tcg", "-cpu", "max",
+            "-bios", f"/proc/self/fd/{bios_fd}", "-m", "512M", "-smp", "1",
+            "-nodefaults", "-no-user-config", "-no-reboot", "-nographic",
+            "-display", "none", "-monitor", "none", "-serial", "stdio",
+            "-device", "isa-debug-exit,iobase=0xf4,iosize=0x04",
+        ]
+        with serial.open("xb") as writer:
+            try:
+                completed = subprocess.run(
+                    args_qemu, stdin=subprocess.DEVNULL, stdout=writer,
+                    stderr=subprocess.STDOUT, timeout=args.timeout,
+                    check=False, pass_fds=qemu_fds,
+                )
+                code = completed.returncode
+            except subprocess.TimeoutExpired:
+                timed_out, code = True, None
     elapsed = round(time.monotonic() - start, 3)
     serial_size = serial.stat().st_size
     require(serial_size <= MAX_SERIAL_BYTES, "serial log size exceeds bounded evidence policy")

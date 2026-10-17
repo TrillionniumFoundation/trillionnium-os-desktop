@@ -2,10 +2,12 @@
 import gzip
 import hashlib
 import os
+import subprocess
 import tempfile
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import run_queryabi_guest as replay
@@ -123,6 +125,69 @@ class QueryAbiReplayInputs(unittest.TestCase):
                 replay.read_pinned_file(
                     alias, hashlib.sha256(b"stand-in only").hexdigest()
                 )
+
+
+    def test_qemu_command_uses_immutable_inherited_fds_not_reopened_paths(self):
+        # Synthetic compiler/QEMU: this tests the *host launch boundary*.
+        # The original Asterinas kernel is not run in this unit test.
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "result"
+            kernel = b"known SHA-validated kernel stand-in"
+            bios = b"known SHA-validated BIOS stand-in"
+            original = self.original()
+            seen_fds = ()
+
+            def simulate_native_tools(command, **kwargs):
+                nonlocal seen_fds
+                if command[0] == "cc":
+                    Path(command[-1]).write_bytes(b"ELF synthetic guest probe")
+                    return subprocess.CompletedProcess(command, 0, "", "")
+                self.assertEqual(command[0], "synthetic-qemu")
+                seen_fds = tuple(kwargs.get("pass_fds", ()))
+                self.assertEqual(len(seen_fds), 3)
+                for option, expected in (("-kernel", kernel), ("-bios", bios)):
+                    fd_path = command[command.index(option) + 1]
+                    self.assertTrue(fd_path.startswith("/proc/self/fd/"), fd_path)
+                    fd = int(fd_path.rsplit("/", 1)[1])
+                    self.assertIn(fd, seen_fds)
+                    self.assertEqual(os.pread(fd, len(expected), 0), expected)
+                    with self.assertRaises(OSError):
+                        os.pwrite(fd, b"CORRUPT", 0)
+                initrd_path = command[command.index("-initrd") + 1]
+                self.assertTrue(initrd_path.startswith("/proc/self/fd/"))
+                initrd_fd = int(initrd_path.rsplit("/", 1)[1])
+                self.assertIn(initrd_fd, seen_fds)
+                injected = os.pread(initrd_fd, os.fstat(initrd_fd).st_size, 0)
+                entries = replay.unpack(gzip.decompress(injected))
+                self.assertEqual(
+                    next(entry[2] for entry in entries if entry[0] == "bin/hos2-queryabi"),
+                    b"ELF synthetic guest probe",
+                )
+                kwargs["stdout"].write(
+                    (replay.EXPECTED_SUCCESS + "\nTRILLIONNIUM_A01_BOOT_OK\n").encode()
+                )
+                return subprocess.CompletedProcess(command, 33)
+
+            with patch.object(
+                replay, "read_pinned_file", side_effect=(kernel, original, bios)
+            ), patch.object(replay.subprocess, "run", side_effect=simulate_native_tools):
+                self.assertEqual(
+                    replay.main([
+                        "--kernel-elf", "/original-kernel-path",
+                        "--expected-kernel-sha256", replay.A05_PINNED_KERNEL_SHA,
+                        "--a01-initramfs", "/original-initrd-path",
+                        "--bios", "/original-bios-path",
+                        "--qemu", "synthetic-qemu", "--output", str(output),
+                    ]),
+                    0,
+                )
+            self.assertEqual(len(seen_fds), 3)
+            for fd in seen_fds:
+                with self.assertRaises(OSError):
+                    os.fstat(fd)
+            result = __import__("json").loads((output / "result.json").read_text())
+            self.assertTrue(result["passed"])
+            self.assertTrue(result["guest_queryabi_ok"])
 
 if __name__ == "__main__":
     unittest.main()
