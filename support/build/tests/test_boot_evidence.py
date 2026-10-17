@@ -201,7 +201,7 @@ class BootEvidenceTests(unittest.TestCase):
 
     def run_recorder(self, no_serial=False, timeout=False, replace_sources=False,
                      tamper_snapshot=False, artifact_args=None, delete_binary=False,
-                     bios_override=None):
+                     bios_override=None, data_override=None):
         tools = self.root / "tools"
         tools.mkdir(exist_ok=True)
         binary = tools / "qemu-system-x86_64"
@@ -211,8 +211,11 @@ class BootEvidenceTests(unittest.TestCase):
         (self.inputs / "qemu.log").write_bytes(b"stale unrelated default file")
         environment = os.environ.copy()
         environment.pop("A01_QEMU_BIOS", None)
+        environment.pop("A01_QEMU_DATA_DIR", None)
         if bios_override is not None:
             environment["A01_QEMU_BIOS"] = bios_override
+        if data_override is not None:
+            environment["A01_QEMU_DATA_DIR"] = data_override
         environment.update({
             "PATH": str(tools) + os.pathsep + environment.get("PATH", ""),
             "A01_QEMU_EVIDENCE": str(self.directory / "qemu.json"),
@@ -296,6 +299,42 @@ class BootEvidenceTests(unittest.TestCase):
                 self.assertIsNone(record["raw_exit_code"])
                 self.assertEqual(record["bios_selection"]["origin"], "A01_QEMU_BIOS")
                 self.assertEqual(record["bios_selection"]["selected_path"], value)
+                self.assertFalse((self.root / "version-started").exists())
+                self.assertFalse((self.root / "loaded.json").exists())
+                self.assertEqual(record["artifacts"], {})
+                self.assertEqual(list(self.directory.glob("artifacts-*")), [])
+
+    def test_recorder_explicit_private_data_directory_with_spaces_appends_one_L(self):
+        private = self.root / "private QEMU data with spaces"
+        private.mkdir()
+        result, record, _ = self.run_recorder(data_override=str(private))
+        self.assertEqual(result.returncode, 33, result.stdout)
+        self.assertEqual(record["data_selection"], {
+            "origin": "A01_QEMU_DATA_DIR", "original_requested_paths": [],
+            "selected_path": str(private), "appended": True,
+        })
+        self.assertNotIn("-L", record["requested_qemu_args"])
+        loaded = json.loads((self.root / "loaded.json").read_text())
+        self.assertEqual(loaded["argv"].count("-L"), 1)
+        self.assertEqual(loaded["argv"][loaded["argv"].index("-L") + 1], str(private))
+        for option in ("-kernel", "-initrd", "-bios"):
+            self.assertEqual(loaded["artifacts"][option]["path"], record["artifacts"][option]["path"])
+        self.check(True, live=True)
+
+    def test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools(self):
+        private = self.root / "private data"
+        private.mkdir()
+        normal = ["-kernel", "kernel.elf", "-initrd", "initramfs.cpio.gz", "-bios", "bios.bin"]
+        for value, arguments in (("", None), ("relative-data", None),
+                (str(self.root / "missing-data"), None), (str(self.inputs / "bios.bin"), None),
+                (str(private), normal + ["-L", "original requested data"])):
+            with self.subTest(value=value, arguments=arguments):
+                result, record, _ = self.run_recorder(data_override=value, artifact_args=arguments)
+                self.assertEqual(result.returncode, 1, result.stdout)
+                self.assertEqual(record["stage"], "artifact_preparation_failed")
+                self.assertIsNone(record["raw_exit_code"])
+                self.assertEqual(record["data_selection"]["origin"], "A01_QEMU_DATA_DIR")
+                self.assertFalse(record["data_selection"]["appended"])
                 self.assertFalse((self.root / "version-started").exists())
                 self.assertFalse((self.root / "loaded.json").exists())
                 self.assertEqual(record["artifacts"], {})

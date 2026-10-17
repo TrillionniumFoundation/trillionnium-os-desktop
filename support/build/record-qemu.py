@@ -101,6 +101,32 @@ def select_bios(arguments, positions, record):
     return actual
 
 
+def select_data_directory(arguments, record):
+    """Append an explicitly selected private QEMU data directory without ambiguity."""
+    positions = [index for index, value in enumerate(arguments) if value == "-L"]
+    originals = [arguments[index + 1] if index + 1 < len(arguments) else None
+                 for index in positions]
+    explicit = "A01_QEMU_DATA_DIR" in os.environ
+    value = os.environ.get("A01_QEMU_DATA_DIR")
+    record["data_selection"] = {
+        "origin": "A01_QEMU_DATA_DIR" if explicit else "requested_qemu_args",
+        "original_requested_paths": originals,
+        "selected_path": value if explicit else originals[0] if len(originals) == 1 else None,
+        "appended": False,
+    }
+    actual = list(arguments)
+    if explicit:
+        if positions:
+            raise ValueError("A01_QEMU_DATA_DIR cannot be combined with a requested -L")
+        if not value or not Path(value).is_absolute():
+            raise ValueError("A01_QEMU_DATA_DIR must name a nonempty absolute directory")
+        if not stat.S_ISDIR(os.stat(value).st_mode):
+            raise ValueError("A01_QEMU_DATA_DIR must name a directory")
+        actual += ["-L", value]
+        record["data_selection"]["appended"] = True
+    return actual
+
+
 def capture_artifact(source, destination=None):
     """Read one stable regular-file FD; optionally create a new exclusive copy."""
     descriptor = os.open(source, os.O_RDONLY | os.O_NONBLOCK)
@@ -173,6 +199,7 @@ def main():
     try:
         positions = artifact_positions(requested)  # Reject malformed requests before the version probe.
         arguments = select_bios(requested, positions, record)
+        arguments = select_data_directory(arguments, record)
         binary = shutil.which("qemu-system-x86_64")
         if not binary:
             raise ValueError("qemu-system-x86_64 is not installed")
