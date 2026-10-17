@@ -110,7 +110,10 @@ impl HeptaControlFile {
             return_errno_with_message!(Errno::EPERM, "HOS2 control fd belongs to another process")
         }
         if process.hepta_exec_epoch() != self.exec_epoch {
-            return_errno_with_message!(Errno::ESTALE, "HOS2 control fd belongs to an old exec image")
+            return_errno_with_message!(
+                Errno::ESTALE,
+                "HOS2 control fd belongs to an old exec image"
+            )
         }
         Ok(())
     }
@@ -195,7 +198,8 @@ impl PerOpenFileOps for HeptaControlFile {
             })?;
         if request.opcode != Opcode::QueryAbi || request.payload != RequestPayload::QueryAbi {
             return_errno_with_message!(
-                Errno::EOPNOTSUPP, "recognized HOS2 resource operation not implemented"
+                Errno::EOPNOTSUPP,
+                "recognized HOS2 resource operation not implemented"
             )
         }
 
