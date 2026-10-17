@@ -1,0 +1,6 @@
+{
+  "producer_commit": "ff0d09a2c2e0cba1d528d11a06083f588989a9f3",
+  "producer_complete_tree": "7daf86431e4d789356365d7cfbde51e854585d0e",
+  "derived_kernel_tree": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da",
+  "commit_object": "tree 7daf86431e4d789356365d7cfbde51e854585d0e\nparent cdfddbfb39d4dfee029d3096615da148068c9652\nauthor Franksudoman <sunfocapital@gmail.com> 1792211500 +0800\ncommitter Franksudoman <sunfocapital@gmail.com> 1792211500 +0800\n\nA01: isolate kernel-test SDK installation and reject legacy reuse\n\nInstall kernel-test cargo-osdk into its guarded private 0700 prefix and invoke that binary directly. Reject legacy skip-install before output or lock creation so another source root's SDK cannot silently produce test results.\n\nValidation: eleven pure in-process isolation tests, independent source review and unchanged lifecycle helper bytes; staged diff check passes. Real kernel-test suites are recorded separately after this source commit."
+}
