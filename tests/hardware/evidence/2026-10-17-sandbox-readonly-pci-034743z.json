@@ -1,0 +1,88 @@
+{
+  "accelerators_visible": [],
+  "blocker": "no_visible_GPU_render_node_CUDA_VFIO_KVM_IOMMU_groups_in_container; physical host capabilities unknown",
+  "device_nodes": {
+    "/dev/dri/renderD128": false,
+    "/dev/kfd": false,
+    "/dev/kvm": false,
+    "/dev/nvidia0": false,
+    "/dev/nvidiactl": false,
+    "/dev/vfio/vfio": false
+  },
+  "device_reset_or_dma_quiescence_verified": false,
+  "execution": {
+    "container_marker": false,
+    "cpu_model": "AMD EPYC 9V74 80-Core Processor",
+    "kernel": "Linux",
+    "kernel_release": "6.18.55",
+    "machine": "x86_64"
+  },
+  "gpu_compute_tested": false,
+  "host_vmm_gpu_passthrough_verified": false,
+  "operations": "read_only_sysfs_procfs_and_device_path_stat_no_device_open_or_driver_write",
+  "pci_devices": [
+    {
+      "bdf": "0000:00:00.0",
+      "class": "0x060000",
+      "device_id": "0x0d57",
+      "driver": null,
+      "iommu_group": null,
+      "vendor_id": "0x8086"
+    },
+    {
+      "bdf": "0000:00:01.0",
+      "class": "0x018000",
+      "device_id": "0x1042",
+      "driver": "virtio-pci",
+      "iommu_group": null,
+      "vendor_id": "0x1af4"
+    },
+    {
+      "bdf": "0000:00:02.0",
+      "class": "0x020000",
+      "device_id": "0x1041",
+      "driver": "virtio-pci",
+      "iommu_group": null,
+      "vendor_id": "0x1af4"
+    },
+    {
+      "bdf": "0000:00:03.0",
+      "class": "0xffff00",
+      "device_id": "0x1044",
+      "driver": "virtio-pci",
+      "iommu_group": null,
+      "vendor_id": "0x1af4"
+    },
+    {
+      "bdf": "0000:00:04.0",
+      "class": "0xffff00",
+      "device_id": "0x105b",
+      "driver": "virtio-pci",
+      "iommu_group": null,
+      "vendor_id": "0x1af4"
+    },
+    {
+      "bdf": "0000:00:05.0",
+      "class": "0xffff00",
+      "device_id": "0x1053",
+      "driver": "virtio-pci",
+      "iommu_group": null,
+      "vendor_id": "0x1af4"
+    },
+    {
+      "bdf": "0000:00:06.0",
+      "class": "0xffff00",
+      "device_id": "0x1045",
+      "driver": "virtio-pci",
+      "iommu_group": null,
+      "vendor_id": "0x1af4"
+    }
+  ],
+  "physical_gpu_driver_or_firmware_qualified": false,
+  "physical_gpu_owner_identified": false,
+  "platform_virtualization_device_access": false,
+  "schema": "a09.readonly-container-candidate-investigation.v1",
+  "scope": "isolated_execution_tool_container_only_not_a_user_hardware_inventory",
+  "timestamp_utc": "2026-10-17T03:47:43.762076+00:00",
+  "visible_iommu_group_count": 0
+}

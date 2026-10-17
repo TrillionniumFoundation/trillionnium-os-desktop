@@ -1,0 +1,431 @@
+{
+  "schema": 1,
+  "scope": "std host regression controls; no real kernel or durable Hepta execution",
+  "success": true,
+  "baseline_commit": "40ca002fac0726b366726d3353916637b29adeae",
+  "synthetic_drop_control": "current source with two exact reclamation blocks reverted; not a historical commit",
+  "rustup_toolchain": "nightly-2026-07-21",
+  "commands": [
+    {
+      "name": "rustc-version",
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+        "-vV"
+      ],
+      "cwd": "/workspace/scratch/629ae4947f18/a03-native-verify",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "d919107c9907c374b7605930746505ef72ce87cc21b641260c6225a7da9d8212",
+      "stdout_bytes": 212,
+      "matched_expectation": true
+    },
+    {
+      "name": "checkout-commit",
+      "command": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/workspace/scratch/629ae4947f18/a03-native-verify",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "a96e73457f94f5c95dc86d7a483acbe0412710e6a67233709d38329df065ce5b",
+      "stdout_bytes": 41,
+      "matched_expectation": true
+    },
+    {
+      "name": "baseline-lib",
+      "command": [
+        "git",
+        "--no-pager",
+        "show",
+        "40ca002fac0726b366726d3353916637b29adeae:libs/os-control/src/lib.rs"
+      ],
+      "cwd": "/workspace/scratch/629ae4947f18/a03-native-verify",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "0dae32bfc3ac08a83b5c7269ebc35d14812bcc19ce2bcf84f76dc94fed964816",
+      "stdout_bytes": 89591,
+      "matched_expectation": true
+    },
+    {
+      "name": "baseline-sync",
+      "command": [
+        "git",
+        "--no-pager",
+        "show",
+        "40ca002fac0726b366726d3353916637b29adeae:libs/os-control/src/sync.rs"
+      ],
+      "cwd": "/workspace/scratch/629ae4947f18/a03-native-verify",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "c008828ccd16a6e9e9fa152b6829d5431f9ddb4d665cf19cca27a10216bffaf2",
+      "stdout_bytes": 1059,
+      "matched_expectation": true
+    },
+    {
+      "name": "historical-token-compile-library",
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+        "--edition",
+        "2021",
+        "--crate-name",
+        "os_control",
+        "--crate-type",
+        "rlib",
+        "--forbid=unsafe_code",
+        "--cfg",
+        "feature=\"std\"",
+        "/tmp/a03-regressions-lsl5ti37/historical-token/lib.rs",
+        "-o",
+        "/tmp/a03-regressions-lsl5ti37/historical-token/libos_control.rlib"
+      ],
+      "cwd": "/tmp/a03-regressions-lsl5ti37/historical-token",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "matched_expectation": true
+    },
+    {
+      "name": "historical-token-compile-tests",
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+        "--edition",
+        "2021",
+        "--test",
+        "--forbid=unsafe_code",
+        "/tmp/a03-regressions-lsl5ti37/historical-token/token_retirement.rs",
+        "--extern",
+        "os_control=/tmp/a03-regressions-lsl5ti37/historical-token/libos_control.rlib",
+        "-o",
+        "/tmp/a03-regressions-lsl5ti37/historical-token/historical-token-tests"
+      ],
+      "cwd": "/tmp/a03-regressions-lsl5ti37/historical-token",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "matched_expectation": true
+    },
+    {
+      "name": "historical-token-run",
+      "command": [
+        "/tmp/a03-regressions-lsl5ti37/historical-token/historical-token-tests",
+        "--test-threads=1"
+      ],
+      "cwd": "/tmp/a03-regressions-lsl5ti37/historical-token",
+      "expected_exit": 101,
+      "timeout_seconds": 45,
+      "returncode": 101,
+      "timed_out": false,
+      "stdout_sha256": "7a276054bb2bc92a79cddc67a38158268e44791a534708a5d042a21d6efadd62",
+      "stdout_bytes": 1904,
+      "matched_expectation": true
+    },
+    {
+      "name": "synthetic-drop-compile-library",
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+        "--edition",
+        "2021",
+        "--crate-name",
+        "os_control",
+        "--crate-type",
+        "rlib",
+        "--forbid=unsafe_code",
+        "--cfg",
+        "feature=\"std\"",
+        "/tmp/a03-regressions-lsl5ti37/synthetic-drop/lib.rs",
+        "-o",
+        "/tmp/a03-regressions-lsl5ti37/synthetic-drop/libos_control.rlib"
+      ],
+      "cwd": "/tmp/a03-regressions-lsl5ti37/synthetic-drop",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "matched_expectation": true
+    },
+    {
+      "name": "synthetic-drop-compile-tests",
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+        "--edition",
+        "2021",
+        "--test",
+        "--forbid=unsafe_code",
+        "/tmp/a03-regressions-lsl5ti37/synthetic-drop/native_handoff.rs",
+        "--extern",
+        "os_control=/tmp/a03-regressions-lsl5ti37/synthetic-drop/libos_control.rlib",
+        "-o",
+        "/tmp/a03-regressions-lsl5ti37/synthetic-drop/synthetic-drop-tests"
+      ],
+      "cwd": "/tmp/a03-regressions-lsl5ti37/synthetic-drop",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "matched_expectation": true
+    },
+    {
+      "name": "synthetic-drop-run",
+      "command": [
+        "/tmp/a03-regressions-lsl5ti37/synthetic-drop/synthetic-drop-tests",
+        "native_owner_drop_",
+        "--test-threads=1"
+      ],
+      "cwd": "/tmp/a03-regressions-lsl5ti37/synthetic-drop",
+      "expected_exit": 101,
+      "timeout_seconds": 45,
+      "returncode": 101,
+      "timed_out": false,
+      "stdout_sha256": "e34fa8a5415618bb7f73181c86b1ef3f85abdfb1b2e6c04df446fa1b4097e360",
+      "stdout_bytes": 1248,
+      "matched_expectation": true
+    },
+    {
+      "name": "fixed-compile-library",
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+        "--edition",
+        "2021",
+        "--crate-name",
+        "os_control",
+        "--crate-type",
+        "rlib",
+        "--forbid=unsafe_code",
+        "--cfg",
+        "feature=\"std\"",
+        "/tmp/a03-regressions-lsl5ti37/fixed/lib.rs",
+        "-o",
+        "/tmp/a03-regressions-lsl5ti37/fixed/libos_control.rlib"
+      ],
+      "cwd": "/tmp/a03-regressions-lsl5ti37/fixed",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "matched_expectation": true
+    },
+    {
+      "name": "fixed-token_retirement-compile-tests",
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+        "--edition",
+        "2021",
+        "--test",
+        "--forbid=unsafe_code",
+        "/tmp/a03-regressions-lsl5ti37/fixed/token_retirement.rs",
+        "--extern",
+        "os_control=/tmp/a03-regressions-lsl5ti37/fixed/libos_control.rlib",
+        "-o",
+        "/tmp/a03-regressions-lsl5ti37/fixed/fixed-token_retirement-tests"
+      ],
+      "cwd": "/tmp/a03-regressions-lsl5ti37/fixed",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "matched_expectation": true
+    },
+    {
+      "name": "fixed-token_retirement-run",
+      "command": [
+        "/tmp/a03-regressions-lsl5ti37/fixed/fixed-token_retirement-tests",
+        "--test-threads=1"
+      ],
+      "cwd": "/tmp/a03-regressions-lsl5ti37/fixed",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "bf122ea8b695040562cb75bfd3e190fb3cd1dcb736275e5e266a81ee45cd1098",
+      "stdout_bytes": 533,
+      "matched_expectation": true
+    },
+    {
+      "name": "fixed-native_handoff-compile-tests",
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+        "--edition",
+        "2021",
+        "--test",
+        "--forbid=unsafe_code",
+        "/tmp/a03-regressions-lsl5ti37/fixed/native_handoff.rs",
+        "--extern",
+        "os_control=/tmp/a03-regressions-lsl5ti37/fixed/libos_control.rlib",
+        "-o",
+        "/tmp/a03-regressions-lsl5ti37/fixed/fixed-native_handoff-tests"
+      ],
+      "cwd": "/tmp/a03-regressions-lsl5ti37/fixed",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "matched_expectation": true
+    },
+    {
+      "name": "fixed-native_handoff-run",
+      "command": [
+        "/tmp/a03-regressions-lsl5ti37/fixed/fixed-native_handoff-tests",
+        "--test-threads=1"
+      ],
+      "cwd": "/tmp/a03-regressions-lsl5ti37/fixed",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "a97f3f1982d7255d4733d54ad8c29b22b7c1fce52f135017c0d8a44868037672",
+      "stdout_bytes": 1332,
+      "matched_expectation": true
+    }
+  ],
+  "checks": [
+    {
+      "name": "historical-token-run",
+      "expected": [
+        "FAILED",
+        2,
+        3,
+        0,
+        0,
+        0
+      ],
+      "observed": [
+        "FAILED",
+        2,
+        3,
+        0,
+        0,
+        0
+      ],
+      "expected_failure_names": [
+        "lost_history_releases_result_resources_even_when_the_old_token_is_retained",
+        "obsolete_token_does_not_keep_an_otherwise_unreferenced_namespace_alive",
+        "retained_retired_token_no_longer_keeps_a_child_cap_constraint_alive"
+      ],
+      "observed_failure_names": [
+        "lost_history_releases_result_resources_even_when_the_old_token_is_retained",
+        "obsolete_token_does_not_keep_an_otherwise_unreferenced_namespace_alive",
+        "retained_retired_token_no_longer_keeps_a_child_cap_constraint_alive"
+      ],
+      "success": true
+    },
+    {
+      "name": "synthetic-drop-run",
+      "expected": [
+        "FAILED",
+        0,
+        2,
+        0,
+        0,
+        13
+      ],
+      "observed": [
+        "FAILED",
+        0,
+        2,
+        0,
+        0,
+        13
+      ],
+      "expected_failure_names": [
+        "native_owner_drop_during_history_loss_can_reenter_loss_gate_before_return",
+        "native_owner_drop_during_retirement_can_read_same_namespace_before_return"
+      ],
+      "observed_failure_names": [
+        "native_owner_drop_during_history_loss_can_reenter_loss_gate_before_return",
+        "native_owner_drop_during_retirement_can_read_same_namespace_before_return"
+      ],
+      "success": true
+    },
+    {
+      "name": "fixed-token_retirement-run",
+      "expected": [
+        "ok",
+        5,
+        0,
+        0,
+        0,
+        0
+      ],
+      "observed": [
+        "ok",
+        5,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_failure_names": [],
+      "observed_failure_names": [],
+      "success": true
+    },
+    {
+      "name": "fixed-native_handoff-run",
+      "expected": [
+        "ok",
+        15,
+        0,
+        0,
+        0,
+        0
+      ],
+      "observed": [
+        "ok",
+        15,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_failure_names": [],
+      "observed_failure_names": [],
+      "success": true
+    }
+  ],
+  "rustc_version": "rustc 1.99.0-nightly (87e5904f5 2026-07-20)\nbinary: rustc\ncommit-hash: 87e5904f5eb6398af6b22eac2802c78934260c48\ncommit-date: 2026-07-20\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.0-nightly\nLLVM version: 22.1.8\n",
+  "checkout_commit": "43ba5e51644d36a467ad0845eee6058da1436652",
+  "current_source_sha256": {
+    "libs/os-control/src/lib.rs": "aa37977e31a293d52233cde446ebbbf86b54befcb41536f049503b41f6ca93b7",
+    "libs/os-control/src/native.rs": "f32028122d21b097c443eb8692f2dd4181e7a3a436daf1c84c67fcaf6c7a8d80",
+    "libs/os-control/src/sync.rs": "e2159cc41ef3a1073b1899615f70ea34cc9915052dd41811180bd3e3497784cd",
+    "tests/control/token_retirement.rs": "7078c9aa1217aa367a671df64c6a0f72deeeed4ad3078a00bb8d085cd31a8b30",
+    "tests/control/native_handoff.rs": "52fe0f5be8fa2cdce169969680437a77ca0c1523f1e738a2262a6fb953b15fa7"
+  },
+  "baseline_source_sha256": {
+    "libs/os-control/src/lib.rs": "0dae32bfc3ac08a83b5c7269ebc35d14812bcc19ce2bcf84f76dc94fed964816",
+    "libs/os-control/src/sync.rs": "c008828ccd16a6e9e9fa152b6829d5431f9ddb4d665cf19cca27a10216bffaf2"
+  },
+  "synthetic_lib_sha256": "22c91df3a6599d689d4938dfc8582db487f5684ab0fa0a96f607709050bb2b21",
+  "source_after_sha256": {
+    "libs/os-control/src/lib.rs": "aa37977e31a293d52233cde446ebbbf86b54befcb41536f049503b41f6ca93b7",
+    "libs/os-control/src/native.rs": "f32028122d21b097c443eb8692f2dd4181e7a3a436daf1c84c67fcaf6c7a8d80",
+    "libs/os-control/src/sync.rs": "e2159cc41ef3a1073b1899615f70ea34cc9915052dd41811180bd3e3497784cd",
+    "tests/control/token_retirement.rs": "7078c9aa1217aa367a671df64c6a0f72deeeed4ad3078a00bb8d085cd31a8b30",
+    "tests/control/native_handoff.rs": "52fe0f5be8fa2cdce169969680437a77ca0c1523f1e738a2262a6fb953b15fa7"
+  }
+}

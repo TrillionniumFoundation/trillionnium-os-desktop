@@ -247,6 +247,38 @@ impl Transport {
         Ok(request)
     }
 
+    /// Decode a copied response within the bounds of this ioctl transport.
+    ///
+    /// The response is allowed to occupy fewer bytes than the advertised
+    /// capacity: the HOSR header determines the actual frame length. Unlike
+    /// the standalone prefix decoder, this entry rejects snapshots larger
+    /// than the descriptor's response_capacity and checks that request_bytes
+    /// describes the supplied typed request. It also requires sufficient
+    /// capacity for an opcode's *successful* result, even on an error response.
+    ///
+    /// This is only a byte/length/correlation check. The caller must first
+    /// complete ioctl/copyout successfully; a failed copyout is not evidence
+    /// of a valid response. Kernel pointer checks and authority stay outside
+    /// the codec.
+    pub fn decode_response_snapshot_for(
+        &self,
+        snapshot: &[u8],
+        request: &Request,
+    ) -> Result<(Response, usize), Error> {
+        self.validate()?;
+        validate_request(request)?;
+        let expected_request_len = HEADER_LEN
+            .checked_add(request_payload_len(&request.payload))
+            .ok_or(Error::IntegerOverflow)?;
+        if self.request_bytes as usize != expected_request_len
+            || snapshot.len() > self.response_capacity as usize
+        {
+            return Err(Error::InvalidTransport);
+        }
+        self.ensure_success_response_capacity(request.opcode)?;
+        decode_response_prefix_for(snapshot, request)
+    }
+
     /// Check capacity before authorization or semantic processing.
     ///
     /// HOS2 requires capacity for the opcode's successful response even when

@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """CPU-only contract tests; NEVER count as accelerator execution."""
 import math
+import json
 from pathlib import Path
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -51,6 +53,44 @@ class ProbeTests(unittest.TestCase):
             result = probe.snapshot(Path(directory))
         self.assertEqual(result["candidate"]["matching_visible_devices"], [])
 
+    def test_vendor_attribute_symlink_cannot_fake_gpu(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            dev = root / "sys/bus/pci/devices/0000:03:00.0"
+            dev.mkdir(parents=True)
+            outside = root / "untrusted-id"
+            outside.write_text("0x10de\n", encoding="utf-8")
+            (dev / "vendor").symlink_to(outside)
+            (dev / "class").write_text("0x030200\n", encoding="utf-8")
+            result = probe.snapshot(root)
+        self.assertEqual(result["candidate"]["matching_visible_devices"], [])
+        self.assertIsNone(result["pci_devices"][0]["vendor_id"])
+
+    def test_fifo_and_large_attribute_refused_without_unbounded_read(self):
+        import os
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fifo = root / "vendor-fifo"
+            os.mkfifo(fifo)
+            self.assertIsNone(probe.read(fifo))
+            huge = root / "vendor-oversized"
+            huge.write_bytes(b"0x10de\n" + b"X" * probe.MAX_SYSFS_ATTRIBUTE_BYTES)
+            self.assertIsNone(probe.read(huge))
+
+    def test_truncated_cpuinfo_is_unknown_not_false_vmx(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            proc = root / "proc"
+            proc.mkdir()
+            (proc / "cpuinfo").write_bytes(b"flags: vmx\n" +
+                                          b"x" * (probe.MAX_CPUINFO_BYTES + 1))
+            result = probe.snapshot(root)
+        self.assertIsNone(result["cpu"]["model"])
+        self.assertIsNone(result["cpu"]["visible_processor_entries"])
+        self.assertIsNone(result["cpu"]["vmx_flag"])
+        self.assertIsNone(result["cpu"]["svm_flag"])
+        self.assertFalse(result["cpu"]["cpuinfo_complete"])
+
 
 class GemmTests(unittest.TestCase):
     def test_deterministic_f32_golden(self):
@@ -74,6 +114,104 @@ class GemmTests(unittest.TestCase):
         with patch.object(cuda_gemm, "library", side_effect=cuda_gemm.Blocked("no driver")):
             with self.assertRaises(cuda_gemm.Blocked):
                 cuda_gemm.gpu_gemm("RTX 4060", "")
+
+    def test_blocked_evidence_keeps_host_provenance_and_unrun_stages_explicit(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "blocked.json"
+            with patch.object(cuda_gemm, "library",
+                              side_effect=cuda_gemm.Blocked("no driver")), \
+                    patch.object(sys, "argv", [
+                        "cuda_gemm.py", "--require-bdf", "0000:01:00.0",
+                        "--output", str(output)]):
+                self.assertEqual(cuda_gemm.main(supervise=False), 2)
+            evidence = json.loads(output.read_text())
+        self.assertEqual(evidence["schema"], "a09.cuda-gemm.v2")
+        self.assertEqual(evidence["status"], "blocked")
+        provenance = evidence["execution_provenance"]
+        self.assertEqual(provenance["execution_layer"], "linux_worker_cuda_driver_api")
+        self.assertFalse(provenance["asterinas_execution_verified"])
+        self.assertTrue(provenance["process_id"] > 0)
+        self.assertFalse(evidence["timeout_enforced"])
+        self.assertEqual(evidence["reported_execution_kernel"],
+                         f"{cuda_gemm.platform.system()} {cuda_gemm.platform.release()}")
+        self.assertTrue(all(value == "not_run" for value in evidence["stages"].values()))
+
+    def test_timeout_marks_inflight_stage_and_never_claims_recovery(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "timeout.json"
+
+            def fake_gpu(_name, _bdf, stages):
+                stages["synchronize"] = "in_progress"
+                raise cuda_gemm.TimeoutExpired("test timeout")
+
+            with patch.object(cuda_gemm, "gpu_gemm", side_effect=fake_gpu), \
+                    patch.object(sys, "argv", ["cuda_gemm.py", "--output", str(output)]):
+                self.assertEqual(cuda_gemm.main(supervise=False), 1)
+            evidence = json.loads(output.read_text())
+        self.assertEqual(evidence["status"], "timeout")
+        self.assertEqual(evidence["stages"]["synchronize"], "failed")
+        self.assertFalse(evidence["failure_recovery_verified"])
+
+    def test_production_entrypoint_uses_reaped_worker_supervisor(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "supervised.json"
+
+            def fake_worker(argv, timeout_seconds):
+                self.assertGreater(timeout_seconds, 0)
+                self.assertIn("--worker", argv)
+                worker_output = Path(argv[argv.index("--output") + 1])
+                a, b = cuda_gemm.inputs()
+                evidence = cuda_gemm._base_evidence(
+                    cuda_gemm.reference(a, b), a, b, timeout_seconds)
+                evidence.update(status="blocked", error="no driver")
+                worker_output.write_text(json.dumps(evidence), encoding="utf-8")
+                return 2, {
+                    "supervisor": "linux_start_new_session_killpg",
+                    "worker_pid": 123,
+                    "timeout_seconds": timeout_seconds,
+                    "worker_reaped": True,
+                    "worker_exit_code": 2,
+                    "timed_out": False,
+                    "effect_result_known": False,
+                    "device_reset_verified": False,
+                }
+
+            with patch.object(cuda_gemm.process_supervisor, "run_worker",
+                              side_effect=fake_worker), \
+                    patch.object(sys, "argv", ["cuda_gemm.py", "--output", str(output)]):
+                self.assertEqual(cuda_gemm.main(), 2)
+            evidence = json.loads(output.read_text())
+        self.assertTrue(evidence["timeout_enforced"])
+        self.assertEqual(evidence["supervisor"]["worker_reaped"], True)
+        self.assertEqual(evidence["execution_provenance"]["execution_layer"],
+                         "linux_supervised_worker_cuda_driver_api")
+
+    def test_unreaped_worker_is_unknown_effect_and_never_success(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "unknown.json"
+            record = {
+                "supervisor": "linux_start_new_session_killpg",
+                "worker_pid": 456,
+                "timeout_seconds": 0.01,
+                "worker_reaped": False,
+                "worker_exit_code": None,
+                "timed_out": True,
+                "effect_result_known": False,
+                "device_reset_verified": False,
+            }
+            with patch.object(cuda_gemm.process_supervisor, "run_worker",
+                              return_value=(124, record)), \
+                    patch.object(sys, "argv", ["cuda_gemm.py", "--output", str(output)]):
+                self.assertEqual(cuda_gemm.main(), 1)
+            evidence = json.loads(output.read_text())
+        # The leader was not reaped: an OS process deadline is NOT verified.
+        # The effect and recovery remain unknown, rather than a passed timeout.
+        self.assertEqual(evidence["status"], "failed")
+        self.assertFalse(evidence["timeout_enforced"])
+        self.assertIn("group/identity cleanup unverified", evidence["error"])
+        self.assertTrue(all(value == "unknown_effect"
+                            for value in evidence["stages"].values()))
+        self.assertFalse(evidence["failure_recovery_verified"])
 
 
 if __name__ == "__main__":
