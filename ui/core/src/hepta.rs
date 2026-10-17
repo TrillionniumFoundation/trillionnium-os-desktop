@@ -157,7 +157,8 @@ mod tests {
 
     #[test]
     fn event_labels_never_render_bidi_overrides_or_line_spoofing() {
-        let malicious = "错误\u{2028}READY\u{202E}DENIED\u{202C}\u{2066}SUCCESS\u{2069}\u{061C}\u{200F}";
+        let malicious =
+            "错误\u{2028}READY\u{202E}DENIED\u{202C}\u{2066}SUCCESS\u{2069}\u{061C}\u{200F}";
         let projected = bounded_hepta_text(malicious);
         assert_eq!(projected, "错误READYDENIEDSUCCESS");
         assert!(projected.len() <= MAX_HEPTA_TEXT_BYTES);
