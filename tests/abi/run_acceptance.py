@@ -119,7 +119,7 @@ def run_command(argv: list[str], cwd: Path, env: dict[str, str], timeout: float)
 # denominator while reporting success=true. Keep this version/count explicit
 # and revise it when the real compiled-source mutation set changes.
 PINNED_MUTATION_SCHEMA = "hos2-rust-source-mutations-v5"
-EXPECTED_COMPILED_MUTANTS = 19
+EXPECTED_COMPILED_MUTANTS = 20
 
 
 def run_compiled_mutations(python: str, cargo: str, toolchain: str, snapshot: Path,
