@@ -33,3 +33,4 @@ run_check spin-tests "$a03_cargo" test --locked --manifest-path libs/os-control/
 run_check spin-clippy "$a03_cargo" clippy --locked --manifest-path libs/os-control/Cargo.toml --no-default-features --features portable-spin --all-targets -- -D warnings
 run_check no-std-target "$a03_cargo" check --locked --manifest-path libs/os-control/Cargo.toml --no-default-features --features portable-spin --lib --target x86_64-unknown-none
 run_check bounded-models env CARGO="$a03_cargo" python3 tests/control/loom/run-models.py "$output_dir/loom"
+run_check lock-allocation env CARGO="$a03_cargo" python3 tests/control/lock_alloc/run-checks.py "$output_dir/lock-allocation"

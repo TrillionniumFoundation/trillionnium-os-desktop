@@ -750,3 +750,168 @@ fn management_revoke_and_native_commit_share_owner_lock() {
         },
     );
 }
+
+#[test]
+fn reservation_loss_and_query_revalidate_admission() {
+    model("reservation_loss_and_query_revalidate_admission", || {
+        let (core, _, _, request) = fixture();
+        let effects = Arc::new(AtomicUsize::new(0));
+        let loss_returned = Arc::new(AtomicUsize::new(0));
+        let (a_core, a_effects, a_lost) = (core.clone(), effects.clone(), loss_returned.clone());
+        let reserve = thread::spawn(move || match a_core.reserve(request, publisher()) {
+            Ok(token) => {
+                let outcome = a_core.execute_reserved(&token, publisher(), |binding| {
+                    assert_eq!(a_lost.load(Ordering::SeqCst), 0);
+                    assert_eq!(a_effects.fetch_add(1, Ordering::SeqCst), 0);
+                    thread::yield_now();
+                    success(binding)
+                });
+                (Some(token), Some(outcome))
+            }
+            Err(error) => {
+                assert_eq!(error, DeliveryError::HistoryLost);
+                (None, None)
+            }
+        });
+        let (b_core, b_lost) = (core.clone(), loss_returned.clone());
+        let loss = thread::spawn(move || {
+            b_core.lose_history();
+            b_lost.store(1, Ordering::SeqCst);
+        });
+        let (c_core, c_view) = (core.clone(), core.delivery_view());
+        let query = thread::spawn(move || {
+            let first = c_core.query_delivery(&c_view, 1).unwrap();
+            thread::yield_now();
+            let second = c_core.query_delivery(&c_view, 1).unwrap();
+            for observation in [first, second] {
+                assert!(matches!(
+                    observation.state,
+                    DeliveryState::NotSeen
+                        | DeliveryState::Reserved
+                        | DeliveryState::Terminal
+                        | DeliveryState::HistoryLost
+                ));
+                assert!(observation.hos2_saved_status_code().is_some());
+            }
+            match first.state {
+                DeliveryState::HistoryLost => {
+                    assert_eq!(second.state, DeliveryState::HistoryLost);
+                }
+                DeliveryState::Terminal => {
+                    assert!(second == first || second.state == DeliveryState::HistoryLost);
+                }
+                DeliveryState::Reserved => {
+                    assert_ne!(second.state, DeliveryState::NotSeen);
+                }
+                _ => {}
+            }
+        });
+        let (token, outcome) = reserve.join().unwrap();
+        loss.join().unwrap();
+        query.join().unwrap();
+        assert_eq!(loss_returned.load(Ordering::SeqCst), 1);
+        match outcome {
+            Some(Ok(terminal)) => {
+                assert_eq!(terminal.status, Some(DeliveryStatus::Ok));
+                assert_eq!(effects.load(Ordering::SeqCst), 1);
+            }
+            Some(Err(DeliveryError::HistoryLost)) | None => {
+                assert_eq!(effects.load(Ordering::SeqCst), 0);
+            }
+            _ => panic!("unexpected reserve/loss effect outcome"),
+        }
+        if let Some(token) = token {
+            assert_eq!(core.next_sequence(), 2);
+            assert_eq!(
+                core.execute_reserved(&token, publisher(), |_| panic!("lost callback executed"))
+                    .err(),
+                Some(DeliveryError::HistoryLost)
+            );
+        } else {
+            assert_eq!(core.next_sequence(), 1);
+        }
+        assert_eq!(core.window_len(), 0);
+        assert_eq!(
+            core.query_delivery(&core.delivery_view(), 1).unwrap().state,
+            DeliveryState::HistoryLost
+        );
+        core.validate_invariants_for_host_model().unwrap();
+    });
+}
+
+#[test]
+fn overlapping_retirements_revalidate_smaller_prefix() {
+    model("overlapping_retirements_revalidate_smaller_prefix", || {
+        let (core, authority, target, first) = fixture();
+        let authority = Arc::new(authority);
+        let second =
+            DeliveryRequest::from_wire(2, target.grant(publisher()).unwrap(), 2, 20, 7, 8).unwrap();
+        let first = core.reserve(first, publisher()).unwrap();
+        let first_terminal = core.commit(&first, publisher(), 1).unwrap();
+        let second = core.reserve(second, publisher()).unwrap();
+        let second_terminal = core.commit(&second, publisher(), 1).unwrap();
+        let view = core.delivery_view_for(owner()).unwrap();
+        let ack = |through| {
+            HistoryAck::from_owner_receipt(
+                core.identity(),
+                through,
+                OwnerReceipt::new(owner(), [1; 32]),
+            )
+            .unwrap()
+        };
+        let (a_core, a_view, a_authority, a_ack) =
+            (core.clone(), view.clone(), authority.clone(), ack(1));
+        let retire_one =
+            thread::spawn(move || a_core.retire_through(&a_view, a_ack, &a_authority).unwrap());
+        let (b_core, b_view, b_authority, b_ack) =
+            (core.clone(), view.clone(), authority.clone(), ack(2));
+        let retire_two =
+            thread::spawn(move || b_core.retire_through(&b_view, b_ack, &b_authority).unwrap());
+        let (c_core, c_view) = (core.clone(), view.clone());
+        let query = thread::spawn(move || {
+            let first = c_core.query_delivery(&c_view, 1).unwrap();
+            thread::yield_now();
+            let second = c_core.query_delivery(&c_view, 2).unwrap();
+            assert!(first == first_terminal || first.state == DeliveryState::Retired);
+            assert!(second == second_terminal || second.state == DeliveryState::Retired);
+            if first.state == DeliveryState::Retired {
+                assert_eq!(
+                    c_core.query_delivery(&c_view, 1).unwrap().state,
+                    DeliveryState::Retired
+                );
+            }
+        });
+        let one = retire_one.join().unwrap();
+        let two = retire_two.join().unwrap();
+        query.join().unwrap();
+        assert!((1..=2).contains(&one.retired_through));
+        assert_eq!(two.retired_through, 2);
+        assert_eq!(one.next_sequence, 3);
+        assert_eq!(two.next_sequence, 3);
+        assert_eq!(core.retired_through(), 2);
+        assert_eq!(core.window_len(), 0);
+        assert_eq!(target.revision(), 3);
+        for token in [&first, &second] {
+            assert_eq!(
+                core.query_delivery(&view, token.id().sequence())
+                    .unwrap()
+                    .state,
+                DeliveryState::Retired
+            );
+            assert_eq!(
+                core.commit(token, publisher(), 1).err(),
+                Some(DeliveryError::HistoryLost)
+            );
+        }
+        assert_eq!(
+            core.reserve(
+                DeliveryRequest::from_wire(1, target.grant(publisher()).unwrap(), 1, 10, 7, 8)
+                    .unwrap(),
+                publisher()
+            )
+            .err(),
+            Some(DeliveryError::Retired)
+        );
+        core.validate_invariants_for_host_model().unwrap();
+    });
+}
