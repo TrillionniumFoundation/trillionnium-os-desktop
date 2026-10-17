@@ -7,7 +7,7 @@ pub mod vm_image;
 
 use bin::{AsterBin, AsterBinType};
 use file::{BundleFile, Initramfs};
-use monitor::{MonitorEndpoint, MonitorStream};
+use monitor::{MonitorEndpoint, MonitorGreeting, MonitorStream};
 use std::{
     io::{BufRead, BufReader, Write},
     process::{self, ExitStatus},
@@ -396,11 +396,9 @@ impl Bundle {
             signal: &SignalGuard,
             daemon_supervisor: &mut DaemonSupervisor<'_>,
         ) -> Result<MonitorStream, Errno> {
-            if matches!(endpoint, MonitorEndpoint::Unix(_)) {
-                // Preserve the existing UNIX monitor startup delay.
-                std::thread::sleep(Duration::from_secs(1));
-            }
             let deadline = Instant::now() + MONITOR_CONNECT_TIMEOUT;
+            let mut connection = None;
+            let mut greeting = MonitorGreeting::default();
             loop {
                 if signal.received_signal().is_some() {
                     return Err(Errno::Interrupted);
@@ -417,27 +415,48 @@ impl Bundle {
                         return Err(Errno::ExecuteCommand);
                     }
                 }
-                match endpoint.try_connect() {
-                    Ok(stream) => {
-                        stream
-                            .set_write_timeout(Some(MONITOR_POLL_INTERVAL))
-                            .map_err(|error| {
-                                error_msg!("failed to set QEMU monitor write timeout: {error}");
-                                Errno::ExecuteCommand
-                            })?;
-                        return Ok(stream);
-                    }
-                    Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
-                        if Instant::now() >= deadline {
-                            error_msg!("timed out connecting to QEMU monitor");
+                if Instant::now() >= deadline {
+                    error_msg!("timed out waiting for QEMU monitor prompt");
+                    return Err(Errno::ExecuteCommand);
+                }
+                if connection.is_none() {
+                    match endpoint.try_connect() {
+                        Ok(stream) => {
+                            stream
+                                .set_write_timeout(Some(MONITOR_POLL_INTERVAL))
+                                .map_err(|error| {
+                                    error_msg!("failed to set QEMU monitor write timeout: {error}");
+                                    Errno::ExecuteCommand
+                                })?;
+                            connection = Some(stream);
+                        }
+                        Err(error)
+                            if matches!(
+                                error.kind(),
+                                std::io::ErrorKind::WouldBlock
+                                    | std::io::ErrorKind::NotFound
+                                    | std::io::ErrorKind::ConnectionRefused
+                            ) => {}
+                        Err(error) => {
+                            error_msg!("failed to connect to QEMU monitor: {error}");
                             return Err(Errno::ExecuteCommand);
                         }
-                        std::thread::sleep(MONITOR_POLL_INTERVAL);
                     }
-                    Err(error) => {
-                        error_msg!("failed to connect to QEMU monitor: {error}");
-                        return Err(Errno::ExecuteCommand);
+                }
+                if let Some(stream) = &mut connection {
+                    match stream.poll_ready(&mut greeting, deadline, MONITOR_POLL_INTERVAL) {
+                        Ok(true) => return Ok(connection.take().unwrap()),
+                        Ok(false) => {}
+                        Err(error) => {
+                            error_msg!("failed to receive QEMU monitor prompt: {error}");
+                            return Err(Errno::ExecuteCommand);
+                        }
                     }
+                } else {
+                    std::thread::sleep(
+                        MONITOR_POLL_INTERVAL
+                            .min(deadline.saturating_duration_since(Instant::now())),
+                    );
                 }
             }
         }

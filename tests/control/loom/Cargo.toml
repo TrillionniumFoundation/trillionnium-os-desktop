@@ -1,0 +1,26 @@
+# Run through run-models.py: all production Rust modules are exact temporary
+# copies, while src/sync.rs is replaced with the test-only Mutex shim.
+[package]
+name = "os-control-loom"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[features]
+default = ["std"]
+std = []
+portable-spin = []
+
+[dependencies]
+loom = "=0.7.2"
+
+[lib]
+name = "os_control"
+path = "src/lib.rs"
+
+[[test]]
+name = "models"
+path = "models.rs"
+
+[lints.rust]
+unsafe_code = "forbid"

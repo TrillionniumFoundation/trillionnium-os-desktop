@@ -222,6 +222,47 @@ class KernelRunnerTests(unittest.TestCase):
     def sdk_calls(self):
         return [json.loads(line) for line in (self.root / "cargo-calls.jsonl").read_text().splitlines()]
 
+    def test_inherited_workspace_lock_survives_supervisor_without_reopening(self):
+        lock_path = self.build / "out-kernel.lock"
+        with lock_path.open("a") as owner:
+            fcntl.flock(owner, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            descriptor = fcntl.fcntl(owner.fileno(), fcntl.F_DUPFD_CLOEXEC, 64)
+            identity = (lock_path.stat().st_dev, lock_path.stat().st_ino)
+            try:
+                result = self.run_runner(name="inherited-lock", pass_fds=(descriptor,),
+                                         extra={"A01_KERNEL_LOCK_FD": str(descriptor)})
+                self.assertEqual(result.returncode, 0, result.stdout)
+                with lock_path.open("a") as competitor:
+                    with self.assertRaises(BlockingIOError):
+                        fcntl.flock(competitor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                self.assertEqual((lock_path.stat().st_dev, lock_path.stat().st_ino), identity)
+            finally:
+                os.close(descriptor)
+        self.assertEqual(self.run_runner(name="after-inherited-lock").returncode, 0)
+
+    def test_invalid_or_foreign_inherited_lock_is_rejected_before_output(self):
+        lock_path = self.build / "out-kernel.lock"
+        lock_path.touch()
+        foreign = self.root / "foreign-lock"
+        foreign.write_text("untouched host model lock\n")
+        with foreign.open("a") as owner:
+            descriptor = fcntl.fcntl(owner.fileno(), fcntl.F_DUPFD_CLOEXEC, 64)
+            try:
+                result = self.run_runner(name="invalid-parent/evidence", pass_fds=(descriptor,),
+                                         extra={"A01_KERNEL_LOCK_FD": str(descriptor)})
+                self.assertNotEqual(result.returncode, 0, result.stdout)
+                self.assertIn("does not match", result.stdout)
+                self.assertFalse((self.root / "invalid-parent").exists())
+            finally:
+                os.close(descriptor)
+        for index, value in enumerate(("", "63", "bad", "2147483648")):
+            with self.subTest(value=value):
+                result = self.run_runner(name=f"invalid-{index}/evidence",
+                                         extra={"A01_KERNEL_LOCK_FD": value})
+                self.assertNotEqual(result.returncode, 0, result.stdout)
+                self.assertFalse((self.root / f"invalid-{index}").exists())
+        self.assertEqual(foreign.read_text(), "untouched host model lock\n")
+
     def test_private_sdk_is_selected_for_every_developer_target(self):
         self.use_sdk_make()
         for target in ("kernel", "run_kernel", "gdb_server"):

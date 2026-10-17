@@ -306,7 +306,13 @@ when the supplied lock is the destination itself or a hard link to it.
 The generated OSDK base crate is a separate Cargo workspace; upstream's root
 lock alone does not freeze it. `minimal/Cargo.lock` is normalized from that
 fixed root lock: 203 packages, with no external version/source/checksum drift.
-OSDK installation also uses its own original `osdk/Cargo.lock` with `--locked`.
+OSDK installation uses its approved derived host `osdk/Cargo.lock` with
+`--locked`. The exact host manifest and lock add `command-fds = "=0.3.2"`
+and four locked transitive packages to preserve child descriptors without
+local unsafe Rust. All 154 original package identities/checksums remain;
+the complete kernel's original `Cargo.lock` and Rust toolchain are unchanged.
+`verify-source.py` reports the two exact approved host derivations separately
+from the fixed upstream Git identities and refuses other manifest/lock bytes.
 
 The native smoke uses QEMU 8.2.2; upstream's full development image uses QEMU
 10.2.1 and additional firmware/GRUB tooling. This is a recorded native-host
@@ -320,6 +326,27 @@ vDSO comes from `asterinas/linux_vdso` commit
 `8af571775a3d3a1df3e84fc9709b9d6b160c771a`, as fixed by upstream. Its README
 attributes the x86_64 image to Linux 6.2.10. These userland/build inputs do not
 replace or boot a Linux host kernel as the project kernel.
+
+Focused host regressions for the workspace lease, cancellation and approved
+host-tool inputs (repeat with `-O` after `-I` for optimized Python):
+
+```sh
+python3 -I support/build/debug/test_workspace_lock.py
+python3 -I support/build/debug/test_worker_cleanup.py
+python3 -I support/build/repro/test_lifecycle.py
+python3 -I support/build/osdk-integration/test_fixed_root_cleanup.py
+python3 -I support/build/tests/test_source_inputs.py
+```
+
+These exercise host tooling and refusal paths; real kernel/guest results are
+reported separately. Integration scratch cleanup removes contents through its
+owned directory descriptor on success, failure and cancellation, preserving
+the empty outer directory and any foreign pathname replacement.
+Kernel session owners allow up to two seconds for worker EXIT cleanup before
+the final group kill and leader reap. Cleanup beyond that bound may leave an
+owned manifest; a later invocation refuses to overwrite it and preserves the
+failure for inspection. This is bounded process cleanup, not unconditional
+recovery from an arbitrary host delay.
 
 ## Opt-in cross-path reproduction
 

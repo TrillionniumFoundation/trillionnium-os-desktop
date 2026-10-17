@@ -1,0 +1,78 @@
+RUN cargo fmt --manifest-path /tmp/os-control-loom-wqd3s2d_/Cargo.toml -- --check
+RUN cargo test --locked --manifest-path /tmp/os-control-loom-wqd3s2d_/Cargo.toml --test models -- --nocapture --test-threads=1
+   Compiling rustversion v1.0.23
+   Compiling find-msvc-tools v0.1.14
+   Compiling once_cell v1.21.4
+   Compiling shlex v2.0.1
+   Compiling log v0.4.34
+   Compiling libc v0.2.191
+   Compiling regex-syntax v0.8.11
+   Compiling cfg-if v1.0.5
+   Compiling pin-project-lite v0.2.17
+   Compiling lazy_static v1.5.1
+   Compiling cc v1.8.0
+   Compiling tracing-core v0.1.36
+   Compiling sharded-slab v0.1.7
+   Compiling thread_local v1.1.10
+   Compiling smallvec v1.16.3
+   Compiling nu-ansi-term v0.50.3
+   Compiling scoped-tls v1.0.1
+   Compiling tracing v0.1.44
+   Compiling tracing-log v0.2.0
+   Compiling regex-automata v0.4.18
+   Compiling generator v0.8.11
+   Compiling matchers v0.2.0
+   Compiling tracing-subscriber v0.3.23
+   Compiling loom v0.7.2
+   Compiling os-control-loom v0.0.0 (/tmp/os-control-loom-wqd3s2d_)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.55s
+     Running models.rs (target/debug/deps/models-0e37f3572337332c)
+
+running 10 tests
+test history_loss_and_callback_fence ... MODEL history_loss_and_callback_fence: schedules=48 max_threads=4 preemption_bound=3 max_branches=10000 max_permutations=none max_duration=none
+ok
+test malformed_callback_reconcile_and_retry ... MODEL malformed_callback_reconcile_and_retry: schedules=2442 max_threads=4 preemption_bound=3 max_branches=10000 max_permutations=none max_duration=none
+ok
+test management_revoke_and_native_commit_share_owner_lock ... MODEL management_revoke_and_native_commit_share_owner_lock: schedules=14 max_threads=4 preemption_bound=3 max_branches=10000 max_permutations=none max_duration=none
+ok
+test native_typed_owner_same_token_effect_once ... MODEL native_typed_owner_same_token_effect_once: schedules=52 max_threads=4 preemption_bound=3 max_branches=10000 max_permutations=none max_duration=none
+ok
+test publish_and_observe_never_tear ... MODEL publish_and_observe_never_tear: schedules=92 max_threads=4 preemption_bound=3 max_branches=10000 max_permutations=none max_duration=none
+ok
+test retire_and_query_linearize ... MODEL retire_and_query_linearize: schedules=19 max_threads=4 preemption_bound=3 max_branches=10000 max_permutations=none max_duration=none
+ok
+test retire_execute_loss_threeway ... MODEL retire_execute_loss_threeway: schedules=2385 max_threads=4 preemption_bound=3 max_branches=10000 max_permutations=none max_duration=none
+ok
+test revoke_and_commit_linearize ... MODEL revoke_and_commit_linearize: schedules=22 max_threads=4 preemption_bound=3 max_branches=10000 max_permutations=none max_duration=none
+ok
+test same_d_reservation_and_effect_once ... MODEL same_d_reservation_and_effect_once: schedules=716 max_threads=4 preemption_bound=3 max_branches=10000 max_permutations=none max_duration=none
+ok
+test two_deliveries_same_resource_cas ... MODEL two_deliveries_same_resource_cas: schedules=160 max_threads=4 preemption_bound=3 max_branches=10000 max_permutations=none max_duration=none
+ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.23s
+
+RUN cargo clippy --locked --manifest-path /tmp/os-control-loom-wqd3s2d_/Cargo.toml --test models -- -D warnings
+    Checking once_cell v1.21.4
+    Checking log v0.4.34
+    Checking regex-syntax v0.8.11
+    Checking cfg-if v1.0.5
+    Checking lazy_static v1.5.1
+    Checking pin-project-lite v0.2.17
+    Checking libc v0.2.191
+    Checking smallvec v1.16.3
+    Checking thread_local v1.1.10
+    Checking nu-ansi-term v0.50.3
+    Checking sharded-slab v0.1.7
+    Checking tracing-core v0.1.36
+    Checking scoped-tls v1.0.1
+    Checking tracing-log v0.2.0
+    Checking tracing v0.1.44
+    Checking regex-automata v0.4.18
+    Checking generator v0.8.11
+    Checking matchers v0.2.0
+    Checking tracing-subscriber v0.3.23
+    Checking loom v0.7.2
+    Checking os-control-loom v0.0.0 (/tmp/os-control-loom-wqd3s2d_)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.22s
+Evidence: /workspace/scratch/629ae4947f18/management-merged-evidence/loom; source_unchanged=True; exit=0

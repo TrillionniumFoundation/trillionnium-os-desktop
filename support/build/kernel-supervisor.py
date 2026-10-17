@@ -58,7 +58,7 @@ class OwnedWorker:
             self.external_reap = True
             raise RuntimeError("worker was externally reaped; group signals are disarmed") from error
 
-    def stop(self, grace=0.1):
+    def stop(self, grace=2.0):
         if self.reaped or self.external_reap:
             return self.status
         self.exited()
@@ -68,6 +68,8 @@ class OwnedWorker:
             pass
         deadline = time.monotonic() + grace
         while time.monotonic() < deadline:
+            if self.exited():
+                break
             time.sleep(min(0.01, max(0, deadline - time.monotonic())))
         # WNOWAIT retains the leader identity until both group signals have
         # been sent. ECHILD permanently disarms this entry before signaling.
@@ -95,14 +97,19 @@ def exit_status(raw_status, shutdown):
 
 
 def inherited_descriptors(target, environment):
-    if target != "gdb_server":
-        return ()
-    value = environment.get("A01_GDB_FD", "")
-    if not re.fullmatch(r"[0-9]+", value) or not 64 <= int(value) <= 2**31 - 1:
-        raise ValueError("gdb_server requires its owned listener descriptor >=64")
-    descriptor = int(value)
-    os.fstat(descriptor)
-    return (descriptor,)
+    names = ["A01_KERNEL_LOCK_FD"] if "A01_KERNEL_LOCK_FD" in environment else []
+    if target == "gdb_server":
+        names.append("A01_GDB_FD")
+    descriptors = []
+    for name in names:
+        value = environment.get(name, "")
+        if not re.fullmatch(r"[0-9]+", value) or not 64 <= int(value) <= 2**31 - 1:
+            raise ValueError(name + " requires its inherited descriptor >=64")
+        descriptor = int(value)
+        os.fstat(descriptor)
+        if descriptor not in descriptors:
+            descriptors.append(descriptor)
+    return tuple(descriptors)
 
 
 def main():

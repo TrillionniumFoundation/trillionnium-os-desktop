@@ -5,15 +5,13 @@
 use std::{
     io::{self, Read, Write},
     net::{Ipv4Addr, TcpListener, TcpStream},
-    os::{
-        fd::AsRawFd,
-        unix::{net::UnixStream, process::CommandExt},
-    },
+    os::{fd::AsRawFd, unix::net::UnixStream},
     process::{Child, Command},
     time::{Duration, Instant},
 };
 
-use rustix::io::{FdFlags, fcntl_dupfd_cloexec, fcntl_setfd};
+use command_fds::CommandFdExt;
+use rustix::io::fcntl_dupfd_cloexec;
 use tempfile::TempPath;
 
 use crate::config::scheme::MonitorTransport;
@@ -57,19 +55,15 @@ impl MonitorEndpoint {
         let fd = pair.qemu.as_raw_fd();
         let local = pair.qemu.local_addr()?;
         let peer = pair.qemu.peer_addr()?;
+        let chardev_id = unused_chardev_id(&command);
         command
             .arg("-chardev")
-            .arg(format!("socket,id={MONITOR_CHARDEV_ID},fd={fd},server=off"))
+            .arg(format!("socket,id={chardev_id},fd={fd},server=off"))
             .arg("-monitor")
-            .arg(format!("chardev:{MONITOR_CHARDEV_ID}"));
-        let qemu = pair.qemu;
-        // SAFETY: the owned stream keeps this descriptor valid until Command
-        // is dropped after spawn. The child hook performs only async-signal-
-        // safe fcntl; it does not allocate or take locks. CLOEXEC remains set
-        // in the parent and unrelated children.
-        unsafe {
-            command.pre_exec(move || fcntl_setfd(&qemu, FdFlags::empty()).map_err(io::Error::from));
-        }
+            .arg(format!("chardev:{chardev_id}"));
+        // Keep CLOEXEC set in OSDK and unrelated children. The safe spawning
+        // abstraction owns the stream and preserves it only in this child.
+        command.preserved_fds(vec![pair.qemu.into()]);
         info!(
             "QEMU monitor preconnected fd={fd} local={local} peer={peer}; listener closed; rejected peers={}",
             pair.rejected_peers
@@ -92,6 +86,25 @@ impl MonitorEndpoint {
             Self::Tcp(stream) => stream.try_clone().map(MonitorStream::Tcp),
         }
     }
+}
+
+fn unused_chardev_id(command: &Command) -> String {
+    // QEMU accepts several spellings of device configuration, including JSON.
+    // Avoid every occurrence instead of partially parsing its option grammar.
+    let arguments = command
+        .get_args()
+        .map(|argument| argument.to_string_lossy())
+        .collect::<Vec<_>>();
+    let mut candidate = MONITOR_CHARDEV_ID.to_owned();
+    let mut suffix = 0usize;
+    while arguments
+        .iter()
+        .any(|argument| argument.contains(&candidate))
+    {
+        suffix += 1;
+        candidate = format!("{MONITOR_CHARDEV_ID}-{suffix}");
+    }
+    candidate
 }
 
 /// The two ends are created by OSDK, before either is handed to a child.
@@ -142,7 +155,69 @@ pub(super) enum MonitorStream {
     Tcp(TcpStream),
 }
 
+#[derive(Default)]
+pub(super) struct MonitorGreeting {
+    matched_prompt_bytes: usize,
+}
+
 impl MonitorStream {
+    /// Polls for the initial HMP prompt within the shared startup deadline.
+    pub(super) fn poll_ready(
+        &mut self,
+        greeting: &mut MonitorGreeting,
+        deadline: Instant,
+        poll_interval: Duration,
+    ) -> io::Result<bool> {
+        const PROMPT: &[u8] = b"(qemu) ";
+        if greeting.matched_prompt_bytes == PROMPT.len() {
+            return Ok(true);
+        }
+        let remaining = deadline
+            .checked_duration_since(Instant::now())
+            .ok_or_else(|| {
+                io::Error::new(io::ErrorKind::TimedOut, "QEMU monitor prompt timed out")
+            })?;
+        self.set_read_timeout(Some(remaining.min(poll_interval)))?;
+        let mut buffer = [0; 256];
+        let count = match self.read(&mut buffer) {
+            Ok(0) => {
+                return Err(io::Error::new(
+                    io::ErrorKind::UnexpectedEof,
+                    "QEMU monitor closed before its prompt",
+                ));
+            }
+            Ok(count) => count,
+            Err(error)
+                if matches!(
+                    error.kind(),
+                    io::ErrorKind::WouldBlock
+                        | io::ErrorKind::TimedOut
+                        | io::ErrorKind::Interrupted
+                ) =>
+            {
+                return Ok(false);
+            }
+            Err(error) => return Err(error),
+        };
+        if Instant::now() >= deadline {
+            return Err(io::Error::new(
+                io::ErrorKind::TimedOut,
+                "QEMU monitor prompt timed out",
+            ));
+        }
+        for byte in &buffer[..count] {
+            if *byte == PROMPT[greeting.matched_prompt_bytes] {
+                greeting.matched_prompt_bytes += 1;
+                if greeting.matched_prompt_bytes == PROMPT.len() {
+                    return Ok(true);
+                }
+            } else {
+                greeting.matched_prompt_bytes = usize::from(*byte == PROMPT[0]);
+            }
+        }
+        Ok(false)
+    }
+
     pub(super) fn set_read_timeout(&self, timeout: Option<Duration>) -> io::Result<()> {
         match self {
             Self::Unix(stream) => stream.set_read_timeout(timeout),
@@ -186,8 +261,130 @@ impl Write for MonitorStream {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rustix::io::fcntl_getfd;
+    use rustix::io::{FdFlags, fcntl_getfd};
     use std::process::Stdio;
+
+    #[test]
+    fn managed_chardev_avoids_existing_ids_in_all_argument_spellings() {
+        let mut command = Command::new("qemu-system-x86_64");
+        command.args([
+            "-chardev",
+            "null,id=osdk-managed-monitor",
+            "-chardev=socket,id=osdk-managed-monitor-1,path=/tmp/unused",
+            "-chardev",
+            r#"{"backend":{"type":"null"},"id":"osdk-managed-monitor-2"}"#,
+        ]);
+        assert_eq!(unused_chardev_id(&command), "osdk-managed-monitor-3");
+    }
+
+    #[test]
+    fn managed_chardev_preserves_existing_configuration_on_spawn() {
+        let output = tempfile::NamedTempFile::new().unwrap();
+        let mut command = Command::new("/usr/bin/printf");
+        command.args(["%s\n", "-chardev", "null,id=osdk-managed-monitor"]);
+        command.stdout(output.reopen().unwrap());
+        let (mut child, _endpoint) =
+            MonitorEndpoint::spawn(MonitorTransport::Tcp, command).unwrap();
+        assert!(child.wait().unwrap().success());
+        let arguments = std::fs::read_to_string(output.path()).unwrap();
+        assert!(arguments.starts_with(
+            "-chardev\nnull,id=osdk-managed-monitor\n-chardev\nsocket,id=osdk-managed-monitor-1,fd="
+        ));
+        assert!(arguments.ends_with(",server=off\n-monitor\nchardev:osdk-managed-monitor-1\n"));
+    }
+
+    fn poll_until_ready(stream: &mut MonitorStream, timeout: Duration) -> io::Result<()> {
+        let deadline = Instant::now() + timeout;
+        let mut greeting = MonitorGreeting::default();
+        while !stream.poll_ready(&mut greeting, deadline, Duration::from_millis(10))? {}
+        Ok(())
+    }
+
+    #[test]
+    fn connected_silent_peer_is_not_a_ready_monitor() {
+        let listener = TcpListener::bind((Ipv4Addr::LOCALHOST, 0)).unwrap();
+        let pair = TcpPair::connect(listener).unwrap();
+        let endpoint = MonitorEndpoint::Tcp(pair.monitor);
+        // A successful clone only proves an owned connection, not QEMU startup.
+        let mut stream = endpoint.try_connect().unwrap();
+        let started = Instant::now();
+        let error = poll_until_ready(&mut stream, Duration::from_millis(40)).unwrap_err();
+        assert_eq!(error.kind(), io::ErrorKind::TimedOut);
+        assert!(started.elapsed() < Duration::from_secs(1));
+        drop(pair.qemu);
+    }
+
+    #[test]
+    fn monitor_readiness_accepts_a_fragmented_hmp_prompt() {
+        let listener = TcpListener::bind((Ipv4Addr::LOCALHOST, 0)).unwrap();
+        let mut pair = TcpPair::connect(listener).unwrap();
+        let mut stream = MonitorStream::Tcp(pair.monitor);
+        let deadline = Instant::now() + TCP_SETUP_TIMEOUT;
+        let mut greeting = MonitorGreeting::default();
+        pair.qemu.write_all(b"QEMU monitor\r\n(qe").unwrap();
+        assert!(
+            !stream
+                .poll_ready(&mut greeting, deadline, TCP_SETUP_TIMEOUT)
+                .unwrap()
+        );
+        pair.qemu.write_all(b"mu)").unwrap();
+        assert!(
+            !stream
+                .poll_ready(&mut greeting, deadline, TCP_SETUP_TIMEOUT)
+                .unwrap()
+        );
+        pair.qemu.write_all(b" ").unwrap();
+        assert!(
+            stream
+                .poll_ready(&mut greeting, deadline, TCP_SETUP_TIMEOUT)
+                .unwrap()
+        );
+    }
+
+    #[test]
+    fn monitor_readiness_rejects_eof_before_the_prompt() {
+        let listener = TcpListener::bind((Ipv4Addr::LOCALHOST, 0)).unwrap();
+        let pair = TcpPair::connect(listener).unwrap();
+        let mut stream = MonitorStream::Tcp(pair.monitor);
+        drop(pair.qemu);
+        assert_eq!(
+            poll_until_ready(&mut stream, TCP_SETUP_TIMEOUT)
+                .unwrap_err()
+                .kind(),
+            io::ErrorKind::UnexpectedEof
+        );
+    }
+
+    #[test]
+    fn readable_banner_cannot_extend_the_monitor_startup_deadline() {
+        use std::sync::{
+            Arc,
+            atomic::{AtomicBool, Ordering},
+        };
+
+        let listener = TcpListener::bind((Ipv4Addr::LOCALHOST, 0)).unwrap();
+        let pair = TcpPair::connect(listener).unwrap();
+        let mut stream = MonitorStream::Tcp(pair.monitor);
+        let stop = Arc::new(AtomicBool::new(false));
+        let writer_stop = stop.clone();
+        let writer = std::thread::spawn(move || {
+            let mut peer = pair.qemu;
+            peer.set_write_timeout(Some(Duration::from_millis(10)))
+                .unwrap();
+            while !writer_stop.load(Ordering::Relaxed) {
+                if peer.write_all(b"banner without a prompt\n").is_err() {
+                    break;
+                }
+                std::thread::sleep(Duration::from_millis(1));
+            }
+        });
+        let started = Instant::now();
+        let result = poll_until_ready(&mut stream, Duration::from_millis(40));
+        stop.store(true, Ordering::Relaxed);
+        writer.join().unwrap();
+        assert_eq!(result.unwrap_err().kind(), io::ErrorKind::TimedOut);
+        assert!(started.elapsed() < Duration::from_secs(1));
+    }
 
     #[test]
     fn client_arriving_first_cannot_become_the_monitor() {
@@ -246,6 +443,21 @@ mod tests {
         let mut stream = endpoint.try_connect().unwrap();
         stream.set_read_timeout(Some(TCP_SETUP_TIMEOUT)).unwrap();
         assert_eq!(stream.read(&mut [0; 1]).unwrap(), 0);
+    }
+
+    #[test]
+    fn private_monitor_handoff_keeps_standard_input_available() {
+        let input = tempfile::NamedTempFile::new().unwrap();
+        std::fs::write(input.path(), b"console input\n").unwrap();
+        let output = tempfile::NamedTempFile::new().unwrap();
+        let mut command = Command::new("/bin/sh");
+        command.args(["-c", "cat", "qemu-wrapper"]);
+        command.stdin(input.reopen().unwrap());
+        command.stdout(output.reopen().unwrap());
+        let (mut child, _endpoint) =
+            MonitorEndpoint::spawn(MonitorTransport::Tcp, command).unwrap();
+        assert!(child.wait().unwrap().success());
+        assert_eq!(std::fs::read(output.path()).unwrap(), b"console input\n");
     }
 
     #[test]

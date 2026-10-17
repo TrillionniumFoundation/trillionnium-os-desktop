@@ -1283,6 +1283,48 @@
       "root_readme_bytes": 0,
       "remaining_ledger": "support/build/evidence/2026-10-17-next-closure/blockers.json",
       "prior_reproduction_note": "Two absent-target full kernel builds at schema4 source 4e8c7083575cec69efabe8d2250dfdd040c8dee8, on the same actual host and two different actual source roots, produced byte-identical complete ELF/initramfs/BIOS inputs and both booted (raw QEMU33). The opt-in source-bound compiler/component path and Cargo metadata projection uses one Cargo job. Registry/toolchain caches were shared. Ordinary source d879a9d2 independently passed a cold make kernel followed by make run_kernel. Cross-host bit reproduction and a complete immutable host/container lock remain unestablished."
+    },
+    "approved_host_osdk_inputs": {
+      "scope": "Host OSDK safe child descriptor preservation only; original kernel and Rust pins remain unchanged.",
+      "upstream_manifest_sha256": "a13930fee211784f779a170a9f7c17ceb3ad017ab9805ba75a503a6597616190",
+      "upstream_lock_sha256": "99a21f72f6a9f1582553b34f06e80f86e539f38e62eab7a0847afd0906e75be3",
+      "derived_manifest_sha256": "39b9fa3d5cc822eb718bd3b14d872f50b48b285998f77ca5ebde38561a69c9ce",
+      "derived_lock_sha256": "1011e26a7070708d37f2062a84b309d2c228c177a9e5434bfe63917203c17a18",
+      "all_154_upstream_package_identities_and_checksums_preserved": true,
+      "added_locked_host_packages": [
+        {
+          "name": "cfg_aliases",
+          "version": "0.2.2",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "checksum": "f079e83a288787bcd14a6aea84cee5c87a67c5a3e660c30f557a3d24761b3527"
+        },
+        {
+          "name": "command-fds",
+          "version": "0.3.2",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "checksum": "f849b92c694fe237ecd8fafd1ba0df7ae0d45c1df6daeb7f68ed4220d51640bd"
+        },
+        {
+          "name": "nix",
+          "version": "0.30.1",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "checksum": "74523f3a35e05aba87a1d978330aef40f67b0304ac79c1c00b294c9830543db6"
+        },
+        {
+          "name": "thiserror",
+          "version": "2.0.18",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "checksum": "4288b5bcbc7920c07a1149a35cf9590a2aa808e0bc1eafaade0b80947865fbc4"
+        },
+        {
+          "name": "thiserror-impl",
+          "version": "2.0.18",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "checksum": "ebc4ee7f67670e9b64d05fa4253e753e016c6c95ff35b89b7941d6b856dec1d5"
+        }
+      ],
+      "source_verifier": "support/build/verify-source.py",
+      "pristine_verification_accepts_derivations": false
     }
   },
   "hepta": {

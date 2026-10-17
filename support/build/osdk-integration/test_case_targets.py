@@ -70,11 +70,10 @@ class PublicRunnerTargetsTests(unittest.TestCase):
             toolbin.mkdir(parents=True)
             for name in ("cargo", "rustc"):
                 (toolbin / name).write_text("# only hashed; not executed\n")
-            def prepare(_upstream, _output, _cargo, _env, _local):
-                fixed.mkdir()
-                identity = fixed.stat()
-                (output / "fixed-root.json").write_text(json.dumps(
-                    {"path": str(fixed), "device": identity.st_dev, "inode": identity.st_ino}))
+            def prepare(_upstream, _output, _cargo, _env, _local, *, fixed_root):
+                nonlocal fixed
+                fixed = fixed_root
+                _env["A01_FIXTURE_FIXED_ROOT"] = str(fixed)
                 h = output / "harness"
                 (h / "tests").mkdir(parents=True)
                 return h, fixed

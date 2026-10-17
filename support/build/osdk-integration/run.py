@@ -4,6 +4,7 @@ import argparse
 from contextlib import contextmanager
 from datetime import datetime, timezone
 import difflib
+import errno
 import fcntl
 import hashlib
 import json
@@ -19,6 +20,8 @@ import time
 import tomllib
 
 TOOLCHAIN = "nightly-2026-07-21"
+UPSTREAM_HARNESS_SEED_SHA256 = "99a21f72f6a9f1582553b34f06e80f86e539f38e62eab7a0847afd0906e75be3"
+DERIVED_HARNESS_SEED_SHA256 = "1011e26a7070708d37f2062a84b309d2c228c177a9e5434bfe63917203c17a18"
 UNIX_PROFILE = "osdk-native-unix-v1"
 TCP_PROFILE = "osdk-native-local-tcp-v1"
 CAPTURE_PROFILE = "osdk-native-local-tcp-gdb-capture-v2"
@@ -202,7 +205,7 @@ def adapt_basic_debug_to_local_tcp(contents):
     return contents.replace(vsc_ready, vsc_owned_ready)
 
 
-def prepare_harness(upstream, output, cargo, env, local_tcp=False):
+def prepare_harness(upstream, output, cargo, env, local_tcp=False, *, fixed_root):
     """Adapt only scratch paths and the local-OSTD anchor, retaining assertions."""
     root = output / "harness"
     root.mkdir()
@@ -213,10 +216,7 @@ def prepare_harness(upstream, output, cargo, env, local_tcp=False):
     # Upstream GDB/monitor UNIX sockets must fit Linux's 108-byte sun_path.
     # This root is atomically created and owned by this run; existing /tmp
     # examples are never touched.
-    fixed = Path(tempfile.mkdtemp(prefix="a01oi-", dir="/tmp"))
-    identity = fixed.stat()
-    (output / "fixed-root.json").write_text(json.dumps({"path": str(fixed),
-        "device": identity.st_dev, "inode": identity.st_ino}, indent=2) + "\n")
+    fixed = fixed_root
     changes = []
     for path in sorted(tests.rglob("*.rs")):
         original = path.read_text()
@@ -250,8 +250,8 @@ def prepare_harness(upstream, output, cargo, env, local_tcp=False):
                 'serde_json = "1.0.111"\nshlex = "1.3.0"\n')
     (root / "Cargo.toml").write_text(manifest)
     seed = (upstream / "osdk/Cargo.lock").read_bytes()
-    if hashlib.sha256(seed).hexdigest() != "99a21f72f6a9f1582553b34f06e80f86e539f38e62eab7a0847afd0906e75be3":
-        raise SystemExit("fixed upstream OSDK harness seed lock differs")
+    if hashlib.sha256(seed).hexdigest() != DERIVED_HARNESS_SEED_SHA256:
+        raise SystemExit("fixed derived OSDK harness seed lock differs")
     (root / "Cargo.lock").write_bytes(seed)
     normalize = [str(cargo), "metadata", "--offline", "--format-version=1",
                  "--filter-platform=x86_64-unknown-linux-gnu"]
@@ -262,6 +262,8 @@ def prepare_harness(upstream, output, cargo, env, local_tcp=False):
     drift = sorted(external(normalized) - external(seed))
     (output / "harness-lock.json").write_text(json.dumps({
         "seed_sha256": hashlib.sha256(seed).hexdigest(),
+        "upstream_seed_sha256": UPSTREAM_HARNESS_SEED_SHA256,
+        "seed_kind": "exact derived OSDK host lock; original upstream seed retained separately",
         "normalized_sha256": hashlib.sha256(normalized).hexdigest(),
         "external_drift": drift, "command": record}, indent=2) + "\n")
     if drift:
@@ -486,7 +488,67 @@ def main():
         return run_locked(args, here, project, upstream, output)
 
 
+@contextmanager
+def owned_fixed_root(output):
+    """Clear the original temporary root through its FD on every exit.
+
+    Keep its empty directory inode: unlinking the named root after an inode
+    comparison would race a replacement. A foreign path replacement is never
+    traversed or removed by cleanup.
+    """
+    fixed = Path(tempfile.mkdtemp(prefix="a01oi-", dir="/tmp"))
+    created = fixed.lstat()
+    descriptor = os.open(fixed, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
+    identity = os.fstat(descriptor)
+    if not stat.S_ISDIR(created.st_mode) or \
+            (created.st_dev, created.st_ino) != (identity.st_dev, identity.st_ino):
+        os.close(descriptor)
+        raise ValueError("owned fixed root identity changed before FD custody; replacement preserved")
+    record = {"path": str(fixed), "device": identity.st_dev, "inode": identity.st_ino,
+              "removed_after_run": False, "contents_removed": False,
+              "cleanup_policy": "clear original pinned directory FD; retain empty root inode"}
+    receipt = output / "fixed-root.json"
+
+    def retain_root(function, path, error):
+        # rmtree operates on the pinned directory itself. Its final rmdir('.')
+        # is deliberately ineligible; no pathname is used to unlink the root.
+        if function is os.rmdir and path == "." and error[1].errno == errno.EINVAL:
+            return
+        raise error[1]
+
+    try:
+        receipt.write_text(json.dumps(record, indent=2) + "\n")
+        yield fixed
+    finally:
+        try:
+            try:
+                named = fixed.lstat()
+                matches = stat.S_ISDIR(named.st_mode) and \
+                    (named.st_dev, named.st_ino) == (identity.st_dev, identity.st_ino)
+                record["named_root_identity_matches"] = matches
+                record["foreign_replacement_preserved"] = not matches
+            except FileNotFoundError:
+                record["named_root_identity_matches"] = False
+                record["named_root_missing"] = True
+            shutil.rmtree(".", dir_fd=descriptor, onerror=retain_root)
+            if os.listdir(descriptor):
+                raise RuntimeError("owned fixed root is not empty after cleanup")
+            record["contents_removed"] = True
+            record["retained_empty_root"] = True
+        except BaseException as error:
+            record["cleanup_error"] = f"{type(error).__name__}: {error}"
+            raise
+        finally:
+            os.close(descriptor)
+            receipt.write_text(json.dumps(record, indent=2) + "\n")
+
+
 def run_locked(args, here, project, upstream, output):
+    with owned_fixed_root(output) as fixed_root:
+        return _run_locked(args, here, project, upstream, output, fixed_root)
+
+
+def _run_locked(args, here, project, upstream, output, fixed_root):
     env = os.environ.copy()
     env["RUSTUP_TOOLCHAIN"] = TOOLCHAIN
     env["RUSTUP_AUTO_INSTALL"] = "0"
@@ -515,7 +577,8 @@ def run_locked(args, here, project, upstream, output):
     env.pop("INTEL_TDX", None)
     env.pop("OSDK_CARGO_LOCK", None)
     commands = []
-    harness_root, fixed_root = prepare_harness(upstream, output, real_cargo, env, args.local_tcp)
+    harness_root, fixed_root = prepare_harness(upstream, output, real_cargo, env, args.local_tcp,
+                                              fixed_root=fixed_root)
     production = [str(real_cargo), "build", "--locked", "--bin", "cargo-osdk"]
     commands.append(command(production, upstream / "osdk", env, output / "osdk-build.log", 600))
     if commands[-1]["raw_exit_code"]:
@@ -702,13 +765,6 @@ def run_locked(args, here, project, upstream, output):
                "host_blocked_cases": sum(bool(r.get("host_blockers")) for r in results),
                "cases": results, "build_commands": commands}
     (output / "result.json").write_text(json.dumps(summary, indent=2) + "\n")
-    ownership = json.loads((output / "fixed-root.json").read_text())
-    if fixed_root.is_dir() and not fixed_root.is_symlink():
-        identity = fixed_root.stat()
-        if (identity.st_dev, identity.st_ino) == (ownership["device"], ownership["inode"]):
-            shutil.rmtree(fixed_root)
-            ownership["removed_after_run"] = True
-            (output / "fixed-root.json").write_text(json.dumps(ownership, indent=2) + "\n")
     print(json.dumps({key: summary[key] for key in ("passed", "failed", "blocked", "soft_skip_count")}))
     return int(summary["failed"] != 0 or summary["blocked"] != 0)
 

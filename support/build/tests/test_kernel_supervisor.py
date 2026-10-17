@@ -199,16 +199,22 @@ from pathlib import Path
 if '--version' in sys.argv: print('GNU Make host fixture');raise SystemExit(0)
 stream=socket.socket(fileno=int(os.environ['A01_GDB_FD']))
 Path(os.environ['MOCK_PROJECT'],'gdb-fd.json').write_text(json.dumps({'fd':stream.fileno(),'address':stream.getsockname(),'listening':stream.getsockopt(socket.SOL_SOCKET,socket.SO_ACCEPTCONN),'argv':sys.argv}))
+held=os.fstat(9);inherited=os.fstat(int(os.environ['A01_KERNEL_LOCK_FD']))
+assert (held.st_dev,held.st_ino)==(inherited.st_dev,inherited.st_ino)
 """)
         with socket.socket() as original:
             original.bind(("127.0.0.1", 0))
             original.listen(1)
             descriptor = fcntl.fcntl(original.fileno(), fcntl.F_DUPFD_CLOEXEC, 64)
+            lock = (fixture.build / "out-kernel.lock").open("a")
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            lock_descriptor = fcntl.fcntl(lock.fileno(), fcntl.F_DUPFD_CLOEXEC, 64)
             try:
                 env = dict(fixture.environment, A01_RUN_DIR=str(fixture.root / "evidence"),
-                           A01_GDB_FD=str(descriptor), A01_GDB_PORT=str(original.getsockname()[1]))
+                           A01_GDB_FD=str(descriptor), A01_GDB_PORT=str(original.getsockname()[1]),
+                           A01_KERNEL_LOCK_FD=str(lock_descriptor))
                 result = subprocess.run(["bash", str(fixture.build / "kernel.sh"), "gdb_server"],
-                                        env=env, pass_fds=(descriptor,), stdout=subprocess.PIPE,
+                                        env=env, pass_fds=(descriptor, lock_descriptor), stdout=subprocess.PIPE,
                                         stderr=subprocess.STDOUT, timeout=8)
                 # The fake make did not launch a kernel; ordinary live boot
                 # validation must still reject it after validating FD handoff.
@@ -221,6 +227,20 @@ Path(os.environ['MOCK_PROJECT'],'gdb-fd.json').write_text(json.dumps({'fd':strea
                 self.save("gdb-fd-handoff", {"kind": "host_fd_handoff_no_kernel", "passed": True,
                                              "listener": record, "driver_rejected_missing_vm": True},
                           result.stdout)
+            finally:
+                os.close(descriptor)
+                os.close(lock_descriptor)
+                lock.close()
+
+    def test_descriptor_list_deduplicates_and_rejects_invalid_handoffs(self):
+        with (self.fixture.build / "out-kernel.lock").open("a") as lock:
+            descriptor = fcntl.fcntl(lock.fileno(), fcntl.F_DUPFD_CLOEXEC, 64)
+            try:
+                self.assertEqual(supervisor.inherited_descriptors("gdb_server", {
+                    "A01_KERNEL_LOCK_FD": str(descriptor), "A01_GDB_FD": str(descriptor)}), (descriptor,))
+                for value in ("", "63", "-1", "not-fd", "2147483648"):
+                    with self.subTest(value=value), self.assertRaises(ValueError):
+                        supervisor.inherited_descriptors("kernel", {"A01_KERNEL_LOCK_FD": value})
             finally:
                 os.close(descriptor)
 

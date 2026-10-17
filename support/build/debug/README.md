@@ -6,7 +6,11 @@ From the project root, after the normal native host/toolchain setup:
 python3 -I support/build/debug/run.py --output support/build/out/NEW-debug-run
 ```
 
-The output directory must be new. Set `CARGO_HOME`, `RUSTUP_HOME` and
+The output directory must be new. The helper acquires the existing kernel
+workspace lock before creating that directory or its parents. A busy workspace
+leaves the requested path available for retry; the kernel worker inherits the
+same locked open file description through cleanup and result capture.
+Set `CARGO_HOME`, `RUSTUP_HOME` and
 `VDSO_LIBRARY_DIR` as for the ordinary build. GDB and native `nm` must be in
 PATH, or select them with `--gdb /absolute/path/to/gdb` and `--nm /path/to/nm`.
 An extracted GDB may also need its existing dependency `LD_LIBRARY_PATH`.

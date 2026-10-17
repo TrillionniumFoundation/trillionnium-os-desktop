@@ -13,7 +13,8 @@ import tempfile
 import unittest
 from unittest.mock import MagicMock, patch
 
-spec = importlib.util.spec_from_file_location("record_qemu", Path(__file__).with_name("record-qemu.py"))
+spec = importlib.util.spec_from_file_location("record_qemu", Path(os.environ.get(
+    "A01_INTEGRATION_RECORDER_SOURCE", str(Path(__file__).with_name("record-qemu.py")))))
 shim = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(shim)
 
@@ -110,6 +111,48 @@ class ProfileTests(unittest.TestCase):
                     owned.close()
                     with self.assertRaises(OSError):
                         os.fstat(inherited_fd)
+
+    def test_dynamic_private_monitor_id_pairs_unique_reference_and_retains_user_id(self):
+        for identifier in ("osdk-managed-monitor-1", "osdk-managed-monitor-2", "another-unique-id"):
+            with self.subTest(identifier=identifier), \
+                    socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:
+                listener.bind(("127.0.0.1", 0))
+                listener.listen(1)
+                with socket.create_connection(listener.getsockname()) as client:
+                    peer, _ = listener.accept()
+                    with peer:
+                        inherited_fd = fcntl.fcntl(client.fileno(), fcntl.F_DUPFD_CLOEXEC, 64)
+                        arguments = ["-chardev", "socket,id=osdk-managed-monitor,host=127.0.0.1,port=12345",
+                                     "-chardev", f"socket,id={identifier},fd={inherited_fd},server=off",
+                                     "-monitor", "chardev:" + identifier]
+                        try:
+                            controls = shim.local_tcp_controls(arguments)
+                            owned, metadata = shim.inherit_monitor_socket(arguments, controls)
+                            self.assertEqual(metadata["chardev_id"], identifier)
+                            self.assertEqual(metadata["fd"], inherited_fd)
+                            self.assertEqual(arguments[1],
+                                             "socket,id=osdk-managed-monitor,host=127.0.0.1,port=12345")
+                            owned.close()
+                            with self.assertRaises(OSError):
+                                os.fstat(inherited_fd)
+                        finally:
+                            try:
+                                os.close(inherited_fd)
+                            except OSError:
+                                pass
+
+    def test_private_monitor_rejects_duplicate_chardev_definition(self):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as stream:
+            inherited_fd = fcntl.fcntl(stream.fileno(), fcntl.F_DUPFD_CLOEXEC, 64)
+            identifier = "osdk-managed-monitor-1"
+            arguments = ["-chardev", f"socket,id={identifier},fd={inherited_fd},server=off",
+                         "-chardev", f"ringbuf,id={identifier}",
+                         "-monitor", "chardev:" + identifier]
+            controls = shim.local_tcp_controls(arguments)
+            with self.assertRaisesRegex(ValueError, "unique"):
+                shim.inherit_monitor_socket(arguments, controls)
+            with self.assertRaises(OSError):
+                os.fstat(inherited_fd)
 
     def test_private_monitor_rejects_listener_and_closes_descriptor(self):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:

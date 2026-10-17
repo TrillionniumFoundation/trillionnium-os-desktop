@@ -58,8 +58,28 @@ export OSDK_CARGO_LOCK="$build_dir/minimal/Cargo.lock"
 export VDSO_LIBRARY_DIR=${VDSO_LIBRARY_DIR:-$build_dir/out/linux-vdso}
 # Refuse a busy workspace before consuming a new evidence path. The same
 # invocation can then be retried after the current owner releases its lock.
-exec 9>"$build_dir/out-kernel.lock"
-flock -n 9 || { echo "another A01 build is using the kernel workspace" >&2; exit 1; }
+if [[ -v A01_KERNEL_LOCK_FD ]]; then
+    [[ "$A01_KERNEL_LOCK_FD" =~ ^[0-9]+$ && ${#A01_KERNEL_LOCK_FD} -le 10 ]] || {
+        echo 'A01_KERNEL_LOCK_FD must name the inherited workspace descriptor >=64' >&2; exit 2;
+    }
+    (( A01_KERNEL_LOCK_FD >= 64 && A01_KERNEL_LOCK_FD <= 2147483647 )) || exit 2
+    # Wrappers already own this open file description. Validate its stable
+    # pathname and acquire/retain its flock before duplicating it onto FD 9.
+    # This private handoff chooses lifecycle ownership, not a security boundary.
+    python3 -I - "$build_dir/out-kernel.lock" "$A01_KERNEL_LOCK_FD" <<'PY'
+import fcntl, os, stat, sys
+path, descriptor = sys.argv[1], int(sys.argv[2])
+held, named = os.fstat(descriptor), os.lstat(path)
+if (not stat.S_ISREG(held.st_mode) or not stat.S_ISREG(named.st_mode)
+        or (held.st_dev, held.st_ino) != (named.st_dev, named.st_ino)):
+    raise SystemExit("inherited kernel workspace descriptor does not match its regular lock pathname")
+fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+PY
+    exec 9>&"$A01_KERNEL_LOCK_FD"
+else
+    exec 9>"$build_dir/out-kernel.lock"
+    flock -n 9 || { echo "another A01 build is using the kernel workspace" >&2; exit 1; }
+fi
 # Keep the lock inode stable: unlinking a locked file permits a second caller
 # to create and lock a different inode before this process releases its fd.
 if [[ -n ${A01_RUN_DIR:-} ]]; then

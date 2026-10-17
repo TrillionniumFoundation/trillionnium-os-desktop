@@ -2,6 +2,7 @@
 """Record the exact kernel invocation and raw QEMU exit code for the smoke run."""
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import shlex
@@ -197,6 +198,15 @@ def main():
     record = {"requested_qemu_args": requested, "cwd": os.getcwd(), "artifacts": {},
               "raw_exit_code": None, "timed_out": False, "stage": "artifact_preparation"}
     try:
+        value = os.environ.get("A01_QEMU_TIMEOUT", "300")
+        record["timeout_requested"] = value
+        try:
+            timeout = int(value)
+            if timeout <= 0 or not math.isfinite(timeout):
+                raise ValueError
+        except (ValueError, OverflowError):
+            raise ValueError("A01_QEMU_TIMEOUT must be a positive finite integer number of seconds") from None
+        record["timeout_seconds"] = timeout
         positions = artifact_positions(requested)  # Reject malformed requests before the version probe.
         arguments = select_bios(requested, positions, record)
         arguments = select_data_directory(arguments, record)
@@ -233,7 +243,7 @@ def main():
             record["qemu_pid"] = result.pid
             destination.write_text(json.dumps(record, indent=2) + "\n")
             try:
-                record["raw_exit_code"] = result.wait(timeout=int(os.environ.get("A01_QEMU_TIMEOUT", "300")))
+                record["raw_exit_code"] = result.wait(timeout=timeout)
             except subprocess.TimeoutExpired:
                 result.kill()
                 result.wait()

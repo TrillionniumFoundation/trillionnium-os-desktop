@@ -21,6 +21,8 @@ PROFILE = {"arch": "x86_64", "machine": "q35", "accel": "tcg", "cpu": "max",
            "firmware": str(FIRMWARE)}
 LOCAL_TCP_PROFILE = "osdk-native-local-tcp-v1"
 CAPTURE_PROFILE = "osdk-native-local-tcp-gdb-capture-v2"
+# The default producer name remains a compatibility fixture constant. The
+# inherited handoff is selected by its unique chardev id/reference pair.
 MONITOR_CHARDEV_ID = "osdk-managed-monitor"
 
 
@@ -290,20 +292,21 @@ def local_tcp_controls(arguments, allow_gdb_zero=False):
             if fields[0] != "socket":
                 continue
             entries = [field.partition("=") for field in fields[1:]]
-            if any(name == "fd" or name == "id" and entry == MONITOR_CHARDEV_ID
-                   for name, _, entry in entries):
+            if any(name == "fd" for name, _, _ in entries):
                 # QEMU consumes every field. Do not let dict construction hide
                 # duplicate keys or bare tokens and record a different meaning.
                 if len(fields) != 4 or any(not separator for _, separator, _ in entries) \
                         or len({name for name, _, _ in entries}) != 3:
                     raise ValueError("private monitor requires exactly socket,id,fd,server without duplicate or bare fields")
                 options = {name: entry for name, _, entry in entries}
-                if set(options) != {"id", "fd", "server"} or options["id"] != MONITOR_CHARDEV_ID \
+                if set(options) != {"id", "fd", "server"} \
+                        or not re.fullmatch(r"[A-Za-z0-9._-]+", options["id"]) \
                         or options["server"] != "off" or not re.fullmatch(r"[0-9]+", options["fd"]) \
                         or not 64 <= int(options["fd"]) <= 2**31 - 1:
-                    raise ValueError("local TCP profile requires the reserved preconnected monitor descriptor fd >= 64")
+                    raise ValueError("local TCP profile requires a named preconnected monitor descriptor fd >= 64")
                 controls.append({"kind": "monitor", "handoff": "private-connected-inherited-fd",
-                                 "fd": int(options["fd"]), "requested_value": value})
+                                 "fd": int(options["fd"]), "chardev_id": options["id"],
+                                 "requested_value": value})
                 continue
             options = dict(field.split("=", 1) for field in fields[1:] if "=" in field)
             if options.get("host") != "127.0.0.1" or not options.get("port", "").isdigit():
@@ -353,15 +356,20 @@ def inherit_monitor_socket(arguments, controls):
     try:
         references = [arguments[index + 1] for index, value in enumerate(arguments[:-1])
                       if value in ("-monitor", "--monitor")]
-        if references.count("chardev:" + MONITOR_CHARDEV_ID) != 1:
-            raise ValueError("private monitor descriptor requires its unique managed monitor reference")
+        identifier = endpoint.get("chardev_id")
+        definitions = [qemu_options(arguments[index + 1]) for index, value in enumerate(arguments[:-1])
+                       if value in ("-chardev", "--chardev")]
+        if not identifier or references.count("chardev:" + identifier) != 1 \
+                or sum("id=" + identifier in fields for fields in definitions) != 1:
+            raise ValueError("private monitor descriptor requires its unique managed monitor reference and chardev definition")
         if stream.family != socket.AF_INET or stream.type != socket.SOCK_STREAM \
                 or stream.getsockopt(socket.SOL_SOCKET, socket.SO_ACCEPTCONN):
             raise ValueError("private monitor descriptor must be a connected IPv4 stream, not a listener")
         local, peer = stream.getsockname(), stream.getpeername()
         if any(address[0] != "127.0.0.1" or not 0 < address[1] <= 65535 for address in (local, peer)):
             raise ValueError("private monitor endpoints must both be 127.0.0.1 with assigned ports")
-        metadata = {"fd": stream.fileno(), "local": list(local), "peer": list(peer),
+        metadata = {"fd": stream.fileno(), "chardev_id": identifier,
+                    "local": list(local), "peer": list(peer),
                     "connected": True, "listening": False,
                     "handoff": "private-connected-inherited-fd",
                     "parent_copy_closed_after_spawn": False}

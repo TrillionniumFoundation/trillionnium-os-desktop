@@ -4,7 +4,7 @@
 
 #![warn(unused)]
 
-use alloc::{boxed::Box, sync::Arc};
+use alloc::{boxed::Box, sync::Arc, vec::Vec};
 use core::{fmt, ops::Bound, sync::atomic::Ordering};
 
 use ostd::{
@@ -26,7 +26,10 @@ use super::{
     nice::Nice,
     stats::{SchedulerStats, set_stats_from_scheduler},
 };
-use crate::thread::{AsThread, Thread};
+use crate::{
+    fs::cgroupfs::{charge_task_cpu, task_cpu_eligible},
+    thread::{AsThread, Thread},
+};
 
 mod policy;
 mod time;
@@ -81,6 +84,8 @@ struct PerCpuClassRqSet {
     real_time: real_time::RealTimeClassRq,
     fair: fair::FairClassRq,
     idle: idle::IdleClassRq,
+    // Runqueue-local parked tasks; no userspace syscall is required to refill.
+    throttled: Vec<Arc<Task>>,
     current: Option<(SchedEntity, CurrentRuntime)>,
 }
 
@@ -272,6 +277,7 @@ impl ClassScheduler {
                 real_time: real_time::RealTimeClassRq::new(cpu),
                 fair: fair::FairClassRq::new(cpu),
                 idle: idle::IdleClassRq::new(),
+                throttled: Vec::new(),
                 current: None,
             })
         };
@@ -335,15 +341,51 @@ impl ClassScheduler {
 }
 
 impl PerCpuClassRqSet {
+    fn replenish_throttled(&mut self, now: u64) {
+        // Inspect the existing allocation in place. The former mem::take()
+        // discarded its capacity every tick and pushed blocked tasks into a
+        // fresh Vec while the IRQ-disabled runqueue spinlock was held.
+        // swap_remove leaves capacity intact and never reallocates this Vec.
+        let mut index = 0;
+        while index < self.throttled.len() {
+            if !task_cpu_eligible(&self.throttled[index], now) {
+                index += 1;
+                continue;
+            }
+            let task = self.throttled.swap_remove(index);
+            if let Some(thread) = task.as_thread().cloned() {
+                self.enqueue_entity((task, thread), None);
+            }
+            // Examine the element swapped into this position next; if this
+            // was the last element, the loop exits naturally.
+        }
+    }
+
     fn pick_next_entity(&mut self) -> Option<SchedEntity> {
-        (self.stop.pick_next())
-            .or_else(|| self.real_time.pick_next())
-            .or_else(|| self.fair.pick_next())
-            .or_else(|| self.idle.pick_next())
-            .and_then(|task| {
-                let thread = task.as_thread()?.clone();
-                Some((task, thread))
-            })
+        let now = sched_clock();
+        self.replenish_throttled(now);
+        if let Some(task) = self.stop.pick_next() {
+            return task.as_thread().cloned().map(|thread| (task, thread));
+        }
+        for _ in 0..self.real_time.len() {
+            let task = self.real_time.pick_next().unwrap();
+            if task_cpu_eligible(&task, now) {
+                let thread = task.as_thread().unwrap().clone();
+                return Some((task, thread));
+            }
+            self.throttled.push(task);
+        }
+        for _ in 0..self.fair.len() {
+            let task = self.fair.pick_next().unwrap();
+            if task_cpu_eligible(&task, now) {
+                let thread = task.as_thread().unwrap().clone();
+                return Some((task, thread));
+            }
+            self.throttled.push(task);
+        }
+        self.idle
+            .pick_next()
+            .and_then(|task| task.as_thread().cloned().map(|thread| (task, thread)))
     }
 
     fn enqueue_entity(&mut self, (task, thread): SchedEntity, flags: Option<EnqueueFlags>) {
@@ -356,7 +398,9 @@ impl PerCpuClassRqSet {
     }
 
     fn load_stats(&self) -> PerCpuLoadStats {
-        let queue_len = (self.stop.len() + self.real_time.len() + self.fair.len()) as u32;
+        let queue_len =
+            (self.stop.len() + self.real_time.len() + self.fair.len() + self.throttled.len())
+                as u32;
         let is_idle = match &self.current {
             Some(((_, thread), _)) => thread.sched_attr().policy_kind() == SchedPolicyKind::Idle,
             None => true,
@@ -371,19 +415,44 @@ impl LocalRunQueue for PerCpuClassRqSet {
     }
 
     fn try_pick_next(&mut self) -> Option<&Arc<Task>> {
+        // OSTD's might_preempt() can call try_pick_next() directly after a
+        // runnable task is enqueued, without a preceding update_current().
+        // A switch in that path must not discard the outgoing task's TSC
+        // runtime when CurrentRuntime::new() replaces its old accounting
+        // state. Charge before pick_next_entity() checks another task's
+        // eligibility and potentially advances a shared cgroup ancestor.
+        if let Some(((task, _), rt)) = &mut self.current {
+            let from = rt.start;
+            rt.update();
+            charge_task_cpu(task, from, rt.start);
+        }
         self.pick_next_entity().and_then(|next| {
             // We guarantee that a task can appear at once in a `PerCpuClassRqSet`. So, the `next` cannot be the same
             // as the current task here.
             if let Some((old, _)) = self.current.replace((next, CurrentRuntime::new())) {
-                self.enqueue_entity(old, None);
+                if task_cpu_eligible(&old.0, sched_clock()) {
+                    self.enqueue_entity(old, None);
+                } else {
+                    self.throttled.push(old.0);
+                }
             }
             self.current.as_ref().map(|((task, _), _)| task)
         })
     }
 
     fn update_current(&mut self, flags: UpdateFlags) -> bool {
-        let (should_preempt, mut lookahead) = if let Some(((_, cur), rt)) = &mut self.current {
+        // Settle the running task FIRST. Replenishment invokes
+        // task_cpu_eligible() and can advance the same cgroup or a common
+        // ancestor's quota window before charge_task_cpu() sees a tick that
+        // straddles the boundary. That loses old-window CPU runtime and
+        // defeats positive overrun debt. N0 keeps all these transitions
+        // serialized inside the existing IRQ-disabled per-CPU runqueue lock.
+        let mut quota_exhausted = false;
+        let (should_preempt, mut lookahead) = if let Some(((task, cur), rt)) = &mut self.current {
+            let from = rt.start;
             rt.update();
+            charge_task_cpu(task, from, rt.start);
+            quota_exhausted = !task_cpu_eligible(task, rt.start);
             let attr = &cur.sched_attr();
 
             match attr.policy_kind() {
@@ -396,11 +465,18 @@ impl LocalRunQueue for PerCpuClassRqSet {
             (false, 4)
         };
 
+        // This timer callback also fires when idle. Once the current task's
+        // exact interval is charged, reconsider throttled tasks and update
+        // the available queues without letting an early eligibility check
+        // erase the last active cgroup period.
+        self.replenish_throttled(sched_clock());
+
         if matches!(flags, UpdateFlags::Wait | UpdateFlags::Exit) {
             lookahead = 4;
         }
 
-        should_preempt
+        quota_exhausted
+            || should_preempt
             || (lookahead >= 1 && !self.stop.is_empty())
             || (lookahead >= 2 && !self.real_time.is_empty())
             || (lookahead >= 3 && !self.fair.is_empty())

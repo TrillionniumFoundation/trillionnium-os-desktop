@@ -65,6 +65,33 @@ def interruption_handlers():
             signal.signal(number, handler)
 
 
+@contextmanager
+def workspace_lock(project):
+    """Lease the existing kernel workspace lock before allocating evidence.
+
+    The kernel worker inherits this same open file description. It must not
+    reopen/flock another descriptor while this wrapper owns the lease.
+    """
+    path = Path(project) / "support/build/out-kernel.lock"
+    original = os.open(path, os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW | os.O_CLOEXEC, 0o600)
+    try:
+        descriptor = fcntl.fcntl(original, fcntl.F_DUPFD_CLOEXEC, 64)
+    finally:
+        os.close(original)
+    try:
+        try:
+            fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError as error:
+            raise ValueError("another A01 build is using the kernel workspace") from error
+        held, named = os.fstat(descriptor), path.lstat()
+        require(stat.S_ISREG(held.st_mode)
+                and (held.st_dev, held.st_ino) == (named.st_dev, named.st_ino),
+                "kernel workspace lock pathname changed while acquiring ownership")
+        yield descriptor
+    finally:
+        os.close(descriptor)
+
+
 def require(condition, message):
     if not condition:
         raise ValueError(message)
@@ -154,7 +181,7 @@ class OwnedSession:
             self.external_reap = True
             raise RuntimeError("owned session was externally reaped; group signals disarmed") from error
 
-    def stop(self, grace=0.25):
+    def stop(self, grace=2.0):
         if self.reaped or self.external_reap:
             return self.status
         # WNOWAIT also detects an external reaper before any numeric group signal.
@@ -165,6 +192,10 @@ class OwnedSession:
             pass
         deadline = time.monotonic() + grace
         while time.monotonic() < deadline:
+            # A live worker can be running its EXIT cleanup. Leave a bounded
+            # opportunity for it to finish; WNOWAIT still anchors its group.
+            if self.exited():
+                break
             time.sleep(min(0.025, max(0, deadline - time.monotonic())))
         # Even an exited leader remains our unreaped child here. Its group number
         # cannot be recycled; TERM-ignoring descendants must not outlive cleanup.
@@ -385,9 +416,21 @@ def debug_main(shutdown):
     for timeout in (args.ready_timeout, args.gdb_timeout, args.boot_timeout):
         if not 0 < timeout < float("inf"):
             parser.error("timeouts must be positive finite seconds")
+    project = Path(__file__).resolve().parents[3]
+    try:
+        with workspace_lock(project) as workspace_descriptor:
+            shutdown.check()
+            return debug_locked(shutdown, args, project, workspace_descriptor)
+    except ShutdownRequested as error:
+        return 128 + error.signum
+    except (OSError, ValueError) as error:
+        print("Rust-entry debug refused: " + str(error), file=sys.stderr)
+        return 1
+
+
+def debug_locked(shutdown, args, project, workspace_descriptor):
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=False)
-    project = Path(__file__).resolve().parents[3]
     symbols = project / "kernel/asterinas/target/x86_64-unknown-none/release/asterinas-osdk-bin"
     result = {"passed": False, "stage": "prepare", "boot_directory": str(output / "boot")}
     commands = []
@@ -429,6 +472,7 @@ def debug_main(shutdown):
         updates = {"A01_GDB_FD": str(descriptor), "A01_GDB_PORT": str(address[1]),
                    "A01_RUN_DIR": str(output / "boot"),
                    "A01_KERNEL_WORKER": "1",
+                   "A01_KERNEL_LOCK_FD": str(workspace_descriptor),
                    "CARGO_TARGET_DIR": str(project / "kernel/asterinas/target")}
         env.update(updates)
         sources = ["support/build/kernel.sh", "support/build/minimal.mk",
@@ -459,7 +503,7 @@ def debug_main(shutdown):
             "toolchain": "nightly-2026-07-21"})
         result["stage"] = "build_and_qemu_ready"
         driver = invoke(["bash", str(project / "support/build/kernel.sh"), "gdb_server"],
-                        "kernel-driver.log", pass_fds=(descriptor,))
+                        "kernel-driver.log", pass_fds=(descriptor, workspace_descriptor))
         ready = wait_for_qemu(output / "boot/qemu.json", driver, listener, args.ready_timeout, shutdown)
         write_json(output / "qemu-ready.json", ready)
         write_json(output / "installed-osdk.json", private_osdk_evidence(output / "boot", project))

@@ -15,10 +15,11 @@ python3 -I support/build/repro/run.py \
 
 Use two isolated exact-source worktrees, an absent `kernel/asterinas/target` in
 each, the same profile root and separate new output paths. Do not run another
-builder in either proof worktree. The profile lock serializes users of the same
-virtual input; the public kernel entry retains its own workspace lock. Target
-absence is checked at launcher entry, before the public entry acquires that
-workspace lock. Independent invocations must therefore own their worktrees.
+builder in either proof worktree. The launcher acquires the existing kernel
+workspace lock before creating a profile or output directory, then holds both
+locks through command-group cleanup and result capture. The kernel worker
+inherits the same locked open file description. Target absence is checked
+again under that lease. Busy calls leave profile/output paths free for retry.
 The caller prepares the fixed nightly, Cargo cache and vDSO in the usual way.
 The profile rejects inherited Rust flags/wrappers and fixes timestamp, locale,
 target path, compiler remap and explicitly selected embedded builder metadata.

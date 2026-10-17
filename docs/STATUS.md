@@ -1,5 +1,30 @@
 # 当前状态
 
+## 2026-10-17：A05 QueryAbi＋A06 CPU 带宽已合并 N0 实验内核
+
+**真实主干合并：**[PR #121](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/121) merge `3538ec23570733a8b48678f9f24fcd0949dabd84`；主干包含此前 A05 的只读 /dev/hepta-control QueryAbi 与 A06 的实际 cgroup CPU 限额／调度器。测试源码本地合并提交 `b913202b2e487126319e60813a54163666b9a2ad` 与远端集成提交 `eaf5242233b799356b7daa73898a14d240832abb` **Git tree 相同**（`b852e0037af8f84c22a8fc7347fa55d8183e07e6`）；后续 PR 仅添加结果 JSON，三条核心内核文件 Git blob 已在合并后再核对一致。唯一文件冲突 `support/build/kernel.sh` 采用已验证的 main A01 新版（保留 manifest 身份及 --live-artifacts），没有回滚 A01 修复。
+
+**实际执行证据（非报告拼接）：**固定 Asterinas v0.19.0 / nightly-2026-07-21 从同一源码树完整构建、在 q35/TCG／1 vCPU／512 MiB 运行 initramfs，raw QEMU=33、构建／启动脚本 exit=0。候选完整 ELF SHA256 `06cf42337d266a486d3ac98caa3f9b0021f0f7679c7130e48224cb35fedb90ab`。在这个内核上，**10/10** 原始 `cpu.stat` 探针客体成功（单 CPU 1% x3＝1.100%、1.000%、0.999%；单 CPU 10%=10.352%、RT10%=9.824%、parent10%=10.226%；双 CPU／双工作线程 1%=0.957%、10%=10.112%、parent10%=10.396%、RT10%=10.187%，全 raw33／无panic）。**3/3** 真实 A05 QueryAbi ioctl 客体通过，包含权限拒绝与格式拒绝测试，raw33。**真实 QEMU 内核回归：**OSTD 报告 221 passed/0 failed，其中3个VMX/EPT软跳过；aster-core 153 passed/0 failed/0软跳过；实际执行通过下界**371**，两套raw33。A05 host smoke、archive负测与bash语法亦通过。机器证据见 [a05-a06-integrated-acceptance.json](../results/organ-backend/2026-10-17/a05-a06-integrated-acceptance.json)。
+
+**严格边界：**这只是 **N0 实验性开发主干**，不能称为已生产可用OS。QEMU双核／双线程有限样本不是 SMP、CPU热插拔、迁移/IRQ锁序或逐100ms硬上限的充分证明；QueryAbi只读，per-open observation space ID不是可信CapSpace。**HOS2 InstallBudget/ReadUsage/QueryDelivery/RetireThrough、exec_epoch与启动能力授权、A07现有Hepta owner的持久K↔D、撤销／历史确认退役尚未集成**；G1/G2仍不合格。root README严格0字节，无现役机器内核部署与生产服务修改。A06原 owner Draft #18 保留独立开发记录；新后续补丁须从当前 main 对齐、避免重复集成或覆盖。
+
+**下一条产品实现：**优先将 A03 `ManagementGrantState`／ResourceDomain 与 A05 Asterinas 的真实进程/CapSpace 身份接合，把 `ReadUsage` 与 `InstallBudget` 接到已合入的**唯一 cgroup/调度资源事实**；完成普通进程无权、exec/fork泄权防护、cap=0独立恢复、同K/D效果幂等，再由 A07通过现有durable authority/operations owner完成效果对账和退役。策略继续在Hepta用户态，IRQ/调度快路径不调用模型。
+
+---
+
+
+## 2026-10-17：原生 QueryAbi 进入主干，G0 验证收敛
+
+本段为已执行事实的最新摘要；历史条目中“ A05 尚未进入 main ”的表述只适用于其旧版本快照。状态文档更新前的主干 HEAD 为 162707a0e6ccccc768c0f1abd3263f3ff4c647a1。
+
+- A05 原生实验设备：PR [#87](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/87) 已合并，merge 2e1d592c25335f3cd97f312e4f73545f305d6e61。Asterinas 主干新增 /dev/hepta-control，只允许 root 打开、只读、且仅支持实验 QueryAbi ioctl；用户态复用项目唯一 HOS2 Rust codec。精确 owner 源码 224fcdde44b9c68163298623fd908e3009b1b2a6 从固定 nightly-2026-07-21 编译成功，ELF SHA256 f667b468940af56070d8a7a1909fe68e863d6a0d095fca8de894e71ff9acd077。独立QEMU单vCPU 3/3 次 raw33，QueryAbi OK、非 root 打开拒绝、dup-fd会话一致、无panic；本源码 aster-core 真正 QEMU ktest 141/141通过，0失败/过滤/软跳过。代码 blob 与main一致。
+- A05 host负测：同 exact owner SHA 下 run-host-smoke.sh exit0，16个请求结构负例、21个异常HOSR响应、ENOTTY/EFAULT及6 normal/6 optimized 归档用例成功。客体的3次通过与host结果分别统计，不能互相替代。
+- A03 G0 portable target：PR [#103](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/103) 合并为 751d5448b6e92e8902b89bcd1d337c5d61872393。独立运行实际Rust标准/portable-spin宿主测试、严格Clippy和x86_64-unknown-none rlib全部通过。这不代表该 crate 已接入新内核或验证 IRQ 锁序；GitHub Actions exact-head此前仍 queued。
+- A02 编译型反例：PR [#101](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/101) 合并为 d2173e21ca902fa304d5d6edacbc329c9484a570。对其精确 SHA c6139994f4cc97b8cdc804e906d532ca04167ad2 运行正式 pinned acceptance，13/13 组检查通过，16/16 编译变异被测试抓住；输入文件哈希保持不变。合入 A05 后在main重新执行 A02 Cargo测试亦成功（首次临时手工加 --locked 但新 checkout 未生成 Cargo.lock 导致的失败不属于代码失败，正式 acceptance 以隔离快照生成锁）。
+- A01 构建命令修复：PR [#110](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/110) 合并为 162707a0e6ccccc768c0f1abd3263f3ff4c647a1；support/build/kernel.sh 去掉 make/gcc --version 的早关闭 head 管道，避免 set -o pipefail 因 SIGPIPE返回141。此缺陷在本轮 A05首次源码构建中真实出现；隔离环境仅临时采用不提前关闭消费者后完整构建成功，工具脚本已恢复，再将两行永久修复合入主干。不声称 PR #110 已完成独立 GitHub runner验收。
+- 明确不能外推：QueryAbi 的 per-open session ID 不是可信 CapSpace；正式 ioctl号、exec_epoch、ReadUsage、InstallBudget、QueryDelivery、RetireThrough、A06 SMP/严格CPU cap、A07 Hepta 唯一 owner K↔D 效果/持久确认及退役仍未闭合。G1/G2 未通过，A06 [Draft #18](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/18) 还不是 main。根 README.md 保持严格0字节，未操作任何现役业务设备。
+
+---
 ## 2026-10-17 UTC：A05 原生 QueryAbi 已在真实 Asterinas 客体执行（仍为 Draft）
 
 - **真实内核 HOS2 ioctl 首次执行成功，纠正下方历史记录的“尚未在 guest 运行”描述**：[A05 Draft #87](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/87) 原源码提交 `5fc3887dfc5833b61d11280eb1421bb7fd78648f`，经过实际 `make kernel` 编译的候选完整 Asterinas ELF SHA256 `54c8a7a798cbbd80f1a8ce5f0144328815e63b413e79b0133206bcaaba607e4a`。四份 A05 实际修改文件的 Git blob 与远端 PR 精确吻合。独立调用固定原始 C probe，在 QEMU q35/TCG x86_64 **1 vCPU/512MiB、无网卡数据盘** 中真正打开 `/dev/hepta-control` 执行 QueryAbi ioctl，校验 HOSR/版本/唯一开放会话 ID/QueryAbi-only 位图、非法 magic EINVAL、NULL transport EFAULT、未知 ioctl ENOTTY。首次 QEMU raw33、`HEPTA_QUERYABI_OK` 与 A01 boot marker，无 panic；同一预校验内核 ELF/一次性 initramfs 又复跑 **3/3 次 raw33**，合计 **4/4** 成功。该轮复用了源构建内核 ELF，没有把这4次 guest replay 说成4次内核重编译。

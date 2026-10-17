@@ -478,5 +478,57 @@ class BootEvidenceTests(unittest.TestCase):
         self.assertTrue(all(Path(item["path"]).is_file() for item in record["artifacts"].values()))
 
 
+class RecorderTimeoutTests(unittest.TestCase):
+    """In-process launch mocks; no QEMU, SDK or guest is executed."""
+
+    def exercise_timeout(self, value, accepted):
+        with tempfile.TemporaryDirectory(prefix="a01-timeout-validation-") as temporary:
+            root = Path(temporary)
+            argv = [str(RECORDER)]
+            for option, name in SNAPSHOT.ARTIFACT_NAMES.items():
+                artifact = root / name
+                artifact.write_bytes(("host-only input " + option).encode())
+                argv.extend((option, str(artifact)))
+            destination = root / "qemu.json"
+            child = mock.MagicMock()
+            child.pid, child.wait.return_value = 12345, 33
+            launch = mock.MagicMock()
+            launch.return_value.__enter__.return_value = child
+            with mock.patch.dict(os.environ, {"A01_QEMU_EVIDENCE": str(destination),
+                                               "A01_QEMU_TIMEOUT": value}, clear=True), \
+                    mock.patch.object(SNAPSHOT.sys, "argv", argv), \
+                    mock.patch.object(SNAPSHOT.shutil, "which", return_value=__file__), \
+                    mock.patch.object(SNAPSHOT.subprocess, "check_output", return_value="host mock") as version, \
+                    mock.patch.object(SNAPSHOT.subprocess, "Popen", launch):
+                status = SNAPSHOT.main()
+            record = json.loads(destination.read_text())
+            self.assertEqual(record["timeout_requested"], value)
+            if accepted:
+                self.assertEqual(status, 33, record)
+                launch.assert_called_once()
+                child.wait.assert_called_once_with(timeout=int(value))
+                self.assertEqual(record["timeout_seconds"], int(value))
+                self.assertEqual(record["raw_exit_code"], 33)
+            else:
+                self.assertEqual(status, 1, record)
+                launch.assert_not_called()
+                version.assert_not_called()
+                self.assertEqual(record["stage"], "artifact_preparation_failed")
+                self.assertIsNone(record["raw_exit_code"])
+                self.assertIn("A01_QEMU_TIMEOUT", record["error"])
+                self.assertFalse(record["artifacts"])
+                self.assertNotIn("qemu_pid", record)
+
+    def test_invalid_timeout_is_rejected_before_any_tool_or_snapshot(self):
+        for value in ("", "garbage", "nan", "inf", "-inf", "1.5", "0", "-1", "9" * 1000):
+            with self.subTest(value=value[:40]):
+                self.exercise_timeout(value, False)
+
+    def test_positive_integer_timeout_is_parsed_before_launch_and_recorded(self):
+        for value in ("1", "300"):
+            with self.subTest(value=value):
+                self.exercise_timeout(value, True)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
