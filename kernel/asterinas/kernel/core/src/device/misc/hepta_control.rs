@@ -5,8 +5,6 @@
 //! effects must be wired to a trusted CapSpace/ResourceDomain before enabling
 //! any additional opcode. This is deliberately an experimental ioctl number.
 
-use core::sync::atomic::{AtomicU64, Ordering};
-
 use device_id::{DeviceId, MinorId};
 use ostd::mm::VmIo;
 use spin::Once;
@@ -25,6 +23,7 @@ use crate::{
         Transport,
     },
     prelude::*,
+    process::Process,
     process::signal::{PollHandle, Pollable},
     util::{ioctl::RawIoctl, random},
 };
@@ -40,7 +39,6 @@ const QUERY_RESPONSE_BYTES: usize = wire::HEADER_LEN + 48;
 
 static MAJOR: Once<char::MajorIdOwner> = Once::new();
 static BOOT_ID: Once<[u8; 16]> = Once::new();
-static NEXT_SESSION: AtomicU64 = AtomicU64::new(1);
 
 fn nonzero_random_id() -> [u8; 16] {
     let mut id = [0u8; 16];
@@ -51,25 +49,14 @@ fn nonzero_random_id() -> [u8; 16] {
     id
 }
 
-// A monotonic per-boot nonce prevents collision and fails closed at the
-// lifetime boundary. It is not a substitute for the real process CapSpace.
-fn new_session_id() -> Result<[u8; 16]> {
-    let counter = loop {
-        let old = NEXT_SESSION.load(Ordering::Acquire);
-        if old == u64::MAX {
-            return_errno_with_message!(Errno::ENOSPC, "HOS2 session identity exhausted");
-        }
-        if NEXT_SESSION
-            .compare_exchange(old, old + 1, Ordering::AcqRel, Ordering::Acquire)
-            .is_ok()
-        {
-            break old;
-        }
-    };
+// Bind the HOS2 CapSpace identity to the kernel-issued process lifetime.
+// This is deliberately independent of PID recycling and is shared by all
+// fds opened by the same process.
+fn process_session_id(process_start_id: u64) -> [u8; 16] {
     let mut id = [0u8; 16];
     id[..8].copy_from_slice(&BOOT_ID.get().unwrap()[..8]);
-    id[8..].copy_from_slice(&counter.to_le_bytes());
-    Ok(id)
+    id[8..].copy_from_slice(&process_start_id.to_le_bytes());
+    id
 }
 
 #[derive(Debug)]
@@ -93,14 +80,40 @@ impl Device for HeptaControlDevice {
     }
 
     fn open(&self) -> Result<Box<dyn PerOpenFileOps>> {
+        let process = Process::current().ok_or_else(|| {
+            Error::with_message(Errno::EPERM, "HOS2 control requires a process session")
+        })?;
+        let process_start_id = process.hepta_process_start_id();
         Ok(Box::new(HeptaControlFile {
-            space_id: new_session_id()?,
+            space_id: process_session_id(process_start_id),
+            process_start_id,
+            exec_epoch: process.hepta_exec_epoch(),
         }))
     }
 }
 
 struct HeptaControlFile {
     space_id: [u8; 16],
+    process_start_id: u64,
+    exec_epoch: u64,
+}
+
+impl HeptaControlFile {
+    /// Verify the current caller is the exact process image that opened this
+    /// file. Forked children have a different process-start identity; execve
+    /// advances the image epoch. Neither can reuse the inherited fd.
+    fn check_session(&self) -> Result<()> {
+        let process = Process::current().ok_or_else(|| {
+            Error::with_message(Errno::EPERM, "HOS2 control requires a process session")
+        })?;
+        if process.hepta_process_start_id() != self.process_start_id {
+            return_errno_with_message!(Errno::EPERM, "HOS2 control fd belongs to another process")
+        }
+        if process.hepta_exec_epoch() != self.exec_epoch {
+            return_errno_with_message!(Errno::ESTALE, "HOS2 control fd belongs to an old exec image")
+        }
+        Ok(())
+    }
 }
 
 impl Pollable for HeptaControlFile {
@@ -142,6 +155,7 @@ impl PerOpenFileOps for HeptaControlFile {
         if raw_ioctl.cmd() != EXPERIMENTAL_HOS2_IOCTL {
             return_errno_with_message!(Errno::ENOTTY, "not a recognized HOS2 ioctl")
         }
+        self.check_session()?;
 
         // Copy the transport once. Every address and length is validated
         // before copying the nested request; no effect can occur on failure.
