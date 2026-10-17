@@ -1,0 +1,73 @@
+{
+  "assignment_verified": false,
+  "blockers": [
+    "target_pci_device_missing"
+  ],
+  "device_opened": false,
+  "driver_binding": {
+    "all_group_bound_to_expected": false,
+    "expected": "vfio-pci",
+    "target": null,
+    "target_bound_to_expected": false
+  },
+  "expected_device_id": null,
+  "expected_group_members": [
+    "0000:01:00.0"
+  ],
+  "expected_vendor": "0x10de",
+  "hard_blockers": [
+    "target_pci_device_missing"
+  ],
+  "iommu": {
+    "dmar_table_present": false,
+    "evidence": false,
+    "group_complete": false,
+    "group_visible": false,
+    "interrupt_remapping": null,
+    "ivrs_table_present": false
+  },
+  "iommu_group_members": [],
+  "observed": {
+    "bdf": "0000:01:00.0",
+    "class": null,
+    "device_id": null,
+    "dma_mask_bits": null,
+    "driver": null,
+    "iommu_group": null,
+    "irq": null,
+    "msi_irq_count": null,
+    "reset_file_present": false,
+    "reset_method": null,
+    "subsystem_device_id": null,
+    "subsystem_vendor_id": null,
+    "vendor_id": null
+  },
+  "observed_group_drivers": {},
+  "observed_group_members": [],
+  "requested_bdf": "0000:01:00.0",
+  "reset": {
+    "all_group_files_present": false,
+    "group_files_present": {},
+    "invoked": false,
+    "qualified": false,
+    "target_file_present": false
+  },
+  "reset_performed": false,
+  "safe_to_assign": false,
+  "schema": "a09.vfio-preflight.v1",
+  "scope": "Linux_sysfs_only_not_asterinas_not_assignment_authorization",
+  "side_effects": "none_no_device_node_open_no_ioctls_no_sysfs_writes",
+  "status": "blocked",
+  "timestamp_utc": "2026-10-16T14:15:54.936189+00:00",
+  "unsafe_interrupts_module_parameter": "N",
+  "unsafe_noiommu_module_parameter": null,
+  "unverified_required_gates": [
+    "hardware_IOMMU_and_interrupt_remapping_enforced",
+    "complete_isolation_group_and_ACS_effective",
+    "no_active_workload_or_production_device_owner",
+    "reliable_hardware_DMA_quiescence_and_reset_isolation",
+    "Asterinas_derived_host_owns_PCI_group_and_DMA",
+    "guest_driver_firmware_and_CUDA_runtime_verified"
+  ],
+  "writes_performed": false
+}
