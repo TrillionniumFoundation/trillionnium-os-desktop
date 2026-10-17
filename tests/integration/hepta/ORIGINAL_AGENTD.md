@@ -1,9 +1,20 @@
 # Original Agentd read-only qualification gate
 
-**Latest archived result: the original-owner probe and original Agentd passed
-their Rust 1.95 compiler checks; executable linking and original-process
-assertions remain `not_run`.** The real metadata/check commands, failed attempts,
-source/lock bindings and raw logs are in
+**Latest archived result: the original Agentd and original-owner probe were
+built, linked and executed successfully on native ARM64 Linux.**
+[Run 39037037916](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39037037916)
+ran the exact desktop `1974d9a94037440da358253e1f449b395daa4b64` and unchanged
+original `f8c9419df6ddeb36ff8b522a50219981fb8d9345`. Its eight read-only process
+checks passed, including original restart, rejection of the old spawn and
+controlled stop. The [ARM evidence archive](evidence/2026-10-17-original-agentd-arm/README.md)
+preserves the original report/logs/locks, final clean source identities and
+independent verification of all three actual ARM64 ELF hashes. This run used
+fresh observer CLI instances; persistent Session/Shell integration, objective
+submission, model turns and device effects remain separate unqualified gates.
+
+The earlier local Rust 1.95 compiler checks did not link or execute the original
+process. Their metadata/check commands, failed attempts, source/lock bindings
+and raw logs remain in
 [BUILD_REVIEW.md](BUILD_REVIEW.md#real-resolution-and-compiler-checks) and
 [the original-probe evidence archive](evidence/2026-10-17-original-probe/README.md).
 `cargo check` does not produce the runnable binaries or pass the live gate.
@@ -19,7 +30,7 @@ The 8 GiB disk threshold is a conservative build budget, not a measured size of
 the minimal graph. No original source, registry, device or production process
 was changed to work around these limits.
 
-`run_original_agentd.py` and `original_agentd_probe.rs` make the next original
+`run_original_agentd.py` and `original_agentd_probe.rs` make the original
 process check reproducible. The Python syntax, runner manifest/patch generation,
 seed-lock validation and rejection of a deliberately changed dependency
 identity were exercised. The later Rust 1.95 check compiled/type-checked the

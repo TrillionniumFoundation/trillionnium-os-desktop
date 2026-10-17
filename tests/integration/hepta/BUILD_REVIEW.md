@@ -6,9 +6,13 @@ original-owner probe `cargo check`, and original Agentd `cargo check` runs recor
 the same clean original checkout before and afterward. Metadata resolution and
 the original-lock subset check passed; the unchanged probe API and original
 Agentd/App Server graph both passed their actual compiler checks.
-The final executable link and original-process qualification remain
-**`not_run`**. The earlier manifest-only findings and local resource snapshot
-below are historical; they do not describe the later provisioned environment.
+The subsequent [native ARM64 build and original-process gate](evidence/2026-10-17-original-agentd-arm/README.md)
+**passed** on exact desktop `1974d9a9`: the original Agentd and probe linked and
+ran, and all eight read-only process checks passed. Three downloaded ARM64 ELF
+files were independently checked against the executed report, source and locks.
+The compiler-check records below retain their original narrower qualification;
+they are not retroactively promoted into executable or runtime evidence.
+The earlier manifest-only findings and local resource snapshot are historical.
 
 ## Corrected external workspace resolver
 
@@ -91,7 +95,8 @@ receipt records 410 resource samples and 1,234,903,040 final/minimum-observed
 free bytes. Whole-cgroup counters still cannot be attributed to this build;
 `maximum_observed_nonreclaimable_bytes` is the wrapper's configured 7 GiB stop
 threshold, not a measured per-process maximum. The full 8 GiB build/runtime
-gate remains separate and unexecuted.
+gate was unexecuted at that local checkpoint. Its later, separately archived
+ARM64 execution is the current result linked above.
 
 ## Minimum original selection and build products
 
@@ -196,4 +201,6 @@ the current gate measures only the work parent's filesystem. Capture stage
 failures, memory events and bounded diagnostics when running the actual graph.
 Readiness failures should retain the original supervisor's bounded diagnostics
 for investigation. Neither improved preflight accounting nor these manifest
-checks can replace the unexecuted original build and process assertions.
+checks can replace actual original build and process assertions. The later ARM
+run supplies those assertions for its recorded profile and platform; it does
+not measure a minimum local build resource requirement or qualify Session/UI.

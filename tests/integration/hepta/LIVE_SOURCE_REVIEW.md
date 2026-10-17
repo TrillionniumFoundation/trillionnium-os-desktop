@@ -4,6 +4,11 @@ This is a source review at **2026-10-17 13:20 UTC**, before any original-process
 result was supplied to this review. It changes no executable source or
 qualification receipt. It neither links nor launches Agentd.
 
+**Later execution:** the separate [ARM64 original-process receipt](evidence/2026-10-17-original-agentd-arm/README.md)
+records the successful build/link and eight runtime checks completed after this
+review. The statements below retain the 13:20 source-review time boundary;
+they do not replace that runtime evidence or qualify persistent Session/Shell.
+
 The reviewed desktop cut is local
 `50fa836e064f67268aafcc6d64835426f89cc90b`, published with the same tree as
 [`5beb3fab54fe7dd60072864276ece1ced38150ab`][desktop]. Its A07 directories are

@@ -89,27 +89,35 @@ own IPC continues to respond. The fixture has no model, policy, grant, durable
 operation database, or device effects, and must never be presented as a running
 Hepta production profile.
 
-## Live profile acceptance still required
+## Original process passed; persistent Session and effect profiles remain
 
 The separate [original-Agentd gate](../../tests/integration/hepta/ORIGINAL_AGENTD.md)
-now provides fixed-source build/launch commands, original-owner process
-assertions, and the actual resource/artifact blockers. Its default preflight
+provides fixed-source build/launch commands and original-owner process
+assertions. Its default preflight
 does not compile or launch Agentd and cannot satisfy live acceptance.
 
-The archived Rust 1.95 compiler checks for the original owner-library probe and
-the original Agentd binary selection passed; executable linking and original
-process assertions remain `not_run` in those records. See the
+The [native ARM64 run and raw evidence](../../tests/integration/hepta/evidence/2026-10-17-original-agentd-arm/README.md)
+now record a passed original Agentd build/link/run on exact desktop `1974d9a9`
+and original `f8c9419d`. All eight original-process checks passed, including
+restart, old-spawn rejection and controlled stop; the three downloaded ELF
+hashes and AArch64 headers independently match the executed report. Both
+source checkouts and the original lock remained clean.
+
+The earlier local Rust 1.95 compiler checks passed without linking or running
+the process in those historical records. See the
 [build review and raw evidence](../../tests/integration/hepta/BUILD_REVIEW.md).
 The [live-source review](../../tests/integration/hepta/LIVE_SOURCE_REVIEW.md)
 checks the actual Supervisor/Agentd startup and Session handoff against the
 fixed source. It is not another executed process result.
 
-For a live run, separately record the fixed Hepta executable/build features,
-launcher command, trusted identity/generation/UID source, configured owners and
-providers, and actual capability response. First verify only the four supported
-read calls. Then qualify daemon restart, generation replacement, history loss,
-and Session freshness. Do not count `--help`, the Python fixture, or source
-conformance as this evidence. Authenticated objective submission and HOS2
+The passed ARM gate launches a new observer CLI for each read and used no ready
+hold. It does not qualify a continuous Session worker or Shell display. The
+next integration run must bind the actual Session executable to the trusted
+original-owner endpoint, then verify continuous lifecycle observation, history
+loss/freshness, rejection of the old spawn after restart, and an explicit trusted
+new configuration for a new Session. Record the actual Shell projection too.
+Do not count `--help`, the Python fixture, or source conformance as this
+end-to-end evidence. Authenticated objective submission and HOS2
 effects require their own owner-approved provider/adapter and durable-result
 acceptance, not changes to this observer's method allowlist.
 
