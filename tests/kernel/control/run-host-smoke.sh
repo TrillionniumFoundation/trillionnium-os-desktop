@@ -20,6 +20,9 @@ test -f "$here/run_queryabi_guest.py" && test ! -L "$here/run_queryabi_guest.py"
 test -f "$here/test_queryabi_guest_runner.py" && test ! -L "$here/test_queryabi_guest_runner.py"
 python3 -I -m unittest discover -s "$here" -p 'test_queryabi_guest_runner.py' -v
 python3 -I -O -m unittest discover -s "$here" -p 'test_queryabi_guest_runner.py' -v
+test -f "$here/test_queryabi_process_space.py" && test ! -L "$here/test_queryabi_process_space.py"
+python3 -I -m unittest discover -s "$here" -p 'test_queryabi_process_space.py' -v
+python3 -I -O -m unittest discover -s "$here" -p 'test_queryabi_process_space.py' -v
 set +e
 "$scratch/probe" --device /dev/null --ioctl-cmd 0x123456 >"$scratch/refusal.log" 2>&1
 result=$?

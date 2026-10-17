@@ -82,6 +82,10 @@ pub(super) fn init_on_each_cpu() {
     timer_manager::init_on_each_cpu();
 }
 
+// Allocated once per Process lifetime, not derived from a truncating timestamp.
+// 0 is never issued and the checked counter never wraps or reuses a retired ID.
+static NEXT_HEPTA_PROCESS_SPACE: AtomicU64 = AtomicU64::new(1);
+
 /// Process stands for a set of threads that shares the same userspace.
 pub struct Process {
     // Immutable Part
@@ -151,6 +155,9 @@ pub struct Process {
     /// Process start time since boot.
     start_time: Jiffies,
 
+    /// Kernel-owned unique per-Process HOS2 namespace sequence (0 = uninitialized).
+    /// Multiple control opens share it; a reused PID must never reuse it.
+    hepta_process_space: AtomicU64,
     /// Incremented after a successful execve to fence old-image fds.
     hepta_exec_epoch: AtomicU64,
 
@@ -270,6 +277,7 @@ impl Process {
                 prof_clock,
                 timer_manager,
                 start_time: Jiffies::elapsed(),
+                hepta_process_space: AtomicU64::new(0),
                 hepta_exec_epoch: AtomicU64::new(0),
                 user_ns: Mutex::new(user_ns),
             }
@@ -313,6 +321,30 @@ impl Process {
     /// Returns the image-generation fence for native HOS2 sessions.
     pub(crate) fn hepta_exec_epoch(&self) -> u64 {
         self.hepta_exec_epoch.load(Ordering::Acquire)
+    }
+
+    /// Stable boot-scoped sequence owned by this Process, independent of PID
+    /// reuse or start-time wraparound. Allocations lost in concurrent first
+    /// opens may create gaps, but no two Process objects can share a sequence.
+    pub(crate) fn hepta_process_space(&self) -> Result<u64> {
+        let current = self.hepta_process_space.load(Ordering::Acquire);
+        if current != 0 {
+            return Ok(current);
+        }
+        let allocated = NEXT_HEPTA_PROCESS_SPACE
+            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |next| {
+                next.checked_add(1)
+            })
+            .map_err(|_| Error::with_message(Errno::ENOSPC, "HOS2 process IDs exhausted"))?;
+        match self.hepta_process_space.compare_exchange(
+            0,
+            allocated,
+            Ordering::AcqRel,
+            Ordering::Acquire,
+        ) {
+            Ok(_) => Ok(allocated),
+            Err(winner) => Ok(winner),
+        }
     }
 
     /// Advances the image-generation fence after a successful execve.
