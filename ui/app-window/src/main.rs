@@ -147,12 +147,14 @@ impl ClientWindow {
                     .desired_width(f32::INFINITY)
                     .hint_text("help / status / echo <text> / clear / exit"),
             );
-            // Enter is used by Chinese IME to confirm a candidate. Losing
-            // TextEdit focus on Enter must NEVER execute an uncommitted command.
-            // Explicit button activation is the only command commit path.
+            // egui Response::clicked() includes keyboard Enter/Space when a
+            // button has focus, not only physical clicks. An IME candidate
+            // confirmation must NEVER become an executable command merely
+            // because focus moved onto Run. Require an explicit primary
+            // pointer click; keyboard activation is intentionally excluded.
             if ui
                 .add_enabled(!self.terminal_preedit_active, egui::Button::new("Run"))
-                .clicked()
+                .clicked_by(egui::PointerButton::Primary)
                 && !self.terminal_close_requested
             {
                 self.run_restricted_command();
@@ -503,6 +505,51 @@ mod tests {
             "IME candidate confirmation via Enter is not an explicit Run click"
         );
         assert!(!state.terminal_close_requested);
+    }
+
+    #[test]
+    fn focused_run_button_enter_cannot_invent_a_pointer_click() {
+        let ctx = egui::Context::default();
+        let make_input = |events| egui::RawInput {
+            screen_rect: Some(egui::Rect::from_min_size(
+                egui::Pos2::ZERO,
+                egui::vec2(900.0, 600.0),
+            )),
+            events,
+            ..Default::default()
+        };
+        let mut run_button = None;
+        let _ = ctx.run(make_input(vec![]), |ctx| {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                run_button = Some(ui.button("Run").id);
+            });
+        });
+        ctx.memory_mut(|memory| {
+            memory.request_focus(run_button.expect("run button exists"));
+        });
+        let mut pointer_activated = false;
+        let mut focused = false;
+        let _ = ctx.run(
+            make_input(vec![egui::Event::Key {
+                key: egui::Key::Enter,
+                physical_key: None,
+                pressed: true,
+                repeat: false,
+                modifiers: egui::Modifiers::default(),
+            }]),
+            |ctx| {
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    let response = ui.button("Run");
+                    focused = response.has_focus();
+                    pointer_activated = response.clicked_by(egui::PointerButton::Primary);
+                });
+            },
+        );
+        assert!(focused, "test must exercise an actual keyboard-focused button");
+        assert!(
+            !pointer_activated,
+            "keyboard Enter, including a stray IME candidate Enter, must not execute Run"
+        );
     }
 
     #[test]
