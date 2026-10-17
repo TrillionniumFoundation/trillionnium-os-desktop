@@ -10,6 +10,8 @@ Default: require zero allocation/reallocation/deallocation under internal locks
 for the current worktree. --historical-control also reproduces the pinned e59
 counterexample with the same native scenarios. --historical-only records just
 that counterexample and explicitly makes no claim about the current worktree.
+--callback-control similarly checks the pinned pre-FnMut d172 capture-cleanup
+counterexample plus current zero; --callback-only records just that negative.
 """
 
 from __future__ import annotations
@@ -30,13 +32,14 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
 SOURCE_ROOT = ROOT / "libs/os-control/src"
 HISTORICAL_COMMIT = "e59f8b2fce1287f1ea706dc94880824a9b586ae3"
+CALLBACK_COMMIT = "d172babcb3d6275ee0dfb0c9a58207eb2149eef9"
 TOOLCHAIN = "nightly-2026-07-21"
 RUSTC_VERSION_LINE = "rustc 1.99.0-nightly (87e5904f5 2026-07-20)"
 REPLACEMENT_SYNC = b"pub(crate) use lock_trace::{lock_unpoisoned, Arc, Mutex, Weak};\n"
 SCENARIOS = (
     "reserve_new", "query_reserved", "duplicate_reserved", "native_wrong_type",
     "execute_native", "query_terminal", "duplicate_terminal", "publish_terminal_retry",
-    "retire_terminal", "query_retired", "full_window_rejection", "loss_full_window",
+    "retire_terminal", "query_retired", "callback_capture_drop", "full_window_rejection", "loss_full_window",
     "hanging_prefix_query", "hanging_prefix_retire", "hanging_prefix_full",
     "publish_pending", "retire_released_prefix", "ten_thousand_writes",
 )
@@ -48,6 +51,8 @@ SCOPE = (
     "while depth is nonzero. Positive controls, "
     "poison/unwind recovery and independent thread depth are checked. Summary includes "
     "scenario setup between named operations, excluding instrumentation controls. "
+    "Callback coverage includes implicit cleanup of owned captures whose bodies only borrow them; "
+    "explicit callback destruction, allocation and reentry remain the adapter's obligations. "
     "This is a std host harness: no Arc atomic ordering proof, exhaustive scheduling proof, "
     "portable-spin allocator proof, real kernel allocator/IRQ proof or host ResourceDomain "
     "allocation claim. Controlled allocation failures cover only the initial ring and "
@@ -109,7 +114,7 @@ def parse_events(path: Path) -> list[dict[str, object]]:
     return events
 
 
-def check_events(events: list[dict[str, object]], historical: bool) -> dict[str, object]:
+def check_events(events: list[dict[str, object]], control: str) -> dict[str, object]:
     def one(event: str, name: str | None = None) -> dict[str, object]:
         selected = [row for row in events if row.get("event") == event and (name is None or row.get("name") == name)]
         if len(selected) != 1:
@@ -137,7 +142,7 @@ def check_events(events: list[dict[str, object]], historical: bool) -> dict[str,
     zero = all(summary.get(field) == 0 for field in COUNT_FIELDS)
     if acceptance.get("zero") is not zero:
         raise ValueError("fixture acceptance disagrees with recorded counts")
-    if historical:
+    if control == "historical":
         by_name = {row["name"]: row for row in scenario_rows}
         # A compiler failure, arbitrary panic or incomplete fixture cannot be a
         # negative pass: identify the intended reserve + reclaim counterexample.
@@ -146,6 +151,16 @@ def check_events(events: list[dict[str, object]], historical: bool) -> dict[str,
                         and by_name["loss_full_window"]["dealloc"] > 0
                         and by_name["ten_thousand_writes"]["alloc"] >= 10_000):
             raise ValueError("pinned baseline did not reproduce the intended lock-allocation defect")
+    elif control == "callback":
+        by_name = {row["name"]: row for row in scenario_rows}
+        captured = by_name["callback_capture_drop"]
+        if zero or captured["alloc"] != 0 or captured["realloc"] != 0 or captured["dealloc"] <= 0:
+            raise ValueError("pinned callback baseline did not reproduce capture cleanup under the execution gate")
+        if any(any(row[field] != 0 for field in COUNT_FIELDS)
+               for row in scenario_rows if row["name"] != "callback_capture_drop"):
+            raise ValueError("callback-only baseline also reported unrelated lock-allocation defects")
+        if any(summary.get(field) != captured[field] for field in COUNT_FIELDS):
+            raise ValueError("callback-only summary includes an unrelated unlabelled lock-allocation defect")
     else:
         if not zero or any(any(row[field] != 0 for field in COUNT_FIELDS) for row in scenario_rows):
             raise ValueError("current native namespace allocated/reallocated/deallocated under an internal lock")
@@ -158,7 +173,8 @@ def check_events(events: list[dict[str, object]], historical: bool) -> dict[str,
             "allocator_positive_control": positive, "events": events}
 
 
-def run_probe(output: Path, revision: str | None, env: dict[str, str], cargo: str) -> dict[str, object]:
+def run_probe(output: Path, revision: str | None, env: dict[str, str], cargo: str,
+              control: str = "current") -> dict[str, object]:
     output.mkdir(parents=True, exist_ok=True)
     historical = revision is not None
     original = sources(revision)
@@ -167,7 +183,7 @@ def run_probe(output: Path, revision: str | None, env: dict[str, str], cargo: st
     fixture = HERE.joinpath("fixture.rs").read_bytes()
     shim = HERE.joinpath("sync_shim.rs").read_bytes()
     report: dict[str, object] = {
-        "mode": "historical_expected_counterexample" if historical else "current_required_zero",
+        "mode": f"{control}_expected_counterexample" if historical else "current_required_zero",
         "source_revision": revision or "worktree",
         "source_inventory": inventory(original), "fixture_sha256": sha(fixture),
         "shim_sha256": sha(shim), "replacement_sync_sha256": sha(REPLACEMENT_SYNC),
@@ -221,7 +237,7 @@ def run_probe(output: Path, revision: str | None, env: dict[str, str], cargo: st
                 try:
                     if execution["timed_out"] or execution["returncode"] != expected_returncode:
                         raise ValueError(f"unexpected fixture return code; expected {expected_returncode}, got {execution['returncode']}")
-                    report["checks"] = check_events(parse_events(output / "run.stdout.log"), historical)
+                    report["checks"] = check_events(parse_events(output / "run.stdout.log"), control)
                     report["passed"] = True
                 except (ValueError, TypeError, KeyError, json.JSONDecodeError) as error:
                     report["error"] = str(error)
@@ -247,6 +263,8 @@ def main() -> int:
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--historical-control", action="store_true")
     mode.add_argument("--historical-only", action="store_true")
+    mode.add_argument("--callback-control", action="store_true")
+    mode.add_argument("--callback-only", action="store_true")
     args = parser.parse_args()
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
@@ -262,7 +280,8 @@ def main() -> int:
     env["RUSTC"] = rustc
     report: dict[str, object] = {
         "scope": SCOPE, "historical_commit": HISTORICAL_COMMIT,
-        "current_check_executed": not args.historical_only,
+        "callback_commit": CALLBACK_COMMIT,
+        "current_check_executed": not (args.historical_only or args.callback_only),
         "rustup_toolchain": env["RUSTUP_TOOLCHAIN"],
         "toolchain_environment": {key: env.get(key) for key in (
             "RUSTUP_HOME", "CARGO_HOME", "RUSTC", "RUSTC_WRAPPER", "RUSTC_WORKSPACE_WRAPPER",
@@ -282,8 +301,13 @@ def main() -> int:
             resolved = git_bytes("rev-parse", HISTORICAL_COMMIT).decode().strip()
             if resolved != HISTORICAL_COMMIT:
                 raise ValueError("historical commit pin did not resolve exactly")
-            report["probes"]["historical"] = run_probe(output / "historical", HISTORICAL_COMMIT, env, cargo)
-        if not args.historical_only:
+            report["probes"]["historical"] = run_probe(output / "historical", HISTORICAL_COMMIT, env, cargo, "historical")
+        if args.callback_control or args.callback_only:
+            resolved = git_bytes("rev-parse", CALLBACK_COMMIT).decode().strip()
+            if resolved != CALLBACK_COMMIT:
+                raise ValueError("callback commit pin did not resolve exactly")
+            report["probes"]["callback"] = run_probe(output / "callback", CALLBACK_COMMIT, env, cargo, "callback")
+        if not (args.historical_only or args.callback_only):
             report["probes"]["current"] = run_probe(output / "current", None, env, cargo)
         expected_hashes = {row["path"]: row["sha256"] for row in report["fixtures"]}
         report["all_probes_used_identical_harness_bytes"] = all(
@@ -292,10 +316,12 @@ def main() -> int:
             for probe in report["probes"].values()
         )
         if report["all_probes_used_identical_harness_bytes"] is not True:
-            raise ValueError("historical/current probe fixture or shim differs from the initial harness bytes")
+            raise ValueError("probe fixture or shim differs from the initial harness bytes")
         report["passed"] = all(probe["passed"] for probe in report["probes"].values())
         report["result"] = ("historical_counterexample_only_current_not_checked" if args.historical_only
+                            else "callback_capture_counterexample_only_current_not_checked" if args.callback_only
                             else "current_zero_with_historical_control" if args.historical_control
+                            else "current_zero_with_callback_control" if args.callback_control
                             else "current_zero") if report["passed"] else "failed"
     except (OSError, ValueError, subprocess.SubprocessError) as error:
         report["error"] = str(error)

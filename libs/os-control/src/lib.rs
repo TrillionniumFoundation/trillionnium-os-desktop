@@ -35,6 +35,12 @@ pub use management::{
     ManagementRevokeReceipt,
 };
 
+mod resource_state;
+pub use resource_state::{
+    NativeResourceError, NativeResourceReceipt, NativeResourceState, NativeResourceUpdate,
+    NativeRevisionChange,
+};
+
 pub const CPU_PERIOD_NS: u64 = 100_000_000;
 pub const DEFAULT_WINDOW_CAPACITY: usize = 1024;
 /// Host-model resource family identity tombstones. Kernel integration must
@@ -2223,11 +2229,11 @@ impl ControlCore {
         &self,
         token: &ReserveToken,
         publisher: PublisherId,
-        execute: F,
+        mut execute: F,
     ) -> Result<DeliveryObservation, DeliveryError>
     where
         T: core::any::Any + Send + Sync,
-        F: FnOnce(NativeExecution<'_, T>) -> PublishOutcome,
+        F: FnMut(NativeExecution<'_, T>) -> PublishOutcome,
     {
         let slot = self.token_slot(token, publisher)?;
         let request = match &slot.request {
@@ -2306,20 +2312,23 @@ impl ControlCore {
     /// Unwind or malformed outcome leaves an opaque pending slot: subsequent
     /// execution is Busy, retirement is blocked, and only trusted externally
     /// fenced reconciliation may finish it through `publish`.
+    /// The callback is borrowed for its single invocation. Its owned captures
+    /// are retained until after the execution gate is released, including
+    /// during unwinding; implicit capture cleanup is not part of the effect.
     pub fn execute_reserved<F>(
         &self,
         token: &ReserveToken,
         publisher: PublisherId,
-        execute: F,
+        mut execute: F,
     ) -> Result<DeliveryObservation, DeliveryError>
     where
-        F: FnOnce(RequestBinding) -> PublishOutcome,
+        F: FnMut(RequestBinding) -> PublishOutcome,
     {
         let slot = self.token_slot(token, publisher)?;
         if matches!(slot.request, ReservedRequest::Native(_)) {
             return Err(DeliveryError::InvalidRequest);
         }
-        self.execute_slot_reserved(token, &slot, execute)
+        self.execute_slot_reserved(token, &slot, &mut execute)
     }
 
     // Both public paths resolve and type-check their canonical stored request
@@ -2328,10 +2337,10 @@ impl ControlCore {
         &self,
         token: &ReserveToken,
         slot: &Arc<Slot>,
-        execute: F,
+        mut execute: F,
     ) -> Result<DeliveryObservation, DeliveryError>
     where
-        F: FnOnce(RequestBinding) -> PublishOutcome,
+        F: FnMut(RequestBinding) -> PublishOutcome,
     {
         let _execution = lock_unpoisoned(&slot.execution_gate);
         if !self.token_is_live(token, slot) {

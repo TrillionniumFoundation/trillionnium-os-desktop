@@ -4,9 +4,24 @@ on:
   pull_request:
     paths:
       - "kernel/asterinas/**"
+      - "libs/os-abi/**"
+      - "support/build/kernel.sh"
       - "support/build/ktest/**"
       - "support/build/prepare-host.sh"
       - "support/upstream-lock.json"
+      - "tests/kernel/control/**"
+      - "tests/organ_backend/**"
+      - ".github/workflows/a06-kernel.yml"
+  push:
+    branches: [main]
+    paths:
+      - "kernel/asterinas/**"
+      - "libs/os-abi/**"
+      - "support/build/kernel.sh"
+      - "support/build/ktest/**"
+      - "support/build/prepare-host.sh"
+      - "support/upstream-lock.json"
+      - "tests/kernel/control/**"
       - "tests/organ_backend/**"
       - ".github/workflows/a06-kernel.yml"
   workflow_dispatch:

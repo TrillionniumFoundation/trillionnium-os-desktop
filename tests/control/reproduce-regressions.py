@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Reproduce A03 failures and fixes with the pinned compiler, on a host only.
 
-The token, native-context and terminal-status baselines are genuine named commits. Drop cleanup
+The token, native-context, status and callback baselines are genuine named commits.
+Drop cleanup
 and management-origin controls are explicitly synthetic mutations of CURRENT
 source, not claimed historical commits. Expected assertion failures retain exit 101
 and logs; this script exits zero only when every negative control and fixed
@@ -26,6 +27,7 @@ import tempfile
 BASELINE_COMMIT = "40ca002fac0726b366726d3353916637b29adeae"
 NATIVE_BASELINE_COMMIT = "86663ea5a934d085a80fcaeaacca535bfb283b77"
 STATUS_BASELINE_COMMIT = "e59f8b2fce1287f1ea706dc94880824a9b586ae3"
+CALLBACK_BASELINE_COMMIT = "d172babcb3d6275ee0dfb0c9a58207eb2149eef9"
 PINNED_TOOLCHAIN = "nightly-2026-07-21"
 PINNED_VERSION = "rustc 1.99.0-nightly (87e5904f5 2026-07-20)"
 SOURCES = (
@@ -33,6 +35,7 @@ SOURCES = (
     "libs/os-control/src/native.rs",
     "libs/os-control/src/sync.rs",
     "libs/os-control/src/management.rs",
+    "libs/os-control/src/resource_state.rs",
     "tests/control/token_retirement.rs",
     "tests/control/native_handoff.rs",
     "tests/control/native_context_negative.rs",
@@ -42,6 +45,8 @@ SOURCES = (
     "tests/control/management_identity.rs",
     "tests/control/native_failure_recovery.rs",
     "tests/control/status_boundary.rs",
+    "tests/control/callback_lifetime.rs",
+    "tests/control/native_resource_state.rs",
 )
 RETIRE_FIXED = """        for _ in (ns.retired_through + 1)..=ack.through {
             if let Some(slot) = ns.slots.pop_front() {
@@ -105,6 +110,13 @@ ORIGIN_FAILURES = {
     "revoke_then_reconstruct_same_config_does_not_reactivate_the_old_snapshot",
     "snapshot_after_state_destruction_is_metadata_and_cannot_authorize_a_new_state",
     "replacing_state_inside_the_same_owner_cannot_reauthorize_a_reserved_old_d",
+}
+CALLBACK_FAILURES = {
+    "native_success_publishes_before_owned_capture_cleanup_and_loss",
+    "host_success_releases_gate_before_owned_capture_cleanup",
+    "body_unwind_releases_gate_before_capture_cleanup_and_keeps_one_effect",
+    "malformed_outcome_releases_gate_before_capture_cleanup",
+    "capture_destructor_panic_after_success_cannot_erase_terminal_publication",
 }
 
 
@@ -254,6 +266,7 @@ def main() -> int:
         "baseline_commit": BASELINE_COMMIT,
         "native_baseline_commit": NATIVE_BASELINE_COMMIT,
         "status_baseline_commit": STATUS_BASELINE_COMMIT,
+        "callback_baseline_commit": CALLBACK_BASELINE_COMMIT,
         "synthetic_drop_control": "current source with two exact reclamation blocks reverted; not a historical commit",
         "synthetic_origin_control": "current source with only the two management origin comparisons removed; not historical",
         "rustup_toolchain": PINNED_TOOLCHAIN,
@@ -307,6 +320,18 @@ def main() -> int:
         report["status_baseline_source_sha256"] = {
             path: sha256(data) for path, data in status_baseline.items()
         }
+        callback_baseline = {}
+        for source in SOURCES[:4]:
+            text = recorder.run(
+                "callback-baseline-" + Path(source).stem,
+                ["git", "--no-pager", "show", f"{CALLBACK_BASELINE_COMMIT}:{source}"],
+                repo,
+                source_output=True,
+            )
+            callback_baseline[source] = text.encode("utf-8")
+        report["callback_baseline_source_sha256"] = {
+            path: sha256(data) for path, data in callback_baseline.items()
+        }
         mutated = current[SOURCES[0]].decode("utf-8")
         for name, fixed, old in [
             ("retire-drop-under-table-lock", RETIRE_FIXED, RETIRE_MUTATED),
@@ -330,12 +355,13 @@ def main() -> int:
         with tempfile.TemporaryDirectory(prefix="a03-regressions-") as temporary:
             temporary_root = Path(temporary)
             roots = {name: temporary_root / name for name in
-                     ("historical-token", "historical-native", "historical-status", "synthetic-drop", "synthetic-origin", "fixed")}
+                     ("historical-token", "historical-native", "historical-status", "historical-callback", "synthetic-drop", "synthetic-origin", "fixed")}
             for name, root in roots.items():
                 root.mkdir()
                 inputs = (baseline if name == "historical-token" else
                           native_baseline if name == "historical-native" else
-                          status_baseline if name == "historical-status" else current)
+                          status_baseline if name == "historical-status" else
+                          callback_baseline if name == "historical-callback" else current)
                 for source, data in inputs.items():
                     (root / Path(source).name).write_bytes(data)
                 for source in SOURCES:
@@ -359,6 +385,12 @@ def main() -> int:
                                        "status_boundary.rs")
             report["checks"].append(verify_tests(recorder, "historical-status-run", executable,
                                                  1, 2, 0, STATUS_FAILURES))
+            root = roots["historical-callback"]
+            library = compile_library(recorder, rustc, "historical-callback", root)
+            executable = compile_tests(recorder, rustc, "historical-callback", root, library,
+                                       "callback_lifetime.rs")
+            report["checks"].append(verify_tests(recorder, "historical-callback-run", executable,
+                                                 2, 5, 0, CALLBACK_FAILURES))
             root = roots["synthetic-drop"]
             library = compile_library(recorder, rustc, "synthetic-drop", root)
             executable = compile_tests(recorder, rustc, "synthetic-drop", root, library, "native_handoff.rs")
@@ -375,7 +407,8 @@ def main() -> int:
                                  ("native_context_negative", 2), ("native_bound_execution", 11),
                                  ("native_lifetime", 5), ("management_authority", 15),
                                  ("management_identity", 6), ("native_failure_recovery", 3),
-                                 ("status_boundary", 3)]:
+                                 ("status_boundary", 3), ("callback_lifetime", 7),
+                                 ("native_resource_state", 7)]:
                 executable = compile_tests(recorder, rustc, "fixed-" + suite, root, library, suite + ".rs")
                 report["checks"].append(verify_tests(recorder, "fixed-" + suite + "-run", executable, count, 0, 0, set()))
         after = {source: sha256((repo / source).read_bytes()) for source in SOURCES}
