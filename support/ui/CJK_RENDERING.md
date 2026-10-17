@@ -107,6 +107,14 @@ receipts distinguish virtual XTEST keys, actual native editor contents,
 software framebuffer pixels and the unresolved candidate-position limit.
 An X11 result does not qualify the Wayland protocol path.
 
+The [2026-10-17 XIM evidence](../../tests/ui/evidence/2026-10-17-real-xim/README.md)
+records a completed 23-action replay with ASCII `nihao` producing `你好` in
+Shell and distinct `zhongwen` producing `中文` in independent Notes after
+focus leaves and returns. Nine actual software framebuffer images, native
+export and Clipboard checks, source/ELF bindings, and the original failed
+attempts are retained. Candidate placement at the caret remains failed; the
+passive DBus trace is not a complete winit IME event trace.
+
 For a complete input qualification, verify preedit/candidate
 placement, candidate commit, cancellation, focus changes across Shell and
 Notes, editing after commit, and keyboard shortcuts. Preserve actual host

@@ -19,6 +19,14 @@ Notes result excludes a stale Shell clipboard being accepted as Notes output.
 The expected Unicode strings are assertions only. This is a virtual keyboard
 test of a real OS input path; it does not establish physical keyboard input.
 
+The [2026-10-17 real XIM evidence](../../tests/ui/evidence/2026-10-17-real-xim/README.md)
+archives the completed UI-05 run, its nine unmodified screenshots and exact
+output assertions, plus failed preflights and earlier attempts. UI-05 passed
+the 23-action slice with the two different outputs above. Candidate placement
+at the caret remains failed. The evidence records the harness and production
+ELF sources separately; this runbook does not turn later documentation edits
+into additional executed qualifications.
+
 ## Fixed prerequisites and provenance
 
 The recorded environment is Ubuntu 24.04 on Linux x86_64, with Python 3.12,
@@ -141,9 +149,10 @@ not satisfy the pixel/input checks. An exception, timeout, cleanup error or
 resource-floor violation remains a failed run, with its original receipt and
 logs preserved in a different output directory.
 
-The optional passive IBus trace is diagnostic only. In the recorded earlier
-run it fell back from DBus Monitoring to legacy eavesdropping and exposed only
-29 empty `UpdatePreeditText` signals, with no Chinese `CommitText` payload.
+The optional passive IBus trace is diagnostic only. In each recorded UI-03,
+UI-04 and UI-05 run it fell back from DBus Monitoring to legacy eavesdropping
+and exposed only 29 empty `UpdatePreeditText` signals, with zero `CommitText`
+signals.
 That trace is not evidence of complete XIM traffic or a direct winit
 `Event::Ime` callback trace. The qualified result uses the ASCII input record,
 actual candidate/preedit pixels and application output checks together.
