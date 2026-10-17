@@ -29,8 +29,14 @@ ephemeral task entries. It evicts only terminal entries and returns a
 truthful resource error when in-flight/unknown entries cannot be removed.
 Neither UI history nor the IPC socket is a persistent effect ledger.
 The socket is a UX prototype control channel and is NOT secure
-against malicious processes under the same UID. Do not expose it as a
-capability grant or forward it over a network.
+against malicious processes under the same UID. Before parsing requests,
+Session checks the kernel SO_PEERCRED reported peer effective UID; Shell/CLI
+check the returned SERVER peer UID before transmitting a request or
+accepting a task snapshot. Both sides share the single Rust implementation
+in `ui/core/src/host_peer.rs`. A foreign UID is refused, not treated as
+an authenticated Hepta or A05 CapSpace operation. A same-UID adversary
+remains outside this prototype's trust boundary. Do not expose this channel
+as a capability grant or forward it over a network.
 
 Shell IPC uses a separate bounded user-action queue (capacity 8) and a
 single coalesced passive snapshot slot. Worker prioritizes actions, and
@@ -71,6 +77,13 @@ plaintext JSON snapshot. There is no background save, external file picker,
 Hepta submission, cross-UID security claim or A05 file-portal grant.
 Import refuses to modify a nonempty chat/composer. A same-UID malicious
 host process is outside this provisional UI storage trust boundary.
+
+The Session request parser performs an independent strict JSON-map
+schema check before deserializing the known Request enum, rejecting duplicate,
+missing, and unknown keys for Snapshot, Launch and Cancel. A real earlier Rust
+binary accepted a Snapshot with extra data; the blocking native Session
+wire-regression fails against that older executable. Host frames remain
+strictly bounded to 64 KiB and are not a durable ledger.
 
 Startup is protected by a Linux kernel advisory exclusive session.lock
 (0600, O_NOFOLLOW), acquired before stale Socket cleanup or UnixListener
