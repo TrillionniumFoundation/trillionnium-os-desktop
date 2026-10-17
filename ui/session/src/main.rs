@@ -513,17 +513,22 @@ fn linux_socket_peer_credentials(stream: &UnixStream) -> io::Result<LinuxPeerCre
 }
 
 #[cfg(target_os = "linux")]
-fn require_same_uid_peer(stream: &UnixStream) -> io::Result<()> {
-    let cred = linux_socket_peer_credentials(stream)?;
-    // Linux kernel supplies peer UID on the connected Unix socket. This
-    // equality cannot distinguish two programs with the same host UID.
-    if cred.uid != unsafe { geteuid() } {
+fn validate_same_uid(cred: LinuxPeerCred, expected_uid: u32) -> io::Result<()> {
+    // Kernel-derived UID match only, not security among processes sharing
+    // one UID and not a trusted A05 authority or Hepta capability.
+    if cred.uid != expected_uid {
         return Err(io::Error::new(
             io::ErrorKind::PermissionDenied,
             "Cross-UID host UI IPC request refused",
         ));
     }
     Ok(())
+}
+
+#[cfg(target_os = "linux")]
+fn require_same_uid_peer(stream: &UnixStream) -> io::Result<()> {
+    let cred = linux_socket_peer_credentials(stream)?;
+    validate_same_uid(cred, unsafe { geteuid() })
 }
 
 #[cfg(not(target_os = "linux"))]
@@ -646,13 +651,16 @@ mod tests {
         assert_eq!(observed.pid, std::process::id() as i32);
         assert!(require_same_uid_peer(&session_side).is_ok());
 
-        // An observed UID mismatch is denied; the UI session generation
-        // remains a stale-command fence, never an identity credential.
-        assert_ne!(observed.uid, observed.uid.wrapping_add(1));
-        assert!(
-            observed.uid != observed.uid.wrapping_add(1),
-            "a different UID must be rejected before request parsing"
+        // Reuse the EXACT production predicate with a deliberately
+        // mismatched owner UID. No second-user account is needed in CI.
+        let other_uid = observed.uid.wrapping_add(1);
+        assert_eq!(
+            validate_same_uid(observed, other_uid)
+                .unwrap_err()
+                .kind(),
+            io::ErrorKind::PermissionDenied
         );
+        assert!(validate_same_uid(observed, observed.uid).is_ok());
     }
 
     #[test]
