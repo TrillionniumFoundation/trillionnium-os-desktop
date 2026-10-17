@@ -7,6 +7,7 @@ device driver, data disk, network stack, firmware, or production service.
 """
 import argparse
 import gzip
+import io
 import hashlib
 import json
 import os
@@ -27,6 +28,7 @@ EXPECTED_SUCCESS = "HEPTA_QUERYABI_OK ops=QueryAbi_only, independent_sessions=ye
 BOOT_MARKER = b'echo "TRILLIONNIUM_A01_BOOT_OK"'
 MAX_SERIAL_BYTES = 8 * 1024 * 1024
 MAX_INPUT_BYTES = 64 * 1024 * 1024
+MAX_UNPACKED_INITRAMFS_BYTES = 64 * 1024 * 1024
 
 
 def digest(data):
@@ -70,11 +72,24 @@ def read_pinned_file(path, expected_hash, limit=MAX_INPUT_BYTES):
     return data
 
 
+def decode_bounded_initramfs(original_gzip, max_unpacked=MAX_UNPACKED_INITRAMFS_BYTES):
+    """Reject a small compressed input before it can inflate without bound."""
+    require(0 < max_unpacked <= MAX_UNPACKED_INITRAMFS_BYTES,
+            "invalid initramfs decompression limit")
+    with gzip.GzipFile(fileobj=io.BytesIO(original_gzip), mode="rb") as stream:
+        data = stream.read(max_unpacked + 1)
+        require(len(data) <= max_unpacked, "initramfs decompression limit exceeded")
+        # Consume one final byte to surface truncated CRC/trailer and concatenated
+        # gzip members without allowing unbounded extraction.
+        require(stream.read(1) == b"", "initramfs decompression limit exceeded")
+    return data
+
+
 def build_guest_initramfs(original_gzip, compiled_probe):
     """Repack only in memory; never extract original cpio to the host."""
     require(len(original_gzip) <= 8 * 1024 * 1024, "compressed original initramfs too large")
     require(len(compiled_probe) <= 16 * 1024 * 1024, "guest probe too large")
-    entries = unpack(gzip.decompress(original_gzip))
+    entries = unpack(decode_bounded_initramfs(original_gzip))
     require(unpack(pack(entries)) == entries, "original newc roundtrip mismatch")
     require(all(e[0].lstrip("./") != "bin/hos2-queryabi" for e in entries),
             "original initramfs already has QueryAbi probe")
