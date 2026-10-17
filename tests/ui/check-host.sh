@@ -75,6 +75,10 @@ cargo test --manifest-path tests/ui/Cargo.toml --locked
 # must be refused with an actual peer-UID diagnostic. The same-UID client
 # must continue to work; old unguarded Rust binaries fail this check.
 bash tests/ui/test-cross-uid-peer.sh "$PWD/ui/target/debug"
+# Probe the ACTUAL native Session through raw Unix-socket JSON, not serde
+# unit models. Exact Snapshot/Launch/Cancel schemas must reject duplicate
+# keys or unknown metadata before any task effect can occur.
+python3 tests/ui/test-strict-request-ipc.py "$PWD/ui/target/debug"
 # The binaries are packaged only when all three suites and strict Rustfmt
 # have passed; the separate Weston smoke still owns its independent gate.
 for manifest in ui/Cargo.toml support/ui/Cargo.toml tests/ui/Cargo.toml; do
