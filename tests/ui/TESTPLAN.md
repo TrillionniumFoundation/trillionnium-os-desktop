@@ -59,8 +59,10 @@ Unit coverage:
   survives without altering input or claiming Hepta execution
 - synthetic egui IME Enabled/Preedit/Commit/Disabled plus Enter in the actual
   restricted terminal widget; Run is disabled during active preedit, and a
-  direct run attempt leaves composition text unchanged. An extra Enter still
-  cannot execute a command (NOT live Wayland IME/candidate evidence)
+  direct run attempt leaves composition text unchanged. A keyboard-focused
+  Run button also requires a primary POINTER click: plain keyboard Enter/Space
+  cannot execute a command even if IME events move focus. This is not live
+  Wayland Chinese candidate-window acceptance.
 - chat workspace explicit app actions linked to observed process task cards
 - oversized/truncated IPC frames and unknown statuses
 - successful observed host child exit

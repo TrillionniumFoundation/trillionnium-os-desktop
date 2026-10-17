@@ -101,7 +101,9 @@ language-model result can mark a task successful. Click the windows to test
 compositor focus and manually test Chinese text composition. Restricted
 Terminal does not run host shell commands, refuses log-forgery control,
 newline and bidi formatting characters, and disables Run during an active
-Chinese IME preedit without discarding uncommitted text. Cancellation
+Chinese IME preedit without discarding uncommitted text. Restricted Terminal
+executes only after an explicit primary pointer click on Run; keyboard
+Enter/Space cannot activate that button, even if it has keyboard focus. Cancellation
 sends SIGKILL and reports requested vs confirmed states separately.
 For command-line cancellation, first read the session_instance from
 trill-ctl snapshot; use trill-ctl cancel <task-id> <session-instance>.
