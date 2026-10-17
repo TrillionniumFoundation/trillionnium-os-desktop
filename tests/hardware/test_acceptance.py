@@ -469,5 +469,32 @@ class AcceptanceTests(unittest.TestCase):
             with self.assertRaises(OSError):
                 acceptance.write_output(pipe, "{}\n")
 
+    def test_cuda_8_digit_zero_domain_matches_4_digit_linux_guest_bdf(self):
+        self.guest["gemm"]["child_evidence"]["device"]["device_bdf"] = "00000000:03:00.0"
+        self.guest["gemm"]["requested_guest_bdf"] = "00000000:03:00.0"
+        self.assertEqual(self.reasons(), [])  # Still manual review, never hardware PASS.
+
+    def test_host_bdf_domain_width_normalization_is_not_device_attestation(self):
+        self.host["device"]["host_bdf"] = "00000000:05:00.0"
+        self.assertEqual(self.reasons(), [])  # Host and guest BDF can differ in VM.
+
+    def test_different_numeric_pci_domain_cannot_alias_guest_gpu(self):
+        child = self.guest["gemm"]["child_evidence"]["device"]
+        child["device_bdf"] = "00010000:03:00.0"
+        self.assertIn("guest_cuda_pci_identity_mismatch", self.reasons())
+        child["device_bdf"] = "00000000:03:00.0"
+        self.guest["gemm"]["requested_guest_bdf"] = "0001:03:00.0"
+        self.assertIn("gemm_target_bdf_mismatch", self.reasons())
+
+    def test_invalid_pci_slot_id_rejected_even_when_repeated(self):
+        self.guest["device"]["guest_bdf"] = "0000:03:20.0"
+        self.guest["gemm"]["requested_guest_bdf"] = "0000:03:20.0"
+        self.guest["gemm"]["child_evidence"]["device"]["device_bdf"] = "0000:03:20.0"
+        reasons = self.reasons()
+        self.assertIn("guest_pci_bdf_missing", reasons)
+        self.assertIn("guest_cuda_pci_identity_mismatch", reasons)
+
+
+
 if __name__ == "__main__":
     unittest.main()
