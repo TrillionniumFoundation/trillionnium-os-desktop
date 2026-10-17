@@ -1,5 +1,27 @@
 # A10 test matrix and provenance
 
+## Host fonts and actual software-composited pixels
+
+`ui/host_fonts.rs` is shared by Shell and AppWindow. Its ordinary tests reject
+invalid override configuration, malformed/Latin-only font bytes, an invalid
+face, a nonregular input and an oversized file. The explicitly ignored real
+font test must be run with an owner-selected CJK font: it checks both egui
+families and nonzero rasterized Chinese outlines. An ignored test is not a
+successful CJK qualification.
+
+`probe-cjk-pixels.py` separately starts private Pixman Weston, captures actual
+Shell and Session-owned Notes PNGs, records registry and font/binary hashes,
+and requires observed Notes cancellation. Captured colors/window differences
+must be paired with visual review of the actual Chinese labels and TextEdit
+hints. This does not replace live IME validation. The current Weston 13
+headless registry has v1 text input, no v3 and no seat, while locked winit
+uses v3. The complete procedure and evidence limits are in
+[`CJK_RENDERING.md`](../../support/ui/CJK_RENDERING.md).
+
+The headless lifecycle scripts now explicitly select Pixman with no inherited
+Weston configuration. Historical no-op/layout receipts retain their original
+qualification and do not become pixel receipts after this source change.
+
 ## Latest recorded Linux host result
 
 The [final 2026-10-17 owner integration evidence](evidence/2026-10-17-rust188-owner-sync/README.md)
