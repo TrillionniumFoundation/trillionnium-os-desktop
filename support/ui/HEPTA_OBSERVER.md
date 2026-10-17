@@ -212,8 +212,20 @@ An observed runtime does not satisfy AuthBus objective submission,
 trusted permission prompts, HOS2 device effects, target-kernel graphics,
 CJK/IME, Android/iOS or physical-device acceptance.
 
-The next write-side step belongs to A07/A05: assemble the existing
-`AuthBusObjectiveIngress` with its authorized signing/owner context, then
+The [original-owner continuous Session/Shell gate](ORIGINAL_HEPTA_SHELL.md)
+adds six held phases to A07's real original probe: Starting, Running,
+Draining, old-spawn stale, explicit trusted Session replacement and stopped
+stale. A10 keeps one native Shell alive and captures six actual X11 frames
+with same-process Session snapshots before and after each capture. The
+first-layout marker remains one-shot; all six images require independent
+visual review. An acknowledgment file coordinates the lifecycle and is not
+a renderer or original-runtime receipt.
+
+The next write-side step belongs to A07/A05: assemble the actual pinned
+`state_control → objective_runtime::ObjectiveRuntimeHost::submit` entry with
+its existing authorized signing/owner context, then
 expose a narrow typed submission interface with owner-issued receipt
 identity and uncertain-delivery reconciliation. Do not turn the local
 composer, event metadata or a provider message into a success receipt.
+The undeclared `objective_ingress.rs` file is not the compiled Agentd entry;
+see A07's [fixed-source review](../../tests/integration/hepta/LIVE_SOURCE_REVIEW.md).
