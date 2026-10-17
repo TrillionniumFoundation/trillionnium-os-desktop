@@ -81,12 +81,47 @@ def check(binary_dir):
                 after = roundtrip(sock, b'{"type":"snapshot"}')
                 require(after["type"] == "snapshot" and not after["tasks"],
                         "malformed requests changed host task state")
+                # A malformed Launch may briefly spawn a child and exit
+                # before the following Snapshot. Guard on Session's durable
+                # next-id allocation too: the first legitimate host launch
+                # must still get ID 1, not silently skip an effected request.
+                legitimate = roundtrip(
+                    sock,
+                    (b'{"type":"launch","workspace":"research","app":"notes",'
+                     b'"expected_instance":"' + generation.encode() + b'"}'),
+                )
+                require(legitimate["type"] == "task", "valid Launch should reach host Session")
+                task = legitimate["task"]
+                require(task["id"] == 1, "malformed Launch consumed a task ID or spawned a child")
+                require(task["workspace"] == "research" and task["app"] == "notes",
+                        "valid Launch was rewritten by a forged request")
+                # Headless GUI is allowed to fail, but only the Session can
+                # observe the actual child outcome. No Hepta success is implied.
+                require(task["state"] in ("running", "failed"),
+                        "unexpected Session response for real host child")
+                if task["state"] == "running":
+                    cancel = roundtrip(
+                        sock,
+                        (b'{"type":"cancel","id":1,"expected_instance":"'
+                         + generation.encode() + b'"}'),
+                    )
+                    require(cancel["type"] == "task", "real child cancellation not acknowledged")
+                    for _ in range(100):
+                        time.sleep(0.02)
+                        snapshot = roundtrip(sock, b'{"type":"snapshot"}')
+                        last = next(t for t in snapshot["tasks"] if t["id"] == 1)
+                        if last["state"] in ("cancelled", "failed", "completed"):
+                            break
+                    else:
+                        raise AssertionError("real launched child was not reaped")
+                else:
+                    require(task["state"] == "failed", "GUI spawn failed with wrong host state")
                 valid_cancel = roundtrip(sock, (b'{"type":"cancel","id":999,"expected_instance":"'
                                                + generation.encode() + b'"}'))
                 require(valid_cancel["type"] == "error" and "task 999 does not exist" in valid_cancel["message"],
                         "valid Cancel was confused with schema rejection")
                 require(proc.poll() is None, "Rust Session died after malformed IPC")
-                print("A10 STRICT REQUEST IPC PASS: real Rust Session rejects 8 forged raw frames, retains empty task state and accepts typed Snapshot/Cancel")
+                print("A10 STRICT REQUEST IPC PASS: 8 forged frames rejected, first legitimate Launch remains ID 1, observed child cleanup, typed Cancel")
             finally:
                 if proc.poll() is None:
                     proc.terminate()
