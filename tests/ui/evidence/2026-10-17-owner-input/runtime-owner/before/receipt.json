@@ -1,0 +1,38 @@
+{
+  "label": "before",
+  "script_revision": "45552fbd8f79ea713509908ac4b08a3fd44a95bc",
+  "script_sha256": "89bb4fc5a798f8b0705d990ba2d91c3b375ec6ff34ded42063e8a1213094f80d",
+  "command": [
+    "sudo",
+    "-n",
+    "-u",
+    "vscode",
+    "env",
+    "-i",
+    "PATH=/usr/bin:/bin",
+    "TMPDIR=/tmp/trill-runtime-owner-r5-z1_r1r33/fixtures",
+    "/usr/bin/bash",
+    "-c",
+    "id -u; exec bash \"$1\" \"$2\"",
+    "bash",
+    "/tmp/trill-runtime-owner-r5-z1_r1r33/before.sh",
+    "/tmp/trill-runtime-owner-r5-z1_r1r33/bin"
+  ],
+  "started_at_utc": "2026-10-17T13:32:10.462650+00:00",
+  "copied_logs": [
+    {
+      "path": "console.log",
+      "sha256": "311169a603c7eddab8bdc2c04e1ebf27d0d381f11d9e528deb370bbc8343801b",
+      "bytes": 461
+    },
+    {
+      "path": "foreign_runtime.log",
+      "sha256": "e29b4e33a495260a43be5636388b511b4442366e6c0ec9f5b0df6219a508958e",
+      "bytes": 172
+    }
+  ],
+  "exit_code": 1,
+  "caller_uid_line_observed": true,
+  "ended_at_utc": "2026-10-17T13:32:13.521602+00:00",
+  "expected_result_observed": true
+}
