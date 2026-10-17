@@ -54,6 +54,7 @@ require_owner_denial foreign_runtime 'XDG_RUNTIME_DIR owner UID differs from Ses
 # A caller may own XDG_RUNTIME_DIR while the existing UI subtree was
 # replaced by another UID. Opening an old subtree must fail before binding.
 mkdir -m 700 "$root/foreign_subdir"
+sudo -n chown 0:0 "$root/foreign_subdir"
 mkdir -m 700 "$root/foreign_subdir/trillionnium-ui"
 sudo -n chown 65534:65534 "$root/foreign_subdir/trillionnium-ui"
 require_owner_denial foreign_subdir 'UI socket directory owner UID differs from Session effective UID'
@@ -61,6 +62,7 @@ require_owner_denial foreign_subdir 'UI socket directory owner UID differs from 
 # The lock itself can be mode 0600 but belong to a different UID. Root can
 # open and flock it unless the service checks the actual file owner.
 mkdir -m 700 "$root/foreign_lock" "$root/foreign_lock/trillionnium-ui"
+sudo -n chown 0:0 "$root/foreign_lock" "$root/foreign_lock/trillionnium-ui"
 touch "$root/foreign_lock/trillionnium-ui/session.lock"
 chmod 600 "$root/foreign_lock/trillionnium-ui/session.lock"
 sudo -n chown 65534:65534 "$root/foreign_lock/trillionnium-ui/session.lock"
@@ -69,6 +71,7 @@ require_owner_denial foreign_lock 'session.lock owner UID differs from Session e
 # Positive: exact same Rust Session under this effective UID's own 0700
 # runtime must reach socket bind and stay alive until our bounded timeout.
 mkdir -m 700 "$root/owned"
+sudo -n chown 0:0 "$root/owned"
 owned_code=0
 sudo -n timeout --signal=TERM --kill-after=2s 1s env \
     XDG_RUNTIME_DIR="$root/owned" "$source_dir/trill-session" \
