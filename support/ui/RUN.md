@@ -45,7 +45,14 @@ they depend on compatible Linux system libraries. An independent committed
 it compiles four disposable C ELF fixtures (NOT A10 Rust binaries), verifies
 the provenance and both SHA256 layers, and proves failure cannot replace an
 existing archive when one source executable is missing. Real Rust executables
-are only packaged after the three actual Cargo suites and Rustfmt pass. The artifact is NOT an
+are only packaged after the three actual Cargo suites and Rustfmt pass.
+The blocking host job then independently replays that newly built archive
+through `tests/ui/replay-packaged-host.sh`, refusing a wrong source SHA or
+unsafe tar contents before extraction. The replay launches *actual packaged
+Rust executables* to check Session/CLI ownership, private IPC, singleton
+flock, stale-generation rejection, observed FAILED headless GUI, and clean
+restart in a private runtime without a display. Weston, live Chinese IME,
+GPU, and Asterinas acceptance remain separate gates. The artifact is NOT an
 Asterinas boot image, compositor, IME, native GPU gate or proof Weston passed.
 Never publish it as a release simply because the binary build succeeded.
 

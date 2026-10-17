@@ -46,7 +46,7 @@ capture_fmt_on_exit() {
 }
 trap capture_fmt_on_exit EXIT
 
-bash -n tests/ui/smoke-wayland.sh tests/ui/headless-weston.sh tests/ui/compositor-restart.sh support/ui/package-host-binaries.sh tests/ui/test-package-host-binaries.sh
+bash -n tests/ui/smoke-wayland.sh tests/ui/headless-weston.sh tests/ui/compositor-restart.sh support/ui/package-host-binaries.sh tests/ui/test-package-host-binaries.sh tests/ui/replay-packaged-host.sh
 python3 tests/ui/test-session-lock.py
 bash tests/ui/test-smoke-cleanup.sh
 bash tests/ui/test-zombie-liveness.sh
@@ -74,6 +74,11 @@ for manifest in ui/Cargo.toml support/ui/Cargo.toml tests/ui/Cargo.toml; do
 done
 if [[ -n "${RUNNER_TEMP:-}" ]]; then
     bash support/ui/package-host-binaries.sh "$RUNNER_TEMP/a10"
+    # Run the exact built ELF files from the new CI archive independently
+    # of Cargo, with no display. Assert real IPC ownership, stale-generation
+    # rejection, FAILED headless client, and fresh Session identity.
+    # This is deliberately separate from the later Weston graphics smoke.
+    bash tests/ui/replay-packaged-host.sh         "$RUNNER_TEMP/a10/a10-linux-host-binaries.tar.gz" "$(git rev-parse HEAD)"
 fi
 # The EXIT hook still preserves a formatter patch on any earlier failure.
 

@@ -31,6 +31,11 @@ Unit coverage:
   actually executes Linux packager; verifies 4 files, source provenance,
   inner/outer SHA256, preservation of prior archive on missing executable,
   and rejection of relative destinations (NOT Rust or Wayland success)
+- A10-owned `tests/ui/replay-packaged-host.sh` executes the four *real*
+  CI-built Rust ELF files only after checking archive source commit and
+  all SHA256 sums; starts Session and CLI in a fresh private runtime,
+  tests 0600 IPC, singleton flock, stale fencing, FAILED headless GUI child,
+  and fresh Session after restart (no graphical compositor assertion)
 - strict HOS2 read-only UI adapter: opcode/payload pairing, request-id
   correlation, response opcode matching, and hidden mutating payload refusal
 - shared A02 `Request::encode` preflight before any transport exchange and
