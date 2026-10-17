@@ -312,9 +312,7 @@ impl<'de> Deserialize<'de> for UniqueRequestFields {
                 A: MapAccess<'de>,
             {
                 let mut fields = serde_json::Map::new();
-                while let Some((key, value)) =
-                    input.next_entry::<String, serde_json::Value>()?
-                {
+                while let Some((key, value)) = input.next_entry::<String, serde_json::Value>()? {
                     if fields.insert(key, value).is_some() {
                         return Err(A::Error::custom("duplicate host request key"));
                     }
