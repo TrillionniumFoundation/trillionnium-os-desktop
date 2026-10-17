@@ -7,8 +7,11 @@ device driver, data disk, network stack, firmware, or production service.
 """
 import argparse
 import gzip
+import io
 import hashlib
 import json
+import os
+import stat
 from pathlib import Path
 import re
 import subprocess
@@ -25,6 +28,7 @@ EXPECTED_SUCCESS = "HEPTA_QUERYABI_OK ops=QueryAbi_only, independent_sessions=ye
 BOOT_MARKER = b'echo "TRILLIONNIUM_A01_BOOT_OK"'
 MAX_SERIAL_BYTES = 8 * 1024 * 1024
 MAX_INPUT_BYTES = 64 * 1024 * 1024
+MAX_UNPACKED_INITRAMFS_BYTES = 64 * 1024 * 1024
 
 
 def digest(data):
@@ -37,10 +41,47 @@ def require(condition, message):
 
 
 def read_pinned_file(path, expected_hash, limit=MAX_INPUT_BYTES):
-    require(path.is_file() and not path.is_symlink(), "input must be a regular non-symlink file")
-    require(path.stat().st_size <= limit, "pinned input too large")
-    data = path.read_bytes()
+    """Bound one pinned input by its opened FD; reject link/path swaps.
+
+    The previous is_file/stat/read_bytes sequence re-resolved the path after
+    validation and could follow a replacement link or read an oversized
+    regular file before comparing its digest. Hash validation alone does not
+    prevent an unbounded or device-backed read.
+    """
+    fd = None
+    try:
+        fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK | os.O_CLOEXEC)
+        with os.fdopen(fd, "rb") as stream:
+            fd = None
+            before = os.fstat(stream.fileno())
+            require(stat.S_ISREG(before.st_mode) and before.st_nlink == 1,
+                    "input must be a regular nonlinked file")
+            require(0 <= before.st_size <= limit, "pinned input too large")
+            data = stream.read(limit + 1)
+            after = os.fstat(stream.fileno())
+            require(len(data) <= limit, "pinned input exceeds size bound")
+            require(len(data) == before.st_size == after.st_size,
+                    "pinned input changed size while reading")
+            require((before.st_dev, before.st_ino, before.st_mtime_ns, before.st_ctime_ns)
+                    == (after.st_dev, after.st_ino, after.st_mtime_ns, after.st_ctime_ns),
+                    "pinned input changed during read")
+    finally:
+        if fd is not None:
+            os.close(fd)
     require(digest(data) == expected_hash, f"pinned input SHA256 mismatch: {path}")
+    return data
+
+
+def decode_bounded_initramfs(original_gzip, max_unpacked=MAX_UNPACKED_INITRAMFS_BYTES):
+    """Reject a small compressed input before it can inflate without bound."""
+    require(0 < max_unpacked <= MAX_UNPACKED_INITRAMFS_BYTES,
+            "invalid initramfs decompression limit")
+    with gzip.GzipFile(fileobj=io.BytesIO(original_gzip), mode="rb") as stream:
+        data = stream.read(max_unpacked + 1)
+        require(len(data) <= max_unpacked, "initramfs decompression limit exceeded")
+        # Consume one final byte to surface truncated CRC/trailer and concatenated
+        # gzip members without allowing unbounded extraction.
+        require(stream.read(1) == b"", "initramfs decompression limit exceeded")
     return data
 
 
@@ -48,7 +89,7 @@ def build_guest_initramfs(original_gzip, compiled_probe):
     """Repack only in memory; never extract original cpio to the host."""
     require(len(original_gzip) <= 8 * 1024 * 1024, "compressed original initramfs too large")
     require(len(compiled_probe) <= 16 * 1024 * 1024, "guest probe too large")
-    entries = unpack(gzip.decompress(original_gzip))
+    entries = unpack(decode_bounded_initramfs(original_gzip))
     require(unpack(pack(entries)) == entries, "original newc roundtrip mismatch")
     require(all(e[0].lstrip("./") != "bin/hos2-queryabi" for e in entries),
             "original initramfs already has QueryAbi probe")
