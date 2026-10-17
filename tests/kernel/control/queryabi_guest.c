@@ -128,6 +128,56 @@ int main(int argc, char **argv){
     if(ioctl(fd,HOS_QUERY_IOCTL,NULL)!=-1||errno!=EFAULT){fail("null_transport");return 10;}
     errno=0;
     if(ioctl(fd,0xC0204803U,NULL)!=-1||errno!=ENOTTY){fail("unknown_command");return 11;}
+    /* HOS2 copyin must complete before copyout, even when user buffers
+     * overlap completely. QueryAbi is read-only and has no delivery effect. */
+    unsigned char overlapping[112]={0}, saved_request[64]={0}, overlap_tr[32]={0};
+    prep(overlapping,11);
+    memcpy(saved_request,overlapping,sizeof saved_request);
+    u64le(overlap_tr,(uint64_t)(uintptr_t)overlapping);
+    u64le(overlap_tr+8,(uint64_t)(uintptr_t)overlapping);
+    u32le(overlap_tr+16,64);u32le(overlap_tr+20,sizeof overlapping);
+    errno=0;
+    if(ioctl(fd,HOS_QUERY_IOCTL,overlap_tr)!=0 ||
+       !valid_reply(overlapping,saved_request) ||
+       memcmp(overlapping+40,a+40,16)!=0 ||
+       memcmp(overlapping+64,a+64,16)!=0){
+        fail("overlap_copyin_before_copyout");return 24;
+    }
+
+    /* An insufficient output capacity is structural EMSGSIZE and cannot
+     * partially overwrite even one byte of the advertised response buffer. */
+    unsigned char short_response[112], short_tr[32]={0};
+    memset(short_response,0xA5,sizeof short_response);
+    prep(q,12);
+    u64le(short_tr,(uint64_t)(uintptr_t)q);
+    u64le(short_tr+8,(uint64_t)(uintptr_t)short_response);
+    u32le(short_tr+16,64);u32le(short_tr+20,111);
+    errno=0;
+    if(ioctl(fd,HOS_QUERY_IOCTL,short_tr)!=-1 || errno!=EMSGSIZE){
+        fail("short_capacity_errno");return 25;
+    }
+    for(size_t index=0;index<sizeof short_response;index++){
+        if(short_response[index]!=0xA5){
+            fail("short_capacity_partial_copyout");return 26;
+        }
+    }
+
+    /* A valid QueryAbi request with an unmapped output address fails EFAULT.
+     * It never grants effect authority or makes the session unusable. */
+    unsigned char null_tr[32]={0};
+    u64le(null_tr,(uint64_t)(uintptr_t)q);
+    u32le(null_tr+16,64);u32le(null_tr+20,112);
+    errno=0;
+    if(ioctl(fd,HOS_QUERY_IOCTL,null_tr)!=-1 || errno!=EFAULT){
+        fail("null_response_copyout");return 27;
+    }
+    prep(q,13);
+    if(run_query(fd,q,c,sizeof c)!=0 || !valid_reply(c,q) ||
+       memcmp(c+40,a+40,16)!=0 || memcmp(c+64,a+64,16)!=0){
+        fail("copyout_error_must_not_invalidate_query_session");return 28;
+    }
+    puts("HEPTA_QUERYABI_COPYIN_BEFORE_COPYOUT_OK");
+    puts("HEPTA_QUERYABI_COPYOUT_ERRORS_NO_MUTATION_OK");
     int dupfd = dup(fd);
     if (dupfd < 0) { fail("dup_fd"); return 18; }
     prep(q,10);
