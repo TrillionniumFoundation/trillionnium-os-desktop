@@ -85,7 +85,8 @@ class EvidenceOutputTests(unittest.TestCase):
             with patch.object(evidence_output.os, "write", side_effect=OSError("no space")):
                 with self.assertRaises(OSError):
                     evidence_output.write_evidence_output(path, "not completed")
-            self.assertEqual(path.stat().st_size, 0)
+            self.assertFalse(path.exists())
+            self.assertEqual(list(Path(directory).glob(".a09-evidence-*")), [])
 
     def test_unicode_payload_is_utf8(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -118,6 +119,77 @@ class EvidenceOutputTests(unittest.TestCase):
             self.assertEqual(path.read_text(), '{"status":"blocked"}\n')
             with self.assertRaises(FileExistsError):
                 kernel_join_gate._write_json(path, '{"status":"review"}\n')
+
+    def test_failed_fsync_never_publishes_final_record(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "out.json"
+            with patch.object(evidence_output.os, "fsync", side_effect=OSError("fsync failed")):
+                with self.assertRaises(OSError):
+                    evidence_output.write_evidence_output(path, "{}")
+            self.assertFalse(path.exists())
+            self.assertEqual(list(Path(directory).glob(".a09-evidence-*")), [])
+
+    def test_link_conflict_after_staging_does_not_overwrite(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "out.json"
+            original_link = os.link
+
+            def race(src, dst, **kwargs):
+                path.write_text("winner", encoding="utf-8")
+                return original_link(src, dst, **kwargs)
+
+            with patch.object(evidence_output.os, "link", side_effect=race):
+                with self.assertRaises(FileExistsError):
+                    evidence_output.write_evidence_output(path, "ours")
+            self.assertEqual(path.read_text(), "winner")
+            self.assertEqual(list(Path(directory).glob(".a09-evidence-*")), [])
+
+    def test_final_parent_symlink_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            dest = root / "trusted"
+            dest.mkdir()
+            alias = root / "parent"
+            alias.symlink_to(dest, target_is_directory=True)
+            with self.assertRaises(OSError):
+                evidence_output.write_evidence_output(alias / "forged.json", "{}")
+            self.assertFalse((dest / "forged.json").exists())
+
+    def test_competing_writers_create_exactly_one_final_record(self):
+        from concurrent.futures import ThreadPoolExecutor
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "one.json"
+
+            def writer(value):
+                try:
+                    evidence_output.write_evidence_output(path, str(value))
+                    return True
+                except FileExistsError:
+                    return False
+
+            with ThreadPoolExecutor(max_workers=8) as pool:
+                result = list(pool.map(writer, range(12)))
+            self.assertEqual(sum(result), 1)
+            self.assertIn(path.read_text(), [str(i) for i in range(12)])
+            self.assertEqual(list(Path(directory).glob(".a09-evidence-*")), [])
+
+    def test_failed_directory_fsync_reports_uncertain_commit_not_success(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "out.json"
+            original_fsync = os.fsync
+
+            def fail_directory_only(fd):
+                if stat.S_ISDIR(os.fstat(fd).st_mode):
+                    raise OSError("directory durability unknown")
+                return original_fsync(fd)
+
+            with patch.object(evidence_output.os, "fsync", side_effect=fail_directory_only):
+                with self.assertRaises(OSError):
+                    evidence_output.write_evidence_output(path, "{}")
+            # Publication can precede a failed directory fsync: do not
+            # claim the record is durably committed merely because it exists.
+            self.assertEqual(path.read_text(), "{}")
+
 
 
 if __name__ == '__main__':
