@@ -11,13 +11,13 @@ WORKFLOW = ROOT / ".github/workflows/a06-kernel.yml"
 class A06KernelOutputContract(unittest.TestCase):
     def test_workflow_uses_generated_osdk_binary_name(self):
         source = WORKFLOW.read_text()
-        expected = "x86_64-unknown-none/release/asterinas-osdk-bin"
+        expected = "osdk/asterinas/asterinas-osdk-bin.elf"
         self.assertEqual(
             source.count(expected),
             2,
             "the hash check and probe must consume the generated OSDK ELF",
         )
-        self.assertNotIn("release/asterinas\\\"", source)
+        self.assertNotIn("release/asterinas-osdk-bin", source)
 
     def test_probe_scripts_keep_local_import_path(self):
         source = WORKFLOW.read_text()
