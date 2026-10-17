@@ -126,7 +126,7 @@ impl PosixThread {
 
     /// The returned lease must remain alive for the entire scheduler debit.
     pub(crate) fn cpu_cgroup(&self) -> Option<Arc<CpuCgroupLease>> {
-        self.cpu_cgroup.read().get().cloned()
+        self.cpu_cgroup.read().get().map(|value| (*value).clone())
     }
 
     pub(crate) fn set_cpu_cgroup(&self, cgroup: Option<Arc<CgroupNode>>) {
