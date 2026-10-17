@@ -124,11 +124,9 @@ impl PosixThread {
         &self.process
     }
 
-    pub(crate) fn cpu_cgroup(&self) -> Option<Arc<CgroupNode>> {
-        self.cpu_cgroup
-            .read()
-            .get()
-            .map(|lease| lease.cgroup.clone())
+    /// The returned lease must remain alive for the entire scheduler debit.
+    pub(crate) fn cpu_cgroup(&self) -> Option<Arc<CpuCgroupLease>> {
+        self.cpu_cgroup.read().get().cloned()
     }
 
     pub(crate) fn set_cpu_cgroup(&self, cgroup: Option<Arc<CgroupNode>>) {
@@ -367,11 +365,15 @@ impl PosixThread {
 /// The lease is separate from CPU usage/accounting state. It only prevents
 /// cgroup deletion while an exited task can still publish its final scheduler
 /// interval. RCU delays `Drop` until readers have left the old snapshot.
-struct CpuCgroupLease {
+pub(crate) struct CpuCgroupLease {
     cgroup: Arc<CgroupNode>,
 }
 
 impl CpuCgroupLease {
+    pub(crate) fn cgroup(&self) -> &CgroupNode {
+        &self.cgroup
+    }
+
     fn new(cgroup: Arc<CgroupNode>) -> Arc<Self> {
         cgroup.retain_cpu_charge_lease();
         Arc::new(Self { cgroup })

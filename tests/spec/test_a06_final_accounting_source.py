@@ -22,7 +22,7 @@ class A06FinalAccountingSource(unittest.TestCase):
         start = source.index("pub(crate) fn charge_task_cpu")
         body = source[start:]
         self.assertIn("thread.weak_process().upgrade()", body)
-        self.assertIn("if let Some(cgroup) = thread.cpu_cgroup()", body)
+        self.assertIn("if let Some(lease) = thread.cpu_cgroup()", body)
         self.assertIn("charge_bandwidth_hierarchy(from, until)", body)
         self.assertIn("CgroupSystem::singleton().controller().cpu.read()", body)
         # The Weak<Process> failure must not immediately return before the
@@ -40,6 +40,14 @@ class A06FinalAccountingSource(unittest.TestCase):
         )
         self.assertIn("if !process.status().is_zombie()", source)
         self.assertIn("deferred scheduler", source)
+
+    def test_debit_retains_the_lease_until_the_scheduler_charge_returns(self):
+        cpu = CPU_RS.read_text()
+        posix = POSIX_RS.read_text()
+        self.assertIn("if let Some(lease) = thread.cpu_cgroup()", cpu)
+        self.assertIn("lease.cgroup().controller().cpu.read()", cpu)
+        self.assertIn("Option<Arc<CpuCgroupLease>>", posix)
+        self.assertIn("self.cpu_cgroup.read().get().cloned()", posix)
 
     def test_zombie_final_debit_lease_blocks_cgroup_deletion(self):
         posix = POSIX_RS.read_text()

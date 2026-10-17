@@ -603,8 +603,11 @@ pub(crate) fn charge_task_cpu(task: &Task, from: u64, until: u64) {
         // cleanup. Charge the interval against the thread-owned cgroup
         // snapshot captured while the process was alive; otherwise the last
         // [from, until) interval disappears from cpu.stat and quota debt.
-        if let Some(cgroup) = thread.cpu_cgroup() {
-            let cpu = cgroup.controller().cpu.read();
+        if let Some(lease) = thread.cpu_cgroup() {
+            // Keep the lease Arc alive until the charge has completed;
+            // returning only the underlying CgroupNode could release the
+            // deletion fence before the scheduler actually debits runtime.
+            let cpu = lease.cgroup().controller().cpu.read();
             cpu.get().charge_bandwidth_hierarchy(from, until);
         } else {
             let cpu = CgroupSystem::singleton().controller().cpu.read();
