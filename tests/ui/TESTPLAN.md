@@ -73,8 +73,10 @@ Unit coverage:
   restricted terminal widget; Run is disabled during active preedit, and a
   direct run attempt leaves composition text unchanged. A keyboard-focused
   Run button also requires a primary POINTER click: plain keyboard Enter/Space
-  cannot execute a command even if IME events move focus. This is not live
-  Wayland Chinese candidate-window acceptance.
+  cannot execute a command even if IME events move focus. Shell draft Save,
+  file Export/Restore and Terminal Clear output now require the same explicit
+  pointer action; focused keyboard confirmation is tested for draft file
+  effects. This is not live Wayland Chinese candidate-window acceptance.
 - chat workspace explicit app actions linked to observed process task cards
 - strict host IPC request JSON fields: an actual previous Rust Session
   accepted unknown fields on the Snapshot unit variant despite Serde

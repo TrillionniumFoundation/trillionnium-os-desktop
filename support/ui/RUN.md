@@ -129,7 +129,11 @@ language-model result can mark a task successful. Click the windows to test
 compositor focus and manually test Chinese text composition. Restricted
 Terminal does not run host shell commands, refuses log-forgery control,
 newline and bidi formatting characters, and disables Run during an active
-Chinese IME preedit without discarding uncommitted text. Restricted Terminal
+Chinese IME preedit without discarding uncommitted text.
+Terminal Clear output and Shell draft Save / Export / Restore also require
+explicit primary pointer clicks: a focused Enter/Space key while confirming
+an IME candidate must not erase local output, persist incomplete text, or
+overwrite a draft backup. Pure navigation remains keyboard-accessible. Restricted Terminal
 executes only after an explicit primary pointer click on Run; keyboard
 Enter/Space cannot activate that button, even if it has keyboard focus. Cancellation
 sends SIGKILL and reports requested vs confirmed states separately.
