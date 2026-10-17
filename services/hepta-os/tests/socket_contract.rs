@@ -35,7 +35,7 @@ fn fixture(name: &str) -> Value {
 fn envelope(request_id: u64, payload: Value) -> Value {
     json!({
         "schema_version": 2, "request_id": request_id, "agent_id": AGENT,
-        "spawn_generation": GENERATION, "current_generation": GENERATION,
+        "spawn_generation": GENERATION, "current_generation": GENERATION + 1,
         "payload": payload
     })
 }
@@ -206,10 +206,10 @@ fn actual_socket_projects_only_bounded_safe_observations_and_allows_no_effect_me
     server.join().expect("fixture server");
     assert!(observed.health.ready);
     assert_eq!(observed.health.process_id, std::process::id());
-    assert_eq!(observed.current_generation, GENERATION);
+    assert_eq!(observed.current_generation, GENERATION + 1);
     assert_eq!(observed.events.len(), 3);
     assert_eq!(observed.next_cursor, 3);
-    assert_eq!(observed.events[1].generation, Some(GENERATION));
+    assert_eq!(observed.events[1].generation, Some(GENERATION + 1));
     assert_eq!(observed.capabilities[0].id, "fixture:future");
     let encoded = serde_json::to_string(&observed).unwrap();
     for excluded in [
@@ -319,7 +319,7 @@ fn response_correlation_version_identity_and_generation_are_mandatory() {
         ),
         (
             "current_generation",
-            json!(8),
+            json!(10),
             ObserverError::GenerationFenced,
         ),
         (
@@ -342,11 +342,10 @@ fn peer_pid_health_invariants_and_unexpected_privileged_payload_fail_closed() {
     let mut fenced = fixture("health");
     fenced["fenced"] = json!(true);
     assert_first_error(Reply::Payload(fenced), ObserverError::GenerationFenced);
-    for (field, value) in [
-        ("lifecycle", json!("stopped")),
-        ("promotion_ready", json!(false)),
-        ("extra", json!(true)),
-    ] {
+    let mut stopped = fixture("health");
+    stopped["lifecycle"] = json!("stopped");
+    assert_first_error(Reply::Payload(stopped), ObserverError::GenerationFenced);
+    for (field, value) in [("promotion_ready", json!(false)), ("extra", json!(true))] {
         let mut invalid = fixture("health");
         invalid[field] = value;
         assert_first_error(Reply::Payload(invalid), ObserverError::ProtocolMismatch);
@@ -482,7 +481,7 @@ fn event_integrity_gap_limits_and_cursor_ahead_are_checked() {
 #[test]
 fn last_health_fence_discards_the_whole_partial_poll() {
     let mut changed = envelope(4, fixture("health"));
-    changed["current_generation"] = json!(8);
+    changed["current_generation"] = json!(10);
     let mut socket = SocketFixture::new();
     let server = socket.serve(vec![
         health(),
@@ -591,5 +590,167 @@ fn stalled_socket_is_bounded_by_one_total_poll_deadline() {
     let start = Instant::now();
     assert_eq!(socket.client().poll(0, 16), Err(ObserverError::Timeout));
     assert!(start.elapsed() < Duration::from_millis(POLL_TIMEOUT_MS + 1500));
+    server.join().expect("fixture server");
+}
+
+#[test]
+fn upstream_running_uses_spawn_plus_one_and_draining_uses_spawn_plus_two() {
+    // Fixed upstream fleet/model.rs::successor increments every lifecycle
+    // transition; agentd/state.rs accepts Starting/+0, Running/+1, Draining/+2.
+    // The previous observer rejected the first real promoted Running response.
+    let mut steps = Vec::new();
+    for (index, lifecycle) in ["starting", "running", "draining"].into_iter().enumerate() {
+        let current = GENERATION + index as u64;
+        let cursor = index as u64 + 1;
+        let mut stage_health = fixture("health");
+        stage_health["lifecycle"] = json!(lifecycle);
+        stage_health["ready"] = json!(lifecycle == "running");
+        stage_health["promotion_ready"] = json!(lifecycle != "draining");
+        let page = json!({"type":"events", "events":[{"cursor":cursor,
+            "kind":{"type":"lifecycle","lifecycle":lifecycle,"generation":current}}],
+            "gap":false,"next_cursor":cursor,"latest_cursor":cursor});
+        for (method, payload) in [
+            (json!({"type":"health"}), stage_health.clone()),
+            (json!({"type":"capabilities"}), fixture("capabilities")),
+            (
+                json!({"type":"events","after_cursor":cursor-1,"limit":16}),
+                page,
+            ),
+            (json!({"type":"health"}), stage_health),
+        ] {
+            let mut response = envelope(steps.len() as u64 + 1, payload);
+            response["current_generation"] = json!(current);
+            steps.push(Step {
+                method,
+                reply: Reply::Envelope(response),
+            });
+        }
+    }
+    let mut socket = SocketFixture::new();
+    let server = socket.serve(steps);
+    let mut client = socket.client();
+    for (index, lifecycle) in ["starting", "running", "draining"].into_iter().enumerate() {
+        let observation = client
+            .poll(index as u64, 16)
+            .expect("upstream-valid lifecycle cut");
+        assert_eq!(observation.spawn_generation, GENERATION);
+        assert_eq!(observation.current_generation, GENERATION + index as u64);
+        assert_eq!(observation.health.lifecycle, lifecycle);
+        assert_eq!(
+            observation.events[0].generation,
+            Some(GENERATION + index as u64)
+        );
+    }
+    server.join().expect("fixture server");
+}
+
+fn generation_step(id: u64, method: Value, payload: Value, current: u64) -> Step {
+    let mut response = envelope(id, payload);
+    response["current_generation"] = json!(current);
+    Step {
+        method,
+        reply: Reply::Envelope(response),
+    }
+}
+
+fn lifecycle_health(lifecycle: &str) -> Value {
+    let mut value = fixture("health");
+    value["lifecycle"] = json!(lifecycle);
+    value["ready"] = json!(lifecycle == "running");
+    value["promotion_ready"] = json!(lifecycle != "draining");
+    value
+}
+
+#[test]
+fn promotion_inside_a_poll_preserves_prior_phase_events_and_final_current() {
+    let mut page = fixture("events");
+    page["events"][0]["kind"] =
+        json!({"type":"lifecycle", "lifecycle":"starting", "generation":GENERATION});
+    let mut socket = SocketFixture::new();
+    let server = socket.serve(vec![
+        generation_step(
+            1,
+            json!({"type":"health"}),
+            lifecycle_health("starting"),
+            GENERATION,
+        ),
+        caps(),
+        events(0, 16, page),
+        generation_step(
+            4,
+            json!({"type":"health"}),
+            lifecycle_health("draining"),
+            GENERATION + 2,
+        ),
+    ]);
+    let observed = socket
+        .client()
+        .poll(0, 16)
+        .expect("monotonic promotion inside a non-atomic cut");
+    assert_eq!(observed.current_generation, GENERATION + 2);
+    assert_eq!(observed.health.lifecycle, "draining");
+    assert_eq!(observed.events[0].generation, Some(GENERATION));
+    assert_eq!(observed.events[1].generation, Some(GENERATION + 1));
+    server.join().expect("fixture server");
+}
+
+#[test]
+fn valid_offsets_do_not_allow_wrong_phase_future_events_or_rollbacks() {
+    for lifecycle in ["starting", "draining", "failed"] {
+        assert_first_error(
+            Reply::Payload(lifecycle_health(lifecycle)),
+            ObserverError::GenerationFenced,
+        );
+    }
+    for (lifecycle, generation) in [
+        ("running", GENERATION),
+        ("draining", GENERATION + 2),
+        ("stopped", GENERATION),
+    ] {
+        let mut page = fixture("events");
+        page["events"][1]["kind"] =
+            json!({"type":"lifecycle", "lifecycle":lifecycle, "generation":generation});
+        let mut socket = SocketFixture::new();
+        let server = socket.serve(vec![health(), caps(), events(0, 16, page)]);
+        assert_eq!(
+            socket.client().poll(0, 16),
+            Err(ObserverError::GenerationFenced)
+        );
+        server.join().expect("fixture server");
+    }
+    // Each response is individually a valid phase, but the same process
+    // cannot move backwards during one cut or after a successful prior cut.
+    let mut socket = SocketFixture::new();
+    let server = socket.serve(vec![
+        health(),
+        generation_step(
+            2,
+            json!({"type":"capabilities"}),
+            fixture("capabilities"),
+            GENERATION,
+        ),
+    ]);
+    assert_eq!(
+        socket.client().poll(0, 16),
+        Err(ObserverError::GenerationFenced)
+    );
+    server.join().expect("fixture server");
+
+    let mut socket = SocketFixture::new();
+    let server = socket.serve(vec![
+        health(),
+        caps(),
+        events(0, 16, fixture("events")),
+        health(),
+        generation_step(
+            5,
+            json!({"type":"health"}),
+            lifecycle_health("starting"),
+            GENERATION,
+        ),
+    ]);
+    let mut client = socket.client();
+    client.poll(0, 16).expect("first running cut");
+    assert_eq!(client.poll(3, 16), Err(ObserverError::GenerationFenced));
     server.join().expect("fixture server");
 }

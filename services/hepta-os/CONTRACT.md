@@ -5,7 +5,7 @@
 The adapter targets Hepta commit
 `f8c9419df6ddeb36ff8b522a50219981fb8d9345`, Agentd control schema **2** and
 capability schema **1**. `UPSTREAM_CONTRACT.json` records SHA-256 content hashes
-and Git blob IDs for eleven reviewed files. The conformance script requires
+and Git blob IDs for twelve reviewed files. The conformance script requires
 the exact checkout commit and content before extracting original declarations.
 
 The dependency is a private, versioned client subset because the whole upstream
@@ -24,6 +24,7 @@ client method or grant authority.
 | `hepta-contracts/src/agent_id.rs:41-73` | Canonical lowercase UUID, supported version and variant |
 | `hepta-agentd/src/client.rs` and `control.rs` | Existing UDS framing and per-request response semantics |
 | `hepta-agentd/src/state_control.rs:148-170,523-531` | Health readiness calculation and read-only known-run lookup |
+| `hepta-fleet/src/model.rs:140-189` and `hepta-agentd/src/state.rs:336-345` | Increment per lifecycle transition; exact serving phase/current-generation binding |
 | `hepta-agentd/src/event_buffer.rs:13-70` | Retained suffix, gap, pagination and process-local cursors |
 | `hepta-agentd/src/lane_b_runtime.rs:29-30,571-657` | Run identity/digest bounds and terminal-observed phases |
 | `hepta-agent-protocol/src/authbus.rs` and `hepta-agentd/src/objective_runtime.rs` | ObjectiveStart authentication and owner admission, intentionally outside this client |
@@ -51,14 +52,26 @@ deployments that intentionally permit group sharing; those deployments are not
 qualified by this profile.
 
 After connecting, kernel peer credentials must supply the configured UID and a
-nonzero PID. The returned `agent_id`, `spawn_generation`, `current_generation`,
-schema version, and request ID must match the trusted configuration/request.
+nonzero PID. The returned `agent_id`, immutable `spawn_generation`, schema
+version, and request ID must match the trusted configuration/request.
 Both `HealthSnapshot.process_id` values must equal the kernel peer PID; every
-connection within a poll must have that same PID. A different current
-generation or a fenced health/event fails the entire read as
-`generation_fenced`. A process restart between polls is not hidden: the Session
+connection within a poll must have that same PID. The original fleet owner
+increments `current_generation` on each lifecycle transition. For this process
+spawn, Agentd accepts exactly Starting at spawn, Running at spawn + 1, and
+Draining at spawn + 2. The adapter validates that exact health phase mapping
+with checked arithmetic; Stopped/Failed and all other offsets fail closed.
+It permits monotonic phase advancement across the RPCs and reports the final
+health response's actual current generation. One ephemeral read watermark
+rejects regression below a prior successful observation in the same client;
+it is not a durable operation record. A fenced health/event or inconsistent
+phase fails the entire read as `generation_fenced`.
+
+A process restart between polls is not hidden: the Session
 must compare the prior observed PID, clear its old event window, and mark the
 source change, even if a launcher reused the same generation incorrectly.
+Normal current-generation advancement within the same spawn/PID preserves the
+event window. A legitimate new spawn requires new trusted endpoint configuration
+and a new client; an old client never rebinds itself to it.
 
 The pathname checks can race other processes under the same UID or a privileged
 host; peer credentials and the bounded method set remain enforced. This
@@ -75,6 +88,11 @@ the entire asynchronous attempt to five seconds. It returns a complete safe
 projection only after both health checks and all intermediate response checks
 pass. The RPCs are separate observations and do not form a linearizable owner
 transaction. Health can change immediately after the final response.
+The upstream response captures runtime generation before separately locking
+its event buffer. Promotion between those locks can yield a newer lifecycle
+event than the captured envelope generation. This mixed cut is conservatively
+discarded; the Session marks its prior observation stale and a later independent
+read can recover. The client does not weaken event fencing to hide that race.
 
 `health.ready` reports the daemon's current readiness calculation, not a model
 answer, objective admission, resource-budget installation, or device-effect
@@ -88,6 +106,9 @@ Events are restricted to `bootstrapped`, `lifecycle`, `app_server_ready`,
 not the full task, token, operation, or device-event stream. Empty struct
 variants enforce strict field rejection for the unit-shaped events; serde's
 internally tagged unit-variant parser otherwise tolerates extra fields.
+Historical lifecycle events use that event's own original phase offset and
+may precede the current phase. They must not exceed the event response's current
+generation. A prior Starting event remains valid after Running/Draining.
 
 For a successful page, `next_cursor` is exactly the last event actually returned.
 An empty page keeps the requested cursor and must be at the observed tail.

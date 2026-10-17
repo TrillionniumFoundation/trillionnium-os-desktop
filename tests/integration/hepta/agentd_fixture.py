@@ -92,7 +92,7 @@ def main():
                     payload = payload_for(request["method"], fixtures)
                     response = {
                         "schema_version": 2, "request_id": request["request_id"], "agent_id": AGENT,
-                        "spawn_generation": GENERATION, "current_generation": GENERATION,
+                        "spawn_generation": GENERATION, "current_generation": GENERATION + 1,
                         "payload": payload,
                     }
                     connection.sendall(json.dumps(response, separators=(",", ":")).encode() + b"\n")

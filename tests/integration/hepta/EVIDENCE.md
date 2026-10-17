@@ -21,7 +21,7 @@ The implementation used the session's isolated fixed-toolchain wrapper:
 commands were run through that wrapper where they invoke Cargo. The reusable
 commands in `services/hepta-os/RUN.md` select the same toolchain directly.
 
-## Executed checks
+## Initial executed checks
 
 | Actual command after the wrapper, or Python command | Result and scope |
 | --- | --- |
@@ -53,6 +53,39 @@ timeout. It verifies that the permit stays with that job, replacement work is
 rejected without queuing, and admission resumes only after actual completion.
 The test does not claim to interrupt an OS filesystem syscall.
 
+## Lifecycle compatibility correction
+
+Further original-runtime review found that the initial fixture and client both
+incorrectly equated Running `current_generation` to immutable `spawn_generation`.
+The original fleet `AgentLifecycleState::successor` increments every lifecycle
+transition, and Agentd `state.rs:336-345` accepts exactly Starting/+0,
+Running/+1 and Draining/+2. The initial serialization checks did not test that
+runtime rule. Their previous pass must not be treated as live interoperability.
+
+On 2026-10-17, the new socket regression
+`upstream_running_uses_spawn_plus_one_and_draining_uses_spawn_plus_two` was first
+run against the old implementation and failed at the valid Running cut with
+`GenerationFenced`. After the correction, the full small suite passed:
+**1 metadata unit test + 16 real private UDS socket tests, 0 failed, 0 ignored**,
+with the same fixed nightly toolchain. `cargo fmt` and
+`cargo clippy --locked --offline --all-targets -- -D warnings` also passed.
+
+The regression covers all three valid phases, advancement inside one four-RPC
+poll, retaining earlier lifecycle events, reporting the final current value,
+wrong phase/offset pairs, future-phase events, and generation rollback during
+or between polls. Original spawn, kernel PID, schema and request correlation
+checks remain in force. The fixture now uses spawn 7 / Running current 8.
+
+The conformance generator additionally binds `state.rs` (12 source hashes total)
+and extracts the original fleet transition methods and Agentd accepted-phase
+expression. Hash verification and reference generation passed. The generated
+program was then compiled and executed with **Rust 1.88.0** using
+`python3 /workspace/scratch/98f315e377b2/next-tools/run-host-rust.py cargo run --offline --manifest-path /workspace/scratch/98f315e377b2/hepta-reference-lifecycle/Cargo.toml`.
+Its lifecycle/restart/overflow behavior assertions, four payload and four
+request roundtrips, identity/envelope, and original EventBuffer tests passed.
+This is execution of extracted source with explicit surrounding shims, not a
+live original Agentd process.
+
 ## Integrated Session fixture evidence
 
 The coordinated A10 candidate also ran its actual Session IPC worker through
@@ -64,6 +97,9 @@ Session changed to stale while retaining the last successful projection. Its
 local action/IPC path remained responsive; objective submission and raw RPC
 requests were rejected by Session. The integrated probe and its detailed
 evidence belong to the A10 candidate (`tests/ui/probe-hepta-session.py`).
+That initial fixture probe predated the lifecycle correction above and used
+the incorrect current=spawn envelope. Re-run it with corrected spawn 7/current
+8 data; the initial result is retained here as historical fixture evidence.
 
 This proves the Session → facade → operating-system socket → bounded UI
 projection path with fixture data. It is **not a live Hepta daemon**, model

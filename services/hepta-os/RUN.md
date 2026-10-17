@@ -21,7 +21,7 @@ system/device changes.
 ## Source-derived conformance
 
 Use an authorized local checkout of the fixed private Hepta revision. The first
-command verifies its exact commit and the eleven reviewed source-file hashes,
+command verifies its exact commit and the twelve reviewed source-file hashes,
 then extracts the original wire declarations and original EventBuffer code
 into a **new, previously nonexistent** small verifier directory. It copies no
 Agentd runtime, signing configuration, operation store, or effect owner.
@@ -35,8 +35,13 @@ cargo +nightly-2026-07-21 run --manifest-path /tmp/hepta-pinned-wire-check/Cargo
 
 After dependencies have been fetched, both Rust commands support `--offline`.
 The emitted program checks four source-derived payload roundtrips, four
-request roundtrips, identity/envelope encoding, and the exact original
-EventBuffer gap/resume/ahead behavior. This is stronger than merely checking
+request roundtrips, identity/envelope encoding, the original fleet lifecycle
+successor and exact Agentd serving-phase expression, and the original
+EventBuffer gap/resume/ahead behavior. The small lifecycle check includes
+promotion, draining, restart fencing, invalid phase/offset pairs and overflow.
+The surrounding error/identity record shapes are explicit test shims; the
+transition methods and accepted expression are copied from verified source.
+This is stronger than merely checking
 that locally invented fixtures parse, while remaining a source/fixture test.
 It does not start Hepta Agentd.
 
@@ -77,7 +82,8 @@ python3 tests/integration/hepta/agentd_fixture.py
 In a second terminal, supply those values to `hepta-observe`, or configure the
 Session's trusted launch environment described by the UI owner's run document.
 The expected projection contains a running health state and three lifecycle
-events. Terminating the fixture with SIGTERM cleans up its private directory;
+events, immutable spawn generation 7 and current generation 8. Terminating the
+fixture with SIGTERM cleans up its private directory;
 the Session should retain its last observation as stale/unavailable while its
 own IPC continues to respond. The fixture has no model, policy, grant, durable
 operation database, or device effects, and must never be presented as a running
@@ -93,3 +99,8 @@ and Session freshness. Do not count `--help`, the Python fixture, or source
 conformance as this evidence. Authenticated objective submission and HOS2
 effects require their own owner-approved provider/adapter and durable-result
 acceptance, not changes to this observer's method allowlist.
+
+Normal lifecycle advancement keeps the same source and its historical events.
+A promotion race between the original runtime snapshot and event-buffer lock
+may briefly discard a mixed poll and mark the last snapshot stale. The next
+read may recover; this is not an automatic task retry or effect replay.

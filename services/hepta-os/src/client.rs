@@ -19,6 +19,9 @@ pub struct ObserverClient {
     runtime: Option<Runtime>,
     next_request_id: u64,
     metadata_gate: Arc<Semaphore>,
+    // Ephemeral read watermark for this configured spawn; it grants no
+    // authority and stores neither operations nor business history.
+    generation_floor: u64,
 }
 
 impl ObserverClient {
@@ -30,24 +33,28 @@ impl ObserverClient {
             .max_blocking_threads(1)
             .build()
             .map_err(|_| ObserverError::Unavailable)?;
+        let generation_floor = config.spawn_generation;
         Ok(Self {
             config,
             runtime: Some(runtime),
             next_request_id: 1,
             metadata_gate: Arc::new(Semaphore::new(1)),
+            generation_floor,
         })
     }
 
     /// Health → capabilities → event page → health, within one five-second
     /// deadline. Any failure discards the entire new observation. All four
-    /// connections must report the configured generation and the same kernel
-    /// peer PID, including both health snapshots. This is not an atomic read.
+    /// connections must report the configured spawn and the same kernel peer
+    /// PID. Current generation may progress through the original Starting,
+    /// Running and Draining phases. This is not an atomic read.
     pub fn poll(&mut self, after_cursor: u64, limit: u16) -> Result<Observation, ObserverError> {
         require_blocking_context()?;
         if !(1..=MAX_EVENTS).contains(&limit) {
             return Err(ObserverError::InvalidRequest);
         }
-        self.runtime
+        let observation = self
+            .runtime
             .as_ref()
             .expect("live runtime")
             .block_on(async {
@@ -57,13 +64,16 @@ impl ObserverClient {
                         &self.config,
                         &mut self.next_request_id,
                         &self.metadata_gate,
+                        self.generation_floor,
                         after_cursor,
                         limit,
                     ),
                 )
                 .await
                 .map_err(|_| ObserverError::Timeout)?
-            })
+            })?;
+        self.generation_floor = observation.current_generation;
+        Ok(observation)
     }
 
     /// Read one already-known run ID. There is no list, submit, cancel, ACK,
@@ -73,19 +83,21 @@ impl ObserverClient {
         if !wire::valid_identity(run_id) {
             return Err(ObserverError::InvalidRequest);
         }
-        self.runtime
+        let (observation, current_generation) = self
+            .runtime
             .as_ref()
             .expect("live runtime")
             .block_on(async {
                 timeout(Duration::from_millis(POLL_TIMEOUT_MS), async {
-                    let (_, pid) = health(
+                    let (_, pid, first_generation) = health(
                         &self.config,
                         &mut self.next_request_id,
                         &self.metadata_gate,
                         None,
                     )
                     .await?;
-                    let (payload, _) = call(
+                    monotonic_generation(self.generation_floor, first_generation)?;
+                    let (payload, _, run_generation) = call(
                         &self.config,
                         &mut self.next_request_id,
                         &self.metadata_gate,
@@ -93,22 +105,26 @@ impl ObserverClient {
                         Some(pid),
                     )
                     .await?;
+                    monotonic_generation(first_generation, run_generation)?;
                     let Payload::RunStatus { run } = payload else {
                         return Err(ObserverError::ProtocolMismatch);
                     };
                     let observed = run.map(|run| run.project(run_id)).transpose()?;
-                    health(
+                    let (_, _, final_generation) = health(
                         &self.config,
                         &mut self.next_request_id,
                         &self.metadata_gate,
                         Some(pid),
                     )
                     .await?;
-                    Ok(observed)
+                    monotonic_generation(run_generation, final_generation)?;
+                    Ok((observed, final_generation))
                 })
                 .await
                 .map_err(|_| ObserverError::Timeout)?
-            })
+            })?;
+        self.generation_floor = current_generation;
+        Ok(observation)
     }
 }
 
@@ -130,15 +146,25 @@ fn require_blocking_context() -> Result<(), ObserverError> {
     }
 }
 
+fn monotonic_generation(previous: u64, current: u64) -> Result<(), ObserverError> {
+    if current < previous {
+        Err(ObserverError::GenerationFenced)
+    } else {
+        Ok(())
+    }
+}
+
 async fn poll(
     config: &EndpointConfig,
     counter: &mut u64,
     metadata_gate: &Arc<Semaphore>,
+    generation_floor: u64,
     after_cursor: u64,
     limit: u16,
 ) -> Result<Observation, ObserverError> {
-    let (_, pid) = health(config, counter, metadata_gate, None).await?;
-    let (payload, _) = call(
+    let (_, pid, first_generation) = health(config, counter, metadata_gate, None).await?;
+    monotonic_generation(generation_floor, first_generation)?;
+    let (payload, _, caps_generation) = call(
         config,
         counter,
         metadata_gate,
@@ -146,11 +172,12 @@ async fn poll(
         Some(pid),
     )
     .await?;
+    monotonic_generation(first_generation, caps_generation)?;
     let Payload::Capabilities(capabilities) = payload else {
         return Err(ObserverError::ProtocolMismatch);
     };
     let capabilities = capabilities.project()?;
-    let (payload, _) = call(
+    let (payload, _, events_generation) = call(
         config,
         counter,
         metadata_gate,
@@ -161,15 +188,22 @@ async fn poll(
         Some(pid),
     )
     .await?;
+    monotonic_generation(caps_generation, events_generation)?;
     let Payload::Events(batch) = payload else {
         return Err(ObserverError::ProtocolMismatch);
     };
-    let events = batch.project(after_cursor, limit, config.spawn_generation)?;
-    let (health, _) = health(config, counter, metadata_gate, Some(pid)).await?;
+    let events = batch.project(
+        after_cursor,
+        limit,
+        config.spawn_generation,
+        events_generation,
+    )?;
+    let (health, _, current_generation) = health(config, counter, metadata_gate, Some(pid)).await?;
+    monotonic_generation(events_generation, current_generation)?;
     Ok(Observation {
         agent_id: config.expected_agent_id.clone(),
         spawn_generation: config.spawn_generation,
-        current_generation: config.spawn_generation,
+        current_generation,
         health,
         capabilities,
         events,
@@ -184,12 +218,17 @@ async fn health(
     counter: &mut u64,
     metadata_gate: &Arc<Semaphore>,
     expected_pid: Option<u32>,
-) -> Result<(HealthObservation, u32), ObserverError> {
-    let (payload, pid) = call(config, counter, metadata_gate, Method::Health, expected_pid).await?;
+) -> Result<(HealthObservation, u32, u64), ObserverError> {
+    let (payload, pid, current_generation) =
+        call(config, counter, metadata_gate, Method::Health, expected_pid).await?;
     let Payload::Health(health) = payload else {
         return Err(ObserverError::ProtocolMismatch);
     };
-    Ok((health.project(pid)?, pid))
+    Ok((
+        health.project(pid, config.spawn_generation, current_generation)?,
+        pid,
+        current_generation,
+    ))
 }
 
 async fn call(
@@ -198,7 +237,7 @@ async fn call(
     metadata_gate: &Arc<Semaphore>,
     method: Method<'_>,
     expected_pid: Option<u32>,
-) -> Result<(Payload, u32), ObserverError> {
+) -> Result<(Payload, u32, u64), ObserverError> {
     validate_socket(config, metadata_gate).await?;
     let mut stream = UnixStream::connect(&config.socket_path)
         .await
@@ -254,7 +293,12 @@ async fn call(
     {
         return Err(ObserverError::ProtocolMismatch);
     }
-    if response.current_generation != config.spawn_generation {
+    if !matches!(
+        response
+            .current_generation
+            .checked_sub(config.spawn_generation),
+        Some(0..=2)
+    ) {
         return Err(ObserverError::GenerationFenced);
     }
     if let Payload::Error { code, message } = response.payload {
@@ -265,7 +309,7 @@ async fn call(
         }
         return Err(ObserverError::OwnerRejected);
     }
-    Ok((response.payload, pid))
+    Ok((response.payload, pid, response.current_generation))
 }
 
 async fn validate_socket(

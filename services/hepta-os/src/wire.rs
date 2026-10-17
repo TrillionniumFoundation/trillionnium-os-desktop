@@ -56,6 +56,17 @@ pub(crate) enum Lifecycle {
 }
 
 impl Lifecycle {
+    /// Upstream AgentdState::refresh_generation accepts exactly these phases
+    /// of one immutable process spawn, not an arbitrary newer generation.
+    fn generation(self, spawn_generation: u64) -> Option<u64> {
+        match self {
+            Self::Starting => Some(spawn_generation),
+            Self::Running => spawn_generation.checked_add(1),
+            Self::Draining => spawn_generation.checked_add(2),
+            Self::Stopped | Self::Failed => None,
+        }
+    }
+
     fn name(self) -> &'static str {
         match self {
             Self::Stopped => "stopped",
@@ -83,11 +94,16 @@ pub(crate) struct Health {
 }
 
 impl Health {
-    pub fn project(self, peer_pid: u32) -> Result<HealthObservation, ObserverError> {
+    pub fn project(
+        self,
+        peer_pid: u32,
+        spawn_generation: u64,
+        current_generation: u64,
+    ) -> Result<HealthObservation, ObserverError> {
         if self.process_id != peer_pid {
             return Err(ObserverError::PeerDenied);
         }
-        if self.fenced {
+        if self.fenced || self.lifecycle.generation(spawn_generation) != Some(current_generation) {
             return Err(ObserverError::GenerationFenced);
         }
         if (self.ready && (self.lifecycle != Lifecycle::Running || !self.promotion_ready))
@@ -176,6 +192,7 @@ impl EventBatch {
         after_cursor: u64,
         limit: u16,
         spawn_generation: u64,
+        current_generation: u64,
     ) -> Result<Vec<EventObservation>, ObserverError> {
         if self.events.len() > usize::from(limit) {
             return Err(ObserverError::ProtocolMismatch);
@@ -216,7 +233,12 @@ impl EventBatch {
                         lifecycle,
                         generation,
                     } => {
-                        if generation != spawn_generation {
+                        // Earlier phases remain in the same process-local
+                        // event ring after promotion/drain. A future phase,
+                        // wrong offset or a non-serving lifecycle is fenced.
+                        if lifecycle.generation(spawn_generation) != Some(generation)
+                            || generation > current_generation
+                        {
                             return Err(ObserverError::GenerationFenced);
                         }
                         (
