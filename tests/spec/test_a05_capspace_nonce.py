@@ -38,7 +38,7 @@ class CapSpaceIdentityContract(unittest.TestCase):
         method = source.split("pub(crate) fn hepta_capspace_session(", 1)[1]
         self.assertIn("let mut identity = self.hepta_space_identity.lock()", method)
         self.assertIn("fetch_update(Ordering::AcqRel, Ordering::Acquire", method)
-        self.assertIn("nonce.checked_add(1)", method.replace("current.checked_add(1)", "nonce.checked_add(1)"))
+        self.assertIn("current.checked_add(1)", method)
         self.assertIn("Errno::ENOSPC", method)
         self.assertIn("*identity = (epoch, nonce)", method)
         self.assertIn("*identity = (next, 0)", method)
