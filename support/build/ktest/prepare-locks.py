@@ -60,6 +60,33 @@ def generated_manifest(upstream, crate):
     return '\n'.join(text) + '\n'
 
 
+def checked_cargo(command, *, cwd, label):
+    """Preserve Cargo stderr when a cold-runner preflight fails."""
+    try:
+        result = subprocess.run(command, cwd=cwd, check=False,
+                                capture_output=True, text=True)
+    except OSError as error:
+        raise SystemExit(f"{label}: cannot start Cargo: {error}") from error
+    if result.returncode:
+        stdout = (result.stdout or "")[-8192:]
+        stderr = (result.stderr or "")[-16384:]
+        raise SystemExit(
+            f"{label}: Cargo exit {result.returncode}, command={command!r}\n"
+            f"stdout (last 8192 chars):\n{stdout}\n"
+            f"stderr (last 16384 chars):\n{stderr}"
+        )
+    return result
+
+
+def prefetch_locked_upstream(upstream):
+    """Populate cache from pinned Cargo.lock; offline+locked audits still decide acceptance."""
+    return checked_cargo(
+        ["cargo", f"+{TOOLCHAIN}", "fetch", "--locked",
+         "--manifest-path", str(upstream / "Cargo.toml")],
+        cwd=upstream, label="prefetch immutable Asterinas Cargo.lock",
+    )
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     here = Path(__file__).resolve().parent
@@ -75,6 +102,9 @@ def main():
     seed_packages = tomllib.loads(seed_bytes.decode())["package"]
     key = lambda p: (p["name"], p["version"], p.get("source", ""), p.get("checksum", ""))
     seed_set = {key(p) for p in seed_packages}
+    # Fresh GitHub-hosted runners have no guaranteed Cargo registry cache.
+    # The seed was SHA-256 checked before this online, --locked prefetch.
+    prefetch_locked_upstream(upstream)
     args.output_dir.mkdir(parents=True, exist_ok=True)
     for crate in args.crate or CRATES:
         manifest = generated_manifest(upstream, crate)
@@ -86,9 +116,10 @@ def main():
             (work / "Cargo.lock").write_bytes(seed_bytes)
             command = ["cargo", f"+{TOOLCHAIN}", "metadata", "--offline",
                        "--format-version", "1", "--filter-platform", "x86_64-unknown-none"]
-            result = subprocess.run(command, cwd=work, check=True, capture_output=True, text=True)
-            locked = subprocess.run([*command, "--locked"], cwd=work, check=True,
-                                    capture_output=True, text=True)
+            result = checked_cargo(command, cwd=work,
+                                   label=f"{crate} offline metadata normalization")
+            locked = checked_cargo([*command, "--locked"], cwd=work,
+                                   label=f"{crate} locked offline metadata audit")
             normalized = (work / "Cargo.lock").read_bytes()
             packages = tomllib.loads(normalized.decode())["package"]
             added = sorted({key(p) for p in packages} - seed_set)
