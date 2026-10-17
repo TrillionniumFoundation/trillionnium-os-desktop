@@ -152,10 +152,11 @@ def main():
             "management_revoke_and_native_commit_share_owner_lock",
             "reservation_loss_and_query_revalidate_admission",
             "overlapping_retirements_revalidate_smaller_prefix",
+            "native_metadata_compatibility_and_invalidation_share_owner",
         }
         if not exit_code and (set(receipt["models"]) != expected_models
                               or any(count <= 0 for count in receipt["models"].values())):
-            print("ERROR: expected twelve named models with positive schedule counts", file=sys.stderr)
+            print("ERROR: expected thirteen named models with positive schedule counts", file=sys.stderr)
             exit_code = 1
     after_inventory = [str(path.relative_to(repo)) for path in
                        sorted(source_root.rglob("*.rs"))]

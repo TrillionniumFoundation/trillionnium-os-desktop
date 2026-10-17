@@ -1,0 +1,479 @@
+{
+  "all_probes_used_identical_harness_bytes": true,
+  "callback_commit": "d172babcb3d6275ee0dfb0c9a58207eb2149eef9",
+  "current_check_executed": true,
+  "fixtures": [
+    {
+      "bytes": 14532,
+      "path": "fixture.rs",
+      "sha256": "22233492412158d470c77866667ea17baa47528ec0b3816a4f3b70cad4cbf38d"
+    },
+    {
+      "bytes": 20737,
+      "path": "run-checks.py",
+      "sha256": "88bf36bb4ec69f9cde5f1428cf89908cdcb53d42b2db5bd2f0b1789640ec4a3b"
+    },
+    {
+      "bytes": 5864,
+      "path": "sync_shim.rs",
+      "sha256": "e27dea85347abd40ca2e42f70a5513567962cb11d42cd8bac53a2c66bea3040b"
+    }
+  ],
+  "harness_fixtures_unchanged_during_execution": true,
+  "historical_commit": "e59f8b2fce1287f1ea706dc94880824a9b586ae3",
+  "passed": true,
+  "probes": {
+    "current": {
+      "build": {
+        "argv": [
+          "cargo",
+          "build",
+          "--offline",
+          "--manifest-path",
+          "/tmp/hos2-lock-alloc-n5hc1k9u/Cargo.toml",
+          "-p",
+          "lock-alloc-fixture"
+        ],
+        "cwd": "/tmp/hos2-lock-alloc-n5hc1k9u",
+        "elapsed_seconds": 1.021826,
+        "returncode": 0,
+        "stderr": "build.stderr.log",
+        "stderr_sha256": "c48b0c10551e31504dbc9f5212bb027e683497016b774ecdbc4c505d4cb3e779",
+        "stdout": "build.stdout.log",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "timed_out": false
+      },
+      "checks": {
+        "allocator_positive_control": {
+          "alloc": 1,
+          "allocated_bytes": 1,
+          "dealloc": 1,
+          "deallocated_bytes": 4097,
+          "event": "control",
+          "name": "allocator_positive",
+          "realloc": 1,
+          "reallocated_bytes": 4097
+        },
+        "events": [
+          {
+            "alloc": 1,
+            "allocated_bytes": 1,
+            "dealloc": 1,
+            "deallocated_bytes": 4097,
+            "event": "control",
+            "name": "allocator_positive",
+            "realloc": 1,
+            "reallocated_bytes": 4097
+          },
+          {
+            "alloc": 1,
+            "allocated_bytes": 16,
+            "dealloc": 0,
+            "deallocated_bytes": 0,
+            "event": "control",
+            "name": "failed_allocator_call_under_lock",
+            "realloc": 0,
+            "reallocated_bytes": 0
+          },
+          {
+            "event": "control",
+            "name": "depth_tls_poison_unwind",
+            "passed": true
+          },
+          {
+            "alloc": 0,
+            "allocated_bytes": 0,
+            "dealloc": 0,
+            "deallocated_bytes": 0,
+            "event": "control",
+            "name": "fallible_ring_and_retirement",
+            "realloc": 0,
+            "reallocated_bytes": 0
+          },
+          {
+            "event": "failure_control",
+            "frontier_atomic": true,
+            "history_usable": true,
+            "injected_failures": 2
+          },
+          {
+            "alloc": 0,
+            "allocated_bytes": 0,
+            "dealloc": 0,
+            "deallocated_bytes": 0,
+            "event": "scenario",
+            "name": "reserve_new",
+            "realloc": 0,
+            "reallocated_bytes": 0
+          },
+          {
+            "alloc": 0,
+            "allocated_bytes": 0,
+            "dealloc": 0,
+            "deallocated_bytes": 0,
+            "event": "scenario",
+            "name": "query_reserved",
+            "realloc": 0,
+            "reallocated_bytes": 0
+          },
+          {
+            "alloc": 0,
+            "allocated_bytes": 0,
+            "dealloc": 0,
+            "deallocated_bytes": 0,
+            "event": "scenario",
+            "name": "duplicate_reserved",
+            "realloc": 0,
+            "reallocated_bytes": 0
+          },
+          {
+            "alloc": 0,
+            "allocated_bytes": 0,
+            "dealloc": 0,
+            "deallocated_bytes": 0,
+            "event": "scenario",
+            "name": "native_wrong_type",
+            "realloc": 0,
+            "reallocated_bytes": 0
+          },
+          {
+            "alloc": 0,
+            "allocated_bytes": 0,
+            "dealloc": 0,
+            "deallocated_bytes": 0,
+            "event": "scenario",
+            "name": "execute_native",
+            "realloc": 0,
+            "reallocated_bytes": 0
+          },
+          {
+            "alloc": 0,
+            "allocated_bytes": 0,
+            "dealloc": 0,
+            "deallocated_bytes": 0,
+            "event": "scenario",
+            "name": "query_terminal",
+            "realloc": 0,
+            "reallocated_bytes": 0
+          },
+          {
+            "alloc": 0,
+            "allocated_bytes": 0,
+            "dealloc": 0,
+            "deallocated_bytes": 0,
+            "event": "scenario",
+            "name": "duplicate_terminal",
+            "realloc": 0,
+            "reallocated_bytes": 0
+          },
+          {
+            "alloc": 0,
+            "allocated_bytes": 0,
+            "dealloc": 0,
+            "deallocated_bytes": 0,
+            "event": "scenario",
+            "name": "publish_terminal_retry",
+            "realloc": 0,
+            "reallocated_bytes": 0
+          },
+          {
+            "alloc": 0,
+            "allocated_bytes": 0,
+            "dealloc": 0,
+            "deallocated_bytes": 0,
+            "event": "scenario",
+            "name": "retire_terminal",
+            "realloc": 0,
+            "reallocated_bytes": 0
+          },
+          {
+            "alloc": 0,
+            "allocated_bytes": 0,
+            "dealloc": 0,
+            "deallocated_bytes": 0,
+            "event": "scenario",
+            "name": "query_retired",
+            "realloc": 0,
+            "reallocated_bytes": 0
+          },
+          {
+            "alloc": 0,
+            "allocated_bytes": 0,
+            "dealloc": 0,
+            "deallocated_bytes": 0,
+            "event": "scenario",
+            "name": "callback_capture_drop",
+            "realloc": 0,
+            "reallocated_bytes": 0
+          },
+          {
+            "alloc": 0,
+            "allocated_bytes": 0,
+            "dealloc": 0,
+            "deallocated_bytes": 0,
+            "event": "scenario",
+            "name": "full_window_rejection",
+            "realloc": 0,
+            "reallocated_bytes": 0
+          },
+          {
+            "alloc": 0,
+            "allocated_bytes": 0,
+            "dealloc": 0,
+            "deallocated_bytes": 0,
+            "event": "scenario",
+            "name": "loss_full_window",
+            "realloc": 0,
+            "reallocated_bytes": 0
+          },
+          {
+            "alloc": 0,
+            "allocated_bytes": 0,
+            "dealloc": 0,
+            "deallocated_bytes": 0,
+            "event": "scenario",
+            "name": "hanging_prefix_query",
+            "realloc": 0,
+            "reallocated_bytes": 0
+          },
+          {
+            "alloc": 0,
+            "allocated_bytes": 0,
+            "dealloc": 0,
+            "deallocated_bytes": 0,
+            "event": "scenario",
+            "name": "hanging_prefix_retire",
+            "realloc": 0,
+            "reallocated_bytes": 0
+          },
+          {
+            "alloc": 0,
+            "allocated_bytes": 0,
+            "dealloc": 0,
+            "deallocated_bytes": 0,
+            "event": "scenario",
+            "name": "hanging_prefix_full",
+            "realloc": 0,
+            "reallocated_bytes": 0
+          },
+          {
+            "alloc": 0,
+            "allocated_bytes": 0,
+            "dealloc": 0,
+            "deallocated_bytes": 0,
+            "event": "scenario",
+            "name": "publish_pending",
+            "realloc": 0,
+            "reallocated_bytes": 0
+          },
+          {
+            "alloc": 0,
+            "allocated_bytes": 0,
+            "dealloc": 0,
+            "deallocated_bytes": 0,
+            "event": "scenario",
+            "name": "retire_released_prefix",
+            "realloc": 0,
+            "reallocated_bytes": 0
+          },
+          {
+            "alloc": 0,
+            "allocated_bytes": 0,
+            "dealloc": 0,
+            "deallocated_bytes": 0,
+            "event": "scenario",
+            "name": "ten_thousand_writes",
+            "realloc": 0,
+            "reallocated_bytes": 0
+          },
+          {
+            "alloc": 0,
+            "allocated_bytes": 0,
+            "dealloc": 0,
+            "deallocated_bytes": 0,
+            "event": "summary",
+            "name": "all_native_namespace_scenarios",
+            "realloc": 0,
+            "reallocated_bytes": 0
+          },
+          {
+            "controls_ok": true,
+            "event": "acceptance",
+            "scenario_count": 19,
+            "zero": true
+          }
+        ],
+        "scenario_count": 19,
+        "summary": {
+          "alloc": 0,
+          "allocated_bytes": 0,
+          "dealloc": 0,
+          "deallocated_bytes": 0,
+          "event": "summary",
+          "name": "all_native_namespace_scenarios",
+          "realloc": 0,
+          "reallocated_bytes": 0
+        }
+      },
+      "clippy": {
+        "argv": [
+          "cargo",
+          "clippy",
+          "--offline",
+          "--workspace",
+          "--all-targets",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "cwd": "/tmp/hos2-lock-alloc-n5hc1k9u",
+        "elapsed_seconds": 0.474404,
+        "returncode": 0,
+        "stderr": "clippy.stderr.log",
+        "stderr_sha256": "a471968e5e86f8c0a4c0549b58e17df10e96d63dfb4661947747a04599cf37c4",
+        "stdout": "clippy.stdout.log",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "timed_out": false
+      },
+      "copied_source_inventory": [
+        {
+          "bytes": 107459,
+          "path": "lib.rs",
+          "sha256": "0ec42981de95f5d64088aeb16fa137c0daabe5a149108b88ff7c4ab7daea431d"
+        },
+        {
+          "bytes": 7125,
+          "path": "management.rs",
+          "sha256": "1b44ed9d89f3bd9aba90c8bcd3aeceb46bcd7332cbdd2bdd3fa40ff200d49340"
+        },
+        {
+          "bytes": 8844,
+          "path": "native.rs",
+          "sha256": "1967c2db5c7292127a5cb4a76c3448a9764710b4c44ebeb40a610dba6e16fd81"
+        },
+        {
+          "bytes": 12951,
+          "path": "resource_state.rs",
+          "sha256": "84fe7cfe37ea109ebfce4de5f32a5a418f4d834c5affc82af2d2a955bc9bb810"
+        },
+        {
+          "bytes": 64,
+          "path": "sync.rs",
+          "sha256": "71454875a11b042ee11551bd9e9df538fb2f7a339d85eb8520ce701a24249b68"
+        }
+      ],
+      "fixture_sha256": "22233492412158d470c77866667ea17baa47528ec0b3816a4f3b70cad4cbf38d",
+      "format": {
+        "argv": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--check"
+        ],
+        "cwd": "/tmp/hos2-lock-alloc-n5hc1k9u",
+        "elapsed_seconds": 0.056852,
+        "returncode": 0,
+        "stderr": "format.stderr.log",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout": "format.stdout.log",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "timed_out": false
+      },
+      "generated_manifests": {
+        "Cargo.toml": {
+          "contents": "[workspace]\nmembers = [\"os-control\", \"lock-trace\", \"fixture\"]\nresolver = \"2\"\n",
+          "sha256": "01df2d9bfdd23e8dbb0203d9f06fb7c0c6e0bf18fc00ef41ce9d65f26ee88f4a"
+        },
+        "fixture/Cargo.toml": {
+          "contents": "[package]\nname = \"lock-alloc-fixture\"\nversion = \"0.0.0\"\nedition = \"2021\"\n[dependencies]\nos-control = { path = \"../os-control\" }\nlock-trace = { path = \"../lock-trace\" }\n",
+          "sha256": "e4321e6ee35195e3d687f77d461b6469d550675d4eee85762014606ccdd9edbb"
+        },
+        "lock-trace/Cargo.toml": {
+          "contents": "[package]\nname = \"lock-trace\"\nversion = \"0.0.0\"\nedition = \"2021\"\n",
+          "sha256": "7d897ae9d0ddf659a64787399f3a39330eaf80beb0694b08e1824c5b4f017540"
+        },
+        "os-control/Cargo.toml": {
+          "contents": "[package]\nname = \"os-control\"\nversion = \"0.0.0\"\nedition = \"2021\"\n[features]\ndefault = [\"std\"]\nstd = []\nportable-spin = []\n[dependencies]\nlock-trace = { path = \"../lock-trace\" }\n[lints.rust]\nunsafe_code = \"forbid\"\n",
+          "sha256": "2b03d8000c16a0121c84dded6f3944dbb1cc65abd568732e58a6c61e9aacb5a4"
+        }
+      },
+      "mode": "current_required_zero",
+      "only_source_substitution": "sync.rs",
+      "passed": true,
+      "replacement_sync_sha256": "71454875a11b042ee11551bd9e9df538fb2f7a339d85eb8520ce701a24249b68",
+      "run": {
+        "argv": [
+          "/tmp/hos2-lock-alloc-n5hc1k9u/target/debug/lock-alloc-fixture",
+          "--allocation-failure-controls"
+        ],
+        "cwd": "/tmp/hos2-lock-alloc-n5hc1k9u",
+        "elapsed_seconds": 0.025552,
+        "returncode": 0,
+        "stderr": "run.stderr.log",
+        "stderr_sha256": "cd1bdb849b492b49d54edc67654b4b86b8327c5c6e1bb8c53ae3267b6c601dc1",
+        "stdout": "run.stdout.log",
+        "stdout_sha256": "baf368b622934cad42fb6e28348ab911d279a3f189dafc4774f78a3f15f06711",
+        "timed_out": false
+      },
+      "scope": "Native namespace scenarios using exact production modules except a std mutex shim. The shim measures thread-local internal-mutex depth and the process allocator records alloc/alloc_zeroed, realloc and dealloc calls (including injected failed attempts) while depth is nonzero. Positive controls, poison/unwind recovery and independent thread depth are checked. Summary includes scenario setup between named operations, excluding instrumentation controls. Callback coverage includes implicit cleanup of owned captures whose bodies only borrow them; explicit callback destruction, allocation and reentry remain the adapter's obligations. This is a std host harness: no Arc atomic ordering proof, exhaustive scheduling proof, portable-spin allocator proof, real kernel allocator/IRQ proof or host ResourceDomain allocation claim. Controlled allocation failures cover only the initial ring and retirement Vec try_reserve_exact paths; no general OOM guarantee is inferred.",
+      "shim_sha256": "e27dea85347abd40ca2e42f70a5513567962cb11d42cd8bac53a2c66bea3040b",
+      "source_inventory": [
+        {
+          "bytes": 107459,
+          "path": "lib.rs",
+          "sha256": "0ec42981de95f5d64088aeb16fa137c0daabe5a149108b88ff7c4ab7daea431d"
+        },
+        {
+          "bytes": 7125,
+          "path": "management.rs",
+          "sha256": "1b44ed9d89f3bd9aba90c8bcd3aeceb46bcd7332cbdd2bdd3fa40ff200d49340"
+        },
+        {
+          "bytes": 8844,
+          "path": "native.rs",
+          "sha256": "1967c2db5c7292127a5cb4a76c3448a9764710b4c44ebeb40a610dba6e16fd81"
+        },
+        {
+          "bytes": 12951,
+          "path": "resource_state.rs",
+          "sha256": "84fe7cfe37ea109ebfce4de5f32a5a418f4d834c5affc82af2d2a955bc9bb810"
+        },
+        {
+          "bytes": 1073,
+          "path": "sync.rs",
+          "sha256": "e2159cc41ef3a1073b1899615f70ea34cc9915052dd41811180bd3e3497784cd"
+        }
+      ],
+      "source_revision": "worktree",
+      "temporary_source_bytes_verified_after_execution": true,
+      "temporary_workspace_removed": true,
+      "worktree_source_bytes_unchanged_during_execution": true
+    }
+  },
+  "result": "current_zero",
+  "rustc": {
+    "argv": [
+      "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+      "-Vv"
+    ],
+    "cwd": "/workspace/scratch/629ae4947f18/a03-owner-verify",
+    "elapsed_seconds": 0.013246,
+    "returncode": 0,
+    "stderr": "rustc.stderr.log",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout": "rustc.stdout.log",
+    "stdout_sha256": "d919107c9907c374b7605930746505ef72ce87cc21b641260c6225a7da9d8212",
+    "timed_out": false
+  },
+  "rustup_toolchain": "nightly-2026-07-21",
+  "scope": "Native namespace scenarios using exact production modules except a std mutex shim. The shim measures thread-local internal-mutex depth and the process allocator records alloc/alloc_zeroed, realloc and dealloc calls (including injected failed attempts) while depth is nonzero. Positive controls, poison/unwind recovery and independent thread depth are checked. Summary includes scenario setup between named operations, excluding instrumentation controls. Callback coverage includes implicit cleanup of owned captures whose bodies only borrow them; explicit callback destruction, allocation and reentry remain the adapter's obligations. This is a std host harness: no Arc atomic ordering proof, exhaustive scheduling proof, portable-spin allocator proof, real kernel allocator/IRQ proof or host ResourceDomain allocation claim. Controlled allocation failures cover only the initial ring and retirement Vec try_reserve_exact paths; no general OOM guarantee is inferred.",
+  "toolchain_environment": {
+    "CARGO_ENCODED_RUSTFLAGS": null,
+    "CARGO_HOME": "/workspace/scratch/629ae4947f18/toolchains/cargo",
+    "RUSTC": "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+    "RUSTC_WORKSPACE_WRAPPER": null,
+    "RUSTC_WRAPPER": null,
+    "RUSTFLAGS": null,
+    "RUSTUP_HOME": "/workspace/scratch/629ae4947f18/toolchains/rustup"
+  }
+}

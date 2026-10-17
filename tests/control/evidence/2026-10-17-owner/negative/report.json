@@ -1,0 +1,1580 @@
+{
+  "schema": 1,
+  "scope": "std host regression controls; no real kernel or durable Hepta execution",
+  "success": true,
+  "baseline_commit": "40ca002fac0726b366726d3353916637b29adeae",
+  "native_baseline_commit": "86663ea5a934d085a80fcaeaacca535bfb283b77",
+  "status_baseline_commit": "e59f8b2fce1287f1ea706dc94880824a9b586ae3",
+  "callback_baseline_commit": "d172babcb3d6275ee0dfb0c9a58207eb2149eef9",
+  "synthetic_drop_control": "current source with two exact reclamation blocks reverted; not a historical commit",
+  "synthetic_origin_control": "current source with only the two management origin comparisons removed; not historical",
+  "rustup_toolchain": "nightly-2026-07-21",
+  "commands": [
+    {
+      "name": "rustc-version",
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+        "-vV"
+      ],
+      "cwd": "/workspace/scratch/629ae4947f18/a03-owner-verify",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "d919107c9907c374b7605930746505ef72ce87cc21b641260c6225a7da9d8212",
+      "stdout_bytes": 212,
+      "matched_expectation": true
+    },
+    {
+      "name": "checkout-commit",
+      "command": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/workspace/scratch/629ae4947f18/a03-owner-verify",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "16c6749b875df1c83452cfe8609b40f79150cb316a18192314a0c2fd1b060385",
+      "stdout_bytes": 41,
+      "matched_expectation": true
+    },
+    {
+      "name": "baseline-lib",
+      "command": [
+        "git",
+        "--no-pager",
+        "show",
+        "40ca002fac0726b366726d3353916637b29adeae:libs/os-control/src/lib.rs"
+      ],
+      "cwd": "/workspace/scratch/629ae4947f18/a03-owner-verify",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "0dae32bfc3ac08a83b5c7269ebc35d14812bcc19ce2bcf84f76dc94fed964816",
+      "stdout_bytes": 89591,
+      "matched_expectation": true
+    },
+    {
+      "name": "baseline-sync",
+      "command": [
+        "git",
+        "--no-pager",
+        "show",
+        "40ca002fac0726b366726d3353916637b29adeae:libs/os-control/src/sync.rs"
+      ],
+      "cwd": "/workspace/scratch/629ae4947f18/a03-owner-verify",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "c008828ccd16a6e9e9fa152b6829d5431f9ddb4d665cf19cca27a10216bffaf2",
+      "stdout_bytes": 1059,
+      "matched_expectation": true
+    },
+    {
+      "name": "native-baseline-lib",
+      "command": [
+        "git",
+        "--no-pager",
+        "show",
+        "86663ea5a934d085a80fcaeaacca535bfb283b77:libs/os-control/src/lib.rs"
+      ],
+      "cwd": "/workspace/scratch/629ae4947f18/a03-owner-verify",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "aa37977e31a293d52233cde446ebbbf86b54befcb41536f049503b41f6ca93b7",
+      "stdout_bytes": 94414,
+      "matched_expectation": true
+    },
+    {
+      "name": "native-baseline-native",
+      "command": [
+        "git",
+        "--no-pager",
+        "show",
+        "86663ea5a934d085a80fcaeaacca535bfb283b77:libs/os-control/src/native.rs"
+      ],
+      "cwd": "/workspace/scratch/629ae4947f18/a03-owner-verify",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "f32028122d21b097c443eb8692f2dd4181e7a3a436daf1c84c67fcaf6c7a8d80",
+      "stdout_bytes": 6010,
+      "matched_expectation": true
+    },
+    {
+      "name": "native-baseline-sync",
+      "command": [
+        "git",
+        "--no-pager",
+        "show",
+        "86663ea5a934d085a80fcaeaacca535bfb283b77:libs/os-control/src/sync.rs"
+      ],
+      "cwd": "/workspace/scratch/629ae4947f18/a03-owner-verify",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "e2159cc41ef3a1073b1899615f70ea34cc9915052dd41811180bd3e3497784cd",
+      "stdout_bytes": 1073,
+      "matched_expectation": true
+    },
+    {
+      "name": "status-baseline-lib",
+      "command": [
+        "git",
+        "--no-pager",
+        "show",
+        "e59f8b2fce1287f1ea706dc94880824a9b586ae3:libs/os-control/src/lib.rs"
+      ],
+      "cwd": "/workspace/scratch/629ae4947f18/a03-owner-verify",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "0225e0ad8585ae32c5c0bb4d5fea506e8270250260eabbc38748c2d6f60d8450",
+      "stdout_bytes": 98110,
+      "matched_expectation": true
+    },
+    {
+      "name": "status-baseline-native",
+      "command": [
+        "git",
+        "--no-pager",
+        "show",
+        "e59f8b2fce1287f1ea706dc94880824a9b586ae3:libs/os-control/src/native.rs"
+      ],
+      "cwd": "/workspace/scratch/629ae4947f18/a03-owner-verify",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "1967c2db5c7292127a5cb4a76c3448a9764710b4c44ebeb40a610dba6e16fd81",
+      "stdout_bytes": 8844,
+      "matched_expectation": true
+    },
+    {
+      "name": "status-baseline-sync",
+      "command": [
+        "git",
+        "--no-pager",
+        "show",
+        "e59f8b2fce1287f1ea706dc94880824a9b586ae3:libs/os-control/src/sync.rs"
+      ],
+      "cwd": "/workspace/scratch/629ae4947f18/a03-owner-verify",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "e2159cc41ef3a1073b1899615f70ea34cc9915052dd41811180bd3e3497784cd",
+      "stdout_bytes": 1073,
+      "matched_expectation": true
+    },
+    {
+      "name": "status-baseline-management",
+      "command": [
+        "git",
+        "--no-pager",
+        "show",
+        "e59f8b2fce1287f1ea706dc94880824a9b586ae3:libs/os-control/src/management.rs"
+      ],
+      "cwd": "/workspace/scratch/629ae4947f18/a03-owner-verify",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "1b44ed9d89f3bd9aba90c8bcd3aeceb46bcd7332cbdd2bdd3fa40ff200d49340",
+      "stdout_bytes": 7125,
+      "matched_expectation": true
+    },
+    {
+      "name": "callback-baseline-lib",
+      "command": [
+        "git",
+        "--no-pager",
+        "show",
+        "d172babcb3d6275ee0dfb0c9a58207eb2149eef9:libs/os-control/src/lib.rs"
+      ],
+      "cwd": "/workspace/scratch/629ae4947f18/a03-owner-verify",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "d8ac849dab1e7f7e2ffa8b97e87033ca954fb95bafac1f17e459b4e85c645bec",
+      "stdout_bytes": 107046,
+      "matched_expectation": true
+    },
+    {
+      "name": "callback-baseline-native",
+      "command": [
+        "git",
+        "--no-pager",
+        "show",
+        "d172babcb3d6275ee0dfb0c9a58207eb2149eef9:libs/os-control/src/native.rs"
+      ],
+      "cwd": "/workspace/scratch/629ae4947f18/a03-owner-verify",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "1967c2db5c7292127a5cb4a76c3448a9764710b4c44ebeb40a610dba6e16fd81",
+      "stdout_bytes": 8844,
+      "matched_expectation": true
+    },
+    {
+      "name": "callback-baseline-sync",
+      "command": [
+        "git",
+        "--no-pager",
+        "show",
+        "d172babcb3d6275ee0dfb0c9a58207eb2149eef9:libs/os-control/src/sync.rs"
+      ],
+      "cwd": "/workspace/scratch/629ae4947f18/a03-owner-verify",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "e2159cc41ef3a1073b1899615f70ea34cc9915052dd41811180bd3e3497784cd",
+      "stdout_bytes": 1073,
+      "matched_expectation": true
+    },
+    {
+      "name": "callback-baseline-management",
+      "command": [
+        "git",
+        "--no-pager",
+        "show",
+        "d172babcb3d6275ee0dfb0c9a58207eb2149eef9:libs/os-control/src/management.rs"
+      ],
+      "cwd": "/workspace/scratch/629ae4947f18/a03-owner-verify",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "1b44ed9d89f3bd9aba90c8bcd3aeceb46bcd7332cbdd2bdd3fa40ff200d49340",
+      "stdout_bytes": 7125,
+      "matched_expectation": true
+    },
+    {
+      "name": "historical-token-compile-library",
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+        "--edition",
+        "2021",
+        "--crate-name",
+        "os_control",
+        "--crate-type",
+        "rlib",
+        "--forbid=unsafe_code",
+        "--cfg",
+        "feature=\"std\"",
+        "/tmp/a03-regressions-1_1aw7gc/historical-token/lib.rs",
+        "-o",
+        "/tmp/a03-regressions-1_1aw7gc/historical-token/libos_control.rlib"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/historical-token",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "matched_expectation": true
+    },
+    {
+      "name": "historical-token-compile-tests",
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+        "--edition",
+        "2021",
+        "--test",
+        "--forbid=unsafe_code",
+        "/tmp/a03-regressions-1_1aw7gc/historical-token/token_retirement.rs",
+        "--extern",
+        "os_control=/tmp/a03-regressions-1_1aw7gc/historical-token/libos_control.rlib",
+        "-o",
+        "/tmp/a03-regressions-1_1aw7gc/historical-token/historical-token-tests"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/historical-token",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "matched_expectation": true
+    },
+    {
+      "name": "historical-token-run",
+      "command": [
+        "/tmp/a03-regressions-1_1aw7gc/historical-token/historical-token-tests",
+        "--test-threads=1"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/historical-token",
+      "expected_exit": 101,
+      "timeout_seconds": 45,
+      "returncode": 101,
+      "timed_out": false,
+      "stdout_sha256": "310af2b19df652bff3c0937c303bd3a7478bfb6bfa3d5f7e5fed1be7cd9ba328",
+      "stdout_bytes": 1895,
+      "matched_expectation": true
+    },
+    {
+      "name": "historical-native-compile-library",
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+        "--edition",
+        "2021",
+        "--crate-name",
+        "os_control",
+        "--crate-type",
+        "rlib",
+        "--forbid=unsafe_code",
+        "--cfg",
+        "feature=\"std\"",
+        "/tmp/a03-regressions-1_1aw7gc/historical-native/lib.rs",
+        "-o",
+        "/tmp/a03-regressions-1_1aw7gc/historical-native/libos_control.rlib"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/historical-native",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "matched_expectation": true
+    },
+    {
+      "name": "historical-native-compile-tests",
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+        "--edition",
+        "2021",
+        "--test",
+        "--forbid=unsafe_code",
+        "/tmp/a03-regressions-1_1aw7gc/historical-native/native_context_negative.rs",
+        "--extern",
+        "os_control=/tmp/a03-regressions-1_1aw7gc/historical-native/libos_control.rlib",
+        "-o",
+        "/tmp/a03-regressions-1_1aw7gc/historical-native/historical-native-tests"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/historical-native",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "matched_expectation": true
+    },
+    {
+      "name": "historical-native-run",
+      "command": [
+        "/tmp/a03-regressions-1_1aw7gc/historical-native/historical-native-tests",
+        "--test-threads=1"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/historical-native",
+      "expected_exit": 101,
+      "timeout_seconds": 45,
+      "returncode": 101,
+      "timed_out": false,
+      "stdout_sha256": "4bb0e347362b44ea5cada8a749871b539343ced634be9ab53e1e0a0ae1192889",
+      "stdout_bytes": 1368,
+      "matched_expectation": true
+    },
+    {
+      "name": "historical-status-compile-library",
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+        "--edition",
+        "2021",
+        "--crate-name",
+        "os_control",
+        "--crate-type",
+        "rlib",
+        "--forbid=unsafe_code",
+        "--cfg",
+        "feature=\"std\"",
+        "/tmp/a03-regressions-1_1aw7gc/historical-status/lib.rs",
+        "-o",
+        "/tmp/a03-regressions-1_1aw7gc/historical-status/libos_control.rlib"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/historical-status",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "matched_expectation": true
+    },
+    {
+      "name": "historical-status-compile-tests",
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+        "--edition",
+        "2021",
+        "--test",
+        "--forbid=unsafe_code",
+        "/tmp/a03-regressions-1_1aw7gc/historical-status/status_boundary.rs",
+        "--extern",
+        "os_control=/tmp/a03-regressions-1_1aw7gc/historical-status/libos_control.rlib",
+        "-o",
+        "/tmp/a03-regressions-1_1aw7gc/historical-status/historical-status-tests"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/historical-status",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "matched_expectation": true
+    },
+    {
+      "name": "historical-status-run",
+      "command": [
+        "/tmp/a03-regressions-1_1aw7gc/historical-status/historical-status-tests",
+        "--test-threads=1"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/historical-status",
+      "expected_exit": 101,
+      "timeout_seconds": 45,
+      "returncode": 101,
+      "timed_out": false,
+      "stdout_sha256": "d410d786f2253e1e274f42d4cb113624ade10bce7b9d7797bbd07bc4ab0e3409",
+      "stdout_bytes": 1144,
+      "matched_expectation": true
+    },
+    {
+      "name": "historical-callback-compile-library",
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+        "--edition",
+        "2021",
+        "--crate-name",
+        "os_control",
+        "--crate-type",
+        "rlib",
+        "--forbid=unsafe_code",
+        "--cfg",
+        "feature=\"std\"",
+        "/tmp/a03-regressions-1_1aw7gc/historical-callback/lib.rs",
+        "-o",
+        "/tmp/a03-regressions-1_1aw7gc/historical-callback/libos_control.rlib"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/historical-callback",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "matched_expectation": true
+    },
+    {
+      "name": "historical-callback-compile-tests",
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+        "--edition",
+        "2021",
+        "--test",
+        "--forbid=unsafe_code",
+        "/tmp/a03-regressions-1_1aw7gc/historical-callback/callback_lifetime.rs",
+        "--extern",
+        "os_control=/tmp/a03-regressions-1_1aw7gc/historical-callback/libos_control.rlib",
+        "-o",
+        "/tmp/a03-regressions-1_1aw7gc/historical-callback/historical-callback-tests"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/historical-callback",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "matched_expectation": true
+    },
+    {
+      "name": "historical-callback-run",
+      "command": [
+        "/tmp/a03-regressions-1_1aw7gc/historical-callback/historical-callback-tests",
+        "--test-threads=1"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/historical-callback",
+      "expected_exit": 101,
+      "timeout_seconds": 45,
+      "returncode": 101,
+      "timed_out": false,
+      "stdout_sha256": "2ad17aad104e2d79dbfdba946c61e6f240b3e8bbe452eca2c70ad7a970e9c6ff",
+      "stdout_bytes": 3132,
+      "matched_expectation": true
+    },
+    {
+      "name": "synthetic-drop-compile-library",
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+        "--edition",
+        "2021",
+        "--crate-name",
+        "os_control",
+        "--crate-type",
+        "rlib",
+        "--forbid=unsafe_code",
+        "--cfg",
+        "feature=\"std\"",
+        "/tmp/a03-regressions-1_1aw7gc/synthetic-drop/lib.rs",
+        "-o",
+        "/tmp/a03-regressions-1_1aw7gc/synthetic-drop/libos_control.rlib"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/synthetic-drop",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "matched_expectation": true
+    },
+    {
+      "name": "synthetic-drop-compile-tests",
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+        "--edition",
+        "2021",
+        "--test",
+        "--forbid=unsafe_code",
+        "/tmp/a03-regressions-1_1aw7gc/synthetic-drop/native_handoff.rs",
+        "--extern",
+        "os_control=/tmp/a03-regressions-1_1aw7gc/synthetic-drop/libos_control.rlib",
+        "-o",
+        "/tmp/a03-regressions-1_1aw7gc/synthetic-drop/synthetic-drop-tests"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/synthetic-drop",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "matched_expectation": true
+    },
+    {
+      "name": "synthetic-drop-run",
+      "command": [
+        "/tmp/a03-regressions-1_1aw7gc/synthetic-drop/synthetic-drop-tests",
+        "native_owner_drop_",
+        "--test-threads=1"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/synthetic-drop",
+      "expected_exit": 101,
+      "timeout_seconds": 45,
+      "returncode": 101,
+      "timed_out": false,
+      "stdout_sha256": "906d4530865df1a5b71a86355a3f81eae3cdf89f14e503f3464cb276dcfd36ac",
+      "stdout_bytes": 1244,
+      "matched_expectation": true
+    },
+    {
+      "name": "synthetic-origin-compile-library",
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+        "--edition",
+        "2021",
+        "--crate-name",
+        "os_control",
+        "--crate-type",
+        "rlib",
+        "--forbid=unsafe_code",
+        "--cfg",
+        "feature=\"std\"",
+        "/tmp/a03-regressions-1_1aw7gc/synthetic-origin/lib.rs",
+        "-o",
+        "/tmp/a03-regressions-1_1aw7gc/synthetic-origin/libos_control.rlib"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/synthetic-origin",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "matched_expectation": true
+    },
+    {
+      "name": "synthetic-origin-compile-tests",
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+        "--edition",
+        "2021",
+        "--test",
+        "--forbid=unsafe_code",
+        "/tmp/a03-regressions-1_1aw7gc/synthetic-origin/management_identity.rs",
+        "--extern",
+        "os_control=/tmp/a03-regressions-1_1aw7gc/synthetic-origin/libos_control.rlib",
+        "-o",
+        "/tmp/a03-regressions-1_1aw7gc/synthetic-origin/synthetic-origin-tests"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/synthetic-origin",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "matched_expectation": true
+    },
+    {
+      "name": "synthetic-origin-run",
+      "command": [
+        "/tmp/a03-regressions-1_1aw7gc/synthetic-origin/synthetic-origin-tests",
+        "--test-threads=1"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/synthetic-origin",
+      "expected_exit": 101,
+      "timeout_seconds": 45,
+      "returncode": 101,
+      "timed_out": false,
+      "stdout_sha256": "5a732d1f913de72faeada5d1639c649ae91cda71c9bb55d28a1205b2e87b16f0",
+      "stdout_bytes": 4809,
+      "matched_expectation": true
+    },
+    {
+      "name": "fixed-compile-library",
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+        "--edition",
+        "2021",
+        "--crate-name",
+        "os_control",
+        "--crate-type",
+        "rlib",
+        "--forbid=unsafe_code",
+        "--cfg",
+        "feature=\"std\"",
+        "/tmp/a03-regressions-1_1aw7gc/fixed/lib.rs",
+        "-o",
+        "/tmp/a03-regressions-1_1aw7gc/fixed/libos_control.rlib"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/fixed",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "matched_expectation": true
+    },
+    {
+      "name": "fixed-token_retirement-compile-tests",
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+        "--edition",
+        "2021",
+        "--test",
+        "--forbid=unsafe_code",
+        "/tmp/a03-regressions-1_1aw7gc/fixed/token_retirement.rs",
+        "--extern",
+        "os_control=/tmp/a03-regressions-1_1aw7gc/fixed/libos_control.rlib",
+        "-o",
+        "/tmp/a03-regressions-1_1aw7gc/fixed/fixed-token_retirement-tests"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/fixed",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "matched_expectation": true
+    },
+    {
+      "name": "fixed-token_retirement-run",
+      "command": [
+        "/tmp/a03-regressions-1_1aw7gc/fixed/fixed-token_retirement-tests",
+        "--test-threads=1"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/fixed",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "bf122ea8b695040562cb75bfd3e190fb3cd1dcb736275e5e266a81ee45cd1098",
+      "stdout_bytes": 533,
+      "matched_expectation": true
+    },
+    {
+      "name": "fixed-native_handoff-compile-tests",
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+        "--edition",
+        "2021",
+        "--test",
+        "--forbid=unsafe_code",
+        "/tmp/a03-regressions-1_1aw7gc/fixed/native_handoff.rs",
+        "--extern",
+        "os_control=/tmp/a03-regressions-1_1aw7gc/fixed/libos_control.rlib",
+        "-o",
+        "/tmp/a03-regressions-1_1aw7gc/fixed/fixed-native_handoff-tests"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/fixed",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "matched_expectation": true
+    },
+    {
+      "name": "fixed-native_handoff-run",
+      "command": [
+        "/tmp/a03-regressions-1_1aw7gc/fixed/fixed-native_handoff-tests",
+        "--test-threads=1"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/fixed",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "30eb705424d74664aec405057606b001a4e35b8c7ed459650f882f232c4e3fa6",
+      "stdout_bytes": 1332,
+      "matched_expectation": true
+    },
+    {
+      "name": "fixed-native_context_negative-compile-tests",
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+        "--edition",
+        "2021",
+        "--test",
+        "--forbid=unsafe_code",
+        "/tmp/a03-regressions-1_1aw7gc/fixed/native_context_negative.rs",
+        "--extern",
+        "os_control=/tmp/a03-regressions-1_1aw7gc/fixed/libos_control.rlib",
+        "-o",
+        "/tmp/a03-regressions-1_1aw7gc/fixed/fixed-native_context_negative-tests"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/fixed",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "matched_expectation": true
+    },
+    {
+      "name": "fixed-native_context_negative-run",
+      "command": [
+        "/tmp/a03-regressions-1_1aw7gc/fixed/fixed-native_context_negative-tests",
+        "--test-threads=1"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/fixed",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "fecdfc624bac33cde9ddf47609e36e258d950a50b2e7698bcf041178ccf384a3",
+      "stdout_bytes": 293,
+      "matched_expectation": true
+    },
+    {
+      "name": "fixed-native_bound_execution-compile-tests",
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+        "--edition",
+        "2021",
+        "--test",
+        "--forbid=unsafe_code",
+        "/tmp/a03-regressions-1_1aw7gc/fixed/native_bound_execution.rs",
+        "--extern",
+        "os_control=/tmp/a03-regressions-1_1aw7gc/fixed/libos_control.rlib",
+        "-o",
+        "/tmp/a03-regressions-1_1aw7gc/fixed/fixed-native_bound_execution-tests"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/fixed",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "matched_expectation": true
+    },
+    {
+      "name": "fixed-native_bound_execution-run",
+      "command": [
+        "/tmp/a03-regressions-1_1aw7gc/fixed/fixed-native_bound_execution-tests",
+        "--test-threads=1"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/fixed",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "363dbe91d23198a25bbf0e05618e5957f989f0a9e7a8f07039219467db9e9d20",
+      "stdout_bytes": 1048,
+      "matched_expectation": true
+    },
+    {
+      "name": "fixed-native_lifetime-compile-tests",
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+        "--edition",
+        "2021",
+        "--test",
+        "--forbid=unsafe_code",
+        "/tmp/a03-regressions-1_1aw7gc/fixed/native_lifetime.rs",
+        "--extern",
+        "os_control=/tmp/a03-regressions-1_1aw7gc/fixed/libos_control.rlib",
+        "-o",
+        "/tmp/a03-regressions-1_1aw7gc/fixed/fixed-native_lifetime-tests"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/fixed",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "matched_expectation": true
+    },
+    {
+      "name": "fixed-native_lifetime-run",
+      "command": [
+        "/tmp/a03-regressions-1_1aw7gc/fixed/fixed-native_lifetime-tests",
+        "--test-threads=1"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/fixed",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "15105f078b08046dd0275d3e5854214a1a5eccdabda4c3d289da0290fd15bd71",
+      "stdout_bytes": 560,
+      "matched_expectation": true
+    },
+    {
+      "name": "fixed-management_authority-compile-tests",
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+        "--edition",
+        "2021",
+        "--test",
+        "--forbid=unsafe_code",
+        "/tmp/a03-regressions-1_1aw7gc/fixed/management_authority.rs",
+        "--extern",
+        "os_control=/tmp/a03-regressions-1_1aw7gc/fixed/libos_control.rlib",
+        "-o",
+        "/tmp/a03-regressions-1_1aw7gc/fixed/fixed-management_authority-tests"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/fixed",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "matched_expectation": true
+    },
+    {
+      "name": "fixed-management_authority-run",
+      "command": [
+        "/tmp/a03-regressions-1_1aw7gc/fixed/fixed-management_authority-tests",
+        "--test-threads=1"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/fixed",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "f60a7e627deeab65cfda0e35fb16da4175d1da0aa3fb527101c5d89215ce54c9",
+      "stdout_bytes": 1293,
+      "matched_expectation": true
+    },
+    {
+      "name": "fixed-management_identity-compile-tests",
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+        "--edition",
+        "2021",
+        "--test",
+        "--forbid=unsafe_code",
+        "/tmp/a03-regressions-1_1aw7gc/fixed/management_identity.rs",
+        "--extern",
+        "os_control=/tmp/a03-regressions-1_1aw7gc/fixed/libos_control.rlib",
+        "-o",
+        "/tmp/a03-regressions-1_1aw7gc/fixed/fixed-management_identity-tests"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/fixed",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "matched_expectation": true
+    },
+    {
+      "name": "fixed-management_identity-run",
+      "command": [
+        "/tmp/a03-regressions-1_1aw7gc/fixed/fixed-management_identity-tests",
+        "--test-threads=1"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/fixed",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "46490e530284160a81e49fa7309aece0db4ee161f89a210bd3a0371fd253c8c2",
+      "stdout_bytes": 639,
+      "matched_expectation": true
+    },
+    {
+      "name": "fixed-native_failure_recovery-compile-tests",
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+        "--edition",
+        "2021",
+        "--test",
+        "--forbid=unsafe_code",
+        "/tmp/a03-regressions-1_1aw7gc/fixed/native_failure_recovery.rs",
+        "--extern",
+        "os_control=/tmp/a03-regressions-1_1aw7gc/fixed/libos_control.rlib",
+        "-o",
+        "/tmp/a03-regressions-1_1aw7gc/fixed/fixed-native_failure_recovery-tests"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/fixed",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "matched_expectation": true
+    },
+    {
+      "name": "fixed-native_failure_recovery-run",
+      "command": [
+        "/tmp/a03-regressions-1_1aw7gc/fixed/fixed-native_failure_recovery-tests",
+        "--test-threads=1"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/fixed",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "5333058e3e8250d3e3c6ae5b22248a24fa610069a41bab79cbe7ad8ed31e0089",
+      "stdout_bytes": 394,
+      "matched_expectation": true
+    },
+    {
+      "name": "fixed-status_boundary-compile-tests",
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+        "--edition",
+        "2021",
+        "--test",
+        "--forbid=unsafe_code",
+        "/tmp/a03-regressions-1_1aw7gc/fixed/status_boundary.rs",
+        "--extern",
+        "os_control=/tmp/a03-regressions-1_1aw7gc/fixed/libos_control.rlib",
+        "-o",
+        "/tmp/a03-regressions-1_1aw7gc/fixed/fixed-status_boundary-tests"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/fixed",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "matched_expectation": true
+    },
+    {
+      "name": "fixed-status_boundary-run",
+      "command": [
+        "/tmp/a03-regressions-1_1aw7gc/fixed/fixed-status_boundary-tests",
+        "--test-threads=1"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/fixed",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "a005fc55a207b463845a286e244448cfef7627c7cf43fe4f519da750520bf2fc",
+      "stdout_bytes": 332,
+      "matched_expectation": true
+    },
+    {
+      "name": "fixed-callback_lifetime-compile-tests",
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+        "--edition",
+        "2021",
+        "--test",
+        "--forbid=unsafe_code",
+        "/tmp/a03-regressions-1_1aw7gc/fixed/callback_lifetime.rs",
+        "--extern",
+        "os_control=/tmp/a03-regressions-1_1aw7gc/fixed/libos_control.rlib",
+        "-o",
+        "/tmp/a03-regressions-1_1aw7gc/fixed/fixed-callback_lifetime-tests"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/fixed",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "matched_expectation": true
+    },
+    {
+      "name": "fixed-callback_lifetime-run",
+      "command": [
+        "/tmp/a03-regressions-1_1aw7gc/fixed/fixed-callback_lifetime-tests",
+        "--test-threads=1"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/fixed",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "41a737e0457681ef09902c05b4a40d4d5c570e0888bacad5942bb6c7aa957f10",
+      "stdout_bytes": 645,
+      "matched_expectation": true
+    },
+    {
+      "name": "fixed-native_resource_state-compile-tests",
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+        "--edition",
+        "2021",
+        "--test",
+        "--forbid=unsafe_code",
+        "/tmp/a03-regressions-1_1aw7gc/fixed/native_resource_state.rs",
+        "--extern",
+        "os_control=/tmp/a03-regressions-1_1aw7gc/fixed/libos_control.rlib",
+        "-o",
+        "/tmp/a03-regressions-1_1aw7gc/fixed/fixed-native_resource_state-tests"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/fixed",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "matched_expectation": true
+    },
+    {
+      "name": "fixed-native_resource_state-run",
+      "command": [
+        "/tmp/a03-regressions-1_1aw7gc/fixed/fixed-native_resource_state-tests",
+        "--test-threads=1"
+      ],
+      "cwd": "/tmp/a03-regressions-1_1aw7gc/fixed",
+      "expected_exit": 0,
+      "timeout_seconds": 45,
+      "returncode": 0,
+      "timed_out": false,
+      "stdout_sha256": "4305d93aceca1b024d5741b2d01190041dd8f61017d52e5149dfb42994106fb7",
+      "stdout_bytes": 762,
+      "matched_expectation": true
+    }
+  ],
+  "checks": [
+    {
+      "name": "historical-token-run",
+      "expected": [
+        "FAILED",
+        2,
+        3,
+        0,
+        0,
+        0
+      ],
+      "observed": [
+        "FAILED",
+        2,
+        3,
+        0,
+        0,
+        0
+      ],
+      "expected_failure_names": [
+        "lost_history_releases_result_resources_even_when_the_old_token_is_retained",
+        "obsolete_token_does_not_keep_an_otherwise_unreferenced_namespace_alive",
+        "retained_retired_token_no_longer_keeps_a_child_cap_constraint_alive"
+      ],
+      "observed_failure_names": [
+        "lost_history_releases_result_resources_even_when_the_old_token_is_retained",
+        "obsolete_token_does_not_keep_an_otherwise_unreferenced_namespace_alive",
+        "retained_retired_token_no_longer_keeps_a_child_cap_constraint_alive"
+      ],
+      "success": true
+    },
+    {
+      "name": "historical-native-run",
+      "expected": [
+        "FAILED",
+        0,
+        2,
+        0,
+        0,
+        0
+      ],
+      "observed": [
+        "FAILED",
+        0,
+        2,
+        0,
+        0,
+        0
+      ],
+      "expected_failure_names": [
+        "generic_native_callback_cannot_apply_a_different_owner_with_the_same_public_ids",
+        "generic_native_callback_cannot_replace_reserved_ancestry_with_fresh_context"
+      ],
+      "observed_failure_names": [
+        "generic_native_callback_cannot_apply_a_different_owner_with_the_same_public_ids",
+        "generic_native_callback_cannot_replace_reserved_ancestry_with_fresh_context"
+      ],
+      "success": true
+    },
+    {
+      "name": "historical-status-run",
+      "expected": [
+        "FAILED",
+        1,
+        2,
+        0,
+        0,
+        0
+      ],
+      "observed": [
+        "FAILED",
+        1,
+        2,
+        0,
+        0,
+        0
+      ],
+      "expected_failure_names": [
+        "out_of_order_is_not_a_serializable_saved_terminal_result",
+        "retired_is_not_a_serializable_saved_terminal_result"
+      ],
+      "observed_failure_names": [
+        "out_of_order_is_not_a_serializable_saved_terminal_result",
+        "retired_is_not_a_serializable_saved_terminal_result"
+      ],
+      "success": true
+    },
+    {
+      "name": "historical-callback-run",
+      "expected": [
+        "FAILED",
+        2,
+        5,
+        0,
+        0,
+        0
+      ],
+      "observed": [
+        "FAILED",
+        2,
+        5,
+        0,
+        0,
+        0
+      ],
+      "expected_failure_names": [
+        "body_unwind_releases_gate_before_capture_cleanup_and_keeps_one_effect",
+        "capture_destructor_panic_after_success_cannot_erase_terminal_publication",
+        "host_success_releases_gate_before_owned_capture_cleanup",
+        "malformed_outcome_releases_gate_before_capture_cleanup",
+        "native_success_publishes_before_owned_capture_cleanup_and_loss"
+      ],
+      "observed_failure_names": [
+        "body_unwind_releases_gate_before_capture_cleanup_and_keeps_one_effect",
+        "capture_destructor_panic_after_success_cannot_erase_terminal_publication",
+        "host_success_releases_gate_before_owned_capture_cleanup",
+        "malformed_outcome_releases_gate_before_capture_cleanup",
+        "native_success_publishes_before_owned_capture_cleanup_and_loss"
+      ],
+      "success": true
+    },
+    {
+      "name": "synthetic-drop-run",
+      "expected": [
+        "FAILED",
+        0,
+        2,
+        0,
+        0,
+        13
+      ],
+      "observed": [
+        "FAILED",
+        0,
+        2,
+        0,
+        0,
+        13
+      ],
+      "expected_failure_names": [
+        "native_owner_drop_during_history_loss_can_reenter_loss_gate_before_return",
+        "native_owner_drop_during_retirement_can_read_same_namespace_before_return"
+      ],
+      "observed_failure_names": [
+        "native_owner_drop_during_history_loss_can_reenter_loss_gate_before_return",
+        "native_owner_drop_during_retirement_can_read_same_namespace_before_return"
+      ],
+      "success": true
+    },
+    {
+      "name": "synthetic-origin-run",
+      "expected": [
+        "FAILED",
+        2,
+        4,
+        0,
+        0,
+        0
+      ],
+      "observed": [
+        "FAILED",
+        2,
+        4,
+        0,
+        0,
+        0
+      ],
+      "expected_failure_names": [
+        "independent_states_with_identical_config_cannot_use_each_others_snapshots",
+        "replacing_state_inside_the_same_owner_cannot_reauthorize_a_reserved_old_d",
+        "revoke_then_reconstruct_same_config_does_not_reactivate_the_old_snapshot",
+        "snapshot_after_state_destruction_is_metadata_and_cannot_authorize_a_new_state"
+      ],
+      "observed_failure_names": [
+        "independent_states_with_identical_config_cannot_use_each_others_snapshots",
+        "replacing_state_inside_the_same_owner_cannot_reauthorize_a_reserved_old_d",
+        "revoke_then_reconstruct_same_config_does_not_reactivate_the_old_snapshot",
+        "snapshot_after_state_destruction_is_metadata_and_cannot_authorize_a_new_state"
+      ],
+      "success": true
+    },
+    {
+      "name": "fixed-token_retirement-run",
+      "expected": [
+        "ok",
+        5,
+        0,
+        0,
+        0,
+        0
+      ],
+      "observed": [
+        "ok",
+        5,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_failure_names": [],
+      "observed_failure_names": [],
+      "success": true
+    },
+    {
+      "name": "fixed-native_handoff-run",
+      "expected": [
+        "ok",
+        15,
+        0,
+        0,
+        0,
+        0
+      ],
+      "observed": [
+        "ok",
+        15,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_failure_names": [],
+      "observed_failure_names": [],
+      "success": true
+    },
+    {
+      "name": "fixed-native_context_negative-run",
+      "expected": [
+        "ok",
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "observed": [
+        "ok",
+        2,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_failure_names": [],
+      "observed_failure_names": [],
+      "success": true
+    },
+    {
+      "name": "fixed-native_bound_execution-run",
+      "expected": [
+        "ok",
+        11,
+        0,
+        0,
+        0,
+        0
+      ],
+      "observed": [
+        "ok",
+        11,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_failure_names": [],
+      "observed_failure_names": [],
+      "success": true
+    },
+    {
+      "name": "fixed-native_lifetime-run",
+      "expected": [
+        "ok",
+        5,
+        0,
+        0,
+        0,
+        0
+      ],
+      "observed": [
+        "ok",
+        5,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_failure_names": [],
+      "observed_failure_names": [],
+      "success": true
+    },
+    {
+      "name": "fixed-management_authority-run",
+      "expected": [
+        "ok",
+        15,
+        0,
+        0,
+        0,
+        0
+      ],
+      "observed": [
+        "ok",
+        15,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_failure_names": [],
+      "observed_failure_names": [],
+      "success": true
+    },
+    {
+      "name": "fixed-management_identity-run",
+      "expected": [
+        "ok",
+        6,
+        0,
+        0,
+        0,
+        0
+      ],
+      "observed": [
+        "ok",
+        6,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_failure_names": [],
+      "observed_failure_names": [],
+      "success": true
+    },
+    {
+      "name": "fixed-native_failure_recovery-run",
+      "expected": [
+        "ok",
+        3,
+        0,
+        0,
+        0,
+        0
+      ],
+      "observed": [
+        "ok",
+        3,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_failure_names": [],
+      "observed_failure_names": [],
+      "success": true
+    },
+    {
+      "name": "fixed-status_boundary-run",
+      "expected": [
+        "ok",
+        3,
+        0,
+        0,
+        0,
+        0
+      ],
+      "observed": [
+        "ok",
+        3,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_failure_names": [],
+      "observed_failure_names": [],
+      "success": true
+    },
+    {
+      "name": "fixed-callback_lifetime-run",
+      "expected": [
+        "ok",
+        7,
+        0,
+        0,
+        0,
+        0
+      ],
+      "observed": [
+        "ok",
+        7,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_failure_names": [],
+      "observed_failure_names": [],
+      "success": true
+    },
+    {
+      "name": "fixed-native_resource_state-run",
+      "expected": [
+        "ok",
+        7,
+        0,
+        0,
+        0,
+        0
+      ],
+      "observed": [
+        "ok",
+        7,
+        0,
+        0,
+        0,
+        0
+      ],
+      "expected_failure_names": [],
+      "observed_failure_names": [],
+      "success": true
+    }
+  ],
+  "rustc_version": "rustc 1.99.0-nightly (87e5904f5 2026-07-20)\nbinary: rustc\ncommit-hash: 87e5904f5eb6398af6b22eac2802c78934260c48\ncommit-date: 2026-07-20\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.0-nightly\nLLVM version: 22.1.8\n",
+  "checkout_commit": "537ad2f69a183f7bf70aa0f463eeccc391e12c13",
+  "current_source_sha256": {
+    "libs/os-control/src/lib.rs": "0ec42981de95f5d64088aeb16fa137c0daabe5a149108b88ff7c4ab7daea431d",
+    "libs/os-control/src/native.rs": "1967c2db5c7292127a5cb4a76c3448a9764710b4c44ebeb40a610dba6e16fd81",
+    "libs/os-control/src/sync.rs": "e2159cc41ef3a1073b1899615f70ea34cc9915052dd41811180bd3e3497784cd",
+    "libs/os-control/src/management.rs": "1b44ed9d89f3bd9aba90c8bcd3aeceb46bcd7332cbdd2bdd3fa40ff200d49340",
+    "libs/os-control/src/resource_state.rs": "84fe7cfe37ea109ebfce4de5f32a5a418f4d834c5affc82af2d2a955bc9bb810",
+    "tests/control/token_retirement.rs": "7078c9aa1217aa367a671df64c6a0f72deeeed4ad3078a00bb8d085cd31a8b30",
+    "tests/control/native_handoff.rs": "afa5ca8334149d5dc31e285d4254806dc92120830e8acebcd7c6fe14801e53c6",
+    "tests/control/native_context_negative.rs": "de202dde9f78ceb712d62a085f95327b6904dea509ef03d695bb98992bb30bb0",
+    "tests/control/native_bound_execution.rs": "4478f2592c1f428d284d7c8051b573969d77da0d367b5d736fc4fa10a4c8a292",
+    "tests/control/native_lifetime.rs": "a11762c5c8b0ad06bf8c277b3a822e581ea9556df608869820734391e2a9f796",
+    "tests/control/management_authority.rs": "0bee44cc64e968f1e4dfc7b1b7f08b104e999d723ef8879f636e9bf89e4ace1e",
+    "tests/control/management_identity.rs": "06760c26cc14c953b33bc145ea22818262002ce410247e6db00fdb3178ad6c71",
+    "tests/control/native_failure_recovery.rs": "7e59ac2d005eda3901c870ca9093ac184d5f8f2abba4f3c27a2720b6b0daf6b7",
+    "tests/control/status_boundary.rs": "4c0279600ca103a657610bfca2bb764ade89af5c0498567376cf652f046f4811",
+    "tests/control/callback_lifetime.rs": "426958030735732e04f26bcf8eb262566512d1e9d94ac00419d653288939a549",
+    "tests/control/native_resource_state.rs": "086478600241f037a02fd7db79a15dea1bc91c61e0a3bdfc066c1b46fa52592f"
+  },
+  "baseline_source_sha256": {
+    "libs/os-control/src/lib.rs": "0dae32bfc3ac08a83b5c7269ebc35d14812bcc19ce2bcf84f76dc94fed964816",
+    "libs/os-control/src/sync.rs": "c008828ccd16a6e9e9fa152b6829d5431f9ddb4d665cf19cca27a10216bffaf2"
+  },
+  "native_baseline_source_sha256": {
+    "libs/os-control/src/lib.rs": "aa37977e31a293d52233cde446ebbbf86b54befcb41536f049503b41f6ca93b7",
+    "libs/os-control/src/native.rs": "f32028122d21b097c443eb8692f2dd4181e7a3a436daf1c84c67fcaf6c7a8d80",
+    "libs/os-control/src/sync.rs": "e2159cc41ef3a1073b1899615f70ea34cc9915052dd41811180bd3e3497784cd"
+  },
+  "status_baseline_source_sha256": {
+    "libs/os-control/src/lib.rs": "0225e0ad8585ae32c5c0bb4d5fea506e8270250260eabbc38748c2d6f60d8450",
+    "libs/os-control/src/native.rs": "1967c2db5c7292127a5cb4a76c3448a9764710b4c44ebeb40a610dba6e16fd81",
+    "libs/os-control/src/sync.rs": "e2159cc41ef3a1073b1899615f70ea34cc9915052dd41811180bd3e3497784cd",
+    "libs/os-control/src/management.rs": "1b44ed9d89f3bd9aba90c8bcd3aeceb46bcd7332cbdd2bdd3fa40ff200d49340"
+  },
+  "callback_baseline_source_sha256": {
+    "libs/os-control/src/lib.rs": "d8ac849dab1e7f7e2ffa8b97e87033ca954fb95bafac1f17e459b4e85c645bec",
+    "libs/os-control/src/native.rs": "1967c2db5c7292127a5cb4a76c3448a9764710b4c44ebeb40a610dba6e16fd81",
+    "libs/os-control/src/sync.rs": "e2159cc41ef3a1073b1899615f70ea34cc9915052dd41811180bd3e3497784cd",
+    "libs/os-control/src/management.rs": "1b44ed9d89f3bd9aba90c8bcd3aeceb46bcd7332cbdd2bdd3fa40ff200d49340"
+  },
+  "synthetic_lib_sha256": "41199b56ae56de1610435d391ac58b829d8520c74e3982ee31a9659879d2a2bc",
+  "synthetic_management_sha256": "61ad0f1b1e524fd51078f8cfa318236b0a2696332004020e320c123ec0ade4e7",
+  "source_after_sha256": {
+    "libs/os-control/src/lib.rs": "0ec42981de95f5d64088aeb16fa137c0daabe5a149108b88ff7c4ab7daea431d",
+    "libs/os-control/src/native.rs": "1967c2db5c7292127a5cb4a76c3448a9764710b4c44ebeb40a610dba6e16fd81",
+    "libs/os-control/src/sync.rs": "e2159cc41ef3a1073b1899615f70ea34cc9915052dd41811180bd3e3497784cd",
+    "libs/os-control/src/management.rs": "1b44ed9d89f3bd9aba90c8bcd3aeceb46bcd7332cbdd2bdd3fa40ff200d49340",
+    "libs/os-control/src/resource_state.rs": "84fe7cfe37ea109ebfce4de5f32a5a418f4d834c5affc82af2d2a955bc9bb810",
+    "tests/control/token_retirement.rs": "7078c9aa1217aa367a671df64c6a0f72deeeed4ad3078a00bb8d085cd31a8b30",
+    "tests/control/native_handoff.rs": "afa5ca8334149d5dc31e285d4254806dc92120830e8acebcd7c6fe14801e53c6",
+    "tests/control/native_context_negative.rs": "de202dde9f78ceb712d62a085f95327b6904dea509ef03d695bb98992bb30bb0",
+    "tests/control/native_bound_execution.rs": "4478f2592c1f428d284d7c8051b573969d77da0d367b5d736fc4fa10a4c8a292",
+    "tests/control/native_lifetime.rs": "a11762c5c8b0ad06bf8c277b3a822e581ea9556df608869820734391e2a9f796",
+    "tests/control/management_authority.rs": "0bee44cc64e968f1e4dfc7b1b7f08b104e999d723ef8879f636e9bf89e4ace1e",
+    "tests/control/management_identity.rs": "06760c26cc14c953b33bc145ea22818262002ce410247e6db00fdb3178ad6c71",
+    "tests/control/native_failure_recovery.rs": "7e59ac2d005eda3901c870ca9093ac184d5f8f2abba4f3c27a2720b6b0daf6b7",
+    "tests/control/status_boundary.rs": "4c0279600ca103a657610bfca2bb764ade89af5c0498567376cf652f046f4811",
+    "tests/control/callback_lifetime.rs": "426958030735732e04f26bcf8eb262566512d1e9d94ac00419d653288939a549",
+    "tests/control/native_resource_state.rs": "086478600241f037a02fd7db79a15dea1bc91c61e0a3bdfc066c1b46fa52592f"
+  }
+}
