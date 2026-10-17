@@ -23,7 +23,6 @@ jobs:
     env:
       DESKTOP_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
       HEPTA_PIN: f8c9419df6ddeb36ff8b522a50219981fb8d9345
-      HEPTA_CI_ROOT: ${{ runner.temp }}/hepta-original-${{ github.run_id }}-${{ github.run_attempt }}
       GIT_TERMINAL_PROMPT: '0'
       PYTHONDONTWRITEBYTECODE: '1'
     steps:
@@ -31,11 +30,13 @@ jobs:
         run: |
           set -euo pipefail
           umask 077
+          # Runner paths are unavailable in job-level expression contexts.
+          export HEPTA_CI_ROOT="$RUNNER_TEMP/hepta-original-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
           test ! -e "$HEPTA_CI_ROOT"
           mkdir -m 700 "$HEPTA_CI_ROOT"
           mkdir -m 700 "$HEPTA_CI_ROOT/logs" "$HEPTA_CI_ROOT/identity" "$HEPTA_CI_ROOT/locks"
-          printf 'CARGO_HOME=%s/cargo-home\nRUSTUP_HOME=%s/rustup-home\n' \
-            "$HEPTA_CI_ROOT" "$HEPTA_CI_ROOT" >> "$GITHUB_ENV"
+          printf 'HEPTA_CI_ROOT=%s\nCARGO_HOME=%s/cargo-home\nRUSTUP_HOME=%s/rustup-home\n' \
+            "$HEPTA_CI_ROOT" "$HEPTA_CI_ROOT" "$HEPTA_CI_ROOT" >> "$GITHUB_ENV"
           python3 - <<'PY'
           from datetime import datetime, timezone
           import json, os, platform
