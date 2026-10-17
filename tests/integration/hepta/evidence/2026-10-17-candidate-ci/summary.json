@@ -1,0 +1,99 @@
+{
+  "recorded_at_utc": "2026-10-17T21:54:37.114748+00:00",
+  "evidence_class": "exact_candidate_github_ci_and_downloaded_artifact_review",
+  "desktop_commit": "c0d5ee395cd76bcd29e8f1c912d048d19c97ce00",
+  "desktop_tree": "18bb74651753640289296ff872ee2db7e1bd6fe4",
+  "hepta_commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+  "a10": {
+    "run_id": 39044366490,
+    "conclusion": "success",
+    "native_job_id": 117452452534,
+    "native_job_started_at": "2026-10-17T18:11:57Z",
+    "native_job_completed_at": "2026-10-17T18:14:27Z",
+    "rust_suites": {
+      "ui_workspace": {
+        "passed": 81,
+        "ignored": 2
+      },
+      "hepta_os_observer": {
+        "passed": 17,
+        "ignored": 0
+      },
+      "support_ui": {
+        "passed": 39,
+        "ignored": 0
+      },
+      "tests_ui_contract": {
+        "passed": 8,
+        "ignored": 0
+      }
+    },
+    "rust_total": {
+      "passed": 145,
+      "failed": 0,
+      "ignored": 2
+    },
+    "ignored_scope": "Two copies of host_fonts::selected_real_font_covers_egui_proportional_and_monospace require TRILL_UI_TEST_CJK_FONT; not real IME results",
+    "other_checks": [
+      "actual runtime ownership foreign-UID refusal and same-UID 0600 bind",
+      "SO_PEERCRED bidirectional and rogue-server refusals",
+      "strict raw IPC rejects eight forged frames",
+      "packaged ELF replay without display",
+      "real Weston Shell and three app layouts",
+      "same Session compositor crash/restart with new client first layout",
+      "Clippy all targets -D warnings",
+      "rustfmt and committed UI Cargo.lock",
+      "6 process guard tests"
+    ],
+    "scripted_fixture_only": [
+      "Session/facade read-only observation and stale retention",
+      "Hepta page egui layout after fresh fixture Session projection"
+    ],
+    "not_verified_by_this_run": [
+      "original Agentd to Session or Shell",
+      "X11 mapping: runner lacks optional tools",
+      "actual Chinese input",
+      "compositor pixel presentation",
+      "physical GPU",
+      "Asterinas",
+      "mobile"
+    ],
+    "first_logged_setup_at": "2026-10-17T18:11:58Z"
+  },
+  "arm": {
+    "run_id": 39044366482,
+    "conclusion": "success",
+    "job_id": 117430045677,
+    "job_started_at": "2026-10-17T15:42:44Z",
+    "job_completed_at": "2026-10-17T16:05:11Z",
+    "original_gate_checks": [
+      "original_starting",
+      "original_running",
+      "bounded_capabilities_events",
+      "missing_run_read",
+      "same_process_draining",
+      "original_restart",
+      "old_spawn_rejected",
+      "controlled_stop"
+    ],
+    "prerequisites": {
+      "manifest_tests": 3,
+      "process_guard_tests": 6
+    },
+    "persistent_session_acceptance": "not_run",
+    "shell_capture": "not_run",
+    "objective_submission": false,
+    "model_turn": false,
+    "device_effect": false,
+    "artifact_actual_arm64_elf_count": 3,
+    "original_source_clean_before_and_after": true
+  },
+  "binary_evidence": {
+    "a10_4_packaged_elf": "Streamed and hashed; strip --strip-debug copies; independently replayed without display in CI",
+    "a10_actual_session_sha256_for_fixture_and_wayland": "6a4090c0ca92a4b06457ca8363e638c3959075860831ac1299641e2e1a1f5c9e",
+    "a10_actual_shell_sha256_for_wayland": "a482d599442e9ca62f5cab26eb25ec63586708863fb1ed5fa968580bfb89f298",
+    "arm_3_actual_elf": "Streamed and hashed against execution report and embedded binary manifest; exact hashes match",
+    "downloaded_executables_executed_by_reviewer": false
+  },
+  "archive_policy": "Original small evidence ZIP included. 17 MB A10 and 80 MB ARM ELF ZIPs were downloaded, hashed and streamed but excluded from this compact source archive; linked Actions artifacts retain their stated expiry."
+}
