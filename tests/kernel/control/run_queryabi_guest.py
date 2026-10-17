@@ -6,6 +6,7 @@ Hepta durability proof, or hardware sign-off. It never changes a host cgroup,
 device driver, data disk, network stack, firmware, or production service.
 """
 import argparse
+from contextlib import ExitStack
 import gzip
 import io
 import hashlib
@@ -18,6 +19,10 @@ import subprocess
 import sys
 import time
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from compile_guard import compile_guest_probe
+from pinned_memfd import sealed_input
+from serial_limit import limit_serial_file
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "organ_backend"))
 from run_guest_probe import pack, unpack  # already shipped A01 newc parser
 
@@ -83,6 +88,12 @@ def decode_bounded_initramfs(original_gzip, max_unpacked=MAX_UNPACKED_INITRAMFS_
         # gzip members without allowing unbounded extraction.
         require(stream.read(1) == b"", "initramfs decompression limit exceeded")
     return data
+
+
+def serial_evidence_complete(length):
+    # Exactly at RLIMIT_FSIZE can mean QEMU survived EFBIG/SIGXFSZ and
+    # the final log is truncated despite an otherwise successful guest exit.
+    return isinstance(length, int) and 0 < length < MAX_SERIAL_BYTES
 
 
 def build_guest_initramfs(original_gzip, compiled_probe):
@@ -151,37 +162,50 @@ def main(argv=None):
     guest_elf = output / "hos2-queryabi"
     compiler = [args.cc, "-std=c11", "-O2", "-Wall", "-Wextra",
                 "-Werror", "-static", str(guest_source), "-o", str(guest_elf)]
-    compile_run = subprocess.run(compiler, capture_output=True, text=True, timeout=60)
-    (output / "compile.log").write_text(compile_run.stdout + compile_run.stderr, encoding="utf-8")
-    require(compile_run.returncode == 0, "static guest C compilation failed")
-    compiled = guest_elf.read_bytes()
+    # Keep compiler stdout/stderr outside Python RAM, bound all child file
+    # writes and inspect the produced ELF only through one no-follow FD.
+    # This host-only check does not attest a real guest boot.
+    compiled = compile_guest_probe(compiler, guest_elf, output / "compile.log", timeout=60)
     initrd = build_guest_initramfs(original, compiled)
     (output / "initramfs.cpio.gz").write_bytes(initrd)
-    # Kernel and BIOS inputs remain at their original, independently hashed paths.
-    args_qemu = [
-        args.qemu, "-kernel", str(args.kernel_elf.absolute()),
-        "-initrd", str((output / "initramfs.cpio.gz").absolute()),
-        "-append", "earlycon console=ttyS0 loglevel=info SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --",
-        "-machine", "q35", "-accel", "tcg", "-cpu", "max",
-        "-bios", str(args.bios.absolute()), "-m", "512M", "-smp", "1",
-        "-nodefaults", "-no-user-config", "-no-reboot", "-nographic",
-        "-display", "none", "-monitor", "none", "-serial", "stdio",
-        "-device", "isa-debug-exit,iobase=0xf4,iosize=0x04",
-    ]
+    # Open sealed anonymous snapshots of the already SHA256-validated bytes.
+    # QEMU must not reopen caller-controlled kernel/BIOS/initramfs paths: a
+    # pathname could be swapped after our original fstat/hash verification.
+    serial = output / "serial.log"
     start = time.monotonic()
     timed_out = False
-    serial = output / "serial.log"
-    with serial.open("xb") as writer:
-        try:
-            completed = subprocess.run(args_qemu, stdin=subprocess.DEVNULL,
-                                       stdout=writer, stderr=subprocess.STDOUT,
-                                       timeout=args.timeout, check=False)
-            code = completed.returncode
-        except subprocess.TimeoutExpired:
-            timed_out, code = True, None
+    with ExitStack() as inputs:
+        kernel_fd = sealed_input("kernel", kernel)
+        inputs.callback(os.close, kernel_fd)
+        initrd_fd = sealed_input("initramfs", initrd)
+        inputs.callback(os.close, initrd_fd)
+        bios_fd = sealed_input("bios", bios)
+        inputs.callback(os.close, bios_fd)
+        qemu_fds = (kernel_fd, initrd_fd, bios_fd)
+        args_qemu = [
+            args.qemu, "-kernel", f"/proc/self/fd/{kernel_fd}",
+            "-initrd", f"/proc/self/fd/{initrd_fd}",
+            "-append", "earlycon console=ttyS0 loglevel=info SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --",
+            "-machine", "q35", "-accel", "tcg", "-cpu", "max",
+            "-bios", f"/proc/self/fd/{bios_fd}", "-m", "512M", "-smp", "1",
+            "-nodefaults", "-no-user-config", "-no-reboot", "-nographic",
+            "-display", "none", "-monitor", "none", "-serial", "stdio",
+            "-device", "isa-debug-exit,iobase=0xf4,iosize=0x04",
+        ]
+        with serial.open("xb") as writer:
+            try:
+                completed = subprocess.run(
+                    args_qemu, stdin=subprocess.DEVNULL, stdout=writer,
+                    stderr=subprocess.STDOUT, timeout=args.timeout,
+                    check=False, pass_fds=qemu_fds,
+                    preexec_fn=limit_serial_file,
+                )
+                code = completed.returncode
+            except subprocess.TimeoutExpired:
+                timed_out, code = True, None
     elapsed = round(time.monotonic() - start, 3)
     serial_size = serial.stat().st_size
-    require(serial_size <= MAX_SERIAL_BYTES, "serial log size exceeds bounded evidence policy")
+    require(serial_evidence_complete(serial_size), "serial evidence empty/overfull or reached the child hard cap")
     captured = serial.read_text(encoding="utf-8", errors="replace")
     guest_ok = EXPECTED_SUCCESS in captured
     boot_ok = "TRILLIONNIUM_A01_BOOT_OK" in captured
