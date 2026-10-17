@@ -216,7 +216,9 @@ def validate(host, guest, host_log, guest_log):
     check(gemm.get("status") == "guest_cuda_reported_pass_not_asterinas_attestation" and
           gemm.get("child_exit_code") == 0, "gemm_not_successful")
     child = gemm.get("child_evidence") if isinstance(gemm.get("child_evidence"), dict) else {}
-    check(child.get("schema") in ("a09.cuda-gemm.v1", "a09.cuda-gemm.v2") and
+    # Only the currently supervised v2 runner is review-eligible. Legacy
+    # v1 in-process/self-reported CUDA records lack bounded process evidence.
+    check(child.get("schema") == "a09.cuda-gemm.v2" and
           child.get("status") == "passed_on_reported_cuda_environment" and
           child.get("test") == "gemm16_f32" and
           child.get("dimension") == [16, 16, 16] and
@@ -233,6 +235,55 @@ def validate(host, guest, host_log, guest_log):
           child.get("cuda_kernel_launched") is True and
           child.get("synchronization_completed") is True and
           child.get("no_cpu_fallback") is True, "invalid_cuda_gemm_result")
+    stages = child.get("stages") if isinstance(child.get("stages"), dict) else {}
+    fixed_stages = (
+        "enumerate_device", "compile_kernel", "allocate_device_memory",
+        "copy_inputs", "submit_command", "synchronize", "copy_result",
+        "compare_reference", "release_resources",
+    )
+    check(all(stages.get(stage) == "passed" for stage in fixed_stages) and
+          stages.get("failure_recovery") == "not_run",
+          "gpu_execution_stage_provenance_missing")
+
+    # Child process never authenticates the Rust host or GPU reset. These
+    # identities must be correlated with independent host/guest boot evidence.
+    provenance = child.get("execution_provenance")
+    provenance = provenance if isinstance(provenance, dict) else {}
+    process_id = provenance.get("process_id")
+    check(type(process_id) is int and process_id > 0 and
+          provenance.get("kernel_name") == "Linux" and
+          isinstance(provenance.get("kernel_release"), str) and
+          bool(provenance["kernel_release"].strip()) and
+          provenance.get("machine") == "x86_64" and
+          isinstance(provenance.get("process_executable"), str) and
+          provenance["process_executable"].startswith("/") and
+          provenance.get("execution_layer") == "linux_supervised_worker_cuda_driver_api",
+          "guest_linux_compute_process_identity_missing")
+    check(child.get("asterinas_execution_verified") is False and
+          child.get("vmm_passthrough_verified") is False and
+          child.get("physical_device_assignment_verified") is False and
+          child.get("reset_or_failure_recovery_verified") is False and
+          child.get("failure_recovery_verified") is False and
+          provenance.get("asterinas_execution_verified") is False and
+          provenance.get("vmm_passthrough_verified") is False and
+          provenance.get("physical_device_assignment_verified") is False,
+          "cuda_child_claims_unauthenticated_host_or_reset_success")
+    worker = child.get("supervisor")
+    worker = worker if isinstance(worker, dict) else {}
+    check(child.get("timeout_enforced") is True and
+          worker.get("supervisor") == "linux_waitid_wnowait_killpg" and
+          type(worker.get("worker_pid")) is int and
+          worker.get("worker_pid") == process_id and
+          type(worker.get("worker_exit_code")) is int and
+          worker["worker_exit_code"] == 0 and
+          worker.get("worker_reaped") is True and
+          worker.get("timed_out") is False and
+          worker.get("device_reset_verified") is False and
+          all(not worker.get(k) for k in (
+              "worker_group_incomplete", "worker_group_inspection_failed",
+              "worker_group_kill_error", "worker_identity_lost",
+              "unreaped_worker_may_remain"
+          )), "guest_cuda_worker_lifecycle_unverified")
     cuda_dev = child.get("device") if isinstance(child.get("device"), dict) else {}
     # This first lab profile is the RTX 4060 (official CUDA CC 8.9).
     # These remain *self-reported* runtime values, not hardware attestation.

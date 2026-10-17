@@ -46,7 +46,7 @@ class AcceptanceTests(unittest.TestCase):
             "gemm": {"schema": "a09.cuda-bounded-run.v1",
                      "status": "guest_cuda_reported_pass_not_asterinas_attestation",
                      "requested_guest_bdf": "0000:03:00.0", "child_exit_code": 0,
-                     "child_evidence": {"schema": "a09.cuda-gemm.v1",
+                     "child_evidence": {"schema": "a09.cuda-gemm.v2",
                                         "status": "passed_on_reported_cuda_environment",
                                         "actual_output_sha256":
                                         "5bf61d6bb17edb58d70dd37589eeab5a02f5cc5d0c5aae5d142b06678416d847",
@@ -65,6 +65,43 @@ class AcceptanceTests(unittest.TestCase):
                                         "cuda_kernel_launched": True,
                                         "synchronization_completed": True,
                                         "no_cpu_fallback": True,
+                                        "asterinas_execution_verified": False,
+                                        "vmm_passthrough_verified": False,
+                                        "physical_device_assignment_verified": False,
+                                        "reset_or_failure_recovery_verified": False,
+                                        "failure_recovery_verified": False,
+                                        "timeout_enforced": True,
+                                        "stages": {
+                                            "enumerate_device": "passed",
+                                            "compile_kernel": "passed",
+                                            "allocate_device_memory": "passed",
+                                            "copy_inputs": "passed",
+                                            "submit_command": "passed",
+                                            "synchronize": "passed",
+                                            "copy_result": "passed",
+                                            "compare_reference": "passed",
+                                            "release_resources": "passed",
+                                            "failure_recovery": "not_run",
+                                        },
+                                        "execution_provenance": {
+                                            "process_id": 4242,
+                                            "process_executable": "/usr/bin/python3",
+                                            "kernel_name": "Linux",
+                                            "kernel_release": "fixture-linux",
+                                            "machine": "x86_64",
+                                            "execution_layer": "linux_supervised_worker_cuda_driver_api",
+                                            "asterinas_execution_verified": False,
+                                            "vmm_passthrough_verified": False,
+                                            "physical_device_assignment_verified": False,
+                                        },
+                                        "supervisor": {
+                                            "supervisor": "linux_waitid_wnowait_killpg",
+                                            "worker_pid": 4242,
+                                            "worker_exit_code": 0,
+                                            "worker_reaped": True,
+                                            "timed_out": False,
+                                            "device_reset_verified": False,
+                                        },
                                         "device": {"device_bdf": "0000:03:00.0",
                                                    "device_name": "NVIDIA GeForce RTX 4060",
                                                    "device_index": 0,
@@ -493,6 +530,62 @@ class AcceptanceTests(unittest.TestCase):
         reasons = self.reasons()
         self.assertIn("guest_pci_bdf_missing", reasons)
         self.assertIn("guest_cuda_pci_identity_mismatch", reasons)
+
+
+
+    def test_legacy_unsupervised_v1_is_not_review_eligible(self):
+        child = self.guest["gemm"]["child_evidence"]
+        child["schema"] = "a09.cuda-gemm.v1"
+        self.assertIn("invalid_cuda_gemm_result", self.reasons())
+
+    def test_missing_guest_pid_or_wrong_linux_kernel_is_blocked(self):
+        provenance = self.guest["gemm"]["child_evidence"]["execution_provenance"]
+        for field, value in (("process_id", None), ("process_id", True),
+                             ("process_id", -1), ("kernel_name", "Darwin"),
+                             ("machine", "aarch64"), ("execution_layer", "linux_host")):
+            with self.subTest(field=field, value=value):
+                old = provenance[field]
+                provenance[field] = value
+                self.assertIn("guest_linux_compute_process_identity_missing", self.reasons())
+                provenance[field] = old
+
+    def test_worker_pid_must_match_kernel_guest_process(self):
+        worker = self.guest["gemm"]["child_evidence"]["supervisor"]
+        worker["worker_pid"] = 4243
+        self.assertIn("guest_cuda_worker_lifecycle_unverified", self.reasons())
+
+    def test_forged_reaped_leader_or_remaining_gpu_worker_is_blocked(self):
+        worker = self.guest["gemm"]["child_evidence"]["supervisor"]
+        for field, value in (("worker_reaped", False), ("worker_exit_code", 1),
+                             ("timed_out", True), ("worker_group_incomplete", True),
+                             ("worker_group_inspection_failed", True),
+                             ("worker_group_kill_error", "EPERM"),
+                             ("worker_identity_lost", True),
+                             ("unreaped_worker_may_remain", True)):
+            with self.subTest(field=field):
+                old = worker.get(field)
+                worker[field] = value
+                self.assertIn("guest_cuda_worker_lifecycle_unverified", self.reasons())
+                if old is None:
+                    del worker[field]
+                else:
+                    worker[field] = old
+
+    def test_missing_compute_stage_is_not_a_reviewable_cuda_result(self):
+        stage = self.guest["gemm"]["child_evidence"]["stages"]
+        stage["synchronize"] = "not_run"
+        self.assertIn("gpu_execution_stage_provenance_missing", self.reasons())
+
+    def test_child_cannot_self_assert_asterinas_or_reset(self):
+        child = self.guest["gemm"]["child_evidence"]
+        child["asterinas_execution_verified"] = True
+        child["reset_or_failure_recovery_verified"] = True
+        self.assertIn("cuda_child_claims_unauthenticated_host_or_reset_success", self.reasons())
+
+    def test_unsupervised_child_cannot_qualify_bounded_result(self):
+        child = self.guest["gemm"]["child_evidence"]
+        child["timeout_enforced"] = False
+        self.assertIn("guest_cuda_worker_lifecycle_unverified", self.reasons())
 
 
 
