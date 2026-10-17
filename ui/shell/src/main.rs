@@ -1527,9 +1527,8 @@ mod shell_lifecycle_tests {
                     }]),
                     |ctx| {
                         egui::CentralPanel::default().show(ctx, |ui| {
-                            activated_by_pointer = ui
-                                .button(label)
-                                .clicked_by(egui::PointerButton::Primary);
+                            activated_by_pointer =
+                                ui.button(label).clicked_by(egui::PointerButton::Primary);
                         });
                     },
                 );

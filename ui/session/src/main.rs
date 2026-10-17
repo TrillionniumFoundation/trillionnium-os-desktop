@@ -13,6 +13,8 @@ use std::path::{Path, PathBuf};
 use std::process::{Child, Command, ExitStatus, Stdio};
 use std::sync::mpsc::{self, Receiver, Sender};
 
+#[cfg(target_os = "linux")]
+use trill_ui_core::host_peer;
 use trill_ui_core::host_peer::require_same_uid_peer;
 use trill_ui_core::{
     parse_host_request, read_frame, socket_path, unix_ms, write_frame, AppKind, HostResources,
