@@ -52,12 +52,45 @@ python3 - "$root/owner.json" <<'PY'
 import json,sys
 s=json.load(open(sys.argv[1]));assert s['type']=='snapshot' and s['tasks']==[],s
 PY
-if env XDG_RUNTIME_DIR="$runtime" "$root/bin/trill-ctl" snapshot >"$root/foreign.json" 2>"$root/foreign.err"; then
-    echo 'CROSS_UID_PEER_ACCEPTED: root requester read nobody Session (the old binary lacks SO_PEERCRED)' >&2
+# Verify CLIENT-SIDE rejection before trusting a different UID's server.
+# sudo provides the intentionally different root UID on the Ubuntu host.
+if sudo -n env XDG_RUNTIME_DIR="$runtime" "$root/bin/trill-ctl" snapshot >"$root/foreign.json" 2>"$root/foreign.err"; then
+    echo 'CROSS_UID_SERVER_TRUSTED: root CLI accepted nobody Session' >&2
     exit 1
 fi
-grep -Fq 'Cross-UID host UI IPC request refused' "$root/session.log" || {
-    echo 'Foreign client denied for a reason other than SO_PEERCRED UID mismatch' >&2
+grep -Fq 'Cross-UID host UI IPC request refused' "$root/foreign.err" || {
+    echo 'Cross-UID CLI failed for a reason other than SO_PEERCRED mismatch' >&2
+    cat "$root/foreign.err" >&2
+    exit 1
+}
+# Independently bypass the CLI with a RAW kernel Unix socket. The server
+# must also reject a root requester itself; client-side checking alone is
+# not enough to establish the two-sided host transport boundary.
+sudo -n python3 - "$runtime/trillionnium-ui/session.sock" <<'PYFOREIGN'
+import socket,sys
+peer=socket.socket(socket.AF_UNIX)
+peer.settimeout(2)
+peer.connect(sys.argv[1])
+try:
+    peer.sendall(b'{"type":"snapshot"}\n')
+    received=peer.recv(4096)
+except (BrokenPipeError,ConnectionResetError):
+    received=b''
+finally:
+    peer.close()
+if received:
+    raise SystemExit("Cross-UID raw client received unauthorized Session bytes")
+PYFOREIGN
+seen=0
+for _ in {1..50}; do
+    if grep -Fq 'Cross-UID host UI IPC request refused' "$root/session.log"; then
+        seen=1
+        break
+    fi
+    sleep 0.05
+done
+[[ "$seen" == 1 ]] || {
+    echo 'Kernel Session did not record server-side foreign UID refusal' >&2
     cat "$root/session.log" >&2
     exit 1
 }
@@ -66,4 +99,4 @@ python3 - "$root/owner.json" "$root/post-denial.json" <<'PY'
 import json,sys
 x=json.load(open(sys.argv[1]));y=json.load(open(sys.argv[2]));assert x['session_instance']==y['session_instance'] and not y['tasks']
 PY
-printf 'A10 SO_PEERCRED live cross-UID rejection PASS: kernel socket denies root client to nobody Session, legitimate same-UID client still served\n'
+printf 'A10 SO_PEERCRED live BIDIRECTIONAL refusal PASS: root CLI distrusts nobody server, raw root client refused by nobody Session, same-UID owner still served\n'

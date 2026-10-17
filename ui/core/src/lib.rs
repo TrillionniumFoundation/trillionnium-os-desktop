@@ -3,6 +3,8 @@
 pub mod hepta;
 
 use serde::{Deserialize, Serialize};
+
+pub mod host_peer;
 use std::io::{self, BufRead, BufReader, Read, Write};
 use std::path::{Path, PathBuf};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
@@ -292,6 +294,77 @@ pub enum Response {
     },
 }
 
+/// A strict host-UI request object. Serde's internally tagged enum with a
+/// unit Snapshot variant may accept extra JSON keys even with
+/// deny_unknown_fields; parsing directly as Request is not a wire-level
+/// unknown-field and duplicate-key rejection contract.
+struct UniqueRequestFields(serde_json::Map<String, serde_json::Value>);
+
+impl<'de> Deserialize<'de> for UniqueRequestFields {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        use serde::de::{Error, MapAccess, Visitor};
+        struct UniqueObjectVisitor;
+        impl<'de> Visitor<'de> for UniqueObjectVisitor {
+            type Value = UniqueRequestFields;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                formatter.write_str("a single host UI request JSON object")
+            }
+
+            fn visit_map<A>(self, mut input: A) -> Result<Self::Value, A::Error>
+            where
+                A: MapAccess<'de>,
+            {
+                let mut fields = serde_json::Map::new();
+                while let Some((key, value)) = input.next_entry::<String, serde_json::Value>()? {
+                    if fields.insert(key, value).is_some() {
+                        return Err(A::Error::custom("duplicate host request key"));
+                    }
+                }
+                Ok(UniqueRequestFields(fields))
+            }
+        }
+        deserializer.deserialize_map(UniqueObjectVisitor)
+    }
+}
+
+/// Exactly one bounded, schema-matching request. Reject unsolicited or
+/// duplicate fields BEFORE Session can read/launch/kill any owned process.
+/// This is an unprivileged Linux host UX IPC guard, NOT A05 authorization.
+pub fn parse_host_request(frame: &[u8]) -> io::Result<Request> {
+    if frame.len() > MAX_FRAME {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "Host request exceeds MAX_FRAME",
+        ));
+    }
+    let UniqueRequestFields(fields) = serde_json::from_slice(frame)
+        .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
+    let allowed: &[&str] = match fields.get("type").and_then(serde_json::Value::as_str) {
+        Some("snapshot") => &["type"],
+        Some("launch") => &["type", "workspace", "app", "expected_instance"],
+        Some("cancel") => &["type", "id", "expected_instance"],
+        _ => {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "Unknown or missing host request type",
+            ))
+        }
+    };
+    if fields.len() != allowed.len() || fields.keys().any(|name| !allowed.contains(&name.as_str()))
+    {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "Missing or unexpected host request field",
+        ));
+    }
+    serde_json::from_value(serde_json::Value::Object(fields))
+        .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))
+}
+
 pub fn unix_ms() -> u64 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -355,6 +428,9 @@ pub fn request(req: &Request) -> io::Result<Response> {
 pub fn request_at(socket: &Path, req: &Request) -> io::Result<Response> {
     use std::os::unix::net::UnixStream;
     let mut stream = UnixStream::connect(socket)?;
+    // Verify the kernel's server UID BEFORE sending a request or trusting a
+    // snapshot. A forged cross-UID socket must not supply fake host tasks.
+    host_peer::require_same_uid_peer(&stream)?;
     stream.set_read_timeout(Some(Duration::from_secs(2)))?;
     stream.set_write_timeout(Some(Duration::from_secs(2)))?;
     write_frame(&mut stream, req)?;
@@ -374,6 +450,55 @@ mod tests {
         };
         assert_eq!(hepta.connection, hepta::HeptaConnectionState::NotObserved);
         assert!(hepta.last_observation.is_none());
+    }
+
+    #[test]
+    fn host_request_schema_rejects_unknown_and_duplicate_fields_before_effects() {
+        for invalid in [
+            r#"{"type":"snapshot","data":[1]}"#,
+            r#"{"type":"snapshot","type":"snapshot"}"#,
+            r#"{"type":"snapshot","expected_instance":"irrelevant"}"#,
+            r#"{"type":"launch","workspace":"personal","app":"notes","expected_instance":"A","surprise":true}"#,
+            r#"{"type":"launch","workspace":"personal","app":"notes","expected_instance":"A","workspace":"research"}"#,
+            r#"{"type":"cancel","id":7,"expected_instance":"A","id":8}"#,
+            r#"{"type":"cancel","id":7,"expected_instance":"A","extra":0}"#,
+            r#"{"type":"cancel","id":7,"expected_instance":"A","app":"notes"}"#,
+            r#"{"type":"cancel","id":"7","expected_instance":"A"}"#,
+            r#"{"type":"launch","workspace":"personal","expected_instance":"A"}"#,
+            r#"{"type":"snapshot","extra":{"type":"launch"}}"#,
+            r#"{"type":"not-an-operation"}"#,
+            r#"["snapshot"]"#,
+            r#"null"#,
+        ] {
+            assert!(
+                parse_host_request(invalid.as_bytes()).is_err(),
+                "Unexpectedly accepted host control request: {invalid}"
+            );
+        }
+        let valid_snapshot = parse_host_request(br#"{"type":"snapshot"}"#).unwrap();
+        assert!(matches!(valid_snapshot, Request::Snapshot));
+
+        let valid_launch = parse_host_request(
+            br#"{"type":"launch","workspace":"research","app":"notes","expected_instance":"A"}"#,
+        )
+        .unwrap();
+        assert!(matches!(
+            valid_launch,
+            Request::Launch {
+                workspace: Workspace::Research,
+                app: AppKind::Notes,
+                expected_instance,
+            } if expected_instance == "A"
+        ));
+        let valid_cancel =
+            parse_host_request(br#"{"type":"cancel","id":17,"expected_instance":"A"}"#).unwrap();
+        assert!(matches!(
+            valid_cancel,
+            Request::Cancel {
+                id: 17,
+                expected_instance,
+            } if expected_instance == "A"
+        ));
     }
 
     #[test]

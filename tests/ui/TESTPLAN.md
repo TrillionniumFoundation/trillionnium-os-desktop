@@ -88,6 +88,16 @@ Unit coverage:
   cannot execute a command even if IME events move focus. This is not live
   Wayland Chinese candidate-window acceptance.
 - chat workspace explicit app actions linked to observed process task cards
+- strict host IPC request JSON fields: an actual previous Rust Session
+  accepted unknown fields on the Snapshot unit variant despite Serde
+  deny_unknown_fields. The new shared parser rejects extra/missing/duplicate
+  top-level keys for Snapshot, Launch, and Cancel before any task action,
+  and retains valid typed requests (not a trusted A05 authorization gate).
+  The exact real-ELF test at tests/ui/test-strict-request-ipc.py sends eight
+  malformed raw frames and checks an unchanged empty task state, followed by
+  a correctly parsed typed Cancel. It was first executed against the older
+  fcc57bd2 CI-built Rust Session, FAILING at malformed case 0 because the
+  older process wrongly returned a Snapshot rather than an IPC rejection
 - oversized/truncated IPC frames and unknown statuses
 - successful observed host child exit
 - live host child cancellation without GUI: real /bin/sleep process receives

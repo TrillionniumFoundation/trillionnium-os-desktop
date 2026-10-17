@@ -26,6 +26,7 @@ import cuda_process_supervisor as process_supervisor
 # and the Asterinas/Linux cross-kernel acceptance checker.
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "support/hardware"))
 from pci_identity import canonical_bdf, matches_target_model
+from evidence_output import write_evidence_output
 
 N = 16
 MAX_CUDA_ENUM_DEVICES = 64
@@ -388,11 +389,7 @@ def _base_evidence(expected, a, b, timeout_seconds):
 
 def _write_evidence(evidence, output):
     payload = json.dumps(evidence, indent=2, sort_keys=True) + "\n"
-    if output == "-":
-        print(payload, end="")
-    else:
-        from pathlib import Path
-        Path(output).write_text(payload, encoding="utf-8")
+    write_evidence_output(output, payload)
 
 
 def read_supervised_worker_report(path):

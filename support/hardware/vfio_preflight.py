@@ -21,6 +21,9 @@ import re
 import stat
 from typing import Any, Iterable
 
+from evidence_output import write_evidence_output
+from pci_identity import linux_sysfs_bdf
+
 
 SCHEMA = "a09.vfio-preflight.v1"
 BDF_RE = re.compile(r"^[0-9a-fA-F]{4,8}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}\.[0-7]$")
@@ -171,7 +174,8 @@ def preflight(root: Path = Path("/"), bdf: str | None = None,
         return _block(result, "non_vfio_expected_driver_forbidden")
     if not bdf:
         return _block(result, "target_bdf_required")
-    if not BDF_RE.fullmatch(bdf):
+    linux_target = linux_sysfs_bdf(bdf)
+    if linux_target is None:
         return _block(result, "invalid_target_bdf")
     if not PCI_HEX_RE.fullmatch(vendor):
         return _block(result, "invalid_expected_vendor")
@@ -179,9 +183,12 @@ def preflight(root: Path = Path("/"), bdf: str | None = None,
         return _block(result, "invalid_expected_device_id")
     if not expected_members:
         return _block(result, "explicit_nonempty_expected_iommu_group_allowlist_required")
-    bdf = bdf.lower()
-    members = [str(member).lower() for member in expected_members]
-    if any(not BDF_RE.fullmatch(member) for member in members):
+    # Normalize PCI identities *before* path traversal and IOMMU allowlist
+    # comparison. 8-digit zero-padded CUDA domains must not falsely reject
+    # a real 4-digit Linux sysfs function or hide a duplicate group member.
+    bdf = linux_target
+    members = [linux_sysfs_bdf(member) for member in expected_members]
+    if any(member is None for member in members):
         return _block(result, "invalid_expected_iommu_group_member")
     if len(set(members)) != len(members) or bdf not in members:
         return _block(result, "duplicate_group_members_or_target_omitted_from_allowlist")
@@ -313,16 +320,17 @@ def preflight(root: Path = Path("/"), bdf: str | None = None,
 def inspect(root: Path, bdf: str, expected_members: Iterable[str],
             vendor: str = DEFAULT_VENDOR, device_id: str | None = None) -> dict[str, Any]:
     """Compatibility alias for callers using the earlier inspect API."""
-    if not isinstance(bdf, str) or not BDF_RE.fullmatch(bdf):
+    target = linux_sysfs_bdf(bdf)
+    if target is None:
         raise ValueError(f"invalid PCI BDF: {bdf!r}")
     if not expected_members:
         raise ValueError("explicit nonempty expected IOMMU group BDF allowlist required")
-    normalized = [str(member).lower() for member in expected_members]
-    if any(not BDF_RE.fullmatch(member) for member in normalized):
+    normalized = [linux_sysfs_bdf(member) for member in expected_members]
+    if any(member is None for member in normalized):
         raise ValueError("invalid expected IOMMU group BDF")
-    if len(set(normalized)) != len(normalized) or bdf.lower() not in normalized:
+    if len(set(normalized)) != len(normalized) or target not in normalized:
         raise ValueError("duplicate group members or target BDF omitted from allowlist")
-    return preflight(root, bdf, expected_members, vendor=vendor, device_id=device_id)
+    return preflight(root, target, normalized, vendor=vendor, device_id=device_id)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -340,13 +348,10 @@ def main(argv: list[str] | None = None) -> int:
                        vendor=args.vendor, device_id=args.device_id,
                        expected_driver=args.expected_driver)
     payload = json.dumps(result, sort_keys=True, indent=2) + "\n"
-    if args.output == "-":
-        print(payload, end="")
-    else:
-        try:
-            Path(args.output).write_text(payload, encoding="utf-8")
-        except OSError:
-            return 1
+    try:
+        write_evidence_output(args.output, payload)
+    except (OSError, ValueError):
+        return 1
     return 2 if result["status"] == "blocked" else 3
 
 

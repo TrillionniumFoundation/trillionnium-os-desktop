@@ -120,6 +120,16 @@ re-resolve an old task ID into the new session.
 Run an alternative X11 test only as an independent host compatibility probe.
 
 Fail closed: missing or world-readable XDG_RUNTIME_DIR rejects startup.
+Session host IPC also uses a single strict bounded JSON request parser;
+Snapshot, Launch, and Cancel reject unknown or duplicate top-level fields
+before task dispatch. An older built Rust Session was observed to accept
+an unknown Snapshot field; this is a schema/validation correction rather
+than a new privileged protocol. The CI now runs tests/ui/test-strict-request-ipc.py
+against its newly compiled real Session binary. The identical test was
+independently run against older source fcc57bd2 and correctly FAILED
+on case 0 (the old process returned an unauthorized Snapshot rather than
+rejecting a request with extra data). Fix acceptance requires that exact
+new binary to reject all eight malformed raw requests without side effects.
 The Linux-only host Session checks SO_PEERCRED on every accepted connection
 and rejects peer credentials whose kernel-reported UID differs from the
 Session effective UID. This supplements private 0700 runtime / 0600 socket
