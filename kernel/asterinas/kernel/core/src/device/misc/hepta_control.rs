@@ -49,16 +49,14 @@ fn nonzero_random_id() -> [u8; 16] {
     id
 }
 
-// Bind the HOS2 CapSpace identity to the real process lifetime tuple already
-// owned by Asterinas: boot identity, PID, and process start jiffies. The weak
-// process pointer below is the authoritative anti-reuse check; this value is
-// only the stable wire identity returned by QueryAbi.
-fn process_session_id(process: &Process) -> [u8; 16] {
+// Stable Process-owned namespace sequence, NOT a truncated PID+start-time
+// pair. The original full BootId is independently carried in the HOS2 header.
+// This wire value is not a grant/authorization credential.
+fn process_session_id(process: &Process) -> Result<[u8; 16]> {
     let mut id = [0u8; 16];
     id[..8].copy_from_slice(&BOOT_ID.get().unwrap()[..8]);
-    id[8..12].copy_from_slice(&process.pid().to_le_bytes());
-    id[12..].copy_from_slice(&(process.start_time().as_u64() as u32).to_le_bytes());
-    id
+    id[8..].copy_from_slice(&process.hepta_process_space()?.to_le_bytes());
+    Ok(id)
 }
 
 #[derive(Debug)]
@@ -86,7 +84,7 @@ impl Device for HeptaControlDevice {
             Error::with_message(Errno::EPERM, "HOS2 control requires a process session")
         })?;
         Ok(Box::new(HeptaControlFile {
-            space_id: process_session_id(&process),
+            space_id: process_session_id(&process)?,
             process: Arc::downgrade(&process),
             exec_epoch: process.hepta_exec_epoch(),
         }))
