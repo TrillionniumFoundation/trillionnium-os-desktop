@@ -184,6 +184,17 @@ unavailable fallback is reported as a soft skip, never as a VMX success.
 
 Each case retains the upstream harness output, exact commands, OSDK adapter
 requests, Cargo identities/locks, and complete guest serial logs with hashes.
+Before probing or starting QEMU, the recorder copies the kernel, BIOS and any
+initramfs into a new private `guest-*/artifacts/` directory through the ordinary
+recorder's stable-file-descriptor capture helper. These exclusive copies are
+read-only and are the actual QEMU input paths. The original requested and
+selected arguments remain recorded; `artifact_sources` identifies the source
+bytes and stat, while `artifact_snapshots` identifies each saved copy. The
+recorder verifies every copy's size, SHA256 and stat before QEMU and after the
+guest finishes. Coverage also saves the original ELF64 little-endian EM62
+symbol file, passes that private copy to the real GDB capture, and keeps the
+strict sidecar binding to those bytes. Later builds can replace generated
+source paths without changing an earlier guest's retained inputs.
 Top-level `result.json` reports passed, failed, blocked and soft skips separately.
 An existing generated path blocks its case; cleanup only removes paths that
 were absent before that exact case. Failed commands and timeouts remain in the
@@ -199,7 +210,9 @@ Coverage is accepted only with a nonempty saved raw profile, successful pinned
 
 `archive.py SOURCE DESTINATION` saves logs, command/guest records, hashes, the
 adaptation patch and locks, with deterministic gzip for large logs. It omits
-generated example source, Cargo targets and tool binaries.
+generated example source, Cargo targets, tool binaries and the guest artifact
+ELFs. Retain `guest-*/artifacts/` separately when preserving the actual boot and
+coverage symbol bytes along with an archive.
 The source must be a nonempty directory and the destination must be new and
 outside it. Reads use the opened root directory and no-follow file descriptors;
 selected symlinks, hardlinks, special files, identity changes and index-name

@@ -112,8 +112,11 @@ class PrivateToolsTests(unittest.TestCase):
         self.assertFalse(missing.exists())
         self.assertTrue(observation["QEMU_fixture_executed"])
         self.assertEqual(record["artifacts"]["-bios"]["sha256"], hashlib.sha256(self.bios.read_bytes()).hexdigest())
-        self.assertEqual(record["artifacts"]["-bios"]["path"], str(self.bios))
-        self.assertEqual(record["argv"][record["argv"].index("-bios") + 1], str(self.bios))
+        bios_snapshot = record["artifacts"]["-bios"]["path"]
+        self.assertNotEqual(bios_snapshot, str(self.bios))
+        self.assertEqual(record["artifact_sources"]["-bios"]["path"], str(self.bios))
+        self.assertEqual(record["argv"][record["argv"].index("-bios") + 1], bios_snapshot)
+        self.assertEqual(record["snapshot_verification"], {"before_qemu": True, "after_qemu": True})
         self.assertEqual(record["argv"][record["argv"].index("-L") + 1], str(self.data))
         self.assertEqual(record["bios_selection"]["origin"], "A01_QEMU_BIOS")
         self.assertEqual(record["bios_selection"]["original_requested_path"], str(DEFAULT_BIOS))

@@ -49,6 +49,105 @@ def select_private_inputs(arguments, record):
     return actual
 
 
+def snapshot_helpers(record):
+    """Load the exact ordinary recorder already used for private selection."""
+    source = Path(__file__).resolve().parent.parent / "record-qemu.py"
+    raw = source.read_bytes()
+    expected = {"path": str(source), "size": len(raw),
+                "sha256": hashlib.sha256(raw).hexdigest()}
+    if record["shared_selector_source"] != expected:
+        raise ValueError("shared recorder source changed after input selection")
+    spec = importlib.util.spec_from_file_location("a01_shared_snapshot_helpers", source)
+    helpers = importlib.util.module_from_spec(spec)
+    exec(compile(raw, str(source), "exec"), helpers.__dict__)
+    return helpers
+
+
+def snapshot_input(source, target, helpers):
+    """Keep source provenance separate from the private copy's exact stat."""
+    original = Path(source).absolute()
+    captured = helpers.capture_artifact(original, target)
+    target.chmod(0o400)
+    copied = helpers.capture_artifact(target)
+    if any(copied[key] != captured[key] for key in ("size", "sha256")):
+        raise ValueError("private input differs from its captured source")
+    artifact = {"path": str(target), **{key: copied[key] for key in ("size", "sha256")}}
+    provenance = {"requested_path": str(source), "path": str(original), **captured}
+    snapshot = {**artifact, "stat": copied["stat"],
+                "creation": "exclusive xb; read-only private copy; no source-path fallback"}
+    return artifact, provenance, snapshot
+
+
+def snapshot_arguments(arguments, guest, record, helpers):
+    """Snapshot mandatory kernel/BIOS and optional initrd before any QEMU probe."""
+    actual = list(arguments)
+    positions = {}
+    names = {"-kernel": "kernel.elf", "-initrd": "initramfs.cpio.gz", "-bios": "bios.bin"}
+    # Use the existing transform's accepted option spellings and value
+    # boundaries. In particular, -append's literal value is not another option.
+    value_options = {"-machine", "-M", "-accel", "-cpu", "-m", "-smp", "-bios",
+                     "-display", "-vga", "-kernel", "-initrd", "-append", "-drive",
+                     "-device", "-chardev", "-serial", "-monitor", "-gdb", "-qmp", "-L"}
+    found = {option: [] for option in names}
+    index = 0
+    while index < len(arguments):
+        token = arguments[index]
+        key = "-" + token.lstrip("-") if token.startswith("-") else token
+        if key in value_options:
+            if index + 1 == len(arguments):
+                raise ValueError(f"QEMU option {token} has no value")
+            if key in names:
+                found[key].append(index + 1)
+            index += 2
+        else:
+            index += 1
+    for option in names:
+        matches = found[option]
+        if len(matches) > 1 or option != "-initrd" and len(matches) != 1:
+            raise ValueError(f"{option} must occur {'at most' if option == '-initrd' else 'exactly'} once")
+        if not matches:
+            continue
+        index = matches[0]
+        if index == len(arguments) or not arguments[index] or arguments[index].startswith("-"):
+            raise ValueError(f"{option} requires one explicit artifact path")
+        positions[option] = index
+    directory = guest / "artifacts"
+    directory.mkdir(mode=0o700)
+    record["snapshot_directory"] = {"path": str(directory),
+        "stat": helpers.file_state(directory.stat()),
+        "ownership": "new exclusive private directory retained as guest evidence"}
+    record["artifacts"], record["artifact_sources"], record["artifact_snapshots"] = {}, {}, {}
+    for option, index in positions.items():
+        artifact, provenance, snapshot = snapshot_input(arguments[index], directory / names[option], helpers)
+        record["artifacts"][option] = artifact
+        record["artifact_sources"][option] = provenance
+        record["artifact_snapshots"][option] = snapshot
+        actual[index] = artifact["path"]
+    return actual
+
+
+def snapshot_coverage_symbol(symbol, record, helpers):
+    target = Path(record["snapshot_directory"]["path"]) / "coverage-symbol.elf"
+    artifact, provenance, snapshot = snapshot_input(symbol["path"], target, helpers)
+    if any(artifact[key] != symbol[key] for key in ("size", "sha256")):
+        raise ValueError("coverage symbols changed before the private capture")
+    with target.open("rb") as stream:
+        header = stream.read(20)
+    if len(header) != 20 or header[:6] != b"\x7fELF\x02\x01" or header[18:20] != b"\x3e\x00":
+        raise ValueError("private coverage symbols must remain ELF64 little-endian EM62")
+    record["coverage_symbol_source"] = provenance
+    record["artifact_snapshots"]["coverage-symbol"] = snapshot
+    return artifact
+
+
+def verify_input_snapshots(record, helpers):
+    """Verify private bytes and identity; original build outputs may change later."""
+    for option, expected in record["artifact_snapshots"].items():
+        actual = helpers.capture_artifact(Path(expected["path"]))
+        if any(actual[key] != expected[key] for key in ("size", "sha256", "stat")):
+            raise ValueError(f"private input snapshot changed: {option}")
+
+
 def file_record(path):
     path = Path(path).resolve()
     with path.open("rb") as source:
@@ -461,6 +560,7 @@ def main():
         arguments, logs, removed = transform_args(requested, guest, cwd)
         record["fixed_profile_args"] = list(arguments)
         arguments = select_private_inputs(arguments, record)
+        record["selected_profile_args"] = list(arguments)
         record["profile"] = dict(PROFILE, firmware=arguments[arguments.index("-bios") + 1])
         local_tcp = os.environ.get("A01_OSDK_LOCAL_TCP") == "1"
         profile_id = os.environ.get("A01_OSDK_PROFILE", "osdk-native-unix-v1")
@@ -502,22 +602,17 @@ def main():
         binary = shutil.which("qemu-system-x86_64")
         if not binary:
             raise FileNotFoundError("qemu-system-x86_64 is not installed")
+        helpers = snapshot_helpers(record)
+        arguments = snapshot_arguments(arguments, guest, record, helpers)
+        record["profile"]["firmware"] = record["artifacts"]["-bios"]["path"]
         command = [binary, *arguments]
-        artifacts = {"-bios": file_record(arguments[arguments.index("-bios") + 1])}
-        for option in ("-kernel", "-initrd"):
-            positions = [i for i, item in enumerate(arguments) if item == option]
-            if len(positions) > 1:
-                raise ValueError(f"multiple QEMU {option} arguments")
-            if positions:
-                artifacts[option] = file_record(arguments[positions[0] + 1])
+        artifacts = record["artifacts"]
         timeout = int(os.environ.get("A01_OSDK_GUEST_TIMEOUT", "300"))
         if timeout <= 0:
             raise ValueError("A01_OSDK_GUEST_TIMEOUT must be positive")
         record.update({"argv": command, "shell_command": shlex.join(command),
                        "removed_profile_args": removed, "artifacts": artifacts,
                        "qemu": file_record(binary), "serial_sources": list(map(str, logs)),
-                       "qemu_version": subprocess.check_output([binary, "--version"], text=True,
-                                                               timeout=10).strip(),
                        "timeout_seconds": timeout})
         if capture_enabled:
             if len(logs) != 1:
@@ -525,7 +620,7 @@ def main():
             raw_path = cwd / "coverage.profraw"
             if os.path.lexists(raw_path):
                 raise ValueError("coverage capture refuses a preexisting coverage.profraw")
-            symbol = coverage_symbol(cwd)
+            symbol = snapshot_coverage_symbol(coverage_symbol(cwd), record, helpers)
             sidecar = guest / "coverage-capture.json"
             guest_record = str(destination.relative_to(case))
             capture_command = [sys.executable, "-I", str(Path(__file__).with_name("capture.py")),
@@ -538,6 +633,10 @@ def main():
                                  "symbol_elf": symbol, "serial_source": str(logs[0]),
                                  "raw_output": str(raw_path), "sidecar_path": str(sidecar),
                                  "raw_exit_code": None, "timed_out": False, "finalized": False}
+        record["qemu_version"] = subprocess.check_output([binary, "--version"], text=True,
+                                                        timeout=10).strip()
+        verify_input_snapshots(record, helpers)
+        record["snapshot_verification"] = {"before_qemu": True, "after_qemu": False}
         destination.write_text(json.dumps(record, indent=2) + "\n")
         stream_paths = {"stdout": guest / "qemu-stdout.log", "stderr": guest / "qemu-stderr.log"}
         stream_errors = []
@@ -623,6 +722,8 @@ def main():
                 if sidecar.is_file():
                     record["capture"]["sidecar"] = file_record(sidecar)
                 raise
+        verify_input_snapshots(record, helpers)
+        record["snapshot_verification"]["after_qemu"] = True
     except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError) as error:
         status = 124 if record["timed_out"] else 125
         record["error"] = f"{type(error).__name__}: {error}"

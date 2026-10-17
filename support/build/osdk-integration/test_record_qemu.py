@@ -161,6 +161,9 @@ class ProfileTests(unittest.TestCase):
     def mock_main(self, timeout=False, raw_exit=0, local_tcp=False, occupied=False, immediate=False):
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary) / "case"
+            kernel, firmware = Path(temporary) / "kernel", Path(temporary) / "bios"
+            kernel.write_bytes(b"fixture kernel")
+            firmware.write_bytes(b"fixture BIOS")
             incoming_log = Path(temporary) / "qemu.log"
             incoming_log.write_text("actual captured serial\n")
             process = MagicMock()
@@ -181,7 +184,7 @@ class ProfileTests(unittest.TestCase):
                 listener.bind.side_effect = OSError(98, "Address already in use")
             context = MagicMock()
             context.__enter__.return_value = process
-            argv = ["record-qemu.py", "-kernel", "/kernel", "-chardev",
+            argv = ["record-qemu.py", "-kernel", str(kernel), "-chardev",
                     "stdio,id=mux,logfile=" + str(incoming_log), "--no-shutdown"]
             if local_tcp:
                 argv += ["-gdb", "tcp:127.0.0.1:23456", "-S"]
@@ -195,6 +198,7 @@ class ProfileTests(unittest.TestCase):
                                          "A01_OSDK_PROFILE": shim.LOCAL_TCP_PROFILE if local_tcp
                                          else "osdk-native-unix-v1"}), \
                     patch.object(shim.sys, "argv", argv), \
+                    patch.object(shim, "FIRMWARE", firmware), \
                     patch.object(shim.socket, "socket", return_value=listener), \
                     patch.object(shim.shutil, "which", return_value="/qemu"), \
                     patch.object(shim, "file_record", side_effect=lambda p: {"path": str(p)}), \
@@ -471,12 +475,15 @@ class CaptureTests(unittest.TestCase):
 
             def capture(qemu, command, guest, metadata, _timeout):
                 self.assertEqual(command[command.index("--endpoint") + 1], "127.0.0.1:34567")
+                copied_symbol = Path(command[command.index("--symbol-elf") + 1])
+                self.assertNotEqual(copied_symbol, symbol)
+                self.assertEqual(copied_symbol.read_bytes(), symbol.read_bytes())
                 raw = cwd / "coverage.profraw"
                 raw.write_bytes(b"data")
                 sidecar = guest / "coverage-capture.json"
                 data = {"passed": True, "profile_id": shim.CAPTURE_PROFILE, "gdb_exit_code": 0,
                         "kernel_sha256": shim.file_record(kernel)["sha256"],
-                        "guest_record": "guests/guest-001/qemu.json", "symbol_elf": shim.file_record(symbol),
+                        "guest_record": "guests/guest-001/qemu.json", "symbol_elf": shim.file_record(copied_symbol),
                         "breakpoint": {"symbol": "ostd::arch::power::try_poweroff",
                                        "resolved_address": "0x2000", "actual_pc": "0x2000"},
                         "announcement": {"address": "0x1000", "size": 4}, "raw": shim.file_record(raw),
