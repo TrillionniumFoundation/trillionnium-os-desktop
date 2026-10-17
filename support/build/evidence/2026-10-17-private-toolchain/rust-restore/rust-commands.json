@@ -1,0 +1,164 @@
+[
+  {
+    "name": "rustup-install",
+    "argv": [
+      "/workspace/scratch/ae1a8cf05419/round2-restore/rustup-init",
+      "-y",
+      "--no-modify-path",
+      "--default-toolchain",
+      "none"
+    ],
+    "cwd": "/workspace/scratch/ae1a8cf05419",
+    "start": "2026-10-17T00:14:58.581286+00:00",
+    "selected_environment": {
+      "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+      "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+      "CARGO_BUILD_JOBS": "2",
+      "CARGO_NET_GIT_FETCH_WITH_CLI": "true"
+    },
+    "returncode": 0,
+    "end": "2026-10-17T00:14:58.641728+00:00"
+  },
+  {
+    "name": "fixed-toolchain-install",
+    "argv": [
+      "rustup",
+      "toolchain",
+      "install",
+      "nightly-2026-07-21",
+      "--profile",
+      "minimal",
+      "--component",
+      "rust-src,rustc-dev,llvm-tools-preview,rustfmt,clippy",
+      "--target",
+      "x86_64-unknown-none"
+    ],
+    "cwd": "/workspace/scratch/ae1a8cf05419",
+    "start": "2026-10-17T00:14:58.642059+00:00",
+    "selected_environment": {
+      "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+      "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+      "CARGO_BUILD_JOBS": "2",
+      "CARGO_NET_GIT_FETCH_WITH_CLI": "true"
+    },
+    "returncode": 0,
+    "end": "2026-10-17T00:15:48.424405+00:00"
+  },
+  {
+    "name": "rustc-version",
+    "argv": [
+      "rustc",
+      "+nightly-2026-07-21",
+      "-Vv"
+    ],
+    "cwd": "/workspace/scratch/ae1a8cf05419",
+    "start": "2026-10-17T00:15:48.424833+00:00",
+    "selected_environment": {
+      "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+      "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+      "CARGO_BUILD_JOBS": "2",
+      "CARGO_NET_GIT_FETCH_WITH_CLI": "true"
+    },
+    "returncode": 0,
+    "end": "2026-10-17T00:15:48.447801+00:00"
+  },
+  {
+    "name": "cargo-version",
+    "argv": [
+      "cargo",
+      "+nightly-2026-07-21",
+      "-Vv"
+    ],
+    "cwd": "/workspace/scratch/ae1a8cf05419",
+    "start": "2026-10-17T00:15:48.448252+00:00",
+    "selected_environment": {
+      "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+      "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+      "CARGO_BUILD_JOBS": "2",
+      "CARGO_NET_GIT_FETCH_WITH_CLI": "true"
+    },
+    "returncode": 0,
+    "end": "2026-10-17T00:15:48.481966+00:00"
+  },
+  {
+    "name": "clippy-version",
+    "argv": [
+      "cargo",
+      "+nightly-2026-07-21",
+      "clippy",
+      "--version"
+    ],
+    "cwd": "/workspace/scratch/ae1a8cf05419",
+    "start": "2026-10-17T00:15:48.482303+00:00",
+    "selected_environment": {
+      "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+      "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+      "CARGO_BUILD_JOBS": "2",
+      "CARGO_NET_GIT_FETCH_WITH_CLI": "true"
+    },
+    "returncode": 0,
+    "end": "2026-10-17T00:15:48.519273+00:00"
+  },
+  {
+    "name": "cargo-binutils-install",
+    "argv": [
+      "cargo",
+      "+nightly-2026-07-21",
+      "install",
+      "--locked",
+      "--version",
+      "0.4.0",
+      "cargo-binutils"
+    ],
+    "cwd": "/workspace/scratch/ae1a8cf05419",
+    "start": "2026-10-17T00:15:48.521309+00:00",
+    "selected_environment": {
+      "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+      "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+      "CARGO_BUILD_JOBS": "2",
+      "CARGO_NET_GIT_FETCH_WITH_CLI": "true"
+    },
+    "returncode": 0,
+    "end": "2026-10-17T00:16:59.023281+00:00"
+  },
+  {
+    "name": "vdso-clone",
+    "argv": [
+      "git",
+      "clone",
+      "https://github.com/asterinas/linux_vdso.git",
+      "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/linux-vdso"
+    ],
+    "cwd": "/workspace/scratch/ae1a8cf05419",
+    "start": "2026-10-17T00:16:59.024053+00:00",
+    "selected_environment": {
+      "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+      "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+      "CARGO_BUILD_JOBS": "2",
+      "CARGO_NET_GIT_FETCH_WITH_CLI": "true"
+    },
+    "returncode": 0,
+    "end": "2026-10-17T00:17:04.588170+00:00"
+  },
+  {
+    "name": "vdso-checkout",
+    "argv": [
+      "git",
+      "-C",
+      "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/linux-vdso",
+      "checkout",
+      "--detach",
+      "8af571775a3d3a1df3e84fc9709b9d6b160c771a"
+    ],
+    "cwd": "/workspace/scratch/ae1a8cf05419",
+    "start": "2026-10-17T00:17:04.588579+00:00",
+    "selected_environment": {
+      "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+      "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+      "CARGO_BUILD_JOBS": "2",
+      "CARGO_NET_GIT_FETCH_WITH_CLI": "true"
+    },
+    "returncode": 0,
+    "end": "2026-10-17T00:17:04.593948+00:00"
+  }
+]
