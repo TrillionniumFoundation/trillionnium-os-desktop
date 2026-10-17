@@ -1057,6 +1057,7 @@ fn parse_read_usage_response(p: &[u8]) -> Result<ReadUsageResponse, Error> {
         || out.window_start_ns != expected_start
         || out.window_consumed_ns > elapsed
         || out.cumulative_cpu_ns < out.window_consumed_ns
+        || out.cumulative_cpu_ns - out.window_consumed_ns > out.window_start_ns
         || out.cumulative_cpu_ns > out.sample_boottime_ns
         || out.active_cap_ns > out.active_period_ns
         || out.dropped_events > out.event_sequence
@@ -1106,6 +1107,11 @@ fn validate_query_delivery_response(v: &QueryDeliveryResponse) -> Result<(), Err
     }
     match v.state {
         DeliveryState::Terminal => {
+            if v.sequence == u64::MAX
+                || matches!(v.saved_status, Status::OutOfOrder | Status::Retired)
+            {
+                return Err(Error::InvalidSequence);
+            }
             if v.saved_status == Status::Ok {
                 if is_zero(&v.stable_object_id)
                     || v.previous_revision == 0
@@ -1128,6 +1134,11 @@ fn validate_query_delivery_response(v: &QueryDeliveryResponse) -> Result<(), Err
         | DeliveryState::Retired
         | DeliveryState::NotSeen
         | DeliveryState::HistoryLost => {
+            if v.sequence == u64::MAX
+                && !matches!(v.state, DeliveryState::NotSeen | DeliveryState::HistoryLost)
+            {
+                return Err(Error::InvalidSequence);
+            }
             if v.saved_status != Status::Ok
                 || !is_zero(&v.stable_object_id)
                 || v.saved_revision != 0
@@ -1233,6 +1244,7 @@ fn validate_read_usage(v: &ReadUsageResponse) -> Result<(), Error> {
         || v.window_start_ns != expected_start
         || v.window_consumed_ns > elapsed
         || v.cumulative_cpu_ns < v.window_consumed_ns
+        || v.cumulative_cpu_ns - v.window_consumed_ns > v.window_start_ns
         || v.cumulative_cpu_ns > v.sample_boottime_ns
         || v.active_cap_ns > v.active_period_ns
         || v.dropped_events > v.event_sequence
