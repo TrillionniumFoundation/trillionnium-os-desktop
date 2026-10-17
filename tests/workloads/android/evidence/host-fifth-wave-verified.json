@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "observed_utc": "2026-10-16T11:25:00Z",
+  "scope": "isolated Linux x86_64 host; actual C compiler/temporary Git checkouts; synthetic AOSP image+APK inputs",
+  "exact_remote_subset": {
+    "command": "python3 -m unittest discover -s tests/workloads/android -p 'test_*.py' -v (isolated 3-module subset of 23 cases)",
+    "ran": 23,
+    "passed": 23,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "log_sha256": "e038563392cd2bb9e5033d42fc61870fd61460f06a20a78627bc66ea45feef49",
+    "remote_git_blobs": {
+      "support/android/verify_product_source.py": "3935e9202492e0b387ed940d89e70ecf413e67c4",
+      "support/android/verify_launch_preflight.py": "c750267b44c62242d483a62f75083d2dfa0c97e8",
+      "tests/workloads/android/binder_uapi_layout.c": "f3636f0a241cf8edc89246b393c850d223c6acad",
+      "tests/workloads/android/test_binder_uapi_layout.py": "abca900a708da1de41bb89b000ca75b4e932440a",
+      "tests/workloads/android/test_verify_product_source.py": "60d8978065259efb1050ee876dd1679f8c588013",
+      "tests/workloads/android/test_verify_launch_preflight.py": "3ad7e6c819067ecb1545e64cc7c3cd8709b19f36"
+    },
+    "real_host_operations": [
+      "C compilation with Linux Binder UAPI",
+      "git init/commit/rev-parse for 3 synthetic projects",
+      "streaming SHA256 checks of synthetic images and VINTF",
+      "symlink confinement positive+negative"
+    ]
+  },
+  "broader_local_combined_subset": {
+    "ran": 40,
+    "passed": 40,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "log_sha256": "5e1d5c3aa9ce5efbe11cfbd02419124e58204ed8516ef9bfa161078a04f519f7",
+    "provenance": "includes 17 earlier locally retained fixture tests that differ in byte identity from current GitHub A08 versions; NOT an exact remote full-suite run"
+  },
+  "source_baseline_merge": "8d8b952551f7e94a3ef7603a4755dab66f6aa847",
+  "binder_layout": "protocol 8, x86_64 LP64; UAPI host header only",
+  "product_lock": "actual Cuttlefish/prebuilts/VMM checkout identities measured only once full repo sync occurs",
+  "runtime": {
+    "aosp_full_checkout": "NOT_EXECUTED",
+    "aosp_product_build": "NOT_EXECUTED",
+    "cuttlefish_boot": "NOT_EXECUTED",
+    "android_zygote_art": "NOT_EXECUTED",
+    "apk_lifecycle": "NOT_EXECUTED",
+    "android_on_asterinas": "NOT_EXECUTED"
+  },
+  "host_environment": {
+    "kvm_device": false,
+    "adb_binary": false,
+    "qemu_binary": false
+  },
+  "known_kernel_blockers": [
+    "binder driver",
+    "seccomp filter installation",
+    "Android-equivalent MAC/SELinux"
+  ],
+  "caution": "No runtime green status; A01 generic kernel QEMU success and Linux-host tests are not Android qualification"
+}

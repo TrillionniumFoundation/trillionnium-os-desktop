@@ -1,0 +1,10 @@
+$ cc -std=c11 -O2 -Wall -Wextra -Werror -pthread tests/workloads/android/seccomp_abi_probe.c -o /mnt/data/a08/seccomp_abi_probe
+$ /mnt/data/a08/seccomp_abi_probe
+no_new_privs	PASS	errno=0
+seccomp_filter_install	PASS	errno=0
+seccomp_deny_getpid	PASS	errno=0
+seccomp_allow_getppid	PASS	errno=0
+seccomp_child	PASS	exit=0
+seccomp_TSYNC_multithread	NOT_TESTED	errno=0
+Android_process_filters	NOT_TESTED	errno=0
+# host Linux only; exit status 0. Not proof of Asterinas or Android.

@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "date_utc": "2026-10-16",
+  "kind": "A08 ART runtime file and Android framework boot marker mock-ADB checks",
+  "scope": "Linux host synthetic ADB only; local run_apk.py identity shim rather than real Android reference",
+  "command": "python3 -m unittest discover -s /mnt/data/a08-seventh/tests/workloads/android -p 'test_boot_gates.py' -v",
+  "test_run": {
+    "ran": 5,
+    "passed": 5,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "log_sha256": "3f4ea98b87aaf74399b1d12f0751b886db1213f445fd6b37f45372f822840c16"
+  },
+  "tested_blob_sha_matches_branch": {
+    "tests/workloads/android/boot_gates.py": "0e5ea68eed7eafb877c8f3d17baac309c13f76db",
+    "tests/workloads/android/test_boot_gates.py": "eb450f07d25dc4de8a46724d4ae110261d569c31"
+  },
+  "neg_cases": [
+    "binder missing despite process PIDs",
+    "ART mounted libart.so unreadable",
+    "framework sys.boot_completed not 1",
+    "reject wrong physical phone before additional reads"
+  ],
+  "facts": [
+    "APEX package apex_manifest.json not guaranteed inside mounted ART runtime",
+    "libart.so existence is only a read gate, not ART/JIT execution",
+    "real Cuttlefish boot and Android-on-Asterinas not executed"
+  ],
+  "android_reference_boot": "not_executed",
+  "aosp_build": "not_executed",
+  "binder_transactions": "not_executed",
+  "native_apk_art_jni": "not_executed",
+  "android_on_asterinas": "not_executed"
+}

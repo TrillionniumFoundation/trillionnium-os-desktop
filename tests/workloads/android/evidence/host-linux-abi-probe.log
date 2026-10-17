@@ -1,0 +1,7 @@
+# host=syscall_probe page_size=4096 uid=0
+mmap	PASS	errno=0
+memfd_create	PASS	errno=0
+SCM_RIGHTS	PASS	errno=0
+futex_wait_wake	PASS	errno=0
+signal	PASS	errno=0
+binder_device_open	BLOCKED	errno=2

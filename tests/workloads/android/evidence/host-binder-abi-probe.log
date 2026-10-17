@@ -1,0 +1,5 @@
+$ cc -std=c11 -O2 -Wall -Wextra -Werror tests/workloads/android/binder_abi_probe.c -o /mnt/data/a08/binder_abi_probe
+$ /mnt/data/a08/binder_abi_probe
+# binder_abi_probe uapi_expected=8 type=48
+binder_device_open	BLOCKED	errno=2
+# exit status 77 (device unavailable; not a passing Binder protocol test)

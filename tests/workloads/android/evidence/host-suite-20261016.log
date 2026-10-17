@@ -1,0 +1,73 @@
+test_actual_successful_ioctl_mmap_is_primitive_only (test_abi_result_parser.AbiResultParserTests.test_actual_successful_ioctl_mmap_is_primitive_only) ... ok
+test_basic_syscalls_pass_with_missing_binder_stays_separately_blocked (test_abi_result_parser.AbiResultParserTests.test_basic_syscalls_pass_with_missing_binder_stays_separately_blocked) ... ok
+test_binder_failed_exit_never_counts_as_ioctl_primitive (test_abi_result_parser.AbiResultParserTests.test_binder_failed_exit_never_counts_as_ioctl_primitive) ... ok
+test_binder_marker_alone_cannot_pass_ioctl (test_abi_result_parser.AbiResultParserTests.test_binder_marker_alone_cannot_pass_ioctl) ... ok
+test_binder_no_device_marker_needs_errno_line (test_abi_result_parser.AbiResultParserTests.test_binder_no_device_marker_needs_errno_line) ... ok
+test_binder_unverified_device_open_inconsistent_with_77 (test_abi_result_parser.AbiResultParserTests.test_binder_unverified_device_open_inconsistent_with_77) ... ok
+test_duplicate_marker_rejected (test_abi_result_parser.AbiResultParserTests.test_duplicate_marker_rejected) ... ok
+test_duplicate_syscall_result_cannot_fake_reliability (test_abi_result_parser.AbiResultParserTests.test_duplicate_syscall_result_cannot_fake_reliability) ... ok
+test_explicit_mmap_failure_cannot_be_overruled_by_exit33 (test_abi_result_parser.AbiResultParserTests.test_explicit_mmap_failure_cannot_be_overruled_by_exit33) ... ok
+test_marker_only_serial_is_not_syscall_evidence (test_abi_result_parser.AbiResultParserTests.test_marker_only_serial_is_not_syscall_evidence) ... ok
+test_markers_must_be_ordered (test_abi_result_parser.AbiResultParserTests.test_markers_must_be_ordered) ... ok
+test_mismatched_page_size_rejected (test_abi_result_parser.AbiResultParserTests.test_mismatched_page_size_rejected) ... ok
+test_missing_result_cannot_be_overruled_by_markers (test_abi_result_parser.AbiResultParserTests.test_missing_result_cannot_be_overruled_by_markers) ... ok
+test_panic_before_boot_marker_rejected (test_abi_result_parser.AbiResultParserTests.test_panic_before_boot_marker_rejected) ... ok
+test_qemu_bad_raw_exit_even_valid_serial (test_abi_result_parser.AbiResultParserTests.test_qemu_bad_raw_exit_even_valid_serial) ... ok
+test_qemu_kernel_override_blocked (test_abi_result_parser.AbiResultParserTests.test_qemu_kernel_override_blocked) ... ok
+test_qemu_known_A01_duplicate_environment_is_accepted (test_abi_result_parser.AbiResultParserTests.test_qemu_known_A01_duplicate_environment_is_accepted) ... ok
+test_qemu_reject_chardev_additional_host_options (test_abi_result_parser.AbiResultParserTests.test_qemu_reject_chardev_additional_host_options) ... ok
+test_unavailable_memfd_is_failure_not_untested_pass (test_abi_result_parser.AbiResultParserTests.test_unavailable_memfd_is_failure_not_untested_pass) ... ok
+test_apk_inventory_keeps_hash_and_abi_classes (test_android_tools.AndroidToolTests.test_apk_inventory_keeps_hash_and_abi_classes) ... ok
+test_badging_parser_does_not_drop_permissions (test_android_tools.AndroidToolTests.test_badging_parser_does_not_drop_permissions) ... ok
+test_execute_cli_blocks_missing_serial_before_adb_write (test_android_tools.AndroidToolTests.test_execute_cli_blocks_missing_serial_before_adb_write) ... ok
+test_execute_cli_does_not_treat_unknown_status_as_success (test_android_tools.AndroidToolTests.test_execute_cli_does_not_treat_unknown_status_as_success) ... ok
+test_execute_cli_returns_failure_for_blocked_guest_run (test_android_tools.AndroidToolTests.test_execute_cli_returns_failure_for_blocked_guest_run) ... ok
+test_execute_scenario_blocks_without_package_metadata (test_android_tools.AndroidToolTests.test_execute_scenario_blocks_without_package_metadata) ... ok
+test_execute_scenario_gates_after_failed_install (test_android_tools.AndroidToolTests.test_execute_scenario_gates_after_failed_install) ... ok
+test_host_probe_is_not_native_android_evidence (test_android_tools.AndroidToolTests.test_host_probe_is_not_native_android_evidence) ... ok
+test_locked_profile_is_explicit_and_4k (test_android_tools.AndroidToolTests.test_locked_profile_is_explicit_and_4k) ... ok
+test_adb_transport_offline_blocks_install (test_apk.ApkTests.test_adb_transport_offline_blocks_install) ... ok
+test_dex_only_metadata_and_sha (test_apk.ApkTests.test_dex_only_metadata_and_sha) ... ok
+test_disposable_reference_lifecycle_with_fake_adb (test_apk.ApkTests.test_disposable_reference_lifecycle_with_fake_adb) ... ok
+test_failed_install_never_records_pass (test_apk.ApkTests.test_failed_install_never_records_pass) ... ok
+test_native_apk_requires_dedicated_abi_matrix (test_apk.ApkTests.test_native_apk_requires_dedicated_abi_matrix) ... ok
+test_native_libraries_are_explicit (test_apk.ApkTests.test_native_libraries_are_explicit) ... ok
+test_preflight_bundle_is_hash_bound_and_reference_only (test_apk.ApkTests.test_preflight_bundle_is_hash_bound_and_reference_only) ... ok
+test_preflight_bundle_rejects_missing_or_claimed_boot (test_apk.ApkTests.test_preflight_bundle_rejects_missing_or_claimed_boot) ... ok
+test_soong_manifest_declares_expected_version_package (test_apk.ApkTests.test_soong_manifest_declares_expected_version_package) ... ok
+test_strict_cli_requires_preflight_before_constructing_adb (test_apk.ApkTests.test_strict_cli_requires_preflight_before_constructing_adb) ... ok
+test_tap_bounds_validation (test_apk.ApkTests.test_tap_bounds_validation) ... ok
+test_tcp_transport_selector_can_differ_from_guest_serial (test_apk.ApkTests.test_tcp_transport_selector_can_differ_from_guest_serial) ... ok
+test_unknown_guest_serial_blocks_install (test_apk.ApkTests.test_unknown_guest_serial_blocks_install) ... ok
+test_wrong_android_build_id_is_rejected_before_writes (test_apk.ApkTests.test_wrong_android_build_id_is_rejected_before_writes) ... ok
+test_wrong_apk_hash_is_rejected_before_adb (test_apk.ApkTests.test_wrong_apk_hash_is_rejected_before_adb) ... ok
+test_wrong_device_is_rejected_before_writes_and_logcat (test_apk.ApkTests.test_wrong_device_is_rejected_before_writes_and_logcat) ... ok
+test_accept_only_A01_safe_TCG_profile (test_asterinas_abi_guest.GuestAbiTests.test_accept_only_A01_safe_TCG_profile) ... ok
+test_guest_abi_pass_binder_missing_is_still_blocked (test_asterinas_abi_guest.GuestAbiTests.test_guest_abi_pass_binder_missing_is_still_blocked) ... ok
+test_kernel_sha_mismatch_rejected_before_qemu_launch (test_asterinas_abi_guest.GuestAbiTests.test_kernel_sha_mismatch_rejected_before_qemu_launch) ... ok
+test_malformed_a01_init_marker_is_rejected (test_asterinas_abi_guest.GuestAbiTests.test_malformed_a01_init_marker_is_rejected) ... ok
+test_missing_or_dynamic_binary_fails_closed (test_asterinas_abi_guest.GuestAbiTests.test_missing_or_dynamic_binary_fails_closed) ... ok
+test_no_guest_marker_even_exit33_fails (test_asterinas_abi_guest.GuestAbiTests.test_no_guest_marker_even_exit33_fails) ... ok
+test_one_command_static_builder_isolated_and_no_A01_mutation (test_asterinas_abi_guest.GuestAbiTests.test_one_command_static_builder_isolated_and_no_A01_mutation) ... ok
+test_pack_a08_without_changing_a01 (test_asterinas_abi_guest.GuestAbiTests.test_pack_a08_without_changing_a01) ... ok
+test_packer_is_deterministic (test_asterinas_abi_guest.GuestAbiTests.test_packer_is_deterministic) ... ok
+test_prevent_overwriting_existing_evidence (test_asterinas_abi_guest.GuestAbiTests.test_prevent_overwriting_existing_evidence) ... ok
+test_reject_device_or_network_qemu_template (test_asterinas_abi_guest.GuestAbiTests.test_reject_device_or_network_qemu_template) ... ok
+test_reject_smp_profile_drift (test_asterinas_abi_guest.GuestAbiTests.test_reject_smp_profile_drift) ... ok
+test_reject_unrecognized_qmp_host_socket (test_asterinas_abi_guest.GuestAbiTests.test_reject_unrecognized_qmp_host_socket) ... ok
+test_failed_a01_reference_boot_is_not_reused (test_asterinas_abi_runner_transport.GuestSubprocessTransportTests.test_failed_a01_reference_boot_is_not_reused) ... ok
+test_marker_only_stdout_with_fake_qemu_exit33_is_red (test_asterinas_abi_runner_transport.GuestSubprocessTransportTests.test_marker_only_stdout_with_fake_qemu_exit33_is_red) ... ok
+test_modified_abi_image_is_blocked_before_run (test_asterinas_abi_runner_transport.GuestSubprocessTransportTests.test_modified_abi_image_is_blocked_before_run) ... ok
+test_modified_qemu_executable_sha_is_blocked_before_run (test_asterinas_abi_runner_transport.GuestSubprocessTransportTests.test_modified_qemu_executable_sha_is_blocked_before_run) ... ok
+test_nonpositive_timeout_fails_closed (test_asterinas_abi_runner_transport.GuestSubprocessTransportTests.test_nonpositive_timeout_fails_closed) ... ok
+test_real_host_subprocess_and_raw_serial_hash (test_asterinas_abi_runner_transport.GuestSubprocessTransportTests.test_real_host_subprocess_and_raw_serial_hash) ... ok
+test_aidl_and_hidl_versions_remain_distinct (test_audit.ManifestTests.test_aidl_and_hidl_versions_remain_distinct) ... ok
+test_cli_missing_source_returns_failure_json (test_audit.ManifestTests.test_cli_missing_source_returns_failure_json) ... ok
+test_duplicate_project_path_fails (test_audit.ManifestTests.test_duplicate_project_path_fails) ... ok
+test_empty_artifact_not_reported_as_pass (test_audit.ManifestTests.test_empty_artifact_not_reported_as_pass) ... ok
+test_empty_product_out_fails_closed (test_audit.ManifestTests.test_empty_product_out_fails_closed) ... ok
+test_missing_cuttlefish_project_fails (test_audit.ManifestTests.test_missing_cuttlefish_project_fails) ... ok
+test_non_hash_revision_fails (test_audit.ManifestTests.test_non_hash_revision_fails) ... ok
+test_resolved_manifest_is_accepted (test_audit.ManifestTests.test_resolved_manifest_is_accepted) ... ok
+test_source_product_requires_expected_identity (test_audit.ManifestTests.test_source_product_requires_expected_identity) ... ok
+test_synthetic_partition_inventory_and_vintf (test_audit.M|ß¾­¢G§²ÚîÆ­yİÑ•É¥¹…Í}ÅÕ…±¥™¥•œè…±Í”°€¹…Ñ¥Ù•}‰É¥‘•}ÕÍ•œè…±Í”°(€€€€€€€€€€€€€€ÍÑ•ÁÌœèmt°€±…ÍÍ¥™¥…Ñ¥½¸œè9½¹•ô(€€€Á¡…Í”€ô€¡½ÍÑ}ÁÉ•½¹‘¥Ñ¥½¸œ(€€€Õ•ÍÑ}¡•­•€ô…±Í”((€€€‘•˜ÍÑ•À¡¹…µ”°…Ñ¥½¸¤è(€€€€€€€¹½¹±½…°Á¡…Í”(€€€€€€€Á¡…Í”€ô¹…µ”(€€€€€€€ÍÑ…ÉÑ•€ôÑ¥µ”¹µ½¹½Ñ½¹¥Œ ¤(€€€€€€€É•ÍÕ±Ğ€ô…Ñ¥½¸ ¤(€€€€€€€É•Á½ÉÑlÍÑ•ÁÌt¹…ÁÁ•¹¡ì¹…µ”œè¹…µ”°€ÍÑ…ÑÕÌœè€Á…ÍÌœ°(€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€€•±…ÁÍ•‘}ÌœèÉ½Õ¹¡Ñ¥µ”¹µ½¹½Ñ½¹¥Œ ¤€´ÍÑ…ÉÑ•°€Ì¥ô¤(€€€€€€€É•ÑÕÉ¸É•ÍÕ±Ğ((€€€ÑÉäè(€€€€€€€É•Á½ÉÑl…Á¬t€ô¥¹ÍÁ•Ñ}¹…Ñ¥Ù•}…Á¬¡…Á¬¤(€€€€€€€¥˜•áÁ•Ñ•‘}Í¡„ÈÔØ…¹É•Á½ÉÑl…Á¬ulÍ¡„ÈÔØt€„ô•áÁ•Ñ•‘}Í¡„ÈÔØ¹±½İ•È ¤è(€€€€€€€€€€€É…¥Í”Q•ÍÑ…¥±ÕÉ” ¹…Ñ¥Ù”A,¡…Í µ¥Íµ…Ñ ‰•™½É”İÉ¥Ñ•Ìœ¤(€€€€€€€¥˜ÁÉ•™±¥¡Ñ}•Ù¥‘•¹”¥Ì¹½Ğ9½¹”è(€€€€€€€€€€€É•Á½ÉÑlÁÉ•™±¥¡Ğt€ô±½…‘}ÁÉ•™±¥¡Ñ}•Ù¥‘•¹”¡ÁÉ•™±¥¡Ñ}•Ù¥‘•¹”¤(€€€€€€€É•Á½ÉÑlÕ•ÍĞt€ôÍÑ•À ‘•Ù¥•}¥‘•¹Ñ¥Ñäœ°±…µ‰‘„è¡•­}‘•Ù¥”¡…‘ˆ¤¤(€€€€€€€Õ•ÍÑ}¡•­•€ôQÉÕ”((€€€€€€€‘•˜¥¹ÍÑ…±° ¤è(€€€€€€€€€€€É•ÍÕ±Ğ€ô…‘ˆ¹µ ¥¹ÍÑ…±°œ°€œµÈœ°€œµĞœ°ÍÑÈ¡…Á¬¤°Ñ¥µ•½ÕĞôÄàÀ¤(€€€€€€€€€€€¥˜€MÕ•ÍÌœ¹½Ğ¥¸É•ÍÕ±Ğè(€€€€€€€€€€€€€€€É…¥Í”Q•ÍÑ…¥±ÕÉ” ¹…Ñ¥Ù”A,¥¹ÍÑ…±±…Ñ¥½¸¹½Ğ½¹™¥Éµ•œ¤(€€€€€€€ÍÑ•À ¥¹ÍÑ…±°œ°¥¹ÍÑ…±°¤(€€€€€€€ÍÑ•À Á…­…•}µ…¹…•Èœ°±…µ‰‘„è•¹ÍÕÉ•}Á…­…”¡…‘ˆ¤¤(€€€€€€€ÍÑ•À ±•…É}ÁÉ¥½É}‘…Ñ„œ°±…µ‰‘„è•¹ÍÕÉ•}±•…È¡…‘ˆ¤¤(€€€€€€€ÍÑ•À ±…Õ¹ œ°±…µ‰‘„è±…Õ¹ ¡…‘ˆ¤¤(€€€€€€€ÍÑ•À ©¹¥}¥Í…}…¹‘}Á¥œ°±…µ‰‘„èİ…¥Ñ}¹½‘”¡…‘ˆ°€¹…Ñ¥Ù•}ÍÑ…ÑÕÌœ°€)9$éààÙ|ØĞéA%}5Q œ¤¤(€€€€€€€ÍÑ•À ¥¹¥Ñ¥…±}•µÁÑäœ°±…µ‰‘„èİ…¥Ñ}¹½‘”¡…‘ˆ°€Í…Ù•‘}Ù…±Õ”œ°€MYé5AQdœ¤¤((€€€€€€€‘•˜•¹Ñ•È ¤è(€€€€€€€€€€€Ñ…À¡…‘ˆ°€¥¹ÁÕÑ}Ù…±Õ”œ¤(€€€€€€€€€€€…‘ˆ¹µ Í¡•±°œ°€¥¹ÁÕĞœ°€Ñ•áĞœ°Y1U¤(€€€€€€€€€€€Ñ…À¡…‘ˆ°€Í…Ù•}‰ÕÑÑ½¸œ¤(€€€€€€€€€€€İ…¥Ñ}¹½‘”¡…‘ˆ°€Í…Ù•‘}Ù…±Õ”œ°€MYèœ€¬Y1U¤(€€€€€€€ÍÑ•À ¥¹ÁÕÑ}…¹‘}Í…Ù”œ°•¹Ñ•È¤(€€€€€€€‘•˜‰…­É½Õ¹ ¤è(€€€€€€€€€€€…‘ˆ¹µ Í¡•±°œ°€¥¹ÁÕĞœ°€­•å•Ù•¹Ğœ°€-e=}!=5œ¤(€€€€€€€€€€€İ…¥Ñ}¹½‘”¡…‘ˆ°€¹…Ñ¥Ù•}ÍÑ…ÑÕÌœ°…‰Í•¹ĞõQÉÕ”¤(€€€€€€€ÍÑ•À ‰…­É½Õ¹œ°‰…­É½Õ¹¤(€€€€€€€ÍÑ•À ™½É•É½Õ¹œ°±…µ‰‘„è±…Õ¹ ¡…‘ˆ¤¤(€€€€€€€ÍÑ•À ™½É•É½Õ¹‘}¹…Ñ¥Ù•}…¹‘}ÍÑ…Ñ”œ°±…µ‰‘„è€ (€€€€€€€€€€€İ…¥Ñ}¹½‘”¡…‘ˆ°€¹…Ñ¥Ù•}ÍÑ…ÑÕÌœ°€)9$éààÙ|ØĞéA%}5Q œ¤°(€€€€€€€€€€€İ…¥Ñ}¹½‘”¡…‘ˆ°€Í…Ù•‘}Ù…±Õ”œ°€MYèœ€¬Y1U¤¤¤(€€€€€€€ÍÑ•À ™½É•}ÍÑ½Àœ°±…µ‰‘„èÍÑ½À¡…‘ˆ¤¤(€€€€€€€ÍÑ•À É•±…Õ¹ œ°±…µ‰‘„è±…Õ¹ ¡…‘ˆ¤¤(€€€€€€€ÍÑ•À É•±…Õ¹¡}¹…Ñ¥Ù•}…¹‘}Á•ÉÍ¥ÍÑ•¹”œ°±…µ‰‘„è€ (€€€€€€€€€€€İ…¥Ñ}¹½‘”¡…‘ˆ°€¹…Ñ¥Ù•}ÍÑ…ÑÕÌœ°€)9$éààÙ|ØĞéA%}5Q œ¤°(€€€€€€€€€€€İ…¥Ñ}¹½‘”¡…‘ˆ°€Í…Ù•‘}Ù…±Õ”œ°€MYèœ€¬Y1U¤¤¤(€€€€€€€ÍÑ•À •á¥Ğœ°±…µ‰‘„èÍÑ½À¡…‘ˆ¤¤(€€€€€€€É•Á½ÉÑlÍÑ…ÑÕÌt€ô€Á…ÍÌœ(€€€•á•ÁĞ€¡=MÉÉ½È°Q•ÍÑ…¥±ÕÉ”°é¥Á™¥±”¹	…‘i¥Á¥±”°ÍÕ‰ÁÉ½•ÍÌ¹Q¥µ•½ÕÑáÁ¥É•°(€€€€€€€€€€€P¹A…ÉÍ•ÉÉ½È°Y…±Õ•ÉÉ½È¤…Ì•áŒè(€€€€€€€É•Á½ÉÑlÍÑ…ÑÕÌt€ô€™…¥°œìÉ•Á½ÉÑl±…ÍÍ¥™¥…Ñ¥½¸t€ôÁ¡…Í”(€€€€€€€É•Á½ÉÑl•ÉÉ½Èt€ôÍÑÈ¡•áŒ¤(€€€™¥¹…±±äè(€€€€€€€¥˜Õ•ÍÑ}¡•­•è(€€€€€€€€€€€ÑÉäè(€€€€€€€€€€€€€€€€¡½ÕĞ€¼€¹…Ñ¥Ù”µ±½…Ğ¹ÑáĞœ¤¹İÉ¥Ñ•}Ñ•áĞ¡…‘ˆ¹µ (€€€€€€€€€€€€€€€€€€€€±½…Ğœ°€œµœ°€œµØœ°€Ñ¡É•…‘Ñ¥µ”œ°€œµĞœ°€œÄÔÀÀœ°Ñ¥µ•½ÕĞôĞÔ¤¤(€€€€€€€€€€€•á•ÁĞ€¡=MÉÉ½È°ÍÕ‰ÁÉ½•ÍÌ¹Q¥µ•½ÕÑáÁ¥É•°Q•ÍÑ…¥±ÕÉ”¤…Ì•áŒè(€€€€€€€€€€€€€€€É•Á½ÉÑl±½…Ñ}•ÉÉ½Èt€ôÍÑÈ¡•áŒ¤(€€€€€€€€¡½ÕĞ€¼€É•ÍÕ±Ğ¹©Í½¸œ¤¹İÉ¥Ñ•}Ñ•áĞ¡©Í½¸¹‘ÕµÁÌ¡É•Á½ÉĞ°Í½ÉÑ}­•åÌõQÉÕ”°¥¹‘•¹ĞôÈ¤€¬€q¸œ¤(€€€É•ÑÕÉ¸É•Á½ÉĞ(()‘•˜•¹ÍÕÉ•}Á…­…”¡…‘ˆè‘ˆ¤è(€€€¥˜€ Á…­…”èœ¹½Ğ¥¸…‘ˆ¹µ Í¡•±°œ°€Á´œ°€Á…Ñ œ°A-¤¤è(€€€€€€€É…¥Í”Q•ÍÑ…¥±ÕÉ” 9…Ñ¥Ù”A,¹½ĞÉ•¥ÍÑ•É•‰äA…­…•5…¹…•Èœ¤(()‘•˜•¹ÍÕÉ•}±•…È¡…‘ˆè‘ˆ¤è(€€€¥˜€MÕ•ÍÌœ¹½Ğ¥¸…‘ˆ¹µ Í¡•±°œ°€Á´œ°€±•…Èœ°A-¤è(€€€€€€€É…¥Í”Q•ÍÑ…¥±ÕÉ” U¹…‰±”Ñ¼±•…È¹…Ñ¥Ù”A,ÁÉ¥½È‘…Ñ„œ¤(()‘•˜µ…¥¸¡…ÉØõ9½¹”¤€´ø¥¹Ğè(€€€À€ô…ÉÁ…ÉÍ”¹ÉÕµ•¹ÑA…ÉÍ•È ¤(€€€À¹…‘‘}…ÉÕµ•¹Ğ œ´µ…Á¬œ°ÑåÁ”õA…Ñ °É•ÅÕ¥É•õQÉÕ”¤(€€€À¹…‘‘}…ÉÕµ•¹Ğ œ´µÍ•É¥…°œ°É•ÅÕ¥É•õQÉÕ”¤(€€€À¹…‘‘}…ÉÕµ•¹Ğ œ´µ½ÕĞœ°ÑåÁ”õA…Ñ °É•ÅÕ¥É•õQÉÕ”¤(€€€À¹…‘‘}…ÉÕµ•¹Ğ œ´µ•áÁ•Ñ•µÍ¡„ÈÔØœ¤(€€€À¹…‘‘}…ÉÕµ•¹Ğ œ´µÁÉ•™±¥¡Ğµ•Ù¥‘•¹”œ°É•ÅÕ¥É•õQÉÕ”°ÑåÁ”õA…Ñ °(€€€€€€€€€€€€€€€€€€¡•±ÀôÁ…ÍÍ¥¹œÉÕ¹}É•™•É•¹•}ÕÑÑ±•™¥Í ÁÉ•™±¥¡Ğ‰Õ¹‘±”œ¤(€€€…ÉÌ€ôÀ¹Á…ÉÍ•}…ÉÌ¡…ÉØ¤(€€€É•ÍÕ±Ğ€ôÉÕ¹}¹…Ñ¥Ù”¡…ÉÌ¹…Á¬°‘ˆ¡…ÉÌ¹Í•É¥…°¤°…ÉÌ¹½ÕĞ°…ÉÌ¹•áÁ•Ñ•‘}Í¡„ÈÔØ°(€€€€€€€€€€€€€€€€€€€€€€€…ÉÌ¹ÁÉ•™±¥¡Ñ}•Ù¥‘•¹”¤(€€€ÁÉ¥¹Ğ¡©Í½¸¹‘ÕµÁÌ¡ìÍÑ…ÑÕÌœèÉ•ÍÕ±ÑlÍÑ…ÑÕÌt°€±…ÍÍ¥™¥…Ñ¥½¸œèÉ•ÍÕ±Ñl±…ÍÍ¥™¥…Ñ¥½¸uô¤¤(€€€É•ÑÕÉ¸€À¥˜É•ÍÕ±ÑlÍÑ…ÑÕÌt€ôô€Á…ÍÌœ•±Í”€Ä(()¥˜}}¹…µ•}|€ôô€}}µ…¥¹}|œè(€€€ÍåÌ¹•á¥Ğ¡µ…¥¸ ¤¤(

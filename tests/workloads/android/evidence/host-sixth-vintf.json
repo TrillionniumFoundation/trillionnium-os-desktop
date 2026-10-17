@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "observed_utc": "2026-10-16",
+  "scope": "isolated Linux host / synthetic VINTF metadata and build-product fixtures; NOT real Android image",
+  "suite": "verify_vintf and verify_launch_preflight",
+  "command": "python3 -m unittest discover -s /mnt/data/a08-sixth/tests/workloads/android -p 'test_*.py' -v",
+  "unit_tests": {
+    "ran": 26,
+    "passed": 26,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "log_file": "host-sixth-vintf.log",
+    "executed_log_sha256": "17a45f1073f56b3852a0fa4562ee1c48bff8613d4a79c2604e847221da1d3d9c"
+  },
+  "source_sha": {
+    "support/android/verify_vintf.py": "554d76e183b0d2f445cde5d3a762aa19af66e28a",
+    "tests/workloads/android/test_verify_vintf.py": "15a51a5fbd2c8b2cedf6c4df8656c782243a52e4",
+    "support/android/verify_launch_preflight.py": "a5db9c8d5bdf54a80d241db21d868b899d96cc71",
+    "tests/workloads/android/test_verify_launch_preflight.py": "eb5e997758150437aca693b9cf7dbc88ccb0a54b"
+  },
+  "checks": {
+    "host_checker_invocation": "executed against fixture shell executable only",
+    "missing_or_incompatible_VINTF": "rejected",
+    "stale_checker_matrix_images": "rejected",
+    "apex_info_outside_checkout": "rejected",
+    "Soong_link_inside_out": "allowed",
+    "Soong_link_outside_out": "rejected"
+  },
+  "actual_aosp_repo_sync": "not_executed",
+  "aosp_image_build": "not_executed",
+  "real_checkvintf_binary": "not_executed",
+  "Android_boot": "not_executed",
+  "Android_on_Asterinas": "not_executed",
+  "note": "A green result is intentionally metadata preflight only and does not imply functioning Binder/HAL/ART/Android app runtime."
+}

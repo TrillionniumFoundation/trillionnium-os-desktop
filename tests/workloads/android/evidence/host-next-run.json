@@ -1,0 +1,106 @@
+{
+  "schema": 1,
+  "observed_utc": "2026-10-16",
+  "host": {
+    "os": "Debian GNU/Linux 13",
+    "kernel": "Linux 6.18.44 x86_64",
+    "architecture": "x86_64",
+    "python": "3.13.5",
+    "environment": "isolated ChatGPT Linux container",
+    "aosp_repo_launcher": false,
+    "adb": false,
+    "qemu": false,
+    "kvm_device": false,
+    "binder_device": false,
+    "disk_available_approx_gib": 30,
+    "github_git_network": "blocked_dns_resolution"
+  },
+  "provenance": "All commands below were locally executed; none were run inside AOSP/Android/Asterinas.",
+  "tests": {
+    "command": "python3 -m unittest discover -s tests/workloads/android -p 'test_*.py' -v",
+    "ran": 23,
+    "passed": 23,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "types": [
+      "offline Android source manifest checks",
+      "synthetic image VINTF parser checks",
+      "mock ADB boot-gate transcripts",
+      "mock APK lifecycle and non-Cuttlefish rejection"
+    ]
+  },
+  "host_probe": {
+    "command": "cc -std=c11 -O2 -Wall -Wextra -Werror -pthread tests/workloads/android/kernel_abi_probe.c -o /mnt/data/a08/kernel_abi_probe && /mnt/data/a08/kernel_abi_probe",
+    "exit": 0,
+    "results": {
+      "mmap": "pass",
+      "memfd_create": "pass",
+      "SCM_RIGHTS": "pass",
+      "futex_wait_wake": "pass",
+      "signal": "pass",
+      "binder_device_open": "blocked_ENOENT"
+    }
+  },
+  "binder_probe": {
+    "command": "cc -std=c11 -O2 -Wall -Wextra -Werror tests/workloads/android/binder_abi_probe.c -o /mnt/data/a08/binder_abi_probe && /mnt/data/a08/binder_abi_probe",
+    "exit": 77,
+    "binder_protocol_expected": 8,
+    "binder_device_open": "blocked_ENOENT",
+    "binder_transactions": "not_tested"
+  },
+  "negative_build_preflight": [
+    {
+      "command": "AOSP_ROOT=<empty_checkout> A08_EVIDENCE=<out> bash support/android/prepare_aosp.sh audit",
+      "exit": 3,
+      "stage": "repo-audit",
+      "error": "AOSP checkout not initialized"
+    },
+    {
+      "command": "AOSP_ROOT=<empty_checkout> A08_EVIDENCE=<checkout>/evidence bash support/android/prepare_aosp.sh audit",
+      "exit": 2,
+      "error": "Checkout/evidence paths must not contain one another"
+    }
+  ],
+  "aosp": {
+    "manifest_tag": "android-15.0.0_r36",
+    "manifest_commit": "a0601d2912a6cedcaf97e1372173f8704a2715b0",
+    "manifest_blob": "a7c482a2345706883f9cde145be289a7c14c1c10",
+    "source": "verified_against_android.googlesource.com_public_gitiles",
+    "full_repo_sync": "not_executed",
+    "image_build": "not_executed",
+    "cuttlefish_boot": "not_executed",
+    "apk_build": "not_executed",
+    "apk_lifecycle": "not_executed",
+    "android_on_asterinas": "not_executed"
+  },
+  "notes": [
+    "C Binder probe returns 77 for blocked device access, not success",
+    "Mock-ADB positive transcript is an offline unit test and NOT real framework boot",
+    "No actual Android device or firmware modified",
+    "No raw Android logs exist, because Cuttlefish was not booted"
+  ],
+  "seccomp_probe": {
+    "command": "cc -std=c11 -O2 -Wall -Wextra -Werror -pthread tests/workloads/android/seccomp_abi_probe.c -o /mnt/data/a08/seccomp_abi_probe && /mnt/data/a08/seccomp_abi_probe",
+    "exit": 0,
+    "results": {
+      "no_new_privs": "pass",
+      "seccomp_filter_install": "pass",
+      "seccomp_deny_getpid": "pass",
+      "seccomp_allow_getppid": "pass",
+      "child_exit": "pass"
+    },
+    "not_tested": [
+      "TSYNC_multithread",
+      "Android_process_filters",
+      "Asterinas_seccomp"
+    ]
+  },
+  "launch_preflight": {
+    "command": "AOSP_ROOT=/mnt/data/a08 A08_EVIDENCE=/mnt/data/a08-dummy A08_CVD_HOME=/mnt/data/a08-cvd A08_CVD_INSTANCE_ID=42 bash support/android/run_reference_cuttlefish.sh",
+    "exit": 4,
+    "error": "KVM device absent or inaccessible; refusing to launch Cuttlefish",
+    "result": "expected_blocked",
+    "cuttlefish_launch": "not_executed"
+  }
+}

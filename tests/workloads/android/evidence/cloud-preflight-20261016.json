@@ -1,0 +1,68 @@
+{
+  "actions": [
+    {
+      "exit_code": 4,
+      "log": "tests/workloads/android/evidence/cloud-preflight-20261016.log",
+      "name": "run_reference_cuttlefish",
+      "status": "blocked_kvm_absent"
+    },
+    {
+      "name": "aosp_sync_build",
+      "status": "not_attempted_host_requirements"
+    }
+  ],
+  "blockers": [
+    "host_ram_below_64GiB",
+    "disk_below_400GiB",
+    "kvm_absent",
+    "android_build_tools_missing",
+    "binder_seccomp_mac_kernel_gaps"
+  ],
+  "claims": {
+    "android_apk_runtime": false,
+    "android_on_asterinas": false,
+    "aosp_build": false,
+    "aosp_source_sync": false,
+    "cuttlefish_boot": false
+  },
+  "execution_class": "configured_cloud_host_preflight",
+  "notes": [
+    "The staged repo launcher is not a source checkout and does not close the AOSP build gate.",
+    "No prebuilt or fake image was accepted.",
+    "This receipt does not claim Android or Asterinas runtime success."
+  ],
+  "observed_utc": "2026-10-16T16:19:04Z",
+  "project_branch_head": "1f04d342961887f4a26407484f9d1e5b14fdd58a",
+  "project_main": "5aeff7b60e8c96aa14676e1642efddc6ad63a607",
+  "repo_launcher_staged": {
+    "path": "/tmp/a08-tools/repo",
+    "sha256": "6ed2f6325705b6ea0af99466d6ebd04adec387a5b6a906cd77bc8c6da65123e5",
+    "version": "repo launcher version 2.69"
+  },
+  "required_host_thresholds": {
+    "free_disk_bytes": 429496729600,
+    "kvm": true,
+    "ram_bytes": 68719476736
+  },
+  "resources": {
+    "disk_free_bytes": 7493013504,
+    "kvm_accessible": false,
+    "meminfo_bytes": {
+      "MemAvailable": 9526816768,
+      "MemTotal": 10451464192,
+      "SwapTotal": 0
+    },
+    "page_size_bytes": 4096
+  },
+  "schema": 1,
+  "tools_on_path": {
+    "aapt2": null,
+    "adb": null,
+    "apkanalyzer": null,
+    "clang": null,
+    "launch_cvd": null,
+    "ninja": null,
+    "qemu-system-x86_64": null,
+    "repo": null
+  }
+}

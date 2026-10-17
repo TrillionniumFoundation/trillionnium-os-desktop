@@ -1,0 +1,27 @@
+{
+  "measured_on": "2026-10-16",
+  "environment": "isolated ChatGPT tools Linux container, NOT Asterinas, NOT Android Cuttlefish",
+  "command_unit": "python3 -m unittest discover -s tests/workloads/android -p 'test_*.py' -v",
+  "unit_tests": {
+    "ran": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "command_abi": "cc -std=c11 -O2 -Wall -Wextra -Werror -pthread tests/workloads/android/kernel_abi_probe.c -o /tmp/a08-kernel-abi-probe && /tmp/a08-kernel-abi-probe",
+  "host_abi_probe": {
+    "mmap": "pass",
+    "memfd_create": "pass",
+    "SCM_RIGHTS": "pass",
+    "futex_wait_wake": "pass",
+    "signal": "pass",
+    "binder_device_open": "blocked_errno_2"
+  },
+  "aosp_sync": "not_executed",
+  "aosp_build": "not_executed",
+  "cuttlefish_boot": "not_executed",
+  "apk_build": "not_executed",
+  "apk_runtime": "not_executed",
+  "asterinas_android": "not_executed",
+  "source_compile": "bash -n prepare_aosp.sh, python3 -m py_compile audit.py run_apk.py; pass"
+}

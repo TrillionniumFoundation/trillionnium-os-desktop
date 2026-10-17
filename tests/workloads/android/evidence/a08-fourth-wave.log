@@ -1,0 +1,25 @@
+2026-10-16 isolated Linux host, Python 3.13.5
+python3 -m unittest discover -s /mnt/data/a08-next/tests/workloads/android -p 'test_*.py' -v
+test_absent_sources_fails_closed ... ok
+test_candidate_sources_still_not_runtime_pass ... ok
+test_cli_bad_lock_exit_three ... ok
+test_cli_red_gate_and_json_output ... ok
+test_comments_without_implementation_not_success ... ok
+test_fixed_kernel_sources_report_three_real_blockers ... ok
+test_kernel_lock_absent ... ok
+test_wrong_kernel_pin_fails_before_scan ... ok
+test_cli_check_only_no_adb ... ok
+test_dex_only_artifact_cannot_embed_native_lib ... ok
+test_escape_outside_build_out_is_forbidden ... ok
+test_hash_tamper_fails ... ok
+test_missing_artifact_and_invalid_badging ... ok
+test_native_elf_machine_must_be_x86_64 ... ok
+test_positive_fixture_is_only_artifact_provenance ... ok
+test_swapped_artifacts_rejected_by_package_identity ... ok
+test_wrong_kernel_scope_refused ... ok
+
+Ran 17 tests in 4.022s
+OK
+
+ALL SUCCESSFUL CASES WERE SYNTHETIC SOURCE/ZIP/FIXTURE TESTS.
+NO REAL AOSP, ART, BINDER, Cuttlefish OR ASTERINAS GUEST WAS EXECUTED.

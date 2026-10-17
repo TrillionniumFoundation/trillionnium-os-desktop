@@ -1,0 +1,303 @@
+{
+  "schema_version": 1,
+  "profile_id": "aosp-15.0.0_r36-cuttlefish-x86_64-4k-software",
+  "status": "source_locked_build_not_run",
+  "execution_boundary": {
+    "reference_class": "linux_or_android_guest",
+    "new_rust_kernel_status": "not_tested",
+    "native_android_claim": false
+  },
+  "aosp": {
+    "release": "Android 15.0.0",
+    "release_build": "BP1A.250505.005.D1",
+    "tag": "android-15.0.0_r36",
+    "manifest_repository": "https://android.googlesource.com/platform/manifest",
+    "manifest_tag_object": "1d7a1b4e33e556ed3cce86e57200f37b49cfd480",
+    "manifest_commit": "a0601d2912a6cedcaf97e1372173f8704a2715b0",
+    "default_xml_sha256": "58aee921fa2aa15b97c3de8e1a06fa582da798973803a3da4c8af596a984719b",
+    "source_projects": {
+      "build/make": "d9611a86f6614b2d8b0367f81a825858dfd2207f",
+      "art": "795d594fd825385562da6b089ea9b2033f3abf5a",
+      "bionic": "8d67ca893c1523eb926b9080dbe4e2ffd2a27ba1",
+      "frameworks/base": "396d32905ded85c082232bc510b525c9e372e585",
+      "frameworks/native": "cdca1e2000347ce2f2b25ab5d0f2dffa81f30e01",
+      "hardware/interfaces": "4d7e907c777eeecc4c5bd7cf640a754fac206ff7",
+      "system/core": "00c7fec1bb09f3284aad6a6f96d2f63dfc3650ad",
+      "system/memory/lmkd": "4812ac8dbb7efa0bc01789d80ee7604e456f10f5",
+      "system/sepolicy": "e4a36f4174b17bbab9dc043f4a65dc8d87377290",
+      "device/google/cuttlefish": "6b140b74d9ec0b55ce230ff11994c627768d7419",
+      "build/release": "be57613fcdf1c2767de62acdca15e16143c1fd80",
+      "build/soong": "333d2b3687b3a337dbcca9d65000bca186795e39",
+      "device/google/cuttlefish_prebuilts": "e612d2d93afcb806af587969a360cfbb28993111",
+      "device/google/cuttlefish_vmm": "33c1d3b8ddc114b2e14750151ef9b1c9492fb7c7"
+    },
+    "source_evidence": {
+      "product_makefile": {
+        "url": "https://android.googlesource.com/device/google/cuttlefish/+/refs/tags/android-15.0.0_r36/vsoc_x86_64/phone/aosp_cf.mk",
+        "sha256": "bf52bb0430e1d52f07c0e56b8bf81cd3a080bbb35058742df73ff8779fdadeb3"
+      },
+      "device_board_config": {
+        "url": "https://android.googlesource.com/device/google/cuttlefish/+/refs/tags/android-15.0.0_r36/vsoc_x86_64/BoardConfig.mk",
+        "sha256": "8ca0068ef3b775d1c5d9839d1dd5e9a5e96599f05920be939683f53e62a648d9"
+      },
+      "shared_board_config": {
+        "url": "https://android.googlesource.com/device/google/cuttlefish/+/refs/tags/android-15.0.0_r36/shared/BoardConfig.mk",
+        "sha256": "570aa305dbed70a75210a9907e3d7efaf7367e0f20d39ba908f2ac846b837156"
+      },
+      "android_products": {
+        "url": "https://android.googlesource.com/device/google/cuttlefish/+/refs/tags/android-15.0.0_r36/AndroidProducts.mk",
+        "sha256": "4f4d2282f616fb79d634bd910acbff65bb52674c5b4dafc996c82ad687f6abbd"
+      },
+      "init_rc": {
+        "url": "https://android.googlesource.com/platform/system/core/+/refs/tags/android-15.0.0_r36/rootdir/init.rc",
+        "sha256": "4d0e8e84c6c5b345c79230c82902a1fb25505cd15808663bca14cb7dedd0030d"
+      }
+    },
+    "runtime_component_sources": {
+      "bionic": "bionic/libc",
+      "init": "system/core/init",
+      "binder_userspace": "frameworks/native/libs/binder",
+      "zygote": "frameworks/base/core/java/com/android/internal/os/ZygoteInit.java",
+      "art": "art/runtime",
+      "system_server": "frameworks/base/services/java/com/android/server/SystemServer.java",
+      "package_manager": "frameworks/base/services/core/java/com/android/server/pm",
+      "surfaceflinger": "frameworks/native/services/surfaceflinger"
+    },
+    "release_config": {
+      "name": "trunk_staging",
+      "release_build": "BP1A.250505.005.D1",
+      "platform_sdk_version": 35,
+      "board_api_level": 202504,
+      "RELEASE_AIDL_USE_UNFROZEN": true,
+      "source": "build/release/flag_declarations/RELEASE_AIDL_USE_UNFROZEN.textproto and flag_values/trunk_staging"
+    }
+  },
+  "target": {
+    "lunch": "aosp_cf_x86_64_phone-trunk_staging-userdebug",
+    "product": "aosp_cf_x86_64_phone",
+    "device": "vsoc_x86_64",
+    "device_tree": "device/google/cuttlefish",
+    "product_makefile": "device/google/cuttlefish/vsoc_x86_64/phone/aosp_cf.mk",
+    "board_config": "device/google/cuttlefish/vsoc_x86_64/BoardConfig.mk",
+    "build_variant": "userdebug",
+    "architecture": "x86_64",
+    "binder_bitness": 64,
+    "page_size_bytes": 4096,
+    "page_size_source": "runtime probe and built product properties; page-agnostic is a separate product",
+    "native_bridge_declared_arch": "arm64",
+    "native_bridge_status": "declared_only_not_verified",
+    "graphics": {
+      "mode": "software",
+      "renderer": "SwiftShader guest_swiftshader",
+      "emulator_renderer": "guest_swiftshader",
+      "gpu_acceleration_claimed": false,
+      "display_bridge_status": "not_implemented"
+    },
+    "target_second_arch": "x86",
+    "target_second_abis": [
+      "x86"
+    ],
+    "native_bridge_declared_arches": [
+      "arm64",
+      "arm"
+    ],
+    "native_bridge_declared_abis": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "armeabi"
+    ]
+  },
+  "partitions": {
+    "dynamic_partitions": true,
+    "super_partition_size_bytes": 7516192768,
+    "system": true,
+    "system_ext": true,
+    "product": true,
+    "vendor": true,
+    "odm": true,
+    "vendor_dlkm": true,
+    "odm_dlkm": true,
+    "system_dlkm": true,
+    "dynamic_groups": [
+      "google_system_dynamic_partitions",
+      "google_vendor_dynamic_partitions"
+    ],
+    "generated_images_required": [
+      "boot.img",
+      "init_boot.img",
+      "vendor_boot.img",
+      "system.img",
+      "system_ext.img",
+      "product.img",
+      "vendor.img",
+      "odm.img",
+      "vendor_dlkm.img",
+      "odm_dlkm.img",
+      "system_dlkm.img",
+      "userdata.img"
+    ],
+    "image_hashes_status": "not_built",
+    "required_cuttlefish_images": [
+      "android-info.txt",
+      "boot.img",
+      "bootloader",
+      "init_boot.img",
+      "super.img",
+      "userdata.img",
+      "vbmeta.img",
+      "vbmeta_system.img",
+      "vbmeta_system_dlkm.img",
+      "vbmeta_vendor_dlkm.img",
+      "vendor_boot.img"
+    ]
+  },
+  "vintf": {
+    "framework_matrix": {
+      "path": "hardware/interfaces/compatibility_matrices/compatibility_matrix.202404.xml",
+      "sha256": "ce02e4a009dd4c82dbc82fe96967edfa3d4186e3973348be32c8c62da5e990eb",
+      "url": "https://android.googlesource.com/platform/hardware/interfaces/+/refs/tags/android-15.0.0_r36/compatibility_matrices/compatibility_matrix.202404.xml",
+      "level": 202404
+    },
+    "conditional_framework_matrix": {
+      "path": "hardware/interfaces/compatibility_matrices/compatibility_matrix.202504.xml",
+      "sha256": "7d510a080d2931ac3437b5083d324a8521b195cc5561dc2dffe16948e3c444ad",
+      "url": "https://android.googlesource.com/platform/hardware/interfaces/+/refs/tags/android-15.0.0_r36/compatibility_matrices/compatibility_matrix.202504.xml",
+      "level": 202504,
+      "status": "conditional_release_matrix; final selection requires built product flags"
+    },
+    "device_manifest": {
+      "path": "device/google/cuttlefish/shared/config/manifest.xml",
+      "sha256": "a5102978d846a8c153907de8e6ef9b18b9586d9632b5f8f1b4d554ab4d918b02",
+      "url": "https://android.googlesource.com/device/google/cuttlefish/+/refs/tags/android-15.0.0_r36/shared/config/manifest.xml",
+      "target_level": 202504,
+      "status": "fragment_only_final_vintf_must_be_assembled",
+      "previous_manifest": {
+        "path": "device/google/cuttlefish/shared/config/previous_manifest.xml",
+        "sha256": "5e898b53db8af9bec6b81ccad1343568715d8727e2188ff78356ae9c7e407c9d",
+        "target_level": 202404,
+        "status": "used when RELEASE_AIDL_USE_UNFROZEN=false"
+      }
+    },
+    "framework_manifest_fragments": [
+      {
+        "path": "device/google/cuttlefish/shared/config/product_manifest.xml",
+        "sha256": "032b01efea6ecf018c6e24f12219637e1f22b4178db95745f5b59c964c8f013a"
+      },
+      {
+        "path": "device/google/cuttlefish/shared/config/system_ext_manifest.xml",
+        "sha256": "032b01efea6ecf018c6e24f12219637e1f22b4178db95745f5b59c964c8f013a"
+      }
+    ],
+    "aidl_instance_status": "requirements only; active 202504 matrix is selected by RELEASE_AIDL_USE_UNFROZEN=true; provider instances require built VINTF and servicemanager inventory",
+    "active_framework_matrix_level": 202504,
+    "active_device_manifest_path": "device/google/cuttlefish/shared/config/manifest.xml",
+    "aidl_hal_examples_frozen_202404": [
+      {
+        "name": "android.hardware.audio.core",
+        "versions": [
+          "1-2"
+        ],
+        "interfaces": {
+          "IModule": [
+            "default"
+          ],
+          "IConfig": [
+            "default"
+          ]
+        }
+      },
+      {
+        "name": "android.hardware.graphics.allocator",
+        "versions": [
+          "1-2"
+        ],
+        "interfaces": {
+          "IAllocator": [
+            "default"
+          ]
+        }
+      },
+      {
+        "name": "android.hardware.graphics.composer3",
+        "versions": [
+          "3"
+        ],
+        "interfaces": {
+          "IComposer": [
+            "default"
+          ]
+        }
+      },
+      {
+        "name": "android.hardware.health",
+        "versions": [
+          "3"
+        ],
+        "interfaces": {
+          "IHealth": [
+            "default"
+          ]
+        }
+      },
+      {
+        "name": "android.hardware.power",
+        "versions": [
+          "5"
+        ],
+        "interfaces": {
+          "IPower": [
+            "default"
+          ]
+        }
+      },
+      {
+        "name": "android.hardware.sensors",
+        "versions": [
+          "2"
+        ],
+        "interfaces": {
+          "ISensors": [
+            "default"
+          ]
+        }
+      }
+    ],
+    "aidl_hal_examples_active_202504": [
+      {
+        "name": "android.hardware.audio.core",
+        "versions": [
+          "1-3"
+        ],
+        "interfaces": {
+          "IModule": [
+            "default"
+          ],
+          "IConfig": [
+            "default"
+          ]
+        }
+      },
+      {
+        "name": "android.hardware.graphics.allocator",
+        "versions": [
+          "1-2"
+        ],
+        "interfaces": {
+          "IAllocator": [
+            "default"
+          ]
+        }
+      },
+      {
+        "name": "android.hardware.graphics.composer3",
+        "versions": [
+          "4"
+        ],
+        "interfaces": {
+          "IComposer": [
+            "default"
+          ]
+        }
+      },
+      {
+        #n»ßËh‘éì¶»§q«^t¸	¥¹‘•È•ÉÉ¹¼½¹¼µ‘•Ù¥”€ ÜÜ¤É•µ…¥¹Ì„Í•Á…É…Ñ”	1=-ÍÑ…ÑÕÌ•Ù•¸¥˜1¥¹Õà	$ÁÉ½‰•ÌÁ…ÍÌ¸ÁÉ¥µ¥Ñ¥Ù”	¥¹‘•È¥½Ñ°½µµ…ÀÁ…ÍÌ‘½•Ì¹½ĞÁÉ½Ù”	¥¹‘•È¥‘•¹Ñ¥Ñä°ÑÉ…¹Í…Ñ¥½¹Ì°5½È¹‘É½¥A,™Õ¹Ñ¥½¹…±¥Ñä¸()1½…°µ•…ÍÕÉ•¡½ÍĞÉ•É•ÍÍ¥½¸è€ÄÌ¼ÄÌÁ…ÍÍ•€¡ÍÑ…Ñ¥Œ1½µÁ¥±…Ñ¥½¸°‘•Ñ•Éµ¥¹¥ÍÑ¥Œ¥¹¥ÑÉ…µ™Ì™¥áÑÕÉ”Á…­¥¹œ°™Õ±°½¹”µ½µµ…¹‰Õ¥±‘•È™¥áÑÕÉ”°ÁÉ½™¥±”½Í¡„½½Ù•ÉİÉ¥Ñ”É•©•Ñ¥½¸¤¸Q¡•Í”İ•É”Íå¹Ñ¡•Ñ¥Œ™¥áÑÕÉ•Ì½¸…¸¥Í½±…Ñ•1¥¹Õà¡½ÍĞ°9=P…¸ÍÑ•É¥¹…ÌÕ•ÍĞ¸M•”Ñ•ÍÑÌ½İ½É­±½…‘Ì½…¹‘É½¥½•Ù¥‘•¹”½¡½ÍĞµ…ÍÑ•É¥¹…Ìµ…‰¤µÕ•ÍĞ¹í©Í½¸±±½ô¸9¼E5T•á•ÕÑ…‰±”¥ÌÁÉ•Í•¹Ğ¥¸Ñ¡¥Ì¡½ÍĞìÕ•ÍĞÑ•ÍĞ…¹¹‘É½¥µ½¸µÍÑ•É¥¹…ÌÉ•µ…¥¸9=PaUQ¸((ŒŒÀà¹¥¹Ñ İ…Ù”è™…±Í¥™¥…‰±”Õ•ÍĞ	$…¹	¥¹‘•ÈÙ•É‘¥ÑÌ()Q¡”ÁÉ•Ù¥½ÕÌÀàE5TÉ•ÍÕ±ĞÁ…ÉÍ•È¡…„É•ÁÉ½‘Õ•€¨©™…±Í”Á½Í¥Ñ¥Ù”¨¨èÉ…ÜE5T•á¥Ğ€ÌÌÁ±ÕÌÍ¡•±°µ±•Ù•°ÍÕ•ÍÌµ…É­•ÉÌ¥¹½ÉÉ•Ñ±äÉ•Á½ÉÑ•1¥¹Õà	$AML•Ù•¸İ¡•¸Ñ¡”Í…µ”Í•É¥…°±½œÍ…¥µµ…À%0•ÉÉ¹¼ôÌá€…¹µ•µ™‘}É•…Ñ”U9Y%1	1}Q}=5A%1}Q%5€¸µ…É­•Èµ½¹±ä	¥¹‘•ÈÁÉ¥µ¥Ñ¥Ù”±…¥´½Õ±…±Í¼‰”É•Á½ÉÑ•…ÌAMLİ¥Ñ¡½ÕĞ¥½Ñ°½µµ…À•Ù¥‘•¹”¸Q¡¥Ìİ…ÌÙ•É¥™¥•İ¥Ñ Ñ¡”½±Á…ÉÍ•È°Ñ¡•¸™¥á•¸()9½Ü•Ù•Éä¹…µ•	$…Í”€¡µµ…À°µ•µ™‘}É•…Ñ”°M5}I%!QL°™ÕÑ•á}İ…¥Ñ}İ…­”°Í¥¹…°¤µÕÍĞ¡…Ù”•á…Ñ±ä½¹”AML•ÉÉ¹¼ôÁ€É•½É‰•Ñİ••¸Ñ¡”ÁÉ½Á•ÈÀà	%8…¹AMLµ…É­•ÉÌ¸€ĞÀäØµ‰åÑ”Á…”Í¥é”°¡É½¹½±½¥…°Õ¹¥ÅÕ”ÀÄ½Ààµ…É­•ÉÌ°E5T•á¥Ğ€ÌÌ°…¹…‰Í•¹”½˜Á…¹¥Œ½ÈÕ•ÍĞ	$™…¥±ÕÉ•Ì…É”…±Í¼É•ÅÕ¥É•¸	¥¹‘•ÈÉ•ÅÕ¥É•Ì…ÑÕ…°‰¥¹‘•É}ÁÉ½Ñ½½±}Ù•ÉÍ¥½¹€°‰¥¹‘•É}Í•Ñ}µ…á}Ñ¡É•…‘Í€°‰¥¹‘•É}µµ…Á€°…¹‰¥¹‘•É}•µÁÑå}İÉ¥Ñ•}É•…‘€AMLÉ•½É‘Ììµ¥ÍÍ¥¹œ‘•Ù¥”•ÉÉ¹¼½•á¥Ğ€ÜÜÉ•µ…¥¹ÌÍ•Á…É…Ñ•±ä‰±½­•¸Ù•¸	¥¹‘•ÈÁÉ¥µ¥Ñ¥Ù”ÍÕ•ÍÌ9YHÅÕ…±¥™¥•Ì™Õ±°	¥¹‘•ÈÑÉ…¹Í…Ñ¥½¹Ì°U%½Í•ÕÉ¥Ñä½¹Ñ•áĞ°‘•…Ñ ½™±¥™•å±”°¹‘É½¥IP½ÈA,ÉÕ¹Ñ¥µ”¸()E5TÉ•Á±…ä¹½ÜÉ•ÍÑÉ¥ÑÌÑ¡”­•É¹•°€µ…ÁÁ•¹‘€½µµ…¹±¥¹”Ñ¼ÀÄÌ­¹½İ¸Í…™”Ù…±Õ•Ì€¡¹¼¥¹¥Ğõ€½Ù•ÉÉ¥‘”¤°É•ÅÕ¥É•Ì•á…ĞÍ•É¥…°¡…É‘•ØÁ…É…µ•Ñ•ÉÌ°•á…ĞÍ…µ”ÀÄµÙ•É¥™¥•E5T‰¥¹…ÉäM!ÈÔØ…¹ÍÕ•ÍÍ™Õ°Í½ÕÉ”E5TÉ•½É°…¹É•™ÕÍ•Ì¥¹Ù…±¥Ñ¥µ•½ÕÑÌ¸I…Ü‰åÑ”¡…Í¡•Ì½˜Í•É¥…°½ÍÑ‘½ÕĞ½ÍÑ‘•ÉÈ…É”É•Ñ…¥¹•°¥¹±Õ‘¥¹œ¹½¸µUQ´à‰åÑ•Ì¸()!½ÍĞ­•É¹•±}…‰¥}ÁÉ½‰”¹Œ¹½ÜÑÉ•…ÑÌÕ¹…Ù…¥±…‰±”½µÁ¥±”µÑ¥µ”ÍåÍ…±±Ì…Ì„™…¥±ÕÉ”…¹Ù…±¥‘…Ñ•ÌM5}I%!QLÉ••¥Ù•™¥±”¥‘•¹Ñ¥ÑäÙ¥„™ÍÑ…Ğ°İ¥Ñ •ÉÉ¹¼ôÀ½¸•¹Õ¥¹”AML¸=¹”¹•Ü¡½ÍĞÑ•ÍĞ…ÑÕ…±±ä½µÁ¥±•Ñ¡”Õ¹¡…¹•Õ•ÍĞµ¥¹Ñ•¹‘•ÁÉ½‰”€¨©ÍÑ…Ñ¥…±±ä¨¨…¹•á•É¥Í•µµ…À°µ•µ™°U9%`™Á…ÍÍ¥¹œ°™ÕÑ•à…¹Í¥¹…±Ì½¸Ñ¡”1¥¹Õà¡½ÍĞ¸€½‘•Ø½‰¥¹‘•É€İ…Ì…‰Í•¹Ğ€¡9=9P¤…¹İ…Ì¹½ĞÍ½É•…ÌÍÕÁÁ½ÉÑ•¸((¨©5•…ÍÕÉ•Ñ•ÍĞÍ½Á”è¨¨€ĞÀ¼ĞÀÁ…ÍÍ•°€À™…¥±ÕÉ•Ì½•ÉÉ½ÉÌ½Í­¥ÁÌ°™É½´Ñ¡”Í¥à‰åÑ”µ™½Èµ‰åÑ”Ù•É¥™¥•ÕÉÉ•¹ĞÀà™¥±•Ì•¹Õµ•É…Ñ•¥¸Ñ•ÍÑÌ½İ½É­±½…‘Ì½…¹‘É½¥½•Ù¥‘•¹”½¡½ÍĞµ…‰¤µ™…±Í”µÁ…ÍÌµÉ•É•ÍÍ¥½¸¹©Í½¹€¸%¹±Õ‘•ÌÉ•…°1¥¹ÕàÍåÍ…±±Ì…¹…¸•á•ÕÑ…‰±”€¨©™…­”E5T¨¨ÕÍ•Í½±•±ä™½ÈÑÉ…¹ÍÁ½ÉĞ½•Ù¥‘•¹”É•É•ÍÍ¥½¸Ñ•ÍÑ¥¹œ°9=P„É•…°Ù¥ÉÑÕ…°µ…¡¥¹”¸M•”¡½ÍĞµ…‰¤µ™…±Í”µÁ…ÍÌµÉ•É•ÍÍ¥½¸¹±½€€¡M!ÈÔØ€ÍˆäØĞÑ‘™”İ‰˜ÈäàäÕ‘ˆÀİ…‰ˆÈÑŒå‰…˜ØĞÙÙˆá„Õ”äå”ÕĞàÑ”áÔÅÙ˜ÈØÈÙ€¤¸Q¡”•¹Ñ¥É”ÀàÍÕ¥Ñ”İ…Ì¹½ĞÉ•ÉÕ¸¥¸Ñ¡¥Ì¥Í½±…Ñ•½¹Ñ…¥¹•ÈìÑ¡¥Ì¥ÌÑ¡”•á…ĞÍ¥àµ™¥±”ÍÕ‰Í•Ğ¸((¨©I•µ…¥¹¥¹œÉ•…Ñ•Ìè¨¨¹¼Å•µÔµÍåÍÑ•´µààÙ|ØĞ¥¹ÍÑ…±±•¡•É”°¹¼ÀàÍÑ•É¥¹…ÌÕ•ÍĞ‰½½Ğ°¹¼…ÑÕ…°	¥¹‘•È¥½Ñ°½ÑÉ…¹Í…Ñ¥½¹Ì½¸ÍÑ•É¥¹…Ì°¹¼=M@€ÄÔ‰Õ¥±½IP½‘Õ…°µA,ÉÕ¹Ñ¥µ”¸I•ÁÉ½‘Õ”½¸ÀÄÌ…±É•…‘äÙ…±¥‘…Ñ•E5T½Q¡½ÍĞÕÍ¥¹œ‰Õ¥±‘}…ÍÑ•É¥¹…Í}…‰¤¹Í¡€Ñ¡•¸ÉÕ¹}…ÍÑ•É¥¹…Í}…‰¤¹Áå€¸AH¥¹Ñ•¹Ñ¥½¹…±±äÍÑ…åÌÉ…™Ğ¸((ŒŒÀàÑ•¹Ñ İ…Ù”èÍ•½µÀ	AÁÉ½‰”¥¸…ÑÕ…°ÍÑ•É¥¹…ÌÕ•ÍĞ()Àà¹½ÜÍÑ…•Ì€¨©Ñ¡É•”¨¨¥¹‘•Á•¹‘•¹ĞÍÑ…Ñ¥ŒààÙ|ØĞÕÍ•ÉÍÁ…”ÁÉ½‰•Ì¥¹Ñ¼Ñ¡”ÀÄµ‘•É¥Ù•ÍÑ•É¥¹…ÌE5T½QÕ•ÍĞè‰…Í¥Œ1¥¹Õà	$°	¥¹‘•ÈUA$ÁÉ¥µ¥Ñ¥Ù•Ì…¹Í•½µÀ	A•¹™½É•µ•¹Ğ¸±°Ñ¡É•”½µÁ¥±”™É½´•á¥ÍÑ¥¹œÀàµ½İ¹•Í½ÕÉ•Ì¸ÀÄ­•É¹•°Í½ÕÉ•Ì…¹‰Õ¥±½¹™¥ÕÉ…Ñ¥½¸É•µ…¥¸Õ¹µ½‘¥™¥•¸()Q¡”ÍÑ…¹‘…±½¹”‰Õ¥±‘•ÈÍÕÁÁ½ÉĞ½…¹‘É½¥½‰Õ¥±‘}…ÍÑ•É¥¹…Í}…‰¤¹Í¡€¹½Ü½µÁ¥±•Ì…¹™¥¹•ÉÁÉ¥¹ÑÌ„ÀàµÍ•½µÀµ…‰¥€°Á±…•Ì¥Ğ¥¸Ñ¡”ÀÄµ™½Éµ…Ğ‘•Ñ•Éµ¥¹¥ÍÑ¥Œ¥¹¥ÑÉ…µ™Ì…¹¥¹©•ÑÌÑ¡•Í”Õ•ÍĞµ…É­•ÉÌ…™Ñ•ÈÑ¡”	¥¹‘•ÈÁÉ½‰”èÀá}UMQ}M=5A}	%9€°Àá}UMQ}M=5A}%1QI}AMM€½ÈÀá}UMQ}M=5A}a%Pèñ½‘”ù€°Ñ¡•¸Àá}UMQ}M=5A}9€¸()Q¡”ÍÑ…Ñ¥ŒÍ•½µÀÑ•ÍĞÕÍ•Ì„Í¡½ÉĞµ±¥Ù•™½É­•¡¥±°Ù•É¥™¥•ÌAI}MQ}9=}9]}AI%YM€°¥¹ÍÑ…±±ÌM=5A}MQ}5=}%1QI€°É•ÅÕ¥É•ÌÉ•…°AI4™É½´‰±½­••ÑÁ¥‘€°½¹™¥ÉµÌÁ•Éµ¥ÑÑ••ÑÁÁ¥‘€°İ…¥ÑÌ™½ÈÑ¡”¡¥±Ñ¼•á¥Ğ¹½Éµ…±±ä…¹ÁÉ¥¹ÑÌÉ…Ü•ÉÉ¹¼½•á¥Ğ•Ù¥‘•¹”¸€¨©Í•½µÀÍåÍ…±°½¥¹ÍÑ…±±…Ñ¥½¸•ÉÉ½È¥Ì…¸¥¹‘•Á•¹‘•¹Ñ±ä±…ÍÍ¥™¥•É•…Ñ”¨¨°¹½ĞÁÉ½½˜Ñ¡…Ğµµ…À½™ÕÑ•à½µ•µ™™…¥±•¸()Q¡”E5TÉ•ÍÕ±ĞÁ…ÉÍ•È¹½Ü…•ÁÑÌÍ•½µÀ%1QHÁÉ¥µ¥Ñ¥Ù”ÍÑ…ÑÕÌ€¨©½¹±ä¨¨İ¡•¸Ñ¡”Í•½µÀµ…É­•È°Õ¹¥ÅÕ”½µÁ±•Ñ”ÍåÍ…±°½	Aµ‘•¹¥…°É•ÍÕ±Ğ±¥¹•Ì…¹Í•½µÁ}¡¥±AML•á¥ĞôÁ€…É•”¸9=MeLôÌà½È=A9=QMUA@ôäÔ™É½´™¥±Ñ•È¥¹ÍÑ…±±…Ñ¥½¸¥Ì™¥±Ñ•É}¥¹ÍÑ…±±}¹½Ñ}¥µÁ±•µ•¹Ñ•‘€ì•ÉÉ½ÈÄÌİ¥Ñ µ¥ÍÍ¥¹œ•ÉÉ¹¼•Ù¥‘•¹”¥Ì¹•Ù•ÈÑÉ•…Ñ•…ÌÍÕ ¸%˜	¥¹‘•È…¹‰…Í¥Œ	$ÍÕ••‰ÕĞÍ•½µÀ¥Ì‰±½­•°Ñ¡”ÉÕ¹¹•È•á¥ÑÌ€¨¨È¨¨°¹½Ğ€À¸%Ğ•á¥ÑÌ€À½¹±ä¥˜1¥¹Õà	$°	¥¹‘•ÈÁÉ¥µ¥Ñ¥Ù•Ì€¨©…¹Í•½µÀ™¥±Ñ•ÈÁÉ¥µ¥Ñ¥Ù”•¹™½É•µ•¹Ğ¨¨…É”…±°¥¹‘•Á•¹‘•¹Ñ±ä•Ù¥‘•¹•¸MÑ¥±°€¨©¹¼¹‘É½¥QL½IP½5½QMe9ÅÕ…±¥™¥…Ñ¥½¸¨¨¸()Q¼É•…Ñ”Ñ¡”Õ•ÍĞÁ…å±½…½¸„Ù•É¥™¥•ÀÄ‰Õ¥±¡½ÍĞè((€€€•áÁ½ÉĞÀá}	%}=UQAUPô½ÑµÀ½„Ààµ…‰¤µÍ•½µÀµ¹•Ü(€€€•áÁ½ÉĞÀá}	UMe	=a}MQQ%ô½Á…Ñ ½Ñ¼½ÍÑ…Ñ¥ŒµààÙ|ØĞµ‰ÕÍå‰½à(€€€‰…Í ÍÕÁÁ½ÉĞ½…¹‘É½¥½‰Õ¥±‘}…ÍÑ•É¥¹…Í}…‰¤¹Í ()IÕ¸ÍÕÁÁ½ÉĞ½…¹‘É½¥½ÉÕ¹}…ÍÑ•É¥¹…Í}…‰¤¹Áå€İ¥Ñ Ñ¡”Í…µ”™É•Í ÀÄ­•É¹•°1½Å•µÔ¹©Í½¸½M•…	%=L½Q½µµ…¹‘½Õµ•¹Ñ•…‰½Ù”¸9¼…‘‘¥Ñ¥½¹…°­•É¹•°™¥±•Ì°E5T¹•Ñİ½É¬‘•Ù¥•Ì½È¡½ÍĞµİ¥‘”Í•½µÀÁ½±¥¥•Ì…É”¡…¹•¸Q¡”¡½ÍĞÍ•½µÀ™¥±Ñ•È¥Ì¥¹ÍÑ…±±•½¹±ä¥¹Í¥‘”Ñ¡”ÁÉ½‰”Ì¥Í½±…Ñ•¡¥±¸((¨©ÑÕ…°¡½ÍĞ•Ù¥‘•¹”€ÈÀÈØ´ÄÀ´ÄØè¨¨€ÔÌ¼ÔÌ¥Í½±…Ñ•ÀàÕ¹¥Ğ½¥¹Ñ•É…Ñ¥½¸…Í•ÌÁ…ÍÍ•İ¥Ñ ÍÑ…Ñ¥Œ½µÁ¥±…Ñ¥½¸°…ÑÕ…°1¥¹Õà¡¥±µ½¹±äÍ•½µÀ¥¹ÍÑ…±±…Ñ¥½¸½AI4•¹™½É•µ•¹Ğ…¹Íå¹Ñ¡•Ñ¥ŒÍ•É¥…°½™…­”µE5T¹•…Ñ¥Ù”Ñ•ÍÑÌ¸Q¡•Í”…É”€¨©9=P¨¨Ñ…É•ĞÍÑ•É¥¹…Ì°™Õ±°¹‘É½¥½ÈÉ•…°IP½	¥¹‘•ÈÕ•ÍĞÉ•ÍÕ±ÑÌ¸á…ĞÍ½ÕÉ”‰±½ˆM!Ì…¹ÉÕ¸M!ÈÔØèÑ•ÍÑÌ½İ½É­±½…‘Ì½…¹‘É½¥½•Ù¥‘•¹”½¡½ÍĞµÕ•ÍĞµÍ•½µÀ¹©Í½¹€ìÉ•…°¡½ÍĞ™¥±Ñ•ÈÍÑ‘½ÕĞè¡½ÍĞµÕ•ÍĞµÍ•½µÀ¹±½€¸I•…°E5TÕ¹…Ù…¥±…‰±”¥¸Ñ¡”ÕÉÉ•¹Ğ½¹Ñ…¥¹•È°Í¼ÍÑ•É¥¹…Ì½	¥¹‘•È½Í•½µÀÕ•ÍĞÁÉ½‰•ÌÉ•µ…¥¸€¨©9=PaUQ¨¨¸

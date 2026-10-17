@@ -1,0 +1,100 @@
+{
+  "profile": "android-15.0.0_r36/aosp_cf_x86_64_phone-trunk_staging-userdebug",
+  "aosp_kernel": "Linux Cuttlefish reference (not Asterinas)",
+  "apk_cases": [
+    {
+      "category": "DEX-only",
+      "source": "tests/workloads/android/apk-smoke",
+      "package": "org.trillionnium.a08smoke",
+      "version": "1.0",
+      "apk_sha256": null,
+      "abi": "none",
+      "permissions": [],
+      "services": [
+        "ActivityManager",
+        "PackageManager",
+        "InputManager",
+        "WindowManager",
+        "data storage"
+      ],
+      "scenarios": [
+        "install",
+        "launch",
+        "home",
+        "input",
+        "commit_shared_prefs",
+        "background",
+        "foreground",
+        "force_stop",
+        "relaunch",
+        "verify_persistence"
+      ],
+      "result": "not_executed"
+    },
+    {
+      "category": "x86_64 native",
+      "source": "tests/workloads/android/apk-smoke/native-smoke",
+      "package": "org.trillionnium.a08native",
+      "version": "1.0",
+      "apk_sha256": null,
+      "abi": "x86_64",
+      "permissions": [],
+      "services": [
+        "ActivityManager",
+        "PackageManager",
+        "ART/JNI",
+        "Bionic dynamic linker",
+        "InputManager",
+        "WindowManager",
+        "SharedPreferences"
+      ],
+      "scenarios": [
+        "install_unmodified",
+        "zygote_ART_launch",
+        "native_library_load",
+        "native_pid_matches_Java_pid",
+        "validate_x86_64_ELF",
+        "jni_isa",
+        "input",
+        "save",
+        "background",
+        "foreground",
+        "force_stop",
+        "relaunch",
+        "JNI_again",
+        "persistence"
+      ],
+      "result": "not_executed_android_runtime",
+      "native_libraries": [
+        "lib/x86_64/liba08jni.so"
+      ],
+      "host_evidence": "Linux-host x86_64 JNI loading and PID comparison passed; NOT Android runtime"
+    },
+    {
+      "category": "ARM64 native",
+      "source": null,
+      "package": null,
+      "version": null,
+      "apk_sha256": null,
+      "abi": "arm64-v8a",
+      "permissions": null,
+      "services": null,
+      "scenarios": null,
+      "result": "blocked_requires_real_arm64_translation_or_native_arm64_profile"
+    },
+    {
+      "category": "32-bit native",
+      "source": null,
+      "package": null,
+      "version": null,
+      "apk_sha256": null,
+      "abi": "armeabi-v7a_or_x86",
+      "permissions": null,
+      "services": null,
+      "scenarios": null,
+      "result": "not_executed_and_runtime_support_not_asserted"
+    }
+  ],
+  "reference_build_verified": false,
+  "android_asterinas_qualified": false
+}
