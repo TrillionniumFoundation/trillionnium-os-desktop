@@ -756,6 +756,9 @@ impl Buffer {
     pub const fn len(&self) -> usize {
         self.len
     }
+    pub const fn is_empty(&self) -> bool {
+        self.len == 0
+    }
     pub const fn direction(&self) -> DmaDirection {
         self.direction
     }
@@ -1033,6 +1036,48 @@ impl Queue {
         Ok(())
     }
 }
+
+/// The public API does not expose mutable PCI identity.
+///
+/// ```compile_fail
+/// use a09_device_lifecycle::DeviceHandle;
+/// let mut device = DeviceHandle::new(0x300, 27, 1).unwrap();
+/// device.pci_bdf = 0x400;
+/// ```
+///
+/// A caller cannot mutate buffer DMA direction in flight.
+///
+/// ```compile_fail
+/// use a09_device_lifecycle::{MemoryObject, ResourceDomainId, Buffer, DmaDirection};
+/// let memory = MemoryObject::new(7, ResourceDomainId::from_u128(1), 4096);
+/// let mut buffer = Buffer::new(&memory, 0, 64, DmaDirection::ToDevice).unwrap();
+/// buffer.direction = DmaDirection::Bidirectional;
+/// ```
+///
+/// Completion fields are private: external code cannot forge one by struct literal.
+///
+/// ```compile_fail
+/// use a09_device_lifecycle::Completion;
+/// let fabricated = Completion {
+///     memory_id: 1, queue_id: 2, queue_instance: 3, device_generation: 4,
+///     queue_generation: 5, sequence: 6,
+/// };
+/// ```
+///
+/// Resource admission tokens are private and cannot be forged by callers.
+///
+/// ```compile_fail
+/// use a09_device_lifecycle::{ResourceDomainId, ResourceRequest, ResourceReservation,
+///     ReservationState};
+/// let fabricated = ResourceReservation {
+///     reservation_id: 1,
+///     domain: ResourceDomainId::from_u128(1),
+///     parent: None,
+///     request: ResourceRequest::new(1, 0, 0, 0),
+///     state: ReservationState::Reserved,
+/// };
+/// ```
+pub struct CompileFailApiBoundary;
 
 #[cfg(test)]
 mod tests {
@@ -1882,45 +1927,3 @@ mod tests {
         assert_eq!(child.usage(), ResourceUsage::ZERO);
     }
 }
-
-/// The public API does not expose mutable PCI identity.
-///
-/// ```compile_fail
-/// use a09_device_lifecycle::DeviceHandle;
-/// let mut device = DeviceHandle::new(0x300, 27, 1).unwrap();
-/// device.pci_bdf = 0x400;
-/// ```
-///
-/// A caller cannot mutate buffer DMA direction in flight.
-///
-/// ```compile_fail
-/// use a09_device_lifecycle::{MemoryObject, ResourceDomainId, Buffer, DmaDirection};
-/// let memory = MemoryObject::new(7, ResourceDomainId::from_u128(1), 4096);
-/// let mut buffer = Buffer::new(&memory, 0, 64, DmaDirection::ToDevice).unwrap();
-/// buffer.direction = DmaDirection::Bidirectional;
-/// ```
-///
-/// Completion fields are private: external code cannot forge one by struct literal.
-///
-/// ```compile_fail
-/// use a09_device_lifecycle::Completion;
-/// let fabricated = Completion {
-///     memory_id: 1, queue_id: 2, queue_instance: 3, device_generation: 4,
-///     queue_generation: 5, sequence: 6,
-/// };
-/// ```
-///
-/// Resource admission tokens are private and cannot be forged by callers.
-///
-/// ```compile_fail
-/// use a09_device_lifecycle::{ResourceDomainId, ResourceRequest, ResourceReservation,
-///     ReservationState};
-/// let fabricated = ResourceReservation {
-///     reservation_id: 1,
-///     domain: ResourceDomainId::from_u128(1),
-///     parent: None,
-///     request: ResourceRequest::new(1, 0, 0, 0),
-///     state: ReservationState::Reserved,
-/// };
-/// ```
-pub struct CompileFailApiBoundary;
