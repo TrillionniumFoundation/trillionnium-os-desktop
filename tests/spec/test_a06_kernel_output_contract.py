@@ -19,6 +19,32 @@ class A06KernelOutputContract(unittest.TestCase):
         )
         self.assertNotIn("release/asterinas\\\"", source)
 
+    def test_probe_scripts_keep_local_import_path(self):
+        source = WORKFLOW.read_text()
+        self.assertIn(
+            "python3 tests/organ_backend/run_candidate_matrix.py",
+            source,
+        )
+        self.assertIn(
+            "python3 tests/organ_backend/smp2/run_parallel_candidate.py",
+            source,
+        )
+        self.assertNotIn(
+            "python3 -I tests/organ_backend/run_candidate_matrix.py",
+            source,
+        )
+        self.assertNotIn(
+            "python3 -I tests/organ_backend/smp2/run_parallel_candidate.py",
+            source,
+        )
+
+    def test_thread_builder_initializes_cpu_cgroup_snapshot(self):
+        builder = (
+            ROOT
+            / "kernel/asterinas/kernel/core/src/process/posix_thread/builder.rs"
+        ).read_text()
+        self.assertIn("cpu_cgroup: RcuOption::new(None)", builder)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
