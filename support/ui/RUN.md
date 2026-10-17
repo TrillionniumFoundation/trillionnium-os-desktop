@@ -157,8 +157,12 @@ Hepta authority, production portal or A05 trusted CapSpace. The blocking
 Linux-host CI now also starts an isolated nobody-owned Session with passwordless
 sudo and verifies a root client's cross-UID access is actually rejected by
 the server (not merely by filesystem permissions), while nobody's own CLI
-continues to work. The test leaves no production processes or files and
-uses disposable private /tmp paths.
+continues to work. This test's nobody-owned runtime is 0700, so an ordinary
+Runner cannot directly read the PID marker. Cleanup uses scoped sudo with
+kernel /proc cmdline, process name and effective UID verification to kill the
+exact disposable Session even on ptrace-restricted hosts. PASS is emitted
+only after teardown; an inaccessible/unverified Session is a test failure.
+No production processes or files are targeted; only private /tmp paths.
 Missing app executable is reported FAILED, not a successful launch.
 A missing session is rendered OFFLINE and existing status is stale.
 `trill-ctl launch` now exits nonzero if the session reports a failed spawn,
@@ -166,6 +170,11 @@ partial or unknown state, even when JSON transport succeeded. A zero exit
 for Running acknowledges only host process creation, not a rendered window
 or final AI-task completion. `cancel` may return zero when SIGKILL has
 been requested but not yet observed; inspect the later session snapshot.
+A headless GUI can exit between Launch returning RUNNING and a later Cancel
+IPC request. In 50/50 independent real Rust ELF attempts on source fcc57bd2,
+Session returned "No owned live child; no cancellation claimed". Strict host
+acceptance now requires a fresh FAILED Snapshot in that race, and never
+records a fake cancellation or inferred Hepta success.
 
 A previous GitHub Actions host run (38932065166) completed the Rust build,
 unit-test and Weston lifecycle steps; its overall result was FAILED because

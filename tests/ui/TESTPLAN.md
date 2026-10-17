@@ -82,10 +82,15 @@ Unit coverage:
   top-level keys for Snapshot, Launch, and Cancel before any task action,
   and retains valid typed requests (not a trusted A05 authorization gate).
   The exact real-ELF test at tests/ui/test-strict-request-ipc.py sends eight
-  malformed raw frames and checks an unchanged empty task state, followed by
-  a correctly parsed typed Cancel. It was first executed against the older
-  fcc57bd2 CI-built Rust Session, FAILING at malformed case 0 because the
-  older process wrongly returned a Snapshot rather than an IPC rejection
+  malformed raw frames, then requires the first valid Launch to receive task
+  ID 1 so no short-lived forged Launch can hide between Snapshots. It checks
+  independently observed child reaping and correctly parsed typed Cancel.
+  The older fcc57bd2 Session FAILED at malformed case 0, accepting an
+  unexpected Snapshot field. A second live fcc57bd2 test showed 50/50
+  display-less GUI exit-before-Cancel races; the test must accept the exact
+  no-owned-child error ONLY when a subsequent Snapshot observes FAILED, not
+  silently reinterpret it as a successful SIGKILL or Hepta task effect.
+  See tests/ui/evidence/2026-10-17-headless-cancel-race.json
 - oversized/truncated IPC frames and unknown statuses
 - successful observed host child exit
 - live host child cancellation without GUI: real /bin/sleep process receives
@@ -110,7 +115,12 @@ Unit coverage:
   root's cross-UID snapshot must be rejected with the exact SO_PEERCRED
   diagnostic; Session remains alive for the owner. A prior `fcc57bd2`
   Rust ELF without this guard was independently shown to FAIL this check.
-  Only disposable /tmp, no production service or CapSpace is accessed
+  Cleanup reads the PID marker through authorized sudo because its containing
+  nobody-owned runtime is 0700 and inaccessible to an ordinary Runner. It
+  verifies process cmdline/comm/effective UID without ptrace-protected
+  /proc/<pid>/exe or environ, kills only a matching disposable Session,
+  and reports PASS only AFTER verified teardown. Only disposable /tmp, no
+  production service or CapSpace is accessed
 - failed host spawn, partial/unknown task and rejected IPC return nonzero
   trill-ctl process exit status; a running child means only host launch ACK
 - invalid app/workspace enum, including ../path command-injection strings,

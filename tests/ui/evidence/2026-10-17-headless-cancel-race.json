@@ -1,0 +1,19 @@
+{
+  "schema": "a10-real-headless-cancel-race-v1",
+  "observed_date": "2026-10-17",
+  "source_commit": "fcc57bd2a64cc7ee84731b432a94b51689355af7",
+  "github_actions_run": 39015860337,
+  "github_artifact_id": 12096301139,
+  "real_binary": "trill-session + trill-app-window from SHA256-verified CI ELF bundle",
+  "host_scope": "ephemeral private Linux/XDG_RUNTIME_DIR; both DISPLAY and WAYLAND_DISPLAY absent; no compositor",
+  "method": "Repeated 50 real Launch(research,notes) requests followed immediately by Cancel(id, exact session generation) using a raw Unix socket; snapshots separate from effect acknowledgements",
+  "attempted_launch_cancel_pairs": 50,
+  "launch_errors": 0,
+  "cancel_error_no_owned_live_child_no_cancellation_claimed": 50,
+  "cancel_requested_or_confirmed": 0,
+  "other_cancel_outcomes": 0,
+  "original_strict_test_problem": "test-strict-request-ipc.py wrongly required a Task response from Cancel after a Running spawn; native GUI exits during the independent IPC round-trip without a display",
+  "new_acceptance": "Allow the exact no-owned-child error only if a following Session Snapshot independently observes FAILED; never translate the error into CANCELLED or a successful Hepta effect. Verify task ID and eventual reap separately.",
+  "remediation_commit": "e6ead0a2d1c8612147035a844afa91aeb8b1422b",
+  "not_claimed": ["current HEAD compiled", "current HEAD CI green", "real Wayland presentation", "CJK candidate UI", "A05 CapSpace", "Asterinas kernel"]
+}
