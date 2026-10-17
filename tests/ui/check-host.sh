@@ -96,7 +96,7 @@ cargo test --manifest-path tests/ui/Cargo.toml --locked
 # host Session inside another UID's private runtime without the new owner
 # checks. Refuse foreign runtime/subdirectory/lock owners before bind or
 # flock; preserve a positive same-UID native socket bind.
-bash tests/ui/test-runtime-owner.sh "$PWD/ui/target/debug"
+bash tests/ui/test-runtime-owner.sh "$ui_binaries"
 # Real Linux SO_PEERCRED negative. The CI runner already provisions
 # passwordless sudo for host dependencies; use it only to start a disposable
 # nobody-owned Session under a separate private /tmp runtime. A root caller
