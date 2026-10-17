@@ -21,6 +21,7 @@
 | [ANDROID_COMPATIBILITY](ANDROID_COMPATIBILITY.md) | 产品/VINTF/MAC/Binder/页大小与代理边界 |
 | [HARDWARE_AND_DRIVERS](HARDWARE_AND_DRIVERS.md) | DMA/队列/复位与提前风险调查 |
 | [DESKTOP_UX](DESKTOP_UX.md) | Rust/Wayland/分域Xwayland/Android桥 |
+| [ORGAN_CONTROL_BROKER](ORGAN_CONTROL_BROKER.md) | UI、Agentd、本地控制桥与HOS2/设备 owner 的权限边界 |
 | [ROADMAP](ROADMAP.md) | 明确M0/M1/M2依赖及下一次真实实现 |
 | [VALIDATION](VALIDATION.md) | 判定器、注入层级、22项审计映射 |
 | [DECISIONS](DECISIONS.md) | 默认路线与重议条件 |
@@ -34,7 +35,7 @@
 
 ## 按模块开始开发
 
-本次文档基于 main `561f1e276cc02fd7a257b8f804488546ab3d2a83`，已包含普通合并的 [A08 #161](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/161)；其源码组合与执行身份见 [组合收据](../results/integration/a08-host-main-20261017/README.md)。A07/A10 最终固定候选为 `5beb3fab54fe7dd60072864276ece1ced38150ab`，仍在 [Draft #157](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/157)；新中文切片与原版编译检查分别绑定自己的源码，见 [STATUS](STATUS.md)。下表将开发入口、技术契约和验收来源放在一起；标为候选的代码及文档尚未合入 main，不能从主干的相对路径假定它们已存在。
+本次文档基于当前 main `eaabd20a2ae67573f76b3a6a8f64ca7a1ea8a9c2`，已包含普通合并的 [A08 #161](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/161)；其源码组合与执行身份见 [组合收据](../results/integration/a08-host-main-20261017/README.md)。A07/A10 最终固定候选为 `5beb3fab54fe7dd60072864276ece1ced38150ab`，仍在 [Draft #157](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/157)；新中文切片与原版编译检查分别绑定自己的源码，见 [STATUS](STATUS.md)。下表将开发入口、技术契约和验收来源放在一起；标为候选的代码及文档尚未合入 main，不能从主干的相对路径假定它们已存在。
 
 | 模块 / owner | 开发与验证入口 | 技术契约 / 实际范围 |
 | --- | --- | --- |
