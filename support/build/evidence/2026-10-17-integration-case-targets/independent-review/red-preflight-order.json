@@ -1,0 +1,32 @@
+{
+  "source": "/workspace/scratch/ae1a8cf05419/integration-target-review-20261017/run-before-preflight.py",
+  "source_sha256": "122557ab91e7a71645c0b24e31d9bd232081911d72855b9dbe89a2db8a43a6f8",
+  "scope": "No Cargo/VM execution; command collaborator records whether production Cargo was reached with foreign symlink present.",
+  "terminal_exception": {
+    "type": "SystemExit",
+    "message": "original OSDK source build failed; see /tmp/a01-target-preflight-0uh51efw/new-output"
+  },
+  "calls": [
+    {
+      "operation": "prepare_harness",
+      "foreign_debug_symlink": true
+    },
+    {
+      "operation": "production_cargo",
+      "argv": [
+        "/root/.rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+        "build",
+        "--locked",
+        "--bin",
+        "cargo-osdk"
+      ],
+      "target": "/tmp/a01-target-preflight-0uh51efw/project/support/build/out/prior/target",
+      "foreign_debug_symlink": true
+    }
+  ],
+  "production_cargo_reached": true,
+  "foreign_keep": "foreign unchanged\n",
+  "foreign_entries": [
+    "keep"
+  ]
+}
