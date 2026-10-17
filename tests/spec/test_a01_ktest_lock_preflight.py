@@ -47,6 +47,14 @@ class ColdRunnerPreflightTests(unittest.TestCase):
             with self.assertRaisesRegex(SystemExit, "cannot start Cargo"):
                 prepare.checked_cargo(["cargo", "--version"], cwd=ROOT, label="missing tool")
 
+    def test_preflight_script_remains_executable(self):
+        # This build input was executable before the A01 cold-runner patch.
+        # Preserve Git's 100755 bit across integrations and reruns.
+        import stat
+        script = ROOT / "prepare-locks.py"
+        self.assertFalse(script.is_symlink())
+        self.assertTrue(script.stat().st_mode & stat.S_IXUSR)
+
     def test_failure_output_is_bounded(self):
         argv = ["cargo", "metadata"]
         fake = subprocess.CompletedProcess(argv, 101, "A" * 100000, "B" * 100000)
