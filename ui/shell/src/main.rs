@@ -1093,6 +1093,8 @@ mod observation_freshness_tests {
         HeptaConnectionState, HeptaHealthObservation, HeptaRuntimeObservation,
     };
 
+    type ResponseSender = SyncSender<(bool, Result<Response, String>)>;
+
     fn observed(sampled_unix_ms: u64) -> HeptaProjection {
         HeptaProjection {
             connection: HeptaConnectionState::Observed,
@@ -1125,7 +1127,7 @@ mod observation_freshness_tests {
     // Only the in-process response queue is synthetic here. The test consumes
     // it through Desktop's real receive and pre-draw state path; no Agentd,
     // compositor, device effect or physical display is claimed.
-    fn queued_desktop() -> (Desktop, SyncSender<(bool, Result<Response, String>)>) {
+    fn queued_desktop() -> (Desktop, ResponseSender) {
         let (actions, _incoming_actions) = mpsc::sync_channel(8);
         let (polls, _incoming_polls) = mpsc::sync_channel(1);
         let (outgoing, rx) = mpsc::sync_channel(16);
@@ -1153,7 +1155,7 @@ mod observation_freshness_tests {
         (desktop, outgoing)
     }
 
-    fn enqueue(sender: &SyncSender<(bool, Result<Response, String>)>, hepta: HeptaProjection) {
+    fn enqueue(sender: &ResponseSender, hepta: HeptaProjection) {
         sender
             .send((
                 false,
