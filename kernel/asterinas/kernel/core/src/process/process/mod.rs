@@ -43,6 +43,11 @@ mod session;
 mod terminal;
 mod timer_manager;
 
+/// Never reuse a boot-local HOS2 process-image namespace. Unlike a truncated
+/// PID/start-time tuple, a checked monotonically allocated nonce cannot
+/// alias a later Process after PID reuse or a long uptime.
+static NEXT_HEPTA_CAPSPACE_NONCE: AtomicU64 = AtomicU64::new(1);
+
 use atomic_integer_wrapper::define_atomic_version_of_integer_like_type;
 pub(crate) use init_proc::spawn_init_process;
 pub(crate) use job_control::JobControl;
@@ -153,6 +158,8 @@ pub struct Process {
 
     /// Incremented after a successful execve to fence old-image fds.
     hepta_exec_epoch: AtomicU64,
+    /// Lazy, process-image-scoped identity. Zero means not yet assigned.
+    hepta_space_nonce: AtomicU64,
 
     // Namespaces
     /// The user namespace
@@ -271,6 +278,7 @@ impl Process {
                 timer_manager,
                 start_time: Jiffies::elapsed(),
                 hepta_exec_epoch: AtomicU64::new(0),
+                hepta_space_nonce: AtomicU64::new(0),
                 user_ns: Mutex::new(user_ns),
             }
         })
@@ -315,15 +323,51 @@ impl Process {
         self.hepta_exec_epoch.load(Ordering::Acquire)
     }
 
+    /// Assign an irrevocably unique boot-local process-image namespace.
+    ///
+    /// Repeated opens by one process image share one value, but fork creates
+    /// a new Process and a successful execve invalidates this nonce. Losing
+    /// concurrent open attempts may burn nonce values; they NEVER recycle one.
+    /// A counter exhaustion fails closed instead of wrapping into old history.
+    pub(crate) fn hepta_capspace_nonce(&self) -> Result<u64> {
+        let current = self.hepta_space_nonce.load(Ordering::Acquire);
+        if current != 0 {
+            return Ok(current);
+        }
+        let candidate = NEXT_HEPTA_CAPSPACE_NONCE
+            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |nonce| {
+                nonce.checked_add(1)
+            })
+            .map_err(|_| Error::with_message(Errno::ENOSPC, "HOS2 CapSpace nonce exhausted"))?;
+        match self.hepta_space_nonce.compare_exchange(
+            0,
+            candidate,
+            Ordering::AcqRel,
+            Ordering::Acquire,
+        ) {
+            Ok(_) => Ok(candidate),
+            Err(winner) if winner != 0 => Ok(winner),
+            Err(_) => Err(Error::with_message(
+                Errno::ESTALE,
+                "HOS2 CapSpace identity changed during open",
+            )),
+        }
+    }
+
     /// Advances the image-generation fence after a successful execve.
     /// Wrapping is rejected so an old fd can never become valid again.
     pub(crate) fn advance_hepta_exec_epoch(&self) -> Result<u64> {
-        self.hepta_exec_epoch
+        let next = self
+            .hepta_exec_epoch
             .fetch_update(Ordering::AcqRel, Ordering::Acquire, |current| {
                 current.checked_add(1)
             })
             .map(|previous| previous + 1)
-            .map_err(|_| Error::with_message(Errno::EOVERFLOW, "HOS2 exec epoch exhausted"))
+            .map_err(|_| Error::with_message(Errno::EOVERFLOW, "HOS2 exec epoch exhausted"))?;
+        // A new image must obtain a NEW CapSpace, never inherit the old
+        // image namespace merely because its PID and Process Arc are stable.
+        self.hepta_space_nonce.store(0, Ordering::Release);
+        Ok(next)
     }
 
     pub(crate) fn tasks(&self) -> &Mutex<TaskSet> {
