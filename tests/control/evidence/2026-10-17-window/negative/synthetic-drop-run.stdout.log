@@ -1,0 +1,24 @@
+
+running 2 tests
+test native_owner_drop_during_history_loss_can_reenter_loss_gate_before_return ... FAILED
+test native_owner_drop_during_retirement_can_read_same_namespace_before_return ... FAILED
+
+failures:
+
+---- native_owner_drop_during_history_loss_can_reenter_loss_gate_before_return stdout ----
+
+thread 'native_owner_drop_during_history_loss_can_reenter_loss_gate_before_return' (221) panicked at /tmp/a03-regressions-bhxyshhy/synthetic-drop/native_handoff.rs:773:5:
+native-owner destructor ran while history loss held its loss gate or namespace table
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- native_owner_drop_during_retirement_can_read_same_namespace_before_return stdout ----
+
+thread 'native_owner_drop_during_retirement_can_read_same_namespace_before_return' (223) panicked at /tmp/a03-regressions-bhxyshhy/synthetic-drop/native_handoff.rs:748:5:
+native-owner destructor ran while retirement held the namespace table lock
+
+
+failures:
+    native_owner_drop_during_history_loss_can_reenter_loss_gate_before_return
+    native_owner_drop_during_retirement_can_read_same_namespace_before_return
+
+test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 13 filtered out; finished in 10.00s

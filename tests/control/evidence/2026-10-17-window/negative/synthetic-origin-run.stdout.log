@@ -1,0 +1,48 @@
+
+running 6 tests
+test independent_states_with_identical_config_cannot_use_each_others_snapshots ... FAILED
+test modifying_the_input_config_copy_does_not_change_saved_terms_or_live_authority ... ok
+test repeated_snapshots_of_one_state_keep_identity_and_native_retry_is_idempotent ... ok
+test replacing_state_inside_the_same_owner_cannot_reauthorize_a_reserved_old_d ... FAILED
+test revoke_then_reconstruct_same_config_does_not_reactivate_the_old_snapshot ... FAILED
+test snapshot_after_state_destruction_is_metadata_and_cannot_authorize_a_new_state ... FAILED
+
+failures:
+
+---- independent_states_with_identical_config_cannot_use_each_others_snapshots stdout ----
+
+thread 'independent_states_with_identical_config_cannot_use_each_others_snapshots' (270) panicked at /tmp/a03-regressions-bhxyshhy/synthetic-origin/management_identity.rs:52:5:
+assertion `left != right` failed
+  left: ManagementGrantSnapshot { config: ManagementGrantConfig { id: ManagementGrantId(Id16(00000000000000000000000000170a70)), publisher: PublisherId(Id16(00000000000000000000000000170a71)), target: ResourceDomainId(Id16(00000000000000000000000000170a72)), stable_object_id: StableObjectId(Id16(00000000000000000000000000170a73)), epoch: 7, issued_at_ns: 10, expires_at_ns: 100, max_cap_ns: 20 }, origin: () }
+ right: ManagementGrantSnapshot { config: ManagementGrantConfig { id: ManagementGrantId(Id16(00000000000000000000000000170a70)), publisher: PublisherId(Id16(00000000000000000000000000170a71)), target: ResourceDomainId(Id16(00000000000000000000000000170a72)), stable_object_id: StableObjectId(Id16(00000000000000000000000000170a73)), epoch: 7, issued_at_ns: 10, expires_at_ns: 100, max_cap_ns: 20 }, origin: () }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- replacing_state_inside_the_same_owner_cannot_reauthorize_a_reserved_old_d stdout ----
+
+thread 'replacing_state_inside_the_same_owner_cannot_reauthorize_a_reserved_old_d' (273) panicked at /tmp/a03-regressions-bhxyshhy/synthetic-origin/management_identity.rs:253:5:
+assertion `left == right` failed
+  left: Some(Busy)
+ right: Some(Conflict)
+
+---- revoke_then_reconstruct_same_config_does_not_reactivate_the_old_snapshot stdout ----
+
+thread 'revoke_then_reconstruct_same_config_does_not_reactivate_the_old_snapshot' (274) panicked at /tmp/a03-regressions-bhxyshhy/synthetic-origin/management_identity.rs:87:5:
+assertion `left != right` failed
+  left: ManagementGrantSnapshot { config: ManagementGrantConfig { id: ManagementGrantId(Id16(00000000000000000000000000170ad4)), publisher: PublisherId(Id16(00000000000000000000000000170ad5)), target: ResourceDomainId(Id16(00000000000000000000000000170ad6)), stable_object_id: StableObjectId(Id16(00000000000000000000000000170ad7)), epoch: 7, issued_at_ns: 10, expires_at_ns: 100, max_cap_ns: 20 }, origin: () }
+ right: ManagementGrantSnapshot { config: ManagementGrantConfig { id: ManagementGrantId(Id16(00000000000000000000000000170ad4)), publisher: PublisherId(Id16(00000000000000000000000000170ad5)), target: ResourceDomainId(Id16(00000000000000000000000000170ad6)), stable_object_id: StableObjectId(Id16(00000000000000000000000000170ad7)), epoch: 7, issued_at_ns: 10, expires_at_ns: 100, max_cap_ns: 20 }, origin: () }
+
+---- snapshot_after_state_destruction_is_metadata_and_cannot_authorize_a_new_state stdout ----
+
+thread 'snapshot_after_state_destruction_is_metadata_and_cannot_authorize_a_new_state' (275) panicked at /tmp/a03-regressions-bhxyshhy/synthetic-origin/management_identity.rs:111:5:
+assertion `left != right` failed
+  left: ManagementGrantSnapshot { config: ManagementGrantConfig { id: ManagementGrantId(Id16(00000000000000000000000000170b38)), publisher: PublisherId(Id16(00000000000000000000000000170b39)), target: ResourceDomainId(Id16(00000000000000000000000000170b3a)), stable_object_id: StableObjectId(Id16(00000000000000000000000000170b3b)), epoch: 7, issued_at_ns: 10, expires_at_ns: 100, max_cap_ns: 20 }, origin: () }
+ right: ManagementGrantSnapshot { config: ManagementGrantConfig { id: ManagementGrantId(Id16(00000000000000000000000000170b38)), publisher: PublisherId(Id16(00000000000000000000000000170b39)), target: ResourceDomainId(Id16(00000000000000000000000000170b3a)), stable_object_id: StableObjectId(Id16(00000000000000000000000000170b3b)), epoch: 7, issued_at_ns: 10, expires_at_ns: 100, max_cap_ns: 20 }, origin: () }
+
+
+failures:
+    independent_states_with_identical_config_cannot_use_each_others_snapshots
+    replacing_state_inside_the_same_owner_cannot_reauthorize_a_reserved_old_d
+    revoke_then_reconstruct_same_config_does_not_reactivate_the_old_snapshot
+    snapshot_after_state_destruction_is_metadata_and_cannot_authorize_a_new_state
+
+test result: FAILED. 2 passed; 4 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
