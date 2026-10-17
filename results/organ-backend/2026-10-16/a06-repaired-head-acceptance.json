@@ -1,0 +1,90 @@
+{
+  "schema": "trillionnium.os.a06.latest-owner-truncation-fix.v1",
+  "source_head": "db3a8a36951041f6016a7d7ed870d1d9d014fdc5",
+  "base_head": "31e49a3c29d5e19d30976cdfb55accba1d786aea",
+  "kernel_sha256": "1bc49d2bd5995ad9d73457b310be1f0a9dcad8e3c36589b5f2741088db071572",
+  "build": {
+    "pinned_nightly": "nightly-2026-07-21",
+    "result": "passed_after_source_repair",
+    "before_repair": "failed aster-core cpu.rs:700 unclosed delimiter"
+  },
+  "smp": {
+    "head": "db3a8a36951041f6016a7d7ed870d1d9d014fdc5",
+    "sha256": "1bc49d2bd5995ad9d73457b310be1f0a9dcad8e3c36589b5f2741088db071572",
+    "rows": [
+      {
+        "name": "leaf1",
+        "exit": 0,
+        "cpu_percent": [
+          0.871,
+          0.879
+        ],
+        "good": true,
+        "seconds": 19.6
+      },
+      {
+        "name": "leaf10",
+        "exit": 0,
+        "cpu_percent": [
+          10.573,
+          10.413
+        ],
+        "good": true,
+        "seconds": 9.8
+      },
+      {
+        "name": "rt10",
+        "exit": 0,
+        "cpu_percent": [
+          10.104
+        ],
+        "good": true,
+        "seconds": 6.2
+      },
+      {
+        "name": "parent10",
+        "exit": 0,
+        "cpu_percent": [
+          10.221
+        ],
+        "good": true,
+        "seconds": 5.7
+      }
+    ],
+    "all_passed": true,
+    "profile": "QEMU q35 TCG 2 vCPUs, two pthread workers, guest-only initramfs",
+    "limitations": [
+      "not full SMP proof",
+      "not native HOS2/Hepta effect"
+    ]
+  },
+  "ktest": {
+    "passed": true,
+    "crates": [
+      {
+        "passed": true,
+        "guests": [
+          {
+            "crate": "aster-core",
+            "declared": 153,
+            "passed": 153,
+            "failed": 0,
+            "filtered": 0,
+            "soft_skipped": 0,
+            "soft_skip_reasons": [],
+            "exercised_passed_lower_bound": 153,
+            "observed_test_starts": 153,
+            "raw_qemu_exit": 33,
+            "guest": "guest-001"
+          }
+        ]
+      }
+    ]
+  },
+  "validation_limits": [
+    "x86_64 q35 TCG two vCPUs two pthreads, not comprehensive SMP",
+    "not exact CPU cap for every period",
+    "no native HOS2 or durable Hepta effect integration"
+  ],
+  "raw_evidence_dir": "/home/qian-qi/.local/state/trillionnium-os-organ-next-20261016/evidence/a06-repaired-{build,smp-*,ktest}"
+}

@@ -1,0 +1,132 @@
+{
+  "schema": "trillionnium.os.a06.smp2.longer-independent.v1",
+  "date": "2026-10-16",
+  "tested_kernel_source_commit": "c65578b2f76538cb6706e1089565ef73adccc8f0",
+  "latest_a06_owner_baseline": "b01d7817576dc187c4312dbaa2b65480d58d1788",
+  "source_equivalence": "GitHub compare c65578b2..b01d7817 shows only added evidence JSON, no Asterinas source changes",
+  "kernel_sha256": "4690299ebbe0f33fb04281e7a55fd30914e339e47a7043bbcbd6ecc5de4bba5d",
+  "test_path": "tests/organ_backend/smp2/run_parallel_candidate.py",
+  "rootfs_original_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+  "profile": "Asterinas-derived kernel, QEMU q35/TCG x86_64, two vCPUs and two simultaneously busy pthreads, 512MiB, pinned SeaBIOS and disposable initramfs, no host networking or disks",
+  "tests": [
+    {
+      "case": "smp2-leaf1pct-3s",
+      "mode": "leaf",
+      "duration_seconds": 3,
+      "quota_us": 1000,
+      "period_us": 100000,
+      "threads": 2,
+      "vcpus": 2,
+      "raw_qemu_exit": 33,
+      "guest_complete": true,
+      "panic": false,
+      "policy_rt": false,
+      "unlimited": {
+        "label": "unlimited",
+        "wall_ns": 3030748444,
+        "cpu_ns": 6005000000,
+        "iterations": 0
+      },
+      "capped": {
+        "label": "one-percent-configured",
+        "wall_ns": 5299732220,
+        "cpu_ns": 48000000,
+        "iterations": 0
+      },
+      "observed_cpu_percent": 0.906,
+      "serial_sha256": "0a2c4a5c7acccb4756f2e17e93c8d65bfeadfffa4f701c1a4ffe1f694fc11eb4"
+    },
+    {
+      "case": "smp2-leaf10pct-3s",
+      "mode": "leaf",
+      "duration_seconds": 3,
+      "quota_us": 10000,
+      "period_us": 100000,
+      "threads": 2,
+      "vcpus": 2,
+      "raw_qemu_exit": 33,
+      "guest_complete": true,
+      "panic": false,
+      "policy_rt": false,
+      "unlimited": {
+        "label": "unlimited",
+        "wall_ns": 3018280339,
+        "cpu_ns": 6003000000,
+        "iterations": 0
+      },
+      "capped": {
+        "label": "one-percent-configured",
+        "wall_ns": 3132156574,
+        "cpu_ns": 323000000,
+        "iterations": 0
+      },
+      "observed_cpu_percent": 10.312,
+      "serial_sha256": "d67a3724bd0cbc5447c3c46b80c0aac8cea23de714d1242861690ef221d086e0"
+    },
+    {
+      "case": "smp2-rt10pct-2s",
+      "mode": "rt",
+      "duration_seconds": 2,
+      "quota_us": 10000,
+      "period_us": 100000,
+      "threads": 2,
+      "vcpus": 2,
+      "raw_qemu_exit": 33,
+      "guest_complete": true,
+      "panic": false,
+      "policy_rt": true,
+      "unlimited": {
+        "label": "unlimited",
+        "wall_ns": 2025772359,
+        "cpu_ns": 4020000000,
+        "iterations": 0
+      },
+      "capped": {
+        "label": "one-percent-configured",
+        "wall_ns": 4118780659,
+        "cpu_ns": 416000000,
+        "iterations": 0
+      },
+      "observed_cpu_percent": 10.1,
+      "serial_sha256": "dd1b43bb15413420a046b261256ce42b1f6fe2e0c3781c4413f3034e56dddbc7"
+    },
+    {
+      "case": "smp2-parent10pct-2s",
+      "mode": "parent",
+      "duration_seconds": 2,
+      "quota_us": 10000,
+      "period_us": 100000,
+      "threads": 2,
+      "vcpus": 2,
+      "raw_qemu_exit": 33,
+      "guest_complete": true,
+      "panic": false,
+      "policy_rt": false,
+      "unlimited": {
+        "label": "unlimited",
+        "wall_ns": 2028514290,
+        "cpu_ns": 4024000000,
+        "iterations": 0
+      },
+      "capped": {
+        "label": "one-percent-configured",
+        "wall_ns": 2108633766,
+        "cpu_ns": 219000000,
+        "iterations": 0
+      },
+      "observed_cpu_percent": 10.386,
+      "serial_sha256": "0427968b6820eac4cc50a856cbf18574f69cc9a918bdf83d55148f90d33a3623"
+    }
+  ],
+  "tests_passed": 4,
+  "tests_failed": 0,
+  "not_qualified": [
+    "Not full SMP lock-order/IRQ interleaving exploration",
+    "Not CPU hotplug or migration stress",
+    "Not per-period hard 100ms quota guarantee",
+    "No new-kernel HOS2/CapSpace real ioctl",
+    "No A07 Hepta durable effect or production readiness"
+  ],
+  "raw_serial_logs": "Authorized isolated host /home/qian-qi/.local/state/trillionnium-os-organ-next-20261016/evidence/a06-extra-smp2-*/serial-1.log; hashes per case",
+  "guest_profile_only": true
+}
