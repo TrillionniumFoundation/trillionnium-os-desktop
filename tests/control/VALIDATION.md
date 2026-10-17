@@ -1,9 +1,11 @@
 # A03 control core acceptance — 2026-10-16
 
 Latest follow-up:
-[VALIDATION-20261017-management.md](VALIDATION-20261017-management.md),
-with 192 tests per backend and ten bounded Loom models (5,950 schedules), plus
-management-only revocation/lease/cap state and failure recovery. Previous:
+[VALIDATION-20261017-window.md](VALIDATION-20261017-window.md),
+with 198 tests per backend, twelve bounded Loom models (26,445 schedules),
+zero locked allocation calls in native namespace probes and observation hardening.
+Previous: [VALIDATION-20261017-management.md](VALIDATION-20261017-management.md)
+(192 tests),
 [VALIDATION-20261017-bound.md](VALIDATION-20261017-bound.md) (168 tests),
 [VALIDATION-20261017-native.md](VALIDATION-20261017-native.md) (150 tests).
 The evidence below remains the historical 113-test acceptance.

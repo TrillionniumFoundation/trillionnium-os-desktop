@@ -353,6 +353,23 @@ fn read_usage_accepts_aligned_windows_through_u64_max() {
         };
         assert_usage(&golden, value, Ok(()), &format!("sample {sample}"));
     }
+    let sample = u64::MAX;
+    let elapsed = sample % CPU_PERIOD_NS;
+    assert_usage(
+        &golden,
+        ReadUsageResponse {
+            sample_boottime_ns: sample,
+            cumulative_cpu_ns: sample,
+            window_start_ns: sample - elapsed,
+            window_consumed_ns: elapsed,
+            active_cap_ns: 0,
+            event_sequence: 0,
+            dropped_events: 0,
+            ..usage_profile()
+        },
+        Ok(()),
+        "cumulative CPU exactly equals u64::MAX sample",
+    );
 }
 
 #[test]
@@ -395,6 +412,14 @@ fn read_usage_rejects_impossible_or_misaligned_cpu_snapshots() {
             "cumulative CPU is smaller than current-window consumption",
             ReadUsageResponse {
                 cumulative_cpu_ns: 34_999_999,
+                ..usage_profile()
+            },
+            Error::InvalidField,
+        ),
+        (
+            "cumulative CPU exceeds boot elapsed time",
+            ReadUsageResponse {
+                cumulative_cpu_ns: 150_000_001,
                 ..usage_profile()
             },
             Error::InvalidField,

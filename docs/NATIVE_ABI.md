@@ -71,7 +71,7 @@ InstallBudget的request_id规定为sequence:u64的小端8字节加8个零字节�
 
 QueryAbi：0 space_id[16]非零；16 page_size:u32非零二次幂；20 max_request_payload:u32；24 max_response_payload:u32；28 reserved:u32=0；32 supported_ops:u64（bit1..5）；40 features:u64=0。支持bit1必需，未知bit拒绝。宣告InstallBudget必须同时宣告ReadUsage、QueryDelivery和RetireThrough；retire要求query历史。payload上限不超过65536且至少容纳宣告操作的最大请求/响应（完整集40/64）。只宣告格式支持不是运行能力，内核必须按已实现范围报告。
 
-ReadUsage：八个u64依次sample_boottime_ns、cumulative_cpu_ns、window_start_ns、window_consumed_ns、active_cap_ns、active_period_ns、event_sequence、dropped_events。原点为内核初始时钟域boot起点0，period=100000000ns，window_start=向下取整(sample/period)*period。cumulative>=window_consumed、dropped<=event_sequence；降cap后consumed>cap合法，调度超支不得篡改统计隐藏。快照必须先结算当前运行量，再同版本读取所有字段。该接口只给局部CPU观测，不声称已经解释父域/I/O/锁等待原因。
+ReadUsage：八个u64依次sample_boottime_ns、cumulative_cpu_ns、window_start_ns、window_consumed_ns、active_cap_ns、active_period_ns、event_sequence、dropped_events。原点为内核初始时钟域boot起点0，period=100000000ns，window_start=向下取整(sample/period)*period。在 N0 单CPU profile 中，`cumulative_cpu_ns` 是该资源对象自 boot 起点累计的 CPU 运行时间，因此必须满足 `window_consumed_ns <= cumulative_cpu_ns <= sample_boottime_ns`；未来多CPU或聚合计费必须另行定义 profile，不能复用这一上界。`dropped_events <= event_sequence`；降cap后consumed>cap合法，调度超支不得篡改统计隐藏。快照必须先结算当前运行量，再同版本读取所有字段。该接口只给局部CPU观测，不声称已经解释父域/I/O/锁等待原因。
 
 InstallBudget请求：expected_revision、period_ns、cap_ns、reserved=0，四个u64。expected_revision∈[1,u64::MAX-1]、period固定100ms、cap∈[0,period]。响应三个u64：previous_revision、effective_boottime_ns、consumed_at_apply_ns；响应头revision=previous_revision+1。成功原D重取返回原值，不再增加revision。
 
@@ -128,3 +128,5 @@ N0不支持CPU集/period变化、迁移、SMP资源控制。后续全路径祖�
 ## 11. 验证边界
 
 黄金向量只测格式；生命周期模型只验证指定交错；真实credential、锁、copyout、runqueue、timer及DMA均需内核实测。至少覆盖：exec后激活、同D跨目标预约、撤销后仅观察、连续写超过1024次并退役、旧序列迟到、拒绝结果不变、同观测不同历史、用户暂停与失效回退区分。
+
+<!-- exact current-main gate refresh -->

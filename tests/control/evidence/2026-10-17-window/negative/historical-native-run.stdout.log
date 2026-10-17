@@ -1,0 +1,28 @@
+
+running 2 tests
+test generic_native_callback_cannot_apply_a_different_owner_with_the_same_public_ids ... FAILED
+test generic_native_callback_cannot_replace_reserved_ancestry_with_fresh_context ... FAILED
+
+failures:
+
+---- generic_native_callback_cannot_apply_a_different_owner_with_the_same_public_ids stdout ----
+
+thread 'generic_native_callback_cannot_apply_a_different_owner_with_the_same_public_ids' (120) panicked at /tmp/a03-regressions-bhxyshhy/historical-native/native_context_negative.rs:92:5:
+assertion `left == right` failed: generic callback applied the wrong native Arc instance
+  left: 1
+ right: 0
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- generic_native_callback_cannot_replace_reserved_ancestry_with_fresh_context stdout ----
+
+thread 'generic_native_callback_cannot_replace_reserved_ancestry_with_fresh_context' (121) panicked at /tmp/a03-regressions-bhxyshhy/historical-native/native_context_negative.rs:114:5:
+assertion `left == right` failed: generic callback let fresh out-of-band ancestry authorize the old D
+  left: 1
+ right: 0
+
+
+failures:
+    generic_native_callback_cannot_apply_a_different_owner_with_the_same_public_ids
+    generic_native_callback_cannot_replace_reserved_ancestry_with_fresh_context
+
+test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s

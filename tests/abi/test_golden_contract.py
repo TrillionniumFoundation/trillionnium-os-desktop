@@ -85,6 +85,7 @@ def read_frame(raw, kind):
             sample, cumulative, start, used, cap, period, events, dropped = struct.unpack_from('<8Q', raw, 64)
             if (period != PERIOD or start != sample // PERIOD * PERIOD
                     or used > sample - start or cumulative < used
+                    or cumulative > sample
                     or cap > period or dropped > events):
                 raise ValueError('usage accounting')
         elif opcode == 4:
@@ -132,10 +133,22 @@ class GoldenContract(unittest.TestCase):
         self.assertEqual(start, (sample // PERIOD) * PERIOD)
         self.assertLessEqual(used, sample - start)
         self.assertLessEqual(used, cumulative)
+        self.assertLessEqual(cumulative, sample)
         self.assertEqual(period, PERIOD)
         self.assertLessEqual(dropped, events)
         self.assertGreater(used, cap)
         self.assertEqual(used, 35_000_000)
+
+    def test_cumulative_cpu_cannot_exceed_boot_elapsed_time(self):
+        original = bytes.fromhex(read_vector('read_usage_lowered_cap')['hex'])
+        mutated = bytearray(original)
+        # HOSR offset 72 is the cumulative_cpu_ns field. This is the exact
+        # issue #104 counterexample: every other golden field remains valid.
+        sample = struct.unpack_from('<Q', original, 64)[0]
+        struct.pack_into('<Q', mutated, 72, sample + 1)
+        self.assertEqual(mutated[72:80].hex(), '81d1f00800000000')
+        with self.assertRaises(ValueError):
+            read_frame(bytes(mutated), 'response')
 
     def test_install_and_history_share_valid_effect_time(self):
         applied = bytes.fromhex(read_vector('install_budget_ok')['hex'])

@@ -230,8 +230,6 @@ fn malformed_public_delivery_observations_fail_closed_for_wire_status() {
         (DeliveryStatus::Unsupported, 7),
         (DeliveryStatus::Indeterminate, 8),
         (DeliveryStatus::Busy, 9),
-        (DeliveryStatus::OutOfOrder, 10),
-        (DeliveryStatus::Retired, 11),
     ] {
         let mut observation = if status == DeliveryStatus::Ok {
             successful
@@ -240,6 +238,11 @@ fn malformed_public_delivery_observations_fail_closed_for_wire_status() {
         };
         observation.status = Some(status);
         assert_eq!(observation.hos2_saved_status_code(), Some(code));
+    }
+    for status in [DeliveryStatus::OutOfOrder, DeliveryStatus::Retired] {
+        let mut observation = terminal;
+        observation.status = Some(status);
+        assert_eq!(observation.hos2_saved_status_code(), None);
     }
 }
 
