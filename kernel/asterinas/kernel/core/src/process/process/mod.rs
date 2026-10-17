@@ -71,25 +71,6 @@ pub(crate) type Pgid = u32;
 /// Session ID.
 pub(crate) type Sid = u32;
 
-/// Monotonic process-start identity used by native control sessions.
-/// PIDs are recycled after exit, so a control fd binds to this lifetime value
-/// instead of relying on a PID. Exhaustion fails closed rather than wrapping.
-static NEXT_HEPTA_PROCESS_START_ID: AtomicU64 = AtomicU64::new(1);
-
-fn allocate_hepta_process_start_id() -> u64 {
-    loop {
-        let current = NEXT_HEPTA_PROCESS_START_ID.load(Ordering::Acquire);
-        assert_ne!(current, 0, "HOS2 process-start identity wrapped");
-        assert_ne!(current, u64::MAX, "HOS2 process-start identity exhausted");
-        if NEXT_HEPTA_PROCESS_START_ID
-            .compare_exchange(current, current + 1, Ordering::AcqRel, Ordering::Acquire)
-            .is_ok()
-        {
-            return current;
-        }
-    }
-}
-
 /// The process group ID for process group created by [`ProcessGroup::new_bootstrap`].
 const BOOTSTRAP_PGID: Pgid = 0;
 /// The session ID for the session created by [`Session::new_bootstrap_pair`].
@@ -170,8 +151,6 @@ pub struct Process {
     /// Process start time since boot.
     start_time: Jiffies,
 
-    /// Non-recycled lifetime identity for native HOS2 session binding.
-    hepta_process_start_id: u64,
     /// Incremented after a successful execve to fence old-image fds.
     hepta_exec_epoch: AtomicU64,
 
@@ -291,7 +270,6 @@ impl Process {
                 prof_clock,
                 timer_manager,
                 start_time: Jiffies::elapsed(),
-                hepta_process_start_id: allocate_hepta_process_start_id(),
                 hepta_exec_epoch: AtomicU64::new(0),
                 user_ns: Mutex::new(user_ns),
             }
@@ -330,12 +308,6 @@ impl Process {
     /// Returns the process start time since boot.
     pub(crate) fn start_time(&self) -> Jiffies {
         self.start_time
-    }
-
-    /// Returns the process-lifetime identity used by native HOS2 sessions.
-    /// This value is never reused after PID recycling.
-    pub(crate) fn hepta_process_start_id(&self) -> u64 {
-        self.hepta_process_start_id
     }
 
     /// Returns the image-generation fence for native HOS2 sessions.
