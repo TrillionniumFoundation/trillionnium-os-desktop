@@ -100,6 +100,7 @@ jobs:
           test -f "$kernel" && test -x "$kernel"
           sha256sum "$kernel" | tee "${RUNNER_TEMP}/a06-kernel.sha256"
 
+      # A05 current-main exact rerun keeps the same lifecycle-aware probe gate.
       - name: Run bounded one-vCPU quota and two-vCPU exit-lifecycle probes
         shell: bash
         env:
