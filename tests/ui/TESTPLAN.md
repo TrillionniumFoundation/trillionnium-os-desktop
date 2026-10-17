@@ -105,6 +105,15 @@ Unit coverage:
   socketpair succeeds, cross-UID fake Session data is refused before request
   delivery. The 0600 socket and 0700 runtime remain mandatory. This does not authenticate
   two programs under the same UID or supply any A05 CapSpace grant
+- privileged *real Rust executable* `tests/ui/test-runtime-owner.sh`:
+  root must refuse a nobody-owned 0700 XDG_RUNTIME_DIR before it creates a
+  child directory; also refuse a foreign-owned private socket directory and
+  existing 0600 lock file before it binds the socket. All three need the
+  exact owner-mismatch diagnostic; root-owned 0700 runtime must still create
+  an actual 0600 Session socket. Baseline CI-built `fcc57bd2` Session
+  failed the first negative test by binding inside the nobody-owned
+  runtime, observed exit 124 after the bounded 1-second process lifetime.
+  No kernel CapSpace, other services or production state is touched.
 - privileged *isolated real process* `tests/ui/test-rogue-session-server.sh`:
   a nobody-owned Unix listener offers a forged successful Snapshot to a root
   caller's actual Rust CLI. Earlier `fcc57bd2` ELF printed the forged

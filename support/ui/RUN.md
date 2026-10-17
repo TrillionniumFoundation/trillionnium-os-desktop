@@ -150,6 +150,14 @@ independently run against older source fcc57bd2 and correctly FAILED
 on case 0 (the old process returned an unauthorized Snapshot rather than
 rejecting a request with extra data). Fix acceptance requires that exact
 new binary to reject all eight malformed raw requests without side effects.
+A host Session must verify the effective UID owns `XDG_RUNTIME_DIR`,
+its existing `trillionnium-ui` subdirectory and `session.lock`, in
+addition to 0700/0600 modes: root bypasses mode bits and must not
+accidentally install a privileged Session inside another user's runtime.
+The strict isolated native gate `tests/ui/test-runtime-owner.sh` checks
+three foreign-owner denials and a valid same-owner Session socket. An older
+`fcc57bd2` CI-built ELF was actually observed to bind in a nobody-owned
+runtime under root; the upgraded exact HEAD still needs its own CI.
 Both Linux host Session and Shell/CLI connect calls use the same shared
 `trill-ui-core::host_peer` SO_PEERCRED identity check. Session refuses
 unknown-UID clients before parsing requests; clients refuse cross-UID

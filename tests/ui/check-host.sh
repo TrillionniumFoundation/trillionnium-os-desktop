@@ -48,7 +48,7 @@ capture_fmt_on_exit() {
 }
 trap capture_fmt_on_exit EXIT
 
-bash -n tests/ui/smoke-wayland.sh tests/ui/headless-weston.sh tests/ui/compositor-restart.sh support/ui/package-host-binaries.sh tests/ui/test-package-host-binaries.sh tests/ui/replay-packaged-host.sh tests/ui/test-cross-uid-peer.sh tests/ui/test-rogue-session-server.sh tests/ui/smoke-x11.sh
+bash -n tests/ui/smoke-wayland.sh tests/ui/headless-weston.sh tests/ui/compositor-restart.sh support/ui/package-host-binaries.sh tests/ui/test-package-host-binaries.sh tests/ui/replay-packaged-host.sh tests/ui/test-cross-uid-peer.sh tests/ui/test-rogue-session-server.sh tests/ui/test-runtime-owner.sh tests/ui/smoke-x11.sh
 python3 tests/ui/test-session-lock.py
 bash tests/ui/test-smoke-cleanup.sh
 bash tests/ui/test-zombie-liveness.sh
@@ -69,6 +69,11 @@ cargo test --manifest-path ui/Cargo.toml --workspace --locked
 # The tests/ui model is a separate host contract, NOT a synthetic UI success.
 cargo test --manifest-path support/ui/Cargo.toml --locked
 cargo test --manifest-path tests/ui/Cargo.toml --locked
+# A real privileged-process boundary beyond 0700/0600: root can create a
+# host Session inside another UID's private runtime without the new owner
+# checks. Refuse foreign runtime/subdirectory/lock owners before bind or
+# flock; preserve a positive same-UID native socket bind.
+bash tests/ui/test-runtime-owner.sh "$PWD/ui/target/debug"
 # Real Linux SO_PEERCRED negative. The CI runner already provisions
 # passwordless sudo for host dependencies; use it only to start a disposable
 # nobody-owned Session under a separate private /tmp runtime. A root caller
