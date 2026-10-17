@@ -168,8 +168,10 @@ Unit coverage:
   restricted terminal widget; Run is disabled during active preedit, and a
   direct run attempt leaves composition text unchanged. A keyboard-focused
   Run button also requires a primary POINTER click: plain keyboard Enter/Space
-  cannot execute a command even if IME events move focus. This is not live
-  Wayland Chinese candidate-window acceptance.
+  cannot execute a command even if IME events move focus. Shell draft Save,
+  file Export/Restore and Terminal Clear output now require the same explicit
+  pointer action; focused keyboard confirmation is tested for draft file
+  effects. This is not live Wayland Chinese candidate-window acceptance.
 - chat workspace explicit app actions linked to observed process task cards
 - strict host IPC request JSON fields: an actual previous Rust Session
   accepted unknown fields on the Snapshot unit variant despite Serde
@@ -200,6 +202,18 @@ Unit coverage:
   socketpair succeeds, cross-UID fake Session data is refused before request
   delivery. The 0600 socket and 0700 runtime remain mandatory. This does not authenticate
   two programs under the same UID or supply any A05 CapSpace grant
+- privileged *real Rust executable* `tests/ui/test-runtime-owner.sh`:
+  root must refuse a nobody-owned 0700 XDG_RUNTIME_DIR before it creates a
+  child directory; also refuse a foreign-owned private socket directory and
+  existing 0600 lock file before it binds the socket. All three need the
+  exact owner-mismatch diagnostic; root-owned 0700 runtime must still create
+  an actual 0600 Session socket. Separately executed real `fcc57bd2` ELF
+  bound a Session socket under ALL THREE foreign-owner scenarios (each
+  killed by 0.5s timeout, exit 124); the strict blocking script likewise
+  fails at its first violation. Evidence:
+  `tests/ui/evidence/2026-10-17-runtime-owner-three-path-baseline.json`.
+  The fixed exact HEAD still requires a genuine CI build and green result.
+  No kernel CapSpace, other services or production state is touched.
 - privileged *isolated real process* `tests/ui/test-rogue-session-server.sh`:
   a nobody-owned Unix listener offers a forged successful Snapshot to a root
   caller's actual Rust CLI. Earlier `fcc57bd2` ELF printed the forged

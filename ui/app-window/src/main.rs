@@ -162,7 +162,12 @@ impl ClientWindow {
             {
                 self.run_restricted_command();
             }
-            if ui.button("Clear output").clicked() {
+            if ui
+                .button("Clear output")
+                .clicked_by(egui::PointerButton::Primary)
+            {
+                // A Chinese IME Enter/Space candidate key must not clear
+                // local command history when the button has keyboard focus.
                 self.terminal_output.clear();
             }
         });

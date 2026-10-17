@@ -57,6 +57,7 @@ for script in \
     tests/ui/replay-packaged-host.sh \
     tests/ui/test-cross-uid-peer.sh \
     tests/ui/test-rogue-session-server.sh \
+    tests/ui/test-runtime-owner.sh \
     tests/ui/smoke-x11.sh; do
     bash -n "$script"
 done
@@ -91,6 +92,11 @@ python3 tests/ui/probe-hepta-session.py \
 # The tests/ui model is a separate host contract, NOT a synthetic UI success.
 cargo test --manifest-path support/ui/Cargo.toml --locked
 cargo test --manifest-path tests/ui/Cargo.toml --locked
+# A real privileged-process boundary beyond 0700/0600: root can create a
+# host Session inside another UID's private runtime without the new owner
+# checks. Refuse foreign runtime/subdirectory/lock owners before bind or
+# flock; preserve a positive same-UID native socket bind.
+bash tests/ui/test-runtime-owner.sh "$PWD/ui/target/debug"
 # Real Linux SO_PEERCRED negative. The CI runner already provisions
 # passwordless sudo for host dependencies; use it only to start a disposable
 # nobody-owned Session under a separate private /tmp runtime. A root caller

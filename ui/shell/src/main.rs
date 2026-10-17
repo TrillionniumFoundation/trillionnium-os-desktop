@@ -566,7 +566,7 @@ impl Desktop {
                 !self.composer.trim().is_empty(),
                 egui::Button::new("Save local draft"),
             )
-            .clicked()
+            .clicked_by(egui::PointerButton::Primary)
         {
             match save_local_draft(&mut self.chat, &mut self.composer) {
                 Ok(()) => {
@@ -576,10 +576,16 @@ impl Desktop {
             }
         }
         ui.horizontal_wrapped(|ui| {
-            if ui.button("Export drafts to local file").clicked() {
+            if ui
+                .button("Export drafts to local file")
+                .clicked_by(egui::PointerButton::Primary)
+            {
                 self.export_drafts();
             }
-            if ui.button("Restore local export").clicked() {
+            if ui
+                .button("Restore local export")
+                .clicked_by(egui::PointerButton::Primary)
+            {
                 self.restore_drafts();
             }
         });
@@ -1482,6 +1488,56 @@ mod shell_lifecycle_tests {
                 !effect_clicked,
                 "Enter/Space, including an IME candidate key, must not request a host effect"
             );
+        }
+    }
+
+    #[test]
+    fn focused_draft_file_buttons_ignore_keyboard_candidate_confirmation() {
+        for label in [
+            "Save local draft",
+            "Export drafts to local file",
+            "Restore local export",
+        ] {
+            let ctx = egui::Context::default();
+            let input = |events| egui::RawInput {
+                focused: true,
+                screen_rect: Some(egui::Rect::from_min_size(
+                    egui::Pos2::ZERO,
+                    egui::vec2(900.0, 600.0),
+                )),
+                events,
+                ..Default::default()
+            };
+            let mut id = None;
+            let _ = ctx.run(input(vec![]), |ctx| {
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    id = Some(ui.button(label).id);
+                });
+            });
+            ctx.memory_mut(|memory| memory.request_focus(id.unwrap()));
+            for key in [egui::Key::Enter, egui::Key::Space] {
+                let mut activated_by_pointer = false;
+                let _ = ctx.run(
+                    input(vec![egui::Event::Key {
+                        key,
+                        physical_key: None,
+                        pressed: true,
+                        repeat: false,
+                        modifiers: egui::Modifiers::default(),
+                    }]),
+                    |ctx| {
+                        egui::CentralPanel::default().show(ctx, |ui| {
+                            activated_by_pointer = ui
+                                .button(label)
+                                .clicked_by(egui::PointerButton::Primary);
+                        });
+                    },
+                );
+                assert!(
+                    !activated_by_pointer,
+                    "{label}: candidate-confirming keyboard action is not an explicit file action"
+                );
+            }
         }
     }
 

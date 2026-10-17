@@ -155,7 +155,11 @@ language-model result can mark a task successful. Click the windows to test
 compositor focus and manually test Chinese text composition. Restricted
 Terminal does not run host shell commands, refuses log-forgery control,
 newline and bidi formatting characters, and disables Run during an active
-Chinese IME preedit without discarding uncommitted text. Restricted Terminal
+Chinese IME preedit without discarding uncommitted text.
+Terminal Clear output and Shell draft Save / Export / Restore also require
+explicit primary pointer clicks: a focused Enter/Space key while confirming
+an IME candidate must not erase local output, persist incomplete text, or
+overwrite a draft backup. Pure navigation remains keyboard-accessible. Restricted Terminal
 executes only after an explicit primary pointer click on Run; keyboard
 Enter/Space cannot activate that button, even if it has keyboard focus. Cancellation
 sends SIGKILL and reports requested vs confirmed states separately.
@@ -176,6 +180,17 @@ independently run against older source fcc57bd2 and correctly FAILED
 on case 0 (the old process returned an unauthorized Snapshot rather than
 rejecting a request with extra data). Fix acceptance requires that exact
 new binary to reject all eight malformed raw requests without side effects.
+A host Session must verify the effective UID owns `XDG_RUNTIME_DIR`,
+its existing `trillionnium-ui` subdirectory and `session.lock`, in
+addition to 0700/0600 modes: root bypasses mode bits and must not
+accidentally install a privileged Session inside another user's runtime.
+The strict isolated native gate `tests/ui/test-runtime-owner.sh` checks
+three foreign-owner denials and a valid same-owner Session socket. The older
+`fcc57bd2` CI-built ELF was independently observed to bind in all THREE
+foreign-owner scenarios, each returning timeout status 124; this is
+explicitly baseline failure evidence, not new-code success. See
+`tests/ui/evidence/2026-10-17-runtime-owner-three-path-baseline.json`.
+The upgraded exact HEAD still needs its own real CI acceptance.
 Both Linux host Session and Shell/CLI connect calls use the same shared
 `trill-ui-core::host_peer` SO_PEERCRED identity check. Session refuses
 unknown-UID clients before parsing requests; clients refuse cross-UID
