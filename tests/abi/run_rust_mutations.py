@@ -609,7 +609,7 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("--toolchain must not be empty")
 
     report: dict[str, Any] = {
-        "schema": "hos2-rust-source-mutations-v5",
+        "schema": "hos2-rust-source-mutations-v6",
         "scope": (
             "host Rust canonical equality, fixed-byte response encoding and "
             "documented QueryAbi/ReadUsage and transport-bound response boundaries; "
