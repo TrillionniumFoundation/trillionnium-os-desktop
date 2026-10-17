@@ -1,17 +1,36 @@
 //! A03 HOS2 control state core.
 //!
-//! This crate is a Linux host model for the control state machine.  It is
-//! intentionally independent of the HOS2 wire codec and of the kernel.  In
+//! This crate has a default std host backend and an experimental alloc-only
+//! portable-spin backend. Runtime validation is still host-model evidence.
+//! It is independent of the HOS2 wire codec and of the kernel. In
 //! particular, a passing test here proves only the model's state invariants;
 //! it does not prove ioctl, credentials, scheduler, copyout, or persistence
-//! behaviour in a real kernel.
+//! behaviour in a real kernel. `execute_reserved` fences an external adapter's
+//! one-shot callback; that adapter still owns actual credentials, resource
+//! mutation, IRQ/preemption locks, allocation safety and runtime settlement.
 
-use std::collections::BTreeMap;
-use std::fmt;
-use std::sync::{Arc, Mutex, MutexGuard};
+#![cfg_attr(not(feature = "std"), no_std)]
+
+#[cfg(not(any(feature = "std", feature = "portable-spin")))]
+compile_error!("select the default std backend or the experimental portable-spin backend");
+
+extern crate alloc;
+
+use alloc::borrow::ToOwned;
+use alloc::collections::{BTreeMap, BTreeSet};
+use alloc::format;
+use alloc::string::String;
+use alloc::vec::Vec;
+use core::fmt;
+
+mod sync;
+use sync::{lock_unpoisoned, Arc, Mutex};
 
 pub const CPU_PERIOD_NS: u64 = 100_000_000;
 pub const DEFAULT_WINDOW_CAPACITY: usize = 1024;
+/// Host-model resource family identity tombstones. Kernel integration must
+/// use its real bounded stable-object registry and lifecycle policy.
+pub const DEFAULT_FAMILY_ID_CAPACITY: usize = 65_536;
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Id16([u8; 16]);
@@ -94,8 +113,8 @@ id_type!(OwnerId);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct NamespaceIdentity {
-    pub boot_id: BootId,
-    pub cap_space_id: CapSpaceId,
+    boot_id: BootId,
+    cap_space_id: CapSpaceId,
 }
 
 impl NamespaceIdentity {
@@ -108,33 +127,68 @@ impl NamespaceIdentity {
             cap_space_id,
         })
     }
+
+    pub const fn boot_id(self) -> BootId {
+        self.boot_id
+    }
+
+    pub const fn cap_space_id(self) -> CapSpaceId {
+        self.cap_space_id
+    }
 }
 
-/// The original Hepta logical operation identity (K). This is an opaque
-/// value carried by an integration owner; the control core never persists,
-/// indexes, or derives execution authority from it.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+/// Hepta's *durable* logical operation identity K, not its reference
+/// OperationKey. The pinned DurableOperationStore indexes operation rows
+/// by (scope_id, operation_id), each a StableId of at most 128 ASCII bytes.
+///
+/// The semantic/payload digest belongs to the existing owner ledger and is
+/// compared on replay. It is not part of K's lookup key. This type stores
+/// only a checked value: A03 never indexes, authorizes or persists K.
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct LogicalOperationId {
-    pub scope_id: Id16,
-    pub operation_id: Id16,
+    scope_id: String,
+    operation_id: String,
+}
+
+pub const MAX_HEPTA_STABLE_ID_BYTES: usize = 128;
+
+fn valid_hepta_stable_id(value: &str) -> bool {
+    !value.is_empty()
+        && value.len() <= MAX_HEPTA_STABLE_ID_BYTES
+        && value
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'.' | b'_' | b'-' | b':'))
 }
 
 impl LogicalOperationId {
-    pub fn new(scope_id: Id16, operation_id: Id16) -> Result<Self, IdentityError> {
-        if !scope_id.is_nonzero() || !operation_id.is_nonzero() {
-            return Err(IdentityError::ZeroIdentity);
+    pub fn new(
+        scope_id: impl AsRef<str>,
+        operation_id: impl AsRef<str>,
+    ) -> Result<Self, IdentityError> {
+        let scope_id = scope_id.as_ref();
+        let operation_id = operation_id.as_ref();
+        if !valid_hepta_stable_id(scope_id) || !valid_hepta_stable_id(operation_id) {
+            return Err(IdentityError::InvalidOperationKey);
         }
         Ok(Self {
-            scope_id,
-            operation_id,
+            scope_id: scope_id.to_owned(),
+            operation_id: operation_id.to_owned(),
         })
+    }
+
+    pub fn scope_id(&self) -> &str {
+        &self.scope_id
+    }
+
+    pub fn operation_id(&self) -> &str {
+        &self.operation_id
     }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct DeliveryId {
-    pub namespace: NamespaceIdentity,
-    pub sequence: u64,
+    namespace: NamespaceIdentity,
+    sequence: u64,
 }
 
 impl DeliveryId {
@@ -147,18 +201,26 @@ impl DeliveryId {
             sequence,
         })
     }
+
+    pub const fn namespace(self) -> NamespaceIdentity {
+        self.namespace
+    }
+
+    pub const fn sequence(self) -> u64 {
+        self.sequence
+    }
 }
 
 /// A value-only association for A07. It is not a persistence record and does
 /// not make K a lookup key for a D result.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct OperationBinding {
     pub logical: LogicalOperationId,
     pub delivery: DeliveryId,
 }
 
 impl OperationBinding {
-    pub const fn new(logical: LogicalOperationId, delivery: DeliveryId) -> Self {
+    pub fn new(logical: LogicalOperationId, delivery: DeliveryId) -> Self {
         Self { logical, delivery }
     }
 }
@@ -166,6 +228,7 @@ impl OperationBinding {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum IdentityError {
     ZeroIdentity,
+    InvalidOperationKey,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -216,9 +279,23 @@ pub struct ResourceDomain {
 
 struct ResourceDomainInner {
     gate: Arc<Mutex<()>>,
+    // Lifetime identity registry is shared by the whole resource family.
+    // Entries are deliberately not freed on handle drop: old stable IDs
+    // cannot become new children after a resource object is destroyed.
+    family: Arc<Mutex<FamilyIdentityRegistry>>,
     state: Mutex<DomainState>,
     parent: Option<ResourceDomain>,
     children: Mutex<BTreeMap<ResourceDomainId, u64>>,
+}
+
+struct FamilyIdentityRegistry {
+    domain_ids: BTreeSet<ResourceDomainId>,
+    object_ids: BTreeSet<StableObjectId>,
+    capacity: usize,
+    // N0 has one BOOTTIME clock for all nodes in this family. A completed
+    // descendant/sibling observation also fences earlier parent operations.
+    // Read/updated only while holding the family's mutation gate.
+    last_boottime_ns: u64,
 }
 
 #[derive(Clone, Copy)]
@@ -231,6 +308,7 @@ struct DomainState {
     consumed_ns: u64,
     window_consumed_ns: u64,
     window_start_ns: u64,
+    last_boottime_ns: u64, // monotonic gate timestamp; no clock-rewind refresh
     event_sequence: u64,
     dropped_events: u64,
     alive: bool,
@@ -241,8 +319,20 @@ struct DomainState {
 #[derive(Clone)]
 pub struct Grant {
     domain: ResourceDomain,
-    pub principal: PublisherId,
+    principal: PublisherId,
     epoch: u64,
+    // Parent-first ancestry is not necessary: this captures the immutable
+    // immediate-parent -> root epoch chain at grant issuance. Every ancestor
+    // revoke/reactivation permanently invalidates the old authorization.
+    ancestor_epochs: Vec<u64>,
+}
+
+impl Grant {
+    /// Stable publisher value captured at grant issuance. Real authority
+    /// still comes from an A05 authenticated session, never a host model.
+    pub const fn principal(&self) -> PublisherId {
+        self.principal
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -254,15 +344,26 @@ pub struct RevokeReceipt {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ResourceError {
     InvalidIdentity,
+    DuplicateDomainId,
+    DuplicateObjectId,
     InvalidBudget,
+    InvalidCapacity,
+    InvalidInterval,
     InvalidRevision,
-    RevisionConflict { expected: u64, actual: u64 },
+    RevisionConflict {
+        expected: u64,
+        actual: u64,
+    },
     ParentConstraint,
     Revoked,
     GrantEpochMismatch,
     Exhausted,
     Overflow,
     MissingParent,
+    ClockRollback,
+    /// Host-only time/accounting inconsistency: never publish a wire-invalid
+    /// successful CAS after already accounted CPU exceeds elapsed BOOTTIME.
+    InconsistentAccounting,
 }
 
 impl ResourceDomain {
@@ -277,12 +378,53 @@ impl ResourceDomain {
         }
         let budget = Budget::new(initial_cap_ns)?;
         if let Some(parent) = parent {
+            // Parent cap reduction and child creation share one mutation gate.
+            let _gate = lock_unpoisoned(&parent.inner.gate);
             let parent_state = parent.snapshot_state();
+            if !parent_state.alive {
+                return Err(ResourceError::Revoked);
+            }
             if initial_cap_ns > parent_state.budget.cap_ns {
                 return Err(ResourceError::ParentConstraint);
             }
+            // Both identity and BOOTTIME liveness span the whole ancestry.
+            // A newly created grandchild must not start earlier than a
+            // grandparent's observed clock just because its parent is stale.
+            // All reads are serialized with usage/revoke/commit by the family gate.
+            let mut newest_ancestor_boottime = parent_state.last_boottime_ns;
+            let mut ancestor = Some(parent);
+            while let Some(node) = ancestor {
+                let ancestor_state = node.snapshot_state();
+                if !ancestor_state.alive {
+                    return Err(ResourceError::Revoked);
+                }
+                if ancestor_state.id == id {
+                    return Err(ResourceError::DuplicateDomainId);
+                }
+                newest_ancestor_boottime =
+                    newest_ancestor_boottime.max(ancestor_state.last_boottime_ns);
+                ancestor = node.inner.parent.as_ref();
+            }
+            let mut registry = lock_unpoisoned(&parent.inner.family);
+            newest_ancestor_boottime = newest_ancestor_boottime.max(registry.last_boottime_ns);
+            if registry.domain_ids.contains(&id) {
+                return Err(ResourceError::DuplicateDomainId);
+            }
+            if registry.object_ids.contains(&stable_object_id) {
+                return Err(ResourceError::DuplicateObjectId);
+            }
+            if registry.domain_ids.len() >= registry.capacity {
+                return Err(ResourceError::Exhausted);
+            }
+            let mut children = lock_unpoisoned(&parent.inner.children);
+            if children.contains_key(&id) {
+                return Err(ResourceError::DuplicateDomainId);
+            }
+            let initial_window_start =
+                (newest_ancestor_boottime / budget.period_ns) * budget.period_ns;
             let inner = Arc::new(ResourceDomainInner {
                 gate: Arc::clone(&parent.inner.gate),
+                family: Arc::clone(&parent.inner.family),
                 state: Mutex::new(DomainState {
                     id,
                     stable_object_id,
@@ -291,7 +433,8 @@ impl ResourceDomain {
                     budget,
                     consumed_ns: 0,
                     window_consumed_ns: 0,
-                    window_start_ns: 0,
+                    window_start_ns: initial_window_start,
+                    last_boottime_ns: newest_ancestor_boottime,
                     event_sequence: 0,
                     dropped_events: 0,
                     alive: true,
@@ -301,12 +444,20 @@ impl ResourceDomain {
                 parent: Some(parent.clone()),
                 children: Mutex::new(BTreeMap::new()),
             });
-            lock_unpoisoned(&parent.inner.children).insert(id, initial_cap_ns);
+            children.insert(id, initial_cap_ns);
+            registry.domain_ids.insert(id);
+            registry.object_ids.insert(stable_object_id);
             return Ok(Self { inner });
         }
         Ok(Self {
             inner: Arc::new(ResourceDomainInner {
                 gate: Arc::new(Mutex::new(())),
+                family: Arc::new(Mutex::new(FamilyIdentityRegistry {
+                    domain_ids: BTreeSet::from([id]),
+                    object_ids: BTreeSet::from([stable_object_id]),
+                    capacity: DEFAULT_FAMILY_ID_CAPACITY,
+                    last_boottime_ns: 0,
+                })),
                 state: Mutex::new(DomainState {
                     id,
                     stable_object_id,
@@ -316,6 +467,7 @@ impl ResourceDomain {
                     consumed_ns: 0,
                     window_consumed_ns: 0,
                     window_start_ns: 0,
+                    last_boottime_ns: 0,
                     event_sequence: 0,
                     dropped_events: 0,
                     alive: true,
@@ -326,6 +478,22 @@ impl ResourceDomain {
                 children: Mutex::new(BTreeMap::new()),
             }),
         })
+    }
+
+    /// Construct an independent root with a small capacity for negative
+    /// host tests. Includes the root itself and never reuses expired IDs.
+    pub fn root_with_capacity_for_host_model(
+        id: ResourceDomainId,
+        stable_object_id: StableObjectId,
+        cap_ns: u64,
+        family_capacity: usize,
+    ) -> Result<Self, ResourceError> {
+        if family_capacity == 0 {
+            return Err(ResourceError::InvalidCapacity);
+        }
+        let root = Self::new(id, stable_object_id, None, cap_ns)?;
+        lock_unpoisoned(&root.inner.family).capacity = family_capacity;
+        Ok(root)
     }
 
     pub fn id(&self) -> ResourceDomainId {
@@ -349,9 +517,23 @@ impl ResourceDomain {
     }
 
     pub fn grant(&self, principal: PublisherId) -> Result<Grant, ResourceError> {
+        // The family mutation gate prevents a parent revoke from racing
+        // issuance of a descendant grant. Possession still does not
+        // guarantee admission: commit rechecks the same ancestor chain.
+        let _gate = lock_unpoisoned(&self.inner.gate);
         let state = self.snapshot_state();
         if !state.alive {
             return Err(ResourceError::Revoked);
+        }
+        let mut ancestor = self.inner.parent.as_ref();
+        let mut ancestor_epochs = Vec::new();
+        while let Some(parent) = ancestor {
+            let ancestor_state = parent.snapshot_state();
+            if !ancestor_state.alive {
+                return Err(ResourceError::Revoked);
+            }
+            ancestor_epochs.push(ancestor_state.grant_epoch);
+            ancestor = parent.inner.parent.as_ref();
         }
         if !principal.is_nonzero() {
             return Err(ResourceError::InvalidIdentity);
@@ -360,6 +542,7 @@ impl ResourceDomain {
             domain: self.clone(),
             principal,
             epoch: state.grant_epoch,
+            ancestor_epochs,
         })
     }
 
@@ -377,11 +560,13 @@ impl ResourceDomain {
     pub fn reactivate_for_host_model(&self) -> Result<(), ResourceError> {
         let _gate = lock_unpoisoned(&self.inner.gate);
         let mut state = lock_unpoisoned(&self.inner.state);
-        state.alive = true;
-        state.grant_epoch = state
+        // Failure to advance epoch must not re-enable authorization.
+        let next_epoch = state
             .grant_epoch
             .checked_add(1)
             .ok_or(ResourceError::Overflow)?;
+        state.grant_epoch = next_epoch;
+        state.alive = true;
         Ok(())
     }
 
@@ -394,19 +579,70 @@ impl ResourceDomain {
         self.snapshot_state().user_paused
     }
 
+    /// Legacy host sampler: never backdate or refresh the quota window.
+    /// The returned sample time reflects any monotonic clamp.
     pub fn usage(&self, sample_boottime_ns: u64) -> UsageSnapshot {
         let _gate = lock_unpoisoned(&self.inner.gate);
+        let family_time = self.family_boottime();
         let mut state = lock_unpoisoned(&self.inner.state);
-        let window_start_ns =
-            (sample_boottime_ns / state.budget.period_ns) * state.budget.period_ns;
-        if window_start_ns != state.window_start_ns {
-            state.window_start_ns = window_start_ns;
+        let effective_ns = sample_boottime_ns
+            .max(state.last_boottime_ns)
+            .max(family_time);
+        let snapshot = Self::snapshot_usage_at(&mut state, effective_ns);
+        self.advance_family_boottime(effective_ns);
+        snapshot
+    }
+
+    /// The fallible HOS2 ReadUsage boundary for a trusted A05 adapter.
+    ///
+    /// A02 rejects CPU consumption that exceeds elapsed BOOTTIME inside the
+    /// current period. The separate point-charge host helper may construct
+    /// such an impossible sample; never report it as wire-ready. Failed reads
+    /// must not advance the sampled time or reset a window.
+    pub fn try_usage(&self, sample_boottime_ns: u64) -> Result<UsageSnapshot, ResourceError> {
+        let _gate = lock_unpoisoned(&self.inner.gate);
+        if sample_boottime_ns < self.family_boottime() {
+            return Err(ResourceError::ClockRollback);
+        }
+        // A ReadUsage is a *current* BOOTTIME observation. Reject a caller's
+        // stale time if any ancestor has already sampled further ahead.
+        // This is the same family gate used by admission and clock updates.
+        let mut ancestor = self.inner.parent.as_ref();
+        while let Some(parent) = ancestor {
+            if sample_boottime_ns < parent.snapshot_state().last_boottime_ns {
+                return Err(ResourceError::ClockRollback);
+            }
+            ancestor = parent.inner.parent.as_ref();
+        }
+        let mut state = lock_unpoisoned(&self.inner.state);
+        if sample_boottime_ns < state.last_boottime_ns {
+            return Err(ResourceError::ClockRollback);
+        }
+        let window_start = (sample_boottime_ns / state.budget.period_ns) * state.budget.period_ns;
+        let window_consumed = if window_start > state.window_start_ns {
+            0
+        } else {
+            state.window_consumed_ns
+        };
+        if window_consumed > sample_boottime_ns - window_start {
+            return Err(ResourceError::InconsistentAccounting);
+        }
+        let snapshot = Self::snapshot_usage_at(&mut state, sample_boottime_ns);
+        self.advance_family_boottime(sample_boottime_ns);
+        Ok(snapshot)
+    }
+
+    fn snapshot_usage_at(state: &mut DomainState, now_ns: u64) -> UsageSnapshot {
+        let window_start = (now_ns / state.budget.period_ns) * state.budget.period_ns;
+        if window_start > state.window_start_ns {
+            state.window_start_ns = window_start;
             state.window_consumed_ns = 0;
         }
+        state.last_boottime_ns = now_ns;
         UsageSnapshot {
             stable_object_id: state.stable_object_id,
             revision: state.revision,
-            sample_boottime_ns,
+            sample_boottime_ns: now_ns,
             cumulative_cpu_ns: state.consumed_ns,
             window_start_ns: state.window_start_ns,
             window_consumed_ns: state.window_consumed_ns,
@@ -418,50 +654,167 @@ impl ResourceDomain {
         }
     }
 
-    /// Charge actual CPU execution to this domain and each ancestor once.
-    /// This is a host-model accounting primitive; it is not a scheduler hook.
+    /// Charge each domain of the ancestry atomically under the family gate.
+    /// A rejection at an ancestor must not move the child clock, reset its
+    /// quota window, or increment a partial event sequence. This simplified
+    /// host primitive attributes delta_ns to the single window containing
+    /// now_ns; it does not replace A06 scheduler interval slicing.
     pub fn charge_cpu(&self, delta_ns: u64, now_ns: u64) -> Result<(), ResourceError> {
         let _gate = lock_unpoisoned(&self.inner.gate);
-        self.charge_locked(delta_ns, now_ns)
-    }
+        if now_ns < self.family_boottime() {
+            return Err(ResourceError::ClockRollback);
+        }
+        let mut updates = Vec::new();
+        let mut cursor = Some(self.clone());
 
-    fn charge_locked(&self, delta_ns: u64, now_ns: u64) -> Result<(), ResourceError> {
-        let parent = self.inner.parent.clone();
-        {
-            let mut state = lock_unpoisoned(&self.inner.state);
-            let new_window_start = (now_ns / state.budget.period_ns) * state.budget.period_ns;
-            if new_window_start != state.window_start_ns {
-                state.window_start_ns = new_window_start;
-                state.window_consumed_ns = 0;
+        // Phase 1: read, validate and stage every ancestor without modifying
+        // any state. Every node is protected against concurrent mutation by
+        // the same family gate, including parent revoke and quota changes.
+        while let Some(domain) = cursor {
+            let old = domain.snapshot_state();
+            if now_ns < old.last_boottime_ns {
+                return Err(ResourceError::ClockRollback);
             }
-            if !state.alive
-                || delta_ns > state.budget.cap_ns.saturating_sub(state.window_consumed_ns)
-            {
+            let window_start = (now_ns / old.budget.period_ns) * old.budget.period_ns;
+            let previous_in_window = if window_start > old.window_start_ns {
+                0
+            } else {
+                old.window_consumed_ns
+            };
+            if !old.alive {
+                return Err(ResourceError::Revoked);
+            }
+            if delta_ns > old.budget.cap_ns.saturating_sub(previous_in_window) {
                 return Err(ResourceError::Exhausted);
             }
-            if state.consumed_ns.checked_add(delta_ns).is_none()
-                || state.window_consumed_ns.checked_add(delta_ns).is_none()
-                || state.event_sequence.checked_add(1).is_none()
-            {
-                return Err(ResourceError::Overflow);
+            let cumulative = old
+                .consumed_ns
+                .checked_add(delta_ns)
+                .ok_or(ResourceError::Overflow)?;
+            let window_consumed = previous_in_window
+                .checked_add(delta_ns)
+                .ok_or(ResourceError::Overflow)?;
+            let event_sequence = old
+                .event_sequence
+                .checked_add(1)
+                .ok_or(ResourceError::Overflow)?;
+            cursor = domain.inner.parent.clone();
+            updates.push((
+                domain,
+                window_start,
+                cumulative,
+                window_consumed,
+                event_sequence,
+            ));
+        }
+
+        // Phase 2: publish the prevalidated values. No failing arithmetic,
+        // admission checks, or callbacks remain in this phase. Readers of
+        // usage/try_usage share the gate and cannot see a half-family charge.
+        for (domain, window_start, cumulative, window_consumed, event_sequence) in updates {
+            let mut state = lock_unpoisoned(&domain.inner.state);
+            state.window_start_ns = window_start;
+            state.window_consumed_ns = window_consumed;
+            state.consumed_ns = cumulative;
+            state.event_sequence = event_sequence;
+            state.last_boottime_ns = now_ns;
+        }
+        self.advance_family_boottime(now_ns);
+        Ok(())
+    }
+
+    /// Deterministic single-CPU interval accounting for the A06 handoff.
+    /// Counts [start_ns, end_ns) in its exact fixed-period windows, including
+    /// both sides of a boundary. A rejected interval changes no domain.
+    /// This is still a host model, not a scheduler or actual runtime meter.
+    pub fn charge_interval_for_host_model(
+        &self,
+        start_ns: u64,
+        end_ns: u64,
+    ) -> Result<(), ResourceError> {
+        if end_ns <= start_ns {
+            return Err(ResourceError::InvalidInterval);
+        }
+        let _gate = lock_unpoisoned(&self.inner.gate);
+        if start_ns < self.family_boottime() {
+            return Err(ResourceError::ClockRollback);
+        }
+        let delta = end_ns - start_ns;
+        let mut pending = Vec::new();
+        let mut cursor = Some(self.clone());
+
+        while let Some(domain) = cursor {
+            let previous = domain.snapshot_state();
+            if start_ns < previous.last_boottime_ns {
+                return Err(ResourceError::ClockRollback);
             }
+            if !previous.alive {
+                return Err(ResourceError::Revoked);
+            }
+            let period = previous.budget.period_ns;
+            let start_window = (start_ns / period) * period;
+            let end_window = (end_ns / period) * period;
+            let first_window_used = if previous.window_start_ns == start_window {
+                previous.window_consumed_ns
+            } else {
+                0
+            };
+
+            let new_window_used = if start_window == end_window {
+                first_window_used
+                    .checked_add(delta)
+                    .ok_or(ResourceError::Overflow)?
+            } else {
+                // A crossing may have a partially occupied first window,
+                // whole intermediate windows, and a partial final window.
+                // A full intermediate window is legal only at 100% cap.
+                let first_end = start_window
+                    .checked_add(period)
+                    .ok_or(ResourceError::Overflow)?;
+                let first_used = first_window_used
+                    .checked_add(first_end - start_ns)
+                    .ok_or(ResourceError::Overflow)?;
+                if first_used > previous.budget.cap_ns {
+                    return Err(ResourceError::Exhausted);
+                }
+                let full_periods = (end_window - first_end) / period;
+                if full_periods > 0 && previous.budget.cap_ns < period {
+                    return Err(ResourceError::Exhausted);
+                }
+                end_ns - end_window
+            };
+            if new_window_used > previous.budget.cap_ns {
+                return Err(ResourceError::Exhausted);
+            }
+            let cumulative = previous
+                .consumed_ns
+                .checked_add(delta)
+                .ok_or(ResourceError::Overflow)?;
+            let event_sequence = previous
+                .event_sequence
+                .checked_add(1)
+                .ok_or(ResourceError::Overflow)?;
+            cursor = domain.inner.parent.clone();
+            pending.push((
+                domain,
+                end_window,
+                new_window_used,
+                cumulative,
+                event_sequence,
+            ));
         }
-        if let Some(parent) = parent {
-            parent.charge_locked(delta_ns, now_ns)?;
+
+        // The shared family gate excludes mutations and usage observations;
+        // the publish phase contains no checks that can partially fail.
+        for (domain, window_start, window_used, cumulative, event_sequence) in pending {
+            let mut state = lock_unpoisoned(&domain.inner.state);
+            state.window_start_ns = window_start;
+            state.window_consumed_ns = window_used;
+            state.consumed_ns = cumulative;
+            state.event_sequence = event_sequence;
+            state.last_boottime_ns = end_ns;
         }
-        let mut state = lock_unpoisoned(&self.inner.state);
-        state.consumed_ns = state
-            .consumed_ns
-            .checked_add(delta_ns)
-            .ok_or(ResourceError::Overflow)?;
-        state.window_consumed_ns = state
-            .window_consumed_ns
-            .checked_add(delta_ns)
-            .ok_or(ResourceError::Overflow)?;
-        state.event_sequence = state
-            .event_sequence
-            .checked_add(1)
-            .ok_or(ResourceError::Overflow)?;
+        self.advance_family_boottime(end_ns);
         Ok(())
     }
 
@@ -489,12 +842,18 @@ impl ResourceDomain {
         now_ns: u64,
     ) -> Result<BudgetReceipt, ResourceError> {
         let _gate = lock_unpoisoned(&self.inner.gate);
+        if now_ns < self.family_boottime() {
+            return Err(ResourceError::ClockRollback);
+        }
         let mut state = lock_unpoisoned(&self.inner.state);
         if !state.alive {
             return Err(ResourceError::Revoked);
         }
         if grant.epoch != state.grant_epoch {
             return Err(ResourceError::GrantEpochMismatch);
+        }
+        if now_ns < state.last_boottime_ns {
+            return Err(ResourceError::ClockRollback);
         }
         if !Arc::ptr_eq(&grant.domain.inner, &self.inner) {
             return Err(ResourceError::GrantEpochMismatch);
@@ -511,31 +870,69 @@ impl ResourceDomain {
                 actual: state.revision,
             });
         }
-        if let Some(parent) = &grant.domain.parent_domain_for_model() {
+        // A revoked ancestor fences child management, even if the
+        // numeric parent cap has not changed. Every ancestor shares
+        // this family's mutation gate with commit and revoke.
+        let mut ancestor = self.inner.parent.as_ref();
+        let mut depth = 0;
+        while let Some(parent) = ancestor {
             let parent_state = parent.snapshot_state();
+            if !parent_state.alive {
+                return Err(ResourceError::Revoked);
+            }
+            if now_ns < parent_state.last_boottime_ns {
+                return Err(ResourceError::ClockRollback);
+            }
+            // Checking just the current alive flag permits an old child
+            // grant to resurrect after an ancestor revoke + reactivation.
+            if grant.ancestor_epochs.get(depth) != Some(&parent_state.grant_epoch) {
+                return Err(ResourceError::GrantEpochMismatch);
+            }
             if cap_ns > parent_state.budget.cap_ns {
                 return Err(ResourceError::ParentConstraint);
             }
+            depth += 1;
+            ancestor = parent.inner.parent.as_ref();
         }
-        if self
-            .inner
-            .children
-            .lock()
-            .map(|children| children.values().any(|child_cap| *child_cap > cap_ns))
-            .unwrap_or(false)
+        if grant.ancestor_epochs.len() != depth {
+            return Err(ResourceError::GrantEpochMismatch);
+        }
+        if lock_unpoisoned(&self.inner.children)
+            .values()
+            .any(|child_cap| *child_cap > cap_ns)
         {
             return Err(ResourceError::ParentConstraint);
         }
-        let previous_revision = state.revision;
-        state.revision = state
+        // Preflight the whole wire-visible receipt before publishing any
+        // state: A02 requires consumed_at_apply <= elapsed in this period.
+        // A rejected/ambiguous accounting sample must not advance revision,
+        // clock or the window. Host charge_cpu can otherwise construct a
+        // physically impossible sample by attributing delta to one instant.
+        let window_start = (now_ns / period_ns) * period_ns;
+        let consumed_at_apply_ns = if window_start > state.window_start_ns {
+            0
+        } else {
+            state.window_consumed_ns
+        };
+        if consumed_at_apply_ns > now_ns - window_start {
+            return Err(ResourceError::InconsistentAccounting);
+        }
+        let next_revision = state
             .revision
             .checked_add(1)
             .ok_or(ResourceError::Overflow)?;
+        let previous_revision = state.revision;
+        if window_start > state.window_start_ns {
+            state.window_start_ns = window_start;
+            state.window_consumed_ns = 0;
+        }
+        state.last_boottime_ns = now_ns;
+        state.revision = next_revision;
         state.budget = Budget { period_ns, cap_ns };
-        if let Some(parent) = &grant.domain.parent_domain_for_model() {
+        if let Some(parent) = self.inner.parent.as_ref() {
             lock_unpoisoned(&parent.inner.children).insert(state.id, cap_ns);
         }
-        let consumed_at_apply_ns = state.window_consumed_ns;
+        self.advance_family_boottime(now_ns);
         Ok(BudgetReceipt {
             previous_revision,
             revision: state.revision,
@@ -544,12 +941,18 @@ impl ResourceDomain {
         })
     }
 
-    fn parent_domain_for_model(&self) -> Option<ResourceDomain> {
-        self.inner.parent.clone()
-    }
-
     fn snapshot_state(&self) -> DomainState {
         *lock_unpoisoned(&self.inner.state)
+    }
+
+    // Caller holds the shared family gate; no callback/allocation is needed.
+    fn family_boottime(&self) -> u64 {
+        lock_unpoisoned(&self.inner.family).last_boottime_ns
+    }
+
+    fn advance_family_boottime(&self, now_ns: u64) {
+        let mut family = lock_unpoisoned(&self.inner.family);
+        family.last_boottime_ns = family.last_boottime_ns.max(now_ns);
     }
 }
 
@@ -561,45 +964,18 @@ pub fn with_parent(
     parent: &ResourceDomain,
     initial_cap_ns: u64,
 ) -> Result<ResourceDomain, ResourceError> {
-    let budget = Budget::new(initial_cap_ns)?;
-    let parent_state = parent.snapshot_state();
-    if initial_cap_ns > parent_state.budget.cap_ns {
-        return Err(ResourceError::ParentConstraint);
-    }
-    if !id.is_nonzero() || !stable_object_id.is_nonzero() {
-        return Err(ResourceError::InvalidIdentity);
-    }
-    let child = ResourceDomain {
-        inner: Arc::new(ResourceDomainInner {
-            gate: Arc::clone(&parent.inner.gate),
-            state: Mutex::new(DomainState {
-                id,
-                stable_object_id,
-                parent: Some(parent_state.id),
-                revision: 1,
-                budget,
-                consumed_ns: 0,
-                window_consumed_ns: 0,
-                window_start_ns: 0,
-                event_sequence: 0,
-                dropped_events: 0,
-                alive: true,
-                grant_epoch: 1,
-                user_paused: false,
-            }),
-            parent: Some(parent.clone()),
-            children: Mutex::new(BTreeMap::new()),
-        }),
-    };
-    lock_unpoisoned(&parent.inner.children).insert(id, initial_cap_ns);
-    Ok(child)
+    ResourceDomain::new(id, stable_object_id, Some(parent), initial_cap_ns)
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct RequestBinding {
     pub sequence: u64,
+    pub publisher: PublisherId,
     pub target: ResourceDomainId,
     pub stable_object_id: StableObjectId,
+    /// Exact HOS2 header handle identity: not just the resolved stable target.
+    pub wire_target_slot: u64,
+    pub wire_target_generation: u64,
     pub expected_revision: u64,
     pub period_ns: u64,
     pub cap_ns: u64,
@@ -615,6 +991,10 @@ pub struct DeliveryRequest {
     pub period_ns: u64,
     pub cap_ns: u64,
     pub payload_digest: [u8; 32],
+    // Zero/zero is permitted only for legacy host-state fixtures. A05 must
+    // construct real HOS2 deliveries with from_wire/with_wire_target.
+    wire_target_slot: u64,
+    wire_target_generation: u64,
 }
 
 impl DeliveryRequest {
@@ -626,7 +1006,40 @@ impl DeliveryRequest {
             period_ns: CPU_PERIOD_NS,
             cap_ns,
             payload_digest: [0; 32],
+            wire_target_slot: 0,
+            wire_target_generation: 0,
         }
+    }
+
+    /// A05 HOS2 InstallBudget binding. Both fields are taken from the
+    /// validated 64-byte request header *after* real handle resolution.
+    /// A handle alias/reuse is still distinguishable from the stable object.
+    pub fn from_wire(
+        sequence: u64,
+        grant: Grant,
+        expected_revision: u64,
+        cap_ns: u64,
+        target_slot: u64,
+        target_generation: u64,
+    ) -> Result<Self, DeliveryError> {
+        Self::new(sequence, grant, expected_revision, cap_ns)
+            .with_wire_target(target_slot, target_generation)
+    }
+
+    /// Bind the HOS2 target slot and generation into the immutable D
+    /// reservation. A mismatched or recycled handle is not the same request
+    /// even when A05 resolves it to the same ResourceDomain instance.
+    pub fn with_wire_target(
+        mut self,
+        target_slot: u64,
+        target_generation: u64,
+    ) -> Result<Self, DeliveryError> {
+        if target_slot == 0 || target_generation == 0 {
+            return Err(DeliveryError::InvalidRequest);
+        }
+        self.wire_target_slot = target_slot;
+        self.wire_target_generation = target_generation;
+        Ok(self)
     }
 
     pub fn with_payload_digest(mut self, payload_digest: [u8; 32]) -> Self {
@@ -637,8 +1050,11 @@ impl DeliveryRequest {
     pub fn binding(&self) -> RequestBinding {
         RequestBinding {
             sequence: self.sequence,
+            publisher: self.grant.principal,
             target: self.grant.domain.id(),
             stable_object_id: self.grant.domain.stable_object_id(),
+            wire_target_slot: self.wire_target_slot,
+            wire_target_generation: self.wire_target_generation,
             expected_revision: self.expected_revision,
             period_ns: self.period_ns,
             cap_ns: self.cap_ns,
@@ -665,6 +1081,28 @@ pub enum DeliveryStatus {
     ParentLimit,
 }
 
+impl DeliveryStatus {
+    /// Numeric HOS2 status value without depending on the A02 codec crate.
+    /// ParentLimit is represented by the wire-level Conflict status because
+    /// HOS2 0.3 has no separate parent-constraint code.
+    pub const fn hos2_code(self) -> u16 {
+        match self {
+            Self::Ok => 0,
+            Self::InvalidInput => 1,
+            Self::PermissionDenied => 2,
+            Self::StaleHandle => 3,
+            Self::Revoked => 4,
+            Self::Conflict | Self::ParentLimit => 5,
+            Self::ResourceExhausted => 6,
+            Self::Unsupported => 7,
+            Self::Indeterminate => 8,
+            Self::Busy => 9,
+            Self::OutOfOrder => 10,
+            Self::Retired => 11,
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DeliveryState {
     Reserved,
@@ -672,6 +1110,19 @@ pub enum DeliveryState {
     Retired,
     NotSeen,
     HistoryLost,
+}
+
+impl DeliveryState {
+    /// Numeric QueryDelivery state value matching HOS2 0.3.
+    pub const fn hos2_code(self) -> u16 {
+        match self {
+            Self::Reserved => 0,
+            Self::Terminal => 1,
+            Self::Retired => 2,
+            Self::NotSeen => 3,
+            Self::HistoryLost => 4,
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -687,6 +1138,65 @@ pub struct DeliveryObservation {
 }
 
 impl DeliveryObservation {
+    /// Validate the entire public QueryDelivery observation before wire use.
+    ///
+    /// Public fields can be modified by a bridge. A result advertised as
+    /// Terminal/Ok without the saved successful CAS receipt must NEVER
+    /// become HOS2 saved_status=0. Likewise rejected and nonterminal states
+    /// cannot carry successful resource metadata. A05 must reject None.
+    pub const fn hos2_saved_status_code(self) -> Option<u16> {
+        // A02 permits any nonzero *history* query sequence. MAX is a
+        // non-executable sentinel: it can be NotSeen/HistoryLost, but may
+        // never claim to be a reserved, retired, or terminal write.
+        if self.id.sequence == 0
+            || !self.id.namespace.boot_id.is_nonzero()
+            || !self.id.namespace.cap_space_id.is_nonzero()
+            || (self.id.sequence == u64::MAX
+                && !matches!(
+                    self.state,
+                    DeliveryState::NotSeen | DeliveryState::HistoryLost
+                ))
+        {
+            return None;
+        }
+        let no_metadata = self.stable_object_id.is_none()
+            && self.saved_revision.is_none()
+            && self.previous_revision.is_none()
+            && self.effective_ns.is_none()
+            && self.consumed_ns.is_none();
+        match (self.state, self.status) {
+            (DeliveryState::Terminal, Some(DeliveryStatus::Ok)) => {
+                match (
+                    self.stable_object_id,
+                    self.previous_revision,
+                    self.saved_revision,
+                    self.effective_ns,
+                    self.consumed_ns,
+                ) {
+                    (
+                        Some(object),
+                        Some(previous),
+                        Some(saved),
+                        Some(effective_ns),
+                        Some(consumed_ns),
+                    ) if object.is_nonzero()
+                        && previous > 0
+                        && previous < u64::MAX
+                        && saved == previous + 1
+                        && consumed_ns <= effective_ns % CPU_PERIOD_NS =>
+                    {
+                        Some(0)
+                    }
+                    _ => None,
+                }
+            }
+            (DeliveryState::Terminal, Some(status)) if no_metadata => Some(status.hos2_code()),
+            (DeliveryState::Terminal, _) => None,
+            (_, None) if no_metadata => Some(0),
+            _ => None,
+        }
+    }
+
     fn reserved(id: DeliveryId) -> Self {
         Self {
             state: DeliveryState::Reserved,
@@ -754,16 +1264,28 @@ pub enum PublishOutcome {
     },
 }
 
-#[derive(Debug)]
 struct Slot {
     binding: RequestBinding,
     publisher: PublisherId,
+    // Public stable-ID bytes cannot authenticate an in-memory target.
+    // Retain the original resource instance until contiguous retirement.
+    target_instance: Arc<ResourceDomainInner>,
+    // Authoritative grant context, not extra HOS2 wire bytes. An old D
+    // cannot be reissued with a fresh post-revocation ancestor grant.
+    ancestor_epochs: Vec<u64>,
     state: Mutex<SlotState>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum SlotState {
     Reserved,
+    // One-shot external execution has begun. If an executor unwinds or
+    // returns malformed metadata, leave the result pending and block any
+    // second effect. Only trusted fenced reconciliation may publish it.
+    Executing,
+    // Namespace destruction fences slots even if a token passed an earlier
+    // liveness check.  A fenced reservation can never mutate the resource.
+    Fenced,
     Terminal(PublishedResult),
 }
 
@@ -821,7 +1343,9 @@ pub struct ReservationMarker {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DeliveryError {
     InvalidSequence,
+    InvalidRequest,
     InvalidIdentity,
+    InvalidCapacity,
     OutOfOrder { expected: u64, got: u64 },
     Conflict,
     ResourceExhausted,
@@ -882,6 +1406,20 @@ impl HistoryAck {
     }
 }
 
+/// Original Hepta owner capability minted only with a newly initialized
+/// namespace. Non-Clone and bound to the in-memory namespace instance.
+pub struct OriginalOwnerAuthority {
+    namespace: Arc<NamespaceState>,
+    owner: OwnerId,
+    generation: u64,
+}
+
+impl OriginalOwnerAuthority {
+    pub const fn owner(&self) -> OwnerId {
+        self.owner
+    }
+}
+
 #[derive(Clone)]
 pub struct DeliveryView {
     identity: NamespaceIdentity,
@@ -915,22 +1453,74 @@ pub struct RetireReceipt {
     pub next_sequence: u64,
 }
 
+/// Read-only host-model invariant failure. This is diagnostic state
+/// validation, not a production kernel authority or a persistence proof.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum DeliveryInvariantError {
+    InvalidFrontier,
+    CapacityExceeded,
+    NoncontiguousWindow,
+    InvalidSlotBinding,
+    InvalidTerminalResult,
+    FencedLiveSlot,
+    LostHistoryRetainsSlots,
+}
+
 impl ControlCore {
     pub fn new(boot_id: BootId, cap_space_id: CapSpaceId) -> Self {
         Self::with_capacity(boot_id, cap_space_id, DEFAULT_WINDOW_CAPACITY)
     }
 
-    pub fn with_capacity(boot_id: BootId, cap_space_id: CapSpaceId, capacity: usize) -> Self {
-        assert!(
-            boot_id.is_nonzero() && cap_space_id.is_nonzero(),
-            "HOS2 identities must be non-zero"
-        );
-        assert!(capacity > 0, "delivery capacity must be non-zero");
+    /// The trusted bootstrap must authenticate the existing Hepta owner
+    /// before handing it the non-Clone retirement capability.
+    pub fn with_original_owner(
+        boot_id: BootId,
+        cap_space_id: CapSpaceId,
+        owner: OwnerId,
+    ) -> Result<(Self, OriginalOwnerAuthority), DeliveryError> {
+        Self::with_capacity_for_owner(boot_id, cap_space_id, DEFAULT_WINDOW_CAPACITY, owner)
+    }
+
+    /// The owner separately proves K journal durability; this memory handle
+    /// alone is not an fsync certificate or a kernel credential.
+    pub fn with_capacity_for_owner(
+        boot_id: BootId,
+        cap_space_id: CapSpaceId,
+        capacity: usize,
+        owner: OwnerId,
+    ) -> Result<(Self, OriginalOwnerAuthority), DeliveryError> {
+        if !owner.is_nonzero() {
+            return Err(DeliveryError::InvalidIdentity);
+        }
+        let core = Self::try_with_capacity(boot_id, cap_space_id, capacity)?;
+        let generation = lock_unpoisoned(&core.namespace.state).generation;
+        let authority = OriginalOwnerAuthority {
+            namespace: Arc::clone(&core.namespace),
+            owner,
+            generation,
+        };
+        Ok((core, authority))
+    }
+
+    /// Fallible trusted namespace bootstrap. The first HOS2 version permits
+    /// at most DEFAULT_WINDOW_CAPACITY unretired writes, never an unbounded
+    /// host override. Reject invalid identity/capacity before allocating.
+    pub fn try_with_capacity(
+        boot_id: BootId,
+        cap_space_id: CapSpaceId,
+        capacity: usize,
+    ) -> Result<Self, DeliveryError> {
+        if !boot_id.is_nonzero() || !cap_space_id.is_nonzero() {
+            return Err(DeliveryError::InvalidIdentity);
+        }
+        if capacity == 0 || capacity > DEFAULT_WINDOW_CAPACITY {
+            return Err(DeliveryError::InvalidCapacity);
+        }
         let identity = NamespaceIdentity {
             boot_id,
             cap_space_id,
         };
-        Self {
+        Ok(Self {
             namespace: Arc::new(NamespaceState {
                 identity,
                 state: Mutex::new(NamespaceInner {
@@ -942,7 +1532,14 @@ impl ControlCore {
                     generation: 1,
                 }),
             }),
-        }
+        })
+    }
+
+    /// Compatibility constructor for already-trusted bootstrap callers.
+    /// Use try_with_capacity when handling a configurable capacity.
+    pub fn with_capacity(boot_id: BootId, cap_space_id: CapSpaceId, capacity: usize) -> Self {
+        Self::try_with_capacity(boot_id, cap_space_id, capacity)
+            .expect("HOS2 boot/CapSpace identity and window capacity must be valid")
     }
 
     pub fn identity(&self) -> NamespaceIdentity {
@@ -985,8 +1582,23 @@ impl ControlCore {
         request: DeliveryRequest,
         publisher: PublisherId,
     ) -> Result<ReserveToken, DeliveryError> {
-        if !publisher.is_nonzero() || request.sequence == 0 || request.sequence == u64::MAX {
+        if request.sequence == 0 || request.sequence == u64::MAX {
             return Err(DeliveryError::InvalidSequence);
+        }
+        if !publisher.is_nonzero() {
+            return Err(DeliveryError::InvalidIdentity);
+        }
+        // Syntactic/static payload violations are checked *before* the
+        // reservation table. They must not burn D or reserve a result slot.
+        // Runtime grant/revision/parent/clock failures after reservation do
+        // become immutable terminal results.
+        if request.expected_revision == 0
+            || request.expected_revision == u64::MAX
+            || request.period_ns != CPU_PERIOD_NS
+            || request.cap_ns > CPU_PERIOD_NS
+            || (request.wire_target_slot == 0) != (request.wire_target_generation == 0)
+        {
+            return Err(DeliveryError::InvalidRequest);
         }
         if publisher != request.grant.principal {
             return Err(DeliveryError::PermissionDenied);
@@ -1000,7 +1612,14 @@ impl ControlCore {
         }
         if request.sequence < ns.next_sequence {
             if let Some(slot) = ns.slots.get(&request.sequence) {
-                if slot.binding == request.binding() {
+                // A globally unique D binds the publisher as well as its
+                // canonical payload and stable target. Neither another
+                // publisher nor another target may claim the saved result.
+                if slot.publisher == publisher
+                    && slot.binding == request.binding()
+                    && Arc::ptr_eq(&slot.target_instance, &request.grant.domain.inner)
+                    && slot.ancestor_epochs.as_slice() == request.grant.ancestor_epochs.as_slice()
+                {
                     let observation =
                         observation_from_slot(self.identity(), request.sequence, slot);
                     return match observation.state {
@@ -1029,6 +1648,8 @@ impl ControlCore {
         let slot = Arc::new(Slot {
             binding: request.binding(),
             publisher,
+            target_instance: Arc::clone(&request.grant.domain.inner),
+            ancestor_epochs: request.grant.ancestor_epochs.clone(),
             state: Mutex::new(SlotState::Reserved),
         });
         ns.slots.insert(request.sequence, Arc::clone(&slot));
@@ -1062,13 +1683,19 @@ impl ControlCore {
             Err(DeliveryError::Busy | DeliveryError::TerminalImmutable) => {
                 let view = self.delivery_view();
                 let observation = self.query_delivery(&view, sequence)?;
-                if observation.state == DeliveryState::Reserved
-                    || observation.state == DeliveryState::Terminal
-                        && observation.id.sequence == binding.sequence
-                {
-                    Ok(ReserveAttempt::Existing(observation))
-                } else {
-                    Err(DeliveryError::Conflict)
+                if observation.id.sequence != binding.sequence {
+                    return Err(DeliveryError::Conflict);
+                }
+                // Retire/loss may win between reserve and read. Both are
+                // permanent no-replay states, never new operations.
+                match observation.state {
+                    DeliveryState::Reserved | DeliveryState::Terminal => {
+                        Ok(ReserveAttempt::Existing(observation))
+                    }
+                    DeliveryState::Retired => Err(DeliveryError::Retired),
+                    DeliveryState::HistoryLost | DeliveryState::NotSeen => {
+                        Err(DeliveryError::HistoryLost)
+                    }
                 }
             }
             Err(error) => Err(error),
@@ -1085,6 +1712,12 @@ impl ControlCore {
         if view.identity != self.identity() || !Arc::ptr_eq(&view.namespace, &self.namespace) {
             return Err(DeliveryError::PermissionDenied);
         }
+        // The A02 history payload permits any nonzero sequence. In
+        // particular MAX can be queried as NotSeen/HistoryLost, while
+        // InstallBudget must never reserve or execute that sentinel D.
+        if sequence == 0 {
+            return Err(DeliveryError::InvalidSequence);
+        }
         let ns = lock_unpoisoned(&self.namespace.state);
         let id = DeliveryId {
             namespace: self.identity(),
@@ -1092,9 +1725,6 @@ impl ControlCore {
         };
         if ns.history_lost || view.generation != ns.generation {
             return Ok(DeliveryObservation::history_lost(id));
-        }
-        if sequence == 0 || sequence == u64::MAX {
-            return Err(DeliveryError::InvalidSequence);
         }
         if sequence <= ns.retired_through {
             return Ok(DeliveryObservation::retired(id));
@@ -1109,19 +1739,23 @@ impl ControlCore {
         &self,
         view: &DeliveryView,
         ack: HistoryAck,
+        owner_authority: &OriginalOwnerAuthority,
     ) -> Result<RetireReceipt, DeliveryError> {
         if view.identity != self.identity()
             || ack.namespace != self.identity()
             || !Arc::ptr_eq(&view.namespace, &self.namespace)
-            || view
-                .owner
-                .map(|owner| owner != ack.receipt.owner)
-                .unwrap_or(false)
+            || !Arc::ptr_eq(&owner_authority.namespace, &self.namespace)
+            || owner_authority.owner != ack.receipt.owner
+            // An observation-only DeliveryView never grants history.ack.
+            || view.owner != Some(ack.receipt.owner)
         {
             return Err(DeliveryError::PermissionDenied);
         }
         let mut ns = lock_unpoisoned(&self.namespace.state);
-        if ns.history_lost || view.generation != ns.generation {
+        if ns.history_lost
+            || view.generation != ns.generation
+            || owner_authority.generation != ns.generation
+        {
             return Err(DeliveryError::HistoryLost);
         }
         if ack.receipt.receipt_digest == [0; 32]
@@ -1161,6 +1795,17 @@ impl ControlCore {
     /// unknown and can never be replayed through this object.
     pub fn lose_history(&self) {
         let mut ns = lock_unpoisoned(&self.namespace.state);
+        // The namespace lock prevents new reservations, while each slot lock
+        // serializes this fence against in-flight commit/publish. A commit
+        // that already owns its slot finishes before loss takes effect; a
+        // commit that has only passed token_is_live observes Fenced instead
+        // of applying an effect after loss. No resource lock is taken here.
+        for slot in ns.slots.values() {
+            let mut state = lock_unpoisoned(&slot.state);
+            if matches!(*state, SlotState::Reserved | SlotState::Executing) {
+                *state = SlotState::Fenced;
+            }
+        }
         ns.history_lost = true;
         ns.slots.clear();
         ns.generation = ns.generation.saturating_add(1);
@@ -1172,6 +1817,89 @@ impl ControlCore {
 
     pub fn capacity(&self) -> usize {
         lock_unpoisoned(&self.namespace.state).capacity
+    }
+
+    /// Inspect the entire bounded non-retired D window under the namespace
+    /// lock, including immutable terminal metadata. Never acquires a resource
+    /// mutation gate or performs an effect. The lock order matches
+    /// QueryDelivery/RetireThrough: namespace first, then result slot.
+    ///
+    /// This is an O(window) host-model diagnostic for A05/A07 integration
+    /// tests. It must not be called from an IRQ or a real scheduler hot path.
+    pub fn validate_invariants_for_host_model(&self) -> Result<(), DeliveryInvariantError> {
+        let ns = lock_unpoisoned(&self.namespace.state);
+        let outstanding = ns
+            .next_sequence
+            .checked_sub(ns.retired_through)
+            .and_then(|difference| difference.checked_sub(1))
+            .ok_or(DeliveryInvariantError::InvalidFrontier)?;
+        if ns.next_sequence == 0 {
+            return Err(DeliveryInvariantError::InvalidFrontier);
+        }
+        if ns.slots.len() > ns.capacity {
+            return Err(DeliveryInvariantError::CapacityExceeded);
+        }
+        if ns.history_lost {
+            if ns.slots.is_empty() {
+                return Ok(());
+            }
+            return Err(DeliveryInvariantError::LostHistoryRetainsSlots);
+        }
+
+        let expected_len =
+            usize::try_from(outstanding).map_err(|_| DeliveryInvariantError::CapacityExceeded)?;
+        if expected_len != ns.slots.len() {
+            return Err(DeliveryInvariantError::NoncontiguousWindow);
+        }
+
+        let mut sequence = ns
+            .retired_through
+            .checked_add(1)
+            .ok_or(DeliveryInvariantError::InvalidFrontier)?;
+        for (&key, slot) in &ns.slots {
+            if key != sequence {
+                return Err(DeliveryInvariantError::NoncontiguousWindow);
+            }
+            if slot.binding.sequence != key
+                || slot.binding.publisher != slot.publisher
+                || !slot.publisher.is_nonzero()
+                || (slot.binding.wire_target_slot == 0)
+                    != (slot.binding.wire_target_generation == 0)
+            {
+                return Err(DeliveryInvariantError::InvalidSlotBinding);
+            }
+            // Audit lock order is namespace -> result slot -> resource
+            // state. Commit takes result slot -> resource mutation gate ->
+            // resource state, so never acquire resource state before slot.
+            let slot_state = lock_unpoisoned(&slot.state);
+            {
+                let target = lock_unpoisoned(&slot.target_instance.state);
+                if target.id != slot.binding.target
+                    || target.stable_object_id != slot.binding.stable_object_id
+                {
+                    return Err(DeliveryInvariantError::InvalidSlotBinding);
+                }
+            }
+            match *slot_state {
+                SlotState::Reserved | SlotState::Executing => {}
+                SlotState::Fenced => return Err(DeliveryInvariantError::FencedLiveSlot),
+                SlotState::Terminal(result) => {
+                    if observation_from_published(self.identity(), key, result)
+                        .hos2_saved_status_code()
+                        .is_none()
+                    {
+                        return Err(DeliveryInvariantError::InvalidTerminalResult);
+                    }
+                }
+            }
+            sequence = sequence
+                .checked_add(1)
+                .ok_or(DeliveryInvariantError::InvalidFrontier)?;
+        }
+        if sequence != ns.next_sequence {
+            return Err(DeliveryInvariantError::NoncontiguousWindow);
+        }
+        Ok(())
     }
 
     fn token_is_live(&self, token: &ReserveToken) -> bool {
@@ -1206,9 +1934,11 @@ impl ReserveToken {
 }
 
 impl ControlCore {
-    /// Publish an already applied kernel effect.  A05 can use this after its
-    /// resource mutation; it must provide the same immutable metadata that the
-    /// request bound.  This method never consults or creates a K ledger.
+    /// Reconcile an effect established by a trusted, externally fenced A05
+    /// adapter, including an interrupted execute_reserved callback. This
+    /// method does not execute or independently prove that external effect.
+    /// Use execute_reserved for a new synchronous effect so namespace loss
+    /// cannot pass between effect and publication. No K ledger is created.
     pub fn publish(
         &self,
         token: &ReserveToken,
@@ -1226,17 +1956,15 @@ impl ControlCore {
         }
         let mut slot_state = lock_unpoisoned(&token.reservation.slot.state);
         match *slot_state {
-            SlotState::Terminal(_) => {
+            SlotState::Fenced => return Err(DeliveryError::HistoryLost),
+            SlotState::Terminal(result) => {
                 return Ok(observation_from_published(
                     self.identity(),
                     token.id().sequence,
-                    match *slot_state {
-                        SlotState::Terminal(result) => result,
-                        SlotState::Reserved => unreachable!(),
-                    },
+                    result,
                 ))
             }
-            SlotState::Reserved => {}
+            SlotState::Reserved | SlotState::Executing => {}
         }
         let result = published_result_from_outcome(token.binding(), outcome)?;
         *slot_state = SlotState::Terminal(result);
@@ -1247,16 +1975,29 @@ impl ControlCore {
         ))
     }
 
-    /// Atomically applies a budget mutation and publishes its terminal result.
-    /// The slot lock is held while the resource gate is taken, but no namespace
-    /// table lock is acquired by the resource path; this preserves the
-    /// delivery->resource lock direction required by the contract.
-    pub fn commit(
+    /// Execute an A05/A06 effect once while holding the reserved result slot.
+    ///
+    /// The adapter must check the real grant/epoch/lease, stable target,
+    /// revision and runtime under its resource mutation lock, and return the
+    /// matching outcome. It must not reenter this namespace, copy user memory,
+    /// allocate, or take a namespace table lock while this callback runs.
+    /// This seam supplies delivery fencing, not kernel credentials or CPU
+    /// enforcement. Never call it directly from IRQ with portable-spin.
+    ///
+    /// A terminal retry returns the saved result without calling `execute`.
+    /// Namespace loss either fences before entry or waits for publication.
+    /// Unwind or malformed outcome leaves an opaque pending slot: subsequent
+    /// execution is Busy, retirement is blocked, and only trusted externally
+    /// fenced reconciliation may finish it through `publish`.
+    pub fn execute_reserved<F>(
         &self,
         token: &ReserveToken,
         publisher: PublisherId,
-        now_ns: u64,
-    ) -> Result<DeliveryObservation, DeliveryError> {
+        execute: F,
+    ) -> Result<DeliveryObservation, DeliveryError>
+    where
+        F: FnOnce(RequestBinding) -> PublishOutcome,
+    {
         if !Arc::ptr_eq(&token.reservation.namespace, &self.namespace)
             || token.reservation.id.namespace != self.identity()
             || publisher != token.publisher()
@@ -1267,45 +2008,60 @@ impl ControlCore {
             return Err(DeliveryError::HistoryLost);
         }
         let mut slot_state = lock_unpoisoned(&token.reservation.slot.state);
-        if let SlotState::Terminal(result) = *slot_state {
-            return Ok(observation_from_published(
-                self.identity(),
-                token.id().sequence,
-                result,
-            ));
+        match *slot_state {
+            SlotState::Fenced => return Err(DeliveryError::HistoryLost),
+            SlotState::Executing => return Err(DeliveryError::Busy),
+            SlotState::Terminal(result) => {
+                return Ok(observation_from_published(
+                    self.identity(),
+                    token.id().sequence,
+                    result,
+                ));
+            }
+            SlotState::Reserved => {}
         }
         let binding = token.binding();
-        let applied = token.reservation.request.grant.domain.apply_budget(
-            &token.reservation.request.grant,
-            binding.expected_revision,
-            binding.period_ns,
-            binding.cap_ns,
-            now_ns,
-        );
-        let result = match applied {
-            Ok(receipt) => PublishedResult {
-                status: DeliveryStatus::Ok,
-                stable_object_id: Some(binding.stable_object_id),
-                saved_revision: Some(receipt.revision),
-                previous_revision: Some(receipt.previous_revision),
-                effective_ns: Some(receipt.effective_boottime_ns),
-                consumed_ns: Some(receipt.consumed_at_apply_ns),
-            },
-            Err(error) => PublishedResult {
-                status: map_resource_error(error),
-                stable_object_id: None,
-                saved_revision: None,
-                previous_revision: None,
-                effective_ns: None,
-                consumed_ns: None,
-            },
-        };
+        // Set the sentinel before invoking external code: unwinding must not
+        // restore permission to perform an effect, even with poison recovery.
+        *slot_state = SlotState::Executing;
+        let outcome = execute(binding);
+        let result = published_result_from_outcome(binding, outcome)?;
         *slot_state = SlotState::Terminal(result);
         Ok(observation_from_published(
             self.identity(),
             token.id().sequence,
             result,
         ))
+    }
+
+    /// Host-model budget CAS using the same one-shot delivery seam as A05.
+    /// It does not implement actual kernel scheduler admission or metering.
+    pub fn commit(
+        &self,
+        token: &ReserveToken,
+        publisher: PublisherId,
+        now_ns: u64,
+    ) -> Result<DeliveryObservation, DeliveryError> {
+        self.execute_reserved(token, publisher, |binding| {
+            match token.reservation.request.grant.domain.apply_budget(
+                &token.reservation.request.grant,
+                binding.expected_revision,
+                binding.period_ns,
+                binding.cap_ns,
+                now_ns,
+            ) {
+                Ok(receipt) => PublishOutcome::Success {
+                    stable_object_id: binding.stable_object_id,
+                    saved_revision: receipt.revision,
+                    previous_revision: receipt.previous_revision,
+                    effective_ns: receipt.effective_boottime_ns,
+                    consumed_ns: receipt.consumed_at_apply_ns,
+                },
+                Err(error) => PublishOutcome::Failure {
+                    status: map_resource_error(error),
+                },
+            }
+        })
     }
 }
 
@@ -1315,7 +2071,15 @@ fn published_result_from_outcome(
 ) -> Result<PublishedResult, DeliveryError> {
     match outcome {
         PublishOutcome::Failure { status } => {
-            if status == DeliveryStatus::Ok {
+            // OutOfOrder and Retired are D namespace admission decisions:
+            // they are returned before a new reservation exists. Do not
+            // manufacture them as immutable results for a reserved D.
+            // A terminal denial may legitimately be other non-Ok statuses
+            // after its already-reserved resource mutation was rejected.
+            if matches!(
+                status,
+                DeliveryStatus::Ok | DeliveryStatus::OutOfOrder | DeliveryStatus::Retired
+            ) {
                 return Err(DeliveryError::InvalidPublish);
             }
             Ok(PublishedResult {
@@ -1335,8 +2099,11 @@ fn published_result_from_outcome(
             consumed_ns,
         } => {
             if stable_object_id != binding.stable_object_id
+                || !stable_object_id.is_nonzero()
+                || previous_revision == 0
                 || previous_revision != binding.expected_revision
                 || previous_revision.checked_add(1) != Some(saved_revision)
+                || consumed_ns > effective_ns % CPU_PERIOD_NS
             {
                 return Err(DeliveryError::InvalidPublish);
             }
@@ -1355,13 +2122,20 @@ fn published_result_from_outcome(
 fn map_resource_error(error: ResourceError) -> DeliveryStatus {
     match error {
         ResourceError::Revoked | ResourceError::GrantEpochMismatch => DeliveryStatus::Revoked,
-        ResourceError::RevisionConflict { .. } => DeliveryStatus::Conflict,
+        ResourceError::RevisionConflict { .. }
+        | ResourceError::DuplicateDomainId
+        | ResourceError::DuplicateObjectId => DeliveryStatus::Conflict,
         ResourceError::ParentConstraint => DeliveryStatus::ParentLimit,
         ResourceError::Exhausted => DeliveryStatus::ResourceExhausted,
         ResourceError::InvalidBudget
+        | ResourceError::InvalidCapacity
+        | ResourceError::InvalidInterval
         | ResourceError::InvalidRevision
         | ResourceError::InvalidIdentity => DeliveryStatus::InvalidInput,
-        ResourceError::Overflow | ResourceError::MissingParent => DeliveryStatus::Indeterminate,
+        ResourceError::Overflow
+        | ResourceError::MissingParent
+        | ResourceError::ClockRollback
+        | ResourceError::InconsistentAccounting => DeliveryStatus::Indeterminate,
     }
 }
 
@@ -1371,7 +2145,11 @@ fn observation_from_slot(
     slot: &Arc<Slot>,
 ) -> DeliveryObservation {
     match *lock_unpoisoned(&slot.state) {
-        SlotState::Reserved => DeliveryObservation::reserved(DeliveryId {
+        SlotState::Reserved | SlotState::Executing => DeliveryObservation::reserved(DeliveryId {
+            namespace,
+            sequence,
+        }),
+        SlotState::Fenced => DeliveryObservation::history_lost(DeliveryId {
             namespace,
             sequence,
         }),
@@ -1399,12 +2177,6 @@ fn observation_from_published(
     }
 }
 
-fn lock_unpoisoned<T>(mutex: &Mutex<T>) -> MutexGuard<'_, T> {
-    mutex
-        .lock()
-        .unwrap_or_else(|poisoned| poisoned.into_inner())
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1430,9 +2202,209 @@ mod tests {
     }
 
     #[test]
+    fn reactivation_epoch_overflow_must_remain_revoked() {
+        let (_, _, domain_id, object, publisher, _) = ids(100);
+        let target = ResourceDomain::new(domain_id, object, None, CPU_PERIOD_NS).unwrap();
+        {
+            let mut state = lock_unpoisoned(&target.inner.state);
+            state.grant_epoch = u64::MAX;
+            state.alive = false;
+        }
+        assert_eq!(
+            target.reactivate_for_host_model(),
+            Err(ResourceError::Overflow)
+        );
+        assert!(matches!(
+            target.grant(publisher),
+            Err(ResourceError::Revoked)
+        ));
+    }
+
+    #[test]
+    fn final_sequence_can_retire_but_max_never_rolls_over() {
+        let (boot, space, domain_id, object, publisher, owner) = ids(301);
+        let (core, authority) = ControlCore::with_original_owner(boot, space, owner).unwrap();
+        // Synthetic late-life fixture: this test does not iterate through
+        // 2^64 writes. Every older D is represented by the retired frontier.
+        {
+            let mut state = lock_unpoisoned(&core.namespace.state);
+            state.retired_through = u64::MAX - 2;
+            state.next_sequence = u64::MAX - 1;
+        }
+        let domain = ResourceDomain::new(domain_id, object, None, 50).unwrap();
+        let grant = domain.grant(publisher).unwrap();
+        let token = core
+            .reserve(
+                DeliveryRequest::new(u64::MAX - 1, grant.clone(), 1, 25),
+                publisher,
+            )
+            .unwrap();
+        assert_eq!(core.next_sequence(), u64::MAX);
+        let terminal = core.commit(&token, publisher, 1).unwrap();
+        assert_eq!(terminal.status, Some(DeliveryStatus::Ok));
+        assert_eq!(
+            core.reserve(
+                DeliveryRequest::new(u64::MAX, grant.clone(), 1, 25),
+                publisher
+            )
+            .err(),
+            Some(DeliveryError::InvalidSequence)
+        );
+        let view = core.delivery_view_for(owner).unwrap();
+        let ack = HistoryAck::from_owner_receipt(
+            core.identity(),
+            u64::MAX - 1,
+            OwnerReceipt::new(owner, [1; 32]),
+        )
+        .unwrap();
+        let receipt = core.retire_through(&view, ack, &authority).unwrap();
+        assert_eq!(receipt.retired_through, u64::MAX - 1);
+        assert_eq!(receipt.next_sequence, u64::MAX);
+        assert_eq!(core.window_len(), 0);
+        assert_eq!(
+            core.query_delivery(&view, u64::MAX - 1).unwrap().state,
+            DeliveryState::Retired
+        );
+        assert_eq!(
+            core.reserve(DeliveryRequest::new(u64::MAX - 1, grant, 1, 25), publisher)
+                .err(),
+            Some(DeliveryError::Retired)
+        );
+        assert_eq!(domain.revision(), 2);
+    }
+
+    #[test]
+    fn last_representable_revision_is_an_immutable_success() {
+        let (boot, space, domain_id, object, publisher, _) = ids(302);
+        let core = ControlCore::new(boot, space);
+        let domain = ResourceDomain::new(domain_id, object, None, 50).unwrap();
+        {
+            let mut state = lock_unpoisoned(&domain.inner.state);
+            state.revision = u64::MAX - 1;
+        }
+        let grant = domain.grant(publisher).unwrap();
+        let request = DeliveryRequest::new(1, grant.clone(), u64::MAX - 1, 25);
+        let token = core.reserve(request, publisher).unwrap();
+        let saved = core.commit(&token, publisher, 2).unwrap();
+        assert_eq!(saved.status, Some(DeliveryStatus::Ok));
+        assert_eq!(saved.previous_revision, Some(u64::MAX - 1));
+        assert_eq!(saved.saved_revision, Some(u64::MAX));
+        assert_eq!(saved.hos2_saved_status_code(), Some(0));
+        assert_eq!(domain.revision(), u64::MAX);
+        match core.reserve_or_get(
+            DeliveryRequest::new(1, grant.clone(), u64::MAX - 1, 25),
+            publisher,
+        ) {
+            Ok(ReserveAttempt::Existing(observed)) => assert_eq!(observed, saved),
+            _ => panic!("final CAS must be read-only on retry"),
+        }
+        assert_eq!(
+            core.reserve(DeliveryRequest::new(2, grant, u64::MAX, 25), publisher)
+                .err(),
+            Some(DeliveryError::InvalidRequest)
+        );
+        assert_eq!(core.next_sequence(), 2);
+        assert_eq!(domain.revision(), u64::MAX);
+    }
+
+    #[test]
+    fn invariant_audit_detects_canonical_handle_corruption() {
+        let (boot, space, domain_id, object, publisher, _) = ids(5100);
+        let core = ControlCore::with_capacity(boot, space, 2);
+        let domain = ResourceDomain::new(domain_id, object, None, 50).unwrap();
+        let grant = domain.grant(publisher).unwrap();
+        let request = DeliveryRequest::from_wire(1, grant, 1, 25, 9, 3).unwrap();
+        let token = core.reserve(request, publisher).unwrap();
+        assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
+
+        let mut corrupted = token.binding();
+        corrupted.wire_target_generation = 0;
+        let bad = Arc::new(Slot {
+            binding: corrupted,
+            publisher,
+            target_instance: Arc::clone(&token.reservation.slot.target_instance),
+            ancestor_epochs: Vec::new(),
+            state: Mutex::new(SlotState::Reserved),
+        });
+        lock_unpoisoned(&core.namespace.state).slots.insert(1, bad);
+        assert_eq!(
+            core.validate_invariants_for_host_model(),
+            Err(DeliveryInvariantError::InvalidSlotBinding)
+        );
+
+        corrupted.wire_target_generation = 3;
+        corrupted.stable_object_id = StableObjectId::from_u128(9_999);
+        let bad = Arc::new(Slot {
+            binding: corrupted,
+            publisher,
+            target_instance: Arc::clone(&token.reservation.slot.target_instance),
+            ancestor_epochs: Vec::new(),
+            state: Mutex::new(SlotState::Reserved),
+        });
+        lock_unpoisoned(&core.namespace.state).slots.insert(1, bad);
+        assert_eq!(
+            core.validate_invariants_for_host_model(),
+            Err(DeliveryInvariantError::InvalidSlotBinding)
+        );
+    }
+
+    #[test]
+    fn invariant_audit_rejects_half_terminal_fenced_and_lost_state() {
+        let (boot, space, domain_id, object, publisher, _) = ids(5101);
+        let core = ControlCore::with_capacity(boot, space, 2);
+        let domain = ResourceDomain::new(domain_id, object, None, 50).unwrap();
+        let grant = domain.grant(publisher).unwrap();
+        let token = core
+            .reserve(DeliveryRequest::new(1, grant, 1, 25), publisher)
+            .unwrap();
+
+        {
+            let mut state = lock_unpoisoned(&token.reservation.slot.state);
+            *state = SlotState::Terminal(PublishedResult {
+                status: DeliveryStatus::Ok,
+                stable_object_id: None,
+                saved_revision: None,
+                previous_revision: None,
+                effective_ns: None,
+                consumed_ns: None,
+            });
+        }
+        assert_eq!(
+            core.validate_invariants_for_host_model(),
+            Err(DeliveryInvariantError::InvalidTerminalResult)
+        );
+
+        {
+            let mut state = lock_unpoisoned(&token.reservation.slot.state);
+            *state = SlotState::Fenced;
+        }
+        assert_eq!(
+            core.validate_invariants_for_host_model(),
+            Err(DeliveryInvariantError::FencedLiveSlot)
+        );
+
+        lock_unpoisoned(&core.namespace.state).history_lost = true;
+        assert_eq!(
+            core.validate_invariants_for_host_model(),
+            Err(DeliveryInvariantError::LostHistoryRetainsSlots)
+        );
+
+        let other = ControlCore::with_capacity(boot, space, 2);
+        let grant = domain.grant(publisher).unwrap();
+        other
+            .reserve(DeliveryRequest::new(1, grant, 1, 25), publisher)
+            .unwrap();
+        lock_unpoisoned(&other.namespace.state).slots.remove(&1);
+        assert_eq!(
+            other.validate_invariants_for_host_model(),
+            Err(DeliveryInvariantError::NoncontiguousWindow)
+        );
+    }
+
+    #[test]
     fn basic_commit_and_observation() {
         let (boot, space, domain_id, object, publisher, owner) = ids(1);
-        let core = ControlCore::new(boot, space);
+        let (core, owner_authority) = ControlCore::with_original_owner(boot, space, owner).unwrap();
         let domain = ResourceDomain::new(domain_id, object, None, 50).unwrap();
         let grant = domain.grant(publisher).unwrap();
         let token = core
@@ -1442,12 +2414,12 @@ mod tests {
         assert_eq!(observed.state, DeliveryState::Terminal);
         assert_eq!(observed.status, Some(DeliveryStatus::Ok));
         assert_eq!(observed.saved_revision, Some(2));
-        let view = core.delivery_view();
+        let view = core.delivery_view_for(owner).unwrap();
         assert_eq!(core.query_delivery(&view, 1).unwrap(), observed);
         let ack =
             HistoryAck::from_owner_receipt(core.identity(), 1, OwnerReceipt::new(owner, [1; 32]))
                 .unwrap();
-        core.retire_through(&view, ack).unwrap();
+        core.retire_through(&view, ack, &owner_authority).unwrap();
         assert_eq!(
             core.query_delivery(&view, 1).unwrap().state,
             DeliveryState::Retired

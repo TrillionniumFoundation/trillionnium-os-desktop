@@ -1,0 +1,71 @@
+{
+  "schema": "hos2-a02-review-execution-v1",
+  "scope": "host codec only; no kernel validation",
+  "host": "343e40cfefc1",
+  "source_parent": "606244b6109b1060b4916baa76e3fdd14dcc5240",
+  "main_merge_parent": "acd9ee30d51c405b32a36ff02ce25a9272b65834",
+  "standalone": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "-B",
+      "tests/abi/run_rust_mutations.py",
+      "--repo-root",
+      "/workspace/scratch/bdc25075f913/trillionnium-os-desktop",
+      "--cargo",
+      "/workspace/scratch/629ae4947f18/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+      "--toolchain",
+      "nightly-2026-07-21",
+      "--output",
+      "/tmp/a02-review-20261017/wrapper-after.json"
+    ],
+    "cwd": "/workspace/scratch/bdc25075f913/trillionnium-os-desktop",
+    "returncode": 0,
+    "elapsed_seconds": 15.944195778999983,
+    "host": "343e40cfefc1",
+    "environment": {
+      "CARGO_HOME": "/tmp/a02-review-20261017/cargo-home",
+      "RUSTUP_HOME": "/workspace/scratch/629ae4947f18/toolchains/rustup",
+      "RUSTC_WRAPPER": "/tmp/a02-review-20261017/compiler-trap",
+      "RUSTC_WORKSPACE_WRAPPER": "/tmp/a02-review-20261017/compiler-trap",
+      "CARGO_BUILD_RUSTC": "/tmp/a02-review-20261017/compiler-trap",
+      "CARGO_BUILD_RUSTC_WRAPPER": "/tmp/a02-review-20261017/compiler-trap",
+      "CARGO_BUILD_RUSTC_WORKSPACE_WRAPPER": "/tmp/a02-review-20261017/compiler-trap"
+    },
+    "wrapper_called": false
+  },
+  "acceptance": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "-B",
+      "tests/abi/run_acceptance.py",
+      "--rustup",
+      "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustup",
+      "--output-dir",
+      "/tmp/a02-review-20261017/acceptance"
+    ],
+    "cwd": "/workspace/scratch/bdc25075f913/trillionnium-os-desktop",
+    "returncode": 0,
+    "elapsed_seconds": 23.61387604399988,
+    "host": "343e40cfefc1",
+    "environment": {
+      "CARGO_HOME": "/tmp/a02-review-20261017/cargo-home",
+      "RUSTUP_HOME": "/workspace/scratch/629ae4947f18/toolchains/rustup",
+      "RUSTC_WRAPPER": "/tmp/a02-review-20261017/compiler-trap",
+      "RUSTC_WORKSPACE_WRAPPER": "/tmp/a02-review-20261017/compiler-trap",
+      "CARGO_BUILD_RUSTC": "/tmp/a02-review-20261017/compiler-trap",
+      "CARGO_BUILD_RUSTC_WRAPPER": "/tmp/a02-review-20261017/compiler-trap",
+      "CARGO_BUILD_RUSTC_WORKSPACE_WRAPPER": "/tmp/a02-review-20261017/compiler-trap"
+    },
+    "wrapper_called": false
+  },
+  "injected_config": "[build]\nrustc = \"/tmp/a02-review-20261017/compiler-trap\"\nrustc-wrapper = \"/tmp/a02-review-20261017/compiler-trap\"\nrustc-workspace-wrapper = \"/tmp/a02-review-20261017/compiler-trap\"\n",
+  "trap_script": "#!/bin/sh\nprintf \"wrapper invoked\\n\" >> /tmp/a02-review-20261017/wrapper-marker\nexit 97\n",
+  "before_trap_calls": 3,
+  "after_trap_calls": 0,
+  "report_sha256": {
+    "cloud-review-acceptance-2026-10-17.json": "c6f41b9c7e1d87abf2f9a822d5eb23b64015329f2f77003f38a4b4947fdfdf47",
+    "cloud-review-before-2026-10-17.json": "03a52fe2ce32d648440a84c4b10a0741ccf77b1ae13d5306ad37645912bb2d38",
+    "cloud-review-mutations-2026-10-17.json": "dfe79c01aecf39d51ef5b2582b57e2f9203a452c7e026c3415ca2fbf20286add",
+    "cloud-review-regressions-2026-10-17.json": "e4c489d354c0a49bf4fd94762ad15e6e14ecfd8466c6cf4501943394b0675476"
+  }
+}
