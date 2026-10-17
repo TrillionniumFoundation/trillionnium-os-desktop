@@ -53,8 +53,9 @@ Unit coverage:
   refused before command history rendering, while valid Chinese/emoji echo
   survives without altering input or claiming Hepta execution
 - synthetic egui IME Enabled/Preedit/Commit/Disabled plus Enter in the actual
-  restricted terminal widget; no shell/log execution unless Run is clicked
-  (still NOT real live Wayland Chinese candidate UI evidence)
+  restricted terminal widget; Run is disabled during active preedit, and a
+  direct run attempt leaves composition text unchanged. An extra Enter still
+  cannot execute a command (NOT live Wayland IME/candidate evidence)
 - chat workspace explicit app actions linked to observed process task cards
 - oversized/truncated IPC frames and unknown statuses
 - successful observed host child exit
