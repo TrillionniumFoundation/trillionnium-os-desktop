@@ -122,9 +122,12 @@ independently run against older source fcc57bd2 and correctly FAILED
 on case 0 (the old process returned an unauthorized Snapshot rather than
 rejecting a request with extra data). Fix acceptance requires that exact
 new binary to reject all eight malformed raw requests without side effects.
-The Linux-only host Session checks SO_PEERCRED on every accepted connection
-and rejects peer credentials whose kernel-reported UID differs from the
-Session effective UID. This supplements private 0700 runtime / 0600 socket
+Both Linux host Session and Shell/CLI connect calls use the same shared
+`trill-ui-core::host_peer` SO_PEERCRED identity check. Session refuses
+unknown-UID clients before parsing requests; clients refuse cross-UID
+servers before sending a request or trusting a host task snapshot. These
+checks compare effective UID and cannot authenticate different programs
+sharing a UID. This supplements private 0700 runtime / 0600 socket
 permissions, but is **not** a cryptographic user identity, same-UID sandbox,
 Hepta authority, production portal or A05 trusted CapSpace. The blocking
 Linux-host CI now also starts an isolated nobody-owned Session with passwordless

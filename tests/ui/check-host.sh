@@ -48,7 +48,7 @@ capture_fmt_on_exit() {
 }
 trap capture_fmt_on_exit EXIT
 
-bash -n tests/ui/smoke-wayland.sh tests/ui/headless-weston.sh tests/ui/compositor-restart.sh support/ui/package-host-binaries.sh tests/ui/test-package-host-binaries.sh tests/ui/replay-packaged-host.sh tests/ui/test-cross-uid-peer.sh
+bash -n tests/ui/smoke-wayland.sh tests/ui/headless-weston.sh tests/ui/compositor-restart.sh support/ui/package-host-binaries.sh tests/ui/test-package-host-binaries.sh tests/ui/replay-packaged-host.sh tests/ui/test-cross-uid-peer.sh tests/ui/test-rogue-session-server.sh
 python3 tests/ui/test-session-lock.py
 bash tests/ui/test-smoke-cleanup.sh
 bash tests/ui/test-zombie-liveness.sh
@@ -75,6 +75,10 @@ cargo test --manifest-path tests/ui/Cargo.toml --locked
 # must be refused with an actual peer-UID diagnostic. The same-UID client
 # must continue to work; old unguarded Rust binaries fail this check.
 bash tests/ui/test-cross-uid-peer.sh "$PWD/ui/target/debug"
+# The opposite direction matters too: an unprivileged rogue Unix server
+# MUST NOT trick the real root CLI into trusting a fabricated Snapshot.
+# CLI must check Linux SO_PEERCRED before it sends even the first request.
+bash tests/ui/test-rogue-session-server.sh "$PWD/ui/target/debug"
 # Probe the ACTUAL native Session through raw Unix-socket JSON, not serde
 # unit models. Exact Snapshot/Launch/Cancel schemas must reject duplicate
 # keys or unknown metadata before any task effect can occur.

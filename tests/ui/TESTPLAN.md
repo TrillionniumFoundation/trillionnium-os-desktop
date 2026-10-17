@@ -83,11 +83,16 @@ Unit coverage:
 - bounded private socket IPC and reconnection without terminating the session
 - a connected but idle same-UID Unix socket peer times out in <=500ms;
   real Snapshot request resumes promptly rather than blocking task reaping
-- Linux SO_PEERCRED checks actual kernel-reported peer PID/UID/GID BEFORE
-  Session request parsing, allows this UID's real socketpair and rejects a
-  different UID through the exact same production comparison; the 0600
-  socket and 0700 runtime remain mandatory. This does not authenticate
+- Linux SO_PEERCRED checks kernel-reported peer PID/UID/GID on BOTH Session
+  accept and UI/CLI connect BEFORE any request or response; same-UID
+  socketpair succeeds, cross-UID fake Session data is refused before request
+  delivery. The 0600 socket and 0700 runtime remain mandatory. This does not authenticate
   two programs under the same UID or supply any A05 CapSpace grant
+- privileged *isolated real process* `tests/ui/test-rogue-session-server.sh`:
+  a nobody-owned Unix listener offers a forged successful Snapshot to a root
+  caller's actual Rust CLI. Earlier `fcc57bd2` ELF printed the forged
+  `FORGED_CROSS_UID_SESSION` source and exited 0 (unsafe). New CLI must
+  refuse via kernel SO_PEERCRED without sending a request.
 - privileged *isolated real process* `tests/ui/test-cross-uid-peer.sh`:
   unprivileged nobody-owned Session and its same-UID CLI succeed, whereas
   root's cross-UID snapshot must be rejected with the exact SO_PEERCRED
