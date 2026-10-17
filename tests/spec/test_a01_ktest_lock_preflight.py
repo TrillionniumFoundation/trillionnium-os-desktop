@@ -1,7 +1,9 @@
 """A01 fixed-lock cold-runner preflight checks; no Rust/network required."""
 import importlib.util
 from pathlib import Path
+import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -53,6 +55,30 @@ class ColdRunnerPreflightTests(unittest.TestCase):
         self.assertEqual(report["stdout"], "resolver context\n")
         self.assertEqual(report["stderr"], "error: missing pinned crate\n")
         self.assertEqual(report["returncode"], 101)
+
+    def test_main_writes_failure_receipt_before_exiting(self):
+        seed = ROOT.parents[2] / "kernel/asterinas/Cargo.lock"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            upstream = root / "upstream"
+            upstream.mkdir()
+            shutil.copyfile(seed, upstream / "Cargo.lock")
+            output = root / "locks"
+            argv = ["prepare-locks.py", "--upstream", str(upstream),
+                    "--output-dir", str(output), "--crate", "ostd"]
+            fake = subprocess.CompletedProcess([], 101, "metadata context\n",
+                                               "error: cache unavailable\n")
+            with patch.object(sys, "argv", argv), \
+                    patch.object(prepare, "prefetch_locked_upstream"), \
+                    patch.object(prepare, "generated_manifest", return_value="[workspace]\n"), \
+                    patch.object(prepare.subprocess, "run", return_value=fake):
+                with self.assertRaises(prepare.CargoFailure):
+                    prepare.main()
+            report = prepare.json.loads((output / prepare.FAILURE_REPORT).read_text())
+        self.assertEqual(report["phase"], "metadata")
+        self.assertEqual(report["crate"], "ostd")
+        self.assertEqual(report["stdout"], "metadata context\n")
+        self.assertEqual(report["stderr"], "error: cache unavailable\n")
 
     def test_success_preserves_machine_readable_metadata(self):
         argv = ["cargo", "metadata", "--offline", "--locked"]
