@@ -709,13 +709,13 @@ metadata; the window quota is not a quota on arbitrary caller allocations.
 
 `ManagementGrantState` is a non-Clone state value embedded **once** in the
 existing resource owner's mutation lock. It holds one delegation's identity,
-publisher, target/object, generation, validity interval and cap ceiling.
+publisher, target/object, management delegation epoch, validity interval and cap ceiling.
 It holds no resource budget, runtime counter, revision, global clock, registry
 or persistent ledger. It is an available primitive for A05/A06 to adopt;
 the native kernel and the old host `Grant` do not automatically use it.
 
 Trusted bootstrap constructs `ManagementGrantState::new(ManagementGrantConfig)`.
-Nonzero IDs/generation, `issued_at_ns < expires_at_ns` and a cap ceiling within
+Nonzero IDs/epoch, `issued_at_ns < expires_at_ns` and a cap ceiling within
 the fixed CPU period are checked. `snapshot()` captures terms, not current
 rights. Native `context.management_snapshot()` returns the exact saved snapshot
 when the reservation used `from_management`; `from_owner` leaves it None.
@@ -724,7 +724,7 @@ the actual owner's existing authority checks.
 
 Inside the same lock as budget CAS/runtime settlement and revoke, call
 `state.check(snapshot, context.binding(), actual_boottime_ns)`. This checks
-the original state instance and all terms, publisher/target/object/generation,
+the original state instance and all terms, publisher/target/object/delegation epoch,
 fixed period, cap ceiling and `[issued_at_ns, expires_at_ns)` validity.
 The caller must sample trusted current BOOTTIME and reject rollback; this
 predicate does not keep another clock or enforce lock ordering itself. Do not
