@@ -139,7 +139,7 @@ fn observed_host_line(task: &TaskRecord) -> String {
         .ui_first_frame_unix_ms
         .map_or("UNOBSERVED".to_owned(), |time| time.to_string());
     format!(
-        "{} | {} | #{} {} | HOST_PROCESS={} | PID={} | FIRST_EGUI_LAYOUT={} | {}",
+        "{} | {} | #{} {} | HOST_PROCESS={} | PID={} | FIRST_EGUI_LAYOUT={} | WAYLAND_AT_LAUNCH={} | {}",
         task.updated_unix_ms,
         task.workspace.name(),
         task.id,
@@ -147,6 +147,10 @@ fn observed_host_line(task: &TaskRecord) -> String {
         task.state.label(),
         task.pid.map_or("-".into(), |pid| pid.to_string()),
         first_layout,
+        task.wayland_socket_epoch_at_launch.map_or(
+            "UNOBSERVED".to_owned(),
+            |epoch| epoch.to_string()
+        ),
         task.detail,
     )
 }
@@ -532,6 +536,13 @@ impl Desktop {
                     ui.label(RichText::new(task.state.label()).color(state_color(task.state)));
                 });
                 ui.small(format!("PID {:?} · {}", task.pid, task.execution_mode));
+                let window_status = self.resources.as_ref().map_or(
+                    "UNVERIFIED: NO CURRENT DISPLAY OBSERVATION",
+                    |sample| task.host_window_observation(&sample.wayland).label(),
+                );
+                if !task.state.is_terminal() {
+                    ui.colored_label(warning(), window_status);
+                }
                 ui.separator();
             }
         });
@@ -1240,6 +1251,7 @@ mod console_tests {
         let line = observed_host_line(&task);
         assert!(line.contains("HOST_PROCESS=UNKNOWN"));
         assert!(line.contains("Child exit could not be observed"));
+        assert!(line.contains("WAYLAND_AT_LAUNCH=UNOBSERVED"));
     }
 }
 
