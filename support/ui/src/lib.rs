@@ -805,12 +805,12 @@ where
 
     fn query_abi(&self, request_id: [u8; 16]) -> Result<QueryAbiResponse, Self::Error> {
         let response = self.exchange_read_only(Request {
-                opcode: Opcode::QueryAbi,
-                request_id,
-                target_slot: 0,
-                target_generation: 0,
-                payload: RequestPayload::QueryAbi,
-            })?;
+            opcode: Opcode::QueryAbi,
+            request_id,
+            target_slot: 0,
+            target_generation: 0,
+            payload: RequestPayload::QueryAbi,
+        })?;
         match response {
             Response {
                 opcode: Opcode::QueryAbi,
@@ -839,12 +839,12 @@ where
         target_generation: u64,
     ) -> Result<ReadUsageResponse, Self::Error> {
         let response = self.exchange_read_only(Request {
-                opcode: Opcode::ReadUsage,
-                request_id,
-                target_slot,
-                target_generation,
-                payload: RequestPayload::ReadUsage,
-            })?;
+            opcode: Opcode::ReadUsage,
+            request_id,
+            target_slot,
+            target_generation,
+            payload: RequestPayload::ReadUsage,
+        })?;
         match response {
             Response {
                 opcode: Opcode::ReadUsage,
@@ -874,12 +874,12 @@ where
         request: DeliveryRequest,
     ) -> Result<QueryDeliveryResponse, Self::Error> {
         let response = self.exchange_read_only(Request {
-                opcode: Opcode::QueryDelivery,
-                request_id,
-                target_slot,
-                target_generation,
-                payload: RequestPayload::QueryDelivery(request),
-            })?;
+            opcode: Opcode::QueryDelivery,
+            request_id,
+            target_slot,
+            target_generation,
+            payload: RequestPayload::QueryDelivery(request),
+        })?;
         match response {
             Response {
                 opcode: Opcode::QueryDelivery,
