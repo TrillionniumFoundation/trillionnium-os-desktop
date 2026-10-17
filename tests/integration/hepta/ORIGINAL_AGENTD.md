@@ -133,6 +133,12 @@ For the external original-library runner it copies the original Cargo.lock and
 rebases the original workspace patch paths into a new manifest. Cargo metadata
 resolves that external package; every shared dependency identity/checksum must
 still occur in the original lock before a `--locked` runner build is allowed.
+The external manifest omits one exact duplicate, unused SSH tungstenite patch
+alias to avoid Cargo 1.95's unstable unused-patch ordering. The retained target
+must remain unused, every other patch mapping is preserved, and two consecutive
+`--locked` metadata commands must leave identical lock bytes before compilation.
+The [lock stability record](PROBE_LOCK_STABILITY.md) gives the failure, exact
+scope, unchanged dependency graph and rejection checks.
 The original Agentd binary itself always uses the untouched original workspace
 and `--locked`. Binary, source and resolved-lock hashes are recorded.
 

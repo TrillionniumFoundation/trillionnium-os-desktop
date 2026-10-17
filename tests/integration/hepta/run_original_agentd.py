@@ -99,13 +99,33 @@ def toml_value(value):
     raise GateError("unsupported_upstream_manifest_value")
 
 
+UNUSED_PATCH_ORIGIN = "ssh://git@github.com/openai-oss-forks/tungstenite-rs.git"
+
+
+def runner_patch_omission(upstream):
+    """One fixed, unused alias is omitted only from the external probe root."""
+    patches = upstream.get("patch", {})
+    retained = patches.get("crates-io", {}).get("tungstenite")
+    alias = patches.get(UNUSED_PATCH_ORIGIN)
+    if not isinstance(retained, dict) or alias != {"tungstenite": retained}:
+        raise GateError("probe_unused_patch_alias_is_not_an_exact_duplicate")
+    if set(retained) != {"git", "rev"}:
+        raise GateError("probe_unused_patch_alias_target_is_not_fixed_git_revision")
+    return {
+        "origin": UNUSED_PATCH_ORIGIN, "package": "tungstenite",
+        "target": retained, "retained_origin": "crates-io",
+        "reason": "Cargo 1.95 does not canonicalize unused patches across origins",
+    }
+
+
 def prepare_runner(source, destination):
-    """Link original libraries; rebase upstream patches without editing them."""
+    """Link original libraries; rebase patches and omit one unused duplicate."""
     workspace = source / "codex-rs"
     upstream = tomllib.loads((workspace / "Cargo.toml").read_text())
     resolver = upstream["workspace"].get("resolver")
     if resolver not in ("1", "2", "3"):
         raise GateError("upstream_explicit_resolver_required")
+    omission = runner_patch_omission(upstream)
     destination.mkdir(mode=0o700)
     (destination / "src").mkdir(mode=0o700)
     lines = [
@@ -122,6 +142,8 @@ def prepare_runner(source, destination):
         lines.append(f'"codex-{crate}"=' + toml_value(dependency))
     lines.append("serde_json=" + toml_value(upstream["workspace"]["dependencies"]["serde_json"]))
     for registry, patches in upstream.get("patch", {}).items():
+        if registry == omission["origin"]:
+            continue
         lines.append("[patch." + json.dumps(registry) + "]")
         for name, original in patches.items():
             patch = original.copy()
@@ -138,19 +160,38 @@ def prepare_runner(source, destination):
     # Cargo adds the external probe package/prunes unused entries. Shared
     # dependencies must retain identities from the original seed lock.
     shutil.copyfile(workspace / "Cargo.lock", destination / "Cargo.lock")
+    return omission
 
 
 def verify_runner_lock(source, runner):
-    def packages(path):
+    def packages(lock):
         return {
             (item["name"], item["version"], item.get("source"), item.get("checksum"))
-            for item in tomllib.loads(path.read_text())["package"]
+            for item in lock["package"]
         }
-    original = packages(source / "codex-rs/Cargo.lock")
-    resolved = packages(runner / "Cargo.lock")
+    original_lock = tomllib.loads((source / "codex-rs/Cargo.lock").read_text())
+    resolved_lock = tomllib.loads((runner / "Cargo.lock").read_text())
+    original = packages(original_lock)
+    resolved = packages(resolved_lock)
     extra = {item for item in resolved - original if item[0] != RUNNER_NAME}
     if extra:
         raise GateError("probe_dependency_identity_drifted_from_original_lock")
+    omission = runner_patch_omission(tomllib.loads((source / "codex-rs/Cargo.toml").read_text()))
+    target = omission["target"]
+    target_source = f'git+{target["git"]}?rev={target["rev"]}#{target["rev"]}'
+    if any(item.get("source") == target_source for item in resolved_lock["package"]):
+        raise GateError("probe_omitted_patch_target_is_active")
+    origin = "git+" + omission["origin"].removesuffix(".git")
+    if any(item.get("source", "").split("?", 1)[0].split("#", 1)[0].removesuffix(".git") == origin
+           for item in resolved_lock["package"]):
+        raise GateError("probe_omitted_patch_origin_is_active")
+    unused = [item for item in resolved_lock.get("patch", {}).get("unused", [])
+              if item.get("source") == target_source]
+    if (len(unused) != 1 or unused[0].get("name") != omission["package"]
+            or (unused[0]["name"], unused[0]["version"], target_source, None) not in original):
+        raise GateError("probe_omitted_patch_target_must_remain_unused_once")
+    return {"omitted_patch": omission, "omitted_target_unused": True,
+            "shared_package_identities_checked": len(resolved - {item for item in resolved if item[0] == RUNNER_NAME})}
 
 
 def build_environment(target):
@@ -374,7 +415,7 @@ def execute(args, source, work, report):
     session_args = session_arguments(args, source, report)
     work.mkdir(mode=0o700)
     runner = work / "probe"
-    prepare_runner(source, runner)
+    report["probe_patch_omission"] = prepare_runner(source, runner)
     observer_target = work / "observer-target"
     original_target = work / "original-target"
     offline = ["--offline"] if args.offline else []
@@ -390,6 +431,12 @@ def execute(args, source, work, report):
         ("original_probe_resolution", UPSTREAM_TOOLCHAIN, runner, original_target, [
             "metadata", *offline, "--format-version", "1", "--manifest-path", str(runner / "Cargo.toml"),
         ]),
+        ("original_probe_locked_metadata_1", UPSTREAM_TOOLCHAIN, runner, original_target, [
+            "metadata", "--locked", *offline, "--format-version", "1", "--manifest-path", str(runner / "Cargo.toml"),
+        ]),
+        ("original_probe_locked_metadata_2", UPSTREAM_TOOLCHAIN, runner, original_target, [
+            "metadata", "--locked", *offline, "--format-version", "1", "--manifest-path", str(runner / "Cargo.toml"),
+        ]),
         ("original_library_probe_build", UPSTREAM_TOOLCHAIN, runner, original_target, [
             "build", "--locked", *offline, "--profile", "dev-small", "--manifest-path", str(runner / "Cargo.toml"), "-j1",
         ]),
@@ -404,9 +451,18 @@ def execute(args, source, work, report):
         report["steps"].append(record)
         bounded_command(command, cwd, build_environment(target), work / f"{name}.log", 3600)
         if name == "original_probe_resolution":
-            verify_runner_lock(source, runner)
+            report["probe_lock_validation"] = verify_runner_lock(source, runner)
+            report["probe_lock_stability"] = {"sha256": sha256(runner / "Cargo.lock"), "locked_metadata_passes": 0}
+        if name.startswith("original_probe_locked_metadata_"):
+            if (sha256(runner / "Cargo.lock") != report["probe_lock_stability"]["sha256"]
+                    or verify_runner_lock(source, runner) != report["probe_lock_validation"]):
+                raise GateError("probe_lock_changed_during_locked_metadata")
+            report["probe_lock_stability"]["locked_metadata_passes"] += 1
         record["status"] = "passed"
     verify_runner_lock(source, runner)
+    if (report["probe_lock_stability"]["locked_metadata_passes"] != 2
+            or sha256(runner / "Cargo.lock") != report["probe_lock_stability"]["sha256"]):
+        raise GateError("probe_lock_changed_during_locked_build")
     verify_source(source)
     binaries = {
         "agentd": original_target / "dev-small/codex-hepta-agentd",
