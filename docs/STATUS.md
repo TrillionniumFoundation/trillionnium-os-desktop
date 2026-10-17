@@ -1,5 +1,25 @@
 # 当前状态
 
+## 2026-10-17：审计修复与 Hepta 只读 UI 接合
+
+本节记录本轮实际增量。起始核对 main 为 `88f859bd2da13aa9e43a321edd172bdf0f7bfcf8`；发布前整合到 `146dedf75c5729ef1930c845eeb60e31e8111c60`，保留期间已合入的 G0 [#105](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/105)、A09 [#142](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/142) 与 A05 [#148](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/148)；A05 的新进程 / 镜像隔离实证完整保留在下段。本轮没有重新编译或启动 Asterinas，既有 kernel/QEMU 结果仍绑定其原始源码。
+
+| 交付 | 本轮结果 | 集成状态与资格 |
+| --- | --- | --- |
+| A08 源码完整性 | 恢复 39 个遗漏文件、4 份变化的历史内容和 2 个执行位；从历史 Git tree 核对，没有损坏基线独有的新文件被覆盖。新增 63 项必需输入清单和 10 项回归；修复只解析第一份 Shell 文件的语法检查；A00 补上执行完整 host suite 的定向 CI | [stacked Draft #156](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/156)，基于 owner `41a8c32`，未合 main |
+| A08 实际 host 验证 | 原始发现 25 项并有 3 个导入错误；历史完整恢复后 166/166 通过；新源码 normal/optimized 各 176/176、0 跳过。真实 Java/JNI 编译与加载通过，完整聚合 exit0 / `host_passed_only` | Binder device 为 BLOCKED/77；Asterinas Binder/seccomp/MAC 源码门槛仍失败；无 Android guest/APK/实机资格 |
+| A07 只读 Agentd client | 固定 Hepta v2 的 Health/Capabilities/Events/RunStatus 白名单、5 秒总期限、64 KiB 帧限额、实际 SO_PEERCRED 与代际核对、受限事件投影。1 个阻塞线程取消回归与 13 个 Linux UDS 测试通过，11 个来源文件及从原源抽取的协议定义核对通过 | [stacked Draft #157](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/157)，A07 与 A10 同一组合候选，未合 main；是 organ 外的主机 client，不是新 Agent/authority/effect owner，也未改变只读 organ 合约 |
+| A10 Session / Rust Shell | Session 独立 worker 执行只读观测，Shell 接收有界 DTO；新增 Runtime 页，断连保留旧观测并标 stale；修复原 Shell inspector 的 Rust E0382 借用错误 | 66 项 UI workspace + 14 项 facade Rust 测试通过；严格 Clippy、fmt 与真实 Session IPC probe 通过，见[证据](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/tree/dfffb4a89b2094d08ea89210097fcc208e98ff68/tests/ui/evidence/2026-10-17-hepta-observer)；实际链路使用协议 fixture，未启动原版 Agentd、未提交 objective、未执行设备效果 |
+| 文档交接 | 纠正架构/路线/验收/CPU 手册及初始 Agent prompts 的过期状态；[INDEX](INDEX.md) 增加逐模块开发/技术/测试映射；新增 [A05 实现与调试手册](agents/handoffs/A05_KERNEL_CONTROL.md) | 只更新文档与交接入口，不变更 HOS2 wire、上游版本或既有 gate 判据 |
+
+A08 已发布修复 HEAD 为 `3ac85d8672e3afcfb70c0ee323108294ef883239`，tree `839a47c23cb457eed3c5a88c8c0dec160bdc87f7`。原始失败、恢复来源、逐文件 hash、normal/optimized 结果及补齐 JDK 前后的真实聚合均保存在 [证据目录](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/tree/3ac85d8672e3afcfb70c0ee323108294ef883239/tests/workloads/android/evidence/2026-10-17-source-integrity)。API 发布 commit metadata 与本地不同，PR 逐提交记录相同 Git tree 的映射，不将不同源码的结果混用。最后追加的 A00 workflow 与手册提交不改变已测 Android 执行源码；YAML 与 Shell 步骤检查通过，云端 runner 是否通过仍须读取实际结果。
+
+**下一条工程边界：**只读观测成功不授予目标提交权限。实际 ObjectiveStart 必须由 Hepta 已有可信 ingress/issuer 和 authority/operations owner 接受原始认证封套，UI 不自签、不生成 authority epoch、不用兼容 RunStart 绕开入口。A05 已合入的只读进程 / 镜像隔离之上的可信能力授予与其余四项 HOS2 操作、A06 exit/reap 最终 CPU 计费与 SMP、A07 durable K↔D/撤销/未知历史/退役仍未闭合；G1/G2、原生设备控制和移动端资格仍未通过。
+
+根 README 保持 0 字节；Asterinas v0.19.0 / `nightly-2026-07-21`、Hepta `f8c9419df6ddeb36ff8b522a50219981fb8d9345` 保持不变。下面按时间保留历史执行记录，其中“当前”“尚未进入 main”等语句只适用于该段绑定的源码，不是本节的现状。
+
+---
+
 ## 2026-10-17：A05 进程身份与 QueryAbi nonce 已合入主干
 
 - **代码已真实合并：**[PR #148](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/148) merge `d8293465bcbbeb192bc53b252df10b9ddcce7a20`。将现有只读 `/dev/hepta-control` QueryAbi 会话绑定实际打开的 Process：fork 继承旧 fd 拒绝、exec 后旧镜像 fd ESTALE、同进程 dup 稳定；进程/镜像用启动内单调且溢出拒绝的64位 nonce 避免 PID+低32位jiffies身份复用。配套 [PR #155](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/155) 增加7项关键客体标记逐项、恰好一次核验和原始串口SHA256，已依次合入 #154/#148，**没有开启HOS2写权限**。
@@ -7,6 +27,8 @@
 - **仍缺的主要产品能力：**可信capabilities的启动后授权、HOS2 `ReadUsage/InstallBudget/QueryDelivery/RetireThrough` 实际效果接口、撤销与幂等/历史确认、Hepta唯一durable owner、SMP生命周期（包括 A06 [PR #138](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/138) 的退出末次CPU借记及cgroup租约）。现在仅有**只读QueryAbi身份隔离**。G1/G2、生产部署仍未完成，根README继续0字节。旧状态快照不应覆盖本段新增实证。
 
 ---
+
+## 历史执行记录
 
 ## 2026-10-17：A03 原生锁后端已经合入主干
 

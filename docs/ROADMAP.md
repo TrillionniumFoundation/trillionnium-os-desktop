@@ -23,13 +23,13 @@ M1a是上游复现，不是宣称新增内核代码。M1c只需Hepta实际用到
 | --- | --- | --- |
 | M0a | 使用support/upstream-lock.json锁定源码；验证完整上游tree、Cargo.lock及许可来源 | 源码checkout与依赖输入可重现，不只写版本号 |
 | M1a | 固定构建容器digest、QEMU/firmware、rootfs manifest与内核配置，按上游入口构建启动 | 实际kernel产物hash、完整serial日志、退出结果 |
-| M1b | 实现NATIVE_ABI五个操作的no_std编解码与客户端格式测试 | 固定头/请求/响应、截断/溢出/unknown/保留位/容量全部覆盖 |
+| M1b | 维护已实现的五操作no_std codec；统一待决语义并保持独立负例/编译变异验收 | 固定头/请求/响应、截断/溢出/unknown/保留位/容量覆盖；证据绑定实际源码与工具链 |
 | M1c | 原Linux构建真实Hepta profile与trace；建立W1必要接口清单 | 明确到ELF、依赖、实际owner装配，不把上游缺口误归OS |
 | M2a | 在上游FileLike/ioctl/进程/调度对象接入CapSpace、单CPU预算与投递表 | 非AI客户端真实安装/观察；fd绑定、CAS、同值更新不充值、copyout重取 |
 | M2b | 接现有Agentd invocation provider/主工具链，保持K/D身份与状态owner | 实际Hepta请求到新内核，非mock结果 |
 | M2c | 受控revoke、停桥/模型、重启及未知操作核对 | 独立应用/I/O继续；不放大权限、不新ID重放 |
 
-文档检查或旧规格模型成功不能推进M1b代码状态；具体执行失败记录在STATUS，不改变本节技术依赖。
+M1b 已有真实 Rust 编码/解码和独立验收，入口为 `tests/abi/run_acceptance.py`。文档检查或旧规格模型成功不能替代该代码证据；具体执行失败记录在STATUS，不改变本节技术依赖。
 
 ## 3. 构建输入与自动化
 
@@ -55,8 +55,10 @@ R-Hardware：实际只读枚举首台候选机/恢复介质，不刷BIOS、不�
 
 ABI问题使用普通客户端缩小；兼容问题使用原ELF差分；Hepta装配问题在原Linux复现。AI策略未优于普通反馈时保留可靠对照，不能为了产品标签强制使用AI。发现核心上游冲突时提交具体复现与改动成本，才调整派生边界。
 
-下一份提交应以真实M1b编解码或M1a构建结果为中心，不再次单纯扩张原则文件。
+下一份实现提交沿已合入的 Process / exec 镜像身份，优先闭合 M2a 的可信能力授予、HOS2 资源操作和最终 CPU 计费；M1c 与 Rust 宿主 UI 的真实 Hepta 只读接合可以并行。可运行宿主客户端不改变新内核 G1/G2 的定义。
 
 ## 6. 本轮之后的真实缺口
 
-完整 Asterinas 派生源码、固定 QEMU 启动证据及 A02 no_std ABI 已合并到 main；A03 仍是 Rust 宿主状态模型。官方 ISO 没有完整下载不妨碍已经核验的独立 initramfs QEMU boot，但不得据此声称裸机。下一实际阻塞为 A05 内核 CapSpace/ioctl、A06 调度器真实 CPU quota（已提交客体中 `cpu.max` 为 NOT_ENFORCED）、A07 沿唯一 Hepta 持久 owner 的真实 K↔D 闭环；A09 GPU 模型未运行实机。仅把真实 Cargo/客体测试记为各自层级结果。
+截至核对的主干 `146dedf75c5729ef1930c845eeb60e31e8111c60`，完整 Asterinas 派生源码、固定 QEMU 启动、A02 no_std ABI、A03 可替换锁后端、A05 只读 QueryAbi 及 Process / exec_epoch / nonce 身份隔离、A06 实际 cgroup CPU 配额均已合并。A03 的 host/Loom 结果仍不是内核 IRQ/SMP 证明；A06 的[已集成实测](../results/organ-backend/2026-10-17/a05-a06-integrated-acceptance.json)包含 10 次一/双 vCPU 配额探针，不能继续将当前主干写为 `NOT_ENFORCED`，也不能外推逐窗口硬上限或完整 SMP 资格。
+
+下一实际阻塞为 A05 在已实现的只读进程 / 镜像隔离上接可信能力授予、管理 / 观察权限和四项剩余设备操作、A06 exit/reap 最终 CPU 计费与资源域生命周期、A07 沿原 Hepta 持久 owner 的 K↔D/确认/退役/重启闭环。A04、A08、A10 的具体实现仍须按各自未合并分支验收；GPU/Android/自研内核 GUI 未获得实机资格。模块手册与源码入口见 [INDEX](INDEX.md)。官方 ISO 未完整下载不妨碍已有独立 initramfs QEMU boot，但不得据此声称裸机。
