@@ -8,6 +8,8 @@
 #include <string.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
+#include <sys/wait.h>
+#include <sys/types.h>
 
 #define HOS_QUERY_IOCTL 0xC0204802U
 static void fail(const char *at){ printf("HEPTA_QUERYABI_FAIL at=%s errno=%d\n",at,errno); }
@@ -102,6 +104,33 @@ int main(void){
     if(ioctl(fd,HOS_QUERY_IOCTL,NULL)!=-1||errno!=EFAULT){fail("null_transport");return 10;}
     errno=0;
     if(ioctl(fd,0xC0204803U,NULL)!=-1||errno!=ENOTTY){fail("unknown_command");return 11;}
+    int dupfd = dup(fd);
+    if (dupfd < 0) { fail("dup_fd"); return 18; }
+    prep(q,10);
+    if (run_query(dupfd,q,c,sizeof c)!=0 || !valid_reply(c,q) ||
+        memcmp(a+40,c+40,16)!=0 || memcmp(a+64,c+64,16)!=0) {
+        fail("dup_session_mismatch"); return 19;
+    }
+    close(dupfd);
+    pid_t child = fork();
+    if (child < 0) { fail("fork_guest"); return 20; }
+    if (child == 0) {
+        if (setuid(65534) != 0) { fail("setuid_guest"); _exit(21); }
+        errno = 0;
+        int guestfd = open("/dev/hepta-control", O_RDWR | O_CLOEXEC);
+        if (guestfd >= 0) close(guestfd);
+        if (guestfd >= 0 || (errno != EACCES && errno != EPERM)) {
+            fail("unprivileged_open_granted"); _exit(22);
+        }
+        puts("HEPTA_NONROOT_OPEN_DENIED");
+        _exit(0);
+    }
+    int child_status = 0;
+    if (waitpid(child, &child_status, 0) != child ||
+        !WIFEXITED(child_status) || WEXITSTATUS(child_status) != 0) {
+        fail("nonroot_child_error"); return 23;
+    }
+    puts("HEPTA_DUP_SESSION_STABLE");
     close(fd2);close(fd);
     puts("HEPTA_QUERYABI_OK ops=QueryAbi_only, independent_sessions=yes, denied_invalid=yes");
     return 0;
