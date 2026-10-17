@@ -3,6 +3,8 @@
 # bundle. This is independent of Cargo. This test needs no compositor and
 # MUST NOT be counted as graphics, IME, GPU, HOS2 effect or kernel success.
 set -euo pipefail
+# The assertions below are security/test gates, never permit -O to disable them.
+export PYTHONOPTIMIZE=0
 bundle="${1:?Usage: replay-packaged-host.sh <tar.gz bundle> <40-hex source SHA>}"
 source_sha="${2:?Missing exact source commit SHA}"
 [[ "$source_sha" =~ ^[0-9a-f]{40}$ ]] || { echo 'Invalid exact source SHA' >&2; exit 2; }
@@ -92,8 +94,16 @@ print(s["session_instance"])
 [[ "$(stat -c %a "$runtime/trillionnium-ui/session.sock")" == 600 ]] || {
     echo 'Live Rust private IPC socket is not 0600' >&2; exit 1;
 }
-if timeout 3s "$service" >"$runtime/duplicate.log" 2>&1; then
-    echo 'A second session illegally acquired a live flock' >&2; exit 1
+duplicate_status=0
+timeout 3s "$service" >"$runtime/duplicate.log" 2>&1 || duplicate_status=$?
+if [[ "$duplicate_status" == 0 || "$duplicate_status" == 124 || "$duplicate_status" == 137 ]]; then
+    echo 'A second session was allowed to run or hung instead of promptly rejecting the held flock' >&2
+    exit 1
+fi
+if ! grep -Eq 'Resource temporarily unavailable|os error 11|WouldBlock' "$runtime/duplicate.log"; then
+    echo 'A second session exited for an unrelated reason rather than exclusive flock denial' >&2
+    cat "$runtime/duplicate.log" >&2
+    exit 1
 fi
 same="$("$ctl" snapshot)"
 printf '%s' "$same" | python3 -c 'import json,sys;s=json.load(sys.stdin);assert s["session_instance"]==sys.argv[1]' "$instance"
