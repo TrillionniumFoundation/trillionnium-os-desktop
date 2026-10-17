@@ -200,7 +200,8 @@ class BootEvidenceTests(unittest.TestCase):
                 path.write_bytes(original)
 
     def run_recorder(self, no_serial=False, timeout=False, replace_sources=False,
-                     tamper_snapshot=False, artifact_args=None, delete_binary=False):
+                     tamper_snapshot=False, artifact_args=None, delete_binary=False,
+                     bios_override=None):
         tools = self.root / "tools"
         tools.mkdir(exist_ok=True)
         binary = tools / "qemu-system-x86_64"
@@ -209,6 +210,9 @@ class BootEvidenceTests(unittest.TestCase):
         selected_log = self.inputs / "selected-serial.raw"
         (self.inputs / "qemu.log").write_bytes(b"stale unrelated default file")
         environment = os.environ.copy()
+        environment.pop("A01_QEMU_BIOS", None)
+        if bios_override is not None:
+            environment["A01_QEMU_BIOS"] = bios_override
         environment.update({
             "PATH": str(tools) + os.pathsep + environment.get("PATH", ""),
             "A01_QEMU_EVIDENCE": str(self.directory / "qemu.json"),
@@ -256,6 +260,46 @@ class BootEvidenceTests(unittest.TestCase):
             self.assertNotEqual(artifact["path"], artifact["source"]["path"])
         self.check(True)
         self.check(True, live=True)
+
+    def test_recorder_explicit_private_bios_with_spaces_uses_selected_snapshot(self):
+        private = self.root / "private firmware with spaces" / "bios 256k.bin"
+        private.parent.mkdir()
+        private.write_bytes(b"private firmware bytes selected explicitly")
+        for missing_original in (False, True):
+            with self.subTest(missing_original=missing_original):
+                if missing_original:
+                    (self.inputs / "bios.bin").unlink()
+                result, record, _ = self.run_recorder(bios_override=str(private))
+                self.assertEqual(result.returncode, 33, result.stdout)
+                self.assertEqual(record["bios_selection"], {
+                    "origin": "A01_QEMU_BIOS", "original_requested_path": "bios.bin",
+                    "selected_path": str(private),
+                })
+                original = record["requested_qemu_args"]
+                self.assertEqual(original[original.index("-bios") + 1], "bios.bin")
+                artifact = record["artifacts"]["-bios"]
+                self.assertEqual(artifact["source"]["requested_path"], str(private))
+                self.assertEqual(artifact["source"]["path"], str(private))
+                self.assertEqual(artifact["sha256"], hashlib.sha256(private.read_bytes()).hexdigest())
+                self.assertNotEqual(artifact["path"], str(private))
+                loaded = json.loads((self.root / "loaded.json").read_text())
+                self.assertEqual(loaded["artifacts"]["-bios"]["path"], artifact["path"])
+                self.assertEqual(loaded["artifacts"]["-bios"]["sha256"], artifact["sha256"])
+                self.check(True, live=True)
+
+    def test_recorder_rejects_invalid_explicit_bios_before_any_tool_execution(self):
+        for value in ("", "bios.bin", str(self.root / "missing-private-bios"), str(self.inputs)):
+            with self.subTest(value=value):
+                result, record, _ = self.run_recorder(bios_override=value)
+                self.assertEqual(result.returncode, 1, result.stdout)
+                self.assertEqual(record["stage"], "artifact_preparation_failed")
+                self.assertIsNone(record["raw_exit_code"])
+                self.assertEqual(record["bios_selection"]["origin"], "A01_QEMU_BIOS")
+                self.assertEqual(record["bios_selection"]["selected_path"], value)
+                self.assertFalse((self.root / "version-started").exists())
+                self.assertFalse((self.root / "loaded.json").exists())
+                self.assertEqual(record["artifacts"], {})
+                self.assertEqual(list(self.directory.glob("artifacts-*")), [])
 
     def test_recorder_missing_selected_log_does_not_use_stale_qemu_log(self):
         result, record, _ = self.run_recorder(no_serial=True)

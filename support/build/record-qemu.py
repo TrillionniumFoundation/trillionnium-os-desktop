@@ -81,6 +81,26 @@ def artifact_positions(arguments):
     return positions
 
 
+def select_bios(arguments, positions, record):
+    """Use a private BIOS only when an explicit absolute regular file is supplied."""
+    original = arguments[positions["-bios"]]
+    value = os.environ.get("A01_QEMU_BIOS")
+    explicit = "A01_QEMU_BIOS" in os.environ
+    record["bios_selection"] = {
+        "origin": "A01_QEMU_BIOS" if explicit else "requested_qemu_args",
+        "original_requested_path": original,
+        "selected_path": value if explicit else original,
+    }
+    actual = list(arguments)
+    if explicit:
+        if not value or not Path(value).is_absolute():
+            raise ValueError("A01_QEMU_BIOS must name a nonempty absolute regular-file path")
+        if not stat.S_ISREG(os.stat(value).st_mode):
+            raise ValueError("A01_QEMU_BIOS must name a regular file")
+        actual[positions["-bios"]] = value
+    return actual
+
+
 def capture_artifact(source, destination=None):
     """Read one stable regular-file FD; optionally create a new exclusive copy."""
     descriptor = os.open(source, os.O_RDONLY | os.O_NONBLOCK)
@@ -151,13 +171,14 @@ def main():
     record = {"requested_qemu_args": requested, "cwd": os.getcwd(), "artifacts": {},
               "raw_exit_code": None, "timed_out": False, "stage": "artifact_preparation"}
     try:
-        artifact_positions(requested)  # Reject malformed requests before even the version probe.
+        positions = artifact_positions(requested)  # Reject malformed requests before the version probe.
+        arguments = select_bios(requested, positions, record)
         binary = shutil.which("qemu-system-x86_64")
         if not binary:
             raise ValueError("qemu-system-x86_64 is not installed")
-        arguments, inherited, gdb_listener = requested, (), None
+        inherited, gdb_listener = (), None
         if "A01_GDB_FD" in os.environ:
-            arguments, inherited, gdb_listener = inherit_gdb_listener(requested, os.environ["A01_GDB_FD"])
+            arguments, inherited, gdb_listener = inherit_gdb_listener(arguments, os.environ["A01_GDB_FD"])
         arguments = snapshot_arguments(arguments, destination, record)
         command = [binary, *arguments]
         record.update(argv=command, shell_command=shlex.join(command),
