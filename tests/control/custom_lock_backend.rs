@@ -200,13 +200,8 @@ fn success(binding: RequestBinding) -> PublishOutcome {
     }
 }
 
-fn ack(core: &Core, through: u64) -> HistoryAck {
-    HistoryAck::from_owner_receipt(
-        core.identity(),
-        through,
-        OwnerReceipt::new(owner_id(), [1; 32]),
-    )
-    .unwrap()
+fn ack(authority: &Authority, through: u64) -> HistoryAck {
+    authority.history_ack(through, [1; 32]).unwrap()
 }
 
 fn deny(core: &Core, token: &Token) {
@@ -299,7 +294,7 @@ fn namespace_lock_roles_route_every_native_operation() {
         Some(DeliveryStatus::Ok)
     );
     let before = trace.snapshot();
-    core.retire_through(&view, ack(&core, 1), &authority)
+    core.retire_through(&view, ack(&authority, 1), &authority)
         .unwrap();
     assert_routes(
         &trace,
@@ -592,7 +587,7 @@ fn custom_backend_reclamation_releases_guards_before_owner_destructor() {
         } else {
             deny(&core, &token);
             let view = core.delivery_view_for(owner_id()).unwrap();
-            core.retire_through(&view, ack(&core, 1), &authority)
+            core.retire_through(&view, ack(&authority, 1), &authority)
                 .unwrap();
         }
         assert_eq!(drops.load(Ordering::SeqCst), 1);

@@ -164,11 +164,7 @@ pub fn exercise_namespace_api() -> Result<DeliveryObservation, DeliveryError> {
     if core.query_delivery(&view, 1)? != terminal {
         return Err(DeliveryError::InvalidPublish);
     }
-    let ack = HistoryAck::from_owner_receipt(
-        core.identity(),
-        1,
-        OwnerReceipt::new(history_owner, [0x71; 32]),
-    )?;
+    let ack = authority.history_ack(1, [0x71; 32])?;
     core.retire_through(&view, ack, &authority)?;
     if core.query_delivery(&view, 1)?.state != DeliveryState::Retired {
         return Err(DeliveryError::InvalidPublish);
