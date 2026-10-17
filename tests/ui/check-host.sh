@@ -41,6 +41,12 @@ trap capture_fmt_on_exit EXIT
 python3 tests/ui/test-session-lock.py
 bash tests/ui/test-smoke-cleanup.sh
 bash tests/ui/test-zombie-liveness.sh
+# Fetch every package recorded in the lockfile, including target-specific
+# entries that are not compiled by the Linux host build. The CI lock gate
+# intentionally runs `cargo metadata --offline` after the real tests; without
+# this prefetch, an uncached Android-only package can make that final
+# reproducibility check fail even though the host build is complete.
+cargo fetch --manifest-path ui/Cargo.toml --locked
 # Build and test first so a formatting failure cannot conceal compiler evidence.
 cargo build --manifest-path ui/Cargo.toml --workspace --bins
 cargo test --manifest-path ui/Cargo.toml --workspace

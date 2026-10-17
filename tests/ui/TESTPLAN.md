@@ -12,8 +12,10 @@ Automated Rust commands (from repository root):
 The UI `--all-targets` test command is also attempted in host validation, but
 the sandbox denies AF_UNIX socket creation (`EPERM`) in
 `ui/session/tests/ipc_reconnect.rs`; that limitation is recorded below.
-These commands never claim a Wayland compositor, live IME, GPU, or target
-kernel pass.
+The host script prefetches every locked package before its post-test offline
+metadata gate, so target-specific lock entries cannot fail reproducibility
+after a successful Linux build. These commands never claim a Wayland
+compositor, live IME, GPU, or target kernel pass.
 On a CI host, `check-host.sh` saves `$RUNNER_TEMP/a10/rustfmt.patch` when
 the strict rustfmt check fails, then exits nonzero. It never reports success
 until that patch is reviewed, committed, and rerun.
