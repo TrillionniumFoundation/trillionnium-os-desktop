@@ -103,7 +103,8 @@ this API shape, not actual A06 integration.
 
 The A06 candidate branch's controller type is private to its scheduler module. A06 must
 provide an owner-module adapter that invokes the typed entry with its actual
-`SubController<CpuController>` type under the existing mutation lock. A05
+`SubController<CpuController>` type, then takes the existing mutation lock
+inside the callback (execution gate before resource lock). A05
 passes token/publisher to that adapter; it must not pin a Process or a new
 wrapper merely to expose a public type instead of the actual resource owner.
 

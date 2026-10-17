@@ -1,9 +1,10 @@
 # A03 control core acceptance — 2026-10-16
 
-Latest follow-up: [VALIDATION-20261017-native.md](VALIDATION-20261017-native.md),
-with 150 tests per backend, stale-token reclamation and a native-owner handoff
-without shadow ResourceDomain state. Previous follow-up:
-[VALIDATION-20261017.md](VALIDATION-20261017.md) (129 tests per backend).
+Latest follow-up: [VALIDATION-20261017-bound.md](VALIDATION-20261017-bound.md),
+with 168 tests per backend and six bounded Loom models (949 schedules), plus
+reservation-bound native execution and weak owner back-links. Previous:
+[VALIDATION-20261017-native.md](VALIDATION-20261017-native.md) (150 tests),
+[VALIDATION-20261017.md](VALIDATION-20261017.md) (129 tests).
 The evidence below remains the historical 113-test acceptance.
 
 Branch: `agents/A03-control-core`. PR: [#50](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/50).

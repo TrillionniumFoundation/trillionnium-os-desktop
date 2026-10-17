@@ -1,0 +1,124 @@
+{
+  "case": "native-owner-strong-backreference-cycle",
+  "evidence_kind": "isolated pinned-source host Rust execution",
+  "captured_at_utc": "2026-10-17T04:10:06.308135+00:00",
+  "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+  "base_commit": "86663ea5a934d085a80fcaeaacca535bfb283b77",
+  "uses_live_worktree_sources": false,
+  "host": "Linux-6.18.55-x86_64-with-glibc2.39",
+  "toolchain_environment": {
+    "RUSTUP_HOME": "/workspace/scratch/629ae4947f18/toolchains/rustup",
+    "CARGO_HOME": "/workspace/scratch/629ae4947f18/toolchains/cargo",
+    "RUSTUP_TOOLCHAIN": "nightly-2026-07-21"
+  },
+  "rustc_verbose": "rustc 1.99.0-nightly (87e5904f5 2026-07-20)\nbinary: rustc\ncommit-hash: 87e5904f5eb6398af6b22eac2802c78934260c48\ncommit-date: 2026-07-20\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.0-nightly\nLLVM version: 22.1.8\n",
+  "sources": [
+    {
+      "repository_path": "libs/os-control/src/lib.rs",
+      "snapshot_path": "/workspace/scratch/629ae4947f18/before-native-cycle-86663ea/src/lib.rs",
+      "git_blob": "de87b4bcc3e43bd16f21dc2995c0f8266722a852",
+      "sha256": "aa37977e31a293d52233cde446ebbbf86b54befcb41536f049503b41f6ca93b7",
+      "bytes": 94414
+    },
+    {
+      "repository_path": "libs/os-control/src/native.rs",
+      "snapshot_path": "/workspace/scratch/629ae4947f18/before-native-cycle-86663ea/src/native.rs",
+      "git_blob": "8df658b37af41c0414699cd63aa58a1b748a1f4e",
+      "sha256": "f32028122d21b097c443eb8692f2dd4181e7a3a436daf1c84c67fcaf6c7a8d80",
+      "bytes": 6010
+    },
+    {
+      "repository_path": "libs/os-control/src/sync.rs",
+      "snapshot_path": "/workspace/scratch/629ae4947f18/before-native-cycle-86663ea/src/sync.rs",
+      "git_blob": "948a12b50648f19214e34cc94616d636a5325743",
+      "sha256": "e2159cc41ef3a1073b1899615f70ea34cc9915052dd41811180bd3e3497784cd",
+      "bytes": 1073
+    }
+  ],
+  "fixture": {
+    "path": "/workspace/scratch/629ae4947f18/before-native-cycle-86663ea/native_owner_cycle_probe.rs",
+    "sha256": "dd36a33ddad52a79b831b4cf3bcc7745cec448f74bc7059aab18c4b1081aa6f9",
+    "bytes": 1771
+  },
+  "artifacts": [
+    {
+      "path": "/workspace/scratch/629ae4947f18/before-native-cycle-86663ea/build/libos_control.rlib",
+      "sha256": "ae9a0510e3ff597db034f6dd7d28bde1042aae38210a720535d1571768b3c16d"
+    },
+    {
+      "path": "/workspace/scratch/629ae4947f18/before-native-cycle-86663ea/build/native_owner_cycle_probe",
+      "sha256": "d07bdcca30707a6871f2366e8c87d9e77fe14c82ad19a7e8b4269d1c3a644b71"
+    }
+  ],
+  "commands": [
+    {
+      "label": "rustc-version",
+      "argv": [
+        "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+        "-Vv"
+      ],
+      "cwd": "/workspace/scratch/629ae4947f18/before-native-cycle-86663ea",
+      "returncode": 0,
+      "stdout": "/workspace/scratch/629ae4947f18/before-native-cycle-86663ea/rustc-version.stdout.log",
+      "stdout_sha256": "d919107c9907c374b7605930746505ef72ce87cc21b641260c6225a7da9d8212",
+      "stderr": "/workspace/scratch/629ae4947f18/before-native-cycle-86663ea/rustc-version.stderr.log",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "compile-library",
+      "argv": [
+        "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+        "--edition=2021",
+        "--crate-type=rlib",
+        "--crate-name=os_control",
+        "--cfg",
+        "feature=\"std\"",
+        "-F",
+        "unsafe-code",
+        "/workspace/scratch/629ae4947f18/before-native-cycle-86663ea/src/lib.rs",
+        "--out-dir",
+        "/workspace/scratch/629ae4947f18/before-native-cycle-86663ea/build"
+      ],
+      "cwd": "/workspace/scratch/629ae4947f18/before-native-cycle-86663ea",
+      "returncode": 0,
+      "stdout": "/workspace/scratch/629ae4947f18/before-native-cycle-86663ea/compile-library.stdout.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "/workspace/scratch/629ae4947f18/before-native-cycle-86663ea/compile-library.stderr.log",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "compile-fixture",
+      "argv": [
+        "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+        "--edition=2021",
+        "/workspace/scratch/629ae4947f18/before-native-cycle-86663ea/native_owner_cycle_probe.rs",
+        "--extern",
+        "os_control=/workspace/scratch/629ae4947f18/before-native-cycle-86663ea/build/libos_control.rlib",
+        "-o",
+        "/workspace/scratch/629ae4947f18/before-native-cycle-86663ea/build/native_owner_cycle_probe"
+      ],
+      "cwd": "/workspace/scratch/629ae4947f18/before-native-cycle-86663ea",
+      "returncode": 0,
+      "stdout": "/workspace/scratch/629ae4947f18/before-native-cycle-86663ea/compile-fixture.stdout.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "/workspace/scratch/629ae4947f18/before-native-cycle-86663ea/compile-fixture.stderr.log",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "run-strong-cycle",
+      "argv": [
+        "/workspace/scratch/629ae4947f18/before-native-cycle-86663ea/build/native_owner_cycle_probe"
+      ],
+      "cwd": "/workspace/scratch/629ae4947f18/before-native-cycle-86663ea",
+      "returncode": 101,
+      "stdout": "/workspace/scratch/629ae4947f18/before-native-cycle-86663ea/run-strong-cycle.stdout.log",
+      "stdout_sha256": "a72482ba13d6c8881b120ceaa2b12625f49443b93afc515d5a91d388528c0e93",
+      "stderr": "/workspace/scratch/629ae4947f18/before-native-cycle-86663ea/run-strong-cycle.stderr.log",
+      "stderr_sha256": "27b1aab10a8e530d49265ba34fbcbfc0a0d3eddac56349f19f1251f3f084cc22"
+    }
+  ],
+  "expected_returncode": 101,
+  "actual_returncode": 101,
+  "expected_failure_reproduced": true,
+  "scope": "A strong native owner -> ControlCore backreference creates an Arc cycle. Explicit rescue lose_history cleanup runs before assertion. The fixed caller pattern opts into WeakControlCore; arbitrary strong cycles are not automatically collected."
+}
