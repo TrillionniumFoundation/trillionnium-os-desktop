@@ -10,6 +10,8 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <sys/types.h>
+#include <stdlib.h>
+#include <limits.h>
 
 #define HOS_QUERY_IOCTL 0xC0204802U
 static void fail(const char *at){ printf("HEPTA_QUERYABI_FAIL at=%s errno=%d\n",at,errno); }
@@ -49,8 +51,30 @@ static int valid_reply(const unsigned char *r,const unsigned char *q){
         read32(r+88)==48 && read32(r+92)==0 && /* HOS2 payload reserved */
         read64(r+96)==2 && read64(r+104)==0;
 }
-int main(void){
+static int run_exec_epoch_check(const char *fd_text){
+    char *end = NULL;
+    long parsed = strtol(fd_text, &end, 10);
+    if (end == fd_text || *end != '\0' || parsed < 0 || parsed >  INT_MAX) {
+        fail("exec_fd_parse"); return 25;
+    }
+    int fd = (int)parsed;
+    unsigned char q[64], r[112];
+    prep(q, 12);
+    errno = 0;
+    if (run_query(fd, q, r, sizeof r) != -1 || errno != ESTALE) {
+        fail("exec_old_fd_not_fenced"); return 26;
+    }
+    puts("HEPTA_EXEC_EPOCH_DENIED");
+    return 0;
+}
+
+int main(int argc, char **argv){
     setvbuf(stdout,NULL,_IONBF,0);
+    if (argc == 2 && strcmp(argv[1], "--exec-epoch-check") == 0) {
+        const char *fd_text = getenv("HEPTA_INHERITED_FD");
+        if (fd_text == NULL) { fail("exec_fd_env"); return 27; }
+        return run_exec_epoch_check(fd_text);
+    }
     int fd=open("/dev/hepta-control",O_RDWR|O_CLOEXEC);
     if(fd<0){fail("open");return 2;}
     unsigned char q[64],a[112],b[112],c[112];
@@ -63,7 +87,10 @@ int main(void){
     if(fd2<0){fail("second_open");return 6;}
     prep(q,2);
     if(run_query(fd2,q,c,sizeof c)!=0||!valid_reply(c,q)){fail("query3");return 7;}
-    if(memcmp(a+40,c+40,16)!=0||memcmp(a+64,c+64,16)==0){fail("space_isolation");return 8;}
+    /* Multiple opens in one process share the same kernel-issued CapSpace;
+     * the fork/exec checks below prove that possession alone does not cross
+     * the process lifetime or image-generation boundary. */
+    if(memcmp(a+40,c+40,16)!=0||memcmp(a+64,c+64,16)!=0){fail("same_process_session");return 8;}
     q[0]='X';errno=0;
     if(run_query(fd,q,c,sizeof c)!=-1||errno!=EPROTONOSUPPORT){
         fail("invalid_magic_protocol");return 9;
@@ -112,9 +139,40 @@ int main(void){
         fail("dup_session_mismatch"); return 19;
     }
     close(dupfd);
+    /* Keep one control fd across execve. The image-generation fence must
+     * invalidate it even though O_CLOEXEC is intentionally absent here. */
+    int execfd = open("/dev/hepta-control", O_RDWR);
+    if (execfd < 0) { fail("exec_open"); return 28; }
+    char execfd_text[32];
+    snprintf(execfd_text, sizeof execfd_text, "%d", execfd);
+    if (setenv("HEPTA_INHERITED_FD", execfd_text, 1) != 0) {
+        fail("exec_fd_env_set"); return 29;
+    }
+    pid_t exec_child = fork();
+    if (exec_child < 0) { fail("exec_fork"); return 30; }
+    if (exec_child == 0) {
+        execl("/bin/hos2-queryabi", "hos2-queryabi", "--exec-epoch-check", NULL);
+        fail("execve_probe"); _exit(31);
+    }
+    int exec_status = 0;
+    if (waitpid(exec_child, &exec_status, 0) != exec_child ||
+        !WIFEXITED(exec_status) || WEXITSTATUS(exec_status) != 0) {
+        fail("exec_epoch_child_error"); return 32;
+    }
+    close(execfd);
     pid_t child = fork();
     if (child < 0) { fail("fork_guest"); return 20; }
     if (child == 0) {
+        /* The inherited fd is intentionally fenced at the process-start
+         * boundary, even while the child still has uid 0. This proves that
+         * fd possession after fork is not a CapSpace credential. */
+        prep(q, 11);
+        errno = 0;
+        if (run_query(fd, q, c, sizeof c) != -1 ||
+            (errno != EPERM && errno != ESTALE)) {
+            fail("fork_inherited_fd_not_fenced"); _exit(24);
+        }
+        puts("HEPTA_FORK_INHERITED_FD_DENIED");
         if (setuid(65534) != 0) { fail("setuid_guest"); _exit(21); }
         errno = 0;
         int guestfd = open("/dev/hepta-control", O_RDWR | O_CLOEXEC);
@@ -132,6 +190,6 @@ int main(void){
     }
     puts("HEPTA_DUP_SESSION_STABLE");
     close(fd2);close(fd);
-    puts("HEPTA_QUERYABI_OK ops=QueryAbi_only, independent_sessions=yes, denied_invalid=yes");
+    puts("HEPTA_QUERYABI_OK ops=QueryAbi_only, process_bound_session=yes, denied_invalid=yes");
     return 0;
 }
