@@ -4,7 +4,8 @@ import sys
 import unittest
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "support/hardware"))
-from pci_identity import canonical_bdf, canonical_nvidia_model, matches_target_model
+from pci_identity import (canonical_bdf, canonical_nvidia_model,
+                          linux_sysfs_bdf, matches_target_model)
 
 import cuda_gemm
 
@@ -61,6 +62,21 @@ class PciIdentityTests(unittest.TestCase):
                           side_effect=AssertionError("must not access CUDA")):
             with self.assertRaises(cuda_gemm.Blocked):
                 cuda_gemm.gpu_gemm("RTX 4060 Ti", "0000:01:00.0")
+
+    def test_linux_sysfs_name_is_numeric_equivalence_not_string_width(self):
+        for raw in ("0000:01:00.0", "00000000:01:00.0", "00000000:01:00.0"):
+            with self.subTest(raw=raw):
+                self.assertEqual(linux_sysfs_bdf(raw), "0000:01:00.0")
+        self.assertEqual(linux_sysfs_bdf("00000001:0A:1F.7"), "0001:0a:1f.7")
+
+    def test_linux_domain_not_truncated_or_slot_overflow_accepted(self):
+        self.assertEqual(linux_sysfs_bdf("00010000:01:00.0"), "00010000:01:00.0")
+        self.assertNotEqual(linux_sysfs_bdf("00010000:01:00.0"),
+                            linux_sysfs_bdf("0000:01:00.0"))
+        for value in ("0000:01:20.0", "00000000:01:20.0", None,
+                      "00000:01:00.0", "0000:01:00.8"):
+            self.assertIsNone(linux_sysfs_bdf(value))
+
 
 
 if __name__ == "__main__":
