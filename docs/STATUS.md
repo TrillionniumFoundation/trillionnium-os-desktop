@@ -1,5 +1,30 @@
 # 当前状态
 
+## 2026-10-17：137 项 Rust 主机回归与真实 Weston 布局收口
+
+**主干实际交付：**[A08 PR #161](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/161) 已普通合并，merge `e962cefbb9c364e0e346aa7327919f1b0eef16c6`；其树与已核对的最终集成树 `20b2cb84087a0b90f1ac1766ad2ef1b221b8df14` 相同。[#156](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/156) 作为已被该集成承接的修复历史关闭，A08 owner 分支未改写。A08 的 184 项正常/优化模式及真实 JNI 结果和 Android 阻塞见下节。
+
+**A07/A10 最新组合仍在 [Draft #157](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/157)。**本轮保留 A10 owner `d4eeeb5e868724f9400b34e1f0c3960723ac94dd` 和协作者新增文本清洗 `a7379fa9b04a4e82b6936a84170c18f418bf3525` 的真实远端历史。实际完成全部 UI 门禁的本地源码是 `9b13dfbcb006a7f8af7cccd338e03174df74bad5`，已发布同树源码为 `865ecf381dc8ddb70470ee173add9bd3b4a6a29a`，完整 Git tree `00923201e6550280e68a5ca662a8a3c3a165a29c`。
+
+本次最终发布 HEAD 为 `e743ee1a06956b51f86c16887f04cd4f518bcccd`，tree `c19e0e318414d24cabe4f9b70c1a1ccc55ead077`。后续增量只增加原版启动门禁、进程清理回归、既有 CI 步骤和文档/证据；实际生产 UI/observer 与既有 fixture/源码契约检查字节未改变。完整 137 项、Weston 与 Clippy 仍绑定上面的被测源码，不伪称在最后证据提交重新执行。入口：[137 项完整记录](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/tree/e743ee1a06956b51f86c16887f04cd4f518bcccd/tests/ui/evidence/2026-10-17-rust188-owner-sync)、[最终组合收据](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/tree/e743ee1a06956b51f86c16887f04cd4f518bcccd/tests/ui/evidence/2026-10-17-final-integration)、[原版门禁与清理证据](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/tree/e743ee1a06956b51f86c16887f04cd4f518bcccd/tests/integration/hepta/evidence/2026-10-17-process-guard)。
+
+| 本轮完成的实际验证 | 结果与边界 |
+| --- | --- |
+| 固定 Rust 1.88 完整 host | 137 项 Rust 测试：UI 73、A07 17、support/ui 39、tests/ui 8；0 失败/忽略。实际 Session/只读 fixture、断连 stale 保留、8 个畸形 IPC、双向 SO_PEERCRED、伪造 server 零请求字节拒绝、验证后的临时进程清理、四 ELF 打包与独立回放全部完成 |
+| 同源码 Weston | 真实 Shell、三个独立应用进程首 layout、取消、合成器 crash/restart、新客户端 layout，以及 Session → A07 fixture → Hepta 页的新鲜投影完成；renderer 为 no-op，不是像素/GPU 验收 |
+| 同源码严格检查 | UI workspace/all-targets Clippy `-D warnings`、四 manifest rustfmt、四份锁不变、332 包 locked/offline metadata 均 exit0；没有继承旧候选的云端绿灯 |
+| 本轮具体修复 | 正常生命周期代次 Starting=spawn、Running=spawn+1、Draining=spawn+2；正常晋级保留历史；实际 Hepta 页布局门禁；非默认 Cargo target 路径；窗口恢复的 Running/PID/first-layout 判据；显示文本 bidi/换行过滤；headless child 已退出时不伪称取消成功 |
+| 原版 Agentd 启动工具 | 固定原版 Supervisor/Fleet/UnixProcessDriver 的构建和进程门禁已形成代码；清理改为 Linux WNOWAIT 保留身份到最后一次组信号之后再回收，6 项独立守卫回归通过，旧实现的 ECHILD 缺陷安全复现通过；没有原版 Agentd 运行资格 |
+| 最终 harness / CI 组合 | 本地 `5f14fde` / 同树远端 `7e7f4d3` 再跑 6 项子进程回归，0 失败/跳过、0.199 秒；YAML 和 8 段 Bash 语法通过。既有 A10 workflow 增加固定 1.88 Clippy 与该 6 项检查；没有加入原版 Agentd 大构建 |
+
+发布时读取的 [Actions 39030185678](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39030185678) 对应最终 HEAD，状态为 queued、无 conclusion。上面的本地执行不代表远端 CI 已通过。
+
+失败证据原样保留。新组合首轮真实 exit101，Session 启动报 EACCES；后续采集的同 inode ELF 为 0644，修改行为方与最初发生时刻**未定位**。保留原产物后移出共享构建缓存，由 Cargo 重新生成；新 ELF 是 0755 且与旧 ELF 字节 SHA-256 相同，完整门禁随后通过。格式门禁捕获的新增测试字符串换行问题以独立提交修复。此前的 Cancel 竞态、严格 lint 和缺失 crate archive 失败亦保留，未把失败日志改成成功。
+
+**尚未跨过的工程边界：**原版 Agentd live gate 仍是 `not_run`；11:12 UTC 的实际预检记录缺 Rust 1.95/cmake 和不足原版构建预算的磁盘，其数值只代表该时点。6 项守卫测试不是原版库编译或原版进程运行。当前 UI 是 Rust `eframe 0.31.1` 的 Linux host 原型，尚无中文字体/真实 IME、像素/GPU、Asterinas UI、移动端或可信 ObjectiveStart/设备效果资格。G1/G2、durable K↔D、授权/撤销/退役等既有缺口没有因主机 UI 通过而关闭。具体实现顺序见 [DESKTOP_UX](DESKTOP_UX.md#6-以-hepta-为核心的-ai-原生-ui)；开发与证据入口见 [INDEX](INDEX.md)。
+
+---
+
 ## 2026-10-17：A08 源码及主机工具整合到 main
 
 本次 A00 集成以实际 main `18d9fca65381f0e84f130c76fa289d5186894d85` 为父提交，纳入 A08 已发布修复 `25c76c1f294a3bf0ccf541f0063b0278899bf979`。整合源码提交为 `194c41d0b2c8f1fabb7b6de4fac8967b862518a6`，与本地实际执行提交 `5a5f03390901c8393d0336f6b5e194e2dfc5eb3e` 的完整 Git tree 同为 `836d3907854eb125eba1fdb492e6baff65ad4c45`。采用独立 A00 主干集成路径，保留两边历史，未改写 A08 owner 分支。
