@@ -3,15 +3,19 @@
 
 Run from any directory: python3 tests/control/loom/run-models.py OUTPUT_DIR
 Optional --offline requires the pinned Cargo.lock dependencies to be cached.
-No production source or Cargo dependency is edited. The exact current lib.rs
-and native.rs bytes are copied into TemporaryDirectory; only sync.rs is replaced
-by the tracked Mutex shim. The temporary source and build artifacts are removed
+No production source or Cargo dependency is edited. Every current src/**/*.rs
+file is copied byte-for-byte into TemporaryDirectory; only src/sync.rs is then
+replaced by the tracked Mutex shim. The temporary source and build artifacts are removed
 on exit. Original source and harness hashes are checked again after validation.
 
 Scope: lock-protected state transitions of the actual implementation, exercised
 with Loom threads and harness atomics. Standard Arc/Weak ownership atomics,
 allocator internals, kernel IRQ/preemption/SMP, real scheduler callbacks, crashes,
 and executions exceeding the explicit model bounds remain outside this check.
+Panic/unwind recovery is also excluded: Loom 0.7.2's Mutex::lock internally
+unwraps its underlying std Mutex after poison before the adapter can recover.
+The malformed-outcome model checks a pending post-effect path without unwind;
+it must not be reported as verification of panic recovery.
 """
 
 import argparse
@@ -38,11 +42,9 @@ def main():
     repo = harness.parents[2]
     output = args.output_dir.resolve()
     output.mkdir(parents=True, exist_ok=True)
-    source_paths = [
-        repo / "libs/os-control/src/lib.rs",
-        repo / "libs/os-control/src/native.rs",
-        repo / "libs/os-control/src/sync.rs",
-    ]
+    source_root = repo / "libs/os-control/src"
+    source_paths = sorted(source_root.rglob("*.rs"))
+    source_inventory = [str(path.relative_to(repo)) for path in source_paths]
     harness_paths = [harness / name for name in
                      ("Cargo.toml", "Cargo.lock", "models.rs", "sync.rs", "run-models.py")]
     inputs = {str(path.relative_to(repo)): path.read_bytes()
@@ -55,9 +57,11 @@ def main():
         "loom_version": "0.7.2",
         "source_hashes": hashes,
         "source_unchanged": False,
+        "source_inventory": source_inventory,
+        "source_inventory_unchanged": False,
         "models": {},
         "bounds": {
-            "max_threads": 3,
+            "max_threads": 4,
             "preemption_bound": 3,
             "max_branches": 10000,
             "max_permutations": None,
@@ -68,7 +72,8 @@ def main():
             "allocator internals and allocation failure",
             "real kernel IRQ, preemption, SMP, lock adapters and scheduler mutation",
             "real credentials and Hepta durable acknowledgement/crash recovery",
-            "more than two concurrent workers or more than three preemptions",
+            "more than three concurrent workers or more than three preemptions",
+            "panic/unwind recovery: Loom 0.7.2 Mutex::lock internally unwraps on poison",
             "arbitrary request values and long sequence histories beyond each fixture",
         ],
         "commands": [],
@@ -91,10 +96,13 @@ def main():
         root = Path(temporary)
         src = root / "src"
         src.mkdir()
-        for name in ("lib.rs", "native.rs"):
-            data = inputs[f"libs/os-control/src/{name}"]
-            (src / name).write_bytes(data)
-            assert (src / name).read_bytes() == data
+        for path in source_paths:
+            relative = path.relative_to(source_root)
+            copied = src / relative
+            copied.parent.mkdir(parents=True, exist_ok=True)
+            data = inputs[str(path.relative_to(repo))]
+            copied.write_bytes(data)
+            assert copied.read_bytes() == data
         for name in ("Cargo.toml", "Cargo.lock", "models.rs"):
             (root / name).write_bytes(inputs[f"tests/control/loom/{name}"])
         (src / "sync.rs").write_bytes(inputs["tests/control/loom/sync.rs"])
@@ -138,13 +146,21 @@ def main():
             "publish_and_observe_never_tear",
             "history_loss_and_callback_fence",
             "native_typed_owner_same_token_effect_once",
+            "retire_execute_loss_threeway",
+            "two_deliveries_same_resource_cas",
+            "malformed_callback_reconcile_and_retry",
+            "management_revoke_and_native_commit_share_owner_lock",
         }
         if not exit_code and (set(receipt["models"]) != expected_models
                               or any(count <= 0 for count in receipt["models"].values())):
-            print("ERROR: expected six named models with positive schedule counts", file=sys.stderr)
+            print("ERROR: expected ten named models with positive schedule counts", file=sys.stderr)
             exit_code = 1
-    after = {name: digest((repo / name).read_bytes()) for name in hashes}
-    receipt["source_unchanged"] = after == hashes
+    after_inventory = [str(path.relative_to(repo)) for path in
+                       sorted(source_root.rglob("*.rs"))]
+    receipt["source_inventory_unchanged"] = after_inventory == source_inventory
+    after = {name: digest((repo / name).read_bytes()) if (repo / name).is_file() else None
+             for name in hashes}
+    receipt["source_unchanged"] = after == hashes and receipt["source_inventory_unchanged"]
     if not receipt["source_unchanged"]:
         print("ERROR: input source or harness changed while modeling", file=sys.stderr)
         exit_code = 1
