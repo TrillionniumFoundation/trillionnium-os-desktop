@@ -1,0 +1,23 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.00s
+     Running ../../tests/control/resource_lifecycle.rs (libs/os-control/target/debug/deps/resource_lifecycle-d6c825de12c21a66)
+
+running 1 test
+test depth_limit_rejection_preserves_child_metadata_and_identity_capacity ... FAILED
+
+failures:
+
+---- depth_limit_rejection_preserves_child_metadata_and_identity_capacity stdout ----
+
+thread 'depth_limit_rejection_preserves_child_metadata_and_identity_capacity' (15) panicked at ../../tests/control/resource_lifecycle.rs:244:5:
+assertion `left == right` failed
+  left: None
+ right: Some(Exhausted)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    depth_limit_rejection_preserves_child_metadata_and_identity_capacity
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 9 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--test resource_lifecycle`
