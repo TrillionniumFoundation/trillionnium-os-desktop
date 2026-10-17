@@ -246,8 +246,11 @@ fn build_kernel_elf(
         rustflags.push("-C target-feature=+zicbom");
     }
 
+    // Inherit RUSTUP_TOOLCHAIN from the caller. The repository build runner
+    // pins nightly-2026-07-21 because COMMON_CARGO_ARGS contains -Zbuild-std;
+    // removing this variable makes rustup fall back to stable in the generated
+    // base-crate workspace and fails before the kernel is compiled.
     let mut command = cargo();
-    command.env_remove("RUSTUP_TOOLCHAIN");
     command.env(
         "OSDK_BUILD_USERNAME",
         whoami::fallible::username().unwrap_or("unknown".to_string()),
