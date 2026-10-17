@@ -1,0 +1,74 @@
+warning: patch `crossterm v0.29.0 (https://github.com/openai-oss-forks/crossterm?rev=45fecb9508105988f42fe6ff0441783ed3717f92#45fecb95)` was not used in the crate graph
+warning: patch `imbl v6.1.0 (/workspace/scratch/98f315e377b2/next-hepta-source/codex-rs/third_party/imbl-6.1.0)` was not used in the crate graph
+warning: patch `matrix-sdk-sqlite v0.18.0 (/workspace/scratch/98f315e377b2/next-hepta-source/codex-rs/third_party/matrix-sdk-sqlite-0.18.0)` was not used in the crate graph
+warning: patch `tokio-tungstenite v0.28.0 (https://github.com/openai-oss-forks/tokio-tungstenite?rev=0e5b2d73aa18dd9f0a50ee9ff199d5aef7594186#0e5b2d73)` was not used in the crate graph
+warning: patch `tungstenite v0.27.0 (https://github.com/openai-oss-forks/tungstenite-rs?rev=4fffad30fe373adbdcffab9545e9e9bf4f2fc19f#4fffad30)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+warning: function `read_restart_journal` is never used
+   --> /workspace/scratch/98f315e377b2/next-hepta-source/codex-rs/hepta-supervisor/src/restart_journal.rs:313:15
+    |
+313 | pub(crate) fn read_restart_journal(
+    |               ^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `restore_window` is never used
+   --> /workspace/scratch/98f315e377b2/next-hepta-source/codex-rs/hepta-supervisor/src/restart_journal.rs:356:15
+    |
+356 | pub(crate) fn restore_window(
+    |               ^^^^^^^^^^^^^^
+
+warning: methods `reset_restart_budget_for_release`, `reset_restart_budget`, and `restore_restart_budget` are never used
+  --> /workspace/scratch/98f315e377b2/next-hepta-source/codex-rs/hepta-supervisor/src/restart_state.rs:37:19
+   |
+19 | impl<D: ProcessDriver> Supervisor<D> {
+   | ------------------------------------ methods in this implementation
+...
+37 |     pub(crate) fn reset_restart_budget_for_release(
+   |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+47 |     pub(crate) fn reset_restart_budget(
+   |                   ^^^^^^^^^^^^^^^^^^^^
+...
+64 |     pub(crate) fn restore_restart_budget(
+   |                   ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `reset_slot_restart_budget` is never used
+   --> /workspace/scratch/98f315e377b2/next-hepta-source/codex-rs/hepta-supervisor/src/restart_state.rs:147:4
+    |
+147 | fn reset_slot_restart_budget<P>(slot: &mut AgentSlot<P>) {
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: fields `restart_window_started_at`, `restart_window_started_unix_millis`, `restart_retry_at`, `restart_automatic`, `restart_after_exit`, and `restart_exhausted` are never read
+   --> /workspace/scratch/98f315e377b2/next-hepta-source/codex-rs/hepta-supervisor/src/runtime.rs:153:9
+    |
+145 | pub(crate) struct AgentSlot<P> {
+    |                   --------- fields in this struct
+...
+153 |     pub restart_window_started_at: Option<Instant>,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^
+154 |     pub restart_window_started_unix_millis: Option<u64>,
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+155 |     pub restart_retry_at: Option<Instant>,
+    |         ^^^^^^^^^^^^^^^^
+156 |     pub restart_automatic: bool,
+    |         ^^^^^^^^^^^^^^^^^
+157 |     pub restart_after_exit: bool,
+    |         ^^^^^^^^^^^^^^^^^^
+158 |     pub restart_exhausted: bool,
+    |         ^^^^^^^^^^^^^^^^^
+
+warning: `codex-hepta-supervisor` (lib) generated 5 warnings
+   Compiling hepta-original-observer-probe v0.0.0 (/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-02/probe)
+    Finished `dev-small` profile [unoptimized] target(s) in 1.76s
+     Running unittests src/main.rs (/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/target/dev-small/deps/hepta_original_observer_probe-8dacfeac5c9917c4)
+
+running 2 tests
+test original_session_probe::tests::actual_stop_can_publish_draining_after_the_last_live_capture ... ok
+test original_session_probe::tests::stale_cut_cannot_rebind_spawn_erase_history_or_claim_fresh_success ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

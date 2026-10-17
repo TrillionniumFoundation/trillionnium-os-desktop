@@ -1,0 +1,213 @@
+{
+  "started_at_utc": "2026-10-17T22:31:29.716097+00:00",
+  "qualification": "lock_resolution_diagnostic_only",
+  "steps": [
+    {
+      "command": [
+        "/workspace/scratch/98f315e377b2/next-tools/cargo/bin/rustup",
+        "run",
+        "1.95.0",
+        "cargo",
+        "metadata",
+        "--offline",
+        "--format-version",
+        "1",
+        "--manifest-path",
+        "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/lock-diagnostic-02/probe/Cargo.toml"
+      ],
+      "cwd": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/lock-diagnostic-02/probe",
+      "started_at_utc": "2026-10-17T22:31:29.716701+00:00",
+      "status": "passed",
+      "deadline_seconds": 120,
+      "minimum_disk_reserve_bytes": 734003200,
+      "maximum_nonreclaimable_bytes": 7516192768,
+      "resource_samples": [
+        {
+          "elapsed_seconds": 0.0,
+          "free_bytes": 2619650048,
+          "nonreclaimable_bytes": 2018389336
+        },
+        {
+          "elapsed_seconds": 1.0,
+          "free_bytes": 2616225792,
+          "nonreclaimable_bytes": 2018493360
+        }
+      ],
+      "pid": 607203,
+      "exit_code": 0,
+      "ended_at_utc": "2026-10-17T22:31:30.717885+00:00",
+      "log": {
+        "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/lock-diagnostic-02/metadata-1.log",
+        "bytes": 3655709,
+        "sha256": "34c81f8624af0c3342b3850dfc6f9da8cd7c1e498a2b552da29d3f74257f3709"
+      }
+    },
+    {
+      "command": [
+        "/workspace/scratch/98f315e377b2/next-tools/cargo/bin/rustup",
+        "run",
+        "1.95.0",
+        "cargo",
+        "metadata",
+        "--offline",
+        "--format-version",
+        "1",
+        "--manifest-path",
+        "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/lock-diagnostic-02/probe/Cargo.toml",
+        "--locked"
+      ],
+      "cwd": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/lock-diagnostic-02/probe",
+      "started_at_utc": "2026-10-17T22:31:30.792076+00:00",
+      "status": "passed",
+      "deadline_seconds": 120,
+      "minimum_disk_reserve_bytes": 734003200,
+      "maximum_nonreclaimable_bytes": 7516192768,
+      "resource_samples": [
+        {
+          "elapsed_seconds": 0.0,
+          "free_bytes": 2616225792,
+          "nonreclaimable_bytes": 2021619328
+        },
+        {
+          "elapsed_seconds": 1.0,
+          "free_bytes": 2612568064,
+          "nonreclaimable_bytes": 2025894616
+        }
+      ],
+      "pid": 607213,
+      "exit_code": 0,
+      "ended_at_utc": "2026-10-17T22:31:31.793153+00:00",
+      "log": {
+        "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/lock-diagnostic-02/metadata-2.log",
+        "bytes": 3655709,
+        "sha256": "34c81f8624af0c3342b3850dfc6f9da8cd7c1e498a2b552da29d3f74257f3709"
+      }
+    },
+    {
+      "command": [
+        "/workspace/scratch/98f315e377b2/next-tools/cargo/bin/rustup",
+        "run",
+        "1.95.0",
+        "cargo",
+        "metadata",
+        "--offline",
+        "--format-version",
+        "1",
+        "--manifest-path",
+        "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/lock-diagnostic-02/probe/Cargo.toml",
+        "--locked"
+      ],
+      "cwd": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/lock-diagnostic-02/probe",
+      "started_at_utc": "2026-10-17T22:31:31.899678+00:00",
+      "status": "passed",
+      "deadline_seconds": 120,
+      "minimum_disk_reserve_bytes": 734003200,
+      "maximum_nonreclaimable_bytes": 7516192768,
+      "resource_samples": [
+        {
+          "elapsed_seconds": 0.0,
+          "free_bytes": 2612568064,
+          "nonreclaimable_bytes": 2028152520
+        },
+        {
+          "elapsed_seconds": 1.001,
+          "free_bytes": 2608910336,
+          "nonreclaimable_bytes": 2049352824
+        }
+      ],
+      "pid": 607224,
+      "exit_code": 0,
+      "ended_at_utc": "2026-10-17T22:31:32.901741+00:00",
+      "log": {
+        "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/lock-diagnostic-02/metadata-3.log",
+        "bytes": 3655709,
+        "sha256": "34c81f8624af0c3342b3850dfc6f9da8cd7c1e498a2b552da29d3f74257f3709"
+      }
+    }
+  ],
+  "build_or_runtime_attempted": false,
+  "source_sha256": "21dd4a2e0621240a75f5ce37bad93da0a37352fbaa78554a50e048abe6a45fd0",
+  "omission": {
+    "origin": "ssh://git@github.com/openai-oss-forks/tungstenite-rs.git",
+    "package": "tungstenite",
+    "target": {
+      "git": "https://github.com/openai-oss-forks/tungstenite-rs",
+      "rev": "4fffad30fe373adbdcffab9545e9e9bf4f2fc19f"
+    },
+    "retained_origin": "crates-io",
+    "reason": "Cargo 1.95 does not canonicalize unused patches across origins"
+  },
+  "observations": [
+    {
+      "index": 1,
+      "locked": false,
+      "before_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+      "after_sha256": "72cb7346158f4c3514922cc7b9020f9b9d290aec78e047264a738d52afe6ed68",
+      "validation": {
+        "omitted_patch": {
+          "origin": "ssh://git@github.com/openai-oss-forks/tungstenite-rs.git",
+          "package": "tungstenite",
+          "target": {
+            "git": "https://github.com/openai-oss-forks/tungstenite-rs",
+            "rev": "4fffad30fe373adbdcffab9545e9e9bf4f2fc19f"
+          },
+          "retained_origin": "crates-io",
+          "reason": "Cargo 1.95 does not canonicalize unused patches across origins"
+        },
+        "omitted_target_unused": true,
+        "shared_package_identities_checked": 732
+      }
+    },
+    {
+      "index": 2,
+      "locked": true,
+      "before_sha256": "72cb7346158f4c3514922cc7b9020f9b9d290aec78e047264a738d52afe6ed68",
+      "after_sha256": "72cb7346158f4c3514922cc7b9020f9b9d290aec78e047264a738d52afe6ed68",
+      "validation": {
+        "omitted_patch": {
+          "origin": "ssh://git@github.com/openai-oss-forks/tungstenite-rs.git",
+          "package": "tungstenite",
+          "target": {
+            "git": "https://github.com/openai-oss-forks/tungstenite-rs",
+            "rev": "4fffad30fe373adbdcffab9545e9e9bf4f2fc19f"
+          },
+          "retained_origin": "crates-io",
+          "reason": "Cargo 1.95 does not canonicalize unused patches across origins"
+        },
+        "omitted_target_unused": true,
+        "shared_package_identities_checked": 732
+      }
+    },
+    {
+      "index": 3,
+      "locked": true,
+      "before_sha256": "72cb7346158f4c3514922cc7b9020f9b9d290aec78e047264a738d52afe6ed68",
+      "after_sha256": "72cb7346158f4c3514922cc7b9020f9b9d290aec78e047264a738d52afe6ed68",
+      "validation": {
+        "omitted_patch": {
+          "origin": "ssh://git@github.com/openai-oss-forks/tungstenite-rs.git",
+          "package": "tungstenite",
+          "target": {
+            "git": "https://github.com/openai-oss-forks/tungstenite-rs",
+            "rev": "4fffad30fe373adbdcffab9545e9e9bf4f2fc19f"
+          },
+          "retained_origin": "crates-io",
+          "reason": "Cargo 1.95 does not canonicalize unused patches across origins"
+        },
+        "omitted_target_unused": true,
+        "shared_package_identities_checked": 732
+      }
+    }
+  ],
+  "resolved_lock_sha256": "72cb7346158f4c3514922cc7b9020f9b9d290aec78e047264a738d52afe6ed68",
+  "package_graph": {
+    "package_count": 733,
+    "package_entries_identical_to_failed_original_alias_manifest": true,
+    "normalized_actual_cargo_resolve_identical": true,
+    "normalized_graph_sha256": "1dd8dc978f55fbdd2b8c90551eaadcfe6a5b3709a82fc108de7cdc5d355e04bd",
+    "unused_patch_count_before": 6,
+    "unused_patch_count_after": 5
+  },
+  "status": "passed",
+  "ended_at_utc": "2026-10-17T22:31:33.134774+00:00"
+}

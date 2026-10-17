@@ -1,0 +1,12 @@
+warning: patch `tungstenite v0.27.0 (https://github.com/openai-oss-forks/tungstenite-rs?rev=4fffad30fe373adbdcffab9545e9e9bf4f2fc19f#4fffad30)` was not used in the crate graph
+warning: patch `crossterm v0.29.0 (https://github.com/openai-oss-forks/crossterm?rev=45fecb9508105988f42fe6ff0441783ed3717f92#45fecb95)` was not used in the crate graph
+warning: patch `imbl v6.1.0 (/workspace/scratch/98f315e377b2/next-hepta-source/codex-rs/third_party/imbl-6.1.0)` was not used in the crate graph
+warning: patch `matrix-sdk-sqlite v0.18.0 (/workspace/scratch/98f315e377b2/next-hepta-source/codex-rs/third_party/matrix-sdk-sqlite-0.18.0)` was not used in the crate graph
+warning: patch `tokio-tungstenite v0.28.0 (https://github.com/openai-oss-forks/tokio-tungstenite?rev=0e5b2d73aa18dd9f0a50ee9ff199d5aef7594186#0e5b2d73)` was not used in the crate graph
+warning: patch `tungstenite v0.27.0 (https://github.com/openai-oss-forks/tungstenite-rs?rev=4fffad30fe373adbdcffab9545e9e9bf4f2fc19f#4fffad30)` was not used in the crate graph
+help: Check that the patched package version and available features are compatible
+      with the dependency requirements. If the patch has a different version from
+      what is locked in the Cargo.lock file, run `cargo update` to use the new
+      version. This may also occur with an optional dependency that is not enabled.
+error: cannot update the lock file /workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-01/probe/Cargo.lock because --locked was passed to prevent this
+help: to generate the lock file without accessing the network, remove the --locked flag and use --offline instead.
