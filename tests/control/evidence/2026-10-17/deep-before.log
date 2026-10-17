@@ -1,0 +1,46 @@
+Baseline commit: 51327db35f6e51c1818b59274275a022b7248efc
+Evidence class: Linux host model; recursive Arc-backed resource-family destruction; no kernel execution
+Baseline library snapshots: git show 51327db35f6e51c1818b59274275a022b7248efc:libs/os-control/src/lib.rs and sync.rs into /tmp/a03-resource-depth-baseline/
+Baseline library command: env RUSTUP_HOME=/workspace/scratch/629ae4947f18/toolchains/rustup CARGO_HOME=/workspace/scratch/629ae4947f18/toolchains/cargo /workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc +nightly-2026-07-21 --edition=2021 --crate-name os_control --crate-type rlib --cfg 'feature="std"' /tmp/a03-resource-depth-baseline/lib.rs -o /tmp/liba03_resource_deep.rlib
+Compiler: rustc 1.99.0-nightly (87e5904f5 2026-07-20)
+Compile command: /workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc +nightly-2026-07-21 --edition=2021 --extern os_control=/tmp/liba03_resource_deep.rlib /workspace/scratch/629ae4947f18/followup-evidence/deep-before.rs -o /tmp/a03-resource-deep-before
+Compile exit: 0
+
+
+Command: /tmp/a03-resource-deep-before 64 65536
+Return code: 0
+Equivalent shell exit: 0
+Stdout:
+
+Stderr:
+constructed 64 domains on 65536-byte stack; dropping final handle
+drop complete
+
+Command: /tmp/a03-resource-deep-before 128 65536
+Return code: 0
+Equivalent shell exit: 0
+Stdout:
+
+Stderr:
+constructed 128 domains on 65536-byte stack; dropping final handle
+drop complete
+
+Command: /tmp/a03-resource-deep-before 256 65536
+Return code: 0
+Equivalent shell exit: 0
+Stdout:
+
+Stderr:
+constructed 256 domains on 65536-byte stack; dropping final handle
+drop complete
+
+Command: /tmp/a03-resource-deep-before 1024 65536
+Return code: -6
+Equivalent shell exit: 134
+Stdout:
+
+Stderr:
+constructed 1024 domains on 65536-byte stack; dropping final handle
+
+thread '<unknown>' (49) has overflowed its stack
+fatal runtime error: stack overflow, aborting

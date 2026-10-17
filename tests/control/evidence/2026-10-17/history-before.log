@@ -1,0 +1,44 @@
+   Compiling os-control v0.1.0 (/workspace/scratch/629ae4947f18/trillionnium-os-desktop/libs/os-control)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.62s
+     Running ../../tests/control/nonblocking_history.rs (libs/os-control/target/debug/deps/nonblocking_history-fb80b7e829e044b2)
+
+running 5 tests
+test terminal_observations_never_regress_during_concurrent_read_and_publication_retries ... ok
+test closing_namespace_fences_writes_while_queries_and_reads_remain_available ... FAILED
+test retire_of_paused_callback_returns_pending_prefix_without_waiting ... FAILED
+test invariant_audit_can_observe_paused_callback_without_waiting ... FAILED
+test paused_callback_query_returns_reserved_and_does_not_hold_namespace ... FAILED
+
+failures:
+
+---- closing_namespace_fences_writes_while_queries_and_reads_remain_available stdout ----
+
+thread 'closing_namespace_fences_writes_while_queries_and_reads_remain_available' (201) panicked at ../../tests/control/nonblocking_history.rs:306:21:
+closure must fence admission before waiting for callback: Timeout
+
+---- retire_of_paused_callback_returns_pending_prefix_without_waiting stdout ----
+
+thread 'retire_of_paused_callback_returns_pending_prefix_without_waiting' (204) panicked at ../../tests/control/nonblocking_history.rs:178:28:
+retirement must inspect pending state without waiting: Timeout
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- invariant_audit_can_observe_paused_callback_without_waiting stdout ----
+
+thread 'invariant_audit_can_observe_paused_callback_without_waiting' (202) panicked at ../../tests/control/nonblocking_history.rs:214:21:
+invariant audit must not wait for external callback: Timeout
+
+---- paused_callback_query_returns_reserved_and_does_not_hold_namespace stdout ----
+
+thread 'paused_callback_query_returns_reserved_and_does_not_hold_namespace' (203) panicked at ../../tests/control/nonblocking_history.rs:132:18:
+query must finish while callback remains paused: Timeout
+
+
+failures:
+    closing_namespace_fences_writes_while_queries_and_reads_remain_available
+    invariant_audit_can_observe_paused_callback_without_waiting
+    paused_callback_query_returns_reserved_and_does_not_hold_namespace
+    retire_of_paused_callback_returns_pending_prefix_without_waiting
+
+test result: FAILED. 1 passed; 4 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.00s
+
+error: test failed, to rerun pass `--test nonblocking_history`
