@@ -4,6 +4,7 @@ set -euo pipefail
 build_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 project_dir=$(cd "$build_dir/../.." && pwd)
 kernel_dir="$project_dir/kernel/asterinas"
+# cargo-osdk emits the generated base crate as <kernel>-osdk-bin; A06 consumes that ELF.
 target=${1:-kernel}
 case "$target" in kernel|run_kernel) ;; *) echo "usage: $0 [kernel|run_kernel]" >&2; exit 2 ;; esac
 export PATH="${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
