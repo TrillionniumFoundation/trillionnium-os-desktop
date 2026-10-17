@@ -7,6 +7,13 @@ trap 'rm -rf -- "$scratch"' EXIT HUP INT TERM
 cc -std=c11 -O2 -Wall -Wextra -Werror -pedantic \
    "$here/hos2_queryabi_probe.c" -o "$scratch/probe"
 "$scratch/probe" --selftest
+# Compile the *same* C guest verifier into a pure Linux host negative oracle.
+# Fail closed if either mandatory native guest source or the test disappears.
+test -f "$here/queryabi_guest.c" && test ! -L "$here/queryabi_guest.c"
+test -f "$here/queryabi_reply_contract.c" && test ! -L "$here/queryabi_reply_contract.c"
+cc -std=c11 -O2 -Wall -Wextra -Werror -pedantic \
+   "$here/queryabi_reply_contract.c" -o "$scratch/reply-contract"
+"$scratch/reply-contract"
 set +e
 "$scratch/probe" --device /dev/null --ioctl-cmd 0x123456 >"$scratch/refusal.log" 2>&1
 result=$?
