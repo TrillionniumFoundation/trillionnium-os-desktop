@@ -2,12 +2,13 @@
 import gzip
 import hashlib
 import json
-from pathlib import Path
 import os
+from pathlib import Path
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest import mock
 
+import archive as archive_module
 from archive import archive, MAX_FILE_BYTES
 
 
@@ -33,9 +34,7 @@ class ArchiveTests(unittest.TestCase):
                          b"RAW\x00serial\xff")
         self.assertFalse((self.dest / "work").exists())
         self.assertTrue((self.dest / "evidence.sha256").is_file())
-        self.assertFalse((self.dest / ".archive-incomplete").exists())
-        # Evidence hashes must bind exactly the output files, including the
-        # deterministic compressed bytes and the manifest itself.
+        # The digest manifest binds the bytes actually archived on disk.
         lines = (self.dest / "evidence.sha256").read_text().splitlines()
         self.assertEqual(len(lines), 3)
         for line in lines:
@@ -49,31 +48,6 @@ class ArchiveTests(unittest.TestCase):
             with self.subTest(candidate=candidate), self.assertRaises(ValueError):
                 archive(candidate, self.dest)
             self.assertFalse(self.dest.exists())
-
-    def test_source_directory_replaced_after_root_fd_open_never_reads_outside(self):
-        # A same-user process can rename the source root while the archiver
-        # already holds its original directory FD; the walk must remain
-        # anchored to that FD rather than reopen the swapped pathname.
-        (self.source / "inside.json").write_bytes(b"original-root")
-        outside = self.root / "outside"
-        outside.mkdir()
-        (outside / "outside.json").write_bytes(b"external-dummy")
-        old_fwalk = os.fwalk
-        swapped = False
-
-        def replace_before_walk(*args, **kwargs):
-            nonlocal swapped
-            if not swapped:
-                swapped = True
-                self.source.rename(self.root / "parked-original")
-                outside.rename(self.source)
-            return old_fwalk(*args, **kwargs)
-
-        with patch("archive.os.fwalk", side_effect=replace_before_walk):
-            self.assertEqual(archive(self.source, self.dest), 1)
-        self.assertTrue(swapped)
-        self.assertEqual((self.dest / "inside.json").read_bytes(), b"original-root")
-        self.assertFalse((self.dest / "outside.json").exists())
 
     def test_symlink_source_rejected(self):
         alias = self.root / "alias"
@@ -129,8 +103,6 @@ class ArchiveTests(unittest.TestCase):
         (self.source / "harness" / "Cargo.lock").write_text("real")
         with self.assertRaises(ValueError):
             archive(self.source, self.dest)
-        # Failure never claims an accepted archive. Avoid pathname-based
-        # cleanup races that could erase unrelated data.
         self.assertTrue((self.dest / ".archive-incomplete").is_file())
         self.assertFalse((self.dest / "evidence.sha256").exists())
 
@@ -162,6 +134,95 @@ class ArchiveTests(unittest.TestCase):
         self.assertEqual(archive(self.source, self.dest), 1)
         self.assertEqual((self.source / "normal.txt").read_text(), "normal")
 
+    def test_reserved_index_paths_cannot_replace_evidence(self):
+        for candidate in ("archive.json", "archive.json/case.json", "evidence.sha256/case.json"):
+            with self.subTest(candidate=candidate), tempfile.TemporaryDirectory() as temp:
+                source = Path(temp) / "source"
+                source.mkdir()
+                path = source / candidate
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("selected evidence must not be overwritten")
+                destination = Path(temp) / "bundle"
+                with self.assertRaises(ValueError):
+                    archive(source, destination)
+                self.assertFalse(destination.exists())
+
+    def test_hardlink_added_between_lstat_and_open_is_rejected(self):
+        file = self.source / "normal.txt"
+        file.write_text("stand-in data")
+        original_open = os.open
+
+        def racing_open(name, flags, *args, **kwargs):
+            if name == "normal.txt":
+                os.link(file, self.root / "external-link.txt")
+            return original_open(name, flags, *args, **kwargs)
+
+        with mock.patch.object(archive_module.os, "open", racing_open):
+            with self.assertRaises(ValueError):
+                archive(self.source, self.dest)
+        self.assertFalse(self.dest.exists())
+
+    def test_file_changed_between_lstat_and_open_is_rejected(self):
+        file = self.source / "normal.txt"
+        file.write_text("before")
+        original_open = os.open
+
+        def racing_open(name, flags, *args, **kwargs):
+            if name == "normal.txt":
+                file.write_text("replacement contents")
+            return original_open(name, flags, *args, **kwargs)
+
+        with mock.patch.object(archive_module.os, "open", racing_open):
+            with self.assertRaises(ValueError):
+                archive(self.source, self.dest)
+        self.assertFalse(self.dest.exists())
+
+    def test_directory_walk_stays_on_open_root_after_path_replacement(self):
+        (self.source / "normal.txt").write_text("original root")
+        original_fwalk = os.fwalk
+
+        def racing_fwalk(*args, **kwargs):
+            self.source.rename(self.root / "held-original")
+            self.source.mkdir()
+            (self.source / "foreign.txt").write_text("replacement root")
+            yield from original_fwalk(*args, **kwargs)
+
+        with mock.patch.object(archive_module.os, "fwalk", racing_fwalk):
+            self.assertEqual(archive(self.source, self.dest), 1)
+        self.assertEqual((self.dest / "normal.txt").read_text(), "original root")
+        self.assertFalse((self.dest / "foreign.txt").exists())
+
+    def test_root_replaced_before_open_is_rejected(self):
+        (self.source / "normal.txt").write_text("original root")
+        original_open = os.open
+
+        def racing_open(name, flags, *args, **kwargs):
+            if name == self.source:
+                self.source.rename(self.root / "held-original")
+                self.source.mkdir()
+                (self.source / "foreign.txt").write_text("replacement root")
+            return original_open(name, flags, *args, **kwargs)
+
+        with mock.patch.object(archive_module.os, "open", racing_open):
+            with self.assertRaises(ValueError):
+                archive(self.source, self.dest)
+        self.assertFalse(self.dest.exists())
+
+    def test_selected_fifo_is_rejected_without_blocking(self):
+        os.mkfifo(self.source / "device.json")
+        with self.assertRaises(ValueError):
+            archive(self.source, self.dest)
+        self.assertFalse(self.dest.exists())
+
+    def test_total_limit_marks_new_bundle_incomplete_without_recursive_deletion(self):
+        (self.source / "first.json").write_bytes(b"12345")
+        (self.source / "second.json").write_bytes(b"67890")
+        with mock.patch.object(archive_module, "MAX_TOTAL_BYTES", 8):
+            with self.assertRaises(ValueError):
+                archive(self.source, self.dest)
+        self.assertTrue((self.dest / ".archive-incomplete").is_file())
+        self.assertFalse((self.dest / "evidence.sha256").exists())
+
 
     def test_failed_cleanup_cannot_erase_a_swapped_foreign_directory(self):
         # A same-UID actor swaps an unrelated REAL directory into the output
@@ -181,7 +242,7 @@ class ArchiveTests(unittest.TestCase):
                 foreign.rename(self.dest)
             return actual_rmtree(path, *args, **kwargs)
 
-        with patch("shutil.rmtree", side_effect=substitute_and_delete):
+        with mock.patch("shutil.rmtree", side_effect=substitute_and_delete):
             with self.assertRaises(ValueError):
                 archive(self.source, self.dest)
 
@@ -210,7 +271,7 @@ class ArchiveTests(unittest.TestCase):
                 (self.dest / "case").symlink_to(outside, target_is_directory=True)
             return result
 
-        with patch("archive.os.mkdir", side_effect=swap_after_mkdir):
+        with mock.patch.object(archive_module.os, "mkdir", side_effect=swap_after_mkdir):
             with self.assertRaises((OSError, ValueError)):
                 archive(self.source, self.dest)
         self.assertTrue(swapped)

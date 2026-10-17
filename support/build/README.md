@@ -6,6 +6,53 @@ complete Asterinas **v0.19.0**, commit
 `96605cf64aeae2d34f29b97e85eff9315fe10a8e`. Upstream documentation, attribution,
 and `LICENSE-MPL` are preserved. The project root README stays empty.
 
+The latest cloud phase completed two further build-support fixes. All four
+public entries now reject encoded Rust flags before consuming output. The QEMU
+recorder saves and actually loads private kernel/initramfs/BIOS snapshots,
+retaining source metadata and verifying the copies before and after execution.
+At published code `31170ffb2ab6d18a85051d426e5d85a83f1b2abf`, complete-kernel
+Rust-entry debugging passed with matching PC/32 live bytes, full initramfs boot,
+raw QEMU33 and a new live-artifact recheck. Its boot ELF SHA256 is
+`fbe81c0e2deae705d61d77ccaaf604e2bf1ca30e4541de71d263af6ecc62ec1b`.
+The full TCP/GDB OSDK matrix passed22/22 at `071dd8ed...`, with eleven raw33
+guests and one explicit VMX soft skip. Two failed debug attempts and the initial
+cancelled matrix remain retained. A fixed-nightly A02 candidate passes61 tests,
+fmt, no_std compile and strict Clippy in isolation, pending A00/A02 adoption.
+See [cloud blocker closure](evidence/2026-10-16-blocker-closure/REPORT.md)
+for exact commands, counts, actual artifacts, and the hardware/owner blockers
+that remain open. Kernel core, upstream pin and root README are unchanged.
+
+Afterward A01 merged actual main `bc294f75...` through `be86dc41...`, importing
+A00-approved ABI/CI updates while preserving the kernel and build subtrees.
+All45 current-main host inputs match the merge's exact Git bytes/blobs/modes.
+Rust83 and Python98 executions passed; fmt and control Clippy passed. Strict
+fixed-nightly ABI Clippy still fails for three original helpers. The exact-base
+candidate still applies cleanly and remains pending owner adoption. See the
+[current main sync evidence](evidence/2026-10-16-cloud-main-sync/REPORT.md).
+This host-only integration does not claim another kernel build or QEMU run.
+
+The preceding phase fixed inherited GNU make controls that could return success
+without executing a kernel recipe, and rejects encoded Rust flags that would
+override OSDK's required kernel flags. At published source
+`ff040c6d5afbc4e26a249022093b8090181f6176`, an empty-target full kernel build
+completed despite deliberately inherited dry-run/touch/extra-makefile settings,
+then booted with raw QEMU 33. The ELF SHA256 is
+`d90ebc3210e74271252a6d1f75ca22a16a569a8b48a99805d30d3d99124b9306`.
+OSTD/core reported 221/141 passes, with three VMX/EPT soft skips and a 359
+exercised lower bound; all three real guests returned raw33. The 56 distinct
+entrance regressions passed in both Python modes, with explicit repeated
+verification receipts. Main's ABI tests passed, while strict fixed-nightly
+Clippy retains two A02 test-helper diagnostics (overall host result partial).
+See [`current build/environment evidence`](evidence/2026-10-16-build-environment/REPORT.md)
+for actual commands, full serial logs, artifacts and retained failures.
+
+The previous two independent clean builds and byte-equality result remain
+scoped to their earlier same-host/same-absolute-path source and are recorded in
+[`clean-repeatability evidence`](evidence/2026-10-16-clean-repeatability/REPORT.md).
+Crosspath and cross-host reproduction remain open. Earlier native cancellation
+and manifest lifecycle results remain in
+[`kernel-test lifecycle evidence`](evidence/2026-10-16-ktest-lifecycle/REPORT.md).
+
 ## Build and boot
 
 On a disposable native **Ubuntu 24.04 x86_64** development host:
@@ -18,16 +65,18 @@ support/build/kernel.sh run_kernel
 ```
 
 Without `--apt`, preparation installs the exact Rust toolchain and fetches the
-fixed vDSO dependency, assuming host packages already exist. If Rust is already
+fixed vDSO dependency and cargo-binutils 0.4.0 with its published lock, assuming
+host packages already exist. `rust-strip` is needed for the separate stripped
+debug boot ELF. If Rust is already
 installed in a nonstandard location, export `CARGO_HOME`, `RUSTUP_HOME`, and its
 `bin` directory in `PATH`. `VDSO_LIBRARY_DIR` and `A01_BUSYBOX` may point to
 existing verified inputs; the defaults are `support/build/out/linux-vdso` and
 `/usr/bin/busybox`.
 
 The wrapper invokes the **upstream `make kernel` and `make run_kernel` targets**,
-with `minimal.mk` replacing their initramfs prerequisite. It temporarily copies
-the minimal OSDK manifest to `kernel/asterinas/kernel/OSDK.toml`, refuses to
-replace an existing file, and removes its copy on exit. No full NixOS ISO,
+with `minimal.mk` replacing their initramfs prerequisite. It temporarily publishes
+the minimal OSDK manifest at `kernel/asterinas/kernel/OSDK.toml` and refuses to
+replace an existing entry. Its exit cleanup is described below. No full NixOS ISO,
 Nix installation, Docker daemon, GRUB image, writable data disk, network,
 display, or KVM is needed for this profile.
 
@@ -35,6 +84,20 @@ The profile fixes x86_64, QEMU q35/TCG, CPU model `max`, **1 vCPU**, **512 MiB**
 explicit packaged SeaBIOS, a serial console, and `isa-debug-exit`. It packages
 static BusyBox, a small init script, and the unmodified upstream
 `test/initramfs/src/boot_hello.sh` into a deterministic newc/gzip initramfs.
+
+The wrapper records and clears inherited `MAKEFLAGS`, `MFLAGS`,
+`GNUMAKEFLAGS`, `MAKEFILES`, `MAKEOVERRIDES` and `MAKELEVEL` before invoking
+GNU make. Dry-run, touch, ignore-error modes and caller-supplied makefiles
+must not turn a skipped or failed kernel recipe into a successful build.
+GNU make establishes normal recursion state for its own children. This is
+the fixed profile's environment contract, not a sandbox for untrusted tools.
+
+Unset `CARGO_ENCODED_RUSTFLAGS` before invoking the normal kernel, ktest,
+debug or integration entry, including when its current value is empty. Cargo gives its presence
+priority over the `RUSTFLAGS` that OSDK supplies for kernel linking and CPU
+configuration. These entries reject it before creating output or taking a
+workspace lock, so the same command and output path can be retried after
+unsetting it. Ordinary `RUSTFLAGS` continue to follow upstream OSDK behavior.
 
 Evidence is written to a new directory under `support/build/out/` by default.
 `A01_RUN_DIR` selects a destination that must not already exist;
@@ -45,16 +108,57 @@ exit status, and complete serial output. The smoke passes only with all guest
 markers, no panic, and **raw QEMU exit 33**. QEMU exit 65 is guest failure;
 OSDK normalizes successful 33 to make exit 0.
 The QEMU recorder binds the complete raw serial bytes by SHA256 and size.
+It exclusively creates three read-only input snapshots in a fresh private
+`artifacts-*` directory and passes those actual paths to QEMU. `qemu.json`
+retains the original arguments and each input's source path/stat/hash alongside
+the loaded snapshot path/stat/hash. Stable-FD source checks and pre/post-run
+snapshot verification fail on detected changes; they do not attribute an
+external writer or provide a sandbox against the same user.
 Fresh runs also verify the recorded kernel, initramfs and BIOS bytes against
 their live paths. For offline archive checks, use `check-boot.py DIR` without
 `--live-artifacts`; historical records without a serial digest require the
 checker from their recorded acceptance commit, not a retroactively added hash.
 The wrapper rejects incomplete log capture, forces its initramfs prerequisite
-on, and shares a persistent workspace lock with the kernel-test runner. Its
-temporary manifest is installed without replacing an existing file, and
-cleanup removes only the inode installed by that invocation.
-The temporary inode is registered before publishing its manifest, including
-when a signal arrives immediately after the atomic link operation.
+on, and shares a persistent workspace lock with the kernel-test runner.
+A busy lock is rejected before creating explicit or default evidence directories,
+so the same command can be retried after the current owner exits. Its temporary
+manifest is installed without replacing an existing file, and
+FD 8 pins its owned regular-file inode before publication, including when a
+signal arrives immediately after the atomic link operation. Cleanup atomically
+moves the public entry into a fresh private directory before inspecting it.
+It deletes only the captured owned inode. A foreign regular file, symlink or
+directory is restored with `renameat2(RENAME_NOREPLACE)`. If restoration is
+unavailable or another writer has filled the public name, the captured entry
+is retained under `.a01-manifest-custody-*` with its recovery path reported.
+Cleanup failure makes an otherwise successful invocation fail; an earlier
+nonzero build status is preserved. `manifest-cleanup.json` records the outcome
+and helper source hash. The workspace lock stays held throughout cleanup.
+
+Standalone calls supervise one worker process group through interruption and
+completion. SIGINT/SIGTERM stop that group before reaping its waitable leader;
+the first cancellation returns 130/143. The Rust-entry debug helper owns its
+worker group directly, so it explicitly selects the internal worker route
+instead of starting a second supervisor session. This route selects cleanup
+ownership and does not provide authorization.
+
+For concurrent development or a workspace that restores generated files, use
+a disposable Git worktree at the exact source commit and a target directory
+inside that worktree. This isolates generated Cargo/OSDK state while retaining
+the same single vendored kernel source and upstream pin:
+
+```sh
+git worktree add --detach /absolute/new/build-worktree "$(git rev-parse HEAD)"
+cd /absolute/new/build-worktree
+export CARGO_TARGET_DIR="$PWD/kernel/asterinas/target"
+support/build/kernel.sh run_kernel
+```
+
+Each worktree retains the existing refusal to overwrite a pre-existing
+`kernel/OSDK.toml`. Preserve and inspect such a file before another attempt;
+the wrapper does not guess that an existing manifest is safe to remove.
+An external writer can still replace files inside a worktree. Custody protects
+the captured entry; it does not keep the public pathname continuously occupied
+or prevent a new entry from appearing there while cleanup runs.
 
 ## Kernel-mode regression tests
 
@@ -88,6 +192,49 @@ exact retries are retained in `evidence/2026-10-16-native-integration/`; they
 are distinct from complete Asterinas kernel acceptance. That phase also
 reran OSTD/aster-core with the fixed OSDK and retained 221/141 reported passes
 and the same 3 soft skips (359 exercised lower bound).
+
+For the explicit loopback TCP profile with GDB-assisted coverage capture:
+
+```sh
+python3 -I support/build/osdk-integration/run.py --local-tcp --coverage-gdb --output NEW_TCP_CAPTURE_DIR
+```
+
+The `osdk-native-local-tcp-gdb-capture-v2` full matrix passed **22/22**, with
+one explicit VMX soft skip and eleven actual QEMU guests returning raw 33.
+Coverage capture stops before the architecture poweroff path, exports the
+announced initialized data, detaches and requires the original guest exit.
+The fixed LLVM tools parsed 5,696 functions with nonzero execution counts.
+A later fatal-panic rejection guard passed its focused checks and a fresh
+coverage guest. These are separate results from the retained default UNIX
+failures and the initial TCP-only coverage failures. Their exact source
+snapshots and logs are in `evidence/2026-10-16-debug-coverage/osdk/`.
+The subsequent review fixes were tested again as a complete **22/22** run at
+`f473a2ccc8dfeaed1223e8478a19c79c90b323e4`, including the fatal-panic guard,
+finite Cargo argument parser, owned-session cleanup, and private connected
+monitor FD. The host suite passed 38 tests with one ignored QEMU transport
+test; that transport test was separately run successfully and is not a kernel
+boot. Full kernel Rust-entry debugging also passed again with raw QEMU 33.
+See `evidence/2026-10-16-review/REPORT.md` for this phase and retained failures.
+
+The independent A04 same-ELF diagnostic is documented in
+`linux-guest/README.md`. Its 28 fixed workloads are separate from OSDK tests;
+read their actual pass/failure/timeout counts before making compatibility
+claims. A Linux-host reference pass does not establish a new-kernel pass.
+
+## Full kernel Rust-entry debugging
+
+```sh
+python3 -I support/build/debug/run.py --output NEW_KERNEL_DEBUG_DIR
+```
+
+This source-builds the full kernel through the upstream developer target,
+retains its DWARF symbol ELF, passes an owned loopback listener into QEMU,
+breaks at `__ostd_main`, checks the actual PC, and detaches. The complete
+initramfs boot must then pass the ordinary live checker with raw QEMU 33.
+The real run displayed a Rust source line and boot call stack before passing
+that boot check. See `debug/README.md` for dependencies and deadlines, and
+`evidence/2026-10-16-debug-coverage/kernel-debug/` for the complete successful
+run and both preceding failures.
 
 The recorded next-phase runs report OSTD **221 passed**, aster-core **141
 passed**, and zero failures. Three OSTD tests returned success after explicitly

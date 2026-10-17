@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "kind": "independent_read_only_source_review_no_new_test_run",
+  "source_commit": "349a28ff9f78319e497d3fd7b58fe73b6e6e44b5",
+  "source_tree": "a58098875a9affc51d409d3aa52ea34fccd7cd6f",
+  "source_paths_and_hashes": {
+    "support/build/osdk-integration/record-qemu.py": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/osdk-integration/record-qemu.py",
+      "size": 32111,
+      "sha256": "975249776d9b08e0894b1112f876da0975825193215a3e6b88e1045895d3b504"
+    },
+    "support/build/osdk-integration/capture.py": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/osdk-integration/capture.py",
+      "size": 11568,
+      "sha256": "7043aa006a901fcdb1e13a3adfade8e3f5f834d1841746343fea4a622bf585b1"
+    },
+    "support/build/osdk-integration/test_record_qemu.py": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/osdk-integration/test_record_qemu.py",
+      "size": 29031,
+      "sha256": "780de328f13217d8146171c08e107002e401e3229a1e43e594a3f1b70b9180c8"
+    },
+    "support/build/osdk-integration/test_capture.py": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/osdk-integration/test_capture.py",
+      "size": 2919,
+      "sha256": "32d3deb3db9286cf48504a9ff29e23a987df97c34197fb4f42e8d1fe92fe6bbd"
+    },
+    "support/build/osdk-integration/test_capture_lifecycle.py": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/osdk-integration/test_capture_lifecycle.py",
+      "size": 15228,
+      "sha256": "3e682cd4c069bb809dde226510158eac0234aa000f9413534fe42f86a0c5ce64"
+    }
+  },
+  "all_5_sources_independently_matched_freeze": true,
+  "blocking_defects_found": [],
+  "reviewed_guarantees": [
+    "run_capture no longer creates a helper session; helper and direct native GDB inherit the outer runner process group.",
+    "Recorder signals only its retained direct capture Popen, using TERM then bounded KILL/wait. It does not send a numeric killpg after reaping a group leader.",
+    "Capture publishes direct GDB Popen ownership before pending SIGINT/SIGTERM unwinds spawn; stop_gdb_child ignores repeat shutdown while killing/reaping its retained direct child.",
+    "CaptureInterrupted forces a failed sidecar with SIGINT/SIGTERM identity; helper or QEMU failure paths cannot synthesize QEMU success33.",
+    "Lifecycle tests use pidfds for observed live-process identity and TCP lease release, rather than absence from process listings or recycled numeric PID probes."
+  ],
+  "limits": [
+    "This source review did not rerun any lifecycle, unit, kernel or QEMU suite; it verifies recorded files and source logic.",
+    "The 5 lifecycle cases are host fixtures. The object named qemu is a Python child, the ELF is a64-byte header stub, nm is a fixed symbol fixture, and native GDB runs an embedded Python TCP lease instead of remote kernel debugging.",
+    "The real native GDB executable is recorded by SHA in the freeze. Its small tools/gdb launcher execs that binary; capture-sidecar gdb metadata describes the launcher path.",
+    "Outer runner group ownership is required to clean descendants. Standalone helper cleanup directly owns native GDB; this is not isolation from a child deliberately creating a separate session or privileged process manipulation.",
+    "Bounded waits may report failure if the host cannot reap an uninterruptible process; these fixtures do not prove universal scheduler/kernel behavior.",
+    "Original leak observation is captured before the fixture finally attempts pidfd-scoped cleanup. No production service or unrelated process group is targeted.",
+    "Host checks provide no new kernel boot, coverage profraw, full22 integration, SMP or VMX result."
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "kind": "capture_lifecycle_fixture_not_kernel",
+  "mode": "timeout",
+  "baseline": true,
+  "source": {
+    "record-qemu.py": "0c21d913538af26be28f1897fcb6da912e3a7677092db351e63fd0b28dfb9ee2",
+    "capture.py": "7d7477f655089b0e3af0ffae473eb1697afcc461f02778a4bc3a5206eb3f3dd1"
+  },
+  "real_gdb": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/bin/gdb",
+  "ready": {
+    "gdb_pid": 22,
+    "helper_pid": 10,
+    "group": 10,
+    "address": [
+      "127.0.0.1",
+      51901
+    ]
+  },
+  "qemu": {
+    "pid": 9,
+    "group": 7,
+    "address": [
+      "127.0.0.1",
+      46921
+    ]
+  },
+  "pids": {
+    "helper": 10,
+    "gdb": 22,
+    "qemu": 9
+  },
+  "pidfd_exited": {
+    "helper": false,
+    "gdb": false,
+    "qemu": true
+  },
+  "gdb_tcp_lease_released": false,
+  "qemu_tcp_lease_released": true,
+  "outer_command": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "-I",
+      "/workspace/scratch/ae1a8cf05419/next5-capture-lifecycle-baseline/timeout/harness.py"
+    ],
+    "cwd": "/workspace/scratch/ae1a8cf05419/next5-capture-lifecycle-baseline/timeout",
+    "raw_exit_code": 124,
+    "timed_out": true,
+    "timeout_cleanup": "SIGTERM and SIGKILL own process group before leader reap",
+    "group_cleanup": {
+      "leader_pid": 7,
+      "leader_exit_code": -15,
+      "leader_reaped": true,
+      "external_reap_disarmed": false,
+      "identity_anchor": "waitid WNOWAIT until group signals precede leader reap"
+    },
+    "duration_seconds": 4.055
+  },
+  "original_leak_reproduced": true,
+  "passed": true
+}

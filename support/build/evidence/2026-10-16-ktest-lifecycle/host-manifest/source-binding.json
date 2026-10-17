@@ -1,0 +1,90 @@
+{
+  "schema": 1,
+  "publication_commit": "a770f31a868d805524065c65a2bcfcbcf10ede2e",
+  "local_commit": "b386cba658de0185164405148c2664723452db1a",
+  "tree": "af2e1bc4d215ac4dc6eadd0cecc147e1673b1c1e",
+  "local_publication_tree_equal": true,
+  "final_source_files": [
+    {
+      "path": "support/build/kernel.sh",
+      "execution_recorded_sha256": "4c6d3b0d87065c8e1f659c7e34793ab1e00248f5bfe038d2c617bf36449bf356",
+      "publication_sha256": "4c6d3b0d87065c8e1f659c7e34793ab1e00248f5bfe038d2c617bf36449bf356",
+      "matches": true
+    },
+    {
+      "path": "support/build/cleanup-manifest.py",
+      "execution_recorded_sha256": "6620d8be088f3602e673397081c5230aa5eb2cad54fd4080f21b3afe370a82c8",
+      "publication_sha256": "6620d8be088f3602e673397081c5230aa5eb2cad54fd4080f21b3afe370a82c8",
+      "matches": true
+    },
+    {
+      "path": "support/build/tests/test_kernel_runner.py",
+      "execution_recorded_sha256": "551d0e40e9dade0ec17fb38422f2b49985f0ee1d07acf26fbb941e205e0d661c",
+      "publication_sha256": "551d0e40e9dade0ec17fb38422f2b49985f0ee1d07acf26fbb941e205e0d661c",
+      "matches": true
+    },
+    {
+      "path": "support/build/README.md",
+      "execution_recorded_sha256": "605bbe9e3a52e09ac9ebdf0bdf6bb2ebcb6536e397b8d10f94035293444e1234",
+      "publication_sha256": "605bbe9e3a52e09ac9ebdf0bdf6bb2ebcb6536e397b8d10f94035293444e1234",
+      "matches": true
+    }
+  ],
+  "baseline_recovered_sources": [
+    {
+      "path": "support/build/kernel.sh",
+      "sha256": "8ba0febef90ae09ca7786604aa6bffee224a0d7e1ef9b5158c582ede759a0cdf",
+      "recovered_from_commit": "84040737d2263368d254d4b16dabff7afb797ea4",
+      "same_at_requested_commit": true,
+      "execution_time_digest_recorded": true
+    },
+    {
+      "path": "support/build/kernel-supervisor.py",
+      "sha256": "d6ccfd00f3eef634ae7032446437039ff88f0935cf0acb3cb589903b57505d61",
+      "recovered_from_commit": "84040737d2263368d254d4b16dabff7afb797ea4",
+      "same_at_requested_commit": true,
+      "execution_time_digest_recorded": false
+    },
+    {
+      "path": "support/build/check-boot.py",
+      "sha256": "2ee1be040c622b248986efdeacab43eea6b2d730e0bad1a8bc0ba995c1915f80",
+      "recovered_from_commit": "84040737d2263368d254d4b16dabff7afb797ea4",
+      "same_at_requested_commit": true,
+      "execution_time_digest_recorded": false
+    },
+    {
+      "path": "support/build/tests/test_kernel_runner.py",
+      "sha256": "a9ce1498b93a0a94b332958623a7b501d051d7da23d39b2b0ab4dbbdd0d86e7a",
+      "recovered_from_commit": "84040737d2263368d254d4b16dabff7afb797ea4",
+      "same_at_requested_commit": true,
+      "execution_time_digest_recorded": false
+    }
+  ],
+  "baseline_source_note": "Only kernel.sh had an individually recorded execution-time SHA. Other baseline fixture/support files were recovered from recorded HEAD later and are explicitly not described as separately captured runtime snapshots.",
+  "source_ready_sha256": "a99a291d067fa0687871b913088619a147811aca6bc134bdc71fff29755604e3",
+  "baseline_observation_sha256": "06b46f59a93527824280a36113880a11056cc9844b687a27b8d6690b6874c79e",
+  "baseline_supplement_sha256": "0e807931a68162e9b08bc73dfa28a68c9b9a342ad82b467a39b8af1b8874b739",
+  "supporting_replay_fixture_sources": [
+    {
+      "path": "support/build/kernel-supervisor.py",
+      "sha256": "d6ccfd00f3eef634ae7032446437039ff88f0935cf0acb3cb589903b57505d61",
+      "publication_commit": "a770f31a868d805524065c65a2bcfcbcf10ede2e",
+      "purpose": "Unchanged support needed to replay the31 host tests from the extracted archive.",
+      "individual_execution_time_digest_recorded": false
+    },
+    {
+      "path": "support/build/check-boot.py",
+      "sha256": "2ee1be040c622b248986efdeacab43eea6b2d730e0bad1a8bc0ba995c1915f80",
+      "publication_commit": "a770f31a868d805524065c65a2bcfcbcf10ede2e",
+      "purpose": "Unchanged support needed to replay the31 host tests from the extracted archive.",
+      "individual_execution_time_digest_recorded": false
+    },
+    {
+      "path": "support/build/tests/test_kernel_supervisor.py",
+      "sha256": "f73c930f99a57167c6ffa3111c341ca371b36e28bc13a31f01c06e7f7c7c15ff",
+      "publication_commit": "a770f31a868d805524065c65a2bcfcbcf10ede2e",
+      "purpose": "Unchanged support needed to replay the31 host tests from the extracted archive.",
+      "individual_execution_time_digest_recorded": false
+    }
+  ]
+}

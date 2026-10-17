@@ -7,7 +7,6 @@ from pathlib import Path
 import shlex
 import shutil
 import re
-import signal
 import socket
 import subprocess
 import sys
@@ -21,6 +20,7 @@ PROFILE = {"arch": "x86_64", "machine": "q35", "accel": "tcg", "cpu": "max",
            "firmware": str(FIRMWARE)}
 LOCAL_TCP_PROFILE = "osdk-native-local-tcp-v1"
 CAPTURE_PROFILE = "osdk-native-local-tcp-gdb-capture-v2"
+MONITOR_CHARDEV_ID = "osdk-managed-monitor"
 
 
 def file_record(path):
@@ -164,6 +164,22 @@ def local_tcp_controls(arguments, allow_gdb_zero=False):
         if key == "-chardev":
             if fields[0] != "socket":
                 continue
+            entries = [field.partition("=") for field in fields[1:]]
+            if any(name == "fd" or name == "id" and entry == MONITOR_CHARDEV_ID
+                   for name, _, entry in entries):
+                # QEMU consumes every field. Do not let dict construction hide
+                # duplicate keys or bare tokens and record a different meaning.
+                if len(fields) != 4 or any(not separator for _, separator, _ in entries) \
+                        or len({name for name, _, _ in entries}) != 3:
+                    raise ValueError("private monitor requires exactly socket,id,fd,server without duplicate or bare fields")
+                options = {name: entry for name, _, entry in entries}
+                if set(options) != {"id", "fd", "server"} or options["id"] != MONITOR_CHARDEV_ID \
+                        or options["server"] != "off" or not re.fullmatch(r"[0-9]+", options["fd"]) \
+                        or not 64 <= int(options["fd"]) <= 2**31 - 1:
+                    raise ValueError("local TCP profile requires the reserved preconnected monitor descriptor fd >= 64")
+                controls.append({"kind": "monitor", "handoff": "private-connected-inherited-fd",
+                                 "fd": int(options["fd"]), "requested_value": value})
+                continue
             options = dict(field.split("=", 1) for field in fields[1:] if "=" in field)
             if options.get("host") != "127.0.0.1" or not options.get("port", "").isdigit():
                 raise ValueError("local TCP profile forbids non-loopback socket chardev")
@@ -186,9 +202,48 @@ def local_tcp_controls(arguments, allow_gdb_zero=False):
             raise ValueError("local TCP monitor must connect to the OSDK-owned listener")
         controls.append({"kind": key[1:], "role": "server" if key == "-gdb" else "client",
                          "host": "127.0.0.1", "port": int(matched[1]), "requested_value": value})
+    if sum(item["kind"] == "monitor" for item in controls) > 1:
+        raise ValueError("local TCP profile requires a unique managed monitor")
     if sum(item["kind"] == "gdb" for item in controls) > 1:
         raise ValueError("local TCP profile requires a unique GDB endpoint")
     return controls
+
+
+def inherit_monitor_socket(arguments, controls):
+    """Validate and own only OSDK's already connected private monitor FD."""
+    endpoint = next((item for item in controls
+                     if item.get("handoff") == "private-connected-inherited-fd"), None)
+    if endpoint is None:
+        return None, None
+    # Take ownership of this inherited descriptor. Any validation or spawn
+    # failure closes it; on success the wrapper closes its copy after Popen.
+    try:
+        stream = socket.socket(fileno=endpoint["fd"])
+    except BaseException:
+        try:
+            os.close(endpoint["fd"])
+        except OSError:
+            pass
+        raise
+    try:
+        references = [arguments[index + 1] for index, value in enumerate(arguments[:-1])
+                      if value in ("-monitor", "--monitor")]
+        if references.count("chardev:" + MONITOR_CHARDEV_ID) != 1:
+            raise ValueError("private monitor descriptor requires its unique managed monitor reference")
+        if stream.family != socket.AF_INET or stream.type != socket.SOCK_STREAM \
+                or stream.getsockopt(socket.SOL_SOCKET, socket.SO_ACCEPTCONN):
+            raise ValueError("private monitor descriptor must be a connected IPv4 stream, not a listener")
+        local, peer = stream.getsockname(), stream.getpeername()
+        if any(address[0] != "127.0.0.1" or not 0 < address[1] <= 65535 for address in (local, peer)):
+            raise ValueError("private monitor endpoints must both be 127.0.0.1 with assigned ports")
+        metadata = {"fd": stream.fileno(), "local": list(local), "peer": list(peer),
+                    "connected": True, "listening": False,
+                    "handoff": "private-connected-inherited-fd",
+                    "parent_copy_closed_after_spawn": False}
+        return stream, metadata
+    except BaseException:
+        stream.close()
+        raise
 
 
 def reserve_gdb_listener(arguments, endpoint):
@@ -229,21 +284,17 @@ def coverage_symbol(cwd):
     return file_record(symbol)
 
 
-def stop_capture_group(process):
-    """Stop only the private session created for this capture and its GDB child."""
-    try:
-        os.killpg(process.pid, signal.SIGTERM)
-    except ProcessLookupError:
-        pass
-    try:
-        process.wait(timeout=1)
-    except subprocess.TimeoutExpired:
-        pass
-    try:
-        os.killpg(process.pid, signal.SIGKILL)
-    except ProcessLookupError:
-        pass
-    process.wait(timeout=2)
+def stop_capture_child(process):
+    """Stop and reap this direct child; the outer runner owns group cleanup."""
+    if process.poll() is None:
+        process.terminate()
+        try:
+            process.wait(timeout=1)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.wait(timeout=2)
+    else:
+        process.wait()
 
 
 def supervise_capture(qemu, capture, guest_timeout, capture_timeout=180):
@@ -254,10 +305,10 @@ def supervise_capture(qemu, capture, guest_timeout, capture_timeout=180):
         qemu_status, capture_status = qemu.poll(), capture.poll()
         if qemu_status is not None and qemu_status != 33:
             if capture_status is None:
-                stop_capture_group(capture)
+                stop_capture_child(capture)
             return qemu_status, False
         if capture_status is not None and capture_status != 0:
-            stop_capture_group(capture)
+            stop_capture_child(capture)
             if qemu_status is None:
                 qemu.kill()
                 qemu.wait()
@@ -266,7 +317,7 @@ def supervise_capture(qemu, capture, guest_timeout, capture_timeout=180):
             return qemu_status, False
         now = time.monotonic()
         if now >= deadline or capture_status is None and now >= capture_deadline:
-            stop_capture_group(capture)
+            stop_capture_child(capture)
             if qemu_status is None:
                 qemu.kill()
                 qemu.wait()
@@ -280,14 +331,16 @@ def run_capture(qemu, arguments, guest, metadata, timeout):
     started, child = time.monotonic(), None
     try:
         with stream_paths["stdout"].open("wb") as stdout, stream_paths["stderr"].open("wb") as stderr:
-            child = subprocess.Popen(arguments, stdout=stdout, stderr=stderr, start_new_session=True)
+            child = subprocess.Popen(arguments, stdout=stdout, stderr=stderr)
             metadata["pid"] = child.pid
+            metadata["process_group"] = os.getpgrp()
+            metadata["group_policy"] = "inherit recorder group; no capture session or group created"
             try:
                 status, timed_out = supervise_capture(qemu, child, timeout)
                 metadata["timed_out"] = timed_out
                 return status, timed_out
             except BaseException:
-                stop_capture_group(child)
+                stop_capture_child(child)
                 raise
             finally:
                 metadata["raw_exit_code"] = child.returncode
@@ -377,6 +430,7 @@ def main():
     started = time.monotonic()
     status = 125
     gdb_listener = None
+    monitor_socket = None
     try:
         arguments, logs, removed = transform_args(requested, guest, cwd)
         local_tcp = os.environ.get("A01_OSDK_LOCAL_TCP") == "1"
@@ -390,6 +444,9 @@ def main():
                        "control_transport": "loopback-tcp" if local_tcp else "upstream-original"})
         controls = local_tcp_controls(arguments, allow_gdb_zero=capture_enabled) if local_tcp else []
         record["control_endpoints"] = controls
+        monitor_socket, monitor_metadata = inherit_monitor_socket(arguments, controls)
+        if monitor_metadata is not None:
+            record["monitor_socket"] = monitor_metadata
         gdb_endpoint = next((item for item in controls if item["kind"] == "gdb"), None)
         if capture_enabled and (gdb_endpoint is None or gdb_endpoint["port"] != 0 or "-S" not in arguments):
             raise ValueError("coverage capture requires its own paused GDB listener requested on port 0")
@@ -458,7 +515,14 @@ def main():
         with stream_paths["stdout"].open("wb") as stdout_log, \
                 stream_paths["stderr"].open("wb") as stderr_log, \
                 subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                 pass_fds=(gdb_listener.fileno(),) if gdb_listener is not None else ()) as process:
+                                 pass_fds=tuple(stream.fileno() for stream in (gdb_listener, monitor_socket)
+                                                if stream is not None)) as process:
+            record["qemu_pid"] = process.pid
+            if monitor_socket is not None:
+                monitor_socket.close()
+                monitor_socket = None
+                record["monitor_socket"]["parent_copy_closed_after_spawn"] = True
+                record["monitor_socket"]["qemu_pid"] = process.pid
             if gdb_listener is not None:
                 gdb_listener.close()
                 gdb_listener = None
@@ -537,6 +601,8 @@ def main():
     finally:
         if gdb_listener is not None:
             gdb_listener.close()
+        if monitor_socket is not None:
+            monitor_socket.close()
     record["wrapper_exit_code"] = status if status >= 0 else 128 - status
     record["duration_seconds"] = round(time.monotonic() - started, 3)
     destination.write_text(json.dumps(record, indent=2) + "\n")

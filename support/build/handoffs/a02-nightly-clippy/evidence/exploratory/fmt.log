@@ -1,0 +1,22 @@
+Diff in /workspace/scratch/ae1a8cf05419/closure-abi/libs/os-abi/tests/mutation_kill.rs:18:
+     assert_eq!(bytes.len() % 2, 0);
+     bytes
+         .as_bytes()
+-        .as_chunks::<2>().0.iter()
++        .as_chunks::<2>()
++        .0
++        .iter()
+         .map(|pair| {
+             let hi = (pair[0] as char).to_digit(16).unwrap() as u8;
+             let lo = (pair[1] as char).to_digit(16).unwrap() as u8;
+Diff in /workspace/scratch/ae1a8cf05419/closure-abi/libs/os-abi/tests/transport_preflight.rs:25:
+                 let hex = value.trim_end_matches([',', '"']);
+                 return hex
+                     .as_bytes()
+-                    .as_chunks::<2>().0.iter()
++                    .as_chunks::<2>()
++                    .0
++                    .iter()
+                     .map(|pair| {
+                         u8::from_str_radix(core::str::from_utf8(pair).unwrap(), 16).unwrap()
+                     })

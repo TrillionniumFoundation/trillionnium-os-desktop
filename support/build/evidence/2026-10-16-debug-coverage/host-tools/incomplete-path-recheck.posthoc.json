@@ -1,0 +1,18 @@
+{
+  "provenance": "Posthoc account of the immediately preceding evidence-generation command failure, not an execution-time child-status JSON",
+  "argv": [
+    "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin/rust-strip",
+    "--version"
+  ],
+  "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+  "explicit_environment_updates": {
+    "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+    "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+    "RUSTUP_TOOLCHAIN": "nightly-2026-07-21"
+  },
+  "inherited_path_note": "PATH was inherited without adding the task toolchain cargo/bin; the exact inherited value was not saved in that attempt.",
+  "stdout_stderr": "rust-strip-version-recheck-incomplete-path.log",
+  "child_exit": "nonzero; exact numeric child exit was not saved",
+  "enclosing_evidence_generation_command_exit": 1,
+  "correction": "Prepend the existing task toolchain cargo/bin for rustc/rustup discovery, matching the successful kernel build environment. No package/toolchain/source was changed."
+}

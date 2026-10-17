@@ -1,0 +1,193 @@
+{
+  "schema": 1,
+  "source_ready": true,
+  "scope": "Pure OSDK managed-monitor transport; no coverage lifecycle changes, OSTD/core, Cargo manifests or locks modified.",
+  "files": {
+    "kernel/asterinas/osdk/src/bundle/mod.rs": "9cada6721381cc03a717e36a41c219263f4f6d59c0f8d6f3471c0c97cd18f8f7",
+    "kernel/asterinas/osdk/src/bundle/monitor.rs": "7fd9487b3852a4e005d1f9e7d18c8f855bf68ab62108d8e2d6fed0a1a0ce623e",
+    "kernel/asterinas/osdk/src/cli.rs": "cc094af376d479bf1572f3f6a97c792e1fde9cb80b5359388af8c20f0ebd8c6a",
+    "kernel/asterinas/osdk/src/config/mod.rs": "d852847e1aa9c00983ab8b4e0f3def33bce9c643108abf52f9c084783cdeb2d6",
+    "kernel/asterinas/osdk/src/config/scheme/qemu.rs": "7e41769cf446502a1392839dc40709977464569ac882b3b4a4d329c0aa5de97a",
+    "kernel/asterinas/osdk/src/util.rs": "83dbd6054e27c6e6fe281f517c45adc7f2419d132ee2246ce8c87ac4cd6cdf4f",
+    "kernel/asterinas/book/src/osdk/reference/commands/run.md": "c0ad80acf5fa4afb347ed0389c12334f72ba8c994501021be3c51cd99fb817bd",
+    "kernel/asterinas/book/src/osdk/reference/manifest.md": "4b5075aae269e7609a1c2d950bd1aa7edf8648095eeb866f18ebf0d436423b9f"
+  },
+  "file_count": 8,
+  "cli": "--qemu-monitor-transport=tcp",
+  "toml": "[qemu]\nmonitor_transport = \"tcp\"\n",
+  "default": "unix; old cached bundle manifests lacking the new field deserialize as Unix",
+  "behavior": "OSDK holds TcpListener(127.0.0.1:0); QEMU is the TCP client with -monitor tcp:127.0.0.1:PORT,server=off; bounded 5-second accept checks cancellation and QEMU/daemon exits; private enum implements Read/Write/timeouts. Selecting transport does not enable monitor or alter guest shutdown.",
+  "execution_records": [
+    {
+      "label": "first full suite; immediate rebind assertion failed",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin/cargo",
+        "test",
+        "--manifest-path",
+        "kernel/asterinas/osdk/Cargo.toml",
+        "--locked",
+        "--bin",
+        "cargo-osdk",
+        "--",
+        "--nocapture"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+      "explicit_env_updates": {
+        "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+        "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+        "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+        "OSDK_LOCAL_DEV": "1",
+        "CARGO_BUILD_JOBS": "2",
+        "LD_LIBRARY_PATH": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/lib/x86_64-linux-gnu"
+      },
+      "shell_PATH_assignment": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/bin:/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin:$PATH",
+      "inherited_environment_note": "Remaining environment and original inherited PATH suffix were not captured in full. This later report transcribes visible original tool calls.",
+      "stdout_stderr_log": "/workspace/scratch/ae1a8cf05419/monitor-transport-host-01.log",
+      "log_sha256": "60e814f1ba8f1b61d9f32cb1ed67a89b26ade9d3f50d25e1069a3b4451e077d7",
+      "raw_exit_code": 101,
+      "original_log_preserved": true
+    },
+    {
+      "label": "isolated listener regression before bounded-rebind test adjustment",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin/cargo",
+        "test",
+        "--manifest-path",
+        "kernel/asterinas/osdk/Cargo.toml",
+        "--locked",
+        "--bin",
+        "cargo-osdk",
+        "bundle::monitor::tests::tcp_listener_owns_only_an_ephemeral_loopback_port",
+        "--",
+        "--exact",
+        "--nocapture"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+      "explicit_env_updates": {
+        "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+        "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+        "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+        "OSDK_LOCAL_DEV": "1",
+        "CARGO_BUILD_JOBS": "2",
+        "LD_LIBRARY_PATH": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/lib/x86_64-linux-gnu"
+      },
+      "shell_PATH_assignment": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/bin:/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin:$PATH",
+      "inherited_environment_note": "Remaining environment and original inherited PATH suffix were not captured in full. This later report transcribes visible original tool calls.",
+      "stdout_stderr_log": "/workspace/scratch/ae1a8cf05419/monitor-transport-listener-02.log",
+      "log_sha256": "2534809d8f08b349f937ae2238508fbdfd3b50aadfa307bbc32f75bc942f7d9c",
+      "raw_exit_code": 0,
+      "original_log_preserved": true
+    },
+    {
+      "label": "final full suite; 35 passed / 0 failed / 0 ignored / 0 filtered in 6.03 seconds",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin/cargo",
+        "test",
+        "--manifest-path",
+        "kernel/asterinas/osdk/Cargo.toml",
+        "--locked",
+        "--bin",
+        "cargo-osdk",
+        "--",
+        "--nocapture"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+      "explicit_env_updates": {
+        "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+        "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+        "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+        "OSDK_LOCAL_DEV": "1",
+        "CARGO_BUILD_JOBS": "2",
+        "LD_LIBRARY_PATH": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/lib/x86_64-linux-gnu"
+      },
+      "shell_PATH_assignment": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/bin:/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin:$PATH",
+      "inherited_environment_note": "Remaining environment and original inherited PATH suffix were not captured in full. This later report transcribes visible original tool calls.",
+      "stdout_stderr_log": "/workspace/scratch/ae1a8cf05419/monitor-transport-host-03.log",
+      "log_sha256": "c72a77df09d24a60c96d3752642e7444f67fcbcda9e1b0fff10797e1e15bf478",
+      "raw_exit_code": 0,
+      "original_log_preserved": true
+    },
+    {
+      "label": "integration harness compile only; no VM",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin/cargo",
+        "test",
+        "--manifest-path",
+        "kernel/asterinas/osdk/Cargo.toml",
+        "--locked",
+        "--test",
+        "integration",
+        "--no-run"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+      "explicit_env_updates": {
+        "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+        "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+        "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+        "OSDK_LOCAL_DEV": "1",
+        "CARGO_BUILD_JOBS": "2"
+      },
+      "shell_PATH_assignment": "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin:$PATH",
+      "inherited_environment_note": "Remaining environment and original inherited PATH suffix were not captured in full. This later report transcribes visible original tool calls.",
+      "stdout_stderr_log": "/workspace/scratch/ae1a8cf05419/monitor-transport-integration-compile-04.log",
+      "log_sha256": "72792502a778f66cd4312c3464432e203a4950ff8d52638c244552346b9c98de",
+      "raw_exit_code": 0,
+      "original_log_preserved": true
+    }
+  ],
+  "diff_check": {
+    "argv": [
+      "git",
+      "diff",
+      "--check",
+      "--",
+      "kernel/asterinas/osdk/src/bundle/mod.rs",
+      "kernel/asterinas/osdk/src/bundle/monitor.rs",
+      "kernel/asterinas/osdk/src/cli.rs",
+      "kernel/asterinas/osdk/src/config/mod.rs",
+      "kernel/asterinas/osdk/src/config/scheme/qemu.rs",
+      "kernel/asterinas/osdk/src/util.rs",
+      "kernel/asterinas/book/src/osdk/reference/commands/run.md",
+      "kernel/asterinas/book/src/osdk/reference/manifest.md"
+    ],
+    "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+    "raw_exit_code": 0,
+    "output": ""
+  },
+  "first_suite_failure_note": "Original 01 log retained. Only a newly added immediate post-drop listener-rebind assertion failed during the parallel suite (34/35); isolated 02 passed. The test now allows a bounded two-second AddrInUse release interval, covering possible concurrent fork/exec descriptor inheritance. A transient descriptor holder was not independently identified; the source transport was not changed for this test adjustment.",
+  "pilot": {
+    "runner": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-local-tcp-01",
+    "result_sha256": "e859359e7c17b65f065b34d0db4c22fb72854b82c27e5ada9627ade8df5b6118",
+    "selected": 3,
+    "passed": 2,
+    "failed": 1,
+    "coverage_qemu_raw_exit": 33,
+    "coverage_monitor_endpoint": [
+      {
+        "kind": "monitor",
+        "role": "client",
+        "host": "127.0.0.1",
+        "port": 46679,
+        "requested_value": "tcp:127.0.0.1:46679,server=off"
+      }
+    ],
+    "coverage_marker": "#### Coverage: 0xffff800010400000 2094456",
+    "coverage_profile_generated": false,
+    "interpretation": "TCP transport is connected; ISA debug-exit still ends QEMU with raw33 before export. This is a real retained coverage failure, not normal-shutdown or coverage success evidence."
+  },
+  "known_log_caveat": "The pilot source could print VM is paused (shutdown) after detecting QEMU already exited. Final source changes only that line to QEMU monitor wait ended; inspecting guest output. The old line was not accepted as shutdown evidence.",
+  "notes": "No tests or failed logs were overwritten. Parent owns commit/push and evidence archival.",
+  "pilot_to_final_source": {
+    "changed_osdk_source_files": [
+      "osdk/src/bundle/mod.rs"
+    ],
+    "file": "kernel/asterinas/osdk/src/bundle/mod.rs",
+    "old_line": "info!(\"VM is paused (shutdown)\");",
+    "new_line": "info!(\"QEMU monitor wait ended; inspecting guest output\");",
+    "pilot_sha256": "8ddbdc43768056940cfe200ce8fb176f31292143a2e83cdcb6d7d388e4b0dd64",
+    "final_sha256": "9cada6721381cc03a717e36a41c219263f4f6d59c0f8d6f3471c0c97cd18f8f7",
+    "reconstructed_pilot_sha256": "8ddbdc43768056940cfe200ce8fb176f31292143a2e83cdcb6d7d388e4b0dd64",
+    "reconstruction_matches_recorded_pilot": true,
+    "interpretation": "Only this neutral diagnostic message differs from the pilot and passing host-suite source. No monitor lifecycle behavior changed; parent requested no repeat of the 35-test suite for this wording-only correction."
+  }
+}

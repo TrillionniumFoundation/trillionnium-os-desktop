@@ -1,0 +1,11 @@
+# Capture lifecycle repair — host fixtures only
+
+Source commit: `349a28ff9f78319e497d3fd7b58fe73b6e6e44b5`; tree `a58098875a9affc51d409d3aa52ea34fccd7cd6f`.
+
+The old capture helper created a separate session. A real4-second outer timeout killed its original group, but pidfds for the helper and native GDB remained unreadable and GDB's TCP lease stayed busy. The baseline test reports OK because this leak was its expected reproduction; two other cases were skipped. The observation was taken before fixture cleanup.
+
+The repaired helper and GDB inherit the outer runner's owned group. Direct-child shutdown uses retained Popen objects; GDB ownership is published before pending SIGINT/SIGTERM can unwind spawn. Final lifecycle tests passed5/5: outer timeout, SIGINT, SIGTERM, standalone helper termination, and actual child status mapping. The first three prove helper/GDB exit by pidfd and TCP lease release; standalone SIGTERM also records a failed sidecar and reaped GDB. A helper child exit7 becomes125, while a synthetic child named QEMU exiting65 remains65. Neither can become success33. Recorder tests passed35/35 and capture tests4/4 under each of `-I` and `-I -O`; the capture unit case delivers real SIGINT and SIGTERM during owner publication.
+
+These are host lifecycle fixtures, not VM or project-kernel tests. The child named QEMU is a Python subprocess. Native GDB executes an embedded Python TCP-lease job through an exec launcher; nm and the64-byte ELF header are fixture inputs. No kernel is loaded, no coverage bytes are exported, and no full22/SMP/VMX claim follows. Exact native GDB hash and all5 source hashes are in the freeze. Production source copies, binaries, targets and generated tool/header fixtures are omitted; generated commands and observations are retained. Reproduce from the pinned lifecycle test source.
+
+The independent reviewer read the ownership paths and verified every frozen file hash without rerunning the suites or a kernel. Outer group ownership remains a required boundary; this is not isolation from privileged manipulation or a deliberately detached descendant. All previous intermediate logs remain in `raw-logs.tar.gz`, with per-member hashes. Key baseline/final observations are also readable separately. `subSHA256SUMS` covers this subpackage. Existing archive and monitor packages remain unchanged.

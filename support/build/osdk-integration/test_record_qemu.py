@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """Pure argument checks for the integration shim; these do not boot guests."""
 import importlib.util
+import fcntl
 import hashlib
 import io
 import json
 import os
 from pathlib import Path
 import subprocess
+import socket
 import tempfile
 import unittest
 from unittest.mock import MagicMock, patch
@@ -88,6 +90,73 @@ class ProfileTests(unittest.TestCase):
             second = shim.reserve_guest(root)
             self.assertEqual(second.name, "guest-002")
             self.assertEqual(marker.read_text(), "old")
+
+    def test_private_monitor_fd_is_validated_and_owned(self):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:
+            listener.bind(("127.0.0.1", 0))
+            listener.listen(1)
+            with socket.create_connection(listener.getsockname()) as client:
+                peer, _ = listener.accept()
+                with peer:
+                    inherited_fd = fcntl.fcntl(client.fileno(), fcntl.F_DUPFD_CLOEXEC, 64)
+                    arguments = ["-chardev", f"socket,id={shim.MONITOR_CHARDEV_ID},fd={inherited_fd},server=off",
+                                 "-monitor", "chardev:" + shim.MONITOR_CHARDEV_ID]
+                    controls = shim.local_tcp_controls(arguments)
+                    owned, metadata = shim.inherit_monitor_socket(arguments, controls)
+                    self.assertEqual(metadata["fd"], inherited_fd)
+                    self.assertFalse(metadata["listening"])
+                    self.assertEqual(metadata["local"], list(client.getsockname()))
+                    self.assertEqual(metadata["peer"], list(client.getpeername()))
+                    owned.close()
+                    with self.assertRaises(OSError):
+                        os.fstat(inherited_fd)
+
+    def test_private_monitor_rejects_listener_and_closes_descriptor(self):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:
+            listener.bind(("127.0.0.1", 0))
+            listener.listen(1)
+            inherited_fd = fcntl.fcntl(listener.fileno(), fcntl.F_DUPFD_CLOEXEC, 64)
+            arguments = ["-chardev", f"socket,id={shim.MONITOR_CHARDEV_ID},fd={inherited_fd},server=off",
+                         "-monitor", "chardev:" + shim.MONITOR_CHARDEV_ID]
+            controls = shim.local_tcp_controls(arguments)
+            with self.assertRaisesRegex(ValueError, "not a listener"):
+                shim.inherit_monitor_socket(arguments, controls)
+            with self.assertRaises(OSError):
+                os.fstat(inherited_fd)
+
+    def test_private_monitor_rejects_low_fd_and_non_ascii_number(self):
+        for descriptor in ("0", "3", "63", "-64", "+64", "６４", "2147483648"):
+            value = f"socket,id={shim.MONITOR_CHARDEV_ID},fd={descriptor},server=off"
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                shim.local_tcp_controls(["-chardev", value])
+        controls = shim.local_tcp_controls([
+            "-chardev", f"socket,id={shim.MONITOR_CHARDEV_ID},fd=64,server=off"])
+        self.assertEqual(controls[0]["fd"], 64)
+
+    def test_private_monitor_rejects_duplicate_and_bare_fields(self):
+        base = f"socket,id={shim.MONITOR_CHARDEV_ID},fd=64,server=off"
+        for value in (base + ",server=on", base + ",server=off", base + ",fd=65",
+                      base + ",id=other", base + ",wait", base + ",", base + ",nodelay=on",
+                      f"socket,id={shim.MONITOR_CHARDEV_ID},fd=64,server",
+                      f"socket,id={shim.MONITOR_CHARDEV_ID},fd=64,fd=65"):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                shim.local_tcp_controls(["-chardev", value])
+
+    def test_private_monitor_rejects_unrelated_fd_and_ambiguous_reference(self):
+        for value in ("socket,id=other,fd=23,server=off",
+                      f"socket,id={shim.MONITOR_CHARDEV_ID},fd=23,server=on",
+                      f"socket,id={shim.MONITOR_CHARDEV_ID},fd=23,server=off,host=127.0.0.1",
+                      f"socket,id={shim.MONITOR_CHARDEV_ID},fd=2,server=off"):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                shim.local_tcp_controls(["-chardev", value])
+        for references in ([], ["-monitor", "chardev:" + shim.MONITOR_CHARDEV_ID] * 2):
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as stream:
+                inherited_fd = fcntl.fcntl(stream.fileno(), fcntl.F_DUPFD_CLOEXEC, 64)
+                controls = [{"kind": "monitor", "handoff": "private-connected-inherited-fd", "fd": inherited_fd}]
+                with self.subTest(references=references), self.assertRaisesRegex(ValueError, "unique"):
+                    shim.inherit_monitor_socket(references, controls)
+                with self.assertRaises(OSError):
+                    os.fstat(inherited_fd)
 
     def mock_main(self, timeout=False, raw_exit=0, local_tcp=False, occupied=False, immediate=False):
         with tempfile.TemporaryDirectory() as temporary:
@@ -333,15 +402,38 @@ class CaptureTests(unittest.TestCase):
     def test_capture_failure_cancels_qemu_promptly(self):
         qemu, capture = MagicMock(), MagicMock()
         qemu.poll.return_value, capture.poll.return_value = None, 7
-        with patch.object(shim, "stop_capture_group") as stop:
+        with patch.object(shim, "stop_capture_child") as stop:
             self.assertEqual(shim.supervise_capture(qemu, capture, 10), (125, False))
         stop.assert_called_once_with(capture)
         qemu.kill.assert_called_once()
 
+    def test_qemu_guest_failure_65_is_preserved(self):
+        qemu, capture = MagicMock(), MagicMock()
+        qemu.poll.return_value, capture.poll.return_value = 65, None
+        with patch.object(shim, "stop_capture_child") as stop:
+            self.assertEqual(shim.supervise_capture(qemu, capture, 10), (65, False))
+        stop.assert_called_once_with(capture)
+        qemu.kill.assert_not_called()
+
+    def test_capture_cleanup_only_signals_unreaped_direct_child(self):
+        process = MagicMock()
+        process.poll.return_value = None
+        process.wait.side_effect = [subprocess.TimeoutExpired(["capture"], 1), -9]
+        shim.stop_capture_child(process)
+        process.terminate.assert_called_once()
+        process.kill.assert_called_once()
+        self.assertEqual(process.wait.call_count, 2)
+        reaped = MagicMock()
+        reaped.poll.return_value = 7
+        shim.stop_capture_child(reaped)
+        reaped.terminate.assert_not_called()
+        reaped.kill.assert_not_called()
+        reaped.wait.assert_called_once_with()
+
     def test_qemu_failure_cancels_capture_promptly(self):
         qemu, capture = MagicMock(), MagicMock()
         qemu.poll.return_value, capture.poll.return_value = 1, None
-        with patch.object(shim, "stop_capture_group") as stop:
+        with patch.object(shim, "stop_capture_child") as stop:
             self.assertEqual(shim.supervise_capture(qemu, capture, 10), (1, False))
         stop.assert_called_once_with(capture)
 
@@ -349,7 +441,7 @@ class CaptureTests(unittest.TestCase):
         qemu, capture = MagicMock(), MagicMock()
         qemu.poll.return_value = capture.poll.return_value = None
         with patch.object(shim.time, "monotonic", side_effect=[0, 0, 5]), \
-                patch.object(shim, "stop_capture_group") as stop:
+                patch.object(shim, "stop_capture_child") as stop:
             self.assertEqual(shim.supervise_capture(qemu, capture, 1), (124, True))
         stop.assert_called_once_with(capture)
         qemu.kill.assert_called_once()

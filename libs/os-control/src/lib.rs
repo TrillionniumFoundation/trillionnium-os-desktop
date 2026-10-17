@@ -110,6 +110,27 @@ impl NamespaceIdentity {
     }
 }
 
+/// The original Hepta logical operation identity (K). This is an opaque
+/// value carried by an integration owner; the control core never persists,
+/// indexes, or derives execution authority from it.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct LogicalOperationId {
+    pub scope_id: Id16,
+    pub operation_id: Id16,
+}
+
+impl LogicalOperationId {
+    pub fn new(scope_id: Id16, operation_id: Id16) -> Result<Self, IdentityError> {
+        if !scope_id.is_nonzero() || !operation_id.is_nonzero() {
+            return Err(IdentityError::ZeroIdentity);
+        }
+        Ok(Self {
+            scope_id,
+            operation_id,
+        })
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct DeliveryId {
     pub namespace: NamespaceIdentity,
@@ -125,6 +146,20 @@ impl DeliveryId {
             namespace,
             sequence,
         })
+    }
+}
+
+/// A value-only association for A07. It is not a persistence record and does
+/// not make K a lookup key for a D result.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct OperationBinding {
+    pub logical: LogicalOperationId,
+    pub delivery: DeliveryId,
+}
+
+impl OperationBinding {
+    pub const fn new(logical: LogicalOperationId, delivery: DeliveryId) -> Self {
+        Self { logical, delivery }
     }
 }
 

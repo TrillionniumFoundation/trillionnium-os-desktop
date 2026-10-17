@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """Capture the live coverage bytes before the original ISA poweroff executes."""
 import argparse
+from contextlib import contextmanager
 import hashlib
 import json
 import os
 from pathlib import Path
 import re
 import shutil
+import signal
 import struct
 import subprocess
 import sys
@@ -109,7 +111,71 @@ quit
 '''
 
 
+class CaptureInterrupted(Exception):
+    def __init__(self, signum):
+        self.signum = signum
+        super().__init__(signal.Signals(signum).name)
+
+
+@contextmanager
+def interruption_handlers():
+    """Unwind the capture and its owned direct GDB child on shutdown."""
+    previous = {number: signal.getsignal(number) for number in (signal.SIGINT, signal.SIGTERM)}
+    def interrupted(signum, _frame):
+        # A second request must not interrupt direct-child cleanup. All
+        # descendants remain in the outer harness's owned group.
+        for number in previous:
+            signal.signal(number, signal.SIG_IGN)
+        raise CaptureInterrupted(signum)
+    try:
+        for number in previous:
+            signal.signal(number, interrupted)
+        yield
+    finally:
+        for number, handler in previous.items():
+            signal.signal(number, handler)
+
+
+@contextmanager
+def publish_child():
+    """Publish Popen ownership before a pending signal can unwind the spawn."""
+    previous = {number: signal.getsignal(number) for number in (signal.SIGINT, signal.SIGTERM)}
+    pending = []
+    def remember(signum, _frame):
+        pending.append(signum)
+    try:
+        for number in previous:
+            signal.signal(number, remember)
+        yield
+    finally:
+        for number, handler in previous.items():
+            signal.signal(number, handler)
+        if pending:
+            for number in previous:
+                signal.signal(number, signal.SIG_IGN)
+            raise CaptureInterrupted(pending[0])
+
+
+def stop_gdb_child(process):
+    """Kill/reap this retained direct child without signaling a numeric group."""
+    previous = {number: signal.getsignal(number) for number in (signal.SIGINT, signal.SIGTERM)}
+    try:
+        for number in previous:
+            signal.signal(number, signal.SIG_IGN)
+        if process.poll() is None:
+            process.kill()
+        return process.wait(timeout=2)
+    finally:
+        for number, handler in previous.items():
+            signal.signal(number, handler)
+
+
 def main():
+    with interruption_handlers():
+        return capture_main()
+
+
+def capture_main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--endpoint", required=True)
     parser.add_argument("--symbol-elf", type=Path, required=True)
@@ -162,12 +228,18 @@ def main():
         record["gdb_version"] = subprocess.check_output([gdb, "--version"], text=True, timeout=10)
         sidecar.write_text(json.dumps(record, indent=2) + "\n")
         with sidecar.with_name("capture-gdb.log").open("wb") as output:
+            child = None
             try:
-                result = subprocess.run(command, stdout=output, stderr=subprocess.STDOUT, timeout=args.timeout)
-                record["gdb_exit_code"] = result.returncode
+                with publish_child():
+                    child = subprocess.Popen(command, stdout=output, stderr=subprocess.STDOUT)
+                record["gdb_pid"] = child.pid
+                record["gdb_exit_code"] = child.wait(timeout=args.timeout)
             except subprocess.TimeoutExpired:
                 record["timed_out"] = True
                 raise ValueError("GDB coverage capture timed out")
+            finally:
+                if child is not None:
+                    record["gdb_exit_code"] = stop_gdb_child(child)
         if observations.is_file():
             observed = json.loads(observations.read_text())
             record.update(observed)
@@ -182,8 +254,10 @@ def main():
                                    "sha256": hashlib.sha256(saved_prefix).hexdigest()}
         if record["raw"]["size"] != record["announcement"]["size"]:
             raise ValueError("captured profile size differs from the guest announcement")
-    except (OSError, ValueError, subprocess.SubprocessError) as error:
+    except (OSError, ValueError, subprocess.SubprocessError, CaptureInterrupted) as error:
         record["passed"] = False
+        if isinstance(error, CaptureInterrupted):
+            record["interrupted_by"] = signal.Signals(error.signum).name
         record["error"] = f"{type(error).__name__}: {error}"
     record["duration_seconds"] = round(time.monotonic() - started, 3)
     sidecar.write_text(json.dumps(record, indent=2) + "\n")

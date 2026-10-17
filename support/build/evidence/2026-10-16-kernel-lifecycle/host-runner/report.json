@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "scope": "Host-only integration runner lifecycle; no Rust build, kernel test, QEMU or Linux workload acceptance.",
+  "remote_code_commit": "7cf6f7c329361c9828a98b766d1f0d78cf53b58d",
+  "remote_code_tree": "515cd2babfb8a4372ef29a26f132ff2de19cbe15",
+  "remote_parent": "4b3153079336ddea244c2ffecea1da0e006769b6",
+  "local_equivalent_code_commit": "287a92e65581f193d764f5ff85fbc3631bc0a9ab",
+  "baseline_commit": "2eee2c3df5a837e89ae7557510008ce1de37a1ca",
+  "source_sha256": {
+    "support/build/osdk-integration/run.py": "023df78aeedb663d10c48dad08a3ed0b2670e2c5094de1bf3ac75035b1bca761",
+    "support/build/osdk-integration/test_runner_lifecycle.py": "cf6c0a66df9e65b03af0c2e7a995079098f257d8b5c343e4b8b8205787b62a80"
+  },
+  "original_primary_probe": {
+    "control_passed": 1,
+    "distinct_cleanup_transition_leaks": 2,
+    "results": "old-probes.json",
+    "source_sha256": "31b97ef6d7fbbe675364aaa1c27fdc4e36d328cbce307452434dfc7b9888d929"
+  },
+  "independent_old_probe": {
+    "same_defect_independently_reproduced": true,
+    "additional_unique_cases": 0,
+    "observation": "independent-old-observation.json",
+    "method_and_gap": "independent-controller-method.json"
+  },
+  "patched_primary_probes": {
+    "passed": 3,
+    "first_sigint_authoritative": true,
+    "all_owned_children_exit_and_tcp_listener_released": true,
+    "results": "patched-probes.json",
+    "old_literal_handler_settings_removed": true,
+    "note": "Patched injections occur at cleanup entry and between group TERM/KILL; these are not the removed literal handler-setting instructions."
+  },
+  "final_host_tests": {
+    "lifecycle": 14,
+    "timeout": 1,
+    "profiles": 7,
+    "per_mode": 22,
+    "python_modes": [
+      "-I",
+      "-I -O"
+    ],
+    "passed_per_mode": 22,
+    "failed": 0,
+    "commands_and_logs": "commands.json"
+  },
+  "intermediate_attempts": "All available original/intermediate probe and test logs retained; first patched original10 and later14 runs passed; original deliberate leak observations not overwritten.",
+  "source_reconstruction": "Actual forward-check, forward-apply, SHA comparison to final Git blobs, reverse-apply in temporary files; no production source copy retained.",
+  "archive": {
+    "path": "raw-evidence.tar.gz",
+    "members": 101,
+    "sha256": "704f64bb8259e0f494207120631be7d3fa1229d1ec4c90e6a0e0a55f23f4f5b5",
+    "all_member_bytes_verified": true
+  },
+  "limits": [
+    "Sole direct-child reaper, no subreaper or claim of reaping grandchildren.",
+    "Only descendants remaining in original process group.",
+    "No /proc identity inference or group signal after leader reap.",
+    "Controlled signal seams, no naturally occurring race-frequency measurement.",
+    "Full22 Rust/guest integration belongs to separate parent-run acceptance, not this host22 denominator."
+  ]
+}

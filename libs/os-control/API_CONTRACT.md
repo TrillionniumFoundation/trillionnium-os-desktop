@@ -72,6 +72,10 @@ binding on `delivery_view_for`, contiguous terminal state, and monotonic
 frontier. Retiring a prefix releases result slots but keeps the frontier so a
 late sequence can only return `Retired`.
 
+`LogicalOperationId` and `OperationBinding` are value-only handoff types for
+the K↔D association. They do not create a K index, persistence record, or
+execution authority; A07 remains the owner of the existing Hepta K ledger.
+
 `lose_history` models a reboot or namespace-loss boundary. Old views observe
 `HistoryLost`, old reserved tokens are fenced, and a new `ControlCore` must
 use a new boot/CapSpace identity. This is not a persistence implementation.

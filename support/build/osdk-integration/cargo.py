@@ -10,6 +10,84 @@ import tempfile
 import tomllib
 
 SEED_SHA256 = "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316"
+TOOLCHAIN = "nightly-2026-07-21"
+ALIASES = {"b": "build", "c": "check", "d": "doc", "r": "run", "t": "test"}
+RESOLVING = {"metadata", "build", "check", "test", "run", "doc",
+             "bench", "rustc", "rustdoc", "fetch", "tree", "pkgid"}
+MANIFEST_ONLY = {"new", "init", "locate-project", "read-manifest", "verify-project",
+                 "version", "help"}
+
+
+def cargo_arguments(requested):
+    """Recognize the fixed profile's commands before Cargo can expand aliases.
+
+    Global value options cannot be mistaken for commands. This is deliberately
+    a finite integration adapter, not a replacement Cargo CLI: custom commands,
+    configuration overrides and directory/lock redirection fail closed.
+    """
+    args = list(requested)
+    if args and args[0].startswith("+"):
+        if args.pop(0) not in ("+" + TOOLCHAIN, "+" + TOOLCHAIN + "-x86_64-unknown-linux-gnu"):
+            raise SystemExit("integration Cargo only permits the fixed " + TOOLCHAIN)
+    index = 0
+    while index < len(args):
+        arg = args[index]
+        if arg == "--color":
+            if index + 1 >= len(args) or args[index + 1] not in ("auto", "always", "never"):
+                raise SystemExit("integration Cargo requires --color auto, always or never")
+            index += 2
+        elif arg.startswith("--color="):
+            if arg.partition("=")[2] not in ("auto", "always", "never"):
+                raise SystemExit("integration Cargo requires --color auto, always or never")
+            index += 1
+        elif arg in ("--quiet", "--verbose", "--locked", "--offline", "--frozen",
+                     "--version", "--help", "--list") or \
+                (arg.startswith("-") and len(arg) > 1 and set(arg[1:]) <= set("vqVh")):
+            index += 1
+        elif arg == "--explain":
+            if index + 1 >= len(args):
+                raise SystemExit("integration Cargo requires a rustc explanation code")
+            index += 2
+        elif arg == "-Z" and index + 1 < len(args):
+            if args[index + 1] == "script" or args[index + 1].startswith("script="):
+                raise SystemExit("integration Cargo does not permit script execution")
+            index += 2
+        elif arg.startswith("-Z") and len(arg) > 2 and not arg.startswith("-Zscript"):
+            index += 1
+        elif arg.startswith("-"):
+            raise SystemExit(f"unsupported integration Cargo global option: {arg}")
+        else:
+            break
+    command = ALIASES.get(args[index], args[index]) if index < len(args) else ""
+    if command and command not in RESOLVING | MANIFEST_ONLY:
+        raise SystemExit(f"unsupported integration Cargo command: {command}")
+    if command:
+        args[index] = command
+    # Cargo accepts global options after the command too. Do not let a caller
+    # redirect the lock, compiler or cwd after the workspace has been verified.
+    cargo_side = args[:args.index("--")] if "--" in args else args
+    for option_index, arg in enumerate(cargo_side):
+        if arg in ("--config", "-C", "--lockfile-path", "-Zscript") or \
+                arg.startswith(("--config=", "--lockfile-path=", "-Zscript")) or \
+                (arg.startswith("-C") and len(arg) > 2) or \
+                (arg == "-Z" and option_index + 1 < len(cargo_side) and
+                 cargo_side[option_index + 1].partition("=")[0] == "script"):
+            raise SystemExit(f"unsupported integration Cargo override: {arg}")
+    if command == "help":
+        topics = [arg for arg in args[index + 1:] if not arg.startswith("-")]
+        if any(ALIASES.get(topic, topic) not in RESOLVING | MANIFEST_ONLY for topic in topics):
+            raise SystemExit("integration Cargo help only permits known commands")
+        args[index + 1:] = [ALIASES.get(arg, arg) for arg in args[index + 1:]]
+    return args, command
+
+
+def locked_arguments(args):
+    # Flags after `--` belong to a test/program/rustc, not Cargo. Place the
+    # enforced flags first, and avoid Cargo's duplicate-option rejection.
+    boundary = args.index("--") if "--" in args else len(args)
+    before = args[:boundary]
+    forced = [flag for flag in ("--locked", "--offline") if flag not in before]
+    return [*forced, *args]
 
 
 def external(data):
@@ -29,21 +107,23 @@ def main():
     # OSDK deliberately removes RUSTUP_TOOLCHAIN before Cargo build, and its
     # generated template says merely "nightly". Pin every real subprocess again
     # instead of allowing a Rust shim to install/select a different nightly.
-    tool_bin = Path(real).parent
-    os.environ["RUSTUP_TOOLCHAIN"] = "nightly-2026-07-21"
+    args, subcommand = cargo_arguments(sys.argv[1:])
+    tool_bin = Path(real).resolve().parent
+    os.environ["RUSTUP_TOOLCHAIN"] = TOOLCHAIN
     os.environ["RUSTUP_AUTO_INSTALL"] = "0"
-    if (tool_bin / "rustc").is_file():
-        os.environ["RUSTC"] = str(tool_bin / "rustc")
-        os.environ["RUSTDOC"] = str(tool_bin / "rustdoc")
-    args = sys.argv[1:]
-    subcommand = next((arg for arg in args if not arg.startswith("-")), "")
-    if subcommand not in ("metadata", "build", "check", "test", "clippy"):
+    for name, variable in (("rustc", "RUSTC"), ("rustdoc", "RUSTDOC")):
+        executable = tool_bin / name
+        if not executable.is_file():
+            raise SystemExit(f"fixed Cargo sibling is missing: {executable}")
+        os.environ[variable] = str(executable)
+    if subcommand not in RESOLVING:
         os.execv(real, [real, *args])
     record_dir = Path(os.environ["A01_OSDK_CASE_OUTPUT"]) / "cargo"
     record_dir.mkdir(parents=True, exist_ok=True)
     descriptor, name = tempfile.mkstemp(prefix="request-", suffix=".json", dir=record_dir)
     os.close(descriptor)
-    report = {"cwd": os.getcwd(), "requested_argv": [real, *args],
+    report = {"cwd": os.getcwd(), "requested_argv": [real, *sys.argv[1:]],
+              "canonical_argv": [real, *args], "command": subcommand,
               "external_drift": None, "normalization_exit": None, "raw_exit_code": None,
               "cargo_path": real, "cargo_sha256": hashlib.sha256(Path(real).read_bytes()).hexdigest(),
               "cargo_version": subprocess.check_output([real, "-Vv"], text=True, timeout=10),
@@ -56,9 +136,10 @@ def main():
         report_path.write_text(json.dumps(report, indent=2) + "\n")
     save()
     locate = [real, "locate-project", "--workspace", "--message-format", "plain"]
-    for index, arg in enumerate(args):
+    cargo_side = args[:args.index("--")] if "--" in args else args
+    for index, arg in enumerate(cargo_side):
         if arg == "--manifest-path":
-            locate += args[index:index + 2]
+            locate += cargo_side[index:index + 2]
         elif arg.startswith("--manifest-path="):
             locate.append(arg)
     root = subprocess.check_output(locate, text=True).strip()
@@ -78,9 +159,9 @@ def main():
     # dependency. This query identifies local manifests and never resolves or
     # builds their dependencies. A full resolution at this stage would resolve
     # the template's not-yet-replaced crates.io OSTD dependency.
-    if subcommand == "metadata" and "--no-deps" in args:
+    if subcommand == "metadata" and "--no-deps" in cargo_side:
         atomic_write(lock, seed)
-        actual = [real, *args, "--locked", "--offline"]
+        actual = [real, *locked_arguments(args)]
         report.update({"actual_argv": actual, "metadata_no_deps_only": True,
                        "external_drift": [], "seed_sha256": SEED_SHA256})
         save()
@@ -115,11 +196,7 @@ def main():
     if drift:
         save()
         raise SystemExit(f"generated lock drifted from pinned upstream identities: {drift}")
-    actual = [real, *args]
-    if "--locked" not in actual:
-        actual.append("--locked")
-    if "--offline" not in actual:
-        actual.append("--offline")
+    actual = [real, *locked_arguments(args)]
     report["actual_argv"] = actual
     save()
     result = subprocess.run(actual)

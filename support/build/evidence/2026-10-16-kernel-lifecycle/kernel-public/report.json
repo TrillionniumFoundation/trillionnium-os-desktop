@@ -1,0 +1,99 @@
+{
+  "schema": 1,
+  "scope": "Actual public A01 run_kernel route: pinned Rust source compilation followed by fixed full-kernel QEMU boot. Not A06 quota, SMP, hardware or W1 acceptance.",
+  "runtime_commit": "287a92e65581f193d764f5ff85fbc3631bc0a9ab",
+  "runtime_tree": "515cd2babfb8a4372ef29a26f132ff2de19cbe15",
+  "published_equivalent_commit": "7cf6f7c329361c9828a98b766d1f0d78cf53b58d",
+  "root_readme_bytes": 0,
+  "toolchain": "nightly-2026-07-21",
+  "source_check": {
+    "passed": true,
+    "checked_files": 118,
+    "pristine": false
+  },
+  "build": {
+    "command": [
+      "support/build/kernel.sh",
+      "run_kernel"
+    ],
+    "upstream_target": "make run_kernel",
+    "cache_reused_from": "next6-clean-debug-01",
+    "actual_rust_compilation_logged": true,
+    "release_compile_seconds": 130,
+    "source_log": "completed-out/run_kernel.log in raw-logs.tar.gz"
+  },
+  "execution": {
+    "actual_tool_session": 2857,
+    "driver_exit": 0,
+    "make_exit": 0,
+    "log_exit": 0,
+    "run_exit": 0,
+    "live_checker_exit_receipt": 0,
+    "qemu_raw_exit": 33,
+    "qemu_timed_out": false,
+    "supervisor_worker_reaped": true,
+    "vcpus": 1,
+    "memory": "512M",
+    "machine": "q35",
+    "accel": "tcg",
+    "cpu": "max",
+    "qemu_version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)\nCopyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers",
+    "duration_seconds": 1.068
+  },
+  "kernel": {
+    "artifact": "kernel.elf.gz",
+    "gzip_sha256": "a40053d77332e838172a0f1c27d0d65f83a1333d1fe6d0343f675d7dcb0d3601",
+    "gzip_bytes": 2570475,
+    "elf_sha256": "490ca0406593c28e64a22333ba432de6122b9a796b0f7f20352b6b2c55e7df56",
+    "elf_bytes": 8290880
+  },
+  "initramfs": {
+    "artifact": "initramfs.cpio.gz",
+    "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+    "bytes": 1107990
+  },
+  "serial": {
+    "artifact": "serial.log.gz",
+    "gzip_sha256": "d5fe235a531899d06b9881f70771c364f0e9ec57ca369e4d1775ae30da87291e",
+    "raw_sha256": "1b584b5f9e937a6c3f87e27422ef74f29133f29ae4f589388262f1ca12a73239",
+    "raw_bytes": 72299,
+    "matches_completed_raw_serial": true,
+    "matches_recorded_live_qemu_sha256": true,
+    "live_qemu_log_reread_during_archive": false,
+    "markers_once": [
+      "TRILLIONNIUM_A01_INIT_BEGIN",
+      "TRILLIONNIUM_A01_CPU_COUNT=1",
+      "TRILLIONNIUM_A01_BOOT_OK"
+    ]
+  },
+  "manifest_handling": {
+    "original_records_preserved": true,
+    "preserved_raw_files": [
+      {
+        "name": "after-clean-debug-01.toml",
+        "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f",
+        "bytes": 1019
+      },
+      {
+        "name": "before-public-boot-01.toml",
+        "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f",
+        "bytes": 1019
+      }
+    ],
+    "writer_and_cause_unknown": true,
+    "exclusive_lock_rename_no_delete_or_overwrite": true,
+    "note": "Historical pathname/inode observations remain unchanged; differing inode records do not establish who wrote or recreated the manifest."
+  },
+  "archive": {
+    "path": "raw-logs.tar.gz",
+    "sha256": "dba3b879f333db4a3b53b9095e6f9bd49962d04c6f98397eea28fb6efcdd08c7",
+    "members": 17,
+    "actual_member_bytes_verified": true
+  },
+  "limits": [
+    "Cached build inputs reused; actual release compilation shown, not a claim of cross-host bit reproducibility.",
+    "Live checker was performed and recorded by parent at completion; archive does not reread the later-reused target or kernel/qemu.log.",
+    "No new QEMU/build/test executed during archive.",
+    "Unknown manifest writer/cause remains unresolved."
+  ]
+}

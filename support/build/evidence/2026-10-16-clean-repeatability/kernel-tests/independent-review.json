@@ -1,0 +1,29 @@
+{
+  "reviewer": "/root/native_osdk_matrix/qemu_profile",
+  "mode": "Independent read-only actual-result and packaging review",
+  "passed": true,
+  "material_issues": [],
+  "actual_result_checks": [
+    "221 unique OSTD test starts each with one ok; 221 passed/0 failed/0 filtered",
+    "Three OSTD soft skips: VMX unavailable twice, VMX/EPT invalidation unavailable once; exercised lower bound218",
+    "141 unique aster-core starts each with one ok; no soft skips; exercised lower bound141",
+    "Both raw serial hashes match actual QEMU records; both raw33/no timeout; both OSDK exit0",
+    "Exact set of10 command receipts raw/effective/leader exit0, leader_reaped:true",
+    "Generated locks match selected runtime input hashes; outer receipt records exit0"
+  ],
+  "package_checks": [
+    "54 raw tar members names/types/size/SHA and whole archive hash",
+    "Eleven readable duplicates byte-identical",
+    "Two fresh gzip ELF snapshots decompress to actual QEMU-record and artifact-manifest hashes/sizes",
+    "Eighteen source snapshots match runtime hashes",
+    "Source5bcec614/tree00e70 precisely binds publication receipt publications[1]",
+    "README accurately limits cache reuse, VMX/EPT soft skips and no A06 acceptance; relative links checked"
+  ],
+  "not_performed": [
+    "No tests rerun",
+    "No live targets or sources modified",
+    "No Git/Cargo/VM actions",
+    "No files written by reviewer"
+  ],
+  "note": "Final SHA256SUMS generated and verified by packager after review."
+}

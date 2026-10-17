@@ -1,0 +1,68 @@
+--- archive.py:review-change-before
++++ archive.py:review-change-after
+@@ -33,21 +33,26 @@
+     with os.fdopen(descriptor, "rb") as stream:
+         opened = os.fstat(stream.fileno())
+         if (not stat.S_ISREG(opened.st_mode)
+-                or (opened.st_dev, opened.st_ino) != (before.st_dev, before.st_ino)):
++                or opened.st_nlink != 1
++                or (opened.st_dev, opened.st_ino, opened.st_size,
++                    opened.st_mtime_ns, opened.st_ctime_ns)
++                != (before.st_dev, before.st_ino, before.st_size,
++                    before.st_mtime_ns, before.st_ctime_ns)):
+             raise ValueError(f"evidence source changed during open: {name}")
+         data = stream.read(MAX_FILE_BYTES + 1)
+         final = os.fstat(stream.fileno())
+-    if (len(data) > MAX_FILE_BYTES or len(data) != opened.st_size
++    if (final.st_nlink != 1 or len(data) > MAX_FILE_BYTES or len(data) != opened.st_size
+             or opened.st_size != final.st_size or opened.st_mtime_ns != final.st_mtime_ns
+             or opened.st_ctime_ns != final.st_ctime_ns):
+         raise ValueError(f"evidence source grew, shrank or changed during read: {name}")
+     return data
+ 
+ 
+-def source_files(source, root_fd):
+-    """Yield relative names/data from a no-symlink recursive walk and two fixed extras."""
+-    for root, dirs, files, fd in os.fwalk(source, topdown=True, follow_symlinks=False):
+-        relative_root = Path(root).relative_to(source)
++def source_files(root_fd):
++    """Walk the opened root inode without following links; include two fixed extras."""
++    for root, dirs, files, fd in os.fwalk(
++            ".", dir_fd=root_fd, topdown=True, follow_symlinks=False):
++        relative_root = Path(root)
+         retained = []
+         for name in sorted(dirs):
+             if name in EXCLUDED_DIRS:
+@@ -87,7 +92,11 @@
+ def archive(source, destination):
+     source = Path(source).absolute()
+     destination = Path(destination).absolute()
+-    if source.is_symlink() or not source.is_dir():
++    try:
++        source_identity = source.lstat()
++    except FileNotFoundError as error:
++        raise ValueError("archive source must be an existing, non-symlink directory") from error
++    if not stat.S_ISDIR(source_identity.st_mode):
+         raise ValueError("archive source must be an existing, non-symlink directory")
+     source = source.resolve()
+     canonical_destination = destination.resolve(strict=False)
+@@ -102,12 +111,18 @@
+     archived_names = set()
+     created = None
+     try:
+-        for item in source_files(source, root_fd):
++        opened_root = os.fstat(root_fd)
++        if (opened_root.st_dev, opened_root.st_ino) != (source_identity.st_dev,
++                                                       source_identity.st_ino):
++            raise ValueError("archive source directory changed during open")
++        for item in source_files(root_fd):
+             if len(item) == 3:
+                 archived, data, original = item
+             else:
+                 archived, data = item
+                 original = str(archived)
++            if archived.parts[0] in {"archive.json", "evidence.sha256"}:
++                raise ValueError(f"evidence collides with archive index: {archived}")
+             if archived in archived_names:
+                 raise ValueError(f"duplicate archive destination: {archived}")
+             archived_names.add(archived)

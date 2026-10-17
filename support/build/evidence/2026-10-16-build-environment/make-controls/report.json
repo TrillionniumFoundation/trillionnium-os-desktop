@@ -1,0 +1,59 @@
+{
+  "scope": "host GNU make controls and normal-kernel wrapper guard; not a Rust kernel build or VM acceptance",
+  "source_publication": "source-publication.json",
+  "raw_original_input": {
+    "path": "raw-originals.tar.gz",
+    "regular_members": 30,
+    "raw_bytes": 251823,
+    "gzip_bytes": 58804,
+    "gzip_sha256": "14744c67b5a16b0f797d91901701d5e8c87048f9eb4cbf32de1fb08e12e04b5b",
+    "member_index": "members.json",
+    "each_member_byte_compared_to_frozen_original": true
+  },
+  "original_input_checksum_sha256": "6f5a58483d1dc86b653373b1a958c29f76a734100279c1ff38cf79aa4f2133dd",
+  "baseline": {
+    "real_gnu_make": "GNU Make 4.3",
+    "dry_run_and_touch": {
+      "return_code": 0,
+      "cargo_osdk_build_executed": false
+    },
+    "empty_makeflags_control_executes_build": true,
+    "i_first_experiment_is_success_control_only": true,
+    "red_methods": 6,
+    "red_assertion_failures_including_subtests": 9,
+    "red_harness_errors": 0,
+    "red_json": "baseline-red.json",
+    "red_log": "baseline-red.log"
+  },
+  "final_host_suite": {
+    "runner_per_mode": 30,
+    "supervisor_per_mode": 9,
+    "modes": [
+      "-I",
+      "-I -O"
+    ],
+    "method_executions": 78,
+    "unique_test_methods": 39,
+    "logs": [
+      "kernel-runner-isolated.log",
+      "kernel-runner-optimized.log",
+      "kernel-supervisor-isolated.log",
+      "kernel-supervisor-optimized.log"
+    ],
+    "status_evidence": "All four raw unittest logs OK; root reports actual tool exit0. Missing separate original invocation receipts are disclosed in independent-review.json."
+  },
+  "independent_review": "independent-review.json",
+  "source_reconstruction": "source-reconstruction.json",
+  "phase_context_not_reexecuted_here": {
+    "original_related_ktest_executions": 34,
+    "original_build_helper_executions_total": 112,
+    "later_root_revalidation_not_included": true,
+    "merged_main_Clippy_reported_exit": 101,
+    "merged_main_Clippy_reported_A02_lints": [
+      "mutation_kill.rs chunks_exact_to_as_chunks",
+      "transport_vectors.rs chunks_exact_to_as_chunks"
+    ],
+    "all_phase_green_claimed": false
+  },
+  "no_tests_or_VM_run_by_archive": true
+}

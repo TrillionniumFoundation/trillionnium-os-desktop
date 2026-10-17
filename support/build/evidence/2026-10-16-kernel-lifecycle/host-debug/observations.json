@@ -1,0 +1,527 @@
+{
+  "initial-fixture-failure": {
+    "sigterm": {
+      "kind": "actual_debug_cli_host_lifecycle_fixture_no_build_no_vm",
+      "source_sha256": "edcd1e590cb95240d966fe03890339e005d4f5a72a07fe404be320a7b7fffadb",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/next6-debug-baseline/sigterm/fixture-project/support/build/debug/run.py",
+        "--output",
+        "/workspace/scratch/ae1a8cf05419/next6-debug-baseline/sigterm/debug-output",
+        "--gdb",
+        "/workspace/scratch/ae1a8cf05419/next6-debug-baseline/sigterm/tools/gdb",
+        "--nm",
+        "/workspace/scratch/ae1a8cf05419/next6-debug-baseline/sigterm/tools/nm",
+        "--ready-timeout",
+        "30"
+      ],
+      "spawn_publication_window": false,
+      "expected_original_leak": true
+    }
+  },
+  "original-leak": {
+    "sigterm": {
+      "kind": "actual_debug_cli_host_lifecycle_fixture_no_build_no_vm",
+      "source_sha256": "edcd1e590cb95240d966fe03890339e005d4f5a72a07fe404be320a7b7fffadb",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/next6-debug-baseline-02/sigterm/fixture-project/support/build/debug/run.py",
+        "--output",
+        "/workspace/scratch/ae1a8cf05419/next6-debug-baseline-02/sigterm/debug-output",
+        "--gdb",
+        "/workspace/scratch/ae1a8cf05419/next6-debug-baseline-02/sigterm/tools/gdb",
+        "--nm",
+        "/workspace/scratch/ae1a8cf05419/next6-debug-baseline-02/sigterm/tools/nm",
+        "--ready-timeout",
+        "30"
+      ],
+      "spawn_publication_window": false,
+      "expected_original_leak": true,
+      "returncode": -15,
+      "ready": {
+        "pid": 14,
+        "group": 14,
+        "address": [
+          "127.0.0.1",
+          56153
+        ],
+        "descendant": {
+          "pid": 15,
+          "group": 14,
+          "address": [
+            "127.0.0.1",
+            57635
+          ]
+        }
+      },
+      "pidfd_exited": {
+        "driver": false,
+        "descendant": false
+      },
+      "lock_released": false,
+      "tcp_leases_released": [
+        false,
+        false
+      ],
+      "result": null,
+      "passed": true
+    }
+  },
+  "final-ordinary": {
+    "sigint-then-sigterm": {
+      "kind": "actual_debug_cli_host_lifecycle_fixture_no_build_no_vm",
+      "source_sha256": "fc5aa7fb949e1312cc8bd96d6b693b7268b065befa23efb1a94021dc3ab955d3",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/next6-debug-patched-02-final/sigint-then-sigterm/fixture-project/support/build/debug/run.py",
+        "--output",
+        "/workspace/scratch/ae1a8cf05419/next6-debug-patched-02-final/sigint-then-sigterm/debug-output",
+        "--gdb",
+        "/workspace/scratch/ae1a8cf05419/next6-debug-patched-02-final/sigint-then-sigterm/tools/gdb",
+        "--nm",
+        "/workspace/scratch/ae1a8cf05419/next6-debug-patched-02-final/sigint-then-sigterm/tools/nm",
+        "--ready-timeout",
+        "30"
+      ],
+      "spawn_publication_window": false,
+      "expected_original_leak": false,
+      "returncode": 130,
+      "ready": {
+        "pid": 18,
+        "group": 18,
+        "address": [
+          "127.0.0.1",
+          42517
+        ],
+        "worker_route": "1",
+        "descendant": {
+          "pid": 19,
+          "group": 18,
+          "address": [
+            "127.0.0.1",
+            42901
+          ]
+        }
+      },
+      "pidfd_exited": {
+        "driver": true,
+        "descendant": true
+      },
+      "lock_released": true,
+      "tcp_leases_released": [
+        true,
+        true
+      ],
+      "result": {
+        "passed": false,
+        "stage": "build_and_qemu_ready",
+        "boot_directory": "/workspace/scratch/ae1a8cf05419/next6-debug-patched-02-final/sigint-then-sigterm/debug-output/boot",
+        "error": "interrupted by SIGINT",
+        "owned_session_cleanup": [
+          {
+            "leader_pid": 18,
+            "status": -9,
+            "reaped": true,
+            "external_reap": false
+          },
+          {
+            "leader_pid": 13,
+            "status": 0,
+            "reaped": true,
+            "external_reap": false
+          },
+          {
+            "leader_pid": 12,
+            "status": 0,
+            "reaped": true,
+            "external_reap": false
+          }
+        ],
+        "interrupted_by": "SIGINT",
+        "received_signals": [
+          "SIGINT",
+          "SIGTERM"
+        ]
+      },
+      "passed": true
+    },
+    "sigterm": {
+      "kind": "actual_debug_cli_host_lifecycle_fixture_no_build_no_vm",
+      "source_sha256": "fc5aa7fb949e1312cc8bd96d6b693b7268b065befa23efb1a94021dc3ab955d3",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/next6-debug-patched-02-final/sigterm/fixture-project/support/build/debug/run.py",
+        "--output",
+        "/workspace/scratch/ae1a8cf05419/next6-debug-patched-02-final/sigterm/debug-output",
+        "--gdb",
+        "/workspace/scratch/ae1a8cf05419/next6-debug-patched-02-final/sigterm/tools/gdb",
+        "--nm",
+        "/workspace/scratch/ae1a8cf05419/next6-debug-patched-02-final/sigterm/tools/nm",
+        "--ready-timeout",
+        "30"
+      ],
+      "spawn_publication_window": false,
+      "expected_original_leak": false,
+      "returncode": 143,
+      "ready": {
+        "pid": 36,
+        "group": 36,
+        "address": [
+          "127.0.0.1",
+          52099
+        ],
+        "worker_route": "1",
+        "descendant": {
+          "pid": 37,
+          "group": 36,
+          "address": [
+            "127.0.0.1",
+            45985
+          ]
+        }
+      },
+      "pidfd_exited": {
+        "driver": true,
+        "descendant": true
+      },
+      "lock_released": true,
+      "tcp_leases_released": [
+        true,
+        true
+      ],
+      "result": {
+        "passed": false,
+        "stage": "build_and_qemu_ready",
+        "boot_directory": "/workspace/scratch/ae1a8cf05419/next6-debug-patched-02-final/sigterm/debug-output/boot",
+        "error": "interrupted by SIGTERM",
+        "owned_session_cleanup": [
+          {
+            "leader_pid": 36,
+            "status": -9,
+            "reaped": true,
+            "external_reap": false
+          },
+          {
+            "leader_pid": 31,
+            "status": 0,
+            "reaped": true,
+            "external_reap": false
+          },
+          {
+            "leader_pid": 30,
+            "status": 0,
+            "reaped": true,
+            "external_reap": false
+          }
+        ],
+        "interrupted_by": "SIGTERM",
+        "received_signals": [
+          "SIGTERM"
+        ]
+      },
+      "passed": true
+    },
+    "spawn-publication": {
+      "kind": "actual_debug_cli_host_lifecycle_fixture_no_build_no_vm",
+      "source_sha256": "fc5aa7fb949e1312cc8bd96d6b693b7268b065befa23efb1a94021dc3ab955d3",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/next6-debug-patched-02-final/spawn-publication/spawn-window.py"
+      ],
+      "spawn_publication_window": true,
+      "expected_original_leak": false,
+      "returncode": 143,
+      "ready": {
+        "pid": 27,
+        "group": 27,
+        "address": [
+          "127.0.0.1",
+          33791
+        ],
+        "worker_route": "1",
+        "descendant": {
+          "pid": 28,
+          "group": 27,
+          "address": [
+            "127.0.0.1",
+            57935
+          ]
+        }
+      },
+      "pidfd_exited": {
+        "driver": true,
+        "descendant": true
+      },
+      "lock_released": true,
+      "tcp_leases_released": [
+        true,
+        true
+      ],
+      "result": {
+        "passed": false,
+        "stage": "build_and_qemu_ready",
+        "boot_directory": "/workspace/scratch/ae1a8cf05419/next6-debug-patched-02-final/spawn-publication/debug-output/boot",
+        "error": "interrupted by SIGTERM",
+        "owned_session_cleanup": [
+          {
+            "leader_pid": 27,
+            "status": -9,
+            "reaped": true,
+            "external_reap": false
+          },
+          {
+            "leader_pid": 22,
+            "status": 0,
+            "reaped": true,
+            "external_reap": false
+          },
+          {
+            "leader_pid": 21,
+            "status": 0,
+            "reaped": true,
+            "external_reap": false
+          }
+        ],
+        "interrupted_by": "SIGTERM",
+        "received_signals": [
+          "SIGTERM"
+        ]
+      },
+      "passed": true
+    }
+  },
+  "final-optimized": {
+    "sigint-then-sigterm": {
+      "kind": "actual_debug_cli_host_lifecycle_fixture_no_build_no_vm",
+      "source_sha256": "fc5aa7fb949e1312cc8bd96d6b693b7268b065befa23efb1a94021dc3ab955d3",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-O",
+        "/workspace/scratch/ae1a8cf05419/next6-debug-patched-03-final-optimized/sigint-then-sigterm/fixture-project/support/build/debug/run.py",
+        "--output",
+        "/workspace/scratch/ae1a8cf05419/next6-debug-patched-03-final-optimized/sigint-then-sigterm/debug-output",
+        "--gdb",
+        "/workspace/scratch/ae1a8cf05419/next6-debug-patched-03-final-optimized/sigint-then-sigterm/tools/gdb",
+        "--nm",
+        "/workspace/scratch/ae1a8cf05419/next6-debug-patched-03-final-optimized/sigint-then-sigterm/tools/nm",
+        "--ready-timeout",
+        "30"
+      ],
+      "spawn_publication_window": false,
+      "expected_original_leak": false,
+      "returncode": 130,
+      "ready": {
+        "pid": 50,
+        "group": 50,
+        "address": [
+          "127.0.0.1",
+          35045
+        ],
+        "worker_route": "1",
+        "descendant": {
+          "pid": 51,
+          "group": 50,
+          "address": [
+            "127.0.0.1",
+            44173
+          ]
+        }
+      },
+      "pidfd_exited": {
+        "driver": true,
+        "descendant": true
+      },
+      "lock_released": true,
+      "tcp_leases_released": [
+        true,
+        true
+      ],
+      "result": {
+        "passed": false,
+        "stage": "build_and_qemu_ready",
+        "boot_directory": "/workspace/scratch/ae1a8cf05419/next6-debug-patched-03-final-optimized/sigint-then-sigterm/debug-output/boot",
+        "error": "interrupted by SIGINT",
+        "owned_session_cleanup": [
+          {
+            "leader_pid": 50,
+            "status": -9,
+            "reaped": true,
+            "external_reap": false
+          },
+          {
+            "leader_pid": 45,
+            "status": 0,
+            "reaped": true,
+            "external_reap": false
+          },
+          {
+            "leader_pid": 44,
+            "status": 0,
+            "reaped": true,
+            "external_reap": false
+          }
+        ],
+        "interrupted_by": "SIGINT",
+        "received_signals": [
+          "SIGINT",
+          "SIGTERM"
+        ]
+      },
+      "passed": true
+    },
+    "sigterm": {
+      "kind": "actual_debug_cli_host_lifecycle_fixture_no_build_no_vm",
+      "source_sha256": "fc5aa7fb949e1312cc8bd96d6b693b7268b065befa23efb1a94021dc3ab955d3",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-O",
+        "/workspace/scratch/ae1a8cf05419/next6-debug-patched-03-final-optimized/sigterm/fixture-project/support/build/debug/run.py",
+        "--output",
+        "/workspace/scratch/ae1a8cf05419/next6-debug-patched-03-final-optimized/sigterm/debug-output",
+        "--gdb",
+        "/workspace/scratch/ae1a8cf05419/next6-debug-patched-03-final-optimized/sigterm/tools/gdb",
+        "--nm",
+        "/workspace/scratch/ae1a8cf05419/next6-debug-patched-03-final-optimized/sigterm/tools/nm",
+        "--ready-timeout",
+        "30"
+      ],
+      "spawn_publication_window": false,
+      "expected_original_leak": false,
+      "returncode": 143,
+      "ready": {
+        "pid": 68,
+        "group": 68,
+        "address": [
+          "127.0.0.1",
+          48987
+        ],
+        "worker_route": "1",
+        "descendant": {
+          "pid": 69,
+          "group": 68,
+          "address": [
+            "127.0.0.1",
+            55143
+          ]
+        }
+      },
+      "pidfd_exited": {
+        "driver": true,
+        "descendant": true
+      },
+      "lock_released": true,
+      "tcp_leases_released": [
+        true,
+        true
+      ],
+      "result": {
+        "passed": false,
+        "stage": "build_and_qemu_ready",
+        "boot_directory": "/workspace/scratch/ae1a8cf05419/next6-debug-patched-03-final-optimized/sigterm/debug-output/boot",
+        "error": "interrupted by SIGTERM",
+        "owned_session_cleanup": [
+          {
+            "leader_pid": 68,
+            "status": -9,
+            "reaped": true,
+            "external_reap": false
+          },
+          {
+            "leader_pid": 63,
+            "status": 0,
+            "reaped": true,
+            "external_reap": false
+          },
+          {
+            "leader_pid": 62,
+            "status": 0,
+            "reaped": true,
+            "external_reap": false
+          }
+        ],
+        "interrupted_by": "SIGTERM",
+        "received_signals": [
+          "SIGTERM"
+        ]
+      },
+      "passed": true
+    },
+    "spawn-publication": {
+      "kind": "actual_debug_cli_host_lifecycle_fixture_no_build_no_vm",
+      "source_sha256": "fc5aa7fb949e1312cc8bd96d6b693b7268b065befa23efb1a94021dc3ab955d3",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-O",
+        "/workspace/scratch/ae1a8cf05419/next6-debug-patched-03-final-optimized/spawn-publication/spawn-window.py"
+      ],
+      "spawn_publication_window": true,
+      "expected_original_leak": false,
+      "returncode": 143,
+      "ready": {
+        "pid": 59,
+        "group": 59,
+        "address": [
+          "127.0.0.1",
+          58055
+        ],
+        "worker_route": "1",
+        "descendant": {
+          "pid": 60,
+          "group": 59,
+          "address": [
+            "127.0.0.1",
+            42773
+          ]
+        }
+      },
+      "pidfd_exited": {
+        "driver": true,
+        "descendant": true
+      },
+      "lock_released": true,
+      "tcp_leases_released": [
+        true,
+        true
+      ],
+      "result": {
+        "passed": false,
+        "stage": "build_and_qemu_ready",
+        "boot_directory": "/workspace/scratch/ae1a8cf05419/next6-debug-patched-03-final-optimized/spawn-publication/debug-output/boot",
+        "error": "interrupted by SIGTERM",
+        "owned_session_cleanup": [
+          {
+            "leader_pid": 59,
+            "status": -9,
+            "reaped": true,
+            "external_reap": false
+          },
+          {
+            "leader_pid": 54,
+            "status": 0,
+            "reaped": true,
+            "external_reap": false
+          },
+          {
+            "leader_pid": 53,
+            "status": 0,
+            "reaped": true,
+            "external_reap": false
+          }
+        ],
+        "interrupted_by": "SIGTERM",
+        "received_signals": [
+          "SIGTERM"
+        ]
+      },
+      "passed": true
+    }
+  }
+}

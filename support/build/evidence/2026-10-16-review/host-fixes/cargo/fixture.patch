@@ -1,0 +1,43 @@
+--- /dev/null
++++ b/fixtures/reproduce-cargo-baseline.py
+@@ -0,0 +1,26 @@
++#!/usr/bin/env python3
++"""Reproduce the original adapter bypass requests with fixture Cargo."""
++import argparse, hashlib, importlib.util, json, subprocess, tempfile
++from pathlib import Path
++parser=argparse.ArgumentParser()
++parser.add_argument('repository',type=Path)
++args=parser.parse_args()
++project=args.repository.resolve()
++path=project/'support/build/osdk-integration/test_cargo.py'
++assert hashlib.sha256(path.read_bytes()).hexdigest() == '277d3d0bd45b287434c62acb0d0e961c845546a9f61d4b363e8ce65e86b7a75e'
++spec=importlib.util.spec_from_file_location('cargo_baseline_controls',path)
++module=importlib.util.module_from_spec(spec)
++spec.loader.exec_module(module)
++old=subprocess.check_output(['git','show','b5030737451cd7b57813fc4e3c39665a6bb66cfc:support/build/osdk-integration/cargo.py'],cwd=project)
++assert hashlib.sha256(old).hexdigest() == '225783be421c1811f92c849a94c238b25fefb6e170f4d8eb33911aa517b99b73'
++requests=[('--color','always','build'),('b',),('r','--','--locked','--offline'),('+nightly','build')]
++with tempfile.TemporaryDirectory() as temporary:
++    baseline=Path(temporary)/'baseline-cargo.py'
++    baseline.write_bytes(old)
++    fixture=module.CargoAdapterTests()
++    results=[]
++    for request in requests:
++        result=fixture.invoke(request,adapter=baseline)
++        results.append({'request':request,'status':result['status'],'actual':result['actual'],
++                        'calls':result['calls'],'report_count':len(result['reports'])})
++print(json.dumps(results,indent=2))
+--- /dev/null
++++ b/fixtures/smoke/Cargo.toml
+@@ -0,0 +1,7 @@
++[package]
++name = "a01-cargo-boundary-smoke"
++version = "0.0.0"
++edition = "2024"
++
++[dependencies]
++cfg-if = "=1.0.4"
+--- /dev/null
++++ b/fixtures/smoke/src/main.rs
+@@ -0,0 +1 @@
++cfg_if::cfg_if! { if #[cfg(target_pointer_width = "64")] { fn main() { println!("A01_FIXED_CARGO_DEPENDENCY_OK"); } } else { compile_error!("expected x86_64"); } }

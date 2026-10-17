@@ -1,0 +1,64 @@
+{
+  "kind": "actual-completed-host-regression-suites",
+  "fixtures_run_no_cargo_rust_or_qemu": true,
+  "baseline": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "-I",
+      "/workspace/scratch/ae1a8cf05419/next9-encoded-flags/baseline-lifecycle/test_runner_lifecycle.py",
+      "RunnerLifecycleTests.test_empty_encoded_flags_reject_before_work_and_same_output_retries",
+      "RunnerLifecycleTests.test_nonempty_encoded_flags_reject_before_work_and_same_output_retries",
+      "-v"
+    ],
+    "exit_code": 1,
+    "test_count": 2,
+    "failures": 2,
+    "interpretation": "both new public CLI guards are absent in copied pre-fix runner; fixture pipeline unexpectedly succeeds"
+  },
+  "final_suites": [
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "support/build/ktest/test_runner_lifecycle.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+      "tool_session": 57051,
+      "observed_exit_code": 0,
+      "tests": 17,
+      "failures": 0,
+      "log": "lifecycle-normal.log"
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "-O",
+        "support/build/ktest/test_runner_lifecycle.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+      "tool_session": 68174,
+      "observed_exit_code": 0,
+      "tests": 17,
+      "failures": 0,
+      "log": "lifecycle-optimized.log"
+    }
+  ],
+  "diff_check": {
+    "argv": [
+      "git",
+      "diff",
+      "--check",
+      "--",
+      "support/build/ktest/run.py",
+      "support/build/ktest/test_runner_lifecycle.py"
+    ],
+    "observed_exit_code": 0
+  },
+  "fixed_files_sha256": {
+    "support/build/ktest/run.py": "6bcd7710d60ef5d0f228a821f80a452fbca9cb1b6110e7dd12f67b2eede66d27",
+    "support/build/ktest/test_runner_lifecycle.py": "0bbbbbde72aa8aff6fc85d6fc1ea3e0a1a0cb70a5b3262e42e602f7104c4704c"
+  }
+}

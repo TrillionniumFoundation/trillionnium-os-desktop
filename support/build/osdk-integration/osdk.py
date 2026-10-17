@@ -12,6 +12,13 @@ import tempfile
 
 CAPTURE_PROFILE = "osdk-native-local-tcp-gdb-capture-v2"
 CAPTURE_SYMBOL = "ostd::arch::power::try_poweroff"
+ANSI = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)")
+FATAL_PANICS = (
+    "panicked at", "An uncaught panic occurred:", "Uncaught panic:",
+    "unknown panic payload! (fatal panic handling error",
+    "Non-resettable panic!", "The panic handler panicked",
+    "Panicked in `PanicGuard`, aborting the system",
+)
 
 
 def adapt_command(args, environment, here):
@@ -53,6 +60,9 @@ def coverage_binding(case_directory, raw_path, profile_id, source_path=None):
                 or serial_records[0].get("sha256") != serial_hash \
                 or serial_records[0].get("size") != len(data):
             raise ValueError("coverage serial bytes do not match the guest record")
+        if profile_id == CAPTURE_PROFILE and any(
+                marker in ANSI.sub("", data.decode(errors="replace")) for marker in FATAL_PANICS):
+            raise ValueError("fatal guest panic in GDB coverage capture serial stream")
         announcements = re.findall(rb"^#### Coverage: (0x[0-9a-fA-F]+) (\d+)\r?$", data, re.MULTILINE)
         if len(announcements) != 1:
             raise ValueError("coverage requires exactly one guest announcement")

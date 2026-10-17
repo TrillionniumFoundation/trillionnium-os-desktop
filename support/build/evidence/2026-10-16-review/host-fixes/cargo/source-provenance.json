@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "scope": "host Cargo adapter boundary and cfg-if host program; no kernel/QEMU acceptance",
+  "baseline": {
+    "commit": "b5030737451cd7b57813fc4e3c39665a6bb66cfc",
+    "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/b5030737451cd7b57813fc4e3c39665a6bb66cfc",
+    "files": {
+      "support/build/osdk-integration/cargo.py": {
+        "sha256": "225783be421c1811f92c849a94c238b25fefb6e170f4d8eb33911aa517b99b73",
+        "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/b5030737451cd7b57813fc4e3c39665a6bb66cfc/support/build/osdk-integration/cargo.py"
+      }
+    }
+  },
+  "final": {
+    "commit": "4976b571b1d01c069254252a03b74aaa4f51af93",
+    "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/4976b571b1d01c069254252a03b74aaa4f51af93",
+    "files": {
+      "support/build/osdk-integration/cargo.py": {
+        "sha256": "747b0d4e9a7c681240ae1c8915df07b3a8fe1677f0a52772cce8272a319887d0",
+        "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/4976b571b1d01c069254252a03b74aaa4f51af93/support/build/osdk-integration/cargo.py"
+      },
+      "support/build/osdk-integration/test_cargo.py": {
+        "sha256": "277d3d0bd45b287434c62acb0d0e961c845546a9f61d4b363e8ce65e86b7a75e",
+        "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/4976b571b1d01c069254252a03b74aaa4f51af93/support/build/osdk-integration/test_cargo.py"
+      }
+    }
+  },
+  "baseline_local_copy_excluded": {
+    "name": "cargo-before.py",
+    "sha256": "225783be421c1811f92c849a94c238b25fefb6e170f4d8eb33911aa517b99b73"
+  },
+  "archived_source_copies": false,
+  "post_real_smoke_delta": {
+    "patch": "post-smoke-delta.patch",
+    "before_sha256": {
+      "support/build/osdk-integration/cargo.py": "cfbe5ff30e5ae88f4f1b4316184bc40cec6848187d5db7697c9685cb6c910658",
+      "support/build/osdk-integration/test_cargo.py": "c2db5dfac97129de605eb613ca019c0f73f06092dd1c409293e97e6290ccf05e"
+    },
+    "after_sha256": {
+      "support/build/osdk-integration/cargo.py": "747b0d4e9a7c681240ae1c8915df07b3a8fe1677f0a52772cce8272a319887d0",
+      "support/build/osdk-integration/test_cargo.py": "277d3d0bd45b287434c62acb0d0e961c845546a9f61d4b363e8ce65e86b7a75e"
+    },
+    "verification": "Original full bytes recovered in memory by reversing the two recorded clippy changes; every byte SHA256 matches the original real-smoke-final.json. Patch reverse-check against final committed working files succeeds.",
+    "real_smoke_repeated": false
+  }
+}

@@ -344,21 +344,13 @@ impl Bundle {
             && let Some(qemu_log_file) = &action.qemu.log_file
         {
             let qemu_log_path = config.work_dir.join(qemu_log_file);
-            let endpoint =
-                MonitorEndpoint::new(action.qemu.monitor_transport).unwrap_or_else(|error| {
-                    error_msg!("failed to prepare QEMU monitor: {error}");
-                    daemon_supervisor.abort(None, Errno::ExecuteCommand);
-                });
-            let monitor_argument = endpoint.qemu_argument().unwrap_or_else(|error| {
-                error_msg!("failed to configure QEMU monitor: {error}");
-                daemon_supervisor.abort(None, Errno::ExecuteCommand);
-            });
-            qemu_cmd.arg("-monitor").arg(monitor_argument);
-
-            info!("Running QEMU: {qemu_cmd:#?}");
-            let Ok(mut qemu_child) = qemu_cmd.spawn() else {
-                daemon_supervisor.abort(None, Errno::ExecuteCommand);
-            };
+            let (mut qemu_child, endpoint) =
+                MonitorEndpoint::spawn(action.qemu.monitor_transport, qemu_cmd).unwrap_or_else(
+                    |error| {
+                        error_msg!("failed to spawn QEMU with its managed monitor: {error}");
+                        daemon_supervisor.abort(None, Errno::ExecuteCommand);
+                    },
+                );
             let mut qemu_monitor_stream = match connect_monitor(
                 &endpoint,
                 &mut qemu_child,

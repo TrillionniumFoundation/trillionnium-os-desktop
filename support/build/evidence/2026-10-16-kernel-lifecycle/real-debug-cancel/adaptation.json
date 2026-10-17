@@ -1,0 +1,27 @@
+{
+  "scope": "GDB script adaptation only; no source/ELF modification; cancellation case, not boot pass",
+  "shim_pid": 266,
+  "original_script": "/workspace/scratch/ae1a8cf05419/a01-next6-build/support/build/out/next6-real-debug-cancel-03/rust-entry.gdb",
+  "original_sha256": "9a1c1adbf9f7e1abd2b8d391b5d9ef56c1e7da1f4bfc08a52808c7e87b612df3",
+  "adapted_script": "/workspace/scratch/ae1a8cf05419/next6-real-debug-cancel-controller-03/adapted-rust-entry.gdb",
+  "adapted_sha256": "71330efa6e9d777e6cbf3325e0aedee1dffa6d3721434a052372d342acefe3cb",
+  "insertion": "after original PC/32-byte live verification and byte marker, before Python end; write readiness then sleep(60)",
+  "real_gdb": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/bin/gdb",
+  "real_gdb_sha256": "3832cc070ae1716e322105d3b39fb398695e5f031c9d39224cf227a8c2b889f6",
+  "requested_argv": [
+    "/workspace/scratch/ae1a8cf05419/next6-real-debug-cancel-controller-03/gdb-live-hold.py",
+    "--nx",
+    "--batch",
+    "--se=/workspace/scratch/ae1a8cf05419/a01-next6-build/kernel/asterinas/target/x86_64-unknown-none/release/asterinas-osdk-bin",
+    "-x",
+    "/workspace/scratch/ae1a8cf05419/a01-next6-build/support/build/out/next6-real-debug-cancel-03/rust-entry.gdb"
+  ],
+  "actual_argv": [
+    "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/bin/gdb",
+    "--nx",
+    "--batch",
+    "--se=/workspace/scratch/ae1a8cf05419/a01-next6-build/kernel/asterinas/target/x86_64-unknown-none/release/asterinas-osdk-bin",
+    "-x",
+    "/workspace/scratch/ae1a8cf05419/next6-real-debug-cancel-controller-03/adapted-rust-entry.gdb"
+  ]
+}

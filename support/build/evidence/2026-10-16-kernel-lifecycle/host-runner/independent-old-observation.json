@@ -1,0 +1,30 @@
+{
+  "kind": "read_only_signal_cleanup_entry_adversarial_host_fixture_no_vm",
+  "ready": {
+    "pid": 8,
+    "group": 8,
+    "address": [
+      "127.0.0.1",
+      35215
+    ]
+  },
+  "error": {
+    "type": "RunnerInterrupted",
+    "message": "SIGTERM",
+    "signum": 15
+  },
+  "pidfd_exited_after_exception": false,
+  "tcp_lease_released": false,
+  "command": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "-I",
+      "-c",
+      "import json,os,signal,socket,time;from pathlib import Path;signal.signal(signal.SIGTERM,signal.SIG_IGN);lease=socket.socket();lease.bind(('127.0.0.1',0));lease.listen(1);Path('ready.json').write_text(json.dumps({'pid':os.getpid(),'group':os.getpgrp(),'address':lease.getsockname()}));time.sleep(60)"
+    ],
+    "cwd": "/workspace/scratch/ae1a8cf05419/next6-runner-cleanup-entry-probe",
+    "raw_exit_code": null,
+    "timed_out": false
+  },
+  "finding_reproduced": true
+}

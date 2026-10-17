@@ -1,0 +1,291 @@
+{
+  "schema": 1,
+  "cwd": "/tmp/a01oi-6wcsfsnj/kernel_test_workspace/run_command/basic_coverage",
+  "requested_osdk_args": [
+    "-kernel",
+    "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/osdk/basic_coverage/basic_coverage-osdk-bin.elf",
+    "-append",
+    "--",
+    "-machine",
+    "q35,kernel-irqchip=split",
+    "-cpu",
+    "Icelake-Server,+x2apic",
+    "--no-reboot",
+    "-m",
+    "8G",
+    "-smp",
+    "1",
+    "-nographic",
+    "-serial",
+    "chardev:mux",
+    "-monitor",
+    "chardev:mux",
+    "-display",
+    "none",
+    "-chardev",
+    "stdio,id=mux,mux=on,signal=off,logfile=qemu.log",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04",
+    "-drive",
+    "if=pflash,format=raw,unit=0,readonly=on,file=/root/ovmf/release/OVMF.fd",
+    "-drive",
+    "if=pflash,format=raw,unit=1,file=/root/ovmf/release/OVMF_VARS.fd",
+    "--no-shutdown",
+    "-gdb",
+    "tcp:127.0.0.1:0",
+    "-S",
+    "-chardev",
+    "socket,id=osdk-managed-monitor,fd=64,server=off",
+    "-monitor",
+    "chardev:osdk-managed-monitor"
+  ],
+  "profile": {
+    "arch": "x86_64",
+    "machine": "q35",
+    "accel": "tcg",
+    "cpu": "max",
+    "vcpus": 1,
+    "memory_mib": 512,
+    "network": false,
+    "data_disks": false,
+    "firmware": "/usr/share/seabios/bios-256k.bin"
+  },
+  "raw_exit_code": 33,
+  "timed_out": false,
+  "profile_id": "osdk-native-local-tcp-gdb-capture-v2",
+  "control_transport": "loopback-tcp",
+  "control_endpoints": [
+    {
+      "kind": "gdb",
+      "role": "server",
+      "host": "127.0.0.1",
+      "port": 0,
+      "requested_value": "tcp:127.0.0.1:0"
+    },
+    {
+      "kind": "monitor",
+      "handoff": "private-connected-inherited-fd",
+      "fd": 64,
+      "requested_value": "socket,id=osdk-managed-monitor,fd=64,server=off"
+    }
+  ],
+  "monitor_socket": {
+    "fd": 64,
+    "local": [
+      "127.0.0.1",
+      57552
+    ],
+    "peer": [
+      "127.0.0.1",
+      46649
+    ],
+    "connected": true,
+    "listening": false,
+    "handoff": "private-connected-inherited-fd",
+    "parent_copy_closed_after_spawn": true,
+    "qemu_pid": 1981
+  },
+  "gdb_readiness": {
+    "ready": true,
+    "marker_requested": true,
+    "startup_survival_seconds": 0.05,
+    "marker": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/next6-osdk-full-01/case-15/gdb-ready.json",
+      "size": 367,
+      "sha256": "cadda4bdca6b5fac28b15d06dc73d94093d963bedb73288cc560f325ed7802b5"
+    }
+  },
+  "gdb_listener": {
+    "host": "127.0.0.1",
+    "port": 47279,
+    "requested_port": 0,
+    "fd": 3,
+    "bind_succeeded": true,
+    "held_until_qemu_spawn": true,
+    "bind_close_rebind_gap": false,
+    "handoff": "prebound-listener-inherited-fd",
+    "parent_copy_closed_after_spawn": true
+  },
+  "argv": [
+    "/usr/bin/qemu-system-x86_64",
+    "-kernel",
+    "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/osdk/basic_coverage/basic_coverage-osdk-bin.elf",
+    "-append",
+    "--",
+    "--no-reboot",
+    "-serial",
+    "chardev:mux",
+    "-monitor",
+    "chardev:mux",
+    "-chardev",
+    "stdio,id=mux,mux=on,signal=off,logfile=qemu.log",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04",
+    "--no-shutdown",
+    "-chardev",
+    "socket,id=a01-gdb0,fd=3,server=on,wait=off",
+    "-gdb",
+    "chardev:a01-gdb0",
+    "-S",
+    "-chardev",
+    "socket,id=osdk-managed-monitor,fd=64,server=off",
+    "-monitor",
+    "chardev:osdk-managed-monitor",
+    "-machine",
+    "q35",
+    "-accel",
+    "tcg",
+    "-cpu",
+    "max",
+    "-m",
+    "512M",
+    "-smp",
+    "1",
+    "-bios",
+    "/usr/share/seabios/bios-256k.bin",
+    "-nodefaults",
+    "-no-user-config",
+    "-display",
+    "none"
+  ],
+  "shell_command": "/usr/bin/qemu-system-x86_64 -kernel /workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/osdk/basic_coverage/basic_coverage-osdk-bin.elf -append -- --no-reboot -serial chardev:mux -monitor chardev:mux -chardev stdio,id=mux,mux=on,signal=off,logfile=qemu.log -device isa-debug-exit,iobase=0xf4,iosize=0x04 --no-shutdown -chardev socket,id=a01-gdb0,fd=3,server=on,wait=off -gdb chardev:a01-gdb0 -S -chardev socket,id=osdk-managed-monitor,fd=64,server=off -monitor chardev:osdk-managed-monitor -machine q35 -accel tcg -cpu max -m 512M -smp 1 -bios /usr/share/seabios/bios-256k.bin -nodefaults -no-user-config -display none",
+  "removed_profile_args": [
+    [
+      "-machine",
+      "q35,kernel-irqchip=split"
+    ],
+    [
+      "-cpu",
+      "Icelake-Server,+x2apic"
+    ],
+    [
+      "-m",
+      "8G"
+    ],
+    [
+      "-smp",
+      "1"
+    ],
+    [
+      "-nographic"
+    ],
+    [
+      "-display",
+      "none"
+    ],
+    [
+      "-drive",
+      "if=pflash,format=raw,unit=0,readonly=on,file=/root/ovmf/release/OVMF.fd"
+    ],
+    [
+      "-drive",
+      "if=pflash,format=raw,unit=1,file=/root/ovmf/release/OVMF_VARS.fd"
+    ]
+  ],
+  "artifacts": {
+    "-bios": {
+      "path": "/usr/share/seabios/bios-256k.bin",
+      "size": 262144,
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    "-kernel": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/osdk/basic_coverage/basic_coverage-osdk-bin.elf",
+      "size": 41563920,
+      "sha256": "fb56d43901288055187bad838943a75330f479b7a98fdeb4e91b4c6d6e9764fc"
+    }
+  },
+  "qemu": {
+    "path": "/usr/bin/qemu-system-x86_64",
+    "size": 26415624,
+    "sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854"
+  },
+  "serial_sources": [
+    "/tmp/a01oi-6wcsfsnj/kernel_test_workspace/run_command/basic_coverage/qemu.log"
+  ],
+  "qemu_version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)\nCopyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers",
+  "timeout_seconds": 300,
+  "capture": {
+    "mode": "gdb-before-poweroff",
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "-I",
+      "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/osdk-integration/capture.py",
+      "--endpoint",
+      "127.0.0.1:47279",
+      "--symbol-elf",
+      "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/x86_64-unknown-none/debug/basic_coverage-osdk-bin",
+      "--serial-log",
+      "/tmp/a01oi-6wcsfsnj/kernel_test_workspace/run_command/basic_coverage/qemu.log",
+      "--raw-output",
+      "/tmp/a01oi-6wcsfsnj/kernel_test_workspace/run_command/basic_coverage/coverage.profraw",
+      "--sidecar",
+      "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/next6-osdk-full-01/case-15/guests/guest-001/coverage-capture.json",
+      "--kernel-sha256",
+      "fb56d43901288055187bad838943a75330f479b7a98fdeb4e91b4c6d6e9764fc",
+      "--guest-record",
+      "guests/guest-001/qemu.json",
+      "--timeout",
+      "180"
+    ],
+    "symbol_elf": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/x86_64-unknown-none/debug/basic_coverage-osdk-bin",
+      "size": 41563920,
+      "sha256": "af84754c8d03d374af8f2c1eae493dc6485c82daeae0414bcb533ce57274d888"
+    },
+    "serial_source": "/tmp/a01oi-6wcsfsnj/kernel_test_workspace/run_command/basic_coverage/qemu.log",
+    "raw_output": "/tmp/a01oi-6wcsfsnj/kernel_test_workspace/run_command/basic_coverage/coverage.profraw",
+    "sidecar_path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/next6-osdk-full-01/case-15/guests/guest-001/coverage-capture.json",
+    "raw_exit_code": 0,
+    "timed_out": false,
+    "finalized": true,
+    "pid": 1986,
+    "process_group": 1631,
+    "group_policy": "inherit recorder group; no capture session or group created",
+    "duration_seconds": 3.264,
+    "logs": {
+      "stdout": {
+        "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/next6-osdk-full-01/case-15/guests/guest-001/coverage-capture-stdout.log",
+        "size": 191,
+        "sha256": "2ca647771356c16a8a8417df54c041e24ff118678075f16687a7dee35dccb8e3"
+      },
+      "stderr": {
+        "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/next6-osdk-full-01/case-15/guests/guest-001/coverage-capture-stderr.log",
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "sidecar": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/next6-osdk-full-01/case-15/guests/guest-001/coverage-capture.json",
+      "size": 2769,
+      "sha256": "50a50a7654d899a0f1bdc0274cea534a57652a454d598de810eafab8bf687197"
+    },
+    "raw": {
+      "path": "/tmp/a01oi-6wcsfsnj/kernel_test_workspace/run_command/basic_coverage/coverage.profraw",
+      "size": 2094456,
+      "sha256": "3d90660be68c63941c5884390c3d25ccd77c33a461c95b070147989117cf253d"
+    },
+    "serial_sha256": "e6998b30baec0d7da585ea8e68f641592b70cad5dfd4c5d4d9706643f9374f7d"
+  },
+  "qemu_pid": 1981,
+  "stream_logs": {
+    "stdout": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/next6-osdk-full-01/case-15/guests/guest-001/qemu-stdout.log",
+      "size": 2823,
+      "sha256": "e6998b30baec0d7da585ea8e68f641592b70cad5dfd4c5d4d9706643f9374f7d"
+    },
+    "stderr": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/next6-osdk-full-01/case-15/guests/guest-001/qemu-stderr.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "serial_logs": [
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/next6-osdk-full-01/case-15/guests/guest-001/serial.log",
+      "size": 2823,
+      "sha256": "e6998b30baec0d7da585ea8e68f641592b70cad5dfd4c5d4d9706643f9374f7d"
+    }
+  ],
+  "wrapper_exit_code": 33,
+  "duration_seconds": 3.414
+}

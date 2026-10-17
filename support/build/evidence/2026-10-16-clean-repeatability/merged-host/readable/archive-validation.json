@@ -1,0 +1,106 @@
+{
+  "schema": 1,
+  "started_utc": "2026-10-16T14:23:48.526830+00:00",
+  "completed_utc": "2026-10-16T14:23:48.958342+00:00",
+  "scope": "Only isolated archive helper host tests from exact committed scratch source; no live repository reads, code/source modifications, Git, Cargo, install or VM execution. Test-owned scratch fixtures allowed.",
+  "source_commit": "81d3080908292a0dc206f047de36b9e27bf68a73",
+  "source_tree": "48d1c43cb77706870cd431a7cc4cecb0f73f3254",
+  "source_inputs_manifest": "/workspace/scratch/ae1a8cf05419/next8-merged-host/source-inputs.json",
+  "source_inputs_manifest_sha256": "fc27382ce35c6e9a8b06e130614cce23a20b442511ca29d4f4362969390ab714",
+  "source_inputs_sha256": {
+    "support/build/osdk-integration/archive.py": "6bb543638261ac29bb0aab604457a238613ef4d52792547f4b37a71235cad266",
+    "support/build/osdk-integration/test_archive.py": "aec6583632e8b4ba197f49360b08177d59768b372724a6dcfea3d4f527f2d9d6",
+    ".github/workflows/a01-boot-evidence.yml": "c28d8ec47ebcde0cf23338c62862ad5ce58d38b01abd8ce2d657fe74092d2d53"
+  },
+  "source_inputs_unchanged_after_tests": true,
+  "python_version": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "selected_inherited_environment": {
+    "PATH": "/root/.codex/tmp/arg0/codex-arg0XJwRso:/opt/codex/codex-path:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback",
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8"
+  },
+  "complete_inherited_environment_saved": false,
+  "environment_updates": {},
+  "runs": [
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        ".",
+        "-p",
+        "test_archive.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/next8-merged-host/source/support/build/osdk-integration",
+      "python_executable": "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "duration_seconds": 0.115,
+      "tests_run": 20,
+      "status": "passed",
+      "failure_summary": null,
+      "log": "/workspace/scratch/ae1a8cf05419/next8-merged-host/archive-I.log",
+      "log_size": 2713,
+      "log_sha256": "9fa283865373610f93737a6f7e8f3cdee87ade485b22baa3d87fc5aac3f183ce",
+      "full_stdout_stderr_merged": true
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "-O",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        ".",
+        "-p",
+        "test_archive.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/next8-merged-host/source/support/build/osdk-integration",
+      "python_executable": "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "duration_seconds": 0.316,
+      "tests_run": 20,
+      "status": "passed",
+      "failure_summary": null,
+      "log": "/workspace/scratch/ae1a8cf05419/next8-merged-host/archive-IO.log",
+      "log_size": 2713,
+      "log_sha256": "f359b18c142888028e562259db4d48f1c3438cd2dd93d4cd6d478e9497222b09",
+      "full_stdout_stderr_merged": true
+    }
+  ],
+  "ci_archive_pair_guard": {
+    "workflow": ".github/workflows/a01-boot-evidence.yml",
+    "workflow_sha256": "c28d8ec47ebcde0cf23338c62862ad5ce58d38b01abd8ce2d657fe74092d2d53",
+    "exact_source_pair": [
+      {
+        "path": "support/build/osdk-integration/archive.py",
+        "exists": true,
+        "is_file": true,
+        "is_symlink": false,
+        "sha256": "6bb543638261ac29bb0aab604457a238613ef4d52792547f4b37a71235cad266"
+      },
+      {
+        "path": "support/build/osdk-integration/test_archive.py",
+        "exists": true,
+        "is_file": true,
+        "is_symlink": false,
+        "sha256": "aec6583632e8b4ba197f49360b08177d59768b372724a6dcfea3d4f527f2d9d6"
+      }
+    ],
+    "selected_branch": "pair_present_and_both_regular_not_symlink: execute both test commands",
+    "pair_condition_met": true,
+    "event_base_absence_branch_needed": false,
+    "evaluation": "Read the committed workflow Bash pair guard and inspect only the exact committed scratch copy; did not execute Git, the workflow or bootstrap absence branch."
+  },
+  "passed": true
+}

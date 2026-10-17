@@ -1,0 +1,28 @@
+{
+  "command": [
+    "patch",
+    "--batch",
+    "-p1",
+    "-i",
+    "restore-original.patch"
+  ],
+  "raw_exit_code": 0,
+  "stdout": "patching file support/build/debug/run.py\npatching file support/build/debug/test_debug.py\n",
+  "recovered_both_original_hashes": true,
+  "source": [
+    {
+      "path": "support/build/debug/run.py",
+      "fixed_sha256": "fc5aa7fb949e1312cc8bd96d6b693b7268b065befa23efb1a94021dc3ab955d3",
+      "original_sha256": "edcd1e590cb95240d966fe03890339e005d4f5a72a07fe404be320a7b7fffadb",
+      "fixed_size": 22206,
+      "original_size": 20027
+    },
+    {
+      "path": "support/build/debug/test_debug.py",
+      "fixed_sha256": "9532fb599b1ed19eba8ec1724a04995ed4c07c677dc10e358abc9c55b74e937c",
+      "original_sha256": "d9c85314795c50aa772fd876c7fb8d97abefd3f8d9063d07daad5981a50a9109",
+      "fixed_size": 20229,
+      "original_size": 10108
+    }
+  ]
+}

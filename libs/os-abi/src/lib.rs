@@ -181,10 +181,7 @@ impl Transport {
             response_capacity: get_u32(bytes, 20),
             reserved: get_u64(bytes, 24),
         };
-        if out.reserved != 0 {
-            return Err(Error::ReservedNonZero);
-        }
-        out.validate_lengths()?;
+        out.validate()?;
         Ok(out)
     }
 
@@ -192,16 +189,62 @@ impl Transport {
         if out.len() < TRANSPORT_LEN {
             return Err(Error::InsufficientCapacity);
         }
-        if self.reserved != 0 {
-            return Err(Error::ReservedNonZero);
-        }
-        self.validate_lengths()?;
+        self.validate()?;
         put_u64(out, 0, self.request_addr);
         put_u64(out, 8, self.response_addr);
         put_u32(out, 16, self.request_bytes);
         put_u32(out, 20, self.response_capacity);
         put_u64(out, 24, self.reserved);
         Ok(TRANSPORT_LEN)
+    }
+
+    /// Validate a descriptor, including one constructed through public fields.
+    ///
+    /// Only the documented length bounds, reserved field and address arithmetic
+    /// are checked. This does not validate user mappings or access permissions.
+    pub fn validate(&self) -> Result<(), Error> {
+        if self.reserved != 0 {
+            return Err(Error::ReservedNonZero);
+        }
+        self.validate_lengths()
+    }
+
+    /// Preflight an already copied, complete request before semantic admission.
+    ///
+    /// Revalidates the descriptor, requires the snapshot's length to equal
+    /// `request_bytes`, decodes the request, then checks capacity for its
+    /// successful response. A snapshot/descriptor length mismatch returns
+    /// [`Error::InvalidTransport`]. No authority or delivery sequence is issued.
+    ///
+    /// The caller must validate the descriptor before copying the complete input
+    /// once; this method then revalidates it and never dereferences either
+    /// address. Overlapping user input and output ranges are allowed. The
+    /// returned request owns all decoded values,
+    /// so later changes to the original buffers cannot alter it. User access
+    /// checks, copy faults, authorization and copyout remain kernel duties.
+    ///
+    /// ```
+    /// use hos2_os_abi::{Opcode, Request, RequestPayload, Transport};
+    /// let request = Request {
+    ///     opcode: Opcode::QueryAbi,
+    ///     request_id: [1; 16],
+    ///     target_slot: 0,
+    ///     target_generation: 0,
+    ///     payload: RequestPayload::QueryAbi,
+    /// };
+    /// let mut snapshot = [0; 64];
+    /// request.encode(&mut snapshot).unwrap();
+    /// let transport = Transport::new(0x1000, 0x1000, 64, 112);
+    /// assert_eq!(transport.decode_request_snapshot(&snapshot), Ok(request));
+    /// ```
+    pub fn decode_request_snapshot(&self, snapshot: &[u8]) -> Result<Request, Error> {
+        self.validate()?;
+        if snapshot.len() != self.request_bytes as usize {
+            return Err(Error::InvalidTransport);
+        }
+        let request = decode_request(snapshot)?;
+        self.ensure_success_response_capacity(request.opcode)?;
+        Ok(request)
     }
 
     /// Check capacity before authorization or semantic processing.
@@ -226,6 +269,14 @@ impl Transport {
         {
             return Err(Error::InvalidTransport);
         }
+        // Guard arithmetic only. Canonical user pointers, access rights and
+        // copy faults remain the kernel ioctl handler's responsibility.
+        self.request_addr
+            .checked_add(u64::from(self.request_bytes))
+            .ok_or(Error::IntegerOverflow)?;
+        self.response_addr
+            .checked_add(u64::from(self.response_capacity))
+            .ok_or(Error::IntegerOverflow)?;
         Ok(())
     }
 }
@@ -367,8 +418,8 @@ pub fn decode_request(bytes: &[u8]) -> Result<Request, Error> {
         return Err(Error::InvalidFlags);
     }
     check_common_header(bytes, true)?;
-    let opcode = Opcode::from_u16(get_u16(bytes, 8))?;
     let payload_len = checked_payload_len(bytes)?;
+    let opcode = Opcode::from_u16(get_u16(bytes, 8))?;
     let request_id = copy16(bytes, 24);
     if is_zero(&request_id) {
         return Err(Error::InvalidRequestId);
@@ -398,13 +449,7 @@ pub fn decode_request(bytes: &[u8]) -> Result<Request, Error> {
             if payload_len != 32 {
                 return Err(Error::PayloadLengthMismatch);
             }
-            let sequence = get_u64(&request_id, 0);
-            if !all_zero(&request_id[8..]) {
-                return Err(Error::SequenceHighBytesNonZero);
-            }
-            if sequence == 0 || sequence == u64::MAX {
-                return Err(Error::InvalidSequence);
-            }
+            validate_install_sequence_id(&request_id)?;
             let req = InstallBudgetRequest {
                 expected_revision: get_u64(payload, 0),
                 period_ns: get_u64(payload, 8),
@@ -471,9 +516,9 @@ pub fn decode_response(bytes: &[u8]) -> Result<Response, Error> {
     check_magic(bytes, HOSR_MAGIC)?;
     check_version(bytes)?;
     check_common_header(bytes, false)?;
+    let payload_len = checked_payload_len(bytes)?;
     let opcode = Opcode::from_u16(get_u16(bytes, 8))?;
     let status = Status::from_u16(get_u16(bytes, 10))?;
-    let payload_len = checked_payload_len(bytes)?;
     let request_id = copy16(bytes, 24);
     let boot_id = copy16(bytes, 40);
     if is_zero(&request_id) {
@@ -481,6 +526,11 @@ pub fn decode_response(bytes: &[u8]) -> Result<Response, Error> {
     }
     if is_zero(&boot_id) {
         return Err(Error::InvalidField);
+    }
+    // Even a failed InstallBudget echoes its ordered sequence identity.
+    // Validate standalone responses as well as correlated ones.
+    if opcode == Opcode::InstallBudget {
+        validate_install_sequence_id(&request_id)?;
     }
     let revision = get_u64(bytes, 56);
     if status != Status::Ok {
@@ -519,11 +569,7 @@ pub fn decode_response(bytes: &[u8]) -> Result<Response, Error> {
                 return Err(Error::InvalidField);
             }
             let p = parse_install_response(payload)?;
-            if p.previous_revision == u64::MAX
-                || p.previous_revision.checked_add(1) != Some(revision)
-            {
-                return Err(Error::IntegerOverflow);
-            }
+            validate_install_response_revision(p.previous_revision, revision)?;
             validate_apply_times(p.effective_boottime_ns, p.consumed_at_apply_ns)?;
             ResponsePayload::InstallBudget(p)
         }
@@ -758,6 +804,40 @@ fn check_target(slot: u64, generation: u64) -> Result<(), Error> {
     Ok(())
 }
 
+/// Construct the canonical InstallBudget request_id from a CapSpace sequence.
+///
+/// This is a wire-format helper only. Sequence allocation, reservation and
+/// replay detection remain the responsibility of the A03/A05 control layer.
+pub fn install_budget_request_id(sequence: u64) -> Result<[u8; 16], Error> {
+    if sequence == 0 || sequence == u64::MAX {
+        return Err(Error::InvalidSequence);
+    }
+    let mut id = [0u8; 16];
+    id[..8].copy_from_slice(&sequence.to_le_bytes());
+    Ok(id)
+}
+
+/// Decode an InstallBudget request_id without accepting nonzero high bytes.
+pub fn install_budget_sequence(id: &[u8; 16]) -> Result<u64, Error> {
+    if is_zero(id) {
+        return Err(Error::InvalidRequestId);
+    }
+    validate_install_sequence_id(id)?;
+    Ok(get_u64(id, 0))
+}
+
+/// The low half is a little-endian sequence; the high half is zero.
+fn validate_install_sequence_id(id: &[u8; 16]) -> Result<(), Error> {
+    if !all_zero(&id[8..]) {
+        return Err(Error::SequenceHighBytesNonZero);
+    }
+    let sequence = get_u64(id, 0);
+    if sequence == 0 || sequence == u64::MAX {
+        return Err(Error::InvalidSequence);
+    }
+    Ok(())
+}
+
 fn validate_request(request: &Request) -> Result<(), Error> {
     if is_zero(&request.request_id) {
         return Err(Error::InvalidRequestId);
@@ -779,13 +859,7 @@ fn validate_request(request: &Request) -> Result<(), Error> {
         }
         Opcode::InstallBudget => {
             check_target(request.target_slot, request.target_generation)?;
-            let seq = get_u64(&request.request_id, 0);
-            if !all_zero(&request.request_id[8..]) {
-                return Err(Error::SequenceHighBytesNonZero);
-            }
-            if seq == 0 || seq == u64::MAX {
-                return Err(Error::InvalidSequence);
-            }
+            validate_install_sequence_id(&request.request_id)?;
             match request.payload {
                 RequestPayload::InstallBudget(v) => validate_install_request(&v)?,
                 _ => return Err(Error::InvalidField),
@@ -1056,6 +1130,9 @@ fn validate_response(response: &Response) -> Result<(), Error> {
     if is_zero(&response.boot_id) {
         return Err(Error::InvalidField);
     }
+    if response.opcode == Opcode::InstallBudget {
+        validate_install_sequence_id(&response.request_id)?;
+    }
     if response.status != Status::Ok {
         if response.revision != 0 || !matches!(response.payload, ResponsePayload::Empty) {
             return Err(Error::MalformedErrorResponse);
@@ -1076,12 +1153,7 @@ fn validate_response(response: &Response) -> Result<(), Error> {
             validate_read_usage(v)
         }
         (Opcode::InstallBudget, ResponsePayload::InstallBudget(v)) => {
-            if response.revision == 0
-                || v.previous_revision == u64::MAX
-                || v.previous_revision.checked_add(1) != Some(response.revision)
-            {
-                return Err(Error::InvalidField);
-            }
+            validate_install_response_revision(v.previous_revision, response.revision)?;
             validate_apply_times(v.effective_boottime_ns, v.consumed_at_apply_ns)
         }
         (Opcode::QueryDelivery, ResponsePayload::QueryDelivery(v)) => {
@@ -1235,6 +1307,18 @@ fn max_u32(a: u32, b: u32) -> u32 {
     } else {
         b
     }
+}
+
+/// A prior revision must exist, must be incrementable, and must match HOSR.
+fn validate_install_response_revision(previous: u64, reported: u64) -> Result<(), Error> {
+    if previous == 0 || reported == 0 {
+        return Err(Error::InvalidField);
+    }
+    let expected = previous.checked_add(1).ok_or(Error::IntegerOverflow)?;
+    if reported != expected {
+        return Err(Error::InvalidField);
+    }
+    Ok(())
 }
 
 fn validate_apply_times(effective_ns: u64, consumed_ns: u64) -> Result<(), Error> {

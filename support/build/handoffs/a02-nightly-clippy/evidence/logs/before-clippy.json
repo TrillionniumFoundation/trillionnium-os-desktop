@@ -1,0 +1,36 @@
+{
+  "argv": [
+    "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin/cargo",
+    "clippy",
+    "--manifest-path",
+    "libs/os-abi/Cargo.toml",
+    "--all-targets",
+    "--offline",
+    "--",
+    "-D",
+    "warnings"
+  ],
+  "cwd": "/workspace/scratch/ae1a8cf05419/closure-abi/frozen-validation/source",
+  "end_unix_ns": 1792167098651870404,
+  "environment": {
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_ENCODED_RUSTFLAGS": null,
+    "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+    "CARGO_NET_OFFLINE": "true",
+    "CARGO_TARGET_DIR": "/workspace/scratch/ae1a8cf05419/closure-abi/frozen-validation/target",
+    "LC_ALL": "C",
+    "RUSTC": null,
+    "RUSTC_WORKSPACE_WRAPPER": null,
+    "RUSTC_WRAPPER": null,
+    "RUSTFLAGS": null,
+    "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+    "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+    "TZ": "UTC"
+  },
+  "expected_returncode": 101,
+  "log_bytes": 814,
+  "log_sha256": "d667494ad7de0cf33a6bc56b89afeb68d0082be955a101ced5fd740ed1b29e66",
+  "name": "before-clippy",
+  "returncode": 101,
+  "start_unix_ns": 1792167098232743476
+}

@@ -216,8 +216,9 @@ can include any POSIX shell compliant separators.
 
     The optional `monitor_transport` field selects `unix` (the default) or `tcp`
     for OSDK's managed monitor connection.
-    With `tcp`, OSDK owns an ephemeral listener on `127.0.0.1`
-    and QEMU connects to it as a client.
+    With `tcp`, OSDK creates both ends of a private connection on `127.0.0.1`,
+    rejects unrelated clients during setup, and closes the listener before
+    QEMU inherits its connected socket descriptor.
     This field does not enable the monitor or change the guest shutdown behavior.
     It can also be set in `[run.qemu]` or `[test.qemu]`,
     and `--qemu-monitor-transport` overrides it.

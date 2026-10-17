@@ -1,6 +1,8 @@
 """Verify capture input boundaries without running GDB or a VM."""
 import importlib.util
+import os
 from pathlib import Path
+import signal
 import tempfile
 import unittest
 
@@ -10,6 +12,19 @@ spec.loader.exec_module(capture)
 
 
 class CaptureTests(unittest.TestCase):
+    def test_shutdown_during_spawn_waits_until_child_owner_is_published(self):
+        original = {number: signal.getsignal(number) for number in (signal.SIGINT, signal.SIGTERM)}
+        for number in original:
+            owner = None
+            with capture.interruption_handlers():
+                with self.assertRaises(capture.CaptureInterrupted) as interrupted:
+                    with capture.publish_child():
+                        os.kill(os.getpid(), number)
+                        owner = object()
+                self.assertIsNotNone(owner)
+                self.assertEqual(interrupted.exception.signum, number)
+            self.assertEqual({number: signal.getsignal(number) for number in original}, original)
+
     def test_only_the_exact_original_poweroff_symbol_resolves(self):
         address = capture.resolved_address("1234 T unrelated\nffffffff88001000 T " + capture.SYMBOL + "\n")
         self.assertEqual(address, 0xffffffff88001000)

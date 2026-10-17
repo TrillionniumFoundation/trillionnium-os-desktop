@@ -1,0 +1,20 @@
+{
+  "patch_member": "source-final/final-three-files.patch",
+  "from_parent": "84040737d2263368d254d4b16dabff7afb797ea4",
+  "argv": [
+    "patch",
+    "--batch",
+    "--fuzz=0",
+    "-p1"
+  ],
+  "exit_code": 0,
+  "stdout": "patching file support/build/ktest/run.py\npatching file support/build/ktest/test_runner_lifecycle.py\npatching file support/build/ktest/README.md\n",
+  "stderr": "",
+  "all_three_files_equal_final_git_bound_bytes": true,
+  "reconstructed_sha256": {
+    "support/build/ktest/run.py": "e18d02adb932ba213f9f78cdad9457a439465779edb46542eec8ecf590514b1e",
+    "support/build/ktest/test_runner_lifecycle.py": "588fc506700c47c0d15b5d91926a176772938ca5df2af4f059d357b27c1ceaf0",
+    "support/build/ktest/README.md": "0376a464794f85f3012816a0e6723f3d26d260d0d6571b1eab1eb27727d2e453"
+  },
+  "worktree": "disposable scratch; no Git write"
+}

@@ -1,0 +1,5 @@
+# Additional root host recheck
+
+Actual root tool session **56957 exited 0** on tested source `ff040c6d5afbc4e26a249022093b8090181f6176`, tree `eb16c5ef5fe8adf3a9249e19a7674cec7b2e359f`. Six exact invocation receipts and all raw logs are retained: kernel runner 30, supervisor 9 and kernel-test lifecycle 17, each under `-I` and `-I -O`, totaling **112 executions of 56 distinct tests**, all passing.
+
+This repeats the separate implementation agent's 112 executions. If totaling actual host executions, those are 224 repeated executions; they are **not 224 distinct tests**. The root recheck removed the listed runner/Cargo/Rustup/Make environment keys before launching child tests, recorded exact argv/cwd/times/exit/log hash and compared six source input hashes before/after. Packaging independently checked every retained receipt, actual unittest count, zero exit, log bytes/hash and source digest against immutable Git. The original controller/report remain unchanged. No Cargo, VM, target or live manifest access occurred during packaging.

@@ -1,0 +1,103 @@
+{
+  "schema": 1,
+  "scope": "Real Rust kernel cancellation acceptance, not complete boot pass. Same fork/exec tree CLI/QEMU/native-GDB pidfds; no /proc inference.",
+  "runtime_source": {
+    "local_commit": "aa4ec5abf2acc60153c39f6c87c8aa29e6abaff5",
+    "tree": "f50be48bfeffeef5d50cce72a50f09c21f65f417",
+    "published_equivalent_commit": "22fcd9edeb8d4e1abee7ce2c3109df5d922c8ed5",
+    "verified_immutable_source_paths": 64,
+    "runtime_status": "?? kernel/asterinas/kernel/OSDK.toml",
+    "source_unchanged_during_case": true
+  },
+  "success": {
+    "attempt": "03",
+    "controller_exit": 0,
+    "debug_cli_exit": 143,
+    "debug_result_passed": false,
+    "interrupted_by": "SIGTERM",
+    "original_pc_and_live32_bytes_verified": true,
+    "entry_address": "0xffffffff88422840",
+    "entry_bytes": "50e83a91f1ff48c7c7a8545488e8ee49060048c7c000105f8848c7c178165f88",
+    "qemu_pid": 262,
+    "native_gdb_pid": 266,
+    "before_alive": {
+      "debug_cli": true,
+      "qemu": true,
+      "native_gdb": true
+    },
+    "after_exited": {
+      "debug_cli": true,
+      "qemu": true,
+      "native_gdb": true
+    },
+    "tcp_port_fresh_bind_released": true,
+    "stable_flock_reacquired": true,
+    "direct_sessions_reaped": true,
+    "duration_seconds": 4.934,
+    "build_cache_reused": true,
+    "fresh_full_recompile_not_claimed": true
+  },
+  "failures_preserved": [
+    {
+      "attempt": "01",
+      "source": "7cf6f7c329361c9828a98b766d1f0d78cf53b58d/tree515cd2babfb8a4372ef29a26f132ff2de19cbe15",
+      "observed": "driver141 during GNU Make metadata pipeline; no QEMU/native-GDB run",
+      "interpretation": "SIGPIPE-prone make/gcc --version|head pipeline; later source22fcd retains full tool output. Not kernel failure."
+    },
+    {
+      "attempt": "02",
+      "source": "7cf6f7c329361c9828a98b766d1f0d78cf53b58d/tree515cd2babfb8a4372ef29a26f132ff2de19cbe15",
+      "observed": "Actual QEMU/nativeGDB reached Rust PC breakpoint; test-adapted GDB Python had SyntaxError before live32 block executed; GDB1/debugCLI1; no cancellation sent",
+      "interpretation": "Controller adapter escaping error, fixed with chr(10) and syntax preflight; not kernel failure or a cancellation pass."
+    }
+  ],
+  "kernel": {
+    "artifact": "kernel.elf.gz",
+    "elf_size": 5975720,
+    "elf_sha256": "89c7f0bab00172e4a8d038a3d5c38396d952ff44e4ab159bbe8765edbaa16313",
+    "gzip_sha256": "aa84b4fae07e8accc049856fd6507a0285fee54de0f1e015eac4a43e04b31698",
+    "symbol_elf_size": 111709176,
+    "symbol_elf_sha256": "855e92c82ac3745d40320fd4451e8862e38e2fbfbf7b2c6e98f60d514018d6a8",
+    "symbol_elf_retained": false
+  },
+  "initramfs": {
+    "path": "initramfs.cpio.gz",
+    "size": 1107990,
+    "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+  },
+  "qemu_record_limits": {
+    "raw_exit_code": null,
+    "serial_sha256": null,
+    "recorder_finalized": false,
+    "normal_boot_serial_exists": false,
+    "reason": "Cancelling the owned worker group also stops its recorder before final raw-exit/serial finalization. pidfd proves actual QEMU death; rawnull is preserved, never rewritten to33 or143."
+  },
+  "serial": {
+    "scope": "Post-cancellation raw pathname snapshot only; recorder died before final serial copy/finalization. Not live-checker or serial-to-final-record acceptance.",
+    "source": "/workspace/scratch/ae1a8cf05419/a01-next6-build/kernel/asterinas/kernel/qemu.log",
+    "size": 18545,
+    "sha256": "fda996a1aae053c946d397bee8eef4c0352db2ed5a8d4a507c83ae53b460a229",
+    "capture_time_ns": 1792157244499567907,
+    "all_three_owned_pidfds_previously_exited": true,
+    "qemu_record_raw_exit": null,
+    "qemu_record_serial_sha256": null,
+    "canonical_completed_boot_serial_exists": false,
+    "complete_debug_driver_stdout_retained_in_raw_logs": true,
+    "writer_or_later_path_mutation_not_inferred": true
+  },
+  "script_scope": "Real GDB15.1 executes a copy of the helper-generated script, preserving original live PC/32-byte check and marker; only a ready JSON and sleep60 are inserted immediately after that marker. Explicitly adapted test script, not unmodified full-debug acceptance.",
+  "raw_archive": {
+    "path": "raw-attempts.tar.gz",
+    "sha256": "b3502f7a852ad715e8f80fb6694cb5823620997e370a31c6f210b90ea7800ed9",
+    "size": 2854184,
+    "verified_members": 85
+  },
+  "notes": [
+    "Only controller sends the experiment SIGTERM, only to the debug CLI through its retained pidfd. Debug-owned group cleanup terminates the actual native GDB and QEMU.",
+    "GDB shutdown may detach and briefly resume the Rust guest before driver-group cleanup. No boot checker, raw33 or full boot completion is claimed.",
+    "All PID identities were observed inside the same controller fork/exec tree using owned receipts and immediately held pidfds; no late numeric group signal or namespace traversal.",
+    "All three controller programs, invocation/selected env, actual/adapted scripts, events, failures, completed debug outputs and manifest receipts are retained in raw tar.",
+    "Unknown manifest writer remains unresolved; only exact minimal hash was moved while holding the stable workspace flock, into exclusive per-attempt preservation files.",
+    "The saved executed ELF and initramfs were captured before target reuse. Raw post-cancel serial is an explicitly unfinalized pathname snapshot; complete driver stdout/GDB logs are retained separately."
+  ]
+}
