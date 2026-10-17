@@ -1,0 +1,55 @@
+{
+  "schema": "trillionnium.os.ci.cold-runner-nightly-smoke.v1",
+  "date": "2026-10-17",
+  "source_commit_with_compiled_kernel": "9b0d78165a6f7d9df6b3a0f9a25f238774d9d68e",
+  "final_pr_head": "0d4748dd3b065e93491e60f193d780d20b8fc178",
+  "main_merge_commit": "29090eaa1051481ed6a1326573d973e018d89c05",
+  "merged_pr": 145,
+  "content_identity_note": "Final PR added only a test and restored the original executable bit to support/build/ktest/prepare-locks.py; underlying kernel, OSDK and lock-prefetch source blobs are unchanged from build-tested commit.",
+  "checks": {
+    "python_spec": {
+      "passed": 22,
+      "failed": 0,
+      "head": "0d4748dd3b065e93491e60f193d780d20b8fc178"
+    },
+    "nightly_rustfmt": {
+      "passed": true,
+      "toolchain": "nightly-2026-07-21"
+    },
+    "git_diff_check": {
+      "passed": true
+    },
+    "prepare_locks": {
+      "passed": true,
+      "ostd_package_count": 97,
+      "ostd_lock_sha256": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6",
+      "aster_core_package_count": 199,
+      "aster_core_lock_sha256": "159b8682d27a7a21af98885ae48515234445c00fdf5e00b158fdc4aa952ff4ed",
+      "external_drift": 0
+    }
+  },
+  "kernel_smoke": {
+    "source_build_exit": 0,
+    "make_exit": 0,
+    "log_capture_exit": 0,
+    "qemu_raw_exit": 33,
+    "qemu_timeout": false,
+    "boot_marker": true,
+    "cpu_one_marker": true,
+    "kernel_elf_sha256": "419f77c2bc5c1b57fc1027a3c9ba8e240a26b840622253487ac419af006701ae",
+    "initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+    "bios_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+    "serial_sha256": "cb09aa56fe36c2d2bd71ced4888a81e0177eb3e8c6377ba77f531a9824e737ab",
+    "platform": "Asterinas v0.19.0 fork; QEMU q35 TCG x86_64 single vCPU, 512MiB, pinned BusyBox initramfs; no guest network or host data disk"
+  },
+  "ci_note": "GitHub exact-kernel-ktest for PR145 was queued at the final local snapshot. Do not report its status as passed until independently confirmed.",
+  "scope_limits": [
+    "No SMP=2 acceptance from this run",
+    "No strict per-window CPU quota or final process-exit debit proof",
+    "No A05 process lifetime/recycled CapSpace identity acceptance",
+    "No HOS2 InstallBudget/ReadUsage/QueryDelivery/RetireThrough or Hepta durable G2",
+    "No physical hardware or production deployment"
+  ],
+  "root_readme_bytes": 0,
+  "raw_local_evidence": "/home/qian-qi/.local/state/trillionnium-os-organ-next-20261016/evidence/pr145-source-boot/"
+}
