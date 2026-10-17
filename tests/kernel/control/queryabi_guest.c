@@ -87,7 +87,10 @@ int main(int argc, char **argv){
     if(fd2<0){fail("second_open");return 6;}
     prep(q,2);
     if(run_query(fd2,q,c,sizeof c)!=0||!valid_reply(c,q)){fail("query3");return 7;}
-    if(memcmp(a+40,c+40,16)!=0||memcmp(a+64,c+64,16)==0){fail("space_isolation");return 8;}
+    /* Multiple opens in one process share the same kernel-issued CapSpace;
+     * the fork/exec checks below prove that possession alone does not cross
+     * the process lifetime or image-generation boundary. */
+    if(memcmp(a+40,c+40,16)!=0||memcmp(a+64,c+64,16)!=0){fail("same_process_session");return 8;}
     q[0]='X';errno=0;
     if(run_query(fd,q,c,sizeof c)!=-1||errno!=EPROTONOSUPPORT){
         fail("invalid_magic_protocol");return 9;
@@ -187,6 +190,6 @@ int main(int argc, char **argv){
     }
     puts("HEPTA_DUP_SESSION_STABLE");
     close(fd2);close(fd);
-    puts("HEPTA_QUERYABI_OK ops=QueryAbi_only, independent_sessions=yes, denied_invalid=yes");
+    puts("HEPTA_QUERYABI_OK ops=QueryAbi_only, process_bound_session=yes, denied_invalid=yes");
     return 0;
 }
