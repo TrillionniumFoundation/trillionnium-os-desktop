@@ -13,6 +13,7 @@ import json
 import math
 import os
 import platform
+import stat
 import struct
 import sys
 import tempfile
@@ -24,6 +25,7 @@ N = 16
 MAX_CUDA_ENUM_DEVICES = 64
 MAX_NVRTC_LOG_BYTES = 64 * 1024
 MAX_NVRTC_PTX_BYTES = 8 * 1024 * 1024
+MAX_WORKER_REPORT_BYTES = 64 * 1024
 CUDA_SOURCE = r'''
 extern "C" __global__ void gemm16(const float *a, const float *b, float *c) {
     int r = blockIdx.x;
@@ -376,6 +378,44 @@ def _write_evidence(evidence, output):
         Path(output).write_text(payload, encoding="utf-8")
 
 
+def read_supervised_worker_report(path):
+    """Bounded, single-fd Linux receipt read; no symlinks, FIFO or duplicates.
+
+    This is an OS worker receipt, not a cryptographic attestation of GPU/DMA.
+    """
+    fd = os.open(path, os.O_RDONLY | os.O_NONBLOCK | os.O_NOFOLLOW | os.O_CLOEXEC)
+    try:
+        before = os.fstat(fd)
+        if (not stat.S_ISREG(before.st_mode)
+                or not 0 < before.st_size <= MAX_WORKER_REPORT_BYTES):
+            raise ValueError("worker report must be bounded regular file")
+        raw = os.read(fd, MAX_WORKER_REPORT_BYTES + 1)
+        after = os.fstat(fd)
+        identity_before = (before.st_dev, before.st_ino, before.st_size,
+                           before.st_mtime_ns, before.st_ctime_ns)
+        identity_after = (after.st_dev, after.st_ino, after.st_size,
+                          after.st_mtime_ns, after.st_ctime_ns)
+        if (len(raw) != before.st_size or len(raw) > MAX_WORKER_REPORT_BYTES
+                or identity_before != identity_after):
+            raise ValueError("worker report changed or exceeded byte limit")
+    finally:
+        os.close(fd)
+
+    def unique_pairs(pairs):
+        obj = {}
+        for key, value in pairs:
+            if key in obj:
+                raise ValueError("duplicate worker JSON key: " + key)
+            obj[key] = value
+        return obj
+
+    def reject_nonfinite(value):
+        raise ValueError("nonfinite worker JSON value: " + value)
+
+    return json.loads(raw.decode("utf-8"), object_pairs_hook=unique_pairs,
+                      parse_constant=reject_nonfinite)
+
+
 def _run_local(args):
     """Run inside an already-supervised worker or a unit-test-only seam."""
     a, b = inputs()
@@ -502,37 +542,52 @@ def _run_supervised(args):
             return 1
 
         try:
-            from pathlib import Path
-            worker = Path(worker_output)
-            if worker.is_symlink() or not worker.is_file() or not 0 < worker.stat().st_size <= 65536:
-                raise ValueError("worker evidence missing, nonregular or oversized")
-            raw = worker.read_bytes()
-            if not 0 < len(raw) <= 65536:
-                raise ValueError("worker evidence exceeded 64 KiB")
-            def unique_pairs(pairs):
-                obj = {}
-                for key, value in pairs:
-                    if key in obj:
-                        raise ValueError("duplicate worker JSON key: " + key)
-                    obj[key] = value
-                return obj
-            def reject_nonfinite(value):
-                raise ValueError("nonfinite worker JSON value: " + value)
-            evidence = json.loads(raw.decode("utf-8"),
-                                  object_pairs_hook=unique_pairs,
-                                  parse_constant=reject_nonfinite)
+            evidence = read_supervised_worker_report(worker_output)
             if (not isinstance(evidence, dict)
                     or evidence.get("schema") != "a09.cuda-gemm.v2"
                     or evidence.get("status") not in (
                         "blocked", "failed", "timeout",
                         "passed_on_reported_cuda_environment")
                     or not isinstance(evidence.get("stages"), dict)
-                    or set(evidence["stages"]) != set(STAGES)):
+                    or set(evidence["stages"]) != set(STAGES)
+                    or not isinstance(evidence.get("execution_provenance"), dict)):
                 raise ValueError("unrecognized or incomplete CUDA worker evidence")
             expected_code = {"blocked": 2, "failed": 1, "timeout": 1,
                              "passed_on_reported_cuda_environment": 0}
             if expected_code[evidence["status"]] != code:
                 raise ValueError("worker return code and evidence disagree")
+            if evidence["status"] == "passed_on_reported_cuda_environment":
+                a, b = inputs()
+                expected = digest(reference(a, b))
+                must_be_true = (
+                    "device_access_attempted", "device_memory_allocated",
+                    "cuda_kernel_launched", "synchronization_completed",
+                    "results_copied", "resources_released", "no_cpu_fallback",
+                )
+                required_stages = tuple(name for name in STAGES if name != "failure_recovery")
+                if (any(evidence.get(field) is not True for field in must_be_true)
+                        or any(evidence["stages"].get(stage) != "passed"
+                               for stage in required_stages)
+                        or evidence.get("input_a_sha256") != digest(a)
+                        or evidence.get("input_b_sha256") != digest(b)
+                        or evidence.get("expected_output_sha256") != expected
+                        or evidence.get("actual_output_sha256") != expected
+                        or evidence.get("test") != "gemm16_f32"
+                        or evidence.get("dimension") != [N, N, N]
+                        or evidence.get("driver_api") != "CUDA Driver API"
+                        or evidence.get("compiler") != "NVRTC"
+                        or not isinstance(evidence.get("device"), dict)):
+                    raise ValueError("CUDA success receipt failed fixed GEMM proof obligations")
+            # Linux worker output is NEVER authoritative about which host
+            # kernel owns the physical PCI function or whether DMA is safe.
+            for key in ("asterinas_execution_verified", "vmm_passthrough_verified",
+                        "physical_device_assignment_verified",
+                        "reset_or_failure_recovery_verified",
+                        "failure_recovery_verified"):
+                evidence[key] = False
+            for key in ("asterinas_execution_verified", "vmm_passthrough_verified",
+                        "physical_device_assignment_verified"):
+                evidence["execution_provenance"][key] = False
         except (OSError, UnicodeError, ValueError, TypeError) as exc:
             a, b = inputs()
             evidence = _base_evidence(reference(a, b), a, b, args.timeout_seconds)
