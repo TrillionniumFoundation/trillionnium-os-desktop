@@ -403,6 +403,16 @@ fn private_socket_dir(path: &std::path::Path) -> io::Result<()> {
             "XDG_RUNTIME_DIR must be exactly 0700",
         ));
     }
+    #[cfg(target_os = "linux")]
+    if metadata.uid() != host_peer::current_effective_uid() {
+        // Mode 0700 alone is insufficient for a privileged launcher: root
+        // can enter another user's 0700 runtime and accidentally install a
+        // root-owned Session into that user's XDG_RUNTIME_DIR.
+        return Err(io::Error::new(
+            io::ErrorKind::PermissionDenied,
+            "XDG_RUNTIME_DIR owner UID differs from Session effective UID",
+        ));
+    }
     if !parent.exists() {
         // Create with 0700 *atomically*: creating with a default umask then
         // chmod-ing leaves a short world-traversable window on 0022 hosts.
@@ -417,6 +427,13 @@ fn private_socket_dir(path: &std::path::Path) -> io::Result<()> {
         return Err(io::Error::new(
             io::ErrorKind::PermissionDenied,
             "UI socket directory must be exactly 0700",
+        ));
+    }
+    #[cfg(target_os = "linux")]
+    if metadata.uid() != host_peer::current_effective_uid() {
+        return Err(io::Error::new(
+            io::ErrorKind::PermissionDenied,
+            "UI socket directory owner UID differs from Session effective UID",
         ));
     }
     Ok(())
@@ -451,6 +468,12 @@ fn acquire_session_lock(socket: &std::path::Path) -> io::Result<File> {
             return Err(io::Error::new(
                 io::ErrorKind::PermissionDenied,
                 "session.lock must be regular 0600",
+            ));
+        }
+        if metadata.uid() != host_peer::current_effective_uid() {
+            return Err(io::Error::new(
+                io::ErrorKind::PermissionDenied,
+                "session.lock owner UID differs from Session effective UID",
             ));
         }
         // LOCK_EX | LOCK_NB: fail immediately if any instance is alive.
