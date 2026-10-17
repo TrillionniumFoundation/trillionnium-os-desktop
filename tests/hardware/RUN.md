@@ -114,3 +114,38 @@ This is a **Linux host baseline only**, not Asterinas GPU verification.
 A later Asterinas-derived host -> Linux GPU guest must repeat an identical
 GEMM with trusted boot/IOMMU/IRQ/DMA and teardown logs. Current physical
 compute, reset recovery and local inference remain BLOCKED/NOT RUN.
+
+## Current isolated-lab first-compute contract (2026-10-17)
+
+A09 host-side regression run #39000264718 passed 133 Python tests and 38
+debug / 38 release / 4 doctest Rust tests on its exact pre-sync HEAD; its
+validation is CPU/metadata-only. Later profile and documentation commits
+require their own completed exact-HEAD checks and must not inherit PASS by
+assumption. The testable minimal GPU command is **only for an already
+authorized idle disposable lab**, after the operator reads the real BDF,
+driver, firmware, IOMMU group and whole-device owner:
+
+    python3 tests/hardware/cuda_gemm.py --require-name 'RTX 4060' \
+      --require-bdf '<actual PCI BDF>' --timeout-seconds 30 \
+      --output '<new independent Linux-host record path>'
+
+Without a valid explicit BDF or with a lookalike RTX 4060 Ti/Laptop GPU,
+the runner refuses CUDA access before loading the driver. It also rejects
+wrong compute capability and never silently falls back to CPU GPU emulation.
+No one should invoke this command on H3/training/prod or unqualified hardware.
+This is **Linux-host** compute, not a Rust-host success.
+
+After A01 actually boots a Linux GPU guest under the Asterinas-derived host,
+the guest benchmark and the independent host boot/IOMMU/PCI/quiescence traces
+feed the **review-only** acceptance command:
+
+    python3 support/vmm/acceptance.py --host host-vmm.json \
+      --host-log host.serial --guest guest-v2.json \
+      --guest-log guest.serial --output review-new.json
+
+The guest v2 record must include worker PID/kernel, device BDF, complete
+GEMM stages and process-group supervision, matched against the physical
+device's vendor/device IDs and boot nonce in both raw serial captures.
+Even coherent unsigned records return exit 3 (independent review), never
+physical GPU approval. A01/A05/A06 implementation gaps remain in
+[issue #96](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/issues/96).

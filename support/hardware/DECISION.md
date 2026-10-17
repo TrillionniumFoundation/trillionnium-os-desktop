@@ -105,3 +105,41 @@ scheduler usage against the canonical ResourceDomain ancestor chain. Only
 then can an authorized idle disposable RTX 4060 lab host run the Linux baseline
 and a SEPARATE GPU guest under an actual Asterinas-derived host. Throughput,
 DMA reset/recovery, cancellation and GPU inference remain not tested.
+
+## 2026-10-17: first-lab identity, provenance and A01/A05/A06 blocker update
+
+The execution-tool **sandbox**, not an authorized physical GPU host, was
+read-only inspected again on Linux 6.18.55 x86_64 with virtual AMD EPYC
+9V74 CPU and seven PCI functions (Intel bridge and VirtIO). No accelerator
+class, CUDA device node, VFIO, KVM or visible IOMMU group was observed.
+The exact time-scoped JSON is
+[2026-10-17-sandbox-readonly-pci-034743z.json](../../tests/hardware/evidence/2026-10-17-sandbox-readonly-pci-034743z.json).
+Absence in this restricted environment is not evidence of absence on the
+user's physical RTX/AI MAX machines. Firmware, driver versions, DMA behavior,
+real VRAM/UMA, queue/fences, PCI subgroup and reset **remain unobserved**.
+
+The GPU model must match **exactly RTX 4060** (optional standard NVIDIA/
+GeForce prefixes, but not RTX 4060 Ti, Laptop GPU, RTX 4070 or a substring).
+Before opening the CUDA Driver API, an explicit real PCI BDF must match a
+well-formed address. The canonical comparison handles a 4-hex-digit Linux
+segment and an 8-hex-digit CUDA segment without confusing different numeric
+domains; PCI slot is limited to 0..31. CUDA's selected device must report
+compute capability 8.9. The host-side executable proof remains GEMM16 FP32
+with the fixed exact SHA; no hardware inference claim follows from it.
+
+Only the supervised CUDA **v2** process receipt is eligible for later
+cross-kernel review: kernel and x86_64 guest identity, worker PID matching
+the supervised child process, exited/reaped worker group, exact fixed
+numerical/allocator/launch/fence/cleanup stages, independent matching raw
+VM-nonce boot logs, and explicit denial of self-attested host, PCI assignment
+or reset success. These are *consistency checks on unauthenticated records*,
+not a cryptographic hardware proof, and process-group cleanup cannot prove
+device DMA quiescence or kill detached-session descendants.
+
+Review integration blocker [#96](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/issues/96)
+for the actual A01 group-scoped IOMMU / full VM, A05 canonical CapSpace
+device/queue ownership, A06 real hierarchical ResourceDomain pin/scheduler
+implementation. Route C remains the only planned GPU implementation.
+Even a future Linux-host GEMM is just a labeled baseline. No Asterinas GPU,
+Linux GPU guest boot, physical reset, NPU, Vulkan/ROCm runtime or local GPU
+inference succeeded here. Root README remains zero bytes.

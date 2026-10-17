@@ -135,3 +135,32 @@ requires an entirely new regular file, using O_CREAT|O_EXCL|O_NOFOLLOW;
 it cannot truncate an existing review record or write to a FIFO or symlink.
 Outcomes remain only `blocked` (exit 2) or
 `independent_hardware_review_required` (exit 3), never auto-certification.
+
+## 2026-10-17 CUDA guest execution/provenance contract v2
+
+The review gate now rejects the former unsupervised
+`a09.cuda-gemm.v1` record, even when its numerical digest and BDF agree.
+A guest's `a09.cuda-gemm.v2` must carry:
+- `execution_provenance` with actual positive worker PID, executable,
+  Linux kernel version, x86_64 architecture and
+  `linux_supervised_worker_cuda_driver_api` execution layer;
+- `supervisor.supervisor=linux_waitid_wnowait_killpg`, same PID, actual
+  exit code 0, reaped leader, no timeout, unresolved descendant, failed
+  inspection/kill, identity loss or unreaped process;
+- all fixed GEMM enumeration, NVRTC, allocation, HtoD, command submission,
+  synchronization, DtoH, exact comparison and release stages marked passed;
+  `failure_recovery` must remain `not_run`; caller's bounded process
+  timeout is not a proven GPU reset/fence;
+- false child claims for Rust-host execution, passthrough, physical
+  assignment and reset; those facts can only come from an independent host
+  capture and verified device/VM/IOMMU lifecycle.
+
+The same shared `support/hardware/pci_identity.py` canonicalization is
+used by CUDA device selection and host/guest manifest comparison, accepting
+4/8-digit zero-padded PCI domains but rejecting different numeric domains,
+bad slots and a lookalike RTX 4060 variant. A coherent unsigned record is
+only eligible for independent hardware review (exit 3), never PASS.
+
+The exact isolated *host* benchmark and these guest records must not be
+silently substituted for each other. Actual A01/A05/A06 kernel interfaces
+and isolated hardware access are tracked by issue #96.
