@@ -1,0 +1,82 @@
+c[?7l[2J[0mSeaBIOS (version 1.16.3-debian-1.16.3-2)
+Booting from ROM..INFO: Initializing frame metadata for physical memory 0..20000000
+INFO: Adding free frames to the allocator: 0..8000
+INFO: Adding free frames to the allocator: 9000..9f000
+INFO: Adding free frames to the allocator: 100000..8000000
+INFO: Adding free frames to the allocator: 8f00000..1ffe0000
+INFO: Initializing the kernel page table
+INFO: Creating new I/O memory allocator builder, ranges: [
+    0x20000000..0x100000000,
+    0x100000000..0x10000000000000,
+]
+INFO: xAPIC found!
+INFO: irq: Initializing PIC as disabled
+INFO: irq: IOAPIC found at 0xfec00000, ID 0, version 32, interrupt base 0, interrupt count 23
+INFO: irq: IOAPIC override: ISA interrupt 0 for GSI 2
+INFO: irq: IOAPIC override: ISA interrupt 5 for GSI 5
+INFO: irq: IOAPIC override: ISA interrupt 9 for GSI 9
+INFO: irq: IOAPIC override: ISA interrupt 10 for GSI 10
+INFO: irq: IOAPIC override: ISA interrupt 11 for GSI 11
+INFO: xAPIC ID: 0, Version: 14, Max LVT: 5
+INFO: TSC frequency: 2480337380 Hz
+INFO: timer: Enable APIC periodic mode
+INFO: timer: APIC timer: first 0x31f4, current 0x184a1a, init 0x3dae
+WARN: IOMMU initialization error: NoIommu
+INFO: acpi: Collected information AcpiInfo { century_register: Some(50), boot_flags: Some(IaPcBootArchFlags(2)), reset_port_and_val: Some((3321, 15)), pci_ecam_region: Some(PciEcamRegion { base_address: 2952790016, bus_start: 0, bus_end: 255 }) }
+INFO: QEMU hypervisor detected, assuming that the isa-debug-exit device exists
+OSTD initialized. Preparing components.
+ERROR: Uncaught panic:
+	called `Result::unwrap()` on an `Err` value: NotIncludeAllComponent("/tmp/trillionnium-a01-normalized-A/kernel/asterinas/kernel/core/comps/virtio")
+	at /tmp/trillionnium-a01-normalized-A/kernel/asterinas/kernel/core/src/init.rs:26
+	on CPU 0 by thread None
+Printing stack trace:
+   1: fn 0xffffffff880ccdc0 - pc 0xffffffff880cd079 / registers:
+
+     rax                0x0; rdx              0x246; rcx 0xffffffff884ad4dd; rbx              0x714;
+     rsi 0xffffffff884ad4dd; rdi 0xffffffff885e84fa; rbp 0xffff800010114000; rsp 0xffffffff88049c00;
+
+   2: fn 0xffffffff880ded80 - pc 0xffffffff880ded86 / registers:
+
+     rax                0x0; rdx              0x246; rcx 0xffffffff884ad4dd; rbx 0xffff800008efe800;
+     rsi 0xffffffff884ad4dd; rdi 0xffffffff885e84fa; rbp 0xffff800010114000; rsp 0xffffffff88049d40;
+
+   3: fn 0xffffffff88417f50 - pc 0xffffffff88417f56 / registers:
+
+     rax                0x0; rdx              0x246; rcx 0xffffffff884ad4dd; rbx 0xffff800008efe800;
+     rsi 0xffffffff884ad4dd; rdi 0xffffffff885e84fa; rbp 0xffff800010114000; rsp 0xffffffff88049d50;
+
+   4: fn 0xffffffff88424bf0 - pc 0xffffffff88424c1b / registers:
+
+     rax                0x0; rdx              0x246; rcx 0xffffffff884ad4dd; rbx 0xffff800008efe800;
+     rsi 0xffffffff884ad4dd; rdi 0xffffffff885e84fa; rbp 0xffff800010114000; rsp 0xffffffff88049d60;
+
+   5: fn 0xffffffff88424000 - pc 0xffffffff88424052 / registers:
+
+     rax                0x0; rdx              0x246; rcx 0xffffffff884ad4dd; rbx 0xffff800008efe800;
+     rsi 0xffffffff884ad4dd; rdi 0xffffffff885e84fa; rbp 0xffff800010114000; rsp 0xffffffff88049d90;
+
+   6: fn 0xffffffff883293a0 - pc 0xffffffff8832a60a / registers:
+
+     rax                0x0; rdx              0x246; rcx 0xffffffff884ad4dd; rbx 0xffff800008efe800;
+     rsi 0xffffffff884ad4dd; rdi 0xffffffff885e84fa; rbp 0xffff800010114000; rsp 0xffffffff88049de0;
+
+   7: fn 0xffffffff88417f00 - pc 0xffffffff88417f06 / registers:
+
+     rax                0x0; rdx              0x246; rcx 0xffffffff884ad4dd; rbx 0xffffffff80000000;
+     rsi 0xffffffff884ad4dd; rdi 0xffffffff885e84fa; rbp                0x0; rsp 0xffffffff88049fd0;
+
+   8: fn 0xffffffff88468670 - pc 0xffffffff8846867b / registers:
+
+     rax                0x0; rdx              0x246; rcx 0xffffffff884ad4dd; rbx 0xffffffff80000000;
+     rsi 0xffffffff884ad4dd; rdi 0xffffffff885e84fa; rbp                0x0; rsp 0xffffffff88049fe0;
+
+   9: fn 0xffffffff88464640 - pc 0xffffffff8846466b / registers:
+
+     rax                0x0; rdx              0x246; rcx 0xffffffff884ad4dd; rbx 0xffffffff80000000;
+     rsi 0xffffffff884ad4dd; rdi 0xffffffff885e84fa; rbp                0x0; rsp 0xffffffff88049ff0;
+
+  10: fn                0x0 - pc 0xffffffff8847e40d / registers:
+
+     rax                0x0; rdx              0x246; rcx 0xffffffff884ad4dd; rbx 0xffffffff80000000;
+     rsi 0xffffffff884ad4dd; rdi 0xffffffff885e84fa; rbp                0x0; rsp 0xffffffff8804a000;
+
