@@ -1994,8 +1994,8 @@ impl ControlCore {
             {
                 return Err(DeliveryInvariantError::InvalidSlotBinding);
             }
-            // Audit lock order is namespace -> short slot state -> resource
-            // state. Commit holds the independent execution gate, briefly
+            // Audit lock order is namespace -> short slot state.
+            // Commit holds the independent execution gate, briefly
             // marks admission, releases slot state, then enters the resource
             // path. Audit compares the retained immutable request; it never
             // locks or inspects external owner policy.

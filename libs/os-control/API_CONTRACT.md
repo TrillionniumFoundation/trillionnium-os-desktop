@@ -87,7 +87,8 @@ callback; this library neither downcasts the owner nor calls its policy.
 For native use, keep A06's existing owner and call `execute_reserved` with a
 callback that settles runtime and checks current grant/ancestor epochs,
 lease, revision CAS and parent constraints under that owner's actual mutation
-lock. Return the exact `BudgetReceipt` or immutable refusal. Revoke and this
+lock. Return `PublishOutcome::Success` carrying the exact receipt fields,
+or `PublishOutcome::Failure` with the immutable refusal. Revoke and this
 commit must share that lock. The synthetic native-owner tests demonstrate
 this API shape, not actual A06 integration.
 
@@ -493,12 +494,13 @@ reused with a new generation) but resolving to the same stable ResourceDomain
 could incorrectly dedupe under one D. A03 now binds **both** fields into
 the global reservation fingerprint.
 
-A05 **must** construct genuine InstallBudget requests using
-`DeliveryRequest::from_wire(sequence, grant, expected_revision, cap_ns,
+A05 **must** construct genuine native InstallBudget requests using
+`NativeDeliveryRequest::from_wire(sequence, grant, expected_revision, cap_ns,
 target_slot, target_generation)`, with nonzero slot and generation obtained
 from a validated original HOS2 request header after stable object/capability
-resolution. `with_wire_target(slot, generation)` performs the same structural
-validation on an existing request. The legacy four-argument `new` leaves
+resolution. Host fixtures use `DeliveryRequest::from_wire` or its
+`with_wire_target(slot, generation)` structural validator. The legacy
+four-argument host `new` leaves
 both fields zero **only for host-only model fixtures**; no real kernel
 adapter may treat that sentinel as a valid HOS2 management handle.
 
@@ -630,7 +632,8 @@ remove it: grants, descendants and retained result slots can still preserve
 the domain. A token alone does not retain a retired result or domain. Once
 the final reference disappears, Drop
 removes only the corresponding entry from the immediate parent's active-child
-cap map. It takes only that short map lock, not the family mutation gate.
+cap map. It briefly reads its ID under self state, releases that guard, then
+takes the parent's short map lock, never the family mutation gate.
 Identity tombstones, parent CPU usage and family clock are never refunded or
 removed. Thus a dead child cannot permanently prevent a lower parent cap,
 while a retained child still constrains the parent.
@@ -653,7 +656,9 @@ instance/generation, non-reusing sequence and complete request binding, pins
 the live slot transiently, then rechecks it after taking the execution gate.
 
 Retirement, explicit history loss or destruction of the last namespace owner
-releases result/resource storage even if old tokens remain in caller memory.
+releases namespace-held result slots and owner pins even if old tokens remain
+in caller memory. An already admitted operation's transient pin or an external
+owner Arc can still preserve the object until its own lifetime ends.
 Those tokens cannot execute or publish again; their cached ID/binding remain
 readable. A DeliveryView or original-owner authority still intentionally
 retains namespace history. Callers must bound their own collections of token
