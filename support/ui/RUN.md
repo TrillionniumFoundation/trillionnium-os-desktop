@@ -33,6 +33,17 @@ In terminal #2:
 For a live Wayland-host lifecycle smoke after building run:
 bash tests/ui/smoke-wayland.sh
 
+The A00-owned GitHub workflow uploads the A10-owned `$RUNNER_TEMP/a10/`
+directory as a CI artifact. After Rust build, all three test suites and strict
+Rustfmt pass, `support/ui/package-host-binaries.sh` adds
+`a10-linux-host-binaries.tar.gz` and an outer SHA256 file. The archive contains
+`trill-session`, `trill-shell`, `trill-app-window`, `trill-ctl`, per-binary
+SHA256 sums and `PROVENANCE.txt` with exact source HEAD and toolchain.
+The copies are debug builds stripped of debug symbols to limit artifact size;
+they depend on compatible Linux system libraries. The artifact is NOT an
+Asterinas boot image, compositor, IME, native GPU gate or proof Weston passed.
+Never publish it as a release simply because the binary build succeeded.
+
 For CI/a Linux host without a physical desktop but WITH Weston, Mesa
 software GL and the Rust toolchain:
 bash tests/ui/headless-weston.sh

@@ -46,7 +46,7 @@ capture_fmt_on_exit() {
 }
 trap capture_fmt_on_exit EXIT
 
-bash -n tests/ui/smoke-wayland.sh tests/ui/headless-weston.sh tests/ui/compositor-restart.sh
+bash -n tests/ui/smoke-wayland.sh tests/ui/headless-weston.sh tests/ui/compositor-restart.sh support/ui/package-host-binaries.sh
 python3 tests/ui/test-session-lock.py
 bash tests/ui/test-smoke-cleanup.sh
 bash tests/ui/test-zombie-liveness.sh
@@ -64,7 +64,14 @@ cargo test --manifest-path ui/Cargo.toml --workspace --locked
 # The tests/ui model is a separate host contract, NOT a synthetic UI success.
 cargo test --manifest-path support/ui/Cargo.toml --locked
 cargo test --manifest-path tests/ui/Cargo.toml --locked
-# Formatter validation is enforced by the EXIT hook even if build/test
-# failed earlier; it preserves the original build/test result.
+# The binaries are packaged only when all three suites and strict Rustfmt
+# have passed; the separate Weston smoke still owns its independent gate.
+for manifest in ui/Cargo.toml support/ui/Cargo.toml tests/ui/Cargo.toml; do
+    cargo fmt --manifest-path "$manifest" --all -- --check
+done
+if [[ -n "${RUNNER_TEMP:-}" ]]; then
+    bash support/ui/package-host-binaries.sh "$RUNNER_TEMP/a10"
+fi
+# The EXIT hook still preserves a formatter patch on any earlier failure.
 
 printf 'A10 host Rust checks passed (NOT a kernel/Wayland/IME pass).\n'

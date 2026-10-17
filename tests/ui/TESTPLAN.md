@@ -22,6 +22,10 @@ compositor, live IME, GPU, or target kernel pass.
 On a CI host, `check-host.sh` saves `$RUNNER_TEMP/a10/rustfmt.patch` when
 the strict rustfmt check fails, then exits nonzero. It never reports success
 until that patch is reviewed, committed, and rerun.
+The same blocking host gate stages an actual Linux ELF binary archive only
+after all three Cargo tests and strict Rustfmt pass. The archive and its
+SHA256 contain four built Rust programs and their build/source provenance,
+not a Weston, Chinese IME, GPU or new-kernel acceptance certificate.
 Unit coverage:
 - strict HOS2 read-only UI adapter: opcode/payload pairing, request-id
   correlation, response opcode matching, and hidden mutating payload refusal
