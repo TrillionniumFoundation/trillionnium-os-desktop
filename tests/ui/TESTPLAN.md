@@ -45,6 +45,10 @@ Unit coverage:
   compositor session in a private directory; require successful wayland-info
   registry round-trip (socket creation alone is insufficient), then run the multi-app smoke;
   compositor-mapped surfaces/real GPU/Chinese IME are still NOT attested
+- real headless Weston crash/restart while the independently supervised Session
+  retains its generation and child identity; a newly launched Wayland app must
+  complete its egui layout and be explicitly reaped. A pre-crash client is NOT
+  assumed to reattach, and this is not a physical GPU reset.
 - shell first egui layout marker before and after Shell restart (exactly once
   per Shell process; not a compositor-presented frame)
 - isolated Wayland smoke: shell plus independent native app processes (Notes,

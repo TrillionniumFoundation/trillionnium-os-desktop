@@ -40,8 +40,11 @@ No completion is claimed until it finishes with exit code 0. It checks
 three distinct child PIDs and their first egui layout events, as well as
 one completed Shell egui layout before AND after restarting the Shell.
 These are process-local Rust layout observations, not compositor surface
-mapping or actual GPU-buffer presentation. Compositor recovery, real Chinese IME candidates and kernel
-boot remain separate tests.
+mapping or actual GPU-buffer presentation. It also launches a separately owned Weston, kills and restarts that test-only
+compositor while the same Session stays alive, and verifies that a new
+Wayland client reaches its first Rust layout. The original client is recorded
+without any claim of lossless window reattachment. Real Chinese IME, physical
+GPU reset and target kernel boot remain separate gates.
 
 The session MUST be independently supervised or kept running in terminal #1.
 Stopping/restarting the shell should not kill its owned app processes.

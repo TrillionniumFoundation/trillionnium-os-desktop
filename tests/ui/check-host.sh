@@ -38,6 +38,7 @@ capture_fmt_on_exit() {
 }
 trap capture_fmt_on_exit EXIT
 
+bash -n tests/ui/smoke-wayland.sh tests/ui/headless-weston.sh tests/ui/compositor-restart.sh
 python3 tests/ui/test-session-lock.py
 bash tests/ui/test-smoke-cleanup.sh
 bash tests/ui/test-zombie-liveness.sh

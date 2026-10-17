@@ -75,5 +75,8 @@ done
 # to this exact compositor socket using an absolute WAYLAND_DISPLAY.
 export A10_SMOKE_LOG_DIR="$runtime/smoke"
 bash tests/ui/smoke-wayland.sh
-printf 'A10 Weston headless client/session smoke: PASSED on this Linux runner\n'
+# A separate private Weston is destroyed and restarted while its own Session
+# stays alive. Do not interpret a fresh client's layout as old-client reattach.
+bash tests/ui/compositor-restart.sh
+printf 'A10 Weston headless client/session and crash/restart smoke: PASSED on this Linux runner\n'
 printf 'NOT PROVEN: monitor mapping, real GPU buffer presentation, Chinese IME or Rust kernel boot\n'
