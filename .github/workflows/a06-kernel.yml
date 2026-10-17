@@ -96,14 +96,19 @@ jobs:
         run: |
           set -euo pipefail
           bash support/build/kernel.sh kernel
-          kernel="${CARGO_TARGET_DIR}/x86_64-unknown-none/release/asterinas-osdk-bin"
+          # The raw Cargo ELF is not QEMU-loadable for the multiboot protocol.
+          # OSDK's bundle step emits a .elf copy and rewrites its machine field to
+          # EM_386 (the QEMU multiboot loader requires that marker for x86_64 guests).
+          kernel="${CARGO_TARGET_DIR}/osdk/asterinas/asterinas-osdk-bin.elf"
           test -f "$kernel" && test -x "$kernel"
+          readelf -h "$kernel" | grep -Eq 'Class:[[:space:]]+ELF64'
+          readelf -h "$kernel" | grep -Eq 'Machine:[[:space:]]+Intel 80386'
           sha256sum "$kernel" | tee "${RUNNER_TEMP}/a06-kernel.sha256"
 
       - name: Run bounded one-vCPU quota and two-vCPU exit-lifecycle probes
         shell: bash
         env:
-          KERNEL: ${{ runner.temp }}/a06-target/x86_64-unknown-none/release/asterinas-osdk-bin
+          KERNEL: ${{ runner.temp }}/a06-target/osdk/asterinas/asterinas-osdk-bin.elf
         run: |
           set -euo pipefail
           sha=$(cut -d' ' -f1 "${RUNNER_TEMP}/a06-kernel.sha256")
