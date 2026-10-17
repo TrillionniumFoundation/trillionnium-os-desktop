@@ -53,6 +53,44 @@ class ProbeTests(unittest.TestCase):
             result = probe.snapshot(Path(directory))
         self.assertEqual(result["candidate"]["matching_visible_devices"], [])
 
+    def test_vendor_attribute_symlink_cannot_fake_gpu(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            dev = root / "sys/bus/pci/devices/0000:03:00.0"
+            dev.mkdir(parents=True)
+            outside = root / "untrusted-id"
+            outside.write_text("0x10de\n", encoding="utf-8")
+            (dev / "vendor").symlink_to(outside)
+            (dev / "class").write_text("0x030200\n", encoding="utf-8")
+            result = probe.snapshot(root)
+        self.assertEqual(result["candidate"]["matching_visible_devices"], [])
+        self.assertIsNone(result["pci_devices"][0]["vendor_id"])
+
+    def test_fifo_and_large_attribute_refused_without_unbounded_read(self):
+        import os
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fifo = root / "vendor-fifo"
+            os.mkfifo(fifo)
+            self.assertIsNone(probe.read(fifo))
+            huge = root / "vendor-oversized"
+            huge.write_bytes(b"0x10de\n" + b"X" * probe.MAX_SYSFS_ATTRIBUTE_BYTES)
+            self.assertIsNone(probe.read(huge))
+
+    def test_truncated_cpuinfo_is_unknown_not_false_vmx(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            proc = root / "proc"
+            proc.mkdir()
+            (proc / "cpuinfo").write_bytes(b"flags: vmx\n" +
+                                          b"x" * (probe.MAX_CPUINFO_BYTES + 1))
+            result = probe.snapshot(root)
+        self.assertIsNone(result["cpu"]["model"])
+        self.assertIsNone(result["cpu"]["visible_processor_entries"])
+        self.assertIsNone(result["cpu"]["vmx_flag"])
+        self.assertIsNone(result["cpu"]["svm_flag"])
+        self.assertFalse(result["cpu"]["cpuinfo_complete"])
+
 
 class GemmTests(unittest.TestCase):
     def test_deterministic_f32_golden(self):
