@@ -137,7 +137,9 @@ fn native_owner_executes_without_any_host_resource_domain_or_shadow_budget() {
     assert_eq!(owner.revision.load(Ordering::Acquire), 1);
     assert_eq!(owner.effects.load(Ordering::SeqCst), 0);
     let terminal = core
-        .execute_reserved(&token, publisher(), |binding| owner.apply(binding))
+        .execute_native_reserved::<FakeNativeOwner, _>(&token, publisher(), |context| {
+            context.owner().apply(context.binding())
+        })
         .unwrap();
     assert_eq!(terminal.state, DeliveryState::Terminal);
     assert_eq!(terminal.status, Some(DeliveryStatus::Ok));
@@ -169,7 +171,9 @@ fn same_real_owner_rewrapped_dedupes_but_equal_ids_on_other_arc_conflict() {
         Some(DeliveryError::Conflict)
     );
     let terminal = core
-        .execute_reserved(&token, publisher(), |binding| owner.apply(binding))
+        .execute_native_reserved::<FakeNativeOwner, _>(&token, publisher(), |context| {
+            context.owner().apply(context.binding())
+        })
         .unwrap();
     match core
         .reserve_native_or_get(request(&owner, 920_002), publisher())
@@ -358,9 +362,9 @@ fn wrong_native_publisher_cannot_reserve_or_execute_external_mutation() {
     let token = core.reserve_native(request, publisher()).unwrap();
     let callbacks = AtomicUsize::new(0);
     assert_eq!(
-        core.execute_reserved(&token, wrong, |binding| {
+        core.execute_native_reserved::<FakeNativeOwner, _>(&token, wrong, |context| {
             callbacks.fetch_add(1, Ordering::SeqCst);
-            owner.apply(binding)
+            context.owner().apply(context.binding())
         }),
         Err(DeliveryError::PermissionDenied)
     );
@@ -391,7 +395,9 @@ fn host_commit_cannot_consume_a_native_callback_or_mutate_native_owner() {
         DeliveryState::Reserved
     );
     let terminal = core
-        .execute_reserved(&token, publisher(), |binding| owner.apply(binding))
+        .execute_native_reserved::<FakeNativeOwner, _>(&token, publisher(), |context| {
+            context.owner().apply(context.binding())
+        })
         .unwrap();
     assert_eq!(terminal.status, Some(DeliveryStatus::Ok));
     assert_eq!(owner.effects.load(Ordering::SeqCst), 1);
@@ -404,12 +410,14 @@ fn native_copyout_retry_reuses_original_result_without_second_owner_cas() {
     let request = request(&owner, 920_009);
     let token = core.reserve_native(request.clone(), publisher()).unwrap();
     let terminal = core
-        .execute_reserved(&token, publisher(), |binding| owner.apply(binding))
+        .execute_native_reserved::<FakeNativeOwner, _>(&token, publisher(), |context| {
+            context.owner().apply(context.binding())
+        })
         .unwrap();
     // Discarding the response models a lost copyout, not a real EFAULT.
     for _ in 0..64 {
         assert_eq!(
-            core.execute_reserved(&token, publisher(), |_| {
+            core.execute_native_reserved::<FakeNativeOwner, _>(&token, publisher(), |_| {
                 panic!("copyout retry entered a second native callback")
             })
             .unwrap(),
@@ -436,7 +444,9 @@ fn native_callback_rechecks_revocation_and_terminal_refusal_never_becomes_succes
     let token = core.reserve_native(request.clone(), publisher()).unwrap();
     owner.revoke();
     let terminal = core
-        .execute_reserved(&token, publisher(), |binding| owner.apply(binding))
+        .execute_native_reserved::<FakeNativeOwner, _>(&token, publisher(), |context| {
+            context.owner().apply(context.binding())
+        })
         .unwrap();
     assert_eq!(terminal.status, Some(DeliveryStatus::Revoked));
     assert_eq!(owner.effects.load(Ordering::SeqCst), 0);
@@ -446,8 +456,10 @@ fn native_callback_rechecks_revocation_and_terminal_refusal_never_becomes_succes
         owner.epoch.store(1, Ordering::Release);
     }
     assert_eq!(
-        core.execute_reserved(&token, publisher(), |_| panic!("refusal became executable"))
-            .unwrap(),
+        core.execute_native_reserved::<FakeNativeOwner, _>(&token, publisher(), |_| panic!(
+            "refusal became executable"
+        ))
+        .unwrap(),
         terminal
     );
     match core.reserve_native_or_get(request, publisher()).unwrap() {
@@ -465,11 +477,13 @@ fn native_commit_before_revoke_preserves_admitted_original_result() {
         .reserve_native(request(&owner, 920_011), publisher())
         .unwrap();
     let terminal = core
-        .execute_reserved(&token, publisher(), |binding| owner.apply(binding))
+        .execute_native_reserved::<FakeNativeOwner, _>(&token, publisher(), |context| {
+            context.owner().apply(context.binding())
+        })
         .unwrap();
     owner.revoke();
     assert_eq!(
-        core.execute_reserved(&token, publisher(), |_| panic!(
+        core.execute_native_reserved::<FakeNativeOwner, _>(&token, publisher(), |_| panic!(
             "terminal success reexecuted"
         ))
         .unwrap(),
@@ -488,8 +502,10 @@ fn native_retirement_releases_owner_even_with_stale_token_retained() {
     let token = core
         .reserve_native(request(&owner, 920_012), publisher())
         .unwrap();
-    core.execute_reserved(&token, publisher(), |binding| owner.apply(binding))
-        .unwrap();
+    core.execute_native_reserved::<FakeNativeOwner, _>(&token, publisher(), |context| {
+        context.owner().apply(context.binding())
+    })
+    .unwrap();
     drop(owner);
     assert!(
         weak_owner.upgrade().is_some(),
@@ -508,7 +524,7 @@ fn native_retirement_releases_owner_even_with_stale_token_retained() {
     );
     let calls = AtomicUsize::new(0);
     assert!(core
-        .execute_reserved(&token, publisher(), |_| {
+        .execute_native_reserved::<FakeNativeOwner, _>(&token, publisher(), |_| {
             calls.fetch_add(1, Ordering::SeqCst);
             panic!("retired native token executed")
         })
@@ -592,12 +608,13 @@ fn concurrent_same_native_d_reserves_and_commits_one_original_owner_effect() {
         for _ in 0..8 {
             let core = Arc::clone(&core);
             let token = Arc::clone(&token);
-            let owner = Arc::clone(&owner);
             let barrier = Arc::clone(&barrier);
             executors.push(thread::spawn(move || {
                 barrier.wait();
-                core.execute_reserved(&token, publisher(), |binding| owner.apply(binding))
-                    .unwrap()
+                core.execute_native_reserved::<FakeNativeOwner, _>(&token, publisher(), |context| {
+                    context.owner().apply(context.binding())
+                })
+                .unwrap()
             }));
         }
         barrier.wait();
@@ -713,12 +730,14 @@ fn native_owner_drop_during_retirement_can_read_same_namespace_before_return() {
     let (core, authority) = core(940_001);
     let report = DropReport::new();
     let token = reserve_reentering_owner(&core, 940_001, DropAction::ReadNamespace, &report);
-    core.execute_reserved(&token, publisher(), |binding| PublishOutcome::Failure {
-        status: if binding.publisher == publisher() {
-            DeliveryStatus::Revoked
-        } else {
-            DeliveryStatus::PermissionDenied
-        },
+    core.execute_native_reserved::<ReenteringNativeOwner, _>(&token, publisher(), |context| {
+        PublishOutcome::Failure {
+            status: if context.binding().publisher == publisher() {
+                DeliveryStatus::Revoked
+            } else {
+                DeliveryStatus::PermissionDenied
+            },
+        }
     })
     .unwrap();
     let view = core.delivery_view_for(durable_owner()).unwrap();
@@ -762,7 +781,7 @@ fn native_owner_drop_during_history_loss_can_reenter_loss_gate_before_return() {
     );
     assert_eq!(core.window_len(), 0);
     assert_eq!(
-        core.execute_reserved(&token, publisher(), |_| panic!(
+        core.execute_native_reserved::<ReenteringNativeOwner, _>(&token, publisher(), |_| panic!(
             "fenced native owner reexecuted"
         )),
         Err(DeliveryError::HistoryLost)

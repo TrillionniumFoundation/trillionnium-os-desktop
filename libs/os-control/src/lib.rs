@@ -5,7 +5,7 @@
 //! It is independent of the HOS2 wire codec and of the kernel. In
 //! particular, a passing test here proves only the model's state invariants;
 //! it does not prove ioctl, credentials, scheduler, copyout, or persistence
-//! behaviour in a real kernel. `execute_reserved` fences an external adapter's
+//! behaviour in a real kernel. `execute_native_reserved` fences an adapter's
 //! one-shot callback; that adapter still owns actual credentials, resource
 //! mutation, IRQ/preemption locks, allocation safety and runtime settlement.
 
@@ -27,7 +27,7 @@ mod sync;
 use sync::{lock_unpoisoned, Arc, Mutex, Weak};
 
 mod native;
-pub use native::{NativeDeliveryRequest, NativeGrant, NativeTarget};
+pub use native::{NativeDeliveryRequest, NativeExecution, NativeGrant, NativeTarget};
 
 pub const CPU_PERIOD_NS: u64 = 100_000_000;
 pub const DEFAULT_WINDOW_CAPACITY: usize = 1024;
@@ -1513,6 +1513,24 @@ pub struct ControlCore {
     namespace: Arc<NamespaceState>,
 }
 
+/// Non-owning back-reference for an external owner pinned by a delivery slot.
+/// Storing this instead of ControlCore avoids namespace -> slot -> owner ->
+/// namespace strong-reference cycles. It grants no retirement authority.
+#[derive(Clone)]
+pub struct WeakControlCore {
+    namespace: Weak<NamespaceState>,
+}
+
+impl WeakControlCore {
+    /// Returns None after the last strong namespace/history owner is gone.
+    /// An obsolete token or weak back-reference cannot restore lost storage.
+    pub fn upgrade(&self) -> Option<ControlCore> {
+        self.namespace
+            .upgrade()
+            .map(|namespace| ControlCore { namespace })
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct RetireReceipt {
     pub retired_through: u64,
@@ -1612,6 +1630,14 @@ impl ControlCore {
 
     pub fn identity(&self) -> NamespaceIdentity {
         self.namespace.identity
+    }
+
+    /// Use a weak back-reference when a native resource owner needs to
+    /// inspect this namespace: its delivery slot already pins that owner.
+    pub fn downgrade(&self) -> WeakControlCore {
+        WeakControlCore {
+            namespace: Arc::downgrade(&self.namespace),
+        }
     }
 
     pub fn next_sequence(&self) -> u64 {
@@ -2088,10 +2114,50 @@ impl ReserveToken {
 }
 
 impl ControlCore {
+    /// Execute against the exact native owner and authorization snapshot
+    /// retained by the reservation. A queue worker needs only its token,
+    /// authenticated publisher and the owner's concrete Rust type; it must
+    /// not re-resolve the original handle to choose an execution target.
+    ///
+    /// A wrong owner type or host-model token returns InvalidRequest before
+    /// admission, leaving the slot available for a correctly typed executor.
+    /// The callback obeys execute_reserved's lock, fencing and one-shot rules.
+    /// It must revalidate current rights and settle runtime under owner().
+    pub fn execute_native_reserved<T, F>(
+        &self,
+        token: &ReserveToken,
+        publisher: PublisherId,
+        execute: F,
+    ) -> Result<DeliveryObservation, DeliveryError>
+    where
+        T: core::any::Any + Send + Sync,
+        F: FnOnce(NativeExecution<'_, T>) -> PublishOutcome,
+    {
+        let slot = self.token_slot(token, publisher)?;
+        let request = match &slot.request {
+            ReservedRequest::Native(request) => request,
+            ReservedRequest::Host(_) => return Err(DeliveryError::InvalidRequest),
+        };
+        let owner = request
+            .grant()
+            .target()
+            .owner_as::<T>()
+            .ok_or(DeliveryError::InvalidRequest)?;
+        self.execute_slot_reserved(token, &slot, |binding| {
+            execute(NativeExecution::new(
+                owner,
+                token.id(),
+                binding,
+                request.grant().ancestor_epochs(),
+            ))
+        })
+    }
+
     /// Reconcile an effect established by a trusted, externally fenced A05
     /// adapter, including an interrupted execute_reserved callback. This
     /// method does not execute or independently prove that external effect.
-    /// Use execute_reserved for a new synchronous effect so namespace loss
+    /// Use execute_native_reserved for a new native synchronous effect (or
+    /// execute_reserved for host fixtures) so namespace loss
     /// cannot pass between effect and publication. No K ledger is created.
     pub fn publish(
         &self,
@@ -2125,7 +2191,9 @@ impl ControlCore {
         ))
     }
 
-    /// Execute an A05/A06 effect once under its independent execution gate.
+    /// Execute a host-model effect once under its independent execution gate.
+    /// Native requests must use execute_native_reserved so the callback
+    /// receives the actual pinned owner and complete saved ancestor context.
     ///
     /// The adapter must check the real grant/epoch/lease, stable target,
     /// revision and runtime under its resource mutation lock, and return the
@@ -2151,8 +2219,25 @@ impl ControlCore {
         F: FnOnce(RequestBinding) -> PublishOutcome,
     {
         let slot = self.token_slot(token, publisher)?;
+        if matches!(slot.request, ReservedRequest::Native(_)) {
+            return Err(DeliveryError::InvalidRequest);
+        }
+        self.execute_slot_reserved(token, &slot, execute)
+    }
+
+    // Both public paths resolve and type-check their canonical stored request
+    // before entering this shared fencing/admission transition.
+    fn execute_slot_reserved<F>(
+        &self,
+        token: &ReserveToken,
+        slot: &Arc<Slot>,
+        execute: F,
+    ) -> Result<DeliveryObservation, DeliveryError>
+    where
+        F: FnOnce(RequestBinding) -> PublishOutcome,
+    {
         let _execution = lock_unpoisoned(&slot.execution_gate);
-        if !self.token_is_live(token, &slot) {
+        if !self.token_is_live(token, slot) {
             return Err(DeliveryError::HistoryLost);
         }
         let mut slot_state = lock_unpoisoned(&slot.state);

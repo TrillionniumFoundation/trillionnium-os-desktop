@@ -57,11 +57,15 @@ actual HOS2 byte layout and payload.
    D is `Conflict`; a duplicate pending D is `Busy`; a duplicate terminal D
    cannot allocate a new effect. `reserve_native_or_get` is the native
    copyout-retry helper (`reserve_or_get` serves host requests).
-4. Use `execute_reserved(token, publisher, callback)` for external A05/A06
-   mutation under the reserved entry's independent execution gate. The callback checks real grant,
+4. Use `execute_native_reserved::<ActualOwner, _>(token, publisher, callback)`
+   for native A05/A06 mutation under the reserved entry's independent
+   execution gate. Its `NativeExecution` context borrows the actual pinned
+   owner and saved full ancestor snapshot; do not re-resolve a handle or use
+   a fresh out-of-band grant to select the execution context. The callback checks real grant,
    lease/epoch, target, CAS and settled usage under its resource lock, then
    returns a `PublishOutcome`. `commit` exercises this same seam with the
-   host ResourceDomain only; it rejects native tokens without executing or
+   host ResourceDomain only; `commit` and the generic `execute_reserved`
+   reject native tokens without executing or
    terminalizing them. `publish` is a reconciliation entry after an effect
    has already been safely fenced/established by the trusted adapter.
    Tokens are instance-bound, so colliding identity bytes do not grant rights.
@@ -79,18 +83,29 @@ another budget, revision, runtime counter, scheduler or persistent ledger.
 Rewrapping the same owner `Arc` dedupes; equal IDs on different allocations
 conflict. Host and native requests also conflict under one D even if their
 public binding bytes match. Complete ancestor snapshots participate in replay
-comparison. A05 must retain its correctly resolved owner/grant context for the
-callback; this library neither downcasts the owner nor calls its policy.
+comparison. The typed execution entry downcasts only the reservation-pinned
+owner to the adapter's concrete Rust type and passes a borrowed context. A
+wrong type or host/native entry mismatch returns `InvalidRequest` before the
+Executing sentinel; the pending D remains available for a correct executor.
+The library never calls owner policy itself. The adapter must check the
+snapshot against that owner's **current** grant/ancestor/lease state under
+its own mutation lock; possession of the snapshot is not authorization.
 
 ## A06: CPU scheduler and ResourceDomain
 
-For native use, keep A06's existing owner and call `execute_reserved` with a
+For native use, keep A06's existing owner and call `execute_native_reserved` with a
 callback that settles runtime and checks current grant/ancestor epochs,
 lease, revision CAS and parent constraints under that owner's actual mutation
 lock. Return `PublishOutcome::Success` carrying the exact receipt fields,
 or `PublishOutcome::Failure` with the immutable refusal. Revoke and this
 commit must share that lock. The synthetic native-owner tests demonstrate
 this API shape, not actual A06 integration.
+
+The current A06 controller type is private to its scheduler module. A06 must
+provide an owner-module adapter that invokes the typed entry with its actual
+`SubController<CpuController>` type under the existing mutation lock. A05
+passes token/publisher to that adapter; it must not pin a Process or a new
+wrapper merely to expose a public type instead of the actual resource owner.
 
 The host `ResourceDomain` exposes stable `ResourceDomainId` and `StableObjectId`, a
 revision-CAS budget update, `try_usage`, `revoke`, explicit `user_paused` state,
@@ -563,7 +578,7 @@ linearization order. The infallible `usage` remains explicitly a host
 three-level stale observations and 64 two-thread race schedules without
 claiming loom or real SMP/IRQ verification.
 
-## One-shot external mutation handoff
+## One-shot mutation handoff
 
 ```text
 fn execute_reserved<F>(
@@ -573,9 +588,29 @@ fn execute_reserved<F>(
     execute: F,
 ) -> Result<DeliveryObservation, DeliveryError>
 where F: FnOnce(RequestBinding) -> PublishOutcome;
+
+fn execute_native_reserved<T, F>(
+    &self,
+    token: &ReserveToken,
+    publisher: PublisherId,
+    execute: F,
+) -> Result<DeliveryObservation, DeliveryError>
+where
+    T: core::any::Any + Send + Sync,
+    F: FnOnce(NativeExecution<'_, T>) -> PublishOutcome;
 ```
 
-A05/A06 can supply one callback which checks actual kernel authority and
+The generic entry accepts host requests only. The typed native entry supplies
+`context.owner() -> &T`, `context.binding() -> RequestBinding`,
+`context.ancestor_epochs() -> &[u64]` and `context.id() -> DeliveryId`
+from the exact immutable stored request. Neither asks a queue worker to keep
+another owner handle or reconstruct authorization context from public IDs.
+Public generic native execution is rejected before callback admission, closing
+the accidental wrong-instance/fresh-ancestor execution route. Trusted code can
+still misuse a callback or manufacture a reconciliation result; this seam
+does not authenticate compromised privileged code.
+
+A05/A06 supply one callback which checks actual kernel authority and
 performs the resource CAS under the real resource mutation lock. This callback
 runs under the reserved entry's execution gate, with neither the namespace
 table mutex nor result-state mutex held. It must not reenter this namespace,
@@ -663,3 +698,20 @@ Those tokens cannot execute or publish again; their cached ID/binding remain
 readable. A DeliveryView or original-owner authority still intentionally
 retains namespace history. Callers must bound their own collections of token
 metadata; the window quota is not a quota on arbitrary caller allocations.
+
+## Weak native-owner back-references
+
+An owner retained by a native result slot must use
+`ControlCore::downgrade() -> WeakControlCore` for a namespace back-reference,
+then `WeakControlCore::upgrade() -> Option<ControlCore>` for observation.
+The weak handle retains no history or retirement authority. Upgrade returns
+None after the last strong namespace/history owner disappears, even if old
+tokens survive. An active DeliveryView or OriginalOwnerAuthority deliberately
+keeps history alive; explicit history loss still fences every old token.
+
+This avoids the concrete namespace -> slot -> native owner -> namespace
+strong-reference cycle. It does not automatically break arbitrary caller-created
+Arc cycles; existing strong back-links must be migrated by their owner. Owner
+Drop can upgrade a weak link during explicit retirement/loss after internal
+locks are released. During final namespace destruction it cannot resurrect
+that namespace. Tests cover both cases with bounded, joined helper threads.

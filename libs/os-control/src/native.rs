@@ -12,8 +12,8 @@ use alloc::vec::Vec;
 use core::any::Any;
 
 use crate::{
-    DeliveryError, PublisherId, RequestBinding, ResourceDomainId, ResourceError, StableObjectId,
-    CPU_PERIOD_NS, MAX_RESOURCE_DEPTH,
+    DeliveryError, DeliveryId, PublisherId, RequestBinding, ResourceDomainId, ResourceError,
+    StableObjectId, CPU_PERIOD_NS, MAX_RESOURCE_DEPTH,
 };
 
 /// A strong lifetime pin to the actual resource owner selected by trusted code.
@@ -54,6 +54,55 @@ impl NativeTarget {
 
     pub(crate) fn same_instance(&self, other: &Self) -> bool {
         Arc::ptr_eq(&self.owner, &other.owner)
+    }
+
+    pub(crate) fn owner_as<T: Any>(&self) -> Option<&T> {
+        self.owner.as_ref().downcast_ref()
+    }
+}
+
+/// Borrowed context from the exact native request stored in a live D slot.
+/// The core constructs it only after validating the token and owner type.
+/// Values still require admission checks under the original owner's lock;
+/// an epoch snapshot is not proof that the authority is currently live.
+pub struct NativeExecution<'a, T> {
+    owner: &'a T,
+    id: DeliveryId,
+    binding: RequestBinding,
+    ancestor_epochs: &'a [u64],
+}
+
+impl<'a, T> NativeExecution<'a, T> {
+    pub(crate) fn new(
+        owner: &'a T,
+        id: DeliveryId,
+        binding: RequestBinding,
+        ancestor_epochs: &'a [u64],
+    ) -> Self {
+        Self {
+            owner,
+            id,
+            binding,
+            ancestor_epochs,
+        }
+    }
+
+    /// The original allocation pinned by NativeTarget, never a re-resolved alias.
+    pub fn owner(&self) -> &'a T {
+        self.owner
+    }
+
+    pub const fn id(&self) -> DeliveryId {
+        self.id
+    }
+
+    pub const fn binding(&self) -> RequestBinding {
+        self.binding
+    }
+
+    /// Issuance-time snapshot in immediate-parent to root order.
+    pub fn ancestor_epochs(&self) -> &'a [u64] {
+        self.ancestor_epochs
     }
 }
 
