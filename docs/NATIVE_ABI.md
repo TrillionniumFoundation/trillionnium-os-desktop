@@ -128,3 +128,5 @@ N0不支持CPU集/period变化、迁移、SMP资源控制。后续全路径祖�
 ## 11. 验证边界
 
 黄金向量只测格式；生命周期模型只验证指定交错；真实credential、锁、copyout、runqueue、timer及DMA均需内核实测。至少覆盖：exec后激活、同D跨目标预约、撤销后仅观察、连续写超过1024次并退役、旧序列迟到、拒绝结果不变、同观测不同历史、用户暂停与失效回退区分。
+
+<!-- exact current-main gate refresh -->
