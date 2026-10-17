@@ -56,3 +56,5 @@ class A06FinalAccountingSource(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
+
+# Exact current-main workflow trigger marker.
