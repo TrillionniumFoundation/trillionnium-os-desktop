@@ -164,8 +164,11 @@ class GemmTests(unittest.TestCase):
                     patch.object(sys, "argv", ["cuda_gemm.py", "--output", str(output)]):
                 self.assertEqual(cuda_gemm.main(), 1)
             evidence = json.loads(output.read_text())
-        self.assertEqual(evidence["status"], "timeout")
-        self.assertTrue(evidence["timeout_enforced"])
+        # The leader was not reaped: an OS process deadline is NOT verified.
+        # The effect and recovery remain unknown, rather than a passed timeout.
+        self.assertEqual(evidence["status"], "failed")
+        self.assertFalse(evidence["timeout_enforced"])
+        self.assertIn("group/identity cleanup unverified", evidence["error"])
         self.assertTrue(all(value == "unknown_effect"
                             for value in evidence["stages"].values()))
         self.assertFalse(evidence["failure_recovery_verified"])
