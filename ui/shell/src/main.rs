@@ -1,4 +1,5 @@
 //! Rust AI-workspace shell for a Linux/Wayland host, not for the target kernel.
+mod hepta_panel;
 mod local_drafts;
 
 use eframe::egui::{self, Color32, RichText};
@@ -7,6 +8,7 @@ use std::collections::VecDeque;
 use std::io::{self, Write};
 use std::sync::mpsc::{self, Receiver, SyncSender, TryRecvError};
 use std::time::{Duration, Instant};
+use trill_ui_core::hepta::{HeptaConnectionState, HeptaProjection};
 use trill_ui_core::{
     request, AppKind, HostResources, HostWaylandObservation, HostWindowObservation, Request,
     Response, TaskRecord, TaskState, WaylandSocketStatus, Workspace,
@@ -15,6 +17,7 @@ use trill_ui_core::{
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Page {
     Conversation,
+    Hepta,
     Tasks,
     Apps,
     Workspaces,
@@ -26,6 +29,7 @@ impl Page {
     fn name(self) -> &'static str {
         match self {
             Self::Conversation => "Conversation",
+            Self::Hepta => "Hepta / Runtime",
             Self::Tasks => "Tasks",
             Self::Apps => "Applications",
             Self::Workspaces => "Workspaces",
@@ -194,6 +198,8 @@ struct Desktop {
     tasks: Vec<TaskRecord>,
     selected: Option<u64>,
     resources: Option<HostResources>,
+    hepta: HeptaProjection,
+    hepta_last_snapshot: Option<Instant>,
     connected: bool,
     session_instance: Option<String>,
     session_error: String,
@@ -217,11 +223,13 @@ impl Desktop {
             composer: String::new(),
             chat: vec![ChatEntry {
                 role: "System / local",
-                text: "Hepta is not connected. This conversation is a local draft; it cannot execute AI tasks or grant permissions. Launchable apps are real host subprocesses.".into(),
+                text: "Conversation messages stay local. The host Session may observe the Hepta runtime, but authenticated objective submission is unavailable. Launchable apps are real host subprocesses.".into(),
             }],
             tasks: Vec::new(),
             selected: None,
             resources: None,
+            hepta: HeptaProjection::default(),
+            hepta_last_snapshot: None,
             connected: false,
             session_instance: None,
             session_error: "Waiting for host session".into(),
@@ -291,6 +299,7 @@ impl Desktop {
                     tasks,
                     resources,
                     session_instance,
+                    hepta,
                 }) => {
                     if self
                         .session_instance
@@ -314,6 +323,8 @@ impl Desktop {
                     self.connected = true;
                     self.session_error.clear();
                     self.resources = Some(resources);
+                    self.hepta = hepta;
+                    self.hepta_last_snapshot = Some(Instant::now());
                     for item in &tasks {
                         if let Some(previous) = self.tasks.iter().find(|old| old.id == item.id) {
                             if previous.state != item.state {
@@ -332,6 +343,7 @@ impl Desktop {
                         self.store_task(task);
                     } else {
                         self.connected = false;
+                        self.hepta.mark_unavailable("host_session_changed");
                         self.notice("Task from changed/unobserved session ignored; refreshing before any status claim");
                         self.bridge.poll();
                     }
@@ -342,6 +354,7 @@ impl Desktop {
                 }) => {
                     if self.session_instance.as_deref() != Some(session_instance.as_str()) {
                         self.connected = false;
+                        self.hepta.mark_unavailable("host_session_changed");
                         self.notice("Session generation changed; refreshing before new commands");
                         self.bridge.poll();
                     }
@@ -353,6 +366,7 @@ impl Desktop {
                     }
                     self.connected = false;
                     self.resources = None;
+                    self.hepta.mark_unavailable("host_session_unavailable");
                     self.session_error = err;
                 }
             }
@@ -410,8 +424,9 @@ impl Desktop {
         ui.heading("Hepta / Conversation");
         ui.colored_label(
             warning(),
-            "LOCAL DRAFT ONLY · Hepta task execution not connected",
+            "LOCAL DRAFT ONLY · Authenticated objective submission unavailable",
         );
+        hepta_panel::status(ui, &self.hepta);
         ui.separator();
         ui.group(|ui| {
             ui.label(RichText::new("Local actions / 本地任务").strong());
@@ -550,10 +565,12 @@ impl Desktop {
                     ui.label(RichText::new(task.state.label()).color(state_color(task.state)));
                 });
                 ui.small(format!("PID {:?} · {}", task.pid, task.execution_mode));
-                let window_status = self.resources.as_ref().map_or(
-                    "UNVERIFIED: NO CURRENT DISPLAY OBSERVATION",
-                    |sample| task.host_window_observation(&sample.wayland).label(),
-                );
+                let window_status = self
+                    .resources
+                    .as_ref()
+                    .map_or("UNVERIFIED: NO CURRENT DISPLAY OBSERVATION", |sample| {
+                        task.host_window_observation(&sample.wayland).label()
+                    });
                 if !task.state.is_terminal() {
                     ui.colored_label(warning(), window_status);
                 }
@@ -710,7 +727,8 @@ impl Desktop {
             ui.colored_label(warning(), "SESSION OFFLINE · state may be stale");
             ui.small(&self.session_error);
         }
-        ui.label("Hepta: UNCONNECTED");
+        hepta_panel::status(ui, &self.hepta);
+        ui.small("Objective submission: unavailable");
         ui.label("HOS2: NOT OBSERVED");
         ui.separator();
         ui.label(RichText::new("Host resource sample").strong());
@@ -794,7 +812,7 @@ impl Desktop {
             }
             ui.small(format!("Observed: {}", task.updated_unix_ms));
             ui.separator();
-            ui.label(task.detail);
+            ui.label(&task.detail);
             if can_offer_fresh_window(
                 &task,
                 self.resources.as_ref().map(|sample| &sample.wayland),
@@ -856,6 +874,13 @@ impl Desktop {
 impl eframe::App for Desktop {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         self.receive();
+        if self.hepta.connection == HeptaConnectionState::Observed
+            && self
+                .hepta_last_snapshot
+                .is_some_and(|time| time.elapsed() > Duration::from_secs(7))
+        {
+            self.hepta.mark_unavailable("session_snapshot_expired");
+        }
         if self.last_poll.elapsed() >= Duration::from_millis(800) {
             self.last_poll = Instant::now();
             self.bridge.poll();
@@ -897,6 +922,7 @@ impl eframe::App for Desktop {
                 ui.separator();
                 for page in [
                     Page::Conversation,
+                    Page::Hepta,
                     Page::Tasks,
                     Page::Apps,
                     Page::Workspaces,
@@ -922,6 +948,7 @@ impl eframe::App for Desktop {
             });
         egui::CentralPanel::default().show(ctx, |ui| match self.page {
             Page::Conversation => self.conversation(ui),
+            Page::Hepta => hepta_panel::runtime(ui, &self.hepta),
             Page::Tasks => self.task_list(ui),
             Page::Apps => self.apps(ui),
             Page::Workspaces => self.workspaces(ui),

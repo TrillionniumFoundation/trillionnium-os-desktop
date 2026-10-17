@@ -52,6 +52,14 @@ evidence that an A05 portal exists.
 
 ## A07: non-fabricated Hepta task stream
 
+The implemented first host slice is a read-only Agentd observer described
+in `HEPTA_OBSERVER.md`: A07's `hepta-os-observer` facade is owned by one
+Session background worker, and Shell consumes bounded typed runtime
+metadata through the existing Session snapshot. It does not implement the
+task/effect contract below. Conversation remains a local draft because
+the authenticated objective adapter is not configured; an observed
+Agentd connection must not enable submission or synthesize a task receipt.
+
 Consume the existing Hepta owner/ledger instead of maintaining an extra
 effect database. The view should expose a stable logical K reference,
 optional HOS2 D delivery namespace/sequence, executor identity, trust domain,

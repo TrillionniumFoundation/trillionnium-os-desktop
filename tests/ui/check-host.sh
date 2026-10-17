@@ -64,6 +64,13 @@ cargo fetch --manifest-path ui/Cargo.toml --locked
 # Build and test first so a formatting failure cannot conceal compiler evidence.
 cargo build --manifest-path ui/Cargo.toml --workspace --bins --locked
 cargo test --manifest-path ui/Cargo.toml --workspace --locked
+# Actual Session/facade/Unix IPC against an explicitly scripted fixed-v2
+# fixture. Its provenance says that upstream Agentd and effects were not run.
+observer_target="${CARGO_TARGET_DIR:-$PWD/ui/target}"
+observer_evidence_root="${RUNNER_TEMP:-$observer_target}"
+python3 tests/ui/probe-hepta-session.py \
+    --session "$observer_target/debug/trill-session" \
+    --output "$observer_evidence_root/a10/session-observer-probe.json"
 # A10's read-only HOS2 adapter consumes the real shared A02 crate. Changes
 # to main ABI must break this same blocking host gate if the consumer regresses.
 # The tests/ui model is a separate host contract, NOT a synthetic UI success.

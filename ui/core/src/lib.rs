@@ -1,5 +1,7 @@
 //! Host-only desktop prototype messages. These are NOT HOS2, a kernel permission
 //! protocol, or a trusted Hepta operation ledger.
+pub mod hepta;
+
 use serde::{Deserialize, Serialize};
 use std::io::{self, BufRead, BufReader, Read, Write};
 use std::path::{Path, PathBuf};
@@ -276,6 +278,9 @@ pub enum Response {
         tasks: Vec<TaskRecord>,
         resources: HostResources,
         session_instance: String,
+        /// Optional on older host snapshots. A missing field is NOT OBSERVED.
+        #[serde(default)]
+        hepta: hepta::HeptaProjection,
     },
     Task {
         task: TaskRecord,
@@ -362,6 +367,16 @@ mod tests {
     use super::*;
 
     #[test]
+    fn older_session_snapshot_cannot_claim_a_hepta_connection() {
+        let old = r#"{"type":"snapshot","tasks":[],"resources":{"sampled_unix_ms":5,"mem_total_kib":null,"mem_available_kib":null,"load_average_1m":null,"source":"old host"},"session_instance":"old"}"#;
+        let Response::Snapshot { hepta, .. } = serde_json::from_str(old).unwrap() else {
+            panic!("expected snapshot");
+        };
+        assert_eq!(hepta.connection, hepta::HeptaConnectionState::NotObserved);
+        assert!(hepta.last_observation.is_none());
+    }
+
+    #[test]
     fn old_host_snapshot_defaults_to_unconfigured_wayland() {
         let old = r#"{"sampled_unix_ms":5,"mem_total_kib":null,"mem_available_kib":null,"load_average_1m":null,"source":"old host"}"#;
         let resources: HostResources = serde_json::from_str(old).unwrap();
@@ -397,7 +412,10 @@ mod tests {
             app.host_window_observation(&sampled),
             HostWindowObservation::SocketUnavailable
         );
-        assert!(app.host_window_observation(&sampled).label().contains("UNVERIFIED"));
+        assert!(app
+            .host_window_observation(&sampled)
+            .label()
+            .contains("UNVERIFIED"));
     }
 
     #[test]

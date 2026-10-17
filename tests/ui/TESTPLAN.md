@@ -2,7 +2,7 @@
 
 Automated Rust commands (from repository root; the blocking CI
 `tests/ui/check-host.sh` now runs all three A10-owned Cargo test suites):
-- cargo test --manifest-path ui/Cargo.toml --workspace --lib --bins --locked --offline
+- cargo test --manifest-path ui/Cargo.toml --workspace --locked --offline
 - cargo test --manifest-path support/ui/Cargo.toml --locked --offline
 - cargo test --manifest-path tests/ui/Cargo.toml --locked --offline
 - cargo build --manifest-path ui/Cargo.toml --workspace --bins --locked --offline
@@ -12,9 +12,10 @@ Automated Rust commands (from repository root; the blocking CI
 - cargo fmt --manifest-path support/ui/Cargo.toml --all -- --check
 - cargo fmt --manifest-path tests/ui/Cargo.toml --all -- --check
 
-The UI `--all-targets` test command is also attempted in host validation, but
-the sandbox denies AF_UNIX socket creation (`EPERM`) in
-`ui/session/tests/ipc_reconnect.rs`; that limitation is recorded below.
+The historical sandbox run recorded below denied AF_UNIX socket creation
+(`EPERM`) in `ui/session/tests/ipc_reconnect.rs`. That result is specific to
+that invocation; current host validation must execute the integration tests
+and record its own outcome rather than inheriting a historical pass or block.
 The host script prefetches every locked package before its post-test offline
 metadata gate, so target-specific lock entries cannot fail reproducibility
 after a successful Linux build. These commands never claim a Wayland
@@ -26,6 +27,29 @@ The same blocking host gate stages an actual Linux ELF binary archive only
 after all three Cargo tests and strict Rustfmt pass. The archive and its
 SHA256 contain four built Rust programs and their build/source provenance,
 not a Weston, Chinese IME, GPU or new-kernel acceptance certificate.
+
+## Hepta observer gate
+
+See `support/ui/HEPTA_OBSERVER.md` for development/configuration and the
+ownership boundary. The core/Session/Shell tests now also cover:
+
+- an absent projection remains `not_observed`, and an explicitly unconfigured
+  Session reports `not_configured`;
+- no objective or generic Agentd RPC message exists in renderer IPC;
+- a real Session process still answers snapshots and dispatches host actions
+  while a deliberately stalled Unix peer waits through the observer timeout;
+- an unknown or failed observer never produces a successful task/effect state;
+- bounded metadata/JSON frames, sticky history gaps, stale evidence retention,
+  and process/generation-change invalidation of the display event window.
+
+The stalled peer is a fault fixture. The successful fixed-v2 protocol fixture
+belongs to A07 and is also not an actual production Agentd acceptance run.
+Record real Agentd provenance and successful/disconnected observations
+separately before marking that gate passed. The observer does not satisfy
+authenticated objective submission or device-control acceptance.
+
+## Existing host and contract coverage
+
 Unit coverage:
 - A10-owned `tests/ui/test-package-host-binaries.sh`: independent C ELF fixture
   actually executes Linux packager; verifies 4 files, source provenance,

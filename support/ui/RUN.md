@@ -3,18 +3,26 @@
 This is an executable Rust GUI prototype under the Linux host compositor.
 It is NOT booted under Asterinas, NOT native HOS2, and NOT a full compositor.
 
-Host prerequisites: Rust stable >=1.83 with Cargo, network/cached crates,
+Host validation uses the fixed Rust `nightly-2026-07-21` toolchain with Cargo,
+network/cached crates,
 Linux Wayland (or X11), OpenGL/Mesa including llvmpipe for software rendering,
 libxkbcommon, a system Chinese font, and a Chinese IME such as Fcitx5.
+The crates' `rust-version = "1.83"` metadata is not a demonstrated minimum
+for every transitive dependency in the current lockfile.
+
+For the Session-owned Hepta runtime observer, explicit endpoint configuration,
+read-only UI behavior and its separate acceptance limits, see
+[`HEPTA_OBSERVER.md`](HEPTA_OBSERVER.md). Authenticated objective submission
+is not configured; Conversation remains a local draft.
 
 From the repository root:
 
 ~~~sh
-cargo build --manifest-path ui/Cargo.toml --workspace --bins --locked
-cargo test --manifest-path ui/Cargo.toml --workspace --locked
-cargo test --manifest-path support/ui/Cargo.toml --locked
-cargo test --manifest-path tests/ui/Cargo.toml --locked
-cargo fmt --manifest-path ui/Cargo.toml --all -- --check
+cargo +nightly-2026-07-21 build --manifest-path ui/Cargo.toml --workspace --bins --locked
+cargo +nightly-2026-07-21 test --manifest-path ui/Cargo.toml --workspace --locked
+cargo +nightly-2026-07-21 test --manifest-path support/ui/Cargo.toml --locked
+cargo +nightly-2026-07-21 test --manifest-path tests/ui/Cargo.toml --locked
+cargo +nightly-2026-07-21 fmt --manifest-path ui/Cargo.toml --all -- --check
 ~~~
 
 Within an existing Linux desktop Wayland session, in terminal #1:
