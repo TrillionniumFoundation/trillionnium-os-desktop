@@ -1,0 +1,440 @@
+{
+  "schema_version": 1,
+  "archived_utc": "2026-10-17T15:03:31.971860+00:00",
+  "purpose": "Archive existing R5 real XIM evidence without rerunning tests",
+  "production": {
+    "local_commit": "35f379101c0863027e971ccb91faf8da71cf929c",
+    "published_commit_same_tree": "1974d9a94037440da358253e1f449b395daa4b64",
+    "tree": "48433c4f1e55de53e8c298193765949996eb18a0",
+    "ui_subtree": "037f318be7140ef046eac1e9cabe230c07eb7059",
+    "binaries": {
+      "trill-shell": {
+        "path": "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-shell",
+        "bytes": 24153992,
+        "sha256": "81e9bcbf79c4060c3047ad0c80df711bfd855f2f47c3900522927d37404d776f"
+      },
+      "trill-session": {
+        "path": "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-session",
+        "bytes": 3527808,
+        "sha256": "5c29cfd7f11455000d7c3d9c0cc2c58fb7fe8761ab326da34c794d0f3481924f"
+      },
+      "trill-ctl": {
+        "path": "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-ctl",
+        "bytes": 1494736,
+        "sha256": "920093314640ad1dd721425ec78457f4ca74c83f9c1a0a878d4ddfee4924a882"
+      },
+      "trill-app-window": {
+        "path": "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-app-window",
+        "bytes": 22627904,
+        "sha256": "08c3bbe84b5d6e773f367f9751a1432eaee327bf45a5b172150f34f165342510"
+      }
+    }
+  },
+  "final_harness": {
+    "local_commit": "02cf552485f899cfbb9cba7eeae663c7f0e8bb9c",
+    "published_commit_same_tree": "698d1bf47fadbdd0fc18fad191b3bd5f9744101f",
+    "tree": "3a46eb76dd667a0fe54fa7b9936df93a7080d430",
+    "tracked_source_bytes_verified": true,
+    "tracked_fixture_bytes_verified": true
+  },
+  "scope": {
+    "qualified": "Linux x86_64 private X11 XTEST ASCII -> IBus libpinyin XIM -> locked winit/egui in two existing Rust editors",
+    "candidate_at_caret_passed": false,
+    "winit_per_event_trace_available": false,
+    "wayland_v3_verified": false,
+    "physical_keyboard_verified": false,
+    "gpu_verified": false,
+    "asterinas_verified": false,
+    "mobile_verified": false,
+    "original_hepta_runtime_verified_by_this_archive": false,
+    "authenticated_objective_submission_verified": false
+  },
+  "runs": [
+    {
+      "id": "preflight-01",
+      "source": "/workspace/scratch/98f315e377b2/next-tools/r5-ime-preflight-01",
+      "namespace_returncode": 1,
+      "receipt_passed": null,
+      "error": null,
+      "receipt_exists": false,
+      "started_unix_ms": 1792244138946,
+      "finished_unix_ms": 1792244139009,
+      "ui_status": null,
+      "actions_recorded": 0,
+      "clipboard_samples": [],
+      "cleanup_records": 0,
+      "rust_ui_ime_verified_raw": null
+    },
+    {
+      "id": "preflight-02",
+      "source": "/workspace/scratch/98f315e377b2/next-tools/r5-ime-preflight-02",
+      "namespace_returncode": 1,
+      "receipt_passed": null,
+      "error": null,
+      "receipt_exists": false,
+      "started_unix_ms": 1792244175379,
+      "finished_unix_ms": 1792244175490,
+      "ui_status": null,
+      "actions_recorded": 0,
+      "clipboard_samples": [],
+      "cleanup_records": 0,
+      "rust_ui_ime_verified_raw": null
+    },
+    {
+      "id": "preflight-03",
+      "source": "/workspace/scratch/98f315e377b2/next-tools/r5-ime-preflight-03",
+      "namespace_returncode": 1,
+      "receipt_passed": false,
+      "error": "schemas command failed",
+      "receipt_exists": true,
+      "started_unix_ms": 1792244207221,
+      "finished_unix_ms": 1792244207229,
+      "ui_status": null,
+      "actions_recorded": 0,
+      "clipboard_samples": [],
+      "cleanup_records": 0,
+      "rust_ui_ime_verified_raw": false
+    },
+    {
+      "id": "preflight-04",
+      "source": "/workspace/scratch/98f315e377b2/next-tools/r5-ime-preflight-04",
+      "namespace_returncode": 1,
+      "receipt_passed": false,
+      "error": "engine-select command failed",
+      "receipt_exists": true,
+      "started_unix_ms": 1792244230307,
+      "finished_unix_ms": 1792244239788,
+      "ui_status": null,
+      "actions_recorded": 0,
+      "clipboard_samples": [],
+      "cleanup_records": 3,
+      "rust_ui_ime_verified_raw": false
+    },
+    {
+      "id": "preflight-05",
+      "source": "/workspace/scratch/98f315e377b2/next-tools/r5-ime-preflight-05",
+      "namespace_returncode": 1,
+      "receipt_passed": false,
+      "error": "IBus XIM selection was not advertised",
+      "receipt_exists": true,
+      "started_unix_ms": 1792244576751,
+      "finished_unix_ms": 1792244586280,
+      "ui_status": null,
+      "actions_recorded": 0,
+      "clipboard_samples": [],
+      "cleanup_records": 3,
+      "rust_ui_ime_verified_raw": false
+    },
+    {
+      "id": "preflight-06",
+      "source": "/workspace/scratch/98f315e377b2/next-tools/r5-ime-preflight-06",
+      "namespace_returncode": 0,
+      "receipt_passed": true,
+      "error": null,
+      "receipt_exists": true,
+      "started_unix_ms": 1792244780943,
+      "finished_unix_ms": 1792244790524,
+      "ui_status": null,
+      "actions_recorded": 0,
+      "clipboard_samples": [],
+      "cleanup_records": 3,
+      "rust_ui_ime_verified_raw": false
+    },
+    {
+      "id": "ui-01",
+      "source": "/workspace/scratch/98f315e377b2/next-tools/r5-ime-ui-01",
+      "namespace_returncode": 1,
+      "receipt_passed": false,
+      "error": "shell-xid command failed",
+      "receipt_exists": true,
+      "started_unix_ms": 1792244871371,
+      "finished_unix_ms": 1792244890092,
+      "ui_status": "running",
+      "actions_recorded": 0,
+      "clipboard_samples": [],
+      "cleanup_records": 6,
+      "rust_ui_ime_verified_raw": false
+    },
+    {
+      "id": "ui-02",
+      "source": "/workspace/scratch/98f315e377b2/next-tools/r5-ime-ui-02",
+      "namespace_returncode": 1,
+      "receipt_passed": false,
+      "error": "Command '['xdotool', 'mousemove', '--sync', '--window', '14680069', '125', '137', 'click', '1']' timed out after 8 seconds",
+      "receipt_exists": true,
+      "started_unix_ms": 1792244931179,
+      "finished_unix_ms": 1792245108300,
+      "ui_status": "running",
+      "actions_recorded": 19,
+      "clipboard_samples": [
+        {
+          "target": "shell",
+          "text": "你好",
+          "sequence": 6,
+          "oracle": "owned_X11_CLIPBOARD_after_explicit_copy"
+        }
+      ],
+      "cleanup_records": 6,
+      "rust_ui_ime_verified_raw": false
+    },
+    {
+      "id": "ui-03",
+      "source": "/dev/shm/trill-a10-ime-r5-r694yz_b/ui-03",
+      "namespace_returncode": 0,
+      "receipt_passed": true,
+      "error": null,
+      "receipt_exists": true,
+      "started_unix_ms": 1792245292424,
+      "finished_unix_ms": 1792245317804,
+      "ui_status": "passed_private_XIM_ASCII_to_Chinese_in_two_Rust_editors",
+      "actions_recorded": 23,
+      "clipboard_samples": [
+        {
+          "target": "shell",
+          "text": "你好",
+          "sequence": 6,
+          "oracle": "owned_X11_CLIPBOARD_after_explicit_copy"
+        },
+        {
+          "target": "notes",
+          "text": "你好",
+          "sequence": 20,
+          "oracle": "owned_X11_CLIPBOARD_after_explicit_copy"
+        }
+      ],
+      "cleanup_records": 6,
+      "rust_ui_ime_verified_raw": true
+    },
+    {
+      "id": "ui-04",
+      "source": "/dev/shm/trill-a10-ime-r5-r694yz_b/ui-04",
+      "namespace_returncode": 0,
+      "receipt_passed": true,
+      "error": null,
+      "receipt_exists": true,
+      "started_unix_ms": 1792245906885,
+      "finished_unix_ms": 1792245932359,
+      "ui_status": "passed_private_XIM_ASCII_to_Chinese_in_two_Rust_editors",
+      "actions_recorded": 23,
+      "clipboard_samples": [
+        {
+          "target": "shell",
+          "text": "你好",
+          "sequence": 6,
+          "oracle": "owned_X11_CLIPBOARD_after_explicit_copy"
+        },
+        {
+          "target": "notes",
+          "text": "中文",
+          "sequence": 20,
+          "oracle": "owned_X11_CLIPBOARD_after_explicit_copy"
+        }
+      ],
+      "cleanup_records": 6,
+      "rust_ui_ime_verified_raw": true
+    },
+    {
+      "id": "ui-05",
+      "source": "/dev/shm/trill-a10-ime-r5-r694yz_b/ui-05",
+      "namespace_returncode": 0,
+      "receipt_passed": true,
+      "error": null,
+      "receipt_exists": true,
+      "started_unix_ms": 1792246170198,
+      "finished_unix_ms": 1792246195478,
+      "ui_status": "passed_private_XIM_ASCII_to_Chinese_in_two_Rust_editors",
+      "actions_recorded": 23,
+      "clipboard_samples": [
+        {
+          "target": "shell",
+          "text": "你好",
+          "sequence": 6,
+          "oracle": "owned_X11_CLIPBOARD_after_explicit_copy"
+        },
+        {
+          "target": "notes",
+          "text": "中文",
+          "sequence": 20,
+          "oracle": "owned_X11_CLIPBOARD_after_explicit_copy"
+        }
+      ],
+      "cleanup_records": 6,
+      "rust_ui_ime_verified_raw": true
+    }
+  ],
+  "raw_archive": {
+    "path": "raw-evidence.tar.gz",
+    "bytes": 2515692,
+    "sha256": "49ce8465d1d1529826666cfc9cc8d349470d47a1a46ff581710b2aeba5e31909",
+    "member_count": 1114
+  },
+  "raw_member_index": {
+    "path": "raw-members.json",
+    "bytes": 342313,
+    "sha256": "baeccd6a45bba6d4cabf085f5973816230abf04bf045065bf9c9c241f53e5ca5"
+  },
+  "standalone_files": [
+    {
+      "path": "ui-05/ui-initial.png",
+      "source_id": "ui-05",
+      "source_relative_path": "ui-initial.png",
+      "bytes": 110913,
+      "sha256": "d9a6cd49013086a9086d2d8bb998dce80a08e36b9e1dd9cc6b0be6ecf10d709d",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "path": "ui-05/input-003-screenshot.png",
+      "source_id": "ui-05",
+      "source_relative_path": "input-003-screenshot.png",
+      "bytes": 114728,
+      "sha256": "8f849d205b70a264cb38990b0f7f6899a158c89999f271db28804c8941ffc9c2",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "path": "ui-05/input-005-screenshot.png",
+      "source_id": "ui-05",
+      "source_relative_path": "input-005-screenshot.png",
+      "bytes": 109536,
+      "sha256": "1da7088162b95214eea8b0ab1f83a906c41cb3c0a42fe892a28affac16c874a8",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "path": "ui-05/input-008-screenshot.png",
+      "source_id": "ui-05",
+      "source_relative_path": "input-008-screenshot.png",
+      "bytes": 114222,
+      "sha256": "d11105187ea08306f514056ce9ec8be3d838eed38e20a9cae40225b38cb7de6b",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "path": "ui-05/input-011-screenshot.png",
+      "source_id": "ui-05",
+      "source_relative_path": "input-011-screenshot.png",
+      "bytes": 73438,
+      "sha256": "7884a3485ad13fe21f4eefa71aa4073e637ff3d670c36638cb03e8be47063bdf",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "path": "ui-05/input-014-screenshot.png",
+      "source_id": "ui-05",
+      "source_relative_path": "input-014-screenshot.png",
+      "bytes": 75584,
+      "sha256": "436a09d50a1789ab099aa5a96f7ff337928022bd1ce12db4755f99f2324c0e27",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "path": "ui-05/input-016-screenshot.png",
+      "source_id": "ui-05",
+      "source_relative_path": "input-016-screenshot.png",
+      "bytes": 70999,
+      "sha256": "25427e77eaafef2893658be3815f35ceb2c384c847fd80986e922a6ec5f3516e",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "path": "ui-05/input-018-screenshot.png",
+      "source_id": "ui-05",
+      "source_relative_path": "input-018-screenshot.png",
+      "bytes": 71071,
+      "sha256": "3a07c571918c26ed837eb1d5f5dc540fc11bc3c44a36d4fb1dc3e4cdf633d5f5",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "path": "ui-05/input-021-screenshot.png",
+      "source_id": "ui-05",
+      "source_relative_path": "input-021-screenshot.png",
+      "bytes": 71083,
+      "sha256": "f05fbbaa3f6cac7bfbaade075e85ca661c4f7e1869bf973fa734f6659ccfca95",
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "path": "ui-05/receipt.json",
+      "source_id": "ui-05",
+      "source_relative_path": "receipt.json",
+      "bytes": 28943,
+      "sha256": "5ea8d59db0c739ffc9bd129aa4e41c54354cf4a9033333df33820be704d547e2",
+      "original_mode_octal": "0o644"
+    },
+    {
+      "path": "ui-05/namespace.json",
+      "source_id": "ui-05",
+      "source_relative_path": "namespace.json",
+      "bytes": 5110,
+      "sha256": "9c0fc7a4235f89d59849101dc0ce6b4d082e21faa31a93dd97b53439189ed197",
+      "original_mode_octal": "0o644"
+    },
+    {
+      "path": "ui-05/probe-provenance.json",
+      "source_id": "ui-05",
+      "source_relative_path": "probe-provenance.json",
+      "bytes": 2657,
+      "sha256": "db9a9f403d08e6c045f13547056cbb28712ab085a883dbe5c7df55673fc05ae3",
+      "original_mode_octal": "0o644"
+    },
+    {
+      "path": "ui-05/rust-build-receipt.json",
+      "source_id": "ui-05",
+      "source_relative_path": "rust-build-receipt.json",
+      "bytes": 5550,
+      "sha256": "f954603a52b17fb5d8716e4c433f3222e5bd78268eb5a470108d801803c481cd",
+      "original_mode_octal": "0o644"
+    },
+    {
+      "path": "ui-05/replay-scenario.json",
+      "source_id": "ui-05",
+      "source_relative_path": "replay-scenario.json",
+      "bytes": 1255,
+      "sha256": "4d3147798e1e135a0cffc9d9e51fb44f3268bda8c5f8a44cb291d8140c5a0d64",
+      "original_mode_octal": "0o644"
+    },
+    {
+      "path": "ui-05/ui-progress.json",
+      "source_id": "ui-05",
+      "source_relative_path": "ui-progress.json",
+      "bytes": 14026,
+      "sha256": "3db4938df41d5bddde34e92c622b8437094a8ec19d60a892cbbb687a3548e8ed",
+      "original_mode_octal": "0o644"
+    },
+    {
+      "path": "ui-05/ui-ready.json",
+      "source_id": "ui-05",
+      "source_relative_path": "ui-ready.json",
+      "bytes": 3725,
+      "sha256": "536880b98e868e20c249ddae26dc61678759da104043f05d0390f575946a4397",
+      "original_mode_octal": "0o644"
+    },
+    {
+      "path": "ui-05/state/trillionnium-ui/local-drafts-v1.json",
+      "source_id": "ui-05",
+      "source_relative_path": "state/trillionnium-ui/local-drafts-v1.json",
+      "bytes": 33,
+      "sha256": "e1bbb8f9c70c67afcc2ddc2126083023ff6d284e0fa934a8b2458f3d3691feb4",
+      "original_mode_octal": "0o600"
+    }
+  ],
+  "exclusions": [
+    "Xauthority cookies",
+    "IBus/dconf user databases and private bus config files",
+    "runtime socket/lock files",
+    "font caches",
+    "ELF binaries",
+    ".deb archives",
+    "unpacked package files and full apt Packages index caches"
+  ],
+  "independent_archive_verification": {
+    "all_archive_members_byte_equal_to_sources": true,
+    "all_standalone_files_byte_equal_to_sources": true,
+    "official_metadata_signature_and_selected_package_fields_verified_offline": true,
+    "verification_in_raw_archive": "archive-validation/metadata-verification.json",
+    "ui_tests_rerun": false,
+    "original_sources_modified": false
+  }
+}

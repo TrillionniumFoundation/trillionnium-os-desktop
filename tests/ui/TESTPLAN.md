@@ -1,20 +1,81 @@
 # A10 test matrix and provenance
 
-Automated Rust commands (from repository root; the blocking CI
-`tests/ui/check-host.sh` now runs all three A10-owned Cargo test suites):
-- cargo test --manifest-path ui/Cargo.toml --workspace --lib --bins --locked --offline
+## Host fonts and actual software-composited pixels
+
+`ui/host_fonts.rs` is shared by Shell and AppWindow. Its ordinary tests reject
+invalid override configuration, malformed/Latin-only font bytes, an invalid
+face, a nonregular input and an oversized file. The explicitly ignored real
+font test must be run with an owner-selected CJK font: it checks both egui
+families and nonzero rasterized Chinese outlines. An ignored test is not a
+successful CJK qualification.
+
+`probe-cjk-pixels.py` separately starts private Pixman Weston, captures actual
+Shell and Session-owned Notes PNGs, records registry and font/binary hashes,
+and requires observed Notes cancellation. Captured colors/window differences
+must be paired with visual review of the actual Chinese labels and TextEdit
+hints. This does not replace live IME validation. The current Weston 13
+headless registry has v1 text input, no v3 and no seat, while locked winit
+uses v3. The complete procedure and evidence limits are in
+[`CJK_RENDERING.md`](../../support/ui/CJK_RENDERING.md).
+
+The headless lifecycle scripts now explicitly select Pixman with no inherited
+Weston configuration. Historical no-op/layout receipts retain their original
+qualification and do not become pixel receipts after this source change.
+
+## Latest recorded Linux host result
+
+The [final 2026-10-17 owner integration evidence](evidence/2026-10-17-rust188-owner-sync/README.md)
+records the complete 137-test host gate, packaged ELF replay, Weston/Hepta
+layout and restart gates, strict Clippy and final lock/formatter checks on
+the same source `9b13dfb` (published with the identical tree as `865ecf3`).
+It includes fixed owner cut `d4eeeb5` and the author's Unicode-filter patch.
+An earlier EACCES failure and exact Rustfmt patch remain preserved; the
+affected cached ELF was retained and rebuilt, and its permission-mutation
+cause remains unknown. Fixture, no-op renderer, missing CJK font, unverified
+X11/mobile/effects and original-Agentd limits are explicit in that receipt.
+
+The [final harness/CI integration record](evidence/2026-10-17-final-integration/README.md)
+separately records six passing Linux child-process cleanup tests and syntax
+checks for all eight workflow Bash blocks on source `5f14fde` (same tree as
+published `7e7f4d3`). It verifies unchanged production UI/observer bytes; it
+does not re-label the earlier full Rust/Weston result as a new execution.
+The existing A10 workflow now enforces pinned all-target Clippy and those six
+process-guard tests. Original Agentd remains `not_run`.
+
+## Earlier recorded source
+
+The [2026-10-17 Rust 1.88 and Weston evidence](evidence/2026-10-17-rust188-weston/README.md)
+records a full 136-test host gate, actual packaged ELF replay, headless Weston
+client/restart checks and a fresh Hepta-page layout on source `d57a1be`.
+Final source `5d6fbb9` changes only an equivalent format capture in one test;
+strict Clippy, that real reconnect test and the final lock/formatter checks
+passed there. The record binds both exact source trees and preserves initial
+failures. Its Hepta peer is an explicit scripted fixture, Weston uses a no-op
+renderer, and the host reported no CJK font; original Agentd, pixels, live IME,
+device effects, mobile and target-kernel UI remain unverified. Historical
+results later in this document retain their own dates and scope.
+
+## Automated commands
+
+Automated Rust commands (from repository root with `RUSTUP_TOOLCHAIN=1.88.0`;
+the blocking CI `tests/ui/check-host.sh` runs all three A10-owned Cargo suites
+and the separate A07 observer suite):
+- cargo test --manifest-path ui/Cargo.toml --workspace --locked --offline
+- cargo test --manifest-path services/hepta-os/Cargo.toml --locked --offline
 - cargo test --manifest-path support/ui/Cargo.toml --locked --offline
 - cargo test --manifest-path tests/ui/Cargo.toml --locked --offline
 - cargo build --manifest-path ui/Cargo.toml --workspace --bins --locked --offline
 - cargo check --manifest-path ui/Cargo.toml --workspace --all-targets --locked --offline
 - cargo clippy --manifest-path ui/Cargo.toml --workspace --all-targets --locked --offline -- -D warnings
 - cargo fmt --manifest-path ui/Cargo.toml --all -- --check
+- cargo fmt --manifest-path services/hepta-os/Cargo.toml --all -- --check
 - cargo fmt --manifest-path support/ui/Cargo.toml --all -- --check
 - cargo fmt --manifest-path tests/ui/Cargo.toml --all -- --check
 
-The UI `--all-targets` test command is also attempted in host validation, but
-the sandbox denies AF_UNIX socket creation (`EPERM`) in
-`ui/session/tests/ipc_reconnect.rs`; that limitation is recorded below.
+The historical sandbox run recorded below denied AF_UNIX socket creation
+(`EPERM`) in `ui/session/tests/ipc_reconnect.rs`. That result is specific to
+that invocation; current host validation must execute the integration tests
+and record its own outcome rather than inheriting a historical pass or block.
 The host script prefetches every locked package before its post-test offline
 metadata gate, so target-specific lock entries cannot fail reproducibility
 after a successful Linux build. These commands never claim a Wayland
@@ -23,9 +84,43 @@ On a CI host, `check-host.sh` saves `$RUNNER_TEMP/a10/rustfmt.patch` when
 the strict rustfmt check fails, then exits nonzero. It never reports success
 until that patch is reviewed, committed, and rerun.
 The same blocking host gate stages an actual Linux ELF binary archive only
-after all three Cargo tests and strict Rustfmt pass. The archive and its
+after all four Cargo suites and strict Rustfmt pass. The archive and its
 SHA256 contain four built Rust programs and their build/source provenance,
 not a Weston, Chinese IME, GPU or new-kernel acceptance certificate.
+
+## Hepta observer gate
+
+See `support/ui/HEPTA_OBSERVER.md` for development/configuration and the
+ownership boundary. The core/Session/Shell tests now also cover:
+
+- an absent projection remains `not_observed`, and an explicitly unconfigured
+  Session reports `not_configured`;
+- no objective or generic Agentd RPC message exists in renderer IPC;
+- a real Session process still answers snapshots and dispatches host actions
+  while a deliberately stalled Unix peer waits through the observer timeout;
+- an unknown or failed observer never produces a successful task/effect state;
+- bounded metadata/JSON frames, sticky history gaps, stale evidence retention,
+  and process/spawn-change invalidation of the display event window;
+- Starting/Running/Draining current-generation advancement retains the same
+  source and event window; freshness loss remains visibly stale;
+- explicit Hepta-page navigation/probe options, one-shot layout metadata,
+  and refusal to report non-observed or expired projections as fresh layouts.
+
+`headless-weston.sh` additionally runs `probe-hepta-wayland.py` against the
+actual Rust Session and Shell with an explicitly scripted A07 Unix fixture.
+Only the fresh `TRILL_HEPTA_LAYOUT_V1` marker from the completed Hepta page
+can pass; the generic Conversation first-frame marker cannot. The evidence
+binds binary/fixture hashes and agent/spawn/current/PID/sample metadata,
+and labels upstream Agentd, compositor pixels and device effects unverified.
+
+The stalled peer is a fault fixture. The successful fixed-v2 protocol fixture
+belongs to A07 and is also not an actual production Agentd acceptance run.
+Record real Agentd provenance and successful/disconnected observations
+separately before marking that gate passed. The observer does not satisfy
+authenticated objective submission or device-control acceptance.
+
+## Existing host and contract coverage
+
 Unit coverage:
 - A10-owned `tests/ui/test-package-host-binaries.sh`: independent C ELF fixture
   actually executes Linux packager; verifies 4 files, source provenance,

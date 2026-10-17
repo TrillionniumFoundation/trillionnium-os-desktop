@@ -12,10 +12,11 @@ else
     compositor_socket="$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY"
 fi
 [[ -S "$compositor_socket" ]] || { echo "No Wayland socket: $compositor_socket" >&2; exit 2; }
-cargo build --manifest-path ui/Cargo.toml --workspace --bins
-ctl=./ui/target/debug/trill-ctl
-session_bin=./ui/target/debug/trill-session
-shell_bin=./ui/target/debug/trill-shell
+cargo build --manifest-path ui/Cargo.toml --workspace --bins --locked
+ui_binaries="${CARGO_TARGET_DIR:-$PWD/ui/target}/debug"
+ctl="$ui_binaries/trill-ctl"
+session_bin="$ui_binaries/trill-session"
+shell_bin="$ui_binaries/trill-shell"
 runtime="$(mktemp -d "${XDG_RUNTIME_DIR%/}/trill-ui-smoke.XXXXXXXX")"
 chmod 700 "$runtime"
 export XDG_RUNTIME_DIR="$runtime" WAYLAND_DISPLAY="$compositor_socket"

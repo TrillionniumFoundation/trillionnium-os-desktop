@@ -20,7 +20,7 @@ capture_fmt_on_exit() {
             mkdir -p "$evidence"
         fi
         local fmt_status=0 manifest
-        local manifests=(ui/Cargo.toml support/ui/Cargo.toml tests/ui/Cargo.toml)
+        local manifests=(ui/Cargo.toml services/hepta-os/Cargo.toml support/ui/Cargo.toml tests/ui/Cargo.toml)
         if [[ -n "$evidence" ]]; then
             : > "$evidence/rustfmt-check.log"
         fi
@@ -32,14 +32,14 @@ capture_fmt_on_exit() {
             fi
         done
         if [[ "$fmt_status" -ne 0 ]]; then
-            echo 'A10 Rustfmt check FAILED in one or more owned crates; preserving exact-source patch' >&2
+            echo 'UI/Hepta host Rustfmt check FAILED; preserving exact-source patch' >&2
             for manifest in "${manifests[@]}"; do
                 cargo fmt --manifest-path "$manifest" --all >/dev/null 2>&1 || true
             done
             if [[ -n "$evidence" ]]; then
-                git diff -- ui support/ui tests/ui > "$evidence/rustfmt.patch" || true
+                git diff -- ui services/hepta-os support/ui tests/ui > "$evidence/rustfmt.patch" || true
             else
-                git diff -- ui support/ui tests/ui >&2 || true
+                git diff -- ui services/hepta-os support/ui tests/ui >&2 || true
             fi
             if [[ "$status" -eq 0 ]]; then status=1; fi
         fi
@@ -48,7 +48,19 @@ capture_fmt_on_exit() {
 }
 trap capture_fmt_on_exit EXIT
 
-bash -n tests/ui/smoke-wayland.sh tests/ui/headless-weston.sh tests/ui/compositor-restart.sh support/ui/package-host-binaries.sh tests/ui/test-package-host-binaries.sh tests/ui/replay-packaged-host.sh tests/ui/test-cross-uid-peer.sh tests/ui/test-rogue-session-server.sh tests/ui/test-runtime-owner.sh tests/ui/smoke-x11.sh
+for script in \
+    tests/ui/smoke-wayland.sh \
+    tests/ui/headless-weston.sh \
+    tests/ui/compositor-restart.sh \
+    support/ui/package-host-binaries.sh \
+    tests/ui/test-package-host-binaries.sh \
+    tests/ui/replay-packaged-host.sh \
+    tests/ui/test-cross-uid-peer.sh \
+    tests/ui/test-rogue-session-server.sh \
+    tests/ui/test-runtime-owner.sh \
+    tests/ui/smoke-x11.sh; do
+    bash -n "$script"
+done
 python3 tests/ui/test-session-lock.py
 bash tests/ui/test-smoke-cleanup.sh
 bash tests/ui/test-zombie-liveness.sh
@@ -64,6 +76,17 @@ cargo fetch --manifest-path ui/Cargo.toml --locked
 # Build and test first so a formatting failure cannot conceal compiler evidence.
 cargo build --manifest-path ui/Cargo.toml --workspace --bins --locked
 cargo test --manifest-path ui/Cargo.toml --workspace --locked
+# A path dependency is built, but its own unit/integration tests are not
+# included by the UI workspace command. Run A07's frozen suite explicitly.
+cargo test --manifest-path services/hepta-os/Cargo.toml --locked
+# Actual Session/facade/Unix IPC against an explicitly scripted fixed-v2
+# fixture. Its provenance says that upstream Agentd and effects were not run.
+ui_target="${CARGO_TARGET_DIR:-$PWD/ui/target}"
+ui_binaries="$ui_target/debug"
+observer_evidence_root="${RUNNER_TEMP:-$ui_target}"
+python3 tests/ui/probe-hepta-session.py \
+    --session "$ui_binaries/trill-session" \
+    --output "$observer_evidence_root/a10/session-observer-probe.json"
 # A10's read-only HOS2 adapter consumes the real shared A02 crate. Changes
 # to main ABI must break this same blocking host gate if the consumer regresses.
 # The tests/ui model is a separate host contract, NOT a synthetic UI success.
@@ -73,24 +96,24 @@ cargo test --manifest-path tests/ui/Cargo.toml --locked
 # host Session inside another UID's private runtime without the new owner
 # checks. Refuse foreign runtime/subdirectory/lock owners before bind or
 # flock; preserve a positive same-UID native socket bind.
-bash tests/ui/test-runtime-owner.sh "$PWD/ui/target/debug"
+bash tests/ui/test-runtime-owner.sh "$ui_binaries"
 # Real Linux SO_PEERCRED negative. The CI runner already provisions
 # passwordless sudo for host dependencies; use it only to start a disposable
 # nobody-owned Session under a separate private /tmp runtime. A root caller
 # must be refused with an actual peer-UID diagnostic. The same-UID client
 # must continue to work; old unguarded Rust binaries fail this check.
-bash tests/ui/test-cross-uid-peer.sh "$PWD/ui/target/debug"
+bash tests/ui/test-cross-uid-peer.sh "$ui_binaries"
 # The opposite direction matters too: an unprivileged rogue Unix server
 # MUST NOT trick the real root CLI into trusting a fabricated Snapshot.
 # CLI must check Linux SO_PEERCRED before it sends even the first request.
-bash tests/ui/test-rogue-session-server.sh "$PWD/ui/target/debug"
+bash tests/ui/test-rogue-session-server.sh "$ui_binaries"
 # Probe the ACTUAL native Session through raw Unix-socket JSON, not serde
 # unit models. Exact Snapshot/Launch/Cancel schemas must reject duplicate
 # keys or unknown metadata before any task effect can occur.
-python3 tests/ui/test-strict-request-ipc.py "$PWD/ui/target/debug"
-# The binaries are packaged only when all three suites and strict Rustfmt
+python3 tests/ui/test-strict-request-ipc.py "$ui_binaries"
+# The binaries are packaged only when all host suites and strict Rustfmt
 # have passed; the separate Weston smoke still owns its independent gate.
-for manifest in ui/Cargo.toml support/ui/Cargo.toml tests/ui/Cargo.toml; do
+for manifest in ui/Cargo.toml services/hepta-os/Cargo.toml support/ui/Cargo.toml tests/ui/Cargo.toml; do
     cargo fmt --manifest-path "$manifest" --all -- --check
 done
 # Additional REAL X11 mapping check on an owned, authenticated Xvfb.
@@ -101,9 +124,10 @@ if command -v Xvfb >/dev/null && command -v xauth >/dev/null &&
    command -v xdpyinfo >/dev/null && command -v xwininfo >/dev/null &&
    command -v xprop >/dev/null; then
     if [[ -n "${RUNNER_TEMP:-}" ]]; then
-        A10_X11_EVIDENCE_DIR="$RUNNER_TEMP/a10/x11"             bash tests/ui/smoke-x11.sh "$PWD/ui/target/debug"
+        A10_X11_EVIDENCE_DIR="$RUNNER_TEMP/a10/x11" \
+            bash tests/ui/smoke-x11.sh "$ui_binaries"
     else
-        bash tests/ui/smoke-x11.sh "$PWD/ui/target/debug"
+        bash tests/ui/smoke-x11.sh "$ui_binaries"
     fi
 else
     echo 'A10 X11 mapping NOT VERIFIED: host Xvfb/x11-utils/xauth unavailable'

@@ -1,0 +1,264 @@
+{
+  "started_at_utc": "2026-10-17T13:37:30.936325+00:00",
+  "source_commit": "35f379101c0863027e971ccb91faf8da71cf929c",
+  "source_tree": "48433c4f1e55de53e8c298193765949996eb18a0",
+  "qualification": "targeted_ui_checks_not_full_host_suite_or_real_ime",
+  "old_target_modified": false,
+  "minimum_free_bytes": 33554432,
+  "steps": [
+    {
+      "name": "clippy",
+      "command": [
+        "/workspace/scratch/98f315e377b2/next-tools/cargo/bin/cargo",
+        "clippy",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "--workspace",
+        "--all-targets",
+        "--locked",
+        "--offline",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "started_at_utc": "2026-10-17T13:37:30.940733+00:00",
+      "samples": [
+        {
+          "elapsed_seconds": 0.0,
+          "free_bytes": 109731840
+        },
+        {
+          "elapsed_seconds": 0.201,
+          "free_bytes": 109731840
+        },
+        {
+          "elapsed_seconds": 0.401,
+          "free_bytes": 109756416
+        },
+        {
+          "elapsed_seconds": 0.601,
+          "free_bytes": 109756416
+        },
+        {
+          "elapsed_seconds": 0.801,
+          "free_bytes": 109748224
+        },
+        {
+          "elapsed_seconds": 1.001,
+          "free_bytes": 109744128
+        },
+        {
+          "elapsed_seconds": 1.202,
+          "free_bytes": 109342720
+        },
+        {
+          "elapsed_seconds": 1.402,
+          "free_bytes": 109338624
+        },
+        {
+          "elapsed_seconds": 1.602,
+          "free_bytes": 109338624
+        },
+        {
+          "elapsed_seconds": 1.802,
+          "free_bytes": 109330432
+        },
+        {
+          "elapsed_seconds": 2.002,
+          "free_bytes": 109330432
+        },
+        {
+          "elapsed_seconds": 2.203,
+          "free_bytes": 109330432
+        },
+        {
+          "elapsed_seconds": 2.403,
+          "free_bytes": 109260800
+        },
+        {
+          "elapsed_seconds": 2.603,
+          "free_bytes": 109256704
+        },
+        {
+          "elapsed_seconds": 2.803,
+          "free_bytes": 109203456
+        },
+        {
+          "elapsed_seconds": 3.003,
+          "free_bytes": 109203456
+        },
+        {
+          "elapsed_seconds": 3.203,
+          "free_bytes": 109203456
+        },
+        {
+          "elapsed_seconds": 3.404,
+          "free_bytes": 109199360
+        }
+      ],
+      "exit_code": 0,
+      "ended_at_utc": "2026-10-17T13:37:34.344540+00:00"
+    },
+    {
+      "name": "shell_focused",
+      "command": [
+        "/workspace/scratch/98f315e377b2/next-tools/cargo/bin/cargo",
+        "test",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "-p",
+        "trill-shell",
+        "--bin",
+        "trill-shell",
+        "--locked",
+        "--offline",
+        "focused_",
+        "--",
+        "--nocapture"
+      ],
+      "started_at_utc": "2026-10-17T13:37:34.344648+00:00",
+      "samples": [
+        {
+          "elapsed_seconds": 0.001,
+          "free_bytes": 109199360
+        },
+        {
+          "elapsed_seconds": 0.201,
+          "free_bytes": 109203456
+        },
+        {
+          "elapsed_seconds": 0.401,
+          "free_bytes": 109203456
+        },
+        {
+          "elapsed_seconds": 0.601,
+          "free_bytes": 109199360
+        },
+        {
+          "elapsed_seconds": 0.801,
+          "free_bytes": 108118016
+        },
+        {
+          "elapsed_seconds": 1.002,
+          "free_bytes": 107618304
+        },
+        {
+          "elapsed_seconds": 1.202,
+          "free_bytes": 107618304
+        },
+        {
+          "elapsed_seconds": 1.402,
+          "free_bytes": 107618304
+        },
+        {
+          "elapsed_seconds": 1.602,
+          "free_bytes": 107618304
+        },
+        {
+          "elapsed_seconds": 1.802,
+          "free_bytes": 107618304
+        },
+        {
+          "elapsed_seconds": 2.003,
+          "free_bytes": 104738816
+        },
+        {
+          "elapsed_seconds": 2.203,
+          "free_bytes": 101064704
+        }
+      ],
+      "exit_code": 0,
+      "ended_at_utc": "2026-10-17T13:37:36.547601+00:00"
+    },
+    {
+      "name": "app_focused",
+      "command": [
+        "/workspace/scratch/98f315e377b2/next-tools/cargo/bin/cargo",
+        "test",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "-p",
+        "trill-app-window",
+        "--bin",
+        "trill-app-window",
+        "--locked",
+        "--offline",
+        "focused_run_button",
+        "--",
+        "--nocapture"
+      ],
+      "started_at_utc": "2026-10-17T13:37:36.547681+00:00",
+      "samples": [
+        {
+          "elapsed_seconds": 0.001,
+          "free_bytes": 101064704
+        },
+        {
+          "elapsed_seconds": 0.201,
+          "free_bytes": 101068800
+        },
+        {
+          "elapsed_seconds": 0.401,
+          "free_bytes": 101064704
+        },
+        {
+          "elapsed_seconds": 0.601,
+          "free_bytes": 100540416
+        },
+        {
+          "elapsed_seconds": 0.801,
+          "free_bytes": 100540416
+        },
+        {
+          "elapsed_seconds": 1.002,
+          "free_bytes": 100540416
+        },
+        {
+          "elapsed_seconds": 1.202,
+          "free_bytes": 100540416
+        },
+        {
+          "elapsed_seconds": 1.402,
+          "free_bytes": 100540416
+        },
+        {
+          "elapsed_seconds": 1.602,
+          "free_bytes": 93204480
+        },
+        {
+          "elapsed_seconds": 1.802,
+          "free_bytes": 93728768
+        }
+      ],
+      "exit_code": 0,
+      "ended_at_utc": "2026-10-17T13:37:38.350239+00:00"
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "/workspace/scratch/98f315e377b2/next-tools/cargo/bin/cargo",
+        "fmt",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "--all",
+        "--check"
+      ],
+      "started_at_utc": "2026-10-17T13:37:38.350316+00:00",
+      "samples": [
+        {
+          "elapsed_seconds": 0.001,
+          "free_bytes": 93728768
+        },
+        {
+          "elapsed_seconds": 0.201,
+          "free_bytes": 93728768
+        }
+      ],
+      "exit_code": 0,
+      "ended_at_utc": "2026-10-17T13:37:38.551219+00:00"
+    }
+  ],
+  "status": "passed",
+  "ended_at_utc": "2026-10-17T13:37:38.551337+00:00",
+  "free_bytes_after": 93728768
+}

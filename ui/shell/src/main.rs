@@ -1,4 +1,7 @@
 //! Rust AI-workspace shell for a Linux/Wayland host, not for the target kernel.
+mod hepta_panel;
+#[path = "../../host_fonts.rs"]
+mod host_fonts;
 mod local_drafts;
 
 use eframe::egui::{self, Color32, RichText};
@@ -7,6 +10,7 @@ use std::collections::VecDeque;
 use std::io::{self, Write};
 use std::sync::mpsc::{self, Receiver, SyncSender, TryRecvError};
 use std::time::{Duration, Instant};
+use trill_ui_core::hepta::{HeptaConnectionState, HeptaProjection};
 use trill_ui_core::{
     request, AppKind, HostResources, HostWaylandObservation, HostWindowObservation, Request,
     Response, TaskRecord, TaskState, WaylandSocketStatus, Workspace,
@@ -15,6 +19,7 @@ use trill_ui_core::{
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Page {
     Conversation,
+    Hepta,
     Tasks,
     Apps,
     Workspaces,
@@ -26,6 +31,7 @@ impl Page {
     fn name(self) -> &'static str {
         match self {
             Self::Conversation => "Conversation",
+            Self::Hepta => "Hepta / Runtime",
             Self::Tasks => "Tasks",
             Self::Apps => "Applications",
             Self::Workspaces => "Workspaces",
@@ -33,6 +39,48 @@ impl Page {
             Self::Settings => "Settings",
         }
     }
+}
+
+#[derive(Clone, Copy)]
+struct StartupOptions {
+    page: Page,
+    hepta_layout_probe: bool,
+}
+
+fn parse_startup_options(
+    args: impl IntoIterator<Item = String>,
+) -> Result<StartupOptions, &'static str> {
+    let mut options = StartupOptions {
+        page: Page::Conversation,
+        hepta_layout_probe: false,
+    };
+    let mut page_selected = false;
+    let mut args = args.into_iter();
+    while let Some(arg) = args.next() {
+        match arg.as_str() {
+            "--page" if !page_selected => {
+                options.page = match args.next().as_deref() {
+                    Some("conversation") => Page::Conversation,
+                    Some("hepta") => Page::Hepta,
+                    Some("tasks") => Page::Tasks,
+                    Some("apps") => Page::Apps,
+                    Some("workspaces") => Page::Workspaces,
+                    Some("console") => Page::Console,
+                    Some("settings") => Page::Settings,
+                    _ => return Err("--page requires a known page name"),
+                };
+                page_selected = true;
+            }
+            "--hepta-layout-probe" if !options.hepta_layout_probe => {
+                options.hepta_layout_probe = true;
+            }
+            _ => return Err("unknown or duplicate Shell option"),
+        }
+    }
+    if options.hepta_layout_probe && options.page != Page::Hepta {
+        return Err("--hepta-layout-probe requires --page hepta");
+    }
+    Ok(options)
 }
 
 /// User actions and passive status polling are intentionally independent.
@@ -146,10 +194,12 @@ fn can_offer_fresh_window(
         && task.pid.is_some_and(|pid| pid != 0)
         && task.ui_first_frame_unix_ms.is_some()
         && display.is_some_and(|sample| {
-            task.wayland_socket_epoch_at_launch.is_some_and(|launch_epoch| {
-                sample.socket_observation_epoch > launch_epoch
-                    && task.host_window_observation(sample) == HostWindowObservation::SocketChanged
-            })
+            task.wayland_socket_epoch_at_launch
+                .is_some_and(|launch_epoch| {
+                    sample.socket_observation_epoch > launch_epoch
+                        && task.host_window_observation(sample)
+                            == HostWindowObservation::SocketChanged
+                })
         })
 }
 
@@ -201,6 +251,8 @@ struct Desktop {
     tasks: Vec<TaskRecord>,
     selected: Option<u64>,
     resources: Option<HostResources>,
+    hepta: HeptaProjection,
+    hepta_last_snapshot: Option<Instant>,
     connected: bool,
     session_instance: Option<String>,
     session_error: String,
@@ -210,25 +262,28 @@ struct Desktop {
     show_notifications: bool,
     notices: VecDeque<String>,
     first_frame_emitted: bool,
+    hepta_layout_probe: hepta_panel::LayoutProbe,
 }
 
 impl Desktop {
-    fn new(ctx: &egui::Context) -> Self {
+    fn new(ctx: &egui::Context, options: StartupOptions) -> Self {
         ctx.set_visuals(egui::Visuals::dark());
-        install_host_cjk_font(ctx);
+        host_fonts::install(ctx);
         let bridge = Bridge::new();
         bridge.poll();
         Self {
-            page: Page::Conversation,
+            page: options.page,
             workspace: Workspace::Personal,
             composer: String::new(),
             chat: vec![ChatEntry {
                 role: "System / local",
-                text: "Hepta is not connected. This conversation is a local draft; it cannot execute AI tasks or grant permissions. Launchable apps are real host subprocesses.".into(),
+                text: "Conversation messages stay local. The host Session may observe the Hepta runtime, but authenticated objective submission is unavailable. Launchable apps are real host subprocesses.".into(),
             }],
             tasks: Vec::new(),
             selected: None,
             resources: None,
+            hepta: HeptaProjection::default(),
+            hepta_last_snapshot: None,
             connected: false,
             session_instance: None,
             session_error: "Waiting for host session".into(),
@@ -238,6 +293,7 @@ impl Desktop {
             show_notifications: false,
             notices: VecDeque::new(),
             first_frame_emitted: false,
+            hepta_layout_probe: hepta_panel::LayoutProbe::new(options.hepta_layout_probe),
         }
     }
 
@@ -298,6 +354,7 @@ impl Desktop {
                     tasks,
                     resources,
                     session_instance,
+                    hepta,
                 }) => {
                     if self
                         .session_instance
@@ -321,6 +378,8 @@ impl Desktop {
                     self.connected = true;
                     self.session_error.clear();
                     self.resources = Some(resources);
+                    self.hepta = hepta;
+                    self.hepta_last_snapshot = Some(Instant::now());
                     for item in &tasks {
                         if let Some(previous) = self.tasks.iter().find(|old| old.id == item.id) {
                             if previous.state != item.state {
@@ -339,6 +398,7 @@ impl Desktop {
                         self.store_task(task);
                     } else {
                         self.connected = false;
+                        self.hepta.mark_unavailable("host_session_changed");
                         self.notice("Task from changed/unobserved session ignored; refreshing before any status claim");
                         self.bridge.poll();
                     }
@@ -349,6 +409,7 @@ impl Desktop {
                 }) => {
                     if self.session_instance.as_deref() != Some(session_instance.as_str()) {
                         self.connected = false;
+                        self.hepta.mark_unavailable("host_session_changed");
                         self.notice("Session generation changed; refreshing before new commands");
                         self.bridge.poll();
                     }
@@ -360,6 +421,7 @@ impl Desktop {
                     }
                     self.connected = false;
                     self.resources = None;
+                    self.hepta.mark_unavailable("host_session_unavailable");
                     self.session_error = err;
                 }
             }
@@ -417,8 +479,9 @@ impl Desktop {
         ui.heading("Hepta / Conversation");
         ui.colored_label(
             warning(),
-            "LOCAL DRAFT ONLY · Hepta task execution not connected",
+            "LOCAL DRAFT ONLY · Authenticated objective submission unavailable",
         );
+        hepta_panel::status(ui, &self.hepta);
         ui.separator();
         ui.group(|ui| {
             ui.label(RichText::new("Local actions / 本地任务").strong());
@@ -474,7 +537,7 @@ impl Desktop {
                 }
             });
         ui.separator();
-        ui.label("Message / 消息 (Chinese IME supported by host; manual validation required)");
+        ui.label("Message / 消息 (Chinese IME requires host support; not yet verified)");
         ui.add(
             egui::TextEdit::multiline(&mut self.composer)
                 .id(egui::Id::new("hepta-local-composer"))
@@ -697,7 +760,10 @@ impl Desktop {
         ui.separator();
         ui.label("Platform: Linux host Rust/egui desktop prototype");
         ui.label("Graphics: eframe/glow; actual GPU/driver not attested");
-        ui.label("Hepta: disconnected; no model requests or OS capabilities");
+        ui.label(host_fonts::status_label(ctx));
+        ui.small("Set TRILL_UI_CJK_FONT to an absolute host font path; font coverage does not verify an input method.");
+        hepta_panel::status(ui, &self.hepta);
+        ui.label("Hepta objective submission: unavailable; local drafts only");
         ui.label("Native HOS2 resource revision: unavailable");
         ui.label("Compositor: external Wayland/X11 host, not bundled");
         ui.separator();
@@ -725,7 +791,8 @@ impl Desktop {
             ui.colored_label(warning(), "SESSION OFFLINE · state may be stale");
             ui.small(&self.session_error);
         }
-        ui.label("Hepta: UNCONNECTED");
+        hepta_panel::status(ui, &self.hepta);
+        ui.small("Objective submission: unavailable");
         ui.label("HOS2: NOT OBSERVED");
         ui.separator();
         ui.label(RichText::new("Host resource sample").strong());
@@ -833,7 +900,9 @@ impl Desktop {
             }
             if self.connected
                 && !task.state.is_terminal()
-                && ui.button("Request termination").clicked_by(egui::PointerButton::Primary)
+                && ui
+                    .button("Request termination")
+                    .clicked_by(egui::PointerButton::Primary)
             {
                 if let Some(expected_instance) = self.session_instance.clone() {
                     self.submit(Request::Cancel {
@@ -873,6 +942,13 @@ impl Desktop {
 impl eframe::App for Desktop {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         self.receive();
+        if self.hepta.connection == HeptaConnectionState::Observed
+            && self
+                .hepta_last_snapshot
+                .is_some_and(|time| time.elapsed() > Duration::from_secs(7))
+        {
+            self.hepta.mark_unavailable("session_snapshot_expired");
+        }
         if self.last_poll.elapsed() >= Duration::from_millis(800) {
             self.last_poll = Instant::now();
             self.bridge.poll();
@@ -914,6 +990,7 @@ impl eframe::App for Desktop {
                 ui.separator();
                 for page in [
                     Page::Conversation,
+                    Page::Hepta,
                     Page::Tasks,
                     Page::Apps,
                     Page::Workspaces,
@@ -939,12 +1016,25 @@ impl eframe::App for Desktop {
             });
         egui::CentralPanel::default().show(ctx, |ui| match self.page {
             Page::Conversation => self.conversation(ui),
+            Page::Hepta => hepta_panel::runtime(ui, &self.hepta),
             Page::Tasks => self.task_list(ui),
             Page::Apps => self.apps(ui),
             Page::Workspaces => self.workspaces(ui),
             Page::Console => self.console(ui),
             Page::Settings => self.settings(ui, ctx),
         });
+        if self.page == Page::Hepta && self.connected {
+            // This optional diagnostic belongs to the completed Hepta page,
+            // never the default Conversation first-layout marker. It reports
+            // only bounded runtime metadata, not a presented compositor frame.
+            let _ = self.hepta_layout_probe.emit_after_runtime_layout(
+                &self.hepta,
+                self.hepta_last_snapshot,
+                Instant::now(),
+                trill_ui_core::unix_ms(),
+                &mut io::stdout(),
+            );
+        }
         // Report only after a full egui widget update, never merely because
         // the shell PID exists. Failure to write a diagnostic marker does not
         // stop independent session-owned clients.
@@ -969,34 +1059,15 @@ fn state_color(state: TaskState) -> Color32 {
     }
 }
 
-fn install_host_cjk_font(ctx: &egui::Context) {
-    // Loading a local font is a display fallback, not bundling a proprietary font.
-    for path in [
-        "/usr/share/fonts/opentype/noto/NotoSansCJKsc-Regular.otf",
-        "/usr/share/fonts/truetype/noto/NotoSansSC-Regular.ttf",
-        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
-        "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",
-        "/usr/share/fonts/truetype/arphic/ukai.ttc",
-    ] {
-        if let Ok(bytes) = std::fs::read(path) {
-            let mut fonts = egui::FontDefinitions::default();
-            fonts
-                .font_data
-                .insert("host-cjk".into(), egui::FontData::from_owned(bytes).into());
-            if let Some(family) = fonts.families.get_mut(&egui::FontFamily::Proportional) {
-                family.insert(0, "host-cjk".into());
-            }
-            if let Some(family) = fonts.families.get_mut(&egui::FontFamily::Monospace) {
-                family.push("host-cjk".into());
-            }
-            ctx.set_fonts(fonts);
-            return;
-        }
-    }
-    eprintln!("No supported host CJK font found: install Noto Sans CJK to render Chinese.");
-}
-
 fn main() -> eframe::Result {
+    let startup = match parse_startup_options(std::env::args().skip(1)) {
+        Ok(options) => options,
+        Err(message) => {
+            eprintln!("trill-shell: {message}");
+            eprintln!("Usage: trill-shell [--page conversation|hepta|tasks|apps|workspaces|console|settings] [--hepta-layout-probe]");
+            std::process::exit(2);
+        }
+    };
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default().with_inner_size([1360.0, 840.0]),
         ..Default::default()
@@ -1004,8 +1075,29 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "Trillionnium · AI workspace",
         options,
-        Box::new(|cc| Ok(Box::new(Desktop::new(&cc.egui_ctx)))),
+        Box::new(move |cc| Ok(Box::new(Desktop::new(&cc.egui_ctx, startup)))),
     )
+}
+
+#[cfg(test)]
+mod startup_tests {
+    use super::*;
+
+    #[test]
+    fn runtime_probe_requires_explicit_hepta_navigation() {
+        let parse = |args: &[&str]| parse_startup_options(args.iter().map(|arg| (*arg).to_owned()));
+        let ordinary = parse(&[]).unwrap();
+        assert!(ordinary.page == Page::Conversation);
+        assert!(!ordinary.hepta_layout_probe);
+        let runtime = parse(&["--page", "hepta", "--hepta-layout-probe"]).unwrap();
+        assert!(runtime.page == Page::Hepta);
+        assert!(runtime.hepta_layout_probe);
+        assert!(parse(&["--hepta-layout-probe"]).is_err());
+        assert!(parse(&["--page", "conversation", "--hepta-layout-probe"]).is_err());
+        assert!(parse(&["--page", "unknown"]).is_err());
+        assert!(parse(&["--page"]).is_err());
+        assert!(parse(&["--page", "hepta", "--page", "conversation"]).is_err());
+    }
 }
 
 /// A synthetic egui input test, not proof that Wayland IME candidates render.
@@ -1435,9 +1527,8 @@ mod shell_lifecycle_tests {
                     }]),
                     |ctx| {
                         egui::CentralPanel::default().show(ctx, |ui| {
-                            activated_by_pointer = ui
-                                .button(label)
-                                .clicked_by(egui::PointerButton::Primary);
+                            activated_by_pointer =
+                                ui.button(label).clicked_by(egui::PointerButton::Primary);
                         });
                     },
                 );

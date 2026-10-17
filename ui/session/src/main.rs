@@ -1,5 +1,7 @@
 //! Independent host-only process launcher/lifecycle owner.
 //! It is not a Wayland compositor and it grants no kernel permissions.
+mod hepta;
+
 use std::collections::BTreeMap;
 use std::fs::{self, File, OpenOptions, Permissions};
 use std::io::{self, Read};
@@ -11,13 +13,13 @@ use std::path::{Path, PathBuf};
 use std::process::{Child, Command, ExitStatus, Stdio};
 use std::sync::mpsc::{self, Receiver, Sender};
 
-use trill_ui_core::host_peer::{
-    self, linux_socket_peer_credentials, require_same_uid_peer, validate_same_uid,
-};
+#[cfg(target_os = "linux")]
+use trill_ui_core::host_peer;
+use trill_ui_core::host_peer::require_same_uid_peer;
 use trill_ui_core::{
-    parse_host_request, read_frame, socket_path, unix_ms, write_frame, AppKind, HostResources, HostWaylandObservation,
-    Request, Response, TaskRecord, TaskState, WaylandSocketStatus, Workspace, MAX_ACTIVE_TASKS,
-    MAX_TRACKED_TASKS,
+    parse_host_request, read_frame, socket_path, unix_ms, write_frame, AppKind, HostResources,
+    HostWaylandObservation, Request, Response, TaskRecord, TaskState, WaylandSocketStatus,
+    Workspace, MAX_ACTIVE_TASKS, MAX_TRACKED_TASKS,
 };
 
 // Linux flock(2) is advisory; it provides a crash-released startup mutex,
@@ -115,6 +117,7 @@ impl DisplayTracker {
 }
 
 struct Session {
+    hepta: hepta::HeptaMonitor,
     display: DisplayTracker,
     instance: String,
     app_binary: PathBuf,
@@ -135,6 +138,7 @@ impl Session {
         let instance = random.iter().map(|byte| format!("{byte:02x}")).collect();
         let (first_frame_tx, first_frame_rx) = mpsc::channel();
         Ok(Self {
+            hepta: hepta::HeptaMonitor::default(),
             display: DisplayTracker::default(),
             instance,
             app_binary,
@@ -194,6 +198,10 @@ impl Session {
         }
         // No arbitrary command strings, shell expansion, user paths or elevated rights.
         let spawn = Command::new(&self.app_binary)
+            .env_remove(hepta::SOCKET_ENV)
+            .env_remove(hepta::AGENT_ENV)
+            .env_remove(hepta::GENERATION_ENV)
+            .env_remove(hepta::PEER_UID_ENV)
             .arg("--kind")
             .arg(app.code())
             .arg("--workspace")
@@ -226,6 +234,7 @@ impl Session {
     }
 
     fn refresh(&mut self) {
+        self.hepta.refresh();
         while let Ok(id) = self.first_frame_rx.try_recv() {
             if let Some(task) = self.tasks.get_mut(&id) {
                 if task.ui_first_frame_unix_ms.is_none() {
@@ -310,6 +319,7 @@ impl Session {
                     tasks: self.tasks.values().rev().cloned().collect(),
                     resources: host_resources(observation),
                     session_instance: self.instance.clone(),
+                    hepta: self.hepta.snapshot(),
                 }
             }
             Request::Launch {
@@ -558,6 +568,7 @@ fn main() -> io::Result<()> {
         app_binary.display()
     );
     let mut session = Session::new(app_binary)?;
+    session.hepta = hepta::HeptaMonitor::from_env();
     // Reap children even while the shell/client is stopped. Blocking
     // incoming() would accumulate zombies until the GUI reconnects.
     listener.set_nonblocking(true)?;
@@ -587,6 +598,8 @@ mod tests {
     use super::*;
     use std::os::unix::process::ExitStatusExt;
     use std::{thread, time::Duration};
+    #[cfg(target_os = "linux")]
+    use trill_ui_core::host_peer::{self, linux_socket_peer_credentials, validate_same_uid};
 
     #[cfg(target_os = "linux")]
     #[test]
@@ -601,9 +614,7 @@ mod tests {
         // mismatched owner UID. No second-user account is needed in CI.
         let other_uid = observed.uid.wrapping_add(1);
         assert_eq!(
-            validate_same_uid(observed, other_uid)
-                .unwrap_err()
-                .kind(),
+            validate_same_uid(observed, other_uid).unwrap_err().kind(),
             io::ErrorKind::PermissionDenied
         );
         assert!(validate_same_uid(observed, observed.uid).is_ok());

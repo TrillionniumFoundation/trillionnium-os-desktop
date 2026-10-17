@@ -1,0 +1,52 @@
+{
+  "evidence_class": "original_source_build_manifest_generation_only",
+  "upstream_commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+  "base_commit": "db1455a7d522ee68d762d58e95a265a7855e16e3",
+  "gate_before_sha256": "9818cd6fa17c68e704b7fe311a8c0c043d05225d46cb4073901ff01621045133",
+  "test_source_sha256": "28031b66b217bf47ba87d56dfabaa8ed3156e2a9971185553ed65a71ad2767aa",
+  "original_workspace_manifest_sha256": "0e3fc0b7dc3ec907e02059a1bc79579077c8e5d1a0ac936b4f1bd984e94afdb4",
+  "original_cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+  "steps": [
+    {
+      "label": "before_fix_expected_red",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "tests/integration/hepta/test_original_build_manifest.py",
+        "OriginalBuildManifestTests.test_fixed_source_resolver_survives_external_workspace",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/98f315e377b2/next-hepta",
+      "environment": {
+        "HEPTA_ORIGINAL_SOURCE": "/workspace/scratch/98f315e377b2/next-hepta-source"
+      },
+      "started_at_utc": "2026-10-17T12:09:54.001431+00:00",
+      "exit_code": 1,
+      "log": "before_fix_regression.log",
+      "log_sha256": "53fc6819767fba222c7494ca5ed61ff01bf0193a4feac29078f2e60a742443af"
+    },
+    {
+      "label": "after_fix_three_manifest_tests",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "tests/integration/hepta/test_original_build_manifest.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/98f315e377b2/next-hepta",
+      "environment": {
+        "HEPTA_ORIGINAL_SOURCE": "/workspace/scratch/98f315e377b2/next-hepta-source"
+      },
+      "started_at_utc": "2026-10-17T12:11:07.247836+00:00",
+      "exit_code": 0,
+      "log": "after_fix_regression.log",
+      "log_sha256": "3133bfde875f4e71d6927fae739a679ab9ff7def388f6438b969d3650695c797"
+    }
+  ],
+  "cargo_resolution_attempted": false,
+  "rust_build_attempted": false,
+  "original_agentd_run": false,
+  "live_agentd_acceptance": "not_run",
+  "gate_after_sha256": "fff0b1228d6f02da4f5a02c3a1af3eb1e5f9aa55f5b7021b8db997934d5e5ceb",
+  "upstream_clean_after": true
+}

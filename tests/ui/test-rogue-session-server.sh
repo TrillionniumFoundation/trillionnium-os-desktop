@@ -58,7 +58,10 @@ sudo -n -u nobody python3 "$root/rogue-server.py" "$root/runtime" >"$root/server
 server_pid=$!
 ready=0
 for _ in {1..100}; do
-    if [[ -S "$root/runtime/trillionnium-ui/session.sock" ]]; then ready=1; break; fi
+    # The listener is inside nobody's 0700 directory. The ordinary CI runner
+    # cannot stat it, so use the already-required sudo for this owned path.
+    if sudo -n test -S "$root/runtime/trillionnium-ui/session.sock"; then ready=1; break; fi
+    kill -0 "$server_pid" 2>/dev/null || break
     sleep 0.05
 done
 [[ "$ready" == 1 ]] || { echo 'Rogue test listener was not established' >&2; cat "$root/server.log" >&2; exit 1; }

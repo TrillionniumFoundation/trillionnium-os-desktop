@@ -105,23 +105,27 @@ def check(binary_dir):
                         (b'{"type":"cancel","id":1,"expected_instance":"'
                          + generation.encode() + b'"}'),
                     )
-                    if cancel["type"] == "task":
-                        require(cancel["task"]["id"] == 1, "wrong child cancellation identity")
+                    require(cancel.get("session_instance") == generation, "Cancel crossed Session instances")
+                    child_already_exited = cancel.get("type") == "error"
+                    if child_already_exited:
+                        # With no display the real AppWindow can fail between
+                        # Launch and Cancel. Session refreshes/reaps before
+                        # handling Cancel, so it must NOT invent an ACK for a
+                        # child it no longer owns. Accept only this exact race
+                        # and require the same child's observed FAILED state.
+                        require(cancel.get("message") == "No owned live child; no cancellation claimed",
+                                f"Cancel failed for an unrelated reason: {cancel}")
+                    else:
+                        require(cancel.get("type") == "task", f"invalid Cancel response: {cancel}")
+                        require(cancel["task"]["id"] == 1 and cancel["task"]["pid"] == task["pid"],
+                                "Cancel acknowledged a different child")
                         require(cancel["task"]["state"] in ("cancel_requested", "running"),
                                 "host cancellation response invented a terminal effect")
-                    else:
-                        # A display-less Rust GUI can genuinely exit before the
-                        # separate Cancel frame reaches Session. A NOT-OWNED
-                        # response is not a successful cancellation; require a
-                        # subsequent independently observed FAILED terminal.
-                        require(
-                            cancel["type"] == "error"
-                            and cancel["message"] == "No owned live child; no cancellation claimed",
-                            f"unrelated cancellation error: {cancel}",
-                        )
                     for _ in range(100):
                         snapshot = roundtrip(sock, b'{"type":"snapshot"}')
+                        require(snapshot["session_instance"] == generation, "cleanup crossed Session instances")
                         last = next(t for t in snapshot["tasks"] if t["id"] == 1)
+                        require(last["pid"] == task["pid"], "cleanup changed the owned child PID")
                         if last["state"] in ("cancelled", "failed"):
                             break
                         require(last["state"] != "completed",
@@ -129,9 +133,10 @@ def check(binary_dir):
                         time.sleep(0.02)
                     else:
                         raise AssertionError("real launched child was not reaped")
-                    if cancel["type"] == "error":
-                        require(last["state"] == "failed",
-                                "no-owned-child cancellation cannot imply cancelled")
+                    if child_already_exited:
+                        require(last["state"] == "failed" and
+                                "Observed non-successful process exit" in last["detail"],
+                                "no-live-child rejection lacked the same child's observed headless failure")
                 else:
                     require(task["state"] == "failed", "GUI spawn failed with wrong host state")
                 valid_cancel = roundtrip(sock, (b'{"type":"cancel","id":999,"expected_instance":"'

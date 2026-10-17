@@ -45,13 +45,19 @@ cleanup() {
                 cp -- "$log" "$A10_HEADLESS_LOG_DIR/" 2>/dev/null || true
             fi
         done
+        if [[ -d "$runtime/hepta-layout" ]]; then
+            mkdir -p -- "$A10_HEADLESS_LOG_DIR/hepta-layout" || true
+            for log in "$runtime"/hepta-layout/*.log "$runtime"/hepta-layout/*.json; do
+                [[ ! -f "$log" ]] || cp -- "$log" "$A10_HEADLESS_LOG_DIR/hepta-layout/" 2>/dev/null || true
+            done
+        fi
     fi
     rm -rf -- "$runtime"
     exit "$status"
 }
 trap cleanup EXIT
 
-weston --backend=headless-backend.so --socket="$WAYLAND_DISPLAY" \
+weston --backend=headless-backend.so --renderer=pixman --no-config --socket="$WAYLAND_DISPLAY" \
     --idle-time=0 --log="$runtime/weston.log" \
     >"$runtime/weston.stdout" 2>&1 &
 weston_pid=$!
@@ -77,6 +83,9 @@ done
 # to this exact compositor socket using an absolute WAYLAND_DISPLAY.
 export A10_SMOKE_LOG_DIR="$runtime/smoke"
 bash tests/ui/smoke-wayland.sh
+python3 tests/ui/probe-hepta-wayland.py \
+    --binaries "${CARGO_TARGET_DIR:-$PWD/ui/target}/debug" \
+    --output "$runtime/hepta-layout"
 # A separate private Weston is destroyed and restarted while its own Session
 # stays alive. Do not interpret a fresh client's layout as old-client reattach.
 bash tests/ui/compositor-restart.sh

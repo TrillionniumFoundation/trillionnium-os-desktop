@@ -1,0 +1,265 @@
+{
+  "recorded_date_utc": "2026-10-17",
+  "evidence_class": "rust188_full_linux_host_and_scripted_hepta_layout_after_owner_sync",
+  "source_qualification": {
+    "all_successful_gate_source_commit": "9b13dfbcb006a7f8af7cccd338e03174df74bad5",
+    "all_successful_gate_source_tree": "00923201e6550280e68a5ca662a8a3c3a165a29c",
+    "full_gate_rerun_at_final_source": true,
+    "remote_github_actions_run_in_this_record": false,
+    "fixed_owner_cut": "d4eeeb5e868724f9400b34e1f0c3960723ac94dd",
+    "concurrent_author_commit_preserved": "a7379fa9b04a4e82b6936a84170c18f418bf3525",
+    "local_author_preserving_cherry_pick": "046adf2ca4366de118823e22c9f9347c01a30a79",
+    "published_equivalent_tree_map_reported_by_a00": {
+      "local_commit": "9b13dfbcb006a7f8af7cccd338e03174df74bad5",
+      "published_commit": "865ecf381dc8ddb70470ee173add9bd3b4a6a29a",
+      "tree": "00923201e6550280e68a5ca662a8a3c3a165a29c"
+    },
+    "earlier_failed_source_published_map_reported_by_a00": {
+      "local_commit": "f62731f76110e213ee9a909f81acc2de2d989655",
+      "published_commit": "9bca9ef1e150ef1868b9205fa66dce99afaa859e",
+      "tree": "dbb1883aa19c7188dc587fb544a102d6523ac94d"
+    },
+    "earlier_evidence_commit": "51e4356da5071507874fa26b4a7669a26c3e5bcb",
+    "earlier_evidence_published_commit_reported_by_a00": "267813fee5d953afadd27801f34fb759e12d8f3c",
+    "source_commit_chain": [
+      {
+        "commit": "94ccba1321449de831b91cce0d52a2b5c68207bd",
+        "tree": "9a1b0552f23661505e563ecfcb9a54809f6e56cd",
+        "parents": [
+          "51e4356da5071507874fa26b4a7669a26c3e5bcb",
+          "d4eeeb5e868724f9400b34e1f0c3960723ac94dd"
+        ],
+        "author_name": "Codex",
+        "author_email": "codex@openai.com",
+        "subject": "Merge fixed A10 owner lifecycle and rogue-peer gates"
+      },
+      {
+        "commit": "046adf2ca4366de118823e22c9f9347c01a30a79",
+        "tree": "b1cf38955ffcc334443edfa1f830f023890df57f",
+        "parents": [
+          "94ccba1321449de831b91cce0d52a2b5c68207bd"
+        ],
+        "author_name": "Qian QI",
+        "author_email": "102159240+ProfHepta@users.noreply.github.com",
+        "subject": "fix(ui): sanitize bidirectional controls and forged line breaks in read-only Hepta observations"
+      },
+      {
+        "commit": "f62731f76110e213ee9a909f81acc2de2d989655",
+        "tree": "dbb1883aa19c7188dc587fb544a102d6523ac94d",
+        "parents": [
+          "046adf2ca4366de118823e22c9f9347c01a30a79"
+        ],
+        "author_name": "Codex",
+        "author_email": "codex@openai.com",
+        "subject": "Finish owned cross-UID cleanup when proc metadata disappears"
+      },
+      {
+        "commit": "9b13dfbcb006a7f8af7cccd338e03174df74bad5",
+        "tree": "00923201e6550280e68a5ca662a8a3c3a165a29c",
+        "parents": [
+          "f62731f76110e213ee9a909f81acc2de2d989655"
+        ],
+        "author_name": "Codex",
+        "author_email": "codex@openai.com",
+        "subject": "Format owner Unicode regression with pinned Rust 1.88"
+      }
+    ],
+    "evidence_overlay_scope": [
+      "tests/ui/evidence/2026-10-17-rust188-owner-sync/**",
+      "tests/ui/TESTPLAN.md evidence index only"
+    ]
+  },
+  "runtime": {
+    "rustc_verbose": "rustc 1.88.0 (6b00bc388 2025-06-23)\nbinary: rustc\ncommit-hash: 6b00bc3880198600130e1cf62b8f8a93494488cc\ncommit-date: 2025-06-23\nhost: x86_64-unknown-linux-gnu\nrelease: 1.88.0\nLLVM version: 20.1.5\n",
+    "weston_version": "13.0.0",
+    "wrapper": "runtime/run-host-rust.py.txt"
+  },
+  "outcomes": [
+    {
+      "attempt": "check-host-01",
+      "head": "f62731f76110e213ee9a909f81acc2de2d989655",
+      "tree": "dbb1883aa19c7188dc587fb544a102d6523ac94d",
+      "exit_code": 101
+    },
+    {
+      "attempt": "check-host-02",
+      "head": "9b13dfbcb006a7f8af7cccd338e03174df74bad5",
+      "tree": "00923201e6550280e68a5ca662a8a3c3a165a29c",
+      "exit_code": 0
+    },
+    {
+      "attempt": "weston-01",
+      "head": "9b13dfbcb006a7f8af7cccd338e03174df74bad5",
+      "tree": "00923201e6550280e68a5ca662a8a3c3a165a29c",
+      "exit_code": 0
+    },
+    {
+      "attempt": "clippy-01",
+      "head": "9b13dfbcb006a7f8af7cccd338e03174df74bad5",
+      "tree": "00923201e6550280e68a5ca662a8a3c3a165a29c",
+      "exit_code": 0
+    },
+    {
+      "attempt": "final-check-01",
+      "head": "9b13dfbcb006a7f8af7cccd338e03174df74bad5",
+      "tree": "00923201e6550280e68a5ca662a8a3c3a165a29c",
+      "exit_code": 0
+    }
+  ],
+  "rust_test_counts": {
+    "ui_workspace": 73,
+    "a07_observer": 17,
+    "support_ui_host_models": 39,
+    "tests_ui_contracts": 8,
+    "total": 137,
+    "failed": 0,
+    "ignored": 0
+  },
+  "full_host_checks_passed": [
+    "real build of four Rust binaries with the original fixed Rust 1.88 pin and committed dependency locks",
+    "137 tests across the UI, facade and two boundary/contract workspaces",
+    "actual Session/facade observation, unavailable/stalled-peer behavior and stale-state retention against explicit fixtures",
+    "bidirectional SO_PEERCRED refusal with verified own-Session teardown",
+    "forged cross-UID server refusal before sending any request byte or trusting a fabricated Snapshot",
+    "eight forged IPC frames rejected before first legitimate task ID; strict identity/PID/terminal observation checks",
+    "four-manifest Rustfmt, real Linux ELF packaging, provenance/checksums and fresh-runtime replay"
+  ],
+  "owner_integration_decisions": [
+    "keep Hepta page, shared source-generation semantics, CARGO_TARGET_DIR selection and separate A07 gates",
+    "preserve owner Running/nonzero PID/previous layout condition for explicit fresh-window offer",
+    "combine both strict Cancel probes: same Session/task/PID, nonterminal ACK, independently observed failure/termination",
+    "use already-required sudo only to inspect the test-owned nobody 0700 runtime socket for readiness",
+    "continue fail-closed cleanup if a private child exits while proc metadata is read",
+    "preserve author Unicode control/bidi/line-separator filtering and ordinary Chinese/Arabic/Emoji text"
+  ],
+  "weston_checks_passed": [
+    "actual Shell layout/restart and three independently spawned application layouts",
+    "fresh Hepta-page projection bound to the fixture and actual Session/Shell binary hashes",
+    "owned compositor crash/restart, unchanged Session and new-client first layout",
+    "observed cancellation/reap"
+  ],
+  "hepta_layout": {
+    "page": "hepta",
+    "connection": "observed",
+    "agent_id": "11111111-1111-4111-8111-111111111111",
+    "spawn_generation": 7,
+    "current_generation": 8,
+    "process_id": 528269,
+    "sampled_unix_ms": 1792236957652
+  },
+  "binary_and_fixture_sha256": {
+    "session_binary_sha256": "3d52f8c3d61c81975a13f518810d4170e84c2c28a070684e91014567764d39c5",
+    "shell_binary_sha256": "21e838f81d35c0372731f1344cb886e96f5b025f6628fa9b73879c2c54d03c29",
+    "fixture_source_sha256": "a588f7ccc260a7699d11bb09d5c78c0aaf45f139050e708aa5285764df935209"
+  },
+  "session_disconnection_probe": {
+    "passed": true,
+    "connection_before_fixture_stop": "observed",
+    "connection_after_fixture_stop": "stale",
+    "same_last_observation_retained": true,
+    "host_action_after_disconnect_ms": 100.229
+  },
+  "failure_history": [
+    {
+      "attempt": "check-host-01",
+      "source": "f62731f76110e213ee9a909f81acc2de2d989655",
+      "build_exit_success": true,
+      "gate_exit_code": 101,
+      "failed_tests": [
+        "no_observer_configuration_is_explicit_and_cannot_submit_objectives",
+        "stalled_agentd_cannot_block_host_snapshot_or_action_dispatch"
+      ],
+      "observed_error": "Both real Session spawn calls returned EACCES (PermissionDenied). Later stat found its cached ELF mode 0644.",
+      "permission_mutation_cause": "unknown",
+      "causality_limit": "The captured ctime was later than the failed gate finish; it does not identify the initial permission-change time or actor. Source review did not find an operation changing the real Session ELF mode.",
+      "recovery": "Preserved original ELF bytes/mode/hash and removed only its two confirmed cache hardlinks. Cargo rebuilt the affected artifact; full gate passed without chmod.",
+      "additional_real_finding": "Rustfmt required a line wrap in the author-added Unicode test; exact patch retained and committed in 9b13dfb before rerunning."
+    }
+  ],
+  "artifact_permission_follow_up": {
+    "mode_trace": "check-host-02/session-artifact-mode.jsonl",
+    "post_capture_session_executable": true,
+    "recorded_transition": "absent -> freshly rebuilt inode with mode 0755; no later changes were observed during the passing gate and six-second follow-up",
+    "current_binary_metadata": [
+      {
+        "name": "trill-session",
+        "mode": "0o755",
+        "inode": 36753,
+        "links": 2,
+        "sha256": "3d52f8c3d61c81975a13f518810d4170e84c2c28a070684e91014567764d39c5",
+        "executable": true
+      },
+      {
+        "name": "trill-shell",
+        "mode": "0o755",
+        "inode": 36769,
+        "links": 2,
+        "sha256": "21e838f81d35c0372731f1344cb886e96f5b025f6628fa9b73879c2c54d03c29",
+        "executable": true
+      },
+      {
+        "name": "trill-app-window",
+        "mode": "0o755",
+        "inode": 36689,
+        "links": 2,
+        "sha256": "c3818b70a1a9fd15de98c46cfeb266fbc6669b83a61ad228aa34fd2214e30870",
+        "executable": true
+      },
+      {
+        "name": "trill-ctl",
+        "mode": "0o755",
+        "inode": 36456,
+        "links": 2,
+        "sha256": "d8adf74b743389c70d606c36ab6faaf4f1f992013a9cc593385868577b633ffd",
+        "executable": true
+      }
+    ],
+    "preserved_failed_elf_sha256": "3d52f8c3d61c81975a13f518810d4170e84c2c28a070684e91014567764d39c5",
+    "rebuilt_session_has_identical_bytes": true,
+    "cause_remains_unknown": true
+  },
+  "locked_dependencies": {
+    "ui/Cargo.lock": "62b00185ec1b839abb55ff24b94809d9b8c704a1097030f5aa66e037a4ca17a5",
+    "services/hepta-os/Cargo.lock": "a1aed4d1f513036cbe03912359f3dfbb2c6d93c5210b8d18244d95be9008a875",
+    "support/ui/Cargo.lock": "e3c3c849d9541154309b197285f99f6a86562f64476f44ab1cb7e2d6d8ae8614",
+    "tests/ui/Cargo.lock": "2e2ed22254320f2da27d098766ba003d1159e71ad8e0ef261be5eb8747a40940"
+  },
+  "separately_retained_binary_originals": [
+    {
+      "file": "check-host-01/trill-session.nonexecutable.elf",
+      "origin": "/workspace/scratch/98f315e377b2/next-tools/r2-evidence/a10/owner-sync-01/check-host-01/trill-session.nonexecutable.elf",
+      "size_bytes": 3527712,
+      "sha256": "3d52f8c3d61c81975a13f518810d4170e84c2c28a070684e91014567764d39c5",
+      "mode": "0o644"
+    },
+    {
+      "file": "check-host-02/a10/a10-linux-host-binaries.tar.gz",
+      "origin": "/workspace/scratch/98f315e377b2/next-tools/r2-evidence/a10/owner-sync-01/check-host-02/a10/a10-linux-host-binaries.tar.gz",
+      "size_bytes": 16396183,
+      "sha256": "1d50c66dc4c8dbc5cee33e86762788afabe779b21ec8f2bf9be3f0c9231e7bb6",
+      "mode": "0o644"
+    }
+  ],
+  "limits": {
+    "upstream_agentd_started": false,
+    "authenticated_objective_submission_tested": false,
+    "device_effect_tested": false,
+    "compositor_pixel_presentation_verified": false,
+    "real_cjk_font_rendering_verified": false,
+    "live_ime_candidate_flow_verified": false,
+    "physical_gpu_or_monitor_verified": false,
+    "pre_crash_client_surface_continuity_verified": false,
+    "target_rust_kernel_ui_verified": false,
+    "android_or_mobile_runtime_verified": false,
+    "wasm_runtime_verified": false,
+    "x11_mapping_tested_in_this_run": false,
+    "notes": [
+      "The passing Hepta peer is an explicit fixed-v2 scripted protocol fixture; actual Rust Session and Shell consumed its projection.",
+      "Weston explicitly reports a no-op renderer; the marker is completed egui widget layout, not pixel presentation.",
+      "Shell stderr reports no supported host CJK font. Unicode string-filter tests do not qualify glyph rendering or live IME.",
+      "Optional X11 mapping reported NOT VERIFIED because the tools were unavailable; inherited owner X11 evidence is not this source run.",
+      "The old Wayland client failed after compositor loss; this test proves a newly launched client, not prior surface continuity.",
+      "No original Agentd launch harness --execute run or authenticated objective/effect path was exercised by this record."
+    ]
+  }
+}

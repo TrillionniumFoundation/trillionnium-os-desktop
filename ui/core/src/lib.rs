@@ -1,5 +1,7 @@
 //! Host-only desktop prototype messages. These are NOT HOS2, a kernel permission
 //! protocol, or a trusted Hepta operation ledger.
+pub mod hepta;
+
 use serde::{Deserialize, Serialize};
 
 pub mod host_peer;
@@ -278,6 +280,9 @@ pub enum Response {
         tasks: Vec<TaskRecord>,
         resources: HostResources,
         session_instance: String,
+        /// Optional on older host snapshots. A missing field is NOT OBSERVED.
+        #[serde(default)]
+        hepta: hepta::HeptaProjection,
     },
     Task {
         task: TaskRecord,
@@ -349,8 +354,7 @@ pub fn parse_host_request(frame: &[u8]) -> io::Result<Request> {
             ))
         }
     };
-    if fields.len() != allowed.len()
-        || fields.keys().any(|name| !allowed.contains(&name.as_str()))
+    if fields.len() != allowed.len() || fields.keys().any(|name| !allowed.contains(&name.as_str()))
     {
         return Err(io::Error::new(
             io::ErrorKind::InvalidData,
@@ -437,6 +441,16 @@ pub fn request_at(socket: &Path, req: &Request) -> io::Result<Response> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn older_session_snapshot_cannot_claim_a_hepta_connection() {
+        let old = r#"{"type":"snapshot","tasks":[],"resources":{"sampled_unix_ms":5,"mem_total_kib":null,"mem_available_kib":null,"load_average_1m":null,"source":"old host"},"session_instance":"old"}"#;
+        let Response::Snapshot { hepta, .. } = serde_json::from_str(old).unwrap() else {
+            panic!("expected snapshot");
+        };
+        assert_eq!(hepta.connection, hepta::HeptaConnectionState::NotObserved);
+        assert!(hepta.last_observation.is_none());
+    }
 
     #[test]
     fn host_request_schema_rejects_unknown_and_duplicate_fields_before_effects() {

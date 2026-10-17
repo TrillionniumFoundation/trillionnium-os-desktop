@@ -85,7 +85,10 @@ pub fn validate_same_uid(cred: LinuxPeerCred, expected_uid: u32) -> io::Result<(
 
 #[cfg(target_os = "linux")]
 pub fn require_same_uid_peer(stream: &UnixStream) -> io::Result<()> {
-    validate_same_uid(linux_socket_peer_credentials(stream)?, current_effective_uid())
+    validate_same_uid(
+        linux_socket_peer_credentials(stream)?,
+        current_effective_uid(),
+    )
 }
 
 #[cfg(not(target_os = "linux"))]

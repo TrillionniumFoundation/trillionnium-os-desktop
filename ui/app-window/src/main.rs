@@ -1,4 +1,6 @@
 //! One independent client window per app process. No embedded webview or Node.
+#[path = "../../host_fonts.rs"]
+mod host_fonts;
 use eframe::egui::{self, RichText};
 use std::io::Write;
 use trill_ui_core::{AppKind, Workspace};
@@ -25,6 +27,7 @@ impl eframe::App for ClientWindow {
             ui.heading(self.kind.name());
             ui.label(format!("Workspace: {} · host task #{}", self.workspace.name(), self.task_id));
             ui.small("This is a separate native Rust app process/window, not a secure workspace container.");
+            ui.small(host_fonts::status_label(ctx));
             ui.separator();
             match self.kind {
                 AppKind::Notes => {
@@ -304,28 +307,6 @@ fn parse_arguments() -> Result<(AppKind, Workspace, u64), String> {
     ))
 }
 
-fn install_host_cjk_font(ctx: &egui::Context) {
-    for path in [
-        "/usr/share/fonts/opentype/noto/NotoSansCJKsc-Regular.otf",
-        "/usr/share/fonts/truetype/noto/NotoSansSC-Regular.ttf",
-        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
-        "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",
-    ] {
-        if let Ok(bytes) = std::fs::read(path) {
-            let mut fonts = egui::FontDefinitions::default();
-            fonts
-                .font_data
-                .insert("host-cjk".into(), egui::FontData::from_owned(bytes).into());
-            if let Some(family) = fonts.families.get_mut(&egui::FontFamily::Proportional) {
-                family.insert(0, "host-cjk".into());
-            }
-            ctx.set_fonts(fonts);
-            return;
-        }
-    }
-    eprintln!("CJK font unavailable: Chinese glyph rendering requires host font installation");
-}
-
 fn main() -> eframe::Result {
     let (kind, workspace, task_id) = parse_arguments().unwrap_or_else(|error| {
         eprintln!("trill-app-window: {error}");
@@ -339,7 +320,7 @@ fn main() -> eframe::Result {
         kind.name(),
         options,
         Box::new(move |cc| {
-            install_host_cjk_font(&cc.egui_ctx);
+            host_fonts::install(&cc.egui_ctx);
             Ok(Box::new(ClientWindow {
                 kind,
                 workspace,
@@ -552,7 +533,10 @@ mod tests {
                 });
             },
         );
-        assert!(focused, "test must exercise an actual keyboard-focused button");
+        assert!(
+            focused,
+            "test must exercise an actual keyboard-focused button"
+        );
         assert!(
             !pointer_activated,
             "keyboard Enter, including a stray IME candidate Enter, must not execute Run"

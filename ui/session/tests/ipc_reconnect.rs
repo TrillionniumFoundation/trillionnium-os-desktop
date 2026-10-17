@@ -137,8 +137,7 @@ fn private_socket_survives_client_disconnect_and_reports_owned_task() {
     // shell metacharacters, or a fallback to an arbitrary command.
     let mut injected = std::os::unix::net::UnixStream::connect(&socket).unwrap();
     let malformed = format!(
-        r#"{{"type":"launch","workspace":"personal","app":"../../bin/sh","expected_instance":"{}"}}"#,
-        session_instance
+        r#"{{"type":"launch","workspace":"personal","app":"../../bin/sh","expected_instance":"{session_instance}"}}"#,
     );
     injected.write_all(malformed.as_bytes()).unwrap();
     injected.write_all(b"\n").unwrap();

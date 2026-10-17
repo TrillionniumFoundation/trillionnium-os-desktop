@@ -1,0 +1,77 @@
+{
+  "recorded_at_utc": "2026-10-17T15:06:15.245668+00:00",
+  "verification_kind": "downloaded_artifact_bytes_and_receipt_cross_check_not_new_runtime",
+  "workflow_run": 39037037916,
+  "job": 117408854785,
+  "desktop_commit": "1974d9a94037440da358253e1f449b395daa4b64",
+  "desktop_local_equivalent": "35f379101c0863027e971ccb91faf8da71cf929c",
+  "desktop_tree": "48433c4f1e55de53e8c298193765949996eb18a0",
+  "hepta_commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+  "platform": "aarch64-unknown-linux-gnu",
+  "artifacts": {
+    "evidence_zip": {
+      "bytes": 456519,
+      "sha256": "7608b75c69fed1ff020fa3dff06f27650c316a9cd492779fb7da592991187a03"
+    },
+    "elf_zip": {
+      "bytes": 80692154,
+      "sha256": "85214ef3134e50967d9737f67c2f1bfc9d1f44feee9942b836be01356989b8df"
+    },
+    "elf_tar_gz": {
+      "bytes": 81462734,
+      "sha256": "75019319213050f1490213fcb78992680b4ab4d904b757a706a1501c4230ce9c"
+    }
+  },
+  "checks": [
+    "runtime_receipt_log_steps_source_locks_final_clean_identity_match",
+    "three_streamed_real_ARM64_executable_bytes_match_manifest_and_executed_report",
+    "nested_archive_manifest_report_and_SHA256SUMS_byte_identity"
+  ],
+  "binaries": {
+    "agentd": {
+      "filename": "codex-hepta-agentd",
+      "bytes": 268391592,
+      "sha256": "3e0753ab7b544ae4a76dee7df4d5c918eb7c766fc271ac9f7111bdb1979ebd6f",
+      "elf_class": 64,
+      "little_endian": true,
+      "e_machine": 183,
+      "architecture": "AArch64",
+      "tar_mode": "0o755",
+      "elf_header_hex": "7f454c460201010000000000000000000300b70001000000c0787200000000004000000000000000284dff0f0000000000000000400038000a0040001e001d00"
+    },
+    "probe": {
+      "filename": "hepta-original-observer-probe",
+      "bytes": 22375664,
+      "sha256": "60a950fe8eb7d85a65ffb16917c2a9088e89b9b13c0cd2c62e94e1a83f08c7ee",
+      "elf_class": 64,
+      "little_endian": true,
+      "e_machine": 183,
+      "architecture": "AArch64",
+      "tar_mode": "0o755",
+      "elf_header_hex": "7f454c460201010000000000000000000300b70001000000008b1000000000004000000000000000706555010000000000000000400038000a0040001e001d00"
+    },
+    "observer": {
+      "filename": "hepta-observe",
+      "bytes": 13681224,
+      "sha256": "3acf4a86268480ca481cf17a5e85205968bf8cd0e9fe2affdc37b9db8eddb48f",
+      "elf_class": 64,
+      "little_endian": true,
+      "e_machine": 183,
+      "architecture": "AArch64",
+      "tar_mode": "0o755",
+      "elf_header_hex": "7f454c460201010000000000000000000300b7000100000000fe000000000000400000000000000008b8d0000000000000000000400038000a00400029002800"
+    }
+  },
+  "runtime_checks": [
+    "original_starting",
+    "original_running",
+    "bounded_capabilities_events",
+    "missing_run_read",
+    "same_process_draining",
+    "original_restart",
+    "old_spawn_rejected",
+    "controlled_stop"
+  ],
+  "passed": true,
+  "finished_at_utc": "2026-10-17T15:06:17.181974+00:00"
+}

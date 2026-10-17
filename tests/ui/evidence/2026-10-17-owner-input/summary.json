@@ -1,0 +1,209 @@
+{
+  "schema_version": 1,
+  "archive_recorded_at_utc": "2026-10-17T13:48:33.759528+00:00",
+  "kind": "closed_native_host_owner_input_evidence",
+  "raw_file_count": 33,
+  "source": {
+    "local_commit": "35f379101c0863027e971ccb91faf8da71cf929c",
+    "tree": "48433c4f1e55de53e8c298193765949996eb18a0",
+    "published_same_tree_commit": "1974d9a94037440da358253e1f449b395daa4b64",
+    "mapping_verification": "Independent read of the immutable GitHub Git commit API returned this exact tree.",
+    "remote_commit_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/1974d9a94037440da358253e1f449b395daa4b64"
+  },
+  "failed_build_source": {
+    "local_commit": "b04a9e5ca7acd78272ddea325e752a7d6b252c9b",
+    "tree": "2af369506b7862e852fa9dedbb6a804425c72ec3",
+    "status": "failed",
+    "exit_code": 101,
+    "diagnosis": "Three E0433 errors: the Session production scope lacked the host_peer module import.",
+    "receipt": "build-before/receipt.json",
+    "log": "build-before/cargo-build.log"
+  },
+  "passed_build": {
+    "status": "passed",
+    "exit_code": 0,
+    "profile": "dev",
+    "toolchain": "1.88.0",
+    "locked": true,
+    "offline": true,
+    "cold_build": false,
+    "receipt": "build-after/receipt.json",
+    "log": "build-after/cargo-build.log",
+    "recorded_cargo_duration": "5.60s",
+    "production_binaries": {
+      "trill-shell": {
+        "path": "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-shell",
+        "bytes": 24153992,
+        "sha256": "81e9bcbf79c4060c3047ad0c80df711bfd855f2f47c3900522927d37404d776f"
+      },
+      "trill-session": {
+        "path": "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-session",
+        "bytes": 3527808,
+        "sha256": "5c29cfd7f11455000d7c3d9c0cc2c58fb7fe8761ab326da34c794d0f3481924f"
+      },
+      "trill-ctl": {
+        "path": "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-ctl",
+        "bytes": 1494736,
+        "sha256": "920093314640ad1dd721425ec78457f4ca74c83f9c1a0a878d4ddfee4924a882"
+      },
+      "trill-app-window": {
+        "path": "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-app-window",
+        "bytes": 22627904,
+        "sha256": "08c3bbe84b5d6e773f367f9751a1432eaee327bf45a5b172150f34f165342510"
+      }
+    }
+  },
+  "format_development_sequence": {
+    "receipt": "format/receipt.json",
+    "recorded_head_before": "b04a9e5ca7acd78272ddea325e752a7d6b252c9b",
+    "clean_commit_tree_binding_claimed": false,
+    "scope": "Precommit development worktree, followed by commit 35f3791; the exact committed-source fmt success is recorded separately in strict-checks.",
+    "check_before_exit": 1,
+    "apply_exit": 0,
+    "check_after_exit": 0
+  },
+  "runtime_owner_regression": {
+    "receipt": "runtime-owner/receipt.json",
+    "caller_user": "vscode",
+    "caller_uid": 1000,
+    "session_effective_uid": 0,
+    "same_session_elf_for_both_scripts": true,
+    "session_sha256": "5c29cfd7f11455000d7c3d9c0cc2c58fb7fe8761ab326da34c794d0f3481924f",
+    "old_script_commit": "45552fbd8f79ea713509908ac4b08a3fd44a95bc",
+    "old_script_exit": 1,
+    "old_script_failure": "Permission denied creating foreign_subdir/trillionnium-ui",
+    "new_script_commit": "35f379101c0863027e971ccb91faf8da71cf929c",
+    "new_script_exit": 0,
+    "new_script_cases": [
+      "foreign_runtime_owner_denied",
+      "foreign_subdirectory_owner_denied",
+      "foreign_lock_owner_denied",
+      "same_uid_socket_bound_0600"
+    ],
+    "fixture_directories_remaining": [],
+    "sudo_audit_warnings_retained": true,
+    "system_policy_modified_by_harness": false
+  },
+  "strict_checks": {
+    "receipt": "strict-checks/receipt.json",
+    "all_four_steps_exit_zero": true,
+    "clippy_scope": "ui workspace, all targets, locked/offline, -D warnings",
+    "executed_test_total": 4,
+    "shell": {
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0,
+      "filtered_out": 25,
+      "filter": "focused_",
+      "log": "strict-checks/shell_focused.log",
+      "names": [
+        "shell_lifecycle_tests::keyboard_focused_host_action_cannot_fake_a_primary_pointer_click",
+        "input_tests::synthetic_chinese_ime_commit_uses_focused_text_edit",
+        "shell_lifecycle_tests::focused_draft_file_buttons_ignore_keyboard_candidate_confirmation"
+      ]
+    },
+    "app_window": {
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0,
+      "filtered_out": 11,
+      "filter": "focused_run_button",
+      "log": "strict-checks/app_focused.log",
+      "names": [
+        "tests::focused_run_button_enter_cannot_invent_a_pointer_click"
+      ]
+    },
+    "fmt_exit_code": 0,
+    "fmt_log_bytes": 0
+  },
+  "qualification": {
+    "linux_host_build": true,
+    "real_nonroot_test_caller": true,
+    "real_root_session_uid_refusals": true,
+    "synthetic_egui_focused_input_tests": true,
+    "full_check_host_suite_rerun": false,
+    "historical_137_requalified": false,
+    "actual_cjk_pixels_from_this_source_executed_by_these_records": false,
+    "real_ime_executed_by_these_records": false,
+    "original_agentd_runtime_executed_by_these_records": false,
+    "hepta_authenticated_objective_executed_by_these_records": false,
+    "asterinas_or_physical_device_qualified_by_these_records": false
+  },
+  "cleanup": {
+    "receipt": "environment/ui-r5-cleanup.json",
+    "scope": "Exactly two completed test executables; four production ELFs and earlier caches retained.",
+    "original_strict_receipt_unchanged": true
+  },
+  "independent_review": {
+    "source_scripts_and_seven_copied_logs_match": true,
+    "production_elf_sha256sum_in_original_elevated_view_matches_build_receipt": true,
+    "ordinary_sandbox_visibility_is_not_a_deletion_check": true,
+    "review_command": [
+      "sha256sum",
+      "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-shell",
+      "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-session",
+      "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-ctl",
+      "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-app-window"
+    ],
+    "test_or_build_rerun_during_archiving": false
+  },
+  "source_bindings": [
+    {
+      "role": "before_runtime_owner_script",
+      "commit": "45552fbd8f79ea713509908ac4b08a3fd44a95bc",
+      "path": "tests/ui/test-runtime-owner.sh",
+      "git_blob": "23ae461b09420c29df02ee7e3743682fa2f58259",
+      "sha256": "89bb4fc5a798f8b0705d990ba2d91c3b375ec6ff34ded42063e8a1213094f80d",
+      "archived_path": "runtime-owner/before/executed-script.sh",
+      "byte_identical": true
+    },
+    {
+      "role": "after_runtime_owner_script",
+      "commit": "35f379101c0863027e971ccb91faf8da71cf929c",
+      "path": "tests/ui/test-runtime-owner.sh",
+      "git_blob": "45c70ebf1fb26b03db6addf33ab1679b93530fc6",
+      "sha256": "8d7761b6a4bdc3bafe00cdf0b5a1cda35aac0fada91a965c467aaa9909192734",
+      "archived_path": "runtime-owner/after/executed-script.sh",
+      "byte_identical": true
+    },
+    {
+      "role": "original_helper_process_guard_dependency",
+      "commit": "35f379101c0863027e971ccb91faf8da71cf929c",
+      "path": "tests/integration/hepta/run_original_agentd.py",
+      "git_blob": "556765bbca30049f1ba75228356595fee71e1b80",
+      "sha256": "fff0b1228d6f02da4f5a02c3a1af3eb1e5f9aa55f5b7021b8db997934d5e5ceb",
+      "duplicate_copy_in_archive": false,
+      "reason": "Available in the same tested source tree; execution helpers import ChildGroup from this file. Importing it is not an original-Agentd runtime test."
+    },
+    {
+      "role": "reviewed_target_directory_integration",
+      "commit": "35f379101c0863027e971ccb91faf8da71cf929c",
+      "path": "tests/ui/check-host.sh",
+      "git_blob": "a7b12ccdb0571c019b76a513f3dc1f6a4f5980f9",
+      "sha256": "ddfc6f32324c8d3ed3e2cb6ed5785b278118a89c1915fb489625edd946b3002b",
+      "executed_end_to_end_by_these_records": false
+    }
+  ],
+  "integrity": {
+    "manifest": "raw-artifacts.json",
+    "sha256sums": "RAW_SHA256SUMS",
+    "retained_source_files_unchanged": true,
+    "elfs_or_package_caches_archived": false,
+    "full_staged_diff_check": {
+      "exit_code": 2,
+      "diagnostics": [
+        {
+          "path": "strict-checks/app_focused.log",
+          "line": 9,
+          "message": "new blank line at EOF"
+        },
+        {
+          "path": "strict-checks/shell_focused.log",
+          "line": 11,
+          "message": "new blank line at EOF"
+        }
+      ],
+      "reason_retained": "Original captured log bytes are preserved; no normalization or trimming was applied."
+    }
+  }
+}

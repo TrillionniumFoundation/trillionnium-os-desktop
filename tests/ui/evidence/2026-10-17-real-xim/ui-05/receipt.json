@@ -1,0 +1,1231 @@
+{
+  "evidence_class": "private_X11_IBus_XIM_real_Rust_input_probe",
+  "started_unix_ms": 1792246170198,
+  "passed": true,
+  "system_install_performed": false,
+  "rust_ui_started": true,
+  "rust_ui_ime_verified": true,
+  "xim_text_committed": true,
+  "physical_input_verified": false,
+  "wayland_text_input_v3_verified": false,
+  "probe_sha256": "c648ff0f841ba1fbe5088c453c57083b9eec4267b4f398c75e6be651d82758e4",
+  "child_guard_sha256": "fff0b1228d6f02da4f5a02c3a1af3eb1e5f9aa55f5b7021b8db997934d5e5ceb",
+  "commands": [
+    {
+      "label": "schemas",
+      "argv": [
+        "/usr/lib/x86_64-linux-gnu/glib-2.0/glib-compile-schemas",
+        "--strict",
+        "/run/a10-ime/schemas"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "display-ready-00",
+      "argv": [
+        "xdpyinfo"
+      ],
+      "returncode": 1
+    },
+    {
+      "label": "display-ready-01",
+      "argv": [
+        "xdpyinfo"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "unauthenticated-display",
+      "argv": [
+        "xdpyinfo"
+      ],
+      "returncode": 1
+    },
+    {
+      "label": "private-us-keymap",
+      "argv": [
+        "setxkbmap",
+        "-layout",
+        "us"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "private-keymap-observed",
+      "argv": [
+        "setxkbmap",
+        "-query"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "engines-ready-00",
+      "argv": [
+        "ibus",
+        "list-engine"
+      ],
+      "returncode": 1
+    },
+    {
+      "label": "engines-ready-01",
+      "argv": [
+        "ibus",
+        "list-engine"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "engine-select",
+      "argv": [
+        "ibus",
+        "engine",
+        "libpinyin"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "engine-observed",
+      "argv": [
+        "ibus",
+        "engine"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "ibus-version",
+      "argv": [
+        "ibus",
+        "version"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "ibus-address",
+      "argv": [
+        "ibus",
+        "address"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "xim-selection",
+      "argv": [
+        "xprop",
+        "-root",
+        "XIM_SERVERS"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "rust-ipc-ready-000",
+      "argv": [
+        "/ui-bin/trill-ctl",
+        "snapshot"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "shell-window-tree-before",
+      "argv": [
+        "xwininfo",
+        "-root",
+        "-tree"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "shell-xid-000",
+      "argv": [
+        "xdotool",
+        "search",
+        "--all",
+        "--onlyvisible",
+        "--pid",
+        "98",
+        "--class",
+        "^trill-shell$"
+      ],
+      "returncode": 1
+    },
+    {
+      "label": "shell-xid-001",
+      "argv": [
+        "xdotool",
+        "search",
+        "--all",
+        "--onlyvisible",
+        "--pid",
+        "98",
+        "--class",
+        "^trill-shell$"
+      ],
+      "returncode": 1
+    },
+    {
+      "label": "shell-xid-002",
+      "argv": [
+        "xdotool",
+        "search",
+        "--all",
+        "--onlyvisible",
+        "--pid",
+        "98",
+        "--class",
+        "^trill-shell$"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "shell-properties",
+      "argv": [
+        "xprop",
+        "-id",
+        "8388613",
+        "WM_CLASS",
+        "_NET_WM_PID"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-001-click-focus",
+      "argv": [
+        "xdotool",
+        "windowfocus",
+        "--sync",
+        "8388613"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-001-click-focus-observed",
+      "argv": [
+        "xdotool",
+        "getwindowfocus"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-001-click",
+      "argv": [
+        "xdotool",
+        "mousemove",
+        "--window",
+        "8388613",
+        "370",
+        "344",
+        "click",
+        "1"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-002-ascii-focus",
+      "argv": [
+        "xdotool",
+        "windowfocus",
+        "--sync",
+        "8388613"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-002-ascii-focus-observed",
+      "argv": [
+        "xdotool",
+        "getwindowfocus"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-002-ascii",
+      "argv": [
+        "xdotool",
+        "type",
+        "--clearmodifiers",
+        "--delay",
+        "130",
+        "--",
+        "nihao"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-004-key-focus",
+      "argv": [
+        "xdotool",
+        "windowfocus",
+        "--sync",
+        "8388613"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-004-key-focus-observed",
+      "argv": [
+        "xdotool",
+        "getwindowfocus"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-004-key",
+      "argv": [
+        "xdotool",
+        "key",
+        "--clearmodifiers",
+        "space"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-006-copy-focus",
+      "argv": [
+        "xdotool",
+        "windowfocus",
+        "--sync",
+        "8388613"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-006-copy-focus-observed",
+      "argv": [
+        "xdotool",
+        "getwindowfocus"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-006-copy",
+      "argv": [
+        "xdotool",
+        "key",
+        "--clearmodifiers",
+        "ctrl+a",
+        "ctrl+c"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-007-click-focus",
+      "argv": [
+        "xdotool",
+        "windowfocus",
+        "--sync",
+        "8388613"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-007-click-focus-observed",
+      "argv": [
+        "xdotool",
+        "getwindowfocus"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-007-click",
+      "argv": [
+        "xdotool",
+        "mousemove",
+        "--window",
+        "8388613",
+        "250",
+        "398",
+        "click",
+        "1"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-009-click-focus",
+      "argv": [
+        "xdotool",
+        "windowfocus",
+        "--sync",
+        "8388613"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-009-click-focus-observed",
+      "argv": [
+        "xdotool",
+        "getwindowfocus"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-009-click",
+      "argv": [
+        "xdotool",
+        "mousemove",
+        "--window",
+        "8388613",
+        "280",
+        "485",
+        "click",
+        "1"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-010-notes",
+      "argv": [
+        "/ui-bin/trill-ctl",
+        "launch",
+        "personal",
+        "notes"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-010-notes-layout-000",
+      "argv": [
+        "/ui-bin/trill-ctl",
+        "snapshot"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-010-notes-layout-001",
+      "argv": [
+        "/ui-bin/trill-ctl",
+        "snapshot"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "notes-window-tree-before",
+      "argv": [
+        "xwininfo",
+        "-root",
+        "-tree"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "notes-xid-000",
+      "argv": [
+        "xdotool",
+        "search",
+        "--all",
+        "--onlyvisible",
+        "--pid",
+        "129",
+        "--class",
+        "^trill-app-window$"
+      ],
+      "returncode": 1
+    },
+    {
+      "label": "notes-xid-001",
+      "argv": [
+        "xdotool",
+        "search",
+        "--all",
+        "--onlyvisible",
+        "--pid",
+        "129",
+        "--class",
+        "^trill-app-window$"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "notes-properties",
+      "argv": [
+        "xprop",
+        "-id",
+        "14680069",
+        "WM_CLASS",
+        "_NET_WM_PID"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-012-click-focus",
+      "argv": [
+        "xdotool",
+        "windowfocus",
+        "--sync",
+        "14680069"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-012-click-focus-observed",
+      "argv": [
+        "xdotool",
+        "getwindowfocus"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-012-click",
+      "argv": [
+        "xdotool",
+        "mousemove",
+        "--window",
+        "14680069",
+        "125",
+        "137",
+        "click",
+        "1"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-013-ascii-focus",
+      "argv": [
+        "xdotool",
+        "windowfocus",
+        "--sync",
+        "14680069"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-013-ascii-focus-observed",
+      "argv": [
+        "xdotool",
+        "getwindowfocus"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-013-ascii",
+      "argv": [
+        "xdotool",
+        "type",
+        "--clearmodifiers",
+        "--delay",
+        "130",
+        "--",
+        "zhongwen"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-015-key-focus",
+      "argv": [
+        "xdotool",
+        "windowfocus",
+        "--sync",
+        "14680069"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-015-key-focus-observed",
+      "argv": [
+        "xdotool",
+        "getwindowfocus"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-015-key",
+      "argv": [
+        "xdotool",
+        "key",
+        "--clearmodifiers",
+        "space"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-017-focus-focus",
+      "argv": [
+        "xdotool",
+        "windowfocus",
+        "--sync",
+        "8388613"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-017-focus-focus-observed",
+      "argv": [
+        "xdotool",
+        "getwindowfocus"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-019-click-focus",
+      "argv": [
+        "xdotool",
+        "windowfocus",
+        "--sync",
+        "14680069"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-019-click-focus-observed",
+      "argv": [
+        "xdotool",
+        "getwindowfocus"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-019-click",
+      "argv": [
+        "xdotool",
+        "mousemove",
+        "--window",
+        "14680069",
+        "125",
+        "137",
+        "click",
+        "1"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-020-copy-focus",
+      "argv": [
+        "xdotool",
+        "windowfocus",
+        "--sync",
+        "14680069"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-020-copy-focus-observed",
+      "argv": [
+        "xdotool",
+        "getwindowfocus"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-020-copy",
+      "argv": [
+        "xdotool",
+        "key",
+        "--clearmodifiers",
+        "ctrl+a",
+        "ctrl+c"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-022-snapshot",
+      "argv": [
+        "/ui-bin/trill-ctl",
+        "snapshot"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-023-finish-cancel",
+      "argv": [
+        "/ui-bin/trill-ctl",
+        "cancel",
+        "1",
+        "0d5f53effda00b776306644e5ce1f303"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "input-023-finish-cancel-observed-000",
+      "argv": [
+        "/ui-bin/trill-ctl",
+        "snapshot"
+      ],
+      "returncode": 0
+    }
+  ],
+  "children": [
+    {
+      "label": "xvfb",
+      "namespace_pid": 5,
+      "argv": [
+        "Xvfb",
+        ":91",
+        "-nolisten",
+        "tcp",
+        "-screen",
+        "0",
+        "1440x1000x24",
+        "-auth",
+        "/run/a10-ime/Xauthority"
+      ]
+    },
+    {
+      "label": "dbus",
+      "namespace_pid": 21,
+      "argv": [
+        "dbus-daemon",
+        "--session",
+        "--nofork",
+        "--address=unix:path=/run/a10-ime/session-bus",
+        "--print-address=1"
+      ]
+    },
+    {
+      "label": "ibus-daemon",
+      "namespace_pid": 24,
+      "argv": [
+        "ibus-daemon",
+        "--xim",
+        "--verbose",
+        "--panel=/usr/libexec/ibus-ui-gtk3",
+        "--config=/usr/libexec/ibus-memconf",
+        "--cache=none"
+      ]
+    },
+    {
+      "label": "ibus-private-signal-trace",
+      "namespace_pid": 95,
+      "argv": [
+        "dbus-monitor",
+        "--address",
+        "unix:path=/run/a10-ime/cache/ibus/dbus-gpviG8d6,guid=51f4d71906a9660101c3cd056ad3819a",
+        "type='signal',interface='org.freedesktop.IBus.InputContext'"
+      ]
+    },
+    {
+      "label": "rust-session",
+      "namespace_pid": 96,
+      "argv": [
+        "/ui-bin/trill-session"
+      ]
+    },
+    {
+      "label": "rust-shell",
+      "namespace_pid": 98,
+      "argv": [
+        "/ui-bin/trill-shell"
+      ]
+    }
+  ],
+  "engine": "libpinyin",
+  "xim_selection_advertised": true,
+  "private_display_rejects_no_cookie": true,
+  "environment_preflight_passed": true,
+  "ibus_signal_trace_started": true,
+  "ui": {
+    "status": "passed_private_XIM_ASCII_to_Chinese_in_two_Rust_editors",
+    "source_commit": "35f379101c0863027e971ccb91faf8da71cf929c",
+    "source_tree": "48433c4f1e55de53e8c298193765949996eb18a0",
+    "harness_provenance": {
+      "environment_source_sha256": "c648ff0f841ba1fbe5088c453c57083b9eec4267b4f398c75e6be651d82758e4",
+      "harness_commit": "02cf552485f899cfbb9cba7eeae663c7f0e8bb9c",
+      "harness_tree": "3a46eb76dd667a0fe54fa7b9936df93a7080d430",
+      "production_ui_commit": "35f379101c0863027e971ccb91faf8da71cf929c",
+      "production_ui_tree": "48433c4f1e55de53e8c298193765949996eb18a0",
+      "unchanged_ui_subtree": "037f318be7140ef046eac1e9cabe230c07eb7059",
+      "tracked_sources": {
+        "environment": {
+          "path": "tests/ui/probe-x11-ime.py",
+          "git_blob": "c37b42d364bde111b70dcd2faab93e296fd509b1",
+          "sha256": "c648ff0f841ba1fbe5088c453c57083b9eec4267b4f398c75e6be651d82758e4",
+          "bytes": 21447
+        },
+        "client": {
+          "path": "tests/ui/x11-ime-client.py",
+          "git_blob": "d17b931dcc3866124e7972e09ae90143bf943006",
+          "sha256": "0ad32bbdbef36ff157efd15bccb43cd4603f2b8258a53698bdce68a3c7c057f2",
+          "bytes": 17204
+        },
+        "guard": {
+          "path": "tests/integration/hepta/run_original_agentd.py",
+          "git_blob": "556765bbca30049f1ba75228356595fee71e1b80",
+          "sha256": "fff0b1228d6f02da4f5a02c3a1af3eb1e5f9aa55f5b7021b8db997934d5e5ceb",
+          "bytes": 20192
+        }
+      },
+      "client_source_sha256": "0ad32bbdbef36ff157efd15bccb43cd4603f2b8258a53698bdce68a3c7c057f2",
+      "input_fixture_sha256": "4d3147798e1e135a0cffc9d9e51fb44f3268bda8c5f8a44cb291d8140c5a0d64",
+      "fixture_source": {
+        "sha256": "4d3147798e1e135a0cffc9d9e51fb44f3268bda8c5f8a44cb291d8140c5a0d64",
+        "path": "tests/ui/x11-ime-actions.json",
+        "kind": "tracked_fixture",
+        "git_blob": "98d5a744edcaa105de6fe1059b528ab3147d5982"
+      },
+      "child_guard_sha256": "fff0b1228d6f02da4f5a02c3a1af3eb1e5f9aa55f5b7021b8db997934d5e5ceb",
+      "font_sha256": "27251f8f257e831f4b876408a7d0ef88ae2c18fe0cbb6780bd18fe6bad8ddb10",
+      "binaries": {
+        "trill-shell": {
+          "path": "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-shell",
+          "bytes": 24153992,
+          "sha256": "81e9bcbf79c4060c3047ad0c80df711bfd855f2f47c3900522927d37404d776f"
+        },
+        "trill-session": {
+          "path": "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-session",
+          "bytes": 3527808,
+          "sha256": "5c29cfd7f11455000d7c3d9c0cc2c58fb7fe8761ab326da34c794d0f3481924f"
+        },
+        "trill-ctl": {
+          "path": "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-ctl",
+          "bytes": 1494736,
+          "sha256": "920093314640ad1dd721425ec78457f4ca74c83f9c1a0a878d4ddfee4924a882"
+        },
+        "trill-app-window": {
+          "path": "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-app-window",
+          "bytes": 22627904,
+          "sha256": "08c3bbe84b5d6e773f367f9751a1432eaee327bf45a5b172150f34f165342510"
+        }
+      }
+    },
+    "input_path": "XTEST_ASCII_keys_to_Xvfb_to_IBus_libpinyin_XIM_to_winit_egui",
+    "physical_keyboard_verified": false,
+    "wayland_v3_verified": false,
+    "synthetic_egui_events_used": false,
+    "unicode_injection_used": false,
+    "actions": [
+      {
+        "sequence": 1,
+        "request": {
+          "action": "click",
+          "target": "shell",
+          "x": 370,
+          "y": 344
+        },
+        "started_unix_ms": 1792246171364,
+        "completed_unix_ms": 1792246171623
+      },
+      {
+        "sequence": 2,
+        "request": {
+          "action": "ascii",
+          "target": "shell",
+          "text": "nihao"
+        },
+        "started_unix_ms": 1792246171623,
+        "completed_unix_ms": 1792246172116
+      },
+      {
+        "sequence": 3,
+        "request": {
+          "action": "screenshot"
+        },
+        "started_unix_ms": 1792246172117,
+        "completed_unix_ms": 1792246172309
+      },
+      {
+        "sequence": 4,
+        "request": {
+          "action": "key",
+          "target": "shell",
+          "key": "space"
+        },
+        "started_unix_ms": 1792246172310,
+        "completed_unix_ms": 1792246172482
+      },
+      {
+        "sequence": 5,
+        "request": {
+          "action": "screenshot"
+        },
+        "started_unix_ms": 1792246172482,
+        "completed_unix_ms": 1792246172671
+      },
+      {
+        "sequence": 6,
+        "request": {
+          "action": "copy",
+          "target": "shell"
+        },
+        "started_unix_ms": 1792246172672,
+        "copied_utf8": "\u4f60\u597d",
+        "completed_unix_ms": 1792246173040
+      },
+      {
+        "sequence": 7,
+        "request": {
+          "action": "click",
+          "target": "shell",
+          "x": 250,
+          "y": 398
+        },
+        "started_unix_ms": 1792246173041,
+        "completed_unix_ms": 1792246173299
+      },
+      {
+        "sequence": 8,
+        "request": {
+          "action": "screenshot"
+        },
+        "started_unix_ms": 1792246173300,
+        "completed_unix_ms": 1792246173488
+      },
+      {
+        "sequence": 9,
+        "request": {
+          "action": "click",
+          "target": "shell",
+          "x": 280,
+          "y": 485
+        },
+        "started_unix_ms": 1792246173488,
+        "completed_unix_ms": 1792246173746
+      },
+      {
+        "sequence": 10,
+        "request": {
+          "action": "notes"
+        },
+        "started_unix_ms": 1792246173747,
+        "completed_unix_ms": 1792246174275
+      },
+      {
+        "sequence": 11,
+        "request": {
+          "action": "screenshot"
+        },
+        "started_unix_ms": 1792246174276,
+        "completed_unix_ms": 1792246174463
+      },
+      {
+        "sequence": 12,
+        "request": {
+          "action": "click",
+          "target": "notes",
+          "x": 125,
+          "y": 137
+        },
+        "started_unix_ms": 1792246174463,
+        "completed_unix_ms": 1792246174725
+      },
+      {
+        "sequence": 13,
+        "request": {
+          "action": "ascii",
+          "target": "notes",
+          "text": "zhongwen"
+        },
+        "started_unix_ms": 1792246174725,
+        "completed_unix_ms": 1792246175412
+      },
+      {
+        "sequence": 14,
+        "request": {
+          "action": "screenshot"
+        },
+        "started_unix_ms": 1792246175413,
+        "completed_unix_ms": 1792246175596
+      },
+      {
+        "sequence": 15,
+        "request": {
+          "action": "key",
+          "target": "notes",
+          "key": "space"
+        },
+        "started_unix_ms": 1792246175597,
+        "completed_unix_ms": 1792246175767
+      },
+      {
+        "sequence": 16,
+        "request": {
+          "action": "screenshot"
+        },
+        "started_unix_ms": 1792246175768,
+        "completed_unix_ms": 1792246175956
+      },
+      {
+        "sequence": 17,
+        "request": {
+          "action": "focus",
+          "target": "shell"
+        },
+        "started_unix_ms": 1792246175957,
+        "completed_unix_ms": 1792246176116
+      },
+      {
+        "sequence": 18,
+        "request": {
+          "action": "screenshot"
+        },
+        "started_unix_ms": 1792246176117,
+        "completed_unix_ms": 1792246176301
+      },
+      {
+        "sequence": 19,
+        "request": {
+          "action": "click",
+          "target": "notes",
+          "x": 125,
+          "y": 137
+        },
+        "started_unix_ms": 1792246176301,
+        "completed_unix_ms": 1792246176565
+      },
+      {
+        "sequence": 20,
+        "request": {
+          "action": "copy",
+          "target": "notes"
+        },
+        "started_unix_ms": 1792246176566,
+        "copied_utf8": "\u4e2d\u6587",
+        "completed_unix_ms": 1792246176937
+      },
+      {
+        "sequence": 21,
+        "request": {
+          "action": "screenshot"
+        },
+        "started_unix_ms": 1792246176938,
+        "completed_unix_ms": 1792246177124
+      },
+      {
+        "sequence": 22,
+        "request": {
+          "action": "snapshot"
+        },
+        "started_unix_ms": 1792246177125,
+        "snapshot": {
+          "type": "snapshot",
+          "tasks": [
+            {
+              "id": 1,
+              "workspace": "personal",
+              "app": "notes",
+              "state": "running",
+              "pid": 129,
+              "exit_code": null,
+              "detail": "Observed child egui first-frame update via private stdout pipe; window mapping/GPU NOT verified",
+              "created_unix_ms": 1792246173862,
+              "updated_unix_ms": 1792246174063,
+              "execution_mode": "linux_host_process",
+              "hos2_revision": null,
+              "ui_first_frame_unix_ms": 1792246174063,
+              "wayland_socket_epoch_at_launch": null
+            }
+          ],
+          "resources": {
+            "sampled_unix_ms": 1792246177173,
+            "mem_total_kib": 10206484,
+            "mem_available_kib": 4009616,
+            "load_average_1m": 0.15,
+            "source": "Linux host /proc and Wayland socket metadata (NOT HOS2)",
+            "wayland": {
+              "status": "unconfigured",
+              "socket_observation_epoch": 1,
+              "sampled_unix_ms": 1792246177173
+            }
+          },
+          "session_instance": "0d5f53effda00b776306644e5ce1f303",
+          "hepta": {
+            "connection": "not_configured",
+            "last_attempt_unix_ms": null,
+            "error_code": null,
+            "last_observation": null
+          }
+        },
+        "completed_unix_ms": 1792246177324
+      },
+      {
+        "sequence": 23,
+        "request": {
+          "action": "finish"
+        },
+        "started_unix_ms": 1792246177325,
+        "completed_unix_ms": 1792246177475
+      }
+    ],
+    "screenshots": [
+      {
+        "file": "ui-initial.png",
+        "width": 1440,
+        "height": 1000,
+        "bytes": 110913,
+        "sha256": "d9a6cd49013086a9086d2d8bb998dce80a08e36b9e1dd9cc6b0be6ecf10d709d",
+        "capture_api": "XGetImage_actual_private_root_framebuffer",
+        "visual_review_required": true
+      },
+      {
+        "file": "input-003-screenshot.png",
+        "width": 1440,
+        "height": 1000,
+        "bytes": 114728,
+        "sha256": "8f849d205b70a264cb38990b0f7f6899a158c89999f271db28804c8941ffc9c2",
+        "capture_api": "XGetImage_actual_private_root_framebuffer",
+        "visual_review_required": true
+      },
+      {
+        "file": "input-005-screenshot.png",
+        "width": 1440,
+        "height": 1000,
+        "bytes": 109536,
+        "sha256": "1da7088162b95214eea8b0ab1f83a906c41cb3c0a42fe892a28affac16c874a8",
+        "capture_api": "XGetImage_actual_private_root_framebuffer",
+        "visual_review_required": true
+      },
+      {
+        "file": "input-008-screenshot.png",
+        "width": 1440,
+        "height": 1000,
+        "bytes": 114222,
+        "sha256": "d11105187ea08306f514056ce9ec8be3d838eed38e20a9cae40225b38cb7de6b",
+        "capture_api": "XGetImage_actual_private_root_framebuffer",
+        "visual_review_required": true
+      },
+      {
+        "file": "input-011-screenshot.png",
+        "width": 1440,
+        "height": 1000,
+        "bytes": 73438,
+        "sha256": "7884a3485ad13fe21f4eefa71aa4073e637ff3d670c36638cb03e8be47063bdf",
+        "capture_api": "XGetImage_actual_private_root_framebuffer",
+        "visual_review_required": true
+      },
+      {
+        "file": "input-014-screenshot.png",
+        "width": 1440,
+        "height": 1000,
+        "bytes": 75584,
+        "sha256": "436a09d50a1789ab099aa5a96f7ff337928022bd1ce12db4755f99f2324c0e27",
+        "capture_api": "XGetImage_actual_private_root_framebuffer",
+        "visual_review_required": true
+      },
+      {
+        "file": "input-016-screenshot.png",
+        "width": 1440,
+        "height": 1000,
+        "bytes": 70999,
+        "sha256": "25427e77eaafef2893658be3815f35ceb2c384c847fd80986e922a6ec5f3516e",
+        "capture_api": "XGetImage_actual_private_root_framebuffer",
+        "visual_review_required": true
+      },
+      {
+        "file": "input-018-screenshot.png",
+        "width": 1440,
+        "height": 1000,
+        "bytes": 71071,
+        "sha256": "3a07c571918c26ed837eb1d5f5dc540fc11bc3c44a36d4fb1dc3e4cdf633d5f5",
+        "capture_api": "XGetImage_actual_private_root_framebuffer",
+        "visual_review_required": true
+      },
+      {
+        "file": "input-021-screenshot.png",
+        "width": 1440,
+        "height": 1000,
+        "bytes": 71083,
+        "sha256": "f05fbbaa3f6cac7bfbaade075e85ca661c4f7e1869bf973fa734f6659ccfca95",
+        "capture_api": "XGetImage_actual_private_root_framebuffer",
+        "visual_review_required": true
+      }
+    ],
+    "owned_windows": {
+      "shell": {
+        "xid": "8388613",
+        "namespace_pid": 98,
+        "class": "trill-shell"
+      },
+      "notes": {
+        "xid": "14680069",
+        "namespace_pid": 129,
+        "class": "trill-app-window"
+      }
+    },
+    "clipboard_samples": [
+      {
+        "target": "shell",
+        "text": "\u4f60\u597d",
+        "sequence": 6,
+        "oracle": "owned_X11_CLIPBOARD_after_explicit_copy"
+      },
+      {
+        "target": "notes",
+        "text": "\u4e2d\u6587",
+        "sequence": 20,
+        "oracle": "owned_X11_CLIPBOARD_after_explicit_copy"
+      }
+    ],
+    "session_instance": "0d5f53effda00b776306644e5ce1f303",
+    "notes_task": 1,
+    "shell_export": {
+      "file": "state/trillionnium-ui/local-drafts-v1.json",
+      "sha256": "e1bbb8f9c70c67afcc2ddc2126083023ff6d284e0fa934a8b2458f3d3691feb4",
+      "content": {
+        "version": 1,
+        "drafts": [
+          "\u4f60\u597d"
+        ]
+      },
+      "mode": "0o600"
+    },
+    "final_snapshot": {
+      "type": "snapshot",
+      "tasks": [
+        {
+          "id": 1,
+          "workspace": "personal",
+          "app": "notes",
+          "state": "cancelled",
+          "pid": 129,
+          "exit_code": null,
+          "detail": "Observed SIGKILL termination",
+          "created_unix_ms": 1792246173862,
+          "updated_unix_ms": 1792246177474,
+          "execution_mode": "linux_host_process",
+          "hos2_revision": null,
+          "ui_first_frame_unix_ms": 1792246174063,
+          "wayland_socket_epoch_at_launch": null
+        }
+      ],
+      "resources": {
+        "sampled_unix_ms": 1792246177474,
+        "mem_total_kib": 10206484,
+        "mem_available_kib": 4028680,
+        "load_average_1m": 0.15,
+        "source": "Linux host /proc and Wayland socket metadata (NOT HOS2)",
+        "wayland": {
+          "status": "unconfigured",
+          "socket_observation_epoch": 1,
+          "sampled_unix_ms": 1792246177474
+        }
+      },
+      "session_instance": "0d5f53effda00b776306644e5ce1f303",
+      "hepta": {
+        "connection": "not_configured",
+        "last_attempt_unix_ms": null,
+        "error_code": null,
+        "last_observation": null
+      }
+    }
+  },
+  "ibus_signal_trace_alive_at_end": true,
+  "cleanup": [
+    {
+      "label": "rust-shell",
+      "namespace_pid": 98,
+      "observed_returncode": -15
+    },
+    {
+      "label": "rust-session",
+      "namespace_pid": 96,
+      "observed_returncode": -15
+    },
+    {
+      "label": "ibus-private-signal-trace",
+      "namespace_pid": 95,
+      "observed_returncode": -15
+    },
+    {
+      "label": "ibus-daemon",
+      "namespace_pid": 24,
+      "observed_returncode": -15
+    },
+    {
+      "label": "dbus",
+      "namespace_pid": 21,
+      "observed_returncode": 0
+    },
+    {
+      "label": "xvfb",
+      "namespace_pid": 5,
+      "observed_returncode": 0
+    }
+  ],
+  "finished_unix_ms": 1792246195478
+}
