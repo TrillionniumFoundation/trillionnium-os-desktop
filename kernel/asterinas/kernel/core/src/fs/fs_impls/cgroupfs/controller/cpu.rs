@@ -796,7 +796,7 @@ mod quota_debt_regressions {
             last_completed + period + quota / 2,
         );
         assert_eq!(budget.window_start, last_completed + period);
-        assert_eq!(budget.carry_debt_clocks, period / 2 - quota);
+        assert_eq!(budget.carry_debt_clocks, period.saturating_sub(period / 2) - quota);
         assert_eq!(budget.used_clocks, quota / 2);
         assert!(!budget.eligible(last_completed + period + quota / 2));
     }
@@ -810,7 +810,7 @@ mod quota_debt_regressions {
         budget.charge(start + period / 2, start + 5 * period + quota / 2);
         // First completed period: P/2 work - Q budget. The following four
         // completed periods were fully busy; no per-period heap work or loop.
-        let expected = period / 2 - quota + 4 * (period - quota);
+        let expected = period.saturating_sub(period / 2) - quota + 4 * (period - quota);
         assert_eq!(budget.carry_debt_clocks, expected);
         assert_eq!(budget.used_clocks, quota / 2);
     }
