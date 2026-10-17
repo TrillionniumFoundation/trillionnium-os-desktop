@@ -554,10 +554,12 @@ impl Desktop {
                     ui.label(RichText::new(task.state.label()).color(state_color(task.state)));
                 });
                 ui.small(format!("PID {:?} · {}", task.pid, task.execution_mode));
-                let window_status = self.resources.as_ref().map_or(
-                    "UNVERIFIED: NO CURRENT DISPLAY OBSERVATION",
-                    |sample| task.host_window_observation(&sample.wayland).label(),
-                );
+                let window_status = self
+                    .resources
+                    .as_ref()
+                    .map_or("UNVERIFIED: NO CURRENT DISPLAY OBSERVATION", |sample| {
+                        task.host_window_observation(&sample.wayland).label()
+                    });
                 if !task.state.is_terminal() {
                     ui.colored_label(warning(), window_status);
                 }

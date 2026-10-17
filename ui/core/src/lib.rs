@@ -523,7 +523,10 @@ mod tests {
             app.host_window_observation(&sampled),
             HostWindowObservation::SocketUnavailable
         );
-        assert!(app.host_window_observation(&sampled).label().contains("UNVERIFIED"));
+        assert!(app
+            .host_window_observation(&sampled)
+            .label()
+            .contains("UNVERIFIED"));
     }
 
     #[test]

@@ -473,9 +473,10 @@ mod tests {
         let before = state.terminal_input.clone();
         state.run_restricted_command();
         assert_eq!(state.terminal_input, before);
-        assert!(state.terminal_output.last().is_some_and(|line| {
-            line.contains("active IME composition")
-        }));
+        assert!(state
+            .terminal_output
+            .last()
+            .is_some_and(|line| { line.contains("active IME composition") }));
         state.terminal_output.clear();
         frame(
             &ctx,
