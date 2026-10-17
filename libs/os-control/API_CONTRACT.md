@@ -42,20 +42,27 @@ actual HOS2 byte layout and payload.
    CapSpace binding, or `with_capacity_for_owner` to also mint the non-Clone
    `OriginalOwnerAuthority` for the authenticated original Hepta owner.
    The HOS2 maximum/default is 1024 non-retired writes.
-2. Resolve a kernel ResourceDomain and a publisher-bound `Grant`. Build a
-   `DeliveryRequest::from_wire` with sequence, expected revision, cap and
+2. Resolve the existing kernel resource owner and pin its actual `Arc` with
+   `NativeTarget::from_owner(owner, domain_id, stable_object_id)`. Snapshot
+   the authenticated publisher, grant epoch and immediate-parent-to-root
+   epoch chain with `NativeGrant::from_owner`. Build a
+   `NativeDeliveryRequest::from_wire` with sequence, expected revision, cap and
    exact nonzero HOS2 target slot/generation. Stable target identity, grant
    epoch/ancestry and optional payload digest are also bound. The unbound
-   `DeliveryRequest::new` constructor is only for legacy host fixtures.
-3. Call `reserve`. Sequence allocation is global across all targets. A second
+   `DeliveryRequest::new` constructor and `ResourceDomain`/`Grant` route are
+   host fixtures; native admission requires no shadow ResourceDomain.
+3. Call `reserve_native`. Sequence allocation is global across host and native
+   requests and all targets. A second
    target, cap, expected revision, grant epoch, or payload digest for the same
    D is `Conflict`; a duplicate pending D is `Busy`; a duplicate terminal D
-   cannot allocate a new effect. `reserve_or_get` is the copyout-retry helper.
+   cannot allocate a new effect. `reserve_native_or_get` is the native
+   copyout-retry helper (`reserve_or_get` serves host requests).
 4. Use `execute_reserved(token, publisher, callback)` for external A05/A06
    mutation under the reserved entry's independent execution gate. The callback checks real grant,
    lease/epoch, target, CAS and settled usage under its resource lock, then
    returns a `PublishOutcome`. `commit` exercises this same seam with the
-   host ResourceDomain. `publish` is a reconciliation entry after an effect
+   host ResourceDomain only; it rejects native tokens without executing or
+   terminalizing them. `publish` is a reconciliation entry after an effect
    has already been safely fenced/established by the trusted adapter.
    Tokens are instance-bound, so colliding identity bytes do not grant rights.
 5. Create an exact `DeliveryView` for history observation. Query is read-only;
@@ -66,9 +73,25 @@ actual HOS2 byte layout and payload.
 The kernel must add real process-start/exec-epoch/session credentials around
 this API. Possession of a host-model token is not a kernel credential.
 
+The native constructors are trusted resolver value seams, not authentication.
+They retain the actual owner allocation and stable identity without storing
+another budget, revision, runtime counter, scheduler or persistent ledger.
+Rewrapping the same owner `Arc` dedupes; equal IDs on different allocations
+conflict. Host and native requests also conflict under one D even if their
+public binding bytes match. Complete ancestor snapshots participate in replay
+comparison. A05 must retain its correctly resolved owner/grant context for the
+callback; this library neither downcasts the owner nor calls its policy.
+
 ## A06: CPU scheduler and ResourceDomain
 
-`ResourceDomain` exposes stable `ResourceDomainId` and `StableObjectId`, a
+For native use, keep A06's existing owner and call `execute_reserved` with a
+callback that settles runtime and checks current grant/ancestor epochs,
+lease, revision CAS and parent constraints under that owner's actual mutation
+lock. Return the exact `BudgetReceipt` or immutable refusal. Revoke and this
+commit must share that lock. The synthetic native-owner tests demonstrate
+this API shape, not actual A06 integration.
+
+The host `ResourceDomain` exposes stable `ResourceDomainId` and `StableObjectId`, a
 revision-CAS budget update, `try_usage`, `revoke`, explicit `user_paused` state,
 and the host-model `charge_cpu` primitive. `install_budget_for_host_model` is
 the seam to replace with the scheduler's mutation path.
@@ -131,6 +154,13 @@ lost and clear the table. Closing rejects reserve/execute/publish/retire with
 HistoryLost, but existing views can still query pending or terminal results.
 An old pending entry may become HistoryLost as it is fenced; complete history
 loss is published only after admitted callbacks have finished.
+
+Retirement advances its frontier and removes the terminal prefix atomically
+under the table mutex, then releases that mutex before dropping reclaimed
+requests/owner pins. Loss similarly publishes loss and empties the table,
+then releases both the table and loss gates before destroying owners. An
+owner destructor may therefore reenter namespace observation or loss; it is
+never invoked by these reclamation paths while their internal locks are held.
 
 The Rust tests under `tests/control` are host-model evidence only. They do not
 claim native kernel capability, real copyout fault handling, power-loss
@@ -505,10 +535,10 @@ or a real Asterinas runqueue/IRQ memory-order proof.
 
 The host-only `validate_invariants_for_host_model()` now also checks
 the exact HOS2 wire handle pair (both zero only in explicit host fixtures,
-otherwise both nonzero) and that the canonical bound ResourceDomainId and
-stable-object ID match the actual retained target instance. It obtains
-locks in namespace -> result slot -> resource state order, never entering
-the ResourceDomain mutation gate from the audit path.
+otherwise both nonzero) and that the canonical binding matches the complete
+retained host/native request. It obtains locks in namespace -> result slot
+order and never enters an external owner's policy or resource mutation gate.
+Native identity assignment remains the trusted resolver's responsibility.
 
 Two internal Rust unit tests deliberately corrupt otherwise private
 namespace fixtures to prove that the auditor **rejects**, rather than

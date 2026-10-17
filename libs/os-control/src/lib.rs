@@ -26,6 +26,9 @@ use core::fmt;
 mod sync;
 use sync::{lock_unpoisoned, Arc, Mutex, Weak};
 
+mod native;
+pub use native::{NativeDeliveryRequest, NativeGrant, NativeTarget};
+
 pub const CPU_PERIOD_NS: u64 = 100_000_000;
 pub const DEFAULT_WINDOW_CAPACITY: usize = 1024;
 /// Host-model resource family identity tombstones. Kernel integration must
@@ -1286,20 +1289,54 @@ pub enum PublishOutcome {
     },
 }
 
+#[derive(Clone)]
+enum ReservedRequest {
+    Host(DeliveryRequest),
+    Native(NativeDeliveryRequest),
+}
+
+impl ReservedRequest {
+    fn binding(&self) -> RequestBinding {
+        match self {
+            Self::Host(request) => request.binding(),
+            Self::Native(request) => request.binding(),
+        }
+    }
+
+    fn valid_wire_target(&self) -> bool {
+        match self {
+            Self::Host(request) => {
+                (request.wire_target_slot == 0) == (request.wire_target_generation == 0)
+            }
+            Self::Native(request) => {
+                request.wire_target_slot() != 0 && request.wire_target_generation() != 0
+            }
+        }
+    }
+
+    fn same_target_and_authority(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::Host(left), Self::Host(right)) => {
+                Arc::ptr_eq(&left.grant.domain.inner, &right.grant.domain.inner)
+                    && left.grant.ancestor_epochs == right.grant.ancestor_epochs
+            }
+            (Self::Native(left), Self::Native(right)) => {
+                left.grant().target().same_instance(right.grant().target())
+                    && left.grant().ancestor_epochs() == right.grant().ancestor_epochs()
+            }
+            _ => false,
+        }
+    }
+}
+
 struct Slot {
     // The bounded window owns the canonical request and its resource pin.
-    request: DeliveryRequest,
+    request: ReservedRequest,
     // Long executor serialization is separate from short observation state.
     // Namespace-table readers never acquire this gate.
     execution_gate: Mutex<()>,
     binding: RequestBinding,
     publisher: PublisherId,
-    // Public stable-ID bytes cannot authenticate an in-memory target.
-    // Retain the original resource instance until contiguous retirement.
-    target_instance: Arc<ResourceDomainInner>,
-    // Authoritative grant context, not extra HOS2 wire bytes. An old D
-    // cannot be reissued with a fresh post-revocation ancestor grant.
-    ancestor_epochs: Vec<u64>,
     state: Mutex<SlotState>,
 }
 
@@ -1613,7 +1650,27 @@ impl ControlCore {
         request: DeliveryRequest,
         publisher: PublisherId,
     ) -> Result<ReserveToken, DeliveryError> {
-        if request.sequence == 0 || request.sequence == u64::MAX {
+        self.reserve_request(ReservedRequest::Host(request), publisher)
+    }
+
+    /// Bind a delivery to the actual external owner, without a host domain.
+    /// The trusted A05 resolver creates NativeGrant; execution must still
+    /// check its current real authority under the external mutation lock.
+    pub fn reserve_native(
+        &self,
+        request: NativeDeliveryRequest,
+        publisher: PublisherId,
+    ) -> Result<ReserveToken, DeliveryError> {
+        self.reserve_request(ReservedRequest::Native(request), publisher)
+    }
+
+    fn reserve_request(
+        &self,
+        request: ReservedRequest,
+        publisher: PublisherId,
+    ) -> Result<ReserveToken, DeliveryError> {
+        let binding = request.binding();
+        if binding.sequence == 0 || binding.sequence == u64::MAX {
             return Err(DeliveryError::InvalidSequence);
         }
         if !publisher.is_nonzero() {
@@ -1623,36 +1680,35 @@ impl ControlCore {
         // reservation table. They must not burn D or reserve a result slot.
         // Runtime grant/revision/parent/clock failures after reservation do
         // become immutable terminal results.
-        if request.expected_revision == 0
-            || request.expected_revision == u64::MAX
-            || request.period_ns != CPU_PERIOD_NS
-            || request.cap_ns > CPU_PERIOD_NS
-            || (request.wire_target_slot == 0) != (request.wire_target_generation == 0)
+        if binding.expected_revision == 0
+            || binding.expected_revision == u64::MAX
+            || binding.period_ns != CPU_PERIOD_NS
+            || binding.cap_ns > CPU_PERIOD_NS
+            || !request.valid_wire_target()
         {
             return Err(DeliveryError::InvalidRequest);
         }
-        if publisher != request.grant.principal {
+        if publisher != binding.publisher {
             return Err(DeliveryError::PermissionDenied);
         }
         let mut ns = lock_unpoisoned(&self.namespace.state);
         if ns.history_lost || ns.closing {
             return Err(DeliveryError::HistoryLost);
         }
-        if request.sequence <= ns.retired_through {
+        if binding.sequence <= ns.retired_through {
             return Err(DeliveryError::Retired);
         }
-        if request.sequence < ns.next_sequence {
-            if let Some(slot) = ns.slots.get(&request.sequence) {
+        if binding.sequence < ns.next_sequence {
+            if let Some(slot) = ns.slots.get(&binding.sequence) {
                 // A globally unique D binds the publisher as well as its
                 // canonical payload and stable target. Neither another
                 // publisher nor another target may claim the saved result.
                 if slot.publisher == publisher
-                    && slot.binding == request.binding()
-                    && Arc::ptr_eq(&slot.target_instance, &request.grant.domain.inner)
-                    && slot.ancestor_epochs.as_slice() == request.grant.ancestor_epochs.as_slice()
+                    && slot.binding == binding
+                    && slot.request.same_target_and_authority(&request)
                 {
                     let observation =
-                        observation_from_slot(self.identity(), request.sequence, slot);
+                        observation_from_slot(self.identity(), binding.sequence, slot);
                     return match observation.state {
                         DeliveryState::Reserved => Err(DeliveryError::Busy),
                         DeliveryState::Terminal => Err(DeliveryError::TerminalImmutable),
@@ -1663,10 +1719,10 @@ impl ControlCore {
             }
             return Err(DeliveryError::HistoryLost);
         }
-        if request.sequence > ns.next_sequence {
+        if binding.sequence > ns.next_sequence {
             return Err(DeliveryError::OutOfOrder {
                 expected: ns.next_sequence,
-                got: request.sequence,
+                got: binding.sequence,
             });
         }
         if ns.slots.len() >= ns.capacity {
@@ -1674,14 +1730,12 @@ impl ControlCore {
         }
         let id = DeliveryId {
             namespace: self.identity(),
-            sequence: request.sequence,
+            sequence: binding.sequence,
         };
         let slot = Arc::new(Slot {
             execution_gate: Mutex::new(()),
-            binding: request.binding(),
+            binding,
             publisher,
-            target_instance: Arc::clone(&request.grant.domain.inner),
-            ancestor_epochs: request.grant.ancestor_epochs.clone(),
             request,
             state: Mutex::new(SlotState::Reserved),
         });
@@ -1708,9 +1762,26 @@ impl ControlCore {
         request: DeliveryRequest,
         publisher: PublisherId,
     ) -> Result<ReserveAttempt, DeliveryError> {
-        let sequence = request.sequence;
+        self.reserve_request_or_get(ReservedRequest::Host(request), publisher)
+    }
+
+    /// Copyout/retry helper for the same native-owner delivery namespace.
+    pub fn reserve_native_or_get(
+        &self,
+        request: NativeDeliveryRequest,
+        publisher: PublisherId,
+    ) -> Result<ReserveAttempt, DeliveryError> {
+        self.reserve_request_or_get(ReservedRequest::Native(request), publisher)
+    }
+
+    fn reserve_request_or_get(
+        &self,
+        request: ReservedRequest,
+        publisher: PublisherId,
+    ) -> Result<ReserveAttempt, DeliveryError> {
         let binding = request.binding();
-        match self.reserve(request, publisher) {
+        let sequence = binding.sequence;
+        match self.reserve_request(request, publisher) {
             Ok(token) => Ok(ReserveAttempt::Reserved(token)),
             Err(DeliveryError::Busy | DeliveryError::TerminalImmutable) => {
                 let view = self.delivery_view();
@@ -1814,14 +1885,23 @@ impl ControlCore {
                 return Err(DeliveryError::PendingPrefix);
             }
         }
+        let mut reclaimed = Vec::new();
         for sequence in (ns.retired_through + 1)..=ack.through {
-            ns.slots.remove(&sequence);
+            if let Some(slot) = ns.slots.remove(&sequence) {
+                reclaimed.push(slot);
+            }
         }
         ns.retired_through = ack.through;
-        Ok(RetireReceipt {
+        let receipt = RetireReceipt {
             retired_through: ns.retired_through,
             next_sequence: ns.next_sequence,
-        })
+        };
+        // The real owner's final destructor may enter its own locks or read
+        // this namespace. Publish the frontier before dropping pins, without
+        // holding the namespace table lock during external destruction.
+        drop(ns);
+        drop(reclaimed);
+        Ok(receipt)
     }
 
     /// Model a lost namespace after boot/recovery.  Existing D values remain
@@ -1849,9 +1929,12 @@ impl ControlCore {
         }
         let mut ns = lock_unpoisoned(&self.namespace.state);
         ns.history_lost = true;
-        ns.slots.clear();
+        let reclaimed = core::mem::take(&mut ns.slots);
         ns.generation = ns.generation.saturating_add(1);
         ns.closing = false;
+        drop(ns);
+        drop(_loss);
+        drop(reclaimed);
     }
 
     pub fn window_len(&self) -> usize {
@@ -1914,15 +1997,11 @@ impl ControlCore {
             // Audit lock order is namespace -> short slot state -> resource
             // state. Commit holds the independent execution gate, briefly
             // marks admission, releases slot state, then enters the resource
-            // path. Never acquire resource state before slot state here.
+            // path. Audit compares the retained immutable request; it never
+            // locks or inspects external owner policy.
             let slot_state = lock_unpoisoned(&slot.state);
-            {
-                let target = lock_unpoisoned(&slot.target_instance.state);
-                if target.id != slot.binding.target
-                    || target.stable_object_id != slot.binding.stable_object_id
-                {
-                    return Err(DeliveryInvariantError::InvalidSlotBinding);
-                }
+            if slot.request.binding() != slot.binding || !slot.request.valid_wire_target() {
+                return Err(DeliveryInvariantError::InvalidSlotBinding);
             }
             match *slot_state {
                 SlotState::Reserved | SlotState::Executing => {}
@@ -2113,9 +2192,13 @@ impl ControlCore {
         now_ns: u64,
     ) -> Result<DeliveryObservation, DeliveryError> {
         let slot = self.token_slot(token, publisher)?;
+        let request = match &slot.request {
+            ReservedRequest::Host(request) => request,
+            ReservedRequest::Native(_) => return Err(DeliveryError::InvalidRequest),
+        };
         self.execute_reserved(token, publisher, |binding| {
-            match slot.request.grant.domain.apply_budget(
-                &slot.request.grant,
+            match request.grant.domain.apply_budget(
+                &request.grant,
                 binding.expected_revision,
                 binding.period_ns,
                 binding.cap_ns,
@@ -2435,8 +2518,6 @@ mod tests {
             binding: corrupted,
             publisher,
             request: original_slot.request.clone(),
-            target_instance: Arc::clone(&original_slot.target_instance),
-            ancestor_epochs: Vec::new(),
             state: Mutex::new(SlotState::Reserved),
         });
         lock_unpoisoned(&core.namespace.state).slots.insert(1, bad);
@@ -2452,8 +2533,6 @@ mod tests {
             binding: corrupted,
             publisher,
             request: original_slot.request.clone(),
-            target_instance: Arc::clone(&original_slot.target_instance),
-            ancestor_epochs: Vec::new(),
             state: Mutex::new(SlotState::Reserved),
         });
         lock_unpoisoned(&core.namespace.state).slots.insert(1, bad);
