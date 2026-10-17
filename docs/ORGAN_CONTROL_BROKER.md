@@ -28,7 +28,8 @@ Hepta 持久身份 K 与本次内核投递 D 永远分开：
 
 | 名称 | 形态 | 所有者 | 用途 |
 | --- | --- | --- | --- |
-| K | `(scope_id, operation_id, payload_digest)` | 原 Hepta operations owner | 业务去重、语义和最终效果事实 |
+| K | `(scope_id, operation_id)` | 原 Hepta operations owner | 持久业务主键、去重和历史定位 |
+| payload_digest | 独立 `Digest32` | 原 Hepta operations owner | 不可变语义与最终使用授权绑定；**不是 K 主键** |
 | D | `(boot_id, cap_space_id, sequence)` | A05 控制会话 | 一次启动内的有序投递和结果槽 |
 | authority_epoch | 单调代际 | authority/final-use owner | 撤销和授权边界 |
 | body_generation | 组合代际 | CNS/Organ owner | 组件和路由一致性 |
@@ -73,8 +74,8 @@ UI API 必须是版本化、无指针、带长度上限的 typed JSON/CBOR 或�
 规则：
 
 1. `client_request_id` 只用于客户端重试去重，不能替代 K 或 D。
-2. 相同 `(scope_id, operation_id)`、相同 digest 必须返回原收据；相同持久主键、不同 digest 必须拒绝。
-3. UI 不得提交 CapSpace、boot_id、原始用户地址、Final-use、签名或设备 fd。
+2. 相同 `(scope_id, operation_id)` 和全部已验证语义（包括 digest、前驱/目标、revision、authority/body generation）保持不变时，新的 `client_request_id` 可取得原收据；同 K 任一语义字段变化必须拒绝。nonce 不纳入持久 K。
+3. UI 不得提交 CapSpace、boot_id、原始用户地址、Final-use、签名或设备 fd；禁止这些字段嵌套于任意 payload 层级或用 camelCase/连字符绕过。入站结构/标识/代际与序列化字节必须有界，不能信任可变原始 payload 引用。
 4. `stop` 只表示停止请求；停止请求的结果仍需由 owner 观察并确认。
 5. UI 必须显示请求状态与实际终局的区别，不能以模型文本、进程退出码或 WebSocket 通知宣称设备效果。
 
