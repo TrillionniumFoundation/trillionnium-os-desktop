@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use core::{
-    sync::atomic::{AtomicBool, AtomicI16, AtomicU32, Ordering},
+    sync::atomic::{AtomicBool, AtomicI16, AtomicU32, AtomicU64, Ordering},
     time::Duration,
 };
 
@@ -70,6 +70,25 @@ define_atomic_version_of_integer_like_type!(Pid, {
 pub(crate) type Pgid = u32;
 /// Session ID.
 pub(crate) type Sid = u32;
+
+/// Monotonic process-start identity used by native control sessions.
+/// PIDs are recycled after exit, so a control fd binds to this lifetime value
+/// instead of relying on a PID. Exhaustion fails closed rather than wrapping.
+static NEXT_HEPTA_PROCESS_START_ID: AtomicU64 = AtomicU64::new(1);
+
+fn allocate_hepta_process_start_id() -> u64 {
+    loop {
+        let current = NEXT_HEPTA_PROCESS_START_ID.load(Ordering::Acquire);
+        assert_ne!(current, 0, "HOS2 process-start identity wrapped");
+        assert_ne!(current, u64::MAX, "HOS2 process-start identity exhausted");
+        if NEXT_HEPTA_PROCESS_START_ID
+            .compare_exchange(current, current + 1, Ordering::AcqRel, Ordering::Acquire)
+            .is_ok()
+        {
+            return current;
+        }
+    }
+}
 
 /// The process group ID for process group created by [`ProcessGroup::new_bootstrap`].
 const BOOTSTRAP_PGID: Pgid = 0;
@@ -150,6 +169,11 @@ pub struct Process {
     timer_manager: PosixTimerManager,
     /// Process start time since boot.
     start_time: Jiffies,
+
+    /// Non-recycled lifetime identity for native HOS2 session binding.
+    hepta_process_start_id: u64,
+    /// Incremented after a successful execve to fence old-image fds.
+    hepta_exec_epoch: AtomicU64,
 
     // Namespaces
     /// The user namespace
@@ -267,6 +291,8 @@ impl Process {
                 prof_clock,
                 timer_manager,
                 start_time: Jiffies::elapsed(),
+                hepta_process_start_id: allocate_hepta_process_start_id(),
+                hepta_exec_epoch: AtomicU64::new(0),
                 user_ns: Mutex::new(user_ns),
             }
         })
@@ -304,6 +330,28 @@ impl Process {
     /// Returns the process start time since boot.
     pub(crate) fn start_time(&self) -> Jiffies {
         self.start_time
+    }
+
+    /// Returns the process-lifetime identity used by native HOS2 sessions.
+    /// This value is never reused after PID recycling.
+    pub(crate) fn hepta_process_start_id(&self) -> u64 {
+        self.hepta_process_start_id
+    }
+
+    /// Returns the image-generation fence for native HOS2 sessions.
+    pub(crate) fn hepta_exec_epoch(&self) -> u64 {
+        self.hepta_exec_epoch.load(Ordering::Acquire)
+    }
+
+    /// Advances the image-generation fence after a successful execve.
+    /// Wrapping is rejected so an old fd can never become valid again.
+    pub(crate) fn advance_hepta_exec_epoch(&self) -> Result<u64> {
+        self.hepta_exec_epoch
+            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |current| {
+                current.checked_add(1)
+            })
+            .map(|previous| previous + 1)
+            .map_err(|_| Error::with_message(Errno::EOVERFLOW, "HOS2 exec epoch exhausted"))
     }
 
     pub(crate) fn tasks(&self) -> &Mutex<TaskSet> {
