@@ -118,8 +118,8 @@ def run_command(argv: list[str], cwd: Path, env: dict[str, str], timeout: float)
 # Acceptance must not trust a child mutation runner that silently lowers its
 # denominator while reporting success=true. Keep this version/count explicit
 # and revise it when the real compiled-source mutation set changes.
-PINNED_MUTATION_SCHEMA = "hos2-rust-source-mutations-v5"
-EXPECTED_COMPILED_MUTANTS = 19
+PINNED_MUTATION_SCHEMA = "hos2-rust-source-mutations-v6"
+EXPECTED_COMPILED_MUTANTS = 20
 
 
 def run_compiled_mutations(python: str, cargo: str, toolchain: str, snapshot: Path,
