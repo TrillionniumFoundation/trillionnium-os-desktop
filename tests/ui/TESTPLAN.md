@@ -52,6 +52,9 @@ Unit coverage:
 - embedded newline, carriage return, escape and bidi log-forgery payloads
   refused before command history rendering, while valid Chinese/emoji echo
   survives without altering input or claiming Hepta execution
+- synthetic egui IME Enabled/Preedit/Commit/Disabled plus Enter in the actual
+  restricted terminal widget; no shell/log execution unless Run is clicked
+  (still NOT real live Wayland Chinese candidate UI evidence)
 - chat workspace explicit app actions linked to observed process task cards
 - oversized/truncated IPC frames and unknown statuses
 - successful observed host child exit

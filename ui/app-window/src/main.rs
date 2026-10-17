@@ -381,6 +381,81 @@ mod tests {
         assert!(state.terminal_close_requested);
     }
 
+    /// A synthetic egui backend event test, not proof that a live host IME
+    /// renders Chinese candidate windows under Weston or Asterinas.
+    #[test]
+    fn ime_candidate_enter_never_implicitly_runs_a_terminal_command() {
+        fn frame(ctx: &egui::Context, state: &mut ClientWindow, events: Vec<egui::Event>) {
+            let input = egui::RawInput {
+                screen_rect: Some(egui::Rect::from_min_size(
+                    egui::Pos2::ZERO,
+                    egui::vec2(900.0, 600.0),
+                )),
+                events,
+                ..Default::default()
+            };
+            let _ = ctx.run(input, |ctx| {
+                egui::CentralPanel::default().show(ctx, |ui| {
+                    state.restricted_terminal(ui, ctx);
+                });
+            });
+        }
+
+        let ctx = egui::Context::default();
+        let mut state = ClientWindow {
+            kind: AppKind::Terminal,
+            workspace: Workspace::Build,
+            task_id: 17,
+            notes: String::new(),
+            left: String::new(),
+            right: String::new(),
+            result: String::new(),
+            focused_input: String::new(),
+            terminal_input: "echo ".into(),
+            terminal_output: Vec::new(),
+            terminal_close_requested: false,
+            first_frame_emitted: false,
+        };
+
+        frame(&ctx, &mut state, vec![]);
+        ctx.memory_mut(|memory| {
+            memory.request_focus(egui::Id::new("restricted-terminal-input"));
+        });
+        frame(
+            &ctx,
+            &mut state,
+            vec![
+                egui::Event::Ime(egui::ImeEvent::Enabled),
+                egui::Event::Ime(egui::ImeEvent::Preedit("nihao".into())),
+            ],
+        );
+        assert!(
+            state.terminal_output.is_empty(),
+            "an uncommitted Chinese candidate must never run a command"
+        );
+        frame(
+            &ctx,
+            &mut state,
+            vec![
+                egui::Event::Ime(egui::ImeEvent::Commit("你好".into())),
+                egui::Event::Ime(egui::ImeEvent::Disabled),
+                egui::Event::Key {
+                    key: egui::Key::Enter,
+                    physical_key: None,
+                    pressed: true,
+                    repeat: false,
+                    modifiers: egui::Modifiers::default(),
+                },
+            ],
+        );
+        assert!(
+            state.terminal_output.is_empty(),
+            "IME candidate confirmation via Enter is not an explicit Run click"
+        );
+        assert!(!state.terminal_close_requested);
+        assert!(state.terminal_input.contains("你好"));
+    }
+
     #[test]
     fn restricted_terminal_refuses_forged_log_lines_and_bidi_controls() {
         let mut state = ClientWindow {
