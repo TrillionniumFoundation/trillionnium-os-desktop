@@ -34,9 +34,11 @@ Older observations and same-revision conflicts are rejected, so a stale grant
 cannot resurrect a revoked or expired capability. The consumer cache holds
 at most 1024 observations: adding a new grant when full fails closed without
 evicting any old entry; an existing grant may still be revoked. On bridge
-disconnect or generation/provenance uncertainty, `invalidate_all()` discards
-all cached grants; `invalidate_scope()` clears one owner's trusted scope.
-Only fresh authenticated A05 observations may authorize after reconnect.
+disconnect or generation/provenance uncertainty, `invalidate_all()` poisons
+all cached grants to Unknown but **preserves revision tombstones**;
+`invalidate_scope()` does so for one scope. A stale same-revision grant cannot
+resurrect after disconnect. Only a new authenticated A05 owner context,
+reconciled against durable authority, may create a fresh cache instance.
 `request()` is an explicit handoff marker for the future A05 portal and has
 no local side effect. These
 are negative, scope-isolation and ordering checks for UI behavior, not

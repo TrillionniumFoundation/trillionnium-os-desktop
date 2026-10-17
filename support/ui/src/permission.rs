@@ -188,17 +188,25 @@ impl PermissionState {
         }
     }
 
-    /// Drop all cached decisions when the authenticated owner is disconnected,
-    /// changes generation or has unknown provenance. This is local consumer
-    /// invalidation, not a capability revoke operation in the A05 owner.
+    /// Invalidate cached decisions when the authoritative stream is lost.
+    /// Preserve revision tombstones so a replay of a pre-disconnect grant
+    /// cannot be accepted as a newly observed authorization. This is a local
+    /// UI guard, NOT a revoke or owner-authentication protocol.
     pub fn invalidate_all(&mut self) {
-        self.observations.clear();
+        for observation in self.observations.values_mut() {
+            observation.decision = PermissionDecision::Unknown;
+        }
     }
 
-    /// Drop only the decisions associated with one owner-invalidated scope.
+    /// Invalidate only one owner's scope, preserving its last revision.
+    /// To reset owner generations, the future trusted A05 bridge must create
+    /// a NEW consumer cache after identity/revision reconciliation.
     pub fn invalidate_scope(&mut self, scope: PermissionScopeId) {
-        self.observations
-            .retain(|(observed_scope, _), _| *observed_scope != scope);
+        for ((observed_scope, _), observation) in &mut self.observations {
+            if *observed_scope == scope {
+                observation.decision = PermissionDecision::Unknown;
+            }
+        }
     }
 
     /// Return the latest observation, if one has been received for this
@@ -286,6 +294,53 @@ mod tests {
             );
             assert!(!state.allows(scope, PermissionKind::Clipboard));
         }
+    }
+
+    #[test]
+    fn old_grant_cannot_resurrect_after_disconnection_invalidation() {
+        let mut state = PermissionState::new();
+        state
+            .observe(
+                PERSONAL,
+                PermissionKind::Microphone,
+                PermissionDecision::Granted,
+                41,
+            )
+            .unwrap();
+        state.invalidate_all();
+        assert_eq!(
+            state.decision(PERSONAL, PermissionKind::Microphone),
+            PermissionDecision::Unknown
+        );
+        assert_eq!(
+            state.observe(
+                PERSONAL,
+                PermissionKind::Microphone,
+                PermissionDecision::Granted,
+                41,
+            ),
+            Err(PermissionObservationError::ConflictingRevision)
+        );
+        assert_eq!(
+            state.observe(
+                PERSONAL,
+                PermissionKind::Microphone,
+                PermissionDecision::Granted,
+                40,
+            ),
+            Err(PermissionObservationError::StaleRevision)
+        );
+        assert!(!state.allows(PERSONAL, PermissionKind::Microphone));
+        assert_eq!(
+            state.observe(
+                PERSONAL,
+                PermissionKind::Microphone,
+                PermissionDecision::Denied,
+                42,
+            ),
+            Ok(PermissionObservationUpdate::Updated)
+        );
+        assert!(!state.allows(PERSONAL, PermissionKind::Microphone));
     }
 
     #[test]

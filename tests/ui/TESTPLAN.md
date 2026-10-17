@@ -30,9 +30,10 @@ Unit coverage:
   negative fixtures must never be reported as owner observations
 - read-only adapter pins the first successful *observed* boot and rejects
   subsequent cross-boot results; a rejected response never pins the boot
-- bounded (1024) permission observation cache, disconnected-owner invalidation,
-  scope-local invalidation, revoke-at-capacity and SAME-revision conflicting
-  grant poisoning to Unknown (including replay) fail-closed regressions
+- bounded (1024) permission observation cache, disconnected-owner invalidation
+  with revision tombstones, scope-local invalidation, revoke-at-capacity and
+  SAME-revision conflicting grant poisoning to Unknown (including replay)
+  fail-closed regressions
 - no Pending -> Completed shortcut
 - distinction among pending/running/partial/unknown/cancel_requested
 - Chinese UTF-8 roundtrip
