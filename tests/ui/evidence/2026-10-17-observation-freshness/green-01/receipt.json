@@ -1,0 +1,67 @@
+{
+  "mode": "green",
+  "status": "failed",
+  "started_utc": "2026-10-17T22:27:06.764265+00:00",
+  "source_commit": "f0f10dff564037fabc35809a8d8bb174dc5becb9",
+  "source_tree": "85d75a56d80b044afa486f0cb4c6159b889a0a12",
+  "ui_tree": "01dfd530cb0613dec6835733bce7855047db283b",
+  "target": "/workspace/scratch/98f315e377b2/next-tools/ui-r6-freshness-build/target",
+  "cache_mode": "warm_copy_of_retained_R5_target",
+  "source_cache_modified": false,
+  "copy_receipt_sha256": "c5d2222dbbf30abc30abdd83f90b2c539d963906632f41d34a0d7f2c6bef9434",
+  "helper_sha256": "48660be97c1bf8c8925d072319c784866e8bf99fe18b89d7aa50b69a860cf9fa",
+  "child_guard_sha256": "5ad34b7157b16fc7754d41dac2bd61ebfac5b5c79d71eb5a7818563254c05fbf",
+  "disk_reserve_bytes": 1073741824,
+  "nonreclaimable_memory_stop_bytes": 7516192768,
+  "per_command_deadline_seconds": 300,
+  "commands": [
+    {
+      "label": "compiler-version",
+      "argv": [
+        "/workspace/scratch/98f315e377b2/next-tools/cargo/bin/rustc",
+        "-vV"
+      ],
+      "started_utc": "2026-10-17T22:27:06.770406+00:00",
+      "exit_code": 0,
+      "elapsed_seconds": 0.201,
+      "finished_utc": "2026-10-17T22:27:06.971399+00:00"
+    },
+    {
+      "label": "freshness-tests",
+      "argv": [
+        "/workspace/scratch/98f315e377b2/next-tools/cargo/bin/cargo",
+        "test",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "-p",
+        "trill-shell",
+        "--locked",
+        "--offline",
+        "observation_freshness_tests",
+        "--",
+        "--nocapture"
+      ],
+      "started_utc": "2026-10-17T22:27:06.971797+00:00",
+      "exit_code": 101,
+      "elapsed_seconds": 3.201,
+      "finished_utc": "2026-10-17T22:27:10.172758+00:00"
+    }
+  ],
+  "samples": [
+    {
+      "command": "compiler-version",
+      "elapsed_seconds": 0.0,
+      "disk_free_bytes": 2610855936,
+      "nonreclaimable_memory_bytes": 2036825976
+    },
+    {
+      "command": "freshness-tests",
+      "elapsed_seconds": 0.0,
+      "disk_free_bytes": 2610847744,
+      "nonreclaimable_memory_bytes": 2034238848
+    }
+  ],
+  "error": "all six actual freshness regressions must pass",
+  "finished_utc": "2026-10-17T22:27:10.173329+00:00",
+  "free_bytes_after": 2610843648
+}

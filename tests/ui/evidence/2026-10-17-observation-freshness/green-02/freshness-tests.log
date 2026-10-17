@@ -1,0 +1,14 @@
+   Compiling trill-shell v0.1.0 (/workspace/scratch/98f315e377b2/next-r6-ui-fix/ui/shell)
+    Finished `test` profile [unoptimized] target(s) in 2.01s
+     Running unittests src/main.rs (/workspace/scratch/98f315e377b2/next-tools/ui-r6-freshness-build/target/debug/deps/trill_shell-57b041f25180d42d)
+
+running 6 tests
+test observation_freshness_tests::future_or_missing_observation_cannot_appear_current ... ok
+test observation_freshness_tests::existing_unknown_states_keep_their_original_diagnostic_and_history ... ok
+test observation_freshness_tests::missing_or_future_local_receipt_is_unknown_without_rewriting_history ... ok
+test observation_freshness_tests::runtime_sample_and_local_receipt_both_have_exact_seven_second_limits ... ok
+test observation_freshness_tests::a_queued_old_observed_response_is_visibly_stale_before_drawing ... ok
+test observation_freshness_tests::a_later_fresh_session_snapshot_can_restore_the_visible_observation ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.01s
+

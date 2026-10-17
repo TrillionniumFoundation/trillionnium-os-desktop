@@ -1,0 +1,170 @@
+{
+  "mode": "red",
+  "status": "expected_failure_observed",
+  "started_utc": "2026-10-17T22:26:39.660769+00:00",
+  "source_commit": "821841baf5c106b7fc5e4b849ac94636b1b724f7",
+  "source_tree": "96987d720e2c57eefde13fff044dd19fc45504c8",
+  "ui_tree": "fafe3454a20b53b43998189b2e5e67ff91c58d93",
+  "target": "/workspace/scratch/98f315e377b2/next-tools/ui-r6-freshness-build/target",
+  "cache_mode": "warm_copy_of_retained_R5_target",
+  "source_cache_modified": false,
+  "copy_receipt_sha256": "c5d2222dbbf30abc30abdd83f90b2c539d963906632f41d34a0d7f2c6bef9434",
+  "helper_sha256": "48660be97c1bf8c8925d072319c784866e8bf99fe18b89d7aa50b69a860cf9fa",
+  "child_guard_sha256": "5ad34b7157b16fc7754d41dac2bd61ebfac5b5c79d71eb5a7818563254c05fbf",
+  "disk_reserve_bytes": 1073741824,
+  "nonreclaimable_memory_stop_bytes": 7516192768,
+  "per_command_deadline_seconds": 300,
+  "commands": [
+    {
+      "label": "compiler-version",
+      "argv": [
+        "/workspace/scratch/98f315e377b2/next-tools/cargo/bin/rustc",
+        "-vV"
+      ],
+      "started_utc": "2026-10-17T22:26:39.665554+00:00",
+      "exit_code": 0,
+      "elapsed_seconds": 0.201,
+      "finished_utc": "2026-10-17T22:26:39.866289+00:00"
+    },
+    {
+      "label": "freshness-tests",
+      "argv": [
+        "/workspace/scratch/98f315e377b2/next-tools/cargo/bin/cargo",
+        "test",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "-p",
+        "trill-shell",
+        "--locked",
+        "--offline",
+        "observation_freshness_tests",
+        "--",
+        "--nocapture"
+      ],
+      "started_utc": "2026-10-17T22:26:39.866673+00:00",
+      "exit_code": 101,
+      "elapsed_seconds": 6.418,
+      "finished_utc": "2026-10-17T22:26:46.284911+00:00"
+    }
+  ],
+  "samples": [
+    {
+      "command": "compiler-version",
+      "elapsed_seconds": 0.0,
+      "disk_free_bytes": 2592169984,
+      "nonreclaimable_memory_bytes": 2032731680
+    },
+    {
+      "command": "freshness-tests",
+      "elapsed_seconds": 0.0,
+      "disk_free_bytes": 2592161792,
+      "nonreclaimable_memory_bytes": 2029360000
+    },
+    {
+      "command": "freshness-tests",
+      "elapsed_seconds": 0.201,
+      "disk_free_bytes": 2592161792,
+      "nonreclaimable_memory_bytes": 2077653584
+    },
+    {
+      "command": "freshness-tests",
+      "elapsed_seconds": 0.401,
+      "disk_free_bytes": 2621825024,
+      "nonreclaimable_memory_bytes": 2112258104
+    },
+    {
+      "command": "freshness-tests",
+      "elapsed_seconds": 0.602,
+      "disk_free_bytes": 2621689856,
+      "nonreclaimable_memory_bytes": 2131861560
+    },
+    {
+      "command": "freshness-tests",
+      "elapsed_seconds": 0.802,
+      "disk_free_bytes": 2621276160,
+      "nonreclaimable_memory_bytes": 2151566376
+    },
+    {
+      "command": "freshness-tests",
+      "elapsed_seconds": 1.002,
+      "disk_free_bytes": 2619207680,
+      "nonreclaimable_memory_bytes": 2103453656
+    },
+    {
+      "command": "freshness-tests",
+      "elapsed_seconds": 1.203,
+      "disk_free_bytes": 2619207680,
+      "nonreclaimable_memory_bytes": 2127376032
+    },
+    {
+      "command": "freshness-tests",
+      "elapsed_seconds": 1.403,
+      "disk_free_bytes": 2619207680,
+      "nonreclaimable_memory_bytes": 2152550048
+    },
+    {
+      "command": "freshness-tests",
+      "elapsed_seconds": 1.604,
+      "disk_free_bytes": 2618859520,
+      "nonreclaimable_memory_bytes": 2183549920
+    },
+    {
+      "command": "freshness-tests",
+      "elapsed_seconds": 1.804,
+      "disk_free_bytes": 2617610240,
+      "nonreclaimable_memory_bytes": 2185800560
+    },
+    {
+      "command": "freshness-tests",
+      "elapsed_seconds": 2.004,
+      "disk_free_bytes": 2617282560,
+      "nonreclaimable_memory_bytes": 2324842496
+    },
+    {
+      "command": "freshness-tests",
+      "elapsed_seconds": 2.205,
+      "disk_free_bytes": 2617282560,
+      "nonreclaimable_memory_bytes": 2486041432
+    },
+    {
+      "command": "freshness-tests",
+      "elapsed_seconds": 2.405,
+      "disk_free_bytes": 2617282560,
+      "nonreclaimable_memory_bytes": 2545686152
+    },
+    {
+      "command": "freshness-tests",
+      "elapsed_seconds": 2.606,
+      "disk_free_bytes": 2617282560,
+      "nonreclaimable_memory_bytes": 2579662536
+    },
+    {
+      "command": "freshness-tests",
+      "elapsed_seconds": 2.806,
+      "disk_free_bytes": 2617282560,
+      "nonreclaimable_memory_bytes": 2594739912
+    },
+    {
+      "command": "freshness-tests",
+      "elapsed_seconds": 3.007,
+      "disk_free_bytes": 2611527680,
+      "nonreclaimable_memory_bytes": 2604484296
+    },
+    {
+      "command": "freshness-tests",
+      "elapsed_seconds": 3.209,
+      "disk_free_bytes": 2610909184,
+      "nonreclaimable_memory_bytes": 2118617096
+    }
+  ],
+  "red_failures": [
+    "a_later_fresh_session_snapshot_can_restore_the_visible_observation",
+    "a_queued_old_observed_response_is_visibly_stale_before_drawing",
+    "future_or_missing_observation_cannot_appear_current",
+    "missing_or_future_local_receipt_is_unknown_without_rewriting_history",
+    "runtime_sample_and_local_receipt_both_have_exact_seven_second_limits"
+  ],
+  "product_tests_passed": false,
+  "finished_utc": "2026-10-17T22:26:46.301212+00:00",
+  "free_bytes_after": 2610900992
+}

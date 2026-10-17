@@ -1,0 +1,49 @@
+   Compiling trill-ui-core v0.1.0 (/workspace/scratch/98f315e377b2/next-r6-ui-red/ui/core)
+   Compiling trill-shell v0.1.0 (/workspace/scratch/98f315e377b2/next-r6-ui-red/ui/shell)
+    Finished `test` profile [unoptimized] target(s) in 3.21s
+     Running unittests src/main.rs (/workspace/scratch/98f315e377b2/next-tools/ui-r6-freshness-build/target/debug/deps/trill_shell-57b041f25180d42d)
+
+running 6 tests
+
+thread 'observation_freshness_tests::a_later_fresh_session_snapshot_can_restore_the_visible_observation' panicked at shell/src/main.rs:1300:9:
+assertion `left == right` failed
+  left: Observed
+ right: Stale
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'observation_freshness_tests::future_or_missing_observation_cannot_appear_current' panicked at shell/src/main.rs:1268:13:
+assertion `left == right` failed
+  left: Observed
+ right: Stale
+
+thread 'observation_freshness_tests::runtime_sample_and_local_receipt_both_have_exact_seven_second_limits' panicked at shell/src/main.rs:1236:13:
+assertion `left == right` failed: sample age boundary
+  left: Observed
+ right: Stale
+test observation_freshness_tests::a_later_fresh_session_snapshot_can_restore_the_visible_observation ... FAILED
+test observation_freshness_tests::future_or_missing_observation_cannot_appear_current ... FAILED
+test observation_freshness_tests::runtime_sample_and_local_receipt_both_have_exact_seven_second_limits ... FAILED
+test observation_freshness_tests::existing_unknown_states_keep_their_original_diagnostic_and_history ... ok
+
+thread 'observation_freshness_tests::missing_or_future_local_receipt_is_unknown_without_rewriting_history' panicked at shell/src/main.rs:1290:13:
+assertion `left == right` failed
+  left: Observed
+ right: Stale
+test observation_freshness_tests::missing_or_future_local_receipt_is_unknown_without_rewriting_history ... FAILED
+
+thread 'observation_freshness_tests::a_queued_old_observed_response_is_visibly_stale_before_drawing' panicked at shell/src/main.rs:1210:9:
+actual status text was "Hepta: OBSERVED · READ ONLY"
+test observation_freshness_tests::a_queued_old_observed_response_is_visibly_stale_before_drawing ... FAILED
+
+failures:
+
+failures:
+    observation_freshness_tests::a_later_fresh_session_snapshot_can_restore_the_visible_observation
+    observation_freshness_tests::a_queued_old_observed_response_is_visibly_stale_before_drawing
+    observation_freshness_tests::future_or_missing_observation_cannot_appear_current
+    observation_freshness_tests::missing_or_future_local_receipt_is_unknown_without_rewriting_history
+    observation_freshness_tests::runtime_sample_and_local_receipt_both_have_exact_seven_second_limits
+
+test result: FAILED. 1 passed; 5 failed; 0 ignored; 0 measured; 28 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p trill-shell --bin trill-shell`
