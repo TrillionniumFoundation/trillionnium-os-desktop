@@ -158,8 +158,11 @@ pub struct Process {
 
     /// Incremented after a successful execve to fence old-image fds.
     hepta_exec_epoch: AtomicU64,
+<<<<<<< HEAD
+=======
     /// Lazy, process-image-scoped identity. Zero means not yet assigned.
     hepta_space_identity: Mutex<(u64, u64)>,
+>>>>>>> origin/main
 
     // Namespaces
     /// The user namespace
@@ -278,7 +281,10 @@ impl Process {
                 timer_manager,
                 start_time: Jiffies::elapsed(),
                 hepta_exec_epoch: AtomicU64::new(0),
+<<<<<<< HEAD
+=======
                 hepta_space_identity: Mutex::new((0, 0)),
+>>>>>>> origin/main
                 user_ns: Mutex::new(user_ns),
             }
         })
@@ -323,6 +329,12 @@ impl Process {
         self.hepta_exec_epoch.load(Ordering::Acquire)
     }
 
+<<<<<<< HEAD
+    /// Advances the image-generation fence after a successful execve.
+    /// Wrapping is rejected so an old fd can never become valid again.
+    pub(crate) fn advance_hepta_exec_epoch(&self) -> Result<u64> {
+        self.hepta_exec_epoch
+=======
     /// Assign an irrevocably unique boot-local process-image namespace.
     ///
     /// The small per-process lock jointly serializes open with successful
@@ -350,16 +362,21 @@ impl Process {
         let mut identity = self.hepta_space_identity.lock();
         let next = self
             .hepta_exec_epoch
+>>>>>>> origin/main
             .fetch_update(Ordering::AcqRel, Ordering::Acquire, |current| {
                 current.checked_add(1)
             })
             .map(|previous| previous + 1)
+<<<<<<< HEAD
+            .map_err(|_| Error::with_message(Errno::EOVERFLOW, "HOS2 exec epoch exhausted"))
+=======
             .map_err(|_| Error::with_message(Errno::EOVERFLOW, "HOS2 exec epoch exhausted"))?;
         // Preserve the lock held across the epoch transition and identity
         // invalidation. A concurrent open can only see the old pair or a
         // newly allocated pair, never a new epoch with the old nonce.
         *identity = (next, 0);
         Ok(next)
+>>>>>>> origin/main
     }
 
     pub(crate) fn tasks(&self) -> &Mutex<TaskSet> {

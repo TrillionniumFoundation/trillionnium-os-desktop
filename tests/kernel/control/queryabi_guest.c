@@ -51,6 +51,8 @@ static int valid_reply(const unsigned char *r,const unsigned char *q){
         read32(r+88)==48 && read32(r+92)==0 && /* HOS2 payload reserved */
         read64(r+96)==2 && read64(r+104)==0;
 }
+<<<<<<< HEAD
+=======
 static void space_hex(const unsigned char *space, char out[33]){
     static const char digits[] = "0123456789abcdef";
     for(int i=0;i<16;i++){
@@ -59,6 +61,7 @@ static void space_hex(const unsigned char *space, char out[33]){
     }
     out[32]='\0';
 }
+>>>>>>> origin/main
 static int run_exec_epoch_check(const char *fd_text){
     char *end = NULL;
     long parsed = strtol(fd_text, &end, 10);
@@ -73,6 +76,8 @@ static int run_exec_epoch_check(const char *fd_text){
         fail("exec_old_fd_not_fenced"); return 26;
     }
     puts("HEPTA_EXEC_EPOCH_DENIED");
+<<<<<<< HEAD
+=======
     const char *old_space = getenv("HEPTA_PREEXEC_SPACE");
     if(old_space==NULL || strlen(old_space)!=32){fail("exec_space_missing");return 34;}
     int reopened=open("/dev/hepta-control",O_RDWR|O_CLOEXEC);
@@ -86,6 +91,7 @@ static int run_exec_epoch_check(const char *fd_text){
     close(reopened);
     if(strcmp(old_space,current_space)==0){fail("exec_capspace_reused");return 37;}
     puts("HEPTA_EXEC_CAPSPACE_ROTATED");
+>>>>>>> origin/main
     return 0;
 }
 
@@ -179,11 +185,14 @@ int main(int argc, char **argv){
             fail("exec_child_preimage_not_valid"); _exit(33);
         }
         puts("HEPTA_EXEC_PREIMAGE_QUERYABI_OK");
+<<<<<<< HEAD
+=======
         char old_space[33];
         space_hex(fresh_r+64,old_space);
         if (setenv("HEPTA_PREEXEC_SPACE", old_space, 1) != 0) {
             fail("exec_space_env_set"); _exit(38);
         }
+>>>>>>> origin/main
         char execfd_text[32];
         snprintf(execfd_text, sizeof execfd_text, "%d", execfd);
         if (setenv("HEPTA_INHERITED_FD", execfd_text, 1) != 0) {
@@ -210,6 +219,8 @@ int main(int argc, char **argv){
             fail("fork_inherited_fd_not_fenced"); _exit(24);
         }
         puts("HEPTA_FORK_INHERITED_FD_DENIED");
+<<<<<<< HEAD
+=======
         /* A freshly opened fd in the child MUST receive a distinct D
          * namespace even if the PID allocator or boot clock later wraps. */
         int childfd=open("/dev/hepta-control",O_RDWR|O_CLOEXEC);
@@ -221,6 +232,7 @@ int main(int argc, char **argv){
         }
         close(childfd);
         puts("HEPTA_FORK_CAPSPACE_DISTINCT");
+>>>>>>> origin/main
         if (setuid(65534) != 0) { fail("setuid_guest"); _exit(21); }
         errno = 0;
         int guestfd = open("/dev/hepta-control", O_RDWR | O_CLOEXEC);
