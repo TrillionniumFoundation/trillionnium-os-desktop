@@ -73,6 +73,11 @@ Unit coverage:
 - bounded private socket IPC and reconnection without terminating the session
 - a connected but idle same-UID Unix socket peer times out in <=500ms;
   real Snapshot request resumes promptly rather than blocking task reaping
+- Linux SO_PEERCRED checks actual kernel-reported peer PID/UID/GID BEFORE
+  Session request parsing, allows this UID's real socketpair and rejects a
+  different UID through the exact same production comparison; the 0600
+  socket and 0700 runtime remain mandatory. This does not authenticate
+  two programs under the same UID or supply any A05 CapSpace grant
 - failed host spawn, partial/unknown task and rejected IPC return nonzero
   trill-ctl process exit status; a running child means only host launch ACK
 - invalid app/workspace enum, including ../path command-injection strings,

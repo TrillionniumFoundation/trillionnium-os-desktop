@@ -9,6 +9,12 @@ implementation. Only the designated owners can define shared ABI changes.
 Require an authenticated process-instance identity (not PID alone),
 workspace/trust-domain identity, grant provenance and revocation signal.
 Shell must be a consumer, not a forgeable same-UID authorization origin.
+The experimental Linux Session enforces 0700/0600 IPC plus SO_PEERCRED
+same-effective-UID checks before parsing a client request. This is only a
+host transport boundary: any other process under the same UID may still
+connect, and a randomly generated Session instance ID is not an
+authorization credential. A05 must not reuse these checks as CapSpace
+authority or Final-use evidence.
 The compositor/session must own focus, input and window permissions; ordinary
 client windows cannot draw trusted system permission prompts. A05 should
 expose the policy decision through the project-wide process/capability
