@@ -1,0 +1,79 @@
+name: A06 exact kernel scheduler and QEMU tests
+
+on:
+  pull_request:
+    paths:
+      - "kernel/asterinas/**"
+      - "support/build/ktest/**"
+      - "support/build/prepare-host.sh"
+      - "support/upstream-lock.json"
+      - "tests/organ_backend/**"
+      - ".github/workflows/a06-kernel.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  exact-kernel-ktest:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Install disposable kernel-test host dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            build-essential ca-certificates curl git python3 pkg-config libssl-dev \
+            clang lld qemu-system-x86 busybox-static
+
+      - name: Install pinned Rust toolchain and verify VDSO input
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash support/build/prepare-host.sh
+
+      - name: Prepare fixed OSDK test locks
+        shell: bash
+        run: python3 -I support/build/ktest/prepare-locks.py
+
+      - name: Run complete OSTD and aster-core kernel tests in real QEMU
+        id: ktest
+        shell: bash
+        env:
+          A01_KTEST_TIMEOUT: "300"
+        run: |
+          set -euo pipefail
+          out="${RUNNER_TEMP}/a06-ktest"
+          mkdir -p "${RUNNER_TEMP}"
+          python3 -I support/build/ktest/run.py --output "$out"
+          test -f "$out/result.json"
+          python3 - "$out/result.json" <<'PY'
+          import json
+          import sys
+          report = json.load(open(sys.argv[1]))
+          if report.get("passed") is not True:
+              raise SystemExit("A06 ktest report is not passed")
+          crates = report.get("crates")
+          if not isinstance(crates, list) or {item.get("crate") for item in crates} != {"ostd", "aster-core"}:
+              raise SystemExit("A06 ktest report does not contain both required crates")
+          for item in crates:
+              if item.get("passed") is not True or not item.get("guests"):
+                  raise SystemExit(f"A06 ktest crate is incomplete: {item!r}")
+          PY
+
+      - name: Upload exact A06 kernel and raw QEMU evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: a06-exact-kernel-ktest-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/a06-ktest
+            support/build/ktest/locks
+          if-no-files-found: error
