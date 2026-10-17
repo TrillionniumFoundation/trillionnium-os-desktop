@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Checks real Linux Wayland app/shell process survival, NOT target-kernel boot.
 set -euo pipefail
+# Many validation probes use Python assert: -O must never disable blockers.
+export PYTHONOPTIMIZE=0
 cd "$(dirname "$0")/../.."
 : "${XDG_RUNTIME_DIR:?Run inside an active Wayland desktop session}"
 : "${WAYLAND_DISPLAY:?A Wayland compositor socket is required}"

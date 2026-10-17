@@ -2,6 +2,8 @@
 # A10 CI: genuine Linux/Weston headless Wayland process exercise.
 # No real monitor/GPU, no real IME, no Asterinas guest boot is claimed.
 set -euo pipefail
+# Many validation probes use Python assert: -O must never disable blockers.
+export PYTHONOPTIMIZE=0
 cd "$(dirname "$0")/../.."
 command -v weston >/dev/null || { echo "weston executable not installed" >&2; exit 2; }
 command -v wayland-info >/dev/null || { echo "wayland-info executable not installed" >&2; exit 2; }

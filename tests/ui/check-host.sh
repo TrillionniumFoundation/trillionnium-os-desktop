@@ -2,6 +2,8 @@
 # Run on a Linux host with Cargo and crates available. Never prints "passed"
 # until each command has actually exited zero.
 set -euo pipefail
+# Many validation probes use Python assert: -O must never disable blockers.
+export PYTHONOPTIMIZE=0
 cd "$(dirname "$0")/../.."
 test "$(wc -c < README.md)" -eq 0
 

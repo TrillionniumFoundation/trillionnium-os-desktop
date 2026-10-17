@@ -2,6 +2,8 @@
 # Host-only destructive compositor restart test. Kills only the Weston that
 # this script starts, never the user's compositor or an unrelated client.
 set -euo pipefail
+# Many validation probes use Python assert: -O must never disable blockers.
+export PYTHONOPTIMIZE=0
 cd "$(dirname "$0")/../.."
 for cmd in weston wayland-info cargo python3 timeout; do
     command -v "$cmd" >/dev/null || { echo "Missing host test tool: $cmd" >&2; exit 2; }

@@ -78,7 +78,9 @@ Unit coverage:
 - invalid app/workspace enum, including ../path command-injection strings,
   rejected before any host process can spawn
 - headless Weston + software Mesa runner: create and destroy a real Wayland
-  compositor session in a private directory; require successful wayland-info
+  compositor session in a private directory; all Python assertion probes
+  run with PYTHONOPTIMIZE=0 so an inherited -O setting cannot falsely pass
+  a compositor/IPC gate; require successful wayland-info
   registry round-trip (socket creation alone is insufficient), then run the multi-app smoke;
   compositor-mapped surfaces/real GPU/Chinese IME are still NOT attested
 - metadata-only Wayland socket observation with fail-closed missing/non-socket
