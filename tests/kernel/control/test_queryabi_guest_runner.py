@@ -54,6 +54,24 @@ class QueryAbiReplayInputs(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "unknown kernel candidate"):
             replay.main(args)
 
+    def test_required_security_markers_are_verified_and_nonduplicated(self):
+        serial = "\n".join(replay.REQUIRED_SECURITY_MARKERS)
+        self.assertEqual(len(replay.REQUIRED_SECURITY_MARKERS), 7)
+        self.assertTrue(all(value == 1 for value in replay.security_marker_counts(serial).values()))
+        for marker in replay.REQUIRED_SECURITY_MARKERS:
+            with self.subTest(removed=marker):
+                broken = serial.replace(marker, "NOT_EXECUTED")
+                self.assertEqual(replay.security_marker_counts(broken)[marker], 0)
+            with self.subTest(repeated=marker):
+                repeated = serial + "\n" + marker
+                self.assertEqual(replay.security_marker_counts(repeated)[marker], 2)
+
+    def test_guest_source_contains_each_required_identity_proof(self):
+        guest_source = Path(__file__).with_name("queryabi_guest.c").read_text()
+        for marker in replay.REQUIRED_SECURITY_MARKERS:
+            with self.subTest(marker=marker):
+                self.assertEqual(guest_source.count('"' + marker + '"'), 1)
+
     def test_fail_closed_on_duplicated_guest_probe(self):
         entries = replay.unpack(gzip.decompress(self.original()))
         entries.append(("bin/hos2-queryabi",
