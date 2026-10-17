@@ -12,6 +12,9 @@
 #![no_std]
 #![forbid(unsafe_code)]
 
+/// Bounded GPU DMA/IOVA alias contract (metadata only; not a driver).
+pub mod dma_alias;
+
 /// A value-only *mirror* of the canonical 16-byte HOS2 ResourceDomainId.
 ///
 /// This is NOT the A03/A05/A06 kernel identity type, nor a capability.

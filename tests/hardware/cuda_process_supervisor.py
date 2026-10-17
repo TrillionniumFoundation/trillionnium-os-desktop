@@ -14,9 +14,14 @@ import time
 
 
 def available():
+    # WNOWAIT can only pin the worker's PID if this process actually owns
+    # child reaping. SIG_IGN auto-reaps children; custom SIGCHLD handlers may
+    # consume wait status independently, allowing numeric PID/PGID reuse.
+    # Reject before spawning rather than attempt a hazardous killpg later.
     return (sys.platform.startswith('linux') and hasattr(os, 'killpg')
             and hasattr(os, 'waitid') and hasattr(os, 'WNOWAIT')
-            and os.path.isdir('/proc'))
+            and os.path.isdir('/proc')
+            and signal.getsignal(signal.SIGCHLD) == signal.SIG_DFL)
 
 
 def _wait_unreaped(process, timeout):
@@ -143,6 +148,14 @@ def run_worker(argv, timeout_seconds):
             pass
         _reap(process, record)
         return 124, record
+    except ChildProcessError:
+        # SIGCHLD=SIG_IGN or a competing child reaper can consume our child
+        # before WNOWAIT observes it. The numeric PID/PGID is then *unowned*
+        # and may already refer to an unrelated process. Never signal that
+        # number, even as a best-effort cleanup; fail closed instead.
+        record['worker_identity_lost'] = True
+        record['unreaped_worker_may_remain'] = True
+        return 125, record
     except BaseException:
         _kill_anchored_group(process, record)
         try:
