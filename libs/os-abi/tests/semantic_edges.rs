@@ -19,7 +19,7 @@ const NONTERMINAL: [(&str, DeliveryState); 4] = [
     ("delivery_not_seen", DeliveryState::NotSeen),
     ("delivery_history_lost", DeliveryState::HistoryLost),
 ];
-const TERMINAL_ERROR_STATUSES: [Status; 11] = [
+const TERMINAL_ERROR_STATUSES: [Status; 9] = [
     Status::InvalidInput,
     Status::PermissionDenied,
     Status::StaleHandle,
@@ -29,8 +29,6 @@ const TERMINAL_ERROR_STATUSES: [Status; 11] = [
     Status::Unsupported,
     Status::Indeterminate,
     Status::Busy,
-    Status::OutOfOrder,
-    Status::Retired,
 ];
 
 fn quoted<'a>(line: &'a str, marker: &str) -> Option<&'a str> {
@@ -229,6 +227,68 @@ fn all_nonterminal_states_keep_only_the_history_sequence() {
 }
 
 #[test]
+fn exhausted_history_sequence_is_only_unknown_or_lost() {
+    for (name, state) in [
+        ("delivery_not_seen_sequence_max", DeliveryState::NotSeen),
+        (
+            "delivery_history_lost_sequence_max",
+            DeliveryState::HistoryLost,
+        ),
+    ] {
+        let value = delivery(name);
+        assert_eq!(value.state, state, "{name}");
+        assert_eq!(value.sequence, u64::MAX, "{name}");
+        assert_eq!(value.saved_status, Status::Ok, "{name}");
+        assert_zero_metadata(&value);
+    }
+}
+
+#[test]
+fn impossible_terminal_history_statuses_are_rejected() {
+    for status in [Status::OutOfOrder, Status::Retired] {
+        let mut bytes = fixed("delivery_terminal_error_1");
+        bytes[66..68].copy_from_slice(&status.as_u16().to_le_bytes());
+        assert_eq!(
+            decode_response(&bytes),
+            Err(Error::InvalidSequence),
+            "{status:?}"
+        );
+
+        let response = Response {
+            opcode: Opcode::QueryDelivery,
+            status: Status::Ok,
+            request_id: OPAQUE_ID,
+            boot_id: [0x33; 16],
+            revision: 0,
+            payload: ResponsePayload::QueryDelivery(QueryDeliveryResponse {
+                state: DeliveryState::Terminal,
+                saved_status: status,
+                sequence: 1,
+                stable_object_id: [0; 16],
+                saved_revision: 0,
+                previous_revision: 0,
+                effective_ns: 0,
+                consumed_ns: 0,
+            }),
+        };
+        let mut output = vec![0xa5; 128];
+        assert_eq!(
+            encode_response(&response, &mut output),
+            Err(Error::InvalidSequence)
+        );
+    }
+}
+
+#[test]
+fn read_usage_rejects_impossible_prior_window_prefix() {
+    let mut bytes = fixed("read_opaque_id_ok");
+    bytes[72..80].copy_from_slice(&140_000_000u64.to_le_bytes());
+    bytes[80..88].copy_from_slice(&100_000_000u64.to_le_bytes());
+    bytes[88..96].copy_from_slice(&35_000_000u64.to_le_bytes());
+    assert_eq!(decode_response(&bytes), Err(Error::InvalidField));
+}
+
+#[test]
 fn all_saved_terminal_rejections_preserve_status_without_success_metadata() {
     for (index, status) in TERMINAL_ERROR_STATUSES.into_iter().enumerate() {
         let name = format!("delivery_terminal_error_{}", index + 1);
@@ -385,8 +445,8 @@ fn nonterminal_states_reject_saved_status_and_each_success_metadata_field() {
 
 #[test]
 fn every_terminal_error_rejects_each_nonzero_success_metadata_field() {
-    for status in 1..=11 {
-        let name = format!("delivery_terminal_error_{status}");
+    for (index, _) in TERMINAL_ERROR_STATUSES.into_iter().enumerate() {
+        let name = format!("delivery_terminal_error_{}", index + 1);
         for offset in [80, 96, 104, 112, 120] {
             let mut bytes = fixed(&name);
             bytes[offset] = 1;
