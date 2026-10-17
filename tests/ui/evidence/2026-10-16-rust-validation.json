@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "agent": "A10-rust-desktop",
+  "checked_at_utc": "2026-10-16T16:30:00Z",
+  "source": "GitHub branch agents/A10-rust-desktop exact head",
+  "head": "7fa62b4d9a5913af3ca0814ea6e89d4005273177",
+  "commands": [
+    {
+      "command": "cargo build --manifest-path ui/Cargo.toml --workspace --bins --locked --offline",
+      "status": "passed"
+    },
+    {
+      "command": "cargo check --manifest-path ui/Cargo.toml --workspace --all-targets --locked --offline",
+      "status": "passed"
+    },
+    {
+      "command": "cargo clippy --manifest-path ui/Cargo.toml --workspace --all-targets --locked --offline -- -D warnings",
+      "status": "passed"
+    },
+    {
+      "command": "cargo test --manifest-path ui/Cargo.toml --workspace --lib --bins --locked --offline",
+      "status": "passed",
+      "tests": 45
+    },
+    {
+      "command": "cargo test --manifest-path support/ui/Cargo.toml --locked --offline",
+      "status": "passed",
+      "tests": 26
+    },
+    {
+      "command": "cargo test --manifest-path tests/ui/Cargo.toml --locked --offline",
+      "status": "passed",
+      "tests": 8
+    },
+    {
+      "command": "cargo test --manifest-path ui/Cargo.toml --workspace --all-targets --locked --offline",
+      "status": "blocked",
+      "passed_unit_and_binary_tests": 45,
+      "blocked_test": "ui/session/tests/ipc_reconnect.rs",
+      "reason": "sandbox denies AF_UNIX socket creation with EPERM; independent Python socket probe shows the same restriction"
+    },
+    {
+      "command": "cargo fmt --manifest-path ui/Cargo.toml --all -- --check; cargo fmt --manifest-path support/ui/Cargo.toml --all -- --check; cargo fmt --manifest-path tests/ui/Cargo.toml --all -- --check",
+      "status": "passed"
+    },
+    {
+      "command": "bash -n tests/ui/*.sh support/ui/*.sh",
+      "status": "passed"
+    }
+  ],
+  "not_executed": [
+    "Weston/Wayland/Xwayland live smoke",
+    "real Chinese IME candidate and focus integration",
+    "GPU/compositor reset",
+    "Asterinas/new kernel desktop boot",
+    "authenticated Hepta/A05/A07/A08 runtime integration"
+  ],
+  "interpretation": "Rust source compilation and headless contract tests are verified at this exact head. Host compositor, hardware, target-kernel and authenticated owner integrations remain separate evidence gates."
+}

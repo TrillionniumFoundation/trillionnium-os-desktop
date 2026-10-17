@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "timestamp_utc": "2026-10-16T12:15:18+00:00",
+  "environment": "ChatGPT Linux execution container, not the target OS and not a Wayland host",
+  "arch": "x86_64",
+  "kernel_release": "6.18.44",
+  "source_branch": "agents/A10-rust-desktop",
+  "source_head_before_evidence": "74c8fafaf9f6b90037ce88630d5774a74350cc44",
+  "toolchain": {
+    "rustc": "not installed",
+    "cargo": "not installed",
+    "weston": "not installed"
+  },
+  "source_blobs": {
+    "tests/ui/test-smoke-cleanup.sh": "eaa5afe4cb483d07e73a3676b6f79d2e70d437c1",
+    "tests/ui/test-zombie-liveness.sh": "54f1c45389722fc0173c04607dfc63290ea67514",
+    "tests/ui/smoke-wayland.sh": "dd18e118cd57e73119c9bb65864f4105b2236d8b",
+    "tests/ui/check-host.sh": "1731daea32419e2a41d127656068a0da8993366e",
+    "support/ui/smoke-cleanup.sh": "2cd8ac8204c5bdf718a5c2a13f687cb8422a7efe"
+  },
+  "checks": [
+    {
+      "command": "bash tests/ui/test-smoke-cleanup.sh",
+      "runs": 20,
+      "passed": 20,
+      "failed": 0,
+      "seconds_total": 0.486,
+      "distinct_success_outputs": [
+        "A10 scoped smoke cleanup: PASS (SIGTERM; other runtime + other executable intact)"
+      ],
+      "sample_failures": []
+    },
+    {
+      "command": "bash tests/ui/test-zombie-liveness.sh",
+      "runs": 20,
+      "passed": 20,
+      "failed": 0,
+      "seconds_total": 16.578,
+      "distinct_success_outputs": [
+        "A10 actual zombie process liveness guard: PASS"
+      ],
+      "sample_failures": []
+    }
+  ],
+  "bash_syntax": {
+    "command": "bash -n <5 shell sources>",
+    "exit_code": 0,
+    "stderr": ""
+  },
+  "interpretation": "Only the Linux process cleanup and actual-zombie detection shell regressions ran; no Rust compiler, Rust tests, Weston, IME, compositor or kernel tests were executed."
+}
