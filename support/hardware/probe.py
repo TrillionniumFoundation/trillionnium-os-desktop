@@ -8,6 +8,8 @@ import platform
 import stat
 from datetime import datetime, timezone
 
+from evidence_output import write_evidence_output
+
 
 MAX_SYSFS_ATTRIBUTE_BYTES = 4096
 MAX_CPUINFO_BYTES = 2 * 1024 * 1024
@@ -136,10 +138,10 @@ def main():
     args = parser.parse_args()
     result = snapshot(target_vendor=args.target_vendor)
     payload = json.dumps(result, indent=2, sort_keys=True) + "\n"
-    if args.output == "-":
-        print(payload, end="")
-    else:
-        Path(args.output).write_text(payload, encoding="utf-8")
+    try:
+        write_evidence_output(args.output, payload)
+    except (OSError, ValueError):
+        return 1  # output record not safely created, do not claim inventory
     return 0  # successful inventory, NOT successful GPU compute
 
 

@@ -17,7 +17,10 @@ import os
 from pathlib import Path
 import re
 import stat
+import sys
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'hardware'))
+from evidence_output import write_evidence_output
 
 KERNEL_PIN = "c4b7ed575b7b32773475b194d2ad41fb6d03765b"
 MAX_SOURCE_BYTES = 512 * 1024
@@ -493,15 +496,8 @@ def inspect_source(kernel_root: Path | str, target_arch: str = "x86_64"):
 
 
 def _write_json(path: Path, payload: str) -> None:
-    """Write only to a regular, non-symlink output path."""
-
-    fd = os.open(
-        path,
-        os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_NOFOLLOW | os.O_CLOEXEC,
-        0o600,
-    )
-    with os.fdopen(fd, "w", encoding="utf-8") as stream:
-        stream.write(payload)
+    """Create a unique, private, fsynced evidence file; never truncate prior data."""
+    write_evidence_output(path, payload)
 
 
 def main() -> int:
