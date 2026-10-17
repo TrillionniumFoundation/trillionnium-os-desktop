@@ -48,7 +48,7 @@ capture_fmt_on_exit() {
 }
 trap capture_fmt_on_exit EXIT
 
-bash -n tests/ui/smoke-wayland.sh tests/ui/headless-weston.sh tests/ui/compositor-restart.sh support/ui/package-host-binaries.sh tests/ui/test-package-host-binaries.sh tests/ui/replay-packaged-host.sh tests/ui/test-cross-uid-peer.sh tests/ui/test-rogue-session-server.sh
+bash -n tests/ui/smoke-wayland.sh tests/ui/headless-weston.sh tests/ui/compositor-restart.sh support/ui/package-host-binaries.sh tests/ui/test-package-host-binaries.sh tests/ui/replay-packaged-host.sh tests/ui/test-cross-uid-peer.sh tests/ui/test-rogue-session-server.sh tests/ui/smoke-x11.sh
 python3 tests/ui/test-session-lock.py
 bash tests/ui/test-smoke-cleanup.sh
 bash tests/ui/test-zombie-liveness.sh
@@ -88,6 +88,21 @@ python3 tests/ui/test-strict-request-ipc.py "$PWD/ui/target/debug"
 for manifest in ui/Cargo.toml support/ui/Cargo.toml tests/ui/Cargo.toml; do
     cargo fmt --manifest-path "$manifest" --all -- --check
 done
+# Additional REAL X11 mapping check on an owned, authenticated Xvfb.
+# This is not a replacement for Weston, live Chinese candidates, Xwayland
+# trust-domain isolation, physical GPU or Asterinas graphics. If this runner
+# lacks the optional X11 tools, report NOT VERIFIED rather than fake PASS.
+if command -v Xvfb >/dev/null && command -v xauth >/dev/null &&
+   command -v xdpyinfo >/dev/null && command -v xwininfo >/dev/null &&
+   command -v xprop >/dev/null; then
+    if [[ -n "${RUNNER_TEMP:-}" ]]; then
+        A10_X11_EVIDENCE_DIR="$RUNNER_TEMP/a10/x11"             bash tests/ui/smoke-x11.sh "$PWD/ui/target/debug"
+    else
+        bash tests/ui/smoke-x11.sh "$PWD/ui/target/debug"
+    fi
+else
+    echo 'A10 X11 mapping NOT VERIFIED: host Xvfb/x11-utils/xauth unavailable'
+fi
 if [[ -n "${RUNNER_TEMP:-}" ]]; then
     bash support/ui/package-host-binaries.sh "$RUNNER_TEMP/a10"
     # Run the exact built ELF files from the new CI archive independently

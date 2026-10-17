@@ -1,0 +1,45 @@
+{
+  "schema": "a10-real-linux-x11-mapped-windows-v1",
+  "date_utc": "2026-10-17",
+  "source_commit": "fcc57bd2a64cc7ee84731b432a94b51689355af7",
+  "source_ci_run": 39015860337,
+  "source_ci_artifact_id": 12096301139,
+  "executed": "four actual Rust Linux-host ELF executables under disposable Xvfb with XAUTHORITY; no Cargo compiled in replay container",
+  "actual_rust_elf_sha256": {
+    "trill-session": "cc37cb9d0463b1b292a37496f96e23c7cb906e763711695ac857435dac43c76c",
+    "trill-shell": "3e0b7277d6ff060516e65f89f780ddd249738920a84d916a3736fa0013cc0497",
+    "trill-app-window": "4ba282d25f3f959a85d02ad9e980d3959cf3e8389f9eeac8518013e3d4583c4d",
+    "trill-ctl": "ee2e1bd0523f5bcde35600b3034396e99295d15c1bfa4048160008ff66cf3cd0"
+  },
+  "observed": {
+    "x11_window_class_counts": {
+      "trill-shell": 1,
+      "trill-app-window": 3
+    },
+    "x11_map_state": "IsViewable",
+    "three_distinct_client_pids": true,
+    "three_first_egui_layouts": true,
+    "shell_first_egui_layout_before_and_after_restart": true,
+    "session_generation_preserved_across_shell_restart": true,
+    "three_client_process_identities_preserved_across_shell_restart": true,
+    "all_three_client_cancellations_observed": true,
+    "framebuffer": {
+      "protocol": "X11/Xvfb",
+      "width": 1280,
+      "height": 800,
+      "nonblank_unique_colors": 1532,
+      "screenshot_sha256": "f112d417d1e44e383a3f6b06f326526f7feee0f609c47831cea7d130c61c9313"
+    }
+  },
+  "result": "PASS, actual Linux-host X11 virtual display",
+  "evidence_script_tested_git_blob": "f3e8df622d05ed061f9887117aaf456c935a1e3b",
+  "not_claimed": [
+    "Wayland window presentation",
+    "trusted isolated Xwayland",
+    "real CJK IME candidates",
+    "physical GPU",
+    "Hepta CapSpace/Final-use",
+    "Android SurfaceFlinger",
+    "Asterinas graphical boot"
+  ]
+}

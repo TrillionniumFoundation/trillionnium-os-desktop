@@ -36,6 +36,17 @@ Unit coverage:
   all SHA256 sums; starts Session and CLI in a fresh private runtime,
   tests 0600 IPC, singleton flock, stale fencing, FAILED headless GUI child,
   and fresh Session after restart (no graphical compositor assertion)
+- A10-owned `tests/ui/smoke-x11.sh` launches the actual Rust Shell, Session
+  and Notes/Calculator/Terminal on a private Xvfb display using a private
+  Xauthority cookie. It requires four distinct X11 `IsViewable` mapped
+  windows, three real first egui layouts, Shell restart without loss of
+  Session/app PIDs, and observed cancellation of all three client processes.
+  If scrot+Pillow are available it also checks an actual nonblank 1280x800
+  virtual framebuffer and records its SHA256; absent tools are explicitly
+  `NOT VERIFIED`. Hosted CI only attempts this extra X11 check when Xvfb,
+  xauth, xdpyinfo, xwininfo and xprop are already installed (never fake green).
+  This is NOT a compositor security/Xwayland isolation, live CJK IME, GPU
+  reset or Asterinas kernel boot test.
 - strict HOS2 read-only UI adapter: opcode/payload pairing, request-id
   correlation, response opcode matching, and hidden mutating payload refusal
 - shared A02 `Request::encode` preflight before any transport exchange and

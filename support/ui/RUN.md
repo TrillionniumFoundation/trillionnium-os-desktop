@@ -33,6 +33,28 @@ In terminal #2:
 For a live Wayland-host lifecycle smoke after building run:
 bash tests/ui/smoke-wayland.sh
 
+An independent real Linux/X11 host test can be run when Xvfb, xauth,
+xdpyinfo, xwininfo, xprop and the software GL stack are installed:
+
+~~~sh
+bash tests/ui/smoke-x11.sh "$PWD/ui/target/debug"
+~~~
+
+It starts its own authenticated virtual X server in a disposable runtime,
+requires Shell and three app windows to be X11 IsViewable, checks true Rust
+egui first layouts and Shell restart with Session/app identity preservation,
+and confirms actual app cancellation. With optional scrot and Python Pillow
+it also captures the virtual framebuffer and checks it is not blank. A real
+run against the four binaries from passing CI #39015860337 was independently
+verified: 4 mapped windows, 3 live child processes, Shell restart, all 3
+observed cancellations and a 1280x800 Xvfb buffer with 1532 colors. Machine
+receipt: `tests/ui/evidence/2026-10-17-x11-real-host-elf.json`.
+The CI host runs this as an additional **fail-if-attempted** gate when those
+X11 tools are present; if absent the gate is explicitly NOT VERIFIED and
+A00 must provision the host profile for mandatory X11 acceptance. None of
+this proves per-trust-domain Xwayland, Wayland presentation, live IME,
+physical GPU, Android or the target Rust kernel.
+
 The A00-owned GitHub workflow uploads the A10-owned `$RUNNER_TEMP/a10/`
 directory as a CI artifact. After Rust build, all three test suites and strict
 Rustfmt pass, `support/ui/package-host-binaries.sh` adds
