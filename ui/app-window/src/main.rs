@@ -15,6 +15,7 @@ struct ClientWindow {
     terminal_input: String,
     terminal_output: Vec<String>,
     terminal_close_requested: bool,
+    terminal_preedit_active: bool,
     first_frame_emitted: bool,
 }
 
@@ -110,6 +111,21 @@ impl ClientWindow {
     }
 
     fn restricted_terminal(&mut self, ui: &mut egui::Ui, ctx: &egui::Context) {
+        // Only a nonempty preedit blocks Run; idle IME Enabled remains usable.
+        ui.input(|input| {
+            for event in &input.events {
+                match event {
+                    egui::Event::Ime(egui::ImeEvent::Preedit(text)) => {
+                        self.terminal_preedit_active = !text.is_empty();
+                    }
+                    egui::Event::Ime(egui::ImeEvent::Commit(_))
+                    | egui::Event::Ime(egui::ImeEvent::Disabled) => {
+                        self.terminal_preedit_active = false;
+                    }
+                    _ => {}
+                }
+            }
+        });
         ui.label("Restricted task terminal / 受限任务终端");
         ui.small("This is an explicit Rust app process. It does not invoke /bin/sh, pipes, redirects, or arbitrary host commands.");
         ui.small("Allowlist: help, status, version, echo <text>, clear, exit");
@@ -134,7 +150,11 @@ impl ClientWindow {
             // Enter is used by Chinese IME to confirm a candidate. Losing
             // TextEdit focus on Enter must NEVER execute an uncommitted command.
             // Explicit button activation is the only command commit path.
-            if ui.button("Run").clicked() && !self.terminal_close_requested {
+            if ui
+                .add_enabled(!self.terminal_preedit_active, egui::Button::new("Run"))
+                .clicked()
+                && !self.terminal_close_requested
+            {
                 self.run_restricted_command();
             }
             if ui.button("Clear output").clicked() {
@@ -142,6 +162,12 @@ impl ClientWindow {
             }
         });
         ui.small("IME: Enter confirms a candidate, not a command. Click Run to execute.");
+        if self.terminal_preedit_active {
+            ui.colored_label(
+                egui::Color32::YELLOW,
+                "IME composition active: Run disabled until candidate commit.",
+            );
+        }
         if self.terminal_close_requested {
             ui.colored_label(
                 egui::Color32::LIGHT_GREEN,
@@ -157,6 +183,10 @@ impl ClientWindow {
     fn run_restricted_command(&mut self) {
         const MAX_COMMAND_BYTES: usize = 512;
         const MAX_ECHO_BYTES: usize = 256;
+        if self.terminal_preedit_active {
+            self.terminal_line("refused: active IME composition; text remains in the editor");
+            return;
+        }
         let command = std::mem::take(&mut self.terminal_input);
         let command = command.trim();
         if command.is_empty() {
@@ -318,6 +348,7 @@ fn main() -> eframe::Result {
                     "allowlist: help | status | version | echo <text> | clear | exit".into(),
                 ],
                 terminal_close_requested: false,
+                terminal_preedit_active: false,
                 first_frame_emitted: false,
             }))
         }),
@@ -341,6 +372,7 @@ mod tests {
             terminal_input: String::new(),
             terminal_output: Vec::new(),
             terminal_close_requested: false,
+            terminal_preedit_active: false,
             first_frame_emitted: false,
         };
         state.calculate('/');
@@ -364,6 +396,7 @@ mod tests {
             terminal_input: String::new(),
             terminal_output: Vec::new(),
             terminal_close_requested: false,
+            terminal_preedit_active: false,
             first_frame_emitted: false,
         };
         state.terminal_input = "sh -c id".into();
@@ -414,6 +447,7 @@ mod tests {
             terminal_input: "echo ".into(),
             terminal_output: Vec::new(),
             terminal_close_requested: false,
+            terminal_preedit_active: false,
             first_frame_emitted: false,
         };
 
@@ -433,6 +467,14 @@ mod tests {
             state.terminal_output.is_empty(),
             "an uncommitted Chinese candidate must never run a command"
         );
+        assert!(state.terminal_preedit_active);
+        let before = state.terminal_input.clone();
+        state.run_restricted_command();
+        assert_eq!(state.terminal_input, before);
+        assert!(state.terminal_output.last().is_some_and(|line| {
+            line.contains("active IME composition")
+        }));
+        state.terminal_output.clear();
         frame(
             &ctx,
             &mut state,
@@ -442,6 +484,7 @@ mod tests {
             ],
         );
         assert!(state.terminal_input.contains("你好"));
+        assert!(!state.terminal_preedit_active);
         // Even an extra Enter key delivered AFTER IME commit must not become
         // a restricted terminal Run click or execute the completed command.
         frame(
@@ -476,6 +519,7 @@ mod tests {
             terminal_input: String::new(),
             terminal_output: Vec::new(),
             terminal_close_requested: false,
+            terminal_preedit_active: false,
             first_frame_emitted: false,
         };
 
@@ -521,6 +565,7 @@ mod tests {
             terminal_input: "echo ".to_owned() + &"界".repeat(100),
             terminal_output: Vec::new(),
             terminal_close_requested: false,
+            terminal_preedit_active: false,
             first_frame_emitted: false,
         };
         let before = state.terminal_input.clone();
@@ -564,6 +609,7 @@ mod tests {
             terminal_input: "x".repeat(513),
             terminal_output: Vec::new(),
             terminal_close_requested: false,
+            terminal_preedit_active: false,
             first_frame_emitted: false,
         };
         state.run_restricted_command();
