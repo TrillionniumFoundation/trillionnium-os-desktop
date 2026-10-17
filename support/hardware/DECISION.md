@@ -1,6 +1,6 @@
 # A09 GPU/NPU hardware decision — 2026-10-16
 
-**Status: research + executable host-side tests, NOT an Asterinas GPU driver, VMM or successful GPU compute.** Baseline latest main commit `5aeff7b60e8c96aa14676e1642efddc6ad63a607`. Upstream Asterinas v0.19.0 commit c4b7ed575b7b32773475b194d2ad41fb6d03765b. Root README remains untouched at 0 bytes. Only A09-owned directories are modified.
+**Status: research + executable host-side tests, NOT an Asterinas GPU driver, VMM or successful GPU compute.** Baseline latest main commit `bc294f75bfb8c03d9963f5a12ea23b9589779d96`. Upstream Asterinas v0.19.0 commit c4b7ed575b7b32773475b194d2ad41fb6d03765b. Root README remains untouched at 0 bytes. Only A09-owned directories are modified.
 
 ## Actual authorized observation vs candidate
 
