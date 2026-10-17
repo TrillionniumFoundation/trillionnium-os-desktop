@@ -59,8 +59,10 @@ impl eframe::App for ClientWindow {
                     ui.label(RichText::new(&self.result).size(20.0));
                     ui.separator();
                     ui.label("Keyboard and IME focus probe / 输入法焦点");
-                    let ime_probe = ui.add(egui::TextEdit::singleline(&mut self.focused_input)
-                        .id(egui::Id::new("calculator-ime-focus")));
+                    let ime_probe = ui.add(
+                        egui::TextEdit::singleline(&mut self.focused_input)
+                            .id(egui::Id::new("calculator-ime-focus")),
+                    );
                     ui.small(if ime_probe.has_focus() {
                         "Keyboard focus: calculator IME probe"
                     } else {
@@ -428,7 +430,7 @@ mod tests {
         assert!(!state.terminal_close_requested);
         assert_eq!(state.terminal_output.len(), 1);
         assert!(state.terminal_output[0].len() < 160);
-        assert!(!state.terminal_output[0].contains(&"x".repeat(64)));
+        assert!(!state.terminal_output[0].contains("x".repeat(64).as_str()));
 
         // A hostile or accidental large paste stays bounded in the UI log.
         state.terminal_output.clear();

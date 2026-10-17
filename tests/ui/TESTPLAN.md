@@ -23,8 +23,10 @@ Unit coverage:
 - no Pending -> Completed shortcut
 - distinction among pending/running/partial/unknown/cancel_requested
 - Chinese UTF-8 roundtrip
-- a pure Rust IME preedit/commit and focus ownership model (not an egui backend or live Wayland IME test)
-- oversized restricted-terminal UTF-8 paste refused before it reaches the rendered command log; no auto-execution on Enter
+- a pure Rust IME preedit/commit and focus ownership model (not an egui
+  backend or live Wayland IME test)
+- oversized restricted-terminal UTF-8 paste refused before it reaches the
+  rendered command log; no auto-execution on Enter
 - chat workspace explicit app actions linked to observed process task cards
 - oversized/truncated IPC frames and unknown statuses
 - successful observed host child exit

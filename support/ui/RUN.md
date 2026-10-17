@@ -74,9 +74,10 @@ candidate confirmation requires an explicit Run click afterward.
 
 Still missing: current-head green CI, automated live IME, real display-driver
 attestation, native HOS2/Hepta bridge, trusted portal, owned compositor,
-per-domain Xwayland, Android buffer/fence runtime, and target kernel boot. `support/ui/src/android.rs` contains only the
-pure consumer state model and contract tests; it is not Android runtime
-evidence.
+per-domain Xwayland, Android buffer/fence runtime, and target kernel boot.
+
+`support/ui/src/android.rs` contains only the pure consumer state model and
+contract tests; it is not Android runtime evidence.
 Do not extrapolate host process exit code 0 to successful Hepta operations.
 
 Optional **user-triggered** draft backup: click “Export drafts to local file”
