@@ -15,8 +15,10 @@ from __future__ import annotations
 import argparse
 from datetime import datetime, timezone
 import json
+import os
 from pathlib import Path
 import re
+import stat
 from typing import Any, Iterable
 
 
@@ -25,11 +27,27 @@ BDF_RE = re.compile(r"^[0-9a-fA-F]{4,8}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}\.[0-7]$")
 PCI_HEX_RE = re.compile(r"^0x[0-9a-fA-F]{4}$")
 DEFAULT_VENDOR = "0x10de"
 DEFAULT_DRIVER = "vfio-pci"
+MAX_SYSFS_TEXT_BYTES = 4096
 
 
 def text_file(path: Path) -> str | None:
+    """Read one sysfs page, without following the final symlink or blocking FIFO.
+
+    Path.read_text() reads the whole file before slicing and can hang on
+    special nodes. A sysfs attribute presents a regular pseudo-file.
+    """
+    flags = os.O_RDONLY | os.O_NONBLOCK | os.O_NOFOLLOW | os.O_CLOEXEC
     try:
-        return path.read_text(encoding="ascii", errors="replace").strip()[:4096]
+        fd = os.open(path, flags)
+        try:
+            info = os.fstat(fd)
+            if not stat.S_ISREG(info.st_mode) or info.st_size > MAX_SYSFS_TEXT_BYTES:
+                return None
+            raw = os.read(fd, MAX_SYSFS_TEXT_BYTES + 1)
+            return (raw.decode("ascii", errors="replace").strip()
+                    if len(raw) <= MAX_SYSFS_TEXT_BYTES else None)
+        finally:
+            os.close(fd)
     except (OSError, ValueError):
         return None
 
@@ -149,6 +167,8 @@ def preflight(root: Path = Path("/"), bdf: str | None = None,
     """Inspect one exact BDF and an explicit complete group allowlist."""
     result = _base_result(root, bdf, expected_members, vendor, device_id)
     result["driver_binding"]["expected"] = expected_driver
+    if expected_driver != DEFAULT_DRIVER:
+        return _block(result, "non_vfio_expected_driver_forbidden")
     if not bdf:
         return _block(result, "target_bdf_required")
     if not BDF_RE.fullmatch(bdf):
@@ -205,6 +225,8 @@ def preflight(root: Path = Path("/"), bdf: str | None = None,
         _block(result, "not_display_or_compute_pci_class")
     if result["observed"]["driver"] not in (None, expected_driver):
         _block(result, "device_bound_to_non_vfio_driver")
+    if result["observed"]["driver"] is None:
+        _block(result, "target_gpu_not_bound_to_vfio")
 
     group_id = result["observed"]["iommu_group"]
     groups_root = root / "sys/kernel/iommu_groups"
@@ -244,6 +266,11 @@ def preflight(root: Path = Path("/"), bdf: str | None = None,
             _block(result, "iommu_peer_driver_link_unresolvable")
         if peer_driver not in (None, expected_driver):
             _block(result, "iommu_peer_bound_to_non_vfio_driver")
+        # An unbound PCI bridge can be part of a viable VFIO group; unlike
+        # compute or audio endpoints, vfio-pci cannot claim the bridge.
+        peer_class = (text_file(peer / "class") or "").lower()
+        if peer_driver is None and not peer_class.startswith("0x06"):
+            _block(result, "iommu_peer_unbound_non_bridge")
     result["iommu"]["group_complete"] = group_complete and not any(
         reason in result["hard_blockers"] for reason in (
             "iommu_group_members_inconsistent", "unexpected_or_missing_iommu_group_member",
@@ -254,7 +281,7 @@ def preflight(root: Path = Path("/"), bdf: str | None = None,
     result["driver_binding"]["target"] = target_driver
     result["driver_binding"]["target_bound_to_expected"] = target_driver == expected_driver
     result["driver_binding"]["all_group_bound_to_expected"] = bool(group_members) and all(
-        driver in (None, expected_driver) for driver in result["observed_group_drivers"].values()
+        driver == expected_driver for driver in result["observed_group_drivers"].values()
     )
     result["reset"]["all_group_files_present"] = bool(group_members) and all(
         result["reset"]["group_files_present"].values()

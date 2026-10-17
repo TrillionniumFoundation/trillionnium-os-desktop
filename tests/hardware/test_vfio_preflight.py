@@ -42,7 +42,7 @@ class VFIOTests(unittest.TestCase):
     def test_even_isolated_fixture_demands_manual_review(self):
         with tempfile.TemporaryDirectory() as d:
             root = Path(d)
-            self.fixture(root)
+            self.fixture(root, drivers={GPU: "vfio-pci"})
             result = self.inspect(root, device_id="0x28a0")
         self.assertEqual(result["hard_blockers"], [])
         self.assertEqual(result["status"], "manual_review_required")
@@ -60,7 +60,8 @@ class VFIOTests(unittest.TestCase):
     def test_all_function_allowlist_still_manual_review(self):
         with tempfile.TemporaryDirectory() as d:
             root = Path(d)
-            self.fixture(root, members=(GPU, AUDIO))
+            self.fixture(root, members=(GPU, AUDIO),
+                         drivers={GPU: "vfio-pci", AUDIO: "vfio-pci"})
             result = self.inspect(root, members=(GPU, AUDIO))
         self.assertEqual(result["status"], "manual_review_required")
 
@@ -117,7 +118,7 @@ class VFIOTests(unittest.TestCase):
         alpha = "0000:0a:0b.0"
         with tempfile.TemporaryDirectory() as d:
             root = Path(d)
-            self.fixture(root, members=(alpha,))
+            self.fixture(root, members=(alpha,), drivers={alpha: "vfio-pci"})
             (root / "sys/bus/pci/devices" / alpha / "class").write_text("0x030200\\n")
             result = vfio.inspect(root, "0000:0A:0B.0", ["0000:0A:0B.0"])
         self.assertEqual(result["status"], "manual_review_required")
@@ -177,6 +178,57 @@ class VFIOTests(unittest.TestCase):
                 result = self.inspect(root)
         self.assertIn("msi_irq_enumeration_unobservable", result["hard_blockers"])
         self.assertEqual(result["status"], "blocked")
+
+
+    def test_unbound_target_gpu_never_counts_as_vfio_ready(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self.fixture(root)
+            result = self.inspect(root)
+        self.assertIn("target_gpu_not_bound_to_vfio", result["hard_blockers"])
+        self.assertIn("iommu_peer_unbound_non_bridge", result["hard_blockers"])
+        self.assertFalse(result["driver_binding"]["all_group_bound_to_expected"])
+        self.assertEqual(result["status"], "blocked")
+
+    def test_unbound_audio_peer_is_not_group_ready(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self.fixture(root, members=(GPU, AUDIO), drivers={GPU: "vfio-pci"})
+            result = self.inspect(root, members=(GPU, AUDIO))
+        self.assertIn("iommu_peer_unbound_non_bridge", result["hard_blockers"])
+        self.assertFalse(result["driver_binding"]["all_group_bound_to_expected"])
+
+    def test_unbound_bridge_peer_is_not_reported_as_vfio_bound(self):
+        bridge = "0000:00:1e.0"
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self.fixture(root, members=(GPU, bridge), drivers={GPU: "vfio-pci"})
+            (root / "sys/bus/pci/devices" / bridge / "class").write_text("0x060400\n")
+            result = self.inspect(root, members=(GPU, bridge))
+        self.assertEqual(result["status"], "manual_review_required")
+        self.assertFalse(result["driver_binding"]["all_group_bound_to_expected"])
+        self.assertFalse(result["safe_to_assign"])
+
+    def test_driver_override_cannot_claim_nvidia_as_vfio(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self.fixture(root, drivers={GPU: "nvidia"})
+            result = vfio.preflight(root, GPU, (GPU,), expected_driver="nvidia")
+        self.assertIn("non_vfio_expected_driver_forbidden", result["hard_blockers"])
+        self.assertEqual(result["status"], "blocked")
+
+    def test_fifo_sysfs_attribute_never_blocks(self):
+        import os
+        with tempfile.TemporaryDirectory() as d:
+            path = Path(d) / "vendor"
+            os.mkfifo(path)
+            self.assertIsNone(vfio.text_file(path))
+
+    def test_unbounded_sysfs_fixture_is_not_read_to_completion(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = Path(d) / "vendor"
+            path.write_bytes(b"a" * (vfio.MAX_SYSFS_TEXT_BYTES + 10))
+            self.assertIsNone(vfio.text_file(path))
 
 
 if __name__ == "__main__":
