@@ -18,6 +18,7 @@ import time
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "organ_backend"))
 from run_guest_probe import pack, unpack  # already shipped A01 newc parser
 
+A05_PINNED_KERNEL_SHA = "54c8a7a798cbbd80f1a8ce5f0144328815e63b413e79b0133206bcaaba607e4a"
 A01_INITRD_SHA = "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
 SEABIOS_SHA = "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
 EXPECTED_SUCCESS = "HEPTA_QUERYABI_OK ops=QueryAbi_only, independent_sessions=yes, denied_invalid=yes"
@@ -84,6 +85,10 @@ def main(argv=None):
 
     require(re.fullmatch(r"[0-9a-f]{64}", args.expected_kernel_sha256) is not None,
             "expected kernel SHA256 must be 64 lowercase hex chars")
+    # Caller-supplied expected hashes are not an independent provenance check:
+    # pin the exact A05 ELF already tested on the real QEMU guest.
+    require(args.expected_kernel_sha256 == A05_PINNED_KERNEL_SHA,
+            "unknown kernel candidate: A05 source/hash must be re-audited before replay")
     require(1 <= args.timeout <= 120, "QEMU timeout must be 1..120s")
     root = Path(__file__).resolve().parents[3]
     lock = json.loads((root / "support/upstream-lock.json").read_text(encoding="utf-8"))
