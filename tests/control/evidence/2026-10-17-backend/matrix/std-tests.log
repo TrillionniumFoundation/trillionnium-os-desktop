@@ -1,0 +1,348 @@
+   Compiling hos2-os-abi v0.1.0 (/workspace/scratch/629ae4947f18/a03-backend-exact/libs/os-abi)
+   Compiling os-control v0.1.0 (/workspace/scratch/629ae4947f18/a03-backend-exact/libs/os-control)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.95s
+     Running unittests src/lib.rs (/workspace/scratch/629ae4947f18/a03-backend-exact-target/debug/deps/os_control-fe3277e52ffaf00e)
+
+running 10 tests
+test resource_state::tests::last_native_revision_succeeds_then_every_owner_write_is_exhausted ... ok
+test resource_state::tests::max_expected_revision_is_invalid_before_any_callback ... ok
+test tests::basic_commit_and_observation ... ok
+test tests::final_sequence_can_retire_but_max_never_rolls_over ... ok
+test tests::invariant_audit_detects_canonical_handle_corruption ... ok
+test tests::invariant_audit_rejects_half_terminal_fenced_and_lost_state ... ok
+test tests::reactivation_epoch_overflow_must_remain_revoked ... ok
+test tests::retired_tokens_release_result_slots_and_namespace_storage ... ok
+test tests::last_representable_revision_is_an_immutable_success ... ok
+test tests::bounded_ring_wrap_preserves_history_and_a_blocked_full_prefix ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running ../../tests/control/bounded_window.rs (/workspace/scratch/629ae4947f18/a03-backend-exact-target/debug/deps/bounded_window-a2c4e7eb423cb908)
+
+running 2 tests
+test pending_head_blocks_full_odd_window_until_no_effect_resolution_then_partial_wrap_continues ... ok
+test odd_windows_survive_ten_thousand_writes_with_only_partial_prefix_retirement ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+     Running ../../tests/control/callback_lifetime.rs (/workspace/scratch/629ae4947f18/a03-backend-exact-target/debug/deps/callback_lifetime-3713b4f82ab1060f)
+
+running 7 tests
+test capture_destructor_panic_after_success_cannot_erase_terminal_publication ... ok
+test body_unwind_releases_gate_before_capture_cleanup_and_keeps_one_effect ... ok
+test native_success_publishes_before_owned_capture_cleanup_and_loss ... ok
+test malformed_outcome_releases_gate_before_capture_cleanup ... ok
+test terminal_retry_drops_unused_callback_outside_gate_without_invoking_it ... ok
+test wrong_type_drops_unused_callback_without_admitting_an_effect ... ok
+test host_success_releases_gate_before_owned_capture_cleanup ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running ../../tests/control/control_conformance.rs (/workspace/scratch/629ae4947f18/a03-backend-exact-target/debug/deps/control_conformance-347625b5306d95dc)
+
+running 81 tests
+test advanced_grandparent_clock_fences_stale_leaf_cas ... ok
+test boot_and_capspace_identity_isolation_and_history_loss_are_explicit ... ok
+test a02_history_max_query_is_read_only_and_never_an_executable_delivery ... ok
+test a02_codec_accepts_every_real_a03_delivery_state ... ok
+test budget_installation_advances_only_on_real_period_boundaries ... ok
+test a02_rejects_elapsed_cpu_forgery_even_without_a03_conversion_guard ... ok
+test checked_namespace_constructor_is_not_an_identity_authority ... ok
+test child_commit_admitted_before_ancestor_revoke_is_immutable ... ok
+test budget_update_at_period_boundary_reports_current_window_consumption ... ok
+test child_cpu_charge_is_counted_once_in_each_ancestor_and_parent_exhaustion_is_atomic ... ok
+test child_creation_inherits_parent_boottime_floor_without_cpu_credit ... ok
+test concurrent_publish_observe_never_yields_partial_terminal_metadata ... ok
+test concurrent_query_publish_and_retire_observe_whole_states ... ok
+test concurrent_same_d_has_one_effect_and_query_never_sees_partial_terminal ... ok
+test concurrent_window_invariant_audits_never_see_half_committed_results ... ok
+test control_states_map_to_hos2_codes_without_importing_the_wire_crate ... ok
+test copyout_failure_retry_reuses_terminal_result_without_second_effect ... ok
+test concurrent_siblings_never_double_spend_shared_parent_quota ... ok
+test cpu_usage_rolls_to_a_new_fixed_period_without_resetting_cumulative_usage ... ok
+test cross_branch_domain_and_object_id_reuse_are_rejected ... ok
+test duplicate_sibling_id_cannot_hide_a_larger_child_budget ... ok
+test durable_hepta_k_is_full_scope_and_operation_stable_id_pair ... ok
+test durable_hepta_k_validation_does_not_truncate_or_normalize ... ok
+test exact_boundary_crossing_preserves_each_period_cap ... ok
+test exhausted_grandparent_does_not_modify_either_descendant ... ok
+test existing_descendants_refuse_read_usage_older_than_ancestor_boottime ... ok
+test external_success_publication_cannot_save_impossible_cpu_accounting ... ok
+test failed_ancestor_charge_never_advances_descendant_clock_or_counters ... ok
+test forged_ack_or_foreign_owner_handle_cannot_retire_terminal_history ... ok
+test grandchild_creation_inherits_newest_ancestor_clock_not_only_parent ... ok
+test concurrent_cousin_registration_same_identity_has_one_winner ... ok
+test grant_publisher_field_cannot_be_reassigned_by_external_code ... ok
+test hanging_prefix_blocks_retire_but_read_and_full_window_recovery_remain_available ... ok
+test history_loss_fences_old_reserved_token ... ok
+test concurrent_root_sample_and_child_read_usage_have_linearizable_clock_order ... ok
+test hos2_saved_success_rejects_consumed_time_beyond_period_elapsed ... ok
+test identical_stable_ids_in_different_root_instances_cannot_replay_a_delivery ... ok
+test incoherent_cpu_charge_cannot_commit_a_wire_invalid_success ... ok
+test independent_a02_read_usage_codec_rejects_future_cpu_and_accepts_later_sample ... ok
+test interval_parent_failure_is_atomic_across_period_boundary ... ok
+test invalid_and_overflow_adjacent_intervals_fail_closed ... ok
+test logical_k_is_value_only_and_never_replaces_boot_local_d ... ok
+test malformed_hos2_target_identity_cannot_consume_a_sequence ... ok
+test malformed_install_budget_is_rejected_before_consuming_global_sequence ... ok
+test malformed_public_delivery_observations_fail_closed_for_wire_status ... ok
+test multi_period_accounting_has_no_unused_quota_credit ... ok
+test namespace_bootstrap_rejects_zero_id_and_out_of_range_window_capacity ... ok
+test invariant_audit_keeps_hanging_prefix_and_capacity_exhaustion_nonterminal ... ok
+test new_grandchild_cannot_enter_a_revoked_root_family ... ok
+test old_child_grant_never_revives_after_ancestor_revoke_and_reactivate ... ok
+test out_of_order_does_not_consume_sequence_and_wrong_history_owner_cannot_retire ... ok
+test grandchild_creation_races_root_clock_sampling_without_backdating ... ok
+test parent_domain_caps_child_budget ... ok
+test pre_reservation_statuses_cannot_be_published_as_terminal_effects ... ok
+test query_and_retire_race_has_only_terminal_or_retired_observations ... ok
+test read_only_history_view_cannot_advance_the_ack_frontier ... ok
+test read_usage_parent_and_child_both_reject_unrepresentable_elapsed_cpu ... ok
+test read_usage_refuses_cpu_in_future_window_without_changing_clock_or_revision ... ok
+test request_digest_and_publisher_identity_are_bound ... ok
+test resource_identity_registry_has_bounded_capacity_and_no_id_reanimation ... ok
+test revoke_before_commit_rejects_and_commit_before_revoke_stays_admitted ... ok
+test revoked_ancestor_fences_child_grants_and_pending_commit ... ok
+test revoked_ancestor_is_not_confused_with_exhausted_cpu_quota ... ok
+test same_cap_update_preserves_consumption_and_cap_zero_is_not_pause ... ok
+test same_d_bound_to_hos2_handle_slot_and_generation ... ok
+test same_d_different_authorized_publisher_is_a_conflict ... ok
+test same_d_target_cap_revision_and_cross_target_are_conflicts ... ok
+test same_d_with_new_ancestor_grant_conflicts_and_old_d_rejects_terminally ... ok
+test same_identity_different_core_instances_cannot_use_each_others_tokens ... ok
+test stale_boottime_samples_never_replenish_window_budget ... ok
+test concurrent_revoke_and_commit_linearizes_to_one_terminal_result ... ok
+test wrong_publisher_cannot_publish_and_terminal_rejection_is_immutable ... ok
+test zero_history_sequence_is_rejected_before_and_after_history_loss ... ok
+test zero_publisher_fails_identity_validation_without_consuming_a_delivery ... ok
+test copyout_retry_racing_with_retirement_never_reopens_a_delivery ... ok
+test concurrent_ancestor_revoke_and_child_grant_issuance_fails_closed ... ok
+test concurrent_ancestor_revoke_and_child_commit_preserve_epoch_fence ... ok
+test child_registration_and_parent_cap_update_cannot_cross ... ok
+test parent_clock_sample_and_child_cas_linearize_under_family_gate ... ok
+test namespace_loss_and_commit_race_never_reports_lost_after_mutation ... ok
+test ten_thousand_writes_are_bounded_and_old_sequences_do_not_reappear ... ok
+
+test result: ok. 81 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+
+     Running ../../tests/control/custom_lock_backend.rs (/workspace/scratch/629ae4947f18/a03-backend-exact-target/debug/deps/custom_lock_backend-e31cb1af427da022)
+
+running 6 tests
+test custom_backend_owned_capture_cleanup_follows_publication_and_unlock ... ok
+test custom_backend_reclamation_releases_guards_before_owner_destructor ... ok
+test namespace_lock_roles_route_every_native_operation ... ok
+test custom_backend_unwind_releases_guards_and_preserves_pending_fence ... ok
+test custom_backend_concurrent_same_d_has_one_effect ... ok
+test custom_backend_loss_waits_for_effect_without_holding_table_or_result ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running ../../tests/control/delivery_adversarial.rs (/workspace/scratch/629ae4947f18/a03-backend-exact-target/debug/deps/delivery_adversarial-62ecb3c86a6f8aab)
+
+running 6 tests
+test identical_public_namespace_bytes_never_transfer_observer_owner_or_publisher_authority ... ok
+test simultaneous_wrong_publishers_cannot_win_against_reservation_owner ... ok
+test full_hos2_window_with_pending_prefix_survives_ten_thousand_deliveries ... ok
+test concurrent_retire_query_and_loss_keep_history_monotonic_and_complete ... ok
+test same_token_commit_and_explicit_refusal_race_have_one_immutable_outcome ... ok
+test pending_copyout_retry_and_loss_race_never_grant_a_second_execution ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+     Running ../../tests/control/kernel_handoff.rs (/workspace/scratch/629ae4947f18/a03-backend-exact-target/debug/deps/kernel_handoff-7d7c4dbb54cca8d0)
+
+running 8 tests
+test invalid_callback_receipts_stay_pending_and_never_allow_another_effect ... ok
+test duplicate_handoff_invokes_once_and_receives_exact_canonical_binding ... ok
+test namespace_loss_before_handoff_fences_external_callback ... ok
+test trusted_external_fence_can_publish_recovered_receipt_without_reexecuting ... ok
+test panicking_callback_preserves_pending_prefix_and_cannot_be_executed_again ... ok
+test wrong_publisher_and_foreign_namespace_never_enter_callback ... ok
+test handoff_entered_before_namespace_loss_finishes_one_effect_then_history_is_lost ... ok
+test simultaneous_handoffs_of_same_token_invoke_exactly_one_callback ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running ../../tests/control/management_authority.rs (/workspace/scratch/629ae4947f18/a03-backend-exact-target/debug/deps/management_authority-2812457ee4a60899)
+
+running 15 tests
+test destroyed_state_cannot_be_recreated_to_accept_its_old_snapshot ... ok
+test every_management_term_is_immutable_in_a_saved_snapshot ... ok
+test expired_terminal_requires_a_new_d_and_fresh_owner_authority_to_apply ... ok
+test fresh_state_with_identical_config_cannot_revive_a_revoked_snapshot ... ok
+test invalid_lease_ranges_and_cap_envelopes_are_rejected ... ok
+test malformed_management_identities_are_rejected_before_state_creation ... ok
+test management_admission_rejects_changed_binding_and_cap_outside_envelope ... ok
+test management_admission_uses_inclusive_issue_and_exclusive_expiry_boundaries ... ok
+test management_epoch_max_revocation_never_wraps_or_reactivates ... ok
+test management_errors_map_only_to_existing_hos2_refusal_statuses ... ok
+test management_revocation_is_idempotent_and_rejects_every_old_snapshot_clone ... ok
+test management_only_revoke_preserves_accounting_and_an_independent_manager ... ok
+test management_snapshot_preserves_all_trusted_terms_and_accepts_boundary_caps ... ok
+test new_management_state_cannot_authorize_an_old_reserved_native_snapshot ... ok
+test same_d_binds_management_origin_terms_and_presence_beyond_request_binding ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running ../../tests/control/management_identity.rs (/workspace/scratch/629ae4947f18/a03-backend-exact-target/debug/deps/management_identity-ab0642635f9a07d8)
+
+running 6 tests
+test independent_states_with_identical_config_cannot_use_each_others_snapshots ... ok
+test repeated_snapshots_of_one_state_keep_identity_and_native_retry_is_idempotent ... ok
+test modifying_the_input_config_copy_does_not_change_saved_terms_or_live_authority ... ok
+test revoke_then_reconstruct_same_config_does_not_reactivate_the_old_snapshot ... ok
+test replacing_state_inside_the_same_owner_cannot_reauthorize_a_reserved_old_d ... ok
+test snapshot_after_state_destruction_is_metadata_and_cannot_authorize_a_new_state ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running ../../tests/control/native_bound_execution.rs (/workspace/scratch/629ae4947f18/a03-backend-exact-target/debug/deps/native_bound_execution-bcb073ea2e14bfed)
+
+running 11 tests
+test bound_callback_receives_original_owner_complete_ancestry_binding_and_d ... ok
+test bound_callback_preserves_reserved_ancestry_after_ancestor_revoke_and_reactivate ... ok
+test bound_callback_uses_pinned_owner_after_all_external_handles_are_dropped ... ok
+test generic_native_execution_is_rejected_without_consuming_typed_admission ... ok
+test bound_context_preserves_every_epoch_of_the_maximum_supported_ancestry ... ok
+test namespace_loss_fences_bound_callback_and_releases_the_original_owner ... ok
+test wrong_owner_type_preserves_pending_slot_and_does_not_consume_execution ... ok
+test host_reservation_is_rejected_before_native_callback_and_still_commits_normally ... ok
+test wrong_publisher_or_foreign_namespace_never_obtains_bound_owner_context ... ok
+test bound_owner_revoke_and_commit_race_revalidates_under_the_original_mutation_lock ... ok
+test concurrent_bound_callbacks_on_one_d_invoke_the_original_owner_once ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running ../../tests/control/native_context_negative.rs (/workspace/scratch/629ae4947f18/a03-backend-exact-target/debug/deps/native_context_negative-faa4d594555d7294)
+
+running 2 tests
+test generic_native_callback_cannot_apply_a_different_owner_with_the_same_public_ids ... ok
+test generic_native_callback_cannot_replace_reserved_ancestry_with_fresh_context ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running ../../tests/control/native_failure_recovery.rs (/workspace/scratch/629ae4947f18/a03-backend-exact-target/debug/deps/native_failure_recovery-6fc49b2a167a6228)
+
+running 3 tests
+test retirement_drop_panic_preserves_frontier_and_releases_remaining_retired_owners ... ok
+test loss_drop_panic_keeps_history_lost_releases_remaining_owners_and_is_idempotent ... ok
+test poisoned_native_effect_recovers_or_loses_history_without_second_effect_in_64_schedules ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running ../../tests/control/native_handoff.rs (/workspace/scratch/629ae4947f18/a03-backend-exact-target/debug/deps/native_handoff-87ce2e9febe739be)
+
+running 15 tests
+test host_commit_cannot_consume_a_native_callback_or_mutate_native_owner ... ok
+test native_and_host_requests_with_equal_public_binding_never_share_d ... ok
+test mutated_native_payload_is_validated_again_without_consuming_d ... ok
+test native_callback_rechecks_revocation_and_terminal_refusal_never_becomes_success ... ok
+test native_commit_before_revoke_preserves_admitted_original_result ... ok
+test native_copyout_retry_reuses_original_result_without_second_owner_cas ... ok
+test native_constructor_rejects_invalid_owner_binding_and_static_wire_fields ... ok
+test native_retirement_releases_owner_even_with_stale_token_retained ... ok
+test native_owner_executes_without_any_host_resource_domain_or_shadow_budget ... ok
+test native_d_binds_full_request_publisher_epoch_and_ancestor_snapshot ... ok
+test same_real_owner_rewrapped_dedupes_but_equal_ids_on_other_arc_conflict ... ok
+test native_owner_drop_during_history_loss_can_reenter_loss_gate_before_return ... ok
+test wrong_native_publisher_cannot_reserve_or_execute_external_mutation ... ok
+test native_owner_drop_during_retirement_can_read_same_namespace_before_return ... ok
+test concurrent_same_native_d_reserves_and_commits_one_original_owner_effect ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running ../../tests/control/native_lifetime.rs (/workspace/scratch/629ae4947f18/a03-backend-exact-target/debug/deps/native_lifetime-bdc60769917e723c)
+
+running 5 tests
+test weak_upgrade_lifetime_follows_real_view_and_owner_authority_references ... ok
+test upgraded_core_neither_replays_old_d_nor_substitutes_a_foreign_retirement_authority ... ok
+test retired_owner_drop_can_upgrade_weak_core_and_read_namespace_without_a_lock_cycle ... ok
+test lost_owner_drop_can_upgrade_weak_core_and_reenter_loss_without_a_lock_cycle ... ok
+test weak_owner_backlink_and_retained_token_do_not_keep_namespace_or_owner_alive ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running ../../tests/control/native_resource_state.rs (/workspace/scratch/629ae4947f18/a03-backend-exact-target/debug/deps/native_resource_state-61cf8b34bdf90869)
+
+running 7 tests
+test invalidating_the_original_pinned_owner_fences_pending_and_new_d_but_keeps_prior_terminal ... ok
+test distinct_deliveries_share_one_revision_cas_and_a_refusal_never_becomes_success ... ok
+test linux_configuration_advances_the_same_revision_without_hos2_budget_restrictions ... ok
+test wrong_identity_and_unrepresentable_receipt_are_refused_before_owner_effect ... ok
+test unwind_after_effect_fences_new_deliveries_and_owner_writes_without_resetting_pending_d ... ok
+test management_snapshot_is_rechecked_under_the_same_owner_lock_as_metadata_and_quota ... ok
+test same_cap_updates_preserve_the_only_usage_counter_and_never_recharge_quota ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running ../../tests/control/nonblocking_history.rs (/workspace/scratch/629ae4947f18/a03-backend-exact-target/debug/deps/nonblocking_history-151eb95c4f83afaf)
+
+running 6 tests
+test retire_of_paused_callback_returns_pending_prefix_without_waiting ... ok
+test paused_callback_query_returns_reserved_and_does_not_hold_namespace ... ok
+test closing_namespace_fences_writes_while_queries_and_reads_remain_available ... ok
+test invariant_audit_can_observe_paused_callback_without_waiting ... ok
+test terminal_observations_never_regress_during_concurrent_read_and_publication_retries ... ok
+test two_concurrent_losses_wait_for_every_callback_without_blocking_history_reads ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+     Running ../../tests/control/resource_adversarial.rs (/workspace/scratch/629ae4947f18/a03-backend-exact-target/debug/deps/resource_adversarial-3fcb285bedf52b72)
+
+running 12 tests
+test child_creation_inherits_a_cousin_observed_family_time ... ok
+test descendant_read_usage_prevents_an_ancestor_boottime_rollback ... ok
+test descendant_cas_prevents_an_ancestor_cas_from_backdating ... ok
+test descendant_read_usage_prevents_sibling_cpu_from_being_charged_in_the_past ... ok
+test descendant_sample_fences_every_stale_sibling_mutation_without_partial_charge ... ok
+test legacy_usage_clamps_to_the_latest_family_observation ... ok
+test inconsistent_accounting_read_and_cas_do_not_advance_family_time ... ok
+test same_cap_cas_does_not_refund_shared_parent_consumption ... ok
+test period_rollover_cas_preserves_cumulative_parent_charge ... ok
+test rejected_cas_and_exhausted_interval_do_not_advance_family_time ... ok
+test successful_descendant_cas_and_charges_each_advance_the_family_floor ... ok
+test concurrent_descendant_and_ancestor_samples_preserve_family_clock_order ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running ../../tests/control/resource_lifecycle.rs (/workspace/scratch/629ae4947f18/a03-backend-exact-target/debug/deps/resource_lifecycle-c22ca30edd52b88f)
+
+running 10 tests
+test child_destruction_does_not_refund_already_consumed_parent_cpu ... ok
+test a_retired_reservation_token_does_not_extend_resource_memory_lifetime ... ok
+test final_descendant_drop_releases_the_whole_unreferenced_parent_chain ... ok
+test destroyed_child_releases_only_active_cap_metadata_not_identity_tombstones ... ok
+test ordinary_clone_drop_preserves_constraint_until_the_last_handle_drops ... ok
+test retained_grant_keeps_the_child_constraint_until_the_grant_drops ... ok
+test terminal_history_retains_the_target_until_contiguous_retirement ... ok
+test depth_limit_rejection_preserves_child_metadata_and_identity_capacity ... ok
+test maximum_depth_parent_chain_drops_on_a_bounded_host_thread_stack ... ok
+test last_child_drop_and_parent_reduction_have_one_legal_serial_order ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running ../../tests/control/status_boundary.rs (/workspace/scratch/629ae4947f18/a03-backend-exact-target/debug/deps/status_boundary-793ff13f3761dbce)
+
+running 3 tests
+test actual_retirement_and_legal_terminal_refusals_keep_existing_wire_statuses ... ok
+test retired_is_not_a_serializable_saved_terminal_result ... ok
+test out_of_order_is_not_a_serializable_saved_terminal_result ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running ../../tests/control/token_retirement.rs (/workspace/scratch/629ae4947f18/a03-backend-exact-target/debug/deps/token_retirement-fdc73cf918747104)
+
+running 5 tests
+test lost_history_releases_result_resources_even_when_the_old_token_is_retained ... ok
+test obsolete_token_does_not_keep_an_otherwise_unreferenced_namespace_alive ... ok
+test retained_retired_token_no_longer_keeps_a_child_cap_constraint_alive ... ok
+test unretired_namespace_slot_protects_a_child_after_token_and_user_handles_drop ... ok
+test ten_thousand_retained_tokens_do_not_reexecute_in_a_one_slot_namespace ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+   Doc-tests os_control
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s

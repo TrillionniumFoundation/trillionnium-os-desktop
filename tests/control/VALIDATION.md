@@ -1,6 +1,10 @@
 # A03 control core acceptance — 2026-10-16
 
 Latest follow-up:
+[VALIDATION-20261017-backend.md](VALIDATION-20261017-backend.md),
+with public native namespace lock injection, 220 tests per host backend,
+nineteen Loom models (27,253 schedules) and an external no_std consumer build.
+Previous:
 [VALIDATION-20261017-owner.md](VALIDATION-20261017-owner.md),
 with 214 tests per backend, thirteen Loom models (26,675 schedules), retained
 callback cleanup and embeddable sole-owner resource CAS metadata.
