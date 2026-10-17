@@ -4,7 +4,7 @@
 
 use os_control::{
     with_parent, BootId, CapSpaceId, ControlCore, DeliveryRequest, HistoryAck, OwnerId,
-    OwnerReceipt, PublisherId, ResourceDomain, ResourceDomainId, ResourceError, StableObjectId,
+    PublisherId, ResourceDomain, ResourceDomainId, ResourceError, StableObjectId,
     CPU_PERIOD_NS, MAX_RESOURCE_DEPTH,
 };
 use std::sync::{Arc, Barrier};

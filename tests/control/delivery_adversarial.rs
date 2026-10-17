@@ -3,7 +3,7 @@
 
 use os_control::{
     BootId, CapSpaceId, ControlCore, DeliveryError, DeliveryRequest, DeliveryState, DeliveryStatus,
-    HistoryAck, OriginalOwnerAuthority, OwnerId, OwnerReceipt, PublishOutcome, PublisherId,
+    HistoryAck, OriginalOwnerAuthority, OwnerId, PublishOutcome, PublisherId,
     ReserveAttempt, ResourceDomain, ResourceDomainId, StableObjectId, CPU_PERIOD_NS,
     DEFAULT_WINDOW_CAPACITY,
 };

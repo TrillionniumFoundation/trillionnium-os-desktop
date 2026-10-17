@@ -5,7 +5,7 @@
 use os_control::{
     BootId, CapSpaceId, ControlCore, DeliveryError, DeliveryObservation, DeliveryState,
     DeliveryStatus, HistoryAck, NativeDeliveryRequest, NativeGrant, NativeTarget,
-    OriginalOwnerAuthority, OwnerId, OwnerReceipt, PublishOutcome, PublisherId, RequestBinding,
+    OriginalOwnerAuthority, OwnerId, PublishOutcome, PublisherId, RequestBinding,
     ReserveToken, ResourceDomainId, StableObjectId, CPU_PERIOD_NS,
 };
 use std::panic::{catch_unwind, AssertUnwindSafe};

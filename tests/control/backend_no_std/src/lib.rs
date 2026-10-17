@@ -15,7 +15,7 @@ use os_control::{
     BootId, CapSpaceId, ControlCoreWith, ControlMutex, DeliveryError, DeliveryObservation,
     DeliveryState, DeliveryViewWith, HistoryAck, LockBackend, LockRole, NativeDeliveryRequest,
     NativeGrant, NativeResourceState, NativeResourceUpdate, NativeTarget,
-    OriginalOwnerAuthorityWith, OwnerId, OwnerReceipt, PublishOutcome, PublisherId,
+    OriginalOwnerAuthorityWith, OwnerId, PublishOutcome, PublisherId,
     ReserveTokenWith, ResourceDomainId, StableObjectId, WeakControlCoreWith,
 };
 

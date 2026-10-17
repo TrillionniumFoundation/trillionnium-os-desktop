@@ -7,7 +7,7 @@
 use os_control::{
     BootId, CapSpaceId, ControlCore, DeliveryError, DeliveryObservation, DeliveryState,
     DeliveryStatus, HistoryAck, NativeDeliveryRequest, NativeGrant, NativeTarget,
-    OriginalOwnerAuthority, OwnerId, OwnerReceipt, PublishOutcome, PublisherId, RequestBinding,
+    OriginalOwnerAuthority, OwnerId, PublishOutcome, PublisherId, RequestBinding,
     ReserveAttempt, ReserveToken, ResourceDomainId, StableObjectId,
 };
 use std::collections::VecDeque;

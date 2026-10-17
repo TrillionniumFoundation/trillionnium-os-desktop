@@ -8,7 +8,7 @@
 use os_control::{
     BootId, CapSpaceId, ControlCore, DeliveryError, DeliveryRequest, DeliveryState, DeliveryStatus,
     HistoryAck, NativeDeliveryRequest, NativeGrant, NativeTarget, OriginalOwnerAuthority, OwnerId,
-    OwnerReceipt, PublishOutcome, PublisherId, RequestBinding, ReserveAttempt, ResourceDomain,
+    PublishOutcome, PublisherId, RequestBinding, ReserveAttempt, ResourceDomain,
     ResourceDomainId, ResourceError, StableObjectId, CPU_PERIOD_NS, MAX_RESOURCE_DEPTH,
 };
 use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};

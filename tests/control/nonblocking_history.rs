@@ -5,7 +5,7 @@
 
 use os_control::{
     BootId, CapSpaceId, ControlCore, DeliveryError, DeliveryRequest, DeliveryState, DeliveryStatus,
-    HistoryAck, OriginalOwnerAuthority, OwnerId, OwnerReceipt, PublishOutcome, PublisherId,
+    HistoryAck, OriginalOwnerAuthority, OwnerId, PublishOutcome, PublisherId,
     RequestBinding, ResourceDomain, ResourceDomainId, StableObjectId, CPU_PERIOD_NS,
 };
 use std::sync::{mpsc, Arc, Barrier};

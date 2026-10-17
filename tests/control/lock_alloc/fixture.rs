@@ -8,7 +8,7 @@ use lock_trace::{
 };
 use os_control::{
     BootId, CapSpaceId, DeliveryError, DeliveryState, DeliveryStatus, HistoryAck,
-    NativeDeliveryRequest, NativeGrant, NativeTarget, OwnerId, OwnerReceipt, PublishOutcome,
+    NativeDeliveryRequest, NativeGrant, NativeTarget, OwnerId, PublishOutcome,
     PublisherId, ResourceDomainId, StableObjectId,
 };
 #[cfg(not(feature = "public-backend"))]

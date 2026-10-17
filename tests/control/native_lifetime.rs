@@ -4,7 +4,7 @@
 
 use os_control::{
     BootId, CapSpaceId, ControlCore, DeliveryError, DeliveryState, DeliveryStatus, HistoryAck,
-    NativeDeliveryRequest, NativeGrant, NativeTarget, OwnerId, OwnerReceipt, PublishOutcome,
+    NativeDeliveryRequest, NativeGrant, NativeTarget, OwnerId, PublishOutcome,
     PublisherId, ReserveToken, ResourceDomainId, StableObjectId, WeakControlCore,
 };
 use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
