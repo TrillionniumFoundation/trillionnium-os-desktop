@@ -7,7 +7,7 @@ use ostd::arch::cpu::context::{FsBase, GsBase};
 use ostd::{
     arch::cpu::context::{FpuContext, UserContext},
     cpu::CpuSet,
-    sync::RwArc,
+    sync::{RcuOption, RwArc},
     task::Task,
 };
 use spin::Once;
@@ -187,6 +187,7 @@ impl PosixThreadBuilder {
                 PosixThread {
                     process,
                     task: weak_task.clone(),
+                    cpu_cgroup: RcuOption::new(None),
                     tid: AtomicU32::new(tid),
                     name: Mutex::new(thread_name),
                     credentials,
