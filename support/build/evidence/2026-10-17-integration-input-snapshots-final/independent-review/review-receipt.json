@@ -1,0 +1,30 @@
+{
+  "scope": "Independent read-only review, limited host helpers and one red/green recorder CLI regression using fake QEMU/capture. No real Cargo/GDB/VM/fullsuite run by this reviewer.",
+  "reviewed_final_recorder_sha256": "9f51c0edb4bd919a3ab95dbee718f79a453f4f529b24c067ef831381764b9d3a",
+  "shared_recorder_sha256": "387845415b54f1822c55ce4198586fae8047f7d3ea94008c84e0974871954098",
+  "final_test_source_sha256": "fb3ac087283168172e7c9107db47c9f865f008cca01ded4d7ef55edddf5de5f8",
+  "identified_issue": "Coverage symbols were copied after the QEMU version probe although kernel/BIOS/initrd were already copied.",
+  "resolved": true,
+  "initial_counterexample": "initial-mixed-freeze-receipt.json uses valid replacement EM62 and demonstrates controller timing split; not an actual guest/symbol mismatch acceptance claim.",
+  "red_green_regression": "version-case-replay.json preserves original raw statuses. Old bc recorder fails the new regression; reordered 67f passes with old symbol copy retained. The final alias revision changes only snapshot_arguments, leaving the tested main and every other function byte-identical.",
+  "extra_host_checks": {
+    "count": 5,
+    "passed": 5,
+    "record": "helpers-result.json"
+  },
+  "read_only_conclusions": [
+    "Actual QEMU kernel/initrd/BIOS arguments and actual capture symbol argument point to exclusive private copies.",
+    "The second ordinary-recorder source read must match selection source SHA/size/path before exact-byte compile; a changed source was rejected.",
+    "capture_artifact checks a stable regular file descriptor, named identity and stat before/after reads; destination uses exclusive creation.",
+    "Copy data/identity/stat changes fail before or after QEMU, while changes to original mutable build outputs are allowed after capture.",
+    "Post-finalization copy failure records wrapper125/error and is rejected by downstream coverage_binding; finalized sidecar alone cannot make that record pass.",
+    "The final alias parser preserves canonical artifact metadata keys, recognizes supported double-hyphen flags and skips known valued options including literal -append values.",
+    "Optional initrd, original UNIX transport, explicit local TCP/capture strategy and existing coverage checks remain in effect."
+  ],
+  "limitations": [
+    "No atomic multi-file build snapshot or protection against arbitrary privileged writers is claimed.",
+    "Private copies are retained in live output. archive.py filters binary suffixes, and root plans explicit stable-FD artifact preservation/deduplication/chunks for final public evidence.",
+    "Producer-owned fullsuite and full22 real integration results are separate from these reviewer fixtures."
+  ],
+  "decision": "No remaining blocking issue found in the final measured candidate."
+}
