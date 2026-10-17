@@ -427,10 +427,10 @@ def _run_local(args):
     return rc
 
 
-def _unknown_effect_evidence(args, record, error):
+def _unknown_effect_evidence(args, record, error, status="timeout", timeout_enforced=False):
     a, b = inputs()
     evidence = _base_evidence(reference(a, b), a, b, args.timeout_seconds)
-    evidence.update(status="timeout", error=error, timeout_enforced=True,
+    evidence.update(status=status, error=error, timeout_enforced=timeout_enforced,
                     supervisor=record, failure_recovery_verified=False)
     evidence["execution_provenance"]["execution_layer"] = (
         "linux_supervised_worker_cuda_driver_api")
@@ -476,23 +476,70 @@ def _run_supervised(args):
             _write_evidence(evidence, args.output)
             return 2
 
-        if code == 124 or not record.get("worker_reaped", False):
+        supervision_complete = bool(
+            record.get("worker_reaped")
+            and not record.get("worker_group_incomplete")
+            and not record.get("worker_group_inspection_failed")
+            and not record.get("worker_group_kill_error")
+            and not record.get("worker_identity_lost")
+            and not record.get("unreaped_worker_may_remain")
+            and code != 125
+        )
+        if code == 124 or not supervision_complete or code == 125:
+            # A worker leader can exit while CUDA-using descendants stay
+            # alive. Never parse its forged "success" report if group/PGID
+            # lifetime or cleanup is not verified. Reset is always unknown.
+            failure = code == 125 or not supervision_complete
             evidence = _unknown_effect_evidence(
-                args, record, "CUDA worker deadline expired; device effect is unknown")
+                args, record,
+                ("worker group/identity cleanup unverified; device effect unknown"
+                 if failure else "CUDA worker deadline expired; device effect unknown"),
+                status="failed" if failure else "timeout",
+                timeout_enforced=(code == 124 and supervision_complete),
+            )
             evidence["elapsed_seconds"] = round(time.monotonic() - started, 6)
             _write_evidence(evidence, args.output)
             return 1
 
         try:
             from pathlib import Path
-            evidence = json.loads(Path(worker_output).read_text(encoding="utf-8"))
-        except (OSError, UnicodeError, ValueError) as exc:
+            worker = Path(worker_output)
+            if worker.is_symlink() or not worker.is_file() or not 0 < worker.stat().st_size <= 65536:
+                raise ValueError("worker evidence missing, nonregular or oversized")
+            raw = worker.read_bytes()
+            if not 0 < len(raw) <= 65536:
+                raise ValueError("worker evidence exceeded 64 KiB")
+            def unique_pairs(pairs):
+                obj = {}
+                for key, value in pairs:
+                    if key in obj:
+                        raise ValueError("duplicate worker JSON key: " + key)
+                    obj[key] = value
+                return obj
+            def reject_nonfinite(value):
+                raise ValueError("nonfinite worker JSON value: " + value)
+            evidence = json.loads(raw.decode("utf-8"),
+                                  object_pairs_hook=unique_pairs,
+                                  parse_constant=reject_nonfinite)
+            if (not isinstance(evidence, dict)
+                    or evidence.get("schema") != "a09.cuda-gemm.v2"
+                    or evidence.get("status") not in (
+                        "blocked", "failed", "timeout",
+                        "passed_on_reported_cuda_environment")
+                    or not isinstance(evidence.get("stages"), dict)
+                    or set(evidence["stages"]) != set(STAGES)):
+                raise ValueError("unrecognized or incomplete CUDA worker evidence")
+            expected_code = {"blocked": 2, "failed": 1, "timeout": 1,
+                             "passed_on_reported_cuda_environment": 0}
+            if expected_code[evidence["status"]] != code:
+                raise ValueError("worker return code and evidence disagree")
+        except (OSError, UnicodeError, ValueError, TypeError) as exc:
             a, b = inputs()
             evidence = _base_evidence(reference(a, b), a, b, args.timeout_seconds)
             evidence.update(status="failed",
-                            error=f"worker evidence unavailable: {exc}")
+                            error=f"worker evidence invalid: {exc}")
             code = 1
-        evidence["timeout_enforced"] = True
+        evidence["timeout_enforced"] = bool(supervision_complete)
         evidence["supervisor"] = record
         evidence["execution_provenance"]["execution_layer"] = (
             "linux_supervised_worker_cuda_driver_api")
