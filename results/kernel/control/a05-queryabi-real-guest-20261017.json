@@ -91,5 +91,67 @@
     "multi_cpu_or_bare_metal": "not tested",
     "production_ready": false
   },
-  "raw_artifacts": "Retained in authorized, isolated test workspace; serial/QEMU logs are not embedded in this public repository to avoid user environment leakage."
+  "raw_artifacts": "Retained in authorized, isolated test workspace; serial/QEMU logs are not embedded in this public repository to avoid user environment leakage.",
+  "independent_repetition": {
+    "count": 3,
+    "source_commit": "5fc3887dfc5833b61d11280eb1421bb7fd78648f",
+    "kernel_elf_sha256": "54c8a7a798cbbd80f1a8ce5f0144328815e63b413e79b0133206bcaaba607e4a",
+    "same_ephemeral_guest_image_sha256": "015834fd087ca17e05f1a083e5d104e3984af4042e1da7ebe5863f354d098c06",
+    "samples": [
+      {
+        "index": 1,
+        "raw_qemu_exit": 33,
+        "host_seconds": 1.495,
+        "queryabi_ok": true,
+        "boot_ok": true,
+        "fail": false,
+        "panic": false,
+        "serial_sha256": "e41c47aec2781f9deff3a18c8f33ee6812334cc03f705dac3fedbbd574b2f4f3",
+        "passed": true
+      },
+      {
+        "index": 2,
+        "raw_qemu_exit": 33,
+        "host_seconds": 1.458,
+        "queryabi_ok": true,
+        "boot_ok": true,
+        "fail": false,
+        "panic": false,
+        "serial_sha256": "f2df77ef5413ba20d4759b2a4d067585a37676fc4d467a7f114da8fc6c7c916a",
+        "passed": true
+      },
+      {
+        "index": 3,
+        "raw_qemu_exit": 33,
+        "host_seconds": 1.574,
+        "queryabi_ok": true,
+        "boot_ok": true,
+        "fail": false,
+        "panic": false,
+        "serial_sha256": "6be3d99430105df2d5332299e065557bd2a0261ec32c07cc7ec31b22677baff7",
+        "passed": true
+      }
+    ],
+    "passed": true,
+    "not_a_new_kernel_build": true
+  },
+  "kernel_mode_regression": {
+    "source_scope": "A05 exact 4 modified paths verified against source commit; other pinned kernel code unchanged",
+    "toolchain": "nightly-2026-07-21",
+    "runner": "support/build/ktest/run.py --crate aster-core --skip-osdk-install",
+    "osdk_source_version": "pinned Asterinas v0.19.0",
+    "test_elf_sha256": "5e1d40b86b4717a645f3cc089f746b7fa0c90e84bf0bdb72615e25d47b402746",
+    "serial_sha256": "40b5431a766e7980cbde3e618aec95044ab13330bfe683a63f427af704a403f7",
+    "actual_tests": 141,
+    "passed": 141,
+    "failed": 0,
+    "filtered": 0,
+    "soft_skipped": 0,
+    "qemu_raw_exit": 33,
+    "timed_out": false,
+    "independent_kernel_test_elf_built_this_run": true,
+    "regular_A05_queryabi_kernel_rebuilt_this_run": false,
+    "result": true,
+    "limitation": "Only aster-core kernel tests, not the full OSTD suite, SMP, device authorization, or G1/G2"
+  }
 }
