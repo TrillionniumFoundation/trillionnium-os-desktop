@@ -6,6 +6,9 @@ on:
       - 'support/build/**'
       - 'support/upstream-lock.json'
       - 'README.md'
+      # Any derived-kernel source change can invalidate the pinned boot
+      # evidence; keep A01 host regressions on that path as a safety net.
+      - 'kernel/asterinas/**'
       - 'kernel/asterinas/osdk/src/commands/**'
       - 'kernel/asterinas/osdk/tests/commands/**'
       - '.github/workflows/a01-boot-evidence.yml'
@@ -15,6 +18,7 @@ on:
       - 'support/build/**'
       - 'support/upstream-lock.json'
       - 'README.md'
+      - 'kernel/asterinas/**'
       - 'kernel/asterinas/osdk/src/commands/**'
       - 'kernel/asterinas/osdk/tests/commands/**'
       - '.github/workflows/a01-boot-evidence.yml'

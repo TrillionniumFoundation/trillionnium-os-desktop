@@ -1057,6 +1057,7 @@ fn parse_read_usage_response(p: &[u8]) -> Result<ReadUsageResponse, Error> {
         || out.window_start_ns != expected_start
         || out.window_consumed_ns > elapsed
         || out.cumulative_cpu_ns < out.window_consumed_ns
+        || out.cumulative_cpu_ns > out.sample_boottime_ns
         || out.active_cap_ns > out.active_period_ns
         || out.dropped_events > out.event_sequence
     {
@@ -1232,6 +1233,7 @@ fn validate_read_usage(v: &ReadUsageResponse) -> Result<(), Error> {
         || v.window_start_ns != expected_start
         || v.window_consumed_ns > elapsed
         || v.cumulative_cpu_ns < v.window_consumed_ns
+        || v.cumulative_cpu_ns > v.sample_boottime_ns
         || v.active_cap_ns > v.active_period_ns
         || v.dropped_events > v.event_sequence
     {

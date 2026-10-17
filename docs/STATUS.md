@@ -1,5 +1,16 @@
 # 当前状态
 
+## 2026-10-17：A03/A02 已独立验证并合并，A05 进程会话完成真实客体验证
+
+- **合并到 main 的真实源码：**[A03 PR #123](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/123) merge `df8e2decbb1f4efb501d03f6141f81c7a128ac1a`，减少 native delivery 预约／退役／历史丢失时的内部锁下分配；[A02 PR #119](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/119) merge `eabf5fb169a1d477ff3b3059a7a2aaa89746cdc8`，为 N0 `ReadUsage` 编码和解码补上 `cumulative_cpu_ns <= sample_boottime_ns` 的不变量。均是精确预期 HEAD 的普通合并，未改其他 Agent 分支。
+- **A03 独立实测：**精确 `25f809623f22b205189a1ad3fa995667189a45b6` 的 std 与 portable-spin Rust 测试、双方严格 Clippy、fmt、`x86_64-unknown-none` 编译均通过；12 项 Loom 模型通过、18 个锁分配检测场景在已测同步模型中无锁内分配。合并后在精确 main `df8e2dec...` 重新运行两套 Rust 测试、两套 Clippy 和格式检查全部通过。**只证明宿主与有界模型行为，不是内核 IRQ/SMP 终验。**
+- **A02 独立实测：**在固定 `nightly-2026-07-21` 上完整执行未修改的 `tests/abi/run_acceptance.py`，**13/13 验收检查全部通过，20/20 编译型错误变异被抓到**；原样输入与 0 字节 README 校验通过。合并后精确 `eabf5fb...` 的 Rust ABI 测试、严格 Clippy 和 Python 57 项测试亦通过。GitHub 云端排队的任务不能冒称绿灯；这些是授权本机独立执行证据。
+- **A05 原生只读 QueryAbi 真实 QEMU：**[Draft PR #125](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/125) 精确源码 `48303eb68582f32639f555f54ccab1d5355753d2` 从源码固定 nightly 编译成功，ELF SHA256 `8198458eb4039717465595952213dbb2a981f77c38f25acc4e171b2caf6c2581`；同一独立 1-vCPU 客体中 pre-exec QueryAbi、post-exec `ESTALE`、fork 继承 fd 拒绝和启动完成标志均成立、QEMU raw33。Host C/Werror 与六项回放负面测试也通过。
+- **未合并的 A05 对抗实验：**为了避免 PID+截断32位启动 jiffies 重用公开 CapSpace wire ID，独立本地候选 `2e87e8fe7a42032e97edb440b170206c53c28069` 尝试单调进程 serial。该候选虽然编译，但真实客体报 `HEPTA_QUERYABI_FAIL at=same_process_session`、QEMU raw65，**明确失败，未推送或合并**；原 A05 owner 分支保持不变，失败已报告 PR #125。
+- **当前剩余主门槛：**A06 zombie/exit 最终 CPU debit [PR #129](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/129)、A05 真正不重用且稳定的 CapSpace ID 和 exec/fork 授权、HOS2 其余四项效果接口、Hepta 原有 durable K→D/历史/退役均未完成端到端资格。A06/N0、A05/QueryAbi 已有实证，但 **G1/G2 和 SMP/硬件生产放行仍然不成立**。
+
+---
+
 ## 2026-10-17：A05 QueryAbi＋A06 CPU 带宽已合并 N0 实验内核
 
 **真实主干合并：**[PR #121](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/121) merge `3538ec23570733a8b48678f9f24fcd0949dabd84`；主干包含此前 A05 的只读 /dev/hepta-control QueryAbi 与 A06 的实际 cgroup CPU 限额／调度器。测试源码本地合并提交 `b913202b2e487126319e60813a54163666b9a2ad` 与远端集成提交 `eaf5242233b799356b7daa73898a14d240832abb` **Git tree 相同**（`b852e0037af8f84c22a8fc7347fa55d8183e07e6`）；后续 PR 仅添加结果 JSON，三条核心内核文件 Git blob 已在合并后再核对一致。唯一文件冲突 `support/build/kernel.sh` 采用已验证的 main A01 新版（保留 manifest 身份及 --live-artifacts），没有回滚 A01 修复。
