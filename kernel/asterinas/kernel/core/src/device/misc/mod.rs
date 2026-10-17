@@ -10,6 +10,7 @@ use spin::Once;
 use super::registry::char::{MajorIdOwner, acquire_major};
 
 mod hwrng;
+mod hepta_control;
 #[cfg(all(target_arch = "x86_64", feature = "cvm_guest"))]
 pub(crate) mod tdxguest;
 
@@ -19,6 +20,7 @@ pub(super) fn init_in_first_kthread() {
     MISC_MAJOR.call_once(|| acquire_major(MajorId::new(10)).unwrap());
 
     hwrng::init_in_first_kthread();
+    hepta_control::init_in_first_kthread();
 
     #[cfg(target_arch = "x86_64")]
     ostd::if_tdx_enabled!({
