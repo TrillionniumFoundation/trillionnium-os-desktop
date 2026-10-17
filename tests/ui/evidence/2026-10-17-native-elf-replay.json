@@ -1,0 +1,46 @@
+{
+  "kind": "a10-linux-host-ELF-independent-execution",
+  "source_commit": "fcc57bd2a64cc7ee84731b432a94b51689355af7",
+  "github_actions_run": 39015860337,
+  "host": "independent Linux container, NO Weston/X11, NO Asterinas, NO GPU, NO CJK candidate UI",
+  "shasum_elf": {
+    "trill-session": "cc37cb9d0463b1b292a37496f96e23c7cb906e763711695ac857435dac43c76c",
+    "trill-ctl": "ee2e1bd0523f5bcde35600b3034396e99295d15c1bfa4048160008ff66cf3cd0",
+    "trill-app-window": "4ba282d25f3f959a85d02ad9e980d3959cf3e8389f9eeac8518013e3d4583c4d",
+    "trill-shell": "3e0b7277d6ff060516e65f89f780ddd249738920a84d916a3736fa0013cc0497"
+  },
+  "checks": {
+    "linux_real_session_ipc": {
+      "passed": true,
+      "session_instance_hex_bytes": 16,
+      "socket_mode": "0600",
+      "wayland_status": "unconfigured"
+    },
+    "exclusive_session_lock": {
+      "passed": true,
+      "duplicate_exit_status": 1,
+      "original_session_survives": true
+    },
+    "generation_fencing": {
+      "passed": true,
+      "stale_cancel_cli_exit_nonzero": true,
+      "no_hos2_revision": true
+    },
+    "headless_gui_failure_is_observed": {
+      "passed": true,
+      "task_state": "failed",
+      "first_egui_layout": null,
+      "not_hepta_completion": true
+    },
+    "session_restart_is_not_old_process_reattach": {
+      "passed": true,
+      "fresh_generation": true,
+      "no_imported_tasks": true,
+      "stale_cancel_rejected": true
+    }
+  },
+  "passed": true,
+  "timestamp_utc": "2026-10-17T09:01:52+00:00",
+  "github_actions_artifact_id": 12096301139,
+  "archive_sha256": "1ae2741312a4819b2e03595a17ed014735379770e10be6f42427fe9a819f8d3e"
+}

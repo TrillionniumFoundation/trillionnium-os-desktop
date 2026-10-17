@@ -72,6 +72,20 @@ starts a fresh task, does not restore unsaved data and does not silently kill
 the old process. Real Chinese IME, physical
 GPU reset and target kernel boot remain separate gates.
 
+A10 independently downloaded the successful exact-source Linux-host
+[#39015860337](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39015860337)
+artifact, verified the outer tarball SHA256 and all four actual ELF hashes, and
+executed its **real** `trill-session` and `trill-ctl` binaries in a separate
+Linux container with DISPLAY and WAYLAND_DISPLAY absent. Five checks passed:
+private 0600 IPC, exclusive process lock, stale-generation cancellation
+rejection, a missing-display GUI child observed FAILED (never Hepta success),
+and a fresh Session instance that does not adopt old tasks. Machine-readable
+host-only results and exact executable SHA256 are stored at
+`tests/ui/evidence/2026-10-17-native-elf-replay.json`; it references source
+`fcc57bd2`, CI artifact ID `12096301139` and archive SHA256.
+**This does not prove a Wayland window, CJK candidate, GPU, A05 effect, or
+Asterinas kernel boot.** Later A10 commits need separate exact-HEAD CI.
+
 The session MUST be independently supervised or kept running in terminal #1.
 Stopping/restarting the shell should not kill its owned app processes.
 Use the conversation's explicit local action cards or the Apps view to
