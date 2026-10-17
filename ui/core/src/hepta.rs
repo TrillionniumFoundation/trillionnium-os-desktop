@@ -81,7 +81,8 @@ pub struct HeptaRuntimeObservation {
     pub latest_cursor: u64,
     /// Sticky for this Session: a later complete page cannot fill an old gap.
     pub history_gap: bool,
-    /// A process/generation change invalidates the old display event window.
+    /// A process/spawn change invalidates the old display event window.
+    /// Ordinary current-generation advancement keeps the same source.
     pub source_changed: bool,
 }
 

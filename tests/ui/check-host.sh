@@ -78,10 +78,11 @@ cargo test --manifest-path ui/Cargo.toml --workspace --locked
 cargo test --manifest-path services/hepta-os/Cargo.toml --locked
 # Actual Session/facade/Unix IPC against an explicitly scripted fixed-v2
 # fixture. Its provenance says that upstream Agentd and effects were not run.
-observer_target="${CARGO_TARGET_DIR:-$PWD/ui/target}"
-observer_evidence_root="${RUNNER_TEMP:-$observer_target}"
+ui_target="${CARGO_TARGET_DIR:-$PWD/ui/target}"
+ui_binaries="$ui_target/debug"
+observer_evidence_root="${RUNNER_TEMP:-$ui_target}"
 python3 tests/ui/probe-hepta-session.py \
-    --session "$observer_target/debug/trill-session" \
+    --session "$ui_binaries/trill-session" \
     --output "$observer_evidence_root/a10/session-observer-probe.json"
 # A10's read-only HOS2 adapter consumes the real shared A02 crate. Changes
 # to main ABI must break this same blocking host gate if the consumer regresses.
@@ -93,11 +94,11 @@ cargo test --manifest-path tests/ui/Cargo.toml --locked
 # nobody-owned Session under a separate private /tmp runtime. A root caller
 # must be refused with an actual peer-UID diagnostic. The same-UID client
 # must continue to work; old unguarded Rust binaries fail this check.
-bash tests/ui/test-cross-uid-peer.sh "$PWD/ui/target/debug"
+bash tests/ui/test-cross-uid-peer.sh "$ui_binaries"
 # Probe the ACTUAL native Session through raw Unix-socket JSON, not serde
 # unit models. Exact Snapshot/Launch/Cancel schemas must reject duplicate
 # keys or unknown metadata before any task effect can occur.
-python3 tests/ui/test-strict-request-ipc.py "$PWD/ui/target/debug"
+python3 tests/ui/test-strict-request-ipc.py "$ui_binaries"
 # The binaries are packaged only when all host suites and strict Rustfmt
 # have passed; the separate Weston smoke still owns its independent gate.
 for manifest in ui/Cargo.toml services/hepta-os/Cargo.toml support/ui/Cargo.toml tests/ui/Cargo.toml; do

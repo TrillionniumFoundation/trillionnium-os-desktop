@@ -34,8 +34,10 @@ configuration. The worker calls A07's blocking facade on its own thread.
 Each poll reads health, capabilities, a bounded event page, and a closing
 health check inside a five-second total deadline. These reads are not an
 atomic owner snapshot. The facade validates all replies against the expected
-AgentId and spawn generation, the current generation, and the same
-kernel-observed peer PID within that poll.
+AgentId and spawn generation, the lifecycle's current generation, and the
+same kernel-observed peer PID within that poll. The pinned Agentd advances
+current generation from `spawn` while starting, to `spawn + 1` while running,
+and `spawn + 2` while draining; the spawn identity itself remains fixed.
 
 The Session polls at a one-second interval after each attempt. Only the
 worker waits for Agentd; the Session event loop uses `try_recv` on a one-slot
@@ -71,8 +73,10 @@ facade. Empty pages do not jump ahead. A detected history gap stays marked
 for the lifetime of the Session view. If the owner reports the read cursor
 ahead of retained history, the worker resets this read cursor to zero and
 keeps the gap warning. This is a read resynchronization, not an objective
-retry. A changed runtime PID or generation invalidates the previous event
-window and is visibly recorded. This cache is volatile and cannot replace
+retry. A changed runtime PID or spawn generation invalidates the previous
+event window and is visibly recorded. Normal promotion/draining changes
+current generation while retaining the same source and bounded event window.
+This cache is volatile and cannot replace
 Hepta's durable operation ledger.
 
 ## Configure and run on a Linux host

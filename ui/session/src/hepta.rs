@@ -227,8 +227,9 @@ fn project_observation(
     let identity_changed = old.is_some_and(|old| {
         // The facade validates the full configured agent identity. Never
         // compare its truncated display string as an authority identifier.
+        // Current generation advances during promotion/draining of the same
+        // spawned process; those lifecycle transitions do not replace it.
         old.spawn_generation != observation.spawn_generation
-            || old.current_generation != observation.current_generation
             || old.health.process_id != observation.health.process_id
     });
     let mut events = old
@@ -304,7 +305,7 @@ mod tests {
         Observation {
             agent_id: "00000000-0000-4000-8000-000000000001".into(),
             spawn_generation: 1,
-            current_generation: 1,
+            current_generation: 2,
             health: HealthObservation {
                 ready: true,
                 promotion_ready: true,
@@ -331,6 +332,45 @@ mod tests {
             latest_cursor: start + count - 1,
             history_gap: gap,
         }
+    }
+
+    #[test]
+    fn lifecycle_advancement_retains_the_same_source_event_window() {
+        let mut starting = observation(20, 1, 1, false);
+        starting.current_generation = starting.spawn_generation;
+        starting.health.lifecycle = "starting".into();
+        starting.health.ready = false;
+        let view = project_observation(starting, &HeptaProjection::default(), 10);
+
+        let running = observation(20, 2, 1, false);
+        let view = project_observation(running, &view, 20);
+        let current = view.last_observation.as_ref().unwrap();
+        assert_eq!(current.current_generation, 2);
+        assert!(!current.source_changed);
+        assert!(!current.history_gap);
+        assert_eq!(current.events.len(), 2);
+
+        let mut draining = observation(20, 3, 1, false);
+        draining.current_generation = draining.spawn_generation + 2;
+        draining.health.lifecycle = "draining".into();
+        draining.health.ready = false;
+        let view = project_observation(draining, &view, 30);
+        let current = view.last_observation.as_ref().unwrap();
+        assert_eq!(current.current_generation, 3);
+        assert!(!current.source_changed);
+        assert!(!current.history_gap);
+        assert_eq!(current.events.len(), 3);
+        assert_eq!(current.events_omitted_from_view, 0);
+
+        let mut replacement = observation(20, 1, 1, false);
+        replacement.spawn_generation = 4;
+        replacement.current_generation = 5;
+        let view = project_observation(replacement, &view, 40);
+        let current = view.last_observation.as_ref().unwrap();
+        assert!(current.source_changed);
+        assert!(current.history_gap);
+        assert_eq!(current.events.len(), 1);
+        assert_eq!(current.events_omitted_from_view, 3);
     }
 
     #[test]

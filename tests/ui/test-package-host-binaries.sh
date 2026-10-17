@@ -9,13 +9,16 @@ done
 
 root="$(mktemp -d "${TMPDIR:-/tmp}/a10-package-check.XXXXXXXX")"
 trap 'rm -rf -- "$root"' EXIT
-mkdir -p "$root/support/ui" "$root/ui/target/debug" "$root/evidence" "$root/mock-bin"
+# A selected target directory must be used consistently by Cargo consumers.
+# Keep spaces in this private path to catch accidentally unquoted paths.
+export CARGO_TARGET_DIR="$root/selected target"
+mkdir -p "$root/support/ui" "$CARGO_TARGET_DIR/debug" "$root/evidence" "$root/mock-bin"
 cp -- support/ui/package-host-binaries.sh "$root/support/ui/package-host-binaries.sh"
 cat > "$root/test-probe.c" <<'SOURCE'
 int main(void) { return 0; }
 SOURCE
 for name in trill-shell trill-session trill-app-window trill-ctl; do
-    cc "$root/test-probe.c" -o "$root/ui/target/debug/$name"
+    cc "$root/test-probe.c" -o "$CARGO_TARGET_DIR/debug/$name"
 done
 cat > "$root/mock-bin/rustc" <<'MOCK'
 #!/usr/bin/env sh
@@ -46,7 +49,7 @@ done
 # A missing native executable must fail before replacing a previously valid
 # archive. This is a negative check; a mock program cannot count as A10 ELF.
 archive_before="$(sha256sum "$root/evidence/a10-linux-host-binaries.tar.gz")"
-rm -f "$root/ui/target/debug/trill-ctl"
+rm -f "$CARGO_TARGET_DIR/debug/trill-ctl"
 if PATH="$root/mock-bin:$PATH" bash "$root/support/ui/package-host-binaries.sh" "$root/evidence" \
     >"$root/expected-rejection.log" 2>&1; then
     echo 'MISSING_BINARY_REJECTED check failed: packager returned success' >&2

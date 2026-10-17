@@ -16,7 +16,7 @@ trap cleanup EXIT
 bundle="$stage/a10-linux-host-binaries"
 mkdir -p -- "$bundle"
 for name in trill-session trill-shell trill-app-window trill-ctl; do
-    src="ui/target/debug/$name"
+    src="${CARGO_TARGET_DIR:-ui/target}/debug/$name"
     [[ -f "$src" && -x "$src" ]] || { echo "Missing built Rust program: $src" >&2; exit 1; }
     install -m 0755 -- "$src" "$bundle/$name"
     strip --strip-debug -- "$bundle/$name"

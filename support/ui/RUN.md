@@ -3,8 +3,10 @@
 This is an executable Rust GUI prototype under the Linux host compositor.
 It is NOT booted under Asterinas, NOT native HOS2, and NOT a full compositor.
 
-Host validation uses the fixed Rust `nightly-2026-07-21` toolchain with Cargo,
-network/cached crates,
+The blocking A00 host workflow fixes Rust **1.88.0**, Cargo and Rustfmt.
+The repository's `nightly-2026-07-21` toolchain is an additional development
+environment; a pass there does not establish the 1.88.0 host gate. Required
+host dependencies include network/cached crates,
 Linux Wayland (or X11), OpenGL/Mesa including llvmpipe for software rendering,
 libxkbcommon, a system Chinese font, and a Chinese IME such as Fcitx5.
 The crates' `rust-version = "1.83"` metadata is not a demonstrated minimum
@@ -18,12 +20,24 @@ is not configured; Conversation remains a local draft.
 From the repository root:
 
 ~~~sh
-cargo +nightly-2026-07-21 build --manifest-path ui/Cargo.toml --workspace --bins --locked
-cargo +nightly-2026-07-21 test --manifest-path ui/Cargo.toml --workspace --locked
-cargo +nightly-2026-07-21 test --manifest-path support/ui/Cargo.toml --locked
-cargo +nightly-2026-07-21 test --manifest-path tests/ui/Cargo.toml --locked
-cargo +nightly-2026-07-21 fmt --manifest-path ui/Cargo.toml --all -- --check
+export RUSTUP_TOOLCHAIN=1.88.0
+cargo build --manifest-path ui/Cargo.toml --workspace --bins --locked
+cargo test --manifest-path ui/Cargo.toml --workspace --locked
+cargo test --manifest-path services/hepta-os/Cargo.toml --locked
+cargo test --manifest-path support/ui/Cargo.toml --locked
+cargo test --manifest-path tests/ui/Cargo.toml --locked
+cargo fmt --manifest-path ui/Cargo.toml --all -- --check
 ~~~
+
+These individual commands are development checks. The complete blocking host
+gate is `bash tests/ui/check-host.sh`, followed by
+`bash tests/ui/headless-weston.sh` for the owned compositor lifecycle gate.
+The host script also requires a C compiler and GNU binutils for its explicitly
+labelled fixture, Python 3, Bash, coreutils, Git, tar, and passwordless sudo
+for its disposable nobody-owned Session and cross-UID negative test. The
+Ubuntu package list is fixed in `.github/workflows/a10-host.yml`. All host
+binary consumers and the packager honor `CARGO_TARGET_DIR`; when it is set,
+replace the default `ui/target/debug` paths below with its `debug` directory.
 
 Within an existing Linux desktop Wayland session, in terminal #1:
 
@@ -42,7 +56,7 @@ For a live Wayland-host lifecycle smoke after building run:
 bash tests/ui/smoke-wayland.sh
 
 The A00-owned GitHub workflow uploads the A10-owned `$RUNNER_TEMP/a10/`
-directory as a CI artifact. After Rust build, all three test suites and strict
+directory as a CI artifact. After Rust build, all host test suites and strict
 Rustfmt pass, `support/ui/package-host-binaries.sh` adds
 `a10-linux-host-binaries.tar.gz` and an outer SHA256 file. The archive contains
 `trill-session`, `trill-shell`, `trill-app-window`, `trill-ctl`, per-binary
@@ -53,7 +67,7 @@ they depend on compatible Linux system libraries. An independent committed
 it compiles four disposable C ELF fixtures (NOT A10 Rust binaries), verifies
 the provenance and both SHA256 layers, and proves failure cannot replace an
 existing archive when one source executable is missing. Real Rust executables
-are only packaged after the three actual Cargo suites and Rustfmt pass.
+are only packaged after all four Cargo suites and Rustfmt pass.
 The blocking host job then independently replays that newly built archive
 through `tests/ui/replay-packaged-host.sh`, refusing a wrong source SHA or
 unsafe tar contents before extraction. The replay launches *actual packaged

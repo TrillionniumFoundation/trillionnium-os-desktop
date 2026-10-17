@@ -9,8 +9,9 @@ for cmd in weston wayland-info cargo python3 timeout; do
     command -v "$cmd" >/dev/null || { echo "Missing host test tool: $cmd" >&2; exit 2; }
 done
 cargo build --manifest-path ui/Cargo.toml --workspace --bins --locked >/dev/null
-ctl=./ui/target/debug/trill-ctl
-session_bin=./ui/target/debug/trill-session
+ui_binaries="${CARGO_TARGET_DIR:-$PWD/ui/target}/debug"
+ctl="$ui_binaries/trill-ctl"
+session_bin="$ui_binaries/trill-session"
 runtime="$(mktemp -d "${TMPDIR:-/tmp}/a10-compositor-restart.XXXXXXXX")"
 chmod 700 "$runtime"
 export XDG_RUNTIME_DIR="$runtime" WAYLAND_DISPLAY="wayland-a10-restart"

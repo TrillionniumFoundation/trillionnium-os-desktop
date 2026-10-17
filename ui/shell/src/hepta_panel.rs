@@ -79,7 +79,7 @@ pub fn runtime(ui: &mut egui::Ui, projection: &HeptaProjection) {
             ui.colored_label(super::warning(), "HISTORY GAP OBSERVED · This session does not have complete event history.");
         }
         if observation.source_changed {
-            ui.colored_label(super::warning(), "Runtime process or generation changed; the previous event window was invalidated.");
+            ui.colored_label(super::warning(), "Runtime process or spawn generation changed; the previous event window was invalidated.");
         }
         if observation.events_omitted_from_view != 0 {
             ui.small(format!(
