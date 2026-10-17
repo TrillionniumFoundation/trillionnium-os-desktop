@@ -1,0 +1,151 @@
+name: A02 pinned-nightly HOS2 host acceptance
+
+on:
+  pull_request:
+    paths:
+      - 'libs/os-abi/**'
+      - 'tests/abi/**'
+      - 'tests/golden/**'
+      - 'support/upstream-lock.json'
+      - '.github/workflows/a02-pinned-host-acceptance.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'libs/os-abi/**'
+      - 'tests/abi/**'
+      - 'tests/golden/**'
+      - 'support/upstream-lock.json'
+      - '.github/workflows/a02-pinned-host-acceptance.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pinned-host-codec:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Verify fixed pins and require a complete A02 acceptance entry
+        shell: bash
+        id: scope
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          test -f README.md && test ! -s README.md
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          lock = json.loads(Path('support/upstream-lock.json').read_text())
+          expected = {
+              'kernel.tag': 'v0.19.0',
+              'kernel.commit': 'c4b7ed575b7b32773475b194d2ad41fb6d03765b',
+              'kernel.toolchain': 'nightly-2026-07-21',
+              'hepta.commit': 'f8c9419df6ddeb36ff8b522a50219981fb8d9345',
+          }
+          for key, wanted in expected.items():
+              section, field = key.split('.')
+              actual = lock.get(section, {}).get(field)
+              if actual != wanted:
+                  raise SystemExit(f'Unexpected source pin {key}: {actual!r}')
+          PY
+          entry=tests/abi/run_acceptance.py
+          if [[ -L "$entry" ]]; then
+            echo 'A02 acceptance entry is a symlink, refusing' >&2
+            exit 1
+          fi
+          if [[ -e "$entry" && ! -f "$entry" ]]; then
+            echo 'A02 acceptance entry is not a regular file' >&2
+            exit 1
+          fi
+          if [[ -f "$entry" ]]; then
+            for required in libs/os-abi/Cargo.toml tests/abi/run_rust_mutations.py tests/golden/generate_hos2.py; do
+              if [[ ! -f "$required" || -L "$required" ]]; then
+                echo "Missing or linked A02 acceptance input: $required" >&2
+                exit 1
+              fi
+            done
+            echo 'enabled=true' >> "$GITHUB_OUTPUT"
+            echo 'A02 fixed-nightly host acceptance is mandatory for this checkout.'
+          else
+            if [[ "$EVENT_NAME" == workflow_dispatch ]]; then
+              echo 'Cannot dispatch without the A02 pinned acceptance runner.' >&2
+              exit 1
+            fi
+            if [[ -z "$BASE_SHA" || -z "$HEAD_SHA" || "$BASE_SHA" =~ ^0+$ ]] ||
+               ! git cat-file -e "$BASE_SHA^{commit}" ||
+               ! git cat-file -e "$HEAD_SHA^{commit}"; then
+              echo 'Cannot verify whether missing A02 runner was removed.' >&2
+              exit 1
+            fi
+            changed=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- libs/os-abi/ tests/abi/ tests/golden/)
+            if [[ -n "$changed" ]]; then
+              echo 'A02 source or golden files changed without the pinned acceptance runner:' >&2
+              printf '%s\n' "$changed" >&2
+              exit 1
+            fi
+            echo 'enabled=false' >> "$GITHUB_OUTPUT"
+            echo 'BOOTSTRAP ONLY: A02 runner not yet present; no fixed-nightly tests executed.'
+          fi
+      - name: Install exact pinned Rust compiler, lint tools and bare target
+        if: steps.scope.outputs.enabled == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup toolchain install nightly-2026-07-21 --profile minimal \
+            --component rustfmt --component clippy --target x86_64-unknown-none
+          rustup run nightly-2026-07-21 rustc -Vv
+          rustup run nightly-2026-07-21 cargo -Vv
+          rustup run nightly-2026-07-21 clippy-driver -V
+      - name: Run complete A02 host acceptance on exact checkout
+        if: steps.scope.outputs.enabled == 'true'
+        shell: bash
+        env:
+          ACCEPTANCE_DIR: ${{ runner.temp }}/a02-pinned-${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          test ! -e "$ACCEPTANCE_DIR"
+          python3 -B tests/abi/run_acceptance.py \
+            --rustup "$(command -v rustup)" \
+            --output-dir "$ACCEPTANCE_DIR"
+          python3 - "$ACCEPTANCE_DIR/report.json" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+          report = json.loads(Path(sys.argv[1]).read_text())
+          required = {
+              'golden_hos2', 'golden_edges', 'golden_transport',
+              'python_discovery', 'python', 'python_optimized',
+              'python_mutations', 'rust_discovery', 'rust',
+              'rustfmt', 'clippy', 'bare_no_std', 'compiled_mutations',
+          }
+          checks = report.get('checks', [])
+          seen = [step.get('name') for step in checks]
+          if (report.get('schema') != 'hos2-a02-host-acceptance-v1'
+              or report.get('toolchain') != 'nightly-2026-07-21'
+              or report.get('success') is not True
+              or report.get('not_executed')
+              or report.get('original_inputs_unchanged') is not True
+              or report.get('readme_bytes') != 0
+              or set(seen) != required
+              or len(seen) != len(required)
+              or not all(step.get('passed') is True for step in checks)):
+              raise SystemExit('A02 full fixed-nightly host acceptance is incomplete')
+          print(f'A02 fixed-nightly HOST codec acceptance: {len(seen)}/{len(required)} checks')
+          print('Not a project-kernel ioctl, QEMU, or durable Hepta acceptance.')
+          PY
+      - name: Retain raw source/command acceptance report on failures
+        if: always() && steps.scope.outputs.enabled == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: a02-fixed-nightly-host-acceptance
+          if-no-files-found: warn
+          path: |
+            ${{ runner.temp }}/a02-pinned-${{ github.run_id }}-${{ github.run_attempt }}/report.json
