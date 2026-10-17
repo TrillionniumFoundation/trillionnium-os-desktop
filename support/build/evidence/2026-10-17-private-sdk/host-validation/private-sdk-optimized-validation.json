@@ -1,0 +1,30 @@
+{
+  "schema": "a01-private-sdk-optimized-host-validation/1",
+  "created_utc": "2026-10-17T04:16:39.676906+00:00",
+  "published_code_commit": "00a24cf5557d1b8e9663a19cc4961af81131d416",
+  "scope": "host-only -I -O kernel runner fixtures; no SDK/kernel/QEMU installation",
+  "command": [
+    "python3",
+    "-I",
+    "-O",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "support/build/tests",
+    "-p",
+    "test_kernel_runner.py",
+    "-v"
+  ],
+  "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+  "source_sha256": {
+    "support/build/kernel.sh": "4ee3118990158bb93be6ffe191cac8de5399f507973af6adc3a05e3614407f83",
+    "support/build/minimal.mk": "9fe262b0287831263217a72380ab24b8e79a3baf2bff4f5a3186c01558ad6635",
+    "support/build/README.md": "0896cf8c0ca002419d1d79b69076e8fbe99d4a2fa8dc57b8ef9354ccb0caed06",
+    "support/build/tests/test_kernel_runner.py": "2311311e33ab57c37117bf431ce938370fb0610b0324c472d4772e3b7c2a4531"
+  },
+  "tests": 40,
+  "observed_tool_returncode": 0,
+  "log": "private-sdk-kernel-runner-v2-isolated-optimized.log",
+  "log_sha256": "0ac5613d8e5658463f66351c824e570d57948268041a59c35fbbcbf37caa3959"
+}

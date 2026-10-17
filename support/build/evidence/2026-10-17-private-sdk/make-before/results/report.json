@@ -1,0 +1,370 @@
+{
+  "schema": "host-only-sdk-root-mtime-probe/1",
+  "source_commit": "cdf308e751e561328c556ca2ece86056d15809a0",
+  "source_files": {
+    "kernel/asterinas/Makefile": {
+      "sha256": "f7d24eb8e81b58d4cf0342862318cbfcf63cd8cff8d0f6f69fb7656295192af6",
+      "bytes": 18799
+    },
+    "support/build/minimal.mk": {
+      "sha256": "0a559e82f2980c5e4e75f466b5eb3346187a720533f8f378878ddd9c04f2c958",
+      "bytes": 1133
+    },
+    "kernel/asterinas/osdk/src/util.rs": {
+      "sha256": "83dbd6054e27c6e6fe281f517c45adc7f2419d132ee2246ce8c87ac4cd6cdf4f",
+      "bytes": 14289
+    }
+  },
+  "make": "GNU Make 4.3\nBuilt for x86_64-pc-linux-gnu\nCopyright (C) 1988-2020 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n",
+  "scope": "GNU make actual upstream+overlay recipes; cargo is an explicit host fixture; no Rust/SDK/QEMU build",
+  "cases": [
+    {
+      "variant": "original",
+      "target": "kernel",
+      "command": [
+        "make",
+        "--no-print-directory",
+        "-C",
+        "/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/original-kernel/new-root",
+        "-f",
+        "Makefile",
+        "-f",
+        "minimal.mk",
+        "kernel",
+        "CARGO_OSDK=/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/original-kernel/cargo-osdk",
+        "A01_INITRAMFS=/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/original-kernel/initramfs",
+        "VDSO_LIBRARY_DIR=host-fixture",
+        "A01_QEMU_WRAPPER=host-fixture",
+        "A01_GDB_PORT=1234",
+        "TARGET_ARCH=x86_64",
+        "SMP=1",
+        "MEM=512M",
+        "ENABLE_KVM=0",
+        "BOOT_PROTOCOL=multiboot",
+        "INITRAMFS=on",
+        "AUTO_TEST=none"
+      ],
+      "returncode": 2,
+      "cargo_calls": [
+        {
+          "argv": [
+            "osdk",
+            "build",
+            "--release",
+            "--boot-method=vmm-direct",
+            "--grub-boot-protocol=multiboot",
+            "--initramfs=/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/original-kernel/initramfs",
+            "--kcmd-args=loglevel=info",
+            "--kcmd-args=earlycon",
+            "--kcmd-args=console=ttyS0",
+            "--qemu-exe=host-fixture"
+          ],
+          "bound": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/original-kernel/old-root",
+          "cwd": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/original-kernel/new-root/kernel",
+          "expected": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/original-kernel/new-root",
+          "operation": "osdk",
+          "returncode": 73,
+          "runtime_osdk_local_dev": "1"
+        }
+      ],
+      "overlay_sha256": "0a559e82f2980c5e4e75f466b5eb3346187a720533f8f378878ddd9c04f2c958"
+    },
+    {
+      "variant": "original",
+      "target": "run_kernel",
+      "command": [
+        "make",
+        "--no-print-directory",
+        "-C",
+        "/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/original-run_kernel/new-root",
+        "-f",
+        "Makefile",
+        "-f",
+        "minimal.mk",
+        "run_kernel",
+        "CARGO_OSDK=/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/original-run_kernel/cargo-osdk",
+        "A01_INITRAMFS=/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/original-run_kernel/initramfs",
+        "VDSO_LIBRARY_DIR=host-fixture",
+        "A01_QEMU_WRAPPER=host-fixture",
+        "A01_GDB_PORT=1234",
+        "TARGET_ARCH=x86_64",
+        "SMP=1",
+        "MEM=512M",
+        "ENABLE_KVM=0",
+        "BOOT_PROTOCOL=multiboot",
+        "INITRAMFS=on",
+        "AUTO_TEST=none"
+      ],
+      "returncode": 2,
+      "cargo_calls": [
+        {
+          "argv": [
+            "osdk",
+            "run",
+            "--release",
+            "--boot-method=vmm-direct",
+            "--grub-boot-protocol=multiboot",
+            "--initramfs=/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/original-run_kernel/initramfs",
+            "--kcmd-args=loglevel=info",
+            "--kcmd-args=earlycon",
+            "--kcmd-args=console=ttyS0",
+            "--qemu-exe=host-fixture"
+          ],
+          "bound": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/original-run_kernel/old-root",
+          "cwd": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/original-run_kernel/new-root/kernel",
+          "expected": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/original-run_kernel/new-root",
+          "operation": "osdk",
+          "returncode": 73,
+          "runtime_osdk_local_dev": "1"
+        }
+      ],
+      "overlay_sha256": "0a559e82f2980c5e4e75f466b5eb3346187a720533f8f378878ddd9c04f2c958"
+    },
+    {
+      "variant": "original",
+      "target": "gdb_server",
+      "command": [
+        "make",
+        "--no-print-directory",
+        "-C",
+        "/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/original-gdb_server/new-root",
+        "-f",
+        "Makefile",
+        "-f",
+        "minimal.mk",
+        "gdb_server",
+        "CARGO_OSDK=/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/original-gdb_server/cargo-osdk",
+        "A01_INITRAMFS=/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/original-gdb_server/initramfs",
+        "VDSO_LIBRARY_DIR=host-fixture",
+        "A01_QEMU_WRAPPER=host-fixture",
+        "A01_GDB_PORT=1234",
+        "TARGET_ARCH=x86_64",
+        "SMP=1",
+        "MEM=512M",
+        "ENABLE_KVM=0",
+        "BOOT_PROTOCOL=multiboot",
+        "INITRAMFS=on",
+        "AUTO_TEST=none"
+      ],
+      "returncode": 2,
+      "cargo_calls": [
+        {
+          "argv": [
+            "osdk",
+            "run",
+            "--release",
+            "--boot-method=vmm-direct",
+            "--grub-boot-protocol=multiboot",
+            "--initramfs=/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/original-gdb_server/initramfs",
+            "--kcmd-args=loglevel=info",
+            "--kcmd-args=earlycon",
+            "--kcmd-args=console=ttyS0",
+            "--qemu-exe=host-fixture",
+            "--strip-elf",
+            "--gdb-server",
+            "wait-client,addr=127.0.0.1:1234"
+          ],
+          "bound": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/original-gdb_server/old-root",
+          "cwd": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/original-gdb_server/new-root/kernel",
+          "expected": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/original-gdb_server/new-root",
+          "operation": "osdk",
+          "returncode": 73,
+          "runtime_osdk_local_dev": "1"
+        }
+      ],
+      "overlay_sha256": "0a559e82f2980c5e4e75f466b5eb3346187a720533f8f378878ddd9c04f2c958"
+    },
+    {
+      "variant": "phony_sdk_prerequisite",
+      "target": "kernel",
+      "command": [
+        "make",
+        "--no-print-directory",
+        "-C",
+        "/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/phony_sdk_prerequisite-kernel/new-root",
+        "-f",
+        "Makefile",
+        "-f",
+        "minimal.mk",
+        "kernel",
+        "CARGO_OSDK=/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/phony_sdk_prerequisite-kernel/cargo-osdk",
+        "A01_INITRAMFS=/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/phony_sdk_prerequisite-kernel/initramfs",
+        "VDSO_LIBRARY_DIR=host-fixture",
+        "A01_QEMU_WRAPPER=host-fixture",
+        "A01_GDB_PORT=1234",
+        "TARGET_ARCH=x86_64",
+        "SMP=1",
+        "MEM=512M",
+        "ENABLE_KVM=0",
+        "BOOT_PROTOCOL=multiboot",
+        "INITRAMFS=on",
+        "AUTO_TEST=none"
+      ],
+      "returncode": 0,
+      "cargo_calls": [
+        {
+          "argv": [
+            "install",
+            "--locked",
+            "cargo-osdk",
+            "--path",
+            "osdk"
+          ],
+          "bound": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/phony_sdk_prerequisite-kernel/new-root",
+          "cwd": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/phony_sdk_prerequisite-kernel/new-root",
+          "operation": "install"
+        },
+        {
+          "argv": [
+            "osdk",
+            "build",
+            "--release",
+            "--boot-method=vmm-direct",
+            "--grub-boot-protocol=multiboot",
+            "--initramfs=/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/phony_sdk_prerequisite-kernel/initramfs",
+            "--kcmd-args=loglevel=info",
+            "--kcmd-args=earlycon",
+            "--kcmd-args=console=ttyS0",
+            "--qemu-exe=host-fixture"
+          ],
+          "bound": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/phony_sdk_prerequisite-kernel/new-root",
+          "cwd": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/phony_sdk_prerequisite-kernel/new-root/kernel",
+          "expected": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/phony_sdk_prerequisite-kernel/new-root",
+          "operation": "osdk",
+          "returncode": 0,
+          "runtime_osdk_local_dev": "1"
+        }
+      ],
+      "overlay_sha256": "b566a51862b7cdb0152da83a2ab081a6dc39ffa3a5377f137d9c8935d9b080a8"
+    },
+    {
+      "variant": "phony_sdk_prerequisite",
+      "target": "run_kernel",
+      "command": [
+        "make",
+        "--no-print-directory",
+        "-C",
+        "/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/phony_sdk_prerequisite-run_kernel/new-root",
+        "-f",
+        "Makefile",
+        "-f",
+        "minimal.mk",
+        "run_kernel",
+        "CARGO_OSDK=/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/phony_sdk_prerequisite-run_kernel/cargo-osdk",
+        "A01_INITRAMFS=/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/phony_sdk_prerequisite-run_kernel/initramfs",
+        "VDSO_LIBRARY_DIR=host-fixture",
+        "A01_QEMU_WRAPPER=host-fixture",
+        "A01_GDB_PORT=1234",
+        "TARGET_ARCH=x86_64",
+        "SMP=1",
+        "MEM=512M",
+        "ENABLE_KVM=0",
+        "BOOT_PROTOCOL=multiboot",
+        "INITRAMFS=on",
+        "AUTO_TEST=none"
+      ],
+      "returncode": 0,
+      "cargo_calls": [
+        {
+          "argv": [
+            "install",
+            "--locked",
+            "cargo-osdk",
+            "--path",
+            "osdk"
+          ],
+          "bound": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/phony_sdk_prerequisite-run_kernel/new-root",
+          "cwd": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/phony_sdk_prerequisite-run_kernel/new-root",
+          "operation": "install"
+        },
+        {
+          "argv": [
+            "osdk",
+            "run",
+            "--release",
+            "--boot-method=vmm-direct",
+            "--grub-boot-protocol=multiboot",
+            "--initramfs=/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/phony_sdk_prerequisite-run_kernel/initramfs",
+            "--kcmd-args=loglevel=info",
+            "--kcmd-args=earlycon",
+            "--kcmd-args=console=ttyS0",
+            "--qemu-exe=host-fixture"
+          ],
+          "bound": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/phony_sdk_prerequisite-run_kernel/new-root",
+          "cwd": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/phony_sdk_prerequisite-run_kernel/new-root/kernel",
+          "expected": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/phony_sdk_prerequisite-run_kernel/new-root",
+          "operation": "osdk",
+          "returncode": 0,
+          "runtime_osdk_local_dev": "1"
+        }
+      ],
+      "overlay_sha256": "b566a51862b7cdb0152da83a2ab081a6dc39ffa3a5377f137d9c8935d9b080a8"
+    },
+    {
+      "variant": "phony_sdk_prerequisite",
+      "target": "gdb_server",
+      "command": [
+        "make",
+        "--no-print-directory",
+        "-C",
+        "/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/phony_sdk_prerequisite-gdb_server/new-root",
+        "-f",
+        "Makefile",
+        "-f",
+        "minimal.mk",
+        "gdb_server",
+        "CARGO_OSDK=/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/phony_sdk_prerequisite-gdb_server/cargo-osdk",
+        "A01_INITRAMFS=/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/phony_sdk_prerequisite-gdb_server/initramfs",
+        "VDSO_LIBRARY_DIR=host-fixture",
+        "A01_QEMU_WRAPPER=host-fixture",
+        "A01_GDB_PORT=1234",
+        "TARGET_ARCH=x86_64",
+        "SMP=1",
+        "MEM=512M",
+        "ENABLE_KVM=0",
+        "BOOT_PROTOCOL=multiboot",
+        "INITRAMFS=on",
+        "AUTO_TEST=none"
+      ],
+      "returncode": 0,
+      "cargo_calls": [
+        {
+          "argv": [
+            "install",
+            "--locked",
+            "cargo-osdk",
+            "--path",
+            "osdk"
+          ],
+          "bound": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/phony_sdk_prerequisite-gdb_server/new-root",
+          "cwd": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/phony_sdk_prerequisite-gdb_server/new-root",
+          "operation": "install"
+        },
+        {
+          "argv": [
+            "osdk",
+            "run",
+            "--release",
+            "--boot-method=vmm-direct",
+            "--grub-boot-protocol=multiboot",
+            "--initramfs=/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/phony_sdk_prerequisite-gdb_server/initramfs",
+            "--kcmd-args=loglevel=info",
+            "--kcmd-args=earlycon",
+            "--kcmd-args=console=ttyS0",
+            "--qemu-exe=host-fixture",
+            "--strip-elf",
+            "--gdb-server",
+            "wait-client,addr=127.0.0.1:1234"
+          ],
+          "bound": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/phony_sdk_prerequisite-gdb_server/new-root",
+          "cwd": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/phony_sdk_prerequisite-gdb_server/new-root/kernel",
+          "expected": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/phony_sdk_prerequisite-gdb_server/new-root",
+          "operation": "osdk",
+          "returncode": 0,
+          "runtime_osdk_local_dev": "1"
+        }
+      ],
+      "overlay_sha256": "b566a51862b7cdb0152da83a2ab081a6dc39ffa3a5377f137d9c8935d9b080a8"
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "scope": "real fixed Cargo custom-subcommand lookup; fake SDKs only; no compilation/QEMU/global SDK mutation",
+  "cargo": "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+  "cargo_sha256": "1e8bffe479c27798861dd7f0a3add4adb898879da0be8431fb48ff8c7cc78c03",
+  "cargo_version": "cargo 1.99.0-nightly (3efb1f477 2026-07-17)\nrelease: 1.99.0-nightly\ncommit-hash: 3efb1f477e99b42974b982d939fd100303cdf7db\ncommit-date: 2026-07-17\nhost: x86_64-unknown-linux-gnu\nlibgit2: 1.9.4 (sys:0.21.0 vendored)\nlibcurl: 8.21.0-DEV (sys:0.4.90+curl-8.21.0 vendored ssl:OpenSSL/3.6.3)\nssl: OpenSSL 3.6.3 9 Jun 2026\nos: Ubuntu 24.4.0 (noble) [64-bit]\n",
+  "cases": [
+    {
+      "name": "unlisted-home-default-prepend",
+      "command": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+        "osdk",
+        "--version",
+        "literal argument"
+      ],
+      "PATH": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/cargo-lookup-results/run-sdk/bin:/usr/bin:/bin",
+      "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/cargo-lookup-results/cargo-home",
+      "returncode": 0,
+      "result": {
+        "selected": "GLOBAL",
+        "argv": [
+          "/workspace/scratch/ae1a8cf05419/sdk-root-audit/cargo-lookup-results/cargo-home/bin/cargo-osdk",
+          "osdk",
+          "--version",
+          "literal argument"
+        ]
+      }
+    },
+    {
+      "name": "explicit-home-after-private",
+      "command": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+        "osdk",
+        "--version",
+        "literal argument"
+      ],
+      "PATH": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/cargo-lookup-results/run-sdk/bin:/workspace/scratch/ae1a8cf05419/sdk-root-audit/cargo-lookup-results/cargo-home/bin:/usr/bin:/bin",
+      "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/cargo-lookup-results/cargo-home",
+      "returncode": 0,
+      "result": {
+        "selected": "PRIVATE",
+        "argv": [
+          "/workspace/scratch/ae1a8cf05419/sdk-root-audit/cargo-lookup-results/run-sdk/bin/cargo-osdk",
+          "osdk",
+          "--version",
+          "literal argument"
+        ]
+      }
+    },
+    {
+      "name": "explicit-home-before-private",
+      "command": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+        "osdk",
+        "--version",
+        "literal argument"
+      ],
+      "PATH": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/cargo-lookup-results/cargo-home/bin:/workspace/scratch/ae1a8cf05419/sdk-root-audit/cargo-lookup-results/run-sdk/bin:/usr/bin:/bin",
+      "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/cargo-lookup-results/cargo-home",
+      "returncode": 0,
+      "result": {
+        "selected": "GLOBAL",
+        "argv": [
+          "/workspace/scratch/ae1a8cf05419/sdk-root-audit/cargo-lookup-results/cargo-home/bin/cargo-osdk",
+          "osdk",
+          "--version",
+          "literal argument"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "scope": "real fixed Cargo lookup, fake SDKs, no compilation",
+  "command": [
+    "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+    "osdk",
+    "--version"
+  ],
+  "cwd": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/cargo-relative-lookup-results",
+  "CARGO_HOME": "cargo-home",
+  "PATH": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/cargo-relative-lookup-results/sdk/bin:cargo-home/bin:/usr/bin:/bin",
+  "returncode": 0,
+  "stdout": "GLOBAL\n",
+  "stderr": "",
+  "conclusion": "relative Cargo home bin in PATH does not suppress Cargo's absolute home/bin default prepend"
+}

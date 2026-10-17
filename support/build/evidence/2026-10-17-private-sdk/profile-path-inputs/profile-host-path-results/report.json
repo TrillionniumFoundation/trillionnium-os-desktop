@@ -1,0 +1,128 @@
+{
+  "source_commit": "cdf308e751e561328c556ca2ece86056d15809a0",
+  "profile_sha256": "ca1a9d239846ba9654bb22ac1628040e99fb4e72a4b91545d7161509c069e180",
+  "scope": "Invoke the exact schema4 Python descriptor code, without invoking Rust.\n\nThis is a host-only descriptor dependency test. It is not a second-host build,\nnor does it establish that Cargo's own salts change under a new Cargo home.\n",
+  "virtual_root": "/workspace/scratch/ae1a8cf05419/full-kernel-profile-v4/virtual-asterinas",
+  "all_non_path_registry_inputs_equal": true,
+  "registry_incoming_metadata_equal": true,
+  "registry_canonical_identity_equal": false,
+  "local_consumer_metadata_equal": false,
+  "cases": [
+    {
+      "cargo_home": "/host-a/cargo",
+      "producer": {
+        "manifest": "/host-a/cargo/registry/src/index.crates.io-fixed/registry-0.1.0",
+        "package": "registry",
+        "version": "0.1.0",
+        "crate": "registry",
+        "crate_type": "lib",
+        "target": "host",
+        "out_dir": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/profile-host-path-results",
+        "extra_filename": "-fixed-file",
+        "incoming_metadata": "fixed-original-salt",
+        "salt_argument": 7,
+        "salt_combined": false,
+        "scope": "cargo-original",
+        "canonical_id": "2962354117a571ab4b0a78ec0d8613260bb4f525f1cdf83198b31b18b4991082",
+        "effective_metadata": "fixed-original-salt"
+      },
+      "local_consumer": {
+        "manifest": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/profile-host-path-results/kernel/pkg",
+        "package": "pkg",
+        "version": "0.1.0",
+        "crate": "pkg",
+        "crate_type": "lib",
+        "target": "host",
+        "out_dir": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/profile-host-path-results/kernel/target/deps",
+        "extra_filename": "-local-file",
+        "incoming_metadata": "local-original",
+        "salt_argument": 7,
+        "salt_combined": false,
+        "scope": "canonical-local",
+        "canonical_id": "96cb439ec4310972159f534178414d40349a4a9a2f2b5a1b0ef19cd43cc6753b",
+        "effective_metadata": "96cb439ec4310972159f534178414d40349a4a9a2f2b5a1b0ef19cd43cc6753b",
+        "descriptor": {
+          "schema": "a01-local-cargo-unit/1",
+          "manifest": "/workspace/scratch/ae1a8cf05419/full-kernel-profile-v4/virtual-asterinas/pkg",
+          "manifest_sha256": "b611fa02f4124a243624c8b6489b50da66e15ff462a00a99f5e4c3310286fcf8",
+          "package": "pkg",
+          "version": "0.1.0",
+          "crate": "pkg",
+          "crate_type": "lib",
+          "target": "host",
+          "compiler": "fixed-rustc-identity",
+          "cwd": "/workspace/scratch/ae1a8cf05419/full-kernel-profile-v4/virtual-asterinas/pkg",
+          "arguments": [
+            "--crate-name",
+            "pkg",
+            "--crate-type",
+            "lib",
+            "src/lib.rs",
+            "--out-dir",
+            "<cargo-output-directory>",
+            "--extern",
+            "registry=<producer:2962354117a571ab4b0a78ec0d8613260bb4f525f1cdf83198b31b18b4991082>"
+          ]
+        }
+      }
+    },
+    {
+      "cargo_home": "/host-b/cargo",
+      "producer": {
+        "manifest": "/host-b/cargo/registry/src/index.crates.io-fixed/registry-0.1.0",
+        "package": "registry",
+        "version": "0.1.0",
+        "crate": "registry",
+        "crate_type": "lib",
+        "target": "host",
+        "out_dir": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/profile-host-path-results",
+        "extra_filename": "-fixed-file",
+        "incoming_metadata": "fixed-original-salt",
+        "salt_argument": 7,
+        "salt_combined": false,
+        "scope": "cargo-original",
+        "canonical_id": "eb26209aeb89cdb9375eeca5af139b68b048d10834628e6f706499ca637ac642",
+        "effective_metadata": "fixed-original-salt"
+      },
+      "local_consumer": {
+        "manifest": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/profile-host-path-results/kernel/pkg",
+        "package": "pkg",
+        "version": "0.1.0",
+        "crate": "pkg",
+        "crate_type": "lib",
+        "target": "host",
+        "out_dir": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/profile-host-path-results/kernel/target/deps",
+        "extra_filename": "-local-file",
+        "incoming_metadata": "local-original",
+        "salt_argument": 7,
+        "salt_combined": false,
+        "scope": "canonical-local",
+        "canonical_id": "57731c2739bc96bd282d53f3dc4130019a24a9783bae3eaee40824eed73a04cf",
+        "effective_metadata": "57731c2739bc96bd282d53f3dc4130019a24a9783bae3eaee40824eed73a04cf",
+        "descriptor": {
+          "schema": "a01-local-cargo-unit/1",
+          "manifest": "/workspace/scratch/ae1a8cf05419/full-kernel-profile-v4/virtual-asterinas/pkg",
+          "manifest_sha256": "b611fa02f4124a243624c8b6489b50da66e15ff462a00a99f5e4c3310286fcf8",
+          "package": "pkg",
+          "version": "0.1.0",
+          "crate": "pkg",
+          "crate_type": "lib",
+          "target": "host",
+          "compiler": "fixed-rustc-identity",
+          "cwd": "/workspace/scratch/ae1a8cf05419/full-kernel-profile-v4/virtual-asterinas/pkg",
+          "arguments": [
+            "--crate-name",
+            "pkg",
+            "--crate-type",
+            "lib",
+            "src/lib.rs",
+            "--out-dir",
+            "<cargo-output-directory>",
+            "--extern",
+            "registry=<producer:eb26209aeb89cdb9375eeca5af139b68b048d10834628e6f706499ca637ac642>"
+          ]
+        }
+      }
+    }
+  ]
+}

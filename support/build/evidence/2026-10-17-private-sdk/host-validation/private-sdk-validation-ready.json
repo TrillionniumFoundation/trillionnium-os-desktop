@@ -1,0 +1,48 @@
+{
+  "schema": "a01-private-sdk-host-validation/1",
+  "created_utc": "2026-10-17T04:10:51.084838+00:00",
+  "base_commit": "09aea79c71dc9f48ba519757078dd8a20f5c8fb3",
+  "scope": "uncommitted support-layer code plus host fixtures; no SDK/kernel/QEMU installation",
+  "source_sha256": {
+    "support/build/kernel.sh": "67cc869ea0cff2cddb3f4edbdfdb39b76de76862648ade9ac434731517329146",
+    "support/build/minimal.mk": "9fe262b0287831263217a72380ab24b8e79a3baf2bff4f5a3186c01558ad6635",
+    "support/build/README.md": "909cb9fba22c758c3609be5c75401755e59a48e6e5bead8523f0f7dabbc5e723",
+    "support/build/tests/test_kernel_runner.py": "0ec2ebf198e758d69b11076e6f34b9c662d883d3df6f1f34e4ce8e7f19e21574"
+  },
+  "results": [
+    {
+      "log": "private-sdk-kernel-runner-ordinary.log",
+      "sha256": "a0b774ca9e734bd0b9b3d376da20062b132d28c40e0d903c8af9e607b5de9a29",
+      "tests": 38,
+      "observed_tool_returncode": 0,
+      "passed": true
+    },
+    {
+      "log": "private-sdk-kernel-runner-final-isolated.log",
+      "sha256": "5119ca467b23c08c0dd5a054faeddfcd34a91a0f9a63dbbe27aa22a8424c6201",
+      "tests": 38,
+      "observed_tool_returncode": 0,
+      "passed": true
+    },
+    {
+      "log": "private-sdk-kernel-supervisor-isolated.log",
+      "sha256": "2d3c0c48e0bee5998f1dc0ea2297131efc032d4aeea545b15152ec54926d5d1b",
+      "tests": 9,
+      "observed_tool_returncode": 0,
+      "passed": true
+    },
+    {
+      "log": "private-sdk-repro-profile-isolated.log",
+      "sha256": "1f637b1d65c33b9dcefb3d06454eb71ca9f3dba906d0ef7d6a239c9f39539653",
+      "tests": 32,
+      "observed_tool_returncode": 0,
+      "passed": true
+    }
+  ],
+  "bash_syntax_check": 0,
+  "git_diff_check": 0,
+  "real_cargo_lookup_report": "cargo-lookup-results/report.json",
+  "real_cargo_relative_home_report": "cargo-relative-lookup-results/report.json",
+  "pre_fix_actual_make_report": "results/report.json",
+  "intermediate_37_test_log_not_final": "private-sdk-kernel-runner-isolated.log"
+}
