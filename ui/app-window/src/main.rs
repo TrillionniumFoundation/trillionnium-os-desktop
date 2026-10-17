@@ -511,6 +511,7 @@ mod tests {
     fn focused_run_button_enter_cannot_invent_a_pointer_click() {
         let ctx = egui::Context::default();
         let make_input = |events| egui::RawInput {
+            focused: true,
             screen_rect: Some(egui::Rect::from_min_size(
                 egui::Pos2::ZERO,
                 egui::vec2(900.0, 600.0),
