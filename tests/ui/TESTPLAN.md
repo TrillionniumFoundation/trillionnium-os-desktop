@@ -49,6 +49,9 @@ Unit coverage:
   backend or live Wayland IME test)
 - oversized restricted-terminal UTF-8 paste refused before it reaches the
   rendered command log; no auto-execution on Enter
+- embedded newline, carriage return, escape and bidi log-forgery payloads
+  refused before command history rendering, while valid Chinese/emoji echo
+  survives without altering input or claiming Hepta execution
 - chat workspace explicit app actions linked to observed process task cards
 - oversized/truncated IPC frames and unknown statuses
 - successful observed host child exit

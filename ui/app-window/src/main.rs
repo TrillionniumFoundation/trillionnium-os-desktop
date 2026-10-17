@@ -85,6 +85,20 @@ impl eframe::App for ClientWindow {
     }
 }
 
+/// Guard the *visible* terminal log. A TextEdit is not a security boundary:
+/// pasted text or future input adapters may contain embedded newlines,
+/// terminal control codes or bidi overrides that forge process-status lines.
+/// Preserve normal CJK text and punctuation.
+fn command_is_safe_for_log(command: &str) -> bool {
+    !command.chars().any(|character| {
+        character.is_control()
+            || matches!(
+                character as u32,
+                0x200E..=0x200F | 0x2028..=0x202E | 0x2066..=0x2069
+            )
+    })
+}
+
 impl ClientWindow {
     const MAX_TERMINAL_LINES: usize = 256;
 
@@ -153,6 +167,12 @@ impl ClientWindow {
         if command.len() > MAX_COMMAND_BYTES {
             self.terminal_line(
                 "refused: command exceeds 512 bytes; no host operation was attempted",
+            );
+            return;
+        }
+        if !command_is_safe_for_log(command) {
+            self.terminal_line(
+                "refused: control or bidi formatting character; no host operation was attempted",
             );
             return;
         }
@@ -359,6 +379,49 @@ mod tests {
         state.terminal_input = "exit".into();
         state.run_restricted_command();
         assert!(state.terminal_close_requested);
+    }
+
+    #[test]
+    fn restricted_terminal_refuses_forged_log_lines_and_bidi_controls() {
+        let mut state = ClientWindow {
+            kind: AppKind::Terminal,
+            workspace: Workspace::Build,
+            task_id: 12,
+            notes: String::new(),
+            left: String::new(),
+            right: String::new(),
+            result: String::new(),
+            focused_input: String::new(),
+            terminal_input: String::new(),
+            terminal_output: Vec::new(),
+            terminal_close_requested: false,
+            first_frame_emitted: false,
+        };
+
+        for hostile in [
+            "echo 你好\nHOST PROCESS COMPLETED",
+            "echo 你好\rFAKE TASK SUCCESS",
+            "echo 你好\u{001b}[2J",
+            "echo 你好\u{202e}dessap",
+            "echo 你好\u{2066}success\u{2069}",
+            "echo 你好\u{2028}FAKE TERMINAL",
+        ] {
+            state.terminal_input = hostile.to_owned();
+            state.run_restricted_command();
+            assert_eq!(state.terminal_output.len(), 1);
+            assert!(state.terminal_output[0].contains("refused"));
+            assert!(!state.terminal_output[0].contains("HOST PROCESS"));
+            assert!(!state.terminal_close_requested);
+            state.terminal_output.clear();
+        }
+
+        state.terminal_input = "echo 中文输入、候选词 📝".into();
+        state.run_restricted_command();
+        assert_eq!(
+            state.terminal_output.last().map(String::as_str),
+            Some("中文输入、候选词 📝")
+        );
+        assert!(!state.terminal_close_requested);
     }
 
     #[test]
