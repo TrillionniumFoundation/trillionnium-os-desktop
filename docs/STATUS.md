@@ -1,5 +1,13 @@
 # 当前状态
 
+## 2026-10-17：A05 进程身份与 QueryAbi nonce 已合入主干
+
+- **代码已真实合并：**[PR #148](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/148) merge `d8293465bcbbeb192bc53b252df10b9ddcce7a20`。将现有只读 `/dev/hepta-control` QueryAbi 会话绑定实际打开的 Process：fork 继承旧 fd 拒绝、exec 后旧镜像 fd ESTALE、同进程 dup 稳定；进程/镜像用启动内单调且溢出拒绝的64位 nonce 避免 PID+低32位jiffies身份复用。配套 [PR #155](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/155) 增加7项关键客体标记逐项、恰好一次核验和原始串口SHA256，已依次合入 #154/#148，**没有开启HOS2写权限**。
+- **最新 main＋修复的真实编译与客体验收：**先在主干 `976c5abc19f59abeb2549c4e3e9da14ce03df8d2` 上叠加精确8个A05文件，组合Git tree `4b486eba185dad538e8578fb6c33916907a82cdf`，固定 `nightly-2026-07-21` 全内核从源码构建exit0、ELF SHA256 `96b12e32ac4db1b65ff026f4576b673643cdf0d18b0836713d67ca689a4a673c`。用原已验证的 nonce 客体 initramfs 新启动 QEMU raw33：QueryAbi、fork/exec/nonce/非root/dup等9项标记各一次，无 FAIL。相同内核的 CPU 1%×2为1.000%/1.000%；10%普通10.478%、SCHED_FIFO10.288%、父域10.043%，**5/5** 原始cpu.stat测试全部raw33；`aster-core` 真正内核QEMU ktest **153/153通过**、0软跳过、raw33。此项仅验证单vCPU N0，未承诺严格逐窗、SMP或裸机。机器收据：[a05-main-combined-acceptance-20261017.json](../results/kernel/control/a05-main-combined-acceptance-20261017.json)。合并期间另有A09工具提交，与8个A05文件没有交集。
+- **仍缺的主要产品能力：**可信capabilities的启动后授权、HOS2 `ReadUsage/InstallBudget/QueryDelivery/RetireThrough` 实际效果接口、撤销与幂等/历史确认、Hepta唯一durable owner、SMP生命周期（包括 A06 [PR #138](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/138) 的退出末次CPU借记及cgroup租约）。现在仅有**只读QueryAbi身份隔离**。G1/G2、生产部署仍未完成，根README继续0字节。旧状态快照不应覆盖本段新增实证。
+
+---
+
 ## 2026-10-17：A03 原生锁后端已经合入主干
 
 - **正式主干合并：**[PR #146](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/146) 提供公开 `LockBackend`/`ControlMutex` 和 `ControlCoreWith<B>` 后端，让 A05/A06 原生内核锁集成不再需要复制控制源码；已合并至 `main`，合并提交 `10e467b3775bc6f041f520bb33e0395c8b6793e1`。
