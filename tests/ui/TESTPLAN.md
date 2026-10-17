@@ -110,9 +110,12 @@ Unit coverage:
   child directory; also refuse a foreign-owned private socket directory and
   existing 0600 lock file before it binds the socket. All three need the
   exact owner-mismatch diagnostic; root-owned 0700 runtime must still create
-  an actual 0600 Session socket. Baseline CI-built `fcc57bd2` Session
-  failed the first negative test by binding inside the nobody-owned
-  runtime, observed exit 124 after the bounded 1-second process lifetime.
+  an actual 0600 Session socket. Separately executed real `fcc57bd2` ELF
+  bound a Session socket under ALL THREE foreign-owner scenarios (each
+  killed by 0.5s timeout, exit 124); the strict blocking script likewise
+  fails at its first violation. Evidence:
+  `tests/ui/evidence/2026-10-17-runtime-owner-three-path-baseline.json`.
+  The fixed exact HEAD still requires a genuine CI build and green result.
   No kernel CapSpace, other services or production state is touched.
 - privileged *isolated real process* `tests/ui/test-rogue-session-server.sh`:
   a nobody-owned Unix listener offers a forged successful Snapshot to a root

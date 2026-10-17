@@ -155,9 +155,12 @@ its existing `trillionnium-ui` subdirectory and `session.lock`, in
 addition to 0700/0600 modes: root bypasses mode bits and must not
 accidentally install a privileged Session inside another user's runtime.
 The strict isolated native gate `tests/ui/test-runtime-owner.sh` checks
-three foreign-owner denials and a valid same-owner Session socket. An older
-`fcc57bd2` CI-built ELF was actually observed to bind in a nobody-owned
-runtime under root; the upgraded exact HEAD still needs its own CI.
+three foreign-owner denials and a valid same-owner Session socket. The older
+`fcc57bd2` CI-built ELF was independently observed to bind in all THREE
+foreign-owner scenarios, each returning timeout status 124; this is
+explicitly baseline failure evidence, not new-code success. See
+`tests/ui/evidence/2026-10-17-runtime-owner-three-path-baseline.json`.
+The upgraded exact HEAD still needs its own real CI acceptance.
 Both Linux host Session and Shell/CLI connect calls use the same shared
 `trill-ui-core::host_peer` SO_PEERCRED identity check. Session refuses
 unknown-UID clients before parsing requests; clients refuse cross-UID
