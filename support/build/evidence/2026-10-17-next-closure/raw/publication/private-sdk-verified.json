@@ -1,0 +1,17 @@
+{
+  "utc": "2026-10-17T04:23:08.945421+00:00",
+  "commit": "5e0e4a734a1dc63d9333b8e432ed071f2406b8e9",
+  "tree": "70f2faa603177c95442138fd2bce8bf7177fa3c7",
+  "parent": "9cf1dfac0477df1488a8be4fc08cf7bbc8edf0f6",
+  "all_144_remote_modes_blobs_equal": true,
+  "index_clean": true,
+  "remaining_tracked_changes_preserved": [
+    "support/build/debug/README.md",
+    "support/build/debug/run.py",
+    "support/build/debug/test_debug.py"
+  ],
+  "status": "M support/build/debug/README.md\n M support/build/debug/run.py\n M support/build/debug/test_debug.py\n?? support/build/evidence/2026-10-17-main47288-abi/\n?? support/build/evidence/2026-10-17-repro-cross-instance/\n?? support/build/evidence/2026-10-17-repro-kernel-c4/\n?? support/build/ktest/test_sdk_isolation.py",
+  "kernel_tree": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da",
+  "root_readme_bytes": 0,
+  "note": "Post-soft-align verification initially assumed globally clean tracked files, then exactly two debug mutations. Separately authorized debug edits appeared concurrently. Both checks failed after a successful soft reset; no worktree reset/overwrite occurred. Final check records and preserves all unstaged debug/ktest changes."
+}

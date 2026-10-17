@@ -1,0 +1,186 @@
+{
+  "fetched_in_current_turn": true,
+  "scope": "Fresh owner metadata only; no owner branch/source changes or new owner guest tests",
+  "raw": {
+    "pr87": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Action completed."
+        }
+      ],
+      "structuredContent": {
+        "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/87",
+        "number": 87,
+        "state": "open",
+        "merged": false,
+        "mergeable": true,
+        "draft": true,
+        "body": "## First genuine Asterinas-side HOS2 ioctl implementation candidate (read-only)\n\nThis is **A05 Draft**, not an assertion of G1. The current kernel still does **not** implement trusted CapSpace, process-start/exec-epoch lifecycle, ResourceDomain CAS, InstallBudget, ReadUsage, QueryDelivery, RetireThrough or Hepta durable effects.\n\n**Source:** independent branch `agents/A05-native-queryabi-bootstrap` at commit `5fc3887dfc5833b61d11280eb1421bb7fd78648f`, pinned base `8f3bb49ab161104063a6ebea25428c40aa884ac0`. Exactly 4 files; **README remains zero bytes**:\n- `kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs`: restricted root-only devtmpfs char device `/dev/hepta-control` using Asterinas' existing char registry and `PerOpenFileOps::ioctl`; canonical HOS2 64-byte QueryAbi decode/112-byte response encoding via the **same** `libs/os-abi/src/lib.rs` source, not a second wire implementation. Allocates per-open temporary unique observation IDs, advertises **only** the QueryAbi operation. Invalid descriptor/request rejected without effect; all other ioctls ENOTTY.\n- `kernel/asterinas/kernel/core/src/{lib.rs,device/misc/mod.rs}`: minimal device registration and shared codec path.\n- `tests/kernel/control/queryabi_guest.c`: **compiled** statically linked x86_64 Linux ELF; checks actual ioctl response format, stable boot identity, per-open space-ID isolation, malformed magic EINVAL, NULL transport EFAULT, unknown ioctl ENOTTY.\n\n**Actual build evidence:** fixed upstream `nightly-2026-07-21` full `make kernel` compiled successfully using pinned Asterinas v0.19.0. Produced kernel ELF **SHA256 `54c8a7a798cbbd80f1a8ce5f0144328815e63b413e79b0133206bcaaba607e4a`**, size 8,352,152B. Guest C probe compiled with `cc -std=c11 -O2 -Wall -Wextra -Werror -static`. Build records are retained in authorized dev environment `/home/qian-qi/.local/state/trillionnium-os-organ-next-20261016/evidence/a05-native-queryabi-build-03/` and `-launch.log`.\n\n**Known build-environment issue:** main's pre-existing A01 `support/build/kernel.sh` invokes `make --version | head -1`/`gcc --version | head -1` under `set -o pipefail`; one attempt exited SIGPIPE 141 before compilation. For the successful private build only, replaced `head -1` with non-early-terminating `sed -n '1p'`; **reverted that A01-owned file before commit**. The PR changes no A01 build inputs or Cargo.lock.\n\n**Missing validation / genuine blockers:** an attempted custom QEMU QueryAbi guest runner and subsequent direct QEMU smoke were refused by the authorized execution channel. No successful kernel QueryAbi ioctl was executed; the C test is **compiled but not run as guest**. Full kernel boot from this particular new ELF, malformed kernel usercopy, fork/exec, authorization and production behavior all remain **NOT TESTED**. Do not mark G1 complete from compilation or from the Linux host QueryAbi/ENOTTY test.\n\n**Review instructions:** A05/A00 should next run the compiled guest probe in a disposable pinned one-vCPU QEMU initramfs, verify magic/version/op-mask/boot ID/fd ownership/error cases and measure copyout on EFAULT. Before considering main, replace the provisional per-open space ID with genuine trusted CapSpace session binding, publish a stable allocated ioctl number through A00, and use an explicit Cargo path dependency/lock arrangement for the canonical HOS2 crate if appropriate. This Draft adds *no effect authority*. Existing Hepta `TrustedReadOnlyOrganV1` remains I/O-free.",
+        "title": "A05 Draft: native read-only HOS2 QueryAbi device in Asterinas",
+        "base": "main",
+        "base_sha": "8f3bb49ab161104063a6ebea25428c40aa884ac0",
+        "head": "agents/A05-native-queryabi-bootstrap",
+        "head_sha": "224fcdde44b9c68163298623fd908e3009b1b2a6",
+        "head_repo_id": 1421656803,
+        "head_repo_full_name": "TrillionniumFoundation/trillionnium-os-desktop",
+        "merge_commit_sha": "425a40331cee8dcabf41414fde8ff94a950860ba",
+        "user": {
+          "login": "ProfHepta",
+          "name": "ProfHepta",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/102159240?v=4",
+          "id": 102159240
+        },
+        "requested_reviewers": null,
+        "requested_team_reviewers": null,
+        "diff": null,
+        "comments": null,
+        "created_at": "2026-10-17T00:37:45Z",
+        "updated_at": "2026-10-17T04:04:39Z",
+        "closed_at": null,
+        "merged_at": null,
+        "commits": 17,
+        "changed_files": 11,
+        "additions": 963,
+        "deletions": 0,
+        "display_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/87",
+        "display_title": "A05 Draft: native read-only HOS2 QueryAbi device in Asterinas"
+      },
+      "isError": false
+    },
+    "pr18": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Action completed."
+        }
+      ],
+      "structuredContent": {
+        "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/18",
+        "number": 18,
+        "state": "open",
+        "merged": false,
+        "mergeable": true,
+        "draft": true,
+        "body": "First real kernel implementation attempt, intentionally DRAFT until pinned Rust compilation and the previously committed Asterinas guest CPU probe pass.\n\nChanges (exact source in branch):\n- Extend existing cgroup CPU controller with TSC-based period/runtime accounting, ancestor checks and throttle counters. Reconfiguration preserves already-used runtime.\n- Charge the common ClassScheduler current task on scheduler events; test eligibility in both real-time and fair queues; park throttled tasks and restore them from local idle ticks. Reuse cgroup state, not a parallel HOS2 ledger. No scheduler hot-injection or model calls.\n- Small A01 build-tool correction: remove `make --version | head -1` / `gcc --version | head -1` pipes under `set -o pipefail` after observing SIGPIPE 141 before any kernel compilation.\n\n**Not claimed:** verified CPU enforcement, SMP correctness, parent/scheduler migration correctness, kernel build, Hepta effects, or API stabilization. We will retain raw build/boot/probe evidence, fix compile and semantic issues here, and not merge if regressions exist. Work is restricted to disposable QEMU and isolated source worktree; no production host cgroup, disk, services or firmware changed. Root README remains 0 bytes.\n\nBaseline failing case in merged tests: 1% `cpu.max=1000 100000` written/read back but guest still used ~998ms CPU per 1000ms wall. Success requires low actual CPU consumption, bounded error and no deadlocks/panics in the **modified** kernel with independent probe.",
+        "title": "A06 WIP: enforce N0 CPU bandwidth through shared scheduler and cgroup",
+        "base": "main",
+        "base_sha": "3dd930e1203772ab0302d1490e1c84ba296f48e3",
+        "head": "agents/A06-cpu-bandwidth-n0",
+        "head_sha": "57b23ede7e242711ef142b672f04c896383a264a",
+        "head_repo_id": 1421656803,
+        "head_repo_full_name": "TrillionniumFoundation/trillionnium-os-desktop",
+        "merge_commit_sha": "83f5fc7277fe5deb53e57d47813fb8a708de06d8",
+        "user": {
+          "login": "ProfHepta",
+          "name": "ProfHepta",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/102159240?v=4",
+          "id": 102159240
+        },
+        "requested_reviewers": null,
+        "requested_team_reviewers": null,
+        "diff": null,
+        "comments": null,
+        "created_at": "2026-10-16T10:42:12Z",
+        "updated_at": "2026-10-17T00:51:29Z",
+        "closed_at": null,
+        "merged_at": null,
+        "commits": 50,
+        "changed_files": 24,
+        "additions": 2835,
+        "deletions": 39,
+        "display_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/18",
+        "display_title": "A06 WIP: enforce N0 CPU bandwidth through shared scheduler and cgroup"
+      },
+      "isError": false
+    },
+    "pr8": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Action completed."
+        }
+      ],
+      "structuredContent": {
+        "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/8",
+        "number": 8,
+        "state": "open",
+        "merged": false,
+        "mergeable": true,
+        "draft": true,
+        "body": "## A04 Linux userland compatibility baseline\n\nThis draft PR records reproducible original-Linux behavior, fixed rootfs/workload inputs, fixed-commit Hepta evidence, guarded QEMU replay, and the first real Asterinas guest capability probe. It does not claim full Debian13 ELF compatibility or authenticated Hepta W1 completion.\n\n### Current head and inputs\n\n- Branch: agents/A04-linux-hepta-baseline\n- Current head: 17558f66a8de10ed51ca2e193f567540168c15a7\n- Base: main 47288c4465720d125658b392efc655b333c90868\n- Hepta source: f8c9419df6ddeb36ff8b522a50219981fb8d9345\n- Rootfs manifest SHA-256: 55aa8369d4f912267139ef7626c752814d7dc833e49accc337529f2545fb94cb\n- USTAR SHA-256: df8df2e3cdcd308ef62a59268a4519e2923c9ff78145e46f26a4092725e80797\n- Catalog SHA-256: 64b268956848d4fd97c6ace51343d607f20495d7bd317491a5bf7ead5e672db0\n\n### Evidence\n\n- Host workload tests: 87 OK / 6 managed-host skips, also under python3 -O; catalog 31 pass + 1 Tokio not_run.\n- Original Linux chroot/staged C ELF: 28/28; five-round stress: 90/90; SQLite WAL source workaround passes.\n- QEMU 8.2.2 and accepted SeaBIOS booted the A01 kernel/initramfs under TCG and exited 33.\n- Guest capability probe: 13 cases, 11 pass. Pathname/abstract AF_UNIX and peer credentials pass in guest.\n- Real guest gaps: MSG_CMSG_CLOEXEC leaves FD_CLOEXEC clear; RLIMIT_NOFILE soft=32 still permits 256 opens without EMFILE.\n- Evidence contract regression: test_guest_qemu_evidence.py locks the 13-case result, focused followups, and exact-rootfs fail-closed status.\n- Exact Debian13 package/sysroot reconstruction was attempted without system installation; all four rebuilt ELF hashes differ from the manifest. Evidence: exact-rootfs-input-recheck-20261017.json.\n\n### Remaining owners\n\n- A05: implement MSG_CMSG_CLOEXEC ancillary receive handling and RLIMIT_NOFILE/EMFILE enforcement.\n- A06: retain passing futex/thread/signal/robust-owner-death probes.\n- A07: supply authenticated provider composition and independent terminal tool-effect receipt.\n- A00/A01: supply original rootfs tar and four manifest-pinned ELF files for full replay.\n\nAll changed files remain under compat/linux/**, support/rootfs/**, tests/workloads/linux/**; root README.md remains empty.",
+        "title": "A04: Linux ELF workload baseline, pinned rootfs and guarded differential replay",
+        "base": "main",
+        "base_sha": "47288c4465720d125658b392efc655b333c90868",
+        "head": "agents/A04-linux-hepta-baseline",
+        "head_sha": "17558f66a8de10ed51ca2e193f567540168c15a7",
+        "head_repo_id": 1421656803,
+        "head_repo_full_name": "TrillionniumFoundation/trillionnium-os-desktop",
+        "merge_commit_sha": "918cd04549a97636085bea9e23c9889f2a43acb7",
+        "user": {
+          "login": "Franksudoman",
+          "name": "Franksudoman",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/273670192?v=4",
+          "id": 273670192
+        },
+        "requested_reviewers": null,
+        "requested_team_reviewers": null,
+        "diff": null,
+        "comments": null,
+        "created_at": "2026-10-16T07:38:18Z",
+        "updated_at": "2026-10-17T04:11:36Z",
+        "closed_at": null,
+        "merged_at": null,
+        "commits": 1,
+        "changed_files": 67,
+        "additions": 11269,
+        "deletions": 0,
+        "display_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/8",
+        "display_title": "A04: Linux ELF workload baseline, pinned rootfs and guarded differential replay"
+      },
+      "isError": false
+    },
+    "issue63": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Action completed."
+        }
+      ],
+      "structuredContent": {
+        "issue": {
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/issues/63",
+          "title": "A06 G1 CPU accounting: settle final Task runtime after Process weak-reference teardown",
+          "issue_number": 63,
+          "body": "## Source-grounded G1 correctness blocker — not yet reproduced as QEMU undercharge\n\nCurrent A06 `kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs` (inspected blob `45d93fe11506e6f6813142de1012352b958a5897`) implements `charge_task_cpu(task, from, until)` by `thread.weak_process().upgrade()`; when the Process Arc is already gone, it **returns without charging any positive pending CPU interval**. This avoids the earlier SMP `unwrap(None)` panic, but may lose final scheduler runtime and undercount the original cgroup and its ancestors for short-lived tasks.\n\nThis is a concrete source-level accounting/lifetime concern, **not a demonstrated quota-bypass exploit**. The owner's 153/153 kernel tests and 2vCPU guest results do not isolate final per-task debit after Process destruction.\n\n### Required A06 correction and exact validation\n- Retain a strong reference to the *original* accounting cgroup/ResourceDomain through task exit or settle current runtime before Process ownership disappears. Do not guess a replacement domain or build a second ResourceDomain/ledger.\n- Debit `[from, until)` once, bounded and IRQ-safe, across preemption, task exit, dequeue and reaping, including shared ancestor, FIFO/fair and 100ms boundary.\n- Add a deterministic negative regression for `Weak<Process>` being dead with pending CPU runtime, plus disposable 1vCPU and 2vCPU high-rate worker/fork/exit QEMU workloads checking actual cpu.stat versus independent process/guest CPU consumption and no panic.\n- Keep A06 [Draft #18](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/18) unqualified for G1 until proven and connected to A05 genuine CapSpace. No production host cgroup/firmware/disk changes.\n\nA00 reported the source path and requirement in #18 review; this issue tracks the executable negative acceptance, not an additional administrative gate.",
+          "state": "open",
+          "user": {
+            "login": "Franksudoman",
+            "name": "Franksudoman",
+            "email": null,
+            "avatar_url": "https://avatars.githubusercontent.com/u/273670192?v=4",
+            "id": 273670192
+          },
+          "assignees": null,
+          "labels": null,
+          "milestone": null,
+          "state_reason": null,
+          "comments": 0,
+          "created_at": "2026-10-16T14:31:12Z",
+          "updated_at": "2026-10-16T14:31:12Z",
+          "closed_at": null,
+          "display_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/issues/63",
+          "display_title": "A06 G1 CPU accounting: settle final Task runtime after Process weak-reference teardown"
+        },
+        "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/issues/63",
+        "title": "A06 G1 CPU accounting: settle final Task runtime after Process weak-reference teardown",
+        "display_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/issues/63",
+        "display_title": "A06 G1 CPU accounting: settle final Task runtime after Process weak-reference teardown"
+      },
+      "isError": false
+    }
+  }
+}
