@@ -256,12 +256,14 @@ mod tests {
     fn owner_disconnect_invalidates_cached_grants() {
         let mut state = PermissionState::new();
         for scope in [PERSONAL, WORK] {
-            state.observe(
-                scope,
-                PermissionKind::Clipboard,
-                PermissionDecision::Granted,
-                2,
-            ).unwrap();
+            state
+                .observe(
+                    scope,
+                    PermissionKind::Clipboard,
+                    PermissionDecision::Granted,
+                    2,
+                )
+                .unwrap();
             assert!(state.allows(scope, PermissionKind::Clipboard));
         }
         state.invalidate_all();
@@ -278,12 +280,14 @@ mod tests {
     fn invalidating_one_scope_does_not_clear_unrelated_grants() {
         let mut state = PermissionState::new();
         for scope in [PERSONAL, WORK] {
-            state.observe(
-                scope,
-                PermissionKind::Camera,
-                PermissionDecision::Granted,
-                1,
-            ).unwrap();
+            state
+                .observe(
+                    scope,
+                    PermissionKind::Camera,
+                    PermissionDecision::Granted,
+                    1,
+                )
+                .unwrap();
         }
         state.invalidate_scope(PERSONAL);
         assert!(!state.allows(PERSONAL, PermissionKind::Camera));
@@ -295,12 +299,14 @@ mod tests {
         let mut state = PermissionState::new();
         for value in 1..=MAX_PERMISSION_OBSERVATIONS as u128 {
             let scope = PermissionScopeId::new(value).unwrap();
-            state.observe(
-                scope,
-                PermissionKind::Microphone,
-                PermissionDecision::Granted,
-                1,
-            ).unwrap();
+            state
+                .observe(
+                    scope,
+                    PermissionKind::Microphone,
+                    PermissionDecision::Granted,
+                    1,
+                )
+                .unwrap();
         }
         let next = PermissionScopeId::new(MAX_PERMISSION_OBSERVATIONS as u128 + 1).unwrap();
         assert_eq!(
