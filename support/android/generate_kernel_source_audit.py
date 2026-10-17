@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
-"""Generate a source-only Android compatibility snapshot for the current tree.
+"""Generate a source-only Android compatibility snapshot for a Git commit.
 
-The snapshot binds every finding to the checked-out project commit and the
-imported Asterinas file hashes. It is deliberately conservative: source
-presence is recorded as evidence for follow-up work, never as runtime support.
+The selected ref is resolved once. Every inspected byte is then read from its
+immutable Git objects, never from the working tree. Source presence is evidence
+for follow-up work, never runtime support.
 """
 
 from __future__ import annotations
 
 import argparse
+from dataclasses import dataclass
+from datetime import datetime, timezone
 import hashlib
+import io
 import json
 import re
 import subprocess
@@ -19,6 +22,7 @@ from typing import Any
 
 PIN = "c4b7ed575b7b32773475b194d2ad41fb6d03765b"
 TAG = "v0.19.0"
+CORE = "kernel/asterinas/kernel/core/src"
 REQUIRED = (
     "kernel/asterinas/kernel/core/src/syscall/mod.rs",
     "kernel/asterinas/kernel/core/src/syscall/prctl.rs",
@@ -38,17 +42,16 @@ REQUIRED = (
 )
 
 
-def sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as stream:
-        for block in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(block)
-    return digest.hexdigest()
+@dataclass(frozen=True)
+class GitSource:
+    blob: str
+    mode: str
+    data: bytes
 
 
 def git(repo: Path, *args: str) -> str:
     result = subprocess.run(
-        ["git", "-C", str(repo), *args],
+        ["git", "--no-replace-objects", "-C", str(repo), *args],
         check=True,
         capture_output=True,
         text=True,
@@ -56,57 +59,99 @@ def git(repo: Path, *args: str) -> str:
     return result.stdout.strip()
 
 
-def source_snapshot(root: Path) -> tuple[dict[str, Any], list[str]]:
+def committed_sources(root: Path, commit: str) -> dict[str, GitSource]:
+    """Read the exact regular Rust blobs selected by one immutable commit."""
+    listing = subprocess.check_output(
+        ["git", "--no-replace-objects", "-C", str(root),
+         "ls-tree", "-r", "-z", commit, "--", CORE]
+    )
+    entries = []
+    for entry in listing.split(b"\0"):
+        if not entry:
+            continue
+        metadata, raw_path = entry.split(b"\t", 1)
+        mode, kind, blob = metadata.decode("ascii").split()
+        relative = raw_path.decode("utf-8")
+        if not relative.endswith(".rs"):
+            continue
+        if kind != "blob" or mode not in ("100644", "100755"):
+            raise ValueError(f"committed Rust source is not a regular file: {relative}")
+        entries.append((relative, mode, blob))
+    if not entries:
+        return {}
+    # A single batch avoids one Git process per Rust source file. No archive
+    # attributes, checkout filters, symlinks or dirty files affect the bytes.
+    result = subprocess.run(
+        ["git", "--no-replace-objects", "-C", str(root), "cat-file", "--batch"],
+        input="".join(blob + "\n" for _, _, blob in entries).encode("ascii"),
+        capture_output=True, check=True,
+    )
+    stream = io.BytesIO(result.stdout)
+    sources = {}
+    for relative, mode, expected_blob in entries:
+        blob, kind, raw_size = stream.readline().decode("ascii").split()
+        size = int(raw_size)
+        data = stream.read(size)
+        if (blob != expected_blob or kind != "blob" or len(data) != size
+                or stream.read(1) != b"\n"):
+            raise ValueError(f"incomplete or mismatched Git blob: {relative}")
+        sources[relative] = GitSource(blob=blob, mode=mode, data=data)
+    if stream.read():
+        raise ValueError("unexpected trailing Git blob output")
+    return sources
+
+
+def source_snapshot(sources: dict[str, GitSource]) -> tuple[dict[str, Any], list[str]]:
     files: dict[str, Any] = {}
     missing: list[str] = []
     for rel in REQUIRED:
-        path = root / rel
-        if not path.is_file():
+        source = sources.get(rel)
+        if source is None:
             missing.append(rel)
             continue
         files[rel] = {
-            "git_blob": git(root, "hash-object", rel),
-            "sha256": sha256(path),
-            "bytes": path.stat().st_size,
+            "git_blob": source.blob,
+            "git_mode": source.mode,
+            "sha256": hashlib.sha256(source.data).hexdigest(),
+            "bytes": len(source.data),
         }
     return files, missing
 
 
-def scan_source(root: Path) -> dict[str, Any]:
-    core = root / "kernel/asterinas/kernel/core/src"
-    rust_files = sorted(core.rglob("*.rs")) if core.is_dir() else []
+def scan_source(sources: dict[str, GitSource]) -> dict[str, Any]:
+    text = {relative: source.data.decode("utf-8") for relative, source in sources.items()}
 
-    def matching(pattern: str, roots: tuple[Path, ...]) -> list[str]:
+    def matching(pattern: str, roots: tuple[str, ...]) -> list[str]:
         expression = re.compile(pattern)
         found: list[str] = []
-        for base in roots:
-            if not base.is_dir():
-                continue
-            for path in sorted(base.rglob("*.rs")):
-                text = path.read_text(encoding="utf-8", errors="replace")
-                if expression.search(text):
-                    found.append(str(path.relative_to(root)))
-        return sorted(set(found))
+        for relative, content in text.items():
+            if any(relative.startswith(base + "/") for base in roots) and expression.search(content):
+                found.append(relative)
+        return sorted(found)
 
     binder = matching(
         r"\b(?:BINDER_WRITE_READ|BINDER_VERSION|binder_ioctl|BinderDevice|BinderDriver)\b",
-        (core / "device", core / "fs", core / "syscall"),
+        (CORE + "/device", CORE + "/fs", CORE + "/syscall"),
     )
-    seccomp = matching(r"\b(?:PR_SET_SECCOMP|PR_GET_SECCOMP|sys_seccomp)\b", (core,))
-    lsm = (core / "security/lsm/modules/mod.rs").read_text(
-        encoding="utf-8", errors="replace"
-    ) if (core / "security/lsm/modules/mod.rs").is_file() else ""
-    selinux_path = core / "security/lsm/modules/selinux.rs"
+    seccomp = matching(r"\b(?:PR_SET_SECCOMP|PR_GET_SECCOMP|sys_seccomp)\b", (CORE,))
+    lsm_path = CORE + "/security/lsm/modules/mod.rs"
+    lsm = text.get(lsm_path, "")
+    selinux_path = CORE + "/security/lsm/modules/selinux.rs"
     # A mention in a comment or compatibility book is not a MAC module. Only
     # a registered module or an actual selinux implementation file counts as
     # a source candidate.
     selinux = []
-    if selinux_path.is_file():
-        selinux.append(str(selinux_path.relative_to(root)))
+    if selinux_path in sources:
+        selinux.append(selinux_path)
     if re.search(r"(?m)^\s*mod\s+selinux\s*;", lsm):
-        selinux.append(str((core / "security/lsm/modules/mod.rs").relative_to(root)))
+        selinux.append(lsm_path)
+    inventory = b"".join(
+        relative.encode("utf-8") + b"\0" + source.blob.encode("ascii") + b"\0"
+        for relative, source in sorted(sources.items())
+    )
     return {
-        "core_rust_file_count": len(rust_files),
+        "core_rust_file_count": len(sources),
+        "scanned_git_blobs_sha256": hashlib.sha256(inventory).hexdigest(),
         "binder_matches": binder,
         "seccomp_matches": seccomp,
         "selinux_matches": sorted(set(selinux)),
@@ -115,8 +160,11 @@ def scan_source(root: Path) -> dict[str, Any]:
 
 
 def build_report(root: Path, project_ref: str = "HEAD") -> dict[str, Any]:
-    files, missing = source_snapshot(root)
-    scan = scan_source(root)
+    commit = git(root, "rev-parse", "--verify", "--end-of-options", f"{project_ref}^{{commit}}")
+    tree = git(root, "rev-parse", f"{commit}^{{tree}}")
+    sources = committed_sources(root, commit)
+    files, missing = source_snapshot(sources)
+    scan = scan_source(sources)
     blockers: list[str] = []
     if not scan["binder_matches"]:
         blockers.append("binder")
@@ -126,11 +174,15 @@ def build_report(root: Path, project_ref: str = "HEAD") -> dict[str, Any]:
         blockers.append("mac")
     if missing:
         blockers.append("source_paths")
+    observed_at = datetime.now(timezone.utc)
     return {
         "schema": 2,
-        "observed_date": "2026-10-16",
-        "project_commit": git(root, "rev-parse", project_ref),
-        "project_tree": git(root, "rev-parse", f"{project_ref}^{{tree}}"),
+        "observed_date": observed_at.date().isoformat(),
+        "observed_at_utc": observed_at.isoformat(),
+        "source_kind": "git_commit_objects",
+        "requested_project_ref": project_ref,
+        "project_commit": commit,
+        "project_tree": tree,
         "kernel_upstream_lock": {"tag": TAG, "commit": PIN},
         "source_files": files,
         "missing_source_paths": missing,
@@ -159,6 +211,8 @@ def build_report(root: Path, project_ref: str = "HEAD") -> dict[str, Any]:
         "status": "source_review_blocked" if blockers else "source_candidates_unverified",
         "limitations": [
             "This is a source snapshot, not a kernel build or guest run.",
+            "Only the selected immutable commit is inspected; working-tree changes are excluded.",
+            "scanned_git_blobs_sha256 hashes sorted UTF-8 path, NUL, ASCII Git blob ID, NUL records.",
             "A syscall entrypoint or source match does not establish Android semantics.",
             "The Cuttlefish Linux reference and any host probes remain separate from Asterinas qualification.",
         ],
@@ -172,7 +226,7 @@ def main() -> int:
     parser.add_argument(
         "--project-ref",
         default="HEAD",
-        help="Git ref whose commit/tree identify the source snapshot (default: HEAD)",
+        help="Git ref to resolve once and inspect directly through immutable Git objects (default: HEAD)",
     )
     args = parser.parse_args()
     report = build_report(args.repo_root.resolve(), args.project_ref)
