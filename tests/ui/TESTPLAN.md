@@ -143,6 +143,8 @@ Unit coverage:
   an earlier compositor socket epoch can offer an explicitly clicked NEW
   process/window. PENDING, UNKNOWN, PARTIAL, CANCEL REQUESTED, terminal,
   offline and never-rendered states must not create a duplicate recovery path
+- stale/out-of-order socket snapshots with an epoch OLDER than the client launch
+  never qualify as a compositor restart; only strictly newer observations do
 - Shell host process effects (app launch from Conversation/Apps, explicit
   NEW window after a lost compositor, and Request termination) require an
   actual primary pointer click. Keyboard-focused Enter/Space is tested not

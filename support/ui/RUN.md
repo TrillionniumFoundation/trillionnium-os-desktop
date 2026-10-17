@@ -98,7 +98,8 @@ a compositor socket replacement but never claims a mapped or reattached surface.
 The original client is recorded without any claim of lossless window
 reattachment. Inspector can offer **Launch NEW window (not reattach)** only
 when the old task remains RUNNING, has an observed PID and first egui layout,
-the socket epoch changed and Session is online. Unknown/partial/cancelling
+the observed compositor socket epoch is strictly NEWER than launch and
+Session is online; equal or older/out-of-order samples never authorize replay. Unknown/partial/cancelling
 tasks are explicitly NOT eligible for this recovery shortcut. An opted-in
 new task cannot restore unsaved data and never silently kills the old process.
 Host process launch, NEW window and termination controls require an explicit
