@@ -61,8 +61,12 @@ IPC marks it stale immediately after the bounded request fails. Restarting
 the Session creates a new view; it never claims to recover complete history.
 
 The displayed metadata is limited to 16 capabilities and the last 16 event
-entries, with 96-byte strings and control characters removed. Truncated
-strings are never used as authority identifiers. Advertised capabilities
+entries, with 96-byte strings, control characters, bidi overrides/isolates,
+direction markers and Unicode line separators stripped before truncation.
+A forged right-to-left or line-break event label must never visually impersonate
+trusted readiness/fencing/permission state. Ordinary Chinese/Arabic/Emoji
+characters remain displayable. Truncated strings are never used as authority
+identifiers. Advertised capabilities
 are labels and version observations, not callable permissions. Raw event
 payloads, workspace/home/run paths, objective text and arbitrary owner
 errors do not cross into the renderer. The host IPC retains its 64 KiB
