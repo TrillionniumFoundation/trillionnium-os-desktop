@@ -1,0 +1,19 @@
+
+running 1 test
+test namespace_lock_roles_route_every_native_operation ... FAILED
+
+failures:
+
+---- namespace_lock_roles_route_every_native_operation stdout ----
+
+thread 'namespace_lock_roles_route_every_native_operation' (396) panicked at /tmp/a03-regressions-fivrzofm/synthetic-role/custom_lock_backend.rs:244:5:
+assertion `left == right` failed
+  left: [2, 0, 1, 1]
+ right: [1, 1, 1, 1]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    namespace_lock_roles_route_every_native_operation
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s

@@ -1,0 +1,29 @@
+
+running 3 tests
+test actual_retirement_and_legal_terminal_refusals_keep_existing_wire_statuses ... ok
+test out_of_order_is_not_a_serializable_saved_terminal_result ... FAILED
+test retired_is_not_a_serializable_saved_terminal_result ... FAILED
+
+failures:
+
+---- out_of_order_is_not_a_serializable_saved_terminal_result stdout ----
+
+thread 'out_of_order_is_not_a_serializable_saved_terminal_result' (173) panicked at /tmp/a03-regressions-bicoxchx/historical-status/status_boundary.rs:40:5:
+assertion `left == right` failed
+  left: Some(10)
+ right: None
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- retired_is_not_a_serializable_saved_terminal_result stdout ----
+
+thread 'retired_is_not_a_serializable_saved_terminal_result' (174) panicked at /tmp/a03-regressions-bicoxchx/historical-status/status_boundary.rs:40:5:
+assertion `left == right` failed
+  left: Some(11)
+ right: None
+
+
+failures:
+    out_of_order_is_not_a_serializable_saved_terminal_result
+    retired_is_not_a_serializable_saved_terminal_result
+
+test result: FAILED. 1 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s

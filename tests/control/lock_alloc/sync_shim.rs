@@ -1,5 +1,6 @@
-//! Test-only lock-depth and allocator instrumentation. The production crate
-//! imports its mutex API from this separate harness crate through sync.rs.
+//! Test-only lock-depth and allocator instrumentation. Current probes select
+//! this mutex through a public backend wrapper outside the production crate.
+//! Only pinned historical controls import it through a replaced sync.rs.
 
 use std::alloc::{GlobalAlloc, Layout, System};
 use std::cell::Cell;

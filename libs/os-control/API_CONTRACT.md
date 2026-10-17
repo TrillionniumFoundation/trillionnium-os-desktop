@@ -17,8 +17,10 @@ D = (BootId, CapSpaceId, sequence)
 The portable spin mutex is **not a validated Asterinas lock adapter**.
 It does not mask IRQs or disable preemption. Same-CPU reentry can deadlock.
 The native delivery table prepares storage outside its internal locks;
-the host ResourceDomain still has allocating mutation paths. A05/A06 must
-adapt `src/sync.rs`, allocator use and their actual owner callbacks to their
+the host ResourceDomain still has allocating mutation paths. A05/A06 can
+instantiate `ControlCoreWith<TheirBackend>` through the public `LockBackend`
+and `ControlMutex` contracts, without editing private source. They must validate
+that backend, allocator use and their actual owner callbacks against their
 kernel lock discipline before production use. This build option
 does not establish G1/G2, scheduler enforcement, or kernel integration.
 
@@ -41,6 +43,24 @@ normally with no saved outcome. A05 must refuse to serialize
 actual HOS2 byte layout and payload.
 
 ## A05: kernel ioctl and CapSpace
+
+For a native kernel namespace, the constructors and methods below also exist
+on `ControlCoreWith<B: LockBackend>`. The existing `ControlCore`, `ReserveToken`,
+`DeliveryView`, `OriginalOwnerAuthority` and weak-handle names are concrete
+aliases for `DefaultLockBackend`, preserving existing constructor inference.
+The corresponding `*With<B>` handles retain the same backend type throughout
+reservation, execution, history observation and retirement. Backend types do
+not authenticate callers; exact namespace instance checks still apply.
+
+`ReserveAttempt` is a public re-export of the actual
+`ReserveAttemptWith<B = DefaultLockBackend>` enum, so either name supports
+variant imports such as `use ReserveAttempt::{Existing, Reserved}`. Method
+results and typed default values preserve the backend identity. A standalone
+`Existing(observation)` carries no token from which Rust can infer B: supply
+an expected type, for example `let attempt: ReserveAttempt =
+ReserveAttempt::Existing(observation)`. This is a source-inference change in
+the experimental generic Rust API, not a HOS2 wire change or a claim of full
+source compatibility for untyped enum construction.
 
 1. Construct `ControlCore::try_with_capacity` after trusted boot identity and
    CapSpace binding, or `with_capacity_for_owner` to also mint the non-Clone
@@ -854,13 +874,55 @@ Drop can upgrade a weak link during explicit retirement/loss after internal
 locks are released. During final namespace destruction it cannot resurrect
 that namespace. Tests cover both cases with bounded, joined helper threads.
 
+## Public native namespace synchronization
+
+`LockBackend` supplies one `ControlMutex` for each protected value. Its GAT
+guard borrows the lock and implements `DerefMut`; it has no `Send` or `Sync`
+requirement, so an IRQ/preemption guard may remain on the acquiring CPU/thread.
+The backend type itself and its locks are `Send + Sync`. No unsafe code,
+erased guard, new scheduler owner or persistent store is needed in the core.
+
+| `LockRole` | Protected state / held across |
+| --- | --- |
+| `NamespaceTable` | Short admission, lookup and frontier transitions |
+| `SlotState` | Short pending/executing/terminal state transitions |
+| `SlotExecution` | One delivery's callback, reconciliation or loss fence |
+| `HistoryLoss` | Serialization of a whole namespace loss operation |
+
+Roles describe use, not an IRQ policy. Execution callbacks and a loss fence can
+take time or wait for another gate. A native backend must choose suitable lock
+classes and preserve the documented order; blindly IRQ-masking every role is
+not validated by this API. Each lock must serialize access to the same retained
+value, publish writes on unlock and observe them on subsequent lock, with no
+allocation or external destructor inside its lock/guard operations. As with any
+safe synchronization abstraction, Rust type checking does not prove that a
+consumer's custom backend implements these semantics correctly.
+
+The namespace uses the supplied backend for all four roles. `NativeTarget`,
+`NativeGrant`, `NativeExecution`, `ManagementGrantState` and `NativeResourceState`
+remain independent of the namespace lock type. The host-only `ResourceDomain`
+family retains its default host mutex. The `commit` simulation still uses
+the selected namespace backend around that host resource operation; it does
+not create a native CPU owner. A no_std consumer currently enables
+`portable-spin` to compile these default aliases and host fixtures, while
+explicitly instantiating its native namespace with its own backend.
+
+Storage preflight and reclamation rules remain in force with an injected
+backend. Construct locks before entering namespace guards; callbacks take
+execution gate before the actual resource lock, avoid namespace reentry,
+allocation and usercopy, and return only after the effect is established.
+Kernel IRQ/SMP behavior, lock latency, allocator safety and actual owner lock
+ordering require A05/A06 integration evidence.
+
 ## Bounded transition models
 
 `python3 tests/control/loom/run-models.py OUTPUT_DIR` uses pinned Loom 0.7.2
-and its own Cargo.lock under tests/control. It copies all actual src/**/*.rs
-bytes unchanged into a temporary crate, replaces only sync.rs with the tracked
-Loom Mutex adapter, and checks before/after hashes. No second state machine,
-production feature or production dependency is introduced.
+and its own Cargo.lock under tests/control. Two temporary-crate variants check
+before/after source hashes. The original thirteen fixtures replace only sync.rs
+with the tracked Loom Mutex adapter. Six native fixtures use an external public
+`LockBackend` and copy every production module, including sync.rs, byte-for-byte
+without substitutions. No second state machine, production feature or production
+dependency is introduced.
 
 Thirteen fixtures cover same-D reservation/effect, revoke/commit, retire/query,
 publish/observe, loss/callback, typed native execution, three-way loss/retirement,
@@ -871,8 +933,9 @@ Each explores up to three workers
 plus main, with preemption_bound=3 and
 max_branches=10000. No time/permutation cutoff is set; exceeding a branch
 limit or any assertion/deadlock fails the command. The runner requires all
-thirteen positive schedule counts, fmt and strict Clippy to pass. The current
-exact-source acceptance records 26,675 schedules across these fixtures.
+nineteen positive schedule counts, fmt and strict Clippy to pass. Public-backend
+fixtures cover simultaneous same-D reservation, same-token execution,
+revoke/commit, retire/query, publish/observe and loss/execution fencing.
 
 This verifies bounded lock-protected transitions with Loom threads/atomics;
 std/alloc Arc/Weak reference-count atomics and finalization are not instrumented.

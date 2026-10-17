@@ -1,0 +1,319 @@
+{
+  "kind": "source-compatibility compile control; not a runtime assertion or kernel proof",
+  "before_commit": "1247d30b2a8d82598482512f4d614b622499e541",
+  "broken_commit": "a2ef27a77fecf6ace2f822fb217a65f9454ba69d",
+  "consumer": "use os_control::{DeliveryObservation, ReserveAttempt, ReserveToken};\nuse os_control::ReserveAttempt::{Existing, Reserved};\n\npub fn classify(value: ReserveAttempt) -> bool {\n    match value {\n        Reserved(token) => {\n            let _: ReserveToken = token;\n            true\n        }\n        Existing(observation) => {\n            let _: DeliveryObservation = observation;\n            false\n        }\n    }\n}\n",
+  "consumer_sha256": "d5f0e8a21a8a624d5583c0837dae8f085f4a47e3f311d8e344e20dc72387dce7",
+  "harness_sha256": "d5adaa04445e5549c5e6ad98358027c3b7d3ec345a34ec3f4622c747832f5e12",
+  "toolchain": "nightly-2026-07-21",
+  "variants": {
+    "before": {
+      "source_revision": "1247d30b2a8d82598482512f4d614b622499e541",
+      "source_inventory": [
+        {
+          "path": "lib.rs",
+          "bytes": 107459,
+          "sha256": "0ec42981de95f5d64088aeb16fa137c0daabe5a149108b88ff7c4ab7daea431d"
+        },
+        {
+          "path": "management.rs",
+          "bytes": 7125,
+          "sha256": "1b44ed9d89f3bd9aba90c8bcd3aeceb46bcd7332cbdd2bdd3fa40ff200d49340"
+        },
+        {
+          "path": "native.rs",
+          "bytes": 8844,
+          "sha256": "1967c2db5c7292127a5cb4a76c3448a9764710b4c44ebeb40a610dba6e16fd81"
+        },
+        {
+          "path": "resource_state.rs",
+          "bytes": 12951,
+          "sha256": "84fe7cfe37ea109ebfce4de5f32a5a418f4d834c5affc82af2d2a955bc9bb810"
+        },
+        {
+          "path": "sync.rs",
+          "bytes": 1073,
+          "sha256": "e2159cc41ef3a1073b1899615f70ea34cc9915052dd41811180bd3e3497784cd"
+        }
+      ],
+      "consumer_sha256": "d5f0e8a21a8a624d5583c0837dae8f085f4a47e3f311d8e344e20dc72387dce7",
+      "expected": "compile_success",
+      "passed": true,
+      "library": {
+        "argv": [
+          "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+          "--edition=2021",
+          "--forbid=unsafe_code",
+          "--error-format=json",
+          "--crate-name=os_control",
+          "--crate-type=rlib",
+          "--cfg",
+          "feature=\"std\"",
+          "/tmp/a03-api-before-2vfzwyt_/src/lib.rs",
+          "-o",
+          "/tmp/a03-api-before-2vfzwyt_/libos_control.rlib"
+        ],
+        "cwd": "/tmp/a03-api-before-2vfzwyt_",
+        "returncode": 0,
+        "timed_out": false,
+        "stdout": "before-library.stdout.log",
+        "stderr": "before-library.stderr.log",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "consumer": {
+        "argv": [
+          "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+          "--edition=2021",
+          "--forbid=unsafe_code",
+          "--error-format=json",
+          "--crate-name=pre_backend_consumer",
+          "--crate-type=rlib",
+          "/tmp/a03-api-before-2vfzwyt_/consumer.rs",
+          "--extern",
+          "os_control=/tmp/a03-api-before-2vfzwyt_/libos_control.rlib",
+          "-o",
+          "/tmp/a03-api-before-2vfzwyt_/libconsumer.rlib"
+        ],
+        "cwd": "/tmp/a03-api-before-2vfzwyt_",
+        "returncode": 0,
+        "timed_out": false,
+        "stdout": "before-consumer.stdout.log",
+        "stderr": "before-consumer.stderr.log",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "copied_source_bytes_verified_after_execution": true,
+      "consumer_bytes_verified_after_execution": true,
+      "temporary_workspace_removed": true
+    },
+    "broken": {
+      "source_revision": "a2ef27a77fecf6ace2f822fb217a65f9454ba69d",
+      "source_inventory": [
+        {
+          "path": "lib.rs",
+          "bytes": 110117,
+          "sha256": "b2f737cf44e9e359f25f2a4e9548b0155e103af29053d8e7723c2efbab007dc1"
+        },
+        {
+          "path": "locking.rs",
+          "bytes": 3086,
+          "sha256": "02f1b7680774b13c394ed9a7f93baeaefd0771dd32e85b6bcae004ec757166f7"
+        },
+        {
+          "path": "management.rs",
+          "bytes": 7125,
+          "sha256": "1b44ed9d89f3bd9aba90c8bcd3aeceb46bcd7332cbdd2bdd3fa40ff200d49340"
+        },
+        {
+          "path": "native.rs",
+          "bytes": 8844,
+          "sha256": "1967c2db5c7292127a5cb4a76c3448a9764710b4c44ebeb40a610dba6e16fd81"
+        },
+        {
+          "path": "resource_state.rs",
+          "bytes": 12951,
+          "sha256": "84fe7cfe37ea109ebfce4de5f32a5a418f4d834c5affc82af2d2a955bc9bb810"
+        },
+        {
+          "path": "sync.rs",
+          "bytes": 1073,
+          "sha256": "e2159cc41ef3a1073b1899615f70ea34cc9915052dd41811180bd3e3497784cd"
+        }
+      ],
+      "consumer_sha256": "d5f0e8a21a8a624d5583c0837dae8f085f4a47e3f311d8e344e20dc72387dce7",
+      "expected": "E0432_alias_not_module",
+      "passed": true,
+      "library": {
+        "argv": [
+          "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+          "--edition=2021",
+          "--forbid=unsafe_code",
+          "--error-format=json",
+          "--crate-name=os_control",
+          "--crate-type=rlib",
+          "--cfg",
+          "feature=\"std\"",
+          "/tmp/a03-api-broken-pdkkdvlk/src/lib.rs",
+          "-o",
+          "/tmp/a03-api-broken-pdkkdvlk/libos_control.rlib"
+        ],
+        "cwd": "/tmp/a03-api-broken-pdkkdvlk",
+        "returncode": 0,
+        "timed_out": false,
+        "stdout": "broken-library.stdout.log",
+        "stderr": "broken-library.stderr.log",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "consumer": {
+        "argv": [
+          "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+          "--edition=2021",
+          "--forbid=unsafe_code",
+          "--error-format=json",
+          "--crate-name=pre_backend_consumer",
+          "--crate-type=rlib",
+          "/tmp/a03-api-broken-pdkkdvlk/consumer.rs",
+          "--extern",
+          "os_control=/tmp/a03-api-broken-pdkkdvlk/libos_control.rlib",
+          "-o",
+          "/tmp/a03-api-broken-pdkkdvlk/libconsumer.rlib"
+        ],
+        "cwd": "/tmp/a03-api-broken-pdkkdvlk",
+        "returncode": 1,
+        "timed_out": false,
+        "stdout": "broken-consumer.stdout.log",
+        "stderr": "broken-consumer.stderr.log",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "97eeae64c80db1419b4356fc4ecfd9dbaa0a608b2cf2ea2c4c4883431be97523"
+      },
+      "expected_diagnostics": [
+        {
+          "code": "E0432",
+          "message": "unresolved import `os_control::ReserveAttempt`",
+          "primary_label": "`ReserveAttempt` is a type alias, not a module",
+          "consumer_line": 2
+        }
+      ],
+      "copied_source_bytes_verified_after_execution": true,
+      "consumer_bytes_verified_after_execution": true,
+      "temporary_workspace_removed": true
+    },
+    "current": {
+      "source_revision": "worktree",
+      "source_inventory": [
+        {
+          "path": "lib.rs",
+          "bytes": 110660,
+          "sha256": "99add95e5202c36ec7b4db003b4e3a8f328832ad10f8809c51878b69c5e64576"
+        },
+        {
+          "path": "locking.rs",
+          "bytes": 3086,
+          "sha256": "02f1b7680774b13c394ed9a7f93baeaefd0771dd32e85b6bcae004ec757166f7"
+        },
+        {
+          "path": "management.rs",
+          "bytes": 7125,
+          "sha256": "1b44ed9d89f3bd9aba90c8bcd3aeceb46bcd7332cbdd2bdd3fa40ff200d49340"
+        },
+        {
+          "path": "native.rs",
+          "bytes": 8844,
+          "sha256": "1967c2db5c7292127a5cb4a76c3448a9764710b4c44ebeb40a610dba6e16fd81"
+        },
+        {
+          "path": "resource_state.rs",
+          "bytes": 12951,
+          "sha256": "84fe7cfe37ea109ebfce4de5f32a5a418f4d834c5affc82af2d2a955bc9bb810"
+        },
+        {
+          "path": "sync.rs",
+          "bytes": 1073,
+          "sha256": "e2159cc41ef3a1073b1899615f70ea34cc9915052dd41811180bd3e3497784cd"
+        }
+      ],
+      "consumer_sha256": "d5f0e8a21a8a624d5583c0837dae8f085f4a47e3f311d8e344e20dc72387dce7",
+      "expected": "compile_success",
+      "passed": true,
+      "library": {
+        "argv": [
+          "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+          "--edition=2021",
+          "--forbid=unsafe_code",
+          "--error-format=json",
+          "--crate-name=os_control",
+          "--crate-type=rlib",
+          "--cfg",
+          "feature=\"std\"",
+          "/tmp/a03-api-current-cuw_g3h_/src/lib.rs",
+          "-o",
+          "/tmp/a03-api-current-cuw_g3h_/libos_control.rlib"
+        ],
+        "cwd": "/tmp/a03-api-current-cuw_g3h_",
+        "returncode": 0,
+        "timed_out": false,
+        "stdout": "current-library.stdout.log",
+        "stderr": "current-library.stderr.log",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "consumer": {
+        "argv": [
+          "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+          "--edition=2021",
+          "--forbid=unsafe_code",
+          "--error-format=json",
+          "--crate-name=pre_backend_consumer",
+          "--crate-type=rlib",
+          "/tmp/a03-api-current-cuw_g3h_/consumer.rs",
+          "--extern",
+          "os_control=/tmp/a03-api-current-cuw_g3h_/libos_control.rlib",
+          "-o",
+          "/tmp/a03-api-current-cuw_g3h_/libconsumer.rlib"
+        ],
+        "cwd": "/tmp/a03-api-current-cuw_g3h_",
+        "returncode": 0,
+        "timed_out": false,
+        "stdout": "current-consumer.stdout.log",
+        "stderr": "current-consumer.stderr.log",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "copied_source_bytes_verified_after_execution": true,
+      "consumer_bytes_verified_after_execution": true,
+      "temporary_workspace_removed": true
+    }
+  },
+  "passed": true,
+  "rustc": {
+    "argv": [
+      "/workspace/scratch/629ae4947f18/toolchains/cargo/bin/rustc",
+      "-vV"
+    ],
+    "cwd": "/workspace/scratch/629ae4947f18/a03-api-exact",
+    "returncode": 0,
+    "timed_out": false,
+    "stdout": "rustc.stdout.log",
+    "stderr": "rustc.stderr.log",
+    "stdout_sha256": "d919107c9907c374b7605930746505ef72ce87cc21b641260c6225a7da9d8212",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "checkout_commit": "a42d078004ea3b29b65bbaecb89932985330e330",
+  "current_source_inventory": [
+    {
+      "path": "lib.rs",
+      "bytes": 110660,
+      "sha256": "99add95e5202c36ec7b4db003b4e3a8f328832ad10f8809c51878b69c5e64576"
+    },
+    {
+      "path": "locking.rs",
+      "bytes": 3086,
+      "sha256": "02f1b7680774b13c394ed9a7f93baeaefd0771dd32e85b6bcae004ec757166f7"
+    },
+    {
+      "path": "management.rs",
+      "bytes": 7125,
+      "sha256": "1b44ed9d89f3bd9aba90c8bcd3aeceb46bcd7332cbdd2bdd3fa40ff200d49340"
+    },
+    {
+      "path": "native.rs",
+      "bytes": 8844,
+      "sha256": "1967c2db5c7292127a5cb4a76c3448a9764710b4c44ebeb40a610dba6e16fd81"
+    },
+    {
+      "path": "resource_state.rs",
+      "bytes": 12951,
+      "sha256": "84fe7cfe37ea109ebfce4de5f32a5a418f4d834c5affc82af2d2a955bc9bb810"
+    },
+    {
+      "path": "sync.rs",
+      "bytes": 1073,
+      "sha256": "e2159cc41ef3a1073b1899615f70ea34cc9915052dd41811180bd3e3497784cd"
+    }
+  ],
+  "all_variants_used_identical_consumer": true,
+  "worktree_source_bytes_unchanged": true,
+  "harness_bytes_unchanged": true
+}

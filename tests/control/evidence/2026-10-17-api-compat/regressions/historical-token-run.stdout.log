@@ -1,0 +1,33 @@
+
+running 5 tests
+test lost_history_releases_result_resources_even_when_the_old_token_is_retained ... FAILED
+test obsolete_token_does_not_keep_an_otherwise_unreferenced_namespace_alive ... FAILED
+test retained_retired_token_no_longer_keeps_a_child_cap_constraint_alive ... FAILED
+test ten_thousand_retained_tokens_do_not_reexecute_in_a_one_slot_namespace ... ok
+test unretired_namespace_slot_protects_a_child_after_token_and_user_handles_drop ... ok
+
+failures:
+
+---- lost_history_releases_result_resources_even_when_the_old_token_is_retained stdout ----
+
+thread 'lost_history_releases_result_resources_even_when_the_old_token_is_retained' (73) panicked at /tmp/a03-regressions-bicoxchx/historical-token/token_retirement.rs:221:10:
+lost results must not retain resources through obsolete tokens: ParentConstraint
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- obsolete_token_does_not_keep_an_otherwise_unreferenced_namespace_alive stdout ----
+
+thread 'obsolete_token_does_not_keep_an_otherwise_unreferenced_namespace_alive' (74) panicked at /tmp/a03-regressions-bicoxchx/historical-token/token_retirement.rs:268:10:
+an obsolete token must not preserve an entire namespace: ParentConstraint
+
+---- retained_retired_token_no_longer_keeps_a_child_cap_constraint_alive stdout ----
+
+thread 'retained_retired_token_no_longer_keeps_a_child_cap_constraint_alive' (75) panicked at /tmp/a03-regressions-bicoxchx/historical-token/token_retirement.rs:143:10:
+retiring the result must release its last child reference: ParentConstraint
+
+
+failures:
+    lost_history_releases_result_resources_even_when_the_old_token_is_retained
+    obsolete_token_does_not_keep_an_otherwise_unreferenced_namespace_alive
+    retained_retired_token_no_longer_keeps_a_child_cap_constraint_alive
+
+test result: FAILED. 2 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
