@@ -9,6 +9,8 @@ import argparse
 import gzip
 import hashlib
 import json
+import os
+import stat
 from pathlib import Path
 import re
 import subprocess
@@ -37,9 +39,33 @@ def require(condition, message):
 
 
 def read_pinned_file(path, expected_hash, limit=MAX_INPUT_BYTES):
-    require(path.is_file() and not path.is_symlink(), "input must be a regular non-symlink file")
-    require(path.stat().st_size <= limit, "pinned input too large")
-    data = path.read_bytes()
+    """Bound one pinned input by its opened FD; reject link/path swaps.
+
+    The previous is_file/stat/read_bytes sequence re-resolved the path after
+    validation and could follow a replacement link or read an oversized
+    regular file before comparing its digest. Hash validation alone does not
+    prevent an unbounded or device-backed read.
+    """
+    fd = None
+    try:
+        fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK | os.O_CLOEXEC)
+        with os.fdopen(fd, "rb") as stream:
+            fd = None
+            before = os.fstat(stream.fileno())
+            require(stat.S_ISREG(before.st_mode) and before.st_nlink == 1,
+                    "input must be a regular nonlinked file")
+            require(0 <= before.st_size <= limit, "pinned input too large")
+            data = stream.read(limit + 1)
+            after = os.fstat(stream.fileno())
+            require(len(data) <= limit, "pinned input exceeds size bound")
+            require(len(data) == before.st_size == after.st_size,
+                    "pinned input changed size while reading")
+            require((before.st_dev, before.st_ino, before.st_mtime_ns, before.st_ctime_ns)
+                    == (after.st_dev, after.st_ino, after.st_mtime_ns, after.st_ctime_ns),
+                    "pinned input changed during read")
+    finally:
+        if fd is not None:
+            os.close(fd)
     require(digest(data) == expected_hash, f"pinned input SHA256 mismatch: {path}")
     return data
 
