@@ -9,6 +9,15 @@ on:
       - "support/upstream-lock.json"
       - "tests/organ_backend/**"
       - ".github/workflows/a06-kernel.yml"
+  push:
+    branches: [main]
+    paths:
+      - "kernel/asterinas/**"
+      - "support/build/ktest/**"
+      - "support/build/prepare-host.sh"
+      - "support/upstream-lock.json"
+      - "tests/organ_backend/**"
+      - ".github/workflows/a06-kernel.yml"
   workflow_dispatch:
 
 permissions:
