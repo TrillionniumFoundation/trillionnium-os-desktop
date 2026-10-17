@@ -120,7 +120,9 @@ class GemmTests(unittest.TestCase):
             output = Path(directory) / "blocked.json"
             with patch.object(cuda_gemm, "library",
                               side_effect=cuda_gemm.Blocked("no driver")), \
-                    patch.object(sys, "argv", ["cuda_gemm.py", "--output", str(output)]):
+                    patch.object(sys, "argv", [
+                        "cuda_gemm.py", "--require-bdf", "0000:01:00.0",
+                        "--output", str(output)]):
                 self.assertEqual(cuda_gemm.main(supervise=False), 2)
             evidence = json.loads(output.read_text())
         self.assertEqual(evidence["schema"], "a09.cuda-gemm.v2")
