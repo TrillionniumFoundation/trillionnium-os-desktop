@@ -8,8 +8,8 @@ use std::io::{self, Write};
 use std::sync::mpsc::{self, Receiver, SyncSender, TryRecvError};
 use std::time::{Duration, Instant};
 use trill_ui_core::{
-    request, AppKind, HostResources, Request, Response, TaskRecord, TaskState, WaylandSocketStatus,
-    Workspace,
+    request, AppKind, HostResources, HostWaylandObservation, HostWindowObservation, Request,
+    Response, TaskRecord, TaskState, WaylandSocketStatus, Workspace,
 };
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -130,6 +130,20 @@ fn collect_export_drafts(chat: &[ChatEntry], composer: &str) -> Result<Vec<Strin
         return Err("No saved local drafts; prior export unchanged.");
     }
     Ok(drafts)
+}
+
+/// Offer only an explicit new host process, never silent reattachment or
+/// preservation of the old application's unsaved state.
+fn can_offer_fresh_window(
+    task: &TaskRecord,
+    display: Option<&HostWaylandObservation>,
+    connected: bool,
+) -> bool {
+    connected
+        && !task.state.is_terminal()
+        && display.is_some_and(|sample| {
+            task.host_window_observation(sample) == HostWindowObservation::SocketChanged
+        })
 }
 
 /// A plain process observation, NOT Hepta operation success or a security log.
@@ -781,6 +795,25 @@ impl Desktop {
             ui.small(format!("Observed: {}", task.updated_unix_ms));
             ui.separator();
             ui.label(task.detail);
+            if can_offer_fresh_window(
+                &task,
+                self.resources.as_ref().map(|sample| &sample.wayland),
+                self.connected,
+            ) {
+                ui.colored_label(
+                    warning(),
+                    "Old client window unverified after compositor restart. A fresh process cannot restore unsaved app state.",
+                );
+                if ui.button("Launch NEW window (not reattach)").clicked()
+                    && self.launch_host_app(task.workspace, task.app)
+                {
+                    self.notice(format!(
+                        "Queued NEW {} process; old task #{} is neither reattached nor cancelled",
+                        task.app.name(),
+                        task.id
+                    ));
+                }
+            }
             if self.connected
                 && !task.state.is_terminal()
                 && ui.button("Request termination").clicked()
@@ -1258,6 +1291,29 @@ mod console_tests {
 #[cfg(test)]
 mod shell_lifecycle_tests {
     use super::*;
+
+    #[test]
+    fn new_window_offer_requires_running_old_client_and_changed_live_socket() {
+        let mut task = TaskRecord::new(12, Workspace::Build, AppKind::Notes);
+        assert!(task.transition(TaskState::Running));
+        task.wayland_socket_epoch_at_launch = Some(3);
+        let mut display = HostWaylandObservation {
+            status: WaylandSocketStatus::SocketObserved,
+            socket_observation_epoch: 4,
+            sampled_unix_ms: 1,
+        };
+        assert!(can_offer_fresh_window(&task, Some(&display), true));
+        assert!(!can_offer_fresh_window(&task, Some(&display), false));
+        assert!(!can_offer_fresh_window(&task, None, true));
+        display.status = WaylandSocketStatus::Missing;
+        assert!(!can_offer_fresh_window(&task, Some(&display), true));
+        display.status = WaylandSocketStatus::SocketObserved;
+        display.socket_observation_epoch = 3;
+        assert!(!can_offer_fresh_window(&task, Some(&display), true));
+        display.socket_observation_epoch = 4;
+        assert!(task.transition(TaskState::Completed));
+        assert!(!can_offer_fresh_window(&task, Some(&display), true));
+    }
 
     #[test]
     fn shell_first_layout_marker_is_exact_and_emitted_once() {

@@ -66,7 +66,10 @@ host-only observation epoch. Every successfully launched host process
 records its observed socket epoch; the Shell identifies when a process predates
 a compositor socket replacement but never claims a mapped or reattached surface.
 The original client is recorded without any claim of lossless window
-reattachment. Real Chinese IME, physical
+reattachment. For a running old app with a stale socket epoch, Inspector can
+offer **Launch NEW window (not reattach)** when the Session is online. This
+starts a fresh task, does not restore unsaved data and does not silently kill
+the old process. Real Chinese IME, physical
 GPU reset and target kernel boot remain separate gates.
 
 The session MUST be independently supervised or kept running in terminal #1.

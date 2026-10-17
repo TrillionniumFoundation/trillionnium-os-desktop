@@ -81,6 +81,9 @@ Unit coverage:
   retains its generation and child identity; a newly launched Wayland app must
   complete its egui layout and be explicitly reaped. A pre-crash client is NOT
   assumed to reattach, and this is not a physical GPU reset.
+- only a still-running app from a previous compositor socket epoch can offer
+  an explicitly clicked NEW process/window; offline, old-generation and
+  terminal cases never fake app reattachment or preserved unsaved data
 - shell first egui layout marker before and after Shell restart (exactly once
   per Shell process; not a compositor-presented frame)
 - isolated Wayland smoke: shell plus independent native app processes (Notes,
