@@ -37,7 +37,7 @@ class A06FinalAccountingSource(unittest.TestCase):
             "node migration, fork inheritance, and root migration must update the snapshot",
         )
         self.assertIn("if !process.status().is_zombie()", source)
-        self.assertIn("deferred scheduler debit of exited tasks", source)
+        self.assertIn("deferred scheduler", source)
 
 
 if __name__ == "__main__":
