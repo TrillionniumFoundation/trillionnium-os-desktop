@@ -7,10 +7,10 @@
 //! scheduler lock discipline before using these state transitions.
 
 #[cfg(feature = "std")]
-pub(crate) use std::sync::{Arc, Mutex, MutexGuard};
+pub(crate) use std::sync::{Arc, Mutex, MutexGuard, Weak};
 
 #[cfg(all(not(feature = "std"), feature = "portable-spin"))]
-pub(crate) use alloc::sync::Arc;
+pub(crate) use alloc::sync::{Arc, Weak};
 #[cfg(all(not(feature = "std"), feature = "portable-spin"))]
 pub(crate) use spin::{Mutex, MutexGuard};
 

@@ -36,6 +36,23 @@ jobs:
       - uses: actions/checkout@v4
       - name: Verify independent HOS2 golden fixtures
         run: python3 tests/golden/generate_hos2.py --check
+      - name: Verify canonical HOS2 semantic edge corpus and independent generator
+        shell: bash
+        run: |
+          set -euo pipefail
+          for fixture in \
+            tests/golden/generate_hos2_edges.py \
+            tests/golden/hos2_edges.json \
+            tests/abi/test_semantic_edges_contract.py \
+            libs/os-abi/tests/semantic_edges.rs; do
+            if [[ ! -f "$fixture" || -L "$fixture" ]]; then
+              echo "Missing or symlinked mandatory HOS2 semantic oracle: $fixture" >&2
+              exit 1
+            fi
+          done
+          # This generator intentionally imports sibling generate_hos2.py;
+          # it checks 24 independently generated HOS2 edge frames.
+          python3 tests/golden/generate_hos2_edges.py --check
       - name: Verify independent native 32-byte HOS2 ioctl transport golden
         shell: bash
         run: |
@@ -61,6 +78,19 @@ jobs:
           test -f tests/kernel/control/run-host-smoke.sh
           test -f tests/kernel/control/fake-ioctl-efault.c
           sh tests/kernel/control/run-host-smoke.sh
+      - name: Compile native A05 QueryAbi guest probe when present (host compiler only)
+        if: hashFiles('tests/kernel/control/queryabi_guest.c') != ''
+        shell: bash
+        run: |
+          set -euo pipefail
+          # This only checks the actual A05 user ELF compiles; it cannot prove
+          # the new Asterinas ioctl or guest QEMU behavior is present.
+          cc -std=c11 -O2 -Wall -Wextra -Werror -pedantic -static \
+            tests/kernel/control/queryabi_guest.c \
+            -o "$RUNNER_TEMP/a05-queryabi-guest"
+          test -s "$RUNNER_TEMP/a05-queryabi-guest"
+          file "$RUNNER_TEMP/a05-queryabi-guest"
+          sha256sum "$RUNNER_TEMP/a05-queryabi-guest"
       - name: Require canonical Rust crate manifests and install lint components
         shell: bash
         run: |
@@ -90,3 +120,20 @@ jobs:
           set -euo pipefail
           cargo fmt --manifest-path libs/os-control/Cargo.toml -- --check
           cargo clippy --manifest-path libs/os-control/Cargo.toml --all-targets -- -D warnings
+      - name: Host A03 no_std portable-spin model and strict Clippy (not kernel IRQ)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s libs/os-control/Cargo.lock
+          cargo test --locked --manifest-path libs/os-control/Cargo.toml \
+            --no-default-features --features portable-spin --verbose
+          cargo clippy --locked --manifest-path libs/os-control/Cargo.toml \
+            --no-default-features --features portable-spin --all-targets -- -D warnings
+      - name: Cross-build A03 portable-spin rlib for x86_64-unknown-none (not kernel link)
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup target add x86_64-unknown-none
+          cargo build --locked --manifest-path libs/os-control/Cargo.toml \
+            --no-default-features --features portable-spin \
+            --lib --target x86_64-unknown-none --verbose

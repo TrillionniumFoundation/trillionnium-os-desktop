@@ -1,7 +1,7 @@
 {
   "schema": "a09.gpu-lab-profile.v1",
   "state": "candidate_not_detected_or_authorized_on_accessible_hardware",
-  "base_main": "4b88b637e520f5a8f10d0e280fb9ee450abee8e4",
+  "base_main": "bc294f75bfb8c03d9963f5a12ea23b9589779d96",
   "kernel_pin": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
   "selected_route": "linux_guest_driver_exclusive_gpu_passthrough_on_asterinas_vmm",
   "target_gpu": {
@@ -40,7 +40,10 @@
     "reference_sha256": "5bf61d6bb17edb58d70dd37589eeab5a02f5cc5d0c5aae5d142b06678416d847",
     "compare": "all_256_exact",
     "gpu_execution_required": true,
-    "reset_fault_injection_enabled": false
+    "reset_fault_injection_enabled": false,
+    "bdf_must_be_observed_before_gpu_device_access": true,
+    "exact_device_name_required": true,
+    "guest_worker_provenance_required": true
   },
   "gates": {
     "linux_host_baseline": false,
@@ -58,5 +61,30 @@
     "bios_modify": false,
     "prod_reset": false,
     "ollama": false
+  },
+  "synced_main": "40ca002fac0726b366726d3353916637b29adeae",
+  "latest_readonly_observation": "tests/hardware/evidence/2026-10-17-sandbox-readonly-pci-034743z.json",
+  "hardware_blocker_issue": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/issues/96",
+  "device_identity_gate": {
+    "lab_gpu_model_exact": "NVIDIA GeForce RTX 4060",
+    "rejects_variant_models": [
+      "RTX 4060 Ti",
+      "RTX 4060 Laptop GPU",
+      "RTX 4070"
+    ],
+    "pci_bdf_is_explicit_and_required": true,
+    "normalized_pci_domain_hex_widths": [
+      4,
+      8
+    ],
+    "pci_slot_max": 31,
+    "vendor_cuda_compute_capability": "8.9",
+    "supervised_child_schema": "a09.cuda-gemm.v2",
+    "guest_linux_kernel_process_provenance_required": true,
+    "worker_pid_equals_compute_process_pid": true,
+    "worker_exit_reaped_without_group_escape_required": true,
+    "all_gemm_and_cleanup_stages_pass_required": true,
+    "hardware_verified_by_self_report": false,
+    "consistent_unsigned_evidence_status": "independent_hardware_review_required"
   }
 }

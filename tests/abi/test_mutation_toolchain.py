@@ -110,7 +110,8 @@ class MutationToolchainTests(unittest.TestCase):
         self.assertEqual(report["mutants"], [])
         self.assertTrue(report["errors"])
         if failure != "invalid_reference":
-            for key in ("baseline", "baseline_semantic_edges", "baseline_profile_boundaries"):
+            for key in ("baseline", "baseline_semantic_edges", "baseline_profile_boundaries",
+                        "baseline_response_snapshot"):
                 baseline = report[key]
                 self.assertFalse(baseline["compiled"])
                 self.assertFalse(baseline["passed"])
@@ -274,6 +275,28 @@ class MutationToolchainTests(unittest.TestCase):
         self.assertEqual(effective["RUSTC"], rustc if explicit_rustc else "rustc")
         self.assertEqual(effective["RUSTC_WRAPPER"], "")
         self.assertEqual(effective["RUSTC_WORKSPACE_WRAPPER"], "")
+
+    def test_snapshot_source_mutants_target_existing_guards_and_complete_suite(self):
+        source = (Path(__file__).resolve().parents[2] / "libs/os-abi/src/lib.rs").read_text(
+            encoding="utf-8"
+        )
+        self.assertEqual(len(mutations.SNAPSHOT_MUTANTS), 4)
+        self.assertEqual(mutations.EXPECTED_MUTANT_COUNT, 16)
+        self.assertEqual(mutations.SUITES["response_snapshot"],
+                         (5, mutations.SNAPSHOT_TESTS))
+        self.assertEqual(len(set(mutations.SNAPSHOT_TESTS)), 5)
+        names = set()
+        for name, designated, changes in mutations.SNAPSHOT_MUTANTS:
+            with self.subTest(name=name):
+                self.assertNotIn(name, names)
+                names.add(name)
+                self.assertIn(designated, mutations.SNAPSHOT_TESTS)
+                self.assertEqual(len(changes), 1)
+                mutated = mutations.mutated_profile_source(source, changes)
+                self.assertNotEqual(mutated, source)
+                for old, new in changes:
+                    self.assertEqual(source.count(old), 1)
+                    self.assertEqual(mutated.count(new), 1)
 
     def test_inherited_and_configured_wrappers_cannot_intercept_explicit_compiler(self):
         self.isolated_fake_cargo_suite(explicit_rustc=True)

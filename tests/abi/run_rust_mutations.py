@@ -3,7 +3,7 @@
 
 Only temporary copies of the crate are changed. A mutant is killed only when it
 compiles successfully, its complete suite runs without skips, and the designated
-regression fails. All three production baselines must pass first. Compiler errors,
+regression fails. All four production baselines must pass first. Compiler errors,
 timeouts and filtered tests never count as mutation kills. This checks host
 codec/canonical-request coverage, not a kernel delivery ledger.
 """
@@ -26,7 +26,8 @@ from typing import Any
 EXPECTED_TEST_COUNT = 8
 EXPECTED_SEMANTIC_TEST_COUNT = 12
 EXPECTED_PROFILE_TEST_COUNT = 7
-EXPECTED_MUTANT_COUNT = 12
+EXPECTED_SNAPSHOT_TEST_COUNT = 5
+EXPECTED_MUTANT_COUNT = 16
 GENERATION_TEST = "same_sequence_and_slot_different_generation_is_conflict"
 MUTANTS = (
     (
@@ -46,6 +47,7 @@ INPUTS = (
     "tests/mutation_kill.rs",
     "tests/semantic_edges.rs",
     "tests/profile_boundaries.rs",
+    "tests/response_snapshot.rs",
 )
 FIXTURES = ("tests/golden/hos2.json", "tests/golden/hos2_edges.json")
 SAVED_STATUS_TEST = "typed_terminal_rejection_encoders_match_all_independent_saved_status_bytes"
@@ -142,6 +144,45 @@ PROFILE_MUTANTS = (
         ),
     ),
 )
+# The new transport-bound response parser is security-critical: deliberately
+# omit one guard at a time in *compiled production Rust*, then require the
+# unchanged independently generated golden-byte suite to reject each variant.
+# Do not count compilation failures, suite omissions or timeout as kills.
+SNAPSHOT_TESTS = (
+    "every_fixed_success_and_error_response_accepts_its_own_transport_bounds",
+    "short_success_capacity_rejects_even_a_complete_64_byte_error_response",
+    "unbounded_prefix_mutant_accepts_bytes_outside_advertised_copyout_capacity",
+    "transport_descriptor_and_typed_request_must_describe_the_same_frame",
+    "malformed_truncated_and_mismatched_responses_remain_rejected",
+)
+SNAPSHOT_MUTANTS = (
+    (
+        "ignore_transport_response_capacity",
+        SNAPSHOT_TESTS[2],
+        (("|| snapshot.len() > self.response_capacity as usize", "|| false"),),
+    ),
+    (
+        "ignore_typed_request_frame_length",
+        SNAPSHOT_TESTS[3],
+        (("self.request_bytes as usize != expected_request_len",
+          "self.request_bytes as usize != expected_request_len && false"),),
+    ),
+    (
+        "ignore_success_capacity_for_error_reply",
+        SNAPSHOT_TESTS[1],
+        (("        self.ensure_success_response_capacity(request.opcode)?;\n"
+          "        decode_response_prefix_for(snapshot, request)",
+          "        decode_response_prefix_for(snapshot, request)"),),
+    ),
+    (
+        "ignore_response_request_correlation",
+        SNAPSHOT_TESTS[4],
+        (("        decode_response_prefix_for(snapshot, request)",
+          "        decode_response_prefix(snapshot)"),),
+    ),
+)
+
+
 SUITES = {
     "mutation_kill": (
         EXPECTED_TEST_COUNT,
@@ -156,6 +197,7 @@ SUITES = {
         ),
     ),
     "profile_boundaries": (EXPECTED_PROFILE_TEST_COUNT, PROFILE_TESTS),
+    "response_snapshot": (EXPECTED_SNAPSHOT_TEST_COUNT, SNAPSHOT_TESTS),
 }
 
 
@@ -522,10 +564,10 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("--toolchain must not be empty")
 
     report: dict[str, Any] = {
-        "schema": "hos2-rust-source-mutations-v3",
+        "schema": "hos2-rust-source-mutations-v4",
         "scope": (
             "host Rust canonical equality, fixed-byte response encoding and "
-            "documented QueryAbi/ReadUsage validation boundaries; "
+            "documented QueryAbi/ReadUsage and transport-bound response boundaries; "
             "each mutant runs its designated complete suite, not the entire crate; "
             "no kernel validation"
         ),
@@ -540,6 +582,7 @@ def main(argv: list[str] | None = None) -> int:
         "baseline": None,
         "baseline_semantic_edges": None,
         "baseline_profile_boundaries": None,
+        "baseline_response_snapshot": None,
         "mutants": [],
         "errors": [],
     }
@@ -578,6 +621,7 @@ def main(argv: list[str] | None = None) -> int:
                 ("mutation_kill", "baseline"),
                 ("semantic_edges", "baseline_semantic_edges"),
                 ("profile_boundaries", "baseline_profile_boundaries"),
+                ("response_snapshot", "baseline_response_snapshot"),
             ):
                 baseline = run_suite(
                     temporary_root / baseline_key,
@@ -634,6 +678,16 @@ def main(argv: list[str] | None = None) -> int:
                         mutated_profile_source(source, changes),
                     )
                     for name, expected_test, changes in PROFILE_MUTANTS
+                )
+                mutations.extend(
+                    (
+                        name,
+                        "response_snapshot",
+                        {"changed_checks": changes},
+                        expected_test,
+                        mutated_profile_source(source, changes),
+                    )
+                    for name, expected_test, changes in SNAPSHOT_MUTANTS
                 )
                 if len(mutations) != EXPECTED_MUTANT_COUNT:
                     raise ValueError("mutation count changed without updating the expected total")

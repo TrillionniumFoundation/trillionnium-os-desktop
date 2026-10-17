@@ -42,20 +42,31 @@ actual HOS2 byte layout and payload.
    CapSpace binding, or `with_capacity_for_owner` to also mint the non-Clone
    `OriginalOwnerAuthority` for the authenticated original Hepta owner.
    The HOS2 maximum/default is 1024 non-retired writes.
-2. Resolve a kernel ResourceDomain and a publisher-bound `Grant`. Build a
-   `DeliveryRequest::from_wire` with sequence, expected revision, cap and
+2. Resolve the existing kernel resource owner and pin its actual `Arc` with
+   `NativeTarget::from_owner(owner, domain_id, stable_object_id)`. Snapshot
+   the authenticated publisher, grant epoch and immediate-parent-to-root
+   epoch chain with `NativeGrant::from_owner`. Build a
+   `NativeDeliveryRequest::from_wire` with sequence, expected revision, cap and
    exact nonzero HOS2 target slot/generation. Stable target identity, grant
    epoch/ancestry and optional payload digest are also bound. The unbound
-   `DeliveryRequest::new` constructor is only for legacy host fixtures.
-3. Call `reserve`. Sequence allocation is global across all targets. A second
+   `DeliveryRequest::new` constructor and `ResourceDomain`/`Grant` route are
+   host fixtures; native admission requires no shadow ResourceDomain.
+3. Call `reserve_native`. Sequence allocation is global across host and native
+   requests and all targets. A second
    target, cap, expected revision, grant epoch, or payload digest for the same
    D is `Conflict`; a duplicate pending D is `Busy`; a duplicate terminal D
-   cannot allocate a new effect. `reserve_or_get` is the copyout-retry helper.
-4. Use `execute_reserved(token, publisher, callback)` for external A05/A06
-   mutation under the reserved result lock. The callback checks real grant,
+   cannot allocate a new effect. `reserve_native_or_get` is the native
+   copyout-retry helper (`reserve_or_get` serves host requests).
+4. Use `execute_native_reserved::<ActualOwner, _>(token, publisher, callback)`
+   for native A05/A06 mutation under the reserved entry's independent
+   execution gate. Its `NativeExecution` context borrows the actual pinned
+   owner and saved full ancestor snapshot; do not re-resolve a handle or use
+   a fresh out-of-band grant to select the execution context. The callback checks real grant,
    lease/epoch, target, CAS and settled usage under its resource lock, then
    returns a `PublishOutcome`. `commit` exercises this same seam with the
-   host ResourceDomain. `publish` is a reconciliation entry after an effect
+   host ResourceDomain only; `commit` and the generic `execute_reserved`
+   reject native tokens without executing or
+   terminalizing them. `publish` is a reconciliation entry after an effect
    has already been safely fenced/established by the trusted adapter.
    Tokens are instance-bound, so colliding identity bytes do not grant rights.
 5. Create an exact `DeliveryView` for history observation. Query is read-only;
@@ -66,9 +77,38 @@ actual HOS2 byte layout and payload.
 The kernel must add real process-start/exec-epoch/session credentials around
 this API. Possession of a host-model token is not a kernel credential.
 
+The native constructors are trusted resolver value seams, not authentication.
+They retain the actual owner allocation and stable identity without storing
+another budget, revision, runtime counter, scheduler or persistent ledger.
+Rewrapping the same owner `Arc` dedupes; equal IDs on different allocations
+conflict. Host and native requests also conflict under one D even if their
+public binding bytes match. Complete ancestor snapshots participate in replay
+comparison. The typed execution entry downcasts only the reservation-pinned
+owner to the adapter's concrete Rust type and passes a borrowed context. A
+wrong type or host/native entry mismatch returns `InvalidRequest` before the
+Executing sentinel; the pending D remains available for a correct executor.
+The library never calls owner policy itself. The adapter must check the
+snapshot against that owner's **current** grant/ancestor/lease state under
+its own mutation lock; possession of the snapshot is not authorization.
+
 ## A06: CPU scheduler and ResourceDomain
 
-`ResourceDomain` exposes stable `ResourceDomainId` and `StableObjectId`, a
+For native use, keep A06's existing owner and call `execute_native_reserved` with a
+callback that settles runtime and checks current grant/ancestor epochs,
+lease, revision CAS and parent constraints under that owner's actual mutation
+lock. Return `PublishOutcome::Success` carrying the exact receipt fields,
+or `PublishOutcome::Failure` with the immutable refusal. Revoke and this
+commit must share that lock. The synthetic native-owner tests demonstrate
+this API shape, not actual A06 integration.
+
+The A06 candidate branch's controller type is private to its scheduler module. A06 must
+provide an owner-module adapter that invokes the typed entry with its actual
+`SubController<CpuController>` type, then takes the existing mutation lock
+inside the callback (execution gate before resource lock). A05
+passes token/publisher to that adapter; it must not pin a Process or a new
+wrapper merely to expose a public type instead of the actual resource owner.
+
+The host `ResourceDomain` exposes stable `ResourceDomainId` and `StableObjectId`, a
 revision-CAS budget update, `try_usage`, `revoke`, explicit `user_paused` state,
 and the host-model `charge_cpu` primitive. `install_budget_for_host_model` is
 the seam to replace with the scheduler's mutation path.
@@ -116,12 +156,28 @@ use a new boot/CapSpace identity. This is not a persistence implementation.
 ## Lock and result invariants
 
 The namespace mutex reserves a slot and its canonical request before any
-resource mutation. Commit then holds only the result slot while entering the
-resource mutation gate; it never acquires the namespace table lock in the
-reverse direction. Query/retire never enter the resource gate. Result payload
-is written under the slot mutex before its state becomes `Terminal`, so a
-reader observes either a complete `Reserved` result or a complete terminal
-result.
+resource mutation. Each slot has a separate execution gate and short-lived
+state mutex. After taking the execution gate, commit/publish briefly validate
+namespace liveness, release the table mutex and use the state mutex to inspect
+or mark admission. The external callback holds only the execution gate while
+entering its resource mutation lock. No namespace-table operation waits for
+that execution gate. Query/retire read only the short state mutex, never the
+resource mutation gate; an Executing slot is observable as Reserved. Complete
+terminal payload and state are published together, and never regress.
+
+Namespace loss serializes on an independent loss gate: set closing under the
+table mutex, release it, wait/fence each slot execution gate, then mark history
+lost and clear the table. Closing rejects reserve/execute/publish/retire with
+HistoryLost, but existing views can still query pending or terminal results.
+An old pending entry may become HistoryLost as it is fenced; complete history
+loss is published only after admitted callbacks have finished.
+
+Retirement advances its frontier and removes the terminal prefix atomically
+under the table mutex, then releases that mutex before dropping reclaimed
+requests/owner pins. Loss similarly publishes loss and empties the table,
+then releases both the table and loss gates before destroying owners. An
+owner destructor may therefore reenter namespace observation or loss; it is
+never invoked by these reclamation paths while their internal locks are held.
 
 The Rust tests under `tests/control` are host-model evidence only. They do not
 claim native kernel capability, real copyout fault handling, power-loss
@@ -140,9 +196,10 @@ owner's receipt represents a durable contiguous confirmation. The
 `OwnerReceipt` digest is opaque model evidence, **not a cryptographic
 signature or a capability**, and a host-model caller can manufacture one.
 
-`lose_history` fences reserved result slots under the same per-slot lock
-that serializes `commit` and `publish`. An already linearized commit
-completes before loss obtains that lock; a token not yet admitted returns
+`lose_history` fences reserved result slots under the per-slot execution gate
+that serializes `commit` and `publish`, without holding the namespace table.
+An already admitted callback completes before loss obtains that gate;
+a token not yet admitted returns
 `HistoryLost` with no new mutation. Any effect handed off to an *external*
 kernel executor before `publish` still requires A05's own fencing and
 effect-journal discipline: the host model cannot cancel arbitrary external
@@ -453,12 +510,13 @@ reused with a new generation) but resolving to the same stable ResourceDomain
 could incorrectly dedupe under one D. A03 now binds **both** fields into
 the global reservation fingerprint.
 
-A05 **must** construct genuine InstallBudget requests using
-`DeliveryRequest::from_wire(sequence, grant, expected_revision, cap_ns,
+A05 **must** construct genuine native InstallBudget requests using
+`NativeDeliveryRequest::from_wire(sequence, grant, expected_revision, cap_ns,
 target_slot, target_generation)`, with nonzero slot and generation obtained
 from a validated original HOS2 request header after stable object/capability
-resolution. `with_wire_target(slot, generation)` performs the same structural
-validation on an existing request. The legacy four-argument `new` leaves
+resolution. Host fixtures use `DeliveryRequest::from_wire` or its
+`with_wire_target(slot, generation)` structural validator. The legacy
+four-argument host `new` leaves
 both fields zero **only for host-only model fixtures**; no real kernel
 adapter may treat that sentinel as a valid HOS2 management handle.
 
@@ -495,10 +553,10 @@ or a real Asterinas runqueue/IRQ memory-order proof.
 
 The host-only `validate_invariants_for_host_model()` now also checks
 the exact HOS2 wire handle pair (both zero only in explicit host fixtures,
-otherwise both nonzero) and that the canonical bound ResourceDomainId and
-stable-object ID match the actual retained target instance. It obtains
-locks in namespace -> result slot -> resource state order, never entering
-the ResourceDomain mutation gate from the audit path.
+otherwise both nonzero) and that the canonical binding matches the complete
+retained host/native request. It obtains locks in namespace -> result slot
+order and never enters an external owner's policy or resource mutation gate.
+Native identity assignment remains the trusted resolver's responsibility.
 
 Two internal Rust unit tests deliberately corrupt otherwise private
 namespace fixtures to prove that the auditor **rejects**, rather than
@@ -521,7 +579,7 @@ linearization order. The infallible `usage` remains explicitly a host
 three-level stale observations and 64 two-thread race schedules without
 claiming loom or real SMP/IRQ verification.
 
-## One-shot external mutation handoff
+## One-shot mutation handoff
 
 ```text
 fn execute_reserved<F>(
@@ -531,14 +589,37 @@ fn execute_reserved<F>(
     execute: F,
 ) -> Result<DeliveryObservation, DeliveryError>
 where F: FnOnce(RequestBinding) -> PublishOutcome;
+
+fn execute_native_reserved<T, F>(
+    &self,
+    token: &ReserveToken,
+    publisher: PublisherId,
+    execute: F,
+) -> Result<DeliveryObservation, DeliveryError>
+where
+    T: core::any::Any + Send + Sync,
+    F: FnOnce(NativeExecution<'_, T>) -> PublishOutcome;
 ```
 
-A05/A06 can supply one callback which checks actual kernel authority and
+The generic entry accepts host requests only. The typed native entry supplies
+`context.owner() -> &T`, `context.binding() -> RequestBinding`,
+`context.ancestor_epochs() -> &[u64]` and `context.id() -> DeliveryId`
+from the exact immutable stored request. Neither asks a queue worker to keep
+another owner handle or reconstruct authorization context from public IDs.
+Public generic native execution is rejected before callback admission, closing
+the accidental wrong-instance/fresh-ancestor execution route. Trusted code can
+still misuse a callback or manufacture a reconciliation result; this seam
+does not authenticate compromised privileged code.
+
+A05/A06 supply one callback which checks actual kernel authority and
 performs the resource CAS under the real resource mutation lock. This callback
-runs under the already reserved result-slot lock, without the namespace table
-lock. It must not reenter this namespace, copy user memory, allocate or acquire
-the namespace table lock. The callback's locks must follow slot -> resource;
-no resource path may reverse into the slot/table. The portable-spin backend
+runs under the reserved entry's execution gate, with neither the namespace
+table mutex nor result-state mutex held. It must not reenter this namespace,
+copy user memory, allocate or acquire the namespace table lock. The callback's
+locks must follow execution gate -> resource; no resource path may reverse
+into that execution gate or namespace table. Observation uses the independent
+short state mutex, so a delayed callback does not block unrelated delivery
+operations or its own Reserved observation. The portable-spin backend
 still requires a validated interrupt/preemption adapter before kernel use.
 
 The core marks the slot internally Executing **before** the callback. A
@@ -550,9 +631,10 @@ refusal for an effect whose result is unknown. Only the trusted adapter, after
 fencing the original executor and establishing the outcome, may reconcile
 with `publish`. Host mutex poison recovery cannot cause a second effect.
 
-Namespace loss uses the same slot lock: it fences before a callback starts or
-waits for that callback and its complete result. It cannot pass through the
-middle of a synchronous effect/publication. This is an in-memory guarantee,
+Namespace loss uses the same execution gate: it fences before a callback
+starts or waits for that callback and its complete result, without holding
+the namespace table during the wait. It cannot complete in the middle of a
+synchronous effect/publication. This is an in-memory guarantee,
 not atomicity with Hepta fsync or physical devices. Actual process death,
 crash/reboot and asynchronous external executor fencing remain A05/A07 work.
 
@@ -573,6 +655,86 @@ shared clock rule is not an SMP metering algorithm; A06 must settle real CPU
 slices and observations under its scheduler's lock discipline.
 
 `tests/control/run-validation.sh OUTPUT_DIR` repeats both host backend test
-suites, formatting, strict Clippy and the x86_64-unknown-none library check.
+suites, formatting, strict Clippy, the x86_64-unknown-none library check and
+the separate bounded Loom harness below.
 `kernel_handoff` tests use a synthetic external callback; they do not call
 an actual kernel driver or the persistent Hepta owner.
+
+
+## Resource lifetime and bounded hierarchy
+
+An active child cap constraint follows the **last strong reference** to its
+ResourceDomainInner. Dropping an ordinary cloned ResourceDomain does not
+remove it: grants, descendants and retained result slots can still preserve
+the domain. A token alone does not retain a retired result or domain. Once
+the final reference disappears, Drop
+removes only the corresponding entry from the immediate parent's active-child
+cap map. It briefly reads its ID under self state, releases that guard, then
+takes the parent's short map lock, never the family mutation gate.
+Identity tombstones, parent CPU usage and family clock are never refunded or
+removed. Thus a dead child cannot permanently prevent a lower parent cap,
+while a retained child still constrains the parent.
+
+MAX_RESOURCE_DEPTH is 64 including the root. Creation at the limit returns
+ResourceError::Exhausted before consuming IDs, changing child metadata or
+advancing clocks. This bounds ancestry walks and recursive parent-handle drop.
+A host 64KiB-stack regression exercises destruction at the permitted depth;
+it is not a native-kernel stack, IRQ or deferred-reclamation proof. A05/A06
+must verify their actual object ownership, residual charges and kernel stack.
+
+## Retired token ownership
+
+The bounded namespace window owns each complete request, grant and result
+slot. ReserveToken caches immutable delivery metadata and holds only a weak
+namespace reference; it holds neither Arc nor Weak to a result slot. This
+also avoids retaining the slot's backing allocation through obsolete Weak
+handles. Each operation resolves the token against the exact namespace
+instance/generation, non-reusing sequence and complete request binding, pins
+the live slot transiently, then rechecks it after taking the execution gate.
+
+Retirement, explicit history loss or destruction of the last namespace owner
+releases namespace-held result slots and owner pins even if old tokens remain
+in caller memory. An already admitted operation's transient pin or an external
+owner Arc can still preserve the object until its own lifetime ends.
+Those tokens cannot execute or publish again; their cached ID/binding remain
+readable. A DeliveryView or original-owner authority still intentionally
+retains namespace history. Callers must bound their own collections of token
+metadata; the window quota is not a quota on arbitrary caller allocations.
+
+## Weak native-owner back-references
+
+An owner retained by a native result slot must use
+`ControlCore::downgrade() -> WeakControlCore` for a namespace back-reference,
+then `WeakControlCore::upgrade() -> Option<ControlCore>` for observation.
+The weak handle retains no history or retirement authority. Upgrade returns
+None after the last strong namespace/history owner disappears, even if old
+tokens survive. An active DeliveryView or OriginalOwnerAuthority deliberately
+keeps history alive; explicit history loss still fences every old token.
+
+This avoids the concrete namespace -> slot -> native owner -> namespace
+strong-reference cycle. It does not automatically break arbitrary caller-created
+Arc cycles; existing strong back-links must be migrated by their owner. Owner
+Drop can upgrade a weak link during explicit retirement/loss after internal
+locks are released. During final namespace destruction it cannot resurrect
+that namespace. Tests cover both cases with bounded, joined helper threads.
+
+## Bounded transition models
+
+`python3 tests/control/loom/run-models.py OUTPUT_DIR` uses pinned Loom 0.7.2
+and its own Cargo.lock under tests/control. It copies actual lib.rs/native.rs
+bytes unchanged into a temporary crate, replaces only sync.rs with the tracked
+Loom Mutex adapter, and checks before/after hashes. No second state machine,
+production feature or production dependency is introduced.
+
+Six fixtures cover same-D reservation/effect, revoke/commit, retire/query,
+publish/observe, loss/callback and typed native owner/context execution.
+Each explores up to two workers plus main, with preemption_bound=3 and
+max_branches=10000. No time/permutation cutoff is set; exceeding a branch
+limit or any assertion/deadlock fails the command. The runner requires all
+six schedule counts, fmt and strict Clippy to pass.
+
+This verifies bounded lock-protected transitions with Loom threads/atomics;
+std/alloc Arc/Weak reference-count atomics and finalization are not instrumented.
+Allocation failure, actual IRQ/preemption/SMP locks, scheduler/usercopy,
+Hepta durability and executions beyond these fixtures/bounds remain unverified.
+Default std and portable-spin thread tests still run separately.

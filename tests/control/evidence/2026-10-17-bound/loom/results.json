@@ -1,0 +1,100 @@
+{
+  "kind": "bounded host model; actual state transitions with Loom Mutex shim",
+  "loom_version": "0.7.2",
+  "source_hashes": {
+    "libs/os-control/src/lib.rs": "902fa4b6f2afc21c6d0679e126dfdf7d4541b66e22313517ba11823ecccb3b5e",
+    "libs/os-control/src/native.rs": "0bea6856e034d4b9962b2c171b8229cbb72436ffeaa2e353f827251ee8e63713",
+    "libs/os-control/src/sync.rs": "e2159cc41ef3a1073b1899615f70ea34cc9915052dd41811180bd3e3497784cd",
+    "tests/control/loom/Cargo.toml": "0f01c76f8c65cf4204e9283bfe02c4d611ca5d63bd6ef836db20b74d827524ff",
+    "tests/control/loom/Cargo.lock": "c4d85ce1660af1770e34b0e9bee92972314a1e8b6dec09394778affe284f75d9",
+    "tests/control/loom/models.rs": "ea1173acc43107c5f801f99c381b61593323843a9c9232d479f230f3184a68e1",
+    "tests/control/loom/sync.rs": "bc2162d347703217ef254478fd3c11778352cdb727198879b043877415d15966",
+    "tests/control/loom/run-models.py": "e1d97329f050ac98db01342dcf1ce616e7ad99d15019dff526ceb356dcdf2511"
+  },
+  "source_unchanged": true,
+  "models": {
+    "history_loss_and_callback_fence": 48,
+    "native_typed_owner_same_token_effect_once": 52,
+    "publish_and_observe_never_tear": 92,
+    "retire_and_query_linearize": 19,
+    "revoke_and_commit_linearize": 22,
+    "same_d_reservation_and_effect_once": 716
+  },
+  "bounds": {
+    "max_threads": 3,
+    "preemption_bound": 3,
+    "max_branches": 10000,
+    "max_permutations": null,
+    "max_duration": null
+  },
+  "excluded": [
+    "std/alloc Arc and Weak reference-count atomics and finalization ordering",
+    "allocator internals and allocation failure",
+    "real kernel IRQ, preemption, SMP, lock adapters and scheduler mutation",
+    "real credentials and Hepta durable acknowledgement/crash recovery",
+    "more than two concurrent workers or more than three preemptions",
+    "arbitrary request values and long sequence histories beyond each fixture"
+  ],
+  "commands": [
+    {
+      "argv": [
+        "cargo",
+        "--version"
+      ],
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "rustc",
+        "--version"
+      ],
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "/tmp/os-control-loom-t4mv5cnz/Cargo.toml",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "/tmp/os-control-loom-t4mv5cnz/Cargo.toml",
+        "--test",
+        "models",
+        "--",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--manifest-path",
+        "/tmp/os-control-loom-t4mv5cnz/Cargo.toml",
+        "--test",
+        "models",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "versions": {
+    "cargo": "cargo 1.99.0-nightly (3efb1f477 2026-07-17)",
+    "rustc": "rustc 1.99.0-nightly (87e5904f5 2026-07-20)"
+  },
+  "exit_code": 0
+}
