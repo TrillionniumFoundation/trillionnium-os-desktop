@@ -230,7 +230,10 @@ fn all_nonterminal_states_keep_only_the_history_sequence() {
 fn exhausted_history_sequence_is_only_unknown_or_lost() {
     for (name, state) in [
         ("delivery_not_seen_sequence_max", DeliveryState::NotSeen),
-        ("delivery_history_lost_sequence_max", DeliveryState::HistoryLost),
+        (
+            "delivery_history_lost_sequence_max",
+            DeliveryState::HistoryLost,
+        ),
     ] {
         let value = delivery(name);
         assert_eq!(value.state, state, "{name}");
@@ -245,7 +248,11 @@ fn impossible_terminal_history_statuses_are_rejected() {
     for status in [Status::OutOfOrder, Status::Retired] {
         let mut bytes = fixed("delivery_terminal_error_1");
         bytes[66..68].copy_from_slice(&status.as_u16().to_le_bytes());
-        assert_eq!(decode_response(&bytes), Err(Error::InvalidSequence), "{status:?}");
+        assert_eq!(
+            decode_response(&bytes),
+            Err(Error::InvalidSequence),
+            "{status:?}"
+        );
 
         let response = Response {
             opcode: Opcode::QueryDelivery,
@@ -265,7 +272,10 @@ fn impossible_terminal_history_statuses_are_rejected() {
             }),
         };
         let mut output = vec![0xa5; 128];
-        assert_eq!(encode_response(&response, &mut output), Err(Error::InvalidSequence));
+        assert_eq!(
+            encode_response(&response, &mut output),
+            Err(Error::InvalidSequence)
+        );
     }
 }
 
