@@ -40,7 +40,12 @@ Rustfmt pass, `support/ui/package-host-binaries.sh` adds
 `trill-session`, `trill-shell`, `trill-app-window`, `trill-ctl`, per-binary
 SHA256 sums and `PROVENANCE.txt` with exact source HEAD and toolchain.
 The copies are debug builds stripped of debug symbols to limit artifact size;
-they depend on compatible Linux system libraries. The artifact is NOT an
+they depend on compatible Linux system libraries. An independent committed
+`tests/ui/test-package-host-binaries.sh` exercise runs first on the CI host:
+it compiles four disposable C ELF fixtures (NOT A10 Rust binaries), verifies
+the provenance and both SHA256 layers, and proves failure cannot replace an
+existing archive when one source executable is missing. Real Rust executables
+are only packaged after the three actual Cargo suites and Rustfmt pass. The artifact is NOT an
 Asterinas boot image, compositor, IME, native GPU gate or proof Weston passed.
 Never publish it as a release simply because the binary build succeeded.
 

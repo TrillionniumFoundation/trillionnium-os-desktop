@@ -46,10 +46,13 @@ capture_fmt_on_exit() {
 }
 trap capture_fmt_on_exit EXIT
 
-bash -n tests/ui/smoke-wayland.sh tests/ui/headless-weston.sh tests/ui/compositor-restart.sh support/ui/package-host-binaries.sh
+bash -n tests/ui/smoke-wayland.sh tests/ui/headless-weston.sh tests/ui/compositor-restart.sh support/ui/package-host-binaries.sh tests/ui/test-package-host-binaries.sh
 python3 tests/ui/test-session-lock.py
 bash tests/ui/test-smoke-cleanup.sh
 bash tests/ui/test-zombie-liveness.sh
+# This real Linux ELF fixture verifies the artifact packager's fail-closed
+# behavior independently of Rust compilation. It does not count as GUI smoke.
+bash tests/ui/test-package-host-binaries.sh
 # Fetch every package recorded in the lockfile, including target-specific
 # entries that are not compiled by the Linux host build. The CI lock gate
 # intentionally runs `cargo metadata --offline` after the real tests; without

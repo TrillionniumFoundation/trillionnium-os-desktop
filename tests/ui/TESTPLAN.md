@@ -27,6 +27,10 @@ after all three Cargo tests and strict Rustfmt pass. The archive and its
 SHA256 contain four built Rust programs and their build/source provenance,
 not a Weston, Chinese IME, GPU or new-kernel acceptance certificate.
 Unit coverage:
+- A10-owned `tests/ui/test-package-host-binaries.sh`: independent C ELF fixture
+  actually executes Linux packager; verifies 4 files, source provenance,
+  inner/outer SHA256, preservation of prior archive on missing executable,
+  and rejection of relative destinations (NOT Rust or Wayland success)
 - strict HOS2 read-only UI adapter: opcode/payload pairing, request-id
   correlation, response opcode matching, and hidden mutating payload refusal
 - shared A02 `Request::encode` preflight before any transport exchange and
