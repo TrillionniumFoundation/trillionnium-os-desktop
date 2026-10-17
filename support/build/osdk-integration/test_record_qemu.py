@@ -201,7 +201,8 @@ class ProfileTests(unittest.TestCase):
                 with self.assertRaises(OSError):
                     os.fstat(inherited_fd)
 
-    def mock_main(self, timeout=False, raw_exit=0, local_tcp=False, occupied=False, immediate=False):
+    def mock_main(self, timeout=False, raw_exit=0, local_tcp=False, occupied=False, immediate=False,
+                  ephemeral=False, ready_marker=True, paused=True):
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary) / "case"
             kernel, firmware = Path(temporary) / "kernel", Path(temporary) / "bios"
@@ -223,6 +224,7 @@ class ProfileTests(unittest.TestCase):
             process.wait.return_value = raw_exit
             listener = MagicMock()
             listener.fileno.return_value = 71
+            listener.getsockname.return_value = ("127.0.0.1", 54321)
             if occupied:
                 listener.bind.side_effect = OSError(98, "Address already in use")
             context = MagicMock()
@@ -230,12 +232,14 @@ class ProfileTests(unittest.TestCase):
             argv = ["record-qemu.py", "-kernel", str(kernel), "-chardev",
                     "stdio,id=mux,logfile=" + str(incoming_log), "--no-shutdown"]
             if local_tcp:
-                argv += ["-gdb", "tcp:127.0.0.1:23456", "-S"]
+                argv += ["-gdb", "tcp:127.0.0.1:" + ("0" if ephemeral else "23456")]
+                if paused:
+                    argv.append("-S")
             ready = output / "gdb-ready.json"
             popen = MagicMock(return_value=context)
             with patch.dict(os.environ, {"A01_OSDK_CASE_OUTPUT": str(output),
                                          "A01_OSDK_GUEST_TIMEOUT": "2",
-                                         "A01_OSDK_GDB_READY": str(ready),
+                                         "A01_OSDK_GDB_READY": str(ready) if ready_marker else "",
                                          "A01_OSDK_COVERAGE_GDB": "0",
                                          "A01_OSDK_LOCAL_TCP": "1" if local_tcp else "0",
                                          "A01_OSDK_PROFILE": shim.LOCAL_TCP_PROFILE if local_tcp
@@ -258,6 +262,11 @@ class ProfileTests(unittest.TestCase):
                 listener.close.assert_called_once()
                 self.assertIn("Address already in use", record["error"])
                 return status, record, process
+            if ephemeral and (not ready_marker or not paused):
+                popen.assert_not_called()
+                self.assertFalse(ready.exists())
+                self.assertIsNone(record["raw_exit_code"])
+                return status, record, process
             self.assertEqual((guest / "serial.log").read_text(), incoming_log.read_text())
             self.assertEqual(record["serial_sources"], [str(incoming_log)])
             self.assertIn("--no-shutdown", record["argv"])
@@ -267,7 +276,7 @@ class ProfileTests(unittest.TestCase):
             self.assertEqual(stderr_sink.getvalue(), stderr)
             self.assertEqual(set(record["stream_logs"]), {"stdout", "stderr"})
             if local_tcp:
-                listener.bind.assert_called_once_with(("127.0.0.1", 23456))
+                listener.bind.assert_called_once_with(("127.0.0.1", 0 if ephemeral else 23456))
                 listener.listen.assert_called_once_with(1)
                 listener.close.assert_called_once()
                 self.assertEqual(popen.call_args.kwargs["pass_fds"], (71,))
@@ -282,6 +291,12 @@ class ProfileTests(unittest.TestCase):
                     marker = json.loads(ready.read_text())
                     self.assertEqual(marker["qemu_pid"], 12345)
                     self.assertEqual(marker["profile_id"], shim.LOCAL_TCP_PROFILE)
+                    if ephemeral:
+                        self.assertEqual(marker["endpoint"], {"kind": "gdb", "role": "server",
+                            "host": "127.0.0.1", "port": 54321,
+                            "requested_value": "tcp:127.0.0.1:0"})
+                        self.assertEqual(marker["listener_handoff"], "prebound-listener-inherited-fd")
+                        self.assertFalse(marker["bind_close_rebind_gap"])
             else:
                 self.assertFalse(ready.exists())
                 listener.bind.assert_not_called()
@@ -333,6 +348,43 @@ class ProfileTests(unittest.TestCase):
         self.assertEqual(status, 33)
         self.assertTrue(record["gdb_readiness"]["ready"])
         self.assertEqual(record["control_transport"], "loopback-tcp")
+
+    def test_ephemeral_gdb_listener_lease_blocks_competitors_until_close(self):
+        arguments, owned = shim.reserve_gdb_listener(
+            ["-gdb", "tcp:127.0.0.1:0", "-S"], {"host": "127.0.0.1", "port": 0})
+        address = owned.getsockname()
+        try:
+            self.assertEqual(address[0], "127.0.0.1")
+            self.assertGreater(address[1], 0)
+            self.assertIn(f"socket,id=a01-gdb0,fd={owned.fileno()},server=on,wait=off", arguments)
+            with socket.socket() as competitor:
+                with self.assertRaises(OSError) as collision:
+                    competitor.bind(address)
+                self.assertEqual(collision.exception.errno, 98)
+        finally:
+            owned.close()
+        with socket.socket() as after_close:
+            after_close.bind(address)
+
+    def test_basic_ephemeral_gdb_publishes_actual_held_nonzero_endpoint(self):
+        status, record, _process = self.mock_main(raw_exit=33, local_tcp=True, ephemeral=True)
+        self.assertEqual(status, 33)
+        self.assertEqual(record["gdb_listener"]["requested_port"], 0)
+        self.assertEqual(record["gdb_listener"]["port"], 54321)
+        self.assertTrue(record["gdb_listener"]["held_until_qemu_spawn"])
+        self.assertFalse(record["gdb_listener"]["bind_close_rebind_gap"])
+        # mock_main validates the exclusive marker before its temporary cleanup.
+        self.assertTrue(record["gdb_readiness"]["ready"])
+
+    def test_basic_ephemeral_gdb_requires_marker_before_any_qemu_spawn(self):
+        status, record, _process = self.mock_main(local_tcp=True, ephemeral=True, ready_marker=False)
+        self.assertEqual(status, 125)
+        self.assertIn("127.0.0.1 endpoint", record["error"])
+
+    def test_basic_ephemeral_gdb_requires_pause_before_any_qemu_spawn(self):
+        status, record, _process = self.mock_main(local_tcp=True, ephemeral=True, paused=False)
+        self.assertEqual(status, 125)
+        self.assertIn("paused guest", record["error"])
 
     def test_occupied_tcp_gdb_does_not_start_qemu_or_signal_ready(self):
         status, record, _process = self.mock_main(local_tcp=True, occupied=True)
@@ -512,6 +564,7 @@ class CaptureTests(unittest.TestCase):
             context.__enter__.return_value = process
             listener = MagicMock()
             listener.fileno.return_value = 71
+            listener.getsockname.return_value = ("127.0.0.1", 54321)
             listener.getsockname.return_value = ("127.0.0.1", 34567)
             arguments = ["record-qemu.py", "-kernel", str(kernel), "-gdb", "tcp:127.0.0.1:0",
                          "-S", "-chardev", "stdio,id=mux,logfile=" + str(serial)]

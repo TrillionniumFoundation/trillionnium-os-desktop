@@ -48,12 +48,30 @@ class ProfileTests(unittest.TestCase):
     def test_tcp_debug_patch_retains_guest_and_debugger_assertions(self):
         original = (HERE.parents[2] / "kernel/asterinas/osdk/tests/commands/run.rs").read_text()
         adapted = runner.adapt_basic_debug_to_local_tcp(original)
-        self.assertIn('TcpListener::bind("127.0.0.1:0")', adapted)
+        basic = adapted[adapted.index('    fn basic_debug() {'):adapted.index('    fn owned_gdb_endpoint()')]
+        self.assertIn('let gdb_address = "127.0.0.1:0".to_string();', basic)
+        self.assertNotIn('TcpListener::bind', basic)
+        self.assertNotIn('drop(listener)', basic)
+        self.assertIn('wait_for(&debugger_cancelled, owned_gdb_endpoint)', basic)
+        self.assertIn('gdb_continue_via(&address, None)', basic)
+        vsc = adapted[adapted.index('    mod vsc {'):]
+        self.assertIn('let addr = "127.0.0.1:0".to_string();', vsc)
+        self.assertNotIn('TcpListener::bind', vsc)
+        self.assertNotIn('drop(listener)', vsc)
+        self.assertIn('let symbols = wait_for(&debugger_cancelled, || launch_symbol_file(&dir))?;', vsc)
+        self.assertIn('let address = wait_for(&debugger_cancelled, owned_gdb_endpoint)?;', vsc)
+        self.assertIn('gdb_continue_via(&address, Some(&symbols))', vsc)
         self.assertIn('std::env::var("A01_OSDK_GDB_READY")', adapted)
         for line in original.splitlines():
             if "assert!" in line or "gdb.join()" in line or 'expect("GDB session failed")' in line:
                 self.assertIn(line, adapted)
         self.assertNotEqual(original, adapted)
+
+    def test_changed_vsc_address_setup_is_rejected(self):
+        original = (HERE.parents[2] / "kernel/asterinas/osdk/tests/commands/run.rs").read_text()
+        with self.assertRaises(SystemExit):
+            runner.adapt_basic_debug_to_local_tcp(original.replace(
+                'let addr = listener.local_addr().unwrap().to_string();', 'let addr = different_setup();'))
 
     def test_changed_debug_setup_is_rejected(self):
         original = (HERE.parents[2] / "kernel/asterinas/osdk/tests/commands/run.rs").read_text()

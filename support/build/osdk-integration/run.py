@@ -170,6 +170,57 @@ def create_case_target(cache, case):
         os.close(cache_fd)
 
 
+GDB_READY_READER = '''    fn owned_gdb_endpoint() -> Result<Option<String>, String> {
+        let ready = std::env::var("A01_OSDK_GDB_READY")
+            .map_err(|error| error.to_string())?;
+        let case = std::env::var("A01_OSDK_CASE_OUTPUT")
+            .map_err(|error| error.to_string())?;
+        if !Path::new(&case).is_absolute()
+            || Path::new(&ready) != Path::new(&case).join("gdb-ready.json")
+        {
+            return Err("GDB readiness marker is not the owned case path".to_owned());
+        }
+        let metadata = match std::fs::symlink_metadata(&ready) {
+            Ok(metadata) => metadata,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(None),
+            Err(error) => return Err(error.to_string()),
+        };
+        if !metadata.is_file() {
+            return Err("GDB readiness marker must be a regular file".to_owned());
+        }
+        let contents = std::fs::read_to_string(&ready).map_err(|error| error.to_string())?;
+        let marker: serde_json::Value = match serde_json::from_str(&contents) {
+            Ok(marker) => marker,
+            Err(error) if error.is_eof() => return Ok(None),
+            Err(error) => return Err(error.to_string()),
+        };
+        let profile = std::env::var("A01_OSDK_PROFILE").map_err(|error| error.to_string())?;
+        if !matches!(profile.as_str(), "osdk-native-local-tcp-v1" | "osdk-native-local-tcp-gdb-capture-v2")
+            || marker["schema"].as_u64() != Some(1)
+            || marker["profile_id"].as_str() != Some(profile.as_str())
+            || marker["listener_handoff"].as_str() != Some("prebound-listener-inherited-fd")
+            || marker["bind_close_rebind_gap"].as_bool() != Some(false)
+            || marker["startup_survival_seconds"].as_f64() != Some(0.05)
+            || marker["qemu_pid"].as_u64().filter(|pid| *pid > 0).is_none()
+        {
+            return Err("GDB readiness marker identity or listener handoff is invalid".to_owned());
+        }
+        let endpoint = &marker["endpoint"];
+        let port = endpoint["port"].as_u64().filter(|port| (1..=65535).contains(port));
+        if endpoint["kind"].as_str() != Some("gdb")
+            || endpoint["role"].as_str() != Some("server")
+            || endpoint["host"].as_str() != Some("127.0.0.1")
+            || endpoint["requested_value"].as_str() != Some("tcp:127.0.0.1:0")
+            || port.is_none()
+        {
+            return Err("GDB readiness endpoint must be the owned nonzero loopback listener".to_owned());
+        }
+        Ok(Some(format!("127.0.0.1:{}", port.unwrap())))
+    }
+
+'''
+
+
 def adapt_basic_debug_to_local_tcp(contents):
     """Change isolated debug transport/readiness while retaining assertions."""
     start = contents.index("    fn basic_debug() {")
@@ -179,30 +230,37 @@ def adapt_basic_debug_to_local_tcp(contents):
             let path = Path::new(&workspace.os_dir()).join("qemu-gdb-sock");
             path.to_string_lossy().to_string()
         };'''
-    tcp_address = '''        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
-        let gdb_address = listener.local_addr().unwrap().to_string();
-        drop(listener);'''
+    tcp_address = '''        let gdb_address = "127.0.0.1:0".to_string();'''
     unix_ready = 'Ok(Path::new(&sock).exists().then_some(()))'
-    tcp_ready = '''let ready = std::env::var("A01_OSDK_GDB_READY")
-                    .map_err(|error| error.to_string())?;
-                Ok(Path::new(&ready).is_file().then_some(()))'''
+    unix_worker = '''            wait_for(&debugger_cancelled, || {
+                Ok(Path::new(&sock).exists().then_some(()))
+            })?;
+            gdb_continue_via(&sock, None)'''
+    tcp_worker = '''            let address = wait_for(&debugger_cancelled, owned_gdb_endpoint)?;
+            gdb_continue_via(&address, None)'''
     if original.count(unix_address) != 1 or original.count(unix_ready) != 1:
         raise SystemExit("basic-debug transport setup changed; refusing a broad test rewrite")
     adapted = original.replace(unix_address, tcp_address).replace("unix_socket", "gdb_address")
-    adapted = adapted.replace(unix_ready, tcp_ready)
-    contents = contents[:start] + adapted + contents[end:]
+    if adapted.count(unix_worker) != 1 or adapted.count("        let sock = gdb_address.clone();\n") != 1:
+        raise SystemExit("basic-debug readiness worker changed; refusing a broad test rewrite")
+    adapted = adapted.replace(unix_worker, tcp_worker).replace("        let sock = gdb_address.clone();\n", "")
+    contents = contents[:start] + adapted + GDB_READY_READER + contents[end:]
     vsc_ready = '''                let symbols = wait_for(&debugger_cancelled, || launch_symbol_file(&dir))?;
                 gdb_continue_via(&addr, Some(&symbols))'''
     if contents.count(vsc_ready) != 1:
         raise SystemExit("VSCode debug readiness changed; refusing a broad test rewrite")
     vsc_owned_ready = '''                let symbols = wait_for(&debugger_cancelled, || launch_symbol_file(&dir))?;
-                wait_for(&debugger_cancelled, || {
-                    let ready = std::env::var("A01_OSDK_GDB_READY")
-                        .map_err(|error| error.to_string())?;
-                    Ok(Path::new(&ready).is_file().then_some(()))
-                })?;
-                gdb_continue_via(&addr, Some(&symbols))'''
-    return contents.replace(vsc_ready, vsc_owned_ready)
+                let address = wait_for(&debugger_cancelled, owned_gdb_endpoint)?;
+                gdb_continue_via(&address, Some(&symbols))'''
+    vsc_address = '''            // Reserve an available TCP port instead of assuming a global fixed port.
+            let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+            let addr = listener.local_addr().unwrap().to_string();
+            drop(listener);'''
+    if contents.count(vsc_address) != 1:
+        raise SystemExit("VSCode debug transport setup changed; refusing a broad test rewrite")
+    return contents.replace(vsc_ready, vsc_owned_ready).replace(
+        vsc_address, '''            // Let the recorder own the ephemeral listener until the QEMU FD handoff.
+            let addr = "127.0.0.1:0".to_string();''')
 
 
 def prepare_harness(upstream, output, cargo, env, local_tcp=False, *, fixed_root):

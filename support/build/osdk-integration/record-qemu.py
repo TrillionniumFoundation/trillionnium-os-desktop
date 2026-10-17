@@ -579,7 +579,8 @@ def main():
             raise ValueError("GDB coverage capture requires the explicit v2 local TCP profile")
         record.update({"profile_id": profile_id,
                        "control_transport": "loopback-tcp" if local_tcp else "upstream-original"})
-        controls = local_tcp_controls(arguments, allow_gdb_zero=capture_enabled) if local_tcp else []
+        allow_gdb_zero = capture_enabled or bool(os.environ.get("A01_OSDK_GDB_READY"))
+        controls = local_tcp_controls(arguments, allow_gdb_zero=allow_gdb_zero) if local_tcp else []
         record["control_endpoints"] = controls
         monitor_socket, monitor_metadata = inherit_monitor_socket(arguments, controls)
         if monitor_metadata is not None:
@@ -593,6 +594,9 @@ def main():
                 ready_path = Path(os.environ["A01_OSDK_GDB_READY"]).resolve()
                 if not ready_path.is_relative_to(case) or ready_path.exists():
                     raise ValueError("GDB readiness marker must be a new path inside this case output")
+            if gdb_endpoint["port"] == 0 and not capture_enabled \
+                    and (ready_path is None or "-S" not in arguments):
+                raise ValueError("ephemeral debug requires a paused guest and its owned readiness marker")
             record["gdb_readiness"] = {"ready": False, "marker_requested": ready_path is not None,
                                        "startup_survival_seconds": 0.05}
             arguments, gdb_listener = reserve_gdb_listener(arguments, gdb_endpoint)
