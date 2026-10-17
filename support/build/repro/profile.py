@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 import stat
 
-SCHEMA = "a01-component-path-projection/1"
+SCHEMA = "a01-component-path-projection/2"
 FILES = ("profile.py", "run.py", "rustc-wrapper.py", "cargo-metadata-wrapper.py")
 HELPERS = ("profile.py", "rustc-wrapper.py", "cargo-metadata-wrapper.py")
 
@@ -51,6 +51,38 @@ def exclusive(path, data, mode=0o600):
 
 def code_hashes(directory):
     return {name: digest(regular(directory / name)[0]) for name in FILES}
+
+
+def compiler_argv(incoming, policy):
+    """Keep all OSDK/Cargo arguments; enforce the same map used by metadata.
+
+    OSDK's global RUSTFLAGS append does not reach its already-built run/test
+    action configs. The compiler wrapper is the final reliable insertion point.
+    """
+    if not incoming:
+        raise ValueError("missing compiler executable")
+    flag = f"--remap-path-prefix={policy['real_root']}={policy['virtual_root']}"
+    result = list(incoming)
+    delimiter = result.index("--") if "--" in result else len(result)
+    options = result[:delimiter]
+    for index, argument in enumerate(options):
+        value = None
+        if argument.startswith("--remap-path-prefix="):
+            value = argument.split("=", 1)[1]
+        elif argument == "--remap-path-prefix" and index + 1 < len(options):
+            value = options[index + 1]
+        if value is None:
+            continue
+        before, separator, after = value.partition("=")
+        real = policy["real_root"]
+        overlaps = before == real or before.startswith(real + "/") or real.startswith(before.rstrip("/") + "/")
+        if separator and overlaps and (before, after) != (real, policy["virtual_root"]):
+            raise ValueError("conflicting compiler path map overlaps this profile's source root")
+    if flag not in options:
+        # Preserve even an explicit end-of-options delimiter and source filename.
+        index = result.index("--") if "--" in result else len(result)
+        result.insert(index, flag)
+    return result
 
 
 def materialize_helpers(destination, source):

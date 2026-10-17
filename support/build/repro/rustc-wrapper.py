@@ -1,5 +1,5 @@
 #!/usr/bin/python3 -I
-"""Pass argv unchanged; select explicitly recorded embedded build metadata."""
+"""Preserve Cargo/OSDK flags and enforce the canonical compiler path map."""
 import fcntl
 import importlib.util
 import json
@@ -17,6 +17,8 @@ env = os.environ.copy()
 policy = json.loads(profile.regular(Path(env["A01_REPRO_POLICY"]))[0])
 incoming = {name: env.get(name) for name in
             ("CARGO", "CARGO_MANIFEST_DIR", "OSDK_BUILD_USERNAME", "OSDK_BUILD_HOSTNAME")}
+incoming_argv = sys.argv[1:]
+effective_argv = profile.compiler_argv(incoming_argv, policy)
 env["CARGO"] = str(HERE / "cargo-metadata-wrapper.py")
 env["OSDK_BUILD_USERNAME"] = policy["embedded_builder"]["username"]
 env["OSDK_BUILD_HOSTNAME"] = policy["embedded_builder"]["hostname"]
@@ -26,7 +28,8 @@ try:
     if not stat.S_ISREG(os.fstat(fd).st_mode) or os.fstat(fd).st_nlink != 1:
         raise ValueError("unsafe compiler log")
     fcntl.flock(fd, fcntl.LOCK_EX)
-    payload = {"pid": os.getpid(), "cwd": os.getcwd(), "argv": sys.argv[1:],
+    payload = {"pid": os.getpid(), "cwd": os.getcwd(), "argv": effective_argv,
+               "incoming_argv": incoming_argv, "effective_argv": effective_argv,
                "incoming": incoming, "effective": {name: env.get(name) for name in incoming}}
     raw = (json.dumps(payload, sort_keys=True) + "\n").encode()
     with os.fdopen(fd, "wb", closefd=False) as stream:
@@ -34,4 +37,4 @@ try:
         stream.flush()
 finally:
     os.close(fd)
-os.execvpe(sys.argv[1], sys.argv[1:], env)
+os.execvpe(effective_argv[0], effective_argv, env)

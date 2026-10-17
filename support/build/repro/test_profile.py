@@ -29,6 +29,34 @@ def fixture():
 
 
 class Projection(unittest.TestCase):
+    def test_compiler_map_keeps_all_required_osdk_arguments(self):
+        incoming = ["/tool/rustc", "--crate-name", "aster_core", "/actual/kernel/core/src/lib.rs",
+                    "--target", "x86_64-unknown-none", "--cfg", "ktest", "-C", "relocation-model=static",
+                    "-C", "no-redzone=y", "--check-cfg", "cfg(ktest)"]
+        effective = profile.compiler_argv(incoming, {"real_root": "/actual", "virtual_root": "/virtual"})
+        self.assertEqual(effective[:-1], incoming)
+        self.assertEqual(effective[-1], "--remap-path-prefix=/actual=/virtual")
+
+    def test_existing_identical_map_is_not_duplicated(self):
+        incoming = ["rustc", "--remap-path-prefix=/actual=/virtual", "--print", "sysroot"]
+        self.assertEqual(profile.compiler_argv(incoming, {"real_root": "/actual", "virtual_root": "/virtual"}), incoming)
+
+    def test_other_maps_and_end_of_options_are_preserved(self):
+        incoming = ["rustc", "--remap-path-prefix=/other=/kept", "--", "-source.rs"]
+        effective = profile.compiler_argv(incoming, {"real_root": "/actual", "virtual_root": "/virtual"})
+        self.assertEqual(effective, ["rustc", "--remap-path-prefix=/other=/kept",
+                                    "--remap-path-prefix=/actual=/virtual", "--", "-source.rs"])
+
+    def test_conflicting_nested_map_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, "conflicting"):
+            profile.compiler_argv(["rustc", "--remap-path-prefix=/actual/driver=/foreign"],
+                                  {"real_root": "/actual", "virtual_root": "/virtual"})
+
+    def test_conflicting_split_option_map_is_rejected(self):
+        with self.assertRaisesRegex(ValueError, "conflicting"):
+            profile.compiler_argv(["rustc", "--remap-path-prefix", "/actual=/foreign"],
+                                  {"real_root": "/actual", "virtual_root": "/virtual"})
+
     def test_root_fragment_and_every_graph_reference_are_projected(self):
         data = fixture()
         mapped, checks = profile.project_metadata(data, "/actual", "/virtual", b'[components]\na={name="driver"}\n')
@@ -81,6 +109,7 @@ class Custody(unittest.TestCase):
             root = Path(temp)
             policy = root / "policy.json"
             policy.write_text(json.dumps({"output": str(root), "real_cargo": "/bin/true",
+                              "real_root": "/actual", "virtual_root": "/virtual",
                               "embedded_builder": {"username": "fixture", "hostname": "fixture"}}))
             env = dict(os.environ, A01_REPRO_POLICY=str(policy))
             profile.materialize_helpers(root / "helpers", HERE)

@@ -23,7 +23,9 @@ The caller prepares the fixed nightly, Cargo cache and vDSO in the usual way.
 The profile rejects inherited Rust flags/wrappers and fixes timestamp, locale,
 target path, compiler remap and explicitly selected embedded builder metadata.
 
-`RUSTC_WRAPPER` forwards every compiler argument unchanged and supplies the
+`RUSTC_WRAPPER` retains every original compiler argument, appends the canonical
+`--remap-path-prefix` unless that identical flag is already present (before an
+explicit `--` delimiter), and supplies the
 metadata adapter through `CARGO` while compiling proc macros. Only the exact
 `metadata --format-version 1` command used by the pinned component macro is
 projected. Original and projected JSON, graph checks, component membership and
@@ -32,6 +34,18 @@ are mapped coherently, including a package located at the workspace root with a
 `#name@version` fragment. Simple absolute paths without whitespace, URI escapes,
 `=`, `#` or `@` are required. A virtual prefix containing `src/` or `tests/` is
 rejected because the pinned runtime splits at the first such substring.
+
+The compiler map is enforced in the wrapper, rather than relying on inherited
+`RUSTFLAGS`. The pinned OSDK CLI appends environment flags to global `config.build`
+after action configs were constructed, while kernel building reads
+`config.run.build`. A real first kernel attempt compiled successfully but booted
+into `NotIncludeAllComponent` because metadata keys were projected and the
+actual kernel compiler arguments had no remap. That failure is retained. Schema
+2 records both incoming and effective compiler arguments; `argv` denotes the
+vector actually executed. All required OSDK flags remain in their original
+order. An already present identical combined option is reused; an equivalent
+split option is retained and may be followed by the identical combined form. New code hashes require a new profile directory and fresh targets; old
+failed profiles and artifacts are never reused as passing evidence.
 
 The complete metadata root is projected along with package IDs. Changing only
 package IDs can bypass the upstream missing-component check and is forbidden.
