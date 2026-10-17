@@ -1,0 +1,41 @@
+{
+  "started_at_utc": "2026-10-17T12:26:05.501580+00:00",
+  "qualification": "original_probe_cargo_resolution_only",
+  "original_agentd_build": "not_run",
+  "original_agentd_runtime": "not_run",
+  "full_gate_resource_threshold_unchanged": 8589934592,
+  "steps": [
+    {
+      "name": "cargo_metadata",
+      "command": [
+        "/workspace/scratch/98f315e377b2/next-tools/cargo/bin/rustup",
+        "run",
+        "1.95.0",
+        "cargo",
+        "metadata",
+        "--format-version",
+        "1",
+        "--manifest-path",
+        "/dev/shm/trill-hepta-r4-enuzuex9/probe-check-01/probe/Cargo.toml"
+      ],
+      "exit_code": 101
+    }
+  ],
+  "upstream": {
+    "commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+    "tree": "15c9d6ea07bf3832de82825a6cc1e8c958dd3d45",
+    "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+    "clean_checkout": true
+  },
+  "desktop_commit": "160e11b1402a3ba6b91a50fa4c99f4a2fd100f18",
+  "desktop_tree": "c4f04639937a42d644161c44efaca7beba985380",
+  "desktop_status": "",
+  "free_bytes_before": 4612448256,
+  "status": "failed",
+  "error": {
+    "type": "RuntimeError",
+    "detail": "actual_cargo_metadata_failed"
+  },
+  "ended_at_utc": "2026-10-17T12:26:05.578148+00:00",
+  "free_bytes_after": 4612448256
+}

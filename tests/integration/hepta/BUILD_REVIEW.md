@@ -1,9 +1,14 @@
 # Fixed original Agentd build review
 
 This review keeps original Hepta pinned to
-`f8c9419df6ddeb36ff8b522a50219981fb8d9345`. The complete checkout was clean before
-and after the checks. No original Cargo resolution, Rust build or Agentd launch
-was attempted. The existing original-process qualification is **`not_run`**.
+`f8c9419df6ddeb36ff8b522a50219981fb8d9345`. The successful real Rust 1.95 metadata,
+original-owner probe `cargo check`, and original Agentd `cargo check` runs record
+the same clean original checkout before and afterward. Metadata resolution and
+the original-lock subset check passed; the unchanged probe API and original
+Agentd/App Server graph both passed their actual compiler checks.
+The final executable link and original-process qualification remain
+**`not_run`**. The earlier manifest-only findings and local resource snapshot
+below are historical; they do not describe the later provisioned environment.
 
 ## Corrected external workspace resolver
 
@@ -20,7 +25,73 @@ manifest-generation tests use the actual verified original source. The valid
 case first failed against the previous gate and then passed after correction;
 the two negative cases also passed. Source-bound raw evidence is in
 [evidence/2026-10-17-build-manifest](evidence/2026-10-17-build-manifest/README.md).
-This does not claim Cargo has resolved or compiled that graph.
+Those three Python tests do not invoke Cargo. The separate real Cargo
+resolution below supplies a later prerequisite result; it does not retroactively
+change the qualification of the manifest-test receipt.
+
+## Real resolution and compiler checks
+
+The source-bound records are archived in
+[evidence/2026-10-17-original-probe](evidence/2026-10-17-original-probe/README.md).
+They preserve failed attempts as well as the completed narrow check:
+
+| UTC on 2026-10-17 | Attempt | Recorded result |
+| --- | --- | --- |
+| 12:11:26–12:11:34 | Isolated official Rust 1.95 minimal toolchain bootstrap | Installation exit 0; no Agentd execution |
+| 12:26:05 | First probe metadata attempt | Exit 101: `rustc -vV` could not be executed because the temporary command environment could not find it; stdout was empty |
+| 12:26:38–12:26:54 | Corrected probe metadata attempt | Exit 0; 733 packages and 733 resolve nodes; shared dependency identities/checksums remained in the original lock |
+| 12:30:05–12:30:06 | First probe compile-check wrapper | Prerequisite selection assertion failed before any Cargo check command or resource sample was recorded |
+| 12:31:09–12:36:39 | Corrected original-owner probe compiler check | Rust 1.95 `cargo check --locked --profile dev-small --manifest-path ... -j1` exited 0; Cargo reported 5m 28s; original source and resolved lock unchanged |
+| 12:39:47–12:46:37 | Original Agentd compiler check | Rust 1.95 checked the unchanged `codex-hepta-agentd` bin selection with `--no-default-features -j1`; exit 0, Cargo reported 6m 48s; original source and lock unchanged |
+
+The successful command used the generated external root, its explicit
+`resolver = "2"`, the unchanged original owner libraries, and Rust 1.95. The
+resolved lock SHA256 is
+`9d1de5fab85aa6400a1d178e1791b3b01453b1b2b37e2b986bbe97cad55ceec1`.
+The original checkout, tree and lock stayed clean and identical before and
+afterward. The new external probe package is the only package identity allowed
+by the subset check to be absent from the original lock.
+
+**733 is the metadata result for this external Supervisor-library probe.** The
+command did not specify `--filter-platform`; its package/node count is not an
+Agentd-only minimum graph, a count of Rust compilation units, or a measurement
+of actual build memory or disk requirements. It does not include a successful
+original binary build, link, daemon launch, Session connection or process
+assertion. The raw 3,539,591-byte metadata output is stored as lossless gzip with
+both original and compressed SHA256 values. Receipts, stderr, generated
+manifest and resolved lock retain their original bytes and absolute paths.
+
+The successful check compiles/type-checks the actual external probe against the
+original owner-library graph. It confirms the reviewed public API calls without
+replacing an upstream module or DTO. Its raw log retains unused-patch warnings
+and the original Supervisor library's five warnings. It does not qualify a
+linked runnable probe/Agentd ELF or any runtime assertion. The separate wrapper
+reserved 700 MiB of temporary filesystem space and imposed a 900-second deadline;
+these bounds do not replace the full gate's 8 GiB admission estimate.
+
+The check receipt contains 330 resource samples. `memory.current` is sampled
+usage of the whole cgroup, while `memory.peak` is its accumulated high-water
+mark, including earlier activity. Neither is a measured peak for this compiler
+process. The minimum observed filesystem free space was 2,553,098,240 bytes;
+the cache was already warm from metadata resolution. These measurements do not
+establish the original Agentd link/build resource requirement.
+
+The later Agentd command ran from the untouched `codex-rs` workspace:
+
+```sh
+rustup run 1.95.0 cargo check --locked --profile dev-small \
+  --no-default-features -p codex-hepta-agentd --bin codex-hepta-agentd -j1
+```
+
+Its actual log includes the original App Server and Agentd crates and finishes
+successfully, with upstream warnings retained. This closes the original binary
+source's compiler-check prerequisite; it does not link the final executable or
+launch a process. It reused the warm target from the passed probe check. The
+receipt records 410 resource samples and 1,234,903,040 final/minimum-observed
+free bytes. Whole-cgroup counters still cannot be attributed to this build;
+`maximum_observed_nonreclaimable_bytes` is the wrapper's configured 7 GiB stop
+threshold, not a measured per-process maximum. The full 8 GiB build/runtime
+gate remains separate and unexecuted.
 
 ## Minimum original selection and build products
 
@@ -44,8 +115,10 @@ graphs. A shared directory is not a promise that every artifact will be reused.
 The probe root copies the original lock as a seed, resolves its added external
 package, and rejects any shared dependency identity or checksum absent from
 the original lock before its `--locked` build. The original binary itself
-always uses the untouched original workspace lock. Resolution is still a real
-gate: the seed check alone does not prove the resolved graph will be accepted.
+always uses the untouched original workspace lock. Actual resolution and the
+subset check passed for the archived external root above. Every new full-gate
+invocation still resolves and checks its own root; copying the seed alone does
+not qualify that later resolved graph.
 
 | Successful build product | Path below the new work directory |
 | --- | --- |
