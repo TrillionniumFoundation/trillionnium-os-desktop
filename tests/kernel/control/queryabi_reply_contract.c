@@ -42,7 +42,14 @@ int main(void) {
     const size_t existing_fields[] = {0, 8, 10, 24, 40, 64, 80, 84, 88, 96, 104};
     for (size_t i = 0; i < sizeof(existing_fields)/sizeof(existing_fields[0]); i++) {
         memcpy(mutated, reply, sizeof(mutated));
-        mutated[existing_fields[i]] ^= 0x7f;
+        /* Boot and per-open space IDs are intentionally opaque: the guest
+         * verifies nonzero here, and compares stability across opens above.
+         * Corrupt those identities to ZERO rather than another valid ID. */
+        if (existing_fields[i] == 40 || existing_fields[i] == 64) {
+            mutated[existing_fields[i]] = 0;
+        } else {
+            mutated[existing_fields[i]] ^= 0x7f;
+        }
         expect("other_field_corruption", !valid_reply(mutated, request));
     }
 
