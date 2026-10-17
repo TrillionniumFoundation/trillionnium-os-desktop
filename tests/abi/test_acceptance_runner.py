@@ -27,8 +27,8 @@ class AcceptanceRunnerTests(unittest.TestCase):
                     raise subprocess.TimeoutExpired(argv, timeout)
                 self.assertEqual(argv[-2:], ["--timeout", "60"])
                 evidence.write_text(json.dumps({"schema": acceptance.PINNED_MUTATION_SCHEMA,
-                                                "success": True, "expected_mutants": 19,
-                                                "mutants_killed": 19}))
+                                                "success": True, "expected_mutants": 20,
+                                                "mutants_killed": 20}))
                 return subprocess.CompletedProcess(argv, 0, "complete batch", "")
 
             with mock.patch.object(acceptance.subprocess, "run", side_effect=cold_batch):
@@ -40,7 +40,7 @@ class AcceptanceRunnerTests(unittest.TestCase):
             self.assertTrue(result["passed"])
             self.assertEqual(result["timeout_seconds"], 900)
             self.assertEqual(result["cargo_timeout_seconds"], 60)
-            self.assertEqual(result["mutants_killed"], 19)
+            self.assertEqual(result["mutants_killed"], 20)
 
     def test_compiled_mutation_subreport_cannot_lower_its_own_denominator(self):
         # A green subprocess return code and success=true are not sufficient.
@@ -51,13 +51,14 @@ class AcceptanceRunnerTests(unittest.TestCase):
             evidence = root / "mutations.json"
             clean_process = {"passed": True, "returncode": 0, "timed_out": False}
             cases = (
-                ("hos2-rust-source-mutations-v4", 19, 19, True, False),
+                ("hos2-rust-source-mutations-v5", 20, 20, True, False),
                 (acceptance.PINNED_MUTATION_SCHEMA, 1, 1, True, False),
                 (acceptance.PINNED_MUTATION_SCHEMA, 16, 16, True, False),
+                (acceptance.PINNED_MUTATION_SCHEMA, 19, 19, True, False),
                 (acceptance.PINNED_MUTATION_SCHEMA, True, True, True, False),
-                (acceptance.PINNED_MUTATION_SCHEMA, 19, 18, True, False),
-                (acceptance.PINNED_MUTATION_SCHEMA, 19, 19, False, False),
-                (acceptance.PINNED_MUTATION_SCHEMA, 19, 19, True, True),
+                (acceptance.PINNED_MUTATION_SCHEMA, 20, 19, True, False),
+                (acceptance.PINNED_MUTATION_SCHEMA, 20, 20, False, False),
+                (acceptance.PINNED_MUTATION_SCHEMA, 20, 20, True, True),
             )
             # Each invocation mutates result["passed"]; returning the same
             # dict would contaminate all later cases after the first negative.
@@ -81,8 +82,8 @@ class AcceptanceRunnerTests(unittest.TestCase):
             root = Path(temporary)
             evidence = root / "mutations.json"
             evidence.write_text(json.dumps({"schema": acceptance.PINNED_MUTATION_SCHEMA,
-                                                "success": True, "expected_mutants": 19,
-                                            "mutants_killed": 19}))
+                                                "success": True, "expected_mutants": 20,
+                                            "mutants_killed": 20}))
             with mock.patch.object(acceptance.subprocess, "run",
                                    side_effect=subprocess.TimeoutExpired("batch", 900)):
                 result = acceptance.run_compiled_mutations(
