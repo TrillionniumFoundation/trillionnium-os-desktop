@@ -51,8 +51,8 @@ python3 "$build_dir/verify-source.py" > "$run_dir/source-inputs.json"
     cargo -Vv
     rustup component list --installed
     rustup target list --installed
-    make --version | head -1
-    gcc --version | head -1
+    make --version
+    gcc --version
     qemu-system-x86_64 --version || true
     git -C "$project_dir" rev-parse HEAD
     git -C "$project_dir" status --short
