@@ -73,10 +73,11 @@ host-only observation epoch. Every successfully launched host process
 records its observed socket epoch; the Shell identifies when a process predates
 a compositor socket replacement but never claims a mapped or reattached surface.
 The original client is recorded without any claim of lossless window
-reattachment. For a running old app with a stale socket epoch, Inspector can
-offer **Launch NEW window (not reattach)** when the Session is online. This
-starts a fresh task, does not restore unsaved data and does not silently kill
-the old process. Real Chinese IME, physical
+reattachment. Inspector can offer **Launch NEW window (not reattach)** only
+when the old task remains RUNNING, has an observed PID and first egui layout,
+the socket epoch changed and Session is online. Unknown/partial/cancelling
+tasks are explicitly NOT eligible for this recovery shortcut. An opted-in
+new task cannot restore unsaved data and never silently kills the old process. Real Chinese IME, physical
 GPU reset and target kernel boot remain separate gates.
 
 A10 independently downloaded the successful exact-source Linux-host
