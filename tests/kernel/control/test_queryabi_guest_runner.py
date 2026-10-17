@@ -127,6 +127,12 @@ class QueryAbiReplayInputs(unittest.TestCase):
                 )
 
 
+    def test_serial_evidence_at_hard_file_limit_is_not_complete(self):
+        for length in (1, replay.MAX_SERIAL_BYTES - 1):
+            self.assertTrue(replay.serial_evidence_complete(length))
+        for length in (-1, 0, replay.MAX_SERIAL_BYTES, replay.MAX_SERIAL_BYTES + 1):
+            self.assertFalse(replay.serial_evidence_complete(length))
+
     def test_qemu_command_uses_immutable_inherited_fds_not_reopened_paths(self):
         # Synthetic compiler/QEMU: this tests the *host launch boundary*.
         # The original Asterinas kernel is not run in this unit test.

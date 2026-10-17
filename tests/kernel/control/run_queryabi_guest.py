@@ -89,6 +89,12 @@ def decode_bounded_initramfs(original_gzip, max_unpacked=MAX_UNPACKED_INITRAMFS_
     return data
 
 
+def serial_evidence_complete(length):
+    # Exactly at RLIMIT_FSIZE can mean QEMU survived EFBIG/SIGXFSZ and
+    # the final log is truncated despite an otherwise successful guest exit.
+    return isinstance(length, int) and 0 < length < MAX_SERIAL_BYTES
+
+
 def build_guest_initramfs(original_gzip, compiled_probe):
     """Repack only in memory; never extract original cpio to the host."""
     require(len(original_gzip) <= 8 * 1024 * 1024, "compressed original initramfs too large")
@@ -198,7 +204,7 @@ def main(argv=None):
                 timed_out, code = True, None
     elapsed = round(time.monotonic() - start, 3)
     serial_size = serial.stat().st_size
-    require(serial_size <= MAX_SERIAL_BYTES, "serial log size exceeds bounded evidence policy")
+    require(serial_evidence_complete(serial_size), "serial evidence empty/overfull or reached the child hard cap")
     captured = serial.read_text(encoding="utf-8", errors="replace")
     guest_ok = EXPECTED_SUCCESS in captured
     boot_ok = "TRILLIONNIUM_A01_BOOT_OK" in captured
