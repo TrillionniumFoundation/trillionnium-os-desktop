@@ -26,8 +26,8 @@ class AcceptanceRunnerTests(unittest.TestCase):
                 if timeout < 75:
                     raise subprocess.TimeoutExpired(argv, timeout)
                 self.assertEqual(argv[-2:], ["--timeout", "60"])
-                evidence.write_text(json.dumps({"success": True, "expected_mutants": 12,
-                                                "mutants_killed": 12}))
+                evidence.write_text(json.dumps({"success": True, "expected_mutants": 16,
+                                                "mutants_killed": 16}))
                 return subprocess.CompletedProcess(argv, 0, "complete batch", "")
 
             with mock.patch.object(acceptance.subprocess, "run", side_effect=cold_batch):
@@ -39,14 +39,14 @@ class AcceptanceRunnerTests(unittest.TestCase):
             self.assertTrue(result["passed"])
             self.assertEqual(result["timeout_seconds"], 900)
             self.assertEqual(result["cargo_timeout_seconds"], 60)
-            self.assertEqual(result["mutants_killed"], 12)
+            self.assertEqual(result["mutants_killed"], 16)
 
     def test_mutation_batch_timeout_cannot_pass_with_a_success_report(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             evidence = root / "mutations.json"
-            evidence.write_text(json.dumps({"success": True, "expected_mutants": 12,
-                                            "mutants_killed": 12}))
+            evidence.write_text(json.dumps({"success": True, "expected_mutants": 16,
+                                            "mutants_killed": 16}))
             with mock.patch.object(acceptance.subprocess, "run",
                                    side_effect=subprocess.TimeoutExpired("batch", 900)):
                 result = acceptance.run_compiled_mutations(
