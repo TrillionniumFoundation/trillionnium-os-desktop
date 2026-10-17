@@ -6,7 +6,7 @@ import unittest
 from unittest.mock import patch
 
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[2] / "support/build/ktest"
 spec = importlib.util.spec_from_file_location("a01_ktest_locks", ROOT / "prepare-locks.py")
 prepare = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(prepare)
