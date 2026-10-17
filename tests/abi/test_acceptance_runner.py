@@ -26,7 +26,8 @@ class AcceptanceRunnerTests(unittest.TestCase):
                 if timeout < 75:
                     raise subprocess.TimeoutExpired(argv, timeout)
                 self.assertEqual(argv[-2:], ["--timeout", "60"])
-                evidence.write_text(json.dumps({"success": True, "expected_mutants": 19,
+                evidence.write_text(json.dumps({"schema": acceptance.PINNED_MUTATION_SCHEMA,
+                                                "success": True, "expected_mutants": 19,
                                                 "mutants_killed": 19}))
                 return subprocess.CompletedProcess(argv, 0, "complete batch", "")
 
@@ -41,11 +42,43 @@ class AcceptanceRunnerTests(unittest.TestCase):
             self.assertEqual(result["cargo_timeout_seconds"], 60)
             self.assertEqual(result["mutants_killed"], 19)
 
+    def test_compiled_mutation_subreport_cannot_lower_its_own_denominator(self):
+        # A green subprocess return code and success=true are not sufficient.
+        # This specifically kills a forged "1/1", "16/16" or old-schema
+        # child report without asking Cargo to compile anything.
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            evidence = root / "mutations.json"
+            clean_process = {"passed": True, "returncode": 0, "timed_out": False}
+            cases = (
+                ("hos2-rust-source-mutations-v4", 19, 19, True, False),
+                (acceptance.PINNED_MUTATION_SCHEMA, 1, 1, True, False),
+                (acceptance.PINNED_MUTATION_SCHEMA, 16, 16, True, False),
+                (acceptance.PINNED_MUTATION_SCHEMA, True, True, True, False),
+                (acceptance.PINNED_MUTATION_SCHEMA, 19, 18, True, False),
+                (acceptance.PINNED_MUTATION_SCHEMA, 19, 19, False, False),
+                (acceptance.PINNED_MUTATION_SCHEMA, 19, 19, True, True),
+            )
+            with mock.patch.object(acceptance, "run_command", return_value=clean_process):
+                for schema, expected, killed, reported_success, allowed in cases:
+                    evidence.write_text(json.dumps({
+                        "schema": schema, "success": reported_success,
+                        "expected_mutants": expected, "mutants_killed": killed,
+                    }))
+                    with self.subTest(schema=schema, expected=expected, killed=killed,
+                                      successful=reported_success):
+                        check = acceptance.run_compiled_mutations(
+                            sys.executable, "cargo", "nightly-2026-07-21",
+                            root, {}, 60, 900, evidence,
+                        )
+                        self.assertIs(check["passed"], allowed)
+
     def test_mutation_batch_timeout_cannot_pass_with_a_success_report(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             evidence = root / "mutations.json"
-            evidence.write_text(json.dumps({"success": True, "expected_mutants": 19,
+            evidence.write_text(json.dumps({"schema": acceptance.PINNED_MUTATION_SCHEMA,
+                                                "success": True, "expected_mutants": 19,
                                             "mutants_killed": 19}))
             with mock.patch.object(acceptance.subprocess, "run",
                                    side_effect=subprocess.TimeoutExpired("batch", 900)):
