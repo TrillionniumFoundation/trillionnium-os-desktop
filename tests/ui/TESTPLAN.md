@@ -2,6 +2,18 @@
 
 ## Latest recorded Linux host result
 
+The [final 2026-10-17 owner integration evidence](evidence/2026-10-17-rust188-owner-sync/README.md)
+records the complete 137-test host gate, packaged ELF replay, Weston/Hepta
+layout and restart gates, strict Clippy and final lock/formatter checks on
+the same source `9b13dfb` (published with the identical tree as `865ecf3`).
+It includes fixed owner cut `d4eeeb5` and the author's Unicode-filter patch.
+An earlier EACCES failure and exact Rustfmt patch remain preserved; the
+affected cached ELF was retained and rebuilt, and its permission-mutation
+cause remains unknown. Fixture, no-op renderer, missing CJK font, unverified
+X11/mobile/effects and original-Agentd limits are explicit in that receipt.
+
+## Earlier recorded source
+
 The [2026-10-17 Rust 1.88 and Weston evidence](evidence/2026-10-17-rust188-weston/README.md)
 records a full 136-test host gate, actual packaged ELF replay, headless Weston
 client/restart checks and a fresh Hepta-page layout on source `d57a1be`.

@@ -1,0 +1,288 @@
+A10 host flock: PASS (exclusive, crash-released, symlink refused)
+A10 scoped smoke cleanup: PASS (SIGTERM; other runtime + other executable intact)
+A10 actual zombie process liveness guard: PASS
+A10 Linux-host native bundle staged: /tmp/a10-package-check.wrTNyMjB/evidence/a10-linux-host-binaries.tar.gz (NOT compositor/kernel acceptance)
+a10-linux-host-binaries.tar.gz: OK
+trill-session: OK
+trill-shell: OK
+trill-app-window: OK
+trill-ctl: OK
+A10 packager fixture PASS: four fixture ELF hashes, provenance, missing binary and relative destination rejection (NO Rust/Weston claim)
+   Compiling trill-ui-core v0.1.0 (/workspace/scratch/98f315e377b2/next-ui/ui/core)
+   Compiling trill-session v0.1.0 (/workspace/scratch/98f315e377b2/next-ui/ui/session)
+   Compiling trill-app-window v0.1.0 (/workspace/scratch/98f315e377b2/next-ui/ui/app-window)
+   Compiling trill-shell v0.1.0 (/workspace/scratch/98f315e377b2/next-ui/ui/shell)
+    Finished `dev` profile [unoptimized] target(s) in 3.51s
+   Compiling trill-session v0.1.0 (/workspace/scratch/98f315e377b2/next-ui/ui/session)
+   Compiling trill-app-window v0.1.0 (/workspace/scratch/98f315e377b2/next-ui/ui/app-window)
+   Compiling trill-shell v0.1.0 (/workspace/scratch/98f315e377b2/next-ui/ui/shell)
+   Compiling trill-ui-core v0.1.0 (/workspace/scratch/98f315e377b2/next-ui/ui/core)
+    Finished `test` profile [unoptimized] target(s) in 3.05s
+     Running unittests src/main.rs (/workspace/scratch/98f315e377b2/r2-host-target/debug/deps/trill_app_window-ffbeec1015dcf47e)
+
+running 8 tests
+test tests::division_by_zero_never_claims_a_numeric_result ... ok
+test tests::restricted_terminal_bounds_input_and_clear_is_local_only ... ok
+test tests::parse_arguments_accepts_terminal_kind ... ok
+test tests::restricted_terminal_refuses_forged_log_lines_and_bidi_controls ... ok
+test tests::restricted_terminal_refuses_commands_over_wire_budget ... ok
+test tests::restricted_terminal_rejects_shell_syntax_and_runs_only_allowlist ... ok
+test tests::ime_candidate_enter_never_implicitly_runs_a_terminal_command ... ok
+test tests::focused_run_button_enter_cannot_invent_a_pointer_click ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running unittests src/bin/trill-ctl.rs (/workspace/scratch/98f315e377b2/r2-host-target/debug/deps/trill_ctl-533a0d1d6f646e39)
+
+running 2 tests
+test tests::failed_spawn_and_unknown_effect_cannot_exit_successfully ... ok
+test tests::workspace_codes_are_not_dynamic_os_permissions ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (/workspace/scratch/98f315e377b2/r2-host-target/debug/deps/trill_session-8a0b1cab951538df)
+
+running 22 tests
+test hepta::tests::partial_endpoint_configuration_cannot_select_an_implicit_peer ... ok
+test hepta::tests::a_lost_worker_cannot_keep_connecting_or_observed_status ... ok
+test tests::connected_host_peer_uses_kernel_credentials_not_claimed_session_id ... ok
+test hepta::tests::lifecycle_advancement_retains_the_same_source_event_window ... ok
+test tests::display_path_symlink_is_not_interpreted_as_a_socket ... ok
+test tests::display_probe_is_fail_closed_and_socket_epochs_track_observed_changes ... ok
+test tests::bounded_history_prunes_terminal_records_but_not_unknown_effects ... ok
+test tests::new_ui_socket_directory_starts_private_without_post_create_chmod ... ok
+test tests::nonzero_or_signal_results_never_fake_success ... ok
+test tests::missing_binary_is_a_failed_task_not_success ... ok
+test tests::first_frame_requires_exact_child_pipe_signal ... ok
+test tests::non_writable_runtime_or_socket_directory_is_rejected ... ok
+test tests::runtime_directory_refuses_world_readable_mode ... ok
+test hepta::tests::bounded_metadata_preserves_stale_evidence_and_sticky_gaps ... ok
+test tests::session_generations_are_strong_and_distinct ... ok
+test tests::session_startup_is_exclusive_and_recovers_a_crashed_lock_owner ... ok
+test tests::socket_directory_cannot_be_redirected_through_a_symlink ... ok
+test tests::session_lock_symlink_is_rejected ... ok
+test tests::malformed_socket_peer_still_allows_child_reaping ... ok
+test tests::cancellation_is_requested_before_real_child_reap_confirms_it ... ok
+test tests::restricted_terminal_is_a_real_owned_task_with_explicit_execution_mode ... ok
+test tests::normal_exit_is_observed_not_fabricated ... ok
+
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/hepta_observer.rs (/workspace/scratch/98f315e377b2/r2-host-target/debug/deps/hepta_observer-7596a4f3ff7198ad)
+
+running 2 tests
+test no_observer_configuration_is_explicit_and_cannot_submit_objectives ... ok
+test stalled_agentd_cannot_block_host_snapshot_or_action_dispatch ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.02s
+
+     Running tests/ipc_reconnect.rs (/workspace/scratch/98f315e377b2/r2-host-target/debug/deps/ipc_reconnect-76d4691053fa641b)
+
+running 1 test
+test private_socket_survives_client_disconnect_and_reports_owned_task ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.63s
+
+     Running unittests src/main.rs (/workspace/scratch/98f315e377b2/r2-host-target/debug/deps/trill_shell-97b60946ad35cedb)
+
+running 22 tests
+test console_tests::process_observations_never_claim_hepta_success ... ok
+test draft_safety_tests::accepted_chinese_draft_is_stored_exactly_once ... ok
+test console_tests::unknown_host_effect_remains_visibly_unknown ... ok
+test draft_safety_tests::export_collection_never_omits_unsent_text_or_overwrites_old_backup ... ok
+test draft_safety_tests::import_refuses_to_overwrite_chat_or_unsubmitted_composer ... ok
+test draft_safety_tests::full_chat_never_evicts_earlier_user_text_or_clears_composer ... ok
+test draft_safety_tests::oversized_utf8_draft_is_not_truncated_or_saved ... ok
+test hepta_panel::probe_tests::a_generic_frame_or_stale_projection_cannot_satisfy_runtime_layout_probe ... ok
+test hepta_panel::probe_tests::runtime_layout_marker_binds_fresh_metadata_and_is_emitted_once ... ok
+test bridge_tests::full_action_queue_rejects_new_command_instead_of_claiming_it_was_sent ... ok
+test local_drafts::tests::private_store_rejects_symlinks_and_insecure_permissions ... ok
+test shell_lifecycle_tests::broken_shell_stdout_never_crashes_or_retries_layout_marker ... ok
+test shell_lifecycle_tests::new_window_offer_requires_observed_running_client_and_changed_live_socket ... ok
+test shell_lifecycle_tests::shell_first_layout_marker_is_exact_and_emitted_once ... ok
+test local_drafts::tests::rejects_more_than_ui_capacity ... ok
+test startup_tests::runtime_probe_requires_explicit_hepta_navigation ... ok
+test local_drafts::tests::export_rejects_existing_public_file_without_changing_its_bytes ... ok
+test local_drafts::tests::reject_oversized_or_malformed_data_without_replacing_existing_export ... ok
+test local_drafts::tests::load_rejects_public_mode_and_truncated_json ... ok
+test local_drafts::tests::explicit_unicode_roundtrip_and_replacement_is_atomic ... ok
+test bridge_tests::coalesced_poll_does_not_fill_action_queue_or_freeze_gui ... ok
+test input_tests::synthetic_chinese_ime_commit_uses_focused_text_edit ... ok
+
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running unittests src/lib.rs (/workspace/scratch/98f315e377b2/r2-host-target/debug/deps/trill_ui_core-2fc7d2ec1851aad2)
+
+running 16 tests
+test hepta::tests::diagnostic_projection_has_no_control_characters_and_respects_utf8_bound ... ok
+test hepta::tests::missing_observation_is_unknown_after_transport_failure ... ok
+test hepta::tests::event_labels_never_render_bidi_overrides_or_line_spoofing ... ok
+test host_peer::tests::both_ends_read_the_kernel_credentials_and_reject_foreign_uid ... ok
+test tests::all_unsettled_states_have_distinct_labels ... ok
+test tests::per_app_wayland_socket_epoch_is_never_surface_restoration_proof ... ok
+test tests::old_task_json_without_socket_epoch_is_fail_closed ... ok
+test tests::older_session_snapshot_cannot_claim_a_hepta_connection ... ok
+test tests::host_request_schema_rejects_unknown_and_duplicate_fields_before_effects ... ok
+test tests::framing_rejects_unterminated_or_oversized_inputs ... ok
+test tests::write_commands_require_session_fencing_identity ... ok
+test tests::utf8_round_trip_preserves_chinese_ime_text ... ok
+test tests::old_host_snapshot_defaults_to_unconfigured_wayland ... ok
+test tests::unknown_task_status_does_not_deserialize_as_success ... ok
+test tests::real_terminal_state_requires_prior_running ... ok
+test tests::serialized_ipc_output_is_also_bounded ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests trill_ui_core
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+ Downloading crates ...
+  Downloaded libc v0.2.191
+    Finished `test` profile [unoptimized] target(s) in 0.26s
+     Running unittests src/lib.rs (/workspace/scratch/98f315e377b2/r2-host-target/debug/deps/hepta_os_observer-1850cc4871e21c2d)
+
+running 1 test
+test client::tests::timed_out_metadata_keeps_its_admission_until_actual_worker_completion ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running unittests src/bin/hepta-observe.rs (/workspace/scratch/98f315e377b2/r2-host-target/debug/deps/hepta_observe-e1b63d489afa1c3b)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/socket_contract.rs (/workspace/scratch/98f315e377b2/r2-host-target/debug/deps/socket_contract-2df3c151c344fcf6)
+
+running 16 tests
+test endpoint_identity_private_directory_socket_modes_and_symlinks_are_enforced ... ok
+test missing_endpoint_fails_unavailable_without_creating_or_discovering_anything ... ok
+test owner_errors_and_overload_are_redacted_and_do_not_enable_retry_or_submission ... ok
+test actual_socket_projects_only_bounded_safe_observations_and_allows_no_effect_methods ... ok
+test last_health_fence_discards_the_whole_partial_poll ... ok
+test bounded_frame_and_newline_requirements_are_enforced_on_the_socket ... ok
+test historical_run_state_is_read_only_and_does_not_disclose_owner_inputs ... ok
+test promotion_inside_a_poll_preserves_prior_phase_events_and_final_current ... ok
+test peer_pid_health_invariants_and_unexpected_privileged_payload_fail_closed ... ok
+test response_correlation_version_identity_and_generation_are_mandatory ... ok
+test event_gap_and_pagination_never_skip_unreturned_events ... ok
+test malformed_capability_sets_and_unknown_fields_are_rejected ... ok
+test upstream_running_uses_spawn_plus_one_and_draining_uses_spawn_plus_two ... ok
+test valid_offsets_do_not_allow_wrong_phase_future_events_or_rollbacks ... ok
+test event_integrity_gap_limits_and_cursor_ahead_are_checked ... ok
+test stalled_socket_is_bounded_by_one_total_poll_deadline ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.32s
+
+   Doc-tests hepta_os_observer
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+PASS: Session/facade/UDS fixture observation and stale-state retention; evidence=/workspace/scratch/98f315e377b2/next-tools/r2-evidence/a10/owner-sync-01/check-host-02/a10/session-observer-probe.json
+This run did not start upstream Agentd, submit an objective, or exercise a device.
+    Finished `test` profile [unoptimized] target(s) in 0.00s
+     Running unittests src/lib.rs (/workspace/scratch/98f315e377b2/r2-host-target/debug/deps/trill_ui_boundary-70345b54848fc171)
+
+running 39 tests
+test android::tests::buffer_cannot_be_reused_until_release_fence_signals ... ok
+test android::tests::display_destroy_retires_all_buffers_and_rejects_new_ones ... ok
+test android::tests::failed_fence_retires_buffer_without_inference ... ok
+test android::tests::display_generation_retires_old_buffers_before_negotiation ... ok
+test android::tests::coordinate_transform_maps_rotation_and_rejects_out_of_bounds ... ok
+test android::tests::ime_back_home_and_suspension_are_explicit ... ok
+test permission::tests::conflicting_decisions_with_one_revision_are_rejected ... ok
+test android::tests::provider_failure_retires_buffers_and_blocks_input ... ok
+test permission::tests::empty_state_is_unknown_and_denied_for_every_capability ... ok
+test permission::tests::old_grant_cannot_resurrect_after_disconnection_invalidation ... ok
+test permission::tests::owner_disconnect_invalidates_cached_grants ... ok
+test permission::tests::same_revision_conflict_poisoned_grant_cannot_replay_as_allowed ... ok
+test permission::tests::zero_revision_cannot_be_constructed_or_observed ... ok
+test permission::tests::grant_in_one_scope_never_authorizes_another_scope ... ok
+test permission::tests::stale_grant_cannot_resurrect_revoked_capability ... ok
+test permission::tests::unknown_observation_is_not_an_implicit_grant ... ok
+test permission::tests::zero_scope_cannot_be_constructed ... ok
+test permission::tests::same_observation_is_idempotent ... ok
+test permission::tests::invalidating_one_scope_does_not_clear_unrelated_grants ... ok
+test permission::tests::local_request_does_not_promote_unknown_to_granted ... ok
+test permission::tests::capacity_failure_never_prevents_revoking_an_existing_grant ... ok
+test tests::compositor_restart_detaches_without_claiming_reattach ... ok
+test tests::cross_boot_observations_require_fresh_bridge_adapter ... ok
+test tests::denied_before_first_valid_observation_does_not_pin_a_boot ... ok
+test tests::exited_app_cannot_be_reattached ... ok
+test tests::gpu_reset_requires_explicit_recreation_and_reports_failure ... ok
+test tests::generation_exhaustion_does_not_leave_lifecycle_in_a_transient_state ... ok
+test tests::ill_formed_a02_response_semantics_fail_closed ... ok
+test tests::read_only_adapter_forwards_only_observation_calls ... ok
+test tests::invalid_read_only_request_never_reaches_transport ... ok
+test tests::mismatched_request_id_cannot_replay_success_or_permission_denial ... ok
+test tests::malformed_read_usage_and_cross_sequence_delivery_never_become_observations ... ok
+test tests::read_only_adapter_rejects_mutating_opcode_before_transport ... ok
+test tests::non_ok_hos2_status_stays_an_observation_error ... ok
+test tests::read_only_adapter_rejects_wrong_opcode_and_mutation_hidden_in_payload ... ok
+test tests::session_failure_is_separate_from_shell_and_app_process ... ok
+test tests::session_restart_requires_link_reconnect_before_reattach ... ok
+test tests::shell_restart_preserves_session_compositor_and_app_process ... ok
+test tests::valid_a02_query_abi_and_usage_are_observations_not_effects ... ok
+
+test result: ok. 39 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests trill_ui_boundary
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+    Finished `test` profile [unoptimized] target(s) in 0.00s
+     Running unittests src/lib.rs (/workspace/scratch/98f315e377b2/r2-host-target/debug/deps/trillionnium_ui_contracts-45a5b1f5101d72bc)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/contract.rs (/workspace/scratch/98f315e377b2/r2-host-target/debug/deps/contract-8672fdbb8247a1ce)
+
+running 8 tests
+test compositor_crash_and_gpu_reset_disconnect_without_fake_reattach ... ok
+test chinese_ime_commit_is_focused_and_not_duplicated ... ok
+test cancellation_is_a_request_until_the_process_exit_is_observed ... ok
+test shell_restart_does_not_terminate_independent_app_windows ... ok
+test app_window_contract_keeps_workspace_identity_across_reconnect ... ok
+test notifications_are_event_idempotent_and_bounded ... ok
+test app_exit_is_distinct_from_window_disconnect_and_cannot_reopen_closed_app ... ok
+test task_cards_require_observed_lifecycle_and_show_real_failures ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests trillionnium_ui_contracts
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+sudo: unable to send audit message: Operation not permitted
+sudo: unable to send audit message: Operation not permitted
+sudo: unable to send audit message: Operation not permitted
+sudo: unable to send audit message: Operation not permitted
+sudo: unable to send audit message: Operation not permitted
+sudo: unable to send audit message: Operation not permitted
+sudo: unable to send audit message: Operation not permitted
+sudo: unable to send audit message: Operation not permitted
+sudo: unable to send audit message: Operation not permitted
+A10 SO_PEERCRED live BIDIRECTIONAL refusal PASS: root CLI distrusts nobody server, raw root client refused, same-UID owner served, verified Session teardown
+sudo: unable to send audit message: Operation not permitted
+sudo: unable to send audit message: Operation not permitted
+sudo: unable to send audit message: Operation not permitted
+sudo: unable to send audit message: Operation not permitted
+sudo: unable to send audit message: Operation not permitted
+A10 REAL forged Session refusal PASS: cross-UID server cannot deliver task snapshots or receive a CLI request (not A05 authentication)
+sudo: unable to send audit message: Operation not permitted
+A10 STRICT REQUEST IPC PASS: 8 forged frames rejected; legitimate Launch remains ID 1; raced headless exit or confirmed SIGKILL is observed (never inferred as cancellation)
+A10 X11 mapping NOT VERIFIED: host Xvfb/x11-utils/xauth unavailable
+A10 Linux-host native bundle staged: /workspace/scratch/98f315e377b2/next-tools/r2-evidence/a10/owner-sync-01/check-host-02/a10/a10-linux-host-binaries.tar.gz (NOT compositor/kernel acceptance)
+A10 REAL Linux ELF replay PASSED: checksum/provenance, private Session IPC, flock, stale fence, failed GUI without display, fresh Session (NOT Weston/IME/kernel)
+A10 host Rust checks passed (NOT a kernel/Wayland/IME pass).
