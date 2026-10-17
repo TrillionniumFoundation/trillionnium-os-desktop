@@ -1,0 +1,53 @@
+{
+  "cpu_model_visible": "AMD EPYC 9V74 80-Core Processor",
+  "device_nodes": {
+    "/dev/dri/renderD128": false,
+    "/dev/kfd": false,
+    "/dev/kvm": false,
+    "/dev/nvidia0": false,
+    "/dev/nvidiactl": false,
+    "/dev/vfio/vfio": false
+  },
+  "execution_kernel": "Linux 6.18.44",
+  "primary_blockers": [
+    "no exposed GPU or KVM device node",
+    "libcuda.so.1 unavailable",
+    "Rust compiler absent",
+    "Asterinas host-side VM+IOMMU adapter not yet integrated"
+  ],
+  "runs": {
+    "bounded_cuda": {
+      "exit_code": 2
+    },
+    "cross_layer": {
+      "exit_code": 2
+    },
+    "pci_inventory": {
+      "exit_code": 0
+    },
+    "python_syntax": {
+      "exit_code": 0
+    },
+    "python_unit": {
+      "exit_code": 0,
+      "tests_run": 50
+    },
+    "vfio_preflight": {
+      "exit_code": 2
+    }
+  },
+  "schema": "a09.phase3-condensed-evidence.v1",
+  "timestamp_utc": "2026-10-16T09:00:14.494339+00:00",
+  "toolchain": {
+    "cargo": null,
+    "qemu": null,
+    "rustc": null
+  },
+  "verified": {
+    "asterinas_host_gpu_passthrough": false,
+    "device_recovery": false,
+    "gpu_compute": false,
+    "python_cpu_fixture_tests": true,
+    "rust_compile": false
+  }
+}

@@ -42,6 +42,22 @@ class ProbeTests(unittest.TestCase):
         self.assertIsNone(result["firmware_version"])
         self.assertIsNone(result["iommu"]["usable_for_passthrough"])
 
+    def test_cpu_vendor_and_vmx_flags_from_readonly_fixture(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            proc = root / "proc"
+            proc.mkdir()
+            (proc / "cpuinfo").write_text(
+                "processor\t: 0\nvendor_id\t: GenuineIntel\n"
+                "model name\t: Isolated Intel Fixture\nflags\t: fpu vmx sse2\n",
+                encoding="utf-8",
+            )
+            result = probe.snapshot(root)
+        self.assertEqual(result["cpu"]["vendor_id"], "GenuineIntel")
+        self.assertEqual(result["cpu"]["model"], "Isolated Intel Fixture")
+        self.assertTrue(result["cpu"]["vmx_flag"])
+        self.assertFalse(result["cpu"]["svm_flag"])
+
     def test_non_accelerator_nvidia_pci_is_not_gpu(self):
         with tempfile.TemporaryDirectory() as directory:
             dev = Path(directory) / "sys/bus/pci/devices/0000:00:01.0"
@@ -73,7 +89,7 @@ class GemmTests(unittest.TestCase):
     def test_missing_driver_never_falls_back_to_cpu(self):
         with patch.object(cuda_gemm, "library", side_effect=cuda_gemm.Blocked("no driver")):
             with self.assertRaises(cuda_gemm.Blocked):
-                cuda_gemm.gpu_gemm("RTX 4060", "")
+                cuda_gemm.gpu_gemm("RTX 4060", "0000:01:00.0", lab_isolated=True)
 
 
 if __name__ == "__main__":

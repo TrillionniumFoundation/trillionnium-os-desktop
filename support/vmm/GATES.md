@@ -22,3 +22,115 @@ Execution-tool container: Linux 6.18.44, x86_64, no /dev/kvm, no forwarded vmx/s
 7. Record *both* Asterinas-derived host kernel boot identity and Linux guest kernel identity with selected physical PCI GPU BDF/driver/runtime, successful CUDA result, DMA cleanup, VM death and recovery in disposable lab.
 
 Only the above can eventually qualify "local GPU in a Linux guest under a Rust host". QEMU/KVM VM on Linux host or reference VMX snippet is categorically different. Performance and GPU reset behavior remain unmeasured.
+
+
+## A09 Phase-2 executable preflight boundary (2026-10-16)
+
+- `../hardware/vfio_preflight.py`: Linux read-only sysfs group inspection with
+  **exact expected-member allowlist**, including display/audio siblings. A
+  mismatched or occupied group, no-IOMMU mode, absent PCI device/identity or
+  incomplete backlink rejects the route. Even a clean observation returns
+  `manual_review_required`, never authorization. This is **not** a Rust-host
+  VFIO assignment implementation. It cannot validate ACS, interrupt remapping,
+  DMA quiescence, active workload ownership or reliable reset.
+- `../../tests/hardware/run_isolated_cuda.py`: bounded, explicit isolated-lab
+  CUDA subprocess with pinned guest PCI identity and fixed output SHA. A child
+  timeout or CUDA error leaves DMA effect **unknown**, not successfully canceled.
+  Its success label remains guest-process reported, not host Asterinas proof.
+- Real VM-to-GPU join still requires A01 source import, an actual VMX/EPT-capable
+  Intel test machine **or** an independently implemented AMD SVM backend,
+  and A05/A06's canonical CapSpace/ResourceDomain. No parallel GPU authority.
+
+### Proposed operation order for A01/A05/A06 (not shipped ABI)
+
+1. `AcquireDevice(DeviceHandle, ResourceDomain, CapSpace context)`: confirm
+   group exclusivity, final `exec_epoch`, active grant, parent budget and
+   current generation; deny if guest/raw fd bypasses common object checks.
+2. `PinMemory(MemoryObject, domain, size, direction)`: charge every ancestor
+   before pinning; track CPU aliases and IOVA range; no arbitrary GPA=HPA.
+3. `Submit(Queue, Buffer, fence)`: require device/queue generation match,
+   buffer prepared for correct DMA direction, CPU writable aliases restricted,
+   and kernel-owned descriptor copy; count in-flight before doorbell.
+4. `Complete(Completion, fence, generation)`: verify current queue generation,
+   hardware signal and DMA sync; only then transition buffers CPU-owned.
+5. `Revoke/Cancel`: block **new** submissions; drain/stop guest and DMA safely.
+   Outstanding effects remain unknown until separately confirmed; an API
+   timeout is not hardware quiescence.
+6. `Stop/Reset/Destroy`: require independently demonstrated quiescence,
+   interrupt/IOTLB/TLB cleanup and all owners retired before pin recycling.
+   On absent evidence, quarantine device+buffers with bounded accounting.
+   Physical GPU reset only on disposable isolated lab card after qualification.
+
+These are typed object/transition requirements for kernel owners, not a second
+permission signer or a simulated ``passed`` production backend.
+
+
+## Phase 3: actual A01 dependency and typed state/provenance gate
+
+A01 [PR #5](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/5)
+has now merged its pinned Asterinas kernel/QEMU boot baseline into main
+at e44c92ac885eb003665ff2e1e5c6fab1f104b2d6. This is a real source/boot
+milestone, **not yet a Linux guest VMM boot or GPU handoff**. Do not use its VMX/EPT soft-skipped test as
+physical Intel virtualization success. The A09 device transition model in
+`device_lifecycle/` is a standalone `no_std` metadata-only prototype, not a
+replacement of A05 CapSpace or A06 ResourceDomain.
+
+A00 acceptance checklist, each independently logged from the real kernel:
+1. A01: fixed kernel source/ELF hash + serialized host boot; VMX on Intel,
+   or independently implemented/tested SVM on AMD; real vCPU/guest memory,
+   virtual IRQ/device model, Linux guest boot.
+2. A05: exclusive group/device lease bound to canonical CapSpace identity;
+   enforce grant/revoke before assignments; reject stale generation/duplicate
+   queue completions; track actual hardware IRQ, not guest self-report.
+3. A06: charge pinned frames and outstanding queue work to existing
+   ResourceDomain hierarchy, including recovery executor reserve; admit only
+   within ancestor budgets and existing memory object lifetimes.
+4. A01/A05: physical IOMMU and interrupt remapping isolation; host/guest
+   device IDs and VM boot nonce; DMA cache sync and CPU writable aliases;
+   explicit teardown IOTLB/TLB invalidation and independently observed
+   quiescence. If unavailable: quarantine rather than recycle or reset.
+5. A00 independent review: match host/guest serial traces and binary digests
+   using `acceptance.py`; a consistent unsigned bundle is still **review
+   required**, NEVER an automatic GPU claim. Test exact CUDA GEMM and compare
+   numerical output on disposable idle RTX 4060.
+
+This PR cannot deliver physical GPU passthrough despite A01 source now being
+integrated: no host GPU/VMM adapter or full driver exists, and this tool container lacks `/dev/kvm`, GPU nodes and toolchain.
+
+Confirmed actual merged main source interfaces: `kernel/asterinas/ostd/src/arch/x86/vm/mod.rs`
+(Intel VMX/VMCS), `kernel/asterinas/ostd/src/vm/mod.rs` (GuestMode/GuestPhysMemSpace),
+`kernel/asterinas/ostd/src/arch/x86/iommu/mod.rs` (crate-private map/unmap and IRQ remap).
+**None is an A09-owned public device-passthrough API.** A00/A01 must coordinate
+export/integration and actual VMX or AMD SVM execution; A09 does not patch
+A05/A06 kernel core sources unilaterally.
+
+
+## Route C lab-host ISA/IOMMU preflight (CPU-only; not VM authorization)
+
+For a first disposable RTX 4060 passthrough prototype prefer a **real Intel
+VMX + VT-d reference host**, because pinned Asterinas v0.19.0 has concrete
+Intel VMX/EPT primitives. Visible AMD SVM CPU flags (such as those on the
+restricted AMD EPYC execution container) cannot be treated as evidence of
+VMX support. SVM/AMD-Vi is a separate implementation/qualification task.
+
+The read-only `support/vmm/platform_gate.py` consumes JSON from the existing
+`support/hardware/probe.py` with an additional CPU `vendor_id` field:
+
+```sh
+python3 support/hardware/probe.py --target-vendor nvidia --output inventory.json
+python3 support/vmm/platform_gate.py --inventory inventory.json --output -
+```
+
+It requires Linux inventory schema, GenuineIntel CPU vendor, exposed `vmx`
+CPU flag, a visible DMAR ACPI table, at least one IOMMU group, and an actual
+PCI NVIDIA accelerator. Missing any condition is `blocked` (exit 2). Even if
+all predicates match, it returns `manual_review_required` (exit 3), **never
+automatic passthrough approval**. CPU VMX and DMAR visibility do not prove
+that Asterinas owns active IOMMU mappings, isolated interrupts, the entire
+IOMMU group, or a safe device reset. Complete IOMMU-group membership and
+absence of productive work must be verified separately with read-only VFIO
+preflight and independent host log evidence.
+
+This check only selects a plausible *Linux reference-lab* machine. It does
+not claim that Linux itself is the new Rust host, that the GPU is isolated,
+or that either Linux/CUDA or the new kernel ran GPU compute.

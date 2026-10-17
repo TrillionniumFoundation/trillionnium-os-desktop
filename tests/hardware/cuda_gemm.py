@@ -12,9 +12,18 @@ import hashlib
 import json
 import math
 import platform
+import re
 import struct
 
 N = 16
+MAX_CUDA_ENUM_DEVICES = 64
+MAX_NVRTC_LOG_BYTES = 64 * 1024
+MAX_NVRTC_PTX_BYTES = 8 * 1024 * 1024
+BDF_RE = re.compile(r"^[0-9a-fA-F]{4,8}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}\.[0-7]$")
+GOLDEN_INPUT_A = "0d9121c90b659969a44ca689809ebd3a6579f3f18b6aa5b9de5da1b98a9458ae"
+GOLDEN_INPUT_B = "37ca62264050ddd6b8674649a77ec6047f3aa1a2d87f97858f7f6be38189df74"
+GOLDEN_OUTPUT = "5bf61d6bb17edb58d70dd37589eeab5a02f5cc5d0c5aae5d142b06678416d847"
+
 CUDA_SOURCE = r'''
 extern "C" __global__ void gemm16(const float *a, const float *b, float *c) {
     int r = blockIdx.x;
@@ -33,6 +42,13 @@ class Blocked(RuntimeError):
 
 class GpuError(RuntimeError):
     pass
+
+
+def checked_nvrtc_size(size, limit, purpose):
+    """Reject impossible compiler-reported sizes before allocating Python RAM."""
+    if type(size) is not int or size < 1 or size > limit:
+        raise GpuError(f"NVRTC {purpose} size outside 1..{limit} bytes: {size}")
+    return size
 
 
 def inputs():
@@ -90,7 +106,36 @@ class Api:
             raise GpuError(f"{self.prefix}.{symbol} returned {rc}")
 
 
-def gpu_gemm(required_name, required_bdf):
+def cleanup_device_resources(cuda, ptrs, module, ctx, submission_attempted, synchronized):
+    """No explicit CUDA frees on potentially in-flight GPU work.
+
+    Does not prove that process teardown or GPU reset is safe. Such cases need
+    the independent host/VMM DMA-quiescence gate and are not a recovery pass.
+    """
+    if submission_attempted and not synchronized:
+        return ["UNKNOWN_DMA_EFFECT: explicit device allocations/module/context release suppressed; host quarantine required"]
+    errors = []
+    for ptr in reversed(ptrs):
+        try:
+            cuda.call("cuMemFree_v2", [C.c_uint64], ptr)
+        except Exception as exc:
+            errors.append(str(exc))
+    if module.value:
+        try:
+            cuda.call("cuModuleUnload", [C.c_void_p], module)
+        except Exception as exc:
+            errors.append(str(exc))
+    if ctx.value:
+        try:
+            cuda.call("cuCtxDestroy_v2", [C.c_void_p], ctx)
+        except Exception as exc:
+            errors.append(str(exc))
+    return errors
+
+
+def gpu_gemm(required_name, required_bdf, *, lab_isolated=False):
+    if not lab_isolated or not BDF_RE.fullmatch(required_bdf) or not required_name.strip():
+        raise Blocked("direct CUDA calls require isolated-lab opt-in, pinned BDF and device name")
     cuda = Api(library(["libcuda.so.1", find_library("cuda")]), "CUDA")
     # Driver API is mandatory; a software rendering backend cannot satisfy these calls.
     cuda.call("cuInit", [C.c_uint], 0)
@@ -98,6 +143,8 @@ def gpu_gemm(required_name, required_bdf):
     cuda.call("cuDeviceGetCount", [C.POINTER(C.c_int)], C.byref(count))
     if count.value < 1:
         raise Blocked("CUDA driver reports zero usable devices")
+    if count.value > MAX_CUDA_ENUM_DEVICES:
+        raise Blocked("CUDA driver reports an unreasonable device count; refusing unbounded enumeration")
     selected = None
     seen = []
     for index in range(count.value):
@@ -147,12 +194,16 @@ def gpu_gemm(required_name, required_bdf):
             log_len = C.c_size_t()
             nvrtc.call("nvrtcGetProgramLogSize", [C.c_void_p, C.POINTER(C.c_size_t)],
                        program, C.byref(log_len))
-            log = C.create_string_buffer(log_len.value)
+            log = C.create_string_buffer(
+                checked_nvrtc_size(log_len.value, MAX_NVRTC_LOG_BYTES, "diagnostic log")
+            )
             nvrtc.call("nvrtcGetProgramLog", [C.c_void_p, C.c_void_p], program, log)
             raise GpuError(f"NVRTC compile {rc}: {log.value.decode(errors='replace')[:2000]}")
         ptx_len = C.c_size_t()
         nvrtc.call("nvrtcGetPTXSize", [C.c_void_p, C.POINTER(C.c_size_t)], program, C.byref(ptx_len))
-        ptx = C.create_string_buffer(ptx_len.value)
+        ptx = C.create_string_buffer(
+            checked_nvrtc_size(ptx_len.value, MAX_NVRTC_PTX_BYTES, "PTX program")
+        )
         nvrtc.call("nvrtcGetPTX", [C.c_void_p, C.c_void_p], program, ptx)
     finally:
         nvrtc.call("nvrtcDestroyProgram", [C.POINTER(C.c_void_p)], C.byref(program))
@@ -161,6 +212,8 @@ def gpu_gemm(required_name, required_bdf):
     cleanup_errors = []
     failure = None
     output = None
+    submission_attempted = False
+    synchronized = False
     try:
         cuda.call("cuCtxCreate_v2", [C.POINTER(C.c_void_p), C.c_uint, C.c_int],
                   C.byref(ctx), 0, device)
@@ -181,32 +234,25 @@ def gpu_gemm(required_name, required_bdf):
             cuda.call("cuMemcpyHtoD_v2", [C.c_uint64, C.c_void_p, C.c_size_t],
                       dev_ptr, C.cast(host, C.c_void_p), C.sizeof(host))
         kernel_args = (C.c_void_p * 3)(*[C.cast(C.byref(p), C.c_void_p) for p in ptrs])
+        # A CUDA launch error may still leave partial hardware side effects.
+        # Mark the attempt before entering the driver; only a successful
+        # synchronization can authorize explicit device memory reclamation.
+        submission_attempted = True
         cuda.call("cuLaunchKernel", [C.c_void_p, C.c_uint, C.c_uint, C.c_uint,
                                      C.c_uint, C.c_uint, C.c_uint, C.c_uint,
                                      C.c_void_p, C.POINTER(C.c_void_p), C.c_void_p],
                   function, N, 1, 1, N, 1, 1, 0, None, kernel_args, None)
         cuda.call("cuCtxSynchronize", [])
+        synchronized = True
         cuda.call("cuMemcpyDtoH_v2", [C.c_void_p, C.c_uint64, C.c_size_t],
                   C.cast(host_c, C.c_void_p), ptrs[2], C.sizeof(host_c))
         output = list(host_c)
     except Exception as exc:
         failure = exc
     finally:
-        for ptr in reversed(ptrs):
-            try:
-                cuda.call("cuMemFree_v2", [C.c_uint64], ptr)
-            except Exception as exc:
-                cleanup_errors.append(str(exc))
-        if module.value:
-            try:
-                cuda.call("cuModuleUnload", [C.c_void_p], module)
-            except Exception as exc:
-                cleanup_errors.append(str(exc))
-        if ctx.value:
-            try:
-                cuda.call("cuCtxDestroy_v2", [C.c_void_p], ctx)
-            except Exception as exc:
-                cleanup_errors.append(str(exc))
+        cleanup_errors.extend(cleanup_device_resources(
+            cuda, ptrs, module, ctx, submission_attempted, synchronized
+        ))
     if failure:
         raise GpuError(str(failure) + (f"; cleanup errors: {cleanup_errors}" if cleanup_errors else ""))
     if cleanup_errors:
@@ -217,7 +263,9 @@ def gpu_gemm(required_name, required_bdf):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--require-name", default="RTX 4060")
-    parser.add_argument("--require-bdf", default="", help="optional exact PCI BDF from read-only probe")
+    parser.add_argument("--require-bdf", default="", help="REQUIRED exact guest PCI BDF from read-only probe")
+    parser.add_argument("--isolated-lab", action="store_true",
+                        help="explicitly acknowledge that this is an idle disposable GPU lab, not H3/training/prod")
     parser.add_argument("--output", default="-", help="'-' prints JSON")
     args = parser.parse_args()
     a, b = inputs()
@@ -234,9 +282,23 @@ def main():
         "physical_device_assignment_verified": False,
         "reset_or_failure_recovery_verified": False,
         "no_cpu_fallback": True, "device": None,
+        "device_access_attempted": False, "isolated_lab_user_assertion": args.isolated_lab,
+        "host_kernel_attested": False, "guest_kernel_attested": False,
+        "actual_gpu_location_attested": False,
     }
     try:
-        device, output = gpu_gemm(args.require_name, args.require_bdf)
+        if not args.isolated_lab:
+            raise Blocked("explicit --isolated-lab required before loading CUDA driver; never run on H3/training/prod")
+        if not BDF_RE.fullmatch(args.require_bdf):
+            raise Blocked("exact --require-bdf domain:bus:device.function required from isolated guest enumeration")
+        if not args.require_name.strip():
+            raise Blocked("nonempty --require-name required")
+        if (evidence["input_a_sha256"], evidence["input_b_sha256"],
+                evidence["expected_output_sha256"]) != (
+                GOLDEN_INPUT_A, GOLDEN_INPUT_B, GOLDEN_OUTPUT):
+            raise GpuError("CPU golden inputs/reference mismatch; refusing GPU launch")
+        evidence["device_access_attempted"] = True
+        device, output = gpu_gemm(args.require_name, args.require_bdf, lab_isolated=True)
         evidence["device"] = device
         evidence["actual_output_sha256"] = digest(output)
         mismatch = compare(output, expected)
