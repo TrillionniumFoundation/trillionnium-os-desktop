@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use core::{
-    sync::atomic::{AtomicBool, AtomicI16, AtomicU32, Ordering},
+    sync::atomic::{AtomicBool, AtomicI16, AtomicU32, AtomicU64, Ordering},
     time::Duration,
 };
 
@@ -151,6 +151,9 @@ pub struct Process {
     /// Process start time since boot.
     start_time: Jiffies,
 
+    /// Incremented after a successful execve to fence old-image fds.
+    hepta_exec_epoch: AtomicU64,
+
     // Namespaces
     /// The user namespace
     user_ns: Mutex<Arc<UserNamespace>>,
@@ -267,6 +270,7 @@ impl Process {
                 prof_clock,
                 timer_manager,
                 start_time: Jiffies::elapsed(),
+                hepta_exec_epoch: AtomicU64::new(0),
                 user_ns: Mutex::new(user_ns),
             }
         })
@@ -304,6 +308,22 @@ impl Process {
     /// Returns the process start time since boot.
     pub(crate) fn start_time(&self) -> Jiffies {
         self.start_time
+    }
+
+    /// Returns the image-generation fence for native HOS2 sessions.
+    pub(crate) fn hepta_exec_epoch(&self) -> u64 {
+        self.hepta_exec_epoch.load(Ordering::Acquire)
+    }
+
+    /// Advances the image-generation fence after a successful execve.
+    /// Wrapping is rejected so an old fd can never become valid again.
+    pub(crate) fn advance_hepta_exec_epoch(&self) -> Result<u64> {
+        self.hepta_exec_epoch
+            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |current| {
+                current.checked_add(1)
+            })
+            .map(|previous| previous + 1)
+            .map_err(|_| Error::with_message(Errno::EOVERFLOW, "HOS2 exec epoch exhausted"))
     }
 
     pub(crate) fn tasks(&self) -> &Mutex<TaskSet> {
