@@ -1,0 +1,6 @@
+$ AOSP_ROOT=<empty_checkout> A08_EVIDENCE=<out> bash support/android/prepare_aosp.sh audit
+AOSP checkout not initialized
+utc=2026-10-16T07:55:57Z stage=repo-audit mode=audit status=fail exit=3
+$ AOSP_ROOT=<empty_checkout> A08_EVIDENCE=<checkout>/evidence bash support/android/prepare_aosp.sh audit
+Checkout/evidence paths must not contain one another
+# second command exit 2

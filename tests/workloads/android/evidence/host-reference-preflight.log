@@ -1,0 +1,5 @@
+$ bash -n support/android/run_reference_cuttlefish.sh
+# exit 0 (syntax check)
+$ AOSP_ROOT=/mnt/data/a08 A08_EVIDENCE=/mnt/data/a08-dummy A08_CVD_HOME=/mnt/data/a08-cvd bash support/android/run_reference_cuttlefish.sh
+KVM device absent or inaccessible; refusing to launch Cuttlefish
+# exit status 4 (environment blocked, no CVD launch or Android runtime)

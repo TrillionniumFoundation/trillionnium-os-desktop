@@ -1,0 +1,95 @@
+test_current_snapshot_is_bound_to_project_commit_and_red (test_kernel_source_audit.KernelSourceAuditTests.test_current_snapshot_is_bound_to_project_commit_and_red) ... ERROR
+test_dirty_tracked_files_do_not_become_commit_evidence (test_kernel_source_audit.KernelSourceAuditTests.test_dirty_tracked_files_do_not_become_commit_evidence) ... ok
+test_malformed_lock_is_a_source_blocker (test_kernel_source_audit.KernelSourceAuditTests.test_malformed_lock_is_a_source_blocker) ... 
+  test_malformed_lock_is_a_source_blocker (test_kernel_source_audit.KernelSourceAuditTests.test_malformed_lock_is_a_source_blocker) (content=b'{"kernel":') ... FAIL
+  test_malformed_lock_is_a_source_blocker (test_kernel_source_audit.KernelSourceAuditTests.test_malformed_lock_is_a_source_blocker) (content=b'{"kernel": []}') ... FAIL
+  test_malformed_lock_is_a_source_blocker (test_kernel_source_audit.KernelSourceAuditTests.test_malformed_lock_is_a_source_blocker) (content=b'\xff') ... FAIL
+test_mismatched_lock_is_a_source_blocker (test_kernel_source_audit.KernelSourceAuditTests.test_mismatched_lock_is_a_source_blocker) ... 
+  test_mismatched_lock_is_a_source_blocker (test_kernel_source_audit.KernelSourceAuditTests.test_mismatched_lock_is_a_source_blocker) (field='tag') ... FAIL
+  test_mismatched_lock_is_a_source_blocker (test_kernel_source_audit.KernelSourceAuditTests.test_mismatched_lock_is_a_source_blocker) (field='commit') ... FAIL
+  test_mismatched_lock_is_a_source_blocker (test_kernel_source_audit.KernelSourceAuditTests.test_mismatched_lock_is_a_source_blocker) (field='reuse') ... FAIL
+test_missing_lock_is_a_source_blocker (test_kernel_source_audit.KernelSourceAuditTests.test_missing_lock_is_a_source_blocker) ... FAIL
+test_observation_time_is_the_actual_utc_audit_time (test_kernel_source_audit.KernelSourceAuditTests.test_observation_time_is_the_actual_utc_audit_time) ... ok
+test_selected_ref_controls_bytes_and_candidate_scan (test_kernel_source_audit.KernelSourceAuditTests.test_selected_ref_controls_bytes_and_candidate_scan) ... ERROR
+test_selected_ref_missing_file_is_not_filled_from_checkout (test_kernel_source_audit.KernelSourceAuditTests.test_selected_ref_missing_file_is_not_filled_from_checkout) ... ok
+test_snapshot_records_git_blob_and_content_hash (test_kernel_source_audit.KernelSourceAuditTests.test_snapshot_records_git_blob_and_content_hash) ... ok
+test_untracked_candidate_does_not_become_commit_evidence (test_kernel_source_audit.KernelSourceAuditTests.test_untracked_candidate_does_not_become_commit_evidence) ... ok
+
+======================================================================
+ERROR: test_current_snapshot_is_bound_to_project_commit_and_red (test_kernel_source_audit.KernelSourceAuditTests.test_current_snapshot_is_bound_to_project_commit_and_red)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/98f315e377b2/next-a08/tests/workloads/android/test_kernel_source_audit.py", line 84, in test_current_snapshot_is_bound_to_project_commit_and_red
+    self.assertEqual(report["kernel_upstream_lock"]["status"], "matched")
+                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+KeyError: 'status'
+
+======================================================================
+ERROR: test_selected_ref_controls_bytes_and_candidate_scan (test_kernel_source_audit.KernelSourceAuditTests.test_selected_ref_controls_bytes_and_candidate_scan)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/98f315e377b2/next-a08/tests/workloads/android/test_kernel_source_audit.py", line 124, in test_selected_ref_controls_bytes_and_candidate_scan
+    self.assertEqual(report["kernel_upstream_lock"]["status"], "matched")
+                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+KeyError: 'status'
+
+======================================================================
+FAIL: test_malformed_lock_is_a_source_blocker (test_kernel_source_audit.KernelSourceAuditTests.test_malformed_lock_is_a_source_blocker) (content=b'{"kernel":')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/98f315e377b2/next-a08/tests/workloads/android/test_kernel_source_audit.py", line 205, in test_malformed_lock_is_a_source_blocker
+    self.assertIn("pinned_lock", report["blocking_requirements"])
+AssertionError: 'pinned_lock' not found in ['binder', 'seccomp', 'mac', 'source_paths']
+
+======================================================================
+FAIL: test_malformed_lock_is_a_source_blocker (test_kernel_source_audit.KernelSourceAuditTests.test_malformed_lock_is_a_source_blocker) (content=b'{"kernel": []}')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/98f315e377b2/next-a08/tests/workloads/android/test_kernel_source_audit.py", line 205, in test_malformed_lock_is_a_source_blocker
+    self.assertIn("pinned_lock", report["blocking_requirements"])
+AssertionError: 'pinned_lock' not found in ['binder', 'seccomp', 'mac', 'source_paths']
+
+======================================================================
+FAIL: test_malformed_lock_is_a_source_blocker (test_kernel_source_audit.KernelSourceAuditTests.test_malformed_lock_is_a_source_blocker) (content=b'\xff')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/98f315e377b2/next-a08/tests/workloads/android/test_kernel_source_audit.py", line 205, in test_malformed_lock_is_a_source_blocker
+    self.assertIn("pinned_lock", report["blocking_requirements"])
+AssertionError: 'pinned_lock' not found in ['binder', 'seccomp', 'mac', 'source_paths']
+
+======================================================================
+FAIL: test_mismatched_lock_is_a_source_blocker (test_kernel_source_audit.KernelSourceAuditTests.test_mismatched_lock_is_a_source_blocker) (field='tag')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/98f315e377b2/next-a08/tests/workloads/android/test_kernel_source_audit.py", line 192, in test_mismatched_lock_is_a_source_blocker
+    self.assertIn("pinned_lock", report["blocking_requirements"])
+AssertionError: 'pinned_lock' not found in ['binder', 'seccomp', 'mac', 'source_paths']
+
+======================================================================
+FAIL: test_mismatched_lock_is_a_source_blocker (test_kernel_source_audit.KernelSourceAuditTests.test_mismatched_lock_is_a_source_blocker) (field='commit')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/98f315e377b2/next-a08/tests/workloads/android/test_kernel_source_audit.py", line 192, in test_mismatched_lock_is_a_source_blocker
+    self.assertIn("pinned_lock", report["blocking_requirements"])
+AssertionError: 'pinned_lock' not found in ['binder', 'seccomp', 'mac', 'source_paths']
+
+======================================================================
+FAIL: test_mismatched_lock_is_a_source_blocker (test_kernel_source_audit.KernelSourceAuditTests.test_mismatched_lock_is_a_source_blocker) (field='reuse')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/98f315e377b2/next-a08/tests/workloads/android/test_kernel_source_audit.py", line 192, in test_mismatched_lock_is_a_source_blocker
+    self.assertIn("pinned_lock", report["blocking_requirements"])
+AssertionError: 'pinned_lock' not found in ['binder', 'seccomp', 'mac', 'source_paths']
+
+======================================================================
+FAIL: test_missing_lock_is_a_source_blocker (test_kernel_source_audit.KernelSourceAuditTests.test_missing_lock_is_a_source_blocker)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/98f315e377b2/next-a08/tests/workloads/android/test_kernel_source_audit.py", line 179, in test_missing_lock_is_a_source_blocker
+    self.assertIn("pinned_lock", report["blocking_requirements"])
+AssertionError: 'pinned_lock' not found in ['binder', 'seccomp', 'mac', 'source_paths']
+
+----------------------------------------------------------------------
+Ran 10 tests in 1.234s
+
+FAILED (failures=7, errors=2)

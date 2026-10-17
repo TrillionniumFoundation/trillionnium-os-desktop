@@ -1,0 +1,64 @@
+{
+  "actions": [
+    {
+      "exit_code": 4,
+      "log": "tests/workloads/android/evidence/cloud-preflight-20261017.log",
+      "name": "run_reference_cuttlefish",
+      "status": "blocked_kvm_absent"
+    },
+    {
+      "name": "aosp_sync_build",
+      "status": "not_attempted_host_requirements"
+    }
+  ],
+  "blockers": [
+    "host_ram_below_64GiB",
+    "disk_below_400GiB",
+    "kvm_absent",
+    "android_build_tools_missing",
+    "binder_seccomp_mac_kernel_gaps"
+  ],
+  "claims": {
+    "android_apk_runtime": false,
+    "android_on_asterinas": false,
+    "aosp_build": false,
+    "aosp_source_sync": false,
+    "cuttlefish_boot": false
+  },
+  "execution_class": "configured_cloud_host_preflight",
+  "notes": [
+    "No Android or Cuttlefish cache exists in this environment.",
+    "No prebuilt or fake image was accepted.",
+    "This receipt does not claim Android or Asterinas runtime success."
+  ],
+  "observed_utc": "2026-10-17T00:11:35Z",
+  "project_branch_head": "fe84296bcddf0d3502e5158d7cae3cb9d2bdea01",
+  "project_main": "acd9ee30d51c405b32a36ff02ce25a9272b65834",
+  "required_host_thresholds": {
+    "free_disk_bytes": 429496729600,
+    "kvm": true,
+    "ram_bytes": 68719476736
+  },
+  "resources": {
+    "disk_free_bytes": 29644689408,
+    "kvm_accessible": false,
+    "meminfo_bytes": {
+      "MemAvailable": 9704734720,
+      "MemTotal": 10451460096,
+      "SwapTotal": 0
+    },
+    "page_size_bytes": 4096
+  },
+  "schema": 1,
+  "tools_on_path": {
+    "aapt2": null,
+    "adb": null,
+    "apkanalyzer": null,
+    "clang": null,
+    "javac": null,
+    "launch_cvd": null,
+    "ninja": null,
+    "qemu-system-x86_64": null,
+    "repo": null
+  }
+}

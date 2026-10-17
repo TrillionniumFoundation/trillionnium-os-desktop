@@ -1,0 +1,239 @@
+{
+  "blocking_requirements": [
+    "binder",
+    "seccomp",
+    "mac"
+  ],
+  "booted_android_on_asterinas": false,
+  "build_tested_this_agent": false,
+  "checks": {
+    "android_mac": {
+      "negative_mac_tests_passed": false,
+      "owner": "A05",
+      "status": "selinux_equivalent_not_evidenced"
+    },
+    "binder": {
+      "owner": "A05/A08",
+      "status": "driver_not_evidenced",
+      "transactions_verified": false
+    },
+    "seccomp": {
+      "negative_filter_test_passed": false,
+      "owner": "A05",
+      "status": "missing_install_entrypoint"
+    }
+  },
+  "kernel_upstream_lock": {
+    "actual": {
+      "acceptance_guard_commit": "2c658089bb90aa5b254ddf336ef3dc1333e755c9",
+      "artifact_sha256": "e884f5e50cf296833276016894a39337cd9ac13bc51f6b1f2dea3cc3a6904b63",
+      "boot_profile": "support/build/minimal/OSDK.toml",
+      "build_code_commit": "4ae1a80e6b87fd55913bd01e6aadd28a20e6c322",
+      "build_verified": true,
+      "cargo_lock_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+      "commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+      "daemon_lifecycle_fix": {
+        "code_commit": "fb81fec167913827bcddfda15676dc6b26f35965",
+        "evidence": "support/build/evidence/2026-10-16-daemon/daemon-probes/",
+        "identity_anchor": "waitable leader via waitid WNOWAIT; group signals before reap; ECHILD disarms",
+        "old_real_leak_cases": 2,
+        "patched_lifecycle_cases_passed": 5,
+        "scope": "OSDK sole reaper; no SIGCHLD auto-reap; descendants stay in original process group"
+      },
+      "derived_tree": "6a9463ebaaa2060e1fe3968bd940b60d9b1bf8a0",
+      "generated_cargo_lock": "support/build/minimal/Cargo.lock",
+      "generated_cargo_lock_sha256": "b42d8fff136d80a5f8159356882096996991e05975d8da9c81ad9db9bdb06e10",
+      "host_regression": {
+        "code_commit": "4ae1a80e6b87fd55913bd01e6aadd28a20e6c322",
+        "evidence": "support/build/evidence/2026-10-16-boot-binding/report.json",
+        "failed": 0,
+        "filtered": 0,
+        "full_unit_suite_passed": true,
+        "ignored": 0,
+        "new_native_integration": "in_progress_not_claimed",
+        "original_failed_suite_evidence": "support/build/evidence/2026-10-16-next/host-tools/results.json",
+        "original_failed_suite_preserved": true,
+        "passed": 28,
+        "previous_selected_integration": {
+          "evidence": "support/build/evidence/2026-10-16-daemon/report.json",
+          "selected_non_vm_passed": 13,
+          "unselected_cases": 9
+        },
+        "suite": "derived_osdk_unit",
+        "total": 28
+      },
+      "kernel_mode_regression": {
+        "crates": [
+          "ostd",
+          "aster-core"
+        ],
+        "evidence": "support/build/evidence/2026-10-16-daemon/acceptance/kernel-tests/result.json",
+        "exercised_passed_lower_bound": 359,
+        "failed": 0,
+        "filtered": 0,
+        "profile": "x86_64-q35-tcg-1cpu-512MiB",
+        "reported_passed": 362,
+        "soft_skipped": 3,
+        "test_base_locks": {
+          "aster-core": {
+            "path": "support/build/ktest/locks/aster-core.Cargo.lock",
+            "sha256": "159b8682d27a7a21af98885ae48515234445c00fdf5e00b158fdc4aa952ff4ed"
+          },
+          "ostd": {
+            "path": "support/build/ktest/locks/ostd.Cargo.lock",
+            "sha256": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6"
+          }
+        }
+      },
+      "license": "MPL-2.0",
+      "license_file": "kernel/asterinas/LICENSE-MPL",
+      "osdk_cargo_lock_sha256": "99a21f72f6a9f1582553b34f06e80f86e539f38e62eab7a0847afd0906e75be3",
+      "qemu_boot_verified": true,
+      "repository": "asterinas/asterinas",
+      "reuse": "full_kernel_derived",
+      "source_directory": "kernel/asterinas",
+      "source_files": 2938,
+      "source_import_method": "vendored_git_tree",
+      "source_imported": true,
+      "tag": "v0.19.0",
+      "target": "x86_64-unknown-none",
+      "toolchain": "nightly-2026-07-21",
+      "toolchain_file_sha256": "b2508d8c9cd57258fad2fc77737e07172846161f6a7dd726cbd8e974de69c6f7",
+      "tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+      "verification_evidence": "support/build/evidence/2026-10-16-boot-binding/report.json"
+    },
+    "expected": {
+      "commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+      "reuse": "full_kernel_derived",
+      "tag": "v0.19.0"
+    },
+    "source_path": "support/upstream-lock.json",
+    "status": "matched"
+  },
+  "limitations": [
+    "This is a source snapshot, not a kernel build or guest run.",
+    "Only the selected immutable commit is inspected; working-tree changes are excluded.",
+    "Expected upstream metadata is compared with the selected commit's hashed lock; matching metadata does not prove imported source equals the upstream tree.",
+    "scanned_git_blobs_sha256 hashes sorted UTF-8 path, NUL, ASCII Git blob ID, NUL records.",
+    "A syscall entrypoint or source match does not establish Android semantics.",
+    "The Cuttlefish Linux reference and any host probes remain separate from Asterinas qualification."
+  ],
+  "missing_source_paths": [],
+  "observed_at_utc": "2026-10-17T10:59:10.665504+00:00",
+  "observed_date": "2026-10-17",
+  "project_commit": "18d9fca65381f0e84f130c76fa289d5186894d85",
+  "project_tree": "d779baa329f7cc04fb2c2cdeb7822356d34af899",
+  "requested_project_ref": "18d9fca65381f0e84f130c76fa289d5186894d85",
+  "runtime_android_verified": false,
+  "schema": 3,
+  "source_files": {
+    "kernel/asterinas/kernel/core/src/device/mod.rs": {
+      "bytes": 1935,
+      "git_blob": "e62d157f391536f3535ad542defe77ba65407de0",
+      "git_mode": "100644",
+      "sha256": "b0afb033113e502ac830ce2e77fb1a1821f9ecb04251d27602e0ee314ddf8497"
+    },
+    "kernel/asterinas/kernel/core/src/security/lsm/modules/mod.rs": {
+      "bytes": 6505,
+      "git_blob": "a7685c0a85ee3b6ce1914627536f0973ccb3ac22",
+      "git_mode": "100644",
+      "sha256": "5281c0450df65176dff02dfc7f41e5811fc2781494698c870f785e6630f52a86"
+    },
+    "kernel/asterinas/kernel/core/src/syscall/clone.rs": {
+      "bytes": 5090,
+      "git_blob": "773b36a69a57509d322b3731f34a1af631dfea68",
+      "git_mode": "100644",
+      "sha256": "db55eecea5c42bad9c214ef2459f9be36a8bc1773cbf4195947b3b228960db1e"
+    },
+    "kernel/asterinas/kernel/core/src/syscall/execve.rs": {
+      "bytes": 4521,
+      "git_blob": "3f3e043b2d60f9f05738efafadb45e774c033a91",
+      "git_mode": "100644",
+      "sha256": "491c0302a5726f1f2f5ba65c2e638aa8f0e13d5be856ef265b228c252fb1ef19"
+    },
+    "kernel/asterinas/kernel/core/src/syscall/futex.rs": {
+      "bytes": 5267,
+      "git_blob": "a6b8181bac64890eb92a894bf5813baf6edb2f26",
+      "git_mode": "100644",
+      "sha256": "d37ea0bb494e9c8cef67271ad770512449e84c8be85435d9e192039fce6ace16"
+    },
+    "kernel/asterinas/kernel/core/src/syscall/memfd_create.rs": {
+      "bytes": 1773,
+      "git_blob": "56b4c50ba020c057213ed2817ddfe56dd7a8080e",
+      "git_mode": "100644",
+      "sha256": "f1b9b2e403572bd096fc44a57dc34fa5a536c9935c3458415c10a011ce5a1bfc"
+    },
+    "kernel/asterinas/kernel/core/src/syscall/mmap.rs": {
+      "bytes": 9896,
+      "git_blob": "a9868870f6662ffd032ab69095276024c372272b",
+      "git_mode": "100644",
+      "sha256": "9a1714738f0a9cb5b9257969cb969f533a6c9329de75f98880d6299289186f6d"
+    },
+    "kernel/asterinas/kernel/core/src/syscall/mod.rs": {
+      "bytes": 10195,
+      "git_blob": "2b5dfbef666e1fb1c2a479b279bab61321e28f6f",
+      "git_mode": "100644",
+      "sha256": "6304a09e1415553e04aec757e43e2dbf92146a3418f293fef11ead1add5987fa"
+    },
+    "kernel/asterinas/kernel/core/src/syscall/mprotect.rs": {
+      "bytes": 1963,
+      "git_blob": "dbf09e4df35602b27900a0bf20c82a850d9208c5",
+      "git_mode": "100644",
+      "sha256": "728ce17b0ad9cbcf28c36757d0b9cf00e8dd4f1a2f7244bbfb01dd7374374128"
+    },
+    "kernel/asterinas/kernel/core/src/syscall/mremap.rs": {
+      "bytes": 4205,
+      "git_blob": "6e70133a7578a51da66f08e920dc2101daf87c50",
+      "git_mode": "100644",
+      "sha256": "d30fe9d9beb36a4a1a08904ec6abddccf03c892520dd662ea45e4fb362a0df9c"
+    },
+    "kernel/asterinas/kernel/core/src/syscall/munmap.rs": {
+      "bytes": 899,
+      "git_blob": "1a25ad3d64ed6ccf8d455da9eacd04c3dcbe3dd5",
+      "git_mode": "100644",
+      "sha256": "ac12f4a6685f3f20b470d00f24f08104ed9be4a9f48a164ac9da6c02ae440878"
+    },
+    "kernel/asterinas/kernel/core/src/syscall/prctl.rs": {
+      "bytes": 11882,
+      "git_blob": "c26b3ef6a85926078983edb6145759b8da28ed47",
+      "git_mode": "100644",
+      "sha256": "05cc746a23aff92f5ff5f834c011c1b3a08d94ba916d92b2cebfcf83ed16b89a"
+    },
+    "kernel/asterinas/kernel/core/src/syscall/recvmsg.rs": {
+      "bytes": 2026,
+      "git_blob": "0ff25d8c0e94c1ec2d05021cba5e98dfb8dba9f7",
+      "git_mode": "100644",
+      "sha256": "37ded6bc962e7804ed89b2c78876d4da780de5d8bb7a6022a0c571bfff440241"
+    },
+    "kernel/asterinas/kernel/core/src/syscall/rt_sigaction.rs": {
+      "bytes": 2872,
+      "git_blob": "10da43a97fe4a29b23733a137820b8e2692bf9d0",
+      "git_mode": "100644",
+      "sha256": "59aec20050c7c50a63a81322bf9ee7d9518bbd8617c48b90580491dd98402e7e"
+    },
+    "kernel/asterinas/kernel/core/src/syscall/sendmsg.rs": {
+      "bytes": 2050,
+      "git_blob": "974a761fd54959bf469fee4ac8fd95f18ac50add",
+      "git_mode": "100644",
+      "sha256": "a4055a1f7ba67c694ca970cbc96f924ce5d9f8c100d629ffc912c034352b3e19"
+    },
+    "support/upstream-lock.json": {
+      "bytes": 4657,
+      "git_blob": "11c1a12ebcd1b7c3457806c52ff52916e7835363",
+      "git_mode": "100644",
+      "sha256": "beb48f48a77101e5456ca78aa98d3c0f4c3a3f11ca29f422e2d576ff837cc592"
+    }
+  },
+  "source_kind": "git_commit_objects",
+  "source_scan": {
+    "binder_matches": [],
+    "core_rust_file_count": 757,
+    "registered_lsm_modules": [
+      "capability"
+    ],
+    "scanned_git_blobs_sha256": "8af85f1c99f7a816ee9bb779d33e8037e7848abf0c4284a716b54b2369b3c90b",
+    "seccomp_matches": [],
+    "selinux_matches": []
+  },
+  "status": "source_review_blocked"
+}

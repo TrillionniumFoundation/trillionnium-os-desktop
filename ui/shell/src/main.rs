@@ -192,7 +192,10 @@ fn can_offer_fresh_window(
         && task.pid.is_some_and(|pid| pid != 0)
         && task.ui_first_frame_unix_ms.is_some()
         && display.is_some_and(|sample| {
-            task.host_window_observation(sample) == HostWindowObservation::SocketChanged
+            task.wayland_socket_epoch_at_launch.is_some_and(|launch_epoch| {
+                sample.socket_observation_epoch > launch_epoch
+                    && task.host_window_observation(sample) == HostWindowObservation::SocketChanged
+            })
         })
 }
 
@@ -486,7 +489,7 @@ impl Desktop {
                             self.connected,
                             egui::Button::new(format!("Open {}", app.name())),
                         )
-                        .clicked()
+                        .clicked_by(egui::PointerButton::Primary)
                         && self.launch_host_app(self.workspace, app)
                     {
                         self.notice(format!(
@@ -644,7 +647,7 @@ impl Desktop {
                     });
                     if ui
                         .add_enabled(self.connected, egui::Button::new("Launch"))
-                        .clicked()
+                        .clicked_by(egui::PointerButton::Primary)
                         && self.launch_host_app(self.workspace, kind)
                     {
                         self.page = Page::Tasks;
@@ -871,7 +874,9 @@ impl Desktop {
                     warning(),
                     "Old client window unverified after compositor restart. A fresh process cannot restore unsaved app state.",
                 );
-                if ui.button("Launch NEW window (not reattach)").clicked()
+                if ui
+                    .button("Launch NEW window (not reattach)")
+                    .clicked_by(egui::PointerButton::Primary)
                     && self.launch_host_app(task.workspace, task.app)
                 {
                     self.notice(format!(
@@ -883,7 +888,7 @@ impl Desktop {
             }
             if self.connected
                 && !task.state.is_terminal()
-                && ui.button("Request termination").clicked()
+                && ui.button("Request termination").clicked_by(egui::PointerButton::Primary)
             {
                 if let Some(expected_instance) = self.session_instance.clone() {
                     self.submit(Request::Cancel {
@@ -1432,6 +1437,10 @@ mod shell_lifecycle_tests {
         display.status = WaylandSocketStatus::SocketObserved;
         display.socket_observation_epoch = 3;
         assert!(!can_offer_fresh_window(&task, Some(&display), true));
+        // An out-of-order older socket sample is not evidence that the
+        // compositor advanced and must never offer a second process.
+        display.socket_observation_epoch = 2;
+        assert!(!can_offer_fresh_window(&task, Some(&display), true));
         display.socket_observation_epoch = 4;
         let mut unknown = task.clone();
         assert!(unknown.transition(TaskState::Unknown));
@@ -1447,6 +1456,52 @@ mod shell_lifecycle_tests {
         assert!(!can_offer_fresh_window(&completed, Some(&display), true));
         task.pid = None;
         assert!(!can_offer_fresh_window(&task, Some(&display), true));
+    }
+
+    #[test]
+    fn keyboard_focused_host_action_cannot_fake_a_primary_pointer_click() {
+        let ctx = egui::Context::default();
+        let raw = |events| egui::RawInput {
+            focused: true,
+            screen_rect: Some(egui::Rect::from_min_size(
+                egui::Pos2::ZERO,
+                egui::vec2(900.0, 600.0),
+            )),
+            events,
+            ..Default::default()
+        };
+        let mut button_id = None;
+        let _ = ctx.run(raw(vec![]), |ctx| {
+            egui::CentralPanel::default().show(ctx, |ui| {
+                button_id = Some(ui.button("Request termination").id);
+            });
+        });
+        ctx.memory_mut(|memory| memory.request_focus(button_id.unwrap()));
+        for key in [egui::Key::Enter, egui::Key::Space] {
+            let mut focused = false;
+            let mut effect_clicked = false;
+            let _ = ctx.run(
+                raw(vec![egui::Event::Key {
+                    key,
+                    physical_key: None,
+                    pressed: true,
+                    repeat: false,
+                    modifiers: egui::Modifiers::default(),
+                }]),
+                |ctx| {
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        let response = ui.button("Request termination");
+                        focused = response.has_focus();
+                        effect_clicked = response.clicked_by(egui::PointerButton::Primary);
+                    });
+                },
+            );
+            assert!(focused, "test must keep the process-effect control focused");
+            assert!(
+                !effect_clicked,
+                "Enter/Space, including an IME candidate key, must not request a host effect"
+            );
+        }
     }
 
     #[test]

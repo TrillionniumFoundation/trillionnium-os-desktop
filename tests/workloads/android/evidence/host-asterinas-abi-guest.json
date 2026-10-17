@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "day_utc": "2026-10-16",
+  "scope": "Linux host, synthetic A01 builder fixtures and real static C compilation only",
+  "run": "python3 -m unittest discover -s /mnt/data/a08-eighth/tests/workloads/android -p test_asterinas_abi_guest.py -v",
+  "tests": {
+    "ran": 13,
+    "passed": 13,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "log_sha256": "c2314fbb72adf1588dfa87651317d2ce5d68522cdf6b5e5f6cf421615cac4034",
+  "verified_git_blobs": {
+    "support/android/prepare_asterinas_abi.py": "ee684fe28e394f4e3fff01be50cfe044dfc792aa",
+    "support/android/run_asterinas_abi.py": "6e18dd076a6ff2e7c3b904de80364bd9630c49df",
+    "support/android/build_asterinas_abi.sh": "dba8142776c73144b2970f09bec92b5bc6ed0a81",
+    "tests/workloads/android/test_asterinas_abi_guest.py": "dec12f24ef22103ec763be7b7719aec0a0a698ce"
+  },
+  "qemu_available": false,
+  "kvm_available": false,
+  "rust_kernel_guest_executed": false,
+  "binder_on_asterinas_executed": false,
+  "android_apk_executed": false,
+  "android_compatible": false
+}

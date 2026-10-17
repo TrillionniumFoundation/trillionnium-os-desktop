@@ -1,0 +1,65 @@
+test_current_snapshot_is_bound_to_project_commit_and_red (test_kernel_source_audit.KernelSourceAuditTests.test_current_snapshot_is_bound_to_project_commit_and_red) ... ok
+test_dirty_tracked_files_do_not_become_commit_evidence (test_kernel_source_audit.KernelSourceAuditTests.test_dirty_tracked_files_do_not_become_commit_evidence) ... FAIL
+test_observation_time_is_the_actual_utc_audit_time (test_kernel_source_audit.KernelSourceAuditTests.test_observation_time_is_the_actual_utc_audit_time) ... FAIL
+test_selected_ref_controls_bytes_and_candidate_scan (test_kernel_source_audit.KernelSourceAuditTests.test_selected_ref_controls_bytes_and_candidate_scan) ... FAIL
+test_selected_ref_missing_file_is_not_filled_from_checkout (test_kernel_source_audit.KernelSourceAuditTests.test_selected_ref_missing_file_is_not_filled_from_checkout) ... FAIL
+test_snapshot_records_git_blob_and_content_hash (test_kernel_source_audit.KernelSourceAuditTests.test_snapshot_records_git_blob_and_content_hash) ... ok
+test_untracked_candidate_does_not_become_commit_evidence (test_kernel_source_audit.KernelSourceAuditTests.test_untracked_candidate_does_not_become_commit_evidence) ... FAIL
+
+======================================================================
+FAIL: test_dirty_tracked_files_do_not_become_commit_evidence (test_kernel_source_audit.KernelSourceAuditTests.test_dirty_tracked_files_do_not_become_commit_evidence)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/98f315e377b2/next-a08/tests/workloads/android/test_kernel_source_audit.py", line 119, in test_dirty_tracked_files_do_not_become_commit_evidence
+    self.assertEqual(report["source_files"][relative]["sha256"], hashlib.sha256(expected).hexdigest())
+AssertionError: '828e00749ef3ba3cbbfd38054fb54feb6c575e291c62b6fcd377b9c10f7d0c61' != 'c81ff0c90faf23080ef7752708ea2954833a77178cc9f21b1aa6d29ae2f23f57'
+- 828e00749ef3ba3cbbfd38054fb54feb6c575e291c62b6fcd377b9c10f7d0c61
++ c81ff0c90faf23080ef7752708ea2954833a77178cc9f21b1aa6d29ae2f23f57
+
+
+======================================================================
+FAIL: test_observation_time_is_the_actual_utc_audit_time (test_kernel_source_audit.KernelSourceAuditTests.test_observation_time_is_the_actual_utc_audit_time)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/98f315e377b2/next-a08/tests/workloads/android/test_kernel_source_audit.py", line 148, in test_observation_time_is_the_actual_utc_audit_time
+    self.assertIn(report["observed_date"], {before.date().isoformat(), after.date().isoformat()})
+AssertionError: '2026-10-16' not found in {'2026-10-17'}
+
+======================================================================
+FAIL: test_selected_ref_controls_bytes_and_candidate_scan (test_kernel_source_audit.KernelSourceAuditTests.test_selected_ref_controls_bytes_and_candidate_scan)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/98f315e377b2/next-a08/tests/workloads/android/test_kernel_source_audit.py", line 106, in test_selected_ref_controls_bytes_and_candidate_scan
+    self.assertEqual(report["source_files"][relative]["git_blob"],
+AssertionError: '3704fdf50075540d58a0c02d7a41fe876473c23f' != '1086a272912f5aea012fcc9a1b461c1be24b9ad1'
+- 3704fdf50075540d58a0c02d7a41fe876473c23f
++ 1086a272912f5aea012fcc9a1b461c1be24b9ad1
+
+
+======================================================================
+FAIL: test_selected_ref_missing_file_is_not_filled_from_checkout (test_kernel_source_audit.KernelSourceAuditTests.test_selected_ref_missing_file_is_not_filled_from_checkout)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/98f315e377b2/next-a08/tests/workloads/android/test_kernel_source_audit.py", line 139, in test_selected_ref_missing_file_is_not_filled_from_checkout
+    self.assertIn(relative, report["missing_source_paths"])
+AssertionError: 'kernel/asterinas/kernel/core/src/syscall/mmap.rs' not found in ['kernel/asterinas/kernel/core/src/syscall/mod.rs', 'kernel/asterinas/kernel/core/src/syscall/mprotect.rs', 'kernel/asterinas/kernel/core/src/syscall/munmap.rs', 'kernel/asterinas/kernel/core/src/syscall/mremap.rs', 'kernel/asterinas/kernel/core/src/syscall/memfd_create.rs', 'kernel/asterinas/kernel/core/src/syscall/sendmsg.rs', 'kernel/asterinas/kernel/core/src/syscall/recvmsg.rs', 'kernel/asterinas/kernel/core/src/syscall/clone.rs', 'kernel/asterinas/kernel/core/src/syscall/execve.rs', 'kernel/asterinas/kernel/core/src/syscall/rt_sigaction.rs']
+
+======================================================================
+FAIL: test_untracked_candidate_does_not_become_commit_evidence (test_kernel_source_audit.KernelSourceAuditTests.test_untracked_candidate_does_not_become_commit_evidence)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/98f315e377b2/next-a08/tests/workloads/android/test_kernel_source_audit.py", line 128, in test_untracked_candidate_does_not_become_commit_evidence
+    self.assertEqual(report["source_scan"]["binder_matches"], [])
+AssertionError: Lists differ: ['kernel/asterinas/kernel/core/src/device/binder.rs'] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+'kernel/asterinas/kernel/core/src/device/binder.rs'
+
+- ['kernel/asterinas/kernel/core/src/device/binder.rs']
++ []
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.736s
+
+FAILED (failures=5)

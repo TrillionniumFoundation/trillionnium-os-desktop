@@ -1,0 +1,32 @@
+{
+  "command": [
+    "python3",
+    "support/android/verify_host.py",
+    "--out",
+    "tests/workloads/android/evidence/2026-10-17-source-integrity/host-gates-with-jdk.json"
+  ],
+  "source_commit": "5fd85f8632308507cd3368607fc37917075c46e4",
+  "source_tree": "5d69a3fc1c7eff6a0449a0d9d7b36c9370f6cca3",
+  "start_utc": "2026-10-17T10:13:58.661043+00:00",
+  "end_utc": "2026-10-17T10:14:05.849522+00:00",
+  "exit_code": 0,
+  "environment": {
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "JAVA_HOME": "/workspace/scratch/98f315e377b2/next-tools/jdk",
+    "PATH_prefix": "/workspace/scratch/98f315e377b2/next-tools/jdk/bin"
+  },
+  "resolved_tools": {
+    "cc": "/usr/bin/cc",
+    "java": "/workspace/scratch/98f315e377b2/next-tools/jdk/bin/java",
+    "javac": "/workspace/scratch/98f315e377b2/next-tools/jdk/bin/javac"
+  },
+  "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "raw_log_sha256": "9628854e3a2cd1931be9ef11a2b3c54677b0dad3042f8d16c8043665be297f9e",
+  "jdk_profile": "Isolated official javac launcher and JNI headers; existing OpenJDK 17.0.20 runtime/compiler modules; see jdk-installation.json",
+  "scope": "Linux host probes and actual Java/JNI host loading only; not Android/Asterinas runtime",
+  "host_status": "host_passed_only",
+  "unit_test_count": 176,
+  "not_passed_gates": [
+    "execute_binder_abi"
+  ]
+}

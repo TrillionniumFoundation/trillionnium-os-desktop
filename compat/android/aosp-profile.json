@@ -1,0 +1,384 @@
+{
+  "schema_version": 1,
+  "profile_id": "aosp-15.0.0_r36-cuttlefish-x86_64-4k-software",
+  "status": "source_locked_build_not_run",
+  "execution_boundary": {
+    "reference_class": "linux_or_android_guest",
+    "new_rust_kernel_status": "not_tested",
+    "native_android_claim": false
+  },
+  "aosp": {
+    "release": "Android 15.0.0",
+    "release_build": "BP1A.250505.005.D1",
+    "tag": "android-15.0.0_r36",
+    "manifest_repository": "https://android.googlesource.com/platform/manifest",
+    "manifest_tag_object": "1d7a1b4e33e556ed3cce86e57200f37b49cfd480",
+    "manifest_commit": "a0601d2912a6cedcaf97e1372173f8704a2715b0",
+    "default_xml_sha256": "58aee921fa2aa15b97c3de8e1a06fa582da798973803a3da4c8af596a984719b",
+    "source_projects": {
+      "build/make": "d9611a86f6614b2d8b0367f81a825858dfd2207f",
+      "art": "795d594fd825385562da6b089ea9b2033f3abf5a",
+      "bionic": "8d67ca893c1523eb926b9080dbe4e2ffd2a27ba1",
+      "frameworks/base": "396d32905ded85c082232bc510b525c9e372e585",
+      "frameworks/native": "cdca1e2000347ce2f2b25ab5d0f2dffa81f30e01",
+      "hardware/interfaces": "4d7e907c777eeecc4c5bd7cf640a754fac206ff7",
+      "system/core": "00c7fec1bb09f3284aad6a6f96d2f63dfc3650ad",
+      "system/memory/lmkd": "4812ac8dbb7efa0bc01789d80ee7604e456f10f5",
+      "system/sepolicy": "e4a36f4174b17bbab9dc043f4a65dc8d87377290",
+      "device/google/cuttlefish": "6b140b74d9ec0b55ce230ff11994c627768d7419",
+      "build/release": "be57613fcdf1c2767de62acdca15e16143c1fd80",
+      "build/soong": "333d2b3687b3a337dbcca9d65000bca186795e39",
+      "device/google/cuttlefish_prebuilts": "e612d2d93afcb806af587969a360cfbb28993111",
+      "device/google/cuttlefish_vmm": "33c1d3b8ddc114b2e14750151ef9b1c9492fb7c7"
+    },
+    "source_evidence": {
+      "product_makefile": {
+        "url": "https://android.googlesource.com/device/google/cuttlefish/+/refs/tags/android-15.0.0_r36/vsoc_x86_64/phone/aosp_cf.mk",
+        "sha256": "bf52bb0430e1d52f07c0e56b8bf81cd3a080bbb35058742df73ff8779fdadeb3"
+      },
+      "device_board_config": {
+        "url": "https://android.googlesource.com/device/google/cuttlefish/+/refs/tags/android-15.0.0_r36/vsoc_x86_64/BoardConfig.mk",
+        "sha256": "8ca0068ef3b775d1c5d9839d1dd5e9a5e96599f05920be939683f53e62a648d9"
+      },
+      "shared_board_config": {
+        "url": "https://android.googlesource.com/device/google/cuttlefish/+/refs/tags/android-15.0.0_r36/shared/BoardConfig.mk",
+        "sha256": "570aa305dbed70a75210a9907e3d7efaf7367e0f20d39ba908f2ac846b837156"
+      },
+      "android_products": {
+        "url": "https://android.googlesource.com/device/google/cuttlefish/+/refs/tags/android-15.0.0_r36/AndroidProducts.mk",
+        "sha256": "4f4d2282f616fb79d634bd910acbff65bb52674c5b4dafc996c82ad687f6abbd"
+      },
+      "init_rc": {
+        "url": "https://android.googlesource.com/platform/system/core/+/refs/tags/android-15.0.0_r36/rootdir/init.rc",
+        "sha256": "4d0e8e84c6c5b345c79230c82902a1fb25505cd15808663bca14cb7dedd0030d"
+      }
+    },
+    "runtime_component_sources": {
+      "bionic": "bionic/libc",
+      "init": "system/core/init",
+      "binder_userspace": "frameworks/native/libs/binder",
+      "zygote": "frameworks/base/core/java/com/android/internal/os/ZygoteInit.java",
+      "art": "art/runtime",
+      "system_server": "frameworks/base/services/java/com/android/server/SystemServer.java",
+      "package_manager": "frameworks/base/services/core/java/com/android/server/pm",
+      "surfaceflinger": "frameworks/native/services/surfaceflinger"
+    },
+    "release_config": {
+      "name": "trunk_staging",
+      "release_build": "BP1A.250505.005.D1",
+      "platform_sdk_version": 35,
+      "board_api_level": 202504,
+      "RELEASE_AIDL_USE_UNFROZEN": true,
+      "source": "build/release/flag_declarations/RELEASE_AIDL_USE_UNFROZEN.textproto and flag_values/trunk_staging"
+    }
+  },
+  "target": {
+    "lunch": "aosp_cf_x86_64_phone-trunk_staging-userdebug",
+    "product": "aosp_cf_x86_64_phone",
+    "device": "vsoc_x86_64",
+    "device_tree": "device/google/cuttlefish",
+    "product_makefile": "device/google/cuttlefish/vsoc_x86_64/phone/aosp_cf.mk",
+    "board_config": "device/google/cuttlefish/vsoc_x86_64/BoardConfig.mk",
+    "build_variant": "userdebug",
+    "architecture": "x86_64",
+    "binder_bitness": 64,
+    "page_size_bytes": 4096,
+    "page_size_source": "runtime probe and built product properties; page-agnostic is a separate product",
+    "native_bridge_declared_arch": "arm64",
+    "native_bridge_status": "declared_only_not_verified",
+    "graphics": {
+      "mode": "software",
+      "renderer": "SwiftShader guest_swiftshader",
+      "emulator_renderer": "guest_swiftshader",
+      "gpu_acceleration_claimed": false,
+      "display_bridge_status": "not_implemented"
+    },
+    "target_second_arch": "x86",
+    "target_second_abis": [
+      "x86"
+    ],
+    "native_bridge_declared_arches": [
+      "arm64",
+      "arm"
+    ],
+    "native_bridge_declared_abis": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "armeabi"
+    ]
+  },
+  "partitions": {
+    "dynamic_partitions": true,
+    "super_partition_size_bytes": 7516192768,
+    "system": true,
+    "system_ext": true,
+    "product": true,
+    "vendor": true,
+    "odm": true,
+    "vendor_dlkm": true,
+    "odm_dlkm": true,
+    "system_dlkm": true,
+    "dynamic_groups": [
+      "google_system_dynamic_partitions",
+      "google_vendor_dynamic_partitions"
+    ],
+    "generated_images_required": [
+      "boot.img",
+      "init_boot.img",
+      "vendor_boot.img",
+      "system.img",
+      "system_ext.img",
+      "product.img",
+      "vendor.img",
+      "odm.img",
+      "vendor_dlkm.img",
+      "odm_dlkm.img",
+      "system_dlkm.img",
+      "userdata.img"
+    ],
+    "image_hashes_status": "not_built",
+    "required_cuttlefish_images": [
+      "android-info.txt",
+      "boot.img",
+      "bootloader",
+      "init_boot.img",
+      "super.img",
+      "userdata.img",
+      "vbmeta.img",
+      "vbmeta_system.img",
+      "vbmeta_system_dlkm.img",
+      "vbmeta_vendor_dlkm.img",
+      "vendor_boot.img"
+    ]
+  },
+  "vintf": {
+    "framework_matrix": {
+      "path": "hardware/interfaces/compatibility_matrices/compatibility_matrix.202404.xml",
+      "sha256": "ce02e4a009dd4c82dbc82fe96967edfa3d4186e3973348be32c8c62da5e990eb",
+      "url": "https://android.googlesource.com/platform/hardware/interfaces/+/refs/tags/android-15.0.0_r36/compatibility_matrices/compatibility_matrix.202404.xml",
+      "level": 202404
+    },
+    "conditional_framework_matrix": {
+      "path": "hardware/interfaces/compatibility_matrices/compatibility_matrix.202504.xml",
+      "sha256": "7d510a080d2931ac3437b5083d324a8521b195cc5561dc2dffe16948e3c444ad",
+      "url": "https://android.googlesource.com/platform/hardware/interfaces/+/refs/tags/android-15.0.0_r36/compatibility_matrices/compatibility_matrix.202504.xml",
+      "level": 202504,
+      "status": "conditional_release_matrix; final selection requires built product flags"
+    },
+    "device_manifest": {
+      "path": "device/google/cuttlefish/shared/config/manifest.xml",
+      "sha256": "a5102978d846a8c153907de8e6ef9b18b9586d9632b5f8f1b4d554ab4d918b02",
+      "url": "https://android.googlesource.com/device/google/cuttlefish/+/refs/tags/android-15.0.0_r36/shared/config/manifest.xml",
+      "target_level": 202504,
+      "status": "fragment_only_final_vintf_must_be_assembled",
+      "previous_manifest": {
+        "path": "device/google/cuttlefish/shared/config/previous_manifest.xml",
+        "sha256": "5e898b53db8af9bec6b81ccad1343568715d8727e2188ff78356ae9c7e407c9d",
+        "target_level": 202404,
+        "status": "used when RELEASE_AIDL_USE_UNFROZEN=false"
+      }
+    },
+    "framework_manifest_fragments": [
+      {
+        "path": "device/google/cuttlefish/shared/config/product_manifest.xml",
+        "sha256": "032b01efea6ecf018c6e24f12219637e1f22b4178db95745f5b59c964c8f013a"
+      },
+      {
+        "path": "device/google/cuttlefish/shared/config/system_ext_manifest.xml",
+        "sha256": "032b01efea6ecf018c6e24f12219637e1f22b4178db95745f5b59c964c8f013a"
+      }
+    ],
+    "aidl_instance_status": "requirements only; active 202504 matrix is selected by RELEASE_AIDL_USE_UNFROZEN=true; provider instances require built VINTF and servicemanager inventory",
+    "active_framework_matrix_level": 202504,
+    "active_device_manifest_path": "device/google/cuttlefish/shared/config/manifest.xml",
+    "aidl_hal_examples_frozen_202404": [
+      {
+        "name": "android.hardware.audio.core",
+        "versions": [
+          "1-2"
+        ],
+        "interfaces": {
+          "IModule": [
+            "default"
+          ],
+          "IConfig": [
+            "default"
+          ]
+        }
+      },
+      {
+        "name": "android.hardware.graphics.allocator",
+        "versions": [
+          "1-2"
+        ],
+        "interfaces": {
+          "IAllocator": [
+            "default"
+          ]
+        }
+      },
+      {
+        "name": "android.hardware.graphics.composer3",
+        "versions": [
+          "3"
+        ],
+        "interfaces": {
+          "IComposer": [
+            "default"
+          ]
+        }
+      },
+      {
+        "name": "android.hardware.health",
+        "versions": [
+          "3"
+        ],
+        "interfaces": {
+          "IHealth": [
+            "default"
+          ]
+        }
+      },
+      {
+        "name": "android.hardware.power",
+        "versions": [
+          "5"
+        ],
+        "interfaces": {
+          "IPower": [
+            "default"
+          ]
+        }
+      },
+      {
+        "name": "android.hardware.sensors",
+        "versions": [
+          "2"
+        ],
+        "interfaces": {
+          "ISensors": [
+            "default"
+          ]
+        }
+      }
+    ],
+    "aidl_hal_examples_active_202504": [
+      {
+        "name": "android.hardware.audio.core",
+        "versions": [
+          "1-3"
+        ],
+        "interfaces": {
+          "IModule": [
+            "default"
+          ],
+          "IConfig": [
+            "default"
+          ]
+        }
+      },
+      {
+        "name": "android.hardware.graphics.allocator",
+        "versions": [
+          "1-2"
+        ],
+        "interfaces": {
+          "IAllocator": [
+            "default"
+          ]
+        }
+      },
+      {
+        "name": "android.hardware.graphics.composer3",
+        "versions": [
+          "4"
+        ],
+        "interfaces": {
+          "IComposer": [
+            "default"
+          ]
+        }
+      },
+      {
+        "name": "android.hardware.health",
+        "versions": [
+          "3-4"
+        ],
+        "interfaces": {
+          "IHealth": [
+            "default"
+          ]
+        }
+      },
+      {
+        "name": "android.hardware.power",
+        "versions": [
+          "5-6"
+        ],
+        "interfaces": {
+          "IPower": [
+            "default"
+          ]
+        }
+      },
+      {
+        "name": "android.hardware.sensors",
+        "versions": [
+          "2-3"
+        ],
+        "interfaces": {
+          "ISensors": [
+            "default"
+          ]
+        }
+      }
+    ]
+  },
+  "toolchain": {
+    "host": "linux-x86_64",
+    "java": "OpenJDK 17 or the pinned AOSP prebuilts/jdk/jdk17/linux-x86",
+    "repo": "official repo launcher; version must be recorded by repo version",
+    "required_host_tools": [
+      "git",
+      "curl",
+      "python3",
+      "make",
+      "bash",
+      "java",
+      "repo"
+    ],
+    "build_commands": [
+      "repo init --partial-clone --no-use-superproject -u https://android.googlesource.com/platform/manifest -b android-15.0.0_r36",
+      "repo sync -c -j8",
+      "repo manifest -r -o pinned-manifest.xml",
+      "source build/envsetup.sh",
+      "lunch aosp_cf_x86_64_phone-trunk_staging-userdebug",
+      "m -j$(nproc)"
+    ],
+    "software_graphics_run_command": "launch_cvd --gpu_mode=guest_swiftshader",
+    "build_verified_here": false,
+    "build_blocker_here": "repo, adb, emulator, aapt2, apkanalyzer, launch_cvd and qemu-system-x86_64 are not installed; host is below official AOSP RAM/disk requirements",
+    "official_host_requirements": {
+      "architecture": "x86_64",
+      "ram_gib_min": 64,
+      "free_disk_gib_min": 400,
+      "source": "https://source.android.com/docs/setup/start/requirements"
+    }
+  },
+  "runtime_components": [
+    "bionic",
+    "init",
+    "binder",
+    "zygote64",
+    "art",
+    "system_server",
+    "package_manager",
+    "surfaceflinger"
+  ],
+  "security": {
+    "selinux_policy_source": "system/sepolicy",
+    "selinux_or_equivalent_mac_required": true,
+    "play_integrity_drm_hardware_attestation": "not_provided",
+    "keystore_hardware_backing": "not_verified"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "command": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "support/android/verify_host.py",
+    "--out",
+    "/workspace/scratch/98f315e377b2/next-a08/tests/workloads/android/evidence/2026-10-17-commit-bound-audit/host-gates.json"
+  ],
+  "cwd": "/workspace/scratch/98f315e377b2/next-a08",
+  "end_utc": "2026-10-17T10:59:51.362175+00:00",
+  "environment": {
+    "JAVA_HOME": "/workspace/scratch/98f315e377b2/next-tools/jdk",
+    "PATH_prefix": "/workspace/scratch/98f315e377b2/next-tools/jdk/bin",
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "exit_code": 0,
+  "host_status": "host_passed_only",
+  "jdk_profile": "Existing isolated official javac launcher/JNI headers with OpenJDK 17.0.20 runtime/compiler modules; installation provenance remains in ../2026-10-17-source-integrity/jdk-installation.json",
+  "log_sha256": "e27e9c23b4f6cde3b961ad75a19d117be1ced0f3b472a223b7eb86c22ed41b4c",
+  "not_passed_gates": [
+    "execute_binder_abi"
+  ],
+  "scope": "Linux host regression and actual Java/JNI loading only; no AOSP, Android guest or Asterinas runtime executed",
+  "source_commit": "cf241f9c459807085e70b1ad54be21d10ca1190d",
+  "source_tree": "7bd0e56ae817625355c0b6b36366eac977aa5725",
+  "start_utc": "2026-10-17T10:59:42.413517+00:00",
+  "unit_test_count": 184
+}
