@@ -67,6 +67,7 @@ use crate::{
     fs::cgroupfs::controller::{Controller, PidsPreCharge, SubCtrlSet, SubCtrlType},
     prelude::*,
     process::{Pid, Process, pid_table},
+    process::posix_thread::AsPosixThread,
 };
 
 /// A type that provides synchronized access to cgroup membership and sub-controller state.
@@ -167,6 +168,7 @@ impl CgroupMembership {
 
         // Try to add the process to the new cgroup first.
         self.add_process_to_node(&process, new_cgroup)?;
+        process.set_cpu_cgroup_for_tasks(Some(new_cgroup.fields.weak_self().upgrade().unwrap()));
         new_cgroup.controller.charge_pids();
 
         // Remove the process from the old cgroup second.
@@ -205,6 +207,7 @@ impl CgroupMembership {
 
         pids_charge.apply();
         self.add_process_to_node(&process, new_cgroup).unwrap();
+        process.set_cpu_cgroup_for_tasks(Some(new_cgroup.fields.weak_self().upgrade().unwrap()));
     }
 
     fn add_process_to_node(&self, process: &Arc<Process>, new_cgroup: &CgroupNode) -> Result<()> {
@@ -242,6 +245,12 @@ impl CgroupMembership {
         };
 
         process.set_cgroup(None);
+        // exit_process() marks the process zombie before removing its cgroup.
+        // Keep the old snapshot for the deferred scheduler debit of exited
+        // tasks; a live explicit migration to root must switch to root.
+        if !process.status().is_zombie() {
+            process.set_cpu_cgroup_for_tasks(None);
+        }
 
         old_cgroup
             .with_inner_mut(|old_cgroup_processes| {
