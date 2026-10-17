@@ -8,6 +8,10 @@
 
 use std::collections::BTreeMap;
 
+/// Bound the consumer-only cache. Exhaustion never silently evicts previous
+/// grants or revocations, and must never imply authorization success.
+pub const MAX_PERMISSION_OBSERVATIONS: usize = 1024;
+
 /// User-facing capabilities whose access must be observed from the trusted
 /// portal/session owner.  A missing observation is never treated as allowed.
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -103,6 +107,7 @@ pub enum PermissionObservationError {
     InvalidRevision,
     StaleRevision,
     ConflictingRevision,
+    CapacityExceeded,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -148,6 +153,9 @@ impl PermissionState {
 
         match self.observations.get(&(scope, kind)).copied() {
             None => {
+                if self.observations.len() >= MAX_PERMISSION_OBSERVATIONS {
+                    return Err(PermissionObservationError::CapacityExceeded);
+                }
                 self.observations.insert((scope, kind), incoming);
                 Ok(PermissionObservationUpdate::Inserted)
             }
@@ -166,6 +174,19 @@ impl PermissionState {
                 Ok(PermissionObservationUpdate::Updated)
             }
         }
+    }
+
+    /// Drop all cached decisions when the authenticated owner is disconnected,
+    /// changes generation or has unknown provenance. This is local consumer
+    /// invalidation, not a capability revoke operation in the A05 owner.
+    pub fn invalidate_all(&mut self) {
+        self.observations.clear();
+    }
+
+    /// Drop only the decisions associated with one owner-invalidated scope.
+    pub fn invalidate_scope(&mut self, scope: PermissionScopeId) {
+        self.observations
+            .retain(|(observed_scope, _), _| *observed_scope != scope);
     }
 
     /// Return the latest observation, if one has been received for this
@@ -230,6 +251,79 @@ mod tests {
 
     const PERSONAL: PermissionScopeId = PermissionScopeId(1);
     const WORK: PermissionScopeId = PermissionScopeId(2);
+
+    #[test]
+    fn owner_disconnect_invalidates_cached_grants() {
+        let mut state = PermissionState::new();
+        for scope in [PERSONAL, WORK] {
+            state.observe(
+                scope,
+                PermissionKind::Clipboard,
+                PermissionDecision::Granted,
+                2,
+            ).unwrap();
+            assert!(state.allows(scope, PermissionKind::Clipboard));
+        }
+        state.invalidate_all();
+        for scope in [PERSONAL, WORK] {
+            assert_eq!(
+                state.decision(scope, PermissionKind::Clipboard),
+                PermissionDecision::Unknown
+            );
+            assert!(!state.allows(scope, PermissionKind::Clipboard));
+        }
+    }
+
+    #[test]
+    fn invalidating_one_scope_does_not_clear_unrelated_grants() {
+        let mut state = PermissionState::new();
+        for scope in [PERSONAL, WORK] {
+            state.observe(
+                scope,
+                PermissionKind::Camera,
+                PermissionDecision::Granted,
+                1,
+            ).unwrap();
+        }
+        state.invalidate_scope(PERSONAL);
+        assert!(!state.allows(PERSONAL, PermissionKind::Camera));
+        assert!(state.allows(WORK, PermissionKind::Camera));
+    }
+
+    #[test]
+    fn capacity_failure_never_prevents_revoking_an_existing_grant() {
+        let mut state = PermissionState::new();
+        for value in 1..=MAX_PERMISSION_OBSERVATIONS as u128 {
+            let scope = PermissionScopeId::new(value).unwrap();
+            state.observe(
+                scope,
+                PermissionKind::Microphone,
+                PermissionDecision::Granted,
+                1,
+            ).unwrap();
+        }
+        let next = PermissionScopeId::new(MAX_PERMISSION_OBSERVATIONS as u128 + 1).unwrap();
+        assert_eq!(
+            state.observe(
+                next,
+                PermissionKind::Microphone,
+                PermissionDecision::Granted,
+                1,
+            ),
+            Err(PermissionObservationError::CapacityExceeded)
+        );
+        assert!(!state.allows(next, PermissionKind::Microphone));
+        assert_eq!(
+            state.observe(
+                PERSONAL,
+                PermissionKind::Microphone,
+                PermissionDecision::Revoked,
+                2,
+            ),
+            Ok(PermissionObservationUpdate::Updated)
+        );
+        assert!(!state.allows(PERSONAL, PermissionKind::Microphone));
+    }
 
     #[test]
     fn zero_scope_cannot_be_constructed() {
