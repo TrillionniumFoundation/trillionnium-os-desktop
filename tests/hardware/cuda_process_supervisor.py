@@ -143,6 +143,14 @@ def run_worker(argv, timeout_seconds):
             pass
         _reap(process, record)
         return 124, record
+    except ChildProcessError:
+        # SIGCHLD=SIG_IGN or a competing child reaper can consume our child
+        # before WNOWAIT observes it. The numeric PID/PGID is then *unowned*
+        # and may already refer to an unrelated process. Never signal that
+        # number, even as a best-effort cleanup; fail closed instead.
+        record['worker_identity_lost'] = True
+        record['unreaped_worker_may_remain'] = True
+        return 125, record
     except BaseException:
         _kill_anchored_group(process, record)
         try:
