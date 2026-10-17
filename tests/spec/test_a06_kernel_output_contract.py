@@ -19,6 +19,25 @@ class A06KernelOutputContract(unittest.TestCase):
         )
         self.assertNotIn("release/asterinas\\\"", source)
 
+    def test_probe_scripts_keep_local_import_path(self):
+        source = WORKFLOW.read_text()
+        self.assertIn(
+            "python3 tests/organ_backend/run_candidate_matrix.py",
+            source,
+        )
+        self.assertIn(
+            "python3 tests/organ_backend/smp2/run_parallel_candidate.py",
+            source,
+        )
+        self.assertNotIn(
+            "python3 -I tests/organ_backend/run_candidate_matrix.py",
+            source,
+        )
+        self.assertNotIn(
+            "python3 -I tests/organ_backend/smp2/run_parallel_candidate.py",
+            source,
+        )
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
