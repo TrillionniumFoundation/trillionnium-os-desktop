@@ -20,15 +20,22 @@ pub enum AliasError {
     SequenceOverflow,
     Fenced,
     StaleReceipt,
+    InvalidBookIdentity,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum MappingState { Reserved, UnknownEffect }
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct MappingReceipt { sequence: u64 }
+pub struct MappingReceipt {
+    sequence: u64,
+    book_instance: u64,
+}
 impl MappingReceipt {
     pub const fn sequence(&self) -> u64 { self.sequence }
+    /// A05's already-existing kernel registry must issue unique book incarnations.
+    /// This value is metadata, not a capability or authentication token.
+    pub const fn book_instance(&self) -> u64 { self.book_instance }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -53,24 +60,33 @@ pub struct DmaAliasBook<const N: usize> {
     group: u32,
     instance: u64,
     generation: u64,
+    // Issued by the canonical A05 registry, distinct across close/reopen,
+    // process exec and hotplug. Never minted by this state model.
+    book_instance: u64,
     entries: [Option<Entry>; N],
     next_sequence: u64,
     fenced: bool,
 }
 
 impl<const N: usize> DmaAliasBook<N> {
-    pub fn new(device: &DeviceHandle, owner: ResourceDomainId) -> Result<Self, AliasError> {
+    pub fn new(
+        device: &DeviceHandle,
+        owner: ResourceDomainId,
+        book_instance: u64,
+    ) -> Result<Self, AliasError> {
         if !owner.is_nonzero() { return Err(AliasError::WrongOwner); }
+        if book_instance == 0 { return Err(AliasError::InvalidBookIdentity); }
         if device.instance_id() == 0 || device.state() != DeviceState::Assigned(owner) {
             return Err(AliasError::WrongDevice);
         }
         Ok(Self {
             owner, pci_bdf: device.pci_bdf(), group: device.iommu_group(),
             instance: device.instance_id(), generation: device.generation(),
-            entries: [None; N], next_sequence: 1, fenced: false,
+            book_instance, entries: [None; N], next_sequence: 1, fenced: false,
         })
     }
 
+    pub const fn book_instance(&self) -> u64 { self.book_instance }
     pub fn active(&self) -> usize { self.entries.iter().filter(|e| e.is_some()).count() }
     pub const fn is_fenced(&self) -> bool { self.fenced }
     fn same_attachment(&self, d: &DeviceHandle) -> bool {
@@ -123,10 +139,13 @@ impl<const N: usize> DmaAliasBook<N> {
             direction, state: MappingState::Reserved,
         });
         self.next_sequence = next;
-        Ok(MappingReceipt { sequence: seq })
+        Ok(MappingReceipt { sequence: seq, book_instance: self.book_instance })
     }
 
     fn index(&self, receipt: &MappingReceipt) -> Option<usize> {
+        // A sequence repeats when a book is recreated. A receipt from the
+        // previous book must NEVER select a slot in a new book.
+        if receipt.book_instance != self.book_instance { return None; }
         self.entries.iter().position(|e| e.map(|x| x.sequence == receipt.sequence).unwrap_or(false))
     }
     pub fn state(&self, receipt: &MappingReceipt) -> Option<MappingState> {
@@ -173,7 +192,7 @@ mod tests {
         let mut device = DeviceHandle::new(0x300, 27, 43).unwrap();
         device.assign_after_kernel_checks(D).unwrap();
         let memory = MemoryObject::new(1, D, 16384);
-        let book = DmaAliasBook::<2>::new(&device, D).unwrap();
+        let book = DmaAliasBook::<2>::new(&device, D, 710).unwrap();
         (device, memory, book)
     }
     fn reserve(book: &mut DmaAliasBook<2>, d: &DeviceHandle,
@@ -308,10 +327,54 @@ mod tests {
         assert_eq!(reserve(&mut b, &d, &m, 0x1000, 0, 4096), Err(AliasError::SequenceOverflow));
         assert_eq!(b.active(), 0);
     }
+
+    #[test]
+    fn book_instance_is_nonzero_and_never_confused_with_permission() {
+        let (dev, _, _) = setup();
+        assert_eq!(
+            DmaAliasBook::<2>::new(&dev, D, 0),
+            Err(AliasError::InvalidBookIdentity)
+        );
+        let book = DmaAliasBook::<2>::new(&dev, D, 722).unwrap();
+        assert_eq!(book.book_instance(), 722);
+    }
+
+    #[test]
+    fn two_books_same_device_with_same_sequence_reject_cross_book_replay() {
+        let (dev, memory, mut first) = setup();
+        let mut second = DmaAliasBook::<2>::new(&dev, D, 711).unwrap();
+        let first_receipt = reserve(&mut first, &dev, &memory, 0x1000, 0, 4096).unwrap();
+        let second_receipt = reserve(&mut second, &dev, &memory, 0x1000, 0, 4096).unwrap();
+        assert_eq!(first_receipt.sequence(), second_receipt.sequence());
+        assert_ne!(first_receipt.book_instance(), second_receipt.book_instance());
+        assert_eq!(second.state(&first_receipt), None);
+        assert_eq!(second.mark_unknown_effect(&first_receipt), Err(AliasError::StaleReceipt));
+        assert_eq!(
+            second.release_after_platform_quiescence(&dev, &first_receipt),
+            Err(AliasError::StaleReceipt)
+        );
+        assert_eq!(second.active(), 1);
+        assert_eq!(second.state(&second_receipt), Some(MappingState::Reserved));
+    }
+
+    #[test]
+    fn book_recreation_cannot_release_old_generation_even_at_same_bdf_iova() {
+        let (dev, memory, mut old) = setup();
+        let stale = reserve(&mut old, &dev, &memory, 0x1000, 0, 4096).unwrap();
+        old.fence_all_on_vm_loss();
+        let mut new = DmaAliasBook::<2>::new(&dev, D, 712).unwrap();
+        let current = reserve(&mut new, &dev, &memory, 0x1000, 0, 4096).unwrap();
+        assert_eq!(new.release_after_platform_quiescence(&dev, &stale), Err(AliasError::StaleReceipt));
+        assert_eq!(new.state(&stale), None);
+        assert_eq!(new.active(), 1);
+        new.release_after_platform_quiescence(&dev, &current).unwrap();
+        assert_eq!(new.active(), 0);
+    }
+
     #[test]
     fn zero_capacity_never_admits() {
         let (d, m, _) = setup();
-        let mut b = DmaAliasBook::<0>::new(&d, D).unwrap();
+        let mut b = DmaAliasBook::<0>::new(&d, D, 720).unwrap();
         assert_eq!(b.reserve_after_kernel_checks(
             &d, &m, 3, 0x1000, 0, 4096, DmaDirection::ToDevice, false
         ), Err(AliasError::Exhausted));
