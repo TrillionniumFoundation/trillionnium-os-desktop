@@ -1,0 +1,42 @@
+{
+  "schema": "trillionnium.a05.queryabi-identity-markers.v1",
+  "source_commit": "5f9b4ca74a4b3ae8ac4cbeccd3a614ca7dd0c6c1",
+  "kernel_elf_sha256": "087b3eddfca6f1535212e82a076fd69e80b72096b478bbd8b7112a3ecb4f568a",
+  "source_kernel_build_verified_by_prior_a05_run": true,
+  "kernel_rebuilt_in_this_specific_test_run": false,
+  "host_smoke_passed": true,
+  "nonce_host_tests_passed": 4,
+  "guest_tests": 2,
+  "guest_qemu_results": [
+    {
+      "run": 1,
+      "qemu_exit": 33,
+      "raw_serial_sha256": "b2b89645cb3f416491e2f79ddf7092bee7bd300e3aa25456613890318b28a6fb",
+      "required_marker_counts": {
+        "HEPTA_DUP_SESSION_STABLE": 1,
+        "HEPTA_EXEC_CAPSPACE_ROTATED": 1,
+        "HEPTA_EXEC_EPOCH_DENIED": 1,
+        "HEPTA_EXEC_PREIMAGE_QUERYABI_OK": 1,
+        "HEPTA_FORK_CAPSPACE_DISTINCT": 1,
+        "HEPTA_FORK_INHERITED_FD_DENIED": 1,
+        "HEPTA_NONROOT_OPEN_DENIED": 1
+      }
+    },
+    {
+      "run": 2,
+      "qemu_exit": 33,
+      "raw_serial_sha256": "fba598ca77a14286f3b935aaef1a8f6c62d63ebdcccb3125c105f3fff27039f3",
+      "required_marker_counts": {
+        "HEPTA_DUP_SESSION_STABLE": 1,
+        "HEPTA_EXEC_CAPSPACE_ROTATED": 1,
+        "HEPTA_EXEC_EPOCH_DENIED": 1,
+        "HEPTA_EXEC_PREIMAGE_QUERYABI_OK": 1,
+        "HEPTA_FORK_CAPSPACE_DISTINCT": 1,
+        "HEPTA_FORK_INHERITED_FD_DENIED": 1,
+        "HEPTA_NONROOT_OPEN_DENIED": 1
+      }
+    }
+  ],
+  "safety": "disposable QEMU q35 TCG x86_64 one vCPU 512MiB, no host network/data disk, no HOS2 effects enabled",
+  "limitations": "no PID recycle / nonce overflow or SMP proof; still read-only QueryAbi"
+}

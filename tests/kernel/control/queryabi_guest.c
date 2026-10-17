@@ -51,6 +51,14 @@ static int valid_reply(const unsigned char *r,const unsigned char *q){
         read32(r+88)==48 && read32(r+92)==0 && /* HOS2 payload reserved */
         read64(r+96)==2 && read64(r+104)==0;
 }
+static void space_hex(const unsigned char *space, char out[33]){
+    static const char digits[] = "0123456789abcdef";
+    for(int i=0;i<16;i++){
+        out[2*i]=digits[space[i]>>4];
+        out[2*i+1]=digits[space[i]&15];
+    }
+    out[32]='\0';
+}
 static int run_exec_epoch_check(const char *fd_text){
     char *end = NULL;
     long parsed = strtol(fd_text, &end, 10);
@@ -65,6 +73,19 @@ static int run_exec_epoch_check(const char *fd_text){
         fail("exec_old_fd_not_fenced"); return 26;
     }
     puts("HEPTA_EXEC_EPOCH_DENIED");
+    const char *old_space = getenv("HEPTA_PREEXEC_SPACE");
+    if(old_space==NULL || strlen(old_space)!=32){fail("exec_space_missing");return 34;}
+    int reopened=open("/dev/hepta-control",O_RDWR|O_CLOEXEC);
+    if(reopened<0){fail("exec_reopen");return 35;}
+    prep(q,13);
+    if(run_query(reopened,q,r,sizeof r)!=0 || !valid_reply(r,q)){
+        fail("exec_new_image_query");close(reopened);return 36;
+    }
+    char current_space[33];
+    space_hex(r+64,current_space);
+    close(reopened);
+    if(strcmp(old_space,current_space)==0){fail("exec_capspace_reused");return 37;}
+    puts("HEPTA_EXEC_CAPSPACE_ROTATED");
     return 0;
 }
 
@@ -158,6 +179,11 @@ int main(int argc, char **argv){
             fail("exec_child_preimage_not_valid"); _exit(33);
         }
         puts("HEPTA_EXEC_PREIMAGE_QUERYABI_OK");
+        char old_space[33];
+        space_hex(fresh_r+64,old_space);
+        if (setenv("HEPTA_PREEXEC_SPACE", old_space, 1) != 0) {
+            fail("exec_space_env_set"); _exit(38);
+        }
         char execfd_text[32];
         snprintf(execfd_text, sizeof execfd_text, "%d", execfd);
         if (setenv("HEPTA_INHERITED_FD", execfd_text, 1) != 0) {
@@ -184,6 +210,17 @@ int main(int argc, char **argv){
             fail("fork_inherited_fd_not_fenced"); _exit(24);
         }
         puts("HEPTA_FORK_INHERITED_FD_DENIED");
+        /* A freshly opened fd in the child MUST receive a distinct D
+         * namespace even if the PID allocator or boot clock later wraps. */
+        int childfd=open("/dev/hepta-control",O_RDWR|O_CLOEXEC);
+        if(childfd<0){fail("fork_fresh_open");_exit(39);}
+        prep(q,14);
+        if(run_query(childfd,q,c,sizeof c)!=0 || !valid_reply(c,q) ||
+           memcmp(a+40,c+40,16)!=0 || memcmp(a+64,c+64,16)==0){
+            fail("fork_fresh_capspace_alias");close(childfd);_exit(40);
+        }
+        close(childfd);
+        puts("HEPTA_FORK_CAPSPACE_DISTINCT");
         if (setuid(65534) != 0) { fail("setuid_guest"); _exit(21); }
         errno = 0;
         int guestfd = open("/dev/hepta-control", O_RDWR | O_CLOEXEC);
