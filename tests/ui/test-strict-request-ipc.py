@@ -105,15 +105,33 @@ def check(binary_dir):
                         (b'{"type":"cancel","id":1,"expected_instance":"'
                          + generation.encode() + b'"}'),
                     )
-                    require(cancel["type"] == "task", "real child cancellation not acknowledged")
+                    if cancel["type"] == "task":
+                        require(cancel["task"]["id"] == 1, "wrong child cancellation identity")
+                        require(cancel["task"]["state"] in ("cancel_requested", "running"),
+                                "host cancellation response invented a terminal effect")
+                    else:
+                        # A display-less Rust GUI can genuinely exit before the
+                        # separate Cancel frame reaches Session. A NOT-OWNED
+                        # response is not a successful cancellation; require a
+                        # subsequent independently observed FAILED terminal.
+                        require(
+                            cancel["type"] == "error"
+                            and cancel["message"] == "No owned live child; no cancellation claimed",
+                            f"unrelated cancellation error: {cancel}",
+                        )
                     for _ in range(100):
-                        time.sleep(0.02)
                         snapshot = roundtrip(sock, b'{"type":"snapshot"}')
                         last = next(t for t in snapshot["tasks"] if t["id"] == 1)
-                        if last["state"] in ("cancelled", "failed", "completed"):
+                        if last["state"] in ("cancelled", "failed"):
                             break
+                        require(last["state"] != "completed",
+                                "display-less GUI exit 0 is not a witnessed window")
+                        time.sleep(0.02)
                     else:
                         raise AssertionError("real launched child was not reaped")
+                    if cancel["type"] == "error":
+                        require(last["state"] == "failed",
+                                "no-owned-child cancellation cannot imply cancelled")
                 else:
                     require(task["state"] == "failed", "GUI spawn failed with wrong host state")
                 valid_cancel = roundtrip(sock, (b'{"type":"cancel","id":999,"expected_instance":"'
@@ -121,7 +139,7 @@ def check(binary_dir):
                 require(valid_cancel["type"] == "error" and "task 999 does not exist" in valid_cancel["message"],
                         "valid Cancel was confused with schema rejection")
                 require(proc.poll() is None, "Rust Session died after malformed IPC")
-                print("A10 STRICT REQUEST IPC PASS: 8 forged frames rejected, first legitimate Launch remains ID 1, observed child cleanup, typed Cancel")
+                print("A10 STRICT REQUEST IPC PASS: 8 forged frames rejected; legitimate Launch remains ID 1; raced headless exit or confirmed SIGKILL is observed (never inferred as cancellation)")
             finally:
                 if proc.poll() is None:
                     proc.terminate()
