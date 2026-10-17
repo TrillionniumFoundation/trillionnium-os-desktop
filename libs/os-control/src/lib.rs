@@ -3036,7 +3036,7 @@ mod tests {
         assert_eq!(observed.saved_revision, Some(2));
         let view = core.delivery_view_for(owner).unwrap();
         assert_eq!(core.query_delivery(&view, 1).unwrap(), observed);
-        let ack = authority.history_ack(1, [1; 32]).unwrap();
+        let ack = owner_authority.history_ack(1, [1; 32]).unwrap();
         core.retire_through(&view, ack, &owner_authority).unwrap();
         assert_eq!(
             core.query_delivery(&view, 1).unwrap().state,
