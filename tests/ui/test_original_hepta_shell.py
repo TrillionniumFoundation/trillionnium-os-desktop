@@ -53,6 +53,7 @@ class CaptureContract(unittest.TestCase):
                        lambda v: v.update(sequence=2),
                        lambda v: v.update(session_pid=0),
                        lambda v: v["snapshot"].update(session_instance="different"),
+                       lambda v: v["snapshot"]["hepta"]["last_observation"]["health"].update(fenced=True),
                        lambda v: v.update(session_socket_path="/tmp/untrusted.sock"),
                        lambda v: v["ack"].update(phase="running")):
             value = copy.deepcopy(expected)
@@ -73,7 +74,7 @@ class CaptureContract(unittest.TestCase):
             with self.assertRaises(RuntimeError):
                 capture.compare_snapshot(value, phase, 10_005)
 
-    def test_starting_accepts_real_async_readiness_and_event_progress_across_rpc_samples(self):
+    def test_starting_accepts_async_readiness_and_tolerates_independent_rpc_combinations(self):
         # Same transition as the retained real capture01: Starting health gains
         # promotion_ready and the event window appends app_server_ready. These
         # contract values are synthetic; the failed real PNG is separate proof.
@@ -87,8 +88,9 @@ class CaptureContract(unittest.TestCase):
         observed["events"].append(ready_event)
         observed.update(next_cursor=3, latest_cursor=3)
         capture.compare_snapshot(after, phase, 10_005, baseline)
-        # Health and Events use separate RPCs: either intermediate view is
-        # legitimate, and the later complete sample must preserve its prefix.
+        # These synthetic combinations test conservative independent-field
+        # acceptance; they do not claim that both orders occurred in the real
+        # capture. Its final Health can be ahead of the preceding Events page.
         for health_first in (True, False):
             intermediate = copy.deepcopy(phase["snapshot"])
             previous = intermediate["hepta"]["last_observation"]
