@@ -146,7 +146,10 @@ fn can_offer_fresh_window(
         && task.pid.is_some_and(|pid| pid != 0)
         && task.ui_first_frame_unix_ms.is_some()
         && display.is_some_and(|sample| {
-            task.host_window_observation(sample) == HostWindowObservation::SocketChanged
+            task.wayland_socket_epoch_at_launch.is_some_and(|launch_epoch| {
+                sample.socket_observation_epoch > launch_epoch
+                    && task.host_window_observation(sample) == HostWindowObservation::SocketChanged
+            })
         })
 }
 
@@ -1322,6 +1325,10 @@ mod shell_lifecycle_tests {
         assert!(!can_offer_fresh_window(&task, Some(&display), true));
         display.status = WaylandSocketStatus::SocketObserved;
         display.socket_observation_epoch = 3;
+        assert!(!can_offer_fresh_window(&task, Some(&display), true));
+        // An out-of-order older socket sample is not evidence that the
+        // compositor advanced and must never offer a second process.
+        display.socket_observation_epoch = 2;
         assert!(!can_offer_fresh_window(&task, Some(&display), true));
         display.socket_observation_epoch = 4;
         let mut unknown = task.clone();
