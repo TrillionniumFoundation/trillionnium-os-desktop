@@ -15,10 +15,11 @@ D = (BootId, CapSpaceId, sequence)
 ```
 
 The portable spin mutex is **not a validated Asterinas lock adapter**.
-It does not mask IRQs or disable preemption. Same-CPU reentry can deadlock;
-the current bounded table operations can allocate while holding locks.
-A05/A06 must adapt `src/sync.rs` and the allocation paths to their actual
-kernel lock/allocator discipline before production use. This build option
+It does not mask IRQs or disable preemption. Same-CPU reentry can deadlock.
+The native delivery table prepares storage outside its internal locks;
+the host ResourceDomain still has allocating mutation paths. A05/A06 must
+adapt `src/sync.rs`, allocator use and their actual owner callbacks to their
+kernel lock discipline before production use. This build option
 does not establish G1/G2, scheduler enforcement, or kernel integration.
 
 The HOS2 wire layout remains owned by A02 and is not represented by a Rust
@@ -32,7 +33,10 @@ HOS2 0.3 has no separate parent-constraint status. The fallible
 for a consistent nonterminal observation with no saved outcome or resource
 metadata, `Some(status)` for a terminal whose status and CAS metadata agree,
 and `None` for any malformed pair, missing/forged success receipt,
-erroneous metadata, or invalid D sequence. A05 must refuse to serialize
+erroneous metadata, invalid D sequence, or terminal `OutOfOrder`/`Retired`.
+The last two statuses describe admission before a reservation; they cannot
+be saved execution outcomes. A real `DeliveryState::Retired` still encodes
+normally with no saved outcome. A05 must refuse to serialize
 `None` rather than default it to Ok. A02 independently validates the
 actual HOS2 byte layout and payload.
 
@@ -159,6 +163,15 @@ use a new boot/CapSpace identity. This is not a persistence implementation.
 
 ## Lock and result invariants
 
+The namespace preallocates a bounded contiguous ring at bootstrap. Ring
+reservation failure returns `ResourceExhausted`. A new delivery first checks
+admission, releases the table lock to allocate its result slot, then checks
+admission again before inserting. A racing loser releases its candidate after
+unlocking. Existing D retries, full-window refusals and history reads do not
+allocate result slots or grow the table. The invariant is always
+`window_len = next_sequence - retired_through - 1` until history is lost;
+an index into recycled storage never supplies a new sequence identity.
+
 The namespace mutex reserves a slot and its canonical request before any
 resource mutation. Each slot has a separate execution gate and short-lived
 state mutex. After taking the execution gate, commit/publish briefly validate
@@ -182,6 +195,20 @@ requests/owner pins. Loss similarly publishes loss and empties the table,
 then releases both the table and loss gates before destroying owners. An
 owner destructor may therefore reenter namespace observation or loss; it is
 never invoked by these reclamation paths while their internal locks are held.
+
+Retirement first validates the prefix under the table lock. Duplicate, invalid
+and pending acknowledgements return without allocating. It prepares an exactly
+bounded reclamation buffer outside the lock, then validates again before
+removing entries; allocation failure returns `ResourceExhausted` without
+advancing the frontier. Namespace loss closes admission and walks the stable sequence range,
+taking only a short table lock to pin each slot before waiting on its execution
+gate. It needs no scratch allocation. For native deliveries with a compliant
+nonallocating callback, these paths neither allocate nor free heap storage
+under an internal table, slot-state, execution or loss lock. Allocations still
+occur at bootstrap, before new-slot admission and before retirement. This is
+not general OOM recovery: `Arc` creation and external owners remain subject to
+the allocator's failure policy. The host ResourceDomain and actual kernel
+lock/IRQ adapters are outside this native namespace guarantee.
 
 The Rust tests under `tests/control` are host-model evidence only. They do not
 claim native kernel capability, real copyout fault handling, power-loss

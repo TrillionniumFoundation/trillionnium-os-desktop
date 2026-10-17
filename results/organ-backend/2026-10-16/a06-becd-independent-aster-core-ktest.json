@@ -1,0 +1,39 @@
+{
+  "schema": "trillionnium.os.a06.becd.ktest.v1",
+  "commit": "becd1fe3a106afd02d755cefebb4dc139704e390",
+  "kernel_source_commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+  "toolchain": "nightly-2026-07-21",
+  "qemu_profile": "q35/TCG, x86_64, 1 vCPU, 512 MiB",
+  "test_type": "real guest cargo osdk test --crate aster-core --skip-osdk-install",
+  "test_result": {
+    "passed": true,
+    "crates": [
+      {
+        "passed": true,
+        "guests": [
+          {
+            "crate": "aster-core",
+            "declared": 153,
+            "passed": 153,
+            "failed": 0,
+            "filtered": 0,
+            "soft_skipped": 0,
+            "soft_skip_reasons": [],
+            "exercised_passed_lower_bound": 153,
+            "observed_test_starts": 153,
+            "raw_qemu_exit": 33,
+            "guest": "guest-001"
+          }
+        ]
+      }
+    ]
+  },
+  "guest_test_elf_sha256": "f954d79798a37dcf4c176745f6fcc3be7cbde3b30cb278035228",
+  "guest_serial_sha256": "2d4a53d12c28f53d96f38a90f7e12115e928f776053ccf7053faa35f33181db1",
+  "production_accepted": false,
+  "limitations": [
+    "aster-core only; separate OSTD/full SMP stress untested",
+    "HOS2/Hepta native effect pipeline not implemented",
+    "isolated pinned dev host, not bare metal"
+  ]
+}

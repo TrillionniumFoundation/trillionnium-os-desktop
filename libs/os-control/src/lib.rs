@@ -17,7 +17,7 @@ compile_error!("select the default std backend or the experimental portable-spin
 extern crate alloc;
 
 use alloc::borrow::ToOwned;
-use alloc::collections::{BTreeMap, BTreeSet};
+use alloc::collections::{BTreeMap, BTreeSet, VecDeque};
 use alloc::format;
 use alloc::string::String;
 use alloc::vec::Vec;
@@ -1197,6 +1197,12 @@ impl DeliveryObservation {
             && self.effective_ns.is_none()
             && self.consumed_ns.is_none();
         match (self.state, self.status) {
+            // These describe namespace admission before reservation, never
+            // a saved result of executing an already reserved delivery.
+            (
+                DeliveryState::Terminal,
+                Some(DeliveryStatus::OutOfOrder | DeliveryStatus::Retired),
+            ) => None,
             (DeliveryState::Terminal, Some(DeliveryStatus::Ok)) => {
                 match (
                     self.stable_object_id,
@@ -1503,17 +1509,28 @@ struct NamespaceState {
     // Serialize concurrent loss operations without holding the table lock.
     loss_gate: Mutex<()>,
     identity: NamespaceIdentity,
+    // Fixed at bootstrap so scratch storage can be prepared without holding
+    // an internal lock. The ring never grows beyond this bound.
+    capacity: usize,
     state: Mutex<NamespaceInner>,
 }
 
 struct NamespaceInner {
     next_sequence: u64,
     retired_through: u64,
-    capacity: usize,
-    slots: BTreeMap<u64, Arc<Slot>>,
+    // Sequence order is contiguous from retired_through + 1. Reserve and
+    // retirement move only the two ends of this preallocated bounded ring.
+    slots: VecDeque<Arc<Slot>>,
     history_lost: bool,
     closing: bool,
     generation: u64,
+}
+
+impl NamespaceInner {
+    fn slot(&self, sequence: u64) -> Option<&Arc<Slot>> {
+        let offset = sequence.checked_sub(self.retired_through)?.checked_sub(1)?;
+        self.slots.get(usize::try_from(offset).ok()?)
+    }
 }
 
 #[derive(Clone)]
@@ -1612,15 +1629,19 @@ impl ControlCore {
             boot_id,
             cap_space_id,
         };
+        let mut slots = VecDeque::new();
+        slots
+            .try_reserve_exact(capacity)
+            .map_err(|_| DeliveryError::ResourceExhausted)?;
         Ok(Self {
             namespace: Arc::new(NamespaceState {
                 loss_gate: Mutex::new(()),
                 identity,
+                capacity,
                 state: Mutex::new(NamespaceInner {
                     next_sequence: 1,
                     retired_through: 0,
-                    capacity,
-                    slots: BTreeMap::new(),
+                    slots,
                     history_lost: false,
                     closing: false,
                     generation: 1,
@@ -1725,7 +1746,63 @@ impl ControlCore {
         if publisher != binding.publisher {
             return Err(DeliveryError::PermissionDenied);
         }
-        let mut ns = lock_unpoisoned(&self.namespace.state);
+        // Read-only retries and a full window do not allocate. A new write
+        // prepares its slot outside every namespace lock, then rechecks
+        // admission because a competing reserve/retire/loss may have won.
+        {
+            let ns = lock_unpoisoned(&self.namespace.state);
+            self.check_reservation(&ns, &request, publisher, binding)?;
+        }
+        let slot = Arc::new(Slot {
+            execution_gate: Mutex::new(()),
+            binding,
+            publisher,
+            request,
+            state: Mutex::new(SlotState::Reserved),
+        });
+        let result = {
+            let mut ns = lock_unpoisoned(&self.namespace.state);
+            match self.check_reservation(&ns, &slot.request, publisher, binding) {
+                Err(error) => Err(error),
+                Ok(()) => {
+                    let id = DeliveryId {
+                        namespace: self.identity(),
+                        sequence: binding.sequence,
+                    };
+                    // Static validation excluded MAX. Compute the frontier
+                    // before insertion so even exhaustion cannot partially
+                    // publish a new slot. Bootstrap reserved the whole ring.
+                    match ns.next_sequence.checked_add(1) {
+                        None => Err(DeliveryError::ResourceExhausted),
+                        Some(next_sequence) => {
+                            ns.slots.push_back(Arc::clone(&slot));
+                            ns.next_sequence = next_sequence;
+                            Ok(ReserveToken {
+                                reservation: Reservation {
+                                    id,
+                                    binding,
+                                    namespace: Arc::downgrade(&self.namespace),
+                                    generation: ns.generation,
+                                },
+                            })
+                        }
+                    }
+                }
+            }
+        };
+        // A losing candidate can hold the last pin to an external owner.
+        // Release the table guard before any such destructor or deallocation.
+        drop(slot);
+        result
+    }
+
+    fn check_reservation(
+        &self,
+        ns: &NamespaceInner,
+        request: &ReservedRequest,
+        publisher: PublisherId,
+        binding: RequestBinding,
+    ) -> Result<(), DeliveryError> {
         if ns.history_lost || ns.closing {
             return Err(DeliveryError::HistoryLost);
         }
@@ -1733,13 +1810,13 @@ impl ControlCore {
             return Err(DeliveryError::Retired);
         }
         if binding.sequence < ns.next_sequence {
-            if let Some(slot) = ns.slots.get(&binding.sequence) {
+            if let Some(slot) = ns.slot(binding.sequence) {
                 // A globally unique D binds the publisher as well as its
                 // canonical payload and stable target. Neither another
                 // publisher nor another target may claim the saved result.
                 if slot.publisher == publisher
                     && slot.binding == binding
-                    && slot.request.same_target_and_authority(&request)
+                    && slot.request.same_target_and_authority(request)
                 {
                     let observation =
                         observation_from_slot(self.identity(), binding.sequence, slot);
@@ -1759,33 +1836,10 @@ impl ControlCore {
                 got: binding.sequence,
             });
         }
-        if ns.slots.len() >= ns.capacity {
+        if ns.slots.len() >= self.namespace.capacity {
             return Err(DeliveryError::ResourceExhausted);
         }
-        let id = DeliveryId {
-            namespace: self.identity(),
-            sequence: binding.sequence,
-        };
-        let slot = Arc::new(Slot {
-            execution_gate: Mutex::new(()),
-            binding,
-            publisher,
-            request,
-            state: Mutex::new(SlotState::Reserved),
-        });
-        ns.slots.insert(id.sequence, Arc::clone(&slot));
-        ns.next_sequence = ns
-            .next_sequence
-            .checked_add(1)
-            .ok_or(DeliveryError::ResourceExhausted)?;
-        Ok(ReserveToken {
-            reservation: Reservation {
-                id,
-                binding: slot.binding,
-                namespace: Arc::downgrade(&self.namespace),
-                generation: ns.generation,
-            },
-        })
+        Ok(())
     }
 
     /// Idempotent retry helper for A05 after a lost copyout.  A duplicate D
@@ -1866,7 +1920,7 @@ impl ControlCore {
         if sequence <= ns.retired_through {
             return Ok(DeliveryObservation::retired(id));
         }
-        match ns.slots.get(&sequence) {
+        match ns.slot(sequence) {
             Some(slot) => Ok(observation_from_slot(self.identity(), sequence, slot)),
             None => Ok(DeliveryObservation::not_seen(id)),
         }
@@ -1888,40 +1942,29 @@ impl ControlCore {
         {
             return Err(DeliveryError::PermissionDenied);
         }
-        let mut ns = lock_unpoisoned(&self.namespace.state);
-        if ns.history_lost
-            || ns.closing
-            || view.generation != ns.generation
-            || owner_authority.generation != ns.generation
-        {
-            return Err(DeliveryError::HistoryLost);
-        }
-        if ack.receipt.receipt_digest == [0; 32]
-            || !ack.receipt.owner.is_nonzero()
-            || ack.through == 0
-        {
-            return Err(DeliveryError::InvalidAck);
-        }
-        if ack.through <= ns.retired_through {
-            return Ok(RetireReceipt {
-                retired_through: ns.retired_through,
-                next_sequence: ns.next_sequence,
-            });
-        }
-        if ack.through >= ns.next_sequence {
-            return Err(DeliveryError::NotSeen);
-        }
-        for sequence in (ns.retired_through + 1)..=ack.through {
-            let Some(slot) = ns.slots.get(&sequence) else {
-                return Err(DeliveryError::PendingPrefix);
-            };
-            if !matches!(*lock_unpoisoned(&slot.state), SlotState::Terminal(_)) {
-                return Err(DeliveryError::PendingPrefix);
+        // Idempotent acknowledgements and refused prefixes remain allocation
+        // free. A valid prefix is checked again after preparing reclamation
+        // storage outside the lock, since retirement/loss may race it.
+        let required = {
+            let ns = lock_unpoisoned(&self.namespace.state);
+            if let Some(receipt) = self.check_retirement(&ns, view, ack, owner_authority)? {
+                return Ok(receipt);
             }
-        }
+            usize::try_from(ack.through - ns.retired_through)
+                .map_err(|_| DeliveryError::ResourceExhausted)?
+        };
         let mut reclaimed = Vec::new();
-        for sequence in (ns.retired_through + 1)..=ack.through {
-            if let Some(slot) = ns.slots.remove(&sequence) {
+        reclaimed
+            .try_reserve_exact(required)
+            .map_err(|_| DeliveryError::ResourceExhausted)?;
+        let mut ns = lock_unpoisoned(&self.namespace.state);
+        if let Some(receipt) = self.check_retirement(&ns, view, ack, owner_authority)? {
+            return Ok(receipt);
+        }
+        // The frontier only increases, so this prefix is no larger than the
+        // one already reserved. pop_front and Vec::push cannot allocate.
+        for _ in (ns.retired_through + 1)..=ack.through {
+            if let Some(slot) = ns.slots.pop_front() {
                 reclaimed.push(slot);
             }
         }
@@ -1938,11 +1981,51 @@ impl ControlCore {
         Ok(receipt)
     }
 
+    fn check_retirement(
+        &self,
+        ns: &NamespaceInner,
+        view: &DeliveryView,
+        ack: HistoryAck,
+        owner_authority: &OriginalOwnerAuthority,
+    ) -> Result<Option<RetireReceipt>, DeliveryError> {
+        if ns.history_lost
+            || ns.closing
+            || view.generation != ns.generation
+            || owner_authority.generation != ns.generation
+        {
+            return Err(DeliveryError::HistoryLost);
+        }
+        if ack.receipt.receipt_digest == [0; 32]
+            || !ack.receipt.owner.is_nonzero()
+            || ack.through == 0
+        {
+            return Err(DeliveryError::InvalidAck);
+        }
+        if ack.through <= ns.retired_through {
+            return Ok(Some(RetireReceipt {
+                retired_through: ns.retired_through,
+                next_sequence: ns.next_sequence,
+            }));
+        }
+        if ack.through >= ns.next_sequence {
+            return Err(DeliveryError::NotSeen);
+        }
+        for sequence in (ns.retired_through + 1)..=ack.through {
+            let Some(slot) = ns.slot(sequence) else {
+                return Err(DeliveryError::PendingPrefix);
+            };
+            if !matches!(*lock_unpoisoned(&slot.state), SlotState::Terminal(_)) {
+                return Err(DeliveryError::PendingPrefix);
+            }
+        }
+        Ok(None)
+    }
+
     /// Model a lost namespace after boot/recovery.  Existing D values remain
     /// unknown and can never be replayed through this object.
     pub fn lose_history(&self) {
         let _loss = lock_unpoisoned(&self.namespace.loss_gate);
-        let slots = {
+        let (first_sequence, next_sequence) = {
             let mut ns = lock_unpoisoned(&self.namespace.state);
             if ns.history_lost {
                 return;
@@ -1950,9 +2033,19 @@ impl ControlCore {
             // Close admission first, but retain bounded observable results
             // while waiting for already admitted synchronous executors.
             ns.closing = true;
-            ns.slots.values().cloned().collect::<Vec<_>>()
+            (ns.retired_through.saturating_add(1), ns.next_sequence)
         };
-        for slot in slots {
+        for sequence in first_sequence..next_sequence {
+            // Closing excludes reserve/retire and the loss gate excludes any
+            // other removal. The stable ring keeps each temporary pin alive
+            // without allocating a snapshot collection under either lock.
+            let slot = {
+                let ns = lock_unpoisoned(&self.namespace.state);
+                ns.slot(sequence).cloned()
+            };
+            let Some(slot) = slot else {
+                continue;
+            };
             // No namespace-table lock is held during this potentially long
             // wait. Query and pending-prefix retirement remain responsive.
             let _execution = lock_unpoisoned(&slot.execution_gate);
@@ -1976,7 +2069,7 @@ impl ControlCore {
     }
 
     pub fn capacity(&self) -> usize {
-        lock_unpoisoned(&self.namespace.state).capacity
+        self.namespace.capacity
     }
 
     /// Inspect the entire bounded non-retired D window under the namespace
@@ -1996,7 +2089,7 @@ impl ControlCore {
         if ns.next_sequence == 0 {
             return Err(DeliveryInvariantError::InvalidFrontier);
         }
-        if ns.slots.len() > ns.capacity {
+        if ns.slots.len() > self.namespace.capacity {
             return Err(DeliveryInvariantError::CapacityExceeded);
         }
         if ns.history_lost {
@@ -2016,11 +2109,8 @@ impl ControlCore {
             .retired_through
             .checked_add(1)
             .ok_or(DeliveryInvariantError::InvalidFrontier)?;
-        for (&key, slot) in &ns.slots {
-            if key != sequence {
-                return Err(DeliveryInvariantError::NoncontiguousWindow);
-            }
-            if slot.binding.sequence != key
+        for slot in &ns.slots {
+            if slot.binding.sequence != sequence
                 || slot.binding.publisher != slot.publisher
                 || !slot.publisher.is_nonzero()
                 || (slot.binding.wire_target_slot == 0)
@@ -2042,7 +2132,7 @@ impl ControlCore {
                 SlotState::Fenced if ns.closing => {}
                 SlotState::Fenced => return Err(DeliveryInvariantError::FencedLiveSlot),
                 SlotState::Terminal(result) => {
-                    if observation_from_published(self.identity(), key, result)
+                    if observation_from_published(self.identity(), sequence, result)
                         .hos2_saved_status_code()
                         .is_none()
                     {
@@ -2078,8 +2168,7 @@ impl ControlCore {
             return Err(DeliveryError::HistoryLost);
         }
         let slot = ns
-            .slots
-            .get(&token.id().sequence)
+            .slot(token.id().sequence)
             .ok_or(DeliveryError::HistoryLost)?;
         if slot.binding != token.binding() {
             return Err(DeliveryError::Conflict);
@@ -2095,8 +2184,7 @@ impl ControlCore {
             && !ns.closing
             && ns.generation == token.reservation.generation
             && ns
-                .slots
-                .get(&token.id().sequence)
+                .slot(token.id().sequence)
                 .map(|slot| Arc::ptr_eq(slot, pinned))
                 .unwrap_or(false)
     }
@@ -2443,7 +2531,7 @@ mod tests {
             .unwrap();
         let slot_weak = {
             let ns = lock_unpoisoned(&core.namespace.state);
-            Arc::downgrade(ns.slots.get(&1).unwrap())
+            Arc::downgrade(ns.slot(1).unwrap())
         };
         let namespace_weak = Arc::downgrade(&core.namespace);
         let cached = token.binding();
@@ -2486,6 +2574,121 @@ mod tests {
             PublisherId::from_u128(n + 4),
             OwnerId::from_u128(n + 5),
         )
+    }
+
+    #[test]
+    fn bounded_ring_wrap_preserves_history_and_a_blocked_full_prefix() {
+        let (boot, space, domain_id, object, publisher, owner) = ids(8002);
+        let (core, authority) =
+            ControlCore::with_capacity_for_owner(boot, space, 3, owner).unwrap();
+        let target = ResourceDomain::new(domain_id, object, None, 50).unwrap();
+        let request = |sequence, revision| {
+            DeliveryRequest::new(sequence, target.grant(publisher).unwrap(), revision, 25)
+        };
+        let view = core.delivery_view_for(owner).unwrap();
+        let ack = |through| {
+            HistoryAck::from_owner_receipt(
+                core.identity(),
+                through,
+                OwnerReceipt::new(owner, [1; 32]),
+            )
+            .unwrap()
+        };
+        let ring_capacity = lock_unpoisoned(&core.namespace.state).slots.capacity();
+        let mut oldest_token = None;
+        for sequence in 1..=3 {
+            let token = core
+                .reserve(request(sequence, sequence), publisher)
+                .unwrap();
+            assert_eq!(
+                core.commit(&token, publisher, 1).unwrap().status,
+                Some(DeliveryStatus::Ok)
+            );
+            if sequence == 1 {
+                oldest_token = Some(token);
+            }
+        }
+        // Keep two saved results live while advancing one entry at a time.
+        // This repeatedly wraps the ring rather than resetting ideal batches.
+        for sequence in 4..=10_000 {
+            core.retire_through(&view, ack(sequence - 3), &authority)
+                .unwrap();
+            let retained = core.query_delivery(&view, sequence - 2).unwrap();
+            assert_eq!(retained.status, Some(DeliveryStatus::Ok));
+            assert_eq!(retained.previous_revision, Some(sequence - 2));
+            assert_eq!(retained.saved_revision, Some(sequence - 1));
+            let token = core
+                .reserve(request(sequence, sequence), publisher)
+                .unwrap();
+            assert_eq!(
+                core.commit(&token, publisher, 1).unwrap().status,
+                Some(DeliveryStatus::Ok)
+            );
+            assert_eq!(core.window_len(), 3);
+            core.validate_invariants_for_host_model().unwrap();
+        }
+        assert_eq!(core.retired_through(), 9_997);
+        assert_eq!(target.revision(), 10_001);
+        assert_eq!(
+            core.commit(&oldest_token.unwrap(), publisher, 1).err(),
+            Some(DeliveryError::HistoryLost)
+        );
+        assert_eq!(
+            core.reserve(request(1, 1), publisher).err(),
+            Some(DeliveryError::Retired)
+        );
+        core.retire_through(&view, ack(10_000), &authority).unwrap();
+
+        let pending = core.reserve(request(10_001, 10_001), publisher).unwrap();
+        for sequence in 10_002..=10_003 {
+            let token = core.reserve(request(sequence, 10_001), publisher).unwrap();
+            core.publish(
+                &token,
+                publisher,
+                PublishOutcome::Failure {
+                    status: DeliveryStatus::PermissionDenied,
+                },
+            )
+            .unwrap();
+        }
+        assert_eq!(
+            core.reserve(request(10_004, 10_001), publisher).err(),
+            Some(DeliveryError::ResourceExhausted)
+        );
+        assert_eq!(
+            core.retire_through(&view, ack(10_003), &authority).err(),
+            Some(DeliveryError::PendingPrefix)
+        );
+        assert_eq!(
+            core.query_delivery(&view, 10_003).unwrap().status,
+            Some(DeliveryStatus::PermissionDenied)
+        );
+        assert_eq!(
+            core.retire_through(&view, ack(10_000), &authority)
+                .unwrap()
+                .retired_through,
+            10_000
+        );
+        core.publish(
+            &pending,
+            publisher,
+            PublishOutcome::Failure {
+                status: DeliveryStatus::Revoked,
+            },
+        )
+        .unwrap();
+        core.retire_through(&view, ack(10_003), &authority).unwrap();
+        assert_eq!(core.window_len(), 0);
+        assert_eq!(
+            core.reserve(request(10_001, 10_001), publisher).err(),
+            Some(DeliveryError::Retired)
+        );
+        assert_eq!(target.revision(), 10_001);
+        assert_eq!(
+            lock_unpoisoned(&core.namespace.state).slots.capacity(),
+            ring_capacity
+        );
+        core.validate_invariants_for_host_model().unwrap();
     }
 
     #[test]
@@ -2614,7 +2817,11 @@ mod tests {
             request: original_slot.request.clone(),
             state: Mutex::new(SlotState::Reserved),
         });
-        lock_unpoisoned(&core.namespace.state).slots.insert(1, bad);
+        let replaced = {
+            let mut ns = lock_unpoisoned(&core.namespace.state);
+            core::mem::replace(&mut ns.slots[0], bad)
+        };
+        drop(replaced);
         assert_eq!(
             core.validate_invariants_for_host_model(),
             Err(DeliveryInvariantError::InvalidSlotBinding)
@@ -2629,7 +2836,11 @@ mod tests {
             request: original_slot.request.clone(),
             state: Mutex::new(SlotState::Reserved),
         });
-        lock_unpoisoned(&core.namespace.state).slots.insert(1, bad);
+        let replaced = {
+            let mut ns = lock_unpoisoned(&core.namespace.state);
+            core::mem::replace(&mut ns.slots[0], bad)
+        };
+        drop(replaced);
         assert_eq!(
             core.validate_invariants_for_host_model(),
             Err(DeliveryInvariantError::InvalidSlotBinding)
@@ -2684,7 +2895,11 @@ mod tests {
         other
             .reserve(DeliveryRequest::new(1, grant, 1, 25), publisher)
             .unwrap();
-        lock_unpoisoned(&other.namespace.state).slots.remove(&1);
+        let removed = {
+            let mut ns = lock_unpoisoned(&other.namespace.state);
+            ns.slots.pop_front()
+        };
+        drop(removed);
         assert_eq!(
             other.validate_invariants_for_host_model(),
             Err(DeliveryInvariantError::NoncontiguousWindow)

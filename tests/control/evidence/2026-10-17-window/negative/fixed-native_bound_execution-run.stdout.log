@@ -1,0 +1,15 @@
+
+running 11 tests
+test bound_callback_preserves_reserved_ancestry_after_ancestor_revoke_and_reactivate ... ok
+test bound_callback_receives_original_owner_complete_ancestry_binding_and_d ... ok
+test bound_callback_uses_pinned_owner_after_all_external_handles_are_dropped ... ok
+test bound_context_preserves_every_epoch_of_the_maximum_supported_ancestry ... ok
+test bound_owner_revoke_and_commit_race_revalidates_under_the_original_mutation_lock ... ok
+test concurrent_bound_callbacks_on_one_d_invoke_the_original_owner_once ... ok
+test generic_native_execution_is_rejected_without_consuming_typed_admission ... ok
+test host_reservation_is_rejected_before_native_callback_and_still_commits_normally ... ok
+test namespace_loss_fences_bound_callback_and_releases_the_original_owner ... ok
+test wrong_owner_type_preserves_pending_slot_and_does_not_consume_execution ... ok
+test wrong_publisher_or_foreign_namespace_never_obtains_bound_owner_context ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s

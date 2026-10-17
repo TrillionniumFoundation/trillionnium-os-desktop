@@ -1,0 +1,167 @@
+{
+  "source_commit": "62225ad9a59d0b03b9a3c09b985a0afcc7a6b442",
+  "kernel_sha256": "a8401ff3389a1c9ecab0a03a6cdef98ec98d084a69e655ad65e4631ee57f09f6",
+  "kernel_build_exit": 0,
+  "aster_core_ktest_passed": 151,
+  "independent_test_results": [
+    {
+      "case": "leaf1-x3",
+      "mode": "leaf",
+      "quota_us": 1000,
+      "duration_s": 1,
+      "repeat": 3,
+      "result_exit": 0,
+      "guest_pass": true,
+      "observed_cpu_percent": [
+        0.909,
+        0.999,
+        1.001
+      ],
+      "guest_exit_codes": [
+        33,
+        33,
+        33
+      ],
+      "time_s": 19.1
+    },
+    {
+      "case": "leaf10-x3",
+      "mode": "leaf",
+      "quota_us": 10000,
+      "duration_s": 1,
+      "repeat": 3,
+      "result_exit": 0,
+      "guest_pass": true,
+      "observed_cpu_percent": [
+        10.508,
+        10.158,
+        10.215
+      ],
+      "guest_exit_codes": [
+        33,
+        33,
+        33
+      ],
+      "time_s": 12.1
+    },
+    {
+      "case": "rt10-x2",
+      "mode": "rt",
+      "quota_us": 10000,
+      "duration_s": 1,
+      "repeat": 2,
+      "result_exit": 0,
+      "guest_pass": true,
+      "observed_cpu_percent": [
+        10.293,
+        9.865
+      ],
+      "guest_exit_codes": [
+        33,
+        33
+      ],
+      "time_s": 8.3
+    },
+    {
+      "case": "parent10-x2",
+      "mode": "parent",
+      "quota_us": 10000,
+      "duration_s": 1,
+      "repeat": 2,
+      "result_exit": 0,
+      "guest_pass": true,
+      "observed_cpu_percent": [
+        10.357,
+        10.39
+      ],
+      "guest_exit_codes": [
+        33,
+        33
+      ],
+      "time_s": 8.1
+    },
+    {
+      "case": "leaf1-10s",
+      "mode": "leaf",
+      "quota_us": 1000,
+      "duration_s": 10,
+      "repeat": 1,
+      "result_exit": 0,
+      "guest_pass": true,
+      "observed_cpu_percent": [
+        1.01
+      ],
+      "guest_exit_codes": [
+        33
+      ],
+      "time_s": 25.1
+    },
+    {
+      "case": "leaf50-10s",
+      "mode": "leaf",
+      "quota_us": 50000,
+      "duration_s": 10,
+      "repeat": 1,
+      "result_exit": 0,
+      "guest_pass": true,
+      "observed_cpu_percent": [
+        50.328
+      ],
+      "guest_exit_codes": [
+        33
+      ],
+      "time_s": 22.4
+    }
+  ],
+  "total_repetitions": 12,
+  "all_qualifying_diagnostic": true,
+  "production_ready": false,
+  "smp_verified": false,
+  "exact_per_period_hard_cap_verified": false,
+  "hos2_ioctl_implemented": false,
+  "additional_wake_preemption_guest_tests": [
+    {
+      "mode": "fair",
+      "quota_us": 10000,
+      "child_wakeups": 300,
+      "qemu_exit": 33,
+      "guest_completed": true,
+      "wake_child_completed": true,
+      "original_cpu_stat_read": true,
+      "observed_parent_cpu_percent": 8.144,
+      "guest_cgroup_usage_before_usec": 4000,
+      "guest_cgroup_usage_after_usec": 138000,
+      "original_probe_sha256": "90149980d52ce5de45b19969eb8e884fe85a3ec608bf8e98ae23f6da1f54bcd5",
+      "initramfs_sha256": "1248cd199cd244e672520a0020eb27c285498db8fee6dc68c2ec08550dd6d2f9"
+    },
+    {
+      "mode": "SCHED_FIFO",
+      "quota_us": 10000,
+      "child_wakeups": 300,
+      "qemu_exit": 33,
+      "guest_completed": true,
+      "wake_child_completed": true,
+      "original_cpu_stat_read": true,
+      "observed_parent_cpu_percent": 10.393,
+      "guest_cgroup_usage_before_usec": 7000,
+      "guest_cgroup_usage_after_usec": 173000,
+      "original_probe_sha256": "90149980d52ce5de45b19969eb8e884fe85a3ec608bf8e98ae23f6da1f54bcd5",
+      "initramfs_sha256": "2925bc6327e4200142bb22a9b2b8578be46cce0e54ce599a9d3bf01e000af423"
+    }
+  ],
+  "evidence_source": "Independent exact-head pinned-nightly native build and 151 real aster-core QEMU ktests; 12 official runner QEMU workloads and 2 guest-only wake-preemption tests",
+  "original_a01_initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+  "execution_profile": {
+    "arch": "x86_64",
+    "qemu": "q35/TCG",
+    "vcpus": 1,
+    "memory_mib": 512,
+    "host_cgroup_modified": false,
+    "host_network_connected": false,
+    "device_disks_attached": false,
+    "toolchain": "nightly-2026-07-21"
+  },
+  "raw_logs_location": "/home/qian-qi/.local/state/trillionnium-os-organ-next-20261016/evidence/a06-pr41-{build,ktest,leaf1-x3,leaf10-x3,rt10-x2,parent10-x2,leaf1-10s,leaf50-10s,wake-fair,wake-rt}",
+  "fresh_kernel_compiled_from_source": true,
+  "wakeup_probe_replay_limitation": "Wake stress used a disposable locally modified copy of original C guest probe. The modification was not committed as a reusable runner; original official CPU quota runner was used unchanged for the 12 other guest tests."
+}

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Reproduce A03 failures and fixes with the pinned compiler, on a host only.
 
-The token and native-context baselines are genuine named commits. Drop cleanup
+The token, native-context and terminal-status baselines are genuine named commits. Drop cleanup
 and management-origin controls are explicitly synthetic mutations of CURRENT
 source, not claimed historical commits. Expected assertion failures retain exit 101
 and logs; this script exits zero only when every negative control and fixed
@@ -25,6 +25,7 @@ import tempfile
 
 BASELINE_COMMIT = "40ca002fac0726b366726d3353916637b29adeae"
 NATIVE_BASELINE_COMMIT = "86663ea5a934d085a80fcaeaacca535bfb283b77"
+STATUS_BASELINE_COMMIT = "e59f8b2fce1287f1ea706dc94880824a9b586ae3"
 PINNED_TOOLCHAIN = "nightly-2026-07-21"
 PINNED_VERSION = "rustc 1.99.0-nightly (87e5904f5 2026-07-20)"
 SOURCES = (
@@ -40,10 +41,10 @@ SOURCES = (
     "tests/control/management_authority.rs",
     "tests/control/management_identity.rs",
     "tests/control/native_failure_recovery.rs",
+    "tests/control/status_boundary.rs",
 )
-RETIRE_FIXED = """        let mut reclaimed = Vec::new();
-        for sequence in (ns.retired_through + 1)..=ack.through {
-            if let Some(slot) = ns.slots.remove(&sequence) {
+RETIRE_FIXED = """        for _ in (ns.retired_through + 1)..=ack.through {
+            if let Some(slot) = ns.slots.pop_front() {
                 reclaimed.push(slot);
             }
         }
@@ -58,8 +59,10 @@ RETIRE_FIXED = """        let mut reclaimed = Vec::new();
         drop(ns);
         drop(reclaimed);
         Ok(receipt)"""
-RETIRE_MUTATED = """        for sequence in (ns.retired_through + 1)..=ack.through {
-            ns.slots.remove(&sequence);
+RETIRE_MUTATED = """        // Keep the now-unused scratch Vec's inferred type in this control.
+        let _: &Vec<Arc<Slot>> = &reclaimed;
+        for _ in (ns.retired_through + 1)..=ack.through {
+            ns.slots.pop_front();
         }
         ns.retired_through = ack.through;
         Ok(RetireReceipt {
@@ -92,6 +95,10 @@ DROP_FAILURES = {
 NATIVE_CONTEXT_FAILURES = {
     "generic_native_callback_cannot_apply_a_different_owner_with_the_same_public_ids",
     "generic_native_callback_cannot_replace_reserved_ancestry_with_fresh_context",
+}
+STATUS_FAILURES = {
+    "out_of_order_is_not_a_serializable_saved_terminal_result",
+    "retired_is_not_a_serializable_saved_terminal_result",
 }
 ORIGIN_FAILURES = {
     "independent_states_with_identical_config_cannot_use_each_others_snapshots",
@@ -246,6 +253,7 @@ def main() -> int:
         "success": False,
         "baseline_commit": BASELINE_COMMIT,
         "native_baseline_commit": NATIVE_BASELINE_COMMIT,
+        "status_baseline_commit": STATUS_BASELINE_COMMIT,
         "synthetic_drop_control": "current source with two exact reclamation blocks reverted; not a historical commit",
         "synthetic_origin_control": "current source with only the two management origin comparisons removed; not historical",
         "rustup_toolchain": PINNED_TOOLCHAIN,
@@ -287,6 +295,18 @@ def main() -> int:
         report["native_baseline_source_sha256"] = {
             path: sha256(data) for path, data in native_baseline.items()
         }
+        status_baseline = {}
+        for source in SOURCES[:4]:
+            text = recorder.run(
+                "status-baseline-" + Path(source).stem,
+                ["git", "--no-pager", "show", f"{STATUS_BASELINE_COMMIT}:{source}"],
+                repo,
+                source_output=True,
+            )
+            status_baseline[source] = text.encode("utf-8")
+        report["status_baseline_source_sha256"] = {
+            path: sha256(data) for path, data in status_baseline.items()
+        }
         mutated = current[SOURCES[0]].decode("utf-8")
         for name, fixed, old in [
             ("retire-drop-under-table-lock", RETIRE_FIXED, RETIRE_MUTATED),
@@ -310,15 +330,17 @@ def main() -> int:
         with tempfile.TemporaryDirectory(prefix="a03-regressions-") as temporary:
             temporary_root = Path(temporary)
             roots = {name: temporary_root / name for name in
-                     ("historical-token", "historical-native", "synthetic-drop", "synthetic-origin", "fixed")}
+                     ("historical-token", "historical-native", "historical-status", "synthetic-drop", "synthetic-origin", "fixed")}
             for name, root in roots.items():
                 root.mkdir()
                 inputs = (baseline if name == "historical-token" else
-                          native_baseline if name == "historical-native" else current)
+                          native_baseline if name == "historical-native" else
+                          status_baseline if name == "historical-status" else current)
                 for source, data in inputs.items():
                     (root / Path(source).name).write_bytes(data)
-                for source in SOURCES[3:]:
-                    (root / Path(source).name).write_bytes(current[source])
+                for source in SOURCES:
+                    if source.startswith("tests/control/"):
+                        (root / Path(source).name).write_bytes(current[source])
             (roots["synthetic-drop"] / "lib.rs").write_text(mutated)
             (roots["synthetic-origin"] / "management.rs").write_text(origin_mutated)
             root = roots["historical-token"]
@@ -331,6 +353,12 @@ def main() -> int:
                                        "native_context_negative.rs")
             report["checks"].append(verify_tests(recorder, "historical-native-run", executable,
                                                  0, 2, 0, NATIVE_CONTEXT_FAILURES))
+            root = roots["historical-status"]
+            library = compile_library(recorder, rustc, "historical-status", root)
+            executable = compile_tests(recorder, rustc, "historical-status", root, library,
+                                       "status_boundary.rs")
+            report["checks"].append(verify_tests(recorder, "historical-status-run", executable,
+                                                 1, 2, 0, STATUS_FAILURES))
             root = roots["synthetic-drop"]
             library = compile_library(recorder, rustc, "synthetic-drop", root)
             executable = compile_tests(recorder, rustc, "synthetic-drop", root, library, "native_handoff.rs")
@@ -346,7 +374,8 @@ def main() -> int:
             for suite, count in [("token_retirement", 5), ("native_handoff", 15),
                                  ("native_context_negative", 2), ("native_bound_execution", 11),
                                  ("native_lifetime", 5), ("management_authority", 15),
-                                 ("management_identity", 6), ("native_failure_recovery", 3)]:
+                                 ("management_identity", 6), ("native_failure_recovery", 3),
+                                 ("status_boundary", 3)]:
                 executable = compile_tests(recorder, rustc, "fixed-" + suite, root, library, suite + ".rs")
                 report["checks"].append(verify_tests(recorder, "fixed-" + suite + "-run", executable, count, 0, 0, set()))
         after = {source: sha256((repo / source).read_bytes()) for source in SOURCES}

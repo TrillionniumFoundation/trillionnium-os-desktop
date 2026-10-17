@@ -1,0 +1,10 @@
+{
+  "allocator_oracle": "integration_audit: checked same shim/global allocator, full 18-event baseline, required expected runtime failure, no compile-error negative acceptance, positive hooks, failed-call counter; no blocker",
+  "boundaries": [
+    "std allocator shim only",
+    "actual kernel IRQ/SMP/preemption and allocator adapters not validated",
+    "Arc/Weak atomics and hardware/durability effects not modeled"
+  ],
+  "delivery_window": "resource_audit: checked checked-sub indexing, MAX sentinel, two-stage reserve/retire, monotonic frontier, no last-owner destruction under table/loss locks; no blocker",
+  "kind": "independent host-model source and harness review; no external certification"
+}
