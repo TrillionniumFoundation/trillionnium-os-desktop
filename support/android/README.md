@@ -33,6 +33,13 @@ Both initial and subsequent reports are retained in the evidence directory;
 the JDK source, digest and composition are in `jdk-installation.json`.
 Historical 2026-10-16 receipts remain historical.
 
+The A00-coordinated `.github/workflows/a08-host.yml` runs the source guard
+before discovery, installs actual JDK 17/JNI build inputs, and executes this
+complete host gate plus the optimized Python suite on relevant PR changes.
+It preserves raw reports even on failure. The workflow YAML and its shell
+steps were parsed locally; execution on its GitHub runner must be reported
+separately. A green host job still does not qualify Android guest execution.
+
 The Android15 Cuttlefish source lock is preserved. The generic APK runner
 requires an explicit disposable serial and
 checks the pinned Cuttlefish device, x86_64 ABI, build ID and 4 KiB page size
