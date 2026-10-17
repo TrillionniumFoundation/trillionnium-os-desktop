@@ -1,0 +1,262 @@
+{
+  "schema": "trillionnium.os.a05-a06.integrated-guest-acceptance.v1",
+  "record_date": "2026-10-17",
+  "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+  "source_git_commit_tested": "b913202b2e487126319e60813a54163666b9a2ad",
+  "remote_merge_commit_equivalent_tree": "eaf5242233b799356b7daa73898a14d240832abb",
+  "source_git_tree_sha1": "b852e0037af8f84c22a8fc7347fa55d8183e07e6",
+  "main_parent": "e59f8b2fce1287f1ea706dc94880824a9b586ae3",
+  "a06_parent": "57b23ede7e242711ef142b672f04c896383a264a",
+  "build": {
+    "command": "support/build/kernel.sh run_kernel",
+    "fixed_toolchain": "nightly-2026-07-21",
+    "kernel_elf_sha256": "06cf42337d266a486d3ac98caa3f9b0021f0f7679c7130e48224cb35fedb90ab",
+    "kernel_elf_size": 8313568,
+    "initramfs_original_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+    "bios_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+    "qemu_raw_exit": 33,
+    "launcher_exit": 0,
+    "guest_marker_present": true,
+    "serial_sha256": "edd038a55cdfaf5840ded266118874ff37d16d5e1b39948d8a4490f7296846cc"
+  },
+  "cpu_quota": {
+    "scope": "1/2-vCPU guest, original cpu.stat probe, fair/real-time/parent",
+    "runs": 10,
+    "cases": [
+      {
+        "case": "smp1-leaf1pct-x3",
+        "mode": "leaf",
+        "quota_us": 1000,
+        "vcpus": 1,
+        "repeat": 3,
+        "duration_sec": 1,
+        "exit": 0,
+        "observed_cpu_percent": [
+          1.1,
+          1.0,
+          0.999
+        ],
+        "guest_complete": [
+          true,
+          true,
+          true
+        ],
+        "all_within_diagnostic_bound": true,
+        "seconds": 18.84
+      },
+      {
+        "case": "smp1-leaf10pct",
+        "mode": "leaf",
+        "quota_us": 10000,
+        "vcpus": 1,
+        "repeat": 1,
+        "duration_sec": 1,
+        "exit": 0,
+        "observed_cpu_percent": [
+          10.352
+        ],
+        "guest_complete": [
+          true
+        ],
+        "all_within_diagnostic_bound": true,
+        "seconds": 4.57
+      },
+      {
+        "case": "smp1-rt10pct",
+        "mode": "rt",
+        "quota_us": 10000,
+        "vcpus": 1,
+        "repeat": 1,
+        "duration_sec": 1,
+        "exit": 0,
+        "observed_cpu_percent": [
+          9.824
+        ],
+        "guest_complete": [
+          true
+        ],
+        "all_within_diagnostic_bound": true,
+        "seconds": 4.68
+      },
+      {
+        "case": "smp1-parent10pct",
+        "mode": "parent",
+        "quota_us": 10000,
+        "vcpus": 1,
+        "repeat": 1,
+        "duration_sec": 1,
+        "exit": 0,
+        "observed_cpu_percent": [
+          10.226
+        ],
+        "guest_complete": [
+          true
+        ],
+        "all_within_diagnostic_bound": true,
+        "seconds": 5.07
+      },
+      {
+        "case": "smp2-leaf1pct",
+        "mode": "leaf",
+        "quota_us": 1000,
+        "vcpus": 2,
+        "repeat": 1,
+        "duration_sec": 3,
+        "exit": 0,
+        "observed_cpu_percent": [
+          0.957
+        ],
+        "guest_complete": [
+          true
+        ],
+        "all_within_diagnostic_bound": true,
+        "seconds": 13.76
+      },
+      {
+        "case": "smp2-leaf10pct",
+        "mode": "leaf",
+        "quota_us": 10000,
+        "vcpus": 2,
+        "repeat": 1,
+        "duration_sec": 3,
+        "exit": 0,
+        "observed_cpu_percent": [
+          10.112
+        ],
+        "guest_complete": [
+          true
+        ],
+        "all_within_diagnostic_bound": true,
+        "seconds": 9.29
+      },
+      {
+        "case": "smp2-parent10pct",
+        "mode": "parent",
+        "quota_us": 10000,
+        "vcpus": 2,
+        "repeat": 1,
+        "duration_sec": 2,
+        "exit": 0,
+        "observed_cpu_percent": [
+          10.396
+        ],
+        "guest_complete": [
+          true
+        ],
+        "all_within_diagnostic_bound": true,
+        "seconds": 7.43
+      },
+      {
+        "case": "smp2-rt10pct",
+        "mode": "rt",
+        "quota_us": 10000,
+        "vcpus": 2,
+        "repeat": 1,
+        "duration_sec": 2,
+        "exit": 0,
+        "observed_cpu_percent": [
+          10.187
+        ],
+        "guest_complete": [
+          true
+        ],
+        "all_within_diagnostic_bound": true,
+        "seconds": 9.4
+      }
+    ],
+    "all_diagnostics_passed": true
+  },
+  "native_hos2_queryabi": {
+    "scope": "read-only per-open session; not trusted CapSpace",
+    "runs": 3,
+    "passed": true,
+    "cases": [
+      {
+        "run": 1,
+        "returncode": 0,
+        "guest_success": true,
+        "qemu_exit": 33,
+        "queryabi_ok": true,
+        "boot_ok": true,
+        "seconds": 2.54,
+        "probe_sha256": "4f47b0a34fb96538c7e71ad184d6177f121422e215246070baa02d277b5ba251"
+      },
+      {
+        "run": 2,
+        "returncode": 0,
+        "guest_success": true,
+        "qemu_exit": 33,
+        "queryabi_ok": true,
+        "boot_ok": true,
+        "seconds": 2.44,
+        "probe_sha256": "4f47b0a34fb96538c7e71ad184d6177f121422e215246070baa02d277b5ba251"
+      },
+      {
+        "run": 3,
+        "returncode": 0,
+        "guest_success": true,
+        "qemu_exit": 33,
+        "queryabi_ok": true,
+        "boot_ok": true,
+        "seconds": 2.66,
+        "probe_sha256": "4f47b0a34fb96538c7e71ad184d6177f121422e215246070baa02d277b5ba251"
+      }
+    ],
+    "probe_sha256": "4f47b0a34fb96538c7e71ad184d6177f121422e215246070baa02d277b5ba251",
+    "pin_patch_sha256": "adb67d414d3bfc1cc2709c3ef286705b6b8d8f15c3b84de5651513f9c5cc84b9",
+    "original_pin_unchanged": true
+  },
+  "kernel_tests": {
+    "invocation": "python3 -I support/build/ktest/run.py --crate ostd --crate aster-core --skip-osdk-install --output FRESH_DIR",
+    "reported_passed": 374,
+    "actual_executed_lower_bound": 371,
+    "failed": 0,
+    "filtered": 0,
+    "soft_skipped": 3,
+    "results": [
+      {
+        "crate": "ostd",
+        "declared": 221,
+        "passed": 221,
+        "failed": 0,
+        "filtered": 0,
+        "soft_skipped": 3,
+        "soft_skip_reasons": [
+          "VMX unavailable",
+          "VMX unavailable",
+          "VMX/EPT invalidation unavailable"
+        ],
+        "raw_qemu_exit": 33
+      },
+      {
+        "crate": "aster-core",
+        "declared": 153,
+        "passed": 153,
+        "failed": 0,
+        "filtered": 0,
+        "soft_skipped": 0,
+        "soft_skip_reasons": [],
+        "raw_qemu_exit": 33
+      }
+    ]
+  },
+  "host_checks": {
+    "a05_host_smoke_exit": 0,
+    "archive_regressions_exit": 0,
+    "build_script_bash_n_exit": 0
+  },
+  "safety": {
+    "root_readme_bytes": 0,
+    "modified_host_cgroup": false,
+    "host_network_attached": false,
+    "data_disks_attached": false,
+    "production_services_changed": false,
+    "producer_source_tree_clean": true
+  },
+  "not_validated": [
+    "strict 100ms per-window CPU maximum and general SMP/hotplug/lock interleavings",
+    "HOS2 trusted CapSpace, exec epoch, InstallBudget, ReadUsage, QueryDelivery, RetireThrough",
+    "durable Hepta K-to-D effect owner, reconciliation and retirement",
+    "GPU, Android, physical hardware, full product security/production"
+  ]
+}
