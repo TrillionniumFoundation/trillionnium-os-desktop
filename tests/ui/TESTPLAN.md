@@ -1,6 +1,7 @@
 # A10 test matrix and provenance
 
-Automated Rust commands (from repository root):
+Automated Rust commands (from repository root; the blocking CI
+`tests/ui/check-host.sh` now runs all three A10-owned Cargo test suites):
 - cargo test --manifest-path ui/Cargo.toml --workspace --lib --bins --locked --offline
 - cargo test --manifest-path support/ui/Cargo.toml --locked --offline
 - cargo test --manifest-path tests/ui/Cargo.toml --locked --offline
@@ -8,6 +9,8 @@ Automated Rust commands (from repository root):
 - cargo check --manifest-path ui/Cargo.toml --workspace --all-targets --locked --offline
 - cargo clippy --manifest-path ui/Cargo.toml --workspace --all-targets --locked --offline -- -D warnings
 - cargo fmt --manifest-path ui/Cargo.toml --all -- --check
+- cargo fmt --manifest-path support/ui/Cargo.toml --all -- --check
+- cargo fmt --manifest-path tests/ui/Cargo.toml --all -- --check
 
 The UI `--all-targets` test command is also attempted in host validation, but
 the sandbox denies AF_UNIX socket creation (`EPERM`) in

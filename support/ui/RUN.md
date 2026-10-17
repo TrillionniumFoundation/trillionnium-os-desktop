@@ -10,8 +10,10 @@ libxkbcommon, a system Chinese font, and a Chinese IME such as Fcitx5.
 From the repository root:
 
 ~~~sh
-cargo build --manifest-path ui/Cargo.toml --workspace --bins
-cargo test --manifest-path ui/Cargo.toml --workspace
+cargo build --manifest-path ui/Cargo.toml --workspace --bins --locked
+cargo test --manifest-path ui/Cargo.toml --workspace --locked
+cargo test --manifest-path support/ui/Cargo.toml --locked
+cargo test --manifest-path tests/ui/Cargo.toml --locked
 cargo fmt --manifest-path ui/Cargo.toml --all -- --check
 ~~~
 

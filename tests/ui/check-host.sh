@@ -17,19 +17,27 @@ capture_fmt_on_exit() {
             evidence="$RUNNER_TEMP/a10"
             mkdir -p "$evidence"
         fi
-        local fmt_status=0
+        local fmt_status=0 manifest
+        local manifests=(ui/Cargo.toml support/ui/Cargo.toml tests/ui/Cargo.toml)
         if [[ -n "$evidence" ]]; then
-            cargo fmt --manifest-path ui/Cargo.toml --all -- --check >"$evidence/rustfmt-check.log" 2>&1 || fmt_status=$?
-        else
-            cargo fmt --manifest-path ui/Cargo.toml --all -- --check || fmt_status=$?
+            : > "$evidence/rustfmt-check.log"
         fi
-        if [[ "$fmt_status" -ne 0 ]]; then
-            echo 'A10 rustfmt check FAILED; preserving exact-source review patch' >&2
-            cargo fmt --manifest-path ui/Cargo.toml --all >/dev/null 2>&1 || true
+        for manifest in "${manifests[@]}"; do
             if [[ -n "$evidence" ]]; then
-                git diff -- ui > "$evidence/rustfmt.patch" || true
+                cargo fmt --manifest-path "$manifest" --all -- --check >>"$evidence/rustfmt-check.log" 2>&1 || fmt_status=1
             else
-                git diff -- ui >&2 || true
+                cargo fmt --manifest-path "$manifest" --all -- --check || fmt_status=1
+            fi
+        done
+        if [[ "$fmt_status" -ne 0 ]]; then
+            echo 'A10 Rustfmt check FAILED in one or more owned crates; preserving exact-source patch' >&2
+            for manifest in "${manifests[@]}"; do
+                cargo fmt --manifest-path "$manifest" --all >/dev/null 2>&1 || true
+            done
+            if [[ -n "$evidence" ]]; then
+                git diff -- ui support/ui tests/ui > "$evidence/rustfmt.patch" || true
+            else
+                git diff -- ui support/ui tests/ui >&2 || true
             fi
             if [[ "$status" -eq 0 ]]; then status=1; fi
         fi
@@ -49,8 +57,13 @@ bash tests/ui/test-zombie-liveness.sh
 # reproducibility check fail even though the host build is complete.
 cargo fetch --manifest-path ui/Cargo.toml --locked
 # Build and test first so a formatting failure cannot conceal compiler evidence.
-cargo build --manifest-path ui/Cargo.toml --workspace --bins
-cargo test --manifest-path ui/Cargo.toml --workspace
+cargo build --manifest-path ui/Cargo.toml --workspace --bins --locked
+cargo test --manifest-path ui/Cargo.toml --workspace --locked
+# A10's read-only HOS2 adapter consumes the real shared A02 crate. Changes
+# to main ABI must break this same blocking host gate if the consumer regresses.
+# The tests/ui model is a separate host contract, NOT a synthetic UI success.
+cargo test --manifest-path support/ui/Cargo.toml --locked
+cargo test --manifest-path tests/ui/Cargo.toml --locked
 # Formatter validation is enforced by the EXIT hook even if build/test
 # failed earlier; it preserves the original build/test result.
 
