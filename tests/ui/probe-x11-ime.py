@@ -262,6 +262,7 @@ def outer(args):
     shutil.copyfile(__file__, output / 'probe-source.py')
     extra_mounts = []
     provenance = {'environment_source_sha256': digest(Path(__file__))}
+    guard_source = source_root / 'tests/integration/hepta/run_original_agentd.py'
     if args.ui:
         build = json.loads(args.build_receipt.read_text())
         require(build['status'] == 'passed' and build['exit_code'] == 0,
@@ -271,13 +272,16 @@ def outer(args):
         def git(*arguments):
             return subprocess.check_output(['git', '-C', str(source_root), *arguments],
                 stderr=subprocess.PIPE, timeout=10).decode().strip()
+        harness_commit = git('rev-parse', 'HEAD')
         require(not git('status', '--porcelain=v1', '--untracked-files=all'),
             'commit the probe and preserve a clean source checkout before execution')
+        require(git('rev-parse', build['source_commit'] + '^{tree}') == build['source_tree'],
+            'recorded production source tree does not match its commit')
         ui_tree = git('rev-parse', build['source_commit'] + ':ui')
-        require(git('rev-parse', 'HEAD:ui') == ui_tree,
+        require(git('rev-parse', harness_commit + ':ui') == ui_tree,
             'current Rust UI source differs from the recorded ELF source')
-        provenance.update({'harness_commit': git('rev-parse', 'HEAD'),
-            'harness_tree': git('rev-parse', 'HEAD^{tree}'),
+        provenance.update({'harness_commit': harness_commit,
+            'harness_tree': git('rev-parse', harness_commit + '^{tree}'),
             'production_ui_commit': build['source_commit'],
             'production_ui_tree': build['source_tree'], 'unchanged_ui_subtree': ui_tree})
         for name, recorded in build['binaries'].items():
@@ -289,19 +293,46 @@ def outer(args):
             'unexpected test font bytes')
         shutil.copyfile(args.build_receipt, output / 'rust-build-receipt.json')
         client_source = Path(__file__).with_name('x11-ime-client.py')
-        shutil.copyfile(client_source, output / 'ui-probe-source.py')
+        tracked_sources = [
+            ('environment', Path(__file__), 'tests/ui/probe-x11-ime.py', 'probe-source.py'),
+            ('client', client_source, 'tests/ui/x11-ime-client.py', 'ui-probe-source.py'),
+            ('guard', guard_source, 'tests/integration/hepta/run_original_agentd.py', 'child-guard-source.py'),
+        ]
+        provenance['tracked_sources'] = {}
+        for role, actual, relative, snapshot_name in tracked_sources:
+            require(actual.resolve(strict=True) == (source_root / relative).resolve(strict=True),
+                role + ' source is outside the selected tracked path')
+            actual_bytes = actual.read_bytes()
+            committed = subprocess.check_output(['git', '-C', str(source_root),
+                'show', harness_commit + ':' + relative], stderr=subprocess.PIPE, timeout=10)
+            require(actual_bytes == committed, role + ' source differs from the frozen commit blob')
+            (output / snapshot_name).write_bytes(actual_bytes)
+            provenance['tracked_sources'][role] = {'path': relative,
+                'git_blob': git('rev-parse', harness_commit + ':' + relative),
+                'sha256': hashlib.sha256(actual_bytes).hexdigest(), 'bytes': len(actual_bytes)}
         scenario = json.loads(args.scenario.read_text())
         require(isinstance(scenario, list) and len(scenario) == 23,
             'fixed 23-action ASCII input scenario required')
         shutil.copyfile(args.scenario, output / 'replay-scenario.json')
+        fixture_path = 'tests/ui/x11-ime-actions.json'
+        fixture_source = {'sha256': digest(output / 'replay-scenario.json'),
+            'path': str(args.scenario.resolve()), 'kind': 'external_fixture_by_independent_hash'}
+        if args.scenario.resolve() == (source_root / fixture_path).resolve():
+            committed = subprocess.check_output(['git', '-C', str(source_root),
+                'show', harness_commit + ':' + fixture_path], stderr=subprocess.PIPE, timeout=10)
+            require((output / 'replay-scenario.json').read_bytes() == committed,
+                'tracked fixture differs from the frozen commit blob')
+            fixture_source.update({'kind': 'tracked_fixture', 'path': fixture_path,
+                'git_blob': git('rev-parse', harness_commit + ':' + fixture_path)})
         provenance.update({'client_source_sha256': digest(client_source),
             'input_fixture_sha256': digest(args.scenario),
+            'fixture_source': fixture_source, 'child_guard_sha256': digest(guard_source),
             'font_sha256': digest(args.font), 'binaries': build['binaries']})
         (output / 'probe-provenance.json').write_text(json.dumps(provenance, indent=2) + '\n')
+        guard_source = output / 'child-guard-source.py'
         extra_mounts = ['--ro-bind', str(args.bin_dir), '/ui-bin',
             '--ro-bind', str(args.font), '/test-fonts/CJK.ttf',
             '--ro-bind', str(output / 'ui-probe-source.py'), '/ui-probe.py']
-    guard_source = source_root / 'tests/integration/hepta/run_original_agentd.py'
     command = ['/usr/bin/bwrap', '--unshare-all', '--die-with-parent', '--new-session',
         '--hostname', 'a10-private-ime', '--ro-bind', '/usr', '/host/usr',
         '--ro-bind', str(base / 'packages'), '/a10-packages',

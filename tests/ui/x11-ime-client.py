@@ -268,6 +268,8 @@ def run_ui(output, report, env, command, spawn, alive):
                 require(draft.is_file(), 'actual Shell export missing')
                 exported = json.loads(draft.read_bytes())
                 require(exported == {'version': 1, 'drafts': ['你好']}, 'actual Shell text did not match IME sample')
+                require(any(s['target'] == 'shell' and s['text'] == '你好' for s in ui['clipboard_samples']),
+                    'actual Shell clipboard text did not match IME sample')
                 # A different expected value excludes a stale Shell clipboard
                 # being mistaken for Notes' current contents.
                 require(any(s['target'] == 'notes' and s['text'] == '中文' for s in ui['clipboard_samples']),

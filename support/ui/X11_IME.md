@@ -54,6 +54,13 @@ receipt must contain `status: "passed"`, `exit_code: 0`, `source_commit`,
 launch. It also requires a clean committed probe checkout and confirms that
 its `ui` subtree matches the build source. A later harness/documentation
 commit is recorded separately from the source of the compiled Rust programs.
+The harness resolves its commit once, then requires the environment, client
+and process-guard files to occupy their expected tracked paths and match that
+commit's exact bytes. Those snapshots, blob IDs and SHA-256 values are recorded.
+The production source tree is also resolved from its recorded commit. A fixture
+inside the tracked path must match its frozen blob; an explicitly supplied
+external fixture is labeled only by its independent hash, not attributed to
+the harness commit.
 
 The fixed sample font is the existing Noto Sans SC Regular file used by the
 CJK pixel qualification: 10,595,948 bytes, SHA-256
