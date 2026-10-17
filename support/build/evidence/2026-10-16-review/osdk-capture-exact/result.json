@@ -1,0 +1,156 @@
+{
+  "schema": 1,
+  "profile_id": "osdk-native-local-tcp-gdb-capture-v2",
+  "control_transport": "loopback-tcp",
+  "profile": "isolated upstream harness paths, native direct multiboot, q35 TCG max 1 vCPU 512 MiB",
+  "scope": "OSDK example kernels and tooling, not complete Asterinas kernel acceptance",
+  "available_cases": 22,
+  "selected_cases": 1,
+  "passed": 1,
+  "failed": 0,
+  "blocked": 0,
+  "soft_skip_count": 0,
+  "host_blocked_cases": 0,
+  "cases": [
+    {
+      "name": "commands::run::coverage_feature::basic_coverage",
+      "profile_id": "osdk-native-local-tcp-gdb-capture-v2",
+      "fixed_paths": [
+        "/tmp/a01oi-3avkyjh0/kernel_test_workspace/run_command"
+      ],
+      "preexisting_paths": [],
+      "status": "passed",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/debug/deps/integration-6ff40639aacd57f2",
+        "--exact",
+        "commands::run::coverage_feature::basic_coverage",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/next5-osdk-capture-exact-01/case-01/work",
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "group_cleanup": {
+        "leader_pid": 210,
+        "leader_exit_code": 0,
+        "leader_reaped": true,
+        "external_reap_disarmed": false,
+        "identity_anchor": "waitid WNOWAIT until group signals precede leader reap"
+      },
+      "duration_seconds": 6.341,
+      "soft_skips": [],
+      "host_blockers": [],
+      "guests": [
+        {
+          "record": "case-01/guests/guest-001/qemu.json",
+          "raw_exit_code": 33,
+          "timed_out": false,
+          "wrapper_exit_code": 33,
+          "error": null,
+          "serial_valid": true,
+          "profile_id": "osdk-native-local-tcp-gdb-capture-v2"
+        }
+      ],
+      "coverage": {
+        "passed": true,
+        "source": "/tmp/a01oi-3avkyjh0/kernel_test_workspace/run_command/basic_coverage/coverage.profraw",
+        "source_preexisted": false,
+        "source_osdk_exit_code": 0,
+        "size": 2094456,
+        "sha256": "a6a60289f3e9fed6c3f6ad17f1108e1a44aac61cac313e8ebc3b1611288eb9a1",
+        "llvm_profdata": "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin/llvm-profdata",
+        "commands": [
+          {
+            "argv": [
+              "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin/llvm-profdata",
+              "merge",
+              "--sparse",
+              "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/next5-osdk-capture-exact-01/case-01/coverage/coverage.profraw",
+              "-o",
+              "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/next5-osdk-capture-exact-01/case-01/coverage/coverage.profdata"
+            ],
+            "raw_exit_code": 0
+          },
+          {
+            "argv": [
+              "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin/llvm-profdata",
+              "show",
+              "--all-functions",
+              "--counts",
+              "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/next5-osdk-capture-exact-01/case-01/coverage/coverage.profdata"
+            ],
+            "raw_exit_code": 0
+          }
+        ],
+        "total_functions": 5696,
+        "maximum_function_count": 383731,
+        "guest_binding": {
+          "passed": true,
+          "capture_sidecar": "guests/guest-001/coverage-capture.json",
+          "capture_sidecar_sha256": "8b0bfa121860e0616c71a012214b1fd60eb6543f9e8b100ba0c4656fd893b73f",
+          "symbol_elf_sha256": "03824ce0355a216035877cdfcfc7f5853555a83142e90c5895b911d91d5a3e69",
+          "guest_record": "guests/guest-001/qemu.json",
+          "kernel_sha256": "2600cc9cc86f31382a64efb45e9e7d346f065cd966a059186f947c195c755598",
+          "serial_sha256": "c12528641370309208c1340ec6a7b9080f7855675656f5b486d05714b9c448f2",
+          "raw_sha256": "a6a60289f3e9fed6c3f6ad17f1108e1a44aac61cac313e8ebc3b1611288eb9a1",
+          "announcement": {
+            "address": "0xffff800010400000",
+            "size": 2094456
+          }
+        }
+      },
+      "cleanup": [
+        {
+          "path": "/tmp/a01oi-3avkyjh0/kernel_test_workspace/run_command",
+          "removed": true,
+          "device": 27,
+          "inode": 1441926
+        }
+      ]
+    }
+  ],
+  "build_commands": [
+    {
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+        "build",
+        "--locked",
+        "--bin",
+        "cargo-osdk"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/osdk",
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "group_cleanup": {
+        "leader_pid": 23,
+        "leader_exit_code": 0,
+        "leader_reaped": true,
+        "external_reap_disarmed": false,
+        "identity_anchor": "waitid WNOWAIT until group signals precede leader reap"
+      },
+      "duration_seconds": 0.223
+    },
+    {
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+        "test",
+        "--locked",
+        "--test",
+        "integration",
+        "--no-run",
+        "--message-format=json"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/next5-osdk-capture-exact-01/harness",
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "group_cleanup": {
+        "leader_pid": 37,
+        "leader_exit_code": 0,
+        "leader_reaped": true,
+        "external_reap_disarmed": false,
+        "identity_anchor": "waitid WNOWAIT until group signals precede leader reap"
+      },
+      "duration_seconds": 0.821
+    }
+  ]
+}

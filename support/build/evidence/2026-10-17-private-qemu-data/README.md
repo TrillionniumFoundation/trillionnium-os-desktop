@@ -1,0 +1,11 @@
+# Explicit private QEMU data directory
+
+`A01_QEMU_DATA_DIR` supplies the explicit private QEMU resource directory required by the relocated cloud QEMU executable. Selecting only `-bios` does not select auxiliary resources such as `kvmvapic.bin`. This change appends exactly `-L <selected directory>` to the actual invocation, while retaining the original `requested_qemu_args` and recording `data_selection` origin, original requested paths, selected path and append decision.
+
+The explicit value must be nonempty, absolute and name an existing directory. Empty, relative, missing and regular-file paths are rejected before QEMU's version probe or launch. Combining the variable with any already requested `-L` is rejected to avoid ambiguity. No fallback, wrapper masquerade or write into /usr is performed. When the variable is absent, the request is left unchanged. Existing explicit private BIOS selection remains available; all three artifact argument/FD/stat/hash checks, exclusive snapshots, inherited GDB-FD handling and the unchanged boot checker remain in force.
+
+The complete production test file passed **27/27 under -I and 27/27 under -I -O**. The two new actual recorder CLI tests use disposable fake QEMU: a private path containing spaces is passed as exactly one -L; four invalid directory values and env+existing-L cause exit1 without version probe, launch, or snapshot creation. Against the exact previously published BIOS recorder, the two new tests fail with the counts retained in result.json and before log. These before controls are not counted as additional full-suite successes.
+
+No actual guest runs in these fixtures. Their raw serial input is historical test data. Actual native missing-resource probes and kernel build/boot acceptance are recorded separately; this package claims path selection validation only.
+
+`source/` retains the exact BIOS source base `a8f1ed1252a7eaccf74b9a717f862413b7c6650d`, unchanged checker/serial controls, exact tested candidate files and unified patch. `logs/` retains both full suites, before failure, actual command/environment/exit and stable-source receipt. `actual-cli-fixtures.tar.gz` retains all raw fixture members with SHA256/size/mode in raw-members.json. Earlier private-BIOS and A02 fixed-nightly evidence directories remain unchanged. `SHA256SUMS` covers every retained file except itself.

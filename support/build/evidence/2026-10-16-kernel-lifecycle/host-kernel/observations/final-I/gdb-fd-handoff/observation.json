@@ -1,0 +1,34 @@
+{
+  "kind": "host_fd_handoff_no_kernel",
+  "passed": true,
+  "listener": {
+    "fd": 64,
+    "address": [
+      "127.0.0.1",
+      58419
+    ],
+    "listening": 1,
+    "argv": [
+      "/tmp/a01-runner-test-u5kwtrie/mock-bin/make",
+      "-C",
+      "/tmp/a01-runner-test-u5kwtrie/kernel/asterinas",
+      "-f",
+      "Makefile",
+      "-f",
+      "/tmp/a01-runner-test-u5kwtrie/support/build/minimal.mk",
+      "gdb_server",
+      "CARGO_OSDK=/tmp/a01-runner-test-u5kwtrie/cargo-home/bin/cargo-osdk",
+      "A01_INITRAMFS=/tmp/a01-runner-test-u5kwtrie/evidence/initramfs.cpio.gz",
+      "A01_QEMU_WRAPPER=/tmp/a01-runner-test-u5kwtrie/support/build/record-qemu.py",
+      "TARGET_ARCH=x86_64",
+      "SMP=1",
+      "MEM=512M",
+      "ENABLE_KVM=0",
+      "BOOT_PROTOCOL=multiboot",
+      "INITRAMFS=on",
+      "AUTO_TEST=none",
+      "A01_GDB_PORT=58419"
+    ]
+  },
+  "driver_rejected_missing_vm": true
+}

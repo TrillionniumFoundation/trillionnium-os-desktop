@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "git_head": "84040737d2263368d254d4b16dabff7afb797ea4",
+  "source": "support/build/kernel.sh",
+  "source_sha256": "8ba0febef90ae09ca7786604aa6bffee224a0d7e1ef9b5158c582ede759a0cdf",
+  "issue": "cleanup identity stat followed by pathname unlink permits foreign replacement deletion",
+  "code_lines": [
+    45,
+    46,
+    47
+  ],
+  "fixture_scope": "Unmodified copied shell runner and supervisor/checker from project; disposable mock project and host tools only; no production manifest, Cargo, kernel build or QEMU",
+  "trigger": "stat wrapper returns the actual owned inode identity while atomically replacing the disposable manifest with a different foreign inode before shell rm",
+  "probe_stat_wrapper": "#!/usr/bin/python3\nimport json,os,subprocess,sys\nfrom pathlib import Path\nresult=subprocess.run(['/usr/bin/stat', *sys.argv[1:]], stdout=subprocess.PIPE, stderr=subprocess.PIPE)\npath=Path(sys.argv[-1])\nroot=Path(os.environ['MOCK_PROJECT'])\nif result.returncode==0 and path==root/'kernel/asterinas/kernel/OSDK.toml':\n    owned_identity=result.stdout.decode().strip()\n    replacement=path.with_name('foreign-manifest-stage')\n    replacement.write_text('foreign manifest installed after identity was checked\\n')\n    foreign_identity='%s:%s' % (replacement.stat().st_dev,replacement.stat().st_ino)\n    os.replace(replacement,path)\n    (root/'race-proof.json').write_text(json.dumps({'owned_identity_checked':owned_identity,'foreign_identity_installed':foreign_identity,'foreign_bytes':path.read_text()}))\nsys.stdout.buffer.write(result.stdout)\nsys.stderr.buffer.write(result.stderr)\nraise SystemExit(result.returncode)\n",
+  "result": {
+    "runner_exit_code": 0,
+    "runner_stdout": "fixture make completed; no kernel or QEMU was executed\nevidence: /workspace/scratch/ae1a8cf05419/a01-runner-test-19v63pm0/evidence\nA01_KERNEL_SUPERVISOR {\"argv\": [\"bash\", \"/workspace/scratch/ae1a8cf05419/a01-runner-test-19v63pm0/support/build/kernel.sh\", \"kernel\"], \"exit_code\": 0, \"external_reap_disarmed\": false, \"group_owner\": \"standalone supervisor\", \"kind\": \"kernel_worker_group_supervision\", \"leader_pid\": 10, \"pass_fds\": [], \"raw_worker_exit\": 0, \"worker_reaped\": true}\n",
+    "foreign_manifest_deleted": true,
+    "owned_identity_checked": "27:1581458",
+    "foreign_identity_installed": "27:1581465",
+    "foreign_bytes": "foreign manifest installed after identity was checked\n"
+  },
+  "reproduction": "Load KernelRunnerTests fixture read-only, setUp(), override only mock-bin/stat with recorded wrapper, run_runner(), inspect race-proof.json and fixture manifest. Existing test_manifest_replaced_during_build_is_preserved covers replacement before the stat, not this stat/unlink interval."
+}

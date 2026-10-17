@@ -1,0 +1,62 @@
+[
+  {
+    "argv": [
+      "/workspace/scratch/ae1a8cf05419/a04-pr8-handoff-16d6728/current-rootfs/usr/local/bin/a04/probe_static",
+      "fd_limit",
+      "/workspace/scratch/ae1a8cf05419/a04-pr8-handoff-16d6728/host-controls-01/fd_limit"
+    ],
+    "binary_sha256": "edd3063a60c3f5c23679de3ab13e71955f7155be619f191468800931d101b078",
+    "case": "static.fd_limit",
+    "elapsed_seconds": 0.0013663768768310547,
+    "exact_match": true,
+    "facts": {
+      "child_reaped": true,
+      "emfile_errno": 24,
+      "ok": true,
+      "parent_rlimit_unchanged": true
+    },
+    "host": "Linux-6.18.44-x86_64-with-glibc2.39",
+    "profile": "original-linux-host-control-not-guest",
+    "raw_exit_code": 0,
+    "reference_facts": {
+      "child_reaped": true,
+      "emfile_errno": 24,
+      "ok": true,
+      "parent_rlimit_unchanged": true
+    },
+    "stderr": "",
+    "stdout": "{\"ok\":true,\"emfile_errno\":24,\"child_reaped\":true,\"parent_rlimit_unchanged\":true}\n",
+    "timed_out": false
+  },
+  {
+    "argv": [
+      "/workspace/scratch/ae1a8cf05419/a04-pr8-handoff-16d6728/current-rootfs/usr/local/bin/a04/probe_static",
+      "scm_rights",
+      "/workspace/scratch/ae1a8cf05419/a04-pr8-handoff-16d6728/host-controls-01/scm_rights"
+    ],
+    "binary_sha256": "edd3063a60c3f5c23679de3ab13e71955f7155be619f191468800931d101b078",
+    "case": "static.scm_rights",
+    "elapsed_seconds": 0.0008344650268554688,
+    "exact_match": true,
+    "facts": {
+      "child_reaped": true,
+      "ok": true,
+      "recv_cloexec": true,
+      "scm_rights": true,
+      "shared_offset": true
+    },
+    "host": "Linux-6.18.44-x86_64-with-glibc2.39",
+    "profile": "original-linux-host-control-not-guest",
+    "raw_exit_code": 0,
+    "reference_facts": {
+      "child_reaped": true,
+      "ok": true,
+      "recv_cloexec": true,
+      "scm_rights": true,
+      "shared_offset": true
+    },
+    "stderr": "",
+    "stdout": "{\"ok\":true,\"scm_rights\":true,\"recv_cloexec\":true,\"shared_offset\":true,\"child_reaped\":true}\n",
+    "timed_out": false
+  }
+]

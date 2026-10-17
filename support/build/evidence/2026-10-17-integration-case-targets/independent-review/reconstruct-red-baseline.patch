@@ -1,0 +1,68 @@
+--- a/run.py
++++ b/run.py
+@@ -56,41 +56,6 @@
+ def external(data):
+     return {(p["name"], p["version"], p["source"], p.get("checksum", ""))
+             for p in tomllib.loads(data.decode())["package"] if p.get("source")}
+-
+-
+-def validate_artifact_cache(cache, create=False):
+-    """Reject foreign links before harness normalization or Cargo can write."""
+-    cache = Path(cache).absolute()
+-    if create:
+-        cache.mkdir(mode=0o700)
+-    flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC
+-    descriptor = os.open(cache, flags)
+-    try:
+-        root = os.fstat(descriptor)
+-        record = {"path": str(cache), "device": root.st_dev, "inode": root.st_ino,
+-                  "artifacts": {}}
+-        for name in ("debug", "release", "x86_64-unknown-none"):
+-            try:
+-                os.mkdir(name, dir_fd=descriptor)
+-            except FileExistsError:
+-                pass
+-            child = os.open(name, flags, dir_fd=descriptor)
+-            try:
+-                opened = os.fstat(child)
+-                named = os.stat(cache / name, follow_symlinks=False)
+-                named_root = os.stat(cache, follow_symlinks=False)
+-                if not stat.S_ISDIR(named_root.st_mode) or \
+-                        (named_root.st_dev, named_root.st_ino) != (root.st_dev, root.st_ino) or \
+-                        not stat.S_ISDIR(named.st_mode) or \
+-                        (named.st_dev, named.st_ino) != (opened.st_dev, opened.st_ino):
+-                    raise ValueError(f"integration artifact cache identity changed: {cache / name}")
+-                record["artifacts"][name] = {"path": str(cache / name),
+-                                           "device": opened.st_dev, "inode": opened.st_ino}
+-            finally:
+-                os.close(child)
+-        return record
+-    finally:
+-        os.close(descriptor)
+ 
+ 
+ def create_case_target(cache, case):
+@@ -504,13 +469,12 @@
+         raise SystemExit("actual compiler does not match the fixed nightly-2026-07-21")
+     env["PATH"] = str(cargo_home / "bin") + os.pathsep + env.get("PATH", "")
+     env["CARGO_BUILD_JOBS"] = env.get("CARGO_BUILD_JOBS", "2")
+-    target_dir = args.target_dir.absolute() if args.target_dir else output / "target"
+-    if args.target_dir and (not target_dir.resolve().is_relative_to((project / "support/build/out").resolve())
++    target_dir = args.target_dir.resolve() if args.target_dir else output / "target"
++    if args.target_dir and (not target_dir.is_relative_to(project / "support/build/out")
+                             or not (target_dir.parent / "harness-adaptation.patch").is_file()
+                             or not (target_dir.parent / "harness-lock.json").is_file()):
+         raise SystemExit("--target-dir must be a prior isolated integration runner cache")
+     env["CARGO_TARGET_DIR"] = str(target_dir)
+-    artifact_cache_profile = validate_artifact_cache(target_dir, create=args.target_dir is None)
+     env["OSDK_LOCAL_DEV"] = "1"
+     env.pop("INTEL_TDX", None)
+     env.pop("OSDK_CARGO_LOCK", None)
+@@ -571,7 +535,6 @@
+                    "rustc_path": str(tool_bin / "rustc"), "rustc_sha256": digest(tool_bin / "rustc"),
+                    "rustup_auto_install": "0", "isolated_fixed_root": str(fixed_root),
+                    "cargo_artifact_cache": str(target_dir),
+-                   "cargo_artifact_cache_profile": artifact_cache_profile,
+                    "case_target_policy": "private generated osdk workspaces; shared debug/release/x86_64-unknown-none artifacts",
+                    "profile_id": profile_id,
+                    "control_transport": "loopback-tcp" if args.local_tcp else "upstream-unix",

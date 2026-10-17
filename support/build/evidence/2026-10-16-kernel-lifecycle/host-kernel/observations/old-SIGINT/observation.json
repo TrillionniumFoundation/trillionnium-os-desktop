@@ -1,0 +1,76 @@
+{
+  "kind": "copied_kernel_runner_signal_host_fixture_no_kernel_no_vm",
+  "command": [
+    "bash",
+    "/workspace/scratch/ae1a8cf05419/next6-kernel-signal-audit-INT/fixture/support/build/kernel.sh",
+    "kernel"
+  ],
+  "selected_environment": {
+    "PATH": "/workspace/scratch/ae1a8cf05419/next6-kernel-signal-audit-INT/fixture/mock-bin:/usr/bin:/bin",
+    "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/next6-kernel-signal-audit-INT/fixture/cargo-home",
+    "VDSO_LIBRARY_DIR": "/workspace/scratch/ae1a8cf05419/next6-kernel-signal-audit-INT/fixture/vdso",
+    "MOCK_PROJECT": "/workspace/scratch/ae1a8cf05419/next6-kernel-signal-audit-INT/fixture",
+    "A01_RUN_DIR": "/workspace/scratch/ae1a8cf05419/next6-kernel-signal-audit-INT/fixture/evidence"
+  },
+  "source_kernel_sh_sha256": "ff4315024e5f9a690ce1c7bf8954d46b65d41e44542d5a4ff0d614833914f5e6",
+  "original_source_sha256": "ff4315024e5f9a690ce1c7bf8954d46b65d41e44542d5a4ff0d614833914f5e6",
+  "production_manifest_before": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f",
+  "leader_pid": 6,
+  "make": {
+    "pid": 38,
+    "group": 6,
+    "child_pid": 40,
+    "address": [
+      "127.0.0.1",
+      33639
+    ],
+    "argv": [
+      "/workspace/scratch/ae1a8cf05419/next6-kernel-signal-audit-INT/fixture/mock-bin/make",
+      "-C",
+      "/workspace/scratch/ae1a8cf05419/next6-kernel-signal-audit-INT/fixture/kernel/asterinas",
+      "-f",
+      "Makefile",
+      "-f",
+      "/workspace/scratch/ae1a8cf05419/next6-kernel-signal-audit-INT/fixture/support/build/minimal.mk",
+      "kernel",
+      "CARGO_OSDK=/workspace/scratch/ae1a8cf05419/next6-kernel-signal-audit-INT/fixture/cargo-home/bin/cargo-osdk",
+      "A01_INITRAMFS=/workspace/scratch/ae1a8cf05419/next6-kernel-signal-audit-INT/fixture/evidence/initramfs.cpio.gz",
+      "A01_QEMU_WRAPPER=/workspace/scratch/ae1a8cf05419/next6-kernel-signal-audit-INT/fixture/support/build/record-qemu.py",
+      "TARGET_ARCH=x86_64",
+      "SMP=1",
+      "MEM=512M",
+      "ENABLE_KVM=0",
+      "BOOT_PROTOCOL=multiboot",
+      "INITRAMFS=on",
+      "AUTO_TEST=none"
+    ]
+  },
+  "dummy_child": {
+    "pid": 40,
+    "group": 6,
+    "address": [
+      "127.0.0.1",
+      43701
+    ]
+  },
+  "manifest_present_before_signal": true,
+  "all_pidfds_alive_before_signal": true,
+  "after_direct_runner_SIGINT": {
+    "runner_pidfd_exited": false,
+    "make_pidfd_exited": false,
+    "dummy_child_pidfd_exited": false,
+    "manifest_present": true,
+    "make_TCP_lease_busy": true,
+    "dummy_child_TCP_lease_busy": true,
+    "workspace_lock_busy": true
+  },
+  "owned_leader_waitid_WNOWAIT": "None",
+  "reproduced": false,
+  "runner_reaped_returncode": -15,
+  "after_owned_group_cleanup_pidfd_exited": {
+    "runner": true,
+    "make": true,
+    "dummy_child": true
+  },
+  "production_manifest_after": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f"
+}

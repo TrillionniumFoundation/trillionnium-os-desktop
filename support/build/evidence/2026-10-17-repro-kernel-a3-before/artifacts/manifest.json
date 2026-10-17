@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "artifacts": [
+    {
+      "kind": "prepared-initramfs-not-booted",
+      "original_bytes": 1107990,
+      "original_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "encoding": "gzip wrapping exact prepared input bytes; no QEMU loaded snapshot exists",
+      "bytes": 1106991,
+      "sha256": "1152f20fcb27d8739be344e3339db7fceab65fdb5ddbde573794f77fd61b822f",
+      "chunks": [
+        {
+          "path": "artifacts/initramfs.input.gz",
+          "bytes": 1106991,
+          "sha256": "1152f20fcb27d8739be344e3339db7fceab65fdb5ddbde573794f77fd61b822f"
+        }
+      ]
+    }
+  ],
+  "original_paths": {
+    "normalized-cloud/A3/kernel-run/initramfs.cpio.gz": {
+      "artifact": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "bytes": 1107990,
+      "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "mode": 420
+    }
+  },
+  "maximum_stored_chunk_bytes": 2097152,
+  "scope": "Prepared initramfs only. No final kernel ELF, BIOS snapshot, QEMU JSON or serial was produced."
+}

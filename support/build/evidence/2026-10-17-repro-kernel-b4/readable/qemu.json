@@ -1,0 +1,195 @@
+{
+  "requested_qemu_args": [
+    "-kernel",
+    "/tmp/trillionnium-a01-normalized-B4/kernel/asterinas/target/osdk/asterinas/asterinas-osdk-bin.elf",
+    "-initrd",
+    "/workspace/scratch/ae1a8cf05419/normalized-cloud/B4/kernel-run/initramfs.cpio.gz",
+    "-append",
+    "earlycon console=ttyS0 console=ttyS0 console=ttyS0 loglevel=info loglevel=info loglevel=info SHELL=/bin/sh SHELL=/bin/sh LOGNAME=root LOGNAME=root HOME=/ HOME=/ USER=root USER=root PATH=/bin:/sbin PATH=/bin:/sbin --",
+    "-machine",
+    "q35",
+    "-accel",
+    "tcg",
+    "-cpu",
+    "max",
+    "-bios",
+    "/usr/share/seabios/bios-256k.bin",
+    "-m",
+    "512M",
+    "-smp",
+    "1",
+    "-nodefaults",
+    "-no-user-config",
+    "-no-reboot",
+    "-nographic",
+    "-display",
+    "none",
+    "-monitor",
+    "none",
+    "-serial",
+    "chardev:serial",
+    "-chardev",
+    "stdio,id=serial,signal=off,logfile=qemu.log",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04"
+  ],
+  "cwd": "/tmp/trillionnium-a01-normalized-B4/kernel/asterinas/kernel",
+  "artifacts": {
+    "-kernel": {
+      "path": "/workspace/scratch/ae1a8cf05419/normalized-cloud/B4/kernel-run/artifacts-221lew9p/kernel.elf",
+      "size": 8286952,
+      "sha256": "8c540288c6af2a1a97121031643c1af4c4db395d7e8b4082d6edc4604449849a",
+      "stat": {
+        "dev": 27,
+        "ino": 926740,
+        "mode": 33024,
+        "size": 8286952,
+        "mtime_ns": 1792202161500754244,
+        "ctime_ns": 1792202161500754244
+      },
+      "source": {
+        "requested_path": "/tmp/trillionnium-a01-normalized-B4/kernel/asterinas/target/osdk/asterinas/asterinas-osdk-bin.elf",
+        "path": "/tmp/trillionnium-a01-normalized-B4/kernel/asterinas/target/osdk/asterinas/asterinas-osdk-bin.elf",
+        "size": 8286952,
+        "sha256": "8c540288c6af2a1a97121031643c1af4c4db395d7e8b4082d6edc4604449849a",
+        "stat": {
+          "dev": 27,
+          "ino": 143326,
+          "mode": 33261,
+          "size": 8286952,
+          "mtime_ns": 1792202161400755084,
+          "ctime_ns": 1792202161403122306
+        }
+      },
+      "creation": "exclusive xb; no overwrite or source-path fallback"
+    },
+    "-initrd": {
+      "path": "/workspace/scratch/ae1a8cf05419/normalized-cloud/B4/kernel-run/artifacts-221lew9p/initramfs.cpio.gz",
+      "size": 1107990,
+      "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "stat": {
+        "dev": 27,
+        "ino": 926741,
+        "mode": 33024,
+        "size": 1107990,
+        "mtime_ns": 1792202161516754110,
+        "ctime_ns": 1792202161516754110
+      },
+      "source": {
+        "requested_path": "/workspace/scratch/ae1a8cf05419/normalized-cloud/B4/kernel-run/initramfs.cpio.gz",
+        "path": "/workspace/scratch/ae1a8cf05419/normalized-cloud/B4/kernel-run/initramfs.cpio.gz",
+        "size": 1107990,
+        "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+        "stat": {
+          "dev": 27,
+          "ino": 923138,
+          "mode": 33188,
+          "size": 1107990,
+          "mtime_ns": 1792201501972048988,
+          "ctime_ns": 1792202161388755185
+        }
+      },
+      "creation": "exclusive xb; no overwrite or source-path fallback"
+    },
+    "-bios": {
+      "path": "/workspace/scratch/ae1a8cf05419/normalized-cloud/B4/kernel-run/artifacts-221lew9p/bios.bin",
+      "size": 262144,
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "stat": {
+        "dev": 27,
+        "ino": 926742,
+        "mode": 33024,
+        "size": 262144,
+        "mtime_ns": 1792202161524721776,
+        "ctime_ns": 1792202161524721776
+      },
+      "source": {
+        "requested_path": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/seabios/bios-256k.bin",
+        "path": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/seabios/bios-256k.bin",
+        "size": 262144,
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+        "stat": {
+          "dev": 27,
+          "ino": 1983885,
+          "mode": 33188,
+          "size": 262144,
+          "mtime_ns": 1701364826000000000,
+          "ctime_ns": 1792196333988385276
+        }
+      },
+      "creation": "exclusive xb; no overwrite or source-path fallback"
+    }
+  },
+  "raw_exit_code": 33,
+  "timed_out": false,
+  "stage": "complete",
+  "bios_selection": {
+    "origin": "A01_QEMU_BIOS",
+    "original_requested_path": "/usr/share/seabios/bios-256k.bin",
+    "selected_path": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/seabios/bios-256k.bin"
+  },
+  "data_selection": {
+    "origin": "A01_QEMU_DATA_DIR",
+    "original_requested_paths": [],
+    "selected_path": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/qemu",
+    "appended": true
+  },
+  "snapshot_directory": {
+    "path": "/workspace/scratch/ae1a8cf05419/normalized-cloud/B4/kernel-run/artifacts-221lew9p",
+    "stat": {
+      "dev": 27,
+      "ino": 926076,
+      "mode": 16832,
+      "size": 4096,
+      "mtime_ns": 1792202161484754379,
+      "ctime_ns": 1792202161484754379
+    },
+    "ownership": "new private mkdtemp directory; retained as evidence"
+  },
+  "argv": [
+    "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/bin/qemu-system-x86_64",
+    "-kernel",
+    "/workspace/scratch/ae1a8cf05419/normalized-cloud/B4/kernel-run/artifacts-221lew9p/kernel.elf",
+    "-initrd",
+    "/workspace/scratch/ae1a8cf05419/normalized-cloud/B4/kernel-run/artifacts-221lew9p/initramfs.cpio.gz",
+    "-append",
+    "earlycon console=ttyS0 console=ttyS0 console=ttyS0 loglevel=info loglevel=info loglevel=info SHELL=/bin/sh SHELL=/bin/sh LOGNAME=root LOGNAME=root HOME=/ HOME=/ USER=root USER=root PATH=/bin:/sbin PATH=/bin:/sbin --",
+    "-machine",
+    "q35",
+    "-accel",
+    "tcg",
+    "-cpu",
+    "max",
+    "-bios",
+    "/workspace/scratch/ae1a8cf05419/normalized-cloud/B4/kernel-run/artifacts-221lew9p/bios.bin",
+    "-m",
+    "512M",
+    "-smp",
+    "1",
+    "-nodefaults",
+    "-no-user-config",
+    "-no-reboot",
+    "-nographic",
+    "-display",
+    "none",
+    "-monitor",
+    "none",
+    "-serial",
+    "chardev:serial",
+    "-chardev",
+    "stdio,id=serial,signal=off,logfile=qemu.log",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04",
+    "-L",
+    "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/qemu"
+  ],
+  "shell_command": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/bin/qemu-system-x86_64 -kernel /workspace/scratch/ae1a8cf05419/normalized-cloud/B4/kernel-run/artifacts-221lew9p/kernel.elf -initrd /workspace/scratch/ae1a8cf05419/normalized-cloud/B4/kernel-run/artifacts-221lew9p/initramfs.cpio.gz -append 'earlycon console=ttyS0 console=ttyS0 console=ttyS0 loglevel=info loglevel=info loglevel=info SHELL=/bin/sh SHELL=/bin/sh LOGNAME=root LOGNAME=root HOME=/ HOME=/ USER=root USER=root PATH=/bin:/sbin PATH=/bin:/sbin --' -machine q35 -accel tcg -cpu max -bios /workspace/scratch/ae1a8cf05419/normalized-cloud/B4/kernel-run/artifacts-221lew9p/bios.bin -m 512M -smp 1 -nodefaults -no-user-config -no-reboot -nographic -display none -monitor none -serial chardev:serial -chardev stdio,id=serial,signal=off,logfile=qemu.log -device isa-debug-exit,iobase=0xf4,iosize=0x04 -L /workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/qemu",
+  "qemu_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+  "qemu_version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)\nCopyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers",
+  "serial_path": "/tmp/trillionnium-a01-normalized-B4/kernel/asterinas/kernel/qemu.log",
+  "qemu_pid": 5349,
+  "serial_sha256": "d1acbe86032800042f707c058cec3e71afbe031b9c66f2b81f4719d113572d5e",
+  "serial_size": 72341,
+  "duration_seconds": 1.279,
+  "recorder_exit_code": 33
+}

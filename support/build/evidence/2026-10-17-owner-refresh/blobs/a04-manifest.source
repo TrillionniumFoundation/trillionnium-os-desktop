@@ -1,0 +1,262 @@
+{
+  "elf": [
+    {
+      "interpreter": "/lib64/ld-linux-x86-64.so.2",
+      "name": "probe_dynamic",
+      "needed": [
+        "libc.so.6"
+      ],
+      "path": "/usr/local/bin/a04/probe_dynamic",
+      "sha256": "36a021aa7877170aedda535fff2a6ab2fc51cdb4b48d04c8c90ff873a40f4324"
+    },
+    {
+      "interpreter": null,
+      "name": "probe_static",
+      "needed": [],
+      "path": "/usr/local/bin/a04/probe_static",
+      "sha256": "edd3063a60c3f5c23679de3ab13e71955f7155be619f191468800931d101b078"
+    },
+    {
+      "interpreter": "/lib64/ld-linux-x86-64.so.2",
+      "name": "sqlite_dynamic",
+      "needed": [
+        "libsqlite3.so.0",
+        "libc.so.6"
+      ],
+      "path": "/usr/local/bin/a04/sqlite_dynamic",
+      "sha256": "d9c953e2dba4473ac1fad46446bc4768a448063547f32180813a868b3bdb7fc6"
+    },
+    {
+      "interpreter": null,
+      "name": "sqlite_static",
+      "needed": [],
+      "path": "/usr/local/bin/a04/sqlite_static",
+      "sha256": "2b8ca0007725bbf94856fc559572b1c86c163cca380cdbf6cce38faa69abefa2"
+    }
+  ],
+  "files": [
+    {
+      "bytes": 27,
+      "mode": "0444",
+      "origin": {
+        "generated": true
+      },
+      "path": "/etc/group",
+      "sha256": "bc0b500e77f3d4bc502ec9dffe4cb22095472b6baffde6d4c4f97e8258393983"
+    },
+    {
+      "bytes": 34,
+      "mode": "0444",
+      "origin": {
+        "generated": true
+      },
+      "path": "/etc/hosts",
+      "sha256": "b69b2c741be48691edabe3771c644c70473ccd6aa8effd9f17cc07fa129917f9"
+    },
+    {
+      "bytes": 44,
+      "mode": "0444",
+      "origin": {
+        "generated": true
+      },
+      "path": "/etc/nsswitch.conf",
+      "sha256": "80ae794d9936fbdbfad807312defe6fd163c165427ddb5fb6b20759149a2f375"
+    },
+    {
+      "bytes": 78,
+      "mode": "0444",
+      "origin": {
+        "generated": true
+      },
+      "path": "/etc/passwd",
+      "sha256": "3107fc65df109caf0f43cb21fa26b9f4138c7417e339c4d6a2232f6346d721ba"
+    },
+    {
+      "bytes": 34,
+      "mode": "0444",
+      "origin": {
+        "generated": true
+      },
+      "path": "/etc/resolv.conf",
+      "sha256": "b7f5c900d7a7abb9cd9b55242f1d9ebecfccab8daa1eb30297f3df6693ff466d"
+    },
+    {
+      "bytes": 229077,
+      "mode": "0444",
+      "origin": {
+        "host_path": "/etc/ssl/certs/ca-certificates.crt",
+        "package": null,
+        "source_sha256": "ccc7cd9a2cba1a04bb7e2eb4e41399500543a873891b36402f70a5623e29e6a5"
+      },
+      "path": "/etc/ssl/certs/ca-certificates.crt",
+      "sha256": "ccc7cd9a2cba1a04bb7e2eb4e41399500543a873891b36402f70a5623e29e6a5"
+    },
+    {
+      "bytes": 1995216,
+      "mode": "0555",
+      "origin": {
+        "host_path": "/lib/x86_64-linux-gnu/libc.so.6",
+        "package": {
+          "name": "libc6:amd64",
+          "version": "2.41-12+deb13u3"
+        },
+        "source_sha256": "fa430b8f298f817a266046af84a77533185ad6fc4406c7d3787b5a0a0c207826"
+      },
+      "path": "/lib/x86_64-linux-gnu/libc.so.6",
+      "sha256": "fa430b8f298f817a266046af84a77533185ad6fc4406c7d3787b5a0a0c207826"
+    },
+    {
+      "bytes": 977112,
+      "mode": "0555",
+      "origin": {
+        "host_path": "/lib/x86_64-linux-gnu/libm.so.6",
+        "package": {
+          "name": "libc6:amd64",
+          "version": "2.41-12+deb13u3"
+        },
+        "source_sha256": "6d567d53e895273ca14a1f9dc164fc6c8d39aed2f60aa46a733c2784228915f3"
+      },
+      "path": "/lib/x86_64-linux-gnu/libm.so.6",
+      "sha256": "6d567d53e895273ca14a1f9dc164fc6c8d39aed2f60aa46a733c2784228915f3"
+    },
+    {
+      "bytes": 14336,
+      "mode": "0555",
+      "origin": {
+        "host_path": "/lib/x86_64-linux-gnu/libnss_dns.so.2",
+        "package": {
+          "name": "libc6:amd64",
+          "version": "2.41-12+deb13u3"
+        },
+        "source_sha256": "d6ff05b8003825fbef5ad779b5e2f870f179953e4fb560697b6f261010efe8d4"
+      },
+      "path": "/lib/x86_64-linux-gnu/libnss_dns.so.2",
+      "sha256": "d6ff05b8003825fbef5ad779b5e2f870f179953e4fb560697b6f261010efe8d4"
+    },
+    {
+      "bytes": 14336,
+      "mode": "0555",
+      "origin": {
+        "host_path": "/lib/x86_64-linux-gnu/libnss_files.so.2",
+        "package": {
+          "name": "libc6:amd64",
+          "version": "2.41-12+deb13u3"
+        },
+        "source_sha256": "8c93b2ae43dac3c2d688d227609d713f71620d3f0980ebf6bbb371c6eb542108"
+      },
+      "path": "/lib/x86_64-linux-gnu/libnss_files.so.2",
+      "sha256": "8c93b2ae43dac3c2d688d227609d713f71620d3f0980ebf6bbb371c6eb542108"
+    },
+    {
+      "bytes": 1571096,
+      "mode": "0555",
+      "origin": {
+        "host_path": "/lib/x86_64-linux-gnu/libsqlite3.so.0",
+        "package": {
+          "name": "libsqlite3-0:amd64",
+          "version": "3.46.1-7+deb13u1"
+        },
+        "source_sha256": "14c4418a06c5c2e30f5fb57bc8add93762236ae17898c6708984cf15e680ca71"
+      },
+      "path": "/lib/x86_64-linux-gnu/libsqlite3.so.0",
+      "sha256": "14c4418a06c5c2e30f5fb57bc8add93762236ae17898c6708984cf15e680ca71"
+    },
+    {
+      "bytes": 225672,
+      "mode": "0555",
+      "origin": {
+        "host_path": "/lib64/ld-linux-x86-64.so.2",
+        "package": {
+          "name": "libc6:amd64",
+          "version": "2.41-12+deb13u3"
+        },
+        "source_sha256": "438c546d8e8cc48496bf3a95f753051afd9db66a629a74e31a9ded71586b56e0"
+      },
+      "path": "/lib64/ld-linux-x86-64.so.2",
+      "sha256": "438c546d8e8cc48496bf3a95f753051afd9db66a629a74e31a9ded71586b56e0"
+    },
+    {
+      "bytes": 44808,
+      "mode": "0555",
+      "origin": {
+        "build_source": "tests/workloads/linux/",
+        "source_sha256": "36a021aa7877170aedda535fff2a6ab2fc51cdb4b48d04c8c90ff873a40f4324"
+      },
+      "path": "/usr/local/bin/a04/probe_dynamic",
+      "sha256": "36a021aa7877170aedda535fff2a6ab2fc51cdb4b48d04c8c90ff873a40f4324"
+    },
+    {
+      "bytes": 935880,
+      "mode": "0555",
+      "origin": {
+        "build_source": "tests/workloads/linux/",
+        "source_sha256": "edd3063a60c3f5c23679de3ab13e71955f7155be619f191468800931d101b078"
+      },
+      "path": "/usr/local/bin/a04/probe_static",
+      "sha256": "edd3063a60c3f5c23679de3ab13e71955f7155be619f191468800931d101b078"
+    },
+    {
+      "bytes": 17040,
+      "mode": "0555",
+      "origin": {
+        "build_source": "tests/workloads/linux/",
+        "source_sha256": "d9c953e2dba4473ac1fad46446bc4768a448063547f32180813a868b3bdb7fc6"
+      },
+      "path": "/usr/local/bin/a04/sqlite_dynamic",
+      "sha256": "d9c953e2dba4473ac1fad46446bc4768a448063547f32180813a868b3bdb7fc6"
+    },
+    {
+      "bytes": 2789544,
+      "mode": "0555",
+      "origin": {
+        "build_source": "tests/workloads/linux/",
+        "source_sha256": "2b8ca0007725bbf94856fc559572b1c86c163cca380cdbf6cce38faa69abefa2"
+      },
+      "path": "/usr/local/bin/a04/sqlite_static",
+      "sha256": "2b8ca0007725bbf94856fc559572b1c86c163cca380cdbf6cce38faa69abefa2"
+    },
+    {
+      "bytes": 114,
+      "mode": "0444",
+      "origin": {
+        "host_path": "/usr/share/zoneinfo/UTC",
+        "package": {
+          "name": "tzdata",
+          "version": "2025b-4+deb13u1"
+        },
+        "source_sha256": "8b85846791ab2c8a5463c83a5be3c043e2570d7448434d41398969ed47e3e6f2"
+      },
+      "path": "/usr/share/zoneinfo/UTC",
+      "sha256": "8b85846791ab2c8a5463c83a5be3c043e2570d7448434d41398969ed47e3e6f2"
+    }
+  ],
+  "host_packages": {
+    "ca-certificates": "20250419",
+    "gcc": "4:14.2.0-1",
+    "libc6": "2.41-12+deb13u3",
+    "libc6-dev": "2.41-12+deb13u3",
+    "libsqlite3-0": "3.46.1-7+deb13u1",
+    "libsqlite3-dev": "3.46.1-7+deb13u1",
+    "openssl": "3.5.7-1~deb13u2",
+    "python3-minimal": "3.13.5-1",
+    "tzdata": "2025b-4+deb13u1"
+  },
+  "kind": "candidate_elf_rootfs",
+  "policy": {
+    "external_dns": "unconfigured",
+    "locale": "C",
+    "rootfs": "read-only when mounted by guest; staging directory not a mounted filesystem",
+    "system_services": [
+      "guest init",
+      "procfs",
+      "devtmpfs or /dev/null",
+      "clock",
+      "entropy"
+    ],
+    "timezone": "UTC",
+    "writable_workspace": "/work (guest must mount separately)"
+  },
+  "qualified_hepta": false,
+  "readonly_mount_verified": false,
+  "schema": 1
+}

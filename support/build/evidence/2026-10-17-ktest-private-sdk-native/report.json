@@ -1,0 +1,92 @@
+{
+  "schema": "a01-ktest-private-sdk-native/1",
+  "producer_commit": "ff0d09a2c2e0cba1d528d11a06083f588989a9f3",
+  "controller_commands": 6,
+  "actual_host": "24f0ea2620fe",
+  "target_reused": true,
+  "cold_build_claimed": false,
+  "runner_result": {
+    "passed": true,
+    "crates": [
+      {
+        "passed": true,
+        "guests": [
+          {
+            "crate": "ostd",
+            "declared": 221,
+            "passed": 221,
+            "failed": 0,
+            "filtered": 0,
+            "soft_skipped": 3,
+            "soft_skip_reasons": [
+              "VMX unavailable",
+              "VMX unavailable",
+              "VMX/EPT invalidation unavailable"
+            ],
+            "exercised_passed_lower_bound": 218,
+            "observed_test_starts": 221,
+            "raw_qemu_exit": 33,
+            "guest": "guest-001"
+          }
+        ]
+      },
+      {
+        "passed": true,
+        "guests": [
+          {
+            "crate": "aster-core",
+            "declared": 141,
+            "passed": 141,
+            "failed": 0,
+            "filtered": 0,
+            "soft_skipped": 0,
+            "soft_skip_reasons": [],
+            "exercised_passed_lower_bound": 141,
+            "observed_test_starts": 141,
+            "raw_qemu_exit": 33,
+            "guest": "guest-001"
+          }
+        ]
+      }
+    ],
+    "toolchain": "nightly-2026-07-21",
+    "runner_sha256": "8bc8f712e7e1606d5744596bb390b1979b9d9559ca478dde5bba8c8670d1f59c",
+    "command_receipts": [
+      "aster-core/osdk-test.log.command.json",
+      "aster-core/result.json.command.json",
+      "cargo-version.log.command.json",
+      "git-head.log.command.json",
+      "git-status.log.command.json",
+      "osdk-install.log.command.json",
+      "ostd/osdk-test.log.command.json",
+      "ostd/result.json.command.json",
+      "rustc-version.log.command.json",
+      "source-inputs.json.command.json"
+    ]
+  },
+  "totals": {
+    "declared": 362,
+    "passed": 362,
+    "failed": 0,
+    "filtered": 0,
+    "soft_skipped": 3,
+    "exercised_passed_lower_bound": 359,
+    "observed_test_starts": 362
+  },
+  "compile_lines_by_crate": {
+    "ostd": 54,
+    "aster-core": 83
+  },
+  "raw_guest_exits": [
+    33,
+    33
+  ],
+  "preserved_original_files": 48,
+  "unique_binary_payloads": 4,
+  "selected_source_controls": 91,
+  "private_sdk_sha256": "94df3fd621055d9f99d3649c21a32d076448d68d8ea4b51d78c8b639a5d2adf0",
+  "snapshot_loaded_execution_claimed": false,
+  "immutable_execution_claimed": false,
+  "all_project_blockers_closed": false,
+  "packaged_utc": "2026-10-17T04:40:04.690445+00:00"
+}

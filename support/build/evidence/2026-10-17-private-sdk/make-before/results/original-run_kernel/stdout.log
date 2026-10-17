@@ -1,0 +1,10 @@
+minimal.mk:5: warning: overriding recipe for target 'initramfs'
+Makefile:323: warning: ignoring old recipe for target 'initramfs'
+minimal.mk:10: warning: overriding recipe for target '/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/original-run_kernel/cargo-osdk'
+Makefile:298: warning: ignoring old recipe for target '/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/original-run_kernel/cargo-osdk'
+minimal.mk:13: warning: overriding recipe for target 'install_osdk'
+Makefile:291: warning: ignoring old recipe for target 'install_osdk'
+minimal.mk:21: warning: overriding recipe for target 'gdb_server'
+Makefile:419: warning: ignoring old recipe for target 'gdb_server'
+{"argv": ["osdk", "run", "--release", "--boot-method=vmm-direct", "--grub-boot-protocol=multiboot", "--initramfs=/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/original-run_kernel/initramfs", "--kcmd-args=loglevel=info", "--kcmd-args=earlycon", "--kcmd-args=console=ttyS0", "--qemu-exe=host-fixture"], "bound": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/original-run_kernel/old-root", "cwd": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/original-run_kernel/new-root/kernel", "expected": "/workspace/scratch/ae1a8cf05419/sdk-root-audit/results/original-run_kernel/new-root", "operation": "osdk", "returncode": 73, "runtime_osdk_local_dev": "1"}
+make: *** [Makefile:349: run_kernel] Error 73

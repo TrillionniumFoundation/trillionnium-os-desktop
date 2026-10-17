@@ -1,0 +1,61 @@
+{
+  "schema": "a01-debug-private-sdk-source-validation/1",
+  "created_utc": "2026-10-17T04:24:59.960661+00:00",
+  "status": "ready_after_independent_approval",
+  "scope": "host-only debug CLI metadata/private-SDK identity correction; no Rust build, real SDK/GDB or QEMU execution",
+  "source_sha256": {
+    "support/build/debug/run.py": "a09a51368412684fe9dbd4cd91ea7e8c596c1244ad42ba321c12fb07d29fe022",
+    "support/build/debug/test_debug.py": "df6dd1c783e07fefef3f08bdd952220d35d8e645a79f65dd4dd0a44a7734cd5c",
+    "support/build/debug/README.md": "278049fb4d303641cff4fd2b8a4be2611f315807454a42f9b94f5a65c78138a5"
+  },
+  "baseline_run_source_sha256": "b27992bff212ee2736401892685e6d08bad31b83ee872a3c0dc5d5c89f0a32ea",
+  "baseline_code_commit_at_start": "9cf1dfac0477df1488a8be4fc08cf7bbc8edf0f6",
+  "tests": [
+    {
+      "command": [
+        "python3",
+        "-I",
+        "support/build/debug/test_debug.py",
+        "-v"
+      ],
+      "observed_tool_returncode": 0,
+      "tests": 16,
+      "log": "after-I.log",
+      "log_sha256": "4cc1fe531f93b6dd9b932d35f2c8dbf86474cde3063eb7c1d452033d7b33d5e9"
+    },
+    {
+      "command": [
+        "python3",
+        "-I",
+        "-O",
+        "support/build/debug/test_debug.py",
+        "-v"
+      ],
+      "observed_tool_returncode": 0,
+      "tests": 16,
+      "log": "after-I-O.log",
+      "log_sha256": "89917215be10112b20ac084d6296c88b604456334c8b2a07da69e39cd59e2041"
+    }
+  ],
+  "pre_fix_negative_control": {
+    "command": [
+      "python3",
+      "-I",
+      "support/build/debug/test_debug.py",
+      "PrivateSdkEvidenceTests",
+      "-v"
+    ],
+    "observed_tool_returncode": 1,
+    "tests": 4,
+    "failures": 4,
+    "log": "before-I.log",
+    "log_sha256": "e5cb9f523fe8fff63e2cc05ba2467ecbb26b978f231f8d33f627d092e0eaea40"
+  },
+  "independent_review": {
+    "path": "/workspace/scratch/ae1a8cf05419/sdk-debug-independent-review/final/review.json",
+    "sha256": "686d8ff4397e7395fe78aa3e398caa801037546827a967de79fac4a07be8a231"
+  },
+  "diff_check_exit": 0,
+  "kernel_and_minimal_and_core_changed": false,
+  "immutable_executed_sdk_claimed": false
+}

@@ -1,0 +1,15 @@
+# Public kernel route build and boot
+
+The exact clean runtime commit was `287a92e65581f193d764f5ff85fbc3631bc0a9ab`, tree `515cd2babfb8a4372ef29a26f132ff2de19cbe15`, identical to published [7cf6f7c329361c9828a98b766d1f0d78cf53b58d](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/7cf6f7c329361c9828a98b766d1f0d78cf53b58d). The completed public command was `support/build/kernel.sh run_kernel`, invoking upstream `make run_kernel` through the minimal overlay. Fixed nightly is `nightly-2026-07-21`.
+
+This was actual Rust compilation and boot: the retained make log compiles aster-core/asterinas/asterinas-osdk-bin and finishes the release profile in **2m10s**, then starts QEMU. Existing target cache from next6-clean-debug-01 was reused; this is not cross-host bit-reproducibility evidence. Source validation passed **118/118** in derived mode; its original `pristine=false` remains explicit. Root README in the runtime Git object is0 bytes.
+
+Actual tool session2857 returned0. make/log/run statuses are0, the live checker returned0 again at completion, and the standalone supervisor recorded exit0 with its direct worker reaped. The guest is q35/TCG, CPU max, **1 vCPU /512MiB**, QEMU8.2.2/SeaBIOS, no KVM. QEMU exits **raw33**, no timeout, with exactly one INIT_BEGIN, CPU_COUNT=1 and BOOT_OK marker.
+
+The retained kernel is **8290880 bytes**, SHA256 `490ca0406593c28e64a22333ba432de6122b9a796b0f7f20352b6b2c55e7df56`. kernel.elf.gz is the parent's immutable saved artifact, SHA256 `a40053d77332e838172a0f1c27d0d65f83a1333d1fe6d0343f675d7dcb0d3601`. The small initramfs remains `86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3`. Canonical serial.log.gz expands to **72299 bytes**, SHA256 `1b584b5f9e937a6c3f87e27422ef74f29133f29ae4f589388262f1ca12a73239`, matching both completed-out serial.log and qemu.json. The archive independently verified compressed/decompressed hashes and record bindings. It did not read the later-reused target, kernel ELF pathname or live kernel/qemu.log.
+
+Invocation, original source/input check, source closure from git show of the fixed published commit, full environment, exact make/QEMU commands, complete serial, all exit codes and supervisor receipt are retained. raw-logs.tar.gz has **17 regular members**, each read back and byte-verified against raw-logs.members.json. Binary kernel/initramfs and canonical compressed serial remain standalone files.
+
+Generated manifest reappearance remains an unknown-writer observation. Original post-debug and preservation JSON plus both renamed manifest files are retained. Parent used the exclusive build lock and rename to preserve existing bytes; it did not delete files or relax overwrite protection. No writer or causal mechanism is inferred from the differing inode observations.
+
+This validates the public Rust full-kernel route. It does not establish A06 CPU quota, HOS2, W1, SMP or physical hardware. No build, VM or live checker was rerun during archive. SHA256SUMS covers all delivered regular files except itself.

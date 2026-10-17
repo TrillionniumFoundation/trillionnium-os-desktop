@@ -1,0 +1,61 @@
+{
+  "actual_cli_fixture_cases": [
+    "private path containing spaces",
+    "original BIOS path missing with explicit valid override",
+    "empty override rejected",
+    "relative override rejected",
+    "missing override file rejected",
+    "directory override rejected"
+  ],
+  "actual_cli_raw_archive": "actual-cli-fixtures.tar.gz",
+  "actual_cli_raw_members": 337,
+  "actual_qemu_guest_executions_by_tests": 0,
+  "base_commit": "01a344c6a293fd73b158e9e6ca93bd9904b69bbf",
+  "behavior": {
+    "all_three_artifact_positions_and_stable_fd_stat_hash_checks_retained": true,
+    "checker_unchanged": true,
+    "default_path_unchanged": true,
+    "explicit_env": "A01_QEMU_BIOS",
+    "invalid_selection_rejected_before_qemu_version_or_launch": true,
+    "no_source_path_fallback": true,
+    "requested_qemu_args_preserved": true,
+    "requires": "nonempty absolute regular-file path",
+    "selected_path_is_actual_snapshot_source": true,
+    "selection_metadata": "bios_selection origin/original_requested_path/selected_path"
+  },
+  "candidate_sources": {
+    "support/build/record-qemu.py": "c62c515aedd4f481ed05525dad7bb6acdd22c7a142115e1856df560e16585d58",
+    "support/build/tests/test_boot_evidence.py": "93d51c9e7dd0f59e5cf8ed6960a5d18b6b87dde997900dd38d4bec5998e270d1"
+  },
+  "checker_sha256": "2ee1be040c622b248986efdeacab43eea6b2d730e0bad1a8bc0ba995c1915f80",
+  "fixture_qemu_only": true,
+  "full_suites": [
+    {
+      "actual_tool_session": 79876,
+      "exit": 0,
+      "log": "logs/after-all-I.log",
+      "mode": "-I",
+      "tests": 25
+    },
+    {
+      "actual_tool_session": 6857,
+      "exit": 0,
+      "log": "logs/after-all-I-O.log",
+      "mode": "-I -O",
+      "tests": 25
+    }
+  ],
+  "new_targeted_control": {
+    "actual_tool_session": 6857,
+    "after_exit": 0,
+    "before_errors": 1,
+    "before_exit": 1,
+    "before_failures": 5,
+    "extra_targeted_runs_not_added_to_full_suite_count": true,
+    "tests": 2
+  },
+  "packaging_observed_git_commit": "a8f1ed1252a7eaccf74b9a717f862413b7c6650d",
+  "real_native_boot_acceptance_claimed_here": false,
+  "status": "validated_explicit_private_bios_selection",
+  "tested_source_and_fixture_hashes_match_packaging_commit": true
+}

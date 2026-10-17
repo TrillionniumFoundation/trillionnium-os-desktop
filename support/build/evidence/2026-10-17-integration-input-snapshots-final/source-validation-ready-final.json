@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "status": "final_host_validated_pending_publish_and_real_full22",
+  "created_utc": "2026-10-17T01:46:23.150965+00:00",
+  "base_source_commit": "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+  "entry_isolation_dependency_commit": "fb508445fe63efdfdd596dc58e42c621b1fd3752",
+  "actual_host_tool_session": 86089,
+  "actual_exit_code": 0,
+  "source_files": {
+    "support/build/osdk-integration/record-qemu.py": "9f51c0edb4bd919a3ab95dbee718f79a453f4f529b24c067ef831381764b9d3a",
+    "support/build/osdk-integration/test_private_tools.py": "71bc693fea9499f07015749a753b929c81c433303d24a8597eb9e236f371a025",
+    "support/build/osdk-integration/test_record_qemu.py": "9805aa6e00cbbee512fb613769874d53600979b77fae484085b83ffccb3925d3",
+    "support/build/osdk-integration/test_input_snapshots.py": "fb3ac087283168172e7c9107db47c9f865f008cca01ded4d7ef55edddf5de5f8",
+    "support/build/osdk-integration/README.md": "5e158f3f57779ba21506a5f03c9c57810344c4caf2dd0abfce5b52427c92bf2a"
+  },
+  "source_stable": true,
+  "suite_counts": [
+    {
+      "mode": "I",
+      "tests": 152,
+      "OK": true,
+      "log_sha256": "411f0c6c0ee33295aafdc6be1f31995a9d48bd71b4ec80387761f6607a1d59b5"
+    },
+    {
+      "mode": "I-O",
+      "tests": 152,
+      "OK": true,
+      "log_sha256": "c4ac2c47df0db3c7d52cc702ceec3feb0ec66230fc98a9fff5dc3b996b752985"
+    }
+  ],
+  "new_snapshot_tests_per_mode": 11,
+  "changed_existing_recorder_functions": [
+    "main"
+  ],
+  "existing_helper_count": 14,
+  "all_existing_helpers_unchanged": true,
+  "normal_recorder_sha256": "387845415b54f1822c55ce4198586fae8047f7d3ea94008c84e0974871954098",
+  "diff_check_returncode": 0,
+  "diff_check_output": "",
+  "independent_review": {
+    "path": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/review-bundle",
+    "files_including_sum": 14,
+    "sum_sha256": "dc63fa5000521a69791165ca332e41f31ded2f53d58693fe2458d014f6ec130e",
+    "all_entries_verified": true
+  },
+  "historical_host_candidate_runs": [
+    {
+      "recorder_sha256": "bc1225b431a103d7b04bc42054471e77db1a071166c6bdde096e5112da22c590",
+      "tool_session": 32695,
+      "tests_per_mode": 150,
+      "status": "historical_pre_review_candidate"
+    },
+    {
+      "recorder_sha256": "67f5767838036f9a7c0c9c594fc210cf4c67a6fbb6f4c084e6990503b2f4f36e",
+      "tool_session": 35805,
+      "tests_per_mode": 151,
+      "status": "historical_before_alias_compatibility_fix"
+    }
+  ],
+  "scope": "host fakeQEMU/capture fixtures plus native GDB lifecycle lease; no kernel build or VM acceptance in this phase"
+}

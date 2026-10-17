@@ -1,0 +1,540 @@
+{
+  "runtime_source_sha": "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+  "runtime_source_tree": "e0e415d6214df7311fb0c3297821659298f564a4",
+  "derived_kernel_tree": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da",
+  "fixed_toolchain": "nightly-2026-07-21",
+  "source_export_paths": [
+    "support/upstream-lock.json",
+    "support/build/verify-source.py",
+    "support/build/record-qemu.py",
+    "support/build/ktest/run.py",
+    "support/build/ktest/record-qemu.py",
+    "support/build/ktest/README.md",
+    "support/build/osdk-integration/run.py",
+    "support/build/osdk-integration/record-qemu.py",
+    "support/build/osdk-integration/capture.py",
+    "support/build/osdk-integration/README.md",
+    "kernel/asterinas/Cargo.lock",
+    "kernel/asterinas/rust-toolchain.toml",
+    "kernel/asterinas/Makefile",
+    "kernel/asterinas/OSDK.toml",
+    "kernel/asterinas/osdk/Cargo.lock",
+    "kernel/asterinas/osdk/Cargo.toml",
+    "kernel/asterinas/osdk/src/util.rs",
+    "kernel/asterinas/osdk/src/base_crate/mod.rs"
+  ],
+  "source_identity_is_not_a_claim_of_rerunning_tests": true,
+  "source_export_path_validation": [
+    {
+      "path": "support/upstream-lock.json",
+      "runtime_commit": "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+      "git_object_type": "blob",
+      "git_mode": "100644",
+      "git_blob_sha1": "778f9d7978ff5d9a7fd436d9f0625ef807e50e81",
+      "sha256": "3be97b6dbe0c2a37c635f517eb4515233c03903d751b5168a99aaf460e6a46ab",
+      "bytes": 41168,
+      "present_in_frozen_source_exports": [
+        {
+          "archive": "raw",
+          "member": "git-source/d895dd73a07788f6fc825fb3ca29cca22d93bb07/support/upstream-lock.json"
+        }
+      ],
+      "ls_tree_argv": [
+        "git",
+        "-C",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+        "ls-tree",
+        "--format=%(objecttype) %(objectmode) %(objectname) %(path)",
+        "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+        "--",
+        "support/upstream-lock.json"
+      ],
+      "ls_tree_exit": 0,
+      "ls_tree_stdout": "blob 100644 778f9d7978ff5d9a7fd436d9f0625ef807e50e81 support/upstream-lock.json\n"
+    },
+    {
+      "path": "support/build/verify-source.py",
+      "runtime_commit": "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+      "git_object_type": "blob",
+      "git_mode": "100644",
+      "git_blob_sha1": "d11dc089a423de677fb3ef9c534230ba266f7915",
+      "sha256": "7121997d17969988f3432675ad9f7cc2d14b0293a46838a315533b9248d1e385",
+      "bytes": 3155,
+      "present_in_frozen_source_exports": [
+        {
+          "archive": "raw",
+          "member": "git-source/d895dd73a07788f6fc825fb3ca29cca22d93bb07/support/build/verify-source.py"
+        }
+      ],
+      "ls_tree_argv": [
+        "git",
+        "-C",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+        "ls-tree",
+        "--format=%(objecttype) %(objectmode) %(objectname) %(path)",
+        "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+        "--",
+        "support/build/verify-source.py"
+      ],
+      "ls_tree_exit": 0,
+      "ls_tree_stdout": "blob 100644 d11dc089a423de677fb3ef9c534230ba266f7915 support/build/verify-source.py\n"
+    },
+    {
+      "path": "support/build/record-qemu.py",
+      "runtime_commit": "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+      "git_object_type": "blob",
+      "git_mode": "100755",
+      "git_blob_sha1": "5326d4acf3919987c381c28a971f763e659747ff",
+      "sha256": "387845415b54f1822c55ce4198586fae8047f7d3ea94008c84e0974871954098",
+      "bytes": 12352,
+      "present_in_frozen_source_exports": [
+        {
+          "archive": "raw",
+          "member": "git-source/d895dd73a07788f6fc825fb3ca29cca22d93bb07/support/build/record-qemu.py"
+        },
+        {
+          "archive": "consumed-source.tar.gz",
+          "member": "support/build/record-qemu.py"
+        }
+      ],
+      "ls_tree_argv": [
+        "git",
+        "-C",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+        "ls-tree",
+        "--format=%(objecttype) %(objectmode) %(objectname) %(path)",
+        "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+        "--",
+        "support/build/record-qemu.py"
+      ],
+      "ls_tree_exit": 0,
+      "ls_tree_stdout": "blob 100755 5326d4acf3919987c381c28a971f763e659747ff support/build/record-qemu.py\n"
+    },
+    {
+      "path": "support/build/ktest/run.py",
+      "runtime_commit": "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+      "git_object_type": "blob",
+      "git_mode": "100755",
+      "git_blob_sha1": "685107ff7ed878dd47acce7643790c9f7a5c45fb",
+      "sha256": "41d23752430ad1a8893c8fc6e970cd1ea816d50be5b019ca11b0b27975ce2e56",
+      "bytes": 15079,
+      "present_in_frozen_source_exports": [
+        {
+          "archive": "raw",
+          "member": "git-source/d895dd73a07788f6fc825fb3ca29cca22d93bb07/support/build/ktest/run.py"
+        }
+      ],
+      "ls_tree_argv": [
+        "git",
+        "-C",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+        "ls-tree",
+        "--format=%(objecttype) %(objectmode) %(objectname) %(path)",
+        "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+        "--",
+        "support/build/ktest/run.py"
+      ],
+      "ls_tree_exit": 0,
+      "ls_tree_stdout": "blob 100755 685107ff7ed878dd47acce7643790c9f7a5c45fb support/build/ktest/run.py\n"
+    },
+    {
+      "path": "support/build/ktest/record-qemu.py",
+      "runtime_commit": "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+      "git_object_type": "blob",
+      "git_mode": "100755",
+      "git_blob_sha1": "01420c79907b1b4291fc6c877a9e1754b0f54b85",
+      "sha256": "52d50a46ad09be00566292bea64cf4b2b979badb84a11f055b5d06ef39e11c28",
+      "bytes": 5180,
+      "present_in_frozen_source_exports": [
+        {
+          "archive": "raw",
+          "member": "git-source/d895dd73a07788f6fc825fb3ca29cca22d93bb07/support/build/ktest/record-qemu.py"
+        }
+      ],
+      "ls_tree_argv": [
+        "git",
+        "-C",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+        "ls-tree",
+        "--format=%(objecttype) %(objectmode) %(objectname) %(path)",
+        "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+        "--",
+        "support/build/ktest/record-qemu.py"
+      ],
+      "ls_tree_exit": 0,
+      "ls_tree_stdout": "blob 100755 01420c79907b1b4291fc6c877a9e1754b0f54b85 support/build/ktest/record-qemu.py\n"
+    },
+    {
+      "path": "support/build/ktest/README.md",
+      "runtime_commit": "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+      "git_object_type": "blob",
+      "git_mode": "100644",
+      "git_blob_sha1": "fc0f7800e43e7d6437a96e3eb6e3e3137c652dbc",
+      "sha256": "334e85e51eb275808b949fb4b0f06925a67747d2f5cad6178704ff914f91a1ff",
+      "bytes": 6563,
+      "present_in_frozen_source_exports": [
+        {
+          "archive": "raw",
+          "member": "git-source/d895dd73a07788f6fc825fb3ca29cca22d93bb07/support/build/ktest/README.md"
+        }
+      ],
+      "ls_tree_argv": [
+        "git",
+        "-C",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+        "ls-tree",
+        "--format=%(objecttype) %(objectmode) %(objectname) %(path)",
+        "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+        "--",
+        "support/build/ktest/README.md"
+      ],
+      "ls_tree_exit": 0,
+      "ls_tree_stdout": "blob 100644 fc0f7800e43e7d6437a96e3eb6e3e3137c652dbc support/build/ktest/README.md\n"
+    },
+    {
+      "path": "support/build/osdk-integration/run.py",
+      "runtime_commit": "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+      "git_object_type": "blob",
+      "git_mode": "100755",
+      "git_blob_sha1": "d34b7dc4818046afaebc25ea6ebf30b21540bf08",
+      "sha256": "ea23d6278d429873d91f9469a9505a9f6768bcacdb41f22c0aae1e7e5135e3a9",
+      "bytes": 31945,
+      "present_in_frozen_source_exports": [
+        {
+          "archive": "raw",
+          "member": "git-source/d895dd73a07788f6fc825fb3ca29cca22d93bb07/support/build/osdk-integration/run.py"
+        },
+        {
+          "archive": "consumed-source.tar.gz",
+          "member": "support/build/osdk-integration/run.py"
+        }
+      ],
+      "ls_tree_argv": [
+        "git",
+        "-C",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+        "ls-tree",
+        "--format=%(objecttype) %(objectmode) %(objectname) %(path)",
+        "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+        "--",
+        "support/build/osdk-integration/run.py"
+      ],
+      "ls_tree_exit": 0,
+      "ls_tree_stdout": "blob 100755 d34b7dc4818046afaebc25ea6ebf30b21540bf08 support/build/osdk-integration/run.py\n"
+    },
+    {
+      "path": "support/build/osdk-integration/record-qemu.py",
+      "runtime_commit": "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+      "git_object_type": "blob",
+      "git_mode": "100755",
+      "git_blob_sha1": "b603cb4e1173ba31846255d99ba2230586c4a55c",
+      "sha256": "da6b336aa83a9067f336125aaab2decb8c20970d6ebac6a6921c8da8e2ae1446",
+      "bytes": 33802,
+      "present_in_frozen_source_exports": [
+        {
+          "archive": "raw",
+          "member": "git-source/d895dd73a07788f6fc825fb3ca29cca22d93bb07/support/build/osdk-integration/record-qemu.py"
+        },
+        {
+          "archive": "consumed-source.tar.gz",
+          "member": "support/build/osdk-integration/record-qemu.py"
+        }
+      ],
+      "ls_tree_argv": [
+        "git",
+        "-C",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+        "ls-tree",
+        "--format=%(objecttype) %(objectmode) %(objectname) %(path)",
+        "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+        "--",
+        "support/build/osdk-integration/record-qemu.py"
+      ],
+      "ls_tree_exit": 0,
+      "ls_tree_stdout": "blob 100755 b603cb4e1173ba31846255d99ba2230586c4a55c support/build/osdk-integration/record-qemu.py\n"
+    },
+    {
+      "path": "support/build/osdk-integration/capture.py",
+      "runtime_commit": "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+      "git_object_type": "blob",
+      "git_mode": "100755",
+      "git_blob_sha1": "98f301cbd2c22865ac0261b5a23e4da253d05444",
+      "sha256": "7043aa006a901fcdb1e13a3adfade8e3f5f834d1841746343fea4a622bf585b1",
+      "bytes": 11568,
+      "present_in_frozen_source_exports": [
+        {
+          "archive": "consumed-source.tar.gz",
+          "member": "support/build/osdk-integration/capture.py"
+        }
+      ],
+      "ls_tree_argv": [
+        "git",
+        "-C",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+        "ls-tree",
+        "--format=%(objecttype) %(objectmode) %(objectname) %(path)",
+        "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+        "--",
+        "support/build/osdk-integration/capture.py"
+      ],
+      "ls_tree_exit": 0,
+      "ls_tree_stdout": "blob 100755 98f301cbd2c22865ac0261b5a23e4da253d05444 support/build/osdk-integration/capture.py\n"
+    },
+    {
+      "path": "support/build/osdk-integration/README.md",
+      "runtime_commit": "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+      "git_object_type": "blob",
+      "git_mode": "100644",
+      "git_blob_sha1": "a3fcb8b4d00f5ba9ebf46daca4116beb110cff1f",
+      "sha256": "5a897e1649e5b3d7982ea007eceb1c39531f005246dc9a20f39c90293ab060cd",
+      "bytes": 12871,
+      "present_in_frozen_source_exports": [
+        {
+          "archive": "raw",
+          "member": "git-source/d895dd73a07788f6fc825fb3ca29cca22d93bb07/support/build/osdk-integration/README.md"
+        },
+        {
+          "archive": "consumed-source.tar.gz",
+          "member": "support/build/osdk-integration/README.md"
+        }
+      ],
+      "ls_tree_argv": [
+        "git",
+        "-C",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+        "ls-tree",
+        "--format=%(objecttype) %(objectmode) %(objectname) %(path)",
+        "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+        "--",
+        "support/build/osdk-integration/README.md"
+      ],
+      "ls_tree_exit": 0,
+      "ls_tree_stdout": "blob 100644 a3fcb8b4d00f5ba9ebf46daca4116beb110cff1f support/build/osdk-integration/README.md\n"
+    },
+    {
+      "path": "kernel/asterinas/Cargo.lock",
+      "runtime_commit": "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+      "git_object_type": "blob",
+      "git_mode": "100644",
+      "git_blob_sha1": "77d8f4be4cdc7365cd73a2e9f7638d46f3608b40",
+      "sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+      "bytes": 49185,
+      "present_in_frozen_source_exports": [
+        {
+          "archive": "raw",
+          "member": "git-source/d895dd73a07788f6fc825fb3ca29cca22d93bb07/kernel/asterinas/Cargo.lock"
+        }
+      ],
+      "ls_tree_argv": [
+        "git",
+        "-C",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+        "ls-tree",
+        "--format=%(objecttype) %(objectmode) %(objectname) %(path)",
+        "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+        "--",
+        "kernel/asterinas/Cargo.lock"
+      ],
+      "ls_tree_exit": 0,
+      "ls_tree_stdout": "blob 100644 77d8f4be4cdc7365cd73a2e9f7638d46f3608b40 kernel/asterinas/Cargo.lock\n"
+    },
+    {
+      "path": "kernel/asterinas/rust-toolchain.toml",
+      "runtime_commit": "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+      "git_object_type": "blob",
+      "git_mode": "100644",
+      "git_blob_sha1": "3ac33bbae32686a33f317f2072734bf6f4e8d610",
+      "sha256": "b2508d8c9cd57258fad2fc77737e07172846161f6a7dd726cbd8e974de69c6f7",
+      "bytes": 339,
+      "present_in_frozen_source_exports": [
+        {
+          "archive": "raw",
+          "member": "git-source/d895dd73a07788f6fc825fb3ca29cca22d93bb07/kernel/asterinas/rust-toolchain.toml"
+        }
+      ],
+      "ls_tree_argv": [
+        "git",
+        "-C",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+        "ls-tree",
+        "--format=%(objecttype) %(objectmode) %(objectname) %(path)",
+        "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+        "--",
+        "kernel/asterinas/rust-toolchain.toml"
+      ],
+      "ls_tree_exit": 0,
+      "ls_tree_stdout": "blob 100644 3ac33bbae32686a33f317f2072734bf6f4e8d610 kernel/asterinas/rust-toolchain.toml\n"
+    },
+    {
+      "path": "kernel/asterinas/Makefile",
+      "runtime_commit": "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+      "git_object_type": "blob",
+      "git_mode": "100644",
+      "git_blob_sha1": "2a906a643d6c463287ea5d633890250b5a046428",
+      "sha256": "f7d24eb8e81b58d4cf0342862318cbfcf63cd8cff8d0f6f69fb7656295192af6",
+      "bytes": 18799,
+      "present_in_frozen_source_exports": [
+        {
+          "archive": "raw",
+          "member": "git-source/d895dd73a07788f6fc825fb3ca29cca22d93bb07/kernel/asterinas/Makefile"
+        }
+      ],
+      "ls_tree_argv": [
+        "git",
+        "-C",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+        "ls-tree",
+        "--format=%(objecttype) %(objectmode) %(objectname) %(path)",
+        "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+        "--",
+        "kernel/asterinas/Makefile"
+      ],
+      "ls_tree_exit": 0,
+      "ls_tree_stdout": "blob 100644 2a906a643d6c463287ea5d633890250b5a046428 kernel/asterinas/Makefile\n"
+    },
+    {
+      "path": "kernel/asterinas/OSDK.toml",
+      "runtime_commit": "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+      "git_object_type": "blob",
+      "git_mode": "100644",
+      "git_blob_sha1": "064fd551a285d71ff91ce9bf6fe4264d63b33034",
+      "sha256": "155af7cb53b4dffc679393b8fc7c2c1719a74134a0ec2b0812f0c4b53a6c609b",
+      "bytes": 2089,
+      "present_in_frozen_source_exports": [
+        {
+          "archive": "raw",
+          "member": "git-source/d895dd73a07788f6fc825fb3ca29cca22d93bb07/kernel/asterinas/OSDK.toml"
+        }
+      ],
+      "ls_tree_argv": [
+        "git",
+        "-C",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+        "ls-tree",
+        "--format=%(objecttype) %(objectmode) %(objectname) %(path)",
+        "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+        "--",
+        "kernel/asterinas/OSDK.toml"
+      ],
+      "ls_tree_exit": 0,
+      "ls_tree_stdout": "blob 100644 064fd551a285d71ff91ce9bf6fe4264d63b33034 kernel/asterinas/OSDK.toml\n"
+    },
+    {
+      "path": "kernel/asterinas/osdk/Cargo.lock",
+      "runtime_commit": "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+      "git_object_type": "blob",
+      "git_mode": "100644",
+      "git_blob_sha1": "82dbdd75cedd73558dd3d5aa17e76376d66d6eaf",
+      "sha256": "99a21f72f6a9f1582553b34f06e80f86e539f38e62eab7a0847afd0906e75be3",
+      "bytes": 35285,
+      "present_in_frozen_source_exports": [
+        {
+          "archive": "raw",
+          "member": "git-source/d895dd73a07788f6fc825fb3ca29cca22d93bb07/kernel/asterinas/osdk/Cargo.lock"
+        }
+      ],
+      "ls_tree_argv": [
+        "git",
+        "-C",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+        "ls-tree",
+        "--format=%(objecttype) %(objectmode) %(objectname) %(path)",
+        "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+        "--",
+        "kernel/asterinas/osdk/Cargo.lock"
+      ],
+      "ls_tree_exit": 0,
+      "ls_tree_stdout": "blob 100644 82dbdd75cedd73558dd3d5aa17e76376d66d6eaf kernel/asterinas/osdk/Cargo.lock\n"
+    },
+    {
+      "path": "kernel/asterinas/osdk/Cargo.toml",
+      "runtime_commit": "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+      "git_object_type": "blob",
+      "git_mode": "100644",
+      "git_blob_sha1": "a5bbae5c43417e4e65fe42b90662b7409c532469",
+      "sha256": "a13930fee211784f779a170a9f7c17ceb3ad017ab9805ba75a503a6597616190",
+      "bytes": 1166,
+      "present_in_frozen_source_exports": [
+        {
+          "archive": "raw",
+          "member": "git-source/d895dd73a07788f6fc825fb3ca29cca22d93bb07/kernel/asterinas/osdk/Cargo.toml"
+        }
+      ],
+      "ls_tree_argv": [
+        "git",
+        "-C",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+        "ls-tree",
+        "--format=%(objecttype) %(objectmode) %(objectname) %(path)",
+        "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+        "--",
+        "kernel/asterinas/osdk/Cargo.toml"
+      ],
+      "ls_tree_exit": 0,
+      "ls_tree_stdout": "blob 100644 a5bbae5c43417e4e65fe42b90662b7409c532469 kernel/asterinas/osdk/Cargo.toml\n"
+    },
+    {
+      "path": "kernel/asterinas/osdk/src/util.rs",
+      "runtime_commit": "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+      "git_object_type": "blob",
+      "git_mode": "100644",
+      "git_blob_sha1": "fc7b02f574dd5b351a7a71a0036459c93e70ed89",
+      "sha256": "83dbd6054e27c6e6fe281f517c45adc7f2419d132ee2246ce8c87ac4cd6cdf4f",
+      "bytes": 14289,
+      "present_in_frozen_source_exports": [
+        {
+          "archive": "raw",
+          "member": "git-source/d895dd73a07788f6fc825fb3ca29cca22d93bb07/kernel/asterinas/osdk/src/util.rs"
+        },
+        {
+          "archive": "consumed-source.tar.gz",
+          "member": "kernel/asterinas/osdk/src/util.rs"
+        }
+      ],
+      "ls_tree_argv": [
+        "git",
+        "-C",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+        "ls-tree",
+        "--format=%(objecttype) %(objectmode) %(objectname) %(path)",
+        "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+        "--",
+        "kernel/asterinas/osdk/src/util.rs"
+      ],
+      "ls_tree_exit": 0,
+      "ls_tree_stdout": "blob 100644 fc7b02f574dd5b351a7a71a0036459c93e70ed89 kernel/asterinas/osdk/src/util.rs\n"
+    },
+    {
+      "path": "kernel/asterinas/osdk/src/base_crate/mod.rs",
+      "runtime_commit": "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+      "git_object_type": "blob",
+      "git_mode": "100644",
+      "git_blob_sha1": "69cc44c22a507deba836616231f64356033109c4",
+      "sha256": "490aa4fc7a57362e1816c3778690de6d4d1af9508c2d4aec2e2c9524b4a74676",
+      "bytes": 12984,
+      "present_in_frozen_source_exports": [
+        {
+          "archive": "raw",
+          "member": "git-source/d895dd73a07788f6fc825fb3ca29cca22d93bb07/kernel/asterinas/osdk/src/base_crate/mod.rs"
+        },
+        {
+          "archive": "consumed-source.tar.gz",
+          "member": "kernel/asterinas/osdk/src/base_crate/mod.rs"
+        }
+      ],
+      "ls_tree_argv": [
+        "git",
+        "-C",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+        "ls-tree",
+        "--format=%(objecttype) %(objectmode) %(objectname) %(path)",
+        "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+        "--",
+        "kernel/asterinas/osdk/src/base_crate/mod.rs"
+      ],
+      "ls_tree_exit": 0,
+      "ls_tree_stdout": "blob 100644 69cc44c22a507deba836616231f64356033109c4 kernel/asterinas/osdk/src/base_crate/mod.rs\n"
+    }
+  ],
+  "source_export_paths_scope": "Exact runtime Git paths retained across raw Git source members and consumed-source.tar.gz; not selection candidates."
+}

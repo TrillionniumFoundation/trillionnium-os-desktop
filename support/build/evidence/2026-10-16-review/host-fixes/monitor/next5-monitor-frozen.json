@@ -1,0 +1,194 @@
+{
+  "schema": 1,
+  "scope": "A01 private TCP monitor inheritance and named scheme monitor_transport",
+  "source": {
+    "kernel/asterinas/osdk/src/bundle/mod.rs": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/osdk/src/bundle/mod.rs",
+      "size": 22034,
+      "sha256": "c183e0069ae9cee3f3e126819935b465d06df7db7b624b259c26d9713c478287"
+    },
+    "kernel/asterinas/osdk/src/bundle/monitor.rs": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/osdk/src/bundle/monitor.rs",
+      "size": 14914,
+      "sha256": "e97fbf524289adf757dc7e624244daecadc38c344d68bb68eed4e90170e41c3b"
+    },
+    "kernel/asterinas/osdk/src/config/scheme/mod.rs": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/osdk/src/config/scheme/mod.rs",
+      "size": 7032,
+      "sha256": "84267b82f607c8508d138de88df722bc19247da32770cd86b6ecff30f48659dd"
+    },
+    "kernel/asterinas/osdk/src/config/scheme/qemu.rs": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/osdk/src/config/scheme/qemu.rs",
+      "size": 8611,
+      "sha256": "57d69250497e770e4a2761c54a809eaeab6cbc308573cca68e31b5b82a938e38"
+    },
+    "kernel/asterinas/book/src/osdk/reference/commands/run.md": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/book/src/osdk/reference/commands/run.md",
+      "size": 2430,
+      "sha256": "acb70ad86c0a1f510b1c719f00504f2dfa60e7862aea5ce2028ff9682fcced81"
+    },
+    "kernel/asterinas/book/src/osdk/reference/manifest.md": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/book/src/osdk/reference/manifest.md",
+      "size": 10697,
+      "sha256": "768afadfe9006c2ab65fbde03a48f77f56c3084d2607de2288da85441168dda1"
+    },
+    "support/build/osdk-integration/record-qemu.py": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/osdk-integration/record-qemu.py",
+      "size": 32073,
+      "sha256": "0c21d913538af26be28f1897fcb6da912e3a7677092db351e63fd0b28dfb9ee2"
+    },
+    "support/build/osdk-integration/test_record_qemu.py": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/osdk-integration/test_record_qemu.py",
+      "size": 27979,
+      "sha256": "ba1511eb8f7ba1da94f8e68a2367cc0500fd78749c4e80453e14cf4e3152aa2b"
+    }
+  },
+  "base_commit": "48a71af2397ff173a9eb114e904f6ec442dde9e4",
+  "results": {
+    "host_suite": {
+      "passed": 38,
+      "failed": 0,
+      "ignored": 1,
+      "log": {
+        "path": "/workspace/scratch/ae1a8cf05419/next5-monitor-host-06-final.log",
+        "size": 4061,
+        "sha256": "349a6606aa92559994fc231818e97159dbc1dffcb5b99ac7dfe364dae3b07ee0"
+      }
+    },
+    "recorder_unit": {
+      "passed": 33,
+      "failed": 0,
+      "log": {
+        "path": "/workspace/scratch/ae1a8cf05419/next5-monitor-recorder-04-final.log",
+        "size": 132,
+        "sha256": "ec7aff524c07919357100938c62c17415bfd4b6e48db97c6654c66c8bd10be3f"
+      },
+      "optimized_log": {
+        "path": "/workspace/scratch/ae1a8cf05419/next5-monitor-recorder-05-final-optimized.log",
+        "size": 132,
+        "sha256": "0acc69625051cec67be0cda77dc25b120c1aed9288981233df1b26d4453479e9"
+      }
+    },
+    "real_qemu_transport_probe": {
+      "passed": 1,
+      "kernel_boot": false,
+      "log": {
+        "path": "/workspace/scratch/ae1a8cf05419/next5-monitor-qemu-probe-03-final.log",
+        "size": 1756,
+        "sha256": "693d5ca351a7114848ba1109324f1d274aaf99dcc87952f14377c95bb980f8a2"
+      },
+      "result": {
+        "path": "/workspace/scratch/ae1a8cf05419/next5-monitor-qemu-probe-03-final/result.json",
+        "size": 488,
+        "sha256": "484cc90dbae39af23b7eb222f88c95d5bd4933dd42c0d8cedfc03d5aa98e0393"
+      }
+    }
+  },
+  "test_command_env": {
+    "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+    "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+    "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+    "GDB_PATH": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/bin",
+    "LD_LIBRARY_PATH": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/lib/x86_64-linux-gnu"
+  },
+  "commands": [
+    "cargo test --manifest-path kernel/asterinas/osdk/Cargo.toml --locked --offline --bin cargo-osdk -- --nocapture",
+    "python3 -I support/build/osdk-integration/test_record_qemu.py",
+    "python3 -I -O support/build/osdk-integration/test_record_qemu.py",
+    "A01_MONITOR_PROBE_OUT=NEW_DIR RUST_LOG=info cargo test --manifest-path kernel/asterinas/osdk/Cargo.toml --locked --offline --bin cargo-osdk real_qemu_uses_preconnected_fd_after_rejecting_client_first -- --ignored --nocapture"
+  ],
+  "prior_logs": [
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/next5-monitor-focused-01.log",
+      "size": 375,
+      "sha256": "5df3b1b8cf65286e7bbf82e34f7513d3f05ec513aa5fe2005717769c6c0b7c38"
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/next5-monitor-host-01.log",
+      "size": 56,
+      "sha256": "56e66bbe41cbf31456540aaebeca5a2802981488bbcd001d4295c632528d14ec"
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/next5-monitor-host-02.log",
+      "size": 1680,
+      "sha256": "b0f60448158523c0a5b9f83c0e95a89cda43e3ea8be939604c438086c7337729"
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/next5-monitor-host-03.log",
+      "size": 1237,
+      "sha256": "9db6aba95166218dc974a0a61281c22e2184b697d951d22dd8a01562a822d55b"
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/next5-monitor-host-04.log",
+      "size": 3949,
+      "sha256": "f1eb88619208481973b758cce912bab761762d2a4ee5203fc758e0a346bedb0d"
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/next5-monitor-host-05.log",
+      "size": 4165,
+      "sha256": "1576851570e618f968e73fe193b234b92de5bc11c08ca9b6062946bbe174f5c1"
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/next5-monitor-inherit-01.log",
+      "size": 487,
+      "sha256": "53aea670eff6cc93e2c885d1b0bb2a97e287ba0dea49e2a8dfa34cd6ae09a5cf"
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/next5-monitor-qemu-probe-01.log",
+      "size": 1754,
+      "sha256": "c59fd21ef0d8c8a8e24a19009fedca7480d84ff09c6ee062952255d2d82f7412"
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/next5-monitor-qemu-probe-02.log",
+      "size": 1914,
+      "sha256": "c2517fcb4c7b2c41967d117aa76c6d4f90b431d625db97f26d81005e719dd15f"
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/next5-monitor-recorder-01.log",
+      "size": 130,
+      "sha256": "75f35c64ec74616288db66d9f27c2a5be2905248cbd32f21ae3c1aa73c03ff01"
+    }
+  ],
+  "notes": [
+    "No kernel/OSTD/Cargo dependency or lock changes. No Git writes. Default UNIX monitor arguments unchanged.",
+    "TCP pair accepted only from own still-open socket tuple; listener dropped before child spawn. QEMU gets only connected endpoint fd >=64. Parent CLOEXEC stays set; only child pre_exec clears it.",
+    "Recorder only permits reserved chardev id, connected AF_INET stream with both addresses 127.0.0.1. No proc/PID identity heuristic.",
+    "First no-library-target invocation failed101. First/second full host attempts exit12; explicit nocapture reveals missing GDB PATH. These logs retained. One early concurrent client-first test failure disappeared in focused run; immediate listener-refusal assertion later bounded for unrelated fork/exec descriptor copies.",
+    "38 host passes plus separately run ignored QEMU transport test is not 39 kernel tests; no project kernel was booted here.",
+    "After real probe03, only recorder/parser and its tests changed: strict monitor fields and fd>=64. Final 33 tests pass under -I and -I -O. Host38 and probe03 Rust source hashes remain identical; neither was rerun for this Python-only delta."
+  ],
+  "post_probe_recorder_hardening": {
+    "changed_source_only": [
+      "support/build/osdk-integration/record-qemu.py",
+      "support/build/osdk-integration/test_record_qemu.py"
+    ],
+    "prior_freeze": {
+      "path": "/workspace/scratch/ae1a8cf05419/next5-monitor-frozen-before-recorder-hardening.json",
+      "size": 7665,
+      "sha256": "a9aa84c90169eb5cb11f7fb2385f27b80cedf479d6171afe7754ee4a920d66c1"
+    },
+    "previous_recorder_tests": {
+      "passed": 31,
+      "failed": 0,
+      "log": {
+        "path": "/workspace/scratch/ae1a8cf05419/next5-monitor-recorder-02.log",
+        "size": 130,
+        "sha256": "8a92198e06641157149b86929d62b4170da7dc7e510bd752325de904d9f4e155"
+      },
+      "optimized_log": {
+        "path": "/workspace/scratch/ae1a8cf05419/next5-monitor-recorder-03-optimized.log",
+        "size": 130,
+        "sha256": "9d6fb8c72ff1aa1c4c150e18e7b7e16c605a9bb1df6c09f5ab82a3cf664ff13e"
+      }
+    },
+    "final_recorder_tests_passed_each_mode": 33,
+    "rust_and_book_source_unchanged_from_real_probe_03": true,
+    "host38_rerun": false,
+    "real_qemu_probe_rerun": false,
+    "changes": [
+      "Require monitor fd >=64 and <=i32::MAX, matching Rust producer.",
+      "Require exactly four socket/id/fd/server fields; reject duplicate keys, bare tokens and additional fields before constructing dict.",
+      "Require ASCII unsigned decimal FD; reject Unicode numeric spellings."
+    ]
+  }
+}

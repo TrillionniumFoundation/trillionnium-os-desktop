@@ -1,0 +1,49 @@
+{
+  "record_kind": "posthoc evidence summary, not a new runtime test",
+  "scope": "Fixed-nightly and private native tools recovery, without system install or privilege/policy changes",
+  "native_packages": {
+    "selected": 57,
+    "verified_downloads": 57,
+    "extractions_exit0": 57,
+    "download_bytes": 132706754,
+    "maintainer_scripts_executed": false
+  },
+  "authenticated_metadata": {
+    "signed_suites": 3,
+    "complete_indexes": 6,
+    "selected_original_stanzas": 57,
+    "trust_root": "signatures/ubuntu-archive-keyring.gpg"
+  },
+  "native_validation": {
+    "total": 27,
+    "passed": 26,
+    "failed": [
+      "qemu-paused-no-datadir-override"
+    ],
+    "paused_qemu_is_kernel_boot_test": false,
+    "known_failure": "No -L probe emitted missing kvmvapic.bin; raw0 did not make the resource check pass."
+  },
+  "original_system_apt_attempt_exit": 100,
+  "rust_commands": {
+    "total": 8,
+    "exit0": 8,
+    "toolchain": "nightly-2026-07-21",
+    "explicit_target": "x86_64-unknown-none",
+    "manifest_current_raw_retained": false
+  },
+  "offline_verification": {
+    "I_exit": 0,
+    "IO_exit": 0,
+    "verifier_sha256": "3f11efbe5987dc830c6f1743c6f89886f77319f508c03ae3f6196111b2952c90",
+    "record": "verification.json"
+  },
+  "limitations": [
+    "Host-provided libc and already installed dependencies remain required.",
+    "Original native controller prepare cwd label was wrong; unchanged receipts plus explicit correction retained.",
+    "Original final experimental restore source evolved during recovery and is not claimed as initial byte-for-byte source.",
+    "Full inherited Rust environment was not recorded.",
+    "Fresh nightly manifest body was not retained; observed hash is explicitly a posthoc tool-result transcription.",
+    "AF_UNIX/KVM restrictions were not bypassed; GDB availability does not establish host ptrace capability.",
+    "This archive does not report a kernel boot result."
+  ]
+}

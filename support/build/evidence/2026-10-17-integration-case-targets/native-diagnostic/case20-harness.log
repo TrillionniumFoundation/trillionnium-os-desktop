@@ -1,0 +1,15 @@
+
+running 1 test
+test examples_in_book::work_in_workspace::work_in_workspace ... 
+thread 'examples_in_book::work_in_workspace::work_in_workspace' (12146) panicked at tests/examples_in_book/work_in_workspace.rs:91:10:
+called `Result::unwrap()` on an `Err` value: OutputError { cmd: Some("cd \"/tmp/a01oi-wkf3cxsu/myworkspace\" && \"/tmp/trillionnium-a01-native-regressions/support/build/osdk-integration/osdk.py\" \"osdk\" \"build\""), stdin: None, cause: Expected(Output { output: Output { status: ExitStatus(unix_wait_status(1536)), stdout: "", stderr: "error: failed to load manifest for dependency `myos`\n\nCaused by:\n  failed to read `/tmp/a01oi-wkf3cxsu/myos/Cargo.toml`\n\nCaused by:\n  No such file or directory (os error 2)\n[Error]: Cargo build failed\n" } }) }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+
+failures:
+
+failures:
+    examples_in_book::work_in_workspace::work_in_workspace
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 21 filtered out; finished in 2.94s
+

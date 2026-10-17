@@ -1,0 +1,75 @@
+{
+  "schema": 1,
+  "kind": "read_only_CI_and_verified_main_merge_not_guest_execution",
+  "archive": {
+    "format": "deterministic tar+gzip, regular members only; verify without extracting",
+    "bytes": 1035508,
+    "sha256": "123845da53783314e4d85cde4b8a623d529ea751828f311674fe0f99675f6045",
+    "parts": [
+      {
+        "path": "sources.tar.gz.part-001",
+        "bytes": 1035508,
+        "sha256": "123845da53783314e4d85cde4b8a623d529ea751828f311674fe0f99675f6045"
+      }
+    ],
+    "source_files": 84,
+    "source_bytes": 8102972
+  },
+  "cdf": {
+    "commit": "cdf308e751e561328c556ca2ece86056d15809a0",
+    "observed_start_utc": "2026-10-17T03:58:16.167Z",
+    "observed_finish_utc": "2026-10-17T04:01:06.231Z",
+    "exact_check_runs_success": 3,
+    "host_workflow": 38994983786,
+    "host_job": 117285455651,
+    "host_checkout": "ae353aa12559fa486b73637b0c2f10d024ef366f",
+    "host_counts": [
+      27,
+      27,
+      30,
+      30,
+      28,
+      28
+    ],
+    "host_executions": 170,
+    "codeql_workflow": 38994981885,
+    "legacy_contexts": [],
+    "aggregate_state_not_exposed_in_retained_wrapper": true
+  },
+  "merge": {
+    "commit": "09aea79c71dc9f48ba519757078dd8a20f5c8fb3",
+    "tree": "23eba5d298ff7db98f0ba6cd8b1c363094639cd4",
+    "parents": [
+      "cdf308e751e561328c556ca2ece86056d15809a0",
+      "b75f8e4ca6f55495a10d1652107c26010cdede7d"
+    ],
+    "recursive_entries_equal": 9128,
+    "root_readme_bytes": 0,
+    "kernel_tree": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da",
+    "source_checks": 118,
+    "source_exit": 0,
+    "host_smoke_exit": 0,
+    "diff_check_exit": 0,
+    "conditional_guest_fixture_present": false,
+    "conditional_host_compile": "skipped",
+    "guest_executed": false
+  },
+  "merge_ci_snapshot": {
+    "commit": "09aea79c71dc9f48ba519757078dd8a20f5c8fb3",
+    "observed_start_utc": "2026-10-17T04:09:41.301Z",
+    "observed_finish_utc": "2026-10-17T04:11:09.818Z",
+    "checks": "two queued/null",
+    "host_workflow": 39001122216,
+    "codeql_workflow": 39001120343,
+    "legacy_contexts": [],
+    "actual_main": "47288c4465720d125658b392efc655b333c90868",
+    "PR22_API_base": "b75f8e4ca6f55495a10d1652107c26010cdede7d",
+    "latest_main_mergeability_not_established_by_API_snapshot": true
+  },
+  "limits": [
+    "No new kernel compilation, guest execution or W1 acceptance in this phase.",
+    "cdf successful host CI is not extrapolated to 09aea or later heads.",
+    "Historical audit REPORT says aggregate legacy status pending; retained wrapper exposes only an empty statuses list, so aggregate pending is not independently established here.",
+    "API snapshots and local main merge refer to their exact commits/times; later branch heads require separate validation."
+  ]
+}

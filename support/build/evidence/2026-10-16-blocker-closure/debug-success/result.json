@@ -1,0 +1,90 @@
+{
+  "actual_tool": {
+    "completion_receipt": "controllers/debug3-postcheck.json",
+    "exit_code": 0,
+    "scope": "outer tool included fetch/switch and debug3 controller",
+    "session_id": 39476
+  },
+  "boot_snapshot": {
+    "actual_qemu_kernel_argv_uses_snapshot": true,
+    "archive": "raw.tar.gz",
+    "bytes": 5975720,
+    "full_bytes_retained": true,
+    "member": "run/boot/artifacts-g0lyeygd/kernel.elf",
+    "sha256": "fbe81c0e2deae705d61d77ccaaf604e2bf1ca30e4541de71d263af6ecc62ec1b"
+  },
+  "cached_kernel_target_reused": true,
+  "controller_exit": 0,
+  "denominator": {
+    "combined_actual_qemu_guests": 2,
+    "combined_complete_passes": 1,
+    "combined_failed_attempts": 2,
+    "combined_raw33_guests": 2,
+    "combined_with_debug_failures_attempts": 3,
+    "this_directory_attempts": 1,
+    "this_directory_failed": 0,
+    "this_directory_passed": 1
+  },
+  "driver_exit": 0,
+  "foreign_manifest": {
+    "actual_preserved_bytes_copy": "controllers/preserved-foreign-OSDK.toml",
+    "preservation_receipt": "controllers/debug3-manifest-preservation.json",
+    "read_only_copy_receipt": "controllers/preserved-foreign-capture.json",
+    "writer": "unknown"
+  },
+  "fresh_live_artifact_postcheck": {
+    "actual_replacement_during_debug3_claimed": false,
+    "exit_code": 0,
+    "original_source_path_sha256_still_matches_snapshot_at_postcheck": true,
+    "receipt": "controllers/debug3-postcheck.json"
+  },
+  "gdb_entry": {
+    "bytes": "50e8ea35f2ff48c7c7e0565488e81e49060048c7c000105f8848c7c178165f88",
+    "detached": true,
+    "gdb_runtime_boot_snapshot_and_retained_symbol_all_match": true,
+    "pc": "0xffffffff88422f10",
+    "size": 32,
+    "symbol": "__ostd_main"
+  },
+  "gdb_exit": 0,
+  "kernel_artifact_compiled_in_previous_debug2_attempt": true,
+  "kernel_source_tree": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da",
+  "kernel_source_tree_unchanged_from_debug2": true,
+  "kernel_unit_regression_tests_run_by_this_debug_attempt": false,
+  "new_full_kernel_rebuild_claimed": false,
+  "owned_session_cleanup": {
+    "all_reaped_zero": true,
+    "leaders": 5
+  },
+  "qemu_raw_exit_code": 33,
+  "release_compiling_log_lines": 0,
+  "release_finish_seconds": 0.2,
+  "schema": 1,
+  "serial": {
+    "bytes": 72303,
+    "complete": true,
+    "path": "readable/run/boot/serial.log",
+    "sha256": "3363db54a8da156395dbd9995a0dff6bb517c3f259373204f886a485e5363460"
+  },
+  "source_commit": "31170ffb2ab6d18a85051d426e5d85a83f1b2abf",
+  "source_tree": "3bef60f628add169a08af75a81dac8c26bcca1da",
+  "status": "passed",
+  "symbol": {
+    "duplicate_symbol_gzip_stored_here": false,
+    "elf": {
+      "bytes": 111689912,
+      "sha256": "06c320f0799d4f8afcb610046dceae64b3cc9885aa64537bc24ce0219c67eaf3"
+    },
+    "gzip": {
+      "bytes": 26991145,
+      "sha256": "4a8d2ea94b3237d211adf14e9230984a1ab80a0de824fe43a76d179193e54b70"
+    },
+    "reassembler_relative_path": "../debug-failures/artifacts/reassemble-symbol.py",
+    "relative_storage_manifest": "../debug-failures/artifacts/symbol-storage.json",
+    "same_entry_bytes_verified_against_retained_chunks": true,
+    "same_retained_symbol_as_debug2": true,
+    "storage_manifest_sha256": "cccc3dcf9a19adeb6768292f3b842628148cfe143cff6f6dd8944ecd193a37f6"
+  },
+  "target_initially_absent": false,
+  "timed_out": false
+}

@@ -1,0 +1,24 @@
+{
+  "kind": "host_only_monitor_tests_and_no_kernel_qemu_transport_probe",
+  "source_commit": "f473a2ccc8dfeaed1223e8478a19c79c90b323e4",
+  "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+  "commands": [
+    "cargo test --manifest-path kernel/asterinas/osdk/Cargo.toml --locked --offline --bin cargo-osdk -- --nocapture",
+    "python3 -I support/build/osdk-integration/test_record_qemu.py",
+    "python3 -I -O support/build/osdk-integration/test_record_qemu.py",
+    "A01_MONITOR_PROBE_OUT=NEW_DIR RUST_LOG=info cargo test --manifest-path kernel/asterinas/osdk/Cargo.toml --locked --offline --bin cargo-osdk real_qemu_uses_preconnected_fd_after_rejecting_client_first -- --ignored --nocapture"
+  ],
+  "selected_environment": {
+    "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+    "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+    "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+    "GDB_PATH": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/bin",
+    "LD_LIBRARY_PATH": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/lib/x86_64-linux-gnu"
+  },
+  "argument_review": "python3 -I -B importlib load of recorder then three local_tcp_controls calls; exact inputs/results in next5-monitor-independent-review.json",
+  "notes": [
+    "No project kernel was launched by these tests/probes.",
+    "Final Rust host38/ignored1 and probe03 source remained unchanged by later recorder-only hardening. Only final recorder33 checks were rerun under both Python modes.",
+    "The initial no-library invocation and early failed/full test attempts are retained as original raw logs; earlier probe01 used fd5 and is not the final fd64 source."
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "argv": [
+    "python3",
+    "-I",
+    "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/linux-guest/isolate.py",
+    "--a04-source-root",
+    "/workspace/scratch/ae1a8cf05419/a04-pr8-handoff-16d6728",
+    "--rootfs",
+    "/workspace/scratch/ae1a8cf05419/a04-pr8-handoff-16d6728/current-rootfs",
+    "--a01-kernel-gz",
+    "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-16/artifacts/kernel.elf.gz",
+    "--a01-initramfs",
+    "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-16/artifacts/initramfs.cpio.gz",
+    "--firmware",
+    "/usr/share/seabios/bios-256k.bin",
+    "--qemu",
+    "/usr/bin/qemu-system-x86_64",
+    "--out-dir",
+    "/workspace/scratch/ae1a8cf05419/a04-pr8-handoff-16d6728/cancel-real-sigterm/runner",
+    "--jobs",
+    "1",
+    "--timeout",
+    "30",
+    "--case",
+    "dynamic.scm_rights",
+    "--case",
+    "static.scm_rights"
+  ],
+  "cleanup_seconds": 0.16406541999822366,
+  "cli_exit_code": 143,
+  "entry_sha256": "918a6addfe87df5a63963376058b7481e4df0d3478a0fd00c15fef14a8d0de5e",
+  "passed": true,
+  "pidfd_ready_before_signal": false,
+  "profile": "actual-Asterinas-SCM-guest-cancellation",
+  "qemu_pid_from_owned_Popen_receipt": 10,
+  "qemu_pidfd_exited_after_cli": true,
+  "signal": "SIGTERM",
+  "summary": {
+    "aborted": true,
+    "aborted_cases": 1,
+    "case_count": 1,
+    "failed_completed": 0,
+    "full_w1_passed": false,
+    "matched": 0,
+    "original_unmodified_suite_passed": false,
+    "profile": "a01-a04-isolated-case-v1",
+    "received_signal": "SIGTERM",
+    "results": [
+      {
+        "aborted": true,
+        "case": "dynamic.scm_rights",
+        "case_result": {
+          "reason": "guest did not produce this case marker",
+          "status": "not_run"
+        },
+        "elapsed_seconds": 1.2231194972991943,
+        "exact_match": false,
+        "guest_execution_verified": false,
+        "initramfs_sha256": "7e47fba09f4a7d243cd8a3f138026ed04b949402e53e8a9e18e6cc1df2fc72ed",
+        "kernel_sha256": "e884f5e50cf296833276016894a39337cd9ac13bc51f6b1f2dea3cc3a6904b63",
+        "original_suite_qualification": false,
+        "qemu_pid": 10,
+        "qemu_reaped_exit_code": 0,
+        "raw_qemu_exit_code": 0,
+        "raw_serial_changed_after_capture": false,
+        "serial_fd_identity": {
+          "bytes": 85310,
+          "device": 27,
+          "inode": 132076
+        },
+        "serial_sha256": "f7adaac1a857eb845a65e308a793611171c7b05137b808ce3ba151db007a24b4",
+        "serial_snapshot_sha256": "a24c6d9ef61a97bd8afe6a55424bae258502ad760095141cf884351b01bb1b6f",
+        "timed_out": false
+      }
+    ],
+    "selected_case_count": 2,
+    "skipped_cases": 1,
+    "timed_out": 0
+  }
+}

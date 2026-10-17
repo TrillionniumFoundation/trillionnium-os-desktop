@@ -1,0 +1,183 @@
+{
+  "schema": 1,
+  "scope": "Pinned OSDK tooling and small OSTD example kernels; this is not complete Asterinas kernel or VMX acceptance. Parent phase archives complete-kernel tests separately.",
+  "fixed_upstream_commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+  "rust_toolchain": "nightly-2026-07-21",
+  "profiles_separate": true,
+  "historical_default_unix": "Existing 20/22 Unix-profile evidence is unchanged in 2026-10-16-native-integration/osdk; it is not relabelled by this phase.",
+  "runs": [
+    {
+      "run": "v1-pilot-01",
+      "profile_id": "osdk-native-local-tcp-v1",
+      "selected_cases": 3,
+      "passed": 2,
+      "failed": 1,
+      "blocked": 0,
+      "soft_skip_count": 0,
+      "actual_guest_count": 3,
+      "guest_raw_exit_codes": [
+        33,
+        33,
+        33
+      ],
+      "result": "v1-pilot-01/result.json",
+      "source_binding": "provenance/published-source-bindings.json",
+      "publication_commit": "c3c80f9a1aac63ca33b6a168deb20d74ca6763b1",
+      "coverage": {
+        "harness_status": "failed",
+        "harness_exit_code": 101,
+        "source_osdk_exit_code": null,
+        "validation": "v1-pilot-01/case-03/coverage/result.json",
+        "guest_record": "v1-pilot-01/case-03/guests/guest-001/qemu.json"
+      }
+    },
+    {
+      "run": "v1-pilot-02",
+      "profile_id": "osdk-native-local-tcp-v1",
+      "selected_cases": 3,
+      "passed": 2,
+      "failed": 1,
+      "blocked": 0,
+      "soft_skip_count": 0,
+      "actual_guest_count": 3,
+      "guest_raw_exit_codes": [
+        33,
+        33,
+        33
+      ],
+      "result": "v1-pilot-02/result.json",
+      "source_binding": "provenance/published-source-bindings.json",
+      "publication_commit": "c3c80f9a1aac63ca33b6a168deb20d74ca6763b1",
+      "coverage": {
+        "harness_status": "failed",
+        "harness_exit_code": 101,
+        "source_osdk_exit_code": 0,
+        "validation": "v1-pilot-02/case-03/coverage/result.json",
+        "guest_record": "v1-pilot-02/case-03/guests/guest-001/qemu.json"
+      }
+    },
+    {
+      "run": "v2-exact-01",
+      "profile_id": "osdk-native-local-tcp-gdb-capture-v2",
+      "selected_cases": 1,
+      "passed": 1,
+      "failed": 0,
+      "blocked": 0,
+      "soft_skip_count": 0,
+      "actual_guest_count": 1,
+      "guest_raw_exit_codes": [
+        33
+      ],
+      "result": "v2-exact-01/result.json",
+      "source_binding": "provenance/published-source-bindings.json",
+      "publication_commit": "fa9b6cd6be310155b10fa36aafcb8896444e0f6e",
+      "coverage": {
+        "harness_status": "passed",
+        "harness_exit_code": 0,
+        "source_osdk_exit_code": 0,
+        "validation": "v2-exact-01/case-01/coverage/result.json",
+        "guest_record": "v2-exact-01/case-01/guests/guest-001/qemu.json",
+        "raw_size": 2094456,
+        "raw_sha256": "39af13905ca147db1d5dbaf3ff5c986513edb46f9b4ffac24165cbf52d05d33e",
+        "total_functions": 5696,
+        "maximum_function_count": 383731,
+        "capture_sidecar": "v2-exact-01/case-01/guests/guest-001/coverage-capture.json",
+        "gdb_exit_code": 0,
+        "breakpoint": {
+          "symbol": "ostd::arch::power::try_poweroff",
+          "resolved_address": "0xffffffff880edfc0",
+          "actual_pc": "0xffffffff880edfc0"
+        },
+        "resumed_by_detach": true,
+        "compressed_artifact_index": "v2-exact-01/artifacts.json"
+      }
+    },
+    {
+      "run": "v2-full-22",
+      "profile_id": "osdk-native-local-tcp-gdb-capture-v2",
+      "selected_cases": 22,
+      "passed": 22,
+      "failed": 0,
+      "blocked": 0,
+      "soft_skip_count": 1,
+      "actual_guest_count": 11,
+      "guest_raw_exit_codes": [
+        33,
+        33,
+        33,
+        33,
+        33,
+        33,
+        33,
+        33,
+        33,
+        33,
+        33
+      ],
+      "result": "v2-full-22/result.json",
+      "source_binding": "provenance/published-source-bindings.json",
+      "publication_commit": "fa9b6cd6be310155b10fa36aafcb8896444e0f6e",
+      "coverage": {
+        "harness_status": "passed",
+        "harness_exit_code": 0,
+        "source_osdk_exit_code": 0,
+        "validation": "v2-full-22/case-15/coverage/result.json",
+        "guest_record": "v2-full-22/case-15/guests/guest-001/qemu.json",
+        "raw_size": 2094456,
+        "raw_sha256": "9d564c13b2747da71c8353ff53214961d199726a1c4a7a9fb97d532a2e5d5764",
+        "total_functions": 5696,
+        "maximum_function_count": 383731,
+        "capture_sidecar": "v2-full-22/case-15/guests/guest-001/coverage-capture.json",
+        "gdb_exit_code": 0,
+        "breakpoint": {
+          "symbol": "ostd::arch::power::try_poweroff",
+          "resolved_address": "0xffffffff880edfc0",
+          "actual_pc": "0xffffffff880edfc0"
+        },
+        "resumed_by_detach": true,
+        "compressed_artifact_index": "v2-full-22/artifacts.json"
+      }
+    },
+    {
+      "run": "v2-guard-exact-01",
+      "profile_id": "osdk-native-local-tcp-gdb-capture-v2",
+      "selected_cases": 1,
+      "passed": 1,
+      "failed": 0,
+      "blocked": 0,
+      "soft_skip_count": 0,
+      "actual_guest_count": 1,
+      "guest_raw_exit_codes": [
+        33
+      ],
+      "result": "v2-guard-exact-01/result.json",
+      "source_binding": "provenance/published-source-bindings.json",
+      "publication_commit": "1cc76b90dfd162e18a946a01e0bcaa31b8e03b4f",
+      "coverage": {
+        "harness_status": "passed",
+        "harness_exit_code": 0,
+        "source_osdk_exit_code": 0,
+        "validation": "v2-guard-exact-01/case-01/coverage/result.json",
+        "guest_record": "v2-guard-exact-01/case-01/guests/guest-001/qemu.json",
+        "raw_size": 2094456,
+        "raw_sha256": "da25dd71ac3710e00cf116f408c71c124218f30fa1a35f58bd61e145ecad7d57",
+        "total_functions": 5696,
+        "maximum_function_count": 383731,
+        "capture_sidecar": "v2-guard-exact-01/case-01/guests/guest-001/coverage-capture.json",
+        "gdb_exit_code": 0,
+        "breakpoint": {
+          "symbol": "ostd::arch::power::try_poweroff",
+          "resolved_address": "0xffffffff880edfc0",
+          "actual_pc": "0xffffffff880edfc0"
+        },
+        "resumed_by_detach": true,
+        "compressed_artifact_index": "v2-guard-exact-01/artifacts.json"
+      }
+    }
+  ],
+  "host_test_invocations": "provenance/pure-test-invocations.json",
+  "monitor_transport_host_tests": "provenance/monitor-transport-source-ready.json",
+  "monitor_transport_host_logs": "provenance/monitor-transport-members.json",
+  "source_provenance": "provenance/published-source-bindings.json",
+  "full_matrix_scope": "The single complete 22-case run uses every fa9b6cd support file exactly. One VMX-unavailable fallback is a soft skip. After the final coverage-only fatal-panic guard, only the 16 related tests and exact real coverage test were rerun."
+}
