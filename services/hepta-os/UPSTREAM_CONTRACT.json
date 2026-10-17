@@ -1,0 +1,73 @@
+{
+  "repository": "https://github.com/TrillionniumFoundation/hepta-private-ci",
+  "commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+  "control_schema_version": 2,
+  "capability_schema_version": 1,
+  "max_control_frame_bytes_including_newline": 65536,
+  "max_event_batch": 256,
+  "read_method_allowlist": [
+    "Health",
+    "Capabilities",
+    "Events",
+    "RunStatus"
+  ],
+  "profile": "linux-local-read-only-observer",
+  "evidence_class": "source_review_and_scripted_socket_fixture_not_live_daemon",
+  "files": [
+    {
+      "path": "codex-rs/hepta-agent-protocol/src/lib.rs",
+      "sha256": "1cd1d1dffd74098d7f34d01b53b7d042d3c6d246c478ae580c2a0d6a602ce11d",
+      "git_blob": "2379d7a33ac80ccb60fa381373537b5dcfac6b54"
+    },
+    {
+      "path": "codex-rs/hepta-agent-protocol/src/capabilities.rs",
+      "sha256": "4ea99c9f8100f7c61a29fe86667449ba1faf8e8b0fb2d71326a485bb73b72e19",
+      "git_blob": "0e5d266bb8f2104051c6a23ea70f48e65b9ae148"
+    },
+    {
+      "path": "codex-rs/hepta-agent-protocol/src/authbus.rs",
+      "sha256": "5e3b3de7deee49156ab1621027396a3a5f88f9a8131a59e9170a741fca5d7748",
+      "git_blob": "9897096d9009673ca9d16ee482282cdceaf87ed7"
+    },
+    {
+      "path": "codex-rs/hepta-contracts/src/agent_id.rs",
+      "sha256": "456b322e28ab0ab6f26f7ae5b2fde5d6d8a9a28b9bb467371664e185e2a88650",
+      "git_blob": "98c9426a2cd7da43cd07458b1472b79acda1f474"
+    },
+    {
+      "path": "codex-rs/hepta-fleet/src/model.rs",
+      "sha256": "64ecaff8ecfc2a60129e300eb24f460160f01636a65fe8d9ace4ea6b5a400d4e",
+      "git_blob": "4e8ab6ced19748d22b543a6dbded5d9942ea463c"
+    },
+    {
+      "path": "codex-rs/hepta-agentd/src/client.rs",
+      "sha256": "e13456dc3678a7d0bf34614a4a69cfb430df425099ae7711b08a8e152b4b7cc6",
+      "git_blob": "cbafcfb553ee8d7a2699878e12c7eda5f91a4a95"
+    },
+    {
+      "path": "codex-rs/hepta-agentd/src/control.rs",
+      "sha256": "ba9f1d6d19deeec39b9f139b980aa327157dcd2213e8c1778b480d82466cb0e9",
+      "git_blob": "7a261a0f92ad4cdccdc2106e33fbdc049ec488ac"
+    },
+    {
+      "path": "codex-rs/hepta-agentd/src/state_control.rs",
+      "sha256": "08cac64fa29ee427e4dd49efce235a7ce9b7e0c1411c8778a29c07868d4be458",
+      "git_blob": "e7c2f88a5dd4c4414ce13a3060b7b8ccea934e28"
+    },
+    {
+      "path": "codex-rs/hepta-agentd/src/event_buffer.rs",
+      "sha256": "de553c282f359e99cd282c72264ee3436cf46045df5f48891d17079dacb3564b",
+      "git_blob": "d3124e9da047fd2bb5f195ea9e6b3137eaeebfb2"
+    },
+    {
+      "path": "codex-rs/hepta-agentd/src/lane_b_runtime.rs",
+      "sha256": "3f5fe2640e6ffaa08ac09f7bc4e386b6976d07103b42c9def17409ae3a459b31",
+      "git_blob": "dfba6f9599d2736f977a84ad36482f8a0319935b"
+    },
+    {
+      "path": "codex-rs/hepta-agentd/src/objective_runtime.rs",
+      "sha256": "bfaf9393bdbbb96e12364464b10d4d01c92390d1c9a587ec664c4809563aa83d",
+      "git_blob": "84a4b156fa04f27665319300e241732697a0ea01"
+    }
+  ]
+}
