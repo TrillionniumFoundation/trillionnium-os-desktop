@@ -317,6 +317,37 @@ fn main() {
         DeliveryState::Retired
     );
 
+    let (capture_core, _) = core(14, 1);
+    let capture_token = capture_core
+        .reserve_native(request(owner.clone(), 1), publisher())
+        .unwrap();
+    let captured_bytes = vec![123u8; 4096];
+    let captured_owner = Arc::new(AtomicUsize::new(17));
+    case!("callback_capture_drop", || capture_core
+        .execute_native_reserved::<Owner, _>(
+            &capture_token,
+            publisher(),
+            move |context| {
+                // No allocation, explicit destruction or reentry in the
+                // callback body. The borrowed owned captures must be dropped
+                // after the internal execution gate has been released.
+                std::hint::black_box(&captured_bytes);
+                assert_eq!(captured_owner.load(Ordering::SeqCst), 17);
+                context.owner().effects.fetch_add(1, Ordering::SeqCst);
+                PublishOutcome::Failure {
+                    status: DeliveryStatus::Revoked,
+                }
+            }
+        ))
+    .unwrap();
+    assert_eq!(
+        capture_core
+            .query_delivery(&capture_core.delivery_view(), 1)
+            .unwrap()
+            .state,
+        DeliveryState::Terminal
+    );
+
     let (full, _) = core(11, 2);
     full.reserve_native(request(owner.clone(), 1), publisher())
         .unwrap();

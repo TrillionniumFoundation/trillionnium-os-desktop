@@ -1,10 +1,11 @@
 # A03 control core acceptance — 2026-10-16
 
 Latest follow-up:
-[VALIDATION-20261017-window.md](VALIDATION-20261017-window.md),
-with 198 tests per backend, twelve bounded Loom models (26,445 schedules),
-zero locked allocation calls in native namespace probes and observation hardening.
-Previous: [VALIDATION-20261017-management.md](VALIDATION-20261017-management.md)
+[VALIDATION-20261017-owner.md](VALIDATION-20261017-owner.md),
+with 214 tests per backend, thirteen Loom models (26,675 schedules), retained
+callback cleanup and embeddable sole-owner resource CAS metadata.
+Previous: [VALIDATION-20261017-window.md](VALIDATION-20261017-window.md)
+(198 tests), [VALIDATION-20261017-management.md](VALIDATION-20261017-management.md)
 (192 tests),
 [VALIDATION-20261017-bound.md](VALIDATION-20261017-bound.md) (168 tests),
 [VALIDATION-20261017-native.md](VALIDATION-20261017-native.md) (150 tests).

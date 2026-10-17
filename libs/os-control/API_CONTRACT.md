@@ -109,7 +109,7 @@ or `PublishOutcome::Failure` with the immutable refusal. Revoke and this
 commit must share that lock. The synthetic native-owner tests demonstrate
 this API shape, not actual A06 integration.
 
-The A06 candidate branch's controller type is private to its scheduler module. A06 must
+The A06 controller now on main is private to its cgroup module. A06 must
 provide an owner-module adapter that invokes the typed entry with its actual
 `SubController<CpuController>` type, then takes the existing mutation lock
 inside the callback (execution gate before resource lock). A05
@@ -139,6 +139,53 @@ Invariants:
 `charge_cpu` is still a host accounting model. Real tick accounting,
 runqueue lock order, timer wakeup, and parent scheduling remain A06/kernel
 work.
+
+### Metadata beside the actual CPU owner
+
+`NativeResourceState` is a non-Clone, allocation-free identity and revision
+primitive for A06's original owner mutation lock. It stores only trusted domain
+and stable-object IDs, revision (initially one) and an irreversible fence.
+It contains no budget, usage, parent table, clock, grant registry or ledger.
+Keep it beside the sole existing `CpuMax` under the same lock; retain the
+actual `SubController<CpuController>` allocation as the native target.
+
+`NativeResourceUpdate::from(binding)` extracts the resource fields. After
+current authority, ancestors, parent policy and settled runtime have been
+checked, call `apply(update, effective_ns, consumed_ns, &mut mutation)`.
+The primitive validates identity, revision CAS, the HOS2 period/cap and every
+saved receipt field before invoking the borrowed, infallible mutation once.
+Its private valid receipt converts with `into_publish_outcome()` without a
+fallible check after the effect. The caller supplies trusted BOOTTIME and
+rollback prevention; the primitive does not establish another time domain.
+
+Every configuration writer must share that metadata. Linux `cpu.max` and
+lifecycle configuration use `apply_owner_configuration(&mut mutation)` under
+the same lock, advancing the same checked revision without inventing D or a
+publisher. This entry permits the actual owner's non-HOS2 periods and unlimited
+quota after its existing policy validation. A06 must normalize or refuse
+incompatible parent periods; comparing raw quota values from different periods
+does not establish a parent constraint. Neither entry resets consumed runtime.
+
+A callback panic leaves the metadata permanently `Indeterminate`, blocking
+both native and ordinary-owner mutation attempts even after host mutex poison
+recovery. There is no reset API or inference that the effect did not occur.
+`invalidate()` permanently closes a known detached owner without changing its
+budget, accounting, revision or saved D results; invalidation preserves an
+existing indeterminate fence. These states do not represent user pause or
+management-grant revocation.
+
+A06's subtree-control replacement can publish a new controller allocation.
+Its adapter must invalidate the old metadata under the old mutation lock as
+part of the actual replacement/commit sequence, or prove that the pinned owner
+is still current. An Arc pin alone cannot prove scheduler membership. A new
+instance receives fresh trusted identity metadata; do not reset a live instance.
+The callback is borrowed so this primitive does not destroy its captures.
+Prepare owning captures before taking the owner lock and destroy them after
+unlocking, or use callbacks borrowing only the owner's fields.
+
+This is executable host-tested Rust for embedding, not an Asterinas adapter.
+The current kernel has QueryAbi and the real A06 CPU controller, but no consumer
+of this metadata primitive or mutating HOS2 delivery core is established here.
 
 ## A07: Hepta persistent confirmation and retirement
 
@@ -619,7 +666,7 @@ fn execute_reserved<F>(
     publisher: PublisherId,
     execute: F,
 ) -> Result<DeliveryObservation, DeliveryError>
-where F: FnOnce(RequestBinding) -> PublishOutcome;
+where F: FnMut(RequestBinding) -> PublishOutcome;
 
 fn execute_native_reserved<T, F>(
     &self,
@@ -629,7 +676,7 @@ fn execute_native_reserved<T, F>(
 ) -> Result<DeliveryObservation, DeliveryError>
 where
     T: core::any::Any + Send + Sync,
-    F: FnOnce(NativeExecution<'_, T>) -> PublishOutcome;
+    F: FnMut(NativeExecution<'_, T>) -> PublishOutcome;
 ```
 
 The generic entry accepts host requests only. The typed native entry supplies
@@ -641,6 +688,20 @@ Public generic native execution is rejected before callback admission, closing
 the accidental wrong-instance/fresh-ancestor execution route. Trusted code can
 still misuse a callback or manufacture a reconciliation result; this seam
 does not authenticate compromised privileged code.
+
+`FnMut` permits the core to borrow the callback for its single invocation.
+It does not permit a second effect for the same D. The public entry retains
+the callback object until the execution gate has been released, including
+when the body unwinds. Owned captures are therefore destroyed outside that
+gate. A consuming `FnOnce` call would instead run their implicit destructors
+under the gate even if the body did not allocate or reenter. A caller whose
+callback captures a borrowed object still owns that object's lifetime.
+
+After a valid outcome is published, capture cleanup can observe the terminal
+result or begin history loss. A panic in capture cleanup cannot change that
+saved result back into a pending operation. If the callback body panics or
+returns malformed metadata, cleanup runs after the gate is released while
+the D remains pending until trusted reconciliation or history loss.
 
 A05/A06 supply one callback which checks actual kernel authority and
 performs the resource CAS under the real resource mutation lock. This callback
@@ -686,8 +747,8 @@ shared clock rule is not an SMP metering algorithm; A06 must settle real CPU
 slices and observations under its scheduler's lock discipline.
 
 `tests/control/run-validation.sh OUTPUT_DIR` repeats both host backend test
-suites, formatting, strict Clippy, the x86_64-unknown-none library check and
-the separate bounded Loom harness below.
+suites, formatting, strict Clippy, the x86_64-unknown-none library check,
+the separate bounded Loom harness and the native lock-allocation probe.
 `kernel_handoff` tests use a synthetic external callback; they do not call
 an actual kernel driver or the persistent Hepta owner.
 
@@ -801,14 +862,17 @@ bytes unchanged into a temporary crate, replaces only sync.rs with the tracked
 Loom Mutex adapter, and checks before/after hashes. No second state machine,
 production feature or production dependency is introduced.
 
-Ten fixtures cover same-D reservation/effect, revoke/commit, retire/query,
+Thirteen fixtures cover same-D reservation/effect, revoke/commit, retire/query,
 publish/observe, loss/callback, typed native execution, three-way loss/retirement,
 two-D resource CAS, post-effect invalid receipt/reconciliation and management
-revocation with independent authorization. Each explores up to three workers
+revocation with independent authorization, reserve/loss revalidation,
+overlapping retirement, and native CAS/compatibility writes/owner invalidation.
+Each explores up to three workers
 plus main, with preemption_bound=3 and
 max_branches=10000. No time/permutation cutoff is set; exceeding a branch
 limit or any assertion/deadlock fails the command. The runner requires all
-ten schedule counts, fmt and strict Clippy to pass.
+thirteen positive schedule counts, fmt and strict Clippy to pass. The current
+exact-source acceptance records 26,675 schedules across these fixtures.
 
 This verifies bounded lock-protected transitions with Loom threads/atomics;
 std/alloc Arc/Weak reference-count atomics and finalization are not instrumented.

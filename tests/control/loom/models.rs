@@ -915,3 +915,222 @@ fn overlapping_retirements_revalidate_smaller_prefix() {
         core.validate_invariants_for_host_model().unwrap();
     });
 }
+
+struct MetadataModelOwner {
+    state: loom::sync::Mutex<MetadataOwnerState>,
+}
+
+struct MetadataOwnerState {
+    metadata: NativeResourceState,
+    period_ns: u64,
+    quota_ns: Option<u64>,
+    used_ns: u64,
+    native_successes: u64,
+    compatibility_successes: u64,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+struct MetadataOwnerObservation {
+    revision: u64,
+    invalidated: bool,
+    period_ns: u64,
+    quota_ns: Option<u64>,
+    used_ns: u64,
+    native_successes: u64,
+    compatibility_successes: u64,
+}
+
+fn metadata_observation(state: &MetadataOwnerState) -> MetadataOwnerObservation {
+    MetadataOwnerObservation {
+        revision: state.metadata.revision(),
+        invalidated: state.metadata.is_invalidated(),
+        period_ns: state.period_ns,
+        quota_ns: state.quota_ns,
+        used_ns: state.used_ns,
+        native_successes: state.native_successes,
+        compatibility_successes: state.compatibility_successes,
+    }
+}
+
+fn apply_metadata(ctx: NativeExecution<'_, MetadataModelOwner>) -> PublishOutcome {
+    assert_eq!(ctx.ancestor_epochs(), &[7, 11]);
+    let binding = ctx.binding();
+    assert_eq!(binding.publisher, publisher());
+    assert_eq!(binding.grant_epoch, 1);
+    let mut state = ctx.owner().state.lock().unwrap();
+    let MetadataOwnerState {
+        metadata,
+        period_ns,
+        quota_ns,
+        used_ns,
+        native_successes,
+        ..
+    } = &mut *state;
+    let mut mutation = || {
+        *period_ns = binding.period_ns;
+        *quota_ns = Some(binding.cap_ns);
+        *native_successes += 1;
+        thread::yield_now();
+    };
+    match metadata.apply(
+        NativeResourceUpdate::from(binding),
+        10,
+        *used_ns,
+        &mut mutation,
+    ) {
+        Ok(receipt) => receipt.into_publish_outcome(),
+        Err(error) => PublishOutcome::Failure {
+            status: error.delivery_status(),
+        },
+    }
+}
+
+#[test]
+fn native_metadata_compatibility_and_invalidation_share_owner() {
+    model(
+        "native_metadata_compatibility_and_invalidation_share_owner",
+        || {
+            let core =
+                ControlCore::with_capacity(BootId::from_u128(1), CapSpaceId::from_u128(2), 2);
+            let owner = Arc::new(MetadataModelOwner {
+                state: loom::sync::Mutex::new(MetadataOwnerState {
+                    metadata: NativeResourceState::new(
+                        ResourceDomainId::from_u128(5),
+                        StableObjectId::from_u128(6),
+                    )
+                    .unwrap(),
+                    period_ns: CPU_PERIOD_NS,
+                    quota_ns: Some(25),
+                    used_ns: 3,
+                    native_successes: 0,
+                    compatibility_successes: 0,
+                }),
+            });
+            let target = NativeTarget::from_owner(
+                owner.clone(),
+                ResourceDomainId::from_u128(5),
+                StableObjectId::from_u128(6),
+            )
+            .unwrap();
+            let grant =
+                NativeGrant::from_owner(target.clone(), publisher(), 1, vec![7, 11]).unwrap();
+            let request = NativeDeliveryRequest::from_wire(1, grant, 1, 10, 7, 8).unwrap();
+            let token = Arc::new(core.reserve_native(request, publisher()).unwrap());
+            let (a_core, a_token) = (core.clone(), token.clone());
+            let native = thread::spawn(move || {
+                a_core
+                    .execute_native_reserved::<MetadataModelOwner, _>(
+                        &a_token,
+                        publisher(),
+                        apply_metadata,
+                    )
+                    .unwrap()
+            });
+            let b_owner = owner.clone();
+            let compatibility = thread::spawn(move || {
+                let mut state = b_owner.state.lock().unwrap();
+                let MetadataOwnerState {
+                    metadata,
+                    period_ns,
+                    quota_ns,
+                    compatibility_successes,
+                    ..
+                } = &mut *state;
+                let mut mutation = || {
+                    // Ordinary owner configuration can use a different period
+                    // and unlimited quota. It still shares the one revision.
+                    *period_ns = 2 * CPU_PERIOD_NS;
+                    *quota_ns = None;
+                    *compatibility_successes += 1;
+                    thread::yield_now();
+                };
+                metadata.apply_owner_configuration(&mut mutation)
+            });
+            let c_owner = owner.clone();
+            let invalidate = thread::spawn(move || {
+                let mut state = c_owner.state.lock().unwrap();
+                state.metadata.invalidate();
+                thread::yield_now();
+                metadata_observation(&state)
+            });
+            let native_result = native.join().unwrap();
+            let compatibility_result = compatibility.join().unwrap();
+            let at_invalidation = invalidate.join().unwrap();
+            let observed = {
+                let state = owner.state.lock().unwrap();
+                assert!(state.metadata.is_invalidated());
+                assert!(!state.metadata.is_indeterminate());
+                metadata_observation(&state)
+            };
+            // No configuration effect may occur after invalidation wins its
+            // owner's lock, even if publication of an earlier effect is late.
+            assert_eq!(observed, at_invalidation);
+            assert_eq!(observed.used_ns, 3);
+            assert!(observed.native_successes <= 1);
+            assert!(observed.compatibility_successes <= 1);
+            assert_eq!(
+                observed.revision,
+                1 + observed.native_successes + observed.compatibility_successes
+            );
+            match native_result.status {
+                Some(DeliveryStatus::Ok) => {
+                    assert_eq!(observed.native_successes, 1);
+                    assert_eq!(native_result.previous_revision, Some(1));
+                    assert_eq!(native_result.saved_revision, Some(2));
+                    assert_eq!(native_result.effective_ns, Some(10));
+                    assert_eq!(native_result.consumed_ns, Some(3));
+                }
+                Some(DeliveryStatus::Conflict | DeliveryStatus::Revoked) => {
+                    assert_eq!(observed.native_successes, 0);
+                }
+                status => panic!("unexpected metadata native result {status:?}"),
+            }
+            match compatibility_result {
+                Ok(change) => {
+                    assert_eq!(observed.compatibility_successes, 1);
+                    assert_eq!(change.revision(), change.previous_revision() + 1);
+                }
+                Err(NativeResourceError::Invalidated) => {
+                    assert_eq!(observed.compatibility_successes, 0);
+                }
+                result => panic!("unexpected compatibility result {result:?}"),
+            }
+            let grant = NativeGrant::from_owner(target, publisher(), 1, vec![7, 11]).unwrap();
+            let request =
+                NativeDeliveryRequest::from_wire(2, grant, observed.revision, 20, 7, 8).unwrap();
+            let after_invalidation = core.reserve_native(request, publisher()).unwrap();
+            let refused = core
+                .execute_native_reserved::<MetadataModelOwner, _>(
+                    &after_invalidation,
+                    publisher(),
+                    apply_metadata,
+                )
+                .unwrap();
+            assert_eq!(refused.status, Some(DeliveryStatus::Revoked));
+            {
+                let mut state = owner.state.lock().unwrap();
+                assert_eq!(
+                    state
+                        .metadata
+                        .apply_owner_configuration(&mut || panic!("invalidated writer ran")),
+                    Err(NativeResourceError::Invalidated)
+                );
+                assert_eq!(metadata_observation(&state), observed);
+            }
+            assert_eq!(
+                core.query_delivery(&core.delivery_view(), 1).unwrap(),
+                native_result
+            );
+            assert_eq!(
+                core.execute_native_reserved::<MetadataModelOwner, _>(
+                    &token,
+                    publisher(),
+                    |_| panic!("old D executed after metadata invalidation"),
+                )
+                .unwrap(),
+                native_result
+            );
+            core.validate_invariants_for_host_model().unwrap();
+        },
+    );
+}
