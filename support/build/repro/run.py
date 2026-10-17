@@ -18,6 +18,12 @@ profile = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(profile)
 
 
+def fixed_rustc_version(cargo_home):
+    # Match kernel.sh even when this launcher's caller defaults to stable.
+    return subprocess.run([str(cargo_home / "bin/rustc"), "+nightly-2026-07-21", "-vV"],
+                          check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--checkout", required=True, type=Path)
@@ -76,8 +82,10 @@ def main():
         (output / "metadata").mkdir(mode=0o700)
         cargo_home = Path(os.environ.get("CARGO_HOME", str(Path.home() / ".cargo")))
         real_cargo = os.path.abspath(cargo_home / "bin/cargo")
+        rustc_version = fixed_rustc_version(cargo_home)
         policy = dict(owner, real_root=str(source), virtual_root=str(virtual),
                       output=str(output), real_cargo=real_cargo,
+                      rustc_identity=profile.digest(rustc_version), rustc_version=rustc_version.decode(),
                       profile_snapshot=before, source_components_identity=component_identity,
                       target_absent_at_prelaunch=True, actual_host={"hostname": socket.gethostname(),
                       "username": pwd.getpwuid(os.getuid()).pw_name, "uid": os.getuid(),

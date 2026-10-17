@@ -90,6 +90,152 @@ class Projection(unittest.TestCase):
         self.assertEqual(mapped["packages"][-1], data["packages"][-1])
 
 
+class CompilerMetadata(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        (self.root / "pkg").mkdir()
+        (self.root / "pkg/Cargo.toml").write_text('[package]\nname="pkg"\nversion="0.1.0"\n')
+        self.env = {"CARGO_MANIFEST_DIR": str(self.root / "pkg"),
+                    "CARGO_PKG_NAME": "pkg", "CARGO_PKG_VERSION": "0.1.0"}
+        self.policy = {"real_root": str(self.root), "virtual_root": "/virtual"}
+        self.argv = ["rustc", "--crate-name", "pkg", "--crate-type", "lib", "src/lib.rs",
+                     "--edition=2024", "--cfg", 'feature="one"', "-C", "metadata=original",
+                     "-C", "extra-filename=-cargo-file", "-C", "opt-level=3", "-C", "panic=abort",
+                     "-C", "lto=thin", "--out-dir", str(self.root / "target/deps")]
+
+    def project(self, argv=None, env=None, history=None):
+        return profile.canonical_compiler_metadata(argv or self.argv, env or self.env,
+                                                   str(self.root / "pkg"), self.policy, history or [])
+
+    def test_only_metadata_changes_and_all_other_execution_flags_survive(self):
+        result, unit = self.project()
+        changed = [index for index, pair in enumerate(zip(self.argv, result)) if pair[0] != pair[1]]
+        self.assertEqual(changed, [self.argv.index("metadata=original")])
+        self.assertEqual(result[changed[0]], "metadata=" + unit["canonical_id"])
+        for flag in ("-Copt-level=3", "-Cpanic=abort", "-Clto=thin"):
+            self.assertIn(flag, unit["descriptor"]["arguments"])
+
+    def test_feature_target_profile_and_unknown_codegen_flags_do_not_merge(self):
+        _, baseline = self.project()
+        for extra in (["--cfg", 'feature="two"'], ["--target", "x86_64-unknown-none"],
+                      ["-C", "opt-level=2"], ["-C", "panic=unwind"], ["-C", "lto=fat"],
+                      ["-C", "future-behavior-option=yes"]):
+            with self.subTest(extra=extra):
+                _, unit = self.project(self.argv + extra)
+                self.assertNotEqual(baseline["canonical_id"], unit["canonical_id"])
+
+    def test_version_package_and_canonical_source_identity_do_not_merge(self):
+        _, baseline = self.project()
+        for key, value in (("CARGO_PKG_VERSION", "0.2.0"), ("CARGO_PKG_NAME", "other")):
+            _, unit = self.project(env=dict(self.env, **{key: value}))
+            self.assertNotEqual(baseline["canonical_id"], unit["canonical_id"])
+        (self.root / "other").mkdir()
+        (self.root / "other/Cargo.toml").write_bytes((self.root / "pkg/Cargo.toml").read_bytes())
+        _, unit = self.project(env=dict(self.env, CARGO_MANIFEST_DIR=str(self.root / "other")))
+        self.assertNotEqual(baseline["canonical_id"], unit["canonical_id"])
+
+    def test_nonlocal_metadata_and_every_argument_are_unchanged(self):
+        result, unit = self.project(env=dict(self.env, CARGO_MANIFEST_DIR="/registry/pkg-0.1.0"))
+        self.assertEqual(result, self.argv)
+        self.assertEqual(unit["scope"], "cargo-original")
+        self.assertEqual(unit["effective_metadata"], "original")
+
+    def test_cargo_print_probe_with_many_crate_types_remains_a_probe(self):
+        argv = ["rustc", "-", "--crate-name", "___", "--print=file-names",
+                "--crate-type", "bin", "--crate-type", "rlib", "--crate-type", "proc-macro"]
+        self.assertEqual(self.project(argv), (argv, None))
+
+    def test_unsupported_metadata_alias_and_duplicate_salt_are_refused(self):
+        for argv in (self.argv + ["--codegen", "metadata=other"],
+                     self.argv + ["--codegen=metadata=other"], self.argv + ["-Cmetadata=other"]):
+            with self.subTest(argv=argv), self.assertRaises(ValueError):
+                self.project(argv)
+
+    def test_only_known_implicit_sysroot_proc_macro_is_allowed_with_fixed_compiler(self):
+        self.policy["rustc_identity"] = "fixed-nightly-version"
+        _, unit = self.project(self.argv + ["--extern", "proc_macro"])
+        self.assertIn("proc_macro=<fixed-sysroot:fixed-nightly-version>", unit["descriptor"]["arguments"])
+        with self.assertRaisesRegex(ValueError, "implicit extern"):
+            self.project(self.argv + ["--extern", "unknown"])
+        del self.policy["rustc_identity"]
+        with self.assertRaisesRegex(ValueError, "implicit extern"):
+            self.project(self.argv + ["--extern", "proc_macro"])
+
+    def test_prefix_neighbors_and_quoted_cfg_strings_keep_their_identity(self):
+        argument = "--cfg=literal=\"" + str(self.root) + "/semantic\""
+        neighbor = str(self.root) + "-neighbor/src/lib.rs"
+        _, unit = self.project(self.argv + [argument, neighbor])
+        self.assertIn(argument, unit["descriptor"]["arguments"])
+        self.assertIn(neighbor, unit["descriptor"]["arguments"])
+
+    def test_local_build_script_outputs_are_explicitly_outside_the_pinned_scope(self):
+        with self.assertRaisesRegex(ValueError, "OUT_DIR"):
+            self.project(env=dict(self.env, OUT_DIR=str(self.root / "target/build/pkg-12345678/out")))
+        with self.assertRaisesRegex(ValueError, "build-script artifact paths"):
+            self.project(self.argv + ["-L", "native=" + str(self.root / "target/release/build/pkg-12345678/out")])
+
+    def test_different_opaque_salts_cannot_alias_one_descriptor(self):
+        _, unit = self.project()
+        different = ["metadata=another" if value == "metadata=original" else value for value in self.argv]
+        with self.assertRaisesRegex(ValueError, "distinct Cargo units collide"):
+            self.project(different, history=[{"state": "started", "unit": unit}])
+        self.project(history=[{"state": "started", "unit": unit}])
+
+    def producer(self, canonical="dependency-one", state="completed", returncode=0):
+        artifact = self.root / "dependency.rlib"
+        artifact.write_bytes(b"one")
+        return artifact, {"state": state, "returncode": returncode,
+                          "unit": {"canonical_id": canonical},
+                          "artifacts": {str(artifact): profile.artifact_identity(artifact)}}
+
+    def test_dependency_identity_is_bound_and_changes_descriptor(self):
+        artifact, first = self.producer()
+        argv = self.argv + ["--extern", "dependency=" + str(artifact)]
+        _, baseline = self.project(argv, history=[first])
+        second = copy.deepcopy(first)
+        second["unit"]["canonical_id"] = "dependency-two"
+        _, changed = self.project(argv, history=[second])
+        self.assertNotEqual(baseline["canonical_id"], changed["canonical_id"])
+        self.assertIn("dependency=<producer:dependency-one>", baseline["descriptor"]["arguments"])
+
+    def test_missing_failed_unfinished_changed_and_ambiguous_producers_are_rejected(self):
+        artifact, producer = self.producer()
+        argv = self.argv + ["--extern", "dependency=" + str(artifact)]
+        unfinished = dict(producer, state="started")
+        failed = dict(producer, returncode=1)
+        ambiguous = copy.deepcopy(producer)
+        ambiguous["unit"]["canonical_id"] = "different"
+        for history in ([], [unfinished], [failed], [producer, ambiguous]):
+            with self.subTest(history=history), self.assertRaisesRegex(ValueError, "successful producer"):
+                self.project(argv, history=history)
+        artifact.write_bytes(b"changed")
+        with self.assertRaisesRegex(ValueError, "successful producer"):
+            self.project(argv, history=[producer])
+
+    def test_launcher_queries_fixed_nightly_even_when_caller_defaults_to_stable(self):
+        spec = importlib.util.spec_from_file_location("a01_repro_run", HERE / "run.py")
+        launcher = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(launcher)
+        cargo_home = self.root / "cargo"
+        (cargo_home / "bin").mkdir(parents=True)
+        shim = cargo_home / "bin/rustc"
+        shim.write_text('#!/usr/bin/python3 -I\nimport json,os,sys\n'
+                        'print(json.dumps({"argv":sys.argv[1:],"caller":os.environ.get("RUSTUP_TOOLCHAIN")}))\n')
+        shim.chmod(0o500)
+        original = os.environ.get("RUSTUP_TOOLCHAIN")
+        os.environ["RUSTUP_TOOLCHAIN"] = "stable"
+        try:
+            observed = json.loads(launcher.fixed_rustc_version(cargo_home))
+        finally:
+            if original is None:
+                del os.environ["RUSTUP_TOOLCHAIN"]
+            else:
+                os.environ["RUSTUP_TOOLCHAIN"] = original
+        self.assertEqual(observed, {"argv": ["+nightly-2026-07-21", "-vV"], "caller": "stable"})
+
+
 class Custody(unittest.TestCase):
     def test_fifo_input_is_rejected_without_blocking(self):
         with tempfile.TemporaryDirectory() as temp:

@@ -23,7 +23,7 @@ The caller prepares the fixed nightly, Cargo cache and vDSO in the usual way.
 The profile rejects inherited Rust flags/wrappers and fixes timestamp, locale,
 target path, compiler remap and explicitly selected embedded builder metadata.
 
-`RUSTC_WRAPPER` retains every original compiler argument, appends the canonical
+`RUSTC_WRAPPER` retains the original OSDK codegen arguments, appends the canonical
 `--remap-path-prefix` unless that identical flag is already present (before an
 explicit `--` delimiter), and supplies the
 metadata adapter through `CARGO` while compiling proc macros. Only the exact
@@ -40,12 +40,54 @@ The compiler map is enforced in the wrapper, rather than relying on inherited
 after action configs were constructed, while kernel building reads
 `config.run.build`. A real first kernel attempt compiled successfully but booted
 into `NotIncludeAllComponent` because metadata keys were projected and the
-actual kernel compiler arguments had no remap. That failure is retained. Schema
-2 records both incoming and effective compiler arguments; `argv` denotes the
-vector actually executed. All required OSDK flags remain in their original
+actual kernel compiler arguments had no remap. That failure is retained. The
+wrapper records both incoming and effective compiler arguments; `argv` denotes
+the vector actually executed. Required OSDK flags remain in their original
 order. An already present identical combined option is reused; an equivalent
 split option is retained and may be followed by the identical combined form. New code hashes require a new profile directory and fresh targets; old
 failed profiles and artifacts are never reused as passing evidence.
+
+Two real schema-2 kernels subsequently booted, but their ELF bytes differed.
+OSDK creates an independent run-base workspace whose external path dependencies
+receive absolute-path-dependent Cargo `-Cmetadata` salts. Compiler path remapping
+does not normalize those crate disambiguators. Schema 3 additionally replaces
+only the metadata salt for Cargo packages inside this source root. Cargo's
+`-Cextra-filename`, output names and real `--extern` paths remain untouched.
+Registry and toolchain crates retain their original metadata salts.
+
+Each replacement is a SHA256 of the canonical package name, version, manifest
+path and parsed manifest (only dependency/workspace path prefixes are projected),
+crate name/type, target, working directory, fixed compiler version identity and
+the full argument vector. Features, cfgs and every behavior/codegen option,
+including unknown future options, participate. The original opaque metadata,
+extra filename, output directory and incremental cache location are excluded
+from that descriptor; incremental compilation remains disabled. Explicit
+`--extern` arguments bind to the canonical identity of one successful producer.
+The only permitted implicit extern is `proc_macro`, bound to the recorded fixed
+`rustc -vV` identity. No artifact filename hash is guessed or removed to infer a
+dependency identity. Only Cargo's observed `-C metadata=...` and `-Cmetadata=...`
+spellings are supported; metadata aliases or duplicate salts are refused.
+
+The compiler helper supervises rustc and preserves inherited Cargo jobserver
+file descriptors. Its separately locked `compiler-units.jsonl` ledger records
+start reservations, completion status and artifact stat observations. A failed,
+unfinished, ambiguous or stat-changed producer cannot satisfy a dependency.
+Artifact observations bind device/inode/size/mtime, not a content-hash or
+privileged-adversary immutability promise. Different incoming Cargo salts mapping
+to one local descriptor in the same build are refused; repeated identical units
+are allowed. `rustc.jsonl` retains one original/effective invocation record with
+the descriptor and both metadata salts.
+
+This is a pinned graph profile. Local `OUT_DIR` inputs and Cargo build-script
+artifact paths are explicitly refused, because their generated directory salts
+would need additional producer/content normalization. Neither occurred in the
+actual schema-2 kernel compiler arguments. Arbitrary source `env!` inputs and
+custom environment-driven code generation are not normalized. Compiler path
+projection recognizes path prefixes and path-valued `=` arguments, leaving
+neighboring directories and arbitrary quoted cfg strings distinct. Source
+checkout paths remain genuinely different; no common staging source tree is
+created. Native test binaries establish mechanism behavior only; the next full
+kernel builds and QEMU boots must independently validate this schema.
 
 The complete metadata root is projected along with package IDs. Changing only
 package IDs can bypass the upstream missing-component check and is forbidden.

@@ -4,9 +4,10 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import stat
 
-SCHEMA = "a01-component-path-projection/2"
+SCHEMA = "a01-component-path-projection/3"
 FILES = ("profile.py", "run.py", "rustc-wrapper.py", "cargo-metadata-wrapper.py")
 HELPERS = ("profile.py", "rustc-wrapper.py", "cargo-metadata-wrapper.py")
 
@@ -83,6 +84,190 @@ def compiler_argv(incoming, policy):
         index = result.index("--") if "--" in result else len(result)
         result.insert(index, flag)
     return result
+
+
+def compiler_unit(arguments, environment):
+    """Describe a Cargo rustc unit without guessing artifact filename hashes."""
+    options = arguments[1:arguments.index("--")] if "--" in arguments else arguments[1:]
+    codegen = []
+    values = {}
+    ambiguous = False
+    index = 0
+    while index < len(options):
+        argument = options[index]
+        if (argument == "--codegen" and index + 1 < len(options)
+                and options[index + 1].startswith("metadata=")) or argument.startswith("--codegen=metadata="):
+            raise ValueError("unsupported Cargo metadata option spelling")
+        if argument == "-C":
+            if index + 1 == len(options):
+                raise ValueError("incomplete codegen argument")
+            codegen.append((index + 2, options[index + 1], False))
+            index += 2
+            continue
+        if argument.startswith("-C") and len(argument) > 2:
+            codegen.append((index + 1, argument[2:], True))
+        if argument in ("--crate-name", "--crate-type", "--target", "--out-dir"):
+            if index + 1 == len(options) or argument in values:
+                ambiguous = True
+            else:
+                values[argument] = options[index + 1]
+        index += 1
+    salts = [entry for entry in codegen if entry[1].startswith("metadata=")]
+    if not salts:
+        return None
+    if ambiguous or len(salts) != 1 or "--crate-name" not in values or "--out-dir" not in values:
+        raise ValueError("ambiguous Cargo compiler unit identity")
+    extras = [entry[1].split("=", 1)[1] for entry in codegen if entry[1].startswith("extra-filename=")]
+    if len(extras) != 1:
+        raise ValueError("Cargo compiler unit must have one artifact suffix")
+    manifest = environment.get("CARGO_MANIFEST_DIR")
+    name = environment.get("CARGO_PKG_NAME")
+    version = environment.get("CARGO_PKG_VERSION")
+    if not manifest or not os.path.isabs(manifest) or not name or not version:
+        raise ValueError("Cargo compiler unit lacks package provenance")
+    return {"manifest": manifest, "package": name, "version": version,
+            "crate": values["--crate-name"], "crate_type": values.get("--crate-type"),
+            "target": values.get("--target", "host"), "out_dir": values["--out-dir"],
+            "extra_filename": extras[0], "incoming_metadata": salts[0][1].split("=", 1)[1],
+            "salt_argument": salts[0][0], "salt_combined": salts[0][2]}
+
+
+def artifact_identity(path):
+    info = os.stat(path, follow_symlinks=False)
+    if not stat.S_ISREG(info.st_mode):
+        raise ValueError("compiler artifact is not a regular file")
+    # Cargo may create another hard link after rustc returns. That changes ctime
+    # and nlink without changing the completed producer's bytes or inode.
+    return {key: getattr(info, key) for key in ("st_dev", "st_ino", "st_size", "st_mtime_ns")}
+
+
+def completed_artifacts(unit):
+    if unit is None:
+        return {}
+    basename = unit["crate"] + unit["extra_filename"]
+    names = ["lib" + basename + suffix for suffix in (".rlib", ".rmeta", ".so", ".a")]
+    names.append(basename)
+    result = {}
+    for name in names:
+        path = os.path.abspath(os.path.join(unit["out_dir"], name))
+        try:
+            result[path] = artifact_identity(path)
+        except FileNotFoundError:
+            pass
+    return result
+
+
+def canonical_compiler_metadata(arguments, environment, cwd, policy, history):
+    """Project local Cargo crate disambiguators; retain real artifact filenames.
+
+    The descriptor includes every compiler argument except the original salt,
+    output naming/location and incremental cache location. Externs bind to
+    successful producers, rather than stripping filename hashes heuristically.
+    """
+    result = list(arguments)
+    unit = compiler_unit(arguments, environment)
+    if unit is None:
+        return result, None
+    real, virtual = policy["real_root"], policy["virtual_root"]
+    local = unit["manifest"] == real or unit["manifest"].startswith(real + "/")
+    if not local:
+        identity = {key: unit[key] for key in
+                    ("manifest", "package", "version", "crate", "crate_type", "target", "incoming_metadata")}
+        unit.update(scope="cargo-original", canonical_id=digest(json.dumps(identity, sort_keys=True).encode()),
+                    effective_metadata=unit["incoming_metadata"])
+        return result, unit
+
+    def normalize(value):
+        # Only absolute path prefixes and path-valued '=' arguments. Do not
+        # rewrite a neighboring directory or arbitrary quoted cfg string.
+        return re.sub(r"(^|=)" + re.escape(real) + r"(?=$|[/=])",
+                      lambda match: match.group(1) + virtual, value)
+
+    if environment.get("OUT_DIR"):
+        raise ValueError("local build-script OUT_DIR inputs are outside this pinned profile")
+    if any(re.search(r"/target/(?:[^/]+/)*build/[^/]+-[0-9a-f]{8,}/out(?:/|$)", argument)
+           for argument in result):
+        raise ValueError("local build-script artifact paths are outside this pinned profile")
+
+    def dependency(value):
+        alias, separator, filename = value.partition("=")
+        if not separator:
+            if alias == "proc_macro" and policy.get("rustc_identity"):
+                return alias + "=<fixed-sysroot:" + policy["rustc_identity"] + ">"
+            raise ValueError("local compiler unit has an implicit extern without producer provenance")
+        filename = os.path.abspath(filename)
+        matches = {entry["unit"]["canonical_id"] for entry in history
+                   if entry.get("state") == "completed" and entry.get("returncode") == 0
+                   and filename in entry.get("artifacts", {})
+                   and entry["artifacts"][filename] == artifact_identity(filename)}
+        if len(matches) != 1:
+            raise ValueError(f"extern lacks one unchanged successful producer: {alias}")
+        return alias + "=<producer:" + matches.pop() + ">"
+
+    descriptor_args = []
+    options_end = result.index("--") if "--" in result else len(result)
+    index = 1
+    while index < len(result):
+        argument = result[index]
+        if index < options_end and argument in ("-C", "--codegen"):
+            if index + 1 >= options_end:
+                raise ValueError("incomplete codegen option")
+            value = result[index + 1]
+            if value.startswith(("metadata=", "extra-filename=")):
+                index += 2
+                continue
+            descriptor_args.append("-C" + ("incremental=<enabled>" if value.startswith("incremental=") else normalize(value)))
+            index += 2
+            continue
+        if index < options_end and argument.startswith("-C") and len(argument) > 2:
+            value = argument[2:]
+            if value.startswith(("metadata=", "extra-filename=")):
+                index += 1
+                continue
+            descriptor_args.append("-C" + ("incremental=<enabled>" if value.startswith("incremental=") else normalize(value)))
+            index += 1
+            continue
+        if index < options_end and argument == "--out-dir":
+            descriptor_args.extend((argument, "<cargo-output-directory>"))
+            index += 2
+            continue
+        if index < options_end and argument == "--extern":
+            descriptor_args.extend((argument, dependency(result[index + 1])))
+            index += 2
+            continue
+        if index < options_end and argument.startswith("--extern="):
+            descriptor_args.append("--extern=" + dependency(argument.split("=", 1)[1]))
+            index += 1
+            continue
+        descriptor_args.append(normalize(argument))
+        index += 1
+    import tomllib
+    manifest = tomllib.loads(regular(Path(unit["manifest"]) / "Cargo.toml")[0].decode())
+
+    def manifest_paths(value):
+        if isinstance(value, dict):
+            return {key: normalize(entry) if key in ("path", "workspace") and isinstance(entry, str)
+                    else manifest_paths(entry) for key, entry in value.items()}
+        if isinstance(value, list):
+            return [manifest_paths(entry) for entry in value]
+        return value
+
+    descriptor = {"schema": "a01-local-cargo-unit/1", "manifest": normalize(unit["manifest"]),
+                  "manifest_sha256": digest(json.dumps(manifest_paths(manifest), sort_keys=True).encode()),
+                  "package": unit["package"], "version": unit["version"], "crate": unit["crate"],
+                  "crate_type": unit["crate_type"], "target": unit["target"],
+                  "compiler": policy.get("rustc_identity"), "cwd": normalize(cwd), "arguments": descriptor_args}
+    canonical = digest(json.dumps(descriptor, sort_keys=True, separators=(",", ":")).encode())
+    for entry in history:
+        other = entry.get("unit")
+        if (other and other.get("scope") == "canonical-local" and other["canonical_id"] == canonical
+                and other["incoming_metadata"] != unit["incoming_metadata"]):
+            raise ValueError("distinct Cargo units collide in the canonical local descriptor")
+    argument = "metadata=" + canonical
+    result[unit["salt_argument"]] = "-C" + argument if unit["salt_combined"] else argument
+    unit.update(scope="canonical-local", canonical_id=canonical,
+                effective_metadata=canonical, descriptor=descriptor)
+    return result, unit
 
 
 def materialize_helpers(destination, source):
