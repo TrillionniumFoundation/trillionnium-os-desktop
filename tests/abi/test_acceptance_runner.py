@@ -51,13 +51,14 @@ class AcceptanceRunnerTests(unittest.TestCase):
             evidence = root / "mutations.json"
             clean_process = {"passed": True, "returncode": 0, "timed_out": False}
             cases = (
-                ("hos2-rust-source-mutations-v4", 19, 19, True, False),
+                ("hos2-rust-source-mutations-v5", 20, 20, True, False),
                 (acceptance.PINNED_MUTATION_SCHEMA, 1, 1, True, False),
                 (acceptance.PINNED_MUTATION_SCHEMA, 16, 16, True, False),
+                (acceptance.PINNED_MUTATION_SCHEMA, 19, 19, True, False),
                 (acceptance.PINNED_MUTATION_SCHEMA, True, True, True, False),
-                (acceptance.PINNED_MUTATION_SCHEMA, 19, 18, True, False),
-                (acceptance.PINNED_MUTATION_SCHEMA, 19, 19, False, False),
-                (acceptance.PINNED_MUTATION_SCHEMA, 19, 19, True, True),
+                (acceptance.PINNED_MUTATION_SCHEMA, 20, 19, True, False),
+                (acceptance.PINNED_MUTATION_SCHEMA, 20, 20, False, False),
+                (acceptance.PINNED_MUTATION_SCHEMA, 20, 20, True, True),
             )
             # Each invocation mutates result["passed"]; returning the same
             # dict would contaminate all later cases after the first negative.
