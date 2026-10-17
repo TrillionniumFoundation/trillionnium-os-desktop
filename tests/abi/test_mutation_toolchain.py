@@ -298,6 +298,24 @@ class MutationToolchainTests(unittest.TestCase):
                     self.assertEqual(source.count(old), 1)
                     self.assertEqual(mutated.count(new), 1)
 
+    def test_cumulative_bound_mutant_changes_both_decoder_and_encoder(self):
+        source = (Path(__file__).resolve().parents[2] / "libs/os-abi/src/lib.rs").read_text(
+            encoding="utf-8"
+        )
+        variants = [item for item in mutations.PROFILE_MUTANTS
+                    if item[0] == "accept_cumulative_cpu_beyond_boot_elapsed"]
+        self.assertEqual(len(variants), 1)
+        name, designated, changes = variants[0]
+        self.assertEqual(designated,
+                         "read_usage_rejects_impossible_or_misaligned_cpu_snapshots")
+        self.assertEqual(len(changes), 2)
+        for original, replacement in changes:
+            with self.subTest(original=original):
+                self.assertEqual(source.count(original), 1)
+                self.assertEqual(replacement, "|| false")
+        mutated = mutations.mutated_profile_source(source, changes)
+        self.assertNotEqual(mutated, source)
+
     def test_negative_wire_source_mutants_are_real_unique_changes(self):
         source = (Path(__file__).resolve().parents[2] / "libs/os-abi/src/lib.rs").read_text(
             encoding="utf-8"
