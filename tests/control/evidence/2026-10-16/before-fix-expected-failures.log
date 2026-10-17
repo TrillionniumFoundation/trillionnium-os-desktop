@@ -1,0 +1,86 @@
+
+running 12 tests
+test descendant_sample_fences_every_stale_sibling_mutation_without_partial_charge ... FAILED
+test child_creation_inherits_a_cousin_observed_family_time ... FAILED
+test descendant_read_usage_prevents_an_ancestor_boottime_rollback ... FAILED
+test descendant_cas_prevents_an_ancestor_cas_from_backdating ... FAILED
+test descendant_read_usage_prevents_sibling_cpu_from_being_charged_in_the_past ... FAILED
+test inconsistent_accounting_read_and_cas_do_not_advance_family_time ... ok
+test concurrent_descendant_and_ancestor_samples_preserve_family_clock_order ... FAILED
+test rejected_cas_and_exhausted_interval_do_not_advance_family_time ... ok
+test legacy_usage_clamps_to_the_latest_family_observation ... FAILED
+test successful_descendant_cas_and_charges_each_advance_the_family_floor ... FAILED
+test same_cap_cas_does_not_refund_shared_parent_consumption ... ok
+test period_rollover_cas_preserves_cumulative_parent_charge ... ok
+
+failures:
+
+---- descendant_sample_fences_every_stale_sibling_mutation_without_partial_charge stdout ----
+
+thread 'descendant_sample_fences_every_stale_sibling_mutation_without_partial_charge' (59) panicked at tests/control/resource_adversarial.rs:143:5:
+assertion `left == right` failed
+  left: Ok(UsageSnapshot { stable_object_id: StableObjectId(Id16(000000000000000000000000000ac1ea)), revision: 1, sample_boottime_ns: 100000009, cumulative_cpu_ns: 0, window_start_ns: 100000000, window_consumed_ns: 0, active_cap_ns: 10, active_period_ns: 100000000, event_sequence: 0, dropped_events: 0, user_paused: false })
+ right: Err(ClockRollback)
+
+---- child_creation_inherits_a_cousin_observed_family_time stdout ----
+
+thread 'child_creation_inherits_a_cousin_observed_family_time' (53) panicked at tests/control/resource_adversarial.rs:294:5:
+assertion `left == right` failed
+  left: Ok(UsageSnapshot { stable_object_id: StableObjectId(Id16(000000000000000000000000000ad573)), revision: 1, sample_boottime_ns: 100000009, cumulative_cpu_ns: 0, window_start_ns: 100000000, window_consumed_ns: 0, active_cap_ns: 10, active_period_ns: 100000000, event_sequence: 0, dropped_events: 0, user_paused: false })
+ right: Err(ClockRollback)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- descendant_read_usage_prevents_an_ancestor_boottime_rollback stdout ----
+
+thread 'descendant_read_usage_prevents_an_ancestor_boottime_rollback' (56) panicked at tests/control/resource_adversarial.rs:37:5:
+assertion `left == right` failed: one resource family cannot observe BOOTTIME moving backward after a leaf read
+  left: Ok(UsageSnapshot { stable_object_id: StableObjectId(Id16(000000000000000000000000000aae60)), revision: 1, sample_boottime_ns: 100000009, cumulative_cpu_ns: 0, window_start_ns: 100000000, window_consumed_ns: 0, active_cap_ns: 100000000, active_period_ns: 100000000, event_sequence: 0, dropped_events: 0, user_paused: false })
+ right: Err(ClockRollback)
+
+---- descendant_cas_prevents_an_ancestor_cas_from_backdating stdout ----
+
+thread 'descendant_cas_prevents_an_ancestor_cas_from_backdating' (55) panicked at tests/control/resource_adversarial.rs:59:5:
+assertion `left == right` failed: a later descendant budget receipt fences older ancestor receipts
+  left: Ok(BudgetReceipt { previous_revision: 1, revision: 2, effective_boottime_ns: 100000009, consumed_at_apply_ns: 0 })
+ right: Err(ClockRollback)
+
+---- descendant_read_usage_prevents_sibling_cpu_from_being_charged_in_the_past stdout ----
+
+thread 'descendant_read_usage_prevents_sibling_cpu_from_being_charged_in_the_past' (57) panicked at tests/control/resource_adversarial.rs:80:5:
+assertion `left == right` failed: N0 single-CPU accounting cannot insert execution before a completed family observation
+  left: Ok(())
+ right: Err(ClockRollback)
+
+---- concurrent_descendant_and_ancestor_samples_preserve_family_clock_order stdout ----
+
+thread 'concurrent_descendant_and_ancestor_samples_preserve_family_clock_order' (54) panicked at tests/control/resource_adversarial.rs:321:9:
+assertion `left == right` failed
+  left: Ok(UsageSnapshot { stable_object_id: StableObjectId(Id16(000000000000000000000000000ad958)), revision: 1, sample_boottime_ns: 100000009, cumulative_cpu_ns: 0, window_start_ns: 100000000, window_consumed_ns: 0, active_cap_ns: 10, active_period_ns: 100000000, event_sequence: 0, dropped_events: 0, user_paused: false })
+ right: Err(ClockRollback)
+
+---- legacy_usage_clamps_to_the_latest_family_observation stdout ----
+
+thread 'legacy_usage_clamps_to_the_latest_family_observation' (61) panicked at tests/control/resource_adversarial.rs:279:9:
+assertion `left == right` failed
+  left: 0
+ right: 100000010
+
+---- successful_descendant_cas_and_charges_each_advance_the_family_floor stdout ----
+
+thread 'successful_descendant_cas_and_charges_each_advance_the_family_floor' (65) panicked at tests/control/resource_adversarial.rs:197:9:
+assertion `left == right` failed
+  left: Ok(UsageSnapshot { stable_object_id: StableObjectId(Id16(000000000000000000000000000ac5d0)), revision: 1, sample_boottime_ns: 100000009, cumulative_cpu_ns: 0, window_start_ns: 100000000, window_consumed_ns: 0, active_cap_ns: 10, active_period_ns: 100000000, event_sequence: 0, dropped_events: 0, user_paused: false })
+ right: Err(ClockRollback)
+
+
+failures:
+    child_creation_inherits_a_cousin_observed_family_time
+    concurrent_descendant_and_ancestor_samples_preserve_family_clock_order
+    descendant_cas_prevents_an_ancestor_cas_from_backdating
+    descendant_read_usage_prevents_an_ancestor_boottime_rollback
+    descendant_read_usage_prevents_sibling_cpu_from_being_charged_in_the_past
+    descendant_sample_fences_every_stale_sibling_mutation_without_partial_charge
+    legacy_usage_clamps_to_the_latest_family_observation
+    successful_descendant_cas_and_charges_each_advance_the_family_floor
+
+test result: FAILED. 4 passed; 8 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s

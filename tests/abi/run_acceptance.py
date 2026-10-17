@@ -96,7 +96,7 @@ def run_command(argv: list[str], cwd: Path, env: dict[str, str], timeout: float)
     started = time.monotonic()
     result: dict[str, Any] = {
         "argv": argv, "cwd": str(cwd), "returncode": None,
-        "stdout": "", "stderr": "", "timed_out": False,
+        "stdout": "", "stderr": "", "timed_out": False, "timeout_seconds": timeout,
     }
     try:
         completed = subprocess.run(argv, cwd=cwd, env=env, capture_output=True,
@@ -112,6 +112,31 @@ def run_command(argv: list[str], cwd: Path, env: dict[str, str], timeout: float)
         result["error"] = str(error)
     result["elapsed_seconds"] = round(time.monotonic() - started, 6)
     result["passed"] = result["returncode"] == 0 and not result["timed_out"]
+    return result
+
+
+def run_compiled_mutations(python: str, cargo: str, toolchain: str, snapshot: Path,
+                           env: dict[str, str], command_timeout: float,
+                           batch_timeout: float, mutation_path: Path) -> dict[str, Any]:
+    """Bound the complete batch separately from each nested compiler command."""
+    result = run_command(
+        [python, "-B", "tests/abi/run_rust_mutations.py", "--cargo", cargo,
+         "--toolchain", toolchain, "--repo-root", str(snapshot),
+         "--output", str(mutation_path), "--timeout", str(command_timeout)],
+        snapshot, env, batch_timeout)
+    result.update(name="compiled_mutations", cargo_timeout_seconds=command_timeout)
+    if mutation_path.is_file():
+        mutation = json.loads(mutation_path.read_text())
+        result["mutation_report"] = str(mutation_path)
+        result["mutants_killed"] = mutation.get("mutants_killed")
+        result["expected_mutants"] = mutation.get("expected_mutants")
+        result["passed"] = (result["passed"] and mutation.get("success") is True
+                            and isinstance(mutation.get("expected_mutants"), int)
+                            and mutation["expected_mutants"] > 0
+                            and mutation.get("mutants_killed") == mutation["expected_mutants"])
+    else:
+        result["passed"] = False
+        result["error"] = "compiled mutation report was not produced"
     return result
 
 
@@ -178,11 +203,13 @@ def execute(args: argparse.Namespace, report: dict[str, Any], output: Path) -> N
         report["toolchain"] = toolchain
         report["toolchain_override"] = args.toolchain is not None
         env = os.environ.copy()
-        for name in ("RUSTC_WRAPPER", "RUSTC_WORKSPACE_WRAPPER", "RUSTFLAGS",
+        for name in ("CARGO_BUILD_RUSTC", "CARGO_BUILD_RUSTC_WRAPPER",
+                     "CARGO_BUILD_RUSTC_WORKSPACE_WRAPPER", "RUSTFLAGS",
                      "CARGO_ENCODED_RUSTFLAGS", "RUSTDOCFLAGS", "CARGO_BUILD_TARGET"):
             env.pop(name, None)
         env.update(RUSTUP_TOOLCHAIN=toolchain, CARGO_NET_OFFLINE="true",
                    CARGO_TERM_COLOR="never", PYTHONDONTWRITEBYTECODE="1",
+                   RUSTC_WRAPPER="", RUSTC_WORKSPACE_WRAPPER="",
                    CARGO_TARGET_DIR=str(output / "target"))
         rustup = shutil.which(args.rustup)
         if rustup is None:
@@ -203,6 +230,7 @@ def execute(args: argparse.Namespace, report: dict[str, Any], output: Path) -> N
                    PATH=str(Path(tool_paths["cargo"]).parent) + os.pathsep + env.get("PATH", ""))
         report["environment"] = {name: env.get(name) for name in (
             "RUSTUP_TOOLCHAIN", "RUSTUP_HOME", "CARGO_HOME", "RUSTC", "RUSTDOC",
+            "RUSTC_WRAPPER", "RUSTC_WORKSPACE_WRAPPER",
             "CARGO_TARGET_DIR", "CARGO_NET_OFFLINE", "PYTHONDONTWRITEBYTECODE", "PATH")}
         report["executables"] = {}
         for name, path in tool_paths.items():
@@ -267,21 +295,9 @@ def execute(args: argparse.Namespace, report: dict[str, Any], output: Path) -> N
         check("bare_no_std", [cargo, "check", "--offline", "--manifest-path", manifest,
                               "--no-default-features", "--target", "x86_64-unknown-none"])
         mutation_path = output / "mutations.json"
-        result = check("compiled_mutations", [python, "-B", "tests/abi/run_rust_mutations.py", "--cargo", cargo,
-                        "--toolchain", toolchain, "--repo-root", str(snapshot), "--output", str(mutation_path),
-                        "--timeout", str(args.timeout)])
-        if mutation_path.is_file():
-            mutation = json.loads(mutation_path.read_text())
-            result["mutation_report"] = str(mutation_path)
-            result["mutants_killed"] = mutation.get("mutants_killed")
-            result["expected_mutants"] = mutation.get("expected_mutants")
-            result["passed"] = (result["passed"] and mutation.get("success") is True
-                                and isinstance(mutation.get("expected_mutants"), int)
-                                and mutation["expected_mutants"] > 0
-                                and mutation.get("mutants_killed") == mutation["expected_mutants"])
-        else:
-            result["passed"] = False
-            result["error"] = "compiled mutation report was not produced"
+        report["checks"].append(run_compiled_mutations(
+            python, cargo, toolchain, snapshot, env, args.timeout,
+            args.mutation_timeout, mutation_path))
     finally:
         after = {name: digest(data) for name, data in selected_inputs(repo).items()}
         report["original_input_sha256_after"] = after
@@ -295,9 +311,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--toolchain", help="explicit override; default is upstream-lock kernel.toolchain")
     parser.add_argument("--output-dir", type=Path, required=True, help="new output directory, outside A02 input trees")
     parser.add_argument("--timeout", type=float, default=60, help="seconds per command, greater than 0 and at most 60")
+    parser.add_argument("--mutation-timeout", type=float, default=900,
+                        help="seconds for the complete compiled mutation batch (default: 900, maximum: 3600)")
     args = parser.parse_args(argv)
     if not 0 < args.timeout <= 60:
         parser.error("--timeout must be greater than 0 and at most 60 seconds")
+    if not args.timeout <= args.mutation_timeout <= 3600:
+        parser.error("--mutation-timeout must be at least --timeout and at most 3600 seconds")
     output = args.output_dir.resolve()
     repo = args.repo_root.resolve()
     if any(output == repo / relative or (repo / relative) in output.parents for relative in SOURCE_ROOTS):
@@ -310,7 +330,8 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     output = output.resolve()
     report: dict[str, Any] = {"schema": "hos2-a02-host-acceptance-v1", "scope": "host codec; no kernel validation",
-                              "success": False, "checks": [], "errors": [], "timeout_seconds": args.timeout}
+                              "success": False, "checks": [], "errors": [], "timeout_seconds": args.timeout,
+                              "mutation_timeout_seconds": args.mutation_timeout}
     try:
         execute(args, report, output)
     except (OSError, ValueError, KeyError, TypeError) as error:

@@ -5,13 +5,65 @@ import io
 import json
 import os
 from pathlib import Path
+import subprocess
+import sys
 import tempfile
 import unittest
+from unittest import mock
 
 import run_acceptance as acceptance
 
 
 class AcceptanceRunnerTests(unittest.TestCase):
+    def test_cold_mutation_batch_can_exceed_one_cargo_command_budget(self):
+        # A virtual 75-second batch consists of individually bounded commands.
+        # Mock the process boundary to exercise the timeout without sleeping.
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            evidence = root / "mutations.json"
+
+            def cold_batch(argv, *, timeout, **kwargs):
+                if timeout < 75:
+                    raise subprocess.TimeoutExpired(argv, timeout)
+                self.assertEqual(argv[-2:], ["--timeout", "60"])
+                evidence.write_text(json.dumps({"success": True, "expected_mutants": 12,
+                                                "mutants_killed": 12}))
+                return subprocess.CompletedProcess(argv, 0, "complete batch", "")
+
+            with mock.patch.object(acceptance.subprocess, "run", side_effect=cold_batch):
+                old_budget = acceptance.run_command(["batch"], root, {}, 60)
+                result = acceptance.run_compiled_mutations(
+                    sys.executable, "cargo", "nightly-2026-07-21", root, {}, 60, 900, evidence)
+            self.assertTrue(old_budget["timed_out"])
+            self.assertFalse(old_budget["passed"])
+            self.assertTrue(result["passed"])
+            self.assertEqual(result["timeout_seconds"], 900)
+            self.assertEqual(result["cargo_timeout_seconds"], 60)
+            self.assertEqual(result["mutants_killed"], 12)
+
+    def test_mutation_batch_timeout_cannot_pass_with_a_success_report(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            evidence = root / "mutations.json"
+            evidence.write_text(json.dumps({"success": True, "expected_mutants": 12,
+                                            "mutants_killed": 12}))
+            with mock.patch.object(acceptance.subprocess, "run",
+                                   side_effect=subprocess.TimeoutExpired("batch", 900)):
+                result = acceptance.run_compiled_mutations(
+                    sys.executable, "cargo", "nightly-2026-07-21", root, {}, 60, 900, evidence)
+            self.assertTrue(result["timed_out"])
+            self.assertFalse(result["passed"])
+
+    def test_mutation_batch_budget_is_finite_and_at_least_one_command(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "evidence"
+            for invalid in ("59", "3601", "nan", "inf", "0", "-1"):
+                with self.subTest(timeout=invalid), contextlib.redirect_stderr(io.StringIO()):
+                    with self.assertRaises(SystemExit) as raised:
+                        acceptance.main(["--output-dir", str(output), "--mutation-timeout", invalid])
+                    self.assertEqual(raised.exception.code, 2)
+                self.assertFalse(output.exists())
+
     def test_python_denominator_rejects_skips_and_missing_discovered_tests(self):
         output = "test_a (sample.Case.test_a) ... ok\n\nRan 1 test in 0.001s\n\nOK\n"
         self.assertTrue(acceptance.python_outcome(output, ["sample.Case.test_a"])["complete"])

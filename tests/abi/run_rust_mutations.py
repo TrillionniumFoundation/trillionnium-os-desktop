@@ -302,6 +302,15 @@ def run_command(
 def suite_environment(base_env: dict[str, str], cwd: Path) -> dict[str, str]:
     """Keep one frozen toolchain selection for identity probes and Cargo runs."""
     env = base_env.copy()
+    # Cargo's build.rustc and compiler wrappers can otherwise select a different
+    # compiler from the one probed directly below. An empty wrapper overrides
+    # Cargo configuration too; removing only the ambient variable is insufficient.
+    for name in ("CARGO_BUILD_RUSTC", "CARGO_BUILD_RUSTC_WRAPPER",
+                 "CARGO_BUILD_RUSTC_WORKSPACE_WRAPPER"):
+        env.pop(name, None)
+    env["RUSTC"] = env.get("RUSTC") or "rustc"
+    env["RUSTC_WRAPPER"] = ""
+    env["RUSTC_WORKSPACE_WRAPPER"] = ""
     env["CARGO_TARGET_DIR"] = str(cwd / "target")
     env["CARGO_TERM_COLOR"] = "never"
     env["CARGO_NET_OFFLINE"] = "true"
@@ -339,6 +348,8 @@ def toolchain_identity(
         "effective_environment": {
             "RUSTUP_TOOLCHAIN": env.get("RUSTUP_TOOLCHAIN"),
             "RUSTC": env.get("RUSTC"),
+            "RUSTC_WRAPPER": env.get("RUSTC_WRAPPER"),
+            "RUSTC_WORKSPACE_WRAPPER": env.get("RUSTC_WORKSPACE_WRAPPER"),
         },
         "selection": "RUSTUP_TOOLCHAIN" if env.get("RUSTUP_TOOLCHAIN") else "rustup-default",
         "cargo_executable": cargo,
@@ -349,12 +360,17 @@ def toolchain_identity(
         "rustc": rustc_probe,
         "valid": False,
     }
-    identity["valid"] = all(
-        probe["returncode"] == 0
-        and not probe["timed_out"]
-        and bool(probe["stdout"].strip())
-        for probe in (cargo_probe, rustc_probe)
-    ) and bool(identity["cargo_path"] and identity["rustc_path"])
+    identity["valid"] = (
+        all(
+            probe["returncode"] == 0
+            and not probe["timed_out"]
+            and bool(probe["stdout"].strip())
+            for probe in (cargo_probe, rustc_probe)
+        )
+        and bool(identity["cargo_path"] and identity["rustc_path"] and env.get("RUSTC"))
+        and env.get("RUSTC_WRAPPER") == ""
+        and env.get("RUSTC_WORKSPACE_WRAPPER") == ""
+    )
     return identity
 
 

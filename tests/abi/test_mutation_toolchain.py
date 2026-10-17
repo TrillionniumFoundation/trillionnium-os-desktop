@@ -1,6 +1,6 @@
 """Fast subprocess-boundary checks for mutation toolchain evidence.
 
-No Cargo or Rust compiler is executed. The production runner still constructs
+No real Cargo or Rust compiler is executed. The production runner still constructs
 its environments, probes identities, parses test output and decides whether
 the baseline/mutation evidence is usable.
 """
@@ -47,6 +47,12 @@ class MutationToolchainTests(unittest.TestCase):
             self.assertEqual(env.get("RUSTUP_TOOLCHAIN"),
                              "nightly-2026-07-21" if selected else None)
             self.assertEqual(env["RUSTC"], sys.executable)
+            self.assertEqual(env["RUSTC_WRAPPER"], "")
+            self.assertEqual(env["RUSTC_WORKSPACE_WRAPPER"], "")
+            self.assertFalse(any(name in env for name in (
+                "CARGO_BUILD_RUSTC", "CARGO_BUILD_RUSTC_WRAPPER",
+                "CARGO_BUILD_RUSTC_WORKSPACE_WRAPPER",
+            )))
             self.assertEqual(env["CARGO_TARGET_DIR"], str(cwd / "target"))
             self.assertEqual(env["CARGO_TERM_COLOR"], "never")
             self.assertEqual(env["CARGO_NET_OFFLINE"], "true")
@@ -128,7 +134,8 @@ class MutationToolchainTests(unittest.TestCase):
         self.assertTrue(mutations.baseline_passed(result))
         self.assertTrue(result["toolchain_matches_reference"])
         self.assertEqual(result["test_toolchain_identity"]["effective_environment"],
-                         {"RUSTUP_TOOLCHAIN": "nightly-2026-07-21", "RUSTC": sys.executable})
+                         {"RUSTUP_TOOLCHAIN": "nightly-2026-07-21", "RUSTC": sys.executable,
+                          "RUSTC_WRAPPER": "", "RUSTC_WORKSPACE_WRAPPER": ""})
         self.assertEqual(len(self.calls), 8)
         suite_cwd = self.root / "suite/libs/os-abi"
         self.assertTrue(all(cwd == suite_cwd for _, _, cwd in self.calls[2:]))
@@ -179,6 +186,100 @@ class MutationToolchainTests(unittest.TestCase):
         self.assertFalse(mutations.same_toolchain(reference, reference))
         self.assertIsNone(report["baseline"])
         self.assertEqual(len(self.calls), 2)
+
+    def test_successful_probes_with_unisolated_compiler_environment_are_invalid(self):
+        probe = {"returncode": 0, "timed_out": False, "stdout": "pinned"}
+        for key, value in (("RUSTC", None), ("RUSTC_WRAPPER", None),
+                           ("RUSTC_WRAPPER", "/untrusted/wrapper"),
+                           ("RUSTC_WORKSPACE_WRAPPER", None),
+                           ("RUSTC_WORKSPACE_WRAPPER", "/untrusted/workspace-wrapper")):
+            with self.subTest(key=key, value=value):
+                env = mutations.suite_environment(self.env, self.root)
+                if value is None:
+                    env.pop(key)
+                else:
+                    env[key] = value
+                with patch.object(mutations, "run_command", return_value=probe):
+                    identity = mutations.toolchain_identity(self.cargo, self.root, 1, env)
+                self.assertFalse(identity["valid"])
+                self.assertFalse(mutations.same_toolchain(identity, identity))
+
+    def isolated_fake_cargo_suite(self, explicit_rustc):
+        """Exercise real subprocesses with a Cargo environment precedence fixture.
+
+        No Rust code is compiled. A trap executable records any wrapper or
+        alternate compiler invocation, including a configured wrapper exposed
+        by deleting rather than explicitly clearing the canonical variable.
+        """
+        tools = self.root / "tools"
+        tools.mkdir()
+        trap_marker = self.root / "unexpected-wrapper-or-compiler"
+        compiler_marker = self.root / "selected-compiler"
+
+        def executable(name, body):
+            path = tools / name
+            path.write_text(f"#!{sys.executable}\n" + body, encoding="utf-8")
+            path.chmod(0o755)
+            return str(path)
+
+        trap = executable("trap", (
+            "from pathlib import Path\n"
+            f"Path({str(trap_marker)!r}).write_text('intercepted')\n"
+            "raise SystemExit(44)\n"
+        ))
+        rustc = executable("rustc", (
+            "from pathlib import Path\n"
+            f"with Path({str(compiler_marker)!r}).open('a') as output:\n"
+            "    output.write('selected\\n')\n"
+            "print('rustc pinned\\nrelease: 1.99.0-nightly')\n"
+        ))
+        cargo = executable("cargo", (
+            "import os, subprocess, sys\n"
+            "if sys.argv[1:] == ['--version']:\n"
+            "    print('cargo pinned')\n"
+            "    raise SystemExit(0)\n"
+            "for name in ('RUSTC_WRAPPER', 'RUSTC_WORKSPACE_WRAPPER'):\n"
+            f"    wrapper = os.environ.get(name, os.environ.get('CARGO_BUILD_' + name, {trap!r}))\n"
+            "    if wrapper:\n"
+            "        subprocess.run([wrapper], check=True)\n"
+            "compiler = os.environ.get('RUSTC') or os.environ.get('CARGO_BUILD_RUSTC') or 'rustc'\n"
+            "subprocess.run([compiler, '-vV'], check=True, capture_output=True, text=True)\n"
+            "if '--no-run' not in sys.argv:\n"
+            f"    print({self.passing_output!r}, end='')\n"
+        ))
+        env = self.env.copy()
+        env.update(PATH=str(tools) + os.pathsep + env.get("PATH", os.defpath),
+                   RUSTC_WRAPPER=trap, RUSTC_WORKSPACE_WRAPPER=trap,
+                   CARGO_BUILD_RUSTC=trap, CARGO_BUILD_RUSTC_WRAPPER=trap,
+                   CARGO_BUILD_RUSTC_WORKSPACE_WRAPPER=trap)
+        if explicit_rustc:
+            env["RUSTC"] = rustc
+        else:
+            env.pop("RUSTC", None)
+        reference_cwd = self.root / "reference"
+        reference_cwd.mkdir()
+        reference = mutations.toolchain_identity(
+            cargo, reference_cwd, 3, mutations.suite_environment(env, reference_cwd)
+        )
+        result = mutations.run_suite(
+            self.root / "suite", {"src/lib.rs": b""}, {}, "// source",
+            cargo, 3, "mutation_kill", env, reference,
+        )
+        self.assertTrue(reference["valid"])
+        self.assertTrue(mutations.baseline_passed(result), result)
+        self.assertFalse(trap_marker.exists(), "an ambient wrapper/compiler executed")
+        self.assertEqual(compiler_marker.read_text().splitlines(), ["selected"] * 5)
+        self.assertEqual(result["toolchain_identity"]["rustc_path"], rustc)
+        effective = result["toolchain_identity"]["effective_environment"]
+        self.assertEqual(effective["RUSTC"], rustc if explicit_rustc else "rustc")
+        self.assertEqual(effective["RUSTC_WRAPPER"], "")
+        self.assertEqual(effective["RUSTC_WORKSPACE_WRAPPER"], "")
+
+    def test_inherited_and_configured_wrappers_cannot_intercept_explicit_compiler(self):
+        self.isolated_fake_cargo_suite(explicit_rustc=True)
+
+    def test_cargo_build_rustc_cannot_bypass_default_compiler_probe(self):
+        self.isolated_fake_cargo_suite(explicit_rustc=False)
 
 
 if __name__ == "__main__":
