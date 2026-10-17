@@ -20,6 +20,7 @@ import sys
 import time
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from compile_guard import compile_guest_probe
 from pinned_memfd import sealed_input
 from serial_limit import limit_serial_file
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "organ_backend"))
@@ -161,10 +162,10 @@ def main(argv=None):
     guest_elf = output / "hos2-queryabi"
     compiler = [args.cc, "-std=c11", "-O2", "-Wall", "-Wextra",
                 "-Werror", "-static", str(guest_source), "-o", str(guest_elf)]
-    compile_run = subprocess.run(compiler, capture_output=True, text=True, timeout=60)
-    (output / "compile.log").write_text(compile_run.stdout + compile_run.stderr, encoding="utf-8")
-    require(compile_run.returncode == 0, "static guest C compilation failed")
-    compiled = guest_elf.read_bytes()
+    # Keep compiler stdout/stderr outside Python RAM, bound all child file
+    # writes and inspect the produced ELF only through one no-follow FD.
+    # This host-only check does not attest a real guest boot.
+    compiled = compile_guest_probe(compiler, guest_elf, output / "compile.log", timeout=60)
     initrd = build_guest_initramfs(original, compiled)
     (output / "initramfs.cpio.gz").write_bytes(initrd)
     # Open sealed anonymous snapshots of the already SHA256-validated bytes.
