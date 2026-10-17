@@ -14,9 +14,14 @@ import time
 
 
 def available():
+    # WNOWAIT can only pin the worker's PID if this process actually owns
+    # child reaping. SIG_IGN auto-reaps children; custom SIGCHLD handlers may
+    # consume wait status independently, allowing numeric PID/PGID reuse.
+    # Reject before spawning rather than attempt a hazardous killpg later.
     return (sys.platform.startswith('linux') and hasattr(os, 'killpg')
             and hasattr(os, 'waitid') and hasattr(os, 'WNOWAIT')
-            and os.path.isdir('/proc'))
+            and os.path.isdir('/proc')
+            and signal.getsignal(signal.SIGCHLD) == signal.SIG_DFL)
 
 
 def _wait_unreaped(process, timeout):
