@@ -40,7 +40,10 @@
     "reference_sha256": "5bf61d6bb17edb58d70dd37589eeab5a02f5cc5d0c5aae5d142b06678416d847",
     "compare": "all_256_exact",
     "gpu_execution_required": true,
-    "reset_fault_injection_enabled": false
+    "reset_fault_injection_enabled": false,
+    "bdf_must_be_observed_before_gpu_device_access": true,
+    "exact_device_name_required": true,
+    "guest_worker_provenance_required": true
   },
   "gates": {
     "linux_host_baseline": false,
@@ -58,5 +61,30 @@
     "bios_modify": false,
     "prod_reset": false,
     "ollama": false
+  },
+  "synced_main": "40ca002fac0726b366726d3353916637b29adeae",
+  "latest_readonly_observation": "tests/hardware/evidence/2026-10-17-sandbox-readonly-pci-034743z.json",
+  "hardware_blocker_issue": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/issues/96",
+  "device_identity_gate": {
+    "lab_gpu_model_exact": "NVIDIA GeForce RTX 4060",
+    "rejects_variant_models": [
+      "RTX 4060 Ti",
+      "RTX 4060 Laptop GPU",
+      "RTX 4070"
+    ],
+    "pci_bdf_is_explicit_and_required": true,
+    "normalized_pci_domain_hex_widths": [
+      4,
+      8
+    ],
+    "pci_slot_max": 31,
+    "vendor_cuda_compute_capability": "8.9",
+    "supervised_child_schema": "a09.cuda-gemm.v2",
+    "guest_linux_kernel_process_provenance_required": true,
+    "worker_pid_equals_compute_process_pid": true,
+    "worker_exit_reaped_without_group_escape_required": true,
+    "all_gemm_and_cleanup_stages_pass_required": true,
+    "hardware_verified_by_self_report": false,
+    "consistent_unsigned_evidence_status": "independent_hardware_review_required"
   }
 }
