@@ -103,6 +103,28 @@ held Session. It keeps the raw bounded JSON frame before and after an actual
 original process/spawn identity, lifecycle generation, current freshness or
 exact stale retention, and the same Shell PID/window throughout.
 
+The original runtime keeps progressing inside a held lifecycle. In Starting,
+the asynchronous app-server probe can change `promotion_ready` from false to
+true and append `app_server_ready` without changing the process, lifecycle or
+generation. The first R6 capture preserved a real Starting PNG and then failed
+because its original oracle compared the entire health object for equality.
+Its raw before/after frames showed exactly this legitimate progression; that
+failed attempt remains separate from a successful six-phase result.
+
+The live oracle therefore fixes AgentId, process ID, spawn/current generation,
+lifecycle and `ready`, with `fenced` strictly false, while allowing only Starting's monotonic
+false-to-true promotion readiness. A ready Running sample must have promotion
+readiness true; Draining must have it false. The original client reads Health,
+Capabilities, Events, then Health again. Its final Health can already show
+promotion readiness while the preceding Events page has not caught up. The
+sample time and event cursors must not regress; the bounded event window must
+retain its exact prefix. Capability/truncation metadata remains fixed, source
+changes and history gaps are false, and actual Session tasks remain empty.
+The after-image read is checked against both the held phase and the actual
+before-image observation, so a newer intermediate sample cannot be silently
+rolled back to the older held record. Stale observations still require full
+exact equality, including every health field, timestamp and event.
+
 The existing `TRILL_HEPTA_LAYOUT_V1` stdout line is one-shot and covers the
 first observed runtime layout only. It is not reused as proof of six phase
 updates. Later frames use the Shell's ordinary 800 ms snapshot polling and
@@ -140,7 +162,11 @@ python3 -B -m unittest discover -s tests/ui \
   -p test_original_hepta_shell.py -v
 ```
 
-These reject substituted identities, incorrect lifecycle/freshness,
+These accept the real Starting readiness/event progression and conservatively
+tolerate independently sampled field combinations. The two synthetic
+intermediate combinations do not claim two observed original-runtime orders.
+The checks reject regression from the actual before
+sample, substituted identities, incorrect lifecycle/freshness,
 replacement outside phase 5, mutated stale data, public/symlink/oversized
 phase files and acknowledgment overwrite. Their success is a harness result
 and cannot substitute for the actual original-owner run or six PNG reviews.

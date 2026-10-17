@@ -28,9 +28,13 @@ def phase_record(sequence=1, instance="first-session", pid=41):
         "agent_id": "11111111-1111-4111-8111-111111111111", "spawn_generation": spawn,
         "current_generation": spawn + {"starting": 0, "running": 1, "draining": 2}[lifecycle],
         "health": {"process_id": 42 if sequence < 5 else 43, "lifecycle": lifecycle,
-            "ready": lifecycle == "running", "promotion_ready": False, "fenced": False},
-        "events": [], "capabilities": []}
-    snapshot = {"type": "snapshot", "session_instance": instance,
+            "ready": lifecycle == "running", "promotion_ready": lifecycle == "running", "fenced": False},
+        "events": [{"cursor": 1, "kind": "bootstrapped", "generation": None, "lifecycle": None},
+            {"cursor": 2, "kind": "lifecycle", "generation": spawn,
+                "lifecycle": lifecycle}],
+        "capabilities": [], "capabilities_truncated": False, "events_omitted_from_view": 0,
+        "next_cursor": 2, "latest_cursor": 2, "history_gap": False, "source_changed": False}
+    snapshot = {"type": "snapshot", "tasks": [], "session_instance": instance,
         "hepta": {"connection": "stale" if stale else "observed",
             "error_code": "generation_mismatch" if stale else None,
             "last_observation": observation}}
@@ -49,6 +53,7 @@ class CaptureContract(unittest.TestCase):
                        lambda v: v.update(sequence=2),
                        lambda v: v.update(session_pid=0),
                        lambda v: v["snapshot"].update(session_instance="different"),
+                       lambda v: v["snapshot"]["hepta"]["last_observation"]["health"].update(fenced=True),
                        lambda v: v.update(session_socket_path="/tmp/untrusted.sock"),
                        lambda v: v["ack"].update(phase="running")):
             value = copy.deepcopy(expected)
@@ -69,6 +74,72 @@ class CaptureContract(unittest.TestCase):
             with self.assertRaises(RuntimeError):
                 capture.compare_snapshot(value, phase, 10_005)
 
+    def test_starting_accepts_async_readiness_and_tolerates_independent_rpc_combinations(self):
+        # Same transition as the retained real capture01: Starting health gains
+        # promotion_ready and the event window appends app_server_ready. These
+        # contract values are synthetic; the failed real PNG is separate proof.
+        phase = phase_record()
+        baseline = phase["snapshot"]["hepta"]
+        after = copy.deepcopy(phase["snapshot"])
+        observed = after["hepta"]["last_observation"]
+        observed["sampled_unix_ms"] = 10_003
+        observed["health"]["promotion_ready"] = True
+        ready_event = {"cursor": 3, "kind": "app_server_ready", "generation": None, "lifecycle": None}
+        observed["events"].append(ready_event)
+        observed.update(next_cursor=3, latest_cursor=3)
+        capture.compare_snapshot(after, phase, 10_005, baseline)
+        # These synthetic combinations test conservative independent-field
+        # acceptance; they do not claim that both orders occurred in the real
+        # capture. Its final Health can be ahead of the preceding Events page.
+        for health_first in (True, False):
+            intermediate = copy.deepcopy(phase["snapshot"])
+            previous = intermediate["hepta"]["last_observation"]
+            previous["sampled_unix_ms"] = 10_001
+            if health_first:
+                previous["health"]["promotion_ready"] = True
+            else:
+                previous["events"].append(ready_event)
+                previous.update(next_cursor=3, latest_cursor=3)
+            capture.compare_snapshot(intermediate, phase, 10_005, baseline)
+            capture.compare_snapshot(after, phase, 10_005, intermediate["hepta"])
+
+    def test_live_progress_cannot_rewrite_source_history_or_regress_after_actual_before(self):
+        phase = phase_record()
+        before = copy.deepcopy(phase["snapshot"])
+        old = before["hepta"]["last_observation"]
+        old["sampled_unix_ms"] = 10_002
+        old["health"]["promotion_ready"] = True
+        old["events"].append({"cursor": 3, "kind": "app_server_ready", "generation": None, "lifecycle": None})
+        old.update(next_cursor=3, latest_cursor=3)
+        capture.compare_snapshot(before, phase, 10_005)
+        # Each mutation could otherwise hide behind the older held phase.
+        for mutation in (
+                lambda v: v["health"].update(promotion_ready=False),
+                lambda v: v.update(sampled_unix_ms=10_001),
+                lambda v: v.update(next_cursor=2),
+                lambda v: v.update(latest_cursor=2),
+                lambda v: v["events"][2].update(kind="rewritten"),
+                lambda v: v["events"].pop(),
+                lambda v: v["health"].update(process_id=99),
+                lambda v: v["health"].update(fenced=True),
+                lambda v: v["health"].update(promotion_ready=1),
+                lambda v: v.update(agent_id="22222222-2222-4222-8222-222222222222"),
+                lambda v: v.update(history_gap=True),
+                lambda v: v.update(source_changed=True)):
+            after = copy.deepcopy(before)
+            mutation(after["hepta"]["last_observation"])
+            with self.assertRaises(RuntimeError):
+                capture.compare_snapshot(after, phase, 10_005, before["hepta"])
+        for sequence, promotion in ((2, False), (3, True)):
+            invalid = phase_record(sequence)
+            invalid["snapshot"]["hepta"]["last_observation"]["health"]["promotion_ready"] = promotion
+            with self.assertRaises(RuntimeError):
+                capture.validate_phase(invalid, sequence)
+        invalid = copy.deepcopy(phase["snapshot"])
+        invalid["tasks"] = [{"unexpected": "host application"}]
+        with self.assertRaises(RuntimeError):
+            capture.compare_snapshot(invalid, phase, 10_005)
+
     def test_stale_retains_exact_old_observation_and_only_phase_five_replaces_session(self):
         previous = phase_record(3)
         stale = phase_record(4)
@@ -86,7 +157,7 @@ class CaptureContract(unittest.TestCase):
             capture.validate_phase(phase_record(4, "unexpected-replacement", 51), 4, previous=previous)
         stopped = phase_record(6, "replacement-session", 51)
         observed = stopped["snapshot"]["hepta"]["last_observation"]
-        observed["health"].update(lifecycle="draining", ready=False)
+        observed["health"].update(lifecycle="draining", ready=False, promotion_ready=False)
         observed["current_generation"] = observed["spawn_generation"] + 2
         capture.validate_phase(stopped, 6, previous=replacement)
         capture.compare_snapshot(stopped["snapshot"], stopped, 30_000)

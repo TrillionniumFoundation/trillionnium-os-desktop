@@ -89,6 +89,7 @@ def positive_integer(value):
 
 def phase_projection(value, phase):
     require(value.get("type") == "snapshot", "actual Session snapshot required")
+    require(value.get("tasks") == [], "capture must not launch or inherit host applications")
     projection = value["hepta"]
     stale = phase in ("old_spawn_stale", "stopped_stale")
     require(projection["connection"] == ("stale" if stale else "observed"),
@@ -110,13 +111,21 @@ def phase_projection(value, phase):
     }[phase]
     lifecycle = health["lifecycle"]
     require(lifecycle in lifecycles, "wrong retained/observed lifecycle")
-    require(type(health["ready"]) is bool and health["ready"] == (lifecycle == "running"),
+    require(all(type(health[key]) is bool for key in ("ready", "promotion_ready", "fenced")),
+        "runtime health flags must be exact booleans")
+    require(health["fenced"] is False, "held original lifecycle must remain unfenced")
+    require(health["ready"] == (lifecycle == "running"),
         "runtime readiness does not match lifecycle")
+    if lifecycle in ("running", "draining"):
+        require(health["promotion_ready"] == (lifecycle == "running"),
+            "runtime promotion readiness does not match lifecycle")
     offset = {"starting": 0, "running": 1, "draining": 2}[lifecycle]
     require(observed["current_generation"] == observed["spawn_generation"] + offset,
         "wrong original lifecycle generation")
     require(len(observed["events"]) <= 16 and len(observed["capabilities"]) <= 16,
         "Session projection exceeded its bounded display window")
+    require(observed["source_changed"] is False and observed["history_gap"] is False,
+        "bounded phase cannot qualify a changed source or incomplete event history")
     require(projection.get("error_code") if stale else projection.get("error_code") is None,
         "wrong diagnostic state")
     return projection, observed
@@ -160,24 +169,60 @@ def validate_phase(value, sequence, runtime=None, previous=None):
     return current_runtime
 
 
-def compare_snapshot(actual, phase, sampled_at_ms):
+def live_progress(observed, previous, phase):
+    for key in ("agent_id", "spawn_generation", "current_generation", "capabilities",
+            "capabilities_truncated", "events_omitted_from_view", "source_changed", "history_gap"):
+        require(observed[key] == previous[key], "live runtime metadata changed: " + key)
+    for key in ("process_id", "lifecycle", "ready", "fenced"):
+        require(observed["health"][key] == previous["health"][key],
+            "live runtime health changed: " + key)
+    old_promotion = previous["health"]["promotion_ready"]
+    promotion = observed["health"]["promotion_ready"]
+    require(promotion == old_promotion
+        or (phase == "starting" and old_promotion is False and promotion is True),
+        "live runtime promotion readiness regressed or changed outside Starting")
+    # Health and Events are separate original RPCs. Do not require readiness
+    # and app_server_ready to appear in the same observation. Within this
+    # bounded phase, the retained event prefix and cursor progress stay exact.
+    require(observed["sampled_unix_ms"] >= previous["sampled_unix_ms"],
+        "live Session observation went backwards")
+    for key in ("next_cursor", "latest_cursor"):
+        require(type(observed[key]) is int and observed[key] >= previous[key],
+            "live event cursor regressed: " + key)
+    require(observed["next_cursor"] <= observed["latest_cursor"], "event cursor exceeds latest")
+    events, prior_events = observed["events"], previous["events"]
+    require(events[:len(prior_events)] == prior_events, "live event history replaced its held prefix")
+    cursors = [event["cursor"] for event in events]
+    require(all(positive_integer(cursor) for cursor in cursors)
+        and all(left < right for left, right in zip(cursors, cursors[1:])),
+        "event metadata cursor order is invalid")
+    require(observed["next_cursor"] == (cursors[-1] if cursors else 0),
+        "next cursor does not match the complete bounded event window")
+    require(all(event["cursor"] > previous["next_cursor"] for event in events[len(prior_events):]),
+        "new event metadata reused a consumed cursor")
+
+
+def compare_snapshot(actual, phase, sampled_at_ms, prior_projection=None):
     require(actual["session_instance"] == phase["session_instance"],
         "live Session instance differs from held phase")
     projection, observed = phase_projection(actual, phase["phase"])
     _, expected = phase_projection(phase["snapshot"], phase["phase"])
-    for key in ("agent_id", "spawn_generation", "current_generation", "health"):
-        require(observed[key] == expected[key], "live runtime metadata changed: " + key)
-    require(observed["sampled_unix_ms"] >= expected["sampled_unix_ms"],
-        "live Session observation went backwards")
     require(observed["sampled_unix_ms"] <= sampled_at_ms, "future observation timestamp")
     if projection["connection"] == "observed":
+        live_progress(observed, expected, phase["phase"])
+        if prior_projection is not None:
+            require(prior_projection["connection"] == "observed", "prior capture snapshot was not live")
+            live_progress(observed, prior_projection["last_observation"], phase["phase"])
         require(sampled_at_ms - observed["sampled_unix_ms"] <= 7000,
             "live observed projection expired")
     else:
         require(observed == expected, "stale Session replaced its retained successful observation")
+        if prior_projection is not None:
+            require(observed == prior_projection["last_observation"],
+                "stale Session changed its observation across capture")
 
 
-def actual_snapshot(phase, output, label):
+def actual_snapshot(phase, output, label, prior_projection=None):
     address = Path(phase["session_socket_path"])
     metadata = address.lstat()
     require(stat.S_ISSOCK(metadata.st_mode) and metadata.st_uid == os.geteuid()
@@ -197,7 +242,7 @@ def actual_snapshot(phase, output, label):
     destination = output / (label + ".snapshot.json")
     destination.write_bytes(raw)
     actual = json.loads(raw)
-    compare_snapshot(actual, phase, ended)
+    compare_snapshot(actual, phase, ended, prior_projection)
     return {"file": destination.name, "bytes": len(raw), "sha256": digest(destination),
         "started_unix_ms": started, "finished_unix_ms": ended,
         "peer_pid": pid, "peer_uid": uid, "peer_gid": gid,
@@ -411,7 +456,7 @@ def inside(args):
             item["capture_started_unix_ms"] = now_ms()
             item["screenshot"] = display.screenshot(output / (label + ".png"))
             item["capture_finished_unix_ms"] = now_ms()
-            item["after"] = actual_snapshot(phase, output, label + "-after")
+            item["after"] = actual_snapshot(phase, output, label + "-after", item["before"]["hepta"])
             require(alive(server) and alive(shell), "Shell exited before phase acknowledgment")
             item["capture_complete"] = True
             item["visual_review_required"] = True
