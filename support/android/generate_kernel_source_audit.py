@@ -23,6 +23,8 @@ from typing import Any
 PIN = "c4b7ed575b7b32773475b194d2ad41fb6d03765b"
 TAG = "v0.19.0"
 CORE = "kernel/asterinas/kernel/core/src"
+LOCK_PATH = "support/upstream-lock.json"
+EXPECTED_LOCK = {"tag": TAG, "commit": PIN, "reuse": "full_kernel_derived"}
 REQUIRED = (
     "kernel/asterinas/kernel/core/src/syscall/mod.rs",
     "kernel/asterinas/kernel/core/src/syscall/prctl.rs",
@@ -60,10 +62,10 @@ def git(repo: Path, *args: str) -> str:
 
 
 def committed_sources(root: Path, commit: str) -> dict[str, GitSource]:
-    """Read the exact regular Rust blobs selected by one immutable commit."""
+    """Read regular Rust sources and the upstream lock from one commit."""
     listing = subprocess.check_output(
         ["git", "--no-replace-objects", "-C", str(root),
-         "ls-tree", "-r", "-z", commit, "--", CORE]
+         "ls-tree", "-r", "-z", commit, "--", CORE, LOCK_PATH]
     )
     entries = []
     for entry in listing.split(b"\0"):
@@ -72,10 +74,10 @@ def committed_sources(root: Path, commit: str) -> dict[str, GitSource]:
         metadata, raw_path = entry.split(b"\t", 1)
         mode, kind, blob = metadata.decode("ascii").split()
         relative = raw_path.decode("utf-8")
-        if not relative.endswith(".rs"):
+        if relative != LOCK_PATH and not (relative.startswith(CORE + "/") and relative.endswith(".rs")):
             continue
         if kind != "blob" or mode not in ("100644", "100755"):
-            raise ValueError(f"committed Rust source is not a regular file: {relative}")
+            raise ValueError(f"committed source input is not a regular file: {relative}")
         entries.append((relative, mode, blob))
     if not entries:
         return {}
@@ -101,6 +103,15 @@ def committed_sources(root: Path, commit: str) -> dict[str, GitSource]:
     return sources
 
 
+def source_metadata(source: GitSource) -> dict[str, Any]:
+    return {
+        "git_blob": source.blob,
+        "git_mode": source.mode,
+        "sha256": hashlib.sha256(source.data).hexdigest(),
+        "bytes": len(source.data),
+    }
+
+
 def source_snapshot(sources: dict[str, GitSource]) -> tuple[dict[str, Any], list[str]]:
     files: dict[str, Any] = {}
     missing: list[str] = []
@@ -109,17 +120,38 @@ def source_snapshot(sources: dict[str, GitSource]) -> tuple[dict[str, Any], list
         if source is None:
             missing.append(rel)
             continue
-        files[rel] = {
-            "git_blob": source.blob,
-            "git_mode": source.mode,
-            "sha256": hashlib.sha256(source.data).hexdigest(),
-            "bytes": len(source.data),
-        }
+        files[rel] = source_metadata(source)
+    if LOCK_PATH in sources:
+        files[LOCK_PATH] = source_metadata(sources[LOCK_PATH])
     return files, missing
 
 
+def verify_upstream_lock(source: GitSource | None) -> dict[str, Any]:
+    result = {
+        "source_path": LOCK_PATH,
+        "expected": dict(EXPECTED_LOCK),
+        "actual": None,
+        "status": "missing",
+    }
+    if source is None:
+        return result
+    try:
+        document = json.loads(source.data.decode("utf-8"))
+        if not isinstance(document, dict) or not isinstance(document.get("kernel"), dict):
+            raise ValueError("upstream lock must contain an object at kernel")
+        actual = document["kernel"]
+    except (UnicodeDecodeError, ValueError) as exc:
+        result.update(status="invalid", error=str(exc))
+        return result
+    result["actual"] = actual
+    result["status"] = "matched" if all(actual.get(key) == value for key, value in EXPECTED_LOCK.items()) else "mismatch"
+    return result
+
+
 def scan_source(sources: dict[str, GitSource]) -> dict[str, Any]:
-    text = {relative: source.data.decode("utf-8") for relative, source in sources.items()}
+    rust_sources = {relative: source for relative, source in sources.items()
+                    if relative.startswith(CORE + "/") and relative.endswith(".rs")}
+    text = {relative: source.data.decode("utf-8") for relative, source in rust_sources.items()}
 
     def matching(pattern: str, roots: tuple[str, ...]) -> list[str]:
         expression = re.compile(pattern)
@@ -141,16 +173,16 @@ def scan_source(sources: dict[str, GitSource]) -> dict[str, Any]:
     # a registered module or an actual selinux implementation file counts as
     # a source candidate.
     selinux = []
-    if selinux_path in sources:
+    if selinux_path in rust_sources:
         selinux.append(selinux_path)
     if re.search(r"(?m)^\s*mod\s+selinux\s*;", lsm):
         selinux.append(lsm_path)
     inventory = b"".join(
         relative.encode("utf-8") + b"\0" + source.blob.encode("ascii") + b"\0"
-        for relative, source in sorted(sources.items())
+        for relative, source in sorted(rust_sources.items())
     )
     return {
-        "core_rust_file_count": len(sources),
+        "core_rust_file_count": len(rust_sources),
         "scanned_git_blobs_sha256": hashlib.sha256(inventory).hexdigest(),
         "binder_matches": binder,
         "seccomp_matches": seccomp,
@@ -164,6 +196,7 @@ def build_report(root: Path, project_ref: str = "HEAD") -> dict[str, Any]:
     tree = git(root, "rev-parse", f"{commit}^{{tree}}")
     sources = committed_sources(root, commit)
     files, missing = source_snapshot(sources)
+    upstream_lock = verify_upstream_lock(sources.get(LOCK_PATH))
     scan = scan_source(sources)
     blockers: list[str] = []
     if not scan["binder_matches"]:
@@ -174,16 +207,18 @@ def build_report(root: Path, project_ref: str = "HEAD") -> dict[str, Any]:
         blockers.append("mac")
     if missing:
         blockers.append("source_paths")
+    if upstream_lock["status"] != "matched":
+        blockers.append("pinned_lock")
     observed_at = datetime.now(timezone.utc)
     return {
-        "schema": 2,
+        "schema": 3,
         "observed_date": observed_at.date().isoformat(),
         "observed_at_utc": observed_at.isoformat(),
         "source_kind": "git_commit_objects",
         "requested_project_ref": project_ref,
         "project_commit": commit,
         "project_tree": tree,
-        "kernel_upstream_lock": {"tag": TAG, "commit": PIN},
+        "kernel_upstream_lock": upstream_lock,
         "source_files": files,
         "missing_source_paths": missing,
         "source_scan": scan,
@@ -212,6 +247,7 @@ def build_report(root: Path, project_ref: str = "HEAD") -> dict[str, Any]:
         "limitations": [
             "This is a source snapshot, not a kernel build or guest run.",
             "Only the selected immutable commit is inspected; working-tree changes are excluded.",
+            "Expected upstream metadata is compared with the selected commit's hashed lock; matching metadata does not prove imported source equals the upstream tree.",
             "scanned_git_blobs_sha256 hashes sorted UTF-8 path, NUL, ASCII Git blob ID, NUL records.",
             "A syscall entrypoint or source match does not establish Android semantics.",
             "The Cuttlefish Linux reference and any host probes remain separate from Asterinas qualification.",

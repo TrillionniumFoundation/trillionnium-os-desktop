@@ -24,24 +24,108 @@
     }
   },
   "kernel_upstream_lock": {
-    "commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
-    "tag": "v0.19.0"
+    "actual": {
+      "acceptance_guard_commit": "2c658089bb90aa5b254ddf336ef3dc1333e755c9",
+      "artifact_sha256": "e884f5e50cf296833276016894a39337cd9ac13bc51f6b1f2dea3cc3a6904b63",
+      "boot_profile": "support/build/minimal/OSDK.toml",
+      "build_code_commit": "4ae1a80e6b87fd55913bd01e6aadd28a20e6c322",
+      "build_verified": true,
+      "cargo_lock_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+      "commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+      "daemon_lifecycle_fix": {
+        "code_commit": "fb81fec167913827bcddfda15676dc6b26f35965",
+        "evidence": "support/build/evidence/2026-10-16-daemon/daemon-probes/",
+        "identity_anchor": "waitable leader via waitid WNOWAIT; group signals before reap; ECHILD disarms",
+        "old_real_leak_cases": 2,
+        "patched_lifecycle_cases_passed": 5,
+        "scope": "OSDK sole reaper; no SIGCHLD auto-reap; descendants stay in original process group"
+      },
+      "derived_tree": "6a9463ebaaa2060e1fe3968bd940b60d9b1bf8a0",
+      "generated_cargo_lock": "support/build/minimal/Cargo.lock",
+      "generated_cargo_lock_sha256": "b42d8fff136d80a5f8159356882096996991e05975d8da9c81ad9db9bdb06e10",
+      "host_regression": {
+        "code_commit": "4ae1a80e6b87fd55913bd01e6aadd28a20e6c322",
+        "evidence": "support/build/evidence/2026-10-16-boot-binding/report.json",
+        "failed": 0,
+        "filtered": 0,
+        "full_unit_suite_passed": true,
+        "ignored": 0,
+        "new_native_integration": "in_progress_not_claimed",
+        "original_failed_suite_evidence": "support/build/evidence/2026-10-16-next/host-tools/results.json",
+        "original_failed_suite_preserved": true,
+        "passed": 28,
+        "previous_selected_integration": {
+          "evidence": "support/build/evidence/2026-10-16-daemon/report.json",
+          "selected_non_vm_passed": 13,
+          "unselected_cases": 9
+        },
+        "suite": "derived_osdk_unit",
+        "total": 28
+      },
+      "kernel_mode_regression": {
+        "crates": [
+          "ostd",
+          "aster-core"
+        ],
+        "evidence": "support/build/evidence/2026-10-16-daemon/acceptance/kernel-tests/result.json",
+        "exercised_passed_lower_bound": 359,
+        "failed": 0,
+        "filtered": 0,
+        "profile": "x86_64-q35-tcg-1cpu-512MiB",
+        "reported_passed": 362,
+        "soft_skipped": 3,
+        "test_base_locks": {
+          "aster-core": {
+            "path": "support/build/ktest/locks/aster-core.Cargo.lock",
+            "sha256": "159b8682d27a7a21af98885ae48515234445c00fdf5e00b158fdc4aa952ff4ed"
+          },
+          "ostd": {
+            "path": "support/build/ktest/locks/ostd.Cargo.lock",
+            "sha256": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6"
+          }
+        }
+      },
+      "license": "MPL-2.0",
+      "license_file": "kernel/asterinas/LICENSE-MPL",
+      "osdk_cargo_lock_sha256": "99a21f72f6a9f1582553b34f06e80f86e539f38e62eab7a0847afd0906e75be3",
+      "qemu_boot_verified": true,
+      "repository": "asterinas/asterinas",
+      "reuse": "full_kernel_derived",
+      "source_directory": "kernel/asterinas",
+      "source_files": 2938,
+      "source_import_method": "vendored_git_tree",
+      "source_imported": true,
+      "tag": "v0.19.0",
+      "target": "x86_64-unknown-none",
+      "toolchain": "nightly-2026-07-21",
+      "toolchain_file_sha256": "b2508d8c9cd57258fad2fc77737e07172846161f6a7dd726cbd8e974de69c6f7",
+      "tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+      "verification_evidence": "support/build/evidence/2026-10-16-boot-binding/report.json"
+    },
+    "expected": {
+      "commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+      "reuse": "full_kernel_derived",
+      "tag": "v0.19.0"
+    },
+    "source_path": "support/upstream-lock.json",
+    "status": "matched"
   },
   "limitations": [
     "This is a source snapshot, not a kernel build or guest run.",
     "Only the selected immutable commit is inspected; working-tree changes are excluded.",
+    "Expected upstream metadata is compared with the selected commit's hashed lock; matching metadata does not prove imported source equals the upstream tree.",
     "scanned_git_blobs_sha256 hashes sorted UTF-8 path, NUL, ASCII Git blob ID, NUL records.",
     "A syscall entrypoint or source match does not establish Android semantics.",
     "The Cuttlefish Linux reference and any host probes remain separate from Asterinas qualification."
   ],
   "missing_source_paths": [],
-  "observed_at_utc": "2026-10-17T10:51:36.401066+00:00",
+  "observed_at_utc": "2026-10-17T10:59:10.665504+00:00",
   "observed_date": "2026-10-17",
   "project_commit": "18d9fca65381f0e84f130c76fa289d5186894d85",
   "project_tree": "d779baa329f7cc04fb2c2cdeb7822356d34af899",
   "requested_project_ref": "18d9fca65381f0e84f130c76fa289d5186894d85",
   "runtime_android_verified": false,
-  "schema": 2,
+  "schema": 3,
   "source_files": {
     "kernel/asterinas/kernel/core/src/device/mod.rs": {
       "bytes": 1935,
@@ -132,6 +216,12 @@
       "git_blob": "974a761fd54959bf469fee4ac8fd95f18ac50add",
       "git_mode": "100644",
       "sha256": "a4055a1f7ba67c694ca970cbc96f924ce5d9f8c100d629ffc912c034352b3e19"
+    },
+    "support/upstream-lock.json": {
+      "bytes": 4657,
+      "git_blob": "11c1a12ebcd1b7c3457806c52ff52916e7835363",
+      "git_mode": "100644",
+      "sha256": "beb48f48a77101e5456ca78aa98d3c0f4c3a3f11ca29f422e2d576ff837cc592"
     }
   },
   "source_kind": "git_commit_objects",

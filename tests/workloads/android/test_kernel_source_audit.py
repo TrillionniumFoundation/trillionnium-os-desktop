@@ -10,6 +10,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 GENERATOR = ROOT / "support/android/generate_kernel_source_audit.py"
+LOCK_PATH = "support/upstream-lock.json"
+EXPECTED_LOCK = {
+    "tag": "v0.19.0",
+    "commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+    "reuse": "full_kernel_derived",
+}
 
 
 class KernelSourceAuditTests(unittest.TestCase):
@@ -26,6 +32,9 @@ class KernelSourceAuditTests(unittest.TestCase):
             path = root / "kernel/asterinas/kernel/core/src" / relative
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(text, encoding="utf-8")
+        lock = root / LOCK_PATH
+        lock.parent.mkdir(parents=True, exist_ok=True)
+        lock.write_text(json.dumps({"kernel": EXPECTED_LOCK}), encoding="utf-8")
         self.commit(root, "Initial source fixture")
         return root
 
@@ -72,6 +81,8 @@ class KernelSourceAuditTests(unittest.TestCase):
             self.assertEqual(report["blocking_requirements"], ["binder", "seccomp", "mac"])
             self.assertFalse(report["runtime_android_verified"])
             self.assertFalse(report["booted_android_on_asterinas"])
+            self.assertEqual(report["kernel_upstream_lock"]["status"], "matched")
+            self.assertEqual(report["kernel_upstream_lock"]["expected"], EXPECTED_LOCK)
 
     def test_snapshot_records_git_blob_and_content_hash(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -96,7 +107,9 @@ class KernelSourceAuditTests(unittest.TestCase):
             selected = self.git(root, "rev-parse", "HEAD")
             relative = "kernel/asterinas/kernel/core/src/syscall/futex.rs"
             expected = (root / relative).read_bytes()
+            expected_lock = (root / LOCK_PATH).read_bytes()
             (root / relative).write_text("pub fn sys_futex() { changed(); }\n", encoding="utf-8")
+            (root / LOCK_PATH).write_text(json.dumps({"kernel": {**EXPECTED_LOCK, "commit": "0" * 40}}), encoding="utf-8")
             binder = root / "kernel/asterinas/kernel/core/src/device/binder.rs"
             binder.write_text("struct BinderDevice;\n", encoding="utf-8")
             self.commit(root, "Different checked-out source and candidate")
@@ -108,6 +121,12 @@ class KernelSourceAuditTests(unittest.TestCase):
             self.assertEqual(report["source_files"][relative]["sha256"], hashlib.sha256(expected).hexdigest())
             self.assertEqual(report["source_scan"]["binder_matches"], [])
             self.assertEqual(report["source_scan"]["core_rust_file_count"], 4)
+            self.assertEqual(report["kernel_upstream_lock"]["status"], "matched")
+            self.assertEqual(report["kernel_upstream_lock"]["actual"], EXPECTED_LOCK)
+            self.assertEqual(report["source_files"][LOCK_PATH]["git_blob"],
+                             self.git(root, "rev-parse", f"{selected}:{LOCK_PATH}"))
+            self.assertEqual(report["source_files"][LOCK_PATH]["sha256"],
+                             hashlib.sha256(expected_lock).hexdigest())
 
     def test_dirty_tracked_files_do_not_become_commit_evidence(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -150,6 +169,43 @@ class KernelSourceAuditTests(unittest.TestCase):
             self.assertEqual(observed.utcoffset().total_seconds(), 0)
             self.assertLessEqual(before, observed)
             self.assertLessEqual(observed, after)
+
+    def test_missing_lock_is_a_source_blocker(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self.make_repository(tmp)
+            (root / LOCK_PATH).unlink()
+            self.commit(root, "Remove upstream lock")
+            report = self.snapshot(root, Path(tmp) / "snapshot.json")
+            self.assertIn("pinned_lock", report["blocking_requirements"])
+            self.assertEqual(report["kernel_upstream_lock"]["status"], "missing")
+            self.assertIsNone(report["kernel_upstream_lock"]["actual"])
+            self.assertNotIn(LOCK_PATH, report["source_files"])
+
+    def test_mismatched_lock_is_a_source_blocker(self):
+        for key, wrong_value in (("tag", "v0.18.0"), ("commit", "0" * 40), ("reuse", "partial")):
+            with self.subTest(field=key), tempfile.TemporaryDirectory() as tmp:
+                root = self.make_repository(tmp)
+                actual = {**EXPECTED_LOCK, key: wrong_value}
+                (root / LOCK_PATH).write_text(json.dumps({"kernel": actual}), encoding="utf-8")
+                self.commit(root, "Change upstream lock")
+                report = self.snapshot(root, Path(tmp) / "snapshot.json")
+                self.assertIn("pinned_lock", report["blocking_requirements"])
+                self.assertEqual(report["kernel_upstream_lock"]["status"], "mismatch")
+                self.assertEqual(report["kernel_upstream_lock"]["actual"], actual)
+                self.assertEqual(report["source_files"][LOCK_PATH]["git_blob"],
+                                 self.git(root, "rev-parse", f"HEAD:{LOCK_PATH}"))
+
+    def test_malformed_lock_is_a_source_blocker(self):
+        for content in (b'{"kernel":', b'{"kernel": []}', b'\xff'):
+            with self.subTest(content=content), tempfile.TemporaryDirectory() as tmp:
+                root = self.make_repository(tmp)
+                (root / LOCK_PATH).write_bytes(content)
+                self.commit(root, "Commit invalid lock data")
+                report = self.snapshot(root, Path(tmp) / "snapshot.json")
+                self.assertIn("pinned_lock", report["blocking_requirements"])
+                self.assertEqual(report["kernel_upstream_lock"]["status"], "invalid")
+                self.assertIsNone(report["kernel_upstream_lock"]["actual"])
+                self.assertEqual(report["source_files"][LOCK_PATH]["sha256"], hashlib.sha256(content).hexdigest())
 
 
 if __name__ == "__main__":
