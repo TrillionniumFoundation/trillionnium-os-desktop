@@ -1,0 +1,112 @@
+{
+  "aosp_runtime_tested": false,
+  "binder_driver_status": "not_found_in_fixed_upstream_core_device_or_syscall_path",
+  "closure_status": {
+    "android_graphics_hwc_gralloc_fence": "open_external_A09_A10",
+    "android_mac": "open_external_A05",
+    "aosp_source_lock": "closed",
+    "binder_driver": "open_external_A05",
+    "host_unit_suite": "closed_184_of_184_host_only",
+    "lmkd_psi_reclaim_freezer": "open_external_A06",
+    "runtime_apk_acceptance": "open_dedicated_AOSP_KVM_host",
+    "seccomp_filter": "open_external_A05"
+  },
+  "cloud_preflight": {
+    "aosp_build_executed": false,
+    "cuttlefish_boot_executed": false,
+    "evidence": "tests/workloads/android/evidence/cloud-preflight-20261017.json",
+    "free_disk_gib": 27.6,
+    "host_ram_gib": 9.7,
+    "kvm": false,
+    "scope": "Historical host capacity observation; not measured again by the commit-bound source audit",
+    "status": "blocked_before_guest_start"
+  },
+  "equivalent_android_mac_status": "not_evidenced",
+  "guest_seccomp_validation": {
+    "guest_status": "not_executed",
+    "host_child_filter": "pass_on_Linux_host_only",
+    "implemented_in_kernel": "NOT VERIFIED; source audit seccomp install entrypoint missing",
+    "initializer": "support/android/prepare_asterinas_abi.py",
+    "not_yet_verified": [
+      "TSYNC multithreaded propagation",
+      "Android process seccomp policies",
+      "SELinux/MAC enforcement",
+      "Android-on-Asterinas"
+    ],
+    "owner": "A05",
+    "probe": "tests/workloads/android/seccomp_abi_probe.c",
+    "runner": "support/android/run_asterinas_abi.py",
+    "scope": "Asterinas guest probe staged but NOT executed",
+    "separately_verifies": [
+      "PR_SET_NO_NEW_PRIVS",
+      "SECCOMP_SET_MODE_FILTER",
+      "denied SYS_getpid EPERM",
+      "allowed SYS_getppid",
+      "child normal exit"
+    ]
+  },
+  "host_unit_evidence": "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/unittest-result.json",
+  "kernel_commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+  "kernel_runtime_tested": false,
+  "owners": {
+    "Binder": "A05+A08",
+    "aosp_baseline": "A08",
+    "cross_agent": "A00",
+    "graphics": "A09+A10",
+    "linux_abi": "A04",
+    "mac": "A05",
+    "pressure_freezer": "A06",
+    "seccomp": "A05"
+  },
+  "present_source_entry_points": [
+    "futex",
+    "mmap",
+    "mprotect",
+    "clone",
+    "fork",
+    "execve",
+    "rt_sigaction",
+    "memfd_create",
+    "sendmsg",
+    "recvmsg",
+    "credentials",
+    "no_new_privs"
+  ],
+  "project_main_commit": "18d9fca65381f0e84f130c76fa289d5186894d85",
+  "require_runtime_probe": [
+    "futex_robust_PI",
+    "mmap_shared_exec",
+    "clone_zygote",
+    "signal_ART",
+    "SCM_RIGHTS",
+    "binder_transactions",
+    "SELinux_MAC_denials",
+    "seccomp_TSYNC",
+    "procfs",
+    "lmkd_PSI",
+    "app_freezer",
+    "reclamation",
+    "VINTF_AIDL_HAL",
+    "surfaceflinger",
+    "keystore_DE_CE"
+  ],
+  "reviewed_at": "2026-10-17",
+  "source_gate": {
+    "blocking_requirements": [
+      "binder",
+      "seccomp",
+      "mac"
+    ],
+    "command": "python3 support/android/generate_kernel_source_audit.py --repo-root . --project-ref 18d9fca65381f0e84f130c76fa289d5186894d85 --output compat/android/source-audit-main-18d9fca6.json",
+    "evidence": "compat/android/source-audit-main-18d9fca6.json",
+    "exit_code": 2,
+    "runtime_verified": false,
+    "source_kind": "git_commit_objects",
+    "status": "source_review_blocked"
+  },
+  "verified_missing_entry_points": [
+    "seccomp_syscall",
+    "prctl_PR_SET_SECCOMP",
+    "prctl_PR_GET_SECCOMP"
+  ]
+}

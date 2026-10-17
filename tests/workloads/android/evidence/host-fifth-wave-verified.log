@@ -1,0 +1,32 @@
+test_incompatible_32bit_binder_mode_is_rejected (test_binder_uapi_layout.BinderLayoutTests.test_incompatible_32bit_binder_mode_is_rejected) ... ok
+test_layout_source_never_opens_device_or_reports_runtime_success (test_binder_uapi_layout.BinderLayoutTests.test_layout_source_never_opens_device_or_reports_runtime_success) ... ok
+test_native_uapi_layout_compiles_and_matches_constants (test_binder_uapi_layout.BinderLayoutTests.test_native_uapi_layout_compiles_and_matches_constants) ... ok
+test_cli_writes_blocked_and_preflight_json (test_verify_launch_preflight.PreflightTests.test_cli_writes_blocked_and_preflight_json) ... ok
+test_escaped_image_path_is_blocked (test_verify_launch_preflight.PreflightTests.test_escaped_image_path_is_blocked) ... ok
+test_image_symlink_outside_aosp_out_is_refused_even_if_hash_matches (test_verify_launch_preflight.PreflightTests.test_image_symlink_outside_aosp_out_is_refused_even_if_hash_matches) ... ok
+test_missing_product_launch_audit_is_blocked (test_verify_launch_preflight.PreflightTests.test_missing_product_launch_audit_is_blocked) ... ok
+test_soong_symlink_inside_same_aosp_out_is_allowed (test_verify_launch_preflight.PreflightTests.test_soong_symlink_inside_same_aosp_out_is_allowed) ... ok
+test_stale_bionic_source_is_rejected (test_verify_launch_preflight.PreflightTests.test_stale_bionic_source_is_rejected) ... ok
+test_stale_cuttlefish_product_is_rejected (test_verify_launch_preflight.PreflightTests.test_stale_cuttlefish_product_is_rejected) ... ok
+test_stale_image_hash_is_rejected (test_verify_launch_preflight.PreflightTests.test_stale_image_hash_is_rejected) ... ok
+test_stale_vintf_file_is_rejected (test_verify_launch_preflight.PreflightTests.test_stale_vintf_file_is_rejected) ... ok
+test_tampered_manifest_is_rejected (test_verify_launch_preflight.PreflightTests.test_tampered_manifest_is_rejected) ... ok
+test_valid_synthetic_source_and_images_are_only_preflight (test_verify_launch_preflight.PreflightTests.test_valid_synthetic_source_and_images_are_only_preflight) ... ok
+test_wrong_checkout_report_is_blocked (test_verify_launch_preflight.PreflightTests.test_wrong_checkout_report_is_blocked) ... ok
+test_cli_fails_closed_and_writes_json (test_verify_product_source.ProductLockTests.test_cli_fails_closed_and_writes_json) ... ok
+test_missing_checkout_fails (test_verify_product_source.ProductLockTests.test_missing_checkout_fails) ... ok
+test_missing_vmm_revision_is_blocking (test_verify_product_source.ProductLockTests.test_missing_vmm_revision_is_blocking) ... ok
+test_symlink_escape_is_refused (test_verify_product_source.ProductLockTests.test_symlink_escape_is_refused) ... ok
+test_three_real_git_checkouts_match_manifest_only (test_verify_product_source.ProductLockTests.test_three_real_git_checkouts_match_manifest_only) ... ok
+test_wrong_device_identity_is_blocking (test_verify_product_source.ProductLockTests.test_wrong_device_identity_is_blocking) ... ok
+test_wrong_product_registration_is_blocking (test_verify_product_source.ProductLockTests.test_wrong_product_registration_is_blocking) ... ok
+test_wrong_resolved_commit_is_blocking (test_verify_product_source.ProductLockTests.test_wrong_resolved_commit_is_blocking) ... ok
+
+----------------------------------------------------------------------
+Ran 23 tests in 0.395s
+
+OK
+{"status": "preflight_only", "errors": [], "android_on_asterinas_verified": false}
+{"status": "blocked", "errors": ["image:vendor_img: file missing at preflight"], "android_on_asterinas_verified": false}
+{"status": "pass_source_checkout_only", "errors": [], "android_on_asterinas_verified": false}
+{"status": "blocked", "errors": ["[Errno 2] No such file or directory: '/tmp/tmp1shzss9w/missing.xml'"], "android_on_asterinas_verified": false}

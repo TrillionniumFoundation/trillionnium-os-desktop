@@ -1,0 +1,54 @@
+{
+  "schema": 1,
+  "kind": "a08_host_jni_gate",
+  "observed_utc": "2026-10-16T08:56:09.442059+00:00",
+  "scope": "LINUX_HOST_ONLY",
+  "machine": "x86_64",
+  "python": "3.13.5",
+  "linux_kernel": "6.18.44",
+  "command": "python3 support/android/verify_host.py --out host-verify.json",
+  "unit_tests": {
+    "ran": 34,
+    "passed": 34,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "synthetic_adb": true
+  },
+  "binary_gates": {
+    "kernel_abi": {
+      "exit": 0,
+      "stdout_sha256": "4abd4b63409106c959edab79f89b78dc181c8a7efeb1c51ee628208c62e93f00",
+      "mmap": "PASS",
+      "memfd": "PASS",
+      "SCM_RIGHTS": "PASS",
+      "futex": "PASS",
+      "signals": "PASS"
+    },
+    "binder_abi": {
+      "exit": 77,
+      "stdout_sha256": "a79205954e509a6cdab1bd8281e49e2ffeac5368bcaead809de24bb3c06e1f2f",
+      "result": "BLOCKED_ENOENT"
+    },
+    "seccomp_abi": {
+      "exit": 0,
+      "stdout_sha256": "ee8c1103eb6f1bf833d908f44329c478741de68e14c8189fbd81171e26d13c82",
+      "result": "PASS_ON_LINUX_CHILD_ONLY",
+      "tsync": "NOT_TESTED"
+    },
+    "java_host_jni": {
+      "exit": 0,
+      "stdout_sha256": "2aeeb5bea8d48ff7850c9c8ec13dbee53f8e82a4a1cae43590bb69b5e332b7ec",
+      "stdout": "HOST_JNI_INTEGRATION_PASS isa=x86_64 pid_equal=true",
+      "native_abi": "x86_64",
+      "is_android_art_execution": false
+    }
+  },
+  "ci_status": "not_verified",
+  "aosp_full_sync": "not_executed",
+  "aosp_build": "not_executed",
+  "apk_binaries_built": "not_executed",
+  "cuttlefish_guest_boot": "not_executed",
+  "android_on_asterinas": "not_executed",
+  "note": "Actual executed host probe facts, not mock Android guest or Rust kernel runtime."
+}

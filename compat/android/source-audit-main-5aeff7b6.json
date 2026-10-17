@@ -1,0 +1,128 @@
+{
+  "blocking_requirements": [
+    "binder",
+    "seccomp",
+    "mac"
+  ],
+  "booted_android_on_asterinas": false,
+  "build_tested_this_agent": false,
+  "checks": {
+    "android_mac": {
+      "negative_mac_tests_passed": false,
+      "owner": "A05",
+      "status": "selinux_equivalent_not_evidenced"
+    },
+    "binder": {
+      "owner": "A05/A08",
+      "status": "driver_not_evidenced",
+      "transactions_verified": false
+    },
+    "seccomp": {
+      "negative_filter_test_passed": false,
+      "owner": "A05",
+      "status": "missing_install_entrypoint"
+    }
+  },
+  "kernel_upstream_lock": {
+    "commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+    "tag": "v0.19.0"
+  },
+  "limitations": [
+    "This is a source snapshot, not a kernel build or guest run.",
+    "A syscall entrypoint or source match does not establish Android semantics.",
+    "The Cuttlefish Linux reference and any host probes remain separate from Asterinas qualification."
+  ],
+  "missing_source_paths": [],
+  "observed_date": "2026-10-16",
+  "project_commit": "5aeff7b60e8c96aa14676e1642efddc6ad63a607",
+  "project_tree": "cf9f3a97c50eb6cd4087dc106144b9ce34ca59b8",
+  "runtime_android_verified": false,
+  "schema": 2,
+  "source_files": {
+    "kernel/asterinas/kernel/core/src/device/mod.rs": {
+      "bytes": 1935,
+      "git_blob": "e62d157f391536f3535ad542defe77ba65407de0",
+      "sha256": "b0afb033113e502ac830ce2e77fb1a1821f9ecb04251d27602e0ee314ddf8497"
+    },
+    "kernel/asterinas/kernel/core/src/security/lsm/modules/mod.rs": {
+      "bytes": 6505,
+      "git_blob": "a7685c0a85ee3b6ce1914627536f0973ccb3ac22",
+      "sha256": "5281c0450df65176dff02dfc7f41e5811fc2781494698c870f785e6630f52a86"
+    },
+    "kernel/asterinas/kernel/core/src/syscall/clone.rs": {
+      "bytes": 5090,
+      "git_blob": "773b36a69a57509d322b3731f34a1af631dfea68",
+      "sha256": "db55eecea5c42bad9c214ef2459f9be36a8bc1773cbf4195947b3b228960db1e"
+    },
+    "kernel/asterinas/kernel/core/src/syscall/execve.rs": {
+      "bytes": 4521,
+      "git_blob": "3f3e043b2d60f9f05738efafadb45e774c033a91",
+      "sha256": "491c0302a5726f1f2f5ba65c2e638aa8f0e13d5be856ef265b228c252fb1ef19"
+    },
+    "kernel/asterinas/kernel/core/src/syscall/futex.rs": {
+      "bytes": 5267,
+      "git_blob": "a6b8181bac64890eb92a894bf5813baf6edb2f26",
+      "sha256": "d37ea0bb494e9c8cef67271ad770512449e84c8be85435d9e192039fce6ace16"
+    },
+    "kernel/asterinas/kernel/core/src/syscall/memfd_create.rs": {
+      "bytes": 1773,
+      "git_blob": "56b4c50ba020c057213ed2817ddfe56dd7a8080e",
+      "sha256": "f1b9b2e403572bd096fc44a57dc34fa5a536c9935c3458415c10a011ce5a1bfc"
+    },
+    "kernel/asterinas/kernel/core/src/syscall/mmap.rs": {
+      "bytes": 9896,
+      "git_blob": "a9868870f6662ffd032ab69095276024c372272b",
+      "sha256": "9a1714738f0a9cb5b9257969cb969f533a6c9329de75f98880d6299289186f6d"
+    },
+    "kernel/asterinas/kernel/core/src/syscall/mod.rs": {
+      "bytes": 10195,
+      "git_blob": "2b5dfbef666e1fb1c2a479b279bab61321e28f6f",
+      "sha256": "6304a09e1415553e04aec757e43e2dbf92146a3418f293fef11ead1add5987fa"
+    },
+    "kernel/asterinas/kernel/core/src/syscall/mprotect.rs": {
+      "bytes": 1963,
+      "git_blob": "dbf09e4df35602b27900a0bf20c82a850d9208c5",
+      "sha256": "728ce17b0ad9cbcf28c36757d0b9cf00e8dd4f1a2f7244bbfb01dd7374374128"
+    },
+    "kernel/asterinas/kernel/core/src/syscall/mremap.rs": {
+      "bytes": 4205,
+      "git_blob": "6e70133a7578a51da66f08e920dc2101daf87c50",
+      "sha256": "d30fe9d9beb36a4a1a08904ec6abddccf03c892520dd662ea45e4fb362a0df9c"
+    },
+    "kernel/asterinas/kernel/core/src/syscall/munmap.rs": {
+      "bytes": 899,
+      "git_blob": "1a25ad3d64ed6ccf8d455da9eacd04c3dcbe3dd5",
+      "sha256": "ac12f4a6685f3f20b470d00f24f08104ed9be4a9f48a164ac9da6c02ae440878"
+    },
+    "kernel/asterinas/kernel/core/src/syscall/prctl.rs": {
+      "bytes": 11882,
+      "git_blob": "c26b3ef6a85926078983edb6145759b8da28ed47",
+      "sha256": "05cc746a23aff92f5ff5f834c011c1b3a08d94ba916d92b2cebfcf83ed16b89a"
+    },
+    "kernel/asterinas/kernel/core/src/syscall/recvmsg.rs": {
+      "bytes": 2026,
+      "git_blob": "0ff25d8c0e94c1ec2d05021cba5e98dfb8dba9f7",
+      "sha256": "37ded6bc962e7804ed89b2c78876d4da780de5d8bb7a6022a0c571bfff440241"
+    },
+    "kernel/asterinas/kernel/core/src/syscall/rt_sigaction.rs": {
+      "bytes": 2872,
+      "git_blob": "10da43a97fe4a29b23733a137820b8e2692bf9d0",
+      "sha256": "59aec20050c7c50a63a81322bf9ee7d9518bbd8617c48b90580491dd98402e7e"
+    },
+    "kernel/asterinas/kernel/core/src/syscall/sendmsg.rs": {
+      "bytes": 2050,
+      "git_blob": "974a761fd54959bf469fee4ac8fd95f18ac50add",
+      "sha256": "a4055a1f7ba67c694ca970cbc96f924ce5d9f8c100d629ffc912c034352b3e19"
+    }
+  },
+  "source_scan": {
+    "binder_matches": [],
+    "core_rust_file_count": 756,
+    "registered_lsm_modules": [
+      "capability"
+    ],
+    "seccomp_matches": [],
+    "selinux_matches": []
+  },
+  "status": "source_review_blocked"
+}

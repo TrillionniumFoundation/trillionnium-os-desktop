@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "date_utc": "2026-10-16",
+  "scope": "isolated Linux host; synthetic VINTF/launch fixtures and real Python test execution; no real Android build/guest",
+  "aosp_reference": "android-15.0.0_r36",
+  "upstream_references": {
+    "checkvintf_apex_migration": "https://gitgud.io/aosp/platform/system/libvintf/-/commit/76409e8245965a7b6b6c2945a60a4b31e3eb2281",
+    "checkvintf_usage": "https://android.googlesource.com/platform/system/libvintf/+/265c5ffc882f66ae49dc5ae2f0d9e67420ebac47/check_vintf.cpp"
+  },
+  "test_command": "python3 -m unittest discover -s /mnt/data/a08-seventh/tests/workloads/android -p 'test_*.py' -v",
+  "tests": {
+    "ran": 31,
+    "passed": 31,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "stdout_tail_results": [
+      "preflight_only",
+      "blocked",
+      "blocked_or_failed"
+    ],
+    "log_sha256": "3be9e824861544965ea1ce0420756292144e15343afe038b30394d7800eb9f5c"
+  },
+  "remote_source_blob_shas": {
+    "support/android/verify_vintf.py": "8e86b50640d3dd4dfb44f01448cbc5d9ae5071fd",
+    "support/android/verify_launch_preflight.py": "a655239c01e294ceb2fe885ff898257dd58ddcd7",
+    "tests/workloads/android/test_verify_vintf.py": "a9e1af7d4f5017ac2e97f013e00fa69814017e4f",
+    "tests/workloads/android/test_verify_launch_preflight.py": "0cdeb91232068a612236b7502f63c945769c7fa1"
+  },
+  "changes_tested": {
+    "apex_metadata": "Python wrapper --apex-info-file translates to checkvintf --dirmap /apex:DIR and hashes apex-info-list.xml",
+    "disallowed_cli": "legacy --apex-info-file NOT forwarded to checkvintf",
+    "checker_verdict": "exit 0 plus final nonblank stdout line COMPATIBLE required",
+    "prelaunch_integrity": "checks mapped /apex, file hash and blocks historical legacy CLI"
+  },
+  "aosp_full_sync": "not_executed",
+  "real_aosp_checkvintf": "not_executed",
+  "vendor_system_images": "not_built",
+  "cuttlefish_guest_boot": "not_executed",
+  "android_on_asterinas": "not_executed",
+  "binder_seccomp_android_mac": "blocking_kernel_requirements"
+}

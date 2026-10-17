@@ -1,0 +1,1191 @@
+{
+  "base": "41a8c32b435f2fa9dd750ded40bd4b37cb7606c6",
+  "base_tree": "a452c9a65b43f2575817a1c576e8328205dc3f79",
+  "restore_source_commit": "37466a93823b9b10ace81759ec6decb59bb5a140",
+  "old_files": 105,
+  "current_files": 66,
+  "restored_omitted_files": [
+    "compat/android/capability-matrix.json",
+    "compat/android/kernel-gaps.json",
+    "compat/android/source-audit-main-0709ab5d.json",
+    "compat/android/source-audit-main-3b2d15bc.json",
+    "compat/android/source-audit-main-5aeff7b6.json",
+    "compat/android/source-audit-main-acd9ee30.json",
+    "compat/android/source-audit-main-bc294f75.json",
+    "compat/android/source-audit-main-e1b9d705.json",
+    "compat/android/source-audit-main-e44c92ac.json",
+    "support/android/README.md",
+    "support/android/generate_kernel_source_audit.py",
+    "support/android/kernel_contract.py",
+    "support/android/prepare_aosp.sh",
+    "support/android/prepare_asterinas_abi.py",
+    "support/android/run_asterinas_abi.py",
+    "support/android/run_reference_cuttlefish.sh",
+    "support/android/run_verified_apks.py",
+    "support/android/verify_host.py",
+    "support/android/verify_launch_preflight.py",
+    "tests/workloads/android/evidence/host-unit-tests-next.log",
+    "tests/workloads/android/evidence/host-unit-tests-rerun.log",
+    "tests/workloads/android/evidence/host-unit-tests.log",
+    "tests/workloads/android/host_jni/MainActivity.java",
+    "tests/workloads/android/kernel_abi_probe.c",
+    "tests/workloads/android/run_apk.py",
+    "tests/workloads/android/run_apk_workload.py",
+    "tests/workloads/android/run_native_apk.py",
+    "tests/workloads/android/test_asterinas_abi_guest.py",
+    "tests/workloads/android/test_asterinas_abi_runner_transport.py",
+    "tests/workloads/android/test_audit.py",
+    "tests/workloads/android/test_binder_uapi_layout.py",
+    "tests/workloads/android/test_boot_gates.py",
+    "tests/workloads/android/test_kernel_abi_runtime_host.py",
+    "tests/workloads/android/test_kernel_contract.py",
+    "tests/workloads/android/test_kernel_source_audit.py",
+    "tests/workloads/android/test_native_apk.py",
+    "tests/workloads/android/test_seccomp_guest_contract.py",
+    "tests/workloads/android/test_verified_artifacts.py",
+    "tests/workloads/android/test_verify_launch_preflight.py"
+  ],
+  "restored_changed_files": [
+    "compat/android/aosp-profile.json",
+    "support/android/capture_guest_logs.py",
+    "tests/workloads/android/evidence/host-suite-20261016.log",
+    "tests/workloads/android/test_apk.py"
+  ],
+  "restored_executable_modes": [
+    "support/android/build_asterinas_abi.sh",
+    "support/android/build_smoke_apk.sh"
+  ],
+  "current_content_unchanged_files": [
+    "compat/android/INTERFACES.md",
+    "support/android/aosp-lock.json",
+    "support/android/aosp_reference.py",
+    "support/android/audit.py",
+    "support/android/build_asterinas_abi.sh",
+    "support/android/build_smoke_apk.sh",
+    "support/android/verify_product_source.py",
+    "support/android/verify_vintf.py",
+    "tests/workloads/android/apk-matrix.json",
+    "tests/workloads/android/apk-smoke/Android.bp",
+    "tests/workloads/android/apk-smoke/app/build.gradle",
+    "tests/workloads/android/apk-smoke/app/src/main/AndroidManifest.xml",
+    "tests/workloads/android/apk-smoke/app/src/main/java/org/trillionnium/a08smoke/MainActivity.java",
+    "tests/workloads/android/apk-smoke/app/src/main/res/values/ids.xml",
+    "tests/workloads/android/apk-smoke/build.gradle",
+    "tests/workloads/android/apk-smoke/native-smoke/app/src/main/AndroidManifest.xml",
+    "tests/workloads/android/apk-smoke/native-smoke/app/src/main/java/org/trillionnium/a08native/MainActivity.java",
+    "tests/workloads/android/apk-smoke/native-smoke/app/src/main/res/values/ids.xml",
+    "tests/workloads/android/apk-smoke/native-smoke/jni/a08jni.c",
+    "tests/workloads/android/apk-smoke/settings.gradle",
+    "tests/workloads/android/apk-workload.schema.json",
+    "tests/workloads/android/binder_abi_probe.c",
+    "tests/workloads/android/binder_uapi_layout.c",
+    "tests/workloads/android/boot_gates.py",
+    "tests/workloads/android/evidence/a08-fourth-wave.json",
+    "tests/workloads/android/evidence/a08-fourth-wave.log",
+    "tests/workloads/android/evidence/cloud-preflight-20261016.json",
+    "tests/workloads/android/evidence/cloud-preflight-20261016.log",
+    "tests/workloads/android/evidence/cloud-preflight-20261017.json",
+    "tests/workloads/android/evidence/cloud-preflight-20261017.log",
+    "tests/workloads/android/evidence/environment.json",
+    "tests/workloads/android/evidence/host-abi-false-pass-regression.json",
+    "tests/workloads/android/evidence/host-abi-false-pass-regression.log",
+    "tests/workloads/android/evidence/host-asterinas-abi-guest.json",
+    "tests/workloads/android/evidence/host-asterinas-abi-guest.log",
+    "tests/workloads/android/evidence/host-binder-abi-probe.log",
+    "tests/workloads/android/evidence/host-binder-uapi-layout.json",
+    "tests/workloads/android/evidence/host-binder-uapi-layout.log",
+    "tests/workloads/android/evidence/host-builder-preflight.log",
+    "tests/workloads/android/evidence/host-fifth-wave-combined.json",
+    "tests/workloads/android/evidence/host-fifth-wave-combined.log",
+    "tests/workloads/android/evidence/host-fifth-wave-verified.json",
+    "tests/workloads/android/evidence/host-fifth-wave-verified.log",
+    "tests/workloads/android/evidence/host-guest-seccomp.json",
+    "tests/workloads/android/evidence/host-guest-seccomp.log",
+    "tests/workloads/android/evidence/host-jni-gate.json",
+    "tests/workloads/android/evidence/host-linux-abi-probe.log",
+    "tests/workloads/android/evidence/host-next-run.json",
+    "tests/workloads/android/evidence/host-reference-preflight.log",
+    "tests/workloads/android/evidence/host-seccomp-abi-probe.log",
+    "tests/workloads/android/evidence/host-seventh-apex.json",
+    "tests/workloads/android/evidence/host-seventh-apex.log",
+    "tests/workloads/android/evidence/host-seventh-boot-gates.json",
+    "tests/workloads/android/evidence/host-seventh-boot-gates.log",
+    "tests/workloads/android/evidence/host-sixth-vintf.json",
+    "tests/workloads/android/evidence/host-sixth-vintf.log",
+    "tests/workloads/android/evidence/host-suite-20261016.json",
+    "tests/workloads/android/seccomp_abi_probe.c",
+    "tests/workloads/android/test_abi_result_parser.py",
+    "tests/workloads/android/test_android_tools.py",
+    "tests/workloads/android/test_verify_product_source.py",
+    "tests/workloads/android/test_verify_vintf.py"
+  ],
+  "current_only_files": [],
+  "verified_files": [
+    {
+      "path": "compat/android/INTERFACES.md",
+      "git_blob_sha1": "a238f9f6f3a854ebfacd3d08d78a320400c23b44",
+      "bytes": 7406,
+      "mode": "100644"
+    },
+    {
+      "path": "compat/android/aosp-profile.json",
+      "git_blob_sha1": "47253b3572d6abd67cf56e3432156d2d570201d0",
+      "bytes": 12679,
+      "mode": "100644"
+    },
+    {
+      "path": "compat/android/capability-matrix.json",
+      "git_blob_sha1": "f5819e106969ec556b869f9937923360746d5909",
+      "bytes": 8103,
+      "mode": "100644"
+    },
+    {
+      "path": "compat/android/kernel-gaps.json",
+      "git_blob_sha1": "f1aefd64c75b8bb9dd95fb5d6ca6ace4bd5e5f3c",
+      "bytes": 3255,
+      "mode": "100644"
+    },
+    {
+      "path": "compat/android/source-audit-main-0709ab5d.json",
+      "git_blob_sha1": "a1f95a10ccbbb84d7cb2ac8d3c89dfbd861b205a",
+      "bytes": 4968,
+      "mode": "100644"
+    },
+    {
+      "path": "compat/android/source-audit-main-3b2d15bc.json",
+      "git_blob_sha1": "81e468bf6cb7158997b1052ca12791821093ebcb",
+      "bytes": 4968,
+      "mode": "100644"
+    },
+    {
+      "path": "compat/android/source-audit-main-5aeff7b6.json",
+      "git_blob_sha1": "d5f300a8f6b7edbda5f77cdc5fa2dec65ab81fd9",
+      "bytes": 4968,
+      "mode": "100644"
+    },
+    {
+      "path": "compat/android/source-audit-main-acd9ee30.json",
+      "git_blob_sha1": "e810c0c74a69808a3a52d4078c9aeffc44b50b7b",
+      "bytes": 4968,
+      "mode": "100644"
+    },
+    {
+      "path": "compat/android/source-audit-main-bc294f75.json",
+      "git_blob_sha1": "ba0f01bcee9654f919532478615eeb5ca058750f",
+      "bytes": 4968,
+      "mode": "100644"
+    },
+    {
+      "path": "compat/android/source-audit-main-e1b9d705.json",
+      "git_blob_sha1": "f01851e7926b0d50b35629521cd320ec3f493c15",
+      "bytes": 4968,
+      "mode": "100644"
+    },
+    {
+      "path": "compat/android/source-audit-main-e44c92ac.json",
+      "git_blob_sha1": "a59299e55c42bfc7c4f25afa65575c16720e4591",
+      "bytes": 5942,
+      "mode": "100644"
+    },
+    {
+      "path": "support/android/README.md",
+      "git_blob_sha1": "433e5410930bddd1fcc29c0de8c984415b6b21b9",
+      "bytes": 31549,
+      "mode": "100644"
+    },
+    {
+      "path": "support/android/aosp-lock.json",
+      "git_blob_sha1": "dabfdaa2f30bc007887853a382504c52a9090075",
+      "bytes": 2223,
+      "mode": "100644"
+    },
+    {
+      "path": "support/android/aosp_reference.py",
+      "git_blob_sha1": "fe8549cf321d2d908c26bfd66d84416f75e580d5",
+      "bytes": 9477,
+      "mode": "100644"
+    },
+    {
+      "path": "support/android/audit.py",
+      "git_blob_sha1": "488670b8c93b24da4cc7aa03bd7e8b6da8dfc640",
+      "bytes": 10041,
+      "mode": "100644"
+    },
+    {
+      "path": "support/android/build_asterinas_abi.sh",
+      "git_blob_sha1": "a2bbc9ac98b327e4b2f3ed4d342b75e8be02adc7",
+      "bytes": 1929,
+      "mode": "100755"
+    },
+    {
+      "path": "support/android/build_smoke_apk.sh",
+      "git_blob_sha1": "5cb8e48887afc41015b9cc407f8a43526feed722",
+      "bytes": 4203,
+      "mode": "100755"
+    },
+    {
+      "path": "support/android/capture_guest_logs.py",
+      "git_blob_sha1": "bda2960c8cdbd8682499b03e2f1b7183da89a700",
+      "bytes": 3464,
+      "mode": "100644"
+    },
+    {
+      "path": "support/android/generate_kernel_source_audit.py",
+      "git_blob_sha1": "dae415af5499a1f30c434901c3d47b85e2bcf36f",
+      "bytes": 7293,
+      "mode": "100644"
+    },
+    {
+      "path": "support/android/kernel_contract.py",
+      "git_blob_sha1": "f9e92e79b4d1a952158faa3c143b7f9cce5d2acb",
+      "bytes": 8889,
+      "mode": "100644"
+    },
+    {
+      "path": "support/android/prepare_aosp.sh",
+      "git_blob_sha1": "60f1141722babd44a7983ee5d4acbbc63cd700c5",
+      "bytes": 5265,
+      "mode": "100755"
+    },
+    {
+      "path": "support/android/prepare_asterinas_abi.py",
+      "git_blob_sha1": "09c56b097c939238a279ea4a544364c55f568918",
+      "bytes": 5553,
+      "mode": "100644"
+    },
+    {
+      "path": "support/android/run_asterinas_abi.py",
+      "git_blob_sha1": "f18c33f21c5873a4d8512f2d523664fb3faddda7",
+      "bytes": 16989,
+      "mode": "100644"
+    },
+    {
+      "path": "support/android/run_reference_cuttlefish.sh",
+      "git_blob_sha1": "6717271dfdd0d95a5ec03ec83eff082c463eda12",
+      "bytes": 2960,
+      "mode": "100755"
+    },
+    {
+      "path": "support/android/run_verified_apks.py",
+      "git_blob_sha1": "439ca31b384515e55357cb63ff1b929734046295",
+      "bytes": 9932,
+      "mode": "100644"
+    },
+    {
+      "path": "support/android/verify_host.py",
+      "git_blob_sha1": "eae5497c7a51b6e16d01998a55a8a0b04451bd34",
+      "bytes": 9397,
+      "mode": "100644"
+    },
+    {
+      "path": "support/android/verify_launch_preflight.py",
+      "git_blob_sha1": "a655239c01e294ceb2fe885ff898257dd58ddcd7",
+      "bytes": 9694,
+      "mode": "100644"
+    },
+    {
+      "path": "support/android/verify_product_source.py",
+      "git_blob_sha1": "3935e9202492e0b387ed940d89e70ecf413e67c4",
+      "bytes": 5754,
+      "mode": "100644"
+    },
+    {
+      "path": "support/android/verify_vintf.py",
+      "git_blob_sha1": "da1201417dab52c7060a51af5cab449cf7bae59a",
+      "bytes": 8935,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/apk-matrix.json",
+      "git_blob_sha1": "636af08cd1b73b741e8e0fe04a1ca30356a6720c",
+      "bytes": 2617,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/apk-smoke/Android.bp",
+      "git_blob_sha1": "cb7977318051f3aa09053a09621bde7b2de59e31",
+      "bytes": 946,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/apk-smoke/app/build.gradle",
+      "git_blob_sha1": "efabf0b1105a08389e9dfac2c7fc4418db1c26ad",
+      "bytes": 276,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/apk-smoke/app/src/main/AndroidManifest.xml",
+      "git_blob_sha1": "cd14ae9e600960639dfe0f90fc6574b4865dc6d3",
+      "bytes": 669,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/apk-smoke/app/src/main/java/org/trillionnium/a08smoke/MainActivity.java",
+      "git_blob_sha1": "371d5268abdf9646990fb13640ba27321b1a5de2",
+      "bytes": 1611,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/apk-smoke/app/src/main/res/values/ids.xml",
+      "git_blob_sha1": "f477fb94a1f275e89a911401341c482727f6cce1",
+      "bytes": 151,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/apk-smoke/build.gradle",
+      "git_blob_sha1": "e5ce0d95c7f5f20385cd3f1bbfe77db777662d94",
+      "bytes": 69,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/apk-smoke/native-smoke/app/src/main/AndroidManifest.xml",
+      "git_blob_sha1": "d737e856f32a7f1130d8fbfb194bab278cb9bf12",
+      "bytes": 686,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/apk-smoke/native-smoke/app/src/main/java/org/trillionnium/a08native/MainActivity.java",
+      "git_blob_sha1": "6ed3e3c7fdf99ecae52ed7239039f94b810db4a8",
+      "bytes": 2459,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/apk-smoke/native-smoke/app/src/main/res/values/ids.xml",
+      "git_blob_sha1": "7a4d394a27a6f278651ee16ab40b2a1233bc1e80",
+      "bytes": 191,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/apk-smoke/native-smoke/jni/a08jni.c",
+      "git_blob_sha1": "3676d1caa8830641f8f7f8af3f40864ad556094b",
+      "bytes": 597,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/apk-smoke/settings.gradle",
+      "git_blob_sha1": "8d0065eebaeea06e7e45cfa1da85f588216f986d",
+      "bytes": 269,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/apk-workload.schema.json",
+      "git_blob_sha1": "ed5b1d0f2363473c349fe72bb61f9f22e4cc8f06",
+      "bytes": 1364,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/binder_abi_probe.c",
+      "git_blob_sha1": "473893084f72a273bd423c4509922edf02efeabf",
+      "bytes": 2355,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/binder_uapi_layout.c",
+      "git_blob_sha1": "f3636f0a241cf8edc89246b393c850d223c6acad",
+      "bytes": 3943,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/boot_gates.py",
+      "git_blob_sha1": "0e5ea68eed7eafb877c8f3d17baac309c13f76db",
+      "bytes": 5320,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/a08-fourth-wave.json",
+      "git_blob_sha1": "11d8fa3cd8b25fe8d26c28f627b9333b6505d8e8",
+      "bytes": 1187,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/a08-fourth-wave.log",
+      "git_blob_sha1": "0f97480d508eefd7b11014c43e318e6ec5cbf6a4",
+      "bytes": 1082,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/cloud-preflight-20261016.json",
+      "git_blob_sha1": "c308d7b394799cf00772352eacea2f04b5be63dc",
+      "bytes": 1867,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/cloud-preflight-20261016.log",
+      "git_blob_sha1": "d588723d34f4472772dfe9b0bf05f760e11f7329",
+      "bytes": 274,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/cloud-preflight-20261017.json",
+      "git_blob_sha1": "fdb730d382adb49847c57cbfc45d11519ab98b98",
+      "bytes": 1662,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/cloud-preflight-20261017.log",
+      "git_blob_sha1": "0bcafb1d0f92b2ded1b6d8ca637cd1296786455e",
+      "bytes": 274,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/environment.json",
+      "git_blob_sha1": "38a6cd8ccaf140f60a999e22351f6dbbe3cc557b",
+      "bytes": 982,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/host-abi-false-pass-regression.json",
+      "git_blob_sha1": "aa2b93763ad8a7e9282c6151dd90e1dbea3e2e14",
+      "bytes": 3183,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/host-abi-false-pass-regression.log",
+      "git_blob_sha1": "639cae52e5e91a9c1413137fe3ec3e9c2ff8b855",
+      "bytes": 5956,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/host-asterinas-abi-guest.json",
+      "git_blob_sha1": "2bdd4d8069a1c1428cfa25417526fb84f70f32f7",
+      "bytes": 1046,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/host-asterinas-abi-guest.log",
+      "git_blob_sha1": "4e9ba51232f10cd7ee0c3949e6a62e222b7a002d",
+      "bytes": 1827,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/host-binder-abi-probe.log",
+      "git_blob_sha1": "a7233c356aaa8543ccf0e40b3f8c6e18f62e44ac",
+      "bytes": 302,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/host-binder-uapi-layout.json",
+      "git_blob_sha1": "f240858651fae0f19ec8861037cbe1da43ebb3d3",
+      "bytes": 1442,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/host-binder-uapi-layout.log",
+      "git_blob_sha1": "f3eaca982855f80c8b483bf1160ae4e307dd01bb",
+      "bytes": 587,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/host-builder-preflight.log",
+      "git_blob_sha1": "289fec6a90069ce74e5cb9f2a8daea7c73c190f5",
+      "bytes": 375,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/host-fifth-wave-combined.json",
+      "git_blob_sha1": "c28f474d5737539358517819c6c088fc507782a7",
+      "bytes": 1635,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/host-fifth-wave-combined.log",
+      "git_blob_sha1": "789bd867d6b30fb29c1c664f13b5bce51902a95f",
+      "bytes": 3204,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/host-fifth-wave-verified.json",
+      "git_blob_sha1": "391365c84164c5c24cb413af7420b3b44f7cdf6e",
+      "bytes": 2658,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/host-fifth-wave-verified.log",
+      "git_blob_sha1": "1d03b7d7a9e5ec3c8725dc98c02140d5bd5fc8d1",
+      "bytes": 3745,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/host-guest-seccomp.json",
+      "git_blob_sha1": "7be8e58588c61c8aea885fc4656c18668dbc71e1",
+      "bytes": 2563,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/host-guest-seccomp.log",
+      "git_blob_sha1": "25f0f46a5b59482d08e608cc3ce99a3a4ddb8ec1",
+      "bytes": 244,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/host-jni-gate.json",
+      "git_blob_sha1": "c42eea448ba74483aefb3aee0fc0a5f8ab5ac3b6",
+      "bytes": 1672,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/host-linux-abi-probe.log",
+      "git_blob_sha1": "f3b0eddad5ee46d04202550d399f97f0eebd0624",
+      "bytes": 194,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/host-next-run.json",
+      "git_blob_sha1": "30e8705f16e7e90b2df19cfca2ce24de7328e761",
+      "bytes": 3883,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/host-reference-preflight.log",
+      "git_blob_sha1": "867abb9adb3ed6a594a9c7a20ae3297ecd589d99",
+      "bytes": 354,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/host-seccomp-abi-probe.log",
+      "git_blob_sha1": "4401b557da4a7b3a51017110b4fd1a8cd4d384dd",
+      "bytes": 475,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/host-seventh-apex.json",
+      "git_blob_sha1": "268177b1293ab8052f92c8b93d2c41590dbdef57",
+      "bytes": 2025,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/host-seventh-apex.log",
+      "git_blob_sha1": "58ea6275a89a41d56e08a188e39d3efd46ec5330",
+      "bytes": 4717,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/host-seventh-boot-gates.json",
+      "git_blob_sha1": "7dfb224934479fd42d37ba5de729702f870fd20c",
+      "bytes": 1414,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/host-seventh-boot-gates.log",
+      "git_blob_sha1": "4626417500c8deca3263051ec4d30f5b48c603ee",
+      "bytes": 715,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/host-sixth-vintf.json",
+      "git_blob_sha1": "6efeecf6cbb509eb934f4348bc73655b6f90696c",
+      "bytes": 1631,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/host-sixth-vintf.log",
+      "git_blob_sha1": "442af7189ba8073bf2298a604c0d45f231524189",
+      "bytes": 4045,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/host-suite-20261016.json",
+      "git_blob_sha1": "b8288f7367289164a02b0005325ab2d0285dadb9",
+      "bytes": 1457,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/host-suite-20261016.log",
+      "git_blob_sha1": "5a67f11d8728994839fd2f45390ef2407a933700",
+      "bytes": 24501,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/host-unit-tests-next.log",
+      "git_blob_sha1": "6a3992397c699b7d877a9cb4deb1a436d248885d",
+      "bytes": 1244,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/host-unit-tests-rerun.log",
+      "git_blob_sha1": "d4ae8655526a4101ff73707a3589b7720eb1f9f5",
+      "bytes": 2788,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/evidence/host-unit-tests.log",
+      "git_blob_sha1": "b856e0cd0d7ec25e3e0b6cb8a0c51095b2ea55e6",
+      "bytes": 697,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/host_jni/MainActivity.java",
+      "git_blob_sha1": "70717012bb0aa749c57c511dca9740932f531eb2",
+      "bytes": 532,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/kernel_abi_probe.c",
+      "git_blob_sha1": "4bfea8af6246784b75ffbaa638a4e934bc0cd7d6",
+      "bytes": 5333,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/run_apk.py",
+      "git_blob_sha1": "3f6da6500d7cf11ac4ce9ba34eee4b4302bc4a47",
+      "bytes": 14575,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/run_apk_workload.py",
+      "git_blob_sha1": "c109a5a056626c19787bb384551888df642c7e97",
+      "bytes": 10780,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/run_native_apk.py",
+      "git_blob_sha1": "79b064d95abec61a14f263bc0b4b8193fb1eacc7",
+      "bytes": 8338,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/seccomp_abi_probe.c",
+      "git_blob_sha1": "17b6ff45792dec2ffc781233abec804f75226720",
+      "bytes": 3011,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/test_abi_result_parser.py",
+      "git_blob_sha1": "5b8f753f1d2f038d55599766b2536e1a016622d8",
+      "bytes": 10570,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/test_android_tools.py",
+      "git_blob_sha1": "e90ae67a7edbb668ac5d700c9a58c3271527a657",
+      "bytes": 7323,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/test_apk.py",
+      "git_blob_sha1": "b9996a3067810766b5a4457806e1650cd07b2c5d",
+      "bytes": 12165,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/test_asterinas_abi_guest.py",
+      "git_blob_sha1": "29d6f662d7321c2b08edb67daf0918ff915959b5",
+      "bytes": 10662,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/test_asterinas_abi_runner_transport.py",
+      "git_blob_sha1": "f676623d3413d442141024f18d6279afc9614e95",
+      "bytes": 5776,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/test_audit.py",
+      "git_blob_sha1": "1a8b1b5068048fd63639f3eb8662abe01d281fa5",
+      "bytes": 6798,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/test_binder_uapi_layout.py",
+      "git_blob_sha1": "abca900a708da1de41bb89b000ca75b4e932440a",
+      "bytes": 2866,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/test_boot_gates.py",
+      "git_blob_sha1": "eb450f07d25dc4de8a46724d4ae110261d569c31",
+      "bytes": 4385,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/test_kernel_abi_runtime_host.py",
+      "git_blob_sha1": "a3f01991bcc2fbad5d1895455980a741c44ae810",
+      "bytes": 2153,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/test_kernel_contract.py",
+      "git_blob_sha1": "fc85e308d7fc4806890514502ea4c01659470cf1",
+      "bytes": 6254,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/test_kernel_source_audit.py",
+      "git_blob_sha1": "455abbd4ea6c48e54398e817bd017980dbce487a",
+      "bytes": 2334,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/test_native_apk.py",
+      "git_blob_sha1": "867b43fd9746cedc9da6453cd9216717ac406c1e",
+      "bytes": 6788,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/test_seccomp_guest_contract.py",
+      "git_blob_sha1": "efa25261b55b619b477ead20eff06f7eb9031bfe",
+      "bytes": 7298,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/test_verified_artifacts.py",
+      "git_blob_sha1": "2350ddd998ed6d6e71ade233fd63791f130a572d",
+      "bytes": 9875,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/test_verify_launch_preflight.py",
+      "git_blob_sha1": "0cdeb91232068a612236b7502f63c945769c7fa1",
+      "bytes": 11762,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/test_verify_product_source.py",
+      "git_blob_sha1": "60d8978065259efb1050ee876dd1679f8c588013",
+      "bytes": 6354,
+      "mode": "100644"
+    },
+    {
+      "path": "tests/workloads/android/test_verify_vintf.py",
+      "git_blob_sha1": "74ef44d7d0e852b35f213520f6afe61f9a365325",
+      "bytes": 7574,
+      "mode": "100644"
+    }
+  ],
+  "base_to_recovered_changes": [
+    {
+      "path": "compat/android/aosp-profile.json",
+      "base_blob_sha1": "d2a60685786f161572bca445bcefb357e348f3b3",
+      "recovered_blob_sha1": "47253b3572d6abd67cf56e3432156d2d570201d0",
+      "base_mode": "100644",
+      "recovered_mode": "100644",
+      "base_bytes": 16728,
+      "recovered_bytes": 12679
+    },
+    {
+      "path": "compat/android/capability-matrix.json",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "f5819e106969ec556b869f9937923360746d5909",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 8103
+    },
+    {
+      "path": "compat/android/kernel-gaps.json",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "f1aefd64c75b8bb9dd95fb5d6ca6ace4bd5e5f3c",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 3255
+    },
+    {
+      "path": "compat/android/source-audit-main-0709ab5d.json",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "a1f95a10ccbbb84d7cb2ac8d3c89dfbd861b205a",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 4968
+    },
+    {
+      "path": "compat/android/source-audit-main-3b2d15bc.json",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "81e468bf6cb7158997b1052ca12791821093ebcb",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 4968
+    },
+    {
+      "path": "compat/android/source-audit-main-5aeff7b6.json",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "d5f300a8f6b7edbda5f77cdc5fa2dec65ab81fd9",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 4968
+    },
+    {
+      "path": "compat/android/source-audit-main-acd9ee30.json",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "e810c0c74a69808a3a52d4078c9aeffc44b50b7b",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 4968
+    },
+    {
+      "path": "compat/android/source-audit-main-bc294f75.json",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "ba0f01bcee9654f919532478615eeb5ca058750f",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 4968
+    },
+    {
+      "path": "compat/android/source-audit-main-e1b9d705.json",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "f01851e7926b0d50b35629521cd320ec3f493c15",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 4968
+    },
+    {
+      "path": "compat/android/source-audit-main-e44c92ac.json",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "a59299e55c42bfc7c4f25afa65575c16720e4591",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 5942
+    },
+    {
+      "path": "support/android/README.md",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "433e5410930bddd1fcc29c0de8c984415b6b21b9",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 31549
+    },
+    {
+      "path": "support/android/build_asterinas_abi.sh",
+      "base_blob_sha1": "a2bbc9ac98b327e4b2f3ed4d342b75e8be02adc7",
+      "recovered_blob_sha1": "a2bbc9ac98b327e4b2f3ed4d342b75e8be02adc7",
+      "base_mode": "100644",
+      "recovered_mode": "100755",
+      "base_bytes": 1929,
+      "recovered_bytes": 1929
+    },
+    {
+      "path": "support/android/build_smoke_apk.sh",
+      "base_blob_sha1": "5cb8e48887afc41015b9cc407f8a43526feed722",
+      "recovered_blob_sha1": "5cb8e48887afc41015b9cc407f8a43526feed722",
+      "base_mode": "100644",
+      "recovered_mode": "100755",
+      "base_bytes": 4203,
+      "recovered_bytes": 4203
+    },
+    {
+      "path": "support/android/capture_guest_logs.py",
+      "base_blob_sha1": "2d606fe4843fda7715dc930b73558f1220b1dea8",
+      "recovered_blob_sha1": "bda2960c8cdbd8682499b03e2f1b7183da89a700",
+      "base_mode": "100644",
+      "recovered_mode": "100644",
+      "base_bytes": 4866,
+      "recovered_bytes": 3464
+    },
+    {
+      "path": "support/android/generate_kernel_source_audit.py",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "dae415af5499a1f30c434901c3d47b85e2bcf36f",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 7293
+    },
+    {
+      "path": "support/android/kernel_contract.py",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "f9e92e79b4d1a952158faa3c143b7f9cce5d2acb",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 8889
+    },
+    {
+      "path": "support/android/prepare_aosp.sh",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "60f1141722babd44a7983ee5d4acbbc63cd700c5",
+      "base_mode": null,
+      "recovered_mode": "100755",
+      "base_bytes": null,
+      "recovered_bytes": 5265
+    },
+    {
+      "path": "support/android/prepare_asterinas_abi.py",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "09c56b097c939238a279ea4a544364c55f568918",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 5553
+    },
+    {
+      "path": "support/android/run_asterinas_abi.py",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "f18c33f21c5873a4d8512f2d523664fb3faddda7",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 16989
+    },
+    {
+      "path": "support/android/run_reference_cuttlefish.sh",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "6717271dfdd0d95a5ec03ec83eff082c463eda12",
+      "base_mode": null,
+      "recovered_mode": "100755",
+      "base_bytes": null,
+      "recovered_bytes": 2960
+    },
+    {
+      "path": "support/android/run_verified_apks.py",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "439ca31b384515e55357cb63ff1b929734046295",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 9932
+    },
+    {
+      "path": "support/android/verify_host.py",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "eae5497c7a51b6e16d01998a55a8a0b04451bd34",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 9397
+    },
+    {
+      "path": "support/android/verify_launch_preflight.py",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "a655239c01e294ceb2fe885ff898257dd58ddcd7",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 9694
+    },
+    {
+      "path": "tests/workloads/android/evidence/host-suite-20261016.log",
+      "base_blob_sha1": "972a5feaf3faad93b2c0685bb1ebed7ec9299e8c",
+      "recovered_blob_sha1": "5a67f11d8728994839fd2f45390ef2407a933700",
+      "base_mode": "100644",
+      "recovered_mode": "100644",
+      "base_bytes": 14144,
+      "recovered_bytes": 24501
+    },
+    {
+      "path": "tests/workloads/android/evidence/host-unit-tests-next.log",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "6a3992397c699b7d877a9cb4deb1a436d248885d",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 1244
+    },
+    {
+      "path": "tests/workloads/android/evidence/host-unit-tests-rerun.log",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "d4ae8655526a4101ff73707a3589b7720eb1f9f5",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 2788
+    },
+    {
+      "path": "tests/workloads/android/evidence/host-unit-tests.log",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "b856e0cd0d7ec25e3e0b6cb8a0c51095b2ea55e6",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 697
+    },
+    {
+      "path": "tests/workloads/android/host_jni/MainActivity.java",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "70717012bb0aa749c57c511dca9740932f531eb2",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 532
+    },
+    {
+      "path": "tests/workloads/android/kernel_abi_probe.c",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "4bfea8af6246784b75ffbaa638a4e934bc0cd7d6",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 5333
+    },
+    {
+      "path": "tests/workloads/android/run_apk.py",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "3f6da6500d7cf11ac4ce9ba34eee4b4302bc4a47",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 14575
+    },
+    {
+      "path": "tests/workloads/android/run_apk_workload.py",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "c109a5a056626c19787bb384551888df642c7e97",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 10780
+    },
+    {
+      "path": "tests/workloads/android/run_native_apk.py",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "79b064d95abec61a14f263bc0b4b8193fb1eacc7",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 8338
+    },
+    {
+      "path": "tests/workloads/android/test_apk.py",
+      "base_blob_sha1": "db7c06e05736bfe85a499539bde7709e2cf92b02",
+      "recovered_blob_sha1": "b9996a3067810766b5a4457806e1650cd07b2c5d",
+      "base_mode": "100644",
+      "recovered_mode": "100644",
+      "base_bytes": 22172,
+      "recovered_bytes": 12165
+    },
+    {
+      "path": "tests/workloads/android/test_asterinas_abi_guest.py",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "29d6f662d7321c2b08edb67daf0918ff915959b5",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 10662
+    },
+    {
+      "path": "tests/workloads/android/test_asterinas_abi_runner_transport.py",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "f676623d3413d442141024f18d6279afc9614e95",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 5776
+    },
+    {
+      "path": "tests/workloads/android/test_audit.py",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "1a8b1b5068048fd63639f3eb8662abe01d281fa5",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 6798
+    },
+    {
+      "path": "tests/workloads/android/test_binder_uapi_layout.py",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "abca900a708da1de41bb89b000ca75b4e932440a",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 2866
+    },
+    {
+      "path": "tests/workloads/android/test_boot_gates.py",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "eb450f07d25dc4de8a46724d4ae110261d569c31",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 4385
+    },
+    {
+      "path": "tests/workloads/android/test_kernel_abi_runtime_host.py",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "a3f01991bcc2fbad5d1895455980a741c44ae810",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 2153
+    },
+    {
+      "path": "tests/workloads/android/test_kernel_contract.py",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "fc85e308d7fc4806890514502ea4c01659470cf1",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 6254
+    },
+    {
+      "path": "tests/workloads/android/test_kernel_source_audit.py",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "455abbd4ea6c48e54398e817bd017980dbce487a",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 2334
+    },
+    {
+      "path": "tests/workloads/android/test_native_apk.py",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "867b43fd9746cedc9da6453cd9216717ac406c1e",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 6788
+    },
+    {
+      "path": "tests/workloads/android/test_seccomp_guest_contract.py",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "efa25261b55b619b477ead20eff06f7eb9031bfe",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 7298
+    },
+    {
+      "path": "tests/workloads/android/test_verified_artifacts.py",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "2350ddd998ed6d6e71ade233fd63791f130a572d",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 9875
+    },
+    {
+      "path": "tests/workloads/android/test_verify_launch_preflight.py",
+      "base_blob_sha1": null,
+      "recovered_blob_sha1": "0cdeb91232068a612236b7502f63c945769c7fa1",
+      "base_mode": null,
+      "recovered_mode": "100644",
+      "base_bytes": null,
+      "recovered_bytes": 11762
+    }
+  ],
+  "invalid_utf8_base_blobs": [
+    {
+      "path": "compat/android/aosp-profile.json",
+      "git_blob_sha1": "d2a60685786f161572bca445bcefb357e348f3b3",
+      "bytes": 16728,
+      "error_offset": 10508,
+      "error_byte_hex": "0xbb",
+      "error": "'utf-8' codec can't decode byte 0xbb in position 10508: invalid start byte"
+    },
+    {
+      "path": "support/android/capture_guest_logs.py",
+      "git_blob_sha1": "2d606fe4843fda7715dc930b73558f1220b1dea8",
+      "bytes": 4866,
+      "error_offset": 1643,
+      "error_byte_hex": "0xb9",
+      "error": "'utf-8' codec can't decode byte 0xb9 in position 1643: invalid start byte"
+    },
+    {
+      "path": "tests/workloads/android/test_apk.py",
+      "git_blob_sha1": "db7c06e05736bfe85a499539bde7709e2cf92b02",
+      "bytes": 22172,
+      "error_offset": 10577,
+      "error_byte_hex": "0xb9",
+      "error": "'utf-8' codec can't decode byte 0xb9 in position 10577: invalid start byte"
+    }
+  ],
+  "method": "Compare complete non-truncated GitHub Git trees at base and historical source; fetched recovered UTF-8 files were independently rehashed using Git blob framing. Verified all 105 A08 file bytes and modes in the checkout before adding the new guard and documentation.",
+  "historical_source_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/tree/37466a93823b9b10ace81759ec6decb59bb5a140",
+  "base_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/tree/41a8c32b435f2fa9dd750ded40bd4b37cb7606c6"
+}

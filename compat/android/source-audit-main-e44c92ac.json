@@ -1,0 +1,173 @@
+{
+  "schema": 1,
+  "observed_utc": "2026-10-16",
+  "main_commit": "e44c92ac885eb003665ff2e1e5c6fab1f104b2d6",
+  "main_tree": "3dd930e1203772ab0302d1490e1c84ba296f48e3",
+  "kernel_upstream_lock": {
+    "repository": "asterinas/asterinas",
+    "tag": "v0.19.0",
+    "commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+    "tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+    "reuse": "full_kernel_derived",
+    "toolchain": "nightly-2026-07-21",
+    "target": "x86_64-unknown-none",
+    "source_imported": true,
+    "build_verified": true,
+    "source_directory": "kernel/asterinas",
+    "source_import_method": "vendored_git_tree",
+    "source_files": 2938,
+    "license": "MPL-2.0",
+    "license_file": "kernel/asterinas/LICENSE-MPL",
+    "cargo_lock_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+    "osdk_cargo_lock_sha256": "99a21f72f6a9f1582553b34f06e80f86e539f38e62eab7a0847afd0906e75be3",
+    "toolchain_file_sha256": "b2508d8c9cd57258fad2fc77737e07172846161f6a7dd726cbd8e974de69c6f7",
+    "qemu_boot_verified": true,
+    "build_code_commit": "94139171cdf84f2b920a8cad94801540055c3040",
+    "derived_tree": "9752b3abdc895d435d33cedc3062bf952c78beeb",
+    "generated_cargo_lock": "support/build/minimal/Cargo.lock",
+    "generated_cargo_lock_sha256": "b42d8fff136d80a5f8159356882096996991e05975d8da9c81ad9db9bdb06e10",
+    "artifact_sha256": "e884f5e50cf296833276016894a39337cd9ac13bc51f6b1f2dea3cc3a6904b63",
+    "boot_profile": "support/build/minimal/OSDK.toml",
+    "verification_evidence": "support/build/evidence/2026-10-16-next/report.json",
+    "acceptance_guard_commit": "c1f3423d6603c09c1b4fd6d7ceef7bfd25739c3a",
+    "kernel_mode_regression": {
+      "evidence": "support/build/evidence/2026-10-16-next/acceptance/kernel-tests/result.json",
+      "crates": [
+        "ostd",
+        "aster-core"
+      ],
+      "reported_passed": 362,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 3,
+      "exercised_passed_lower_bound": 359,
+      "profile": "x86_64-q35-tcg-1cpu-512MiB",
+      "test_base_locks": {
+        "ostd": {
+          "path": "support/build/ktest/locks/ostd.Cargo.lock",
+          "sha256": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6"
+        },
+        "aster-core": {
+          "path": "support/build/ktest/locks/aster-core.Cargo.lock",
+          "sha256": "159b8682d27a7a21af98885ae48515234445c00fdf5e00b158fdc4aa952ff4ed"
+        }
+      }
+    },
+    "host_regression": {
+      "evidence": "support/build/evidence/2026-10-16-next/host-tools/results.json",
+      "full_original_unit_suite_passed": false,
+      "passed": 13,
+      "failed": 1,
+      "selected_non_vm_integration_passed": 13
+    }
+  },
+  "source_files": {
+    "kernel/asterinas/kernel/core/src/syscall/mod.rs": {
+      "sha": "2b5dfbef666e1fb1c2a479b279bab61321e28f6f",
+      "size": 10195
+    },
+    "kernel/asterinas/kernel/core/src/syscall/prctl.rs": {
+      "sha": "c26b3ef6a85926078983edb6145759b8da28ed47",
+      "size": 11882
+    },
+    "kernel/asterinas/kernel/core/src/syscall/futex.rs": {
+      "sha": "a6b8181bac64890eb92a894bf5813baf6edb2f26",
+      "size": 5267
+    },
+    "kernel/asterinas/kernel/core/src/syscall/mmap.rs": {
+      "sha": "a9868870f6662ffd032ab69095276024c372272b",
+      "size": 9896
+    },
+    "kernel/asterinas/kernel/core/src/syscall/memfd_create.rs": {
+      "sha": "56b4c50ba020c057213ed2817ddfe56dd7a8080e",
+      "size": 1773
+    },
+    "kernel/asterinas/kernel/core/src/syscall/sendmsg.rs": {
+      "sha": "974a761fd54959bf469fee4ac8fd95f18ac50add",
+      "size": 2050
+    },
+    "kernel/asterinas/kernel/core/src/syscall/recvmsg.rs": {
+      "sha": "0ff25d8c0e94c1ec2d05021cba5e98dfb8dba9f7",
+      "size": 2026
+    },
+    "kernel/asterinas/kernel/core/src/security/lsm/modules/mod.rs": {
+      "sha": "a7685c0a85ee3b6ce1914627536f0973ccb3ac22",
+      "size": 6505
+    },
+    "kernel/asterinas/kernel/core/src/device/mod.rs": {
+      "sha": "e62d157f391536f3535ad542defe77ba65407de0",
+      "size": 1935
+    },
+    "support/upstream-lock.json": {
+      "sha": "b1568cb4933aedbe84b7bd26fe009fb280c03209",
+      "size": 3682
+    }
+  },
+  "source_path_scan": {
+    "core_files": 756,
+    "keywords": [
+      {
+        "term": "seccomp",
+        "matching_source_paths": []
+      },
+      {
+        "term": "binder",
+        "matching_source_paths": []
+      },
+      {
+        "term": "selinux",
+        "matching_source_paths": []
+      }
+    ]
+  },
+  "checks": {
+    "binder": {
+      "status": "missing_driver_source_evidence",
+      "reason": "no binder-named Rust driver module in core path and device/module path read; protocol transactions untested",
+      "owner": "A05/A08"
+    },
+    "seccomp": {
+      "status": "missing_install_syscall_or_prctl_entrypoint",
+      "sys_seccomp_registered": false,
+      "prctl_set_seccomp_registered": false,
+      "owner": "A05"
+    },
+    "android_mac": {
+      "status": "not_implemented_as_selinux",
+      "registered_lsms": [
+        "capability",
+        "yama"
+      ],
+      "owner": "A05"
+    },
+    "futex": {
+      "status": "source_entrypoint_only",
+      "fn_present": true,
+      "owner": "A04"
+    },
+    "mmap": {
+      "status": "source_entrypoint_only",
+      "fn_present": true,
+      "owner": "A04"
+    },
+    "memfd": {
+      "status": "source_entrypoint_only",
+      "fn_present": true,
+      "owner": "A04"
+    },
+    "scm_rights": {
+      "status": "syscall_entrypoint_only_not_protocol_tested",
+      "sendmsg": true,
+      "recvmsg": true,
+      "owner": "A04"
+    }
+  },
+  "runtime_android_verified": false,
+  "booted_android_on_asterinas": false,
+  "build_tested_this_agent": false,
+  "limitations": [
+    "Snapshot of current main source and pathname scan, not compiled or run under Asterinas in this session",
+    "No claims about missing handlers outside checked core tree",
+    "A01 QEMU boot evidence from upstream-lock is not Android boot evidence"
+  ]
+}

@@ -1,0 +1,250 @@
+{
+  "android_apk_runtime": "not_executed",
+  "android_reference_boot": "not_executed",
+  "aosp_product_build": "not_executed",
+  "asterinas_source_gate": {
+    "android_runtime_verified": false,
+    "blocking_requirements": [
+      "binder",
+      "seccomp",
+      "mac"
+    ],
+    "kernel_runtime_verified": false,
+    "source_scan_exit": 2,
+    "status": "source_review_blocked"
+  },
+  "host": {
+    "machine": "x86_64",
+    "platform": "Linux-6.18.55-x86_64-with-glibc2.39",
+    "python": "3.12.14"
+  },
+  "host_gates_passed": true,
+  "native_asterinas_qualified": false,
+  "operations": [
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/scratch/98f315e377b2/next-main/support/android/verify_source_integrity.py"
+      ],
+      "exit": 0,
+      "name": "source_integrity",
+      "status": "passed",
+      "stderr": "",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "{\n  \"android_on_asterinas_verified\": false,\n  \"checked_files\": 71,\n  \"errors\": [],\n  \"required_files\": 63,\n  \"schema\": 1,\n  \"scope\": \"A08_SOURCE_INTEGRITY_ONLY\",\n  \"status\": \"source_integrity_passed\"\n}\n",
+      "stdout_sha256": "8ca3f1c5740a5bfd7a8cc9709912b414e11b504e009153d7d2ef442c109425af"
+    },
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "/workspace/scratch/98f315e377b2/next-main/tests/workloads/android",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "exit": 0,
+      "name": "offline_unit_tests",
+      "status": "passed",
+      "stderr": "test_wrong_checkout_report_is_blocked) ... ok\ntest_cli_fails_closed_and_writes_json (test_verify_product_source.ProductLockTests.test_cli_fails_closed_and_writes_json) ... ok\ntest_missing_checkout_fails (test_verify_product_source.ProductLockTests.test_missing_checkout_fails) ... ok\ntest_missing_vmm_revision_is_blocking (test_verify_product_source.ProductLockTests.test_missing_vmm_revision_is_blocking) ... ok\ntest_symlink_escape_is_refused (test_verify_product_source.ProductLockTests.test_symlink_escape_is_refused) ... ok\ntest_three_real_git_checkouts_match_manifest_only (test_verify_product_source.ProductLockTests.test_three_real_git_checkouts_match_manifest_only) ... ok\ntest_wrong_device_identity_is_blocking (test_verify_product_source.ProductLockTests.test_wrong_device_identity_is_blocking) ... ok\ntest_wrong_product_registration_is_blocking (test_verify_product_source.ProductLockTests.test_wrong_product_registration_is_blocking) ... ok\ntest_wrong_resolved_commit_is_blocking (test_verify_product_source.ProductLockTests.test_wrong_resolved_commit_is_blocking) ... ok\ntest_active_release_matrix_set_is_fail_closed (test_verify_vintf.VintfTests.test_active_release_matrix_set_is_fail_closed) ... ok\ntest_apex_filename_must_be_real_apex_info_list (test_verify_vintf.VintfTests.test_apex_filename_must_be_real_apex_info_list) ... ok\ntest_apex_info_in_build_out_is_recorded (test_verify_vintf.VintfTests.test_apex_info_in_build_out_is_recorded) ... ok\ntest_apex_info_outside_aosp_out_is_rejected (test_verify_vintf.VintfTests.test_apex_info_outside_aosp_out_is_rejected) ... ok\ntest_apex_legacy_cli_is_never_forwarded (test_verify_vintf.VintfTests.test_apex_legacy_cli_is_never_forwarded) ... ok\ntest_build_tool_invocation_and_real_exit (test_verify_vintf.VintfTests.test_build_tool_invocation_and_real_exit) ... ok\ntest_cli_refuses_incomplete_product_without_success_claim (test_verify_vintf.VintfTests.test_cli_refuses_incomplete_product_without_success_claim) ... ok\ntest_incompatible_is_not_green (test_verify_vintf.VintfTests.test_incompatible_is_not_green) ... ok\ntest_missing_framework_matrix_fails_before_execution (test_verify_vintf.VintfTests.test_missing_framework_matrix_fails_before_execution) ... ok\ntest_soong_vintf_symlink_within_same_out_is_allowed (test_verify_vintf.VintfTests.test_soong_vintf_symlink_within_same_out_is_allowed) ... ok\ntest_vendor_vintf_symlink_escape_is_blocked (test_verify_vintf.VintfTests.test_vendor_vintf_symlink_escape_is_blocked) ... ok\ntest_wrong_tool_outside_same_build_is_blocked (test_verify_vintf.VintfTests.test_wrong_tool_outside_same_build_is_blocked) ... ok\ntest_zero_exit_with_incompatible_string_fails_closed (test_verify_vintf.VintfTests.test_zero_exit_with_incompatible_string_fails_closed) ... ok\ntest_zero_exit_without_compatible_marker_fails (test_verify_vintf.VintfTests.test_zero_exit_without_compatible_marker_fails) ... ok\n\n----------------------------------------------------------------------\nRan 184 tests in 7.250s\n\nOK\n",
+      "stderr_sha256": "982e73cf7a2609ddb49fa03b103bedc1b0379c405d4662a6d06611a98053194a",
+      "stdout": "manifest: fail (1 errors) -> /tmp/tmpjyzes57h/report.json\n{\"blockers\": [\"pinned_lock\"], \"runtime_verified\": false, \"status\": \"lock_unavailable\"}\n{\"blockers\": [\"binder\", \"seccomp\", \"mac\"], \"runtime_verified\": false, \"status\": \"source_review_blocked\"}\n{\"linux_abi_probe\": \"pass\", \"binder_probe\": \"primitive_ioctl_mmap_only\", \"seccomp_probe\": \"filter_install_not_implemented\"}\n{\"linux_abi_probe\": \"pass\", \"binder_probe\": \"primitive_ioctl_mmap_only\", \"seccomp_probe\": \"filter_enforcement_primitive_only\"}\n{\"status\": \"artifacts_verified_no_guest_execution\", \"scope\": \"Linux Cuttlefish reference, NOT Asterinas\", \"asterinas_runtime_passed\": false, \"evidence\": \"/tmp/tmpmtcp79je/evidence/result.json\"}\n{\"status\": \"linux_reference_apks_passed_only\", \"scope\": \"Linux Cuttlefish reference, NOT Asterinas\", \"asterinas_runtime_passed\": false, \"evidence\": \"/tmp/tmpwdsrxnf6/evidence/result.json\"}\n{\"status\": \"blocked_or_failed\", \"scope\": \"Linux Cuttlefish reference, NOT Asterinas\", \"asterinas_runtime_passed\": false, \"evidence\": \"/tmp/tmpchlk8kwr/evidence/result.json\"}\n{\"status\": \"preflight_only\", \"errors\": [], \"android_on_asterinas_verified\": false}\n{\"status\": \"blocked\", \"errors\": [\"image:vendor_img: file missing at preflight\"], \"android_on_asterinas_verified\": false}\n{\"status\": \"pass_source_checkout_only\", \"errors\": [], \"android_on_asterinas_verified\": false}\n{\"status\": \"blocked\", \"errors\": [\"[Errno 2] No such file or directory: '/tmp/tmpi4dhrccn/missing.xml'\"], \"android_on_asterinas_verified\": false}\n{\"status\": \"blocked_or_failed\", \"errors\": [\"vendor or odm device VINTF manifest is missing\"], \"android_on_asterinas_verified\": false}\n",
+      "stdout_sha256": "c9d4d10087fb87cf02ec80c926ce3ff145b3117be6591af1582c8ca2b42e676c"
+    },
+    {
+      "command": [
+        "cc",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pthread",
+        "/workspace/scratch/98f315e377b2/next-main/tests/workloads/android/kernel_abi_probe.c",
+        "-o",
+        "/tmp/a08-host-4sbnl6la/kernel_abi"
+      ],
+      "exit": 0,
+      "name": "compile_kernel_abi",
+      "status": "passed",
+      "stderr": "",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "/tmp/a08-host-4sbnl6la/kernel_abi"
+      ],
+      "exit": 0,
+      "name": "execute_kernel_abi",
+      "status": "passed",
+      "stderr": "",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "# host=syscall_probe page_size=4096 uid=0\nmmap\tPASS\terrno=0\nmemfd_create\tPASS\terrno=0\nSCM_RIGHTS\tPASS\terrno=0\nfutex_wait_wake\tPASS\terrno=0\nsignal\tPASS\terrno=0\nbinder_device_open\tBLOCKED\terrno=2\n",
+      "stdout_sha256": "4abd4b63409106c959edab79f89b78dc181c8a7efeb1c51ee628208c62e93f00"
+    },
+    {
+      "command": [
+        "cc",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "/workspace/scratch/98f315e377b2/next-main/tests/workloads/android/binder_abi_probe.c",
+        "-o",
+        "/tmp/a08-host-4sbnl6la/binder_abi"
+      ],
+      "exit": 0,
+      "name": "compile_binder_abi",
+      "status": "passed",
+      "stderr": "",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "/tmp/a08-host-4sbnl6la/binder_abi"
+      ],
+      "exit": 77,
+      "name": "execute_binder_abi",
+      "status": "binder_blocked_no_device",
+      "stderr": "",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "# binder_abi_probe uapi_expected=8 type=48\nbinder_device_open\tBLOCKED\terrno=2\n",
+      "stdout_sha256": "a79205954e509a6cdab1bd8281e49e2ffeac5368bcaead809de24bb3c06e1f2f"
+    },
+    {
+      "command": [
+        "cc",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "/workspace/scratch/98f315e377b2/next-main/tests/workloads/android/binder_uapi_layout.c",
+        "-o",
+        "/tmp/a08-host-4sbnl6la/binder_uapi_layout"
+      ],
+      "exit": 0,
+      "name": "compile_binder_uapi_layout",
+      "status": "passed",
+      "stderr": "",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "/tmp/a08-host-4sbnl6la/binder_uapi_layout"
+      ],
+      "exit": 0,
+      "name": "execute_binder_uapi_layout",
+      "status": "passed",
+      "stderr": "",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "{\"schema\":1,\"scope\":\"host_linux_uapi_layout_only\",\"arch\":\"x86_64_lp64\",\"protocol_version\":8,\"write_read_size\":48,\"transaction_size\":64,\"transaction_secctx_size\":72,\"flat_object_size\":24,\"handle_cookie_size\":12,\"sender_uid_offset\":28,\"ioctls\":{\"BINDER_WRITE_READ\":3224396289,\"BINDER_VERSION\":3221512713,\"BINDER_SET_MAX_THREADS\":1074029061,\"BINDER_SET_CONTEXT_MGR_EXT\":1075339789},\"binder_driver_verified\":false,\"android_asterinas_verified\":false}\n",
+      "stdout_sha256": "71dfb9b4d981fc00c67e37aef890911535abbc9681f8f7f8ec5c24e061aa3f21"
+    },
+    {
+      "command": [
+        "cc",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "/workspace/scratch/98f315e377b2/next-main/tests/workloads/android/seccomp_abi_probe.c",
+        "-o",
+        "/tmp/a08-host-4sbnl6la/seccomp_abi"
+      ],
+      "exit": 0,
+      "name": "compile_seccomp_abi",
+      "status": "passed",
+      "stderr": "",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "/tmp/a08-host-4sbnl6la/seccomp_abi"
+      ],
+      "exit": 0,
+      "name": "execute_seccomp_abi",
+      "status": "passed",
+      "stderr": "",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "no_new_privs\tPASS\terrno=0\nseccomp_filter_install\tPASS\terrno=0\nseccomp_deny_getpid\tPASS\terrno=0\nseccomp_allow_getppid\tPASS\terrno=0\nseccomp_child\tPASS\texit=0\nseccomp_TSYNC_multithread\tNOT_TESTED\terrno=0\nAndroid_process_filters\tNOT_TESTED\terrno=0\n",
+      "stdout_sha256": "ee8c1103eb6f1bf833d908f44329c478741de68e14c8189fbd81171e26d13c82"
+    },
+    {
+      "command": [
+        "cc",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fPIC",
+        "-shared",
+        "-I/workspace/scratch/98f315e377b2/next-tools/jdk/include",
+        "-I/workspace/scratch/98f315e377b2/next-tools/jdk/include/linux",
+        "/workspace/scratch/98f315e377b2/next-main/tests/workloads/android/apk-smoke/native-smoke/jni/a08jni.c",
+        "-o",
+        "/tmp/a08-host-4sbnl6la/liba08jni.so"
+      ],
+      "exit": 0,
+      "name": "compile_host_jni",
+      "status": "passed",
+      "stderr": "",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "/workspace/scratch/98f315e377b2/next-tools/jdk/bin/javac",
+        "-d",
+        "/tmp/a08-host-4sbnl6la/classes",
+        "/workspace/scratch/98f315e377b2/next-main/tests/workloads/android/host_jni/MainActivity.java"
+      ],
+      "exit": 0,
+      "name": "compile_java_jni_harness",
+      "status": "passed",
+      "stderr": "",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "/workspace/scratch/98f315e377b2/next-tools/jdk/bin/java",
+        "-Djava.library.path=/tmp/a08-host-4sbnl6la",
+        "-cp",
+        "/tmp/a08-host-4sbnl6la/classes",
+        "org.trillionnium.a08native.MainActivity"
+      ],
+      "exit": 0,
+      "name": "execute_real_host_jni",
+      "status": "passed",
+      "stderr": "",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "HOST_JNI_INTEGRATION_PASS isa=x86_64 pid_equal=true\n",
+      "stdout_sha256": "2aeeb5bea8d48ff7850c9c8ec13dbee53f8e82a4a1cae43590bb69b5e332b7ec"
+    }
+  ],
+  "schema": 1,
+  "scope": "LINUX_HOST_ONLY",
+  "status": "host_passed_only",
+  "timestamp_utc": "2026-10-17T11:07:48.721940+00:00",
+  "unit_test_count": 184,
+  "unqualified_or_blocked": [
+    "execute_binder_abi"
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "schema": 1,
+  "report": "A08 ninth-wave strict Asterinas ABI guest verdict anti-false-positive regression",
+  "observed_date_utc": "2026-10-16",
+  "host": {
+    "os": "Linux",
+    "kernel": "6.18.44",
+    "arch": "x86_64",
+    "python": "3.13.5",
+    "compiler": "Debian GCC 14.2.0"
+  },
+  "observed_bug_before_fix": {
+    "input": "A01 and A08 success markers plus raw QEMU exit 33 with mmap FAIL errno=38 and memfd_create UNAVAILABLE_AT_COMPILE_TIME; Binder PASS marker without ioctl evidence",
+    "incorrect_old_result": {
+      "linux_abi_probe": "pass",
+      "binder_probe": "primitive_ioctl_mmap_only"
+    },
+    "verified_via_local_reproduction": true
+  },
+  "mitigation": {
+    "syscall_names": [
+      "mmap",
+      "memfd_create",
+      "SCM_RIGHTS",
+      "futex_wait_wake",
+      "signal"
+    ],
+    "requirements": [
+      "exactly one PASS errno=0 for each syscall",
+      "page_size=4096",
+      "chronological unique A01/A08 markers",
+      "A01 QEMU raw exit=33",
+      "no panic/guest ABI failure",
+      "Binder device errno and actual protocol ioctl/mmap result lines",
+      "Binder transaction and Android full runtime never auto-certified",
+      "strict A01 command-line whitelist",
+      "QEMU binary and A01 boot record hashes match",
+      "real subprocess output/serial hashes use raw bytes"
+    ]
+  },
+  "tests": {
+    "command": "python3 -m unittest discover -s /mnt/data/a08-eighth/tests/workloads/android -p 'test_*.py' -v",
+    "executed": 40,
+    "passed": 40,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "wall_seconds": 5.736,
+    "log_sha256": "3b9644dfe7bf29895db07abb24c9baf646cd6b8a5cce99e5d484e8d51d6f2626"
+  },
+  "executed_probes": {
+    "linux_host_static_C": "five ABI syscall families PASS with errno=0; Binder device unavailable ENOENT",
+    "subprocess_runner": "actually invoked host-side fake QEMU executable; not a real virtual machine",
+    "serial_bytes": "hashed raw bytes including non-UTF-8 test suffix",
+    "source_guest_compilation": "static C compiler PASS; fake initramfs packer used in tests"
+  },
+  "verified_source_blobs": {
+    "support/android/run_asterinas_abi.py": "e5c4fede5d4ad8ab67de642565dfe2f9a7741193",
+    "tests/workloads/android/test_asterinas_abi_guest.py": "2840f6b7fc9e4d38a79e3abf390b8edf71395254",
+    "tests/workloads/android/test_abi_result_parser.py": "83f1acbcf1b4fc5b0dbbe43f29b2f8f610ace478",
+    "tests/workloads/android/kernel_abi_probe.c": "4bfea8af6246784b75ffbaa638a4e934bc0cd7d6",
+    "tests/workloads/android/test_kernel_abi_runtime_host.py": "a3f01991bcc2fbad5d1895455980a741c44ae810",
+    "tests/workloads/android/test_asterinas_abi_runner_transport.py": "f676623d3413d442141024f18d6279afc9614e95"
+  },
+  "limitations": {
+    "actual_Asterinas_QEMU_guest": "NOT_EXECUTED",
+    "Binder_on_target": "NOT_EXECUTED",
+    "full_Binder_transactions": "NOT_VERIFIED",
+    "Android_APK_or_ART": "NOT_EXECUTED",
+    "Android_on_Asterinas": "NOT_VERIFIED",
+    "QEMU_binary_available": false,
+    "KVM_device_available": false,
+    "complete_AOSP_tree_available": false
+  },
+  "scope": "host-only exact-blob matched six-file subset, NOT full A08 test tree nor Android runtime"
+}

@@ -1,0 +1,66 @@
+{
+  "schema": 1,
+  "profile": "a08-cuttlefish-x86_64-4k-sw",
+  "aosp": {
+    "tag": "android-15.0.0_r36",
+    "release_build": "BP1A.250505.005.D1",
+    "manifest_url": "https://android.googlesource.com/platform/manifest",
+    "manifest_commit": "a0601d2912a6cedcaf97e1372173f8704a2715b0",
+    "manifest_default_xml_blob": "a7c482a2345706883f9cde145be289a7c14c1c10",
+    "manifest_default_revision": "refs/tags/android-15.0.0_r36",
+    "resolved_manifest_sha256": null,
+    "product": "aosp_cf_x86_64_phone",
+    "release": "trunk_staging",
+    "variant": "userdebug",
+    "lunch": "aosp_cf_x86_64_phone-trunk_staging-userdebug",
+    "arch": "x86_64",
+    "required_page_size_bytes": 4096,
+    "graphics_reference": "guest_swiftshader",
+    "reference_guest_kernel": "linux_cuttlefish_only",
+    "native_asterinas_qualified": false,
+    "build_verified": false,
+    "runtime_verified": false,
+    "release_tag_verified_against_gitiles": true
+  },
+  "checked_project_commits": {
+    "build/make": "d9611a86f6614b2d8b0367f81a825858dfd2207f",
+    "frameworks/base": "396d32905ded85c082232bc510b525c9e372e585",
+    "system/core": "00c7fec1bb09f3284aad6a6f96d2f63dfc3650ad",
+    "bionic": "8d67ca893c1523eb926b9080dbe4e2ffd2a27ba1",
+    "frameworks/native": "cdca1e2000347ce2f2b25ab5d0f2dffa81f30e01"
+  },
+  "artifacts": {
+    "system_image_sha256": null,
+    "vendor_image_sha256": null,
+    "vendor_vintf_manifest_sha256": null,
+    "framework_compatibility_matrix_sha256": null,
+    "resolved_aidl_hal_instances": null,
+    "bionic_art_zygote_system_server_verified": false
+  },
+  "apk_workloads": {
+    "dex_only": {
+      "module": "A08Smoke",
+      "package": "org.trillionnium.a08smoke",
+      "sha256": null,
+      "apk_compiled": false
+    },
+    "x86_64_native": {
+      "module": "A08NativeSmoke",
+      "package": "org.trillionnium.a08native",
+      "jni": "lib/x86_64/liba08jni.so",
+      "sha256": null,
+      "apk_compiled": false,
+      "host_java_jni_verified": true,
+      "android_art_verified": false
+    },
+    "arm64_native": {
+      "module": null,
+      "apk_compiled": false,
+      "translation_verified": false
+    },
+    "bit32_native": {
+      "module": null,
+      "apk_compiled": false
+    }
+  }
+}
