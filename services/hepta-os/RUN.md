@@ -91,6 +91,11 @@ Hepta production profile.
 
 ## Live profile acceptance still required
 
+The separate [original-Agentd gate](../../tests/integration/hepta/ORIGINAL_AGENTD.md)
+now provides fixed-source build/launch commands, original-owner process
+assertions, and the actual resource/artifact blockers. Its default preflight
+does not compile or launch Agentd and cannot satisfy live acceptance.
+
 For a live run, separately record the fixed Hepta executable/build features,
 launcher command, trusted identity/generation/UID source, configured owners and
 providers, and actual capability response. First verify only the four supported

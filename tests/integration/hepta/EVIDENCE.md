@@ -109,6 +109,14 @@ fixture is described as a production owner.
 
 ## Remaining acceptance gates
 
+The next original-process gate is now concrete in
+[ORIGINAL_AGENTD.md](ORIGINAL_AGENTD.md). Its actual 2026-10-17 preflight exited
+2 before any build/launch because of disk, missing original Rust 1.95, and
+`cmake`. Exact-SHA CI/release inspection found no applicable Linux executable.
+The runner was syntax/formatted and its manifest/lock preparation checked;
+original-library compilation and every original-process assertion remain
+unexecuted. Those facts do not change the fixture evidence class above.
+
 1. Supply an independently trusted live Hepta profile, binary/build features,
    configured owners/providers, Agent identity, spawn generation, and endpoint
    UID; run the four supported reads against that actual daemon.
