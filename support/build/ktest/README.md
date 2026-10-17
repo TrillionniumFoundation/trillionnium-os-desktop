@@ -32,7 +32,16 @@ The runner installs OSDK from the vendored source with `--locked`, then invokes
 corresponding fixed test-base lock. The installed downstream OSDK lock patch
 copies it into the generated workspace and passes `--locked` to Cargo. The
 runner checks the resulting generated lock against the selected input again.
-`--skip-osdk-install` can reuse the already source-built patched OSDK.
+`--skip-osdk-install` can reuse a source-built patched OSDK only from the same
+actual absolute upstream checkout root used by this run, not merely the same
+Git commit. With `OSDK_LOCAL_DEV=1`, OSDK binds local OSTD and helper paths through
+its compile-time `CARGO_MANIFEST_DIR`; runtime environment changes cannot rebind
+those paths. After moving the source or creating another worktree, omit the flag
+so the runner installs OSDK from that checkout before testing. Reusing a binary
+from another root can mix local package identities and cause lockfile collisions;
+an OSTD-only success can also refer to that other root. The separate OSDK
+integration runner builds and executes its own source-bound OSDK in its isolated
+target directory, rather than reusing this globally installed ktest binary.
 
 No upstream OSDK manifest is rewritten. The original upstream manifest expands
 its ordinary test arguments, and `record-qemu.py` records those requested
