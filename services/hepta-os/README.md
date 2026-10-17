@@ -6,10 +6,14 @@ speaks the existing, fixed Agentd v2 JSON-over-UDS control wire and exposes only
 bounded metadata and omits the upstream workspace paths, signing inputs,
 session-ingress address, and arbitrary payloads.
 
-**Current evidence:** compiled Linux host client, real Unix-socket fixture
-roundtrips, strict negative cases, and source-derived wire conformance against
-Hepta `f8c9419df6ddeb36ff8b522a50219981fb8d9345`. No live Hepta daemon profile,
-model turn, HOS2 delivery, device action, or Asterinas execution is claimed.
+**Current evidence:** the compiled Linux host client, real Unix-socket fixture
+roundtrips, strict negative cases and source-derived wire conformance are now
+joined by an [executed original Agentd ARM64 read-only gate](../../tests/integration/hepta/evidence/2026-10-17-original-agentd-arm/README.md).
+Fixed Hepta `f8c9419df6ddeb36ff8b522a50219981fb8d9345` was built and run unchanged;
+all eight lifecycle/read checks passed, and three downloaded ELF hashes match
+the executed receipt. This gate uses fresh observer CLI instances. Continuous
+Session-to-original-Agentd observation and Shell projection remain unqualified;
+model turns, HOS2 delivery, device actions and Asterinas execution are not claimed.
 This is a candidate for owner adoption, not completion of A07's durable effect
 acceptance gate. [Evidence and remaining gates](../../tests/integration/hepta/EVIDENCE.md)
 are recorded separately.

@@ -11,8 +11,10 @@ implement or claim A07's Hepta → HOS2 durable-effect gate.
 - `EVIDENCE.md` records the commands, results, limitations and remaining gates.
 - `run_original_agentd.py` and `original_agentd_probe.rs` are the separate
   original-source build/process gate. Default mode performs only preflight;
-  [ORIGINAL_AGENTD.md](ORIGINAL_AGENTD.md) records commands, actual resource
-  blockers, artifact search, and the unexecuted original-process assertions.
+  [ORIGINAL_AGENTD.md](ORIGINAL_AGENTD.md) records commands, historical resource
+  blockers and the [executed native ARM64 result](evidence/2026-10-17-original-agentd-arm/README.md).
+  All eight original-process read checks passed on the fixed source; continuous
+  Session/Shell integration and authenticated effects remain separate gates.
 - `test_original_process_guard.py` exercises the original-process harness's
   Linux child identity and cleanup guard using disposable Python children,
   kernel WNOWAIT/ECHILD results and safe signal spies. It does not build or

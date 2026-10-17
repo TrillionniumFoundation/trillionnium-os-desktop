@@ -4,6 +4,13 @@ Evidence recorded on **2026-10-17 UTC**. This change is a bounded Linux host
 observation slice for the A10 stacked candidate, with files in the A07-owned
 adapter area. It does not claim A07's durable Hepta → HOS2 effect gate.
 
+**Latest separate execution:** the [original Agentd ARM64 archive](evidence/2026-10-17-original-agentd-arm/README.md)
+now records a passed original build/link/run and all eight read-only process
+checks, with independently verified executable hashes. The earlier records
+below retain their original source/time boundaries. The ARM gate uses fresh
+observer CLI instances and does not qualify persistent Session/Shell, model
+turns, authenticated objective submission or device effects.
+
 ## Frozen inputs and execution environment
 
 | Input | Value |
