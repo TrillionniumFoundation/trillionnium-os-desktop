@@ -435,8 +435,8 @@ fn nonterminal_states_reject_saved_status_and_each_success_metadata_field() {
 
 #[test]
 fn every_terminal_error_rejects_each_nonzero_success_metadata_field() {
-    for status in 1..=11 {
-        let name = format!("delivery_terminal_error_{status}");
+    for (index, _) in TERMINAL_ERROR_STATUSES.into_iter().enumerate() {
+        let name = format!("delivery_terminal_error_{}", index + 1);
         for offset in [80, 96, 104, 112, 120] {
             let mut bytes = fixed(&name);
             bytes[offset] = 1;
