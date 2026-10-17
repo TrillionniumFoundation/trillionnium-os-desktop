@@ -254,6 +254,47 @@ class VFIOTests(unittest.TestCase):
             report = self.inspect(root)
         self.assertEqual(report["status"], "blocked")
         self.assertIn("unsafe_interrupt_remapping_setting_unobservable", report["hard_blockers"])
+    def test_eight_digit_cuda_zero_domain_matches_linux_sysfs_path(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self.fixture(root, drivers={GPU: "vfio-pci"})
+            result = vfio.inspect(root, "00000000:01:00.0",
+                                  ["00000000:01:00.0"], device_id="0x28a0")
+        self.assertEqual(result["status"], "manual_review_required")
+        self.assertEqual(result["requested_bdf"], GPU)
+        self.assertEqual(result["observed"]["bdf"], GPU)
+        self.assertEqual(result["expected_group_members"], [GPU])
+        self.assertEqual(result["observed_group_members"], [GPU])
+        self.assertFalse(result["safe_to_assign"])
+
+    def test_mixed_width_iommu_allowlist_duplicate_blocks(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self.fixture(root, drivers={GPU: "vfio-pci"})
+            result = vfio.preflight(root, GPU, [GPU, "00000000:01:00.0"])
+            self.assertIn("duplicate_group_members_or_target_omitted_from_allowlist",
+                          result["hard_blockers"])
+            with self.assertRaises(ValueError):
+                vfio.inspect(root, GPU, [GPU, "00000000:01:00.0"])
+
+    def test_nonzero_high_pci_domain_never_aliases_zero_domain_device(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            self.fixture(root, drivers={GPU: "vfio-pci"})
+            other = "00010000:01:00.0"
+            result = vfio.preflight(root, other, [other])
+        self.assertEqual(result["status"], "blocked")
+        self.assertIn("target_pci_device_missing", result["hard_blockers"])
+        self.assertFalse(result["safe_to_assign"])
+
+    def test_device_number_beyond_pci_slot_31_is_invalid_bdf(self):
+        with tempfile.TemporaryDirectory() as d:
+            result = vfio.preflight(Path(d), "00000000:01:20.0",
+                                    ["00000000:01:20.0"])
+        self.assertEqual(result["status"], "blocked")
+        self.assertIn("invalid_target_bdf", result["hard_blockers"])
+
+
 
 if __name__ == "__main__":
     unittest.main()

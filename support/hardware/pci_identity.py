@@ -28,6 +28,22 @@ def canonical_bdf(value):
     return f"{int(domain, 16):08x}:{int(bus, 16):02x}:{dev:02x}.{func}"
 
 
+def linux_sysfs_bdf(value):
+    """Canonical sysfs PCI path identity, never a device permission grant.
+
+    CUDA may present 00000000:01:00.0 whereas Linux normally uses
+    0000:01:00.0. Preserve the *numeric* PCI domain without truncation.
+    For domains above 0xffff leave the full 8-digit identifier unchanged;
+    absent a matching sysfs node, VFIO preflight remains blocked.
+    """
+    ident = canonical_bdf(value)
+    if ident is None:
+        return None
+    domain, rest = ident.split(":", 1)
+    number = int(domain, 16)
+    return f"{number:04x}:{rest}" if number <= 0xffff else ident
+
+
 def canonical_nvidia_model(value):
     """Normalize optional NVIDIA/GeForce prefixes, never fuzzy substrings."""
     if not isinstance(value, str):

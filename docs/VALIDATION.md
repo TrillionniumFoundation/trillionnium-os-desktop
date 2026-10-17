@@ -8,11 +8,11 @@
 
 ## 2. 三类接口测试
 
-格式测试（计划）：HOS2/HOSR的64字节header、32字节transport与预算、Query48/Usage64/Install24/Delivery64/Retire16响应及40字节历史引用；截断每一长度、尾随字节、flags/reserved/enum、id全零、generation/target、major/minor、过大payload、输出容量、revision溢出、错误响应无敏感payload。
+格式测试（已有 Rust codec 与独立验收）：HOS2/HOSR的64字节header、32字节transport与预算、Query48/Usage64/Install24/Delivery64/Retire16响应及40字节历史引用；截断每一长度、尾随字节、flags/reserved/enum、id全零、generation/target、major/minor、过大payload、输出容量、revision溢出、错误响应无敏感payload。正式入口见下方第9节；格式通过不授予内核权限。
 
 规格模型：K查找后比较digest；D/CapSpace跨boot；revoke/admit两种线性顺序；停止后partial效果；相同预算反复更新保留用量；parent cap共同执行。模型证明选定解释的逻辑，不证明内核采用了该解释。
 
-实际内核测试（待接合）：fork/exec/dup/SCM_RIGHTS/control fd打开身份、Linux/Android设备别名、并发CAS/撤销、copyout EFAULT后的原D重取、容量耗尽、真实CPU计费、硬件reset/DMA引用。模型和codec均不提供这些证据。
+实际内核测试（部分已有，其余待接合）：主干只读 QueryAbi 和 cgroup CPU 配额有[固定客体收据](../results/organ-backend/2026-10-17/a05-a06-integrated-acceptance.json)。Process / exec_epoch / nonce 的只读身份隔离另有 [单 vCPU 组合收据](../results/kernel/control/a05-main-combined-acceptance-20261017.json)，不能再整体标为未实现。完整 capability 授予与恢复、Linux/Android设备别名、并发CAS/撤销、copyout EFAULT后的原D重取、容量耗尽、最终CPU计费及硬件reset/DMA引用仍按其专用源码与场景验收；不得继承 host 模型或其他候选分支的通过状态。
 
 ## 3. 第一个端到端闭环
 
@@ -42,7 +42,7 @@ A：同新内核固定策略/非AI反馈/Hepta策略；B：同硬件Linux等价�
 
 | 审计项 | 0.2规格落点 | 尚需真实验证 |
 | --- | --- | --- |
-| F01 | ARCHITECTURE/DECISIONS/upstream-lock：完整内核派生 | 构建导入/启动 |
+| F01 | ARCHITECTURE/DECISIONS/upstream-lock：完整内核派生 | 已有固定构建/启动；裸机与跨宿主可复现仍待验证 |
 | F02 | NATIVE_ABI §2：同对象策略、会话绑定、root边界 | 内核别名/fd/credential |
 | F03 | NATIVE_ABI §7：admit/revoke同锁及桥TCB | 并发/硬件切点 |
 | F04 | NATIVE_ABI §8：K与D、摘要不入查找键 | 持久owner/重启/copyout |
@@ -75,7 +75,13 @@ A：同新内核固定策略/非AI反馈/Hepta策略；B：同硬件Linux等价�
 
 [tests/spec/test_recovery_contract.py](../tests/spec/test_recovery_contract.py)是仅用Python标准库的**顺序规格模型**，不解析wire、不调用设备，不实现Rust库或真实权限。运行 `python3 tests/spec/test_recovery_contract.py /tmp/hos-spec-results.json` 可复现14个场景。结果基线在[spec-recovery-v03.json](../results/spec-recovery-v03.json)。其中10,000次写在同一模型窗口中，每64条终局确认一次，验证旧序列不能重新执行；不是内核吞吐或并发测试。
 
-[tests/golden/hos2.json](../tests/golden/hos2.json)包含12份独立生成的固定十六进制请求/响应样本，包括降额后consumed>cap与错误响应。当前仅核算长度和固定布局；尚无Rust encoder/decoder来消费它们，不称为codec通过。未来必须用独立实现验证expected字段、畸形变体和相关性，不能仅做同一codec的round-trip。
+[tests/golden/hos2.json](../tests/golden/hos2.json)包含12份独立生成的固定十六进制请求/响应样本，包括降额后consumed>cap与错误响应。实际 [no_std Rust codec](../libs/os-abi/src/lib.rs) 已消费独立固定样本，并由 [run_acceptance.py](../tests/abi/run_acceptance.py) 执行黄金、语义边界、负例及编译型错误变异验收。使用以下正式入口，保留其生成的原始日志与源码/工具链身份；独立 expected 数据仍须与同一 codec 的 round-trip 分开：
+
+```bash
+python3 tests/abi/run_acceptance.py --help
+```
+
+精确执行命令、结果与边界见 [A02 验收说明](../tests/abi/A02_REVIEW_CLOSURE_2026-10-17.md) 和 [证据完整性修复](../tests/abi/A02_EVIDENCE_INTEGRITY_2026-10-17.md)。当前 #147 的累计CPU/历史投递语义仍待 A00 统一决策，不能把验收脚本修复写成语义已定案。
 
 | 复审项 | 本轮落实 | 尚未完成 |
 | --- | --- | --- |
@@ -86,7 +92,7 @@ A：同新内核固定策略/非AI反馈/Hepta策略；B：同硬件Linux等价�
 | V205 | 按原因回退、恢复域不可被管理；暂停场景 | 实际timer/进程失效/恢复资源 |
 | V206 | ClassScheduler公共gate、TSC换算与计费点 | 内核调度/真实误差界 |
 | V207 | 有序sequence+连续退役；模型10,000写 | 常驻内核/持久owner确认 |
-| V208 | HOS2边界/错误分类、12份固定字节 | Rust codec与用户copy测试 |
+| V208 | 五操作Rust codec、独立golden/负例/编译变异已执行 | 真实效果路径的用户copy/权限/恢复接合 |
 | V209 | 持久OperationIntent逐字段映射 | 真实owner调用/事务边界 |
 | V210 | 提交前时效重验；局部观测限制 | 父域/等待原因与实际控制收益 |
 | V211 | 内核初始时钟域，N0不支持活跃快照恢复 | 时钟/恢复失效实现 |
@@ -94,7 +100,7 @@ A：同新内核固定策略/非AI反馈/Hepta策略；B：同硬件Linux等价�
 | V213 | shell/compositor/GPU分别承诺 | UI与客户端实际恢复 |
 | V214 | Direct Boot/DE/CE/密钥列入后续 | AOSP product及真实解锁 |
 | V215 | DMA所有CPU映射别名要求 | 实际驱动/设备验证 |
-| V216 | 官方安装ISO下载试验如实记录失败 | 完整构建输入、Rust源码构建/启动 |
+| V216 | 官方ISO下载失败保留历史；Rust源码构建与QEMU启动已有独立证据 | 完整构建输入、跨宿主复现与裸机资格 |
 | V217 | 当前版本测试源码、固定样本与结果入库 | 从模型迁移到实际内核测试 |
 
 14个模型断言通过不表示17个实现问题已经关闭。测试中的布尔观察授权是明确的模型前提，不是可用于生产的授权机制。

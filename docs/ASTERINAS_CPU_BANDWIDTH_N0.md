@@ -1,18 +1,35 @@
 # A06 N0 CPU bandwidth — reproducible implementation evidence
 
-Date: 2026-10-16. **Kernel effect observed; not production-ready, not HOS2-authorized.** Changes belong to [Draft PR #18](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/18). Root README remains zero bytes.
+Updated: 2026-10-17; main examined at `146dedf75c5729ef1930c845eeb60e31e8111c60`. **Kernel effect observed; not production-ready, not HOS2-authorized.** The cgroup CPU implementation is already in main through [PR #121](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/121). [Draft PR #18](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/18) retains the original development history; it is not the current integration state. Root README remains zero bytes.
 
-## Implementation
+## Current integrated evidence and next implementation boundary
+
+The [2026-10-17 integrated receipt](../results/organ-backend/2026-10-17/a05-a06-integrated-acceptance.json) binds tested source `b913202b2e487126319e60813a54163666b9a2ad` to equivalent remote merge commit `eaf5242233b799356b7daa73898a14d240832abb`, tree `b852e0037af8f84c22a8fc7347fa55d8183e07e6`. It records ten real quota probes across the selected one/two-vCPU profiles, three read-only QueryAbi probes, and kernel regression with 374 reported passes, three VMX/EPT soft skips, and an actual executed lower bound of 371. These historical receipts do not automatically qualify a later HEAD.
+
+| Integrated sample | Configured CPU | Observed CPU percent |
+| --- | ---: | --- |
+| One-vCPU leaf, three runs | 1% | 1.100, 1.000, 0.999 |
+| One-vCPU leaf / real-time / parent | 10% | 10.352 / 9.824 / 10.226 |
+| Two-vCPU leaf | 1% | 0.957 |
+| Two-vCPU leaf / parent / real-time | 10% | 10.112 / 10.396 / 10.187 |
+
+The actual owner is the existing [cgroup CPU controller](../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs), consumed by the common [ClassScheduler](../kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs). A native HOS2 budget entry must mutate this same state. Main's HOS2 device still exposes only QueryAbi. Process/exec-epoch/nonce identity fencing is now merged with a [separate single-vCPU receipt](../results/kernel/control/a05-main-combined-acceptance-20261017.json); trusted capability grants and the four other operations remain unimplemented there.
+
+The next correctness task is final runtime debit after process exit/reap: main's `charge_task_cpu` returns when `thread.weak_process().upgrade()` fails. A06/A05 must retain the correct original accounting owner and lifetime through final charging, migration and cgroup removal, and validate the relevant SMP/lock interactions. A successful short quota sample does not prove this lifecycle. Candidate fixes are not main acceptance.
+
+The original 2026-10-16 experiments below are retained with their failures and original hashes. Their approximately 2.1% first-patch result is historical; use the table above for the later integrated samples. Neither establishes a strict per-100ms hard maximum, a general SMP guarantee or a product SLO.
+
+## Implementation and original experiment history
 
 The existing Asterinas cgroup CPU controller now tracks absolute TSC-aligned periods and actual per-thread runtime, while the common `ClassScheduler` charges and checks both Fair and real-time tasks. Exhausted tasks are parked in a runqueue-local set and reconsidered on periodic idle ticks, without synchronous Hepta calls. Parent bandwidth limits are checked alongside child controls; quota writes retain already-consumed runtime rather than refunding it. The existing Linux cgroup and future native HOS2 entry points must converge on this *same* accounting state.
 
-This N0 profile runs **one vCPU only**. It uses OSTD's 1000Hz periodic tick, so 1ms quotas may overshoot by roughly a tick per 100ms period; the current result is not an exact hardware deadline or strict 1% promise.
+The original N0 experiment below used **one vCPU only**. It used OSTD's 1000Hz periodic tick, so 1ms quotas could overshoot by roughly a tick per 100ms period. The later limited two-vCPU samples above expand measured scenarios without proving general SMP correctness or a strict 1% guarantee.
 
 During multi-cap testing, the 10% guest timed out immediately after a `cpu.stat` read. Review identified that `CpuController::read_cpu_stat` held the bandwidth spinlock while writing into `VmPrinter`, a user-memory operation that may fault or schedule. Commit `512e45d02b4ff544189b104cb36994f2edc588f4` copies all throttle counters to scalars and **releases the lock before writing**; the new kernel was compiled from source and tested separately. This is an evidence-backed remediation, not a proof that all possible SMP/IRQ lock orders are correct.
 
 An unrelated A01 build-script issue (`make --version | head -1` under `set -o pipefail` caused SIGPIPE 141) was corrected without changing the build inputs.
 
-## Real guest results
+## Historical 2026-10-16 guest results
 
 The original unchanged kernel accepted 1% CPU configuration but consumed approximately 998ms per 1000ms. The first patched kernel compiled and booted; QEMU on a disposable initramfs observed 970ms/1000ms without a cap and 21ms/1000ms after 1% configuration.
 
@@ -29,7 +46,9 @@ The original unchanged kernel accepted 1% CPU configuration but consumed approxi
 
 The post-lockfix candidate kernel ELF SHA256 is `a2f72e2bc75d0490b658898697ced0532fe36395067939e3959f88dab051676e`. [Machine-readable results](../results/organ-backend/2026-10-16/a06-cpu-bandwidth-n0.json) retain the actual samples, boot status and SHA values. Large QEMU serial logs and test binaries remain in the isolated execution environment rather than increasing the Git repository by megabytes of binaries.
 
-## Reproduce without changing a host cgroup
+## Replay the historical candidate without changing a host cgroup
+
+The following hash is the original post-lockfix candidate, not the current main kernel. To test a new candidate, first build and bind its source/ELF/input identities using the [A01 build workflow](../support/build/README.md); retain a new result instead of replacing the historical receipt.
 
 ```bash
 python3 tests/organ_backend/run_candidate_matrix.py \
@@ -44,13 +63,13 @@ For a parent limit, use `--mode parent`; for SCHED_FIFO, use `--mode rt`. For on
 
 ## Remaining blockers
 
-- **Accuracy:** fix or explicitly bound tick-scale overrun. Present 1% observation ≈2.1%; cannot claim exact CPU cap.
+- **Accuracy:** quantify the current implementation's per-window overrun; neither the historical ≈2.1% first patch nor the later integrated samples prove an exact CPU cap.
 - **SMP:** global quota accounting, per-CPU parking and wake ordering, CPU hotplug, cross-CPU migration, memory ordering and IPI behavior have not been verified.
-- **CPU controller lifecycle:** sub-controller activation/disable, quota-period reconfiguration, cpu.weight, OOM/memory ownership and shutdown tests remain.
-- **Hepta:** no tested HOS2 ioctl, CapSpace authorization or durable K↔D effect/retire flow yet. `TrustedReadOnlyOrganV1` must not be used for effectful device writes.
-- **Kernel conformance:** selected A01 boot and isolated tests do not prove the full OSTD/upstream regression suite on this changed kernel.
+- **CPU controller lifecycle:** final exit/reap debit and original-domain lifetime, sub-controller activation/disable, quota-period reconfiguration, cpu.weight, OOM/memory ownership and shutdown tests remain.
+- **Hepta:** read-only QueryAbi has real guest evidence; trusted CapSpace authorization, HOS2 budget/usage/history operations and durable K↔D effect/retire flow are not integrated. `TrustedReadOnlyOrganV1` must not be used for effectful device writes.
+- **Kernel conformance:** the integrated OSTD/aster-core receipt has its exact source, counts and soft skips; changed kernel code needs relevant new regressions rather than inheriting that receipt.
 
-Keep this PR **Draft** until A00/A06 have reviewed lock ordering, supplied a quantified cap error contract, and run relevant kernel regressions. No need for a second control database, HOS3 protocol or full from-scratch kernel rewrite.
+Keep unaccepted follow-up candidates **Draft** until A00/A06 have reviewed their actual lock/lifetime changes and run the relevant kernel scenarios. The existing main quota implementation is already merged; its remaining gates must not be confused with the status of old PR #18. No second control database or new wire version is required for this documentation correction.
 
 ## Independent kernel-mode regression and explicit pass/fail guard
 

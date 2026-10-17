@@ -1,0 +1,108 @@
+{
+  "schema": "trillionnium.os.a05.main-composition-acceptance.v1",
+  "date": "2026-10-17",
+  "baseline_main_commit": "976c5abc19f59abeb2549c4e3e9da14ce03df8d2",
+  "a05_source_head": "219ff1c1d8c4e860d36795099b2a29d027db3c5b",
+  "combined_source_tree": "4b486eba185dad538e8578fb6c33916907a82cdf",
+  "build": {
+    "result": "passed",
+    "kernel_sha256": "96b12e32ac4db1b65ff026f4576b673643cdf0d18b0836713d67ca689a4a673c",
+    "source_build": true,
+    "rust_toolchain": "nightly-2026-07-21",
+    "upstream_asterinas": "c4b7ed575b7b32773475b194d2ad41fb6d03765b"
+  },
+  "host_tests": {
+    "a05_c11_smoke": "passed",
+    "nonce_unit_count": 4,
+    "nonce_unit_passed": 4,
+    "queryabi_runner_negative_count": 8,
+    "queryabi_runner_negative_passed": 8,
+    "queryabi_runner_python_optimized": "passed"
+  },
+  "queryabi_guest": {
+    "qemu_raw_exit": 33,
+    "no_panic_or_fail_marker": true,
+    "security_markers_all_present_exactly_once": true,
+    "mandatory_markers": [
+      "HEPTA_EXEC_PREIMAGE_QUERYABI_OK",
+      "HEPTA_EXEC_EPOCH_DENIED",
+      "HEPTA_EXEC_CAPSPACE_ROTATED",
+      "HEPTA_FORK_INHERITED_FD_DENIED",
+      "HEPTA_FORK_CAPSPACE_DISTINCT",
+      "HEPTA_NONROOT_OPEN_DENIED",
+      "HEPTA_DUP_SESSION_STABLE"
+    ],
+    "boot_marker": true,
+    "raw_serial_sha256": "06a15517c1456b71fe6fd6ee0a6e2677a5946003fe1aa990f819c171636a6a90",
+    "reused_prevalidated_guest_initramfs_sha256": "6677327aa59be11aab3a8c9ff180f557a38469235ea52e9665a81ffb8f822044",
+    "disposable_q35_tcg_one_vcpu": true,
+    "no_host_network_or_disk": true
+  },
+  "cpu_guest": {
+    "result": "passed_bounded_N0",
+    "cases": [
+      {
+        "case": "leaf1",
+        "mode": "leaf",
+        "quota_us": 1000,
+        "runs": 2,
+        "cpu_percent": [
+          1,
+          1
+        ],
+        "qemu_result": "raw33_each",
+        "diagnostic_bound_percent": 1.6
+      },
+      {
+        "case": "leaf10",
+        "mode": "leaf",
+        "quota_us": 10000,
+        "runs": 1,
+        "cpu_percent": [
+          10.478
+        ],
+        "qemu_result": "raw33_each",
+        "diagnostic_bound_percent": 12.5
+      },
+      {
+        "case": "rt10",
+        "mode": "rt",
+        "quota_us": 10000,
+        "runs": 1,
+        "cpu_percent": [
+          10.288
+        ],
+        "qemu_result": "raw33_each",
+        "diagnostic_bound_percent": 12.5
+      },
+      {
+        "case": "parent10",
+        "mode": "parent",
+        "quota_us": 10000,
+        "runs": 1,
+        "cpu_percent": [
+          10.043
+        ],
+        "qemu_result": "raw33_each",
+        "diagnostic_bound_percent": 12.5
+      }
+    ]
+  },
+  "native_kernel_ktest": {
+    "crate": "aster-core",
+    "passed": 153,
+    "failed": 0,
+    "soft_skipped": 0,
+    "qemu_raw_exit": 33
+  },
+  "scope": "Read-only QueryAbi identity and single-vCPU CPU-regression integration only",
+  "unverified": [
+    "full SMP/fork PID recycle stress",
+    "nonce exhaustion",
+    "complete native HOS2 CapSpace authorization",
+    "ReadUsage/InstallBudget/QueryDelivery/RetireThrough",
+    "Hepta durable K-D and effect commit/reconcile",
+    "physical hardware and production"
+  ],
+  "production_ready": false
+}

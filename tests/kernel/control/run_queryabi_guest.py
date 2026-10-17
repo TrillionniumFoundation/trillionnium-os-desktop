@@ -21,7 +21,21 @@ from run_guest_probe import pack, unpack  # already shipped A01 newc parser
 A05_PINNED_KERNEL_SHA = "a0ef91869518ea644aff2e44f0a27d5fc712b574e7ba4bc499bf40f267bdd851"
 A01_INITRD_SHA = "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
 SEABIOS_SHA = "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
-EXPECTED_SUCCESS = "HEPTA_QUERYABI_OK ops=QueryAbi_only, independent_sessions=yes, denied_invalid=yes"
+EXPECTED_SUCCESS = "HEPTA_QUERYABI_OK ops=QueryAbi_only, process_bound_session=yes, denied_invalid=yes"
+REQUIRED_SECURITY_MARKERS = (
+    "HEPTA_EXEC_PREIMAGE_QUERYABI_OK",
+    "HEPTA_EXEC_EPOCH_DENIED",
+    "HEPTA_EXEC_CAPSPACE_ROTATED",
+    "HEPTA_FORK_INHERITED_FD_DENIED",
+    "HEPTA_FORK_CAPSPACE_DISTINCT",
+    "HEPTA_NONROOT_OPEN_DENIED",
+    "HEPTA_DUP_SESSION_STABLE",
+)
+
+def security_marker_counts(serial_text):
+    """Exact-one guest evidence for this QueryAbi process-lifetime profile."""
+    return {marker: serial_text.count(marker) for marker in REQUIRED_SECURITY_MARKERS}
+
 BOOT_MARKER = b'echo "TRILLIONNIUM_A01_BOOT_OK"'
 MAX_SERIAL_BYTES = 8 * 1024 * 1024
 MAX_INPUT_BYTES = 64 * 1024 * 1024
@@ -142,10 +156,13 @@ def main(argv=None):
     serial_size = serial.stat().st_size
     require(serial_size <= MAX_SERIAL_BYTES, "serial log size exceeds bounded evidence policy")
     captured = serial.read_text(encoding="utf-8", errors="replace")
-    guest_ok = EXPECTED_SUCCESS in captured
-    boot_ok = "TRILLIONNIUM_A01_BOOT_OK" in captured
+    guest_ok = captured.count(EXPECTED_SUCCESS) == 1
+    boot_ok = captured.count("TRILLIONNIUM_A01_BOOT_OK") == 1
     no_fail = "HEPTA_QUERYABI_FAIL" not in captured and "Kernel panic" not in captured
-    passed = not timed_out and code == 33 and guest_ok and boot_ok and no_fail
+    marker_counts = security_marker_counts(captured)
+    security_markers_ok = all(count == 1 for count in marker_counts.values())
+    passed = (not timed_out and code == 33 and guest_ok and boot_ok
+              and no_fail and security_markers_ok)
     result = {
         "schema": "a05.queryabi-pinned-guest-replay.v1", "scope": "read_only_queryabi",
         "kernel_elf_sha256": digest(kernel), "original_a01_initramfs_sha256": digest(original),
@@ -154,6 +171,9 @@ def main(argv=None):
         "qemu_argv": args_qemu, "qemu_exit": code, "timed_out": timed_out,
         "elapsed_seconds": elapsed, "guest_queryabi_ok": guest_ok,
         "guest_boot_ok": boot_ok, "guest_failed": not no_fail,
+        "security_marker_counts": marker_counts,
+        "security_markers_ok": security_markers_ok,
+        "raw_serial_sha256": digest(serial.read_bytes()),
         "no_host_network_or_disk": True,
         "native_capspace": False, "native_resource_effects": False,
         "hepta_durability": False, "production_ready": False, "passed": passed,
