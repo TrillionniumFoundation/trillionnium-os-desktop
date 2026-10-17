@@ -1,5 +1,15 @@
 # 当前状态
 
+## 2026-10-17 UTC：A05 原生 QueryAbi 已在真实 Asterinas 客体执行（仍为 Draft）
+
+- **真实内核 HOS2 ioctl 首次执行成功，纠正下方历史记录的“尚未在 guest 运行”描述**：[A05 Draft #87](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/87) 原源码提交 `5fc3887dfc5833b61d11280eb1421bb7fd78648f`，经过实际 `make kernel` 编译的候选完整 Asterinas ELF SHA256 `54c8a7a798cbbd80f1a8ce5f0144328815e63b413e79b0133206bcaaba607e4a`。四份 A05 实际修改文件的 Git blob 与远端 PR 精确吻合。独立调用固定原始 C probe，在 QEMU q35/TCG x86_64 **1 vCPU/512MiB、无网卡数据盘** 中真正打开 `/dev/hepta-control` 执行 QueryAbi ioctl，校验 HOSR/版本/唯一开放会话 ID/QueryAbi-only 位图、非法 magic EINVAL、NULL transport EFAULT、未知 ioctl ENOTTY。首次 QEMU raw33、`HEPTA_QUERYABI_OK` 与 A01 boot marker，无 panic；同一预校验内核 ELF/一次性 initramfs 又复跑 **3/3 次 raw33**，合计 **4/4** 成功。该轮复用了源构建内核 ELF，没有把这4次 guest replay 说成4次内核重编译。
+- **真实内核回归：**从与 A05 四份改动路径逐字节一致的隔离源码工作树，运行固定 `nightly-2026-07-21` / `support/build/ktest/run.py --crate aster-core --skip-osdk-install`，实际 QEMU 内核测试 **141/141 passed、0 failed、0 filtered、0 soft skipped、raw33**。该轮重新构建内核测试 ELF，SHA256 `5e1d40b86b4717a645f3cc089f746b7fa0c90e84bf0bdb72615e25d47b402746`，不等同完整 Asterinas/OSTD/SMP 矩阵。
+- **客体回复校验反例同步通过：**独立对 [Draft #90](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/90) 精确源提交 `e925bdfcc59b2f7f7d606eb964447ffd8b741283` 执行 `sh tests/kernel/control/run-host-smoke.sh` exit0，真正编译原 C guest 校验器并验证 **1合法＋21非法 HOSR 响应**、另16帧结构负测及 ENOTTY/EFAULT 拒绝。其加固后 guest C blob `58cc000c81501185aa0d328bc8701cec92a2dea0` 在同一 A05 内核 ELF 的 QEMU 中也返回 raw33/QueryAbi OK、无 panic。**这是 host 负例与 guest 正例的分别验证**，并非全部恶意 transport 都已在 guest 测试；#90 远端 CI `host-contracts` 仍 queued，不能报绿。
+- **证据已进入 A05 owner 分支：**[PR #91](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/91) 已合至 `agents/A05-native-queryabi-bootstrap`，后续验证以 A05 分支下 [a05-queryabi-real-guest-20261017.json](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/agents/A05-native-queryabi-bootstrap/results/kernel/control/a05-queryabi-real-guest-20261017.json) 追加完整 QEMU/重复测试和141项内核验收机器结果。原始串口、具体QEMU命令和编译日志保存在授权隔离实验区，公共仓库仅保留脱敏的哈希与结果。
+- **尚未放行：**A05 主 PR 仍为 Draft，**只实现只读 QueryAbi**；查询中的 per-open observation space ID **不是真实可信 CapSpace**，未完成 exec_epoch/启动授权/InstallBudget/ReadUsage/QueryDelivery/RetireThrough 与 Hepta 持久 owner K↔D。HOS2 G1/G2、SMP、裸机、持久副作用均不合格。禁止把 `TrustedReadOnlyOrganV1` 当作硬件效果执行器；保持原 authority/operations 真正执行 owner。
+
+---
+
 ## 2026-10-16：A00 A03 生命周期主干合并、HOS2 语义边界和 A05 客体验收防假阳性
 
 - **A03 真正源码已合 main**：[PR #86](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/86) merge `9113b3cfc2822d86f32e3dcfc78c6e2b8c123ecd`，仅改 A03 自有 `libs/os-control/**` / `tests/control/**`。修复末次 `Arc` 释放后父资源域不应保留已销毁子域 cap、外部 execute 回调期间不能卡死 QueryDelivery/retire/history audit、资源域过深递归释放风险，增加层级最大64约束。精确 HEAD [G0 run 38986007642](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/38986007642) **success**：真实 A02/A03 Cargo、fmt、strict Clippy 均通过，A03 129/129 宿主 Rust 用例通过。原 owner 另外记录 portable-spin/no_std build 与第二后端 129/129。**仍是 Linux host model，不是 A05 内核设备/持久 Hepta 效果**。
