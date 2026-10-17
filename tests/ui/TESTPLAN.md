@@ -25,6 +25,8 @@ until that patch is reviewed, committed, and rerun.
 Unit coverage:
 - strict HOS2 read-only UI adapter: opcode/payload pairing, request-id
   correlation, response opcode matching, and hidden mutating payload refusal
+- bounded (1024) permission observation cache, disconnected-owner invalidation,
+  scope-local invalidation and revoke-at-capacity fail-closed regressions
 - no Pending -> Completed shortcut
 - distinction among pending/running/partial/unknown/cancel_requested
 - Chinese UTF-8 roundtrip

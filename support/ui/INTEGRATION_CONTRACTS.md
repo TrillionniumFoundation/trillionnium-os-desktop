@@ -31,8 +31,14 @@ wire format. An empty scope cache is `Unknown` and denies access. Only the
 latest authoritative `Granted` observation for the exact scope allows an
 action; a grant observed for one scope is never considered for another scope.
 Older observations and same-revision conflicts are rejected, so a stale grant
-cannot resurrect a revoked or expired capability. `request()` is an explicit
-handoff marker for the future A05 portal and has no local side effect. These
+cannot resurrect a revoked or expired capability. The consumer cache holds
+at most 1024 observations: adding a new grant when full fails closed without
+evicting any old entry; an existing grant may still be revoked. On bridge
+disconnect or generation/provenance uncertainty, `invalidate_all()` discards
+all cached grants; `invalidate_scope()` clears one owner's trusted scope.
+Only fresh authenticated A05 observations may authorize after reconnect.
+`request()` is an explicit handoff marker for the future A05 portal and has
+no local side effect. These
 are negative, scope-isolation and ordering checks for UI behavior, not
 evidence that an A05 portal exists.
 
