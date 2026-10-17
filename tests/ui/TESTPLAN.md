@@ -45,6 +45,8 @@ Unit coverage:
   compositor session in a private directory; require successful wayland-info
   registry round-trip (socket creation alone is insufficient), then run the multi-app smoke;
   compositor-mapped surfaces/real GPU/Chinese IME are still NOT attested
+- shell first egui layout marker before and after Shell restart (exactly once
+  per Shell process; not a compositor-presented frame)
 - isolated Wayland smoke: shell plus independent native app processes (Notes,
   Calculator, and Restricted Terminal), cross-workspace identities, explicit
   first-egui-frame markers, an externally killed child observed as FAILED with
@@ -53,6 +55,8 @@ Unit coverage:
 - independent idle-time process reaping when no shell client is connected
 - a child GUI first-update layout completion signal must match the exact
   parent-owned marker; host process spawn alone never asserts rendering
+- a broken Shell stdout leaves UI/session running without repeated writes;
+  readiness polling treats genuinely pending frames as normal, not exceptions
 - session process restart from stale Unix socket: fresh instance ID, no fake
   reattachment or completion of previous child history
 - session generation comes from 128-bit /dev/urandom (no PID/time fallback)

@@ -4,6 +4,7 @@ mod local_drafts;
 use eframe::egui::{self, Color32, RichText};
 use std::cmp::Reverse;
 use std::collections::VecDeque;
+use std::io::{self, Write};
 use std::sync::mpsc::{self, Receiver, SyncSender, TryRecvError};
 use std::time::{Duration, Instant};
 use trill_ui_core::{
@@ -96,6 +97,20 @@ struct ChatEntry {
 // silently evict earlier user text or drop the unsubmitted composer.
 const MAX_CHAT_ENTRIES: usize = 128; // Includes the local system notice.
 const MAX_DRAFT_BYTES: usize = 16 * 1024;
+/// An independently emitted Shell-side egui layout marker. This proves only
+/// that the Rust widget tree completed an update, not compositor presentation.
+const SHELL_FIRST_LAYOUT_MARKER: &[u8] = b"TRILL_SHELL_FIRST_FRAME_V1\n";
+
+fn emit_shell_first_layout<W: Write>(emitted: &mut bool, output: &mut W) -> io::Result<()> {
+    if *emitted {
+        return Ok(());
+    }
+    // A broken stdout pipe must not turn a still-usable desktop into a
+    // recurring I/O retry loop or a fatal process exit.
+    *emitted = true;
+    output.write_all(SHELL_FIRST_LAYOUT_MARKER)?;
+    output.flush()
+}
 
 fn may_restore_drafts(chat: &[ChatEntry], composer: &str) -> bool {
     chat.len() == 1 && composer.is_empty()
@@ -168,6 +183,7 @@ struct Desktop {
     zoom: f32,
     show_notifications: bool,
     notices: VecDeque<String>,
+    first_frame_emitted: bool,
 }
 
 impl Desktop {
@@ -195,6 +211,7 @@ impl Desktop {
             zoom: 1.0,
             show_notifications: false,
             notices: VecDeque::new(),
+            first_frame_emitted: false,
         }
     }
 
@@ -826,6 +843,10 @@ impl eframe::App for Desktop {
             Page::Console => self.console(ui),
             Page::Settings => self.settings(ui, ctx),
         });
+        // Report only after a full egui widget update, never merely because
+        // the shell PID exists. Failure to write a diagnostic marker does not
+        // stop independent session-owned clients.
+        let _ = emit_shell_first_layout(&mut self.first_frame_emitted, &mut io::stdout());
         ctx.request_repaint_after(Duration::from_millis(100));
     }
 }
@@ -1178,5 +1199,40 @@ mod console_tests {
         let line = observed_host_line(&task);
         assert!(line.contains("HOST_PROCESS=UNKNOWN"));
         assert!(line.contains("Child exit could not be observed"));
+    }
+}
+
+#[cfg(test)]
+mod shell_lifecycle_tests {
+    use super::*;
+
+    #[test]
+    fn shell_first_layout_marker_is_exact_and_emitted_once() {
+        let mut emitted = false;
+        let mut output = Vec::new();
+        emit_shell_first_layout(&mut emitted, &mut output).unwrap();
+        emit_shell_first_layout(&mut emitted, &mut output).unwrap();
+        assert!(emitted);
+        assert_eq!(output, SHELL_FIRST_LAYOUT_MARKER);
+    }
+
+    #[test]
+    fn broken_shell_stdout_never_crashes_or_retries_layout_marker() {
+        struct BrokenPipe;
+        impl Write for BrokenPipe {
+            fn write(&mut self, _bytes: &[u8]) -> io::Result<usize> {
+                Err(io::Error::new(io::ErrorKind::BrokenPipe, "closed stdout"))
+            }
+            fn flush(&mut self) -> io::Result<()> {
+                Ok(())
+            }
+        }
+        let mut emitted = false;
+        let error = emit_shell_first_layout(&mut emitted, &mut BrokenPipe).unwrap_err();
+        assert_eq!(error.kind(), io::ErrorKind::BrokenPipe);
+        assert!(emitted, "a closed logging pipe must not trigger a retry loop");
+        let mut output = Vec::new();
+        emit_shell_first_layout(&mut emitted, &mut output).unwrap();
+        assert!(output.is_empty(), "layout marker is one-shot");
     }
 }

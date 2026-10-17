@@ -37,9 +37,10 @@ bash tests/ui/headless-weston.sh
 It creates a private runtime directory and targets the existing compositor
 socket by absolute path. It terminates only processes started by the script.
 No completion is claimed until it finishes with exit code 0. It checks
-two separate child PIDs AND both process-local first egui frame events before
-the Shell is restarted, but not compositor surface mapping or GPU buffer
-presentation. Compositor recovery, real Chinese IME candidates and kernel
+three distinct child PIDs and their first egui layout events, as well as
+one completed Shell egui layout before AND after restarting the Shell.
+These are process-local Rust layout observations, not compositor surface
+mapping or actual GPU-buffer presentation. Compositor recovery, real Chinese IME candidates and kernel
 boot remain separate tests.
 
 The session MUST be independently supervised or kept running in terminal #1.

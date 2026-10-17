@@ -54,6 +54,37 @@ cleanup() {
     [[ -d "$runtime" ]] && rm -rf -- "$runtime"
 }
 trap cleanup EXIT
+
+# Process liveness is weaker than an actual Rust/egui widget update.
+# Use a one-shot shell-emitted marker, separate from the child app signals.
+wait_shell_layout() {
+    local logfile="$1" seen=0 count
+    for _ in {1..100}; do
+        if [[ -f "$logfile" ]] &&
+            grep -Fxq "TRILL_SHELL_FIRST_FRAME_V1" "$logfile"; then
+            seen=1
+            break
+        fi
+        if ! host_process_alive "$shell_pid"; then
+            echo "Shell exited before completing its first egui layout" >&2
+            [[ ! -f "$logfile" ]] || tail -80 "$logfile" >&2
+            return 1
+        fi
+        sleep 0.1
+    done
+    if [[ "$seen" != 1 ]]; then
+        echo "Shell timed out before its first egui layout" >&2
+        [[ ! -f "$logfile" ]] || tail -80 "$logfile" >&2
+        return 1
+    fi
+    count="$(grep -Fxc "TRILL_SHELL_FIRST_FRAME_V1" "$logfile" || true)"
+    if [[ "$count" != 1 ]]; then
+        echo "Shell emitted $count first-layout markers (expected exactly one)" >&2
+        return 1
+    fi
+    host_process_alive "$shell_pid" || { echo "Shell died after first layout" >&2; return 1; }
+}
+
 "$session_bin" >"$runtime/session.log" 2>&1 &
 session_pid=$!
 initial=""
@@ -66,8 +97,7 @@ done
 instance="$(printf '%s' "$initial" | python3 -c 'import json,sys;print(json.load(sys.stdin)["session_instance"])')"
 "$shell_bin" >"$runtime/shell.log" 2>&1 &
 shell_pid=$!
-sleep 3
-host_process_alive "$shell_pid" || { echo "Shell startup failed" >&2; cat "$runtime/shell.log" >&2; exit 1; }
+wait_shell_layout "$runtime/shell.log"
 response="$("$ctl" launch personal notes)"
 task_id="$(printf '%s' "$response" | python3 -c 'import json,sys;print(json.load(sys.stdin)["task"]["id"])')"
 app_pid="$(printf '%s' "$response" | python3 -c 'import json,sys;d=json.load(sys.stdin)["task"];assert d["state"]=="running" and d["pid"];print(d["pid"])')"
@@ -96,10 +126,13 @@ for _ in {1..100}; do
     if printf '%s' "$observed" | python3 -c '
 import json,sys
 d=json.load(sys.stdin)
-for id,pid in ((int(sys.argv[1]),int(sys.argv[2])),(int(sys.argv[3]),int(sys.argv[4])),(int(sys.argv[5]),int(sys.argv[6]))):
-    task=next(t for t in d["tasks"] if t["id"] == id)
-    assert task["pid"] == pid and task["state"] == "running", task
-    assert task["ui_first_frame_unix_ms"] is not None, task
+required=((int(sys.argv[1]),int(sys.argv[2])),(int(sys.argv[3]),int(sys.argv[4])),(int(sys.argv[5]),int(sys.argv[6])))
+# First frames are expected to be PENDING during readiness polling. Return a
+# quiet not-ready status; only a real timeout is printed as a failure.
+if not all(any(t["id"] == id and t["pid"] == pid and t["state"] == "running" and
+               t["ui_first_frame_unix_ms"] is not None for t in d["tasks"])
+           for id,pid in required):
+    raise SystemExit(1)
 ' "$task_id" "$app_pid" "$task2_id" "$app2_pid" "$task3_id" "$app3_pid"; then
         ready=1
         break
@@ -108,6 +141,7 @@ for id,pid in ((int(sys.argv[1]),int(sys.argv[2])),(int(sys.argv[3]),int(sys.arg
 done
 if [[ "$ready" -ne 1 ]]; then
     echo "At least one native app never reached its first egui update" >&2
+    printf '%s\n' "$observed" >&2
     cat "$runtime/session.log" >&2
     exit 1
 fi
@@ -180,8 +214,7 @@ assert any(t["id"] == int(sys.argv[6]) and t["state"] == "running" and
 ' "$instance" "$task_id" "$app_pid" "$task2_id" "$app2_pid" "$task3_id" "$app3_pid"
 "$shell_bin" >"$runtime/shell-restart.log" 2>&1 &
 shell_pid=$!
-sleep 3
-host_process_alive "$shell_pid" || { echo "Shell restart failed" >&2; cat "$runtime/shell-restart.log" >&2; exit 1; }
+wait_shell_layout "$runtime/shell-restart.log"
 "$ctl" cancel "$task_id" "$instance" >/dev/null
 "$ctl" cancel "$task2_id" "$instance" >/dev/null
 "$ctl" cancel "$task3_id" "$instance" >/dev/null
@@ -206,5 +239,5 @@ for id in (int(sys.argv[1]),int(sys.argv[2]),int(sys.argv[3])):
 task_id=""
 task2_id=""
 task3_id=""
-printf 'Wayland host Shell restart, three Rust first frames and observed cancellation: PASS\n'
+printf 'Wayland host Shell first layout, restarted Shell layout, three app layouts and observed cancellation: PASS\n'
 printf 'NOT VERIFIED: real CJK candidates, compositor restart, GPU reset or Asterinas boot.\n'
