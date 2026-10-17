@@ -1,0 +1,150 @@
+name: A03 native Loom and allocation safety
+
+on:
+  pull_request:
+    paths:
+      - 'libs/os-control/**'
+      - 'tests/control/**'
+      - 'support/upstream-lock.json'
+      - 'README.md'
+      - '.github/workflows/a03-native-models.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'libs/os-control/**'
+      - 'tests/control/**'
+      - 'support/upstream-lock.json'
+      - 'README.md'
+      - '.github/workflows/a03-native-models.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: a03-native-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  exact-native-models:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      RUSTUP_TOOLCHAIN: nightly-2026-07-21
+      EXACT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      EVENT_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Check exact HEAD and immutable inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$EXACT_SHA"
+          test -f README.md && test ! -s README.md
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          lock = json.loads(Path('support/upstream-lock.json').read_text())
+          for section, field, expected in (
+              ('kernel','tag','v0.19.0'),
+              ('kernel','commit','c4b7ed575b7b32773475b194d2ad41fb6d03765b'),
+              ('kernel','toolchain','nightly-2026-07-21'),
+              ('hepta','commit','f8c9419df6ddeb36ff8b522a50219981fb8d9345'),
+          ):
+              if lock[section][field] != expected:
+                  raise SystemExit(f'pin mismatch: {section}.{field}')
+          PY
+          for path in libs/os-control/Cargo.toml tests/control/loom/Cargo.toml tests/control/loom/Cargo.lock tests/control/loom/models.rs tests/control/loom/sync.rs tests/control/loom/run-models.py; do
+            if [[ ! -f "$path" || -L "$path" ]]; then
+              echo "Missing or symlinked mandatory model input: $path" >&2
+              exit 1
+            fi
+          done
+      - name: Install exact pinned Rust and host lint tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup toolchain install nightly-2026-07-21 --profile minimal
+          rustup component add --toolchain nightly-2026-07-21 rustfmt clippy
+          rustc -Vv
+          cargo -Vv
+      - name: Execute bounded Loom models on exact A03 source (host only)
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir="$RUNNER_TEMP/a03-loom"
+          python3 -I tests/control/loom/run-models.py "$dir"
+          python3 - "$dir/results.json" <<'PY'
+          import json,sys
+          v=json.load(open(sys.argv[1]))
+          models=v.get('models')
+          if (v.get('exit_code') != 0 or v.get('source_unchanged') is not True
+              or not isinstance(models,dict) or len(models)<10
+              or not all(isinstance(x,int) and x>0 for x in models.values())):
+              raise SystemExit('Loom result missing verified source/successful schedules')
+          print(f'PASS {len(models)} bounded host Loom models, not IRQ/SMP proof')
+          PY
+      - name: Require complete native allocation probe or explicit bootstrap
+        id: scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir=tests/control/lock_alloc
+          checks=(run-checks.py fixture.rs sync_shim.rs)
+          present=0
+          for file in "${checks[@]}"; do
+            if [[ -e "$dir/$file" || -L "$dir/$file" ]]; then present=$((present+1)); fi
+          done
+          if (( present == 0 )); then
+            if [[ "$GITHUB_EVENT_NAME" != workflow_dispatch ]]; then
+              if [[ -z "$EVENT_BASE" || "$EVENT_BASE" =~ ^0+$ ]] || ! git cat-file -e "$EVENT_BASE^{commit}" 2>/dev/null; then
+                echo 'Cannot prove allocator probe absence against event base' >&2
+                exit 1
+              fi
+              for file in "${checks[@]}"; do
+                if git cat-file -e "$EVENT_BASE:$dir/$file" 2>/dev/null; then
+                  echo "Allocator probe removed: $file" >&2
+                  exit 1
+                fi
+              done
+            fi
+            echo 'has_probe=false' >> "$GITHUB_OUTPUT"
+            echo 'BOOTSTRAP ONLY: native lock allocation test absent, not verified'
+          else
+            for file in "${checks[@]}"; do
+              if [[ ! -f "$dir/$file" || -L "$dir/$file" ]]; then
+                echo "Partial or symlinked allocator probe: $file" >&2
+                exit 1
+              fi
+            done
+            echo 'has_probe=true' >> "$GITHUB_OUTPUT"
+          fi
+      - name: Prove no internal-lock alloc, realloc or free (host only)
+        if: ${{ steps.scope.outputs.has_probe == 'true' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir="$RUNNER_TEMP/a03-lock-alloc"
+          python3 -I tests/control/lock_alloc/run-checks.py "$dir"
+          python3 - "$dir/execution.json" <<'PY'
+          import json,sys
+          v=json.load(open(sys.argv[1]))
+          if (v.get('passed') is not True or v.get('current_check_executed') is not True
+              or v.get('result') != 'current_zero'
+              or v.get('all_probes_used_identical_harness_bytes') is not True
+              or v.get('harness_fixtures_unchanged_during_execution') is not True):
+              raise SystemExit('Locked allocator model failed exact-source acceptance')
+          print('PASS current native model lock allocation guard; not kernel IRQ proof')
+          PY
+      - name: Upload raw model and allocator evidence even when rejected
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: a03-native-models-${{ github.run_id }}
+          if-no-files-found: warn
+          path: |
+            ${{ runner.temp }}/a03-loom/
+            ${{ runner.temp }}/a03-lock-alloc/
