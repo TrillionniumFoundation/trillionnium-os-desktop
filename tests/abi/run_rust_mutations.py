@@ -146,11 +146,11 @@ PROFILE_MUTANTS = (
         ),
     ),
     (
-        "accept_cumulative_cpu_beyond_boot_elapsed",
+        "accept_prior_window_cpu_sum",
         PROFILE_TESTS[6],
         tuple(
             (
-                f"|| {value}.cumulative_cpu_ns > {value}.sample_boottime_ns",
+                f"|| {value}.cumulative_cpu_ns - {value}.window_consumed_ns > {value}.window_start_ns",
                 "|| false",
             )
             for value in ("out", "v")
