@@ -6,7 +6,7 @@
     "android_mac": "open_external_A05",
     "aosp_source_lock": "closed",
     "binder_driver": "open_external_A05",
-    "host_unit_suite": "closed_166_of_166",
+    "host_unit_suite": "closed_184_of_184_host_only",
     "lmkd_psi_reclaim_freezer": "open_external_A06",
     "runtime_apk_acceptance": "open_dedicated_AOSP_KVM_host",
     "seccomp_filter": "open_external_A05"
@@ -18,6 +18,7 @@
     "free_disk_gib": 27.6,
     "host_ram_gib": 9.7,
     "kvm": false,
+    "scope": "Historical host capacity observation; not measured again by the commit-bound source audit",
     "status": "blocked_before_guest_start"
   },
   "equivalent_android_mac_status": "not_evidenced",
@@ -44,6 +45,7 @@
       "child normal exit"
     ]
   },
+  "host_unit_evidence": "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/unittest-result.json",
   "kernel_commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
   "kernel_runtime_tested": false,
   "owners": {
@@ -70,7 +72,7 @@
     "credentials",
     "no_new_privs"
   ],
-  "project_main_commit": "acd9ee30d51c405b32a36ff02ce25a9272b65834",
+  "project_main_commit": "18d9fca65381f0e84f130c76fa289d5186894d85",
   "require_runtime_probe": [
     "futex_robust_PI",
     "mmap_shared_exec",
@@ -95,10 +97,11 @@
       "seccomp",
       "mac"
     ],
-    "command": "python3 support/android/kernel_contract.py --kernel-root kernel/asterinas --lock support/upstream-lock.json --out /tmp/a08-final-source-gate.json",
-    "evidence": "compat/android/source-audit-main-acd9ee30.json",
+    "command": "python3 support/android/generate_kernel_source_audit.py --repo-root . --project-ref 18d9fca65381f0e84f130c76fa289d5186894d85 --output compat/android/source-audit-main-18d9fca6.json",
+    "evidence": "compat/android/source-audit-main-18d9fca6.json",
     "exit_code": 2,
     "runtime_verified": false,
+    "source_kind": "git_commit_objects",
     "status": "source_review_blocked"
   },
   "verified_missing_entry_points": [

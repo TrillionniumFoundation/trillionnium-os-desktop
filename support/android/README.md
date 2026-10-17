@@ -2,7 +2,40 @@
 
 This is support/android/README.md. The repository ROOT README.md stays 0 bytes.
 
-## Current checkpoint — 2026-10-17 source recovery
+## Current checkpoint — 2026-10-17 commit-bound source audit
+
+`generate_kernel_source_audit.py` now resolves `--project-ref` once and reads
+the selected commit's immutable Git blobs for both content hashes and source
+candidate scans. Dirty, untracked, or differently checked-out files cannot be
+attributed to that commit. Reports contain the actual UTC observation time,
+resolved commit/tree, per-input Git blob/SHA256/mode, and a digest of the entire
+scanned Rust blob inventory. Schema 3 distinguishes the expected upstream pin
+from the actual `support/upstream-lock.json` read from that same commit; the
+lock blob is hashed, and missing, malformed or mismatched metadata adds a
+`pinned_lock` blocker. A metadata match does not establish that imported kernel
+files are identical to upstream. The previous tool read the worktree while labeling
+it with the requested ref and hard-coded its observation date.
+
+Eight regression additions cover commit/working-tree separation, observation
+time and upstream-lock validation. The first five fail on the original tool;
+the additional lock cases reject its successor's unverified fixed-pin claim.
+The current complete suite is **184/184 in normal and optimized Python**, with
+no skips. The complete host runner returned **host_passed_only**
+and actually compiled/loaded the JNI library and Java harness using the same
+isolated OpenJDK tools documented below. Binder device open remains
+**BLOCKED / exit 77**. Exact tested source, commands, baseline failures and raw
+output are in `tests/workloads/android/evidence/2026-10-17-commit-bound-audit/`.
+
+The newly recorded main snapshot is fixed at
+`18d9fca65381f0e84f130c76fa289d5186894d85`, tree
+`d779baa329f7cc04fb2c2cdeb7822356d34af899`. Its 757 committed core Rust files
+still contain no Binder, seccomp-install, or Android MAC candidate; the source
+gate returns **exit 2**. This is a separate immutable-main source scan, while
+the host regression runs the A08 branch recorded in its receipt. Neither
+result qualifies a kernel build, Android boot or APK execution. GitHub Actions
+execution remains a separately reported result; queued jobs are not passes.
+
+## Source recovery checkpoint — 2026-10-17
 
 This repair is based on A08 PR #7 commit
 `41a8c32b435f2fa9dd750ded40bd4b37cb7606c6`. That checkout omitted 39 files,
@@ -12,7 +45,7 @@ recovered from `37466a93823b9b10ace81759ec6decb59bb5a140` and verified against
 every original Git blob and mode before further edits. The 62 shared file
 contents were unchanged; there were no newer A08-only files to discard.
 The restored historical suite ran **166/166**. Ten new source-integrity
-regressions bring the current suite to **176/176 in both normal and optimized
+regressions brought that recovery suite to **176/176 in both normal and optimized
 Python**, with no skipped tests. Provenance, commands and raw output are in
 `tests/workloads/android/evidence/2026-10-17-source-integrity/`.
 
@@ -160,7 +193,7 @@ Source lock: selected, resolved full manifest PENDING. Build: NOT RUN.
 Cuttlefish reference boot: NOT RUN. Rust-kernel Android: NOT RUN.
 APK: first-party source and automated scenario exist, APK build and execution
 NOT RUN. Native ABI x86_64/ARM64/32-bit: NOT RUN; no translator assumed.
-Current host Python suite: 176/176 passed in normal and optimized Python,
+Current host Python suite: 184/184 passed in normal and optimized Python,
 with no skips. The broader host gate passed with the documented isolated
 Java/JNI tool configuration; its earlier missing-tools failure is retained.
 Linux ABI probe: mmap, memfd,
@@ -168,7 +201,7 @@ SCM_RIGHTS, futex, signals PASS; Binder device missing ENOENT. This means only
 the Linux host probe has passed. Binder protocol probe exits 77 with ENOENT; no
 Binder transaction has run. Real framework boot and APK tests remain NOT
 EXECUTED. The current rerun receipt is
-tests/workloads/android/evidence/2026-10-17-source-integrity/.
+tests/workloads/android/evidence/2026-10-17-commit-bound-audit/.
 
 For actual failures preserve first stderr/errno, initiator, target kernel,
 AOSP version, full SHA/manifest, host toolchain, raw serial/logcat, timing,
@@ -204,8 +237,9 @@ Linux HOST-ONLY reproduction:
 An earlier host wave passed 34 offline Python tests, C syscall probes and an
 isolated Linux seccomp filter; Java loaded a real x86_64 shared library compiled
 from the same A08 JNI C source and reported HOST_JNI_INTEGRATION_PASS. That
-receipt is historical. The current host gate is 166/166 with Java/JNI tools
-blocked on this host; missing /dev/binder is explicitly
+receipt is historical. A subsequent 166-test historical host run was blocked
+by missing Java/JNI development tools. The current 184-test full host pass is
+recorded at the checkpoint above; missing /dev/binder is still explicitly
 binder_blocked_no_device (exit 77), not a Binder success. Evidence for the
 earlier JNI wave is tests/workloads/android/evidence/host-jni-gate.json.
 
@@ -216,33 +250,38 @@ Android ART/PackageManager runtime execution, complete AOSP build, Cuttlefish bo
 
 ## Current Asterinas source snapshot
 
-The imported kernel source is re-audited against the current project commit,
-not against an older A08 branch merge parent. Generate the bound snapshot with:
+Select the exact project commit to audit. The generator reads that commit's
+Git objects even when the A08 tools are checked out on a different branch;
+it does not inspect local working-tree edits. Generate the bound snapshot with:
 
     python3 support/android/generate_kernel_source_audit.py \
       --repo-root . \
       --project-ref origin/main \
       --output compat/android/source-audit-main-$(git rev-parse --short origin/main).json
 
-The command returns exit 2 while Binder, seccomp, or Android MAC evidence is
+The referenced commit must already exist locally; `origin/main` is the locally
+available ref, not a network freshness guarantee. The command returns exit 2
+while Binder, seccomp, or Android MAC evidence is
 missing. That is intentional. The JSON records the exact project commit/tree,
 Git blob and SHA256 for each inspected kernel file, and keeps runtime Android
 and Android-on-Asterinas false. `kernel_contract.py` remains the fail-closed
 live scanner; neither tool modifies kernel sources.
 
-The checked-in `source-audit-main-acd9ee30.json` is the snapshot for the
-current main commit used to rebase this branch. Earlier files
+The checked-in `source-audit-main-18d9fca6.json` records the fixed main checkpoint
+`18d9fca65381f0e84f130c76fa289d5186894d85` using immutable Git objects.
+`source-audit-main-acd9ee30.json` and earlier files
 `source-audit-main-e1b9d705.json`, `source-audit-main-bc294f75.json`,
 `source-audit-main-5aeff7b6.json`,
 `source-audit-main-0709ab5d.json`,
 `source-audit-main-3b2d15bc.json` and `source-audit-main-e44c92ac.json` remain
-historical A08 wave records and must not be read as the current main snapshot.
+historical A08 wave records. They predate the commit-binding repair and are not
+substitutes for a fresh snapshot from the corrected tool.
 
 ## Fourth wave: Asterinas kernel ABI source gate and artifact-qualified APK runner
 
 The historical A08 source audit recorded the imported Asterinas tree at
-`e44c92ac885eb003665ff2e1e5c6fab1f104b2d6`; the current-main snapshot above
-supersedes it for present source paths. Both audits agree that futex/mmap/
+`e44c92ac885eb003665ff2e1e5c6fab1f104b2d6`; the immutable-main snapshot above
+supersedes it for the recorded main checkpoint. Both audits agree that futex/mmap/
 memfd/sendmsg/recvmsg entrypoints exist, while an Android Binder driver,
 seccomp installation syscall/prctl, and Android MAC policy enforcement remain
 unverified or missing. **No Android guest was booted or qualified.**
@@ -269,12 +308,13 @@ This wave's measured *new* isolated Python tests: 17 passed, zero
 failed/errors/skipped (8 kernel-source fixtures + 9 APK artifact fixtures); see
 tests/workloads/android/evidence/a08-fourth-wave.json and .log. These are
 synthetic/host tests, not a real AOSP/ART/Binder execution. The complete
-current 166-test suite is recorded above. AOSP checkout, actual APK build and
+166-test suite was the historical checkpoint; the current full suite is recorded
+above. AOSP checkout, actual APK build and
 Android runtime remain **NOT EXECUTED**.
 
 ## Fifth wave: x86_64 Binder UAPI wire layout (2026-10-16)
 
-The A08 branch now incorporates current `main` with A01's full pinned Asterinas kernel as a **merge parent**, without changing non-A08 source. Binder is still NOT implemented or qualified on the target kernel.
+At the fifth-wave checkpoint, the A08 branch incorporated then-current `main` with A01's full pinned Asterinas kernel as a **merge parent**, without changing non-A08 source. Binder is still NOT implemented or qualified on the target kernel.
 
 For a real Linux x86_64 header baseline, build and execute:
 
@@ -351,7 +391,7 @@ Exact byte-identical A08 remote source unit tests, on an isolated Debian x86_64 
 
 Executed APEX/VINTF and launch-preflight subset: **31/31 passed** (0 failures, 0 errors, 0 skips). Transcript SHA256: `3be9e824861544965ea1ce0420756292144e15343afe038b30394d7800eb9f5c`. Evidence under `tests/workloads/android/evidence/host-seventh-apex.{json,log}`. This is NOT a complete A08 full-suite run and used a synthetic checkvintf executable, **not** the actual AOSP 15 built binary.
 
-**Still unexecuted:** AOSP full checkout/build and partition image, actual target checkvintf/ART/Binder/PackageManager, KVM Cuttlefish Linux guest boot, original APK lifecycle, Android on Asterinas. The container lacks repo, adb, QEMU, KVM and the necessary AOSP build disk space.
+**Still unexecuted:** AOSP full checkout/build and partition image, actual target checkvintf/ART/Binder/PackageManager, KVM Cuttlefish Linux guest boot, original APK lifecycle, Android on Asterinas. At that historical wave, the container lacked repo, adb, QEMU, KVM and the necessary AOSP build disk space.
 
 ## Seventh wave: mounted ART and framework readiness
 
@@ -404,7 +444,7 @@ After an actual A01 kernel.sh run_kernel and trusted fresh qemu.json, replay the
 
 QEMU is restricted to q35, TCG, 1 CPU, 512 MiB, no network/disk/host QMP and no KVM. The runner checks the recorded A01 kernel and SeaBIOS hashes and captures raw serial bytes, QEMU exit status and required A01/A08 markers. A Binder errno/no-device (77) remains a separate BLOCKED status even if Linux ABI probes pass. A primitive Binder ioctl/mmap pass does not prove Binder identity, transactions, MAC or Android APK functionality.
 
-Local measured host regression: 13/13 passed (static ELF compilation, deterministic initramfs fixture packing, full one-command builder fixture, profile/sha/overwrite rejection). These were synthetic fixtures on an isolated Linux host, NOT an Asterinas guest. See tests/workloads/android/evidence/host-asterinas-abi-guest.{json,log}. No QEMU executable is present in this host; guest test and Android-on-Asterinas remain NOT EXECUTED.
+Local measured host regression: 13/13 passed (static ELF compilation, deterministic initramfs fixture packing, full one-command builder fixture, profile/sha/overwrite rejection). These were synthetic fixtures on an isolated Linux host, NOT an Asterinas guest. See tests/workloads/android/evidence/host-asterinas-abi-guest.{json,log}. No QEMU executable was present on that historical test host; A08 guest probes and Android-on-Asterinas remain NOT EXECUTED.
 
 ## A08 ninth wave: falsifiable guest ABI and Binder verdicts
 
@@ -438,4 +478,4 @@ To create the guest payload on a verified A01 build host:
 
 Run `support/android/run_asterinas_abi.py` with the same fresh A01 kernel ELF/qemu.json/SeaBIOS/TCG command documented above. No additional kernel files, QEMU network devices or host-wide seccomp policies are changed. The host seccomp filter is installed only inside the probe's isolated child.
 
-**Actual host evidence 2026-10-16:** 53/53 isolated A08 unit/integration cases passed with GCC static C compilation, actual Linux child-only seccomp installation/EPERM enforcement and synthetic serial/fake-QEMU negative tests. These are **NOT** target Asterinas, full Android or real ART/Binder guest results. Exact source blob SHAs and run SHA256: `tests/workloads/android/evidence/host-guest-seccomp.json`; real host filter stdout: `host-guest-seccomp.log`. Real QEMU unavailable in the current container, so Asterinas/Binder/seccomp guest probes remain **NOT EXECUTED**.
+**Actual host evidence 2026-10-16:** 53/53 isolated A08 unit/integration cases passed with GCC static C compilation, actual Linux child-only seccomp installation/EPERM enforcement and synthetic serial/fake-QEMU negative tests. These are **NOT** target Asterinas, full Android or real ART/Binder guest results. Exact source blob SHAs and run SHA256: `tests/workloads/android/evidence/host-guest-seccomp.json`; real host filter stdout: `host-guest-seccomp.log`. Real QEMU was unavailable on that historical test host; A08 Asterinas/Binder/seccomp guest probes remain **NOT EXECUTED**.
