@@ -5,7 +5,7 @@
 use os_control::{
     with_parent, BootId, CapSpaceId, ControlCore, DeliveryRequest, HistoryAck, OwnerId,
     OwnerReceipt, PublisherId, ResourceDomain, ResourceDomainId, ResourceError, StableObjectId,
-    CPU_PERIOD_NS,
+    CPU_PERIOD_NS, MAX_RESOURCE_DEPTH,
 };
 use std::sync::{Arc, Barrier};
 use std::thread;
@@ -231,4 +231,50 @@ fn last_child_drop_and_parent_reduction_have_one_legal_serial_order() {
         assert_eq!(parent.budget().cap_ns, 9);
         assert_eq!(parent.revision(), 2);
     }
+}
+
+#[test]
+fn depth_limit_rejection_preserves_child_metadata_and_identity_capacity() {
+    let parent = root(809_000, 20);
+    let mut leaf = parent.clone();
+    for level in 2..=MAX_RESOURCE_DEPTH {
+        leaf = child(&leaf, 809_000 + level as u128, 10);
+    }
+    let rejected_id = 809_000 + MAX_RESOURCE_DEPTH as u128 + 1;
+    assert_eq!(
+        with_parent(
+            ResourceDomainId::from_u128(rejected_id),
+            StableObjectId::from_u128(rejected_id),
+            &leaf,
+            1,
+        )
+        .err(),
+        Some(ResourceError::Exhausted)
+    );
+    // Rejection did not create a hidden child-cap constraint on the leaf.
+    reduce(&leaf, 1, 0, 0);
+    assert_eq!(leaf.budget().cap_ns, 0);
+    // Neither ID was consumed: the same pair remains usable at legal depth.
+    let replacement = child(&parent, rejected_id, 1);
+    assert_eq!(replacement.parent_id(), Some(parent.id()));
+    assert_eq!(replacement.budget().cap_ns, 1);
+    assert_eq!(parent.try_usage(0).unwrap().cumulative_cpu_ns, 0);
+}
+
+#[test]
+fn maximum_depth_parent_chain_drops_on_a_bounded_host_thread_stack() {
+    // This is a host stack regression, not a claim about an Asterinas
+    // kernel stack or its native object destruction machinery.
+    thread::Builder::new()
+        .stack_size(64 * 1024)
+        .spawn(|| {
+            let mut leaf = root(810_000, 10);
+            for level in 2..=MAX_RESOURCE_DEPTH {
+                leaf = child(&leaf, 810_000 + level as u128, 10);
+            }
+            drop(leaf);
+        })
+        .unwrap()
+        .join()
+        .unwrap();
 }

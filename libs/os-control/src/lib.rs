@@ -31,6 +31,9 @@ pub const DEFAULT_WINDOW_CAPACITY: usize = 1024;
 /// Host-model resource family identity tombstones. Kernel integration must
 /// use its real bounded stable-object registry and lifecycle policy.
 pub const DEFAULT_FAMILY_ID_CAPACITY: usize = 65_536;
+/// Includes the root. Bounds ancestry traversal and final-reference drop.
+/// This host bound is not a proof of safety on an actual kernel IRQ stack.
+pub const MAX_RESOURCE_DEPTH: usize = 64;
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Id16([u8; 16]);
@@ -278,6 +281,7 @@ pub struct ResourceDomain {
 }
 
 struct ResourceDomainInner {
+    depth: usize,
     gate: Arc<Mutex<()>>,
     // Lifetime identity registry is shared by the whole resource family.
     // Entries are deliberately not freed on handle drop: old stable IDs
@@ -397,6 +401,9 @@ impl ResourceDomain {
             if !parent_state.alive {
                 return Err(ResourceError::Revoked);
             }
+            if parent.inner.depth >= MAX_RESOURCE_DEPTH {
+                return Err(ResourceError::Exhausted);
+            }
             if initial_cap_ns > parent_state.budget.cap_ns {
                 return Err(ResourceError::ParentConstraint);
             }
@@ -436,6 +443,7 @@ impl ResourceDomain {
             let initial_window_start =
                 (newest_ancestor_boottime / budget.period_ns) * budget.period_ns;
             let inner = Arc::new(ResourceDomainInner {
+                depth: parent.inner.depth + 1,
                 gate: Arc::clone(&parent.inner.gate),
                 family: Arc::clone(&parent.inner.family),
                 state: Mutex::new(DomainState {
@@ -464,6 +472,7 @@ impl ResourceDomain {
         }
         Ok(Self {
             inner: Arc::new(ResourceDomainInner {
+                depth: 1,
                 gate: Arc::new(Mutex::new(())),
                 family: Arc::new(Mutex::new(FamilyIdentityRegistry {
                     domain_ids: BTreeSet::from([id]),
@@ -1278,6 +1287,9 @@ pub enum PublishOutcome {
 }
 
 struct Slot {
+    // Long executor serialization is separate from short observation state.
+    // Namespace-table readers never acquire this gate.
+    execution_gate: Mutex<()>,
     binding: RequestBinding,
     publisher: PublisherId,
     // Public stable-ID bytes cannot authenticate an in-memory target.
@@ -1442,6 +1454,8 @@ pub struct DeliveryView {
 }
 
 struct NamespaceState {
+    // Serialize concurrent loss operations without holding the table lock.
+    loss_gate: Mutex<()>,
     identity: NamespaceIdentity,
     state: Mutex<NamespaceInner>,
 }
@@ -1452,6 +1466,7 @@ struct NamespaceInner {
     capacity: usize,
     slots: BTreeMap<u64, Arc<Slot>>,
     history_lost: bool,
+    closing: bool,
     generation: u64,
 }
 
@@ -1535,6 +1550,7 @@ impl ControlCore {
         };
         Ok(Self {
             namespace: Arc::new(NamespaceState {
+                loss_gate: Mutex::new(()),
                 identity,
                 state: Mutex::new(NamespaceInner {
                     next_sequence: 1,
@@ -1542,6 +1558,7 @@ impl ControlCore {
                     capacity,
                     slots: BTreeMap::new(),
                     history_lost: false,
+                    closing: false,
                     generation: 1,
                 }),
             }),
@@ -1617,7 +1634,7 @@ impl ControlCore {
             return Err(DeliveryError::PermissionDenied);
         }
         let mut ns = lock_unpoisoned(&self.namespace.state);
-        if ns.history_lost {
+        if ns.history_lost || ns.closing {
             return Err(DeliveryError::HistoryLost);
         }
         if request.sequence <= ns.retired_through {
@@ -1659,6 +1676,7 @@ impl ControlCore {
             sequence: request.sequence,
         };
         let slot = Arc::new(Slot {
+            execution_gate: Mutex::new(()),
             binding: request.binding(),
             publisher,
             target_instance: Arc::clone(&request.grant.domain.inner),
@@ -1766,6 +1784,7 @@ impl ControlCore {
         }
         let mut ns = lock_unpoisoned(&self.namespace.state);
         if ns.history_lost
+            || ns.closing
             || view.generation != ns.generation
             || owner_authority.generation != ns.generation
         {
@@ -1807,21 +1826,31 @@ impl ControlCore {
     /// Model a lost namespace after boot/recovery.  Existing D values remain
     /// unknown and can never be replayed through this object.
     pub fn lose_history(&self) {
-        let mut ns = lock_unpoisoned(&self.namespace.state);
-        // The namespace lock prevents new reservations, while each slot lock
-        // serializes this fence against in-flight commit/publish. A commit
-        // that already owns its slot finishes before loss takes effect; a
-        // commit that has only passed token_is_live observes Fenced instead
-        // of applying an effect after loss. No resource lock is taken here.
-        for slot in ns.slots.values() {
+        let _loss = lock_unpoisoned(&self.namespace.loss_gate);
+        let slots = {
+            let mut ns = lock_unpoisoned(&self.namespace.state);
+            if ns.history_lost {
+                return;
+            }
+            // Close admission first, but retain bounded observable results
+            // while waiting for already admitted synchronous executors.
+            ns.closing = true;
+            ns.slots.values().cloned().collect::<Vec<_>>()
+        };
+        for slot in slots {
+            // No namespace-table lock is held during this potentially long
+            // wait. Query and pending-prefix retirement remain responsive.
+            let _execution = lock_unpoisoned(&slot.execution_gate);
             let mut state = lock_unpoisoned(&slot.state);
             if matches!(*state, SlotState::Reserved | SlotState::Executing) {
                 *state = SlotState::Fenced;
             }
         }
+        let mut ns = lock_unpoisoned(&self.namespace.state);
         ns.history_lost = true;
         ns.slots.clear();
         ns.generation = ns.generation.saturating_add(1);
+        ns.closing = false;
     }
 
     pub fn window_len(&self) -> usize {
@@ -1881,9 +1910,10 @@ impl ControlCore {
             {
                 return Err(DeliveryInvariantError::InvalidSlotBinding);
             }
-            // Audit lock order is namespace -> result slot -> resource
-            // state. Commit takes result slot -> resource mutation gate ->
-            // resource state, so never acquire resource state before slot.
+            // Audit lock order is namespace -> short slot state -> resource
+            // state. Commit holds the independent execution gate, briefly
+            // marks admission, releases slot state, then enters the resource
+            // path. Never acquire resource state before slot state here.
             let slot_state = lock_unpoisoned(&slot.state);
             {
                 let target = lock_unpoisoned(&slot.target_instance.state);
@@ -1895,6 +1925,7 @@ impl ControlCore {
             }
             match *slot_state {
                 SlotState::Reserved | SlotState::Executing => {}
+                SlotState::Fenced if ns.closing => {}
                 SlotState::Fenced => return Err(DeliveryInvariantError::FencedLiveSlot),
                 SlotState::Terminal(result) => {
                     if observation_from_published(self.identity(), key, result)
@@ -1918,6 +1949,7 @@ impl ControlCore {
     fn token_is_live(&self, token: &ReserveToken) -> bool {
         let ns = lock_unpoisoned(&self.namespace.state);
         !ns.history_lost
+            && !ns.closing
             && ns.generation == token.reservation.generation
             && ns
                 .slots
@@ -1964,6 +1996,7 @@ impl ControlCore {
         {
             return Err(DeliveryError::PermissionDenied);
         }
+        let _execution = lock_unpoisoned(&token.reservation.slot.execution_gate);
         if !self.token_is_live(token) {
             return Err(DeliveryError::HistoryLost);
         }
@@ -1988,7 +2021,7 @@ impl ControlCore {
         ))
     }
 
-    /// Execute an A05/A06 effect once while holding the reserved result slot.
+    /// Execute an A05/A06 effect once under its independent execution gate.
     ///
     /// The adapter must check the real grant/epoch/lease, stable target,
     /// revision and runtime under its resource mutation lock, and return the
@@ -1998,7 +2031,9 @@ impl ControlCore {
     /// enforcement. Never call it directly from IRQ with portable-spin.
     ///
     /// A terminal retry returns the saved result without calling `execute`.
-    /// Namespace loss either fences before entry or waits for publication.
+    /// Namespace loss either fences before entry or waits for publication
+    /// without holding the namespace table lock. Query can read Executing as
+    /// Reserved while the callback runs; terminal snapshots never regress.
     /// Unwind or malformed outcome leaves an opaque pending slot: subsequent
     /// execution is Busy, retirement is blocked, and only trusted externally
     /// fenced reconciliation may finish it through `publish`.
@@ -2017,6 +2052,7 @@ impl ControlCore {
         {
             return Err(DeliveryError::PermissionDenied);
         }
+        let _execution = lock_unpoisoned(&token.reservation.slot.execution_gate);
         if !self.token_is_live(token) {
             return Err(DeliveryError::HistoryLost);
         }
@@ -2037,9 +2073,10 @@ impl ControlCore {
         // Set the sentinel before invoking external code: unwinding must not
         // restore permission to perform an effect, even with poison recovery.
         *slot_state = SlotState::Executing;
+        drop(slot_state);
         let outcome = execute(binding);
         let result = published_result_from_outcome(binding, outcome)?;
-        *slot_state = SlotState::Terminal(result);
+        *lock_unpoisoned(&token.reservation.slot.state) = SlotState::Terminal(result);
         Ok(observation_from_published(
             self.identity(),
             token.id().sequence,
@@ -2333,6 +2370,7 @@ mod tests {
         let mut corrupted = token.binding();
         corrupted.wire_target_generation = 0;
         let bad = Arc::new(Slot {
+            execution_gate: Mutex::new(()),
             binding: corrupted,
             publisher,
             target_instance: Arc::clone(&token.reservation.slot.target_instance),
@@ -2348,6 +2386,7 @@ mod tests {
         corrupted.wire_target_generation = 3;
         corrupted.stable_object_id = StableObjectId::from_u128(9_999);
         let bad = Arc::new(Slot {
+            execution_gate: Mutex::new(()),
             binding: corrupted,
             publisher,
             target_instance: Arc::clone(&token.reservation.slot.target_instance),
