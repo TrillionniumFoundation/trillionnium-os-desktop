@@ -28,7 +28,7 @@ EXPECTED_SEMANTIC_TEST_COUNT = 12
 EXPECTED_PROFILE_TEST_COUNT = 7
 EXPECTED_SNAPSHOT_TEST_COUNT = 5
 EXPECTED_NEGATIVE_TEST_COUNT = 21
-EXPECTED_MUTANT_COUNT = 19
+EXPECTED_MUTANT_COUNT = 20
 GENERATION_TEST = "same_sequence_and_slot_different_generation_is_conflict"
 MUTANTS = (
     (
@@ -141,6 +141,17 @@ PROFILE_MUTANTS = (
             (
                 f"|| {value}.window_start_ns != expected_start",
                 f"|| {value}.window_start_ns > expected_start",
+            )
+            for value in ("out", "v")
+        ),
+    ),
+    (
+        "accept_cumulative_cpu_beyond_boot_elapsed",
+        PROFILE_TESTS[6],
+        tuple(
+            (
+                f"|| {value}.cumulative_cpu_ns > {value}.sample_boottime_ns",
+                "|| false",
             )
             for value in ("out", "v")
         ),
@@ -598,7 +609,7 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("--toolchain must not be empty")
 
     report: dict[str, Any] = {
-        "schema": "hos2-rust-source-mutations-v5",
+        "schema": "hos2-rust-source-mutations-v6",
         "scope": (
             "host Rust canonical equality, fixed-byte response encoding and "
             "documented QueryAbi/ReadUsage and transport-bound response boundaries; "
