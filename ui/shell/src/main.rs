@@ -10,7 +10,7 @@ use std::collections::VecDeque;
 use std::io::{self, Write};
 use std::sync::mpsc::{self, Receiver, SyncSender, TryRecvError};
 use std::time::{Duration, Instant};
-use trill_ui_core::hepta::{HeptaConnectionState, HeptaProjection};
+use trill_ui_core::hepta::HeptaProjection;
 use trill_ui_core::{
     request, AppKind, HostResources, HostWaylandObservation, HostWindowObservation, Request,
     Response, TaskRecord, TaskState, WaylandSocketStatus, Workspace,
@@ -433,14 +433,13 @@ impl Desktop {
     /// get a local timestamp later than the frame's freshness evaluation.
     fn receive_and_refresh_hepta(&mut self, clock: impl FnOnce() -> (Instant, u64)) {
         self.receive();
-        let (now, _now_unix_ms) = clock();
-        if self.hepta.connection == HeptaConnectionState::Observed
-            && self.hepta_last_snapshot.is_some_and(|received| {
-                now.saturating_duration_since(received) > Duration::from_secs(7)
-            })
-        {
-            self.hepta.mark_unavailable("session_snapshot_expired");
-        }
+        let (now, now_unix_ms) = clock();
+        hepta_panel::expire_unfresh_observation(
+            &mut self.hepta,
+            self.hepta_last_snapshot,
+            now,
+            now_unix_ms,
+        );
     }
 
     /// Explicit user-requested export. Never autosave chat or feed Hepta.
@@ -1090,7 +1089,9 @@ fn main() -> eframe::Result {
 #[cfg(test)]
 mod observation_freshness_tests {
     use super::*;
-    use trill_ui_core::hepta::{HeptaHealthObservation, HeptaRuntimeObservation};
+    use trill_ui_core::hepta::{
+        HeptaConnectionState, HeptaHealthObservation, HeptaRuntimeObservation,
+    };
 
     fn observed(sampled_unix_ms: u64) -> HeptaProjection {
         HeptaProjection {

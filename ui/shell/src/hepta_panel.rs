@@ -10,6 +10,51 @@ use trill_ui_core::hepta::{HeptaConnectionState, HeptaProjection};
 const LAYOUT_PROBE_PREFIX: &[u8] = b"TRILL_HEPTA_LAYOUT_V1 ";
 const MAX_OBSERVATION_AGE: Duration = Duration::from_secs(7);
 
+/// Both the local receipt and the original sample must be current. A response
+/// can wait in the Shell queue while the UI is paused; receiving it now must
+/// not reset the age of its runtime observation. Clock rollback is unknown,
+/// not a zero-age success. Shared by visible state and the layout diagnostic.
+fn freshness_failure(
+    projection: &HeptaProjection,
+    received_at: Option<Instant>,
+    now: Instant,
+    now_unix_ms: u64,
+) -> Option<&'static str> {
+    let Some(observation) = &projection.last_observation else {
+        return Some("hepta_observation_missing");
+    };
+    let Some(received_age) = received_at.and_then(|received| now.checked_duration_since(received))
+    else {
+        return Some("session_snapshot_time_invalid");
+    };
+    if received_age > MAX_OBSERVATION_AGE {
+        return Some("session_snapshot_expired");
+    }
+    let Some(sample_age_ms) = now_unix_ms.checked_sub(observation.sampled_unix_ms) else {
+        return Some("hepta_observation_time_invalid");
+    };
+    if sample_age_ms > MAX_OBSERVATION_AGE.as_millis() as u64 {
+        return Some("hepta_observation_expired");
+    }
+    None
+}
+
+/// Downgrade only current-looking data, preserving the complete last success
+/// and the Session's attempt timestamp. Only a later Session snapshot may
+/// restore Observed; existing unknown-state diagnostics are kept unchanged.
+pub fn expire_unfresh_observation(
+    projection: &mut HeptaProjection,
+    received_at: Option<Instant>,
+    now: Instant,
+    now_unix_ms: u64,
+) {
+    if projection.connection == HeptaConnectionState::Observed {
+        if let Some(code) = freshness_failure(projection, received_at, now, now_unix_ms) {
+            projection.mark_unavailable(code);
+        }
+    }
+}
+
 /// Explicit opt-in stdout evidence from a completed runtime-page widget update.
 /// It is not compositor presentation, a Hepta operation, or an effect receipt.
 pub struct LayoutProbe {
@@ -48,22 +93,12 @@ impl LayoutProbe {
         {
             return Ok(());
         }
-        let Some(received_age) =
-            received_at.and_then(|received| now.checked_duration_since(received))
-        else {
+        if freshness_failure(projection, received_at, now, now_unix_ms).is_some() {
             return Ok(());
-        };
+        }
         let Some(observation) = &projection.last_observation else {
             return Ok(());
         };
-        let Some(sample_age_ms) = now_unix_ms.checked_sub(observation.sampled_unix_ms) else {
-            return Ok(());
-        };
-        if received_age > MAX_OBSERVATION_AGE
-            || sample_age_ms > MAX_OBSERVATION_AGE.as_millis() as u64
-        {
-            return Ok(());
-        }
         // A closed logging pipe never stalls the UI or creates a retry loop.
         self.emitted = true;
         let mut line = LAYOUT_PROBE_PREFIX.to_vec();
