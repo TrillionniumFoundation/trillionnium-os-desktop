@@ -1,5 +1,14 @@
 # 当前状态
 
+## 2026-10-17：最终计费编译修复与 A09 严格测试恢复
+
+- **A06 真实修复但尚未主干放行：**在 [Draft #132](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/132) 的实际固定 nightly 内核构建中，发现两处 `Option<ArcRef<T>>.cloned()` 编译错误 E0599；以明确的 `.map(|value| (*value).clone())` 保持真实 `Arc<T>` 引用。独立 [PR #141](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/141) 已合入 #132 开发分支，合并提交 `ee6c278f9468c4633bed94d0bc3563b9601df0a4`，**不是合并 main**。原源码编译失败；修复后完整 Asterinas 编译 exit0，ELF SHA256 `48bea33a39614004a17aeae9159f0ea57a73a6fd4db64c3c3b2fd43c6dee934f`。固定 QEMU 1-vCPU 原始 `cpu.stat` 客体验证 **4/4 raw33**：leaf1%＝1.0%、1.1%；RT10%＝9.965%；parent10%＝10.096%；同源码 **aster-core 153/153 真实内核测试通过**、0失败/过滤/软跳过。机器证据见 [A06 验收收据](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/e0060a06ac11a30ad7472c65e0d9da852cc03d50/results/organ-backend/2026-10-17/a06-final-debit-arc-ref-compile-and-guest.json)。尚未专门证明 zombie exit/reap 最后一段 CPU debit，不能据此宣告 G1 或 SMP 合格。
+- **A05 防复用候选独立验收边界：**精确候选 `7a9b4919402fe43b88866da2c2aab2aa5b589e28` 的宿主 nonce 契约 **4/4 通过**，原 QueryAbi host smoke 通过；固定 nightly 全内核编译 exit0，ELF SHA256 `dfac10ce6909ac99321e4768e41f8ff5c70edd7e496d51d735ffd6e3577213ee`，普通隔离 QEMU initramfs 启动 raw33/boot marker 成立。**本轮未执行该候选的实际 fork/exec/QueryAbi identity 客体探针**，原同进程身份曾有失败；继续保持其 Draft，不得因编译和普通启动成功就签发真实效果权限。
+- **本轮已合并主干的代码与实测流程：**[A03 PR #134](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/134) 将实际成功的 exact-source Loom／锁分配模型加入 CI，merge `c0ffb9e736869da577fed12d9fa46df086bcd858`；[A09 PR #143](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/143) 修复已合并 DMA 元数据模型的两处严格 Clippy 问题和 Rust 格式，merge `7d6c9d426e7920fc17bb723de9e2a671fcc91b5e`，本地真实 **55 单元＋4 compile-fail doctest＋7 Linux ECHILD/worker 负例**均通过、Clippy `-D warnings` 与 fmt 均通过。**A09 仍只是 no_std/host 元数据模型**，未进行真实 GPU DMA、IOMMU 或物理硬件测试。
+- **下一条实质阻塞：**A06 从主干当前版本对齐完整最后计费生命周期 QEMU 场景（真实 fork/exit/reap、cgroup lease/rmdir、SMP 迁移/锁序）；A05 通过精确进程 nonce/exec/fork 客体权限验收后才可接 HOS2 ReadUsage/InstallBudget；A07 只沿既有 Hepta owner 实现持久 K↔D 结果确认和退役，不把只读 organ host 变为效果执行器。**G1/G2、真实硬件和生产资格仍未闭合。**
+
+---
+
 ## 2026-10-17：A03/A02 已独立验证并合并，A05 进程会话完成真实客体验证
 
 - **合并到 main 的真实源码：**[A03 PR #123](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/123) merge `df8e2decbb1f4efb501d03f6141f81c7a128ac1a`，减少 native delivery 预约／退役／历史丢失时的内部锁下分配；[A02 PR #119](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/119) merge `eabf5fb169a1d477ff3b3059a7a2aaa89746cdc8`，为 N0 `ReadUsage` 编码和解码补上 `cumulative_cpu_ns <= sample_boottime_ns` 的不变量。均是精确预期 HEAD 的普通合并，未改其他 Agent 分支。
