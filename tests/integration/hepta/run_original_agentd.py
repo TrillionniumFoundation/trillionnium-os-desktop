@@ -95,13 +95,19 @@ def toml_value(value):
 
 def prepare_runner(source, destination):
     """Link original libraries; rebase upstream patches without editing them."""
-    destination.mkdir(mode=0o700)
-    (destination / "src").mkdir(mode=0o700)
     workspace = source / "codex-rs"
     upstream = tomllib.loads((workspace / "Cargo.toml").read_text())
+    resolver = upstream["workspace"].get("resolver")
+    if resolver not in ("1", "2", "3"):
+        raise GateError("upstream_explicit_resolver_required")
+    destination.mkdir(mode=0o700)
+    (destination / "src").mkdir(mode=0o700)
     lines = [
         "[package]", f'name="{RUNNER_NAME}"', 'version="0.0.0"',
-        'edition="2024"', "publish=false", "[workspace]", "[dependencies]",
+        'edition="2024"', "publish=false", "[workspace]",
+        # This external root cannot inherit the original workspace setting.
+        # Keep its resolver explicit; the package edition is not a substitute.
+        "resolver=" + toml_value(resolver), "[dependencies]",
     ]
     for crate in ["hepta-contracts", "hepta-fleet", "hepta-paths", "hepta-supervisor"]:
         dependency = {"path": str(workspace / crate)}
