@@ -382,7 +382,7 @@ fn clone_child_task(
     // read section as migration.  This snapshot is only a deferred-final-
     // charge fallback; live charges still resolve through Process::cgroup().
     let _cgroup_read_guard = CgroupMembership::read_lock();
-    let inherited_cpu_cgroup = process.cgroup().get().cloned();
+    let inherited_cpu_cgroup = process.cgroup().get().map(|value| (*value).clone());
 
     // Clone system V semaphore
     clone_sysvsem(clone_flags)?;
