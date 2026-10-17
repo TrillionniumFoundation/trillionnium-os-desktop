@@ -91,6 +91,54 @@ jobs:
           test -s "$RUNNER_TEMP/a05-queryabi-guest"
           file "$RUNNER_TEMP/a05-queryabi-guest"
           sha256sum "$RUNNER_TEMP/a05-queryabi-guest"
+      - name: A05 pinned QueryAbi replay host regressions (no QEMU)
+        shell: bash
+        run: |
+          set -euo pipefail
+          dir=tests/kernel/control
+          fixtures=(
+            run_queryabi_guest.py test_queryabi_guest_runner.py
+            pinned_memfd.py test_pinned_memfd.py
+            serial_limit.py test_serial_limit.py
+          )
+          any=0
+          for name in "${fixtures[@]}"; do
+            path="$dir/$name"
+            if [[ -e "$path" || -L "$path" ]]; then
+              if [[ ! -f "$path" || -L "$path" ]]; then
+                echo "A05 replay source/test is not a regular file: $path" >&2
+                exit 1
+              fi
+              any=1
+            fi
+          done
+          if [[ "$any" -eq 0 ]]; then
+            echo 'BOOTSTRAP ONLY: no A05 replay harness is present on this checkout'
+          else
+            for pair in \
+              'run_queryabi_guest.py test_queryabi_guest_runner.py' \
+              'pinned_memfd.py test_pinned_memfd.py' \
+              'serial_limit.py test_serial_limit.py'; do
+              read -r source testfile <<< "$pair"
+              if [[ -e "$dir/$source" || -e "$dir/$testfile" ]]; then
+                if [[ ! -f "$dir/$source" || ! -f "$dir/$testfile" ]]; then
+                  echo "A05 replay source/test pair incomplete: $pair" >&2
+                  exit 1
+                fi
+              fi
+            done
+            for mode in normal optimized; do
+              args=()
+              if [[ "$mode" == optimized ]]; then args=(-O); fi
+              logfile="$RUNNER_TEMP/a05-replay-${mode}.log"
+              python3 -I "${args[@]}" -m unittest discover -s "$dir" \
+                -p 'test_*.py' -v 2>&1 | tee "$logfile"
+              if ! grep -Eq '^Ran [1-9][0-9]* tests? in ' "$logfile"; then
+                echo 'A05 replay suite yielded zero tests; fail closed' >&2
+                exit 1
+              fi
+            done
+          fi
       - name: Require canonical Rust crate manifests and install lint components
         shell: bash
         run: |
