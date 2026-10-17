@@ -1,0 +1,70 @@
+{
+  "base_a06_sha": "5142ba0896b8a6e8622c9b17c5d65d42a65db395",
+  "kernel_sha256": "cf18bb770305735c8e7ef85826ac81d64bda879b3f9be88c35eb9c72a5a16490",
+  "patch": "CpuControl.max uses SpinLock<CpuMax, LocalIrqDisabled>",
+  "result": "passed",
+  "tests": [
+    {
+      "name": "leaf-1pct-repeat3",
+      "mode": "leaf",
+      "quota_us": 1000,
+      "repeat": 3,
+      "process_exit": 0,
+      "cpu_percent": [
+        1.999,
+        1.899,
+        1.9
+      ],
+      "candidate_sha": "cf18bb770305735c8e7ef85826ac81d64bda879b3f9be88c35eb9c72a5a16490",
+      "bounded_diagnostic_pass": true,
+      "seconds": 21.33
+    },
+    {
+      "name": "leaf-10pct-repeat3",
+      "mode": "leaf",
+      "quota_us": 10000,
+      "repeat": 3,
+      "process_exit": 0,
+      "cpu_percent": [
+        11.098,
+        10.672,
+        10.799
+      ],
+      "candidate_sha": "cf18bb770305735c8e7ef85826ac81d64bda879b3f9be88c35eb9c72a5a16490",
+      "bounded_diagnostic_pass": true,
+      "seconds": 15.62
+    },
+    {
+      "name": "rt-10pct",
+      "mode": "rt",
+      "quota_us": 10000,
+      "repeat": 1,
+      "process_exit": 0,
+      "cpu_percent": [
+        11.192
+      ],
+      "candidate_sha": "cf18bb770305735c8e7ef85826ac81d64bda879b3f9be88c35eb9c72a5a16490",
+      "bounded_diagnostic_pass": true,
+      "seconds": 5.31
+    },
+    {
+      "name": "parent-10pct",
+      "mode": "parent",
+      "quota_us": 10000,
+      "repeat": 1,
+      "process_exit": 0,
+      "cpu_percent": [
+        11.195
+      ],
+      "candidate_sha": "cf18bb770305735c8e7ef85826ac81d64bda879b3f9be88c35eb9c72a5a16490",
+      "bounded_diagnostic_pass": true,
+      "seconds": 5.06
+    }
+  ],
+  "smp_validated": false,
+  "precise_cap_guaranteed": false,
+  "hos2_effect_validated": false,
+  "changed_original_a06_branch": false,
+  "test_environment": "Asterinas v0.19.0 fork, pinned Rust nightly-2026-07-21, QEMU q35/TCG x86_64 1 vCPU 512MiB, guest-only temporary initramfs, no host network/data disk",
+  "scope": "diagnostic bounded non-hang tests, not exact CPU quota/SMP/production or HOS2 end-to-end"
+}
