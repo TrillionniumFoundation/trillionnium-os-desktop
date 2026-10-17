@@ -81,12 +81,13 @@ Hepta's durable operation ledger.
 
 ## Configure and run on a Linux host
 
-Use the repository's fixed Rust toolchain and the lockfile:
+Use the fixed host CI toolchain and the lockfile (see `RUN.md` for the
+separate repository nightly development toolchain):
 
 ```sh
-cargo +nightly-2026-07-21 build --manifest-path ui/Cargo.toml --workspace --bins --locked
-cargo +nightly-2026-07-21 test --manifest-path ui/Cargo.toml -p trill-ui-core -p trill-session --locked
-cargo +nightly-2026-07-21 test --manifest-path ui/Cargo.toml -p trill-shell --locked
+cargo +1.88.0 build --manifest-path ui/Cargo.toml --workspace --bins --locked
+cargo +1.88.0 test --manifest-path ui/Cargo.toml -p trill-ui-core -p trill-session --locked
+cargo +1.88.0 test --manifest-path ui/Cargo.toml -p trill-shell --locked
 ```
 
 The runtime remains the existing Linux host prototype. Follow `RUN.md` for
@@ -120,6 +121,16 @@ the same private `XDG_RUNTIME_DIR`, start `ui/target/debug/trill-shell`, then
 open **Hepta / Runtime**. `ui/target/debug/trill-ctl snapshot` also returns
 the same projection under `hepta`. If `CARGO_TARGET_DIR` is set, use the
 corresponding binary directory instead of `ui/target/debug`.
+
+`trill-shell --page hepta` opens the runtime page directly. Normal startup
+still opens Conversation. An additional explicit `--hepta-layout-probe`
+prints exactly one `TRILL_HEPTA_LAYOUT_V1` JSON line to stdout after that page
+has completed an egui widget update while the Session is connected and the
+projection is `observed`. Both the last snapshot receipt and its runtime
+sample must be no older than seven seconds. The line binds the displayed
+AgentId, spawn/current generations, PID and sample timestamp. No endpoint,
+payload or objective text is logged. It is a layout diagnostic, not proof
+of compositor presentation or an executed operation.
 
 With all four variables absent, host applications and drafts continue to
 work and the Hepta view says `NOT CONFIGURED`. Partial or malformed
@@ -163,6 +174,25 @@ python3 tests/ui/probe-hepta-session.py \
 The default fixture lives at `tests/integration/hepta/agentd_fixture.py`
 and is owned by A07. This requires real host Unix sockets; an invocation
 denied `AF_UNIX` by a sandbox is blocked, not a passed probe.
+
+The Weston gate also runs `tests/ui/probe-hepta-wayland.py`. It starts the
+actual Session and Shell plus the explicitly scripted A07 Unix fixture,
+passes observer configuration only to Session, and requires the specific
+fresh Hepta-page marker. The ordinary Conversation first-layout marker is
+insufficient. It compares the layout identity/generation/PID to a live
+Session snapshot and the fixture process, and retains binary/source hashes,
+JSON evidence and raw logs even on failure. With an existing test compositor:
+
+```sh
+python3 tests/ui/probe-hepta-wayland.py \
+  --binaries "${CARGO_TARGET_DIR:-$PWD/ui/target}/debug" \
+  --output "${RUNNER_TEMP:?}/hepta-layout-new-run"
+```
+
+The output directory must be new or empty. This gate reports
+`scripted_socket_fixture_hepta_page_layout_not_daemon` and explicitly sets
+upstream Agentd, objective/device effects and compositor pixel presentation
+to unverified. It cannot substitute for the original-daemon acceptance below.
 
 Projection tests cover bounded metadata, JSON frame size with a full host
 task view, stale evidence retention, sticky gaps and source-change window

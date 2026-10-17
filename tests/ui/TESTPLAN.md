@@ -1,14 +1,17 @@
 # A10 test matrix and provenance
 
-Automated Rust commands (from repository root; the blocking CI
-`tests/ui/check-host.sh` now runs all three A10-owned Cargo test suites):
+Automated Rust commands (from repository root with `RUSTUP_TOOLCHAIN=1.88.0`;
+the blocking CI `tests/ui/check-host.sh` runs all three A10-owned Cargo suites
+and the separate A07 observer suite):
 - cargo test --manifest-path ui/Cargo.toml --workspace --locked --offline
+- cargo test --manifest-path services/hepta-os/Cargo.toml --locked --offline
 - cargo test --manifest-path support/ui/Cargo.toml --locked --offline
 - cargo test --manifest-path tests/ui/Cargo.toml --locked --offline
 - cargo build --manifest-path ui/Cargo.toml --workspace --bins --locked --offline
 - cargo check --manifest-path ui/Cargo.toml --workspace --all-targets --locked --offline
 - cargo clippy --manifest-path ui/Cargo.toml --workspace --all-targets --locked --offline -- -D warnings
 - cargo fmt --manifest-path ui/Cargo.toml --all -- --check
+- cargo fmt --manifest-path services/hepta-os/Cargo.toml --all -- --check
 - cargo fmt --manifest-path support/ui/Cargo.toml --all -- --check
 - cargo fmt --manifest-path tests/ui/Cargo.toml --all -- --check
 
@@ -24,7 +27,7 @@ On a CI host, `check-host.sh` saves `$RUNNER_TEMP/a10/rustfmt.patch` when
 the strict rustfmt check fails, then exits nonzero. It never reports success
 until that patch is reviewed, committed, and rerun.
 The same blocking host gate stages an actual Linux ELF binary archive only
-after all three Cargo tests and strict Rustfmt pass. The archive and its
+after all four Cargo suites and strict Rustfmt pass. The archive and its
 SHA256 contain four built Rust programs and their build/source provenance,
 not a Weston, Chinese IME, GPU or new-kernel acceptance certificate.
 
@@ -40,7 +43,18 @@ ownership boundary. The core/Session/Shell tests now also cover:
   while a deliberately stalled Unix peer waits through the observer timeout;
 - an unknown or failed observer never produces a successful task/effect state;
 - bounded metadata/JSON frames, sticky history gaps, stale evidence retention,
-  and process/generation-change invalidation of the display event window.
+  and process/spawn-change invalidation of the display event window;
+- Starting/Running/Draining current-generation advancement retains the same
+  source and event window; freshness loss remains visibly stale;
+- explicit Hepta-page navigation/probe options, one-shot layout metadata,
+  and refusal to report non-observed or expired projections as fresh layouts.
+
+`headless-weston.sh` additionally runs `probe-hepta-wayland.py` against the
+actual Rust Session and Shell with an explicitly scripted A07 Unix fixture.
+Only the fresh `TRILL_HEPTA_LAYOUT_V1` marker from the completed Hepta page
+can pass; the generic Conversation first-frame marker cannot. The evidence
+binds binary/fixture hashes and agent/spawn/current/PID/sample metadata,
+and labels upstream Agentd, compositor pixels and device effects unverified.
 
 The stalled peer is a fault fixture. The successful fixed-v2 protocol fixture
 belongs to A07 and is also not an actual production Agentd acceptance run.

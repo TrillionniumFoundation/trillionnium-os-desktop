@@ -39,6 +39,48 @@ impl Page {
     }
 }
 
+#[derive(Clone, Copy)]
+struct StartupOptions {
+    page: Page,
+    hepta_layout_probe: bool,
+}
+
+fn parse_startup_options(
+    args: impl IntoIterator<Item = String>,
+) -> Result<StartupOptions, &'static str> {
+    let mut options = StartupOptions {
+        page: Page::Conversation,
+        hepta_layout_probe: false,
+    };
+    let mut page_selected = false;
+    let mut args = args.into_iter();
+    while let Some(arg) = args.next() {
+        match arg.as_str() {
+            "--page" if !page_selected => {
+                options.page = match args.next().as_deref() {
+                    Some("conversation") => Page::Conversation,
+                    Some("hepta") => Page::Hepta,
+                    Some("tasks") => Page::Tasks,
+                    Some("apps") => Page::Apps,
+                    Some("workspaces") => Page::Workspaces,
+                    Some("console") => Page::Console,
+                    Some("settings") => Page::Settings,
+                    _ => return Err("--page requires a known page name"),
+                };
+                page_selected = true;
+            }
+            "--hepta-layout-probe" if !options.hepta_layout_probe => {
+                options.hepta_layout_probe = true;
+            }
+            _ => return Err("unknown or duplicate Shell option"),
+        }
+    }
+    if options.hepta_layout_probe && options.page != Page::Hepta {
+        return Err("--hepta-layout-probe requires --page hepta");
+    }
+    Ok(options)
+}
+
 /// User actions and passive status polling are intentionally independent.
 /// A slow/disconnected session must not fill the user-action queue with polls.
 struct Bridge {
@@ -209,16 +251,17 @@ struct Desktop {
     show_notifications: bool,
     notices: VecDeque<String>,
     first_frame_emitted: bool,
+    hepta_layout_probe: hepta_panel::LayoutProbe,
 }
 
 impl Desktop {
-    fn new(ctx: &egui::Context) -> Self {
+    fn new(ctx: &egui::Context, options: StartupOptions) -> Self {
         ctx.set_visuals(egui::Visuals::dark());
         install_host_cjk_font(ctx);
         let bridge = Bridge::new();
         bridge.poll();
         Self {
-            page: Page::Conversation,
+            page: options.page,
             workspace: Workspace::Personal,
             composer: String::new(),
             chat: vec![ChatEntry {
@@ -239,6 +282,7 @@ impl Desktop {
             show_notifications: false,
             notices: VecDeque::new(),
             first_frame_emitted: false,
+            hepta_layout_probe: hepta_panel::LayoutProbe::new(options.hepta_layout_probe),
         }
     }
 
@@ -699,7 +743,8 @@ impl Desktop {
         ui.separator();
         ui.label("Platform: Linux host Rust/egui desktop prototype");
         ui.label("Graphics: eframe/glow; actual GPU/driver not attested");
-        ui.label("Hepta: disconnected; no model requests or OS capabilities");
+        hepta_panel::status(ui, &self.hepta);
+        ui.label("Hepta objective submission: unavailable; local drafts only");
         ui.label("Native HOS2 resource revision: unavailable");
         ui.label("Compositor: external Wayland/X11 host, not bundled");
         ui.separator();
@@ -955,6 +1000,18 @@ impl eframe::App for Desktop {
             Page::Console => self.console(ui),
             Page::Settings => self.settings(ui, ctx),
         });
+        if self.page == Page::Hepta && self.connected {
+            // This optional diagnostic belongs to the completed Hepta page,
+            // never the default Conversation first-layout marker. It reports
+            // only bounded runtime metadata, not a presented compositor frame.
+            let _ = self.hepta_layout_probe.emit_after_runtime_layout(
+                &self.hepta,
+                self.hepta_last_snapshot,
+                Instant::now(),
+                trill_ui_core::unix_ms(),
+                &mut io::stdout(),
+            );
+        }
         // Report only after a full egui widget update, never merely because
         // the shell PID exists. Failure to write a diagnostic marker does not
         // stop independent session-owned clients.
@@ -1007,6 +1064,14 @@ fn install_host_cjk_font(ctx: &egui::Context) {
 }
 
 fn main() -> eframe::Result {
+    let startup = match parse_startup_options(std::env::args().skip(1)) {
+        Ok(options) => options,
+        Err(message) => {
+            eprintln!("trill-shell: {message}");
+            eprintln!("Usage: trill-shell [--page conversation|hepta|tasks|apps|workspaces|console|settings] [--hepta-layout-probe]");
+            std::process::exit(2);
+        }
+    };
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default().with_inner_size([1360.0, 840.0]),
         ..Default::default()
@@ -1014,8 +1079,29 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "Trillionnium · AI workspace",
         options,
-        Box::new(|cc| Ok(Box::new(Desktop::new(&cc.egui_ctx)))),
+        Box::new(move |cc| Ok(Box::new(Desktop::new(&cc.egui_ctx, startup)))),
     )
+}
+
+#[cfg(test)]
+mod startup_tests {
+    use super::*;
+
+    #[test]
+    fn runtime_probe_requires_explicit_hepta_navigation() {
+        let parse = |args: &[&str]| parse_startup_options(args.iter().map(|arg| (*arg).to_owned()));
+        let ordinary = parse(&[]).unwrap();
+        assert!(ordinary.page == Page::Conversation);
+        assert!(!ordinary.hepta_layout_probe);
+        let runtime = parse(&["--page", "hepta", "--hepta-layout-probe"]).unwrap();
+        assert!(runtime.page == Page::Hepta);
+        assert!(runtime.hepta_layout_probe);
+        assert!(parse(&["--hepta-layout-probe"]).is_err());
+        assert!(parse(&["--page", "conversation", "--hepta-layout-probe"]).is_err());
+        assert!(parse(&["--page", "unknown"]).is_err());
+        assert!(parse(&["--page"]).is_err());
+        assert!(parse(&["--page", "hepta", "--page", "conversation"]).is_err());
+    }
 }
 
 /// A synthetic egui input test, not proof that Wayland IME candidates render.
