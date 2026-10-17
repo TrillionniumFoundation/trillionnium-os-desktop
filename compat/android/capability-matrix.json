@@ -1,0 +1,217 @@
+{
+  "schema_version": 1,
+  "profile": "aosp-15.0.0_r36-cuttlefish-x86_64-4k-software",
+  "scope": "static source audit of this repository; no Android boot is claimed",
+  "status_vocabulary": {
+    "source_present": "a related primitive exists in the Asterinas tree; Android semantics are still unverified",
+    "explicitly_unsupported": "the source or documentation explicitly rejects the required primitive",
+    "not_found": "no implementation was found by the recorded search",
+    "not_verified": "requires a built Android reference or a kernel integration test"
+  },
+  "capabilities": [
+    {
+      "interface": "mmap/mprotect/munmap",
+      "android_consumers": [
+        "bionic",
+        "ART",
+        "shared memory",
+        "gralloc buffers"
+      ],
+      "asterinas_status": "source_present",
+      "evidence": [
+        "kernel/asterinas/kernel/core/src/syscall/mmap.rs",
+        "kernel/asterinas/kernel/core/src/syscall/mprotect.rs",
+        "kernel/asterinas/kernel/core/src/syscall/munmap.rs"
+      ],
+      "required_follow_up": "verify shared mappings, PROT flags, MAP_SHARED, file-backed mappings and buffer lifetime on the Android profile"
+    },
+    {
+      "interface": "futex",
+      "android_consumers": [
+        "bionic pthreads",
+        "ART",
+        "Binder thread pools"
+      ],
+      "asterinas_status": "source_present",
+      "evidence": [
+        "kernel/asterinas/kernel/core/src/syscall/futex.rs",
+        "kernel/asterinas/kernel/core/src/process/posix_thread/futex.rs"
+      ],
+      "required_follow_up": "run contention, PI/robust-list and process-shared futex probes; no Android result yet"
+    },
+    {
+      "interface": "clone/clone3, execve, threads and process groups",
+      "android_consumers": [
+        "init",
+        "Zygote",
+        "system_server",
+        "app processes"
+      ],
+      "asterinas_status": "source_present",
+      "evidence": [
+        "kernel/asterinas/kernel/core/src/process/clone.rs",
+        "kernel/asterinas/kernel/core/src/syscall/execve.rs"
+      ],
+      "required_follow_up": "verify namespaces, credentials, signal dispositions and zygote fork semantics"
+    },
+    {
+      "interface": "signals and signal masks",
+      "android_consumers": [
+        "ART",
+        "native crash handling",
+        "Binder death cleanup"
+      ],
+      "asterinas_status": "source_present",
+      "evidence": [
+        "kernel/asterinas/kernel/core/src/arch/x86/signal.rs",
+        "kernel/asterinas/kernel/core/src/syscall/pidfd_send_signal.rs"
+      ],
+      "required_follow_up": "test rt_sigaction, rt_sigprocmask, tgkill and altstack with real Bionic"
+    },
+    {
+      "interface": "Unix fd passing (SCM_RIGHTS/SCM_CREDENTIALS)",
+      "android_consumers": [
+        "Binder fd payloads",
+        "socket-based services"
+      ],
+      "asterinas_status": "source_present",
+      "evidence": [
+        "kernel/asterinas/kernel/core/src/net/socket/unix/ctrl_msg.rs"
+      ],
+      "required_follow_up": "Binder driver fd transfer and caller identity are separate unimplemented work"
+    },
+    {
+      "interface": "UID/GID and process credentials",
+      "android_consumers": [
+        "Android UID isolation",
+        "Binder calling identity",
+        "file access"
+      ],
+      "asterinas_status": "source_present",
+      "evidence": [
+        "kernel/asterinas/kernel/core/src/process/credentials/mod.rs",
+        "kernel/asterinas/kernel/core/src/net/socket/unix/cred.rs"
+      ],
+      "required_follow_up": "derive Binder identity from kernel credentials; reject payload self-reporting"
+    },
+    {
+      "interface": "procfs status/maps/fd/cgroup/oom_score_adj",
+      "android_consumers": [
+        "lmkd",
+        "debuggerd",
+        "ART diagnostics",
+        "system_server"
+      ],
+      "asterinas_status": "source_present",
+      "evidence": [
+        "kernel/asterinas/kernel/core/src/fs/fs_impls/procfs",
+        "kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/pid/task/oom_score_adj.rs"
+      ],
+      "required_follow_up": "verify field compatibility and live updates against the pinned AOSP lmkd"
+    },
+    {
+      "interface": "Binder driver, binderfs and /dev/binder",
+      "android_consumers": [
+        "init",
+        "system_server",
+        "HALs",
+        "every normal app"
+      ],
+      "asterinas_status": "not_found",
+      "evidence": [
+        "repository-wide search for binder, binderfs, /dev/binder, BR_*/BC_* returned no implementation"
+      ],
+      "required_follow_up": "A01/A04 must provide driver/ioctl/object references, transaction and oneway ordering, death notifications, fd transfer, thread-pool wakeups and trusted caller identity"
+    },
+    {
+      "interface": "SELinux or equivalent mandatory access control",
+      "android_consumers": [
+        "zygote domains",
+        "system_server",
+        "HAL service domains",
+        "file labels"
+      ],
+      "asterinas_status": "not_found",
+      "evidence": [
+        "repository-wide search found no Android security_context or SELinux policy enforcement; only generic capabilities/Yama sources"
+      ],
+      "required_follow_up": "A01/A05 must provide a deny-by-default MAC enforcement path and negative permission tests"
+    },
+    {
+      "interface": "seccomp syscall filtering",
+      "android_consumers": [
+        "isolated processes",
+        "sandboxed services"
+      ],
+      "asterinas_status": "explicitly_unsupported",
+      "evidence": [
+        "kernel/asterinas/book/src/kernel/linux-compatibility/README.md",
+        "kernel/asterinas/kernel/core/src/syscall/prctl.rs"
+      ],
+      "required_follow_up": "implement or explicitly gate Android components requiring PR_SET_SECCOMP; never return a fake success"
+    },
+    {
+      "interface": "cgroup memory pressure, PSI and OOM reclaim",
+      "android_consumers": [
+        "lmkd",
+        "foreground/background policy",
+        "memory reclaim"
+      ],
+      "asterinas_status": "not_verified",
+      "evidence": [
+        "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs",
+        "kernel/asterinas/kernel/core/src/mm"
+      ],
+      "required_follow_up": "A06/A01 must expose real memory.events/PSI/oom_score_adj behavior before lmkd can be exercised"
+    },
+    {
+      "interface": "app freezer",
+      "android_consumers": [
+        "cached app suspension",
+        "background execution policy"
+      ],
+      "asterinas_status": "explicitly_unsupported",
+      "evidence": [
+        "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/systree_node.rs: cgroup.freeze writes disabled and read remains unfrozen"
+      ],
+      "required_follow_up": "implement process-group freeze/thaw with Binder, clocks and signals semantics, then test unfreeze"
+    },
+    {
+      "interface": "SurfaceFlinger/HWC/gralloc/fence",
+      "android_consumers": [
+        "system_server display",
+        "input and window composition"
+      ],
+      "asterinas_status": "not_found",
+      "evidence": [
+        "repository-wide search found no SurfaceFlinger, HWC, gralloc or Android fence bridge"
+      ],
+      "required_follow_up": "A09/A10 must provide software framebuffer ownership, buffer layout and fence generations"
+    },
+    {
+      "interface": "runtime page size",
+      "android_consumers": [
+        "Bionic",
+        "ART",
+        "ELF alignment",
+        "mmap"
+      ],
+      "asterinas_status": "not_verified",
+      "evidence": [
+        "host probe reports 4096 bytes; this is not a new-kernel result"
+      ],
+      "required_follow_up": "probe sysconf(_SC_PAGESIZE) and ELF PT_LOAD alignment inside each Android execution environment"
+    },
+    {
+      "interface": "Native Bridge / cross-ISA translation",
+      "android_consumers": [
+        "ARM64 and 32-bit APK native libraries"
+      ],
+      "asterinas_status": "not_verified",
+      "evidence": [
+        "no translator or Android Native Bridge implementation in this repository"
+      ],
+      "required_follow_up": "test DEX-only, x86_64, ARM64 and 32-bit native APKs as separate classes; do not infer translation from an ABI label"
+    }
+  ]
+}

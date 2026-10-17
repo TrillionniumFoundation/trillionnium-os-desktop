@@ -1,0 +1,48 @@
+{
+  "claims": {
+    "android_on_asterinas": false,
+    "aosp_build": false,
+    "aosp_source_sync": false,
+    "apk_runtime": false,
+    "art_system_server_boot": false,
+    "binder_transaction": false,
+    "cuttlefish_boot": false
+  },
+  "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/workloads/android -p 'test_*.py' -v",
+  "execution_class": "linux_host_only",
+  "exit_code": 0,
+  "host": {
+    "available_tools": {
+      "aapt2": null,
+      "adb": null,
+      "apkanalyzer": null,
+      "cc": "/usr/bin/cc",
+      "java": "/usr/bin/java",
+      "qemu-system-x86_64": null,
+      "repo": null
+    },
+    "page_size_bytes": 4096,
+    "python": "3.12.14",
+    "uname": {
+      "machine": "x86_64",
+      "node": "634466a20059",
+      "processor": "x86_64",
+      "release": "6.18.44",
+      "system": "Linux",
+      "version": "#1 SMP Sat Sep 26 20:02:31 UTC 2026"
+    }
+  },
+  "log_sha256": "1b56bd2482d1d9b50abf6ead6286c4adbdec7b2c207e0c6e639226a0a6565b76",
+  "notes": [
+    "Host tests exercise parsers, fail-closed gates, Linux probes and synthetic/fake guest fixtures only.",
+    "No result in this receipt qualifies Android on the Rust kernel."
+  ],
+  "observed_utc": "2026-10-16T15:51:57Z",
+  "project_commit": "49eb74201b28c8485cbddc955543a1512b8e3d04",
+  "project_tree": "c42ee1f5bddab659789e518091c35072c458affa",
+  "schema": 1,
+  "tests_failed": 0,
+  "tests_passed": 166,
+  "tests_run": 166,
+  "tests_skipped": 0
+}

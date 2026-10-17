@@ -1,0 +1,30 @@
+{
+  "command": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests/workloads/android",
+    "-p",
+    "test_*.py",
+    "-v"
+  ],
+  "cwd": "/workspace/scratch/98f315e377b2/next-a08",
+  "end_utc": "2026-10-17T10:59:34.583152+00:00",
+  "environment": {
+    "JAVA_HOME": "/workspace/scratch/98f315e377b2/next-tools/jdk",
+    "PATH_prefix": "/workspace/scratch/98f315e377b2/next-tools/jdk/bin",
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "errors": 0,
+  "exit_code": 0,
+  "failures": 0,
+  "log_sha256": "5b880460f50e4e987e318e9e6ffef259f358776087684c69840c28a4824f3972",
+  "scope": "Linux host regression and actual Java/JNI loading only; no AOSP, Android guest or Asterinas runtime executed",
+  "skips": 0,
+  "source_commit": "cf241f9c459807085e70b1ad54be21d10ca1190d",
+  "source_tree": "7bd0e56ae817625355c0b6b36366eac977aa5725",
+  "start_utc": "2026-10-17T10:59:27.267120+00:00",
+  "test_count": 184
+}

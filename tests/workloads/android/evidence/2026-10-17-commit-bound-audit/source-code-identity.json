@@ -1,0 +1,41 @@
+{
+  "android_guest_executed": false,
+  "aosp_build_executed": false,
+  "asterinas_kernel_runtime_executed": false,
+  "early_github_snapshot": {
+    "actions_run_id": 39024900281,
+    "head": "3ac85d8672e3afcfb70c0ee323108294ef883239",
+    "observed_conclusion": null,
+    "observed_status": "queued",
+    "scope": "Historical observation before both source repairs were published; not current head or CI state"
+  },
+  "executable_sources": {
+    "support/android/generate_kernel_source_audit.py": "d8567b0df01f2682d8721ce010eb27d3333cd046",
+    "support/android/verify_host.py": "217f239f5747b9c3837363cd0371189ef5a98b17",
+    "support/android/verify_source_integrity.py": "89cccec5db26eed05700a83fac88c2f485e1a336",
+    "tests/workloads/android/test_kernel_source_audit.py": "4430c0ab4de576ffd0062347ae8f8d1843826e60"
+  },
+  "final_followup_scope": "Only support/android/README.md, compat/android/kernel-gaps.json status metadata and evidence change after this tested commit",
+  "source_publication_handoff": {
+    "new_source_ci_conclusion_asserted": false,
+    "published_source_head": "73718f6247a2a5b2c4784150c7804c02584cba13",
+    "pull_request": 156,
+    "scope": "Source publication checkpoint; subsequent evidence publication and main integration are separate stages",
+    "unchanged_owner_head": "41a8c32b435f2fa9dd750ded40bd4b37cb7606c6",
+    "verified_by": "A00 integration owner"
+  },
+  "source_publication_mapping": [
+    {
+      "identical_tree": "bd9fc1db6624c3f219e8f36655da549ffd0a4326",
+      "local_commit": "cfc08a3ec2d30742363153cc4b02b016e5ef697e",
+      "published_commit": "dac2f6becf7f0d1c1230dd7f91f75357ccf869cb"
+    },
+    {
+      "identical_tree": "7bd0e56ae817625355c0b6b36366eac977aa5725",
+      "local_commit": "cf241f9c459807085e70b1ad54be21d10ca1190d",
+      "published_commit": "73718f6247a2a5b2c4784150c7804c02584cba13"
+    }
+  ],
+  "tested_commit": "cf241f9c459807085e70b1ad54be21d10ca1190d",
+  "tested_tree": "7bd0e56ae817625355c0b6b36366eac977aa5725"
+}

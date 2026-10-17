@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "observed_utc": "2026-10-16T10:47:11Z",
+  "scope": "isolated Linux x86_64 Python test fixtures, NOT Android or Asterinas",
+  "reference_main": "e44c92ac885eb003665ff2e1e5c6fab1f104b2d6",
+  "source_snapshot": "compat/android/source-audit-main-e44c92ac.json",
+  "new_tests": {
+    "count": 17,
+    "passed": 17,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "command": "python3 -m unittest discover -s /mnt/data/a08-next/tests/workloads/android -p 'test_*.py' -v",
+    "log_sha256": "3ef51564cf3cc4f238c6abb4bac7c67fb3ef8e4d4df0d91462c4eaf4faecf888"
+  },
+  "kernel_source_findings": {
+    "binder": "driver_not_evidenced",
+    "seccomp": "no_install_entrypoint",
+    "selinux_mac": "not_evidenced",
+    "futex_mmap_memfd_scm": "source_entrypoints_only"
+  },
+  "source_manifest": {
+    "aosp_tag": "android-15.0.0_r36",
+    "bionic_commit": "8d67ca893c1523eb926b9080dbe4e2ffd2a27ba1",
+    "frameworks_native_commit": "cdca1e2000347ce2f2b25ab5d0f2dffa81f30e01"
+  },
+  "aosp_build": "not_executed",
+  "cuttlefish_boot": "not_executed",
+  "apk_build": "not_executed",
+  "android_asterinas": "not_executed",
+  "last_34_test_suite_rerun": "not_executed_this_wave"
+}

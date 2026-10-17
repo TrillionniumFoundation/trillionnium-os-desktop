@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "date_utc": "2026-10-16",
+  "kind": "A08 Binder ABI/source/dual APK artifact combined offline regression",
+  "executed_environment": {
+    "platform": "Linux 6.18.44 x86_64, Debian 13 container",
+    "python": "3.13.5",
+    "cc": "Debian GCC 14.2.0",
+    "kvm_available": false,
+    "adb_available": false,
+    "aosp_checkout_available": false
+  },
+  "command": "python3 -m unittest discover -s tests/workloads/android -p 'test_*.py' -v (isolated combined subset of 20 test cases)",
+  "tests": {
+    "ran": 20,
+    "passed": 20,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "log_sha256": "06071df70ee4d62cc385dfad3471edf4e0bb79d9fd82060b032d018c91dde26d"
+  },
+  "checked_blob_shas": {
+    "tests/workloads/android/binder_uapi_layout.c": "f3636f0a241cf8edc89246b393c850d223c6acad",
+    "tests/workloads/android/test_binder_uapi_layout.py": "abca900a708da1de41bb89b000ca75b4e932440a"
+  },
+  "source_pin": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+  "a08_merge_main": "42295f0754e1c7c8c5f0369b77394757a59c6488",
+  "scope": "Linux host C UAPI checks and synthetic Python source/APK fixtures ONLY",
+  "guest_kernel_execution": "NOT_EXECUTED",
+  "android_build": "NOT_EXECUTED",
+  "android_zygote_art": "NOT_EXECUTED",
+  "android_apk_lifecycle": "NOT_EXECUTED",
+  "binder_driver": "NOT_VERIFIED",
+  "seccomp_on_asterinas": "NOT_VERIFIED",
+  "android_mac": "NOT_VERIFIED",
+  "known_blockers": [
+    "binder",
+    "seccomp",
+    "android_mac"
+  ],
+  "note": "The previous 34-test A08 host suite was not rerun as a complete set in this session; 20-case combined subset is an independent measured denominator."
+}

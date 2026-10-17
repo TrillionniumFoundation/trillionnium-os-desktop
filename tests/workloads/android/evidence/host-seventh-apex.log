@@ -1,0 +1,39 @@
+test_apex_info_dirmap_revalidated_before_launch (test_verify_launch_preflight.PreflightTests.test_apex_info_dirmap_revalidated_before_launch) ... ok
+test_checker_binary_changed_after_pass_blocks_guest (test_verify_launch_preflight.PreflightTests.test_checker_binary_changed_after_pass_blocks_guest) ... ok
+test_cli_writes_blocked_and_preflight_json (test_verify_launch_preflight.PreflightTests.test_cli_writes_blocked_and_preflight_json) ... ok
+test_escaped_image_path_is_blocked (test_verify_launch_preflight.PreflightTests.test_escaped_image_path_is_blocked) ... ok
+test_failed_checkvintf_result_blocks_guest (test_verify_launch_preflight.PreflightTests.test_failed_checkvintf_result_blocks_guest) ... ok
+test_framework_matrix_changed_after_checkvintf_blocks_guest (test_verify_launch_preflight.PreflightTests.test_framework_matrix_changed_after_checkvintf_blocks_guest) ... ok
+test_image_symlink_outside_aosp_out_is_refused_even_if_hash_matches (test_verify_launch_preflight.PreflightTests.test_image_symlink_outside_aosp_out_is_refused_even_if_hash_matches) ... ok
+test_missing_product_launch_audit_is_blocked (test_verify_launch_preflight.PreflightTests.test_missing_product_launch_audit_is_blocked) ... ok
+test_missing_vintf_compatibility_result_blocks_guest (test_verify_launch_preflight.PreflightTests.test_missing_vintf_compatibility_result_blocks_guest) ... ok
+test_removed_apex_cli_flag_blocks_preflight (test_verify_launch_preflight.PreflightTests.test_removed_apex_cli_flag_blocks_preflight) ... ok
+test_soong_symlink_inside_same_aosp_out_is_allowed (test_verify_launch_preflight.PreflightTests.test_soong_symlink_inside_same_aosp_out_is_allowed) ... ok
+test_stale_bionic_source_is_rejected (test_verify_launch_preflight.PreflightTests.test_stale_bionic_source_is_rejected) ... ok
+test_stale_cuttlefish_product_is_rejected (test_verify_launch_preflight.PreflightTests.test_stale_cuttlefish_product_is_rejected) ... ok
+test_stale_image_hash_is_rejected (test_verify_launch_preflight.PreflightTests.test_stale_image_hash_is_rejected) ... ok
+test_stale_vintf_file_is_rejected (test_verify_launch_preflight.PreflightTests.test_stale_vintf_file_is_rejected) ... ok
+test_tampered_manifest_is_rejected (test_verify_launch_preflight.PreflightTests.test_tampered_manifest_is_rejected) ... ok
+test_valid_synthetic_source_and_images_are_only_preflight (test_verify_launch_preflight.PreflightTests.test_valid_synthetic_source_and_images_are_only_preflight) ... ok
+test_wrong_checkout_report_is_blocked (test_verify_launch_preflight.PreflightTests.test_wrong_checkout_report_is_blocked) ... ok
+test_apex_filename_must_be_real_apex_info_list (test_verify_vintf.VintfTests.test_apex_filename_must_be_real_apex_info_list) ... ok
+test_apex_info_in_build_out_is_recorded (test_verify_vintf.VintfTests.test_apex_info_in_build_out_is_recorded) ... ok
+test_apex_info_outside_aosp_out_is_rejected (test_verify_vintf.VintfTests.test_apex_info_outside_aosp_out_is_rejected) ... ok
+test_apex_legacy_cli_is_never_forwarded (test_verify_vintf.VintfTests.test_apex_legacy_cli_is_never_forwarded) ... ok
+test_build_tool_invocation_and_real_exit (test_verify_vintf.VintfTests.test_build_tool_invocation_and_real_exit) ... ok
+test_cli_refuses_incomplete_product_without_success_claim (test_verify_vintf.VintfTests.test_cli_refuses_incomplete_product_without_success_claim) ... ok
+test_incompatible_is_not_green (test_verify_vintf.VintfTests.test_incompatible_is_not_green) ... ok
+test_missing_framework_matrix_fails_before_execution (test_verify_vintf.VintfTests.test_missing_framework_matrix_fails_before_execution) ... ok
+test_soong_vintf_symlink_within_same_out_is_allowed (test_verify_vintf.VintfTests.test_soong_vintf_symlink_within_same_out_is_allowed) ... ok
+test_vendor_vintf_symlink_escape_is_blocked (test_verify_vintf.VintfTests.test_vendor_vintf_symlink_escape_is_blocked) ... ok
+test_wrong_tool_outside_same_build_is_blocked (test_verify_vintf.VintfTests.test_wrong_tool_outside_same_build_is_blocked) ... ok
+test_zero_exit_with_incompatible_string_fails_closed (test_verify_vintf.VintfTests.test_zero_exit_with_incompatible_string_fails_closed) ... ok
+test_zero_exit_without_compatible_marker_fails (test_verify_vintf.VintfTests.test_zero_exit_without_compatible_marker_fails) ... ok
+
+----------------------------------------------------------------------
+Ran 31 tests in 0.080s
+
+OK
+{"status": "preflight_only", "errors": [], "android_on_asterinas_verified": false}
+{"status": "blocked", "errors": ["image:vendor_img: file missing at preflight"], "android_on_asterinas_verified": false}
+{"status": "blocked_or_failed", "errors": ["vendor or odm device VINTF manifest is missing"], "android_on_asterinas_verified": false}

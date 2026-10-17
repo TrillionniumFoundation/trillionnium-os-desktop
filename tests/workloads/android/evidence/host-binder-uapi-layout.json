@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "observed_at_utc": "2026-10-16T11:09:51.243687+00:00",
+  "kind": "a08_x86_64_binder_uapi_layout_host_verification",
+  "scope": "LINUX_HOST_HEADER_ONLY",
+  "platform": "Linux-6.18.44-x86_64-with-glibc2.41",
+  "cc_version": "cc (Debian 14.2.0-19) 14.2.0",
+  "source_git_blob_sha": "f3636f0a241cf8edc89246b393c850d223c6acad",
+  "test_git_blob_sha": "abca900a708da1de41bb89b000ca75b4e932440a",
+  "binary_sha256": "aab048d09d7be6cd158f0d77a3081072cb530cb10f100a4891c51ec85635f02d",
+  "tests": {
+    "run": 3,
+    "passed": 3,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "stderr_sha256": "49531d4fa867245d755242f51064267c8f36a93e03910852aa7ac3c3cb4277b1"
+  },
+  "layout": {
+    "schema": 1,
+    "scope": "host_linux_uapi_layout_only",
+    "arch": "x86_64_lp64",
+    "protocol_version": 8,
+    "write_read_size": 48,
+    "transaction_size": 64,
+    "transaction_secctx_size": 72,
+    "flat_object_size": 24,
+    "handle_cookie_size": 12,
+    "sender_uid_offset": 28,
+    "ioctls": {
+      "BINDER_WRITE_READ": 3224396289,
+      "BINDER_VERSION": 3221512713,
+      "BINDER_SET_MAX_THREADS": 1074029061,
+      "BINDER_SET_CONTEXT_MGR_EXT": 1075339789
+    },
+    "binder_driver_verified": false,
+    "android_asterinas_verified": false
+  },
+  "binder_ioctl_runtime": "NOT_EXECUTED",
+  "android_apk_runtime": "NOT_EXECUTED",
+  "target_kernel_android_runtime": "NOT_EXECUTED",
+  "asterinas_compatibility": "NOT_VERIFIED"
+}
