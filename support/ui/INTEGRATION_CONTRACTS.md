@@ -59,8 +59,11 @@ Task execution and history QueryDelivery/RetireThrough remain A07/A02/A05
 interfaces; the UI must not emit HOS2 InstallBudget or synthesize D/K IDs.
 Its A02-typed read-only transport consumer enforces opcode/payload matching,
 and every typed result must correlate to the same request ID and opcode;
-mismatches fail closed instead of being reported as an observation. This does
-not authenticate an owner or substitute for A05/A07 broker credentials.
+mismatches fail closed instead of being reported as an observation.
+The existing A02 request encoder rejects malformed read requests before any
+exchange, and A02 `Response::validate_for` checks the complete reply
+(including boot ID, revision, time and delivery sequence) before projection.
+This does not authenticate an owner or substitute for A05/A07 broker credentials.
 Do not permanently grant Hepta global clipboard, key input or screen capture.
 Hepta outage must not stop independent host/client process use.
 

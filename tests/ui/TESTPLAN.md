@@ -25,6 +25,9 @@ until that patch is reviewed, committed, and rerun.
 Unit coverage:
 - strict HOS2 read-only UI adapter: opcode/payload pairing, request-id
   correlation, response opcode matching, and hidden mutating payload refusal
+- shared A02 `Request::encode` preflight before any transport exchange and
+  `Response::validate_for` for boot ID, revision, timing, delivery sequence;
+  negative fixtures must never be reported as owner observations
 - bounded (1024) permission observation cache, disconnected-owner invalidation,
   scope-local invalidation and revoke-at-capacity fail-closed regressions
 - no Pending -> Completed shortcut

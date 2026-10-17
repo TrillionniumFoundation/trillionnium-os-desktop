@@ -738,6 +738,7 @@ pub enum ReadOnlyError<E> {
     Transport(E),
     Rejected(Status),
     MutationNotAllowed,
+    MalformedRequest,
     MalformedResponse,
 }
 
@@ -784,15 +785,25 @@ where
         ) {
             return Err(ReadOnlyError::MutationNotAllowed);
         }
-        let expected_opcode = request.opcode;
-        let expected_request_id = request.request_id;
+        // Keep the single A02 codec authoritative for target validity,
+        // nonzero request identity, delivery semantics and payload shape.
+        // The largest read-only HOS2 request is HEADER_LEN + 40 bytes.
+        // An invalid request must fail BEFORE a transport can observe it.
+        let mut request_frame = [0u8; hos2_os_abi::HEADER_LEN + 40];
+        request
+            .encode(&mut request_frame)
+            .map_err(|_| ReadOnlyError::MalformedRequest)?;
+
         let response = self
             .transport
             .exchange(request)
             .map_err(ReadOnlyError::Transport)?;
-        if response.opcode != expected_opcode || response.request_id != expected_request_id {
-            return Err(ReadOnlyError::MalformedResponse);
-        }
+        // Validate the complete result, not just opcode/request_id.
+        // Includes boot identity, revision, status/payload semantics,
+        // time bounds and QueryDelivery's requested sequence.
+        response
+            .validate_for(&request)
+            .map_err(|_| ReadOnlyError::MalformedResponse)?;
         Ok(response)
     }
 }
@@ -1203,6 +1214,132 @@ mod tests {
             source.exchange_read_only(disguised_mutation),
             Err(ReadOnlyError::MutationNotAllowed),
             "a read-only opcode must never conceal a budget mutation"
+        );
+    }
+
+    #[test]
+    fn invalid_read_only_request_never_reaches_transport() {
+        struct PanicOnExchange;
+        impl Hos2ReadTransport for PanicOnExchange {
+            type Error = ();
+            fn exchange(&self, _request: Request) -> Result<Response, Self::Error> {
+                panic!("malformed request must be rejected before exchange");
+            }
+        }
+        let source = Hos2ReadOnlyAdapter::new(PanicOnExchange);
+        let invalid_id = Request {
+            opcode: Opcode::QueryAbi,
+            request_id: [0; 16],
+            target_slot: 0,
+            target_generation: 0,
+            payload: RequestPayload::QueryAbi,
+        };
+        assert_eq!(
+            source.exchange_read_only(invalid_id),
+            Err(ReadOnlyError::MalformedRequest)
+        );
+        let wrong_target = Request {
+            opcode: Opcode::QueryAbi,
+            request_id: [9; 16],
+            target_slot: 3,
+            target_generation: 1,
+            payload: RequestPayload::QueryAbi,
+        };
+        assert_eq!(
+            source.exchange_read_only(wrong_target),
+            Err(ReadOnlyError::MalformedRequest)
+        );
+    }
+
+    #[test]
+    fn ill_formed_a02_response_semantics_fail_closed() {
+        let payload = QueryAbiResponse {
+            space_id: [1; 16],
+            page_size: 4096,
+            max_request_payload: 64,
+            max_response_payload: 64,
+            supported_ops: 0,
+            features: 0,
+        };
+        let mut invalid = response(Opcode::QueryAbi, ResponsePayload::QueryAbi(payload));
+        invalid.boot_id = [0; 16];
+        let source = Hos2ReadOnlyAdapter::new(FakeTransport { response: invalid });
+        assert_eq!(
+            source.query_abi([9; 16]),
+            Err(ReadOnlyError::MalformedResponse),
+            "a zero boot ID is not a valid observed result"
+        );
+
+        invalid.boot_id = [8; 16];
+        invalid.revision = 5;
+        let source = Hos2ReadOnlyAdapter::new(FakeTransport { response: invalid });
+        assert_eq!(
+            source.query_abi([9; 16]),
+            Err(ReadOnlyError::MalformedResponse),
+            "QueryAbi cannot carry an invented nonzero revision"
+        );
+    }
+
+    #[test]
+    fn malformed_read_usage_and_cross_sequence_delivery_never_become_observations() {
+        let invalid_usage = Response {
+            opcode: Opcode::ReadUsage,
+            status: Status::Ok,
+            request_id: [9; 16],
+            boot_id: [8; 16],
+            revision: 1,
+            payload: ResponsePayload::ReadUsage(ReadUsageResponse {
+                sample_boottime_ns: 150_000_000,
+                cumulative_cpu_ns: 20_000_000,
+                window_start_ns: 0, // must be 100 ms in A02's time contract
+                window_consumed_ns: 10_000_000,
+                active_cap_ns: 10_000_000,
+                active_period_ns: hos2_os_abi::CPU_PERIOD_NS,
+                event_sequence: 2,
+                dropped_events: 0,
+            }),
+        };
+        let source = Hos2ReadOnlyAdapter::new(FakeTransport {
+            response: invalid_usage,
+        });
+        assert_eq!(
+            source.read_usage([9; 16], 1, 1),
+            Err(ReadOnlyError::MalformedResponse)
+        );
+
+        let mismatched_delivery = Response {
+            opcode: Opcode::QueryDelivery,
+            status: Status::Ok,
+            request_id: [9; 16],
+            boot_id: [8; 16],
+            revision: 0,
+            payload: ResponsePayload::QueryDelivery(QueryDeliveryResponse {
+                state: DeliveryState::NotSeen,
+                saved_status: Status::Ok,
+                sequence: 6,
+                stable_object_id: [0; 16],
+                saved_revision: 0,
+                previous_revision: 0,
+                effective_ns: 0,
+                consumed_ns: 0,
+            }),
+        };
+        let source = Hos2ReadOnlyAdapter::new(FakeTransport {
+            response: mismatched_delivery,
+        });
+        assert_eq!(
+            source.query_delivery(
+                [9; 16],
+                1,
+                1,
+                DeliveryRequest {
+                    history_boot: [1; 16],
+                    history_space: [2; 16],
+                    sequence: 5,
+                }
+            ),
+            Err(ReadOnlyError::MalformedResponse),
+            "a different history sequence must not be attributed to the requested D"
         );
     }
 
