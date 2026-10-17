@@ -1,0 +1,19 @@
+
+running 15 tests
+test concurrent_same_native_d_reserves_and_commits_one_original_owner_effect ... ok
+test host_commit_cannot_consume_a_native_callback_or_mutate_native_owner ... ok
+test mutated_native_payload_is_validated_again_without_consuming_d ... ok
+test native_and_host_requests_with_equal_public_binding_never_share_d ... ok
+test native_callback_rechecks_revocation_and_terminal_refusal_never_becomes_success ... ok
+test native_commit_before_revoke_preserves_admitted_original_result ... ok
+test native_constructor_rejects_invalid_owner_binding_and_static_wire_fields ... ok
+test native_copyout_retry_reuses_original_result_without_second_owner_cas ... ok
+test native_d_binds_full_request_publisher_epoch_and_ancestor_snapshot ... ok
+test native_owner_drop_during_history_loss_can_reenter_loss_gate_before_return ... ok
+test native_owner_drop_during_retirement_can_read_same_namespace_before_return ... ok
+test native_owner_executes_without_any_host_resource_domain_or_shadow_budget ... ok
+test native_retirement_releases_owner_even_with_stale_token_retained ... ok
+test same_real_owner_rewrapped_dedupes_but_equal_ids_on_other_arc_conflict ... ok
+test wrong_native_publisher_cannot_reserve_or_execute_external_mutation ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
