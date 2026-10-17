@@ -111,6 +111,20 @@ the original list is retained in `upstream-test-list.txt`. Each case has a
 900-second bound, and each guest has a 300-second bound. Native QEMU, SeaBIOS,
 GCC, GDB and the pinned Rust toolchain must be available. `--target-dir` can
 reuse a previous runner's independent Cargo cache after validating its origin.
+Every case receives a new exclusive `case-NN/target` as `CARGO_TARGET_DIR`.
+Generated `osdk/` base crates and bundles stay private to that case, preventing
+same-name examples such as the two `myos` projects from sharing generated
+workspace paths. Only `debug`, `release` and `x86_64-unknown-none` are explicit
+symlinks to verified directories in the isolated compilation cache. No prior
+`osdk/` tree is linked, copied or removed. Existing target/profile entries or
+unexpected cache types fail without replacement; partial owned directories
+remain available for diagnosis. Cache types and identities are checked before
+harness normalization or any Cargo build. `target-profile.json` and the case result bind
+the target/cache identities and each shared artifact directory. The persistent
+integration lock still serializes these shared compiled artifacts, and coverage
+symbols use the current case target. This is cache isolation for the observed
+same-name workspace hazard; it neither attributes the historical writer nor
+protects against a privileged process replacing paths during execution.
 The runner acquires its lock before creating the requested output directory.
 All commands have an owned session: timeout, SIGINT and SIGTERM stop that
 original group while its direct leader is still unreaped, then reap the leader

@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 import shutil
 import signal
+import stat
 import subprocess
 import sys
 import tempfile
@@ -55,6 +56,115 @@ def digest(path):
 def external(data):
     return {(p["name"], p["version"], p["source"], p.get("checksum", ""))
             for p in tomllib.loads(data.decode())["package"] if p.get("source")}
+
+
+def validate_artifact_cache(cache, create=False):
+    """Reject foreign links before harness normalization or Cargo can write."""
+    cache = Path(cache).absolute()
+    if create:
+        cache.mkdir(mode=0o700)
+    flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC
+    descriptor = os.open(cache, flags)
+    try:
+        root = os.fstat(descriptor)
+        record = {"path": str(cache), "device": root.st_dev, "inode": root.st_ino,
+                  "artifacts": {}}
+        for name in ("debug", "release", "x86_64-unknown-none"):
+            try:
+                os.mkdir(name, dir_fd=descriptor)
+            except FileExistsError:
+                pass
+            child = os.open(name, flags, dir_fd=descriptor)
+            try:
+                opened = os.fstat(child)
+                named = os.stat(cache / name, follow_symlinks=False)
+                named_root = os.stat(cache, follow_symlinks=False)
+                if not stat.S_ISDIR(named_root.st_mode) or \
+                        (named_root.st_dev, named_root.st_ino) != (root.st_dev, root.st_ino) or \
+                        not stat.S_ISDIR(named.st_mode) or \
+                        (named.st_dev, named.st_ino) != (opened.st_dev, opened.st_ino):
+                    raise ValueError(f"integration artifact cache identity changed: {cache / name}")
+                record["artifacts"][name] = {"path": str(cache / name),
+                                           "device": opened.st_dev, "inode": opened.st_ino}
+            finally:
+                os.close(child)
+        return record
+    finally:
+        os.close(descriptor)
+
+
+def create_case_target(cache, case):
+    """Own generated workspaces per case, sharing only known Cargo artifacts.
+
+    The integration lock serializes all users of this cache. No prior generated
+    osdk workspace is copied, reused, removed or linked into the new target.
+    """
+    cache, case = Path(cache).absolute(), Path(case).absolute()
+    flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC
+    cache_fd = os.open(cache, flags)
+    case_fd = target_fd = None
+
+    def identity(fd):
+        value = os.fstat(fd)
+        return {"device": value.st_dev, "inode": value.st_ino}
+
+    def verify(path, fd):
+        value = os.stat(path, follow_symlinks=False)
+        expected = identity(fd)
+        if not stat.S_ISDIR(value.st_mode) or (value.st_dev, value.st_ino) != \
+                (expected["device"], expected["inode"]):
+            raise ValueError(f"integration target directory identity changed: {path}")
+        return expected
+
+    try:
+        cache_identity = verify(cache, cache_fd)
+        case_fd = os.open(case, flags)
+        case_identity = verify(case, case_fd)
+        os.mkdir("target", mode=0o700, dir_fd=case_fd)
+        target_fd = os.open("target", flags, dir_fd=case_fd)
+        target = case / "target"
+        target_identity = verify(target, target_fd)
+        # Establish this directory before OSDK runs; it can never alias the
+        # shared target's same-name base crates or bundles.
+        os.mkdir("osdk", mode=0o700, dir_fd=target_fd)
+        record = {"target": {"path": str(target), **target_identity},
+                  "case": {"path": str(case), **case_identity},
+                  "artifact_cache": {"path": str(cache), **cache_identity},
+                  "generated_osdk": {"path": str(target / "osdk"), "shared": False},
+                  "shared_artifacts": {}}
+        for name in ("debug", "release", "x86_64-unknown-none"):
+            try:
+                os.mkdir(name, dir_fd=cache_fd)
+            except FileExistsError:
+                pass
+            artifact_fd = os.open(name, flags, dir_fd=cache_fd)
+            try:
+                artifact_identity = verify(cache / name, artifact_fd)
+                verify(cache, cache_fd)
+                os.symlink(str(cache / name), name, dir_fd=target_fd,
+                           target_is_directory=True)
+                verify(cache, cache_fd)
+                verify(cache / name, artifact_fd)
+                record["shared_artifacts"][name] = {
+                    "link": str(target / name), "destination": str(cache / name),
+                    **artifact_identity}
+            finally:
+                os.close(artifact_fd)
+        verify(cache, cache_fd)
+        verify(case, case_fd)
+        verify(target, target_fd)
+        descriptor = os.open("target-profile.json", os.O_WRONLY | os.O_CREAT | os.O_EXCL |
+                             os.O_NOFOLLOW | os.O_CLOEXEC, 0o600, dir_fd=case_fd)
+        with os.fdopen(descriptor, "w") as stream:
+            json.dump(record, stream, indent=2)
+            stream.write("\n")
+        return target, record
+    finally:
+        if target_fd is not None:
+            os.close(target_fd)
+        if case_fd is not None:
+            os.close(case_fd)
+        os.close(cache_fd)
 
 
 def adapt_basic_debug_to_local_tcp(contents):
@@ -358,7 +468,7 @@ def main():
     parser.add_argument("--coverage-gdb", action="store_true",
                         help="explicit v2 coverage capture at the original poweroff breakpoint; requires --local-tcp")
     parser.add_argument("--target-dir", type=Path,
-                        help="reuse this runner's previous independent Cargo target cache")
+                        help="reuse a prior isolated Cargo artifact cache; generated workspaces stay per case")
     args = parser.parse_args()
     if "CARGO_ENCODED_RUSTFLAGS" in os.environ:
         print("CARGO_ENCODED_RUSTFLAGS overrides mandatory OSDK kernel flags; "
@@ -394,12 +504,13 @@ def run_locked(args, here, project, upstream, output):
         raise SystemExit("actual compiler does not match the fixed nightly-2026-07-21")
     env["PATH"] = str(cargo_home / "bin") + os.pathsep + env.get("PATH", "")
     env["CARGO_BUILD_JOBS"] = env.get("CARGO_BUILD_JOBS", "2")
-    target_dir = args.target_dir.resolve() if args.target_dir else output / "target"
-    if args.target_dir and (not target_dir.is_relative_to(project / "support/build/out")
+    target_dir = args.target_dir.absolute() if args.target_dir else output / "target"
+    if args.target_dir and (not target_dir.resolve().is_relative_to((project / "support/build/out").resolve())
                             or not (target_dir.parent / "harness-adaptation.patch").is_file()
                             or not (target_dir.parent / "harness-lock.json").is_file()):
         raise SystemExit("--target-dir must be a prior isolated integration runner cache")
     env["CARGO_TARGET_DIR"] = str(target_dir)
+    artifact_cache_profile = validate_artifact_cache(target_dir, create=args.target_dir is None)
     env["OSDK_LOCAL_DEV"] = "1"
     env.pop("INTEL_TDX", None)
     env.pop("OSDK_CARGO_LOCK", None)
@@ -459,6 +570,9 @@ def run_locked(args, here, project, upstream, output):
                    "cargo_path": str(real_cargo), "cargo_sha256": digest(real_cargo),
                    "rustc_path": str(tool_bin / "rustc"), "rustc_sha256": digest(tool_bin / "rustc"),
                    "rustup_auto_install": "0", "isolated_fixed_root": str(fixed_root),
+                   "cargo_artifact_cache": str(target_dir),
+                   "cargo_artifact_cache_profile": artifact_cache_profile,
+                   "case_target_policy": "private generated osdk workspaces; shared debug/release/x86_64-unknown-none artifacts",
                    "profile_id": profile_id,
                    "control_transport": "loopback-tcp" if args.local_tcp else "upstream-unix",
                    "harness_path": str(harness), "harness_sha256": digest(harness),
@@ -497,6 +611,16 @@ def run_locked(args, here, project, upstream, output):
         temp = fixed_root / f"case-{index:02d}-tmp"
         temp.mkdir()
         case_env = env.copy()
+        try:
+            case_target, target_profile = create_case_target(target_dir, directory)
+        except (OSError, ValueError) as error:
+            report.update({"status": "blocked", "target_error": str(error)})
+            (directory / "result.json").write_text(json.dumps(report, indent=2) + "\n")
+            results.append(report)
+            print(f"BLOCKED {case}: target custody: {error}", flush=True)
+            continue
+        case_env["CARGO_TARGET_DIR"] = str(case_target)
+        report["cargo_target_profile"] = target_profile
         case_env["TMPDIR"] = str(temp)
         case_env["A01_OSDK_CASE_OUTPUT"] = str(directory)
         case_env["A01_OSDK_GDB_READY"] = str(directory / "gdb-ready.json")
