@@ -1,6 +1,10 @@
 # A03 control core acceptance — 2026-10-16
 
 Latest follow-up:
+[VALIDATION-20261017-api.md](VALIDATION-20261017-api.md), with reservation enum
+variant imports repaired, 223 tests per host backend and a three-version
+compiler compatibility control.
+Previous:
 [VALIDATION-20261017-backend.md](VALIDATION-20261017-backend.md),
 with public native namespace lock injection, 220 tests per host backend,
 nineteen Loom models (27,253 schedules) and an external no_std consumer build.
