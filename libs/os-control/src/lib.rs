@@ -288,6 +288,19 @@ struct ResourceDomainInner {
     children: Mutex<BTreeMap<ResourceDomainId, u64>>,
 }
 
+impl Drop for ResourceDomainInner {
+    fn drop(&mut self) {
+        // This is the last Arc, not an ordinary cloned handle. Grants,
+        // descendants and retained delivery slots keep the active constraint
+        // alive until their references disappear. Identity tombstones and
+        // ancestor CPU consumption are deliberately left untouched.
+        if let Some(parent) = self.parent.as_ref() {
+            let id = lock_unpoisoned(&self.state).id;
+            lock_unpoisoned(&parent.inner.children).remove(&id);
+        }
+    }
+}
+
 struct FamilyIdentityRegistry {
     domain_ids: BTreeSet<ResourceDomainId>,
     object_ids: BTreeSet<StableObjectId>,
