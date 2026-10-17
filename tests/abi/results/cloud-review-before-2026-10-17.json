@@ -1,0 +1,263 @@
+{
+  "schema": "hos2-rust-source-mutations-v3",
+  "scope": "host Rust canonical equality, fixed-byte response encoding and documented QueryAbi/ReadUsage validation boundaries; each mutant runs its designated complete suite, not the entire crate; no kernel validation",
+  "source_policy": "every mutant is derived independently from one captured production source",
+  "expected_mutants": 12,
+  "expected_tests_by_suite": {
+    "mutation_kill": 8,
+    "semantic_edges": 12,
+    "profile_boundaries": 7
+  },
+  "success": false,
+  "requested_toolchain": "nightly-2026-07-21",
+  "reference_toolchain_identity": {
+    "cwd": "/tmp/hos2-rust-mutations-r_m8caix/toolchain-reference",
+    "effective_environment": {
+      "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+      "RUSTC": null
+    },
+    "selection": "RUSTUP_TOOLCHAIN",
+    "cargo_executable": "/workspace/scratch/629ae4947f18/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+    "cargo_path": "/workspace/scratch/629ae4947f18/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+    "rustc_executable": "rustc",
+    "rustc_path": "/workspace/scratch/629ae4947f18/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/rustc",
+    "cargo": {
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+        "--version"
+      ],
+      "returncode": 0,
+      "stdout": "cargo 1.99.0-nightly (3efb1f477 2026-07-17)\n",
+      "stderr": "",
+      "timed_out": false
+    },
+    "rustc": {
+      "command": [
+        "rustc",
+        "-vV"
+      ],
+      "returncode": 0,
+      "stdout": "rustc 1.99.0-nightly (87e5904f5 2026-07-20)\nbinary: rustc\ncommit-hash: 87e5904f5eb6398af6b22eac2802c78934260c48\ncommit-date: 2026-07-20\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.0-nightly\nLLVM version: 22.1.8\n",
+      "stderr": "",
+      "timed_out": false
+    },
+    "valid": true
+  },
+  "baseline": {
+    "suite": "mutation_kill",
+    "expected_tests": 8,
+    "required_tests": [
+      "same_sequence_and_target_different_cap_is_conflict",
+      "same_sequence_and_target_different_revision_is_conflict",
+      "same_sequence_and_slot_different_generation_is_conflict"
+    ],
+    "source_sha256": "b7cc442a3bd0b5fcf5dddbd8f3557e036daf6912d0ca54e38acaee9b2f235725",
+    "toolchain_identity": {
+      "cwd": "/tmp/hos2-rust-mutations-r_m8caix/baseline/libs/os-abi",
+      "effective_environment": {
+        "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+        "RUSTC": null
+      },
+      "selection": "RUSTUP_TOOLCHAIN",
+      "cargo_executable": "/workspace/scratch/629ae4947f18/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+      "cargo_path": "/workspace/scratch/629ae4947f18/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+      "rustc_executable": "rustc",
+      "rustc_path": "/workspace/scratch/629ae4947f18/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/rustc",
+      "cargo": {
+        "command": [
+          "/workspace/scratch/629ae4947f18/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+          "--version"
+        ],
+        "returncode": 0,
+        "stdout": "cargo 1.99.0-nightly (3efb1f477 2026-07-17)\n",
+        "stderr": "",
+        "timed_out": false
+      },
+      "rustc": {
+        "command": [
+          "rustc",
+          "-vV"
+        ],
+        "returncode": 0,
+        "stdout": "rustc 1.99.0-nightly (87e5904f5 2026-07-20)\nbinary: rustc\ncommit-hash: 87e5904f5eb6398af6b22eac2802c78934260c48\ncommit-date: 2026-07-20\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.0-nightly\nLLVM version: 22.1.8\n",
+        "stderr": "",
+        "timed_out": false
+      },
+      "valid": true
+    },
+    "toolchain_matches_reference": true,
+    "compilation": {
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+        "test",
+        "--offline",
+        "--color",
+        "never",
+        "--test",
+        "mutation_kill",
+        "--no-run"
+      ],
+      "returncode": 101,
+      "stdout": "",
+      "stderr": "error: process didn't exit successfully: `/tmp/a02-review-20261017/compiler-trap /tmp/a02-review-20261017/compiler-trap /tmp/a02-review-20261017/compiler-trap -vV` (exit status: 97)\n",
+      "timed_out": false
+    },
+    "compiled": false,
+    "test_toolchain_identity": null,
+    "test": null,
+    "tests": null,
+    "passed": false
+  },
+  "baseline_semantic_edges": {
+    "suite": "semantic_edges",
+    "expected_tests": 12,
+    "required_tests": [
+      "typed_terminal_rejection_encoders_match_all_independent_saved_status_bytes",
+      "every_semantic_edge_encoder_matches_fixed_bytes_and_preserves_unused_capacity",
+      "every_semantic_edge_encoder_rejects_each_short_capacity_without_writing"
+    ],
+    "source_sha256": "b7cc442a3bd0b5fcf5dddbd8f3557e036daf6912d0ca54e38acaee9b2f235725",
+    "toolchain_identity": {
+      "cwd": "/tmp/hos2-rust-mutations-r_m8caix/baseline_semantic_edges/libs/os-abi",
+      "effective_environment": {
+        "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+        "RUSTC": null
+      },
+      "selection": "RUSTUP_TOOLCHAIN",
+      "cargo_executable": "/workspace/scratch/629ae4947f18/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+      "cargo_path": "/workspace/scratch/629ae4947f18/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+      "rustc_executable": "rustc",
+      "rustc_path": "/workspace/scratch/629ae4947f18/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/rustc",
+      "cargo": {
+        "command": [
+          "/workspace/scratch/629ae4947f18/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+          "--version"
+        ],
+        "returncode": 0,
+        "stdout": "cargo 1.99.0-nightly (3efb1f477 2026-07-17)\n",
+        "stderr": "",
+        "timed_out": false
+      },
+      "rustc": {
+        "command": [
+          "rustc",
+          "-vV"
+        ],
+        "returncode": 0,
+        "stdout": "rustc 1.99.0-nightly (87e5904f5 2026-07-20)\nbinary: rustc\ncommit-hash: 87e5904f5eb6398af6b22eac2802c78934260c48\ncommit-date: 2026-07-20\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.0-nightly\nLLVM version: 22.1.8\n",
+        "stderr": "",
+        "timed_out": false
+      },
+      "valid": true
+    },
+    "toolchain_matches_reference": true,
+    "compilation": {
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+        "test",
+        "--offline",
+        "--color",
+        "never",
+        "--test",
+        "semantic_edges",
+        "--no-run"
+      ],
+      "returncode": 101,
+      "stdout": "",
+      "stderr": "error: process didn't exit successfully: `/tmp/a02-review-20261017/compiler-trap /tmp/a02-review-20261017/compiler-trap /tmp/a02-review-20261017/compiler-trap -vV` (exit status: 97)\n",
+      "timed_out": false
+    },
+    "compiled": false,
+    "test_toolchain_identity": null,
+    "test": null,
+    "tests": null,
+    "passed": false
+  },
+  "baseline_profile_boundaries": {
+    "suite": "profile_boundaries",
+    "expected_tests": 7,
+    "required_tests": [
+      "query_abi_supported_operation_masks_match_documented_table",
+      "query_abi_advertised_payload_minima_match_each_supported_profile",
+      "query_abi_advertised_payload_limits_include_exact_maximum",
+      "query_abi_page_sizes_accept_every_nonzero_power_of_two",
+      "read_usage_accepts_zero_full_caps_and_exact_elapsed_consumption",
+      "read_usage_accepts_aligned_windows_through_u64_max",
+      "read_usage_rejects_impossible_or_misaligned_cpu_snapshots"
+    ],
+    "source_sha256": "b7cc442a3bd0b5fcf5dddbd8f3557e036daf6912d0ca54e38acaee9b2f235725",
+    "toolchain_identity": {
+      "cwd": "/tmp/hos2-rust-mutations-r_m8caix/baseline_profile_boundaries/libs/os-abi",
+      "effective_environment": {
+        "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+        "RUSTC": null
+      },
+      "selection": "RUSTUP_TOOLCHAIN",
+      "cargo_executable": "/workspace/scratch/629ae4947f18/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+      "cargo_path": "/workspace/scratch/629ae4947f18/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+      "rustc_executable": "rustc",
+      "rustc_path": "/workspace/scratch/629ae4947f18/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/rustc",
+      "cargo": {
+        "command": [
+          "/workspace/scratch/629ae4947f18/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+          "--version"
+        ],
+        "returncode": 0,
+        "stdout": "cargo 1.99.0-nightly (3efb1f477 2026-07-17)\n",
+        "stderr": "",
+        "timed_out": false
+      },
+      "rustc": {
+        "command": [
+          "rustc",
+          "-vV"
+        ],
+        "returncode": 0,
+        "stdout": "rustc 1.99.0-nightly (87e5904f5 2026-07-20)\nbinary: rustc\ncommit-hash: 87e5904f5eb6398af6b22eac2802c78934260c48\ncommit-date: 2026-07-20\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.0-nightly\nLLVM version: 22.1.8\n",
+        "stderr": "",
+        "timed_out": false
+      },
+      "valid": true
+    },
+    "toolchain_matches_reference": true,
+    "compilation": {
+      "command": [
+        "/workspace/scratch/629ae4947f18/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+        "test",
+        "--offline",
+        "--color",
+        "never",
+        "--test",
+        "profile_boundaries",
+        "--no-run"
+      ],
+      "returncode": 101,
+      "stdout": "",
+      "stderr": "error: process didn't exit successfully: `/tmp/a02-review-20261017/compiler-trap /tmp/a02-review-20261017/compiler-trap /tmp/a02-review-20261017/compiler-trap -vV` (exit status: 97)\n",
+      "timed_out": false
+    },
+    "compiled": false,
+    "test_toolchain_identity": null,
+    "test": null,
+    "tests": null,
+    "passed": false
+  },
+  "mutants": [],
+  "errors": [
+    "production mutation_kill baseline did not pass its complete suite",
+    "production semantic_edges baseline did not pass its complete suite",
+    "production profile_boundaries baseline did not pass its complete suite"
+  ],
+  "input_sha256": {
+    "Cargo.toml": "8941aa060c09b8243125fceba8000bac896ac12a72f215a1295174cdf1f92b3a",
+    "src/lib.rs": "b7cc442a3bd0b5fcf5dddbd8f3557e036daf6912d0ca54e38acaee9b2f235725",
+    "tests/mutation_kill.rs": "1f14653601039db35ba3bed7dcc6f57ec2e288592b871772e0c4f3c744a1f07a",
+    "tests/semantic_edges.rs": "b86ef0a2d71e430a0be7b3fa63d3a37b2f97484d2650d5919ae8fbe2ec1ddec5",
+    "tests/profile_boundaries.rs": "a721cde38be67e2c2ec117864e8783211db38664242c903a7df9c878bd24959f"
+  },
+  "fixture_sha256": {
+    "tests/golden/hos2.json": "792e8535ab3d0144ff182e3024c57b1a6815b65ffd7ac3ff07a67594851a05ed",
+    "tests/golden/hos2_edges.json": "d176461f0a1b42751e3e41c24102e56d25c8e4942cec0deb0ae3f16c271e13d4"
+  },
+  "mutants_killed": 0
+}
