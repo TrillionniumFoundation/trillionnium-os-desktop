@@ -5,7 +5,7 @@ use core::sync::atomic::{AtomicU32, AtomicU64, Ordering};
 use aster_rights::{ReadDupOp, ReadOp, ReadWriteOp};
 use aster_util::fixed_str::FixedCStr;
 use ostd::{
-    sync::{RoArc, RwMutexReadGuard, Waker},
+    sync::{RcuOption, RoArc, RwMutexReadGuard, Waker},
     task::Task,
 };
 use spin::Once;
@@ -17,6 +17,7 @@ use super::{
 use crate::{
     events::IoEvents,
     fs::{file::file_table::FileTable, thread_info::ThreadFsInfo},
+    fs::cgroupfs::CgroupNode,
     prelude::*,
     process::{
         ExitCode, Pid,
@@ -51,6 +52,12 @@ pub struct PosixThread {
     // Immutable part
     process: Weak<Process>,
     task: Weak<Task>,
+
+    /// Cgroup snapshot used for the last scheduler debit after the process
+    /// owner has gone away.  The process cgroup is still the authoritative
+    /// live binding; this reference only keeps that binding available for the
+    /// deferred final charge of an exited task.
+    cpu_cgroup: RcuOption<Arc<CpuCgroupLease>>,
 
     // Mutable part
     tid: AtomicU32,
@@ -115,6 +122,17 @@ impl PosixThread {
 
     pub(crate) fn weak_process(&self) -> &Weak<Process> {
         &self.process
+    }
+
+    pub(crate) fn cpu_cgroup(&self) -> Option<Arc<CgroupNode>> {
+        self.cpu_cgroup
+            .read()
+            .get()
+            .map(|lease| lease.cgroup.clone())
+    }
+
+    pub(crate) fn set_cpu_cgroup(&self, cgroup: Option<Arc<CgroupNode>>) {
+        self.cpu_cgroup.update(cgroup.map(CpuCgroupLease::new));
     }
 
     /// Returns the thread id
@@ -341,6 +359,28 @@ impl PosixThread {
     /// Returns the exit code of this thread.
     pub(crate) fn exit_code(&self) -> ExitCode {
         self.exit_code.load(Ordering::Relaxed)
+    }
+}
+
+/// A lifecycle lease for the cgroup used by a deferred final CPU debit.
+///
+/// The lease is separate from CPU usage/accounting state. It only prevents
+/// cgroup deletion while an exited task can still publish its final scheduler
+/// interval. RCU delays `Drop` until readers have left the old snapshot.
+struct CpuCgroupLease {
+    cgroup: Arc<CgroupNode>,
+}
+
+impl CpuCgroupLease {
+    fn new(cgroup: Arc<CgroupNode>) -> Arc<Self> {
+        cgroup.retain_cpu_charge_lease();
+        Arc::new(Self { cgroup })
+    }
+}
+
+impl Drop for CpuCgroupLease {
+    fn drop(&mut self) {
+        self.cgroup.release_cpu_charge_lease();
     }
 }
 
