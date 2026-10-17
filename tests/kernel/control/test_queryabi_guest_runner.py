@@ -44,6 +44,16 @@ class QueryAbiReplayInputs(unittest.TestCase):
         with self.assertRaises(ValueError):
             replay.build_guest_initramfs(self.original(), b"X" * (16 * 1024 * 1024 + 1))
 
+    def test_cannot_self_authorize_a_different_kernel_hash(self):
+        args = [
+            "--kernel-elf", "/nonexistent-no-read",
+            "--expected-kernel-sha256", "0" * 64,
+            "--a01-initramfs", "/nonexistent-no-read",
+            "--output", "/nonexistent-no-create",
+        ]
+        with self.assertRaisesRegex(ValueError, "unknown kernel candidate"):
+            replay.main(args)
+
     def test_fail_closed_on_duplicated_guest_probe(self):
         entries = replay.unpack(gzip.decompress(self.original()))
         entries.append(("bin/hos2-queryabi",
