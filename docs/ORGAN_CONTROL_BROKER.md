@@ -73,7 +73,7 @@ UI API 必须是版本化、无指针、带长度上限的 typed JSON/CBOR 或�
 规则：
 
 1. `client_request_id` 只用于客户端重试去重，不能替代 K 或 D。
-2. 相同 K、相同 digest 必须返回原收据；相同 K、不同 digest 必须拒绝。
+2. 相同 `(scope_id, operation_id)`、相同 digest 必须返回原收据；相同持久主键、不同 digest 必须拒绝。
 3. UI 不得提交 CapSpace、boot_id、原始用户地址、Final-use、签名或设备 fd。
 4. `stop` 只表示停止请求；停止请求的结果仍需由 owner 观察并确认。
 5. UI 必须显示请求状态与实际终局的区别，不能以模型文本、进程退出码或 WebSocket 通知宣称设备效果。
