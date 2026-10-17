@@ -12,6 +12,11 @@ independent verification of all three actual ARM64 ELF hashes. This run used
 fresh observer CLI instances; persistent Session/Shell integration, objective
 submission, model turns and device effects remain separate unqualified gates.
 
+The new optional [persistent Session extension](ORIGINAL_SESSION.md) adds real
+Session/ctl lifecycle checks and a bounded Shell capture handoff. It preserves
+the eight process checks and reports its additional qualification separately;
+the archived result above is not evidence that this new extension ran.
+
 The earlier local Rust 1.95 compiler checks did not link or execute the original
 process. Their metadata/check commands, failed attempts, source/lock bindings
 and raw logs remain in
@@ -154,14 +159,16 @@ the already reviewed Linux credential/framing/health/event checks.
 6. Stop via the original Supervisor, confirm no active process, and verify the
    observer cannot produce a successful post-stop snapshot.
 
-Each CLI invocation creates one observer instance. This gate does not by itself
+Each CLI invocation creates one observer instance. The default gate does not by itself
 qualify a persistent Session worker or Shell display across restart. For a
 separate Session probe, `--hold-seconds 30` leaves a bounded first-Running window
 and emits a `trusted_endpoint` record. Only a trusted test launcher may hand
 that configuration to Session; the renderer still receives projections only.
 The existing same-client lifecycle socket regression remains a separate test.
+For the complete six-phase persistent-consumer extension, supply both
+`--session-bin` and `--ctl-bin` as described in [ORIGINAL_SESSION.md](ORIGINAL_SESSION.md).
 
-The runtime subprocess has a 240-second outer deadline and its own dedicated
+The default runtime subprocess has a 240-second outer deadline and its own dedicated
 process group. The original Supervisor performs normal cleanup; timeout,
 interruption or nonzero subprocess exit starts bounded group termination.
 Cleanup applies only to processes and directories created by this invocation.

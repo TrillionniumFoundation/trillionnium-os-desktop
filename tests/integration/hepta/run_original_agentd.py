@@ -36,6 +36,12 @@ EXPECTED_CHECKS = [
     "missing_run_read", "same_process_draining", "original_restart",
     "old_spawn_rejected", "controlled_stop",
 ]
+SESSION_PHASES = ["starting", "running", "draining", "old_spawn_stale", "recovered_running", "stopped_stale"]
+SESSION_CHECKS = [
+    "persistent_session_starting", "persistent_session_running", "persistent_session_draining",
+    "same_worker_same_instance", "old_spawn_stale_ipc_responsive", "explicit_session_replacement",
+    "replacement_running", "stopped_stale_ipc_responsive",
+]
 
 
 class GateError(Exception):
@@ -128,6 +134,7 @@ def prepare_runner(source, destination):
             lines.append(json.dumps(key) + "=" + toml_value(value))
     (destination / "Cargo.toml").write_text("\n".join(lines) + "\n")
     shutil.copyfile(HERE / "original_agentd_probe.rs", destination / "src/main.rs")
+    shutil.copyfile(HERE / "original_session_probe.rs", destination / "src/original_session_probe.rs")
     # Cargo adds the external probe package/prunes unused entries. Shared
     # dependencies must retain identities from the original seed lock.
     shutil.copyfile(workspace / "Cargo.lock", destination / "Cargo.lock")
@@ -285,7 +292,86 @@ def terminate_group(group):
     return group.reap()
 
 
+def validate_runtime_records(records, session_enabled):
+    """Require both independently named qualifications when Session is enabled.
+
+    This checks receipt completeness and cross-record identity, not simulated
+    runtime success. Actual lifecycle predicates remain in the linked probe.
+    """
+    if not records:
+        raise GateError("runtime_acceptance_record_missing")
+    final = records[-1]
+    if final.get("event") != "acceptance_pass" or final.get("checks") != EXPECTED_CHECKS:
+        raise GateError("runtime_acceptance_checks_incomplete")
+    if any(final.get(key) is not False for key in ["objective_submission", "model_turn", "device_effect"]):
+        raise GateError("unexpected_effect_profile")
+    phases = [item for item in records if item.get("event") == "session_phase_observed"]
+    passes = [item for item in records if item.get("event") == "session_acceptance_pass"]
+    if not session_enabled:
+        if phases or passes:
+            raise GateError("unexpected_session_qualification")
+        return
+    if len(passes) != 1 or passes[0].get("checks") != SESSION_CHECKS:
+        raise GateError("session_acceptance_checks_incomplete")
+    if any(passes[0].get(key) is not False for key in ["objective_submission", "model_turn", "device_effect", "shell_capture_qualified_by_this_record"]):
+        raise GateError("unexpected_session_effect_or_capture_claim")
+    if [item.get("phase") for item in phases] != SESSION_PHASES or [item.get("sequence") for item in phases] != list(range(1, 7)):
+        raise GateError("session_phase_receipts_incomplete")
+    first, replacement = phases[0], phases[4]
+    for entries, expected in [(phases[:4], first), (phases[4:], replacement)]:
+        for item in entries:
+            if any(type(item.get(key)) is not int or item[key] <= 0 for key in ["session_pid", "worker_tid"]):
+                raise GateError("session_process_or_worker_identity_missing")
+            if any(item.get(key) != expected.get(key) for key in ["session_pid", "session_instance", "worker_tid", "runtime_dir", "session_socket_path"]):
+                raise GateError("session_identity_changed_within_continuous_interval")
+            if item.get("snapshot", {}).get("session_instance") != expected.get("session_instance"):
+                raise GateError("session_snapshot_identity_disagrees")
+    if not first.get("session_instance") or first["session_instance"] == replacement.get("session_instance"):
+        raise GateError("replacement_session_identity_not_distinct")
+    if first.get("runtime_dir") != replacement.get("runtime_dir") or first.get("session_socket_path") != replacement.get("session_socket_path"):
+        raise GateError("replacement_session_runtime_changed")
+    for key, item in [("first", first), ("replacement", replacement)]:
+        if passes[0].get(f"{key}_session_instance") != item.get("session_instance") or passes[0].get(f"{key}_session_pid") != item.get("session_pid"):
+            raise GateError("session_final_receipt_identity_disagrees")
+    stopped = [item for item in records if item.get("event") == "session_stopped"]
+    if len(stopped) != 2 or any(item.get("signal") != 9 for item in stopped):
+        raise GateError("session_cleanup_receipts_incomplete")
+    for actual, expected in zip(stopped, [first, replacement]):
+        if any(actual.get(key) != expected.get(key) for key in ["session_pid", "session_instance", "worker_tid"]):
+            raise GateError("session_cleanup_identity_disagrees")
+
+
+def session_arguments(args, source, report):
+    if bool(args.session_bin) != bool(args.ctl_bin):
+        raise GateError("session_and_ctl_binaries_must_be_supplied_together")
+    if not args.session_bin:
+        if args.session_phase_dir:
+            raise GateError("phase_capture_requires_session_binaries")
+        return []
+    arguments = []
+    report["session_input_binaries"] = {}
+    for name, path in [("session", args.session_bin), ("ctl", args.ctl_bin)]:
+        path = path.resolve(strict=True)
+        if not path.is_file() or not os.access(path, os.X_OK):
+            raise GateError("session_input_must_be_executable_file")
+        with path.open("rb") as binary:
+            if binary.read(4) != b"\x7fELF":
+                raise GateError("session_input_must_be_native_elf")
+        report["session_input_binaries"][name] = {
+            "path": str(path), "bytes": path.stat().st_size, "sha256": sha256(path),
+            "provenance": "prebuilt_input_caller_must_bind_build_to_source",
+        }
+        arguments.extend([f"--{name}-bin", str(path)])
+    if args.session_phase_dir:
+        phases = args.session_phase_dir.resolve()
+        if phases.exists() or phases.is_relative_to(source) or phases.is_relative_to(ROOT):
+            raise GateError("phase_directory_must_be_new_and_outside_source_checkouts")
+        arguments.extend(["--session-phase-dir", str(phases), "--session-ack-seconds", str(args.session_ack_seconds)])
+    return arguments
+
+
 def execute(args, source, work, report):
+    session_args = session_arguments(args, source, report)
     work.mkdir(mode=0o700)
     runner = work / "probe"
     prepare_runner(source, runner)
@@ -330,6 +416,7 @@ def execute(args, source, work, report):
     report["binary_sha256"] = {name: sha256(path) for name, path in binaries.items()}
     report["probe_resolved_lock_sha256"] = sha256(runner / "Cargo.lock")
     report["probe_source_sha256"] = sha256(runner / "src/main.rs")
+    report["session_probe_source_sha256"] = sha256(runner / "src/original_session_probe.rs")
     report["observer_source_sha256"] = {
         str(path.relative_to(ROOT)): sha256(path)
         for path in sorted((ROOT / "services/hepta-os").rglob("*"))
@@ -339,25 +426,35 @@ def execute(args, source, work, report):
     report["live_agentd_acceptance"] = "failed"
     # A short fresh path is necessary for the original nested UUID Unix socket.
     with tempfile.TemporaryDirectory(prefix="hp-", dir="/tmp") as state_root:
-        command = [str(binaries["probe"]), str(binaries["agentd"]), str(binaries["observer"]), state_root, str(args.hold_seconds)]
+        command = [str(binaries["probe"]), str(binaries["agentd"]), str(binaries["observer"]), state_root, str(args.hold_seconds), *session_args]
         record = {"step": "original_agentd_process_probe", "status": "running"}
         report["steps"].append(record)
         # No inherited HOME/CODEX_HOME, API key, AuthBus/Hepta provider flags or
         # existing user config. Original UnixProcessDriver assigns child roots.
         environment = {"PATH": "/usr/bin:/bin", "LANG": "C.UTF-8", "HEPTA_COGNITIVE_RETRIEVAL_MODE": "compatibility"}
         log_path = work / "original_agentd_process_probe.log"
-        bounded_command(command, ROOT, environment, log_path, 240)
+        session_enabled = bool(session_args)
+        if session_enabled:
+            report["persistent_session_acceptance"] = "failed"
+        timeout = 240 + (120 if session_enabled else 0)
+        if args.session_phase_dir:
+            timeout += 6 * args.session_ack_seconds
+        try:
+            bounded_command(command, ROOT, environment, log_path, timeout)
+        finally:
+            if session_enabled:
+                for path in sorted((Path(state_root) / "ui-runtime").glob("session-*.log")):
+                    shutil.copyfile(path, work / path.name)
         if log_path.stat().st_size > 1024 * 1024:
             raise GateError("runtime_probe_log_exceeded_bound")
         records = [json.loads(line) for line in log_path.read_text().splitlines() if line.startswith("{")]
-        if not records:
-            raise GateError("runtime_acceptance_record_missing")
-        final = records[-1]
-        if final.get("event") != "acceptance_pass" or final.get("checks") != EXPECTED_CHECKS:
-            raise GateError("runtime_acceptance_checks_incomplete")
-        if any(final.get(key) is not False for key in ["objective_submission", "model_turn", "device_effect"]):
-            raise GateError("unexpected_effect_profile")
+        validate_runtime_records(records, session_enabled)
         report["runtime_records"] = records
+        if session_enabled:
+            for name, item in report["session_input_binaries"].items():
+                if sha256(Path(item["path"])) != item["sha256"]:
+                    raise GateError("session_binary_changed_during_qualification")
+            report["persistent_session_acceptance"] = "passed"
         record["status"] = "passed"
     verify_source(source)
     report["live_agentd_acceptance"] = "passed"
@@ -372,6 +469,10 @@ def main():
     parser.add_argument("--offline", action="store_true")
     parser.add_argument("--rustup", default=shutil.which("rustup") or "rustup")
     parser.add_argument("--hold-seconds", type=int, default=0, choices=range(31), metavar="0..30")
+    parser.add_argument("--session-bin", type=Path, help="Optional prebuilt actual trill-session ELF; requires --ctl-bin")
+    parser.add_argument("--ctl-bin", type=Path, help="Actual trill-ctl ELF from the same source build")
+    parser.add_argument("--session-phase-dir", type=Path, help="New external directory for six actual phase records and optional Shell capture acknowledgments")
+    parser.add_argument("--session-ack-seconds", type=int, default=60, choices=range(1, 121), metavar="1..120")
     parser.add_argument("--report", type=Path, help="New report file; never overwrite prior evidence")
     args = parser.parse_args()
     report = {
@@ -379,6 +480,7 @@ def main():
         "evidence_class": "original_agentd_readonly_acceptance_gate",
         "status": "preflight", "large_build_attempted": False,
         "runtime_probe_attempted": False, "live_agentd_acceptance": "not_run",
+        "persistent_session_acceptance": "not_run",
         "required_toolchains": {"upstream": UPSTREAM_TOOLCHAIN, "observer": OBSERVER_TOOLCHAIN},
         "profile": {"agentd_default_features": False, "supervisor_production_authority": False,
                     "objective_issuer": False, "model_turn": False, "device_effect_provider": False},
@@ -388,6 +490,7 @@ def main():
     try:
         source = args.hepta_source.resolve(strict=True)
         report["upstream"] = verify_source(source)
+        session_arguments(args, source, report)
         work = args.work_dir.resolve()
         if work.is_relative_to(source) or work.is_relative_to(ROOT):
             raise GateError("work_directory_must_be_outside_source_checkouts")
