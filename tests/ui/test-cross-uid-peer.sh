@@ -28,7 +28,11 @@ cleanup() {
                     # even for sudo-root inside Docker or a hardened runner.
                     # /proc/<pid>/cmdline, comm and status are kernel-owned and
                     # readable without depending on CAP_SYS_PTRACE.
-                    exe="$(sudo -n cat "/proc/$child/cmdline" 2>/dev/null | tr '\0' '\n' | sed -n '1p')"
+                    # Exit may race the /proc existence check. Continue the
+                    # fail-closed cleanup path instead of abandoning this
+                    # trap under set -e before reaping our launcher/removing
+                    # our temporary directory.
+                    exe="$(sudo -n cat "/proc/$child/cmdline" 2>/dev/null | tr '\0' '\n' | sed -n '1p' || true)"
                     local name owner
                     name="$(sudo -n cat "/proc/$child/comm" 2>/dev/null || true)"
                     owner="$(sudo -n awk '/^Uid:/ {print $3; exit}' "/proc/$child/status" 2>/dev/null || true)"
