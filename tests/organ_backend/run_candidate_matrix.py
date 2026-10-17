@@ -14,6 +14,11 @@ from pathlib import Path
 import re
 import subprocess
 
+import sys
+
+# Keep sibling imports stable if this runner is invoked from an isolated
+# subprocess or a different working directory.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 from run_guest_probe import pack, unpack
 
 REF_INITRD = "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
