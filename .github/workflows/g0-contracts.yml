@@ -34,6 +34,9 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Verify exact previous/base Git trees, including deleted regression pairs.
+          fetch-depth: 0
       - name: Verify independent HOS2 golden fixtures
         run: python3 tests/golden/generate_hos2.py --check
       - name: Verify canonical HOS2 semantic edge corpus and independent generator
@@ -93,40 +96,53 @@ jobs:
           sha256sum "$RUNNER_TEMP/a05-queryabi-guest"
       - name: A05 pinned QueryAbi replay host regressions (no QEMU)
         shell: bash
+        env:
+          EVENT_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: |
           set -euo pipefail
           dir=tests/kernel/control
-          fixtures=(
-            run_queryabi_guest.py test_queryabi_guest_runner.py
-            pinned_memfd.py test_pinned_memfd.py
-            serial_limit.py test_serial_limit.py
-          )
+          # A pair absent from BOTH base and head may bootstrap once. Once
+          # tracked, deleting its source AND test together must be a failure.
+          if [[ -z "${EVENT_BASE_SHA:-}" || "$EVENT_BASE_SHA" =~ ^0+$ ]] ||
+             ! git cat-file -e "$EVENT_BASE_SHA^{commit}" 2>/dev/null; then
+            echo 'Cannot identify exact A05 regression event base' >&2
+            exit 1
+          fi
           any=0
-          for name in "${fixtures[@]}"; do
-            path="$dir/$name"
-            if [[ -e "$path" || -L "$path" ]]; then
-              if [[ ! -f "$path" || -L "$path" ]]; then
-                echo "A05 replay source/test is not a regular file: $path" >&2
-                exit 1
-              fi
-              any=1
-            fi
-          done
-          if [[ "$any" -eq 0 ]]; then
-            echo 'BOOTSTRAP ONLY: no A05 replay harness is present on this checkout'
-          else
-            for pair in \
-              'run_queryabi_guest.py test_queryabi_guest_runner.py' \
-              'pinned_memfd.py test_pinned_memfd.py' \
-              'serial_limit.py test_serial_limit.py'; do
-              read -r source testfile <<< "$pair"
-              if [[ -e "$dir/$source" || -e "$dir/$testfile" ]]; then
-                if [[ ! -f "$dir/$source" || ! -f "$dir/$testfile" ]]; then
-                  echo "A05 replay source/test pair incomplete: $pair" >&2
+          for pair in \
+            'run_queryabi_guest.py test_queryabi_guest_runner.py' \
+            'pinned_memfd.py test_pinned_memfd.py' \
+            'serial_limit.py test_serial_limit.py'; do
+            read -r source testfile <<< "$pair"
+            for name in "$source" "$testfile"; do
+              path="$dir/$name"
+              # The event-base *tree* is authoritative, not only the head.
+              if git cat-file -e "$EVENT_BASE_SHA:$path" 2>/dev/null; then
+                if [[ ! -f "$path" || -L "$path" ]]; then
+                  echo "A05 required regression vanished since base: $path" >&2
                   exit 1
                 fi
               fi
+              if [[ -e "$path" || -L "$path" ]]; then
+                if [[ ! -f "$path" || -L "$path" ]]; then
+                  echo "A05 replay source/test is not regular: $path" >&2
+                  exit 1
+                fi
+                any=1
+              fi
             done
+            if [[ -e "$dir/$source" || -L "$dir/$source" ||
+                  -e "$dir/$testfile" || -L "$dir/$testfile" ]]; then
+              if [[ ! -f "$dir/$source" || -L "$dir/$source" ||
+                    ! -f "$dir/$testfile" || -L "$dir/$testfile" ]]; then
+                echo "A05 replay source/test pair incomplete: $pair" >&2
+                exit 1
+              fi
+            fi
+          done
+          if [[ "$any" -eq 0 ]]; then
+            echo 'BOOTSTRAP ONLY: all three A05 replay pairs absent in base and head'
+          else
             for mode in normal optimized; do
               args=()
               if [[ "$mode" == optimized ]]; then args=(-O); fi
