@@ -231,5 +231,29 @@ class VFIOTests(unittest.TestCase):
             self.assertIsNone(vfio.text_file(path))
 
 
+    def test_unreadable_existing_unsafe_mode_setting_blocks(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.fixture(root, drivers={GPU: "vfio-pci"})
+            setting = root / "sys/module/vfio/parameters/enable_unsafe_noiommu_mode"
+            setting.parent.mkdir(parents=True)
+            external = root / "dummy-unsafe-setting"
+            external.write_text("Y\n")
+            setting.symlink_to(external)
+            report = self.inspect(root)
+        self.assertEqual(report["status"], "blocked")
+        self.assertIn("unsafe_noiommu_mode_unobservable", report["hard_blockers"])
+
+    def test_oversized_interrupt_setting_fails_closed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.fixture(root, drivers={GPU: "vfio-pci"})
+            setting = root / "sys/module/vfio_iommu_type1/parameters/allow_unsafe_interrupts"
+            setting.parent.mkdir(parents=True)
+            setting.write_bytes(b"N" * (vfio.MAX_SYSFS_TEXT_BYTES + 1))
+            report = self.inspect(root)
+        self.assertEqual(report["status"], "blocked")
+        self.assertIn("unsafe_interrupt_remapping_setting_unobservable", report["hard_blockers"])
+
 if __name__ == "__main__":
     unittest.main()
