@@ -174,3 +174,19 @@ does not install a permission or exclusive PCI lease by itself. The
 review byte encoding with A03/A05/A06 before
 connecting to kernel state. Local compilation passes; canonical kernel
 integration remains pending CI and A00/A01/A05/A06 review.
+
+## Bounded GPU DMA/IOVA alias model (2026-10-17)
+
+The new no_std, no-alloc, safe-Rust dma_alias module is a per-device *metadata* book, not a driver, permission authority, IOMMU page table or hardware fence. It conservatively rejects overlapping IOVA and same-memory byte ranges, reused memory IDs across active instances, CPU-writable aliases, invalid ranges, wrong owner/device attachments, and capacity/sequence overflows. On VM exit it seals admissions and retains all mappings as unknown effects; only an external A01/A05 trusted adapter, after real DMA quiescence/IOTLB/CPU synchronization, may call release_after_platform_quiescence. A06 remains the sole owner of pinned-frame and ResourceDomain charges. Independent books do NOT establish global unique PCI ownership; no new GPU capability signer is introduced. Host tests do not claim physical DMA, NVIDIA, CUDA or new-kernel VMM execution. See issue #96.
+
+## Book-instance replay protection
+
+Each `DmaAliasBook` now requires an explicit **nonzero** `book_instance`
+issued uniquely per book lifetime by A05's *existing* trusted device/queue
+registry. `MappingReceipt` includes the same value and cannot be used against
+a different book, even when PCI BDF, IOMMU group, device attachment instance,
+memory object and sequence all match. This protects a close/reopen or VM
+recreation against cross-book stale-receipt release. Its ID is metadata only
+and cannot mint GPU rights; independent books **still do not enforce actual
+exclusive DMA ownership**. Three Rust regression tests cover zero IDs,
+cross-book identical sequence replay and book recreation.

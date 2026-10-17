@@ -1,10 +1,13 @@
 """CPU-only OS watchdog contract. No CUDA device access."""
+import os
 import pathlib
+import signal
 import subprocess
 import sys
 import tempfile
 import time
 import unittest
+from unittest.mock import Mock, patch
 
 import cuda_process_supervisor as supervisor
 
@@ -72,6 +75,77 @@ int main(int argc, char **argv) {
         self.assertNotEqual(code, 0)
         self.assertFalse(info['timed_out'])
         self.assertTrue(info['worker_reaped'])
+
+    def test_ignored_or_custom_sigchld_rejected_before_worker_spawn(self):
+        # Python programs embedding the supervisor may install a SIGCHLD
+        # handler or ignore SIGCHLD. Neither setting guarantees WNOWAIT
+        # will retain an unreaped leader as a safe numeric PGID anchor.
+        original = signal.getsignal(signal.SIGCHLD)
+        try:
+            for handler in (signal.SIG_IGN, lambda _signum, _frame: None):
+                with self.subTest(handler=repr(handler)):
+                    signal.signal(signal.SIGCHLD, handler)
+                    self.assertFalse(supervisor.available())
+                    with patch.object(supervisor.subprocess, "Popen") as spawn:
+                        with self.assertRaises(ValueError):
+                            supervisor.run_worker(["disposable-worker"], 1.0)
+                        spawn.assert_not_called()
+        finally:
+            signal.signal(signal.SIGCHLD, original)
+
+    def test_externally_reaped_worker_pid_is_never_signalled_or_credited(self):
+        # A competing SIGCHLD reaper / SIG_IGN may make waitid raise ECHILD.
+        # In that case the PID/PGID is no longer pinned by an unreaped child
+        # and can be reused; touching it could signal an unrelated process.
+        simulated = Mock()
+        simulated.pid = 999999
+        simulated.args = ["disposable-worker"]
+        with patch.object(supervisor, "available", return_value=True), \
+             patch.object(supervisor.subprocess, "Popen", return_value=simulated), \
+             patch.object(supervisor, "_wait_unreaped",
+                          side_effect=ChildProcessError("ECHILD")), \
+             patch.object(supervisor, "_kill_anchored_group") as kill_group, \
+             patch.object(supervisor, "_reap") as reap:
+            code, record = supervisor.run_worker(["disposable-worker"], 1.0)
+        self.assertEqual(code, 125)
+        self.assertTrue(record["worker_identity_lost"])
+        self.assertTrue(record["unreaped_worker_may_remain"])
+        self.assertFalse(record["worker_reaped"])
+        self.assertFalse(record["effect_result_known"])
+        self.assertFalse(record["device_reset_verified"])
+        kill_group.assert_not_called()
+        simulated.kill.assert_not_called()
+        reap.assert_not_called()
+
+    def test_real_linux_echild_does_not_signal_recycled_process_group(self):
+        # A disposable subprocess is consumed by a competing reaper. Linux
+        # waitid(P_PID, WNOWAIT) then raises ECHILD. The numeric PID/PGID is
+        # no longer owned by our worker, so A09 must NOT issue any signal.
+        if not supervisor.available():
+            self.skipTest("Linux waitid/WNOWAIT/pgid not available")
+        original_wait = supervisor._wait_unreaped
+
+        def competing_reaper(process, timeout):
+            pid, status = os.waitpid(process.pid, 0)
+            self.assertEqual(pid, process.pid)
+            self.assertEqual(status, 0)
+            return original_wait(process, timeout)
+
+        with patch.object(supervisor, "_wait_unreaped", side_effect=competing_reaper), \
+             patch.object(supervisor.os, "killpg",
+                          side_effect=AssertionError("must not kill reused PGID")) as kill_group, \
+             patch.object(supervisor.subprocess.Popen, "kill",
+                          side_effect=AssertionError("must not kill reused PID")) as kill_worker:
+            code, record = supervisor.run_worker([sys.executable, "-c", "pass"], 2.0)
+
+        self.assertEqual(code, 125)
+        self.assertTrue(record["worker_identity_lost"])
+        self.assertTrue(record["unreaped_worker_may_remain"])
+        self.assertFalse(record["worker_reaped"])
+        self.assertFalse(record["effect_result_known"])
+        self.assertFalse(record["device_reset_verified"])
+        kill_group.assert_not_called()
+        kill_worker.assert_not_called()
 
     def test_invalid_command_or_timeout_fails_before_spawn(self):
         with self.assertRaises(ValueError):
