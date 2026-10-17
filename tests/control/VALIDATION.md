@@ -1,8 +1,10 @@
 # A03 control core acceptance — 2026-10-16
 
-Latest follow-up: [VALIDATION-20261017.md](VALIDATION-20261017.md), with
-129 tests per backend and additional lifecycle, history liveness and depth
-fixes. The evidence below remains the historical 113-test acceptance.
+Latest follow-up: [VALIDATION-20261017-native.md](VALIDATION-20261017-native.md),
+with 150 tests per backend, stale-token reclamation and a native-owner handoff
+without shadow ResourceDomain state. Previous follow-up:
+[VALIDATION-20261017.md](VALIDATION-20261017.md) (129 tests per backend).
+The evidence below remains the historical 113-test acceptance.
 
 Branch: `agents/A03-control-core`. PR: [#50](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/50).
 Latest main used: `bc294f75bfb8c03d9963f5a12ea23b9589779d96`.

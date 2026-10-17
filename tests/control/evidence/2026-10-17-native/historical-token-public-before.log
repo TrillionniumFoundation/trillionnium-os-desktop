@@ -1,0 +1,47 @@
+   Compiling os-control v0.1.0 (/workspace/scratch/629ae4947f18/trillionnium-os-desktop/libs/os-control)
+warning: unused import: `Weak`
+  --> src/lib.rs:27:41
+   |
+27 | use sync::{lock_unpoisoned, Arc, Mutex, Weak};
+   |                                         ^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `os-control` (lib) generated 1 warning (run `cargo fix --lib -p os-control` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.65s
+     Running ../../tests/control/token_retirement.rs (libs/os-control/target/debug/deps/token_retirement-c02634bcf57a4fa1)
+
+running 5 tests
+test obsolete_token_does_not_keep_an_otherwise_unreferenced_namespace_alive ... FAILED
+test lost_history_releases_result_resources_even_when_the_old_token_is_retained ... FAILED
+test retained_retired_token_no_longer_keeps_a_child_cap_constraint_alive ... FAILED
+test unretired_namespace_slot_protects_a_child_after_token_and_user_handles_drop ... ok
+test ten_thousand_retained_tokens_do_not_reexecute_in_a_one_slot_namespace ... ok
+
+failures:
+
+---- obsolete_token_does_not_keep_an_otherwise_unreferenced_namespace_alive stdout ----
+
+thread 'obsolete_token_does_not_keep_an_otherwise_unreferenced_namespace_alive' (145) panicked at ../../tests/control/token_retirement.rs:268:10:
+an obsolete token must not preserve an entire namespace: ParentConstraint
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- lost_history_releases_result_resources_even_when_the_old_token_is_retained stdout ----
+
+thread 'lost_history_releases_result_resources_even_when_the_old_token_is_retained' (144) panicked at ../../tests/control/token_retirement.rs:221:10:
+lost results must not retain resources through obsolete tokens: ParentConstraint
+
+---- retained_retired_token_no_longer_keeps_a_child_cap_constraint_alive stdout ----
+
+thread 'retained_retired_token_no_longer_keeps_a_child_cap_constraint_alive' (146) panicked at ../../tests/control/token_retirement.rs:143:10:
+retiring the result must release its last child reference: ParentConstraint
+
+
+failures:
+    lost_history_releases_result_resources_even_when_the_old_token_is_retained
+    obsolete_token_does_not_keep_an_otherwise_unreferenced_namespace_alive
+    retained_retired_token_no_longer_keeps_a_child_cap_constraint_alive
+
+test result: FAILED. 2 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+error: test failed, to rerun pass `--test token_retirement`
