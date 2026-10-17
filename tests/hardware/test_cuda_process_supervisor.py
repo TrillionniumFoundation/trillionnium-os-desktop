@@ -1,5 +1,6 @@
 """CPU-only OS watchdog contract. No CUDA device access."""
 import pathlib
+import signal
 import subprocess
 import sys
 import tempfile
@@ -73,6 +74,23 @@ int main(int argc, char **argv) {
         self.assertNotEqual(code, 0)
         self.assertFalse(info['timed_out'])
         self.assertTrue(info['worker_reaped'])
+
+    def test_ignored_or_custom_sigchld_rejected_before_worker_spawn(self):
+        # Python programs embedding the supervisor may install a SIGCHLD
+        # handler or ignore SIGCHLD. Neither setting guarantees WNOWAIT
+        # will retain an unreaped leader as a safe numeric PGID anchor.
+        original = signal.getsignal(signal.SIGCHLD)
+        try:
+            for handler in (signal.SIG_IGN, lambda _signum, _frame: None):
+                with self.subTest(handler=repr(handler)):
+                    signal.signal(signal.SIGCHLD, handler)
+                    self.assertFalse(supervisor.available())
+                    with patch.object(supervisor.subprocess, "Popen") as spawn:
+                        with self.assertRaises(ValueError):
+                            supervisor.run_worker(["disposable-worker"], 1.0)
+                        spawn.assert_not_called()
+        finally:
+            signal.signal(signal.SIGCHLD, original)
 
     def test_externally_reaped_worker_pid_is_never_signalled_or_credited(self):
         # A competing SIGCHLD reaper / SIG_IGN may make waitid raise ECHILD.
