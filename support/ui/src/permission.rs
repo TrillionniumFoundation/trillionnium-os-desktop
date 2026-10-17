@@ -167,6 +167,18 @@ impl PermissionState {
             }
             Some(current) if revision == current.revision => {
                 debug_assert_ne!(current.decision, decision);
+                // A previously granted permission cannot remain usable after
+                // two contradictory claims at the SAME owner revision.
+                // Poison this cache entry to Unknown. Neither replay of the
+                // old grant nor the conflicting decision can restore access
+                // without a strictly newer authenticated observation.
+                self.observations.insert(
+                    (scope, kind),
+                    PermissionObservation {
+                        decision: PermissionDecision::Unknown,
+                        revision,
+                    },
+                );
                 Err(PermissionObservationError::ConflictingRevision)
             }
             Some(_) => {
@@ -445,8 +457,73 @@ mod tests {
         );
         assert_eq!(
             state.decision(PERSONAL, PermissionKind::Camera),
-            PermissionDecision::Denied
+            PermissionDecision::Unknown
         );
+        assert!(!state.allows(PERSONAL, PermissionKind::Camera));
+    }
+
+    #[test]
+    fn same_revision_conflict_poisoned_grant_cannot_replay_as_allowed() {
+        let mut state = PermissionState::new();
+        state
+            .observe(
+                PERSONAL,
+                PermissionKind::ScreenShare,
+                PermissionDecision::Granted,
+                7,
+            )
+            .unwrap();
+        assert!(state.allows(PERSONAL, PermissionKind::ScreenShare));
+
+        assert_eq!(
+            state.observe(
+                PERSONAL,
+                PermissionKind::ScreenShare,
+                PermissionDecision::Revoked,
+                7,
+            ),
+            Err(PermissionObservationError::ConflictingRevision)
+        );
+        assert_eq!(
+            state.decision(PERSONAL, PermissionKind::ScreenShare),
+            PermissionDecision::Unknown
+        );
+        assert!(!state.allows(PERSONAL, PermissionKind::ScreenShare));
+
+        // A duplicate earlier grant at that revision must not repair the
+        // conflicted observation or restore screen capture.
+        assert_eq!(
+            state.observe(
+                PERSONAL,
+                PermissionKind::ScreenShare,
+                PermissionDecision::Granted,
+                7,
+            ),
+            Err(PermissionObservationError::ConflictingRevision)
+        );
+        assert!(!state.allows(PERSONAL, PermissionKind::ScreenShare));
+        assert_eq!(
+            state.observe(
+                PERSONAL,
+                PermissionKind::ScreenShare,
+                PermissionDecision::Granted,
+                6,
+            ),
+            Err(PermissionObservationError::StaleRevision)
+        );
+        assert!(!state.allows(PERSONAL, PermissionKind::ScreenShare));
+
+        // A genuinely newer owner revision may authorize the action.
+        assert_eq!(
+            state.observe(
+                PERSONAL,
+                PermissionKind::ScreenShare,
+                PermissionDecision::Granted,
+                8,
+            ),
+            Ok(PermissionObservationUpdate::Updated)
+        );
+        assert!(state.allows(PERSONAL, PermissionKind::ScreenShare));
     }
 
     #[test]

@@ -29,7 +29,8 @@ Unit coverage:
   `Response::validate_for` for boot ID, revision, timing, delivery sequence;
   negative fixtures must never be reported as owner observations
 - bounded (1024) permission observation cache, disconnected-owner invalidation,
-  scope-local invalidation and revoke-at-capacity fail-closed regressions
+  scope-local invalidation, revoke-at-capacity and SAME-revision conflicting
+  grant poisoning to Unknown (including replay) fail-closed regressions
 - no Pending -> Completed shortcut
 - distinction among pending/running/partial/unknown/cancel_requested
 - Chinese UTF-8 roundtrip
