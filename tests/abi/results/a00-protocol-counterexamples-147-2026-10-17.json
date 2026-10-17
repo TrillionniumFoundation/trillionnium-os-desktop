@@ -1,0 +1,90 @@
+{
+  "scope": "host-codec counterexamples; A00 issue #147 decision pending; no new normative acceptance rule",
+  "issue": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/issues/147",
+  "source_base": "1247d30b2a8d82598482512f4d614b622499e541",
+  "production_source_sha256": "0de94affd479cecd692de000cc4ab97f5ce7453d81dc0dcd46c7db2e67fa35ec",
+  "timestamp_utc": "2026-10-17T09:05:58.295584+00:00",
+  "host": "24f0ea2620fe",
+  "case_count": 13,
+  "commands": [
+    {
+      "argv": [
+        "/workspace/scratch/629ae4947f18/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/rustc",
+        "-Vv"
+      ],
+      "returncode": 0,
+      "stdout": "rustc 1.99.0-nightly (87e5904f5 2026-07-20)\nbinary: rustc\ncommit-hash: 87e5904f5eb6398af6b22eac2802c78934260c48\ncommit-date: 2026-07-20\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.0-nightly\nLLVM version: 22.1.8\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/629ae4947f18/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2021",
+        "--crate-name",
+        "hos2_os_abi",
+        "--crate-type",
+        "rlib",
+        "/workspace/scratch/8e8c65a24673/trillionnium-os-desktop/libs/os-abi/src/lib.rs",
+        "--out-dir",
+        "/workspace/scratch/8e8c65a24673/a02-protocol-proofs"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/629ae4947f18/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2021",
+        "/workspace/scratch/8e8c65a24673/a02-protocol-proofs/proof.rs",
+        "--extern",
+        "hos2_os_abi=/workspace/scratch/8e8c65a24673/a02-protocol-proofs/libhos2_os_abi.rlib",
+        "-o",
+        "/workspace/scratch/8e8c65a24673/a02-protocol-proofs/proof"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/8e8c65a24673/a02-protocol-proofs/proof"
+      ],
+      "returncode": 0,
+      "stdout": "sample=150000000 cumulative=140000000 start=100000000 consumed=35000000 prior_single_cpu_feasible=false decode=Ok(()) encode=Ok(128)\nsample=1 cumulative=1 start=0 consumed=0 prior_single_cpu_feasible=false decode=Ok(()) encode=Ok(128)\nsample=100000001 cumulative=100000001 start=100000000 consumed=0 prior_single_cpu_feasible=false decode=Ok(()) encode=Ok(128)\nsample=1 cumulative=0 start=0 consumed=0 prior_single_cpu_feasible=true decode=Ok(()) encode=Ok(128)\nsample=1 cumulative=1 start=0 consumed=1 prior_single_cpu_feasible=true decode=Ok(()) encode=Ok(128)\nsample=1 cumulative=2 start=0 consumed=0 prior_single_cpu_feasible=false decode=Err(InvalidField) encode=Err(InvalidField)\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/629ae4947f18/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2021",
+        "/workspace/scratch/8e8c65a24673/a02-protocol-proofs/history_proof.rs",
+        "--extern",
+        "hos2_os_abi=/workspace/scratch/8e8c65a24673/a02-protocol-proofs/libhos2_os_abi.rlib",
+        "-o",
+        "/workspace/scratch/8e8c65a24673/a02-protocol-proofs/history_proof"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/workspace/scratch/8e8c65a24673/a02-protocol-proofs/history_proof"
+      ],
+      "returncode": 0,
+      "stdout": "state=Reserved saved_status=Ok sequence=18446744073709551615 decode=Ok(()) encode=Ok(128)\nstate=Retired saved_status=Ok sequence=18446744073709551615 decode=Ok(()) encode=Ok(128)\nstate=Terminal saved_status=PermissionDenied sequence=18446744073709551615 decode=Ok(()) encode=Ok(128)\nstate=NotSeen saved_status=Ok sequence=18446744073709551615 decode=Ok(()) encode=Ok(128)\nstate=HistoryLost saved_status=Ok sequence=18446744073709551615 decode=Ok(()) encode=Ok(128)\nstate=Terminal saved_status=OutOfOrder sequence=1 decode=Ok(()) encode=Ok(128)\nstate=Terminal saved_status=Retired sequence=1 decode=Ok(()) encode=Ok(128)\n",
+      "stderr": ""
+    }
+  ],
+  "proofs": {
+    "proof": {
+      "source": "use hos2_os_abi::*;\nfn raw(sample:u64, cumulative:u64, start:u64, consumed:u64)->[u8;128] {\n    let mut b=[0u8;128];\n    b[0..4].copy_from_slice(b\"HOSR\");\n    b[4..6].copy_from_slice(&2u16.to_le_bytes());\n    b[8..10].copy_from_slice(&2u16.to_le_bytes());\n    b[12..16].copy_from_slice(&64u32.to_le_bytes());\n    b[16..20].copy_from_slice(&64u32.to_le_bytes());\n    b[24]=1; b[40]=2;\n    b[56..64].copy_from_slice(&1u64.to_le_bytes());\n    for (i,value) in [sample,cumulative,start,consumed,20_000_000,CPU_PERIOD_NS,0,0].iter().enumerate() {\n        b[64+i*8..72+i*8].copy_from_slice(&value.to_le_bytes());\n    }\n    b\n}\nfn main() {\n    for (sample,cumulative,start,consumed) in [(150_000_000,140_000_000,100_000_000,35_000_000),(1,1,0,0),(100_000_001,100_000_001,100_000_000,0),(1,0,0,0),(1,1,0,1),(1,2,0,0)] {\n        let bytes=raw(sample,cumulative,start,consumed);\n        let decoded=decode_response(&bytes);\n        let physical=cumulative.checked_sub(consumed).is_some_and(|prior| prior<=start);\n        let typed=Response{opcode:Opcode::ReadUsage,status:Status::Ok,request_id:[1;16],boot_id:[2;16],revision:1,payload:ResponsePayload::ReadUsage(ReadUsageResponse{sample_boottime_ns:sample,cumulative_cpu_ns:cumulative,window_start_ns:start,window_consumed_ns:consumed,active_cap_ns:20_000_000,active_period_ns:CPU_PERIOD_NS,event_sequence:0,dropped_events:0})};\n        println!(\"sample={sample} cumulative={cumulative} start={start} consumed={consumed} prior_single_cpu_feasible={physical} decode={:?} encode={:?}\",decoded.as_ref().map(|_|()),typed.encode(&mut [0u8;128]));\n    }\n}\n",
+      "sha256": "ce93edfb2100e49d199d2d1e37bc42046fbc51133d7bef75a091e284de4a08fa"
+    },
+    "history_proof": {
+      "source": "use hos2_os_abi::*;\nfn main() {\n for (state,status,sequence) in [(DeliveryState::Reserved,Status::Ok,u64::MAX),(DeliveryState::Retired,Status::Ok,u64::MAX),(DeliveryState::Terminal,Status::PermissionDenied,u64::MAX),(DeliveryState::NotSeen,Status::Ok,u64::MAX),(DeliveryState::HistoryLost,Status::Ok,u64::MAX),(DeliveryState::Terminal,Status::OutOfOrder,1),(DeliveryState::Terminal,Status::Retired,1)] {\n let mut b=[0u8;128];\n b[..4].copy_from_slice(b\"HOSR\");b[4..6].copy_from_slice(&2u16.to_le_bytes());b[8..10].copy_from_slice(&4u16.to_le_bytes());b[12..16].copy_from_slice(&64u32.to_le_bytes());b[16..20].copy_from_slice(&64u32.to_le_bytes());b[24]=1;b[40]=2;\n b[64..66].copy_from_slice(&state.as_u16().to_le_bytes());b[66..68].copy_from_slice(&status.as_u16().to_le_bytes());b[72..80].copy_from_slice(&sequence.to_le_bytes());\n let typed=Response{opcode:Opcode::QueryDelivery,status:Status::Ok,request_id:[1;16],boot_id:[2;16],revision:0,payload:ResponsePayload::QueryDelivery(QueryDeliveryResponse{state,saved_status:status,sequence,stable_object_id:[0;16],saved_revision:0,previous_revision:0,effective_ns:0,consumed_ns:0})};\n println!(\"state={state:?} saved_status={status:?} sequence={sequence} decode={:?} encode={:?}\",decode_response(&b).as_ref().map(|_|()),typed.encode(&mut [0u8;128]));\n }\n}\n",
+      "sha256": "dc3755ca0704cc17d3074e8eaddb1c47a2b506acadb048903342196ffba7da62"
+    }
+  }
+}

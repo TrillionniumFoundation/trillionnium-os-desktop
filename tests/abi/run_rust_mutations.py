@@ -447,25 +447,47 @@ def toolchain_identity(
         "rustc": rustc_probe,
         "valid": False,
     }
-    identity["valid"] = (
-        all(
-            probe["returncode"] == 0
-            and not probe["timed_out"]
-            and bool(probe["stdout"].strip())
-            for probe in (cargo_probe, rustc_probe)
-        )
-        and bool(identity["cargo_path"] and identity["rustc_path"] and env.get("RUSTC"))
-        and env.get("RUSTC_WRAPPER") == ""
-        and env.get("RUSTC_WORKSPACE_WRAPPER") == ""
-    )
+    identity["valid"] = valid_toolchain_identity(identity)
     return identity
 
 
-def same_toolchain(identity: dict[str, Any], reference: dict[str, Any]) -> bool:
-    """Missing identity or a change in either executable/version fails closed."""
+def valid_toolchain_identity(identity: Any) -> bool:
+    """Validate raw probe facts independently of a report's cached valid flag."""
+    try:
+        if not isinstance(identity, dict):
+            return False
+        env = identity["effective_environment"]
+        if (not isinstance(env, dict) or not isinstance(env.get("RUSTC"), str)
+                or not env["RUSTC"] or env.get("RUSTC_WRAPPER") != ""
+                or env.get("RUSTC_WORKSPACE_WRAPPER") != ""
+                or identity["rustc_executable"] != env["RUSTC"]
+                or identity["selection"] != (
+                    "RUSTUP_TOOLCHAIN" if env.get("RUSTUP_TOOLCHAIN") else "rustup-default")):
+            return False
+        for name, version_arg in (("cargo", "--version"), ("rustc", "-vV")):
+            executable, path, probe = (identity[f"{name}_executable"],
+                                       identity[f"{name}_path"], identity[name])
+            if (not isinstance(executable, str) or not executable
+                    or not isinstance(path, str) or not Path(path).is_absolute()
+                    or not isinstance(probe, dict)
+                    or probe.get("command") != [executable, version_arg]
+                    or type(probe.get("returncode")) is not int or probe["returncode"] != 0
+                    or probe.get("timed_out") is not False
+                    or probe.get("error")
+                    or not isinstance(probe.get("stdout"), str) or not probe["stdout"].strip()):
+                return False
+        return True
+    except (KeyError, TypeError, ValueError):
+        return False
+
+
+def same_toolchain(identity: Any, reference: Any) -> bool:
+    """Missing identity or contradictory/changed executable evidence fails closed."""
     return bool(
-        identity["valid"]
-        and reference["valid"]
+        valid_toolchain_identity(identity)
+        and valid_toolchain_identity(reference)
+        and identity.get("valid") is True
+        and reference.get("valid") is True
         and all(
             identity[key] == reference[key]
             for key in (

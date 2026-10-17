@@ -19,6 +19,8 @@ import sys
 import time
 from typing import Any
 
+import run_rust_mutations as mutation_evidence
+
 
 SOURCE_ROOTS = ("libs/os-abi", "tests/golden", "tests/abi")
 EXTRA_INPUTS = ("README.md", "support/upstream-lock.json")
@@ -122,6 +124,155 @@ PINNED_MUTATION_SCHEMA = "hos2-rust-source-mutations-v6"
 EXPECTED_COMPILED_MUTANTS = 20
 
 
+def mutation_expectations(source: str) -> dict[str, tuple[str, str, str]]:
+    """Reconstruct the fixed production changes, never a child's kill totals."""
+    expectations = {
+        name: ("mutation_kill", expected, digest(
+            mutation_evidence.mutated_source(source, field).encode()))
+        for name, field, expected in mutation_evidence.MUTANTS
+    }
+    expectations["ignore_target_generation"] = (
+        "mutation_kill", mutation_evidence.GENERATION_TEST,
+        digest(mutation_evidence.mutated_generation_source(source).encode()))
+    expectations["zero_saved_status"] = (
+        "semantic_edges", mutation_evidence.SAVED_STATUS_TEST,
+        digest(mutation_evidence.mutated_saved_status_source(source).encode()))
+    for suite, changes in (
+        ("profile_boundaries", mutation_evidence.PROFILE_MUTANTS),
+        ("response_snapshot", mutation_evidence.SNAPSHOT_MUTANTS),
+        ("negative_vectors", mutation_evidence.NEGATIVE_MUTANTS),
+    ):
+        for name, expected, edits in changes:
+            if name in expectations:
+                raise ValueError("duplicate compiled mutation identity")
+            expectations[name] = (
+                suite, expected,
+                digest(mutation_evidence.mutated_profile_source(source, edits).encode()))
+    if len(expectations) != EXPECTED_COMPILED_MUTANTS:
+        raise ValueError("compiled mutation definitions changed without acceptance review")
+    return expectations
+
+
+def compiled_report_errors(mutation: Any, snapshot: Path, toolchain: str,
+                           cargo: str, env: dict[str, str]) -> list[str]:
+    """Recheck raw complete-suite evidence with the runner's existing parser.
+
+    The child report is useful evidence only when each expected source variant
+    compiled and ran its designated regression. Aggregate success/count fields
+    alone cannot prove that, nor can a compiler error count as a killed mutant.
+    """
+    errors: list[str] = []
+    try:
+        if (not isinstance(mutation, dict)
+                or mutation.get("success") is not True
+                or mutation.get("errors") != []
+                or mutation.get("schema") != PINNED_MUTATION_SCHEMA
+                or type(mutation.get("expected_mutants")) is not int
+                or mutation["expected_mutants"] != EXPECTED_COMPILED_MUTANTS
+                or type(mutation.get("mutants_killed")) is not int
+                or mutation["mutants_killed"] != EXPECTED_COMPILED_MUTANTS):
+            return ["invalid compiled mutation summary"]
+        inputs = {relative: (snapshot / "libs/os-abi" / relative).read_bytes()
+                  for relative in mutation_evidence.INPUTS}
+        fixtures = {relative: (snapshot / relative).read_bytes()
+                    for relative in mutation_evidence.FIXTURES}
+        if (mutation.get("input_sha256") != {name: digest(data) for name, data in inputs.items()}
+                or mutation.get("fixture_sha256") != {name: digest(data) for name, data in fixtures.items()}):
+            errors.append("compiled mutation input identities do not match acceptance snapshot")
+        reference = mutation["reference_toolchain_identity"]
+        expected_env = mutation_evidence.suite_environment(dict(env, RUSTUP_TOOLCHAIN=toolchain), snapshot)
+        expected_cargo = (str(Path(cargo) if Path(cargo).is_absolute() else snapshot / cargo)
+                          if os.sep in cargo else cargo)
+        expected_rustc = expected_env["RUSTC"]
+        if (not mutation_evidence.same_toolchain(reference, reference)
+                or reference["effective_environment"] != {name: expected_env.get(name) for name in (
+                    "RUSTUP_TOOLCHAIN", "RUSTC", "RUSTC_WRAPPER", "RUSTC_WORKSPACE_WRAPPER")}
+                or reference["cargo_executable"] != expected_cargo
+                or reference["cargo_path"] != mutation_evidence.executable_path(expected_cargo, snapshot, expected_env)
+                or reference["rustc_executable"] != expected_rustc
+                or reference["rustc_path"] != mutation_evidence.executable_path(expected_rustc, snapshot, expected_env)
+                or mutation.get("requested_toolchain") != toolchain):
+            errors.append("invalid compiled mutation reference toolchain")
+        source = inputs["src/lib.rs"].decode("utf-8")
+        expectations = mutation_expectations(source)
+        expected_counts = {suite: count for suite, (count, _) in mutation_evidence.SUITES.items()}
+        if mutation.get("expected_tests_by_suite") != expected_counts:
+            errors.append("compiled mutation suite denominators changed")
+
+        baseline_cases: dict[str, set[str]] = {}
+
+        def suite_valid(result: Any, suite: str, source_hash: str,
+                        expected_failure: str | None = None) -> bool:
+            count, required = mutation_evidence.SUITES[suite]
+            if not isinstance(result, dict):
+                return False
+            compilation, execution = result.get("compilation"), result.get("test")
+            if not isinstance(compilation, dict) or not isinstance(execution, dict):
+                return False
+            command = [reference["cargo_executable"], "test", "--offline", "--color",
+                       "never", "--test", suite]
+            if (result.get("suite") != suite
+                    or result.get("expected_tests") != count
+                    or tuple(result.get("required_tests", ())) != required
+                    or result.get("source_sha256") != source_hash
+                    or result.get("compiled") is not True
+                    or result.get("toolchain_matches_reference") is not True
+                    or not mutation_evidence.same_toolchain(result["toolchain_identity"], reference)
+                    or not mutation_evidence.same_toolchain(result["test_toolchain_identity"], reference)
+                    or compilation.get("command") != command + ["--no-run"]
+                    or type(compilation.get("returncode")) is not int
+                    or compilation["returncode"] != 0
+                    or compilation.get("timed_out") is not False
+                    or compilation.get("error")
+                    or execution.get("command") != command + ["--", "--test-threads=1"]
+                    or type(execution.get("returncode")) is not int
+                    or execution.get("timed_out") is not False
+                    or execution.get("error")
+                    or not isinstance(execution.get("stdout"), str)):
+                return False
+            observed = mutation_evidence.test_outcome(execution["stdout"], count, required)
+            if result.get("tests") != observed or not observed["complete"]:
+                return False
+            if expected_failure is None:
+                baseline_cases[suite] = set(observed["cases"])
+                return (result.get("passed") is True
+                        and execution.get("returncode") == 0
+                        and observed["status"] == "ok"
+                        and observed["passed"] == count and observed["failed"] == 0)
+            return (set(observed["cases"]) == baseline_cases.get(suite)
+                    and result.get("expected_failure") == expected_failure
+                    and result.get("expected_test_failed") is True
+                    and result.get("killed") is True
+                    and execution.get("returncode") == 101
+                    and observed["status"] == "FAILED"
+                    and observed["cases"].get(expected_failure) == "FAILED")
+
+        for suite, key in (
+            ("mutation_kill", "baseline"),
+            ("semantic_edges", "baseline_semantic_edges"),
+            ("profile_boundaries", "baseline_profile_boundaries"),
+            ("response_snapshot", "baseline_response_snapshot"),
+            ("negative_vectors", "baseline_negative_vectors"),
+        ):
+            if not suite_valid(mutation.get(key), suite, digest(inputs["src/lib.rs"])):
+                errors.append(f"invalid compiled mutation baseline: {suite}")
+        mutants = mutation.get("mutants")
+        if (not isinstance(mutants, list) or len(mutants) != EXPECTED_COMPILED_MUTANTS
+                or not all(isinstance(item, dict) and isinstance(item.get("name"), str)
+                           for item in mutants)
+                or len({item["name"] for item in mutants}) != len(mutants)
+                or {item["name"] for item in mutants} != set(expectations)):
+            errors.append("missing, duplicate or unexpected compiled mutation identities")
+        else:
+            for mutant in mutants:
+                suite, expected_failure, source_hash = expectations[mutant["name"]]
+                if not suite_valid(mutant, suite, source_hash, expected_failure):
+                    errors.append(f"invalid compiled mutation kill evidence: {mutant['name']}")
+    except (OSError, UnicodeError, ValueError, KeyError, TypeError, AttributeError) as error:
+        errors.append(f"malformed compiled mutation evidence: {error}")
+    return errors
+
+
 def run_compiled_mutations(python: str, cargo: str, toolchain: str, snapshot: Path,
                            env: dict[str, str], command_timeout: float,
                            batch_timeout: float, mutation_path: Path) -> dict[str, Any]:
@@ -133,19 +284,16 @@ def run_compiled_mutations(python: str, cargo: str, toolchain: str, snapshot: Pa
         snapshot, env, batch_timeout)
     result.update(name="compiled_mutations", cargo_timeout_seconds=command_timeout)
     if mutation_path.is_file():
-        mutation = json.loads(mutation_path.read_text())
-        result["mutation_report"] = str(mutation_path)
-        result["mutants_killed"] = mutation.get("mutants_killed")
-        result["expected_mutants"] = mutation.get("expected_mutants")
-        result["passed"] = (
-            result["passed"]
-            and mutation.get("success") is True
-            and mutation.get("schema") == PINNED_MUTATION_SCHEMA
-            and type(mutation.get("expected_mutants")) is int
-            and mutation["expected_mutants"] == EXPECTED_COMPILED_MUTANTS
-            and type(mutation.get("mutants_killed")) is int
-            and mutation["mutants_killed"] == EXPECTED_COMPILED_MUTANTS
-        )
+        try:
+            mutation = json.loads(mutation_path.read_text())
+            result["mutation_report"] = str(mutation_path)
+            if isinstance(mutation, dict):
+                result["mutants_killed"] = mutation.get("mutants_killed")
+                result["expected_mutants"] = mutation.get("expected_mutants")
+            result["evidence_errors"] = compiled_report_errors(mutation, snapshot, toolchain, cargo, env)
+            result["passed"] = result["passed"] and not result["evidence_errors"]
+        except (OSError, UnicodeError, ValueError) as error:
+            result.update(passed=False, error=f"cannot read compiled mutation evidence: {error}")
     else:
         result["passed"] = False
         result["error"] = "compiled mutation report was not produced"
