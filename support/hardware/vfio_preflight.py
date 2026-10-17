@@ -21,6 +21,8 @@ import re
 import stat
 from typing import Any, Iterable
 
+from evidence_output import write_evidence_output
+
 
 SCHEMA = "a09.vfio-preflight.v1"
 BDF_RE = re.compile(r"^[0-9a-fA-F]{4,8}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}\.[0-7]$")
@@ -340,13 +342,10 @@ def main(argv: list[str] | None = None) -> int:
                        vendor=args.vendor, device_id=args.device_id,
                        expected_driver=args.expected_driver)
     payload = json.dumps(result, sort_keys=True, indent=2) + "\n"
-    if args.output == "-":
-        print(payload, end="")
-    else:
-        try:
-            Path(args.output).write_text(payload, encoding="utf-8")
-        except OSError:
-            return 1
+    try:
+        write_evidence_output(args.output, payload)
+    except (OSError, ValueError):
+        return 1
     return 2 if result["status"] == "blocked" else 3
 
 
