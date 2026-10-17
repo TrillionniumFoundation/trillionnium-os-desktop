@@ -59,6 +59,12 @@ for _ in {1..100}; do
     sleep 0.05
 done
 [[ "$ready" == 1 ]] || { echo 'Private Xvfb server startup failed' >&2; exit 1; }
+# A test-only private X11 server must actually require the test cookie.
+# This is NOT domain isolation between clients that share the cookie.
+if XAUTHORITY="$root/unknown-cookie" xdpyinfo -display "$DISPLAY" >/dev/null 2>&1; then
+    echo 'Test-owned Xvfb accepted an unauthenticated client' >&2
+    exit 1
+fi
 "$bin_dir/trill-session" >"$root/session.log" 2>&1 & session_pid=$!
 ctl="$bin_dir/trill-ctl"
 initial=''

@@ -41,7 +41,8 @@ bash tests/ui/smoke-x11.sh "$PWD/ui/target/debug"
 ~~~
 
 It starts its own authenticated virtual X server in a disposable runtime,
-requires Shell and three app windows to be X11 IsViewable, checks true Rust
+proves missing-Xauthority clients cannot connect, requires Shell and three
+app windows to be X11 IsViewable, checks true Rust
 egui first layouts and Shell restart with Session/app identity preservation,
 and confirms actual app cancellation. With optional scrot and Python Pillow
 it also captures the virtual framebuffer and checks it is not blank. A real
