@@ -7,14 +7,59 @@ use lock_trace::{
     TrackingAllocator,
 };
 use os_control::{
-    BootId, CapSpaceId, ControlCore, DeliveryError, DeliveryState, DeliveryStatus, HistoryAck,
-    NativeDeliveryRequest, NativeGrant, NativeTarget, OriginalOwnerAuthority, OwnerId,
-    OwnerReceipt, PublishOutcome, PublisherId, ReserveAttempt, ReserveToken, ResourceDomainId,
-    StableObjectId,
+    BootId, CapSpaceId, DeliveryError, DeliveryState, DeliveryStatus, HistoryAck,
+    NativeDeliveryRequest, NativeGrant, NativeTarget, OwnerId, OwnerReceipt, PublishOutcome,
+    PublisherId, ResourceDomainId, StableObjectId,
 };
+#[cfg(not(feature = "public-backend"))]
+use os_control::{ControlCore, OriginalOwnerAuthority, ReserveAttempt, ReserveToken};
 use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
+
+// Current-source probes use the supported external lock interface. Historical
+// probes predate that API and retain their explicitly recorded sync substitution.
+#[cfg(feature = "public-backend")]
+mod backend {
+    use os_control::{ControlMutex, LockBackend, LockRole};
+
+    pub struct TrackingBackend;
+
+    pub struct TrackingMutex<T> {
+        inner: lock_trace::Mutex<T>,
+    }
+
+    impl<T: Send> ControlMutex for TrackingMutex<T> {
+        type Value = T;
+        type Guard<'a>
+            = lock_trace::MutexGuard<'a, T>
+        where
+            Self: 'a;
+
+        fn lock(&self) -> Self::Guard<'_> {
+            lock_trace::lock_unpoisoned(&self.inner)
+        }
+    }
+
+    impl LockBackend for TrackingBackend {
+        type Mutex<T: Send> = TrackingMutex<T>;
+
+        fn new<T: Send>(value: T, _role: LockRole) -> Self::Mutex<T> {
+            TrackingMutex {
+                inner: lock_trace::Mutex::new(value),
+            }
+        }
+    }
+}
+
+#[cfg(feature = "public-backend")]
+type ControlCore = os_control::ControlCoreWith<backend::TrackingBackend>;
+#[cfg(feature = "public-backend")]
+type OriginalOwnerAuthority = os_control::OriginalOwnerAuthorityWith<backend::TrackingBackend>;
+#[cfg(feature = "public-backend")]
+type ReserveToken = os_control::ReserveTokenWith<backend::TrackingBackend>;
+#[cfg(feature = "public-backend")]
+use os_control::ReserveAttemptWith as ReserveAttempt;
 
 #[global_allocator]
 static GLOBAL: TrackingAllocator = TrackingAllocator;

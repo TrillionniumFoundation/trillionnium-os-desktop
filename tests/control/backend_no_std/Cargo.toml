@@ -1,0 +1,16 @@
+[package]
+name = "os-control-backend-no-std"
+version = "0.0.0"
+edition = "2021"
+publish = false
+
+[workspace]
+members = ["."]
+resolver = "2"
+
+[dependencies]
+os-control = { path = "../../../libs/os-control", default-features = false, features = ["portable-spin"] }
+spin = { version = "=0.9.9", default-features = false, features = ["mutex", "spin_mutex"] }
+
+[lints.rust]
+unsafe_code = "forbid"

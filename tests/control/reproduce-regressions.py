@@ -36,6 +36,7 @@ SOURCES = (
     "libs/os-control/src/sync.rs",
     "libs/os-control/src/management.rs",
     "libs/os-control/src/resource_state.rs",
+    "libs/os-control/src/locking.rs",
     "tests/control/token_retirement.rs",
     "tests/control/native_handoff.rs",
     "tests/control/native_context_negative.rs",
@@ -47,6 +48,7 @@ SOURCES = (
     "tests/control/status_boundary.rs",
     "tests/control/callback_lifetime.rs",
     "tests/control/native_resource_state.rs",
+    "tests/control/custom_lock_backend.rs",
 )
 RETIRE_FIXED = """        for _ in (ns.retired_through + 1)..=ack.through {
             if let Some(slot) = ns.slots.pop_front() {
@@ -65,7 +67,7 @@ RETIRE_FIXED = """        for _ in (ns.retired_through + 1)..=ack.through {
         drop(reclaimed);
         Ok(receipt)"""
 RETIRE_MUTATED = """        // Keep the now-unused scratch Vec's inferred type in this control.
-        let _: &Vec<Arc<Slot>> = &reclaimed;
+        let _: &Vec<Arc<Slot<B>>> = &reclaimed;
         for _ in (ns.retired_through + 1)..=ack.through {
             ns.slots.pop_front();
         }
@@ -269,6 +271,7 @@ def main() -> int:
         "callback_baseline_commit": CALLBACK_BASELINE_COMMIT,
         "synthetic_drop_control": "current source with two exact reclamation blocks reverted; not a historical commit",
         "synthetic_origin_control": "current source with only the two management origin comparisons removed; not historical",
+        "synthetic_lock_role_control": "current source with SlotState lock tagged NamespaceTable; runtime assertion control, not historical",
         "rustup_toolchain": PINNED_TOOLCHAIN,
         "commands": recorder.commands,
         "checks": [],
@@ -352,10 +355,16 @@ def main() -> int:
                 raise RuntimeError("management origin control requires one exact comparison; refusing approximate mutation")
             origin_mutated = origin_mutated.replace(fixed, old, 1)
         report["synthetic_management_sha256"] = sha256(origin_mutated.encode("utf-8"))
+        role_fixed = "state: B::new(SlotState::Reserved, LockRole::SlotState)"
+        if current[SOURCES[0]].decode("utf-8").count(role_fixed) != 1:
+            raise RuntimeError("lock role control requires one exact slot constructor")
+        role_mutated = current[SOURCES[0]].decode("utf-8").replace(
+            role_fixed, "state: B::new(SlotState::Reserved, LockRole::NamespaceTable)", 1)
+        report["synthetic_lock_role_sha256"] = sha256(role_mutated.encode("utf-8"))
         with tempfile.TemporaryDirectory(prefix="a03-regressions-") as temporary:
             temporary_root = Path(temporary)
             roots = {name: temporary_root / name for name in
-                     ("historical-token", "historical-native", "historical-status", "historical-callback", "synthetic-drop", "synthetic-origin", "fixed")}
+                     ("historical-token", "historical-native", "historical-status", "historical-callback", "synthetic-drop", "synthetic-origin", "synthetic-role", "fixed")}
             for name, root in roots.items():
                 root.mkdir()
                 inputs = (baseline if name == "historical-token" else
@@ -369,6 +378,7 @@ def main() -> int:
                         (root / Path(source).name).write_bytes(current[source])
             (roots["synthetic-drop"] / "lib.rs").write_text(mutated)
             (roots["synthetic-origin"] / "management.rs").write_text(origin_mutated)
+            (roots["synthetic-role"] / "lib.rs").write_text(role_mutated)
             root = roots["historical-token"]
             library = compile_library(recorder, rustc, "historical-token", root)
             executable = compile_tests(recorder, rustc, "historical-token", root, library, "token_retirement.rs")
@@ -401,6 +411,14 @@ def main() -> int:
                                        "management_identity.rs")
             report["checks"].append(verify_tests(recorder, "synthetic-origin-run", executable,
                                                  2, 4, 0, ORIGIN_FAILURES))
+            root = roots["synthetic-role"]
+            library = compile_library(recorder, rustc, "synthetic-role", root)
+            executable = compile_tests(recorder, rustc, "synthetic-role", root, library,
+                                       "custom_lock_backend.rs")
+            report["checks"].append(verify_tests(
+                recorder, "synthetic-role-run", executable, 0, 1, 5,
+                {"namespace_lock_roles_route_every_native_operation"},
+                "namespace_lock_roles_route_every_native_operation"))
             root = roots["fixed"]
             library = compile_library(recorder, rustc, "fixed", root)
             for suite, count in [("token_retirement", 5), ("native_handoff", 15),
@@ -408,7 +426,7 @@ def main() -> int:
                                  ("native_lifetime", 5), ("management_authority", 15),
                                  ("management_identity", 6), ("native_failure_recovery", 3),
                                  ("status_boundary", 3), ("callback_lifetime", 7),
-                                 ("native_resource_state", 7)]:
+                                 ("native_resource_state", 7), ("custom_lock_backend", 6)]:
                 executable = compile_tests(recorder, rustc, "fixed-" + suite, root, library, suite + ".rs")
                 report["checks"].append(verify_tests(recorder, "fixed-" + suite + "-run", executable, count, 0, 0, set()))
         after = {source: sha256((repo / source).read_bytes()) for source in SOURCES}
