@@ -8,8 +8,8 @@ use std::io::{self, Write};
 use std::sync::mpsc::{self, Receiver, SyncSender, TryRecvError};
 use std::time::{Duration, Instant};
 use trill_ui_core::{
-    request, AppKind, HostResources, Request, Response, TaskRecord, TaskState,
-    WaylandSocketStatus, Workspace,
+    request, AppKind, HostResources, Request, Response, TaskRecord, TaskState, WaylandSocketStatus,
+    Workspace,
 };
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -714,7 +714,10 @@ impl Desktop {
                 sample.wayland.status.label(),
                 sample.wayland.socket_observation_epoch
             ));
-            ui.small(format!("Socket observed unix ms: {}", sample.wayland.sampled_unix_ms));
+            ui.small(format!(
+                "Socket observed unix ms: {}",
+                sample.wayland.sampled_unix_ms
+            ));
             if sample.wayland.status != WaylandSocketStatus::SocketObserved {
                 ui.colored_label(
                     warning(),

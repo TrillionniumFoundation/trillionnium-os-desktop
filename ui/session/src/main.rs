@@ -4,9 +4,7 @@ use std::collections::BTreeMap;
 use std::fs::{self, File, OpenOptions, Permissions};
 use std::io::{self, Read};
 use std::os::fd::AsRawFd;
-use std::os::unix::fs::{
-    DirBuilderExt, FileTypeExt, MetadataExt, OpenOptionsExt, PermissionsExt,
-};
+use std::os::unix::fs::{DirBuilderExt, FileTypeExt, MetadataExt, OpenOptionsExt, PermissionsExt};
 use std::os::unix::net::{UnixListener, UnixStream};
 use std::os::unix::process::ExitStatusExt;
 use std::path::{Path, PathBuf};
@@ -14,9 +12,9 @@ use std::process::{Child, Command, ExitStatus, Stdio};
 use std::sync::mpsc::{self, Receiver, Sender};
 
 use trill_ui_core::{
-    read_frame, socket_path, unix_ms, write_frame, AppKind, HostResources,
-    HostWaylandObservation, Request, Response, TaskRecord, TaskState, WaylandSocketStatus,
-    Workspace, MAX_ACTIVE_TASKS, MAX_TRACKED_TASKS,
+    read_frame, socket_path, unix_ms, write_frame, AppKind, HostResources, HostWaylandObservation,
+    Request, Response, TaskRecord, TaskState, WaylandSocketStatus, Workspace, MAX_ACTIVE_TASKS,
+    MAX_TRACKED_TASKS,
 };
 
 // Linux flock(2) is advisory; it provides a crash-released startup mutex,
@@ -582,7 +580,9 @@ mod tests {
         let present = tracker.observe(probe_wayland_path(Some(&socket)));
         assert_eq!(present.status, WaylandSocketStatus::SocketObserved);
         assert_eq!(
-            tracker.observe(probe_wayland_path(Some(&socket))).socket_observation_epoch,
+            tracker
+                .observe(probe_wayland_path(Some(&socket)))
+                .socket_observation_epoch,
             present.socket_observation_epoch,
             "an unchanged socket must not generate false restart events"
         );

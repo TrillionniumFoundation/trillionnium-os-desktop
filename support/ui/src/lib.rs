@@ -818,9 +818,7 @@ where
         // being conflated into one perceived observation timeline.
         // Never pin an unauthenticated error as the boot baseline.
         if response.status == Status::Ok {
-            let pinned = self
-                .observed_boot
-                .get_or_init(|| response.boot_id);
+            let pinned = self.observed_boot.get_or_init(|| response.boot_id);
             if pinned != &response.boot_id {
                 return Err(ReadOnlyError::BootChanged);
             }
