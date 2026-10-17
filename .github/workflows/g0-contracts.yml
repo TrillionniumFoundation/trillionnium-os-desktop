@@ -78,6 +78,19 @@ jobs:
           test -f tests/kernel/control/run-host-smoke.sh
           test -f tests/kernel/control/fake-ioctl-efault.c
           sh tests/kernel/control/run-host-smoke.sh
+      - name: Compile native A05 QueryAbi guest probe when present (host compiler only)
+        if: hashFiles('tests/kernel/control/queryabi_guest.c') != ''
+        shell: bash
+        run: |
+          set -euo pipefail
+          # This only checks the actual A05 user ELF compiles; it cannot prove
+          # the new Asterinas ioctl or guest QEMU behavior is present.
+          cc -std=c11 -O2 -Wall -Wextra -Werror -pedantic -static \
+            tests/kernel/control/queryabi_guest.c \
+            -o "$RUNNER_TEMP/a05-queryabi-guest"
+          test -s "$RUNNER_TEMP/a05-queryabi-guest"
+          file "$RUNNER_TEMP/a05-queryabi-guest"
+          sha256sum "$RUNNER_TEMP/a05-queryabi-guest"
       - name: Require canonical Rust crate manifests and install lint components
         shell: bash
         run: |
