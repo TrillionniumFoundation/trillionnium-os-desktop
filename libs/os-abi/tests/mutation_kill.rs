@@ -18,7 +18,9 @@ fn hex(bytes: &str) -> Vec<u8> {
     assert_eq!(bytes.len() % 2, 0);
     bytes
         .as_bytes()
-        .chunks_exact(2)
+        .as_chunks::<2>()
+        .0
+        .iter()
         .map(|pair| {
             let hi = (pair[0] as char).to_digit(16).unwrap() as u8;
             let lo = (pair[1] as char).to_digit(16).unwrap() as u8;
@@ -171,6 +173,23 @@ fn same_sequence_across_targets_is_also_conflict() {
     assert_eq!(prior.request_id, next.request_id);
     assert_ne!(prior, next);
     assert_eq!(canonical_retry(&prior, &next), Replay::Conflict);
+    assert_eq!(ignoring_target(&prior, &next), Replay::Identical);
+    assert!(must_conflict(&prior, &next, ignoring_target).is_err());
+}
+
+#[test]
+fn same_sequence_and_slot_different_generation_is_conflict() {
+    let prior = decode_request(&fixed_install()).unwrap();
+    // Slot reuse changes the capability identity, even when its index and all
+    // budget fields stay the same. Mutate only the fixed wire generation.
+    let next = changed_u64(48, prior.target_generation + 1);
+    assert_eq!(prior.request_id, next.request_id);
+    assert_eq!(prior.target_slot, next.target_slot);
+    assert_eq!(prior.payload, next.payload);
+    assert_ne!(prior.target_generation, next.target_generation);
+    assert_ne!(prior, next);
+    assert_eq!(canonical_retry(&prior, &next), Replay::Conflict);
+    assert_eq!(must_conflict(&prior, &next, canonical_retry), Ok(()));
     assert_eq!(ignoring_target(&prior, &next), Replay::Identical);
     assert!(must_conflict(&prior, &next, ignoring_target).is_err());
 }
