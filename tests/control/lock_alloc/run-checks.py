@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""Build exact-source native delivery probes with a test-only lock/allocator shim.
+"""Build exact-source native delivery probes with a public lock backend.
 
-The production sources are copied only into a temporary Cargo workspace. All
-modules except sync.rs remain byte-identical; that module re-exports a std
-mutex shim from a separate test crate. Unsafe allocator hooks never enter the
-production crate, whose unsafe_code=forbid lint remains enabled.
+The production sources are copied only into a temporary Cargo workspace. The
+current-source probe keeps every module byte-identical and selects an external
+TrackingBackend through the public LockBackend API. Historical controls predate
+that API and replace only sync.rs with a std mutex shim from a separate test
+crate. Unsafe allocator hooks never enter the production crate, whose
+unsafe_code=forbid lint remains enabled.
 
 Default: require zero allocation/reallocation/deallocation under internal locks
 for the current worktree. --historical-control also reproduces the pinned e59
@@ -45,8 +47,9 @@ SCENARIOS = (
 )
 COUNT_FIELDS = ("alloc", "realloc", "dealloc")
 SCOPE = (
-    "Native namespace scenarios using exact production modules except a std mutex shim. "
-    "The shim measures thread-local internal-mutex depth and the process allocator records "
+    "Current native namespace scenarios use byte-identical production modules and the public "
+    "LockBackend API; only historical controls substitute a std mutex shim for sync.rs. "
+    "The supplied backend measures thread-local internal-mutex depth and the process allocator records "
     "alloc/alloc_zeroed, realloc and dealloc calls (including injected failed attempts) "
     "while depth is nonzero. Positive controls, "
     "poison/unwind recovery and independent thread depth are checked. Summary includes "
@@ -186,7 +189,9 @@ def run_probe(output: Path, revision: str | None, env: dict[str, str], cargo: st
         "mode": f"{control}_expected_counterexample" if historical else "current_required_zero",
         "source_revision": revision or "worktree",
         "source_inventory": inventory(original), "fixture_sha256": sha(fixture),
-        "shim_sha256": sha(shim), "replacement_sync_sha256": sha(REPLACEMENT_SYNC),
+        "shim_sha256": sha(shim),
+        "replacement_sync_sha256": sha(REPLACEMENT_SYNC) if historical else None,
+        "lock_selection": "private_sync_substitution_historical_only" if historical else "public_LockBackend_TrackingBackend",
         "scope": SCOPE, "passed": False,
     }
     write_json(output / "execution.json", report)
@@ -199,18 +204,20 @@ def run_probe(output: Path, revision: str | None, env: dict[str, str], cargo: st
         copied = {name: (workspace / "os-control/src" / name).read_bytes() for name in original}
         if copied != original:
             raise ValueError("production source copy changed bytes")
-        workspace.joinpath("os-control/src/sync.rs").write_bytes(REPLACEMENT_SYNC)
+        if historical:
+            workspace.joinpath("os-control/src/sync.rs").write_bytes(REPLACEMENT_SYNC)
         report["copied_source_inventory"] = inventory({name: (workspace / "os-control/src" / name).read_bytes() for name in original})
-        report["only_source_substitution"] = "sync.rs"
+        report["only_source_substitution"] = "sync.rs" if historical else None
+        report["production_sources_byte_identical"] = not historical
         for subdir, source_name, data in (("lock-trace", "lib.rs", shim), ("fixture", "main.rs", fixture)):
             target = workspace / subdir / "src" / source_name
             target.parent.mkdir(parents=True)
             target.write_bytes(data)
         manifests = {
             "Cargo.toml": '[workspace]\nmembers = ["os-control", "lock-trace", "fixture"]\nresolver = "2"\n',
-            "os-control/Cargo.toml": '[package]\nname = "os-control"\nversion = "0.0.0"\nedition = "2021"\n[features]\ndefault = ["std"]\nstd = []\nportable-spin = []\n[dependencies]\nlock-trace = { path = "../lock-trace" }\n[lints.rust]\nunsafe_code = "forbid"\n',
+            "os-control/Cargo.toml": '[package]\nname = "os-control"\nversion = "0.0.0"\nedition = "2021"\n[features]\ndefault = ["std"]\nstd = []\nportable-spin = []\n[dependencies]\n' + ('lock-trace = { path = "../lock-trace" }\n' if historical else '') + '[lints.rust]\nunsafe_code = "forbid"\n',
             "lock-trace/Cargo.toml": '[package]\nname = "lock-trace"\nversion = "0.0.0"\nedition = "2021"\n',
-            "fixture/Cargo.toml": '[package]\nname = "lock-alloc-fixture"\nversion = "0.0.0"\nedition = "2021"\n[dependencies]\nos-control = { path = "../os-control" }\nlock-trace = { path = "../lock-trace" }\n',
+            "fixture/Cargo.toml": '[package]\nname = "lock-alloc-fixture"\nversion = "0.0.0"\nedition = "2021"\n[features]\npublic-backend = []\ndefault = ' + ('[]\n' if historical else '["public-backend"]\n') + '[dependencies]\nos-control = { path = "../os-control" }\nlock-trace = { path = "../lock-trace" }\n',
         }
         for name, contents in manifests.items():
             workspace.joinpath(name).write_text(contents)
@@ -242,7 +249,7 @@ def run_probe(output: Path, revision: str | None, env: dict[str, str], cargo: st
                 except (ValueError, TypeError, KeyError, json.JSONDecodeError) as error:
                     report["error"] = str(error)
         copied_final = {name: (workspace / "os-control/src" / name).read_bytes() for name in original}
-        expected_final = {**original, "sync.rs": REPLACEMENT_SYNC}
+        expected_final = {**original, "sync.rs": REPLACEMENT_SYNC} if historical else original
         report["temporary_source_bytes_verified_after_execution"] = copied_final == expected_final
         if copied_final != expected_final:
             report["passed"] = False

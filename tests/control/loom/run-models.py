@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
-"""Model the actual os-control transitions with a test-only Loom Mutex backend.
+"""Model actual os-control transitions with default and public Loom backends.
 
 Run from any directory: python3 tests/control/loom/run-models.py OUTPUT_DIR
 Optional --offline requires the pinned Cargo.lock dependencies to be cached.
 No production source or Cargo dependency is edited. Every current src/**/*.rs
-file is copied byte-for-byte into TemporaryDirectory; only src/sync.rs is then
-replaced by the tracked Mutex shim. The temporary source and build artifacts are removed
-on exit. Original source and harness hashes are checked again after validation.
+file is copied byte-for-byte into TemporaryDirectory. The default-backend variant
+replaces only src/sync.rs with the tracked Mutex shim. The public-backend variant
+retains every production module unchanged and uses the public LockBackend seam
+from its external test. The temporary source and build artifacts are removed on
+exit. Original source and harness hashes are checked again after validation.
 
 Scope: lock-protected state transitions of the actual implementation, exercised
 with Loom threads and harness atomics. Standard Arc/Weak ownership atomics,
@@ -37,6 +39,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("output_dir", type=Path)
     parser.add_argument("--offline", action="store_true")
+    parser.add_argument("--variant", choices=("all", "default_shim", "public_backend"),
+                        default="all")
     args = parser.parse_args()
     harness = Path(__file__).resolve().parent
     repo = harness.parents[2]
@@ -46,20 +50,23 @@ def main():
     source_paths = sorted(source_root.rglob("*.rs"))
     source_inventory = [str(path.relative_to(repo)) for path in source_paths]
     harness_paths = [harness / name for name in
-                     ("Cargo.toml", "Cargo.lock", "models.rs", "sync.rs", "run-models.py")]
+                     ("Cargo.toml", "Cargo.lock", "models.rs", "models_public.rs",
+                      "sync.rs", "run-models.py")]
     inputs = {str(path.relative_to(repo)): path.read_bytes()
               for path in source_paths + harness_paths}
     hashes = {name: digest(data) for name, data in inputs.items()}
     (output / "source-manifest.sha256").write_text(
         "".join(f"{value}  {name}\n" for name, value in sorted(hashes.items())))
     receipt = {
-        "kind": "bounded host model; actual state transitions with Loom Mutex shim",
+        "kind": "bounded host models; default Mutex shim and public LockBackend",
         "loom_version": "0.7.2",
         "source_hashes": hashes,
         "source_unchanged": False,
         "source_inventory": source_inventory,
         "source_inventory_unchanged": False,
         "models": {},
+        "variants": {},
+        "requested_variant": args.variant,
         "bounds": {
             "max_threads": 4,
             "preemption_bound": 3,
@@ -92,72 +99,113 @@ def main():
             return proc.returncode
     receipt["versions"] = versions
     exit_code = 0
-    with tempfile.TemporaryDirectory(prefix="os-control-loom-") as temporary:
-        root = Path(temporary)
-        src = root / "src"
-        src.mkdir()
-        for path in source_paths:
-            relative = path.relative_to(source_root)
-            copied = src / relative
-            copied.parent.mkdir(parents=True, exist_ok=True)
-            data = inputs[str(path.relative_to(repo))]
-            copied.write_bytes(data)
-            assert copied.read_bytes() == data
-        for name in ("Cargo.toml", "Cargo.lock", "models.rs"):
-            (root / name).write_bytes(inputs[f"tests/control/loom/{name}"])
-        (src / "sync.rs").write_bytes(inputs["tests/control/loom/sync.rs"])
-        environment = os.environ.copy()
-        # Never resume a checkpoint or inherit scheduling bounds from the shell.
-        for key in list(environment):
-            if key.startswith("LOOM_"):
-                del environment[key]
-        environment["CARGO_TARGET_DIR"] = str(root / "target")
-        common = ["--locked", "--manifest-path", str(root / "Cargo.toml")]
-        if args.offline:
-            common.append("--offline")
-        commands = [
-            [cargo, "fmt", "--manifest-path", str(root / "Cargo.toml"), "--", "--check"],
-            [cargo, "test", *common, "--test", "models", "--", "--nocapture", "--test-threads=1"],
-            [cargo, "clippy", *common, "--test", "models", "--", "-D", "warnings"],
-        ]
-        log = []
-        for command in commands:
-            print("RUN " + " ".join(command), flush=True)
-            proc = subprocess.run(command, cwd=root, env=environment,
-                                  stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                  text=True, check=False)
-            sys.stdout.write(proc.stdout)
-            sys.stdout.flush()
-            receipt["commands"].append({"argv": command, "exit_code": proc.returncode})
-            log.append("$ " + " ".join(command) + "\n" + proc.stdout)
-            if proc.returncode:
-                exit_code = proc.returncode
-                break
-        combined = "\n".join(log)
-        (output / "models.log").write_text(combined)
-        receipt["models"] = {
-            name: int(count) for name, count in
-            re.findall(r"MODEL (\w+): schedules=(\d+)", combined)
-        }
-        expected_models = {
-            "same_d_reservation_and_effect_once",
-            "revoke_and_commit_linearize",
-            "retire_and_query_linearize",
-            "publish_and_observe_never_tear",
-            "history_loss_and_callback_fence",
-            "native_typed_owner_same_token_effect_once",
-            "retire_execute_loss_threeway",
-            "two_deliveries_same_resource_cas",
-            "malformed_callback_reconcile_and_retry",
-            "management_revoke_and_native_commit_share_owner_lock",
-            "reservation_loss_and_query_revalidate_admission",
-            "overlapping_retirements_revalidate_smaller_prefix",
-            "native_metadata_compatibility_and_invalidation_share_owner",
-        }
-        if not exit_code and (set(receipt["models"]) != expected_models
-                              or any(count <= 0 for count in receipt["models"].values())):
-            print("ERROR: expected thirteen named models with positive schedule counts", file=sys.stderr)
-            exit_code = 1
+    expected_default = {
+        "same_d_reservation_and_effect_once",
+        "revoke_and_commit_linearize",
+        "retire_and_query_linearize",
+        "publish_and_observe_never_tear",
+        "history_loss_and_callback_fence",
+        "native_typed_owner_same_token_effect_once",
+        "retire_execute_loss_threeway",
+        "two_deliveries_same_resource_cas",
+        "malformed_callback_reconcile_and_retry",
+        "management_revoke_and_native_commit_share_owner_lock",
+        "reservation_loss_and_query_revalidate_admission",
+        "overlapping_retirements_revalidate_smaller_prefix",
+        "native_metadata_compatibility_and_invalidation_share_owner",
+    }
+    expected_public = {
+        "public_backend_same_d_reservation_and_effect_once",
+        "public_backend_same_token_effect_once",
+        "public_backend_revoke_and_commit_linearize",
+        "public_backend_retire_and_query_linearize",
+        "public_backend_publish_and_observe_never_tear",
+        "public_backend_history_loss_and_execution_fence",
+    }
+    all_logs = []
+    for variant, test_target, expected_models in (
+        ("default_shim", "models", expected_default),
+        ("public_backend", "models_public", expected_public),
+    ):
+        if args.variant not in ("all", variant):
+            continue
+        with tempfile.TemporaryDirectory(prefix=f"os-control-loom-{variant}-") as temporary:
+            root = Path(temporary)
+            src = root / "src"
+            src.mkdir()
+            for path in source_paths:
+                relative = path.relative_to(source_root)
+                copied = src / relative
+                copied.parent.mkdir(parents=True, exist_ok=True)
+                data = inputs[str(path.relative_to(repo))]
+                copied.write_bytes(data)
+                assert copied.read_bytes() == data
+            for name in ("Cargo.toml", "Cargo.lock", "models.rs", "models_public.rs"):
+                (root / name).write_bytes(inputs[f"tests/control/loom/{name}"])
+            overrides = []
+            if variant == "default_shim":
+                (src / "sync.rs").write_bytes(inputs["tests/control/loom/sync.rs"])
+                overrides.append("src/sync.rs")
+            # Record and enforce the exact temporary production module set.
+            copied_inventory = sorted(str(path.relative_to(src)) for path in src.rglob("*.rs"))
+            expected_inventory = sorted(str(path.relative_to(source_root)) for path in source_paths)
+            assert copied_inventory == expected_inventory
+            copied_hashes = {
+                str(path.relative_to(src)): digest(path.read_bytes()) for path in src.rglob("*.rs")
+            }
+            for path in source_paths:
+                relative = str(path.relative_to(source_root))
+                if f"src/{relative}" not in overrides:
+                    assert copied_hashes[relative] == hashes[str(path.relative_to(repo))]
+            receipt["variants"][variant] = {
+                "test_target": test_target,
+                "source_overrides": overrides,
+                "copied_source_hashes": copied_hashes,
+                "models": {},
+            }
+            environment = os.environ.copy()
+            # Never resume a checkpoint or inherit scheduling bounds from the shell.
+            for key in list(environment):
+                if key.startswith("LOOM_"):
+                    del environment[key]
+            environment["CARGO_TARGET_DIR"] = str(root / "target")
+            common = ["--locked", "--manifest-path", str(root / "Cargo.toml")]
+            if args.offline:
+                common.append("--offline")
+            commands = [
+                [cargo, "fmt", "--manifest-path", str(root / "Cargo.toml"), "--", "--check"],
+                [cargo, "test", *common, "--test", test_target, "--", "--nocapture", "--test-threads=1"],
+                [cargo, "clippy", *common, "--test", test_target, "--", "-D", "warnings"],
+            ]
+            log = []
+            for command in commands:
+                print("RUN " + " ".join(command), flush=True)
+                proc = subprocess.run(command, cwd=root, env=environment,
+                                      stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                      text=True, check=False)
+                sys.stdout.write(proc.stdout)
+                sys.stdout.flush()
+                receipt["commands"].append({"variant": variant, "argv": command,
+                                            "exit_code": proc.returncode})
+                log.append("$ " + " ".join(command) + "\n" + proc.stdout)
+                if proc.returncode:
+                    exit_code = proc.returncode
+                    break
+            combined = "\n".join(log)
+            (output / f"{variant}.log").write_text(combined)
+            all_logs.append(combined)
+            counts = {name: int(count) for name, count in
+                      re.findall(r"MODEL (\w+): schedules=(\d+)", combined)}
+            receipt["variants"][variant]["models"] = counts
+            receipt["models"].update(counts)
+            if not exit_code and (set(counts) != expected_models
+                                  or any(count <= 0 for count in counts.values())):
+                print(f"ERROR: {variant} expected {len(expected_models)} named models "
+                      "with positive schedule counts", file=sys.stderr)
+                exit_code = 1
+        if exit_code:
+            break
+    (output / "models.log").write_text("\n".join(all_logs))
     after_inventory = [str(path.relative_to(repo)) for path in
                        sorted(source_root.rglob("*.rs"))]
     receipt["source_inventory_unchanged"] = after_inventory == source_inventory

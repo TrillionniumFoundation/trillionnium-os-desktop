@@ -1,7 +1,8 @@
 //! A03 HOS2 control state core.
 //!
 //! This crate has a default std host backend and an experimental alloc-only
-//! portable-spin backend. Runtime validation is still host-model evidence.
+//! portable-spin backend. [`ControlCoreWith`] also accepts external lock backends
+//! without copying state transitions. Runtime validation is still host-model evidence.
 //! It is independent of the HOS2 wire codec and of the kernel. In
 //! particular, a passing test here proves only the model's state invariants;
 //! it does not prove ioctl, credentials, scheduler, copyout, or persistence
@@ -25,6 +26,10 @@ use core::fmt;
 
 mod sync;
 use sync::{lock_unpoisoned, Arc, Mutex, Weak};
+
+mod locking;
+use locking::lock as lock_control;
+pub use locking::{ControlMutex, DefaultLockBackend, LockBackend, LockRole};
 
 mod native;
 pub use native::{NativeDeliveryRequest, NativeExecution, NativeGrant, NativeTarget};
@@ -1349,15 +1354,27 @@ impl ReservedRequest {
     }
 }
 
-struct Slot {
+/// Default host/portable namespace. Native kernel consumers can select their
+/// own locks through [`ControlCoreWith`] without changing these transitions.
+pub type ControlCore = ControlCoreWith<DefaultLockBackend>;
+pub type WeakControlCore = WeakControlCoreWith<DefaultLockBackend>;
+pub type Reservation = ReservationWith<DefaultLockBackend>;
+pub type ReserveToken = ReserveTokenWith<DefaultLockBackend>;
+// Re-export the enum itself: a type alias cannot be used in a variant import
+// such as `use os_control::ReserveAttempt::{Existing, Reserved}`.
+pub use ReserveAttemptWith as ReserveAttempt;
+pub type DeliveryView = DeliveryViewWith<DefaultLockBackend>;
+pub type OriginalOwnerAuthority = OriginalOwnerAuthorityWith<DefaultLockBackend>;
+
+struct Slot<B: LockBackend> {
     // The bounded window owns the canonical request and its resource pin.
     request: ReservedRequest,
     // Long executor serialization is separate from short observation state.
     // Namespace-table readers never acquire this gate.
-    execution_gate: Mutex<()>,
+    execution_gate: B::Mutex<()>,
     binding: RequestBinding,
     publisher: PublisherId,
-    state: Mutex<SlotState>,
+    state: B::Mutex<SlotState>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -1383,14 +1400,14 @@ struct PublishedResult {
     consumed_ns: Option<u64>,
 }
 
-pub struct Reservation {
+pub struct ReservationWith<B: LockBackend> {
     id: DeliveryId,
     binding: RequestBinding,
-    namespace: Weak<NamespaceState>,
+    namespace: Weak<NamespaceState<B>>,
     generation: u64,
 }
 
-impl Reservation {
+impl<B: LockBackend> ReservationWith<B> {
     pub fn id(&self) -> DeliveryId {
         self.id
     }
@@ -1410,13 +1427,19 @@ pub enum ReserveResult {
     Existing(DeliveryObservation),
 }
 
-pub enum ReserveAttempt {
-    Reserved(ReserveToken),
+/// New reservation token or immutable observation, with the namespace backend.
+///
+/// This enum is also exported under its original name [`ReserveAttempt`], so
+/// both names support importing variants. The default backend applies in type
+/// positions. An `Existing(observation)` constructor without an expected type
+/// must supply a backend parameter or explicit `ReserveAttempt` annotation.
+pub enum ReserveAttemptWith<B: LockBackend = DefaultLockBackend> {
+    Reserved(ReserveTokenWith<B>),
     Existing(DeliveryObservation),
 }
 
 /// A public marker is deliberately not a publisher credential.  The actual
-/// publication token is returned by `reserve` in `ReserveToken`; this marker
+/// publication token is returned by `reserve` in a reservation token; this marker
 /// is used only for ergonomic status reporting when callers use `try_reserve`.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ReservationMarker {
@@ -1491,74 +1514,105 @@ impl HistoryAck {
 
 /// Original Hepta owner capability minted only with a newly initialized
 /// namespace. Non-Clone and bound to the in-memory namespace instance.
-pub struct OriginalOwnerAuthority {
-    namespace: Arc<NamespaceState>,
+pub struct OriginalOwnerAuthorityWith<B: LockBackend> {
+    namespace: Arc<NamespaceState<B>>,
     owner: OwnerId,
     generation: u64,
 }
 
-impl OriginalOwnerAuthority {
+impl<B: LockBackend> OriginalOwnerAuthorityWith<B> {
     pub const fn owner(&self) -> OwnerId {
         self.owner
     }
 }
 
-#[derive(Clone)]
-pub struct DeliveryView {
+pub struct DeliveryViewWith<B: LockBackend> {
     identity: NamespaceIdentity,
-    namespace: Arc<NamespaceState>,
+    namespace: Arc<NamespaceState<B>>,
     generation: u64,
     owner: Option<OwnerId>,
 }
 
-struct NamespaceState {
+struct NamespaceState<B: LockBackend> {
     // Serialize concurrent loss operations without holding the table lock.
-    loss_gate: Mutex<()>,
+    loss_gate: B::Mutex<()>,
     identity: NamespaceIdentity,
     // Fixed at bootstrap so scratch storage can be prepared without holding
     // an internal lock. The ring never grows beyond this bound.
     capacity: usize,
-    state: Mutex<NamespaceInner>,
+    state: B::Mutex<NamespaceInner<B>>,
 }
 
-struct NamespaceInner {
+struct NamespaceInner<B: LockBackend> {
     next_sequence: u64,
     retired_through: u64,
     // Sequence order is contiguous from retired_through + 1. Reserve and
     // retirement move only the two ends of this preallocated bounded ring.
-    slots: VecDeque<Arc<Slot>>,
+    slots: VecDeque<Arc<Slot<B>>>,
     history_lost: bool,
     closing: bool,
     generation: u64,
 }
 
-impl NamespaceInner {
-    fn slot(&self, sequence: u64) -> Option<&Arc<Slot>> {
+impl<B: LockBackend> NamespaceInner<B> {
+    fn slot(&self, sequence: u64) -> Option<&Arc<Slot<B>>> {
         let offset = sequence.checked_sub(self.retired_through)?.checked_sub(1)?;
         self.slots.get(usize::try_from(offset).ok()?)
     }
 }
 
-#[derive(Clone)]
-pub struct ControlCore {
-    namespace: Arc<NamespaceState>,
+/// Delivery namespace using the synchronizers supplied by `B`.
+///
+/// All namespace table, result-state, execution and loss locks use this backend.
+/// The host [`ResourceDomain`] retains its default host/portable locks; selecting
+/// a backend does not turn [`Self::commit`] into a kernel scheduler operation.
+/// Native integrations must use the existing owner through
+/// [`Self::execute_native_reserved`] and validate their actual lock discipline.
+pub struct ControlCoreWith<B: LockBackend> {
+    namespace: Arc<NamespaceState<B>>,
 }
 
 /// Non-owning back-reference for an external owner pinned by a delivery slot.
-/// Storing this instead of ControlCore avoids namespace -> slot -> owner ->
+/// Storing this instead of a strong control core avoids namespace -> slot -> owner ->
 /// namespace strong-reference cycles. It grants no retirement authority.
-#[derive(Clone)]
-pub struct WeakControlCore {
-    namespace: Weak<NamespaceState>,
+pub struct WeakControlCoreWith<B: LockBackend> {
+    namespace: Weak<NamespaceState<B>>,
 }
 
-impl WeakControlCore {
+impl<B: LockBackend> Clone for ControlCoreWith<B> {
+    fn clone(&self) -> Self {
+        Self {
+            namespace: Arc::clone(&self.namespace),
+        }
+    }
+}
+
+impl<B: LockBackend> Clone for WeakControlCoreWith<B> {
+    fn clone(&self) -> Self {
+        Self {
+            namespace: Weak::clone(&self.namespace),
+        }
+    }
+}
+
+impl<B: LockBackend> Clone for DeliveryViewWith<B> {
+    fn clone(&self) -> Self {
+        Self {
+            identity: self.identity,
+            namespace: Arc::clone(&self.namespace),
+            generation: self.generation,
+            owner: self.owner,
+        }
+    }
+}
+
+impl<B: LockBackend> WeakControlCoreWith<B> {
     /// Returns None after the last strong namespace/history owner is gone.
     /// An obsolete token or weak back-reference cannot restore lost storage.
-    pub fn upgrade(&self) -> Option<ControlCore> {
+    pub fn upgrade(&self) -> Option<ControlCoreWith<B>> {
         self.namespace
             .upgrade()
-            .map(|namespace| ControlCore { namespace })
+            .map(|namespace| ControlCoreWith::<B> { namespace })
     }
 }
 
@@ -1581,7 +1635,7 @@ pub enum DeliveryInvariantError {
     LostHistoryRetainsSlots,
 }
 
-impl ControlCore {
+impl<B: LockBackend> ControlCoreWith<B> {
     pub fn new(boot_id: BootId, cap_space_id: CapSpaceId) -> Self {
         Self::with_capacity(boot_id, cap_space_id, DEFAULT_WINDOW_CAPACITY)
     }
@@ -1592,7 +1646,7 @@ impl ControlCore {
         boot_id: BootId,
         cap_space_id: CapSpaceId,
         owner: OwnerId,
-    ) -> Result<(Self, OriginalOwnerAuthority), DeliveryError> {
+    ) -> Result<(Self, OriginalOwnerAuthorityWith<B>), DeliveryError> {
         Self::with_capacity_for_owner(boot_id, cap_space_id, DEFAULT_WINDOW_CAPACITY, owner)
     }
 
@@ -1603,13 +1657,13 @@ impl ControlCore {
         cap_space_id: CapSpaceId,
         capacity: usize,
         owner: OwnerId,
-    ) -> Result<(Self, OriginalOwnerAuthority), DeliveryError> {
+    ) -> Result<(Self, OriginalOwnerAuthorityWith<B>), DeliveryError> {
         if !owner.is_nonzero() {
             return Err(DeliveryError::InvalidIdentity);
         }
         let core = Self::try_with_capacity(boot_id, cap_space_id, capacity)?;
-        let generation = lock_unpoisoned(&core.namespace.state).generation;
-        let authority = OriginalOwnerAuthority {
+        let generation = lock_control(&core.namespace.state).generation;
+        let authority = OriginalOwnerAuthorityWith::<B> {
             namespace: Arc::clone(&core.namespace),
             owner,
             generation,
@@ -1640,18 +1694,21 @@ impl ControlCore {
             .try_reserve_exact(capacity)
             .map_err(|_| DeliveryError::ResourceExhausted)?;
         Ok(Self {
-            namespace: Arc::new(NamespaceState {
-                loss_gate: Mutex::new(()),
+            namespace: Arc::new(NamespaceState::<B> {
+                loss_gate: B::new((), LockRole::HistoryLoss),
                 identity,
                 capacity,
-                state: Mutex::new(NamespaceInner {
-                    next_sequence: 1,
-                    retired_through: 0,
-                    slots,
-                    history_lost: false,
-                    closing: false,
-                    generation: 1,
-                }),
+                state: B::new(
+                    NamespaceInner::<B> {
+                        next_sequence: 1,
+                        retired_through: 0,
+                        slots,
+                        history_lost: false,
+                        closing: false,
+                        generation: 1,
+                    },
+                    LockRole::NamespaceTable,
+                ),
             }),
         })
     }
@@ -1669,34 +1726,34 @@ impl ControlCore {
 
     /// Use a weak back-reference when a native resource owner needs to
     /// inspect this namespace: its delivery slot already pins that owner.
-    pub fn downgrade(&self) -> WeakControlCore {
-        WeakControlCore {
+    pub fn downgrade(&self) -> WeakControlCoreWith<B> {
+        WeakControlCoreWith::<B> {
             namespace: Arc::downgrade(&self.namespace),
         }
     }
 
     pub fn next_sequence(&self) -> u64 {
-        lock_unpoisoned(&self.namespace.state).next_sequence
+        lock_control(&self.namespace.state).next_sequence
     }
 
     pub fn retired_through(&self) -> u64 {
-        lock_unpoisoned(&self.namespace.state).retired_through
+        lock_control(&self.namespace.state).retired_through
     }
 
-    pub fn delivery_view(&self) -> DeliveryView {
+    pub fn delivery_view(&self) -> DeliveryViewWith<B> {
         self.delivery_view_with_owner(None)
     }
 
-    pub fn delivery_view_for(&self, owner: OwnerId) -> Result<DeliveryView, DeliveryError> {
+    pub fn delivery_view_for(&self, owner: OwnerId) -> Result<DeliveryViewWith<B>, DeliveryError> {
         if !owner.is_nonzero() {
             return Err(DeliveryError::InvalidIdentity);
         }
         Ok(self.delivery_view_with_owner(Some(owner)))
     }
 
-    fn delivery_view_with_owner(&self, owner: Option<OwnerId>) -> DeliveryView {
-        let state = lock_unpoisoned(&self.namespace.state);
-        DeliveryView {
+    fn delivery_view_with_owner(&self, owner: Option<OwnerId>) -> DeliveryViewWith<B> {
+        let state = lock_control(&self.namespace.state);
+        DeliveryViewWith::<B> {
             identity: self.identity(),
             namespace: Arc::clone(&self.namespace),
             generation: state.generation,
@@ -1710,7 +1767,7 @@ impl ControlCore {
         &self,
         request: DeliveryRequest,
         publisher: PublisherId,
-    ) -> Result<ReserveToken, DeliveryError> {
+    ) -> Result<ReserveTokenWith<B>, DeliveryError> {
         self.reserve_request(ReservedRequest::Host(request), publisher)
     }
 
@@ -1721,7 +1778,7 @@ impl ControlCore {
         &self,
         request: NativeDeliveryRequest,
         publisher: PublisherId,
-    ) -> Result<ReserveToken, DeliveryError> {
+    ) -> Result<ReserveTokenWith<B>, DeliveryError> {
         self.reserve_request(ReservedRequest::Native(request), publisher)
     }
 
@@ -1729,7 +1786,7 @@ impl ControlCore {
         &self,
         request: ReservedRequest,
         publisher: PublisherId,
-    ) -> Result<ReserveToken, DeliveryError> {
+    ) -> Result<ReserveTokenWith<B>, DeliveryError> {
         let binding = request.binding();
         if binding.sequence == 0 || binding.sequence == u64::MAX {
             return Err(DeliveryError::InvalidSequence);
@@ -1756,18 +1813,18 @@ impl ControlCore {
         // prepares its slot outside every namespace lock, then rechecks
         // admission because a competing reserve/retire/loss may have won.
         {
-            let ns = lock_unpoisoned(&self.namespace.state);
+            let ns = lock_control(&self.namespace.state);
             self.check_reservation(&ns, &request, publisher, binding)?;
         }
-        let slot = Arc::new(Slot {
-            execution_gate: Mutex::new(()),
+        let slot = Arc::new(Slot::<B> {
+            execution_gate: B::new((), LockRole::SlotExecution),
             binding,
             publisher,
             request,
-            state: Mutex::new(SlotState::Reserved),
+            state: B::new(SlotState::Reserved, LockRole::SlotState),
         });
         let result = {
-            let mut ns = lock_unpoisoned(&self.namespace.state);
+            let mut ns = lock_control(&self.namespace.state);
             match self.check_reservation(&ns, &slot.request, publisher, binding) {
                 Err(error) => Err(error),
                 Ok(()) => {
@@ -1783,8 +1840,8 @@ impl ControlCore {
                         Some(next_sequence) => {
                             ns.slots.push_back(Arc::clone(&slot));
                             ns.next_sequence = next_sequence;
-                            Ok(ReserveToken {
-                                reservation: Reservation {
+                            Ok(ReserveTokenWith::<B> {
+                                reservation: ReservationWith::<B> {
                                     id,
                                     binding,
                                     namespace: Arc::downgrade(&self.namespace),
@@ -1804,7 +1861,7 @@ impl ControlCore {
 
     fn check_reservation(
         &self,
-        ns: &NamespaceInner,
+        ns: &NamespaceInner<B>,
         request: &ReservedRequest,
         publisher: PublisherId,
         binding: RequestBinding,
@@ -1855,7 +1912,7 @@ impl ControlCore {
         &self,
         request: DeliveryRequest,
         publisher: PublisherId,
-    ) -> Result<ReserveAttempt, DeliveryError> {
+    ) -> Result<ReserveAttemptWith<B>, DeliveryError> {
         self.reserve_request_or_get(ReservedRequest::Host(request), publisher)
     }
 
@@ -1864,7 +1921,7 @@ impl ControlCore {
         &self,
         request: NativeDeliveryRequest,
         publisher: PublisherId,
-    ) -> Result<ReserveAttempt, DeliveryError> {
+    ) -> Result<ReserveAttemptWith<B>, DeliveryError> {
         self.reserve_request_or_get(ReservedRequest::Native(request), publisher)
     }
 
@@ -1872,11 +1929,11 @@ impl ControlCore {
         &self,
         request: ReservedRequest,
         publisher: PublisherId,
-    ) -> Result<ReserveAttempt, DeliveryError> {
+    ) -> Result<ReserveAttemptWith<B>, DeliveryError> {
         let binding = request.binding();
         let sequence = binding.sequence;
         match self.reserve_request(request, publisher) {
-            Ok(token) => Ok(ReserveAttempt::Reserved(token)),
+            Ok(token) => Ok(ReserveAttemptWith::<B>::Reserved(token)),
             Err(DeliveryError::Busy | DeliveryError::TerminalImmutable) => {
                 let view = self.delivery_view();
                 let observation = self.query_delivery(&view, sequence)?;
@@ -1887,7 +1944,7 @@ impl ControlCore {
                 // permanent no-replay states, never new operations.
                 match observation.state {
                     DeliveryState::Reserved | DeliveryState::Terminal => {
-                        Ok(ReserveAttempt::Existing(observation))
+                        Ok(ReserveAttemptWith::<B>::Existing(observation))
                     }
                     DeliveryState::Retired => Err(DeliveryError::Retired),
                     DeliveryState::HistoryLost | DeliveryState::NotSeen => {
@@ -1903,7 +1960,7 @@ impl ControlCore {
     /// from `reserve`: observation never grants execution rights.
     pub fn query_delivery(
         &self,
-        view: &DeliveryView,
+        view: &DeliveryViewWith<B>,
         sequence: u64,
     ) -> Result<DeliveryObservation, DeliveryError> {
         if view.identity != self.identity() || !Arc::ptr_eq(&view.namespace, &self.namespace) {
@@ -1915,7 +1972,7 @@ impl ControlCore {
         if sequence == 0 {
             return Err(DeliveryError::InvalidSequence);
         }
-        let ns = lock_unpoisoned(&self.namespace.state);
+        let ns = lock_control(&self.namespace.state);
         let id = DeliveryId {
             namespace: self.identity(),
             sequence,
@@ -1934,16 +1991,16 @@ impl ControlCore {
 
     pub fn retire_through(
         &self,
-        view: &DeliveryView,
+        view: &DeliveryViewWith<B>,
         ack: HistoryAck,
-        owner_authority: &OriginalOwnerAuthority,
+        owner_authority: &OriginalOwnerAuthorityWith<B>,
     ) -> Result<RetireReceipt, DeliveryError> {
         if view.identity != self.identity()
             || ack.namespace != self.identity()
             || !Arc::ptr_eq(&view.namespace, &self.namespace)
             || !Arc::ptr_eq(&owner_authority.namespace, &self.namespace)
             || owner_authority.owner != ack.receipt.owner
-            // An observation-only DeliveryView never grants history.ack.
+            // An observation-only delivery view never grants history.ack.
             || view.owner != Some(ack.receipt.owner)
         {
             return Err(DeliveryError::PermissionDenied);
@@ -1952,7 +2009,7 @@ impl ControlCore {
         // free. A valid prefix is checked again after preparing reclamation
         // storage outside the lock, since retirement/loss may race it.
         let required = {
-            let ns = lock_unpoisoned(&self.namespace.state);
+            let ns = lock_control(&self.namespace.state);
             if let Some(receipt) = self.check_retirement(&ns, view, ack, owner_authority)? {
                 return Ok(receipt);
             }
@@ -1963,7 +2020,7 @@ impl ControlCore {
         reclaimed
             .try_reserve_exact(required)
             .map_err(|_| DeliveryError::ResourceExhausted)?;
-        let mut ns = lock_unpoisoned(&self.namespace.state);
+        let mut ns = lock_control(&self.namespace.state);
         if let Some(receipt) = self.check_retirement(&ns, view, ack, owner_authority)? {
             return Ok(receipt);
         }
@@ -1989,10 +2046,10 @@ impl ControlCore {
 
     fn check_retirement(
         &self,
-        ns: &NamespaceInner,
-        view: &DeliveryView,
+        ns: &NamespaceInner<B>,
+        view: &DeliveryViewWith<B>,
         ack: HistoryAck,
-        owner_authority: &OriginalOwnerAuthority,
+        owner_authority: &OriginalOwnerAuthorityWith<B>,
     ) -> Result<Option<RetireReceipt>, DeliveryError> {
         if ns.history_lost
             || ns.closing
@@ -2020,7 +2077,7 @@ impl ControlCore {
             let Some(slot) = ns.slot(sequence) else {
                 return Err(DeliveryError::PendingPrefix);
             };
-            if !matches!(*lock_unpoisoned(&slot.state), SlotState::Terminal(_)) {
+            if !matches!(*lock_control(&slot.state), SlotState::Terminal(_)) {
                 return Err(DeliveryError::PendingPrefix);
             }
         }
@@ -2030,9 +2087,9 @@ impl ControlCore {
     /// Model a lost namespace after boot/recovery.  Existing D values remain
     /// unknown and can never be replayed through this object.
     pub fn lose_history(&self) {
-        let _loss = lock_unpoisoned(&self.namespace.loss_gate);
+        let _loss = lock_control(&self.namespace.loss_gate);
         let (first_sequence, next_sequence) = {
-            let mut ns = lock_unpoisoned(&self.namespace.state);
+            let mut ns = lock_control(&self.namespace.state);
             if ns.history_lost {
                 return;
             }
@@ -2046,7 +2103,7 @@ impl ControlCore {
             // other removal. The stable ring keeps each temporary pin alive
             // without allocating a snapshot collection under either lock.
             let slot = {
-                let ns = lock_unpoisoned(&self.namespace.state);
+                let ns = lock_control(&self.namespace.state);
                 ns.slot(sequence).cloned()
             };
             let Some(slot) = slot else {
@@ -2054,13 +2111,13 @@ impl ControlCore {
             };
             // No namespace-table lock is held during this potentially long
             // wait. Query and pending-prefix retirement remain responsive.
-            let _execution = lock_unpoisoned(&slot.execution_gate);
-            let mut state = lock_unpoisoned(&slot.state);
+            let _execution = lock_control(&slot.execution_gate);
+            let mut state = lock_control(&slot.state);
             if matches!(*state, SlotState::Reserved | SlotState::Executing) {
                 *state = SlotState::Fenced;
             }
         }
-        let mut ns = lock_unpoisoned(&self.namespace.state);
+        let mut ns = lock_control(&self.namespace.state);
         ns.history_lost = true;
         let reclaimed = core::mem::take(&mut ns.slots);
         ns.generation = ns.generation.saturating_add(1);
@@ -2071,7 +2128,7 @@ impl ControlCore {
     }
 
     pub fn window_len(&self) -> usize {
-        lock_unpoisoned(&self.namespace.state).slots.len()
+        lock_control(&self.namespace.state).slots.len()
     }
 
     pub fn capacity(&self) -> usize {
@@ -2086,7 +2143,7 @@ impl ControlCore {
     /// This is an O(window) host-model diagnostic for A05/A07 integration
     /// tests. It must not be called from an IRQ or a real scheduler hot path.
     pub fn validate_invariants_for_host_model(&self) -> Result<(), DeliveryInvariantError> {
-        let ns = lock_unpoisoned(&self.namespace.state);
+        let ns = lock_control(&self.namespace.state);
         let outstanding = ns
             .next_sequence
             .checked_sub(ns.retired_through)
@@ -2129,7 +2186,7 @@ impl ControlCore {
             // marks admission, releases slot state, then enters the resource
             // path. Audit compares the retained immutable request; it never
             // locks or inspects external owner policy.
-            let slot_state = lock_unpoisoned(&slot.state);
+            let slot_state = lock_control(&slot.state);
             if slot.request.binding() != slot.binding || !slot.request.valid_wire_target() {
                 return Err(DeliveryInvariantError::InvalidSlotBinding);
             }
@@ -2158,9 +2215,9 @@ impl ControlCore {
 
     fn token_slot(
         &self,
-        token: &ReserveToken,
+        token: &ReserveTokenWith<B>,
         publisher: PublisherId,
-    ) -> Result<Arc<Slot>, DeliveryError> {
+    ) -> Result<Arc<Slot<B>>, DeliveryError> {
         if !Weak::ptr_eq(
             &token.reservation.namespace,
             &Arc::downgrade(&self.namespace),
@@ -2169,7 +2226,7 @@ impl ControlCore {
         {
             return Err(DeliveryError::PermissionDenied);
         }
-        let ns = lock_unpoisoned(&self.namespace.state);
+        let ns = lock_control(&self.namespace.state);
         if ns.history_lost || ns.closing || ns.generation != token.reservation.generation {
             return Err(DeliveryError::HistoryLost);
         }
@@ -2184,8 +2241,8 @@ impl ControlCore {
         Ok(Arc::clone(slot))
     }
 
-    fn token_is_live(&self, token: &ReserveToken, pinned: &Arc<Slot>) -> bool {
-        let ns = lock_unpoisoned(&self.namespace.state);
+    fn token_is_live(&self, token: &ReserveTokenWith<B>, pinned: &Arc<Slot<B>>) -> bool {
+        let ns = lock_control(&self.namespace.state);
         !ns.history_lost
             && !ns.closing
             && ns.generation == token.reservation.generation
@@ -2196,12 +2253,12 @@ impl ControlCore {
     }
 }
 
-pub struct ReserveToken {
-    reservation: Reservation,
+pub struct ReserveTokenWith<B: LockBackend> {
+    reservation: ReservationWith<B>,
 }
 
-impl ReserveToken {
-    pub fn reservation(&self) -> &Reservation {
+impl<B: LockBackend> ReserveTokenWith<B> {
+    pub fn reservation(&self) -> &ReservationWith<B> {
         &self.reservation
     }
     pub fn id(&self) -> DeliveryId {
@@ -2215,7 +2272,7 @@ impl ReserveToken {
     }
 }
 
-impl ControlCore {
+impl<B: LockBackend> ControlCoreWith<B> {
     /// Execute against the exact native owner and authorization snapshot
     /// retained by the reservation. A queue worker needs only its token,
     /// authenticated publisher and the owner's concrete Rust type; it must
@@ -2227,7 +2284,7 @@ impl ControlCore {
     /// It must revalidate current rights and settle runtime under owner().
     pub fn execute_native_reserved<T, F>(
         &self,
-        token: &ReserveToken,
+        token: &ReserveTokenWith<B>,
         publisher: PublisherId,
         mut execute: F,
     ) -> Result<DeliveryObservation, DeliveryError>
@@ -2264,16 +2321,16 @@ impl ControlCore {
     /// cannot pass between effect and publication. No K ledger is created.
     pub fn publish(
         &self,
-        token: &ReserveToken,
+        token: &ReserveTokenWith<B>,
         publisher: PublisherId,
         outcome: PublishOutcome,
     ) -> Result<DeliveryObservation, DeliveryError> {
         let slot = self.token_slot(token, publisher)?;
-        let _execution = lock_unpoisoned(&slot.execution_gate);
+        let _execution = lock_control(&slot.execution_gate);
         if !self.token_is_live(token, &slot) {
             return Err(DeliveryError::HistoryLost);
         }
-        let mut slot_state = lock_unpoisoned(&slot.state);
+        let mut slot_state = lock_control(&slot.state);
         match *slot_state {
             SlotState::Fenced => return Err(DeliveryError::HistoryLost),
             SlotState::Terminal(result) => {
@@ -2317,7 +2374,7 @@ impl ControlCore {
     /// during unwinding; implicit capture cleanup is not part of the effect.
     pub fn execute_reserved<F>(
         &self,
-        token: &ReserveToken,
+        token: &ReserveTokenWith<B>,
         publisher: PublisherId,
         mut execute: F,
     ) -> Result<DeliveryObservation, DeliveryError>
@@ -2335,18 +2392,18 @@ impl ControlCore {
     // before entering this shared fencing/admission transition.
     fn execute_slot_reserved<F>(
         &self,
-        token: &ReserveToken,
-        slot: &Arc<Slot>,
+        token: &ReserveTokenWith<B>,
+        slot: &Arc<Slot<B>>,
         mut execute: F,
     ) -> Result<DeliveryObservation, DeliveryError>
     where
         F: FnMut(RequestBinding) -> PublishOutcome,
     {
-        let _execution = lock_unpoisoned(&slot.execution_gate);
+        let _execution = lock_control(&slot.execution_gate);
         if !self.token_is_live(token, slot) {
             return Err(DeliveryError::HistoryLost);
         }
-        let mut slot_state = lock_unpoisoned(&slot.state);
+        let mut slot_state = lock_control(&slot.state);
         match *slot_state {
             SlotState::Fenced => return Err(DeliveryError::HistoryLost),
             SlotState::Executing => return Err(DeliveryError::Busy),
@@ -2366,7 +2423,7 @@ impl ControlCore {
         drop(slot_state);
         let outcome = execute(binding);
         let result = published_result_from_outcome(binding, outcome)?;
-        *lock_unpoisoned(&slot.state) = SlotState::Terminal(result);
+        *lock_control(&slot.state) = SlotState::Terminal(result);
         Ok(observation_from_published(
             self.identity(),
             token.id().sequence,
@@ -2378,7 +2435,7 @@ impl ControlCore {
     /// It does not implement actual kernel scheduler admission or metering.
     pub fn commit(
         &self,
-        token: &ReserveToken,
+        token: &ReserveTokenWith<B>,
         publisher: PublisherId,
         now_ns: u64,
     ) -> Result<DeliveryObservation, DeliveryError> {
@@ -2484,12 +2541,12 @@ fn map_resource_error(error: ResourceError) -> DeliveryStatus {
     }
 }
 
-fn observation_from_slot(
+fn observation_from_slot<B: LockBackend>(
     namespace: NamespaceIdentity,
     sequence: u64,
-    slot: &Arc<Slot>,
+    slot: &Arc<Slot<B>>,
 ) -> DeliveryObservation {
-    match *lock_unpoisoned(&slot.state) {
+    match *lock_control(&slot.state) {
         SlotState::Reserved | SlotState::Executing => DeliveryObservation::reserved(DeliveryId {
             namespace,
             sequence,

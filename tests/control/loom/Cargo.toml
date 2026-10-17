@@ -1,5 +1,5 @@
-# Run through run-models.py: all production Rust modules are exact temporary
-# copies, while src/sync.rs is replaced with the test-only Mutex shim.
+# Run through run-models.py: the default-backend variant replaces only sync.rs;
+# the public-backend variant retains every production Rust module unchanged.
 [package]
 name = "os-control-loom"
 version = "0.0.0"
@@ -21,6 +21,10 @@ path = "src/lib.rs"
 [[test]]
 name = "models"
 path = "models.rs"
+
+[[test]]
+name = "models_public"
+path = "models_public.rs"
 
 [lints.rust]
 unsafe_code = "forbid"

@@ -1,0 +1,55 @@
+
+running 7 tests
+test body_unwind_releases_gate_before_capture_cleanup_and_keeps_one_effect ... FAILED
+test capture_destructor_panic_after_success_cannot_erase_terminal_publication ... FAILED
+test host_success_releases_gate_before_owned_capture_cleanup ... FAILED
+test malformed_outcome_releases_gate_before_capture_cleanup ... FAILED
+test native_success_publishes_before_owned_capture_cleanup_and_loss ... FAILED
+test terminal_retry_drops_unused_callback_outside_gate_without_invoking_it ... ok
+test wrong_type_drops_unused_callback_without_admitting_an_effect ... ok
+
+failures:
+
+---- body_unwind_releases_gate_before_capture_cleanup_and_keeps_one_effect stdout ----
+
+thread 'body_unwind_releases_gate_before_capture_cleanup_and_keeps_one_effect' (224) panicked at /tmp/a03-regressions-fivrzofm/historical-callback/callback_lifetime.rs:225:13:
+injected post-effect callback body panic
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'body_unwind_releases_gate_before_capture_cleanup_and_keeps_one_effect' (224) panicked at /tmp/a03-regressions-fivrzofm/historical-callback/callback_lifetime.rs:94:9:
+capture cleanup waited on an execution gate still held by its caller
+
+---- capture_destructor_panic_after_success_cannot_erase_terminal_publication stdout ----
+
+thread 'capture_destructor_panic_after_success_cannot_erase_terminal_publication' (226) panicked at /tmp/a03-regressions-fivrzofm/historical-callback/callback_lifetime.rs:302:9:
+injected capture destructor panic
+
+thread 'capture_destructor_panic_after_success_cannot_erase_terminal_publication' (226) panicked at /tmp/a03-regressions-fivrzofm/historical-callback/callback_lifetime.rs:320:5:
+assertion `left == right` failed
+  left: Reserved
+ right: Terminal
+
+---- host_success_releases_gate_before_owned_capture_cleanup stdout ----
+
+thread 'host_success_releases_gate_before_owned_capture_cleanup' (227) panicked at /tmp/a03-regressions-fivrzofm/historical-callback/callback_lifetime.rs:94:9:
+capture cleanup waited on an execution gate still held by its caller
+
+---- malformed_outcome_releases_gate_before_capture_cleanup stdout ----
+
+thread 'malformed_outcome_releases_gate_before_capture_cleanup' (229) panicked at /tmp/a03-regressions-fivrzofm/historical-callback/callback_lifetime.rs:94:9:
+capture cleanup waited on an execution gate still held by its caller
+
+---- native_success_publishes_before_owned_capture_cleanup_and_loss stdout ----
+
+thread 'native_success_publishes_before_owned_capture_cleanup_and_loss' (231) panicked at /tmp/a03-regressions-fivrzofm/historical-callback/callback_lifetime.rs:94:9:
+capture cleanup waited on an execution gate still held by its caller
+
+
+failures:
+    body_unwind_releases_gate_before_capture_cleanup_and_keeps_one_effect
+    capture_destructor_panic_after_success_cannot_erase_terminal_publication
+    host_success_releases_gate_before_owned_capture_cleanup
+    malformed_outcome_releases_gate_before_capture_cleanup
+    native_success_publishes_before_owned_capture_cleanup_and_loss
+
+test result: FAILED. 2 passed; 5 failed; 0 ignored; 0 measured; 0 filtered out; finished in 20.01s
