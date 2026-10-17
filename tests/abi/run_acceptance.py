@@ -115,6 +115,13 @@ def run_command(argv: list[str], cwd: Path, env: dict[str, str], timeout: float)
     return result
 
 
+# Acceptance must not trust a child mutation runner that silently lowers its
+# denominator while reporting success=true. Keep this version/count explicit
+# and revise it when the real compiled-source mutation set changes.
+PINNED_MUTATION_SCHEMA = "hos2-rust-source-mutations-v5"
+EXPECTED_COMPILED_MUTANTS = 19
+
+
 def run_compiled_mutations(python: str, cargo: str, toolchain: str, snapshot: Path,
                            env: dict[str, str], command_timeout: float,
                            batch_timeout: float, mutation_path: Path) -> dict[str, Any]:
@@ -130,10 +137,15 @@ def run_compiled_mutations(python: str, cargo: str, toolchain: str, snapshot: Pa
         result["mutation_report"] = str(mutation_path)
         result["mutants_killed"] = mutation.get("mutants_killed")
         result["expected_mutants"] = mutation.get("expected_mutants")
-        result["passed"] = (result["passed"] and mutation.get("success") is True
-                            and isinstance(mutation.get("expected_mutants"), int)
-                            and mutation["expected_mutants"] > 0
-                            and mutation.get("mutants_killed") == mutation["expected_mutants"])
+        result["passed"] = (
+            result["passed"]
+            and mutation.get("success") is True
+            and mutation.get("schema") == PINNED_MUTATION_SCHEMA
+            and type(mutation.get("expected_mutants")) is int
+            and mutation["expected_mutants"] == EXPECTED_COMPILED_MUTANTS
+            and type(mutation.get("mutants_killed")) is int
+            and mutation["mutants_killed"] == EXPECTED_COMPILED_MUTANTS
+        )
     else:
         result["passed"] = False
         result["error"] = "compiled mutation report was not produced"
