@@ -1,0 +1,18 @@
+{
+  "record_kind": "explicit packaging-count correction; original frozen bytes unchanged",
+  "initial_tool_reported_file_count": 225,
+  "actual_frozen_regular_file_count": 226,
+  "reason": "The original freeze statistics and root checksum writer excluded all files whose basename was SHA256SUMS, including prior-reference/SHA256SUMS.",
+  "nested_file": "prior-reference/SHA256SUMS",
+  "nested_file_sha256": "638b3c5e0a1534a4c9c0656af5390374ace6f97ffd92a985cb01f2db4949da00",
+  "original_manifest_entries": 224,
+  "original_manifest_binds_nested_file": true,
+  "original_root_checksum_binds_manifest": true,
+  "original_root_checksum_entries": 224,
+  "original_root_checksum_sha256": "a3cd39678aa15bb850f538d6bc7b1a661a9a3ed1559a080231c75c42611fe00a",
+  "original_manifest_sha256": "5a84bb6223c17c7dfc4dfe78e23c31f55ecbc1f6d78d512edcd9d34d3c214d21",
+  "frozen_original_modified": false,
+  "failed_initial_packager_exit": 1,
+  "failure_preservation": "packaging-before/failure.json and replayed-failure.log retain an actual repeat execution of the unchanged first source; the initial tool response was not a separately captured log file.",
+  "corrected_scope": "All 226 originals are archived, each binds to member-manifest and outer checksums. Portable verification requires the precise original inner coverage, full captured-manifest coverage and independently fixed nested checksum identity."
+}
