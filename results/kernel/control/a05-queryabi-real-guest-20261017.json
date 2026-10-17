@@ -153,5 +153,29 @@
     "regular_A05_queryabi_kernel_rebuilt_this_run": false,
     "result": true,
     "limitation": "Only aster-core kernel tests, not the full OSTD suite, SMP, device authorization, or G1/G2"
+  },
+  "response_checker_hardening": {
+    "source_pr": 90,
+    "merged_into_a05_branch": "db0a77263218b7d4cd4d3994a93edcf4d7da9590",
+    "source_commit": "e925bdfcc59b2f7f7d606eb964447ffd8b741283",
+    "guest_c_git_blob": "58cc000c81501185aa0d328bc8701cec92a2dea0",
+    "host_contract_git_blob": "ea9e60c4e6e02d542fb4e9df9778a6a671a3943b",
+    "host_test_command": "sh tests/kernel/control/run-host-smoke.sh",
+    "host_test_exit": 0,
+    "host_checks": "exact guest verifier: one valid HOSR frame and 21 corrupted HOSR frames; transport 16 malformed; /dev/null real ENOTTY versus injected EFAULT correctly differentiated",
+    "hardened_guest_qemu": {
+      "kernel_elf_sha256": "54c8a7a798cbbd80f1a8ce5f0144328815e63b413e79b0133206bcaaba607e4a",
+      "initramfs_sha256": "2157cef0b8d4c6f6a4411cac7b3cca3d3edd514f85d07c1319349de64bd36cc8",
+      "probe_elf_sha256": "d465aa3e6fcf0c634e60d5407d13639f193cf193c05a38700a0a9f0064971f35",
+      "raw_exit": 33,
+      "timed_out": false,
+      "probe_ok": true,
+      "boot_ok": true,
+      "guest_fail": false,
+      "kernel_panic": false,
+      "passed": true
+    },
+    "remote_github_actions_status_at_last_check": "queued (not green)",
+    "limitations": "host mutation checks are not kernel negative-input tests; no effects or trusted CapSpace, no production clearance"
   }
 }
