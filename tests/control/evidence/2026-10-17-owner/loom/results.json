@@ -1,0 +1,118 @@
+{
+  "kind": "bounded host model; actual state transitions with Loom Mutex shim",
+  "loom_version": "0.7.2",
+  "source_hashes": {
+    "libs/os-control/src/lib.rs": "0ec42981de95f5d64088aeb16fa137c0daabe5a149108b88ff7c4ab7daea431d",
+    "libs/os-control/src/management.rs": "1b44ed9d89f3bd9aba90c8bcd3aeceb46bcd7332cbdd2bdd3fa40ff200d49340",
+    "libs/os-control/src/native.rs": "1967c2db5c7292127a5cb4a76c3448a9764710b4c44ebeb40a610dba6e16fd81",
+    "libs/os-control/src/resource_state.rs": "84fe7cfe37ea109ebfce4de5f32a5a418f4d834c5affc82af2d2a955bc9bb810",
+    "libs/os-control/src/sync.rs": "e2159cc41ef3a1073b1899615f70ea34cc9915052dd41811180bd3e3497784cd",
+    "tests/control/loom/Cargo.toml": "886bac4e86ee92730abbf80652dd3d63c98f1ac01c2e01332e043df9c6c43d44",
+    "tests/control/loom/Cargo.lock": "c4d85ce1660af1770e34b0e9bee92972314a1e8b6dec09394778affe284f75d9",
+    "tests/control/loom/models.rs": "592101d2b5db5de9510072334a6e4865cc90b55fe317b668da05aa30b3fa6cdb",
+    "tests/control/loom/sync.rs": "bc2162d347703217ef254478fd3c11778352cdb727198879b043877415d15966",
+    "tests/control/loom/run-models.py": "abda97493ef403628fb7d07661909d5c8afafef6c349bd53bac5b828f278b9e7"
+  },
+  "source_unchanged": true,
+  "source_inventory": [
+    "libs/os-control/src/lib.rs",
+    "libs/os-control/src/management.rs",
+    "libs/os-control/src/native.rs",
+    "libs/os-control/src/resource_state.rs",
+    "libs/os-control/src/sync.rs"
+  ],
+  "source_inventory_unchanged": true,
+  "models": {
+    "history_loss_and_callback_fence": 64,
+    "malformed_callback_reconcile_and_retry": 2442,
+    "management_revoke_and_native_commit_share_owner_lock": 14,
+    "native_metadata_compatibility_and_invalidation_share_owner": 230,
+    "native_typed_owner_same_token_effect_once": 52,
+    "overlapping_retirements_revalidate_smaller_prefix": 5161,
+    "publish_and_observe_never_tear": 92,
+    "reservation_loss_and_query_revalidate_admission": 14302,
+    "retire_and_query_linearize": 32,
+    "retire_execute_loss_threeway": 3188,
+    "revoke_and_commit_linearize": 22,
+    "same_d_reservation_and_effect_once": 916,
+    "two_deliveries_same_resource_cas": 160
+  },
+  "bounds": {
+    "max_threads": 4,
+    "preemption_bound": 3,
+    "max_branches": 10000,
+    "max_permutations": null,
+    "max_duration": null
+  },
+  "excluded": [
+    "std/alloc Arc and Weak reference-count atomics and finalization ordering",
+    "allocator internals and allocation failure",
+    "real kernel IRQ, preemption, SMP, lock adapters and scheduler mutation",
+    "real credentials and Hepta durable acknowledgement/crash recovery",
+    "more than three concurrent workers or more than three preemptions",
+    "panic/unwind recovery: Loom 0.7.2 Mutex::lock internally unwraps on poison",
+    "arbitrary request values and long sequence histories beyond each fixture"
+  ],
+  "commands": [
+    {
+      "argv": [
+        "cargo",
+        "--version"
+      ],
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "rustc",
+        "--version"
+      ],
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "/tmp/os-control-loom-jx8o375f/Cargo.toml",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--manifest-path",
+        "/tmp/os-control-loom-jx8o375f/Cargo.toml",
+        "--test",
+        "models",
+        "--",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit_code": 0
+    },
+    {
+      "argv": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--manifest-path",
+        "/tmp/os-control-loom-jx8o375f/Cargo.toml",
+        "--test",
+        "models",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "versions": {
+    "cargo": "cargo 1.99.0-nightly (3efb1f477 2026-07-17)",
+    "rustc": "rustc 1.99.0-nightly (87e5904f5 2026-07-20)"
+  },
+  "exit_code": 0
+}
