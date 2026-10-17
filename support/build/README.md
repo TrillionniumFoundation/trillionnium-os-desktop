@@ -91,6 +91,20 @@ replace an existing entry. Its exit cleanup is described below. No full NixOS IS
 Nix installation, Docker daemon, GRUB image, writable data disk, network,
 display, or KVM is needed for this profile.
 
+Every normal kernel, run, and GDB invocation installs the locked OSDK from
+this checkout into its new evidence directory's private `osdk/` prefix.
+Upstream `cargo osdk` selects that binary through `PATH`; the shared Cargo
+home's `bin` entry is explicitly retained after the private bin directory to
+prevent Cargo's default home-bin precedence from selecting a different SDK.
+`CARGO_HOME`, when set, must be an absolute path; otherwise `HOME` must be
+absolute for the default `.cargo/` location. The selected Cargo home path
+must have no `..` components, so its explicit bin
+entry matches Cargo's lookup path. The dependency cache and
+Rustup toolchain stay shared. The environment log records the installation and lookup paths,
+and `osdk/cargo-osdk.sha256` records the installed binary's bytes. The profile
+does not update or consume the global installed `cargo-osdk`; a newer global
+binary or another checkout's installation cannot change the selected SDK.
+
 The profile fixes x86_64, QEMU q35/TCG, CPU model `max`, **1 vCPU**, **512 MiB**,
 explicit packaged SeaBIOS, a serial console, and `isa-debug-exit`. It packages
 static BusyBox, a small init script, and the unmodified upstream

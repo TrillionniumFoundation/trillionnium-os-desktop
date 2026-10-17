@@ -10,6 +10,18 @@ if [[ ${CARGO_ENCODED_RUSTFLAGS+x} ]]; then
     echo 'unset CARGO_ENCODED_RUSTFLAGS: it overrides the RUSTFLAGS required by OSDK for the kernel build' >&2
     exit 2
 fi
+if [[ -v CARGO_HOME && "$CARGO_HOME" != /* ]]; then
+    echo 'CARGO_HOME must be an absolute path when set; unset it to use the default' >&2
+    exit 2
+fi
+if [[ ! -v CARGO_HOME && "${HOME:-}" != /* ]]; then
+    echo 'HOME must be an absolute path when CARGO_HOME is unset' >&2
+    exit 2
+fi
+if [[ "/${CARGO_HOME:-$HOME/.cargo}/" == */../* ]]; then
+    echo "Cargo home path must not contain '..' components; use an absolute path without parent components" >&2
+    exit 2
+fi
 if [[ "$target" == gdb_server ]]; then
     [[ ${A01_GDB_PORT:-} =~ ^[0-9]+$ && ${A01_GDB_FD:-} =~ ^[0-9]+$ ]] || {
         echo 'gdb_server requires the owned listener from support/build/debug/run.py' >&2; exit 2;
@@ -59,6 +71,14 @@ else
     run_dir=$(mktemp -d "$build_dir/out/$(date -u +%Y%m%dT%H%M%SZ)-$target-XXXXXX")
 fi
 run_dir=$(cd "$run_dir" && pwd)
+# OSDK_LOCAL_DEV embeds its source root at compile time. A global installed
+# SDK may belong to another checkout, even when its mtime is newer here.
+# Cargo honors PATH order only when its own home/bin is explicitly present;
+# keep that exact entry after this invocation's exclusive installation prefix.
+osdk_install_root="$run_dir/osdk"
+mkdir -m 700 "$osdk_install_root"
+mkdir -m 700 "$osdk_install_root/bin"
+export PATH="$osdk_install_root/bin:$PATH"
 manifest_file="$kernel_dir/kernel/OSDK.toml"
 manifest_temporary=
 manifest_anchor_open=
@@ -110,6 +130,9 @@ python3 "$build_dir/verify-source.py" > "$run_dir/source-inputs.json"
     git -C "$project_dir" rev-parse HEAD
     git -C "$project_dir" status --short
     printf 'CARGO_BUILD_JOBS=%s\nVDSO_LIBRARY_DIR=%s\n' "$CARGO_BUILD_JOBS" "$VDSO_LIBRARY_DIR"
+    printf 'A01_OSDK_INSTALL_ROOT=%s\nCARGO_OSDK=%s\nCARGO_HOME=%s\nRUSTUP_HOME=%s\nPATH=%s\n' \
+        "$osdk_install_root" "$osdk_install_root/bin/cargo-osdk" \
+        "${CARGO_HOME-<unset>}" "${RUSTUP_HOME-<unset>}" "$PATH"
     printf 'RUSTFLAGS=%s\nCARGO_ENCODED_RUSTFLAGS=%s\nCARGO_TARGET_DIR=%s\nASTER_BUILD_TIMESTAMP=%s\n' \
         "${RUSTFLAGS-<unset>}" "${CARGO_ENCODED_RUSTFLAGS-<unset>}" \
         "${CARGO_TARGET_DIR-<unset>}" "${ASTER_BUILD_TIMESTAMP-<unset>}"
@@ -136,7 +159,8 @@ manifest_temporary=
 export A01_QEMU_EVIDENCE="$run_dir/qemu.json"
 if [[ "$target" != kernel ]]; then rm -f "$kernel_dir/kernel/qemu.log"; fi
 command=(make -C "$kernel_dir" -f Makefile -f "$build_dir/minimal.mk" "$target"
-    "CARGO_OSDK=${CARGO_HOME:-$HOME/.cargo}/bin/cargo-osdk"
+    "CARGO_OSDK=$osdk_install_root/bin/cargo-osdk"
+    "A01_OSDK_INSTALL_ROOT=$osdk_install_root"
     "A01_INITRAMFS=$run_dir/initramfs.cpio.gz"
     "A01_QEMU_WRAPPER=$build_dir/record-qemu.py" TARGET_ARCH=x86_64 SMP=1 MEM=512M
     ENABLE_KVM=0 BOOT_PROTOCOL=multiboot INITRAMFS=on AUTO_TEST=none)
