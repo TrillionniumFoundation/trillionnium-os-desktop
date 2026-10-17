@@ -788,7 +788,9 @@ mod quota_debt_regressions {
         budget.charge(last_completed + period / 2,
                       last_completed + period + quota / 2);
         assert_eq!(budget.window_start, last_completed + period);
-        // A TSC period can contain an odd number of clocks: the interval\n        // [start + floor(P/2), start + P) has ceil(P/2) clocks.\n        assert_eq!(budget.carry_debt_clocks, period - period / 2 - quota);
+        // A TSC period can contain an odd number of clocks: the interval
+        // [start + floor(P/2), start + P) has ceil(P/2) clocks.
+        assert_eq!(budget.carry_debt_clocks, period - period / 2 - quota);
         assert_eq!(budget.used_clocks, quota / 2);
         assert!(!budget.eligible(last_completed + period + quota / 2));
     }
@@ -802,7 +804,8 @@ mod quota_debt_regressions {
         budget.charge(start + period / 2, start + 5 * period + quota / 2);
         // First completed period: P/2 work - Q budget. The following four
         // completed periods were fully busy; no per-period heap work or loop.
-        // The first interval spans P - floor(P/2) clocks, not floor(P/2).\n        let expected = period - period / 2 - quota + 4 * (period - quota);
+        // The first interval spans P - floor(P/2) clocks, not floor(P/2).
+        let expected = period - period / 2 - quota + 4 * (period - quota);
         assert_eq!(budget.carry_debt_clocks, expected);
         assert_eq!(budget.used_clocks, quota / 2);
     }
