@@ -1360,7 +1360,9 @@ pub type ControlCore = ControlCoreWith<DefaultLockBackend>;
 pub type WeakControlCore = WeakControlCoreWith<DefaultLockBackend>;
 pub type Reservation = ReservationWith<DefaultLockBackend>;
 pub type ReserveToken = ReserveTokenWith<DefaultLockBackend>;
-pub type ReserveAttempt = ReserveAttemptWith<DefaultLockBackend>;
+// Re-export the enum itself: a type alias cannot be used in a variant import
+// such as `use os_control::ReserveAttempt::{Existing, Reserved}`.
+pub use ReserveAttemptWith as ReserveAttempt;
 pub type DeliveryView = DeliveryViewWith<DefaultLockBackend>;
 pub type OriginalOwnerAuthority = OriginalOwnerAuthorityWith<DefaultLockBackend>;
 
@@ -1425,7 +1427,13 @@ pub enum ReserveResult {
     Existing(DeliveryObservation),
 }
 
-pub enum ReserveAttemptWith<B: LockBackend> {
+/// New reservation token or immutable observation, with the namespace backend.
+///
+/// This enum is also exported under its original name [`ReserveAttempt`], so
+/// both names support importing variants. The default backend applies in type
+/// positions. An `Existing(observation)` constructor without an expected type
+/// must supply a backend parameter or explicit `ReserveAttempt` annotation.
+pub enum ReserveAttemptWith<B: LockBackend = DefaultLockBackend> {
     Reserved(ReserveTokenWith<B>),
     Existing(DeliveryObservation),
 }

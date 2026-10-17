@@ -52,6 +52,16 @@ The corresponding `*With<B>` handles retain the same backend type throughout
 reservation, execution, history observation and retirement. Backend types do
 not authenticate callers; exact namespace instance checks still apply.
 
+`ReserveAttempt` is a public re-export of the actual
+`ReserveAttemptWith<B = DefaultLockBackend>` enum, so either name supports
+variant imports such as `use ReserveAttempt::{Existing, Reserved}`. Method
+results and typed default values preserve the backend identity. A standalone
+`Existing(observation)` carries no token from which Rust can infer B: supply
+an expected type, for example `let attempt: ReserveAttempt =
+ReserveAttempt::Existing(observation)`. This is a source-inference change in
+the experimental generic Rust API, not a HOS2 wire change or a claim of full
+source compatibility for untyped enum construction.
+
 1. Construct `ControlCore::try_with_capacity` after trusted boot identity and
    CapSpace binding, or `with_capacity_for_owner` to also mint the non-Clone
    `OriginalOwnerAuthority` for the authenticated original Hepta owner.

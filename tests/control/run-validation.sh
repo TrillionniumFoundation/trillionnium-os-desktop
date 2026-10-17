@@ -36,5 +36,6 @@ run_check no-std-build "$a03_cargo" build --locked --manifest-path libs/os-contr
 run_check custom-no-std-fmt "$a03_cargo" fmt --manifest-path tests/control/backend_no_std/Cargo.toml -- --check
 run_check custom-no-std-build "$a03_cargo" build --locked --manifest-path tests/control/backend_no_std/Cargo.toml --lib --target x86_64-unknown-none
 run_check custom-no-std-clippy "$a03_cargo" clippy --locked --manifest-path tests/control/backend_no_std/Cargo.toml --lib --target x86_64-unknown-none -- -D warnings
+run_check api-compatibility python3 tests/control/api_compat/run-checks.py "$output_dir/api-compatibility"
 run_check bounded-models env CARGO="$a03_cargo" python3 tests/control/loom/run-models.py "$output_dir/loom"
 run_check lock-allocation env CARGO="$a03_cargo" python3 tests/control/lock_alloc/run-checks.py "$output_dir/lock-allocation"

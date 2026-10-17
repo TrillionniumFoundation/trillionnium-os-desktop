@@ -49,6 +49,7 @@ SOURCES = (
     "tests/control/callback_lifetime.rs",
     "tests/control/native_resource_state.rs",
     "tests/control/custom_lock_backend.rs",
+    "tests/control/api_compat.rs",
 )
 RETIRE_FIXED = """        for _ in (ns.retired_through + 1)..=ack.through {
             if let Some(slot) = ns.slots.pop_front() {
@@ -426,7 +427,8 @@ def main() -> int:
                                  ("native_lifetime", 5), ("management_authority", 15),
                                  ("management_identity", 6), ("native_failure_recovery", 3),
                                  ("status_boundary", 3), ("callback_lifetime", 7),
-                                 ("native_resource_state", 7), ("custom_lock_backend", 6)]:
+                                 ("native_resource_state", 7), ("custom_lock_backend", 6),
+                                 ("api_compat", 3)]:
                 executable = compile_tests(recorder, rustc, "fixed-" + suite, root, library, suite + ".rs")
                 report["checks"].append(verify_tests(recorder, "fixed-" + suite + "-run", executable, count, 0, 0, set()))
         after = {source: sha256((repo / source).read_bytes()) for source in SOURCES}
