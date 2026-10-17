@@ -21,6 +21,7 @@ import time
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from pinned_memfd import sealed_input
+from serial_limit import limit_serial_file
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "organ_backend"))
 from run_guest_probe import pack, unpack  # already shipped A01 newc parser
 
@@ -190,6 +191,7 @@ def main(argv=None):
                     args_qemu, stdin=subprocess.DEVNULL, stdout=writer,
                     stderr=subprocess.STDOUT, timeout=args.timeout,
                     check=False, pass_fds=qemu_fds,
+                    preexec_fn=limit_serial_file,
                 )
                 code = completed.returncode
             except subprocess.TimeoutExpired:

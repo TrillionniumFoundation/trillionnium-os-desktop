@@ -143,6 +143,7 @@ class QueryAbiReplayInputs(unittest.TestCase):
                     Path(command[-1]).write_bytes(b"ELF synthetic guest probe")
                     return subprocess.CompletedProcess(command, 0, "", "")
                 self.assertEqual(command[0], "synthetic-qemu")
+                self.assertIs(kwargs.get("preexec_fn"), replay.limit_serial_file)
                 seen_fds = tuple(kwargs.get("pass_fds", ()))
                 self.assertEqual(len(seen_fds), 3)
                 for option, expected in (("-kernel", kernel), ("-bios", bios)):
