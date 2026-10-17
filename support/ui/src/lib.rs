@@ -1374,7 +1374,7 @@ mod tests {
                     history_boot: [1; 16],
                     history_space: [2; 16],
                     sequence: 5,
-                }
+                },
             ),
             Err(ReadOnlyError::MalformedResponse),
             "a different history sequence must not be attributed to the requested D"
