@@ -12,8 +12,8 @@ use alloc::vec::Vec;
 use core::any::Any;
 
 use crate::{
-    DeliveryError, DeliveryId, PublisherId, RequestBinding, ResourceDomainId, ResourceError,
-    StableObjectId, CPU_PERIOD_NS, MAX_RESOURCE_DEPTH,
+    DeliveryError, DeliveryId, ManagementGrantSnapshot, PublisherId, RequestBinding,
+    ResourceDomainId, ResourceError, StableObjectId, CPU_PERIOD_NS, MAX_RESOURCE_DEPTH,
 };
 
 /// A strong lifetime pin to the actual resource owner selected by trusted code.
@@ -70,6 +70,7 @@ pub struct NativeExecution<'a, T> {
     id: DeliveryId,
     binding: RequestBinding,
     ancestor_epochs: &'a [u64],
+    management_snapshot: Option<&'a ManagementGrantSnapshot>,
 }
 
 impl<'a, T> NativeExecution<'a, T> {
@@ -78,12 +79,14 @@ impl<'a, T> NativeExecution<'a, T> {
         id: DeliveryId,
         binding: RequestBinding,
         ancestor_epochs: &'a [u64],
+        management_snapshot: Option<&'a ManagementGrantSnapshot>,
     ) -> Self {
         Self {
             owner,
             id,
             binding,
             ancestor_epochs,
+            management_snapshot,
         }
     }
 
@@ -104,6 +107,12 @@ impl<'a, T> NativeExecution<'a, T> {
     pub fn ancestor_epochs(&self) -> &'a [u64] {
         self.ancestor_epochs
     }
+
+    /// Optional saved management delegation. The real owner must check this
+    /// against its canonical state under the same lock as budget admission.
+    pub fn management_snapshot(&self) -> Option<&'a ManagementGrantSnapshot> {
+        self.management_snapshot
+    }
 }
 
 /// Immutable authorization snapshot from the external owner's trusted resolver.
@@ -114,6 +123,7 @@ pub struct NativeGrant {
     principal: PublisherId,
     epoch: u64,
     ancestor_epochs: Vec<u64>,
+    management_snapshot: Option<ManagementGrantSnapshot>,
 }
 
 impl NativeGrant {
@@ -136,7 +146,35 @@ impl NativeGrant {
             principal: publisher,
             epoch,
             ancestor_epochs,
+            management_snapshot: None,
         })
+    }
+
+    /// Bind a saved delegation to the original resource owner. This is a
+    /// value/lifetime seam; lease, liveness and cap-envelope admission remain
+    /// the actual owner's responsibility via ManagementGrantState::check.
+    pub fn from_management(
+        target: NativeTarget,
+        snapshot: ManagementGrantSnapshot,
+        ancestor_epochs: Vec<u64>,
+    ) -> Result<Self, ResourceError> {
+        if snapshot.target() != target.id()
+            || snapshot.stable_object_id() != target.stable_object_id()
+        {
+            return Err(ResourceError::InvalidIdentity);
+        }
+        let mut grant = Self::from_owner(
+            target,
+            snapshot.publisher(),
+            snapshot.epoch(),
+            ancestor_epochs,
+        )?;
+        grant.management_snapshot = Some(snapshot);
+        Ok(grant)
+    }
+
+    pub const fn management_snapshot(&self) -> Option<&ManagementGrantSnapshot> {
+        self.management_snapshot.as_ref()
     }
 
     pub const fn principal(&self) -> PublisherId {
