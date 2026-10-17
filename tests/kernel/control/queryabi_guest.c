@@ -83,7 +83,7 @@ int main(void){
     }
     unsigned char q_budget[96];
     prep(q,7);memcpy(q_budget,q,64);
-    u16le(q_budget+8,3);u64le(q_budget+24,1);
+    u16le(q_budget+8,3);u32le(q_budget+16,32);u64le(q_budget+24,1);
     memset(q_budget+32,0,8);
     u64le(q_budget+40,1);u64le(q_budget+48,1);
     memset(q_budget+64,0,32);
