@@ -23,6 +23,8 @@ On a CI host, `check-host.sh` saves `$RUNNER_TEMP/a10/rustfmt.patch` when
 the strict rustfmt check fails, then exits nonzero. It never reports success
 until that patch is reviewed, committed, and rerun.
 Unit coverage:
+- strict HOS2 read-only UI adapter: opcode/payload pairing, request-id
+  correlation, response opcode matching, and hidden mutating payload refusal
 - no Pending -> Completed shortcut
 - distinction among pending/running/partial/unknown/cancel_requested
 - Chinese UTF-8 roundtrip

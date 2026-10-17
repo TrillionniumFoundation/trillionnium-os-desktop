@@ -768,22 +768,32 @@ impl<T> Hos2ReadOnlyAdapter<T>
 where
     T: Hos2ReadTransport,
 {
-    /// Forward an existing HOS2 request only when its opcode is one of the
-    /// observation operations.  The adapter never forwards InstallBudget or
-    /// RetireThrough, and it does not manufacture an authorization decision.
+    /// Enforce the existing shared A02 opcode/payload pairing before any
+    /// exchange. A mutating payload disguised under a read-only opcode is
+    /// NOT a read-only request. Also reject an unrelated response ID/opcode:
+    /// successful transport delivery cannot authenticate a different result.
     pub fn exchange_read_only(
         &self,
         request: Request,
     ) -> Result<Response, ReadOnlyError<T::Error>> {
         if !matches!(
-            request.opcode,
-            Opcode::QueryAbi | Opcode::ReadUsage | Opcode::QueryDelivery
+            (&request.opcode, &request.payload),
+            (Opcode::QueryAbi, RequestPayload::QueryAbi)
+                | (Opcode::ReadUsage, RequestPayload::ReadUsage)
+                | (Opcode::QueryDelivery, RequestPayload::QueryDelivery(_))
         ) {
             return Err(ReadOnlyError::MutationNotAllowed);
         }
-        self.transport
+        let expected_opcode = request.opcode;
+        let expected_request_id = request.request_id;
+        let response = self
+            .transport
             .exchange(request)
-            .map_err(ReadOnlyError::Transport)
+            .map_err(ReadOnlyError::Transport)?;
+        if response.opcode != expected_opcode || response.request_id != expected_request_id {
+            return Err(ReadOnlyError::MalformedResponse);
+        }
+        Ok(response)
     }
 }
 
@@ -794,16 +804,13 @@ where
     type Error = ReadOnlyError<T::Error>;
 
     fn query_abi(&self, request_id: [u8; 16]) -> Result<QueryAbiResponse, Self::Error> {
-        let response = self
-            .transport
-            .exchange(Request {
+        let response = self.exchange_read_only(Request {
                 opcode: Opcode::QueryAbi,
                 request_id,
                 target_slot: 0,
                 target_generation: 0,
                 payload: RequestPayload::QueryAbi,
-            })
-            .map_err(ReadOnlyError::Transport)?;
+            })?;
         match response {
             Response {
                 opcode: Opcode::QueryAbi,
@@ -831,16 +838,13 @@ where
         target_slot: u64,
         target_generation: u64,
     ) -> Result<ReadUsageResponse, Self::Error> {
-        let response = self
-            .transport
-            .exchange(Request {
+        let response = self.exchange_read_only(Request {
                 opcode: Opcode::ReadUsage,
                 request_id,
                 target_slot,
                 target_generation,
                 payload: RequestPayload::ReadUsage,
-            })
-            .map_err(ReadOnlyError::Transport)?;
+            })?;
         match response {
             Response {
                 opcode: Opcode::ReadUsage,
@@ -869,16 +873,13 @@ where
         target_generation: u64,
         request: DeliveryRequest,
     ) -> Result<QueryDeliveryResponse, Self::Error> {
-        let response = self
-            .transport
-            .exchange(Request {
+        let response = self.exchange_read_only(Request {
                 opcode: Opcode::QueryDelivery,
                 request_id,
                 target_slot,
                 target_generation,
                 payload: RequestPayload::QueryDelivery(request),
-            })
-            .map_err(ReadOnlyError::Transport)?;
+            })?;
         match response {
             Response {
                 opcode: Opcode::QueryDelivery,
@@ -1120,7 +1121,7 @@ mod tests {
         let source = Hos2ReadOnlyAdapter::new(FakeTransport {
             response: response(Opcode::QueryAbi, ResponsePayload::QueryAbi(payload)),
         });
-        assert_eq!(source.query_abi([1; 16]).unwrap(), payload);
+        assert_eq!(source.query_abi([9; 16]).unwrap(), payload);
     }
 
     #[test]
@@ -1136,8 +1137,72 @@ mod tests {
             },
         });
         assert_eq!(
-            source.query_abi([1; 16]),
+            source.query_abi([9; 16]),
             Err(ReadOnlyError::Rejected(Status::PermissionDenied))
+        );
+    }
+
+    #[test]
+    fn mismatched_request_id_cannot_replay_success_or_permission_denial() {
+        let payload = QueryAbiResponse {
+            space_id: [1; 16],
+            page_size: 4096,
+            max_request_payload: 64,
+            max_response_payload: 64,
+            supported_ops: 0,
+            features: 0,
+        };
+        let source = Hos2ReadOnlyAdapter::new(FakeTransport {
+            response: response(Opcode::QueryAbi, ResponsePayload::QueryAbi(payload)),
+        });
+        assert_eq!(
+            source.query_abi([1; 16]),
+            Err(ReadOnlyError::MalformedResponse),
+            "an unrelated successful response must never authorize the next read"
+        );
+
+        let source = Hos2ReadOnlyAdapter::new(FakeTransport {
+            response: Response {
+                opcode: Opcode::QueryAbi,
+                status: Status::PermissionDenied,
+                request_id: [9; 16],
+                boot_id: [8; 16],
+                revision: 0,
+                payload: ResponsePayload::Empty,
+            },
+        });
+        assert_eq!(
+            source.query_abi([1; 16]),
+            Err(ReadOnlyError::MalformedResponse),
+            "even an error cannot be attributed to a different request ID"
+        );
+    }
+
+    #[test]
+    fn read_only_adapter_rejects_wrong_opcode_and_mutation_hidden_in_payload() {
+        let source = Hos2ReadOnlyAdapter::new(FakeTransport {
+            response: response(Opcode::ReadUsage, ResponsePayload::Empty),
+        });
+        assert_eq!(
+            source.query_abi([9; 16]),
+            Err(ReadOnlyError::MalformedResponse)
+        );
+        let disguised_mutation = Request {
+            opcode: Opcode::QueryAbi,
+            request_id: [9; 16],
+            target_slot: 0,
+            target_generation: 0,
+            payload: RequestPayload::InstallBudget(hos2_os_abi::InstallBudgetRequest {
+                expected_revision: 1,
+                period_ns: hos2_os_abi::CPU_PERIOD_NS,
+                cap_ns: 1,
+                reserved: 0,
+            }),
+        };
+        assert_eq!(
+            source.exchange_read_only(disguised_mutation),
+            Err(ReadOnlyError::MutationNotAllowed),
+            "a read-only opcode must never conceal a budget mutation"
         );
     }
 
