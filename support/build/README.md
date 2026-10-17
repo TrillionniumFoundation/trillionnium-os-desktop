@@ -6,52 +6,59 @@ complete Asterinas **v0.19.0**, commit
 `96605cf64aeae2d34f29b97e85eff9315fe10a8e`. Upstream documentation, attribution,
 and `LICENSE-MPL` are preserved. The project root README stays empty.
 
-The latest cloud phase completed two further build-support fixes. All four
-public entries now reject encoded Rust flags before consuming output. The QEMU
-recorder saves and actually loads private kernel/initramfs/BIOS snapshots,
-retaining source metadata and verifying the copies before and after execution.
-At published code `31170ffb2ab6d18a85051d426e5d85a83f1b2abf`, complete-kernel
-Rust-entry debugging passed with matching PC/32 live bytes, full initramfs boot,
-raw QEMU33 and a new live-artifact recheck. Its boot ELF SHA256 is
-`fbe81c0e2deae705d61d77ccaaf604e2bf1ca30e4541de71d263af6ecc62ec1b`.
-The full TCP/GDB OSDK matrix passed22/22 at `071dd8ed...`, with eleven raw33
-guests and one explicit VMX soft skip. Two failed debug attempts and the initial
-cancelled matrix remain retained. A fixed-nightly A02 candidate passes61 tests,
-fmt, no_std compile and strict Clippy in isolation, pending A00/A02 adoption.
-See [cloud blocker closure](evidence/2026-10-16-blocker-closure/REPORT.md)
-for exact commands, counts, actual artifacts, and the hardware/owner blockers
-that remain open. Kernel core, upstream pin and root README are unchanged.
+The 2026-10-17 project-cloud validation completed the ordinary developer
+pipeline at published code `d879a9d2ffae8d0eb0df441370da54f9e3a38431`:
+an absent target, `make kernel`, then `make run_kernel`, a full initramfs boot
+and raw QEMU exit **33**. The complete boot ELF is 8,258,112 bytes, SHA256
+`c49ad7da1c76c1f559d065ac3f8cbcbad407242dda54f1ed00028f02d5c2413d`.
+The first build's frozen ELF has the same bytes. The boot stage reused that
+newly built target; it is one cold-build/boot pipeline, not two cold builds.
 
-Afterward A01 merged actual main `bc294f75...` through `be86dc41...`, importing
-A00-approved ABI/CI updates while preserving the kernel and build subtrees.
-All45 current-main host inputs match the merge's exact Git bytes/blobs/modes.
-Rust83 and Python98 executions passed; fmt and control Clippy passed. Strict
-fixed-nightly ABI Clippy still fails for three original helpers. The exact-base
-candidate still applies cleanly and remains pending owner adoption. See the
-[current main sync evidence](evidence/2026-10-16-cloud-main-sync/REPORT.md).
-This host-only integration does not claim another kernel build or QEMU run.
+Separately, opt-in schema4 at `4e8c7083575cec69efabe8d2250dfdd040c8dee8`
+completed two absent-target builds in different actual source roots. Both
+full kernels booted with raw33; their complete ELF, initramfs and BIOS bytes
+are identical. The ELF SHA256 is
+`8c540288c6af2a1a97121031643c1af4c4db395d7e8b4082d6edc4604449849a`.
+This establishes same-host cross-path reproduction for that explicit profile.
+Cross-host reproduction and a complete immutable host/container lock remain
+open. Earlier component-path panics, unequal A2/B2 ELFs and A3's producer
+ordering failure remain archived, with their actual commands and errors.
 
-The preceding phase fixed inherited GNU make controls that could return success
-without executing a kernel recipe, and rejects encoded Rust flags that would
-override OSDK's required kernel flags. At published source
-`ff040c6d5afbc4e26a249022093b8090181f6176`, an empty-target full kernel build
-completed despite deliberately inherited dry-run/touch/extra-makefile settings,
-then booted with raw QEMU 33. The ELF SHA256 is
-`d90ebc3210e74271252a6d1f75ca22a16a569a8b48a99805d30d3d99124b9306`.
-OSTD/core reported 221/141 passes, with three VMX/EPT soft skips and a 359
-exercised lower bound; all three real guests returned raw33. The 56 distinct
-entrance regressions passed in both Python modes, with explicit repeated
-verification receipts. Main's ABI tests passed, while strict fixed-nightly
-Clippy retains two A02 test-helper diagnostics (overall host result partial).
-See [`current build/environment evidence`](evidence/2026-10-16-build-environment/REPORT.md)
-for actual commands, full serial logs, artifacts and retained failures.
+The final TCP/GDB OSDK matrix at `d879a9d2...` passed **22/22**, zero failures
+or blocked cases, eleven actual guests at raw33 and one VMX soft skip.
+Coverage exported 5,692 functions with execution counts. Each case owns its
+generated OSDK directory, and QEMU loads private kernel/BIOS copies; coverage
+also uses a private symbol ELF. All 23 input mappings were preserved.
+The correct-source-root OSTD/core run at `d895dd73...` reported **362**
+passes, with three VMX/EPT soft skips and a **359** exercised lower bound.
+Host-only snapshot tests passed 152 checks in each Python mode; they are
+separate from the real VM results.
 
-The previous two independent clean builds and byte-equality result remain
-scoped to their earlier same-host/same-absolute-path source and are recorded in
-[`clean-repeatability evidence`](evidence/2026-10-16-clean-repeatability/REPORT.md).
-Crosspath and cross-host reproduction remain open. Earlier native cancellation
-and manifest lifecycle results remain in
-[`kernel-test lifecycle evidence`](evidence/2026-10-16-ktest-lifecycle/REPORT.md).
+Native tools were restored from 57 signed Ubuntu packages into a private
+prefix, together with the exact fixed Rust nightly. The failed system APT
+attempt is retained; no sandbox or capability restrictions were weakened.
+The minimal profile needs no Docker/Nix daemon or full NixOS installer ISO.
+Private BIOS and QEMU data-directory selectors fix the cloud's packaged-ROM
+paths without changing host firmware. Exact environment, dependency checks,
+commands, full serial logs, artifacts, failures and remaining work are indexed
+in [the cloud closure report](evidence/2026-10-17-cloud-closure/REPORT.md).
+
+Actual main `40ca002fac0726b366726d3353916637b29adeae` was merged through
+`5fffe3394dd562ad88fda7c37edc258cf9b56387`. Its control model passed 129 tests
+in each backend; the earlier exact `8f3bb49...` ABI validation passed all 13
+runner checks, including strict fixed-nightly Clippy. The previously pending
+A02 helper fix is now adopted in main. The final source bridge checks the
+exact Git inputs of these historical host runs; it does not claim to rerun
+them or establish native HOS2 enforcement. Kernel core files remain owned by
+A05/A06, and G1/G2, KVM/VMX, default host AF_UNIX, cross-host/immutable
+reproduction and the unidentified workspace writer remain open.
+
+Earlier accepted complete-kernel Rust-entry debugging, same-path repeatability
+and build-environment results remain in the
+[previous cloud report](evidence/2026-10-16-blocker-closure/REPORT.md),
+[clean-repeatability report](evidence/2026-10-16-clean-repeatability/REPORT.md)
+and [build-environment report](evidence/2026-10-16-build-environment/REPORT.md).
+They retain their own precise producer commits and acceptance scope.
 
 ## Build and boot
 
@@ -71,7 +78,11 @@ debug boot ELF. If Rust is already
 installed in a nonstandard location, export `CARGO_HOME`, `RUSTUP_HOME`, and its
 `bin` directory in `PATH`. `VDSO_LIBRARY_DIR` and `A01_BUSYBOX` may point to
 existing verified inputs; the defaults are `support/build/out/linux-vdso` and
-`/usr/bin/busybox`.
+`/usr/bin/busybox`. For private-prefix installations, set `A01_QEMU_BIOS` to
+the verified SeaBIOS file and `A01_QEMU_DATA_DIR` to the packaged QEMU data
+directory. The latter supplies `-L` for ROM lookup. Also put the native tools
+and Cargo in `PATH` and configure their library paths as recorded in the
+cloud report; these selectors do not install packages or change host firmware.
 
 The wrapper invokes the **upstream `make kernel` and `make run_kernel` targets**,
 with `minimal.mk` replacing their initramfs prerequisite. It temporarily publishes
@@ -184,7 +195,7 @@ python3 -I support/build/osdk-integration/run.py --output NEW_INTEGRATION_DIR
 ```
 
 See `osdk-integration/README.md` for its isolated harness adaptations, pinned
-generated locks and raw guest checks. The latest per-case results are 20/22
+generated locks and raw guest checks. The historical default-UNIX results are 20/22
 passed, with the original UNIX GDB and coverage cases failing because this
 execution environment rejects UNIX socket creation. One passing hypervisor
 case explicitly takes its VMX-unavailable fallback. The full-run failure and
@@ -199,7 +210,7 @@ For the explicit loopback TCP profile with GDB-assisted coverage capture:
 python3 -I support/build/osdk-integration/run.py --local-tcp --coverage-gdb --output NEW_TCP_CAPTURE_DIR
 ```
 
-The `osdk-native-local-tcp-gdb-capture-v2` full matrix passed **22/22**, with
+The earlier `osdk-native-local-tcp-gdb-capture-v2` full matrix passed **22/22**, with
 one explicit VMX soft skip and eleven actual QEMU guests returning raw 33.
 Coverage capture stops before the architecture poweroff path, exports the
 announced initialized data, detaches and requires the original guest exit.
@@ -215,6 +226,19 @@ monitor FD. The host suite passed 38 tests with one ignored QEMU transport
 test; that transport test was separately run successfully and is not a kernel
 boot. Full kernel Rust-entry debugging also passed again with raw QEMU 33.
 See `evidence/2026-10-16-review/REPORT.md` for this phase and retained failures.
+
+The final cloud matrix after the per-case target and private-input fixes
+passed all 22 cases in one execution at `d879a9d2...`, with eleven raw33
+guests and one VMX soft skip. All actual private boot inputs and the coverage
+symbol ELF are retained in
+[`native-cloud-final`](evidence/2026-10-17-native-cloud-final/README.md).
+The earlier 20/22 cloud run, missing offline dependencies, wrong-source-root
+OSDK retry and coverage recovery remain in
+[`native-cloud-before`](evidence/2026-10-17-native-cloud-before/README.md).
+That initial run lost one original example ELF to reuse; its original serial
+and hash are retained, and it is not retroactively treated as a fully
+preserved-input pass. The final runner captures inputs before QEMU's version
+probe and verifies private copies before and after execution.
 
 The independent A04 same-ELF diagnostic is documented in
 `linux-guest/README.md`. Its 28 fixed workloads are separate from OSDK tests;
@@ -283,6 +307,24 @@ vDSO comes from `asterinas/linux_vdso` commit
 attributes the x86_64 image to Linux 6.2.10. These userland/build inputs do not
 replace or boot a Linux host kernel as the project kernel.
 
+## Opt-in cross-path reproduction
+
+```sh
+python3 -I support/build/repro/run.py --checkout /absolute/source-worktree \
+    --profile-root /absolute/stable-profile --output /absolute/new-evidence
+```
+
+Use the same profile root and two distinct clean worktrees with absent kernel
+targets. Schema4 projects compiler/component paths and binds local Cargo
+metadata to recorded source/compiler/producer descriptors. It deliberately
+uses one Cargo job because this fixed Cargo can pipeline consumer metadata
+before its producer completion receipt exists. The strict producer check stays
+enabled. Ordinary builds retain their normal upstream flags and job count.
+See [the profile documentation](repro/README.md) and
+[the actual complete-kernel comparison](evidence/2026-10-17-repro-cross-path/README.md).
+This is the one vendored implementation built from separate Git worktrees;
+no alternate OSTD-only kernel or duplicated implementation is maintained.
+
 ## A00 / A05 / A06 handoff
 
 All paths below are relative to `kernel/asterinas/`:
@@ -307,9 +349,11 @@ stable resource identity, and ResourceDomain are **not implemented by A01**.
 Budget enforcement must cover the common scheduler path and all controlled
 classes, rather than modifying only the fair scheduler.
 
-A01 has not changed those core process/ioctl/scheduler files. A05/A06 can begin
-against this source root after A00 integrates the branch; A01 retains build
-tooling ownership and will not overwrite their core changes.
+A01 has not changed those core process/ioctl/scheduler files. A05/A06 have
+already started their owner branches against this single source root. A01
+retains build tooling ownership and will not overwrite their core changes.
+The [current handoff](evidence/2026-10-17-cloud-closure/HANDOFF.md) records
+exact build/test producers and the remaining owner work for A00 integration.
 
 Real smoke results, failures, and host package limitations are in
 `evidence/2026-10-16/`. The BusyBox applet workaround avoids an observed script

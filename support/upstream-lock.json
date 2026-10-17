@@ -28,7 +28,7 @@
     "verification_evidence": "support/build/evidence/2026-10-16-boot-binding/report.json",
     "acceptance_guard_commit": "2c658089bb90aa5b254ddf336ef3dc1333e755c9",
     "kernel_mode_regression": {
-      "evidence": "support/build/evidence/2026-10-16-build-environment/kernel-tests/report.json",
+      "evidence": "support/build/evidence/2026-10-17-native-cloud-before/README.md",
       "crates": [
         "ostd",
         "aster-core"
@@ -49,22 +49,25 @@
           "sha256": "159b8682d27a7a21af98885ae48515234445c00fdf5e00b158fdc4aa952ff4ed"
         }
       },
-      "osdk_code_commit": "ff040c6d5afbc4e26a249022093b8090181f6176",
-      "latest_phase": "2026-10-16-build-environment",
-      "osdk_binary_sha256": "00795405023f25033622ec194db7b2f17cc657e884002f18cd214aa9db35bfbb",
-      "code_commit": "ff040c6d5afbc4e26a249022093b8090181f6176",
-      "source_tree": "eb16c5ef5fe8adf3a9249e19a7674cec7b2e359f",
-      "actual_tool_session": 74160,
-      "actual_tool_exit": 0,
+      "osdk_code_commit": "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+      "latest_phase": "2026-10-17-native-cloud-before",
+      "osdk_binary_sha256": "e4bdfec2d828d6ed7403828587062a0ab6a5e7af2c6bfb1193454371fdc11f5f",
+      "code_commit": "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+      "source_tree": "e0e415d6214df7311fb0c3297821659298f564a4",
+      "actual_tool_session": 36657,
+      "actual_tool_exit": 1,
       "guests": 2,
       "raw_qemu_exits": [
         33,
         33
       ],
-      "direct_command_leaders_reaped": 10,
       "target_cache_reused": true,
-      "target_cache_source": "current normal clean kernel build and public boot",
-      "empty_target_rebuild": false
+      "target_cache_source": "same absolute native worktree kernel-mode target",
+      "empty_target_rebuild": false,
+      "actual_tool_exit_scope": "enclosing sequential retry controller; it later failed on the retained 20/22 matrix",
+      "osdk_install_skipped": false,
+      "source_root_bound_sdk_reinstalled": true,
+      "kernel_mode_runner_exit": 0
     },
     "host_regression": {
       "evidence": "support/build/evidence/2026-10-16-review/host-fixes/monitor/README.md",
@@ -174,7 +177,32 @@
             "coverage_profraw_size": 2094448,
             "coverage_profraw_sha256": "24312473e6f0cdfc94d12dc826ae323843fbdcf5f7c1a806bf99aa335d7f7e04"
           }
-        ]
+        ],
+        "cloud_latest": {
+          "source_commit": "d879a9d2ffae8d0eb0df441370da54f9e3a38431",
+          "source_tree": "a2baa0d707b8af80ae0e7d9f09b6e08379667bc2",
+          "profile": "osdk-native-local-tcp-gdb-capture-v2",
+          "evidence": "support/build/evidence/2026-10-17-native-cloud-final/README.md",
+          "selected": 22,
+          "passed": 22,
+          "failed": 0,
+          "blocked": 0,
+          "vmx_soft_skipped": 1,
+          "qemu_guests": 11,
+          "raw_guest_exit": 33,
+          "coverage_functions": 5692,
+          "coverage_profraw_size": 2096896,
+          "coverage_profraw_sha256": "0862a2568e4bb069835dfa6fdf2d15af727020848976bb0a2457b8eeb7fb601c",
+          "maximum_function_count": 383729,
+          "actual_tool_session": 78119,
+          "actual_tool_exit": 0,
+          "cache_reused": true,
+          "empty_target_rebuild": false,
+          "per_case_generated_osdk_directories": true,
+          "actual_input_mappings_retained": 23,
+          "unique_artifact_payloads_retained": 13,
+          "default_unix_blocker_closed": false
+        }
       },
       "previous_full_unit_suite_35": {
         "evidence": "support/build/evidence/2026-10-16-debug-coverage/osdk/REPORT.md",
@@ -319,44 +347,45 @@
     },
     "artifact_sha256_role": "Original accepted minimal-boot baseline; current source-built products are recorded separately under latest_native_boot and full_kernel_debug.",
     "latest_native_boot": {
-      "code_commit": "ff040c6d5afbc4e26a249022093b8090181f6176",
-      "source_tree": "eb16c5ef5fe8adf3a9249e19a7674cec7b2e359f",
-      "actual_tool_session": 47989,
+      "code_commit": "d879a9d2ffae8d0eb0df441370da54f9e3a38431",
+      "source_tree": "a2baa0d707b8af80ae0e7d9f09b6e08379667bc2",
+      "derived_tree": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da",
+      "actual_tool_session": 15521,
       "actual_tool_exit": 0,
       "source_build_invoked": true,
       "release_compilation_observed": false,
       "target_cache_reused": true,
       "empty_target_rebuild": false,
-      "target_cache_source": "immediately preceding empty-target kernel stage in same controller",
+      "target_cache_source": "preceding cold make kernel in the same N1 worktree/controller",
       "preceding_clean_kernel_build": {
-        "source_commit": "ff040c6d5afbc4e26a249022093b8090181f6176",
+        "source_commit": "d879a9d2ffae8d0eb0df441370da54f9e3a38431",
         "target_absent_before_launch": true,
         "compilation_lines": 279,
         "public_exit": 0,
-        "worker_exit": 0,
-        "kernel_sha256": "d90ebc3210e74271252a6d1f75ca22a16a569a8b48a99805d30d3d99124b9306",
-        "kernel_bytes": 8266576
+        "kernel_sha256": "c49ad7da1c76c1f559d065ac3f8cbcbad407242dda54f1ed00028f02d5c2413d",
+        "kernel_bytes": 8258112,
+        "first_produced_bytes_retained": true
       },
       "passed": true,
       "qemu_raw_exit": 33,
-      "supervisor_exit": 0,
-      "worker_reaped": true,
-      "boot_sha256": "d90ebc3210e74271252a6d1f75ca22a16a569a8b48a99805d30d3d99124b9306",
-      "boot_size": 8266576,
+      "boot_sha256": "c49ad7da1c76c1f559d065ac3f8cbcbad407242dda54f1ed00028f02d5c2413d",
+      "boot_size": 8258112,
       "initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
-      "serial_sha256": "18f820dba25feb4186b881cd68fb3d44c53b4d129653152bcfccefbce330c357",
-      "evidence": "support/build/evidence/2026-10-16-build-environment/kernel-public/README.md",
-      "profile": "x86_64-q35-tcg-max-1cpu-512MiB-SeaBIOS",
+      "serial_sha256": "3840526255cff7c53567f3e35e42739a11dba24f3feb03594719e92bec0ab5ca",
+      "serial_size": 72247,
+      "evidence": "support/build/evidence/2026-10-17-native-cloud-normal/README.md",
+      "profile": "ordinary x86_64-q35-tcg-max-1cpu-512MiB-SeaBIOS",
       "source_directory": "kernel/asterinas",
-      "derived_tree": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da",
       "manifest_cleanup_outcome": "owned_removed",
-      "manifest_cleanup_exit": 0,
-      "manifest_cleanup_helper_sha256": "6620d8be088f3602e673397081c5230aa5eb2cad54fd4080f21b3afe370a82c8",
-      "inherited_make_controls_recorded_and_cleared": true,
-      "generated_normal_lock_snapshot_retained": true,
+      "controller_commands": 11,
+      "all_controller_exits": 0,
+      "post_source_inputs_checked": 118,
+      "post_git_status_empty": true,
       "registry_and_toolchain_caches_reused": true,
+      "projection_profile_used": false,
       "cross_path_or_cross_host_reproducibility_claimed": false,
-      "foreign_manifest_writer_identified": false
+      "foreign_manifest_writer_identified": false,
+      "stage_scope": "boot stage reused the preceding cold make kernel target; cold compilation is recorded in preceding_clean_kernel_build"
     },
     "full_kernel_debug_history": [
       {
@@ -575,6 +604,45 @@
         "target_cache_reused": true,
         "target_cache_source": "completed clean-pair run B",
         "empty_target_rebuild": false
+      },
+      {
+        "evidence": "support/build/evidence/2026-10-16-build-environment/kernel-tests/report.json",
+        "crates": [
+          "ostd",
+          "aster-core"
+        ],
+        "reported_passed": 362,
+        "failed": 0,
+        "filtered": 0,
+        "soft_skipped": 3,
+        "exercised_passed_lower_bound": 359,
+        "profile": "x86_64-q35-tcg-1cpu-512MiB",
+        "test_base_locks": {
+          "ostd": {
+            "path": "support/build/ktest/locks/ostd.Cargo.lock",
+            "sha256": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6"
+          },
+          "aster-core": {
+            "path": "support/build/ktest/locks/aster-core.Cargo.lock",
+            "sha256": "159b8682d27a7a21af98885ae48515234445c00fdf5e00b158fdc4aa952ff4ed"
+          }
+        },
+        "osdk_code_commit": "ff040c6d5afbc4e26a249022093b8090181f6176",
+        "latest_phase": "2026-10-16-build-environment",
+        "osdk_binary_sha256": "00795405023f25033622ec194db7b2f17cc657e884002f18cd214aa9db35bfbb",
+        "code_commit": "ff040c6d5afbc4e26a249022093b8090181f6176",
+        "source_tree": "eb16c5ef5fe8adf3a9249e19a7674cec7b2e359f",
+        "actual_tool_session": 74160,
+        "actual_tool_exit": 0,
+        "guests": 2,
+        "raw_qemu_exits": [
+          33,
+          33
+        ],
+        "direct_command_leaders_reaped": 10,
+        "target_cache_reused": true,
+        "target_cache_source": "current normal clean kernel build and public boot",
+        "empty_target_rebuild": false
       }
     ],
     "native_boot_history": [
@@ -651,6 +719,46 @@
         "manifest_cleanup_exit": 0,
         "manifest_cleanup_helper_sha256": "6620d8be088f3602e673397081c5230aa5eb2cad54fd4080f21b3afe370a82c8",
         "same_host_same_absolute_path_comparison_only": true,
+        "foreign_manifest_writer_identified": false
+      },
+      {
+        "code_commit": "ff040c6d5afbc4e26a249022093b8090181f6176",
+        "source_tree": "eb16c5ef5fe8adf3a9249e19a7674cec7b2e359f",
+        "actual_tool_session": 47989,
+        "actual_tool_exit": 0,
+        "source_build_invoked": true,
+        "release_compilation_observed": false,
+        "target_cache_reused": true,
+        "empty_target_rebuild": false,
+        "target_cache_source": "immediately preceding empty-target kernel stage in same controller",
+        "preceding_clean_kernel_build": {
+          "source_commit": "ff040c6d5afbc4e26a249022093b8090181f6176",
+          "target_absent_before_launch": true,
+          "compilation_lines": 279,
+          "public_exit": 0,
+          "worker_exit": 0,
+          "kernel_sha256": "d90ebc3210e74271252a6d1f75ca22a16a569a8b48a99805d30d3d99124b9306",
+          "kernel_bytes": 8266576
+        },
+        "passed": true,
+        "qemu_raw_exit": 33,
+        "supervisor_exit": 0,
+        "worker_reaped": true,
+        "boot_sha256": "d90ebc3210e74271252a6d1f75ca22a16a569a8b48a99805d30d3d99124b9306",
+        "boot_size": 8266576,
+        "initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+        "serial_sha256": "18f820dba25feb4186b881cd68fb3d44c53b4d129653152bcfccefbce330c357",
+        "evidence": "support/build/evidence/2026-10-16-build-environment/kernel-public/README.md",
+        "profile": "x86_64-q35-tcg-max-1cpu-512MiB-SeaBIOS",
+        "source_directory": "kernel/asterinas",
+        "derived_tree": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da",
+        "manifest_cleanup_outcome": "owned_removed",
+        "manifest_cleanup_exit": 0,
+        "manifest_cleanup_helper_sha256": "6620d8be088f3602e673397081c5230aa5eb2cad54fd4080f21b3afe370a82c8",
+        "inherited_make_controls_recorded_and_cleared": true,
+        "generated_normal_lock_snapshot_retained": true,
+        "registry_and_toolchain_caches_reused": true,
+        "cross_path_or_cross_host_reproducibility_claimed": false,
         "foreign_manifest_writer_identified": false
       }
     ],
@@ -862,40 +970,180 @@
       "remaining_ledger": "support/build/evidence/2026-10-16-blocker-closure/blockers/ledger.json"
     },
     "cloud_main_sync": {
-      "main_commit": "bc294f75bfb8c03d9963f5a12ea23b9589779d96",
-      "published_merge_commit": "be86dc41228078b4b941b8a2e4d745fc09453d11",
-      "merged_tree": "2e18b73e5898af2e8b21fa746c9f32a2669b9ec1",
-      "evidence": "support/build/evidence/2026-10-16-cloud-main-sync/REPORT.md",
-      "host_test_source": "bc294f75bfb8c03d9963f5a12ea23b9589779d96",
-      "merged_inputs_equal_validated_git_bytes_blobs_modes": 45,
+      "main_commit": "40ca002fac0726b366726d3353916637b29adeae",
+      "published_merge_commit": "5fffe3394dd562ad88fda7c37edc258cf9b56387",
+      "evidence": "support/build/evidence/2026-10-17-owner-refresh/README.md",
       "kernel_tree_unchanged": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da",
-      "new_kernel_builds": 0,
-      "new_qemu_guests": 0,
-      "host_rust_tests_passed": 83,
-      "host_python_test_executions_passed": 98,
-      "passing_host_test_executions": 181,
-      "two_fmt_checks_exit": [
-        0,
-        0
-      ],
-      "control_strict_clippy_exit": 0,
-      "abi_whole_crate_strict_clippy_exit": 101,
-      "abi_narrow_clippy_exits": {
-        "mutation_kill": 101,
-        "transport_vectors": 101
+      "abi_host_validation": {
+        "source_commit": "8f3bb49ab161104063a6ebea25428c40aa884ac0",
+        "runner_checks_passed": 13,
+        "python_tests_per_mode": 52,
+        "python_modes": 2,
+        "rust_tests_and_doctests_passed": 70,
+        "mutation_cases_killed": 12,
+        "expected_mutation_assertions": 17,
+        "fmt_exit": 0,
+        "strict_clippy_exit": 0,
+        "no_std_exit": 0
       },
-      "abi_all_three_helpers_still_unchanged": true,
-      "host_overall_validation": "partial",
-      "extra_isolated_generator_exit": 1,
-      "supported_generator_retry_exit": 0,
-      "a05_smoke_host_only_exit": 0,
-      "candidate_baseline_inputs_equal_current_main": 14,
-      "candidate_patch_check_exit": 0,
-      "candidate_patch_applied": false,
-      "owner_adoption_still_pending": true,
-      "prior_cloud_evidence_master_sha256": "b6854af729f89c0e1463185c80195cb69611f018ac4fa72d68d6f0af26be7b2e",
+      "control_host_validation": {
+        "source_commit": "40ca002fac0726b366726d3353916637b29adeae",
+        "std_passed": 129,
+        "portable_spin_passed": 129,
+        "fmt_exit": 0,
+        "strict_clippy_exits": [
+          0,
+          0
+        ],
+        "no_std_exit": 0
+      },
+      "host_results_are_not_native_control_acceptance": true,
+      "source_bridge": "support/build/evidence/2026-10-17-cloud-closure/source-bridge/result.json",
       "all_project_blockers_closed": false,
       "native_resource_control_accepted": false,
+      "root_readme_bytes": 0
+    },
+    "cloud_main_sync_history": [
+      {
+        "main_commit": "bc294f75bfb8c03d9963f5a12ea23b9589779d96",
+        "published_merge_commit": "be86dc41228078b4b941b8a2e4d745fc09453d11",
+        "merged_tree": "2e18b73e5898af2e8b21fa746c9f32a2669b9ec1",
+        "evidence": "support/build/evidence/2026-10-16-cloud-main-sync/REPORT.md",
+        "host_test_source": "bc294f75bfb8c03d9963f5a12ea23b9589779d96",
+        "merged_inputs_equal_validated_git_bytes_blobs_modes": 45,
+        "kernel_tree_unchanged": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da",
+        "new_kernel_builds": 0,
+        "new_qemu_guests": 0,
+        "host_rust_tests_passed": 83,
+        "host_python_test_executions_passed": 98,
+        "passing_host_test_executions": 181,
+        "two_fmt_checks_exit": [
+          0,
+          0
+        ],
+        "control_strict_clippy_exit": 0,
+        "abi_whole_crate_strict_clippy_exit": 101,
+        "abi_narrow_clippy_exits": {
+          "mutation_kill": 101,
+          "transport_vectors": 101
+        },
+        "abi_all_three_helpers_still_unchanged": true,
+        "host_overall_validation": "partial",
+        "extra_isolated_generator_exit": 1,
+        "supported_generator_retry_exit": 0,
+        "a05_smoke_host_only_exit": 0,
+        "candidate_baseline_inputs_equal_current_main": 14,
+        "candidate_patch_check_exit": 0,
+        "candidate_patch_applied": false,
+        "owner_adoption_still_pending": true,
+        "prior_cloud_evidence_master_sha256": "b6854af729f89c0e1463185c80195cb69611f018ac4fa72d68d6f0af26be7b2e",
+        "all_project_blockers_closed": false,
+        "native_resource_control_accepted": false,
+        "root_readme_bytes": 0
+      }
+    ],
+    "cloud_validation_2026_10_17": {
+      "evidence": "support/build/evidence/2026-10-17-cloud-closure/REPORT.md",
+      "ordinary_build_and_boot": {
+        "code_commit": "d879a9d2ffae8d0eb0df441370da54f9e3a38431",
+        "source_tree": "a2baa0d707b8af80ae0e7d9f09b6e08379667bc2",
+        "derived_tree": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da",
+        "actual_tool_session": 15521,
+        "actual_tool_exit": 0,
+        "source_build_invoked": true,
+        "release_compilation_observed": false,
+        "target_cache_reused": true,
+        "empty_target_rebuild": false,
+        "target_cache_source": "preceding cold make kernel in the same N1 worktree/controller",
+        "preceding_clean_kernel_build": {
+          "source_commit": "d879a9d2ffae8d0eb0df441370da54f9e3a38431",
+          "target_absent_before_launch": true,
+          "compilation_lines": 279,
+          "public_exit": 0,
+          "kernel_sha256": "c49ad7da1c76c1f559d065ac3f8cbcbad407242dda54f1ed00028f02d5c2413d",
+          "kernel_bytes": 8258112,
+          "first_produced_bytes_retained": true
+        },
+        "passed": true,
+        "qemu_raw_exit": 33,
+        "boot_sha256": "c49ad7da1c76c1f559d065ac3f8cbcbad407242dda54f1ed00028f02d5c2413d",
+        "boot_size": 8258112,
+        "initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+        "serial_sha256": "3840526255cff7c53567f3e35e42739a11dba24f3feb03594719e92bec0ab5ca",
+        "serial_size": 72247,
+        "evidence": "support/build/evidence/2026-10-17-native-cloud-normal/README.md",
+        "profile": "ordinary x86_64-q35-tcg-max-1cpu-512MiB-SeaBIOS",
+        "source_directory": "kernel/asterinas",
+        "manifest_cleanup_outcome": "owned_removed",
+        "controller_commands": 11,
+        "all_controller_exits": 0,
+        "post_source_inputs_checked": 118,
+        "post_git_status_empty": true,
+        "registry_and_toolchain_caches_reused": true,
+        "projection_profile_used": false,
+        "cross_path_or_cross_host_reproducibility_claimed": false,
+        "foreign_manifest_writer_identified": false,
+        "stage_scope": "boot stage reused the preceding cold make kernel target; cold compilation is recorded in preceding_clean_kernel_build"
+      },
+      "source_bound_kernel_mode_regression": "support/build/evidence/2026-10-17-native-cloud-before/README.md",
+      "final_osdk_matrix": {
+        "source_commit": "d879a9d2ffae8d0eb0df441370da54f9e3a38431",
+        "source_tree": "a2baa0d707b8af80ae0e7d9f09b6e08379667bc2",
+        "profile": "osdk-native-local-tcp-gdb-capture-v2",
+        "evidence": "support/build/evidence/2026-10-17-native-cloud-final/README.md",
+        "selected": 22,
+        "passed": 22,
+        "failed": 0,
+        "blocked": 0,
+        "vmx_soft_skipped": 1,
+        "qemu_guests": 11,
+        "raw_guest_exit": 33,
+        "coverage_functions": 5692,
+        "coverage_profraw_size": 2096896,
+        "coverage_profraw_sha256": "0862a2568e4bb069835dfa6fdf2d15af727020848976bb0a2457b8eeb7fb601c",
+        "maximum_function_count": 383729,
+        "actual_tool_session": 78119,
+        "actual_tool_exit": 0,
+        "cache_reused": true,
+        "empty_target_rebuild": false,
+        "per_case_generated_osdk_directories": true,
+        "actual_input_mappings_retained": 23,
+        "unique_artifact_payloads_retained": 13,
+        "default_unix_blocker_closed": false
+      },
+      "cross_path_repeatability": {
+        "source_commit": "4e8c7083575cec69efabe8d2250dfdd040c8dee8",
+        "source_tree": "d50cc2fd3fac4e8060ff26c324267b267767bca2",
+        "schema": "a01-component-path-projection/4",
+        "cargo_build_jobs": 1,
+        "cold_builds": 2,
+        "actual_source_roots_differ": true,
+        "same_actual_host": true,
+        "complete_elf_bytes_equal": true,
+        "complete_initramfs_bytes_equal": true,
+        "complete_bios_bytes_equal": true,
+        "kernel_sha256": "8c540288c6af2a1a97121031643c1af4c4db395d7e8b4082d6edc4604449849a",
+        "kernel_bytes": 8286952,
+        "raw_qemu_exits": [
+          33,
+          33
+        ],
+        "evidence": "support/build/evidence/2026-10-17-repro-cross-path/README.md",
+        "cross_host_verified": false,
+        "immutable_environment_verified": false
+      },
+      "host_snapshot_tests_per_python_mode": 152,
+      "host_snapshot_python_modes": 2,
+      "private_signed_ubuntu_packages": 57,
+      "private_toolchain_evidence": "support/build/evidence/2026-10-17-private-toolchain/REPORT.md",
+      "owner_final_readback": "support/build/evidence/2026-10-17-owner-final-refresh/REPORT.md",
+      "remaining_ledger": "support/build/evidence/2026-10-17-cloud-closure/blockers.json",
+      "all_project_blockers_closed": false,
+      "native_resource_control_accepted": false,
+      "default_unix_blocker_closed": false,
+      "vmx_ept_exercised": false,
+      "cross_host_reproducibility_claimed": false,
+      "immutable_environment_claimed": false,
       "root_readme_bytes": 0
     }
   },
@@ -918,6 +1166,6 @@
   "boot_firmware_digest": "sha256:1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
   "reproducible_kernel_build_ready": false,
   "native_build_profile_ready": true,
-  "native_build_environment": "support/build/evidence/2026-10-16/host/environment-investigation.json",
-  "reproducible_kernel_build_note": "Two same-host, same-absolute-source/target-path empty kernel-target builds produced byte-identical ELF files and booted. Registry/toolchain caches were shared. Cross-path/cross-host bit reproducibility and a complete configured host/container lock remain unestablished."
+  "native_build_environment": "support/build/evidence/2026-10-17-private-toolchain/REPORT.md",
+  "reproducible_kernel_build_note": "Two absent-target full kernel builds at schema4 source 4e8c7083575cec69efabe8d2250dfdd040c8dee8, on the same actual host and two different actual source roots, produced byte-identical complete ELF/initramfs/BIOS inputs and both booted (raw QEMU33). The opt-in source-bound compiler/component path and Cargo metadata projection uses one Cargo job. Registry/toolchain caches were shared. Ordinary source d879a9d2 independently passed a cold make kernel followed by make run_kernel. Cross-host bit reproduction and a complete immutable host/container lock remain unestablished."
 }
