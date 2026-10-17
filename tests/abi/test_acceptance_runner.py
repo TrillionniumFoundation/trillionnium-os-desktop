@@ -59,7 +59,10 @@ class AcceptanceRunnerTests(unittest.TestCase):
                 (acceptance.PINNED_MUTATION_SCHEMA, 19, 19, False, False),
                 (acceptance.PINNED_MUTATION_SCHEMA, 19, 19, True, True),
             )
-            with mock.patch.object(acceptance, "run_command", return_value=clean_process):
+            # Each invocation mutates result["passed"]; returning the same
+            # dict would contaminate all later cases after the first negative.
+            with mock.patch.object(acceptance, "run_command",
+                                   side_effect=lambda *args, **kwargs: dict(clean_process)):
                 for schema, expected, killed, reported_success, allowed in cases:
                     evidence.write_text(json.dumps({
                         "schema": schema, "success": reported_success,
