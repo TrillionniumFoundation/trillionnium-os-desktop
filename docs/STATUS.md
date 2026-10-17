@@ -1,5 +1,14 @@
 # 当前状态
 
+## 2026-10-16：A02 全量实测合主干；A05 QueryAbi 内核候选（未验收）
+
+- **A02 已真实合入 `main`**：[PR #76](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/76)，merge `8f3bb49ab161104063a6ebea25428c40aa884ac0`。在授权执行宿主固定 `nightly-2026-07-21`（Rust 1.99.0-nightly）对精确 owner 代码源和与 main 同步的提交 `338bd37b471cb0c94f2dbd251d4c98fd6180342c` 运行 `tests/abi/run_acceptance.py`，**13/13 必需检查通过**，无失败和遗漏，含 no_std 编解码、12基本 + 24语义黄金字节、32B transport、负面案例、独立 Rust/Python 编译变异测试、fmt、严格Clippy、no_std target。合并后 `libs/os-abi/src/lib.rs` Git blob `dc32e002cfbfc63c456e071958b167ad24f50cf5` 与被测代码逐字节一致。最初执行宿主未安装固定 Clippy，验收按规则拒绝；仅安装固定工具链 Clippy 后重跑通过。实际 Github Actions 另看其独立结论，不能把 queued 状态报为通过。
+- **A03 同一源码进一步复核**：使用 `RUSTUP_TOOLCHAIN=nightly-2026-07-21` 对 `tests/control/run-validation.sh` 运行真正 Rust host / portable-spin / no_std 编译、测试与严格 lint，最终 exit0。首次错误使用默认 Rust 1.95 导致 `x86_64-unknown-none` 目标缺失，保留为执行环境问题，不能算产品测试失败或掩盖后续修复。
+- **首次 A05 真实内核源码候选（仍为 Draft）**：[PR #87](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/87)，commit `5fc3887dfc5833b61d11280eb1421bb7fd78648f`。沿 Asterinas 既有 char registry/devtmpfs/PerOpenFileOps，新增仅只读 `/dev/hepta-control` 的实验 HOS2 QueryAbi；输入/输出调用**同一份** `libs/os-abi/src/lib.rs`，boot/临时会话 ID 独立标识，**不授予** CPU、设备、管理/历史退役效果权。内核在独立工作树从固定 Asterinas 源码成功 `make kernel` 构建，ELF SHA256 `54c8a7a798cbbd80f1a8ce5f0144328815e63b413e79b0133206bcaaba607e4a`；静态 Linux ELF QueryAbi 对抗探针用 `cc -Wall -Wextra -Werror -static` 编译通过，但**尚未在 guest 真正运行 ioctl**。
+- **明确剩余阻塞：**尝试创建 QueryAbi 客体 runner 及独立运行 QEMU 被授权执行工具拒绝；没有声称新内核的 QueryAbi 设备已运行/boot 通过。原 main 的 A01 构建脚本有 `set -o pipefail` 与 `head -1` 偶发 exit141，候选编译中仅在隔离工作树暂时把 `head` 换成 `sed -n '1p'`，在提交 A05 前完全恢复；PR #87 不改 A01 所有文件。正式 ioctl 编号、可信 CapSpace/process-start/exec_epoch、A06 真正的 ResourceDomain/G1、A07 Hepta 唯一持久 owner 效果/撤销/历史查询和退役/G2 均未放行。根 README 保留严格0字节，未修改生产机器。
+
+---
+
 ## 2026-10-16：A00 持久 K 主键纠偏与 G0 严格 CI 交付
 
 - **已合并真正 CI 源码**：[PR #69](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/69)，merge `5aeff7b60e8c96aa14676e1642efddc6ad63a607`，现有 `.github/workflows/g0-contracts.yml` 对 A02/A03 Cargo+fmt+strict Clippy、A05 QueryAbi/ENOTTY 改为必需检查，`tests/control/**` 纳入 PR/push 触发。A00 在独立 Bash fixture 实际测 **9/9** 文件缺失保护场景通过；**当前新主干 GitHub Actions 仍需自身真实完成，不能报通过**。
