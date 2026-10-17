@@ -12,7 +12,7 @@ use std::process::{Child, Command, ExitStatus, Stdio};
 use std::sync::mpsc::{self, Receiver, Sender};
 
 use trill_ui_core::{
-    read_frame, socket_path, unix_ms, write_frame, AppKind, HostResources, HostWaylandObservation,
+    parse_host_request, read_frame, socket_path, unix_ms, write_frame, AppKind, HostResources, HostWaylandObservation,
     Request, Response, TaskRecord, TaskState, WaylandSocketStatus, Workspace, MAX_ACTIVE_TASKS,
     MAX_TRACKED_TASKS,
 };
@@ -551,7 +551,7 @@ fn serve_connection(mut stream: UnixStream, session: &mut Session) -> io::Result
     stream.set_read_timeout(Some(std::time::Duration::from_millis(500)))?;
     stream.set_write_timeout(Some(std::time::Duration::from_millis(500)))?;
     let response = match read_frame(&mut stream) {
-        Ok(frame) => match serde_json::from_slice::<Request>(&frame) {
+        Ok(frame) => match parse_host_request(&frame) {
             Ok(command) => session.handle(command),
             Err(error) => Response::Error {
                 message: format!("Invalid IPC request: {error}"),
