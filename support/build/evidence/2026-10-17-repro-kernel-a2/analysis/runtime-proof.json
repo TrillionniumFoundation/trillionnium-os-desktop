@@ -1,0 +1,30 @@
+{
+  "full_serial_sha256": "e0845a2d34a0f3d16d7a753c50c94f30b1d3eacc1d7b1649811cfdc4f574cccd",
+  "full_serial_bytes": 72341,
+  "required_markers": [
+    "OSTD initialized. Preparing components.",
+    "TRILLIONNIUM_A01_INIT_BEGIN",
+    "TRILLIONNIUM_A01_CPU_COUNT=1",
+    "Successfully booted.",
+    "TRILLIONNIUM_A01_BOOT_OK"
+  ],
+  "all_required_markers_present": true,
+  "proc_version_marked_excerpt": "TRILLIONNIUM_A01_PROC_VERSION_BEGIN\r\n[     0.569] INFO  : [pid=1][tid=1][id=56][SYS_CLONE]\r\n[     0.571] INFO  : [pid=1][tid=1][id=61][SYS_WAIT4]\r\n[     0.572] INFO  : [pid=14][tid=14][id=273][SYS_SET_ROBUST_LIST]\r\n[     0.573] INFO  : [pid=14][tid=14][id=3][SYS_CLOSE]\r\n[     0.573] INFO  : [pid=14][tid=14][id=13][SYS_RT_SIGACTION]\r\n[     0.573] INFO  : [pid=14][tid=14][id=59][SYS_EXECVE]\r\n[     0.576] INFO  : [pid=14][tid=14][id=12][SYS_BRK]\r\n[     0.576] INFO  : [pid=14][tid=14][id=12][SYS_BRK]\r\n[     0.576] INFO  : [pid=14][tid=14][id=158][SYS_ARCH_PRCTL]\r\n[     0.577] INFO  : [pid=14][tid=14][id=218][SYS_SET_TID_ADDRESS]\r\n[     0.577] INFO  : [pid=14][tid=14][id=273][SYS_SET_ROBUST_LIST]\r\n[     0.577] WARN  : Unimplemented syscall number: 334\r\n[     0.577] INFO  : [pid=14][tid=14][id=302][SYS_PRLIMIT64]\r\n[     0.577] INFO  : [pid=14][tid=14][id=267][SYS_READLINKAT]\r\n[     0.578] INFO  : [pid=14][tid=14][id=318][SYS_GETRANDOM]\r\n[     0.579] INFO  : [pid=14][tid=14][id=12][SYS_BRK]\r\n[     0.579] INFO  : [pid=14][tid=14][id=12][SYS_BRK]\r\n[     0.579] INFO  : [pid=14][tid=14][id=12][SYS_BRK]\r\n[     0.579] INFO  : [pid=14][tid=14][id=10][SYS_MPROTECT]\r\n[     0.580] INFO  : [pid=14][tid=14][id=157][SYS_PRCTL]\r\n[     0.580] INFO  : [pid=14][tid=14][id=102][SYS_GETUID]\r\n[     0.581] INFO  : [pid=14][tid=14][id=257][SYS_OPENAT]\r\n[     0.583] INFO  : [pid=14][tid=14][id=40][SYS_SENDFILE]\r\nLinux version 5.13.0 (a01-repro@a01-fixed-profile) (rustc 1.99.0-nightly) #1 SMP Thu Jan  1 00:00:00 UTC 1970\r\n[     0.585] INFO  : [pid=14][tid=14][id=40][SYS_SENDFILE]\r\n[     0.585] INFO  : [pid=14][tid=14][id=3][SYS_CLOSE]\r\n[     0.585] INFO  : [pid=14][tid=14][id=231][SYS_EXIT_GROUP]\r\n[     0.587] INFO  : [pid=1][tid=1][id=15][SYS_RT_SIGRETURN]\r\n[     0.587] INFO  : [pid=1][tid=1][id=61][SYS_WAIT4]\r\n[     0.588] INFO  : [pid=1][tid=1][id=1][SYS_WRITE]\r\nTRILLIONNIUM_A01_PROC_VERSION_END",
+  "explicit_synthetic_embedded_builder": {
+    "username": "a01-repro",
+    "hostname": "a01-fixed-profile"
+  },
+  "actual_host": {
+    "hostname": "343e40cfefc1",
+    "username": "root",
+    "uid": 0,
+    "uname": [
+      "Linux",
+      "343e40cfefc1",
+      "6.18.44",
+      "#1 SMP Sat Sep 26 20:02:31 UTC 2026",
+      "x86_64"
+    ]
+  },
+  "scope": "A2 boot acceptance only; embedded builder is deliberately synthetic opt-in profile metadata and does not identify the actual cloud host."
+}
