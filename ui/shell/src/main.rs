@@ -808,7 +808,9 @@ impl Desktop {
                     warning(),
                     "Old client window unverified after compositor restart. A fresh process cannot restore unsaved app state.",
                 );
-                if ui.button("Launch NEW window (not reattach)").clicked_by(egui::PointerButton::Primary)
+                if ui
+                    .button("Launch NEW window (not reattach)")
+                    .clicked_by(egui::PointerButton::Primary)
                     && self.launch_host_app(task.workspace, task.app)
                 {
                     self.notice(format!(
@@ -1370,8 +1372,7 @@ mod shell_lifecycle_tests {
                     egui::CentralPanel::default().show(ctx, |ui| {
                         let response = ui.button("Request termination");
                         focused = response.has_focus();
-                        effect_clicked =
-                            response.clicked_by(egui::PointerButton::Primary);
+                        effect_clicked = response.clicked_by(egui::PointerButton::Primary);
                     });
                 },
             );
