@@ -439,21 +439,27 @@ mod tests {
             vec![
                 egui::Event::Ime(egui::ImeEvent::Commit("你好".into())),
                 egui::Event::Ime(egui::ImeEvent::Disabled),
-                egui::Event::Key {
-                    key: egui::Key::Enter,
-                    physical_key: None,
-                    pressed: true,
-                    repeat: false,
-                    modifiers: egui::Modifiers::default(),
-                },
             ],
+        );
+        assert!(state.terminal_input.contains("你好"));
+        // Even an extra Enter key delivered AFTER IME commit must not become
+        // a restricted terminal Run click or execute the completed command.
+        frame(
+            &ctx,
+            &mut state,
+            vec![egui::Event::Key {
+                key: egui::Key::Enter,
+                physical_key: None,
+                pressed: true,
+                repeat: false,
+                modifiers: egui::Modifiers::default(),
+            }],
         );
         assert!(
             state.terminal_output.is_empty(),
             "IME candidate confirmation via Enter is not an explicit Run click"
         );
         assert!(!state.terminal_close_requested);
-        assert!(state.terminal_input.contains("你好"));
     }
 
     #[test]
