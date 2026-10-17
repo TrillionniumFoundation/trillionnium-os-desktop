@@ -100,7 +100,10 @@ reattachment. Inspector can offer **Launch NEW window (not reattach)** only
 when the old task remains RUNNING, has an observed PID and first egui layout,
 the socket epoch changed and Session is online. Unknown/partial/cancelling
 tasks are explicitly NOT eligible for this recovery shortcut. An opted-in
-new task cannot restore unsaved data and never silently kills the old process. Real Chinese IME, physical
+new task cannot restore unsaved data and never silently kills the old process.
+Host process launch, NEW window and termination controls require an explicit
+primary pointer click; Enter/Space on a focused button cannot activate them.
+ Real Chinese IME, physical
 GPU reset and target kernel boot remain separate gates.
 
 A10 independently downloaded the successful exact-source Linux-host
