@@ -1,0 +1,10 @@
+[package]
+name = "a04-tokio-workload"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+# Exact direct dependency. Generate/commit Cargo.lock on a provisioned Rust host
+# BEFORE qualifying a Tokio binary; an unpinned transitive closure is not W1.
+[dependencies]
+tokio = { version = "=1.47.1", default-features = false, features = ["fs", "io-util", "macros", "net", "rt-multi-thread", "sync", "time"] }
