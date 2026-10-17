@@ -162,6 +162,11 @@ python3 -B -m unittest discover -s tests/ui \
   -p test_original_hepta_shell.py -v
 ```
 
+The A10 workflow runs this command in a separate step after the original-process
+guard tests and preserves `original-shell-contracts.log` in `a10-host-evidence`.
+This CI step exercises capture contracts and disposable child cleanup; it does
+not start original Agentd or qualify six actual window images.
+
 These accept the real Starting readiness/event progression and conservatively
 tolerate independently sampled field combinations. The two synthetic
 intermediate combinations do not claim two observed original-runtime orders.
