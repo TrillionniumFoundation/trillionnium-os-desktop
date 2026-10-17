@@ -122,12 +122,19 @@ impl HeptaProjection {
     }
 }
 
-/// Text is display data, with control characters removed and a byte bound.
-/// Truncation is only for this view; these strings are never reused as an
-/// authoritative identifier in a request to Hepta.
+/// UI-only display data. Strip ASCII controls, Unicode line separators,
+/// bidi overrides/isolates and direction markers BEFORE size truncation.
+/// Untrusted event metadata must not forge a "ready", "fenced" or error label
+/// through visual reordering. This does NOT authorize a Hepta operation.
 pub fn bounded_hepta_text(text: &str) -> String {
     let mut output = String::new();
-    for character in text.chars().filter(|character| !character.is_control()) {
+    for character in text.chars().filter(|character| {
+        !character.is_control()
+            && !matches!(
+                *character as u32,
+                0x061C | 0x200E..=0x200F | 0x2028..=0x202E | 0x2066..=0x2069
+            )
+    }) {
         if output.len() + character.len_utf8() > MAX_HEPTA_TEXT_BYTES {
             break;
         }
@@ -146,6 +153,26 @@ mod tests {
         assert!(!text.chars().any(char::is_control));
         assert!(text.len() <= MAX_HEPTA_TEXT_BYTES);
         assert!(text.is_char_boundary(text.len()));
+    }
+
+    #[test]
+    fn event_labels_never_render_bidi_overrides_or_line_spoofing() {
+        let malicious = "错误\u{2028}READY\u{202E}DENIED\u{202C}\u{2066}SUCCESS\u{2069}\u{061C}\u{200F}";
+        let projected = bounded_hepta_text(malicious);
+        assert_eq!(projected, "错误READYDENIEDSUCCESS");
+        assert!(projected.len() <= MAX_HEPTA_TEXT_BYTES);
+        assert!(!projected.chars().any(|character| {
+            character.is_control()
+                || matches!(
+                    character as u32,
+                    0x061C | 0x200E..=0x200F | 0x2028..=0x202E | 0x2066..=0x2069
+                )
+        }));
+        assert_eq!(
+            bounded_hepta_text("中文输入、候选词 📝 / Arabic العربية"),
+            "中文输入、候选词 📝 / Arabic العربية",
+            "ordinary Unicode display text must survive"
+        );
     }
 
     #[test]
