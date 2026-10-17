@@ -129,6 +129,13 @@ assert t["state"] == "running" and t["pid"]
 print(t["id"], t["pid"])
 ')"
 [[ -n "$old_id" && -n "$old_pid" ]] || { echo "Missing initial app identity" >&2; exit 1; }
+old_launch_epoch="$(printf '%s' "$old_response" | python3 -c '
+import json,sys
+task=json.load(sys.stdin)["task"]
+epoch=task["wayland_socket_epoch_at_launch"]
+assert epoch is not None and epoch == int(sys.argv[1]), task
+print(epoch)
+' "$initial_socket_epoch")"
 await_app_layout "$old_id" "$old_pid"
 
 # Destroy only the private compositor while keeping the same session alive.
@@ -171,7 +178,10 @@ o=s["resources"]["wayland"]
 assert s["session_instance"] == sys.argv[1]
 assert o["status"] == "socket_observed", o
 assert o["socket_observation_epoch"] > int(sys.argv[2]), o
-' "$instance" "$missing_epoch"
+old=next(t for t in s["tasks"] if t["id"] == int(sys.argv[3]))
+assert old["wayland_socket_epoch_at_launch"] == int(sys.argv[4]), old
+assert old["wayland_socket_epoch_at_launch"] < o["socket_observation_epoch"], old
+' "$instance" "$missing_epoch" "$old_id" "$old_launch_epoch"
 host_process_alive "$session_pid" || { echo "Session did not survive compositor restart" >&2; exit 1; }
 
 new_response="$("$ctl" launch research calculator)"
@@ -184,6 +194,12 @@ print(t["id"], t["pid"])
 [[ -n "$new_id" && -n "$new_pid" && "$old_pid" != "$new_pid" ]] || {
     echo "New compositor client identity invalid" >&2; exit 1;
 }
+printf '%s' "$new_response" | python3 -c '
+import json,sys
+task=json.load(sys.stdin)["task"]
+epoch=task["wayland_socket_epoch_at_launch"]
+assert epoch is not None and epoch > int(sys.argv[1]), task
+' "$old_launch_epoch"
 await_app_layout "$new_id" "$new_pid"
 "$ctl" cancel "$new_id" "$instance" >/dev/null
 new_state=""

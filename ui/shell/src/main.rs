@@ -745,6 +745,19 @@ impl Desktop {
                 task.pid, task.exit_code
             ));
             ui.small(format!("HOS2 revision: {:?}", task.hos2_revision));
+            ui.small(format!(
+                "Wayland socket epoch at launch: {:?}",
+                task.wayland_socket_epoch_at_launch
+            ));
+            if let Some(resources) = &self.resources {
+                ui.colored_label(
+                    warning(),
+                    task.host_window_observation(&resources.wayland).label(),
+                );
+                ui.small("This is host socket metadata only; client surfaces and reattachment are not attested.");
+            } else {
+                ui.colored_label(warning(), "UNVERIFIED: NO CURRENT DISPLAY OBSERVATION");
+            }
             if let Some(time) = task.ui_first_frame_unix_ms {
                 ui.colored_label(
                     success_color(),

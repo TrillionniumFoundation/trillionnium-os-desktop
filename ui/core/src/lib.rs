@@ -118,6 +118,10 @@ pub struct TaskRecord {
     /// First completed egui App::update widget layout, signalled by THIS child.
     /// This is not a compositor surface-mapped or GPU-fence confirmation.
     pub ui_first_frame_unix_ms: Option<u64>,
+    /// Linux host Wayland socket epoch observed when Session requested this
+    /// native child launch. This is NOT a surface-mapped or connected event.
+    #[serde(default)]
+    pub wayland_socket_epoch_at_launch: Option<u64>,
 }
 
 impl TaskRecord {
@@ -139,7 +143,26 @@ impl TaskRecord {
             },
             hos2_revision: None,
             ui_first_frame_unix_ms: None,
+            wayland_socket_epoch_at_launch: None,
         }
+    }
+
+    /// A Linux socket change may invalidate the old client display channel,
+    /// but even a matching socket epoch does NOT prove Wayland surface mapping.
+    pub fn host_window_observation(
+        &self,
+        current: &HostWaylandObservation,
+    ) -> HostWindowObservation {
+        let Some(at_launch) = self.wayland_socket_epoch_at_launch else {
+            return HostWindowObservation::NoSocketAtLaunch;
+        };
+        if current.status != WaylandSocketStatus::SocketObserved {
+            return HostWindowObservation::SocketUnavailable;
+        }
+        if current.socket_observation_epoch != at_launch {
+            return HostWindowObservation::SocketChanged;
+        }
+        HostWindowObservation::SameSocketUnverified
     }
 
     /// Only the lifecycle owner may call this. An LLM message is not evidence.
@@ -183,6 +206,27 @@ impl WaylandSocketStatus {
             Self::Missing => "SOCKET MISSING",
             Self::NotSocket => "UNTRUSTED SOCKET PATH",
             Self::SocketObserved => "SOCKET PRESENT (UNVERIFIED)",
+        }
+    }
+}
+
+/// Unprivileged host metadata classification; there is intentionally no
+/// "window restored" or "surface ready" result without a compositor receipt.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum HostWindowObservation {
+    NoSocketAtLaunch,
+    SocketUnavailable,
+    SocketChanged,
+    SameSocketUnverified,
+}
+
+impl HostWindowObservation {
+    pub const fn label(self) -> &'static str {
+        match self {
+            Self::NoSocketAtLaunch => "UNVERIFIED: NO WAYLAND SOCKET AT LAUNCH",
+            Self::SocketUnavailable => "UNVERIFIED: WAYLAND SOCKET UNAVAILABLE",
+            Self::SocketChanged => "UNVERIFIED: WAYLAND SOCKET CHANGED SINCE LAUNCH",
+            Self::SameSocketUnverified => "UNVERIFIED: SAME SOCKET METADATA",
         }
     }
 }
@@ -324,6 +368,46 @@ mod tests {
         assert_eq!(resources.wayland.status, WaylandSocketStatus::Unconfigured);
         assert_eq!(resources.wayland.socket_observation_epoch, 0);
         assert_eq!(resources.wayland.status.label(), "NOT CONFIGURED");
+    }
+
+    #[test]
+    fn per_app_wayland_socket_epoch_is_never_surface_restoration_proof() {
+        let mut app = TaskRecord::new(1, Workspace::Research, AppKind::Notes);
+        let mut sampled = HostWaylandObservation {
+            status: WaylandSocketStatus::SocketObserved,
+            socket_observation_epoch: 7,
+            sampled_unix_ms: 1,
+        };
+        assert_eq!(
+            app.host_window_observation(&sampled),
+            HostWindowObservation::NoSocketAtLaunch
+        );
+        app.wayland_socket_epoch_at_launch = Some(7);
+        assert_eq!(
+            app.host_window_observation(&sampled),
+            HostWindowObservation::SameSocketUnverified
+        );
+        sampled.socket_observation_epoch = 8;
+        assert_eq!(
+            app.host_window_observation(&sampled),
+            HostWindowObservation::SocketChanged
+        );
+        sampled.status = WaylandSocketStatus::Missing;
+        assert_eq!(
+            app.host_window_observation(&sampled),
+            HostWindowObservation::SocketUnavailable
+        );
+        assert!(app.host_window_observation(&sampled).label().contains("UNVERIFIED"));
+    }
+
+    #[test]
+    fn old_task_json_without_socket_epoch_is_fail_closed() {
+        let task = TaskRecord::new(9, Workspace::Build, AppKind::Calculator);
+        let json = serde_json::to_string(&task).unwrap();
+        let old = json.replace(",\"wayland_socket_epoch_at_launch\":null", "");
+        assert_ne!(json, old);
+        let decoded: TaskRecord = serde_json::from_str(&old).unwrap();
+        assert_eq!(decoded.wayland_socket_epoch_at_launch, None);
     }
 
     #[test]

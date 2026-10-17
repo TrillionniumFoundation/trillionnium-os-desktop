@@ -64,8 +64,9 @@ Unit coverage:
   registry round-trip (socket creation alone is insufficient), then run the multi-app smoke;
   compositor-mapped surfaces/real GPU/Chinese IME are still NOT attested
 - metadata-only Wayland socket observation with fail-closed missing/non-socket
-  status and monotone per-Session observation epoch; the UI never treats
-  PID survival as proof that an old Wayland surface was reattached
+  status and monotone per-Session observation epoch; each app records its
+  launch socket epoch. The Shell explicitly distinguishes old-client socket
+  change from new-client launch without ever claiming surface reattachment
 - real headless Weston crash/restart while the independently supervised Session
   retains its generation and child identity; a newly launched Wayland app must
   complete its egui layout and be explicitly reaped. A pre-crash client is NOT

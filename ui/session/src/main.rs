@@ -183,6 +183,12 @@ impl Session {
         };
         self.next_id = next;
         let mut task = TaskRecord::new(id, workspace, app);
+        // A child can outlive the compositor that was present at launch.
+        // Record the socket identity only for later fail-closed comparison.
+        let at_launch = self.display.observe(probe_host_wayland());
+        if at_launch.status == WaylandSocketStatus::SocketObserved {
+            task.wayland_socket_epoch_at_launch = Some(at_launch.socket_observation_epoch);
+        }
         // No arbitrary command strings, shell expansion, user paths or elevated rights.
         let spawn = Command::new(&self.app_binary)
             .arg("--kind")

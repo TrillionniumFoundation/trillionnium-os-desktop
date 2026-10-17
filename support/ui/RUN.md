@@ -57,7 +57,9 @@ mapping or actual GPU-buffer presentation. It also launches a separately owned W
 compositor while the same Session stays alive, and verifies that a new
 Wayland client reaches its first Rust layout. The Session separately observes
 the test socket disappear and reappear with a monotonically increasing
-host-only observation epoch; the Shell surfaces uncertain display health.
+host-only observation epoch. Every successfully launched host process
+records its observed socket epoch; the Shell identifies when a process predates
+a compositor socket replacement but never claims a mapped or reattached surface.
 The original client is recorded without any claim of lossless window
 reattachment. Real Chinese IME, physical
 GPU reset and target kernel boot remain separate gates.
