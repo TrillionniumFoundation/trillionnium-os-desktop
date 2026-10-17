@@ -1,5 +1,22 @@
 # 当前状态
 
+## 2026-10-16：A00 持久 K 主键纠偏与 G0 严格 CI 交付
+
+- **已合并真正 CI 源码**：[PR #69](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/69)，merge `5aeff7b60e8c96aa14676e1642efddc6ad63a607`，现有 `.github/workflows/g0-contracts.yml` 对 A02/A03 Cargo+fmt+strict Clippy、A05 QueryAbi/ENOTTY 改为必需检查，`tests/control/**` 纳入 PR/push 触发。A00 在独立 Bash fixture 实际测 **9/9** 文件缺失保护场景通过；**当前新主干 GitHub Actions 仍需自身真实完成，不能报通过**。
+- **重要 Hepta 事实校正（取代下方 A00 历史错误 K 描述）：** 固定 `hepta-private-ci@f8c9419d...` 的 `kernel.operations` 持久 `OperationIntentV1` 含独立的 `scope_id: StableId`、`operation_id: StableId`、`payload_digest: Digest32`，其固定 SQL 主键是 `PRIMARY KEY(scope_id, operation_id)`；摘要不是主键，参与 `semantic_digest` 和权限/最终效果的独立校验。此前 A00 草稿 #35/#48 曾把 `model.rs::OperationKey {id,payload_digest}` **参考模型**误当该持久账本的 K，两个草稿均未合主干；这一定义现明确撤回。A03 owner 的两个无损 StableId 字段方向正确，不能被旧草稿覆盖。A07 仍要在原唯一 Hepta owner 里分别验证摘要、授权、代际和 K→D 绑定。
+- **当前真实限制：** A03 仍为 Rust **host model**、A05 五操作真实 CapSpace/ioctl 与 A07 持久执行/恢复仍未闭环，G1/G2 不合格；A06 CPU 配额实测不能替代生命周期/权限/严格窗口验收，A09 GPU/VMM 仍需隔离执行及物理硬件验证。固定 Asterinas/Hepta/toolchain 未升级，根 README 0 字节。
+
+---
+
+
+## 2026-10-16：HOS2 ABI 独立复核与主干合并
+
+- **已完成：**[PR #72](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/72) 的 `no_std` HOS2 transport snapshot/preflight/typed codec 修复已独立测试并合入 `main`，merge `02a0e4f6e11ed04039179165726ae43a0caab78a`。独立对精确 PR HEAD `eef96afd4c3fcdc5bcdc2b8ba00260e1fb116b91` 在 Linux host 执行 `cargo test --offline`、`cargo clippy --offline --all-targets -- -D warnings`、`cargo fmt -- --check`、`cargo check --offline --no-default-features` 和 `python3 -m unittest discover -s tests/abi -p test_*.py -v`，全部返回 0；Python ABI 30/30 通过。这是**真实源码宿主测试**，不是内核 HOS2 功能验收。
+- **A06 最新开发：**A06 Draft [PR #18](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/18) 已有多轮真实 QEMU 1vCPU/2vCPU 探针和修复进展，当前仍为 Draft、未进主干。其精确提交对应的 SMP 证据包括已修复的已退出 Process 生命周期问题，但不能从两线程、2vCPU 样本推广到完整 SMP、CPU 热插拔或所有内核锁序。未验证严格逐窗 CPU 上限。
+- **真实下一步：**A05 必须将已合入的 ABI/控制核心接进内核设备/进程授权与 `QueryAbi`，随后最小 `InstallBudget/ReadUsage` 调用进入唯一实际调度/配额状态；A07 沿现有 Hepta owner 完成真实效果确认、历史查询与有界退役。A06 先独立整树回归和 owner 审核，再申请合并；不能因 host ABI 测试绿灯自动放行 G1/G2。
+
+---
+
 ## 2026-10-16：A00 Hepta K/HOS2 严格合并与 CUDA 原生超时真实反例
 
 - **A03 真实 Rust 源码交接（尚未合 main）：**[Draft #48](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/48) 最新 A00 head `040eb1b352308debc763c7c9cb86106ffb1e11dc`：在 A03 owner 的 ResourceDomain/投递/原 owner 权限模型上，统一固定 Hepta 真正的 K=`StableId+Digest32` 和 `DeliveryObservation::hos2_saved_status_code()->Result<u16,DeliveryError>`。拒绝终局结果缺失、伪造元数据、`previous_revision=0`、以及 `consumed > effective % 100ms`，对齐主干 A02 Rust decoder。**44项 Rust 集成测试已编写但本环境没有 cargo/rustc，不能宣称 44/44 通过**；独立 Python 时间/修订数学 oracle 5/5 通过，仅属算术模型。A03 owner 正持续更新，禁止强推或覆盖 owner，合入前需精确头部 Cargo/Clippy/fmt 与现有 Hepta 持久 owner 接合。

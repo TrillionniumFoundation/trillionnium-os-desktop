@@ -6,6 +6,7 @@ on:
       - "tests/abi/**"
       - "tests/golden/**"
       - "tests/spec/**"
+      - "tests/control/**"
       - "tests/organ_backend/**"
       - "tests/kernel/control/**"
       - "libs/os-abi/**"
@@ -17,6 +18,7 @@ on:
       - "tests/abi/**"
       - "tests/golden/**"
       - "tests/spec/**"
+      - "tests/control/**"
       - "tests/organ_backend/**"
       - "tests/kernel/control/**"
       - "libs/os-abi/**"
@@ -34,6 +36,17 @@ jobs:
       - uses: actions/checkout@v4
       - name: Verify independent HOS2 golden fixtures
         run: python3 tests/golden/generate_hos2.py --check
+      - name: Verify independent native 32-byte HOS2 ioctl transport golden
+        shell: bash
+        run: |
+          set -euo pipefail
+          for fixture in tests/golden/generate_transport32.py tests/golden/transport32.hex; do
+            if [[ ! -f "$fixture" || -L "$fixture" ]]; then
+              echo "Missing or symlinked independent ioctl transport fixture: $fixture" >&2
+              exit 1
+            fi
+          done
+          python3 -I tests/golden/generate_transport32.py --check
       - name: Python wire mutations and recovery specification
         run: |
           python3 -m unittest discover -s tests/abi -p 'test_*.py' -v
@@ -43,11 +56,37 @@ jobs:
           python3 -m unittest discover -s tests/organ_backend -p 'test_*.py' -v
           python3 -O -m unittest discover -s tests/organ_backend -p 'test_*.py' -v
       - name: Host A05 QueryAbi wire and ENOTTY smoke (no kernel driver)
-        if: hashFiles('tests/kernel/control/hos2_queryabi_probe.c') != ''
-        run: sh tests/kernel/control/run-host-smoke.sh
-      - name: Host Rust no_std ABI crate (when implemented)
-        if: hashFiles('libs/os-abi/Cargo.toml') != ''
+        run: |
+          test -f tests/kernel/control/hos2_queryabi_probe.c
+          test -f tests/kernel/control/run-host-smoke.sh
+          test -f tests/kernel/control/fake-ioctl-efault.c
+          sh tests/kernel/control/run-host-smoke.sh
+      - name: Require canonical Rust crate manifests and install lint components
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f libs/os-abi/Cargo.toml
+          test -f libs/os-control/Cargo.toml
+      - name: Report real host Rust toolchain and install lint components
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustc -Vv
+          cargo -Vv
+          rustup component add rustfmt clippy
+      - name: Host Rust no_std ABI crate
         run: cargo test --manifest-path libs/os-abi/Cargo.toml --verbose
-      - name: Host Rust control model (when implemented)
-        if: hashFiles('libs/os-control/Cargo.toml') != ''
+      - name: Host Rust ABI strict rustfmt and Clippy
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo fmt --manifest-path libs/os-abi/Cargo.toml -- --check
+          cargo clippy --manifest-path libs/os-abi/Cargo.toml --all-targets -- -D warnings
+      - name: Host Rust control model
         run: cargo test --manifest-path libs/os-control/Cargo.toml --verbose
+      - name: Host Rust control strict rustfmt and Clippy
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo fmt --manifest-path libs/os-control/Cargo.toml -- --check
+          cargo clippy --manifest-path libs/os-control/Cargo.toml --all-targets -- -D warnings

@@ -1,0 +1,153 @@
+{
+  "node": "29609d47ba8e",
+  "head": "00061b6bd0886e393e5ea4113ff999e15ed47bfd",
+  "source": "/tmp/a02-pinned-nightly-audit-rj24ndxy/source",
+  "results": [
+    {
+      "label": "rustc-version",
+      "argv": [
+        "rustc",
+        "-vV"
+      ],
+      "returncode": 0,
+      "output": "rustc 1.99.0-nightly (87e5904f5 2026-07-20)\nbinary: rustc\ncommit-hash: 87e5904f5eb6398af6b22eac2802c78934260c48\ncommit-date: 2026-07-20\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.0-nightly\nLLVM version: 22.1.8\n",
+      "output_sha256": "d919107c9907c374b7605930746505ef72ce87cc21b641260c6225a7da9d8212"
+    },
+    {
+      "label": "cargo-version",
+      "argv": [
+        "cargo",
+        "-V"
+      ],
+      "returncode": 0,
+      "output": "cargo 1.99.0-nightly (3efb1f477 2026-07-17)\n",
+      "output_sha256": "eead13b33714ef18c9cb5b27e1e7aba3f4bc4471ecda1b548ecc6b57b19cdd4d"
+    },
+    {
+      "label": "clippy-version",
+      "argv": [
+        "cargo",
+        "clippy",
+        "--version"
+      ],
+      "returncode": 0,
+      "output": "clippy 0.1.99 (87e5904f5e 2026-07-20)\n",
+      "output_sha256": "8db71aee5df25f942acfce7f8e9ecbf4772e12422e6a6d0fc98e42ae4dbea87f"
+    },
+    {
+      "label": "targets",
+      "argv": [
+        "rustup",
+        "target",
+        "list",
+        "--installed"
+      ],
+      "returncode": 0,
+      "output": "aarch64-unknown-none-softfloat\nloongarch64-unknown-none-softfloat\nriscv64imac-unknown-none-elf\nx86_64-unknown-linux-gnu\nx86_64-unknown-none\n",
+      "output_sha256": "36e5343812591efbccd7d12d26ea21d96a6735e343e98451c589360aeb20350c"
+    },
+    {
+      "label": "test",
+      "argv": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "libs/os-abi/Cargo.toml",
+        "--offline"
+      ],
+      "returncode": 0,
+      "output": "\nrunning 3 tests\ntest tests::malformed_usage_is_rejected ... ok\ntest tests::transport_explicit_little_endian ... ok\ntest tests::request_header_and_payload_round_trip ... ok\n\ntest result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 8 tests\ntest all_known_error_status_codes_accept_empty_error_responses ... ok\ntest all_golden_responses_decode_from_larger_copyout_capacity ... ok\ntest every_golden_encoder_checks_capacity_before_writing ... ok\ntest each_golden_cut_is_rejected_not_just_selected_truncations ... ok\ntest encoders_match_independent_golden_bytes_for_all_operations ... ok\ntest every_golden_header_refuses_version_reserved_or_zero_id_mutation ... ok\ntest fixed_golden_vectors_are_consumed_by_rust_codec ... ok\ntest golden_mutation_sweep_never_panics_or_reencodes_accepted_bytes_differently ... ok\n\ntest result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s\n\n\nrunning 8 tests\ntest fixed_golden_is_a_real_valid_rust_request ... ok\ntest full_low_eight_byte_sequence_is_little_endian_and_high_half_zero ... ok\ntest same_sequence_across_targets_is_also_conflict ... ok\ntest revision_ignoring_mutant_is_killed_by_same_delivery_oracle ... ok\ntest cap_ignoring_mutant_is_killed_by_same_delivery_oracle ... ok\ntest same_sequence_and_slot_different_generation_is_conflict ... ok\ntest same_sequence_and_target_different_cap_is_conflict ... ok\ntest same_sequence_and_target_different_revision_is_conflict ... ok\n\ntest result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 21 tests\ntest correlation_and_capacity_helpers_are_stable ... ok\ntest encoders_report_insufficient_output_capacity ... ok\ntest install_budget_request_rejects_revision_period_cap_and_reserved_mutations ... ok\ntest install_response_echo_rejects_unordered_ids_in_success_and_failure ... ok\ntest fixed_golden_budget_mutations_preserve_delivery_id_but_change_canonical_request ... ok\ntest install_revision_mismatch_is_not_an_integer_overflow ... ok\ntest malformed_frame_lengths_are_rejected_before_unknown_opcode_or_status ... ok\ntest install_previous_revision_must_be_a_valid_existing_revision ... ok\ntest ordered_sequence_helpers_provide_canonical_little_endian_ids ... ok\ntest public_request_payload_mismatches_never_write_output ... ok\ntest public_response_payload_mismatches_never_write_output ... ok\ntest query_abi_capability_table_rejects_unsupported_feature_combinations ... ok\ntest budget_cpu_time_cannot_exceed_elapsed_window_time ... ok\ntest response_structure_mutations_are_rejected ... ok\ntest query_delivery_terminal_metadata_and_historical_request_are_checked ... ok\ntest read_usage_and_retire_through_reject_impossible_semantic_values ... ok\ntest transport_rejects_wrapping_pointer_ranges_without_access_checks ... ok\ntest self_consistent_retirement_must_cover_the_requested_frontier ... ok\ntest self_consistent_install_response_must_match_the_requested_revision ... ok\ntest unknown_minor_and_exact_wire_lengths_are_rejected ... ok\ntest request_structure_mutations_are_rejected ... ok\n\ntest result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 7 tests\ntest query_abi_page_sizes_accept_every_nonzero_power_of_two ... ok\ntest read_usage_accepts_zero_full_caps_and_exact_elapsed_consumption ... ok\ntest read_usage_rejects_impossible_or_misaligned_cpu_snapshots ... ok\ntest query_abi_advertised_payload_limits_include_exact_maximum ... ok\ntest read_usage_accepts_aligned_windows_through_u64_max ... ok\ntest query_abi_supported_operation_masks_match_documented_table ... ok\ntest query_abi_advertised_payload_minima_match_each_supported_profile ... ok\n\ntest result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s\n\n\nrunning 12 tests\ntest all_nonterminal_states_keep_only_the_history_sequence ... ok\ntest all_independent_semantic_edge_frames_decode ... ok\ntest every_semantic_edge_encoder_matches_fixed_bytes_and_preserves_unused_capacity ... ok\ntest last_write_sequence_and_revision_increment_to_max_are_valid ... ok\ntest all_saved_terminal_rejections_preserve_status_without_success_metadata ... ok\ntest history_and_read_ids_remain_opaque_including_nonzero_high_bytes ... ok\ntest one_step_beyond_accepted_write_and_retire_boundaries_is_rejected ... ok\ntest retired_frontier_can_reach_last_write_and_leave_next_sequence_max ... ok\ntest nonterminal_states_reject_saved_status_and_each_success_metadata_field ... ok\ntest typed_terminal_rejection_encoders_match_all_independent_saved_status_bytes ... ok\ntest every_terminal_error_rejects_each_nonzero_success_metadata_field ... ok\ntest every_semantic_edge_encoder_rejects_each_short_capacity_without_writing ... ok\n\ntest result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 6 tests\ntest descriptor_lengths_must_match_even_otherwise_valid_snapshots ... ok\ntest overlapping_ranges_are_accepted_and_request_owns_the_snapshot_values ... ok\ntest public_descriptor_fields_cannot_bypass_validation ... ok\ntest all_five_fixed_requests_pass_the_combined_preflight ... ok\ntest every_opcode_requires_success_capacity_before_admission ... ok\ntest malformed_snapshot_is_rejected_before_short_output_capacity ... ok\n\ntest result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 4 tests\ntest decode_independent_transport32_bytes_and_reencode_exactly ... ok\ntest transport_reserves_success_capacity_before_processing_semantic_errors ... ok\ntest every_short_transport_descriptor_is_rejected ... ok\ntest transport_rejects_reserved_overflow_and_invalid_request_byte_count ... ok\n\ntest result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 1 test\ntest src/lib.rs - Transport::decode_request_snapshot (line 226) ... ok\n\ntest result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s\n\n   Compiling hos2-os-abi v0.1.0 (/tmp/a02-pinned-nightly-audit-rj24ndxy/source/libs/os-abi)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.25s\n     Running unittests src/lib.rs (/tmp/a02-pinned-nightly-audit-rj24ndxy/target/debug/deps/hos2_os_abi-e285e22209df9f81)\n     Running tests/golden_vectors.rs (/tmp/a02-pinned-nightly-audit-rj24ndxy/target/debug/deps/golden_vectors-f9ac9ce0a46b7dd7)\n     Running tests/mutation_kill.rs (/tmp/a02-pinned-nightly-audit-rj24ndxy/target/debug/deps/mutation_kill-cbb9bc2c97531eee)\n     Running tests/negative_vectors.rs (/tmp/a02-pinned-nightly-audit-rj24ndxy/target/debug/deps/negative_vectors-28eda1c1f02d2c8f)\n     Running tests/profile_boundaries.rs (/tmp/a02-pinned-nightly-audit-rj24ndxy/target/debug/deps/profile_boundaries-55bf964b96026ca0)\n     Running tests/semantic_edges.rs (/tmp/a02-pinned-nightly-audit-rj24ndxy/target/debug/deps/semantic_edges-bc2867a3f4227f1c)\n     Running tests/transport_preflight.rs (/tmp/a02-pinned-nightly-audit-rj24ndxy/target/debug/deps/transport_preflight-5039b2d27c04075f)\n     Running tests/transport_vectors.rs (/tmp/a02-pinned-nightly-audit-rj24ndxy/target/debug/deps/transport_vectors-36150cbff1fb459a)\n   Doc-tests hos2_os_abi\n",
+      "output_sha256": "25e0dde33b6e8303a659ac9e6b357e6786c9474fc202aaf550a3e8253d1b94a9"
+    },
+    {
+      "label": "fmt",
+      "argv": [
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "libs/os-abi/Cargo.toml",
+        "--",
+        "--check"
+      ],
+      "returncode": 0,
+      "output": "",
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "clippy",
+      "argv": [
+        "cargo",
+        "clippy",
+        "--manifest-path",
+        "libs/os-abi/Cargo.toml",
+        "--offline",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "returncode": 101,
+      "output": "    Checking hos2-os-abi v0.1.0 (/tmp/a02-pinned-nightly-audit-rj24ndxy/source/libs/os-abi)\nerror: using `chunks_exact` with a constant chunk size\n  --> tests/mutation_kill.rs:21:10\n   |\n21 |         .chunks_exact(2)\n   |          ^^^^^^^^^^^^^^^ help: consider using `as_chunks` instead: `as_chunks::<2>().0.iter()`\n   |\n   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#chunks_exact_to_as_chunks\n   = note: `-D clippy::chunks-exact-to-as-chunks` implied by `-D warnings`\n   = help: to override `-D warnings` add `#[allow(clippy::chunks_exact_to_as_chunks)]`\n\nerror: could not compile `hos2-os-abi` (test \"mutation_kill\") due to 1 previous error\nwarning: build failed, waiting for other jobs to finish...\nerror: using `chunks_exact` with a constant chunk size\n  --> tests/transport_preflight.rs:28:22\n   |\n28 |                     .chunks_exact(2)\n   |                      ^^^^^^^^^^^^^^^ help: consider using `as_chunks` instead: `as_chunks::<2>().0.iter()`\n   |\n   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#chunks_exact_to_as_chunks\n   = note: `-D clippy::chunks-exact-to-as-chunks` implied by `-D warnings`\n   = help: to override `-D warnings` add `#[allow(clippy::chunks_exact_to_as_chunks)]`\n\nerror: could not compile `hos2-os-abi` (test \"transport_preflight\") due to 1 previous error\n",
+      "output_sha256": "bd5a49594ed5bba066dcac6f852e63f60924921d3075520c7428209b4cb57fff"
+    },
+    {
+      "label": "no-std",
+      "argv": [
+        "cargo",
+        "check",
+        "--manifest-path",
+        "libs/os-abi/Cargo.toml",
+        "--offline",
+        "--no-default-features",
+        "--target",
+        "x86_64-unknown-none"
+      ],
+      "returncode": 0,
+      "output": "    Checking hos2-os-abi v0.1.0 (/tmp/a02-pinned-nightly-audit-rj24ndxy/source/libs/os-abi)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.23s\n",
+      "output_sha256": "ca88b1b4f1f276e910d40e21c296891a73df16cde5ac7295b0332316173e8d31"
+    }
+  ],
+  "input_hashes": {
+    "libs/os-abi/Cargo.toml": "8941aa060c09b8243125fceba8000bac896ac12a72f215a1295174cdf1f92b3a",
+    "libs/os-abi/src/lib.rs": "b7cc442a3bd0b5fcf5dddbd8f3557e036daf6912d0ca54e38acaee9b2f235725",
+    "libs/os-abi/tests/transport_preflight.rs": "8987706f87172d7072a68b9288434e21af3453438e5d0593493707d599ce6c7c",
+    "libs/os-abi/tests/golden_vectors.rs": "4e67370ffdb00aec71655c8e37d18b864162a13ed984bbab82dfcc9c20ffe1de",
+    "libs/os-abi/tests/profile_boundaries.rs": "7e1a8a22e2ad9f4f3d24f931679eae100625ed18fec18839cbbe9d142aba4b03",
+    "libs/os-abi/tests/mutation_kill.rs": "fdf8894da26f74bab7b7f2dfb321943ca07c6075b6023f50586f8237169deb0b",
+    "libs/os-abi/tests/negative_vectors.rs": "a5d98872b3e009e2d986d05f9219348bcac7b7f54dbec56e332553b05f1028b7",
+    "libs/os-abi/tests/transport_vectors.rs": "1153fbf02e592169fa1b8a6a2e820796fc55244c5d78660fda85b6ab5018e182",
+    "libs/os-abi/tests/semantic_edges.rs": "b86ef0a2d71e430a0be7b3fa63d3a37b2f97484d2650d5919ae8fbe2ec1ddec5",
+    "tests/golden/hos2_edges.json": "d176461f0a1b42751e3e41c24102e56d25c8e4942cec0deb0ae3f16c271e13d4",
+    "tests/golden/generate_hos2_edges.py": "6beca933a8eee565342310604689bbed21b2efe3958ee4e1ab6f796139b3108e",
+    "tests/golden/transport32.hex": "7c72f4018d2aa14a298064a40d7fc8ff819ff0f87567f857fc5f600bfd3fd28a",
+    "tests/golden/generate_transport32.py": "8afcc15d130335c378d9235f6a52be9cc804ed2522d85e11e5771e9e609e44a7",
+    "tests/golden/hos2.json": "792e8535ab3d0144ff182e3024c57b1a6815b65ffd7ac3ff07a67594851a05ed",
+    "tests/golden/generate_hos2.py": "87121df8850842e8f39ce9e7668a1e7b0aed5158d5a8f01fb0343d3345f9638a",
+    "tests/abi/A02_PREFLIGHT_2026-10-16.md": "9915d650a3f67e61ce0e37a277480f51606af88825bc9c1de1ffceba4cbf6b57",
+    "tests/abi/test_golden_contract.py": "b03e9372d0d2b161154f2175ba5dafdcc1b917d041aefc0f80c737ce41cc087e",
+    "tests/abi/A02_ACCEPTANCE_2026-10-16.md": "d79ee7004b04238015274e720fd90b2b3cf0be7cdd9e167c552765604e1304b9",
+    "tests/abi/A02_SAVED_STATUS_ACCEPTANCE_2026-10-16.md": "4a790f052a3fe833e820245189590fda62b47d9c9a4356f94e0ab4c2a7ee898a",
+    "tests/abi/A02_EXECUTION_2026-10-16.md": "ccbe366b2a189bf6b4e2d2acb2a896bfd32f36f223ae772510fe00d8ee12bceb",
+    "tests/abi/test_mutations.py": "d282e5991d4996e3ce3ba5790493b5171e9bc968be9da008d420caf295e0a068",
+    "tests/abi/test_semantic_edges_contract.py": "3b635d2ff64e991d824702236ddb3e41b4e5f7c8af7fe90b181f06feabc62c99",
+    "tests/abi/test_transport32_contract.py": "94f6cd378357ac9eb0eeab65bd34a627bd1a0c2f90332c8402c56d9e3225b8bc",
+    "tests/abi/test_dense_boundaries.py": "b1b89edf78c7ca48a53b535175e4e2571952fa8ce3ea44ca4742816584debbd6",
+    "tests/abi/test_profile_boundaries.py": "9b8a0306930bb3f475ccae27f4e0bee0a373c8eaabe1355ca2ccf41f314f3bad",
+    "tests/abi/A02_PROFILE_ACCEPTANCE_2026-10-16.md": "044f7f2390fee0cc51d2a031bd0aeca2dbbed86149918bd83e7347e2b78a2420",
+    "tests/abi/run_rust_mutations.py": "a3705ccf3734aa8b7c868e07100fc02bbb7b857abdb13cb84fc868a96a939eda",
+    "tests/abi/A02_PR65_EXECUTION_2026-10-16.md": "0b346913c2a70c3df13eacb989083c3a77f9a8f811e7b09d20666e05dcbe1a21",
+    "tests/abi/results/rust-source-mutations-saved-status-2026-10-16.json": "34c02fb89da371db690c51373217a4f9b38c00e7e162452ab4db4ee69a586226",
+    "tests/abi/results/profile-before-controls-2026-10-16.json": "c3b9c95f4eaf7caa8286d25b646d589b5935deedc5d8b3805a50b33ee246f139",
+    "tests/abi/results/rust-source-mutations-profile-2026-10-16.json": "ee8446964f28cca5acd79642aa0200748b1d240e5dc509de2b32aeeba58b4e54",
+    "tests/abi/results/rust-source-mutations-preflight-2026-10-16.json": "76bfba4d376b236dd5d8265efc37dba0197b9e363b478edb1910ca79b04ad486",
+    "tests/abi/results/host-acceptance-2026-10-16.json": "c57d2e7035c448d2425d6e7e8042dfbff6390253c70255d167873137b1b81a86",
+    "tests/abi/results/rust-source-mutations-2026-10-16.json": "e2cf16cf71d2464d176d3881867084472946e85eaf58c74ad6b4d41c9bf98d3f",
+    "tests/abi/results/profile-boundary-acceptance-2026-10-16.json": "6c76522aa1fd00af990c9c817e83492e6be69d19d39c2c0816b1a5f947e3e710",
+    "tests/abi/results/saved-status-acceptance-2026-10-16.json": "7203fb190c0333ffeabf29c471b4b8e1d706a27c35653fdb0a37fae561cbe89f",
+    "tests/abi/results/transport-preflight-2026-10-16.json": "a4e66527fae5396c64a1f1820ae51307f4a5da2e05fc0b10e32a5a959d99cff1",
+    "tests/abi/results/saved-status-before-control-2026-10-16.json": "008a2cdf6d14def18765d5adf93f31188a49b3f90c67ccef8928ce62ecfcaba8"
+  },
+  "schema": "hos2-pinned-cloud-before-v1",
+  "scope": "Original 00061b6 host ABI checks on the configured project cloud node; no kernel claims",
+  "clippy_failed_before": true
+}

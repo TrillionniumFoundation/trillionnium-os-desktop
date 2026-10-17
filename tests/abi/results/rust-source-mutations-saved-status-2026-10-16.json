@@ -1,0 +1,357 @@
+{
+  "schema": "hos2-rust-source-mutations-v1",
+  "scope": "host Rust codec/canonical-request comparison; no kernel validation",
+  "expected_tests_per_suite": 7,
+  "expected_tests_by_suite": {
+    "mutation_kill": 7,
+    "semantic_edges": 12
+  },
+  "success": true,
+  "baseline": {
+    "suite": "mutation_kill",
+    "expected_tests": 7,
+    "required_tests": [
+      "same_sequence_and_target_different_cap_is_conflict",
+      "same_sequence_and_target_different_revision_is_conflict"
+    ],
+    "source_sha256": "b7cc442a3bd0b5fcf5dddbd8f3557e036daf6912d0ca54e38acaee9b2f235725",
+    "compilation": {
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--color",
+        "never",
+        "--test",
+        "mutation_kill",
+        "--no-run"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": "   Compiling hos2-os-abi v0.1.0 (/tmp/hos2-rust-mutations-o6uzv786/baseline/libs/os-abi)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.38s\n  Executable tests/mutation_kill.rs (target/debug/deps/mutation_kill-580c2d0d89ba4b4b)\n",
+      "timed_out": false
+    },
+    "compiled": true,
+    "test": {
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--color",
+        "never",
+        "--test",
+        "mutation_kill",
+        "--",
+        "--test-threads=1"
+      ],
+      "returncode": 0,
+      "stdout": "\nrunning 7 tests\ntest cap_ignoring_mutant_is_killed_by_same_delivery_oracle ... ok\ntest fixed_golden_is_a_real_valid_rust_request ... ok\ntest full_low_eight_byte_sequence_is_little_endian_and_high_half_zero ... ok\ntest revision_ignoring_mutant_is_killed_by_same_delivery_oracle ... ok\ntest same_sequence_across_targets_is_also_conflict ... ok\ntest same_sequence_and_target_different_cap_is_conflict ... ok\ntest same_sequence_and_target_different_revision_is_conflict ... ok\n\ntest result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n",
+      "stderr": "    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.00s\n     Running tests/mutation_kill.rs (target/debug/deps/mutation_kill-580c2d0d89ba4b4b)\n",
+      "timed_out": false
+    },
+    "tests": {
+      "cases": {
+        "cap_ignoring_mutant_is_killed_by_same_delivery_oracle": "ok",
+        "fixed_golden_is_a_real_valid_rust_request": "ok",
+        "full_low_eight_byte_sequence_is_little_endian_and_high_half_zero": "ok",
+        "revision_ignoring_mutant_is_killed_by_same_delivery_oracle": "ok",
+        "same_sequence_across_targets_is_also_conflict": "ok",
+        "same_sequence_and_target_different_cap_is_conflict": "ok",
+        "same_sequence_and_target_different_revision_is_conflict": "ok"
+      },
+      "complete": true,
+      "passed": 7,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "status": "ok"
+    },
+    "passed": true
+  },
+  "baseline_semantic_edges": {
+    "suite": "semantic_edges",
+    "expected_tests": 12,
+    "required_tests": [
+      "typed_terminal_rejection_encoders_match_all_independent_saved_status_bytes",
+      "every_semantic_edge_encoder_matches_fixed_bytes_and_preserves_unused_capacity",
+      "every_semantic_edge_encoder_rejects_each_short_capacity_without_writing"
+    ],
+    "source_sha256": "b7cc442a3bd0b5fcf5dddbd8f3557e036daf6912d0ca54e38acaee9b2f235725",
+    "compilation": {
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--color",
+        "never",
+        "--test",
+        "semantic_edges",
+        "--no-run"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": "   Compiling hos2-os-abi v0.1.0 (/tmp/hos2-rust-mutations-o6uzv786/baseline_semantic_edges/libs/os-abi)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.48s\n  Executable tests/semantic_edges.rs (target/debug/deps/semantic_edges-13b789dad6c6536b)\n",
+      "timed_out": false
+    },
+    "compiled": true,
+    "test": {
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--color",
+        "never",
+        "--test",
+        "semantic_edges",
+        "--",
+        "--test-threads=1"
+      ],
+      "returncode": 0,
+      "stdout": "\nrunning 12 tests\ntest all_independent_semantic_edge_frames_decode ... ok\ntest all_nonterminal_states_keep_only_the_history_sequence ... ok\ntest all_saved_terminal_rejections_preserve_status_without_success_metadata ... ok\ntest every_semantic_edge_encoder_matches_fixed_bytes_and_preserves_unused_capacity ... ok\ntest every_semantic_edge_encoder_rejects_each_short_capacity_without_writing ... ok\ntest every_terminal_error_rejects_each_nonzero_success_metadata_field ... ok\ntest history_and_read_ids_remain_opaque_including_nonzero_high_bytes ... ok\ntest last_write_sequence_and_revision_increment_to_max_are_valid ... ok\ntest nonterminal_states_reject_saved_status_and_each_success_metadata_field ... ok\ntest one_step_beyond_accepted_write_and_retire_boundaries_is_rejected ... ok\ntest retired_frontier_can_reach_last_write_and_leave_next_sequence_max ... ok\ntest typed_terminal_rejection_encoders_match_all_independent_saved_status_bytes ... ok\n\ntest result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s\n\n",
+      "stderr": "    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.00s\n     Running tests/semantic_edges.rs (target/debug/deps/semantic_edges-13b789dad6c6536b)\n",
+      "timed_out": false
+    },
+    "tests": {
+      "cases": {
+        "all_independent_semantic_edge_frames_decode": "ok",
+        "all_nonterminal_states_keep_only_the_history_sequence": "ok",
+        "all_saved_terminal_rejections_preserve_status_without_success_metadata": "ok",
+        "every_semantic_edge_encoder_matches_fixed_bytes_and_preserves_unused_capacity": "ok",
+        "every_semantic_edge_encoder_rejects_each_short_capacity_without_writing": "ok",
+        "every_terminal_error_rejects_each_nonzero_success_metadata_field": "ok",
+        "history_and_read_ids_remain_opaque_including_nonzero_high_bytes": "ok",
+        "last_write_sequence_and_revision_increment_to_max_are_valid": "ok",
+        "nonterminal_states_reject_saved_status_and_each_success_metadata_field": "ok",
+        "one_step_beyond_accepted_write_and_retire_boundaries_is_rejected": "ok",
+        "retired_frontier_can_reach_last_write_and_leave_next_sequence_max": "ok",
+        "typed_terminal_rejection_encoders_match_all_independent_saved_status_bytes": "ok"
+      },
+      "complete": true,
+      "passed": 12,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered_out": 0,
+      "status": "ok"
+    },
+    "passed": true
+  },
+  "mutants": [
+    {
+      "suite": "mutation_kill",
+      "expected_tests": 7,
+      "required_tests": [
+        "same_sequence_and_target_different_cap_is_conflict",
+        "same_sequence_and_target_different_revision_is_conflict"
+      ],
+      "source_sha256": "3773c824bc643ee6e8aca17beadcdf8cb2d46524149d9dea7375cc74f963d191",
+      "compilation": {
+        "command": [
+          "cargo",
+          "test",
+          "--offline",
+          "--color",
+          "never",
+          "--test",
+          "mutation_kill",
+          "--no-run"
+        ],
+        "returncode": 0,
+        "stdout": "",
+        "stderr": "   Compiling hos2-os-abi v0.1.0 (/tmp/hos2-rust-mutations-o6uzv786/ignore_cap_ns/libs/os-abi)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.43s\n  Executable tests/mutation_kill.rs (target/debug/deps/mutation_kill-580c2d0d89ba4b4b)\n",
+        "timed_out": false
+      },
+      "compiled": true,
+      "test": {
+        "command": [
+          "cargo",
+          "test",
+          "--offline",
+          "--color",
+          "never",
+          "--test",
+          "mutation_kill",
+          "--",
+          "--test-threads=1"
+        ],
+        "returncode": 101,
+        "stdout": "\nrunning 7 tests\ntest cap_ignoring_mutant_is_killed_by_same_delivery_oracle ... FAILED\ntest fixed_golden_is_a_real_valid_rust_request ... ok\ntest full_low_eight_byte_sequence_is_little_endian_and_high_half_zero ... ok\ntest revision_ignoring_mutant_is_killed_by_same_delivery_oracle ... ok\ntest same_sequence_across_targets_is_also_conflict ... ok\ntest same_sequence_and_target_different_cap_is_conflict ... FAILED\ntest same_sequence_and_target_different_revision_is_conflict ... ok\n\nfailures:\n\n---- cap_ignoring_mutant_is_killed_by_same_delivery_oracle stdout ----\n\nthread 'cap_ignoring_mutant_is_killed_by_same_delivery_oracle' (381) panicked at tests/mutation_kill.rs:154:5:\nassertion failed: must_conflict(&prior, &next, canonical_retry).is_ok()\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\n---- same_sequence_and_target_different_cap_is_conflict stdout ----\n\nthread 'same_sequence_and_target_different_cap_is_conflict' (386) panicked at tests/mutation_kill.rs:131:5:\nassertion `left != right` failed\n  left: Request { opcode: InstallBudget, request_id: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], target_slot: 7, target_generation: 9, payload: InstallBudget(InstallBudgetRequest { expected_revision: 10, period_ns: 100000000, cap_ns: 40000000, reserved: 0 }) }\n right: Request { opcode: InstallBudget, request_id: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], target_slot: 7, target_generation: 9, payload: InstallBudget(InstallBudgetRequest { expected_revision: 10, period_ns: 100000000, cap_ns: 39000000, reserved: 0 }) }\n\n\nfailures:\n    cap_ignoring_mutant_is_killed_by_same_delivery_oracle\n    same_sequence_and_target_different_cap_is_conflict\n\ntest result: FAILED. 5 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n",
+        "stderr": "    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.00s\n     Running tests/mutation_kill.rs (target/debug/deps/mutation_kill-580c2d0d89ba4b4b)\nerror: test failed, to rerun pass `--test mutation_kill`\n",
+        "timed_out": false
+      },
+      "tests": {
+        "cases": {
+          "cap_ignoring_mutant_is_killed_by_same_delivery_oracle": "FAILED",
+          "fixed_golden_is_a_real_valid_rust_request": "ok",
+          "full_low_eight_byte_sequence_is_little_endian_and_high_half_zero": "ok",
+          "revision_ignoring_mutant_is_killed_by_same_delivery_oracle": "ok",
+          "same_sequence_across_targets_is_also_conflict": "ok",
+          "same_sequence_and_target_different_cap_is_conflict": "FAILED",
+          "same_sequence_and_target_different_revision_is_conflict": "ok"
+        },
+        "complete": true,
+        "passed": 5,
+        "failed": 2,
+        "ignored": 0,
+        "measured": 0,
+        "filtered_out": 0,
+        "status": "FAILED"
+      },
+      "name": "ignore_cap_ns",
+      "expected_failure": "same_sequence_and_target_different_cap_is_conflict",
+      "omitted_field": "cap_ns",
+      "expected_test_failed": true,
+      "killed": true
+    },
+    {
+      "suite": "mutation_kill",
+      "expected_tests": 7,
+      "required_tests": [
+        "same_sequence_and_target_different_cap_is_conflict",
+        "same_sequence_and_target_different_revision_is_conflict"
+      ],
+      "source_sha256": "bf02ce0d73b51ab217d57b3c503deafa256c87e6fe8bb863288a966414a54d72",
+      "compilation": {
+        "command": [
+          "cargo",
+          "test",
+          "--offline",
+          "--color",
+          "never",
+          "--test",
+          "mutation_kill",
+          "--no-run"
+        ],
+        "returncode": 0,
+        "stdout": "",
+        "stderr": "   Compiling hos2-os-abi v0.1.0 (/tmp/hos2-rust-mutations-o6uzv786/ignore_expected_revision/libs/os-abi)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.35s\n  Executable tests/mutation_kill.rs (target/debug/deps/mutation_kill-580c2d0d89ba4b4b)\n",
+        "timed_out": false
+      },
+      "compiled": true,
+      "test": {
+        "command": [
+          "cargo",
+          "test",
+          "--offline",
+          "--color",
+          "never",
+          "--test",
+          "mutation_kill",
+          "--",
+          "--test-threads=1"
+        ],
+        "returncode": 101,
+        "stdout": "\nrunning 7 tests\ntest cap_ignoring_mutant_is_killed_by_same_delivery_oracle ... ok\ntest fixed_golden_is_a_real_valid_rust_request ... ok\ntest full_low_eight_byte_sequence_is_little_endian_and_high_half_zero ... ok\ntest revision_ignoring_mutant_is_killed_by_same_delivery_oracle ... FAILED\ntest same_sequence_across_targets_is_also_conflict ... ok\ntest same_sequence_and_target_different_cap_is_conflict ... ok\ntest same_sequence_and_target_different_revision_is_conflict ... FAILED\n\nfailures:\n\n---- revision_ignoring_mutant_is_killed_by_same_delivery_oracle stdout ----\n\nthread 'revision_ignoring_mutant_is_killed_by_same_delivery_oracle' (502) panicked at tests/mutation_kill.rs:163:5:\nassertion failed: must_conflict(&prior, &next, canonical_retry).is_ok()\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\n---- same_sequence_and_target_different_revision_is_conflict stdout ----\n\nthread 'same_sequence_and_target_different_revision_is_conflict' (505) panicked at tests/mutation_kill.rs:143:5:\nassertion `left != right` failed\n  left: Request { opcode: InstallBudget, request_id: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], target_slot: 7, target_generation: 9, payload: InstallBudget(InstallBudgetRequest { expected_revision: 10, period_ns: 100000000, cap_ns: 40000000, reserved: 0 }) }\n right: Request { opcode: InstallBudget, request_id: [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], target_slot: 7, target_generation: 9, payload: InstallBudget(InstallBudgetRequest { expected_revision: 9, period_ns: 100000000, cap_ns: 40000000, reserved: 0 }) }\n\n\nfailures:\n    revision_ignoring_mutant_is_killed_by_same_delivery_oracle\n    same_sequence_and_target_different_revision_is_conflict\n\ntest result: FAILED. 5 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n",
+        "stderr": "    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.00s\n     Running tests/mutation_kill.rs (target/debug/deps/mutation_kill-580c2d0d89ba4b4b)\nerror: test failed, to rerun pass `--test mutation_kill`\n",
+        "timed_out": false
+      },
+      "tests": {
+        "cases": {
+          "cap_ignoring_mutant_is_killed_by_same_delivery_oracle": "ok",
+          "fixed_golden_is_a_real_valid_rust_request": "ok",
+          "full_low_eight_byte_sequence_is_little_endian_and_high_half_zero": "ok",
+          "revision_ignoring_mutant_is_killed_by_same_delivery_oracle": "FAILED",
+          "same_sequence_across_targets_is_also_conflict": "ok",
+          "same_sequence_and_target_different_cap_is_conflict": "ok",
+          "same_sequence_and_target_different_revision_is_conflict": "FAILED"
+        },
+        "complete": true,
+        "passed": 5,
+        "failed": 2,
+        "ignored": 0,
+        "measured": 0,
+        "filtered_out": 0,
+        "status": "FAILED"
+      },
+      "name": "ignore_expected_revision",
+      "expected_failure": "same_sequence_and_target_different_revision_is_conflict",
+      "omitted_field": "expected_revision",
+      "expected_test_failed": true,
+      "killed": true
+    },
+    {
+      "suite": "semantic_edges",
+      "expected_tests": 12,
+      "required_tests": [
+        "typed_terminal_rejection_encoders_match_all_independent_saved_status_bytes",
+        "every_semantic_edge_encoder_matches_fixed_bytes_and_preserves_unused_capacity",
+        "every_semantic_edge_encoder_rejects_each_short_capacity_without_writing"
+      ],
+      "source_sha256": "5cef86822a11188c2f0cb14ac8d0c2da1ef446ad7d3a92fe937afd3548b59fff",
+      "compilation": {
+        "command": [
+          "cargo",
+          "test",
+          "--offline",
+          "--color",
+          "never",
+          "--test",
+          "semantic_edges",
+          "--no-run"
+        ],
+        "returncode": 0,
+        "stdout": "",
+        "stderr": "   Compiling hos2-os-abi v0.1.0 (/tmp/hos2-rust-mutations-o6uzv786/zero_saved_status/libs/os-abi)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.49s\n  Executable tests/semantic_edges.rs (target/debug/deps/semantic_edges-13b789dad6c6536b)\n",
+        "timed_out": false
+      },
+      "compiled": true,
+      "test": {
+        "command": [
+          "cargo",
+          "test",
+          "--offline",
+          "--color",
+          "never",
+          "--test",
+          "semantic_edges",
+          "--",
+          "--test-threads=1"
+        ],
+        "returncode": 101,
+        "stdout": "\nrunning 12 tests\ntest all_independent_semantic_edge_frames_decode ... ok\ntest all_nonterminal_states_keep_only_the_history_sequence ... ok\ntest all_saved_terminal_rejections_preserve_status_without_success_metadata ... ok\ntest every_semantic_edge_encoder_matches_fixed_bytes_and_preserves_unused_capacity ... FAILED\ntest every_semantic_edge_encoder_rejects_each_short_capacity_without_writing ... ok\ntest every_terminal_error_rejects_each_nonzero_success_metadata_field ... ok\ntest history_and_read_ids_remain_opaque_including_nonzero_high_bytes ... ok\ntest last_write_sequence_and_revision_increment_to_max_are_valid ... ok\ntest nonterminal_states_reject_saved_status_and_each_success_metadata_field ... ok\ntest one_step_beyond_accepted_write_and_retire_boundaries_is_rejected ... ok\ntest retired_frontier_can_reach_last_write_and_leave_next_sequence_max ... ok\ntest typed_terminal_rejection_encoders_match_all_independent_saved_status_bytes ... FAILED\n\nfailures:\n\n---- every_semantic_edge_encoder_matches_fixed_bytes_and_preserves_unused_capacity stdout ----\n\nthread 'every_semantic_edge_encoder_matches_fixed_bytes_and_preserves_unused_capacity' (643) panicked at tests/semantic_edges.rs:138:17:\nassertion `left == right` failed: delivery_terminal_error_1\n  left: [72, 79, 83, 82, 2, 0, 0, 0, 4, 0, 0, 0, 64, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 1, 35, 69, 103, 137, 171, 205, 239, 254, 220, 186, 152, 118, 84, 50, 16, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]\n right: [72, 79, 83, 82, 2, 0, 0, 0, 4, 0, 0, 0, 64, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 1, 35, 69, 103, 137, 171, 205, 239, 254, 220, 186, 152, 118, 84, 50, 16, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\n---- typed_terminal_rejection_encoders_match_all_independent_saved_status_bytes stdout ----\n\nthread 'typed_terminal_rejection_encoders_match_all_independent_saved_status_bytes' (651) panicked at tests/semantic_edges.rs:216:9:\nassertion `left == right` failed: delivery_terminal_error_1\n  left: [72, 79, 83, 82, 2, 0, 0, 0, 4, 0, 0, 0, 64, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 1, 35, 69, 103, 137, 171, 205, 239, 254, 220, 186, 152, 118, 84, 50, 16, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]\n right: [72, 79, 83, 82, 2, 0, 0, 0, 4, 0, 0, 0, 64, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 1, 35, 69, 103, 137, 171, 205, 239, 254, 220, 186, 152, 118, 84, 50, 16, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 51, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]\n\n\nfailures:\n    every_semantic_edge_encoder_matches_fixed_bytes_and_preserves_unused_capacity\n    typed_terminal_rejection_encoders_match_all_independent_saved_status_bytes\n\ntest result: FAILED. 10 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s\n\n",
+        "stderr": "    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.01s\n     Running tests/semantic_edges.rs (target/debug/deps/semantic_edges-13b789dad6c6536b)\nerror: test failed, to rerun pass `--test semantic_edges`\n",
+        "timed_out": false
+      },
+      "tests": {
+        "cases": {
+          "all_independent_semantic_edge_frames_decode": "ok",
+          "all_nonterminal_states_keep_only_the_history_sequence": "ok",
+          "all_saved_terminal_rejections_preserve_status_without_success_metadata": "ok",
+          "every_semantic_edge_encoder_matches_fixed_bytes_and_preserves_unused_capacity": "FAILED",
+          "every_semantic_edge_encoder_rejects_each_short_capacity_without_writing": "ok",
+          "every_terminal_error_rejects_each_nonzero_success_metadata_field": "ok",
+          "history_and_read_ids_remain_opaque_including_nonzero_high_bytes": "ok",
+          "last_write_sequence_and_revision_increment_to_max_are_valid": "ok",
+          "nonterminal_states_reject_saved_status_and_each_success_metadata_field": "ok",
+          "one_step_beyond_accepted_write_and_retire_boundaries_is_rejected": "ok",
+          "retired_frontier_can_reach_last_write_and_leave_next_sequence_max": "ok",
+          "typed_terminal_rejection_encoders_match_all_independent_saved_status_bytes": "FAILED"
+        },
+        "complete": true,
+        "passed": 10,
+        "failed": 2,
+        "ignored": 0,
+        "measured": 0,
+        "filtered_out": 0,
+        "status": "FAILED"
+      },
+      "name": "zero_saved_status",
+      "expected_failure": "typed_terminal_rejection_encoders_match_all_independent_saved_status_bytes",
+      "zeroed_field": "saved_status",
+      "expected_test_failed": true,
+      "killed": true
+    }
+  ],
+  "errors": [],
+  "input_sha256": {
+    "Cargo.toml": "8941aa060c09b8243125fceba8000bac896ac12a72f215a1295174cdf1f92b3a",
+    "src/lib.rs": "b7cc442a3bd0b5fcf5dddbd8f3557e036daf6912d0ca54e38acaee9b2f235725",
+    "tests/mutation_kill.rs": "10e4a0a2521291602fc548664d9d2baaa0feb4eea15271afe772b9fc27135ece",
+    "tests/semantic_edges.rs": "b86ef0a2d71e430a0be7b3fa63d3a37b2f97484d2650d5919ae8fbe2ec1ddec5"
+  },
+  "fixture_sha256": {
+    "tests/golden/hos2_edges.json": "d176461f0a1b42751e3e41c24102e56d25c8e4942cec0deb0ae3f16c271e13d4"
+  },
+  "mutants_killed": 3
+}

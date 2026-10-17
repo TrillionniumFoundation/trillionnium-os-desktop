@@ -6,9 +6,9 @@
 
 use hos2_os_abi::{
     declared_response_len, decode_request, decode_response, decode_response_for,
-    decode_response_prefix, decode_response_prefix_for, encode_response, DeliveryRequest, Error,
-    InstallBudgetRequest, Opcode, QueryAbiResponse, Request, RequestPayload, Response,
-    ResponsePayload, Status, Transport, CPU_PERIOD_NS,
+    decode_response_prefix, decode_response_prefix_for, encode_request, encode_response,
+    DeliveryRequest, Error, InstallBudgetRequest, Opcode, QueryAbiResponse, Request,
+    RequestPayload, Response, ResponsePayload, Status, Transport, CPU_PERIOD_NS,
 };
 
 fn hex(input: &str) -> Vec<u8> {
@@ -52,6 +52,175 @@ fn query_delivery_terminal() -> Vec<u8> {
 
 fn assert_err<T: core::fmt::Debug>(result: Result<T, Error>, expected: Error) {
     assert_eq!(result.unwrap_err(), expected);
+}
+
+fn golden_frame(name: &str) -> Vec<u8> {
+    let mut current = "";
+    for line in include_str!("../../../tests/golden/hos2.json").lines() {
+        if let Some((_, value)) = line.split_once("\"name\": \"") {
+            current = value.split_once('"').unwrap().0;
+        }
+        if current == name {
+            if let Some((_, value)) = line.split_once("\"hex\": \"") {
+                return hex(value.split_once('"').unwrap().0);
+            }
+        }
+    }
+    panic!("missing independent golden frame: {name}")
+}
+
+#[test]
+fn self_consistent_install_response_must_match_the_requested_revision() {
+    let bytes = install_success();
+    let response = decode_response(&bytes).unwrap();
+    let mut request = decode_request(&install_request()).unwrap();
+    response.validate_for(&request).unwrap();
+
+    let RequestPayload::InstallBudget(ref mut budget) = request.payload else {
+        panic!("expected installation request")
+    };
+    budget.expected_revision = 9; // Legal request, but the result applied revision 10.
+    let mut encoded = [0; 96];
+    assert_eq!(encode_request(&request, &mut encoded), Ok(96));
+    assert!(response.matches_request(&request));
+    assert_eq!(response.validate_for(&request), Err(Error::InvalidField));
+    assert_eq!(
+        decode_response_for(&bytes, &request),
+        Err(Error::InvalidField)
+    );
+    let mut capacity = bytes;
+    capacity.extend_from_slice(&[0xa5; 32]);
+    assert_eq!(
+        decode_response_prefix_for(&capacity, &request),
+        Err(Error::InvalidField)
+    );
+}
+
+#[test]
+fn self_consistent_retirement_must_cover_the_requested_frontier() {
+    let bytes = golden_frame("retire_through_ok");
+    let response = decode_response(&bytes).unwrap();
+    let mut request = decode_request(&golden_frame("retire_through")).unwrap();
+    response.validate_for(&request).unwrap();
+
+    let RequestPayload::RetireThrough(ref mut history) = request.payload else {
+        panic!("expected retirement request")
+    };
+    history.sequence = 2; // Result retired through 1; next_sequence=2 is valid alone.
+    let mut encoded = [0; 104];
+    assert_eq!(encode_request(&request, &mut encoded), Ok(104));
+    assert!(response.matches_request(&request));
+    assert_eq!(response.validate_for(&request), Err(Error::InvalidField));
+    assert_eq!(
+        decode_response_for(&bytes, &request),
+        Err(Error::InvalidField)
+    );
+    let mut capacity = bytes;
+    capacity.extend_from_slice(&[0xa5; 32]);
+    assert_eq!(
+        decode_response_prefix_for(&capacity, &request),
+        Err(Error::InvalidField)
+    );
+}
+
+#[test]
+fn public_request_payload_mismatches_never_write_output() {
+    let requests = [
+        "query_abi",
+        "read_usage",
+        "install_budget",
+        "query_delivery_with_new_view",
+        "retire_through",
+    ]
+    .map(|name| decode_request(&golden_frame(name)).unwrap());
+    for (index, original) in requests.iter().enumerate() {
+        for (other_index, other) in requests.iter().enumerate() {
+            if index == other_index {
+                continue;
+            }
+            let mut invalid = *original;
+            // A canonical sequence ID is also a valid opaque correlation ID.
+            invalid.request_id = hos2_os_abi::install_budget_request_id(1).unwrap();
+            invalid.payload = other.payload;
+            let mut output = [0xa5; 160];
+            assert_eq!(
+                encode_request(&invalid, &mut output),
+                Err(Error::InvalidField),
+                "{:?} with {:?}",
+                invalid.opcode,
+                invalid.payload
+            );
+            assert_eq!(output, [0xa5; 160]);
+        }
+    }
+}
+
+#[test]
+fn public_response_payload_mismatches_never_write_output() {
+    let responses = [
+        "query_abi_ok",
+        "read_usage_lowered_cap",
+        "install_budget_ok",
+        "query_delivery_terminal",
+        "retire_through_ok",
+    ]
+    .map(|name| decode_response(&golden_frame(name)).unwrap());
+    for (index, original) in responses.iter().enumerate() {
+        for (other_index, other) in responses.iter().enumerate() {
+            if index == other_index {
+                continue;
+            }
+            let mut invalid = *original;
+            invalid.request_id = hos2_os_abi::install_budget_request_id(1).unwrap();
+            invalid.payload = other.payload;
+            let mut output = [0xa5; 160];
+            assert_eq!(
+                encode_response(&invalid, &mut output),
+                Err(Error::InvalidField),
+                "{:?} with {:?}",
+                invalid.opcode,
+                invalid.payload
+            );
+            assert_eq!(output, [0xa5; 160]);
+        }
+    }
+}
+
+#[test]
+fn malformed_frame_lengths_are_rejected_before_unknown_opcode_or_status() {
+    // NATIVE_ABI §3: check the full snapshot's framing before dispatching an
+    // opcode. Otherwise a malformed unknown operation gets EOPNOTSUPP instead
+    // of a structural EINVAL from the driver's error mapping.
+    for response in [false, true] {
+        let mut frame = if response {
+            cas_error()
+        } else {
+            query_request()
+        };
+        frame[8..10].copy_from_slice(&u16::MAX.to_le_bytes());
+        let parse = |bytes: &[u8]| {
+            if response {
+                decode_response(bytes).map(|_| ())
+            } else {
+                decode_request(bytes).map(|_| ())
+            }
+        };
+        assert_eq!(parse(&frame), Err(Error::UnknownOpcode));
+
+        frame[16..20].copy_from_slice(&1u32.to_le_bytes());
+        assert_eq!(parse(&frame), Err(Error::Truncated));
+        frame[16..20].fill(0);
+        frame.push(0);
+        assert_eq!(parse(&frame), Err(Error::TrailingBytes));
+        frame[16..20].copy_from_slice(&u32::MAX.to_le_bytes());
+        assert_eq!(parse(&frame), Err(Error::PayloadTooLarge));
+    }
+
+    let mut unknown_status = cas_error();
+    unknown_status[10..12].copy_from_slice(&u16::MAX.to_le_bytes());
+    assert_err(decode_response(&unknown_status), Error::InvalidStatus);
+    unknown_status[16..20].copy_from_slice(&1u32.to_le_bytes());
+    assert_err(decode_response(&unknown_status), Error::Truncated);
 }
 
 #[test]
@@ -401,4 +570,210 @@ fn unknown_minor_and_exact_wire_lengths_are_rejected() {
     assert_err(Transport::decode(&trailing), Error::TrailingBytes);
     descriptor[24] = 1;
     assert_err(Transport::decode(&descriptor), Error::ReservedNonZero);
+}
+#[test]
+fn ordered_sequence_helpers_provide_canonical_little_endian_ids() {
+    use hos2_os_abi::{install_budget_request_id, install_budget_sequence};
+    assert_eq!(install_budget_request_id(0), Err(Error::InvalidSequence));
+    assert_eq!(
+        install_budget_request_id(u64::MAX),
+        Err(Error::InvalidSequence)
+    );
+    assert_eq!(
+        install_budget_sequence(&[0; 16]),
+        Err(Error::InvalidRequestId)
+    );
+
+    for sequence in [1, 255, 256, 0x0102_0304_0506_0708, u64::MAX - 1] {
+        let id = install_budget_request_id(sequence).unwrap();
+        assert_eq!(&id[..8], &sequence.to_le_bytes());
+        assert_eq!(&id[8..], &[0; 8]);
+        assert_eq!(install_budget_sequence(&id), Ok(sequence));
+    }
+
+    let mut bad = install_budget_request_id(1).unwrap();
+    bad[15] = 1;
+    assert_eq!(
+        install_budget_sequence(&bad),
+        Err(Error::SequenceHighBytesNonZero)
+    );
+}
+
+#[test]
+fn install_revision_mismatch_is_not_an_integer_overflow() {
+    let valid = install_success();
+    let mut mismatched = valid.clone();
+    mismatched[56..64].copy_from_slice(&12u64.to_le_bytes());
+    assert_err(decode_response(&mismatched), Error::InvalidField);
+
+    let mut encoding_mismatch = decode_response(&valid).unwrap();
+    encoding_mismatch.revision = 12;
+    let mut out = [0x5a; 88];
+    assert_eq!(
+        encode_response(&encoding_mismatch, &mut out),
+        Err(Error::InvalidField)
+    );
+    assert_eq!(out, [0x5a; 88]);
+
+    let mut overflow = valid.clone();
+    overflow[64..72].copy_from_slice(&u64::MAX.to_le_bytes());
+    assert_err(decode_response(&overflow), Error::IntegerOverflow);
+
+    let mut encoding_overflow = decode_response(&valid).unwrap();
+    if let ResponsePayload::InstallBudget(ref mut installed) = encoding_overflow.payload {
+        installed.previous_revision = u64::MAX;
+    } else {
+        panic!("expected golden InstallBudget result");
+    }
+    assert_eq!(
+        encode_response(&encoding_overflow, &mut out),
+        Err(Error::IntegerOverflow)
+    );
+    assert_eq!(out, [0x5a; 88]);
+}
+
+#[test]
+fn query_abi_capability_table_rejects_unsupported_feature_combinations() {
+    let golden = query_abi_success();
+
+    for (offset, value, expected) in [
+        (80usize, 0u32, Error::InvalidField),
+        (80, 3, Error::InvalidField),
+        (84, 65_537, Error::PayloadTooLarge),
+        (88, 65_537, Error::PayloadTooLarge),
+        (88, 47, Error::InvalidField),
+    ] {
+        let mut frame = golden.clone();
+        frame[offset..offset + 4].copy_from_slice(&value.to_le_bytes());
+        assert_err(decode_response(&frame), expected);
+    }
+
+    let mut invalid = golden.clone();
+    invalid[92] = 1;
+    assert_err(decode_response(&invalid), Error::InvalidField);
+
+    let mut invalid = golden.clone();
+    invalid[96..104].copy_from_slice(&0u64.to_le_bytes());
+    assert_err(decode_response(&invalid), Error::InvalidField);
+
+    let mut invalid = golden.clone();
+    invalid[96..104].copy_from_slice(&0x0au64.to_le_bytes());
+    assert_err(decode_response(&invalid), Error::InvalidField);
+
+    let mut invalid = golden.clone();
+    invalid[104..112].copy_from_slice(&1u64.to_le_bytes());
+    assert_err(decode_response(&invalid), Error::InvalidField);
+
+    // HOS2 also permits a QueryAbi-only implementation. The operations
+    // mask is a format advertisement, not a grant of resource authority.
+    let mut limited = golden;
+    limited[96..104].copy_from_slice(&2u64.to_le_bytes());
+    limited[84..88].copy_from_slice(&0u32.to_le_bytes());
+    limited[88..92].copy_from_slice(&48u32.to_le_bytes());
+    let decoded = decode_response(&limited).unwrap();
+    let mut out = [0u8; 112];
+    assert_eq!(encode_response(&decoded, &mut out), Ok(112));
+    assert_eq!(out.as_slice(), limited.as_slice());
+}
+
+#[test]
+fn install_budget_request_rejects_revision_period_cap_and_reserved_mutations() {
+    let golden = install_request();
+    for (offset, value) in [
+        (64usize, 0u64),
+        (64, u64::MAX),
+        (72, CPU_PERIOD_NS - 1),
+        (72, CPU_PERIOD_NS + 1),
+        (80, CPU_PERIOD_NS + 1),
+        (88, 1),
+    ] {
+        let mut invalid = golden.clone();
+        invalid[offset..offset + 8].copy_from_slice(&value.to_le_bytes());
+        assert_err(decode_request(&invalid), Error::InvalidField);
+    }
+    let mut request = decode_request(&golden).unwrap();
+    if let RequestPayload::InstallBudget(ref mut budget) = request.payload {
+        budget.cap_ns = CPU_PERIOD_NS + 1;
+    }
+    let mut out = [0xa5; 96];
+    assert_eq!(
+        hos2_os_abi::encode_request(&request, &mut out),
+        Err(Error::InvalidField)
+    );
+    assert_eq!(out, [0xa5; 96]);
+}
+
+#[test]
+fn query_delivery_terminal_metadata_and_historical_request_are_checked() {
+    let golden = query_delivery_terminal();
+
+    let mut invalid = golden.clone();
+    invalid[68] = 1; // nested QueryDelivery reserved:u32
+    assert_err(decode_response(&invalid), Error::ReservedNonZero);
+
+    let mut invalid = golden.clone();
+    invalid[64..66].copy_from_slice(&5u16.to_le_bytes());
+    assert_err(decode_response(&invalid), Error::InvalidField);
+
+    let mut invalid = golden.clone();
+    invalid[66..68].copy_from_slice(&Status::Conflict.as_u16().to_le_bytes());
+    assert_err(decode_response(&invalid), Error::MalformedErrorResponse);
+
+    let mut invalid = golden.clone();
+    invalid[80..96].fill(0);
+    assert_err(decode_response(&invalid), Error::InvalidField);
+
+    let mut invalid = golden.clone();
+    invalid[96..104].copy_from_slice(&12u64.to_le_bytes());
+    assert_err(decode_response(&invalid), Error::InvalidField);
+
+    let query = hex("484f533202000000040000004000000028000000000000001111111111111111111111111111111150000000000000000300000000000000000000000000000033333333333333333333333333333333222222222222222222222222222222220100000000000000");
+    let request = decode_request(&query).unwrap();
+    assert!(decode_response_for(&golden, &request).is_ok());
+
+    let mut wrong_sequence = golden.clone();
+    wrong_sequence[72..80].copy_from_slice(&2u64.to_le_bytes());
+    assert!(decode_response(&wrong_sequence).is_ok());
+    assert_err(
+        decode_response_for(&wrong_sequence, &request),
+        Error::InvalidField,
+    );
+
+    let mut zero_history_boot = query.clone();
+    zero_history_boot[64..80].fill(0);
+    assert_err(decode_request(&zero_history_boot), Error::InvalidField);
+    let mut zero_history_space = query.clone();
+    zero_history_space[80..96].fill(0);
+    assert_err(decode_request(&zero_history_space), Error::InvalidField);
+    let mut zero_history_sequence = query;
+    zero_history_sequence[96..104].fill(0);
+    assert_err(decode_request(&zero_history_sequence), Error::InvalidField);
+}
+
+#[test]
+fn read_usage_and_retire_through_reject_impossible_semantic_values() {
+    let usage = hex("484f5352020000000200000040000000400000000000000011111111111111111111111111111111333333333333333333333333333333330b0000000000000080d1f00800000000804a5d050000000000e1f50500000000c00e160200000000002d31010000000000e1f505000000004d000000000000000200000000000000");
+    assert!(decode_response(&usage).is_ok());
+
+    for (offset, value) in [
+        (72usize, 34_999_999u64), // cumulative less than window consumed
+        (80, 101_000_000),        // wrong 100ms window start
+        (88, 50_000_001),         // impossible single-CPU consumption
+        (96, CPU_PERIOD_NS + 1),  // cap exceeds period
+        (104, CPU_PERIOD_NS - 1), // unsupported period
+        (120, 78),                // dropped_events > event_sequence
+    ] {
+        let mut invalid = usage.clone();
+        invalid[offset..offset + 8].copy_from_slice(&value.to_le_bytes());
+        assert_err(decode_response(&invalid), Error::InvalidField);
+    }
+
+    let retirement = hex("484f535202000000050000004000000010000000000000001111111111111111111111111111111133333333333333333333333333333333000000000000000001000000000000000200000000000000");
+    assert!(decode_response(&retirement).is_ok());
+    let mut invalid = retirement.clone();
+    invalid[72..80].copy_from_slice(&1u64.to_le_bytes());
+    assert_err(decode_response(&invalid), Error::InvalidField);
+    let mut invalid = retirement;
+    invalid[72..80].fill(0);
+    assert_err(decode_response(&invalid), Error::InvalidField);
 }
