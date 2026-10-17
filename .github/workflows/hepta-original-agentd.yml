@@ -1,10 +1,14 @@
-name: Hepta original Agentd read-only qualification (ARM64)
+name: Hepta original Agentd and persistent Session qualification (ARM64)
 
 on:
   pull_request:
     paths:
       - 'services/hepta-os/**'
       - 'tests/integration/hepta/**'
+      - 'ui/core/**'
+      - 'ui/session/**'
+      - 'ui/Cargo.toml'
+      - 'ui/Cargo.lock'
       - '.github/workflows/hepta-original-agentd.yml'
   workflow_dispatch:
 
@@ -77,7 +81,10 @@ jobs:
             services/hepta-os/UPSTREAM_CONTRACT.json \
             tests/integration/hepta/run_original_agentd.py \
             tests/integration/hepta/original_agentd_probe.rs \
+            tests/integration/hepta/original_session_probe.rs \
+            ui/session/Cargo.toml ui/session/src/hepta.rs ui/Cargo.lock \
             tests/integration/hepta/test_original_build_manifest.py \
+            tests/integration/hepta/test_original_session_receipts.py \
             tests/integration/hepta/test_original_process_guard.py; do
             test -s "$path"
           done
@@ -86,9 +93,13 @@ jobs:
             services/hepta-os/UPSTREAM_CONTRACT.json \
             tests/integration/hepta/run_original_agentd.py \
             tests/integration/hepta/original_agentd_probe.rs \
+            tests/integration/hepta/original_session_probe.rs \
+            ui/Cargo.toml ui/Cargo.lock ui/session/Cargo.toml \
             .github/workflows/hepta-original-agentd.yml \
             > "$HEPTA_CI_ROOT/identity/desktop-inputs.sha256"
           cp services/hepta-os/Cargo.lock "$HEPTA_CI_ROOT/locks/observer-Cargo.lock"
+          cp ui/Cargo.lock "$HEPTA_CI_ROOT/locks/ui-Cargo.lock"
+          git rev-parse HEAD:ui HEAD:services/hepta-os > "$HEPTA_CI_ROOT/identity/consumer-source-trees.txt"
           cp services/hepta-os/UPSTREAM_CONTRACT.json "$HEPTA_CI_ROOT/locks/UPSTREAM_CONTRACT.json"
 
       - name: Fetch only the fixed original Hepta source without credentials
@@ -121,6 +132,7 @@ jobs:
           {
             python3 -m unittest discover -v -s tests/integration/hepta -p test_original_build_manifest.py
             python3 -m unittest discover -v -s tests/integration/hepta -p test_original_process_guard.py
+            python3 -m unittest discover -v -s tests/integration/hepta -p test_original_session_receipts.py
           } > "$HEPTA_CI_ROOT/logs/gate-prerequisites.log" 2>&1
 
       - name: Install pinned compilers and original Linux native prerequisites
@@ -149,18 +161,31 @@ jobs:
             cat /etc/os-release
           } > "$HEPTA_CI_ROOT/logs/native-setup.log" 2>&1
 
-      - name: Build and run the unchanged original Agentd with the read-only probe
+      - name: Build the actual Session and ctl from this exact candidate
+        run: |
+          set -euo pipefail
+          # These are production binaries, with the committed UI lockfile and
+          # no fixture/provider override. The runtime gate records their hashes.
+          CARGO_TARGET_DIR="$HEPTA_CI_ROOT/session-target" CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=1 \
+            rustup run 1.88.0 cargo build --locked --manifest-path ui/Cargo.toml \
+              -p trill-session --bin trill-session --bin trill-ctl \
+              > "$HEPTA_CI_ROOT/logs/session-build.log" 2>&1
+
+      - name: Run original Agentd and the continuous read-only Session probe
         id: gate
         run: |
           set -euo pipefail
           # The runner owns fresh work/report creation, the 8 GiB resource
-          # preflight, locked builds, private process roots and all eight checks.
+          # preflight, locked builds, private process roots, the eight original
+          # owner checks and eight additional continuous Session assertions.
           # No inherited model/provider configuration or credential is supplied.
           set +e
           python3 tests/integration/hepta/run_original_agentd.py \
             --hepta-source "$HEPTA_CI_ROOT/hepta-source" \
             --work-dir "$HEPTA_CI_ROOT/work" \
             --report "$HEPTA_CI_ROOT/report.json" \
+            --session-bin "$HEPTA_CI_ROOT/session-target/debug/trill-session" \
+            --ctl-bin "$HEPTA_CI_ROOT/session-target/debug/trill-ctl" \
             --execute > "$HEPTA_CI_ROOT/logs/gate.log" 2>&1
           gate_exit=$?
           set -e
@@ -168,7 +193,7 @@ jobs:
           cat "$HEPTA_CI_ROOT/logs/gate.log"
           exit "$gate_exit"
 
-      - name: Bind successful runtime qualification to the three actual ARM64 ELF files
+      - name: Bind both successful runtime qualifications to five actual ARM64 ELF files
         id: package
         if: ${{ success() && steps.gate.outcome == 'success' }}
         run: |
@@ -191,20 +216,25 @@ jobs:
           report = json.loads(report_path.read_text())
           if report.get("status") != "passed" or report.get("live_agentd_acceptance") != "passed":
               raise SystemExit("Actual runtime acceptance is required; preflight success cannot publish ELF files")
+          if report.get("persistent_session_acceptance") != "passed":
+              raise SystemExit("Actual continuous Session acceptance is also required")
           if report.get("upstream", {}).get("commit") != os.environ["HEPTA_PIN"]:
               raise SystemExit("Runtime receipt does not bind the fixed original source")
           binaries = {
               "agentd": root / "work/original-target/dev-small/codex-hepta-agentd",
               "probe": root / "work/original-target/dev-small/hepta-original-observer-probe",
               "observer": root / "work/observer-target/debug/hepta-observe",
+              "session": root / "session-target/debug/trill-session",
+              "ctl": root / "session-target/debug/trill-ctl",
           }
           manifest = {
               "desktop_commit": os.environ["DESKTOP_SHA"],
               "hepta_commit": os.environ["HEPTA_PIN"],
               "report_sha256": digest(report_path),
-              "qualification": "original_agentd_readonly_acceptance_passed",
+              "qualification": "original_agentd_and_persistent_session_readonly_acceptance_passed",
               "platform": "aarch64-unknown-linux-gnu",
               "objective_submission": False, "model_turn": False, "device_effect": False,
+              "shell_pixel_qualification": "not_run",
               "binaries": {},
           }
           for name, path in binaries.items():
@@ -215,7 +245,9 @@ jobs:
               if len(header) != 20 or header[:6] != b"\x7fELF\x02\x01" or struct.unpack("<H", header[18:20])[0] != 183:
                   raise SystemExit(f"Not an actual ELF64 little-endian AArch64 binary: {name}")
               actual = digest(path)
-              if report.get("binary_sha256", {}).get(name) != actual:
+              executed_hash = (report.get("session_input_binaries", {}).get(name, {}).get("sha256")
+                               if name in ("session", "ctl") else report.get("binary_sha256", {}).get(name))
+              if executed_hash != actual:
                   raise SystemExit(f"ELF hash differs from the executed runtime receipt: {name}")
               manifest["binaries"][name] = {"filename": path.name, "sha256": actual, "bytes": path.stat().st_size}
           output = root / "artifacts"
@@ -281,3 +313,4 @@ jobs:
             ${{ env.HEPTA_CI_ROOT }}/work/probe/Cargo.toml
             ${{ env.HEPTA_CI_ROOT }}/work/probe/Cargo.lock
             ${{ env.HEPTA_CI_ROOT }}/work/probe/src/main.rs
+            ${{ env.HEPTA_CI_ROOT }}/work/probe/src/original_session_probe.rs
