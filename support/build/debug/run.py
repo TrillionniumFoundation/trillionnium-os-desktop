@@ -14,6 +14,7 @@ import shlex
 import shutil
 import signal
 import socket
+import stat
 import struct
 import subprocess
 import sys
@@ -75,6 +76,44 @@ def sha256(path):
         for chunk in iter(lambda: source.read(1024 * 1024), b""):
             result.update(chunk)
     return result.hexdigest()
+
+
+def private_osdk_evidence(boot, project):
+    """Observe this invocation's private SDK and its install receipt."""
+    prefix = Path(boot).resolve() / "osdk"
+    binary = prefix / "bin/cargo-osdk"
+    keys = ("st_dev", "st_ino", "st_mode", "st_size", "st_mtime_ns", "st_ctime_ns")
+    identity = lambda value: {key: getattr(value, key) for key in keys}
+    descriptor = os.open(binary, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    try:
+        before = os.fstat(descriptor)
+        require(stat.S_ISREG(before.st_mode) and before.st_mode & 0o111,
+                "private OSDK is not a regular executable")
+        require(identity(binary.lstat()) == identity(before), "private OSDK changed before observation")
+        digest = hashlib.sha256()
+        for chunk in iter(lambda: os.read(descriptor, 1024 * 1024), b""):
+            digest.update(chunk)
+        require(identity(os.fstat(descriptor)) == identity(before)
+                and identity(binary.lstat()) == identity(before), "private OSDK changed during observation")
+    finally:
+        os.close(descriptor)
+    receipt = prefix / "cargo-osdk.sha256"
+    require(not receipt.is_symlink(), "private OSDK installation receipt is a symlink")
+    raw_receipt = receipt.read_bytes()
+    filename = str(binary)
+    escaped = filename.replace("\\", "\\\\").replace("\n", "\\n").replace("\r", "\\r")
+    line = ("\\" if escaped != filename else "") + digest.hexdigest() + "  " + escaped + "\n"
+    require(raw_receipt == line.encode(), "private OSDK differs from this build's installation receipt")
+    source = Path(project).resolve() / "kernel/asterinas/osdk"
+    return {"path": str(binary), "size": before.st_size, "sha256": digest.hexdigest(),
+            "stat": identity(before), "installation_root": str(prefix),
+            "source_directory": str(source),
+            "source_inputs": {name: {"path": str(source / name), "sha256": sha256(source / name)}
+                              for name in ("Cargo.toml", "Cargo.lock")},
+            "installation_receipt": {"path": str(receipt), "sha256": hashlib.sha256(raw_receipt).hexdigest()},
+            "matches_installation_receipt": True,
+            "observation": "private SDK after this debug build reached live QEMU; source inputs are also recorded in environment.json",
+            "scope": "post-build path and byte observation; not immutable custody of executed SDK bytes"}
 
 
 def write_json(path, value):
@@ -396,7 +435,8 @@ def debug_main(shutdown):
                    "support/build/record-qemu.py", "support/build/check-boot.py",
                    "support/build/minimal/OSDK.toml", "support/build/minimal/Cargo.lock",
                    "support/upstream-lock.json", "kernel/asterinas/rust-toolchain.toml",
-                   "kernel/asterinas/Cargo.lock", "kernel/asterinas/osdk/Cargo.lock",
+                   "kernel/asterinas/Cargo.lock", "kernel/asterinas/osdk/Cargo.toml",
+                   "kernel/asterinas/osdk/Cargo.lock",
                    "kernel/asterinas/ostd/src/boot/mod.rs"]
         sources += [str(path.relative_to(project)) for path in
                     sorted((project / "kernel/asterinas/osdk/src").rglob("*")) if path.is_file()]
@@ -422,10 +462,7 @@ def debug_main(shutdown):
                         "kernel-driver.log", pass_fds=(descriptor,))
         ready = wait_for_qemu(output / "boot/qemu.json", driver, listener, args.ready_timeout, shutdown)
         write_json(output / "qemu-ready.json", ready)
-        installed_osdk = Path(env.get("CARGO_HOME", str(Path.home() / ".cargo"))) / "bin/cargo-osdk"
-        write_json(output / "installed-osdk.json", {"path": str(installed_osdk.resolve()),
-                   "size": installed_osdk.stat().st_size, "sha256": sha256(installed_osdk),
-                   "observation": "after this debug build reached live QEMU; make may have reinstalled OSDK"})
+        write_json(output / "installed-osdk.json", private_osdk_evidence(output / "boot", project))
         listener.close()
         listener = None
         result["stage"] = "symbol_lookup"

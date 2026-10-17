@@ -56,6 +56,14 @@ their intermediate record. Cleanup only signals each helper-owned session
 while its direct leader is still unreaped, then reaps it; no already-reaped
 numeric process group is signalled.
 
+`installed-osdk.json` observes this run's private
+`boot/osdk/bin/cargo-osdk`, records its source directory and Cargo input
+hashes, and requires its stable regular-file bytes to match
+`boot/osdk/cargo-osdk.sha256` from the installation. It never falls back to
+the shared Cargo home's SDK. A missing global SDK or an unrelated global
+installation therefore does not change this record. This observation does
+not establish immutable custody of the SDK bytes previously executed.
+
 SIGINT and SIGTERM record cancellation cooperatively, including during child
 publication and cleanup. The first signal determines exit130/143, interrupted
 attempts remain failed, and repeated signals cannot skip owned-session cleanup.

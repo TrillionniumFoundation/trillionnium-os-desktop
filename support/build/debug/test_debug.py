@@ -41,7 +41,8 @@ class DebugTests(unittest.TestCase):
                          "support/build/record-qemu.py", "support/build/check-boot.py",
                          "support/build/minimal/OSDK.toml", "support/build/minimal/Cargo.lock",
                          "support/upstream-lock.json", "kernel/asterinas/rust-toolchain.toml",
-                         "kernel/asterinas/Cargo.lock", "kernel/asterinas/osdk/Cargo.lock",
+                         "kernel/asterinas/Cargo.lock", "kernel/asterinas/osdk/Cargo.toml",
+                         "kernel/asterinas/osdk/Cargo.lock",
                          "kernel/asterinas/ostd/src/boot/mod.rs"]:
                 path = project / name
                 path.parent.mkdir(parents=True, exist_ok=True)
@@ -362,10 +363,10 @@ class EncodedFlagEntryTests(unittest.TestCase):
                              "support/build/record-qemu.py", "support/build/check-boot.py",
                              "support/build/minimal/OSDK.toml", "support/build/minimal/Cargo.lock",
                              "support/upstream-lock.json", "kernel/asterinas/rust-toolchain.toml",
-                             "kernel/asterinas/Cargo.lock", "kernel/asterinas/osdk/Cargo.lock",
+                             "kernel/asterinas/Cargo.lock", "kernel/asterinas/osdk/Cargo.toml",
+                             "kernel/asterinas/osdk/Cargo.lock",
                              "kernel/asterinas/ostd/src/boot/mod.rs",
-                             "kernel/asterinas/target/x86_64-unknown-none/release/asterinas-osdk-bin",
-                             "host-cargo/bin/cargo-osdk"]:
+                             "kernel/asterinas/target/x86_64-unknown-none/release/asterinas-osdk-bin"]:
                 path = project / relative
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text("host entry fixture, not kernel source or ELF\n")
@@ -379,6 +380,11 @@ class EncodedFlagEntryTests(unittest.TestCase):
                 "class HostSession:\n"
                 " def __init__(self,*args,**kwargs):\n"
                 f"  Path({str(marker)!r}).write_text('host OwnedSession fixture, no child tools or VM\\n')\n"
+                "  if any(str(value).endswith('/kernel.sh') for value in args[0]):\n"
+                f"   binary=Path({str(output / 'boot/osdk/bin/cargo-osdk')!r});binary.parent.mkdir(parents=True)\n"
+                "   binary.write_bytes(b'private host SDK fixture');binary.chmod(0o500)\n"
+                "   import hashlib\n"
+                "   (binary.parent.parent/'cargo-osdk.sha256').write_text(hashlib.sha256(binary.read_bytes()).hexdigest()+'  '+str(binary)+'\\n')\n"
                 "  self.process=types.SimpleNamespace(pid=42);self.reaped=False;self.external_reap=False\n"
                 " def wait(self,*args): self.reaped=True;return 0\n"
                 " def stop(self): self.reaped=True;return 0\n"
@@ -426,6 +432,115 @@ class EncodedFlagEntryTests(unittest.TestCase):
 
     def test_nonempty_encoded_flags_rejected_before_output_and_tools_then_same_argv_retries(self):
         self.check_encoded_rejection_and_retry("-Copt-level=0\x1f--cfg=host_fixture")
+
+
+class PrivateSdkEvidenceTests(unittest.TestCase):
+    def run_sdk_fixture(self, name, *, global_sdk=False, private_sdk=True, bad_receipt=False):
+        """Run the actual debug entry with explicit host-only heavy-work substitutes."""
+        temporary = tempfile.TemporaryDirectory(prefix="a01-debug-sdk-")
+        self.addCleanup(temporary.cleanup)
+        setting = os.environ.get("A01_DEBUG_SDK_OUT")
+        root = Path(setting) / name if setting else Path(temporary.name)
+        if setting:
+            root.mkdir(parents=True, exist_ok=False)
+        project = root / "project"
+        source = Path(os.environ.get("A01_DEBUG_SDK_SOURCE", str(Path(__file__).with_name("run.py"))))
+        script = project / "support/build/debug/run.py"
+        script.parent.mkdir(parents=True)
+        shutil.copyfile(source, script)
+        for relative in ("support/build/kernel.sh", "support/build/minimal.mk",
+                         "support/build/record-qemu.py", "support/build/check-boot.py",
+                         "support/build/minimal/OSDK.toml", "support/build/minimal/Cargo.lock",
+                         "support/upstream-lock.json", "kernel/asterinas/rust-toolchain.toml",
+                         "kernel/asterinas/Cargo.lock", "kernel/asterinas/osdk/Cargo.toml",
+                         "kernel/asterinas/osdk/Cargo.lock", "kernel/asterinas/ostd/src/boot/mod.rs",
+                         "kernel/asterinas/target/x86_64-unknown-none/release/asterinas-osdk-bin"):
+            path = project / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("explicit debug host fixture, not kernel source or ELF\n")
+        cargo_home = root / "cargo-home"
+        global_binary = cargo_home / "bin/cargo-osdk"
+        if global_sdk:
+            global_binary.parent.mkdir(parents=True)
+            global_binary.write_bytes(b"foreign-global-sdk-from-another-source-root")
+        output = root / "debug-output"
+        private_binary = output / "boot/osdk/bin/cargo-osdk"
+        wrapper = root / "debug-entry-fixture.py"
+        wrapper.write_text(
+            "import hashlib,importlib.util,json,sys,types\nfrom pathlib import Path\n"
+            f"spec=importlib.util.spec_from_file_location('debug_fixture',{str(script)!r})\n"
+            "module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)\n"
+            f"root=Path({str(root)!r});binary=Path({str(private_binary)!r})\n"
+            "# No compiler, SDK, debugger, nm or guest process executes.\n"
+            "class HostSession:\n"
+            " def __init__(self,command,**kwargs):\n"
+            "  self.process=types.SimpleNamespace(pid=42);self.reaped=False;self.external_reap=False\n"
+            "  with (root/'invocations.jsonl').open('a') as out: out.write(json.dumps(command)+'\\n')\n"
+            "  if any(str(value).endswith('/kernel.sh') for value in command):\n"
+            f"   if {private_sdk!r}:\n"
+            "    binary.parent.mkdir(parents=True);binary.write_bytes(b'private-sdk-from-this-debug-build');binary.chmod(0o500)\n"
+            f"    digest={'chr(48)*64' if bad_receipt else 'hashlib.sha256(binary.read_bytes()).hexdigest()'}\n"
+            "    (binary.parent.parent/'cargo-osdk.sha256').write_text(digest+'  '+str(binary)+'\\n')\n"
+            " def wait(self,*args): self.reaped=True;return 0\n"
+            " def stop(self): self.reaped=True;return 0\n"
+            "module.OwnedSession=HostSession\n"
+            "module.shutil.which=lambda name: sys.executable\n"
+            "module.subprocess.check_output=lambda *args,**kwargs: 'host-fixture\\n'\n"
+            "module.wait_for_qemu=lambda *args: {'host_fixture':True}\n"
+            "module.entry_address=lambda *args:4096\n"
+            "module.bind_entry_artifacts=lambda *args:{'symbol_artifact':{'host_fixture':True},'expected_bytes':'00'*32}\n"
+            "module.accept_gdb=lambda *args:{'host_fixture':True}\n"
+            "module.accept_boot=lambda *args:{'host_fixture':True}\n"
+            f"sys.argv=[{str(script)!r},'--output',{str(output)!r}]\n"
+            "raise SystemExit(module.main())\n")
+        command = [sys.executable, "-I", *(["-O"] if sys.flags.optimize else []), str(wrapper)]
+        env = dict(os.environ, CARGO_HOME=str(cargo_home))
+        env.pop("CARGO_ENCODED_RUSTFLAGS", None)
+        result = subprocess.run(command, cwd=project, env=env, stdout=subprocess.PIPE,
+                                stderr=subprocess.STDOUT, timeout=10)
+        (root / "console.log").write_bytes(result.stdout)
+        record = json.loads((output / "installed-osdk.json").read_text()) if (output / "installed-osdk.json").exists() else None
+        observation = {"kind": "actual_debug_cli_with_host_substitutes_no_build_no_vm",
+                       "source_sha256": DEBUG.sha256(source), "command": command,
+                       "global_exists": global_binary.exists(), "private_exists": private_binary.exists(),
+                       "private_binary": str(private_binary), "private_receipt_tampered": bad_receipt,
+                       "returncode": result.returncode, "installed_osdk": record,
+                       "result": json.loads((output / "result.json").read_text())}
+        (root / "observation.json").write_text(json.dumps(observation, indent=2) + "\n")
+        return root, project, output, private_binary, result, record
+
+    def check_private_selected(self, name, global_sdk):
+        root, project, output, binary, result, record = self.run_sdk_fixture(name, global_sdk=global_sdk)
+        self.assertEqual(result.returncode, 0, result.stdout.decode())
+        self.assertEqual(record["path"], str(binary))
+        self.assertEqual(record["sha256"], hashlib.sha256(binary.read_bytes()).hexdigest())
+        self.assertEqual(record["source_directory"], str(project / "kernel/asterinas/osdk"))
+        self.assertEqual(record["installation_root"], str(output / "boot/osdk"))
+        self.assertEqual(record["installation_receipt"]["path"], str(output / "boot/osdk/cargo-osdk.sha256"))
+        self.assertTrue(record["matches_installation_receipt"])
+        self.assertNotIn("cargo-home", json.dumps(record))
+
+    def test_missing_global_sdk_does_not_fail_or_change_private_evidence(self):
+        self.check_private_selected("global-missing", False)
+
+    def test_foreign_global_sdk_is_not_recorded_as_this_debug_build(self):
+        self.check_private_selected("global-foreign", True)
+
+    def test_missing_private_sdk_never_falls_back_to_foreign_global(self):
+        root, project, output, binary, result, record = self.run_sdk_fixture(
+            "private-missing", global_sdk=True, private_sdk=False)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIsNone(record)
+        self.assertFalse(json.loads((output / "result.json").read_text())["passed"])
+
+    def test_private_sdk_receipt_mismatch_is_rejected_before_gdb(self):
+        root, project, output, binary, result, record = self.run_sdk_fixture(
+            "private-receipt-mismatch", global_sdk=True, bad_receipt=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIsNone(record)
+        self.assertIn("installation receipt", json.loads((output / "result.json").read_text())["error"])
+        invocations = [json.loads(line) for line in (root / "invocations.jsonl").read_text().splitlines()]
+        self.assertFalse(any("-x" in command for command in invocations))
 
 
 if __name__ == "__main__":
