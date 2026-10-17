@@ -1,5 +1,5 @@
-# Run through run-models.py: src/lib.rs and src/native.rs are exact temporary
-# copies of the production core, while src/sync.rs is the test-only Mutex shim.
+# Run through run-models.py: all production Rust modules are exact temporary
+# copies, while src/sync.rs is replaced with the test-only Mutex shim.
 [package]
 name = "os-control-loom"
 version = "0.0.0"

@@ -51,6 +51,10 @@ actual HOS2 byte layout and payload.
    epoch/ancestry and optional payload digest are also bound. The unbound
    `DeliveryRequest::new` constructor and `ResourceDomain`/`Grant` route are
    host fixtures; native admission requires no shadow ResourceDomain.
+   If the original owner uses `ManagementGrantState`, obtain its immutable
+   snapshot and use `NativeGrant::from_management(target, snapshot, ancestors)`.
+   The library checks target IDs and additionally binds the full delegation
+   instance/terms in D. This does not create another authority registry.
 3. Call `reserve_native`. Sequence allocation is global across host and native
    requests and all targets. A second
    target, cap, expected revision, grant epoch, or payload digest for the same
@@ -701,6 +705,50 @@ readable. A DeliveryView or original-owner authority still intentionally
 retains namespace history. Callers must bound their own collections of token
 metadata; the window quota is not a quota on arbitrary caller allocations.
 
+## Management-only revocation and lease state
+
+`ManagementGrantState` is a non-Clone state value embedded **once** in the
+existing resource owner's mutation lock. It holds one delegation's identity,
+publisher, target/object, management delegation epoch, validity interval and cap ceiling.
+It holds no resource budget, runtime counter, revision, global clock, registry
+or persistent ledger. It is an available primitive for A05/A06 to adopt;
+the native kernel and the old host `Grant` do not automatically use it.
+
+Trusted bootstrap constructs `ManagementGrantState::new(ManagementGrantConfig)`.
+Nonzero IDs/epoch, `issued_at_ns < expires_at_ns` and a cap ceiling within
+the fixed CPU period are checked. `snapshot()` captures terms, not current
+rights. Native `context.management_snapshot()` returns the exact saved snapshot
+when the reservation used `from_management`; `from_owner` leaves it None.
+None does not grant rights or imply lease validation: that path still requires
+the actual owner's existing authority checks.
+
+Inside the same lock as budget CAS/runtime settlement and revoke, call
+`state.check(snapshot, context.binding(), actual_boottime_ns)`. This checks
+the original state instance and all terms, publisher/target/object/delegation epoch,
+fixed period, cap ceiling and `[issued_at_ns, expires_at_ns)` validity.
+The caller must sample trusted current BOOTTIME and reject rollback; this
+predicate does not keep another clock or enforce lock ordering itself. Do not
+check, unlock and later commit. These semantic checks happen after reservation;
+expiry, revocation or cap-envelope denial becomes an immutable terminal refusal.
+`ManagementError::delivery_status()` maps them to existing HOS2 statuses.
+
+`revoke()` only closes this management delegation. It returns an idempotent
+`ManagementRevokeReceipt`, advances its epoch once (saturating at MAX) and never
+reactivates it. Applications may keep running/accounting under their already
+admitted budget, and an independent manager remains usable. Revoke does not
+change a budget, refund usage, imply user pause, invalidate history or prove
+hardware quiescence. `ResourceDomain::revoke()` retains its distinct host-model
+whole-domain semantics. Reason-dependent recovery policy, timers and actual
+process-exit handling remain the real owner's responsibilities.
+
+State instances mint private Arc identity tags; Snapshot is Clone but not Copy.
+Tag equality plus complete terms prevents a new state with identical public
+configuration from accepting an old snapshot, even after the original state
+was destroyed. Tags are instance identity, not liveness or kernel credentials.
+Creating a replacement state cannot reopen an old D: native dedupe distinguishes
+the new origin, changed terms, and Some/None paths. New authorization needs a
+fresh D and the original Hepta K policy; no durable ledger is added.
+
 ## Weak native-owner back-references
 
 An owner retained by a native result slot must use
@@ -721,20 +769,24 @@ that namespace. Tests cover both cases with bounded, joined helper threads.
 ## Bounded transition models
 
 `python3 tests/control/loom/run-models.py OUTPUT_DIR` uses pinned Loom 0.7.2
-and its own Cargo.lock under tests/control. It copies actual lib.rs/native.rs
+and its own Cargo.lock under tests/control. It copies all actual src/**/*.rs
 bytes unchanged into a temporary crate, replaces only sync.rs with the tracked
 Loom Mutex adapter, and checks before/after hashes. No second state machine,
 production feature or production dependency is introduced.
 
-Six fixtures cover same-D reservation/effect, revoke/commit, retire/query,
-publish/observe, loss/callback and typed native owner/context execution.
-Each explores up to two workers plus main, with preemption_bound=3 and
+Ten fixtures cover same-D reservation/effect, revoke/commit, retire/query,
+publish/observe, loss/callback, typed native execution, three-way loss/retirement,
+two-D resource CAS, post-effect invalid receipt/reconciliation and management
+revocation with independent authorization. Each explores up to three workers
+plus main, with preemption_bound=3 and
 max_branches=10000. No time/permutation cutoff is set; exceeding a branch
 limit or any assertion/deadlock fails the command. The runner requires all
-six schedule counts, fmt and strict Clippy to pass.
+ten schedule counts, fmt and strict Clippy to pass.
 
 This verifies bounded lock-protected transitions with Loom threads/atomics;
 std/alloc Arc/Weak reference-count atomics and finalization are not instrumented.
 Allocation failure, actual IRQ/preemption/SMP locks, scheduler/usercopy,
 Hepta durability and executions beyond these fixtures/bounds remain unverified.
 Default std and portable-spin thread tests still run separately.
+Loom 0.7.2's internal Mutex poison handling cannot verify unwind recovery;
+the poison/Drop-panic regressions use real host threads instead.
