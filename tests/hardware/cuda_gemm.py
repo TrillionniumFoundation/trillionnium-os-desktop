@@ -451,14 +451,32 @@ def _supervised_main():
             try:
                 status, supervisor = run_worker(command, args.timeout_seconds)
                 result["worker_supervision"] = supervisor
-                result["timeout_enforced"] = bool(supervisor.get("worker_reaped"))
+                # An apparently reaped leader is insufficient: all group
+                # inspections, signals and the final reap must be sound.
+                supervision_complete = bool(
+                    supervisor.get("worker_reaped")
+                    and not supervisor.get("worker_group_incomplete")
+                    and not supervisor.get("worker_group_inspection_failed")
+                    and not supervisor.get("worker_group_kill_error")
+                    and not supervisor.get("worker_identity_lost")
+                    and not supervisor.get("unreaped_worker_may_remain")
+                    and status != 125
+                )
+                result["timeout_enforced"] = supervision_complete
                 if supervisor["timed_out"]:
                     result.update(status="timeout",
                                   error="native worker exceeded wall-clock deadline; effect unknown",
                                   reset_or_failure_recovery_verified=False)
                     exit_code = 1
-                elif not supervisor["worker_reaped"]:
-                    result.update(status="failed", error="worker not reaped; effect unknown")
+                elif status == 125 or not supervision_complete:
+                    # Refuse orphan descendants, failed procfs inspection,
+                    # failed group signal, lost PID or incomplete reaping.
+                    # Even a worker-written success report remains untrusted.
+                    result.update(
+                        status="failed",
+                        error="worker group/identity cleanup unverified; effect unknown",
+                        reset_or_failure_recovery_verified=False,
+                    )
                     exit_code = 1
                 else:
                     # Parse only the bounded report written inside the private
