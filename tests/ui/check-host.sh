@@ -48,7 +48,7 @@ capture_fmt_on_exit() {
 }
 trap capture_fmt_on_exit EXIT
 
-bash -n tests/ui/smoke-wayland.sh tests/ui/headless-weston.sh tests/ui/compositor-restart.sh support/ui/package-host-binaries.sh tests/ui/test-package-host-binaries.sh tests/ui/replay-packaged-host.sh
+bash -n tests/ui/smoke-wayland.sh tests/ui/headless-weston.sh tests/ui/compositor-restart.sh support/ui/package-host-binaries.sh tests/ui/test-package-host-binaries.sh tests/ui/replay-packaged-host.sh tests/ui/test-cross-uid-peer.sh
 python3 tests/ui/test-session-lock.py
 bash tests/ui/test-smoke-cleanup.sh
 bash tests/ui/test-zombie-liveness.sh
@@ -69,6 +69,12 @@ cargo test --manifest-path ui/Cargo.toml --workspace --locked
 # The tests/ui model is a separate host contract, NOT a synthetic UI success.
 cargo test --manifest-path support/ui/Cargo.toml --locked
 cargo test --manifest-path tests/ui/Cargo.toml --locked
+# Real Linux SO_PEERCRED negative. The CI runner already provisions
+# passwordless sudo for host dependencies; use it only to start a disposable
+# nobody-owned Session under a separate private /tmp runtime. A root caller
+# must be refused with an actual peer-UID diagnostic. The same-UID client
+# must continue to work; old unguarded Rust binaries fail this check.
+bash tests/ui/test-cross-uid-peer.sh "$PWD/ui/target/debug"
 # The binaries are packaged only when all three suites and strict Rustfmt
 # have passed; the separate Weston smoke still owns its independent gate.
 for manifest in ui/Cargo.toml support/ui/Cargo.toml tests/ui/Cargo.toml; do

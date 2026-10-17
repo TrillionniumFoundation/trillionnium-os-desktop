@@ -116,7 +116,12 @@ The Linux-only host Session checks SO_PEERCRED on every accepted connection
 and rejects peer credentials whose kernel-reported UID differs from the
 Session effective UID. This supplements private 0700 runtime / 0600 socket
 permissions, but is **not** a cryptographic user identity, same-UID sandbox,
-Hepta authority, production portal or A05 trusted CapSpace.
+Hepta authority, production portal or A05 trusted CapSpace. The blocking
+Linux-host CI now also starts an isolated nobody-owned Session with passwordless
+sudo and verifies a root client's cross-UID access is actually rejected by
+the server (not merely by filesystem permissions), while nobody's own CLI
+continues to work. The test leaves no production processes or files and
+uses disposable private /tmp paths.
 Missing app executable is reported FAILED, not a successful launch.
 A missing session is rendered OFFLINE and existing status is stale.
 `trill-ctl launch` now exits nonzero if the session reports a failed spawn,

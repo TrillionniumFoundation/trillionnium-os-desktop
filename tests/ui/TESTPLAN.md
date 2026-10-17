@@ -78,6 +78,12 @@ Unit coverage:
   different UID through the exact same production comparison; the 0600
   socket and 0700 runtime remain mandatory. This does not authenticate
   two programs under the same UID or supply any A05 CapSpace grant
+- privileged *isolated real process* `tests/ui/test-cross-uid-peer.sh`:
+  unprivileged nobody-owned Session and its same-UID CLI succeed, whereas
+  root's cross-UID snapshot must be rejected with the exact SO_PEERCRED
+  diagnostic; Session remains alive for the owner. A prior `fcc57bd2`
+  Rust ELF without this guard was independently shown to FAIL this check.
+  Only disposable /tmp, no production service or CapSpace is accessed
 - failed host spawn, partial/unknown task and rejected IPC return nonzero
   trill-ctl process exit status; a running child means only host launch ACK
 - invalid app/workspace enum, including ../path command-injection strings,
