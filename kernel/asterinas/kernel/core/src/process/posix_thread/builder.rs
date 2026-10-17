@@ -7,7 +7,7 @@ use ostd::arch::cpu::context::{FsBase, GsBase};
 use ostd::{
     arch::cpu::context::{FpuContext, UserContext},
     cpu::CpuSet,
-    sync::RwArc,
+    sync::{RcuOption, RwArc},
     task::Task,
 };
 use spin::Once;
