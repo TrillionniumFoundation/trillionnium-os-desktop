@@ -1,0 +1,56 @@
+{
+  "started_at_utc": "2026-10-17T22:51:45.396622+00:00",
+  "qualification": "task_local_abort_coordination_guard_only",
+  "actual_agentd_or_session_runtime": false,
+  "steps": [
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "-c",
+        "import time; time.sleep(30)"
+      ],
+      "cwd": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/helper-v3-guard-check-01",
+      "started_at_utc": "2026-10-17T22:51:45.397092+00:00",
+      "status": "failed",
+      "deadline_seconds": 5,
+      "minimum_disk_reserve_bytes": 734003200,
+      "maximum_nonreclaimable_bytes": 7516192768,
+      "resource_samples": [
+        {
+          "elapsed_seconds": 0.0,
+          "free_bytes": 1182810112,
+          "nonreclaimable_bytes": 2022049672
+        }
+      ],
+      "pid": 6,
+      "capture_abort_request": {
+        "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/helper-v3-guard-check-01/abort-request.json",
+        "abort": true,
+        "reason": "bounded owned-child guard regression"
+      },
+      "cleanup_exit_code": -15,
+      "child_guard_armed_after_completion": false,
+      "ended_at_utc": "2026-10-17T22:51:48.397913+00:00",
+      "log": {
+        "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/helper-v3-guard-check-01/owned-child.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ],
+  "checks": [
+    {
+      "name": "fifo_rejected_without_blocking",
+      "seconds": 3.8938000216148794e-05
+    },
+    {
+      "name": "actual_owned_child_aborted_and_reaped",
+      "cleanup_exit_code": -15,
+      "child_pid": 6
+    }
+  ],
+  "helper_sha256": "5d9976b96e93d0ce39c2df402e9f310fe1755811c479ad422d9bec01ff46f4ff",
+  "status": "passed",
+  "ended_at_utc": "2026-10-17T22:51:48.398150+00:00"
+}

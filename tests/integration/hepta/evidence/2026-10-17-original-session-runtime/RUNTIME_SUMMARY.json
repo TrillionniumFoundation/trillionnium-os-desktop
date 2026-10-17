@@ -1,0 +1,375 @@
+{
+  "qualification": "curated_original_agentd_persistent_session_runtime_evidence",
+  "shell_capture_qualification": "separate_A10_capture_receipts_and_raw_PNGs_required",
+  "objective_submission": false,
+  "model_turn": false,
+  "device_effect": false,
+  "attempts": [
+    {
+      "attempt": "runtime-01",
+      "status": "failed",
+      "receipt_sha256": "6aa7ad9371be2d2257926f6c619d1b70e64a8465bd4d11b8c1e2cbf3e8e64637",
+      "runtime_source_commit": "c50d7b9b688135a22ced2f7f3cbe21c3028d8e17",
+      "runtime_source_tree": "1b606b1922751fe938fa4bcca0a923516323f418",
+      "ui_build_source_commit": "35f379101c0863027e971ccb91faf8da71cf929c",
+      "live_agentd_acceptance": "failed",
+      "persistent_session_acceptance": "failed",
+      "helper_version": 2,
+      "phase_count": 1,
+      "ack_count": 0,
+      "private_state_absent_at_archive": true,
+      "error": {
+        "type": "RuntimeError",
+        "detail": "command failed with exit 1: original-session-process.log"
+      },
+      "phase_identities": [
+        {
+          "phase": "starting",
+          "session_pid": 612960,
+          "worker_tid": 612962,
+          "session_instance": "60f31bbe23526f6d8cdd92f471039fbb",
+          "original": {
+            "active": true,
+            "agent_id": "22222222-2222-4222-8222-222222222222",
+            "healthy": false,
+            "process_id": 612929,
+            "spawn_generation": 1
+          },
+          "connection": "observed",
+          "error_code": null,
+          "retained_spawn": 1,
+          "retained_current_generation": 1,
+          "retained_health": {
+            "fenced": false,
+            "lifecycle": "starting",
+            "process_id": 612929,
+            "promotion_ready": false,
+            "ready": false
+          }
+        }
+      ]
+    },
+    {
+      "attempt": "runtime-02",
+      "status": "passed",
+      "receipt_sha256": "cb79e60baf9aa571da1e73b0a6b727cc88b2587849a328188332c7779eac17c1",
+      "runtime_source_commit": "28843c6632fe63db6b3fecb4d05888e90976fd16",
+      "runtime_source_tree": "759c42b36d965174dc00a39b7f28e962ed667d85",
+      "ui_build_source_commit": "35f379101c0863027e971ccb91faf8da71cf929c",
+      "live_agentd_acceptance": "passed",
+      "persistent_session_acceptance": "passed",
+      "helper_version": 3,
+      "phase_count": 6,
+      "ack_count": 6,
+      "private_state_absent_at_archive": true,
+      "error": null,
+      "phase_identities": [
+        {
+          "phase": "starting",
+          "session_pid": 615562,
+          "worker_tid": 615564,
+          "session_instance": "b4122eb42acae07a5d5b97c1c496e2fd",
+          "original": {
+            "active": true,
+            "agent_id": "22222222-2222-4222-8222-222222222222",
+            "healthy": false,
+            "process_id": 615532,
+            "spawn_generation": 1
+          },
+          "connection": "observed",
+          "error_code": null,
+          "retained_spawn": 1,
+          "retained_current_generation": 1,
+          "retained_health": {
+            "fenced": false,
+            "lifecycle": "starting",
+            "process_id": 615532,
+            "promotion_ready": false,
+            "ready": false
+          }
+        },
+        {
+          "phase": "running",
+          "session_pid": 615562,
+          "worker_tid": 615564,
+          "session_instance": "b4122eb42acae07a5d5b97c1c496e2fd",
+          "original": {
+            "active": true,
+            "agent_id": "22222222-2222-4222-8222-222222222222",
+            "healthy": true,
+            "process_id": 615532,
+            "spawn_generation": 1
+          },
+          "connection": "observed",
+          "error_code": null,
+          "retained_spawn": 1,
+          "retained_current_generation": 2,
+          "retained_health": {
+            "fenced": false,
+            "lifecycle": "running",
+            "process_id": 615532,
+            "promotion_ready": true,
+            "ready": true
+          }
+        },
+        {
+          "phase": "draining",
+          "session_pid": 615562,
+          "worker_tid": 615564,
+          "session_instance": "b4122eb42acae07a5d5b97c1c496e2fd",
+          "original": {
+            "active": true,
+            "agent_id": "22222222-2222-4222-8222-222222222222",
+            "healthy": true,
+            "process_id": 615532,
+            "spawn_generation": 1
+          },
+          "connection": "observed",
+          "error_code": null,
+          "retained_spawn": 1,
+          "retained_current_generation": 3,
+          "retained_health": {
+            "fenced": false,
+            "lifecycle": "draining",
+            "process_id": 615532,
+            "promotion_ready": false,
+            "ready": false
+          }
+        },
+        {
+          "phase": "old_spawn_stale",
+          "session_pid": 615562,
+          "worker_tid": 615564,
+          "session_instance": "b4122eb42acae07a5d5b97c1c496e2fd",
+          "original": {
+            "active": true,
+            "agent_id": "22222222-2222-4222-8222-222222222222",
+            "healthy": true,
+            "process_id": 615755,
+            "spawn_generation": 5
+          },
+          "connection": "stale",
+          "error_code": "protocol_mismatch",
+          "retained_spawn": 1,
+          "retained_current_generation": 3,
+          "retained_health": {
+            "fenced": false,
+            "lifecycle": "draining",
+            "process_id": 615532,
+            "promotion_ready": false,
+            "ready": false
+          }
+        },
+        {
+          "phase": "recovered_running",
+          "session_pid": 615926,
+          "worker_tid": 615929,
+          "session_instance": "b4b8c3aa629eeac9d5968a060d2b0559",
+          "original": {
+            "active": true,
+            "agent_id": "22222222-2222-4222-8222-222222222222",
+            "healthy": true,
+            "process_id": 615755,
+            "spawn_generation": 5
+          },
+          "connection": "observed",
+          "error_code": null,
+          "retained_spawn": 5,
+          "retained_current_generation": 6,
+          "retained_health": {
+            "fenced": false,
+            "lifecycle": "running",
+            "process_id": 615755,
+            "promotion_ready": true,
+            "ready": true
+          }
+        },
+        {
+          "phase": "stopped_stale",
+          "session_pid": 615926,
+          "worker_tid": 615929,
+          "session_instance": "b4b8c3aa629eeac9d5968a060d2b0559",
+          "original": {
+            "active": false,
+            "agent_id": "22222222-2222-4222-8222-222222222222",
+            "healthy": false,
+            "process_id": null,
+            "spawn_generation": null
+          },
+          "connection": "stale",
+          "error_code": "unavailable",
+          "retained_spawn": 5,
+          "retained_current_generation": 6,
+          "retained_health": {
+            "fenced": false,
+            "lifecycle": "running",
+            "process_id": 615755,
+            "promotion_ready": true,
+            "ready": true
+          }
+        }
+      ]
+    },
+    {
+      "attempt": "runtime-03",
+      "status": "passed",
+      "receipt_sha256": "14b0cfc7fcc5c70aa2957342b65ca74461e63b0b6bcdd1cad12cd767db48edaa",
+      "runtime_source_commit": "145e94c364243789b88c23b1292f9d4d9ca9a0e9",
+      "runtime_source_tree": "98dee80a7ec855a84c777b350fed8ef675e31fc1",
+      "ui_build_source_commit": "84f0070b6e7e01238a8dac6044748b15101c9497",
+      "live_agentd_acceptance": "passed",
+      "persistent_session_acceptance": "passed",
+      "helper_version": 3,
+      "phase_count": 6,
+      "ack_count": 6,
+      "private_state_absent_at_archive": true,
+      "error": null,
+      "phase_identities": [
+        {
+          "phase": "starting",
+          "session_pid": 616357,
+          "worker_tid": 616359,
+          "session_instance": "1726d69f559ede7d224e8bc0f12c282b",
+          "original": {
+            "active": true,
+            "agent_id": "22222222-2222-4222-8222-222222222222",
+            "healthy": false,
+            "process_id": 616327,
+            "spawn_generation": 1
+          },
+          "connection": "observed",
+          "error_code": null,
+          "retained_spawn": 1,
+          "retained_current_generation": 1,
+          "retained_health": {
+            "fenced": false,
+            "lifecycle": "starting",
+            "process_id": 616327,
+            "promotion_ready": false,
+            "ready": false
+          }
+        },
+        {
+          "phase": "running",
+          "session_pid": 616357,
+          "worker_tid": 616359,
+          "session_instance": "1726d69f559ede7d224e8bc0f12c282b",
+          "original": {
+            "active": true,
+            "agent_id": "22222222-2222-4222-8222-222222222222",
+            "healthy": true,
+            "process_id": 616327,
+            "spawn_generation": 1
+          },
+          "connection": "observed",
+          "error_code": null,
+          "retained_spawn": 1,
+          "retained_current_generation": 2,
+          "retained_health": {
+            "fenced": false,
+            "lifecycle": "running",
+            "process_id": 616327,
+            "promotion_ready": true,
+            "ready": true
+          }
+        },
+        {
+          "phase": "draining",
+          "session_pid": 616357,
+          "worker_tid": 616359,
+          "session_instance": "1726d69f559ede7d224e8bc0f12c282b",
+          "original": {
+            "active": true,
+            "agent_id": "22222222-2222-4222-8222-222222222222",
+            "healthy": true,
+            "process_id": 616327,
+            "spawn_generation": 1
+          },
+          "connection": "observed",
+          "error_code": null,
+          "retained_spawn": 1,
+          "retained_current_generation": 3,
+          "retained_health": {
+            "fenced": false,
+            "lifecycle": "draining",
+            "process_id": 616327,
+            "promotion_ready": false,
+            "ready": false
+          }
+        },
+        {
+          "phase": "old_spawn_stale",
+          "session_pid": 616357,
+          "worker_tid": 616359,
+          "session_instance": "1726d69f559ede7d224e8bc0f12c282b",
+          "original": {
+            "active": true,
+            "agent_id": "22222222-2222-4222-8222-222222222222",
+            "healthy": true,
+            "process_id": 616535,
+            "spawn_generation": 5
+          },
+          "connection": "stale",
+          "error_code": "protocol_mismatch",
+          "retained_spawn": 1,
+          "retained_current_generation": 3,
+          "retained_health": {
+            "fenced": false,
+            "lifecycle": "draining",
+            "process_id": 616327,
+            "promotion_ready": false,
+            "ready": false
+          }
+        },
+        {
+          "phase": "recovered_running",
+          "session_pid": 616715,
+          "worker_tid": 616717,
+          "session_instance": "7df3d71d043233ca8649ad3560f57432",
+          "original": {
+            "active": true,
+            "agent_id": "22222222-2222-4222-8222-222222222222",
+            "healthy": true,
+            "process_id": 616535,
+            "spawn_generation": 5
+          },
+          "connection": "observed",
+          "error_code": null,
+          "retained_spawn": 5,
+          "retained_current_generation": 6,
+          "retained_health": {
+            "fenced": false,
+            "lifecycle": "running",
+            "process_id": 616535,
+            "promotion_ready": true,
+            "ready": true
+          }
+        },
+        {
+          "phase": "stopped_stale",
+          "session_pid": 616715,
+          "worker_tid": 616717,
+          "session_instance": "7df3d71d043233ca8649ad3560f57432",
+          "original": {
+            "active": false,
+            "agent_id": "22222222-2222-4222-8222-222222222222",
+            "healthy": false,
+            "process_id": null,
+            "spawn_generation": null
+          },
+          "connection": "stale",
+          "error_code": "unavailable",
+          "retained_spawn": 5,
+          "retained_current_generation": 7,
+          "retained_health": {
+            "fenced": false,
+            "lifecycle": "draining",
+            "process_id": 616535,
+            "promotion_ready": false,
+            "ready": false
+          }
+        }
+      ]
+    }
+  ]
+}

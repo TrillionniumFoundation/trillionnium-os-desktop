@@ -1,0 +1,155 @@
+{
+  "qualification": "frozen_source_python_gate_checks",
+  "status": "passed",
+  "started_at_utc": "2026-10-17T23:09:05.911620+00:00",
+  "expected_tests": 17,
+  "test_scope": {
+    "manifest_and_lock_contract": 5,
+    "disposable_owned_linux_child_guard": 6,
+    "synthetic_session_receipt_rejections": 6
+  },
+  "original_agentd_runtime_attempted": false,
+  "session_runtime_attempted": false,
+  "shell_capture_attempted": false,
+  "cargo_resolution_or_compilation_attempted": false,
+  "objective_submission": false,
+  "model_turn": false,
+  "device_effect": false,
+  "steps": [
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/integration/hepta",
+        "-p",
+        "test_original_*.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/98f315e377b2/next-r6-runtime-new-03",
+      "started_at_utc": "2026-10-17T23:09:05.975155+00:00",
+      "status": "passed",
+      "deadline_seconds": 90,
+      "minimum_disk_reserve_bytes": 734003200,
+      "maximum_nonreclaimable_bytes": 7516192768,
+      "resource_samples": [
+        {
+          "elapsed_seconds": 0.0,
+          "free_bytes": 881405952,
+          "nonreclaimable_bytes": 2032910432
+        },
+        {
+          "elapsed_seconds": 1.0,
+          "free_bytes": 881401856,
+          "nonreclaimable_bytes": 2039773872
+        }
+      ],
+      "pid": 617791,
+      "exit_code": 0,
+      "child_guard_armed_after_completion": false,
+      "ended_at_utc": "2026-10-17T23:09:06.976691+00:00",
+      "log": {
+        "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/gate-source-checks-01/python-gate-tests.log",
+        "bytes": 3228,
+        "sha256": "9baf2e557e700d5ae7a8167788c2c3e2ddd30c80584525219c6dac0b84b5b1f1"
+      }
+    }
+  ],
+  "desktop": {
+    "commit": "145e94c364243789b88c23b1292f9d4d9ca9a0e9",
+    "tree": "98dee80a7ec855a84c777b350fed8ef675e31fc1",
+    "clean": true,
+    "subtrees": {
+      "services/hepta-os": "7ebe43051e1cebb8049ba50e9da4a9fb59d1a0c7",
+      "ui": "22959f24a71b5ece8286a962abc19d9fe3ab6ffc"
+    },
+    "inputs": {
+      "tests/integration/hepta/run_original_agentd.py": "21dd4a2e0621240a75f5ce37bad93da0a37352fbaa78554a50e048abe6a45fd0",
+      "tests/integration/hepta/original_agentd_probe.rs": "d297d6b5c7e39c3c98a4cb051d54ebdfc58757d04ca5ca265a023f4fb7fb276c",
+      "tests/integration/hepta/original_session_probe.rs": "7660c76f640cf612f57a2ee6a2ea7d8b09e8ac332c20fd44d8e7c8bbcb0663c5",
+      "services/hepta-os/Cargo.toml": "6d33aced708f1f6d3637e065825dd1718a4b187876e96edf1f7aefb0f437bfee",
+      "services/hepta-os/Cargo.lock": "a1aed4d1f513036cbe03912359f3dfbb2c6d93c5210b8d18244d95be9008a875",
+      "services/hepta-os/UPSTREAM_CONTRACT.json": "24efcccd98b6ac6a56cb34b36f5bdb10785d955efd86c32fed308bac1505f7ef",
+      "ui/Cargo.toml": "2c59194ffc1ed3bc0d5118f275498c1e09bd49f6ce71b80db709927b317a7628",
+      "ui/Cargo.lock": "e484809d742a264a296046b0d272e843d167b02b634232e793ef702757cc70e1"
+    }
+  },
+  "original": {
+    "commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+    "tree": "15c9d6ea07bf3832de82825a6cc1e8c958dd3d45",
+    "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+    "clean_checkout": true
+  },
+  "test_sources": {
+    "tests/integration/hepta/test_original_build_manifest.py": "7d84514be774290e296de9c397910086cca903bd8794011ca8263a34b6f9ba5a",
+    "tests/integration/hepta/test_original_process_guard.py": "5dd5a3c5d9600981c692283acff73cc388da90977d11c0f38cbe049a49ff8191",
+    "tests/integration/hepta/test_original_session_receipts.py": "9d472ae7751d5b714af8bbb72c0ad19467e28a90c188fbce938717d65427832e"
+  },
+  "wrapper_sha256": "be037301d2853c6d86a8e4da0bbe3f2526636eac358b0e918f28c750a19e3a58",
+  "helper": {
+    "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/helper-v3/common.py",
+    "sha256": "5d9976b96e93d0ce39c2df402e9f310fe1755811c479ad422d9bec01ff46f4ff"
+  },
+  "environment": {
+    "PATH": "/usr/bin:/bin",
+    "LANG": "C.UTF-8",
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "HEPTA_ORIGINAL_SOURCE": "/workspace/scratch/98f315e377b2/next-hepta-source"
+  },
+  "observed_tests_passed": 17,
+  "test_result_lines": [
+    "test_fixed_source_resolver_survives_external_workspace (test_original_build_manifest.OriginalBuildManifestTests.test_fixed_source_resolver_survives_external_workspace) ... ok",
+    "test_missing_resolver_is_rejected_before_preparing_directory (test_original_build_manifest.OriginalBuildManifestTests.test_missing_resolver_is_rejected_before_preparing_directory) ... ok",
+    "test_nonduplicate_source_patch_is_never_silently_dropped (test_original_build_manifest.OriginalBuildManifestTests.test_nonduplicate_source_patch_is_never_silently_dropped) ... ok",
+    "test_omitted_alias_target_must_be_unused_exactly_once (test_original_build_manifest.OriginalBuildManifestTests.test_omitted_alias_target_must_be_unused_exactly_once) ... ok",
+    "test_unknown_or_non_string_resolver_is_rejected (test_original_build_manifest.OriginalBuildManifestTests.test_unknown_or_non_string_resolver_is_rejected) ... ok",
+    "test_failed_real_leader_remains_waitable_until_every_group_signal_finishes (test_original_process_guard.OriginalProcessGuardTests.test_failed_real_leader_remains_waitable_until_every_group_signal_finishes) ... ok",
+    "test_nonwaitable_sigchld_disposition_is_rejected_before_spawn (test_original_process_guard.OriginalProcessGuardTests.test_nonwaitable_sigchld_disposition_is_rejected_before_spawn) ... ok",
+    "test_real_echild_before_cleanup_permanently_disarms_the_group (test_original_process_guard.OriginalProcessGuardTests.test_real_echild_before_cleanup_permanently_disarms_the_group) ... ok",
+    "test_real_echild_between_term_and_kill_blocks_escalation (test_original_process_guard.OriginalProcessGuardTests.test_real_echild_between_term_and_kill_blocks_escalation) ... ok",
+    "test_success_uses_actual_exit_status_and_does_not_signal_reaped_identity (test_original_process_guard.OriginalProcessGuardTests.test_success_uses_actual_exit_status_and_does_not_signal_reaped_identity) ... ok",
+    "test_timeout_signals_only_anchored_real_child_then_reaps (test_original_process_guard.OriginalProcessGuardTests.test_timeout_signals_only_anchored_real_child_then_reaps) ... ok",
+    "test_legacy_eight_check_gate_cannot_claim_session (test_original_session_receipts.OriginalSessionReceiptTests.test_legacy_eight_check_gate_cannot_claim_session) ... ok",
+    "test_missing_cleanup_or_worker_identity_fails (test_original_session_receipts.OriginalSessionReceiptTests.test_missing_cleanup_or_worker_identity_fails) ... ok",
+    "test_missing_reordered_and_duplicated_phase_cannot_pass (test_original_session_receipts.OriginalSessionReceiptTests.test_missing_reordered_and_duplicated_phase_cannot_pass) ... ok",
+    "test_same_worker_and_instance_intervals_are_checked_independently (test_original_session_receipts.OriginalSessionReceiptTests.test_same_worker_and_instance_intervals_are_checked_independently) ... ok",
+    "test_session_receipt_cannot_grant_shell_or_effect_qualification (test_original_session_receipts.OriginalSessionReceiptTests.test_session_receipt_cannot_grant_shell_or_effect_qualification) ... ok",
+    "test_snapshot_and_final_receipt_cannot_substitute_another_session (test_original_session_receipts.OriginalSessionReceiptTests.test_snapshot_and_final_receipt_cannot_substitute_another_session) ... ok"
+  ],
+  "desktop_after": {
+    "commit": "145e94c364243789b88c23b1292f9d4d9ca9a0e9",
+    "tree": "98dee80a7ec855a84c777b350fed8ef675e31fc1",
+    "clean": true,
+    "subtrees": {
+      "services/hepta-os": "7ebe43051e1cebb8049ba50e9da4a9fb59d1a0c7",
+      "ui": "22959f24a71b5ece8286a962abc19d9fe3ab6ffc"
+    },
+    "inputs": {
+      "tests/integration/hepta/run_original_agentd.py": "21dd4a2e0621240a75f5ce37bad93da0a37352fbaa78554a50e048abe6a45fd0",
+      "tests/integration/hepta/original_agentd_probe.rs": "d297d6b5c7e39c3c98a4cb051d54ebdfc58757d04ca5ca265a023f4fb7fb276c",
+      "tests/integration/hepta/original_session_probe.rs": "7660c76f640cf612f57a2ee6a2ea7d8b09e8ac332c20fd44d8e7c8bbcb0663c5",
+      "services/hepta-os/Cargo.toml": "6d33aced708f1f6d3637e065825dd1718a4b187876e96edf1f7aefb0f437bfee",
+      "services/hepta-os/Cargo.lock": "a1aed4d1f513036cbe03912359f3dfbb2c6d93c5210b8d18244d95be9008a875",
+      "services/hepta-os/UPSTREAM_CONTRACT.json": "24efcccd98b6ac6a56cb34b36f5bdb10785d955efd86c32fed308bac1505f7ef",
+      "ui/Cargo.toml": "2c59194ffc1ed3bc0d5118f275498c1e09bd49f6ce71b80db709927b317a7628",
+      "ui/Cargo.lock": "e484809d742a264a296046b0d272e843d167b02b634232e793ef702757cc70e1"
+    }
+  },
+  "original_after": {
+    "commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+    "tree": "15c9d6ea07bf3832de82825a6cc1e8c958dd3d45",
+    "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+    "clean_checkout": true
+  },
+  "test_sources_after": {
+    "tests/integration/hepta/test_original_build_manifest.py": "7d84514be774290e296de9c397910086cca903bd8794011ca8263a34b6f9ba5a",
+    "tests/integration/hepta/test_original_process_guard.py": "5dd5a3c5d9600981c692283acff73cc388da90977d11c0f38cbe049a49ff8191",
+    "tests/integration/hepta/test_original_session_receipts.py": "9d472ae7751d5b714af8bbb72c0ad19467e28a90c188fbce938717d65427832e"
+  },
+  "source_and_helper_unchanged": true,
+  "exit_code": 0,
+  "ended_at_utc": "2026-10-17T23:09:07.027327+00:00"
+}
