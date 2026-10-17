@@ -86,7 +86,7 @@ pub(crate) fn do_execve(
     // After this point, failures in subsequent operations are fatal: the process
     // state may be left inconsistent and it can never return to user mode.
 
-    let res = do_execve_no_return(
+    let mut res = do_execve_no_return(
         ctx,
         user_context,
         thread_name,
@@ -94,6 +94,19 @@ pub(crate) fn do_execve(
         &elf_load_info,
         exec_cred,
     );
+
+    if res.is_ok() {
+        // A successful image replacement fences every control fd opened by
+        // the old image.  The epoch is process-scoped (threads share it) and
+        // is checked by the native HOS2 ioctl before any operation is parsed.
+        // If the monotonic fence is exhausted, fail-stop the process rather
+        // than allowing an old fd to become valid again after wraparound.
+        if let Err(err) = ctx.process.advance_hepta_exec_epoch() {
+            ctx.posix_thread
+                .enqueue_signal(Box::new(KernelSignal::new(SIGKILL)));
+            res = Err(err);
+        }
+    }
 
     if res.is_ok() {
         ctx.posix_thread
