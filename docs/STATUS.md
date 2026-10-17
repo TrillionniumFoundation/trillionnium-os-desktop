@@ -1,5 +1,13 @@
 # 当前状态
 
+## 2026-10-17：A03 原生锁后端已经合入主干
+
+- **正式主干合并：**[PR #146](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/146) 提供公开 `LockBackend`/`ControlMutex` 和 `ControlCoreWith<B>` 后端，让 A05/A06 原生内核锁集成不再需要复制控制源码；已合并至 `main`，合并提交 `10e467b3775bc6f041f520bb33e0395c8b6793e1`。
+- **独立 exact-head 回归：**已针对最终 PR HEAD `d3bbaf8d5baed636647e529d8475f65e7f8199a5`，在本机固定 nightly-2026-07-21 执行 `tests/control/run-validation.sh` 全量宿主矩阵，包括 std/portable-spin、严格 Clippy、fmt、x86_64-unknown-none `no_std` 构建、公共后端 API 兼容性、Loom 有界并发模型和锁内零分配，**执行结束通过**。最早的失败来自默认 Rust 1.95 未安装 `x86_64-unknown-none` 以及浅克隆缺失固定历史 Git 对象；改用已安装目标的固定 nightly、抓取必要基线提交后复跑通过。
+- **不能外推的边界：**以上是 Rust 库及其宿主模型的真实回归，尚未证明 Asterinas 多核 IRQ 锁安全、A05 ioctl/exec/fork 身份隔离、A06 zombie 最终 CPU 借记、A07 Hepta durable owner 的实体效果与故障恢复。最近相关候选 PR 仍分别处于 Draft，需要真实内核与 QEMU 证据而非只靠这次 host pass。
+
+---
+
 ## 2026-10-17：最终计费编译修复与 A09 严格测试恢复
 
 - **A06 真实修复但尚未主干放行：**在 [Draft #132](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/132) 的实际固定 nightly 内核构建中，发现两处 `Option<ArcRef<T>>.cloned()` 编译错误 E0599；以明确的 `.map(|value| (*value).clone())` 保持真实 `Arc<T>` 引用。独立 [PR #141](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/141) 已合入 #132 开发分支，合并提交 `ee6c278f9468c4633bed94d0bc3563b9601df0a4`，**不是合并 main**。原源码编译失败；修复后完整 Asterinas 编译 exit0，ELF SHA256 `48bea33a39614004a17aeae9159f0ea57a73a6fd4db64c3c3b2fd43c6dee934f`。固定 QEMU 1-vCPU 原始 `cpu.stat` 客体验证 **4/4 raw33**：leaf1%＝1.0%、1.1%；RT10%＝9.965%；parent10%＝10.096%；同源码 **aster-core 153/153 真实内核测试通过**、0失败/过滤/软跳过。机器证据见 [A06 验收收据](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/e0060a06ac11a30ad7472c65e0d9da852cc03d50/results/organ-backend/2026-10-17/a06-final-debit-arc-ref-compile-and-guest.json)。尚未专门证明 zombie exit/reap 最后一段 CPU debit，不能据此宣告 G1 或 SMP 合格。
