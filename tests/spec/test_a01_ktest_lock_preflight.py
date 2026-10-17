@@ -2,6 +2,7 @@
 import importlib.util
 from pathlib import Path
 import subprocess
+import tempfile
 import unittest
 from unittest.mock import patch
 
@@ -35,6 +36,23 @@ class ColdRunnerPreflightTests(unittest.TestCase):
         self.assertIn("error: missing pinned crate", str(raised.exception))
         self.assertFalse(run.call_args.kwargs["check"])
         self.assertTrue(run.call_args.kwargs["capture_output"])
+
+    def test_failure_receipt_preserves_bounded_streams(self):
+        argv = ["cargo", "+nightly-2026-07-21", "metadata", "--offline"]
+        fake = subprocess.CompletedProcess(argv, 101, "resolver context\n", "error: missing pinned crate\n")
+        with tempfile.TemporaryDirectory() as directory:
+            with patch.object(prepare.subprocess, "run", return_value=fake):
+                with self.assertRaises(prepare.CargoFailure) as raised:
+                    prepare.checked_cargo(argv, cwd=ROOT, label="ostd offline")
+            prepare.write_failure_report(Path(directory), raised.exception,
+                                         phase="metadata", crate="ostd")
+            report = prepare.json.loads((Path(directory) / prepare.FAILURE_REPORT).read_text())
+        self.assertFalse(report["passed"])
+        self.assertEqual(report["phase"], "metadata")
+        self.assertEqual(report["crate"], "ostd")
+        self.assertEqual(report["stdout"], "resolver context\n")
+        self.assertEqual(report["stderr"], "error: missing pinned crate\n")
+        self.assertEqual(report["returncode"], 101)
 
     def test_success_preserves_machine_readable_metadata(self):
         argv = ["cargo", "metadata", "--offline", "--locked"]
