@@ -1,0 +1,127 @@
+{
+  "schema": "trillionnium.os.a06.smp.independent.v1",
+  "head": "becd1fe3a106afd02d755cefebb4dc139704e390",
+  "kernel_sha256": "6dd63979a531762d1ca2df649a5fd510d847ec9994455623de02965b275b40db",
+  "source_build_exit": 0,
+  "rust_toolchain": "nightly-2026-07-21",
+  "target": "x86_64",
+  "qemu": "q35/TCG",
+  "vcpus": 2,
+  "ram_mib": 512,
+  "guest_processes": "two pthread workers sharing one cgroup",
+  "bios_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+  "a01_initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+  "host_network_or_cgroup_modified": false,
+  "checks": [
+    {
+      "mode": "leaf",
+      "quota_usec": 1000,
+      "period_usec": 100000,
+      "repetitions": 3,
+      "runner_exit": 0,
+      "all_guest_completed": true,
+      "runs": [
+        {
+          "index": 1,
+          "raw_qemu_exit": 33,
+          "complete": true,
+          "panic": false,
+          "uncapped_cpu_percent": 197.112,
+          "capped_cpu_percent": 0.879,
+          "serial_sha256": "5afb229ddc0e9a885ebbf8974ed7f0313993a39bba4949e70f95727aefbe7306"
+        },
+        {
+          "index": 2,
+          "raw_qemu_exit": 33,
+          "complete": true,
+          "panic": false,
+          "uncapped_cpu_percent": 197.348,
+          "capped_cpu_percent": 0.893,
+          "serial_sha256": "d43aa41d9dd0794138259696dc3fe98fceef0e5f06264ba040d2daa47dacbea2"
+        },
+        {
+          "index": 3,
+          "raw_qemu_exit": 33,
+          "complete": true,
+          "panic": false,
+          "uncapped_cpu_percent": 197.667,
+          "capped_cpu_percent": 0.96,
+          "serial_sha256": "348fa40569592858e03ca5febaf0465520467cb8c9bf91366e8addd76693cc4b"
+        }
+      ]
+    },
+    {
+      "mode": "leaf",
+      "quota_usec": 10000,
+      "period_usec": 100000,
+      "repetitions": 2,
+      "runner_exit": 0,
+      "all_guest_completed": true,
+      "runs": [
+        {
+          "index": 1,
+          "raw_qemu_exit": 33,
+          "complete": true,
+          "panic": false,
+          "uncapped_cpu_percent": 197.36,
+          "capped_cpu_percent": 10.929,
+          "serial_sha256": "b67b5b200b08b5873b7302c82ff83292e37c76abe8e5713c457a0bacbe630c9c"
+        },
+        {
+          "index": 2,
+          "raw_qemu_exit": 33,
+          "complete": true,
+          "panic": false,
+          "uncapped_cpu_percent": 196.874,
+          "capped_cpu_percent": 10.589,
+          "serial_sha256": "addb3d3311a378c3c7f3070474424eeacd714404d36bb4a218cfcee3770c62a2"
+        }
+      ]
+    },
+    {
+      "mode": "rt",
+      "quota_usec": 10000,
+      "period_usec": 100000,
+      "repetitions": 1,
+      "runner_exit": 0,
+      "all_guest_completed": true,
+      "runs": [
+        {
+          "index": 1,
+          "raw_qemu_exit": 33,
+          "complete": true,
+          "panic": false,
+          "uncapped_cpu_percent": 197.327,
+          "capped_cpu_percent": 10.355,
+          "serial_sha256": "0a87736ad9b16ac894555a923e38c341d78db878c5966a6d679e82c2720c0829"
+        }
+      ]
+    },
+    {
+      "mode": "parent",
+      "quota_usec": 10000,
+      "period_usec": 100000,
+      "repetitions": 1,
+      "runner_exit": 0,
+      "all_guest_completed": true,
+      "runs": [
+        {
+          "index": 1,
+          "raw_qemu_exit": 33,
+          "complete": true,
+          "panic": false,
+          "uncapped_cpu_percent": 198.122,
+          "capped_cpu_percent": 10.648,
+          "serial_sha256": "a72afe80d56c81ac3e16cd4d08e028c49e0227dff7f636192968ab874ebe82ac"
+        }
+      ]
+    }
+  ],
+  "raw_evidence_root": "/home/qian-qi/.local/state/trillionnium-os-organ-next-20261016/evidence",
+  "limits": [
+    "diagnostic average percentage, not strict per-window enforcement",
+    "2-vCPU QEMU not complete SMP proof",
+    "no CPU hotplug/cgroup task migration qualification",
+    "HOS2 native ioctl and Hepta original owner effects not implemented"
+  ]
+}

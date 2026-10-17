@@ -1,0 +1,66 @@
+{
+  "head": "ad55fecd95857f3e3c7cb5997118f7a44e5f5555",
+  "kernel_sha256": "41cd6283facb4bf4ce1c7f60284c4433ba6d2777e73e54a58eaf5e1a4169fe43",
+  "passes": true,
+  "cases": [
+    {
+      "case": "leaf1-3",
+      "mode": "leaf",
+      "quota_us": 1000,
+      "repetitions": 3,
+      "percent": [
+        1.1,
+        1.1,
+        1
+      ],
+      "process_exit": 0,
+      "passed": true,
+      "elapsed_s": 21.9
+    },
+    {
+      "case": "leaf10-2",
+      "mode": "leaf",
+      "quota_us": 10000,
+      "repetitions": 2,
+      "percent": [
+        10.392,
+        9.902
+      ],
+      "process_exit": 0,
+      "passed": true,
+      "elapsed_s": 8.3
+    },
+    {
+      "case": "rt10",
+      "mode": "rt",
+      "quota_us": 10000,
+      "repetitions": 1,
+      "percent": [
+        10.379
+      ],
+      "process_exit": 0,
+      "passed": true,
+      "elapsed_s": 4.7
+    },
+    {
+      "case": "parent10",
+      "mode": "parent",
+      "quota_us": 10000,
+      "repetitions": 1,
+      "percent": [
+        10.141
+      ],
+      "process_exit": 0,
+      "passed": true,
+      "elapsed_s": 5
+    }
+  ],
+  "single_cpu_only": true,
+  "precision_guaranteed": false,
+  "kernel_tests_run": false,
+  "smp_tested": false,
+  "test_profile": "Asterinas pinned nightly-2026-07-21 from source, QEMU q35 TCG 1vCPU 512MiB, original guest cpu.stat probe, no host network/data disk/cgroup write",
+  "verification": "7 guest executions, expected CPU threshold and boot exits checked; full kernel ktests NOT run",
+  "original_a01_initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+  "source_build_exit": 0
+}
