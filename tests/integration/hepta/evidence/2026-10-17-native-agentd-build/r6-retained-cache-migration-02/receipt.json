@@ -1,0 +1,72 @@
+{
+  "started_at_utc": "2026-10-17T22:12:31.889909+00:00",
+  "status": "failed",
+  "source_before": {
+    "commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+    "clean": true,
+    "lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389"
+  },
+  "ownership_receipt_sha256": "9aca28de4ad2581662c56aaa9e58cb6eb1d93c99f0133e6e35d78399528c988c",
+  "resources_before": {
+    "disk_free_bytes": 7725088768,
+    "ram_filesystem_free_bytes": 56877056,
+    "memory_stat": "anon 106008576\nfile 7703437312\nkernel 701014016\nkernel_stack 638976\npagetables 3862528\nsec_pagetables 0\npercpu 2112\nsock 0\nvmalloc 0\nshmem 5168840704\nfile_mapped 212992\nfile_dirty 774144\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 4194304\nshmem_thp 0\ninactive_anon 1133215744\nactive_anon 4141445120\ninactive_file 529203200\nactive_file 2005393408\nunevictable 0\nslab_reclaimable 625080936\nslab_unreclaimable 71380384\nslab 696461320\nworkingset_refault_anon 0\nworkingset_refault_file 27586594\nworkingset_activate_anon 0\nworkingset_activate_file 12612092\nworkingset_restore_anon 0\nworkingset_restore_file 8406415\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgscan 40816968\npgsteal 40564934\npswpin 0\npswpout 0\npgscan_kswapd 252147\npgscan_direct 40564821\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 249882\npgsteal_direct 40315052\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 473509316\npgmajfault 9287\npgrefill 20274599\npgactivate 12937548\npgdeactivate 20172652\npglazyfree 88\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nthp_fault_alloc 1051\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\n",
+    "memory_events": "low 0\nhigh 0\nmax 610241\noom 0\noom_kill 0\noom_group_kill 0\n"
+  },
+  "migrations": [
+    {
+      "source": "/dev/shm/trill-hepta-r4-enuzuex9/probe-check-02/target",
+      "destination": "/workspace/scratch/98f315e377b2/next-tools/r6-retained-cache-migration-01/check-target",
+      "label": "check-target",
+      "status": "migrated_verified_original_path_preserved",
+      "manifest_path": "/workspace/scratch/98f315e377b2/next-tools/r6-retained-cache-migration-02/check-target-members.json.gz",
+      "manifest_sha256": "57c50e280bfba2c5f0de0e079cc7b0cf938db293e49a81a2278a8a7917a1cc44",
+      "uncompressed_manifest_sha256": "e2d0c9d818f24748cd7730a3d46a747ff9f5ac0a40330d935e3493b3f38566b3",
+      "entries": 12258,
+      "files": 10386,
+      "file_bytes": 1653171601,
+      "reuses_verified_failed_attempt_disk_copy": true,
+      "verified_copy_matches_source": true,
+      "resources_after": {
+        "disk_free_bytes": 7724449792,
+        "ram_filesystem_free_bytes": 1677553664,
+        "memory_stat": "anon 126832640\nfile 6083399680\nkernel 690024448\nkernel_stack 638976\npagetables 3641344\nsec_pagetables 0\npercpu 2112\nsock 0\nvmalloc 0\nshmem 3548164096\nfile_mapped 36864\nfile_dirty 1413120\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 4194304\nshmem_thp 0\ninactive_anon 1154195456\nactive_anon 2520764416\ninactive_file 529326080\nactive_file 2005909504\nunevictable 0\nslab_reclaimable 618756848\nslab_unreclaimable 66941232\nslab 685698080\nworkingset_refault_anon 0\nworkingset_refault_file 27586594\nworkingset_activate_anon 0\nworkingset_activate_file 12612092\nworkingset_restore_anon 0\nworkingset_restore_file 8406415\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgscan 40816968\npgsteal 40564934\npswpin 0\npswpout 0\npgscan_kswapd 252147\npgscan_direct 40564821\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 249882\npgsteal_direct 40315052\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 473652653\npgmajfault 9287\npgrefill 20274599\npgactivate 12937674\npgdeactivate 20172652\npglazyfree 88\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nthp_fault_alloc 1051\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\n",
+        "memory_events": "low 0\nhigh 0\nmax 610241\noom 0\noom_kill 0\noom_group_kill 0\n"
+      }
+    },
+    {
+      "source": "/dev/shm/trill-hepta-r4-enuzuex9/cargo",
+      "destination": "/workspace/scratch/98f315e377b2/next-tools/r6-retained-cache-migration-02/cargo-cache",
+      "label": "cargo-cache",
+      "status": "copying",
+      "manifest_path": "/workspace/scratch/98f315e377b2/next-tools/r6-retained-cache-migration-02/cargo-cache-members.json.gz",
+      "manifest_sha256": "93e09c45d56d48b521f90449133bdeae645b71e4661c123c32df8d73330c369c",
+      "uncompressed_manifest_sha256": "2e2abba674272682ca18eba6e2fa9c856cdb7623d938dde4449bb01bca9e5bb7",
+      "entries": 67933,
+      "files": 56912,
+      "file_bytes": 1587708151,
+      "verified_copy_matches_source": true
+    }
+  ],
+  "previous_attempt_receipt_path": "/workspace/scratch/98f315e377b2/next-tools/r6-retained-cache-migration-01/receipt.json",
+  "previous_attempt_receipt_sha256": "cff8e9ac31d2d9c63df78cfabaa3b10d3250b14f20a8e54a28d8d6efe4d5a09d",
+  "directory_mtime_equivalence_required": false,
+  "directory_mtime_scope": "Copy01 differed only in 481 directory mtimes after path swap; original was restored. Every file byte, mode and file mtime plus entry types and symlink targets remain strict.",
+  "original_source_modified": false,
+  "historical_logs_modified": false,
+  "compilers_modified": false,
+  "qualified_ui_elfs_modified": false,
+  "cache_contents_preserved": false,
+  "original_cache_access_paths_preserved": false,
+  "error": {
+    "type": "AssertionError",
+    "detail": ""
+  },
+  "resources_after": {
+    "disk_free_bytes": 5943885824,
+    "ram_filesystem_free_bytes": 1677553664,
+    "memory_stat": "anon 188108800\nfile 7356977152\nkernel 888442880\nkernel_stack 638976\npagetables 4026368\nsec_pagetables 0\npercpu 2288\nsock 45056\nvmalloc 0\nshmem 3548164096\nfile_mapped 36864\nfile_dirty 385957888\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 4194304\nshmem_thp 0\ninactive_anon 1215344640\nactive_anon 2520764416\ninactive_file 8708096\nactive_file 3800068096\nunevictable 0\nslab_reclaimable 821665008\nslab_unreclaimable 62040752\nslab 883705760\nworkingset_refault_anon 0\nworkingset_refault_file 27660813\nworkingset_activate_anon 0\nworkingset_activate_file 12684069\nworkingset_restore_anon 0\nworkingset_restore_file 8406416\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgscan 41132177\npgsteal 40765178\npswpin 0\npswpout 0\npgscan_kswapd 567356\npgscan_direct 40564821\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 450126\npgsteal_direct 40315052\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 473849216\npgmajfault 9287\npgrefill 20276412\npgactivate 13289977\npgdeactivate 20174465\npglazyfree 88\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nthp_fault_alloc 1051\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\n",
+    "memory_events": "low 0\nhigh 0\nmax 610241\noom 0\noom_kill 0\noom_group_kill 0\n"
+  },
+  "ended_at_utc": "2026-10-17T22:13:06.147179+00:00"
+}
