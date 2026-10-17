@@ -14,6 +14,7 @@ CPU_RS = ROOT / "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controlle
 CGROUP_RS = ROOT / "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/systree_node.rs"
 POSIX_RS = ROOT / "kernel/asterinas/kernel/core/src/process/posix_thread/mod.rs"
 INODE_RS = ROOT / "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/inode.rs"
+BUILDER_RS = ROOT / "kernel/asterinas/kernel/core/src/process/posix_thread/builder.rs"
 
 
 class A06FinalAccountingSource(unittest.TestCase):
@@ -40,6 +41,11 @@ class A06FinalAccountingSource(unittest.TestCase):
         )
         self.assertIn("if !process.status().is_zombie()", source)
         self.assertIn("deferred scheduler", source)
+
+    def test_builder_imports_rcu_option_for_snapshot_initialization(self):
+        source = BUILDER_RS.read_text()
+        self.assertIn("sync::{RcuOption, RwArc}", source)
+        self.assertIn("cpu_cgroup: RcuOption::new(None)", source)
 
     def test_zombie_final_debit_lease_blocks_cgroup_deletion(self):
         posix = POSIX_RS.read_text()
