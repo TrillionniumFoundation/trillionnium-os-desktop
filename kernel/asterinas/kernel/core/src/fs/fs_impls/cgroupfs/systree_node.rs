@@ -67,7 +67,6 @@ use crate::{
     fs::cgroupfs::controller::{Controller, PidsPreCharge, SubCtrlSet, SubCtrlType},
     prelude::*,
     process::{Pid, Process, pid_table},
-    process::posix_thread::AsPosixThread,
 };
 
 /// A type that provides synchronized access to cgroup membership and sub-controller state.
