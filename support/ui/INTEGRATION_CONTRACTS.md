@@ -1,0 +1,147 @@
+# A10 integration requests for A00 / A05 / A07 / A08
+
+Scope: this is an interface consumer checklist, NOT a new wire protocol,
+driver interface, kernel device manager, capability format or trusted grant
+implementation. Only the designated owners can define shared ABI changes.
+
+## A05: trusted session and portal source
+
+Require an authenticated process-instance identity (not PID alone),
+workspace/trust-domain identity, grant provenance and revocation signal.
+Shell must be a consumer, not a forgeable same-UID authorization origin.
+The experimental Linux Session rejects runtime, private child directory and
+session.lock ownership mismatches against its effective UID before binding,
+and enforces 0700/0600 modes plus shared SO_PEERCRED same-effective-UID
+checks before parsing a client request; the native
+Shell and CLI also check the server UID before sending any host request
+or consuming a task snapshot. This is only a
+host transport boundary: any other process under the same UID may still
+connect, and a randomly generated Session instance ID is not an
+authorization credential. A05 must not reuse these checks as CapSpace
+authority or Final-use evidence.
+The compositor/session must own focus, input and window permissions; ordinary
+client windows cannot draw trusted system permission prompts. A05 should
+expose the policy decision through the project-wide process/capability
+object model after A00 coordination.
+
+File picker: return explicit selected capability/object, no directory-wide
+implicit delegation. Clipboard and drag/drop require source and target domain
+and user-initiated access. Screenshot, screen share, microphone, camera and
+notifications must be portal mediated with revocation, not default Hepta
+recording. Trusted prompts must be rendered from a system-owned surface.
+The host prototype offers none of these grants.
+
+### Consumer-side permission state
+
+`support/ui/src/permission.rs` provides the shell's consumer-only
+`PermissionState`. It accepts an opaque owner-supplied scope key, capability
+kind, revision and observed decision; it does not request a grant, mint a
+token, identify a process, derive a workspace/trust domain or define a portal
+wire format. An empty scope cache is `Unknown` and denies access. Only the
+latest authoritative `Granted` observation for the exact scope allows an
+action; a grant observed for one scope is never considered for another scope.
+Older observations and same-revision conflicts are rejected, so a stale grant
+cannot resurrect a revoked or expired capability. The consumer cache holds
+at most 1024 observations: adding a new grant when full fails closed without
+evicting any old entry; an existing grant may still be revoked. On bridge
+disconnect or generation/provenance uncertainty, `invalidate_all()` poisons
+all cached grants to Unknown but **preserves revision tombstones**;
+`invalidate_scope()` does so for one scope. A stale same-revision grant cannot
+resurrect after disconnect. Only a new authenticated A05 owner context,
+reconciled against durable authority, may create a fresh cache instance.
+`request()` is an explicit handoff marker for the future A05 portal and has
+no local side effect. These
+are negative, scope-isolation and ordering checks for UI behavior, not
+evidence that an A05 portal exists.
+
+## A07: non-fabricated Hepta task stream
+
+The implemented first host slice is a read-only Agentd observer described
+in `HEPTA_OBSERVER.md`: A07's `hepta-os-observer` facade is owned by one
+Session background worker, and Shell consumes bounded typed runtime
+metadata through the existing Session snapshot. It does not implement the
+task/effect contract below. Conversation remains a local draft because
+the authenticated objective adapter is not configured; an observed
+Agentd connection must not enable submission or synthesize a task receipt.
+
+Consume the existing Hepta owner/ledger instead of maintaining an extra
+effect database. The view should expose a stable logical K reference,
+optional HOS2 D delivery namespace/sequence, executor identity, trust domain,
+task operation type, time and source of last observation, optional HOS2
+resource sample and revision, plus provenance for each status transition.
+Mapping must preserve pending, running, partial, unknown, cancel_requested,
+completed, failed and confirmed cancelled distinctly. No terminal success
+without the owner-confirmed result; a provider/model message is text only.
+A requested cancellation is not guaranteed effect cancellation. Error
+details must distinguish transport failure and uncertain effect.
+
+Task execution and history QueryDelivery/RetireThrough remain A07/A02/A05
+interfaces; the UI must not emit HOS2 InstallBudget or synthesize D/K IDs.
+Its A02-typed read-only transport consumer enforces opcode/payload matching,
+and every typed result must correlate to the same request ID and opcode;
+mismatches fail closed instead of being reported as an observation.
+The existing A02 request encoder rejects malformed read requests before any
+exchange, and A02 `Response::validate_for` checks the complete reply
+(including boot ID, revision, time and delivery sequence) before projection.
+The adapter also pins the first successful observed boot ID so later replies
+from another boot fail closed rather than appearing to be a continuous task
+timeline. A fresh authenticated bridge creates a new adapter after reboot.
+This does not authenticate an owner or substitute for A05/A07 broker credentials.
+Do not permanently grant Hepta global clipboard, key input or screen capture.
+Hepta outage must not stop independent host/client process use.
+
+## A08: initial full-display Android surface
+
+Define a negotiated full-display surface contract before individual activity
+windows. Proposed consumer fields (names conceptual, not on-wire ABI):
+- display instance and owner identity, display dimensions, pixel format,
+  density, transform, orientation, color space, and redraw generation
+- buffer import/export mechanism chosen by compositor (DMA-BUF where verified,
+  CPU shared memory fallback where permitted), stride/planes and lifetime
+- acquire and release fences with explicit synchronization ownership; buffer
+  reuse only after release, no unverified zero-copy assumptions
+- input coordinate transforms, key/text/IME composition and candidates,
+  touch slots, soft keyboard, Back/Home, multiwindow focus
+- SurfaceFlinger display root and lifecycle transitions, suspension/resume,
+  generation change, destroyed surface and explicit failure/unknown states
+
+The consumer-side Rust model for these fields is `support/ui/src/android.rs`
+(`AndroidDisplaySurface`). It is deliberately a pure state model with no
+Binder object, file descriptor, SurfaceFlinger call, dma-buf import or new
+wire format. Its tests cover stale-generation buffer retirement, producer /
+compositor ownership, acquire/release fence readiness and failure, coordinate
+mapping, IME composition, Back/Home routing, suspend/resume and provider
+failure. These tests are contract checks only; they do not count as Android,
+GPU or target-kernel evidence.
+
+The compositor, not the chat shell, must own buffer import and input routing.
+Initial full-surface acceptance does not imply APK-level native windows or
+independent per-activity integration. A08 negotiates Android semantics,
+A09 may supply actual GPU import/reset evidence; neither is implemented here.
+
+## Compositor and Xwayland failure domains
+
+Intended ownership: shell client -> authenticated session/compositor boundary
+-> existing Wayland compositor -> client surfaces. Shell restart shall not
+destroy independent compositor/client sockets. Session restart currently
+loses ownership records; old clients are not claimed reattached. Compositor
+crash may disconnect Wayland clients and invalidate buffers, and GPU reset
+may require buffer recreation. Reattach is a fresh compositor/renderer
+protocol, not an assumption from a surviving PID.
+
+One Xwayland instance per genuine trust domain where supported, not one
+shared X server described as isolated. X SECURITY alone is not an isolation
+proof. First host prototype remains one external host compositor with no
+trust-domain Xwayland isolation.
+
+## A00 acceptance hooks
+
+Under A00 ownership: add .github/workflows host UI job scoped to ui/**,
+tests/ui/** and support/ui/**. It should run Rust host build/test/fmt
+with dependency cache, then install required Mesa/Wayland dependencies.
+Use isolated XDG_RUNTIME_DIR and headless compositor if possible for
+interactive smoke; record stdout/stderr, exit code, driver, compositor
+version, input method and observed faults. Host green != kernel green.
+
+Track UI, A05 identity/permissions, A07 task integration and A08 Android
+display as independent gates; do not alter docs/STATUS.md from A10 branch.

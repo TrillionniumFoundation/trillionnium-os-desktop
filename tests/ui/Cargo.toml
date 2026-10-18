@@ -1,0 +1,12 @@
+[package]
+name = "trillionnium-ui-contracts"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+path = "src/lib.rs"
+
+# This crate is intentionally dependency-free.  It is a host-side contract
+# model for the first Rust UI prototype, so it can run without a compositor,
+# Wayland, an IME, or the target kernel.

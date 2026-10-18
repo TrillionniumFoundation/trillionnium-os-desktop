@@ -1,0 +1,251 @@
+{
+  "recorded_date_utc": "2026-10-17",
+  "evidence_class": "rust188_linux_host_and_scripted_hepta_page_layout",
+  "source_qualification": {
+    "full_host_and_weston_commit": "d57a1be747c1fe0877334d4676d2ddf93dbcac92",
+    "full_host_and_weston_tree": "dda7f6564be2d301a8f4502e8c53b739c79d2cf4",
+    "final_source_commit": "5d6fbb9d81330bb9e21f7f3d3e4b4d784e6ceaa9",
+    "final_source_tree": "c2950ff1bfb51ee09edb60d921b1879fc4ac8ba9",
+    "files_different_after_full_gate": [
+      "ui/session/tests/ipc_reconnect.rs"
+    ],
+    "difference": "Equivalent Rust format capture in one reconnect negative test; all other tracked files are byte-identical to the full gate source.",
+    "final_source_executed": [
+      "strict UI workspace/all-targets Clippy with -D warnings",
+      "real Unix-socket ipc_reconnect integration test",
+      "four-manifest Rustfmt checks",
+      "committed unchanged UI lock",
+      "all-package locked offline cargo metadata",
+      "empty README and clean source tree checks"
+    ],
+    "full_gate_rerun_at_final_source": false,
+    "remote_github_actions_run_in_this_record": false,
+    "source_commit_chain": [
+      {
+        "commit": "7dbf4a280af1264a3dfcc192a7fc8a150fa109c3",
+        "tree": "3fb0b7a500be73eb3505788c9d9a6d4728b5d3fe",
+        "parents": [
+          "ff2418537d913827fefd2eb0232c80d006502fa0",
+          "edda96b2c522df6125bf941d70e89f5af1fda974"
+        ],
+        "subject": "Merge A10 owner strict IPC into Hepta observer candidate"
+      },
+      {
+        "commit": "ab34bbd0483479b58a7364dc70d7db043d7babef",
+        "tree": "50178f0b0226e13c2155b6ffca85e5f4ee8cc683",
+        "parents": [
+          "7dbf4a280af1264a3dfcc192a7fc8a150fa109c3"
+        ],
+        "subject": "Keep Hepta lifecycle observations on one source and fix host target paths"
+      },
+      {
+        "commit": "ca5238d33fa22434984c0a90df0e473c56ccbd31",
+        "tree": "a286bc1ab16727c38d8d9fa04f9a334b9341c0db",
+        "parents": [
+          "ab34bbd0483479b58a7364dc70d7db043d7babef"
+        ],
+        "subject": "fix(hepta-observer): bind lifecycle phases to original generation semantics"
+      },
+      {
+        "commit": "a643abae15d6beb12fd36031c038f038e0e2e79d",
+        "tree": "00da47d39ded77f52c6adf1c611623bc7299a28f",
+        "parents": [
+          "ca5238d33fa22434984c0a90df0e473c56ccbd31"
+        ],
+        "subject": "Verify fresh Hepta page layout through real Rust Shell and Session"
+      },
+      {
+        "commit": "d57a1be747c1fe0877334d4676d2ddf93dbcac92",
+        "tree": "dda7f6564be2d301a8f4502e8c53b739c79d2cf4",
+        "parents": [
+          "a643abae15d6beb12fd36031c038f038e0e2e79d"
+        ],
+        "subject": "Handle observed headless child exit in strict IPC gate"
+      },
+      {
+        "commit": "5d6fbb9d81330bb9e21f7f3d3e4b4d784e6ceaa9",
+        "tree": "c2950ff1bfb51ee09edb60d921b1879fc4ac8ba9",
+        "parents": [
+          "d57a1be747c1fe0877334d4676d2ddf93dbcac92"
+        ],
+        "subject": "Satisfy Rust 1.88 strict Clippy in reconnect negative test"
+      }
+    ],
+    "published_equivalent_tree_map_reported_by_a00": [
+      {
+        "local_commit": "d57a1be747c1fe0877334d4676d2ddf93dbcac92",
+        "published_commit": "3afa4683795b14977b44ccb7ac47447980ad5e5b",
+        "tree": "dda7f6564be2d301a8f4502e8c53b739c79d2cf4"
+      },
+      {
+        "local_commit": "5d6fbb9d81330bb9e21f7f3d3e4b4d784e6ceaa9",
+        "published_commit": "d69f04df16435c86951365aa20a4c9282f7b4428",
+        "tree": "c2950ff1bfb51ee09edb60d921b1879fc4ac8ba9"
+      }
+    ],
+    "evidence_overlay_scope": [
+      "tests/ui/evidence/2026-10-17-rust188-weston/**",
+      "tests/ui/TESTPLAN.md evidence index only"
+    ]
+  },
+  "runtime": {
+    "rustc_verbose": "rustc 1.88.0 (6b00bc388 2025-06-23)\nbinary: rustc\ncommit-hash: 6b00bc3880198600130e1cf62b8f8a93494488cc\ncommit-date: 2025-06-23\nhost: x86_64-unknown-linux-gnu\nrelease: 1.88.0\nLLVM version: 20.1.5\n",
+    "weston_version": "13.0.0",
+    "target": "x86_64-unknown-linux-gnu",
+    "wrapper": "runtime/run-host-rust.py.txt",
+    "renderer_observed": "Weston no-op renderer",
+    "cjk_font_observed": "No supported host CJK font found"
+  },
+  "outcomes": [
+    {
+      "attempt": "check-host-01",
+      "head": "a643abae15d6beb12fd36031c038f038e0e2e79d",
+      "tree": "00da47d39ded77f52c6adf1c611623bc7299a28f",
+      "exit_code": 1
+    },
+    {
+      "attempt": "check-host-02",
+      "head": "d57a1be747c1fe0877334d4676d2ddf93dbcac92",
+      "tree": "dda7f6564be2d301a8f4502e8c53b739c79d2cf4",
+      "exit_code": 0
+    },
+    {
+      "attempt": "weston-01",
+      "head": "d57a1be747c1fe0877334d4676d2ddf93dbcac92",
+      "tree": "dda7f6564be2d301a8f4502e8c53b739c79d2cf4",
+      "exit_code": 0
+    },
+    {
+      "attempt": "clippy-01",
+      "head": "d57a1be747c1fe0877334d4676d2ddf93dbcac92",
+      "tree": "dda7f6564be2d301a8f4502e8c53b739c79d2cf4",
+      "exit_code": 101
+    },
+    {
+      "attempt": "clippy-02",
+      "head": "5d6fbb9d81330bb9e21f7f3d3e4b4d784e6ceaa9",
+      "tree": "c2950ff1bfb51ee09edb60d921b1879fc4ac8ba9",
+      "exit_code": 101
+    },
+    {
+      "attempt": "clippy-03",
+      "head": "5d6fbb9d81330bb9e21f7f3d3e4b4d784e6ceaa9",
+      "tree": "c2950ff1bfb51ee09edb60d921b1879fc4ac8ba9",
+      "exit_code": 0
+    },
+    {
+      "attempt": "reconnect-01",
+      "head": "5d6fbb9d81330bb9e21f7f3d3e4b4d784e6ceaa9",
+      "tree": "c2950ff1bfb51ee09edb60d921b1879fc4ac8ba9",
+      "exit_code": 0
+    },
+    {
+      "attempt": "cargo-fetch-02",
+      "head": "5d6fbb9d81330bb9e21f7f3d3e4b4d784e6ceaa9",
+      "tree": "c2950ff1bfb51ee09edb60d921b1879fc4ac8ba9",
+      "exit_code": 0
+    },
+    {
+      "attempt": "final-check-01",
+      "head": "5d6fbb9d81330bb9e21f7f3d3e4b4d784e6ceaa9",
+      "tree": "c2950ff1bfb51ee09edb60d921b1879fc4ac8ba9",
+      "exit_code": 0
+    }
+  ],
+  "rust_test_counts_at_full_host_source": {
+    "ui_workspace": 72,
+    "a07_observer": 17,
+    "support_ui_host_models": 39,
+    "tests_ui_contracts": 8,
+    "total": 136,
+    "failed": 0,
+    "ignored": 0
+  },
+  "host_checks_passed": [
+    "actual Session/facade observation and stale-state retention against an explicit scripted Unix fixture",
+    "live bidirectional SO_PEERCRED cross-UID refusal and same-UID service",
+    "eight forged wire frames refused before the first legitimate task ID and actual owned-child cleanup",
+    "four actual Rust Linux ELF packaging, checksums/provenance and fresh-runtime replay"
+  ],
+  "weston_checks_passed": [
+    "Shell first layout and restarted Shell layout",
+    "three independent application client layouts and observed cancellation",
+    "fresh observed Hepta page layout bound to Session and fixture source metadata",
+    "owned compositor crash/restart with unchanged Session, changed socket epoch and a new client layout"
+  ],
+  "hepta_layout": {
+    "page": "hepta",
+    "connection": "observed",
+    "agent_id": "11111111-1111-4111-8111-111111111111",
+    "spawn_generation": 7,
+    "current_generation": 8,
+    "process_id": 512723,
+    "sampled_unix_ms": 1792235327235
+  },
+  "binary_and_fixture_sha256": {
+    "session_binary_sha256": "bb4451dafb3f1c049bd2b11eeb6fec8eb41103904c8f2bd0f75f8315fae370a6",
+    "shell_binary_sha256": "41b8358577e06b1f2c3f936a3e7de15c9a8db2ea359b1a2d810c6ff2fa2197af",
+    "fixture_source_sha256": "a588f7ccc260a7699d11bb09d5c78c0aaf45f139050e708aa5285764df935209"
+  },
+  "session_disconnection_probe": {
+    "passed": true,
+    "observed_connection": "observed",
+    "after_fixture_stop_connection": "stale",
+    "retained_sample_identical": true,
+    "host_action_after_disconnect_ms": 100.248
+  },
+  "failure_history": [
+    {
+      "attempt": "check-host-01",
+      "classification": "test race",
+      "finding": "A real headless child could exit and be reaped between Launch and Cancel; the original strict probe required a Task ACK unconditionally.",
+      "resolution": "d57a1be accepts only the exact no-owned-live-child domain error and then requires the same task/PID observed FAILED with non-successful-exit evidence; forged-frame blockers remain intact."
+    },
+    {
+      "attempt": "clippy-01",
+      "classification": "strict lint",
+      "finding": "Rust 1.88 Clippy rejected an existing positional format argument in ipc_reconnect.rs.",
+      "resolution": "5d6fbb9 uses the equivalent captured variable; strict Clippy and the real reconnect test passed."
+    },
+    {
+      "attempt": "clippy-02",
+      "classification": "environment cache failure before compilation",
+      "finding": "After cache-only archive cleanup, Cargo 1.88 required ab_glyph.crate despite its unpacked source and .cargo-ok file. Offline invocation failed.",
+      "resolution": "Standard registry archives were restored with the unchanged lock; Clippy-03, cargo-fetch-02 and final offline metadata passed."
+    }
+  ],
+  "locked_dependencies": {
+    "ui/Cargo.lock": "62b00185ec1b839abb55ff24b94809d9b8c704a1097030f5aa66e037a4ca17a5",
+    "services/hepta-os/Cargo.lock": "a1aed4d1f513036cbe03912359f3dfbb2c6d93c5210b8d18244d95be9008a875",
+    "support/ui/Cargo.lock": "e3c3c849d9541154309b197285f99f6a86562f64476f44ab1cb7e2d6d8ae8614",
+    "tests/ui/Cargo.lock": "2e2ed22254320f2da27d098766ba003d1159e71ad8e0ef261be5eb8747a40940"
+  },
+  "linux_binary_archive": {
+    "retained_original_path": "/workspace/scratch/98f315e377b2/next-tools/r2-evidence/a10/check-host-02/a10/a10-linux-host-binaries.tar.gz",
+    "size_bytes": 16395572,
+    "sha256": "3f82a3268f453dbe84b0efb14cd767f32f833721baa0234f9bdda4f6a4e85631",
+    "built_source_commit": "d57a1be747c1fe0877334d4676d2ddf93dbcac92",
+    "copied_into_git_evidence": false,
+    "note": "The original archive is retained separately; the byte-identical checksum file and all replay logs are committed here."
+  },
+  "limits": {
+    "upstream_agentd_started": false,
+    "authenticated_objective_submission_tested": false,
+    "device_effect_tested": false,
+    "compositor_pixel_presentation_verified": false,
+    "real_cjk_font_rendering_verified": false,
+    "live_ime_candidate_flow_verified": false,
+    "physical_gpu_or_monitor_verified": false,
+    "pre_crash_client_surface_continuity_verified": false,
+    "target_rust_kernel_ui_verified": false,
+    "android_or_mobile_runtime_verified": false,
+    "wasm_runtime_verified": false,
+    "notes": [
+      "The Hepta identity is an explicitly scripted fixed-v2 fixture. Actual Rust Session and Shell processes consumed it; this does not qualify original Agentd or effects.",
+      "Weston logs explicitly select a no-op renderer. The marker comes after egui widget update, without screenshot/pixel acceptance.",
+      "The old client failed after compositor loss. The test proves a newly launched client layout, not old-window continuity.",
+      "The 39 support/ui tests are host boundary models, including Android-shaped contracts, and do not qualify Android runtime.",
+      "Source-derived lifecycle conformance owned by A07 is separate from original-daemon execution."
+    ]
+  }
+}

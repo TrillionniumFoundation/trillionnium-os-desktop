@@ -1,0 +1,14 @@
+test_fixed_source_resolver_survives_external_workspace (__main__.OriginalBuildManifestTests.test_fixed_source_resolver_survives_external_workspace) ... FAIL
+
+======================================================================
+FAIL: test_fixed_source_resolver_survives_external_workspace (__main__.OriginalBuildManifestTests.test_fixed_source_resolver_survives_external_workspace)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/98f315e377b2/next-hepta/tests/integration/hepta/test_original_build_manifest.py", line 36, in test_fixed_source_resolver_survives_external_workspace
+    self.assertEqual(
+AssertionError: None != '2' : external package edition must not replace the original explicit resolver
+
+----------------------------------------------------------------------
+Ran 1 test in 0.035s
+
+FAILED (failures=1)

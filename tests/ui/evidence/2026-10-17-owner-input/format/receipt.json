@@ -1,0 +1,48 @@
+{
+  "started_at_utc": "2026-10-17T13:27:49.134642+00:00",
+  "source_commit_before": "b04a9e5ca7acd78272ddea325e752a7d6b252c9b",
+  "steps": [
+    {
+      "name": "check_before",
+      "command": [
+        "python3",
+        "/workspace/scratch/98f315e377b2/next-tools/run-host-rust.py",
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "--all",
+        "--check"
+      ],
+      "exit_code": 1
+    },
+    {
+      "name": "apply",
+      "command": [
+        "python3",
+        "/workspace/scratch/98f315e377b2/next-tools/run-host-rust.py",
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "--all"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "check_after",
+      "command": [
+        "python3",
+        "/workspace/scratch/98f315e377b2/next-tools/run-host-rust.py",
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "--all",
+        "--check"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "ended_at_utc": "2026-10-17T13:27:49.561925+00:00"
+}

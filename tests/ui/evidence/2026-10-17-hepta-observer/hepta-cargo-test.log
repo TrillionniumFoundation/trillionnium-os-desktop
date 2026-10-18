@@ -1,0 +1,40 @@
+   Compiling hepta-os-observer v0.1.0 (/workspace/scratch/98f315e377b2/next-ui/services/hepta-os)
+    Finished `test` profile [unoptimized] target(s) in 1.05s
+     Running unittests src/lib.rs (/workspace/scratch/98f315e377b2/next-target/debug/deps/hepta_os_observer-6aa0aebe7d9bdbd3)
+
+running 1 test
+test client::tests::timed_out_metadata_keeps_its_admission_until_actual_worker_completion ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running unittests src/bin/hepta-observe.rs (/workspace/scratch/98f315e377b2/next-target/debug/deps/hepta_observe-105058c7504dc65d)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/socket_contract.rs (/workspace/scratch/98f315e377b2/next-target/debug/deps/socket_contract-1fac35c8da5a31e0)
+
+running 13 tests
+test endpoint_identity_private_directory_socket_modes_and_symlinks_are_enforced ... ok
+test missing_endpoint_fails_unavailable_without_creating_or_discovering_anything ... ok
+test actual_socket_projects_only_bounded_safe_observations_and_allows_no_effect_methods ... ok
+test last_health_fence_discards_the_whole_partial_poll ... ok
+test owner_errors_and_overload_are_redacted_and_do_not_enable_retry_or_submission ... ok
+test bounded_frame_and_newline_requirements_are_enforced_on_the_socket ... ok
+test historical_run_state_is_read_only_and_does_not_disclose_owner_inputs ... ok
+test response_correlation_version_identity_and_generation_are_mandatory ... ok
+test peer_pid_health_invariants_and_unexpected_privileged_payload_fail_closed ... ok
+test event_gap_and_pagination_never_skip_unreturned_events ... ok
+test malformed_capability_sets_and_unknown_fields_are_rejected ... ok
+test event_integrity_gap_limits_and_cursor_ahead_are_checked ... ok
+test stalled_socket_is_bounded_by_one_total_poll_deadline ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.32s
+
+   Doc-tests hepta_os_observer
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

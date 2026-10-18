@@ -1,0 +1,381 @@
+{
+  "status": "two_six_phase_captures_passed_with_initial_failed_attempt_preserved",
+  "recorded_unix_ms": 1792278804996,
+  "recommended_repository_path": "tests/ui/evidence/2026-10-17-original-hepta-shell",
+  "raw_png_count": 13,
+  "successful_raw_png_count": 12,
+  "human_review": {
+    "a10_implementation_agent": "13 images individually inspected",
+    "root_integrator": "13 images individually inspected; separate record",
+    "independent_reviewer": "13 images individually inspected; separate records"
+  },
+  "runs": [
+    {
+      "run": "01",
+      "archive_directory": "capture01-failed",
+      "capture_passed": false,
+      "owner_status": "failed",
+      "error": "live runtime metadata changed: health",
+      "shell_pid": 613072,
+      "shell_window": {
+        "xid": "2097155",
+        "pid": 613072,
+        "class": "trill-shell"
+      },
+      "same_shell_pid_all_phases": false,
+      "same_shell_window_all_phases": false,
+      "namespace_returncode": 1,
+      "namespace_started_unix_ms": 1792276957375,
+      "namespace_finished_unix_ms": 1792276966605,
+      "owned_shell_display_cleanup": [
+        {
+          "label": "rust-shell",
+          "pid": 613072,
+          "observed_returncode": -15
+        },
+        {
+          "label": "xvfb",
+          "pid": 613064,
+          "observed_returncode": 0
+        }
+      ],
+      "runtime_private_state_cleanup_complete": null,
+      "phases": [
+        {
+          "sequence": 1,
+          "phase": "starting",
+          "session_pid": 612960,
+          "session_instance": "60f31bbe23526f6d8cdd92f471039fbb",
+          "worker_tid": 612962,
+          "original": {
+            "active": true,
+            "agent_id": "22222222-2222-4222-8222-222222222222",
+            "healthy": false,
+            "process_id": 612929,
+            "spawn_generation": 1
+          },
+          "png": "phase-1-starting.png",
+          "png_sha256": "1c2bd97c058dd4af757632e041cf2ac059f2dcf3444df836db3df25fb5dbf65c",
+          "acknowledged": false
+        }
+      ]
+    },
+    {
+      "run": "02",
+      "archive_directory": "capture02-r5-passed",
+      "capture_passed": true,
+      "owner_status": "passed",
+      "error": null,
+      "shell_pid": 615673,
+      "shell_window": {
+        "xid": "2097155",
+        "pid": 615673,
+        "class": "trill-shell"
+      },
+      "same_shell_pid_all_phases": true,
+      "same_shell_window_all_phases": true,
+      "namespace_returncode": 0,
+      "namespace_started_unix_ms": 1792277791336,
+      "namespace_finished_unix_ms": 1792277820098,
+      "owned_shell_display_cleanup": [
+        {
+          "label": "rust-shell",
+          "pid": 615673,
+          "observed_returncode": -15
+        },
+        {
+          "label": "xvfb",
+          "pid": 615632,
+          "observed_returncode": 0
+        }
+      ],
+      "runtime_private_state_cleanup_complete": true,
+      "phases": [
+        {
+          "sequence": 1,
+          "phase": "starting",
+          "session_pid": 615562,
+          "session_instance": "b4122eb42acae07a5d5b97c1c496e2fd",
+          "worker_tid": 615564,
+          "original": {
+            "active": true,
+            "agent_id": "22222222-2222-4222-8222-222222222222",
+            "healthy": false,
+            "process_id": 615532,
+            "spawn_generation": 1
+          },
+          "png": "phase-1-starting.png",
+          "png_sha256": "789d490ddc62a804a1defd6c2ef8ee037db9e18ae3a54273d894acc970623954",
+          "acknowledged": true
+        },
+        {
+          "sequence": 2,
+          "phase": "running",
+          "session_pid": 615562,
+          "session_instance": "b4122eb42acae07a5d5b97c1c496e2fd",
+          "worker_tid": 615564,
+          "original": {
+            "active": true,
+            "agent_id": "22222222-2222-4222-8222-222222222222",
+            "healthy": true,
+            "process_id": 615532,
+            "spawn_generation": 1
+          },
+          "png": "phase-2-running.png",
+          "png_sha256": "13056f4fb8c901b87020f778c1073ee299f09a62b05a874be4fa398a90ce6200",
+          "acknowledged": true
+        },
+        {
+          "sequence": 3,
+          "phase": "draining",
+          "session_pid": 615562,
+          "session_instance": "b4122eb42acae07a5d5b97c1c496e2fd",
+          "worker_tid": 615564,
+          "original": {
+            "active": true,
+            "agent_id": "22222222-2222-4222-8222-222222222222",
+            "healthy": true,
+            "process_id": 615532,
+            "spawn_generation": 1
+          },
+          "png": "phase-3-draining.png",
+          "png_sha256": "37e369f3afbec554c4345339dc4c24a7a84ab032f8aded3e08f7d8bb33ccbbc4",
+          "acknowledged": true
+        },
+        {
+          "sequence": 4,
+          "phase": "old_spawn_stale",
+          "session_pid": 615562,
+          "session_instance": "b4122eb42acae07a5d5b97c1c496e2fd",
+          "worker_tid": 615564,
+          "original": {
+            "active": true,
+            "agent_id": "22222222-2222-4222-8222-222222222222",
+            "healthy": true,
+            "process_id": 615755,
+            "spawn_generation": 5
+          },
+          "png": "phase-4-old_spawn_stale.png",
+          "png_sha256": "82c6bade18b0924045c0b6e04d696c43be6d360bf542accb5fc1adbd123c695d",
+          "acknowledged": true
+        },
+        {
+          "sequence": 5,
+          "phase": "recovered_running",
+          "session_pid": 615926,
+          "session_instance": "b4b8c3aa629eeac9d5968a060d2b0559",
+          "worker_tid": 615929,
+          "original": {
+            "active": true,
+            "agent_id": "22222222-2222-4222-8222-222222222222",
+            "healthy": true,
+            "process_id": 615755,
+            "spawn_generation": 5
+          },
+          "png": "phase-5-recovered_running.png",
+          "png_sha256": "6062f206323c26afd1adfe18c0214d7e325313d0605ea09876efd7c9d4321e6e",
+          "acknowledged": true
+        },
+        {
+          "sequence": 6,
+          "phase": "stopped_stale",
+          "session_pid": 615926,
+          "session_instance": "b4b8c3aa629eeac9d5968a060d2b0559",
+          "worker_tid": 615929,
+          "original": {
+            "active": false,
+            "agent_id": "22222222-2222-4222-8222-222222222222",
+            "healthy": false,
+            "process_id": null,
+            "spawn_generation": null
+          },
+          "png": "phase-6-stopped_stale.png",
+          "png_sha256": "01a7e9811ed71439a0660267e430345869ccfc2cd2b96921782db6ffb3a41f02",
+          "acknowledged": true
+        }
+      ]
+    },
+    {
+      "run": "03",
+      "archive_directory": "capture03-freshness-passed",
+      "capture_passed": true,
+      "owner_status": "passed",
+      "error": null,
+      "shell_pid": 616470,
+      "shell_window": {
+        "xid": "2097155",
+        "pid": 616470,
+        "class": "trill-shell"
+      },
+      "same_shell_pid_all_phases": true,
+      "same_shell_window_all_phases": true,
+      "namespace_returncode": 0,
+      "namespace_started_unix_ms": 1792277984492,
+      "namespace_finished_unix_ms": 1792278013250,
+      "owned_shell_display_cleanup": [
+        {
+          "label": "rust-shell",
+          "pid": 616470,
+          "observed_returncode": -15
+        },
+        {
+          "label": "xvfb",
+          "pid": 616445,
+          "observed_returncode": 0
+        }
+      ],
+      "runtime_private_state_cleanup_complete": true,
+      "phases": [
+        {
+          "sequence": 1,
+          "phase": "starting",
+          "session_pid": 616357,
+          "session_instance": "1726d69f559ede7d224e8bc0f12c282b",
+          "worker_tid": 616359,
+          "original": {
+            "active": true,
+            "agent_id": "22222222-2222-4222-8222-222222222222",
+            "healthy": false,
+            "process_id": 616327,
+            "spawn_generation": 1
+          },
+          "png": "phase-1-starting.png",
+          "png_sha256": "081fcfdd2efd7fcfd16333ad7134c2ad54ad607d52dce772e4eb4ee26a800d7f",
+          "acknowledged": true
+        },
+        {
+          "sequence": 2,
+          "phase": "running",
+          "session_pid": 616357,
+          "session_instance": "1726d69f559ede7d224e8bc0f12c282b",
+          "worker_tid": 616359,
+          "original": {
+            "active": true,
+            "agent_id": "22222222-2222-4222-8222-222222222222",
+            "healthy": true,
+            "process_id": 616327,
+            "spawn_generation": 1
+          },
+          "png": "phase-2-running.png",
+          "png_sha256": "4f0cc9de4cf713ffb536babcafbd87428d7853a542a9d0d3efde25cadd2792c2",
+          "acknowledged": true
+        },
+        {
+          "sequence": 3,
+          "phase": "draining",
+          "session_pid": 616357,
+          "session_instance": "1726d69f559ede7d224e8bc0f12c282b",
+          "worker_tid": 616359,
+          "original": {
+            "active": true,
+            "agent_id": "22222222-2222-4222-8222-222222222222",
+            "healthy": true,
+            "process_id": 616327,
+            "spawn_generation": 1
+          },
+          "png": "phase-3-draining.png",
+          "png_sha256": "fa569e67c8ae8672d49bc7ff3469246d748a25e413edb0f8985ee9e28169f4e8",
+          "acknowledged": true
+        },
+        {
+          "sequence": 4,
+          "phase": "old_spawn_stale",
+          "session_pid": 616357,
+          "session_instance": "1726d69f559ede7d224e8bc0f12c282b",
+          "worker_tid": 616359,
+          "original": {
+            "active": true,
+            "agent_id": "22222222-2222-4222-8222-222222222222",
+            "healthy": true,
+            "process_id": 616535,
+            "spawn_generation": 5
+          },
+          "png": "phase-4-old_spawn_stale.png",
+          "png_sha256": "bd3a80d6c5664effb339acc6988204be5391d5e56a704693034ebf5b089d872f",
+          "acknowledged": true
+        },
+        {
+          "sequence": 5,
+          "phase": "recovered_running",
+          "session_pid": 616715,
+          "session_instance": "7df3d71d043233ca8649ad3560f57432",
+          "worker_tid": 616717,
+          "original": {
+            "active": true,
+            "agent_id": "22222222-2222-4222-8222-222222222222",
+            "healthy": true,
+            "process_id": 616535,
+            "spawn_generation": 5
+          },
+          "png": "phase-5-recovered_running.png",
+          "png_sha256": "afaffd7410df6e382b7a0f3f5c60243eedfe781ba25ce62a46759d4eb813106b",
+          "acknowledged": true
+        },
+        {
+          "sequence": 6,
+          "phase": "stopped_stale",
+          "session_pid": 616715,
+          "session_instance": "7df3d71d043233ca8649ad3560f57432",
+          "worker_tid": 616717,
+          "original": {
+            "active": false,
+            "agent_id": "22222222-2222-4222-8222-222222222222",
+            "healthy": false,
+            "process_id": null,
+            "spawn_generation": null
+          },
+          "png": "phase-6-stopped_stale.png",
+          "png_sha256": "9728bdd2d061e4554e63dc6a8865afb85cb31b68bb4d86d9726434a00b1aad9c",
+          "acknowledged": true
+        }
+      ]
+    }
+  ],
+  "artifact_binding_checks": [
+    {
+      "run": "01",
+      "raw_phase_and_png_and_snapshot_sha256_verified": true,
+      "phase_bytes_equal_original_owner_record": true,
+      "actual_peer_and_session_instance_equal_owner": true,
+      "acknowledgements_checked": 0,
+      "a10_manual_review_included": true
+    },
+    {
+      "run": "02",
+      "raw_phase_and_png_and_snapshot_sha256_verified": true,
+      "phase_bytes_equal_original_owner_record": true,
+      "actual_peer_and_session_instance_equal_owner": true,
+      "acknowledgements_checked": 6,
+      "a10_manual_review_included": true
+    },
+    {
+      "run": "03",
+      "raw_phase_and_png_and_snapshot_sha256_verified": true,
+      "phase_bytes_equal_original_owner_record": true,
+      "actual_peer_and_session_instance_equal_owner": true,
+      "acknowledgements_checked": 6,
+      "a10_manual_review_included": true
+    }
+  ],
+  "source_and_elf_binding": "source-bindings.json",
+  "oracle_tests": {
+    "receipt": "oracle-fix/final-tests-receipt.json",
+    "exit_code": 0,
+    "count": 8,
+    "parent_death_scope": "actual exec child leader dies by SIGKILL after capture parent dies; no arbitrary-descendant claim"
+  },
+  "sampling_boundary": "PNG pixels are manually read; before/after Session IPC binds a legal projection interval, not a guarantee that the painted sampled_unix_ms equals the final after snapshot.",
+  "stale_timing": "Old R5 stop retained Running generation 6; new GREEN03 stop retained Draining generation 7. Both are real original observations; the difference is not attributed to the UI fix.",
+  "marker_boundary": "A one-shot first-page layout marker is recorded once per Shell. Six PNGs and separate manual review qualify subsequent stages; ACKs are coordination only.",
+  "freshness_bug_boundary": "Delayed queued-response regression and corrected production compilation are in sibling 2026-10-17-observation-freshness evidence. These six-phase runs do not simulate a paused UI queue.",
+  "exclusions": [
+    "Xauthority cookies",
+    "ELFs",
+    "Cargo targets or caches",
+    "font bytes",
+    "private original Agentd state",
+    "objective/model/device effects"
+  ],
+  "private_cookie_scan": "No selected evidence contains any of the three disposable display cookies in raw or hexadecimal representation.",
+  "qualification": "Linux x86_64 native Rust Shell read-only original Hepta projection through real Session IPC and private X11 framebuffer; no physical display, mobile, target kernel, model task, objective ingress, device action, or keyboard input qualification."
+}

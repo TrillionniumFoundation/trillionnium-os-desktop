@@ -1,0 +1,135 @@
+{
+  "evidence_class": "scripted_socket_fixture_not_hepta_daemon",
+  "upstream_agentd_started": false,
+  "objective_submitted": false,
+  "device_effect_tested": false,
+  "session_binary_sha256": "3d52f8c3d61c81975a13f518810d4170e84c2c28a070684e91014567764d39c5",
+  "fixture_source_sha256": "a588f7ccc260a7699d11bb09d5c78c0aaf45f139050e708aa5285764df935209",
+  "started_unix_ms": 1792236905867,
+  "observed": {
+    "connection": "observed",
+    "last_attempt_unix_ms": 1792236905895,
+    "error_code": null,
+    "last_observation": {
+      "sampled_unix_ms": 1792236905895,
+      "agent_id": "11111111-1111-4111-8111-111111111111",
+      "spawn_generation": 7,
+      "current_generation": 8,
+      "health": {
+        "ready": true,
+        "promotion_ready": true,
+        "fenced": false,
+        "lifecycle": "running",
+        "process_id": 527377
+      },
+      "capabilities": [
+        {
+          "id": "fixture:future",
+          "major": 2,
+          "minor": 3
+        },
+        {
+          "id": "objective.start",
+          "major": 1,
+          "minor": 0
+        },
+        {
+          "id": "run.lifecycle",
+          "major": 1,
+          "minor": 1
+        }
+      ],
+      "capabilities_truncated": false,
+      "events": [
+        {
+          "cursor": 1,
+          "kind": "bootstrapped",
+          "generation": null,
+          "lifecycle": null
+        },
+        {
+          "cursor": 2,
+          "kind": "lifecycle",
+          "generation": 8,
+          "lifecycle": "running"
+        },
+        {
+          "cursor": 3,
+          "kind": "app_server_ready",
+          "generation": null,
+          "lifecycle": null
+        }
+      ],
+      "events_omitted_from_view": 0,
+      "next_cursor": 3,
+      "latest_cursor": 3,
+      "history_gap": false,
+      "source_changed": false
+    }
+  },
+  "stale": {
+    "connection": "stale",
+    "last_attempt_unix_ms": 1792236906896,
+    "error_code": "unavailable",
+    "last_observation": {
+      "sampled_unix_ms": 1792236905895,
+      "agent_id": "11111111-1111-4111-8111-111111111111",
+      "spawn_generation": 7,
+      "current_generation": 8,
+      "health": {
+        "ready": true,
+        "promotion_ready": true,
+        "fenced": false,
+        "lifecycle": "running",
+        "process_id": 527377
+      },
+      "capabilities": [
+        {
+          "id": "fixture:future",
+          "major": 2,
+          "minor": 3
+        },
+        {
+          "id": "objective.start",
+          "major": 1,
+          "minor": 0
+        },
+        {
+          "id": "run.lifecycle",
+          "major": 1,
+          "minor": 1
+        }
+      ],
+      "capabilities_truncated": false,
+      "events": [
+        {
+          "cursor": 1,
+          "kind": "bootstrapped",
+          "generation": null,
+          "lifecycle": null
+        },
+        {
+          "cursor": 2,
+          "kind": "lifecycle",
+          "generation": 8,
+          "lifecycle": "running"
+        },
+        {
+          "cursor": 3,
+          "kind": "app_server_ready",
+          "generation": null,
+          "lifecycle": null
+        }
+      ],
+      "events_omitted_from_view": 0,
+      "next_cursor": 3,
+      "latest_cursor": 3,
+      "history_gap": false,
+      "source_changed": false
+    }
+  },
+  "host_action_after_disconnect_ms": 100.229,
+  "renderer_write_requests_rejected": true,
+  "passed": true,
+  "finished_unix_ms": 1792236906999
+}

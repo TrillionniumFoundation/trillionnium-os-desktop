@@ -1,0 +1,197 @@
+{
+  "total_count": 2,
+  "jobs": [
+    {
+      "id": 117515138978,
+      "run_id": 39073273425,
+      "workflow_name": "A10 Rust Wayland host integration",
+      "head_branch": "agents/A00-a10-hepta-observer-20261017",
+      "run_url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39073273425",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOVLzC488AAAAbXHK3og",
+      "head_sha": "f0924a6e48c68101ec09b01ef2f69aec330a3da7",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/jobs/117515138978",
+      "html_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39073273425/job/117515138978",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-17T22:00:26Z",
+      "started_at": "2026-10-17T22:18:36Z",
+      "completed_at": "2026-10-17T22:18:52Z",
+      "name": "ui-source-guard",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-17T22:18:37Z",
+          "completed_at": "2026-10-17T22:18:37Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-17T22:18:37Z",
+          "completed_at": "2026-10-17T22:18:49Z"
+        },
+        {
+          "name": "Verify A00 bootstrap versus A10 source diff and empty README",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-17T22:18:49Z",
+          "completed_at": "2026-10-17T22:18:49Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-10-17T22:18:49Z",
+          "completed_at": "2026-10-17T22:18:49Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-10-17T22:18:49Z",
+          "completed_at": "2026-10-17T22:18:49Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117515138978",
+      "labels": [
+        "ubuntu-24.04"
+      ],
+      "runner_id": 1000157621,
+      "runner_name": "GitHub Actions 1000157621",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 117518904862,
+      "run_id": 39073273425,
+      "workflow_name": "A10 Rust Wayland host integration",
+      "head_branch": "agents/A00-a10-hepta-observer-20261017",
+      "run_url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39073273425",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOVLzC488AAAAbXKwuHg",
+      "head_sha": "f0924a6e48c68101ec09b01ef2f69aec330a3da7",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/jobs/117518904862",
+      "html_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39073273425/job/117518904862",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-17T22:18:52Z",
+      "started_at": "2026-10-17T22:44:10Z",
+      "completed_at": "2026-10-17T22:47:10Z",
+      "name": "native-rust-and-wayland",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-17T22:44:11Z",
+          "completed_at": "2026-10-17T22:44:12Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-17T22:44:12Z",
+          "completed_at": "2026-10-17T22:44:14Z"
+        },
+        {
+          "name": "Install separately pinned host Rust and Linux software-rendering dependencies",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-17T22:44:14Z",
+          "completed_at": "2026-10-17T22:44:48Z"
+        },
+        {
+          "name": "Record real host versions, not the pinned Asterinas kernel toolchain",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-17T22:44:48Z",
+          "completed_at": "2026-10-17T22:44:49Z"
+        },
+        {
+          "name": "Compile and test Rust binaries and validate rustfmt",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-17T22:44:49Z",
+          "completed_at": "2026-10-17T22:46:34Z"
+        },
+        {
+          "name": "Run true Linux-host first-frame and lifecycle tests under headless Weston",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-10-17T22:46:34Z",
+          "completed_at": "2026-10-17T22:46:43Z"
+        },
+        {
+          "name": "Enforce Rust 1.88 UI workspace and all-target Clippy warnings",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-10-17T22:46:43Z",
+          "completed_at": "2026-10-17T22:47:05Z"
+        },
+        {
+          "name": "Test original-Agentd gate cleanup with disposable Linux children",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-10-17T22:47:05Z",
+          "completed_at": "2026-10-17T22:47:05Z"
+        },
+        {
+          "name": "Enforce committed UI dependency lock after attempting real tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-10-17T22:47:05Z",
+          "completed_at": "2026-10-17T22:47:05Z"
+        },
+        {
+          "name": "Preserve raw A10 host/compiler/Weston evidence even on failure",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-10-17T22:47:05Z",
+          "completed_at": "2026-10-17T22:47:08Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20,
+          "started_at": "2026-10-17T22:47:08Z",
+          "completed_at": "2026-10-17T22:47:08Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21,
+          "started_at": "2026-10-17T22:47:08Z",
+          "completed_at": "2026-10-17T22:47:08Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117518904862",
+      "labels": [
+        "ubuntu-24.04"
+      ],
+      "runner_id": 1000157870,
+      "runner_name": "GitHub Actions 1000157870",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    }
+  ]
+}

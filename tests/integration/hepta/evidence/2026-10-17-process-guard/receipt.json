@@ -1,0 +1,54 @@
+{
+  "recorded_at_utc": "2026-10-17T11:38:13.284419+00:00",
+  "evidence_class": "linux_process_guard_only",
+  "root": "/workspace/scratch/98f315e377b2/next-hepta",
+  "base_commit": "a92d8ed242dc073738b5f7b85cd0af9d329dfce8",
+  "old_source_sha256": "8714516af855657c7d5b7b8a6891a7da9976d2010a00bd6f72a574a92fa6b2d8",
+  "source_sha256": {
+    "tests/integration/hepta/run_original_agentd.py": "9818cd6fa17c68e704b7fe311a8c0c043d05225d46cb4073901ff01621045133",
+    "tests/integration/hepta/test_original_process_guard.py": "5dd5a3c5d9600981c692283acff73cc388da90977d11c0f38cbe049a49ff8191",
+    "tests/integration/hepta/ORIGINAL_AGENTD.md": "789d8b218d55c1b55860d3cdad8ce316a2a57d68388ac47048d655886de1bcd8",
+    "tests/integration/hepta/EVIDENCE.md": "1406258cdb24adce5b4a9d4611333d5e33fc8421d92020c6e664d2401efa587b",
+    "tests/integration/hepta/README.md": "02299b2bb3dc2b773c56e12c48b10aac85f9dcef3dcca67514c1c8b1e1a43d50"
+  },
+  "probe_source_sha256": "252355118c02dc55d4d033e22d5eb437bb44cc95b7ed5d2857cd218f7fa71c56",
+  "steps": [
+    {
+      "label": "regression",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/integration/hepta",
+        "-p",
+        "test_original_process_guard.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/98f315e377b2/next-hepta",
+      "started_at_utc": "2026-10-17T11:38:12.872074+00:00",
+      "exit_code": 0,
+      "log": "/workspace/scratch/98f315e377b2/hepta-process-guard-review-20261017-r1/regression.log",
+      "log_sha256": "aa7cb39ee4c3b4ef964a64b5c106009d68c8cecb0eb6822ad2ad096af0fd3854"
+    },
+    {
+      "label": "old_source_red",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/98f315e377b2/hepta-process-guard-review-20261017-r1/probe_old_guard.py"
+      ],
+      "cwd": "/workspace/scratch/98f315e377b2/next-hepta",
+      "started_at_utc": "2026-10-17T11:38:13.189985+00:00",
+      "exit_code": 0,
+      "log": "/workspace/scratch/98f315e377b2/hepta-process-guard-review-20261017-r1/old_source_red.log",
+      "log_sha256": "fc1106cb6b498863489473b1a60ee85b92c6340074fe8c88a8cfd5a710d9b0bd"
+    }
+  ],
+  "large_build_attempted": false,
+  "original_agentd_run": false,
+  "pid_reuse_attempted": false,
+  "shared_rust_target_modified": false
+}

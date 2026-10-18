@@ -1,0 +1,67 @@
+{
+  "reviewer": "/root/r6_review_ci",
+  "reviewed_utc": "2026-10-17T23:12:07.371511+00:00",
+  "status": "passed",
+  "accepted_actual_pixel_images": 12,
+  "accepted_runs": [
+    {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/r6-review/shell-02-independent-review.json",
+      "bytes": 22657,
+      "sha256": "fd40951cbf6501d7cfb2f9ac665f6a0e0d2516bf6df25abdf1eb38f14128a2bd"
+    },
+    {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/r6-review/shell-03-independent-review.json",
+      "bytes": 22969,
+      "sha256": "e4e49bea5815f9dcea651b8d7934454ff5907adc936193bc64b70c8a19ed20a2"
+    }
+  ],
+  "preserved_initial_failed_run": {
+    "capture": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-shell-01/capture-receipt.json",
+      "bytes": 9264,
+      "sha256": "b028a7bf3c1017592952719e6e77f9a4f3bf7d41cee9d8c35bcd65b0b6b341b2"
+    },
+    "runtime": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/runtime-01/receipt.json",
+      "bytes": 27421,
+      "sha256": "6aa7ad9371be2d2257926f6c619d1b70e64a8465bd4d11b8c1e2cbf3e8e64637"
+    },
+    "independent_failure_review": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/r6-review/shell-01-starting-independent-review.json",
+      "bytes": 2701,
+      "sha256": "7722a191cba3b4ced4f4f80e79a0e79188dc127ca353a010c852f7092d97d62d"
+    },
+    "cause": "Initial oracle incorrectly required entire live health equality across legitimate Starting app_server_ready progress.",
+    "no_ack_written": true,
+    "private_state_absent_at_review": true,
+    "actual_process_ids_absent_at_review": [
+      612928,
+      612929,
+      612960,
+      612962,
+      613064,
+      613072
+    ],
+    "owner_v2_receipt_has_explicit_cleanup_boolean": false,
+    "recorded_shell_display_stops": [
+      {
+        "label": "rust-shell",
+        "pid": 613072,
+        "observed_returncode": -15
+      },
+      {
+        "label": "xvfb",
+        "pid": 613064,
+        "observed_returncode": 0
+      }
+    ],
+    "probe_exit_code": 1,
+    "counts_as_completed_integration_pass": false
+  },
+  "stopped_stale_difference": {
+    "old_R5_run02": "Retained Running/current6/PID615755/sample1792277809180/cursor4.",
+    "new_GREEN03_run03": "Retained Draining/current7/PID616535/sample1792278002303/cursor5.",
+    "interpretation": "Both are actual legal stop races; each first stale and later failure preserve its own complete last successful observation."
+  },
+  "scope": "Real immutable original Hepta → continuous Session observer/IPC → one actual native Rust Shell across six phases, twice; no control-side effect or mobile readiness promoted."
+}

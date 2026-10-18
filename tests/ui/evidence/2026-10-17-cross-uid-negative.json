@@ -1,0 +1,29 @@
+{
+  "schema": "a10-linux-cross-uid-negative-v1",
+  "date_utc": "2026-10-17",
+  "scope": "disposable Linux host process/socket test only, no HOS2, no Asterinas kernel, no production service",
+  "baseline": {
+    "rust_source_commit": "fcc57bd2a64cc7ee84731b432a94b51689355af7",
+    "proven_rust_artifact_id": 12096301139,
+    "github_ci_run": 39015860337,
+    "process_owner": "nobody (UID 65534)",
+    "owner_client": "nobody / trill-ctl snapshot",
+    "owner_client_result": "PASS: session snapshot observed",
+    "cross_uid_client": "root (UID 0) / trill-ctl snapshot",
+    "cross_uid_result": "UNEXPECTED SUCCESS: real older Rust Session returned snapshot to UID 0",
+    "strict_negative_test_exit_code": 1,
+    "observed_failure_line": "CROSS_UID_PEER_ACCEPTED: root requester read nobody Session (the old binary lacks SO_PEERCRED)",
+    "runtime": "private temporary /tmp directory; terminated and cleaned up"
+  },
+  "remediation": {
+    "source_fix_commits": [
+      "caa80d51edab4f590fbefb63bdfd7e339545f5f3",
+      "5b8834c80f109a10671ebde065234c250be3278c"
+    ],
+    "exact_live_test_blob": "8f05d5d6d7aecb8459dd51b5b0c72f0bf3359516",
+    "blocking_ci_integration": "53d6f5d330ebd44e922cc94a736f725976792624",
+    "latest_exact_source_status": "NOT yet proven by GitHub Actions at the time of this receipt"
+  },
+  "acceptance_requirement": "new Session must reject UID 0 with a SO_PEERCRED denial log, while UID 65534 owner continues to operate",
+  "caveat": "same-UID IPC is not a trusted A05 CapSpace, effect authority or sandbox"
+}

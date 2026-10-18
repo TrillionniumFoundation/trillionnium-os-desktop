@@ -1,0 +1,2010 @@
+{
+  "started_at_utc": "2026-10-17T22:56:31.002009+00:00",
+  "qualification": "staged_original_agentd_persistent_session_runtime",
+  "status": "passed",
+  "desktop": {
+    "commit": "28843c6632fe63db6b3fecb4d05888e90976fd16",
+    "tree": "759c42b36d965174dc00a39b7f28e962ed667d85",
+    "clean": true,
+    "subtrees": {
+      "services/hepta-os": "7ebe43051e1cebb8049ba50e9da4a9fb59d1a0c7",
+      "ui": "037f318be7140ef046eac1e9cabe230c07eb7059"
+    },
+    "inputs": {
+      "tests/integration/hepta/run_original_agentd.py": "21dd4a2e0621240a75f5ce37bad93da0a37352fbaa78554a50e048abe6a45fd0",
+      "tests/integration/hepta/original_agentd_probe.rs": "d297d6b5c7e39c3c98a4cb051d54ebdfc58757d04ca5ca265a023f4fb7fb276c",
+      "tests/integration/hepta/original_session_probe.rs": "7660c76f640cf612f57a2ee6a2ea7d8b09e8ac332c20fd44d8e7c8bbcb0663c5",
+      "services/hepta-os/Cargo.toml": "6d33aced708f1f6d3637e065825dd1718a4b187876e96edf1f7aefb0f437bfee",
+      "services/hepta-os/Cargo.lock": "a1aed4d1f513036cbe03912359f3dfbb2c6d93c5210b8d18244d95be9008a875",
+      "services/hepta-os/UPSTREAM_CONTRACT.json": "24efcccd98b6ac6a56cb34b36f5bdb10785d955efd86c32fed308bac1505f7ef",
+      "ui/Cargo.toml": "2c59194ffc1ed3bc0d5118f275498c1e09bd49f6ce71b80db709927b317a7628",
+      "ui/Cargo.lock": "e484809d742a264a296046b0d272e843d167b02b634232e793ef702757cc70e1"
+    }
+  },
+  "original_build": {
+    "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-03/receipt.json",
+    "receipt_sha256": "1dd50ac0a0a1856a787bf3ba6556407e13d85591daac1bf154639f063eb63f00",
+    "original": {
+      "commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+      "tree": "15c9d6ea07bf3832de82825a6cc1e8c958dd3d45",
+      "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+      "clean_checkout": true
+    },
+    "binary": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/target/dev-small/codex-hepta-agentd",
+      "bytes": 329001344,
+      "sha256": "f476f9bb435c5127839c48ae7135d5a6fa7695ff5253460fdd8d19d7b084d4fa",
+      "elf_class": 64,
+      "elf_machine": 62,
+      "architecture": "x86_64"
+    },
+    "previous_attempt_receipt_sha256": null,
+    "initial_admission": {
+      "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/receipt.json",
+      "receipt_sha256": "9a8f0853019123980f5bbd2213f477465935c10048eced027018161a70631625",
+      "minimum_free_bytes": 8589934592,
+      "free_bytes_at_admission": 12099153920
+    },
+    "previous_attempt": {
+      "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-02/receipt.json",
+      "receipt_sha256": "bbf9330b962ffa48f17895e47fe18e601d96d4271fa6686ed472bae9ca6a9361",
+      "status": "failed",
+      "stop_reason": "observed_memory_reserve_reached"
+    },
+    "resource_recovery": {
+      "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/r6-retained-cache-migration-03/receipt.json",
+      "receipt_sha256": "1f6854af7ec3f66e6a2426ae70e85d7813fe2cf3a658628b948045094a5ec735"
+    },
+    "previous_failed_migrations": [
+      {
+        "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/r6-retained-cache-migration-01/receipt.json",
+        "receipt_sha256": "cff8e9ac31d2d9c63df78cfabaa3b10d3250b14f20a8e54a28d8d6efe4d5a09d",
+        "status": "failed"
+      },
+      {
+        "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/r6-retained-cache-migration-02/receipt.json",
+        "receipt_sha256": "221f9db60e561bdd3fac2a914ad106834f95d5410ef433f77e7af9ac39713a45",
+        "status": "failed"
+      }
+    ],
+    "fresh_full_gate_preflight_applied_at_this_attempt": false,
+    "stock_fresh_work_gate_reexecuted": false,
+    "source_build_kind": "new_R6_target_copied_from_retained_warm_cache"
+  },
+  "helper_version": 3,
+  "consumer_source_reuse": {
+    "compiled_source_commit": "c50d7b9b688135a22ced2f7f3cbe21c3028d8e17",
+    "runtime_source_commit": "28843c6632fe63db6b3fecb4d05888e90976fd16",
+    "linked_source_inputs": {
+      "tests/integration/hepta/run_original_agentd.py": {
+        "built_git_object": "b0b04b01a28eb1b4ac08c38c47f6c14e1c7e4ca9",
+        "current_git_object": "b0b04b01a28eb1b4ac08c38c47f6c14e1c7e4ca9",
+        "identical": true
+      },
+      "tests/integration/hepta/original_agentd_probe.rs": {
+        "built_git_object": "668bb0e9d8a9d599b2d9a0b5c9a348fe6e2e4aa2",
+        "current_git_object": "668bb0e9d8a9d599b2d9a0b5c9a348fe6e2e4aa2",
+        "identical": true
+      },
+      "tests/integration/hepta/original_session_probe.rs": {
+        "built_git_object": "d1149f58b3a0067e167054ff89cf276ccfd40f91",
+        "current_git_object": "d1149f58b3a0067e167054ff89cf276ccfd40f91",
+        "identical": true
+      },
+      "services/hepta-os/src": {
+        "built_git_object": "8e116828e92f8186a08348bce2f0df47fcb699dd",
+        "current_git_object": "8e116828e92f8186a08348bce2f0df47fcb699dd",
+        "identical": true
+      },
+      "services/hepta-os/Cargo.toml": {
+        "built_git_object": "6441a6eeec92fec5de448f1b9ab3125620761553",
+        "current_git_object": "6441a6eeec92fec5de448f1b9ab3125620761553",
+        "identical": true
+      },
+      "services/hepta-os/Cargo.lock": {
+        "built_git_object": "7c2c444263cef0f974e883c3d7d0e22e95585098",
+        "current_git_object": "7c2c444263cef0f974e883c3d7d0e22e95585098",
+        "identical": true
+      },
+      "services/hepta-os/UPSTREAM_CONTRACT.json": {
+        "built_git_object": "b82cf4290cbd8b9198ca29365ed3bc89c3fd92f8",
+        "current_git_object": "b82cf4290cbd8b9198ca29365ed3bc89c3fd92f8",
+        "identical": true
+      }
+    },
+    "recompiled_for_runtime_source": false,
+    "reuse_reason": "all probe, gate and observer executable inputs are identical"
+  },
+  "previous_runtime_receipts": [
+    {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/runtime-01/receipt.json",
+      "sha256": "6aa7ad9371be2d2257926f6c619d1b70e64a8465bd4d11b8c1e2cbf3e8e64637",
+      "status": "failed",
+      "error": {
+        "type": "RuntimeError",
+        "detail": "command failed with exit 1: original-session-process.log"
+      },
+      "live_agentd_acceptance": "failed",
+      "persistent_session_acceptance": "failed"
+    }
+  ],
+  "consumer_build_receipt": {
+    "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-02/receipt.json",
+    "sha256": "c5ba7cd15f9cddc301e3004168ca0a68ceb9b59f1d91d90eb1d94b298dd8447b"
+  },
+  "ui_build": {
+    "build_receipt_path": "/workspace/scratch/98f315e377b2/next-tools/ui-r5-build-02/receipt.json",
+    "build_receipt_sha256": "f954603a52b17fb5d8716e4c433f3222e5bd78268eb5a470108d801803c481cd",
+    "source_commit": "35f379101c0863027e971ccb91faf8da71cf929c",
+    "source_tree": "48433c4f1e55de53e8c298193765949996eb18a0",
+    "current_ui_subtree_matches_build": true,
+    "linked_source_inputs": {
+      "ui": {
+        "built_git_object": "037f318be7140ef046eac1e9cabe230c07eb7059",
+        "current_git_object": "037f318be7140ef046eac1e9cabe230c07eb7059",
+        "identical": true
+      },
+      "services/hepta-os/src": {
+        "built_git_object": "8e116828e92f8186a08348bce2f0df47fcb699dd",
+        "current_git_object": "8e116828e92f8186a08348bce2f0df47fcb699dd",
+        "identical": true
+      },
+      "services/hepta-os/Cargo.toml": {
+        "built_git_object": "6441a6eeec92fec5de448f1b9ab3125620761553",
+        "current_git_object": "6441a6eeec92fec5de448f1b9ab3125620761553",
+        "identical": true
+      },
+      "services/hepta-os/Cargo.lock": {
+        "built_git_object": "7c2c444263cef0f974e883c3d7d0e22e95585098",
+        "current_git_object": "7c2c444263cef0f974e883c3d7d0e22e95585098",
+        "identical": true
+      }
+    },
+    "binaries": {
+      "session": {
+        "path": "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-session",
+        "bytes": 3527808,
+        "sha256": "5c29cfd7f11455000d7c3d9c0cc2c58fb7fe8761ab326da34c794d0f3481924f",
+        "elf_class": 64,
+        "elf_machine": 62,
+        "architecture": "x86_64"
+      },
+      "ctl": {
+        "path": "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-ctl",
+        "bytes": 1494736,
+        "sha256": "920093314640ad1dd721425ec78457f4ca74c83f9c1a0a878d4ddfee4924a882",
+        "elf_class": 64,
+        "elf_machine": 62,
+        "architecture": "x86_64"
+      }
+    }
+  },
+  "binaries_before": {
+    "agentd": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/target/dev-small/codex-hepta-agentd",
+      "bytes": 329001344,
+      "sha256": "f476f9bb435c5127839c48ae7135d5a6fa7695ff5253460fdd8d19d7b084d4fa",
+      "elf_class": 64,
+      "elf_machine": 62,
+      "architecture": "x86_64"
+    },
+    "probe": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/target/dev-small/hepta-original-observer-probe",
+      "bytes": 29114728,
+      "sha256": "46c8f20bef00d5e4b76ae7fcba784937bc1c4d9a33d6b416cd4acc1b96d43365",
+      "elf_class": 64,
+      "elf_machine": 62,
+      "architecture": "x86_64"
+    },
+    "observer": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-02/observer-target/debug/hepta-observe",
+      "bytes": 13883672,
+      "sha256": "de5aa738234b7ebfdf35afb5e78cf0296962f76625ae1e3fffdc44ba682b7a55",
+      "elf_class": 64,
+      "elf_machine": 62,
+      "architecture": "x86_64"
+    },
+    "session": {
+      "path": "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-session",
+      "bytes": 3527808,
+      "sha256": "5c29cfd7f11455000d7c3d9c0cc2c58fb7fe8761ab326da34c794d0f3481924f",
+      "elf_class": 64,
+      "elf_machine": 62,
+      "architecture": "x86_64"
+    },
+    "ctl": {
+      "path": "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-ctl",
+      "bytes": 1494736,
+      "sha256": "920093314640ad1dd721425ec78457f4ca74c83f9c1a0a878d4ddfee4924a882",
+      "elf_class": 64,
+      "elf_machine": 62,
+      "architecture": "x86_64"
+    }
+  },
+  "steps": [
+    {
+      "command": [
+        "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/target/dev-small/hepta-original-observer-probe",
+        "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/target/dev-small/codex-hepta-agentd",
+        "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-02/observer-target/debug/hepta-observe",
+        "/tmp/hp-wl_fcxn_",
+        "0",
+        "--session-bin",
+        "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-session",
+        "--ctl-bin",
+        "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-ctl",
+        "--session-phase-dir",
+        "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/runtime-02/phases",
+        "--session-ack-seconds",
+        "120"
+      ],
+      "cwd": "/workspace/scratch/98f315e377b2/next-r6-runtime-old-03",
+      "started_at_utc": "2026-10-17T22:56:31.002806+00:00",
+      "status": "passed",
+      "deadline_seconds": 1080,
+      "minimum_disk_reserve_bytes": 734003200,
+      "maximum_nonreclaimable_bytes": 7516192768,
+      "resource_samples": [
+        {
+          "elapsed_seconds": 0.0,
+          "free_bytes": 887078912,
+          "nonreclaimable_bytes": 2164505000
+        },
+        {
+          "elapsed_seconds": 1.0,
+          "free_bytes": 881909760,
+          "nonreclaimable_bytes": 2317206568
+        },
+        {
+          "elapsed_seconds": 2.001,
+          "free_bytes": 881909760,
+          "nonreclaimable_bytes": 2331428296
+        },
+        {
+          "elapsed_seconds": 3.001,
+          "free_bytes": 881909760,
+          "nonreclaimable_bytes": 2331747880
+        },
+        {
+          "elapsed_seconds": 4.002,
+          "free_bytes": 881758208,
+          "nonreclaimable_bytes": 2332703024
+        },
+        {
+          "elapsed_seconds": 5.002,
+          "free_bytes": 881741824,
+          "nonreclaimable_bytes": 2329834248
+        },
+        {
+          "elapsed_seconds": 6.003,
+          "free_bytes": 881741824,
+          "nonreclaimable_bytes": 2330872248
+        },
+        {
+          "elapsed_seconds": 7.003,
+          "free_bytes": 881741824,
+          "nonreclaimable_bytes": 2307611464
+        },
+        {
+          "elapsed_seconds": 8.003,
+          "free_bytes": 881598464,
+          "nonreclaimable_bytes": 2316224608
+        },
+        {
+          "elapsed_seconds": 9.004,
+          "free_bytes": 881582080,
+          "nonreclaimable_bytes": 2340061752
+        },
+        {
+          "elapsed_seconds": 10.004,
+          "free_bytes": 881582080,
+          "nonreclaimable_bytes": 2339791920
+        },
+        {
+          "elapsed_seconds": 11.005,
+          "free_bytes": 881455104,
+          "nonreclaimable_bytes": 2340753688
+        },
+        {
+          "elapsed_seconds": 12.005,
+          "free_bytes": 881405952,
+          "nonreclaimable_bytes": 2344866048
+        },
+        {
+          "elapsed_seconds": 13.005,
+          "free_bytes": 881405952,
+          "nonreclaimable_bytes": 2350558000
+        },
+        {
+          "elapsed_seconds": 14.006,
+          "free_bytes": 881381376,
+          "nonreclaimable_bytes": 2336638768
+        },
+        {
+          "elapsed_seconds": 15.006,
+          "free_bytes": 881381376,
+          "nonreclaimable_bytes": 2313276992
+        },
+        {
+          "elapsed_seconds": 16.007,
+          "free_bytes": 881381376,
+          "nonreclaimable_bytes": 2348344584
+        },
+        {
+          "elapsed_seconds": 17.007,
+          "free_bytes": 881209344,
+          "nonreclaimable_bytes": 2340625680
+        },
+        {
+          "elapsed_seconds": 18.008,
+          "free_bytes": 881143808,
+          "nonreclaimable_bytes": 2357898920
+        },
+        {
+          "elapsed_seconds": 19.008,
+          "free_bytes": 881074176,
+          "nonreclaimable_bytes": 2342101568
+        },
+        {
+          "elapsed_seconds": 20.012,
+          "free_bytes": 881733632,
+          "nonreclaimable_bytes": 2310346720
+        },
+        {
+          "elapsed_seconds": 21.013,
+          "free_bytes": 881709056,
+          "nonreclaimable_bytes": 2305192880
+        },
+        {
+          "elapsed_seconds": 22.013,
+          "free_bytes": 881709056,
+          "nonreclaimable_bytes": 2281906240
+        },
+        {
+          "elapsed_seconds": 23.013,
+          "free_bytes": 881557504,
+          "nonreclaimable_bytes": 2220306024
+        },
+        {
+          "elapsed_seconds": 24.014,
+          "free_bytes": 881557504,
+          "nonreclaimable_bytes": 2234968392
+        }
+      ],
+      "pid": 615531,
+      "exit_code": 0,
+      "child_guard_armed_after_completion": false,
+      "ended_at_utc": "2026-10-17T22:56:55.017483+00:00",
+      "log": {
+        "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/runtime-02/original-session-process.log",
+        "bytes": 23225,
+        "sha256": "e981e0e8b8005dbec0946be59e0183b9858888697fc973e533558a24662d7f1b"
+      }
+    }
+  ],
+  "stock_fresh_work_gate_reexecuted": false,
+  "runtime_probe_attempted": true,
+  "live_agentd_acceptance": "passed",
+  "persistent_session_acceptance": "passed",
+  "shell_capture_qualification": "separate_consumer_receipt_required",
+  "phase_dir": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/runtime-02/phases",
+  "capture_ack_seconds": 120,
+  "capture_abort_request_path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/runtime-02/abort-request.json",
+  "objective_submission": false,
+  "model_turn": false,
+  "device_effect": false,
+  "helper_sha256": {
+    "run_session.py": "9a09a995361121bc9f167dee33dd3ff075d0a12c349b74bf4ad78842a53adbd6",
+    "common.py": "5d9976b96e93d0ce39c2df402e9f310fe1755811c479ad422d9bec01ff46f4ff"
+  },
+  "private_original_state_root": "/tmp/hp-wl_fcxn_",
+  "runtime_records": [
+    {
+      "agent_id": "22222222-2222-4222-8222-222222222222",
+      "event": "trusted_endpoint",
+      "evidence_class": "original_agentd_probe_in_progress_not_pass",
+      "peer_uid": 0,
+      "socket_path": "/tmp/hp-wl_fcxn_/fleet/run/aeirceircejbcfarceirceircei.ctl",
+      "spawn_generation": 1
+    },
+    {
+      "event": "phase_observed",
+      "observation": {
+        "agent_id": "22222222-2222-4222-8222-222222222222",
+        "capabilities": [
+          {
+            "id": "automation.calendar_v2",
+            "major": 1,
+            "minor": 0
+          },
+          {
+            "id": "cognitive.context.revalidate",
+            "major": 1,
+            "minor": 0
+          },
+          {
+            "id": "run.lifecycle",
+            "major": 1,
+            "minor": 1
+          }
+        ],
+        "current_generation": 1,
+        "events": [
+          {
+            "cursor": 1,
+            "generation": null,
+            "kind": "bootstrapped",
+            "lifecycle": null
+          },
+          {
+            "cursor": 2,
+            "generation": 1,
+            "kind": "lifecycle",
+            "lifecycle": "starting"
+          }
+        ],
+        "health": {
+          "fenced": false,
+          "lifecycle": "starting",
+          "process_id": 615532,
+          "promotion_ready": false,
+          "ready": false
+        },
+        "history_gap": false,
+        "latest_cursor": 2,
+        "next_cursor": 2,
+        "spawn_generation": 1
+      }
+    },
+    {
+      "ack": {
+        "phase": "starting",
+        "sequence": 1,
+        "session_instance": "b4122eb42acae07a5d5b97c1c496e2fd"
+      },
+      "ack_timeout_seconds": 120,
+      "capture_ack_is_coordination_only": true,
+      "event": "session_phase_observed",
+      "original": {
+        "active": true,
+        "agent_id": "22222222-2222-4222-8222-222222222222",
+        "healthy": false,
+        "process_id": 615532,
+        "spawn_generation": 1
+      },
+      "phase": "starting",
+      "recorded_unix_ms": 1792277791322,
+      "runtime_dir": "/tmp/hp-wl_fcxn_/ui-runtime",
+      "sequence": 1,
+      "session_instance": "b4122eb42acae07a5d5b97c1c496e2fd",
+      "session_pid": 615562,
+      "session_socket_path": "/tmp/hp-wl_fcxn_/ui-runtime/trillionnium-ui/session.sock",
+      "snapshot": {
+        "hepta": {
+          "connection": "observed",
+          "error_code": null,
+          "last_attempt_unix_ms": 1792277791224,
+          "last_observation": {
+            "agent_id": "22222222-2222-4222-8222-222222222222",
+            "capabilities": [
+              {
+                "id": "automation.calendar_v2",
+                "major": 1,
+                "minor": 0
+              },
+              {
+                "id": "cognitive.context.revalidate",
+                "major": 1,
+                "minor": 0
+              },
+              {
+                "id": "run.lifecycle",
+                "major": 1,
+                "minor": 1
+              }
+            ],
+            "capabilities_truncated": false,
+            "current_generation": 1,
+            "events": [
+              {
+                "cursor": 1,
+                "generation": null,
+                "kind": "bootstrapped",
+                "lifecycle": null
+              },
+              {
+                "cursor": 2,
+                "generation": 1,
+                "kind": "lifecycle",
+                "lifecycle": "starting"
+              }
+            ],
+            "events_omitted_from_view": 0,
+            "health": {
+              "fenced": false,
+              "lifecycle": "starting",
+              "process_id": 615532,
+              "promotion_ready": false,
+              "ready": false
+            },
+            "history_gap": false,
+            "latest_cursor": 2,
+            "next_cursor": 2,
+            "sampled_unix_ms": 1792277791224,
+            "source_changed": false,
+            "spawn_generation": 1
+          }
+        },
+        "resources": {
+          "load_average_1m": 0.23,
+          "mem_available_kib": 7551804,
+          "mem_total_kib": 10206484,
+          "sampled_unix_ms": 1792277791322,
+          "source": "Linux host /proc and Wayland socket metadata (NOT HOS2)",
+          "wayland": {
+            "sampled_unix_ms": 1792277791322,
+            "socket_observation_epoch": 1,
+            "status": "unconfigured"
+          }
+        },
+        "session_instance": "b4122eb42acae07a5d5b97c1c496e2fd",
+        "tasks": [],
+        "type": "snapshot"
+      },
+      "stale_verification": null,
+      "worker_tid": 615564
+    },
+    {
+      "ack": {
+        "phase": "starting",
+        "sequence": 1,
+        "session_instance": "b4122eb42acae07a5d5b97c1c496e2fd"
+      },
+      "capture_ack_is_coordination_only": true,
+      "event": "session_phase_acknowledged"
+    },
+    {
+      "event": "phase_observed",
+      "observation": {
+        "agent_id": "22222222-2222-4222-8222-222222222222",
+        "capabilities": [
+          {
+            "id": "automation.calendar_v2",
+            "major": 1,
+            "minor": 0
+          },
+          {
+            "id": "cognitive.context.revalidate",
+            "major": 1,
+            "minor": 0
+          },
+          {
+            "id": "run.lifecycle",
+            "major": 1,
+            "minor": 1
+          }
+        ],
+        "current_generation": 2,
+        "events": [
+          {
+            "cursor": 1,
+            "generation": null,
+            "kind": "bootstrapped",
+            "lifecycle": null
+          },
+          {
+            "cursor": 2,
+            "generation": 1,
+            "kind": "lifecycle",
+            "lifecycle": "starting"
+          },
+          {
+            "cursor": 3,
+            "generation": null,
+            "kind": "app_server_ready",
+            "lifecycle": null
+          },
+          {
+            "cursor": 4,
+            "generation": 2,
+            "kind": "lifecycle",
+            "lifecycle": "running"
+          }
+        ],
+        "health": {
+          "fenced": false,
+          "lifecycle": "running",
+          "process_id": 615532,
+          "promotion_ready": true,
+          "ready": true
+        },
+        "history_gap": false,
+        "latest_cursor": 4,
+        "next_cursor": 4,
+        "spawn_generation": 1
+      }
+    },
+    {
+      "ack": {
+        "phase": "running",
+        "sequence": 2,
+        "session_instance": "b4122eb42acae07a5d5b97c1c496e2fd"
+      },
+      "ack_timeout_seconds": 120,
+      "capture_ack_is_coordination_only": true,
+      "event": "session_phase_observed",
+      "original": {
+        "active": true,
+        "agent_id": "22222222-2222-4222-8222-222222222222",
+        "healthy": true,
+        "process_id": 615532,
+        "spawn_generation": 1
+      },
+      "phase": "running",
+      "recorded_unix_ms": 1792277795434,
+      "runtime_dir": "/tmp/hp-wl_fcxn_/ui-runtime",
+      "sequence": 2,
+      "session_instance": "b4122eb42acae07a5d5b97c1c496e2fd",
+      "session_pid": 615562,
+      "session_socket_path": "/tmp/hp-wl_fcxn_/ui-runtime/trillionnium-ui/session.sock",
+      "snapshot": {
+        "hepta": {
+          "connection": "observed",
+          "error_code": null,
+          "last_attempt_unix_ms": 1792277795236,
+          "last_observation": {
+            "agent_id": "22222222-2222-4222-8222-222222222222",
+            "capabilities": [
+              {
+                "id": "automation.calendar_v2",
+                "major": 1,
+                "minor": 0
+              },
+              {
+                "id": "cognitive.context.revalidate",
+                "major": 1,
+                "minor": 0
+              },
+              {
+                "id": "run.lifecycle",
+                "major": 1,
+                "minor": 1
+              }
+            ],
+            "capabilities_truncated": false,
+            "current_generation": 2,
+            "events": [
+              {
+                "cursor": 1,
+                "generation": null,
+                "kind": "bootstrapped",
+                "lifecycle": null
+              },
+              {
+                "cursor": 2,
+                "generation": 1,
+                "kind": "lifecycle",
+                "lifecycle": "starting"
+              },
+              {
+                "cursor": 3,
+                "generation": null,
+                "kind": "app_server_ready",
+                "lifecycle": null
+              },
+              {
+                "cursor": 4,
+                "generation": 2,
+                "kind": "lifecycle",
+                "lifecycle": "running"
+              }
+            ],
+            "events_omitted_from_view": 0,
+            "health": {
+              "fenced": false,
+              "lifecycle": "running",
+              "process_id": 615532,
+              "promotion_ready": true,
+              "ready": true
+            },
+            "history_gap": false,
+            "latest_cursor": 4,
+            "next_cursor": 4,
+            "sampled_unix_ms": 1792277795236,
+            "source_changed": false,
+            "spawn_generation": 1
+          }
+        },
+        "resources": {
+          "load_average_1m": 0.29,
+          "mem_available_kib": 7386608,
+          "mem_total_kib": 10206484,
+          "sampled_unix_ms": 1792277795433,
+          "source": "Linux host /proc and Wayland socket metadata (NOT HOS2)",
+          "wayland": {
+            "sampled_unix_ms": 1792277795433,
+            "socket_observation_epoch": 1,
+            "status": "unconfigured"
+          }
+        },
+        "session_instance": "b4122eb42acae07a5d5b97c1c496e2fd",
+        "tasks": [],
+        "type": "snapshot"
+      },
+      "stale_verification": null,
+      "worker_tid": 615564
+    },
+    {
+      "ack": {
+        "phase": "running",
+        "sequence": 2,
+        "session_instance": "b4122eb42acae07a5d5b97c1c496e2fd"
+      },
+      "capture_ack_is_coordination_only": true,
+      "event": "session_phase_acknowledged"
+    },
+    {
+      "event": "ready_window",
+      "hold_seconds": 0
+    },
+    {
+      "event": "phase_observed",
+      "observation": {
+        "agent_id": "22222222-2222-4222-8222-222222222222",
+        "capabilities": [
+          {
+            "id": "automation.calendar_v2",
+            "major": 1,
+            "minor": 0
+          },
+          {
+            "id": "cognitive.context.revalidate",
+            "major": 1,
+            "minor": 0
+          },
+          {
+            "id": "run.lifecycle",
+            "major": 1,
+            "minor": 1
+          }
+        ],
+        "current_generation": 3,
+        "events": [
+          {
+            "cursor": 1,
+            "generation": null,
+            "kind": "bootstrapped",
+            "lifecycle": null
+          },
+          {
+            "cursor": 2,
+            "generation": 1,
+            "kind": "lifecycle",
+            "lifecycle": "starting"
+          },
+          {
+            "cursor": 3,
+            "generation": null,
+            "kind": "app_server_ready",
+            "lifecycle": null
+          },
+          {
+            "cursor": 4,
+            "generation": 2,
+            "kind": "lifecycle",
+            "lifecycle": "running"
+          },
+          {
+            "cursor": 5,
+            "generation": 3,
+            "kind": "lifecycle",
+            "lifecycle": "draining"
+          },
+          {
+            "cursor": 6,
+            "generation": null,
+            "kind": "draining",
+            "lifecycle": null
+          }
+        ],
+        "health": {
+          "fenced": false,
+          "lifecycle": "draining",
+          "process_id": 615532,
+          "promotion_ready": false,
+          "ready": false
+        },
+        "history_gap": false,
+        "latest_cursor": 6,
+        "next_cursor": 6,
+        "spawn_generation": 1
+      }
+    },
+    {
+      "ack": {
+        "phase": "draining",
+        "sequence": 3,
+        "session_instance": "b4122eb42acae07a5d5b97c1c496e2fd"
+      },
+      "ack_timeout_seconds": 120,
+      "capture_ack_is_coordination_only": true,
+      "event": "session_phase_observed",
+      "original": {
+        "active": true,
+        "agent_id": "22222222-2222-4222-8222-222222222222",
+        "healthy": true,
+        "process_id": 615532,
+        "spawn_generation": 1
+      },
+      "phase": "draining",
+      "recorded_unix_ms": 1792277799345,
+      "runtime_dir": "/tmp/hp-wl_fcxn_/ui-runtime",
+      "sequence": 3,
+      "session_instance": "b4122eb42acae07a5d5b97c1c496e2fd",
+      "session_pid": 615562,
+      "session_socket_path": "/tmp/hp-wl_fcxn_/ui-runtime/trillionnium-ui/session.sock",
+      "snapshot": {
+        "hepta": {
+          "connection": "observed",
+          "error_code": null,
+          "last_attempt_unix_ms": 1792277799249,
+          "last_observation": {
+            "agent_id": "22222222-2222-4222-8222-222222222222",
+            "capabilities": [
+              {
+                "id": "automation.calendar_v2",
+                "major": 1,
+                "minor": 0
+              },
+              {
+                "id": "cognitive.context.revalidate",
+                "major": 1,
+                "minor": 0
+              },
+              {
+                "id": "run.lifecycle",
+                "major": 1,
+                "minor": 1
+              }
+            ],
+            "capabilities_truncated": false,
+            "current_generation": 3,
+            "events": [
+              {
+                "cursor": 1,
+                "generation": null,
+                "kind": "bootstrapped",
+                "lifecycle": null
+              },
+              {
+                "cursor": 2,
+                "generation": 1,
+                "kind": "lifecycle",
+                "lifecycle": "starting"
+              },
+              {
+                "cursor": 3,
+                "generation": null,
+                "kind": "app_server_ready",
+                "lifecycle": null
+              },
+              {
+                "cursor": 4,
+                "generation": 2,
+                "kind": "lifecycle",
+                "lifecycle": "running"
+              },
+              {
+                "cursor": 5,
+                "generation": 3,
+                "kind": "lifecycle",
+                "lifecycle": "draining"
+              },
+              {
+                "cursor": 6,
+                "generation": null,
+                "kind": "draining",
+                "lifecycle": null
+              }
+            ],
+            "events_omitted_from_view": 0,
+            "health": {
+              "fenced": false,
+              "lifecycle": "draining",
+              "process_id": 615532,
+              "promotion_ready": false,
+              "ready": false
+            },
+            "history_gap": false,
+            "latest_cursor": 6,
+            "next_cursor": 6,
+            "sampled_unix_ms": 1792277799249,
+            "source_changed": false,
+            "spawn_generation": 1
+          }
+        },
+        "resources": {
+          "load_average_1m": 0.51,
+          "mem_available_kib": 7352392,
+          "mem_total_kib": 10206484,
+          "sampled_unix_ms": 1792277799345,
+          "source": "Linux host /proc and Wayland socket metadata (NOT HOS2)",
+          "wayland": {
+            "sampled_unix_ms": 1792277799345,
+            "socket_observation_epoch": 1,
+            "status": "unconfigured"
+          }
+        },
+        "session_instance": "b4122eb42acae07a5d5b97c1c496e2fd",
+        "tasks": [],
+        "type": "snapshot"
+      },
+      "stale_verification": null,
+      "worker_tid": 615564
+    },
+    {
+      "ack": {
+        "phase": "draining",
+        "sequence": 3,
+        "session_instance": "b4122eb42acae07a5d5b97c1c496e2fd"
+      },
+      "capture_ack_is_coordination_only": true,
+      "event": "session_phase_acknowledged"
+    },
+    {
+      "event": "phase_observed",
+      "observation": {
+        "agent_id": "22222222-2222-4222-8222-222222222222",
+        "capabilities": [
+          {
+            "id": "automation.calendar_v2",
+            "major": 1,
+            "minor": 0
+          },
+          {
+            "id": "cognitive.context.revalidate",
+            "major": 1,
+            "minor": 0
+          },
+          {
+            "id": "run.lifecycle",
+            "major": 1,
+            "minor": 1
+          }
+        ],
+        "current_generation": 6,
+        "events": [
+          {
+            "cursor": 1,
+            "generation": null,
+            "kind": "bootstrapped",
+            "lifecycle": null
+          },
+          {
+            "cursor": 2,
+            "generation": 5,
+            "kind": "lifecycle",
+            "lifecycle": "starting"
+          },
+          {
+            "cursor": 3,
+            "generation": null,
+            "kind": "app_server_ready",
+            "lifecycle": null
+          },
+          {
+            "cursor": 4,
+            "generation": 6,
+            "kind": "lifecycle",
+            "lifecycle": "running"
+          }
+        ],
+        "health": {
+          "fenced": false,
+          "lifecycle": "running",
+          "process_id": 615755,
+          "promotion_ready": true,
+          "ready": true
+        },
+        "history_gap": false,
+        "latest_cursor": 4,
+        "next_cursor": 4,
+        "spawn_generation": 5
+      }
+    },
+    {
+      "event": "phase_observed",
+      "observation": {
+        "agent_id": "22222222-2222-4222-8222-222222222222",
+        "capabilities": [
+          {
+            "id": "automation.calendar_v2",
+            "major": 1,
+            "minor": 0
+          },
+          {
+            "id": "cognitive.context.revalidate",
+            "major": 1,
+            "minor": 0
+          },
+          {
+            "id": "run.lifecycle",
+            "major": 1,
+            "minor": 1
+          }
+        ],
+        "current_generation": 6,
+        "events": [
+          {
+            "cursor": 1,
+            "generation": null,
+            "kind": "bootstrapped",
+            "lifecycle": null
+          },
+          {
+            "cursor": 2,
+            "generation": 5,
+            "kind": "lifecycle",
+            "lifecycle": "starting"
+          },
+          {
+            "cursor": 3,
+            "generation": null,
+            "kind": "app_server_ready",
+            "lifecycle": null
+          },
+          {
+            "cursor": 4,
+            "generation": 6,
+            "kind": "lifecycle",
+            "lifecycle": "running"
+          }
+        ],
+        "health": {
+          "fenced": false,
+          "lifecycle": "running",
+          "process_id": 615755,
+          "promotion_ready": true,
+          "ready": true
+        },
+        "history_gap": false,
+        "latest_cursor": 4,
+        "next_cursor": 4,
+        "spawn_generation": 5
+      }
+    },
+    {
+      "ack": {
+        "phase": "old_spawn_stale",
+        "sequence": 4,
+        "session_instance": "b4122eb42acae07a5d5b97c1c496e2fd"
+      },
+      "ack_timeout_seconds": 120,
+      "capture_ack_is_coordination_only": true,
+      "event": "session_phase_observed",
+      "original": {
+        "active": true,
+        "agent_id": "22222222-2222-4222-8222-222222222222",
+        "healthy": true,
+        "process_id": 615755,
+        "spawn_generation": 5
+      },
+      "phase": "old_spawn_stale",
+      "recorded_unix_ms": 1792277804362,
+      "runtime_dir": "/tmp/hp-wl_fcxn_/ui-runtime",
+      "sequence": 4,
+      "session_instance": "b4122eb42acae07a5d5b97c1c496e2fd",
+      "session_pid": 615562,
+      "session_socket_path": "/tmp/hp-wl_fcxn_/ui-runtime/trillionnium-ui/session.sock",
+      "snapshot": {
+        "hepta": {
+          "connection": "stale",
+          "error_code": "protocol_mismatch",
+          "last_attempt_unix_ms": 1792277804260,
+          "last_observation": {
+            "agent_id": "22222222-2222-4222-8222-222222222222",
+            "capabilities": [
+              {
+                "id": "automation.calendar_v2",
+                "major": 1,
+                "minor": 0
+              },
+              {
+                "id": "cognitive.context.revalidate",
+                "major": 1,
+                "minor": 0
+              },
+              {
+                "id": "run.lifecycle",
+                "major": 1,
+                "minor": 1
+              }
+            ],
+            "capabilities_truncated": false,
+            "current_generation": 3,
+            "events": [
+              {
+                "cursor": 1,
+                "generation": null,
+                "kind": "bootstrapped",
+                "lifecycle": null
+              },
+              {
+                "cursor": 2,
+                "generation": 1,
+                "kind": "lifecycle",
+                "lifecycle": "starting"
+              },
+              {
+                "cursor": 3,
+                "generation": null,
+                "kind": "app_server_ready",
+                "lifecycle": null
+              },
+              {
+                "cursor": 4,
+                "generation": 2,
+                "kind": "lifecycle",
+                "lifecycle": "running"
+              },
+              {
+                "cursor": 5,
+                "generation": 3,
+                "kind": "lifecycle",
+                "lifecycle": "draining"
+              },
+              {
+                "cursor": 6,
+                "generation": null,
+                "kind": "draining",
+                "lifecycle": null
+              }
+            ],
+            "events_omitted_from_view": 0,
+            "health": {
+              "fenced": false,
+              "lifecycle": "draining",
+              "process_id": 615532,
+              "promotion_ready": false,
+              "ready": false
+            },
+            "history_gap": false,
+            "latest_cursor": 6,
+            "next_cursor": 6,
+            "sampled_unix_ms": 1792277801255,
+            "source_changed": false,
+            "spawn_generation": 1
+          }
+        },
+        "resources": {
+          "load_average_1m": 0.47,
+          "mem_available_kib": 7357644,
+          "mem_total_kib": 10206484,
+          "sampled_unix_ms": 1792277804361,
+          "source": "Linux host /proc and Wayland socket metadata (NOT HOS2)",
+          "wayland": {
+            "sampled_unix_ms": 1792277804361,
+            "socket_observation_epoch": 1,
+            "status": "unconfigured"
+          }
+        },
+        "session_instance": "b4122eb42acae07a5d5b97c1c496e2fd",
+        "tasks": [],
+        "type": "snapshot"
+      },
+      "stale_verification": {
+        "first_stale_snapshot": {
+          "hepta": {
+            "connection": "stale",
+            "error_code": "protocol_mismatch",
+            "last_attempt_unix_ms": 1792277803256,
+            "last_observation": {
+              "agent_id": "22222222-2222-4222-8222-222222222222",
+              "capabilities": [
+                {
+                  "id": "automation.calendar_v2",
+                  "major": 1,
+                  "minor": 0
+                },
+                {
+                  "id": "cognitive.context.revalidate",
+                  "major": 1,
+                  "minor": 0
+                },
+                {
+                  "id": "run.lifecycle",
+                  "major": 1,
+                  "minor": 1
+                }
+              ],
+              "capabilities_truncated": false,
+              "current_generation": 3,
+              "events": [
+                {
+                  "cursor": 1,
+                  "generation": null,
+                  "kind": "bootstrapped",
+                  "lifecycle": null
+                },
+                {
+                  "cursor": 2,
+                  "generation": 1,
+                  "kind": "lifecycle",
+                  "lifecycle": "starting"
+                },
+                {
+                  "cursor": 3,
+                  "generation": null,
+                  "kind": "app_server_ready",
+                  "lifecycle": null
+                },
+                {
+                  "cursor": 4,
+                  "generation": 2,
+                  "kind": "lifecycle",
+                  "lifecycle": "running"
+                },
+                {
+                  "cursor": 5,
+                  "generation": 3,
+                  "kind": "lifecycle",
+                  "lifecycle": "draining"
+                },
+                {
+                  "cursor": 6,
+                  "generation": null,
+                  "kind": "draining",
+                  "lifecycle": null
+                }
+              ],
+              "events_omitted_from_view": 0,
+              "health": {
+                "fenced": false,
+                "lifecycle": "draining",
+                "process_id": 615532,
+                "promotion_ready": false,
+                "ready": false
+              },
+              "history_gap": false,
+              "latest_cursor": 6,
+              "next_cursor": 6,
+              "sampled_unix_ms": 1792277801255,
+              "source_changed": false,
+              "spawn_generation": 1
+            }
+          },
+          "resources": {
+            "load_average_1m": 0.47,
+            "mem_available_kib": 7362540,
+            "mem_total_kib": 10206484,
+            "sampled_unix_ms": 1792277803256,
+            "source": "Linux host /proc and Wayland socket metadata (NOT HOS2)",
+            "wayland": {
+              "sampled_unix_ms": 1792277803256,
+              "socket_observation_epoch": 1,
+              "status": "unconfigured"
+            }
+          },
+          "session_instance": "b4122eb42acae07a5d5b97c1c496e2fd",
+          "tasks": [],
+          "type": "snapshot"
+        },
+        "later_failure_preserves_exact_last_observation": true,
+        "preceding_live_observation": {
+          "agent_id": "22222222-2222-4222-8222-222222222222",
+          "capabilities": [
+            {
+              "id": "automation.calendar_v2",
+              "major": 1,
+              "minor": 0
+            },
+            {
+              "id": "cognitive.context.revalidate",
+              "major": 1,
+              "minor": 0
+            },
+            {
+              "id": "run.lifecycle",
+              "major": 1,
+              "minor": 1
+            }
+          ],
+          "capabilities_truncated": false,
+          "current_generation": 3,
+          "events": [
+            {
+              "cursor": 1,
+              "generation": null,
+              "kind": "bootstrapped",
+              "lifecycle": null
+            },
+            {
+              "cursor": 2,
+              "generation": 1,
+              "kind": "lifecycle",
+              "lifecycle": "starting"
+            },
+            {
+              "cursor": 3,
+              "generation": null,
+              "kind": "app_server_ready",
+              "lifecycle": null
+            },
+            {
+              "cursor": 4,
+              "generation": 2,
+              "kind": "lifecycle",
+              "lifecycle": "running"
+            },
+            {
+              "cursor": 5,
+              "generation": 3,
+              "kind": "lifecycle",
+              "lifecycle": "draining"
+            },
+            {
+              "cursor": 6,
+              "generation": null,
+              "kind": "draining",
+              "lifecycle": null
+            }
+          ],
+          "events_omitted_from_view": 0,
+          "health": {
+            "fenced": false,
+            "lifecycle": "draining",
+            "process_id": 615532,
+            "promotion_ready": false,
+            "ready": false
+          },
+          "history_gap": false,
+          "latest_cursor": 6,
+          "next_cursor": 6,
+          "sampled_unix_ms": 1792277799249,
+          "source_changed": false,
+          "spawn_generation": 1
+        }
+      },
+      "worker_tid": 615564
+    },
+    {
+      "ack": {
+        "phase": "old_spawn_stale",
+        "sequence": 4,
+        "session_instance": "b4122eb42acae07a5d5b97c1c496e2fd"
+      },
+      "capture_ack_is_coordination_only": true,
+      "event": "session_phase_acknowledged"
+    },
+    {
+      "event": "session_stopped",
+      "exit_code": null,
+      "session_instance": "b4122eb42acae07a5d5b97c1c496e2fd",
+      "session_pid": 615562,
+      "signal": 9,
+      "worker_tid": 615564
+    },
+    {
+      "ack": {
+        "phase": "recovered_running",
+        "sequence": 5,
+        "session_instance": "b4b8c3aa629eeac9d5968a060d2b0559"
+      },
+      "ack_timeout_seconds": 120,
+      "capture_ack_is_coordination_only": true,
+      "event": "session_phase_observed",
+      "original": {
+        "active": true,
+        "agent_id": "22222222-2222-4222-8222-222222222222",
+        "healthy": true,
+        "process_id": 615755,
+        "spawn_generation": 5
+      },
+      "phase": "recovered_running",
+      "recorded_unix_ms": 1792277807271,
+      "runtime_dir": "/tmp/hp-wl_fcxn_/ui-runtime",
+      "sequence": 5,
+      "session_instance": "b4b8c3aa629eeac9d5968a060d2b0559",
+      "session_pid": 615926,
+      "session_socket_path": "/tmp/hp-wl_fcxn_/ui-runtime/trillionnium-ui/session.sock",
+      "snapshot": {
+        "hepta": {
+          "connection": "observed",
+          "error_code": null,
+          "last_attempt_unix_ms": 1792277807173,
+          "last_observation": {
+            "agent_id": "22222222-2222-4222-8222-222222222222",
+            "capabilities": [
+              {
+                "id": "automation.calendar_v2",
+                "major": 1,
+                "minor": 0
+              },
+              {
+                "id": "cognitive.context.revalidate",
+                "major": 1,
+                "minor": 0
+              },
+              {
+                "id": "run.lifecycle",
+                "major": 1,
+                "minor": 1
+              }
+            ],
+            "capabilities_truncated": false,
+            "current_generation": 6,
+            "events": [
+              {
+                "cursor": 1,
+                "generation": null,
+                "kind": "bootstrapped",
+                "lifecycle": null
+              },
+              {
+                "cursor": 2,
+                "generation": 5,
+                "kind": "lifecycle",
+                "lifecycle": "starting"
+              },
+              {
+                "cursor": 3,
+                "generation": null,
+                "kind": "app_server_ready",
+                "lifecycle": null
+              },
+              {
+                "cursor": 4,
+                "generation": 6,
+                "kind": "lifecycle",
+                "lifecycle": "running"
+              }
+            ],
+            "events_omitted_from_view": 0,
+            "health": {
+              "fenced": false,
+              "lifecycle": "running",
+              "process_id": 615755,
+              "promotion_ready": true,
+              "ready": true
+            },
+            "history_gap": false,
+            "latest_cursor": 4,
+            "next_cursor": 4,
+            "sampled_unix_ms": 1792277807173,
+            "source_changed": false,
+            "spawn_generation": 5
+          }
+        },
+        "resources": {
+          "load_average_1m": 0.67,
+          "mem_available_kib": 7375892,
+          "mem_total_kib": 10206484,
+          "sampled_unix_ms": 1792277807270,
+          "source": "Linux host /proc and Wayland socket metadata (NOT HOS2)",
+          "wayland": {
+            "sampled_unix_ms": 1792277807270,
+            "socket_observation_epoch": 1,
+            "status": "unconfigured"
+          }
+        },
+        "session_instance": "b4b8c3aa629eeac9d5968a060d2b0559",
+        "tasks": [],
+        "type": "snapshot"
+      },
+      "stale_verification": null,
+      "worker_tid": 615929
+    },
+    {
+      "ack": {
+        "phase": "recovered_running",
+        "sequence": 5,
+        "session_instance": "b4b8c3aa629eeac9d5968a060d2b0559"
+      },
+      "capture_ack_is_coordination_only": true,
+      "event": "session_phase_acknowledged"
+    },
+    {
+      "ack": {
+        "phase": "stopped_stale",
+        "sequence": 6,
+        "session_instance": "b4b8c3aa629eeac9d5968a060d2b0559"
+      },
+      "ack_timeout_seconds": 120,
+      "capture_ack_is_coordination_only": true,
+      "event": "session_phase_observed",
+      "original": {
+        "active": false,
+        "agent_id": "22222222-2222-4222-8222-222222222222",
+        "healthy": false,
+        "process_id": null,
+        "spawn_generation": null
+      },
+      "phase": "stopped_stale",
+      "recorded_unix_ms": 1792277811283,
+      "runtime_dir": "/tmp/hp-wl_fcxn_/ui-runtime",
+      "sequence": 6,
+      "session_instance": "b4b8c3aa629eeac9d5968a060d2b0559",
+      "session_pid": 615926,
+      "session_socket_path": "/tmp/hp-wl_fcxn_/ui-runtime/trillionnium-ui/session.sock",
+      "snapshot": {
+        "hepta": {
+          "connection": "stale",
+          "error_code": "unavailable",
+          "last_attempt_unix_ms": 1792277811183,
+          "last_observation": {
+            "agent_id": "22222222-2222-4222-8222-222222222222",
+            "capabilities": [
+              {
+                "id": "automation.calendar_v2",
+                "major": 1,
+                "minor": 0
+              },
+              {
+                "id": "cognitive.context.revalidate",
+                "major": 1,
+                "minor": 0
+              },
+              {
+                "id": "run.lifecycle",
+                "major": 1,
+                "minor": 1
+              }
+            ],
+            "capabilities_truncated": false,
+            "current_generation": 6,
+            "events": [
+              {
+                "cursor": 1,
+                "generation": null,
+                "kind": "bootstrapped",
+                "lifecycle": null
+              },
+              {
+                "cursor": 2,
+                "generation": 5,
+                "kind": "lifecycle",
+                "lifecycle": "starting"
+              },
+              {
+                "cursor": 3,
+                "generation": null,
+                "kind": "app_server_ready",
+                "lifecycle": null
+              },
+              {
+                "cursor": 4,
+                "generation": 6,
+                "kind": "lifecycle",
+                "lifecycle": "running"
+              }
+            ],
+            "events_omitted_from_view": 0,
+            "health": {
+              "fenced": false,
+              "lifecycle": "running",
+              "process_id": 615755,
+              "promotion_ready": true,
+              "ready": true
+            },
+            "history_gap": false,
+            "latest_cursor": 4,
+            "next_cursor": 4,
+            "sampled_unix_ms": 1792277809180,
+            "source_changed": false,
+            "spawn_generation": 5
+          }
+        },
+        "resources": {
+          "load_average_1m": 0.67,
+          "mem_available_kib": 7379028,
+          "mem_total_kib": 10206484,
+          "sampled_unix_ms": 1792277811280,
+          "source": "Linux host /proc and Wayland socket metadata (NOT HOS2)",
+          "wayland": {
+            "sampled_unix_ms": 1792277811280,
+            "socket_observation_epoch": 1,
+            "status": "unconfigured"
+          }
+        },
+        "session_instance": "b4b8c3aa629eeac9d5968a060d2b0559",
+        "tasks": [],
+        "type": "snapshot"
+      },
+      "stale_verification": {
+        "first_stale_snapshot": {
+          "hepta": {
+            "connection": "stale",
+            "error_code": "unavailable",
+            "last_attempt_unix_ms": 1792277810180,
+            "last_observation": {
+              "agent_id": "22222222-2222-4222-8222-222222222222",
+              "capabilities": [
+                {
+                  "id": "automation.calendar_v2",
+                  "major": 1,
+                  "minor": 0
+                },
+                {
+                  "id": "cognitive.context.revalidate",
+                  "major": 1,
+                  "minor": 0
+                },
+                {
+                  "id": "run.lifecycle",
+                  "major": 1,
+                  "minor": 1
+                }
+              ],
+              "capabilities_truncated": false,
+              "current_generation": 6,
+              "events": [
+                {
+                  "cursor": 1,
+                  "generation": null,
+                  "kind": "bootstrapped",
+                  "lifecycle": null
+                },
+                {
+                  "cursor": 2,
+                  "generation": 5,
+                  "kind": "lifecycle",
+                  "lifecycle": "starting"
+                },
+                {
+                  "cursor": 3,
+                  "generation": null,
+                  "kind": "app_server_ready",
+                  "lifecycle": null
+                },
+                {
+                  "cursor": 4,
+                  "generation": 6,
+                  "kind": "lifecycle",
+                  "lifecycle": "running"
+                }
+              ],
+              "events_omitted_from_view": 0,
+              "health": {
+                "fenced": false,
+                "lifecycle": "running",
+                "process_id": 615755,
+                "promotion_ready": true,
+                "ready": true
+              },
+              "history_gap": false,
+              "latest_cursor": 4,
+              "next_cursor": 4,
+              "sampled_unix_ms": 1792277809180,
+              "source_changed": false,
+              "spawn_generation": 5
+            }
+          },
+          "resources": {
+            "load_average_1m": 0.67,
+            "mem_available_kib": 7389264,
+            "mem_total_kib": 10206484,
+            "sampled_unix_ms": 1792277810376,
+            "source": "Linux host /proc and Wayland socket metadata (NOT HOS2)",
+            "wayland": {
+              "sampled_unix_ms": 1792277810376,
+              "socket_observation_epoch": 1,
+              "status": "unconfigured"
+            }
+          },
+          "session_instance": "b4b8c3aa629eeac9d5968a060d2b0559",
+          "tasks": [],
+          "type": "snapshot"
+        },
+        "later_failure_preserves_exact_last_observation": true,
+        "preceding_live_observation": {
+          "agent_id": "22222222-2222-4222-8222-222222222222",
+          "capabilities": [
+            {
+              "id": "automation.calendar_v2",
+              "major": 1,
+              "minor": 0
+            },
+            {
+              "id": "cognitive.context.revalidate",
+              "major": 1,
+              "minor": 0
+            },
+            {
+              "id": "run.lifecycle",
+              "major": 1,
+              "minor": 1
+            }
+          ],
+          "capabilities_truncated": false,
+          "current_generation": 6,
+          "events": [
+            {
+              "cursor": 1,
+              "generation": null,
+              "kind": "bootstrapped",
+              "lifecycle": null
+            },
+            {
+              "cursor": 2,
+              "generation": 5,
+              "kind": "lifecycle",
+              "lifecycle": "starting"
+            },
+            {
+              "cursor": 3,
+              "generation": null,
+              "kind": "app_server_ready",
+              "lifecycle": null
+            },
+            {
+              "cursor": 4,
+              "generation": 6,
+              "kind": "lifecycle",
+              "lifecycle": "running"
+            }
+          ],
+          "events_omitted_from_view": 0,
+          "health": {
+            "fenced": false,
+            "lifecycle": "running",
+            "process_id": 615755,
+            "promotion_ready": true,
+            "ready": true
+          },
+          "history_gap": false,
+          "latest_cursor": 4,
+          "next_cursor": 4,
+          "sampled_unix_ms": 1792277807173,
+          "source_changed": false,
+          "spawn_generation": 5
+        }
+      },
+      "worker_tid": 615929
+    },
+    {
+      "ack": {
+        "phase": "stopped_stale",
+        "sequence": 6,
+        "session_instance": "b4b8c3aa629eeac9d5968a060d2b0559"
+      },
+      "capture_ack_is_coordination_only": true,
+      "event": "session_phase_acknowledged"
+    },
+    {
+      "event": "session_stopped",
+      "exit_code": null,
+      "session_instance": "b4b8c3aa629eeac9d5968a060d2b0559",
+      "session_pid": 615926,
+      "signal": 9,
+      "worker_tid": 615929
+    },
+    {
+      "checks": [
+        "persistent_session_starting",
+        "persistent_session_running",
+        "persistent_session_draining",
+        "same_worker_same_instance",
+        "old_spawn_stale_ipc_responsive",
+        "explicit_session_replacement",
+        "replacement_running",
+        "stopped_stale_ipc_responsive"
+      ],
+      "device_effect": false,
+      "event": "session_acceptance_pass",
+      "evidence_class": "original_agentd_persistent_session_readonly",
+      "first_session_instance": "b4122eb42acae07a5d5b97c1c496e2fd",
+      "first_session_pid": 615562,
+      "model_turn": false,
+      "objective_submission": false,
+      "replacement_session_instance": "b4b8c3aa629eeac9d5968a060d2b0559",
+      "replacement_session_pid": 615926,
+      "shell_capture_qualified_by_this_record": false
+    },
+    {
+      "checks": [
+        "original_starting",
+        "original_running",
+        "bounded_capabilities_events",
+        "missing_run_read",
+        "same_process_draining",
+        "original_restart",
+        "old_spawn_rejected",
+        "controlled_stop"
+      ],
+      "device_effect": false,
+      "event": "acceptance_pass",
+      "evidence_class": "original_agentd_process_readonly_observer",
+      "model_turn": false,
+      "new_spawn": 5,
+      "objective_submission": false,
+      "old_spawn": 1
+    }
+  ],
+  "private_state_cleanup_complete": true,
+  "desktop_after": {
+    "commit": "28843c6632fe63db6b3fecb4d05888e90976fd16",
+    "tree": "759c42b36d965174dc00a39b7f28e962ed667d85",
+    "clean": true,
+    "subtrees": {
+      "services/hepta-os": "7ebe43051e1cebb8049ba50e9da4a9fb59d1a0c7",
+      "ui": "037f318be7140ef046eac1e9cabe230c07eb7059"
+    },
+    "inputs": {
+      "tests/integration/hepta/run_original_agentd.py": "21dd4a2e0621240a75f5ce37bad93da0a37352fbaa78554a50e048abe6a45fd0",
+      "tests/integration/hepta/original_agentd_probe.rs": "d297d6b5c7e39c3c98a4cb051d54ebdfc58757d04ca5ca265a023f4fb7fb276c",
+      "tests/integration/hepta/original_session_probe.rs": "7660c76f640cf612f57a2ee6a2ea7d8b09e8ac332c20fd44d8e7c8bbcb0663c5",
+      "services/hepta-os/Cargo.toml": "6d33aced708f1f6d3637e065825dd1718a4b187876e96edf1f7aefb0f437bfee",
+      "services/hepta-os/Cargo.lock": "a1aed4d1f513036cbe03912359f3dfbb2c6d93c5210b8d18244d95be9008a875",
+      "services/hepta-os/UPSTREAM_CONTRACT.json": "24efcccd98b6ac6a56cb34b36f5bdb10785d955efd86c32fed308bac1505f7ef",
+      "ui/Cargo.toml": "2c59194ffc1ed3bc0d5118f275498c1e09bd49f6ce71b80db709927b317a7628",
+      "ui/Cargo.lock": "e484809d742a264a296046b0d272e843d167b02b634232e793ef702757cc70e1"
+    }
+  },
+  "original_after": {
+    "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-03/receipt.json",
+    "receipt_sha256": "1dd50ac0a0a1856a787bf3ba6556407e13d85591daac1bf154639f063eb63f00",
+    "original": {
+      "commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+      "tree": "15c9d6ea07bf3832de82825a6cc1e8c958dd3d45",
+      "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+      "clean_checkout": true
+    },
+    "binary": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/target/dev-small/codex-hepta-agentd",
+      "bytes": 329001344,
+      "sha256": "f476f9bb435c5127839c48ae7135d5a6fa7695ff5253460fdd8d19d7b084d4fa",
+      "elf_class": 64,
+      "elf_machine": 62,
+      "architecture": "x86_64"
+    },
+    "previous_attempt_receipt_sha256": null,
+    "initial_admission": {
+      "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/receipt.json",
+      "receipt_sha256": "9a8f0853019123980f5bbd2213f477465935c10048eced027018161a70631625",
+      "minimum_free_bytes": 8589934592,
+      "free_bytes_at_admission": 12099153920
+    },
+    "previous_attempt": {
+      "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-02/receipt.json",
+      "receipt_sha256": "bbf9330b962ffa48f17895e47fe18e601d96d4271fa6686ed472bae9ca6a9361",
+      "status": "failed",
+      "stop_reason": "observed_memory_reserve_reached"
+    },
+    "resource_recovery": {
+      "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/r6-retained-cache-migration-03/receipt.json",
+      "receipt_sha256": "1f6854af7ec3f66e6a2426ae70e85d7813fe2cf3a658628b948045094a5ec735"
+    },
+    "previous_failed_migrations": [
+      {
+        "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/r6-retained-cache-migration-01/receipt.json",
+        "receipt_sha256": "cff8e9ac31d2d9c63df78cfabaa3b10d3250b14f20a8e54a28d8d6efe4d5a09d",
+        "status": "failed"
+      },
+      {
+        "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/r6-retained-cache-migration-02/receipt.json",
+        "receipt_sha256": "221f9db60e561bdd3fac2a914ad106834f95d5410ef433f77e7af9ac39713a45",
+        "status": "failed"
+      }
+    ],
+    "fresh_full_gate_preflight_applied_at_this_attempt": false,
+    "stock_fresh_work_gate_reexecuted": false,
+    "source_build_kind": "new_R6_target_copied_from_retained_warm_cache"
+  },
+  "binaries_after": {
+    "agentd": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/target/dev-small/codex-hepta-agentd",
+      "bytes": 329001344,
+      "sha256": "f476f9bb435c5127839c48ae7135d5a6fa7695ff5253460fdd8d19d7b084d4fa",
+      "elf_class": 64,
+      "elf_machine": 62,
+      "architecture": "x86_64"
+    },
+    "probe": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/target/dev-small/hepta-original-observer-probe",
+      "bytes": 29114728,
+      "sha256": "46c8f20bef00d5e4b76ae7fcba784937bc1c4d9a33d6b416cd4acc1b96d43365",
+      "elf_class": 64,
+      "elf_machine": 62,
+      "architecture": "x86_64"
+    },
+    "observer": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-02/observer-target/debug/hepta-observe",
+      "bytes": 13883672,
+      "sha256": "de5aa738234b7ebfdf35afb5e78cf0296962f76625ae1e3fffdc44ba682b7a55",
+      "elf_class": 64,
+      "elf_machine": 62,
+      "architecture": "x86_64"
+    },
+    "session": {
+      "path": "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-session",
+      "bytes": 3527808,
+      "sha256": "5c29cfd7f11455000d7c3d9c0cc2c58fb7fe8761ab326da34c794d0f3481924f",
+      "elf_class": 64,
+      "elf_machine": 62,
+      "architecture": "x86_64"
+    },
+    "ctl": {
+      "path": "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-ctl",
+      "bytes": 1494736,
+      "sha256": "920093314640ad1dd721425ec78457f4ca74c83f9c1a0a878d4ddfee4924a882",
+      "elf_class": 64,
+      "elf_machine": 62,
+      "architecture": "x86_64"
+    }
+  },
+  "helper_sha256_after": {
+    "run_session.py": "9a09a995361121bc9f167dee33dd3ff075d0a12c349b74bf4ad78842a53adbd6",
+    "common.py": "5d9976b96e93d0ce39c2df402e9f310fe1755811c479ad422d9bec01ff46f4ff"
+  },
+  "ended_at_utc": "2026-10-17T22:56:55.614175+00:00",
+  "raw_artifacts": {
+    "allocation.json": {
+      "bytes": 10827,
+      "sha256": "2c60b56238aa931d98e3f0baf6ab111117d45b791ec805a615c09af1fb8ccdc9"
+    },
+    "original-session-process.log": {
+      "bytes": 23225,
+      "sha256": "e981e0e8b8005dbec0946be59e0183b9858888697fc973e533558a24662d7f1b"
+    },
+    "phases/ack-1.json": {
+      "bytes": 88,
+      "sha256": "4a8a020f457f66b14a0d10ced65c8b29c94b27ae27a571f99587ab7f31a75526"
+    },
+    "phases/ack-2.json": {
+      "bytes": 87,
+      "sha256": "f7b562afa48936f48f0808c613d6567d7ffe5951cc87ee1b1152e2dd3b81c20c"
+    },
+    "phases/ack-3.json": {
+      "bytes": 88,
+      "sha256": "c8cb2fb7666f7f787db67c54ea6c9ee05d08126b997943f1d8df21d0999abe42"
+    },
+    "phases/ack-4.json": {
+      "bytes": 95,
+      "sha256": "b5045133c82d39cf407977222ba12a6ab51d7b0c8e938462928be9283ac9ece2"
+    },
+    "phases/ack-5.json": {
+      "bytes": 97,
+      "sha256": "2e381a100f6acb5669c6eae60903deea2183153bf944430e40a92bf4f2cc7be7"
+    },
+    "phases/ack-6.json": {
+      "bytes": 93,
+      "sha256": "7e8f11959ce757ace2debc73ec89a76f3e2b6056d9548a59ef9bfe9a1a7d4c18"
+    },
+    "phases/phase-1.json": {
+      "bytes": 1823,
+      "sha256": "bc001fbc85fde3ccf0bdcc93f043e66f36560e67ef79d1e76d07d58e4f35f475"
+    },
+    "phases/phase-2.json": {
+      "bytes": 1960,
+      "sha256": "f16c1d8357974009120e9dc81b52a7615317a322f1d86c87764cfa3f9669c92f"
+    },
+    "phases/phase-3.json": {
+      "bytes": 2101,
+      "sha256": "ed1f8ea0819e501c9cdcd55618f0a5f28022c19eb502ae004bafecadb590b3d2"
+    },
+    "phases/phase-4.json": {
+      "bytes": 4665,
+      "sha256": "77f9cf8f62a68b9923e1ad452ef11e5c6b920a164fdda96b9accd79ede39222e"
+    },
+    "phases/phase-5.json": {
+      "bytes": 1980,
+      "sha256": "7025092462d6100bf3c095b2efd61e5dbc0cd15f628d52ec9e253c5a46ce1619"
+    },
+    "phases/phase-6.json": {
+      "bytes": 4235,
+      "sha256": "4bd0cc68ded14e346d9e834f514db672d67f544f10f3c78497418136343a1180"
+    },
+    "runtime-records.json": {
+      "bytes": 38736,
+      "sha256": "dac42a600dd75dc3669566fcf82c8e9222514e0233b3b3c666718bdbbfff1c99"
+    },
+    "session-1.log": {
+      "bytes": 153,
+      "sha256": "0e4268801944deb713b42fc966efddabf15c5103be786619d29fa4ff4998ee7d"
+    },
+    "session-2.log": {
+      "bytes": 153,
+      "sha256": "926d5555146a3236068044c44b0de6e78f779c9212229ab9e1670db7907c65a4"
+    }
+  }
+}

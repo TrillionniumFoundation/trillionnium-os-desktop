@@ -1,0 +1,28 @@
+{
+  "scope": "read-only replay of preserved capture01 raw frames; no new runtime, screenshot or ack",
+  "inputs": {
+    "phase-1-starting.json": {
+      "sha256": "b105faa9092312adef46c7c9f39ac42968cae4f9804a05a6a0bb2521afc51fe2",
+      "original_write_unix_ms": 1792276957880
+    },
+    "phase-1-starting-before.snapshot.json": {
+      "sha256": "42fd7f8b53721884282c364239428988edbc69fd03b1d86ec46f3948e2c057af",
+      "original_write_unix_ms": 1792276957951
+    },
+    "phase-1-starting-after.snapshot.json": {
+      "sha256": "1622f31a8695abdf74af684883c091fb9ec5f46e8fb23efc46c81310fbbbf8b4",
+      "original_write_unix_ms": 1792276960555
+    }
+  },
+  "oracles": {
+    "executed_old": {
+      "source_sha256": "356871f7827f644157fd3476643104bb62cfcab68bf4a4b6c12c75d081e2fe5a",
+      "result": "rejected",
+      "error": "live runtime metadata changed: health"
+    },
+    "candidate_fix": {
+      "source_sha256": "85ace5d05f00950aa493218121d2fd8dbdbb33a2669284563e684b8bc2d5880d",
+      "result": "accepted"
+    }
+  }
+}

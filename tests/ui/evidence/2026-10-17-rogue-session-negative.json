@@ -1,0 +1,22 @@
+{
+  "schema": "a10-real-linux-cross-uid-rogue-session-baseline-v1",
+  "date_utc": "2026-10-17",
+  "source_commit": "fcc57bd2a64cc7ee84731b432a94b51689355af7",
+  "source_ci_run": 39015860337,
+  "ci_artifact_id": 12096301139,
+  "test_script_blob": "d2d1444534fa929d90df2e67191fdc2d31ae7077",
+  "test_script_exit": 1,
+  "actual_spoof": {
+    "server_uid": 65534,
+    "client_uid": 0,
+    "server": "temporary UNIX listener in nobody-owned private /tmp runtime",
+    "response_type": "snapshot",
+    "forged_resource_source": "FORGED_CROSS_UID_SESSION",
+    "cli_exit_code": 0,
+    "display": "Root trill-ctl printed FORGED_CROSS_UID_SESSION and trusted the fabricated snapshot",
+    "actual_failure": "FORGED_SERVER_ACCEPTED: real Rust CLI trusted a cross-UID fake Snapshot"
+  },
+  "remediation_commit": "e69497b12aabbe5c7e6b5d8548dafd97b433af32",
+  "required_green_gate": "tests/ui/test-rogue-session-server.sh against exact compiled HEAD",
+  "caveat": "Host-only effective-UID barrier; same-UID adversary/A05 CapSpace/Hepta FinalUse not addressed"
+}

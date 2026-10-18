@@ -1,0 +1,1731 @@
+{
+  "started_at_utc": "2026-10-17T22:35:58.656396+00:00",
+  "qualification": "staged_original_session_consumer_build",
+  "status": "passed",
+  "desktop": {
+    "commit": "c50d7b9b688135a22ced2f7f3cbe21c3028d8e17",
+    "tree": "1b606b1922751fe938fa4bcca0a923516323f418",
+    "clean": true,
+    "subtrees": {
+      "services/hepta-os": "7ebe43051e1cebb8049ba50e9da4a9fb59d1a0c7",
+      "ui": "037f318be7140ef046eac1e9cabe230c07eb7059"
+    },
+    "inputs": {
+      "tests/integration/hepta/run_original_agentd.py": "21dd4a2e0621240a75f5ce37bad93da0a37352fbaa78554a50e048abe6a45fd0",
+      "tests/integration/hepta/original_agentd_probe.rs": "d297d6b5c7e39c3c98a4cb051d54ebdfc58757d04ca5ca265a023f4fb7fb276c",
+      "tests/integration/hepta/original_session_probe.rs": "7660c76f640cf612f57a2ee6a2ea7d8b09e8ac332c20fd44d8e7c8bbcb0663c5",
+      "services/hepta-os/Cargo.toml": "6d33aced708f1f6d3637e065825dd1718a4b187876e96edf1f7aefb0f437bfee",
+      "services/hepta-os/Cargo.lock": "a1aed4d1f513036cbe03912359f3dfbb2c6d93c5210b8d18244d95be9008a875",
+      "services/hepta-os/UPSTREAM_CONTRACT.json": "24efcccd98b6ac6a56cb34b36f5bdb10785d955efd86c32fed308bac1505f7ef",
+      "ui/Cargo.toml": "2c59194ffc1ed3bc0d5118f275498c1e09bd49f6ce71b80db709927b317a7628",
+      "ui/Cargo.lock": "e484809d742a264a296046b0d272e843d167b02b634232e793ef702757cc70e1"
+    }
+  },
+  "original_build": {
+    "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-03/receipt.json",
+    "receipt_sha256": "1dd50ac0a0a1856a787bf3ba6556407e13d85591daac1bf154639f063eb63f00",
+    "original": {
+      "commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+      "tree": "15c9d6ea07bf3832de82825a6cc1e8c958dd3d45",
+      "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+      "clean_checkout": true
+    },
+    "binary": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/target/dev-small/codex-hepta-agentd",
+      "bytes": 329001344,
+      "sha256": "f476f9bb435c5127839c48ae7135d5a6fa7695ff5253460fdd8d19d7b084d4fa",
+      "elf_class": 64,
+      "elf_machine": 62,
+      "architecture": "x86_64"
+    },
+    "previous_attempt_receipt_sha256": null,
+    "initial_admission": {
+      "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/receipt.json",
+      "receipt_sha256": "9a8f0853019123980f5bbd2213f477465935c10048eced027018161a70631625",
+      "minimum_free_bytes": 8589934592,
+      "free_bytes_at_admission": 12099153920
+    },
+    "previous_attempt": {
+      "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-02/receipt.json",
+      "receipt_sha256": "bbf9330b962ffa48f17895e47fe18e601d96d4271fa6686ed472bae9ca6a9361",
+      "status": "failed",
+      "stop_reason": "observed_memory_reserve_reached"
+    },
+    "resource_recovery": {
+      "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/r6-retained-cache-migration-03/receipt.json",
+      "receipt_sha256": "1f6854af7ec3f66e6a2426ae70e85d7813fe2cf3a658628b948045094a5ec735"
+    },
+    "previous_failed_migrations": [
+      {
+        "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/r6-retained-cache-migration-01/receipt.json",
+        "receipt_sha256": "cff8e9ac31d2d9c63df78cfabaa3b10d3250b14f20a8e54a28d8d6efe4d5a09d",
+        "status": "failed"
+      },
+      {
+        "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/r6-retained-cache-migration-02/receipt.json",
+        "receipt_sha256": "221f9db60e561bdd3fac2a914ad106834f95d5410ef433f77e7af9ac39713a45",
+        "status": "failed"
+      }
+    ],
+    "fresh_full_gate_preflight_applied_at_this_attempt": false,
+    "stock_fresh_work_gate_reexecuted": false,
+    "source_build_kind": "new_R6_target_copied_from_retained_warm_cache"
+  },
+  "helper_version": 2,
+  "previous_failed_consumer_build": {
+    "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-01/receipt.json",
+    "sha256": "2b84db548738e2eb2a6983e51cda79e7862993c0ca96fe8565b8ca449f13c509",
+    "error": {
+      "type": "RuntimeError",
+      "detail": "command failed with exit 101: probe-build.log"
+    },
+    "status": "failed"
+  },
+  "runtime_probe_attempted": false,
+  "stock_fresh_work_gate_reexecuted": false,
+  "retained_r4_inputs_modified": false,
+  "steps": [
+    {
+      "command": [
+        "/workspace/scratch/98f315e377b2/next-tools/cargo/bin/rustup",
+        "run",
+        "1.88.0",
+        "cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "--manifest-path",
+        "/workspace/scratch/98f315e377b2/next-r6-runtime-old/services/hepta-os/Cargo.toml",
+        "--bin",
+        "hepta-observe"
+      ],
+      "cwd": "/workspace/scratch/98f315e377b2/next-r6-runtime-old",
+      "started_at_utc": "2026-10-17T22:35:58.656609+00:00",
+      "status": "passed",
+      "deadline_seconds": 900,
+      "minimum_disk_reserve_bytes": 734003200,
+      "maximum_nonreclaimable_bytes": 7516192768,
+      "resource_samples": [
+        {
+          "elapsed_seconds": 0.0,
+          "free_bytes": 2470526976,
+          "nonreclaimable_bytes": 2190678616
+        },
+        {
+          "elapsed_seconds": 1.0,
+          "free_bytes": 2460577792,
+          "nonreclaimable_bytes": 2207393504
+        },
+        {
+          "elapsed_seconds": 2.001,
+          "free_bytes": 2456199168,
+          "nonreclaimable_bytes": 2250430408
+        },
+        {
+          "elapsed_seconds": 3.001,
+          "free_bytes": 2447937536,
+          "nonreclaimable_bytes": 2229904520
+        },
+        {
+          "elapsed_seconds": 4.002,
+          "free_bytes": 2434895872,
+          "nonreclaimable_bytes": 2223239816
+        },
+        {
+          "elapsed_seconds": 5.002,
+          "free_bytes": 2434801664,
+          "nonreclaimable_bytes": 2315396896
+        },
+        {
+          "elapsed_seconds": 6.003,
+          "free_bytes": 2431164416,
+          "nonreclaimable_bytes": 2370504472
+        },
+        {
+          "elapsed_seconds": 7.003,
+          "free_bytes": 2423459840,
+          "nonreclaimable_bytes": 2292760432
+        },
+        {
+          "elapsed_seconds": 8.004,
+          "free_bytes": 2423459840,
+          "nonreclaimable_bytes": 2377811560
+        },
+        {
+          "elapsed_seconds": 9.006,
+          "free_bytes": 2409218048,
+          "nonreclaimable_bytes": 2251776736
+        },
+        {
+          "elapsed_seconds": 10.007,
+          "free_bytes": 2403524608,
+          "nonreclaimable_bytes": 2046252632
+        },
+        {
+          "elapsed_seconds": 11.007,
+          "free_bytes": 2400538624,
+          "nonreclaimable_bytes": 2148471656
+        },
+        {
+          "elapsed_seconds": 12.008,
+          "free_bytes": 2400538624,
+          "nonreclaimable_bytes": 2212518456
+        },
+        {
+          "elapsed_seconds": 13.008,
+          "free_bytes": 2393477120,
+          "nonreclaimable_bytes": 2295190776
+        },
+        {
+          "elapsed_seconds": 14.009,
+          "free_bytes": 2384842752,
+          "nonreclaimable_bytes": 2310641720
+        },
+        {
+          "elapsed_seconds": 15.01,
+          "free_bytes": 2371706880,
+          "nonreclaimable_bytes": 2155328712
+        },
+        {
+          "elapsed_seconds": 16.011,
+          "free_bytes": 2365571072,
+          "nonreclaimable_bytes": 2155055416
+        },
+        {
+          "elapsed_seconds": 17.011,
+          "free_bytes": 2346545152,
+          "nonreclaimable_bytes": 2072538728
+        }
+      ],
+      "pid": 608436,
+      "exit_code": 0,
+      "ended_at_utc": "2026-10-17T22:36:15.668792+00:00",
+      "log": {
+        "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-02/observer-build.log",
+        "bytes": 650,
+        "sha256": "869bf398625e361378791b46d3886a646536a2212e4eae2052570a1fcb6b72c5"
+      }
+    },
+    {
+      "command": [
+        "/workspace/scratch/98f315e377b2/next-tools/cargo/bin/rustup",
+        "run",
+        "1.95.0",
+        "cargo",
+        "metadata",
+        "--offline",
+        "--format-version",
+        "1",
+        "--manifest-path",
+        "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-02/probe/Cargo.toml"
+      ],
+      "cwd": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-02/probe",
+      "started_at_utc": "2026-10-17T22:36:15.673315+00:00",
+      "status": "passed",
+      "deadline_seconds": 300,
+      "minimum_disk_reserve_bytes": 734003200,
+      "maximum_nonreclaimable_bytes": 7516192768,
+      "resource_samples": [
+        {
+          "elapsed_seconds": 0.0,
+          "free_bytes": 2346065920,
+          "nonreclaimable_bytes": 2072538728
+        },
+        {
+          "elapsed_seconds": 1.0,
+          "free_bytes": 2342641664,
+          "nonreclaimable_bytes": 2084063888
+        }
+      ],
+      "pid": 608868,
+      "exit_code": 0,
+      "ended_at_utc": "2026-10-17T22:36:16.674661+00:00",
+      "log": {
+        "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-02/probe-resolution.log",
+        "bytes": 3655629,
+        "sha256": "010e51951ea931d4317a0f6cdc78df152af55f72b7672b19162c5aaa030f731e"
+      }
+    },
+    {
+      "command": [
+        "/workspace/scratch/98f315e377b2/next-tools/cargo/bin/rustup",
+        "run",
+        "1.95.0",
+        "cargo",
+        "metadata",
+        "--offline",
+        "--format-version",
+        "1",
+        "--manifest-path",
+        "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-02/probe/Cargo.toml",
+        "--locked"
+      ],
+      "cwd": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-02/probe",
+      "started_at_utc": "2026-10-17T22:36:16.781455+00:00",
+      "status": "passed",
+      "deadline_seconds": 300,
+      "minimum_disk_reserve_bytes": 734003200,
+      "maximum_nonreclaimable_bytes": 7516192768,
+      "resource_samples": [
+        {
+          "elapsed_seconds": 0.0,
+          "free_bytes": 2342641664,
+          "nonreclaimable_bytes": 2088977496
+        },
+        {
+          "elapsed_seconds": 1.0,
+          "free_bytes": 2338983936,
+          "nonreclaimable_bytes": 2104503608
+        }
+      ],
+      "pid": 608882,
+      "exit_code": 0,
+      "ended_at_utc": "2026-10-17T22:36:17.782660+00:00",
+      "log": {
+        "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-02/probe-locked-metadata-1.log",
+        "bytes": 3655629,
+        "sha256": "010e51951ea931d4317a0f6cdc78df152af55f72b7672b19162c5aaa030f731e"
+      }
+    },
+    {
+      "command": [
+        "/workspace/scratch/98f315e377b2/next-tools/cargo/bin/rustup",
+        "run",
+        "1.95.0",
+        "cargo",
+        "metadata",
+        "--offline",
+        "--format-version",
+        "1",
+        "--manifest-path",
+        "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-02/probe/Cargo.toml",
+        "--locked"
+      ],
+      "cwd": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-02/probe",
+      "started_at_utc": "2026-10-17T22:36:17.865490+00:00",
+      "status": "passed",
+      "deadline_seconds": 300,
+      "minimum_disk_reserve_bytes": 734003200,
+      "maximum_nonreclaimable_bytes": 7516192768,
+      "resource_samples": [
+        {
+          "elapsed_seconds": 0.0,
+          "free_bytes": 2338983936,
+          "nonreclaimable_bytes": 2105459144
+        },
+        {
+          "elapsed_seconds": 1.0,
+          "free_bytes": 2335326208,
+          "nonreclaimable_bytes": 2109009720
+        }
+      ],
+      "pid": 608891,
+      "exit_code": 0,
+      "ended_at_utc": "2026-10-17T22:36:18.866808+00:00",
+      "log": {
+        "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-02/probe-locked-metadata-2.log",
+        "bytes": 3655629,
+        "sha256": "010e51951ea931d4317a0f6cdc78df152af55f72b7672b19162c5aaa030f731e"
+      }
+    },
+    {
+      "command": [
+        "/workspace/scratch/98f315e377b2/next-tools/cargo/bin/rustup",
+        "run",
+        "1.95.0",
+        "cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "--profile",
+        "dev-small",
+        "--manifest-path",
+        "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-02/probe/Cargo.toml",
+        "-j1"
+      ],
+      "cwd": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-02/probe",
+      "started_at_utc": "2026-10-17T22:36:18.947663+00:00",
+      "status": "passed",
+      "deadline_seconds": 1200,
+      "minimum_disk_reserve_bytes": 734003200,
+      "maximum_nonreclaimable_bytes": 7516192768,
+      "resource_samples": [
+        {
+          "elapsed_seconds": 0.0,
+          "free_bytes": 2335326208,
+          "nonreclaimable_bytes": 2108991792
+        },
+        {
+          "elapsed_seconds": 1.0,
+          "free_bytes": 2333642752,
+          "nonreclaimable_bytes": 2277816328
+        },
+        {
+          "elapsed_seconds": 2.003,
+          "free_bytes": 2328997888,
+          "nonreclaimable_bytes": 2283911384
+        },
+        {
+          "elapsed_seconds": 3.003,
+          "free_bytes": 2327375872,
+          "nonreclaimable_bytes": 2407684512
+        },
+        {
+          "elapsed_seconds": 4.004,
+          "free_bytes": 2327375872,
+          "nonreclaimable_bytes": 2474624408
+        },
+        {
+          "elapsed_seconds": 5.004,
+          "free_bytes": 2318876672,
+          "nonreclaimable_bytes": 2544424920
+        },
+        {
+          "elapsed_seconds": 6.007,
+          "free_bytes": 2312478720,
+          "nonreclaimable_bytes": 2585238104
+        },
+        {
+          "elapsed_seconds": 7.008,
+          "free_bytes": 2300518400,
+          "nonreclaimable_bytes": 2368702264
+        },
+        {
+          "elapsed_seconds": 8.008,
+          "free_bytes": 2300518400,
+          "nonreclaimable_bytes": 2440628288
+        },
+        {
+          "elapsed_seconds": 9.009,
+          "free_bytes": 2286694400,
+          "nonreclaimable_bytes": 2370960448
+        },
+        {
+          "elapsed_seconds": 10.011,
+          "free_bytes": 2281574400,
+          "nonreclaimable_bytes": 2331093752
+        },
+        {
+          "elapsed_seconds": 11.011,
+          "free_bytes": 2279194624,
+          "nonreclaimable_bytes": 2451244320
+        },
+        {
+          "elapsed_seconds": 12.012,
+          "free_bytes": 2267996160,
+          "nonreclaimable_bytes": 2449399672
+        },
+        {
+          "elapsed_seconds": 13.012,
+          "free_bytes": 2260135936,
+          "nonreclaimable_bytes": 2558553856
+        },
+        {
+          "elapsed_seconds": 14.013,
+          "free_bytes": 2247327744,
+          "nonreclaimable_bytes": 2399467544
+        },
+        {
+          "elapsed_seconds": 15.015,
+          "free_bytes": 2243850240,
+          "nonreclaimable_bytes": 2458431192
+        },
+        {
+          "elapsed_seconds": 16.015,
+          "free_bytes": 2235330560,
+          "nonreclaimable_bytes": 2380272680
+        },
+        {
+          "elapsed_seconds": 17.016,
+          "free_bytes": 2232676352,
+          "nonreclaimable_bytes": 2408989984
+        },
+        {
+          "elapsed_seconds": 18.016,
+          "free_bytes": 2227380224,
+          "nonreclaimable_bytes": 2428765840
+        },
+        {
+          "elapsed_seconds": 19.017,
+          "free_bytes": 2222698496,
+          "nonreclaimable_bytes": 2454297048
+        },
+        {
+          "elapsed_seconds": 20.017,
+          "free_bytes": 2217529344,
+          "nonreclaimable_bytes": 2302142688
+        },
+        {
+          "elapsed_seconds": 21.017,
+          "free_bytes": 2209030144,
+          "nonreclaimable_bytes": 2253427104
+        },
+        {
+          "elapsed_seconds": 22.018,
+          "free_bytes": 2207313920,
+          "nonreclaimable_bytes": 2322554576
+        },
+        {
+          "elapsed_seconds": 23.018,
+          "free_bytes": 2199506944,
+          "nonreclaimable_bytes": 2237376048
+        },
+        {
+          "elapsed_seconds": 24.019,
+          "free_bytes": 2199465984,
+          "nonreclaimable_bytes": 2364540848
+        },
+        {
+          "elapsed_seconds": 25.019,
+          "free_bytes": 2191048704,
+          "nonreclaimable_bytes": 2226433808
+        },
+        {
+          "elapsed_seconds": 26.02,
+          "free_bytes": 2190970880,
+          "nonreclaimable_bytes": 2347182432
+        },
+        {
+          "elapsed_seconds": 27.02,
+          "free_bytes": 2190970880,
+          "nonreclaimable_bytes": 2436712296
+        },
+        {
+          "elapsed_seconds": 28.02,
+          "free_bytes": 2185527296,
+          "nonreclaimable_bytes": 2585294696
+        },
+        {
+          "elapsed_seconds": 29.021,
+          "free_bytes": 2184544256,
+          "nonreclaimable_bytes": 2741551248
+        },
+        {
+          "elapsed_seconds": 30.021,
+          "free_bytes": 2172272640,
+          "nonreclaimable_bytes": 2716446376
+        },
+        {
+          "elapsed_seconds": 31.022,
+          "free_bytes": 2162663424,
+          "nonreclaimable_bytes": 2337012160
+        },
+        {
+          "elapsed_seconds": 32.023,
+          "free_bytes": 2158731264,
+          "nonreclaimable_bytes": 2276724352
+        },
+        {
+          "elapsed_seconds": 33.023,
+          "free_bytes": 2154950656,
+          "nonreclaimable_bytes": 2329416200
+        },
+        {
+          "elapsed_seconds": 34.024,
+          "free_bytes": 2154885120,
+          "nonreclaimable_bytes": 2410597176
+        },
+        {
+          "elapsed_seconds": 35.027,
+          "free_bytes": 2151079936,
+          "nonreclaimable_bytes": 2502688912
+        },
+        {
+          "elapsed_seconds": 36.027,
+          "free_bytes": 2145767424,
+          "nonreclaimable_bytes": 2541080360
+        },
+        {
+          "elapsed_seconds": 37.028,
+          "free_bytes": 2135183360,
+          "nonreclaimable_bytes": 2310733216
+        },
+        {
+          "elapsed_seconds": 38.031,
+          "free_bytes": 2130460672,
+          "nonreclaimable_bytes": 2329092792
+        },
+        {
+          "elapsed_seconds": 39.035,
+          "free_bytes": 2126364672,
+          "nonreclaimable_bytes": 2378736032
+        },
+        {
+          "elapsed_seconds": 40.035,
+          "free_bytes": 2126331904,
+          "nonreclaimable_bytes": 2422631112
+        },
+        {
+          "elapsed_seconds": 41.036,
+          "free_bytes": 2126331904,
+          "nonreclaimable_bytes": 2518260424
+        },
+        {
+          "elapsed_seconds": 42.036,
+          "free_bytes": 2114752512,
+          "nonreclaimable_bytes": 2334126400
+        },
+        {
+          "elapsed_seconds": 43.037,
+          "free_bytes": 2112790528,
+          "nonreclaimable_bytes": 2356572856
+        },
+        {
+          "elapsed_seconds": 44.037,
+          "free_bytes": 2107949056,
+          "nonreclaimable_bytes": 2335174048
+        },
+        {
+          "elapsed_seconds": 45.038,
+          "free_bytes": 2102685696,
+          "nonreclaimable_bytes": 2331201800
+        },
+        {
+          "elapsed_seconds": 46.038,
+          "free_bytes": 2097930240,
+          "nonreclaimable_bytes": 2366968072
+        },
+        {
+          "elapsed_seconds": 47.039,
+          "free_bytes": 2092077056,
+          "nonreclaimable_bytes": 2345649272
+        },
+        {
+          "elapsed_seconds": 48.039,
+          "free_bytes": 2089480192,
+          "nonreclaimable_bytes": 2430925320
+        },
+        {
+          "elapsed_seconds": 49.04,
+          "free_bytes": 2086461440,
+          "nonreclaimable_bytes": 2523756776
+        },
+        {
+          "elapsed_seconds": 50.04,
+          "free_bytes": 2078826496,
+          "nonreclaimable_bytes": 2377235720
+        },
+        {
+          "elapsed_seconds": 51.04,
+          "free_bytes": 2075541504,
+          "nonreclaimable_bytes": 2214972256
+        },
+        {
+          "elapsed_seconds": 52.041,
+          "free_bytes": 2071019520,
+          "nonreclaimable_bytes": 2264591704
+        },
+        {
+          "elapsed_seconds": 53.041,
+          "free_bytes": 2064637952,
+          "nonreclaimable_bytes": 2241836752
+        },
+        {
+          "elapsed_seconds": 54.042,
+          "free_bytes": 2061266944,
+          "nonreclaimable_bytes": 2317501904
+        },
+        {
+          "elapsed_seconds": 55.043,
+          "free_bytes": 2055495680,
+          "nonreclaimable_bytes": 2240208912
+        },
+        {
+          "elapsed_seconds": 56.043,
+          "free_bytes": 2054348800,
+          "nonreclaimable_bytes": 2305193248
+        },
+        {
+          "elapsed_seconds": 57.047,
+          "free_bytes": 2046083072,
+          "nonreclaimable_bytes": 2251921960
+        },
+        {
+          "elapsed_seconds": 58.047,
+          "free_bytes": 2040057856,
+          "nonreclaimable_bytes": 2247591816
+        },
+        {
+          "elapsed_seconds": 59.048,
+          "free_bytes": 2038521856,
+          "nonreclaimable_bytes": 2326502400
+        },
+        {
+          "elapsed_seconds": 60.048,
+          "free_bytes": 2035273728,
+          "nonreclaimable_bytes": 2306241040
+        },
+        {
+          "elapsed_seconds": 61.049,
+          "free_bytes": 2035265536,
+          "nonreclaimable_bytes": 2413568528
+        },
+        {
+          "elapsed_seconds": 62.049,
+          "free_bytes": 2031198208,
+          "nonreclaimable_bytes": 2487370184
+        },
+        {
+          "elapsed_seconds": 63.05,
+          "free_bytes": 2021261312,
+          "nonreclaimable_bytes": 2271071752
+        },
+        {
+          "elapsed_seconds": 64.05,
+          "free_bytes": 2025172992,
+          "nonreclaimable_bytes": 2352152280
+        },
+        {
+          "elapsed_seconds": 65.051,
+          "free_bytes": 2019508224,
+          "nonreclaimable_bytes": 2396373016
+        },
+        {
+          "elapsed_seconds": 66.055,
+          "free_bytes": 2019381248,
+          "nonreclaimable_bytes": 2436698712
+        },
+        {
+          "elapsed_seconds": 67.055,
+          "free_bytes": 2019381248,
+          "nonreclaimable_bytes": 2523204992
+        },
+        {
+          "elapsed_seconds": 68.056,
+          "free_bytes": 2019381248,
+          "nonreclaimable_bytes": 2580298632
+        },
+        {
+          "elapsed_seconds": 69.056,
+          "free_bytes": 2019381248,
+          "nonreclaimable_bytes": 2639702560
+        },
+        {
+          "elapsed_seconds": 70.057,
+          "free_bytes": 2009481216,
+          "nonreclaimable_bytes": 2750590096
+        },
+        {
+          "elapsed_seconds": 71.057,
+          "free_bytes": 2002026496,
+          "nonreclaimable_bytes": 2792000736
+        },
+        {
+          "elapsed_seconds": 72.057,
+          "free_bytes": 1995415552,
+          "nonreclaimable_bytes": 2794259560
+        },
+        {
+          "elapsed_seconds": 73.058,
+          "free_bytes": 1977913344,
+          "nonreclaimable_bytes": 2358916400
+        },
+        {
+          "elapsed_seconds": 74.058,
+          "free_bytes": 1976074240,
+          "nonreclaimable_bytes": 2445415728
+        },
+        {
+          "elapsed_seconds": 75.059,
+          "free_bytes": 1968427008,
+          "nonreclaimable_bytes": 2363876768
+        },
+        {
+          "elapsed_seconds": 76.059,
+          "free_bytes": 1964068864,
+          "nonreclaimable_bytes": 2395811408
+        },
+        {
+          "elapsed_seconds": 77.06,
+          "free_bytes": 1960042496,
+          "nonreclaimable_bytes": 2391342336
+        },
+        {
+          "elapsed_seconds": 78.06,
+          "free_bytes": 1954377728,
+          "nonreclaimable_bytes": 2405549808
+        },
+        {
+          "elapsed_seconds": 79.06,
+          "free_bytes": 1953558528,
+          "nonreclaimable_bytes": 2453557208
+        },
+        {
+          "elapsed_seconds": 80.061,
+          "free_bytes": 1953533952,
+          "nonreclaimable_bytes": 2545645896
+        },
+        {
+          "elapsed_seconds": 81.062,
+          "free_bytes": 1953533952,
+          "nonreclaimable_bytes": 2575626968
+        },
+        {
+          "elapsed_seconds": 82.062,
+          "free_bytes": 1953533952,
+          "nonreclaimable_bytes": 2628923024
+        },
+        {
+          "elapsed_seconds": 83.062,
+          "free_bytes": 1953533952,
+          "nonreclaimable_bytes": 2704212688
+        },
+        {
+          "elapsed_seconds": 84.063,
+          "free_bytes": 1947762688,
+          "nonreclaimable_bytes": 2739940056
+        },
+        {
+          "elapsed_seconds": 85.063,
+          "free_bytes": 1921843200,
+          "nonreclaimable_bytes": 2364313032
+        },
+        {
+          "elapsed_seconds": 86.064,
+          "free_bytes": 1917878272,
+          "nonreclaimable_bytes": 2451876520
+        },
+        {
+          "elapsed_seconds": 87.064,
+          "free_bytes": 1912680448,
+          "nonreclaimable_bytes": 2468217904
+        },
+        {
+          "elapsed_seconds": 88.064,
+          "free_bytes": 1907286016,
+          "nonreclaimable_bytes": 2396243936
+        },
+        {
+          "elapsed_seconds": 89.065,
+          "free_bytes": 1905885184,
+          "nonreclaimable_bytes": 2462340576
+        },
+        {
+          "elapsed_seconds": 90.065,
+          "free_bytes": 1897910272,
+          "nonreclaimable_bytes": 2384835752
+        },
+        {
+          "elapsed_seconds": 91.066,
+          "free_bytes": 1897865216,
+          "nonreclaimable_bytes": 2542282128
+        },
+        {
+          "elapsed_seconds": 92.066,
+          "free_bytes": 1897865216,
+          "nonreclaimable_bytes": 2597772344
+        },
+        {
+          "elapsed_seconds": 93.067,
+          "free_bytes": 1897865216,
+          "nonreclaimable_bytes": 2663630176
+        },
+        {
+          "elapsed_seconds": 94.067,
+          "free_bytes": 1891110912,
+          "nonreclaimable_bytes": 2748167520
+        },
+        {
+          "elapsed_seconds": 95.068,
+          "free_bytes": 1877188608,
+          "nonreclaimable_bytes": 2409793616
+        },
+        {
+          "elapsed_seconds": 96.071,
+          "free_bytes": 1873596416,
+          "nonreclaimable_bytes": 2429590888
+        },
+        {
+          "elapsed_seconds": 97.071,
+          "free_bytes": 1873592320,
+          "nonreclaimable_bytes": 2523494264
+        },
+        {
+          "elapsed_seconds": 98.072,
+          "free_bytes": 1873592320,
+          "nonreclaimable_bytes": 2584431280
+        },
+        {
+          "elapsed_seconds": 99.072,
+          "free_bytes": 1867296768,
+          "nonreclaimable_bytes": 2643124288
+        },
+        {
+          "elapsed_seconds": 100.073,
+          "free_bytes": 1856888832,
+          "nonreclaimable_bytes": 2455968896
+        },
+        {
+          "elapsed_seconds": 101.073,
+          "free_bytes": 1856270336,
+          "nonreclaimable_bytes": 2553990032
+        },
+        {
+          "elapsed_seconds": 102.074,
+          "free_bytes": 1856270336,
+          "nonreclaimable_bytes": 2601946000
+        },
+        {
+          "elapsed_seconds": 103.074,
+          "free_bytes": 1856270336,
+          "nonreclaimable_bytes": 2666619904
+        },
+        {
+          "elapsed_seconds": 104.074,
+          "free_bytes": 1847685120,
+          "nonreclaimable_bytes": 2741997512
+        },
+        {
+          "elapsed_seconds": 105.075,
+          "free_bytes": 1833996288,
+          "nonreclaimable_bytes": 2474147296
+        },
+        {
+          "elapsed_seconds": 106.075,
+          "free_bytes": 1831264256,
+          "nonreclaimable_bytes": 2511369888
+        },
+        {
+          "elapsed_seconds": 107.076,
+          "free_bytes": 1828741120,
+          "nonreclaimable_bytes": 2573888456
+        },
+        {
+          "elapsed_seconds": 108.076,
+          "free_bytes": 1828741120,
+          "nonreclaimable_bytes": 2636192752
+        },
+        {
+          "elapsed_seconds": 109.077,
+          "free_bytes": 1828470784,
+          "nonreclaimable_bytes": 2712488944
+        },
+        {
+          "elapsed_seconds": 110.077,
+          "free_bytes": 1828470784,
+          "nonreclaimable_bytes": 2746069064
+        },
+        {
+          "elapsed_seconds": 111.077,
+          "free_bytes": 1828470784,
+          "nonreclaimable_bytes": 2821190128
+        },
+        {
+          "elapsed_seconds": 112.078,
+          "free_bytes": 1828466688,
+          "nonreclaimable_bytes": 2702342112
+        },
+        {
+          "elapsed_seconds": 113.078,
+          "free_bytes": 1828466688,
+          "nonreclaimable_bytes": 2687048312
+        },
+        {
+          "elapsed_seconds": 114.079,
+          "free_bytes": 1827938304,
+          "nonreclaimable_bytes": 2738854520
+        },
+        {
+          "elapsed_seconds": 115.079,
+          "free_bytes": 1816207360,
+          "nonreclaimable_bytes": 2841635360
+        },
+        {
+          "elapsed_seconds": 116.082,
+          "free_bytes": 1816207360,
+          "nonreclaimable_bytes": 2976022064
+        },
+        {
+          "elapsed_seconds": 117.082,
+          "free_bytes": 1816207360,
+          "nonreclaimable_bytes": 3047815968
+        },
+        {
+          "elapsed_seconds": 118.083,
+          "free_bytes": 1807400960,
+          "nonreclaimable_bytes": 3050592216
+        },
+        {
+          "elapsed_seconds": 119.083,
+          "free_bytes": 1799430144,
+          "nonreclaimable_bytes": 3049567176
+        },
+        {
+          "elapsed_seconds": 120.083,
+          "free_bytes": 1793388544,
+          "nonreclaimable_bytes": 3080803272
+        },
+        {
+          "elapsed_seconds": 121.084,
+          "free_bytes": 1786052608,
+          "nonreclaimable_bytes": 3093084072
+        },
+        {
+          "elapsed_seconds": 122.084,
+          "free_bytes": 1777467392,
+          "nonreclaimable_bytes": 3101048912
+        },
+        {
+          "elapsed_seconds": 123.085,
+          "free_bytes": 1772265472,
+          "nonreclaimable_bytes": 3091639024
+        },
+        {
+          "elapsed_seconds": 124.085,
+          "free_bytes": 1768669184,
+          "nonreclaimable_bytes": 3128514544
+        },
+        {
+          "elapsed_seconds": 125.086,
+          "free_bytes": 1759551488,
+          "nonreclaimable_bytes": 3048193752
+        },
+        {
+          "elapsed_seconds": 126.086,
+          "free_bytes": 1750462464,
+          "nonreclaimable_bytes": 3033787792
+        },
+        {
+          "elapsed_seconds": 127.086,
+          "free_bytes": 1721249792,
+          "nonreclaimable_bytes": 2298660872
+        },
+        {
+          "elapsed_seconds": 128.087,
+          "free_bytes": 1718583296,
+          "nonreclaimable_bytes": 2347444760
+        },
+        {
+          "elapsed_seconds": 129.091,
+          "free_bytes": 1718583296,
+          "nonreclaimable_bytes": 2448677400
+        },
+        {
+          "elapsed_seconds": 130.091,
+          "free_bytes": 1710387200,
+          "nonreclaimable_bytes": 2379529904
+        },
+        {
+          "elapsed_seconds": 131.095,
+          "free_bytes": 1706422272,
+          "nonreclaimable_bytes": 2460245400
+        },
+        {
+          "elapsed_seconds": 132.095,
+          "free_bytes": 1699688448,
+          "nonreclaimable_bytes": 2358798600
+        },
+        {
+          "elapsed_seconds": 133.096,
+          "free_bytes": 1676595200,
+          "nonreclaimable_bytes": 2321734368
+        },
+        {
+          "elapsed_seconds": 134.096,
+          "free_bytes": 1676566528,
+          "nonreclaimable_bytes": 2441543360
+        },
+        {
+          "elapsed_seconds": 135.097,
+          "free_bytes": 1671884800,
+          "nonreclaimable_bytes": 2481340968
+        },
+        {
+          "elapsed_seconds": 136.097,
+          "free_bytes": 1665011712,
+          "nonreclaimable_bytes": 2506261656
+        },
+        {
+          "elapsed_seconds": 137.098,
+          "free_bytes": 1658744832,
+          "nonreclaimable_bytes": 2418760504
+        },
+        {
+          "elapsed_seconds": 138.098,
+          "free_bytes": 1654415360,
+          "nonreclaimable_bytes": 2369284888
+        },
+        {
+          "elapsed_seconds": 139.099,
+          "free_bytes": 1660186624,
+          "nonreclaimable_bytes": 2448070576
+        },
+        {
+          "elapsed_seconds": 140.099,
+          "free_bytes": 1657102336,
+          "nonreclaimable_bytes": 2515591032
+        },
+        {
+          "elapsed_seconds": 141.1,
+          "free_bytes": 1653178368,
+          "nonreclaimable_bytes": 2408037512
+        },
+        {
+          "elapsed_seconds": 142.1,
+          "free_bytes": 1648758784,
+          "nonreclaimable_bytes": 2433254728
+        },
+        {
+          "elapsed_seconds": 143.103,
+          "free_bytes": 1648758784,
+          "nonreclaimable_bytes": 2526640136
+        },
+        {
+          "elapsed_seconds": 144.103,
+          "free_bytes": 1648758784,
+          "nonreclaimable_bytes": 2609207288
+        },
+        {
+          "elapsed_seconds": 145.104,
+          "free_bytes": 1645346816,
+          "nonreclaimable_bytes": 2717681656
+        },
+        {
+          "elapsed_seconds": 146.104,
+          "free_bytes": 1645346816,
+          "nonreclaimable_bytes": 2760189944
+        },
+        {
+          "elapsed_seconds": 147.105,
+          "free_bytes": 1641000960,
+          "nonreclaimable_bytes": 2786590352
+        },
+        {
+          "elapsed_seconds": 148.105,
+          "free_bytes": 1635901440,
+          "nonreclaimable_bytes": 2807364744
+        },
+        {
+          "elapsed_seconds": 149.106,
+          "free_bytes": 1630167040,
+          "nonreclaimable_bytes": 2820928432
+        },
+        {
+          "elapsed_seconds": 150.108,
+          "free_bytes": 1621434368,
+          "nonreclaimable_bytes": 2825812176
+        },
+        {
+          "elapsed_seconds": 151.108,
+          "free_bytes": 1617321984,
+          "nonreclaimable_bytes": 2856114384
+        },
+        {
+          "elapsed_seconds": 152.109,
+          "free_bytes": 1603428352,
+          "nonreclaimable_bytes": 2469839248
+        },
+        {
+          "elapsed_seconds": 153.109,
+          "free_bytes": 1599971328,
+          "nonreclaimable_bytes": 2515225648
+        },
+        {
+          "elapsed_seconds": 154.109,
+          "free_bytes": 1595011072,
+          "nonreclaimable_bytes": 2402751168
+        },
+        {
+          "elapsed_seconds": 155.11,
+          "free_bytes": 1595011072,
+          "nonreclaimable_bytes": 2570836368
+        },
+        {
+          "elapsed_seconds": 156.11,
+          "free_bytes": 1595011072,
+          "nonreclaimable_bytes": 2701875776
+        },
+        {
+          "elapsed_seconds": 157.111,
+          "free_bytes": 1594994688,
+          "nonreclaimable_bytes": 2767948368
+        },
+        {
+          "elapsed_seconds": 158.111,
+          "free_bytes": 1594994688,
+          "nonreclaimable_bytes": 2839583312
+        },
+        {
+          "elapsed_seconds": 159.112,
+          "free_bytes": 1594994688,
+          "nonreclaimable_bytes": 2855995864
+        },
+        {
+          "elapsed_seconds": 160.112,
+          "free_bytes": 1594994688,
+          "nonreclaimable_bytes": 2908881888
+        },
+        {
+          "elapsed_seconds": 161.115,
+          "free_bytes": 1594994688,
+          "nonreclaimable_bytes": 2952139744
+        },
+        {
+          "elapsed_seconds": 162.115,
+          "free_bytes": 1594994688,
+          "nonreclaimable_bytes": 2969995536
+        },
+        {
+          "elapsed_seconds": 163.116,
+          "free_bytes": 1594994688,
+          "nonreclaimable_bytes": 3042383712
+        },
+        {
+          "elapsed_seconds": 164.116,
+          "free_bytes": 1594994688,
+          "nonreclaimable_bytes": 3131372784
+        },
+        {
+          "elapsed_seconds": 165.117,
+          "free_bytes": 1594994688,
+          "nonreclaimable_bytes": 3209422424
+        },
+        {
+          "elapsed_seconds": 166.117,
+          "free_bytes": 1586012160,
+          "nonreclaimable_bytes": 3253859928
+        },
+        {
+          "elapsed_seconds": 167.117,
+          "free_bytes": 1578102784,
+          "nonreclaimable_bytes": 3361437272
+        },
+        {
+          "elapsed_seconds": 168.118,
+          "free_bytes": 1570951168,
+          "nonreclaimable_bytes": 3423569104
+        },
+        {
+          "elapsed_seconds": 169.118,
+          "free_bytes": 1517264896,
+          "nonreclaimable_bytes": 3122471664
+        },
+        {
+          "elapsed_seconds": 170.119,
+          "free_bytes": 1511833600,
+          "nonreclaimable_bytes": 3140333448
+        },
+        {
+          "elapsed_seconds": 171.119,
+          "free_bytes": 1505869824,
+          "nonreclaimable_bytes": 3135457312
+        },
+        {
+          "elapsed_seconds": 172.12,
+          "free_bytes": 1481302016,
+          "nonreclaimable_bytes": 2322149536
+        },
+        {
+          "elapsed_seconds": 173.12,
+          "free_bytes": 1484275712,
+          "nonreclaimable_bytes": 2294024144
+        },
+        {
+          "elapsed_seconds": 174.12,
+          "free_bytes": 1483997184,
+          "nonreclaimable_bytes": 2387181776
+        },
+        {
+          "elapsed_seconds": 175.123,
+          "free_bytes": 1476157440,
+          "nonreclaimable_bytes": 2285584888
+        },
+        {
+          "elapsed_seconds": 176.123,
+          "free_bytes": 1473552384,
+          "nonreclaimable_bytes": 2325518912
+        },
+        {
+          "elapsed_seconds": 177.124,
+          "free_bytes": 1471885312,
+          "nonreclaimable_bytes": 2307524648
+        },
+        {
+          "elapsed_seconds": 178.124,
+          "free_bytes": 1468928000,
+          "nonreclaimable_bytes": 2291815520
+        },
+        {
+          "elapsed_seconds": 179.125,
+          "free_bytes": 1468129280,
+          "nonreclaimable_bytes": 2369699928
+        },
+        {
+          "elapsed_seconds": 180.125,
+          "free_bytes": 1459650560,
+          "nonreclaimable_bytes": 2275831576
+        },
+        {
+          "elapsed_seconds": 181.127,
+          "free_bytes": 1456476160,
+          "nonreclaimable_bytes": 2361087112
+        },
+        {
+          "elapsed_seconds": 182.127,
+          "free_bytes": 1451970560,
+          "nonreclaimable_bytes": 2319367320
+        },
+        {
+          "elapsed_seconds": 183.128,
+          "free_bytes": 1450328064,
+          "nonreclaimable_bytes": 2433257272
+        },
+        {
+          "elapsed_seconds": 184.131,
+          "free_bytes": 1442041856,
+          "nonreclaimable_bytes": 2317792248
+        },
+        {
+          "elapsed_seconds": 185.131,
+          "free_bytes": 1439924224,
+          "nonreclaimable_bytes": 2406295360
+        },
+        {
+          "elapsed_seconds": 186.132,
+          "free_bytes": 1434058752,
+          "nonreclaimable_bytes": 2448727976
+        },
+        {
+          "elapsed_seconds": 187.135,
+          "free_bytes": 1429766144,
+          "nonreclaimable_bytes": 2378268480
+        },
+        {
+          "elapsed_seconds": 188.135,
+          "free_bytes": 1423962112,
+          "nonreclaimable_bytes": 2377012712
+        },
+        {
+          "elapsed_seconds": 189.139,
+          "free_bytes": 1421447168,
+          "nonreclaimable_bytes": 2425490408
+        },
+        {
+          "elapsed_seconds": 190.14,
+          "free_bytes": 1416425472,
+          "nonreclaimable_bytes": 2347954072
+        },
+        {
+          "elapsed_seconds": 191.141,
+          "free_bytes": 1412743168,
+          "nonreclaimable_bytes": 2323607008
+        },
+        {
+          "elapsed_seconds": 192.141,
+          "free_bytes": 1410506752,
+          "nonreclaimable_bytes": 2460851496
+        },
+        {
+          "elapsed_seconds": 193.142,
+          "free_bytes": 1405698048,
+          "nonreclaimable_bytes": 2463514464
+        },
+        {
+          "elapsed_seconds": 194.142,
+          "free_bytes": 1405698048,
+          "nonreclaimable_bytes": 2546186552
+        },
+        {
+          "elapsed_seconds": 195.143,
+          "free_bytes": 1400221696,
+          "nonreclaimable_bytes": 2640862288
+        },
+        {
+          "elapsed_seconds": 196.143,
+          "free_bytes": 1391341568,
+          "nonreclaimable_bytes": 2388784808
+        },
+        {
+          "elapsed_seconds": 197.144,
+          "free_bytes": 1388265472,
+          "nonreclaimable_bytes": 2393472584
+        },
+        {
+          "elapsed_seconds": 198.144,
+          "free_bytes": 1381711872,
+          "nonreclaimable_bytes": 2371596624
+        },
+        {
+          "elapsed_seconds": 199.144,
+          "free_bytes": 1379295232,
+          "nonreclaimable_bytes": 2406728784
+        },
+        {
+          "elapsed_seconds": 200.145,
+          "free_bytes": 1375195136,
+          "nonreclaimable_bytes": 2432060384
+        },
+        {
+          "elapsed_seconds": 201.145,
+          "free_bytes": 1368195072,
+          "nonreclaimable_bytes": 2392098080
+        },
+        {
+          "elapsed_seconds": 202.146,
+          "free_bytes": 1365831680,
+          "nonreclaimable_bytes": 2484949976
+        },
+        {
+          "elapsed_seconds": 203.146,
+          "free_bytes": 1358581760,
+          "nonreclaimable_bytes": 2390436640
+        },
+        {
+          "elapsed_seconds": 204.147,
+          "free_bytes": 1356492800,
+          "nonreclaimable_bytes": 2449120136
+        },
+        {
+          "elapsed_seconds": 205.147,
+          "free_bytes": 1349890048,
+          "nonreclaimable_bytes": 2405834344
+        },
+        {
+          "elapsed_seconds": 206.148,
+          "free_bytes": 1349873664,
+          "nonreclaimable_bytes": 2537877808
+        },
+        {
+          "elapsed_seconds": 207.148,
+          "free_bytes": 1349873664,
+          "nonreclaimable_bytes": 2612400432
+        },
+        {
+          "elapsed_seconds": 208.148,
+          "free_bytes": 1345347584,
+          "nonreclaimable_bytes": 2698944128
+        },
+        {
+          "elapsed_seconds": 209.149,
+          "free_bytes": 1335291904,
+          "nonreclaimable_bytes": 2449210656
+        },
+        {
+          "elapsed_seconds": 210.15,
+          "free_bytes": 1331044352,
+          "nonreclaimable_bytes": 2486871464
+        },
+        {
+          "elapsed_seconds": 211.15,
+          "free_bytes": 1328705536,
+          "nonreclaimable_bytes": 2532766048
+        },
+        {
+          "elapsed_seconds": 212.151,
+          "free_bytes": 1328705536,
+          "nonreclaimable_bytes": 2640142688
+        },
+        {
+          "elapsed_seconds": 213.151,
+          "free_bytes": 1328705536,
+          "nonreclaimable_bytes": 2728104288
+        },
+        {
+          "elapsed_seconds": 214.152,
+          "free_bytes": 1328705536,
+          "nonreclaimable_bytes": 2794207176
+        },
+        {
+          "elapsed_seconds": 215.152,
+          "free_bytes": 1328705536,
+          "nonreclaimable_bytes": 2854147768
+        },
+        {
+          "elapsed_seconds": 216.153,
+          "free_bytes": 1328705536,
+          "nonreclaimable_bytes": 2936933512
+        },
+        {
+          "elapsed_seconds": 217.153,
+          "free_bytes": 1328439296,
+          "nonreclaimable_bytes": 2973679912
+        },
+        {
+          "elapsed_seconds": 218.154,
+          "free_bytes": 1315229696,
+          "nonreclaimable_bytes": 3065233352
+        },
+        {
+          "elapsed_seconds": 219.155,
+          "free_bytes": 1309175808,
+          "nonreclaimable_bytes": 3076497272
+        },
+        {
+          "elapsed_seconds": 220.155,
+          "free_bytes": 1289859072,
+          "nonreclaimable_bytes": 2448148320
+        },
+        {
+          "elapsed_seconds": 221.155,
+          "free_bytes": 1287135232,
+          "nonreclaimable_bytes": 2558505168
+        },
+        {
+          "elapsed_seconds": 222.156,
+          "free_bytes": 1282064384,
+          "nonreclaimable_bytes": 2549320640
+        },
+        {
+          "elapsed_seconds": 223.156,
+          "free_bytes": 1276051456,
+          "nonreclaimable_bytes": 2476170840
+        },
+        {
+          "elapsed_seconds": 224.167,
+          "free_bytes": 1271775232,
+          "nonreclaimable_bytes": 2551818664
+        },
+        {
+          "elapsed_seconds": 225.171,
+          "free_bytes": 1266454528,
+          "nonreclaimable_bytes": 2540969576
+        },
+        {
+          "elapsed_seconds": 226.171,
+          "free_bytes": 1266438144,
+          "nonreclaimable_bytes": 2636541760
+        },
+        {
+          "elapsed_seconds": 227.172,
+          "free_bytes": 1266438144,
+          "nonreclaimable_bytes": 2720975728
+        },
+        {
+          "elapsed_seconds": 228.172,
+          "free_bytes": 1262223360,
+          "nonreclaimable_bytes": 2833711752
+        },
+        {
+          "elapsed_seconds": 229.172,
+          "free_bytes": 1256001536,
+          "nonreclaimable_bytes": 2861699088
+        },
+        {
+          "elapsed_seconds": 230.175,
+          "free_bytes": 1250336768,
+          "nonreclaimable_bytes": 2882919640
+        },
+        {
+          "elapsed_seconds": 231.175,
+          "free_bytes": 1244151808,
+          "nonreclaimable_bytes": 2628092224
+        },
+        {
+          "elapsed_seconds": 232.176,
+          "free_bytes": 1235415040,
+          "nonreclaimable_bytes": 2378520288
+        },
+        {
+          "elapsed_seconds": 233.176,
+          "free_bytes": 1207472128,
+          "nonreclaimable_bytes": 2062380800
+        }
+      ],
+      "pid": 608900,
+      "exit_code": 0,
+      "ended_at_utc": "2026-10-17T22:40:12.125233+00:00",
+      "log": {
+        "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-02/probe-build.log",
+        "bytes": 13865,
+        "sha256": "9c7d7102399990719e22da014d137e576a9547695f6fe45c7aa4e1bae7cc055a"
+      }
+    },
+    {
+      "command": [
+        "/workspace/scratch/98f315e377b2/next-tools/cargo/bin/rustup",
+        "run",
+        "1.95.0",
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "--profile",
+        "dev-small",
+        "--manifest-path",
+        "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-02/probe/Cargo.toml",
+        "-j1",
+        "--bin",
+        "hepta-original-observer-probe",
+        "original_session_probe::tests::"
+      ],
+      "cwd": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-02/probe",
+      "started_at_utc": "2026-10-17T22:40:12.125370+00:00",
+      "status": "passed",
+      "deadline_seconds": 600,
+      "minimum_disk_reserve_bytes": 734003200,
+      "maximum_nonreclaimable_bytes": 7516192768,
+      "resource_samples": [
+        {
+          "elapsed_seconds": 0.0,
+          "free_bytes": 1207472128,
+          "nonreclaimable_bytes": 2062380800
+        },
+        {
+          "elapsed_seconds": 1.0,
+          "free_bytes": 1207316480,
+          "nonreclaimable_bytes": 2306468688
+        },
+        {
+          "elapsed_seconds": 2.002,
+          "free_bytes": 1183633408,
+          "nonreclaimable_bytes": 2067265016
+        }
+      ],
+      "pid": 612531,
+      "exit_code": 0,
+      "ended_at_utc": "2026-10-17T22:40:14.128838+00:00",
+      "log": {
+        "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-02/probe-stale-tests.log",
+        "bytes": 4346,
+        "sha256": "6a756b53cba3b4f5c323b2f18d326e78a371fe59598fee37a39dcf98c1eee82f"
+      }
+    }
+  ],
+  "helper_sha256": {
+    "build_consumers.py": "81a7c2ce9654883c9f149fb3f427f217cb3958581064e654815674a94e7f2098",
+    "common.py": "ffebab0d7da58e7b46ee41fc5556ada0f9905017bb6b7342712c2297f0356950"
+  },
+  "probe_patch_omission": {
+    "origin": "ssh://git@github.com/openai-oss-forks/tungstenite-rs.git",
+    "package": "tungstenite",
+    "target": {
+      "git": "https://github.com/openai-oss-forks/tungstenite-rs",
+      "rev": "4fffad30fe373adbdcffab9545e9e9bf4f2fc19f"
+    },
+    "retained_origin": "crates-io",
+    "reason": "Cargo 1.95 does not canonicalize unused patches across origins"
+  },
+  "build_environment_paths": {
+    "CARGO_HOME": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/cargo",
+    "RUSTUP_HOME": "/dev/shm/trill-hepta-r4-enuzuex9/rustup",
+    "CARGO_TARGET_DIR": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/target",
+    "PATH": "/dev/shm/trill-hepta-r4-enuzuex9/cmake-3.28.3-02/cmake/data/bin:/dev/shm/trill-hepta-r4-enuzuex9/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin:/workspace/scratch/98f315e377b2/next-tools/cargo/bin:/usr/bin:/bin",
+    "TMPDIR": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/tmp",
+    "CARGO_BUILD_JOBS": "1",
+    "CARGO_INCREMENTAL": "0"
+  },
+  "probe_lock_validation": {
+    "omitted_patch": {
+      "origin": "ssh://git@github.com/openai-oss-forks/tungstenite-rs.git",
+      "package": "tungstenite",
+      "target": {
+        "git": "https://github.com/openai-oss-forks/tungstenite-rs",
+        "rev": "4fffad30fe373adbdcffab9545e9e9bf4f2fc19f"
+      },
+      "retained_origin": "crates-io",
+      "reason": "Cargo 1.95 does not canonicalize unused patches across origins"
+    },
+    "omitted_target_unused": true,
+    "shared_package_identities_checked": 732
+  },
+  "probe_lock_stability": {
+    "sha256": "72cb7346158f4c3514922cc7b9020f9b9d290aec78e047264a738d52afe6ed68",
+    "locked_metadata_passes": 2
+  },
+  "probe_manifest_sha256": "3ca93a2c1f3c5a7d314f20bb540b36f8cc0c25fcaa63453a799b8fe558ca26e7",
+  "resolved_probe_lock_sha256": "72cb7346158f4c3514922cc7b9020f9b9d290aec78e047264a738d52afe6ed68",
+  "probe_sources_sha256": {
+    "main.rs": "d297d6b5c7e39c3c98a4cb051d54ebdfc58757d04ca5ca265a023f4fb7fb276c",
+    "original_session_probe.rs": "7660c76f640cf612f57a2ee6a2ea7d8b09e8ac332c20fd44d8e7c8bbcb0663c5"
+  },
+  "binaries": {
+    "agentd": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/target/dev-small/codex-hepta-agentd",
+      "bytes": 329001344,
+      "sha256": "f476f9bb435c5127839c48ae7135d5a6fa7695ff5253460fdd8d19d7b084d4fa",
+      "elf_class": 64,
+      "elf_machine": 62,
+      "architecture": "x86_64"
+    },
+    "observer": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-02/observer-target/debug/hepta-observe",
+      "bytes": 13883672,
+      "sha256": "de5aa738234b7ebfdf35afb5e78cf0296962f76625ae1e3fffdc44ba682b7a55",
+      "elf_class": 64,
+      "elf_machine": 62,
+      "architecture": "x86_64"
+    },
+    "probe": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/target/dev-small/hepta-original-observer-probe",
+      "bytes": 29114728,
+      "sha256": "46c8f20bef00d5e4b76ae7fcba784937bc1c4d9a33d6b416cd4acc1b96d43365",
+      "elf_class": 64,
+      "elf_machine": 62,
+      "architecture": "x86_64"
+    }
+  },
+  "desktop_after": {
+    "commit": "c50d7b9b688135a22ced2f7f3cbe21c3028d8e17",
+    "tree": "1b606b1922751fe938fa4bcca0a923516323f418",
+    "clean": true,
+    "subtrees": {
+      "services/hepta-os": "7ebe43051e1cebb8049ba50e9da4a9fb59d1a0c7",
+      "ui": "037f318be7140ef046eac1e9cabe230c07eb7059"
+    },
+    "inputs": {
+      "tests/integration/hepta/run_original_agentd.py": "21dd4a2e0621240a75f5ce37bad93da0a37352fbaa78554a50e048abe6a45fd0",
+      "tests/integration/hepta/original_agentd_probe.rs": "d297d6b5c7e39c3c98a4cb051d54ebdfc58757d04ca5ca265a023f4fb7fb276c",
+      "tests/integration/hepta/original_session_probe.rs": "7660c76f640cf612f57a2ee6a2ea7d8b09e8ac332c20fd44d8e7c8bbcb0663c5",
+      "services/hepta-os/Cargo.toml": "6d33aced708f1f6d3637e065825dd1718a4b187876e96edf1f7aefb0f437bfee",
+      "services/hepta-os/Cargo.lock": "a1aed4d1f513036cbe03912359f3dfbb2c6d93c5210b8d18244d95be9008a875",
+      "services/hepta-os/UPSTREAM_CONTRACT.json": "24efcccd98b6ac6a56cb34b36f5bdb10785d955efd86c32fed308bac1505f7ef",
+      "ui/Cargo.toml": "2c59194ffc1ed3bc0d5118f275498c1e09bd49f6ce71b80db709927b317a7628",
+      "ui/Cargo.lock": "e484809d742a264a296046b0d272e843d167b02b634232e793ef702757cc70e1"
+    }
+  },
+  "original_after": {
+    "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-03/receipt.json",
+    "receipt_sha256": "1dd50ac0a0a1856a787bf3ba6556407e13d85591daac1bf154639f063eb63f00",
+    "original": {
+      "commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+      "tree": "15c9d6ea07bf3832de82825a6cc1e8c958dd3d45",
+      "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+      "clean_checkout": true
+    },
+    "binary": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/target/dev-small/codex-hepta-agentd",
+      "bytes": 329001344,
+      "sha256": "f476f9bb435c5127839c48ae7135d5a6fa7695ff5253460fdd8d19d7b084d4fa",
+      "elf_class": 64,
+      "elf_machine": 62,
+      "architecture": "x86_64"
+    },
+    "previous_attempt_receipt_sha256": null,
+    "initial_admission": {
+      "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/receipt.json",
+      "receipt_sha256": "9a8f0853019123980f5bbd2213f477465935c10048eced027018161a70631625",
+      "minimum_free_bytes": 8589934592,
+      "free_bytes_at_admission": 12099153920
+    },
+    "previous_attempt": {
+      "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-02/receipt.json",
+      "receipt_sha256": "bbf9330b962ffa48f17895e47fe18e601d96d4271fa6686ed472bae9ca6a9361",
+      "status": "failed",
+      "stop_reason": "observed_memory_reserve_reached"
+    },
+    "resource_recovery": {
+      "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/r6-retained-cache-migration-03/receipt.json",
+      "receipt_sha256": "1f6854af7ec3f66e6a2426ae70e85d7813fe2cf3a658628b948045094a5ec735"
+    },
+    "previous_failed_migrations": [
+      {
+        "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/r6-retained-cache-migration-01/receipt.json",
+        "receipt_sha256": "cff8e9ac31d2d9c63df78cfabaa3b10d3250b14f20a8e54a28d8d6efe4d5a09d",
+        "status": "failed"
+      },
+      {
+        "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/r6-retained-cache-migration-02/receipt.json",
+        "receipt_sha256": "221f9db60e561bdd3fac2a914ad106834f95d5410ef433f77e7af9ac39713a45",
+        "status": "failed"
+      }
+    ],
+    "fresh_full_gate_preflight_applied_at_this_attempt": false,
+    "stock_fresh_work_gate_reexecuted": false,
+    "source_build_kind": "new_R6_target_copied_from_retained_warm_cache"
+  },
+  "helper_sha256_after": {
+    "build_consumers.py": "81a7c2ce9654883c9f149fb3f427f217cb3958581064e654815674a94e7f2098",
+    "common.py": "ffebab0d7da58e7b46ee41fc5556ada0f9905017bb6b7342712c2297f0356950"
+  },
+  "ended_at_utc": "2026-10-17T22:40:14.534630+00:00"
+}

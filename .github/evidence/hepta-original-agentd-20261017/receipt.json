@@ -1,0 +1,55 @@
+{
+  "recorded_at_utc": "2026-10-17T12:50:03.142702+00:00",
+  "evidence_class": "actions_expression_semantics_regression",
+  "raw_files": [
+    {
+      "path": "INSTALLATION.json",
+      "bytes": 348,
+      "sha256": "177ab842769b78a9a45a4d604b61afba2b905ec3370c8c078bb7adf69e6b5800"
+    },
+    {
+      "path": "before-fix.log",
+      "bytes": 302,
+      "sha256": "1658f30f83d6c90de7b4fb02a51f7c49b15b60e0e2f1164ab4c42438637c73ce"
+    },
+    {
+      "path": "before-fix.exit",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "path": "after-fix.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "after-fix.exit",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    }
+  ],
+  "before": {
+    "remote_commit": "c19df90e4efd5ef88602cce7fed83f194914ebab",
+    "workflow_sha256": "66cba0ae811a7126315e54683693c1c84fcc3db81acf4f0fc70ece8b7470c8db",
+    "actionlint_exit": 1,
+    "github_run": 39032341629,
+    "github_status": "completed",
+    "github_conclusion": "failure",
+    "jobs_created": 0
+  },
+  "after": {
+    "remote_commit": "78de7ea57cfbede31e2a9572a294a72553067884",
+    "workflow_sha256": "1b0008afc10b526d16f9edf7b1a43d2fdeef1c116b857ac2928ff94df921f6e6",
+    "actionlint_exit": 0,
+    "github_run": 39032688536,
+    "observed_job": 117396196504,
+    "observed_labels": [
+      "ubuntu-24.04-arm"
+    ],
+    "observed_status": "queued",
+    "observed_runner_id": 0,
+    "observed_steps": []
+  },
+  "original_agentd_execution_qualified": false,
+  "snapshot_is_not_live_status": true
+}

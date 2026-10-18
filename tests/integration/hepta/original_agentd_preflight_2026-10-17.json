@@ -1,0 +1,39 @@
+{
+  "recorded_at_utc": "2026-10-17T11:12:19.142412+00:00",
+  "evidence_class": "original_agentd_readonly_acceptance_gate",
+  "status": "blocked",
+  "large_build_attempted": false,
+  "runtime_probe_attempted": false,
+  "live_agentd_acceptance": "not_run",
+  "required_toolchains": {
+    "upstream": "1.95.0",
+    "observer": "1.88.0"
+  },
+  "profile": {
+    "agentd_default_features": false,
+    "supervisor_production_authority": false,
+    "objective_issuer": false,
+    "model_turn": false,
+    "device_effect_provider": false
+  },
+  "steps": [],
+  "upstream": {
+    "commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+    "tree": "15c9d6ea07bf3832de82825a6cc1e8c958dd3d45",
+    "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+    "clean_checkout": true
+  },
+  "resources": {
+    "free_bytes": 29278208,
+    "minimum_free_bytes": 8589934592,
+    "bound_kind": "conservative_build_estimate_not_measured_size"
+  },
+  "installed_toolchains": [
+    "1.88.0-x86_64-unknown-linux-gnu (active)"
+  ],
+  "blockers": [
+    "insufficient_disk_for_original_build",
+    "toolchain_not_installed:1.95.0",
+    "build_tool_missing:cmake"
+  ]
+}

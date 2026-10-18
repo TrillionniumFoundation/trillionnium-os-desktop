@@ -1,0 +1,340 @@
+{
+  "original_hepta_pin": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+  "runs": [
+    {
+      "run": "01",
+      "archive_directory": "capture01-failed",
+      "executed_worktree": "/workspace/scratch/98f315e377b2/next-r6-runtime-old",
+      "provenance": {
+        "harness_commit": "c50d7b9b688135a22ced2f7f3cbe21c3028d8e17",
+        "harness_tree": "1b606b1922751fe938fa4bcca0a923516323f418",
+        "production_ui_commit": "35f379101c0863027e971ccb91faf8da71cf929c",
+        "production_source_tree": "48433c4f1e55de53e8c298193765949996eb18a0",
+        "unchanged_ui_subtree": "037f318be7140ef046eac1e9cabe230c07eb7059",
+        "tracked_sources": {
+          "harness": {
+            "path": "tests/ui/probe-original-hepta-shell.py",
+            "git_blob": "cec283317b00b11f95882ad0fbfce9f8a932dd4a",
+            "sha256": "356871f7827f644157fd3476643104bb62cfcab68bf4a4b6c12c75d081e2fe5a",
+            "bytes": 31984
+          },
+          "pixels": {
+            "path": "tests/ui/x11-ime-client.py",
+            "git_blob": "d17b931dcc3866124e7972e09ae90143bf943006",
+            "sha256": "0ad32bbdbef36ff157efd15bccb43cd4603f2b8258a53698bdce68a3c7c057f2",
+            "bytes": 17204
+          },
+          "guard": {
+            "path": "tests/integration/hepta/run_original_agentd.py",
+            "git_blob": "b0b04b01a28eb1b4ac08c38c47f6c14e1c7e4ca9",
+            "sha256": "21dd4a2e0621240a75f5ce37bad93da0a37352fbaa78554a50e048abe6a45fd0",
+            "bytes": 30386
+          }
+        },
+        "binaries": {
+          "trill-shell": {
+            "path": "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-shell",
+            "bytes": 24153992,
+            "sha256": "81e9bcbf79c4060c3047ad0c80df711bfd855f2f47c3900522927d37404d776f"
+          },
+          "trill-session": {
+            "path": "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-session",
+            "bytes": 3527808,
+            "sha256": "5c29cfd7f11455000d7c3d9c0cc2c58fb7fe8761ab326da34c794d0f3481924f"
+          },
+          "trill-ctl": {
+            "path": "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-ctl",
+            "bytes": 1494736,
+            "sha256": "920093314640ad1dd721425ec78457f4ca74c83f9c1a0a878d4ddfee4924a882"
+          }
+        },
+        "package_stage_sha256": "a9757073710b43c5383c2d594c4c944712a946466d90e47f2522aceab6c338b0",
+        "font_sha256": "27251f8f257e831f4b876408a7d0ef88ae2c18fe0cbb6780bd18fe6bad8ddb10",
+        "unchanged_session_path_dependency": {
+          "services/hepta-os/src": "8e116828e92f8186a08348bce2f0df47fcb699dd",
+          "services/hepta-os/Cargo.toml": "6441a6eeec92fec5de448f1b9ab3125620761553",
+          "services/hepta-os/Cargo.lock": "7c2c444263cef0f974e883c3d7d0e22e95585098"
+        }
+      },
+      "paired_runtime_receipt": {
+        "file": "capture01-failed/paired-runtime-receipt.json",
+        "bytes": 27421,
+        "sha256": "6aa7ad9371be2d2257926f6c619d1b70e64a8465bd4d11b8c1e2cbf3e8e64637"
+      },
+      "original_owner_binaries": {
+        "agentd": {
+          "path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/target/dev-small/codex-hepta-agentd",
+          "bytes": 329001344,
+          "sha256": "f476f9bb435c5127839c48ae7135d5a6fa7695ff5253460fdd8d19d7b084d4fa",
+          "elf_class": 64,
+          "elf_machine": 62,
+          "architecture": "x86_64"
+        },
+        "probe": {
+          "path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/target/dev-small/hepta-original-observer-probe",
+          "bytes": 29114728,
+          "sha256": "46c8f20bef00d5e4b76ae7fcba784937bc1c4d9a33d6b416cd4acc1b96d43365",
+          "elf_class": 64,
+          "elf_machine": 62,
+          "architecture": "x86_64"
+        },
+        "observer": {
+          "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-02/observer-target/debug/hepta-observe",
+          "bytes": 13883672,
+          "sha256": "de5aa738234b7ebfdf35afb5e78cf0296962f76625ae1e3fffdc44ba682b7a55",
+          "elf_class": 64,
+          "elf_machine": 62,
+          "architecture": "x86_64"
+        },
+        "session": {
+          "path": "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-session",
+          "bytes": 3527808,
+          "sha256": "5c29cfd7f11455000d7c3d9c0cc2c58fb7fe8761ab326da34c794d0f3481924f",
+          "elf_class": 64,
+          "elf_machine": 62,
+          "architecture": "x86_64"
+        },
+        "ctl": {
+          "path": "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-ctl",
+          "bytes": 1494736,
+          "sha256": "920093314640ad1dd721425ec78457f4ca74c83f9c1a0a878d4ddfee4924a882",
+          "elf_class": 64,
+          "elf_machine": 62,
+          "architecture": "x86_64"
+        }
+      },
+      "local_git_tree_and_production_closure_verified": true,
+      "pre_execution_source_snapshots_match_tracked_blobs": true,
+      "root_reported_published_same_tree_object": null
+    },
+    {
+      "run": "02",
+      "archive_directory": "capture02-r5-passed",
+      "executed_worktree": "/workspace/scratch/98f315e377b2/next-r6-runtime-old-03",
+      "provenance": {
+        "harness_commit": "28843c6632fe63db6b3fecb4d05888e90976fd16",
+        "harness_tree": "759c42b36d965174dc00a39b7f28e962ed667d85",
+        "production_ui_commit": "35f379101c0863027e971ccb91faf8da71cf929c",
+        "production_source_tree": "48433c4f1e55de53e8c298193765949996eb18a0",
+        "unchanged_ui_subtree": "037f318be7140ef046eac1e9cabe230c07eb7059",
+        "tracked_sources": {
+          "harness": {
+            "path": "tests/ui/probe-original-hepta-shell.py",
+            "git_blob": "d7d4889736f26bdb9bde155c7987a6ef20e9718a",
+            "sha256": "971c8a92ca2fe205784f2ebde3c4dceaf4615527f20df256071995157aa68265",
+            "bytes": 35068
+          },
+          "pixels": {
+            "path": "tests/ui/x11-ime-client.py",
+            "git_blob": "d17b931dcc3866124e7972e09ae90143bf943006",
+            "sha256": "0ad32bbdbef36ff157efd15bccb43cd4603f2b8258a53698bdce68a3c7c057f2",
+            "bytes": 17204
+          },
+          "guard": {
+            "path": "tests/integration/hepta/run_original_agentd.py",
+            "git_blob": "b0b04b01a28eb1b4ac08c38c47f6c14e1c7e4ca9",
+            "sha256": "21dd4a2e0621240a75f5ce37bad93da0a37352fbaa78554a50e048abe6a45fd0",
+            "bytes": 30386
+          }
+        },
+        "binaries": {
+          "trill-shell": {
+            "path": "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-shell",
+            "bytes": 24153992,
+            "sha256": "81e9bcbf79c4060c3047ad0c80df711bfd855f2f47c3900522927d37404d776f"
+          },
+          "trill-session": {
+            "path": "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-session",
+            "bytes": 3527808,
+            "sha256": "5c29cfd7f11455000d7c3d9c0cc2c58fb7fe8761ab326da34c794d0f3481924f"
+          },
+          "trill-ctl": {
+            "path": "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-ctl",
+            "bytes": 1494736,
+            "sha256": "920093314640ad1dd721425ec78457f4ca74c83f9c1a0a878d4ddfee4924a882"
+          }
+        },
+        "package_stage_sha256": "a9757073710b43c5383c2d594c4c944712a946466d90e47f2522aceab6c338b0",
+        "font_sha256": "27251f8f257e831f4b876408a7d0ef88ae2c18fe0cbb6780bd18fe6bad8ddb10",
+        "unchanged_session_path_dependency": {
+          "services/hepta-os/src": "8e116828e92f8186a08348bce2f0df47fcb699dd",
+          "services/hepta-os/Cargo.toml": "6441a6eeec92fec5de448f1b9ab3125620761553",
+          "services/hepta-os/Cargo.lock": "7c2c444263cef0f974e883c3d7d0e22e95585098"
+        }
+      },
+      "paired_runtime_receipt": {
+        "file": "capture02-r5-passed/paired-runtime-receipt.json",
+        "bytes": 65311,
+        "sha256": "cb79e60baf9aa571da1e73b0a6b727cc88b2587849a328188332c7779eac17c1"
+      },
+      "original_owner_binaries": {
+        "agentd": {
+          "path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/target/dev-small/codex-hepta-agentd",
+          "bytes": 329001344,
+          "sha256": "f476f9bb435c5127839c48ae7135d5a6fa7695ff5253460fdd8d19d7b084d4fa",
+          "elf_class": 64,
+          "elf_machine": 62,
+          "architecture": "x86_64"
+        },
+        "probe": {
+          "path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/target/dev-small/hepta-original-observer-probe",
+          "bytes": 29114728,
+          "sha256": "46c8f20bef00d5e4b76ae7fcba784937bc1c4d9a33d6b416cd4acc1b96d43365",
+          "elf_class": 64,
+          "elf_machine": 62,
+          "architecture": "x86_64"
+        },
+        "observer": {
+          "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-02/observer-target/debug/hepta-observe",
+          "bytes": 13883672,
+          "sha256": "de5aa738234b7ebfdf35afb5e78cf0296962f76625ae1e3fffdc44ba682b7a55",
+          "elf_class": 64,
+          "elf_machine": 62,
+          "architecture": "x86_64"
+        },
+        "session": {
+          "path": "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-session",
+          "bytes": 3527808,
+          "sha256": "5c29cfd7f11455000d7c3d9c0cc2c58fb7fe8761ab326da34c794d0f3481924f",
+          "elf_class": 64,
+          "elf_machine": 62,
+          "architecture": "x86_64"
+        },
+        "ctl": {
+          "path": "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-ctl",
+          "bytes": 1494736,
+          "sha256": "920093314640ad1dd721425ec78457f4ca74c83f9c1a0a878d4ddfee4924a882",
+          "elf_class": 64,
+          "elf_machine": 62,
+          "architecture": "x86_64"
+        }
+      },
+      "local_git_tree_and_production_closure_verified": true,
+      "pre_execution_source_snapshots_match_tracked_blobs": true,
+      "root_reported_published_same_tree_object": "66dba7f40c2fa8fea2e7828ec2fd4db336bb681f"
+    },
+    {
+      "run": "03",
+      "archive_directory": "capture03-freshness-passed",
+      "executed_worktree": "/workspace/scratch/98f315e377b2/next-r6-runtime-new-03",
+      "provenance": {
+        "harness_commit": "145e94c364243789b88c23b1292f9d4d9ca9a0e9",
+        "harness_tree": "98dee80a7ec855a84c777b350fed8ef675e31fc1",
+        "production_ui_commit": "84f0070b6e7e01238a8dac6044748b15101c9497",
+        "production_source_tree": "9c8e3627a970f9c3f2bea9bbdde583adeb4bc313",
+        "unchanged_ui_subtree": "22959f24a71b5ece8286a962abc19d9fe3ab6ffc",
+        "tracked_sources": {
+          "harness": {
+            "path": "tests/ui/probe-original-hepta-shell.py",
+            "git_blob": "d7d4889736f26bdb9bde155c7987a6ef20e9718a",
+            "sha256": "971c8a92ca2fe205784f2ebde3c4dceaf4615527f20df256071995157aa68265",
+            "bytes": 35068
+          },
+          "pixels": {
+            "path": "tests/ui/x11-ime-client.py",
+            "git_blob": "d17b931dcc3866124e7972e09ae90143bf943006",
+            "sha256": "0ad32bbdbef36ff157efd15bccb43cd4603f2b8258a53698bdce68a3c7c057f2",
+            "bytes": 17204
+          },
+          "guard": {
+            "path": "tests/integration/hepta/run_original_agentd.py",
+            "git_blob": "b0b04b01a28eb1b4ac08c38c47f6c14e1c7e4ca9",
+            "sha256": "21dd4a2e0621240a75f5ce37bad93da0a37352fbaa78554a50e048abe6a45fd0",
+            "bytes": 30386
+          }
+        },
+        "binaries": {
+          "trill-shell": {
+            "path": "/workspace/scratch/98f315e377b2/next-tools/ui-r6-freshness-build/target/debug/trill-shell",
+            "bytes": 24154200,
+            "sha256": "62d0f304d6a3a53db4bc605e374470a924a56bfeb63387b1c12f9f245f17536a",
+            "elf_machine": "x86_64"
+          },
+          "trill-session": {
+            "path": "/workspace/scratch/98f315e377b2/next-tools/ui-r6-freshness-build/target/debug/trill-session",
+            "bytes": 3527792,
+            "sha256": "f152e6413742baa3349aded2283f9aff41bfe1bc552586aa260ade6327d5d16d",
+            "elf_machine": "x86_64"
+          },
+          "trill-ctl": {
+            "path": "/workspace/scratch/98f315e377b2/next-tools/ui-r6-freshness-build/target/debug/trill-ctl",
+            "bytes": 1494736,
+            "sha256": "ba85b891f91a88ac3ad5240535f5dd6261c47eadbcc1bb64593add0a0aa2b598",
+            "elf_machine": "x86_64"
+          }
+        },
+        "package_stage_sha256": "a9757073710b43c5383c2d594c4c944712a946466d90e47f2522aceab6c338b0",
+        "font_sha256": "27251f8f257e831f4b876408a7d0ef88ae2c18fe0cbb6780bd18fe6bad8ddb10",
+        "unchanged_session_path_dependency": {
+          "services/hepta-os/src": "8e116828e92f8186a08348bce2f0df47fcb699dd",
+          "services/hepta-os/Cargo.toml": "6441a6eeec92fec5de448f1b9ab3125620761553",
+          "services/hepta-os/Cargo.lock": "7c2c444263cef0f974e883c3d7d0e22e95585098"
+        }
+      },
+      "paired_runtime_receipt": {
+        "file": "capture03-freshness-passed/paired-runtime-receipt.json",
+        "bytes": 66305,
+        "sha256": "14b0cfc7fcc5c70aa2957342b65ca74461e63b0b6bcdd1cad12cd767db48edaa"
+      },
+      "original_owner_binaries": {
+        "agentd": {
+          "path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/target/dev-small/codex-hepta-agentd",
+          "bytes": 329001344,
+          "sha256": "f476f9bb435c5127839c48ae7135d5a6fa7695ff5253460fdd8d19d7b084d4fa",
+          "elf_class": 64,
+          "elf_machine": 62,
+          "architecture": "x86_64"
+        },
+        "probe": {
+          "path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/target/dev-small/hepta-original-observer-probe",
+          "bytes": 29114728,
+          "sha256": "46c8f20bef00d5e4b76ae7fcba784937bc1c4d9a33d6b416cd4acc1b96d43365",
+          "elf_class": 64,
+          "elf_machine": 62,
+          "architecture": "x86_64"
+        },
+        "observer": {
+          "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-02/observer-target/debug/hepta-observe",
+          "bytes": 13883672,
+          "sha256": "de5aa738234b7ebfdf35afb5e78cf0296962f76625ae1e3fffdc44ba682b7a55",
+          "elf_class": 64,
+          "elf_machine": 62,
+          "architecture": "x86_64"
+        },
+        "session": {
+          "path": "/workspace/scratch/98f315e377b2/next-tools/ui-r6-freshness-build/target/debug/trill-session",
+          "bytes": 3527792,
+          "sha256": "f152e6413742baa3349aded2283f9aff41bfe1bc552586aa260ade6327d5d16d",
+          "elf_class": 64,
+          "elf_machine": 62,
+          "architecture": "x86_64"
+        },
+        "ctl": {
+          "path": "/workspace/scratch/98f315e377b2/next-tools/ui-r6-freshness-build/target/debug/trill-ctl",
+          "bytes": 1494736,
+          "sha256": "ba85b891f91a88ac3ad5240535f5dd6261c47eadbcc1bb64593add0a0aa2b598",
+          "elf_class": 64,
+          "elf_machine": 62,
+          "architecture": "x86_64"
+        }
+      },
+      "local_git_tree_and_production_closure_verified": true,
+      "pre_execution_source_snapshots_match_tracked_blobs": true,
+      "root_reported_published_same_tree_object": "299794f90d4557cec4ee9a7fc92c397031fced4f"
+    }
+  ],
+  "oracle_final_commit": "aa3fc6feac114ee78910be604fa2a190be080ab0",
+  "oracle_final_tree": "1aca36120aa0abdc9e56543dd67b8d8724cb9be4",
+  "oracle_candidate_raw_replay_commit": "68c9aa3df9a45906a44d20bd7f1a0bc684a19f02",
+  "oracle_candidate_raw_replay_sha256": "85ace5d05f00950aa493218121d2fd8dbdbb33a2669284563e684b8bc2d5880d",
+  "published_mapping": {
+    "provided_by": "root integration agent",
+    "mapping": {
+      "28843c6632fe63db6b3fecb4d05888e90976fd16": "66dba7f40c2fa8fea2e7828ec2fd4db336bb681f",
+      "145e94c364243789b88c23b1292f9d4d9ca9a0e9": "299794f90d4557cec4ee9a7fc92c397031fced4f",
+      "aa3fc6feac114ee78910be604fa2a190be080ab0": "cd92cf08c398bfbf8ea55381acc529d210a5bdc1"
+    },
+    "meaning": "Published objects are reported by root to have identical trees; original execution commit IDs remain unchanged in every raw receipt.",
+    "remote_objects_independently_fetched_by_a10": false
+  }
+}
