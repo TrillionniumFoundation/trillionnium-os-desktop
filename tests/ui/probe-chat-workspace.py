@@ -387,7 +387,7 @@ def outside(args):
         '--symlink', 'usr/sbin', '/sbin', '--symlink', 'usr/lib', '/lib', '--symlink', 'usr/lib64', '/lib64',
         '--ro-bind', '/etc', '/etc', '--proc', '/proc', '--dev', '/dev', '--tmpfs', '/tmp', '--dir', '/root', '--dir', '/run',
         '--ro-bind', str(ROOT), '/test-harness', '--ro-bind', str(source), '/test-source',
-        '--ro-bind', str(binary_dir), '/ui-bin', '--bind', str(output / 'inside'), '/capture',
+        '--ro-bind', str(binary_dir), '/ui-bin', '--bind', str(output / 'inside'), '/capture', '--chdir', '/capture',
         '--clearenv', '--setenv', 'PATH', '/usr/bin:/bin', '--setenv', 'LANG', 'C.UTF-8',
         '--setenv', 'LC_ALL', 'C.UTF-8', '--setenv', 'TZ', 'UTC',
         '/usr/bin/python3', '-B', str(script), '--inside', '/capture']
