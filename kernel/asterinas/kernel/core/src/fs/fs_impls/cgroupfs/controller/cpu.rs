@@ -808,7 +808,10 @@ mod quota_debt_regressions {
         budget.charge(last_completed + period / 2,
                       last_completed + period + quota / 2);
         assert_eq!(budget.window_start, last_completed + period);
-        assert_eq!(budget.carry_debt_clocks, period / 2 - quota);
+        // A suffix beginning at floor(P/2) contains ceil(P/2) clocks.
+        // TSC calibration can make P odd; do not discard its final clock.
+        let completed_work = period - period / 2;
+        assert_eq!(budget.carry_debt_clocks, completed_work - quota);
         assert_eq!(budget.used_clocks, quota / 2);
         assert!(!budget.eligible(last_completed + period + quota / 2));
     }
@@ -820,11 +823,46 @@ mod quota_debt_regressions {
         let start = period.saturating_mul(2);
         let mut budget = sample(1_000, 100_000, start);
         budget.charge(start + period / 2, start + 5 * period + quota / 2);
-        // First completed period: P/2 work - Q budget. The following four
-        // completed periods were fully busy; no per-period heap work or loop.
-        let expected = period / 2 - quota + 4 * (period - quota);
+        // Count the first suffix by its endpoints, including an odd P's
+        // final clock. The following four completed periods were fully busy;
+        // no per-period heap work or loop is needed in the production path.
+        let completed_work = period - period / 2;
+        let expected = completed_work - quota + 4 * (period - quota);
         assert_eq!(budget.carry_debt_clocks, expected);
         assert_eq!(budget.used_clocks, quota / 2);
+    }
+
+    #[ktest]
+    fn odd_and_even_completed_periods_preserve_every_clock() {
+        let quota = CpuMax::us_to_clocks(1_000);
+        // The crossing helper takes its period explicitly. Exercise both
+        // parities regardless of the host's calibrated TSC frequency, while
+        // retaining its real quota conversion and completed-window logic.
+        let base_period = quota.checked_mul(4).unwrap();
+        for extra_clock in [1, 2] {
+            let period = base_period.checked_add(extra_clock).unwrap();
+            let start = period.checked_mul(2).unwrap();
+            for idle_periods in [0, 6] {
+                for full_periods in [0, 4] {
+                    let budget = sample(1_000, 100_000, start);
+                    let from = start + idle_periods * period + period / 2;
+                    let new_start = start + (idle_periods + 1 + full_periods) * period;
+                    // Independently integrate each completed window by its
+                    // endpoint overlap. Idle budgets must never become credit.
+                    let mut expected_debt = 0u64;
+                    let mut window = start;
+                    while window < new_start {
+                        let work = (window + period).saturating_sub(from.max(window));
+                        expected_debt = expected_debt.saturating_add(work).saturating_sub(quota);
+                        window += period;
+                    }
+                    assert_eq!(
+                        budget.debt_after_crossing(from, new_start, period),
+                        expected_debt,
+                    );
+                }
+            }
+        }
     }
 
     #[ktest]
