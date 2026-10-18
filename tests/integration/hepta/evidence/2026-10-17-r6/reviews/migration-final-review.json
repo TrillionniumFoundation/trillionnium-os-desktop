@@ -1,0 +1,51 @@
+{
+  "review_context": "elevated read-only view of task-owned RAM cache paths",
+  "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/r6-retained-cache-migration-03/receipt.json",
+  "receipt_sha256": "1f6854af7ec3f66e6a2426ae70e85d7813fe2cf3a658628b948045094a5ec735",
+  "status": "passed",
+  "prior_failure_chain": [
+    {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/r6-retained-cache-migration-01/receipt.json",
+      "sha256": "cff8e9ac31d2d9c63df78cfabaa3b10d3250b14f20a8e54a28d8d6efe4d5a09d",
+      "status": "failed",
+      "hash_verified": true
+    },
+    {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/r6-retained-cache-migration-02/receipt.json",
+      "sha256": "221f9db60e561bdd3fac2a914ad106834f95d5410ef433f77e7af9ac39713a45",
+      "status": "failed",
+      "hash_verified": true
+    }
+  ],
+  "actual_paths": [
+    {
+      "source": "/dev/shm/trill-hepta-r4-enuzuex9/probe-check-02/target",
+      "actual_link_target": "/workspace/scratch/98f315e377b2/next-tools/r6-retained-cache-migration-01/check-target",
+      "resolved_destination": "/workspace/scratch/98f315e377b2/next-tools/r6-retained-cache-migration-01/check-target",
+      "root_mode": "0o755",
+      "root_mode_matches_manifest": true,
+      "uid": 0,
+      "old_duplicate_path_absent": true,
+      "manifest_sha256": "57c50e280bfba2c5f0de0e079cc7b0cf938db293e49a81a2278a8a7917a1cc44",
+      "manifest_digest_verified": true,
+      "file_count": 10386,
+      "file_bytes": 1653171601
+    },
+    {
+      "source": "/dev/shm/trill-hepta-r4-enuzuex9/cargo",
+      "actual_link_target": "/workspace/scratch/98f315e377b2/next-tools/r6-retained-cache-migration-02/cargo-cache",
+      "resolved_destination": "/workspace/scratch/98f315e377b2/next-tools/r6-retained-cache-migration-02/cargo-cache",
+      "root_mode": "0o700",
+      "root_mode_matches_manifest": true,
+      "uid": 0,
+      "old_duplicate_path_absent": true,
+      "manifest_sha256": "93e09c45d56d48b521f90449133bdeae645b71e4661c123c32df8d73330c369c",
+      "manifest_digest_verified": true,
+      "file_count": 56912,
+      "file_bytes": 1587708151
+    }
+  ],
+  "source_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+  "directory_mtimes_required": false,
+  "scope": "Receipt chain, compressed manifests, actual symlink targets/root modes/ownership and duplicate absence independently verified. This read does not rehash every cache file or prove original runtime execution."
+}

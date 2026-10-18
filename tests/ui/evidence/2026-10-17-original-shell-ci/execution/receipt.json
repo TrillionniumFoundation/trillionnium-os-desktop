@@ -1,0 +1,42 @@
+{
+  "cwd": "/workspace/scratch/98f315e377b2/next-r6-ci-oracle",
+  "command": [
+    "bash",
+    "--noprofile",
+    "--norc",
+    "/workspace/scratch/98f315e377b2/next-tools/r6-shell-oracle-ci-01/workflow-step.sh"
+  ],
+  "test_argv": [
+    "python3",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests/ui",
+    "-p",
+    "test_original_hepta_shell.py",
+    "-v"
+  ],
+  "workflow_run_block_matches_preset": true,
+  "workflow_run_block_sha256": "2a91459734feb431f6365b07fb239d53c29882a215e6e2dbb9d237ad4d492c79",
+  "environment_override": {
+    "RUNNER_TEMP": "/workspace/scratch/98f315e377b2/next-tools/r6-shell-oracle-ci-01/runner-temp"
+  },
+  "timeout_seconds": 30,
+  "started_unix_ms": 1792279529350,
+  "source_commit": "632f5f0b27bc4c051f1b13dbb162e3c7cb9727ef",
+  "status": "passed",
+  "exit_code": 0,
+  "finished_unix_ms": 1792279529535,
+  "source_identity_unchanged": true,
+  "passed_test_count": 8,
+  "failed_test_count": 0,
+  "tee_log": {
+    "file": "runner-temp/a10/original-shell-contracts.log",
+    "bytes": 1850,
+    "sha256": "0e897af3e9aaf7af2a6d9e6eb3e9051075ff89f4f985ceaa0712a2c2edd7cf85"
+  },
+  "tee_log_equals_raw_process_output": true,
+  "qualification": "Exact local execution of the newly committed A10 Python contract-test step; synthetic contract inputs plus actual disposable-child parent-death check. Not a GitHub run, original Agentd run, Rust rebuild, or actual window capture."
+}

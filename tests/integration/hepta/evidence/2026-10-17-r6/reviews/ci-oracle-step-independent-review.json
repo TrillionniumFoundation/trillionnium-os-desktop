@@ -1,0 +1,58 @@
+{
+  "reviewer": "/root/r6_review_ci",
+  "reviewed_utc": "2026-10-17T23:30:12.284272+00:00",
+  "status": "passed",
+  "source_commit": "632f5f0b27bc4c051f1b13dbb162e3c7cb9727ef",
+  "source_tree": "2486e578a802b30c396f1910a6e7d6c42a70b8af",
+  "changed_paths": [
+    ".github/workflows/a10-host.yml",
+    "support/ui/ORIGINAL_HEPTA_SHELL.md"
+  ],
+  "source_before_after_and_six_actual_git_file_snapshots_identical": true,
+  "workflow_run_block_exactly_matches_executed_script": true,
+  "bash_pipefail_preserves_test_failure": true,
+  "log_is_inside_existing_always_artifact_directory": true,
+  "actual_local_tests_passed": 8,
+  "actual_test_failures": 0,
+  "raw_tee_log_matches_process_stdout_stderr": true,
+  "actual_disposable_parent_death_record": {
+    "test": "fresh_exec_parent_death",
+    "parent_pid": 35,
+    "actual_exec_child_pid": 36,
+    "target_executable": "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3.12",
+    "observed_si_code": 2,
+    "observed_si_status": 9,
+    "child_reaped": true
+  },
+  "receipt": {
+    "path": "/workspace/scratch/98f315e377b2/next-tools/r6-shell-oracle-ci-01/receipt.json",
+    "sha256": "b0fd52967c4db36136cd512ad1fee1a0f62c7e8a3e62432f86b6b2e05a5d9e57"
+  },
+  "execution_plan": {
+    "path": "/workspace/scratch/98f315e377b2/next-tools/r6-shell-oracle-ci-01/execution-plan.json",
+    "sha256": "336061c86fd2e3bf94e2478cd043dd0f0acc01a51a4d60ce381989545cb470ec"
+  },
+  "raw_log": {
+    "path": "/workspace/scratch/98f315e377b2/next-tools/r6-shell-oracle-ci-01/runner-temp/a10/original-shell-contracts.log",
+    "bytes": 1850,
+    "sha256": "0e897af3e9aaf7af2a6d9e6eb3e9051075ff89f4f985ceaa0712a2c2edd7cf85"
+  },
+  "verified_manifest_files": [
+    "execution-plan.json",
+    "receipt.json",
+    "run-ci-contracts-source.py",
+    "runner-temp/a10/original-shell-contracts.log",
+    "source-after.json",
+    "source-before.json",
+    "sources/.github/workflows/a10-host.yml",
+    "sources/support/ui/ORIGINAL_HEPTA_SHELL.md",
+    "sources/tests/integration/hepta/run_original_agentd.py",
+    "sources/tests/ui/probe-original-hepta-shell.py",
+    "sources/tests/ui/test_original_hepta_shell.py",
+    "sources/tests/ui/x11-ime-client.py",
+    "stdout-stderr.log",
+    "workflow-step.sh"
+  ],
+  "qualification": "Exact local execution of the newly committed CI step, with synthetic contract data and an actual disposable child parent-death test. No GitHub run, original Agentd, Session/Shell product launch, Rust rebuild, or actual pixels are newly qualified.",
+  "reviewer_did_not_rerun_tests": true
+}
