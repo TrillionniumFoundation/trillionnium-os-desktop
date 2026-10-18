@@ -6,6 +6,37 @@ complete Asterinas **v0.19.0**, commit
 `96605cf64aeae2d34f29b97e85eff9315fe10a8e`. Upstream documentation, attribution,
 and `LICENSE-MPL` are preserved. The project root README stays empty.
 
+## Current main validation — 2026-10-18
+
+The current run starts from remote main `b7a8388726b67394398431e74d2e5d2079ff375f`
+and preserves the existing A01 history through an ordinary merge. Published
+producer `c22891b593f77c98ff4ea94d7aecb54f32222651` completed an absent-target
+**make kernel → make run_kernel** with the fixed nightly, a small initramfs,
+1 vCPU and 512 MiB under QEMU TCG. Both make commands returned 0 and the
+actual full-kernel guest returned raw **33**. Its complete boot ELF is
+8,310,560 bytes, SHA256
+`208caf5126c94f660292aacd36040ec62c9d317b116b9a861634f08cb02cd8f3`.
+The source-built first ELF and the actual loaded private copy are identical.
+
+OSTD/core ktests at that producer reported **374 passes**, zero failures or
+filtered tests; three VMX/EPT capability skips leave a **371 exercised lower
+bound**. Current core passed all 153 tests. The host build gate passed 86
+checks on the pre-commit merge worktree with its 13 recorded inputs equal to
+the producer; OSDK host units at the producer passed 45 with one existing
+ignored transport probe. A05/A06 core, OSTD and the external ABI retain the
+exact bytes of the fetched main. No dedicated A05 ioctl or A06 final-debit
+lifecycle/SMP acceptance is claimed by this minimal boot.
+
+[The current report](evidence/2026-10-18-current-main/REPORT.md) links the full
+serial logs, exact QEMU command, dependency installation evidence, compressed
+loaded artifacts and before/after source receipts. The [owner handoff](evidence/2026-10-18-current-main/HANDOFF.md)
+lists concrete Process, ioctl and scheduler interfaces. The report/lock/evidence
+publication follows the tested producer; it is not claimed as a separately
+rebuilt final HEAD. All earlier results below retain their own producer and
+acceptance scope.
+
+## Earlier validation snapshots
+
 The 2026-10-17 project-cloud validation completed the ordinary developer
 pipeline at published code `d879a9d2ffae8d0eb0df441370da54f9e3a38431`:
 an absent target, `make kernel`, then `make run_kernel`, a full initramfs boot

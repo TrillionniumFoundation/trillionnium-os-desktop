@@ -1,0 +1,68 @@
+{
+  "head": "c22891b593f77c98ff4ea94d7aecb54f32222651",
+  "project_tree": "af19f57a5e275fb8712363d90e72eca88477ec3e",
+  "kernel_tree": "6c2904e53e79cedbbaf013a73a6173f4afa57010",
+  "upstream_commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+  "upstream_tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+  "script_sha256": "6f9ae236c1d2c6398e830ee9dba9d57195933e69b32c777df8038b59c874b4c9",
+  "file_count": 3010,
+  "files_sha256": "36d3f324138eb079ceb994d0a190828b202bacd4c29e162ff14272313123a832",
+  "phases": [
+    {
+      "phase": "before",
+      "captured_at_utc": "2026-10-18T03:02:27.265019+00:00",
+      "manifest": "source/before.json.gz",
+      "matches_git": true,
+      "git_status_clean": true,
+      "comparison": null
+    },
+    {
+      "phase": "after-kernel",
+      "captured_at_utc": "2026-10-18T03:06:50.059075+00:00",
+      "manifest": "source/after-kernel.json.gz",
+      "matches_git": true,
+      "git_status_clean": true,
+      "comparison": {
+        "reference": "/tmp/a01-source-before.json",
+        "changed_identity_fields": [],
+        "passed": true
+      }
+    },
+    {
+      "phase": "after-boot",
+      "captured_at_utc": "2026-10-18T03:07:17.116401+00:00",
+      "manifest": "source/after-boot.json.gz",
+      "matches_git": true,
+      "git_status_clean": true,
+      "comparison": {
+        "reference": "/tmp/a01-source-before.json",
+        "changed_identity_fields": [],
+        "passed": true
+      }
+    },
+    {
+      "phase": "after-ktest",
+      "captured_at_utc": "2026-10-18T03:13:34.295564+00:00",
+      "manifest": "source/after-ktest.json.gz",
+      "matches_git": true,
+      "git_status_clean": true,
+      "comparison": {
+        "reference": "/tmp/a01-source-before.json",
+        "changed_identity_fields": [],
+        "passed": true
+      }
+    }
+  ],
+  "external_abi": {
+    "path": "libs/os-abi/src/lib.rs",
+    "git_mode": "100644",
+    "git_kind": "blob",
+    "git_blob": "1bb29f39c39ba4bd3414ecb433b4831de881d5a4",
+    "worktree_mode": "100644",
+    "size": 46709,
+    "sha256": "0de94affd479cecd692de000cc4ab97f5ce7453d81dc0dcd46c7db2e67fa35ec",
+    "worktree_git_blob": "1bb29f39c39ba4bd3414ecb433b4831de881d5a4",
+    "matches_git": true
+  },
+  "metadata_commit_note": "This evidence is added after executing this producer commit. The evidence/report/lock-only publication commit is not asserted to have been separately rebuilt."
+}
