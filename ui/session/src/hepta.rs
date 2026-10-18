@@ -456,6 +456,7 @@ fn project_observation(
         last_attempt_unix_ms: Some(sampled_unix_ms),
         error_code: None,
         last_observation: Some(last_observation),
+        runtime_sample_clock: None,
         run,
     }
 }

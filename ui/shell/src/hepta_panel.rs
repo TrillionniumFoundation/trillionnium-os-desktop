@@ -399,6 +399,7 @@ mod probe_tests {
             last_attempt_unix_ms: Some(10_000),
             error_code: None,
             run: None,
+            runtime_sample_clock: None,
             last_observation: Some(HeptaRuntimeObservation {
                 sampled_unix_ms: 10_000,
                 agent_id: "11111111-1111-4111-8111-111111111111".into(),

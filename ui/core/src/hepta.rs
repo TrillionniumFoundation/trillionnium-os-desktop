@@ -180,6 +180,15 @@ impl HeptaRunProjection {
     }
 }
 
+/// Session's clock for one successful runtime read, independent of later
+/// failed polls and separately sampled known-run observations.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct HeptaRuntimeSampleClock {
+    pub observation_sequence: u64,
+    pub sample_age_at_snapshot_ms: u64,
+}
+
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct HeptaProjection {
@@ -188,6 +197,10 @@ pub struct HeptaProjection {
     /// Stable, bounded diagnostic code only; no endpoint or raw backend error.
     pub error_code: Option<String>,
     pub last_observation: Option<HeptaRuntimeObservation>,
+    /// Missing in older producers. A consumer must treat an observed runtime
+    /// with no successful-sample age as unknown, not as a zero-age success.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub runtime_sample_clock: Option<HeptaRuntimeSampleClock>,
     /// Omitted unless a trusted launcher configured an exact known run ID.
     /// Unconfigured snapshots retain the previous wire shape byte for byte.
     #[serde(default, skip_serializing_if = "Option::is_none")]

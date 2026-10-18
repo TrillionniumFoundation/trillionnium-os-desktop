@@ -1043,6 +1043,7 @@ mod observation_freshness_tests {
     use super::*;
     use trill_ui_core::hepta::{
         HeptaConnectionState, HeptaHealthObservation, HeptaRuntimeObservation,
+        HeptaRuntimeSampleClock,
     };
 
     type ResponseSender = SyncSender<BridgeReply>;
@@ -1053,6 +1054,7 @@ mod observation_freshness_tests {
             last_attempt_unix_ms: Some(sampled_unix_ms),
             error_code: None,
             run: None,
+            runtime_sample_clock: None,
             last_observation: Some(HeptaRuntimeObservation {
                 sampled_unix_ms,
                 agent_id: "11111111-1111-4111-8111-111111111111".into(),
@@ -1165,6 +1167,58 @@ mod observation_freshness_tests {
             })
             .collect::<Vec<_>>()
             .join("\n")
+    }
+
+    #[test]
+    fn runtime_total_age_includes_source_age_rtt_and_queue_after_wall_clock_rollback() {
+        let (mut desktop, outgoing) = queued_desktop();
+        let now = Instant::now();
+        let mut sample = observed(10_000);
+        sample.runtime_sample_clock = Some(HeptaRuntimeSampleClock {
+            observation_sequence: 1,
+            sample_age_at_snapshot_ms: 6_000,
+        });
+        enqueue_at(
+            &outgoing,
+            sample.clone(),
+            now - Duration::from_millis(2_011),
+            now - Duration::from_millis(1_991),
+        );
+        // The successful sample was already 6 seconds old inside this IPC.
+        // A 20 ms round trip and 1,991 ms queue delay put its conservative
+        // total age at 8,011 ms. Wall time has rolled back to a 6 second age;
+        // separately checking wall age and receipt age would report fresh.
+        desktop.receive_and_refresh_hepta(|| (now, 16_000));
+        let text = actual_status_text(&desktop.hepta);
+        assert!(
+            text.contains("STALE · CURRENT STATE UNKNOWN"),
+            "the actual runtime status wrongly renewed its freshness: {text:?}"
+        );
+        assert!(!text.contains("OBSERVED · READ ONLY"));
+        assert_eq!(desktop.hepta.last_observation, sample.last_observation);
+        assert_eq!(desktop.hepta.last_attempt_unix_ms, sample.last_attempt_unix_ms);
+        assert!(desktop.connected);
+    }
+
+    #[test]
+    fn runtime_total_age_accepts_the_exact_seven_second_boundary() {
+        let (mut desktop, outgoing) = queued_desktop();
+        let now = Instant::now();
+        let mut sample = observed(10_000);
+        sample.runtime_sample_clock = Some(HeptaRuntimeSampleClock {
+            observation_sequence: 1,
+            sample_age_at_snapshot_ms: 6_000,
+        });
+        enqueue_at(
+            &outgoing,
+            sample.clone(),
+            now - Duration::from_millis(1_000),
+            now - Duration::from_millis(980),
+        );
+        desktop.receive_and_refresh_hepta(|| (now, 16_000));
+        assert_eq!(desktop.hepta.connection, HeptaConnectionState::Observed);
+        assert!(actual_status_text(&desktop.hepta).contains("OBSERVED · READ ONLY"));
+        assert_eq!(desktop.hepta.last_observation, sample.last_observation);
     }
 
     #[test]
