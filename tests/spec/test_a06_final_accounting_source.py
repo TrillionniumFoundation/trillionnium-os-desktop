@@ -2,7 +2,8 @@
 
 This is intentionally a narrow source contract.  The full scheduler and QEMU
 tests remain the authority for runtime behavior; the guard prevents a future
-cleanup from reintroducing the known Weak<Process> early-return hole.
+cleanup from dropping the retained final-charge path. Behavioral regression
+coverage lives in cpu/final_charge_regressions.rs and runs in real kernel ktest.
 """
 
 from pathlib import Path
@@ -25,11 +26,7 @@ class A06FinalAccountingSource(unittest.TestCase):
         self.assertIn("if let Some(cgroup) = thread.cpu_cgroup()", body)
         self.assertIn("charge_bandwidth_hierarchy(from, until)", body)
         self.assertIn("CgroupSystem::singleton().controller().cpu.read()", body)
-        # The Weak<Process> failure must not immediately return before the
-        # fallback charge is attempted.
-        failure = body.index("let Some(process) = thread.weak_process().upgrade() else")
-        fallback = body.index("thread.cpu_cgroup()", failure)
-        self.assertLess(failure, fallback)
+        self.assertIn("guard.get().is_some() || !process.status().is_zombie()", body)
 
     def test_migration_updates_all_live_thread_snapshots(self):
         source = CGROUP_RS.read_text()

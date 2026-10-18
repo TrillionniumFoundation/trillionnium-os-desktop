@@ -53,10 +53,10 @@ pub struct PosixThread {
     process: Weak<Process>,
     task: Weak<Task>,
 
-    /// Cgroup snapshot used for the last scheduler debit after the process
-    /// owner has gone away.  The process cgroup is still the authoritative
-    /// live binding; this reference only keeps that binding available for the
-    /// deferred final charge of an exited task.
+    /// Cgroup snapshot used for the last scheduler debit after process exit.
+    /// The process cgroup is still the authoritative live binding; this
+    /// reference preserves it after a zombie is detached from its cgroup,
+    /// whether or not the parent has reaped the process yet.
     cpu_cgroup: RcuOption<Arc<CpuCgroupLease>>,
 
     // Mutable part
