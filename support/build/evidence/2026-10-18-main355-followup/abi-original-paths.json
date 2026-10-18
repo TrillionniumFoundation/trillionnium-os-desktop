@@ -1,0 +1,470 @@
+{
+  "exclusions": [
+    {
+      "path": "/workspace/scratch/d7da9e7650f0/a01-runtime/review/a02-after-main-3551e1e/target",
+      "reason": "Cargo target binaries, metadata and build cache are outside this text-evidence archive."
+    },
+    {
+      "pattern": "**/__pycache__/**, **/.pytest_cache/**",
+      "reason": "Interpreter/test caches are outside text evidence."
+    },
+    {
+      "reason": "No scope expansion; parent preserves kernel evidence separately.",
+      "scope": "Unrelated temporary worktrees and parent kernel build/runtime outputs"
+    }
+  ],
+  "files": [
+    {
+      "archive_member": "environment/env.sh",
+      "kind": "original_environment_setup_script",
+      "original_absolute_path": "/workspace/scratch/d7da9e7650f0/a01-runtime/env.sh",
+      "original_mode": "0o644",
+      "sha256": "2a5a7b26e546b68605a4fbdb52198998b5f9b3d95d3e030a4c2a1db8b2f28ae0",
+      "size": 1337
+    },
+    {
+      "archive_member": "gate/mutations.json",
+      "kind": "original_gate_report_with_raw_command_output",
+      "original_absolute_path": "/workspace/scratch/d7da9e7650f0/a01-runtime/review/a02-after-main-3551e1e/mutations.json",
+      "original_mode": "0o644",
+      "sha256": "11b7f38397f27bb8e91709e908c10f5f8da07d33fc365f0238636699ce1c8901",
+      "size": 229361
+    },
+    {
+      "archive_member": "gate/report.json",
+      "kind": "original_gate_report_with_raw_command_output",
+      "original_absolute_path": "/workspace/scratch/d7da9e7650f0/a01-runtime/review/a02-after-main-3551e1e/report.json",
+      "original_mode": "0o644",
+      "sha256": "0ead346793aecc193c76586c34caf9b67772a441ec7d63877361d360bcd94bc7",
+      "size": 346133
+    },
+    {
+      "archive_member": "gate/snapshot/README.md",
+      "kind": "original_gate_snapshot_input_or_generated_lock",
+      "original_absolute_path": "/workspace/scratch/d7da9e7650f0/a01-runtime/review/a02-after-main-3551e1e/snapshot/README.md",
+      "original_mode": "0o444",
+      "original_repository_absolute_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/README.md",
+      "repository_relative_source_path": "README.md",
+      "repository_source_git_blob_sha1": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "repository_source_head": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "archive_member": "gate/snapshot/libs/os-abi/Cargo.lock",
+      "kind": "original_gate_snapshot_input_or_generated_lock",
+      "original_absolute_path": "/workspace/scratch/d7da9e7650f0/a01-runtime/review/a02-after-main-3551e1e/snapshot/libs/os-abi/Cargo.lock",
+      "original_mode": "0o644",
+      "sha256": "95c2616d9e61cbbb848888797f71d434d59744612fbaad5fa558754488cbffbd",
+      "size": 155
+    },
+    {
+      "archive_member": "gate/snapshot/libs/os-abi/Cargo.toml",
+      "kind": "original_gate_snapshot_input_or_generated_lock",
+      "original_absolute_path": "/workspace/scratch/d7da9e7650f0/a01-runtime/review/a02-after-main-3551e1e/snapshot/libs/os-abi/Cargo.toml",
+      "original_mode": "0o644",
+      "original_repository_absolute_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/libs/os-abi/Cargo.toml",
+      "repository_relative_source_path": "libs/os-abi/Cargo.toml",
+      "repository_source_git_blob_sha1": "d4fcfed8405155e257925b08fc7a8a7805ef81e1",
+      "repository_source_head": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+      "sha256": "8941aa060c09b8243125fceba8000bac896ac12a72f215a1295174cdf1f92b3a",
+      "size": 143
+    },
+    {
+      "archive_member": "gate/snapshot/libs/os-abi/src/lib.rs",
+      "kind": "original_gate_snapshot_input_or_generated_lock",
+      "original_absolute_path": "/workspace/scratch/d7da9e7650f0/a01-runtime/review/a02-after-main-3551e1e/snapshot/libs/os-abi/src/lib.rs",
+      "original_mode": "0o644",
+      "original_repository_absolute_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/libs/os-abi/src/lib.rs",
+      "repository_relative_source_path": "libs/os-abi/src/lib.rs",
+      "repository_source_git_blob_sha1": "276e59ef0de4df46c09b17a792c5c049024d07b3",
+      "repository_source_head": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+      "sha256": "826e6533bd7ed2f6527db819e9f0400867ca1e607cd0581a03970444c3e4b60f",
+      "size": 47272
+    },
+    {
+      "archive_member": "gate/snapshot/libs/os-abi/tests/golden_vectors.rs",
+      "kind": "original_gate_snapshot_input_or_generated_lock",
+      "original_absolute_path": "/workspace/scratch/d7da9e7650f0/a01-runtime/review/a02-after-main-3551e1e/snapshot/libs/os-abi/tests/golden_vectors.rs",
+      "original_mode": "0o644",
+      "original_repository_absolute_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/libs/os-abi/tests/golden_vectors.rs",
+      "repository_relative_source_path": "libs/os-abi/tests/golden_vectors.rs",
+      "repository_source_git_blob_sha1": "b6ee5929b7bea1c8de32e7411964327f9716a31c",
+      "repository_source_head": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+      "sha256": "4e67370ffdb00aec71655c8e37d18b864162a13ed984bbab82dfcc9c20ffe1de",
+      "size": 17995
+    },
+    {
+      "archive_member": "gate/snapshot/libs/os-abi/tests/mutation_kill.rs",
+      "kind": "original_gate_snapshot_input_or_generated_lock",
+      "original_absolute_path": "/workspace/scratch/d7da9e7650f0/a01-runtime/review/a02-after-main-3551e1e/snapshot/libs/os-abi/tests/mutation_kill.rs",
+      "original_mode": "0o644",
+      "original_repository_absolute_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/libs/os-abi/tests/mutation_kill.rs",
+      "repository_relative_source_path": "libs/os-abi/tests/mutation_kill.rs",
+      "repository_source_git_blob_sha1": "7ce09ea2098f801f7c7feb44e6791b491ce38ae3",
+      "repository_source_head": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+      "sha256": "1f14653601039db35ba3bed7dcc6f57ec2e288592b871772e0c4f3c744a1f07a",
+      "size": 8006
+    },
+    {
+      "archive_member": "gate/snapshot/libs/os-abi/tests/negative_vectors.rs",
+      "kind": "original_gate_snapshot_input_or_generated_lock",
+      "original_absolute_path": "/workspace/scratch/d7da9e7650f0/a01-runtime/review/a02-after-main-3551e1e/snapshot/libs/os-abi/tests/negative_vectors.rs",
+      "original_mode": "0o644",
+      "original_repository_absolute_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/libs/os-abi/tests/negative_vectors.rs",
+      "repository_relative_source_path": "libs/os-abi/tests/negative_vectors.rs",
+      "repository_source_git_blob_sha1": "3da7a23df6b30095c8748ecfa284680c85fa51cb",
+      "repository_source_head": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+      "sha256": "a5d98872b3e009e2d986d05f9219348bcac7b7f54dbec56e332553b05f1028b7",
+      "size": 29539
+    },
+    {
+      "archive_member": "gate/snapshot/libs/os-abi/tests/profile_boundaries.rs",
+      "kind": "original_gate_snapshot_input_or_generated_lock",
+      "original_absolute_path": "/workspace/scratch/d7da9e7650f0/a01-runtime/review/a02-after-main-3551e1e/snapshot/libs/os-abi/tests/profile_boundaries.rs",
+      "original_mode": "0o644",
+      "original_repository_absolute_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/libs/os-abi/tests/profile_boundaries.rs",
+      "repository_relative_source_path": "libs/os-abi/tests/profile_boundaries.rs",
+      "repository_source_git_blob_sha1": "900edb8c094f32feb4e40a61714a375d6585580b",
+      "repository_source_head": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+      "sha256": "e755ceb1748296727000a4346457434069081d38131956722209ddbaedd8f535",
+      "size": 15508
+    },
+    {
+      "archive_member": "gate/snapshot/libs/os-abi/tests/response_snapshot.rs",
+      "kind": "original_gate_snapshot_input_or_generated_lock",
+      "original_absolute_path": "/workspace/scratch/d7da9e7650f0/a01-runtime/review/a02-after-main-3551e1e/snapshot/libs/os-abi/tests/response_snapshot.rs",
+      "original_mode": "0o644",
+      "original_repository_absolute_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/libs/os-abi/tests/response_snapshot.rs",
+      "repository_relative_source_path": "libs/os-abi/tests/response_snapshot.rs",
+      "repository_source_git_blob_sha1": "105fd38a808561ff9628aa9b2eb3fdc8c2360bb7",
+      "repository_source_head": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+      "sha256": "003569153f8bf951a3695403993b01f3d5e033f6ebd4123bb8ee771e0a133a23",
+      "size": 7763
+    },
+    {
+      "archive_member": "gate/snapshot/libs/os-abi/tests/semantic_edges.rs",
+      "kind": "original_gate_snapshot_input_or_generated_lock",
+      "original_absolute_path": "/workspace/scratch/d7da9e7650f0/a01-runtime/review/a02-after-main-3551e1e/snapshot/libs/os-abi/tests/semantic_edges.rs",
+      "original_mode": "0o644",
+      "original_repository_absolute_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/libs/os-abi/tests/semantic_edges.rs",
+      "repository_relative_source_path": "libs/os-abi/tests/semantic_edges.rs",
+      "repository_source_git_blob_sha1": "d8708aa170f907af154fc5fec3eff5d39d1efe1a",
+      "repository_source_head": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+      "sha256": "1fda562bb27f000475d2288ae9f6208d4eb575cc06daf5be5d850030994efc77",
+      "size": 17891
+    },
+    {
+      "archive_member": "gate/snapshot/libs/os-abi/tests/transport_preflight.rs",
+      "kind": "original_gate_snapshot_input_or_generated_lock",
+      "original_absolute_path": "/workspace/scratch/d7da9e7650f0/a01-runtime/review/a02-after-main-3551e1e/snapshot/libs/os-abi/tests/transport_preflight.rs",
+      "original_mode": "0o644",
+      "original_repository_absolute_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/libs/os-abi/tests/transport_preflight.rs",
+      "repository_relative_source_path": "libs/os-abi/tests/transport_preflight.rs",
+      "repository_source_git_blob_sha1": "d9277d1cc8dca4d6e9366442434b468bc38ed870",
+      "repository_source_head": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+      "sha256": "bc4fe420256d296507f6669ac13e4020a3eb2903cf24392bd300c432eb424022",
+      "size": 6349
+    },
+    {
+      "archive_member": "gate/snapshot/libs/os-abi/tests/transport_vectors.rs",
+      "kind": "original_gate_snapshot_input_or_generated_lock",
+      "original_absolute_path": "/workspace/scratch/d7da9e7650f0/a01-runtime/review/a02-after-main-3551e1e/snapshot/libs/os-abi/tests/transport_vectors.rs",
+      "original_mode": "0o644",
+      "original_repository_absolute_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/libs/os-abi/tests/transport_vectors.rs",
+      "repository_relative_source_path": "libs/os-abi/tests/transport_vectors.rs",
+      "repository_source_git_blob_sha1": "86362890e71f74fcb4e8d0c3a8557a13fbb2290d",
+      "repository_source_head": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+      "sha256": "b9ce881502690c2caaa6a1a019fc2ae55b67a8b9548ee4f489fe4fd73f2f7fd3",
+      "size": 3954
+    },
+    {
+      "archive_member": "gate/snapshot/support/upstream-lock.json",
+      "kind": "original_gate_snapshot_input_or_generated_lock",
+      "original_absolute_path": "/workspace/scratch/d7da9e7650f0/a01-runtime/review/a02-after-main-3551e1e/snapshot/support/upstream-lock.json",
+      "original_mode": "0o444",
+      "original_repository_absolute_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/upstream-lock.json",
+      "repository_relative_source_path": "support/upstream-lock.json",
+      "repository_source_git_blob_sha1": "4672cfeb9102e26b9a7f5b63b02e7cb4c144ebfe",
+      "repository_source_head": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+      "sha256": "6e8daf9d2b7e492ef0b7fafe029419c5d2d48d39793e3404fcc4377e5c529925",
+      "size": 74761
+    },
+    {
+      "archive_member": "gate/snapshot/tests/abi/run_acceptance.py",
+      "kind": "original_gate_snapshot_input_or_generated_lock",
+      "original_absolute_path": "/workspace/scratch/d7da9e7650f0/a01-runtime/review/a02-after-main-3551e1e/snapshot/tests/abi/run_acceptance.py",
+      "original_mode": "0o644",
+      "original_repository_absolute_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/tests/abi/run_acceptance.py",
+      "repository_relative_source_path": "tests/abi/run_acceptance.py",
+      "repository_source_git_blob_sha1": "f46596d6574797cbac454629b1d3b1b5142da387",
+      "repository_source_head": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+      "sha256": "e10422d4331e1ae6e50be8f650bb96604e6dbcbdae2083cf42097ad21fd647fa",
+      "size": 28931
+    },
+    {
+      "archive_member": "gate/snapshot/tests/abi/run_rust_mutations.py",
+      "kind": "original_gate_snapshot_input_or_generated_lock",
+      "original_absolute_path": "/workspace/scratch/d7da9e7650f0/a01-runtime/review/a02-after-main-3551e1e/snapshot/tests/abi/run_rust_mutations.py",
+      "original_mode": "0o644",
+      "original_repository_absolute_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/tests/abi/run_rust_mutations.py",
+      "repository_relative_source_path": "tests/abi/run_rust_mutations.py",
+      "repository_source_git_blob_sha1": "a912aa77d4478fdfd652bb09d6784a76b45e444e",
+      "repository_source_head": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+      "sha256": "62b0d3e043aeb9dfcdcb7d9991a9d6bac94ac578416814e3f4dafc53eebb1fe1",
+      "size": 33098
+    },
+    {
+      "archive_member": "gate/snapshot/tests/abi/test_acceptance_runner.py",
+      "kind": "original_gate_snapshot_input_or_generated_lock",
+      "original_absolute_path": "/workspace/scratch/d7da9e7650f0/a01-runtime/review/a02-after-main-3551e1e/snapshot/tests/abi/test_acceptance_runner.py",
+      "original_mode": "0o644",
+      "original_repository_absolute_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/tests/abi/test_acceptance_runner.py",
+      "repository_relative_source_path": "tests/abi/test_acceptance_runner.py",
+      "repository_source_git_blob_sha1": "9f61b646fa90e72cc54019b56bbaa6cf36ea8c8c",
+      "repository_source_head": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+      "sha256": "7734ba9a5d06c91bd24c6cc3656729032a70b58a3e83e2c514b9fe23c26868c6",
+      "size": 23031
+    },
+    {
+      "archive_member": "gate/snapshot/tests/abi/test_dense_boundaries.py",
+      "kind": "original_gate_snapshot_input_or_generated_lock",
+      "original_absolute_path": "/workspace/scratch/d7da9e7650f0/a01-runtime/review/a02-after-main-3551e1e/snapshot/tests/abi/test_dense_boundaries.py",
+      "original_mode": "0o644",
+      "original_repository_absolute_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/tests/abi/test_dense_boundaries.py",
+      "repository_relative_source_path": "tests/abi/test_dense_boundaries.py",
+      "repository_source_git_blob_sha1": "5337f41a65f529a1c8d8668ecf3d1f17b1759067",
+      "repository_source_head": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+      "sha256": "b1b89edf78c7ca48a53b535175e4e2571952fa8ce3ea44ca4742816584debbd6",
+      "size": 8889
+    },
+    {
+      "archive_member": "gate/snapshot/tests/abi/test_golden_contract.py",
+      "kind": "original_gate_snapshot_input_or_generated_lock",
+      "original_absolute_path": "/workspace/scratch/d7da9e7650f0/a01-runtime/review/a02-after-main-3551e1e/snapshot/tests/abi/test_golden_contract.py",
+      "original_mode": "0o644",
+      "original_repository_absolute_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/tests/abi/test_golden_contract.py",
+      "repository_relative_source_path": "tests/abi/test_golden_contract.py",
+      "repository_source_git_blob_sha1": "da32002efec0ddc8ea23f2885b84fb985488d4c7",
+      "repository_source_head": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+      "sha256": "a75f1fbf14921a96ade1a87e4bf7508b0565412de4571b19b914f63580340bb9",
+      "size": 12349
+    },
+    {
+      "archive_member": "gate/snapshot/tests/abi/test_mutation_toolchain.py",
+      "kind": "original_gate_snapshot_input_or_generated_lock",
+      "original_absolute_path": "/workspace/scratch/d7da9e7650f0/a01-runtime/review/a02-after-main-3551e1e/snapshot/tests/abi/test_mutation_toolchain.py",
+      "original_mode": "0o644",
+      "original_repository_absolute_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/tests/abi/test_mutation_toolchain.py",
+      "repository_relative_source_path": "tests/abi/test_mutation_toolchain.py",
+      "repository_source_git_blob_sha1": "0c4940eb071aef7e241eb253f44178091ba956db",
+      "repository_source_head": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+      "sha256": "8914ab200d396b4a24b053151912e3055b532aa1ec9ff9177294d71252924999",
+      "size": 17901
+    },
+    {
+      "archive_member": "gate/snapshot/tests/abi/test_mutations.py",
+      "kind": "original_gate_snapshot_input_or_generated_lock",
+      "original_absolute_path": "/workspace/scratch/d7da9e7650f0/a01-runtime/review/a02-after-main-3551e1e/snapshot/tests/abi/test_mutations.py",
+      "original_mode": "0o644",
+      "original_repository_absolute_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/tests/abi/test_mutations.py",
+      "repository_relative_source_path": "tests/abi/test_mutations.py",
+      "repository_source_git_blob_sha1": "19ed1f5498ad13a6facb7d48cee80296f540b8a3",
+      "repository_source_head": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+      "sha256": "d282e5991d4996e3ce3ba5790493b5171e9bc968be9da008d420caf295e0a068",
+      "size": 9788
+    },
+    {
+      "archive_member": "gate/snapshot/tests/abi/test_profile_boundaries.py",
+      "kind": "original_gate_snapshot_input_or_generated_lock",
+      "original_absolute_path": "/workspace/scratch/d7da9e7650f0/a01-runtime/review/a02-after-main-3551e1e/snapshot/tests/abi/test_profile_boundaries.py",
+      "original_mode": "0o644",
+      "original_repository_absolute_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/tests/abi/test_profile_boundaries.py",
+      "repository_relative_source_path": "tests/abi/test_profile_boundaries.py",
+      "repository_source_git_blob_sha1": "5c9174cd75c31514953282afc359d459486aff59",
+      "repository_source_head": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+      "sha256": "9b8a0306930bb3f475ccae27f4e0bee0a373c8eaabe1355ca2ccf41f314f3bad",
+      "size": 3820
+    },
+    {
+      "archive_member": "gate/snapshot/tests/abi/test_semantic_edges_contract.py",
+      "kind": "original_gate_snapshot_input_or_generated_lock",
+      "original_absolute_path": "/workspace/scratch/d7da9e7650f0/a01-runtime/review/a02-after-main-3551e1e/snapshot/tests/abi/test_semantic_edges_contract.py",
+      "original_mode": "0o644",
+      "original_repository_absolute_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/tests/abi/test_semantic_edges_contract.py",
+      "repository_relative_source_path": "tests/abi/test_semantic_edges_contract.py",
+      "repository_source_git_blob_sha1": "4ed04745234c5951528d29c1dfd7e22ecfab61f4",
+      "repository_source_head": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+      "sha256": "3b635d2ff64e991d824702236ddb3e41b4e5f7c8af7fe90b181f06feabc62c99",
+      "size": 1201
+    },
+    {
+      "archive_member": "gate/snapshot/tests/abi/test_transport32_contract.py",
+      "kind": "original_gate_snapshot_input_or_generated_lock",
+      "original_absolute_path": "/workspace/scratch/d7da9e7650f0/a01-runtime/review/a02-after-main-3551e1e/snapshot/tests/abi/test_transport32_contract.py",
+      "original_mode": "0o644",
+      "original_repository_absolute_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/tests/abi/test_transport32_contract.py",
+      "repository_relative_source_path": "tests/abi/test_transport32_contract.py",
+      "repository_source_git_blob_sha1": "5bd9178b66734fa3fb81b39ff5d4f258b7ce93ab",
+      "repository_source_head": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+      "sha256": "94f6cd378357ac9eb0eeab65bd34a627bd1a0c2f90332c8402c56d9e3225b8bc",
+      "size": 1528
+    },
+    {
+      "archive_member": "gate/snapshot/tests/golden/generate_hos2.py",
+      "kind": "original_gate_snapshot_input_or_generated_lock",
+      "original_absolute_path": "/workspace/scratch/d7da9e7650f0/a01-runtime/review/a02-after-main-3551e1e/snapshot/tests/golden/generate_hos2.py",
+      "original_mode": "0o644",
+      "original_repository_absolute_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/tests/golden/generate_hos2.py",
+      "repository_relative_source_path": "tests/golden/generate_hos2.py",
+      "repository_source_git_blob_sha1": "8a52b6988d3cb0bb40fc1babe27580d10f0ebfbc",
+      "repository_source_head": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+      "sha256": "87121df8850842e8f39ce9e7668a1e7b0aed5158d5a8f01fb0343d3345f9638a",
+      "size": 4799
+    },
+    {
+      "archive_member": "gate/snapshot/tests/golden/generate_hos2_edges.py",
+      "kind": "original_gate_snapshot_input_or_generated_lock",
+      "original_absolute_path": "/workspace/scratch/d7da9e7650f0/a01-runtime/review/a02-after-main-3551e1e/snapshot/tests/golden/generate_hos2_edges.py",
+      "original_mode": "0o644",
+      "original_repository_absolute_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/tests/golden/generate_hos2_edges.py",
+      "repository_relative_source_path": "tests/golden/generate_hos2_edges.py",
+      "repository_source_git_blob_sha1": "463a184c65e7bd43b0b5219a2e4f54d51be56055",
+      "repository_source_head": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+      "sha256": "2181532576a3e849a94da450591096866f1c837c965b534fd550bb481285f9fd",
+      "size": 5685
+    },
+    {
+      "archive_member": "gate/snapshot/tests/golden/generate_transport32.py",
+      "kind": "original_gate_snapshot_input_or_generated_lock",
+      "original_absolute_path": "/workspace/scratch/d7da9e7650f0/a01-runtime/review/a02-after-main-3551e1e/snapshot/tests/golden/generate_transport32.py",
+      "original_mode": "0o644",
+      "original_repository_absolute_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/tests/golden/generate_transport32.py",
+      "repository_relative_source_path": "tests/golden/generate_transport32.py",
+      "repository_source_git_blob_sha1": "b7c0119ef2f638cd9461f86e7e493cd0187f15dd",
+      "repository_source_head": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+      "sha256": "8afcc15d130335c378d9235f6a52be9cc804ed2522d85e11e5771e9e609e44a7",
+      "size": 1212
+    },
+    {
+      "archive_member": "gate/snapshot/tests/golden/hos2.json",
+      "kind": "original_gate_snapshot_input_or_generated_lock",
+      "original_absolute_path": "/workspace/scratch/d7da9e7650f0/a01-runtime/review/a02-after-main-3551e1e/snapshot/tests/golden/hos2.json",
+      "original_mode": "0o644",
+      "original_repository_absolute_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/tests/golden/hos2.json",
+      "repository_relative_source_path": "tests/golden/hos2.json",
+      "repository_source_git_blob_sha1": "3a0fe9ac075883e1dcc543903f19b76acdeb1f16",
+      "repository_source_head": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+      "sha256": "792e8535ab3d0144ff182e3024c57b1a6815b65ffd7ac3ff07a67594851a05ed",
+      "size": 4693
+    },
+    {
+      "archive_member": "gate/snapshot/tests/golden/hos2_edges.json",
+      "kind": "original_gate_snapshot_input_or_generated_lock",
+      "original_absolute_path": "/workspace/scratch/d7da9e7650f0/a01-runtime/review/a02-after-main-3551e1e/snapshot/tests/golden/hos2_edges.json",
+      "original_mode": "0o644",
+      "original_repository_absolute_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/tests/golden/hos2_edges.json",
+      "repository_relative_source_path": "tests/golden/hos2_edges.json",
+      "repository_source_git_blob_sha1": "5b4c01a09ee35f8bf7759298c008251c6063b94a",
+      "repository_source_head": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+      "sha256": "b3b7adf219f24493f71abe6c451b88ac4943024b7d050174c269c047642caa26",
+      "size": 12624
+    },
+    {
+      "archive_member": "gate/snapshot/tests/golden/transport32.hex",
+      "kind": "original_gate_snapshot_input_or_generated_lock",
+      "original_absolute_path": "/workspace/scratch/d7da9e7650f0/a01-runtime/review/a02-after-main-3551e1e/snapshot/tests/golden/transport32.hex",
+      "original_mode": "0o644",
+      "original_repository_absolute_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/tests/golden/transport32.hex",
+      "repository_relative_source_path": "tests/golden/transport32.hex",
+      "repository_source_git_blob_sha1": "ef801c3df5354faca677094e483f8ca8bc3de5f1",
+      "repository_source_head": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+      "sha256": "7c72f4018d2aa14a298064a40d7fc8ff819ff0f87567f857fc5f600bfd3fd28a",
+      "size": 65
+    },
+    {
+      "archive_member": "outer/command.json",
+      "kind": "original_outer_invocation_receipt",
+      "original_absolute_path": "/tmp/a01-main355-abi/outer/command.json",
+      "original_mode": "0o644",
+      "sha256": "473f6985e765efa83b2d70ef9826b0d0b73c612fcfd22eee0effdecca0fa19ca",
+      "size": 2047
+    },
+    {
+      "archive_member": "outer/command.sh",
+      "kind": "original_outer_invocation_receipt",
+      "original_absolute_path": "/tmp/a01-main355-abi/outer/command.sh",
+      "original_mode": "0o644",
+      "sha256": "b4c61d1e455d40bc3473ada844f1c94e5e7f60c33e62815fdf419def65a547e5",
+      "size": 435
+    },
+    {
+      "archive_member": "outer/gate-kernel-reference-search.json",
+      "kind": "original_outer_invocation_receipt",
+      "original_absolute_path": "/tmp/a01-main355-abi/outer/gate-kernel-reference-search.json",
+      "original_mode": "0o644",
+      "sha256": "6d2de27107a6a4521ac818a935c13a4c002855286945554044f4886f1cf16c9f",
+      "size": 825
+    },
+    {
+      "archive_member": "outer/owner-gate.log",
+      "kind": "original_outer_invocation_receipt",
+      "original_absolute_path": "/tmp/a01-main355-abi/outer/owner-gate.log",
+      "original_mode": "0o644",
+      "sha256": "07050be97da4bb2eec76222038afc1d08677dca09ef503e3b6ac27879ea845ea",
+      "size": 151
+    },
+    {
+      "archive_member": "outer/postgate-untracked-observation.json",
+      "kind": "original_outer_invocation_receipt",
+      "original_absolute_path": "/tmp/a01-main355-abi/outer/postgate-untracked-observation.json",
+      "original_mode": "0o644",
+      "sha256": "44630be7369ef6fb088db820fc94662f8196363859208a83d760c07d9c8297fe",
+      "size": 2061
+    },
+    {
+      "archive_member": "outer/result.json",
+      "kind": "original_outer_invocation_receipt",
+      "original_absolute_path": "/tmp/a01-main355-abi/outer/result.json",
+      "original_mode": "0o644",
+      "sha256": "98d6da27d3fc475dfab23e2f964c56adef521109e317cd49e2c8c2c56ca7e71c",
+      "size": 759
+    },
+    {
+      "archive_member": "outer/source-after.json",
+      "kind": "original_outer_invocation_receipt",
+      "original_absolute_path": "/tmp/a01-main355-abi/outer/source-after.json",
+      "original_mode": "0o644",
+      "sha256": "74b32e3e4978ce1045e27e1fc40886ddd54cf43782ec8f327db4eb9cbf981592",
+      "size": 10494
+    },
+    {
+      "archive_member": "outer/source-before.json",
+      "kind": "original_outer_invocation_receipt",
+      "original_absolute_path": "/tmp/a01-main355-abi/outer/source-before.json",
+      "original_mode": "0o644",
+      "sha256": "e3b970c9ffffced92ca50090b7af761bcb769f88a7cb54e460bdfdc56af2a788",
+      "size": 10494
+    },
+    {
+      "archive_member": "scripts/package-owner-evidence.py",
+      "kind": "packaging_script_source",
+      "original_absolute_path": "/tmp/a01-main355-abi/package-owner-evidence.py",
+      "original_mode": "0o644",
+      "sha256": "7d59b0f6ad16aca6e180d88effa7a2dd4576c295e366667236d5a8d3ef8d1a4e",
+      "size": 12005
+    },
+    {
+      "archive_member": "scripts/run-owner-gate.py",
+      "kind": "original_recording_wrapper_source",
+      "original_absolute_path": "/tmp/a01-main355-abi/run-owner-gate.py",
+      "original_mode": "0o644",
+      "sha256": "5652e290dcf6eae601314bd98f9032ffc3591ee80c46dd6e67851c1223d8d9e5",
+      "size": 6402
+    }
+  ],
+  "original_gate_output_directory": "/workspace/scratch/d7da9e7650f0/a01-runtime/review/a02-after-main-3551e1e",
+  "original_outer_evidence_directory": "/tmp/a01-main355-abi/outer",
+  "schema": "a01-evidence-original-path-map-v1",
+  "source_head": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa"
+}

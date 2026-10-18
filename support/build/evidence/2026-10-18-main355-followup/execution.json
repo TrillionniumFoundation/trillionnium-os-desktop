@@ -1,0 +1,35 @@
+{
+  "source_commit": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+  "kernel_target_exists_before": true,
+  "cargo_build_jobs": "2",
+  "a01_smp": "1",
+  "started_at_utc": "2026-10-18T03:29:03.859572+00:00",
+  "phases": [
+    {
+      "stage": "kernel",
+      "argv": [
+        "support/build/kernel.sh",
+        "kernel"
+      ],
+      "cwd": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop",
+      "A01_RUN_DIR": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-main355-followup/kernel",
+      "started_at_utc": "2026-10-18T03:29:03.859664+00:00",
+      "finished_at_utc": "2026-10-18T03:30:07.511977+00:00",
+      "exit_code": 0
+    },
+    {
+      "stage": "run_kernel",
+      "argv": [
+        "support/build/kernel.sh",
+        "run_kernel"
+      ],
+      "cwd": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop",
+      "A01_RUN_DIR": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-main355-followup/run_kernel",
+      "started_at_utc": "2026-10-18T03:30:08.011327+00:00",
+      "finished_at_utc": "2026-10-18T03:30:11.006818+00:00",
+      "exit_code": 0
+    }
+  ],
+  "finished_at_utc": "2026-10-18T03:30:11.521355+00:00",
+  "passed": true
+}

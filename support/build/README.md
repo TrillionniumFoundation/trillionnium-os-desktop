@@ -6,7 +6,29 @@ complete Asterinas **v0.19.0**, commit
 `96605cf64aeae2d34f29b97e85eff9315fe10a8e`. Upstream documentation, attribution,
 and `LICENSE-MPL` are preserved. The project root README stays empty.
 
-## Current main validation — 2026-10-18
+## Latest main integration — 2026-10-18
+
+Main advanced during the first pipeline to
+`3551e1e0e017e2973da7e2b8ab811ece25c258c0`, changing the external ABI
+compiled by the kernel. Published producer
+`40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa` merges that main unchanged and
+passed a new incremental **make kernel → make run_kernel** (raw QEMU33).
+Its complete ELF is 8,303,048 bytes, SHA256
+`1eb66b33baef6b338c232598d25f743dc83526a2715811b430e5a7208e249ecd`.
+The existing A02 ABI gate passed 13/13 checks, 78 Rust tests and 20 compiled
+mutation checks, including strict Clippy and bare-target no_std.
+
+The [main integration report](evidence/2026-10-18-main355-followup/REPORT.md)
+and [current handoff](evidence/2026-10-18-main355-followup/HANDOFF.md) retain
+the new source/ABI fingerprints and actual loaded artifacts. The earlier
+cold build and 374 reported kernel tests below keep their original c22891b
+scope; those kernel tests were not rerun on the ABI update. A post-boot
+untracked OSDK manifest with a different inode was preserved and manually
+quarantined under the native workspace lock. Its unknown writer remains
+an environment issue; raw nonempty Git status and the quarantine receipt
+are retained, without changing the successful boot evidence.
+
+## Initial main validation — 2026-10-18
 
 The current run starts from remote main `b7a8388726b67394398431e74d2e5d2079ff375f`
 and preserves the existing A01 history through an ordinary merge. Published
