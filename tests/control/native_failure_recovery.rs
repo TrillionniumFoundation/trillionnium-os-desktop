@@ -5,7 +5,7 @@
 use os_control::{
     BootId, CapSpaceId, ControlCore, DeliveryError, DeliveryObservation, DeliveryState,
     DeliveryStatus, HistoryAck, NativeDeliveryRequest, NativeGrant, NativeTarget,
-    OriginalOwnerAuthority, OwnerId, OwnerReceipt, PublishOutcome, PublisherId, RequestBinding,
+    OriginalOwnerAuthority, OwnerId, PublishOutcome, PublisherId, RequestBinding,
     ReserveToken, ResourceDomainId, StableObjectId, CPU_PERIOD_NS,
 };
 use std::panic::{catch_unwind, AssertUnwindSafe};
@@ -116,13 +116,8 @@ fn reserve(core: &ControlCore, owner: Arc<NativeOwner>, sequence: u64) -> Reserv
     core.reserve_native(request, publisher()).unwrap()
 }
 
-fn ack(core: &ControlCore, through: u64) -> HistoryAck {
-    HistoryAck::from_owner_receipt(
-        core.identity(),
-        through,
-        OwnerReceipt::new(owner_id(), [0x59; 32]),
-    )
-    .unwrap()
+fn ack(authority: &OriginalOwnerAuthority, through: u64) -> HistoryAck {
+    authority.history_ack(through, [0x59; 32]).unwrap()
 }
 
 fn assert_without_saved_result(observation: DeliveryObservation, state: DeliveryState) {
@@ -162,7 +157,7 @@ fn poisoned_native_effect_recovers_or_loses_history_without_second_effect_in_64_
             DeliveryState::Reserved,
         );
         assert_eq!(
-            core.retire_through(&view, ack(&core, 1), &authority),
+            core.retire_through(&view, ack(&authority, 1), &authority),
             Err(DeliveryError::PendingPrefix)
         );
         assert_eq!(core.retired_through(), 0);
@@ -201,7 +196,7 @@ fn poisoned_native_effect_recovers_or_loses_history_without_second_effect_in_64_
                     }
                     other => panic!("unretired reserved D became {other:?}"),
                 }
-                let retirement = core.retire_through(&view, ack(&core, 1), &authority);
+                let retirement = core.retire_through(&view, ack(&authority, 1), &authority);
                 match observation.state {
                     DeliveryState::Reserved => assert!(matches!(
                         retirement,
@@ -275,7 +270,7 @@ fn retirement_drop_panic_preserves_frontier_and_releases_remaining_retired_owner
     }
     let view = core.delivery_view_for(owner_id()).unwrap();
     assert!(catch_unwind(AssertUnwindSafe(|| {
-        core.retire_through(&view, ack(&core, 2), &authority)
+        core.retire_through(&view, ack(&authority, 2), &authority)
     }))
     .is_err());
     assert_eq!(first_drops.load(Ordering::SeqCst), 1);
@@ -295,7 +290,7 @@ fn retirement_drop_panic_preserves_frontier_and_releases_remaining_retired_owner
         DeliveryState::Reserved,
     );
     assert_eq!(
-        core.retire_through(&view, ack(&core, 2), &authority)
+        core.retire_through(&view, ack(&authority, 2), &authority)
             .unwrap()
             .retired_through,
         2
@@ -334,7 +329,7 @@ fn loss_drop_panic_keeps_history_lost_releases_remaining_owners_and_is_idempoten
     }
     core.lose_history();
     assert_eq!(
-        core.retire_through(&view, ack(&core, 3), &authority),
+        core.retire_through(&view, ack(&authority, 3), &authority),
         Err(DeliveryError::HistoryLost)
     );
     for token in [&first_token, &second_token, &third_token] {
