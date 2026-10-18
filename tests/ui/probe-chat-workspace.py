@@ -377,7 +377,8 @@ def outside(args):
         'binaries': actual_binaries, 'build_receipt': build, 'build_receipt_sha256': digest(args.build_receipt),
         'harness_sha256': digest(Path(__file__)), 'native_receipts': {name: digest(native / 'receipts' / name) for name in native_receipts},
         'font_sha256': digest(native / 'sysroot/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc'),
-        'namespace': ['owned_mount', 'user', 'ipc', 'network', 'uts', 'pid'], 'host_desktop_bound': False}
+        'namespace': ['owned_mount', 'user', 'ipc', 'network', 'uts', 'pid'],
+        'proc_view': 'read_only_host_proc_for_Linux_host_resource_metrics', 'host_desktop_bound': False}
     write(output / 'inside/input-binding.json', binding)
     script = Path('/test-harness/tests/ui/probe-chat-workspace.py')
     cmd = ['/usr/bin/bwrap', '--unshare-user', '--unshare-ipc', '--unshare-net', '--unshare-uts', '--unshare-pid',
@@ -385,7 +386,7 @@ def outside(args):
         '--ro-bind', '/usr', '/host/usr', '--ro-bind', str(native / 'sysroot'), '/r7-sysroot',
         '--ro-bind', str(native / 'view02/usr'), '/usr', '--symlink', 'usr/bin', '/bin',
         '--symlink', 'usr/sbin', '/sbin', '--symlink', 'usr/lib', '/lib', '--symlink', 'usr/lib64', '/lib64',
-        '--ro-bind', '/etc', '/etc', '--proc', '/proc', '--dev', '/dev', '--tmpfs', '/tmp', '--dir', '/root', '--dir', '/run',
+        '--ro-bind', '/etc', '/etc', '--ro-bind', '/proc', '/proc', '--dev', '/dev', '--tmpfs', '/tmp', '--dir', '/root', '--dir', '/run',
         '--ro-bind', str(ROOT), '/test-harness', '--ro-bind', str(source), '/test-source',
         '--ro-bind', str(binary_dir), '/ui-bin', '--bind', str(output / 'inside'), '/capture', '--chdir', '/capture',
         '--clearenv', '--setenv', 'PATH', '/usr/bin:/bin', '--setenv', 'LANG', 'C.UTF-8',
