@@ -863,6 +863,18 @@ impl Process {
     pub(crate) fn set_cgroup(&self, cgroup: Option<Arc<CgroupNode>>) {
         self.cgroup.update(cgroup);
     }
+
+    /// Updates the scheduler's final-charge snapshot for every thread in the
+    /// process.  The cgroup membership lock serializes this with migration;
+    /// the snapshot is not a second accounting ledger and is only used when
+    /// the owning process Arc has already been dropped.
+    pub(crate) fn set_cpu_cgroup_for_tasks(&self, cgroup: Option<Arc<CgroupNode>>) {
+        for task in self.tasks.lock().as_slice() {
+            if let Some(posix_thread) = task.as_posix_thread() {
+                posix_thread.set_cpu_cgroup(cgroup.clone());
+            }
+        }
+    }
 }
 
 /// Enqueues a process-directed kernel signal asynchronously.

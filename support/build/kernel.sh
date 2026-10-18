@@ -13,6 +13,7 @@ export CARGO_NET_GIT_FETCH_WITH_CLI=true
 export RUST_LOG=info
 export OSDK_CARGO_LOCK="$build_dir/minimal/Cargo.lock"
 export VDSO_LIBRARY_DIR=${VDSO_LIBRARY_DIR:-$build_dir/out/linux-vdso}
+export A01_SMP=${A01_SMP:-1}
 if [[ -n ${A01_RUN_DIR:-} ]]; then
     run_dir=$A01_RUN_DIR
     mkdir -p "$(dirname "$run_dir")"
@@ -78,7 +79,7 @@ if [[ "$target" == run_kernel ]]; then rm -f "$kernel_dir/kernel/qemu.log"; fi
 command=(make -C "$kernel_dir" -f Makefile -f "$build_dir/minimal.mk" "$target"
     "CARGO_OSDK=${CARGO_HOME:-$HOME/.cargo}/bin/cargo-osdk"
     "A01_INITRAMFS=$run_dir/initramfs.cpio.gz"
-    "A01_QEMU_WRAPPER=$build_dir/record-qemu.py" TARGET_ARCH=x86_64 SMP=1 MEM=512M
+    "A01_QEMU_WRAPPER=$build_dir/record-qemu.py" TARGET_ARCH=x86_64 SMP="$A01_SMP" MEM=512M
     ENABLE_KVM=0 BOOT_PROTOCOL=multiboot INITRAMFS=on AUTO_TEST=none)
 printf '%q ' "${command[@]}" > "$run_dir/command.sh"
 printf '\n' >> "$run_dir/command.sh"
