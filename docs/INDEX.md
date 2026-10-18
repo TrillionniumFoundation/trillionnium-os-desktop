@@ -40,6 +40,8 @@ A07/A10 的源码与开发手册已通过 [PR #187](https://github.com/Trillionn
 
 R6 的两轮原版 → 持续 Session → 同一 Rust Shell 六阶段链路是 2026-10-17 的真实执行，本轮只独立复核其归档，见 [R6 完整交付索引](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/89aa8fa62d30b00259cb33174260c134edf1a70b/tests/integration/hepta/evidence/2026-10-17-r6/README.md)。下表保留全部 A00–A10 的开发入口、技术契约和资格边界；历史证据的固定提交链接继续保留。
 
+下表的 control core 验证属于宿主模型与有界并发检查；其 durable K/fsync 接合尚未闭合，内核 IRQ/SMP 接合仍需验证。A05 的实际内核入口仍按 QueryAbi 与各项效果操作分别判定，不能从宿主通过推定内核效果可用。
+
 | 模块 / owner | 开发与验证入口 | 技术契约 / 实际范围 |
 | --- | --- | --- |
 | A00 集成 | [PLAN](agents/PLAN.md)、[STATUS](STATUS.md) | [ARCHITECTURE](ARCHITECTURE.md)、[DECISIONS](DECISIONS.md)；统一接口与集成 |

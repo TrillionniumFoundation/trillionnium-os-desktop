@@ -1,0 +1,196 @@
+{
+  "schema": 1,
+  "completed_at": "2026-10-18T05:50:19.235685+00:00",
+  "passed": true,
+  "baseline_commit": "01caff4fb3651f57ea32e648ade5a351d20df569",
+  "tested_source_commit": "0788f3d480751c31ccf202e15f74d85060a6702e",
+  "tested_source_tree": "e379667fdb96d3585cd3b5d45758fe041d76694e",
+  "tested_git_status": "",
+  "source_diff_files": [
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs"
+  ],
+  "source_sha256": "73154f0f42b22a8e3928a848a693b9bdb27d37ed9946db2d1e949ab0e6af3a5e",
+  "non_ktest_prefix_bytes": 25018,
+  "non_ktest_prefix_sha256": "e1b678e541a360de694585dfe59b12ac5df0a2ff6aa97261feeeaf63f28459a7",
+  "production_unchanged": true,
+  "fix": {
+    "cause": "Two old ktest expected-value formulas dropped one TSC clock for odd period values; production endpoint accounting was correct.",
+    "units": "TSC clocks, not nanoseconds",
+    "exact_change": "period - period / 2 is the length of [period / 2, period); no tolerance or threshold adjustment.",
+    "new_regression": "8 deterministic combinations: periods 4*quota+1 / 4*quota+2, idle periods 0 / 6, subsequent completed periods 0 / 4, against independent per-window endpoint overlap."
+  },
+  "original_ci_failure": {
+    "run_id": 39096189453,
+    "job_id": 117583025092,
+    "artifact_id": 12125492767,
+    "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39096189453",
+    "exact_head": "9265235c4b4f375844c923cf0b0f517d119d9937",
+    "core_result": {
+      "declared": 159,
+      "passed": 157,
+      "failed": 2,
+      "filtered": 0
+    },
+    "classification": "Two pre-existing expected-value formulas truncate an odd completed-period suffix by one TSC clock. The production arithmetic counts the interval endpoints correctly. This is not a new final-charge test failure or VMX skip or timeout.",
+    "units": "TSC clocks; not nanoseconds",
+    "calibration_note": "The OSTD guest logs its own frequency, but the aster-core log level omits its independent calibration. Controlled frequency 2441165790 Hz reproduces both observed expected/actual pairs; it is a diagnostic input, not a directly observed aster-core calibration."
+  },
+  "deterministic_rust_replay": {
+    "path": "clock-oracle-replay/result.json",
+    "sha256": "1be54ae585917c9ccbd9986026216c35a5dbb6ff4088ad9f09ba233788da7c5b",
+    "passed": true,
+    "results": [
+      {
+        "case": "baseline-2000000000",
+        "exit_code": 0,
+        "passed": 12,
+        "failed": 0,
+        "filtered": 0
+      },
+      {
+        "case": "baseline-2441165790",
+        "exit_code": 101,
+        "passed": 10,
+        "failed": 2,
+        "filtered": 0
+      },
+      {
+        "case": "candidate-2000000000",
+        "exit_code": 0,
+        "passed": 13,
+        "failed": 0,
+        "filtered": 0
+      },
+      {
+        "case": "candidate-2441165790",
+        "exit_code": 0,
+        "passed": 13,
+        "failed": 0,
+        "filtered": 0
+      }
+    ],
+    "scope": "Actual extracted Rust CpuMax and its quota ktests, with only ostd ktest attributes mapped to host test attributes and tsc_freq supplied by a controlled input. This does not replace the full original QEMU gate."
+  },
+  "full_kernel_gate": {
+    "directory": "kernel-full-original-cargo-home",
+    "command": [
+      "python3",
+      "-I",
+      "support/build/ktest/run.py",
+      "--skip-osdk-install",
+      "--output",
+      "/workspace/scratch/499c7902de8e/nextstep-ci-evidence/repair/kernel-full-original-cargo-home"
+    ],
+    "started_at": "2026-10-18T05:39:44.980156+00:00",
+    "finished_at": "2026-10-18T05:45:37.208037+00:00",
+    "runner_exit_code": 0,
+    "test_name_filter": null,
+    "fixed_test_locks": {
+      "ostd.Cargo.lock": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6",
+      "aster-core.Cargo.lock": "159b8682d27a7a21af98885ae48515234445c00fdf5e00b158fdc4aa952ff4ed"
+    },
+    "artifacts": {
+      "ostd": {
+        "test_result": {
+          "passed": true,
+          "guests": [
+            {
+              "crate": "ostd",
+              "declared": 221,
+              "passed": 221,
+              "failed": 0,
+              "filtered": 0,
+              "soft_skipped": 3,
+              "soft_skip_reasons": [
+                "VMX unavailable",
+                "VMX unavailable",
+                "VMX/EPT invalidation unavailable"
+              ],
+              "exercised_passed_lower_bound": 218,
+              "observed_test_starts": 221,
+              "raw_qemu_exit": 33,
+              "guest": "guest-001"
+            }
+          ]
+        },
+        "elf_original_path": "/workspace/scratch/499c7902de8e/nextstep-cpu-fix/kernel/asterinas/target/osdk/ostd/ostd-osdk-bin.elf",
+        "elf_archived_path": "kernel-full-original-cargo-home/ostd/tested-kernel.elf",
+        "elf_sha256": "83a58bfe68731bf40cffc649e4b6574c8833fe79508647137a881ec557ea57e0",
+        "elf_bytes": 2009752,
+        "serial_sha256": "9e1a05b6814bcb882a6c5ac27495ead88b06a35a80955e51473946b844766692",
+        "qemu_metadata_sha256": "868b3d360aa1393ad6bd2ddadea0bd7e9eab85b12f16d577d033f6b8065a7927",
+        "raw_exit_code": 33,
+        "timed_out": false,
+        "duration_seconds": 1.223,
+        "profile": {
+          "arch": "x86_64",
+          "machine": "q35",
+          "accel": "tcg",
+          "cpu": "max",
+          "vcpus": 1,
+          "memory_mib": 512,
+          "network": false,
+          "data_disks": false
+        }
+      },
+      "aster-core": {
+        "test_result": {
+          "passed": true,
+          "guests": [
+            {
+              "crate": "aster-core",
+              "declared": 160,
+              "passed": 160,
+              "failed": 0,
+              "filtered": 0,
+              "soft_skipped": 0,
+              "soft_skip_reasons": [],
+              "exercised_passed_lower_bound": 160,
+              "observed_test_starts": 160,
+              "raw_qemu_exit": 33,
+              "guest": "guest-001"
+            }
+          ]
+        },
+        "elf_original_path": "/workspace/scratch/499c7902de8e/nextstep-cpu-fix/kernel/asterinas/target/osdk/aster-core/aster-core-osdk-bin.elf",
+        "elf_archived_path": "kernel-full-original-cargo-home/aster-core/tested-kernel.elf",
+        "elf_sha256": "249b96e4e12f96f1f45daa3b54af7405eedb271fa55a52404c4b8befbbaeac88",
+        "elf_bytes": 9515848,
+        "serial_sha256": "5ad6adb985afb8ff976db3c78d2ab14793ab86134b97028d6b1cf0309f189856",
+        "qemu_metadata_sha256": "b10c79f0d730f3843948621dd7b02ce6b8310613e2aa0114f0e3bc794f06a0fb",
+        "raw_exit_code": 33,
+        "timed_out": false,
+        "duration_seconds": 0.87,
+        "profile": {
+          "arch": "x86_64",
+          "machine": "q35",
+          "accel": "tcg",
+          "cpu": "max",
+          "vcpus": 1,
+          "memory_mib": 512,
+          "network": false,
+          "data_disks": false
+        }
+      }
+    }
+  },
+  "build_environment": {
+    "environment_file": "kernel-full-original-cargo-home/environment.json",
+    "osdk_source_build_log": "kernel-full-exact-osdk/osdk-install.log",
+    "osdk_sha256_during_test": "84615048f2231d2435bb717005c62691f5d1ff2058ee0685775992a90943e16a",
+    "cargo_home": "/workspace/scratch/499c7902de8e/implementation-tools/cargo",
+    "restored_osdk_sha256": "9a72566d641c4f444d13b3572211de00267e5750f52f06039e61888428bcfc5e",
+    "restoration_followup": "osdk-restoration-followup.json"
+  },
+  "failed_attempts": {
+    "history": "attempt-history.json",
+    "host_macro_failure": "Separate symlinked Cargo home runs failed StableCrateId/E0463; same-context target reset did not resolve it. Original Cargo home plus the same current-worktree OSDK passed. Exact underlying Cargo/rustc path/cache cause was not established.",
+    "later_osdk_restore_observation": "The runner verified restoration, but a later read observed the temporary binary again. Writer unknown. Restored again with fresh mtime and revalidated; see osdk-restoration-followup.json."
+  },
+  "prior_production_evidence": {
+    "index": "results/integration/2026-10-18-audit-followthrough/README.md",
+    "production_elf_sha256": "edce11ac22903da6b7b65295fb75bf07f364f227a5f7e327b489381df9500399",
+    "qualification": "Historical execution reused because production bytes are unchanged; no new production build or 1/2-vCPU probe run in this repair."
+  },
+  "scope": "New execution covers full OSTD plus aster-core ktests. OSTD has 3 original VMX/EPT soft skips. No claim of general SMP/IRQ, Hepta HOS2 control effects, or hardware qualification. Evidence/doc-only publication after tested_source_commit must preserve this actual test identity."
+}
