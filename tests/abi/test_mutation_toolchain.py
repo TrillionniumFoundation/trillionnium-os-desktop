@@ -303,7 +303,7 @@ class MutationToolchainTests(unittest.TestCase):
             encoding="utf-8"
         )
         variants = [item for item in mutations.PROFILE_MUTANTS
-                    if item[0] == "accept_cumulative_cpu_beyond_boot_elapsed"]
+                    if item[0] == "accept_prior_window_cpu_sum"]
         self.assertEqual(len(variants), 1)
         name, designated, changes = variants[0]
         self.assertEqual(designated,
@@ -313,6 +313,7 @@ class MutationToolchainTests(unittest.TestCase):
             with self.subTest(original=original):
                 self.assertEqual(source.count(original), 1)
                 self.assertEqual(replacement, "|| false")
+                 self.assertIn("cumulative_cpu_ns - window_consumed_ns > window_start_ns", original)
         mutated = mutations.mutated_profile_source(source, changes)
         self.assertNotEqual(mutated, source)
 
