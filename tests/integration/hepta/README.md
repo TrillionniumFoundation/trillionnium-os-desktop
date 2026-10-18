@@ -1,6 +1,7 @@
 # Hepta integration validation
 
-This directory validates the A10 read-only host observer candidate. It does not
+This directory validates the A10 read-only host observer and the separately
+enabled [ObjectiveStart transport](../../../services/hepta-os/OBJECTIVE_TRANSPORT.md). It does not
 implement or claim A07's Hepta → HOS2 durable-effect gate.
 
 - `check_upstream_contract.py` verifies exact source provenance and can emit a
@@ -19,6 +20,12 @@ implement or claim A07's Hepta → HOS2 durable-effect gate.
   Linux child identity and cleanup guard using disposable Python children,
   kernel WNOWAIT/ECHILD results and safe signal spies. It does not build or
   launch original Agentd.
+- `check_objective_wire.py` verifies fourteen exact original source files and
+  emits a small original-declaration wire check with extraction/hash provenance.
+  It compiles no Agentd crate, signs nothing and submits no actual objective.
+  The optional transport's tests use the fixed original expired/all-zero wire
+  fixture and scripted replies over real disposable UDS connections; those
+  tests are not original-owner admission evidence.
 
 The socket and parser regression tests live in
 `services/hepta-os/tests/socket_contract.rs`; the timed-out metadata admission

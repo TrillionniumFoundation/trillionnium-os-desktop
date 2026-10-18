@@ -138,7 +138,7 @@ impl Drop for ObserverClient {
     }
 }
 
-fn require_blocking_context() -> Result<(), ObserverError> {
+pub(crate) fn require_blocking_context() -> Result<(), ObserverError> {
     if Handle::try_current().is_ok() {
         Err(ObserverError::InvalidExecutionContext)
     } else {
@@ -312,7 +312,7 @@ async fn call(
     Ok((response.payload, pid, response.current_generation))
 }
 
-async fn validate_socket(
+pub(crate) async fn validate_socket(
     config: &EndpointConfig,
     metadata_gate: &Arc<Semaphore>,
 ) -> Result<(), ObserverError> {

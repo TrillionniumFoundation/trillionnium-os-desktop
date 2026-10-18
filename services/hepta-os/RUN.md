@@ -1,15 +1,15 @@
 # Build, run, and validate
 
-Run commands from the desktop repository root. The tested toolchain is
-`nightly-2026-07-21`; the host crate declares Rust 1.83 as its syntax/API minimum,
+Run commands from the desktop repository root. The current lightweight validation uses
+Rust **1.88.0**; the host crate declares Rust 1.83 as its syntax/API minimum,
 but that minimum toolchain has not been qualified in this change. Dependencies
 are pinned and `Cargo.lock` is committed. No build step needs the full Hepta
 workspace.
 
 ```sh
-cargo +nightly-2026-07-21 test --locked --manifest-path services/hepta-os/Cargo.toml
-cargo +nightly-2026-07-21 fmt --check --manifest-path services/hepta-os/Cargo.toml
-cargo +nightly-2026-07-21 clippy --locked --manifest-path services/hepta-os/Cargo.toml --all-targets -- -D warnings
+cargo +1.88.0 test --locked --manifest-path services/hepta-os/Cargo.toml
+cargo +1.88.0 fmt --check --manifest-path services/hepta-os/Cargo.toml
+cargo +1.88.0 clippy --locked --manifest-path services/hepta-os/Cargo.toml --all-targets -- -D warnings
 ```
 
 The Linux tests bind fresh private Unix sockets under `/tmp` and remove their
@@ -30,7 +30,7 @@ Agentd runtime, signing configuration, operation store, or effect owner.
 python3 tests/integration/hepta/check_upstream_contract.py \
   --hepta-source /absolute/path/to/hepta-private-ci \
   --emit-reference /tmp/hepta-pinned-wire-check
-cargo +nightly-2026-07-21 run --manifest-path /tmp/hepta-pinned-wire-check/Cargo.toml
+cargo +1.88.0 run --manifest-path /tmp/hepta-pinned-wire-check/Cargo.toml
 ```
 
 After dependencies have been fetched, both Rust commands support `--offline`.
@@ -48,7 +48,7 @@ It does not start Hepta Agentd.
 ## Standalone diagnostic client
 
 ```sh
-cargo +nightly-2026-07-21 run --locked --manifest-path services/hepta-os/Cargo.toml \
+cargo +1.88.0 run --locked --manifest-path services/hepta-os/Cargo.toml \
   --bin hepta-observe -- --help
 ```
 
@@ -89,7 +89,55 @@ own IPC continues to respond. The fixture has no model, policy, grant, durable
 operation database, or device effects, and must never be presented as a running
 Hepta production profile.
 
-## Original process passed; persistent Session and effect profiles remain
+## Optional ObjectiveStart transport and source declarations
+
+The [separate default-off feature](OBJECTIVE_TRANSPORT.md) adds no command to
+`hepta-observe`, Session or Shell. These commands validate its exact wire and
+single-attempt failure semantics using only disposable Linux UDS fixtures;
+they do not authenticate or submit an objective to original Hepta.
+
+```sh
+cargo +1.88.0 check --locked --manifest-path services/hepta-os/Cargo.toml \
+  --no-default-features --all-targets
+cargo +1.88.0 test --locked --manifest-path services/hepta-os/Cargo.toml \
+  --features objective-transport
+cargo +1.88.0 clippy --locked --manifest-path services/hepta-os/Cargo.toml \
+  --features objective-transport --all-targets -- -D warnings
+cargo +1.88.0 fmt --check --manifest-path services/hepta-os/Cargo.toml
+```
+
+The feature-on test command also runs the existing observer baseline. The
+new socket tests verify at most one connection, unchanged original raw ingress,
+peer/source/request/run identity, exact publication/refusal payloads, unknown
+delivery, strict EOF/framing and finite diagnostics. A separate small Tokio
+duplex unit test forces a partial write and cancellation; compile-fail examples
+protect the consuming API and opaque raw input.
+
+For additional source-derived wire conformance, provide the fourteen exact
+files named by [OBJECTIVE_UPSTREAM_CONTRACT.json](OBJECTIVE_UPSTREAM_CONTRACT.json)
+under their original relative paths. An authorized checkout or a fixed-file
+snapshot is accepted. Every file must match its original Git blob, SHA-256 and
+size. Use a new, nonexistent output directory:
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 tests/integration/hepta/check_objective_wire.py \
+  --source-files /absolute/path/to/fixed-original-files \
+  --emit-reference /tmp/hepta-objective-wire-check
+cargo +1.88.0 run --locked --offline \
+  --manifest-path /tmp/hepta-objective-wire-check/Cargo.toml
+```
+
+The generated project contains original serde declarations, the original
+AgentId implementation and the existing expired/all-zero wire fixture factory.
+Only the request/payload enums are narrowed to ObjectiveStart and its three
+response variants. The local assertion harness checks the flat `objective_run`
+shape against actual original serialization and distinguishes the separate
+client-facing `ObjectiveStartOutcome` shape. The small existing lock is reused
+with one explicit root-package rename; no original Agentd dependency, runtime,
+issuer, signature, process, effect owner or socket is constructed. Extraction
+ranges and source/generated hashes are recorded with the emitted project.
+
+## Original process and persistent Session passed; effect profiles remain
 
 The separate [original-Agentd gate](../../tests/integration/hepta/ORIGINAL_AGENTD.md)
 provides fixed-source build/launch commands and original-owner process
@@ -110,16 +158,20 @@ The [live-source review](../../tests/integration/hepta/LIVE_SOURCE_REVIEW.md)
 checks the actual Supervisor/Agentd startup and Session handoff against the
 fixed source. It is not another executed process result.
 
-The passed ARM gate launches a new observer CLI for each read and used no ready
-hold. It does not qualify a continuous Session worker or Shell display. The
-next integration run must bind the actual Session executable to the trusted
-original-owner endpoint, then verify continuous lifecycle observation, history
-loss/freshness, rejection of the old spawn after restart, and an explicit trusted
-new configuration for a new Session. Record the actual Shell projection too.
-Do not count `--help`, the Python fixture, or source conformance as this
-end-to-end evidence. Authenticated objective submission and HOS2
+The earlier ARM gate launched a new observer CLI for each read and used no
+ready hold. Later [two original continuous Session runs](../../tests/integration/hepta/evidence/2026-10-17-original-session-runtime/README.md)
+each passed the original eight checks plus eight Session checks and six real
+Shell phases. The same Session persisted through Starting/Running/Draining and
+old-spawn staleness; a replacement Session used new explicit trusted binding.
+Actual stop samples retained either Running or Draining before becoming stale,
+as recorded in each run. Those receipts distinguish reused original/probe/observer
+ELFs from new UI builds and retain the failed first capture harness attempt.
+Do not count `--help`, the Python fixture, or source conformance as that
+original-runtime evidence. Authenticated objective submission and HOS2
 effects require their own owner-approved provider/adapter and durable-result
-acceptance, not changes to this observer's method allowlist.
+acceptance, not changes to this observer's method allowlist. The new optional
+transport is one local protocol step toward that integration, with no real
+issuer/profile assembly or original submission in its tests.
 
 The read-only original-process profile needs no AuthBus issuer or objective
 profile. A future `ObjectiveStart` deployment needs independently installed
