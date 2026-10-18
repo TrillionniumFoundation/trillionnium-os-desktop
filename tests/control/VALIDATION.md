@@ -1,9 +1,11 @@
 # A03 control core acceptance — 2026-10-16
 
-Latest follow-up:
-[VALIDATION-20261017-api.md](VALIDATION-20261017-api.md), with reservation enum
-variant imports repaired, 223 tests per host backend and a three-version
-compiler compatibility control.
+最新补充（2026-10-18）：[本轮 A03 执行与输入绑定](../../results/integration/2026-10-18-audit-followthrough/README.md#a03)。[PR #185](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/185) 已合入 original-owner authority 绑定的 HistoryAck，以及不复用 namespace 实例 tag 的修复；旧 ACK 不能因内存地址复用而授权新 namespace。本轮 std 与 portable-spin 各 225 项测试通过，Loom 为 19 个模型、27,253 个调度，19 个实际锁内分配场景的 alloc/realloc/dealloc 均为零；格式、严格 Clippy 和 bare no_std 的实际命令及来源一并保留。
+
+这份新证据属于实际执行的宿主模型。集成时按源码及 harness 摘要匹配复用 Loom/allocation，未宣称在每个文档或合并 HEAD 重新执行；具体执行头、完整输入、命令、日志和复用理由见索引。它不建立 durable K/fsync、真实内核 IRQ/SMP 或设备效果资格。
+
+此前 223 项与三版本编译器对照见 [VALIDATION-20261017-api.md](VALIDATION-20261017-api.md)，保留其原始来源和分母；不与本轮 225 相加。
+
 Previous:
 [VALIDATION-20261017-backend.md](VALIDATION-20261017-backend.md),
 with public native namespace lock injection, 220 tests per host backend,

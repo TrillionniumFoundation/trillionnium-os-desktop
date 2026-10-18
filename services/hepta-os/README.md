@@ -6,19 +6,11 @@ speaks the existing, fixed Agentd v2 JSON-over-UDS control wire. Its default API
 bounded metadata and omits the upstream workspace paths, signing inputs,
 session-ingress address, and arbitrary payloads.
 
-**Current evidence:** the compiled Linux host client, real Unix-socket fixture
-roundtrips, strict negative cases and source-derived wire conformance are now
-joined by an [executed original Agentd ARM64 read-only gate](../../tests/integration/hepta/evidence/2026-10-17-original-agentd-arm/README.md).
-Fixed Hepta `f8c9419df6ddeb36ff8b522a50219981fb8d9345` was built and run unchanged;
-all eight lifecycle/read checks passed, and three downloaded ELF hashes match
-the executed receipt. The later [two original continuous Session runs](../../tests/integration/hepta/evidence/2026-10-17-original-session-runtime/README.md)
-each passed the original eight checks plus eight Session checks, with six real
-Shell phases. Their compiled inputs, controlled restart/stop and cleanup are
-recorded separately. Model turns, HOS2 delivery, device actions and Asterinas
-execution are not claimed.
-This is a candidate for owner adoption, not completion of A07's durable effect
-acceptance gate. [Evidence and remaining gates](../../tests/integration/hepta/EVIDENCE.md)
-are recorded separately.
+**当前证据：**Linux host client 的真实 Unix socket fixture、负例和固定协议核验已有各自记录；此外，固定原版 Hepta f8c9419df6ddeb36ff8b522a50219981fb8d9345 → 持续 Session worker → 同一个真实 Rust Shell 窗口，已在 R6 完成两轮六阶段只读运行。每轮保留原版 8 项与 Session 8 项断言、6 张成功 PNG、精确进程/代际来源与逐图审查，见 [R6 完整交付索引](../../tests/integration/hepta/evidence/2026-10-17-r6/README.md)、[持续 Session 实录](../../tests/integration/hepta/evidence/2026-10-17-original-session-runtime/README.md) 和[真实 Shell 窗口归档](../../tests/ui/evidence/2026-10-17-original-hepta-shell/README.md)。独立 ARM gate 及 ARM 持续 Session 的历史记录仍保留自己的架构、被测源码与产物来源。
+
+这些运行发生于 2026-10-17 UTC。PR #189 归档的后续工作对源码、快照和像素作了独立复核，没有重新启动原版运行时。源码已通过 [PR #187](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/187) 进入主干，该次 host/软件 Wayland 验证另见[集成索引](../../results/integration/2026-10-18-audit-followthrough/README.md)；其中 scripted fixture 的 Hepta 页布局不能写成原版 Agentd 新运行。原始 receipt 中的 ELF 摘要与本轮审查可取得的文件分别记录，不把源码/归档复核写成一次新的 ELF 执行。
+
+默认配置和 Session 仍使用只读观察客户端。R7 新增默认关闭的 `objective-transport` feature，可传送外部已签发的原始 ObjectiveStart 信封；其校验为结构校验，本地 UDS 与原版 serde 声明测试不提供原版 owner 的实际准入资格。可信 ObjectiveStart 的桌面入口、模型 turn、durable K↔D 的桌面接合、HOS2 delivery、设备效果和 Asterinas 运行资格尚未由此建立；这不等于 A07 的持久效果验收完成。[剩余门禁](../../tests/integration/hepta/EVIDENCE.md)继续分别记录。
 
 | Surface | Current behavior |
 | --- | --- |

@@ -21,6 +21,8 @@ mod status;
 pub(crate) mod sync;
 pub(crate) mod task_set;
 mod term_status;
+#[cfg(ktest)]
+pub(crate) mod test_util;
 mod wait;
 
 pub(crate) use clone::{CloneArgs, CloneFlags, clone_child};
