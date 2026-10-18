@@ -4,8 +4,8 @@
 
 use os_control::{
     with_parent, BootId, CapSpaceId, ControlCore, DeliveryError, DeliveryRequest, DeliveryState,
-    DeliveryStatus, HistoryAck, OwnerId, OwnerReceipt, PublishOutcome, PublisherId, ResourceDomain,
-    ResourceDomainId, ResourceError, StableObjectId, CPU_PERIOD_NS,
+    DeliveryStatus, HistoryAck, OriginalOwnerAuthority, OwnerId, PublishOutcome, PublisherId,
+    ResourceDomain, ResourceDomainId, ResourceError, StableObjectId, CPU_PERIOD_NS,
 };
 use std::sync::atomic::{AtomicUsize, Ordering};
 
@@ -27,13 +27,8 @@ fn parent(n: u128) -> ResourceDomain {
     .unwrap()
 }
 
-fn ack(core: &ControlCore, through: u64) -> HistoryAck {
-    HistoryAck::from_owner_receipt(
-        core.identity(),
-        through,
-        OwnerReceipt::new(owner(), [0x73; 32]),
-    )
-    .unwrap()
+fn ack(authority: &OriginalOwnerAuthority, through: u64) -> HistoryAck {
+    authority.history_ack(through, [0x73; 32]).unwrap()
 }
 
 fn denied_without_replay(result: Result<os_control::DeliveryObservation, DeliveryError>) {
@@ -69,7 +64,7 @@ fn ten_thousand_retained_tokens_do_not_reexecute_in_a_one_slot_namespace() {
             core.commit(&token, publisher(), sequence).unwrap().status,
             Some(DeliveryStatus::Ok)
         );
-        core.retire_through(&view, ack(&core, sequence), &authority)
+        core.retire_through(&view, ack(&authority, sequence), &authority)
             .unwrap();
         assert_eq!(core.window_len(), 0);
         assert_eq!(token.binding(), binding);
@@ -134,7 +129,7 @@ fn retained_retired_token_no_longer_keeps_a_child_cap_constraint_alive() {
     };
     let binding = token.binding();
     let view = core.delivery_view_for(owner()).unwrap();
-    core.retire_through(&view, ack(&core, 1), &authority)
+    core.retire_through(&view, ack(&authority, 1), &authority)
         .unwrap();
 
     // Only the obsolete token remains outside the namespace. Its cached
@@ -186,7 +181,7 @@ fn unretired_namespace_slot_protects_a_child_after_token_and_user_handles_drop()
         root.install_budget_for_host_model(&root_grant, 1, CPU_PERIOD_NS, 20, 2),
         Err(ResourceError::ParentConstraint)
     );
-    core.retire_through(&view, ack(&core, 1), &authority)
+    core.retire_through(&view, ack(&authority, 1), &authority)
         .unwrap();
     root.install_budget_for_host_model(&root_grant, 1, CPU_PERIOD_NS, 20, 2)
         .unwrap();
