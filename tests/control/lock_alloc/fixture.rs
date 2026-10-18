@@ -8,8 +8,8 @@ use lock_trace::{
 };
 use os_control::{
     BootId, CapSpaceId, DeliveryError, DeliveryState, DeliveryStatus, HistoryAck,
-    NativeDeliveryRequest, NativeGrant, NativeTarget, OwnerId, OwnerReceipt, PublishOutcome,
-    PublisherId, ResourceDomainId, StableObjectId,
+    NativeDeliveryRequest, NativeGrant, NativeTarget, OwnerId, PublishOutcome, PublisherId,
+    ResourceDomainId, StableObjectId,
 };
 #[cfg(not(feature = "public-backend"))]
 use os_control::{ControlCore, OriginalOwnerAuthority, ReserveAttempt, ReserveToken};
@@ -203,13 +203,8 @@ fn request(owner: Arc<Owner>, sequence: u64) -> NativeDeliveryRequest {
     let grant = NativeGrant::from_owner(target, publisher(), 1, vec![5, 6]).unwrap();
     NativeDeliveryRequest::from_wire(sequence, grant, 1, 17, 7, 11).unwrap()
 }
-fn ack(core: &ControlCore, through: u64) -> HistoryAck {
-    HistoryAck::from_owner_receipt(
-        core.identity(),
-        through,
-        OwnerReceipt::new(owner_id(), [1; 32]),
-    )
-    .unwrap()
+fn ack(authority: &OriginalOwnerAuthority, through: u64) -> HistoryAck {
+    authority.history_ack(through, [1; 32]).unwrap()
 }
 fn deny(core: &ControlCore, token: &ReserveToken) {
     core.publish(
@@ -239,7 +234,7 @@ fn fallible_allocation_controls() {
         .reserve_native(request(owner(), 1), publisher())
         .unwrap();
     deny(&core, &token);
-    let acknowledgement = ack(&core, 1);
+    let acknowledgement = ack(&authority, 1);
     fail_next_allocation();
     assert_eq!(
         core.retire_through(&view, acknowledgement, &authority),
@@ -351,7 +346,7 @@ fn main() {
     .unwrap();
     case!("retire_terminal", || first.retire_through(
         &view,
-        ack(&first, 1),
+        ack(&authority, 1),
         &authority
     ))
     .unwrap();
@@ -426,7 +421,7 @@ fn main() {
     assert_eq!(
         case!("hanging_prefix_retire", || hanging.retire_through(
             &view,
-            ack(&hanging, 4),
+            ack(&authority, 4),
             &authority
         )),
         Err(DeliveryError::PendingPrefix)
@@ -440,7 +435,7 @@ fn main() {
     case!("publish_pending", || deny(&hanging, &prefix));
     case!("retire_released_prefix", || hanging.retire_through(
         &view,
-        ack(&hanging, 4),
+        ack(&authority, 4),
         &authority
     ))
     .unwrap();
@@ -453,7 +448,7 @@ fn main() {
                 .reserve_native(request(owner.clone(), sequence), publisher())
                 .unwrap();
             deny(&long, &token);
-            long.retire_through(&view, ack(&long, sequence), &authority)
+            long.retire_through(&view, ack(&authority, sequence), &authority)
                 .unwrap();
         }
     });

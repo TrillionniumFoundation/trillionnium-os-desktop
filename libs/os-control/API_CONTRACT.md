@@ -211,12 +211,16 @@ of this metadata primitive or mutating HOS2 delivery core is established here.
 
 A07 records `K` and its association with this crate's D in the existing Hepta
 owner ledger. A03 does not create, reconcile, or persist K. After the owner
-has durably confirmed a contiguous terminal prefix, it creates a value-only
-`OwnerReceipt`/`HistoryAck` and calls
-`retire_through(&owner_view, ack, &original_owner_authority)`.
-The receipt is not authentication: the authority minted by trusted bootstrap
-is mandatory. The namespace validates instance, generation, exact boot/space,
-owner binding, contiguous terminal state, and monotonic frontier.
+has durably confirmed a contiguous terminal prefix, it supplies the digest to
+`OriginalOwnerAuthority::history_ack`, which stamps a private namespace-bound
+receipt tag, then calls `retire_through(&owner_view, ack,
+&original_owner_authority)`. `HistoryAck::from_owner_receipt` remains a
+value-only parser for untrusted evidence and can never authorize retirement.
+The instance tag is allocated once from a process-local non-reusing counter;
+exhaustion rejects namespace creation. It is not an allocation address, so a
+copied ACK cannot authenticate a replacement namespace after address reuse.
+The namespace validates the private receipt tag, instance, generation, exact
+boot/space, owner binding, contiguous terminal state, and monotonic frontier.
 Retiring a prefix releases result slots but keeps the frontier so a
 late sequence can only return `Retired`.
 
@@ -292,7 +296,10 @@ An observation-only `delivery_view()` may query but cannot retire. The
 verifies an actual history.ack capability, and A07 must validate that the
 owner's receipt represents a durable contiguous confirmation. The
 `OwnerReceipt` digest is opaque model evidence, **not a cryptographic
-signature or a capability**, and a host-model caller can manufacture one.
+signature**. A caller-created receipt is intentionally untrusted; only the
+non-Clone original-owner authority can stamp the private namespace-bound tag
+required by `retire_through`. The host model still does not implement A07's
+persistent K ledger or fsync proof.
 
 `lose_history` fences reserved result slots under the per-slot execution gate
 that serializes `commit` and `publish`, without holding the namespace table.

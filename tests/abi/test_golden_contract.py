@@ -85,6 +85,7 @@ def read_frame(raw, kind):
             sample, cumulative, start, used, cap, period, events, dropped = struct.unpack_from('<8Q', raw, 64)
             if (period != PERIOD or start != sample // PERIOD * PERIOD
                     or used > sample - start or cumulative < used
+                    or cumulative - used > start
                     or cumulative > sample
                     or cap > period or dropped > events):
                 raise ValueError('usage accounting')
@@ -92,6 +93,10 @@ def read_frame(raw, kind):
             state, saved, spare, sequence, object_id, saved_revision, previous, effective, consumed = struct.unpack_from('<HHIQ16sQQQQ', raw, 64)
             if state > 4 or saved > 11 or spare or not sequence:
                 raise ValueError('delivery state/status/sequence/reserved')
+            if state == 1 and saved in (10, 11):
+                raise ValueError('pre-reservation status cannot be terminal')
+            if sequence == 2**64 - 1 and state not in (3, 4):
+                raise ValueError('exhausted sequence cannot have a reserved result')
             if state == 1 and saved == 0:
                 if (not any(object_id) or not 0 < previous < 2**64 - 1
                         or saved_revision != previous + 1
@@ -149,6 +154,59 @@ class GoldenContract(unittest.TestCase):
         self.assertEqual(mutated[72:80].hex(), '81d1f00800000000')
         with self.assertRaises(ValueError):
             read_frame(bytes(mutated), 'response')
+
+    def test_prior_window_cpu_cannot_exceed_prior_elapsed_time(self):
+        original = bytes.fromhex(read_vector('read_usage_lowered_cap')['hex'])
+        for sample, start, used in ((150_000_000, PERIOD, 35_000_000),
+                                    (50_000_000, 0, 35_000_000)):
+            with self.subTest(sample=sample, start=start):
+                boundary = bytearray(original)
+                # All time before the current window may have been spent
+                # running. One additional prior nanosecond is impossible
+                # even though cumulative time still fits below sample time.
+                struct.pack_into('<4Q', boundary, 64, sample, start + used, start, used)
+                self.assertEqual(read_frame(bytes(boundary), 'response')[0], 2)
+                impossible = bytearray(boundary)
+                struct.pack_into('<Q', impossible, 72, start + used + 1)
+                self.assertLess(struct.unpack_from('<Q', impossible, 72)[0], sample)
+                with self.assertRaises(ValueError):
+                    read_frame(bytes(impossible), 'response')
+
+        # Keep the audit counterexample independent of generated edge vectors:
+        # 140ms total - 35ms current = 105ms before a 100ms window start.
+        impossible = bytearray(original)
+        struct.pack_into('<4Q', impossible, 64, 150_000_000, 140_000_000,
+                         PERIOD, 35_000_000)
+        with self.assertRaises(ValueError):
+            read_frame(bytes(impossible), 'response')
+
+    def test_delivery_status_and_exhausted_sequence_boundaries(self):
+        original = bytes.fromhex(read_vector('query_delivery_terminal')['hex'])
+
+        def frame(state, saved, sequence):
+            raw = bytearray(original)
+            struct.pack_into('<HHIQ', raw, 64, state, saved, 0, sequence)
+            if state != 1 or saved != 0:
+                raw[80:] = bytes(48)
+            return bytes(raw)
+
+        # OutOfOrder and Retired arise before reservation; neither is a saved
+        # terminal result. MAX is an exhaustion marker, never a reserved write.
+        invalid = ((1, 10, 1), (1, 11, 1),
+                   (0, 0, 2**64 - 1), (1, 2, 2**64 - 1), (2, 0, 2**64 - 1))
+        for state, saved, sequence in invalid:
+            with self.subTest(state=state, saved=saved, sequence=sequence):
+                with self.assertRaises(ValueError):
+                    read_frame(frame(state, saved, sequence), 'response')
+
+        # The last usable sequence remains valid for all reserved-result
+        # states, including terminal success and every saved error 1..9.
+        valid = [(0, 0, 2**64 - 2), (2, 0, 2**64 - 2),
+                 (3, 0, 2**64 - 1), (4, 0, 2**64 - 1)]
+        valid.extend((1, saved, 2**64 - 2) for saved in range(10))
+        for state, saved, sequence in valid:
+            with self.subTest(state=state, saved=saved, sequence=sequence):
+                self.assertEqual(read_frame(frame(state, saved, sequence), 'response')[0], 4)
 
     def test_install_and_history_share_valid_effect_time(self):
         applied = bytes.fromhex(read_vector('install_budget_ok')['hex'])
