@@ -1568,6 +1568,169 @@ mod workspace_context_tests {
         assert!(matches!(requests.try_recv(), Err(TryRecvError::Empty)));
     }
 
+    fn overflowing_console() -> (Desktop, Receiver<Request>) {
+        let (mut desktop, outgoing, requests) = setup();
+        let mut records = Vec::new();
+        for workspace in Workspace::ALL {
+            desktop.drafts.set_tab(workspace, WorkspaceTab::Console);
+            for row in 0..30 {
+                let mut task = TaskRecord::new(records.len() as u64 + 1, workspace, AppKind::Notes);
+                // Bounded historical rows make both real Console regions
+                // overflow without pretending to launch host processes.
+                task.state = TaskState::Completed;
+                task.exit_code = Some(0);
+                task.updated_unix_ms = 1;
+                task.detail = format!("process-scroll-row-{row:02}");
+                records.push(task);
+            }
+        }
+        let mut response = snapshot(A, 20_000, records[0].clone());
+        if let Response::Snapshot { tasks, .. } = &mut response {
+            *tasks = records;
+        }
+        outgoing.send((false, Ok(response))).unwrap();
+        desktop.receive_and_refresh_hepta(|| (Instant::now(), 20_000));
+        for row in 0..30 {
+            desktop.notice(format!("local-scroll-notice-{row:02}"));
+        }
+        (desktop, requests)
+    }
+
+    #[derive(Debug)]
+    struct PaintedRow {
+        text: String,
+        rect: egui::Rect,
+        visible_rect: egui::Rect,
+    }
+
+    fn first_painted_row(output: &egui::FullOutput, marker: &str) -> PaintedRow {
+        output
+            .shapes
+            .iter()
+            .find_map(|shape| match &shape.shape {
+                egui::Shape::Text(text) if text.galley.job.text.contains(marker) => {
+                    let rect = egui::Rect::from_min_size(text.pos, text.galley.size());
+                    let visible_rect = rect.intersect(shape.clip_rect);
+                    visible_rect.is_positive().then(|| PaintedRow {
+                        text: text.galley.job.text.clone(),
+                        rect,
+                        visible_rect,
+                    })
+                }
+                _ => None,
+            })
+            .unwrap_or_else(|| panic!("no clipped visible row for {marker:?}"))
+    }
+
+    fn assert_same_row(before: &PaintedRow, after: &PaintedRow) {
+        assert_eq!(before.text, after.text, "a different scroll region moved");
+        assert!(
+            (before.rect.min.y - after.rect.min.y).abs() < 0.5,
+            "scroll position changed: {before:?} -> {after:?}"
+        );
+    }
+
+    fn settle_console(desktop: &mut Desktop, ctx: &egui::Context) -> egui::FullOutput {
+        let mut output = draw(desktop, ctx, vec![]);
+        for _ in 0..30 {
+            output = draw(desktop, ctx, vec![]);
+        }
+        output
+    }
+
+    fn wheel_console(
+        desktop: &mut Desktop,
+        ctx: &egui::Context,
+        position: egui::Pos2,
+        delta: f32,
+    ) -> egui::FullOutput {
+        draw(
+            desktop,
+            ctx,
+            vec![
+                egui::Event::PointerMoved(position),
+                egui::Event::MouseWheel {
+                    unit: egui::MouseWheelUnit::Point,
+                    delta: egui::vec2(0.0, delta),
+                    modifiers: egui::Modifiers::NONE,
+                },
+            ],
+        );
+        settle_console(desktop, ctx)
+    }
+
+    #[test]
+    fn actual_console_has_no_scroll_area_id_clash_in_any_workspace() {
+        let (mut desktop, requests) = overflowing_console();
+        let ctx = egui::Context::default();
+        ctx.options_mut(|options| options.warn_on_id_clash = true);
+        for workspace in Workspace::ALL {
+            desktop.workspace = workspace;
+            let text = visible_text(&settle_console(&mut desktop, &ctx));
+            assert!(text.contains("Observed host process lifecycle"));
+            assert!(text.contains("Local Shell notices (latest 30, volatile)"));
+            assert!(
+                !text.contains("use of ScrollArea ID"),
+                "actual Console painted an egui ScrollArea ID conflict: {text}"
+            );
+        }
+        assert!(matches!(requests.try_recv(), Err(TryRecvError::Empty)));
+    }
+
+    #[test]
+    fn actual_console_scrolls_regions_independently_and_restores_workspace_offsets() {
+        let (mut desktop, requests) = overflowing_console();
+        let ctx = egui::Context::default();
+        let initial = settle_console(&mut desktop, &ctx);
+        let initial_process = first_painted_row(&initial, "process-scroll-row-");
+        let initial_notice = first_painted_row(&initial, "local-scroll-notice-");
+        assert!(initial_process.text.ends_with("process-scroll-row-00"));
+        assert_eq!(initial_notice.text, "local-scroll-notice-29");
+
+        let process_scrolled = wheel_console(
+            &mut desktop,
+            &ctx,
+            initial_process.visible_rect.center(),
+            -350.0,
+        );
+        let moved_process = first_painted_row(&process_scrolled, "process-scroll-row-");
+        let unchanged_notice = first_painted_row(&process_scrolled, "local-scroll-notice-");
+        assert_ne!(initial_process.text, moved_process.text);
+        assert_same_row(&initial_notice, &unchanged_notice);
+
+        let notices_scrolled = wheel_console(
+            &mut desktop,
+            &ctx,
+            unchanged_notice.visible_rect.center(),
+            -150.0,
+        );
+        let final_process = first_painted_row(&notices_scrolled, "process-scroll-row-");
+        let moved_notice = first_painted_row(&notices_scrolled, "local-scroll-notice-");
+        assert_same_row(&moved_process, &final_process);
+        assert_ne!(initial_notice.text, moved_notice.text);
+
+        desktop.workspace = Workspace::Research;
+        let research = settle_console(&mut desktop, &ctx);
+        assert!(first_painted_row(&research, "process-scroll-row-")
+            .text
+            .ends_with("process-scroll-row-00"));
+        assert_eq!(
+            first_painted_row(&research, "local-scroll-notice-").text,
+            "local-scroll-notice-29"
+        );
+        desktop.workspace = Workspace::Personal;
+        let restored = settle_console(&mut desktop, &ctx);
+        assert_same_row(
+            &final_process,
+            &first_painted_row(&restored, "process-scroll-row-"),
+        );
+        assert_same_row(
+            &moved_notice,
+            &first_painted_row(&restored, "local-scroll-notice-"),
+        );
+        assert!(matches!(requests.try_recv(), Err(TryRecvError::Empty)));
+    }
+
     #[test]
     fn delayed_snapshot_is_visibly_stale_and_action_reply_cannot_refresh_it() {
         let (mut desktop, outgoing, requests) = setup();
