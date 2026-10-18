@@ -229,12 +229,7 @@ fn public_backend_retire_and_query_linearize() {
         let token = core.reserve_native(request, publisher()).unwrap();
         let terminal = execute(&core, &token).unwrap();
         let view = core.delivery_view_for(owner_id()).unwrap();
-        let ack = HistoryAck::from_owner_receipt(
-            core.identity(),
-            1,
-            OwnerReceipt::new(owner_id(), [1; 32]),
-        )
-        .unwrap();
+        let ack = authority.history_ack(1, [1; 32]).unwrap();
         let (a_core, a_view) = (core.clone(), view.clone());
         let a = thread::spawn(move || a_core.retire_through(&a_view, ack, &authority).unwrap());
         let (b_core, b_view) = (core.clone(), view.clone());
