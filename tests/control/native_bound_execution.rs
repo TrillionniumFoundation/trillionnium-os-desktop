@@ -8,7 +8,7 @@
 use os_control::{
     BootId, CapSpaceId, ControlCore, DeliveryError, DeliveryRequest, DeliveryState, DeliveryStatus,
     HistoryAck, NativeDeliveryRequest, NativeGrant, NativeTarget, OriginalOwnerAuthority, OwnerId,
-    OwnerReceipt, PublishOutcome, PublisherId, RequestBinding, ResourceDomain, ResourceDomainId,
+    PublishOutcome, PublisherId, RequestBinding, ResourceDomain, ResourceDomainId,
     StableObjectId, CPU_PERIOD_NS, MAX_RESOURCE_DEPTH,
 };
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -117,13 +117,8 @@ impl BoundOwner {
     }
 }
 
-fn ack(core: &ControlCore) -> HistoryAck {
-    HistoryAck::from_owner_receipt(
-        core.identity(),
-        1,
-        OwnerReceipt::new(durable_owner(), [0x35; 32]),
-    )
-    .unwrap()
+fn ack(authority: &OriginalOwnerAuthority) -> HistoryAck {
+    authority.history_ack(1, [0x35; 32]).unwrap()
 }
 
 #[test]
@@ -193,7 +188,7 @@ fn bound_callback_uses_pinned_owner_after_all_external_handles_are_dropped() {
         1
     );
     let view = core.delivery_view_for(durable_owner()).unwrap();
-    core.retire_through(&view, ack(&core), &authority).unwrap();
+    core.retire_through(&view, ack(&authority), &authority).unwrap();
     assert!(weak_owner.upgrade().is_none());
     assert!(matches!(
         core.execute_native_reserved::<BoundOwner, _>(&token, publisher(), |_| {
@@ -223,7 +218,7 @@ fn wrong_owner_type_preserves_pending_slot_and_does_not_consume_execution() {
         DeliveryState::Reserved
     );
     assert_eq!(
-        core.retire_through(&view, ack(&core), &authority),
+        core.retire_through(&view, ack(&authority), &authority),
         Err(DeliveryError::PendingPrefix)
     );
     assert_eq!(original.mutation.lock().unwrap().effects, 0);
