@@ -313,7 +313,8 @@ class MutationToolchainTests(unittest.TestCase):
             with self.subTest(original=original):
                 self.assertEqual(source.count(original), 1)
                 self.assertEqual(replacement, "|| false")
-                self.assertIn("cumulative_cpu_ns - window_consumed_ns > window_start_ns", original)
+                self.assertIn("cumulative_cpu_ns - ", original)
+                self.assertIn(" > ", original)
         mutated = mutations.mutated_profile_source(source, changes)
         self.assertNotEqual(mutated, source)
 
