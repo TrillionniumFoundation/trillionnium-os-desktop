@@ -378,6 +378,12 @@ fn clone_child_task(
         ..
     } = ctx;
 
+    // Keep the cgroup snapshot and child insertion under the same membership
+    // read section as migration.  This snapshot is only a deferred-final-
+    // charge fallback; live charges still resolve through Process::cgroup().
+    let _cgroup_read_guard = CgroupMembership::read_lock();
+    let inherited_cpu_cgroup = process.cgroup().get().map(|cgroup| cgroup.clone());
+
     // Clone system V semaphore
     clone_sysvsem(clone_flags)?;
 
@@ -481,6 +487,11 @@ fn clone_child_task(
                 "the process has exited or has already executed a new program",
             )
         })?;
+
+    child_task
+        .as_posix_thread()
+        .unwrap()
+        .set_cpu_cgroup(inherited_cpu_cgroup);
 
     let child_thread = child_task.as_thread().unwrap();
     pid_table::pid_table_mut().insert_thread(child_tid, child_thread);
