@@ -654,15 +654,17 @@ mod tests {
 
     #[test]
     fn full_or_oversized_draft_preserves_all_text_and_references() {
-        let mut book = DraftBook::default();
-        book.drafts = vec![
-            LocalDraft {
-                workspace: Workspace::Personal,
-                text: "keep".into(),
-                contexts: vec![]
-            };
-            MAX_LOCAL_DRAFTS
-        ];
+        let mut book = DraftBook {
+            drafts: vec![
+                LocalDraft {
+                    workspace: Workspace::Personal,
+                    text: "keep".into(),
+                    contexts: vec![]
+                };
+                MAX_LOCAL_DRAFTS
+            ],
+            ..Default::default()
+        };
         book.composer_mut(Workspace::Personal).text = "valuable unsaved".into();
         let task = TaskRecord::new(1, Workspace::Personal, AppKind::Notes);
         book.attach(

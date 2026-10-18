@@ -447,15 +447,17 @@ impl Desktop {
     }
 
     fn restore_drafts(&mut self) {
+        self.restore_drafts_from(local_drafts::state_dir());
+    }
+
+    fn restore_drafts_from(&mut self, directory: io::Result<std::path::PathBuf>) {
         // Import is deliberately non-destructive: never clear existing unsent
         // composer text or replace in-memory drafts without a fresh session.
         if !self.drafts.may_restore() {
             self.notice("Import refused: local chat/composer is not empty; nothing overwritten.");
             return;
         }
-        match local_drafts::state_dir()
-            .and_then(|dir| local_drafts::load_context_at(&dir, self.workspace))
-        {
+        match directory.and_then(|dir| local_drafts::load_context_at(&dir, self.workspace)) {
             Ok(drafts) => {
                 let count = drafts.len();
                 if let Err(message) = self.drafts.restore(drafts) {
@@ -1427,12 +1429,9 @@ mod workspace_context_tests {
     use trill_ui_core::conversation::ContextRef;
     const A: &str = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
     const B: &str = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
+    type QueuedResponses = SyncSender<(bool, Result<Response, String>)>;
 
-    fn setup() -> (
-        Desktop,
-        SyncSender<(bool, Result<Response, String>)>,
-        Receiver<Request>,
-    ) {
+    fn setup() -> (Desktop, QueuedResponses, Receiver<Request>) {
         let (mut desktop, outgoing) = observation_freshness_tests::queued_desktop();
         let (actions, incoming) = mpsc::sync_channel(8);
         desktop.bridge.actions = actions;
@@ -1607,6 +1606,89 @@ mod workspace_context_tests {
             TaskState::Completed
         );
         assert!(matches!(requests.try_recv(), Err(TryRecvError::Empty)));
+    }
+
+    #[test]
+    #[cfg(target_os = "linux")]
+    fn actual_import_refuses_fifo_without_writer_and_never_restores_legacy() {
+        use std::ffi::CString;
+        use std::fs::{self, DirBuilder, OpenOptions};
+        use std::os::unix::ffi::OsStrExt;
+        use std::os::unix::fs::{DirBuilderExt, OpenOptionsExt};
+        use std::path::PathBuf;
+        unsafe extern "C" {
+            fn mkfifo(path: *const std::os::raw::c_char, mode: u32) -> i32;
+        }
+        struct PrivateDir(PathBuf);
+        impl Drop for PrivateDir {
+            fn drop(&mut self) {
+                let _ = fs::remove_dir_all(&self.0);
+            }
+        }
+        let dir = PrivateDir(std::env::temp_dir().join(format!(
+            "trill-fifo-import-{}-{}",
+            std::process::id(),
+            trill_ui_core::unix_ms()
+        )));
+        DirBuilder::new().mode(0o700).create(&dir.0).unwrap();
+        let legacy = dir.0.join("local-drafts-v1.json");
+        let original = br#"{"version":1,"drafts":["legacy must not be silently restored"]}"#;
+        OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .mode(0o600)
+            .open(&legacy)
+            .unwrap()
+            .write_all(original)
+            .unwrap();
+        let fifo = dir.0.join("local-context-drafts-v2.json");
+        let name = CString::new(fifo.as_os_str().as_bytes()).unwrap();
+        // Only this test-owned path is created, with no writer during the
+        // complete acceptance window. No global environment is changed.
+        assert_eq!(unsafe { mkfifo(name.as_ptr(), 0o600) }, 0);
+        let (mut desktop, _outgoing, requests) = setup();
+        let (finished, receive) = mpsc::sync_channel(1);
+        let import_dir = dir.0.clone();
+        let worker = std::thread::spawn(move || {
+            desktop.restore_drafts_from(Ok(import_dir));
+            finished.send(desktop).unwrap();
+        });
+        let first = receive.recv_timeout(Duration::from_secs(2));
+        let refused_without_writer = first.is_ok();
+        let mut cleanup_writer = None;
+        let returned = match first {
+            Ok(desktop) => desktop,
+            Err(mpsc::RecvTimeoutError::Timeout) => {
+                // RED-only cleanup: open our FIFO after the failed deadline
+                // to release a blocked reader, then join it. This writer
+                // cannot turn the no-writer acceptance predicate into PASS.
+                cleanup_writer = Some(
+                    OpenOptions::new()
+                        .write(true)
+                        .custom_flags(0o4000)
+                        .open(&fifo)
+                        .unwrap(),
+                );
+                receive
+                    .recv_timeout(Duration::from_secs(2))
+                    .expect("blocked FIFO reader did not finish after owned cleanup writer")
+            }
+            Err(error) => panic!("import worker ended without a result: {error}"),
+        };
+        worker.join().unwrap();
+        drop(cleanup_writer);
+        assert!(
+            returned.drafts.may_restore(),
+            "FIFO import changed the empty draft book"
+        );
+        assert!(returned
+            .notices
+            .back()
+            .unwrap()
+            .contains("Draft import FAILED"));
+        assert_eq!(fs::read(legacy).unwrap(), original);
+        assert!(matches!(requests.try_recv(), Err(TryRecvError::Empty)));
+        assert!(refused_without_writer, "FIFO import blocked for 2 seconds with no writer; only the later cleanup writer released it");
     }
 }
 
