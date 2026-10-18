@@ -1,0 +1,30 @@
+{
+  "scope": "actual CLI offline reassembly into new scratch directories; entire 12/13 artifact set additionally decompressed and checked in full verifier",
+  "runs": [
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-native-cloud-before/artifacts/reassemble.py",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-native-cloud-before/artifacts/manifest.json",
+        "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+        "/workspace/scratch/ae1a8cf05419/native-cloud/before-reassemble-validation/I-bios"
+      ],
+      "returncode": 0,
+      "stdout": "{\"schema\": 1, \"passed\": true, \"manifest\": \"/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-native-cloud-before/artifacts/manifest.json\", \"raw_path\": \"/workspace/scratch/ae1a8cf05419/native-cloud/before-reassemble-validation/I-bios/1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735.bin\", \"raw_bytes\": 262144, \"raw_sha256\": \"1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735\", \"gzip_bytes\": 109289, \"gzip_sha256\": \"3be74e9f7c998c06146ac4f4d89b62b6d2c2968cd69e5908a806e3581535f94c\", \"verified_parts\": 1}\n"
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "-O",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-native-cloud-before/artifacts/reassemble.py",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-native-cloud-before/artifacts/manifest.json",
+        "c029dcedeec5eaae1ab254b913e2a193311df678746150ae1bfde63f376c7a03",
+        "/workspace/scratch/ae1a8cf05419/native-cloud/before-reassemble-validation/I-O-largest"
+      ],
+      "returncode": 0,
+      "stdout": "{\"schema\": 1, \"passed\": true, \"manifest\": \"/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-native-cloud-before/artifacts/manifest.json\", \"raw_path\": \"/workspace/scratch/ae1a8cf05419/native-cloud/before-reassemble-validation/I-O-largest/c029dcedeec5eaae1ab254b913e2a193311df678746150ae1bfde63f376c7a03.bin\", \"raw_bytes\": 41609160, \"raw_sha256\": \"c029dcedeec5eaae1ab254b913e2a193311df678746150ae1bfde63f376c7a03\", \"gzip_bytes\": 11456666, \"gzip_sha256\": \"757b787d050de60d177375f89ee9ef6c52a75bd53fad1ae5efeac79d9b6fe019\", \"verified_parts\": 6}\n"
+    }
+  ]
+}

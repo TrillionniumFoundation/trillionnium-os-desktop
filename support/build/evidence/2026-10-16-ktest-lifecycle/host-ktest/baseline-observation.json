@@ -1,0 +1,38 @@
+{
+  "argv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "-I",
+    "/workspace/scratch/ae1a8cf05419/next7-ktest-lifecycle/baseline-project/support/build/ktest/run.py",
+    "--output",
+    "/workspace/scratch/ae1a8cf05419/next7-ktest-lifecycle/baseline-output"
+  ],
+  "source_sha256": "c70096ee2bd5b4e369da4bb45533fb8d8fea2892371678064d9bd55663187c29",
+  "namespace_evidence": "all fixtures fork/exec from this controller; no namespace switch or /proc inspection",
+  "commands": [
+    "SIGTERM sent only to retained CLI Popen",
+    "pidfd observation of both same-namespace fixture PIDs before cleanup",
+    "fresh TCP bind and flock tests"
+  ],
+  "fixture": {
+    "leader": 7,
+    "descendant": 8,
+    "address": [
+      "127.0.0.1",
+      53035
+    ]
+  },
+  "lock_available_before": false,
+  "cli_exit": -15,
+  "live_pidfds_after_cli": [
+    true,
+    true
+  ],
+  "lock_available_after": true,
+  "lease_free_after_cli": false,
+  "success_result_exists": false,
+  "finding_reproduced": true,
+  "cleanup_exited": [
+    true,
+    true
+  ]
+}

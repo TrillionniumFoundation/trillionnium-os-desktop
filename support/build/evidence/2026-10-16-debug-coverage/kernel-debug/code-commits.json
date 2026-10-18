@@ -1,0 +1,308 @@
+{
+  "published_debug_code_commit": "40f6c7ae47626df9eb66eb3c4a4c9036bc5c8ccc",
+  "published_debug_code_tree": "a41f900f4fc9d61a007d673870e74cdf0e037a71",
+  "execution_boundary": "Run04 actually recorded HEAD 1cc76b... with dirty/untracked debug files. Source identity is established by its 63 execution-time hashes and the later published Git object. The nine commit files also byte-matched the working files in this posthoc check; that additional check is not an execution-time snapshot of unrecorded files.",
+  "nine_source_files_posthoc": {
+    "support/build/README.md": {
+      "published_git_blob_sha256": "eea6a524fa3ae4cd1162c6c59b033f4e56dbe6867861494856b16779e564c348",
+      "current_working_file_sha256": "eea6a524fa3ae4cd1162c6c59b033f4e56dbe6867861494856b16779e564c348",
+      "posthoc_byte_match": true
+    },
+    "support/build/debug/README.md": {
+      "published_git_blob_sha256": "f89996c747da38008021c061fccfd0a57eeab4c949584a9351f31278428a0ccf",
+      "current_working_file_sha256": "f89996c747da38008021c061fccfd0a57eeab4c949584a9351f31278428a0ccf",
+      "posthoc_byte_match": true
+    },
+    "support/build/debug/run.py": {
+      "published_git_blob_sha256": "edcd1e590cb95240d966fe03890339e005d4f5a72a07fe404be320a7b7fffadb",
+      "current_working_file_sha256": "edcd1e590cb95240d966fe03890339e005d4f5a72a07fe404be320a7b7fffadb",
+      "posthoc_byte_match": true
+    },
+    "support/build/debug/test_debug.py": {
+      "published_git_blob_sha256": "d9c85314795c50aa772fd876c7fb8d97abefd3f8d9063d07daad5981a50a9109",
+      "current_working_file_sha256": "d9c85314795c50aa772fd876c7fb8d97abefd3f8d9063d07daad5981a50a9109",
+      "posthoc_byte_match": true
+    },
+    "support/build/kernel.sh": {
+      "published_git_blob_sha256": "ff4315024e5f9a690ce1c7bf8954d46b65d41e44542d5a4ff0d614833914f5e6",
+      "current_working_file_sha256": "ff4315024e5f9a690ce1c7bf8954d46b65d41e44542d5a4ff0d614833914f5e6",
+      "posthoc_byte_match": true
+    },
+    "support/build/minimal.mk": {
+      "published_git_blob_sha256": "0a559e82f2980c5e4e75f466b5eb3346187a720533f8f378878ddd9c04f2c958",
+      "current_working_file_sha256": "0a559e82f2980c5e4e75f466b5eb3346187a720533f8f378878ddd9c04f2c958",
+      "posthoc_byte_match": true
+    },
+    "support/build/prepare-host.sh": {
+      "published_git_blob_sha256": "949d948cfa3974bc2b46ae3e1f0266e5e8354ffbda036b87299a69421d62e322",
+      "current_working_file_sha256": "949d948cfa3974bc2b46ae3e1f0266e5e8354ffbda036b87299a69421d62e322",
+      "posthoc_byte_match": true
+    },
+    "support/build/record-qemu.py": {
+      "published_git_blob_sha256": "9d6779a4df75ad55f04a37aea213449d83a8ad4c7096dd1b6381628833b42e62",
+      "current_working_file_sha256": "9d6779a4df75ad55f04a37aea213449d83a8ad4c7096dd1b6381628833b42e62",
+      "posthoc_byte_match": true
+    },
+    "support/build/tests/test_gdb_listener.py": {
+      "published_git_blob_sha256": "300e049a6e6bf6ef8bf26810db614b75bc57d44c4129e628907bce015181c6bb",
+      "current_working_file_sha256": "300e049a6e6bf6ef8bf26810db614b75bc57d44c4129e628907bce015181c6bb",
+      "posthoc_byte_match": true
+    }
+  },
+  "all63_run04_recorded_inputs_match_published_commit": {
+    "support/build/kernel.sh": {
+      "recorded_run04_sha256": "ff4315024e5f9a690ce1c7bf8954d46b65d41e44542d5a4ff0d614833914f5e6",
+      "published_git_blob_sha256": "ff4315024e5f9a690ce1c7bf8954d46b65d41e44542d5a4ff0d614833914f5e6"
+    },
+    "support/build/minimal.mk": {
+      "recorded_run04_sha256": "0a559e82f2980c5e4e75f466b5eb3346187a720533f8f378878ddd9c04f2c958",
+      "published_git_blob_sha256": "0a559e82f2980c5e4e75f466b5eb3346187a720533f8f378878ddd9c04f2c958"
+    },
+    "support/build/record-qemu.py": {
+      "recorded_run04_sha256": "9d6779a4df75ad55f04a37aea213449d83a8ad4c7096dd1b6381628833b42e62",
+      "published_git_blob_sha256": "9d6779a4df75ad55f04a37aea213449d83a8ad4c7096dd1b6381628833b42e62"
+    },
+    "support/build/check-boot.py": {
+      "recorded_run04_sha256": "2ee1be040c622b248986efdeacab43eea6b2d730e0bad1a8bc0ba995c1915f80",
+      "published_git_blob_sha256": "2ee1be040c622b248986efdeacab43eea6b2d730e0bad1a8bc0ba995c1915f80"
+    },
+    "support/build/minimal/OSDK.toml": {
+      "recorded_run04_sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f",
+      "published_git_blob_sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f"
+    },
+    "support/build/minimal/Cargo.lock": {
+      "recorded_run04_sha256": "b42d8fff136d80a5f8159356882096996991e05975d8da9c81ad9db9bdb06e10",
+      "published_git_blob_sha256": "b42d8fff136d80a5f8159356882096996991e05975d8da9c81ad9db9bdb06e10"
+    },
+    "support/upstream-lock.json": {
+      "recorded_run04_sha256": "ed6554e2c0e15c46fee05b34ee77dfeddd6697b093d1a18522f5784622c6aef1",
+      "published_git_blob_sha256": "ed6554e2c0e15c46fee05b34ee77dfeddd6697b093d1a18522f5784622c6aef1"
+    },
+    "kernel/asterinas/rust-toolchain.toml": {
+      "recorded_run04_sha256": "b2508d8c9cd57258fad2fc77737e07172846161f6a7dd726cbd8e974de69c6f7",
+      "published_git_blob_sha256": "b2508d8c9cd57258fad2fc77737e07172846161f6a7dd726cbd8e974de69c6f7"
+    },
+    "kernel/asterinas/Cargo.lock": {
+      "recorded_run04_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+      "published_git_blob_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316"
+    },
+    "kernel/asterinas/osdk/Cargo.lock": {
+      "recorded_run04_sha256": "99a21f72f6a9f1582553b34f06e80f86e539f38e62eab7a0847afd0906e75be3",
+      "published_git_blob_sha256": "99a21f72f6a9f1582553b34f06e80f86e539f38e62eab7a0847afd0906e75be3"
+    },
+    "kernel/asterinas/ostd/src/boot/mod.rs": {
+      "recorded_run04_sha256": "8d5adf5603324edf3ffbdfe22b11c9436db74246843df3927926e54d28a4b76e",
+      "published_git_blob_sha256": "8d5adf5603324edf3ffbdfe22b11c9436db74246843df3927926e54d28a4b76e"
+    },
+    "kernel/asterinas/osdk/src/arch.rs": {
+      "recorded_run04_sha256": "ca9320a60a7b52e43dd5c1a6bebac681049f57fa25b9a366ae0dac6039950683",
+      "published_git_blob_sha256": "ca9320a60a7b52e43dd5c1a6bebac681049f57fa25b9a366ae0dac6039950683"
+    },
+    "kernel/asterinas/osdk/src/base_crate/Cargo.toml.template": {
+      "recorded_run04_sha256": "7b9098b341d09bfcb335699cb7bba4061eaab285b99ec94d2294047f889cd51a",
+      "published_git_blob_sha256": "7b9098b341d09bfcb335699cb7bba4061eaab285b99ec94d2294047f889cd51a"
+    },
+    "kernel/asterinas/osdk/src/base_crate/aarch64.ld.template": {
+      "recorded_run04_sha256": "11f87e09d2824f308f4a1026990425b49f9238eb2dab6d6707612cebe07d85c6",
+      "published_git_blob_sha256": "11f87e09d2824f308f4a1026990425b49f9238eb2dab6d6707612cebe07d85c6"
+    },
+    "kernel/asterinas/osdk/src/base_crate/loongarch64.ld.template": {
+      "recorded_run04_sha256": "3af87a07eafb297cf71e9553e93afc1fccd8238c4ca09afbdab047185719d80a",
+      "published_git_blob_sha256": "3af87a07eafb297cf71e9553e93afc1fccd8238c4ca09afbdab047185719d80a"
+    },
+    "kernel/asterinas/osdk/src/base_crate/main.rs.template": {
+      "recorded_run04_sha256": "412d9874d21fb248d2d17ca7e56016511e4dd29d208c1ab2b81b5338733e606f",
+      "published_git_blob_sha256": "412d9874d21fb248d2d17ca7e56016511e4dd29d208c1ab2b81b5338733e606f"
+    },
+    "kernel/asterinas/osdk/src/base_crate/mod.rs": {
+      "recorded_run04_sha256": "490aa4fc7a57362e1816c3778690de6d4d1af9508c2d4aec2e2c9524b4a74676",
+      "published_git_blob_sha256": "490aa4fc7a57362e1816c3778690de6d4d1af9508c2d4aec2e2c9524b4a74676"
+    },
+    "kernel/asterinas/osdk/src/base_crate/riscv64.ld.template": {
+      "recorded_run04_sha256": "90bb2f8f5b5c51451ef99e19e592cf6b872597f9434bf604d45ca652ef70e8ac",
+      "published_git_blob_sha256": "90bb2f8f5b5c51451ef99e19e592cf6b872597f9434bf604d45ca652ef70e8ac"
+    },
+    "kernel/asterinas/osdk/src/base_crate/x86_64.ld.template": {
+      "recorded_run04_sha256": "515b7f1d1943e7d8b9eb59b5194c02023bce5c9e021865ddf3ab6815327c833c",
+      "published_git_blob_sha256": "515b7f1d1943e7d8b9eb59b5194c02023bce5c9e021865ddf3ab6815327c833c"
+    },
+    "kernel/asterinas/osdk/src/bundle/bin.rs": {
+      "recorded_run04_sha256": "1ee1db0380ecc0bcd70a9d674a8a1f29038212046fcbd7a593caf779eba048ca",
+      "published_git_blob_sha256": "1ee1db0380ecc0bcd70a9d674a8a1f29038212046fcbd7a593caf779eba048ca"
+    },
+    "kernel/asterinas/osdk/src/bundle/file.rs": {
+      "recorded_run04_sha256": "89d83f04381dbbdf56a0f19542d0fad0068cc84127f3917c4953a25dd0b8a5c6",
+      "published_git_blob_sha256": "89d83f04381dbbdf56a0f19542d0fad0068cc84127f3917c4953a25dd0b8a5c6"
+    },
+    "kernel/asterinas/osdk/src/bundle/mod.rs": {
+      "recorded_run04_sha256": "9cada6721381cc03a717e36a41c219263f4f6d59c0f8d6f3471c0c97cd18f8f7",
+      "published_git_blob_sha256": "9cada6721381cc03a717e36a41c219263f4f6d59c0f8d6f3471c0c97cd18f8f7"
+    },
+    "kernel/asterinas/osdk/src/bundle/monitor.rs": {
+      "recorded_run04_sha256": "7fd9487b3852a4e005d1f9e7d18c8f855bf68ab62108d8e2d6fed0a1a0ce623e",
+      "published_git_blob_sha256": "7fd9487b3852a4e005d1f9e7d18c8f855bf68ab62108d8e2d6fed0a1a0ce623e"
+    },
+    "kernel/asterinas/osdk/src/bundle/vm_image.rs": {
+      "recorded_run04_sha256": "39d4fe05cff94c82cb6691e36632835be8c0a35efe8a3d1d6e0bbd7cd0756219",
+      "published_git_blob_sha256": "39d4fe05cff94c82cb6691e36632835be8c0a35efe8a3d1d6e0bbd7cd0756219"
+    },
+    "kernel/asterinas/osdk/src/cli.rs": {
+      "recorded_run04_sha256": "cc094af376d479bf1572f3f6a97c792e1fde9cb80b5359388af8c20f0ebd8c6a",
+      "published_git_blob_sha256": "cc094af376d479bf1572f3f6a97c792e1fde9cb80b5359388af8c20f0ebd8c6a"
+    },
+    "kernel/asterinas/osdk/src/commands/build/bin.rs": {
+      "recorded_run04_sha256": "21ccf19d9bc1bb6850121e2604ec0abbecc1dc0ecf221c4cb5c2d65abfe31194",
+      "published_git_blob_sha256": "21ccf19d9bc1bb6850121e2604ec0abbecc1dc0ecf221c4cb5c2d65abfe31194"
+    },
+    "kernel/asterinas/osdk/src/commands/build/grub.cfg.template": {
+      "recorded_run04_sha256": "8870ce43d6f3b09a318ff714c6a0788ee36615387a5ec9aaa1554cf565f3c31f",
+      "published_git_blob_sha256": "8870ce43d6f3b09a318ff714c6a0788ee36615387a5ec9aaa1554cf565f3c31f"
+    },
+    "kernel/asterinas/osdk/src/commands/build/grub.rs": {
+      "recorded_run04_sha256": "3e155a2b2dc500b2cf9099d06399760c36c65a5c8be69b4e11e1cdd9d9d5bbf1",
+      "published_git_blob_sha256": "3e155a2b2dc500b2cf9099d06399760c36c65a5c8be69b4e11e1cdd9d9d5bbf1"
+    },
+    "kernel/asterinas/osdk/src/commands/build/mod.rs": {
+      "recorded_run04_sha256": "806eaae191e38ee5e3945a3532c2dad7cbc01575bec3f9e8f2d87d4ded66eb25",
+      "published_git_blob_sha256": "806eaae191e38ee5e3945a3532c2dad7cbc01575bec3f9e8f2d87d4ded66eb25"
+    },
+    "kernel/asterinas/osdk/src/commands/build/qcow2.rs": {
+      "recorded_run04_sha256": "07cc688ec19477e2456ee4f570c635d1b6c2971ce6ab2f921a52f9c8190bd275",
+      "published_git_blob_sha256": "07cc688ec19477e2456ee4f570c635d1b6c2971ce6ab2f921a52f9c8190bd275"
+    },
+    "kernel/asterinas/osdk/src/commands/debug.rs": {
+      "recorded_run04_sha256": "4d3a426ed55b5b9f9710d45bbc85ce910c8b90f11651dbd37567cc8561b3e3dc",
+      "published_git_blob_sha256": "4d3a426ed55b5b9f9710d45bbc85ce910c8b90f11651dbd37567cc8561b3e3dc"
+    },
+    "kernel/asterinas/osdk/src/commands/launch.json.template": {
+      "recorded_run04_sha256": "2cc52368a862be8b9fe2174a0a59eacb3d90c7b9bf14d5f906118e31fa374150",
+      "published_git_blob_sha256": "2cc52368a862be8b9fe2174a0a59eacb3d90c7b9bf14d5f906118e31fa374150"
+    },
+    "kernel/asterinas/osdk/src/commands/mod.rs": {
+      "recorded_run04_sha256": "82b6c3dca49e460a1eff894bee2da506b656a56115518e46cdc9bd0bb01fef6e",
+      "published_git_blob_sha256": "82b6c3dca49e460a1eff894bee2da506b656a56115518e46cdc9bd0bb01fef6e"
+    },
+    "kernel/asterinas/osdk/src/commands/new/kernel.OSDK.toml.template": {
+      "recorded_run04_sha256": "bd1eeb49f04db650250454908779321bf774d96ae8df60d0b7afaff0d34cd804",
+      "published_git_blob_sha256": "bd1eeb49f04db650250454908779321bf774d96ae8df60d0b7afaff0d34cd804"
+    },
+    "kernel/asterinas/osdk/src/commands/new/kernel.template": {
+      "recorded_run04_sha256": "ff55b6d1f250e3786f72de0242acdb82e7d2da91f98ae4007103718ca6a69571",
+      "published_git_blob_sha256": "ff55b6d1f250e3786f72de0242acdb82e7d2da91f98ae4007103718ca6a69571"
+    },
+    "kernel/asterinas/osdk/src/commands/new/lib.OSDK.toml.template": {
+      "recorded_run04_sha256": "730426be9c5e3567f35c22ad338647f2f3803815663318516aa5a95b19fd6f27",
+      "published_git_blob_sha256": "730426be9c5e3567f35c22ad338647f2f3803815663318516aa5a95b19fd6f27"
+    },
+    "kernel/asterinas/osdk/src/commands/new/lib.template": {
+      "recorded_run04_sha256": "dbaeb30371315d9cdc7a7d9f416360692cf3f00caa83a45a4dcfb37c8da593ad",
+      "published_git_blob_sha256": "dbaeb30371315d9cdc7a7d9f416360692cf3f00caa83a45a4dcfb37c8da593ad"
+    },
+    "kernel/asterinas/osdk/src/commands/new/mod.rs": {
+      "recorded_run04_sha256": "ed83bdfceed00286bcdf85b405da1302826a3675531046c097445c2a3a0a248f",
+      "published_git_blob_sha256": "ed83bdfceed00286bcdf85b405da1302826a3675531046c097445c2a3a0a248f"
+    },
+    "kernel/asterinas/osdk/src/commands/new/rust-toolchain.toml.template": {
+      "recorded_run04_sha256": "5b7e2ddbe3f85eb15e37f9e640758d1284f85b095f845120b716963e1a977eee",
+      "published_git_blob_sha256": "5b7e2ddbe3f85eb15e37f9e640758d1284f85b095f845120b716963e1a977eee"
+    },
+    "kernel/asterinas/osdk/src/commands/profile.rs": {
+      "recorded_run04_sha256": "9060734daf290d9da9f0ab1a052aca810e07c57245761ecf0fe2789a626680f4",
+      "published_git_blob_sha256": "9060734daf290d9da9f0ab1a052aca810e07c57245761ecf0fe2789a626680f4"
+    },
+    "kernel/asterinas/osdk/src/commands/run.rs": {
+      "recorded_run04_sha256": "65f2b0f69907bfd03fc26e907a52d64afb72f98d4d033186525ed7972ba6a109",
+      "published_git_blob_sha256": "65f2b0f69907bfd03fc26e907a52d64afb72f98d4d033186525ed7972ba6a109"
+    },
+    "kernel/asterinas/osdk/src/commands/test.rs": {
+      "recorded_run04_sha256": "a1f35b4d72e2235cacd368b421bf992a9d58c0537b21882f6f37cb8d1cee23bf",
+      "published_git_blob_sha256": "a1f35b4d72e2235cacd368b421bf992a9d58c0537b21882f6f37cb8d1cee23bf"
+    },
+    "kernel/asterinas/osdk/src/commands/util.rs": {
+      "recorded_run04_sha256": "36b303c9afe2765ded30154b84633e9fd6154bb11e8febde2ec6f53e303ec5a1",
+      "published_git_blob_sha256": "36b303c9afe2765ded30154b84633e9fd6154bb11e8febde2ec6f53e303ec5a1"
+    },
+    "kernel/asterinas/osdk/src/config/manifest.rs": {
+      "recorded_run04_sha256": "1b72abf33abcbc4d7296f4855f4136645a03001421455b81fc1b0de039a5cda1",
+      "published_git_blob_sha256": "1b72abf33abcbc4d7296f4855f4136645a03001421455b81fc1b0de039a5cda1"
+    },
+    "kernel/asterinas/osdk/src/config/mod.rs": {
+      "recorded_run04_sha256": "d852847e1aa9c00983ab8b4e0f3def33bce9c643108abf52f9c084783cdeb2d6",
+      "published_git_blob_sha256": "d852847e1aa9c00983ab8b4e0f3def33bce9c643108abf52f9c084783cdeb2d6"
+    },
+    "kernel/asterinas/osdk/src/config/scheme/action.rs": {
+      "recorded_run04_sha256": "4588e00e533b0da8d407933e774cd712f592649b25f7b6a91bb6e9a037ad2729",
+      "published_git_blob_sha256": "4588e00e533b0da8d407933e774cd712f592649b25f7b6a91bb6e9a037ad2729"
+    },
+    "kernel/asterinas/osdk/src/config/scheme/boot.rs": {
+      "recorded_run04_sha256": "d306ea8c27ab81031c8193c1ec69e5272143a4ee6f060506bc87b1b7e2bb517f",
+      "published_git_blob_sha256": "d306ea8c27ab81031c8193c1ec69e5272143a4ee6f060506bc87b1b7e2bb517f"
+    },
+    "kernel/asterinas/osdk/src/config/scheme/grub.rs": {
+      "recorded_run04_sha256": "20d50b821da1156276ba9a52decd815d3e29822e3c949936005d606fb3542c8d",
+      "published_git_blob_sha256": "20d50b821da1156276ba9a52decd815d3e29822e3c949936005d606fb3542c8d"
+    },
+    "kernel/asterinas/osdk/src/config/scheme/mod.rs": {
+      "recorded_run04_sha256": "84dce26078dec9d1bc06cd0de0c0b1d405ab07638fcb63e65cde4ad9737bcef7",
+      "published_git_blob_sha256": "84dce26078dec9d1bc06cd0de0c0b1d405ab07638fcb63e65cde4ad9737bcef7"
+    },
+    "kernel/asterinas/osdk/src/config/scheme/qemu.rs": {
+      "recorded_run04_sha256": "7e41769cf446502a1392839dc40709977464569ac882b3b4a4d329c0aa5de97a",
+      "published_git_blob_sha256": "7e41769cf446502a1392839dc40709977464569ac882b3b4a4d329c0aa5de97a"
+    },
+    "kernel/asterinas/osdk/src/config/test/OSDK.toml.full": {
+      "recorded_run04_sha256": "5966ef4ebe4a100d44e94d0a3051c66bce117a6000698d129d2c60e50b846a6c",
+      "published_git_blob_sha256": "5966ef4ebe4a100d44e94d0a3051c66bce117a6000698d129d2c60e50b846a6c"
+    },
+    "kernel/asterinas/osdk/src/config/test/mod.rs": {
+      "recorded_run04_sha256": "1a3a1562c60c8a7216df222ba9e2d4ff221a488317dee558ae7c95b15f027ed0",
+      "published_git_blob_sha256": "1a3a1562c60c8a7216df222ba9e2d4ff221a488317dee558ae7c95b15f027ed0"
+    },
+    "kernel/asterinas/osdk/src/config/unix_args.rs": {
+      "recorded_run04_sha256": "523e40bfe0d55572e7b4cad979656b25204a738a8b9c87155bc30461969571bf",
+      "published_git_blob_sha256": "523e40bfe0d55572e7b4cad979656b25204a738a8b9c87155bc30461969571bf"
+    },
+    "kernel/asterinas/osdk/src/daemon/mod.rs": {
+      "recorded_run04_sha256": "4cc428167c52b8e38317ad5c35a2665edfb74b447594ffc4a29f760d5aeafa5c",
+      "published_git_blob_sha256": "4cc428167c52b8e38317ad5c35a2665edfb74b447594ffc4a29f760d5aeafa5c"
+    },
+    "kernel/asterinas/osdk/src/daemon/signal.rs": {
+      "recorded_run04_sha256": "e827bb5c8902d2236a7e566734ab4106cd99f49ebc2319310bb79c4551cf36a8",
+      "published_git_blob_sha256": "e827bb5c8902d2236a7e566734ab4106cd99f49ebc2319310bb79c4551cf36a8"
+    },
+    "kernel/asterinas/osdk/src/daemon/supervisor/tests.rs": {
+      "recorded_run04_sha256": "840de8f83bb464e119bbd9bd6f992c5e5719d07fe03789a5923a01c04b69fd68",
+      "published_git_blob_sha256": "840de8f83bb464e119bbd9bd6f992c5e5719d07fe03789a5923a01c04b69fd68"
+    },
+    "kernel/asterinas/osdk/src/daemon/supervisor.rs": {
+      "recorded_run04_sha256": "bcb8e093f3588efc0326153361e21383f57463ce55ae2d64fc70e479d7a63c00",
+      "published_git_blob_sha256": "bcb8e093f3588efc0326153361e21383f57463ce55ae2d64fc70e479d7a63c00"
+    },
+    "kernel/asterinas/osdk/src/error.rs": {
+      "recorded_run04_sha256": "e29ce99eb836a5ddd5fc50d62fb883fc3daa2221897035fb792734bc0bdbf31e",
+      "published_git_blob_sha256": "e29ce99eb836a5ddd5fc50d62fb883fc3daa2221897035fb792734bc0bdbf31e"
+    },
+    "kernel/asterinas/osdk/src/main.rs": {
+      "recorded_run04_sha256": "b5098a4eb56581ac7099010f9c518d6571091b1168264603c6c5a084b1439019",
+      "published_git_blob_sha256": "b5098a4eb56581ac7099010f9c518d6571091b1168264603c6c5a084b1439019"
+    },
+    "kernel/asterinas/osdk/src/util.rs": {
+      "recorded_run04_sha256": "83dbd6054e27c6e6fe281f517c45adc7f2419d132ee2246ce8c87ac4cd6cdf4f",
+      "published_git_blob_sha256": "83dbd6054e27c6e6fe281f517c45adc7f2419d132ee2246ce8c87ac4cd6cdf4f"
+    },
+    "support/build/debug/README.md": {
+      "recorded_run04_sha256": "f89996c747da38008021c061fccfd0a57eeab4c949584a9351f31278428a0ccf",
+      "published_git_blob_sha256": "f89996c747da38008021c061fccfd0a57eeab4c949584a9351f31278428a0ccf"
+    },
+    "support/build/debug/run.py": {
+      "recorded_run04_sha256": "edcd1e590cb95240d966fe03890339e005d4f5a72a07fe404be320a7b7fffadb",
+      "published_git_blob_sha256": "edcd1e590cb95240d966fe03890339e005d4f5a72a07fe404be320a7b7fffadb"
+    },
+    "support/build/debug/test_debug.py": {
+      "recorded_run04_sha256": "d9c85314795c50aa772fd876c7fb8d97abefd3f8d9063d07daad5981a50a9109",
+      "published_git_blob_sha256": "d9c85314795c50aa772fd876c7fb8d97abefd3f8d9063d07daad5981a50a9109"
+    }
+  },
+  "current_final_archive_head_claim": "No claim that later evidence commits or later upstream-lock changes have all 63 old execution hashes.",
+  "earlier_helper_recovery": "source-recovery/recover-run01-03.patch restores the exact three earlier helper sources from this published commit; actual git-show/apply replay hashes recorded."
+}

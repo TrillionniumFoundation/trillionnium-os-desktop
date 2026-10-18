@@ -1,0 +1,73 @@
+{
+  "schema": 1,
+  "case": "first_failed_real_debug_attempt",
+  "driver_exit": 1,
+  "actual_stage": "build_and_qemu_ready",
+  "actual_error": "kernel driver exited before GDB readiness",
+  "failure_detail": "Rust release compilation with debuginfo completed; missing rust-strip stopped OSDK before QEMU/GDB readiness.",
+  "qemu_executed": false,
+  "gdb_kernel_session_executed": false,
+  "raw_events_record": "live-events.jsonl",
+  "invocation_record": "live-invocation.json",
+  "owned_profile_publications": 1,
+  "owned_profile_deletions": 1,
+  "manifest_present_after": false,
+  "published_profile_stat": {
+    "device": 27,
+    "inode": 1572956,
+    "size": 1019,
+    "mtime_ns": 1792150310751512534,
+    "ctime_ns": 1792150310751921812
+  },
+  "published_profile_sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f",
+  "last_complete_temporary_stat": {
+    "device": 27,
+    "inode": 1572956,
+    "size": 1019,
+    "mtime_ns": 1792150310751512534,
+    "ctime_ns": 1792150310751512534
+  },
+  "temporary_and_published_identity_match": true,
+  "observed_replacement": false,
+  "observation_method": "inotify only; no writer PID attribution and no real-build ptrace trace",
+  "preliminary_ptrace_probe": {
+    "argv": [
+      "strace",
+      "-o",
+      "/workspace/scratch/ae1a8cf05419/next4-strace-probe.log",
+      "true"
+    ],
+    "raw_exit_code": 1,
+    "observed_stderr": "PTRACE_TRACEME/PTRACE_SETOPTIONS Operation not permitted; no ptrace attempted on actual build; observation uses inotify only",
+    "recorded_from_prior_tool_receipt": true
+  },
+  "actual_debug_source": {
+    "git_head": "c3c80f9a1aac63ca33b6a168deb20d74ca6763b1",
+    "git_tree": "b7f00eab49382a996dcdf4651b0d5a8f4d7c685f",
+    "git_status": "M support/build/kernel.sh\n M support/build/minimal.mk\n M support/build/record-qemu.py\n?? support/build/debug/\n?? support/build/tests/test_gdb_listener.py",
+    "source_sha256": {
+      "support/build/kernel.sh": "ff4315024e5f9a690ce1c7bf8954d46b65d41e44542d5a4ff0d614833914f5e6",
+      "support/build/minimal.mk": "0a559e82f2980c5e4e75f466b5eb3346187a720533f8f378878ddd9c04f2c958",
+      "support/build/record-qemu.py": "9d6779a4df75ad55f04a37aea213449d83a8ad4c7096dd1b6381628833b42e62",
+      "support/build/debug/run.py": "562d0d008d57b36538a0f316945033d7612b83e2e52eced93cc6b2d084b9ac57"
+    }
+  },
+  "separately_archived_parent_debug_records": [
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/next4-kernel-debug/result.json",
+      "bytes": 587,
+      "sha256": "91774136b4a763d22fa2c1360fcad5aec8faf239ea9baa98b7a60d52dd1a7304"
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/next4-kernel-debug/environment.json",
+      "bytes": 9923,
+      "sha256": "04c6268686a30685bf7b6799712efcc20bf03b4b5ef94d55233238fec641fabd"
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/next4-kernel-debug/boot/gdb_server.log",
+      "bytes": 20721,
+      "sha256": "29c07f99ab1546284923cb7beb55bd239973ed0c82f04a3e05d028fbffabd01f"
+    }
+  ],
+  "historical_residual_attribution": "Unresolved. This attempt observes normal cleanup after a build failure and does not identify the cause of next3-kernel residue."
+}

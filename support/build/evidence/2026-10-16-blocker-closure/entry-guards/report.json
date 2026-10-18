@@ -1,0 +1,130 @@
+{
+  "schema": 1,
+  "kind": "host_only_entry_guard_regression_and_direct_cli_probes",
+  "baseline_commit": "350d98d70a3d7b7c720cabd7720063849afb5a29",
+  "fixed_commit_binding": "per-file SHA256 snapshots; root publishes fixed source commit separately",
+  "scope": [
+    "Only osdk-integration and debug public entry guards",
+    "Presence check rejects both empty and nonempty CARGO_ENCODED_RUSTFLAGS with exit 2",
+    "Guard precedes output mkdir, integration flock, tool lookup or invocation",
+    "Unset retains the exact argv and evidence path for successful host-fixture retry"
+  ],
+  "not_acceptance": [
+    "No Cargo build",
+    "No VM boot",
+    "No GDB guest acceptance",
+    "No claim of complete integration matrix"
+  ],
+  "suites": [
+    {
+      "phase": "red",
+      "suite": "debug-I",
+      "tests": 2,
+      "exit_code": 1,
+      "invocation": "raw/red/debug-I/invocation.json",
+      "log": "raw/red/debug-I/console.log"
+    },
+    {
+      "phase": "red",
+      "suite": "debug-IO",
+      "tests": 2,
+      "exit_code": 1,
+      "invocation": "raw/red/debug-IO/invocation.json",
+      "log": "raw/red/debug-IO/console.log"
+    },
+    {
+      "phase": "red",
+      "suite": "integration-I",
+      "tests": 2,
+      "exit_code": 1,
+      "invocation": "raw/red/integration-I/invocation.json",
+      "log": "raw/red/integration-I/console.log"
+    },
+    {
+      "phase": "red",
+      "suite": "integration-IO",
+      "tests": 2,
+      "exit_code": 1,
+      "invocation": "raw/red/integration-IO/invocation.json",
+      "log": "raw/red/integration-IO/console.log"
+    },
+    {
+      "phase": "green",
+      "suite": "debug-I",
+      "tests": 12,
+      "exit_code": 0,
+      "invocation": "raw/green/debug-I/invocation.json",
+      "log": "raw/green/debug-I/console.log"
+    },
+    {
+      "phase": "green",
+      "suite": "debug-IO",
+      "tests": 12,
+      "exit_code": 0,
+      "invocation": "raw/green/debug-IO/invocation.json",
+      "log": "raw/green/debug-IO/console.log"
+    },
+    {
+      "phase": "green",
+      "suite": "integration-I",
+      "tests": 16,
+      "exit_code": 0,
+      "invocation": "raw/green/integration-I/invocation.json",
+      "log": "raw/green/integration-I/console.log"
+    },
+    {
+      "phase": "green",
+      "suite": "integration-IO",
+      "tests": 16,
+      "exit_code": 0,
+      "invocation": "raw/green/integration-IO/invocation.json",
+      "log": "raw/green/integration-IO/console.log"
+    }
+  ],
+  "counts": {
+    "red_executions_expected_failed": 8,
+    "green_full_suite_executions_passed": 56,
+    "green_new_entry_test_executions_within_56": 8,
+    "baseline_direct_cli_probes": 8,
+    "fixed_direct_cli_probes": 8,
+    "direct_cli_probes_total": 16
+  },
+  "sources": {
+    "support/build/osdk-integration/run.py": {
+      "baseline_sha256": "023df78aeedb663d10c48dad08a3ed0b2670e2c5094de1bf3ac75035b1bca761",
+      "fixed_sha256": "180c02c80c6beb4bab50016c356bb52c43175122fec13195db022186328f1060",
+      "baseline_size": 31657,
+      "fixed_size": 31887
+    },
+    "support/build/osdk-integration/test_runner_lifecycle.py": {
+      "baseline_sha256": "cf6c0a66df9e65b03af0c2e7a995079098f257d8b5c343e4b8b8205787b62a80",
+      "fixed_sha256": "604f9fe115d8b7e6ad95ac4686a7c7e395cbcc9ac9f2ae7acdba4a3bdcc31dc5",
+      "baseline_size": 16507,
+      "fixed_size": 20636
+    },
+    "support/build/debug/run.py": {
+      "baseline_sha256": "fc5aa7fb949e1312cc8bd96d6b693b7268b065befa23efb1a94021dc3ab955d3",
+      "fixed_sha256": "b27992bff212ee2736401892685e6d08bad31b83ee872a3c0dc5d5c89f0a32ea",
+      "baseline_size": 22206,
+      "fixed_size": 22436
+    },
+    "support/build/debug/test_debug.py": {
+      "baseline_sha256": "9532fb599b1ed19eba8ec1724a04995ed4c07c677dc10e358abc9c55b74e937c",
+      "fixed_sha256": "46aa469a89e56adc217eacbdd8837f7395ab60f37c5d6b95e3fc4fef7cda4611",
+      "baseline_size": 20229,
+      "fixed_size": 26037
+    }
+  },
+  "artifact_policy": {
+    "raw_files_copied_without_rewrite": true,
+    "excluded": [
+      "__pycache__ directories",
+      "*.pyc bytecode"
+    ],
+    "original_absolute_paths_in_logs_preserved": true,
+    "raw_storage": "raw.tar.gz, with per-member source SHA256 and size in archive-manifest.json",
+    "raw_archive_members": 464,
+    "raw_archive_sha256": "940ee386b7ab2ea2c8f7ac4b72540e2c1f899124ded2bd7c37de76f57c3cc895"
+  },
+  "verified_all_expected_results": true
+}

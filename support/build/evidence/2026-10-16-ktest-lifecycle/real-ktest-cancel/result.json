@@ -1,0 +1,383 @@
+{
+  "kind": "actual_ktest_cli_cancellation_with_native_qemu_paused_before_execution",
+  "passed": true,
+  "boot_pass": false,
+  "rust_entry_verified": false,
+  "guest_tests_executed": false,
+  "native_launch": {
+    "kind": "test_only_native_qemu_minus_S_hold",
+    "pid": 353,
+    "group": 69,
+    "requested_argv": [
+      "/workspace/scratch/ae1a8cf05419/next7-real-ktest-cancel-controller-01/tools/qemu-system-x86_64",
+      "-kernel",
+      "/workspace/scratch/ae1a8cf05419/a01-next6-build/kernel/asterinas/target/osdk/ostd/ostd-osdk-bin.elf",
+      "-append",
+      "loglevel=error earlycon console=ttyS0 --",
+      "-machine",
+      "q35",
+      "-accel",
+      "tcg",
+      "-cpu",
+      "max",
+      "-bios",
+      "/usr/share/seabios/bios-256k.bin",
+      "-m",
+      "512M",
+      "-smp",
+      "1",
+      "-nodefaults",
+      "-no-user-config",
+      "-no-reboot",
+      "-nographic",
+      "-display",
+      "none",
+      "-monitor",
+      "none",
+      "-serial",
+      "chardev:serial",
+      "-chardev",
+      "stdio,id=serial,signal=off,logfile=/workspace/scratch/ae1a8cf05419/a01-next6-build/support/build/out/next7-real-ktest-cancel-01/ostd/guests/guest-001/serial.log",
+      "-device",
+      "isa-debug-exit,iobase=0xf4,iosize=0x04"
+    ],
+    "actual_argv": [
+      "/usr/bin/qemu-system-x86_64",
+      "-kernel",
+      "/workspace/scratch/ae1a8cf05419/a01-next6-build/kernel/asterinas/target/osdk/ostd/ostd-osdk-bin.elf",
+      "-append",
+      "loglevel=error earlycon console=ttyS0 --",
+      "-machine",
+      "q35",
+      "-accel",
+      "tcg",
+      "-cpu",
+      "max",
+      "-bios",
+      "/usr/share/seabios/bios-256k.bin",
+      "-m",
+      "512M",
+      "-smp",
+      "1",
+      "-nodefaults",
+      "-no-user-config",
+      "-no-reboot",
+      "-nographic",
+      "-display",
+      "none",
+      "-monitor",
+      "none",
+      "-serial",
+      "chardev:serial",
+      "-chardev",
+      "stdio,id=serial,signal=off,logfile=/workspace/scratch/ae1a8cf05419/a01-next6-build/support/build/out/next7-real-ktest-cancel-01/ostd/guests/guest-001/serial.log",
+      "-device",
+      "isa-debug-exit,iobase=0xf4,iosize=0x04",
+      "-S"
+    ],
+    "real_qemu": "/usr/bin/qemu-system-x86_64",
+    "real_qemu_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+    "kernel": {
+      "path": "/workspace/scratch/ae1a8cf05419/a01-next6-build/kernel/asterinas/target/osdk/ostd/ostd-osdk-bin.elf",
+      "size": 2004424,
+      "sha256": "772fe2bf84a55651afb84d0cc1ed43c36e69175bccc451af7c0f6b0aa8fffa35"
+    },
+    "adaptation": "only append -S; no source, ELF, serial, device or machine change",
+    "rust_entry_or_boot_pass": false,
+    "time_ns": 1792159340731841966
+  },
+  "production_start_record": {
+    "schema": 1,
+    "crate": "ostd",
+    "cwd": "/workspace/scratch/ae1a8cf05419/a01-next6-build/kernel/asterinas",
+    "requested_osdk_args": [
+      "-kernel",
+      "/workspace/scratch/ae1a8cf05419/a01-next6-build/kernel/asterinas/target/osdk/ostd/ostd-osdk-bin.elf",
+      "-append",
+      "loglevel=error earlycon console=ttyS0 --",
+      "-cpu",
+      "Icelake-Server,+x2apic,+vmx",
+      "-smp",
+      "1",
+      "-m",
+      "512M",
+      "--no-reboot",
+      "-nographic",
+      "-display",
+      "none",
+      "-monitor",
+      "chardev:mux",
+      "-nic",
+      "none",
+      "-machine",
+      "q35,kernel-irqchip=split",
+      "-serial",
+      "chardev:mux",
+      "-chardev",
+      "stdio,id=mux,mux=on,signal=off,logfile=qemu.log",
+      "-device",
+      "isa-debug-exit,iobase=0xf4,iosize=0x04",
+      "-device",
+      "virtio-blk-pci,bus=pcie.0,addr=0x6,drive=x0,serial=vext2,disable-legacy=on,disable-modern=off,queue-size=64,num-queues=1,request-merging=off,backend_defaults=off,discard=off,write-zeroes=off,event_idx=off,indirect_desc=off,queue_reset=off",
+      "-device",
+      "virtio-blk-pci,bus=pcie.0,addr=0x7,drive=x1,serial=vexfat,disable-legacy=on,disable-modern=off,queue-size=64,num-queues=1,request-merging=off,backend_defaults=off,discard=off,write-zeroes=off,event_idx=off,indirect_desc=off,queue_reset=off",
+      "-device",
+      "virtio-blk-pci,bus=pcie.0,addr=0x8,drive=x2,serial=vltpdev,disable-legacy=on,disable-modern=off,queue-size=64,num-queues=1,request-merging=off,backend_defaults=off,discard=off,write-zeroes=off,event_idx=off,indirect_desc=off,queue_reset=off",
+      "-device",
+      "virtio-rng-pci,bus=pcie.0,addr=0x9,disable-legacy=on,disable-modern=off,rng=rng0,event_idx=off,indirect_desc=off,queue_reset=off",
+      "-device",
+      "virtio-serial-pci,disable-legacy=on,disable-modern=off",
+      "-device",
+      "nvme,drive=nvme0n1,serial=nvme0n1",
+      "-drive",
+      "if=none,format=raw,id=x0,file=./test/initramfs/build/ext2.img",
+      "-drive",
+      "if=none,format=raw,id=x1,file=./test/initramfs/build/exfat.img",
+      "-drive",
+      "if=none,format=raw,id=x2,file=./test/initramfs/build/ltp_dev.img",
+      "-drive",
+      "if=none,format=raw,id=nvme0n1,file=./test/initramfs/build/nvme0n1.img",
+      "-object",
+      "rng-random,id=rng0,filename=/dev/urandom"
+    ],
+    "argv": [
+      "/workspace/scratch/ae1a8cf05419/next7-real-ktest-cancel-controller-01/tools/qemu-system-x86_64",
+      "-kernel",
+      "/workspace/scratch/ae1a8cf05419/a01-next6-build/kernel/asterinas/target/osdk/ostd/ostd-osdk-bin.elf",
+      "-append",
+      "loglevel=error earlycon console=ttyS0 --",
+      "-machine",
+      "q35",
+      "-accel",
+      "tcg",
+      "-cpu",
+      "max",
+      "-bios",
+      "/usr/share/seabios/bios-256k.bin",
+      "-m",
+      "512M",
+      "-smp",
+      "1",
+      "-nodefaults",
+      "-no-user-config",
+      "-no-reboot",
+      "-nographic",
+      "-display",
+      "none",
+      "-monitor",
+      "none",
+      "-serial",
+      "chardev:serial",
+      "-chardev",
+      "stdio,id=serial,signal=off,logfile=/workspace/scratch/ae1a8cf05419/a01-next6-build/support/build/out/next7-real-ktest-cancel-01/ostd/guests/guest-001/serial.log",
+      "-device",
+      "isa-debug-exit,iobase=0xf4,iosize=0x04"
+    ],
+    "shell_command": "/workspace/scratch/ae1a8cf05419/next7-real-ktest-cancel-controller-01/tools/qemu-system-x86_64 -kernel /workspace/scratch/ae1a8cf05419/a01-next6-build/kernel/asterinas/target/osdk/ostd/ostd-osdk-bin.elf -append 'loglevel=error earlycon console=ttyS0 --' -machine q35 -accel tcg -cpu max -bios /usr/share/seabios/bios-256k.bin -m 512M -smp 1 -nodefaults -no-user-config -no-reboot -nographic -display none -monitor none -serial chardev:serial -chardev stdio,id=serial,signal=off,logfile=/workspace/scratch/ae1a8cf05419/a01-next6-build/support/build/out/next7-real-ktest-cancel-01/ostd/guests/guest-001/serial.log -device isa-debug-exit,iobase=0xf4,iosize=0x04",
+    "profile": {
+      "arch": "x86_64",
+      "machine": "q35",
+      "accel": "tcg",
+      "cpu": "max",
+      "vcpus": 1,
+      "memory_mib": 512,
+      "network": false,
+      "data_disks": false
+    },
+    "qemu_sha256": "bc98b3f708295d8094632c982d28b7de85e38e7a9b4fce663900343f92b9d9ce",
+    "qemu_version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)\nCopyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers",
+    "artifacts": {
+      "-kernel": {
+        "path": "/workspace/scratch/ae1a8cf05419/a01-next6-build/kernel/asterinas/target/osdk/ostd/ostd-osdk-bin.elf",
+        "size": 2004424,
+        "sha256": "772fe2bf84a55651afb84d0cc1ed43c36e69175bccc451af7c0f6b0aa8fffa35"
+      },
+      "-bios": {
+        "path": "/usr/share/seabios/bios-256k.bin",
+        "size": 262144,
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+      }
+    },
+    "raw_exit_code": null,
+    "timed_out": false
+  },
+  "before_signal_alive": {
+    "ktest_cli": true,
+    "native_qemu": true
+  },
+  "cli_returncode": 143,
+  "after_signal_pidfd_exited": {
+    "ktest_cli": true,
+    "native_qemu": true
+  },
+  "stable_lock_reacquired": true,
+  "ktest_result": {
+    "passed": false,
+    "crates": [],
+    "toolchain": "nightly-2026-07-21",
+    "runner_sha256": "e18d02adb932ba213f9f78cdad9457a439465779edb46542eec8ecf590514b1e",
+    "error": "RunnerInterrupted: SIGTERM",
+    "command_receipts": [
+      "cargo-version.log.command.json",
+      "git-head.log.command.json",
+      "git-status.log.command.json",
+      "ostd/osdk-test.log.command.json",
+      "rustc-version.log.command.json",
+      "source-inputs.json.command.json"
+    ],
+    "interrupted_by": "SIGTERM",
+    "received_signals": [
+      "SIGTERM"
+    ],
+    "exit_code": 143
+  },
+  "cancelled_command": {
+    "argv": [
+      "cargo",
+      "+nightly-2026-07-21",
+      "osdk",
+      "test",
+      "--release",
+      "--boot-method=vmm-direct",
+      "--grub-boot-protocol=multiboot",
+      "--qemu-exe=/workspace/scratch/ae1a8cf05419/a01-next6-build/support/build/ktest/record-qemu.py",
+      "--kcmd-args=loglevel=error",
+      "--kcmd-args=earlycon",
+      "--kcmd-args=console=ttyS0"
+    ],
+    "cwd": "/workspace/scratch/ae1a8cf05419/a01-next6-build/kernel/asterinas/ostd",
+    "raw_exit_code": 13,
+    "exit_code": 143,
+    "error": "RunnerInterrupted: SIGTERM",
+    "group_cleanup": {
+      "leader_pid": 69,
+      "leader_exit_code": 13,
+      "leader_reaped": true,
+      "external_reap_disarmed": false,
+      "identity_anchor": "waitid WNOWAIT; final group signal before leader reap"
+    },
+    "interrupted_by": "SIGTERM",
+    "received_signals": [
+      "SIGTERM"
+    ],
+    "duration_seconds": 9.226
+  },
+  "owned_cleanup": [
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/a01-next6-build/support/build/out/next7-real-ktest-cancel-01/cargo-version.log.command.json/group_cleanup",
+      "reaped": true,
+      "external_reap": false,
+      "record": {
+        "leader_pid": 32,
+        "leader_exit_code": 0,
+        "leader_reaped": true,
+        "external_reap_disarmed": false,
+        "identity_anchor": "waitid WNOWAIT; final group signal before leader reap"
+      }
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/a01-next6-build/support/build/out/next7-real-ktest-cancel-01/git-head.log.command.json/group_cleanup",
+      "reaped": true,
+      "external_reap": false,
+      "record": {
+        "leader_pid": 57,
+        "leader_exit_code": 0,
+        "leader_reaped": true,
+        "external_reap_disarmed": false,
+        "identity_anchor": "waitid WNOWAIT; final group signal before leader reap"
+      }
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/a01-next6-build/support/build/out/next7-real-ktest-cancel-01/git-status.log.command.json/group_cleanup",
+      "reaped": true,
+      "external_reap": false,
+      "record": {
+        "leader_pid": 58,
+        "leader_exit_code": 0,
+        "leader_reaped": true,
+        "external_reap_disarmed": false,
+        "identity_anchor": "waitid WNOWAIT; final group signal before leader reap"
+      }
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/a01-next6-build/support/build/out/next7-real-ktest-cancel-01/ostd/osdk-test.log.command.json/group_cleanup",
+      "reaped": true,
+      "external_reap": false,
+      "record": {
+        "leader_pid": 69,
+        "leader_exit_code": 13,
+        "leader_reaped": true,
+        "external_reap_disarmed": false,
+        "identity_anchor": "waitid WNOWAIT; final group signal before leader reap"
+      }
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/a01-next6-build/support/build/out/next7-real-ktest-cancel-01/rustc-version.log.command.json/group_cleanup",
+      "reaped": true,
+      "external_reap": false,
+      "record": {
+        "leader_pid": 22,
+        "leader_exit_code": 0,
+        "leader_reaped": true,
+        "external_reap_disarmed": false,
+        "identity_anchor": "waitid WNOWAIT; final group signal before leader reap"
+      }
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/a01-next6-build/support/build/out/next7-real-ktest-cancel-01/source-inputs.json.command.json/group_cleanup",
+      "reaped": true,
+      "external_reap": false,
+      "record": {
+        "leader_pid": 20,
+        "leader_exit_code": 0,
+        "leader_reaped": true,
+        "external_reap_disarmed": false,
+        "identity_anchor": "waitid WNOWAIT; final group signal before leader reap"
+      }
+    }
+  ],
+  "queued_second_launch": false,
+  "source_after": {
+    "support/build/ktest/run.py": {
+      "path": "/workspace/scratch/ae1a8cf05419/a01-next6-build/support/build/ktest/run.py",
+      "size": 14780,
+      "sha256": "e18d02adb932ba213f9f78cdad9457a439465779edb46542eec8ecf590514b1e"
+    },
+    "support/build/ktest/record-qemu.py": {
+      "path": "/workspace/scratch/ae1a8cf05419/a01-next6-build/support/build/ktest/record-qemu.py",
+      "size": 3496,
+      "sha256": "0db266f115090bdcac0e0b3944b42d2f555c301b30a713314f20af6a6f5a6a2a"
+    },
+    "support/build/ktest/check.py": {
+      "path": "/workspace/scratch/ae1a8cf05419/a01-next6-build/support/build/ktest/check.py",
+      "size": 4623,
+      "sha256": "503fcc6d1ed2f828d3ab9fdbf54f28df2148dea43afbd8d9abae65d34baa1373"
+    },
+    "support/build/ktest/locks/ostd.Cargo.lock": {
+      "path": "/workspace/scratch/ae1a8cf05419/a01-next6-build/support/build/ktest/locks/ostd.Cargo.lock",
+      "size": 20185,
+      "sha256": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6"
+    },
+    "support/build/verify-source.py": {
+      "path": "/workspace/scratch/ae1a8cf05419/a01-next6-build/support/build/verify-source.py",
+      "size": 3155,
+      "sha256": "7121997d17969988f3432675ad9f7cc2d14b0293a46838a315533b9248d1e385"
+    }
+  },
+  "recorder_finalization": "rawnull is expected if the wrapper was terminated before rewriting its launch record",
+  "actual_cli_returncode": 143,
+  "controller_cleanup": [
+    {
+      "process": "ktest_cli",
+      "was_alive": false,
+      "pidfd_exited": true
+    },
+    {
+      "process": "native_qemu",
+      "was_alive": false,
+      "pidfd_exited": true
+    }
+  ],
+  "duration_seconds": 9.727,
+  "production_output": "/workspace/scratch/ae1a8cf05419/a01-next6-build/support/build/out/next7-real-ktest-cancel-01"
+}

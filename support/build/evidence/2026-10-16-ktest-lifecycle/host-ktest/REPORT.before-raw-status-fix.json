@@ -1,0 +1,98 @@
+{
+  "scope": [
+    "support/build/ktest/run.py",
+    "support/build/ktest/test_runner_lifecycle.py",
+    "support/build/ktest/README.md"
+  ],
+  "frozen_sha256": {
+    "support/build/ktest/run.py": "1d16f77291c43f8ceb11267e87ccceb8e53e2acfac4da9965de0d9f0cc1c0f67",
+    "support/build/ktest/test_runner_lifecycle.py": "06c8d437630b8920054173a71d39eb9dc5063a24622c9f1e50aa8384c64a1861",
+    "support/build/ktest/README.md": "bb2b37b41a5efb3b577ee6fc56d919068f0b040c43c5b970f77081e744d74875"
+  },
+  "old_runner_sha256": "c70096ee2bd5b4e369da4bb45533fb8d8fea2892371678064d9bd55663187c29",
+  "host_only": true,
+  "kernel_or_qemu_pass_claimed": false,
+  "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "platform": "Linux-6.18.44-x86_64-with-glibc2.39",
+  "commands": [
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/next7-ktest-lifecycle/baseline.py"
+      ],
+      "exit_code": 0,
+      "retained": [
+        "baseline-console.log",
+        "baseline-observation.json",
+        "run-before.py"
+      ]
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/next7-ktest-lifecycle/patched.py"
+      ],
+      "exit_code": 0,
+      "retained": [
+        "patched-console.log",
+        "patched-console-controller.log",
+        "patched-observation.json",
+        "run-after.py"
+      ]
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "support/build/ktest/test_runner_lifecycle.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "tests": 15,
+      "subtests_note": "TERM is independently exercised at all 8 pipeline stages",
+      "log": "test-I-final.log"
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-O",
+        "support/build/ktest/test_runner_lifecycle.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "tests": 15,
+      "optimized_cli_children": true,
+      "log": "test-IO-final.log"
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check",
+        "--",
+        "support/build/ktest"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "preserved_intermediate_logs": [
+    "test-I-attempt01.log",
+    "test-I-attempt02.log",
+    "test-IO-attempt02.log",
+    "test-I-attempt03.log",
+    "test-IO-attempt03.log"
+  ],
+  "limitations": [
+    "Fixtures fork/exec in one PID namespace and retain owned PID/pidfd receipts; no /proc inspection.",
+    "Only the direct leader is reaped. Grandchild death is asynchronous and observed with pidfd plus fresh TCP bind within bounded waits.",
+    "No process escaping its original group is claimed covered.",
+    "No Rust build or QEMU launch performed by this audit."
+  ],
+  "result_schema": {
+    "aggregate": "result.json: passed:false, interrupted_by, received_signals, exit_code, runner_sha256, toolchain, command_receipts",
+    "command": "<full-log-name>.command.json: argv,cwd,raw_exit_code,group_cleanup{leader_pid,leader_exit_code,leader_reaped,external_reap_disarmed,identity_anchor},interrupted_by,received_signals,duration_seconds"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "utc": "2026-10-17T04:39:34.569207+00:00",
+  "kind": "publisher_commit_message_erratum_no_source_or_evidence_change",
+  "affected_commit": "cdfddbfb39d4dfee029d3096615da148068c9652",
+  "affected_sentence": "Both distinct ordinary-profile ELFs are retained without claiming byte equality",
+  "correction": "N2 first-build and boot ELF copies are byte-identical, 8255688 bytes, SHA256 5c2cee2a8806baf873149ce07f752cc3b1c633efd4199e0c8c0ba20ef5f325f7. The 94df3f... retained binary is cargo-osdk, not a second distinct kernel ELF. The published phase report and artifacts were correct throughout.",
+  "evidence_report_git_path": "support/build/evidence/2026-10-17-private-sdk-native/report.json",
+  "evidence_report_sha256": "bf5ee5938282ca3ede6caf7150df67f6e44943dbdfba139df526ecc98cd2bf47",
+  "correct_first_elf": {
+    "source": "/tmp/trillionnium-a01-private-sdk-N2/kernel/asterinas/target/osdk/asterinas/asterinas-osdk-bin.elf",
+    "source_stat": {
+      "st_dev": 27,
+      "st_ino": 404611,
+      "st_mode": 33261,
+      "st_size": 8255688,
+      "st_mtime_ns": 1792211009171642547,
+      "st_ctime_ns": 1792211009171653744
+    },
+    "copy": "/workspace/scratch/ae1a8cf05419/private-sdk-native-N2/first-build-kernel.elf",
+    "size": 8255688,
+    "sha256": "5c2cee2a8806baf873149ce07f752cc3b1c633efd4199e0c8c0ba20ef5f325f7"
+  },
+  "correct_first_and_boot_kernel_complete_bytes_equal": true,
+  "original_commit_message": "A01: retain private OSDK cold kernel build and real N2 boot\n\nPreserve the complete source0a7037 cold make-kernel pipeline, source-specific SDK receipts, first-build and boot ELF inputs, actual QEMU command and full serial output.\n\nValidation: all eleven controller commands returned zero, 279 cold compilation lines and no warm boot compilation, raw QEMU33 and live artifact verification pass. Both distinct ordinary-profile ELFs are retained without claiming byte equality; the phase's portable verifiers pass.\n",
+  "publication_action": "No amend, force push, original phase edit or reexecution. Preserve this correction in final closure/publication record.",
+  "terminology_note": "C4 commit message phrase immutable input snapshots denotes retained content-addressed artifact copies; it is not a claim that previously executed SDK bytes, workspace files, or the host environment had immutable custody."
+}

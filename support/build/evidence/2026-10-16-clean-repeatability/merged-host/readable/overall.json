@@ -1,0 +1,58 @@
+{
+  "commit": "81d3080908292a0dc206f047de36b9e27bf68a73",
+  "tree": "48d1c43cb77706870cd431a7cc4cecb0f73f3254",
+  "passed": true,
+  "source_input_files": 34,
+  "final_source_mutations": [],
+  "checks": [
+    {
+      "name": "ABI Python",
+      "passed": 19,
+      "failed": 0,
+      "command_receipt": "abi-python.command.json"
+    },
+    {
+      "name": "golden vectors",
+      "verified": 12,
+      "exit_code": 0,
+      "command_receipt": "golden-check.command.json"
+    },
+    {
+      "name": "ABI Rust",
+      "passed": 25,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 0,
+      "command_receipt": "abi-rust.command.json"
+    },
+    {
+      "name": "os-control Rust",
+      "passed": 21,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 0,
+      "command_receipt": "control-rust.command.json"
+    },
+    {
+      "name": "archive Python -I",
+      "passed": 20,
+      "failed": 0,
+      "receipt": "archive-validation.json"
+    },
+    {
+      "name": "archive Python -I -O",
+      "passed": 20,
+      "failed": 0,
+      "receipt": "archive-validation.json"
+    }
+  ],
+  "actual_test_executions": 105,
+  "notes": [
+    "All host execution at exact committed merge tree in disposable source copy; no live WIP included.",
+    "Fresh separate Cargo targets, fixed nightly-2026-07-21, offline, jobs2; no external packages in either crate lock.",
+    "os-control is an independent host control-model suite, not an integrated ABI/kernel consumer.",
+    "Generated ABI lock preserved; tracked os-control lock unchanged. No root repository Cargo.lock written.",
+    "No VM, kernel build, dependency installation or production source mutation.",
+    "25 Rust ABI and 19 Python ABI now actual pass counts, replacing prior declaration-only knowledge."
+  ]
+}

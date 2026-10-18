@@ -1,0 +1,161 @@
+{
+  "schema": 1,
+  "kind": "host_only_recorded_artifact_snapshot_regression",
+  "baseline_commit": "071dd8edcd2a3cf9b33dbbeab713428317b9b76c",
+  "fixed_binding": "exact SHA256 source snapshots; A01 publishes code commit separately",
+  "sources": {
+    "support/build/record-qemu.py": {
+      "baseline_sha256": "9d6779a4df75ad55f04a37aea213449d83a8ad4c7096dd1b6381628833b42e62",
+      "fixed_sha256": "70d2e30bd49bee95e6d588faf2b60bf80183b27fb0cb666d99a1ad77a98fe9fb",
+      "changed": true
+    },
+    "support/build/tests/test_boot_evidence.py": {
+      "baseline_sha256": "7aee2ada26573fa2833642c8dbc57784c9b28fd18bda3cefed62b1f1e71ddeb8",
+      "fixed_sha256": "17fe33bf356c3f8cebafc57f46d6b5b2d258a1e59ff03436261e4a9c83a94181",
+      "changed": true
+    },
+    "support/build/check-boot.py": {
+      "baseline_sha256": "2ee1be040c622b248986efdeacab43eea6b2d730e0bad1a8bc0ba995c1915f80",
+      "fixed_sha256": "2ee1be040c622b248986efdeacab43eea6b2d730e0bad1a8bc0ba995c1915f80",
+      "changed": false
+    },
+    "support/build/tests/test_gdb_listener.py": {
+      "baseline_sha256": "300e049a6e6bf6ef8bf26810db614b75bc57d44c4129e628907bce015181c6bb",
+      "fixed_sha256": "300e049a6e6bf6ef8bf26810db614b75bc57d44c4129e628907bce015181c6bb",
+      "changed": false
+    }
+  },
+  "counts": {
+    "expected_red_assertion_failures": 2,
+    "final_boot_evidence_passed": 46,
+    "final_listener_passed": 6,
+    "final_total_test_method_executions_passed": 52,
+    "intermediate_22_test_suite_passes_retained_but_not_added_to_final_denominator": 44
+  },
+  "suites": [
+    {
+      "phase": "red",
+      "mode": "I",
+      "test_methods": 1,
+      "exit_code": 1,
+      "invocation": "raw/red/I/invocation.json",
+      "log": "raw/red/I/console.log",
+      "final_acceptance": false
+    },
+    {
+      "phase": "red",
+      "mode": "IO",
+      "test_methods": 1,
+      "exit_code": 1,
+      "invocation": "raw/red/IO/invocation.json",
+      "log": "raw/red/IO/console.log",
+      "final_acceptance": false
+    },
+    {
+      "phase": "green",
+      "mode": "I",
+      "test_methods": 22,
+      "exit_code": 0,
+      "invocation": "raw/green/I/invocation.json",
+      "log": "raw/green/I/console.log",
+      "final_acceptance": false
+    },
+    {
+      "phase": "green",
+      "mode": "IO",
+      "test_methods": 22,
+      "exit_code": 0,
+      "invocation": "raw/green/IO/invocation.json",
+      "log": "raw/green/IO/console.log",
+      "final_acceptance": false
+    },
+    {
+      "phase": "green-final",
+      "mode": "I",
+      "test_methods": 23,
+      "exit_code": 0,
+      "invocation": "raw/green-final/I/invocation.json",
+      "log": "raw/green-final/I/console.log",
+      "final_acceptance": true
+    },
+    {
+      "phase": "green-final",
+      "mode": "IO",
+      "test_methods": 23,
+      "exit_code": 0,
+      "invocation": "raw/green-final/IO/invocation.json",
+      "log": "raw/green-final/IO/console.log",
+      "final_acceptance": true
+    },
+    {
+      "phase": "listener",
+      "mode": "I",
+      "test_methods": 3,
+      "exit_code": 0,
+      "invocation": "raw/listener/I/invocation.json",
+      "log": "raw/listener/I/console.log",
+      "final_acceptance": true
+    },
+    {
+      "phase": "listener",
+      "mode": "IO",
+      "test_methods": 3,
+      "exit_code": 0,
+      "invocation": "raw/listener/IO/invocation.json",
+      "log": "raw/listener/IO/console.log",
+      "final_acceptance": true
+    }
+  ],
+  "source_replacement_cli_evidence": [
+    {
+      "phase": "red",
+      "mode": "I",
+      "recorder_raw_exit": 33,
+      "unchanged_live_checker_exit": 1,
+      "observation": "raw/red/I/fixtures/test_recorder_snapshots_survive_atomic_replacement_of_all_source_paths/replacement-observation.json"
+    },
+    {
+      "phase": "red",
+      "mode": "IO",
+      "recorder_raw_exit": 33,
+      "unchanged_live_checker_exit": 1,
+      "observation": "raw/red/IO/fixtures/test_recorder_snapshots_survive_atomic_replacement_of_all_source_paths/replacement-observation.json"
+    },
+    {
+      "phase": "green-final",
+      "mode": "I",
+      "recorder_raw_exit": 33,
+      "unchanged_live_checker_exit": 0,
+      "observation": "raw/green-final/I/fixtures/test_recorder_snapshots_survive_atomic_replacement_of_all_source_paths/replacement-observation.json"
+    },
+    {
+      "phase": "green-final",
+      "mode": "IO",
+      "recorder_raw_exit": 33,
+      "unchanged_live_checker_exit": 0,
+      "observation": "raw/green-final/IO/fixtures/test_recorder_snapshots_survive_atomic_replacement_of_all_source_paths/replacement-observation.json"
+    }
+  ],
+  "scope": [
+    "Source FD and pathname dev/ino/mode/size/mtime_ns/ctime_ns validated before and after chunked reads",
+    "Private mkdtemp 0700 directory, xb exclusive files, retained mode0400 snapshots",
+    "QEMU actual argv loads snapshots, original argv and per-source stat/size/SHA retained",
+    "Snapshots verified before launch and after exit; mismatch returns1 with stage/error, no source fallback",
+    "All3 artifact flags each required exactly once and with a path before QEMU version probe",
+    "Original check-boot unchanged"
+  ],
+  "limits": [
+    "Host executable QEMU fixture only; no kernel build or guest boot in these tests",
+    "Private path and mode reduce accidental mutation; no sandbox or adversarial immutability guarantee",
+    "External source-path writer remains unidentified and unattributed"
+  ],
+  "raw_policy": {
+    "exclude": [
+      "__pycache__",
+      "*.pyc"
+    ],
+    "preserve_logs_and_invocations_without_rewrite": true,
+    "historical_absolute_paths_preserved": true,
+    "red_and_intermediate_sources_recovered_by_reversing_later_hardening_and_matching_contemporaneous_SHA256": true
+  }
+}

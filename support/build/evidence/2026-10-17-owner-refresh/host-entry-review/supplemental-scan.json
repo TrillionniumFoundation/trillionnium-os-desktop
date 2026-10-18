@@ -1,0 +1,295 @@
+{
+  "schema": 1,
+  "started_utc": "2026-10-17T01:09:07.587383+00:00",
+  "completed_utc": "2026-10-17T01:09:07.629421+00:00",
+  "repo_head": "e932e49191db61bb4b95d4dbbb891e4793908219",
+  "script_sha256": "b62094938d510e2ee2e921f5ce79a8321ebd0c361fedf000dd68d65b7d8a722e",
+  "selected_file_count": 16,
+  "matched_line_count": 11,
+  "files": [
+    {
+      "path": "libs/os-abi/Cargo.toml",
+      "size": 143,
+      "sha256": "8941aa060c09b8243125fceba8000bac896ac12a72f215a1295174cdf1f92b3a"
+    },
+    {
+      "path": "libs/os-control/API_CONTRACT.md",
+      "size": 32723,
+      "sha256": "3fe9e6a4ac94dd1f65b7611a77ac4f32f7732c20bec38d0d16548887f7895040"
+    },
+    {
+      "path": "libs/os-control/Cargo.toml",
+      "size": 826,
+      "sha256": "be1f0c411db19a961ffd77925ff8708a7d394de44cb3498a162586b42f7b03f6"
+    },
+    {
+      "path": "support/hardware/DECISION.md",
+      "size": 11378,
+      "sha256": "d59600c17d4145ebdeb349ffa94e7b1c9cfa83a0bec567ff352d28c0f02eed4a"
+    },
+    {
+      "path": "support/hardware/rtx4060-lab-profile.json",
+      "size": 1800,
+      "sha256": "e8a10b9e0dbb58461f3ed9144395b85d6388e3d9f563874cac95b30feed09ffe"
+    },
+    {
+      "path": "support/vmm/GATES.md",
+      "size": 3078,
+      "sha256": "3ffe2e02c6aa4da993198b331a1ae86fffaba76a40cccbd4fd54117aaa554230"
+    },
+    {
+      "path": "tests/abi/A02_ACCEPTANCE_2026-10-16.md",
+      "size": 7363,
+      "sha256": "d79ee7004b04238015274e720fd90b2b3cf0be7cdd9e167c552765604e1304b9"
+    },
+    {
+      "path": "tests/abi/A02_CLOUD_CLOSURE_2026-10-16.md",
+      "size": 7190,
+      "sha256": "ad29ce005c4abfcd0a77f66e9582df4f5a1b2fcf7abf89648f7cc0e5b132f8d9"
+    },
+    {
+      "path": "tests/abi/A02_EXECUTION_2026-10-16.md",
+      "size": 6638,
+      "sha256": "ccbe366b2a189bf6b4e2d2acb2a896bfd32f36f223ae772510fe00d8ee12bceb"
+    },
+    {
+      "path": "tests/abi/A02_PR65_EXECUTION_2026-10-16.md",
+      "size": 6925,
+      "sha256": "0b346913c2a70c3df13eacb989083c3a77f9a8f811e7b09d20666e05dcbe1a21"
+    },
+    {
+      "path": "tests/abi/A02_PREFLIGHT_2026-10-16.md",
+      "size": 5369,
+      "sha256": "9915d650a3f67e61ce0e37a277480f51606af88825bc9c1de1ffceba4cbf6b57"
+    },
+    {
+      "path": "tests/abi/A02_PROFILE_ACCEPTANCE_2026-10-16.md",
+      "size": 7095,
+      "sha256": "044f7f2390fee0cc51d2a031bd0aeca2dbbed86149918bd83e7347e2b78a2420"
+    },
+    {
+      "path": "tests/abi/A02_REVIEW_CLOSURE_2026-10-17.md",
+      "size": 7168,
+      "sha256": "d988512099957b3d2e102382acc4e9101a4d1ae3f929e9a1e0fa42d7b6a6ee22"
+    },
+    {
+      "path": "tests/abi/A02_SAVED_STATUS_ACCEPTANCE_2026-10-16.md",
+      "size": 6295,
+      "sha256": "4a790f052a3fe833e820245189590fda62b47d9c9a4356f94e0ab4c2a7ee898a"
+    },
+    {
+      "path": "tests/control/VALIDATION.md",
+      "size": 8109,
+      "sha256": "13de5b1afcd60c23ac40bbf479b5b147a4d4ecf595bfe3f6d19016721e3d5bfa"
+    },
+    {
+      "path": "tests/hardware/RUN.md",
+      "size": 4293,
+      "sha256": "89501a8398e193944766761ffafb777eb3c048b6b9be2e5e6fbf6f2c790afc94"
+    }
+  ],
+  "matches": [
+    {
+      "path": "support/hardware/DECISION.md",
+      "line": 7,
+      "text": "The read-only probe ran in the execution-tool Linux container, NOT on a user-provided bare-metal GPU host. Visible environment: Linux 6.18.44, x86_64, virtual CPU model AMD EPYC 9V74 80-Core Processor (3 visible /proc/cpuinfo processor entries, not a claim about physical cores). PCI enumeration exposed host bridge 8086:0d57 and six VirtIO functions: 1af4:1042, 1af4:1041, 1af4:1044, 1af4:105b, 1af4:1053, 1af4:1045. No visible PCI display or compute-accelerator class, NVIDIA or AMD GPU, /dev/dri/renderD128, /dev/kfd, /dev/nvidiactl, /dev/nvidia0, /dev/vfio/vfio or /dev/kvm. No VMX/SVM flags, visible IOMMU group or DMAR/IVRS table. Absence in a restricted container DOES NOT prove physical host absence.",
+      "context": [
+        {
+          "line": 6,
+          "text": ""
+        },
+        {
+          "line": 7,
+          "text": "The read-only probe ran in the execution-tool Linux container, NOT on a user-provided bare-metal GPU host. Visible environment: Linux 6.18.44, x86_64, virtual CPU model AMD EPYC 9V74 80-Core Processor (3 visible /proc/cpuinfo processor entries, not a claim about physical cores). PCI enumeration exposed host bridge 8086:0d57 and six VirtIO functions: 1af4:1042, 1af4:1041, 1af4:1044, 1af4:105b, 1af4:1053, 1af4:1045. No visible PCI display or compute-accelerator class, NVIDIA or AMD GPU, /dev/dri/renderD128, /dev/kfd, /dev/nvidiactl, /dev/nvidia0, /dev/vfio/vfio or /dev/kvm. No VMX/SVM flags, visible IOMMU group or DMAR/IVRS table. Absence in a restricted container DOES NOT prove physical host absence."
+        },
+        {
+          "line": 8,
+          "text": ""
+        }
+      ]
+    },
+    {
+      "path": "support/hardware/DECISION.md",
+      "line": 49,
+      "text": "Proposed compute provenance after eventual success: **host kernel Asterinas-derived Rust**, **VM Linux guest kernel**, **guest process Python GEMM**, **physical RTX 4060**, **guest NVIDIA driver**, **guest NVRTC/CUDA runtime**. No part of that combination has yet been demonstrated here. A05 must bind VM/device ownership to final process identity and revocation; A06 must enforce parent ResourceDomain budgets and recovery executor reserve; A01 must integrate real frames, PCI/IOMMU and correct VMX/SVM backend. Hepta calls existing HOS2/ResourceDomain surfaces, not direct PCI registers.",
+      "context": [
+        {
+          "line": 48,
+          "text": ""
+        },
+        {
+          "line": 49,
+          "text": "Proposed compute provenance after eventual success: **host kernel Asterinas-derived Rust**, **VM Linux guest kernel**, **guest process Python GEMM**, **physical RTX 4060**, **guest NVIDIA driver**, **guest NVRTC/CUDA runtime**. No part of that combination has yet been demonstrated here. A05 must bind VM/device ownership to final process identity and revocation; A06 must enforce parent ResourceDomain budgets and recovery executor reserve; A01 must integrate real frames, PCI/IOMMU and correct VMX/SVM backend. Hepta calls existing HOS2/ResourceDomain surfaces, not direct PCI registers."
+        },
+        {
+          "line": 50,
+          "text": ""
+        }
+      ]
+    },
+    {
+      "path": "support/hardware/DECISION.md",
+      "line": 56,
+      "text": "4. Implement a minimal but actual VMM with vCPU, VM memory, virtual interrupts, device model, boot and lifecycle, correct Intel VMX vs AMD SVM; AMD SVM is not evidenced in pinned upstream. See ../vmm/GATES.md.",
+      "context": [
+        {
+          "line": 55,
+          "text": "3. Run CUDA GEMM solely on a separate disposable Linux lab GPU as a baseline. Label kernel Linux, never Asterinas."
+        },
+        {
+          "line": 56,
+          "text": "4. Implement a minimal but actual VMM with vCPU, VM memory, virtual interrupts, device model, boot and lifecycle, correct Intel VMX vs AMD SVM; AMD SVM is not evidenced in pinned upstream. See ../vmm/GATES.md."
+        },
+        {
+          "line": 57,
+          "text": "5. Validate group isolation, interrupt remapping, bounded DMA and reset strategy on disposable GPU; then boot a Linux guest **on the Asterinas-derived host** with exclusive GPU passthrough. Repeat identical GEMM; persist host+guest logs and numerical/cleanup facts."
+        }
+      ]
+    },
+    {
+      "path": "support/hardware/DECISION.md",
+      "line": 61,
+      "text": "**References:** [fixed Asterinas VMX context](https://github.com/asterinas/asterinas/blob/c4b7ed575b7b32773475b194d2ad41fb6d03765b/ostd/src/arch/x86/vm/mod.rs); [OSTD example](https://github.com/asterinas/asterinas/blob/c4b7ed575b7b32773475b194d2ad41fb6d03765b/osdk/tests/examples_in_book/write_a_hypervisor_in_100_lines_templates/lib.rs); [VFIO/IOMMU groups](https://docs.kernel.org/driver-api/vfio.html); [Linux DMA](https://docs.kernel.org/core-api/dma-api-howto.html); [CUDA launch](https://docs.nvidia.com/cuda/cuda-driver-api/cuda_driver_api/group__CUDA__EXEC.html).",
+      "context": [
+        {
+          "line": 60,
+          "text": ""
+        },
+        {
+          "line": 61,
+          "text": "**References:** [fixed Asterinas VMX context](https://github.com/asterinas/asterinas/blob/c4b7ed575b7b32773475b194d2ad41fb6d03765b/ostd/src/arch/x86/vm/mod.rs); [OSTD example](https://github.com/asterinas/asterinas/blob/c4b7ed575b7b32773475b194d2ad41fb6d03765b/osdk/tests/examples_in_book/write_a_hypervisor_in_100_lines_templates/lib.rs); [VFIO/IOMMU groups](https://docs.kernel.org/driver-api/vfio.html); [Linux DMA](https://docs.kernel.org/core-api/dma-api-howto.html); [CUDA launch](https://docs.nvidia.com/cuda/cuda-driver-api/cuda_driver_api/group__CUDA__EXEC.html)."
+        }
+      ]
+    },
+    {
+      "path": "support/vmm/GATES.md",
+      "line": 7,
+      "text": "| Intel VMX | ostd/src/arch/x86/vm/mod.rs, context.rs, ept.rs, vmx/ and ostd/src/vm/{gpm_space,guest_mode}.rs provide Intel VMX, EPT, guest context/exit primitives | No Linux boot VMM, PCI GPU passthrough, vCPU scheduling, virt IRQ, device model, recovery qualification |",
+      "context": [
+        {
+          "line": 6,
+          "text": "| --- | --- | --- |"
+        },
+        {
+          "line": 7,
+          "text": "| Intel VMX | ostd/src/arch/x86/vm/mod.rs, context.rs, ept.rs, vmx/ and ostd/src/vm/{gpm_space,guest_mode}.rs provide Intel VMX, EPT, guest context/exit primitives | No Linux boot VMM, PCI GPU passthrough, vCPU scheduling, virt IRQ, device model, recovery qualification |"
+        },
+        {
+          "line": 8,
+          "text": "| AMD SVM | No SVM-specific file in pinned x86 vm tree; implementation uses VMX/VMCS | Do not use VMX example as proof of AMD SVM/NPT/VMCB/VMRUN, even though visible virtual CPU is AMD |"
+        }
+      ]
+    },
+    {
+      "path": "support/vmm/GATES.md",
+      "line": 8,
+      "text": "| AMD SVM | No SVM-specific file in pinned x86 vm tree; implementation uses VMX/VMCS | Do not use VMX example as proof of AMD SVM/NPT/VMCB/VMRUN, even though visible virtual CPU is AMD |",
+      "context": [
+        {
+          "line": 7,
+          "text": "| Intel VMX | ostd/src/arch/x86/vm/mod.rs, context.rs, ept.rs, vmx/ and ostd/src/vm/{gpm_space,guest_mode}.rs provide Intel VMX, EPT, guest context/exit primitives | No Linux boot VMM, PCI GPU passthrough, vCPU scheduling, virt IRQ, device model, recovery qualification |"
+        },
+        {
+          "line": 8,
+          "text": "| AMD SVM | No SVM-specific file in pinned x86 vm tree; implementation uses VMX/VMCS | Do not use VMX example as proof of AMD SVM/NPT/VMCB/VMRUN, even though visible virtual CPU is AMD |"
+        },
+        {
+          "line": 9,
+          "text": "| ARM EL2 | No ARM VM implementation found in pinned VM path | No ARM EL2, stage-2/SMMU/GIC guest virtualization pass |"
+        }
+      ]
+    },
+    {
+      "path": "support/vmm/GATES.md",
+      "line": 12,
+      "text": "Execution-tool container: Linux 6.18.44, x86_64, no /dev/kvm, no forwarded vmx/svm flags; NO hypervisor run. Upstream osdk/tests/examples_in_book/write_a_hypervisor_in_100_lines_templates/lib.rs demonstrates a small VMX real-mode guest that prints serial and halts; not a Linux guest VM or a GPU VMM.",
+      "context": [
+        {
+          "line": 11,
+          "text": ""
+        },
+        {
+          "line": 12,
+          "text": "Execution-tool container: Linux 6.18.44, x86_64, no /dev/kvm, no forwarded vmx/svm flags; NO hypervisor run. Upstream osdk/tests/examples_in_book/write_a_hypervisor_in_100_lines_templates/lib.rs demonstrates a small VMX real-mode guest that prints serial and halts; not a Linux guest VM or a GPU VMM."
+        },
+        {
+          "line": 13,
+          "text": ""
+        }
+      ]
+    },
+    {
+      "path": "support/vmm/GATES.md",
+      "line": 16,
+      "text": "1. Discover actual architecture at runtime; reject VMX absent on Intel / SVM absent on AMD. If AMD target is chosen, implement/test SVM instead of attempting VMX commands. No aggressive emulation fallback.",
+      "context": [
+        {
+          "line": 15,
+          "text": ""
+        },
+        {
+          "line": 16,
+          "text": "1. Discover actual architecture at runtime; reject VMX absent on Intel / SVM absent on AMD. If AMD target is chosen, implement/test SVM instead of attempting VMX commands. No aggressive emulation fallback."
+        },
+        {
+          "line": 17,
+          "text": "2. VM owns real vCPU state, timers, fault injection, VM entry/exits, scheduling and lifecycle, guest physical memory backed by pinned MemoryObjects and ResourceDomain quotas."
+        }
+      ]
+    },
+    {
+      "path": "support/vmm/GATES.md",
+      "line": 24,
+      "text": "Only the above can eventually qualify \"local GPU in a Linux guest under a Rust host\". QEMU/KVM VM on Linux host or reference VMX snippet is categorically different. Performance and GPU reset behavior remain unmeasured.",
+      "context": [
+        {
+          "line": 23,
+          "text": ""
+        },
+        {
+          "line": 24,
+          "text": "Only the above can eventually qualify \"local GPU in a Linux guest under a Rust host\". QEMU/KVM VM on Linux host or reference VMX snippet is categorically different. Performance and GPU reset behavior remain unmeasured."
+        }
+      ]
+    },
+    {
+      "path": "tests/hardware/RUN.md",
+      "line": 16,
+      "text": "Actual observed: 6/6 unit tests passed, 0 failures; py_compile passed; no NVIDIA PCI GPU and no CUDA runtime, /dev/kvm or /dev/vfio/vfio in container.",
+      "context": [
+        {
+          "line": 15,
+          "text": ""
+        },
+        {
+          "line": 16,
+          "text": "Actual observed: 6/6 unit tests passed, 0 failures; py_compile passed; no NVIDIA PCI GPU and no CUDA runtime, /dev/kvm or /dev/vfio/vfio in container."
+        },
+        {
+          "line": 17,
+          "text": ""
+        }
+      ]
+    },
+    {
+      "path": "tests/hardware/RUN.md",
+      "line": 32,
+      "text": "- [Architecture decision](../../support/hardware/DECISION.md) and [VMX/SVM/EL2 VMM gates](../../support/vmm/GATES.md): design only, no new kernel guest boot.",
+      "context": [
+        {
+          "line": 31,
+          "text": "- [CUDA blocker](evidence/2026-10-16-cuda-gemm-blocked.json): process exit **2**, libcuda.so.1 unavailable, no device opened or compute dispatched. The CPU golden SHA is still generated/verified."
+        },
+        {
+          "line": 32,
+          "text": "- [Architecture decision](../../support/hardware/DECISION.md) and [VMX/SVM/EL2 VMM gates](../../support/vmm/GATES.md): design only, no new kernel guest boot."
+        },
+        {
+          "line": 33,
+          "text": ""
+        }
+      ]
+    }
+  ],
+  "scope": "Remaining tracked project documentation/configuration; no vendored kernel, historical evidence/results, auth/key/account material, execution-host or runtime probes."
+}

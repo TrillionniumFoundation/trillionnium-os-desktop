@@ -1,0 +1,102 @@
+{
+  "schema": 1,
+  "kernel": {
+    "repository": "asterinas/asterinas",
+    "tag": "v0.19.0",
+    "commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+    "tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+    "reuse": "full_kernel_derived",
+    "toolchain": "nightly-2026-07-21",
+    "target": "x86_64-unknown-none",
+    "source_imported": true,
+    "build_verified": true,
+    "source_directory": "kernel/asterinas",
+    "source_import_method": "vendored_git_tree",
+    "source_files": 2938,
+    "license": "MPL-2.0",
+    "license_file": "kernel/asterinas/LICENSE-MPL",
+    "cargo_lock_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+    "osdk_cargo_lock_sha256": "99a21f72f6a9f1582553b34f06e80f86e539f38e62eab7a0847afd0906e75be3",
+    "toolchain_file_sha256": "b2508d8c9cd57258fad2fc77737e07172846161f6a7dd726cbd8e974de69c6f7",
+    "qemu_boot_verified": true,
+    "build_code_commit": "4ae1a80e6b87fd55913bd01e6aadd28a20e6c322",
+    "derived_tree": "6a9463ebaaa2060e1fe3968bd940b60d9b1bf8a0",
+    "generated_cargo_lock": "support/build/minimal/Cargo.lock",
+    "generated_cargo_lock_sha256": "b42d8fff136d80a5f8159356882096996991e05975d8da9c81ad9db9bdb06e10",
+    "artifact_sha256": "e884f5e50cf296833276016894a39337cd9ac13bc51f6b1f2dea3cc3a6904b63",
+    "boot_profile": "support/build/minimal/OSDK.toml",
+    "verification_evidence": "support/build/evidence/2026-10-16-boot-binding/report.json",
+    "acceptance_guard_commit": "2c658089bb90aa5b254ddf336ef3dc1333e755c9",
+    "kernel_mode_regression": {
+      "evidence": "support/build/evidence/2026-10-16-daemon/acceptance/kernel-tests/result.json",
+      "crates": [
+        "ostd",
+        "aster-core"
+      ],
+      "reported_passed": 362,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 3,
+      "exercised_passed_lower_bound": 359,
+      "profile": "x86_64-q35-tcg-1cpu-512MiB",
+      "test_base_locks": {
+        "ostd": {
+          "path": "support/build/ktest/locks/ostd.Cargo.lock",
+          "sha256": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6"
+        },
+        "aster-core": {
+          "path": "support/build/ktest/locks/aster-core.Cargo.lock",
+          "sha256": "159b8682d27a7a21af98885ae48515234445c00fdf5e00b158fdc4aa952ff4ed"
+        }
+      }
+    },
+    "host_regression": {
+      "evidence": "support/build/evidence/2026-10-16-boot-binding/report.json",
+      "suite": "derived_osdk_unit",
+      "code_commit": "4ae1a80e6b87fd55913bd01e6aadd28a20e6c322",
+      "full_unit_suite_passed": true,
+      "total": 28,
+      "passed": 28,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 0,
+      "previous_selected_integration": {
+        "evidence": "support/build/evidence/2026-10-16-daemon/report.json",
+        "selected_non_vm_passed": 13,
+        "unselected_cases": 9
+      },
+      "new_native_integration": "in_progress_not_claimed",
+      "original_failed_suite_evidence": "support/build/evidence/2026-10-16-next/host-tools/results.json",
+      "original_failed_suite_preserved": true
+    },
+    "daemon_lifecycle_fix": {
+      "code_commit": "fb81fec167913827bcddfda15676dc6b26f35965",
+      "evidence": "support/build/evidence/2026-10-16-daemon/daemon-probes/",
+      "old_real_leak_cases": 2,
+      "patched_lifecycle_cases_passed": 5,
+      "identity_anchor": "waitable leader via waitid WNOWAIT; group signals before reap; ECHILD disarms",
+      "scope": "OSDK sole reaper; no SIGCHLD auto-reap; descendants stay in original process group"
+    }
+  },
+  "hepta": {
+    "repository": "TrillionniumFoundation/hepta-private-ci",
+    "commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+    "build_verified": false
+  },
+  "reference_assets": [
+    {
+      "name": "asterinas-nixos-0.19.0-x86_64.iso",
+      "size": 1442840576,
+      "digest": "sha256:7df9fafed4fe886e44bda501834937d893e12a05af911fabeb068c34379fb86e",
+      "browser_download_url": "https://github.com/asterinas/asterinas/releases/download/v0.19.0/asterinas-nixos-0.19.0-x86_64.iso"
+    }
+  ],
+  "reference_asset_downloaded": false,
+  "rootfs_manifest": "support/build/evidence/2026-10-16/acceptance/boot/initramfs-manifest.json",
+  "build_container_digest": null,
+  "boot_firmware_digest": "sha256:1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+  "reproducible_kernel_build_ready": false,
+  "native_build_profile_ready": true,
+  "native_build_environment": "support/build/evidence/2026-10-16/host/environment-investigation.json",
+  "reproducible_kernel_build_note": "Native locked build and QEMU boot passed; cross-host bit reproducibility and a complete configured host/container lock are not established."
+}

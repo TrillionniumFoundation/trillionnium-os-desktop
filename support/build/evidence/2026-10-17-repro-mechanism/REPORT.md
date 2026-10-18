@@ -1,0 +1,19 @@
+# Native component path-projection mechanism evidence
+
+The unchanged upstream component macro was exercised in two distinct real source roots with separate empty targets. Full Cargo metadata root/graph projection, an exact virtual Components.toml input and compiler path remapping produced two successful **native host** programs with byte-identical 4,512,576-byte ELFs, SHA256 `2f42eb381eafe171fc226f71f687255db15a2a6a67087ce4e306f26e1a68d072`. These are tiny host fixtures, **not kernel ELFs or kernel/QEMU acceptance**.
+
+The final support/build/repro implementation is bound byte-for-byte to published source `542e09ebf0471124a01e3d721b531a29e141e54b` (tree `8e7a594456108c9a9e796bdee2d22a26f9ebfbda`) in source-bindings.json, including Git blob IDs and modes for all six candidate files and the four unchanged upstream macro inputs. Thirteen focused candidate tests passed in isolated ordinary and optimized Python modes: 26 executions, not a larger inferred test count. The final candidate hardened the demonstrated mechanism; its full-kernel proof is a separate root task.
+
+Actual failures are retained: compiler-only remapping creates registration-key mismatch; ID-only metadata mapping bypasses missing-component validation; missing virtual Components is rejected. The initial relative-span fixture already failed its baseline and is retained as a fixture error, not accepted as a successful pair. The full mapping preserves validation. Independent review also retains the before/after FIFO, executable-mode and helper-bytecode failures. The final profile materializes a byte-bound executable helper closure, suppresses helper bytecode, serializes its virtual inputs and preserves foreign files.
+
+## Complete reproducible evidence archive
+
+Run `python3 -I verify.py` from this directory. It verifies every outer checksum, each ordered part (at most 2 MiB), the reassembled gzip SHA256, all 278 regular tar members byte-for-byte, deterministic tar metadata and the unmodified 277-entry inner checksum closure. No extraction is needed. To also save a new assembled file, use `python3 -I verify.py --output /absolute/new-mechanism.tar.gz`; an existing output is refused.
+
+archive.json records exact part ordering, sizes and hashes. member-manifest.json enumerates all member names, sizes and payload hashes. The tar uses sorted paths, uid/gid 0, empty owner names, mtime 0 and mode 0644; gzip has mtime 0 and an empty filename. Two independent archive constructions were compared byte-for-byte. Tar modes normalize this evidence container; published source Git modes remain recorded separately.
+
+The frozen archive-ready generator had 277 checksum entries plus its own SHA256SUMS: 278 covered members. It had also copied a nested independent-review/SHA256SUMS while excluding every basename SHA256SUMS from the master. That unlisted file was outside the frozen closure; its current observed bytes are preserved separately under original-extra/, with its exact size/hash explained in summary.json. No frozen archive input or checksum was edited, and no log or binary was omitted from the declared closure.
+
+All controllers, actual commands, stdout/stderr, original/projected metadata, fixture sources and locks are inside the tar. Five distinct native ELFs are retained as gzip payloads with all 12 original case bindings in artifact-references.json. Selected readable independent-review reports are also beside this report. The four generated fixture target caches were retired only after preserving those outputs; the separate cache receipt identifies the 2,026,016,181 apparent bytes removed and their original dev/inode custody. No kernel build cache was removed by that operation.
+
+Actual host identity is retained separately from selected embedded builder metadata. This evidence does not claim independent-host reproducibility, kernel boot, native HOS2 or hardware validation.

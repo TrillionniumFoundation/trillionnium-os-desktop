@@ -1,0 +1,71 @@
+{
+  "schema": 1,
+  "kind": "kernel_wrapper_lifecycle_host_fixtures_no_kernel_no_vm",
+  "source_commit": "4b3153079336ddea244c2ffecea1da0e006769b6",
+  "source_tree": "6860909e4645acdc9c4e0ed4f6eb215dac63d139",
+  "baseline": {
+    "SIGTERM": "Wrapper pidfd exited with-15; make/dummy child remained live, two TCP leases and inherited flock busy; owned fixture manifest was removed.",
+    "SIGINT": "After2seconds wrapper/make/dummy child remained live; TCP leases and lock busy; fixture manifest remained.",
+    "both_controlled_fixture_cleanups": "Every observed pidfd exited after only its owned anchored fixture group was terminated and reaped.",
+    "production_manifest_before_and_after_sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f"
+  },
+  "accepted_final": {
+    "new_supervisor_tests_passed_each_mode": 9,
+    "existing_wrapper_tests_passed_each_mode": 10,
+    "modes": [
+      "-I -B",
+      "-I -O -B"
+    ],
+    "failed": 0,
+    "real_signal_cases": [
+      "public SIGINT plus repeat TERM",
+      "public SIGTERM plus repeat TERM",
+      "normal successful worker with lingering TERM-ignoring child",
+      "INT then TERM before Popen returns",
+      "INT then TERM at normal cleanup first group signal"
+    ],
+    "other_cases": [
+      "explicit inherited debug worker route",
+      "GDB listener descriptor>=64 across public wrapper",
+      "no signals after normal reap",
+      "ECHILD permanently disarms group signals"
+    ]
+  },
+  "version_history": [
+    {
+      "label": "unchanged baseline",
+      "source": "692c9cf6ced7660304e2f94e31f034ab478830d6",
+      "result": "Actual direct TERM leak and INT hang reproduced."
+    },
+    {
+      "label": "first throw/IGN intermediate",
+      "source": "first-intermediate-source.json",
+      "result": "Initial9+10 passed both modes, but parent review rejected signal-handler transition windows; not accepted final."
+    },
+    {
+      "label": "cooperative preliminary",
+      "result": "9+10 passed both modes; logs retained, test-source hashes were not separately frozen at those instants; not final acceptance."
+    },
+    {
+      "label": "cooperative final",
+      "source": "4b3153079336ddea244c2ffecea1da0e006769b6",
+      "result": "9+10 passed both modes; exact four hashes frozen and readable seam observations retained."
+    }
+  ],
+  "fixed_source_check": {
+    "passed": true,
+    "checked_files": 118,
+    "errors": 0
+  },
+  "new_builds_or_VM_runs_in_this_package": 0,
+  "limits": [
+    "All workloads are host fixtures, no real Rust build or QEMU/kernel run in this subtask.",
+    "Public supervisor must receive cooperative INT/TERM to clean its private worker session; uncatchable SIGKILL cannot run cleanup.",
+    "Composed debug calls must use the explicit worker route so parent OwnedSession remains sole group owner.",
+    "Group cleanup assumes this supervisor is sole direct-leader reaper; ECHILD fails closed without numeric group guesses.",
+    "No /proc identity heuristics, subreaper, global process kills or core/OSTD changes."
+  ],
+  "patch_restorations": 3,
+  "raw_log_members": 81,
+  "new_source_copies_or_tool_binaries_in_package": false
+}

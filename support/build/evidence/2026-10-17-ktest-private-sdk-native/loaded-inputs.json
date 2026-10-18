@@ -1,0 +1,49 @@
+{
+  "inputs": [
+    {
+      "crate": "ostd",
+      "guest": "guest-001",
+      "option": "-kernel",
+      "qemu_record": "native-followup/ktest/run/ostd/guests/guest-001/qemu.json",
+      "actual_loaded_path": "/tmp/trillionnium-a01-private-sdk-N2/kernel/asterinas/target/osdk/ostd/ostd-osdk-bin.elf",
+      "captured_path": "loaded-inputs/ostd/guest-001/kernel",
+      "bytes": 1999216,
+      "sha256": "9a9990862b8541a4ccf5d833c96eb50fdca8fd4d1237c1a4d458ba8e2edaae75",
+      "capture_timing": "After root RUN DONE, before held worktree/target release; actual QEMU used original path, not this later evidence copy."
+    },
+    {
+      "crate": "ostd",
+      "guest": "guest-001",
+      "option": "-bios",
+      "qemu_record": "native-followup/ktest/run/ostd/guests/guest-001/qemu.json",
+      "actual_loaded_path": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/seabios/bios-256k.bin",
+      "captured_path": "loaded-inputs/ostd/guest-001/bios",
+      "bytes": 262144,
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "capture_timing": "After root RUN DONE, before held worktree/target release; actual QEMU used original path, not this later evidence copy."
+    },
+    {
+      "crate": "aster-core",
+      "guest": "guest-001",
+      "option": "-kernel",
+      "qemu_record": "native-followup/ktest/run/aster-core/guests/guest-001/qemu.json",
+      "actual_loaded_path": "/tmp/trillionnium-a01-private-sdk-N2/kernel/asterinas/target/osdk/aster-core/aster-core-osdk-bin.elf",
+      "captured_path": "loaded-inputs/aster-core/guest-001/kernel",
+      "bytes": 6513384,
+      "sha256": "e5cacb6001427f57c3943d9b05f948bf5c308f21c7bad554d024d12daebc32f9",
+      "capture_timing": "After root RUN DONE, before held worktree/target release; actual QEMU used original path, not this later evidence copy."
+    },
+    {
+      "crate": "aster-core",
+      "guest": "guest-001",
+      "option": "-bios",
+      "qemu_record": "native-followup/ktest/run/aster-core/guests/guest-001/qemu.json",
+      "actual_loaded_path": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/seabios/bios-256k.bin",
+      "captured_path": "loaded-inputs/aster-core/guest-001/bios",
+      "bytes": 262144,
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "capture_timing": "After root RUN DONE, before held worktree/target release; actual QEMU used original path, not this later evidence copy."
+    }
+  ],
+  "immutable_or_snapshot_execution_claimed": false
+}

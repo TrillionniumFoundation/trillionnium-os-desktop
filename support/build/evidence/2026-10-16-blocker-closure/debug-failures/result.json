@@ -1,0 +1,117 @@
+{
+  "all_complete_pass_claims": false,
+  "attempts": [
+    {
+      "actual_tool": {
+        "completion": "immediate exit",
+        "exit_code": 1,
+        "provenance": "root agent supplied actual-tool completion observation; subprocess exit also retained in controller result.json",
+        "scope": "one outer exec contained cache cleanup and controller invocation; no standalone debug session",
+        "session_id": null
+      },
+      "attempt": "debug1",
+      "controller_directory": "raw/debug1-controller",
+      "controller_script": "controllers/run-validation-attempt1.py",
+      "failure": "GDB executable absent from selected PATH; runner required GDB and nm",
+      "overall_exit_code": 1,
+      "passed": false,
+      "real_qemu_started": false,
+      "run_directory": "raw/debug1-run",
+      "stage": "prepare"
+    },
+    {
+      "actual_tool": {
+        "completion": "session completed",
+        "exit_code": 1,
+        "provenance": "root agent supplied actual-tool completion observation; subprocess exit also retained in controller result.json",
+        "session_id": 47050
+      },
+      "all_owned_sessions_reaped": true,
+      "attempt": "debug2",
+      "complete_serial_retained": true,
+      "controller_directory": "raw/debug2-controller",
+      "controller_script": "controllers/run-validation.py",
+      "driver_exit_code": 1,
+      "entry_address": "0xffffffff88422f10",
+      "entry_bytes": "50e8ea35f2ff48c7c7e0565488e81e49060048c7c000105f8848c7c178165f88",
+      "failure": "kernel driver/live artifact checker rejected -kernel path size/SHA256 mismatch after GDB detach",
+      "gdb_exit_code": 0,
+      "initramfs_full_bytes_retained": true,
+      "live_boot_validation_pass_claimed": false,
+      "original_boot_metadata": {
+        "path": "/workspace/scratch/ae1a8cf05419/a01-next9-native/kernel/asterinas/target/osdk/asterinas/asterinas-osdk-bin.elf",
+        "sha256": "fbe81c0e2deae705d61d77ccaaf604e2bf1ca30e4541de71d263af6ecc62ec1b",
+        "size": 5975720
+      },
+      "original_full_boot_bytes_retained": false,
+      "overall_exit_code": 1,
+      "owned_sessions_reaped": 5,
+      "passed": false,
+      "post_failure_foreign_manifest_observation": {
+        "bytes": 1019,
+        "differs_from_custody_cleanup_owned_inode": true,
+        "inode": 1590194,
+        "path": "artifacts/debug2-foreign-kernel-OSDK.toml",
+        "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f",
+        "writer": "unknown"
+      },
+      "post_failure_public_boot_path_observation": {
+        "bytes": 8266576,
+        "full_bytes_copied": false,
+        "role": "later pathname occupant; not archived original debug2 boot ELF",
+        "sha256": "d90ebc3210e74271252a6d1f75ca22a16a569a8b48a99805d30d3d99124b9306",
+        "writer": "unknown"
+      },
+      "qemu_raw_exit_code": 33,
+      "qemu_timed_out": false,
+      "real_qemu_started": true,
+      "release_compilation_log": "raw/debug2-run/kernel-driver.log",
+      "release_compilation_observed": true,
+      "retained_symbol_entry_32_bytes_match_gdb": true,
+      "run_directory": "raw/debug2-run",
+      "runtime_entry_32_bytes_match_recorded_symbol_and_boot_entry": true,
+      "rust_entry_hit": true,
+      "serial_bytes": 72303,
+      "serial_sha256": "edd1fd74c93fca6ffadd7e9dcae602789aa93c759cca7c9a8d12c2dc55978ff0",
+      "stage": "boot_after_detach",
+      "symbol_artifact_retained": {
+        "gzip_bytes": 26991145,
+        "gzip_sha256": "4a8d2ea94b3237d211adf14e9230984a1ab80a0de824fe43a76d179193e54b70",
+        "path": "artifacts/debug2-symbol.elf.gz",
+        "raw_bytes": 111689912,
+        "raw_sha256": "06c320f0799d4f8afcb610046dceae64b3cc9885aa64537bc24ce0219c67eaf3"
+      }
+    }
+  ],
+  "capture_scope": "read-only copies and stable FD observations; no code, manifest, target mutation or rebuild by archiver",
+  "denominator": {
+    "actual_qemu_guests": 1,
+    "actual_qemu_guests_with_raw33": 1,
+    "complete_debug_validation_passes": 0,
+    "controller_attempts": 2,
+    "controller_failed": 2,
+    "controller_passed": 0,
+    "successful_gdb_entry_observations": 1
+  },
+  "original_full_debug2_boot_bytes_not_reconstructed": true,
+  "schema": 1,
+  "source_commit": "071dd8edcd2a3cf9b33dbbeab713428317b9b76c",
+  "source_tree": "5268494bc732e2f39b319248ec4a4dc1705d8d75",
+  "status": "failed_attempts_retained",
+  "storage": {
+    "chunk_count": 13,
+    "current_symbol_manifest": "artifacts/symbol-storage.json",
+    "current_symbol_reassembler": "artifacts/reassemble-symbol.py",
+    "elf_bytes": 111689912,
+    "elf_sha256": "06c320f0799d4f8afcb610046dceae64b3cc9885aa64537bc24ce0219c67eaf3",
+    "gzip_bytes": 26991145,
+    "gzip_sha256": "4a8d2ea94b3237d211adf14e9230984a1ab80a0de824fe43a76d179193e54b70",
+    "historical_path_is_no_longer_current_repo_storage": true,
+    "historical_single_file_path_in_capture_facts": "artifacts/debug2-symbol.elf.gz",
+    "migration_receipt": "artifacts/storage-migration.json"
+  },
+  "unknowns": [
+    "writer and exact timing of public artifact replacement",
+    "writer and exact timing of later foreign manifest pathname occupancy"
+  ]
+}

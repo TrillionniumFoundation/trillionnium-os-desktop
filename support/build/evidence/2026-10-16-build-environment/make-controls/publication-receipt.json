@@ -1,0 +1,299 @@
+{
+  "phase": "next9",
+  "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+  "branch": "agents/A01-asterinas-boot",
+  "local_commit": "6b68e196fc95c7da7159e464dd5b2f2a50d136f3",
+  "local_parent": "b1a15d9afc456346410af658d2164ee5fa085656",
+  "remote_commit": "ff040c6d5afbc4e26a249022093b8090181f6176",
+  "tree": "eb16c5ef5fe8adf3a9249e19a7674cec7b2e359f",
+  "ordered_parents": [
+    "74ee9b3d62dc85f272681c5caed3a9c328e38539"
+  ],
+  "message": "Protect pinned builds from inherited make modes and encoded Rust flags",
+  "changed_paths": [
+    {
+      "path": "support/build/README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8587096fe36ca59da6684cda5156ea25ad6921ce"
+    },
+    {
+      "path": "support/build/kernel.sh",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "a1911971821c9fad4d444f04426fda8e83a93898"
+    },
+    {
+      "path": "support/build/ktest/README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4055fefba15306e4fcaebf6dc487c73f80015784"
+    },
+    {
+      "path": "support/build/ktest/run.py",
+      "mode": "100755",
+      "type": "blob",
+      "sha": "e3438cac9f232340ee6fffe3fbe6de20f39c13cd"
+    },
+    {
+      "path": "support/build/ktest/test_runner_lifecycle.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "93042acdef20119310f7011035d4ce50631092c9"
+    },
+    {
+      "path": "support/build/tests/test_kernel_runner.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d1219b470b3c5fdc49ea57e59ba9e0cccce798b5"
+    }
+  ],
+  "expected_previous_head": "74ee9b3d62dc85f272681c5caed3a9c328e38539",
+  "force": false,
+  "remote_git_tree_parents_message_verified": true,
+  "all_6_uploaded_blob_sha_verified": true,
+  "all_6_remote_paths_mode_type_sha_readback_verified": true,
+  "remote_recursive_tree_entries": 7065,
+  "remote_recursive_tree_truncated": false,
+  "branch_head_readback": "ff040c6d5afbc4e26a249022093b8090181f6176",
+  "no_local_git_mutation_performed": true,
+  "no_pr_mutation_performed": true,
+  "read_only_committed_git_objects": true,
+  "uncommitted_wip_not_read": true,
+  "main_merge_performed": false,
+  "validation_reported_by_root": {
+    "host_executions": 112,
+    "python_modes": [
+      "-I",
+      "-I -O"
+    ],
+    "runner_tests_each_mode": 30,
+    "supervisor_tests_each_mode": 9,
+    "ktest_tests_each_mode": 17,
+    "original_red_assertion_failures": 9,
+    "real_gnu_make_regressions_passed": true,
+    "encoded_rustflags_presence_rejected": true,
+    "bash_syntax_exit_code": 0,
+    "diff_check_exit_code": 0,
+    "root_readme_bytes": 0,
+    "verification_receipt": "/workspace/scratch/ae1a8cf05419/next9-code-verification.json",
+    "real_kernel_build_pending": true
+  },
+  "publications": [
+    {
+      "phase": "next9-main-source-sync",
+      "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+      "branch": "agents/A01-asterinas-boot",
+      "local_commit": "b1a15d9afc456346410af658d2164ee5fa085656",
+      "remote_commit": "74ee9b3d62dc85f272681c5caed3a9c328e38539",
+      "tree": "73b34b91910852917d4c6bea020c8b4dc1e62e10",
+      "ordered_parents": [
+        "79d7f0530f08237ab2581d70d44fe59130eced8b",
+        "3b2d15bc987e7ca78e64fa54edffb2177b8abde0"
+      ],
+      "message": "Merge remote-tracking branch 'origin/main' into agents/A01-asterinas-boot",
+      "changed_paths": [
+        {
+          "path": "libs/os-abi/src/lib.rs",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "7c8b4b72a2eec365dac4875a27789cb374f9a254"
+        },
+        {
+          "path": "libs/os-abi/tests/golden_vectors.rs",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "b6ee5929b7bea1c8de32e7411964327f9716a31c"
+        },
+        {
+          "path": "libs/os-abi/tests/negative_vectors.rs",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "54dd76f00e3e6da1158db658d072a5b5dfa8c583"
+        },
+        {
+          "path": "libs/os-abi/tests/transport_vectors.rs",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "7483e7b78bd61ca3a7bd90cfc5dce123e40e0502"
+        },
+        {
+          "path": "tests/abi/A02_ACCEPTANCE_2026-10-16.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "1ae13b085c4fc60f74a75a4a8fdda4cccd09f967"
+        },
+        {
+          "path": "tests/abi/A02_PR65_EXECUTION_2026-10-16.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "c5e454da69de228820e1af903b5dde3cc8c72161"
+        },
+        {
+          "path": "tests/abi/results/host-acceptance-2026-10-16.json",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "349cd9ab961157e1238e4f8fe34d2d94e06e1056"
+        },
+        {
+          "path": "tests/abi/results/rust-source-mutations-2026-10-16.json",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "35658999e800a7c1a6aea7266c8a8ee0034fd2dc"
+        },
+        {
+          "path": "tests/abi/run_rust_mutations.py",
+          "mode": "100755",
+          "type": "blob",
+          "sha": "e2171ccfa1d94e35198929c40c9e08820d1eb1ad"
+        },
+        {
+          "path": "tests/abi/test_dense_boundaries.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "5337f41a65f529a1c8d8668ecf3d1f17b1759067"
+        },
+        {
+          "path": "tests/abi/test_golden_contract.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "5beefaa50a078cabe4772c8a531656a20549001f"
+        },
+        {
+          "path": "tests/abi/test_mutations.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "19ed1f5498ad13a6facb7d48cee80296f540b8a3"
+        },
+        {
+          "path": "tests/abi/test_transport32_contract.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "5bd9178b66734fa3fb81b39ff5d4f258b7ce93ab"
+        },
+        {
+          "path": "tests/golden/generate_transport32.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "b7c0119ef2f638cd9461f86e7e493cd0187f15dd"
+        },
+        {
+          "path": "tests/golden/transport32.hex",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "ef801c3df5354faca677094e483f8ca8bc3de5f1"
+        }
+      ],
+      "expected_previous_head": "79d7f0530f08237ab2581d70d44fe59130eced8b",
+      "force": false,
+      "remote_git_tree_parents_message_verified": true,
+      "all_15_remote_paths_mode_type_sha_readback_verified": true,
+      "remote_recursive_tree_entries": 7065,
+      "remote_recursive_tree_truncated": false,
+      "branch_head_readback": "74ee9b3d62dc85f272681c5caed3a9c328e38539",
+      "no_local_git_mutation_performed": true,
+      "no_pr_mutation_performed": true,
+      "read_only_committed_git_objects": true,
+      "uncommitted_wip_not_read": true,
+      "main_merge_performed": false,
+      "validation_reported_by_root": {
+        "rust_passed": 39,
+        "python_passed": 28,
+        "fmt_exit_code": 0,
+        "hos2_golden_vectors": 12,
+        "transport32_golden_passed": 1,
+        "fixed_source_checks_passed": 118,
+        "root_readme_bytes": 0,
+        "clippy_exit_code": 101,
+        "clippy_blockers": [
+          "libs/os-abi/tests/mutation_kill.rs:21 chunks_exact_to_as_chunks",
+          "libs/os-abi/tests/transport_vectors.rs:14 chunks_exact_to_as_chunks"
+        ],
+        "owner_source_not_modified": true,
+        "all_green_claimed": false
+      }
+    },
+    {
+      "phase": "next9-build-input-isolation",
+      "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+      "branch": "agents/A01-asterinas-boot",
+      "local_commit": "6b68e196fc95c7da7159e464dd5b2f2a50d136f3",
+      "local_parent": "b1a15d9afc456346410af658d2164ee5fa085656",
+      "remote_commit": "ff040c6d5afbc4e26a249022093b8090181f6176",
+      "tree": "eb16c5ef5fe8adf3a9249e19a7674cec7b2e359f",
+      "ordered_parents": [
+        "74ee9b3d62dc85f272681c5caed3a9c328e38539"
+      ],
+      "message": "Protect pinned builds from inherited make modes and encoded Rust flags",
+      "changed_paths": [
+        {
+          "path": "support/build/README.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "8587096fe36ca59da6684cda5156ea25ad6921ce"
+        },
+        {
+          "path": "support/build/kernel.sh",
+          "mode": "100755",
+          "type": "blob",
+          "sha": "a1911971821c9fad4d444f04426fda8e83a93898"
+        },
+        {
+          "path": "support/build/ktest/README.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "4055fefba15306e4fcaebf6dc487c73f80015784"
+        },
+        {
+          "path": "support/build/ktest/run.py",
+          "mode": "100755",
+          "type": "blob",
+          "sha": "e3438cac9f232340ee6fffe3fbe6de20f39c13cd"
+        },
+        {
+          "path": "support/build/ktest/test_runner_lifecycle.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "93042acdef20119310f7011035d4ce50631092c9"
+        },
+        {
+          "path": "support/build/tests/test_kernel_runner.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "d1219b470b3c5fdc49ea57e59ba9e0cccce798b5"
+        }
+      ],
+      "expected_previous_head": "74ee9b3d62dc85f272681c5caed3a9c328e38539",
+      "force": false,
+      "remote_git_tree_parents_message_verified": true,
+      "all_6_uploaded_blob_sha_verified": true,
+      "all_6_remote_paths_mode_type_sha_readback_verified": true,
+      "remote_recursive_tree_entries": 7065,
+      "remote_recursive_tree_truncated": false,
+      "branch_head_readback": "ff040c6d5afbc4e26a249022093b8090181f6176",
+      "no_local_git_mutation_performed": true,
+      "no_pr_mutation_performed": true,
+      "read_only_committed_git_objects": true,
+      "uncommitted_wip_not_read": true,
+      "main_merge_performed": false,
+      "validation_reported_by_root": {
+        "host_executions": 112,
+        "python_modes": [
+          "-I",
+          "-I -O"
+        ],
+        "runner_tests_each_mode": 30,
+        "supervisor_tests_each_mode": 9,
+        "ktest_tests_each_mode": 17,
+        "original_red_assertion_failures": 9,
+        "real_gnu_make_regressions_passed": true,
+        "encoded_rustflags_presence_rejected": true,
+        "bash_syntax_exit_code": 0,
+        "diff_check_exit_code": 0,
+        "root_readme_bytes": 0,
+        "verification_receipt": "/workspace/scratch/ae1a8cf05419/next9-code-verification.json",
+        "real_kernel_build_pending": true
+      }
+    }
+  ]
+}

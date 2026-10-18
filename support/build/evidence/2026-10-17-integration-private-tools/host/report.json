@@ -1,0 +1,170 @@
+{
+  "schema": 1,
+  "kind": "OSDK_private_host_tool_selection_host_regressions_only",
+  "baseline_commit": "30851677a3b2011789e452d99376bfac2d0bbfd9",
+  "fixed_source_binding": "Per-file SHA256; root publishes the five-file code commit before final acceptance packet",
+  "sources": {
+    "support/build/osdk-integration/record-qemu.py": {
+      "baseline_sha256": "975249776d9b08e0894b1112f876da0975825193215a3e6b88e1045895d3b504",
+      "fixed_sha256": "da6b336aa83a9067f336125aaab2decb8c20970d6ebac6a6921c8da8e2ae1446",
+      "new_file": false,
+      "changed": true
+    },
+    "support/build/osdk-integration/run.py": {
+      "baseline_sha256": "180c02c80c6beb4bab50016c356bb52c43175122fec13195db022186328f1060",
+      "fixed_sha256": "ea23d6278d429873d91f9469a9505a9f6768bcacdb41f22c0aae1e7e5135e3a9",
+      "new_file": false,
+      "changed": true
+    },
+    "support/build/osdk-integration/README.md": {
+      "baseline_sha256": "1dee8ff41341a5a0c433865696b1d3d9f6a6e14ce9f9238f02da92429b15bffe",
+      "fixed_sha256": "5a897e1649e5b3d7982ea007eceb1c39531f005246dc9a20f39c90293ab060cd",
+      "new_file": false,
+      "changed": true
+    },
+    "support/build/osdk-integration/test_capture_lifecycle.py": {
+      "baseline_sha256": "3e682cd4c069bb809dde226510158eac0234aa000f9413534fe42f86a0c5ce64",
+      "fixed_sha256": "4aa14e956d2f38b44d0117389da7f70491e60deda2de0a8e1d0056788ee94648",
+      "new_file": false,
+      "changed": true
+    },
+    "support/build/osdk-integration/test_private_tools.py": {
+      "baseline_sha256": null,
+      "fixed_sha256": "9f99ba46532e9131a77c86f14dc1e55a28fa788f054ff657a705fa6ededbd017",
+      "new_file": true,
+      "changed": true
+    },
+    "support/build/record-qemu.py": {
+      "baseline_sha256": "387845415b54f1822c55ce4198586fae8047f7d3ea94008c84e0974871954098",
+      "fixed_sha256": "387845415b54f1822c55ce4198586fae8047f7d3ea94008c84e0974871954098",
+      "new_file": false,
+      "changed": false
+    },
+    "support/build/osdk-integration/test_record_qemu.py": {
+      "baseline_sha256": "780de328f13217d8146171c08e107002e401e3229a1e43e594a3f1b70b9180c8",
+      "fixed_sha256": "780de328f13217d8146171c08e107002e401e3229a1e43e594a3f1b70b9180c8",
+      "new_file": false,
+      "changed": false
+    }
+  },
+  "suites": [
+    {
+      "phase": "red",
+      "mode": "I",
+      "test_methods": 1,
+      "returncode": 1,
+      "invocation": "raw/red/I/invocation.json",
+      "console": "raw/red/I/console.log"
+    },
+    {
+      "phase": "red",
+      "mode": "IO",
+      "test_methods": 1,
+      "returncode": 1,
+      "invocation": "raw/red/IO/invocation.json",
+      "console": "raw/red/IO/console.log"
+    },
+    {
+      "phase": "targeted",
+      "mode": "I",
+      "test_methods": 6,
+      "returncode": 0,
+      "invocation": "raw/targeted/I/invocation.json",
+      "console": "raw/targeted/I/console.log"
+    },
+    {
+      "phase": "targeted",
+      "mode": "IO",
+      "test_methods": 6,
+      "returncode": 0,
+      "invocation": "raw/targeted/IO/invocation.json",
+      "console": "raw/targeted/IO/console.log"
+    },
+    {
+      "phase": "full",
+      "mode": "I",
+      "test_methods": 131,
+      "returncode": 0,
+      "invocation": "raw/full/I/invocation.json",
+      "console": "raw/full/I/console.log"
+    },
+    {
+      "phase": "full",
+      "mode": "IO",
+      "test_methods": 131,
+      "returncode": 0,
+      "invocation": "raw/full/IO/invocation.json",
+      "console": "raw/full/IO/console.log"
+    }
+  ],
+  "counts": {
+    "expected_red_assertion_failures": 2,
+    "targeted_new_methods_each_mode": 6,
+    "targeted_preflight_executions_separate_from_full_suite": 12,
+    "full_integration_host_methods_each_mode": 131,
+    "full_host_test_method_executions_passed": 262,
+    "new_upstream22_guest_matrix_executions": 0,
+    "new_Rust_or_Cargo_builds": 0
+  },
+  "unchanged_previous_recorder_helpers_AST": [
+    "file_record",
+    "qemu_options",
+    "transform_args",
+    "reserve_guest",
+    "local_tcp_controls",
+    "inherit_monitor_socket",
+    "reserve_gdb_listener",
+    "coverage_symbol",
+    "stop_capture_child",
+    "supervise_capture",
+    "run_capture",
+    "finalize_capture",
+    "tee_stream"
+  ],
+  "actual_private_CLI_positive_observations": [
+    {
+      "mode": "I",
+      "actual_CLI_returncode": 33,
+      "host_default_BIOS_absent": true,
+      "selected_BIOS_path": "/workspace/scratch/ae1a8cf05419/integration-private-tools/full/I/private-fixtures/test_private_environment_reaches_unmodified_cli_with_spaces_and_missing_requested_bios/private tools with spaces/firmware chosen.bin",
+      "selected_data_path": "/workspace/scratch/ae1a8cf05419/integration-private-tools/full/I/private-fixtures/test_private_environment_reaches_unmodified_cli_with_spaces_and_missing_requested_bios/private tools with spaces/qemu data",
+      "shared_selector_sha256": "387845415b54f1822c55ce4198586fae8047f7d3ea94008c84e0974871954098",
+      "raw_observation": "raw/full/I/private-fixtures/test_private_environment_reaches_unmodified_cli_with_spaces_and_missing_requested_bios/invocation-001.json"
+    },
+    {
+      "mode": "IO",
+      "actual_CLI_returncode": 33,
+      "host_default_BIOS_absent": true,
+      "selected_BIOS_path": "/workspace/scratch/ae1a8cf05419/integration-private-tools/full/IO/private-fixtures/test_private_environment_reaches_unmodified_cli_with_spaces_and_missing_requested_bios/private tools with spaces/firmware chosen.bin",
+      "selected_data_path": "/workspace/scratch/ae1a8cf05419/integration-private-tools/full/IO/private-fixtures/test_private_environment_reaches_unmodified_cli_with_spaces_and_missing_requested_bios/private tools with spaces/qemu data",
+      "shared_selector_sha256": "387845415b54f1822c55ce4198586fae8047f7d3ea94008c84e0974871954098",
+      "raw_observation": "raw/full/IO/private-fixtures/test_private_environment_reaches_unmodified_cli_with_spaces_and_missing_requested_bios/invocation-001.json"
+    }
+  ],
+  "shared_selection_contract": [
+    "Apply original transform_args unchanged before shared selectors",
+    "Compile exact parent normal-recorder source bytes and retain matching SHA256",
+    "Default FIRMWARE remains original integration constant and test monkeypatch still works",
+    "Both env selections precede any QEMU version probe or execution",
+    "Actual BIOS artifact is hashed from selected argv path",
+    "Explicit data directory plus any requested -L rejects, including duplicates; unset parser behavior unchanged",
+    "Shared dependency included in runner input hash table and lifecycle fixture closure"
+  ],
+  "independent_review": "raw/independent-review/REPORT.md",
+  "limits": [
+    "Executable fake-QEMU fixtures prove CLI/selection/guard mechanics only, not a guest boot",
+    "Full host suite includes native GDB lease lifecycle fixtures, not project kernel GDB acceptance",
+    "Default original UNIX transport is preserved; no automatic switch to TCP or coverage",
+    "Only select_bios/select_data_directory are reused; integration file_record retains its existing path-read semantics rather than normal recorder artifact snapshots",
+    "Original finite parser behavior and unknown option handling are unchanged; this change is not a general QEMU sandbox"
+  ],
+  "raw_policy": {
+    "regular_members_only": true,
+    "exclude": [
+      "__pycache__",
+      "*.pyc",
+      "symlink dereferencing"
+    ],
+    "absolute_paths_in_logs_preserved": true
+  }
+}

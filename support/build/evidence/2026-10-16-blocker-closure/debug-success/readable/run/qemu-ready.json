@@ -1,0 +1,194 @@
+{
+  "requested_qemu_args": [
+    "-kernel",
+    "/workspace/scratch/ae1a8cf05419/a01-next9-native/kernel/asterinas/target/osdk/asterinas/asterinas-osdk-bin.elf",
+    "-initrd",
+    "/workspace/scratch/ae1a8cf05419/a01-next9-native/support/build/out/closure-debug-03/boot/initramfs.cpio.gz",
+    "-append",
+    "earlycon console=ttyS0 console=ttyS0 console=ttyS0 loglevel=info loglevel=info loglevel=info SHELL=/bin/sh SHELL=/bin/sh LOGNAME=root LOGNAME=root HOME=/ HOME=/ USER=root USER=root PATH=/bin:/sbin PATH=/bin:/sbin --",
+    "-machine",
+    "q35",
+    "-accel",
+    "tcg",
+    "-cpu",
+    "max",
+    "-bios",
+    "/usr/share/seabios/bios-256k.bin",
+    "-m",
+    "512M",
+    "-smp",
+    "1",
+    "-nodefaults",
+    "-no-user-config",
+    "-no-reboot",
+    "-nographic",
+    "-display",
+    "none",
+    "-monitor",
+    "none",
+    "-serial",
+    "chardev:serial",
+    "-chardev",
+    "stdio,id=serial,signal=off,logfile=qemu.log",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04",
+    "-gdb",
+    "tcp:127.0.0.1:40603",
+    "-S"
+  ],
+  "cwd": "/workspace/scratch/ae1a8cf05419/a01-next9-native/kernel/asterinas/kernel",
+  "artifacts": {
+    "-kernel": {
+      "path": "/workspace/scratch/ae1a8cf05419/a01-next9-native/support/build/out/closure-debug-03/boot/artifacts-g0lyeygd/kernel.elf",
+      "size": 5975720,
+      "sha256": "fbe81c0e2deae705d61d77ccaaf604e2bf1ca30e4541de71d263af6ecc62ec1b",
+      "stat": {
+        "dev": 27,
+        "ino": 1731341,
+        "mode": 33024,
+        "size": 5975720,
+        "mtime_ns": 1792168052107308395,
+        "ctime_ns": 1792168052107308395
+      },
+      "source": {
+        "requested_path": "/workspace/scratch/ae1a8cf05419/a01-next9-native/kernel/asterinas/target/osdk/asterinas/asterinas-osdk-bin.elf",
+        "path": "/workspace/scratch/ae1a8cf05419/a01-next9-native/kernel/asterinas/target/osdk/asterinas/asterinas-osdk-bin.elf",
+        "size": 5975720,
+        "sha256": "fbe81c0e2deae705d61d77ccaaf604e2bf1ca30e4541de71d263af6ecc62ec1b",
+        "stat": {
+          "dev": 27,
+          "ino": 1589742,
+          "mode": 33261,
+          "size": 5975720,
+          "mtime_ns": 1792168052059591673,
+          "ctime_ns": 1792168052059645612
+        }
+      },
+      "creation": "exclusive xb; no overwrite or source-path fallback"
+    },
+    "-initrd": {
+      "path": "/workspace/scratch/ae1a8cf05419/a01-next9-native/support/build/out/closure-debug-03/boot/artifacts-g0lyeygd/initramfs.cpio.gz",
+      "size": 1107990,
+      "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "stat": {
+        "dev": 27,
+        "ino": 1731342,
+        "mode": 33024,
+        "size": 1107990,
+        "mtime_ns": 1792168052118265672,
+        "ctime_ns": 1792168052118265672
+      },
+      "source": {
+        "requested_path": "/workspace/scratch/ae1a8cf05419/a01-next9-native/support/build/out/closure-debug-03/boot/initramfs.cpio.gz",
+        "path": "/workspace/scratch/ae1a8cf05419/a01-next9-native/support/build/out/closure-debug-03/boot/initramfs.cpio.gz",
+        "size": 1107990,
+        "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+        "stat": {
+          "dev": 27,
+          "ino": 1731327,
+          "mode": 33188,
+          "size": 1107990,
+          "mtime_ns": 1792168051569284544,
+          "ctime_ns": 1792168051991309748
+        }
+      },
+      "creation": "exclusive xb; no overwrite or source-path fallback"
+    },
+    "-bios": {
+      "path": "/workspace/scratch/ae1a8cf05419/a01-next9-native/support/build/out/closure-debug-03/boot/artifacts-g0lyeygd/bios.bin",
+      "size": 262144,
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "stat": {
+        "dev": 27,
+        "ino": 1731343,
+        "mode": 33024,
+        "size": 262144,
+        "mtime_ns": 1792168052120030567,
+        "ctime_ns": 1792168052120030567
+      },
+      "source": {
+        "requested_path": "/usr/share/seabios/bios-256k.bin",
+        "path": "/usr/share/seabios/bios-256k.bin",
+        "size": 262144,
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+        "stat": {
+          "dev": 27,
+          "ino": 1844444,
+          "mode": 33188,
+          "size": 262144,
+          "mtime_ns": 1701364826000000000,
+          "ctime_ns": 1792135136289681470
+        }
+      },
+      "creation": "exclusive xb; no overwrite or source-path fallback"
+    }
+  },
+  "raw_exit_code": null,
+  "timed_out": false,
+  "stage": "qemu_running",
+  "snapshot_directory": {
+    "path": "/workspace/scratch/ae1a8cf05419/a01-next9-native/support/build/out/closure-debug-03/boot/artifacts-g0lyeygd",
+    "stat": {
+      "dev": 27,
+      "ino": 1731340,
+      "mode": 16832,
+      "size": 4096,
+      "mtime_ns": 1792168052091308581,
+      "ctime_ns": 1792168052091308581
+    },
+    "ownership": "new private mkdtemp directory; retained as evidence"
+  },
+  "argv": [
+    "/usr/bin/qemu-system-x86_64",
+    "-kernel",
+    "/workspace/scratch/ae1a8cf05419/a01-next9-native/support/build/out/closure-debug-03/boot/artifacts-g0lyeygd/kernel.elf",
+    "-initrd",
+    "/workspace/scratch/ae1a8cf05419/a01-next9-native/support/build/out/closure-debug-03/boot/artifacts-g0lyeygd/initramfs.cpio.gz",
+    "-append",
+    "earlycon console=ttyS0 console=ttyS0 console=ttyS0 loglevel=info loglevel=info loglevel=info SHELL=/bin/sh SHELL=/bin/sh LOGNAME=root LOGNAME=root HOME=/ HOME=/ USER=root USER=root PATH=/bin:/sbin PATH=/bin:/sbin --",
+    "-machine",
+    "q35",
+    "-accel",
+    "tcg",
+    "-cpu",
+    "max",
+    "-bios",
+    "/workspace/scratch/ae1a8cf05419/a01-next9-native/support/build/out/closure-debug-03/boot/artifacts-g0lyeygd/bios.bin",
+    "-m",
+    "512M",
+    "-smp",
+    "1",
+    "-nodefaults",
+    "-no-user-config",
+    "-no-reboot",
+    "-nographic",
+    "-display",
+    "none",
+    "-monitor",
+    "none",
+    "-serial",
+    "chardev:serial",
+    "-chardev",
+    "stdio,id=serial,signal=off,logfile=qemu.log",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04",
+    "-gdb",
+    "chardev:a01-kernel-gdb",
+    "-S",
+    "-chardev",
+    "socket,id=a01-kernel-gdb,fd=64,server=on,wait=off"
+  ],
+  "shell_command": "/usr/bin/qemu-system-x86_64 -kernel /workspace/scratch/ae1a8cf05419/a01-next9-native/support/build/out/closure-debug-03/boot/artifacts-g0lyeygd/kernel.elf -initrd /workspace/scratch/ae1a8cf05419/a01-next9-native/support/build/out/closure-debug-03/boot/artifacts-g0lyeygd/initramfs.cpio.gz -append 'earlycon console=ttyS0 console=ttyS0 console=ttyS0 loglevel=info loglevel=info loglevel=info SHELL=/bin/sh SHELL=/bin/sh LOGNAME=root LOGNAME=root HOME=/ HOME=/ USER=root USER=root PATH=/bin:/sbin PATH=/bin:/sbin --' -machine q35 -accel tcg -cpu max -bios /workspace/scratch/ae1a8cf05419/a01-next9-native/support/build/out/closure-debug-03/boot/artifacts-g0lyeygd/bios.bin -m 512M -smp 1 -nodefaults -no-user-config -no-reboot -nographic -display none -monitor none -serial chardev:serial -chardev stdio,id=serial,signal=off,logfile=qemu.log -device isa-debug-exit,iobase=0xf4,iosize=0x04 -gdb chardev:a01-kernel-gdb -S -chardev socket,id=a01-kernel-gdb,fd=64,server=on,wait=off",
+  "qemu_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+  "gdb_listener": {
+    "fd": 64,
+    "address": [
+      "127.0.0.1",
+      40603
+    ],
+    "ownership": "inherited listening FD; no port rebind"
+  },
+  "qemu_version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)\nCopyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers",
+  "serial_path": "/workspace/scratch/ae1a8cf05419/a01-next9-native/kernel/asterinas/kernel/qemu.log",
+  "qemu_pid": 285
+}

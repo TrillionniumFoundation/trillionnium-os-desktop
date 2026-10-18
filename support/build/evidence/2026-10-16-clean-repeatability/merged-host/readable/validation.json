@@ -1,0 +1,347 @@
+{
+  "source_commit": "81d3080908292a0dc206f047de36b9e27bf68a73",
+  "source_tree": "48d1c43cb77706870cd431a7cc4cecb0f73f3254",
+  "executed_tests": [
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/abi",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/next8-merged-host/source",
+      "environment_overrides": {
+        "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+        "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+        "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+        "RUSTUP_AUTO_INSTALL": "0",
+        "CARGO_NET_OFFLINE": "true",
+        "CARGO_BUILD_JOBS": "2",
+        "PATH": "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin:/root/.codex/tmp/arg0/codex-arg0XJwRso:/opt/codex/codex-path:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback"
+      },
+      "exit_code": 0,
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "duration_seconds": 0.061,
+      "log": "abi-python.log",
+      "log_sha256": "504e44c9c10cbf8e5af837e5f442ce5e14e6a8d2ee9df53e2bd84d5514e34f3b",
+      "log_bytes": 2950,
+      "rust_test_summaries": [],
+      "python_test_summary": {
+        "count": 19,
+        "result": "OK"
+      }
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-B",
+        "tests/golden/generate_hos2.py",
+        "--check"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/next8-merged-host/source",
+      "environment_overrides": {
+        "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+        "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+        "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+        "RUSTUP_AUTO_INSTALL": "0",
+        "CARGO_NET_OFFLINE": "true",
+        "CARGO_BUILD_JOBS": "2",
+        "PATH": "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin:/root/.codex/tmp/arg0/codex-arg0XJwRso:/opt/codex/codex-path:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback"
+      },
+      "exit_code": 0,
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "duration_seconds": 0.0408,
+      "log": "golden-check.log",
+      "log_sha256": "6cf7dd416aecd1d872d3fad5f2bfce2a82f9d8b7709b7dc73a5037fdd1989366",
+      "log_bytes": 32,
+      "rust_test_summaries": []
+    },
+    {
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin/cargo",
+        "+nightly-2026-07-21",
+        "test",
+        "--offline",
+        "--jobs",
+        "2",
+        "--manifest-path",
+        "libs/os-abi/Cargo.toml",
+        "--target-dir",
+        "/workspace/scratch/ae1a8cf05419/next8-merged-host/target-os-abi"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/next8-merged-host/source",
+      "environment_overrides": {
+        "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+        "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+        "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+        "RUSTUP_AUTO_INSTALL": "0",
+        "CARGO_NET_OFFLINE": "true",
+        "CARGO_BUILD_JOBS": "2",
+        "PATH": "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin:/root/.codex/tmp/arg0/codex-arg0XJwRso:/opt/codex/codex-path:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback"
+      },
+      "exit_code": 0,
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "duration_seconds": 0.8288,
+      "log": "abi-rust.log",
+      "log_sha256": "dcfc023b3d7d2daece9040f0e64b406abe2f15943b4ad2ec843a123c30273694",
+      "log_bytes": 2966,
+      "rust_test_summaries": [
+        {
+          "passed": 3,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "passed": 5,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "passed": 7,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "passed": 10,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        }
+      ]
+    },
+    {
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin/cargo",
+        "+nightly-2026-07-21",
+        "test",
+        "--offline",
+        "--jobs",
+        "2",
+        "--manifest-path",
+        "libs/os-control/Cargo.toml",
+        "--target-dir",
+        "/workspace/scratch/ae1a8cf05419/next8-merged-host/target-os-control"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/next8-merged-host/source",
+      "environment_overrides": {
+        "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+        "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+        "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+        "RUSTUP_AUTO_INSTALL": "0",
+        "CARGO_NET_OFFLINE": "true",
+        "CARGO_BUILD_JOBS": "2",
+        "PATH": "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin:/root/.codex/tmp/arg0/codex-arg0XJwRso:/opt/codex/codex-path:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback"
+      },
+      "exit_code": 0,
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "duration_seconds": 1.129,
+      "log": "control-rust.log",
+      "log_sha256": "90edd59ca605fb1ef4bbde5994f4feaaf113134e06d3c831e0bc2b5e2a0dfe43",
+      "log_bytes": 2417,
+      "rust_test_summaries": [
+        {
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "passed": 20,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        },
+        {
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0,
+          "measured": 0,
+          "filtered_out": 0
+        }
+      ]
+    }
+  ],
+  "version_receipts": [
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "--version"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/next8-merged-host/source",
+      "environment_overrides": {
+        "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+        "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+        "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+        "RUSTUP_AUTO_INSTALL": "0",
+        "CARGO_NET_OFFLINE": "true",
+        "CARGO_BUILD_JOBS": "2",
+        "PATH": "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin:/root/.codex/tmp/arg0/codex-arg0XJwRso:/opt/codex/codex-path:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback"
+      },
+      "exit_code": 0,
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "duration_seconds": 0.0206,
+      "log": "version-python.log",
+      "log_sha256": "4c3569f5da09975434dd9fd9a91fadbc4367a91d8f3c3fab59e9241ab9ee4bd8",
+      "log_bytes": 15,
+      "rust_test_summaries": []
+    },
+    {
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin/cargo",
+        "+nightly-2026-07-21",
+        "-vV"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/next8-merged-host/source",
+      "environment_overrides": {
+        "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+        "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+        "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+        "RUSTUP_AUTO_INSTALL": "0",
+        "CARGO_NET_OFFLINE": "true",
+        "CARGO_BUILD_JOBS": "2",
+        "PATH": "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin:/root/.codex/tmp/arg0/codex-arg0XJwRso:/opt/codex/codex-path:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback"
+      },
+      "exit_code": 0,
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "duration_seconds": 0.021,
+      "log": "version-cargo.log",
+      "log_sha256": "1fd7bd42db99cffe020290fbdd2995474bca84729f7817172227917917b0dd55",
+      "log_bytes": 351,
+      "rust_test_summaries": []
+    },
+    {
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin/rustc",
+        "+nightly-2026-07-21",
+        "-vV"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/next8-merged-host/source",
+      "environment_overrides": {
+        "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+        "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+        "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+        "RUSTUP_AUTO_INSTALL": "0",
+        "CARGO_NET_OFFLINE": "true",
+        "CARGO_BUILD_JOBS": "2",
+        "PATH": "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin:/root/.codex/tmp/arg0/codex-arg0XJwRso:/opt/codex/codex-path:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback"
+      },
+      "exit_code": 0,
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "duration_seconds": 0.0205,
+      "log": "version-rustc.log",
+      "log_sha256": "d919107c9907c374b7605930746505ef72ce87cc21b641260c6225a7da9d8212",
+      "log_bytes": 212,
+      "rust_test_summaries": []
+    },
+    {
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin/rustup",
+        "which",
+        "--toolchain",
+        "nightly-2026-07-21",
+        "cargo"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/next8-merged-host/source",
+      "environment_overrides": {
+        "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+        "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+        "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+        "RUSTUP_AUTO_INSTALL": "0",
+        "CARGO_NET_OFFLINE": "true",
+        "CARGO_BUILD_JOBS": "2",
+        "PATH": "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin:/root/.codex/tmp/arg0/codex-arg0XJwRso:/opt/codex/codex-path:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback"
+      },
+      "exit_code": 0,
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "duration_seconds": 0.0206,
+      "log": "which-cargo.log",
+      "log_sha256": "9e2cdd52db083f622ab6dd3ed466b2ef013233229556f11b728b83ead25bef63",
+      "log_bytes": 115,
+      "rust_test_summaries": []
+    },
+    {
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin/rustup",
+        "which",
+        "--toolchain",
+        "nightly-2026-07-21",
+        "rustc"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/next8-merged-host/source",
+      "environment_overrides": {
+        "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+        "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+        "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+        "RUSTUP_AUTO_INSTALL": "0",
+        "CARGO_NET_OFFLINE": "true",
+        "CARGO_BUILD_JOBS": "2",
+        "PATH": "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin:/root/.codex/tmp/arg0/codex-arg0XJwRso:/opt/codex/codex-path:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback"
+      },
+      "exit_code": 0,
+      "raw_exit_code": 0,
+      "timed_out": false,
+      "duration_seconds": 0.0206,
+      "log": "which-rustc.log",
+      "log_sha256": "81829806fb856d92db68ef09210374b2845dc1a5cfce0e8ced959adcb989f05e",
+      "log_bytes": 115,
+      "rust_test_summaries": []
+    }
+  ],
+  "locks": [
+    {
+      "path": "libs/os-abi/Cargo.lock",
+      "sha256": "95c2616d9e61cbbb848888797f71d434d59744612fbaad5fa558754488cbffbd",
+      "bytes": 155,
+      "before": null,
+      "generated_by_test": true,
+      "retained": "locks/libs/os-abi/Cargo.lock"
+    },
+    {
+      "path": "libs/os-control/Cargo.lock",
+      "sha256": "7482530ce597f7a808e186423ebc14f9d52b8cf348171747e8d231132e40e1b5",
+      "bytes": 154,
+      "before": {
+        "sha256": "7482530ce597f7a808e186423ebc14f9d52b8cf348171747e8d231132e40e1b5",
+        "bytes": 154
+      },
+      "generated_by_test": false,
+      "retained": "locks/libs/os-control/Cargo.lock"
+    }
+  ],
+  "tracked_source_mutations": [],
+  "passed": true,
+  "note": "Host-only ABI codec/control model tests. No QEMU, kernel build, global install, or live repository source used."
+}

@@ -1,0 +1,152 @@
+   Compiling hos2-os-abi v0.1.0 (/workspace/scratch/ae1a8cf05419/round2-latest-main/source/libs/os-abi)
+   Compiling os-control v0.1.0 (/workspace/scratch/ae1a8cf05419/round2-latest-main/source/libs/os-control)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.85s
+     Running unittests src/lib.rs (/workspace/scratch/ae1a8cf05419/round2-latest-main/control-target/debug/deps/os_control-36f754420c7c74a1)
+
+running 6 tests
+test tests::final_sequence_can_retire_but_max_never_rolls_over ... ok
+test tests::basic_commit_and_observation ... ok
+test tests::invariant_audit_rejects_half_terminal_fenced_and_lost_state ... ok
+test tests::invariant_audit_detects_canonical_handle_corruption ... ok
+test tests::last_representable_revision_is_an_immutable_success ... ok
+test tests::reactivation_epoch_overflow_must_remain_revoked ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running ../../tests/control/control_conformance.rs (/workspace/scratch/ae1a8cf05419/round2-latest-main/control-target/debug/deps/control_conformance-5caba4d4dad1ee6a)
+
+running 81 tests
+test a02_history_max_query_is_read_only_and_never_an_executable_delivery ... ok
+test a02_rejects_elapsed_cpu_forgery_even_without_a03_conversion_guard ... ok
+test a02_codec_accepts_every_real_a03_delivery_state ... ok
+test boot_and_capspace_identity_isolation_and_history_loss_are_explicit ... ok
+test advanced_grandparent_clock_fences_stale_leaf_cas ... ok
+test budget_installation_advances_only_on_real_period_boundaries ... ok
+test budget_update_at_period_boundary_reports_current_window_consumption ... ok
+test checked_namespace_constructor_is_not_an_identity_authority ... ok
+test child_cpu_charge_is_counted_once_in_each_ancestor_and_parent_exhaustion_is_atomic ... ok
+test child_creation_inherits_parent_boottime_floor_without_cpu_credit ... ok
+test child_commit_admitted_before_ancestor_revoke_is_immutable ... ok
+test concurrent_query_publish_and_retire_observe_whole_states ... ok
+test concurrent_publish_observe_never_yields_partial_terminal_metadata ... ok
+test concurrent_same_d_has_one_effect_and_query_never_sees_partial_terminal ... ok
+test concurrent_window_invariant_audits_never_see_half_committed_results ... ok
+test concurrent_siblings_never_double_spend_shared_parent_quota ... ok
+test control_states_map_to_hos2_codes_without_importing_the_wire_crate ... ok
+test copyout_failure_retry_reuses_terminal_result_without_second_effect ... ok
+test cpu_usage_rolls_to_a_new_fixed_period_without_resetting_cumulative_usage ... ok
+test cross_branch_domain_and_object_id_reuse_are_rejected ... ok
+test duplicate_sibling_id_cannot_hide_a_larger_child_budget ... ok
+test durable_hepta_k_is_full_scope_and_operation_stable_id_pair ... ok
+test durable_hepta_k_validation_does_not_truncate_or_normalize ... ok
+test exact_boundary_crossing_preserves_each_period_cap ... ok
+test exhausted_grandparent_does_not_modify_either_descendant ... ok
+test existing_descendants_refuse_read_usage_older_than_ancestor_boottime ... ok
+test external_success_publication_cannot_save_impossible_cpu_accounting ... ok
+test failed_ancestor_charge_never_advances_descendant_clock_or_counters ... ok
+test forged_ack_or_foreign_owner_handle_cannot_retire_terminal_history ... ok
+test grandchild_creation_inherits_newest_ancestor_clock_not_only_parent ... ok
+test concurrent_root_sample_and_child_read_usage_have_linearizable_clock_order ... ok
+test grant_publisher_field_cannot_be_reassigned_by_external_code ... ok
+test hanging_prefix_blocks_retire_but_read_and_full_window_recovery_remain_available ... ok
+test history_loss_fences_old_reserved_token ... ok
+test hos2_saved_success_rejects_consumed_time_beyond_period_elapsed ... ok
+test identical_stable_ids_in_different_root_instances_cannot_replay_a_delivery ... ok
+test incoherent_cpu_charge_cannot_commit_a_wire_invalid_success ... ok
+test independent_a02_read_usage_codec_rejects_future_cpu_and_accepts_later_sample ... ok
+test interval_parent_failure_is_atomic_across_period_boundary ... ok
+test invalid_and_overflow_adjacent_intervals_fail_closed ... ok
+test concurrent_cousin_registration_same_identity_has_one_winner ... ok
+test logical_k_is_value_only_and_never_replaces_boot_local_d ... ok
+test malformed_hos2_target_identity_cannot_consume_a_sequence ... ok
+test malformed_install_budget_is_rejected_before_consuming_global_sequence ... ok
+test malformed_public_delivery_observations_fail_closed_for_wire_status ... ok
+test multi_period_accounting_has_no_unused_quota_credit ... ok
+test namespace_bootstrap_rejects_zero_id_and_out_of_range_window_capacity ... ok
+test invariant_audit_keeps_hanging_prefix_and_capacity_exhaustion_nonterminal ... ok
+test new_grandchild_cannot_enter_a_revoked_root_family ... ok
+test old_child_grant_never_revives_after_ancestor_revoke_and_reactivate ... ok
+test out_of_order_does_not_consume_sequence_and_wrong_history_owner_cannot_retire ... ok
+test grandchild_creation_races_root_clock_sampling_without_backdating ... ok
+test parent_domain_caps_child_budget ... ok
+test pre_reservation_statuses_cannot_be_published_as_terminal_effects ... ok
+test query_and_retire_race_has_only_terminal_or_retired_observations ... ok
+test read_only_history_view_cannot_advance_the_ack_frontier ... ok
+test read_usage_parent_and_child_both_reject_unrepresentable_elapsed_cpu ... ok
+test read_usage_refuses_cpu_in_future_window_without_changing_clock_or_revision ... ok
+test request_digest_and_publisher_identity_are_bound ... ok
+test concurrent_revoke_and_commit_linearizes_to_one_terminal_result ... ok
+test resource_identity_registry_has_bounded_capacity_and_no_id_reanimation ... ok
+test revoke_before_commit_rejects_and_commit_before_revoke_stays_admitted ... ok
+test revoked_ancestor_is_not_confused_with_exhausted_cpu_quota ... ok
+test revoked_ancestor_fences_child_grants_and_pending_commit ... ok
+test same_cap_update_preserves_consumption_and_cap_zero_is_not_pause ... ok
+test same_d_bound_to_hos2_handle_slot_and_generation ... ok
+test same_d_different_authorized_publisher_is_a_conflict ... ok
+test same_d_target_cap_revision_and_cross_target_are_conflicts ... ok
+test same_d_with_new_ancestor_grant_conflicts_and_old_d_rejects_terminally ... ok
+test same_identity_different_core_instances_cannot_use_each_others_tokens ... ok
+test stale_boottime_samples_never_replenish_window_budget ... ok
+test wrong_publisher_cannot_publish_and_terminal_rejection_is_immutable ... ok
+test zero_history_sequence_is_rejected_before_and_after_history_loss ... ok
+test zero_publisher_fails_identity_validation_without_consuming_a_delivery ... ok
+test copyout_retry_racing_with_retirement_never_reopens_a_delivery ... ok
+test ten_thousand_writes_are_bounded_and_old_sequences_do_not_reappear ... ok
+test child_registration_and_parent_cap_update_cannot_cross ... ok
+test concurrent_ancestor_revoke_and_child_commit_preserve_epoch_fence ... ok
+test concurrent_ancestor_revoke_and_child_grant_issuance_fails_closed ... ok
+test parent_clock_sample_and_child_cas_linearize_under_family_gate ... ok
+test namespace_loss_and_commit_race_never_reports_lost_after_mutation ... ok
+
+test result: ok. 81 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.52s
+
+     Running ../../tests/control/delivery_adversarial.rs (/workspace/scratch/ae1a8cf05419/round2-latest-main/control-target/debug/deps/delivery_adversarial-9c769c78f9488c6b)
+
+running 6 tests
+test identical_public_namespace_bytes_never_transfer_observer_owner_or_publisher_authority ... ok
+test full_hos2_window_with_pending_prefix_survives_ten_thousand_deliveries ... ok
+test simultaneous_wrong_publishers_cannot_win_against_reservation_owner ... ok
+test concurrent_retire_query_and_loss_keep_history_monotonic_and_complete ... ok
+test same_token_commit_and_explicit_refusal_race_have_one_immutable_outcome ... ok
+test pending_copyout_retry_and_loss_race_never_grant_a_second_execution ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s
+
+     Running ../../tests/control/kernel_handoff.rs (/workspace/scratch/ae1a8cf05419/round2-latest-main/control-target/debug/deps/kernel_handoff-f681180aff73098d)
+
+running 8 tests
+test duplicate_handoff_invokes_once_and_receives_exact_canonical_binding ... ok
+test invalid_callback_receipts_stay_pending_and_never_allow_another_effect ... ok
+test wrong_publisher_and_foreign_namespace_never_enter_callback ... ok
+test panicking_callback_preserves_pending_prefix_and_cannot_be_executed_again ... ok
+test namespace_loss_before_handoff_fences_external_callback ... ok
+test trusted_external_fence_can_publish_recovered_receipt_without_reexecuting ... ok
+test handoff_entered_before_namespace_loss_finishes_one_effect_then_history_is_lost ... ok
+test simultaneous_handoffs_of_same_token_invoke_exactly_one_callback ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+     Running ../../tests/control/resource_adversarial.rs (/workspace/scratch/ae1a8cf05419/round2-latest-main/control-target/debug/deps/resource_adversarial-3b9d9b9c392b7ab1)
+
+running 12 tests
+test child_creation_inherits_a_cousin_observed_family_time ... ok
+test descendant_cas_prevents_an_ancestor_cas_from_backdating ... ok
+test descendant_read_usage_prevents_an_ancestor_boottime_rollback ... ok
+test descendant_sample_fences_every_stale_sibling_mutation_without_partial_charge ... ok
+test descendant_read_usage_prevents_sibling_cpu_from_being_charged_in_the_past ... ok
+test inconsistent_accounting_read_and_cas_do_not_advance_family_time ... ok
+test period_rollover_cas_preserves_cumulative_parent_charge ... ok
+test legacy_usage_clamps_to_the_latest_family_observation ... ok
+test rejected_cas_and_exhausted_interval_do_not_advance_family_time ... ok
+test same_cap_cas_does_not_refund_shared_parent_consumption ... ok
+test successful_descendant_cas_and_charges_each_advance_the_family_floor ... ok
+test concurrent_descendant_and_ancestor_samples_preserve_family_clock_order ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+   Doc-tests os_control
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

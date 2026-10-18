@@ -1,0 +1,90 @@
+[
+  {
+    "label": "red-bc1225",
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "-I",
+      "-B",
+      "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/osdk-integration/test_input_snapshots.py",
+      "InputSnapshotCliTests.test_capture_cli_freezes_valid_symbols_before_qemu_version_probe",
+      "-v"
+    ],
+    "cwd": "/workspace/scratch/ae1a8cf05419",
+    "selected_environment": {
+      "A01_INTEGRATION_RECORDER_SOURCE": "/workspace/scratch/ae1a8cf05419/coverage-freeze-timing-review/test_capture_cli_uses_private_em62_after_original_symbol_and_kernel_change/fixture project/support/build/osdk-integration/record-qemu.py",
+      "A01_INPUT_SNAPSHOTS_OUT": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225"
+    },
+    "source_sha256_before": "bc1225b431a103d7b04bc42054471e77db1a071166c6bdde096e5112da22c590",
+    "test_sha256_before": "8e68dc4178876cc83af3ab062fb6521e86546d3b956704872c1d60edb9768280",
+    "started_utc": "2026-10-17T01:43:17.510034+00:00",
+    "scope": "Actual production recorder under one host-only regression case using executable fake QEMU/fake capture; no VM or GDB.",
+    "raw_exit_code": 1,
+    "expected_test_exit_code": 1,
+    "expected_result": true,
+    "log": "red-bc1225.log",
+    "source_sha256_after": "bc1225b431a103d7b04bc42054471e77db1a071166c6bdde096e5112da22c590",
+    "test_sha256_after": "8e68dc4178876cc83af3ab062fb6521e86546d3b956704872c1d60edb9768280",
+    "finished_utc": "2026-10-17T01:43:17.842170+00:00",
+    "retained_invocation": "red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/invocation-001.json",
+    "observed_recorder": {
+      "wrapper_exit": 125,
+      "qemu_raw_exit": -9,
+      "capture_raw_exit": 96,
+      "capture_finalized": false,
+      "snapshot_verification": {
+        "before_qemu": true,
+        "after_qemu": false
+      },
+      "symbol_copy": {
+        "path": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/artifacts/coverage-symbol.elf",
+        "size": 111,
+        "sha256": "b73765bfc8cd61556a15b7389fc85c0b1ca0d15ab4f1b67eacd53f71869b69de"
+      },
+      "error": "FileNotFoundError: [Errno 2] No such file or directory: '/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/coverage-capture.json'"
+    }
+  },
+  {
+    "label": "green-67f576",
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "-I",
+      "-B",
+      "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/osdk-integration/test_input_snapshots.py",
+      "InputSnapshotCliTests.test_capture_cli_freezes_valid_symbols_before_qemu_version_probe",
+      "-v"
+    ],
+    "cwd": "/workspace/scratch/ae1a8cf05419",
+    "selected_environment": {
+      "A01_INTEGRATION_RECORDER_SOURCE": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/osdk-integration/record-qemu.py",
+      "A01_INPUT_SNAPSHOTS_OUT": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/green-67f576"
+    },
+    "source_sha256_before": "67f5767838036f9a7c0c9c594fc210cf4c67a6fbb6f4c084e6990503b2f4f36e",
+    "test_sha256_before": "8e68dc4178876cc83af3ab062fb6521e86546d3b956704872c1d60edb9768280",
+    "started_utc": "2026-10-17T01:43:17.848161+00:00",
+    "scope": "Actual production recorder under one host-only regression case using executable fake QEMU/fake capture; no VM or GDB.",
+    "raw_exit_code": 0,
+    "expected_test_exit_code": 0,
+    "expected_result": true,
+    "log": "green-67f576.log",
+    "source_sha256_after": "67f5767838036f9a7c0c9c594fc210cf4c67a6fbb6f4c084e6990503b2f4f36e",
+    "test_sha256_after": "8e68dc4178876cc83af3ab062fb6521e86546d3b956704872c1d60edb9768280",
+    "finished_utc": "2026-10-17T01:43:18.179168+00:00",
+    "retained_invocation": "green-67f576/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/invocation-001.json",
+    "observed_recorder": {
+      "wrapper_exit": 33,
+      "qemu_raw_exit": 33,
+      "capture_raw_exit": 0,
+      "capture_finalized": true,
+      "snapshot_verification": {
+        "before_qemu": true,
+        "after_qemu": true
+      },
+      "symbol_copy": {
+        "path": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/green-67f576/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/artifacts/coverage-symbol.elf",
+        "size": 97,
+        "sha256": "f065ca80a1527a54f48645cb15652b29cdb0e99aa5eb4e3e561f447be2a005ae"
+      },
+      "error": null
+    }
+  }
+]

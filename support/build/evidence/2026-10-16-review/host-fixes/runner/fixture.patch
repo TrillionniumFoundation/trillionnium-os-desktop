@@ -1,0 +1,28 @@
+--- /dev/null
++++ b/fixtures/reproduce-runner-baseline.py
+@@ -0,0 +1,25 @@
++#!/usr/bin/env python3
++"""Reproduce the four retained negative controls using committed code."""
++import argparse, hashlib, importlib.util, subprocess, tempfile, unittest
++from pathlib import Path
++parser=argparse.ArgumentParser()
++parser.add_argument('repository',type=Path)
++args=parser.parse_args()
++project=args.repository.resolve()
++path=project/'support/build/osdk-integration/test_runner_lifecycle.py'
++assert hashlib.sha256(path.read_bytes()).hexdigest() == '05a5e2704e6c66ea7d492b342fca7a0db3bbc1debf5f269b169669e8baa822a1'
++spec=importlib.util.spec_from_file_location('baseline_controls',path)
++module=importlib.util.module_from_spec(spec)
++spec.loader.exec_module(module)
++old=subprocess.check_output(['git','show','b5030737451cd7b57813fc4e3c39665a6bb66cfc:support/build/osdk-integration/run.py'],cwd=project)
++assert hashlib.sha256(old).hexdigest() == 'ef81477a6d4acb2719e9e7f839c770dbc054bac13f1361f7e3153a506d42b415'
++with tempfile.TemporaryDirectory() as temporary:
++    baseline=Path(temporary)/'baseline-run.py'
++    baseline.write_bytes(old)
++    module.RunnerLifecycleTests.runner_path=baseline
++    names=['test_success_reaps_leader_after_killing_its_remaining_descendant',
++           'test_sigint_cleans_group_and_preserves_interrupted_command_record',
++           'test_sigterm_cleans_group_and_preserves_interrupted_command_record',
++           'test_busy_lock_does_not_create_output_or_parent_directories']
++    result=unittest.TextTestRunner(verbosity=2).run(unittest.TestSuite(module.RunnerLifecycleTests(name) for name in names))
++raise SystemExit(not result.wasSuccessful())

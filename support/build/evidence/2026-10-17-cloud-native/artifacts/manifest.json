@@ -1,0 +1,89 @@
+{
+  "schema": 1,
+  "artifacts": [
+    {
+      "kind": "bios",
+      "original_bytes": 262144,
+      "original_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "container_encoding": "gzip around the exact original input bytes, including already-gzipped initramfs",
+      "gzip_bytes": 109289,
+      "gzip_sha256": "f8510d8b7852c919074672d812c33f21eb740d4ed172c567929e72c691198e16",
+      "chunks": [
+        {
+          "path": "artifacts/bios.input.gz",
+          "bytes": 109289,
+          "sha256": "f8510d8b7852c919074672d812c33f21eb740d4ed172c567929e72c691198e16"
+        }
+      ]
+    },
+    {
+      "kind": "initramfs",
+      "original_bytes": 1107990,
+      "original_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "container_encoding": "gzip around the exact original input bytes, including already-gzipped initramfs",
+      "gzip_bytes": 1106991,
+      "gzip_sha256": "1152f20fcb27d8739be344e3339db7fceab65fdb5ddbde573794f77fd61b822f",
+      "chunks": [
+        {
+          "path": "artifacts/initramfs.input.gz",
+          "bytes": 1106991,
+          "sha256": "1152f20fcb27d8739be344e3339db7fceab65fdb5ddbde573794f77fd61b822f"
+        }
+      ]
+    },
+    {
+      "kind": "kernel",
+      "original_bytes": 8287984,
+      "original_sha256": "acb9d5528282dbd8880372e47365b5c5d61d431cad0cdb0d2599aead39426e11",
+      "container_encoding": "gzip around the exact original input bytes, including already-gzipped initramfs",
+      "gzip_bytes": 2570543,
+      "gzip_sha256": "891c29d3274093e47db444eac331a40a711cc5ee7e08e1c1022284ab94448eb7",
+      "chunks": [
+        {
+          "path": "artifacts/kernel.input.gz.part-001",
+          "bytes": 2097152,
+          "sha256": "be3f256d0927330bd15df822b3ff1bbae327edd8b14e5b105edc9f10564642c8"
+        },
+        {
+          "path": "artifacts/kernel.input.gz.part-002",
+          "bytes": 473391,
+          "sha256": "0342aee491968397f84a2ddf7713ee1386f8120f4238d00c1ef42b3a87852f1a"
+        }
+      ]
+    }
+  ],
+  "original_current_cloud_paths": {
+    "boot/artifacts-41iebhw4/bios.bin": {
+      "artifact": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "bytes": 262144,
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "mode": 256
+    },
+    "boot/artifacts-41iebhw4/initramfs.cpio.gz": {
+      "artifact": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "bytes": 1107990,
+      "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "mode": 256
+    },
+    "boot/artifacts-41iebhw4/kernel.elf": {
+      "artifact": "acb9d5528282dbd8880372e47365b5c5d61d431cad0cdb0d2599aead39426e11",
+      "bytes": 8287984,
+      "sha256": "acb9d5528282dbd8880372e47365b5c5d61d431cad0cdb0d2599aead39426e11",
+      "mode": 256
+    },
+    "boot/initramfs.cpio.gz": {
+      "artifact": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "bytes": 1107990,
+      "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "mode": 420
+    },
+    "build/initramfs.cpio.gz": {
+      "artifact": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "bytes": 1107990,
+      "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "mode": 420
+    }
+  },
+  "all_three_qemu_snapshot_paths_verified": true,
+  "maximum_stored_binary_chunk_bytes": 2097152
+}

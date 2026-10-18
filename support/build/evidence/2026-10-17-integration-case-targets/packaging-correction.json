@@ -1,0 +1,129 @@
+{
+  "corrected_utc": "2026-10-17T01:40:16.489804+00:00",
+  "controller_path": "/workspace/scratch/ae1a8cf05419/integration-case-target-packaging-pre-correction/correct-packaging.py",
+  "controller_sha256": "32bf9b58302538c109d75217949ac38d65bd762ab347f76e2ab8aa56865aa9d1",
+  "reason": "Metadata-only correction of logical payload vs tar member types; publisher independently identified four internal Cargo artifact hardlinks.",
+  "pre_correction_snapshot": "/workspace/scratch/ae1a8cf05419/integration-case-target-packaging-pre-correction",
+  "pre_correction_receipt_sha256": "54144417d1d237da12fc60ab2901c0e57d38e61a8a4aaa65b63962cce1a422d2",
+  "before_metadata": {
+    "README.md": {
+      "size": 7974,
+      "sha256": "37029f38d9b9ee8257d0c986da6448e2b0e37cba8b28468640ce88b55d6dcea3"
+    },
+    "report.json": {
+      "size": 6760,
+      "sha256": "48592ec0cf567b32269e46aea8c5b562538c9ab2e31917eeb11233b0a9fb783e"
+    },
+    "SHA256SUMS": {
+      "size": 3098,
+      "sha256": "b171bb6cd16f633ba8cb44dfb5a0105939478fde1e187e305567d5d714717599"
+    },
+    "raw-members.json": {
+      "size": 336515,
+      "sha256": "95ef5acde4123422614c400404c6438e324c367ca983e6ca9afec3430cb12730"
+    },
+    "freeze-evidence.py": {
+      "size": 8193,
+      "sha256": "5469b11549388d60c63dd2e4c6e744c51f37d4a60272efc2cb3679f207c09080"
+    },
+    "source-validation-ready.json": {
+      "size": 1671,
+      "sha256": "3f295283e14b60c51ff61815ea97e5164fa0c8226aeb933ed55a6ab7d3933d10"
+    }
+  },
+  "after_metadata": {
+    "README.md": {
+      "size": 9067,
+      "sha256": "e06c2f9ff4afedc4c0cfefa57f701b9c79fb7dec36ed914d979e3a244eee1b93"
+    },
+    "report.json": {
+      "size": 10122,
+      "sha256": "acb0fdac1165bc0976ca3192f91a72c940669ecaa2379a38bc0e49bab670d89d"
+    },
+    "raw-members.json": {
+      "size": 339421,
+      "sha256": "17d5427df9361d91893251da1d95a9caa76d074a7067a86c66faa68277086907"
+    }
+  },
+  "raw_unchanged": {
+    "size": 999293,
+    "sha256": "4711dcca8593133057df96fbd4c3330a90f0f3f2985120447ae41eb75b26b548"
+  },
+  "source_test_fixed_snapshots_unchanged": {
+    "support/build/osdk-integration/run.py": {
+      "sha256": "6d1ade703a944aa4773033f86edeed3c82d0e5f274253e9327458efcd92451cc",
+      "size": 37792
+    },
+    "support/build/osdk-integration/test_case_targets.py": {
+      "sha256": "eab6279e3a1d478a07593c48e2d25e9a751dff5fa0e1201e4daa1d68bb193392",
+      "size": 14748
+    },
+    "support/build/osdk-integration/README.md": {
+      "sha256": "e8d8f3431278aceebcad5443bec2c68a93aba624fe7d6ac36028639d3da89213",
+      "size": 13963
+    }
+  },
+  "archive_member_types": {
+    "regular": 1377,
+    "hardlink": 4,
+    "symlink": 0,
+    "total": 1381
+  },
+  "logical_payload_bytes": 4565559,
+  "regular_header_data_bytes": 4551399,
+  "internal_hardlink_members": [
+    {
+      "path": "tiny-host-cargo/artifact-cache/debug/deps/liba01_case_cache_fixture-2baa71dcd742279b.rlib",
+      "target": "tiny-host-cargo/artifact-cache/debug/liba01_case_cache_fixture.rlib",
+      "header_index_zero_based": 596,
+      "target_header_index_zero_based": 584,
+      "header_size": 0,
+      "target_type": "regular",
+      "target_size": 5656,
+      "logical_payload_size": 5656,
+      "logical_payload_sha256": "4e03626f398bc2e0a1c7c123e2771a06776f5171e2f97efdcd3a6d28aca1076b",
+      "target_path_validated_internal": true
+    },
+    {
+      "path": "tiny-host-cargo/artifact-cache/debug/deps/liba01_case_cache_fixture-2baa71dcd742279b.rmeta",
+      "target": "tiny-host-cargo/artifact-cache/debug/incremental/a01_case_cache_fixture-254svqlscxm7q/s-hna5j1ae6b-19gxg0f-6syjoaky8uusev04r0z4b9e35/metadata.rmeta",
+      "header_index_zero_based": 597,
+      "target_header_index_zero_based": 592,
+      "header_size": 0,
+      "target_type": "regular",
+      "target_size": 1406,
+      "logical_payload_size": 1406,
+      "logical_payload_sha256": "e68b593474e0284d3b803874943c8356762d828db9691d1264e0e79eed7cc933",
+      "target_path_validated_internal": true
+    },
+    {
+      "path": "tiny-host-cargo-final/artifact-cache/debug/deps/liba01_case_cache_fixture-2baa71dcd742279b.rlib",
+      "target": "tiny-host-cargo-final/artifact-cache/debug/liba01_case_cache_fixture.rlib",
+      "header_index_zero_based": 1138,
+      "target_header_index_zero_based": 1126,
+      "header_size": 0,
+      "target_type": "regular",
+      "target_size": 5680,
+      "logical_payload_size": 5680,
+      "logical_payload_sha256": "32fdb0bac83378a4cb82b0b48ebcec7bdca91ce6dfda7f2c70082a28392f5293",
+      "target_path_validated_internal": true
+    },
+    {
+      "path": "tiny-host-cargo-final/artifact-cache/debug/deps/liba01_case_cache_fixture-2baa71dcd742279b.rmeta",
+      "target": "tiny-host-cargo-final/artifact-cache/debug/incremental/a01_case_cache_fixture-254svqlscxm7q/s-hna5m8dbn8-1jr3kl9-doztujisoh07qyr2b27jjarir/metadata.rmeta",
+      "header_index_zero_based": 1139,
+      "target_header_index_zero_based": 1134,
+      "header_size": 0,
+      "target_type": "regular",
+      "target_size": 1418,
+      "logical_payload_size": 1418,
+      "logical_payload_sha256": "50d1f1593da6b1b3492695c3a6a0f181b1bca636667d5bb6061b20956bbc8e62",
+      "target_path_validated_internal": true
+    }
+  ],
+  "all_payload_hashes_verified": true,
+  "no_extractall": true,
+  "new_Cargo_invocations": 0,
+  "new_VM_runs": 0,
+  "new_test_executions": 0
+}

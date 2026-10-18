@@ -1,0 +1,56 @@
+{
+  "schema": "a01-enforced-remap-fix-evidence/1",
+  "old_kernel_failure": {
+    "source_commit": "542e09ebf0471124a01e3d721b531a29e141e54b",
+    "outer_status": 2,
+    "actual_guest_error": "NotIncludeAllComponent real virtio source path",
+    "actual_rustc_invocations": 369,
+    "x86_64_unknown_none_invocations": 138,
+    "x86_64_unknown_none_with_remap": 0,
+    "host_or_probe_with_remap": 123,
+    "linux_host_target_with_remap": 7,
+    "old_profile_source_code_custody_all_true": true
+  },
+  "fixed_source_commit": "bdf7a08dcc0980fa85c0ba5abdf365b7d2c42e80",
+  "final_candidate_tests": {
+    "tests_each": 18,
+    "modes": [
+      "-I",
+      "-I -O"
+    ],
+    "actual_returncodes": [
+      0,
+      0
+    ],
+    "commands_receipt": "fix-tests/final-test-exits.json"
+  },
+  "actual_fixed_nightly_cli": {
+    "RUSTFLAGS": "",
+    "unmapped_compile": 0,
+    "unmapped_program": 101,
+    "enforced_compile": 0,
+    "enforced_program": 0,
+    "wrapped_rustc_version_probe": 0,
+    "original_cfg_preserved": true,
+    "file_macro_prints_virtual_path": true,
+    "actual_native_artifact_bindings": [
+      {
+        "kind": "native host CLI fixture, not kernel",
+        "original_path": "/workspace/scratch/ae1a8cf05419/repro-round3/effective-cli/unmapped-native",
+        "raw_size": 4508720,
+        "raw_sha256": "1a299e06698c0328d2ac8af2cbc07e193d5b28c972bb72c5b9faa695c6cbadde",
+        "gzip_member": "native-cli/artifacts/unmapped-native.elf.gz",
+        "gzip_sha256": "19eabd35425d4fffbe723b573f42f0a35748a0b3b404f93be92be74ab9170eed"
+      },
+      {
+        "kind": "native host CLI fixture, not kernel",
+        "original_path": "/workspace/scratch/ae1a8cf05419/repro-round3/effective-cli/enforced-native",
+        "raw_size": 4508640,
+        "raw_sha256": "0bd27e20e6472f1800ab884521625ab91c662d48558645b754e6a0c0ed9f072b",
+        "gzip_member": "native-cli/artifacts/enforced-native.elf.gz",
+        "gzip_sha256": "21fccf1fa9305f06bbae8c29cb46222d6c7cd0b0a28c7bddcb1c70fe46f48098"
+      }
+    ]
+  },
+  "new_kernel_or_cross_host_success_claimed": false
+}

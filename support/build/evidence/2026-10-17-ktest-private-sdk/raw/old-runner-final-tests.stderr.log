@@ -1,0 +1,94 @@
+test_both_crates_share_one_private_install (__main__.SdkIsolationMockTests.test_both_crates_share_one_private_install) ... FAIL
+test_existing_private_prefix_is_preserved_without_install (__main__.SdkIsolationMockTests.test_existing_private_prefix_is_preserved_without_install) ... FAIL
+test_filtered_name_and_checker_flag_survive (__main__.SdkIsolationMockTests.test_filtered_name_and_checker_flag_survive) ... ok
+test_install_failure_stops_without_metadata_or_test (__main__.SdkIsolationMockTests.test_install_failure_stops_without_metadata_or_test) ... ok
+test_linked_private_binary_is_refused (__main__.SdkIsolationMockTests.test_linked_private_binary_is_refused) ... FAIL
+test_missing_private_binary_is_refused (__main__.SdkIsolationMockTests.test_missing_private_binary_is_refused) ... FAIL
+test_nonexecutable_private_binary_is_refused (__main__.SdkIsolationMockTests.test_nonexecutable_private_binary_is_refused) ... FAIL
+test_old_skip_option_stops_before_output_or_lock (__main__.SdkIsolationMockTests.test_old_skip_option_stops_before_output_or_lock) ... FAIL
+test_private_install_root_and_absolute_sdk_argv (__main__.SdkIsolationMockTests.test_private_install_root_and_absolute_sdk_argv) ... FAIL
+test_source_verification_failure_never_reserves_sdk_prefix (__main__.SdkIsolationMockTests.test_source_verification_failure_never_reserves_sdk_prefix) ... ok
+test_test_failure_is_preserved_without_guest_checker (__main__.SdkIsolationMockTests.test_test_failure_is_preserved_without_guest_checker) ... ok
+
+======================================================================
+FAIL: test_both_crates_share_one_private_install (__main__.SdkIsolationMockTests.test_both_crates_share_one_private_install)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/ktest/test_sdk_isolation_mock.py", line 138, in test_both_crates_share_one_private_install
+    self.assertTrue(all(row['argv'][:3] == [str(self.private_sdk), 'osdk', 'test'] for row in tests))
+AssertionError: False is not true
+
+======================================================================
+FAIL: test_existing_private_prefix_is_preserved_without_install (__main__.SdkIsolationMockTests.test_existing_private_prefix_is_preserved_without_install)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/ktest/test_sdk_isolation_mock.py", line 178, in test_existing_private_prefix_is_preserved_without_install
+    with self.assertRaises(FileExistsError):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: FileExistsError not raised
+
+======================================================================
+FAIL: test_linked_private_binary_is_refused (__main__.SdkIsolationMockTests.test_linked_private_binary_is_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/ktest/test_sdk_isolation_mock.py", line 163, in test_linked_private_binary_is_refused
+    with self.assertRaisesRegex(SystemExit, 'private.*cargo-osdk'):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: SystemExit not raised
+
+======================================================================
+FAIL: test_missing_private_binary_is_refused (__main__.SdkIsolationMockTests.test_missing_private_binary_is_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/ktest/test_sdk_isolation_mock.py", line 157, in test_missing_private_binary_is_refused
+    with self.assertRaisesRegex(SystemExit, 'private.*cargo-osdk'):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: SystemExit not raised
+
+======================================================================
+FAIL: test_nonexecutable_private_binary_is_refused (__main__.SdkIsolationMockTests.test_nonexecutable_private_binary_is_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/ktest/test_sdk_isolation_mock.py", line 169, in test_nonexecutable_private_binary_is_refused
+    with self.assertRaisesRegex(SystemExit, 'private.*cargo-osdk'):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: SystemExit not raised
+
+======================================================================
+FAIL: test_old_skip_option_stops_before_output_or_lock (__main__.SdkIsolationMockTests.test_old_skip_option_stops_before_output_or_lock)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/ktest/test_sdk_isolation_mock.py", line 190, in test_old_skip_option_stops_before_output_or_lock
+    RUNNER.run_main(args, shutdown)
+  File "/workspace/scratch/ae1a8cf05419/ktest-sdk-independent-review/before/support__build__ktest__run.py", line 234, in run_main
+    with (project / "support/build/out-kernel.lock").open("a") as lock:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1139, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1143, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/unittest/mock.py", line 1198, in _execute_mock_call
+    raise effect
+AssertionError: no output or lock open
+
+======================================================================
+FAIL: test_private_install_root_and_absolute_sdk_argv (__main__.SdkIsolationMockTests.test_private_install_root_and_absolute_sdk_argv)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/ktest/test_sdk_isolation_mock.py", line 119, in test_private_install_root_and_absolute_sdk_argv
+    self.assertEqual(install['argv'][-2:], ['--root', str(self.output / 'osdk')])
+AssertionError: Lists differ: ['--path', 'osdk'] != ['--root', '/tmp/tmpvfti1y0_/evidence/osdk']
+
+First differing element 0:
+'--path'
+'--root'
+
+- ['--path', 'osdk']
++ ['--root', '/tmp/tmpvfti1y0_/evidence/osdk']
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.040s
+
+FAILED (failures=7)

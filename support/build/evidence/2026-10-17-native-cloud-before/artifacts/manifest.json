@@ -1,0 +1,790 @@
+{
+  "schema": 1,
+  "created_utc": "2026-10-17T02:01:47.814291+00:00",
+  "scope": "all recorded historical QEMU kernel/BIOS plus successful coverage2 EM62, using retained original gzip captures where original mutable outputs changed",
+  "mapping_count": 23,
+  "retained_mapping_count": 22,
+  "known_unavailable_count": 1,
+  "historical_input_bytes_complete": false,
+  "unique_artifacts": {
+    "515fe3671f742e8dcfb4d27e52a92a7796a279d24d4349bf2c5fd64b7c789626": {
+      "raw_bytes": 2004872,
+      "raw_sha256": "515fe3671f742e8dcfb4d27e52a92a7796a279d24d4349bf2c5fd64b7c789626",
+      "gzip_bytes": 580342,
+      "gzip_sha256": "cf938e971ae08a7745ab26881246756ef7e267be93b696a52f6149e0f3d1b197",
+      "ordered_parts": [
+        {
+          "path": "515fe3671f742e8dcfb4d27e52a92a7796a279d24d4349bf2c5fd64b7c789626/part-0001",
+          "bytes": 580342,
+          "sha256": "cf938e971ae08a7745ab26881246756ef7e267be93b696a52f6149e0f3d1b197"
+        }
+      ],
+      "gzip_custody": "/workspace/scratch/ae1a8cf05419/native-cloud/failure-diagnosis/original-ostd-kernel.elf.gz",
+      "roundtrip_and_all_parts_verified": true
+    },
+    "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735": {
+      "raw_bytes": 262144,
+      "raw_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "gzip_bytes": 109289,
+      "gzip_sha256": "3be74e9f7c998c06146ac4f4d89b62b6d2c2968cd69e5908a806e3581535f94c",
+      "ordered_parts": [
+        {
+          "path": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735/part-0001",
+          "bytes": 109289,
+          "sha256": "3be74e9f7c998c06146ac4f4d89b62b6d2c2968cd69e5908a806e3581535f94c"
+        }
+      ],
+      "gzip_custody": "/workspace/scratch/ae1a8cf05419/native-cloud/before-inputs/gzip-custody/1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735.gz",
+      "roundtrip_and_all_parts_verified": true
+    },
+    "124f70ccb4767e26bb0b83a4d90281d59e461bc7dc5fe589cdfa5ac67b850ccc": {
+      "raw_bytes": 6518456,
+      "raw_sha256": "124f70ccb4767e26bb0b83a4d90281d59e461bc7dc5fe589cdfa5ac67b850ccc",
+      "gzip_bytes": 1967102,
+      "gzip_sha256": "0a4d07eb3cf27cfe0acc8b294f2e878766665357a75657568289dd3da4e159e0",
+      "ordered_parts": [
+        {
+          "path": "124f70ccb4767e26bb0b83a4d90281d59e461bc7dc5fe589cdfa5ac67b850ccc/part-0001",
+          "bytes": 1967102,
+          "sha256": "0a4d07eb3cf27cfe0acc8b294f2e878766665357a75657568289dd3da4e159e0"
+        }
+      ],
+      "gzip_custody": "/workspace/scratch/ae1a8cf05419/native-cloud/retry-artifacts/aster-core-kernel.elf.gz",
+      "roundtrip_and_all_parts_verified": true
+    },
+    "5dd0c531769aab93a4284169fa039729102d8ff3cbe73a16ce852e2d8beb60e1": {
+      "raw_bytes": 2004544,
+      "raw_sha256": "5dd0c531769aab93a4284169fa039729102d8ff3cbe73a16ce852e2d8beb60e1",
+      "gzip_bytes": 580447,
+      "gzip_sha256": "84832134bf0af5ac89bece99d544cdaf36d6a3c70504885e517f642bbbd506a6",
+      "ordered_parts": [
+        {
+          "path": "5dd0c531769aab93a4284169fa039729102d8ff3cbe73a16ce852e2d8beb60e1/part-0001",
+          "bytes": 580447,
+          "sha256": "84832134bf0af5ac89bece99d544cdaf36d6a3c70504885e517f642bbbd506a6"
+        }
+      ],
+      "gzip_custody": "/workspace/scratch/ae1a8cf05419/native-cloud/retry-artifacts/ostd-kernel.elf.gz",
+      "roundtrip_and_all_parts_verified": true
+    },
+    "9b779020e49813b0ab4ff9c9ff7bf1981e8bad7ec20afa67cfd65af221f989c5": {
+      "raw_bytes": 27819832,
+      "raw_sha256": "9b779020e49813b0ab4ff9c9ff7bf1981e8bad7ec20afa67cfd65af221f989c5",
+      "gzip_bytes": 6817941,
+      "gzip_sha256": "de8ad17ea6417b081ef169934710807ba1f6e252aa5ab60fb7d1b6e51743f800",
+      "ordered_parts": [
+        {
+          "path": "9b779020e49813b0ab4ff9c9ff7bf1981e8bad7ec20afa67cfd65af221f989c5/part-0001",
+          "bytes": 2097152,
+          "sha256": "943ed775ddaa6069e6fd58a32f1ed396764908e2134f35fb931fd502558d5b54"
+        },
+        {
+          "path": "9b779020e49813b0ab4ff9c9ff7bf1981e8bad7ec20afa67cfd65af221f989c5/part-0002",
+          "bytes": 2097152,
+          "sha256": "0f4aa9e801f7aecf97e8adbbb5b5d58c4805b0c876d819415fdcf7b2d3c69cb0"
+        },
+        {
+          "path": "9b779020e49813b0ab4ff9c9ff7bf1981e8bad7ec20afa67cfd65af221f989c5/part-0003",
+          "bytes": 2097152,
+          "sha256": "e23c3967a64e68f126f68d518d2241995dc9f5e09fed2c98b74f7f513eab44c8"
+        },
+        {
+          "path": "9b779020e49813b0ab4ff9c9ff7bf1981e8bad7ec20afa67cfd65af221f989c5/part-0004",
+          "bytes": 526485,
+          "sha256": "1eb24df5a2f51f64f9ebb8ea1c395c281422081d8c67987674209152f475430b"
+        }
+      ],
+      "gzip_custody": "/workspace/scratch/ae1a8cf05419/native-cloud/before-inputs/gzip-custody/9b779020e49813b0ab4ff9c9ff7bf1981e8bad7ec20afa67cfd65af221f989c5.gz",
+      "roundtrip_and_all_parts_verified": true
+    },
+    "37a2d1f1cfae1cf1f7192de1913ad1060b47cf722836c360b3225964c05dc098": {
+      "raw_bytes": 27819920,
+      "raw_sha256": "37a2d1f1cfae1cf1f7192de1913ad1060b47cf722836c360b3225964c05dc098",
+      "gzip_bytes": 6819303,
+      "gzip_sha256": "359d344ecb3411d091c0f7bf8df47b4818353cc54888660e4092af58343cb2c0",
+      "ordered_parts": [
+        {
+          "path": "37a2d1f1cfae1cf1f7192de1913ad1060b47cf722836c360b3225964c05dc098/part-0001",
+          "bytes": 2097152,
+          "sha256": "20f125f0a6f94b09f95847fef25d0cbf59f1793b637662c7d0958576983377ed"
+        },
+        {
+          "path": "37a2d1f1cfae1cf1f7192de1913ad1060b47cf722836c360b3225964c05dc098/part-0002",
+          "bytes": 2097152,
+          "sha256": "4de53bf58311d117d71595c7f4d516099cf16cbe3f116eb71f2c10a3e206ef5d"
+        },
+        {
+          "path": "37a2d1f1cfae1cf1f7192de1913ad1060b47cf722836c360b3225964c05dc098/part-0003",
+          "bytes": 2097152,
+          "sha256": "07b6c9b89c44c832e0a592c5da18ba9e67ea6b4fa224da0b0240e5c673e9bb14"
+        },
+        {
+          "path": "37a2d1f1cfae1cf1f7192de1913ad1060b47cf722836c360b3225964c05dc098/part-0004",
+          "bytes": 527847,
+          "sha256": "1a22cdbc44b689abff41b1109c1ea5f7eb3c07a03682b3aca0d2d923ff0dd9fb"
+        }
+      ],
+      "gzip_custody": "/workspace/scratch/ae1a8cf05419/native-cloud/before-inputs/gzip-custody/37a2d1f1cfae1cf1f7192de1913ad1060b47cf722836c360b3225964c05dc098.gz",
+      "roundtrip_and_all_parts_verified": true
+    },
+    "60c1e7b88dc648428fd209777e71642e65a3bb4b3afcb2728cc496c13b5ad59c": {
+      "raw_bytes": 27819496,
+      "raw_sha256": "60c1e7b88dc648428fd209777e71642e65a3bb4b3afcb2728cc496c13b5ad59c",
+      "gzip_bytes": 6818236,
+      "gzip_sha256": "0ee408e62e1200a3e0ebc3126abf1db539ae931adaa0c176849b9c674cc0b62d",
+      "ordered_parts": [
+        {
+          "path": "60c1e7b88dc648428fd209777e71642e65a3bb4b3afcb2728cc496c13b5ad59c/part-0001",
+          "bytes": 2097152,
+          "sha256": "9629e764dbb79c06ad12d96e74edae824485aee162a3c5abdafeb054fc94d864"
+        },
+        {
+          "path": "60c1e7b88dc648428fd209777e71642e65a3bb4b3afcb2728cc496c13b5ad59c/part-0002",
+          "bytes": 2097152,
+          "sha256": "bb4a09af6d41d6771ad51f1fe3eb88aaf758b1e7c703c733d803b788c1a193b7"
+        },
+        {
+          "path": "60c1e7b88dc648428fd209777e71642e65a3bb4b3afcb2728cc496c13b5ad59c/part-0003",
+          "bytes": 2097152,
+          "sha256": "81bf628b374c53c8ecfc447e6161f691ceb335d21c582ce00a48571c2c3be2ea"
+        },
+        {
+          "path": "60c1e7b88dc648428fd209777e71642e65a3bb4b3afcb2728cc496c13b5ad59c/part-0004",
+          "bytes": 526780,
+          "sha256": "a8e00ff318f12914e095b33b80af924b9e39ce58fb8170be7df36834638c2256"
+        }
+      ],
+      "gzip_custody": "/workspace/scratch/ae1a8cf05419/native-cloud/before-inputs/gzip-custody/60c1e7b88dc648428fd209777e71642e65a3bb4b3afcb2728cc496c13b5ad59c.gz",
+      "roundtrip_and_all_parts_verified": true
+    },
+    "aff6f49431a9a44c44c67a2d256c3f3e12fe0ed2fb390fc017314d480f92183e": {
+      "raw_bytes": 39846192,
+      "raw_sha256": "aff6f49431a9a44c44c67a2d256c3f3e12fe0ed2fb390fc017314d480f92183e",
+      "gzip_bytes": 9246479,
+      "gzip_sha256": "3fee4f2c07c34d7fa8670a367e2cb8ab2dea3913df4d182b5aed05835c36599f",
+      "ordered_parts": [
+        {
+          "path": "aff6f49431a9a44c44c67a2d256c3f3e12fe0ed2fb390fc017314d480f92183e/part-0001",
+          "bytes": 2097152,
+          "sha256": "b32066def190cd4d05c1cc8eebe5b9368342552f84cee75cc4663aa2b97a8b16"
+        },
+        {
+          "path": "aff6f49431a9a44c44c67a2d256c3f3e12fe0ed2fb390fc017314d480f92183e/part-0002",
+          "bytes": 2097152,
+          "sha256": "50a9a58fa3cc971722ddde5ce835c144ec2283b955eae616549af62b1c4da85d"
+        },
+        {
+          "path": "aff6f49431a9a44c44c67a2d256c3f3e12fe0ed2fb390fc017314d480f92183e/part-0003",
+          "bytes": 2097152,
+          "sha256": "2a202f57edd62a9b5e89a38a55c46e428cb8e99aaf18523e55af74e3c8bc2e69"
+        },
+        {
+          "path": "aff6f49431a9a44c44c67a2d256c3f3e12fe0ed2fb390fc017314d480f92183e/part-0004",
+          "bytes": 2097152,
+          "sha256": "317a53ca3fd22bc655c2e6c893a8716b63d7dbaf94309ab73ca3d1a6599dc818"
+        },
+        {
+          "path": "aff6f49431a9a44c44c67a2d256c3f3e12fe0ed2fb390fc017314d480f92183e/part-0005",
+          "bytes": 857871,
+          "sha256": "ce0d858556a3c702309c15d4bedfb52784e33462b253dbc3bf2db3eea028b17a"
+        }
+      ],
+      "gzip_custody": "/workspace/scratch/ae1a8cf05419/native-cloud/before-inputs/gzip-custody/aff6f49431a9a44c44c67a2d256c3f3e12fe0ed2fb390fc017314d480f92183e.gz",
+      "roundtrip_and_all_parts_verified": true
+    },
+    "c94c1087d0ac70ca76b1fae9204ca8fd7efdde2601f770f923686f1fb78c9e5d": {
+      "raw_bytes": 28434320,
+      "raw_sha256": "c94c1087d0ac70ca76b1fae9204ca8fd7efdde2601f770f923686f1fb78c9e5d",
+      "gzip_bytes": 6963716,
+      "gzip_sha256": "74c21b79c0a1c6c3d45e23721f7349f1e318c4e5e96bd30e374644aa82a30c47",
+      "ordered_parts": [
+        {
+          "path": "c94c1087d0ac70ca76b1fae9204ca8fd7efdde2601f770f923686f1fb78c9e5d/part-0001",
+          "bytes": 2097152,
+          "sha256": "a614968adb1a30bcd434f601eef65105bcaebb2866cd2c783fcca84f475734b9"
+        },
+        {
+          "path": "c94c1087d0ac70ca76b1fae9204ca8fd7efdde2601f770f923686f1fb78c9e5d/part-0002",
+          "bytes": 2097152,
+          "sha256": "80d2836250babf9ae2ab5269b3f93e2edd72cc2d3dca31aec0a3edc5101792ea"
+        },
+        {
+          "path": "c94c1087d0ac70ca76b1fae9204ca8fd7efdde2601f770f923686f1fb78c9e5d/part-0003",
+          "bytes": 2097152,
+          "sha256": "fd23a13924b9d7b53fb31fe04cf4efe4f3366d684ab59e559c67889ea0a572b6"
+        },
+        {
+          "path": "c94c1087d0ac70ca76b1fae9204ca8fd7efdde2601f770f923686f1fb78c9e5d/part-0004",
+          "bytes": 672260,
+          "sha256": "e15c8127b8f6e818f968ccd0e56ba405a76aec9236e96f68f08bf138fba52346"
+        }
+      ],
+      "gzip_custody": "/workspace/scratch/ae1a8cf05419/native-cloud/before-inputs/gzip-custody/c94c1087d0ac70ca76b1fae9204ca8fd7efdde2601f770f923686f1fb78c9e5d.gz",
+      "roundtrip_and_all_parts_verified": true
+    },
+    "26cdc9446aad0b427ce6129bde02ff16e3c765e5ae0fe6fed621174d365cccad": {
+      "raw_bytes": 28202280,
+      "raw_sha256": "26cdc9446aad0b427ce6129bde02ff16e3c765e5ae0fe6fed621174d365cccad",
+      "gzip_bytes": 6922488,
+      "gzip_sha256": "5947a260cce6bb0a26089a3a4eaad46a1d3e508dabb50ecf03f33854340fb85c",
+      "ordered_parts": [
+        {
+          "path": "26cdc9446aad0b427ce6129bde02ff16e3c765e5ae0fe6fed621174d365cccad/part-0001",
+          "bytes": 2097152,
+          "sha256": "3d00655b5ccb097e80c6738f12a1c7a1d82ea12f0106c5a3038f31a4cbf68f15"
+        },
+        {
+          "path": "26cdc9446aad0b427ce6129bde02ff16e3c765e5ae0fe6fed621174d365cccad/part-0002",
+          "bytes": 2097152,
+          "sha256": "fad961eef343244da8b236c30ff95bcddca51e33f5775191a51b7e872cd85e4d"
+        },
+        {
+          "path": "26cdc9446aad0b427ce6129bde02ff16e3c765e5ae0fe6fed621174d365cccad/part-0003",
+          "bytes": 2097152,
+          "sha256": "7a8613e73955aeaf510db451c1549692aab077b3204712284faba0ae3d21fed8"
+        },
+        {
+          "path": "26cdc9446aad0b427ce6129bde02ff16e3c765e5ae0fe6fed621174d365cccad/part-0004",
+          "bytes": 631032,
+          "sha256": "791a67d29392de33d5e3492a8937b706ddc03a0f915d75b382274cfbc2654fc5"
+        }
+      ],
+      "gzip_custody": "/workspace/scratch/ae1a8cf05419/native-cloud/before-inputs/gzip-custody/26cdc9446aad0b427ce6129bde02ff16e3c765e5ae0fe6fed621174d365cccad.gz",
+      "roundtrip_and_all_parts_verified": true
+    },
+    "c029dcedeec5eaae1ab254b913e2a193311df678746150ae1bfde63f376c7a03": {
+      "raw_bytes": 41609160,
+      "raw_sha256": "c029dcedeec5eaae1ab254b913e2a193311df678746150ae1bfde63f376c7a03",
+      "gzip_bytes": 11456666,
+      "gzip_sha256": "757b787d050de60d177375f89ee9ef6c52a75bd53fad1ae5efeac79d9b6fe019",
+      "ordered_parts": [
+        {
+          "path": "c029dcedeec5eaae1ab254b913e2a193311df678746150ae1bfde63f376c7a03/part-0001",
+          "bytes": 2097152,
+          "sha256": "0d1ed99bff76b435634e8b7da57359c787adeb479f269beef397e3b00beaaec1"
+        },
+        {
+          "path": "c029dcedeec5eaae1ab254b913e2a193311df678746150ae1bfde63f376c7a03/part-0002",
+          "bytes": 2097152,
+          "sha256": "2567aaec5276d494ad6ba10fb1828ab1a29b370f194e0f44e9ca66c926f5e2a1"
+        },
+        {
+          "path": "c029dcedeec5eaae1ab254b913e2a193311df678746150ae1bfde63f376c7a03/part-0003",
+          "bytes": 2097152,
+          "sha256": "9340eb157784db53013e54510be2c1c50e985948d3f39f6a0571c266f42f4d93"
+        },
+        {
+          "path": "c029dcedeec5eaae1ab254b913e2a193311df678746150ae1bfde63f376c7a03/part-0004",
+          "bytes": 2097152,
+          "sha256": "40795a28313e1489ba5312f41b453dcbd8d7dbcbd53b68bd1ed07766534c4a57"
+        },
+        {
+          "path": "c029dcedeec5eaae1ab254b913e2a193311df678746150ae1bfde63f376c7a03/part-0005",
+          "bytes": 2097152,
+          "sha256": "42a94e1942b550cef13aaaec4fc0593451f6eca9371a8f42430701e11ef846c9"
+        },
+        {
+          "path": "c029dcedeec5eaae1ab254b913e2a193311df678746150ae1bfde63f376c7a03/part-0006",
+          "bytes": 970906,
+          "sha256": "14f7e56c8720a0854b21fe9b8b3e10c3c8641fdbd363ae1a036b874b5859cbd4"
+        }
+      ],
+      "gzip_custody": "/workspace/scratch/ae1a8cf05419/native-cloud/coverage2-artifacts/kernel.elf.gz",
+      "roundtrip_and_all_parts_verified": true
+    },
+    "0eecf10d7133ae17d16b22cf694239b7eb14e9021f093d97c2561a36a842f546": {
+      "raw_bytes": 41609160,
+      "raw_sha256": "0eecf10d7133ae17d16b22cf694239b7eb14e9021f093d97c2561a36a842f546",
+      "gzip_bytes": 11456654,
+      "gzip_sha256": "c8237104a48178c3159f0d8b44a1ac32f67d33d6895be138a29b6678eb9d12e7",
+      "ordered_parts": [
+        {
+          "path": "0eecf10d7133ae17d16b22cf694239b7eb14e9021f093d97c2561a36a842f546/part-0001",
+          "bytes": 2097152,
+          "sha256": "62ab76a78fe8904a3110d5cdded6f07aca1d3ebfe3d8e19a4c7110b9be4b3bd4"
+        },
+        {
+          "path": "0eecf10d7133ae17d16b22cf694239b7eb14e9021f093d97c2561a36a842f546/part-0002",
+          "bytes": 2097152,
+          "sha256": "b64fbcb3abba28f5a402421f961c5ede71006085dee30366f33c9ce7973d7565"
+        },
+        {
+          "path": "0eecf10d7133ae17d16b22cf694239b7eb14e9021f093d97c2561a36a842f546/part-0003",
+          "bytes": 2097152,
+          "sha256": "2bcf1b637499118a0ec6673a0ad4cd4c51d4c68c30ef43e2df99e0bf378f0149"
+        },
+        {
+          "path": "0eecf10d7133ae17d16b22cf694239b7eb14e9021f093d97c2561a36a842f546/part-0004",
+          "bytes": 2097152,
+          "sha256": "2f941ec75a7c1e405de01e30717d24f5ca5ca3f07f8d1e31d0eee3e1faaa21f7"
+        },
+        {
+          "path": "0eecf10d7133ae17d16b22cf694239b7eb14e9021f093d97c2561a36a842f546/part-0005",
+          "bytes": 2097152,
+          "sha256": "9d15103e9cbba8b3a01bf40e7dcd68681c3f2cbd4926ef0022937c65ade9c13d"
+        },
+        {
+          "path": "0eecf10d7133ae17d16b22cf694239b7eb14e9021f093d97c2561a36a842f546/part-0006",
+          "bytes": 970894,
+          "sha256": "9207152b3246f5a93de4b54616a0a0c820c4dbdb907693c53514e2e52679bdf0"
+        }
+      ],
+      "gzip_custody": "/workspace/scratch/ae1a8cf05419/native-cloud/coverage2-artifacts/symbol.elf.gz",
+      "roundtrip_and_all_parts_verified": true
+    }
+  },
+  "mappings": [
+    {
+      "group": "wrong-sdk-ktest",
+      "guest_record": "/workspace/scratch/ae1a8cf05419/native-cloud/ktest/ostd/guests/guest-001/qemu.json",
+      "option": "-kernel",
+      "original_artifact": {
+        "path": "/tmp/trillionnium-a01-native-regressions/kernel/asterinas/target/osdk/ostd/ostd-osdk-bin.elf",
+        "size": 2004872,
+        "sha256": "515fe3671f742e8dcfb4d27e52a92a7796a279d24d4349bf2c5fd64b7c789626",
+        "stat": {
+          "dev": 27,
+          "ino": 428677,
+          "mode": 33261,
+          "size": 2004872,
+          "mtime_ns": 1792199065123829921,
+          "ctime_ns": 1792199065123856172
+        }
+      },
+      "retained": true,
+      "retained_gzip_source": "/workspace/scratch/ae1a8cf05419/native-cloud/failure-diagnosis/original-ostd-kernel.elf.gz",
+      "gzip_source_stat": {
+        "dev": 27,
+        "ino": 427378,
+        "mode": 33188,
+        "size": 580342,
+        "mtime_ns": 1792199307317516028,
+        "ctime_ns": 1792199307317516028
+      },
+      "status": "retained_by_exact_raw_sha256",
+      "storage_key": "515fe3671f742e8dcfb4d27e52a92a7796a279d24d4349bf2c5fd64b7c789626"
+    },
+    {
+      "group": "wrong-sdk-ktest",
+      "guest_record": "/workspace/scratch/ae1a8cf05419/native-cloud/ktest/ostd/guests/guest-001/qemu.json",
+      "option": "-bios",
+      "original_artifact": {
+        "path": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/seabios/bios-256k.bin",
+        "size": 262144,
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+        "stat": {
+          "dev": 27,
+          "ino": 1983885,
+          "mode": 33188,
+          "size": 262144,
+          "mtime_ns": 1701364826000000000,
+          "ctime_ns": 1792196333988385276
+        }
+      },
+      "retained": true,
+      "stable_capture_stat": {
+        "dev": 27,
+        "ino": 1983885,
+        "mode": 33188,
+        "size": 262144,
+        "mtime_ns": 1701364826000000000,
+        "ctime_ns": 1792196333988385276
+      },
+      "status": "retained_by_exact_raw_sha256",
+      "storage_key": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    {
+      "group": "correct-root-ktest",
+      "guest_record": "/workspace/scratch/ae1a8cf05419/native-cloud/ktest-retry/aster-core/guests/guest-001/qemu.json",
+      "option": "-kernel",
+      "original_artifact": {
+        "path": "/tmp/trillionnium-a01-native-regressions/kernel/asterinas/target/osdk/aster-core/aster-core-osdk-bin.elf",
+        "size": 6518456,
+        "sha256": "124f70ccb4767e26bb0b83a4d90281d59e461bc7dc5fe589cdfa5ac67b850ccc",
+        "stat": {
+          "dev": 27,
+          "ino": 434462,
+          "mode": 33261,
+          "size": 6518456,
+          "mtime_ns": 1792199667492708962,
+          "ctime_ns": 1792199667492723155
+        }
+      },
+      "retained": true,
+      "retained_gzip_source": "/workspace/scratch/ae1a8cf05419/native-cloud/retry-artifacts/aster-core-kernel.elf.gz",
+      "gzip_source_stat": {
+        "dev": 27,
+        "ino": 526065,
+        "mode": 33188,
+        "size": 1967102,
+        "mtime_ns": 1792199705857133454,
+        "ctime_ns": 1792199705857133454
+      },
+      "status": "retained_by_exact_raw_sha256",
+      "storage_key": "124f70ccb4767e26bb0b83a4d90281d59e461bc7dc5fe589cdfa5ac67b850ccc"
+    },
+    {
+      "group": "correct-root-ktest",
+      "guest_record": "/workspace/scratch/ae1a8cf05419/native-cloud/ktest-retry/aster-core/guests/guest-001/qemu.json",
+      "option": "-bios",
+      "original_artifact": {
+        "path": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/seabios/bios-256k.bin",
+        "size": 262144,
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+        "stat": {
+          "dev": 27,
+          "ino": 1983885,
+          "mode": 33188,
+          "size": 262144,
+          "mtime_ns": 1701364826000000000,
+          "ctime_ns": 1792196333988385276
+        }
+      },
+      "retained": true,
+      "status": "retained_by_exact_raw_sha256",
+      "storage_key": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    {
+      "group": "correct-root-ktest",
+      "guest_record": "/workspace/scratch/ae1a8cf05419/native-cloud/ktest-retry/ostd/guests/guest-001/qemu.json",
+      "option": "-kernel",
+      "original_artifact": {
+        "path": "/tmp/trillionnium-a01-native-regressions/kernel/asterinas/target/osdk/ostd/ostd-osdk-bin.elf",
+        "size": 2004544,
+        "sha256": "5dd0c531769aab93a4284169fa039729102d8ff3cbe73a16ce852e2d8beb60e1",
+        "stat": {
+          "dev": 27,
+          "ino": 434954,
+          "mode": 33261,
+          "size": 2004544,
+          "mtime_ns": 1792199506181741499,
+          "ctime_ns": 1792199506181757038
+        }
+      },
+      "retained": true,
+      "retained_gzip_source": "/workspace/scratch/ae1a8cf05419/native-cloud/retry-artifacts/ostd-kernel.elf.gz",
+      "gzip_source_stat": {
+        "dev": 27,
+        "ino": 526045,
+        "mode": 33188,
+        "size": 580447,
+        "mtime_ns": 1792199704733142617,
+        "ctime_ns": 1792199704733142617
+      },
+      "status": "retained_by_exact_raw_sha256",
+      "storage_key": "5dd0c531769aab93a4284169fa039729102d8ff3cbe73a16ce852e2d8beb60e1"
+    },
+    {
+      "group": "correct-root-ktest",
+      "guest_record": "/workspace/scratch/ae1a8cf05419/native-cloud/ktest-retry/ostd/guests/guest-001/qemu.json",
+      "option": "-bios",
+      "original_artifact": {
+        "path": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/seabios/bios-256k.bin",
+        "size": 262144,
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+        "stat": {
+          "dev": 27,
+          "ino": 1983885,
+          "mode": 33188,
+          "size": 262144,
+          "mtime_ns": 1701364826000000000,
+          "ctime_ns": 1792196333988385276
+        }
+      },
+      "retained": true,
+      "status": "retained_by_exact_raw_sha256",
+      "storage_key": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    {
+      "group": "initial-20-of-22",
+      "guest_record": "/workspace/scratch/ae1a8cf05419/native-cloud/integration-retry/case-01/guests/guest-001/qemu.json",
+      "option": "-bios",
+      "original_artifact": {
+        "path": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/seabios/bios-256k.bin",
+        "size": 262144,
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+      },
+      "retained": true,
+      "status": "retained_by_exact_raw_sha256",
+      "storage_key": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    {
+      "group": "initial-20-of-22",
+      "guest_record": "/workspace/scratch/ae1a8cf05419/native-cloud/integration-retry/case-01/guests/guest-001/qemu.json",
+      "option": "-kernel",
+      "original_artifact": {
+        "path": "/workspace/scratch/ae1a8cf05419/native-cloud/integration-retry/target/osdk/basic_debug/basic_debug-osdk-bin.elf",
+        "size": 27819832,
+        "sha256": "9b779020e49813b0ab4ff9c9ff7bf1981e8bad7ec20afa67cfd65af221f989c5"
+      },
+      "retained": true,
+      "stable_capture_stat": {
+        "dev": 27,
+        "ino": 529311,
+        "mode": 33261,
+        "size": 27819832,
+        "mtime_ns": 1792199813814119992,
+        "ctime_ns": 1792199813814166052
+      },
+      "status": "retained_by_exact_raw_sha256",
+      "storage_key": "9b779020e49813b0ab4ff9c9ff7bf1981e8bad7ec20afa67cfd65af221f989c5"
+    },
+    {
+      "group": "initial-20-of-22",
+      "guest_record": "/workspace/scratch/ae1a8cf05419/native-cloud/integration-retry/case-02/guests/guest-001/qemu.json",
+      "option": "-bios",
+      "original_artifact": {
+        "path": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/seabios/bios-256k.bin",
+        "size": 262144,
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+      },
+      "retained": true,
+      "status": "retained_by_exact_raw_sha256",
+      "storage_key": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    {
+      "group": "initial-20-of-22",
+      "guest_record": "/workspace/scratch/ae1a8cf05419/native-cloud/integration-retry/case-02/guests/guest-001/qemu.json",
+      "option": "-kernel",
+      "original_artifact": {
+        "path": "/workspace/scratch/ae1a8cf05419/native-cloud/integration-retry/target/osdk/vsc_launch_file/vsc_launch_file-osdk-bin.elf",
+        "size": 27819920,
+        "sha256": "37a2d1f1cfae1cf1f7192de1913ad1060b47cf722836c360b3225964c05dc098"
+      },
+      "retained": true,
+      "stable_capture_stat": {
+        "dev": 27,
+        "ino": 529432,
+        "mode": 33261,
+        "size": 27819920,
+        "mtime_ns": 1792199820113697409,
+        "ctime_ns": 1792199820113726438
+      },
+      "status": "retained_by_exact_raw_sha256",
+      "storage_key": "37a2d1f1cfae1cf1f7192de1913ad1060b47cf722836c360b3225964c05dc098"
+    },
+    {
+      "group": "initial-20-of-22",
+      "guest_record": "/workspace/scratch/ae1a8cf05419/native-cloud/integration-retry/case-14/guests/guest-001/qemu.json",
+      "option": "-bios",
+      "original_artifact": {
+        "path": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/seabios/bios-256k.bin",
+        "size": 262144,
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+      },
+      "retained": true,
+      "status": "retained_by_exact_raw_sha256",
+      "storage_key": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    {
+      "group": "initial-20-of-22",
+      "guest_record": "/workspace/scratch/ae1a8cf05419/native-cloud/integration-retry/case-14/guests/guest-001/qemu.json",
+      "option": "-kernel",
+      "original_artifact": {
+        "path": "/workspace/scratch/ae1a8cf05419/native-cloud/integration-retry/target/osdk/myos/myos-osdk-bin.elf",
+        "size": 27819608,
+        "sha256": "04bd324919bd0b61991d6cbcab5382bbe1eddbc7c3ff885108f33456c76166a3"
+      },
+      "retained": false,
+      "status": "known_historical_payload_unavailable",
+      "reason": "initial case14 myos ELF was overwritten by later case18; original full bytes were not retained and are not reconstructed",
+      "postcheck_receipt": "/workspace/scratch/ae1a8cf05419/native-cloud/initial-matrix-artifact-postcheck.json"
+    },
+    {
+      "group": "initial-20-of-22",
+      "guest_record": "/workspace/scratch/ae1a8cf05419/native-cloud/integration-retry/case-18/guests/guest-001/qemu.json",
+      "option": "-bios",
+      "original_artifact": {
+        "path": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/seabios/bios-256k.bin",
+        "size": 262144,
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+      },
+      "retained": true,
+      "status": "retained_by_exact_raw_sha256",
+      "storage_key": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    {
+      "group": "initial-20-of-22",
+      "guest_record": "/workspace/scratch/ae1a8cf05419/native-cloud/integration-retry/case-18/guests/guest-001/qemu.json",
+      "option": "-kernel",
+      "original_artifact": {
+        "path": "/workspace/scratch/ae1a8cf05419/native-cloud/integration-retry/target/osdk/myos/myos-osdk-bin.elf",
+        "size": 27819496,
+        "sha256": "60c1e7b88dc648428fd209777e71642e65a3bb4b3afcb2728cc496c13b5ad59c"
+      },
+      "retained": true,
+      "stable_capture_stat": {
+        "dev": 27,
+        "ino": 529890,
+        "mode": 33261,
+        "size": 27819496,
+        "mtime_ns": 1792199839929601430,
+        "ctime_ns": 1792199839929631249
+      },
+      "status": "retained_by_exact_raw_sha256",
+      "storage_key": "60c1e7b88dc648428fd209777e71642e65a3bb4b3afcb2728cc496c13b5ad59c"
+    },
+    {
+      "group": "initial-20-of-22",
+      "guest_record": "/workspace/scratch/ae1a8cf05419/native-cloud/integration-retry/case-19/guests/guest-001/qemu.json",
+      "option": "-bios",
+      "original_artifact": {
+        "path": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/seabios/bios-256k.bin",
+        "size": 262144,
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+      },
+      "retained": true,
+      "status": "retained_by_exact_raw_sha256",
+      "storage_key": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    {
+      "group": "initial-20-of-22",
+      "guest_record": "/workspace/scratch/ae1a8cf05419/native-cloud/integration-retry/case-19/guests/guest-001/qemu.json",
+      "option": "-kernel",
+      "original_artifact": {
+        "path": "/workspace/scratch/ae1a8cf05419/native-cloud/integration-retry/target/osdk/mylib/mylib-osdk-bin.elf",
+        "size": 39846192,
+        "sha256": "aff6f49431a9a44c44c67a2d256c3f3e12fe0ed2fb390fc017314d480f92183e"
+      },
+      "retained": true,
+      "stable_capture_stat": {
+        "dev": 27,
+        "ino": 531182,
+        "mode": 33261,
+        "size": 39846192,
+        "mtime_ns": 1792199904519505977,
+        "ctime_ns": 1792199904524156194
+      },
+      "status": "retained_by_exact_raw_sha256",
+      "storage_key": "aff6f49431a9a44c44c67a2d256c3f3e12fe0ed2fb390fc017314d480f92183e"
+    },
+    {
+      "group": "initial-20-of-22",
+      "guest_record": "/workspace/scratch/ae1a8cf05419/native-cloud/integration-retry/case-21/guests/guest-001/qemu.json",
+      "option": "-bios",
+      "original_artifact": {
+        "path": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/seabios/bios-256k.bin",
+        "size": 262144,
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+      },
+      "retained": true,
+      "status": "retained_by_exact_raw_sha256",
+      "storage_key": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    {
+      "group": "initial-20-of-22",
+      "guest_record": "/workspace/scratch/ae1a8cf05419/native-cloud/integration-retry/case-21/guests/guest-001/qemu.json",
+      "option": "-kernel",
+      "original_artifact": {
+        "path": "/workspace/scratch/ae1a8cf05419/native-cloud/integration-retry/target/osdk/hypervisor_in_100_lines/hypervisor_in_100_lines-osdk-bin.elf",
+        "size": 28434320,
+        "sha256": "c94c1087d0ac70ca76b1fae9204ca8fd7efdde2601f770f923686f1fb78c9e5d"
+      },
+      "retained": true,
+      "stable_capture_stat": {
+        "dev": 27,
+        "ino": 531485,
+        "mode": 33261,
+        "size": 28434320,
+        "mtime_ns": 1792199912998519582,
+        "ctime_ns": 1792199912998558270
+      },
+      "status": "retained_by_exact_raw_sha256",
+      "storage_key": "c94c1087d0ac70ca76b1fae9204ca8fd7efdde2601f770f923686f1fb78c9e5d"
+    },
+    {
+      "group": "initial-20-of-22",
+      "guest_record": "/workspace/scratch/ae1a8cf05419/native-cloud/integration-retry/case-22/guests/guest-001/qemu.json",
+      "option": "-bios",
+      "original_artifact": {
+        "path": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/seabios/bios-256k.bin",
+        "size": 262144,
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+      },
+      "retained": true,
+      "status": "retained_by_exact_raw_sha256",
+      "storage_key": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    {
+      "group": "initial-20-of-22",
+      "guest_record": "/workspace/scratch/ae1a8cf05419/native-cloud/integration-retry/case-22/guests/guest-001/qemu.json",
+      "option": "-kernel",
+      "original_artifact": {
+        "path": "/workspace/scratch/ae1a8cf05419/native-cloud/integration-retry/target/osdk/kernel_in_100_lines/kernel_in_100_lines-osdk-bin.elf",
+        "size": 28202280,
+        "sha256": "26cdc9446aad0b427ce6129bde02ff16e3c765e5ae0fe6fed621174d365cccad"
+      },
+      "retained": true,
+      "stable_capture_stat": {
+        "dev": 27,
+        "ino": 531610,
+        "mode": 33261,
+        "size": 28202280,
+        "mtime_ns": 1792199919788612122,
+        "ctime_ns": 1792199919788643266
+      },
+      "status": "retained_by_exact_raw_sha256",
+      "storage_key": "26cdc9446aad0b427ce6129bde02ff16e3c765e5ae0fe6fed621174d365cccad"
+    },
+    {
+      "group": "coverage2-success",
+      "guest_record": "/tmp/trillionnium-a01-native-regressions/support/build/out/coverage-retry2/case-01/guests/guest-001/qemu.json",
+      "option": "-bios",
+      "original_artifact": {
+        "path": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/seabios/bios-256k.bin",
+        "size": 262144,
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+      },
+      "retained": true,
+      "status": "retained_by_exact_raw_sha256",
+      "storage_key": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    {
+      "group": "coverage2-success",
+      "guest_record": "/tmp/trillionnium-a01-native-regressions/support/build/out/coverage-retry2/case-01/guests/guest-001/qemu.json",
+      "option": "-kernel",
+      "original_artifact": {
+        "path": "/tmp/trillionnium-a01-native-regressions/support/build/out/coverage-retry2/target/osdk/basic_coverage/basic_coverage-osdk-bin.elf",
+        "size": 41609160,
+        "sha256": "c029dcedeec5eaae1ab254b913e2a193311df678746150ae1bfde63f376c7a03"
+      },
+      "retained": true,
+      "retained_gzip_source": "/workspace/scratch/ae1a8cf05419/native-cloud/coverage2-artifacts/kernel.elf.gz",
+      "gzip_source_stat": {
+        "dev": 27,
+        "ino": 159,
+        "mode": 33188,
+        "size": 11456666,
+        "mtime_ns": 1792200423591156222,
+        "ctime_ns": 1792200423591156222
+      },
+      "status": "retained_by_exact_raw_sha256",
+      "storage_key": "c029dcedeec5eaae1ab254b913e2a193311df678746150ae1bfde63f376c7a03"
+    },
+    {
+      "group": "coverage2-success",
+      "guest_record": "/tmp/trillionnium-a01-native-regressions/support/build/out/coverage-retry2/case-01/guests/guest-001/qemu.json",
+      "option": "coverage-symbol",
+      "original_artifact": {
+        "path": "/tmp/trillionnium-a01-native-regressions/support/build/out/coverage-retry2/target/x86_64-unknown-none/debug/basic_coverage-osdk-bin",
+        "size": 41609160,
+        "sha256": "0eecf10d7133ae17d16b22cf694239b7eb14e9021f093d97c2561a36a842f546"
+      },
+      "retained": true,
+      "retained_gzip_source": "/workspace/scratch/ae1a8cf05419/native-cloud/coverage2-artifacts/symbol.elf.gz",
+      "gzip_source_stat": {
+        "dev": 27,
+        "ino": 160,
+        "mode": 33188,
+        "size": 11456654,
+        "mtime_ns": 1792200430099101410,
+        "ctime_ns": 1792200430099101410
+      },
+      "status": "retained_by_exact_raw_sha256",
+      "storage_key": "0eecf10d7133ae17d16b22cf694239b7eb14e9021f093d97c2561a36a842f546"
+    }
+  ],
+  "unexpected_errors": [],
+  "archive_completed": true,
+  "passed": true
+}

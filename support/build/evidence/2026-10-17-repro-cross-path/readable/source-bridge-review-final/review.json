@@ -1,0 +1,43 @@
+{
+  "schema": "a01-independent-static-review/1",
+  "reviewer": "closure_inventory",
+  "recorded_utc": "2026-10-17T01:56:11.242120+00:00",
+  "scripts": {
+    "verify-cloud-source-bridge.py": "7eda9053b280a14c59b90ee78b3a4bc5acbb4d2de2461cacf0ef174994b8fe29",
+    "compare-normalized-cloud-v4.py": "7c1da58aa5b1e3ee2484404349cee31f09e7bf3e5df39e563e72865dcc933a61"
+  },
+  "recommendation": "acceptable for scoped source bridge and same-host comparison execution",
+  "review_mode": "Read-only static review and AST syntax parsing only; scripts were not executed. No Cargo, guest, comparator, candidate source bridge, active B4 output or original target was run/read.",
+  "source_bridge": {
+    "projection_producer": "4e8c7083575cec69efabe8d2250dfdd040c8dee8",
+    "ordinary_and_matrix_ref_from_parent": "d879a9d2",
+    "checks": [
+      "Projection group includes ordinary closure plus the four projection runtime helpers; ordinary group excludes these helpers.",
+      "All seven requested refs resolve once to full commit identities before comparisons.",
+      "Listed inputs require exact Git mode, object kind and blob/subtree identity.",
+      "All distinct resolved producers and candidate are checked for fixed upstream pins and zero-byte root README.",
+      "Historical ABI/control groups only bridge previous validation inputs; they claim no candidate rerun or G0/G1/G2 acceptance.",
+      "Output is exclusively created, with source_bridge_passed separate from validation_executed_here=false."
+    ],
+    "limit": "Only explicitly listed Git inputs; external tool and firmware identities remain bound in separate actual-run records."
+  },
+  "comparison": {
+    "checks": [
+      "Exact eight controller names/order and all eight exit codes must match successful original controller operations.",
+      "Ledger is exactly twice compiler calls; state vocabulary and PID sets are closed.",
+      "Every unique compiler PID has exactly one start and completion in that order with equal compiler-unit identities.",
+      "All non-null Cargo units complete successfully; null compiler probes may retain their actual nonzero query statuses.",
+      "Recorded effective argv can differ only by canonical metadata and remap; local descriptor hashes match canonical IDs.",
+      "Fixed nightly identity, schema4, one-job policy and actual child environment are checked.",
+      "Source worktrees are clean at the supplied full source commit, real source roots differ and actual host/profile/Components bindings agree.",
+      "Live check-boot runs will be additional real checks in a fresh exclusive comparison directory.",
+      "Actual complete kernel/initrd/BIOS bytes are compared after retained size/SHA checks; report excludes cross-host and immutable-host acceptance."
+    ],
+    "previous_findings_resolved": [
+      "orphan/unknown/unordered producer ledger events are rejected",
+      "vacuous/partial controller success is rejected"
+    ],
+    "execution_status": "not executed by reviewer; B4 completion and comparison remain pending actual root execution"
+  },
+  "syntax_parse_passed": true
+}

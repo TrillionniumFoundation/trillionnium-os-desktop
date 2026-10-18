@@ -1,0 +1,45 @@
+test_private_paths_with_spaces_load_selected_bios_and_one_data_directory (__main__.KtestPrivateInputsTests.test_private_paths_with_spaces_load_selected_bios_and_one_data_directory) ... FAIL
+test_private_bios_without_data_preserves_optional_initrd_and_fixed_profile (__main__.KtestPrivateInputsTests.test_private_bios_without_data_preserves_optional_initrd_and_fixed_profile) ... FAIL
+
+======================================================================
+FAIL: test_private_paths_with_spaces_load_selected_bios_and_one_data_directory (__main__.KtestPrivateInputsTests.test_private_paths_with_spaces_load_selected_bios_and_one_data_directory)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/tests/test_ktest_private_inputs.py", line 104, in test_private_paths_with_spaces_load_selected_bios_and_one_data_directory
+    self.assertEqual(result.returncode, 33, result.stdout)
+AssertionError: 1 != 33 : Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/round2-ktest-private/baseline-record-qemu.py", line 80, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/workspace/scratch/ae1a8cf05419/round2-ktest-private/baseline-record-qemu.py", line 48, in main
+    artifacts["-bios"] = {"path": str(firmware), "size": firmware.stat().st_size,
+                                                         ^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/pathlib.py", line 840, in stat
+    return os.stat(self, follow_symlinks=follow_symlinks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/usr/share/seabios/bios-256k.bin'
+
+
+======================================================================
+FAIL: test_private_bios_without_data_preserves_optional_initrd_and_fixed_profile (__main__.KtestPrivateInputsTests.test_private_bios_without_data_preserves_optional_initrd_and_fixed_profile)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/tests/test_ktest_private_inputs.py", line 127, in test_private_bios_without_data_preserves_optional_initrd_and_fixed_profile
+    self.assertEqual(result.returncode, 33, result.stdout)
+AssertionError: 1 != 33 : Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/round2-ktest-private/baseline-record-qemu.py", line 80, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/workspace/scratch/ae1a8cf05419/round2-ktest-private/baseline-record-qemu.py", line 48, in main
+    artifacts["-bios"] = {"path": str(firmware), "size": firmware.stat().st_size,
+                                                         ^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/pathlib.py", line 840, in stat
+    return os.stat(self, follow_symlinks=follow_symlinks)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/usr/share/seabios/bios-256k.bin'
+
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.094s
+
+FAILED (failures=2)

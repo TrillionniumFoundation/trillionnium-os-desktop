@@ -1,0 +1,199 @@
+{
+  "schema": "a01-cloud-closure-report/1",
+  "branch": "agents/A01-asterinas-boot",
+  "pull_request": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/22",
+  "base_main": "40ca002fac0726b366726d3353916637b29adeae",
+  "merged_main_commit": "5fffe3394dd562ad88fda7c37edc258cf9b56387",
+  "status": "actual full-kernel build/boot and selected regressions passed; remaining host and owner work is explicit",
+  "pins": {
+    "upstream_commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+    "upstream_tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+    "derived_kernel_tree": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da",
+    "toolchain": "nightly-2026-07-21",
+    "rustc_commit": "87e5904f5eb6398af6b22eac2802c78934260c48",
+    "source_directory": "kernel/asterinas"
+  },
+  "ordinary_kernel": {
+    "source": "d879a9d2ffae8d0eb0df441370da54f9e3a38431",
+    "tool_session": 15521,
+    "tool_exit": 0,
+    "controller_steps": 11,
+    "all_steps_exit": 0,
+    "cold_make_kernel_compilation_lines": 279,
+    "boot_stage_compilation_lines": 0,
+    "target_absent_before_cold_stage": true,
+    "boot_reuses_preceding_cold_target": true,
+    "raw_qemu_exit": 33,
+    "kernel_bytes": 8258112,
+    "kernel_sha256": "c49ad7da1c76c1f559d065ac3f8cbcbad407242dda54f1ed00028f02d5c2413d",
+    "first_produced_and_boot_bytes_equal": true,
+    "serial_bytes": 72247,
+    "serial_sha256": "3840526255cff7c53567f3e35e42739a11dba24f3feb03594719e92bec0ab5ca",
+    "post_verified_source_inputs": 118,
+    "post_git_status_empty": true,
+    "evidence": "2026-10-17-native-cloud-normal"
+  },
+  "projected_repeatability": {
+    "source": "4e8c7083575cec69efabe8d2250dfdd040c8dee8",
+    "schema": "a01-component-path-projection/4",
+    "cargo_jobs": 1,
+    "cases": [
+      "A4",
+      "B4"
+    ],
+    "cold_distinct_actual_source_roots": true,
+    "target_absent_each": true,
+    "raw_qemu_exits": [
+      33,
+      33
+    ],
+    "complete_input_bytes_equal": {
+      "-kernel": true,
+      "-initrd": true,
+      "-bios": true
+    },
+    "kernel_sha256": "8c540288c6af2a1a97121031643c1af4c4db395d7e8b4082d6edc4604449849a",
+    "kernel_bytes": 8286952,
+    "actual_comparison_exit": 0,
+    "evidence": "2026-10-17-repro-cross-path"
+  },
+  "kernel_mode": {
+    "source": "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+    "reported_passed": 362,
+    "failed": 0,
+    "soft_skipped": 3,
+    "exercised_lower_bound": 359,
+    "raw_qemu_exits": [
+      33,
+      33
+    ],
+    "kernel_mode_runner_exit": 0,
+    "enclosing_tool_session": 36657,
+    "enclosing_tool_exit": 1,
+    "enclosing_failure_reason": "subsequent retained initial OSDK matrix failed 2/22; this is not relabeled as tool exit 0",
+    "same_absolute_source_root_sdk_reinstalled": true,
+    "evidence": "2026-10-17-native-cloud-before"
+  },
+  "osdk_matrix": {
+    "source": "d879a9d2ffae8d0eb0df441370da54f9e3a38431",
+    "tool_session": 78119,
+    "tool_exit": 0,
+    "selected": 22,
+    "passed": 22,
+    "failed": 0,
+    "blocked": 0,
+    "vmx_soft_skip": 1,
+    "actual_guests": 11,
+    "all_raw_exit": 33,
+    "cached_compilation": true,
+    "cold_claimed": false,
+    "private_input_mappings": 23,
+    "unique_retained_artifacts": 13,
+    "coverage_functions_with_counts": 5692,
+    "coverage_raw_bytes": 2096896,
+    "coverage_raw_sha256": "0862a2568e4bb069835dfa6fdf2d15af727020848976bb0a2457b8eeb7fb601c",
+    "llvm_merge_show_exits": [
+      0,
+      0
+    ],
+    "evidence": "2026-10-17-native-cloud-final",
+    "positive_function_entry_count_analysis": "coverage-counts.json"
+  },
+  "dependencies": {
+    "signed_ubuntu_packages": 57,
+    "private_prefix": true,
+    "system_apt_failed_attempt_retained": true,
+    "apt_security_bypassed": false,
+    "rust_nightly_changed": false,
+    "installer_iso_required": false,
+    "nix_or_docker_required": false,
+    "evidence": "2026-10-17-private-toolchain"
+  },
+  "source_bridge": {
+    "candidate": "8deaf5c1b8211189d90fecf15a4b27b5b6bad72c",
+    "source_identity_is_not_test_execution": true,
+    "groups": [
+      "opt-in-path-projected-kernel-build-and-boot",
+      "ordinary-kernel-build-and-boot",
+      "upstream-kernel-mode-regression",
+      "upstream-osdk-matrix",
+      "historical-fixed-nightly-abi-host-input-identity",
+      "historical-fixed-nightly-control-host-input-identity"
+    ],
+    "candidate_tree": "73032690e089a6bb48b85b146d80f8330b027b79",
+    "source_bridge_passed": true,
+    "actual_command_exit": 0,
+    "validation_executed_here": false,
+    "result": "source-bridge/result.json",
+    "final_documentation_commit_will_descend_from_candidate": true
+  },
+  "host_results": {
+    "abi_source": "8f3bb49ab161104063a6ebea25428c40aa884ac0",
+    "abi_runner_checks": 13,
+    "abi_python_per_mode": 52,
+    "abi_rust_and_doc_tests": 70,
+    "control_source": "40ca002fac0726b366726d3353916637b29adeae",
+    "control_tests_per_backend": 129,
+    "control_backends": 2,
+    "final_snapshot_tests_per_python_mode": 152,
+    "python_modes": 2,
+    "scope": "Separate exact historical host validations; final bridge compares only consumed Git inputs, without rerunning them."
+  },
+  "scopes": {
+    "all_project_blockers_closed": false,
+    "cross_host_reproducibility_accepted": false,
+    "immutable_environment_accepted": false,
+    "native_hos2_enforcement_accepted": false,
+    "g1_accepted": false,
+    "g2_accepted": false,
+    "vmx_ept_exercised": false,
+    "default_host_af_unix_restored": false,
+    "unknown_writer_identified": false,
+    "kernel_core_modified_this_round": false,
+    "root_readme_bytes": 0
+  },
+  "historical_limits": [
+    "Initial 20/22 matrix case14 original ELF bytes were overwritten and are unavailable; original hash/serial are retained. No replacement is reconstructed.",
+    "Wrong-root installed SDK original bytes were not frozen; observed hash/static-root diagnosis remains.",
+    "A2/B2 complete ELFs differ despite both booting; those failures remain.",
+    "First path-remap kernel panicked; A3 strict producer completion failed before QEMU; both remain.",
+    "Generic auditor v1 mistook a captured historical partial manifest for a complete subpackage; those failed attempts and corrected auditor scope are preserved."
+  ],
+  "phase_index": "phase-index.json",
+  "blockers": "blockers.json",
+  "handoff": "HANDOFF.md",
+  "root_readme_bytes": 0,
+  "phase_audit": {
+    "indexed_phases": 30,
+    "indexed_physical_files": 1247,
+    "indexed_physical_bytes": 288729204,
+    "final_accepted_phase_checks": 98,
+    "accepted_nonzero_exits": 0,
+    "historical_attempts": 110,
+    "historical_zero_exits": 108,
+    "retained_auditor_scope_error_exits": 2,
+    "superseded_native_freeze_checks_retained_as_history": 8,
+    "snapshot_sum": "08ee378521d2d8f5ca85612156adaa818ddf471e7607362632514da4f055dd0a",
+    "raw_receipts_archive": "raw-receipts.tar.gz"
+  },
+  "static_validation": {
+    "commands": 4,
+    "all_command_exits": 0,
+    "local_markdown_links_checked": 16,
+    "root_readme_bytes": 0,
+    "kernel_tree_worktree_diff_exit": 0,
+    "evidence": "static-validation/result.json",
+    "new_kernel_builds": 0,
+    "new_guests": 0
+  },
+  "prepared_utc": "2026-10-17T02:24:38.498399+00:00",
+  "aggregate_preseal_validation": {
+    "actual_modes": [
+      "I",
+      "IO"
+    ],
+    "all_exits": 0,
+    "receipt": "preseal-validation.json",
+    "scope": "preseal receipt, final sealed checks executed afterward"
+  }
+}

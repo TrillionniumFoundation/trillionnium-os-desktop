@@ -1,0 +1,22 @@
+{
+  "scope": "New unpublished packaging correction only; original historical tracked files remain unchanged",
+  "failed_command": [
+    "python3",
+    "-I",
+    "cross-host-review/cross-instance-verify.py",
+    "--capture-completed-c4"
+  ],
+  "observed_exit_code": 1,
+  "output": "comparison failed: checksum coverage mismatch\n",
+  "cause": "The C4 packer imported the historical schema4 helper without disabling Python bytecode output. Python wrote one new untracked cache file inside A4.",
+  "generated_extra": {
+    "path": "__pycache__/schema4_checks.cpython-312.pyc",
+    "bytes": 14794,
+    "sha256": "949b68583901212d77c3628b04b6420aa85e21633999097918ca00822bbd8094"
+  },
+  "recovery": "Preserved the generated extra in scratch, then removed only that exact generated file and its now-empty directory. No historical phase member, checksum or artifact was modified.",
+  "prevention": "The corrected scratch packer now sets sys.dont_write_bytecode=True before helper imports. Cross-instance verifier already sets it before all helper imports.",
+  "corrected_packer_sha256": "1814824be9d069d2492bfbdcab5596beb88641dcda1f2a21bcd89dec55b1ceb9",
+  "cross_instance_or_kernel_failure": false,
+  "utc": "2026-10-17T04:19:13.732665+00:00"
+}

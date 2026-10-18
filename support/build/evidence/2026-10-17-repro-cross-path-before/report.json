@@ -1,0 +1,269 @@
+{
+  "schema": 1,
+  "phase": "2026-10-17-repro-cross-path-before",
+  "packaged_utc": "2026-10-17T01:11:28.881551+00:00",
+  "comparison_passed": false,
+  "cross_path_byte_reproduction_accepted": false,
+  "cross_host_reproduction_accepted": false,
+  "case_boot_results": {
+    "A2": true,
+    "B2": true
+  },
+  "scope": "Original same-host cross-path comparison failed after two successful real kernel boots and two original comparison live checks. This is a standalone read-only evidence package, not a rerun of the failing script or a new build/VM.",
+  "source": {
+    "producer_commit": "bdf7a08dcc0980fa85c0ba5abdf365b7d2c42e80",
+    "producer_complete_tree": "eff51eb940d1f415aedb84555752ecbc97d58faa",
+    "derived_kernel_tree": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da",
+    "build_controls_tree": "65343022b1f365fd5fe2fdfb80c0d23e96b72f4e",
+    "commit_object": "tree eff51eb940d1f415aedb84555752ecbc97d58faa\nparent 67deec2ece2bb2428c4f03dcba57ec39094dc32a\nauthor Franksudoman <sunfocapital@gmail.com> 1792198208 +0800\ncommitter Franksudoman <sunfocapital@gmail.com> 1792198208 +0800\n\nfix(build): enforce canonical remapping in compiler arguments\n\nAppend the bound canonical remap to the effective rustc arguments without losing OSDK flags, reject conflicting overlapping maps, and record incoming and executed arguments. Schema two host and native compiler checks pass; full kernel acceptance is separate.",
+    "source_archive": "source/controls.tar.gz",
+    "source_member_count": 86,
+    "scope": "Exact shared bdf7a08 producer controls for both A2 and B2; not a changed-source comparison."
+  },
+  "original_failure": {
+    "observation": "root-observation.json",
+    "argv": [
+      "python3",
+      "compare-normalized-cloud.py"
+    ],
+    "cwd": "/workspace/scratch/ae1a8cf05419",
+    "shell": "/bin/bash",
+    "login": false,
+    "exit_code": 1,
+    "exception_final_line": "ValueError: actual boot input bytes differ",
+    "raw_traceback_available": false,
+    "independent_exception_log_available": false,
+    "provenance": "Delegating root actual tool-result retained summary; full traceback unavailable and not reconstructed.",
+    "script_sha256": "5566d3648f6ffff15cb84cb2e1be280899983109b38eb1024873d1f1aae594e6",
+    "script_original_path": "compare-normalized-cloud.py",
+    "script_readable_copy": "readable/comparison-script.py",
+    "original_output_members": [
+      "A2-live-recheck.log",
+      "B2-live-recheck.log"
+    ],
+    "original_result_json_exists": false,
+    "original_script_reexecuted": false
+  },
+  "cases": {
+    "A2": {
+      "source_commit": "bdf7a08dcc0980fa85c0ba5abdf365b7d2c42e80",
+      "real_root": "/tmp/trillionnium-a01-normalized-A2/kernel/asterinas",
+      "virtual_root": "/workspace/scratch/ae1a8cf05419/full-kernel-profile-v2/virtual-asterinas",
+      "actual_host": {
+        "hostname": "343e40cfefc1",
+        "username": "root",
+        "uid": 0,
+        "uname": [
+          "Linux",
+          "343e40cfefc1",
+          "6.18.44",
+          "#1 SMP Sat Sep 26 20:02:31 UTC 2026",
+          "x86_64"
+        ]
+      },
+      "embedded_builder": {
+        "username": "a01-repro",
+        "hostname": "a01-fixed-profile"
+      },
+      "profile_code_sha256": {
+        "profile.py": "bd2ccad531f4e81e87755f838c4e2908032505f1d5a061a95a85af498349095c",
+        "run.py": "1f1d5c207e5cdac85cf1c0a8b4c54ea8a398d4134e53192532f0325a4780272c",
+        "rustc-wrapper.py": "ce26497fe044ccab2c1569a39b200cdfa0b8b9acb9420257ff2ab9f9f3cd7d69",
+        "cargo-metadata-wrapper.py": "ba2a27ad16cd0b1a6236dc18c4246716990ca8429a0006fde527b00a26bbd730"
+      },
+      "components_sha256": "26b4b68a8a0f661c6575ec444b3456730110e78fa72b2d03c2a70c4ee46d60f6",
+      "target_absent_at_prelaunch": true,
+      "profile_result": {
+        "command": [
+          "/tmp/trillionnium-a01-normalized-A2/support/build/kernel.sh",
+          "run_kernel"
+        ],
+        "started": "2026-10-17T00:50:30.452352+00:00",
+        "finished": "2026-10-17T00:56:16.765257+00:00",
+        "child_returncode": 0,
+        "returncode": 0,
+        "profile_custody_unchanged": true,
+        "source_components_unchanged": true,
+        "profile_code_unchanged": true,
+        "scope": "same-host opt-in path projection; independent-host reproduction not claimed"
+      },
+      "all_eight_commands_exit_zero": true,
+      "raw_qemu_exit": 33,
+      "timed_out": false,
+      "serial_bytes": 72341,
+      "serial_sha256": "e0845a2d34a0f3d16d7a753c50c94f30b1d3eacc1d7b1649811cfdc4f574cccd",
+      "inputs": {
+        "-kernel": {
+          "bytes": 8293608,
+          "sha256": "e89063b19e5895aa64695ba27c04d7d53fd5d65e23adeb0aab06983a1a33794d",
+          "path": "/workspace/scratch/ae1a8cf05419/normalized-cloud/A2/kernel-run/artifacts-f2z0ubxj/kernel.elf"
+        },
+        "-initrd": {
+          "bytes": 1107990,
+          "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+          "path": "/workspace/scratch/ae1a8cf05419/normalized-cloud/A2/kernel-run/artifacts-f2z0ubxj/initramfs.cpio.gz"
+        },
+        "-bios": {
+          "bytes": 262144,
+          "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+          "path": "/workspace/scratch/ae1a8cf05419/normalized-cloud/A2/kernel-run/artifacts-f2z0ubxj/bios.bin"
+        }
+      },
+      "mapped_metadata_sha256s": [
+        "556374ce94c5d8a21e3ce782a70d4022840ad8c1bed1d826535beef82de7f2f3",
+        "556374ce94c5d8a21e3ce782a70d4022840ad8c1bed1d826535beef82de7f2f3",
+        "556374ce94c5d8a21e3ce782a70d4022840ad8c1bed1d826535beef82de7f2f3",
+        "556374ce94c5d8a21e3ce782a70d4022840ad8c1bed1d826535beef82de7f2f3",
+        "556374ce94c5d8a21e3ce782a70d4022840ad8c1bed1d826535beef82de7f2f3",
+        "556374ce94c5d8a21e3ce782a70d4022840ad8c1bed1d826535beef82de7f2f3"
+      ],
+      "original_metadata_sha256s": [
+        "48a76f0ad274a45e9fc6ff374b0baacb0054e2db4f7e18201a7d4717fca8a945",
+        "48a76f0ad274a45e9fc6ff374b0baacb0054e2db4f7e18201a7d4717fca8a945",
+        "48a76f0ad274a45e9fc6ff374b0baacb0054e2db4f7e18201a7d4717fca8a945",
+        "48a76f0ad274a45e9fc6ff374b0baacb0054e2db4f7e18201a7d4717fca8a945",
+        "48a76f0ad274a45e9fc6ff374b0baacb0054e2db4f7e18201a7d4717fca8a945",
+        "48a76f0ad274a45e9fc6ff374b0baacb0054e2db4f7e18201a7d4717fca8a945"
+      ]
+    },
+    "B2": {
+      "source_commit": "bdf7a08dcc0980fa85c0ba5abdf365b7d2c42e80",
+      "real_root": "/tmp/trillionnium-a01-normalized-B2/kernel/asterinas",
+      "virtual_root": "/workspace/scratch/ae1a8cf05419/full-kernel-profile-v2/virtual-asterinas",
+      "actual_host": {
+        "hostname": "343e40cfefc1",
+        "username": "root",
+        "uid": 0,
+        "uname": [
+          "Linux",
+          "343e40cfefc1",
+          "6.18.44",
+          "#1 SMP Sat Sep 26 20:02:31 UTC 2026",
+          "x86_64"
+        ]
+      },
+      "embedded_builder": {
+        "username": "a01-repro",
+        "hostname": "a01-fixed-profile"
+      },
+      "profile_code_sha256": {
+        "profile.py": "bd2ccad531f4e81e87755f838c4e2908032505f1d5a061a95a85af498349095c",
+        "run.py": "1f1d5c207e5cdac85cf1c0a8b4c54ea8a398d4134e53192532f0325a4780272c",
+        "rustc-wrapper.py": "ce26497fe044ccab2c1569a39b200cdfa0b8b9acb9420257ff2ab9f9f3cd7d69",
+        "cargo-metadata-wrapper.py": "ba2a27ad16cd0b1a6236dc18c4246716990ca8429a0006fde527b00a26bbd730"
+      },
+      "components_sha256": "26b4b68a8a0f661c6575ec444b3456730110e78fa72b2d03c2a70c4ee46d60f6",
+      "target_absent_at_prelaunch": true,
+      "profile_result": {
+        "command": [
+          "/tmp/trillionnium-a01-normalized-B2/support/build/kernel.sh",
+          "run_kernel"
+        ],
+        "started": "2026-10-17T00:56:30.910512+00:00",
+        "finished": "2026-10-17T01:02:39.641297+00:00",
+        "child_returncode": 0,
+        "returncode": 0,
+        "profile_custody_unchanged": true,
+        "source_components_unchanged": true,
+        "profile_code_unchanged": true,
+        "scope": "same-host opt-in path projection; independent-host reproduction not claimed"
+      },
+      "all_eight_commands_exit_zero": true,
+      "raw_qemu_exit": 33,
+      "timed_out": false,
+      "serial_bytes": 72341,
+      "serial_sha256": "e429eae97a05c5fe47e0fc4c09bb5cbf3911e86eea80598dbf22cbf5c5c0c123",
+      "inputs": {
+        "-kernel": {
+          "bytes": 8292192,
+          "sha256": "b5fda2500d15c250d022f81bf2d30c0778244faea021a5db34aa68665d68f763",
+          "path": "/workspace/scratch/ae1a8cf05419/normalized-cloud/B2/kernel-run/artifacts-fnk1zwy5/kernel.elf"
+        },
+        "-initrd": {
+          "bytes": 1107990,
+          "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+          "path": "/workspace/scratch/ae1a8cf05419/normalized-cloud/B2/kernel-run/artifacts-fnk1zwy5/initramfs.cpio.gz"
+        },
+        "-bios": {
+          "bytes": 262144,
+          "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+          "path": "/workspace/scratch/ae1a8cf05419/normalized-cloud/B2/kernel-run/artifacts-fnk1zwy5/bios.bin"
+        }
+      },
+      "mapped_metadata_sha256s": [
+        "556374ce94c5d8a21e3ce782a70d4022840ad8c1bed1d826535beef82de7f2f3",
+        "556374ce94c5d8a21e3ce782a70d4022840ad8c1bed1d826535beef82de7f2f3",
+        "556374ce94c5d8a21e3ce782a70d4022840ad8c1bed1d826535beef82de7f2f3",
+        "556374ce94c5d8a21e3ce782a70d4022840ad8c1bed1d826535beef82de7f2f3",
+        "556374ce94c5d8a21e3ce782a70d4022840ad8c1bed1d826535beef82de7f2f3",
+        "556374ce94c5d8a21e3ce782a70d4022840ad8c1bed1d826535beef82de7f2f3"
+      ],
+      "original_metadata_sha256s": [
+        "238b04d98f86e3a755b07a1ca8ff3207b2f279488e890ae1b6120fc6fac79b1b",
+        "238b04d98f86e3a755b07a1ca8ff3207b2f279488e890ae1b6120fc6fac79b1b",
+        "238b04d98f86e3a755b07a1ca8ff3207b2f279488e890ae1b6120fc6fac79b1b",
+        "238b04d98f86e3a755b07a1ca8ff3207b2f279488e890ae1b6120fc6fac79b1b",
+        "238b04d98f86e3a755b07a1ca8ff3207b2f279488e890ae1b6120fc6fac79b1b",
+        "238b04d98f86e3a755b07a1ca8ff3207b2f279488e890ae1b6120fc6fac79b1b"
+      ]
+    }
+  },
+  "actual_complete_input_bytes_equal": {
+    "-kernel": false,
+    "-initrd": true,
+    "-bios": true
+  },
+  "different_options": [
+    "-kernel"
+  ],
+  "A2_kernel_minus_B2_bytes": 1416,
+  "context_equalities": {
+    "producer_commit_equal": true,
+    "real_source_roots_equal": false,
+    "virtual_roots_equal": true,
+    "profile_code_hashes_equal": true,
+    "components_hash_equal": true,
+    "actual_host_equal": true,
+    "mapped_metadata_payload_sha256s_equal_by_call_order": true,
+    "original_metadata_payload_sha256s_equal_by_call_order": false,
+    "serial_payload_sha256_equal": false
+  },
+  "new_read_only_diagnosis": {
+    "input_comparison": "diagnosis/inputs.json",
+    "ELF_sections": "diagnosis/elf.json",
+    "failure_reason": "Only kernel ELF bytes differ among the three loaded input types; initramfs and BIOS are byte-identical.",
+    "cause_established": false,
+    "scope": "Derived from retained snapshots; no new compilation, live guest or original comparison execution."
+  },
+  "preservation": {
+    "original_unique_files": 116,
+    "shared_original_paths_deduplicated": 7,
+    "raw_regular_members": 108,
+    "deduplicated_binary_payloads": 4,
+    "logical_binary_paths": 8,
+    "source_controls": 86,
+    "source_tree_objects": 30,
+    "raw_manifest": "raw.manifest.json",
+    "binary_manifest": "artifacts/manifest.json",
+    "source_manifest": "source/members.json",
+    "original_capture_and_case_bindings": "capture.json",
+    "frozen_package_bindings": "inputs/frozen-package-bindings.json",
+    "readable_manifest": "readable/manifest.json",
+    "maximum_stored_chunk_bytes": 2097152,
+    "self_contained_offline_verification": true
+  },
+  "limits": [
+    "Both real guest boots passed; complete kernel ELF equality failed. Two successful live checks do not establish equal binaries.",
+    "The original exception has only the stated final line/status from root retained summary; there is no fabricated complete raw traceback.",
+    "The existing comparison directory contains only two 84-byte live-check logs and no result.json.",
+    "Cause of remaining binary nondeterminism is not proven by the read-only diagnosis.",
+    "Profile is explicit same-host v2 projection with synthetic embedded builder identity and recorded actual host; no cross-host/immutable-host acceptance.",
+    "Source controls are exact selected inputs and offline Git membership objects, not a duplicate of the entire repository or host dependencies.",
+    "Reassembly creates fresh files, not original inodes or the original execution environment."
+  ],
+  "verification": {
+    "command": "python3 -I support/build/evidence/2026-10-17-repro-cross-path-before/verify.py",
+    "optimized_command": "python3 -I -O support/build/evidence/2026-10-17-repro-cross-path-before/verify.py",
+    "scope": "Offline evidence integrity, complete reconstructed inputs, source binding and expected comparison failure. A successful verifier means this failed-result evidence is intact, not that cross-path comparison passed."
+  }
+}

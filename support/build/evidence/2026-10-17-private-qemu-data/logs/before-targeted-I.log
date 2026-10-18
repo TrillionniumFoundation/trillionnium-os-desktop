@@ -1,0 +1,61 @@
+test_recorder_explicit_private_data_directory_with_spaces_appends_one_L (__main__.BootEvidenceTests.test_recorder_explicit_private_data_directory_with_spaces_appends_one_L) ... ERROR
+test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools (__main__.BootEvidenceTests.test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools) ... 
+  test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools (__main__.BootEvidenceTests.test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools) (value='', arguments=None) ... FAIL
+  test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools (__main__.BootEvidenceTests.test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools) (value='relative-data', arguments=None) ... FAIL
+  test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools (__main__.BootEvidenceTests.test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools) (value='/workspace/scratch/ae1a8cf05419/round2-qemu-data/before-targeted-I-fixtures/test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools/missing-data', arguments=None) ... FAIL
+  test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools (__main__.BootEvidenceTests.test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools) (value='/workspace/scratch/ae1a8cf05419/round2-qemu-data/before-targeted-I-fixtures/test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools/inputs/bios.bin', arguments=None) ... FAIL
+  test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools (__main__.BootEvidenceTests.test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools) (value='/workspace/scratch/ae1a8cf05419/round2-qemu-data/before-targeted-I-fixtures/test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools/private data', arguments=['-kernel', 'kernel.elf', '-initrd', 'initramfs.cpio.gz', '-bios', 'bios.bin', '-L', 'original requested data']) ... FAIL
+
+======================================================================
+ERROR: test_recorder_explicit_private_data_directory_with_spaces_appends_one_L (__main__.BootEvidenceTests.test_recorder_explicit_private_data_directory_with_spaces_appends_one_L)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/tests/test_boot_evidence.py", line 312, in test_recorder_explicit_private_data_directory_with_spaces_appends_one_L
+    self.assertEqual(record["data_selection"], {
+                     ~~~~~~^^^^^^^^^^^^^^^^^^
+KeyError: 'data_selection'
+
+======================================================================
+FAIL: test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools (__main__.BootEvidenceTests.test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools) (value='', arguments=None)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/tests/test_boot_evidence.py", line 333, in test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools
+    self.assertEqual(result.returncode, 1, result.stdout)
+AssertionError: 33 != 1 : 
+
+======================================================================
+FAIL: test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools (__main__.BootEvidenceTests.test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools) (value='relative-data', arguments=None)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/tests/test_boot_evidence.py", line 333, in test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools
+    self.assertEqual(result.returncode, 1, result.stdout)
+AssertionError: 33 != 1 : 
+
+======================================================================
+FAIL: test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools (__main__.BootEvidenceTests.test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools) (value='/workspace/scratch/ae1a8cf05419/round2-qemu-data/before-targeted-I-fixtures/test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools/missing-data', arguments=None)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/tests/test_boot_evidence.py", line 333, in test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools
+    self.assertEqual(result.returncode, 1, result.stdout)
+AssertionError: 33 != 1 : 
+
+======================================================================
+FAIL: test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools (__main__.BootEvidenceTests.test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools) (value='/workspace/scratch/ae1a8cf05419/round2-qemu-data/before-targeted-I-fixtures/test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools/inputs/bios.bin', arguments=None)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/tests/test_boot_evidence.py", line 333, in test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools
+    self.assertEqual(result.returncode, 1, result.stdout)
+AssertionError: 33 != 1 : 
+
+======================================================================
+FAIL: test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools (__main__.BootEvidenceTests.test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools) (value='/workspace/scratch/ae1a8cf05419/round2-qemu-data/before-targeted-I-fixtures/test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools/private data', arguments=['-kernel', 'kernel.elf', '-initrd', 'initramfs.cpio.gz', '-bios', 'bios.bin', '-L', 'original requested data'])
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/tests/test_boot_evidence.py", line 333, in test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools
+    self.assertEqual(result.returncode, 1, result.stdout)
+AssertionError: 33 != 1 : 
+
+----------------------------------------------------------------------
+Ran 2 tests in 1.141s
+
+FAILED (failures=5, errors=1)

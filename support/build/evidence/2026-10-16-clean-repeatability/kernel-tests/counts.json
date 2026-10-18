@@ -1,0 +1,121 @@
+{
+  "passed": true,
+  "declared_passes": 362,
+  "soft_skipped": 3,
+  "exercised_passed_lower_bound": 359,
+  "guest_count": 2,
+  "raw_qemu_exits": [
+    33,
+    33
+  ],
+  "outer_exit_code": 0,
+  "guests": [
+    {
+      "crate": "ostd",
+      "passed": 221,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 3,
+      "soft_skip_reasons": [
+        "VMX unavailable",
+        "VMX unavailable",
+        "VMX/EPT invalidation unavailable"
+      ],
+      "exercised_passed_lower_bound": 218,
+      "raw_qemu_exit": 33,
+      "timed_out": false,
+      "serial_bytes": 23028,
+      "serial_sha256": "85f3cc2b69274521f3eeca0e699e667d462cd2d8fb58759e154bf885aa90a332",
+      "generated_lock_sha256": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6",
+      "actual_input_lock_sha256": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6"
+    },
+    {
+      "crate": "aster-core",
+      "passed": 141,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 0,
+      "soft_skip_reasons": [],
+      "exercised_passed_lower_bound": 141,
+      "raw_qemu_exit": 33,
+      "timed_out": false,
+      "serial_bytes": 15032,
+      "serial_sha256": "40b5431a766e7980cbde3e618aec95044ab13330bfe683a63f427af704a403f7",
+      "generated_lock_sha256": "159b8682d27a7a21af98885ae48515234445c00fdf5e00b158fdc4aa952ff4ed",
+      "actual_input_lock_sha256": "159b8682d27a7a21af98885ae48515234445c00fdf5e00b158fdc4aa952ff4ed"
+    }
+  ],
+  "command_receipts": [
+    {
+      "path": "run/aster-core/osdk-test.log.command.json",
+      "sha256": "4b4e4e006b7ddcbbdc84302e395b6d3cd92e511d1b2be33fd644237e7f697ee7",
+      "raw_exit_code": 0,
+      "exit_code": 0,
+      "leader_reaped": true
+    },
+    {
+      "path": "run/aster-core/result.json.command.json",
+      "sha256": "bed9d872c90a57839a55fa638e862e3e7391a588d205ce7e91f84f469ef37a66",
+      "raw_exit_code": 0,
+      "exit_code": 0,
+      "leader_reaped": true
+    },
+    {
+      "path": "run/cargo-version.log.command.json",
+      "sha256": "40fa8ae17a4434c4c8081bb65abe5d9896ea6e39df6fd13f3230b826004e6a8e",
+      "raw_exit_code": 0,
+      "exit_code": 0,
+      "leader_reaped": true
+    },
+    {
+      "path": "run/git-head.log.command.json",
+      "sha256": "9b5160bb2469036e4c80de67d7a697c5dbd656eb0975315f4f6d41c2e9af4233",
+      "raw_exit_code": 0,
+      "exit_code": 0,
+      "leader_reaped": true
+    },
+    {
+      "path": "run/git-status.log.command.json",
+      "sha256": "38cdfd0498c736cf736eee17f4eac91b953d033a732518401627bc2c4b99b357",
+      "raw_exit_code": 0,
+      "exit_code": 0,
+      "leader_reaped": true
+    },
+    {
+      "path": "run/osdk-install.log.command.json",
+      "sha256": "ef7df29675e4fc953d4f4cd9ec52236b289bb75f01481d6ea2cc3ee8c7dca11e",
+      "raw_exit_code": 0,
+      "exit_code": 0,
+      "leader_reaped": true
+    },
+    {
+      "path": "run/ostd/osdk-test.log.command.json",
+      "sha256": "3cddc15a0d8750eea6c42508e1c72b408adfdd18df3adaae85be2d5af76f18ad",
+      "raw_exit_code": 0,
+      "exit_code": 0,
+      "leader_reaped": true
+    },
+    {
+      "path": "run/ostd/result.json.command.json",
+      "sha256": "78a32868a8e483d177c1b43ff4a584c54625f436280db9448db0e56cdbadee57",
+      "raw_exit_code": 0,
+      "exit_code": 0,
+      "leader_reaped": true
+    },
+    {
+      "path": "run/rustc-version.log.command.json",
+      "sha256": "e587fad47436990b2a21d7034923f4359833f4e4fd41179b10068343b99f89e4",
+      "raw_exit_code": 0,
+      "exit_code": 0,
+      "leader_reaped": true
+    },
+    {
+      "path": "run/source-inputs.json.command.json",
+      "sha256": "8e37e0aabc5066f703f52ee3f9521572997f82fc069c35626b4e4a38a9d0d331",
+      "raw_exit_code": 0,
+      "exit_code": 0,
+      "leader_reaped": true
+    }
+  ],
+  "note": "221 OSTD includes three upstream soft-success VMX/EPT skips; 141 aster-core have none. Expected-panic tests remain valid upstream tests."
+}

@@ -1,0 +1,92 @@
+{
+  "schema": "a01-next-cloud-phase-index/1",
+  "phases": [
+    {
+      "path": "support/build/evidence/2026-10-17-cloud-restore-next",
+      "file_count": 34,
+      "total_bytes": 22259252,
+      "sha256sums_sha256": "3e06dc3c6acd8e465cd2994978e1380e082558a5499123035c1495240cfcadd3",
+      "verifier_sha256": "45fd64d735686c587dc1add881bea7b423f960e5e3a4d3d936c764a22ae06fef"
+    },
+    {
+      "path": "support/build/evidence/2026-10-17-private-sdk",
+      "file_count": 144,
+      "total_bytes": 729950,
+      "sha256sums_sha256": "5b5282caf32344825c71f36e3bbb4205356ba95a300ba176f4ed8c18bc366207",
+      "verifier_sha256": "c1dd764b783087aa17a8a3309faec92a4747a6018ded2ce0b502419ae5e58950"
+    },
+    {
+      "path": "support/build/evidence/2026-10-17-private-sdk-native",
+      "file_count": 36,
+      "total_bytes": 7067449,
+      "sha256sums_sha256": "3876a3d9b0f57774af5d760b4da8c191b9cf07060d91f288d9c4385e7c0d624e",
+      "verifier_sha256": "5f502000e8513877697e3d1654780ee38f208cf23ff94efd354d056e8c1aa28f"
+    },
+    {
+      "path": "support/build/evidence/2026-10-17-debug-private-sdk",
+      "file_count": 21,
+      "total_bytes": 659179,
+      "sha256sums_sha256": "d23e23dc542eaedb0bf7e32c4067fa3762fa6b7be97da3c2586e12efadc38b1b",
+      "verifier_sha256": "7e077ea7d8a2dce67f54f25b86b1471431df34174fdebf8dbb731b256913009f"
+    },
+    {
+      "path": "support/build/evidence/2026-10-17-debug-private-sdk-native",
+      "file_count": 76,
+      "total_bytes": 34078531,
+      "sha256sums_sha256": "f4e1137b22ea82612d0aceeac6bc96852b8ae89368b6cfbe456a12335d2a508f",
+      "verifier_sha256": "f2e63cd59a1c75484f066943fe1d76cdebff13c3ce1183b53c197edb738dcfc3"
+    },
+    {
+      "path": "support/build/evidence/2026-10-17-ktest-private-sdk",
+      "file_count": 58,
+      "total_bytes": 196870,
+      "sha256sums_sha256": "ec5a876a2785b07edb13be9236bc825baa53af020faa7d62128d50c33bab92ef",
+      "verifier_sha256": "82b00e20713e07a5371c6eda3fcec73bee3ab7c018a2579ced47bfd3db401df6"
+    },
+    {
+      "path": "support/build/evidence/2026-10-17-ktest-private-sdk-native",
+      "file_count": 32,
+      "total_bytes": 5901212,
+      "sha256sums_sha256": "746d148ad340a2089a9f2600ca43fdce0c6c5f188e616de0181b02d56a9bac9c",
+      "verifier_sha256": "07157ab10bb4bbc930c77d5a44ab9915ce983378353df35a1fff81ea496780ab"
+    },
+    {
+      "path": "support/build/evidence/2026-10-17-main-ci-next",
+      "file_count": 7,
+      "total_bytes": 1083756,
+      "sha256sums_sha256": "8009a5964a8d873143bf2588d8928abf82698eeeaf07dd00cba17fce2a96d3f6",
+      "verifier_sha256": "b69861e57b4b6c3daa0ac7fa9350ad8c3bdcd9b7ae3180ec473a4cefe9b444b4"
+    },
+    {
+      "path": "support/build/evidence/2026-10-17-main47288-abi",
+      "file_count": 63,
+      "total_bytes": 523968,
+      "sha256sums_sha256": "4f595e97791c9fa64596bd1fb88daad34011481c6dca3dbe76c5882ab013dc17",
+      "verifier_sha256": "b6d2522489311f3fb4d2853bcc16a9c25f651fc1c55ee78660963c51b8197741"
+    },
+    {
+      "path": "support/build/evidence/2026-10-17-repro-cross-instance",
+      "file_count": 7,
+      "total_bytes": 100567,
+      "sha256sums_sha256": "770da47f7dcf25e5834dbaccd46680db0228883acf4e96c3fafd48def58aa88e",
+      "verifier_sha256": "80675d58a08acc04b841c042cf24ee92c5a60c43c7b4f23777bb3f32fd4b6f2a"
+    },
+    {
+      "path": "support/build/evidence/2026-10-17-repro-kernel-c4",
+      "file_count": 46,
+      "total_bytes": 5754156,
+      "sha256sums_sha256": "6e4fff0841536e458825693e3bb99c643695aa2b91e2c537b027de24fcb2e6c5",
+      "verifier_sha256": "545a7d6d86c0759b066d53d96db85554a4dfb9b937a2d7c4c49f262f95536724"
+    }
+  ],
+  "a04_exact_input_handoff": {
+    "path": "support/build/handoffs/a04-exact-rootfs",
+    "file_count": 13,
+    "total_bytes": 69196,
+    "sha256sums_sha256": "901bbf9f1f0b73dd04d240b4f69f77af17657291d9d8556c0c4fbfff8f2ea947",
+    "scope": "Exact-input handoff and saved actual recovery checks only. This closure does not execute its ELF payload or call the materializer without required --output."
+  },
+  "original_verifier_runs": "phase-verification.json",
+  "historical_ci_scope": "main-ci-next snapshot through09aea only; final-head PR/CI readback occurs separately after all publications.",
+  "inventory_policy": "Counts and sizes cover frozen SHA256SUMS members plus that root checksum file. Untracked Python __pycache__ directories are runtime cache, excluded; all other unlisted entries fail verification."
+}

@@ -1,0 +1,56 @@
+{
+  "schema": 1,
+  "scope": "Fresh source build of complete derived Asterinas kernel and OSDK, real Rust-entry GDB attachment and resume to minimal userspace boot; not an OSTD-only example or host Linux boot.",
+  "result": "result.json",
+  "invocation": "invocation.json",
+  "source_binding": "source-bindings.json",
+  "source_publication_commit": "9b381118fe8a1889d4523b4de999bbe45f1b0436",
+  "runtime_git_head": "873cad772d17230ae77dee3973252c97d517dea0",
+  "runtime_tree": "af84f6dfedc3db7d8a9dc4498ea1e1681ea6940c",
+  "target_preexisted_at_launch": false,
+  "manifest_preexisted_at_launch": false,
+  "offline_environment": true,
+  "actual_outer_exit": 0,
+  "actual_outer_session": 88997,
+  "actual_QEMU_raw_exit": 33,
+  "actual_GDB_exit": 0,
+  "actual_GDB_detached": true,
+  "Rust_entry": "0xffffffff88422840",
+  "live_entry_bytes": "50e83a91f1ff48c7c7a8545488e8ee49060048c7c000105f8848c7c178165f88",
+  "live_entry_size": 32,
+  "serial_sha256": "bbcb07e958137c8fd41674b8b7834266c1fd50bcc7f3e6e146d7b84ef0410e02",
+  "artifacts": "artifacts.json",
+  "compile_evidence": {
+    "log": "logs.tar.gz#boot/gdb_server.log",
+    "selected_lines": [
+      {
+        "line": 10,
+        "text": "  Installing cargo-osdk v0.19.0 (/workspace/scratch/ae1a8cf05419/a01-next6-build/kernel/asterinas/osdk)"
+      },
+      {
+        "line": 116,
+        "text": "   Compiling cargo-osdk v0.19.0 (/workspace/scratch/ae1a8cf05419/a01-next6-build/kernel/asterinas/osdk)"
+      },
+      {
+        "line": 117,
+        "text": "    Finished `release` profile [optimized] target(s) in 1m 17s"
+      },
+      {
+        "line": 119,
+        "text": "    Replaced package `cargo-osdk v0.19.0 (/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/osdk)` with `cargo-osdk v0.19.0 (/workspace/scratch/ae1a8cf05419/a01-next6-build/kernel/asterinas/osdk)` (executable `cargo-osdk`)"
+      },
+      {
+        "line": 342,
+        "text": "   Compiling asterinas v0.1.0 (/workspace/scratch/ae1a8cf05419/a01-next6-build/kernel/asterinas/kernel)"
+      },
+      {
+        "line": 347,
+        "text": "    Finished `release` profile [optimized + debuginfo] target(s) in 2m 42s"
+      }
+    ]
+  },
+  "post_run_manifest_observation": "post-debug-manifest.json",
+  "post_run_manifest_caveat": "Generated manifest pathname remained after this successful debug run; original observation/inode/content digest retained. Archival did not delete it or relax the existing-manifest guard. Subsequent source/manifest handling belongs to separate later runs.",
+  "historical_difference": "Boot89c7/symbol855e are new actual hashes, different from earlier artifacts. Difference cause is unknown; bit-for-bit reproduction is not claimed.",
+  "symbol_retention": "Original symbol ELF111709176B hashed before target transition; raw file excluded. Rebuild uses published full tree, fixed toolchain/locks/inputs and recorded commands; rebuilt hashes must be measured, not assumed."
+}

@@ -1,0 +1,27 @@
+{
+  "producer_local_commit": "0053c98e787391ef566305296ffd2b7c912a1095",
+  "published_tree_equivalent_commit": "a8f1ed1252a7eaccf74b9a717f862413b7c6650d",
+  "retry_published_commit": "31543f71a247add15ce8e026a25385c535746bca",
+  "commits": {
+    "0053c98e787391ef566305296ffd2b7c912a1095": {
+      "tree": "8c1902eb85f94a9285a0b34689c8c696fd716c17",
+      "kernel_tree": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da",
+      "commit_object": "tree 8c1902eb85f94a9285a0b34689c8c696fd716c17\nparent f9a71fa7f9bd68423ca9e98a8e7317c3e3fb8ce5\nauthor A01 Rust Kernel Agent <a01@agents.trillionnium.local> 1792196479 -0700\ncommitter A01 Rust Kernel Agent <a01@agents.trillionnium.local> 1792196479 -0700\n\nfix(build): select private BIOS inputs with explicit provenance\n\nA01_QEMU_BIOS selects an absolute private regular BIOS while the recorder retains requested arguments, selection origin, and loaded snapshot provenance.\n"
+    },
+    "a8f1ed1252a7eaccf74b9a717f862413b7c6650d": {
+      "tree": "8c1902eb85f94a9285a0b34689c8c696fd716c17",
+      "kernel_tree": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da",
+      "commit_object": "tree 8c1902eb85f94a9285a0b34689c8c696fd716c17\nparent f9a71fa7f9bd68423ca9e98a8e7317c3e3fb8ce5\nauthor Franksudoman <sunfocapital@gmail.com> 1792196491 +0800\ncommitter Franksudoman <sunfocapital@gmail.com> 1792196491 +0800\n\nfix(build): select private BIOS inputs with explicit provenance\n\nA01_QEMU_BIOS selects an absolute private regular BIOS while the recorder retains requested arguments, selection origin, and loaded snapshot provenance."
+    },
+    "31543f71a247add15ce8e026a25385c535746bca": {
+      "tree": "8913083575cd63c00cdcfa14f6d747187b878777",
+      "kernel_tree": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da",
+      "commit_object": "tree 8913083575cd63c00cdcfa14f6d747187b878777\nparent a8f1ed1252a7eaccf74b9a717f862413b7c6650d\nauthor Franksudoman <sunfocapital@gmail.com> 1792196822 +0800\ncommitter Franksudoman <sunfocapital@gmail.com> 1792196822 +0800\n\nfix(build): select explicit private QEMU data directories\n\nValidate A01_QEMU_DATA_DIR before version probing, reject ambiguous requested -L arguments, and preserve selection provenance alongside requested and executed QEMU arguments."
+    }
+  },
+  "producer_and_first_published_full_trees_equal": true,
+  "all_three_kernel_trees_equal": true,
+  "historical_retry_diff_log": "readable/current-cloud/retry-kernel-tree-binding.log",
+  "producer_build_not_relabelled_as_retry_fresh_compile": true,
+  "selected_source_archive": "source/controls.tar.gz"
+}

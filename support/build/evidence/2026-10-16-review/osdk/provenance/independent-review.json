@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "mode": "Two independent read-only reviewers; no new guest runs, archive edits or source edits by reviewers.",
+  "material_blockers": [],
+  "reviewers": [
+    {
+      "agent": "coverage_binding_tests",
+      "checks": [
+        "11 actual source serial/helper/tar bytes match QEMU expected size and SHA256",
+        "345 tar members and two coverage artifacts match actual source",
+        "coverage current size2094448, capture/PC/LLVM/GDB/OSDK bindings valid",
+        "89 source digests against f473 and runtime8db/publicationf473 equal full Git trees"
+      ]
+    },
+    {
+      "agent": "qemu_profile",
+      "checks": [
+        "Actual hardened helper345 files and original346 checksums verified",
+        "345 tar members plus two artifacts map to actual original source bytes",
+        "All11 source/helper/tar/QEMU expected serial identities agree",
+        "3 owned-loopback GDB FD handoffs and current private connected FD64 monitor/named chardev/QEMU PID6865 consistent",
+        "89/89 source digests match f473; original environment bytes preserved"
+      ]
+    }
+  ],
+  "transcription_note": "Results transcribed from agent messages after the independent inspections."
+}

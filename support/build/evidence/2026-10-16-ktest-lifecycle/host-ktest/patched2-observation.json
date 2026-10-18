@@ -1,0 +1,76 @@
+{
+  "argv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "-I",
+    "/workspace/scratch/ae1a8cf05419/next7-ktest-lifecycle/patched2-project/support/build/ktest/run.py",
+    "--output",
+    "/workspace/scratch/ae1a8cf05419/next7-ktest-lifecycle/patched2-output"
+  ],
+  "source_sha256": "e18d02adb932ba213f9f78cdad9457a439465779edb46542eec8ecf590514b1e",
+  "namespace_evidence": "all fixtures fork/exec from this controller; no namespace switch or /proc inspection",
+  "commands": [
+    "SIGTERM sent only to retained CLI Popen",
+    "pidfd observation of both same-namespace fixture PIDs before cleanup",
+    "fresh TCP bind and flock tests"
+  ],
+  "fixture": {
+    "leader": 7,
+    "descendant": 8,
+    "address": [
+      "127.0.0.1",
+      51947
+    ]
+  },
+  "lock_available_before": false,
+  "cli_exit": 143,
+  "live_pidfds_after_cli": [
+    false,
+    false
+  ],
+  "lock_available_after": true,
+  "lease_free_after_cli": true,
+  "result": {
+    "passed": false,
+    "crates": [],
+    "toolchain": "nightly-2026-07-21",
+    "runner_sha256": "e18d02adb932ba213f9f78cdad9457a439465779edb46542eec8ecf590514b1e",
+    "error": "RunnerInterrupted: SIGTERM",
+    "command_receipts": [
+      "source-inputs.json.command.json"
+    ],
+    "interrupted_by": "SIGTERM",
+    "received_signals": [
+      "SIGTERM"
+    ],
+    "exit_code": 143
+  },
+  "command_receipt": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "-I",
+      "/workspace/scratch/ae1a8cf05419/next7-ktest-lifecycle/patched2-project/support/build/verify-source.py"
+    ],
+    "cwd": "/workspace/scratch/ae1a8cf05419/next7-ktest-lifecycle/patched2-project",
+    "raw_exit_code": -9,
+    "exit_code": 143,
+    "error": "RunnerInterrupted: SIGTERM",
+    "group_cleanup": {
+      "leader_pid": 7,
+      "leader_exit_code": -9,
+      "leader_reaped": true,
+      "external_reap_disarmed": false,
+      "identity_anchor": "waitid WNOWAIT; final group signal before leader reap"
+    },
+    "interrupted_by": "SIGTERM",
+    "received_signals": [
+      "SIGTERM"
+    ],
+    "duration_seconds": 0.092
+  },
+  "success_result_exists": false,
+  "finding_reproduced": true,
+  "cleanup_exited": [
+    true,
+    true
+  ]
+}

@@ -1,0 +1,299 @@
+{
+  "actual_cli_checks": [
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/handoffs/a04-exact-rootfs/verify.py",
+        "--repo",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+        "--output",
+        "/workspace/scratch/ae1a8cf05419/a04-input-recovery-audit/after-readback/ordinary-explicit-repo"
+      ],
+      "cwd": "/tmp",
+      "exit_code": 0,
+      "finish_utc": "2026-10-17T04:09:22.879887+00:00",
+      "label": "ordinary-explicit-repo",
+      "start_utc": "2026-10-17T04:09:22.719365+00:00",
+      "stderr": "",
+      "stdout": "{\"result\": \"exact_input_recovery_pass\", \"output\": \"/workspace/scratch/ae1a8cf05419/a04-input-recovery-audit/after-readback/ordinary-explicit-repo\", \"original_tar_sha256\": \"df8df2e3cdcd308ef62a59268a4519e2923c9ff78145e46f26a4092725e80797\", \"files\": 17, \"elf\": 4, \"new_qemu_execution\": false}\n"
+    },
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/handoffs/a04-exact-rootfs/verify.py",
+        "--output",
+        "/workspace/scratch/ae1a8cf05419/a04-input-recovery-audit/after-readback/ordinary-default-repo"
+      ],
+      "cwd": "/tmp",
+      "exit_code": 0,
+      "finish_utc": "2026-10-17T04:09:23.055181+00:00",
+      "label": "ordinary-default-repo",
+      "start_utc": "2026-10-17T04:09:22.879966+00:00",
+      "stderr": "",
+      "stdout": "{\"result\": \"exact_input_recovery_pass\", \"output\": \"/workspace/scratch/ae1a8cf05419/a04-input-recovery-audit/after-readback/ordinary-default-repo\", \"original_tar_sha256\": \"df8df2e3cdcd308ef62a59268a4519e2923c9ff78145e46f26a4092725e80797\", \"files\": 17, \"elf\": 4, \"new_qemu_execution\": false}\n"
+    },
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/handoffs/a04-exact-rootfs/verify.py",
+        "--repo",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+        "--output",
+        "/workspace/scratch/ae1a8cf05419/a04-input-recovery-audit/after-readback/ordinary-existing-dir/destination"
+      ],
+      "exit_code": 1,
+      "expected_refusal": true,
+      "finish_utc": "2026-10-17T04:09:23.212946+00:00",
+      "foreign_sentinel_preserved": true,
+      "label": "ordinary-existing-dir",
+      "start_utc": "2026-10-17T04:09:23.055531+00:00",
+      "stderr": "input recovery failed: [Errno 17] File exists: 'destination'\n",
+      "stdout": ""
+    },
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/handoffs/a04-exact-rootfs/verify.py",
+        "--repo",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+        "--output",
+        "/workspace/scratch/ae1a8cf05419/a04-input-recovery-audit/after-readback/ordinary-existing-file/destination"
+      ],
+      "exit_code": 1,
+      "expected_refusal": true,
+      "finish_utc": "2026-10-17T04:09:23.358265+00:00",
+      "foreign_sentinel_preserved": true,
+      "label": "ordinary-existing-file",
+      "start_utc": "2026-10-17T04:09:23.213299+00:00",
+      "stderr": "input recovery failed: [Errno 17] File exists: 'destination'\n",
+      "stdout": ""
+    },
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/handoffs/a04-exact-rootfs/verify.py",
+        "--repo",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+        "--output",
+        "/workspace/scratch/ae1a8cf05419/a04-input-recovery-audit/after-readback/ordinary-symlink-ancestor/link/destination"
+      ],
+      "exit_code": 1,
+      "expected_refusal": true,
+      "finish_utc": "2026-10-17T04:09:23.493854+00:00",
+      "foreign_sentinel_preserved": true,
+      "label": "ordinary-symlink-ancestor",
+      "start_utc": "2026-10-17T04:09:23.358608+00:00",
+      "stderr": "input recovery failed: [Errno 20] Not a directory: 'link'\n",
+      "stdout": ""
+    },
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-O",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/handoffs/a04-exact-rootfs/verify.py",
+        "--repo",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+        "--output",
+        "/workspace/scratch/ae1a8cf05419/a04-input-recovery-audit/after-readback/optimized-explicit-repo"
+      ],
+      "cwd": "/tmp",
+      "exit_code": 0,
+      "finish_utc": "2026-10-17T04:09:23.835462+00:00",
+      "label": "optimized-explicit-repo",
+      "start_utc": "2026-10-17T04:09:23.494031+00:00",
+      "stderr": "",
+      "stdout": "{\"result\": \"exact_input_recovery_pass\", \"output\": \"/workspace/scratch/ae1a8cf05419/a04-input-recovery-audit/after-readback/optimized-explicit-repo\", \"original_tar_sha256\": \"df8df2e3cdcd308ef62a59268a4519e2923c9ff78145e46f26a4092725e80797\", \"files\": 17, \"elf\": 4, \"new_qemu_execution\": false}\n"
+    },
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-O",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/handoffs/a04-exact-rootfs/verify.py",
+        "--output",
+        "/workspace/scratch/ae1a8cf05419/a04-input-recovery-audit/after-readback/optimized-default-repo"
+      ],
+      "cwd": "/tmp",
+      "exit_code": 0,
+      "finish_utc": "2026-10-17T04:09:24.190423+00:00",
+      "label": "optimized-default-repo",
+      "start_utc": "2026-10-17T04:09:23.835549+00:00",
+      "stderr": "",
+      "stdout": "{\"result\": \"exact_input_recovery_pass\", \"output\": \"/workspace/scratch/ae1a8cf05419/a04-input-recovery-audit/after-readback/optimized-default-repo\", \"original_tar_sha256\": \"df8df2e3cdcd308ef62a59268a4519e2923c9ff78145e46f26a4092725e80797\", \"files\": 17, \"elf\": 4, \"new_qemu_execution\": false}\n"
+    },
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-O",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/handoffs/a04-exact-rootfs/verify.py",
+        "--repo",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+        "--output",
+        "/workspace/scratch/ae1a8cf05419/a04-input-recovery-audit/after-readback/optimized-existing-dir/destination"
+      ],
+      "exit_code": 1,
+      "expected_refusal": true,
+      "finish_utc": "2026-10-17T04:09:24.504275+00:00",
+      "foreign_sentinel_preserved": true,
+      "label": "optimized-existing-dir",
+      "start_utc": "2026-10-17T04:09:24.190918+00:00",
+      "stderr": "input recovery failed: [Errno 17] File exists: 'destination'\n",
+      "stdout": ""
+    },
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-O",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/handoffs/a04-exact-rootfs/verify.py",
+        "--repo",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+        "--output",
+        "/workspace/scratch/ae1a8cf05419/a04-input-recovery-audit/after-readback/optimized-existing-file/destination"
+      ],
+      "exit_code": 1,
+      "expected_refusal": true,
+      "finish_utc": "2026-10-17T04:09:24.780735+00:00",
+      "foreign_sentinel_preserved": true,
+      "label": "optimized-existing-file",
+      "start_utc": "2026-10-17T04:09:24.504561+00:00",
+      "stderr": "input recovery failed: [Errno 17] File exists: 'destination'\n",
+      "stdout": ""
+    },
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-O",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/handoffs/a04-exact-rootfs/verify.py",
+        "--repo",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+        "--output",
+        "/workspace/scratch/ae1a8cf05419/a04-input-recovery-audit/after-readback/optimized-symlink-ancestor/link/destination"
+      ],
+      "exit_code": 1,
+      "expected_refusal": true,
+      "finish_utc": "2026-10-17T04:09:25.053755+00:00",
+      "foreign_sentinel_preserved": true,
+      "label": "optimized-symlink-ancestor",
+      "start_utc": "2026-10-17T04:09:24.781063+00:00",
+      "stderr": "input recovery failed: [Errno 20] Not a directory: 'link'\n",
+      "stdout": ""
+    }
+  ],
+  "all_four_cli_payload_groups_equal": true,
+  "all_manifest_files_exact_match": true,
+  "all_successful_recoveries_original_tar_sha256": "df8df2e3cdcd308ef62a59268a4519e2923c9ff78145e46f26a4092725e80797",
+  "elf": {
+    "probe_dynamic": {
+      "bytes": 44808,
+      "exact_match": true,
+      "sha256": "36a021aa7877170aedda535fff2a6ab2fc51cdb4b48d04c8c90ff873a40f4324"
+    },
+    "probe_static": {
+      "bytes": 935880,
+      "exact_match": true,
+      "sha256": "edd3063a60c3f5c23679de3ab13e71955f7155be619f191468800931d101b078"
+    },
+    "sqlite_dynamic": {
+      "bytes": 17040,
+      "exact_match": true,
+      "sha256": "d9c953e2dba4473ac1fad46446bc4768a448063547f32180813a868b3bdb7fc6"
+    },
+    "sqlite_static": {
+      "bytes": 2789544,
+      "exact_match": true,
+      "sha256": "2b8ca0007725bbf94856fc559572b1c86c163cca380cdbf6cce38faa69abefa2"
+    }
+  },
+  "expected_refusal_count": 6,
+  "failed_candidate_verifier_sha256": "534b5fb52b71a9b35f56a71942bf43b525f84f74c87efec0dc5c952e12374752",
+  "historical_guest_report": {
+    "commit": "cdf308e751e561328c556ca2ece86056d15809a0",
+    "git_blob": "7e81125535063e38f810c57e33868281419537e2",
+    "interpretation": "historical guest failures remain; recovering original inputs is not new QEMU compatibility acceptance",
+    "path": "support/build/evidence/2026-10-16-review/linux-guest/report.json"
+  },
+  "independent_corrected_review": "independent-review.json",
+  "kind": "actual_original_input_recovery_not_guest_acceptance",
+  "manifest_file_count": 17,
+  "new_qemu_execution": false,
+  "old_red_to_new_refusal": "independent-red-green.json",
+  "payload_executed": false,
+  "permanent_fixture_checks": [
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/handoffs/a04-exact-rootfs",
+        "-p",
+        "test_verify.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "finish_utc": "2026-10-17T04:09:01.319491+00:00",
+      "label": "ordinary",
+      "start_utc": "2026-10-17T04:09:01.190861+00:00",
+      "stderr": "test_directory_replacement_does_not_redirect_writes (test_verify.OutputCustodyTests.test_directory_replacement_does_not_redirect_writes) ... ok\ntest_existing_directory_is_preserved (test_verify.OutputCustodyTests.test_existing_directory_is_preserved) ... ok\ntest_existing_file_is_preserved (test_verify.OutputCustodyTests.test_existing_file_is_preserved) ... ok\ntest_midwrite_error_retains_incomplete_marker (test_verify.OutputCustodyTests.test_midwrite_error_retains_incomplete_marker) ... ok\ntest_plain_roundtrip_has_original_bytes_and_no_incomplete_marker (test_verify.OutputCustodyTests.test_plain_roundtrip_has_original_bytes_and_no_incomplete_marker) ... ok\ntest_same_length_tamper_before_first_stat_is_refused (test_verify.OutputCustodyTests.test_same_length_tamper_before_first_stat_is_refused) ... ok\ntest_symlink_ancestor_is_refused (test_verify.OutputCustodyTests.test_symlink_ancestor_is_refused) ... ok\n\n----------------------------------------------------------------------\nRan 7 tests in 0.015s\n\nOK\n",
+      "stdout": ""
+    },
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-O",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/handoffs/a04-exact-rootfs",
+        "-p",
+        "test_verify.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "finish_utc": "2026-10-17T04:09:01.812464+00:00",
+      "label": "optimized",
+      "start_utc": "2026-10-17T04:09:01.319762+00:00",
+      "stderr": "test_directory_replacement_does_not_redirect_writes (test_verify.OutputCustodyTests.test_directory_replacement_does_not_redirect_writes) ... ok\ntest_existing_directory_is_preserved (test_verify.OutputCustodyTests.test_existing_directory_is_preserved) ... ok\ntest_existing_file_is_preserved (test_verify.OutputCustodyTests.test_existing_file_is_preserved) ... ok\ntest_midwrite_error_retains_incomplete_marker (test_verify.OutputCustodyTests.test_midwrite_error_retains_incomplete_marker) ... ok\ntest_plain_roundtrip_has_original_bytes_and_no_incomplete_marker (test_verify.OutputCustodyTests.test_plain_roundtrip_has_original_bytes_and_no_incomplete_marker) ... ok\ntest_same_length_tamper_before_first_stat_is_refused (test_verify.OutputCustodyTests.test_same_length_tamper_before_first_stat_is_refused) ... ok\ntest_symlink_ancestor_is_refused (test_verify.OutputCustodyTests.test_symlink_ancestor_is_refused) ... ok\n\n----------------------------------------------------------------------\nRan 7 tests in 0.010s\n\nOK\n",
+      "stdout": ""
+    }
+  ],
+  "permanent_fixtures_passed_each_mode": 7,
+  "schema": 1,
+  "source_or_remote_mutated_by_verifier": false,
+  "sources": {
+    "README.md": {
+      "bytes": 4433,
+      "sha256": "2c0dc65cd003976d07095b4432f1c12d33f478599dd74e371fd2412f5f3d3926"
+    },
+    "manifest-debian13-x86_64.json": {
+      "bytes": 8135,
+      "sha256": "55aa8369d4f912267139ef7626c752814d7dc833e49accc337529f2545fb94cb"
+    },
+    "source-bindings.json": {
+      "bytes": 1415,
+      "sha256": "2d2f1c00dddaa3922c98c37005f8c37abb32dcb0412f33355b8e82346d691c8d"
+    },
+    "test_verify.py": {
+      "bytes": 4773,
+      "sha256": "4ed9ada44502e166df97608be198c3955db87765fd50329cad21c2504dce45d5"
+    },
+    "verify.py": {
+      "bytes": 10486,
+      "sha256": "4ef5ab0a24b4460e358b4443c956667f2974b80547234c31784ebcaae378bad9"
+    }
+  },
+  "success_count": 4
+}

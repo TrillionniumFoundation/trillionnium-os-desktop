@@ -1,0 +1,94 @@
+{
+  "schema": 1,
+  "maximum_stored_chunk_bytes": 2097152,
+  "artifacts": [
+    {
+      "kind": "kernel",
+      "original_bytes": 8258112,
+      "original_sha256": "c49ad7da1c76c1f559d065ac3f8cbcbad407242dda54f1ed00028f02d5c2413d",
+      "encoding": "gzip wrapper over original input bytes; initramfs remains original cpio.gz",
+      "bytes": 2561104,
+      "sha256": "54d6b88d6df32eb0f797b530fe444d0f85912a2128e6e5af99e9d1e64f83e5d9",
+      "chunks": [
+        {
+          "path": "artifacts/kernel.input.gz.part-001",
+          "bytes": 2097152,
+          "sha256": "a5a6df7a3433206860bb3b3881365931fd092bf92857d05e839eadc13b26a0b0"
+        },
+        {
+          "path": "artifacts/kernel.input.gz.part-002",
+          "bytes": 463952,
+          "sha256": "8921b56d3f2aec8383a1ac90983116e13681c9584c893df4327341cf5724494e"
+        }
+      ]
+    },
+    {
+      "kind": "bios",
+      "original_bytes": 262144,
+      "original_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "encoding": "gzip wrapper over original input bytes; initramfs remains original cpio.gz",
+      "bytes": 109289,
+      "sha256": "f8510d8b7852c919074672d812c33f21eb740d4ed172c567929e72c691198e16",
+      "chunks": [
+        {
+          "path": "artifacts/bios.input.gz",
+          "bytes": 109289,
+          "sha256": "f8510d8b7852c919074672d812c33f21eb740d4ed172c567929e72c691198e16"
+        }
+      ]
+    },
+    {
+      "kind": "initramfs",
+      "original_bytes": 1107990,
+      "original_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "encoding": "gzip wrapper over original input bytes; initramfs remains original cpio.gz",
+      "bytes": 1106991,
+      "sha256": "1152f20fcb27d8739be344e3339db7fceab65fdb5ddbde573794f77fd61b822f",
+      "chunks": [
+        {
+          "path": "artifacts/initramfs.input.gz",
+          "bytes": 1106991,
+          "sha256": "1152f20fcb27d8739be344e3339db7fceab65fdb5ddbde573794f77fd61b822f"
+        }
+      ]
+    }
+  ],
+  "original_paths": {
+    "normal-cloud-final/first-build-kernel.elf": {
+      "artifact": "c49ad7da1c76c1f559d065ac3f8cbcbad407242dda54f1ed00028f02d5c2413d",
+      "bytes": 8258112,
+      "sha256": "c49ad7da1c76c1f559d065ac3f8cbcbad407242dda54f1ed00028f02d5c2413d",
+      "mode": 256
+    },
+    "normal-cloud-final/kernel-boot/artifacts-n33_kyai/bios.bin": {
+      "artifact": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "bytes": 262144,
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "mode": 256
+    },
+    "normal-cloud-final/kernel-boot/artifacts-n33_kyai/initramfs.cpio.gz": {
+      "artifact": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "bytes": 1107990,
+      "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "mode": 256
+    },
+    "normal-cloud-final/kernel-boot/artifacts-n33_kyai/kernel.elf": {
+      "artifact": "c49ad7da1c76c1f559d065ac3f8cbcbad407242dda54f1ed00028f02d5c2413d",
+      "bytes": 8258112,
+      "sha256": "c49ad7da1c76c1f559d065ac3f8cbcbad407242dda54f1ed00028f02d5c2413d",
+      "mode": 256
+    },
+    "normal-cloud-final/kernel-boot/initramfs.cpio.gz": {
+      "artifact": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "bytes": 1107990,
+      "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "mode": 420
+    },
+    "normal-cloud-final/kernel-build/initramfs.cpio.gz": {
+      "artifact": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "bytes": 1107990,
+      "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "mode": 420
+    }
+  }
+}

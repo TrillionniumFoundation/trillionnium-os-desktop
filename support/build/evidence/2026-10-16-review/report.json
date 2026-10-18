@@ -1,0 +1,215 @@
+{
+  "schema": 1,
+  "phase": "2026-10-16-review",
+  "status": "completed; expected Linux compatibility failures retained",
+  "branch": "agents/A01-asterinas-boot",
+  "pull_request": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/22",
+  "upstream": {
+    "commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+    "tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+    "toolchain": "nightly-2026-07-21",
+    "kernel_root": "kernel/asterinas",
+    "core_and_ostd_unchanged": true
+  },
+  "code_commits": {
+    "main_merge": "48a71af2397ff173a9eb114e904f6ec442dde9e4",
+    "archive": "b5030737451cd7b57813fc4e3c39665a6bb66cfc",
+    "cargo": "4976b571b1d01c069254252a03b74aaa4f51af93",
+    "runner": "2eee2c3df5a837e89ae7557510008ce1de37a1ca",
+    "monitor": "f473a2ccc8dfeaed1223e8478a19c79c90b323e4",
+    "capture_lifecycle": "349a28ff9f78319e497d3fd7b58fe73b6e6e44b5",
+    "linux_guest_entry": "d85b1e091143a9c4f004c024f433a58188455105",
+    "documentation": "5f59dbb7baa34cf7c69e8730bc4642f061b36fa1",
+    "linux_guest_cancellation": "3db0aa8ac369888db66c2dd05b825f648a2d27ff",
+    "latest_main_merge": "de4f6082f5c43e2592a4b33daeeaa6827803eb3e"
+  },
+  "host_fixes": {
+    "archive": {
+      "a00_exact_commit": "5af5ed301bcdb18b4a0c14cfe2ddfa245dc6a963",
+      "a00_tests_per_mode": 13,
+      "independent_original_vulnerabilities_reproduced": 3,
+      "final_tests_per_mode": 20,
+      "python_modes": [
+        "-I",
+        "-I -O"
+      ],
+      "existing_run_files_byte_verified": 673,
+      "file_cap_bytes": 134217728,
+      "total_cap_bytes": 1073741824,
+      "evidence": "host-fixes/archive/README.md"
+    },
+    "cargo": {
+      "tests_per_mode": 13,
+      "real_pinned_cargo_commands": 4,
+      "after_real_smoke_delta": "Only external clippy command removed from allowlist; final host tests rerun, original real commands not rerun at that exact two-line delta",
+      "old_bypasses_reproduced": 4,
+      "evidence": "host-fixes/cargo/README.md"
+    },
+    "runner": {
+      "new_lifecycle_tests_per_mode": 10,
+      "original_timeout_tests_per_mode": 1,
+      "profile_tests": 7,
+      "old_negative_controls_failed": 4,
+      "identity_anchor": "WNOWAIT leader until group signals precede reap; ECHILD disarms; no proc namespace dependence or subreaper",
+      "evidence": "host-fixes/runner/README.md"
+    },
+    "monitor": {
+      "host_units_passed": 38,
+      "host_units_failed": 0,
+      "host_units_ignored": 1,
+      "ignored_qemu_transport_test_separately_run_passed": 1,
+      "transport_probe_is_kernel_boot": false,
+      "final_recorder_tests_per_mode": 33,
+      "client_first_rejected": true,
+      "listener_closed_before_qemu_spawn": true,
+      "private_connected_fd_minimum": 64,
+      "evidence": "host-fixes/monitor/README.md"
+    },
+    "capture_lifecycle": {
+      "code_commit": "349a28ff9f78319e497d3fd7b58fe73b6e6e44b5",
+      "original_helper_and_gdb_leak_reproduced": true,
+      "real_host_lifecycle_checks": 5,
+      "recorder_tests_per_mode": 35,
+      "capture_tests_per_mode": 4,
+      "real_kernel_boot_in_host_fixtures": false,
+      "group_identity": "Outer owned runner group only; helper/GDB direct-child terminate/kill/wait without independent sessions",
+      "evidence": "host-fixes/capture-lifecycle/README.md"
+    }
+  },
+  "osdk_full": {
+    "code_commit": "f473a2ccc8dfeaed1223e8478a19c79c90b323e4",
+    "profile": "osdk-native-local-tcp-gdb-capture-v2",
+    "selected": 22,
+    "passed": 22,
+    "failed": 0,
+    "blocked": 0,
+    "vmx_soft_skipped": 1,
+    "actual_qemu_guests": 11,
+    "all_guest_raw_exit": 33,
+    "runner_actual_exit": 0,
+    "coverage": {
+      "profraw_size": 2094448,
+      "profraw_sha256": "24312473e6f0cdfc94d12dc826ae323843fbdcf5f7c1a806bf99aa335d7f7e04",
+      "llvm_functions": 5696,
+      "maximum_function_count": 383731
+    },
+    "evidence": "osdk/REPORT.md"
+  },
+  "kernel_debug": {
+    "code_commit": "f473a2ccc8dfeaed1223e8478a19c79c90b323e4",
+    "passed": true,
+    "entry": "__ostd_main",
+    "entry_pc": "0xffffffff88426860",
+    "live_instruction_bytes": 32,
+    "matches_symbol_and_boot": true,
+    "detached": true,
+    "driver_and_gdb_exit": 0,
+    "raw_qemu_exit": 33,
+    "live_checker_passed": true,
+    "boot_sha256": "fcec53875dec2ca19b20e285df94590e9c21036cdabec54799fbda6bddb84026",
+    "symbol_sha256": "a1c7a44cb844553d00c2942760df0f2389919f1e530bfaa45081c7463d31e21a",
+    "serial_sha256": "e22c52f2889e4348ff3105d65356967ed7c286a66defd559b2fbaee27f56084c",
+    "evidence": "kernel-debug/REPORT.md"
+  },
+  "linux_guest": {
+    "a04_source_commit": "16d672881909a5a9197d82126032b7d962db7d76",
+    "rootfs_tar_sha256": "df8df2e3cdcd308ef62a59268a4519e2923c9ff78145e46f26a4092725e80797",
+    "source_owned_by_a04": true,
+    "kernel_core_changes": false,
+    "original_28_suite": "failed timeout at 180s, raw QEMU null and runner exit2; original evidence retained",
+    "isolated_cases_expected": 28,
+    "evidence": "linux-guest/REPORT.md",
+    "code_commit": "d85b1e091143a9c4f004c024f433a58188455105",
+    "matched": 24,
+    "completed_failed": 2,
+    "timed_out": 2,
+    "driver_exit": 2,
+    "full_original_suite_passed": false,
+    "full_w1_passed": false,
+    "unported_workloads_outside_28": 4,
+    "s1_block_persistence_verified": false,
+    "cancellation_followup": {
+      "code_commit": "3db0aa8ac369888db66c2dd05b825f648a2d27ff",
+      "entry_sha256": "918a6addfe87df5a63963376058b7481e4df0d3478a0fd00c15fef14a8d0de5e",
+      "real_signal_checks_passed": 2,
+      "signal_cli_exits": [
+        143,
+        130
+      ],
+      "queued_case_started": false,
+      "owned_qemu_pidfd_exit_verified": true,
+      "original_dummy_leak_claimed": false,
+      "focused_cases": 3,
+      "matched": 1,
+      "completed_failed": 1,
+      "timed_out": 1,
+      "driver_exit": 2,
+      "full28_rerun": false,
+      "evidence": "linux-guest/cancellation/REPORT.md",
+      "actual_jobs": 1,
+      "not_runtime_exercised": [
+        "two active guests cancelled together",
+        "forced kill fallback",
+        "worker exception cleanup"
+      ]
+    }
+  },
+  "historical_results_unchanged": {
+    "default_unix_latest_per_case": "20/22, retained AF_UNIX EPERM failures",
+    "tcp_v1_pilots": "two runs each 2/3 with coverage failure",
+    "prior_kernel_mode_tests": {
+      "reported_passed": 362,
+      "soft_skipped": 3,
+      "exercised_passed_lower_bound": 359,
+      "not_rerun_this_phase": true
+    }
+  },
+  "limits": [
+    "No HOS2/ioctl/resource quota implementation or release claim.",
+    "No SMP/VMX/EPT/full upstream device or userspace matrix claim.",
+    "Existing generated-manifest overwrite and inode protections retained."
+  ],
+  "latest_main_merged": "ad5a942376116277b466d8eec9d35f47e9d201c2",
+  "latest_derived_kernel_tree": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da",
+  "main_merge_host_control": {
+    "passed": 21,
+    "failed": 0,
+    "first_missing_rustc_attempt_preserved": true,
+    "evidence": "baseline/main-control-verification.json"
+  },
+  "post_capture_fix_exact": {
+    "code_commit": "349a28ff9f78319e497d3fd7b58fe73b6e6e44b5",
+    "documentation_binding_commit": "5f59dbb7baa34cf7c69e8730bc4642f061b36fa1",
+    "selected": 1,
+    "passed": 1,
+    "failed": 0,
+    "actual_runner_exit": 0,
+    "qemu_raw_exit": 33,
+    "full22_rerun_after_this_fix": false,
+    "coverage": {
+      "profraw_size": 2094456,
+      "profraw_sha256": "a6a60289f3e9fed6c3f6ad17f1108e1a44aac61cac313e8ebc3b1611288eb9a1",
+      "llvm_functions": 5696,
+      "maximum_function_count": 383731
+    },
+    "evidence": "osdk-capture-exact/REPORT.md"
+  },
+  "handoff": {
+    "kernel_root": "kernel/asterinas",
+    "build": "support/build/kernel.sh kernel",
+    "boot": "support/build/kernel.sh run_kernel",
+    "debug": "python3 -I support/build/debug/run.py --output NEW_DIR",
+    "a05_process": "kernel/core/src/process/process/mod.rs",
+    "a05_ioctl": [
+      "kernel/core/src/syscall/ioctl.rs",
+      "kernel/core/src/fs/file/file_handle.rs"
+    ],
+    "a06_scheduler": "kernel/core/src/sched/sched_class/",
+    "core_paths_relative_to": "kernel/asterinas",
+    "compatibility_blockers": [
+      "RLIMIT_NOFILE accepted but open path does not enforce limit",
+      "MSG_CMSG_CLOEXEC receive handling leaves descriptor flags empty; parent waits for ACK after child assertion"
+    ],
+    "scope": "A01 host/build tooling only; core/OSTD changes require existing owners and A00 coordination"
+  }
+}

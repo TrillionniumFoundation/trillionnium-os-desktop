@@ -1,0 +1,99 @@
+{
+  "directory": "/workspace/scratch/ae1a8cf05419/next4-owned-nonce-l1el6jrp",
+  "target": "/workspace/scratch/ae1a8cf05419/next4-owned-nonce-l1el6jrp/owned-profile.txt",
+  "nonce_sha256": "0e1949a94718fa80fa32243c9c593e7fcf00b573eaecd5812c0a476421453c6f",
+  "wait_before_delete_seconds": 4,
+  "observe_after_delete_seconds": 10,
+  "no_git_kernel_or_service_operation": true,
+  "samples": [],
+  "initial": {
+    "label": "created",
+    "seconds": 0.001113,
+    "exists": true,
+    "inode": 131080,
+    "mtime_ns": 1792151325941284020,
+    "ctime_ns": 1792151325941284020,
+    "matches_nonce": true
+  },
+  "deleted_seconds": 4.033501,
+  "immediately_after_delete": {
+    "label": "deleted",
+    "seconds": 4.033578,
+    "exists": false
+  },
+  "recreated": {
+    "label": "after_delete",
+    "seconds": 6.294495,
+    "exists": true,
+    "inode": 131081,
+    "mtime_ns": 1792151325941284020,
+    "ctime_ns": 1792151332227597834,
+    "matches_nonce": true,
+    "seconds_after_delete": 2.261013
+  },
+  "final": {
+    "label": "final",
+    "seconds": 14.043056,
+    "exists": true,
+    "inode": 131081,
+    "mtime_ns": 1792151325941284020,
+    "ctime_ns": 1792151332227597834,
+    "matches_nonce": true
+  },
+  "events": [
+    {
+      "seconds": 0.001064,
+      "event": "CREATE|owned-profile.txt"
+    },
+    {
+      "seconds": 0.001084,
+      "event": "CLOSE_WRITE,CLOSE|owned-profile.txt"
+    },
+    {
+      "seconds": 4.03359,
+      "event": "DELETE|owned-profile.txt"
+    },
+    {
+      "seconds": 5.892554,
+      "event": "ATTRIB,ISDIR|"
+    },
+    {
+      "seconds": 5.892573,
+      "event": "CREATE|.owned-profile.txt.9c5Vne"
+    },
+    {
+      "seconds": 5.892577,
+      "event": "ATTRIB|.owned-profile.txt.9c5Vne"
+    },
+    {
+      "seconds": 5.892578,
+      "event": "CLOSE_WRITE,CLOSE|.owned-profile.txt.9c5Vne"
+    },
+    {
+      "seconds": 5.89258,
+      "event": "CREATE,ISDIR|.rsync-tmp"
+    },
+    {
+      "seconds": 5.892581,
+      "event": "ATTRIB|.owned-profile.txt.9c5Vne"
+    },
+    {
+      "seconds": 5.892582,
+      "event": "MOVED_FROM|.owned-profile.txt.9c5Vne"
+    },
+    {
+      "seconds": 6.294404,
+      "event": "MOVED_TO|owned-profile.txt"
+    },
+    {
+      "seconds": 6.294422,
+      "event": "DELETE,ISDIR|.rsync-tmp"
+    },
+    {
+      "seconds": 6.34472,
+      "event": "ATTRIB,ISDIR|"
+    }
+  ],
+  "elapsed_seconds": 14.043,
+  "bounded_control_only": true
+}

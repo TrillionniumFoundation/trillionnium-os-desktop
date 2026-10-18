@@ -1,0 +1,30 @@
+{
+  "scope": "actual CLI offline reassembly into new scratch directories; entire 12/13 artifact set additionally decompressed and checked in full verifier",
+  "runs": [
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-native-cloud-final/artifacts/reassemble.py",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-native-cloud-final/artifacts/manifest.json",
+        "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+        "/workspace/scratch/ae1a8cf05419/native-cloud/final-reassemble-validation/I-bios"
+      ],
+      "returncode": 0,
+      "stdout": "{\"schema\": 1, \"passed\": true, \"manifest\": \"/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-native-cloud-final/artifacts/manifest.json\", \"raw_path\": \"/workspace/scratch/ae1a8cf05419/native-cloud/final-reassemble-validation/I-bios/1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735.bin\", \"raw_bytes\": 262144, \"raw_sha256\": \"1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735\", \"gzip_bytes\": 109289, \"gzip_sha256\": \"3be74e9f7c998c06146ac4f4d89b62b6d2c2968cd69e5908a806e3581535f94c\", \"verified_parts\": 1}\n"
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "-O",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-native-cloud-final/artifacts/reassemble.py",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-native-cloud-final/artifacts/manifest.json",
+        "5d46099d508bf4fa46cf0e4327a2326ff6e493f872324b6a228cd20f526f1e5d",
+        "/workspace/scratch/ae1a8cf05419/native-cloud/final-reassemble-validation/I-O-largest"
+      ],
+      "returncode": 0,
+      "stdout": "{\"schema\": 1, \"passed\": true, \"manifest\": \"/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-native-cloud-final/artifacts/manifest.json\", \"raw_path\": \"/workspace/scratch/ae1a8cf05419/native-cloud/final-reassemble-validation/I-O-largest/5d46099d508bf4fa46cf0e4327a2326ff6e493f872324b6a228cd20f526f1e5d.bin\", \"raw_bytes\": 41609184, \"raw_sha256\": \"5d46099d508bf4fa46cf0e4327a2326ff6e493f872324b6a228cd20f526f1e5d\", \"gzip_bytes\": 11455585, \"gzip_sha256\": \"a847c36fcfc7e6465d627b7d00449f37217e11d6524bc848b4b5f71e5bd090c0\", \"verified_parts\": 6}\n"
+    }
+  ]
+}

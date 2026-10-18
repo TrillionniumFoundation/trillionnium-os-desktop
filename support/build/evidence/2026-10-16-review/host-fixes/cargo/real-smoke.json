@@ -1,0 +1,85 @@
+{
+  "commands": [
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/osdk-integration/cargo.py",
+        "--color",
+        "never",
+        "metadata",
+        "--no-deps",
+        "--format-version",
+        "1"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/next5-cargo/real-workspace",
+      "raw_exit_code": 0,
+      "stdout": "real-01.stdout.log",
+      "stderr": "real-01.stderr.log"
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/osdk-integration/cargo.py",
+        "+nightly-2026-07-21",
+        "--color",
+        "never",
+        "b"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/next5-cargo/real-workspace",
+      "raw_exit_code": 0,
+      "stdout": "real-02.stdout.log",
+      "stderr": "real-02.stderr.log"
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/osdk-integration/cargo.py",
+        "--color=never",
+        "r",
+        "--",
+        "--locked",
+        "--offline"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/next5-cargo/real-workspace",
+      "raw_exit_code": 0,
+      "stdout": "real-03.stdout.log",
+      "stderr": "real-03.stderr.log"
+    },
+    {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/osdk-integration/cargo.py",
+        "--version"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/next5-cargo/real-workspace",
+      "raw_exit_code": 0,
+      "stdout": "real-04.stdout.log",
+      "stderr": "real-04.stderr.log"
+    }
+  ],
+  "environment": {
+    "A01_REAL_CARGO": "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+    "A01_OSDK_CASE_OUTPUT": "/workspace/scratch/ae1a8cf05419/next5-cargo/real-records",
+    "A01_OSDK_ALLOWED_ROOTS": "[\"/workspace/scratch/ae1a8cf05419/next5-cargo/real-workspace\"]",
+    "OSDK_CARGO_LOCK": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/Cargo.lock",
+    "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+    "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+    "RUSTUP_TOOLCHAIN": "nightly",
+    "RUSTUP_AUTO_INSTALL": "1",
+    "RUSTC": "/inherited/wrong-rustc",
+    "RUSTDOC": "/inherited/wrong-rustdoc",
+    "CARGO_TARGET_DIR": "/workspace/scratch/ae1a8cf05419/next5-cargo/real-target"
+  },
+  "inputs_sha256": {
+    "support/build/osdk-integration/cargo.py": "dadc2ec80fa56f7f8cb08e38ea09a7f0a9f51b671d791dc6ea5810159dffdaf2",
+    "support/build/osdk-integration/test_cargo.py": "c3648f6f1ec279779ffcc5e45daf155ef2f6199a1f0a4b364dd8347a5f1b2975",
+    "kernel/asterinas/Cargo.lock": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316"
+  },
+  "cargo_version": "cargo 1.99.0-nightly (3efb1f477 2026-07-17)\nrelease: 1.99.0-nightly\ncommit-hash: 3efb1f477e99b42974b982d939fd100303cdf7db\ncommit-date: 2026-07-17\nhost: x86_64-unknown-linux-gnu\nlibgit2: 1.9.4 (sys:0.21.0 vendored)\nlibcurl: 8.21.0-DEV (sys:0.4.90+curl-8.21.0 vendored ssl:OpenSSL/3.6.3)\nssl: OpenSSL 3.6.3 9 Jun 2026\nos: Ubuntu 24.4.0 (noble) [64-bit]\n",
+  "rustc_version": "rustc 1.99.0-nightly (87e5904f5 2026-07-20)\nbinary: rustc\ncommit-hash: 87e5904f5eb6398af6b22eac2802c78934260c48\ncommit-date: 2026-07-20\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.0-nightly\nLLVM version: 22.1.8\n",
+  "artifact_sha256": "0f934cd519cd8cf4b1059ae945a63211eb9577380ebf5bfaef637273e08cc04e"
+}

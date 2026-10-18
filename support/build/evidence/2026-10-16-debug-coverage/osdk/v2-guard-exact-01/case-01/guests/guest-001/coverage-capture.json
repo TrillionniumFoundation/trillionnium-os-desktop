@@ -1,0 +1,62 @@
+{
+  "schema": 1,
+  "profile_id": "osdk-native-local-tcp-gdb-capture-v2",
+  "passed": true,
+  "finalized": true,
+  "endpoint": "127.0.0.1:49383",
+  "kernel_sha256": "8881434fe6d45ce6a064d06f2d932b9e28831c0c95c13b780930d8f21405c4a5",
+  "guest_record": "guests/guest-001/qemu.json",
+  "gdb_exit_code": 0,
+  "timed_out": false,
+  "symbol_elf": {
+    "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-integration-native-06/target/x86_64-unknown-none/debug/basic_coverage-osdk-bin",
+    "size": 41563928,
+    "sha256": "98db6f0a844869e6c80dbd65da5508118d5777502d64142d070f7e2ef9b72d60"
+  },
+  "nm_command": {
+    "argv": [
+      "/usr/bin/nm",
+      "-n",
+      "-C",
+      "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-integration-native-06/target/x86_64-unknown-none/debug/basic_coverage-osdk-bin"
+    ],
+    "raw_exit_code": 0
+  },
+  "gdb_command": [
+    "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/bin/gdb",
+    "--batch",
+    "-nx",
+    "--quiet",
+    "--se=/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-integration-native-06/target/x86_64-unknown-none/debug/basic_coverage-osdk-bin",
+    "-x",
+    "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-03/case-01/guests/guest-001/capture.gdb"
+  ],
+  "gdb": {
+    "path": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/bin/gdb",
+    "size": 8920528,
+    "sha256": "3832cc070ae1716e322105d3b39fb398695e5f031c9d39224cf227a8c2b889f6"
+  },
+  "gdb_version": "GNU gdb (Ubuntu 15.1-1ubuntu1~24.04.1) 15.1\nCopyright (C) 2024 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n",
+  "breakpoint": {
+    "symbol": "ostd::arch::power::try_poweroff",
+    "resolved_address": "0xffffffff880edfc0",
+    "actual_pc": "0xffffffff880edfc0"
+  },
+  "announcement": {
+    "address": "0xffff800010400000",
+    "size": 2094456
+  },
+  "memsave_command": "monitor memsave 0xffff800010400000 2094456 \"/tmp/a01oi-gtwue_3u/kernel_test_workspace/run_command/basic_coverage/coverage.profraw\"",
+  "resumed_by_detach": true,
+  "raw": {
+    "path": "/tmp/a01oi-gtwue_3u/kernel_test_workspace/run_command/basic_coverage/coverage.profraw",
+    "size": 2094456,
+    "sha256": "da25dd71ac3710e00cf116f408c71c124218f30fa1a35f58bd61e145ecad7d57"
+  },
+  "serial_prefix": {
+    "size": 2823,
+    "sha256": "f37f1e85399ebc66617db4238ce46e526467076aa296cd37d84b00ef7350deca"
+  },
+  "duration_seconds": 2.901,
+  "serial_sha256": "f37f1e85399ebc66617db4238ce46e526467076aa296cd37d84b00ef7350deca"
+}

@@ -1,0 +1,135 @@
+{
+  "schema": 1,
+  "reviewed_utc": "2026-10-17T01:19:18.158760+00:00",
+  "source_code_publish_recommended": true,
+  "blocking_code_findings": [],
+  "scope": "Independent read-only source review plus small pure-Python/fake-compiler host checks. No real Cargo/Rust build/QEMU/VM was executed and no agent source/test/README or previously frozen evidence was changed.",
+  "final_source_binding": {
+    "source_freeze_manifest_sha256": "7012b1316d4018411f9610bb58830b1ca1435aecb7ca8b5d9921c89fee8f0823",
+    "all_six_hashes_match": true,
+    "records": [
+      {
+        "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/repro/README.md",
+        "sha256": "8e46294326675a6867be750ae4a3065ca0c7cce78dcd77027d5eaf6a0222b44c",
+        "bytes": 8050,
+        "stable_read": true
+      },
+      {
+        "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/repro/cargo-metadata-wrapper.py",
+        "sha256": "ba2a27ad16cd0b1a6236dc18c4246716990ca8429a0006fde527b00a26bbd730",
+        "bytes": 2859,
+        "stable_read": true
+      },
+      {
+        "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/repro/profile.py",
+        "sha256": "eff0877a3d352db33fe78b5d7a7f0cc9590faac22cb08baa184668ee290ea2d8",
+        "bytes": 18452,
+        "stable_read": true
+      },
+      {
+        "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/repro/run.py",
+        "sha256": "354b757bddf88093de5d3ac65f58225eac4c912564e642e1953839bbdbca7a4f",
+        "bytes": 7054,
+        "stable_read": true
+      },
+      {
+        "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/repro/rustc-wrapper.py",
+        "sha256": "acab1c580b5e1cd82b515d1757bd1e1cca27c9aa8ec462e8ddbf79c2482bda8e",
+        "bytes": 3468,
+        "stable_read": true
+      },
+      {
+        "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/repro/test_profile.py",
+        "sha256": "19a9aec36bf8de7771ded3186dbd5374cc0fd34d2335647b4fa3c1f5e22e4e9a",
+        "bytes": 19689,
+        "stable_read": true
+      }
+    ],
+    "scope": "Final six source files read only; runtime hashes match the already tested runtime snapshot."
+  },
+  "focused_checks": {
+    "checks_per_mode": 16,
+    "modes": [
+      "python3 -I",
+      "python3 -I -O"
+    ],
+    "runtime_checks_per_mode": 15,
+    "launcher_checks_per_mode": 1,
+    "runtime_receipts": [
+      "focused-normal2.json",
+      "focused-optimized2.json"
+    ],
+    "launcher_receipts": [
+      "launcher-normal.json",
+      "launcher-optimized.json"
+    ],
+    "all_receipts_passed": true,
+    "commands": [
+      {
+        "argv": [
+          "python3",
+          "-I",
+          "/workspace/scratch/ae1a8cf05419/profile3-review/focused-review.py",
+          "normal2"
+        ],
+        "exit_code": 0
+      },
+      {
+        "argv": [
+          "python3",
+          "-I",
+          "-O",
+          "/workspace/scratch/ae1a8cf05419/profile3-review/focused-review.py",
+          "optimized2"
+        ],
+        "exit_code": 0
+      },
+      {
+        "argv": [
+          "python3",
+          "-I",
+          "/workspace/scratch/ae1a8cf05419/profile3-review/launcher-review.py",
+          "normal"
+        ],
+        "exit_code": 0
+      },
+      {
+        "argv": [
+          "python3",
+          "-I",
+          "-O",
+          "/workspace/scratch/ae1a8cf05419/profile3-review/launcher-review.py",
+          "optimized"
+        ],
+        "exit_code": 0
+      }
+    ],
+    "actual_concurrency": "Only two fake compiler processes through copied real wrappers. First exit0, second same canonical descriptor with distinct incoming Cargo metadata exit1; one started/completed ledger pair.",
+    "launcher": "Fake rustup/rustc shim with incoming RUSTUP_TOOLCHAIN=stable observed explicit +nightly-2026-07-21 -vV.",
+    "initial_harness_attempts": "The first runtime snapshot attempt encountered an announced concurrent run.py identity fix, so final source binding was absent and receipt creation failed. Those initial harness attempts are not counted as passing or candidate code failures; fresh normal2/optimized2 receipts bind the unchanged verified runtime files."
+  },
+  "actual_A2_B2_argument_findings": {
+    "receipt": "actual-a2b2-flags.json",
+    "local_build_script_metadata": "local-build-script-metadata.json",
+    "actual_build_script_calls": "actual-build-script-calls.json",
+    "actual_rustc_rows_per_case": 369,
+    "actual_native_library_path_calls_per_case": 0,
+    "actual_local_custom_build_invocations_per_case": 0,
+    "scope": "Read-only analysis of frozen real A2/B2 data, separate from profile3 test acceptance."
+  },
+  "comparison_script_review": {
+    "sha256": "fb906361d92172dc6900846e6a0160c34516397f38db495a448b896332ca7736",
+    "retained_copy": "compare-normalized-cloud-v3-reviewed.py",
+    "executed": false,
+    "previous_finding": "Counts/PID sets alone did not bind completed compiler ledger units to rustc invocation records.",
+    "resolved_in_reviewed_script": "Every compiler invocation has a unique PID, exactly one started and completed record, and both ledger unit values exactly match compiler_unit; final pass remains complete input-byte equality.",
+    "scope": "Static review only. No original or v3 comparison execution."
+  },
+  "limits": [
+    "This review does not accept a profile3 full-kernel boot or A3/B3 byte reproduction. Those remain actual-run requirements.",
+    "Current producer provenance is successful completion plus dev/inode/size/mtime artifact identity, not cryptographic immutable content proof. Bind eventual ledger to recorded source commit/tree/status and policy code hashes.",
+    "Only opt-in local metadata/remap changes are reviewed; original artifact filenames/extern arguments and kernel core ownership remain intact.",
+    "No cross-host or immutable environment acceptance.",
+    "Synthetic helper/fake compiler host checks are not guest boot evidence."
+  ]
+}

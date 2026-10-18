@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "generated_utc": "2026-10-16T13:09:02.902300+00:00",
+  "archived_inputs": [
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/next6-build-preflight.json",
+      "sha256": "0dec6fbb77ae74ec3a9a3dc1b52e0017c07db80c9c5cc45dd8731ffce44cc5a0",
+      "size": 371576
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/next6-cache-cleanup.json",
+      "sha256": "d266fd7fe21d0523c7ee09e4463c887bf7837e57998e23f511be099c6fdcc9d0",
+      "size": 1135
+    }
+  ],
+  "embedded_cache_report": {
+    "original_path": "/workspace/scratch/ae1a8cf05419/next6-cache-preflight-review.json",
+    "original_sha256": "f47f6fa428e27dc98351360d5e8c83fe7321d29330b779f5e8c096b554c4654c",
+    "storage": "Embedded as cache_review.report in the frozen preflight JSON. No second full copy.",
+    "byte_reconstruction": "json.dumps(cache_review.report, indent=2) plus one LF; UTF-8. Its reconstructed original bytes were verified against the frozen original SHA256.",
+    "reconstructed_sha256": "f47f6fa428e27dc98351360d5e8c83fe7321d29330b779f5e8c096b554c4654c"
+  },
+  "verification": {
+    "atomic_archive_replace": true,
+    "archive_reopened_and_all_members_verified": true,
+    "source_preflight_sha_verified": true,
+    "cleanup_receipt_sha_matches_frozen_preflight": true
+  },
+  "actions_in_preflight": [
+    "Read source and fixed input files, Git metadata, tool versions/help, installed component lists and cached archive/index/Git contents",
+    "Write authorized scratch JSON reports only"
+  ],
+  "actions_not_performed": [
+    "No dependency installation or fetch/download",
+    "No source/manifest/target modification",
+    "No VM or full build",
+    "No service, system-disk, BIOS or GPU change",
+    "No ISO obtained or required"
+  ],
+  "archive_actions": "Read frozen preflight/cleanup files and write this owned evidence directory only; no read of in-progress build logs or target."
+}

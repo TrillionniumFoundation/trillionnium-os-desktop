@@ -1,0 +1,168 @@
+{
+  "schema": 1,
+  "scope": "host-only actual executed commands and retained reconstruction recipes",
+  "working_directory": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+  "actual_probe_commands": [
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/next6-runner-signal-seam/probe.py",
+        "--out",
+        "/workspace/scratch/ae1a8cf05419/next6-runner-signal-seam/run-01"
+      ],
+      "stdout_stderr": "/workspace/scratch/ae1a8cf05419/next6-runner-signal-seam/console-01.log",
+      "exit_code": 0,
+      "meaning": "probe succeeded by proving control pass and two old leaks"
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/next6-runner-signal-seam/patched/probe.py",
+        "--out",
+        "/workspace/scratch/ae1a8cf05419/next6-runner-signal-seam/patched/run-01"
+      ],
+      "stdout_stderr": "/workspace/scratch/ae1a8cf05419/next6-runner-signal-seam/patched/console-01.log",
+      "exit_code": 0,
+      "meaning": "all three patched controls passed; old literal setting seams removed"
+    }
+  ],
+  "final_host_tests": [
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "support/build/osdk-integration/test_runner_lifecycle.py"
+      ],
+      "exit_code": 0,
+      "tests": 14,
+      "mode": "normal",
+      "log": "lifecycle-final.log",
+      "log_sha256": "6dd5f00931ffdb29e3b3d0694c4a2a58360b883a5d7d0ef80b02075c5232a2ab"
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "support/build/osdk-integration/test_runner.py"
+      ],
+      "exit_code": 0,
+      "tests": 1,
+      "mode": "normal",
+      "log": "timeout-final.log",
+      "log_sha256": "ddff57e2da8ce895e6e18b54709b05140a40034c781dd4bbed78491a1914699b"
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "support/build/osdk-integration/test_profiles.py"
+      ],
+      "exit_code": 0,
+      "tests": 7,
+      "mode": "normal",
+      "log": "profiles-final.log",
+      "log_sha256": "83166b089fbcb82fac63f22522fa6ae99bb5e46368cd35d756277fd463dd6346"
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "-O",
+        "support/build/osdk-integration/test_runner_lifecycle.py"
+      ],
+      "exit_code": 0,
+      "tests": 14,
+      "mode": "optimized",
+      "log": "lifecycle-final-optimized.log",
+      "log_sha256": "dded5ed7e638feca2ecaaa10eabc99dca2dec68ee5f431821d49ce74b1d4d333"
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "-O",
+        "support/build/osdk-integration/test_runner.py"
+      ],
+      "exit_code": 0,
+      "tests": 1,
+      "mode": "optimized",
+      "log": "timeout-final-optimized.log",
+      "log_sha256": "90e8fa28984015f375e7e18582f0e2ac2076d76e4edea6c017d35a2551ab6aa0"
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "-O",
+        "support/build/osdk-integration/test_profiles.py"
+      ],
+      "exit_code": 0,
+      "tests": 7,
+      "mode": "optimized",
+      "log": "profiles-final-optimized.log",
+      "log_sha256": "83166b089fbcb82fac63f22522fa6ae99bb5e46368cd35d756277fd463dd6346"
+    }
+  ],
+  "intermediate_host_tests": [
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "support/build/osdk-integration/test_runner_lifecycle.py"
+      ],
+      "stdout_stderr": "lifecycle-existing-01.log",
+      "tests": 10,
+      "exit_code": 0,
+      "meaning": "patched cancellation with original tests before four new regression cases"
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "support/build/osdk-integration/test_runner_lifecycle.py"
+      ],
+      "stdout_stderr": "lifecycle-patched-01.log",
+      "tests": 14,
+      "exit_code": 0,
+      "meaning": "first full scoped14 check"
+    }
+  ],
+  "source_reconstruction_steps": {
+    "executed": true,
+    "temporary_directory_removed": true,
+    "argv_templates": [
+      [
+        "git",
+        "show",
+        "2eee2c3df5a837e89ae7557510008ce1de37a1ca:SOURCE_PATH"
+      ],
+      [
+        "git",
+        "apply",
+        "--check",
+        "/workspace/scratch/ae1a8cf05419/next6-runner-signal-seam/source-change.patch"
+      ],
+      [
+        "git",
+        "apply",
+        "/workspace/scratch/ae1a8cf05419/next6-runner-signal-seam/source-change.patch"
+      ],
+      [
+        "git",
+        "show",
+        "287a92e65581f193d764f5ff85fbc3631bc0a9ab:SOURCE_PATH"
+      ],
+      [
+        "git",
+        "apply",
+        "--reverse",
+        "/workspace/scratch/ae1a8cf05419/next6-runner-signal-seam/source-change.patch"
+      ]
+    ],
+    "template_placeholders": [
+      "SOURCE_PATH is either exact assigned source from source-reconstruction.json; git apply cwd is disposable reconstructed tree"
+    ]
+  }
+}

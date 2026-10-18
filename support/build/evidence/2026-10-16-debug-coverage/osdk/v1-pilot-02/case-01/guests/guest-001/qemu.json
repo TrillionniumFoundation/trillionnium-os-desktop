@@ -1,0 +1,195 @@
+{
+  "schema": 1,
+  "cwd": "/tmp/a01oi-bklghrml/kernel_test_workspace/run_command/basic_debug",
+  "requested_osdk_args": [
+    "-kernel",
+    "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-integration-native-06/target/osdk/basic_debug/basic_debug-osdk-bin.elf",
+    "-append",
+    "--",
+    "-machine",
+    "q35,kernel-irqchip=split",
+    "-cpu",
+    "Icelake-Server,+x2apic",
+    "--no-reboot",
+    "-m",
+    "8G",
+    "-smp",
+    "1",
+    "-nographic",
+    "-serial",
+    "chardev:mux",
+    "-monitor",
+    "chardev:mux",
+    "-display",
+    "none",
+    "-chardev",
+    "stdio,id=mux,mux=on,signal=off",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04",
+    "-drive",
+    "if=pflash,format=raw,unit=0,readonly=on,file=/root/ovmf/release/OVMF.fd",
+    "-drive",
+    "if=pflash,format=raw,unit=1,file=/root/ovmf/release/OVMF_VARS.fd",
+    "-gdb",
+    "tcp:127.0.0.1:35177",
+    "-S"
+  ],
+  "profile": {
+    "arch": "x86_64",
+    "machine": "q35",
+    "accel": "tcg",
+    "cpu": "max",
+    "vcpus": 1,
+    "memory_mib": 512,
+    "network": false,
+    "data_disks": false,
+    "firmware": "/usr/share/seabios/bios-256k.bin"
+  },
+  "raw_exit_code": 33,
+  "timed_out": false,
+  "profile_id": "osdk-native-local-tcp-v1",
+  "control_transport": "loopback-tcp",
+  "control_endpoints": [
+    {
+      "kind": "gdb",
+      "role": "server",
+      "host": "127.0.0.1",
+      "port": 35177,
+      "requested_value": "tcp:127.0.0.1:35177"
+    }
+  ],
+  "gdb_readiness": {
+    "ready": true,
+    "marker_requested": true,
+    "startup_survival_seconds": 0.05,
+    "marker": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-local-tcp-02/case-01/gdb-ready.json",
+      "size": 358,
+      "sha256": "2a373c7435f43734323e3a66fe3a10cf2794bcf817af553c8668d68bbf3a9503"
+    }
+  },
+  "gdb_listener": {
+    "host": "127.0.0.1",
+    "port": 35177,
+    "fd": 3,
+    "bind_succeeded": true,
+    "held_until_qemu_spawn": true,
+    "bind_close_rebind_gap": false,
+    "handoff": "prebound-listener-inherited-fd",
+    "parent_copy_closed_after_spawn": true
+  },
+  "argv": [
+    "/usr/bin/qemu-system-x86_64",
+    "-kernel",
+    "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-integration-native-06/target/osdk/basic_debug/basic_debug-osdk-bin.elf",
+    "-append",
+    "--",
+    "--no-reboot",
+    "-serial",
+    "chardev:mux",
+    "-monitor",
+    "chardev:mux",
+    "-chardev",
+    "stdio,id=mux,mux=on,signal=off,logfile=/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-local-tcp-02/case-01/guests/guest-001/serial.log",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04",
+    "-chardev",
+    "socket,id=a01-gdb0,fd=3,server=on,wait=off",
+    "-gdb",
+    "chardev:a01-gdb0",
+    "-S",
+    "-machine",
+    "q35",
+    "-accel",
+    "tcg",
+    "-cpu",
+    "max",
+    "-m",
+    "512M",
+    "-smp",
+    "1",
+    "-bios",
+    "/usr/share/seabios/bios-256k.bin",
+    "-nodefaults",
+    "-no-user-config",
+    "-display",
+    "none"
+  ],
+  "shell_command": "/usr/bin/qemu-system-x86_64 -kernel /workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-integration-native-06/target/osdk/basic_debug/basic_debug-osdk-bin.elf -append -- --no-reboot -serial chardev:mux -monitor chardev:mux -chardev stdio,id=mux,mux=on,signal=off,logfile=/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-local-tcp-02/case-01/guests/guest-001/serial.log -device isa-debug-exit,iobase=0xf4,iosize=0x04 -chardev socket,id=a01-gdb0,fd=3,server=on,wait=off -gdb chardev:a01-gdb0 -S -machine q35 -accel tcg -cpu max -m 512M -smp 1 -bios /usr/share/seabios/bios-256k.bin -nodefaults -no-user-config -display none",
+  "removed_profile_args": [
+    [
+      "-machine",
+      "q35,kernel-irqchip=split"
+    ],
+    [
+      "-cpu",
+      "Icelake-Server,+x2apic"
+    ],
+    [
+      "-m",
+      "8G"
+    ],
+    [
+      "-smp",
+      "1"
+    ],
+    [
+      "-nographic"
+    ],
+    [
+      "-display",
+      "none"
+    ],
+    [
+      "-drive",
+      "if=pflash,format=raw,unit=0,readonly=on,file=/root/ovmf/release/OVMF.fd"
+    ],
+    [
+      "-drive",
+      "if=pflash,format=raw,unit=1,file=/root/ovmf/release/OVMF_VARS.fd"
+    ]
+  ],
+  "artifacts": {
+    "-bios": {
+      "path": "/usr/share/seabios/bios-256k.bin",
+      "size": 262144,
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    "-kernel": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-integration-native-06/target/osdk/basic_debug/basic_debug-osdk-bin.elf",
+      "size": 27792512,
+      "sha256": "b129e3a828782f1466222ce8fd6eaaf760f4d775f094cb7cc6864312f7cbf9e1"
+    }
+  },
+  "qemu": {
+    "path": "/usr/bin/qemu-system-x86_64",
+    "size": 26415624,
+    "sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854"
+  },
+  "serial_sources": [
+    "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-local-tcp-02/case-01/guests/guest-001/serial.log"
+  ],
+  "qemu_version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)\nCopyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers",
+  "timeout_seconds": 300,
+  "stream_logs": {
+    "stdout": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-local-tcp-02/case-01/guests/guest-001/qemu-stdout.log",
+      "size": 2781,
+      "sha256": "9645f3a8939d6e26bb2082b5aa01eb37af25b693a783b9a5f36deec0ee67cbf5"
+    },
+    "stderr": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-local-tcp-02/case-01/guests/guest-001/qemu-stderr.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "serial_logs": [
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-local-tcp-02/case-01/guests/guest-001/serial.log",
+      "size": 2781,
+      "sha256": "9645f3a8939d6e26bb2082b5aa01eb37af25b693a783b9a5f36deec0ee67cbf5"
+    }
+  ],
+  "wrapper_exit_code": 33,
+  "duration_seconds": 1.772
+}
