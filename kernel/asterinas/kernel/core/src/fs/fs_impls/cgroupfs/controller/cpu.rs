@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
+mod max_config;
+
 use alloc::sync::Arc;
 use core::sync::atomic::{AtomicU32, Ordering};
 
@@ -452,14 +454,6 @@ impl super::SubControl for CpuController {
             "cpu.max" => {
                 let control = self.control()?;
 
-                // The cgroup v2 CPU bandwidth limit is `$MAX $PERIOD`, where `$MAX` is
-                // either `max` or at least 1ms and `$PERIOD` is in the range 1ms..=1s.
-                //
-                // Reference: <https://docs.kernel.org/admin-guide/cgroup-v2.html#cpu-interface-files>
-                const MIN_QUOTA_USEC: u64 = 1_000;
-                const MIN_PERIOD_USEC: u64 = 1_000;
-                const MAX_PERIOD_USEC: u64 = 1_000_000;
-
                 let (content, len) = reader
                     .read_cstring_until_end(MAX_ATTR_SIZE)
                     .map_err(|_| Error::PageFault)?;
@@ -467,40 +461,12 @@ impl super::SubControl for CpuController {
                     .to_str()
                     .map_err(|_| Error::InvalidOperation)?
                     .trim();
-                let mut tokens = content.split_whitespace();
-
-                let Some(quota_token) = tokens.next() else {
-                    return Err(Error::InvalidOperation);
-                };
-                let period_token = tokens.next();
-
-                // Check whether `quota_usec` is valid.
-                let quota_usec = if quota_token == "max" {
-                    u64::MAX
-                } else if let Ok(quota_usec) = quota_token.parse::<u64>() {
-                    if quota_usec < MIN_QUOTA_USEC {
-                        return Err(Error::InvalidOperation);
-                    }
-                    quota_usec
-                } else {
-                    return Err(Error::InvalidOperation);
-                };
-
-                // Check whether `period_usec` is valid.
-                let period_usec = if let Some(period_usec) =
-                    period_token.and_then(|period_token| period_token.parse::<u64>().ok())
-                {
-                    if !(MIN_PERIOD_USEC..=MAX_PERIOD_USEC).contains(&period_usec) {
-                        return Err(Error::InvalidOperation);
-                    }
-                    Some(period_usec)
-                } else {
-                    None
-                };
+                let config = max_config::CpuMaxConfig::parse(content)
+                    .map_err(|_| Error::InvalidOperation)?;
 
                 let mut max = control.max.lock();
-                let next_period = period_usec.unwrap_or(max.period_usec);
-                max.reconfigure(quota_usec, next_period, read_tsc());
+                let next_period = config.period_usec.unwrap_or(max.period_usec);
+                max.reconfigure(config.quota_usec, next_period, read_tsc());
 
                 Ok(len)
             }
@@ -652,6 +618,9 @@ pub(crate) fn charge_cpu_time(process: &Process, stat_kind: CpuStatKind) {
             .charge_cpu_time(&cgroup_guard, stat_kind);
     }
 }
+
+#[cfg(ktest)]
+mod config_regressions;
 
 #[cfg(ktest)]
 mod final_charge_regressions;
