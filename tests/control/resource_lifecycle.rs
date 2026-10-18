@@ -4,8 +4,8 @@
 
 use os_control::{
     with_parent, BootId, CapSpaceId, ControlCore, DeliveryRequest, HistoryAck, OwnerId,
-    OwnerReceipt, PublisherId, ResourceDomain, ResourceDomainId, ResourceError, StableObjectId,
-    CPU_PERIOD_NS, MAX_RESOURCE_DEPTH,
+    PublisherId, ResourceDomain, ResourceDomainId, ResourceError, StableObjectId, CPU_PERIOD_NS,
+    MAX_RESOURCE_DEPTH,
 };
 use std::sync::{Arc, Barrier};
 use std::thread;
@@ -105,8 +105,7 @@ fn terminal_history_retains_the_target_until_contiguous_retirement() {
     drop(token);
     assert_child_constraint(&parent, 9, 10);
 
-    let ack = HistoryAck::from_owner_receipt(core.identity(), 1, OwnerReceipt::new(owner, [1; 32]))
-        .unwrap();
+    let ack = authority.history_ack(1, [1; 32]).unwrap();
     core.retire_through(&view, ack, &authority).unwrap();
     reduce(&parent, 1, 9, 10);
     assert_eq!(core.retired_through(), 1);
@@ -134,8 +133,7 @@ fn a_retired_reservation_token_does_not_extend_resource_memory_lifetime() {
     core.commit(&token, who, 10).unwrap();
     drop(leaf);
     assert_child_constraint(&parent, 9, 10);
-    let ack = HistoryAck::from_owner_receipt(core.identity(), 1, OwnerReceipt::new(owner, [1; 32]))
-        .unwrap();
+    let ack = authority.history_ack(1, [1; 32]).unwrap();
     core.retire_through(&view, ack, &authority).unwrap();
     reduce(&parent, 1, 9, 10);
     assert_eq!(

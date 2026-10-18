@@ -3,9 +3,8 @@
 
 use os_control::{
     BootId, CapSpaceId, ControlCore, DeliveryError, DeliveryRequest, DeliveryState, DeliveryStatus,
-    HistoryAck, OriginalOwnerAuthority, OwnerId, OwnerReceipt, PublishOutcome, PublisherId,
-    ReserveAttempt, ResourceDomain, ResourceDomainId, StableObjectId, CPU_PERIOD_NS,
-    DEFAULT_WINDOW_CAPACITY,
+    HistoryAck, OriginalOwnerAuthority, OwnerId, PublishOutcome, PublisherId, ReserveAttempt,
+    ResourceDomain, ResourceDomainId, StableObjectId, CPU_PERIOD_NS, DEFAULT_WINDOW_CAPACITY,
 };
 use std::sync::{Arc, Barrier};
 use std::thread;
@@ -33,13 +32,8 @@ fn target(n: u128) -> ResourceDomain {
     .unwrap()
 }
 
-fn ack(core: &ControlCore, sequence: u64) -> HistoryAck {
-    HistoryAck::from_owner_receipt(
-        core.identity(),
-        sequence,
-        OwnerReceipt::new(owner(), [0x81; 32]),
-    )
-    .unwrap()
+fn ack(authority: &OriginalOwnerAuthority, sequence: u64) -> HistoryAck {
+    authority.history_ack(sequence, [0x81; 32]).unwrap()
 }
 
 #[test]
@@ -82,7 +76,7 @@ fn full_hos2_window_with_pending_prefix_survives_ten_thousand_deliveries() {
             Some(DeliveryError::ResourceExhausted)
         );
         assert_eq!(
-            core.retire_through(&view, ack(&core, next - 1), &authority),
+            core.retire_through(&view, ack(&authority, next - 1), &authority),
             Err(DeliveryError::PendingPrefix)
         );
         assert_eq!(
@@ -108,7 +102,7 @@ fn full_hos2_window_with_pending_prefix_survives_ten_thousand_deliveries() {
         },
     )
     .unwrap();
-    core.retire_through(&view, ack(&core, next - 1), &authority)
+    core.retire_through(&view, ack(&authority, next - 1), &authority)
         .unwrap();
     for sequence in next..=10_000 {
         let token = core
@@ -121,7 +115,7 @@ fn full_hos2_window_with_pending_prefix_survives_ten_thousand_deliveries() {
             core.commit(&token, publisher(), sequence).unwrap().status,
             Some(DeliveryStatus::Ok)
         );
-        core.retire_through(&view, ack(&core, sequence), &authority)
+        core.retire_through(&view, ack(&authority, sequence), &authority)
             .unwrap();
     }
     assert_eq!(core.next_sequence(), 10_001);
@@ -222,7 +216,7 @@ fn identical_public_namespace_bytes_never_transfer_observer_owner_or_publisher_a
             Err(DeliveryError::PermissionDenied)
         );
         assert_eq!(
-            foreign.retire_through(&view, ack(&core, 1), &authority),
+            foreign.retire_through(&view, ack(&authority, 1), &authority),
             Err(DeliveryError::PermissionDenied)
         );
     }
@@ -231,7 +225,7 @@ fn identical_public_namespace_bytes_never_transfer_observer_owner_or_publisher_a
         Err(DeliveryError::PermissionDenied)
     );
     assert_eq!(
-        core.retire_through(&view, ack(&core, 1), &alien_authority),
+        core.retire_through(&view, ack(&authority, 1), &alien_authority),
         Err(DeliveryError::PermissionDenied)
     );
     assert_eq!(core.query_delivery(&view, 1).unwrap(), terminal);
@@ -370,7 +364,7 @@ fn concurrent_retire_query_and_loss_keep_history_monotonic_and_complete() {
             let view_ref = &view;
             let retire = scope.spawn(move || {
                 start_retire.wait();
-                match core_ref.retire_through(view_ref, ack(core_ref, 1), &authority) {
+                match core_ref.retire_through(view_ref, ack(&authority, 1), &authority) {
                     Ok(receipt) => {
                         assert_eq!(receipt.retired_through, 1);
                         assert_eq!(receipt.next_sequence, 2);
