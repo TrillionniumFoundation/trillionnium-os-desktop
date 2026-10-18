@@ -146,7 +146,7 @@ PROFILE_MUTANTS = (
         ),
     ),
     (
-        "accept_prior_window_cpu_sum",
+        "accept_cumulative_cpu_beyond_boot_elapsed",
         PROFILE_TESTS[6],
         tuple(
             (
