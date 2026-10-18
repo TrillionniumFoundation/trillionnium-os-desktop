@@ -684,28 +684,109 @@ mod tests {
 
     #[test]
     fn session_startup_is_exclusive_and_recovers_a_crashed_lock_owner() {
+        use std::io::{BufRead, BufReader, Write};
+
+        const OWNER_SOCKET_ENV: &str = "TRILL_TEST_LOCK_OWNER_SOCKET";
+        const READY: &str = "TRILL_TEST_LOCK_OWNER_READY";
+        if let Some(socket) = std::env::var_os(OWNER_SOCKET_ENV) {
+            // This branch exists only in the test executable. Acquire after
+            // exec, so unrelated parallel tests cannot inherit the owner's
+            // flock file description through their concurrent process spawns.
+            let owner = acquire_session_lock(Path::new(&socket)).unwrap();
+            let mut output = io::stdout().lock();
+            writeln!(output, "{READY}").unwrap();
+            output.flush().unwrap();
+            drop(output);
+            // The parent retains this stdin pipe until it kills and reaps us.
+            // This owner starts no other processes after acquiring the lock.
+            let mut byte = [0];
+            let _ = io::stdin().read(&mut byte).unwrap();
+            drop(owner);
+            panic!("isolated lock owner must be stopped with SIGKILL");
+        }
+
+        struct Fixture {
+            dir: PathBuf,
+            owner: Option<Child>,
+            reader: Option<thread::JoinHandle<()>>,
+        }
+        impl Drop for Fixture {
+            fn drop(&mut self) {
+                if let Some(owner) = self.owner.as_mut() {
+                    let _ = owner.kill();
+                    let _ = owner.wait();
+                }
+                if let Some(reader) = self.reader.take() {
+                    let _ = reader.join();
+                }
+                let _ = fs::remove_dir_all(&self.dir);
+            }
+        }
+
         let dir = std::env::temp_dir().join(format!(
             "trill-lock-runtime-{}-{}",
             std::process::id(),
             unix_ms()
         ));
         fs::create_dir(&dir).unwrap();
+        let mut fixture = Fixture {
+            dir: dir.clone(),
+            owner: None,
+            reader: None,
+        };
         fs::set_permissions(&dir, Permissions::from_mode(0o700)).unwrap();
         let socket = dir.join("trillionnium-ui/session.sock");
         private_socket_dir(&socket).unwrap();
-        let first = acquire_session_lock(&socket).unwrap();
+
+        fixture.owner = Some(
+            Command::new(std::env::current_exe().unwrap())
+                .args([
+                    "--exact",
+                    "tests::session_startup_is_exclusive_and_recovers_a_crashed_lock_owner",
+                    "--nocapture",
+                    "--quiet",
+                ])
+                .env(OWNER_SOCKET_ENV, &socket)
+                .stdin(Stdio::piped())
+                .stdout(Stdio::piped())
+                .stderr(Stdio::inherit())
+                .spawn()
+                .unwrap(),
+        );
+        let stdout = fixture.owner.as_mut().unwrap().stdout.take().unwrap();
+        let (ready_tx, ready_rx) = mpsc::channel();
+        fixture.reader = Some(thread::spawn(move || {
+            for line in BufReader::new(stdout).lines() {
+                match line {
+                    Ok(line) if line == READY => {
+                        let _ = ready_tx.send(());
+                        break;
+                    }
+                    Ok(_) => {}
+                    Err(_) => break,
+                }
+            }
+        }));
+        ready_rx
+            .recv_timeout(Duration::from_secs(3))
+            .expect("isolated owner must report its actual acquired kernel lock");
+
         let second = acquire_session_lock(&socket);
         assert_eq!(
             second.unwrap_err().kind(),
             io::ErrorKind::WouldBlock,
             "another session must not replace a live owner"
         );
-        drop(first);
-        // The on-disk lock remains, but dropping or crashing the first
-        // owner releases the kernel lock without requiring stale PID cleanup.
+        let owner = fixture.owner.as_mut().unwrap();
+        owner.kill().unwrap();
+        let status = owner.wait().unwrap();
+        fixture.owner = None; // Never signal a reaped process identity in Drop.
+        assert_eq!(status.signal(), Some(9), "observe the real owner crash");
+        // SIGKILL + wait closes every descriptor in this isolated owner.
+        // A same-process File drop cannot promise this when parallel tests
+        // have temporarily inherited that description across fork -> exec.
         let third = acquire_session_lock(&socket).unwrap();
         drop(third);
-        fs::remove_dir_all(&dir).unwrap();
     }
 
     #[test]

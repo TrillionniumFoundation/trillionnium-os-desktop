@@ -5,8 +5,8 @@
 
 use os_control::{
     BootId, CapSpaceId, ControlCore, DeliveryError, DeliveryRequest, DeliveryState, DeliveryStatus,
-    HistoryAck, OriginalOwnerAuthority, OwnerId, OwnerReceipt, PublishOutcome, PublisherId,
-    RequestBinding, ResourceDomain, ResourceDomainId, StableObjectId, CPU_PERIOD_NS,
+    HistoryAck, OriginalOwnerAuthority, OwnerId, PublishOutcome, PublisherId, RequestBinding,
+    ResourceDomain, ResourceDomainId, StableObjectId, CPU_PERIOD_NS,
 };
 use std::sync::{mpsc, Arc, Barrier};
 use std::thread;
@@ -51,13 +51,8 @@ fn success(binding: RequestBinding) -> PublishOutcome {
     }
 }
 
-fn ack(core: &ControlCore, through: u64) -> HistoryAck {
-    HistoryAck::from_owner_receipt(
-        core.identity(),
-        through,
-        OwnerReceipt::new(owner(), [0x61; 32]),
-    )
-    .unwrap()
+fn ack(authority: &OriginalOwnerAuthority, through: u64) -> HistoryAck {
+    authority.history_ack(through, [0x61; 32]).unwrap()
 }
 
 /// Release on both normal completion and assertion unwinding. This guard is
@@ -150,7 +145,7 @@ fn retire_of_paused_callback_returns_pending_prefix_without_waiting() {
     let (core, authority, resource) = fixture(930_001);
     let token = core.reserve(request(&resource, 1), publisher()).unwrap();
     let view = core.delivery_view_for(owner()).unwrap();
-    let acknowledgement = ack(&core, 1);
+    let acknowledgement = ack(&authority, 1);
     thread::scope(|scope| {
         let (entered_send, entered_recv) = mpsc::channel();
         let (release_send, release_recv) = mpsc::channel();
@@ -225,10 +220,10 @@ fn closing_namespace_fences_writes_while_queries_and_reads_remain_available() {
     core.publish(&first, publisher(), success(first.binding()))
         .unwrap();
     let view = core.delivery_view_for(owner()).unwrap();
-    core.retire_through(&view, ack(&core, 1), &authority)
+    core.retire_through(&view, ack(&authority, 1), &authority)
         .unwrap();
     let token = core.reserve(request(&resource, 2), publisher()).unwrap();
-    let acknowledgement = ack(&core, 2);
+    let acknowledgement = ack(&authority, 2);
 
     thread::scope(|scope| {
         let (entered_send, entered_recv) = mpsc::channel();
@@ -377,7 +372,7 @@ fn two_concurrent_losses_wait_for_every_callback_without_blocking_history_reads(
     core.publish(&retired, publisher(), success(retired.binding()))
         .unwrap();
     let view = core.delivery_view_for(owner()).unwrap();
-    core.retire_through(&view, ack(&core, 1), &authority)
+    core.retire_through(&view, ack(&authority, 1), &authority)
         .unwrap();
     let first = core
         .reserve(request(&first_resource, 2), publisher())

@@ -7,8 +7,8 @@
 use os_control::{
     BootId, CapSpaceId, ControlCore, DeliveryError, DeliveryObservation, DeliveryState,
     DeliveryStatus, HistoryAck, NativeDeliveryRequest, NativeGrant, NativeTarget,
-    OriginalOwnerAuthority, OwnerId, OwnerReceipt, PublishOutcome, PublisherId, RequestBinding,
-    ReserveAttempt, ReserveToken, ResourceDomainId, StableObjectId,
+    OriginalOwnerAuthority, OwnerId, PublishOutcome, PublisherId, RequestBinding, ReserveAttempt,
+    ReserveToken, ResourceDomainId, StableObjectId,
 };
 use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
@@ -90,13 +90,8 @@ fn namespace(id: u128, capacity: usize) -> (ControlCore, OriginalOwnerAuthority)
     .unwrap()
 }
 
-fn ack(core: &ControlCore, through: u64) -> HistoryAck {
-    HistoryAck::from_owner_receipt(
-        core.identity(),
-        through,
-        OwnerReceipt::new(history_owner(), [0x8d; 32]),
-    )
-    .unwrap()
+fn ack(authority: &OriginalOwnerAuthority, through: u64) -> HistoryAck {
+    authority.history_ack(through, [0x8d; 32]).unwrap()
 }
 
 fn execute(core: &ControlCore, token: &ReserveToken) -> DeliveryObservation {
@@ -123,7 +118,7 @@ fn odd_windows_survive_ten_thousand_writes_with_only_partial_prefix_retirement()
                 let through = live[count - 1];
                 let before_next = core.next_sequence();
                 let receipt = core
-                    .retire_through(&view, ack(&core, through), &authority)
+                    .retire_through(&view, ack(&authority, through), &authority)
                     .unwrap();
                 for _ in 0..count {
                     live.pop_front();
@@ -138,7 +133,7 @@ fn odd_windows_survive_ten_thousand_writes_with_only_partial_prefix_retirement()
                 assert_eq!(core.retired_through(), retired);
                 assert_eq!(core.window_len(), capacity - count);
                 assert_eq!(
-                    core.retire_through(&view, ack(&core, 1), &authority)
+                    core.retire_through(&view, ack(&authority, 1), &authority)
                         .unwrap(),
                     receipt
                 );
@@ -187,7 +182,7 @@ fn odd_windows_survive_ten_thousand_writes_with_only_partial_prefix_retirement()
             }
         }
         let receipt = core
-            .retire_through(&view, ack(&core, WRITES), &authority)
+            .retire_through(&view, ack(&authority, WRITES), &authority)
             .unwrap();
         assert_eq!(receipt.retired_through, WRITES);
         assert_eq!(receipt.next_sequence, WRITES + 1);
@@ -255,7 +250,7 @@ fn pending_head_blocks_full_odd_window_until_no_effect_resolution_then_partial_w
         );
     }
     assert_eq!(
-        core.retire_through(&view, ack(&core, capacity as u64), &authority),
+        core.retire_through(&view, ack(&authority, capacity as u64), &authority),
         Err(DeliveryError::PendingPrefix)
     );
     assert_eq!(core.retired_through(), 0);
@@ -282,7 +277,7 @@ fn pending_head_blocks_full_odd_window_until_no_effect_resolution_then_partial_w
         .unwrap(),
         refusal
     );
-    core.retire_through(&view, ack(&core, 4), &authority)
+    core.retire_through(&view, ack(&authority, 4), &authority)
         .unwrap();
     for _ in 0..4 {
         live.pop_front();
@@ -293,7 +288,7 @@ fn pending_head_blocks_full_odd_window_until_no_effect_resolution_then_partial_w
         if live.len() == capacity {
             let through = live[2];
             let receipt = core
-                .retire_through(&view, ack(&core, through), &authority)
+                .retire_through(&view, ack(&authority, through), &authority)
                 .unwrap();
             for _ in 0..3 {
                 live.pop_front();
@@ -322,7 +317,7 @@ fn pending_head_blocks_full_odd_window_until_no_effect_resolution_then_partial_w
         }
     }
     let receipt = core
-        .retire_through(&view, ack(&core, WRITES), &authority)
+        .retire_through(&view, ack(&authority, WRITES), &authority)
         .unwrap();
     assert_eq!(receipt.retired_through, WRITES);
     assert_eq!(receipt.next_sequence, WRITES + 1);

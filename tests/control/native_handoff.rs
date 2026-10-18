@@ -8,8 +8,8 @@
 use os_control::{
     BootId, CapSpaceId, ControlCore, DeliveryError, DeliveryRequest, DeliveryState, DeliveryStatus,
     HistoryAck, NativeDeliveryRequest, NativeGrant, NativeTarget, OriginalOwnerAuthority, OwnerId,
-    OwnerReceipt, PublishOutcome, PublisherId, RequestBinding, ReserveAttempt, ResourceDomain,
-    ResourceDomainId, ResourceError, StableObjectId, CPU_PERIOD_NS, MAX_RESOURCE_DEPTH,
+    PublishOutcome, PublisherId, RequestBinding, ReserveAttempt, ResourceDomain, ResourceDomainId,
+    ResourceError, StableObjectId, CPU_PERIOD_NS, MAX_RESOURCE_DEPTH,
 };
 use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
 use std::sync::{mpsc, Arc, Barrier, Mutex};
@@ -117,13 +117,8 @@ fn request_with_grant(grant: NativeGrant) -> NativeDeliveryRequest {
         .with_payload_digest([0x42; 32])
 }
 
-fn ack(core: &ControlCore, through: u64) -> HistoryAck {
-    HistoryAck::from_owner_receipt(
-        core.identity(),
-        through,
-        OwnerReceipt::new(durable_owner(), [0x33; 32]),
-    )
-    .unwrap()
+fn ack(authority: &OriginalOwnerAuthority, through: u64) -> HistoryAck {
+    authority.history_ack(through, [0x33; 32]).unwrap()
 }
 
 #[test]
@@ -512,7 +507,7 @@ fn native_retirement_releases_owner_even_with_stale_token_retained() {
         "unretired result lost its owner pin"
     );
     let view = core.delivery_view_for(durable_owner()).unwrap();
-    core.retire_through(&view, ack(&core, 1), &authority)
+    core.retire_through(&view, ack(&authority, 1), &authority)
         .unwrap();
     assert!(
         weak_owner.upgrade().is_none(),
@@ -741,7 +736,7 @@ fn native_owner_drop_during_retirement_can_read_same_namespace_before_return() {
     })
     .unwrap();
     let view = core.delivery_view_for(durable_owner()).unwrap();
-    let receipt = core.retire_through(&view, ack(&core, 1), &authority);
+    let receipt = core.retire_through(&view, ack(&authority, 1), &authority);
     report.join_after_owner_release();
     assert_eq!(receipt.unwrap().retired_through, 1);
     assert_eq!(report.called.load(Ordering::SeqCst), 1);

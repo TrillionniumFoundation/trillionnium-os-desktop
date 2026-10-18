@@ -23,6 +23,7 @@ use alloc::format;
 use alloc::string::String;
 use alloc::vec::Vec;
 use core::fmt;
+use core::sync::atomic::{AtomicUsize, Ordering};
 
 mod sync;
 use sync::{lock_unpoisoned, Arc, Mutex, Weak};
@@ -1470,13 +1471,32 @@ pub enum DeliveryError {
 pub struct OwnerReceipt {
     pub owner: OwnerId,
     pub receipt_digest: [u8; 32],
+    // A value-only receipt supplied by a caller is intentionally untrusted.
+    // This private tag is stamped only by the non-Clone original-owner
+    // authority for its exact in-memory namespace instance.
+    namespace_tag: usize,
 }
 
 impl OwnerReceipt {
+    /// Construct untrusted owner evidence for negative tests and wire parsing.
+    /// A caller-created receipt can never authorize retirement by itself.
     pub const fn new(owner: OwnerId, receipt_digest: [u8; 32]) -> Self {
         Self {
             owner,
             receipt_digest,
+            namespace_tag: 0,
+        }
+    }
+
+    fn authenticated<B: LockBackend>(
+        namespace: &Arc<NamespaceState<B>>,
+        owner: OwnerId,
+        receipt_digest: [u8; 32],
+    ) -> Self {
+        Self {
+            owner,
+            receipt_digest,
+            namespace_tag: namespace_receipt_tag(namespace),
         }
     }
 }
@@ -1489,12 +1509,38 @@ pub struct HistoryAck {
 }
 
 impl HistoryAck {
+    /// Wrap value-only owner evidence. The resulting acknowledgement remains
+    /// untrusted until it is stamped by [`OriginalOwnerAuthorityWith::history_ack`].
     pub fn from_owner_receipt(
         namespace: NamespaceIdentity,
         through: u64,
         receipt: OwnerReceipt,
     ) -> Result<Self, DeliveryError> {
-        if through == 0 || !receipt.owner.is_nonzero() || receipt.receipt_digest == [0; 32] {
+        Self::validate_receipt(namespace, through, receipt)
+    }
+
+    fn from_authenticated_receipt(
+        namespace: NamespaceIdentity,
+        through: u64,
+        receipt: OwnerReceipt,
+    ) -> Result<Self, DeliveryError> {
+        if receipt.namespace_tag == 0 {
+            return Err(DeliveryError::InvalidAck);
+        }
+        Self::validate_receipt(namespace, through, receipt)
+    }
+
+    fn validate_receipt(
+        namespace: NamespaceIdentity,
+        through: u64,
+        receipt: OwnerReceipt,
+    ) -> Result<Self, DeliveryError> {
+        if through == 0
+            || !receipt.owner.is_nonzero()
+            || receipt.receipt_digest == [0; 32]
+            || !namespace.boot_id().is_nonzero()
+            || !namespace.cap_space_id().is_nonzero()
+        {
             return Err(DeliveryError::InvalidAck);
         }
         Ok(Self {
@@ -1524,6 +1570,21 @@ impl<B: LockBackend> OriginalOwnerAuthorityWith<B> {
     pub const fn owner(&self) -> OwnerId {
         self.owner
     }
+
+    /// Stamp an owner acknowledgement for this exact namespace instance.
+    /// A07 must supply the digest from its existing durable K ledger; this
+    /// host-model helper does not persist K or prove fsync by itself.
+    pub fn history_ack(
+        &self,
+        through: u64,
+        receipt_digest: [u8; 32],
+    ) -> Result<HistoryAck, DeliveryError> {
+        HistoryAck::from_authenticated_receipt(
+            self.namespace.identity,
+            through,
+            OwnerReceipt::authenticated(&self.namespace, self.owner, receipt_digest),
+        )
+    }
 }
 
 pub struct DeliveryViewWith<B: LockBackend> {
@@ -1533,9 +1594,37 @@ pub struct DeliveryViewWith<B: LockBackend> {
     owner: Option<OwnerId>,
 }
 
+fn namespace_receipt_tag<B: LockBackend>(namespace: &Arc<NamespaceState<B>>) -> usize {
+    namespace.receipt_tag
+}
+
+// A Copy HistoryAck can outlive every Arc to its namespace. An address cannot
+// identify that instance once an allocator reuses it. Reserve a fresh tag for
+// each bootstrap and fail closed on exhaustion; never wrap or recycle a tag.
+static NEXT_NAMESPACE_RECEIPT_TAG: AtomicUsize = AtomicUsize::new(1);
+
+fn allocate_namespace_receipt_tag() -> Result<usize, DeliveryError> {
+    let mut current = NEXT_NAMESPACE_RECEIPT_TAG.load(Ordering::Relaxed);
+    loop {
+        let next = current
+            .checked_add(1)
+            .ok_or(DeliveryError::ResourceExhausted)?;
+        match NEXT_NAMESPACE_RECEIPT_TAG.compare_exchange_weak(
+            current,
+            next,
+            Ordering::Relaxed,
+            Ordering::Relaxed,
+        ) {
+            Ok(_) => return Ok(current),
+            Err(observed) => current = observed,
+        }
+    }
+}
+
 struct NamespaceState<B: LockBackend> {
     // Serialize concurrent loss operations without holding the table lock.
     loss_gate: B::Mutex<()>,
+    receipt_tag: usize,
     identity: NamespaceIdentity,
     // Fixed at bootstrap so scratch storage can be prepared without holding
     // an internal lock. The ring never grows beyond this bound.
@@ -1696,6 +1785,7 @@ impl<B: LockBackend> ControlCoreWith<B> {
         Ok(Self {
             namespace: Arc::new(NamespaceState::<B> {
                 loss_gate: B::new((), LockRole::HistoryLoss),
+                receipt_tag: allocate_namespace_receipt_tag()?,
                 identity,
                 capacity,
                 state: B::new(
@@ -1999,6 +2089,7 @@ impl<B: LockBackend> ControlCoreWith<B> {
             || ack.namespace != self.identity()
             || !Arc::ptr_eq(&view.namespace, &self.namespace)
             || !Arc::ptr_eq(&owner_authority.namespace, &self.namespace)
+            || ack.receipt.namespace_tag != namespace_receipt_tag(&self.namespace)
             || owner_authority.owner != ack.receipt.owner
             // An observation-only delivery view never grants history.ack.
             || view.owner != Some(ack.receipt.owner)
@@ -2060,6 +2151,7 @@ impl<B: LockBackend> ControlCoreWith<B> {
         }
         if ack.receipt.receipt_digest == [0; 32]
             || !ack.receipt.owner.is_nonzero()
+            || ack.receipt.namespace_tag != namespace_receipt_tag(&self.namespace)
             || ack.through == 0
         {
             return Err(DeliveryError::InvalidAck);
@@ -2603,9 +2695,7 @@ mod tests {
         let cached = token.binding();
         core.commit(&token, publisher, 1).unwrap();
         let view = core.delivery_view_for(owner).unwrap();
-        let ack =
-            HistoryAck::from_owner_receipt(core.identity(), 1, OwnerReceipt::new(owner, [1; 32]))
-                .unwrap();
+        let ack = authority.history_ack(1, [1; 32]).unwrap();
         core.retire_through(&view, ack, &authority).unwrap();
         assert!(
             slot_weak.upgrade().is_none(),
@@ -2652,14 +2742,7 @@ mod tests {
             DeliveryRequest::new(sequence, target.grant(publisher).unwrap(), revision, 25)
         };
         let view = core.delivery_view_for(owner).unwrap();
-        let ack = |through| {
-            HistoryAck::from_owner_receipt(
-                core.identity(),
-                through,
-                OwnerReceipt::new(owner, [1; 32]),
-            )
-            .unwrap()
-        };
+        let ack = |through| authority.history_ack(through, [1; 32]).unwrap();
         let ring_capacity = lock_unpoisoned(&core.namespace.state).slots.capacity();
         let mut oldest_token = None;
         for sequence in 1..=3 {
@@ -2807,12 +2890,7 @@ mod tests {
             Some(DeliveryError::InvalidSequence)
         );
         let view = core.delivery_view_for(owner).unwrap();
-        let ack = HistoryAck::from_owner_receipt(
-            core.identity(),
-            u64::MAX - 1,
-            OwnerReceipt::new(owner, [1; 32]),
-        )
-        .unwrap();
+        let ack = authority.history_ack(u64::MAX - 1, [1; 32]).unwrap();
         let receipt = core.retire_through(&view, ack, &authority).unwrap();
         assert_eq!(receipt.retired_through, u64::MAX - 1);
         assert_eq!(receipt.next_sequence, u64::MAX);
@@ -2987,9 +3065,7 @@ mod tests {
         assert_eq!(observed.saved_revision, Some(2));
         let view = core.delivery_view_for(owner).unwrap();
         assert_eq!(core.query_delivery(&view, 1).unwrap(), observed);
-        let ack =
-            HistoryAck::from_owner_receipt(core.identity(), 1, OwnerReceipt::new(owner, [1; 32]))
-                .unwrap();
+        let ack = owner_authority.history_ack(1, [1; 32]).unwrap();
         core.retire_through(&view, ack, &owner_authority).unwrap();
         assert_eq!(
             core.query_delivery(&view, 1).unwrap().state,

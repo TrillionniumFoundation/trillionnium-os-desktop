@@ -1,5 +1,7 @@
 name: A06 exact kernel scheduler and QEMU tests
 
+# Keep an exact A06 receipt on current-main A02 candidates.
+
 on:
   pull_request:
     paths:
@@ -96,22 +98,27 @@ jobs:
         run: |
           set -euo pipefail
           bash support/build/kernel.sh kernel
-          kernel="${CARGO_TARGET_DIR}/x86_64-unknown-none/release/asterinas-osdk-bin"
+          # The raw Cargo ELF is not QEMU-loadable for the multiboot protocol.
+          # OSDK's bundle step emits a .elf copy and rewrites its machine field to
+          # EM_386 (the QEMU multiboot loader requires that marker for x86_64 guests).
+          kernel="${CARGO_TARGET_DIR}/osdk/asterinas/asterinas-osdk-bin.elf"
           test -f "$kernel" && test -x "$kernel"
+          readelf -h "$kernel" | grep -Eq 'Class:[[:space:]]+ELF64'
+          readelf -h "$kernel" | grep -Eq 'Machine:[[:space:]]+Intel 80386'
           sha256sum "$kernel" | tee "${RUNNER_TEMP}/a06-kernel.sha256"
 
       - name: Run bounded one-vCPU quota and two-vCPU exit-lifecycle probes
         shell: bash
         env:
-          KERNEL: ${{ runner.temp }}/a06-target/x86_64-unknown-none/release/asterinas-osdk-bin
+          KERNEL: ${{ runner.temp }}/a06-target/osdk/asterinas/asterinas-osdk-bin.elf
         run: |
           set -euo pipefail
           sha=$(cut -d' ' -f1 "${RUNNER_TEMP}/a06-kernel.sha256")
-          python3 -I tests/organ_backend/run_candidate_matrix.py \
+          python3 tests/organ_backend/run_candidate_matrix.py \
             --a01-tree "$GITHUB_WORKSPACE" --kernel "$KERNEL" --expected-sha256 "$sha" \
             --out "${RUNNER_TEMP}/a06-probe-1vcpu" --quota-us 1000 --mode leaf \
             --repeat 2 --duration-seconds 1 --max-cpu-percent 3
-          python3 -I tests/organ_backend/smp2/run_parallel_candidate.py \
+          python3 tests/organ_backend/smp2/run_parallel_candidate.py \
             --a01-tree "$GITHUB_WORKSPACE" --kernel "$KERNEL" --expected-sha256 "$sha" \
             --out "${RUNNER_TEMP}/a06-probe-2vcpu" --quota-us 1000 --mode leaf \
             --repeat 2 --duration-seconds 1 --max-cpu-percent 3
