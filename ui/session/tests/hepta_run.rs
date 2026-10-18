@@ -19,12 +19,14 @@ const PRESENT: u8 = 0;
 const MISSING: u8 = 1;
 const OLD_SPAWN: u8 = 2;
 const HELD_RUN: u8 = 3;
+const HELD_RUNTIME: u8 = 4;
 static NEXT_RUNTIME: AtomicUsize = AtomicUsize::new(1);
 
 #[derive(Default)]
 struct Control {
     mode: AtomicU8,
     run_held: AtomicBool,
+    runtime_held: AtomicBool,
     hold_capabilities: AtomicBool,
     stopping: AtomicBool,
     run_reads: AtomicUsize,
@@ -187,6 +189,12 @@ fn serve(listener: UnixListener, expected_run: &str, control: &Control) {
         let payload = match method["type"].as_str().unwrap() {
             "health" => fixtures["health"].clone(),
             "capabilities" => {
+                if control.mode.load(Ordering::SeqCst) == HELD_RUNTIME {
+                    control.runtime_held.store(true, Ordering::SeqCst);
+                    hold(control, || {
+                        control.mode.load(Ordering::SeqCst) == HELD_RUNTIME
+                    });
+                }
                 hold(control, || control.hold_capabilities.load(Ordering::SeqCst));
                 fixtures["capabilities"].clone()
             }
@@ -249,6 +257,14 @@ fn exact_known_run_projects_only_owner_metadata_and_retains_it_on_null_and_old_s
             .is_some_and(|run| run.connection == HeptaRunConnectionState::Observed)
     });
     assert_eq!(first.connection, HeptaConnectionState::Observed);
+    assert!(
+        first
+            .runtime_sample_clock
+            .as_deref()
+            .unwrap()
+            .observation_sequence
+            > 0
+    );
     let run = first.run.as_ref().unwrap();
     assert_eq!(run.run_id, run_id);
     let first_sample_age = run.sample_age_at_snapshot_ms.unwrap();
@@ -297,6 +313,34 @@ fn exact_known_run_projects_only_owner_metadata_and_retains_it_on_null_and_old_s
     harness.control.mode.store(OLD_SPAWN, Ordering::SeqCst);
     let fenced = harness.until(|view| view.connection == HeptaConnectionState::Stale);
     assert_eq!(fenced.error_code.as_deref(), Some("protocol_mismatch"));
+    let failed_again =
+        harness.until(|view| view.last_attempt_unix_ms > fenced.last_attempt_unix_ms);
+    assert_eq!(failed_again.connection, HeptaConnectionState::Stale);
+    assert_eq!(failed_again.last_observation, fenced.last_observation);
+    assert_eq!(
+        failed_again
+            .runtime_sample_clock
+            .as_deref()
+            .unwrap()
+            .observation_sequence,
+        fenced
+            .runtime_sample_clock
+            .as_deref()
+            .unwrap()
+            .observation_sequence
+    );
+    assert!(
+        failed_again
+            .runtime_sample_clock
+            .as_deref()
+            .unwrap()
+            .sample_age_at_snapshot_ms
+            >= fenced
+                .runtime_sample_clock
+                .as_deref()
+                .unwrap()
+                .sample_age_at_snapshot_ms
+    );
     let run = fenced.run.unwrap();
     assert!(run.sample_age_at_snapshot_ms.unwrap() >= missing_sample_age);
     assert_eq!(run.connection, HeptaRunConnectionState::Stale);
@@ -309,6 +353,9 @@ fn a_slow_successful_run_read_never_retimestamps_health_or_blocks_host_dispatch(
     let mut harness = Harness::new(Some("known:slow-read"), HELD_RUN);
     let initial = harness.until(|view| view.connection == HeptaConnectionState::Observed);
     let runtime_sample = initial.last_observation.unwrap().sampled_unix_ms;
+    let runtime_attempt = initial.last_attempt_unix_ms;
+    let runtime_clock = initial.runtime_sample_clock.as_deref().unwrap();
+    assert!(runtime_attempt.unwrap() >= runtime_sample);
     let started = Instant::now();
     while !harness.control.run_held.load(Ordering::SeqCst) {
         assert!(started.elapsed() < Duration::from_secs(2));
@@ -320,6 +367,21 @@ fn a_slow_successful_run_read_never_retimestamps_health_or_blocks_host_dispatch(
         assert_eq!(
             view.last_observation.unwrap().sampled_unix_ms,
             runtime_sample
+        );
+        assert_eq!(view.last_attempt_unix_ms, runtime_attempt);
+        assert_eq!(
+            view.runtime_sample_clock
+                .as_deref()
+                .unwrap()
+                .observation_sequence,
+            runtime_clock.observation_sequence
+        );
+        assert!(
+            view.runtime_sample_clock
+                .as_deref()
+                .unwrap()
+                .sample_age_at_snapshot_ms
+                >= runtime_clock.sample_age_at_snapshot_ms
         );
         assert_eq!(
             view.run.unwrap().connection,
@@ -355,7 +417,23 @@ fn a_slow_successful_run_read_never_retimestamps_health_or_blocks_host_dispatch(
         fresh_run.last_observation.unwrap().sampled_unix_ms,
         runtime_sample
     );
-    assert_eq!(fresh_run.last_attempt_unix_ms, Some(runtime_sample));
+    assert_eq!(fresh_run.last_attempt_unix_ms, runtime_attempt);
+    assert_eq!(
+        fresh_run
+            .runtime_sample_clock
+            .as_deref()
+            .unwrap()
+            .observation_sequence,
+        runtime_clock.observation_sequence
+    );
+    assert!(
+        fresh_run
+            .runtime_sample_clock
+            .as_deref()
+            .unwrap()
+            .sample_age_at_snapshot_ms
+            >= 900
+    );
     let run = fresh_run.run.unwrap();
     assert!(run.sample_age_at_snapshot_ms.unwrap() >= 900);
     let sample = run.last_observation.unwrap();
@@ -365,12 +443,48 @@ fn a_slow_successful_run_read_never_retimestamps_health_or_blocks_host_dispatch(
 }
 
 #[test]
-fn an_endpoint_without_a_run_id_keeps_the_old_snapshot_shape_and_never_reads_a_run() {
+fn an_endpoint_without_a_run_id_reports_runtime_age_and_never_reads_a_run() {
     let mut harness = Harness::new(None, PRESENT);
     let view = harness.until(|view| view.connection == HeptaConnectionState::Observed);
     assert!(view.run.is_none());
     let serialized = serde_json::to_value(view).unwrap();
-    assert_eq!(serialized.as_object().unwrap().len(), 4);
+    assert_eq!(serialized.as_object().unwrap().len(), 5);
+    assert!(
+        serialized["runtime_sample_clock"]["observation_sequence"]
+            .as_u64()
+            .unwrap()
+            > 0
+    );
+    assert!(serialized["runtime_sample_clock"]["sample_age_at_snapshot_ms"].is_u64());
     assert!(serialized.get("run").is_none());
+    assert_eq!(harness.control.run_reads.load(Ordering::SeqCst), 0);
+}
+
+#[test]
+fn a_slow_successful_runtime_poll_counts_its_whole_read_and_keeps_session_ipc_live() {
+    let mut harness = Harness::new(None, HELD_RUNTIME);
+    let started = Instant::now();
+    while !harness.control.runtime_held.load(Ordering::SeqCst) {
+        assert!(started.elapsed() < Duration::from_secs(2));
+        thread::sleep(Duration::from_millis(10));
+    }
+    let held = Instant::now();
+    while held.elapsed() < Duration::from_millis(900) {
+        let (view, _) = harness.snapshot();
+        assert_eq!(view.connection, HeptaConnectionState::Connecting);
+        assert!(view.runtime_sample_clock.is_none());
+        thread::sleep(Duration::from_millis(20));
+    }
+    harness.control.mode.store(PRESENT, Ordering::SeqCst);
+    let observed = harness.until(|view| view.connection == HeptaConnectionState::Observed);
+    let clock = observed.runtime_sample_clock.as_deref().unwrap();
+    assert_eq!(clock.observation_sequence, 1);
+    assert!(
+        clock.sample_age_at_snapshot_ms >= 900,
+        "slow successful poll was retimestamped on completion"
+    );
+    let sample = observed.last_observation.unwrap();
+    assert!(observed.last_attempt_unix_ms.unwrap() >= sample.sampled_unix_ms + 900);
+    assert!(observed.run.is_none());
     assert_eq!(harness.control.run_reads.load(Ordering::SeqCst), 0);
 }

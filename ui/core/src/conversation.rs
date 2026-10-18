@@ -342,6 +342,7 @@ mod tests {
             last_attempt_unix_ms: Some(20_000),
             error_code: None,
             last_observation: Some(observation),
+            runtime_sample_clock: None,
             run: None,
         };
         projection

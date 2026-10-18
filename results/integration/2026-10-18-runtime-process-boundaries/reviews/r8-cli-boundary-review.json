@@ -1,0 +1,195 @@
+{
+  "schema": "r8-cli-boundary-source-review-v1",
+  "source": {
+    "head": "f9e306f76154590e096a42f70ce9de0a7c859e60",
+    "tree": "70c6f2b365baa9c3ef8561d7c9882dc24ba6ca2b",
+    "status": "?? results/integration/2026-10-18-r7-recovery/",
+    "inputs": [
+      {
+        "path": "docs/agents/R8_NEXT_SLICE.md",
+        "bytes": 19092,
+        "sha256": "0c85f96a433fb758f956ebce4b2b8c7df510b8db622440243993fd427bbb2663",
+        "git_blob": "202e08b66980609fe08221c3ea24695e36df884b"
+      },
+      {
+        "path": "services/hepta-os/Cargo.toml",
+        "bytes": 840,
+        "sha256": "7ca5e7cab7d0b6c48eb1008c14b0bc3c9bb87d55c29e0eeebb21cdff17a5adbd",
+        "git_blob": "1bbfb93e3977923c1db3d016519ad291cd9e7cdd"
+      },
+      {
+        "path": "services/hepta-os/src/bin/hepta-submit.rs",
+        "bytes": 8376,
+        "sha256": "f856132b9f9e47512058421e42ca89a450bdad808b0943ef5030458d93b64fba",
+        "git_blob": "99d9ab142b79cb29e4452c9dd798ee8ce13d7aa9"
+      },
+      {
+        "path": "services/hepta-os/src/objective/mod.rs",
+        "bytes": 17186,
+        "sha256": "4d58183fff058d7febb90c6c720fe19c2fbe52998487bc6dfa761d48c1b5353e",
+        "git_blob": "e0a81d2bb201539d7a1694fcc6c38207bac872d0"
+      },
+      {
+        "path": "services/hepta-os/src/objective/wire.rs",
+        "bytes": 10261,
+        "sha256": "3b75d3df94302076052b5daadf6f13b318610920b8e754f0893e6422f2efa39c",
+        "git_blob": "4e716a2fac29a92d17f76619ec983f6fc25e1011"
+      },
+      {
+        "path": "services/hepta-os/tests/objective_cli.rs",
+        "bytes": 11024,
+        "sha256": "a387b97f2445bafe234dfbd060bcfca68b1228a03f201d16670258d5c621a49c",
+        "git_blob": "7e1f81a3b4e1235e620052953350219583089565"
+      },
+      {
+        "path": "services/hepta-os/tests/objective_transport.rs",
+        "bytes": 29921,
+        "sha256": "4162a6e63f647938e0f4a7d7f2e70003153177e045f5ec1352ede15cb3616ae1",
+        "git_blob": "c601e632297b4b609afdcc518c8df8c7e810e31d"
+      },
+      {
+        "path": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+        "bytes": 23877,
+        "sha256": "ad5b76ea3c937167b06ad293a4772acfcc666ab363e5586bdd6041c293de4b87",
+        "git_blob": "5be218634b427b166a42e3f9ef4446d2f2b33685"
+      },
+      {
+        "path": "tests/integration/hepta/original_objective_probe.rs",
+        "bytes": 21988,
+        "sha256": "7aaf85c90cdde3dd1e011fb4b745453e848bfc04dfaceb59f257d08d9b225eef",
+        "git_blob": "c7fd3df689faea33686d0c046c1e74389b9d5d70"
+      },
+      {
+        "path": "tests/integration/hepta/original_objective_owner.rs",
+        "bytes": 14105,
+        "sha256": "f01310e679872217af747192c3329218f2d6045972c77718d7f358384eb88eda",
+        "git_blob": "6646c068d7de571f2f77e866ee9c76652626ede1"
+      },
+      {
+        "path": "results/integration/2026-10-18-objective-desktop/README.md",
+        "bytes": 18803,
+        "sha256": "f30e60e9e39167e5c157beaba3841786fc871ca0b87fe7528184bd5415b2983b",
+        "git_blob": "0dde86fae4d224bb69063f68553cf2e69f8a433e"
+      }
+    ],
+    "main_service_tree": "685dd5996d3bfd4d8305562381edf1e3cca20552",
+    "r8_executed_same_tree_remote_service": "088c3e553aee22745773b32d39f3bea61566e48b"
+  },
+  "scope": "Read-only review of current R8 ObjectiveStart CLI, transport, subprocess tests, retained-original probe and S1/S2 instructions. No test, original process, model, kernel or device was run in this review.",
+  "conclusion": {
+    "original_objective_start_implemented": true,
+    "observed_r8_qualification": "The checked-in R8 evidence records real unchanged-original admission/journal and continuous Session/Shell projection, using an isolated test issuer on source 25298f5d87cf3db90deefe9c0405ecd241dc6581, same-tree remote ca5e7d8473690df1bf7636de0808e58414c40abe.",
+    "new_demonstrated_production_defect": false,
+    "recommended_next_increment": "Two real CLI-process termination regressions at the stdin-EOF boundary and after a verified complete UDS request, before any owner reply.",
+    "product_pending_durability_complete": false,
+    "online_admission_reconciliation_complete": false
+  },
+  "verified_contracts": [
+    {
+      "claim": "The CLI emits one LF JSON for ordinary Linux invocation and treats write failure as exit 74 after the underlying attempt; absent output is not a not-sent receipt.",
+      "source": "services/hepta-os/src/bin/hepta-submit.rs",
+      "lines": "3-5, 41-58, 125-170"
+    },
+    {
+      "claim": "Input acquisition is limited to 65537 bytes but waits for EOF outside the transport deadline; whole-child lifetime belongs to the trusted launcher.",
+      "source": "services/hepta-os/src/bin/hepta-submit.rs",
+      "lines": "86-94"
+    },
+    {
+      "claim": "The consuming transport retains original envelope ownership in memory. A positive write count followed by unresolved I/O or protocol failure remains SubmitUnknown; no semantic reconnect or replay exists.",
+      "source": "services/hepta-os/src/objective/mod.rs",
+      "lines": "233-274, 316-379, 383-445"
+    },
+    {
+      "claim": "Only exact source-specific pre-dispatch refusals are certain. Generic request_rejected remains unknown, and valid owner admission is separate from device-effect completion.",
+      "source": "services/hepta-os/src/objective/wire.rs",
+      "lines": "213-301"
+    },
+    {
+      "claim": "The original qualification probe already writes each original request before spawning the CLI, with file sync, rename and parent-directory sync; this is a controlled test producer, not an enrolled product request owner.",
+      "source": "tests/integration/hepta/original_objective_owner.rs",
+      "lines": "55-65, 264-293"
+    },
+    {
+      "claim": "The original qualification caller checks complete parsed JSON identity and status/exit agreement. It does not reinterpret missing output as zero-sent.",
+      "source": "tests/integration/hepta/original_objective_owner.rs",
+      "lines": "293-340"
+    },
+    {
+      "claim": "Stopped-owner journal inspection requires a retained acknowledged anchor and read-only File. It is not a live-side ledger reader or online historical RPC.",
+      "source": "tests/integration/hepta/original_objective_probe.rs",
+      "lines": "74-124, 467-481"
+    },
+    {
+      "claim": "S1 requires an existing issuer and original request owner. S2 separately handles publication history and effect terminal results; fixed f8 lacks the proposed online admission-history RPC.",
+      "source": "docs/agents/R8_NEXT_SLICE.md",
+      "lines": "24-52"
+    }
+  ],
+  "current_test_coverage": {
+    "cli_test_file": "services/hepta-os/tests/objective_cli.rs",
+    "six_existing_tests": [
+      "trusted_cli_keeps_original_wire_and_projects_only_admission_metadata",
+      "lost_owner_reply_retains_unknown_and_does_not_reconnect",
+      "invalid_input_is_not_sent_and_never_echoes_the_source",
+      "non_utf8_argument_is_a_finite_rejection_without_echo_or_connection",
+      "wrong_trusted_peer_pid_sends_no_request_bytes",
+      "closed_stdout_reports_lost_result_after_the_single_owner_attempt"
+    ],
+    "gap": "Child.kill() currently appears only in timeout cleanup (lines 74-87), where timing out fails the test. No CLI test deliberately kills the process at a verified request phase and accepts the resulting missing-output case as the expected fault.",
+    "historical_test_scope": "Existing six subprocess tests are local scripted-socket contracts. R8 original-owner admission and journal qualification is separately archived; those counts are not added to this source review."
+  },
+  "proposal": {
+    "title": "Exercise loss of the trusted CLI process at both sides of request transmission",
+    "classification": "Small test-coverage increment; not a claimed production repair or durable S2 completion",
+    "affected_paths": [
+      "services/hepta-os/tests/objective_cli.rs",
+      "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "services/hepta-os/RUN.md (only if needed to expose the focused command)"
+    ],
+    "cases": [
+      {
+        "name": "killed_before_stdin_eof_has_no_complete_result",
+        "setup": "Spawn the actual feature-enabled CLI with its original raw input and explicit private endpoint. Keep the trusted caller's stdin writer open after writing the bounded compact envelope, so EOF has not occurred.",
+        "action": "Kill only that owned CLI child while it is still live and reap it using one Child owner.",
+        "assertions": [
+          "Expected SIGKILL exit is recorded, stdout has no complete result, no UDS request was received, original input remains unchanged.",
+          "Absence of a result must not be manufactured into an exit-10/not_sent result. The test's external knowledge that no frame was sent does not change the caller's output contract."
+        ],
+        "qualification": "Pre-transmission process-loss case, not a production durable intent store."
+      },
+      {
+        "name": "killed_after_verified_complete_request_keeps_missing_result_unknown",
+        "setup": "The real private fixture listener verifies the exact complete original request, then signals the test caller through a bounded handshake and holds its response.",
+        "action": "After the complete-frame signal and before the fixture responds, kill/reap the actual owned CLI. Keep the fixture/listener alive until this cut.",
+        "assertions": [
+          "Expected SIGKILL and empty/incomplete stdout are recorded.",
+          "The fixture received exactly the original one frame and then observes connection closure; the listener backlog has no second connection.",
+          "Original issuer envelope and request/run/spawn identity remain unchanged; no replacement facade or replay is launched."
+        ],
+        "qualification": "Real subprocess/UDS loss after positive transmission. The scripted peer establishes neither original-owner publication nor production recovery."
+      }
+    ],
+    "constraints": [
+      "Use explicit phase handshakes; do not use a sleep as proof that a write occurred.",
+      "Retain sole child ownership and bounded cleanup on success and assertion failure.",
+      "A transport timeout that wins before the intended kill invalidates that fault run; do not relabel it as the requested process-death result.",
+      "Do not change original Hepta, protocol, features, issuer, Session/Shell authority, kernel, or production storage."
+    ]
+  },
+  "durable_handoff": {
+    "already_present": "In-memory SubmissionAttempt retains the original raw envelope; the isolated original probe persists exact request bytes before invocation.",
+    "still_required_for_product": "The existing issuer/request owner must provide the actual pending-intent commit and recovery hook before enabling a product submit action.",
+    "why_current_probe_is_insufficient": "It has confirmed receipt anchors from successful controlled runs. A first publication whose receipt is lost cannot be negated using RunStatus null or repaired by bypassing the live owner journal.",
+    "allowed_next_owner_seam": "A separately reviewed original-owner API/host integration for admission history and pending request reconciliation, keeping original run/issuer/message/sequence/spawn and unknown state.",
+    "prohibited_substitutes": [
+      "A new desktop-owned SQLite or journal",
+      "A new local signer/authority allocator",
+      "Automatic new run/request ID or generation rebinding after unknown",
+      "Live recovery/truncation of original journal behind the owner"
+    ]
+  },
+  "source_equivalence_note": "git diff ca5e7d..f9e306f under services/hepta-os listed only CONTRACT.md, OBJECTIVE_TRANSPORT.md and README.md. This is a static code-identity observation, not a new execution on f9e306f.",
+  "edits_made_to_shared_repository": false,
+  "authorization_for_implementation": "Proposal only; parent asked for affected paths before any shared-code changes."
+}

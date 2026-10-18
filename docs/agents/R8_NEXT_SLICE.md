@@ -49,6 +49,8 @@ Session/Shell 分别呈现“提交结果未知”“历史已发布”“效果
 | journal 截断、回滚、错误 anchor 或仅更换 publication digest | 拒绝伪终态；完整故障与原始文件摘要归档 |
 | 效果发生后源 owner 崩溃，随后接替 | 旧 K 不变；先 fence，再依独立原 D 终态恢复；旧 generation 的确认拒绝 |
 
+**R9 已完成的有界增量：**[真实 CLI 进程丢失回归](../../results/integration/2026-10-18-runtime-process-boundaries/hepta-cli/README.md) 新增两个实际 `hepta-submit` SIGKILL/reap 用例：调用方持有 EOF 时终止，以及 peer 已读取完整原帧、尚未回复时终止。用 channel 握手固定故障点，保留准确原输入，断言没有输出回执、第二帧或自动重连。前者的独立 fixture 可证明当次没有连接，后者证明完整发送而结果未知；调用方仅看到 CLI 无输出时不能据此合成 `NotSent` 或 `NotApplied`。完整 feature suite 43 项通过，新增两项已包含其中。这个进程内保留实验没有实现首次发送前的产品持久保存、原 owner 在线查询或 durable reconciliation，S1/S2 仍按下面的原完成判据推进。
+
 依赖 / 完成判定：真实存储提交和受控 crash/reopen 均有日志；所有注入点可复跑，恢复者不新建 K、不盲重发、不清除未知。在线查询未接通时，该部分继续标为未完成；不得用隔离 probe 的 journal 检查代替产品恢复服务。
 
 ## S3：从原 authority/Operations 接到一个受限 OS adapter

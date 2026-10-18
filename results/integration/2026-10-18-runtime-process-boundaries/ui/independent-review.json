@@ -1,0 +1,464 @@
+{
+  "baseline_head": "09cf259676e2a81a998c14f1e1fddf4cc94b80df",
+  "baseline_tree": "543f38cb0621a77f65f1dccdaa3cf417bb103956",
+  "boundaries": {
+    "conservative_age": "Full RTT is an intentional conservative upper bound and can expire a view slightly earlier; the result is unknown, not an inferred effect.",
+    "font_tests": "The recorded full workspace command passes 137 tests and ignores two real-font tests. A separate font run, if any, needs its own evidence and is not inferred here.",
+    "new_native_pixel_review": false,
+    "new_original_agentd_execution": false,
+    "physical_or_mobile_qualification": false,
+    "production_elf_reexecution": false,
+    "root_owned_docs_outside_scope_may_change": true,
+    "source_head_is_committed_green": false,
+    "this_reviewer_executed_tests": false,
+    "this_reviewer_modified_ui": false
+  },
+  "canonical_execution_manifest_file_count": 34,
+  "canonical_execution_manifest_sha_independently_recomputed": "d720db71872f8c263b73ab3b5ad9702a856898a32b7cfde312cfe805156d0fe0",
+  "checks": [
+    {
+      "conclusion": "Runtime monotonic read-start and conservative Unix sample are recorded before the complete health/capabilities/events/closing-health poll. Completion time is kept separately in last_attempt_unix_ms. Serialized successful sample age includes the entire read and worker/Session delay and rounds up to milliseconds.",
+      "id": "whole_runtime_poll_age",
+      "result": "pass",
+      "source": [
+        "ui/session/src/hepta.rs:HeptaMonitor::from_env",
+        "ui/session/src/hepta.rs:HeptaMonitor::snapshot_at",
+        "ui/session/src/hepta.rs:rounded_age_ms"
+      ]
+    },
+    {
+      "conclusion": "Only a validated success advances the checked-add sequence and successful runtime Instant. Failed polls and known-run reads retain that sequence and Instant; counter exhaustion stays unknown with historical data. Cursor resynchronization remains a read-only event operation, with no objective retry.",
+      "id": "success_only_nonwrapping_clock",
+      "result": "pass",
+      "source": [
+        "ui/session/src/hepta.rs:project_observation",
+        "ui/session/src/hepta.rs:HeptaMonitor::from_env"
+      ]
+    },
+    {
+      "conclusion": "The bound is source age at the Session snapshot plus the complete measured IPC round trip plus time after the real transport receipt. Bridge timestamps receipt before bounded queue delivery. The clock is evaluated after queue consumption and before page rendering; wall rollback cannot discard elapsed monotonic time.",
+      "id": "source_age_plus_rtt_plus_queue",
+      "result": "pass",
+      "source": [
+        "ui/shell/src/hepta_panel.rs:ReceiptAgeAnchor",
+        "ui/shell/src/main.rs:Bridge::with_transport",
+        "ui/shell/src/main.rs:Desktop::receive_and_refresh_hepta"
+      ]
+    },
+    {
+      "conclusion": "For an unchanged successful sequence, each new anchor is the maximum of the previous bound advanced to the new receipt and the new source-age-plus-RTT bound. Overlapping RTTs are not repeatedly summed and a younger repeated frame cannot erase prior elapsed time.",
+      "id": "same_sample_no_rejuvenation_or_double_rtt",
+      "result": "pass",
+      "source": [
+        "ui/shell/src/hepta_panel.rs:ReceiptAgeAnchor::from_snapshot",
+        "ui/shell/src/hepta_panel.rs:RuntimeReceiptClock::observe"
+      ]
+    },
+    {
+      "conclusion": "Runtime source is Session instance, original AgentId projection, spawn generation and process PID. Lifecycle current_generation does not reset an unchanged process clock. A changed source requires valid metadata of its own; sequence regression and unmatched projection/clock identity remain unknown. Original owner validation remains in the existing observer facade.",
+      "id": "explicit_runtime_source_identity",
+      "result": "pass",
+      "source": [
+        "ui/shell/src/hepta_panel.rs:RuntimeSource",
+        "ui/shell/src/hepta_panel.rs:RuntimeReceiptClock::observe",
+        "ui/shell/src/hepta_panel.rs:RuntimeReceiptClock::age_for"
+      ]
+    },
+    {
+      "conclusion": "Missing runtime history preserves an earlier anchor when the Session identity is unchanged; only an explicit Session change can clear it on this branch. The regression passes an observed sequence 1 at 6000 ms, a missing-history frame, and the same sequence claiming age zero 1001 ms later through the actual Desktop response path. The final renderer must display stale.",
+      "id": "same_session_missing_history_retains_anchor",
+      "result": "pass",
+      "source": [
+        "ui/shell/src/hepta_panel.rs:RuntimeReceiptClock::observe",
+        "ui/shell/src/main.rs:observation_freshness_tests::missing_runtime_history_from_the_same_session_cannot_reset_a_previous_sample_age"
+      ]
+    },
+    {
+      "conclusion": "The optional outer clock permits old snapshots to decode, while missing/invalid clock data never supplies a fresh zero-age sample. Nested missing, null, negative, wrong-type and extra fields fail strict decoding. Zero/regressed sequence, overflow/huge duration, missing/reversed monotonic times and future/expired Unix sample produce unknown state. Existing unknown-state runtime diagnostics are retained.",
+      "id": "missing_old_invalid_metadata_fail_closed",
+      "result": "pass",
+      "source": [
+        "ui/core/src/hepta.rs:HeptaRuntimeSampleClock",
+        "ui/core/src/hepta.rs:HeptaProjection",
+        "ui/shell/src/hepta_panel.rs:RuntimeReceiptClock",
+        "ui/core/src/observation.rs:freshness_failure"
+      ]
+    },
+    {
+      "conclusion": "Runtime age expiry does not alter a separately fresh known run. Each projection owns its own successful Instant and sequence. A run read cannot renew runtime sample or attempt time; runtime success cannot renew run history. Actual owner/transport unavailability still conservatively affects availability as before. Null RunStatus remains current projection absence, not non-admission, SubmitUnknown resolution or permission to retry.",
+      "id": "runtime_and_run_independent",
+      "result": "pass",
+      "source": [
+        "ui/core/src/hepta.rs:HeptaProjection::mark_runtime_unavailable",
+        "ui/session/src/hepta.rs:HeptaMonitor::expire_at",
+        "ui/session/src/hepta.rs:project_run_status",
+        "ui/shell/src/main.rs:Desktop::receive_and_refresh_hepta"
+      ]
+    },
+    {
+      "conclusion": "The real Desktop pre-draw path expires state before every page. Status text and the optional runtime layout diagnostic use the same bound/source predicate; marker success alone cannot qualify visible freshness. The negative and exact-limit positive controls draw the actual egui status function and inspect text shapes.",
+      "id": "visible_renderer_and_layout_use_actual_clock",
+      "result": "pass",
+      "source": [
+        "ui/shell/src/main.rs:eframe::App::update",
+        "ui/shell/src/main.rs:Desktop::receive_and_refresh_hepta",
+        "ui/shell/src/hepta_panel.rs:expire_unfresh_observation",
+        "ui/shell/src/hepta_panel.rs:LayoutProbe::emit_after_runtime_layout",
+        "ui/shell/src/hepta_panel.rs:status"
+      ]
+    },
+    {
+      "conclusion": "Option<Box<HeptaRuntimeSampleClock>> and the corresponding as_deref/copied/constructor changes resolve the actual enum-size lint without changing JSON fields, weakening strict decoding or adding a lint allow. Snapshot age is computed on a copied clock; retained latest history is not mutated. The additional conversation change is a cfg(test) literal field set to None.",
+      "id": "boxed_clock_minimal_layout_repair",
+      "result": "pass",
+      "source": [
+        "ui/core/src/hepta.rs:HeptaProjection.runtime_sample_clock",
+        "ui/session/src/hepta.rs:HeptaMonitor::snapshot_at",
+        "ui/shell/src/hepta_panel.rs:RuntimeReceiptClock"
+      ]
+    },
+    {
+      "conclusion": "Tests cover a held complete runtime poll, independently held run read, responsive actual Session IPC and empty host tasks, two failed old-spawn polls retaining success metadata, ceil and 7000/7001 ms boundaries, repeated-frame arithmetic, source changes, sequence exhaustion/regression, missing history, visible/layout agreement and a bounded Bridge ordering handshake. These are local scripted UDS/egui/queue tests; none is an original Agentd run.",
+      "id": "meaningful_scripted_uds_and_boundary_regressions",
+      "result": "pass",
+      "source": [
+        "ui/session/tests/hepta_run.rs",
+        "ui/session/src/hepta.rs:tests",
+        "ui/shell/src/hepta_panel.rs:tests",
+        "ui/shell/src/main.rs:observation_freshness_tests",
+        "ui/shell/src/main.rs:bridge_tests"
+      ]
+    },
+    {
+      "conclusion": "Documentation explicitly states that runtime_sample_clock is present with successful runtime history even when no known run is configured, so that full configured-runtime snapshot is no longer byte-identical to older frames. Older strict decoders reject the new field; new Shell accepts old omitted metadata only as unknown history. Matching Session, Shell and trill-ctl must be deployed together.",
+      "id": "paired_wire_deployment_documented",
+      "result": "pass",
+      "source": [
+        "ui/shell/OBSERVATION_FRESHNESS.md:Wire compatibility",
+        "support/ui/HEPTA_OBSERVER.md"
+      ]
+    },
+    {
+      "conclusion": "No issuer, signature construction, ObjectiveStart transport, Agentd endpoint authority or durable outcome ledger is added to Shell. Submission remains unavailable in this product UI. Earlier original-owner and native pixel evidence keeps its own source/binary identity; this source and local test review does not qualify original Agentd compatibility, new compositor pixels, model execution or physical/mobile device effects.",
+      "id": "qualification_and_owner_boundaries",
+      "result": "pass",
+      "source": [
+        "ui/shell/OBSERVATION_FRESHNESS.md:Regression and evidence boundaries",
+        "support/ui/HEPTA_OBSERVER.md",
+        "ui/shell/src/hepta_panel.rs:runtime"
+      ]
+    }
+  ],
+  "documentation_binding_note": "support/ui/HEPTA_OBSERVER.md is independently bound in the eight-file review scope; it is not part of the 34-file execution manifest.",
+  "existing_execution_receipts_independently_checked": [
+    {
+      "attempt": "test-03",
+      "command": [
+        "/workspace/scratch/98f315e377b2/recovery-r7/rust-1.88/bin/cargo",
+        "test",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "--locked",
+        "--workspace"
+      ],
+      "exit_code": 0,
+      "raw_log": {
+        "bytes": 14844,
+        "path": "r9-ui-verification/test-03/stdout-stderr.log",
+        "sha256": "4d8c27555128a8e44b646d7e97c3f65f28d250b84ea7e00f0e98ec428541b3f9"
+      },
+      "receipt": {
+        "bytes": 572,
+        "path": "r9-ui-verification/test-03/receipt.json",
+        "sha256": "338e93c748aef931ffc7e7ed6e834dd1cec0643186a2c423a6d1408b794b7f5c"
+      },
+      "source_after": {
+        "bytes": 5231,
+        "sha256": "326f507b60732e7a0325450285098aca30f7f6cc6190452249575929b9cff762"
+      },
+      "source_before": {
+        "bytes": 5231,
+        "sha256": "326f507b60732e7a0325450285098aca30f7f6cc6190452249575929b9cff762"
+      },
+      "source_closure": "d720db71872f8c263b73ab3b5ad9702a856898a32b7cfde312cfe805156d0fe0",
+      "source_equal": true,
+      "test_result_rows": [
+        [
+          "ok",
+          "11",
+          "0",
+          "1"
+        ],
+        [
+          "ok",
+          "2",
+          "0",
+          "0"
+        ],
+        [
+          "ok",
+          "30",
+          "0",
+          "0"
+        ],
+        [
+          "ok",
+          "2",
+          "0",
+          "0"
+        ],
+        [
+          "ok",
+          "4",
+          "0",
+          "0"
+        ],
+        [
+          "ok",
+          "1",
+          "0",
+          "0"
+        ],
+        [
+          "ok",
+          "63",
+          "0",
+          "1"
+        ],
+        [
+          "ok",
+          "24",
+          "0",
+          "0"
+        ],
+        [
+          "ok",
+          "0",
+          "0",
+          "0"
+        ]
+      ],
+      "test_totals_independently_parsed_from_raw_log": {
+        "failed": 0,
+        "ignored": 2,
+        "passed": 137
+      }
+    },
+    {
+      "attempt": "fmt-02",
+      "command": [
+        "/workspace/scratch/98f315e377b2/recovery-r7/rust-1.88/bin/cargo",
+        "fmt",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "raw_log": {
+        "bytes": 0,
+        "path": "r9-ui-verification/fmt-02/stdout-stderr.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "receipt": {
+        "bytes": 569,
+        "path": "r9-ui-verification/fmt-02/receipt.json",
+        "sha256": "5fdd390fee46fb8963ee90f16ff74e4253b7d73e9f5b81fd3e3ea74c131e39fe"
+      },
+      "source_after": {
+        "bytes": 5231,
+        "sha256": "326f507b60732e7a0325450285098aca30f7f6cc6190452249575929b9cff762"
+      },
+      "source_before": {
+        "bytes": 5231,
+        "sha256": "326f507b60732e7a0325450285098aca30f7f6cc6190452249575929b9cff762"
+      },
+      "source_closure": "d720db71872f8c263b73ab3b5ad9702a856898a32b7cfde312cfe805156d0fe0",
+      "source_equal": true
+    },
+    {
+      "attempt": "clippy-02",
+      "command": [
+        "/workspace/scratch/98f315e377b2/recovery-r7/rust-1.88/bin/cargo",
+        "clippy",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "raw_log": {
+        "bytes": 2784,
+        "path": "r9-ui-verification/clippy-02/stdout-stderr.log",
+        "sha256": "b952ff7c02e9f5270d85bef280a49e18519ceca01e93ea12f7c1abcf1c849410"
+      },
+      "receipt": {
+        "bytes": 571,
+        "path": "r9-ui-verification/clippy-02/receipt.json",
+        "sha256": "44a71913afeff476e6694642042eb4dab726a34f68400c3dc568f5734204d267"
+      },
+      "source_after": {
+        "bytes": 5231,
+        "sha256": "326f507b60732e7a0325450285098aca30f7f6cc6190452249575929b9cff762"
+      },
+      "source_before": {
+        "bytes": 5231,
+        "sha256": "326f507b60732e7a0325450285098aca30f7f6cc6190452249575929b9cff762"
+      },
+      "source_closure": "d720db71872f8c263b73ab3b5ad9702a856898a32b7cfde312cfe805156d0fe0",
+      "source_equal": true
+    },
+    {
+      "attempt": "build-01",
+      "command": [
+        "/workspace/scratch/98f315e377b2/recovery-r7/rust-1.88/bin/cargo",
+        "build",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "--locked",
+        "--workspace",
+        "--bins"
+      ],
+      "exit_code": 0,
+      "raw_log": {
+        "bytes": 254,
+        "path": "r9-ui-verification/build-01/stdout-stderr.log",
+        "sha256": "3a377e01d7da622dc24146441c6217514196a32dced98c740a41bf9d3f60fa18"
+      },
+      "receipt": {
+        "bytes": 762,
+        "path": "r9-ui-verification/build-01/receipt.json",
+        "sha256": "2c3d38591739d9f00dec30c5c1da094c8ef951d1de4a0def3e965d1559d390aa"
+      },
+      "source_after": {
+        "bytes": 5231,
+        "sha256": "326f507b60732e7a0325450285098aca30f7f6cc6190452249575929b9cff762"
+      },
+      "source_before": {
+        "bytes": 5231,
+        "sha256": "326f507b60732e7a0325450285098aca30f7f6cc6190452249575929b9cff762"
+      },
+      "source_closure": "d720db71872f8c263b73ab3b5ad9702a856898a32b7cfde312cfe805156d0fe0",
+      "source_equal": true
+    }
+  ],
+  "expected_execution_source_closure": "d720db71872f8c263b73ab3b5ad9702a856898a32b7cfde312cfe805156d0fe0",
+  "material_findings": [],
+  "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+  "retained_failed_attempts": [
+    {
+      "attempt": "test-01",
+      "exit_code": 101,
+      "log_sha256": "68b75694191e087638129bd5dd97045e2e8991814791881269e8800a5140ab48",
+      "reason": "E0063 in the cfg(test) HeptaProjection literal: the added runtime_sample_clock field was absent; workspace tests did not run.",
+      "receipt": {
+        "bytes": 571,
+        "path": "r9-ui-verification/test-01/receipt.json",
+        "sha256": "7ec84ca49c1725cb541302e636385d2c8c8cd6455d11538c79285b6938bf28b8"
+      }
+    },
+    {
+      "attempt": "clippy-01",
+      "exit_code": 101,
+      "log_sha256": "061b0838c058423b7da1e6cb5372ea2a3b392df16f30496600a9795e2cb12713",
+      "reason": "Strict large_enum_variant lint on Response: Snapshot at least 384 bytes versus Task 168 bytes. The later Box change fixes memory layout rather than permitting the lint.",
+      "receipt": {
+        "bytes": 572,
+        "path": "r9-ui-verification/clippy-01/receipt.json",
+        "sha256": "172c0a70676f279593df61e97aae601a5af37d43b84a2283927f56f3395a9f36"
+      }
+    }
+  ],
+  "review_completed_at": "2026-10-18T15:33:42.879308+00:00",
+  "review_kind": "independent_read_only_source_and_existing_receipt_review",
+  "review_methods": [
+    "Read the complete changed runtime timing and projection paths, the actual Bridge/Desktop pre-draw call chain, shared visible/layout predicate, targeted regression bodies, and both clock documents.",
+    "Read the test-only conversation fixture one-line repair and compared the final Box adaptation against the retained pre-Box source/diff.",
+    "Recompute canonical SHA-256 from the execution source manifest, verify all 34 listed current source files, compare execution source-before/source-after, and hash original logs before accepting their reported results.",
+    "Hash the eight reviewed files and their scoped git diff before and after this review. Root-owned documentation changes outside the eight files are expected and do not imply a clean worktree.",
+    "Do not execute Cargo, UI, Session, Agentd, issuer or objective operations."
+  ],
+  "review_source_before_at": "2026-10-18T15:30:57.678057+00:00",
+  "review_source_patch": {
+    "bytes": 87505,
+    "sha256": "8df085d3af06c4577abb929ffdcafc2808ab0c3d2ac041138285cfbcb47a238f"
+  },
+  "reviewed_uncommitted_scope": {
+    "support/ui/HEPTA_OBSERVER.md": {
+      "bytes": 26375,
+      "sha256": "50185b6258b7c8b13fb47fab7833a3c1afba8e99ae808eb5ff268f9e03b6ce96"
+    },
+    "ui/core/src/conversation.rs": {
+      "bytes": 14415,
+      "sha256": "2d2d6226e48799bf017a4cdcbaa33d2df7a8e6f0285f32d253383cf07d7d1ee6"
+    },
+    "ui/core/src/hepta.rs": {
+      "bytes": 13513,
+      "sha256": "d5f1639d3db790fdd1db533e9a729c38c778db754aff87ef3da7fd76aec514a9"
+    },
+    "ui/session/src/hepta.rs": {
+      "bytes": 46323,
+      "sha256": "81f53d565cd0cf6abd532f502d2014e3e54ca8c4ea315253da3f5d17cd5e0c7d"
+    },
+    "ui/session/tests/hepta_run.rs": {
+      "bytes": 18736,
+      "sha256": "27d4c630f86dcf7f793921c363285efec4fe610ad915609348107e5ad8c43e60"
+    },
+    "ui/shell/OBSERVATION_FRESHNESS.md": {
+      "bytes": 7891,
+      "sha256": "95c4d5aee8b51da2a8b323d884264c87592793a6024f1ffd89b20bca13e9b987"
+    },
+    "ui/shell/src/hepta_panel.rs": {
+      "bytes": 38167,
+      "sha256": "dcb910afc9516eafc36b088d91cf53b98a94bccdf56c9920a55eef6e4a538fb2"
+    },
+    "ui/shell/src/main.rs": {
+      "bytes": 103570,
+      "sha256": "5ed13375ca2fa9f1cdf59a1e60576a248fbf99bf34194c57a1d3b28ab652f92c"
+    }
+  },
+  "reviewer": "A07 /root/r6_original_session",
+  "schema_version": 1,
+  "source_after": {
+    "support/ui/HEPTA_OBSERVER.md": {
+      "bytes": 26375,
+      "sha256": "50185b6258b7c8b13fb47fab7833a3c1afba8e99ae808eb5ff268f9e03b6ce96"
+    },
+    "ui/core/src/conversation.rs": {
+      "bytes": 14415,
+      "sha256": "2d2d6226e48799bf017a4cdcbaa33d2df7a8e6f0285f32d253383cf07d7d1ee6"
+    },
+    "ui/core/src/hepta.rs": {
+      "bytes": 13513,
+      "sha256": "d5f1639d3db790fdd1db533e9a729c38c778db754aff87ef3da7fd76aec514a9"
+    },
+    "ui/session/src/hepta.rs": {
+      "bytes": 46323,
+      "sha256": "81f53d565cd0cf6abd532f502d2014e3e54ca8c4ea315253da3f5d17cd5e0c7d"
+    },
+    "ui/session/tests/hepta_run.rs": {
+      "bytes": 18736,
+      "sha256": "27d4c630f86dcf7f793921c363285efec4fe610ad915609348107e5ad8c43e60"
+    },
+    "ui/shell/OBSERVATION_FRESHNESS.md": {
+      "bytes": 7891,
+      "sha256": "95c4d5aee8b51da2a8b323d884264c87592793a6024f1ffd89b20bca13e9b987"
+    },
+    "ui/shell/src/hepta_panel.rs": {
+      "bytes": 38167,
+      "sha256": "dcb910afc9516eafc36b088d91cf53b98a94bccdf56c9920a55eef6e4a538fb2"
+    },
+    "ui/shell/src/main.rs": {
+      "bytes": 103570,
+      "sha256": "5ed13375ca2fa9f1cdf59a1e60576a248fbf99bf34194c57a1d3b28ab652f92c"
+    }
+  },
+  "source_unchanged_across_final_review": true,
+  "status": "pass_source_review",
+  "subject": "R9 runtime total monotonic age, missing-history retention, independent known-run clock and wire compatibility"
+}

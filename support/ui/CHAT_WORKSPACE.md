@@ -46,7 +46,7 @@ opt-in layout probe retain the separate diagnostic path used by existing gates.
 | `ui/core/src/observation.rs` | One pure predicate for source wall age and caller-supplied monotonic age | Caller-supplied clocks; no clock reads, lifecycle changes or IPC |
 | `ui/shell/src/conversation.rs` | Per-workspace composer/tab state, bounded draft book, complete host snapshot cache, cards and embedded panels | Actual `Response::Snapshot` for current task rows; expired Hepta projection for runtime rows |
 | `ui/shell/src/main.rs` | Actual response queue, expiry before every page, existing host launch/cancel transport | The independent Session, fenced by its observed instance |
-| `ui/shell/src/hepta_panel.rs` | Runtime health, independent known-run card and one-shot health layout diagnostic | Read-only Session projections; health uses the R6 age checks and configured runs use the separate total-age bound |
+| `ui/shell/src/hepta_panel.rs` | Runtime health, independent known-run card and one-shot health layout diagnostic | Read-only Session projections; runtime and known-run each use their own monotonic total-age bound and source wall-time check |
 | `ui/shell/src/local_drafts.rs` | Explicit private plaintext export/import, v2 context schema and v1 compatibility | Local file content is historical input, never a live receipt |
 
 The renderer IPC still contains only Snapshot, Launch and Cancel. This change
@@ -81,10 +81,13 @@ does not authorize an operation.
 
 The Shell consumes queued responses, samples its clocks, expires observations
 and only then paints any page. Bridge records actual IPC receipt before queue
-delivery; dequeue does not create a new receipt time. Host task rows and
-runtime health require both source wall age and local receipt age to be at
-most **7,000 ms**. At **7,001 ms** they are stale. Missing/future local receipt
-times and missing/future source samples are unknown, never zero-age success.
+delivery; dequeue does not create a new receipt time. Host task rows require
+both source wall age and local receipt age to be at most **7,000 ms**. Runtime
+health and known-run observations each require a separate complete monotonic
+age bound at most **7,000 ms**, as described below, as well as a valid source
+wall age. At **7,001 ms** the respective view is stale. Missing/future local
+receipt times and missing/future source samples are unknown, never zero-age
+success.
 
 For host task rows, the source clock is
 `Response::Snapshot.resources.sampled_unix_ms`; the row's
@@ -95,12 +98,24 @@ snapshot rows and their receipt time. `Response::Task` may report an action
 result but cannot update this cache, renew every row or recover stale status.
 Only a later complete Snapshot can do that; clock recovery alone cannot.
 
-For Hepta runtime health, the source clock remains the original observation's
-`sampled_unix_ms`. The R6 exact error codes, preserved last observation and
-attempt time, and the rule that only Observed is downgraded are unchanged.
-The actual visible state and the optional Hepta layout marker use the same
-shared predicate. A source-age pass is a bounded observation claim, not a
-compositor frame, device effect or owner-completion receipt.
+For Hepta runtime health, Session records the beginning of the complete
+successful poll and exposes its advancing age in `runtime_sample_clock`,
+alongside a nonzero successful-read sequence. Shell adds the full IPC round
+trip and elapsed time since actual receipt. The **sum** must remain at most
+7,000 ms; `sampled_unix_ms` also remains subject to the source wall-time check.
+Wall-clock rollback, failed polls and independent known-run reads cannot
+renew the runtime sample. Repeated snapshots of the same successful sequence
+retain the larger advancing age bound; same-Session missing history cannot
+reset it. Missing or invalid clock metadata leaves history unknown.
+
+The complete last observation, original attempt timestamp and rule that only
+Observed is downgraded remain in place. Existing non-Observed diagnostics are
+retained; new clock failures have their documented error codes. The actual
+visible state and optional Hepta layout marker use the same predicate.
+Session, Shell and ctl require matching builds from compatible source: a new Shell treats
+older runtime history without the clock as unknown, while older strict
+decoders reject the new field. A current observation is not a compositor
+frame, device effect or owner-completion receipt.
 
 The optional known-run card has an independent total-age bound. Session
 reports the retained run sample's monotonic age at snapshot creation, rounded
@@ -112,7 +127,7 @@ renewing the sample or repeatedly adding overlapping round trips. Health
 updates do not renew run observations. Missing age is unknown, and a null
 run projection cannot prove non-admission, completion or cancellation.
 See [the known-run contract](HEPTA_OBSERVER.md#observe-one-already-known-run)
-and [the total-age specification](../../ui/shell/OBSERVATION_FRESHNESS.md#known-run-total-monotonic-age).
+and [the total-age specification](../../ui/shell/OBSERVATION_FRESHNESS.md#independently-sampled-known-run).
 
 ## Local storage and bounds
 

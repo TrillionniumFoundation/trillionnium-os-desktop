@@ -36,7 +36,7 @@ G0 的“通过”必须区分源码编译、主机模型和内核启动：A01 �
 | A03 | libs/os-control/**、tests/control/** | 消费 wire 但不自改 codec/golden |
 | A04 | compat/linux/**、support/rootfs/**、tests/workloads/linux/** | 兼容缺口先给内核 owner 最小复现 |
 | A05 | kernel/asterinas/kernel/core/src/process/**、syscall/ioctl.rs 与邻近控制模块；tests/kernel/control/** | 取得 A01+A02+A03 的基线；A06 仅经约定 ResourceDomain 接口对接 |
-| A06 | kernel/asterinas/kernel/core/src/sched/**、tests/kernel/scheduler/** | A05 先固定进程身份/资源句柄 API；OSTD 公共更改由 A00 协调 |
+| A06 | kernel/asterinas/kernel/core/src/sched/**、kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs 及其 cpu/**、tests/kernel/scheduler/**、tests/organ_backend/** | 现有 cgroup CPU controller 是唯一预算事实 owner。A05 先固定进程身份/资源句柄 API；OSTD 公共更改由 A00 协调 |
 | A07 | services/hepta-os/**、tests/integration/hepta/** | 上游 Hepta 只读，必要修订单独小 PR |
 | A08 | compat/android/**、support/android/**、tests/workloads/android/** | Android 与内核改动需 A00 指派所有者 |
 | A09 | support/hardware/**、support/vmm/**、tests/hardware/** | 不接管现役设备或核心驱动 |

@@ -2,6 +2,24 @@
 
 Updated: 2026-10-18; final-debit change based on main `3551e1e0e017e2973da7e2b8ab811ece25c258c0`. **Kernel effect observed; not production-ready, not HOS2-authorized.** The cgroup CPU implementation is already in main through [PR #121](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/121). [Draft PR #18](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/18) retains the original development history; it is not the current integration state. Root README remains zero bytes.
 
+## Latest configuration input boundary
+
+[PR #195](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/195)
+is merged in main `f9e306f76154590e096a42f70ce9de0a7c859e60`.
+The production writer now rejects explicitly malformed or overflowing periods
+and extra `cpu.max` fields before taking the existing bandwidth mutation lock.
+An omitted period still uses the current owner's period. Rejection leaves
+quota, period, usage, debt and throttling state unchanged; this does not create
+a second resource owner or enable a new HOS2 operation.
+
+The [input contract and replay instructions](../tests/organ_backend/CPU_MAX_CONFIG.md)
+link the actual allocation-free parser, its seven shared host/kernel regression
+cases and the two real controller/`VmReader` kernel cases. This is an intentional
+strictness choice for malformed input, not byte-for-byte Linux parser
+compatibility. Those source additions and #195's own execution records are
+separate from the older 159/160-test and quota samples below; this documentation
+update does not rerun the kernel or extend SMP/G1/G2 qualification.
+
 ## Current integrated evidence and next implementation boundary
 
 The [2026-10-17 integrated receipt](../results/organ-backend/2026-10-17/a05-a06-integrated-acceptance.json) binds tested source `b913202b2e487126319e60813a54163666b9a2ad` to equivalent remote merge commit `eaf5242233b799356b7daa73898a14d240832abb`, tree `b852e0037af8f84c22a8fc7347fa55d8183e07e6`. It records ten real quota probes across the selected one/two-vCPU profiles, three read-only QueryAbi probes, and kernel regression with 374 reported passes, three VMX/EPT soft skips, and an actual executed lower bound of 371. These historical receipts do not automatically qualify a later HEAD.

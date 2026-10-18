@@ -1,0 +1,59 @@
+{
+  "schema": "hepta-cli-sigkill-source-binding-v1",
+  "execution": {
+    "head": "00796f6f6e10027e12b83d37d9ab4b8ab913f72e",
+    "head_tree": "9336e6e6daab3b45d5f92a9eaa4161395603036f",
+    "working_patch_path": "execution/source.patch",
+    "working_patch_sha256": "077347ec84b75f57f7a73e0944772a94027549f0adb4e487ee4c8c97b86c7a56",
+    "changed_files_from_execution_head": [
+      "services/hepta-os/tests/objective_cli.rs"
+    ],
+    "test_source": {
+      "path": "services/hepta-os/tests/objective_cli.rs",
+      "bytes": 18082,
+      "sha256": "f1cafe25930066e92f93e0b8b8ec06fbe218a353dfa180c421a513fb8e4d684b",
+      "git_blob_of_actual_bytes": "4136d3d78da1e7dbf7b36b046e6cad6cccda56f0"
+    },
+    "source_inputs": 20,
+    "source_unchanged": true,
+    "receipt_sha256": "78d9ead5ad5ae17441d8019a6cb78ccabdc7a00fb48c8c8a423216a68c4fbdff",
+    "started_at": "2026-10-18T14:59:47.555823+00:00",
+    "finished_at": "2026-10-18T15:00:24.815440+00:00"
+  },
+  "later_containing_local_commit": {
+    "commit": "09cf259676e2a81a998c14f1e1fddf4cc94b80df",
+    "tree": "543f38cb0621a77f65f1dccdaa3cf417bb103956",
+    "all_executed_rust_manifest_lock_fixture_bytes_equal": true,
+    "only_service_file_changed_after_execution": [
+      "services/hepta-os/OBJECTIVE_TRANSPORT.md"
+    ],
+    "new_execution_of_this_commit": false
+  },
+  "tests": {
+    "focused_new": 2,
+    "full_distinct": 43,
+    "full_components": {
+      "library": 2,
+      "cli": 8,
+      "objective_transport": 15,
+      "readonly_socket_contract": 16,
+      "compile_fail_docs": 2
+    },
+    "focused_included_in_full": true
+  },
+  "feature_off_check": "passed",
+  "strict_clippy": "passed",
+  "fmt": "passed",
+  "independent_source_review": {
+    "path": "a07-objective-cli-kill-source-review.json",
+    "sha256": "b0ff37a9ab7dc8a3e092e8bf3c90ee7738124afcb8b58001c96ff955ac81bad4",
+    "reviewer_executed_tests": false
+  },
+  "scope": [
+    "Actual owned hepta-submit child processes and private UDS fixtures.",
+    "No original Agentd, issuer, objective, Session, Shell or kernel guest launched by this execution.",
+    "Missing stdout receipt is not an emitted NotSent or SubmitUnknown outcome.",
+    "Input retention in these tests is caller process-local, not durable reconciliation.",
+    "No production source, manifest, lock or protocol change."
+  ]
+}

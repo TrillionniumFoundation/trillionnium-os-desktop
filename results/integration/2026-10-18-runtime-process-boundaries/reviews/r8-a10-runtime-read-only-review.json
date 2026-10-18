@@ -1,0 +1,171 @@
+{
+  "schema": "r8-a10-read-only-runtime-review-v1",
+  "reviewed_utc": "2026-10-18T14:41:17.305042+00:00",
+  "reviewer": "/root/r6_shell_live",
+  "source_head": "f9e306f76154590e096a42f70ce9de0a7c859e60",
+  "source_files": {
+    "docs/agents/R8_NEXT_SLICE.md": {
+      "bytes": 19092,
+      "sha256": "0c85f96a433fb758f956ebce4b2b8c7df510b8db622440243993fd427bbb2663",
+      "git_blob": "202e08b66980609fe08221c3ea24695e36df884b"
+    },
+    "services/hepta-os/OBJECTIVE_TRANSPORT.md": {
+      "bytes": 23877,
+      "sha256": "ad5b76ea3c937167b06ad293a4772acfcc666ab363e5586bdd6041c293de4b87",
+      "git_blob": "5be218634b427b166a42e3f9ef4446d2f2b33685"
+    },
+    "services/hepta-os/src/client.rs": {
+      "bytes": 14515,
+      "sha256": "8669dc6c1e48c43108f3c2e1f8602e7602ac45e3e74239f638cdf92a3a99f5e8",
+      "git_blob": "60a32f5af8e8d3b7bcd6b68b9bd7e1f8dec9c79a"
+    },
+    "services/hepta-os/src/objective/mod.rs": {
+      "bytes": 17186,
+      "sha256": "4d58183fff058d7febb90c6c720fe19c2fbe52998487bc6dfa761d48c1b5353e",
+      "git_blob": "e0a81d2bb201539d7a1694fcc6c38207bac872d0"
+    },
+    "services/hepta-os/src/bin/hepta-submit.rs": {
+      "bytes": 8376,
+      "sha256": "f856132b9f9e47512058421e42ca89a450bdad808b0943ef5030458d93b64fba",
+      "git_blob": "99d9ab142b79cb29e4452c9dd798ee8ce13d7aa9"
+    },
+    "ui/session/src/hepta.rs": {
+      "bytes": 37188,
+      "sha256": "b1275bf525743c44862216bcf5574c5749c81f44ba9084f8cbc4b12c2945711b",
+      "git_blob": "7bc95f02cdad0d64fb199f6effbb2ce2b30f6b77"
+    },
+    "ui/shell/src/main.rs": {
+      "bytes": 95227,
+      "sha256": "c58b213542eb4b82cb8007fa45847f6c3ca4f29d6cc490a9ad0ce2ecf9c3c293",
+      "git_blob": "4214cde215b56bfa50644548cfe9fcbb3092fd80"
+    },
+    "ui/shell/src/hepta_panel.rs": {
+      "bytes": 26466,
+      "sha256": "bf750b01941918af784b90883bd145e1189f321b5da556f6fe1b24358b61d40d",
+      "git_blob": "4857d0182d8694c8ff3d3c07492a2fecc280d1b0"
+    },
+    "ui/core/src/hepta.rs": {
+      "bytes": 11133,
+      "sha256": "8b3456ec708091c6739a9eab1ddb8d36db791ff416ce78e4cdaa8ee47b00b467",
+      "git_blob": "aaf54e642ce37e3a5b9862f52022ce272333c632"
+    },
+    "ui/core/src/observation.rs": {
+      "bytes": 2292,
+      "sha256": "a6c7a3d98187b74aa8d73ab525ce8aabd4f9ef347eb89bef94d852f37c925cba",
+      "git_blob": "659b6ebd115270bb2eed8b28a9687587a87e1d0d"
+    },
+    "ui/shell/OBSERVATION_FRESHNESS.md": {
+      "bytes": 7160,
+      "sha256": "98302b92b969382930bad272890ac1140dfe37252451a9e0e3153338756fbaa7",
+      "git_blob": "a79936bce449d4ac991dba2cc58bf32cc442d583"
+    },
+    "ui/core/src/conversation.rs": {
+      "bytes": 14375,
+      "sha256": "58ecb302f1569af1a98c9a6b9a848417c4b77d925478aed84d0c1d14adf3049a",
+      "git_blob": "df0663852e0d69a8baac3a7c95a785a1d9a16038"
+    },
+    "ui/shell/src/conversation.rs": {
+      "bytes": 29656,
+      "sha256": "79fe8b1d6a3584e9b45197fb8510ee1646ca1b93feeaf70d0aac24720a56401a",
+      "git_blob": "4e33b9f8ad64eef299c4baa5a7b063edf1986b41"
+    }
+  },
+  "scope": "First pass read-only source review. No source edits, new Rust test execution, native screenshot, original owner run, system clock change or device operation.",
+  "finding": {
+    "id": "R8-A10-RUNTIME-TOTAL-AGE",
+    "severity": "P2",
+    "status": "source-level deterministic counterexample; a focused actual Desktop RED remains to be executed if implementation is assigned",
+    "classification": "Remaining pre-existing Runtime-health freshness gap, not a regression in the enhanced known-run clock and not a newly demonstrated authority/effect defect.",
+    "summary": "After a valid Session snapshot waits in transit/queue and the wall clock steps backward, the Runtime health card can still display OBSERVED for a successful health sample whose true monotonic age is greater than7seconds. The known-run card correctly expires because it receives total monotonic source age.",
+    "affected_paths": [
+      {
+        "path": "ui/session/src/hepta.rs",
+        "lines": "296-307,340-365",
+        "behavior": "Session checks its local runtime update age before snapshot, but snapshot_at serializes monotonic source age only inside hepta.run. The Runtime age accumulated before snapshot is not transmitted."
+      },
+      {
+        "path": "ui/shell/src/main.rs",
+        "lines": "373-390,445-462",
+        "behavior": "Run clock consumes request-start/receipt timestamps; Runtime only retains actual received_at and later calls the separate freshness helper before painting."
+      },
+      {
+        "path": "ui/shell/src/hepta_panel.rs",
+        "lines": "19-39,45-56,58-180",
+        "behavior": "Runtime compares source wall age and local receipt age separately. Run combines source monotonic age, full IPC RTT and queue age."
+      },
+      {
+        "path": "ui/core/src/observation.rs",
+        "lines": "19-39",
+        "behavior": "A backward wall adjustment that leaves now>=sample is not invalid; each supplied age below7000ms passes."
+      }
+    ],
+    "concrete_timing": {
+      "health_sample_monotonic_ms": 0,
+      "health_sample_unix_ms": 10000,
+      "request_start_monotonic_ms": 5990,
+      "session_snapshot_monotonic_ms": 6000,
+      "transport_receipt_monotonic_ms": 6010,
+      "ui_prepaint_monotonic_ms": 8001,
+      "ui_prepaint_unix_ms_after_rollback": 16000,
+      "true_runtime_sample_age_ms": 8001,
+      "runtime_wall_age_argument_ms": 6000,
+      "runtime_receipt_age_argument_ms": 1991,
+      "runtime_predicate_result_from_source": "None -> retains Observed (both supplied ages below7000)",
+      "optional_run_source_age_at_snapshot_ms": 6000,
+      "run_full_rtt_ms": 20,
+      "run_total_age_argument_ms": 8011,
+      "run_predicate_result_from_source": "ReceiptExpired -> Stale; correct conservative bound"
+    },
+    "reachability": "Session can form the first snapshot at source age6000 while stillObserved; a paused UI can process that reply1991ms after receipt before a later poll completes. A wall rollback from expected18001 to16000 makes the original timestamp appear6000ms old. No forged owner data, reordered Session responses or multi-second IPC over its own timeout is required.",
+    "reproduction_direction": [
+      "Reuse observation_freshness_tests::queued_desktop, observed(10000), run_view(10000) and enqueue_at in ui/shell/src/main.rs.",
+      "Set now=Instant::now(), request_start=now-2011ms, received=now-1991ms. Optional run.sample_age_at_snapshot_ms=Some(6000). Call actual Desktop.receive_and_refresh_hepta(||(now,16000)).",
+      "Assert the Runtime projection and actual hepta_panel::status text are stale and its retained last_observation remains unchanged. Current source will retain Observed, so this is the intended focused RED. The optional known-run comparison already becomesStale.",
+      "Bind the producer side with HeptaMonitor at a known last_runtime_sample and snapshot at sample+6000ms; show the current Runtime wire lacks its advancing monotonic age while the known-run wire carries6000.",
+      "No system wall-clock mutation or originalAgentd/native rerun is needed for this deterministic input/real-renderer regression. It remains a source/egui contract qualification."
+    ],
+    "minimal_fix_direction": [
+      "Carry Runtime successful-sample monotonic age and a nonwrapping successful-observation sequence from Session. Keep attempt/report time distinct from last successful sample time; failures must not renew old success.",
+      "Give Runtime its own source-bound age anchor keyed by Session and original runtime source, and use the existing conservative source-age+RTT+queue calculation. Do not borrow known-run age or let either stream refresh the other.",
+      "Preserve all current stale diagnostics and complete historical owner metadata; handle old/absent age metadata fail-closed and document any additive wire compatibility change.",
+      "Focused tests should cover total7000/7001, repeated snapshots without reset/doubleRTT, new successful sequence, Session replacement, and the source-level rollback witness above before considering broader gates."
+    ],
+    "documentation_scope": "ui/shell/OBSERVATION_FRESHNESS.md:78-82 explicitly limits enhanced total age to known runs. This finding identifies a remaining Runtime path improvement and does not reinterpret125 tests or the existing3native images as coverage of this clock fault."
+  },
+  "reviewed_boundaries_without_new_source_blocker": [
+    {
+      "boundary": "RunStatus null",
+      "source": "ui/session/src/hepta.rs:463-493 and ui/core/src/hepta.rs:166-180",
+      "conclusion": "None marksProjectionMissing and preserves last observation plus stickygap. No durable non-admission inference; firstnull has no prior sample."
+    },
+    {
+      "boundary": "SubmitUnknown",
+      "source": "services/hepta-os/src/objective/mod.rs:214-264; OBJECTIVE_TRANSPORT.md",
+      "conclusion": "Immutable SubmissionAttempt is separate from read-onlyRunObservation and exposes no RunStatus-update/retry/rebind path. CLI loststdout remainsunknown at caller boundary."
+    },
+    {
+      "boundary": "Known-run freshness",
+      "source": "ui/shell/src/hepta_panel.rs:58-180 and ui/session/src/hepta.rs:197-229,340-365",
+      "conclusion": "Successful read uses conservative read-start time, includesclosinghealth, serializesrounded-up sourceage, addsfullRTT+queue, preservesmax advancing anchor for repeatedsequence. Missingage/reversedtime/regression cannotappearcurrent."
+    },
+    {
+      "boundary": "Session replacement",
+      "source": "ui/shell/src/main.rs:350-390; hepta_panel.rs:94-102; core conversation reference model",
+      "conclusion": "Clock source=(session_instance,run_id), sequence starts anew on explicitsourcechange; host selection/history clears for replacement while savedhostquotes remain exactSession/task references. This does not turn a hostTask into an originalrun."
+    }
+  ],
+  "small_product_seam_after_correctness": {
+    "status": "Optional next UI-only slice, not implemented",
+    "paths": [
+      "ui/core/src/conversation.rs::ContextRef",
+      "ui/shell/src/conversation.rs::context_card",
+      "ui/shell/src/hepta_panel.rs::run_card"
+    ],
+    "gap": "Known-run metadata currently remains a read-only Runtime/Context card; existing typed savedcontext references are HostTask or HeptaRuntime, not exact known-run references.",
+    "direction": "An immutable HeptaRun context quote could bind observingSession+originalruntime source+runID and reuse real currentprojection resolution, with explicit historical/unknown display. It must not claim trusted publication, auto-submit, restore lostCLIattempts, or replace S1/S2 issuer/request-owner work."
+  },
+  "new_tests_run": 0,
+  "new_native_images": 0,
+  "source_files_modified": false,
+  "test_count_note": "STATUS125 is read as an existing source-bound claim; this first-pass review did not rerun or expand that suite."
+}

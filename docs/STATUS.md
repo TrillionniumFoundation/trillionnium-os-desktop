@@ -1,6 +1,27 @@
 # 当前状态
 
-## 2026-10-18 R8：可信提交、原版 run 与真实桌面
+## 2026-10-18 R9：Runtime 总年龄与 CLI 进程丢失边界
+
+**本轮已修复 Runtime health 在总年龄超过 7 秒后仍显示 Observed 的实际回归，并增加两个真实 CLI 被 SIGKILL 的发送边界测试。**代码从 main `f9e306f76154590e096a42f70ce9de0a7c859e60` 继续，保留 #192、#195 的全部已合入实现；UI 最终实际执行来源为 `09cf259676e2a81a998c14f1e1fddf4cc94b80df` 加当时冻结补丁，完整 UI/observer 闭包 SHA-256 为 `d720db71872f8c263b73ab3b5ad9702a856898a32b7cfde312cfe805156d0fe0`。后续文档/发布提交不改写原执行身份，完整来源与失败见 [R9 实际证据](../results/integration/2026-10-18-runtime-process-boundaries/README.md)。
+
+| 本轮增量 | 已实际核实的结果 |
+| --- | --- |
+| Runtime 的完整时钟链 | Session 从完整 poll 开始前计时，仅成功后推进样本序号。Shell 使用样本年龄 + 完整 IPC RTT + 实际 receipt 至绘制时间的总上界；8,011 ms 的真实队列/egui RED 已复现并修复，7,000 ms 边界继续有效。 |
+| 同来源历史与独立 run | 同 Session 临时缺历史、同序号年轻帧、失败尝试与墙钟回拨不重新刷新旧 Runtime；新的 Runtime clock 与 known-run clock 独立，过期互不冒充。实际 Session/scripted UDS 回归覆盖慢完整 poll、独立慢 run 和连续旧 spawn 失败。 |
+| 最终 UI 验证 | 最终 boxed clock 源码完整 workspace **137 passed / 0 failed / 2 既有 CJK ignored**，无过滤；严格 workspace/all-targets Clippy、fmt、四程序 bins 构建均通过，四次闭包前后相同。保留 test-01 的 fixture 编译失败、clippy-01 的 enum 大小失败和全部中间结果。 |
+| 真实 CLI 终止边界 | EOF 仍被持有时终止，以及 peer 已读完整原帧但回复尚未发送时终止，均实际 SIGKILL/reap、无回执、无重试。完整 objective feature **43 passed**，含新增两项；feature-off check、strict Clippy、fmt 通过。没有输出不能合成为 NotSent 或持久未受理。 |
+| 文档与模块交接 | 固定基线 A00–A10 共 11 模块都有真实开发/技术入口，53 次本地链接/49 个目标通过。新增 A04 主干交接手册，明确固定候选独立 checkout 与同 ELF 条件；A04 实现仍在 Draft #8。补 A06 实际 cgroup owner 和 cpu.max 输入契约。 |
+| 历史证据补全 | R7 可恢复原文与明确缺失清单已归档；R8 ARM run 39106645234 的最终成功、原始日志和来源已独立复核。它们保持历史身份，不能替代 R9 的运行或丢失原图。 |
+
+Runtime clock 是新增可选 wire 字段：新 Shell 接收旧帧时对缺 clock 的 Runtime 历史显示 unknown，旧严格 decoder 会拒绝新字段，因此 **Session、Shell、ctl 必须匹配部署**。源码与完整规则见 [DESKTOP_UX 第 4.1 节](DESKTOP_UX.md#41-原版观测的可见新鲜度) 和 [当前新鲜度手册](../ui/shell/OBSERVATION_FRESHNESS.md)。
+
+本轮新增的本地运行是 Rust/实际 CLI/Session/scripted UDS/egui 测试，没有新启动原版 Agentd、捕获 compositor 像素或执行设备效果。R8 真实原版与窗口证据继续有效但只属于其固定来源。当前仍是 Rust eframe/egui 的 Linux host 开发桌面；production issuer、首次发送前的原请求持久保存、原 owner 在线结果核对、K↔D、四个 HOS2 效果操作、Asterinas G1/G2、显示/输入与移动设备接合仍按 [既有 S1–S5 工单](agents/R8_NEXT_SLICE.md) 推进。
+
+下列历史节保留各自源码、日期、计数与失败，其中“当前”“本轮”“尚未”等仅描述该轮。根 README 继续严格为 0 字节，上游 pins 未变。
+
+---
+
+## 2026-10-18 R8：已合入的可信提交、原版 run 与真实桌面
 
 **当前增量已实际完成独立可信 CLI → 原版 ObjectiveStart 准入/journal → 持续 Session → 同一 Rust Shell 三阶段窗口。** 本节绑定实际本地输入 `25298f5d87cf3db90deefe9c0405ecd241dc6581` 与同树发布 [`ca5e7d8473690df1bf7636de0808e58414c40abe`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/ca5e7d8473690df1bf7636de0808e58414c40abe)，tree `9584997da412dd10c0960f69011b40a4b26d2862`；交付 [PR #192](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/192) 完整纳入 #190 工作区候选与 #191 主干修复的开发历史。固定原版 Hepta 仍为 `f8c9419df6ddeb36ff8b522a50219981fb8d9345`，源码、manifest 和 lock 未改。详见 [本轮完整证据](../results/integration/2026-10-18-objective-desktop/README.md)。
 
@@ -13,7 +34,9 @@
 | run 新鲜度 | 使用 Session 单调样本年龄 + 实际 IPC RTT + 真正接收至绘制的时间上界，组合值须 ≤7,000 ms；首个排队旧帧与墙钟回拨不能让样本重新变新。既有 runtime health 仍按其原双时钟规则检查。 |
 | A06 / CI 修复 | #191 只修 cfg(ktest) 奇数周期 oracle，生产函数字节不变。完整客体 aster-core 160/160；OSTD 框架报告 221 passed，其中原 VMX/EPT 有 3 个 soft skip，至少 218 个实际执行。#191 merge 的三项 CI 已 completed/success，原始记录见本轮索引；不将它们转记给 #192 的不同 head。 |
 
-**当前范围：**这是一条 Linux host 上真实的原版准入与可见投影链路。截图的英文 Runtime 卡片通过；顶部中文后缀在该隔离字体环境出现缺字方框，CJK/IME 和整机显示资格未通过本轮验证。原版回执中的 admitted 不代表模型 turn 或设备完成。生产 issuer 接入、原 owner 在线持久结果核对、durable K↔D、最终使用授权、撤销/确认退役、HOS2 四个待实现操作、Asterinas G1/G2、显示/输入和移动适配继续推进，具体实现顺序与完成判据见 [R8_NEXT_SLICE](agents/R8_NEXT_SLICE.md)。
+**R8 ARM 完成后的补充复核：**[run 39106645234](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39106645234) / job `117613820420` 已于 2026-10-18 07:36:49 UTC completed/success，实际 head 为 `05a7cd23f0a4b90b154ef0c45be89093b129f767`，tree `592e13cc526a247ec4246a4cfe8458e07392d0e1`。2026-10-18 下午独立读回 API、完整 job 日志与小证据 ZIP：原版只读 8 + Session 8（六阶段）、原版 Objective 10 核心检查 / 7 次明确提交 / 三个 Session 阶段通过，Python 前置 17 和 Objective receipt 12 通过；39 次哈希核对覆盖 33 个独立源码路径。五/六输入 ARM ELF 的包装记录与报告已核对，本次未下载大 ELF 包独立重算其字节。详见 [R8 ARM 完成证据](../results/integration/2026-10-18-runtime-process-boundaries/r8-arm-completion/README.md)。这是旧固定 head 的实际完成补充，不授予后来的 R9、内核或 Shell 像素资格。
+
+**R8 已通过的范围：**这是一条 Linux host 上真实的原版准入与可见投影链路。截图的英文 Runtime 卡片通过；顶部中文后缀在该隔离字体环境出现缺字方框，CJK/IME 和整机显示资格未通过该轮验证。原版回执中的 admitted 不代表模型 turn 或设备完成。生产 issuer 接入、原 owner 在线持久结果核对、durable K↔D、最终使用授权、撤销/确认退役、HOS2 四个待实现操作、Asterinas G1/G2、显示/输入和移动适配继续推进，具体实现顺序与完成判据见 [R8_NEXT_SLICE](agents/R8_NEXT_SLICE.md)。
 
 下面各历史节保留各自的实际源码、日期、计数和失败；其中“本轮”“当前”“尚未”只描述该历史轮次，不覆盖本节新增结果。根 README 继续为 0 字节。
 

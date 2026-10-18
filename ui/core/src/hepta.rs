@@ -185,7 +185,10 @@ impl HeptaRunProjection {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct HeptaRuntimeSampleClock {
+    /// Nonzero, nonwrapping successful-read sequence owned by this Session.
     pub observation_sequence: u64,
+    /// Rounded up from the beginning of the complete successful runtime poll
+    /// to the Session snapshot; independent of wall-clock adjustments.
     pub sample_age_at_snapshot_ms: u64,
 }
 
@@ -200,9 +203,9 @@ pub struct HeptaProjection {
     /// Missing in older producers. A consumer must treat an observed runtime
     /// with no successful-sample age as unknown, not as a zero-age success.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub runtime_sample_clock: Option<HeptaRuntimeSampleClock>,
+    pub runtime_sample_clock: Option<Box<HeptaRuntimeSampleClock>>,
     /// Omitted unless a trusted launcher configured an exact known run ID.
-    /// Unconfigured snapshots retain the previous wire shape byte for byte.
+    /// A runtime sample clock is independent of this optional run projection.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub run: Option<Box<HeptaRunProjection>>,
 }
@@ -308,7 +311,38 @@ mod tests {
         let old = r#"{"connection":"not_configured","last_attempt_unix_ms":null,"error_code":null,"last_observation":null}"#;
         let projection: HeptaProjection = serde_json::from_str(old).unwrap();
         assert!(projection.run.is_none());
+        assert!(projection.runtime_sample_clock.is_none());
         assert_eq!(serde_json::to_string(&projection).unwrap(), old);
         assert_eq!(projection, HeptaProjection::not_configured());
+    }
+
+    #[test]
+    fn runtime_sample_clock_never_deserializes_invalid_or_missing_age_as_zero() {
+        let mut wire = serde_json::to_value(HeptaProjection::default()).unwrap();
+        for invalid in [
+            serde_json::json!({"observation_sequence": 1}),
+            serde_json::json!({"observation_sequence": 1, "sample_age_at_snapshot_ms": null}),
+            serde_json::json!({"observation_sequence": 1, "sample_age_at_snapshot_ms": -1}),
+            serde_json::json!({"observation_sequence": 1, "sample_age_at_snapshot_ms": "0"}),
+            serde_json::json!({"observation_sequence": 1, "sample_age_at_snapshot_ms": 0, "extra": true}),
+        ] {
+            wire["runtime_sample_clock"] = invalid;
+            assert!(serde_json::from_value::<HeptaProjection>(wire.clone()).is_err());
+        }
+        wire["runtime_sample_clock"] = serde_json::json!({
+            "observation_sequence": 1, "sample_age_at_snapshot_ms": 6000
+        });
+        let current: HeptaProjection = serde_json::from_value(wire.clone()).unwrap();
+        assert_eq!(
+            current
+                .runtime_sample_clock
+                .as_deref()
+                .unwrap()
+                .sample_age_at_snapshot_ms,
+            6000
+        );
+        wire.as_object_mut().unwrap().remove("runtime_sample_clock");
+        let older: HeptaProjection = serde_json::from_value(wire).unwrap();
+        assert!(older.runtime_sample_clock.is_none());
     }
 }
