@@ -303,7 +303,7 @@ class MutationToolchainTests(unittest.TestCase):
             encoding="utf-8"
         )
         variants = [item for item in mutations.PROFILE_MUTANTS
-                    if item[0] == "accept_prior_window_cpu_sum"]
+                    if item[0] == "accept_cumulative_cpu_beyond_boot_elapsed"]
         self.assertEqual(len(variants), 1)
         name, designated, changes = variants[0]
         self.assertEqual(designated,
