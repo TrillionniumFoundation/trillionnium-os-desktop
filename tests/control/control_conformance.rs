@@ -6,9 +6,10 @@
 
 use os_control::{
     with_parent, BootId, CapSpaceId, ControlCore, DeliveryError, DeliveryRequest, DeliveryState,
-    DeliveryStatus, HistoryAck, LogicalOperationId, NamespaceIdentity, OperationBinding,
-    OriginalOwnerAuthority, OwnerId, OwnerReceipt, PublishOutcome, PublisherId, ReserveAttempt,
-    ResourceDomain, ResourceDomainId, ResourceError, StableObjectId, CPU_PERIOD_NS,
+    DeliveryStatus, HistoryAck, LogicalOperationId, NamespaceIdentity, OperationBinding, OwnerId,
+    OriginalOwnerAuthority, OwnerReceipt, PublishOutcome, PublisherId, ReserveAttempt,
+    ResourceDomain, ResourceDomainId,
+    ResourceError, StableObjectId, CPU_PERIOD_NS,
 };
 use std::sync::{Arc, Barrier};
 use std::thread;
