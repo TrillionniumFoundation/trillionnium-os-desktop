@@ -1,0 +1,97 @@
+{
+  "source_commit": "fbaa6fa9582424a1c02bd71d9b1edaaaa4fe53c2",
+  "source_inputs": {
+    "services/hepta-os/CONTRACT.md": "9f65ed57e3cb6366fd38b1b5e0b329461b81590db7c37aa52cd2bf0d6b8938a9",
+    "services/hepta-os/Cargo.lock": "a1aed4d1f513036cbe03912359f3dfbb2c6d93c5210b8d18244d95be9008a875",
+    "services/hepta-os/Cargo.toml": "7ca5e7cab7d0b6c48eb1008c14b0bc3c9bb87d55c29e0eeebb21cdff17a5adbd",
+    "services/hepta-os/OBJECTIVE_TRANSPORT.md": "fc8dd5a6d549976cd595499ff31e2dd3271f388bb42249b222c2b6cb4337022e",
+    "services/hepta-os/OBJECTIVE_UPSTREAM_CONTRACT.json": "ba3005ee18c77ccf701c5dea063fa2f8d184b9aaebfbf912cd8d16287564d449",
+    "services/hepta-os/README.md": "2490d3d8854192030f406c41dd8d51c741e407a91e16d510b4636d75ca93fccf",
+    "services/hepta-os/RUN.md": "736f6479197d01ffb220cf4df3c944fd6b6a0ca9a8a280dfd639dd1e26912b4b",
+    "services/hepta-os/UPSTREAM_CONTRACT.json": "24efcccd98b6ac6a56cb34b36f5bdb10785d955efd86c32fed308bac1505f7ef",
+    "services/hepta-os/src/bin/hepta-observe.rs": "2a7b3eafc7b795e63bf43ef01e41e12a73f5d097c906bdd69f5d11049bc083b7",
+    "services/hepta-os/src/bin/hepta-submit.rs": "f856132b9f9e47512058421e42ca89a450bdad808b0943ef5030458d93b64fba",
+    "services/hepta-os/src/client.rs": "8669dc6c1e48c43108f3c2e1f8602e7602ac45e3e74239f638cdf92a3a99f5e8",
+    "services/hepta-os/src/lib.rs": "3904ceed5853d3ea930ea329faa78f5611ee6cf5f90178919a8f2d8db7c39162",
+    "services/hepta-os/src/objective/mod.rs": "4d58183fff058d7febb90c6c720fe19c2fbe52998487bc6dfa761d48c1b5353e",
+    "services/hepta-os/src/objective/wire.rs": "3b75d3df94302076052b5daadf6f13b318610920b8e754f0893e6422f2efa39c",
+    "services/hepta-os/src/wire.rs": "6e1377eb6cc009a6289602da248c11e905a53c484437b602f048298521d07e0c",
+    "services/hepta-os/tests/fixtures/agentd_v2_payloads.json": "5c96555ad2a043ce8e651d9bfb4d9e05cb71cc57c60ad4288aba7270da84c0dd",
+    "services/hepta-os/tests/fixtures/objective_ingress_original_wire_only.json": "bb4e4330efcd1ef0390c75dbfd7f8e190d3290311919648aa24cd16942fa7de8",
+    "services/hepta-os/tests/objective_cli.rs": "a387b97f2445bafe234dfbd060bcfca68b1228a03f201d16670258d5c621a49c",
+    "services/hepta-os/tests/objective_transport.rs": "4162a6e63f647938e0f4a7d7f2e70003153177e045f5ec1352ede15cb3616ae1",
+    "services/hepta-os/tests/socket_contract.rs": "189205cf47730dd085a0cd44d7b0eedf47f705f9d3e646ea86d13b41b475ff01"
+  },
+  "source_unchanged": true,
+  "checks": [
+    {
+      "name": "tests",
+      "command": [
+        "cargo",
+        "+1.88.0",
+        "test",
+        "--manifest-path",
+        "services/hepta-os/Cargo.toml",
+        "--features",
+        "objective-transport",
+        "--locked",
+        "--offline"
+      ],
+      "started_at": "2026-10-18T05:22:56.901039+00:00",
+      "ended_at": "2026-10-18T05:23:25.892234+00:00",
+      "exit_code": 0
+    },
+    {
+      "name": "clippy",
+      "command": [
+        "cargo",
+        "+1.88.0",
+        "clippy",
+        "--manifest-path",
+        "services/hepta-os/Cargo.toml",
+        "--all-targets",
+        "--features",
+        "objective-transport",
+        "--locked",
+        "--offline",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "started_at": "2026-10-18T05:23:25.892436+00:00",
+      "ended_at": "2026-10-18T05:23:48.711146+00:00",
+      "exit_code": 0
+    },
+    {
+      "name": "default-check",
+      "command": [
+        "cargo",
+        "+1.88.0",
+        "check",
+        "--manifest-path",
+        "services/hepta-os/Cargo.toml",
+        "--no-default-features",
+        "--locked",
+        "--offline"
+      ],
+      "started_at": "2026-10-18T05:23:48.711483+00:00",
+      "ended_at": "2026-10-18T05:23:51.670648+00:00",
+      "exit_code": 0
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "+1.88.0",
+        "fmt",
+        "--manifest-path",
+        "services/hepta-os/Cargo.toml",
+        "--",
+        "--check"
+      ],
+      "started_at": "2026-10-18T05:23:51.670850+00:00",
+      "ended_at": "2026-10-18T05:23:51.850055+00:00",
+      "exit_code": 0
+    }
+  ]
+}

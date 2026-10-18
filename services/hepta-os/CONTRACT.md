@@ -162,19 +162,26 @@ The Session must expire its freshness from a monotonic last-success timestamp
 independently of worker replies; it must not keep the connection healthy just
 because an old object remains in memory.
 
-ObjectiveStart remains absent from the observer and CLI. The existing wire requires an original
-`AuthBusObjectiveIngress` from an independently trusted configured issuer,
+ObjectiveStart remains absent from `ObserverClient`, `hepta-observe`, Session
+IPC and the Rust Shell. The separate `hepta-submit` executable is available
+only with the default-off `objective-transport` feature. The wire requires an
+original `AuthBusObjectiveIngress` from an independently trusted configured issuer,
 including signature and owner-bound immutable inputs. Neither a UI draft nor
 an advertised capability is such an envelope. This candidate provides no UI
 issuer, signing key, authority epoch allocator, generic high-authority ingress,
 or UI/Session effect submission. The optional default-off transport accepts that
 original envelope from a trusted host, checks structure and retains uncertain
 delivery; it does not authenticate an issuer or assemble the provider.
-The next integration step is owner-approved assembly of the original
-authenticated objective provider and a restricted HOS2 effect adapter, with the
+The [2026-10-18 original-runtime evidence](../../results/integration/2026-10-18-objective-desktop/README.md)
+qualifies the isolated test issuer's original-owner admission, journal binding,
+revocation negative case and restart behavior. The next integration step is
+assembly of the existing production issuer/provider, its durable request and
+unknown-result handoff, and a restricted HOS2 effect adapter, with the
 original durable operation owner responsible for K/D binding, uncertainty,
-fencing, acknowledgement and retirement. That work requires separate real
-admission/effect/revoke/restart evidence.
+fencing, acknowledgement and retirement. That production and effect work
+requires its own real admission/effect/revoke/restart evidence; the stopped-owner
+journal check does not install an online recovery service. See
+[S1–S5](../../docs/agents/R8_NEXT_SLICE.md) for the owner/API and completion gates.
 
 The compiled original route is
 [state_control.rs:206–228](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-agentd/src/state_control.rs#L206-L228)

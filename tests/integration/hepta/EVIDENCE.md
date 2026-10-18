@@ -1,17 +1,48 @@
-# Read-only observer evidence
+# Hepta observer and ObjectiveStart evidence
 
-Evidence recorded on **2026-10-17 UTC**. This change is a bounded Linux host
-observation slice for the A10 stacked candidate, with files in the A07-owned
+## Current original-owner execution: 2026-10-18 UTC
+
+The [original objective and desktop result](../../../results/integration/2026-10-18-objective-desktop/README.md)
+records two real Linux host runs against unchanged Hepta
+`f8c9419df6ddeb36ff8b522a50219981fb8d9345`. The core-only run and the run with
+Session/Shell each passed ten core checks with seven explicit submission
+attempts. The second also completed three known-run Session phases: a current
+nonterminal `admitted` run, retained stale history after owner replacement,
+and `projection_missing` in an explicitly replaced Session. One native Shell
+remained alive across three actual captured PNGs; capture coordination and
+independent pixel review are recorded separately.
+
+Both runs used a disposable test issuer explicitly enrolled in the original
+owner. The original journal/receipt check, exact replay, explicit abstention,
+signature/revocation negatives and generation fencing have actual process
+evidence. A compiled admission is not a completed task; a missing current run
+projection does not erase durable publication. Production issuer assembly,
+online unknown reconciliation, model turns, Operations dispatch, canonical
+intelligence, device effects and historical run resumption remain unqualified.
+
+The final UI workspace on `25298f5d87cf3db90deefe9c0405ecd241dc6581` passed
+125 tests with zero failures and two existing CJK ignores, and passed its native
+build, strict Clippy and format checks. The result index binds the actual
+original/desktop source inputs and ELFs separately from later publication.
+These are local execution records, not an assertion that a new GitHub CI head
+has passed. [ORIGINAL_OBJECTIVE.md](ORIGINAL_OBJECTIVE.md) gives the repeatable
+gate; [S1–S5](../../../docs/agents/R8_NEXT_SLICE.md) defines the remaining owner,
+effect and target-kernel work.
+
+## Historical observer evidence: 2026-10-17 UTC
+
+The evidence below was recorded on **2026-10-17 UTC**. That change was a bounded
+Linux host observation slice for the A10 stacked candidate, with files in the A07-owned
 adapter area. It does not claim A07's durable Hepta → HOS2 effect gate.
 
-**Latest separate execution:** the [original Agentd ARM64 archive](evidence/2026-10-17-original-agentd-arm/README.md)
-now records a passed original build/link/run and all eight read-only process
+**Historical separate ARM64 execution:** the [original Agentd ARM64 archive](evidence/2026-10-17-original-agentd-arm/README.md)
+records a passed original build/link/run and all eight read-only process
 checks, with independently verified executable hashes. The earlier records
 below retain their original source/time boundaries. The ARM gate uses fresh
 observer CLI instances and does not qualify persistent Session/Shell, model
 turns, authenticated objective submission or device effects.
 
-## Frozen inputs and execution environment
+### Frozen inputs and execution environment
 
 | Input | Value |
 | --- | --- |
@@ -28,7 +59,7 @@ The implementation used the session's isolated fixed-toolchain wrapper:
 commands were run through that wrapper where they invoke Cargo. The reusable
 commands in `services/hepta-os/RUN.md` select the same toolchain directly.
 
-## Initial executed checks
+### Initial executed checks
 
 | Actual command after the wrapper, or Python command | Result and scope |
 | --- | --- |
@@ -60,7 +91,7 @@ timeout. It verifies that the permit stays with that job, replacement work is
 rejected without queuing, and admission resumes only after actual completion.
 The test does not claim to interrupt an OS filesystem syscall.
 
-## Lifecycle compatibility correction
+### Lifecycle compatibility correction
 
 Further original-runtime review found that the initial fixture and client both
 incorrectly equated Running `current_generation` to immutable `spawn_generation`.
@@ -93,7 +124,7 @@ request roundtrips, identity/envelope, and original EventBuffer tests passed.
 This is execution of extracted source with explicit surrounding shims, not a
 live original Agentd process.
 
-## Integrated Session fixture evidence
+### Integrated Session fixture evidence
 
 The coordinated A10 candidate also ran its actual Session IPC worker through
 this client against `tests/integration/hepta/agentd_fixture.py`, a separate
@@ -113,8 +144,6 @@ projection path with fixture data. It is **not a live Hepta daemon**, model
 provider, authenticated ObjectiveStart, HOS2 execution, or device-control test.
 The source-derived verifier is a separate contract-conformance check; neither
 fixture is described as a production owner.
-
-## Remaining acceptance gates
 
 ### Original-process harness cleanup correction
 
@@ -138,29 +167,48 @@ old-source probe. Neither this probe nor the guard tests built or launched
 original Agentd, modified shared Rust target binaries, or changed the earlier
 `live_agentd_acceptance: not_run` qualification.
 
-### Unexecuted original-process and production gates
+### Initial original-process preflight
 
-The next original-process gate is now concrete in
+The original-process gate was specified in
 [ORIGINAL_AGENTD.md](ORIGINAL_AGENTD.md). Its actual 2026-10-17 preflight exited
 2 before any build/launch because of disk, missing original Rust 1.95, and
-`cmake`. Exact-SHA CI/release inspection found no applicable Linux executable.
+`cmake`. The initial exact-SHA CI/release inspection found no applicable Linux
+executable.
 The runner was syntax/formatted and its manifest/lock preparation checked;
-original-library compilation and every original-process assertion remain
-unexecuted. Those facts do not change the fixture evidence class above.
+original-library compilation and every original-process assertion were
+unexecuted at that preflight. The later original ARM64 run above, the
+[R6 continuous Session/Shell runs](evidence/2026-10-17-r6/README.md) and the
+current ObjectiveStart result have their own actual build/runtime evidence.
+They do not change this initial failure or the fixture evidence class above.
 
-1. Supply an independently trusted live Hepta profile, binary/build features,
-   configured owners/providers, Agent identity, spawn generation, and endpoint
-   UID; run the four supported reads against that actual daemon.
-2. Qualify actual daemon restart/generation replacement and history loss with
-   Session freshness and source-change handling. The observer itself creates
-   no task replay or durable effect conclusion.
-3. Assemble the existing authenticated objective issuer/provider boundary.
+## Remaining acceptance gates
+
+The fixed-source read-only lifecycle and isolated test-issuer admission gates
+now have the separate actual runs linked above. Their qualification is limited
+to those source, issuer, endpoint and Linux host profiles. The following product
+work remains, with owner/API and positive/negative completion criteria in
+[S1–S5](../../../docs/agents/R8_NEXT_SLICE.md):
+
+1. Assemble the existing production objective issuer/provider and the original
+   request owner's durable retention before the first transmission. Bind the
+   trusted launcher's actual Agent identity, spawn, executable, endpoint and
+   peer UID/PID. The isolated probe's test issuer cannot fill a missing product
+   configuration.
    The UI draft must not self-sign, self-assign authority, or use SessionIngress
    as a substitute for authorization.
-4. Assemble the restricted HOS2 effect adapter and original durable operation
+2. Connect the original owner's durable result/reconciliation seam, including
+   responses lost after publication and restart. Stopped-owner inspection via
+   the public journal API is not an online product query. `run_status: null`,
+   timeout or missing history must not authorize a new ID, automatic retry or
+   a claim of non-admission.
+3. Assemble the restricted HOS2 effect adapter and original durable operation
    owner, with immutable intent/K/D binding, real effect results, revoke/fence,
    lost-response uncertainty, restart, acknowledgement, and retirement tests.
    This observer does not supply that chain or introduce a second ledger.
+4. Close Asterinas G1's five operations on the same kernel and real resource
+   owner, then run the original Hepta owner/adapter and durable fault recovery
+   there for G2. Existing Linux host and bounded cgroup evidence does not close
+   those cross-owner effect gates.
 5. Separately qualify Asterinas, Windows and mobile transport/process boundaries.
    A Rust UI build and a Linux observation fixture do not establish those
    platform/device capabilities.

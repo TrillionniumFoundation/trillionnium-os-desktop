@@ -43,10 +43,10 @@ opt-in layout probe retain the separate diagnostic path used by existing gates.
 | Module | Responsibility | Source of truth |
 | --- | --- | --- |
 | `ui/core/src/conversation.rs` | `LocalDraft`, typed `ContextRef`, exact task/runtime source keys, validation and reference resolution | Immutable local quotes and independently supplied owner observations |
-| `ui/core/src/observation.rs` | One pure predicate for source and local receipt age | Caller-supplied clocks; no clock reads, lifecycle changes or IPC |
+| `ui/core/src/observation.rs` | One pure predicate for source wall age and caller-supplied monotonic age | Caller-supplied clocks; no clock reads, lifecycle changes or IPC |
 | `ui/shell/src/conversation.rs` | Per-workspace composer/tab state, bounded draft book, complete host snapshot cache, cards and embedded panels | Actual `Response::Snapshot` for current task rows; expired Hepta projection for runtime rows |
 | `ui/shell/src/main.rs` | Actual response queue, expiry before every page, existing host launch/cancel transport | The independent Session, fenced by its observed instance |
-| `ui/shell/src/hepta_panel.rs` | Existing runtime display and one-shot layout diagnostic | Same R6 predicate and exact diagnostic codes through the shared helper |
+| `ui/shell/src/hepta_panel.rs` | Runtime health, independent known-run card and one-shot health layout diagnostic | Read-only Session projections; health uses the R6 age checks and configured runs use the separate total-age bound |
 | `ui/shell/src/local_drafts.rs` | Explicit private plaintext export/import, v2 context schema and v1 compatibility | Local file content is historical input, never a live receipt |
 
 The renderer IPC still contains only Snapshot, Launch and Cancel. This change
@@ -80,8 +80,10 @@ does not authorize an operation.
 ## Shared freshness rule
 
 The Shell consumes queued responses, samples its clocks, expires observations
-and only then paints any page. A current observation requires both ages to be
-at most **7,000 ms**. At **7,001 ms** it is stale. Missing/future local receipt
+and only then paints any page. Bridge records actual IPC receipt before queue
+delivery; dequeue does not create a new receipt time. Host task rows and
+runtime health require both source wall age and local receipt age to be at
+most **7,000 ms**. At **7,001 ms** they are stale. Missing/future local receipt
 times and missing/future source samples are unknown, never zero-age success.
 
 For host task rows, the source clock is
@@ -93,12 +95,24 @@ snapshot rows and their receipt time. `Response::Task` may report an action
 result but cannot update this cache, renew every row or recover stale status.
 Only a later complete Snapshot can do that; clock recovery alone cannot.
 
-For Hepta, the source clock remains the original observation's
+For Hepta runtime health, the source clock remains the original observation's
 `sampled_unix_ms`. The R6 exact error codes, preserved last observation and
 attempt time, and the rule that only Observed is downgraded are unchanged.
 The actual visible state and the optional Hepta layout marker use the same
 shared predicate. A source-age pass is a bounded observation claim, not a
 compositor frame, device effect or owner-completion receipt.
+
+The optional known-run card has an independent total-age bound. Session
+reports the retained run sample's monotonic age at snapshot creation, rounded
+up to milliseconds. Shell adds the full IPC round trip and elapsed time after
+actual receipt; their **sum** must remain at most 7,000 ms, and source wall age
+must also pass. The full round trip is a conservative transfer bound. Repeated
+snapshots of the same run read retain the larger advancing bound, without
+renewing the sample or repeatedly adding overlapping round trips. Health
+updates do not renew run observations. Missing age is unknown, and a null
+run projection cannot prove non-admission, completion or cancellation.
+See [the known-run contract](HEPTA_OBSERVER.md#observe-one-already-known-run)
+and [the total-age specification](../../ui/shell/OBSERVATION_FRESHNESS.md#known-run-total-monotonic-age).
 
 ## Local storage and bounds
 

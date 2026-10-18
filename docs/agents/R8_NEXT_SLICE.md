@@ -2,7 +2,7 @@
 
 本页是下一实现工单；沿用 [ARCHITECTURE](../ARCHITECTURE.md)、[ROADMAP](../ROADMAP.md)、[PLAN](PLAN.md) 的 owner 与 G1/G2 定义，不重复总路线。
 源码核对：desktop 候选 `cf2f61f73078f7310e60ea894c8ed83d51ef27b0`；Hepta 固定 `f8c9419df6ddeb36ff8b522a50219981fb8d9345`；Asterinas 固定派生基线及工具链见 [upstream-lock](../../support/upstream-lock.json)。
-**本轮新增原版 ObjectiveStart probe、已知 run 的 Session 投影和对应真实 Shell 尚待实际运行结果；本页不授予通过资格。** 测试 issuer 的隔离实验即使通过，也不能转记为生产 issuer、设备控制或 G2 完成。
+**R8 已实际完成隔离测试 issuer 的原版准入与 known-run 桌面投影；本页维护后续产品接合，不能将这些新工单记为已通过。** 执行输入为 `25298f5d87cf3db90deefe9c0405ecd241dc6581`，同树远端 `ca5e7d8473690df1bf7636de0808e58414c40abe`；两轮各 10 核心检查 / 7 次提交尝试，后一轮另有 3 个 Session 阶段和同一 Shell 的 3 张实际图，见 [本轮证据](../../results/integration/2026-10-18-objective-desktop/README.md)。测试 issuer、停 owner 后的只读 journal 核对和英文 Runtime 卡片通过，生产 issuer、在线 durable reconciliation、设备控制与 G2 仍待实现。
 
 ## 交付目标与实施顺序
 
@@ -12,7 +12,7 @@
 
 | 工单 | 实施 owner | 可并行前提 | 闭合产物 |
 | --- | --- | --- | --- |
-| S1 既有 issuer 接入 | A07 + 原 issuer/Agentd 产品宿主；A10 仅展示 | 本轮 probe 先保留待运行状态；契约研究可并行 | 真实签发来源、单次提交与原 owner receipt |
+| S1 既有 issuer 接入 | A07 + 原 issuer/Agentd 产品宿主；A10 仅展示 | 隔离原版 probe 已通过；需已有 issuer/provider 和原请求保存 owner | 真实签发来源、单次提交与原 owner receipt |
 | S2 durable 与 unknown | A07 + 原 RunStart/Operations owners | S1 身份契约；可先做原 Linux 故障实验 | 原 owner 历史查询/核对、接替及禁止盲重放 |
 | S3 受限效果适配 | A07 + 原 authority/Operations owners | S2 的持久投递接缝确定 | 单一目的端 adapter 与原 owner 确认 |
 | S4 Asterinas G1 | A05 + A06，A02/A03 提供已实现库 | 独立于模型和 S1；同一内核树串行集成 | 普通客户端在客体执行五操作及故障负例 |
@@ -111,7 +111,7 @@ A07 在 G1 同树内核/固定 rootfs 中装配原 owner 与同一窄 adapter，
 ## 工单收口材料
 
 每个工单提交实现、模块开发说明、API/状态与故障契约、可复跑命令和原始正负日志；引用实际执行的 commit/tree、features、ELF、存储与运行 profile。编译通过、运行通过及证据复用分别记录。
-原始失败、unknown 和未运行项不可删改；GitHub queued/cancelled 不记为代码失败或通过。本轮 R8 的原版/桌面运行结果待实际收据产生后追加到现有 [STATUS](../STATUS.md) 与测试证据目录，本页只维护下一工单依赖。
+原始失败、unknown 和未运行项不可删改；GitHub queued/cancelled 不记为代码失败或通过。本轮 R8 的原版/桌面实际收据已归档到 [STATUS](../STATUS.md) 与 [本轮证据](../../results/integration/2026-10-18-objective-desktop/README.md)；本页只维护后续 S1–S5 的实现依赖，不改变历史失败或原版/目标 OS 的资格边界。
 
 [PLAN]: PLAN.md
 [ABI]: ../NATIVE_ABI.md

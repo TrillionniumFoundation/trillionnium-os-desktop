@@ -6,11 +6,13 @@ speaks the existing, fixed Agentd v2 JSON-over-UDS control wire. Its default API
 bounded metadata and omits the upstream workspace paths, signing inputs,
 session-ingress address, and arbitrary payloads.
 
-**当前证据：**Linux host client 的真实 Unix socket fixture、负例和固定协议核验已有各自记录；此外，固定原版 Hepta f8c9419df6ddeb36ff8b522a50219981fb8d9345 → 持续 Session worker → 同一个真实 Rust Shell 窗口，已在 R6 完成两轮六阶段只读运行。每轮保留原版 8 项与 Session 8 项断言、6 张成功 PNG、精确进程/代际来源与逐图审查，见 [R6 完整交付索引](../../tests/integration/hepta/evidence/2026-10-17-r6/README.md)、[持续 Session 实录](../../tests/integration/hepta/evidence/2026-10-17-original-session-runtime/README.md) 和[真实 Shell 窗口归档](../../tests/ui/evidence/2026-10-17-original-hepta-shell/README.md)。独立 ARM gate 及 ARM 持续 Session 的历史记录仍保留自己的架构、被测源码与产物来源。
+**当前证据（2026-10-18 UTC）：**固定原版 Hepta `f8c9419df6ddeb36ff8b522a50219981fb8d9345` 已实际完成两轮隔离测试 issuer 的签名 ObjectiveStart 进程门禁，每轮执行 7 次明确提交尝试，10 项核心检查通过。后一轮还完成已知 run 的三个持续 Session 阶段：当前 `admitted` 非终态、旧端点失效后的完整 stale 历史、显式替换 Session 后的 `projection_missing`；同一个真实 Rust Shell 保留 3 张 PNG。准入收据与停止 owner 后以只读文件经原始公共 API 校验的 journal 记录绑定，实际源码、ELF、日志与逐图审查见[本轮原版目标与桌面实录](../../results/integration/2026-10-18-objective-desktop/README.md)。这是 Linux host 上测试 issuer 的原版认证与持久准入资格；生产 issuer、在线持久结果核对和设备效果仍未闭合。
 
-这些运行发生于 2026-10-17 UTC。PR #189 归档的后续工作对源码、快照和像素作了独立复核，没有重新启动原版运行时。源码已通过 [PR #187](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/187) 进入主干，该次 host/软件 Wayland 验证另见[集成索引](../../results/integration/2026-10-18-audit-followthrough/README.md)；其中 scripted fixture 的 Hepta 页布局不能写成原版 Agentd 新运行。原始 receipt 中的 ELF 摘要与本轮审查可取得的文件分别记录，不把源码/归档复核写成一次新的 ELF 执行。
+**R6 历史证据：**Linux host client 的真实 Unix socket fixture、负例和固定协议核验保留各自记录；固定原版 Hepta → 持续 Session worker → 同一个真实 Rust Shell 窗口在 R6 完成两轮六阶段只读运行。每轮保留原版 8 项与 Session 8 项断言、6 张成功 PNG、精确进程/代际来源与逐图审查，见 [R6 完整交付索引](../../tests/integration/hepta/evidence/2026-10-17-r6/README.md)、[持续 Session 实录](../../tests/integration/hepta/evidence/2026-10-17-original-session-runtime/README.md) 和[真实 Shell 窗口归档](../../tests/ui/evidence/2026-10-17-original-hepta-shell/README.md)。独立 ARM gate 及 ARM 持续 Session 的历史记录仍保留自己的架构、被测源码与产物来源。
 
-默认配置和 Session 仍使用只读观察客户端。R7 新增默认关闭的 `objective-transport` feature，R8 增加使用该 feature 的 `hepta-submit` 可执行程序；可信调用者从 stdin 提供外部已签发的原始 ObjectiveStart 信封，并独立给定端点、AgentId、spawn、UID/PID 与 request ID。程序输出一条有界的结构化收据，不签发信封、不重试。已知 run 可由可信 launcher 通过 `TRILL_HEPTA_RUN_ID` 交给 Session 的独立只读投影。原始 owner 准入的隔离进程门禁见 [ORIGINAL_OBJECTIVE](../../tests/integration/hepta/ORIGINAL_OBJECTIVE.md)，其实际执行资格须绑定对应记录。模型 turn、生产 issuer 接入、durable K↔D 的桌面接合、HOS2 delivery、设备效果和 Asterinas 运行仍需各自验收。[剩余门禁](../../tests/integration/hepta/EVIDENCE.md)继续分别记录。
+上述 R6 运行发生于 2026-10-17 UTC。PR #189 归档的后续工作对源码、快照和像素作了独立复核，没有重新启动原版运行时。R6 源码已通过 [PR #187](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/187) 进入主干，该次 host/软件 Wayland 验证另见[集成索引](../../results/integration/2026-10-18-audit-followthrough/README.md)；其中 scripted fixture 的 Hepta 页布局不能写成原版 Agentd 新运行。原始 receipt 中的 ELF 摘要与该次审查可取得的文件分别记录，不把源码/归档复核写成一次新的 ELF 执行。
+
+默认配置和 Session 仍使用只读观察客户端。R7 新增默认关闭的 `objective-transport` feature，R8 增加使用该 feature 的 `hepta-submit` 可执行程序；可信调用者从 stdin 提供外部已签发的原始 ObjectiveStart 信封，并独立给定端点、AgentId、spawn、UID/PID 与 request ID。程序输出一条有界的结构化收据，不签发信封、不重试。已知 run 可由可信 launcher 通过 `TRILL_HEPTA_RUN_ID` 交给 Session 的独立只读投影。原始 owner 准入的隔离进程门禁及复跑命令见 [ORIGINAL_OBJECTIVE](../../tests/integration/hepta/ORIGINAL_OBJECTIVE.md)，实际执行资格绑定上述本轮实录。模型 turn、生产 issuer 接入、durable K↔D 的桌面接合、HOS2 delivery、设备效果和 Asterinas 运行仍需各自验收。[剩余门禁](../../tests/integration/hepta/EVIDENCE.md#remaining-acceptance-gates)和 [S1–S5 下一切片](../../docs/agents/R8_NEXT_SLICE.md)继续分别记录。
 
 | Surface | Current behavior |
 | --- | --- |
@@ -40,8 +42,10 @@ retains `SubmitUnknown` after any unresolved delivery. Its real local socket
 tests use scripted fixtures and provide no original-owner admission evidence.
 The separate original process probe uses a disposable explicitly enrolled test
 issuer and the unchanged original Fleet/Supervisor/Agentd. Its admission,
-durable-journal and restart assertions must pass in an actual process run;
-parser tests or successful compilation alone do not qualify them.
+durable-journal and restart assertions passed in the two actual process runs
+linked above. Parser tests or successful compilation alone do not qualify
+those assertions. Stopped-owner journal inspection is an isolated evidence
+check, not an online product reconciliation service.
 
 This observer performs host I/O outside the organ boundary. It is **not** an
 implementation of `TrustedReadOnlyOrganV1`, whose handler must not perform I/O or

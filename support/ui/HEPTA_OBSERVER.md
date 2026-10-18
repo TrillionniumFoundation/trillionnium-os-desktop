@@ -2,9 +2,11 @@
 
 This slice connects the Rust host Session to the existing Hepta Agentd v2
 control endpoint. The native Shell renders the resulting typed metadata.
-Conversation remains a local draft: authenticated objective submission has
-not been assembled. A successful observation is not an AI task result or
-a device-effect receipt.
+Conversation remains a local draft, with no Shell submission command. The
+separate default-off [trusted ObjectiveStart command](../../services/hepta-os/OBJECTIVE_TRANSPORT.md#trusted-single-attempt-command)
+can carry a pre-existing issuer envelope to the original owner. Session and
+Shell receive only read-only observations. A successful observation is not
+an AI task result or a device-effect receipt.
 
 ## Ownership and fixed sources
 
@@ -17,7 +19,7 @@ exact upstream source hashes and supported read protocol.
 
 | Component | Responsibility | Excluded authority |
 | --- | --- | --- |
-| A07 `services/hepta-os` | Validate the fixed v2 responses, peer credentials, identity, generation, request correlation and event cursor | No generic RPC, objective ingress, run creation, cancellation, terminal write or effect ledger |
+| A07 `services/hepta-os` default observer profile | Validate the fixed v2 responses, peer credentials, identity, generation, request correlation and event cursor | No generic RPC, objective ingress, run creation, cancellation, terminal write or effect ledger in this read-only profile |
 | A10 `ui/session/src/hepta.rs` | Explicit launcher configuration, one background observer, bounded volatile display cache | No AuthBus signing, synthesized D/K IDs or HOS2 budget |
 | A10 `ui/core/src/hepta.rs` | Serializable read-only Session → Shell projection | No Agentd path, raw event payload or transport method |
 | A10 `ui/shell/src/hepta_panel.rs` | Connection state, last successful observation and recent event metadata | No renderer-side Agentd connection or task submission |
@@ -295,8 +297,8 @@ round trips. A bounded channel handshake checks actual Bridge timestamp
 ordering without a scheduling sleep. The real Session UDS fixture checks
 that a held run read contributes at least its hold time to the reported age.
 An egui runtime-page test checks the visible run fields and unknown-state
-wording. These are scripted host and widget tests; the separate original
-Agentd probe must still establish real owner compatibility.
+wording. These are scripted host and widget tests, separate from the
+original-owner results recorded below.
 
 The cancellation lifecycle regression uses an already-built Rust test child
 and a private, bounded UDS readiness handshake. It exercises the ordinary
@@ -369,11 +371,52 @@ first-layout marker remains one-shot; all six images require independent
 visual review. An acknowledgment file coordinates the lifecycle and is not
 a renderer or original-runtime receipt.
 
-The next write-side step belongs to A07/A05: assemble the actual pinned
-`state_control → objective_runtime::ObjectiveRuntimeHost::submit` entry with
-its existing authorized signing/owner context, then
-expose a narrow typed submission interface with owner-issued receipt
-identity and uncertain-delivery reconciliation. Do not turn the local
-composer, event metadata or a provider message into a success receipt.
+## Recorded original-owner run projection
+
+The [R8 ObjectiveStart and desktop result](../../results/integration/2026-10-18-objective-desktop/README.md)
+records the separate trusted-host ingress qualification and a known run
+observed through the real Session and one continuous native Shell. Its three
+held phases are a compiled run projected as admitted, old-endpoint rejection
+with unchanged run history, and an explicitly replaced Session whose current
+owner projection lacks that same run ID. The latter remains unknown even
+when durable admission is established separately by the original owner.
+
+The source-bound capture includes actual Session snapshots before and after
+each frame. Stale history preserves the run sample and attempt timestamp
+while its independent age advances. Replacement null has no prior sample,
+omits sample age and retains gap=false. These are observations of the
+original owner; no host task is synthesized from the run ID.
+
+Those frames qualify the English Runtime card on a private Linux X11 display.
+The Chinese suffix in the submission-unavailable label has missing glyphs,
+so they do not qualify CJK fonts or IME. Their owner phase and terminal flag
+also do not qualify model execution, HOS2 or desktop/mobile device effects.
+The R6 six-phase capture and the scripted fixture results above retain their
+own original source and execution scope.
+
+## Next production issuer and provider handoff
+
+The independent `hepta-submit` path already targets the pinned compiled
+`state_control → objective_runtime::ObjectiveRuntimeHost::submit` entry.
+The next A07/A05 step is to connect the existing production AuthBus issuer
+and its trusted provider/launcher to that boundary, including the original
+owner's recovery contract. The local draft composer remains unsent until an
+explicitly designed and authorized application handoff exists.
+
+The trusted caller must retain the original raw signed envelope before
+starting the command, supply its exact endpoint/agent/spawn/UID/PID/request
+identity, close stdin, and bound the whole child process lifetime. Structural
+parsing does not authenticate the input; issuer trust, signatures, replay,
+expiry, profile and durable publication remain with the original owners.
+An interrupted process or missing/partial stdout preserves uncertainty.
+Read-only `run_status: null` cannot reconcile it into non-admission, and a
+new spawn or fresh signature is not an automatic retry mechanism. Preserve
+intent through the original recovery contract without adding a UI or Session
+submission ledger.
+
+For observation, the launcher can pass one already-known run ID and the four
+explicit observer endpoint values to Session as documented above. A provider
+message, readiness label or local draft cannot serve as an owner-issued
+admission receipt or a device-effect receipt.
 The undeclared `objective_ingress.rs` file is not the compiled Agentd entry;
 see A07's [fixed-source review](../../tests/integration/hepta/LIVE_SOURCE_REVIEW.md).

@@ -1,6 +1,25 @@
 # 当前状态
 
-## 2026-10-18：本轮集成与有效执行证据
+## 2026-10-18 R8：可信提交、原版 run 与真实桌面
+
+**当前增量已实际完成独立可信 CLI → 原版 ObjectiveStart 准入/journal → 持续 Session → 同一 Rust Shell 三阶段窗口。** 本节绑定实际本地输入 `25298f5d87cf3db90deefe9c0405ecd241dc6581` 与同树发布 [`ca5e7d8473690df1bf7636de0808e58414c40abe`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/ca5e7d8473690df1bf7636de0808e58414c40abe)，tree `9584997da412dd10c0960f69011b40a4b26d2862`；交付 [PR #192](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/192) 完整纳入 #190 工作区候选与 #191 主干修复的开发历史。固定原版 Hepta 仍为 `f8c9419df6ddeb36ff8b522a50219981fb8d9345`，源码、manifest 和 lock 未改。详见 [本轮完整证据](../results/integration/2026-10-18-objective-desktop/README.md)。
+
+| 当前交付 | 实际结果与边界 |
+| --- | --- |
+| Rust 聊天/任务工作区 | 纳入 typed 本地草稿、精确 Session/task 上下文和私有 v2 保存/恢复；新集成树完整 UI workspace 125 passed / 0 failed / 2 既有 CJK ignored，严格 Clippy、fmt 与实际 bins 构建通过。本轮新增 PNG 只验 Runtime 页，不外推全部工作区输入行为。 |
+| 可信单次 ObjectiveStart | 默认关闭的 objective-transport feature 提供独立 hepta-submit CLI，显式信任端点/AgentId/spawn/UID/PID，原封套从 stdin 输入；有限收据、一次传输、不自动重试。冻结服务输入 41 项通过，随后新集成 CLI 实际重建并绑定原版运行。Shell/Session 仍无提交命令。 |
+| 原版认证与持久准入 | 新构建的原版 Agentd 和外部 probe 实际执行两轮，每轮 10 核心检查 / 7 次明确提交尝试；包括合法准入、exact replay、explicit abstain、伪签名、body/spawn 隔离、测试 issuer 撤销、原版重启与原 journal/receipt 绑定。隔离测试 issuer 通过不等于生产签发来源已接通。 |
+| 已知 run 到真实窗口 | 后一轮增加三个 Session 阶段；同一 Shell PID 323732 / XID 2097155 的三张真实 PNG 已逐图检查。界面从 observed 到保留旧历史的 stale，再到新 owner 的 projection_missing/unknown；不会把 RunStatus null 当作未受理或完成。 |
+| run 新鲜度 | 使用 Session 单调样本年龄 + 实际 IPC RTT + 真正接收至绘制的时间上界，组合值须 ≤7,000 ms；首个排队旧帧与墙钟回拨不能让样本重新变新。既有 runtime health 仍按其原双时钟规则检查。 |
+| A06 / CI 修复 | #191 只修 cfg(ktest) 奇数周期 oracle，生产函数字节不变。完整客体 aster-core 160/160；OSTD 框架报告 221 passed，其中原 VMX/EPT 有 3 个 soft skip，至少 218 个实际执行。#191 merge 的三项 CI 已 completed/success，原始记录见本轮索引；不将它们转记给 #192 的不同 head。 |
+
+**当前范围：**这是一条 Linux host 上真实的原版准入与可见投影链路。截图的英文 Runtime 卡片通过；顶部中文后缀在该隔离字体环境出现缺字方框，CJK/IME 和整机显示资格未通过本轮验证。原版回执中的 admitted 不代表模型 turn 或设备完成。生产 issuer 接入、原 owner 在线持久结果核对、durable K↔D、最终使用授权、撤销/确认退役、HOS2 四个待实现操作、Asterinas G1/G2、显示/输入和移动适配继续推进，具体实现顺序与完成判据见 [R8_NEXT_SLICE](agents/R8_NEXT_SLICE.md)。
+
+下面各历史节保留各自的实际源码、日期、计数和失败；其中“本轮”“当前”“尚未”只描述该历史轮次，不覆盖本节新增结果。根 README 继续为 0 字节。
+
+---
+
+## 2026-10-18 上一轮 audit-followthrough：集成与有效执行证据
 
 本轮保留 [文档 #186](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/186) 在 main 66ade4cbbe1e8d8319652d870c6c773c5efd8206 建立的 R6 实录和 A00–A10 文档盘点。[A02/A03 #185](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/185) 已合入 4339acedd2d433f838c7b5fd445709c539043a77；[A07/A10 #187](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/187) 随后正式合入 main 9a858dceb3a0ede6c3a021b9d16f3bf41e8503d5，保留原 owner 和 #157 的完整开发历史。下面分别记录本轮实际执行、匹配输入后的证据复用、历史实录复核和 A06 的实际客体验证，完整来源见[本轮证据索引](../results/integration/2026-10-18-audit-followthrough/README.md)。
 

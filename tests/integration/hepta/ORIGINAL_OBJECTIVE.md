@@ -13,6 +13,25 @@ for the next execution/context step; `WaitingForContext` is not a wire phase at
 the pinned revision. No model turn, Operations dispatch, canonical intelligence
 invocation, device effect or historical run resumption is qualified here.
 
+## Executed qualification: 2026-10-18 UTC
+
+The [original objective and desktop result](../../../results/integration/2026-10-18-objective-desktop/README.md)
+records two actual Linux host runs of this gate. The core-only run and the
+Session/Shell run each passed all ten core checks with seven explicit submission
+attempts. The second additionally completed the three Session phases below and
+kept one native Shell alive for three captured PNGs. The result binds each
+original/desktop build and ELF to its actual runtime, with capture and visual
+review recorded separately. These local runs do not grant a different source
+or a pending GitHub CI run the same qualification.
+
+Both runs used an isolated test issuer explicitly enrolled in the original
+owner. `production_issuer`, `model_turn`, `operations_dispatch`,
+`canonical_intelligence`, `device_effect` and `historical_run_resumed` remain
+false. The stopped-owner journal check validates original durable publication;
+it is not an online product recovery service. Production trust, durable unknown
+reconciliation, restricted OS effects and Asterinas G1/G2 remain in
+[S1–S5](../../../docs/agents/R8_NEXT_SLICE.md).
+
 ## Files and responsibilities
 
 | File | Responsibility |

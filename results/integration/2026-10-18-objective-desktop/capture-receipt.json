@@ -1,0 +1,1096 @@
+{
+  "evidence_class": "original_objective_continuous_session_native_shell_capture",
+  "started_unix_ms": 1792305391978,
+  "capture_passed": true,
+  "original_hepta_pin": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+  "source_provenance": {
+    "harness_commit": "25298f5d87cf3db90deefe9c0405ecd241dc6581",
+    "harness_tree": "9584997da412dd10c0960f69011b40a4b26d2862",
+    "production_ui_commit": "25298f5d87cf3db90deefe9c0405ecd241dc6581",
+    "production_source_tree": "9584997da412dd10c0960f69011b40a4b26d2862",
+    "unchanged_ui_subtree": "42857c1bda95681f0c482fef8eb8da0f53979020",
+    "ui_lock_sha256": "e484809d742a264a296046b0d272e843d167b02b634232e793ef702757cc70e1",
+    "tracked_sources": {
+      "harness": {
+        "path": "tests/ui/probe-original-objective-shell.py",
+        "git_blob": "2300cfb6c069bc5c317c48b3e56eb04ddaec18ff",
+        "sha256": "c1e1c94f42f0a30cd694f458259667ca9ec111503e269325acf5e976a4d3af32",
+        "bytes": 41554
+      },
+      "reviewed_helpers": {
+        "path": "tests/ui/probe-original-hepta-shell.py",
+        "git_blob": "d7d4889736f26bdb9bde155c7987a6ef20e9718a",
+        "sha256": "971c8a92ca2fe205784f2ebde3c4dceaf4615527f20df256071995157aa68265",
+        "bytes": 35068
+      },
+      "pixels": {
+        "path": "tests/ui/x11-ime-client.py",
+        "git_blob": "6cf6b4405929a51436472e64133dc9f7020469f3",
+        "sha256": "784ecf35860b6e6c2bde73b650a5da00261f57a864a0c4fe0fa19f01a8c5e1d0",
+        "bytes": 17316
+      },
+      "guard": {
+        "path": "tests/integration/hepta/run_original_agentd.py",
+        "git_blob": "b0b04b01a28eb1b4ac08c38c47f6c14e1c7e4ca9",
+        "sha256": "21dd4a2e0621240a75f5ce37bad93da0a37352fbaa78554a50e048abe6a45fd0",
+        "bytes": 30386
+      }
+    },
+    "binaries": {
+      "trill-shell": {
+        "path": "/workspace/scratch/499c7902de8e/implementation-tools/a10-target/debug/trill-shell",
+        "bytes": 142690776,
+        "sha256": "93ee96b6ad1d1bcf5d3ddfabff3eacc1b7e49a4d894274c8bcea888b7bab0fdb"
+      }
+    },
+    "build_receipt_sha256": "73dd9d9b53a95d05edc0c5778de13c7bf619f4274c7d5d3dc27f62dac5dd8f6f",
+    "font_source": "unchanged_eframe_embedded_fonts_no_external_font_override",
+    "original_and_session_elf_binding": "separate_original_objective_probe_report",
+    "host_dependencies_sha256": "490a535321c70765695d667353f1f5d4e6024ff163325a955b327b2ee44b6350"
+  },
+  "visual_review_required": true,
+  "visual_review_completed_by_capture": false,
+  "layout_marker_scope": "first_runtime_layout_only_known_run_pixels_require_visual_review",
+  "capture_api": "XGetImage_actual_private_root_framebuffer",
+  "original_agentd_managed_by": "original_objective_probe",
+  "session_managed_by": "original_objective_probe",
+  "shell_processes_started": 1,
+  "synthetic_agentd_fixture_used": false,
+  "renderer_memory_injected": false,
+  "objective_submitted_by_capture": false,
+  "model_called": false,
+  "device_effect_tested": false,
+  "physical_display_tested": false,
+  "keyboard_input_tested": false,
+  "language_scope": "English_Runtime_card",
+  "cjk_ime_tested": false,
+  "font_source": "unchanged_eframe_embedded_fonts",
+  "shared_pid_namespace": true,
+  "isolated_network_mounts_ipc_uts": true,
+  "child_leader_parent_death_signal": "SIGKILL",
+  "arbitrary_descendant_parent_death_qualification": false,
+  "phases": [
+    {
+      "sequence": 1,
+      "phase": "compiled_run_projected",
+      "started_unix_ms": 1792305393256,
+      "phase_file": "phase-1-compiled_run_projected.json",
+      "phase_sha256": "92ae29c3a319a05c121972b64c9e9e41649cfbfe27fbc13d3a1d03b1d5234dd9",
+      "session_pid": 323665,
+      "session_instance": "5982ef6aeaa50d9ad7645cd2c5ebec56",
+      "shell_pid": 323732,
+      "shell_window_xid": "2097155",
+      "before": {
+        "file": "phase-1-compiled_run_projected-before.snapshot.json",
+        "bytes": 1754,
+        "sha256": "adcd82f0376f373f0b6e81bc0f1b89e8be49106e15060182a499b8931e2cd6cf",
+        "started_unix_ms": 1792305393285,
+        "finished_unix_ms": 1792305393380,
+        "transport_elapsed_ms_rounded_up": 96,
+        "peer_pid": 323665,
+        "peer_uid": 0,
+        "peer_gid": 0,
+        "session_instance": "5982ef6aeaa50d9ad7645cd2c5ebec56",
+        "hepta": {
+          "connection": "observed",
+          "last_attempt_unix_ms": 1792305393001,
+          "error_code": null,
+          "last_observation": {
+            "sampled_unix_ms": 1792305393001,
+            "agent_id": "33333333-3333-4333-8333-333333333333",
+            "spawn_generation": 1,
+            "current_generation": 2,
+            "health": {
+              "ready": true,
+              "promotion_ready": true,
+              "fenced": false,
+              "lifecycle": "running",
+              "process_id": 323523
+            },
+            "capabilities": [
+              {
+                "id": "automation.calendar_v2",
+                "major": 1,
+                "minor": 0
+              },
+              {
+                "id": "cognitive.context.revalidate",
+                "major": 1,
+                "minor": 0
+              },
+              {
+                "id": "objective.start",
+                "major": 1,
+                "minor": 0
+              },
+              {
+                "id": "run.lifecycle",
+                "major": 1,
+                "minor": 1
+              }
+            ],
+            "capabilities_truncated": false,
+            "events": [
+              {
+                "cursor": 1,
+                "kind": "bootstrapped",
+                "generation": null,
+                "lifecycle": null
+              },
+              {
+                "cursor": 2,
+                "kind": "lifecycle",
+                "generation": 1,
+                "lifecycle": "starting"
+              },
+              {
+                "cursor": 3,
+                "kind": "app_server_ready",
+                "generation": null,
+                "lifecycle": null
+              },
+              {
+                "cursor": 4,
+                "kind": "lifecycle",
+                "generation": 2,
+                "lifecycle": "running"
+              }
+            ],
+            "events_omitted_from_view": 0,
+            "next_cursor": 4,
+            "latest_cursor": 4,
+            "history_gap": false,
+            "source_changed": false
+          },
+          "run": {
+            "run_id": "run.desktop-compiled",
+            "connection": "observed",
+            "last_attempt_unix_ms": 1792305393007,
+            "error_code": null,
+            "last_observation": {
+              "sampled_unix_ms": 1792305393001,
+              "observation_sequence": 4,
+              "run_id": "run.desktop-compiled",
+              "revision": 1,
+              "phase": "admitted",
+              "authority_epoch": 1,
+              "generation": 2,
+              "terminal_observed": false,
+              "idempotent": false
+            },
+            "sample_age_at_snapshot_ms": 379,
+            "observation_gap": false
+          }
+        }
+      },
+      "capture_started_unix_ms": 1792305395892,
+      "screenshot": {
+        "file": "phase-1-compiled_run_projected.png",
+        "width": 1440,
+        "height": 1000,
+        "bytes": 128063,
+        "sha256": "724bcd24eb8d6462a26475ac99a4847d93070a567f1f1cbb634ce0c86a4d4586",
+        "capture_api": "XGetImage_actual_private_root_framebuffer",
+        "visual_review_required": true
+      },
+      "capture_finished_unix_ms": 1792305396106,
+      "after": {
+        "file": "phase-1-compiled_run_projected-after.snapshot.json",
+        "bytes": 1753,
+        "sha256": "b47f982e26dadd3484d7a731ab6dfd45605da830da5cfe0ac1886f94468c04e3",
+        "started_unix_ms": 1792305396106,
+        "finished_unix_ms": 1792305396196,
+        "transport_elapsed_ms_rounded_up": 90,
+        "peer_pid": 323665,
+        "peer_uid": 0,
+        "peer_gid": 0,
+        "session_instance": "5982ef6aeaa50d9ad7645cd2c5ebec56",
+        "hepta": {
+          "connection": "observed",
+          "last_attempt_unix_ms": 1792305396098,
+          "error_code": null,
+          "last_observation": {
+            "sampled_unix_ms": 1792305396098,
+            "agent_id": "33333333-3333-4333-8333-333333333333",
+            "spawn_generation": 1,
+            "current_generation": 2,
+            "health": {
+              "ready": true,
+              "promotion_ready": true,
+              "fenced": false,
+              "lifecycle": "running",
+              "process_id": 323523
+            },
+            "capabilities": [
+              {
+                "id": "automation.calendar_v2",
+                "major": 1,
+                "minor": 0
+              },
+              {
+                "id": "cognitive.context.revalidate",
+                "major": 1,
+                "minor": 0
+              },
+              {
+                "id": "objective.start",
+                "major": 1,
+                "minor": 0
+              },
+              {
+                "id": "run.lifecycle",
+                "major": 1,
+                "minor": 1
+              }
+            ],
+            "capabilities_truncated": false,
+            "events": [
+              {
+                "cursor": 1,
+                "kind": "bootstrapped",
+                "generation": null,
+                "lifecycle": null
+              },
+              {
+                "cursor": 2,
+                "kind": "lifecycle",
+                "generation": 1,
+                "lifecycle": "starting"
+              },
+              {
+                "cursor": 3,
+                "kind": "app_server_ready",
+                "generation": null,
+                "lifecycle": null
+              },
+              {
+                "cursor": 4,
+                "kind": "lifecycle",
+                "generation": 2,
+                "lifecycle": "running"
+              }
+            ],
+            "events_omitted_from_view": 0,
+            "next_cursor": 4,
+            "latest_cursor": 4,
+            "history_gap": false,
+            "source_changed": false
+          },
+          "run": {
+            "run_id": "run.desktop-compiled",
+            "connection": "observed",
+            "last_attempt_unix_ms": 1792305396104,
+            "error_code": null,
+            "last_observation": {
+              "sampled_unix_ms": 1792305396099,
+              "observation_sequence": 7,
+              "run_id": "run.desktop-compiled",
+              "revision": 1,
+              "phase": "admitted",
+              "authority_epoch": 1,
+              "generation": 2,
+              "terminal_observed": false,
+              "idempotent": false
+            },
+            "sample_age_at_snapshot_ms": 98,
+            "observation_gap": false
+          }
+        }
+      },
+      "capture_complete": true,
+      "visual_review_required": true,
+      "finished_unix_ms": 1792305396228,
+      "acknowledged_unix_ms": 1792305396232
+    },
+    {
+      "sequence": 2,
+      "phase": "old_endpoint_run_stale",
+      "started_unix_ms": 1792305399253,
+      "phase_file": "phase-2-old_endpoint_run_stale.json",
+      "phase_sha256": "2f0957e2d2a4d21e74d2eff1d8a645d8021f7fb1d9f2ae159d741cce58b1eb26",
+      "session_pid": 323665,
+      "session_instance": "5982ef6aeaa50d9ad7645cd2c5ebec56",
+      "shell_pid": 323732,
+      "shell_window_xid": "2097155",
+      "before": {
+        "file": "phase-2-old_endpoint_run_stale-before.snapshot.json",
+        "bytes": 1778,
+        "sha256": "5b0f36cd63ef17b13bc445b9751040f07ac035774999763afff991811d538784",
+        "started_unix_ms": 1792305399270,
+        "finished_unix_ms": 1792305399319,
+        "transport_elapsed_ms_rounded_up": 50,
+        "peer_pid": 323665,
+        "peer_uid": 0,
+        "peer_gid": 0,
+        "session_instance": "5982ef6aeaa50d9ad7645cd2c5ebec56",
+        "hepta": {
+          "connection": "stale",
+          "last_attempt_unix_ms": 1792305399112,
+          "error_code": "protocol_mismatch",
+          "last_observation": {
+            "sampled_unix_ms": 1792305396098,
+            "agent_id": "33333333-3333-4333-8333-333333333333",
+            "spawn_generation": 1,
+            "current_generation": 2,
+            "health": {
+              "ready": true,
+              "promotion_ready": true,
+              "fenced": false,
+              "lifecycle": "running",
+              "process_id": 323523
+            },
+            "capabilities": [
+              {
+                "id": "automation.calendar_v2",
+                "major": 1,
+                "minor": 0
+              },
+              {
+                "id": "cognitive.context.revalidate",
+                "major": 1,
+                "minor": 0
+              },
+              {
+                "id": "objective.start",
+                "major": 1,
+                "minor": 0
+              },
+              {
+                "id": "run.lifecycle",
+                "major": 1,
+                "minor": 1
+              }
+            ],
+            "capabilities_truncated": false,
+            "events": [
+              {
+                "cursor": 1,
+                "kind": "bootstrapped",
+                "generation": null,
+                "lifecycle": null
+              },
+              {
+                "cursor": 2,
+                "kind": "lifecycle",
+                "generation": 1,
+                "lifecycle": "starting"
+              },
+              {
+                "cursor": 3,
+                "kind": "app_server_ready",
+                "generation": null,
+                "lifecycle": null
+              },
+              {
+                "cursor": 4,
+                "kind": "lifecycle",
+                "generation": 2,
+                "lifecycle": "running"
+              }
+            ],
+            "events_omitted_from_view": 0,
+            "next_cursor": 4,
+            "latest_cursor": 4,
+            "history_gap": false,
+            "source_changed": false
+          },
+          "run": {
+            "run_id": "run.desktop-compiled",
+            "connection": "stale",
+            "last_attempt_unix_ms": 1792305396104,
+            "error_code": "protocol_mismatch",
+            "last_observation": {
+              "sampled_unix_ms": 1792305396099,
+              "observation_sequence": 7,
+              "run_id": "run.desktop-compiled",
+              "revision": 1,
+              "phase": "admitted",
+              "authority_epoch": 1,
+              "generation": 2,
+              "terminal_observed": false,
+              "idempotent": false
+            },
+            "sample_age_at_snapshot_ms": 3221,
+            "observation_gap": true
+          }
+        }
+      },
+      "capture_started_unix_ms": 1792305401835,
+      "screenshot": {
+        "file": "phase-2-old_endpoint_run_stale.png",
+        "width": 1440,
+        "height": 1000,
+        "bytes": 145229,
+        "sha256": "e68e2d7ec2b038d69d650774c0e15b87a09bc131ebc66d12613f7c6941b04a8a",
+        "capture_api": "XGetImage_actual_private_root_framebuffer",
+        "visual_review_required": true
+      },
+      "capture_finished_unix_ms": 1792305402014,
+      "after": {
+        "file": "phase-2-old_endpoint_run_stale-after.snapshot.json",
+        "bytes": 1778,
+        "sha256": "e3d14b6ab9005926ce431850b026e737dfedc3fb2e9792feaf43864a28954eec",
+        "started_unix_ms": 1792305402014,
+        "finished_unix_ms": 1792305402041,
+        "transport_elapsed_ms_rounded_up": 28,
+        "peer_pid": 323665,
+        "peer_uid": 0,
+        "peer_gid": 0,
+        "session_instance": "5982ef6aeaa50d9ad7645cd2c5ebec56",
+        "hepta": {
+          "connection": "stale",
+          "last_attempt_unix_ms": 1792305401118,
+          "error_code": "protocol_mismatch",
+          "last_observation": {
+            "sampled_unix_ms": 1792305396098,
+            "agent_id": "33333333-3333-4333-8333-333333333333",
+            "spawn_generation": 1,
+            "current_generation": 2,
+            "health": {
+              "ready": true,
+              "promotion_ready": true,
+              "fenced": false,
+              "lifecycle": "running",
+              "process_id": 323523
+            },
+            "capabilities": [
+              {
+                "id": "automation.calendar_v2",
+                "major": 1,
+                "minor": 0
+              },
+              {
+                "id": "cognitive.context.revalidate",
+                "major": 1,
+                "minor": 0
+              },
+              {
+                "id": "objective.start",
+                "major": 1,
+                "minor": 0
+              },
+              {
+                "id": "run.lifecycle",
+                "major": 1,
+                "minor": 1
+              }
+            ],
+            "capabilities_truncated": false,
+            "events": [
+              {
+                "cursor": 1,
+                "kind": "bootstrapped",
+                "generation": null,
+                "lifecycle": null
+              },
+              {
+                "cursor": 2,
+                "kind": "lifecycle",
+                "generation": 1,
+                "lifecycle": "starting"
+              },
+              {
+                "cursor": 3,
+                "kind": "app_server_ready",
+                "generation": null,
+                "lifecycle": null
+              },
+              {
+                "cursor": 4,
+                "kind": "lifecycle",
+                "generation": 2,
+                "lifecycle": "running"
+              }
+            ],
+            "events_omitted_from_view": 0,
+            "next_cursor": 4,
+            "latest_cursor": 4,
+            "history_gap": false,
+            "source_changed": false
+          },
+          "run": {
+            "run_id": "run.desktop-compiled",
+            "connection": "stale",
+            "last_attempt_unix_ms": 1792305396104,
+            "error_code": "protocol_mismatch",
+            "last_observation": {
+              "sampled_unix_ms": 1792305396099,
+              "observation_sequence": 7,
+              "run_id": "run.desktop-compiled",
+              "revision": 1,
+              "phase": "admitted",
+              "authority_epoch": 1,
+              "generation": 2,
+              "terminal_observed": false,
+              "idempotent": false
+            },
+            "sample_age_at_snapshot_ms": 5939,
+            "observation_gap": true
+          }
+        }
+      },
+      "capture_complete": true,
+      "visual_review_required": true,
+      "finished_unix_ms": 1792305402058,
+      "acknowledged_unix_ms": 1792305402063
+    },
+    {
+      "sequence": 3,
+      "phase": "replacement_run_projection_missing",
+      "started_unix_ms": 1792305402215,
+      "phase_file": "phase-3-replacement_run_projection_missing.json",
+      "phase_sha256": "c597b12ac1d08e0307f41dcc389b38dee43bb6bc650cd773201ccf23a56b917b",
+      "session_pid": 323923,
+      "session_instance": "9e58476c6fb8dc00a30d46379a488460",
+      "shell_pid": 323732,
+      "shell_window_xid": "2097155",
+      "before": {
+        "file": "phase-3-replacement_run_projection_missing-before.snapshot.json",
+        "bytes": 1554,
+        "sha256": "0fd8cfcc6d6ed422099496395dfdeb9b956daf4ec228b84b0c4381fa26a960b2",
+        "started_unix_ms": 1792305402235,
+        "finished_unix_ms": 1792305402304,
+        "transport_elapsed_ms_rounded_up": 69,
+        "peer_pid": 323923,
+        "peer_uid": 0,
+        "peer_gid": 0,
+        "session_instance": "9e58476c6fb8dc00a30d46379a488460",
+        "hepta": {
+          "connection": "observed",
+          "last_attempt_unix_ms": 1792305402113,
+          "error_code": null,
+          "last_observation": {
+            "sampled_unix_ms": 1792305402113,
+            "agent_id": "33333333-3333-4333-8333-333333333333",
+            "spawn_generation": 5,
+            "current_generation": 6,
+            "health": {
+              "ready": true,
+              "promotion_ready": true,
+              "fenced": false,
+              "lifecycle": "running",
+              "process_id": 323803
+            },
+            "capabilities": [
+              {
+                "id": "automation.calendar_v2",
+                "major": 1,
+                "minor": 0
+              },
+              {
+                "id": "cognitive.context.revalidate",
+                "major": 1,
+                "minor": 0
+              },
+              {
+                "id": "objective.start",
+                "major": 1,
+                "minor": 0
+              },
+              {
+                "id": "run.lifecycle",
+                "major": 1,
+                "minor": 1
+              }
+            ],
+            "capabilities_truncated": false,
+            "events": [
+              {
+                "cursor": 1,
+                "kind": "bootstrapped",
+                "generation": null,
+                "lifecycle": null
+              },
+              {
+                "cursor": 2,
+                "kind": "lifecycle",
+                "generation": 5,
+                "lifecycle": "starting"
+              },
+              {
+                "cursor": 3,
+                "kind": "app_server_ready",
+                "generation": null,
+                "lifecycle": null
+              },
+              {
+                "cursor": 4,
+                "kind": "lifecycle",
+                "generation": 6,
+                "lifecycle": "running"
+              }
+            ],
+            "events_omitted_from_view": 0,
+            "next_cursor": 4,
+            "latest_cursor": 4,
+            "history_gap": false,
+            "source_changed": false
+          },
+          "run": {
+            "run_id": "run.desktop-compiled",
+            "connection": "projection_missing",
+            "last_attempt_unix_ms": 1792305402120,
+            "error_code": "run_projection_missing",
+            "last_observation": null,
+            "observation_gap": false
+          }
+        }
+      },
+      "capture_started_unix_ms": 1792305404819,
+      "screenshot": {
+        "file": "phase-3-replacement_run_projection_missing.png",
+        "width": 1440,
+        "height": 1000,
+        "bytes": 129733,
+        "sha256": "9958922769c3d52d8594830fbe3714a4c2c9b048625a4e9f40be7ef99a05f671",
+        "capture_api": "XGetImage_actual_private_root_framebuffer",
+        "visual_review_required": true
+      },
+      "capture_finished_unix_ms": 1792305405052,
+      "after": {
+        "file": "phase-3-replacement_run_projection_missing-after.snapshot.json",
+        "bytes": 1554,
+        "sha256": "2bbd2ec170bbe2e6d1c69148519f1838355b1f15a25dbb802a3cca15946075c7",
+        "started_unix_ms": 1792305405052,
+        "finished_unix_ms": 1792305405128,
+        "transport_elapsed_ms_rounded_up": 77,
+        "peer_pid": 323923,
+        "peer_uid": 0,
+        "peer_gid": 0,
+        "session_instance": "9e58476c6fb8dc00a30d46379a488460",
+        "hepta": {
+          "connection": "observed",
+          "last_attempt_unix_ms": 1792305404145,
+          "error_code": null,
+          "last_observation": {
+            "sampled_unix_ms": 1792305404145,
+            "agent_id": "33333333-3333-4333-8333-333333333333",
+            "spawn_generation": 5,
+            "current_generation": 6,
+            "health": {
+              "ready": true,
+              "promotion_ready": true,
+              "fenced": false,
+              "lifecycle": "running",
+              "process_id": 323803
+            },
+            "capabilities": [
+              {
+                "id": "automation.calendar_v2",
+                "major": 1,
+                "minor": 0
+              },
+              {
+                "id": "cognitive.context.revalidate",
+                "major": 1,
+                "minor": 0
+              },
+              {
+                "id": "objective.start",
+                "major": 1,
+                "minor": 0
+              },
+              {
+                "id": "run.lifecycle",
+                "major": 1,
+                "minor": 1
+              }
+            ],
+            "capabilities_truncated": false,
+            "events": [
+              {
+                "cursor": 1,
+                "kind": "bootstrapped",
+                "generation": null,
+                "lifecycle": null
+              },
+              {
+                "cursor": 2,
+                "kind": "lifecycle",
+                "generation": 5,
+                "lifecycle": "starting"
+              },
+              {
+                "cursor": 3,
+                "kind": "app_server_ready",
+                "generation": null,
+                "lifecycle": null
+              },
+              {
+                "cursor": 4,
+                "kind": "lifecycle",
+                "generation": 6,
+                "lifecycle": "running"
+              }
+            ],
+            "events_omitted_from_view": 0,
+            "next_cursor": 4,
+            "latest_cursor": 4,
+            "history_gap": false,
+            "source_changed": false
+          },
+          "run": {
+            "run_id": "run.desktop-compiled",
+            "connection": "projection_missing",
+            "last_attempt_unix_ms": 1792305404152,
+            "error_code": "run_projection_missing",
+            "last_observation": null,
+            "observation_gap": false
+          }
+        }
+      },
+      "capture_complete": true,
+      "visual_review_required": true,
+      "finished_unix_ms": 1792305405147,
+      "acknowledged_unix_ms": 1792305405151
+    }
+  ],
+  "commands": [
+    {
+      "label": "display-ready-000",
+      "argv": [
+        "xdpyinfo"
+      ],
+      "returncode": 1
+    },
+    {
+      "label": "display-ready-001",
+      "argv": [
+        "xdpyinfo"
+      ],
+      "returncode": 1
+    },
+    {
+      "label": "display-ready-002",
+      "argv": [
+        "xdpyinfo"
+      ],
+      "returncode": 1
+    },
+    {
+      "label": "display-ready-003",
+      "argv": [
+        "xdpyinfo"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "display-no-cookie",
+      "argv": [
+        "xdpyinfo"
+      ],
+      "returncode": 1
+    },
+    {
+      "label": "shell-window-000",
+      "argv": [
+        "xdotool",
+        "search",
+        "--all",
+        "--onlyvisible",
+        "--pid",
+        "323732",
+        "--class",
+        "^trill-shell$"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "shell-window-properties",
+      "argv": [
+        "xprop",
+        "-id",
+        "2097155",
+        "WM_CLASS",
+        "_NET_WM_PID"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "shell-window-visible",
+      "argv": [
+        "xdotool",
+        "search",
+        "--all",
+        "--onlyvisible",
+        "--pid",
+        "323732",
+        "--class",
+        "^trill-shell$"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "shell-owned-window-size",
+      "argv": [
+        "xdotool",
+        "windowsize",
+        "2097155",
+        "1400",
+        "960"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "shell-owned-window-position",
+      "argv": [
+        "xdotool",
+        "windowmove",
+        "2097155",
+        "20",
+        "20"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "shell-window-tree",
+      "argv": [
+        "xwininfo",
+        "-root",
+        "-tree"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "phase-1-compiled_run_projected-before-properties",
+      "argv": [
+        "xprop",
+        "-id",
+        "2097155",
+        "WM_CLASS",
+        "_NET_WM_PID"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "phase-1-compiled_run_projected-before-visible",
+      "argv": [
+        "xdotool",
+        "search",
+        "--all",
+        "--onlyvisible",
+        "--pid",
+        "323732",
+        "--class",
+        "^trill-shell$"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "phase-1-compiled_run_projected-after-properties",
+      "argv": [
+        "xprop",
+        "-id",
+        "2097155",
+        "WM_CLASS",
+        "_NET_WM_PID"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "phase-1-compiled_run_projected-after-visible",
+      "argv": [
+        "xdotool",
+        "search",
+        "--all",
+        "--onlyvisible",
+        "--pid",
+        "323732",
+        "--class",
+        "^trill-shell$"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "phase-2-old_endpoint_run_stale-before-properties",
+      "argv": [
+        "xprop",
+        "-id",
+        "2097155",
+        "WM_CLASS",
+        "_NET_WM_PID"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "phase-2-old_endpoint_run_stale-before-visible",
+      "argv": [
+        "xdotool",
+        "search",
+        "--all",
+        "--onlyvisible",
+        "--pid",
+        "323732",
+        "--class",
+        "^trill-shell$"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "phase-2-old_endpoint_run_stale-after-properties",
+      "argv": [
+        "xprop",
+        "-id",
+        "2097155",
+        "WM_CLASS",
+        "_NET_WM_PID"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "phase-2-old_endpoint_run_stale-after-visible",
+      "argv": [
+        "xdotool",
+        "search",
+        "--all",
+        "--onlyvisible",
+        "--pid",
+        "323732",
+        "--class",
+        "^trill-shell$"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "phase-3-replacement_run_projection_missing-before-properties",
+      "argv": [
+        "xprop",
+        "-id",
+        "2097155",
+        "WM_CLASS",
+        "_NET_WM_PID"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "phase-3-replacement_run_projection_missing-before-visible",
+      "argv": [
+        "xdotool",
+        "search",
+        "--all",
+        "--onlyvisible",
+        "--pid",
+        "323732",
+        "--class",
+        "^trill-shell$"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "phase-3-replacement_run_projection_missing-after-properties",
+      "argv": [
+        "xprop",
+        "-id",
+        "2097155",
+        "WM_CLASS",
+        "_NET_WM_PID"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "phase-3-replacement_run_projection_missing-after-visible",
+      "argv": [
+        "xdotool",
+        "search",
+        "--all",
+        "--onlyvisible",
+        "--pid",
+        "323732",
+        "--class",
+        "^trill-shell$"
+      ],
+      "returncode": 0
+    }
+  ],
+  "children": [
+    {
+      "label": "xvfb",
+      "pid": 323721,
+      "argv": [
+        "Xvfb",
+        ":92",
+        "-nolisten",
+        "tcp",
+        "-screen",
+        "0",
+        "1440x1000x24",
+        "-auth",
+        "/workspace/scratch/499c7902de8e/nextstep-objective-capture-01/Xauthority"
+      ],
+      "exec_wrapper_argv": [
+        "/usr/bin/python3",
+        "-B",
+        "/test-source/tests/ui/probe-original-objective-shell.py",
+        "--parent-pid",
+        "323719",
+        "--exec-child",
+        "Xvfb",
+        ":92",
+        "-nolisten",
+        "tcp",
+        "-screen",
+        "0",
+        "1440x1000x24",
+        "-auth",
+        "/workspace/scratch/499c7902de8e/nextstep-objective-capture-01/Xauthority"
+      ],
+      "parent_pid": 323719,
+      "parent_death_signal": "SIGKILL"
+    },
+    {
+      "label": "rust-shell",
+      "pid": 323732,
+      "argv": [
+        "/ui-bin/trill-shell",
+        "--page",
+        "hepta",
+        "--hepta-layout-probe"
+      ],
+      "exec_wrapper_argv": [
+        "/usr/bin/python3",
+        "-B",
+        "/test-source/tests/ui/probe-original-objective-shell.py",
+        "--parent-pid",
+        "323719",
+        "--exec-child",
+        "/ui-bin/trill-shell",
+        "--page",
+        "hepta",
+        "--hepta-layout-probe"
+      ],
+      "parent_pid": 323719,
+      "parent_death_signal": "SIGKILL"
+    }
+  ],
+  "private_display_rejects_no_cookie": true,
+  "shell_pid": 323732,
+  "first_runtime_layout": {
+    "page": "hepta",
+    "connection": "observed",
+    "agent_id": "33333333-3333-4333-8333-333333333333",
+    "spawn_generation": 1,
+    "current_generation": 2,
+    "process_id": 323523,
+    "sampled_unix_ms": 1792305391986
+  },
+  "shell_window": {
+    "xid": "2097155",
+    "pid": 323732,
+    "class": "trill-shell"
+  },
+  "same_shell_pid_all_phases": true,
+  "same_shell_window_all_phases": true,
+  "cleanup": [
+    {
+      "label": "rust-shell",
+      "pid": 323732,
+      "observed_returncode": -15
+    },
+    {
+      "label": "xvfb",
+      "pid": 323721,
+      "observed_returncode": 0
+    }
+  ],
+  "finished_unix_ms": 1792305411576
+}

@@ -23,6 +23,17 @@ reconciliation or HOS2/device delivery. The separately recorded
 [R6 original Agentd and continuous Session runs](../../tests/integration/hepta/evidence/2026-10-17-original-session-runtime/README.md)
 remain evidence for the read-only lifecycle boundary.
 
+The [2026-10-18 original-runtime runs](../../results/integration/2026-10-18-objective-desktop/README.md)
+separately passed two isolated test-issuer process gates, each with ten core
+checks and seven explicit submission attempts. They exercise the unchanged
+original owner through `hepta-submit`, including authenticated durable admission,
+exact replay, explicit abstention, signature/revocation negatives, generation
+fencing and journal/receipt binding. The second run also qualifies three
+known-run Session phases and one native Shell's three captured frames. These
+are Linux host results. They do not enroll a production issuer, provide online
+durable reconciliation, execute a model turn or Operations dispatch, or qualify
+HOS2/device effects. The R7 fixtures above retain their original narrower scope.
+
 ## Fixed original contracts
 
 All claims below target
@@ -320,10 +331,15 @@ gate, and both feature-off and feature-on targets must compile. No Cargo package
 version/lock is changed; the optional `serde_json/raw_value` feature supplies raw
 preservation without a cryptography or original-daemon dependency.
 
-Before a real objective can enter this path, the original owners must provide
-the configured issuer/trust and replay checkpoint, frozen objective profile,
-actual existing authenticated ingress, and a reviewed durable reconciliation
-handoff. An independently bound executable/endpoint/PID must be used. Actual
-owner admission, unknown-after-publication, revocation, restart and exact
-identity recovery still require their own original-runtime evidence. HOS2 K/D,
-acknowledgement, retirement and device-effect acceptance remain a separate gate.
+For production use, the existing owners must provide the configured
+issuer/trust and replay checkpoint, frozen objective profile, actual existing
+authenticated ingress, and durable request retention and reconciliation
+handoff. An independently bound executable/endpoint/PID must be used. The
+isolated original-owner admission, revocation negative and restart checks are
+now linked above; they use a disposable test issuer. Their stopped-owner,
+read-only journal inspection does not implement online unknown reconciliation
+or qualify recovery after a production request loses its response. The compiled
+run remains `admitted` and nonterminal; a replacement owner's `run_status: null`
+does not negate its durable admission. HOS2 K/D, acknowledgement, retirement
+and device-effect acceptance remain separate gates, specified with the
+production issuer and recovery work in [S1–S5](../../docs/agents/R8_NEXT_SLICE.md).

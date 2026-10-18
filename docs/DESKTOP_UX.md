@@ -2,13 +2,21 @@
 
 版本0.3。原生桌面以Rust实现，对话/任务/应用工作区是主界面，终端/日志只是任务内选项；恢复入口可以简化但不能代替日常UI。状态见STATUS。
 
+## 当前 R8 增量
+
+[PR #192](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/192) 将 #190 的 Rust 聊天/任务工作区与独立可信 ObjectiveStart CLI、指定 run 的 Session/Shell 投影组合。实际执行源码为 `25298f5d87cf3db90deefe9c0405ecd241dc6581`，同树远端 `ca5e7d8473690df1bf7636de0808e58414c40abe`；tree `9584997da412dd10c0960f69011b40a4b26d2862`。完整 UI workspace 125 passed / 0 failed / 2 既有 CJK ignored，严格 Clippy、fmt 和实际 bins 构建通过，见 [本轮实录](../results/integration/2026-10-18-objective-desktop/README.md)。
+
+本轮新构建固定原版 Hepta f8 并实际完成两轮 ObjectiveStart，每轮 10 个核心检查 / 7 次明确提交尝试；后一轮运行真实 Session 和同一个 Shell 窗口，三张新图依次为已观察准入、旧来源 stale、替换 owner 后当前 run 投影缺失/unknown。隔离测试 issuer 的签名认证、原 journal 与回执绑定已通过；产品生产 issuer 和模型/设备效果仍未接通。三图的英文 Runtime 卡片已逐张检查，顶部中文后缀缺字方框作为环境限制保留；不是 CJK/IME 或完整工作区输入资格。
+
+以下协议路线和第 6 节描述当前设计；R5/R6 与上一轮 audit-followthrough 的固定执行记录保留其原源码与范围，不覆盖本段新结果。
+
 ## 1. 协议路线
 
 原生Rust聊天/任务shell与compositor/session连接所有者分进程设计；后者承载Wayland客户端；X11程序通过按信任域分离的Xwayland接入；Android先以完整SurfaceFlinger显示面桥接，之后再拆逐应用窗口。
 
-A07/A10 已通过 [PR #187](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/187) 合入 main 9a858dceb3a0ede6c3a021b9d16f3bf41e8503d5，包含全 Rust eframe 0.31.1（egui、glow、Wayland/X11）的 Shell、Session、CLI 和 AppWindow。实际 UI 测试对象为 be335eba60f9a511a78ff8e3af90a043d50855e2，完整门禁与资格见 [STATUS](STATUS.md)。[#157](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/157) 已按源码完整纳入关闭，保留原开发历史。R6 固定候选为 [`89aa8fa62d30b00259cb33174260c134edf1a70b`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/89aa8fa62d30b00259cb33174260c134edf1a70b)，tree `5fa4057019ee044ed9bc3337ae78d90496f8b923`。R6 的 UI 实际构建来源为本地 `84f0070b6e7e01238a8dac6044748b15101c9497` / 同树远端 `88e9cdb124801c1d0fba5d2bb7e52a85a69a79f4`；R6 新六阶段原版运行来源另为本地 `145e94c364243789b88c23b1292f9d4d9ca9a0e9` / 远端 `299794f90d4557cec4ee9a7fc92c397031fced4f`。源码、四程序构建结果、真实 Shell/Session/CLI 运行及后续证据提交分别记录，见 [R6 完整交付索引](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/89aa8fa62d30b00259cb33174260c134edf1a70b/tests/integration/hepta/evidence/2026-10-17-r6/README.md)。这已经是 Rust 原生 Linux host UI；完整原生 Rust compositor、Asterinas 显示/输入和移动适配仍需实现与验收。
+**上一轮源码集成与 R6 历史：**A07/A10 已通过 [PR #187](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/187) 合入 main 9a858dceb3a0ede6c3a021b9d16f3bf41e8503d5，包含全 Rust eframe 0.31.1（egui、glow、Wayland/X11）的 Shell、Session、CLI 和 AppWindow。实际 UI 测试对象为 be335eba60f9a511a78ff8e3af90a043d50855e2，完整门禁与资格见 [STATUS](STATUS.md)。[#157](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/157) 已按源码完整纳入关闭，保留原开发历史。R6 固定候选为 [`89aa8fa62d30b00259cb33174260c134edf1a70b`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/89aa8fa62d30b00259cb33174260c134edf1a70b)，tree `5fa4057019ee044ed9bc3337ae78d90496f8b923`。R6 的 UI 实际构建来源为本地 `84f0070b6e7e01238a8dac6044748b15101c9497` / 同树远端 `88e9cdb124801c1d0fba5d2bb7e52a85a69a79f4`；R6 新六阶段原版运行来源另为本地 `145e94c364243789b88c23b1292f9d4d9ca9a0e9` / 远端 `299794f90d4557cec4ee9a7fc92c397031fced4f`。源码、四程序构建结果、真实 Shell/Session/CLI 运行及后续证据提交分别记录，见 [R6 完整交付索引](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/89aa8fa62d30b00259cb33174260c134edf1a70b/tests/integration/hepta/evidence/2026-10-17-r6/README.md)。这已经是 Rust 原生 Linux host UI；完整原生 Rust compositor、Asterinas 显示/输入和移动适配仍需实现与验收。
 
-2026-10-18 的原版 M0 复核读取既有源码对象、运行收据、阶段快照和成功 PNG，未重新运行原版 Agentd 或采集新窗口。本轮在 be335eba 上另完成完整 host 151 passed / 2 既有 CJK ignored、严格 Clippy/fmt 和 Weston 13 headless 生命周期验证：Shell 首次布局与重启、3 个独立 app 的布局和已观察取消通过；compositor 重启后同一 Session 保留，新的客户端可布局并确认取消，旧 client 则报告 failed。该结果没有证明旧 surface 重连或 compositor 像素、IME、物理显示、GPU、Asterinas/移动运行。本轮 Hepta 页布局的数据源是明确标注的 scripted fixture；原版六阶段数据源资格仍属于 R6 的固定实录。Session 锁恢复测试改成隔离真实 owner 的进程检查，生产 flock/File 锁语义未改。详细记录见[本轮索引](../results/integration/2026-10-18-audit-followthrough/README.md)。
+**上一轮 audit-followthrough（#189）：**2026-10-18 的原版 M0 复核读取既有源码对象、运行收据、阶段快照和成功 PNG，未重新运行原版 Agentd 或采集新窗口。本轮在 be335eba 上另完成完整 host 151 passed / 2 既有 CJK ignored、严格 Clippy/fmt 和 Weston 13 headless 生命周期验证：Shell 首次布局与重启、3 个独立 app 的布局和已观察取消通过；compositor 重启后同一 Session 保留，新的客户端可布局并确认取消，旧 client 则报告 failed。该结果没有证明旧 surface 重连或 compositor 像素、IME、物理显示、GPU、Asterinas/移动运行。本轮 Hepta 页布局的数据源是明确标注的 scripted fixture；原版六阶段数据源资格仍属于 R6 的固定实录。Session 锁恢复测试改成隔离真实 owner 的进程检查，生产 flock/File 锁语义未改。详细记录见[本轮索引](../results/integration/2026-10-18-audit-followthrough/README.md)。
 
 **R5 历史构建与输入基线：**`35f37910` 已以固定 Rust 1.88 完整构建 UI workspace 的四个新 ELF，实际执行 Shell 3 条和 AppWindow 1 条定向测试，并通过 workspace/all-targets Clippy `-D warnings` 与 fmt。非 root 调用者 UID 1000 的真实脚本对照使用同一个新 Session，验证三个外属 UID 路径拒绝及同 UID `0600` socket 正例；旧脚本 RED 是 fixture 准备权限问题，不是旧 Session 的漏洞复现。命令、hash、失败与结果分母见 [构建/UID/定向回归实录](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/83b6a514164e29d536c5d2d4e078e04da4eeddb1/tests/ui/evidence/2026-10-17-owner-input/README.md) 和 [STATUS](STATUS.md)。这些是 Linux host 结果，Asterinas 的完整显示/输入栈、原生 Rust compositor 和移动端移植仍未完成。
 
@@ -54,25 +62,28 @@ UI-01/02 的真实失败继续保留；UI-03、UI-04、UI-05 各自保留执行 
 
 ## 6. 以 Hepta 为核心的 AI 原生 UI
 
+当前已实现全 Rust Workspace/Chat、Personal/Research/Build 草稿与上下文、Tasks 和嵌入控制台；本地引用按 Session/task identity 保留历史。可信宿主可调用独立的 default-off hepta-submit，但 Shell 和 Session IPC 继续只提供观察与宿主自有进程动作，没有原版 objective 提交按钮。已有 run 由可信 launcher 通过 TRILL_HEPTA_RUN_ID 指定，再进入原版只读观察链；实现说明见 [CHAT_WORKSPACE](../support/ui/CHAT_WORKSPACE.md)、[HEPTA_OBSERVER](../support/ui/HEPTA_OBSERVER.md)。本轮真实原版三阶段补上的是原版准入后的 run 可见性，仍未执行模型 turn、Operations dispatch 或设备效果。
+
 R6（2026-10-17 实际执行，2026-10-18 独立复核归档）的可执行切片已是：固定原版 Hepta 的 A07 只读 client → Session 独立持续 worker → 同一个真实 Rust Shell 窗口。数据源为显式配置的 socket、AgentId、spawn generation 与 UID。旧 R5 和新 GREEN03 两轮分别完成 Starting、Running、Draining、旧 spawn 拒绝、显式新可信 Session 恢复和原版停止后的 stale；每轮原版 8 + Session 8 通过，保留 6 张成功 PNG，见 [三轮原版 / Session 运行](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/89aa8fa62d30b00259cb33174260c134edf1a70b/tests/integration/hepta/evidence/2026-10-17-original-session-runtime/README.md) 与 [13 张原图、快照、ACK 与逐图审查](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/89aa8fa62d30b00259cb33174260c134edf1a70b/tests/ui/evidence/2026-10-17-original-hepta-shell/README.md)。新旧源码、ELF、同 Shell PID/XID 和人工验图分别绑定，不再把该链路仅描述为 scripted fixture。ARM 上另有持续 Session 的实际 8 + 8 运行，但该 CI 不启动 Shell。主机应用启动/取消仍由 Session 管理它自己创建的子进程，不等于 Hepta objective 已提交或设备效果已完成。
 
 | 界面对象 | 事实来源与实现规则 | 当前接合状态 |
 | --- | --- | --- |
 | 连接与健康 | Health、实际 peer credentials、AgentId、PID、spawn/current generation；断连保留旧样本并明确 stale | 固定原版 → 持续 Session → 同一真实 Shell 两轮六阶段已通过；失去原版后保留历史并明确当前未知，Session IPC 仍可响应 |
 | 能力与事件 | 固定协议白名单、有界数量/帧长/文本；能力标签不授予调用权；正常 Starting/Running/Draining 晋级保留同一来源历史 | 只读原版窗口链路已通过；保留有界字段、bidi/伪造换行过滤和合法生命周期晋级，能力显示不等于授予执行权限 |
-| 用户意图与草稿 | Shell 收集并显示用户输入；执行前的草稿是本地数据；最终提交结果只能来自原有 Hepta owner | 已有本地草稿；可信 objective ingress adapter 尚未接通 |
+| 用户意图与草稿 | Shell 收集用户输入和 typed 上下文；草稿保存/导出仍为本地数据，原版受理来自既有 owner | 独立可信宿主 CLI 已实测原版隔离准入；产品生产 issuer 和 UI 提交装配仍按 S1/S2 推进 |
+| 指定原版 run | 可信 launcher 选择精确 ID；原版七字段投影、独立单调总年龄、最后成功历史与 gap | 原版 Session/同一 Shell 三阶段通过；RunStatus null 只表示当前投影缺失，不能判为未受理或效果完成 |
 | 任务与效果结果 | 复用 Hepta 已有 authority/operations owner 的真实状态；unknown、partial、cancel_requested 和终态分别显示 | 本桌面/A07 接入原版 durable K↔D、撤销、确认退役与 HOS2 效果链仍待闭合 |
 | 窗口、输入与恢复 | Session/合成器持有进程和连接；新窗口要求 Session 在线、Running/非零 PID/已有 first layout，且已观察 socket epoch 严格大于启动 epoch。模型不可伪造焦点、资源权限或完成状态 | R5 UID、按钮规则及 UI-05 XIM 差异文本/焦点流程保留原有通过项；候选 caret 定位仍失败，Wayland 输入、GPU、跨域输入与移动显示仍待验收 |
 
 Shell 的启动、新窗口、终止以及 `Save local draft`、`Export drafts to local file`、`Restore local export` 按钮只接受主指针激活。后面三个动作分别为本地内存保存、文件导出和恢复，不能统称为已经提交 Hepta 的任务。Terminal 的 `Run` 和 `Clear output` 源码也要求主指针。R5 focused_ 回归实际覆盖 Shell host effect、三个草稿按钮的 Enter/Space，以及 AppWindow `Run` 的 Enter；没有单独运行 `Clear output` 的真实输入验收。键盘导航、无障碍操作与真实 IME 的产品交互仍需各自的设计和实际验证。
 
-下一条执行接口由 Hepta 既有、已配置的可信 issuer 提供原始认证封套，交给 `state_control → objective_runtime::ObjectiveRuntimeHost::submit` 路径；接受、发布和效果结果分别来自原有 owner。UI 不生成 authority epoch，不自签 objective，也不通过兼容 RunStart 绕开入口。带 socket I/O 的 client 与将来的效果 adapter 位于 `TrustedReadOnlyOrganV1` 外；这个只读 organ 合约不能充当操作系统沙箱。
+后续生产签发接入由 Hepta 既有、已配置的可信 issuer 提供原始认证封套，交给 `state_control → objective_runtime::ObjectiveRuntimeHost::submit` 路径；接受、发布和效果结果分别来自原有 owner。UI 不生成 authority epoch，不自签 objective，也不通过兼容 RunStart 绕开入口。带 socket I/O 的 client 与将来的效果 adapter 位于 `TrustedReadOnlyOrganV1` 外；这个只读 organ 合约不能充当操作系统沙箱。
 
 实际原版入口为 [state_control 的 ObjectiveStart 分支](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-agentd/src/state_control.rs#L206-L228) 调用 `objective_runtime` 中的 `ObjectiveRuntimeHost::submit`，不是未在原版模块表声明的 `objective_ingress.rs`。原 owner [先做 readiness、过期、签名认证及发布前检查，再持久发布，并重查最新 readiness/trust 与 runtime 准入](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-agentd/src/objective_runtime.rs#L206-L327)。请求可能送达后的断连或错误若缺少明确未接收证据，UI 必须保留 SubmitUnknown；[RunStatus](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-agentd/src/state_control.rs#L523-L531) 只查询内存中的 runs 投影，`null` 不证明未持久接收。不能因此换 run ID、自动重签或跨 spawn 重试。Admitted/Conflict 仅表示原版发布结果，explicit abstention 可以被接收而没有运行中的 run；真实设备完成仍需原效果 owner 的结果事实。
 
 ### 6.1 聊天与任务工作区
 
-下一步主界面采用全 Rust 的聊天 / 任务 / 应用与文件工作区，参考 Robrix 的聊天组织方式；运行监控、终端和日志作为工作区内的页面。科幻视觉风格使用清晰的信息层级、颜色与动效表达实际状态，不能靠装饰性的模型回复伪造执行进度。当前 R6 完成的是原版运行信息接入与真实状态显示，完整工作区改版仍待下一切片交付。
+当前主界面已采用全 Rust Workspace/Chat，提供 Personal/Research/Build 分区、typed 本地草稿、任务上下文、Tasks 与控制台页面，具体结构和持久化范围见 [CHAT_WORKSPACE](../support/ui/CHAT_WORKSPACE.md)。R8 的实际整树回归包括这些实现，新增原版截图限定为 Runtime 页；完整工作区 IME、无障碍、真实产品提交和跨平台交互继续逐项验收。界面以明确的来源和状态表达执行事实，不能用模型文字代替原 owner 的进度与结果。
 
 聊天草稿应使用 typed 本地模型，并能引用实际任务和来源上下文。宿主任务引用由 `(session_instance, task_id)` 标识；Session 换代后保留旧引用为历史，不按同名 task_id 静默重绑。原版 Hepta 观测另以 AgentId / spawn 标识，不能把宿主 TaskRecord 命名为原版 objective。任务状态变化时间不等于观测时间：上下文卡是否仍为当前事实，应检查 Snapshot 的采样时间与本地 receipt 年龄。草稿保存、导出、恢复与原版接收 / 执行分别显示。
 
@@ -85,6 +96,6 @@ Shell 的启动、新窗口、终止以及 `Save local draft`、`Export drafts t
 
 ### 6.2 可信意图入口与平台接合
 
-先实现位于 `TrustedReadOnlyOrganV1` 外的单次有界 ObjectiveStart 适配器，接收既有可信 issuer 的原始封套。结构检查不替代原版认证；传输一旦可能发出请求而没有明确结果，就保留 SubmitUnknown 及原请求身份。通用错误可能发生在持久发布之后，不能当作“没有提交”；不自动换 ID、重签或跨 spawn 重发。该入口接通之前，Shell 的本地草稿和任务上下文不应发送 objective。
+位于 `TrustedReadOnlyOrganV1` 外的单次有界 ObjectiveStart 传输与 hepta-submit CLI 已实现，并用隔离测试 issuer 对固定原版 owner 实际验证；完整命令和错误语义见 [OBJECTIVE_TRANSPORT](../services/hepta-os/OBJECTIVE_TRANSPORT.md)。结构检查仍不替代原版认证；一旦可能发出请求而没有明确结果，就保留 SubmitUnknown 及原身份。通用错误可能发生在持久发布之后，不能判为“没有提交”，也不能自动换 ID、重签或跨 spawn 重发。下一步是接既有生产 issuer/provider、首次发送前保存原请求的 owner，以及原版持久 unknown 核对接口；具体工作与完成判据见 [R8_NEXT_SLICE 的 S1/S2](agents/R8_NEXT_SLICE.md)。这些产品装配完成前，Shell 本地草稿和任务上下文仍不提交 objective。
 
 随后接既有持久结果 owner、durable K↔D、撤销与确认退役；cancel_requested 与真实停止分开显示。UI 不创建新的 authority/operations owner，也不直接持有设备效果权限。桌面、Web 和移动端可以共享 Rust 领域模型、类型与协议，但 compositor、显示/输入、IME、触控、缩放旋转和设备效果必须分别验收。字体、像素、交互、原版只读运行与设备执行各自交付真实记录；某项通过不等于整个原生系统完成。

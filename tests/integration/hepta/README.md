@@ -20,12 +20,29 @@ implement or claim A07's Hepta → HOS2 durable-effect gate.
   Linux child identity and cleanup guard using disposable Python children,
   kernel WNOWAIT/ECHILD results and safe signal spies. It does not build or
   launch original Agentd.
+- `run_original_objective.py` and the `original_objective_*.rs` probe use the
+  unchanged original Fleet/Supervisor/Agentd and an isolated enrolled test
+  issuer. [ORIGINAL_OBJECTIVE.md](ORIGINAL_OBJECTIVE.md) defines ten core checks,
+  seven explicit submission attempts and the optional three known-run Session
+  phases. Two actual Linux host runs passed; the second also completed the
+  three Session phases and one native Shell's three captured frames. Build,
+  runtime and visual sources are bound separately in the
+  [2026-10-18 result](../../../results/integration/2026-10-18-objective-desktop/README.md).
+- The [original Objective Shell capture guide](../../ui/ORIGINAL_OBJECTIVE_SHELL.md)
+  holds that same Shell across a current admitted run, retained stale history
+  and an explicit replacement Session's missing projection. Its capture ACKs
+  coordinate phases; the actual PNGs require independent visual review.
 - `check_objective_wire.py` verifies fourteen exact original source files and
   emits a small original-declaration wire check with extraction/hash provenance.
   It compiles no Agentd crate, signs nothing and submits no actual objective.
   The optional transport's tests use the fixed original expired/all-zero wire
   fixture and scripted replies over real disposable UDS connections; those
   tests are not original-owner admission evidence.
+
+The original-runtime results qualify test-issuer authentication and durable
+admission, not production issuer assembly or an online reconciliation service.
+Model turns, Operations dispatch, HOS2/device effects and Asterinas/mobile
+execution remain separate gates; see [S1–S5](../../../docs/agents/R8_NEXT_SLICE.md).
 
 The socket and parser regression tests live in
 `services/hepta-os/tests/socket_contract.rs`; the timed-out metadata admission
