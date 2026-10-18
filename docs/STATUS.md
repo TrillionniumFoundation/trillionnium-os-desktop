@@ -1,6 +1,27 @@
 # 当前状态
 
-## 2026-10-18：R6 原版 Hepta 持续 Session、真实 Rust Shell 与新鲜度修复
+## 2026-10-18：本轮集成与有效执行证据
+
+本轮保留 [文档 #186](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/186) 在 main 66ade4cbbe1e8d8319652d870c6c773c5efd8206 建立的 R6 实录和 A00–A10 文档盘点。[A02/A03 #185](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/185) 已合入 4339acedd2d433f838c7b5fd445709c539043a77；[A07/A10 #187](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/187) 随后正式合入 main 9a858dceb3a0ede6c3a021b9d16f3bf41e8503d5，保留原 owner 和 #157 的完整开发历史。下面分别记录本轮实际执行、匹配输入后的证据复用、历史实录复核和 A06 的实际客体验证，完整来源见[本轮证据索引](../results/integration/2026-10-18-audit-followthrough/README.md)。
+
+| 项目 | 已确定的结果与边界 |
+| --- | --- |
+| A02 独立判定器与完整 pinned 验收 | #185 补齐 Python oracle 的 prior-window 上界、不可能终态与保留序号检查；没有重写已在 #181 合入的 Rust codec 修复。nightly-2026-07-21 的完整 run_acceptance.py 已实际完成 13/13 检查，success=true、not_executed=[]、输入前后不变；Python ABI 普通及优化模式各 62 项。包含实际 Rust 测试、fmt、严格 all-target Clippy、bare no_std 和编译变异检查。13 是验收步骤数，不是 Rust 测试数。 |
+| A03 HistoryAck 绑定与回归 | 退役 ACK 必须由既有 original-owner authority 生成并绑定具体 namespace 实例。以进程内不复用、溢出拒绝的 tag 取代可复用内存地址，阻止旧 ACK 在新 namespace 中再次获得授权。本轮 std 与 portable-spin 各 225 项测试通过；Loom 19 个模型、27,253 个调度通过；19 个实际锁内分配场景的 alloc/realloc/dealloc 均为零。宿主 receipt 绑定不等于 durable K/fsync 或内核设备授权。 |
+| G0 本地有效门禁 | 在 a0adc97b35264510fb2056bed93d46c155ffe5ff / tree 2f391cae63211e7d607d188205cf91b997077b3e 上，原工作流 16 个 run block 全部有有效结果：13 个新执行、3 个明确复用相同输入的实际成功证据。A02 的 28 个输入、A03 Loom 的 12 个输入和 allocation 的 9 个输入均核对匹配。机器摘要 success=true、source_unchanged=true。裸目标构建和 guest probe 编译分别陈述，不计为新的 guest 或设备运行。 |
+| 原版 Hepta → 持续 Session → 原生 Rust Shell | 本轮重新核对已归档 R6 的源码、原始收据、阶段快照和 12 张成功 PNG；既有两轮六阶段只读链路的资格保留。本轮没有重新启动原版 Agentd、运行模型或再捕获一组窗口。首轮失败图和失败收据继续保留；实际运行来源仍是 2026-10-17 的固定提交。 |
+| UI 集成与完整 host 门禁 | 实际测试对象为 be335eba60f9a511a78ff8e3af90a043d50855e2；完整 host 151 passed / 2 既有 CJK ignored，严格 Clippy/fmt 与真实进程检查通过。锁恢复测试改用 exec 后获取锁的独立 owner，验证竞争者拒绝、真实 SIGKILL/reap 和同一锁文件恢复；生产锁实现未改。首轮同进程 drop 后立即重取失败与修复记录保留；2 个 ignored 字体测试不能写成通过。 |
+| UI 软件 Wayland 生命周期 | Linux Weston 13 headless 下，真实 Rust Shell 首次布局与重启、3 个独立 app 首次布局及观察到的取消通过；另一次 compositor crash/restart 中同一 Session 存活、socket epoch 改变、新 Wayland client 首次布局并确认取消。旧 client 在 compositor 丢失后 failed，没有证明旧 surface 重连。本轮 Hepta 页布局使用 scripted UDS fixture 经真实 Session 投影，不是新原版 Agentd 运行；未检查 compositor 像素、物理显示、GPU、IME 或目标 OS。 |
+| A06 zombie 尾段计费 | [PR #188](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/188) 的实际测试头为 e97a30c923b1a27e1578eaaf6b39d85fe1aa5591 / tree c70e97c30b6a7808586c1a2a7db4a6860ede004e，同树发布为 9265235c4b4f375844c923cf0b0f517d119d9937；已合入 main 8ea35f55a38949f511f0855cd168dfd1d672acc8。保留仍存在的 Process cgroup 归属，仅在已 detach 的 zombie 或 Weak 升级失败时使用线程保留 lease。完整 aster-core 正向 159/159 通过，零 skip/filter，QEMU raw exit 33；受控负对照为 157 passed / 2 expected fail，raw exit 65、无 timeout，命中两项预期回归。对象回归不自动证明完整迁移/退出交错。 |
+| A06 生产内核 N0 probe | 恢复最终生产源码后，新 release 内核 ELF 的 SHA-256 为 edce11ac22903da6b7b65295fb75bf07f364f227a5f7e327b489381df9500399。沿用 1000/100000 us（1%）配置和 3% 上界，1 vCPU 两轮实测为 0.769% / 1.000%，2 vCPU 两轮为 0.550% / 0.960%；四轮均 complete、无 panic，QEMU raw exit 33、runner exit 0。双核未限额 baseline 超过 145%，确认实际并行。该限定配置的 probe 保留 smp_qualified=false、hepta_hos2_qualified=false，不据此授予一般 SMP 或 Hepta/HOS2 资格；原始收据及命令见本轮索引。 |
+
+**发布与 CI：**#188 已普通合入 main 8ea35f55a38949f511f0855cd168dfd1d672acc8，tree 6eb10ba7fa117a6669350be6be9467a7052feae8；此前 #187 已将 A07/A10 合入 9a858dceb3a0ede6c3a021b9d16f3bf41e8503d5，#157 已按完整 incorporated 关闭，不再是尚待合入的产品分支。实际 A06 / UI 执行头仍分别为 e97a30c9 / be335eba，不替换成后来的 merge SHA。A06 构建期间未跟踪的临时 manifest / pycache 观察不改变已发布提交树，原始收据分别记录，不据此宣称整个工作区均无临时文件。#185 精确 head 的 A02（run 39094060165）、A03（39094060158）、G0（39094060159）和 CodeQL（39094058499）在 2026-10-18 04:32:48 UTC 均已读回 completed/success；#187/#188 各门禁的分项状态、精确时间、workflow run/job 和结论见本轮索引。本地成功与仓库其他提交的成功不授予尚未完成的 GitHub CI 通过。
+
+当前已验证宿主模型、固定配置的 A06 客体 N0 配额，以及固定原版 Hepta 的只读可见链路。可信 ObjectiveStart、原版 durable K↔D、撤销/确认退役、HOS2 实际设备效果、Asterinas 显示/输入和移动设备适配仍需各自实现与验收。以下历史节保留各次原始源码、执行日期和失败，不作为本轮重新执行。
+
+---
+
+## R6 历史实录：2026-10-17 原版运行与 2026-10-18 文档归档
 
 **本节文档基于 main `3551e1e0e017e2973da7e2b8ab811ece25c258c0`；R6 的实际本地执行日期为 2026-10-17 UTC。**本次仅更新 STATUS、INDEX、DESKTOP_UX，保留主干后来新增的 A06 `b7a8388726b67394398431e74d2e5d2079ff375f` 和 A02 `3551e1e0`。A07/A10 产品代码仍在 [Draft #157](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/157)，固定已发布候选为 [`89aa8fa62d30b00259cb33174260c134edf1a70b`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/89aa8fa62d30b00259cb33174260c134edf1a70b)，完整 tree `5fa4057019ee044ed9bc3337ae78d90496f8b923`，A10 owner 仍为 `45552fbd8f79ea713509908ac4b08a3fd44a95bc`。主干文档合入不表示该产品候选已合入，R6 的 UI/原版运行不为后来新增的内核代码授予运行资格。
 
