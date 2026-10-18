@@ -219,10 +219,12 @@ verify "cpu.max single value preserves period" \
 verify "cpu.max rejects an invalid period" \
     "echo '30000 999' > cpu.max 2>/dev/null || echo rejected" \
     "rejected"
-echo "50000 invalid" > cpu.max
-verify "cpu.max accepts a non-numeric period" \
+verify "cpu.max rejects a non-numeric period" \
+    "echo '50000 invalid' > cpu.max 2>/dev/null || echo rejected" \
+    "rejected"
+verify "cpu.max rejection preserves quota and period" \
     "cat cpu.max" \
-    "50000 200000"
+    "30000 200000"
 echo "max 100000" > cpu.max
 verify "cpu.max resets to default value" \
     "cat cpu.max" \
