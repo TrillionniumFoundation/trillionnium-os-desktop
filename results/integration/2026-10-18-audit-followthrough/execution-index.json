@@ -1,0 +1,762 @@
+{
+  "schema": "trillionnium-audit-followthrough-index-v1",
+  "recorded_at_utc": "2026-10-18T04:35:23.138092+00:00",
+  "repository": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop",
+  "merged_code": {
+    "commit": "8ea35f55a38949f511f0855cd168dfd1d672acc8",
+    "tree": "6eb10ba7fa117a6669350be6be9467a7052feae8",
+    "local_same_tree_commit": "236c996bf407f0c8be286037022c31b8964884ec"
+  },
+  "pull_requests": {
+    "a02_a03": 185,
+    "a07_a10": 187,
+    "a06": 188
+  },
+  "local_and_remote_execution_are_separate": true,
+  "a02": {
+    "success": true,
+    "checks": [
+      {
+        "returncode": 0,
+        "name": "golden_hos2"
+      },
+      {
+        "returncode": 0,
+        "name": "golden_edges"
+      },
+      {
+        "returncode": 0,
+        "name": "golden_transport"
+      },
+      {
+        "returncode": 0,
+        "name": "python_discovery"
+      },
+      {
+        "returncode": 0,
+        "name": "python"
+      },
+      {
+        "returncode": 0,
+        "name": "python_optimized"
+      },
+      {
+        "returncode": 0,
+        "name": "python_mutations"
+      },
+      {
+        "returncode": 0,
+        "name": "rust_discovery"
+      },
+      {
+        "returncode": 0,
+        "name": "rust"
+      },
+      {
+        "returncode": 0,
+        "name": "rustfmt"
+      },
+      {
+        "returncode": 0,
+        "name": "clippy"
+      },
+      {
+        "returncode": 0,
+        "name": "bare_no_std"
+      },
+      {
+        "returncode": 0,
+        "name": "compiled_mutations"
+      }
+    ],
+    "original_inputs_unchanged": true,
+    "not_executed": [],
+    "report": "implementation-a02-acceptance/report.json"
+  },
+  "g0": {
+    "head": "a0adc97b35264510fb2056bed93d46c155ffe5ff",
+    "tree": "2f391cae63211e7d607d188205cf91b997077b3e",
+    "success": true,
+    "source_unchanged": true,
+    "executed_step_count": 13,
+    "reused_step_count": 3
+  },
+  "a03": {
+    "std_passed": 225,
+    "portable_spin_passed": 225,
+    "loom_models": 19,
+    "loom_schedules": 27253,
+    "allocation_scenarios": 19,
+    "all_allocation_counters_zero": true,
+    "report_directory": "implementation-receipt-evidence",
+    "integration_logs": "implementation-g0-evidence"
+  },
+  "a06": {
+    "schema_version": 1,
+    "recorded_utc": "2026-10-18T04:31:46.371130+00:00",
+    "local_bounded_gates_passed": true,
+    "candidate": {
+      "local_commit": "e97a30c923b1a27e1578eaaf6b39d85fe1aa5591",
+      "tree": "c70e97c30b6a7808586c1a2a7db4a6860ede004e",
+      "kernel_tree": "8625fd18112b0f3bdd82e29a541d0963f2da314c",
+      "core_tree": "31c754b99d31129e6fb1d74653bbbfff47579b5e",
+      "remote_pr": 188,
+      "remote_candidate_commit_reported_by_root": "9265235c4b4f375844c923cf0b0f517d119d9937",
+      "remote_candidate_tree_reported_by_root": "c70e97c30b6a7808586c1a2a7db4a6860ede004e",
+      "merged_main_reported_by_root": "8ea35f55a38949f511f0855cd168dfd1d672acc8",
+      "merged_tree_reported_by_root": "6eb10ba7fa117a6669350be6be9467a7052feae8"
+    },
+    "implementation_scope": "Preserve a present Process cgroup binding and all live Process dispatch; use the thread-owned lease when an upgraded zombie has no binding, or Weak upgrade fails. Binding acquire precedes the zombie acquire. No new scheduler membership mutex, public quota observer, or second accounting ledger.",
+    "core_positive": {
+      "report": "final-positive-full-core/accepted-positive.json",
+      "declared": 159,
+      "passed": 159,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 0,
+      "observed_starts": 159,
+      "raw_qemu_exit": 33,
+      "kernel_sha256": "50e78cb6284ae6d7a54e49d34e944a3f072c8cedac05b60ce634be9a9f5de0b6",
+      "serial_sha256": "f6531d8460530ddc0f16250759c37d33d3a0d362d80a125d05af332ce9ddcad4",
+      "retained_kernel": "final-positive-full-core/positive-kernel.elf"
+    },
+    "controlled_negative": {
+      "report": "final-negative-full-core-v2/controlled-negative.json",
+      "passed": 157,
+      "failed": 2,
+      "filtered": 0,
+      "raw_qemu_exit": 65,
+      "expected_failures": [
+        "unreaped_zombie_final_interval_debits_old_leaf_and_ancestors_once",
+        "zombie_final_interval_crossing_a_window_preserves_positive_quota_debt"
+      ],
+      "mutation": "Only change the production present-binding-or-live predicate to if true, restoring successful-Weak-upgrade dispatch from before the fix.",
+      "test_bytes_unchanged": {
+        "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/final_charge_regressions.rs": "14d934c0e1763cdaff5128651a39dbf6ce0e2314c6f5042c87413841f7661168",
+        "kernel/asterinas/kernel/core/src/process/test_util.rs": "3a436aa9baca6b328346e57a76eb2ce6c63c1b482ab87a1adbf0e3e3c08dc217"
+      },
+      "source_restored_before_result_analysis": true,
+      "restoration_record": "final-negative-source-v2/restoration.json",
+      "kernel_sha256": "700e3b3750fa42aa05b7e90e80af12f7e1e431720dbc8a2a1a04c084c9f0428e",
+      "serial_sha256": "79e175d69a5d09855bf3bf40628bb3f8f6d7c4dbfc8dbd0b782f20f006a1968c",
+      "retained_kernel": "final-negative-full-core-v2/negative-kernel.elf"
+    },
+    "production_build": {
+      "report": "production-build/accepted-production.json",
+      "wrapper_run_exit": 0,
+      "smp_build_argument": 2,
+      "kernel_sha256": "edce11ac22903da6b7b65295fb75bf07f364f227a5f7e327b489381df9500399",
+      "retained_kernel": "production-kernel.elf",
+      "format": "ELF64 with OSDK multiboot EM_386 marker",
+      "source_inputs_report": "production-build/source-inputs.json"
+    },
+    "quota_probe_parameters": {
+      "mode": "leaf",
+      "quota_us": 1000,
+      "period_us": 100000,
+      "requested_duration_seconds": 1,
+      "repeat_per_vcpu_count": 2,
+      "max_cpu_percent": 3.0,
+      "two_vcpu_unlimited_baseline_minimum_percent_exclusive": 145.0,
+      "parameters_or_thresholds_changed": false
+    },
+    "production_probes": {
+      "1vcpu": {
+        "runner_exit": 0,
+        "report": "probe-1vcpu/result.json",
+        "initramfs_sha256": "b84d6975fd89ec6eb84787cbf59fa98259a98786e93040ccf3d8e746d2dc0dec",
+        "runs": [
+          {
+            "index": 1,
+            "raw_qemu_exit": 33,
+            "guest_complete": true,
+            "panic": false,
+            "capped_cpu_percent": 0.769,
+            "unlimited_cpu_percent": 92.682,
+            "samples": [
+              {
+                "label": "unlimited",
+                "wall_ns": 1000199088,
+                "cpu_ns": 927000000,
+                "iterations": 141400000
+              },
+              {
+                "label": "one-percent-configured",
+                "wall_ns": 1299798494,
+                "cpu_ns": 10000000,
+                "iterations": 1300000
+              }
+            ],
+            "serial_sha256": "a98024c8317627715132a14584967cd4d21e4bd94580d0507b81506ffc03f016"
+          },
+          {
+            "index": 2,
+            "raw_qemu_exit": 33,
+            "guest_complete": true,
+            "panic": false,
+            "capped_cpu_percent": 1.0,
+            "unlimited_cpu_percent": 91.745,
+            "samples": [
+              {
+                "label": "unlimited",
+                "wall_ns": 1000596976,
+                "cpu_ns": 918000000,
+                "iterations": 162000000
+              },
+              {
+                "label": "one-percent-configured",
+                "wall_ns": 1000256411,
+                "cpu_ns": 10000000,
+                "iterations": 1500000
+              }
+            ],
+            "serial_sha256": "7236bc6031f1e63f0ddf5949737c04bd0b6f4fe56109b5fa7022f2631fc40edc"
+          }
+        ]
+      },
+      "2vcpu": {
+        "runner_exit": 0,
+        "report": "probe-2vcpu/result.json",
+        "initramfs_sha256": "5e3d27c1af365060ef9f9a24b6c0c0ee8f8a33bd13a56b0af2fff12cf3de4463",
+        "runs": [
+          {
+            "index": 1,
+            "raw_qemu_exit": 33,
+            "guest_complete": true,
+            "panic": false,
+            "capped_cpu_percent": 0.55,
+            "unlimited_cpu_percent": 184.038,
+            "samples": [
+              {
+                "label": "unlimited",
+                "wall_ns": 1026417323,
+                "cpu_ns": 1889000000,
+                "iterations": 0
+              },
+              {
+                "label": "one-percent-configured",
+                "wall_ns": 1999140631,
+                "cpu_ns": 11000000,
+                "iterations": 0
+              }
+            ],
+            "serial_sha256": "c9fab8e43b5f5001ce15ffba0f4a981e52249dbe59e335a03a8dfd860bccb0d5"
+          },
+          {
+            "index": 2,
+            "raw_qemu_exit": 33,
+            "guest_complete": true,
+            "panic": false,
+            "capped_cpu_percent": 0.96,
+            "unlimited_cpu_percent": 213.012,
+            "samples": [
+              {
+                "label": "unlimited",
+                "wall_ns": 1014028805,
+                "cpu_ns": 2160000000,
+                "iterations": 0
+              },
+              {
+                "label": "one-percent-configured",
+                "wall_ns": 2500078115,
+                "cpu_ns": 24000000,
+                "iterations": 0
+              }
+            ],
+            "serial_sha256": "b8de2370eaa88459e2f0a99caa58b349892ed771f736b2584c2239d92985dc21"
+          }
+        ]
+      }
+    },
+    "ostd": {
+      "rerun_here": false,
+      "prior_run_id": 39089584115,
+      "source_equivalence_report": "source-scope.json",
+      "scope": "OSTD, OSDK, ktest support, production dependency lock and toolchain pin are identical Git objects to merged A06 b7a83887. Prior OSTD runtime evidence keeps its original environment and soft skips; no new 221-test execution is claimed."
+    },
+    "build_harness_observation": {
+      "automatically_clean_claimed": false,
+      "final_entire_worktree_clean_claimed": false,
+      "tracked_source_clean": true,
+      "last_observed_git_status": "?? kernel/asterinas/kernel/OSDK.toml\n",
+      "last_observed_manifest": {
+        "path": "kernel/asterinas/kernel/OSDK.toml",
+        "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f",
+        "mtime_ns": 1792296831222154518,
+        "inode": 1086060,
+        "device": 27,
+        "same_bytes_as_pinned_template": true
+      },
+      "records": [
+        "production-build/temporary-manifest-cleanup.json",
+        "production-build/post-probe-cleanup-execution-context.json",
+        "production-build/final-source-status.json"
+      ],
+      "facts": "A known temporary OSDK manifest remained visible after the wrapper. Exact bytes/hash were preserved and manual cleanup produced an empty immediate git status. The old manifest later reappeared across execution contexts. Both probe source paths were reviewed and do not write the manifest. The cause is unresolved; no cleanup protection or build script was changed. Repeated deletion was stopped on root instruction."
+    },
+    "limits": {
+      "full_exit_current_guest_final_debit_attribution_qualified": false,
+      "full_concurrent_migration_exit_linearization_qualified": false,
+      "general_smp_qualified": false,
+      "strict_one_percent_cap_guaranteed": false,
+      "cpu_stat_or_getrusage_precision_qualified": false,
+      "controller_disable_reenable_qualified": false,
+      "hepta_hos2_effectful_control_qualified": false,
+      "github_actions_pass_claimed": false
+    },
+    "measurement_note": "Probe CPU percentages come from the existing guest getrusage sampling. The second unlimited two-vCPU sample exceeds 200%; the unchanged >145% parallelism guard passed, but this is not precision accounting validation. Exact raw ns values are retained.",
+    "earlier_attempts_excluded_from_final_acceptance": [
+      {
+        "path": "final-negative-full-core/compile-failure.json",
+        "classification": "E0599 compile failure, no QEMU, not a behavioral negative"
+      },
+      {
+        "path": "positive-full-core/scope.json",
+        "classification": "ef9 pre-refinement positive passed 158/158; superseded by the final 159-test candidate"
+      }
+    ],
+    "additional_static_checks": {
+      "source_and_workflow_guards_passed": 5,
+      "new_rust_fixture_format_check": "pinned nightly-2026-07-21 rustfmt passed",
+      "git_diff_check_passed": true
+    }
+  },
+  "a07_a10": {
+    "summary": "implementation-hepta-review/a10-integration-summary.json",
+    "summary_sha256": "aba9cdce8c1d728fe28e58287ad48832da8d8f7042379254069df23999c46540",
+    "local_gate": {
+      "status": "passed",
+      "commands_and_exit_codes": {
+        "bash tests/ui/check-host.sh": 0,
+        "bash tests/ui/headless-weston.sh": 0,
+        "cargo clippy --manifest-path ui/Cargo.toml --workspace --all-targets --locked --offline -- -D warnings": 0,
+        "python3 original process guard": 0,
+        "python3 original Shell capture contracts": 0,
+        "cargo metadata --manifest-path ui/Cargo.toml --locked --offline --format-version 1": 0
+      },
+      "rust_test_totals": {
+        "passed": 151,
+        "failed": 0,
+        "ignored": 2
+      },
+      "rust_test_breakdown": {
+        "ui_workspace": 87,
+        "services_hepta_os": 17,
+        "support_ui_using_current_main_libs_os_abi": 39,
+        "tests_ui_contracts": 8
+      },
+      "ignored_reason": "Two existing host_fonts tests (Shell and app) require TRILL_UI_TEST_CJK_FONT; no new CJK font/input qualification.",
+      "python_suites": [
+        {
+          "log": "a10-main-verified/a10/process-guard.log",
+          "passed": 6,
+          "failed": 0
+        },
+        {
+          "log": "a10-main-verified/a10/original-shell-contracts.log",
+          "passed": 8,
+          "failed": 0
+        }
+      ],
+      "rustfmt": "Four manifest checks passed; rustfmt-check.log is empty; source checkout stayed clean.",
+      "strict_clippy": "ui workspace, all targets, locked/offline, -D warnings; exit 0, 1m44s.",
+      "locked_dependencies": {
+        "head": "be335eba60f9a511a78ff8e3af90a043d50855e2",
+        "ui_lock_tracked": true,
+        "lock_diff": "",
+        "lock_sha256": "e484809d742a264a296046b0d272e843d167b02b634232e793ef702757cc70e1",
+        "metadata_exit_code": 0,
+        "metadata_stderr": "",
+        "resolved_packages": 332
+      },
+      "toolchain": "Rust 1.88.0",
+      "platform": "Linux x86_64, Ubuntu 24.04.3, Weston 13.0.0",
+      "test_parallelism": "Normal Rust test threading retained; no suite serialization or retry-until-green.",
+      "privilege_scope": "Actual UID-boundary checks were executed in the authorized full UID-map environment. Initial restricted-sandbox sudo diagnostic failure is preserved separately."
+    },
+    "source_binding": {
+      "all_local_full_gate_commands_executed_on": {
+        "commit": "be335eba60f9a511a78ff8e3af90a043d50855e2",
+        "tree": "58fa519a927624c2cc091f295e337492d31b68a6",
+        "parents": [
+          "435eb3b93a4f90cf596893d25b45c03f86e05b2f"
+        ],
+        "subject": "test(ui): isolate the real lock owner before crash recovery"
+      },
+      "local_be_to_0d_only_six_workflow_path_lines": true,
+      "local_0d_to_adf_only_three_existing_main_documents": true,
+      "files_changed_between_executed_be_and_merged_main": [
+        ".github/workflows/a10-host.yml",
+        "docs/DESKTOP_UX.md",
+        "docs/INDEX.md",
+        "docs/STATUS.md",
+        "support/ui/ci/a10-host.yml"
+      ],
+      "local_adf_published_360_and_merged_main_9a_full_trees_identical": true,
+      "shared_git_objects_independently_read": true,
+      "published_commit_ancestry_differs_from_local_commit_ancestry": true,
+      "tests_not_rerun_for_only_ci_paths_and_three_document_changes": true,
+      "root_readme_bytes": 0,
+      "local_0d_worktree_clean_at_handoff": true,
+      "source_before": "a10-main-verified/source-before.json",
+      "source_after": "a10-main-verified/source-after.json"
+    },
+    "x11_pixel_limit": {
+      "new_x11_pngs": 0,
+      "scrot_installed_for_this_run": false,
+      "literal_gate_message": "A10 X11 framebuffer pixels NOT VERIFIED: scrot/Pillow not installed",
+      "what_is_verified": "Actual IsViewable native window mappings, first egui layouts, process identity, restart and observed lifecycle",
+      "receipt": "a10-main-verified/a10/x11/receipt.json"
+    },
+    "historical_original_hepta_m0": {
+      "status": "independently reviewed archived M0 evidence passed; not a new original Agentd runtime execution in this integration run",
+      "owner_head": "89aa8fa62d30b00259cb33174260c134edf1a70b",
+      "original_hepta_commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+      "original_agentd_sha256": "f476f9bb435c5127839c48ae7135d5a6fa7695ff5253460fdd8d19d7b084d4fa",
+      "linked_original_probe_sha256": "46c8f20bef00d5e4b76ae7fcba784937bc1c4d9a33d6b416cd4acc1b96d43365",
+      "six_stage_runs": 2,
+      "raw_success_pngs_individually_reviewed": 12,
+      "preserved_failed_attempt_pngs": 1,
+      "archival_files_hash_verified": 324,
+      "before_after_session_snapshots_replayed": 24,
+      "qualification": "Pinned original Hepta -> Session -> the same native Rust Shell across six visible lifecycle phases; Linux x86_64 private Xvfb read-only observer.",
+      "phase_names": [
+        "starting",
+        "running",
+        "draining",
+        "old_spawn_stale",
+        "recovered_running_after_explicit_session_replacement",
+        "stopped_stale"
+      ],
+      "historical_executions": [
+        {
+          "run": "02",
+          "executed_commit": "28843c6632fe63db6b3fecb4d05888e90976fd16",
+          "executed_tree": "759c42b36d965174dc00a39b7f28e962ed667d85",
+          "published_same_tree_commit": "66dba7f40c2fa8fea2e7828ec2fd4db336bb681f",
+          "shell_pid": 615673,
+          "shell_window": {
+            "xid": "2097155",
+            "pid": 615673,
+            "class": "trill-shell"
+          }
+        },
+        {
+          "run": "03",
+          "executed_commit": "145e94c364243789b88c23b1292f9d4d9ca9a0e9",
+          "executed_tree": "98dee80a7ec855a84c777b350fed8ef675e31fc1",
+          "published_same_tree_commit": "299794f90d4557cec4ee9a7fc92c397031fced4f",
+          "shell_pid": 616470,
+          "shell_window": {
+            "xid": "2097155",
+            "pid": 616470,
+            "class": "trill-shell"
+          }
+        }
+      ],
+      "review_file": "m0-independent-review.json",
+      "review_script": "verify_m0.py",
+      "existing_repo_archive": "tests/ui/evidence/2026-10-17-original-hepta-shell/",
+      "do_not_duplicate_original_pngs_or_original_elf_in_new_text_archive": true,
+      "review_script_historical_merge_scope": "The prior review script checked prospective main 3551 + owner 89. This current report separately binds the executed be source and merged 9a source; it does not relabel the old prospective merge.",
+      "elf_limit": "Original ELF bytes were not locally available to this reviewer for new rehashing/execution; archived build/runtime receipts and prior independent byte inspection supply that provenance.",
+      "production_source_association": "Initial 435 integration matched owner 89 production/helper closure. The be fix changes only cfg(test) in Session: full ui/main.rs Git blobs change, the 22703-byte production prefix is unchanged, and all four actual rebuilt production ELFs are byte-identical between 435 and be. Do not claim the old eleven full Git objects are all unchanged on merged main."
+    },
+    "excluded_qualifications": [
+      "No new original-Agentd-to-Shell six-stage execution in this local integration run.",
+      "No ObjectiveStart submission, model turn, effect execution, second issuer or ledger.",
+      "No physical display/GPU/reset qualification, real CJK candidates/IME/input, or pre-crash Wayland surface continuity.",
+      "No Asterinas graphical boot, target kernel, desktop device-control or Android/iOS/mobile qualification."
+    ]
+  },
+  "composition": {
+    "schema": "audit-final-component-composition-v1",
+    "recorded_at_utc": "2026-10-18T04:14:14.939600+00:00",
+    "local_head": "236c996bf407f0c8be286037022c31b8964884ec",
+    "local_tree": "6eb10ba7fa117a6669350be6be9467a7052feae8",
+    "component_input_comparisons": [
+      {
+        "component": "a02_a03",
+        "reference_commit": "a0adc97b35264510fb2056bed93d46c155ffe5ff",
+        "path": "libs/os-abi",
+        "reference_object": "75a708cc77501ac2b21887840f69cc29c013b846",
+        "integrated_object": "75a708cc77501ac2b21887840f69cc29c013b846",
+        "equal": true
+      },
+      {
+        "component": "a02_a03",
+        "reference_commit": "a0adc97b35264510fb2056bed93d46c155ffe5ff",
+        "path": "libs/os-control",
+        "reference_object": "64ea401f6d8f0e47811d70a7a1467ca397047e37",
+        "integrated_object": "64ea401f6d8f0e47811d70a7a1467ca397047e37",
+        "equal": true
+      },
+      {
+        "component": "a02_a03",
+        "reference_commit": "a0adc97b35264510fb2056bed93d46c155ffe5ff",
+        "path": "tests/abi",
+        "reference_object": "8429cdde1754f62cafa6112336a38c633d6f229e",
+        "integrated_object": "8429cdde1754f62cafa6112336a38c633d6f229e",
+        "equal": true
+      },
+      {
+        "component": "a02_a03",
+        "reference_commit": "a0adc97b35264510fb2056bed93d46c155ffe5ff",
+        "path": "tests/control",
+        "reference_object": "f805a7fca64514d47994c853e808bb78db35ca51",
+        "integrated_object": "f805a7fca64514d47994c853e808bb78db35ca51",
+        "equal": true
+      },
+      {
+        "component": "a02_a03",
+        "reference_commit": "a0adc97b35264510fb2056bed93d46c155ffe5ff",
+        "path": ".github/workflows/g0-contracts.yml",
+        "reference_object": "3729fc3790f6080bbed85ecf5812bd3ba56a66b6",
+        "integrated_object": "3729fc3790f6080bbed85ecf5812bd3ba56a66b6",
+        "equal": true
+      },
+      {
+        "component": "a06",
+        "reference_commit": "e97a30c923b1a27e1578eaaf6b39d85fe1aa5591",
+        "path": "kernel/asterinas",
+        "reference_object": "8625fd18112b0f3bdd82e29a541d0963f2da314c",
+        "integrated_object": "8625fd18112b0f3bdd82e29a541d0963f2da314c",
+        "equal": true
+      },
+      {
+        "component": "a06",
+        "reference_commit": "e97a30c923b1a27e1578eaaf6b39d85fe1aa5591",
+        "path": "support/build",
+        "reference_object": "94ffd006a9b2eb6aa68328cb9a4ec62bbd3f3140",
+        "integrated_object": "94ffd006a9b2eb6aa68328cb9a4ec62bbd3f3140",
+        "equal": true
+      },
+      {
+        "component": "a06",
+        "reference_commit": "e97a30c923b1a27e1578eaaf6b39d85fe1aa5591",
+        "path": "tests/spec/test_a06_final_accounting_source.py",
+        "reference_object": "98343c35b653233fa1e0fa35e36c00d30e7a88d5",
+        "integrated_object": "98343c35b653233fa1e0fa35e36c00d30e7a88d5",
+        "equal": true
+      },
+      {
+        "component": "a07_a10",
+        "reference_commit": "0d873e1d2d280d228f9f5a136d7d85c0912a2662",
+        "path": "ui",
+        "reference_object": "c717fe3c24f9a3404af0616c8c8274f1ab5150ae",
+        "integrated_object": "c717fe3c24f9a3404af0616c8c8274f1ab5150ae",
+        "equal": true
+      },
+      {
+        "component": "a07_a10",
+        "reference_commit": "0d873e1d2d280d228f9f5a136d7d85c0912a2662",
+        "path": "services/hepta-os",
+        "reference_object": "7ebe43051e1cebb8049ba50e9da4a9fb59d1a0c7",
+        "integrated_object": "7ebe43051e1cebb8049ba50e9da4a9fb59d1a0c7",
+        "equal": true
+      },
+      {
+        "component": "a07_a10",
+        "reference_commit": "0d873e1d2d280d228f9f5a136d7d85c0912a2662",
+        "path": "support/ui",
+        "reference_object": "c537efac4fd125499d69481344e3f3d6bf0e6882",
+        "integrated_object": "c537efac4fd125499d69481344e3f3d6bf0e6882",
+        "equal": true
+      },
+      {
+        "component": "a07_a10",
+        "reference_commit": "0d873e1d2d280d228f9f5a136d7d85c0912a2662",
+        "path": "tests/ui",
+        "reference_object": "b1919c033db778c682e92792f341074e69641709",
+        "integrated_object": "b1919c033db778c682e92792f341074e69641709",
+        "equal": true
+      },
+      {
+        "component": "a07_a10",
+        "reference_commit": "0d873e1d2d280d228f9f5a136d7d85c0912a2662",
+        "path": "tests/integration/hepta",
+        "reference_object": "09a95c8c50389a8b8ce5ac98215ad4bec518229e",
+        "integrated_object": "09a95c8c50389a8b8ce5ac98215ad4bec518229e",
+        "equal": true
+      },
+      {
+        "component": "a07_a10",
+        "reference_commit": "0d873e1d2d280d228f9f5a136d7d85c0912a2662",
+        "path": ".github/workflows/a10-host.yml",
+        "reference_object": "22389b68be35e183dfc3933b9597aeb4611fd366",
+        "integrated_object": "22389b68be35e183dfc3933b9597aeb4611fd366",
+        "equal": true
+      },
+      {
+        "component": "a07_a10",
+        "reference_commit": "0d873e1d2d280d228f9f5a136d7d85c0912a2662",
+        "path": ".github/workflows/hepta-original-agentd.yml",
+        "reference_object": "607391af4cba5a393d41d988e85a6d78398515d9",
+        "integrated_object": "607391af4cba5a393d41d988e85a6d78398515d9",
+        "equal": true
+      }
+    ],
+    "source_equal": true,
+    "spec": {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/spec",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "log": "spec.log",
+      "sha256": "40f38f52cf1bc91d3bf74cf9072969f1fa6d51d287028d8a4ae0e38dc24ac024"
+    },
+    "tracked_status_after": ""
+  },
+  "github": {
+    "schema": "audit-final-github-snapshot-v1",
+    "observed_at_utc": "2026-10-18 04:32:48 UTC",
+    "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+    "scope": "Exact published PR heads #185/#187/#188; local execution results and merge commits have separate identities",
+    "runs": [
+      {
+        "id": 39094060165,
+        "name": "A02 pinned-nightly HOS2 host acceptance",
+        "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39094060165",
+        "head_sha": "1c3241f81b5d319968ab46d3e3aa9329fed04068",
+        "status": "completed",
+        "conclusion": "success",
+        "created_at": "2026-10-18T03:33:44Z",
+        "updated_at": "2026-10-18T04:16:12Z"
+      },
+      {
+        "id": 39094060158,
+        "name": "A03 native Loom and allocation safety",
+        "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39094060158",
+        "head_sha": "1c3241f81b5d319968ab46d3e3aa9329fed04068",
+        "status": "completed",
+        "conclusion": "success",
+        "created_at": "2026-10-18T03:33:44Z",
+        "updated_at": "2026-10-18T04:19:54Z"
+      },
+      {
+        "id": 39094060159,
+        "name": "G0 scoped host contracts",
+        "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39094060159",
+        "head_sha": "1c3241f81b5d319968ab46d3e3aa9329fed04068",
+        "status": "completed",
+        "conclusion": "success",
+        "created_at": "2026-10-18T03:33:44Z",
+        "updated_at": "2026-10-18T04:20:07Z"
+      },
+      {
+        "id": 39094058499,
+        "name": "PR #185",
+        "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39094058499",
+        "head_sha": "1c3241f81b5d319968ab46d3e3aa9329fed04068",
+        "status": "completed",
+        "conclusion": "success",
+        "created_at": "2026-10-18T03:33:42Z",
+        "updated_at": "2026-10-18T04:29:45Z"
+      },
+      {
+        "id": 39095995767,
+        "name": "A10 Rust Wayland host integration",
+        "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39095995767",
+        "head_sha": "36067459b464a11818e4cf47ca47d54557cd2306",
+        "status": "queued",
+        "conclusion": null,
+        "created_at": "2026-10-18T04:07:19Z",
+        "updated_at": "2026-10-18T04:07:19Z"
+      },
+      {
+        "id": 39095995747,
+        "name": "Hepta original Agentd and persistent Session qualification (ARM64)",
+        "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39095995747",
+        "head_sha": "36067459b464a11818e4cf47ca47d54557cd2306",
+        "status": "in_progress",
+        "conclusion": null,
+        "created_at": "2026-10-18T04:07:19Z",
+        "updated_at": "2026-10-18T04:28:24Z"
+      },
+      {
+        "id": 39095993913,
+        "name": "PR #187",
+        "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39095993913",
+        "head_sha": "36067459b464a11818e4cf47ca47d54557cd2306",
+        "status": "queued",
+        "conclusion": null,
+        "created_at": "2026-10-18T04:07:17Z",
+        "updated_at": "2026-10-18T04:07:17Z"
+      },
+      {
+        "id": 39096189453,
+        "name": "A06 exact kernel scheduler and QEMU tests",
+        "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39096189453",
+        "head_sha": "9265235c4b4f375844c923cf0b0f517d119d9937",
+        "status": "queued",
+        "conclusion": null,
+        "created_at": "2026-10-18T04:10:45Z",
+        "updated_at": "2026-10-18T04:10:45Z"
+      },
+      {
+        "id": 39096189401,
+        "name": "A01 boot-evidence host regressions",
+        "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39096189401",
+        "head_sha": "9265235c4b4f375844c923cf0b0f517d119d9937",
+        "status": "queued",
+        "conclusion": null,
+        "created_at": "2026-10-18T04:10:45Z",
+        "updated_at": "2026-10-18T04:10:45Z"
+      },
+      {
+        "id": 39096189388,
+        "name": "G0 scoped host contracts",
+        "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39096189388",
+        "head_sha": "9265235c4b4f375844c923cf0b0f517d119d9937",
+        "status": "queued",
+        "conclusion": null,
+        "created_at": "2026-10-18T04:10:45Z",
+        "updated_at": "2026-10-18T04:10:45Z"
+      },
+      {
+        "id": 39096188023,
+        "name": "PR #188",
+        "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39096188023",
+        "head_sha": "9265235c4b4f375844c923cf0b0f517d119d9937",
+        "status": "queued",
+        "conclusion": null,
+        "created_at": "2026-10-18T04:10:43Z",
+        "updated_at": "2026-10-18T04:10:43Z"
+      }
+    ]
+  },
+  "text_evidence": {
+    "path": "audit-followthrough-text-evidence.zip",
+    "bytes": 460351,
+    "sha256": "cab03301d28e0cf06b0d3663729b1d3981158791e48e5c13f5cc84f0206de2d4",
+    "file_count": 236,
+    "source_bytes": 2748149,
+    "manifest": "MANIFEST.json",
+    "crc_and_each_file_hash_verified": true,
+    "contains_binary_build_products": false
+  },
+  "limits": [
+    "Historical original Hepta M0 is independently reviewed, not a new original execution.",
+    "No ObjectiveStart, durable K/fsync, general IRQ/SMP, strict 1% CPU guarantee or exact cpu.stat/getrusage qualification.",
+    "No physical device control, Asterinas GUI, mobile, IME, GPU or preserved old Wayland surface qualification.",
+    "Tracked CPU source is unchanged; the recorded untracked temporary manifest visibility observation is not claimed fully cleaned."
+  ],
+  "documentation_validation": {
+    "new_local_links_checked": 36,
+    "missing_links": 0,
+    "required_a02_a03_anchors_present": true,
+    "root_readme_bytes": 0,
+    "archive_crc_and_236_hash_records_verified": true,
+    "production_source_unchanged_from_merged_code": true,
+    "git_diff_check_passed": true
+  }
+}
