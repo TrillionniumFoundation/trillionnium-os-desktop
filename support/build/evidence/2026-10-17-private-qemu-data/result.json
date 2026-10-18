@@ -1,0 +1,64 @@
+{
+  "actual_cli_fixture_cases": [
+    "private data directory path with spaces appended as one -L",
+    "empty value rejected",
+    "relative path rejected",
+    "missing directory rejected",
+    "regular file rejected",
+    "explicit env plus requested -L rejected"
+  ],
+  "actual_cli_raw_archive": "actual-cli-fixtures.tar.gz",
+  "actual_cli_raw_members": 620,
+  "actual_qemu_guest_executions_by_tests": 0,
+  "base_commit": "a8f1ed1252a7eaccf74b9a717f862413b7c6650d",
+  "behavior": {
+    "actual_explicit_qemu_args_appended": [
+      "-L",
+      "selected explicit directory"
+    ],
+    "all_three_artifact_positions_and_stable_fd_stat_hash_checks_retained": true,
+    "bios_selection_and_snapshot_binding_retained": true,
+    "checker_unchanged": true,
+    "default_arguments_unchanged": true,
+    "env_plus_existing_requested_L_rejected": true,
+    "explicit_env": "A01_QEMU_DATA_DIR",
+    "invalid_selection_rejected_before_qemu_version_or_launch": true,
+    "no_fallback_or_system_install": true,
+    "requested_qemu_args_preserved": true,
+    "requires": "nonempty absolute existing directory",
+    "selection_metadata": "data_selection origin/original_requested_paths/selected_path/appended"
+  },
+  "candidate_matching_git_commit_at_packaging": "0e33c0b6f5ad2570b780da623618f26b08e0476e",
+  "candidate_sources": {
+    "support/build/record-qemu.py": "387845415b54f1822c55ce4198586fae8047f7d3ea94008c84e0974871954098",
+    "support/build/tests/test_boot_evidence.py": "9a4346cfe9822bdb8b362f90bfcd9aa008e46898027d7e3a61e31bb11e50056d"
+  },
+  "checker_sha256": "2ee1be040c622b248986efdeacab43eea6b2d730e0bad1a8bc0ba995c1915f80",
+  "fixture_qemu_only": true,
+  "full_suites": [
+    {
+      "actual_tool_session": 73992,
+      "exit": 0,
+      "log": "logs/after-all-I.log",
+      "mode": "-I",
+      "tests": 27
+    },
+    {
+      "actual_tool_session": 73992,
+      "exit": 0,
+      "log": "logs/after-all-I-O.log",
+      "mode": "-I -O",
+      "tests": 27
+    }
+  ],
+  "new_targeted_before_control": {
+    "actual_tool_session": 73992,
+    "errors": 1,
+    "exit": 1,
+    "failures": 5,
+    "not_added_to_full_suite_count": true,
+    "tests": 2
+  },
+  "real_native_boot_acceptance_claimed_here": false,
+  "status": "validated_explicit_private_qemu_data_selection"
+}

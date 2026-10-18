@@ -1,0 +1,303 @@
+{
+  "schema": 1,
+  "upstream_review": {
+    "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+    "pull_request": 32,
+    "commit": "5af5ed301bcdb18b4a0c14cfe2ddfa245dc6a963",
+    "base": "fa9b6cd6be310155b10fa36aafcb8896444e0f6e",
+    "ahead_commits": 4,
+    "changed_paths": [
+      "support/build/osdk-integration/archive.py",
+      "support/build/osdk-integration/test_archive.py"
+    ]
+  },
+  "source": {
+    "remote_commit": "5af5ed301bcdb18b4a0c14cfe2ddfa245dc6a963",
+    "files": [
+      {
+        "path": "support/build/osdk-integration/archive.py",
+        "sha256": "6bb543638261ac29bb0aab604457a238613ef4d52792547f4b37a71235cad266",
+        "bytes": 8116,
+        "a00_exact_sha256": "66dab15e1659303f3c5d3ce00e5c92b825b3307e72f1b533f8a4f401a43711a8",
+        "before_adoption_sha256": "efbaffe878555c509336d86b57b67327d632a2bf0eff16fc5f6b74895d1fed04"
+      },
+      {
+        "path": "support/build/osdk-integration/test_archive.py",
+        "sha256": "aec6583632e8b4ba197f49360b08177d59768b372724a6dcfea3d4f527f2d9d6",
+        "bytes": 9750,
+        "a00_exact_sha256": "d1451a38ab68667b554f3deb1f211dc4704f37bc7128cd8db989763b2e2a972b",
+        "before_adoption_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ]
+  },
+  "tests": {
+    "a00_exact_I": {
+      "count": 13,
+      "exit": 0,
+      "log": "original-tests-I.log"
+    },
+    "a00_exact_IO": {
+      "count": 13,
+      "exit": 0,
+      "log": "original-tests-IO.log"
+    },
+    "adopted_I": {
+      "count": 20,
+      "exit": 0,
+      "log": "adopted-tests-I.log"
+    },
+    "adopted_IO": {
+      "count": 20,
+      "exit": 0,
+      "log": "adopted-tests-IO.log"
+    },
+    "diff_check_exit": 0
+  },
+  "confirmed_original_defects": [
+    "archive.json selected source overwritten by generated index",
+    "hardlink added between lstat and open accepted",
+    "os.fwalk reopens source path after root_fd open and reads a replacement root"
+  ],
+  "fixes": [
+    "pin root open identity and traverse using root_fd",
+    "compare regular file identity, size, ctime, mtime, nlink before/open/end",
+    "reject archive.json and evidence.sha256 reserved output paths and descendants"
+  ],
+  "compatibility": [
+    {
+      "run": "osdk-integration-native-07",
+      "source": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-integration-native-07",
+      "destination": "/workspace/scratch/ae1a8cf05419/next5-archive-review/compatibility-final/osdk-integration-native-07",
+      "records": 320,
+      "total_source_bytes": 4419026,
+      "max_source_bytes": 299844,
+      "largest_10": [
+        {
+          "source": "case-20/cargo/request-ypxz5j_c.metadata.json",
+          "archived": "case-20/cargo/request-ypxz5j_c.metadata.json.gz",
+          "source_size": 299844,
+          "source_sha256": "5d9a48961bb7d01e61d37544f559c849e7380ac2fbeaae9672f37cd48515d64a"
+        },
+        {
+          "source": "case-20/cargo/request-ewslkkct.metadata.json",
+          "archived": "case-20/cargo/request-ewslkkct.metadata.json.gz",
+          "source_size": 298216,
+          "source_sha256": "195598890b71f26dadd3a63750d4b6be4e13c2889504a854f32cda1f7a520aa5"
+        },
+        {
+          "source": "case-19/cargo/request-p0dy0xjq.metadata.json",
+          "archived": "case-19/cargo/request-p0dy0xjq.metadata.json.gz",
+          "source_size": 298132,
+          "source_sha256": "93002025b8966c16737ffd83e9a11f63e76958d7764ad046f46919d0a3e9ec24"
+        },
+        {
+          "source": "case-22/cargo/request-d0suo7gb.metadata.json",
+          "archived": "case-22/cargo/request-d0suo7gb.metadata.json.gz",
+          "source_size": 295116,
+          "source_sha256": "0d21694ceab4aa9a463c0834af8f3faaf27ae210b7e36378a81346d7db212d1c"
+        },
+        {
+          "source": "case-20/cargo/request-63gmk8i0.metadata.json",
+          "archived": "case-20/cargo/request-63gmk8i0.metadata.json.gz",
+          "source_size": 294946,
+          "source_sha256": "71785124dbb5585bd3e9544bae5121b1e8b283b81f97e6865051959ec78804de"
+        },
+        {
+          "source": "case-20/cargo/request-lymstetx.metadata.json",
+          "archived": "case-20/cargo/request-lymstetx.metadata.json.gz",
+          "source_size": 294946,
+          "source_sha256": "71785124dbb5585bd3e9544bae5121b1e8b283b81f97e6865051959ec78804de"
+        },
+        {
+          "source": "case-21/cargo/request-ypk4zvr6.metadata.json",
+          "archived": "case-21/cargo/request-ypk4zvr6.metadata.json.gz",
+          "source_size": 294430,
+          "source_sha256": "4cb9d76f6c7174219d02881ca7668c4b9466b4bf9c1669c66c606f396d2134dd"
+        },
+        {
+          "source": "case-14/cargo/request-pfpgfvy7.metadata.json",
+          "archived": "case-14/cargo/request-pfpgfvy7.metadata.json.gz",
+          "source_size": 293936,
+          "source_sha256": "923036a3876d215fc210dd62b64970bdd73ae6eea7764b3d8cb993495c1e863c"
+        },
+        {
+          "source": "case-02/cargo/request-dziw6en2.metadata.json",
+          "archived": "case-02/cargo/request-dziw6en2.metadata.json.gz",
+          "source_size": 293732,
+          "source_sha256": "37086e435e7cafb0e9578a84119e2671eb8effd36fa79c06a98545c3f54d4030"
+        },
+        {
+          "source": "case-01/cargo/request-1s48i7q2.metadata.json",
+          "archived": "case-01/cargo/request-1s48i7q2.metadata.json.gz",
+          "source_size": 293628,
+          "source_sha256": "e2afd6d8ea6a1ed5438132e748392846f8c8156e77f56d878b0cba0f67197f18"
+        }
+      ],
+      "all_source_payloads_and_manifest_checksums_verified": true,
+      "max_file_bytes": 134217728,
+      "max_total_bytes": 1073741824,
+      "selected_suffix_distribution": {
+        ".json": {
+          "count": 236,
+          "bytes": 3918495,
+          "max_bytes": 299844
+        },
+        ".patch": {
+          "count": 1,
+          "bytes": 3527,
+          "max_bytes": 3527
+        },
+        ".log": {
+          "count": 68,
+          "bytes": 266955,
+          "max_bytes": 166603
+        },
+        ".txt": {
+          "count": 1,
+          "bytes": 1154,
+          "max_bytes": 1154
+        },
+        ".lock": {
+          "count": 13,
+          "bytes": 228556,
+          "max_bytes": 18358
+        },
+        ".toml": {
+          "count": 1,
+          "bytes": 339,
+          "max_bytes": 339
+        }
+      }
+    },
+    {
+      "run": "osdk-capture-v2-02",
+      "source": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02",
+      "destination": "/workspace/scratch/ae1a8cf05419/next5-archive-review/compatibility-final/osdk-capture-v2-02",
+      "records": 353,
+      "total_source_bytes": 14984220,
+      "max_source_bytes": 5496220,
+      "largest_10": [
+        {
+          "source": "case-15/guests/guest-001/capture-nm.log",
+          "archived": "case-15/guests/guest-001/capture-nm.log.gz",
+          "source_size": 5496220,
+          "source_sha256": "c0667e12793757c552e566c48b912ba66486ee6fde166c40440cd9c55be148ca"
+        },
+        {
+          "source": "case-15/coverage/coverage.profraw",
+          "archived": "case-15/coverage/coverage.profraw",
+          "source_size": 2094456,
+          "source_sha256": "9d564c13b2747da71c8353ff53214961d199726a1c4a7a9fb97d532a2e5d5764"
+        },
+        {
+          "source": "case-15/coverage/llvm-profdata-1.log",
+          "archived": "case-15/coverage/llvm-profdata-1.log.gz",
+          "source_size": 1316899,
+          "source_sha256": "7ab8adc671b6b1f76a6ca8acc735fe062b47513a4575f9b26da83260dd9ed7f0"
+        },
+        {
+          "source": "case-15/coverage/coverage.profdata",
+          "archived": "case-15/coverage/coverage.profdata",
+          "source_size": 1246368,
+          "source_sha256": "3943ebac9b179492df719bd0e5d12401d966cd81431519000186bae206cd354b"
+        },
+        {
+          "source": "case-15/cargo/request-0o2s_2wk.metadata.json",
+          "archived": "case-15/cargo/request-0o2s_2wk.metadata.json.gz",
+          "source_size": 306260,
+          "source_sha256": "91fa4e59c9e70fa8cc612b9c2ad1496640996b2c24989de4ec332d43d859fc16"
+        },
+        {
+          "source": "case-20/cargo/request-ephat2ko.metadata.json",
+          "archived": "case-20/cargo/request-ephat2ko.metadata.json.gz",
+          "source_size": 299844,
+          "source_sha256": "c01b5d33ea6abe31656a63e6080e39dfc1624777429f64d383d0509e6e90642b"
+        },
+        {
+          "source": "case-20/cargo/request-7kzsauiv.metadata.json",
+          "archived": "case-20/cargo/request-7kzsauiv.metadata.json.gz",
+          "source_size": 298216,
+          "source_sha256": "593bea518ecf7c5d5e6f53ad189d36742d0018ed56bb9103c10433d8274b4bae"
+        },
+        {
+          "source": "case-19/cargo/request-j_pa8m3b.metadata.json",
+          "archived": "case-19/cargo/request-j_pa8m3b.metadata.json.gz",
+          "source_size": 298132,
+          "source_sha256": "f4394bcd1b019a94b05d5e8e8dbcb35a8a78c480b1dd455f509e48962f2e67b1"
+        },
+        {
+          "source": "case-20/cargo/request-l4xxrwii.metadata.json",
+          "archived": "case-20/cargo/request-l4xxrwii.metadata.json.gz",
+          "source_size": 294946,
+          "source_sha256": "c46db943136e0560aabd517cb48292831cdfa5862bd6968c6171f339856906a5"
+        },
+        {
+          "source": "case-20/cargo/request-y2fnzy0y.metadata.json",
+          "archived": "case-20/cargo/request-y2fnzy0y.metadata.json.gz",
+          "source_size": 294946,
+          "source_sha256": "c46db943136e0560aabd517cb48292831cdfa5862bd6968c6171f339856906a5"
+        }
+      ],
+      "all_source_payloads_and_manifest_checksums_verified": true,
+      "max_file_bytes": 134217728,
+      "max_total_bytes": 1073741824,
+      "selected_suffix_distribution": {
+        ".json": {
+          "count": 255,
+          "bytes": 4286388,
+          "max_bytes": 306260
+        },
+        ".patch": {
+          "count": 1,
+          "bytes": 6013,
+          "max_bytes": 6013
+        },
+        ".log": {
+          "count": 78,
+          "bytes": 7097965,
+          "max_bytes": 5496220
+        },
+        ".txt": {
+          "count": 1,
+          "bytes": 1154,
+          "max_bytes": 1154
+        },
+        ".lock": {
+          "count": 14,
+          "bytes": 248275,
+          "max_bytes": 19980
+        },
+        ".profdata": {
+          "count": 1,
+          "bytes": 1246368,
+          "max_bytes": 1246368
+        },
+        ".profraw": {
+          "count": 1,
+          "bytes": 2094456,
+          "max_bytes": 2094456
+        },
+        ".gdb": {
+          "count": 1,
+          "bytes": 3262,
+          "max_bytes": 3262
+        },
+        ".toml": {
+          "count": 1,
+          "bytes": 339,
+          "max_bytes": 339
+        }
+      }
+    }
+  ],
+  "semantics": {
+    "source_policy": "Existing non-symlink root directory; selected files must be regular and single-link, bounded, stable during read. Non-excluded symlink directories fail closed. Excluded generated directories are pruned before traversal. Fixed harness/Cargo.lock and rust-toolchain.toml use no-follow reads.",
+    "empty_missing_output_collision": "Missing/non-directory/symlink roots rejected; no permitted files rejected without creating a bundle. Existing destinations preserved; reserved/duplicate payload names rejected; a failed invocation cleans its owned new bundle.",
+    "limits": {
+      "per_file_bytes": 134217728,
+      "total_selected_bytes": 1073741824
+    },
+    "scope": "Host-only archival validation. No new Rust build, kernel regression, QEMU boot, VMX or SMP result claimed. Existing real run source directories read only.",
+    "concurrency_limit": "This is a sequential evidence capture, not an atomic snapshot of a concurrently mutated whole tree. Destination parent must be trusted; directory ownership checks do not promise isolation from a malicious same-user renamer."
+  }
+}

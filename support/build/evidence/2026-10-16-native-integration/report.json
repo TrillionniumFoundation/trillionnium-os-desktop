@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "branch": "agents/A01-asterinas-boot",
+  "pr": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/22",
+  "base_main": "7ba970724ddb7528c3f0908a048cbc647586c6f7",
+  "native_support_code_commit": "efff58b94b167dc9a9f66b3a742a31189aa7805e",
+  "production_osdk_code_commit": "4ae1a80e6b87fd55913bd01e6aadd28a20e6c322",
+  "kernel_upstream_commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+  "toolchain": "nightly-2026-07-21",
+  "kernel_mode": {
+    "evidence": "kernel-tests/result.json",
+    "reported_passed": 362,
+    "failed": 0,
+    "filtered": 0,
+    "soft_skipped": 3,
+    "exercised_passed_lower_bound": 359,
+    "raw_qemu_codes": [
+      33,
+      33
+    ],
+    "fresh_this_phase": true,
+    "osdk_binary_sha256": "1689a417b07b8fd8ec45a8dd2d2d103759bab25f63faec1ab486e606e1c24011"
+  },
+  "native_osdk_integration": {
+    "available_cases": 22,
+    "latest_per_case_passed": 20,
+    "latest_per_case_failed": 2,
+    "path_blocked": 0,
+    "host_blocked_failed_cases": 2,
+    "vmx_soft_skip_count": 1,
+    "full_matrix_passed": false,
+    "aggregation": "original full run07 plus exact retries09 and10; original run07 remains 19 passed / 3 failed",
+    "profile": "isolated original assertions; direct multiboot; q35 TCG max 1 vCPU 512MiB SeaBIOS; pinned locks/compiler",
+    "original_default_upstream_profile": false,
+    "actual_tcp_gdb_case_passed": true,
+    "actual_vscode_lldb_client_executed": false,
+    "unix_gdb_case": "failed AF_UNIX EPERM raw QEMU1",
+    "coverage_case": "failed monitor AF_UNIX EPERM raw QEMU1; no valid coverage profile",
+    "evidence_directory": "osdk/"
+  },
+  "pure_support_tests": {
+    "passed": 19,
+    "failed": 0,
+    "evidence": "osdk/"
+  },
+  "osdk_rustfmt": {
+    "exit_code": 0,
+    "evidence": "osdk-fmt.log"
+  },
+  "full_asterinas_boot": {
+    "newest_evidence": "support/build/evidence/2026-10-16-boot-binding/report.json",
+    "qemu_raw": 33,
+    "kernel_sha256": "e884f5e50cf296833276016894a39337cd9ac13bc51f6b1f2dea3cc3a6904b63"
+  },
+  "limits": [
+    "UNIX socket creation denied by current execution environment",
+    "VMX/EPT not exercised under TCG",
+    "Default upstream GRUB/container and full device/userspace matrix not established",
+    "One temporary-profile replacement remains unexplained; preceding initial host-failure raw log was overwritten",
+    "A05/A06 HOS2 resource enforcement not implemented by A01"
+  ],
+  "root_readme_bytes": 0,
+  "prior_boot_binding_pr": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/20"
+}

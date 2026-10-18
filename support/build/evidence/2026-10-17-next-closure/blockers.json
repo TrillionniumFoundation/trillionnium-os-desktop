@@ -1,0 +1,231 @@
+{
+  "schema": "a01-next-cloud-closure-ledger/1",
+  "created_utc": "2026-10-17T04:30:45.811605+00:00",
+  "draft": false,
+  "publishable": true,
+  "all_project_blockers_closed": false,
+  "native_resource_control_accepted": false,
+  "immutable_environment_claimed": false,
+  "rows": [
+    {
+      "id": "fixed-complete-upstream",
+      "status": "closed_preexisting",
+      "owner": "A01",
+      "claim": "Single complete pinned Asterinas import and native build entry remain preserved.",
+      "evidence": "support/upstream-lock.json",
+      "boundary": "No kernel version/toolchain upgrade; no A05/A06 runtime source modification."
+    },
+    {
+      "id": "private-cloud-tool-recovery",
+      "status": "closed_actual_this_round",
+      "owner": "A01",
+      "claim": "Fixed Rust/nightly and private native tools restored; actual C4 uses them for a complete source build/boot.",
+      "evidence": "support/build/evidence/2026-10-17-cloud-restore-next/REPORT.md",
+      "boundary": "Private signed inputs; not a complete immutable host image."
+    },
+    {
+      "id": "observed-cross-instance-schema4",
+      "status": "closed_actual_this_round",
+      "owner": "A01",
+      "claim": "C4 absent-target source build and raw33 boot; complete ELF/initramfs/BIOS bytes equal retained A4 inputs on a different observed cloud instance.",
+      "source": "4e8c7083575cec69efabe8d2250dfdd040c8dee8",
+      "boundary": "Same fixed source/toolchain/literal dependency and profile paths; not arbitrary hosts or immutable environment.",
+      "evidence": "support/build/evidence/2026-10-17-repro-cross-instance/README.md"
+    },
+    {
+      "id": "a04-original-exact-inputs",
+      "status": "closed_recovery_only_this_round",
+      "owner": "A01 delivers; A04 consumes",
+      "claim": "Manifest-matching original USTAR plus all four ELF inputs and all 17 rootfs files recovered exactly from retained Git.",
+      "source": "3e5ec7c",
+      "evidence": "support/build/handoffs/a04-exact-rootfs/README.md",
+      "boundary": "Payload not executed; Linux compatibility gaps remain open."
+    },
+    {
+      "id": "normal-sdk-foreign-root-mtime",
+      "status": "closed_actual_this_round",
+      "owner": "A01",
+      "claim": "Per-run locked SDK installation root and fixed private Cargo subcommand selection; actual Cargo parent-component counterexample fixed.",
+      "source": "00a24cf5557d1b8e9663a19cc4961af81131d416",
+      "evidence": "support/build/evidence/2026-10-17-private-sdk/REPORT.md",
+      "host_executions": 161,
+      "boundary": "One actual cold build and warm raw33 boot with retained private SDK payloads; not immutable compiler attestation. Historical initial wrong-root SDK payload was not retained.",
+      "native_source": "0a7037fdde1e4c21884ea4f490ff28134082d0a2",
+      "native_evidence": "support/build/evidence/2026-10-17-private-sdk-native/REPORT.md"
+    },
+    {
+      "id": "debug-private-sdk-evidence",
+      "status": "closed_actual_this_round",
+      "owner": "A01",
+      "claim": "Debug observes its current boot private SDK and installation receipt rather than unrelated global binary.",
+      "source": "a5af45537dea32039ea172ad0d7e381400c07d95",
+      "evidence": "support/build/evidence/2026-10-17-debug-private-sdk/REPORT.md",
+      "host_complete_suite_executions": 32,
+      "independent_focused_repeated_subset": 8,
+      "boundary": "Actual TCP/GDB and raw33 accepted separately; installed SDK identity is a post-build observation, not immutable executed-byte custody.",
+      "native_evidence": "support/build/evidence/2026-10-17-debug-private-sdk-native/README.md"
+    },
+    {
+      "id": "main47288-bounded-response-codec",
+      "status": "closed_host_only_this_round",
+      "owner": "A02 source; A01 independent validation",
+      "claim": "Exact main47288 unchanged acceptance runner passed13/13 including bounded response-snapshot method.",
+      "source": "47288c4465720d125658b392efc655b333c90868",
+      "evidence": "support/build/evidence/2026-10-17-main47288-abi/README.md",
+      "runner_checks": 13,
+      "python_ordinary": 52,
+      "python_optimized": 52,
+      "rust_unit_integration": 74,
+      "rust_doctest": 1,
+      "mutants_killed": 12,
+      "negative_assertions": 17,
+      "boundary": "No native ioctl/copyout, trusted CapSpace, scheduling or persistence proof."
+    },
+    {
+      "id": "native-private-sdk-n2",
+      "status": "closed_actual_this_round",
+      "owner": "A01 root",
+      "source": "0a7037fdde1e4c21884ea4f490ff28134082d0a2",
+      "tool_session": 19957,
+      "claim": "Root session19957 exit0,11commands0,279cold compile lines,0boot compile lines,raw33 and fresh live/source checks pass.",
+      "boundary": "Global before payload not retained; acceptance does not claim global immutable custody, normalized reproducibility, or a second cold build.",
+      "evidence": "support/build/evidence/2026-10-17-private-sdk-native/REPORT.md",
+      "kernel_sha256": "5c2cee2a8806baf873149ce07f752cc3b1c633efd4199e0c8c0ba20ef5f325f7",
+      "kernel_size": 8255688,
+      "first_and_loaded_kernel_complete_bytes_equal": true,
+      "private_sdk_complete_bytes_equal": true,
+      "private_sdk_sha256": "94df3fd621055d9f99d3649c21a32d076448d68d8ea4b51d78c8b639a5d2adf0",
+      "global_sdk_sha256_unchanged": "b5b92798bfcfb9416539fcaca3271cdc7017444affba26b34b7881d861171f2e",
+      "global_sdk_fd_and_path_stat_unchanged": true,
+      "global_before_after_complete_payload_comparison_claimed": false
+    },
+    {
+      "id": "native-private-sdk-debug-retry",
+      "status": "closed_actual_this_round",
+      "owner": "A01 root",
+      "source": "a5af45537dea32039ea172ad0d7e381400c07d95",
+      "tool_session": 67862,
+      "claim": "Root session67862 exit0,6 commands0,177 compilation lines;32 runtime entry bytes match symbol+boot,detach0,raw33.",
+      "prior_attempt": "prepare failed because controller selected absent private-prefix nm; no kernel/VM launch; corrected controller uses /usr/bin/x86_64-linux-gnu-nm",
+      "boundary": "Target reused and actual recompilation retained; no cold build or immutable execution claim.",
+      "evidence": "support/build/evidence/2026-10-17-debug-private-sdk-native/README.md"
+    },
+    {
+      "id": "a05-trusted-native-control",
+      "status": "open_owner",
+      "owner": "A05 / A00",
+      "evidence": "round-next/owner-readback.json pr87",
+      "head": "224fcdde44b9c68163298623fd908e3009b1b2a6",
+      "remaining": "Trusted CapSpace/process-start/exec_epoch/launch grants and native five-operation permissions/lifecycle/errno.",
+      "boundary": "Historical QueryAbi-only real guest is preserved at its original source/ELF; not full native authority or latest-head G1."
+    },
+    {
+      "id": "a06-final-runtime-debit",
+      "status": "open_owner",
+      "owner": "A06 / A00",
+      "evidence": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/issues/63",
+      "head": "57b23ede7e242711ef142b672f04c896383a264a",
+      "remaining": "Settle original-domain pending CPU interval after weak Process reference expires; test exit/preemption/ancestor/boundary in1/2CPU guests.",
+      "boundary": "Source lifetime concern; not a demonstrated QEMU quota-bypass exploit."
+    },
+    {
+      "id": "a05-a06-g1",
+      "status": "open_owner",
+      "owner": "A05 / A06 / A00",
+      "remaining": "Integrated trusted native control with actual CPU enforcement and negative ordinary-client workload evidence.",
+      "boundary": "A03 host state-core and ABI checks do not establish native G1."
+    },
+    {
+      "id": "a07-persistent-owner-g2",
+      "status": "open_owner",
+      "owner": "A07 / A00",
+      "remaining": "Existing unique Hepta durable operation owner K\u2194D, actual authenticated tool effect, recovery/query/ack/retire/revoke/kill/reboot.",
+      "boundary": "No second business database or parallel authority; no new G2 proof in this round."
+    },
+    {
+      "id": "a04-msg-cmsg-cloexec",
+      "status": "open_owner",
+      "owner": "A05 implementation; A04 differential guest acceptance",
+      "remaining": "MSG_CMSG_CLOEXEC must set received FD_CLOEXEC.",
+      "boundary": "Previously observed guest failure; not rerun against N2 here."
+    },
+    {
+      "id": "a04-rlimit-nofile",
+      "status": "open_owner",
+      "owner": "A05 implementation; A04 differential guest acceptance",
+      "remaining": "RLIMIT_NOFILE soft32 must stop additional opens with EMFILE.",
+      "boundary": "Previously observed guest allowed256 opens; exact input recovery does not close behavior."
+    },
+    {
+      "id": "host-default-af-unix",
+      "status": "not_closed_this_round",
+      "owner": "cloud capability / A01 test route",
+      "remaining": "Actual default AF_UNIX daemon route on an environment permitting it.",
+      "boundary": "Historical TCP matrix22/22 is a named fallback; guest AF_UNIX acceptance is separate."
+    },
+    {
+      "id": "kvm-vmx-ept",
+      "status": "not_closed_this_round",
+      "owner": "cloud hardware capability / A09 coordination",
+      "remaining": "Authorized KVM/VMX/EPT environment and actual exercised tests.",
+      "boundary": "TCG raw33 and soft skips do not exercise VMX/EPT or establish bare metal."
+    },
+    {
+      "id": "arbitrary-host-reproduction",
+      "status": "not_established",
+      "owner": "A01 / A00",
+      "remaining": "Broader host/input-layout reproduction beyond the observed same-layout cloud instances.",
+      "boundary": "Do not erase concrete observed A4/C4 equality; do not extrapolate it to arbitrary hosts."
+    },
+    {
+      "id": "immutable-complete-environment",
+      "status": "not_established",
+      "owner": "A01 / A00",
+      "remaining": "Complete immutable environment/container/toolchain/dependency closure and replay.",
+      "boundary": "Signed private packages and stable-file observations are not a whole-host immutable image."
+    },
+    {
+      "id": "unknown-workspace-writer",
+      "status": "open_unattributed",
+      "owner": "project environment / A00",
+      "remaining": "Identify source of historical file/mode/generated-manifest replacement and prevent it within actual authorized environment.",
+      "boundary": "Untracked unexecuted draft reappeared with new inodes; v1 atime diagnostic corrected; v2 observed MOVED_FROM and12 seconds without reappearance, later absent. Writer identity unknown; same-UID private prefix is not an immutable sandbox."
+    },
+    {
+      "id": "latest-head-ci-and-a00-integration",
+      "status": "pending_final_readback",
+      "owner": "A00 / A01 PR evidence",
+      "remaining": "Fresh final-head check/run states and PR22 main integration decision.",
+      "boundary": "Queued/in-progress/historical CI is not final-head green; A01 does not write main."
+    },
+    {
+      "id": "private-ktest-native-suites",
+      "status": "closed_actual_this_round",
+      "owner": "A01 root",
+      "source_commit": "ff0d09a2c2e0cba1d528d11a06083f588989a9f3",
+      "host_mock_checks_passed": 11,
+      "scope": "Actual private SDK OSTD221/core141,362reported/3soft/359exercised lower bound;two raw33.",
+      "boundary": "Three VMX/EPT soft skips are not exercised passes; target reused.",
+      "code_status": "Published source; actual two suites completed",
+      "tool_session": 79302,
+      "evidence": "support/build/evidence/2026-10-17-ktest-private-sdk-native/REPORT.md",
+      "reported_passed": 362,
+      "failed": 0,
+      "soft_skipped": 3,
+      "exercised_passed_lower_bound": 359
+    }
+  ],
+  "updated_utc": "2026-10-17T04:44:00+00:00",
+  "current_round_real_qemu_guests": 5,
+  "current_round_raw_qemu_exits": [
+    33,
+    33,
+    33,
+    33,
+    33
+  ],
+  "deferred_after_publication": [
+    "Fresh final-head PR22/check/run readback after closure publication; earlier CI snapshot is historical only.",
+    "A00 integration and listed cross-owner/environment blockers remain open."
+  ]
+}

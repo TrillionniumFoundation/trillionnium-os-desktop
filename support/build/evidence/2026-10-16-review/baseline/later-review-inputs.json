@@ -1,0 +1,12 @@
+{
+  "observed_after_full_22": true,
+  "full_22_code_commit": "f473a2ccc8dfeaed1223e8478a19c79c90b323e4",
+  "comments": [
+    {
+      "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/22#discussion_r4294528498",
+      "path": "support/build/osdk-integration/record-qemu.py",
+      "body": "**<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>  Keep the capture helper inside the runner's cleanup scope**\n\nWhen the coverage case reaches `--case-timeout` while capture is active, this creates the capture helper and GDB in a new session. The timeout handler in `run.py` lines 174-180 only signals the harness process group, so it kills the recorder before its `BaseException` cleanup can run but cannot reach this nested session; the capture processes can therefore outlive the timed-out case and overlap a retry after the runner releases its lock. Ensure the helper is tied to the recorder's lifetime or explicitly terminate this separately owned session from the outer timeout path.\n\nUseful? React with 👍 / 👎.\n\n<!-- codex-code-review-finding:v1 -->",
+      "created_at": "2026-10-16T12:13:59Z"
+    }
+  ]
+}

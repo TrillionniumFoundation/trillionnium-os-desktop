@@ -1,0 +1,15 @@
+# Independent review: per-case OSDK targets
+
+The reviewed runner gives each case an exclusive generated `target/osdk` tree and shares only `debug`, `release` and `x86_64-unknown-none` compilation directories. The CLI retains one persistent integration lock across profiles and caches. Existing generated trees and unexpected entries are preserved.
+
+One actual controller-order defect was found: the initial patch could reach production Cargo before its per-case checks rejected a foreign `debug` symlink. `check_preflight_order.py` reproduces this through the actual public runner with command collaborators; it does not execute Cargo or a VM. On source SHA `122557ab91e7a71645c0b24e31d9bd232081911d72855b9dbe89a2db8a43a6f8`, the production command was reached. On reviewed source SHA `6d1ade703a944aa4773033f86edeed3c82d0e5f274253e9327458efcd92451cc`, the same input raises NotADirectoryError before harness preparation or Cargo (`calls=[]`). The foreign marker remains unchanged in both fixtures.
+
+The repair adds a no-follow cache/profile preflight before the first Cargo operation, keeps the per-case checks and identity records, rejects unexpected directories/files/links, and leaves partial owned output for diagnosis. No further blocking issue was found in this review.
+
+The final independent host-only receipt ran nine target-custody tests with `python3 -I -B`, exit 0, with identical runner source hash before and after. Its test source SHA is saved in the receipt. The owner subsequently added a tenth test without changing the runner source; this review does not relabel the saved nine-test run as ten. A separate actual flock fixture confirms a second runner is refused, its requested output is not consumed, and the lock can be reacquired after release.
+
+Canonical Cargo workspace roots remain under allowed output/cache roots. Coverage symbol paths resolve to the same original shared ELF used by capture/binding. UNIX monitor sockets use short TMPDIR paths; GDB uses project-relative or short fixed-root paths, so the added case target component does not lengthen them. Normal/UNIX/TCP/capture selection logic was unchanged. A delegated read-only check of the preceding patch ran seven profile tests, eight then-current case-target tests, and three profiles through the actual Cargo shim with lightweight fake child tools; none ran real compilation, GDB or a guest. Those observations are distinct from the final nine-test receipt retained here.
+
+No historical writer is attributed. These checks do not protect against an arbitrary external process replacing paths and do not establish that the complete integration suite passes. Root will run the full 22-case real regression from the published source.
+
+All work was read-only in the repository. This bundle contains the review probe, results and a patch for reconstructing the initial red baseline from a temporary copy of the reviewed source; it contains no duplicate production implementation. The source binding is to measured working-tree bytes, not an invented Git commit.

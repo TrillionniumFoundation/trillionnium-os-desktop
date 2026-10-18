@@ -1,0 +1,115 @@
+{
+  "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+  "kind": "host_only_archive_validation_no_new_qemu",
+  "runs": [
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "/workspace/scratch/ae1a8cf05419/next5-archive-review",
+        "-p",
+        "test_archive.py",
+        "-v"
+      ],
+      "source_stage": "a00_exact",
+      "tests": 13,
+      "exit": 0,
+      "log": "original-tests-I.log"
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "-O",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "/workspace/scratch/ae1a8cf05419/next5-archive-review",
+        "-p",
+        "test_archive.py",
+        "-v"
+      ],
+      "source_stage": "a00_exact",
+      "tests": 13,
+      "exit": 0,
+      "log": "original-tests-IO.log"
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/next5-archive-review/reproduce_original.py"
+      ],
+      "source_stage": "a00_exact",
+      "exit": 0,
+      "output": "original-reproductions.json"
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "support/build/osdk-integration",
+        "-p",
+        "test_archive.py",
+        "-v"
+      ],
+      "source_stage": "adopted_final",
+      "tests": 20,
+      "exit": 0,
+      "log": "adopted-tests-I.log"
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "-O",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "support/build/osdk-integration",
+        "-p",
+        "test_archive.py",
+        "-v"
+      ],
+      "source_stage": "adopted_final",
+      "tests": 20,
+      "exit": 0,
+      "log": "adopted-tests-IO.log"
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/next5-archive-review/compatibility.py"
+      ],
+      "source_stage": "adopted_final",
+      "exit": 0,
+      "log": "compatibility-final.log"
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check",
+        "--",
+        "support/build/osdk-integration/archive.py",
+        "support/build/osdk-integration/test_archive.py"
+      ],
+      "exit": 0
+    }
+  ],
+  "notes": [
+    "Test logs are raw, including intermediate staged runs. Reproduction helper was actually executed while its neighboring archive.py held the exact A00 version. It must be paired with the pinned upstream version to reproduce old defects.",
+    "Existing native source run directories were only read; their result payloads are not recopied here."
+  ]
+}

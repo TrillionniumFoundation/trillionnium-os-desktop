@@ -1,0 +1,173 @@
+{
+  "kind": "read_only_semantic_graph_review_no_new_Cargo_no_Rust_no_VM",
+  "profile_sha256": "e1dc29bebb7fa8ee32e4eb2022b26785f1ace48535f714e4da79628b2e49ac2b",
+  "upstream_priority_source": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/kernel/libs/comp-sys/component-macro/src/priority.rs",
+  "upstream_priority_sha256": "7c89992761844d328e1f57d03f2b02b1d9cd869e80fd1d5279566de1fb4d0761",
+  "real_Cargo_fixture_cases": [
+    {
+      "kind": "actual_Cargo_metadata_from_toy_macro_fixture_not_full_kernel",
+      "original_path": "/workspace/scratch/ae1a8cf05419/repro-round2/cases-v2/normalized-A/metadata-2977-original.json",
+      "original_sha256": "fb4818fe12a24e435812a7ccf11df766667768c0478bea8777bafacc9dc3c2e4",
+      "saved_mapped_sha256": "838c98633b5ee3d3a559df840afcb426b577191e90b40c6ea61cd01ca4fba2b0",
+      "packages": 24,
+      "resolve_nodes": 24,
+      "candidate_corrects_prior_saved_root_package_ID_omissions": [
+        {
+          "json_path": "/packages/9/id",
+          "prior_value": "path+file:///workspace/scratch/ae1a8cf05419/repro-round2/checkout-C#probe-app@0.1.0",
+          "candidate_value": "path+file:///workspace/scratch/ae1a8cf05419/repro-round2/virtual-workspace-v2#probe-app@0.1.0"
+        },
+        {
+          "json_path": "/workspace_members/0",
+          "prior_value": "path+file:///workspace/scratch/ae1a8cf05419/repro-round2/checkout-C#probe-app@0.1.0",
+          "candidate_value": "path+file:///workspace/scratch/ae1a8cf05419/repro-round2/virtual-workspace-v2#probe-app@0.1.0"
+        },
+        {
+          "json_path": "/workspace_default_members/0",
+          "prior_value": "path+file:///workspace/scratch/ae1a8cf05419/repro-round2/checkout-C#probe-app@0.1.0",
+          "candidate_value": "path+file:///workspace/scratch/ae1a8cf05419/repro-round2/virtual-workspace-v2#probe-app@0.1.0"
+        },
+        {
+          "json_path": "/resolve/nodes/9/id",
+          "prior_value": "path+file:///workspace/scratch/ae1a8cf05419/repro-round2/checkout-C#probe-app@0.1.0",
+          "candidate_value": "path+file:///workspace/scratch/ae1a8cf05419/repro-round2/virtual-workspace-v2#probe-app@0.1.0"
+        },
+        {
+          "json_path": "/resolve/root",
+          "prior_value": "path+file:///workspace/scratch/ae1a8cf05419/repro-round2/checkout-C#probe-app@0.1.0",
+          "candidate_value": "path+file:///workspace/scratch/ae1a8cf05419/repro-round2/virtual-workspace-v2#probe-app@0.1.0"
+        }
+      ],
+      "other_projected_fields_equal_prior_saved_object": true,
+      "component_view_before": [
+        {
+          "name": "toy-component",
+          "path": "/workspace/scratch/ae1a8cf05419/repro-round2/checkout-C/toy-component",
+          "in_workspace": true,
+          "priority": 0
+        }
+      ],
+      "component_view_after": [
+        {
+          "name": "toy-component",
+          "path": "/workspace/scratch/ae1a8cf05419/repro-round2/virtual-workspace-v2/toy-component",
+          "in_workspace": true,
+          "priority": 0
+        }
+      ],
+      "membership_checks": [
+        {
+          "name": "toy-component",
+          "in_workspace_before": true,
+          "in_workspace_after": true,
+          "listed": true
+        }
+      ]
+    },
+    {
+      "kind": "actual_Cargo_metadata_from_toy_macro_fixture_not_full_kernel",
+      "original_path": "/workspace/scratch/ae1a8cf05419/repro-round2/cases-v2/normalized-A/metadata-2995-original.json",
+      "original_sha256": "fb4818fe12a24e435812a7ccf11df766667768c0478bea8777bafacc9dc3c2e4",
+      "saved_mapped_sha256": "838c98633b5ee3d3a559df840afcb426b577191e90b40c6ea61cd01ca4fba2b0",
+      "packages": 24,
+      "resolve_nodes": 24,
+      "candidate_corrects_prior_saved_root_package_ID_omissions": [
+        {
+          "json_path": "/packages/9/id",
+          "prior_value": "path+file:///workspace/scratch/ae1a8cf05419/repro-round2/checkout-C#probe-app@0.1.0",
+          "candidate_value": "path+file:///workspace/scratch/ae1a8cf05419/repro-round2/virtual-workspace-v2#probe-app@0.1.0"
+        },
+        {
+          "json_path": "/workspace_members/0",
+          "prior_value": "path+file:///workspace/scratch/ae1a8cf05419/repro-round2/checkout-C#probe-app@0.1.0",
+          "candidate_value": "path+file:///workspace/scratch/ae1a8cf05419/repro-round2/virtual-workspace-v2#probe-app@0.1.0"
+        },
+        {
+          "json_path": "/workspace_default_members/0",
+          "prior_value": "path+file:///workspace/scratch/ae1a8cf05419/repro-round2/checkout-C#probe-app@0.1.0",
+          "candidate_value": "path+file:///workspace/scratch/ae1a8cf05419/repro-round2/virtual-workspace-v2#probe-app@0.1.0"
+        },
+        {
+          "json_path": "/resolve/nodes/9/id",
+          "prior_value": "path+file:///workspace/scratch/ae1a8cf05419/repro-round2/checkout-C#probe-app@0.1.0",
+          "candidate_value": "path+file:///workspace/scratch/ae1a8cf05419/repro-round2/virtual-workspace-v2#probe-app@0.1.0"
+        },
+        {
+          "json_path": "/resolve/root",
+          "prior_value": "path+file:///workspace/scratch/ae1a8cf05419/repro-round2/checkout-C#probe-app@0.1.0",
+          "candidate_value": "path+file:///workspace/scratch/ae1a8cf05419/repro-round2/virtual-workspace-v2#probe-app@0.1.0"
+        }
+      ],
+      "other_projected_fields_equal_prior_saved_object": true,
+      "component_view_before": [
+        {
+          "name": "toy-component",
+          "path": "/workspace/scratch/ae1a8cf05419/repro-round2/checkout-C/toy-component",
+          "in_workspace": true,
+          "priority": 0
+        }
+      ],
+      "component_view_after": [
+        {
+          "name": "toy-component",
+          "path": "/workspace/scratch/ae1a8cf05419/repro-round2/virtual-workspace-v2/toy-component",
+          "in_workspace": true,
+          "priority": 0
+        }
+      ],
+      "membership_checks": [
+        {
+          "name": "toy-component",
+          "in_workspace_before": true,
+          "in_workspace_after": true,
+          "listed": true
+        }
+      ]
+    }
+  ],
+  "synthetic_dependency_priorities_before": [
+    {
+      "name": "a",
+      "path": "/review-real/a",
+      "in_workspace": true,
+      "priority": 0
+    },
+    {
+      "name": "b",
+      "path": "/review-real/b",
+      "in_workspace": true,
+      "priority": 1
+    },
+    {
+      "name": "external",
+      "path": "/outside/external",
+      "in_workspace": false,
+      "priority": 2
+    }
+  ],
+  "synthetic_dependency_priorities_after": [
+    {
+      "name": "a",
+      "path": "/review-virtual/a",
+      "in_workspace": true,
+      "priority": 0
+    },
+    {
+      "name": "b",
+      "path": "/review-virtual/b",
+      "in_workspace": true,
+      "priority": 1
+    },
+    {
+      "name": "external",
+      "path": "/outside/external",
+      "in_workspace": false,
+      "priority": 2
+    }
+  ],
+  "missing_component_rejected_by_both": {
+    "upstream_predicate_transcription": "upstream missing workspace component",
+    "candidate": "component missing from Components.toml: a"
+  },
+  "scope": "Python transcription of read upstream algorithm; actual macro/full-kernel execution remains separately owned by root"
+}

@@ -1,0 +1,176 @@
+{
+  "schema": 1,
+  "status": "completed",
+  "generated_utc": "2026-10-16T14:09:10.345487+00:00",
+  "upstream": {
+    "tag": "v0.19.0",
+    "commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+    "tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+    "toolchain": "nightly-2026-07-21",
+    "source_directory": "kernel/asterinas"
+  },
+  "branch": "agents/A01-asterinas-boot",
+  "pr": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/22",
+  "phase": {
+    "evidence": "support/build/evidence/2026-10-16-ktest-lifecycle/report.json",
+    "latest_main_merged": "ed7c9ef81388f89f1509e62f4d8d54322b23f496",
+    "main_merge_commit": "84040737d2263368d254d4b16dabff7afb797ea4",
+    "ktest_code_commit": "efb02440ad6fff3b7a1a5d5019f660743d74ab32",
+    "manifest_code_commit": "a770f31a868d805524065c65a2bcfcbcf10ede2e",
+    "host_ktest_per_python_mode": 15,
+    "host_manifest_and_supervisor_per_python_mode": 31,
+    "python_modes": [
+      "-I",
+      "-I -O"
+    ],
+    "reported_kernel_passes": 362,
+    "kernel_soft_skips": 3,
+    "kernel_exercised_passed_lower_bound": 359,
+    "actual_cancellation": {
+      "tool_session": 50773,
+      "controller_exit": 0,
+      "cli_exit": 143,
+      "actual_cargo_raw_exit": 13,
+      "effective_cancellation_exit": 143,
+      "native_qemu_paused_with_minus_S": true,
+      "qemu_record_raw_exit": null,
+      "guest_execution_or_boot_pass_claimed": false,
+      "pidfds_exited": true,
+      "stable_workspace_lock_released": true,
+      "direct_command_leaders_reaped": 6
+    },
+    "no_tracked_kernel_source_changes_this_phase": true,
+    "upstream_hardware_matrix_or_resource_control_accepted": false
+  },
+  "full_kernel_test_result": {
+    "passed": true,
+    "crates": [
+      {
+        "passed": true,
+        "guests": [
+          {
+            "crate": "ostd",
+            "declared": 221,
+            "passed": 221,
+            "failed": 0,
+            "filtered": 0,
+            "soft_skipped": 3,
+            "soft_skip_reasons": [
+              "VMX unavailable",
+              "VMX unavailable",
+              "VMX/EPT invalidation unavailable"
+            ],
+            "exercised_passed_lower_bound": 218,
+            "observed_test_starts": 221,
+            "raw_qemu_exit": 33,
+            "guest": "guest-001"
+          }
+        ]
+      },
+      {
+        "passed": true,
+        "guests": [
+          {
+            "crate": "aster-core",
+            "declared": 141,
+            "passed": 141,
+            "failed": 0,
+            "filtered": 0,
+            "soft_skipped": 0,
+            "soft_skip_reasons": [],
+            "exercised_passed_lower_bound": 141,
+            "observed_test_starts": 141,
+            "raw_qemu_exit": 33,
+            "guest": "guest-001"
+          }
+        ]
+      }
+    ],
+    "toolchain": "nightly-2026-07-21",
+    "runner_sha256": "e18d02adb932ba213f9f78cdad9457a439465779edb46542eec8ecf590514b1e",
+    "command_receipts": [
+      "aster-core/osdk-test.log.command.json",
+      "aster-core/result.json.command.json",
+      "cargo-version.log.command.json",
+      "git-head.log.command.json",
+      "git-status.log.command.json",
+      "osdk-install.log.command.json",
+      "ostd/osdk-test.log.command.json",
+      "ostd/result.json.command.json",
+      "rustc-version.log.command.json",
+      "source-inputs.json.command.json"
+    ]
+  },
+  "latest_native_boot": {
+    "code_commit": "a770f31a868d805524065c65a2bcfcbcf10ede2e",
+    "source_tree": "af2e1bc4d215ac4dc6eadd0cecc147e1673b1c1e",
+    "actual_tool_session": 58936,
+    "actual_tool_exit": 0,
+    "source_build_invoked": true,
+    "release_compilation_observed": false,
+    "target_cache_reused": true,
+    "empty_target_rebuild": false,
+    "passed": true,
+    "qemu_raw_exit": 33,
+    "supervisor_exit": 0,
+    "worker_reaped": true,
+    "boot_sha256": "490ca0406593c28e64a22333ba432de6122b9a796b0f7f20352b6b2c55e7df56",
+    "boot_size": 8290880,
+    "initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+    "serial_sha256": "774861f179d264e69ce774ce85a95011c78c125bd2a4a3defa93959bf73b2302",
+    "evidence": "support/build/evidence/2026-10-16-ktest-lifecycle/kernel-public/README.md",
+    "profile": "x86_64-q35-tcg-max-1cpu-512MiB-SeaBIOS",
+    "source_directory": "kernel/asterinas",
+    "derived_tree": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da",
+    "manifest_cleanup_outcome": "owned_removed",
+    "manifest_cleanup_helper_sha256": "6620d8be088f3602e673397081c5230aa5eb2cad54fd4080f21b3afe370a82c8",
+    "later_foreign_manifest_observed": true,
+    "foreign_manifest_writer_identified": false
+  },
+  "actual_cancellation": {
+    "tool_session": 50773,
+    "controller_exit": 0,
+    "cli_exit": 143,
+    "actual_cargo_raw_exit": 13,
+    "effective_cancellation_exit": 143,
+    "native_qemu_paused_with_minus_S": true,
+    "qemu_record_raw_exit": null,
+    "guest_execution_or_boot_pass_claimed": false,
+    "pidfds_exited": true,
+    "stable_workspace_lock_released": true,
+    "direct_command_leaders_reaped": 6
+  },
+  "archive_directories": [
+    "host-ktest",
+    "host-manifest",
+    "kernel-tests",
+    "real-ktest-cancel",
+    "kernel-public"
+  ],
+  "remote_ci_snapshot": {
+    "source_commit": "a770f31a868d805524065c65a2bcfcbcf10ede2e",
+    "checks": [
+      {
+        "name": "host-evidence",
+        "status": "queued",
+        "conclusion": null
+      },
+      {
+        "name": "Analyze (python)",
+        "status": "queued",
+        "conclusion": null
+      }
+    ],
+    "final_evidence_commit_checks_not_yet_created": true
+  },
+  "limitations": [
+    "unknown later manifest writer",
+    "host AF_UNIX socket creation EPERM",
+    "CI queued, main not merged",
+    "A04 prior 24/28 result not rerun",
+    "OSDK prior 22/22 not rerun",
+    "no HOS2/quota/Hepta/SMP/persistence acceptance",
+    "cache reuse is explicit; no bit reproducibility claim"
+  ],
+  "root_readme_bytes": 0
+}

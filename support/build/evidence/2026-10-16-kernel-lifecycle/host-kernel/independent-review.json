@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "reviewer": "/root/next5_monitor",
+  "kind": "read_only_cooperative_helper_and_debug_route_review",
+  "reviewed_paths": [
+    "support/build/kernel.sh",
+    "support/build/kernel-supervisor.py"
+  ],
+  "source_sha256": {
+    "support/build/kernel.sh": "67be1710836069b7b84a50ff5c97d5ccf9f190bbc98c99741d30869ec6ea04fd",
+    "support/build/kernel-supervisor.py": "d6ccfd00f3eef634ae7032446437039ff88f0935cf0acb3cb589903b57505d61"
+  },
+  "blocking_findings": [],
+  "findings": [
+    "Handler only records first signal; Popen ownership publication does not unwind asynchronously.",
+    "OwnedWorker.exited uses WNOWAIT and ECHILD disarm; both group signals precede reap; later stop on a reaped entry sends no signal.",
+    "main finally retains errors/receipt and maps first signal to130/143.",
+    "Debug explicitly sets A01_KERNEL_WORKER=1 so the added standalone session is bypassed.",
+    "GDB pass_fds retains validated descriptors >=64."
+  ],
+  "reviewer_reran_tests": false,
+  "reviewer_changed_source": false,
+  "parent_review": "Accepted cooperative first_signal state after requesting replacement of intermediate throwing-handler/IGN-transition design.",
+  "kernel_claim": false
+}

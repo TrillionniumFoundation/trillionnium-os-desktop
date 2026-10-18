@@ -1,0 +1,135 @@
+{
+  "source_commit": "47288c4465720d125658b392efc655b333c90868",
+  "records": [
+    {
+      "label": "source-head",
+      "command": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/tmp/trillionnium-a01-main47288-abi",
+      "start_utc": "2026-10-17T04:12:59.084417+00:00",
+      "finish_utc": "2026-10-17T04:12:59.086604+00:00",
+      "exit_code": 0
+    },
+    {
+      "label": "source-status-before",
+      "command": [
+        "git",
+        "status",
+        "--porcelain"
+      ],
+      "cwd": "/tmp/trillionnium-a01-main47288-abi",
+      "start_utc": "2026-10-17T04:12:59.086820+00:00",
+      "finish_utc": "2026-10-17T04:12:59.192449+00:00",
+      "exit_code": 0
+    },
+    {
+      "label": "source-trees",
+      "command": [
+        "git",
+        "rev-parse",
+        "HEAD^{tree}",
+        "HEAD:kernel/asterinas",
+        "HEAD:libs/os-abi",
+        "HEAD:tests/abi",
+        "HEAD:tests/golden"
+      ],
+      "cwd": "/tmp/trillionnium-a01-main47288-abi",
+      "start_utc": "2026-10-17T04:12:59.192791+00:00",
+      "finish_utc": "2026-10-17T04:12:59.196973+00:00",
+      "exit_code": 0
+    },
+    {
+      "label": "changed-input-blobs",
+      "command": [
+        "git",
+        "ls-tree",
+        "47288c4465720d125658b392efc655b333c90868",
+        "libs/os-abi/src/lib.rs",
+        "libs/os-abi/tests/response_snapshot.rs",
+        "tests/abi/A02_RESPONSE_SNAPSHOT_ACCEPTANCE_2026-10-17.md",
+        "tests/abi/run_acceptance.py"
+      ],
+      "cwd": "/tmp/trillionnium-a01-main47288-abi",
+      "start_utc": "2026-10-17T04:12:59.197198+00:00",
+      "finish_utc": "2026-10-17T04:12:59.199921+00:00",
+      "exit_code": 0
+    },
+    {
+      "label": "rustc-identity",
+      "command": [
+        "rustup",
+        "run",
+        "nightly-2026-07-21",
+        "rustc",
+        "-Vv"
+      ],
+      "cwd": "/tmp/trillionnium-a01-main47288-abi",
+      "start_utc": "2026-10-17T04:12:59.200065+00:00",
+      "finish_utc": "2026-10-17T04:12:59.229454+00:00",
+      "exit_code": 0
+    },
+    {
+      "label": "cargo-identity",
+      "command": [
+        "rustup",
+        "run",
+        "nightly-2026-07-21",
+        "cargo",
+        "-Vv"
+      ],
+      "cwd": "/tmp/trillionnium-a01-main47288-abi",
+      "start_utc": "2026-10-17T04:12:59.229967+00:00",
+      "finish_utc": "2026-10-17T04:12:59.249513+00:00",
+      "exit_code": 0
+    },
+    {
+      "label": "acceptance",
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "tests/abi/run_acceptance.py",
+        "--repo-root",
+        "/tmp/trillionnium-a01-main47288-abi",
+        "--output-dir",
+        "/workspace/scratch/ae1a8cf05419/main47288-abi-validation/acceptance",
+        "--timeout",
+        "60",
+        "--mutation-timeout",
+        "900"
+      ],
+      "cwd": "/tmp/trillionnium-a01-main47288-abi",
+      "start_utc": "2026-10-17T04:12:59.249890+00:00",
+      "finish_utc": "2026-10-17T04:13:10.725146+00:00",
+      "exit_code": 0
+    },
+    {
+      "label": "source-status-after",
+      "command": [
+        "git",
+        "status",
+        "--porcelain"
+      ],
+      "cwd": "/tmp/trillionnium-a01-main47288-abi",
+      "start_utc": "2026-10-17T04:13:10.725680+00:00",
+      "finish_utc": "2026-10-17T04:13:10.739028+00:00",
+      "exit_code": 0
+    },
+    {
+      "label": "source-head-after",
+      "command": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/tmp/trillionnium-a01-main47288-abi",
+      "start_utc": "2026-10-17T04:13:10.739371+00:00",
+      "finish_utc": "2026-10-17T04:13:10.741210+00:00",
+      "exit_code": 0
+    }
+  ],
+  "exit_code": 0,
+  "new_kernel_or_guest_test": false
+}

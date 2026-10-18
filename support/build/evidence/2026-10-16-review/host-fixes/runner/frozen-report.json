@@ -1,0 +1,115 @@
+{
+  "schema": 1,
+  "scope": "host-only integration runner lifecycle; no Rust build or QEMU invoked",
+  "source_files_sha256": {
+    "support/build/osdk-integration/run.py": "31b97ef6d7fbbe675364aaa1c27fdc4e36d328cbce307452434dfc7b9888d929",
+    "support/build/osdk-integration/test_runner_lifecycle.py": "05a5e2704e6c66ea7d492b342fca7a0db3bbc1debf5f269b169669e8baa822a1",
+    "support/build/osdk-integration/test_runner.py": "ca5976428d99eb207f0d7c4aa4bfcc9f8f8f8304806c709daddc9602f9c001c9"
+  },
+  "baseline": {
+    "source": "before-run.py",
+    "sha256": "ef81477a6d4acb2719e9e7f839c770dbc054bac13f1361f7e3153a506d42b415",
+    "frozen_test_fixture_log": "baseline-frozen-controls.log",
+    "exit_code": 1,
+    "selected_tests": 4,
+    "failures": 4,
+    "test_names": [
+      "test_success_reaps_leader_after_killing_its_remaining_descendant",
+      "test_sigint_cleans_group_and_preserves_interrupted_command_record",
+      "test_sigterm_cleans_group_and_preserves_interrupted_command_record",
+      "test_busy_lock_does_not_create_output_or_parent_directories"
+    ]
+  },
+  "checks": [
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "support/build/osdk-integration/test_runner_lifecycle.py"
+      ],
+      "log": "lifecycle-frozen.log",
+      "exit_code": 0,
+      "tests": 10,
+      "log_sha256": "908a935027185819161af57bb2ae2d84a434fa54a081aaaf259e523f49140afb"
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "-O",
+        "support/build/osdk-integration/test_runner_lifecycle.py"
+      ],
+      "log": "lifecycle-frozen-optimized.log",
+      "exit_code": 0,
+      "tests": 10,
+      "log_sha256": "e7d0029fa916b5dc7c9a9166e24bbca58bda5df0d87cf99fcea070f5aa82d633"
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "support/build/osdk-integration/test_runner.py"
+      ],
+      "log": "existing-runner-frozen.log",
+      "exit_code": 0,
+      "tests": 1,
+      "log_sha256": "0908d2c0e232f7ff525568313405e23253ee813e2d9d1a18e48d41258dd7f2ec"
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "-O",
+        "support/build/osdk-integration/test_runner.py"
+      ],
+      "log": "existing-runner-frozen-optimized.log",
+      "exit_code": 0,
+      "tests": 1,
+      "log_sha256": "0ed8283285a84fb4c626a8397287aa87a19eb3f93fdd72e9f87a1c98e00d2519"
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "support/build/osdk-integration/test_profiles.py"
+      ],
+      "log": "existing-profiles-final-03.log",
+      "exit_code": 0,
+      "tests": 7,
+      "source_note": "same final runner logic before only stop docstring change",
+      "log_sha256": "83166b089fbcb82fac63f22522fa6ae99bb5e46368cd35d756277fd463dd6346"
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check",
+        "--",
+        "support/build/osdk-integration/run.py",
+        "support/build/osdk-integration/test_runner_lifecycle.py",
+        "support/build/osdk-integration/test_runner.py"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "behavior": [
+    "flock acquired before any new output directory or parent is created",
+    "all subprocess calls use owned new sessions with bounded WNOWAIT polling",
+    "SIGINT and SIGTERM unwind through cleanup and retain command JSON and raw output",
+    "temporary Python signal handler defers shutdown during Popen owner publication without changing child signal mask",
+    "TERM and KILL sent only while direct leader remains unreaped; ECHILD disarms further group signals",
+    "direct leader reaped before output lock release; no subreaper, no /proc traversal, no claim of reaping grandchildren",
+    "real pidfd plus TCP listener lease tests bound descendant exit and resource release after asynchronous SIGKILL"
+  ],
+  "preserved_failures": {
+    "baseline-regressions.log": "initial four real negative controls before fix",
+    "baseline-frozen-controls.log": "same four controls against retained original code using final fixture",
+    "existing-runner-final.log": "old immediate flock assertion exposed asynchronous SIGKILL scheduling race; assertion corrected to bounded two-second real-lock retry"
+  },
+  "intermediate_note": "lifecycle-05-final.log and lifecycle-optimized-final-02.log tested an intermediate /proc group-observation approach; it was removed because this environment has mismatched /proc PID namespace; these are not final acceptance logs.",
+  "constraints": [
+    "only original process group descendants are covered; setsid/setpgid escape is outside this owned-session contract",
+    "sole direct-child reaper; external reap is diagnosed and numeric signals are disarmed",
+    "host controls are not kernel or QEMU boot acceptance"
+  ]
+}

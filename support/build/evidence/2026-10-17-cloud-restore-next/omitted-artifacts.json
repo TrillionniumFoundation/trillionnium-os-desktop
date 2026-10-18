@@ -1,0 +1,26 @@
+{
+  "omitted": [
+    {
+      "path": "round-next/restore-rust-inputs/rustup-init",
+      "bytes": 21113232,
+      "sha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71",
+      "reason": "Executable payload omitted; fresh authenticated URL/size/hash/command receipts retained"
+    },
+    {
+      "path": "native-tools-restore/debs",
+      "reason": "57 .deb payloads remain locally; exact signed identities/download hashes and extraction receipts retained"
+    },
+    {
+      "path": "native-tools/root,toolchains,vdso binary",
+      "reason": "Extracted/installed tool trees and Cargo caches remain local; tool identities and command results retained"
+    }
+  ],
+  "fresh_nightly_manifest": {
+    "member": "restore-rust-inputs/channel-rust-nightly.toml",
+    "direct_copy": "fresh-nightly-manifest.toml.gz",
+    "uncompressed_size": 929653,
+    "sha256": "c0b09f4e128768b2d6eab27050625a1ce974f8b39c07871370368cd82fbf8617",
+    "raw_body_retained": true
+  },
+  "scope": "Omitted payloads were present and used locally during the recorded restoration. This archive verifies authenticated input metadata and original receipts; it cannot reinstall tools without fetching omitted payloads."
+}

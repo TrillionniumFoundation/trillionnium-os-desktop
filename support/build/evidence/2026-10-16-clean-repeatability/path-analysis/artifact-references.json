@@ -1,0 +1,163 @@
+{
+  "schema": 1,
+  "kind": "archived_fixed_elf_path_dependency_analysis",
+  "packaging_source_commit": "5bcec614c1a075782b6ffaa5a5212fdee29be37d",
+  "packaging_source_tree": "00e70e58dfa0dbf4718db55240136683f0a23310",
+  "packaging_source_is_not_a_historical_elf_source_claim": true,
+  "immutable_artifact_references": [
+    {
+      "label": "baseline",
+      "repo_path": "support/build/evidence/2026-10-16/artifacts/kernel.elf.gz",
+      "relative_to_package": "../../2026-10-16/artifacts/kernel.elf.gz",
+      "compression": "gzip",
+      "compressed_bytes": 2570372,
+      "compressed_sha256": "4138796d664a9e8dcd3453e31ca7953d69f74ef269169f1339416235c5b59a91",
+      "uncompressed_bytes": 8297624,
+      "uncompressed_sha256": "e884f5e50cf296833276016894a39337cd9ac13bc51f6b1f2dea3cc3a6904b63",
+      "independently_decompressed_at_package": true,
+      "runtime_source_commit": "02febdc7316cf945f7002823ad62f617f6d6eedd",
+      "runtime_source_tree": "59b7adbdfd0b48cd9dcdf14fbe4ec80571ee53d0"
+    },
+    {
+      "label": "current",
+      "repo_path": "support/build/evidence/2026-10-16-ktest-lifecycle/kernel-public/kernel.elf.gz",
+      "relative_to_package": "../../2026-10-16-ktest-lifecycle/kernel-public/kernel.elf.gz",
+      "compression": "gzip",
+      "compressed_bytes": 2570475,
+      "compressed_sha256": "a40053d77332e838172a0f1c27d0d65f83a1333d1fe6d0343f675d7dcb0d3601",
+      "uncompressed_bytes": 8290880,
+      "uncompressed_sha256": "490ca0406593c28e64a22333ba432de6122b9a796b0f7f20352b6b2c55e7df56",
+      "independently_decompressed_at_package": true,
+      "runtime_source_commit": "a770f31a868d805524065c65a2bcfcbcf10ede2e",
+      "runtime_source_tree": "af2e1bc4d215ac4dc6eadd0cecc147e1673b1c1e"
+    }
+  ],
+  "original_scratch_files": [
+    {
+      "path": "original/README.md",
+      "bytes": 1654,
+      "sha256": "42ebdd639a1c1bad476494a520515161fac6df05a6f3121722dcaf884717967b"
+    },
+    {
+      "path": "original/SHA256SUMS",
+      "bytes": 333,
+      "sha256": "0e86c575a182a98f65566ca3e94a64e290e997174f6beb555eb4370622f7549d"
+    },
+    {
+      "path": "original/component-macro-excerpt.txt",
+      "bytes": 1957,
+      "sha256": "f8616b6b5423bc0c2cf34d4c318e4b5adbb1a0d3f28a70f90393ba4b99b55c7e"
+    },
+    {
+      "path": "original/elf-structure.json",
+      "bytes": 16937,
+      "sha256": "8a869c97c585feaacec376f61e64531fe28baba9db7f2cf2a166b4744c8c83d6"
+    },
+    {
+      "path": "original/report.json",
+      "bytes": 32017,
+      "sha256": "d5cb068cb7fae203d3ccaa4cf5e832c0caa82692e231ec799f85e76fe620e467"
+    }
+  ],
+  "loaded_sections": {
+    ".text": {
+      "name": ".text",
+      "allocated": true,
+      "baseline_size": 4581398,
+      "current_size": 4580470,
+      "size_delta_current_minus_baseline": -928,
+      "bytes_equal_sha256": false,
+      "baseline_sha256": "88ebe1b38fc14ffda94c611ec8d7f248abfcb2a2939ed9ead585f0b132110e75",
+      "current_sha256": "eaccdc6427c2693d28f60d2288a47abf2e052d408b89f4606dbdc9b65e9caf7f"
+    },
+    ".rodata": {
+      "name": ".rodata",
+      "allocated": true,
+      "baseline_size": 747488,
+      "current_size": 739968,
+      "size_delta_current_minus_baseline": -7520,
+      "bytes_equal_sha256": false,
+      "baseline_sha256": "9c813a760b891f3600293037a795a1e5acb0dc1f1ed58b3071a98db6ba2447da",
+      "current_sha256": "30602ab5abb189399f430d3537172492a65849b3414a81983ea03f7e511b89f4"
+    }
+  },
+  "path_occurrences": {
+    "baseline": {
+      "project_root": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+      "root_byte_length": 55,
+      "project_root_occurrences_entire_elf": 931,
+      "project_root_occurrences_rodata": 931,
+      "rustup_root_occurrences_rodata": 31,
+      "cargo_root_occurrences_rodata": 61,
+      "samples": [
+        {
+          "kind": "source_location",
+          "literal": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/syscall/clock_gettime.rs",
+          "file_offset": 4637027,
+          "section_offset": 3995,
+          "matched_bytes": 113
+        },
+        {
+          "kind": "component_metadata_literal",
+          "literal": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/kernel/core/comps/block",
+          "file_offset": 4635663,
+          "section_offset": 2631,
+          "matched_bytes": 96
+        },
+        {
+          "kind": "component_metadata_literal",
+          "literal": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/kernel/comps/i8042",
+          "file_offset": 4655776,
+          "section_offset": 22744,
+          "matched_bytes": 91
+        }
+      ]
+    },
+    "current": {
+      "project_root": "/workspace/scratch/ae1a8cf05419/a01-next6-build",
+      "root_byte_length": 47,
+      "project_root_occurrences_entire_elf": 931,
+      "project_root_occurrences_rodata": 931,
+      "rustup_root_occurrences_rodata": 31,
+      "cargo_root_occurrences_rodata": 61,
+      "samples": [
+        {
+          "kind": "source_location",
+          "literal": "/workspace/scratch/ae1a8cf05419/a01-next6-build/kernel/asterinas/kernel/core/src/syscall/clock_gettime.rs",
+          "file_offset": 4685501,
+          "section_offset": 52469,
+          "matched_bytes": 105
+        },
+        {
+          "kind": "component_metadata_literal",
+          "literal": "/workspace/scratch/ae1a8cf05419/a01-next6-build/kernel/asterinas/kernel/core/comps/block",
+          "file_offset": 4640944,
+          "section_offset": 7912,
+          "matched_bytes": 88
+        },
+        {
+          "kind": "component_metadata_literal",
+          "literal": "/workspace/scratch/ae1a8cf05419/a01-next6-build/kernel/asterinas/kernel/comps/i8042",
+          "file_offset": 4639746,
+          "section_offset": 6714,
+          "matched_bytes": 83
+        }
+      ]
+    }
+  },
+  "runtime_and_key_build_inputs_equal": true,
+  "claims": {
+    "demonstrated_runtime_loaded_absolute_paths": true,
+    "all_changed_bytes_attributed_to_path": false,
+    "cross_directory_bit_identity_proved": false,
+    "cross_host_bit_identity_proved": false,
+    "source_remap_covers_arbitrary_component_literals": false
+  },
+  "scope": {
+    "source_edits": false,
+    "current_target_or_generated_manifest_reads": false,
+    "vm_or_cargo_or_rustc_invocations": false,
+    "git_writes": false,
+    "large_elf_duplicates_in_this_package": false
+  }
+}

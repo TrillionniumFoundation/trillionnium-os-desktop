@@ -1,0 +1,94 @@
+{
+  "schema": 1,
+  "kind": "independent_read_only_source_and_argument_review_no_kernel",
+  "reviewed_initial_freeze": "next5-monitor-frozen-before-recorder-hardening.json",
+  "reviewed_final_freeze": "next5-monitor-frozen.json",
+  "initial_source_sha256": "766f1379528f3320d01557d18c2bed248b5d6e2914b116a49f2e1541d562288e",
+  "final_source_sha256": "0c21d913538af26be28f1897fcb6da912e3a7677092db351e63fd0b28dfb9ee2",
+  "initial_actual_reproduction": {
+    "method": "python3 -I -B importlib exec_module then local_tcp_controls; observed before producer hardening; no socket construction and no QEMU launch",
+    "results": [
+      {
+        "argument": "socket,id=osdk-managed-monitor,fd=3,server=off",
+        "accepted": true,
+        "controls": [
+          {
+            "kind": "monitor",
+            "handoff": "private-connected-inherited-fd",
+            "fd": 3,
+            "requested_value": "socket,id=osdk-managed-monitor,fd=3,server=off"
+          }
+        ]
+      },
+      {
+        "argument": "socket,id=osdk-managed-monitor,fd=64,server=off,server",
+        "accepted": true,
+        "controls": [
+          {
+            "kind": "monitor",
+            "handoff": "private-connected-inherited-fd",
+            "fd": 64,
+            "requested_value": "socket,id=osdk-managed-monitor,fd=64,server=off,server"
+          }
+        ]
+      },
+      {
+        "argument": "socket,id=osdk-managed-monitor,fd=64,server=on,server=off",
+        "accepted": true,
+        "controls": [
+          {
+            "kind": "monitor",
+            "handoff": "private-connected-inherited-fd",
+            "fd": 64,
+            "requested_value": "socket,id=osdk-managed-monitor,fd=64,server=on,server=off"
+          }
+        ]
+      }
+    ]
+  },
+  "final_actual_reproduction": {
+    "method": "same three pure local_tcp_controls calls after producer hardening; no QEMU launch",
+    "results": [
+      {
+        "argument": "socket,id=osdk-managed-monitor,fd=3,server=off",
+        "accepted": false,
+        "error": "local TCP profile requires the reserved preconnected monitor descriptor fd >= 64"
+      },
+      {
+        "argument": "socket,id=osdk-managed-monitor,fd=64,server=off,server",
+        "accepted": false,
+        "error": "private monitor requires exactly socket,id,fd,server without duplicate or bare fields"
+      },
+      {
+        "argument": "socket,id=osdk-managed-monitor,fd=64,server=on,server=off",
+        "accepted": false,
+        "error": "private monitor requires exactly socket,id,fd,server without duplicate or bare fields"
+      }
+    ]
+  },
+  "review_findings": [
+    "Initial recorder accepted fd=3 although Rust producer reserved fd>=64.",
+    "Initial parser dict folded duplicate keys and ignored a bare server field; three concrete malformed inputs were accepted.",
+    "Producer hardened only recorder and recorder tests; final same inputs rejected."
+  ],
+  "accepted_chain": [
+    "Own TcpStream remains open while accepted peer is compared with its exact local endpoint tuple; unrelated first clients are dropped.",
+    "Listener is consumed by TcpPair::connect and dropped before returning or spawning QEMU.",
+    "fcntl_dupfd_cloexec uses minimum64; parent CLOEXEC remains set; captured child endpoint clears CLOEXEC only in pre_exec.",
+    "Command owns captured endpoint and drops it on successful spawn and spawn failure; RAII closes setup failures.",
+    "Recorder validates reserved chardev id, unique managed-monitor reference, connected AF_INET SOCK_STREAM and both127.0.0.1 endpoints, then passes only owned sockets using Popen pass_fds.",
+    "Rust log labels launcher child pid; recorder records actual Popen qemu_pid. No proc/PID inference used."
+  ],
+  "boundaries": [
+    "TCP setup can fail closed under local connection flooding; this is not a denial-of-service guarantee.",
+    "Does not isolate from privileged or same-user process injection/FD access.",
+    "38 host tests and separate real transport-only QEMU probe are not kernel regressions; probe memory64MiB and no project kernel.",
+    "Final recorder33 tests each mode were rerun; unchanged Rust host38 and real probe03 were not rerun for Python-only parser delta."
+  ],
+  "read_only_source_check": {
+    "initial_8_sources_matched_freeze": true,
+    "production_source_edits": false,
+    "kernel_runs_by_reviewer": 0,
+    "whole_suite_reruns_by_reviewer": 0
+  }
+}

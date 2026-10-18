@@ -1,0 +1,42 @@
+{
+  "scope": "Restore only tracked executable bits after observed workspace drift; no code/index change or writer attribution",
+  "records": [
+    {
+      "path": "support/build/repro/rustc-wrapper.py",
+      "index_mode": "100755",
+      "index_blob": "fce4dbf1928f72d996deaa34120e17d3f1bf3769",
+      "source_sha256": "acab1c580b5e1cd82b515d1757bd1e1cca27c9aa8ec462e8ddbf79c2482bda8e",
+      "before_mode": "0o644",
+      "after_mode": "0o755",
+      "content_unchanged": true
+    },
+    {
+      "path": "support/build/repro/cargo-metadata-wrapper.py",
+      "index_mode": "100755",
+      "index_blob": "82a50b3819f73353b29e176d5e04969091806532",
+      "source_sha256": "ba2a27ad16cd0b1a6236dc18c4246716990ca8429a0006fde527b00a26bbd730",
+      "before_mode": "0o644",
+      "after_mode": "0o755",
+      "content_unchanged": true
+    }
+  ],
+  "later_observation": {
+    "utc": "2026-10-17T02:15:44.375756+00:00",
+    "records": [
+      {
+        "path": "support/build/repro/rustc-wrapper.py",
+        "observed_mode": "0o644",
+        "sha256": "acab1c580b5e1cd82b515d1757bd1e1cca27c9aa8ec462e8ddbf79c2482bda8e",
+        "source_bytes_still_equal": true
+      },
+      {
+        "path": "support/build/repro/cargo-metadata-wrapper.py",
+        "observed_mode": "0o644",
+        "sha256": "ba2a27ad16cd0b1a6236dc18c4246716990ca8429a0006fde527b00a26bbd730",
+        "source_bytes_still_equal": true
+      }
+    ],
+    "writer_identified": false,
+    "note": "Executable bits drifted again after the recorded repair; no persistent workspace-mode or immutable-host closure is claimed. Published Git mode remains 100755."
+  }
+}

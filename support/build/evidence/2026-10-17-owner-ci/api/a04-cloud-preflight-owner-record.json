@@ -1,0 +1,47 @@
+{
+  "a01_inputs": {
+    "a01_existing_replay_exit": 33,
+    "initramfs": "support/build/evidence/2026-10-16/artifacts/initramfs.cpio.gz",
+    "initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+    "kernel_elf_sha256": "e884f5e50cf296833276016894a39337cd9ac13bc51f6b1f2dea3cc3a6904b63",
+    "kernel_gz": "support/build/evidence/2026-10-16/artifacts/kernel.elf.gz",
+    "kernel_gz_sha256": "4138796d664a9e8dcd3453e31ca7953d69f74ef269169f1339416235c5b59a91"
+  },
+  "classification": "environment_or_other_owner_blockers; no kernel ABI conclusion",
+  "date": "2026-10-16",
+  "dependency_blockers": {
+    "provider_credentials_and_composition": "not_available",
+    "rootfs_tar": "not_available_in_cloud_workspace",
+    "sqlite_dev_headers_and_linker_symlink": "not_available"
+  },
+  "environment": {
+    "cargo": "cargo 1.99.1 (5f94df478 2026-08-27)",
+    "machine": "x86_64",
+    "qemu": null,
+    "release": "6.18.44",
+    "rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
+    "seabios": null,
+    "strace": "strace -- version 6.8",
+    "system": "Linux"
+  },
+  "host_policy": {
+    "abstract_af_unix": "EPERM",
+    "cap_eff": "0",
+    "no_new_privs": "1",
+    "pathname_af_unix": "EPERM",
+    "ptrace_traceme": "EPERM",
+    "seccomp": "2",
+    "socketpair": "allowed"
+  },
+  "kind": "A04_CLOUD_PREFLIGHT_BLOCKER_SWEEP",
+  "qemu_replay": {
+    "command": "python3 tests/workloads/linux/replay_qemu.py --a01-kernel-gz support/build/evidence/2026-10-16/artifacts/kernel.elf.gz --a01-initramfs support/build/evidence/2026-10-16/artifacts/initramfs.cpio.gz --rootfs-tar FIXED_ROOTFS.tar --rootfs-manifest support/rootfs/manifest-debian13-x86_64.json --reference tests/workloads/linux/baselines/linux-debian13-x86_64.json --out-dir NEW",
+    "exit_code": 2,
+    "guest_execution_verified": false,
+    "raw_qemu_exit_code": null,
+    "reason": "QEMU unavailable",
+    "run_status_sha256": "7ab955e1e448dcb62e6b489abfbb8b1a9eeed66e04552c37b1610a3899dc305f",
+    "status": "blocked_environment_or_input"
+  },
+  "schema": 1
+}

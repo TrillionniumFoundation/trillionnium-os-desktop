@@ -1,0 +1,114 @@
+{
+  "scope": "Read-only postfailure observation. No A3 file/target/profile changed or compiler/VM started.",
+  "source_commit": "4cf864b62859f0fdb39609589ddd9ef90c6dbc9d",
+  "ledger_events": 608,
+  "ledger_sha256": "21801290886f33988e445615c8307981a012072f73a1fbb38a823d97273a7118",
+  "smoltcp_events": [
+    {
+      "event_index_zero_based": 585,
+      "record": {
+        "pid": 4129,
+        "state": "started",
+        "unit": {
+          "canonical_id": "a0bb7cd484483b077a4560e3a62437bb5613e63f97a28babe0c08915b5e419a2",
+          "crate": "smoltcp",
+          "crate_type": "lib",
+          "effective_metadata": "1dbd83659343d63b",
+          "extra_filename": "-543a7acef0a676dd",
+          "incoming_metadata": "1dbd83659343d63b",
+          "manifest": "/workspace/scratch/ae1a8cf05419/toolchains/cargo/git/checkouts/smoltcp-da84dc96af6ffcd7/56ab837",
+          "out_dir": "/tmp/trillionnium-a01-normalized-A3/kernel/asterinas/target/x86_64-unknown-none/release/deps",
+          "package": "smoltcp",
+          "salt_argument": 37,
+          "salt_combined": false,
+          "scope": "cargo-original",
+          "target": "x86_64-unknown-none",
+          "version": "0.11.0"
+        }
+      },
+      "current_artifacts": {}
+    },
+    {
+      "event_index_zero_based": 607,
+      "record": {
+        "artifacts": {
+          "/tmp/trillionnium-a01-normalized-A3/kernel/asterinas/target/x86_64-unknown-none/release/deps/libsmoltcp-543a7acef0a676dd.rlib": {
+            "st_dev": 27,
+            "st_ino": 789294,
+            "st_mtime_ns": 1792200335871893447,
+            "st_size": 4785672
+          },
+          "/tmp/trillionnium-a01-normalized-A3/kernel/asterinas/target/x86_64-unknown-none/release/deps/libsmoltcp-543a7acef0a676dd.rmeta": {
+            "st_dev": 27,
+            "st_ino": 789236,
+            "st_mtime_ns": 1792200334455598090,
+            "st_size": 3809982
+          }
+        },
+        "pid": 4129,
+        "returncode": 0,
+        "state": "completed",
+        "unit": {
+          "canonical_id": "a0bb7cd484483b077a4560e3a62437bb5613e63f97a28babe0c08915b5e419a2",
+          "crate": "smoltcp",
+          "crate_type": "lib",
+          "effective_metadata": "1dbd83659343d63b",
+          "extra_filename": "-543a7acef0a676dd",
+          "incoming_metadata": "1dbd83659343d63b",
+          "manifest": "/workspace/scratch/ae1a8cf05419/toolchains/cargo/git/checkouts/smoltcp-da84dc96af6ffcd7/56ab837",
+          "out_dir": "/tmp/trillionnium-a01-normalized-A3/kernel/asterinas/target/x86_64-unknown-none/release/deps",
+          "package": "smoltcp",
+          "salt_argument": 37,
+          "salt_combined": false,
+          "scope": "cargo-original",
+          "target": "x86_64-unknown-none",
+          "version": "0.11.0"
+        }
+      },
+      "current_artifacts": {
+        "/tmp/trillionnium-a01-normalized-A3/kernel/asterinas/target/x86_64-unknown-none/release/deps/libsmoltcp-543a7acef0a676dd.rlib": {
+          "actual": {
+            "st_dev": 27,
+            "st_ino": 789294,
+            "st_mtime_ns": 1792200335871893447,
+            "st_size": 4785672
+          },
+          "matches_completed_stat": true
+        },
+        "/tmp/trillionnium-a01-normalized-A3/kernel/asterinas/target/x86_64-unknown-none/release/deps/libsmoltcp-543a7acef0a676dd.rmeta": {
+          "actual": {
+            "st_dev": 27,
+            "st_ino": 789236,
+            "st_mtime_ns": 1792200334455598090,
+            "st_size": 3809982
+          },
+          "matches_completed_stat": true
+        }
+      }
+    }
+  ],
+  "console_sha256": "396dda1835a4d97003724ab56fa3b6b5e11ed933d69068508c354607162469a9",
+  "failure_lines": [
+    {
+      "line_one_based": 267,
+      "text": "   Compiling aster-bigtcp v0.1.0 (/tmp/trillionnium-a01-normalized-A3/kernel/asterinas/kernel/libs/aster-bigtcp)"
+    },
+    {
+      "line_one_based": 277,
+      "text": "ValueError: extern lacks one unchanged successful producer: smoltcp"
+    },
+    {
+      "line_one_based": 278,
+      "text": "error: could not compile `aster-bigtcp` (lib)"
+    },
+    {
+      "line_one_based": 281,
+      "text": "  process didn't exit successfully: `/workspace/scratch/ae1a8cf05419/full-kernel-profile-v3/helpers/rustc-wrapper.py /workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/rustc --crate-name aster_bigtcp --edition=2024 /tmp/trillionnium-a01-normalized-A3/kernel/asterinas/kernel/libs/aster-bigtcp/src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C linker-plugin-lto --warn=unused_qualifications --warn=unreachable_pub --allow=unexpected_cfgs '--warn=clippy::redundant_test_prefix' --warn=redundant_imports '--warn=clippy::inconsistent_struct_constructor' '--warn=clippy::allow_attributes' --check-cfg 'cfg(ktest)' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values())' -C metadata=9c2397419b4f1491 -C extra-filename=-e183957be3098dcd --out-dir /tmp/trillionnium-a01-normalized-A3/kernel/asterinas/target/x86_64-unknown-none/release/deps --target x86_64-unknown-none -C strip=debuginfo -L dependency=/tmp/trillionnium-a01-normalized-A3/kernel/asterinas/target/x86_64-unknown-none/release/deps -L dependency=/tmp/trillionnium-a01-normalized-A3/kernel/asterinas/target/release/deps --extern 'noprelude,nounused:alloc=/tmp/trillionnium-a01-normalized-A3/kernel/asterinas/target/x86_64-unknown-none/release/deps/liballoc-35d1bb41d1f478a2.rmeta' --extern aster_softirq=/tmp/trillionnium-a01-normalized-A3/kernel/asterinas/target/x86_64-unknown-none/release/deps/libaster_softirq-2457de439b29a63f.rmeta --extern aster_util=/tmp/trillionnium-a01-normalized-A3/kernel/asterinas/target/x86_64-unknown-none/release/deps/libaster_util-d4987cab56982e3a.rmeta --extern bitflags=/tmp/trillionnium-a01-normalized-A3/kernel/asterinas/target/x86_64-unknown-none/release/deps/libbitflags-da619b5d68795b20.rmeta --extern 'noprelude,nounused:compiler_builtins=/tmp/trillionnium-a01-normalized-A3/kernel/asterinas/target/x86_64-unknown-none/release/deps/libcompiler_builtins-6b24b6ad707fc0e5.rmeta' --extern 'noprelude,nounused:core=/tmp/trillionnium-a01-normalized-A3/kernel/asterinas/target/x86_64-unknown-none/release/deps/libcore-a4aa64c37738e5ce.rmeta' --extern dma_pool=/tmp/trillionnium-a01-normalized-A3/kernel/asterinas/target/x86_64-unknown-none/release/deps/libdma_pool-1fc8a1d24743ea76.rmeta --extern int_to_c_enum=/tmp/trillionnium-a01-normalized-A3/kernel/asterinas/target/x86_64-unknown-none/release/deps/libint_to_c_enum-7930525829bd669e.rmeta --extern jhash=/tmp/trillionnium-a01-normalized-A3/kernel/asterinas/target/x86_64-unknown-none/release/deps/libjhash-2d093982be1092ab.rmeta --extern ostd=/tmp/trillionnium-a01-normalized-A3/kernel/asterinas/target/x86_64-unknown-none/release/deps/libostd-3af5f55c17c65e75.rmeta --extern ostd_pod=/tmp/trillionnium-a01-normalized-A3/kernel/asterinas/target/x86_64-unknown-none/release/deps/libostd_pod-e0ebe24e750e3ed3.rmeta --extern smoltcp=/tmp/trillionnium-a01-normalized-A3/kernel/asterinas/target/x86_64-unknown-none/release/deps/libsmoltcp-543a7acef0a676dd.rmeta --extern spin=/tmp/trillionnium-a01-normalized-A3/kernel/asterinas/target/x86_64-unknown-none/release/deps/libspin-688ca86810b6ffe2.rmeta --extern takeable=/tmp/trillionnium-a01-normalized-A3/kernel/asterinas/target/x86_64-unknown-none/release/deps/libtakeable-d74ef3c4117e4dae.rmeta --extern zerocopy=/tmp/trillionnium-a01-normalized-A3/kernel/asterinas/target/x86_64-unknown-none/release/deps/libzerocopy-2b798b097923d093.rmeta -Z unstable-options -C link-arg=-Tx86_64.ld -C relocation-model=static -C relro-level=off -C force-unwind-tables=yes --check-cfg 'cfg(ktest)' -C no-redzone=y -C target-feature=+ermsb` (exit status: 1)"
+    },
+    {
+      "line_one_based": 282,
+      "text": "warning: build failed, waiting for other jobs to finish..."
+    }
+  ],
+  "inference": "Cargo can schedule a library consumer after dependency metadata is ready but before full producer completion. The old wrapper requires a completed producer immediately; metadata pipelining is a design incompatibility. Postfailure stats show no current mismatch. Exact A3 wall-clock consumer-before-completion timing was not separately recorded; an intentional-delay actual Cargo probe supplies that controlled scheduling evidence separately."
+}

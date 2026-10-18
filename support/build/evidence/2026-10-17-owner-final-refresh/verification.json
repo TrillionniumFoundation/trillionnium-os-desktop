@@ -1,0 +1,30 @@
+{
+  "record_kind": "Posthoc transcription of the actual first self-check exec output; no per-command timestamps were captured or reconstructed.",
+  "scope": "Wrapper/source/archive validation only; no fresh remote query, compilation, owner test or guest run.",
+  "tool_result": {
+    "chunk_id": "bf56df",
+    "overall_exit_code": 0
+  },
+  "verifier_sha256": "3715d0e7e969c0ea38cfe726c7da688d350148d767a8f95ef737a081cba3f376",
+  "archive_sha256": "919897c9b1dfc1e8b7ed86e26393f6a7b0eac2ab19e151f5995fba69f18002bc",
+  "commands": [
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-owner-final-refresh/verify.py"
+      ],
+      "observed_stdout": "{\"original_inner_checksums\": 38, \"original_raw_unchanged\": true, \"pass\": true, \"raw_files\": 39, \"requests\": 18, \"scope\": \"historical_readback_only\", \"source_bindings\": 15}\n"
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "-O",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-owner-final-refresh/verify.py"
+      ],
+      "observed_stdout": "{\"original_inner_checksums\": 38, \"original_raw_unchanged\": true, \"pass\": true, \"raw_files\": 39, \"requests\": 18, \"scope\": \"historical_readback_only\", \"source_bindings\": 15}\n"
+    }
+  ],
+  "seal_scope": "The original code/raw inputs were unchanged. After adding this receipt the outer checksum manifest is regenerated and both modes are checked again against the final sealed inventory; final tool output is separately reported to the publisher."
+}

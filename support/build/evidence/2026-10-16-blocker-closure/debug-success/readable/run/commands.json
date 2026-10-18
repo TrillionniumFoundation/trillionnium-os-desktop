@@ -1,0 +1,66 @@
+[
+  {
+    "argv": [
+      "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/bin/gdb",
+      "--version"
+    ],
+    "shell_command": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/bin/gdb --version",
+    "cwd": "/workspace/scratch/ae1a8cf05419/a01-next9-native",
+    "stdout_stderr": "gdb-version.log",
+    "pass_fds": [],
+    "timeout_seconds": 30
+  },
+  {
+    "argv": [
+      "/usr/bin/x86_64-linux-gnu-nm",
+      "--version"
+    ],
+    "shell_command": "/usr/bin/x86_64-linux-gnu-nm --version",
+    "cwd": "/workspace/scratch/ae1a8cf05419/a01-next9-native",
+    "stdout_stderr": "nm-version.log",
+    "pass_fds": [],
+    "timeout_seconds": 30
+  },
+  {
+    "argv": [
+      "bash",
+      "/workspace/scratch/ae1a8cf05419/a01-next9-native/support/build/kernel.sh",
+      "gdb_server"
+    ],
+    "shell_command": "bash /workspace/scratch/ae1a8cf05419/a01-next9-native/support/build/kernel.sh gdb_server",
+    "cwd": "/workspace/scratch/ae1a8cf05419/a01-next9-native",
+    "stdout_stderr": "kernel-driver.log",
+    "pass_fds": [
+      64
+    ],
+    "timeout_seconds": null
+  },
+  {
+    "argv": [
+      "/usr/bin/x86_64-linux-gnu-nm",
+      "--defined-only",
+      "--format=posix",
+      "/workspace/scratch/ae1a8cf05419/a01-next9-native/kernel/asterinas/target/x86_64-unknown-none/release/asterinas-osdk-bin"
+    ],
+    "shell_command": "/usr/bin/x86_64-linux-gnu-nm --defined-only --format=posix /workspace/scratch/ae1a8cf05419/a01-next9-native/kernel/asterinas/target/x86_64-unknown-none/release/asterinas-osdk-bin",
+    "cwd": "/workspace/scratch/ae1a8cf05419/a01-next9-native",
+    "stdout_stderr": "symbols.log",
+    "pass_fds": [],
+    "timeout_seconds": 30
+  },
+  {
+    "argv": [
+      "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/bin/gdb",
+      "--nx",
+      "--batch",
+      "--se=/workspace/scratch/ae1a8cf05419/a01-next9-native/kernel/asterinas/target/x86_64-unknown-none/release/asterinas-osdk-bin",
+      "-x",
+      "/workspace/scratch/ae1a8cf05419/a01-next9-native/support/build/out/closure-debug-03/rust-entry.gdb"
+    ],
+    "shell_command": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/bin/gdb --nx --batch --se=/workspace/scratch/ae1a8cf05419/a01-next9-native/kernel/asterinas/target/x86_64-unknown-none/release/asterinas-osdk-bin -x /workspace/scratch/ae1a8cf05419/a01-next9-native/support/build/out/closure-debug-03/rust-entry.gdb",
+    "cwd": "/workspace/scratch/ae1a8cf05419/a01-next9-native",
+    "stdout_stderr": "gdb.log",
+    "pass_fds": [],
+    "timeout_seconds": 90
+  }
+]

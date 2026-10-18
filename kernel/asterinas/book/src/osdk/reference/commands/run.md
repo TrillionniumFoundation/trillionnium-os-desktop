@@ -28,6 +28,21 @@ comma separated configuration list:
 Besides, to collect coverage data, we can use option `--coverage`. This option
 enables the coverage feature and collect coverage data to `coverage.profraw` when exit.
 
+OSDK uses a temporary UNIX socket for its managed QEMU monitor by default.
+Use `--qemu-monitor-transport=tcp` to select an ephemeral IPv4 loopback connection.
+OSDK creates both ends of a private connection on `127.0.0.1`, closes the
+listener before spawning QEMU, and passes QEMU its connected socket descriptor.
+An unrelated client arriving during setup is rejected.
+This option selects only the transport;
+the managed monitor still requires its usual configuration,
+such as `--coverage` together with a configured QEMU `log_file`.
+It does not change the guest shutdown behavior or guarantee coverage export.
+For example:
+
+```bash
+cargo osdk run --coverage --qemu-monitor-transport=tcp
+```
+
 See [Debug Command](debug.md) to interact with the GDB server in terminal.
 
 ## Examples

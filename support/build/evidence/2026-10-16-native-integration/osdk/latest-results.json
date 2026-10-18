@@ -1,0 +1,883 @@
+{
+  "schema": 1,
+  "published_code_commit": "efff58b94b167dc9a9f66b3a742a31189aa7805e",
+  "scope": "OSDK tooling and small OSTD examples; not full Asterinas, HOS ABI, Linux userspace or desktop acceptance",
+  "method": "latest per-case result across full attempt-07 plus explicit retries attempt-08/09/10; not a single all-22 run from final runner source",
+  "denominator": 22,
+  "passed": 20,
+  "failed": 2,
+  "blocked_without_execution": 0,
+  "host_blocked_cases": 2,
+  "soft_skip_count": 1,
+  "first_full_attempt": {
+    "run": "attempt-07",
+    "result": "attempt-07/result.json",
+    "passed": 19,
+    "failed": 3,
+    "soft_skip_count": 1
+  },
+  "runner_source_phases": [
+    {
+      "run": "attempt-07",
+      "executed_runner_sha256": "d63d587a2952df3e3e95336962f136dc737a0882a94e1cfeb34a5a509ae5c4f7",
+      "published_runner_sha256": "f2c461648ed824af38380bed4baf9bd9ab8e3c8578f8dffedb023120f903b1a5",
+      "patch_to_published": "provenance/attempt-07-to-published-runner.patch",
+      "reconstruction_sha_verified": true,
+      "executed_git_head": "69335fcf2ccf4741346aa31bea2d1e3dca397ac6",
+      "final_published_commit": "efff58b94b167dc9a9f66b3a742a31189aa7805e"
+    },
+    {
+      "run": "attempt-08",
+      "executed_runner_sha256": "d63d587a2952df3e3e95336962f136dc737a0882a94e1cfeb34a5a509ae5c4f7",
+      "published_runner_sha256": "f2c461648ed824af38380bed4baf9bd9ab8e3c8578f8dffedb023120f903b1a5",
+      "patch_to_published": "provenance/attempt-08-to-published-runner.patch",
+      "reconstruction_sha_verified": true,
+      "executed_git_head": "69335fcf2ccf4741346aa31bea2d1e3dca397ac6",
+      "final_published_commit": "efff58b94b167dc9a9f66b3a742a31189aa7805e"
+    },
+    {
+      "run": "attempt-09",
+      "executed_runner_sha256": "c29bf0b524dc9faf5ad5f3c61fd2527ebd44389124d5376e3aa1f9ea36b2c121",
+      "published_runner_sha256": "f2c461648ed824af38380bed4baf9bd9ab8e3c8578f8dffedb023120f903b1a5",
+      "patch_to_published": "provenance/attempt-09-to-published-runner.patch",
+      "reconstruction_sha_verified": true,
+      "executed_git_head": "69335fcf2ccf4741346aa31bea2d1e3dca397ac6",
+      "final_published_commit": "efff58b94b167dc9a9f66b3a742a31189aa7805e"
+    },
+    {
+      "run": "attempt-10",
+      "executed_runner_sha256": "f2c461648ed824af38380bed4baf9bd9ab8e3c8578f8dffedb023120f903b1a5",
+      "published_runner_sha256": "f2c461648ed824af38380bed4baf9bd9ab8e3c8578f8dffedb023120f903b1a5",
+      "patch_to_published": "provenance/attempt-10-to-published-runner.patch",
+      "reconstruction_sha_verified": true,
+      "executed_git_head": "69335fcf2ccf4741346aa31bea2d1e3dca397ac6",
+      "final_published_commit": "efff58b94b167dc9a9f66b3a742a31189aa7805e"
+    }
+  ],
+  "cases": [
+    {
+      "name": "commands::run::qemu_gdb_feature::basic_debug",
+      "first_full_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-01/result.json",
+        "harness_command": "attempt-07/case-01/harness.command.json",
+        "harness_log": "attempt-07/case-01/harness.log.gz",
+        "status": "failed",
+        "raw_harness_exit": 101,
+        "soft_skips": [],
+        "host_blockers": [
+          "host denies Unix socket creation (EPERM)"
+        ],
+        "guests": [
+          {
+            "record": "attempt-07/case-01/guests/guest-001/qemu.json",
+            "raw_exit_code": 1,
+            "timed_out": false,
+            "wrapper_exit_code": 1,
+            "error": null,
+            "serial_valid": false
+          }
+        ]
+      },
+      "latest_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-01/result.json",
+        "harness_command": "attempt-07/case-01/harness.command.json",
+        "harness_log": "attempt-07/case-01/harness.log.gz",
+        "status": "failed",
+        "raw_harness_exit": 101,
+        "soft_skips": [],
+        "host_blockers": [
+          "host denies Unix socket creation (EPERM)"
+        ],
+        "guests": [
+          {
+            "record": "attempt-07/case-01/guests/guest-001/qemu.json",
+            "raw_exit_code": 1,
+            "timed_out": false,
+            "wrapper_exit_code": 1,
+            "error": null,
+            "serial_valid": false
+          }
+        ]
+      },
+      "retries": []
+    },
+    {
+      "name": "commands::run::qemu_gdb_feature::vsc::vsc_launch_file",
+      "first_full_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-02/result.json",
+        "harness_command": "attempt-07/case-02/harness.command.json",
+        "harness_log": "attempt-07/case-02/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": [
+          {
+            "record": "attempt-07/case-02/guests/guest-001/qemu.json",
+            "raw_exit_code": 33,
+            "timed_out": false,
+            "wrapper_exit_code": 33,
+            "error": null,
+            "serial_valid": true
+          }
+        ]
+      },
+      "latest_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-02/result.json",
+        "harness_command": "attempt-07/case-02/harness.command.json",
+        "harness_log": "attempt-07/case-02/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": [
+          {
+            "record": "attempt-07/case-02/guests/guest-001/qemu.json",
+            "raw_exit_code": 33,
+            "timed_out": false,
+            "wrapper_exit_code": 33,
+            "error": null,
+            "serial_valid": true
+          }
+        ]
+      },
+      "retries": []
+    },
+    {
+      "name": "cli::cli_build_help_message",
+      "first_full_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-03/result.json",
+        "harness_command": "attempt-07/case-03/harness.command.json",
+        "harness_log": "attempt-07/case-03/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": []
+      },
+      "latest_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-03/result.json",
+        "harness_command": "attempt-07/case-03/harness.command.json",
+        "harness_log": "attempt-07/case-03/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": []
+      },
+      "retries": []
+    },
+    {
+      "name": "cli::cli_check_help_message",
+      "first_full_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-04/result.json",
+        "harness_command": "attempt-07/case-04/harness.command.json",
+        "harness_log": "attempt-07/case-04/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": []
+      },
+      "latest_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-04/result.json",
+        "harness_command": "attempt-07/case-04/harness.command.json",
+        "harness_log": "attempt-07/case-04/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": []
+      },
+      "retries": []
+    },
+    {
+      "name": "cli::cli_clippy_help_message",
+      "first_full_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-05/result.json",
+        "harness_command": "attempt-07/case-05/harness.command.json",
+        "harness_log": "attempt-07/case-05/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": []
+      },
+      "latest_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-05/result.json",
+        "harness_command": "attempt-07/case-05/harness.command.json",
+        "harness_log": "attempt-07/case-05/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": []
+      },
+      "retries": []
+    },
+    {
+      "name": "cli::cli_help_message",
+      "first_full_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-06/result.json",
+        "harness_command": "attempt-07/case-06/harness.command.json",
+        "harness_log": "attempt-07/case-06/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": []
+      },
+      "latest_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-06/result.json",
+        "harness_command": "attempt-07/case-06/harness.command.json",
+        "harness_log": "attempt-07/case-06/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": []
+      },
+      "retries": []
+    },
+    {
+      "name": "cli::cli_new_crate_with_hyphen",
+      "first_full_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-07/result.json",
+        "harness_command": "attempt-07/case-07/harness.command.json",
+        "harness_log": "attempt-07/case-07/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": []
+      },
+      "latest_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-07/result.json",
+        "harness_command": "attempt-07/case-07/harness.command.json",
+        "harness_log": "attempt-07/case-07/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": []
+      },
+      "retries": []
+    },
+    {
+      "name": "cli::cli_new_help_message",
+      "first_full_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-08/result.json",
+        "harness_command": "attempt-07/case-08/harness.command.json",
+        "harness_log": "attempt-07/case-08/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": []
+      },
+      "latest_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-08/result.json",
+        "harness_command": "attempt-07/case-08/harness.command.json",
+        "harness_log": "attempt-07/case-08/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": []
+      },
+      "retries": []
+    },
+    {
+      "name": "cli::cli_run_help_message",
+      "first_full_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-09/result.json",
+        "harness_command": "attempt-07/case-09/harness.command.json",
+        "harness_log": "attempt-07/case-09/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": []
+      },
+      "latest_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-09/result.json",
+        "harness_command": "attempt-07/case-09/harness.command.json",
+        "harness_log": "attempt-07/case-09/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": []
+      },
+      "retries": []
+    },
+    {
+      "name": "cli::cli_test_help_message",
+      "first_full_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-10/result.json",
+        "harness_command": "attempt-07/case-10/harness.command.json",
+        "harness_log": "attempt-07/case-10/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": []
+      },
+      "latest_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-10/result.json",
+        "harness_command": "attempt-07/case-10/harness.command.json",
+        "harness_log": "attempt-07/case-10/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": []
+      },
+      "retries": []
+    },
+    {
+      "name": "commands::new::create_kernel_in_workspace",
+      "first_full_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-11/result.json",
+        "harness_command": "attempt-07/case-11/harness.command.json",
+        "harness_log": "attempt-07/case-11/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": []
+      },
+      "latest_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-11/result.json",
+        "harness_command": "attempt-07/case-11/harness.command.json",
+        "harness_log": "attempt-07/case-11/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": []
+      },
+      "retries": []
+    },
+    {
+      "name": "commands::new::create_lib_in_workspace",
+      "first_full_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-12/result.json",
+        "harness_command": "attempt-07/case-12/harness.command.json",
+        "harness_log": "attempt-07/case-12/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": []
+      },
+      "latest_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-12/result.json",
+        "harness_command": "attempt-07/case-12/harness.command.json",
+        "harness_log": "attempt-07/case-12/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": []
+      },
+      "retries": []
+    },
+    {
+      "name": "commands::new::create_two_crates_in_workspace",
+      "first_full_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-13/result.json",
+        "harness_command": "attempt-07/case-13/harness.command.json",
+        "harness_log": "attempt-07/case-13/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": []
+      },
+      "latest_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-13/result.json",
+        "harness_command": "attempt-07/case-13/harness.command.json",
+        "harness_log": "attempt-07/case-13/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": []
+      },
+      "retries": []
+    },
+    {
+      "name": "commands::run::basic::new_kernel_and_run",
+      "first_full_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-14/result.json",
+        "harness_command": "attempt-07/case-14/harness.command.json",
+        "harness_log": "attempt-07/case-14/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": [
+          {
+            "record": "attempt-07/case-14/guests/guest-001/qemu.json",
+            "raw_exit_code": 33,
+            "timed_out": false,
+            "wrapper_exit_code": 33,
+            "error": null,
+            "serial_valid": true
+          }
+        ]
+      },
+      "latest_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-14/result.json",
+        "harness_command": "attempt-07/case-14/harness.command.json",
+        "harness_log": "attempt-07/case-14/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": [
+          {
+            "record": "attempt-07/case-14/guests/guest-001/qemu.json",
+            "raw_exit_code": 33,
+            "timed_out": false,
+            "wrapper_exit_code": 33,
+            "error": null,
+            "serial_valid": true
+          }
+        ]
+      },
+      "retries": []
+    },
+    {
+      "name": "commands::run::coverage_feature::basic_coverage",
+      "first_full_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-15/result.json",
+        "harness_command": "attempt-07/case-15/harness.command.json",
+        "harness_log": "attempt-07/case-15/harness.log.gz",
+        "status": "failed",
+        "raw_harness_exit": 101,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": []
+      },
+      "latest_attempt": {
+        "run": "attempt-10",
+        "case_result": "attempt-10/case-01/result.json",
+        "harness_command": "attempt-10/case-01/harness.command.json",
+        "harness_log": "attempt-10/case-01/harness.log.gz",
+        "status": "failed",
+        "raw_harness_exit": 101,
+        "soft_skips": [],
+        "host_blockers": [
+          "host denies Unix socket creation (EPERM)"
+        ],
+        "guests": [
+          {
+            "record": "attempt-10/case-01/guests/guest-001/qemu.json",
+            "raw_exit_code": 1,
+            "timed_out": false,
+            "wrapper_exit_code": 1,
+            "error": null,
+            "serial_valid": false
+          }
+        ]
+      },
+      "retries": [
+        {
+          "run": "attempt-08",
+          "case_result": "attempt-08/case-01/result.json",
+          "harness_command": "attempt-08/case-01/harness.command.json",
+          "harness_log": "attempt-08/case-01/harness.log.gz",
+          "status": "failed",
+          "raw_harness_exit": 101,
+          "soft_skips": [],
+          "host_blockers": [
+            "host denies Unix socket creation (EPERM)"
+          ],
+          "guests": [
+            {
+              "record": "attempt-08/case-01/guests/guest-001/qemu.json",
+              "raw_exit_code": 1,
+              "timed_out": false,
+              "wrapper_exit_code": 1,
+              "error": null,
+              "serial_valid": false
+            }
+          ]
+        },
+        {
+          "run": "attempt-10",
+          "case_result": "attempt-10/case-01/result.json",
+          "harness_command": "attempt-10/case-01/harness.command.json",
+          "harness_log": "attempt-10/case-01/harness.log.gz",
+          "status": "failed",
+          "raw_harness_exit": 101,
+          "soft_skips": [],
+          "host_blockers": [
+            "host denies Unix socket creation (EPERM)"
+          ],
+          "guests": [
+            {
+              "record": "attempt-10/case-01/guests/guest-001/qemu.json",
+              "raw_exit_code": 1,
+              "timed_out": false,
+              "wrapper_exit_code": 1,
+              "error": null,
+              "serial_valid": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "examples_in_book::create_os_projects::create_a_kernel_project",
+      "first_full_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-16/result.json",
+        "harness_command": "attempt-07/case-16/harness.command.json",
+        "harness_log": "attempt-07/case-16/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": []
+      },
+      "latest_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-16/result.json",
+        "harness_command": "attempt-07/case-16/harness.command.json",
+        "harness_log": "attempt-07/case-16/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": []
+      },
+      "retries": []
+    },
+    {
+      "name": "examples_in_book::create_os_projects::create_a_library_project",
+      "first_full_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-17/result.json",
+        "harness_command": "attempt-07/case-17/harness.command.json",
+        "harness_log": "attempt-07/case-17/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": []
+      },
+      "latest_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-17/result.json",
+        "harness_command": "attempt-07/case-17/harness.command.json",
+        "harness_log": "attempt-07/case-17/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": []
+      },
+      "retries": []
+    },
+    {
+      "name": "examples_in_book::test_and_run_projects::create_and_run_kernel",
+      "first_full_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-18/result.json",
+        "harness_command": "attempt-07/case-18/harness.command.json",
+        "harness_log": "attempt-07/case-18/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": [
+          {
+            "record": "attempt-07/case-18/guests/guest-001/qemu.json",
+            "raw_exit_code": 33,
+            "timed_out": false,
+            "wrapper_exit_code": 33,
+            "error": null,
+            "serial_valid": true
+          }
+        ]
+      },
+      "latest_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-18/result.json",
+        "harness_command": "attempt-07/case-18/harness.command.json",
+        "harness_log": "attempt-07/case-18/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": [
+          {
+            "record": "attempt-07/case-18/guests/guest-001/qemu.json",
+            "raw_exit_code": 33,
+            "timed_out": false,
+            "wrapper_exit_code": 33,
+            "error": null,
+            "serial_valid": true
+          }
+        ]
+      },
+      "retries": []
+    },
+    {
+      "name": "examples_in_book::test_and_run_projects::create_and_test_library",
+      "first_full_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-19/result.json",
+        "harness_command": "attempt-07/case-19/harness.command.json",
+        "harness_log": "attempt-07/case-19/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": [
+          {
+            "record": "attempt-07/case-19/guests/guest-001/qemu.json",
+            "raw_exit_code": 33,
+            "timed_out": false,
+            "wrapper_exit_code": 33,
+            "error": null,
+            "serial_valid": true
+          }
+        ]
+      },
+      "latest_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-19/result.json",
+        "harness_command": "attempt-07/case-19/harness.command.json",
+        "harness_log": "attempt-07/case-19/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": [
+          {
+            "record": "attempt-07/case-19/guests/guest-001/qemu.json",
+            "raw_exit_code": 33,
+            "timed_out": false,
+            "wrapper_exit_code": 33,
+            "error": null,
+            "serial_valid": true
+          }
+        ]
+      },
+      "retries": []
+    },
+    {
+      "name": "examples_in_book::work_in_workspace::work_in_workspace",
+      "first_full_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-20/result.json",
+        "harness_command": "attempt-07/case-20/harness.command.json",
+        "harness_log": "attempt-07/case-20/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": [
+          {
+            "record": "attempt-07/case-20/guests/guest-001/qemu.json",
+            "raw_exit_code": 33,
+            "timed_out": false,
+            "wrapper_exit_code": 33,
+            "error": null,
+            "serial_valid": true
+          },
+          {
+            "record": "attempt-07/case-20/guests/guest-002/qemu.json",
+            "raw_exit_code": 33,
+            "timed_out": false,
+            "wrapper_exit_code": 33,
+            "error": null,
+            "serial_valid": true
+          },
+          {
+            "record": "attempt-07/case-20/guests/guest-003/qemu.json",
+            "raw_exit_code": 33,
+            "timed_out": false,
+            "wrapper_exit_code": 33,
+            "error": null,
+            "serial_valid": true
+          }
+        ]
+      },
+      "latest_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-20/result.json",
+        "harness_command": "attempt-07/case-20/harness.command.json",
+        "harness_log": "attempt-07/case-20/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": [
+          {
+            "record": "attempt-07/case-20/guests/guest-001/qemu.json",
+            "raw_exit_code": 33,
+            "timed_out": false,
+            "wrapper_exit_code": 33,
+            "error": null,
+            "serial_valid": true
+          },
+          {
+            "record": "attempt-07/case-20/guests/guest-002/qemu.json",
+            "raw_exit_code": 33,
+            "timed_out": false,
+            "wrapper_exit_code": 33,
+            "error": null,
+            "serial_valid": true
+          },
+          {
+            "record": "attempt-07/case-20/guests/guest-003/qemu.json",
+            "raw_exit_code": 33,
+            "timed_out": false,
+            "wrapper_exit_code": 33,
+            "error": null,
+            "serial_valid": true
+          }
+        ]
+      },
+      "retries": []
+    },
+    {
+      "name": "examples_in_book::write_a_hypervisor_in_100_lines::write_a_hypervisor_in_100_lines",
+      "first_full_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-21/result.json",
+        "harness_command": "attempt-07/case-21/harness.command.json",
+        "harness_log": "attempt-07/case-21/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [
+          "VMX unavailable; hypervisor example accepted upstream fallback"
+        ],
+        "host_blockers": [],
+        "guests": [
+          {
+            "record": "attempt-07/case-21/guests/guest-001/qemu.json",
+            "raw_exit_code": 33,
+            "timed_out": false,
+            "wrapper_exit_code": 33,
+            "error": null,
+            "serial_valid": true
+          }
+        ]
+      },
+      "latest_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-21/result.json",
+        "harness_command": "attempt-07/case-21/harness.command.json",
+        "harness_log": "attempt-07/case-21/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [
+          "VMX unavailable; hypervisor example accepted upstream fallback"
+        ],
+        "host_blockers": [],
+        "guests": [
+          {
+            "record": "attempt-07/case-21/guests/guest-001/qemu.json",
+            "raw_exit_code": 33,
+            "timed_out": false,
+            "wrapper_exit_code": 33,
+            "error": null,
+            "serial_valid": true
+          }
+        ]
+      },
+      "retries": []
+    },
+    {
+      "name": "examples_in_book::write_a_kernel_in_100_lines::write_a_kernel_in_100_lines",
+      "first_full_attempt": {
+        "run": "attempt-07",
+        "case_result": "attempt-07/case-22/result.json",
+        "harness_command": "attempt-07/case-22/harness.command.json",
+        "harness_log": "attempt-07/case-22/harness.log.gz",
+        "status": "failed",
+        "raw_harness_exit": 101,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": []
+      },
+      "latest_attempt": {
+        "run": "attempt-09",
+        "case_result": "attempt-09/case-01/result.json",
+        "harness_command": "attempt-09/case-01/harness.command.json",
+        "harness_log": "attempt-09/case-01/harness.log.gz",
+        "status": "passed",
+        "raw_harness_exit": 0,
+        "soft_skips": [],
+        "host_blockers": [],
+        "guests": [
+          {
+            "record": "attempt-09/case-01/guests/guest-001/qemu.json",
+            "raw_exit_code": 33,
+            "timed_out": false,
+            "wrapper_exit_code": 33,
+            "error": null,
+            "serial_valid": true
+          }
+        ]
+      },
+      "retries": [
+        {
+          "run": "attempt-09",
+          "case_result": "attempt-09/case-01/result.json",
+          "harness_command": "attempt-09/case-01/harness.command.json",
+          "harness_log": "attempt-09/case-01/harness.log.gz",
+          "status": "passed",
+          "raw_harness_exit": 0,
+          "soft_skips": [],
+          "host_blockers": [],
+          "guests": [
+            {
+              "record": "attempt-09/case-01/guests/guest-001/qemu.json",
+              "raw_exit_code": 33,
+              "timed_out": false,
+              "wrapper_exit_code": 33,
+              "error": null,
+              "serial_valid": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+tree 7daf86431e4d789356365d7cfbde51e854585d0e
+parent cdfddbfb39d4dfee029d3096615da148068c9652
+author Franksudoman <sunfocapital@gmail.com> 1792211500 +0800
+committer Franksudoman <sunfocapital@gmail.com> 1792211500 +0800
+
+A01: isolate kernel-test SDK installation and reject legacy reuse
+
+Install kernel-test cargo-osdk into its guarded private 0700 prefix and invoke that binary directly. Reject legacy skip-install before output or lock creation so another source root's SDK cannot silently produce test results.
+
+Validation: eleven pure in-process isolation tests, independent source review and unchanged lifecycle helper bytes; staged diff check passes. Real kernel-test suites are recorded separately after this source commit.

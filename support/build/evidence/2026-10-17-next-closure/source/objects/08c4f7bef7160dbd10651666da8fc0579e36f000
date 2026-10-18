@@ -1,0 +1,10 @@
+tree c9c03a374050cb94752edf72023933b74958a97b
+parent 1001161c45fed52b4735606c81bc039cad770db4
+author Franksudoman <sunfocapital@gmail.com> 1792212205 +0800
+committer Franksudoman <sunfocapital@gmail.com> 1792212205 +0800
+
+A01: retain real private SDK OSTD and core kernel regressions
+
+Preserve the ff0d09a source-bound kernel-test run, private SDK, original loaded ELF inputs, complete serials and post-run stable capture receipts.
+
+Validation: six controller commands and ten child commands succeeded; both guests exited raw33. OSTD/core reported 362 cases with three soft skips and 359 exercised lower bound. Targets were reused with 54 OSTD and 83 core compilation lines; loaded paths were captured after execution, without a snapshot-at-execution claim.

@@ -1,0 +1,211 @@
+{
+  "requested_qemu_args": [
+    "-kernel",
+    "/tmp/trillionnium-a01-private-sdk-N2/kernel/asterinas/target/osdk/asterinas/asterinas-osdk-bin.elf",
+    "-initrd",
+    "/workspace/scratch/ae1a8cf05419/native-followup/debug-retry1/run/boot/initramfs.cpio.gz",
+    "-append",
+    "earlycon console=ttyS0 console=ttyS0 console=ttyS0 loglevel=info loglevel=info loglevel=info SHELL=/bin/sh SHELL=/bin/sh LOGNAME=root LOGNAME=root HOME=/ HOME=/ USER=root USER=root PATH=/bin:/sbin PATH=/bin:/sbin --",
+    "-machine",
+    "q35",
+    "-accel",
+    "tcg",
+    "-cpu",
+    "max",
+    "-bios",
+    "/usr/share/seabios/bios-256k.bin",
+    "-m",
+    "512M",
+    "-smp",
+    "1",
+    "-nodefaults",
+    "-no-user-config",
+    "-no-reboot",
+    "-nographic",
+    "-display",
+    "none",
+    "-monitor",
+    "none",
+    "-serial",
+    "chardev:serial",
+    "-chardev",
+    "stdio,id=serial,signal=off,logfile=qemu.log",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04",
+    "-gdb",
+    "tcp:127.0.0.1:42627",
+    "-S"
+  ],
+  "cwd": "/tmp/trillionnium-a01-private-sdk-N2/kernel/asterinas/kernel",
+  "artifacts": {
+    "-kernel": {
+      "path": "/workspace/scratch/ae1a8cf05419/native-followup/debug-retry1/run/boot/artifacts-_ib34uhe/kernel.elf",
+      "size": 5963432,
+      "sha256": "dfb30f188cc0b6b4fad8dc6f8bb75c4a77768cbb94bf19612b06a50a8116d23f",
+      "stat": {
+        "dev": 27,
+        "ino": 525131,
+        "mode": 33024,
+        "size": 5963432,
+        "mtime_ns": 1792211528456336362,
+        "ctime_ns": 1792211528456336362
+      },
+      "source": {
+        "requested_path": "/tmp/trillionnium-a01-private-sdk-N2/kernel/asterinas/target/osdk/asterinas/asterinas-osdk-bin.elf",
+        "path": "/tmp/trillionnium-a01-private-sdk-N2/kernel/asterinas/target/osdk/asterinas/asterinas-osdk-bin.elf",
+        "size": 5963432,
+        "sha256": "dfb30f188cc0b6b4fad8dc6f8bb75c4a77768cbb94bf19612b06a50a8116d23f",
+        "stat": {
+          "dev": 27,
+          "ino": 404596,
+          "mode": 33261,
+          "size": 5963432,
+          "mtime_ns": 1792211528421581897,
+          "ctime_ns": 1792211528421604871
+        }
+      },
+      "creation": "exclusive xb; no overwrite or source-path fallback"
+    },
+    "-initrd": {
+      "path": "/workspace/scratch/ae1a8cf05419/native-followup/debug-retry1/run/boot/artifacts-_ib34uhe/initramfs.cpio.gz",
+      "size": 1107990,
+      "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "stat": {
+        "dev": 27,
+        "ino": 525132,
+        "mode": 33024,
+        "size": 1107990,
+        "mtime_ns": 1792211528464336275,
+        "ctime_ns": 1792211528464336275
+      },
+      "source": {
+        "requested_path": "/workspace/scratch/ae1a8cf05419/native-followup/debug-retry1/run/boot/initramfs.cpio.gz",
+        "path": "/workspace/scratch/ae1a8cf05419/native-followup/debug-retry1/run/boot/initramfs.cpio.gz",
+        "size": 1107990,
+        "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+        "stat": {
+          "dev": 27,
+          "ino": 409736,
+          "mode": 33188,
+          "size": 1107990,
+          "mtime_ns": 1792211253365571205,
+          "ctime_ns": 1792211528376337232
+        }
+      },
+      "creation": "exclusive xb; no overwrite or source-path fallback"
+    },
+    "-bios": {
+      "path": "/workspace/scratch/ae1a8cf05419/native-followup/debug-retry1/run/boot/artifacts-_ib34uhe/bios.bin",
+      "size": 262144,
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "stat": {
+        "dev": 27,
+        "ino": 525133,
+        "mode": 33024,
+        "size": 262144,
+        "mtime_ns": 1792211528470407033,
+        "ctime_ns": 1792211528470407033
+      },
+      "source": {
+        "requested_path": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/seabios/bios-256k.bin",
+        "path": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/seabios/bios-256k.bin",
+        "size": 262144,
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+        "stat": {
+          "dev": 27,
+          "ino": 1971903,
+          "mode": 33188,
+          "size": 262144,
+          "mtime_ns": 1701364826000000000,
+          "ctime_ns": 1792209846789822275
+        }
+      },
+      "creation": "exclusive xb; no overwrite or source-path fallback"
+    }
+  },
+  "raw_exit_code": 33,
+  "timed_out": false,
+  "stage": "complete",
+  "bios_selection": {
+    "origin": "A01_QEMU_BIOS",
+    "original_requested_path": "/usr/share/seabios/bios-256k.bin",
+    "selected_path": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/seabios/bios-256k.bin"
+  },
+  "data_selection": {
+    "origin": "A01_QEMU_DATA_DIR",
+    "original_requested_paths": [],
+    "selected_path": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/qemu",
+    "appended": true
+  },
+  "snapshot_directory": {
+    "path": "/workspace/scratch/ae1a8cf05419/native-followup/debug-retry1/run/boot/artifacts-_ib34uhe",
+    "stat": {
+      "dev": 27,
+      "ino": 525130,
+      "mode": 16832,
+      "size": 4096,
+      "mtime_ns": 1792211528452336406,
+      "ctime_ns": 1792211528452336406
+    },
+    "ownership": "new private mkdtemp directory; retained as evidence"
+  },
+  "argv": [
+    "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/bin/qemu-system-x86_64",
+    "-kernel",
+    "/workspace/scratch/ae1a8cf05419/native-followup/debug-retry1/run/boot/artifacts-_ib34uhe/kernel.elf",
+    "-initrd",
+    "/workspace/scratch/ae1a8cf05419/native-followup/debug-retry1/run/boot/artifacts-_ib34uhe/initramfs.cpio.gz",
+    "-append",
+    "earlycon console=ttyS0 console=ttyS0 console=ttyS0 loglevel=info loglevel=info loglevel=info SHELL=/bin/sh SHELL=/bin/sh LOGNAME=root LOGNAME=root HOME=/ HOME=/ USER=root USER=root PATH=/bin:/sbin PATH=/bin:/sbin --",
+    "-machine",
+    "q35",
+    "-accel",
+    "tcg",
+    "-cpu",
+    "max",
+    "-bios",
+    "/workspace/scratch/ae1a8cf05419/native-followup/debug-retry1/run/boot/artifacts-_ib34uhe/bios.bin",
+    "-m",
+    "512M",
+    "-smp",
+    "1",
+    "-nodefaults",
+    "-no-user-config",
+    "-no-reboot",
+    "-nographic",
+    "-display",
+    "none",
+    "-monitor",
+    "none",
+    "-serial",
+    "chardev:serial",
+    "-chardev",
+    "stdio,id=serial,signal=off,logfile=qemu.log",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04",
+    "-gdb",
+    "chardev:a01-kernel-gdb",
+    "-S",
+    "-L",
+    "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/qemu",
+    "-chardev",
+    "socket,id=a01-kernel-gdb,fd=64,server=on,wait=off"
+  ],
+  "shell_command": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/bin/qemu-system-x86_64 -kernel /workspace/scratch/ae1a8cf05419/native-followup/debug-retry1/run/boot/artifacts-_ib34uhe/kernel.elf -initrd /workspace/scratch/ae1a8cf05419/native-followup/debug-retry1/run/boot/artifacts-_ib34uhe/initramfs.cpio.gz -append 'earlycon console=ttyS0 console=ttyS0 console=ttyS0 loglevel=info loglevel=info loglevel=info SHELL=/bin/sh SHELL=/bin/sh LOGNAME=root LOGNAME=root HOME=/ HOME=/ USER=root USER=root PATH=/bin:/sbin PATH=/bin:/sbin --' -machine q35 -accel tcg -cpu max -bios /workspace/scratch/ae1a8cf05419/native-followup/debug-retry1/run/boot/artifacts-_ib34uhe/bios.bin -m 512M -smp 1 -nodefaults -no-user-config -no-reboot -nographic -display none -monitor none -serial chardev:serial -chardev stdio,id=serial,signal=off,logfile=qemu.log -device isa-debug-exit,iobase=0xf4,iosize=0x04 -gdb chardev:a01-kernel-gdb -S -L /workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/qemu -chardev socket,id=a01-kernel-gdb,fd=64,server=on,wait=off",
+  "qemu_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+  "gdb_listener": {
+    "fd": 64,
+    "address": [
+      "127.0.0.1",
+      42627
+    ],
+    "ownership": "inherited listening FD; no port rebind"
+  },
+  "qemu_version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)\nCopyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers",
+  "serial_path": "/tmp/trillionnium-a01-private-sdk-N2/kernel/asterinas/kernel/qemu.log",
+  "qemu_pid": 3121,
+  "serial_sha256": "30a97b13f9ba1e61039970367df4a4fcb2846963b02f88b88e699518878990ca",
+  "serial_size": 72255,
+  "duration_seconds": 3.331,
+  "recorder_exit_code": 33
+}

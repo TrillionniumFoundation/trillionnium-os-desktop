@@ -1,0 +1,99 @@
+{
+  "schema": 1,
+  "scope": "Debug CLI cancellation; discussion_r4294629171",
+  "base_commit": "692c9cf6ced7660304e2f94e31f034ab478830d6",
+  "source": {
+    "support/build/debug/run.py": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/debug/run.py",
+      "size": 22206,
+      "sha256": "fc5aa7fb949e1312cc8bd96d6b693b7268b065befa23efb1a94021dc3ab955d3"
+    },
+    "support/build/debug/test_debug.py": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/debug/test_debug.py",
+      "size": 20229,
+      "sha256": "9532fb599b1ed19eba8ec1724a04995ed4c07c677dc10e358abc9c55b74e937c"
+    }
+  },
+  "original_source": {
+    "path": "/workspace/scratch/ae1a8cf05419/next6-debug-original/run.py",
+    "size": 20027,
+    "sha256": "edcd1e590cb95240d966fe03890339e005d4f5a72a07fe404be320a7b7fffadb"
+  },
+  "original_reproduction": {
+    "observation": {
+      "path": "/workspace/scratch/ae1a8cf05419/next6-debug-baseline-02/sigterm/observation.json",
+      "size": 1204,
+      "sha256": "89e6e6b6fd4ac40ada1a7549fb2aa3f6b1378ae70978420e383ec48d864d58bd"
+    },
+    "log": {
+      "path": "/workspace/scratch/ae1a8cf05419/next6-debug-baseline-02.log",
+      "size": 98,
+      "sha256": "c6d094c685f7de3dc92435a2dcef19353b687f4f444cc2bd38b5c97ded59ba67"
+    },
+    "result": "Actual original CLI SIGTERM -15; unreaped driver and descendant still alive by pidfd; inherited lock and both TCP leases remained held; no result.json. This is a host fixture, no build or VM."
+  },
+  "passed_host_tests": {
+    "ordinary": 10,
+    "optimized": 10,
+    "ordinary_log": {
+      "path": "/workspace/scratch/ae1a8cf05419/next6-debug-patched-02-final.log",
+      "size": 109,
+      "sha256": "1cbd4df94b51b50258cb37c3f9d28098366335ea971f7faee2c5dbe530c6710a"
+    },
+    "optimized_log": {
+      "path": "/workspace/scratch/ae1a8cf05419/next6-debug-patched-03-final-optimized.log",
+      "size": 109,
+      "sha256": "7a64fc026cd0434ceb523947062be8e1e85f13b296b1ec1a09bc75ed50fc907b"
+    }
+  },
+  "live_cli_cases": {
+    "ordinary": {
+      "sigint-then-sigterm": {
+        "path": "/workspace/scratch/ae1a8cf05419/next6-debug-patched-02-final/sigint-then-sigterm/observation.json",
+        "size": 2005,
+        "sha256": "2433deae5bb46a02aba30a3ce7c73aa7e1f5c0392d6f477c3c9f5305271d8693"
+      },
+      "sigterm": {
+        "path": "/workspace/scratch/ae1a8cf05419/next6-debug-patched-02-final/sigterm/observation.json",
+        "size": 1931,
+        "sha256": "87f852322adc2929b6c129dd0efec34bc29003090092934787b28cf607d670be"
+      },
+      "spawn-publication": {
+        "path": "/workspace/scratch/ae1a8cf05419/next6-debug-patched-02-final/spawn-publication/observation.json",
+        "size": 1589,
+        "sha256": "b5a7925abbeeba9eeaec90321f88777acd3ea8570a32b3c5d1e00297e4dfbaec"
+      }
+    },
+    "optimized": {
+      "sigint-then-sigterm": {
+        "path": "/workspace/scratch/ae1a8cf05419/next6-debug-patched-03-final-optimized/sigint-then-sigterm/observation.json",
+        "size": 2065,
+        "sha256": "5a90447e9d8ab3b4b26b5c29ba3926d0e5e9badf63ebcf13c4683f1f3835d6f5"
+      },
+      "sigterm": {
+        "path": "/workspace/scratch/ae1a8cf05419/next6-debug-patched-03-final-optimized/sigterm/observation.json",
+        "size": 1991,
+        "sha256": "f6d8ae019b55996e9861979871562e3a0a7589b0e9cf46feaac1e2afa66b7907"
+      },
+      "spawn-publication": {
+        "path": "/workspace/scratch/ae1a8cf05419/next6-debug-patched-03-final-optimized/spawn-publication/observation.json",
+        "size": 1619,
+        "sha256": "78266ef46939c7fd2a377a1394bd7e854b865f756eec40f018aa7b8106021827"
+      }
+    }
+  },
+  "commands": [
+    "A01_DEBUG_SOURCE=ORIGINAL_DIR A01_DEBUG_EXPECT_ORIGINAL_LEAK=1 A01_DEBUG_LIFECYCLE_OUT=NEW_BASELINE_DIR python3 -I support/build/debug/test_debug.py DebugTests.test_sigterm_cleans_actual_cli_owned_driver_and_descendant",
+    "A01_DEBUG_LIFECYCLE_OUT=NEW_DIR python3 -I support/build/debug/test_debug.py",
+    "A01_DEBUG_LIFECYCLE_OUT=NEW_DIR python3 -I -O support/build/debug/test_debug.py"
+  ],
+  "notes": [
+    "Only debug/run.py and test_debug.py changed; no Git writes, VM, Rust build, core, or OSTD changes.",
+    "Signal handler only records first cancellation and requests; readiness/wait loops synchronously check it. Popen ownership publication and final cleanup cannot be interrupted by asynchronous Python exceptions.",
+    "Existing OwnedSession WNOWAIT/group-before-reap is reused. Actual CLI TERM143, INT then TERM130, and TERM in spawn\u2192owner-publication window143 clean both pidfds, leases and lock; result passed=false, signal recorded.",
+    "A01_KERNEL_WORKER=1 explicitly selects parent-owned Bash worker, avoiding nested supervisor sessions. This is lifecycle routing, not an authorization flag.",
+    "Fixture tools, source metadata placeholders and driver only emulate CLI lifecycle; they never invoke a build, QEMU, nm or GDB. Their paths contain fixture-project and all copies/commands retained.",
+    "First baseline attempt next6-debug-baseline.log failed because test fixture omitted fcntl import; it cleaned owned pidfds. Corrected original reproduction retained separately, not relabelled.",
+    "Existing fixed CARGO_TARGET_DIR/symbol path policy was preserved."
+  ]
+}

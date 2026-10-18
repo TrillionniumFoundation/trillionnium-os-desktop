@@ -1,0 +1,42 @@
+{
+  "argv": [
+    "python3",
+    "-I",
+    "support/build/debug/run.py",
+    "--output",
+    "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/next4-kernel-debug",
+    "--gdb",
+    "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/bin/gdb"
+  ],
+  "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+  "explicit_environment": {
+    "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+    "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+    "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+    "VDSO_LIBRARY_DIR": "/workspace/scratch/ae1a8cf05419/linux-vdso",
+    "LD_LIBRARY_PATH": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/lib/x86_64-linux-gnu",
+    "PATH": "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin:/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/bin:/root/.codex/tmp/arg0/codex-arg0XJwRso:/opt/codex/codex-path:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback"
+  },
+  "watcher_argv": [
+    "inotifywait",
+    "-m",
+    "-e",
+    "create,delete,moved_to,moved_from,attrib,close_write",
+    "--format",
+    "%e|%f",
+    "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/kernel"
+  ],
+  "raw_exit_code": 1,
+  "ptrace_probe": {
+    "argv": [
+      "strace",
+      "-o",
+      "/workspace/scratch/ae1a8cf05419/next4-strace-probe.log",
+      "true"
+    ],
+    "raw_exit_code": 1,
+    "observed_stderr": "PTRACE_TRACEME/PTRACE_SETOPTIONS Operation not permitted; no ptrace attempted on actual build; observation uses inotify only",
+    "recorded_from_prior_tool_receipt": true
+  },
+  "manifest_present_after": false
+}

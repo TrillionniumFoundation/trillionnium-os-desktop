@@ -1,0 +1,131 @@
+{
+  "schema": "a01-private-sdk-host-validation/2",
+  "created_utc": "2026-10-17T04:14:05.423423+00:00",
+  "base_commit": "09aea79c71dc9f48ba519757078dd8a20f5c8fb3",
+  "scope": "final support-layer code plus host fixtures; no SDK/kernel/QEMU install or VM result",
+  "status": "ready_after_independent_v2_approval",
+  "source_sha256": {
+    "support/build/kernel.sh": "4ee3118990158bb93be6ffe191cac8de5399f507973af6adc3a05e3614407f83",
+    "support/build/minimal.mk": "9fe262b0287831263217a72380ab24b8e79a3baf2bff4f5a3186c01558ad6635",
+    "support/build/README.md": "0896cf8c0ca002419d1d79b69076e8fbe99d4a2fa8dc57b8ef9354ccb0caed06",
+    "support/build/tests/test_kernel_runner.py": "2311311e33ab57c37117bf431ce938370fb0610b0324c472d4772e3b7c2a4531"
+  },
+  "results": [
+    {
+      "log": "private-sdk-kernel-runner-v2-ordinary.log",
+      "sha256": "73b362d91f70c62c7557e03b1ce1f077f92f1ef2cd5d2ec9e8ef295b98ff8cb5",
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "support/build/tests",
+        "-p",
+        "test_kernel_runner.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+      "tests": 40,
+      "observed_tool_returncode": 0,
+      "passed": true
+    },
+    {
+      "log": "private-sdk-kernel-runner-v2-isolated.log",
+      "sha256": "60b54e1e87fdeb89b84cf1e5c6a2349aa8cb549a55526a6b1f68b323a429fe43",
+      "command": [
+        "python3",
+        "-I",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "support/build/tests",
+        "-p",
+        "test_kernel_runner.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+      "tests": 40,
+      "observed_tool_returncode": 0,
+      "passed": true
+    },
+    {
+      "log": "private-sdk-kernel-supervisor-v2-isolated.log",
+      "sha256": "bd35fc0b16e9d020f41a7d1bda66a4fefa414419437bf9b7d71d73ea945e341e",
+      "command": [
+        "python3",
+        "-I",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "support/build/tests",
+        "-p",
+        "test_kernel_supervisor.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+      "tests": 9,
+      "observed_tool_returncode": 0,
+      "passed": true
+    },
+    {
+      "log": "private-sdk-repro-profile-v2-isolated.log",
+      "sha256": "182b6d7a5e0a57b0775dd47ad0d180ff55890d9c5d8f70f21284ddb4bf2d6743",
+      "command": [
+        "python3",
+        "-I",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "support/build/repro",
+        "-p",
+        "test_profile.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+      "tests": 32,
+      "observed_tool_returncode": 0,
+      "passed": true
+    }
+  ],
+  "syntax_and_diff_checks": [
+    {
+      "command": [
+        "bash",
+        "-n",
+        "support/build/kernel.sh"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "supersedes": {
+    "receipt": "private-sdk-validation-ready.json",
+    "sha256": "cb0ccf3a74ad7b684e226659df4b1c81585433853b9520f43e1fd8dd7f7adb14",
+    "status": "superseded_not_final_acceptance",
+    "reason": "Independent real Cargo found absolute Cargo home paths containing '..' could prefer global SDK; final entry rejects parent components in explicit/default Cargo home before output."
+  },
+  "independent_review": "sdk-root-independent-review/final-v2",
+  "real_cargo_lookup_report": "cargo-lookup-results/report.json",
+  "real_cargo_relative_home_report": "cargo-relative-lookup-results/report.json",
+  "pre_fix_actual_make_report": "results/report.json",
+  "limitations": [
+    "Host-only tests do not constitute a full Rust kernel build or QEMU boot.",
+    "Historical initial wrong-root SDK binary was not retained; old static path diagnosis remains its stated evidence.",
+    "Private prefixes isolate ordinary installations, not an immutable sandbox against an unrelated same-user writer."
+  ]
+}

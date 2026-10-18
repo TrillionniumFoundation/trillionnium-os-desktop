@@ -1,0 +1,68 @@
+{
+  "fixture": "production runner + GNU make/upstream Makefile/minimal.mk; only external inputs/tools are fixtures; no kernel compiled",
+  "gnu_make": "GNU Make 4.3",
+  "results": [
+    {
+      "MAKEFLAGS": "n",
+      "argv": [
+        "bash",
+        "/tmp/a01-runner-test-r0q7x93h/support/build/kernel.sh",
+        "kernel"
+      ],
+      "returncode": 0,
+      "cargo_calls": [
+        "-Vv"
+      ],
+      "cargo_recipe_executed": false,
+      "output": "make: Entering directory '/tmp/a01-runner-test-r0q7x93h/kernel/asterinas'\n/tmp/a01-runner-test-r0q7x93h/support/build/minimal.mk:5: warning: overriding recipe for target 'initramfs'\nMakefile:323: warning: ignoring old recipe for target 'initramfs'\n/tmp/a01-runner-test-r0q7x93h/support/build/minimal.mk:10: warning: overriding recipe for target '/tmp/a01-runner-test-r0q7x93h/cargo-home/bin/cargo-osdk'\nMakefile:298: warning: ignoring old recipe for target '/tmp/a01-runner-test-r0q7x93h/cargo-home/bin/cargo-osdk'\n/tmp/a01-runner-test-r0q7x93h/support/build/minimal.mk:13: warning: overriding recipe for target 'install_osdk'\nMakefile:291: warning: ignoring old recipe for target 'install_osdk'\n/tmp/a01-runner-test-r0q7x93h/support/build/minimal.mk:21: warning: overriding recipe for target 'gdb_server'\nMakefile:419: warning: ignoring old recipe for target 'gdb_server'\nOSDK_LOCAL_DEV=1 cargo install --locked cargo-osdk --path osdk\n# Checking `VDSO_LIBRARY_DIR` environment variable\nif [ -z \"/tmp/a01-runner-test-r0q7x93h/vdso\" ]; then \\\n\techo \"Error: the VDSO_LIBRARY_DIR environment variable must be given.\"; \\\n\techo \"    This variable points to a directory that provides Linux's vDSO files,\"; \\\n\techo \"    which is required to build Asterinas. Search for VDSO_LIBRARY_DIR\"; \\\n\techo \"    in Asterinas's Dockerfile for more information.\"; \\\n\texit 1; \\\nfi\ntest -s \"/tmp/a01-runner-test-r0q7x93h/evidence-0/initramfs.cpio.gz\"\ncd kernel && cargo osdk build --release --boot-method=vmm-direct --grub-boot-protocol=multiboot --initramfs=\"/tmp/a01-runner-test-r0q7x93h/evidence-0/initramfs.cpio.gz\" --kcmd-args=\"loglevel=info\" --kcmd-args=\"earlycon\" --kcmd-args=\"console=ttyS0\" --qemu-exe=\"/tmp/a01-runner-test-r0q7x93h/support/build/record-qemu.py\"\nmake: Leaving directory '/tmp/a01-runner-test-r0q7x93h/kernel/asterinas'\nevidence: /tmp/a01-runner-test-r0q7x93h/evidence-0\nA01_KERNEL_SUPERVISOR {\"argv\": [\"bash\", \"/tmp/a01-runner-test-r0q7x93h/support/build/kernel.sh\", \"kernel\"], \"exit_code\": 0, \"external_reap_disarmed\": false, \"group_owner\": \"standalone supervisor\", \"kind\": \"kernel_worker_group_supervision\", \"leader_pid\": 10, \"pass_fds\": [], \"raw_worker_exit\": 0, \"worker_reaped\": true}\n",
+      "run_exit_code": "0\n"
+    },
+    {
+      "MAKEFLAGS": "t",
+      "argv": [
+        "bash",
+        "/tmp/a01-runner-test-r0q7x93h/support/build/kernel.sh",
+        "kernel"
+      ],
+      "returncode": 0,
+      "cargo_calls": [
+        "-Vv"
+      ],
+      "cargo_recipe_executed": false,
+      "output": "make: Entering directory '/tmp/a01-runner-test-r0q7x93h/kernel/asterinas'\n/tmp/a01-runner-test-r0q7x93h/support/build/minimal.mk:5: warning: overriding recipe for target 'initramfs'\nMakefile:323: warning: ignoring old recipe for target 'initramfs'\n/tmp/a01-runner-test-r0q7x93h/support/build/minimal.mk:10: warning: overriding recipe for target '/tmp/a01-runner-test-r0q7x93h/cargo-home/bin/cargo-osdk'\nMakefile:298: warning: ignoring old recipe for target '/tmp/a01-runner-test-r0q7x93h/cargo-home/bin/cargo-osdk'\n/tmp/a01-runner-test-r0q7x93h/support/build/minimal.mk:13: warning: overriding recipe for target 'install_osdk'\nMakefile:291: warning: ignoring old recipe for target 'install_osdk'\n/tmp/a01-runner-test-r0q7x93h/support/build/minimal.mk:21: warning: overriding recipe for target 'gdb_server'\nMakefile:419: warning: ignoring old recipe for target 'gdb_server'\ntouch /tmp/a01-runner-test-r0q7x93h/cargo-home/bin/cargo-osdk\nmake: Leaving directory '/tmp/a01-runner-test-r0q7x93h/kernel/asterinas'\nevidence: /tmp/a01-runner-test-r0q7x93h/evidence-1\nA01_KERNEL_SUPERVISOR {\"argv\": [\"bash\", \"/tmp/a01-runner-test-r0q7x93h/support/build/kernel.sh\", \"kernel\"], \"exit_code\": 0, \"external_reap_disarmed\": false, \"group_owner\": \"standalone supervisor\", \"kind\": \"kernel_worker_group_supervision\", \"leader_pid\": 48, \"pass_fds\": [], \"raw_worker_exit\": 0, \"worker_reaped\": true}\n",
+      "run_exit_code": "0\n"
+    },
+    {
+      "MAKEFLAGS": "i",
+      "argv": [
+        "bash",
+        "/tmp/a01-runner-test-r0q7x93h/support/build/kernel.sh",
+        "kernel"
+      ],
+      "returncode": 0,
+      "cargo_calls": [
+        "-Vv",
+        "osdk build --release --boot-method=vmm-direct --grub-boot-protocol=multiboot --initramfs=/tmp/a01-runner-test-r0q7x93h/evidence-2/initramfs.cpio.gz --kcmd-args=loglevel=info --kcmd-args=earlycon --kcmd-args=console=ttyS0 --qemu-exe=/tmp/a01-runner-test-r0q7x93h/support/build/record-qemu.py"
+      ],
+      "cargo_recipe_executed": true,
+      "output": "make: Entering directory '/tmp/a01-runner-test-r0q7x93h/kernel/asterinas'\n/tmp/a01-runner-test-r0q7x93h/support/build/minimal.mk:5: warning: overriding recipe for target 'initramfs'\nMakefile:323: warning: ignoring old recipe for target 'initramfs'\n/tmp/a01-runner-test-r0q7x93h/support/build/minimal.mk:10: warning: overriding recipe for target '/tmp/a01-runner-test-r0q7x93h/cargo-home/bin/cargo-osdk'\nMakefile:298: warning: ignoring old recipe for target '/tmp/a01-runner-test-r0q7x93h/cargo-home/bin/cargo-osdk'\n/tmp/a01-runner-test-r0q7x93h/support/build/minimal.mk:13: warning: overriding recipe for target 'install_osdk'\nMakefile:291: warning: ignoring old recipe for target 'install_osdk'\n/tmp/a01-runner-test-r0q7x93h/support/build/minimal.mk:21: warning: overriding recipe for target 'gdb_server'\nMakefile:419: warning: ignoring old recipe for target 'gdb_server'\nmake: Leaving directory '/tmp/a01-runner-test-r0q7x93h/kernel/asterinas'\nevidence: /tmp/a01-runner-test-r0q7x93h/evidence-2\nA01_KERNEL_SUPERVISOR {\"argv\": [\"bash\", \"/tmp/a01-runner-test-r0q7x93h/support/build/kernel.sh\", \"kernel\"], \"exit_code\": 0, \"external_reap_disarmed\": false, \"group_owner\": \"standalone supervisor\", \"kind\": \"kernel_worker_group_supervision\", \"leader_pid\": 86, \"pass_fds\": [], \"raw_worker_exit\": 0, \"worker_reaped\": true}\n",
+      "run_exit_code": "0\n"
+    },
+    {
+      "MAKEFLAGS": "",
+      "argv": [
+        "bash",
+        "/tmp/a01-runner-test-r0q7x93h/support/build/kernel.sh",
+        "kernel"
+      ],
+      "returncode": 0,
+      "cargo_calls": [
+        "-Vv",
+        "osdk build --release --boot-method=vmm-direct --grub-boot-protocol=multiboot --initramfs=/tmp/a01-runner-test-r0q7x93h/evidence-3/initramfs.cpio.gz --kcmd-args=loglevel=info --kcmd-args=earlycon --kcmd-args=console=ttyS0 --qemu-exe=/tmp/a01-runner-test-r0q7x93h/support/build/record-qemu.py"
+      ],
+      "cargo_recipe_executed": true,
+      "output": "make: Entering directory '/tmp/a01-runner-test-r0q7x93h/kernel/asterinas'\n/tmp/a01-runner-test-r0q7x93h/support/build/minimal.mk:5: warning: overriding recipe for target 'initramfs'\nMakefile:323: warning: ignoring old recipe for target 'initramfs'\n/tmp/a01-runner-test-r0q7x93h/support/build/minimal.mk:10: warning: overriding recipe for target '/tmp/a01-runner-test-r0q7x93h/cargo-home/bin/cargo-osdk'\nMakefile:298: warning: ignoring old recipe for target '/tmp/a01-runner-test-r0q7x93h/cargo-home/bin/cargo-osdk'\n/tmp/a01-runner-test-r0q7x93h/support/build/minimal.mk:13: warning: overriding recipe for target 'install_osdk'\nMakefile:291: warning: ignoring old recipe for target 'install_osdk'\n/tmp/a01-runner-test-r0q7x93h/support/build/minimal.mk:21: warning: overriding recipe for target 'gdb_server'\nMakefile:419: warning: ignoring old recipe for target 'gdb_server'\nmake: Leaving directory '/tmp/a01-runner-test-r0q7x93h/kernel/asterinas'\nevidence: /tmp/a01-runner-test-r0q7x93h/evidence-3\nA01_KERNEL_SUPERVISOR {\"argv\": [\"bash\", \"/tmp/a01-runner-test-r0q7x93h/support/build/kernel.sh\", \"kernel\"], \"exit_code\": 0, \"external_reap_disarmed\": false, \"group_owner\": \"standalone supervisor\", \"kind\": \"kernel_worker_group_supervision\", \"leader_pid\": 128, \"pass_fds\": [], \"raw_worker_exit\": 0, \"worker_reaped\": true}\n",
+      "run_exit_code": "0\n"
+    }
+  ]
+}

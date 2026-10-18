@@ -1,0 +1,75 @@
+initramfs: 1107990 bytes, sha256=86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3
+make: Entering directory '/workspace/scratch/ae1a8cf05419/a01-current-build/kernel/asterinas'
+/workspace/scratch/ae1a8cf05419/a01-current-build/support/build/minimal.mk:5: warning: overriding recipe for target 'initramfs'
+Makefile:323: warning: ignoring old recipe for target 'initramfs'
+/workspace/scratch/ae1a8cf05419/a01-current-build/support/build/minimal.mk:10: warning: overriding recipe for target '/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin/cargo-osdk'
+Makefile:298: warning: ignoring old recipe for target '/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin/cargo-osdk'
+/workspace/scratch/ae1a8cf05419/a01-current-build/support/build/minimal.mk:13: warning: overriding recipe for target 'install_osdk'
+Makefile:291: warning: ignoring old recipe for target 'install_osdk'
+/workspace/scratch/ae1a8cf05419/a01-current-build/support/build/minimal.mk:21: warning: overriding recipe for target 'gdb_server'
+Makefile:419: warning: ignoring old recipe for target 'gdb_server'
+warning: unstable feature specified for `-Ctarget-feature`: `ermsb`
+  |
+  = note: this feature is not stably supported; its behavior can change in the future
+
+warning: `int-to-c-enum` (lib) generated 1 warning
+warning: `ostd-pod` (lib) generated 1 warning (1 duplicate)
+warning: `id-alloc` (lib) generated 1 warning (1 duplicate)
+warning: `ostd-test` (lib) generated 1 warning (1 duplicate)
+warning: `linux-boot-params` (lib) generated 1 warning (1 duplicate)
+warning: `align_ext` (lib) generated 1 warning (1 duplicate)
+warning: `ostd` (lib) generated 1 warning (1 duplicate)
+warning: `component` (lib) generated 1 warning (1 duplicate)
+warning: `typeflags-util` (lib) generated 1 warning (1 duplicate)
+warning: `aster-rights` (lib) generated 1 warning (1 duplicate)
+warning: `osdk-heap-allocator` (lib) generated 1 warning (1 duplicate)
+warning: `aster-util` (lib) generated 1 warning (1 duplicate)
+warning: `aster-softirq` (lib) generated 1 warning (1 duplicate)
+warning: `dma-pool` (lib) generated 1 warning (1 duplicate)
+warning: `device-id` (lib) generated 1 warning (1 duplicate)
+warning: `aster-console` (lib) generated 1 warning (1 duplicate)
+warning: `io-util` (lib) generated 1 warning (1 duplicate)
+warning: `jhash` (lib) generated 1 warning (1 duplicate)
+warning: `aster-bigtcp` (lib) generated 1 warning (1 duplicate)
+warning: `aster-block` (lib) generated 1 warning (1 duplicate)
+warning: `aster-pci` (lib) generated 1 warning (1 duplicate)
+warning: `aster-network` (lib) generated 1 warning (1 duplicate)
+warning: `aster-systree` (lib) generated 1 warning (1 duplicate)
+warning: `aster-input` (lib) generated 1 warning (1 duplicate)
+warning: `aster-cmdline` (lib) generated 1 warning (1 duplicate)
+warning: `aster-fuse` (lib) generated 1 warning (1 duplicate)
+warning: `aster-framebuffer` (lib) generated 1 warning (1 duplicate)
+warning: `aster-virtio` (lib) generated 1 warning (1 duplicate)
+warning: `aster-device` (lib) generated 1 warning (1 duplicate)
+warning: `aster-logger` (lib) generated 1 warning (1 duplicate)
+warning: `cpio-decoder` (lib) generated 1 warning (1 duplicate)
+warning: `aster-nvme` (lib) generated 1 warning (1 duplicate)
+warning: `osdk-frame-allocator` (lib) generated 1 warning (1 duplicate)
+warning: `aster-time` (lib) generated 1 warning (1 duplicate)
+warning: `ring-buffer` (lib) generated 1 warning (1 duplicate)
+warning: `xarray` (lib) generated 1 warning (1 duplicate)
+warning: `logo-ascii-art` (lib) generated 1 warning (1 duplicate)
+warning: `keyable-arc` (lib) generated 1 warning (1 duplicate)
+warning: `sparse-id-alloc` (lib) generated 1 warning (1 duplicate)
+warning: `aster-uart` (lib) generated 1 warning (1 duplicate)
+warning: `aster-core` (lib) generated 1 warning (1 duplicate)
+warning: `aster-drm` (lib) generated 1 warning (1 duplicate)
+warning: `aster-i8042` (lib) generated 1 warning (1 duplicate)
+warning: `aster-simpledrm` (lib) generated 1 warning (1 duplicate)
+warning: `asterinas` (lib) generated 1 warning (1 duplicate)
+warning: `asterinas-osdk-bin` (bin "asterinas-osdk-bin") generated 1 warning (1 duplicate)
+    Finished `release` profile [optimized] target(s) in 0.17s
+Could not open option rom 'kvmvapic.bin': No such file or directory
+Could not open option rom 'multiboot_dma.bin': No such file or directory
+c[?7l[2J[0mSeaBIOS (version 1.16.3-debian-1.16.3-2)
+Booting from Floppy...
+Boot failed: could not read the boot disk
+
+Booting from Hard Disk...
+Boot failed: could not read the boot disk
+
+No bootable device.
+make: *** [Makefile:349: run_kernel] Error 2
+make: Leaving directory '/workspace/scratch/ae1a8cf05419/a01-current-build/kernel/asterinas'
+evidence: /workspace/scratch/ae1a8cf05419/current-cloud/boot
+A01_KERNEL_SUPERVISOR {"argv": ["bash", "/workspace/scratch/ae1a8cf05419/a01-current-build/support/build/kernel.sh", "run_kernel"], "exit_code": 2, "external_reap_disarmed": false, "group_owner": "standalone supervisor", "kind": "kernel_worker_group_supervision", "leader_pid": 4976, "pass_fds": [], "raw_worker_exit": 2, "worker_reaped": true}

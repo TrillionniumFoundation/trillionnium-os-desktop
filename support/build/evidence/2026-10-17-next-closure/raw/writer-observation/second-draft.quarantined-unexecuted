@@ -1,0 +1,204 @@
+"""Host fixtures for private SDK installation; no Rust build or QEMU."""
+import importlib.util
+import json
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+import tempfile
+import unittest
+
+HERE = Path(__file__).resolve().parent
+SPEC = importlib.util.spec_from_file_location("ktest_sdk_lifecycle", HERE / "test_runner_lifecycle.py")
+LIFECYCLE = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(LIFECYCLE)
+
+SDK = r'''#!/usr/bin/python3
+import json, os, shutil, sys
+from pathlib import Path
+record = {"kind":"sdk", "path":__file__, "argv":sys.argv[1:], "source_root":SOURCE_ROOT}
+root = Path(os.environ["FIXTURE_ROOT"])
+with (root/"sdk-calls.jsonl").open("a") as stream: stream.write(json.dumps(record)+"\n")
+if os.environ.get("SDK_ARGV_PROBE"):
+    print(json.dumps(record)); raise SystemExit(0)
+if sys.argv[1:3] != ["osdk", "test"]: raise SystemExit("wrong cargo-osdk CLI contract")
+if os.environ.get("SDK_EXIT"): raise SystemExit(int(os.environ["SDK_EXIT"]))
+target = Path(os.environ["CARGO_TARGET_DIR"])/"osdk"/(os.environ["A01_KTEST_CRATE"]+"-test-base")
+target.mkdir(parents=True, exist_ok=True)
+shutil.copyfile(os.environ["OSDK_CARGO_LOCK"], target/"Cargo.lock")
+Path(os.environ["A01_KTEST_GUESTS"]).mkdir()
+print("host-only SDK fixture; no Rust or guest")
+'''
+
+CARGO = r'''#!/usr/bin/python3
+import json, os, shutil, subprocess, sys
+from pathlib import Path
+root = Path(os.environ["FIXTURE_ROOT"])
+args = sys.argv[1:]
+if args and args[0].startswith("+"): args = args[1:]
+with (root/"sdk-calls.jsonl").open("a") as stream:
+    stream.write(json.dumps({"kind":"cargo", "argv":sys.argv[1:], "cwd":os.getcwd()})+"\n")
+if args == ["-Vv"]: print("host fixture cargo"); raise SystemExit(0)
+if args and args[0] == "install":
+    if os.environ.get("INSTALL_EXIT"): raise SystemExit(int(os.environ["INSTALL_EXIT"]))
+    prefix = Path(args[args.index("--root")+1]) if "--root" in args else Path(os.environ["CARGO_HOME"])
+    binary = prefix/"bin/cargo-osdk"
+    binary.parent.mkdir(parents=True, exist_ok=True)
+    mode = os.environ.get("INSTALL_MODE", "regular")
+    if mode == "missing": raise SystemExit(0)
+    if mode == "symlink": binary.symlink_to(root/"cargo/bin/cargo-osdk"); raise SystemExit(0)
+    binary.write_text((root/"sdk-template.py").read_text().replace("SOURCE_ROOT", repr(os.getcwd())))
+    binary.chmod(0o644 if mode == "nonexecutable" else 0o755)
+    raise SystemExit(0)
+if args and args[0] == "osdk":
+    real = os.environ.get("A01_TEST_REAL_CARGO")
+    command = [real, *args] if real else [shutil.which("cargo-osdk"), *args]
+    raise SystemExit(subprocess.run(command).returncode)
+raise SystemExit("unexpected host fixture cargo argv")
+'''
+
+
+class SDKIsolationTests(unittest.TestCase):
+    fixture = LIFECYCLE.RunnerLifecycleTests.fixture
+
+    def setup_sdk(self, root):
+        project, argv, env = self.fixture(root)
+        (root / "sdk-template.py").write_text(SDK)
+        cargo = root / "cargo/bin/cargo"
+        cargo.write_text(CARGO)
+        cargo.chmod(0o755)
+        global_sdk = root / "cargo/bin/cargo-osdk"
+        global_sdk.write_text(SDK.replace("SOURCE_ROOT", repr("/foreign/checkout")))
+        global_sdk.chmod(0o755)
+        return project, argv, env, global_sdk
+
+    def invoke(self, argv, env):
+        return subprocess.run(argv, env=env, capture_output=True, text=True, timeout=15)
+
+    def calls(self, root):
+        path = root / "sdk-calls.jsonl"
+        return [json.loads(line) for line in path.read_text().splitlines()] if path.exists() else []
+
+    def test_default_installs_and_directly_executes_private_source_bound_sdk(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            project, argv, env, global_sdk = self.setup_sdk(root)
+            original = global_sdk.read_bytes()
+            result = self.invoke(argv, env)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            prefix = root / "output/osdk"
+            sdk = prefix / "bin/cargo-osdk"
+            calls = self.calls(root)
+            install = next(row for row in calls if row["kind"] == "cargo" and "install" in row["argv"])
+            self.assertEqual(install["argv"], ["+nightly-2026-07-21", "install", "--locked", "--root",
+                                             str(prefix), "cargo-osdk", "--path", "osdk"])
+            selected = next(row for row in calls if row["kind"] == "sdk")
+            self.assertEqual(selected["path"], str(sdk))
+            self.assertEqual(selected["source_root"], str(project / "kernel/asterinas"))
+            self.assertEqual(selected["argv"][:2], ["osdk", "test"])
+            self.assertEqual(global_sdk.read_bytes(), original)
+            self.assertEqual(prefix.stat().st_mode & 0o777, 0o700)
+            self.assertEqual(sdk.parent.stat().st_mode & 0o777, 0o700)
+            evidence = json.loads((root / "output/environment.json").read_text())
+            self.assertEqual(evidence["osdk_path"], str(sdk))
+            self.assertEqual(evidence["osdk_source_root"], str(project / "kernel/asterinas"))
+
+    def test_skip_install_rejects_before_output_lock_or_tools(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            project, argv, env, _ = self.setup_sdk(root)
+            result = self.invoke(argv + ["--skip-osdk-install"], env)
+            self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+            self.assertIn("omit --skip-osdk-install", result.stderr)
+            self.assertFalse((root / "output").exists())
+            self.assertFalse((project / "support/build/out-kernel.lock").exists())
+            self.assertEqual(self.calls(root), [])
+
+    def test_each_output_installs_separately_without_changing_shared_cache(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            _, argv, env, global_sdk = self.setup_sdk(root)
+            original = global_sdk.read_bytes()
+            cache = root / "cargo/registry/cache-sentinel"
+            cache.parent.mkdir()
+            cache.write_bytes(b"shared cache")
+            for name in ("first", "second"):
+                command = list(argv)
+                command[command.index("--output") + 1] = str(root / name)
+                result = self.invoke(command, env)
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            selected = [row["path"] for row in self.calls(root) if row["kind"] == "sdk"]
+            self.assertEqual(selected, [str(root / name / "osdk/bin/cargo-osdk") for name in ("first", "second")])
+            self.assertEqual(global_sdk.read_bytes(), original)
+            self.assertEqual(cache.read_bytes(), b"shared cache")
+
+    def test_install_failure_never_runs_global_sdk(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            _, argv, env, global_sdk = self.setup_sdk(root)
+            original = global_sdk.read_bytes()
+            result = self.invoke(argv, env | {"INSTALL_EXIT": "47"})
+            self.assertNotEqual(result.returncode, 0)
+            self.assertFalse(any(row["kind"] == "sdk" for row in self.calls(root)))
+            self.assertEqual(global_sdk.read_bytes(), original)
+            receipt = json.loads((root / "output/osdk-install.log.command.json").read_text())
+            self.assertEqual(receipt["raw_exit_code"], 47)
+            self.assertFalse(json.loads((root / "output/result.json").read_text())["passed"])
+
+    def test_invalid_private_binary_never_falls_back_to_global_sdk(self):
+        for mode in ("missing", "nonexecutable", "symlink"):
+            with self.subTest(mode=mode), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                _, argv, env, global_sdk = self.setup_sdk(root)
+                original = global_sdk.read_bytes()
+                result = self.invoke(argv, env | {"INSTALL_MODE": mode})
+                self.assertNotEqual(result.returncode, 0)
+                self.assertFalse(any(row["kind"] == "sdk" for row in self.calls(root)))
+                self.assertEqual(global_sdk.read_bytes(), original)
+
+    def test_private_sdk_failure_is_retained_without_global_fallback(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            _, argv, env, global_sdk = self.setup_sdk(root)
+            original = global_sdk.read_bytes()
+            result = self.invoke(argv, env | {"SDK_EXIT": "47"})
+            self.assertNotEqual(result.returncode, 0)
+            selected = [row for row in self.calls(root) if row["kind"] == "sdk"]
+            self.assertEqual(len(selected), 1)
+            self.assertEqual(selected[0]["path"], str(root / "output/osdk/bin/cargo-osdk"))
+            self.assertEqual((root / "output/ostd/osdk-exit-code.txt").read_text(), "47\n")
+            self.assertEqual(global_sdk.read_bytes(), original)
+
+    def test_invalid_cargo_home_rejects_before_output_lock_or_tools(self):
+        for value in ("", "relative", "/absolute/placeholder/../cargo-home"):
+            with self.subTest(value=value), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                project, argv, env, _ = self.setup_sdk(root)
+                result = self.invoke(argv, env | {"CARGO_HOME": value})
+                self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+                self.assertFalse((root / "output").exists())
+                self.assertFalse((project / "support/build/out-kernel.lock").exists())
+                self.assertEqual(self.calls(root), [])
+
+    def test_fixed_real_cargo_and_direct_sdk_have_same_osdk_test_argv_contract(self):
+        cargo = os.environ.get("A01_TEST_REAL_CARGO")
+        if not cargo:
+            self.skipTest("set A01_TEST_REAL_CARGO to the fixed real Cargo; fake SDK only")
+        cargo = Path(cargo)
+        self.assertTrue(cargo.is_absolute() and cargo.is_file())
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            _, _, env, sdk = self.setup_sdk(root)
+            env["SDK_ARGV_PROBE"] = "1"
+            env["PATH"] = str(sdk.parent) + os.pathsep + env.get("PATH", "")
+            forwarded = self.invoke([str(cargo), "osdk", "test", "--host-fixture-contract"], env)
+            direct = self.invoke([str(sdk), "osdk", "test", "--host-fixture-contract"], env)
+            self.assertEqual(forwarded.returncode, 0, forwarded.stderr)
+            self.assertEqual(direct.returncode, 0, direct.stderr)
+            self.assertEqual(json.loads(forwarded.stdout)["argv"], ["osdk", "test", "--host-fixture-contract"])
+            self.assertEqual(json.loads(forwarded.stdout)["argv"], json.loads(direct.stdout)["argv"])
+
+
+if __name__ == "__main__":
+    unittest.main()

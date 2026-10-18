@@ -1,0 +1,30 @@
+{
+  "review_scope": "Independent read-only review of per-case target custody; scratch fixtures only, no source modifications or heavy Cargo/VM.",
+  "old_source_sha256": "122557ab91e7a71645c0b24e31d9bd232081911d72855b9dbe89a2db8a43a6f8",
+  "reviewed_source_sha256": "6d1ade703a944aa4773033f86edeed3c82d0e5f274253e9327458efcd92451cc",
+  "finding": {
+    "issue": "Foreign profile links could reach Cargo before the per-case no-follow check.",
+    "old_fixture": "red-preflight-order.json",
+    "fixed_fixture": "green-preflight-order.json",
+    "resolved": true
+  },
+  "final_receipts": [
+    "green-case-target-tests.json",
+    "green-case-target-tests.log",
+    "green-lock-fixture.json"
+  ],
+  "read_only_checks": [
+    "Every case gets exclusive target/osdk. Only three known Cargo artifact directories are linked.",
+    "Preflight validates default/prior cache and known profile real directories before prepare_harness or any Cargo.",
+    "Existing generated osdk trees are neither copied nor linked nor deleted; partial target on failure is retained.",
+    "The CLI holds one integration lock across all profile/cache operations and waits/cleans owned process groups before releasing it.",
+    "Cargo shim canonical generated roots remain within allowed output; shared ELF resolves into explicit allowed cache.",
+    "Coverage/debug selection and symbols retain profile semantics. UNIX paths use short TMPDIR or project-root relative sockets, not the expanded target path."
+  ],
+  "limitations": [
+    "Focused fixtures establish controller behavior, not kernel/OSDK integration passage.",
+    "No conclusion about the historical unknown writer. Arbitrary external processes are outside the cooperative lock contract.",
+    "The complete new-source 22-case real regression is still required and will be run by root."
+  ],
+  "decision": "No remaining blocking issue found in the reviewed repair."
+}

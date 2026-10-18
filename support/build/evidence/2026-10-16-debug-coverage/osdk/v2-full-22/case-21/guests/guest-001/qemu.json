@@ -1,0 +1,145 @@
+{
+  "schema": 1,
+  "cwd": "/tmp/a01oi-56ah_res/case-21-tmp/.tmp17ZUIF/hypervisor_in_100_lines",
+  "requested_osdk_args": [
+    "-kernel",
+    "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-integration-native-06/target/osdk/hypervisor_in_100_lines/hypervisor_in_100_lines-osdk-bin.elf",
+    "-append",
+    "--",
+    "-enable-kvm",
+    "-machine",
+    "q35,kernel-irqchip=split",
+    "-cpu",
+    "host,+vmx",
+    "-m",
+    "256M",
+    "-smp",
+    "1",
+    "--no-reboot",
+    "-nographic",
+    "-serial",
+    "chardev:mux",
+    "-monitor",
+    "chardev:mux",
+    "-chardev",
+    "stdio,id=mux,mux=on,signal=off",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04"
+  ],
+  "profile": {
+    "arch": "x86_64",
+    "machine": "q35",
+    "accel": "tcg",
+    "cpu": "max",
+    "vcpus": 1,
+    "memory_mib": 512,
+    "network": false,
+    "data_disks": false,
+    "firmware": "/usr/share/seabios/bios-256k.bin"
+  },
+  "raw_exit_code": 33,
+  "timed_out": false,
+  "profile_id": "osdk-native-local-tcp-gdb-capture-v2",
+  "control_transport": "loopback-tcp",
+  "control_endpoints": [],
+  "argv": [
+    "/usr/bin/qemu-system-x86_64",
+    "-kernel",
+    "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-integration-native-06/target/osdk/hypervisor_in_100_lines/hypervisor_in_100_lines-osdk-bin.elf",
+    "-append",
+    "--",
+    "--no-reboot",
+    "-serial",
+    "chardev:mux",
+    "-monitor",
+    "chardev:mux",
+    "-chardev",
+    "stdio,id=mux,mux=on,signal=off,logfile=/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/case-21/guests/guest-001/serial.log",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04",
+    "-machine",
+    "q35",
+    "-accel",
+    "tcg",
+    "-cpu",
+    "max",
+    "-m",
+    "512M",
+    "-smp",
+    "1",
+    "-bios",
+    "/usr/share/seabios/bios-256k.bin",
+    "-nodefaults",
+    "-no-user-config",
+    "-display",
+    "none"
+  ],
+  "shell_command": "/usr/bin/qemu-system-x86_64 -kernel /workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-integration-native-06/target/osdk/hypervisor_in_100_lines/hypervisor_in_100_lines-osdk-bin.elf -append -- --no-reboot -serial chardev:mux -monitor chardev:mux -chardev stdio,id=mux,mux=on,signal=off,logfile=/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/case-21/guests/guest-001/serial.log -device isa-debug-exit,iobase=0xf4,iosize=0x04 -machine q35 -accel tcg -cpu max -m 512M -smp 1 -bios /usr/share/seabios/bios-256k.bin -nodefaults -no-user-config -display none",
+  "removed_profile_args": [
+    [
+      "-enable-kvm"
+    ],
+    [
+      "-machine",
+      "q35,kernel-irqchip=split"
+    ],
+    [
+      "-cpu",
+      "host,+vmx"
+    ],
+    [
+      "-m",
+      "256M"
+    ],
+    [
+      "-smp",
+      "1"
+    ],
+    [
+      "-nographic"
+    ]
+  ],
+  "artifacts": {
+    "-bios": {
+      "path": "/usr/share/seabios/bios-256k.bin",
+      "size": 262144,
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    "-kernel": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-integration-native-06/target/osdk/hypervisor_in_100_lines/hypervisor_in_100_lines-osdk-bin.elf",
+      "size": 28403080,
+      "sha256": "1f89e5bd3292af5921a6fe0650e0fc0c6f0af1e345c2a8e22840b1e0efd0d68e"
+    }
+  },
+  "qemu": {
+    "path": "/usr/bin/qemu-system-x86_64",
+    "size": 26415624,
+    "sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854"
+  },
+  "serial_sources": [
+    "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/case-21/guests/guest-001/serial.log"
+  ],
+  "qemu_version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)\nCopyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers",
+  "timeout_seconds": 300,
+  "stream_logs": {
+    "stdout": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/case-21/guests/guest-001/qemu-stdout.log",
+      "size": 2787,
+      "sha256": "2652fec30db1472107195694ecf49e3f4707f7492659316d0ac19f6fbced5db7"
+    },
+    "stderr": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/case-21/guests/guest-001/qemu-stderr.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "serial_logs": [
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/case-21/guests/guest-001/serial.log",
+      "size": 2787,
+      "sha256": "2652fec30db1472107195694ecf49e3f4707f7492659316d0ac19f6fbced5db7"
+    }
+  ],
+  "wrapper_exit_code": 33,
+  "duration_seconds": 1.075
+}

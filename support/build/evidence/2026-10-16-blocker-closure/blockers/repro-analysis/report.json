@@ -1,0 +1,204 @@
+{
+  "schema": "a01-reproduction-path-analysis/1",
+  "created_utc": "2026-10-16T16:07:03.747384+00:00",
+  "source_commit": "350d98d70a3d7b7c720cabd7720063849afb5a29",
+  "scope": "Read-only local source and tool inventory analysis. No build, container, chroot, namespace, mount or compiler probe was executed.",
+  "inputs": [
+    {
+      "path": "support/build/kernel.sh",
+      "git_blob": "a1911971821c9fad4d444f04426fda8e83a93898",
+      "size": 7767,
+      "sha256": "1aab60856d182b5fdf26c9de7360c3e34fbc91a73dd0468902f09e2f61065216"
+    },
+    {
+      "path": "kernel/asterinas/osdk/src/config/scheme/action.rs",
+      "git_blob": "796d6b6da74b6e53495f8fb7ae75465099bca077",
+      "size": 5159,
+      "sha256": "4588e00e533b0da8d407933e774cd712f592649b25f7b6a91bb6e9a037ad2729"
+    },
+    {
+      "path": "kernel/asterinas/osdk/src/config/manifest.rs",
+      "git_blob": "a20281fc9d586482cfb436968893ea75a47a99b0",
+      "size": 9576,
+      "sha256": "1b72abf33abcbc4d7296f4855f4136645a03001421455b81fc1b0de039a5cda1"
+    },
+    {
+      "path": "kernel/asterinas/osdk/src/commands/build/mod.rs",
+      "git_blob": "78d625f88894e98ee93f9ed5216758dc22e96303",
+      "size": 14006,
+      "sha256": "806eaae191e38ee5e3945a3532c2dad7cbc01575bec3f9e8f2d87d4ded66eb25"
+    },
+    {
+      "path": "kernel/asterinas/osdk/src/base_crate/Cargo.toml.template",
+      "git_blob": "5ea21e65fc3de5a3ed0c96f1473066b9aac9d500",
+      "size": 167,
+      "sha256": "7b9098b341d09bfcb335699cb7bba4061eaab285b99ec94d2294047f889cd51a"
+    },
+    {
+      "path": "kernel/asterinas/kernel/libs/comp-sys/component-macro/src/lib.rs",
+      "git_blob": "012c0b3a0439031b44c2b9e81f8a25146ed35f63",
+      "size": 2697,
+      "sha256": "cbbecb3051bb5bd333ddc1b1636548b5c97c6b5164ef562bee8a0ed2e64e47bc"
+    },
+    {
+      "path": "kernel/asterinas/kernel/libs/comp-sys/component-macro/src/priority.rs",
+      "git_blob": "b7d68bc0101cf7daa8b441268eba7e3b8dd7c6ed",
+      "size": 7896,
+      "sha256": "7c89992761844d328e1f57d03f2b02b1d9cd869e80fd1d5279566de1fb4d0761"
+    },
+    {
+      "path": "kernel/asterinas/kernel/libs/comp-sys/component/src/lib.rs",
+      "git_blob": "a97dc474b3ddbdf0f6be269582e8c21a3a685afc",
+      "size": 6828,
+      "sha256": "3466a4ce2e1047a87661292897f320465a9f03b7b0ae26f1caf598c1dd6095b9"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/version.rs",
+      "git_blob": "14ea5b2274089a7dd998c6b728c96f3495fde50f",
+      "size": 1910,
+      "sha256": "fe97ffe833f234d709a0a5ddbd8cfe8adeb302c3fb374bf62678b0ce9e20fc14"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/net/uts_ns.rs",
+      "git_blob": "b1ad1dd989b47202303c4c2a25a46cd612b63f4c",
+      "size": 7304,
+      "sha256": "1bb50853b60fbd2fe5d584e5cb8412794786d138fc4dc3596a21284e580086ff"
+    },
+    {
+      "path": "kernel/asterinas/tools/dev_env/docker/run_dev_container.sh",
+      "git_blob": "41a6be4aa36245fa7c1913d59bcd7e2d7c34a93f",
+      "size": 405,
+      "sha256": "c956ac719a32876dfef7d1c47a3a3769684764c9208da23de7a2cc1eb3648d09"
+    }
+  ],
+  "tool_inventory": {
+    "bwrap": {
+      "path": "/usr/bin/bwrap",
+      "version": "bubblewrap 0.9.0"
+    },
+    "chroot": "/usr/sbin/chroot",
+    "unshare": "/usr/bin/unshare",
+    "not_on_path": [
+      "proot",
+      "docker",
+      "podman",
+      "nix",
+      "rustc",
+      "cargo"
+    ]
+  },
+  "findings": [
+    {
+      "id": "component-package-paths",
+      "status": "source-confirmed",
+      "detail": "The macro reads cargo metadata, extracts absolute path+file package IDs and emits them as ordinary Rust string literals. It also separately reads Components.toml from actual metadata.workspace_root."
+    },
+    {
+      "id": "registration-file-path",
+      "status": "source-confirmed",
+      "detail": "init_component emits file!() into ComponentRegistry. Runtime strips src/ or tests/ and uses exact key removal from a map keyed by metadata-derived package path. Remapping only file! paths can separate the keys; no runtime panic was newly tested."
+    },
+    {
+      "id": "osdk-config-no-root-map",
+      "status": "source-confirmed",
+      "detail": "OSDK BuildScheme exposes profile/features/rustflags etc.; no virtual Cargo metadata workspace root. OSDK canonicalizes source/config paths. Rustflags support does not rewrite arbitrary macro-generated literals."
+    },
+    {
+      "id": "osdk-host-identity",
+      "status": "source-confirmed",
+      "detail": "build_kernel_elf overwrites OSDK_BUILD_USERNAME and OSDK_BUILD_HOSTNAME with whoami values for the child cargo process. Parent values and USER/HOSTNAME are insufficient. Cached whoami 1.6.1 uses getpwuid_r/gethostname on Linux."
+    },
+    {
+      "id": "workspace-wrapper-scope",
+      "status": "source-confirmed",
+      "detail": "Generated base Cargo.toml starts with empty [workspace], and core is a path dependency. RUSTC_WORKSPACE_WRAPPER is scoped to workspace members and cannot be relied on to intercept core and all dependencies. It does not virtualize metadata subprocesses."
+    },
+    {
+      "id": "container-tool-presence",
+      "status": "inventory-only",
+      "detail": "bwrap 0.9.0 exists but permission for its required namespaces/mounts was not probed. Docker/Podman/Nix/PRoot were not found on PATH. chroot does not itself change the UTS hostname or supply a complete root filesystem."
+    }
+  ],
+  "routes": [
+    {
+      "name": "canonical real build root",
+      "support_only": true,
+      "implementable_without_namespaces": true,
+      "executed": false,
+      "claim_scope": "Normalize different origin checkouts into the same actual canonical compiler-visible source/tool/cache/target paths; still same-visible-path compilation. Does not prove cross-visible-path or cross-host output identity.",
+      "requirements": [
+        "git detached worktree or exact committed snapshot at a reserved real absolute path",
+        "serialize access and validate ownership; never delete arbitrary supplied target/source directories",
+        "fixed real toolchain/Cargo source/VDSO paths, not merely symlink aliases",
+        "fixed timestamp/timezone/locale and complete input hashes",
+        "clean target before each run with before/after identity receipts",
+        "record actual host username/nodename; cannot neutralize them by only exporting parent OSDK_BUILD_* variables"
+      ]
+    },
+    {
+      "name": "existing image/engine fixed mount root",
+      "support_only": true,
+      "implemented_or_runtime_available": false,
+      "executed": false,
+      "claim_scope": "Distinct origin host paths bind to one compiler-visible root. If executed on distinct hosts, can test a defined normalized-environment cross-host property; does not test arbitrary compiler-visible roots.",
+      "requirements": [
+        "already permitted container/VM execution platform",
+        "digest-pinned image and complete tools/dependency hashes",
+        "same fixed mount roots for source, toolchain, cargo registry and target",
+        "stable container identity/hostname and build account",
+        "no privileged host network or host /dev passthrough needed for this TCG boot profile",
+        "actual independent job/host identity receipts and bytewise output comparison"
+      ]
+    },
+    {
+      "name": "RUSTC_WRAPPER normalization",
+      "support_only": true,
+      "executed": false,
+      "status": "candidate requiring design and real tests",
+      "claim_scope": "An all-rustc wrapper could select explicitly recorded embedded builder identity without changing SDK source, but it cannot fix Cargo metadata package path literals or provide cross-host evidence.",
+      "limitations": [
+        "RUSTC_WORKSPACE_WRAPPER alone is insufficient",
+        "all-rustc wrapper must preserve argv exactly and compose safely with existing wrappers",
+        "must handle Cargo environment dependency fingerprints correctly; clean-only success is insufficient incremental evidence",
+        "actual host identity must remain in external provenance even if embedded builder identity is normalized"
+      ]
+    }
+  ],
+  "coordination_proposals": [
+    {
+      "owner": "A00 and comp-sys owner",
+      "files": [
+        "kernel/asterinas/kernel/libs/comp-sys/component-macro/src/lib.rs",
+        "kernel/asterinas/kernel/libs/comp-sys/component-macro/src/priority.rs",
+        "kernel/asterinas/kernel/libs/comp-sys/component/src/lib.rs"
+      ],
+      "change": "Use a shared stable component package identity instead of absolute package path + file! registration. CARGO_PKG_NAME is a candidate only with an explicit uniqueness check consistent with Components.toml; otherwise use a structured stable package identity. Keep graph priorities and stage ordering unchanged.",
+      "validation": [
+        "macro/host coverage for duplicate identities, dependency graph and equal priorities",
+        "two different real source roots, empty target, identical tool/cache/host identities",
+        "all declared component initialization stages and actual boot validation on both artifacts",
+        "bytewise ELF comparison and PT_LOAD/rodata root audit",
+        "normal full kernel and OSTD/core regressions"
+      ]
+    },
+    {
+      "owner": "A00 and OSDK build owner",
+      "files": [
+        "kernel/asterinas/osdk/src/commands/build/mod.rs"
+      ],
+      "change": "Optionally honor explicitly supplied reproducible embedded builder username/hostname with the current whoami behavior as default. Record selected and actual identities separately. No version/pin replacement.",
+      "validation": [
+        "current-default behavior unchanged",
+        "explicit fixed identities reach actual core rustc and /proc/version",
+        "actual independent-host clean build pair; compare all outputs and provenance"
+      ]
+    }
+  ],
+  "blocker_status": {
+    "same_host_same_path_previous_evidence": "already proved on earlier source only",
+    "cross_compiler_visible_path_identity": "not closed; needs coordinated component identity change or a deliberately normalized-visible-root scope",
+    "normalized_origin_checkout_support_route": "possible design, not executed in this read-only task",
+    "cross_host_identity": "not proved; one current host and SDK host identity injection remain",
+    "namespace_availability": "unknown by design; no probe or workaround attempted"
+  }
+}

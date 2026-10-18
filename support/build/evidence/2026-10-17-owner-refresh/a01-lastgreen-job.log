@@ -1,0 +1,470 @@
+﻿2026-10-17T01:04:17.6618693Z Current runner version: '2.337.0'
+2026-10-17T01:04:17.6636554Z ##[group]Runner Image Provisioner
+2026-10-17T01:04:17.6637112Z Hosted Compute Agent
+2026-10-17T01:04:17.6637493Z Version: 20261012.601
+2026-10-17T01:04:17.6637893Z Commit: f3dc54e1fb89da6852db922499a0233137369e1d
+2026-10-17T01:04:17.6638302Z Build Date: 2026-10-12T17:48:21Z
+2026-10-17T01:04:17.6638758Z Worker ID: {744fed02-41fa-43dc-aa51-a504ae57f9f3}
+2026-10-17T01:04:17.6639157Z Region: centralus
+2026-10-17T01:04:17.6639466Z Cloud: Azure
+2026-10-17T01:04:17.6639849Z ##[endgroup]
+2026-10-17T01:04:17.6640579Z ##[group]Operating System
+2026-10-17T01:04:17.6640954Z Ubuntu
+2026-10-17T01:04:17.6641292Z 24.04.5
+2026-10-17T01:04:17.6641576Z LTS
+2026-10-17T01:04:17.6641945Z ##[endgroup]
+2026-10-17T01:04:17.6642258Z ##[group]Runner Image
+2026-10-17T01:04:17.6642618Z Image: ubuntu-24.04
+2026-10-17T01:04:17.6642959Z Version: 20261012.334.1
+2026-10-17T01:04:17.6643736Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-17T01:04:17.6644557Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261012.334
+2026-10-17T01:04:17.6645108Z ##[endgroup]
+2026-10-17T01:04:17.6645960Z ##[group]GITHUB_TOKEN Permissions
+2026-10-17T01:04:17.6647249Z Contents: read
+2026-10-17T01:04:17.6647592Z Metadata: read
+2026-10-17T01:04:17.6647915Z ##[endgroup]
+2026-10-17T01:04:17.6649231Z Secret source: Actions
+2026-10-17T01:04:17.6649881Z Cache mode: write
+2026-10-17T01:04:17.6650353Z Prepare workflow directory
+2026-10-17T01:04:17.6887171Z Prepare all required actions
+2026-10-17T01:04:17.6917227Z Getting action download info
+2026-10-17T01:04:17.9287970Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-17T01:04:18.2341999Z Complete job name: host-evidence
+2026-10-17T01:04:18.3344541Z ##[group]Run actions/checkout@v4
+2026-10-17T01:04:18.3345011Z with:
+2026-10-17T01:04:18.3345241Z   fetch-depth: 0
+2026-10-17T01:04:18.3345698Z   repository: TrillionniumFoundation/trillionnium-os-desktop
+2026-10-17T01:04:18.3347874Z   token: ***
+2026-10-17T01:04:18.3348105Z   ssh-strict: true
+2026-10-17T01:04:18.3348339Z   ssh-user: git
+2026-10-17T01:04:18.3348580Z   persist-credentials: true
+2026-10-17T01:04:18.3348844Z   clean: true
+2026-10-17T01:04:18.3349088Z   sparse-checkout-cone-mode: true
+2026-10-17T01:04:18.3349362Z   fetch-tags: false
+2026-10-17T01:04:18.3349599Z   show-progress: true
+2026-10-17T01:04:18.3349840Z   lfs: false
+2026-10-17T01:04:18.3350062Z   submodules: false
+2026-10-17T01:04:18.3350304Z   set-safe-directory: true
+2026-10-17T01:04:18.3350575Z   allow-unsafe-pr-checkout: false
+2026-10-17T01:04:18.3350929Z ##[endgroup]
+2026-10-17T01:04:18.3983192Z Syncing repository: TrillionniumFoundation/trillionnium-os-desktop
+2026-10-17T01:04:18.3984674Z ##[group]Getting Git version info
+2026-10-17T01:04:18.3985536Z Working directory is '/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop'
+2026-10-17T01:04:18.3986533Z [command]/usr/bin/git version
+2026-10-17T01:04:18.4205202Z git version 2.55.0
+2026-10-17T01:04:18.4218885Z ##[endgroup]
+2026-10-17T01:04:18.4232499Z Temporarily overriding HOME='/home/runner/work/_temp/2796efbd-38ba-4015-bfa5-841000b98214' before making global git config changes
+2026-10-17T01:04:18.4233622Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-17T01:04:18.4236640Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop
+2026-10-17T01:04:18.4510291Z Deleting the contents of '/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop'
+2026-10-17T01:04:18.4513701Z ##[group]Initializing the repository
+2026-10-17T01:04:18.4517422Z [command]/usr/bin/git init /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop
+2026-10-17T01:04:18.5301485Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-17T01:04:18.5302172Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-17T01:04:18.5303003Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-17T01:04:18.5303611Z hint: call:
+2026-10-17T01:04:18.5303828Z hint:
+2026-10-17T01:04:18.5304123Z hint: 	git config --global init.defaultBranch <name>
+2026-10-17T01:04:18.5304446Z hint:
+2026-10-17T01:04:18.5304884Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-17T01:04:18.5305787Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-17T01:04:18.5306401Z hint:
+2026-10-17T01:04:18.5306739Z hint: 	git branch -m <name>
+2026-10-17T01:04:18.5307141Z hint:
+2026-10-17T01:04:18.5307636Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-17T01:04:18.5308607Z Initialized empty Git repository in /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/.git/
+2026-10-17T01:04:18.5313173Z [command]/usr/bin/git remote add origin https://github.com/TrillionniumFoundation/trillionnium-os-desktop
+2026-10-17T01:04:18.6203365Z ##[endgroup]
+2026-10-17T01:04:18.6204151Z ##[group]Disabling automatic garbage collection
+2026-10-17T01:04:18.6205906Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-17T01:04:18.6292141Z ##[endgroup]
+2026-10-17T01:04:18.6293327Z ##[group]Setting up auth
+2026-10-17T01:04:18.6297395Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-17T01:04:18.6327918Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-17T01:04:18.6839814Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-17T01:04:18.6878435Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-17T01:04:18.7063563Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-17T01:04:18.7092575Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-17T01:04:18.7274586Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-17T01:04:18.7504519Z ##[endgroup]
+2026-10-17T01:04:18.7505336Z ##[group]Fetching the repository
+2026-10-17T01:04:18.7513229Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/* +154d4a62b18e3126a9dacd9e62df94f8e0536045:refs/remotes/pull/22/merge
+2026-10-17T01:04:22.8029441Z From https://github.com/TrillionniumFoundation/trillionnium-os-desktop
+2026-10-17T01:04:22.8031431Z  * [new branch]      agents/A00-a01-archive-ci                -> origin/agents/A00-a01-archive-ci
+2026-10-17T01:04:22.8033195Z  * [new branch]      agents/A00-a01-archive-nofollow          -> origin/agents/A00-a01-archive-nofollow
+2026-10-17T01:04:22.8035063Z  * [new branch]      agents/A00-a01-archive-safety            -> origin/agents/A00-a01-archive-safety
+2026-10-17T01:04:22.8037129Z  * [new branch]      agents/A00-a01-boot-evidence-ci          -> origin/agents/A00-a01-boot-evidence-ci
+2026-10-17T01:04:22.8039030Z  * [new branch]      agents/A00-a01-fd-evidence-archive       -> origin/agents/A00-a01-fd-evidence-archive
+2026-10-17T01:04:22.8040731Z  * [new branch]      agents/A00-a02-clippy-199                -> origin/agents/A00-a02-clippy-199
+2026-10-17T01:04:22.8042075Z  * [new branch]      agents/A00-a02-clippy-chunk-parsing      -> origin/agents/A00-a02-clippy-chunk-parsing
+2026-10-17T01:04:22.8043396Z  * [new branch]      agents/A00-a02-pinned-acceptance-ci      -> origin/agents/A00-a02-pinned-acceptance-ci
+2026-10-17T01:04:22.8044744Z  * [new branch]      agents/A00-a02-verified-workflow-stack   -> origin/agents/A00-a02-verified-workflow-stack
+2026-10-17T01:04:22.8046590Z  * [new branch]      agents/A00-a03-ancestor-revoke-fence     -> origin/agents/A00-a03-ancestor-revoke-fence
+2026-10-17T01:04:22.8048029Z  * [new branch]      agents/A00-a03-canonical-hepta-k         -> origin/agents/A00-a03-canonical-hepta-k
+2026-10-17T01:04:22.8049429Z  * [new branch]      agents/A00-a03-clippy-rustfmt-20261016   -> origin/agents/A00-a03-clippy-rustfmt-20261016
+2026-10-17T01:04:22.8050846Z  * [new branch]      agents/A00-a03-clock-monotonicity        -> origin/agents/A00-a03-clock-monotonicity
+2026-10-17T01:04:22.8052360Z  * [new branch]      agents/A00-a03-durable-owner-authority   -> origin/agents/A00-a03-durable-owner-authority
+2026-10-17T01:04:22.8053995Z  * [new branch]      agents/A00-a03-hos2-status-failclosed    -> origin/agents/A00-a03-hos2-status-failclosed
+2026-10-17T01:04:22.8055900Z  * [new branch]      agents/A00-a03-k-identity-immutable      -> origin/agents/A00-a03-k-identity-immutable
+2026-10-17T01:04:22.8057962Z  * [new branch]      agents/A00-a03-k-owner-consolidated      -> origin/agents/A00-a03-k-owner-consolidated
+2026-10-17T01:04:22.8059652Z  * [new branch]      agents/A00-a03-readusage-wire-invariant  -> origin/agents/A00-a03-readusage-wire-invariant
+2026-10-17T01:04:22.8061192Z  * [new branch]      agents/A00-a03-resource-domain-atomicity -> origin/agents/A00-a03-resource-domain-atomicity
+2026-10-17T01:04:22.8062649Z  * [new branch]      agents/A00-a03-status-failclosed         -> origin/agents/A00-a03-status-failclosed
+2026-10-17T01:04:22.8063953Z  * [new branch]      agents/A00-a05-enotty-strict             -> origin/agents/A00-a05-enotty-strict
+2026-10-17T01:04:22.8065259Z  * [new branch]      agents/A00-a05-queryabi-ci               -> origin/agents/A00-a05-queryabi-ci
+2026-10-17T01:04:22.8067003Z  * [new branch]      agents/A00-a05-queryabi-errno-contract   -> origin/agents/A00-a05-queryabi-errno-contract
+2026-10-17T01:04:22.8068583Z  * [new branch]      agents/A00-a05-queryabi-guest-compile-ci -> origin/agents/A00-a05-queryabi-guest-compile-ci
+2026-10-17T01:04:22.8070311Z  * [new branch]      agents/A00-a05-queryabi-guest-reply-failclosed -> origin/agents/A00-a05-queryabi-guest-reply-failclosed
+2026-10-17T01:04:22.8072025Z  * [new branch]      agents/A00-a05-queryabi-native-replay    -> origin/agents/A00-a05-queryabi-native-replay
+2026-10-17T01:04:22.8073785Z  * [new branch]      agents/A00-a06-boundary-debt             -> origin/agents/A00-a06-boundary-debt
+2026-10-17T01:04:22.8075199Z  * [new branch]      agents/A00-a06-cpustat-readonly          -> origin/agents/A00-a06-cpustat-readonly
+2026-10-17T01:04:22.8076919Z  * [new branch]      agents/A00-a06-cpustat-readonly-on-latest -> origin/agents/A00-a06-cpustat-readonly-on-latest
+2026-10-17T01:04:22.8078775Z  * [new branch]      agents/A00-a06-exact-smp-evidence-20261016 -> origin/agents/A00-a06-exact-smp-evidence-20261016
+2026-10-17T01:04:22.8080442Z  * [new branch]      agents/A00-a06-full-kernel-tests-20261016 -> origin/agents/A00-a06-full-kernel-tests-20261016
+2026-10-17T01:04:22.8082087Z  * [new branch]      agents/A00-a06-smp-longer-independent    -> origin/agents/A00-a06-smp-longer-independent
+2026-10-17T01:04:22.8083992Z  * [new branch]      agents/A00-a06-stat-observe-verified     -> origin/agents/A00-a06-stat-observe-verified
+2026-10-17T01:04:22.8085890Z  * [new branch]      agents/A00-a06-throttle-queue-safety     -> origin/agents/A00-a06-throttle-queue-safety
+2026-10-17T01:04:22.8090542Z  * [new branch]      agents/A00-a09-evidence-guards           -> origin/agents/A00-a09-evidence-guards
+2026-10-17T01:04:22.8092208Z  * [new branch]      agents/A00-a09-native-hard-timeout-regression -> origin/agents/A00-a09-native-hard-timeout-regression
+2026-10-17T01:04:22.8093951Z  * [new branch]      agents/A00-a09-native-worker-supervisor  -> origin/agents/A00-a09-native-worker-supervisor
+2026-10-17T01:04:22.8095651Z  * [new branch]      agents/A00-a09-pgid-reuse-fence          -> origin/agents/A00-a09-pgid-reuse-fence
+2026-10-17T01:04:22.8097204Z  * [new branch]      agents/A00-a09-tested-supervisor-core    -> origin/agents/A00-a09-tested-supervisor-core
+2026-10-17T01:04:22.8098868Z  * [new branch]      agents/A00-a09-vfio-bounded-sysfs        -> origin/agents/A00-a09-vfio-bounded-sysfs
+2026-10-17T01:04:22.8100428Z  * [new branch]      agents/A00-a09-worker-group-lifecycle    -> origin/agents/A00-a09-worker-group-lifecycle
+2026-10-17T01:04:22.8101865Z  * [new branch]      agents/A00-a10-host-ci                   -> origin/agents/A00-a10-host-ci
+2026-10-17T01:04:22.8103252Z  * [new branch]      agents/A00-g0-edge-golden-guard          -> origin/agents/A00-g0-edge-golden-guard
+2026-10-17T01:04:22.8104592Z  * [new branch]      agents/A00-g0-fmt-clippy                 -> origin/agents/A00-g0-fmt-clippy
+2026-10-17T01:04:22.8105972Z  * [new branch]      agents/A00-integration                   -> origin/agents/A00-integration
+2026-10-17T01:04:22.8107256Z  * [new branch]      agents/A01-asterinas-boot                -> origin/agents/A01-asterinas-boot
+2026-10-17T01:04:22.8108625Z  * [new branch]      agents/A02-format-tests-verified         -> origin/agents/A02-format-tests-verified
+2026-10-17T01:04:22.8109940Z  * [new branch]      agents/A02-hos2-wire                     -> origin/agents/A02-hos2-wire
+2026-10-17T01:04:22.8111129Z  * [new branch]      agents/A02-rust-codec                    -> origin/agents/A02-rust-codec
+2026-10-17T01:04:22.8112333Z  * [new branch]      agents/A03-control-core                  -> origin/agents/A03-control-core
+2026-10-17T01:04:22.8113642Z  * [new branch]      agents/A04-linux-hepta-baseline          -> origin/agents/A04-linux-hepta-baseline
+2026-10-17T01:04:22.8114994Z  * [new branch]      agents/A05-hos2-queryabi-smoke           -> origin/agents/A05-hos2-queryabi-smoke
+2026-10-17T01:04:22.8117455Z  * [new branch]      agents/A05-native-queryabi-bootstrap     -> origin/agents/A05-native-queryabi-bootstrap
+2026-10-17T01:04:22.8118944Z  * [new branch]      agents/A05-queryabi-guest-evidence       -> origin/agents/A05-queryabi-guest-evidence
+2026-10-17T01:04:22.8120349Z  * [new branch]      agents/A06-1khz-overshoot-debt           -> origin/agents/A06-1khz-overshoot-debt
+2026-10-17T01:04:22.8121807Z  * [new branch]      agents/A06-1khz-quota-debt-experiment    -> origin/agents/A06-1khz-quota-debt-experiment
+2026-10-17T01:04:22.8123434Z  * [new branch]      agents/A06-5khz-timer-precision-spike    -> origin/agents/A06-5khz-timer-precision-spike
+2026-10-17T01:04:22.8124845Z  * [new branch]      agents/A06-cpu-bandwidth-n0              -> origin/agents/A06-cpu-bandwidth-n0
+2026-10-17T01:04:22.8126488Z  * [new branch]      agents/A06-cpustat-readonly-owner-integration -> origin/agents/A06-cpustat-readonly-owner-integration
+2026-10-17T01:04:22.8128051Z  * [new branch]      agents/A06-cross-period-charge           -> origin/agents/A06-cross-period-charge
+2026-10-17T01:04:22.8129380Z  * [new branch]      agents/A06-irq-safe-cpu-max              -> origin/agents/A06-irq-safe-cpu-max
+2026-10-17T01:04:22.8131077Z  * [new branch]      agents/A06-latest-head-QEMU-independent  -> origin/agents/A06-latest-head-QEMU-independent
+2026-10-17T01:04:22.8132888Z  * [new branch]      agents/A06-repair-truncated-cpu-tests    -> origin/agents/A06-repair-truncated-cpu-tests
+2026-10-17T01:04:22.8134372Z  * [new branch]      agents/A06-smp-exited-process-guard      -> origin/agents/A06-smp-exited-process-guard
+2026-10-17T01:04:22.8135852Z  * [new branch]      agents/A08-android-compat                -> origin/agents/A08-android-compat
+2026-10-17T01:04:22.8137008Z  * [new branch]      agents/A09-gpu-vmm                       -> origin/agents/A09-gpu-vmm
+2026-10-17T01:04:22.8138163Z  * [new branch]      agents/A09-gpu-vmm-phase2                -> origin/agents/A09-gpu-vmm-phase2
+2026-10-17T01:04:22.8139353Z  * [new branch]      agents/A10-rust-desktop                  -> origin/agents/A10-rust-desktop
+2026-10-17T01:04:22.8140597Z  * [new branch]      agents/organ-audit-a02-bounds            -> origin/agents/organ-audit-a02-bounds
+2026-10-17T01:04:22.8142031Z  * [new branch]      agents/organ-backend-validation          -> origin/agents/organ-backend-validation
+2026-10-17T01:04:22.8143421Z  * [new branch]      main                                     -> origin/main
+2026-10-17T01:04:22.8144360Z  * [new ref]         154d4a62b18e3126a9dacd9e62df94f8e0536045 -> pull/22/merge
+2026-10-17T01:04:22.8147366Z ##[endgroup]
+2026-10-17T01:04:22.8148263Z ##[group]Determining the checkout info
+2026-10-17T01:04:22.8149201Z ##[endgroup]
+2026-10-17T01:04:22.8149780Z [command]/usr/bin/git sparse-checkout disable
+2026-10-17T01:04:22.8151526Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-17T01:04:22.8153355Z ##[group]Checking out the ref
+2026-10-17T01:04:22.8154163Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/22/merge
+2026-10-17T01:04:23.2546419Z Note: switching to 'refs/remotes/pull/22/merge'.
+2026-10-17T01:04:23.2546870Z 
+2026-10-17T01:04:23.2547033Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-17T01:04:23.2547436Z changes and commit them, and you can discard any commits you make in this
+2026-10-17T01:04:23.2547822Z state without impacting any branches by switching back to a branch.
+2026-10-17T01:04:23.2548049Z 
+2026-10-17T01:04:23.2548201Z If you want to create a new branch to retain commits you create, you may
+2026-10-17T01:04:23.2548570Z do so (now or later) by using -c with the switch command. Example:
+2026-10-17T01:04:23.2548766Z 
+2026-10-17T01:04:23.2548855Z   git switch -c <new-branch-name>
+2026-10-17T01:04:23.2548994Z 
+2026-10-17T01:04:23.2549089Z Or undo this operation with:
+2026-10-17T01:04:23.2549217Z 
+2026-10-17T01:04:23.2549288Z   git switch -
+2026-10-17T01:04:23.2549391Z 
+2026-10-17T01:04:23.2549566Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-17T01:04:23.2549806Z 
+2026-10-17T01:04:23.2550400Z HEAD is now at 154d4a6 Merge 1e81ef45250dc16e903b05d0386e4f95f332aee9 into 82ef86a9d48851c17de2df0699b16f032be7dd3e
+2026-10-17T01:04:23.2574819Z ##[endgroup]
+2026-10-17T01:04:23.2612639Z [command]/usr/bin/git log -1 --format=%H
+2026-10-17T01:04:23.2633535Z 154d4a62b18e3126a9dacd9e62df94f8e0536045
+2026-10-17T01:04:23.2784187Z ##[group]Run test -f README.md && test ! -s README.md
+2026-10-17T01:04:23.2784460Z [36;1mtest -f README.md && test ! -s README.md[0m
+2026-10-17T01:04:23.2784632Z [36;1mpython3 - <<'PY'[0m
+2026-10-17T01:04:23.2784761Z [36;1mimport json[0m
+2026-10-17T01:04:23.2784884Z [36;1mfrom pathlib import Path[0m
+2026-10-17T01:04:23.2785082Z [36;1mlock = json.loads(Path('support/upstream-lock.json').read_text())[0m
+2026-10-17T01:04:23.2785284Z [36;1mexpected = {[0m
+2026-10-17T01:04:23.2785625Z [36;1m    'kernel.tag': 'v0.19.0',[0m
+2026-10-17T01:04:23.2785854Z [36;1m    'kernel.commit': 'c4b7ed575b7b32773475b194d2ad41fb6d03765b',[0m
+2026-10-17T01:04:23.2786086Z [36;1m    'kernel.toolchain': 'nightly-2026-07-21',[0m
+2026-10-17T01:04:23.2786263Z [36;1m    'kernel.reuse': 'full_kernel_derived',[0m
+2026-10-17T01:04:23.2786462Z [36;1m    'hepta.commit': 'f8c9419df6ddeb36ff8b522a50219981fb8d9345',[0m
+2026-10-17T01:04:23.2786663Z [36;1m}[0m
+2026-10-17T01:04:23.2786810Z [36;1mfor key, wanted in expected.items():[0m
+2026-10-17T01:04:23.2786975Z [36;1m    section, field = key.split('.')[0m
+2026-10-17T01:04:23.2787144Z [36;1m    actual = lock.get(section, {}).get(field)[0m
+2026-10-17T01:04:23.2787329Z [36;1m    if actual != wanted:[0m
+2026-10-17T01:04:23.2787502Z [36;1m        raise SystemExit(f'pinned {key} changed: {actual!r}')[0m
+2026-10-17T01:04:23.2787676Z [36;1mPY[0m
+2026-10-17T01:04:23.2998766Z shell: /usr/bin/bash -e {0}
+2026-10-17T01:04:23.2998921Z ##[endgroup]
+2026-10-17T01:04:23.3322914Z ##[group]Run python3 -I support/build/tests/test_boot_evidence.py
+2026-10-17T01:04:23.3323203Z [36;1mpython3 -I support/build/tests/test_boot_evidence.py[0m
+2026-10-17T01:04:23.3323438Z [36;1mpython3 -I -O support/build/tests/test_boot_evidence.py[0m
+2026-10-17T01:04:23.3371197Z shell: /usr/bin/bash -e {0}
+2026-10-17T01:04:23.3371347Z ##[endgroup]
+2026-10-17T01:04:23.7720162Z test_appended_harmless_raw_bytes_are_rejected (__main__.BootEvidenceTests.test_appended_harmless_raw_bytes_are_rejected) ... ok
+2026-10-17T01:04:24.2565199Z test_archived_verification_does_not_require_original_paths (__main__.BootEvidenceTests.test_archived_verification_does_not_require_original_paths) ... ok
+2026-10-17T01:04:24.2572820Z test_capture_exclusive_creation_preserves_existing_snapshot_bytes (__main__.BootEvidenceTests.test_capture_exclusive_creation_preserves_existing_snapshot_bytes) ... ok
+2026-10-17T01:04:24.2594003Z test_capture_rejects_in_place_mutation_and_path_replacement_during_fd_read (__main__.BootEvidenceTests.test_capture_rejects_in_place_mutation_and_path_replacement_during_fd_read) ... ok
+2026-10-17T01:04:26.0127159Z test_fatal_kernel_panics_are_rejected_with_matching_digest (__main__.BootEvidenceTests.test_fatal_kernel_panics_are_rejected_with_matching_digest) ... ok
+2026-10-17T01:04:26.2710647Z test_inconsistent_recorded_serial_size_is_rejected (__main__.BootEvidenceTests.test_inconsistent_recorded_serial_size_is_rejected) ... ok
+2026-10-17T01:04:27.7932148Z test_live_artifact_bytes_are_checked_for_all_three_inputs (__main__.BootEvidenceTests.test_live_artifact_bytes_are_checked_for_all_three_inputs) ... ok
+2026-10-17T01:04:28.3076348Z test_matching_real_raw_serial_passes_in_archive_and_live_modes (__main__.BootEvidenceTests.test_matching_real_raw_serial_passes_in_archive_and_live_modes) ... ok
+2026-10-17T01:04:29.7693899Z test_missing_artifact_entries_and_hashes_are_rejected_offline (__main__.BootEvidenceTests.test_missing_artifact_entries_and_hashes_are_rejected_offline) ... ok
+2026-10-17T01:04:31.0526767Z test_missing_complete_boot_markers_are_rejected_with_matching_digest (__main__.BootEvidenceTests.test_missing_complete_boot_markers_are_rejected_with_matching_digest) ... ok
+2026-10-17T01:04:31.6471968Z test_missing_exit_or_timeout_result_is_rejected (__main__.BootEvidenceTests.test_missing_exit_or_timeout_result_is_rejected) ... ok
+2026-10-17T01:04:32.1843038Z test_missing_or_wrong_serial_sha256_is_rejected (__main__.BootEvidenceTests.test_missing_or_wrong_serial_sha256_is_rejected) ... ok
+2026-10-17T01:04:34.0389438Z test_non_successful_raw_status_and_timeout_are_rejected (__main__.BootEvidenceTests.test_non_successful_raw_status_and_timeout_are_rejected) ... ok
+2026-10-17T01:04:34.7741495Z test_recorder_binds_complete_actual_chardev_log_and_inputs (__main__.BootEvidenceTests.test_recorder_binds_complete_actual_chardev_log_and_inputs) ... ok
+2026-10-17T01:04:34.9325231Z test_recorder_creates_distinct_private_snapshot_directories_without_reuse (__main__.BootEvidenceTests.test_recorder_creates_distinct_private_snapshot_directories_without_reuse) ... ok
+2026-10-17T01:04:35.3068382Z test_recorder_detects_snapshot_tampering_after_raw_guest_exit_without_source_fallback (__main__.BootEvidenceTests.test_recorder_detects_snapshot_tampering_after_raw_guest_exit_without_source_fallback) ... ok
+2026-10-17T01:04:35.9669323Z test_recorder_explicit_private_bios_with_spaces_uses_selected_snapshot (__main__.BootEvidenceTests.test_recorder_explicit_private_bios_with_spaces_uses_selected_snapshot) ... ok
+2026-10-17T01:04:36.2846574Z test_recorder_explicit_private_data_directory_with_spaces_appends_one_L (__main__.BootEvidenceTests.test_recorder_explicit_private_data_directory_with_spaces_appends_one_L) ... ok
+2026-10-17T01:04:36.3438285Z test_recorder_launch_failure_retains_explicit_failure_record_and_snapshots (__main__.BootEvidenceTests.test_recorder_launch_failure_retains_explicit_failure_record_and_snapshots) ... ok
+2026-10-17T01:04:36.6652028Z test_recorder_missing_selected_log_does_not_use_stale_qemu_log (__main__.BootEvidenceTests.test_recorder_missing_selected_log_does_not_use_stale_qemu_log) ... ok
+2026-10-17T01:04:36.7820679Z test_recorder_rejects_invalid_explicit_bios_before_any_tool_execution (__main__.BootEvidenceTests.test_recorder_rejects_invalid_explicit_bios_before_any_tool_execution) ... ok
+2026-10-17T01:04:36.9204593Z test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools (__main__.BootEvidenceTests.test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools) ... ok
+2026-10-17T01:04:37.4761155Z test_recorder_rejects_missing_duplicate_and_valueless_artifacts_before_version_probe (__main__.BootEvidenceTests.test_recorder_rejects_missing_duplicate_and_valueless_artifacts_before_version_probe) ... ok
+2026-10-17T01:04:37.5027809Z test_recorder_rejects_nonregular_source_with_explicit_failure_record (__main__.BootEvidenceTests.test_recorder_rejects_nonregular_source_with_explicit_failure_record) ... ok
+2026-10-17T01:04:37.6037325Z test_recorder_snapshots_survive_atomic_replacement_of_all_source_paths (__main__.BootEvidenceTests.test_recorder_snapshots_survive_atomic_replacement_of_all_source_paths) ... ok
+2026-10-17T01:04:38.9137588Z test_recorder_timeout_is_rejected_even_with_complete_serial (__main__.BootEvidenceTests.test_recorder_timeout_is_rejected_even_with_complete_serial) ... ok
+2026-10-17T01:04:39.3839214Z test_replaced_or_truncated_serial_is_rejected (__main__.BootEvidenceTests.test_replaced_or_truncated_serial_is_rejected) ... ok
+2026-10-17T01:04:39.3839677Z 
+2026-10-17T01:04:39.3839804Z ----------------------------------------------------------------------
+2026-10-17T01:04:39.3840088Z Ran 27 tests in 15.874s
+2026-10-17T01:04:39.3840207Z 
+2026-10-17T01:04:39.3845926Z OK
+2026-10-17T01:04:40.1369441Z test_appended_harmless_raw_bytes_are_rejected (__main__.BootEvidenceTests.test_appended_harmless_raw_bytes_are_rejected) ... ok
+2026-10-17T01:04:40.6280945Z test_archived_verification_does_not_require_original_paths (__main__.BootEvidenceTests.test_archived_verification_does_not_require_original_paths) ... ok
+2026-10-17T01:04:40.6288176Z test_capture_exclusive_creation_preserves_existing_snapshot_bytes (__main__.BootEvidenceTests.test_capture_exclusive_creation_preserves_existing_snapshot_bytes) ... ok
+2026-10-17T01:04:40.6307973Z test_capture_rejects_in_place_mutation_and_path_replacement_during_fd_read (__main__.BootEvidenceTests.test_capture_rejects_in_place_mutation_and_path_replacement_during_fd_read) ... ok
+2026-10-17T01:04:42.4532370Z test_fatal_kernel_panics_are_rejected_with_matching_digest (__main__.BootEvidenceTests.test_fatal_kernel_panics_are_rejected_with_matching_digest) ... ok
+2026-10-17T01:04:42.6933084Z test_inconsistent_recorded_serial_size_is_rejected (__main__.BootEvidenceTests.test_inconsistent_recorded_serial_size_is_rejected) ... ok
+2026-10-17T01:04:44.1238904Z test_live_artifact_bytes_are_checked_for_all_three_inputs (__main__.BootEvidenceTests.test_live_artifact_bytes_are_checked_for_all_three_inputs) ... ok
+2026-10-17T01:04:44.6144303Z test_matching_real_raw_serial_passes_in_archive_and_live_modes (__main__.BootEvidenceTests.test_matching_real_raw_serial_passes_in_archive_and_live_modes) ... ok
+2026-10-17T01:04:46.2238285Z test_missing_artifact_entries_and_hashes_are_rejected_offline (__main__.BootEvidenceTests.test_missing_artifact_entries_and_hashes_are_rejected_offline) ... ok
+2026-10-17T01:04:47.4617727Z test_missing_complete_boot_markers_are_rejected_with_matching_digest (__main__.BootEvidenceTests.test_missing_complete_boot_markers_are_rejected_with_matching_digest) ... ok
+2026-10-17T01:04:47.9422313Z test_missing_exit_or_timeout_result_is_rejected (__main__.BootEvidenceTests.test_missing_exit_or_timeout_result_is_rejected) ... ok
+2026-10-17T01:04:48.4228305Z test_missing_or_wrong_serial_sha256_is_rejected (__main__.BootEvidenceTests.test_missing_or_wrong_serial_sha256_is_rejected) ... ok
+2026-10-17T01:04:49.8230161Z test_non_successful_raw_status_and_timeout_are_rejected (__main__.BootEvidenceTests.test_non_successful_raw_status_and_timeout_are_rejected) ... ok
+2026-10-17T01:04:50.4441499Z test_recorder_binds_complete_actual_chardev_log_and_inputs (__main__.BootEvidenceTests.test_recorder_binds_complete_actual_chardev_log_and_inputs) ... ok
+2026-10-17T01:04:50.7736338Z test_recorder_creates_distinct_private_snapshot_directories_without_reuse (__main__.BootEvidenceTests.test_recorder_creates_distinct_private_snapshot_directories_without_reuse) ... ok
+2026-10-17T01:04:51.2923648Z test_recorder_detects_snapshot_tampering_after_raw_guest_exit_without_source_fallback (__main__.BootEvidenceTests.test_recorder_detects_snapshot_tampering_after_raw_guest_exit_without_source_fallback) ... ok
+2026-10-17T01:04:52.0971638Z test_recorder_explicit_private_bios_with_spaces_uses_selected_snapshot (__main__.BootEvidenceTests.test_recorder_explicit_private_bios_with_spaces_uses_selected_snapshot) ... ok
+2026-10-17T01:04:52.4995595Z test_recorder_explicit_private_data_directory_with_spaces_appends_one_L (__main__.BootEvidenceTests.test_recorder_explicit_private_data_directory_with_spaces_appends_one_L) ... ok
+2026-10-17T01:04:52.6313968Z test_recorder_launch_failure_retains_explicit_failure_record_and_snapshots (__main__.BootEvidenceTests.test_recorder_launch_failure_retains_explicit_failure_record_and_snapshots) ... ok
+2026-10-17T01:04:53.0302089Z test_recorder_missing_selected_log_does_not_use_stale_qemu_log (__main__.BootEvidenceTests.test_recorder_missing_selected_log_does_not_use_stale_qemu_log) ... ok
+2026-10-17T01:04:53.4749473Z test_recorder_rejects_invalid_explicit_bios_before_any_tool_execution (__main__.BootEvidenceTests.test_recorder_rejects_invalid_explicit_bios_before_any_tool_execution) ... ok
+2026-10-17T01:04:54.0317312Z test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools (__main__.BootEvidenceTests.test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools) ... ok
+2026-10-17T01:04:55.3672140Z test_recorder_rejects_missing_duplicate_and_valueless_artifacts_before_version_probe (__main__.BootEvidenceTests.test_recorder_rejects_missing_duplicate_and_valueless_artifacts_before_version_probe) ... ok
+2026-10-17T01:04:55.5151144Z test_recorder_rejects_nonregular_source_with_explicit_failure_record (__main__.BootEvidenceTests.test_recorder_rejects_nonregular_source_with_explicit_failure_record) ... ok
+2026-10-17T01:04:55.7754466Z test_recorder_snapshots_survive_atomic_replacement_of_all_source_paths (__main__.BootEvidenceTests.test_recorder_snapshots_survive_atomic_replacement_of_all_source_paths) ... ok
+2026-10-17T01:04:57.1469218Z test_recorder_timeout_is_rejected_even_with_complete_serial (__main__.BootEvidenceTests.test_recorder_timeout_is_rejected_even_with_complete_serial) ... ok
+2026-10-17T01:04:57.6171905Z test_replaced_or_truncated_serial_is_rejected (__main__.BootEvidenceTests.test_replaced_or_truncated_serial_is_rejected) ... ok
+2026-10-17T01:04:57.6172645Z 
+2026-10-17T01:04:57.6172778Z ----------------------------------------------------------------------
+2026-10-17T01:04:57.6173077Z Ran 27 tests in 17.719s
+2026-10-17T01:04:57.6173233Z 
+2026-10-17T01:04:57.6173308Z OK
+2026-10-17T01:04:57.6320699Z ##[group]Run bash -n support/build/kernel.sh
+2026-10-17T01:04:57.6320906Z [36;1mbash -n support/build/kernel.sh[0m
+2026-10-17T01:04:57.6321102Z [36;1mpython3 -I support/build/tests/test_kernel_runner.py[0m
+2026-10-17T01:04:57.6321324Z [36;1mpython3 -I -O support/build/tests/test_kernel_runner.py[0m
+2026-10-17T01:04:57.6371808Z shell: /usr/bin/bash -e {0}
+2026-10-17T01:04:57.6371945Z ##[endgroup]
+2026-10-17T01:04:58.1376627Z test_busy_lock_preserves_default_output_for_same_command_retry (__main__.KernelRunnerTests.test_busy_lock_preserves_default_output_for_same_command_retry) ... ok
+2026-10-17T01:04:58.5867465Z test_busy_lock_preserves_explicit_output_path_for_same_command_retry (__main__.KernelRunnerTests.test_busy_lock_preserves_explicit_output_path_for_same_command_retry) ... ok
+2026-10-17T01:04:58.8632234Z test_cleanup_restore_conflict_changes_success_to_failure (__main__.KernelRunnerTests.test_cleanup_restore_conflict_changes_success_to_failure) ... ok
+2026-10-17T01:04:59.1398028Z test_cleanup_restore_conflict_preserves_original_make_failure (__main__.KernelRunnerTests.test_cleanup_restore_conflict_preserves_original_make_failure) ... ok
+2026-10-17T01:04:59.8910927Z test_concurrent_runner_refused_and_lock_inode_survives_exit (__main__.KernelRunnerTests.test_concurrent_runner_refused_and_lock_inode_survives_exit) ... ok
+2026-10-17T01:05:00.1708014Z test_empty_encoded_rustflags_are_rejected_before_output_then_unset_retry (__main__.KernelRunnerTests.test_empty_encoded_rustflags_are_rejected_before_output_then_unset_retry) ... ok
+2026-10-17T01:05:00.3456503Z test_existing_directory_and_stale_success_are_rejected (__main__.KernelRunnerTests.test_existing_directory_and_stale_success_are_rejected) ... ok
+2026-10-17T01:05:00.5208827Z test_existing_manifest_is_preserved (__main__.KernelRunnerTests.test_existing_manifest_is_preserved) ... ok
+2026-10-17T01:05:00.8047018Z test_fixed_initramfs_argument_overrides_inherited_off (__main__.KernelRunnerTests.test_fixed_initramfs_argument_overrides_inherited_off) ... ok
+2026-10-17T01:05:01.0807391Z test_fresh_make_success_without_qemu_is_not_boot_success (__main__.KernelRunnerTests.test_fresh_make_success_without_qemu_is_not_boot_success) ... ok
+2026-10-17T01:05:02.2558195Z test_inherited_dry_run_touch_and_question_flags_still_execute_real_make_recipes (__main__.KernelRunnerTests.test_inherited_dry_run_touch_and_question_flags_still_execute_real_make_recipes) ... ok
+2026-10-17T01:05:02.5332942Z test_inherited_ignore_errors_does_not_mask_real_make_recipe_failure (__main__.KernelRunnerTests.test_inherited_ignore_errors_does_not_mask_real_make_recipe_failure) ... ok
+2026-10-17T01:05:03.0866510Z test_inherited_makefiles_are_not_read_and_normal_retry_can_build (__main__.KernelRunnerTests.test_inherited_makefiles_are_not_read_and_normal_retry_can_build) ... ok
+2026-10-17T01:05:03.3639872Z test_log_write_failure_overrides_successful_make (__main__.KernelRunnerTests.test_log_write_failure_overrides_successful_make) ... ok
+2026-10-17T01:05:03.5904614Z test_manifest_created_during_preparation_is_preserved (__main__.KernelRunnerTests.test_manifest_created_during_preparation_is_preserved) ... ok
+2026-10-17T01:05:03.8662291Z test_manifest_replaced_during_build_is_preserved (__main__.KernelRunnerTests.test_manifest_replaced_during_build_is_preserved) ... ok
+2026-10-17T01:05:04.1442581Z test_nonempty_encoded_rustflags_are_rejected_before_output_then_unset_retry (__main__.KernelRunnerTests.test_nonempty_encoded_rustflags_are_rejected_before_output_then_unset_retry) ... ok
+2026-10-17T01:05:04.4216160Z test_outer_make_state_is_recorded_and_children_establish_normal_recursion (__main__.KernelRunnerTests.test_outer_make_state_is_recorded_and_children_establish_normal_recursion) ... ok
+2026-10-17T01:05:04.6984242Z test_owned_manifest_removed_after_success (__main__.KernelRunnerTests.test_owned_manifest_removed_after_success) ... ok
+2026-10-17T01:05:04.9240228Z test_signal_immediately_after_manifest_publication_cleans_owned_inode (__main__.KernelRunnerTests.test_signal_immediately_after_manifest_publication_cleans_owned_inode) ... ok
+2026-10-17T01:05:04.9277752Z test_exception_after_capture_preserves_candidate (__main__.ManifestCustodyTests.test_exception_after_capture_preserves_candidate) ... ok
+2026-10-17T01:05:04.9282781Z test_foreign_dangling_symlink_is_restored_without_following (__main__.ManifestCustodyTests.test_foreign_dangling_symlink_is_restored_without_following) ... ok
+2026-10-17T01:05:04.9287974Z test_foreign_directory_and_contents_are_restored (__main__.ManifestCustodyTests.test_foreign_directory_and_contents_are_restored) ... ok
+2026-10-17T01:05:04.9291033Z test_invalid_anchor_never_moves_public_entry (__main__.ManifestCustodyTests.test_invalid_anchor_never_moves_public_entry) ... ok
+2026-10-17T01:05:04.9295219Z test_missing_public_path_is_a_noop (__main__.ManifestCustodyTests.test_missing_public_path_is_a_noop) ... ok
+2026-10-17T01:05:04.9300947Z test_new_public_entry_after_owned_capture_is_untouched (__main__.ManifestCustodyTests.test_new_public_entry_after_owned_capture_is_untouched) ... ok
+2026-10-17T01:05:04.9304513Z test_owned_inode_is_removed_from_private_custody (__main__.ManifestCustodyTests.test_owned_inode_is_removed_from_private_custody) ... ok
+2026-10-17T01:05:04.9312594Z test_replacement_immediately_before_capture_is_restored (__main__.ManifestCustodyTests.test_replacement_immediately_before_capture_is_restored) ... ok
+2026-10-17T01:05:04.9321073Z test_restore_conflict_retains_both_foreign_entries (__main__.ManifestCustodyTests.test_restore_conflict_retains_both_foreign_entries) ... ok
+2026-10-17T01:05:04.9328127Z test_unavailable_noreplace_retains_foreign_candidate (__main__.ManifestCustodyTests.test_unavailable_noreplace_retains_foreign_candidate) ... ok
+2026-10-17T01:05:04.9328562Z 
+2026-10-17T01:05:04.9328685Z ----------------------------------------------------------------------
+2026-10-17T01:05:04.9328927Z Ran 30 tests in 7.245s
+2026-10-17T01:05:04.9329005Z 
+2026-10-17T01:05:04.9329048Z OK
+2026-10-17T01:05:05.6413106Z test_busy_lock_preserves_default_output_for_same_command_retry (__main__.KernelRunnerTests.test_busy_lock_preserves_default_output_for_same_command_retry) ... ok
+2026-10-17T01:05:06.0917264Z test_busy_lock_preserves_explicit_output_path_for_same_command_retry (__main__.KernelRunnerTests.test_busy_lock_preserves_explicit_output_path_for_same_command_retry) ... ok
+2026-10-17T01:05:06.3694518Z test_cleanup_restore_conflict_changes_success_to_failure (__main__.KernelRunnerTests.test_cleanup_restore_conflict_changes_success_to_failure) ... ok
+2026-10-17T01:05:06.6478383Z test_cleanup_restore_conflict_preserves_original_make_failure (__main__.KernelRunnerTests.test_cleanup_restore_conflict_preserves_original_make_failure) ... ok
+2026-10-17T01:05:07.3509550Z test_concurrent_runner_refused_and_lock_inode_survives_exit (__main__.KernelRunnerTests.test_concurrent_runner_refused_and_lock_inode_survives_exit) ... ok
+2026-10-17T01:05:07.6303424Z test_empty_encoded_rustflags_are_rejected_before_output_then_unset_retry (__main__.KernelRunnerTests.test_empty_encoded_rustflags_are_rejected_before_output_then_unset_retry) ... ok
+2026-10-17T01:05:07.8086177Z test_existing_directory_and_stale_success_are_rejected (__main__.KernelRunnerTests.test_existing_directory_and_stale_success_are_rejected) ... ok
+2026-10-17T01:05:07.9838442Z test_existing_manifest_is_preserved (__main__.KernelRunnerTests.test_existing_manifest_is_preserved) ... ok
+2026-10-17T01:05:08.2600602Z test_fixed_initramfs_argument_overrides_inherited_off (__main__.KernelRunnerTests.test_fixed_initramfs_argument_overrides_inherited_off) ... ok
+2026-10-17T01:05:08.5372002Z test_fresh_make_success_without_qemu_is_not_boot_success (__main__.KernelRunnerTests.test_fresh_make_success_without_qemu_is_not_boot_success) ... ok
+2026-10-17T01:05:09.6416455Z test_inherited_dry_run_touch_and_question_flags_still_execute_real_make_recipes (__main__.KernelRunnerTests.test_inherited_dry_run_touch_and_question_flags_still_execute_real_make_recipes) ... ok
+2026-10-17T01:05:09.9205596Z test_inherited_ignore_errors_does_not_mask_real_make_recipe_failure (__main__.KernelRunnerTests.test_inherited_ignore_errors_does_not_mask_real_make_recipe_failure) ... ok
+2026-10-17T01:05:10.4736570Z test_inherited_makefiles_are_not_read_and_normal_retry_can_build (__main__.KernelRunnerTests.test_inherited_makefiles_are_not_read_and_normal_retry_can_build) ... ok
+2026-10-17T01:05:10.7507085Z test_log_write_failure_overrides_successful_make (__main__.KernelRunnerTests.test_log_write_failure_overrides_successful_make) ... ok
+2026-10-17T01:05:10.9776346Z test_manifest_created_during_preparation_is_preserved (__main__.KernelRunnerTests.test_manifest_created_during_preparation_is_preserved) ... ok
+2026-10-17T01:05:11.2539842Z test_manifest_replaced_during_build_is_preserved (__main__.KernelRunnerTests.test_manifest_replaced_during_build_is_preserved) ... ok
+2026-10-17T01:05:11.5331313Z test_nonempty_encoded_rustflags_are_rejected_before_output_then_unset_retry (__main__.KernelRunnerTests.test_nonempty_encoded_rustflags_are_rejected_before_output_then_unset_retry) ... ok
+2026-10-17T01:05:11.8105977Z test_outer_make_state_is_recorded_and_children_establish_normal_recursion (__main__.KernelRunnerTests.test_outer_make_state_is_recorded_and_children_establish_normal_recursion) ... ok
+2026-10-17T01:05:12.0872080Z test_owned_manifest_removed_after_success (__main__.KernelRunnerTests.test_owned_manifest_removed_after_success) ... ok
+2026-10-17T01:05:12.3145343Z test_signal_immediately_after_manifest_publication_cleans_owned_inode (__main__.KernelRunnerTests.test_signal_immediately_after_manifest_publication_cleans_owned_inode) ... ok
+2026-10-17T01:05:12.3409036Z test_exception_after_capture_preserves_candidate (__main__.ManifestCustodyTests.test_exception_after_capture_preserves_candidate) ... ok
+2026-10-17T01:05:12.3414008Z test_foreign_dangling_symlink_is_restored_without_following (__main__.ManifestCustodyTests.test_foreign_dangling_symlink_is_restored_without_following) ... ok
+2026-10-17T01:05:12.3419414Z test_foreign_directory_and_contents_are_restored (__main__.ManifestCustodyTests.test_foreign_directory_and_contents_are_restored) ... ok
+2026-10-17T01:05:12.3422487Z test_invalid_anchor_never_moves_public_entry (__main__.ManifestCustodyTests.test_invalid_anchor_never_moves_public_entry) ... ok
+2026-10-17T01:05:12.3425998Z test_missing_public_path_is_a_noop (__main__.ManifestCustodyTests.test_missing_public_path_is_a_noop) ... ok
+2026-10-17T01:05:12.3431096Z test_new_public_entry_after_owned_capture_is_untouched (__main__.ManifestCustodyTests.test_new_public_entry_after_owned_capture_is_untouched) ... ok
+2026-10-17T01:05:12.3434720Z test_owned_inode_is_removed_from_private_custody (__main__.ManifestCustodyTests.test_owned_inode_is_removed_from_private_custody) ... ok
+2026-10-17T01:05:12.3452869Z test_replacement_immediately_before_capture_is_restored (__main__.ManifestCustodyTests.test_replacement_immediately_before_capture_is_restored) ... ok
+2026-10-17T01:05:12.3461046Z test_restore_conflict_retains_both_foreign_entries (__main__.ManifestCustodyTests.test_restore_conflict_retains_both_foreign_entries) ... ok
+2026-10-17T01:05:12.3468122Z test_unavailable_noreplace_retains_foreign_candidate (__main__.ManifestCustodyTests.test_unavailable_noreplace_retains_foreign_candidate) ... ok
+2026-10-17T01:05:12.3468487Z 
+2026-10-17T01:05:12.3468574Z ----------------------------------------------------------------------
+2026-10-17T01:05:12.3468760Z Ran 30 tests in 7.155s
+2026-10-17T01:05:12.3468838Z 
+2026-10-17T01:05:12.3468887Z OK
+2026-10-17T01:05:12.3642870Z ##[group]Run set -euo pipefail
+2026-10-17T01:05:12.3643073Z [36;1mset -euo pipefail[0m
+2026-10-17T01:05:12.3643220Z [36;1mdir=support/build/osdk-integration[0m
+2026-10-17T01:05:12.3643521Z [36;1mif [[ -e "$dir/archive.py" || -L "$dir/archive.py" || -e "$dir/test_archive.py" || -L "$dir/test_archive.py" ]]; then[0m
+2026-10-17T01:05:12.3643888Z [36;1m  if [[ ! -f "$dir/archive.py" || -L "$dir/archive.py" || ! -f "$dir/test_archive.py" || -L "$dir/test_archive.py" ]]; then[0m
+2026-10-17T01:05:12.3644198Z [36;1m    echo 'A01 archive source/test pair incomplete or symlinked' >&2[0m
+2026-10-17T01:05:12.3644389Z [36;1m    exit 1[0m
+2026-10-17T01:05:12.3644498Z [36;1m  fi[0m
+2026-10-17T01:05:12.3644678Z [36;1m  (cd "$dir" && python3 -I -m unittest discover -s . -p 'test_archive.py' -v)[0m
+2026-10-17T01:05:12.3644944Z [36;1m  (cd "$dir" && python3 -I -O -m unittest discover -s . -p 'test_archive.py' -v)[0m
+2026-10-17T01:05:12.3645148Z [36;1melse[0m
+2026-10-17T01:05:12.3645335Z [36;1m  # The first workflow-only bootstrap may lack this source pair.[0m
+2026-10-17T01:05:12.3645705Z [36;1m  # After the pair lands, deleting BOTH must fail instead of passing.[0m
+2026-10-17T01:05:12.3645942Z [36;1m  if [[ -z "${EVENT_BASE_SHA:-}" || "$EVENT_BASE_SHA" =~ ^0+$ ]] ||[0m
+2026-10-17T01:05:12.3646169Z [36;1m     ! git cat-file -e "$EVENT_BASE_SHA^{commit}" 2>/dev/null; then[0m
+2026-10-17T01:05:12.3646435Z [36;1m    echo 'Cannot verify archive-source absence against exact event base commit' >&2[0m
+2026-10-17T01:05:12.3646652Z [36;1m    exit 1[0m
+2026-10-17T01:05:12.3646762Z [36;1m  fi[0m
+2026-10-17T01:05:12.3646920Z [36;1m  for source_path in "$dir/archive.py" "$dir/test_archive.py"; do[0m
+2026-10-17T01:05:12.3647164Z [36;1m    if git cat-file -e "$EVENT_BASE_SHA:$source_path" 2>/dev/null; then[0m
+2026-10-17T01:05:12.3647434Z [36;1m      echo "A01 archive source/test was removed from its event base: $source_path" >&2[0m
+2026-10-17T01:05:12.3647778Z [36;1m      exit 1[0m
+2026-10-17T01:05:12.3647891Z [36;1m    fi[0m
+2026-10-17T01:05:12.3647994Z [36;1m  done[0m
+2026-10-17T01:05:12.3648219Z [36;1m  echo 'BOOTSTRAP ONLY: A01 OSDK archive sources absent in both base and head; no archive tests performed'[0m
+2026-10-17T01:05:12.3648471Z [36;1mfi[0m
+2026-10-17T01:05:12.3698978Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-17T01:05:12.3699157Z env:
+2026-10-17T01:05:12.3699300Z   EVENT_BASE_SHA: 8f3bb49ab161104063a6ebea25428c40aa884ac0
+2026-10-17T01:05:12.3699467Z ##[endgroup]
+2026-10-17T01:05:12.4240772Z test_bounded_read_rejects_sparse_oversize_without_allocating (test_archive.ArchiveTests.test_bounded_read_rejects_sparse_oversize_without_allocating) ... ok
+2026-10-17T01:05:12.4251279Z test_custody_destination_subdirectory_swap_cannot_write_outside (test_archive.ArchiveTests.test_custody_destination_subdirectory_swap_cannot_write_outside) ... ok
+2026-10-17T01:05:12.4257729Z test_custody_exclusive_output_open_preserves_racing_existing_file (test_archive.ArchiveTests.test_custody_exclusive_output_open_preserves_racing_existing_file) ... ok
+2026-10-17T01:05:12.4265489Z test_custody_failed_cleanup_cannot_erase_swapped_foreign_directory (test_archive.ArchiveTests.test_custody_failed_cleanup_cannot_erase_swapped_foreign_directory) ... ok
+2026-10-17T01:05:12.4280678Z test_custody_indexes_use_exact_written_payloads_without_path_walks_or_reads (test_archive.ArchiveTests.test_custody_indexes_use_exact_written_payloads_without_path_walks_or_reads) ... ok
+2026-10-17T01:05:12.4288944Z test_custody_manifest_symlink_cannot_overwrite_external_bytes (test_archive.ArchiveTests.test_custody_manifest_symlink_cannot_overwrite_external_bytes) ... ok
+2026-10-17T01:05:12.4298163Z test_custody_root_swap_after_open_preserves_foreign_directory_and_owned_marker (test_archive.ArchiveTests.test_custody_root_swap_after_open_preserves_foreign_directory_and_owned_marker) ... ok
+2026-10-17T01:05:12.4308728Z test_custody_subdirectory_swap_after_open_keeps_writes_on_pinned_fd (test_archive.ArchiveTests.test_custody_subdirectory_swap_after_open_keeps_writes_on_pinned_fd) ... ok
+2026-10-17T01:05:12.4314081Z test_custody_symlink_destination_parent_is_not_traversed (test_archive.ArchiveTests.test_custody_symlink_destination_parent_is_not_traversed) ... ok
+2026-10-17T01:05:12.4323164Z test_directory_walk_stays_on_open_root_after_path_replacement (test_archive.ArchiveTests.test_directory_walk_stays_on_open_root_after_path_replacement) ... ok
+2026-10-17T01:05:12.4327025Z test_empty_archive_fails_closed (test_archive.ArchiveTests.test_empty_archive_fails_closed) ... ok
+2026-10-17T01:05:12.4331378Z test_existing_destination_is_preserved (test_archive.ArchiveTests.test_existing_destination_is_preserved) ... ok
+2026-10-17T01:05:12.4335199Z test_external_hardlink_is_not_silently_archived (test_archive.ArchiveTests.test_external_hardlink_is_not_silently_archived) ... ok
+2026-10-17T01:05:12.4610084Z test_file_changed_between_lstat_and_open_is_rejected (test_archive.ArchiveTests.test_file_changed_between_lstat_and_open_is_rejected) ... ok
+2026-10-17T01:05:12.4618290Z test_fixed_input_destination_name_collision_rejected (test_archive.ArchiveTests.test_fixed_input_destination_name_collision_rejected) ... ok
+2026-10-17T01:05:12.4622471Z test_hardlink_added_between_lstat_and_open_is_rejected (test_archive.ArchiveTests.test_hardlink_added_between_lstat_and_open_is_rejected) ... ok
+2026-10-17T01:05:12.4625793Z test_missing_or_regular_file_source_rejected_without_creating_bundle (test_archive.ArchiveTests.test_missing_or_regular_file_source_rejected_without_creating_bundle) ... ok
+2026-10-17T01:05:12.4637185Z test_regular_log_roundtrip_and_deterministic_gzip (test_archive.ArchiveTests.test_regular_log_roundtrip_and_deterministic_gzip) ... ok
+2026-10-17T01:05:12.4653714Z test_reserved_index_paths_cannot_replace_evidence (test_archive.ArchiveTests.test_reserved_index_paths_cannot_replace_evidence) ... ok
+2026-10-17T01:05:12.4658319Z test_root_replaced_before_open_is_rejected (test_archive.ArchiveTests.test_root_replaced_before_open_is_rejected) ... ok
+2026-10-17T01:05:12.4661524Z test_selected_fifo_is_rejected_without_blocking (test_archive.ArchiveTests.test_selected_fifo_is_rejected_without_blocking) ... ok
+2026-10-17T01:05:12.4668473Z test_special_fixed_lock_cannot_follow_symlink (test_archive.ArchiveTests.test_special_fixed_lock_cannot_follow_symlink) ... ok
+2026-10-17T01:05:12.4678914Z test_special_pinned_inputs_are_archived_without_symlink_traversal (test_archive.ArchiveTests.test_special_pinned_inputs_are_archived_without_symlink_traversal) ... ok
+2026-10-17T01:05:12.4683000Z test_symlink_directory_denied (test_archive.ArchiveTests.test_symlink_directory_denied) ... ok
+2026-10-17T01:05:12.4685224Z test_symlink_source_rejected (test_archive.ArchiveTests.test_symlink_source_rejected) ... ok
+2026-10-17T01:05:12.4689106Z test_symlink_to_external_dummy_log_denied (test_archive.ArchiveTests.test_symlink_to_external_dummy_log_denied) ... ok
+2026-10-17T01:05:12.4695913Z test_total_limit_preserves_incomplete_new_custody (test_archive.ArchiveTests.test_total_limit_preserves_incomplete_new_custody) ... ok
+2026-10-17T01:05:12.4702926Z test_unchanged_original_file_is_required (test_archive.ArchiveTests.test_unchanged_original_file_is_required) ... ok
+2026-10-17T01:05:12.4703334Z 
+2026-10-17T01:05:12.4703463Z ----------------------------------------------------------------------
+2026-10-17T01:05:12.4703744Z Ran 28 tests in 0.047s
+2026-10-17T01:05:12.4703861Z 
+2026-10-17T01:05:12.4703926Z OK
+2026-10-17T01:05:12.7324996Z test_bounded_read_rejects_sparse_oversize_without_allocating (test_archive.ArchiveTests.test_bounded_read_rejects_sparse_oversize_without_allocating) ... ok
+2026-10-17T01:05:12.7335721Z test_custody_destination_subdirectory_swap_cannot_write_outside (test_archive.ArchiveTests.test_custody_destination_subdirectory_swap_cannot_write_outside) ... ok
+2026-10-17T01:05:12.7342722Z test_custody_exclusive_output_open_preserves_racing_existing_file (test_archive.ArchiveTests.test_custody_exclusive_output_open_preserves_racing_existing_file) ... ok
+2026-10-17T01:05:12.7350130Z test_custody_failed_cleanup_cannot_erase_swapped_foreign_directory (test_archive.ArchiveTests.test_custody_failed_cleanup_cannot_erase_swapped_foreign_directory) ... ok
+2026-10-17T01:05:12.7361254Z test_custody_indexes_use_exact_written_payloads_without_path_walks_or_reads (test_archive.ArchiveTests.test_custody_indexes_use_exact_written_payloads_without_path_walks_or_reads) ... ok
+2026-10-17T01:05:12.7368520Z test_custody_manifest_symlink_cannot_overwrite_external_bytes (test_archive.ArchiveTests.test_custody_manifest_symlink_cannot_overwrite_external_bytes) ... ok
+2026-10-17T01:05:12.7377163Z test_custody_root_swap_after_open_preserves_foreign_directory_and_owned_marker (test_archive.ArchiveTests.test_custody_root_swap_after_open_preserves_foreign_directory_and_owned_marker) ... ok
+2026-10-17T01:05:12.7386977Z test_custody_subdirectory_swap_after_open_keeps_writes_on_pinned_fd (test_archive.ArchiveTests.test_custody_subdirectory_swap_after_open_keeps_writes_on_pinned_fd) ... ok
+2026-10-17T01:05:12.7392082Z test_custody_symlink_destination_parent_is_not_traversed (test_archive.ArchiveTests.test_custody_symlink_destination_parent_is_not_traversed) ... ok
+2026-10-17T01:05:12.7400487Z test_directory_walk_stays_on_open_root_after_path_replacement (test_archive.ArchiveTests.test_directory_walk_stays_on_open_root_after_path_replacement) ... ok
+2026-10-17T01:05:12.7403911Z test_empty_archive_fails_closed (test_archive.ArchiveTests.test_empty_archive_fails_closed) ... ok
+2026-10-17T01:05:12.7408041Z test_existing_destination_is_preserved (test_archive.ArchiveTests.test_existing_destination_is_preserved) ... ok
+2026-10-17T01:05:12.7411533Z test_external_hardlink_is_not_silently_archived (test_archive.ArchiveTests.test_external_hardlink_is_not_silently_archived) ... ok
+2026-10-17T01:05:12.7418049Z test_file_changed_between_lstat_and_open_is_rejected (test_archive.ArchiveTests.test_file_changed_between_lstat_and_open_is_rejected) ... ok
+2026-10-17T01:05:12.7425221Z test_fixed_input_destination_name_collision_rejected (test_archive.ArchiveTests.test_fixed_input_destination_name_collision_rejected) ... ok
+2026-10-17T01:05:12.7429240Z test_hardlink_added_between_lstat_and_open_is_rejected (test_archive.ArchiveTests.test_hardlink_added_between_lstat_and_open_is_rejected) ... ok
+2026-10-17T01:05:12.7432169Z test_missing_or_regular_file_source_rejected_without_creating_bundle (test_archive.ArchiveTests.test_missing_or_regular_file_source_rejected_without_creating_bundle) ... ok
+2026-10-17T01:05:12.7443283Z test_regular_log_roundtrip_and_deterministic_gzip (test_archive.ArchiveTests.test_regular_log_roundtrip_and_deterministic_gzip) ... ok
+2026-10-17T01:05:12.7459860Z test_reserved_index_paths_cannot_replace_evidence (test_archive.ArchiveTests.test_reserved_index_paths_cannot_replace_evidence) ... ok
+2026-10-17T01:05:12.7464073Z test_root_replaced_before_open_is_rejected (test_archive.ArchiveTests.test_root_replaced_before_open_is_rejected) ... ok
+2026-10-17T01:05:12.7467188Z test_selected_fifo_is_rejected_without_blocking (test_archive.ArchiveTests.test_selected_fifo_is_rejected_without_blocking) ... ok
+2026-10-17T01:05:12.7473833Z test_special_fixed_lock_cannot_follow_symlink (test_archive.ArchiveTests.test_special_fixed_lock_cannot_follow_symlink) ... ok
+2026-10-17T01:05:12.7483878Z test_special_pinned_inputs_are_archived_without_symlink_traversal (test_archive.ArchiveTests.test_special_pinned_inputs_are_archived_without_symlink_traversal) ... ok
+2026-10-17T01:05:12.7487939Z test_symlink_directory_denied (test_archive.ArchiveTests.test_symlink_directory_denied) ... ok
+2026-10-17T01:05:12.7490068Z test_symlink_source_rejected (test_archive.ArchiveTests.test_symlink_source_rejected) ... ok
+2026-10-17T01:05:12.7493482Z test_symlink_to_external_dummy_log_denied (test_archive.ArchiveTests.test_symlink_to_external_dummy_log_denied) ... ok
+2026-10-17T01:05:12.7500035Z test_total_limit_preserves_incomplete_new_custody (test_archive.ArchiveTests.test_total_limit_preserves_incomplete_new_custody) ... ok
+2026-10-17T01:05:12.7507417Z test_unchanged_original_file_is_required (test_archive.ArchiveTests.test_unchanged_original_file_is_required) ... ok
+2026-10-17T01:05:12.7507760Z 
+2026-10-17T01:05:12.7507885Z ----------------------------------------------------------------------
+2026-10-17T01:05:12.7508153Z Ran 28 tests in 0.019s
+2026-10-17T01:05:12.7508261Z 
+2026-10-17T01:05:12.7508330Z OK
+2026-10-17T01:05:12.7690140Z Post job cleanup.
+2026-10-17T01:05:12.8206079Z [command]/usr/bin/git version
+2026-10-17T01:05:12.8230297Z git version 2.55.0
+2026-10-17T01:05:12.8254123Z Temporarily overriding HOME='/home/runner/work/_temp/1b25fa73-2532-4d5e-b36d-1d56953fdd9d' before making global git config changes
+2026-10-17T01:05:12.8254864Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-17T01:05:12.8257870Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop
+2026-10-17T01:05:12.8286490Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-17T01:05:12.8311748Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-17T01:05:12.8510236Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-17T01:05:12.8537203Z http.https://github.com/.extraheader
+2026-10-17T01:05:12.8547381Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-17T01:05:12.8576343Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-17T01:05:12.8771411Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-17T01:05:12.8806259Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-17T01:05:12.9096479Z Cleaning up orphan processes
+2026-10-17T01:05:12.9298326Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

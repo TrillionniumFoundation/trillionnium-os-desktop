@@ -1,0 +1,8 @@
+# Private monitor handoff — host tests and no-kernel transport probes
+
+Source commit: `f473a2ccc8dfeaed1223e8478a19c79c90b323e4`.
+Final Rust host suite:38 passed,0 failed,1 explicitly ignored real-QEMU transport test. That ignored test was separately executed against real QEMU:1 passed, raw exit0, q35/TCG/1vCPU/64MiB, no kernel image. It confirms an outsider's earlier `quit` is rejected and the managed private descriptor reports a paused VM before its owned client quits. Probe01/02 and their original logs are retained; only probe03 binds the final Rust source freeze. Probe01 predates descriptor reservation and used fd5; final probe03 uses fd64.
+
+The independent reviewer verified all8 frozen files and the socket/descriptor ownership paths. Three malformed pure-parser inputs exposed a recorder boundary gap: fd3, a bare trailing server field, and duplicate server keys were accepted. After the producer's Python-only hardening, the same inputs are rejected; final recorder tests pass33/33 under both `-I` and `-I -O`. Rust host38 and the real probe were not rerun for this Python-only delta. Both freeze manifests, concrete before/after inputs, and all original failures remain available.
+
+The guarantee is ownership of the preconnected TCP pair and bounded setup, not denial-of-service resistance or protection from privileged/same-user FD access. Rust launcher `child pid` and recorder actual Popen `qemu_pid` are distinct labels. None of these host tests, parser calls, or no-kernel probes is a project-kernel boot or an SMP/VMX result. No production source copies, targets, tool binaries, or guest-memory files are packaged. `raw-logs.members.json` hashes every tar member; `subSHA256SUMS` hashes the complete package.

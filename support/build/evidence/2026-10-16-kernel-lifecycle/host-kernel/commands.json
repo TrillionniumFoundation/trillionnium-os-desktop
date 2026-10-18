@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+  "kind": "host_only_fixture_and_patch_restore_commands",
+  "baseline_commands": [
+    "python3 -I -B /workspace/scratch/ae1a8cf05419/next6-kernel-signal-audit.py",
+    "python3 -I -B /workspace/scratch/ae1a8cf05419/next6-kernel-signal-audit-INT.py"
+  ],
+  "final_commands": [
+    "A01_KERNEL_LIFECYCLE_OUT=/workspace/scratch/ae1a8cf05419/next6-kernel-supervisor-cooperative-final-I python3 -I -B support/build/tests/test_kernel_supervisor.py",
+    "A01_KERNEL_LIFECYCLE_OUT=/workspace/scratch/ae1a8cf05419/next6-kernel-supervisor-cooperative-final-IO python3 -I -O -B support/build/tests/test_kernel_supervisor.py",
+    "python3 -I -B support/build/tests/test_kernel_runner.py",
+    "python3 -I -O -B support/build/tests/test_kernel_runner.py",
+    "bash -n support/build/kernel.sh",
+    "git diff --check -- support/build/kernel.sh support/build/kernel-supervisor.py support/build/tests/test_kernel_supervisor.py support/build/tests/test_kernel_runner.py"
+  ],
+  "source_integrity_command": "python3 -I support/build/verify-source.py",
+  "intermediate_commands": [
+    "python3 -I -B support/build/tests/test_kernel_runner.py",
+    "python3 -I -O -B support/build/tests/test_kernel_runner.py",
+    "A01_KERNEL_LIFECYCLE_OUT=/workspace/scratch/ae1a8cf05419/next6-kernel-supervisor-final-I python3 -I -B support/build/tests/test_kernel_supervisor.py",
+    "A01_KERNEL_LIFECYCLE_OUT=/workspace/scratch/ae1a8cf05419/next6-kernel-supervisor-final-IO python3 -I -O -B support/build/tests/test_kernel_supervisor.py"
+  ],
+  "notes": [
+    "Initial tests named final-I/IO precede parent review and are superseded; accepted tests are cooperative-final-I/IO.",
+    "Baseline harnesses are historical host reproducers with recorded absolute scratch paths. They copy an unchanged runner and use synthetic build tools; they read the observed production manifest for a before/after hash and must be paired with the pinned baseline source when replayed.",
+    "Full wrapper fixture commands and selected environments are in baseline observation JSON; final signal commands are in each final observation JSON. Seam tests send real SIGINT then SIGTERM inside the Python test process around a real Popen/group cleanup, not a VM.",
+    "Patch restoration was executed in a disposable partial source directory; no Git refs/index or active build worktree were read or changed."
+  ]
+}

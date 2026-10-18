@@ -1,0 +1,62 @@
+--- a/support/build/ktest/run.py
++++ b/support/build/ktest/run.py
+@@ -211,6 +211,10 @@
+ 
+ 
+ def run_main(args, shutdown):
++    if "CARGO_ENCODED_RUSTFLAGS" in os.environ:
++        print("CARGO_ENCODED_RUSTFLAGS overrides mandatory OSDK kernel flags; "
++              "unset CARGO_ENCODED_RUSTFLAGS and retry", file=sys.stderr)
++        raise SystemExit(2)
+     here = Path(__file__).resolve().parent
+     project = here.parents[2]
+     upstream = project / "kernel/asterinas"
+--- a/support/build/ktest/test_runner_lifecycle.py
++++ b/support/build/ktest/test_runner_lifecycle.py
+@@ -28,6 +28,8 @@
+ import json, os, shutil, signal, socket, subprocess, sys, time
+ from pathlib import Path
+ root = Path(os.environ['FIXTURE_ROOT'])
++with (root/'tool-invocations.jsonl').open('a') as trace:
++    trace.write(json.dumps({'file':__file__, 'argv':sys.argv})+'\n')
+ if '--descendant' in sys.argv:
+     signal.signal(signal.SIGTERM, signal.SIG_IGN)
+     lease = socket.socket(); lease.bind(('127.0.0.1', 0)); lease.listen()
+@@ -322,6 +324,37 @@
+             self.assertFalse(requested.parent.exists())
+             self.assertFalse((project/"support/build/out").exists())
+ 
++    def exercise_encoded_flags_rejection(self, value):
++        with tempfile.TemporaryDirectory() as temporary:
++            root = Path(temporary)
++            project, argv, env = self.fixture(root)
++            requested = root/"missing-parent/evidence"
++            argv[argv.index("--output") + 1] = str(requested)
++            env["CARGO_ENCODED_RUSTFLAGS"] = value
++            for call in (argv, argv[:len(PYTHON)+1]):
++                completed = subprocess.run(call, env=env, capture_output=True, text=True, timeout=10)
++                self.assertEqual(completed.returncode, 2, completed.stdout + completed.stderr)
++                self.assertIn("unset CARGO_ENCODED_RUSTFLAGS and retry", completed.stderr)
++                self.assertFalse(requested.parent.exists())
++                self.assertFalse((project/"support/build/out").exists())
++                self.assertFalse((project/"support/build/out-kernel.lock").exists())
++                self.assertFalse((root/"tool-invocations.jsonl").exists())
++                self.assertFalse((project/"kernel/asterinas/target").exists())
++            del env["CARGO_ENCODED_RUSTFLAGS"]
++            completed = subprocess.run(argv, env=env, capture_output=True, text=True, timeout=10)
++            self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
++            result = json.loads((requested/"result.json").read_text())
++            self.assertTrue(result["passed"])
++            self.assertTrue(result["crates"][0]["fixture_only"])
++            self.assertEqual(len((root/"tool-invocations.jsonl").read_text().splitlines()), 8)
++            self.assertTrue(self.lock_free(project))
++
++    def test_empty_encoded_flags_reject_before_work_and_same_output_retries(self):
++        self.exercise_encoded_flags_rejection("")
++
++    def test_nonempty_encoded_flags_reject_before_work_and_same_output_retries(self):
++        self.exercise_encoded_flags_rejection("--cfg\x1fhost_supplied_flag")
++
+     def test_existing_failed_evidence_survives_and_lock_is_released(self):
+         with tempfile.TemporaryDirectory() as temporary:
+             root = Path(temporary)

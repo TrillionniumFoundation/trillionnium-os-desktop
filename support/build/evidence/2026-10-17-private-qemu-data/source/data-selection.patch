@@ -1,0 +1,113 @@
+diff --git a/support/build/record-qemu.py b/support/build/record-qemu.py
+index 93945e7..5326d4a 100755
+--- a/support/build/record-qemu.py
++++ b/support/build/record-qemu.py
+@@ -101,6 +101,32 @@ def select_bios(arguments, positions, record):
+     return actual
+ 
+ 
++def select_data_directory(arguments, record):
++    """Append an explicitly selected private QEMU data directory without ambiguity."""
++    positions = [index for index, value in enumerate(arguments) if value == "-L"]
++    originals = [arguments[index + 1] if index + 1 < len(arguments) else None
++                 for index in positions]
++    explicit = "A01_QEMU_DATA_DIR" in os.environ
++    value = os.environ.get("A01_QEMU_DATA_DIR")
++    record["data_selection"] = {
++        "origin": "A01_QEMU_DATA_DIR" if explicit else "requested_qemu_args",
++        "original_requested_paths": originals,
++        "selected_path": value if explicit else originals[0] if len(originals) == 1 else None,
++        "appended": False,
++    }
++    actual = list(arguments)
++    if explicit:
++        if positions:
++            raise ValueError("A01_QEMU_DATA_DIR cannot be combined with a requested -L")
++        if not value or not Path(value).is_absolute():
++            raise ValueError("A01_QEMU_DATA_DIR must name a nonempty absolute directory")
++        if not stat.S_ISDIR(os.stat(value).st_mode):
++            raise ValueError("A01_QEMU_DATA_DIR must name a directory")
++        actual += ["-L", value]
++        record["data_selection"]["appended"] = True
++    return actual
++
++
+ def capture_artifact(source, destination=None):
+     """Read one stable regular-file FD; optionally create a new exclusive copy."""
+     descriptor = os.open(source, os.O_RDONLY | os.O_NONBLOCK)
+@@ -173,6 +199,7 @@ def main():
+     try:
+         positions = artifact_positions(requested)  # Reject malformed requests before the version probe.
+         arguments = select_bios(requested, positions, record)
++        arguments = select_data_directory(arguments, record)
+         binary = shutil.which("qemu-system-x86_64")
+         if not binary:
+             raise ValueError("qemu-system-x86_64 is not installed")
+diff --git a/support/build/tests/test_boot_evidence.py b/support/build/tests/test_boot_evidence.py
+index 9c6617b..38403e1 100644
+--- a/support/build/tests/test_boot_evidence.py
++++ b/support/build/tests/test_boot_evidence.py
+@@ -201,7 +201,7 @@ class BootEvidenceTests(unittest.TestCase):
+ 
+     def run_recorder(self, no_serial=False, timeout=False, replace_sources=False,
+                      tamper_snapshot=False, artifact_args=None, delete_binary=False,
+-                     bios_override=None):
++                     bios_override=None, data_override=None):
+         tools = self.root / "tools"
+         tools.mkdir(exist_ok=True)
+         binary = tools / "qemu-system-x86_64"
+@@ -211,8 +211,11 @@ class BootEvidenceTests(unittest.TestCase):
+         (self.inputs / "qemu.log").write_bytes(b"stale unrelated default file")
+         environment = os.environ.copy()
+         environment.pop("A01_QEMU_BIOS", None)
++        environment.pop("A01_QEMU_DATA_DIR", None)
+         if bios_override is not None:
+             environment["A01_QEMU_BIOS"] = bios_override
++        if data_override is not None:
++            environment["A01_QEMU_DATA_DIR"] = data_override
+         environment.update({
+             "PATH": str(tools) + os.pathsep + environment.get("PATH", ""),
+             "A01_QEMU_EVIDENCE": str(self.directory / "qemu.json"),
+@@ -301,6 +304,42 @@ class BootEvidenceTests(unittest.TestCase):
+                 self.assertEqual(record["artifacts"], {})
+                 self.assertEqual(list(self.directory.glob("artifacts-*")), [])
+ 
++    def test_recorder_explicit_private_data_directory_with_spaces_appends_one_L(self):
++        private = self.root / "private QEMU data with spaces"
++        private.mkdir()
++        result, record, _ = self.run_recorder(data_override=str(private))
++        self.assertEqual(result.returncode, 33, result.stdout)
++        self.assertEqual(record["data_selection"], {
++            "origin": "A01_QEMU_DATA_DIR", "original_requested_paths": [],
++            "selected_path": str(private), "appended": True,
++        })
++        self.assertNotIn("-L", record["requested_qemu_args"])
++        loaded = json.loads((self.root / "loaded.json").read_text())
++        self.assertEqual(loaded["argv"].count("-L"), 1)
++        self.assertEqual(loaded["argv"][loaded["argv"].index("-L") + 1], str(private))
++        for option in ("-kernel", "-initrd", "-bios"):
++            self.assertEqual(loaded["artifacts"][option]["path"], record["artifacts"][option]["path"])
++        self.check(True, live=True)
++
++    def test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools(self):
++        private = self.root / "private data"
++        private.mkdir()
++        normal = ["-kernel", "kernel.elf", "-initrd", "initramfs.cpio.gz", "-bios", "bios.bin"]
++        for value, arguments in (("", None), ("relative-data", None),
++                (str(self.root / "missing-data"), None), (str(self.inputs / "bios.bin"), None),
++                (str(private), normal + ["-L", "original requested data"])):
++            with self.subTest(value=value, arguments=arguments):
++                result, record, _ = self.run_recorder(data_override=value, artifact_args=arguments)
++                self.assertEqual(result.returncode, 1, result.stdout)
++                self.assertEqual(record["stage"], "artifact_preparation_failed")
++                self.assertIsNone(record["raw_exit_code"])
++                self.assertEqual(record["data_selection"]["origin"], "A01_QEMU_DATA_DIR")
++                self.assertFalse(record["data_selection"]["appended"])
++                self.assertFalse((self.root / "version-started").exists())
++                self.assertFalse((self.root / "loaded.json").exists())
++                self.assertEqual(record["artifacts"], {})
++                self.assertEqual(list(self.directory.glob("artifacts-*")), [])
++
+     def test_recorder_missing_selected_log_does_not_use_stale_qemu_log(self):
+         result, record, _ = self.run_recorder(no_serial=True)
+         self.assertEqual(result.returncode, 33, result.stdout)

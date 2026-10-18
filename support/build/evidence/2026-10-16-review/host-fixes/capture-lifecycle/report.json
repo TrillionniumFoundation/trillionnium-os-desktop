@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "kind": "capture_lifecycle_host_fixtures_not_kernel",
+  "source_commit": "349a28ff9f78319e497d3fd7b58fe73b6e6e44b5",
+  "source_tree": "a58098875a9affc51d409d3aa52ea34fccd7cd6f",
+  "old_leak_reproduced": {
+    "outer_timeout_seconds": 4,
+    "pidfd_exited": {
+      "helper": false,
+      "gdb": false,
+      "qemu": true
+    },
+    "gdb_tcp_lease_released": false,
+    "outer_group": 7,
+    "escaped_helper_group": 10
+  },
+  "final_lifecycle": {
+    "passed": 5,
+    "failed": 0,
+    "cases": [
+      "outer timeout",
+      "outer SIGINT",
+      "outer SIGTERM",
+      "standalone helper SIGTERM",
+      "helper/QEMU status mapping"
+    ],
+    "timeout_pidfd_exited": {
+      "helper": true,
+      "gdb": true,
+      "qemu": true
+    },
+    "timeout_gdb_tcp_lease_released": true,
+    "standalone_pidfd_exited": {
+      "helper": true,
+      "gdb": true
+    },
+    "standalone_sidecar_failed": true,
+    "status_mapping": {
+      "helper_failure": 125,
+      "qemu_failure_65": 65
+    }
+  },
+  "recorder_units": {
+    "passed_each_mode": 35,
+    "failed": 0,
+    "modes": [
+      "-I",
+      "-I -O"
+    ]
+  },
+  "capture_units": {
+    "passed_each_mode": 4,
+    "failed": 0,
+    "modes": [
+      "-I",
+      "-I -O"
+    ],
+    "includes_actual_self_SIGINT_and_SIGTERM_during_owner_publication": true
+  },
+  "all_frozen_source_and_artifact_hashes_independently_verified": true,
+  "new_kernel_runs_in_this_package": 0,
+  "new_vm_runs_in_this_package": 0,
+  "earlier_full22_integration_not_rerun_for_this_fix": true,
+  "raw_tar_members": 236
+}

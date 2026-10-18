@@ -1,0 +1,5 @@
+# A01 independent latest-main ABI acceptance
+
+Exact detached main `47288c4465720d125658b392efc655b333c90868` passed the unchanged A02 unified acceptance under `nightly-2026-07-21` in this project cloud. All 13 checks actually passed; Python52+52, Rust74+1doctest, strict fmt/Clippy, bare x86_64-unknown-none no_std and 12/12 compiled mutants killed. The 17 expected mutant assertion failures are deliberate negative controls, not production failures.
+
+The 32-line production addition binds HOSR snapshot length to ioctl transport output capacity and the typed request length, then delegates to the existing decoder. Five new Rust tests exercise the fixed vectors and rejected bounds/correlation. No wire/golden/dependency change. Full source closure, actual commands/environment/tool identities/UTC/exits and raw owner reports are retained; compiled targets are excluded. Git source was clean before/after and all selected input hashes remained unchanged. This is host ABI validation only and does not prove new native ioctl, CapSpace, scheduler or guest behavior. A01 build inputs remain a separate proof.

@@ -1,0 +1,16 @@
+test_capture_cli_freezes_valid_symbols_before_qemu_version_probe (__main__.InputSnapshotCliTests.test_capture_cli_freezes_valid_symbols_before_qemu_version_probe) ... FAIL
+
+======================================================================
+FAIL: test_capture_cli_freezes_valid_symbols_before_qemu_version_probe (__main__.InputSnapshotCliTests.test_capture_cli_freezes_valid_symbols_before_qemu_version_probe)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/osdk-integration/test_input_snapshots.py", line 337, in test_capture_cli_freezes_valid_symbols_before_qemu_version_probe
+    self.assert_capture_uses_private_em62_after_source_change("version")
+  File "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/osdk-integration/test_input_snapshots.py", line 314, in assert_capture_uses_private_em62_after_source_change
+    self.assertEqual(process.returncode, 33, process.stdout)
+AssertionError: 125 != 33 : b"FileNotFoundError: [Errno 2] No such file or directory: '/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/coverage-capture.json'\n"
+
+----------------------------------------------------------------------
+Ran 1 test in 0.249s
+
+FAILED (failures=1)

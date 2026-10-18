@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "historical_phase_not_modified": true,
+  "items": [
+    {
+      "path": "support/build/evidence/2026-10-17-repro-kernel-b2/report.json",
+      "fields": [
+        "verification.command",
+        "verification.optimized_command"
+      ],
+      "original_mistake": "The prose command points to repro-kernel-a2/verify.py.",
+      "correct_command": "python3 -I support/build/evidence/2026-10-17-repro-kernel-b2/verify.py",
+      "correct_optimized_command": "python3 -I -O support/build/evidence/2026-10-17-repro-kernel-b2/verify.py",
+      "new_actual_receipts": "audit batch01 executions/repro-kernel-b2/shipped-{I,IO}/command.json both exit0; b2_accepted_in_this_phase=true.",
+      "artifact_identity_changed": false
+    }
+  ]
+}

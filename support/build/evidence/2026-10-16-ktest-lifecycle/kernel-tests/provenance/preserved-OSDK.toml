@@ -1,0 +1,44 @@
+# SPDX-License-Identifier: MPL-2.0
+# Temporarily installed as kernel/OSDK.toml by the build wrapper. The upstream
+# source tree remains unchanged after the wrapper exits.
+
+supported_archs = ["x86_64"]
+
+[boot]
+method = "vmm-direct"
+kcmd_args = [
+    "earlycon",
+    "console=ttyS0",
+    "loglevel=info",
+    "SHELL=/bin/sh",
+    "LOGNAME=root",
+    "HOME=/",
+    "USER=root",
+    "PATH=/bin:/sbin",
+]
+init_args = []
+
+[grub]
+boot_protocol = "multiboot"
+
+[qemu]
+# Direct multiboot ELF loading uses QEMU's packaged PC firmware; it does not
+# require OVMF, GRUB, data disks, network access, a display, or KVM.
+args = """\
+    -machine q35 \
+    -accel tcg \
+    -cpu max \
+    -bios /usr/share/seabios/bios-256k.bin \
+    -m 512M \
+    -smp 1 \
+    -nodefaults \
+    -no-user-config \
+    -no-reboot \
+    -nographic \
+    -display none \
+    -monitor none \
+    -chardev stdio,id=serial,signal=off,logfile=qemu.log \
+    -serial chardev:serial \
+    -device isa-debug-exit,iobase=0xf4,iosize=0x04
+"""
+log_file = "qemu.log"

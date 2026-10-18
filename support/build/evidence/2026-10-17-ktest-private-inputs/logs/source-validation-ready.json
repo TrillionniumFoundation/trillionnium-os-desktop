@@ -1,0 +1,74 @@
+{
+  "base_commit": "30851677a3b2011789e452d99376bfac2d0bbfd9",
+  "before_positive_control_exit": 1,
+  "before_positive_control_tests": 2,
+  "full_host_test_executions": 68,
+  "normal_selector_source_working_diff": "",
+  "real_kernel_builds_or_vm_runs": 0,
+  "shared_selector_sha256": "387845415b54f1822c55ce4198586fae8047f7d3ea94008c84e0974871954098",
+  "source_sha256": {
+    "support/build/ktest/README.md": "334e85e51eb275808b949fb4b0f06925a67747d2f5cad6178704ff914f91a1ff",
+    "support/build/ktest/record-qemu.py": "52d50a46ad09be00566292bea64cf4b2b979badb84a11f055b5d06ef39e11c28",
+    "support/build/ktest/run.py": "41d23752430ad1a8893c8fc6e970cd1ea816d50be5b019ca11b0b27975ce2e56",
+    "support/build/ktest/test_runner_lifecycle.py": "aea57b83ab365f389357c6b57e1503f5a7adae77767bfe469af2c0d730dfc51c",
+    "support/build/tests/test_ktest_private_inputs.py": "e85ffc1f296429dc1d34a4728661cca2cfc589da4a9c7addcf6b41aba73cfe5a"
+  },
+  "status": "host_green_source_stable_ready_for_publication",
+  "tests": [
+    {
+      "actual_tool_session": 68485,
+      "exit": 0,
+      "log": "/workspace/scratch/ae1a8cf05419/round2-ktest-private/private-I.log",
+      "log_sha256": "7c7a210ff552cda6b105cbcfae97ebbbb023ddff2686a7f364ca8e24a76c1bf8",
+      "mode": "-I",
+      "suite": "private",
+      "tests": 5
+    },
+    {
+      "actual_tool_session": 68485,
+      "exit": 0,
+      "log": "/workspace/scratch/ae1a8cf05419/round2-ktest-private/private-I-O.log",
+      "log_sha256": "ab689fd2af979ca1854efc4a841ba6826ad7789d69a34dfbe2ea7aa17248c3e8",
+      "mode": "-I -O",
+      "suite": "private",
+      "tests": 5
+    },
+    {
+      "actual_tool_session": 68485,
+      "exit": 0,
+      "log": "/workspace/scratch/ae1a8cf05419/round2-ktest-private/checker-I.log",
+      "log_sha256": "f466005c092b8ce9fd8d044db5eaad002bf5015f9fbee9fe211cc285d92349de",
+      "mode": "-I",
+      "suite": "checker",
+      "tests": 12
+    },
+    {
+      "actual_tool_session": 68485,
+      "exit": 0,
+      "log": "/workspace/scratch/ae1a8cf05419/round2-ktest-private/checker-I-O.log",
+      "log_sha256": "63bd6703f6555c098998143aa700452b490f39a06c6e3d1368d5a5c57c98cd92",
+      "mode": "-I -O",
+      "suite": "checker",
+      "tests": 12
+    },
+    {
+      "actual_tool_session": 50454,
+      "exit": 0,
+      "log": "/workspace/scratch/ae1a8cf05419/round2-restore/ktest-lifecycle-I.log",
+      "log_sha256": "e3b0bc56a164a9543a72dde16a65ba6421a845af2c7c0d94f0435160a2ef3082",
+      "mode": "-I",
+      "suite": "lifecycle",
+      "tests": 17
+    },
+    {
+      "actual_tool_session": 68485,
+      "exit": 0,
+      "log": "/workspace/scratch/ae1a8cf05419/round2-ktest-private/lifecycle-I-O.log",
+      "log_sha256": "8898cb45f944dd1996f954dddc2003cd3e32ca7c1e07f56db91a392ee67003d5",
+      "mode": "-I -O",
+      "suite": "lifecycle",
+      "tests": 17
+    }
+  ],
+  "unchanged_checker_sha256": "503fcc6d1ed2f828d3ab9fdbf54f28df2148dea43afbd8d9abae65d34baa1373"
+}

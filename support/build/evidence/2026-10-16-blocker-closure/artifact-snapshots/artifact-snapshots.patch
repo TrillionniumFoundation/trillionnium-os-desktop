@@ -1,0 +1,459 @@
+diff --git a/support/build/record-qemu.py b/support/build/record-qemu.py
+index e216c6b24..7af460303 100755
+--- a/support/build/record-qemu.py
++++ b/support/build/record-qemu.py
+@@ -7,8 +7,10 @@ from pathlib import Path
+ import shlex
+ import shutil
+ import socket
++import stat
+ import subprocess
+ import sys
++import tempfile
+ import time
+ 
+ 
+@@ -58,28 +60,117 @@ def serial_log_path(arguments, cwd):
+     return path if path.is_absolute() else cwd / path
+ 
+ 
++ARTIFACT_NAMES = {"-kernel": "kernel.elf", "-initrd": "initramfs.cpio.gz", "-bios": "bios.bin"}
++
++
++def file_state(info):
++    return {name: getattr(info, "st_" + name) for name in
++            ("dev", "ino", "mode", "size", "mtime_ns", "ctime_ns")}
++
++
++def artifact_positions(arguments):
++    positions = {}
++    for option in ARTIFACT_NAMES:
++        found = [index for index, value in enumerate(arguments) if value == option]
++        if len(found) != 1:
++            raise ValueError(f"{option} must occur exactly once")
++        index = found[0] + 1
++        if index == len(arguments) or not arguments[index] or arguments[index].startswith("-"):
++            raise ValueError(f"{option} requires one explicit artifact path")
++        positions[option] = index
++    return positions
++
++
++def capture_artifact(source, destination=None):
++    """Read one stable regular-file FD; optionally create a new exclusive copy."""
++    descriptor = os.open(source, os.O_RDONLY | os.O_NONBLOCK)
++    try:
++        before = os.fstat(descriptor)
++        if not stat.S_ISREG(before.st_mode):
++            raise ValueError(f"artifact source is not a regular file: {source}")
++        state = file_state(before)
++        if file_state(os.stat(source)) != state:
++            raise ValueError(f"artifact source changed before capture: {source}")
++        digest, size = hashlib.sha256(), 0
++        output = None
++        try:
++            if destination is not None:
++                output = Path(destination).open("xb")
++            while True:
++                chunk = os.read(descriptor, 1024 * 1024)
++                if not chunk:
++                    break
++                digest.update(chunk)
++                size += len(chunk)
++                if output is not None:
++                    output.write(chunk)
++            if (file_state(os.fstat(descriptor)) != state or file_state(os.stat(source)) != state
++                    or size != before.st_size):
++                raise ValueError(f"artifact source changed during capture: {source}")
++        finally:
++            if output is not None:
++                output.close()
++        return {"size": size, "sha256": digest.hexdigest(), "stat": state}
++    finally:
++        os.close(descriptor)
++
++
++def snapshot_arguments(arguments, destination, record):
++    positions = artifact_positions(arguments)
++    directory = Path(tempfile.mkdtemp(prefix="artifacts-", dir=destination.parent)).absolute()
++    record["snapshot_directory"] = {"path": str(directory), "stat": file_state(directory.stat()),
++                                    "ownership": "new private mkdtemp directory; retained as evidence"}
++    actual = list(arguments)
++    for option, index in positions.items():
++        requested = arguments[index]
++        source = Path(requested).absolute()
++        target = directory / ARTIFACT_NAMES[option]
++        captured = capture_artifact(source, target)
++        target.chmod(0o400)
++        copied = capture_artifact(target)
++        if any(copied[key] != captured[key] for key in ("size", "sha256")):
++            raise ValueError(f"artifact snapshot differs from captured source: {option}")
++        record["artifacts"][option] = {"path": str(target), **copied,
++            "source": {"requested_path": requested, "path": str(source), **captured},
++            "creation": "exclusive xb; no overwrite or source-path fallback"}
++        actual[index] = str(target)
++    return actual
++
++
++def verify_snapshots(artifacts):
++    for option in ARTIFACT_NAMES:
++        artifact = artifacts[option]
++        current = capture_artifact(Path(artifact["path"]))
++        if any(current[key] != artifact[key] for key in ("size", "sha256", "stat")):
++            raise ValueError(f"artifact snapshot changed: {option}")
++
++
+ def main():
+-    binary = shutil.which("qemu-system-x86_64")
+-    if not binary:
+-        raise SystemExit("qemu-system-x86_64 is not installed")
+     requested = sys.argv[1:]
+-    arguments, inherited, gdb_listener = requested, (), None
+-    if "A01_GDB_FD" in os.environ:
+-        arguments, inherited, gdb_listener = inherit_gdb_listener(requested, os.environ["A01_GDB_FD"])
+-    command = [binary, *arguments]
+-    destination = Path(os.environ["A01_QEMU_EVIDENCE"])
+-    record = {"argv": command, "shell_command": shlex.join(command),
+-              "cwd": os.getcwd(), "qemu_sha256": hashlib.sha256(Path(binary).read_bytes()).hexdigest(),
+-              "qemu_version": subprocess.check_output([binary, "--version"], text=True).strip(),
+-              "artifacts": {}, "raw_exit_code": None, "timed_out": False}
+-    if gdb_listener is not None:
+-        record.update({"requested_qemu_args": requested, "gdb_listener": gdb_listener})
+-    for option in ("-kernel", "-initrd", "-bios"):
+-        if option in command:
+-            path = Path(command[command.index(option) + 1])
+-            raw = path.read_bytes()
+-            record["artifacts"][option] = {"path": str(path), "size": len(raw),
+-                "sha256": hashlib.sha256(raw).hexdigest()}
++    destination = Path(os.environ["A01_QEMU_EVIDENCE"]).absolute()
++    record = {"requested_qemu_args": requested, "cwd": os.getcwd(), "artifacts": {},
++              "raw_exit_code": None, "timed_out": False, "stage": "artifact_preparation"}
++    try:
++        artifact_positions(requested)  # Reject malformed requests before even the version probe.
++        binary = shutil.which("qemu-system-x86_64")
++        if not binary:
++            raise ValueError("qemu-system-x86_64 is not installed")
++        arguments, inherited, gdb_listener = requested, (), None
++        if "A01_GDB_FD" in os.environ:
++            arguments, inherited, gdb_listener = inherit_gdb_listener(requested, os.environ["A01_GDB_FD"])
++        arguments = snapshot_arguments(arguments, destination, record)
++        command = [binary, *arguments]
++        record.update(argv=command, shell_command=shlex.join(command),
++                      qemu_sha256=hashlib.sha256(Path(binary).read_bytes()).hexdigest())
++        if gdb_listener is not None:
++            record["gdb_listener"] = gdb_listener
++        record["qemu_version"] = subprocess.check_output([binary, "--version"], text=True).strip()
++        verify_snapshots(record["artifacts"])
++    except (OSError, ValueError, subprocess.SubprocessError) as error:
++        record.update(stage="artifact_preparation_failed", error=str(error), recorder_exit_code=1)
++        destination.write_text(json.dumps(record, indent=2) + "\n")
++        print(f"QEMU artifact preparation rejected: {error}", file=sys.stderr)
++        return 1
+     try:
+         serial_path = serial_log_path(command, Path.cwd())
+         record["serial_path"] = str(serial_path)
+@@ -87,6 +178,7 @@ def main():
+         serial_path = None
+         record["serial_error"] = str(error)
+     started = time.monotonic()
++    record["stage"] = "qemu_running"
+     destination.write_text(json.dumps(record, indent=2) + "\n")
+     try:
+         with subprocess.Popen(command, pass_fds=inherited) as result:
+@@ -101,6 +193,8 @@ def main():
+     except subprocess.TimeoutExpired:
+         record["raw_exit_code"] = 124
+         record["timed_out"] = True
++    except (OSError, ValueError, subprocess.SubprocessError) as error:
++        record.update(stage="qemu_failed", error=str(error))
+     if serial_path is not None:
+         try:
+             raw_serial = serial_path.read_bytes()
+@@ -109,8 +203,19 @@ def main():
+         except OSError as error:
+             record["serial_error"] = str(error)
+     record["duration_seconds"] = round(time.monotonic() - started, 3)
++    status = record["raw_exit_code"]
++    exit_code = 1 if status is None else status if status >= 0 else 128 - status
++    try:
++        verify_snapshots(record["artifacts"])
++        if status is not None:
++            record["stage"] = "complete"
++    except (OSError, ValueError) as error:
++        record.update(stage="artifact_verification_failed", error=str(error))
++        print(f"QEMU artifact verification rejected: {error}", file=sys.stderr)
++        exit_code = 1
++    record["recorder_exit_code"] = exit_code
+     destination.write_text(json.dumps(record, indent=2) + "\n")
+-    return record["raw_exit_code"] if record["raw_exit_code"] >= 0 else 128 - record["raw_exit_code"]
++    return exit_code
+ 
+ 
+ if __name__ == "__main__":
+diff --git a/support/build/tests/test_boot_evidence.py b/support/build/tests/test_boot_evidence.py
+index 14c0f1059..b57fa6d16 100644
+--- a/support/build/tests/test_boot_evidence.py
++++ b/support/build/tests/test_boot_evidence.py
+@@ -1,6 +1,7 @@
+ #!/usr/bin/env python3
+ """Exercise boot evidence binding with archived raw bytes and disposable tools."""
+ import hashlib
++import importlib.util
+ import json
+ import os
+ from pathlib import Path
+@@ -9,10 +10,14 @@ import subprocess
+ import sys
+ import tempfile
+ import unittest
++from unittest import mock
+ 
+ BUILD = Path(__file__).resolve().parents[1]
+ CHECKER = BUILD / "check-boot.py"
+-RECORDER = BUILD / "record-qemu.py"
++RECORDER = Path(os.environ.get("A01_SNAPSHOT_RECORDER_SOURCE", str(BUILD / "record-qemu.py")))
++SPEC = importlib.util.spec_from_file_location("a01_snapshot_recorder", RECORDER)
++SNAPSHOT = importlib.util.module_from_spec(SPEC)
++SPEC.loader.exec_module(SNAPSHOT)
+ REAL_SERIAL = BUILD / "evidence/2026-10-16/acceptance/boot/serial.log"
+ MODES = ((), ("-O",), ("-I",), ("-I", "-O"))
+ MARKERS = (
+@@ -20,13 +25,35 @@ MARKERS = (
+     b"TRILLIONNIUM_A01_CPU_COUNT=1", b"Successfully booted.", b"TRILLIONNIUM_A01_BOOT_OK",
+ )
+ FAKE_QEMU = """#!/usr/bin/python3
++import hashlib
++import json
+ import os
+ from pathlib import Path
+ import sys
+ import time
+ if '--version' in sys.argv:
++    if os.environ.get('FIXTURE_VERSION_MARKER'):
++        Path(os.environ['FIXTURE_VERSION_MARKER']).write_text('version probe executed\\n')
++    if os.environ.get('FIXTURE_DELETE_AFTER_VERSION') == '1':
++        Path(sys.argv[0]).unlink()
+     print('disposable QEMU recorder fixture; no guest executed')
+     raise SystemExit(0)
++loaded = {}
++for option in ('-kernel', '-initrd', '-bios'):
++    if option in sys.argv:
++        path = Path(sys.argv[sys.argv.index(option)+1])
++        raw = path.read_bytes()
++        loaded[option] = {'path':str(path), 'size':len(raw), 'sha256':hashlib.sha256(raw).hexdigest()}
++Path(os.environ['FIXTURE_LOADED']).write_text(json.dumps({'argv':sys.argv, 'artifacts':loaded}))
++for name in json.loads(os.environ.get('FIXTURE_REPLACE_SOURCES', '[]')):
++    path = Path(name)
++    replacement = path.with_name(path.name + '.replacement')
++    replacement.write_bytes(b'atomic replacement of original source after fake QEMU read\\n')
++    replacement.replace(path)
++if os.environ.get('FIXTURE_TAMPER_SNAPSHOT') == '1':
++    path = Path(sys.argv[sys.argv.index('-kernel')+1])
++    path.chmod(0o600)
++    path.write_bytes(b'deliberately corrupted live artifact\\n')
+ if os.environ.get('FIXTURE_NO_SERIAL') != '1':
+     Path(os.environ['FIXTURE_SERIAL_DEST']).write_bytes(Path(os.environ['FIXTURE_SERIAL_SOURCE']).read_bytes())
+ if os.environ.get('FIXTURE_TIMEOUT') == '1':
+@@ -39,7 +66,10 @@ class BootEvidenceTests(unittest.TestCase):
+     def setUp(self):
+         temporary = tempfile.TemporaryDirectory(prefix="a01-boot-evidence-")
+         self.addCleanup(temporary.cleanup)
+-        self.root = Path(temporary.name)
++        setting = os.environ.get("A01_SNAPSHOT_TEST_OUT")
++        self.root = Path(setting) / self._testMethodName if setting else Path(temporary.name)
++        if setting:
++            self.root.mkdir(parents=True, exist_ok=False)
+         self.directory = self.root / "evidence"
+         self.inputs = self.root / "inputs"
+         self.directory.mkdir()
+@@ -169,9 +199,10 @@ class BootEvidenceTests(unittest.TestCase):
+                 self.check(False, live=True)
+                 path.write_bytes(original)
+ 
+-    def run_recorder(self, no_serial=False, timeout=False):
++    def run_recorder(self, no_serial=False, timeout=False, replace_sources=False,
++                     tamper_snapshot=False, artifact_args=None, delete_binary=False):
+         tools = self.root / "tools"
+-        tools.mkdir()
++        tools.mkdir(exist_ok=True)
+         binary = tools / "qemu-system-x86_64"
+         binary.write_text(FAKE_QEMU)
+         binary.chmod(0o755)
+@@ -184,14 +215,30 @@ class BootEvidenceTests(unittest.TestCase):
+             "A01_QEMU_TIMEOUT": "1" if timeout else "5",
+             "FIXTURE_SERIAL_SOURCE": str(REAL_SERIAL), "FIXTURE_SERIAL_DEST": str(selected_log),
+             "FIXTURE_NO_SERIAL": "1" if no_serial else "0", "FIXTURE_TIMEOUT": "1" if timeout else "0",
++            "FIXTURE_LOADED": str(self.root / "loaded.json"),
++            "FIXTURE_VERSION_MARKER": str(self.root / "version-started"),
++            "FIXTURE_REPLACE_SOURCES": json.dumps([str(self.inputs / item["path"])
++                for item in self.record["artifacts"].values()] if replace_sources else []),
++            "FIXTURE_TAMPER_SNAPSHOT": "1" if tamper_snapshot else "0",
++            "FIXTURE_DELETE_AFTER_VERSION": "1" if delete_binary else "0",
+         })
+-        argv = [sys.executable, "-I", str(RECORDER)]
+-        for option, artifact in self.record["artifacts"].items():
+-            argv.extend((option, artifact["path"]))
++        argv = [sys.executable, "-I", *(["-O"] if sys.flags.optimize else []), str(RECORDER)]
++        if artifact_args is None:
++            for option, artifact in self.record["artifacts"].items():
++                argv.extend((option, artifact["path"]))
++        else:
++            argv.extend(artifact_args)
+         argv.extend(("-chardev", "stdio,id=other,logfile=unrelated.log", "-serial", "chardev:serial",
+                      "-chardev", "stdio,id=serial,signal=off,logfile=selected-serial.raw"))
+         result = subprocess.run(argv, cwd=self.inputs, env=environment, stdout=subprocess.PIPE,
+                                 stderr=subprocess.STDOUT, text=True, timeout=10)
++        self._recorder_calls = getattr(self, "_recorder_calls", 0) + 1
++        prefix = self.root / f"recorder-{self._recorder_calls:03d}"
++        prefix.with_suffix(".log").write_text(result.stdout)
++        prefix.with_suffix(".json").write_text(json.dumps({"argv": argv, "cwd": str(self.inputs),
++            "selected_environment": {key: environment[key] for key in environment
++                if key.startswith(("FIXTURE_", "A01_QEMU_"))}, "returncode": result.returncode,
++            "source_sha256": hashlib.sha256(RECORDER.read_bytes()).hexdigest()}, indent=2) + "\n")
+         return result, json.loads((self.directory / "qemu.json").read_text()), selected_log
+ 
+     def test_recorder_binds_complete_actual_chardev_log_and_inputs(self):
+@@ -200,7 +247,13 @@ class BootEvidenceTests(unittest.TestCase):
+         self.assertEqual(record["serial_path"], str(selected_log))
+         self.assertEqual(record["serial_sha256"], hashlib.sha256(self.raw_serial).hexdigest())
+         self.assertEqual(record["serial_size"], len(self.raw_serial))
+-        self.assertEqual(record["artifacts"], self.record["artifacts"])
++        for option, original in self.record["artifacts"].items():
++            artifact = record["artifacts"][option]
++            self.assertEqual(artifact["sha256"], original["sha256"])
++            self.assertEqual(artifact["size"], original["size"])
++            self.assertEqual(artifact["source"]["requested_path"], original["path"])
++            self.assertEqual(artifact["source"]["path"], str(self.inputs / original["path"]))
++            self.assertNotEqual(artifact["path"], artifact["source"]["path"])
+         self.check(True)
+         self.check(True, live=True)
+ 
+@@ -218,6 +271,129 @@ class BootEvidenceTests(unittest.TestCase):
+         self.assertEqual(record["serial_sha256"], hashlib.sha256(self.raw_serial).hexdigest())
+         self.check(False)
+ 
++    def test_recorder_snapshots_survive_atomic_replacement_of_all_source_paths(self):
++        result, record, _ = self.run_recorder(replace_sources=True)
++        command = [sys.executable, "-I", *(["-O"] if sys.flags.optimize else []),
++                   str(CHECKER), str(self.directory), "--live-artifacts"]
++        live = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
++                              text=True, timeout=10)
++        loaded = json.loads((self.root / "loaded.json").read_text())
++        (self.root / "replacement-observation.json").write_text(json.dumps({
++            "kind": "actual_recorder_cli_with_fake_QEMU_no_guest",
++            "source_sha256": hashlib.sha256(RECORDER.read_bytes()).hexdigest(),
++            "recorder_exit": result.returncode, "live_checker_argv": command,
++            "live_checker_exit": live.returncode, "live_checker_output": live.stdout,
++            "fake_QEMU_loaded": loaded, "record": record,
++            "replaced_sources": {option: hashlib.sha256((self.inputs / artifact["path"]).read_bytes()).hexdigest()
++                for option, artifact in self.record["artifacts"].items()}}, indent=2) + "\n")
++        self.assertEqual(result.returncode, 33, result.stdout)
++        self.assertEqual(live.returncode, 0, live.stdout)
++        for option, original in self.record["artifacts"].items():
++            artifact = record["artifacts"][option]
++            self.assertEqual(loaded["artifacts"][option]["sha256"], original["sha256"])
++            self.assertEqual(loaded["artifacts"][option]["path"], artifact["path"])
++            self.assertEqual(artifact["source"]["sha256"], original["sha256"])
++            self.assertNotEqual(artifact["path"], str(self.inputs / original["path"]))
++            self.assertNotEqual(hashlib.sha256((self.inputs / original["path"]).read_bytes()).hexdigest(),
++                                original["sha256"])
++
++    def test_recorder_rejects_missing_duplicate_and_valueless_artifacts_before_version_probe(self):
++        normal = ["-kernel", "kernel.elf", "-initrd", "initramfs.cpio.gz", "-bios", "bios.bin"]
++        for index in (0, 2, 4):
++            for kind, arguments in (
++                ("missing", normal[:index] + normal[index + 2:]),
++                ("duplicate", normal + normal[index:index + 2]),
++                ("valueless", normal[:index] + normal[index + 2:] + [normal[index]]),
++                ("empty", normal[:index + 1] + [""] + normal[index + 2:]),
++            ):
++                with self.subTest(option=normal[index], kind=kind):
++                    result, record, _ = self.run_recorder(artifact_args=arguments)
++                    self.assertEqual(result.returncode, 1, result.stdout)
++                    self.assertEqual(record["stage"], "artifact_preparation_failed")
++                    self.assertIn("error", record)
++                    self.assertIsNone(record["raw_exit_code"])
++                    self.assertFalse((self.root / "version-started").exists())
++                    self.assertFalse((self.root / "loaded.json").exists())
++                    self.assertEqual(list(self.directory.glob("artifacts-*")), [])
++
++    def test_capture_rejects_in_place_mutation_and_path_replacement_during_fd_read(self):
++        source = self.inputs / "changing-input"
++        for mode in ("in-place", "replace"):
++            with self.subTest(mode=mode):
++                source.write_bytes(b"stable original bytes")
++                destination = self.directory / (mode + ".snapshot")
++                original_read, fired = SNAPSHOT.os.read, []
++
++                def mutate_after_read(descriptor, count):
++                    data = original_read(descriptor, count)
++                    if not fired:
++                        fired.append(True)
++                        if mode == "in-place":
++                            source.write_bytes(b"changed during open FD read")
++                        else:
++                            replacement = source.with_suffix(".new")
++                            replacement.write_bytes(b"replacement inode during open FD read")
++                            replacement.replace(source)
++                    return data
++
++                with mock.patch.object(SNAPSHOT.os, "read", side_effect=mutate_after_read):
++                    with self.assertRaisesRegex(ValueError, "changed"):
++                        SNAPSHOT.capture_artifact(source, destination)
++                self.assertTrue(fired)
++
++    def test_capture_exclusive_creation_preserves_existing_snapshot_bytes(self):
++        source, destination = self.inputs / "kernel.elf", self.directory / "existing.snapshot"
++        destination.write_bytes(b"pre-existing snapshot must survive")
++        with self.assertRaises(FileExistsError):
++            SNAPSHOT.capture_artifact(source, destination)
++        self.assertEqual(destination.read_bytes(), b"pre-existing snapshot must survive")
++
++    def test_recorder_rejects_nonregular_source_with_explicit_failure_record(self):
++        result, record, _ = self.run_recorder(artifact_args=["-kernel", str(self.inputs),
++            "-initrd", "initramfs.cpio.gz", "-bios", "bios.bin"])
++        self.assertEqual(result.returncode, 1, result.stdout)
++        self.assertEqual(record["stage"], "artifact_preparation_failed")
++        self.assertIn("regular file", record["error"])
++        self.assertFalse((self.root / "version-started").exists())
++        self.assertFalse((self.root / "loaded.json").exists())
++
++    def test_recorder_detects_snapshot_tampering_after_raw_guest_exit_without_source_fallback(self):
++        result, record, _ = self.run_recorder(tamper_snapshot=True)
++        self.assertEqual(result.returncode, 1, result.stdout)
++        self.assertEqual(record["raw_exit_code"], 33)
++        self.assertEqual(record["stage"], "artifact_verification_failed")
++        self.assertIn("error", record)
++        self.assertEqual(record["recorder_exit_code"], 1)
++        self.assertNotEqual(record["artifacts"]["-kernel"]["path"], str(self.inputs / "kernel.elf"))
++        self.check(False, live=True)
++
++    def test_recorder_creates_distinct_private_snapshot_directories_without_reuse(self):
++        first_result, first, _ = self.run_recorder()
++        first_bytes = {option: Path(artifact["path"]).read_bytes()
++                       for option, artifact in first["artifacts"].items()}
++        second_result, second, _ = self.run_recorder()
++        self.assertEqual(first_result.returncode, 33, first_result.stdout)
++        self.assertEqual(second_result.returncode, 33, second_result.stdout)
++        self.assertNotEqual(first["snapshot_directory"]["path"], second["snapshot_directory"]["path"])
++        for record in (first, second):
++            directory = Path(record["snapshot_directory"]["path"])
++            self.assertEqual(directory.parent, self.directory)
++            self.assertEqual(directory.stat().st_mode & 0o777, 0o700)
++            for option, artifact in record["artifacts"].items():
++                self.assertEqual(Path(artifact["path"]).parent, directory)
++                self.assertEqual(Path(artifact["path"]).read_bytes(), first_bytes[option])
++                self.assertEqual(Path(artifact["path"]).stat().st_mode & 0o777, 0o400)
++
++    def test_recorder_launch_failure_retains_explicit_failure_record_and_snapshots(self):
++        result, record, _ = self.run_recorder(delete_binary=True)
++        self.assertEqual(result.returncode, 1, result.stdout)
++        self.assertEqual(record["stage"], "qemu_failed")
++        self.assertIn("error", record)
++        self.assertIsNone(record["raw_exit_code"])
++        self.assertEqual(record["recorder_exit_code"], 1)
++        self.assertEqual(len(record["artifacts"]), 3)
++        self.assertTrue(all(Path(item["path"]).is_file() for item in record["artifacts"].values()))
++
+ 
+ if __name__ == "__main__":
+     unittest.main(verbosity=2)

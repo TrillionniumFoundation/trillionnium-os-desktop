@@ -1,0 +1,37 @@
+{
+  "host": "29609d47ba8e",
+  "time": "2026-10-16T16:06:46.424050+00:00",
+  "dev_kvm_exists": false,
+  "uid": 0,
+  "cpu_affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+  ],
+  "probes": [
+    {
+      "name": "AF_UNIX_socket",
+      "passed": false,
+      "errno": 1,
+      "error": "Operation not permitted"
+    },
+    {
+      "name": "AF_UNIX_socketpair",
+      "passed": true
+    }
+  ],
+  "virtualization_flags": [
+    "npt"
+  ],
+  "process_restrictions": {
+    "CapEff": "0000000000000000",
+    "Seccomp": "2",
+    "Seccomp_filters": "1"
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "kind": "post-fix_materialized_helper_exec_with_actual_Cargo_toy_JSON_fixture_no_new_Cargo_no_Rust_no_VM",
+  "helper_sha256": {
+    "profile.py": "e1dc29bebb7fa8ee32e4eb2022b26785f1ace48535f714e4da79628b2e49ac2b",
+    "rustc-wrapper.py": "fa966690f26ba59688cc92fc3908bc535f46ac25fdc66bf8e5fef7975c7a4b14",
+    "cargo-metadata-wrapper.py": "ba2a27ad16cd0b1a6236dc18c4246716990ca8429a0006fde527b00a26bbd730"
+  },
+  "source_sha256": {
+    "profile.py": "e1dc29bebb7fa8ee32e4eb2022b26785f1ace48535f714e4da79628b2e49ac2b",
+    "README.md": "10154dd06a7765a95e01cd95f60f34c4af93b968ad6c3067a54575d40644b0af",
+    "cargo-metadata-wrapper.py": "ba2a27ad16cd0b1a6236dc18c4246716990ca8429a0006fde527b00a26bbd730",
+    "run.py": "1f1d5c207e5cdac85cf1c0a8b4c54ea8a398d4134e53192532f0325a4780272c",
+    "rustc-wrapper.py": "fa966690f26ba59688cc92fc3908bc535f46ac25fdc66bf8e5fef7975c7a4b14",
+    "test_profile.py": "084ca13504eda89df264fac25eb48781e4398d56e2ca5c42e5572add0ad3971b"
+  },
+  "records": [
+    {
+      "helper": "rustc-wrapper.py",
+      "argv": [
+        "/tmp/a01-repro-final-helper-d89_v3p2/profile/helpers/rustc-wrapper.py",
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-c",
+        "import os;print(os.environ[\"OSDK_BUILD_USERNAME\"]);print(os.environ[\"CARGO\"])"
+      ],
+      "child_returncode": 0,
+      "stderr": "",
+      "stdout_sha256": "89506d6ed11917614cbb6a9b0bd9c41c9fcafa0a87a922e2691e41f2a7ac5201",
+      "mode": "0o500",
+      "stdout": "review\n/tmp/a01-repro-final-helper-d89_v3p2/profile/helpers/cargo-metadata-wrapper.py\n"
+    },
+    {
+      "helper": "cargo-metadata-wrapper.py",
+      "argv": [
+        "/tmp/a01-repro-final-helper-d89_v3p2/profile/helpers/cargo-metadata-wrapper.py",
+        "metadata",
+        "--format-version",
+        "1"
+      ],
+      "child_returncode": 0,
+      "stderr": "",
+      "stdout_sha256": "ab2ea11c5fb00da7fae6273cd4c1083379758484e7ad0af114398204c212efb8",
+      "mode": "0o500",
+      "packages": 24,
+      "workspace_root": "/tmp/a01-repro-final-helper-d89_v3p2/profile/virtual-asterinas",
+      "all_workspace_pkg_IDs_projected": true
+    }
+  ],
+  "profile_custody_unchanged": true,
+  "helper_entries_after": [
+    "cargo-metadata-wrapper.py",
+    "profile.py",
+    "rustc-wrapper.py"
+  ],
+  "bytecode_cache_created": false,
+  "metadata_binding_files": 1,
+  "scope": "Checks materialized helper execution, metadata graph and snapshots only; does not launch run.py or a kernel build."
+}

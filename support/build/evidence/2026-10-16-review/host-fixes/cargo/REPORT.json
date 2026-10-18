@@ -1,0 +1,104 @@
+{
+  "source_files_sha256": {
+    "support/build/osdk-integration/cargo.py": "747b0d4e9a7c681240ae1c8915df07b3a8fe1677f0a52772cce8272a319887d0",
+    "support/build/osdk-integration/test_cargo.py": "277d3d0bd45b287434c62acb0d0e961c845546a9f61d4b363e8ce65e86b7a75e"
+  },
+  "baseline_source_sha256": "225783be421c1811f92c849a94c238b25fefb6e170f4d8eb33911aa517b99b73",
+  "tests": [
+    {
+      "command": [
+        "python3",
+        "-I",
+        "support/build/osdk-integration/test_cargo.py"
+      ],
+      "log": "tests-clippy-closed.log",
+      "tests": 13,
+      "exit": 0
+    },
+    {
+      "command": [
+        "python3",
+        "-I",
+        "-O",
+        "support/build/osdk-integration/test_cargo.py"
+      ],
+      "log": "tests-clippy-closed-optimized.log",
+      "tests": 13,
+      "exit": 0
+    }
+  ],
+  "real_smoke": "real-smoke-final.json",
+  "real_reports": [
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/next5-cargo/real-records-final/cargo/request-agxq6mx6.json",
+      "command": "metadata",
+      "actual_argv": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+        "--locked",
+        "--offline",
+        "--color",
+        "never",
+        "metadata",
+        "--no-deps",
+        "--format-version",
+        "1"
+      ],
+      "external_drift": [],
+      "normalization_exit": null,
+      "raw_exit_code": 0
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/next5-cargo/real-records-final/cargo/request-gjjrq4fc.json",
+      "command": "run",
+      "actual_argv": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+        "--locked",
+        "--offline",
+        "--color=never",
+        "run",
+        "--",
+        "--locked",
+        "--offline"
+      ],
+      "external_drift": [],
+      "normalization_exit": 0,
+      "raw_exit_code": 0
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/next5-cargo/real-records-final/cargo/request-s809q1qt.json",
+      "command": "build",
+      "actual_argv": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+        "--locked",
+        "--offline",
+        "--color",
+        "never",
+        "build"
+      ],
+      "external_drift": [],
+      "normalization_exit": 0,
+      "raw_exit_code": 0
+    }
+  ],
+  "scope": "Isolated host Cargo adapter and host cfg-if smoke; no QEMU or kernel claim. Only classified Cargo builtins are allowed. Custom/external commands including clippy, configuration overrides, -C, script and lockfile redirection are intentionally unsupported.",
+  "official_references": [
+    "https://doc.rust-lang.org/cargo/commands/cargo.html",
+    "https://doc.rust-lang.org/cargo/reference/config.html#alias"
+  ],
+  "local_primary_semantics": [
+    "pinned-cargo-help.stdout.log",
+    "pinned-cargo-list.stdout.log"
+  ],
+  "fixed_seed_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+  "previous_freeze_sha256": {
+    "support/build/osdk-integration/cargo.py": "cfbe5ff30e5ae88f4f1b4316184bc40cec6848187d5db7697c9685cb6c910658",
+    "support/build/osdk-integration/test_cargo.py": "c2db5dfac97129de605eb613ca019c0f73f06092dd1c409293e97e6290ccf05e"
+  },
+  "post_real_smoke_delta": {
+    "cargo.py": "Remove clippy from RESOLVING; unknown-command rejection now closes the only permitted external Cargo tool. No cfg-if smoke command path changes.",
+    "test_cargo.py": "Add clippy to commands rejected before real Cargo executes.",
+    "real_smoke_repeated": false,
+    "real_smoke_source_hashes_remain_in": "real-smoke-final.json",
+    "reason": "The fixed toolchain has no cargo-clippy and the 22-case isolated integration suite does not call clippy. Arbitrary external aliases/tools are unsupported."
+  }
+}

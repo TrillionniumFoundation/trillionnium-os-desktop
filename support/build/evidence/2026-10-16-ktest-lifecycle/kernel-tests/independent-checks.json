@@ -1,0 +1,39 @@
+{
+  "kind": "archival_read_only_serial_checker_not_new_guest_execution",
+  "checks": [
+    {
+      "crate": "ostd",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-B",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/ktest/check.py",
+        "/workspace/scratch/ae1a8cf05419/a01-next6-build/support/build/out/next7-ktest-01/ostd/guests",
+        "--crate",
+        "ostd"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+      "raw_exit_code": 0,
+      "stdout_sha256": "061d15cd72fc6ef8563e04ad5f90b598362bc46c5155321990427f4b55216ee2",
+      "stderr": "",
+      "output_matches_original_checker": true
+    },
+    {
+      "crate": "aster-core",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-B",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/ktest/check.py",
+        "/workspace/scratch/ae1a8cf05419/a01-next6-build/support/build/out/next7-ktest-01/aster-core/guests",
+        "--crate",
+        "aster-core"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+      "raw_exit_code": 0,
+      "stdout_sha256": "a41e8a14eb6a1c769d0fd1d17d5cff46ea3432d713062629abf7521d8f929a34",
+      "stderr": "",
+      "output_matches_original_checker": true
+    }
+  ]
+}

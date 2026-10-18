@@ -1,0 +1,48 @@
+{
+  "passed": true,
+  "source": "/tmp/a01oi-56ah_res/kernel_test_workspace/run_command/basic_coverage/coverage.profraw",
+  "source_preexisted": false,
+  "source_osdk_exit_code": 0,
+  "size": 2094456,
+  "sha256": "9d564c13b2747da71c8353ff53214961d199726a1c4a7a9fb97d532a2e5d5764",
+  "llvm_profdata": "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin/llvm-profdata",
+  "commands": [
+    {
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin/llvm-profdata",
+        "merge",
+        "--sparse",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/case-15/coverage/coverage.profraw",
+        "-o",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/case-15/coverage/coverage.profdata"
+      ],
+      "raw_exit_code": 0
+    },
+    {
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin/llvm-profdata",
+        "show",
+        "--all-functions",
+        "--counts",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/case-15/coverage/coverage.profdata"
+      ],
+      "raw_exit_code": 0
+    }
+  ],
+  "total_functions": 5696,
+  "maximum_function_count": 383731,
+  "guest_binding": {
+    "passed": true,
+    "capture_sidecar": "guests/guest-001/coverage-capture.json",
+    "capture_sidecar_sha256": "893e1ac938962fc00e7a18b7a3a30c1c069448dc4b4ba06a58e9ab0653739d37",
+    "symbol_elf_sha256": "a0bf4a5d234589a66274e877e6710efaebc55d29f99ea47b0807bda0dc4cab05",
+    "guest_record": "guests/guest-001/qemu.json",
+    "kernel_sha256": "1a7ebcc637b84959321a7ede0d83c315dac80a23974b39efd24b50363923d4cf",
+    "serial_sha256": "af13fc151b6c20519b1a8e8b213e99fac019f026c8cfc03a0006b792034e1fdc",
+    "raw_sha256": "9d564c13b2747da71c8353ff53214961d199726a1c4a7a9fb97d532a2e5d5764",
+    "announcement": {
+      "address": "0xffff800010400000",
+      "size": 2094456
+    }
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "scope": "Actual independent offline subprocess observations after native debug capture; these are not additional debugger/kernel/VM passes.",
+  "initial_source_closure_checks": [
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "f2af38",
+        "wall_time_seconds": 1.415954799,
+        "exit_code": 1,
+        "original_token_count": 17,
+        "output": "verification failed: 'source/kernel/asterinas/ostd/src/boot/mod.rs'\n"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "38002a",
+        "wall_time_seconds": 1.447662522,
+        "exit_code": 1,
+        "original_token_count": 17,
+        "output": "verification failed: 'source/kernel/asterinas/ostd/src/boot/mod.rs'\n"
+      }
+    }
+  ],
+  "corrected_source_closure_checks": [
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "be71bd",
+        "wall_time_seconds": 1.070020453,
+        "exit_code": 0,
+        "original_token_count": 192,
+        "output": "{\n  \"passed\": true,\n  \"source_commit\": \"a5af45537dea32039ea172ad0d7e381400c07d95\",\n  \"source_controls\": 84,\n  \"original_files\": 57,\n  \"successful_debug_runs\": 1,\n  \"failed_prepare_attempts\": 1,\n  \"raw_qemu_exit\": 33,\n  \"gdb_runtime_entry_bytes_match\": true,\n  \"kernel_sha256\": \"dfb30f188cc0b6b4fad8dc6f8bb75c4a77768cbb94bf19612b06a50a8116d23f\",\n  \"symbol_sha256\": \"4e95684449b048413c7b89c003ac82f0e484819c629f74e3da23cba12d069af4\",\n  \"private_sdk_sha256\": \"94df3fd621055d9f99d3649c21a32d076448d68d8ea4b51d78c8b639a5d2adf0\",\n  \"compile_lines\": 177,\n  \"cold_build_claimed\": false,\n  \"restored_directory\": null,\n  \"scope\": \"Offline retained source/input/controller/runtime-entry-byte/serial checks only; no captured code, SDK, debugger, target, build or VM execution.\"\n}\n"
+      }
+    },
+    {
+      "status": "fulfilled",
+      "value": {
+        "chunk_id": "846e50",
+        "wall_time_seconds": 1.2049423479999999,
+        "exit_code": 0,
+        "original_token_count": 192,
+        "output": "{\n  \"passed\": true,\n  \"source_commit\": \"a5af45537dea32039ea172ad0d7e381400c07d95\",\n  \"source_controls\": 84,\n  \"original_files\": 57,\n  \"successful_debug_runs\": 1,\n  \"failed_prepare_attempts\": 1,\n  \"raw_qemu_exit\": 33,\n  \"gdb_runtime_entry_bytes_match\": true,\n  \"kernel_sha256\": \"dfb30f188cc0b6b4fad8dc6f8bb75c4a77768cbb94bf19612b06a50a8116d23f\",\n  \"symbol_sha256\": \"4e95684449b048413c7b89c003ac82f0e484819c629f74e3da23cba12d069af4\",\n  \"private_sdk_sha256\": \"94df3fd621055d9f99d3649c21a32d076448d68d8ea4b51d78c8b639a5d2adf0\",\n  \"compile_lines\": 177,\n  \"cold_build_claimed\": false,\n  \"restored_directory\": null,\n  \"scope\": \"Offline retained source/input/controller/runtime-entry-byte/serial checks only; no captured code, SDK, debugger, target, build or VM execution.\"\n}\n"
+      }
+    }
+  ],
+  "relocation_and_restore": {
+    "passed": true,
+    "scope": "Actual offline relocation and reconstruction from native debug evidence; no original target, SDK, debugger, compiler or VM.",
+    "commands": [
+      {
+        "name": "relocated-I",
+        "argv": [
+          "python3",
+          "-I",
+          "/workspace/scratch/ae1a8cf05419/debug-native-review/relocated-phase/verify.py"
+        ],
+        "returncode": 0,
+        "log": "/workspace/scratch/ae1a8cf05419/debug-native-review/relocated-I.log",
+        "log_sha256": "69c35160f015c15a64c16d7a3faa21715679fdd7cdfc2e529559ff333fb8cca8",
+        "output": "{\n  \"passed\": true,\n  \"source_commit\": \"a5af45537dea32039ea172ad0d7e381400c07d95\",\n  \"source_controls\": 84,\n  \"original_files\": 57,\n  \"successful_debug_runs\": 1,\n  \"failed_prepare_attempts\": 1,\n  \"raw_qemu_exit\": 33,\n  \"gdb_runtime_entry_bytes_match\": true,\n  \"kernel_sha256\": \"dfb30f188cc0b6b4fad8dc6f8bb75c4a77768cbb94bf19612b06a50a8116d23f\",\n  \"symbol_sha256\": \"4e95684449b048413c7b89c003ac82f0e484819c629f74e3da23cba12d069af4\",\n  \"private_sdk_sha256\": \"94df3fd621055d9f99d3649c21a32d076448d68d8ea4b51d78c8b639a5d2adf0\",\n  \"compile_lines\": 177,\n  \"cold_build_claimed\": false,\n  \"restored_directory\": null,\n  \"scope\": \"Offline retained source/input/controller/runtime-entry-byte/serial checks only; no captured code, SDK, debugger, target, build or VM execution.\"\n}\n"
+      },
+      {
+        "name": "relocated-IO",
+        "argv": [
+          "python3",
+          "-I",
+          "-O",
+          "/workspace/scratch/ae1a8cf05419/debug-native-review/relocated-phase/verify.py"
+        ],
+        "returncode": 0,
+        "log": "/workspace/scratch/ae1a8cf05419/debug-native-review/relocated-IO.log",
+        "log_sha256": "69c35160f015c15a64c16d7a3faa21715679fdd7cdfc2e529559ff333fb8cca8",
+        "output": "{\n  \"passed\": true,\n  \"source_commit\": \"a5af45537dea32039ea172ad0d7e381400c07d95\",\n  \"source_controls\": 84,\n  \"original_files\": 57,\n  \"successful_debug_runs\": 1,\n  \"failed_prepare_attempts\": 1,\n  \"raw_qemu_exit\": 33,\n  \"gdb_runtime_entry_bytes_match\": true,\n  \"kernel_sha256\": \"dfb30f188cc0b6b4fad8dc6f8bb75c4a77768cbb94bf19612b06a50a8116d23f\",\n  \"symbol_sha256\": \"4e95684449b048413c7b89c003ac82f0e484819c629f74e3da23cba12d069af4\",\n  \"private_sdk_sha256\": \"94df3fd621055d9f99d3649c21a32d076448d68d8ea4b51d78c8b639a5d2adf0\",\n  \"compile_lines\": 177,\n  \"cold_build_claimed\": false,\n  \"restored_directory\": null,\n  \"scope\": \"Offline retained source/input/controller/runtime-entry-byte/serial checks only; no captured code, SDK, debugger, target, build or VM execution.\"\n}\n"
+      },
+      {
+        "name": "actual-restore",
+        "argv": [
+          "python3",
+          "-I",
+          "/workspace/scratch/ae1a8cf05419/debug-native-review/relocated-phase/verify.py",
+          "--restore",
+          "/workspace/scratch/ae1a8cf05419/debug-native-review/restored-native-debug"
+        ],
+        "returncode": 0,
+        "log": "/workspace/scratch/ae1a8cf05419/debug-native-review/restore.log",
+        "log_sha256": "0ac76d3b840b3860a130fcb7b72d471ccfd69a57671a0bb12152d3e66b3ed26b",
+        "output": "{\n  \"passed\": true,\n  \"source_commit\": \"a5af45537dea32039ea172ad0d7e381400c07d95\",\n  \"source_controls\": 84,\n  \"original_files\": 57,\n  \"successful_debug_runs\": 1,\n  \"failed_prepare_attempts\": 1,\n  \"raw_qemu_exit\": 33,\n  \"gdb_runtime_entry_bytes_match\": true,\n  \"kernel_sha256\": \"dfb30f188cc0b6b4fad8dc6f8bb75c4a77768cbb94bf19612b06a50a8116d23f\",\n  \"symbol_sha256\": \"4e95684449b048413c7b89c003ac82f0e484819c629f74e3da23cba12d069af4\",\n  \"private_sdk_sha256\": \"94df3fd621055d9f99d3649c21a32d076448d68d8ea4b51d78c8b639a5d2adf0\",\n  \"compile_lines\": 177,\n  \"cold_build_claimed\": false,\n  \"restored_directory\": \"/workspace/scratch/ae1a8cf05419/debug-native-review/restored-native-debug\",\n  \"scope\": \"Offline retained source/input/controller/runtime-entry-byte/serial checks only; no captured code, SDK, debugger, target, build or VM execution.\"\n}\n"
+      }
+    ],
+    "utc": "2026-10-17T04:37:05.580846+00:00"
+  }
+}

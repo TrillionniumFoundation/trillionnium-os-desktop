@@ -1,0 +1,38 @@
+--- attempt-08/run.py
++++ published/run.py
+@@ -76,6 +76,17 @@
+             if original.count('env!("CARGO_MANIFEST_DIR")') != 1:
+                 raise SystemExit("OSDK integration helper manifest anchor changed")
+             adapted = adapted.replace('env!("CARGO_MANIFEST_DIR")', json.dumps(str(upstream / "osdk")))
++        if path == tests / "examples_in_book/write_a_kernel_in_100_lines.rs":
++            original_dependency = 'toml::Value::String("0.1.0".to_string())'
++            if adapted.count(original_dependency) != 1:
++                raise SystemExit("kernel100 align_ext dependency expression changed")
++            local = upstream / "ostd/libs/align_ext"
++            if tomllib.loads((local / "Cargo.toml").read_text())["package"]["version"] != "0.1.0":
++                raise SystemExit("fixed local align_ext version changed")
++            local_dependency = ('toml::Value::Table(toml::Table::from_iter(['
++                '("path".to_string(), toml::Value::String(' + json.dumps(str(local)) + '.to_string())),'
++                '("version".to_string(), toml::Value::String("0.1.0".to_string()))]))')
++            adapted = adapted.replace(original_dependency, local_dependency)
+         if adapted != original:
+             path.write_text(adapted)
+             relative = str(path.relative_to(root))
+@@ -241,6 +252,8 @@
+                            for p in sorted((harness_root / "tests").rglob("*")) if p.is_file()},
+                        "source_inputs_sha256": {str(p.relative_to(upstream)): digest(p)
+                            for p in sorted((upstream / "osdk/src").rglob("*")) if p.is_file()},
++                       "local_align_ext_inputs_sha256": {str(p.relative_to(upstream)): digest(p)
++                           for p in sorted((upstream / "ostd/libs/align_ext").rglob("*")) if p.is_file()},
+                        "profile": "isolated upstream harness paths, native direct multiboot, q35 TCG max 1 vCPU 512 MiB",
+                        "scope": "OSDK example kernels and tooling, not complete Asterinas kernel acceptance"}
+         (output / "environment.json").write_text(json.dumps(environment, indent=2) + "\n")
+@@ -260,7 +273,7 @@
+                 continue
+             work = directory / "work"
+             work.mkdir()
+-            temp = directory / "tmp"
++            temp = fixed_root / f"case-{index:02d}-tmp"
+             temp.mkdir()
+             case_env = env.copy()
+             case_env["TMPDIR"] = str(temp)
