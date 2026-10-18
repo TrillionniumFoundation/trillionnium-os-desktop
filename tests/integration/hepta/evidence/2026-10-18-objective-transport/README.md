@@ -17,7 +17,7 @@ tree `fc2019d43fcb06d7583e1d4904042e3ddcab229d`；运行前后 HEAD、tree、干
 | 验证 | 结果与分母 | 原始记录 |
 | --- | --- | --- |
 | 默认 feature-off 全 targets 编译 | passed；`--no-default-features --locked --offline` | [日志](validation-01/feature-off-check.log) |
-| feature-on 完整 Rust 测试 | **35 / 35 passed**；0 ignored、0 failed | [日志](validation-01/feature-on-tests.log) |
+| feature-on 完整 Rust 测试 | **35 / 35 passed**；0 ignored、0 failed | [日志](validation-01/feature-on-tests.log.gz) |
 | 既有 observer 基线 | 上述 35 项中的 **17 项**：16 个原 socket-contract 测试 + 1 个 metadata admission 单测 | 同一完整日志，未单独重复计数 |
 | 新增 Objective 传输与结构测试 | **15 / 15 passed**；真实临时 UDS 交换、发送前拒绝与纯结构负面场景 | 同一完整日志的 `objective_transport.rs` 段 |
 | 部分写入取消逻辑 | **1 / 1 passed**；3-byte Tokio duplex 强制部分写入，随后取消与写失败仍保留正数计数/Unknown | 同一完整日志的 `objective::tests` 段 |
@@ -67,7 +67,7 @@ JSON 字节、issuer/message/run、sequence/revision/authority、signature 和 s
 [Cargo.lock](validation-01/wire-reference/Cargo.lock) 复用 desktop 的轻量闭包，
 只显式替换唯一根 package 名；实际 `--locked --offline` 构建/运行后 lock 摘要
 仍一致。**没有构建 733-package 原版 Agentd crate，也没有运行任何原版 owner。**
-原声明及测试程序本身保存在 [main.rs](validation-01/wire-reference/src/main.rs)，
+原声明及测试程序本身保存在 [main.rs.gz](validation-01/wire-reference/src/main.rs.gz)，
 其读取的 all-zero fixture 与原版既有 wire factory 的字段值相等。
 
 [实际运行收据](validation-01/receipt.json) 包括各命令、开始/结束时刻、退出码、
@@ -78,7 +78,9 @@ JSON 字节、issuer/message/run、sequence/revision/authority、signature 和 s
 ## 归档、清理与尚未闭合项
 
 [MANIFEST.json](MANIFEST.json) 保留 **14 个原始输入、54,119 字节**的逐文件来源
-与 SHA-256，复制后逐字节复核。`SHA256SUMS` 覆盖本目录除其自身外的全部文件，
+与 SHA-256，复制后逐字节复核。测试原日志和生成的 main.rs 使用无损 gzip（mtime=0），
+解压字节及原 SHA-256 均保持；manifest 另记录压缩后字节数与 SHA-256。这样保留
+原始末尾空行而不改写实录。`SHA256SUMS` 覆盖本目录除其自身外的全部文件，
 包括原始 helper、完整日志、原声明提取结果及新写的说明。无 ELF、Cargo cache、
 issuer 密钥或原版私有运行状态。只读的[清理检查](fixture-cleanup.json)在结束后
 未发现本轮两种 fixture 前缀的残留目录；fixture 自身只删除其刚创建的私有目录。
