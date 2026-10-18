@@ -5,7 +5,7 @@
 
 use os_control::{
     BootId, CapSpaceId, ControlCore, DeliveryError, DeliveryRequest, DeliveryState, DeliveryStatus,
-    HistoryAck, OwnerId, OwnerReceipt, PublishOutcome, PublisherId, ResourceDomain,
+    HistoryAck, OwnerId, PublishOutcome, PublisherId, ResourceDomain,
     ResourceDomainId, StableObjectId, CPU_PERIOD_NS,
 };
 
@@ -81,8 +81,7 @@ fn actual_retirement_and_legal_terminal_refusals_keep_existing_wire_statuses() {
         .unwrap();
     assert_eq!(terminal.hos2_saved_status_code(), Some(4));
     let view = core.delivery_view_for(owner).unwrap();
-    let ack = HistoryAck::from_owner_receipt(core.identity(), 1, OwnerReceipt::new(owner, [1; 32]))
-        .unwrap();
+    let ack = authority.history_ack(1, [1; 32]).unwrap();
     core.retire_through(&view, ack, &authority).unwrap();
     let retired = core.query_delivery(&view, 1).unwrap();
     assert_eq!(retired.state, DeliveryState::Retired);
