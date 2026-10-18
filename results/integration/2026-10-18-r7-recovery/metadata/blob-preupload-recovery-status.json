@@ -1,0 +1,26 @@
+{
+  "schema": "r7-a10-blob-preupload-recovery-v1",
+  "recovered_at_utc": "2026-10-18T14:28:53.350Z",
+  "source": "Surviving functions.store values and tool-call history; no original filesystem payload recovered.",
+  "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+  "original_manifest_sha256": "6121846fe1709169c7fe5cd6dbd192c1658f45f7249c5f0c879384ef65c41d20",
+  "confirmed_uploads": [],
+  "confirmed_count": 0,
+  "first_unresolved_create_blob": {
+    "sha": "c489e716e8fa239ecce9b4d7241efb68966984bc",
+    "bytes": 95876,
+    "chars": 127836,
+    "payload_sha256": "0bfce4ffa9992d34360524fd2b0262ba26a8e0b24e61fed7ea17c1c2bcbd9c3c",
+    "paths": [
+      "tests/ui/evidence/2026-10-18-chat-workspace-native/raw/capture02/inside/action-003-screenshot.png"
+    ]
+  },
+  "first_call_status": "The first preupload orchestration included bounded base64 reads followed by create_blob. No SHA response or completed receipt was received before exec was aborted by the user. No boundary checkpoint was saved, so whether the remote create call actually began cannot be independently established. No automatic retry.",
+  "later_blob_calls_started": false,
+  "raw_or_base64_payload_survives_in_store": false,
+  "blob_metadata_survives": true,
+  "payload_bytes_verified_before_original_call": 2757523,
+  "requested_mutation_scope": "create_blob only; no tree, commit or ref operation was called by A10.",
+  "documentation_review_status": "Read-only source/document/receipt review was completed and findings sent to root; the final JSON write was never reached because the physical workspace raw-duplicate count assertion failed. No claim of a completed original final-review file.",
+  "recovery_is_not_new_execution_or_upload_evidence": true
+}

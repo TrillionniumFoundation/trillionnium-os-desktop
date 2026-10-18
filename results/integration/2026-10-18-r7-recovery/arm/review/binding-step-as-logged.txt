@@ -1,0 +1,65 @@
+set -euo pipefail
+test "$(git rev-parse HEAD)" = "$DESKTOP_SHA"
+test -z "$(git status --porcelain=v1 --untracked-files=all)"
+python3 - <<'PY'
+import hashlib, json, os, stat, struct, tarfile
+from pathlib import Path
+
+def digest(path):
+    result = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            result.update(chunk)
+    return result.hexdigest()
+
+root = Path(os.environ["HEPTA_CI_ROOT"])
+report_path = root / "report.json"
+report = json.loads(report_path.read_text())
+if report.get("status") != "passed" or report.get("live_agentd_acceptance") != "passed":
+    raise SystemExit("Actual runtime acceptance is required; preflight success cannot publish ELF files")
+if report.get("persistent_session_acceptance") != "passed":
+    raise SystemExit("Actual continuous Session acceptance is also required")
+if report.get("upstream", {}).get("commit") != os.environ["HEPTA_PIN"]:
+    raise SystemExit("Runtime receipt does not bind the fixed original source")
+binaries = {
+    "agentd": root / "work/original-target/dev-small/codex-hepta-agentd",
+    "probe": root / "work/original-target/dev-small/hepta-original-observer-probe",
+    "observer": root / "work/observer-target/debug/hepta-observe",
+    "session": root / "session-target/debug/trill-session",
+    "ctl": root / "session-target/debug/trill-ctl",
+}
+manifest = {
+    "desktop_commit": os.environ["DESKTOP_SHA"],
+    "hepta_commit": os.environ["HEPTA_PIN"],
+    "report_sha256": digest(report_path),
+    "qualification": "original_agentd_and_persistent_session_readonly_acceptance_passed",
+    "platform": "aarch64-unknown-linux-gnu",
+    "objective_submission": False, "model_turn": False, "device_effect": False,
+    "shell_pixel_qualification": "not_run",
+    "binaries": {},
+}
+for name, path in binaries.items():
+    if path.is_symlink() or not stat.S_ISREG(path.stat().st_mode) or not os.access(path, os.X_OK):
+        raise SystemExit(f"Missing regular executable: {name}")
+    with path.open("rb") as stream:
+        header = stream.read(20)
+    if len(header) != 20 or header[:6] != b"\x7fELF\x02\x01" or struct.unpack("<H", header[18:20])[0] != 183:
+        raise SystemExit(f"Not an actual ELF64 little-endian AArch64 binary: {name}")
+    actual = digest(path)
+    executed_hash = (report.get("session_input_binaries", {}).get(name, {}).get("sha256")
+                     if name in ("session", "ctl") else report.get("binary_sha256", {}).get(name))
+    if executed_hash != actual:
+        raise SystemExit(f"ELF hash differs from the executed runtime receipt: {name}")
+    manifest["binaries"][name] = {"filename": path.name, "sha256": actual, "bytes": path.stat().st_size}
+output = root / "artifacts"
+output.mkdir(mode=0o700)
+manifest_path = output / "binary-manifest.json"
+manifest_path.write_text(json.dumps(manifest, indent=2) + "\n")
+sums = output / "SHA256SUMS"
+sums.write_text("".join(f'{item["sha256"]}  {item["filename"]}\n' for item in manifest["binaries"].values()))
+archive = output / "hepta-original-agentd-aarch64-linux.tar.gz"
+with tarfile.open(archive, "x:gz") as bundle:
+    for path in [*binaries.values(), manifest_path, sums, report_path]:
+        bundle.add(path, arcname=path.name, recursive=False)
+(output / "archive.sha256").write_text(f"{digest(archive)}  {archive.name}\n")
+PY
