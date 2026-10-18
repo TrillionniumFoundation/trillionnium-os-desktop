@@ -633,6 +633,7 @@ impl Desktop {
             .map(observed_host_line)
             .collect();
         egui::ScrollArea::vertical()
+            .id_salt(("console-processes", self.workspace.code()))
             .max_height(340.0)
             .show(ui, |ui| {
                 if observed.is_empty() {
@@ -646,6 +647,7 @@ impl Desktop {
         ui.separator();
         ui.label(RichText::new("Local Shell notices (latest 30, volatile)").strong());
         egui::ScrollArea::vertical()
+            .id_salt(("console-notices", self.workspace.code()))
             .max_height(240.0)
             .show(ui, |ui| {
                 if self.notices.is_empty() {

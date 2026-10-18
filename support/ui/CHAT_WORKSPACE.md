@@ -26,6 +26,11 @@ These labels organize the UI; they do not create OS security namespaces.
    backend/CLI remains compatible with earlier host tests, but is not a new
    standalone Console entry in this workspace.
 
+The Console process and notice regions have distinct stable scroll IDs,
+scoped to the workspace and region. Scrolling one region preserves the
+other region's position. Switching workspaces and returning restores each
+workspace's two positions; rendering order does not serve as their identity.
+
 The wide layout places chat and the workspace tabs side by side. A narrow
 host window keeps the same state and exposes the tabs in an expandable panel.
 This responsive layout does not establish an Android/mobile build or device
@@ -134,6 +139,13 @@ and clicks the actual Quote / Save / Context / Console widgets. It requires
 the host operation queue to remain empty and verifies that an action reply
 cannot freshen a delayed complete snapshot. These are in-process contract
 tests, not original-Agentd execution or presented pixels.
+
+Console regressions render both overflowing regions through that same
+workspace path. They place the pointer inside a clipped visible row, deliver
+real egui wheel events, check that the other region's painted row and vertical
+position stay unchanged, then switch workspaces and verify restoration.
+Another check enables egui's ID warnings and refuses a painted ScrollArea
+collision. Neither test injects scroll state or compares generated ID strings.
 
 The actual Desktop import regression creates a private 0600 FIFO with no
 writer and requires rejection within two seconds, no fallback to an existing
