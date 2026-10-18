@@ -121,6 +121,8 @@ struct Session {
     display: DisplayTracker,
     instance: String,
     app_binary: PathBuf,
+    #[cfg(test)]
+    cancellation_fixture_socket: Option<PathBuf>,
     next_id: u64,
     tasks: BTreeMap<u64, TaskRecord>,
     children: BTreeMap<u64, Child>,
@@ -142,12 +144,41 @@ impl Session {
             display: DisplayTracker::default(),
             instance,
             app_binary,
+            #[cfg(test)]
+            cancellation_fixture_socket: None,
             next_id: 1,
             tasks: BTreeMap::new(),
             children: BTreeMap::new(),
             first_frame_tx,
             first_frame_rx,
         })
+    }
+
+    fn child_command(&self, id: u64, workspace: Workspace, app: AppKind) -> Command {
+        let mut command = Command::new(&self.app_binary);
+        #[cfg(test)]
+        if let Some(socket) = &self.cancellation_fixture_socket {
+            // Re-exec an already-built test child. This selection does not
+            // exist in production and leaves spawn/ownership/cancellation on
+            // the same Session path as ordinary fixed host applications.
+            command
+                .args([
+                    "--exact",
+                    "tests::owned_cancellation_fixture",
+                    "--nocapture",
+                    "--quiet",
+                ])
+                .env("TRILL_TEST_CANCEL_CHILD_SOCKET", socket);
+            return command;
+        }
+        command
+            .arg("--kind")
+            .arg(app.code())
+            .arg("--workspace")
+            .arg(workspace.code())
+            .arg("--task-id")
+            .arg(id.to_string());
+        command
     }
 
     /// Only completed/failed/confirmed-cancelled records can be pruned.
@@ -197,17 +228,13 @@ impl Session {
             task.wayland_socket_epoch_at_launch = Some(at_launch.socket_observation_epoch);
         }
         // No arbitrary command strings, shell expansion, user paths or elevated rights.
-        let spawn = Command::new(&self.app_binary)
+        let spawn = self
+            .child_command(id, workspace, app)
             .env_remove(hepta::SOCKET_ENV)
             .env_remove(hepta::AGENT_ENV)
             .env_remove(hepta::GENERATION_ENV)
             .env_remove(hepta::PEER_UID_ENV)
-            .arg("--kind")
-            .arg(app.code())
-            .arg("--workspace")
-            .arg(workspace.code())
-            .arg("--task-id")
-            .arg(id.to_string())
+            .env_remove(hepta::RUN_ID_ENV)
             .stdin(Stdio::null())
             .stdout(Stdio::piped()) // private one-frame readiness pipe, not a global text stream
             .spawn();
@@ -973,10 +1000,31 @@ mod tests {
     }
 
     #[test]
+    fn owned_cancellation_fixture() {
+        use std::io::Write;
+        let Some(socket) = std::env::var_os("TRILL_TEST_CANCEL_CHILD_SOCKET") else {
+            return;
+        };
+        // This branch only runs in the test executable. No temporary script,
+        // shell, grandchild, compositor, first-frame or Hepta signal is used.
+        let mut control = UnixStream::connect(socket).unwrap();
+        control
+            .set_read_timeout(Some(Duration::from_secs(10)))
+            .unwrap();
+        control
+            .set_write_timeout(Some(Duration::from_secs(3)))
+            .unwrap();
+        control.write_all(b"TRILL_CANCEL_READY\n").unwrap();
+        let mut byte = [0];
+        let _ = control.read(&mut byte);
+        panic!("the acknowledged child must be stopped by the owning Session's SIGKILL");
+    }
+
+    #[test]
     fn cancellation_is_requested_before_real_child_reap_confirms_it() {
         // Linux-host process proof: this test intentionally requires no
         // compositor, IME, GPU or Hepta service.
-        // A panic must not leave a 30-second host process orphaned by the
+        // A panic must not leave an acknowledged host process orphaned by the
         // test runner. Reap every owned child before removing fixture files.
         struct Fixture {
             dir: std::path::PathBuf,
@@ -1005,12 +1053,13 @@ mod tests {
             session: None,
         };
         fs::set_permissions(&dir, Permissions::from_mode(0o700)).unwrap();
-        let child_file = dir.join("child.sh");
-        fs::write(&child_file, b"#!/bin/sh\nexec /bin/sleep 30\n").unwrap();
-        fs::set_permissions(&child_file, Permissions::from_mode(0o700)).unwrap();
-
-        fixture.session = Some(Session::new(child_file).unwrap());
+        let socket = dir.join("child.sock");
+        let listener = UnixListener::bind(&socket).unwrap();
+        fs::set_permissions(&socket, Permissions::from_mode(0o600)).unwrap();
+        listener.set_nonblocking(true).unwrap();
+        fixture.session = Some(Session::new(std::env::current_exe().unwrap()).unwrap());
         let session = fixture.session.as_mut().unwrap();
+        session.cancellation_fixture_socket = Some(socket);
         let expected_instance = session.instance.clone();
         let Response::Task { task, .. } = session.handle(Request::Launch {
             workspace: Workspace::Build,
@@ -1019,8 +1068,46 @@ mod tests {
         }) else {
             panic!("expected real child launch");
         };
-        assert_eq!(task.state, TaskState::Running);
+        assert_eq!(task.state, TaskState::Running, "{}", task.detail);
         assert!(task.pid.is_some());
+
+        // Prove that this exact child reached its read-and-wait branch before
+        // requesting cancellation. A fixed delay is not a readiness proof.
+        let started = std::time::Instant::now();
+        let mut control = loop {
+            match listener.accept() {
+                Ok((control, _)) => break control,
+                Err(error) if error.kind() == io::ErrorKind::WouldBlock => {
+                    assert!(
+                        session
+                            .children
+                            .get_mut(&task.id)
+                            .unwrap()
+                            .try_wait()
+                            .unwrap()
+                            .is_none(),
+                        "owned child exited before its control handshake"
+                    );
+                    assert!(
+                        started.elapsed() < Duration::from_secs(3),
+                        "owned child readiness deadline exceeded"
+                    );
+                    thread::sleep(Duration::from_millis(10));
+                }
+                Err(error) => panic!("owned child handshake failed: {error}"),
+            }
+        };
+        #[cfg(target_os = "linux")]
+        assert_eq!(
+            linux_socket_peer_credentials(&control).unwrap().pid as u32,
+            task.pid.unwrap()
+        );
+        control
+            .set_read_timeout(Some(Duration::from_secs(3)))
+            .unwrap();
+        let mut ready = [0; b"TRILL_CANCEL_READY\n".len()];
+        control.read_exact(&mut ready).unwrap();
+        assert_eq!(&ready, b"TRILL_CANCEL_READY\n");
 
         let Response::Task {
             task: requested, ..
@@ -1048,6 +1135,7 @@ mod tests {
         assert_eq!(terminal.state, TaskState::Cancelled);
         assert!(terminal.detail.contains("SIGKILL"));
         assert!(session.children.is_empty(), "observed child must be reaped");
+        drop(control);
     }
 
     #[test]

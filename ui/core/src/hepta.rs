@@ -86,6 +86,100 @@ pub struct HeptaRuntimeObservation {
     pub source_changed: bool,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum HeptaRunConnectionState {
+    Connecting,
+    Observed,
+    /// The owner's current in-memory projection did not contain this ID.
+    /// This says nothing about objective publication or a durable outcome.
+    ProjectionMissing,
+    Stale,
+    Unavailable,
+}
+
+impl HeptaRunConnectionState {
+    pub const fn label(self) -> &'static str {
+        match self {
+            Self::Connecting => "CONNECTING · CURRENT RUN STATE UNKNOWN",
+            Self::Observed => "OBSERVED · READ ONLY",
+            Self::ProjectionMissing => "PROJECTION MISSING · CURRENT RUN STATE UNKNOWN",
+            Self::Stale => "STALE · CURRENT RUN STATE UNKNOWN",
+            Self::Unavailable => "UNAVAILABLE · CURRENT RUN STATE UNKNOWN",
+        }
+    }
+}
+
+/// One successful read of an already-known owner run. The seven owner fields
+/// below retain the typed RunObservation meaning; no HostTask ID or inferred
+/// effect state is added. Only sampling time and sequence belong to Session.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct HeptaRunObservation {
+    /// Conservative start of the completed read, including closing-health
+    /// time in this sample's age instead of rejuvenating an earlier payload.
+    pub sampled_unix_ms: u64,
+    /// Volatile, nonwrapping successful-read sequence within this Session.
+    /// It is neither the owner's revision nor a publication receipt.
+    pub observation_sequence: u64,
+    pub run_id: String,
+    pub revision: u64,
+    pub phase: String,
+    pub authority_epoch: u64,
+    pub generation: u64,
+    pub terminal_observed: bool,
+    pub idempotent: bool,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct HeptaRunProjection {
+    /// Exact, launcher-selected identity; never shortened for display.
+    pub run_id: String,
+    pub connection: HeptaRunConnectionState,
+    pub last_attempt_unix_ms: Option<u64>,
+    pub error_code: Option<String>,
+    pub last_observation: Option<HeptaRunObservation>,
+    /// Monotonic age of the retained sample when Session formed this snapshot,
+    /// rounded up to milliseconds. Absent before a successful sample or from
+    /// an older producer; a consumer must not infer freshness from absence.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sample_age_at_snapshot_ms: Option<u64>,
+    /// Sticky interruption after a successful read, not a durable journal gap
+    /// or a claim that the surrounding observation history was complete.
+    pub observation_gap: bool,
+}
+
+impl HeptaRunProjection {
+    pub fn connecting(run_id: String) -> Self {
+        Self {
+            run_id,
+            connection: HeptaRunConnectionState::Connecting,
+            last_attempt_unix_ms: None,
+            error_code: None,
+            last_observation: None,
+            sample_age_at_snapshot_ms: None,
+            observation_gap: false,
+        }
+    }
+
+    pub fn mark_unavailable(&mut self, code: &str) {
+        self.observation_gap |= self.last_observation.is_some();
+        self.connection = if self.last_observation.is_some() {
+            HeptaRunConnectionState::Stale
+        } else {
+            HeptaRunConnectionState::Unavailable
+        };
+        self.error_code = Some(bounded_hepta_text(code));
+    }
+
+    pub fn mark_projection_missing(&mut self) {
+        self.observation_gap |= self.last_observation.is_some();
+        self.connection = HeptaRunConnectionState::ProjectionMissing;
+        self.error_code = Some("run_projection_missing".into());
+    }
+}
+
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct HeptaProjection {
@@ -94,6 +188,10 @@ pub struct HeptaProjection {
     /// Stable, bounded diagnostic code only; no endpoint or raw backend error.
     pub error_code: Option<String>,
     pub last_observation: Option<HeptaRuntimeObservation>,
+    /// Omitted unless a trusted launcher configured an exact known run ID.
+    /// Unconfigured snapshots retain the previous wire shape byte for byte.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub run: Option<Box<HeptaRunProjection>>,
 }
 
 impl HeptaProjection {
@@ -113,6 +211,14 @@ impl HeptaProjection {
 
     /// Losing a transport does not erase evidence or make old evidence live.
     pub fn mark_unavailable(&mut self, code: &str) {
+        self.mark_runtime_unavailable(code);
+        if let Some(run) = &mut self.run {
+            run.mark_unavailable(code);
+        }
+    }
+
+    /// A runtime sample's age does not expire a separately sampled run read.
+    pub fn mark_runtime_unavailable(&mut self, code: &str) {
         self.connection = if self.last_observation.is_some() {
             HeptaConnectionState::Stale
         } else {
@@ -182,5 +288,14 @@ mod tests {
         view.mark_unavailable("host_session_unavailable");
         assert_eq!(view.connection, HeptaConnectionState::Unavailable);
         assert!(view.last_observation.is_none());
+    }
+
+    #[test]
+    fn an_unconfigured_run_keeps_the_previous_exact_wire_shape() {
+        let old = r#"{"connection":"not_configured","last_attempt_unix_ms":null,"error_code":null,"last_observation":null}"#;
+        let projection: HeptaProjection = serde_json::from_str(old).unwrap();
+        assert!(projection.run.is_none());
+        assert_eq!(serde_json::to_string(&projection).unwrap(), old);
+        assert_eq!(projection, HeptaProjection::not_configured());
     }
 }

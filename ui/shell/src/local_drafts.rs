@@ -5,22 +5,84 @@ use std::fs::{self, DirBuilder, File, OpenOptions};
 use std::io::{self, Read, Write};
 use std::os::unix::fs::{DirBuilderExt, OpenOptionsExt, PermissionsExt};
 use std::path::{Path, PathBuf};
+use trill_ui_core::conversation::{LocalDraft, MAX_LOCAL_DRAFTS};
+use trill_ui_core::Workspace;
 
 const VERSION: u32 = 1;
 const MAX_ENTRIES: usize = 127;
 const MAX_ENTRY_BYTES: usize = 16 * 1024;
 const MAX_FILE_BYTES: u64 = 4 * 1024 * 1024;
 const FILE_NAME: &str = "local-drafts-v1.json";
+const CONTEXT_FILE_NAME: &str = "local-context-drafts-v2.json";
 // Linux O_NOFOLLOW ensures a raced file-to-symlink replacement is refused
 // by the kernel during open, not merely by an earlier path metadata check.
 #[cfg(target_os = "linux")]
 const LINUX_O_NOFOLLOW: i32 = 0o400000;
+// Open must reach the descriptor type check even for an unexpected FIFO
+// with no writer. O_NONBLOCK has no effect on ordinary regular-file reads.
+#[cfg(target_os = "linux")]
+const LINUX_O_NONBLOCK: i32 = 0o4000;
 
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Snapshot {
     version: u32,
     drafts: Vec<String>,
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ContextSnapshot {
+    version: u32,
+    drafts: Vec<LocalDraft>,
+}
+
+fn validate_context(drafts: &[LocalDraft]) -> io::Result<()> {
+    if drafts.is_empty() || drafts.len() > MAX_LOCAL_DRAFTS {
+        return Err(invalid("Invalid local context draft count"));
+    }
+    for draft in drafts {
+        draft.validate().map_err(invalid)?;
+    }
+    Ok(())
+}
+
+pub fn save_context_at(dir: &Path, drafts: &[LocalDraft]) -> io::Result<PathBuf> {
+    validate_context(drafts)?;
+    let payload = serde_json::to_vec(&ContextSnapshot {
+        version: 2,
+        drafts: drafts.to_vec(),
+    })
+    .map_err(io::Error::other)?;
+    save_payload(dir, CONTEXT_FILE_NAME, &payload)
+}
+
+/// Prefer v2. Fall back to legacy text only when the v2 file is absent, never
+/// when v2 is corrupt/insecure. Legacy had no workspace or source references;
+/// explicit import assigns its text to the currently chosen workspace.
+pub fn load_context_at(dir: &Path, legacy_workspace: Workspace) -> io::Result<Vec<LocalDraft>> {
+    let bytes = match load_payload(dir, CONTEXT_FILE_NAME) {
+        Ok(bytes) => bytes,
+        Err(error) if error.kind() == io::ErrorKind::NotFound => {
+            return load_at(dir).map(|drafts| {
+                drafts
+                    .into_iter()
+                    .map(|text| LocalDraft {
+                        workspace: legacy_workspace,
+                        text,
+                        contexts: Vec::new(),
+                    })
+                    .collect()
+            });
+        }
+        Err(error) => return Err(error),
+    };
+    let snapshot: ContextSnapshot = serde_json::from_slice(&bytes).map_err(io::Error::other)?;
+    if snapshot.version != 2 {
+        return Err(invalid("Unsupported local context draft schema"));
+    }
+    validate_context(&snapshot.drafts)?;
+    Ok(snapshot.drafts)
 }
 
 fn invalid(message: &'static str) -> io::Error {
@@ -77,18 +139,23 @@ fn ensure_private_dir(dir: &Path) -> io::Result<()> {
     Ok(())
 }
 
-pub fn save_at(dir: &Path, drafts: &[String]) -> io::Result<PathBuf> {
+#[cfg(test)]
+fn save_at(dir: &Path, drafts: &[String]) -> io::Result<PathBuf> {
     validate(drafts)?;
     let payload = serde_json::to_vec(&Snapshot {
         version: VERSION,
         drafts: drafts.to_vec(),
     })
     .map_err(io::Error::other)?;
+    save_payload(dir, FILE_NAME, &payload)
+}
+
+fn save_payload(dir: &Path, name: &str, payload: &[u8]) -> io::Result<PathBuf> {
     if payload.len() as u64 > MAX_FILE_BYTES {
         return Err(invalid("Draft snapshot exceeds 4 MiB"));
     }
     ensure_private_dir(dir)?;
-    let target = dir.join(FILE_NAME);
+    let target = dir.join(name);
     match fs::symlink_metadata(&target) {
         Ok(meta) => {
             // Do not silently replace an existing backup whose visibility
@@ -123,7 +190,7 @@ pub fn save_at(dir: &Path, drafts: &[String]) -> io::Result<PathBuf> {
             Err(error) => return Err(error),
         };
         let result = (|| -> io::Result<()> {
-            file.write_all(&payload)?;
+            file.write_all(payload)?;
             file.sync_all()?;
             fs::rename(&temp, &target)?;
             // The rename is atomic, but without fsync on the containing
@@ -150,6 +217,16 @@ pub fn save_at(dir: &Path, drafts: &[String]) -> io::Result<PathBuf> {
 }
 
 pub fn load_at(dir: &Path) -> io::Result<Vec<String>> {
+    let bytes = load_payload(dir, FILE_NAME)?;
+    let snapshot: Snapshot = serde_json::from_slice(&bytes).map_err(io::Error::other)?;
+    if snapshot.version != VERSION {
+        return Err(invalid("Unsupported local draft snapshot schema"));
+    }
+    validate(&snapshot.drafts)?;
+    Ok(snapshot.drafts)
+}
+
+fn load_payload(dir: &Path, name: &str) -> io::Result<Vec<u8>> {
     // Loading never creates or modifies directories; user must first export.
     let dir_meta = fs::symlink_metadata(dir)?;
     if !dir_meta.file_type().is_dir() || dir_meta.permissions().mode() & 0o777 != 0o700 {
@@ -158,7 +235,7 @@ pub fn load_at(dir: &Path) -> io::Result<Vec<String>> {
             "Draft directory is not private",
         ));
     }
-    let target = dir.join(FILE_NAME);
+    let target = dir.join(name);
     // Open without following any final-component symlink; check the *opened
     // file's* metadata rather than trusting a potentially stale path stat.
     // No guarantee is made against a malicious other process under the same
@@ -167,7 +244,7 @@ pub fn load_at(dir: &Path) -> io::Result<Vec<String>> {
     options.read(true);
     #[cfg(target_os = "linux")]
     {
-        options.custom_flags(LINUX_O_NOFOLLOW);
+        options.custom_flags(LINUX_O_NOFOLLOW | LINUX_O_NONBLOCK);
     }
     #[cfg(not(target_os = "linux"))]
     {
@@ -192,12 +269,7 @@ pub fn load_at(dir: &Path) -> io::Result<Vec<String>> {
     if bytes.len() as u64 > MAX_FILE_BYTES {
         return Err(invalid("Draft snapshot grew too large while reading"));
     }
-    let snapshot: Snapshot = serde_json::from_slice(&bytes).map_err(io::Error::other)?;
-    if snapshot.version != VERSION {
-        return Err(invalid("Unsupported local draft snapshot schema"));
-    }
-    validate(&snapshot.drafts)?;
-    Ok(snapshot.drafts)
+    Ok(bytes)
 }
 
 #[cfg(test)]
@@ -329,5 +401,53 @@ mod tests {
         let fixture = Fixture::new("capacity");
         let drafts = vec!["ok".into(); MAX_ENTRIES + 1];
         assert!(save_at(&fixture.0, &drafts).is_err());
+    }
+
+    #[test]
+    fn context_export_roundtrip_preserves_workspace_and_reference_without_live_status() {
+        use trill_ui_core::conversation::ContextRef;
+        use trill_ui_core::{AppKind, TaskRecord};
+        let fixture = Fixture::new("context-v2");
+        let task = TaskRecord::new(42, Workspace::Research, AppKind::Notes);
+        let draft = LocalDraft {
+            workspace: Workspace::Research,
+            text: "保留这个引用 📝".into(),
+            contexts: vec![ContextRef::host_task(
+                "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                &task,
+                20_000,
+            )],
+        };
+        let path = save_context_at(&fixture.0, &[draft.clone()]).unwrap();
+        assert_eq!(path.file_name().unwrap(), CONTEXT_FILE_NAME);
+        assert_eq!(
+            load_context_at(&fixture.0, Workspace::Build).unwrap(),
+            vec![draft]
+        );
+        let json: serde_json::Value = serde_json::from_slice(&fs::read(&path).unwrap()).unwrap();
+        assert!(json["drafts"][0].get("current").is_none());
+        assert_eq!(
+            fs::metadata(path).unwrap().permissions().mode() & 0o777,
+            0o600
+        );
+    }
+
+    #[test]
+    fn legacy_import_is_explicitly_rehomed_and_corrupt_v2_never_falls_back() {
+        let fixture = Fixture::new("legacy-v2");
+        save_at(&fixture.0, &["legacy 中文".into()]).unwrap();
+        let imported = load_context_at(&fixture.0, Workspace::Build).unwrap();
+        assert_eq!(imported[0].workspace, Workspace::Build);
+        assert!(imported[0].contexts.is_empty());
+        let path = save_context_at(&fixture.0, &imported).unwrap();
+        fs::write(&path, b"{\"version\":2,\"drafts\":[").unwrap();
+        assert!(load_context_at(&fixture.0, Workspace::Personal).is_err());
+        fs::remove_file(path).unwrap();
+        symlink(
+            fixture.0.join("not-present"),
+            fixture.0.join(CONTEXT_FILE_NAME),
+        )
+        .unwrap();
+        assert!(load_context_at(&fixture.0, Workspace::Personal).is_err());
     }
 }

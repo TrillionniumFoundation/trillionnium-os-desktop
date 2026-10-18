@@ -39,8 +39,8 @@ same kernel-observed peer PID within that poll. The pinned Agentd advances
 current generation from `spawn` while starting, to `spawn + 1` while running,
 and `spawn + 2` while draining; the spawn identity itself remains fixed.
 
-The Session polls at a one-second interval after each attempt. Only the
-worker waits for Agentd; the Session event loop uses `try_recv` on a one-slot
+The Session polls at a one-second interval after each iteration. Only the
+worker waits for Agentd; the Session event loop uses `try_recv` on a two-slot
 channel and continues to reap applications and answer host IPC. A receiver
 backlog cannot become an unbounded event journal. No transport error is
 converted into a success.
@@ -109,6 +109,7 @@ UUID format; the generation is a nonzero integer and UID is a Linux UID.
 | `TRILL_HEPTA_AGENT_ID` | Expected AgentId |
 | `TRILL_HEPTA_SPAWN_GENERATION` | Expected spawn generation |
 | `TRILL_HEPTA_PEER_UID` | Expected Linux peer UID |
+| `TRILL_HEPTA_RUN_ID` (optional) | One exact, already-known run ID; requires all four endpoint values |
 
 For example, after the launcher has populated the `OWNER_*` values:
 
@@ -136,10 +137,10 @@ AgentId, spawn/current generations, PID and sample timestamp. No endpoint,
 payload or objective text is logged. It is a layout diagnostic, not proof
 of compositor presentation or an executed operation.
 
-With all four variables absent, host applications and drafts continue to
+With all five variables absent, host applications and drafts continue to
 work and the Hepta view says `NOT CONFIGURED`. Partial or malformed
 configuration fails closed. Endpoint changes require a Session restart;
-there is no renderer endpoint editor. The Session removes these four
+there is no renderer endpoint editor. The Session removes these five
 configuration variables before spawning its child applications.
 
 This is an application architecture boundary. The existing private socket
@@ -152,6 +153,125 @@ The IPC schema changed additively. The new Shell can read an older snapshot
 as `NOT OBSERVED`; an older strict Shell may reject a new snapshot. Deploy
 the Session, Shell and `trill-ctl` built from the same source together.
 
+## Observe one already-known run
+
+The trusted launcher may additionally set `TRILL_HEPTA_RUN_ID` to a run ID
+it already knows from the original owner. The exact grammar is 1–128 ASCII
+bytes from `[A-Za-z0-9._:-]`. Empty, non-UTF-8, whitespace, path-like or
+overlong values fail closed before a worker or socket connection is created.
+The ID is neither trimmed nor synthesized from a host task number. It is
+displayed in full, independently of the 96-byte event-text display bound.
+
+All four existing endpoint values remain mandatory when the run ID is set.
+Apply all five variables only to Session, for example by adding
+`TRILL_HEPTA_RUN_ID="${OWNER_KNOWN_RUN_ID:?}"` to the launcher command above.
+This does not connect the local draft composer to any submission path. The
+Session has no signing, cancellation, terminal acknowledgment, submission
+retry, run discovery or durable run ledger API.
+
+The same bounded worker first completes the runtime poll and publishes its
+health sample. It then calls the existing typed `ObserverClient::run_status`
+for that single configured ID. This is an independent health → run status →
+health read with the facade's five-second total deadline and peer/identity/
+generation checks. No new worker is created per read. The Session event loop
+continues to serve snapshots and host actions while either read is pending.
+
+With the run variable absent, `hepta.run` is omitted entirely and the previous
+snapshot shape is retained. With it present, deploy the new Session, Shell
+and `trill-ctl` together: older strict decoders cannot read the added field.
+The exact additional structure is:
+
+```json
+{
+  "run_id": "known:run-1",
+  "connection": "observed",
+  "last_attempt_unix_ms": 1792300000000,
+  "error_code": null,
+  "last_observation": {
+    "sampled_unix_ms": 1792300000000,
+    "observation_sequence": 1,
+    "run_id": "known:run-1",
+    "revision": 4,
+    "phase": "indeterminate",
+    "authority_epoch": 9,
+    "generation": 6,
+    "terminal_observed": false,
+    "idempotent": false
+  },
+  "sample_age_at_snapshot_ms": 1,
+  "observation_gap": false
+}
+```
+
+| Run connection state | Meaning |
+| --- | --- |
+| `connecting` | The first complete read for the exact known ID is pending |
+| `observed` | A fresh, validated typed run observation is available |
+| `projection_missing` | `run_status` returned null: only the owner's current in-memory projection lacks the ID; admission and durable outcome remain unknown |
+| `unavailable` | No successful run sample has been received and observation is unavailable |
+| `stale` | A previous run sample is retained, but current state is unknown after failure, transport loss or expiry |
+
+Null, old-spawn rejection and disconnection preserve `last_observation`.
+After any interruption following a successful read, `observation_gap` stays
+true for this Session. A first null response has no previous sample and
+keeps that flag false; this is not evidence of complete owner history.
+If runtime polling fails before the next run read, the run's last-attempt
+timestamp also stays unchanged. A fresh health poll alone never restores a
+stale or missing run to `observed`.
+
+The seven owner fields are copied from the facade's `RunObservation`.
+`generation` belongs to the run receipt and may differ from the current
+daemon generation. A preceding runtime health PID is not attached to the
+run as though the run API had returned it. `terminal_observed` states only
+what the original owner observed; neither it nor `phase` proves that a
+desktop, mobile or other device effect completed.
+
+`sampled_unix_ms` and the nonwrapping `observation_sequence` belong to this
+Session's successful reads, not the owner's operation revision or an
+admission receipt. Run sampling time is conservatively bound to the start
+of the completed `run_status` call; `last_attempt_unix_ms` records its
+completion. The closing health check's delay therefore counts toward the
+run payload's age. Health and run reads carry separate monotonic times
+through the bounded delivery channel. Run success or delay cannot renew
+the health sample. Session expires each run sample independently after
+seven seconds, checks source wall-clock age and rejects future timestamps.
+For each snapshot with run history, Session also reports
+`sample_age_at_snapshot_ms`: the sample's independent monotonic age when
+forming that snapshot, rounded **up** to milliseconds. This changing age is
+outside `last_observation`, so retained history and its attempt timestamp
+remain intact. Before any successful run sample, the age field is omitted.
+A consumer receiving an observed run from an older producer without this
+field must treat its freshness as unknown; deploy the matching binaries.
+
+Shell's IPC worker records request start and actual transport return before
+sending into the response queue. Its run age bound is the Session sample
+age **plus the full IPC round trip plus the time after transport receipt**.
+The full round trip conservatively bounds the unmeasured transfer from the
+Session snapshot to Shell; it adds up to one round trip of conservative age
+in addition to the sub-millisecond upward rounding.
+The combined bound must be at most 7,000 ms, not merely each component
+separately. A bound over 7,000 ms, invalid/missing time, or a future source
+wall timestamp makes current state unknown. This also protects the first
+queued frame when the wall clock has rolled back to just after its sample.
+
+Shell keeps an age anchor for each
+`(session_instance, run_id, observation_sequence)`. For a repeated sample,
+it retains the larger of the old bound advanced to the new receipt and the
+new source-age-plus-round-trip bound. This cannot rejuvenate the sample and
+does not repeatedly add overlapping round trips. A higher successful-read
+sequence or an explicit new Session/run source starts a new age bound.
+This total monotonic age rule is specific to the configured run projection.
+Runtime health keeps its existing separate source-wall/receipt checks,
+using the same actual Bridge receipt timestamp. See
+`ui/shell/OBSERVATION_FRESHNESS.md` for the exact distinction and regressions.
+
+The **Hepta / Runtime** page displays an independent known-run card even
+when only stale run history remains. It shows the exact run ID, original
+phase/revision/generation/authority epoch and owner terminal observation.
+It neither creates a `HostTask` nor upgrades a local draft into a submitted
+objective. The existing `TRILL_HEPTA_LAYOUT_V1` marker still describes only
+runtime health; it does not certify this card or a run outcome.
+
 ## Validation and limits
 
 `ui/session/tests/hepta_observer.rs` runs the real Session executable and
@@ -160,6 +280,34 @@ objective/generic-RPC messages, and puts a deliberately stalled private Unix
 peer behind the observer. During the five-second timeout, snapshots and
 host action dispatch must remain responsive; no Hepta success is inferred.
 The stalled peer is an explicit fault fixture, not a successful Agentd run.
+
+`ui/session/tests/hepta_run.rs` runs the actual Session against a scripted
+fixed-v2 UDS peer. It verifies a full 128-byte selected ID, typed owner-only
+projection, null and old-spawn history retention, missing-run opt-out wire
+compatibility, and responsive host dispatch during a held run read. The
+delayed successful read must retain the earlier health timestamp exactly.
+Session and Shell tests independently cover the 7,000/7,001 ms boundary,
+monotonic expiry, clock rollback, queued samples and repeated snapshots.
+The configured-run regressions also check rounded source age, a first queued
+frame across rollback, a combined age over the limit when every component
+is below it, and preservation of the advancing bound without double counting
+round trips. A bounded channel handshake checks actual Bridge timestamp
+ordering without a scheduling sleep. The real Session UDS fixture checks
+that a held run read contributes at least its hold time to the reported age.
+An egui runtime-page test checks the visible run fields and unknown-state
+wording. These are scripted host and widget tests; the separate original
+Agentd probe must still establish real owner compatibility.
+
+The cancellation lifecycle regression uses an already-built Rust test child
+and a private, bounded UDS readiness handshake. It exercises the ordinary
+Session ownership and SIGKILL/reap path, without creating and immediately
+executing a temporary shell script during parallel tests. It retains the
+`Running → CancelRequested → Cancelled` assertions and checks the exact
+owned child PID before cancellation. The command selection exists only
+under `cfg(test)`; production application arguments are unchanged. This
+removes the script-execution fixture hazard identified while investigating
+CI job `117592973270`, whose original log proves spawn failure but does not
+record its errno. It does not establish that ETXTBSY caused that failure.
 
 The blocking host gate also runs `tests/ui/probe-hepta-session.py`, which
 starts the actual Session binary and A07's scripted fixed-v2 Unix fixture.

@@ -1,5 +1,9 @@
 # Read-only observer technical contract
 
+This contract describes the default `ObserverClient` and CLI. The separately
+enabled, default-off [ObjectiveStart transport](OBJECTIVE_TRANSPORT.md) is not a
+method added to this observer or to `TrustedReadOnlyOrganV1`.
+
 ## Version and provenance
 
 The adapter targets Hepta commit
@@ -158,12 +162,15 @@ The Session must expire its freshness from a monotonic last-success timestamp
 independently of worker replies; it must not keep the connection healthy just
 because an old object remains in memory.
 
-ObjectiveStart is absent on purpose. The existing wire requires an original
+ObjectiveStart remains absent from the observer and CLI. The existing wire requires an original
 `AuthBusObjectiveIngress` from an independently trusted configured issuer,
 including signature and owner-bound immutable inputs. Neither a UI draft nor
 an advertised capability is such an envelope. This candidate provides no UI
 issuer, signing key, authority epoch allocator, generic high-authority ingress,
-or effect submission. The next step is owner-approved assembly of the original
+or UI/Session effect submission. The optional default-off transport accepts that
+original envelope from a trusted host, checks structure and retains uncertain
+delivery; it does not authenticate an issuer or assemble the provider.
+The next integration step is owner-approved assembly of the original
 authenticated objective provider and a restricted HOS2 effect adapter, with the
 original durable operation owner responsible for K/D binding, uncertainty,
 fencing, acknowledgement and retirement. That work requires separate real

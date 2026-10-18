@@ -1,0 +1,122 @@
+{
+  "profileId": "objective.profile.desktop-isolated.v1",
+  "profileRevision": 1,
+  "expectedInputSchemaDigest": "3aeffe6b5a086577efeedbc52cd0b2fd02bc7978196a895dcfc071478e93b0a3",
+  "expectedNormalizationProfileDigest": "a7aa893135f2a106206f8335a59e2ec4418db43f67cc40b98302bb8056a79495",
+  "principalScopeDigest": "65508db979229c6df7f0b150b62ca92ee8c3c2bc7b08d9fc19b36ce8b87f0085",
+  "principalScope": "principal.desktop-isolated",
+  "allowedLocales": [
+    "en-US"
+  ],
+  "maximumSourceAgeMicros": 60000000,
+  "maximumFutureSkewMicros": 1000000,
+  "deadlineRequired": true,
+  "allowedTrustedSourceIdentities": [
+    "issuer.desktop-isolated-objective.v1"
+  ],
+  "constraints": [
+    {
+      "sourceConstraintId": "latency.ceiling",
+      "expectedUnit": "micros",
+      "class": "task",
+      "axis": "latency.micros"
+    }
+  ],
+  "predicates": [
+    {
+      "sourcePredicateId": "task.success",
+      "expectedUnit": "ratio",
+      "axis": "task.success.ratio"
+    },
+    {
+      "sourcePredicateId": "task.terminal",
+      "expectedUnit": "boolean",
+      "axis": "task.terminal"
+    }
+  ],
+  "actions": [
+    {
+      "sourceActionClass": "read",
+      "actionId": "action.read"
+    }
+  ],
+  "softDimensions": [],
+  "evidenceRequirements": [
+    {
+      "sourceRequirementId": "evidence.quality",
+      "axis": "evidence.confidence"
+    }
+  ],
+  "resources": {
+    "timeMicros": {
+      "constraintId": "resource.time.ceiling",
+      "axis": "resource.time",
+      "class": "task",
+      "q32PerSourceUnit": 1,
+      "evidenceSource": "objective.resource.profile"
+    },
+    "tokenCount": {
+      "constraintId": "resource.tokens.ceiling",
+      "axis": "resource.tokens",
+      "class": "task",
+      "q32PerSourceUnit": 1,
+      "evidenceSource": "objective.resource.profile"
+    },
+    "computeMicros": {
+      "constraintId": "resource.compute.ceiling",
+      "axis": "resource.compute",
+      "class": "environment",
+      "q32PerSourceUnit": 1,
+      "evidenceSource": "objective.resource.profile"
+    },
+    "memoryBytes": {
+      "constraintId": "resource.memory.ceiling",
+      "axis": "resource.memory",
+      "class": "environment",
+      "q32PerSourceUnit": 1,
+      "evidenceSource": "objective.resource.profile"
+    },
+    "networkBytes": {
+      "constraintId": "resource.network.ceiling",
+      "axis": "resource.network",
+      "class": "principal",
+      "q32PerSourceUnit": 1,
+      "evidenceSource": "objective.resource.profile"
+    },
+    "externalEffectCount": {
+      "constraintId": "resource.effects.ceiling",
+      "axis": "resource.effects",
+      "class": "principal",
+      "q32PerSourceUnit": 1,
+      "evidenceSource": "objective.resource.profile"
+    }
+  },
+  "risk": {
+    "evidenceSource": "objective.risk.profile",
+    "class": "principal",
+    "riskConstraintId": "risk.class",
+    "riskAxis": "risk.class.value",
+    "lowValueQ32": 0,
+    "mediumValueQ32": 1,
+    "highValueQ32": 2,
+    "criticalValueQ32": 3,
+    "rollbackConstraintId": "risk.rollback",
+    "rollbackAxis": "risk.rollback.value",
+    "rollbackNoneValueQ32": 0,
+    "rollbackReversibleValueQ32": 1,
+    "rollbackCompensatableValueQ32": 2,
+    "rollbackIrreversibleValueQ32": 3,
+    "compensationConstraintId": "risk.compensation",
+    "compensationAxis": "risk.compensation.value",
+    "compensationFalseValueQ32": 0,
+    "compensationTrueValueQ32": 1,
+    "abstentionConstraintId": "risk.abstention",
+    "abstentionAxis": "risk.abstention.value",
+    "abstentionRules": [
+      {
+        "sourceRule": "ask",
+        "valueQ32": 1
+      }
+    ]
+  }
+}
