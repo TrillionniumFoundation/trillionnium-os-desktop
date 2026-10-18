@@ -1,0 +1,85 @@
+#!/usr/bin/env python3
+"""One small final-combination gate; never launches Rust, Weston or Agentd."""
+import datetime
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+import sys
+import yaml
+
+root = Path('/workspace/scratch/98f315e377b2/next-ui')
+out = Path('/workspace/scratch/98f315e377b2/next-final-ui-integration-20261017-r2')
+out.mkdir(exist_ok=False)
+def now():
+    return datetime.datetime.now(datetime.timezone.utc).isoformat()
+def git(*args):
+    return subprocess.check_output(['git', *args], cwd=root).decode().strip()
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+receipt = {
+    'started_at_utc': now(), 'cwd': str(root),
+    'source_commit': git('rev-parse', 'HEAD'),
+    'source_tree': git('rev-parse', 'HEAD^{tree}'),
+    'qualification': 'combined_process_guard_and_workflow_static_only',
+    'original_agentd_run': False, 'rust_build_repeated': False,
+    'weston_run_repeated': False, 'steps': [],
+}
+assert not git('status', '--porcelain'), 'working tree must be clean before gate'
+assert (root / 'README.md').stat().st_size == 0
+baseline = '9b13dfbcb006a7f8af7cccd338e03174df74bad5'
+unchanged = ['ui', 'support/ui']
+assert not git('diff', '--name-only', baseline, 'HEAD', '--', *unchanged)
+service_changes = git('diff', '--name-only', baseline, 'HEAD', '--', 'services/hepta-os').splitlines()
+assert service_changes == ['services/hepta-os/RUN.md'], service_changes
+changed_tests = git('diff', '--name-only', baseline, 'HEAD', '--', 'tests/ui').splitlines()
+assert all(p == 'tests/ui/TESTPLAN.md' or p.startswith('tests/ui/evidence/') for p in changed_tests)
+existing_hepta = git('ls-tree', '-r', '--name-only', baseline, '--', 'tests/integration/hepta').splitlines()
+existing_code = [p for p in existing_hepta if not p.endswith('.md')]
+assert existing_code, 'existing Hepta fixture/source-contract checks must be covered'
+assert not git('diff', '--name-only', baseline, 'HEAD', '--', *existing_code)
+receipt['unchanged_successful_ui_source'] = {
+    'local_commit': baseline, 'remote_commit': '865ecf381dc8ddb70470ee173add9bd3b4a6a29a',
+    'tree': '00923201e6550280e68a5ca662a8a3c3a165a29c',
+    'directories': unchanged, 'existing_hepta_fixture_and_contract_checks': existing_code,
+    'services_hepta_os_only_change': service_changes,
+    'ui_test_changes_only_docs_and_evidence': True,
+    'qualification': 'Prior 137-test host, Weston and Clippy results remain bound to that earlier full tree; this gate does not repeat or re-label them.',
+}
+receipt['preliminary_verifier_corrections'] = ['The initial static verifier stopped before tests because it required all services/hepta-os files to be unchanged. The actual sole change there is RUN.md documentation. This corrected verifier permits that exact documentation path.', 'The second static check assumed tests/integration/hepta already contained Rust manifests. It actually contained two Python source/fixture checks, which this verifier now explicitly covers with a nonempty path set. No repository source was changed to satisfy either verifier correction.']
+guard = json.loads((root / 'tests/integration/hepta/evidence/2026-10-17-process-guard/receipt.json').read_text())
+receipt['source_sha256'] = {}
+for path, expected in guard['source_sha256'].items():
+    actual = sha(root / path)
+    assert actual == expected, (path, actual, expected)
+    receipt['source_sha256'][path] = actual
+workflow_path = root / '.github/workflows/a10-host.yml'
+receipt['source_sha256']['.github/workflows/a10-host.yml'] = sha(workflow_path)
+workflow = yaml.safe_load(workflow_path.read_text())
+steps = workflow['jobs']['native-rust-and-wayland']['steps']
+assert workflow['jobs']['native-rust-and-wayland']['env']['RUSTUP_TOOLCHAIN'] == '1.88.0'
+commands = [s['run'] for job in workflow['jobs'].values() for s in job.get('steps', []) if 'run' in s]
+assert any('--component clippy' in cmd for cmd in commands)
+assert any('cargo clippy' in cmd and '--all-targets' in cmd and '--locked --offline -- -D warnings' in cmd for cmd in commands)
+assert any("-p 'test_original_process_guard.py' -v" in cmd for cmd in commands)
+assert not any('run_original_agentd.py' in cmd or '--execute' in cmd for cmd in commands)
+for i, command in enumerate(commands):
+    # GitHub expressions are placeholders for syntax parsing; never executed.
+    import re
+    parsed = re.sub(r'\$\{\{[\s\S]*?\}\}', 'GITHUB_VALUE', command)
+    proc = subprocess.run(['bash', '-n'], input=parsed.encode(), capture_output=True)
+    assert proc.returncode == 0, (i, proc.stderr.decode())
+receipt['workflow_static'] = {'yaml_parser': yaml.__version__, 'bash_blocks_checked': len(commands), 'exit_code': 0, 'remote_ci_executed': False}
+command = [sys.executable, '-B', '-m', 'unittest', 'discover', '-s', 'tests/integration/hepta', '-p', 'test_original_process_guard.py', '-v']
+started = now()
+proc = subprocess.run(command, cwd=root, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=30)
+log = out / 'process-guard.log'
+log.write_bytes(proc.stdout)
+receipt['steps'].append({'command': command, 'started_at_utc': started, 'ended_at_utc': now(), 'exit_code': proc.returncode, 'log': log.name, 'log_sha256': sha(log)})
+receipt['ended_at_utc'] = now()
+receipt['exit_code'] = proc.returncode
+(out / 'receipt.json').write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + '\n')
+print(proc.stdout.decode(), end='')
+print(json.dumps({'source_commit': receipt['source_commit'], 'source_tree': receipt['source_tree'], 'workflow_static': receipt['workflow_static'], 'exit_code': proc.returncode, 'receipt': str(out / 'receipt.json')}))
+sys.exit(proc.returncode)

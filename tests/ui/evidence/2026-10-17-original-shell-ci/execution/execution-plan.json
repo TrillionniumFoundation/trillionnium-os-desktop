@@ -1,0 +1,29 @@
+{
+  "cwd": "/workspace/scratch/98f315e377b2/next-r6-ci-oracle",
+  "command": [
+    "bash",
+    "--noprofile",
+    "--norc",
+    "/workspace/scratch/98f315e377b2/next-tools/r6-shell-oracle-ci-01/workflow-step.sh"
+  ],
+  "test_argv": [
+    "python3",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests/ui",
+    "-p",
+    "test_original_hepta_shell.py",
+    "-v"
+  ],
+  "workflow_run_block_matches_preset": true,
+  "workflow_run_block_sha256": "2a91459734feb431f6365b07fb239d53c29882a215e6e2dbb9d237ad4d492c79",
+  "environment_override": {
+    "RUNNER_TEMP": "/workspace/scratch/98f315e377b2/next-tools/r6-shell-oracle-ci-01/runner-temp"
+  },
+  "timeout_seconds": 30,
+  "started_unix_ms": 1792279529350,
+  "source_commit": "632f5f0b27bc4c051f1b13dbb162e3c7cb9727ef"
+}

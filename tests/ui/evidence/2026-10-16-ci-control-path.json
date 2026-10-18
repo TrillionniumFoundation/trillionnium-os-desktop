@@ -1,0 +1,60 @@
+{
+  "schema": 1,
+  "timestamp_utc": "2026-10-16T12:42:11Z",
+  "agent": "A10",
+  "execution_host": "isolated Linux container; no cargo/rustc/Weston or external DNS",
+  "tested_source_blob": {
+    "tests/ui/check-host.sh": "6af9f8355ba5426c69378861274bc2eebab8c971",
+    "tests/ui/test-smoke-cleanup.sh": "eaa5afe4cb483d07e73a3676b6f79d2e70d437c1",
+    "tests/ui/test-zombie-liveness.sh": "54f1c45389722fc0173c04607dfc63290ea67514",
+    "support/ui/smoke-cleanup.sh": "2cd8ac8204c5bdf718a5c2a13f687cb8422a7efe"
+  },
+  "results": [
+    {
+      "scope": "real Linux shell regressions",
+      "command": "bash test-smoke-cleanup.sh; bash test-zombie-liveness.sh",
+      "iterations_each": 8,
+      "passed": 16,
+      "failed": 0
+    },
+    {
+      "scope": "real Bash parser",
+      "command": "bash -n tests/ui/check-host.sh",
+      "exit_code": 0
+    },
+    {
+      "scope": "real no-Cargo preflight",
+      "command": "bash tests/ui/check-host.sh",
+      "exit_code": 127,
+      "linux_subtests_passed": 2,
+      "detail": "cargo executable missing; no Rust compilation"
+    },
+    {
+      "scope": "mocked Cargo script control only",
+      "build_exit_code": 53,
+      "format_exit_code": 37,
+      "observed_check_host_exit_code": 53,
+      "fmt_diagnostic_file_present": true
+    },
+    {
+      "scope": "mocked Cargo script control only",
+      "build_exit_code": 0,
+      "format_exit_code": 37,
+      "observed_check_host_exit_code": 1,
+      "fmt_diagnostic_file_present": true
+    },
+    {
+      "scope": "mocked Cargo script control only",
+      "build_exit_code": 0,
+      "format_exit_code": 0,
+      "observed_check_host_exit_code": 0,
+      "fmt_diagnostic_file_present": true
+    }
+  ],
+  "caveats": [
+    "Mocked Cargo is a /bin/bash command stub; no Rust compiler or application was executed.",
+    "The real Linux scripts were executed from byte-identical Git blob snapshots.",
+    "The shell was validated as an executable control path, not a Rust build or Hepta/Wayland run.",
+    "The headless Weston and real Chinese IME validations remain unexecuted."
+  ]
+}

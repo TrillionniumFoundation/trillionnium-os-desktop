@@ -1,0 +1,20 @@
+{
+  "schema": "a10-host-strict-request-negative-v1",
+  "date_utc": "2026-10-17",
+  "scope": "real unprivileged Linux Rust Session IPC; no Wayland, HOS2 or production authority",
+  "source_commit": "fcc57bd2a64cc7ee84731b432a94b51689355af7",
+  "source_ci_run": 39015860337,
+  "verified_ci_artifact_id": 12096301139,
+  "binary_archive_sha256": "1ae2741312a4819b2e03595a17ed014735379770e10be6f42427fe9a819f8d3e",
+  "actual_request": "{\"type\":\"snapshot\",\"data\":[1]}",
+  "observed_response_type": "snapshot",
+  "expected_response_type": "error",
+  "result": "FAIL (intentional, baseline defect reproduced)",
+  "independent_test_script_blob": "1203382b1fe0e01523fc06a20d9819a9778fe352",
+  "test_case": "REJECT_FAIL_CASE_0",
+  "exit_code": 1,
+  "side_effects": "No task launched; session stayed up and responded to subsequent valid snapshot requests",
+  "remediation_commit": "31a75feaab568a80a28f05101380341d36f95ec6",
+  "gate": "tests/ui/test-strict-request-ipc.py must PASS against newly compiled exact HEAD under tests/ui/check-host.sh",
+  "limitations": "Does not imply trustworthy A05 CapSpace, real Weston/IME/GPU, or Asterinas boot"
+}

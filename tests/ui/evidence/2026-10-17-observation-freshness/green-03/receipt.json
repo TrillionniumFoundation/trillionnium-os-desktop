@@ -1,0 +1,471 @@
+{
+  "mode": "green",
+  "status": "passed",
+  "started_utc": "2026-10-17T22:30:18.047959+00:00",
+  "source_commit": "84f0070b6e7e01238a8dac6044748b15101c9497",
+  "source_tree": "9c8e3627a970f9c3f2bea9bbdde583adeb4bc313",
+  "ui_tree": "22959f24a71b5ece8286a962abc19d9fe3ab6ffc",
+  "target": "/workspace/scratch/98f315e377b2/next-tools/ui-r6-freshness-build/target",
+  "cache_mode": "warm_copy_of_retained_R5_target",
+  "cwd": "/workspace/scratch/98f315e377b2/next-r6-ui-fix",
+  "package_invalidation": "trill-shell only in new copied target",
+  "source_cache_modified": false,
+  "copy_receipt_sha256": "c5d2222dbbf30abc30abdd83f90b2c539d963906632f41d34a0d7f2c6bef9434",
+  "helper_sha256": "e6c8856cc5218f711b64e3ed655f6e0b3afa94b68771ee68b140407807094763",
+  "child_guard_sha256": "5ad34b7157b16fc7754d41dac2bd61ebfac5b5c79d71eb5a7818563254c05fbf",
+  "disk_reserve_bytes": 1073741824,
+  "nonreclaimable_memory_stop_bytes": 7516192768,
+  "per_command_deadline_seconds": 300,
+  "commands": [
+    {
+      "label": "compiler-version",
+      "argv": [
+        "/workspace/scratch/98f315e377b2/next-tools/cargo/bin/rustc",
+        "-vV"
+      ],
+      "started_utc": "2026-10-17T22:30:18.053368+00:00",
+      "exit_code": 0,
+      "elapsed_seconds": 0.201,
+      "finished_utc": "2026-10-17T22:30:18.254271+00:00"
+    },
+    {
+      "label": "clean-shell-package",
+      "argv": [
+        "/workspace/scratch/98f315e377b2/next-tools/cargo/bin/cargo",
+        "clean",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "-p",
+        "trill-shell",
+        "--locked",
+        "--offline"
+      ],
+      "started_utc": "2026-10-17T22:30:18.254688+00:00",
+      "exit_code": 0,
+      "elapsed_seconds": 0.201,
+      "finished_utc": "2026-10-17T22:30:18.455789+00:00"
+    },
+    {
+      "label": "freshness-tests",
+      "argv": [
+        "/workspace/scratch/98f315e377b2/next-tools/cargo/bin/cargo",
+        "test",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "-p",
+        "trill-shell",
+        "--locked",
+        "--offline",
+        "observation_freshness_tests",
+        "--",
+        "--nocapture"
+      ],
+      "started_utc": "2026-10-17T22:30:18.456246+00:00",
+      "exit_code": 0,
+      "elapsed_seconds": 2.205,
+      "finished_utc": "2026-10-17T22:30:20.661699+00:00"
+    },
+    {
+      "label": "layout-probe-tests",
+      "argv": [
+        "/workspace/scratch/98f315e377b2/next-tools/cargo/bin/cargo",
+        "test",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "-p",
+        "trill-shell",
+        "--locked",
+        "--offline",
+        "hepta_panel::probe_tests"
+      ],
+      "started_utc": "2026-10-17T22:30:20.677742+00:00",
+      "exit_code": 0,
+      "elapsed_seconds": 0.201,
+      "finished_utc": "2026-10-17T22:30:20.878670+00:00"
+    },
+    {
+      "label": "clippy",
+      "argv": [
+        "/workspace/scratch/98f315e377b2/next-tools/cargo/bin/cargo",
+        "clippy",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "-p",
+        "trill-shell",
+        "--all-targets",
+        "--locked",
+        "--offline",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "started_utc": "2026-10-17T22:30:20.879184+00:00",
+      "exit_code": 0,
+      "elapsed_seconds": 1.006,
+      "finished_utc": "2026-10-17T22:30:21.885017+00:00"
+    },
+    {
+      "label": "fmt",
+      "argv": [
+        "/workspace/scratch/98f315e377b2/next-tools/cargo/bin/cargo",
+        "fmt",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "started_utc": "2026-10-17T22:30:21.885559+00:00",
+      "exit_code": 0,
+      "elapsed_seconds": 0.201,
+      "finished_utc": "2026-10-17T22:30:22.086493+00:00"
+    },
+    {
+      "label": "production-build",
+      "argv": [
+        "/workspace/scratch/98f315e377b2/next-tools/cargo/bin/cargo",
+        "build",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "--workspace",
+        "--bins",
+        "--locked",
+        "--offline"
+      ],
+      "started_utc": "2026-10-17T22:30:22.087039+00:00",
+      "exit_code": 0,
+      "elapsed_seconds": 5.614,
+      "finished_utc": "2026-10-17T22:30:27.700668+00:00"
+    }
+  ],
+  "samples": [
+    {
+      "command": "compiler-version",
+      "elapsed_seconds": 0.0,
+      "disk_free_bytes": 2638254080,
+      "nonreclaimable_memory_bytes": 2079240800
+    },
+    {
+      "command": "clean-shell-package",
+      "elapsed_seconds": 0.0,
+      "disk_free_bytes": 2638245888,
+      "nonreclaimable_memory_bytes": 2082257616
+    },
+    {
+      "command": "freshness-tests",
+      "elapsed_seconds": 0.0,
+      "disk_free_bytes": 2646601728,
+      "nonreclaimable_memory_bytes": 2056856296
+    },
+    {
+      "command": "freshness-tests",
+      "elapsed_seconds": 0.201,
+      "disk_free_bytes": 2646585344,
+      "nonreclaimable_memory_bytes": 2140785456
+    },
+    {
+      "command": "freshness-tests",
+      "elapsed_seconds": 0.401,
+      "disk_free_bytes": 2646585344,
+      "nonreclaimable_memory_bytes": 2171550240
+    },
+    {
+      "command": "freshness-tests",
+      "elapsed_seconds": 0.602,
+      "disk_free_bytes": 2646089728,
+      "nonreclaimable_memory_bytes": 2201114776
+    },
+    {
+      "command": "freshness-tests",
+      "elapsed_seconds": 0.802,
+      "disk_free_bytes": 2644869120,
+      "nonreclaimable_memory_bytes": 2204899752
+    },
+    {
+      "command": "freshness-tests",
+      "elapsed_seconds": 1.002,
+      "disk_free_bytes": 2644664320,
+      "nonreclaimable_memory_bytes": 2380903256
+    },
+    {
+      "command": "freshness-tests",
+      "elapsed_seconds": 1.203,
+      "disk_free_bytes": 2644664320,
+      "nonreclaimable_memory_bytes": 2547341768
+    },
+    {
+      "command": "freshness-tests",
+      "elapsed_seconds": 1.403,
+      "disk_free_bytes": 2644664320,
+      "nonreclaimable_memory_bytes": 2570865096
+    },
+    {
+      "command": "freshness-tests",
+      "elapsed_seconds": 1.604,
+      "disk_free_bytes": 2644664320,
+      "nonreclaimable_memory_bytes": 2606135752
+    },
+    {
+      "command": "freshness-tests",
+      "elapsed_seconds": 1.804,
+      "disk_free_bytes": 2644664320,
+      "nonreclaimable_memory_bytes": 2613270984
+    },
+    {
+      "command": "freshness-tests",
+      "elapsed_seconds": 2.005,
+      "disk_free_bytes": 2638278656,
+      "nonreclaimable_memory_bytes": 2142214888
+    },
+    {
+      "command": "layout-probe-tests",
+      "elapsed_seconds": 0.001,
+      "disk_free_bytes": 2629976064,
+      "nonreclaimable_memory_bytes": 2097894040
+    },
+    {
+      "command": "clippy",
+      "elapsed_seconds": 0.0,
+      "disk_free_bytes": 2629971968,
+      "nonreclaimable_memory_bytes": 2103702968
+    },
+    {
+      "command": "clippy",
+      "elapsed_seconds": 0.204,
+      "disk_free_bytes": 2629955584,
+      "nonreclaimable_memory_bytes": 2185649448
+    },
+    {
+      "command": "clippy",
+      "elapsed_seconds": 0.404,
+      "disk_free_bytes": 2629926912,
+      "nonreclaimable_memory_bytes": 2223988320
+    },
+    {
+      "command": "clippy",
+      "elapsed_seconds": 0.605,
+      "disk_free_bytes": 2629926912,
+      "nonreclaimable_memory_bytes": 2194409960
+    },
+    {
+      "command": "clippy",
+      "elapsed_seconds": 0.805,
+      "disk_free_bytes": 2629926912,
+      "nonreclaimable_memory_bytes": 2214148584
+    },
+    {
+      "command": "fmt",
+      "elapsed_seconds": 0.001,
+      "disk_free_bytes": 2629914624,
+      "nonreclaimable_memory_bytes": 2085813064
+    },
+    {
+      "command": "production-build",
+      "elapsed_seconds": 0.001,
+      "disk_free_bytes": 2629914624,
+      "nonreclaimable_memory_bytes": 2085815864
+    },
+    {
+      "command": "production-build",
+      "elapsed_seconds": 0.201,
+      "disk_free_bytes": 2629894144,
+      "nonreclaimable_memory_bytes": 2159230200
+    },
+    {
+      "command": "production-build",
+      "elapsed_seconds": 0.401,
+      "disk_free_bytes": 2629890048,
+      "nonreclaimable_memory_bytes": 2187922880
+    },
+    {
+      "command": "production-build",
+      "elapsed_seconds": 0.602,
+      "disk_free_bytes": 2629099520,
+      "nonreclaimable_memory_bytes": 2216661584
+    },
+    {
+      "command": "production-build",
+      "elapsed_seconds": 0.802,
+      "disk_free_bytes": 2627702784,
+      "nonreclaimable_memory_bytes": 2216021040
+    },
+    {
+      "command": "production-build",
+      "elapsed_seconds": 1.003,
+      "disk_free_bytes": 2625798144,
+      "nonreclaimable_memory_bytes": 2172905040
+    },
+    {
+      "command": "production-build",
+      "elapsed_seconds": 1.204,
+      "disk_free_bytes": 2625216512,
+      "nonreclaimable_memory_bytes": 2196391280
+    },
+    {
+      "command": "production-build",
+      "elapsed_seconds": 1.405,
+      "disk_free_bytes": 2624335872,
+      "nonreclaimable_memory_bytes": 2246394768
+    },
+    {
+      "command": "production-build",
+      "elapsed_seconds": 1.605,
+      "disk_free_bytes": 2625503232,
+      "nonreclaimable_memory_bytes": 2182750824
+    },
+    {
+      "command": "production-build",
+      "elapsed_seconds": 1.806,
+      "disk_free_bytes": 2625757184,
+      "nonreclaimable_memory_bytes": 2194137432
+    },
+    {
+      "command": "production-build",
+      "elapsed_seconds": 2.006,
+      "disk_free_bytes": 2625757184,
+      "nonreclaimable_memory_bytes": 2208210624
+    },
+    {
+      "command": "production-build",
+      "elapsed_seconds": 2.206,
+      "disk_free_bytes": 2624958464,
+      "nonreclaimable_memory_bytes": 2223196128
+    },
+    {
+      "command": "production-build",
+      "elapsed_seconds": 2.407,
+      "disk_free_bytes": 2624196608,
+      "nonreclaimable_memory_bytes": 2296424736
+    },
+    {
+      "command": "production-build",
+      "elapsed_seconds": 2.607,
+      "disk_free_bytes": 2624196608,
+      "nonreclaimable_memory_bytes": 2488504576
+    },
+    {
+      "command": "production-build",
+      "elapsed_seconds": 2.808,
+      "disk_free_bytes": 2624196608,
+      "nonreclaimable_memory_bytes": 2565803680
+    },
+    {
+      "command": "production-build",
+      "elapsed_seconds": 3.008,
+      "disk_free_bytes": 2624196608,
+      "nonreclaimable_memory_bytes": 2590363296
+    },
+    {
+      "command": "production-build",
+      "elapsed_seconds": 3.209,
+      "disk_free_bytes": 2624196608,
+      "nonreclaimable_memory_bytes": 2627612320
+    },
+    {
+      "command": "production-build",
+      "elapsed_seconds": 3.409,
+      "disk_free_bytes": 2624196608,
+      "nonreclaimable_memory_bytes": 2633162400
+    },
+    {
+      "command": "production-build",
+      "elapsed_seconds": 3.609,
+      "disk_free_bytes": 2614067200,
+      "nonreclaimable_memory_bytes": 2652954272
+    },
+    {
+      "command": "production-build",
+      "elapsed_seconds": 3.81,
+      "disk_free_bytes": 2600038400,
+      "nonreclaimable_memory_bytes": 2235325632
+    },
+    {
+      "command": "production-build",
+      "elapsed_seconds": 4.01,
+      "disk_free_bytes": 2624217088,
+      "nonreclaimable_memory_bytes": 2222196456
+    },
+    {
+      "command": "production-build",
+      "elapsed_seconds": 4.211,
+      "disk_free_bytes": 2623717376,
+      "nonreclaimable_memory_bytes": 2332044208
+    },
+    {
+      "command": "production-build",
+      "elapsed_seconds": 4.411,
+      "disk_free_bytes": 2623717376,
+      "nonreclaimable_memory_bytes": 2524751584
+    },
+    {
+      "command": "production-build",
+      "elapsed_seconds": 4.612,
+      "disk_free_bytes": 2623717376,
+      "nonreclaimable_memory_bytes": 2576394872
+    },
+    {
+      "command": "production-build",
+      "elapsed_seconds": 4.812,
+      "disk_free_bytes": 2623717376,
+      "nonreclaimable_memory_bytes": 2608274040
+    },
+    {
+      "command": "production-build",
+      "elapsed_seconds": 5.012,
+      "disk_free_bytes": 2623717376,
+      "nonreclaimable_memory_bytes": 2636323448
+    },
+    {
+      "command": "production-build",
+      "elapsed_seconds": 5.213,
+      "disk_free_bytes": 2620821504,
+      "nonreclaimable_memory_bytes": 2652516568
+    },
+    {
+      "command": "production-build",
+      "elapsed_seconds": 5.413,
+      "disk_free_bytes": 2609311744,
+      "nonreclaimable_memory_bytes": 2668191960
+    }
+  ],
+  "test_binary": {
+    "path": "/workspace/scratch/98f315e377b2/next-tools/ui-r6-freshness-build/target/debug/deps/trill_shell-57b041f25180d42d",
+    "sha256": "2139a6f1f19229a52f717eaa6b1dd5ce1b2cb68123ce7b0e39af309e718769fd",
+    "bytes": 8292600,
+    "retained_path": "/workspace/scratch/98f315e377b2/next-tools/ui-r6-freshness-build/green-03/executed-test.elf",
+    "retained_sha256": "2139a6f1f19229a52f717eaa6b1dd5ce1b2cb68123ce7b0e39af309e718769fd",
+    "dependency_info_sha256": "f23e47a057b8fab2d00425183b736fc9ee5870a113ed7be7085eb11315aadfe6",
+    "compiled_source_directory": "/workspace/scratch/98f315e377b2/next-r6-ui-fix/ui/shell",
+    "recompilation_observed": true
+  },
+  "binaries": {
+    "trill-shell": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/ui-r6-freshness-build/target/debug/trill-shell",
+      "bytes": 24154200,
+      "sha256": "62d0f304d6a3a53db4bc605e374470a924a56bfeb63387b1c12f9f245f17536a",
+      "elf_machine": "x86_64"
+    },
+    "trill-session": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/ui-r6-freshness-build/target/debug/trill-session",
+      "bytes": 3527792,
+      "sha256": "f152e6413742baa3349aded2283f9aff41bfe1bc552586aa260ade6327d5d16d",
+      "elf_machine": "x86_64"
+    },
+    "trill-ctl": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/ui-r6-freshness-build/target/debug/trill-ctl",
+      "bytes": 1494736,
+      "sha256": "ba85b891f91a88ac3ad5240535f5dd6261c47eadbcc1bb64593add0a0aa2b598",
+      "elf_machine": "x86_64"
+    },
+    "trill-app-window": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/ui-r6-freshness-build/target/debug/trill-app-window",
+      "bytes": 22627904,
+      "sha256": "08c3bbe84b5d6e773f367f9751a1432eaee327bf45a5b172150f34f165342510",
+      "elf_machine": "x86_64"
+    }
+  },
+  "exit_code": 0,
+  "product_tests_passed": true,
+  "finished_utc": "2026-10-17T22:30:27.748232+00:00",
+  "free_bytes_after": 2624200704
+}

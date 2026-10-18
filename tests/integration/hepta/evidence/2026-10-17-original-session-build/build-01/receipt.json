@@ -1,0 +1,295 @@
+{
+  "started_at_utc": "2026-10-17T22:23:10.322953+00:00",
+  "qualification": "staged_original_session_consumer_build",
+  "status": "failed",
+  "desktop": {
+    "commit": "9d2ef72a4183460b1b4f1cdad97c1c013fa9d8dd",
+    "tree": "651ff86f8814218bab71b19a550a1d84aa3a1d41",
+    "clean": true,
+    "subtrees": {
+      "services/hepta-os": "7ebe43051e1cebb8049ba50e9da4a9fb59d1a0c7",
+      "ui": "037f318be7140ef046eac1e9cabe230c07eb7059"
+    },
+    "inputs": {
+      "tests/integration/hepta/run_original_agentd.py": "5ad34b7157b16fc7754d41dac2bd61ebfac5b5c79d71eb5a7818563254c05fbf",
+      "tests/integration/hepta/original_agentd_probe.rs": "d297d6b5c7e39c3c98a4cb051d54ebdfc58757d04ca5ca265a023f4fb7fb276c",
+      "tests/integration/hepta/original_session_probe.rs": "7660c76f640cf612f57a2ee6a2ea7d8b09e8ac332c20fd44d8e7c8bbcb0663c5",
+      "services/hepta-os/Cargo.toml": "6d33aced708f1f6d3637e065825dd1718a4b187876e96edf1f7aefb0f437bfee",
+      "services/hepta-os/Cargo.lock": "a1aed4d1f513036cbe03912359f3dfbb2c6d93c5210b8d18244d95be9008a875",
+      "services/hepta-os/UPSTREAM_CONTRACT.json": "24efcccd98b6ac6a56cb34b36f5bdb10785d955efd86c32fed308bac1505f7ef",
+      "ui/Cargo.toml": "2c59194ffc1ed3bc0d5118f275498c1e09bd49f6ce71b80db709927b317a7628",
+      "ui/Cargo.lock": "e484809d742a264a296046b0d272e843d167b02b634232e793ef702757cc70e1"
+    }
+  },
+  "original_build": {
+    "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-03/receipt.json",
+    "receipt_sha256": "1dd50ac0a0a1856a787bf3ba6556407e13d85591daac1bf154639f063eb63f00",
+    "original": {
+      "commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+      "tree": "15c9d6ea07bf3832de82825a6cc1e8c958dd3d45",
+      "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+      "clean_checkout": true
+    },
+    "binary": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/target/dev-small/codex-hepta-agentd",
+      "bytes": 329001344,
+      "sha256": "f476f9bb435c5127839c48ae7135d5a6fa7695ff5253460fdd8d19d7b084d4fa",
+      "elf_class": 64,
+      "elf_machine": 62,
+      "architecture": "x86_64"
+    },
+    "previous_attempt_receipt_sha256": null,
+    "initial_admission": {
+      "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/receipt.json",
+      "receipt_sha256": "9a8f0853019123980f5bbd2213f477465935c10048eced027018161a70631625",
+      "minimum_free_bytes": 8589934592,
+      "free_bytes_at_admission": 12099153920
+    },
+    "previous_attempt": {
+      "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-02/receipt.json",
+      "receipt_sha256": "bbf9330b962ffa48f17895e47fe18e601d96d4271fa6686ed472bae9ca6a9361",
+      "status": "failed",
+      "stop_reason": "observed_memory_reserve_reached"
+    },
+    "resource_recovery": {
+      "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/r6-retained-cache-migration-03/receipt.json",
+      "receipt_sha256": "1f6854af7ec3f66e6a2426ae70e85d7813fe2cf3a658628b948045094a5ec735"
+    },
+    "previous_failed_migrations": [
+      {
+        "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/r6-retained-cache-migration-01/receipt.json",
+        "receipt_sha256": "cff8e9ac31d2d9c63df78cfabaa3b10d3250b14f20a8e54a28d8d6efe4d5a09d",
+        "status": "failed"
+      },
+      {
+        "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/r6-retained-cache-migration-02/receipt.json",
+        "receipt_sha256": "221f9db60e561bdd3fac2a914ad106834f95d5410ef433f77e7af9ac39713a45",
+        "status": "failed"
+      }
+    ],
+    "fresh_full_gate_preflight_applied_at_this_attempt": false,
+    "stock_fresh_work_gate_reexecuted": false,
+    "source_build_kind": "new_R6_target_copied_from_retained_warm_cache"
+  },
+  "runtime_probe_attempted": false,
+  "stock_fresh_work_gate_reexecuted": false,
+  "retained_r4_inputs_modified": false,
+  "steps": [
+    {
+      "command": [
+        "/workspace/scratch/98f315e377b2/next-tools/cargo/bin/rustup",
+        "run",
+        "1.88.0",
+        "cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "--manifest-path",
+        "/workspace/scratch/98f315e377b2/next-r6-integration/services/hepta-os/Cargo.toml",
+        "--bin",
+        "hepta-observe"
+      ],
+      "cwd": "/workspace/scratch/98f315e377b2/next-r6-integration",
+      "started_at_utc": "2026-10-17T22:23:10.323227+00:00",
+      "status": "passed",
+      "deadline_seconds": 900,
+      "minimum_disk_reserve_bytes": 734003200,
+      "maximum_nonreclaimable_bytes": 7516192768,
+      "resource_samples": [
+        {
+          "elapsed_seconds": 0.0,
+          "free_bytes": 2732474368,
+          "nonreclaimable_bytes": 2495210416
+        },
+        {
+          "elapsed_seconds": 1.0,
+          "free_bytes": 2723454976,
+          "nonreclaimable_bytes": 2558200328
+        },
+        {
+          "elapsed_seconds": 2.001,
+          "free_bytes": 2718081024,
+          "nonreclaimable_bytes": 2599260160
+        },
+        {
+          "elapsed_seconds": 3.001,
+          "free_bytes": 2709819392,
+          "nonreclaimable_bytes": 2584783080
+        },
+        {
+          "elapsed_seconds": 4.004,
+          "free_bytes": 2696769536,
+          "nonreclaimable_bytes": 2612601416
+        },
+        {
+          "elapsed_seconds": 5.004,
+          "free_bytes": 2696597504,
+          "nonreclaimable_bytes": 2707517728
+        },
+        {
+          "elapsed_seconds": 6.005,
+          "free_bytes": 2685353984,
+          "nonreclaimable_bytes": 2601357128
+        },
+        {
+          "elapsed_seconds": 7.008,
+          "free_bytes": 2685341696,
+          "nonreclaimable_bytes": 2702354672
+        },
+        {
+          "elapsed_seconds": 8.008,
+          "free_bytes": 2672619520,
+          "nonreclaimable_bytes": 2606986936
+        },
+        {
+          "elapsed_seconds": 9.008,
+          "free_bytes": 2666323968,
+          "nonreclaimable_bytes": 2607353536
+        },
+        {
+          "elapsed_seconds": 10.009,
+          "free_bytes": 2660401152,
+          "nonreclaimable_bytes": 2417903672
+        },
+        {
+          "elapsed_seconds": 11.009,
+          "free_bytes": 2656694272,
+          "nonreclaimable_bytes": 2453239520
+        },
+        {
+          "elapsed_seconds": 12.01,
+          "free_bytes": 2656694272,
+          "nonreclaimable_bytes": 2521106144
+        },
+        {
+          "elapsed_seconds": 13.01,
+          "free_bytes": 2645544960,
+          "nonreclaimable_bytes": 2565683232
+        },
+        {
+          "elapsed_seconds": 14.011,
+          "free_bytes": 2630991872,
+          "nonreclaimable_bytes": 2397112792
+        },
+        {
+          "elapsed_seconds": 15.011,
+          "free_bytes": 2611257344,
+          "nonreclaimable_bytes": 2500112616
+        },
+        {
+          "elapsed_seconds": 16.012,
+          "free_bytes": 2608422912,
+          "nonreclaimable_bytes": 2356531312
+        }
+      ],
+      "pid": 604552,
+      "exit_code": 0,
+      "ended_at_utc": "2026-10-17T22:23:26.335718+00:00",
+      "log": {
+        "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-01/observer-build.log",
+        "bytes": 650,
+        "sha256": "15b6b51e248ddd52f7b81eb66ac9c0a3db9aee33dc43dd16ae8a8a669fab95bc"
+      }
+    },
+    {
+      "command": [
+        "/workspace/scratch/98f315e377b2/next-tools/cargo/bin/rustup",
+        "run",
+        "1.95.0",
+        "cargo",
+        "metadata",
+        "--offline",
+        "--format-version",
+        "1",
+        "--manifest-path",
+        "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-01/probe/Cargo.toml"
+      ],
+      "cwd": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-01/probe",
+      "started_at_utc": "2026-10-17T22:23:26.339979+00:00",
+      "status": "passed",
+      "deadline_seconds": 300,
+      "minimum_disk_reserve_bytes": 734003200,
+      "maximum_nonreclaimable_bytes": 7516192768,
+      "resource_samples": [
+        {
+          "elapsed_seconds": 0.0,
+          "free_bytes": 2607943680,
+          "nonreclaimable_bytes": 2356531312
+        },
+        {
+          "elapsed_seconds": 1.0,
+          "free_bytes": 2604519424,
+          "nonreclaimable_bytes": 2368770456
+        }
+      ],
+      "pid": 604978,
+      "exit_code": 0,
+      "ended_at_utc": "2026-10-17T22:23:27.340914+00:00",
+      "log": {
+        "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-01/probe-resolution.log",
+        "bytes": 3655805,
+        "sha256": "241b35b64bfc10330b03ab3627b61b1a9ffab79c9cae6967cf0a468f070fe213"
+      }
+    },
+    {
+      "command": [
+        "/workspace/scratch/98f315e377b2/next-tools/cargo/bin/rustup",
+        "run",
+        "1.95.0",
+        "cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "--profile",
+        "dev-small",
+        "--manifest-path",
+        "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-01/probe/Cargo.toml",
+        "-j1"
+      ],
+      "cwd": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-01/probe",
+      "started_at_utc": "2026-10-17T22:23:27.411646+00:00",
+      "status": "failed",
+      "deadline_seconds": 1200,
+      "minimum_disk_reserve_bytes": 734003200,
+      "maximum_nonreclaimable_bytes": 7516192768,
+      "resource_samples": [
+        {
+          "elapsed_seconds": 0.0,
+          "free_bytes": 2604519424,
+          "nonreclaimable_bytes": 2370795016
+        },
+        {
+          "elapsed_seconds": 1.0,
+          "free_bytes": 2604515328,
+          "nonreclaimable_bytes": 2370708280
+        }
+      ],
+      "pid": 604990,
+      "exit_code": 101,
+      "ended_at_utc": "2026-10-17T22:23:31.412880+00:00",
+      "log": {
+        "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-01/probe-build.log",
+        "bytes": 1635,
+        "sha256": "4cde8a70fd6d53e68f4508dfe58792a64a9fb67c0ff78503018647a5ec2d566e"
+      }
+    }
+  ],
+  "helper_sha256": {
+    "build_consumers.py": "7d2fc391f7034966ed912e5cadc02e9f031367bb60a23c4c744b216d19919ddc",
+    "common.py": "597d4ef609d38a5ffc3966075212dca380eb7184ccbc253f7816ddb1404a6937"
+  },
+  "build_environment_paths": {
+    "CARGO_HOME": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/cargo",
+    "RUSTUP_HOME": "/dev/shm/trill-hepta-r4-enuzuex9/rustup",
+    "CARGO_TARGET_DIR": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/target",
+    "PATH": "/dev/shm/trill-hepta-r4-enuzuex9/cmake-3.28.3-02/cmake/data/bin:/dev/shm/trill-hepta-r4-enuzuex9/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin:/workspace/scratch/98f315e377b2/next-tools/cargo/bin:/usr/bin:/bin",
+    "TMPDIR": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/tmp",
+    "CARGO_BUILD_JOBS": "1",
+    "CARGO_INCREMENTAL": "0"
+  },
+  "error": {
+    "type": "RuntimeError",
+    "detail": "command failed with exit 101: probe-build.log"
+  },
+  "ended_at_utc": "2026-10-17T22:23:31.413041+00:00"
+}

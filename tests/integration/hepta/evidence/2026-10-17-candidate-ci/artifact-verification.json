@@ -1,0 +1,17 @@
+{
+  "verification_scope": "actual artifact ZIP bytes and streamed tar members; no downloaded executable was run",
+  "passed": true,
+  "desktop_commit": "c0d5ee395cd76bcd29e8f1c912d048d19c97ce00",
+  "hepta_commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+  "a10_zip_bytes": 17397212,
+  "a10_zip_sha256": "7e5be6de0d4b2231b3015944cbb35f4a9ce6d1a51fda727dcb8771fbda8ce6f6",
+  "arm_evidence_zip_bytes": 456651,
+  "arm_evidence_zip_sha256": "6d06b0f8ff338f9b76dd8568432f62c70074790259983630b644a1bd2ea14cfc",
+  "arm_elf_zip_bytes": 80667136,
+  "arm_elf_zip_sha256": "8296a3e573f375ca18d0fee262cee730098f230b841aa0c593f5aa7ad8aa4874",
+  "a10_actual_elf_count": 4,
+  "arm_actual_elf_count": 3,
+  "arm_manifest_report_and_actual_elf_hashes_match": true,
+  "a10_all_packaged_elf_sha256_match": true,
+  "a10_packaged_bytes_are_stripped_copies": "package-host-binaries.sh runs strip --strip-debug; bundle is independently replayed without GUI; real Wayland fixture reports unstripped execution hashes"
+}

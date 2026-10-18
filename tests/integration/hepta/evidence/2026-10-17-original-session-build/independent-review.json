@@ -1,0 +1,87 @@
+{
+  "reviewer": "/root/r6_review_ci",
+  "reviewed_utc": "2026-10-17T22:48:40.453181+00:00",
+  "status": "passed",
+  "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-02/receipt.json",
+  "receipt_sha256": "c5ba7cd15f9cddc301e3004168ca0a68ceb9b59f1d91d90eb1d94b298dd8447b",
+  "source_commit": "c50d7b9b688135a22ced2f7f3cbe21c3028d8e17",
+  "source_tree": "1b606b1922751fe938fa4bcca0a923516323f418",
+  "frozen_source_clean_and_inputs_match": true,
+  "helper_v2_pre_post_hashes_match_actual": true,
+  "preserved_failed_build_01_hash_match": true,
+  "steps": [
+    {
+      "log": "observer-build.log",
+      "sha256": "869bf398625e361378791b46d3886a646536a2212e4eae2052570a1fcb6b72c5",
+      "exit_code": 0,
+      "started_at_utc": "2026-10-17T22:35:58.656609+00:00",
+      "ended_at_utc": "2026-10-17T22:36:15.668792+00:00"
+    },
+    {
+      "log": "probe-resolution.log",
+      "sha256": "010e51951ea931d4317a0f6cdc78df152af55f72b7672b19162c5aaa030f731e",
+      "exit_code": 0,
+      "started_at_utc": "2026-10-17T22:36:15.673315+00:00",
+      "ended_at_utc": "2026-10-17T22:36:16.674661+00:00"
+    },
+    {
+      "log": "probe-locked-metadata-1.log",
+      "sha256": "010e51951ea931d4317a0f6cdc78df152af55f72b7672b19162c5aaa030f731e",
+      "exit_code": 0,
+      "started_at_utc": "2026-10-17T22:36:16.781455+00:00",
+      "ended_at_utc": "2026-10-17T22:36:17.782660+00:00"
+    },
+    {
+      "log": "probe-locked-metadata-2.log",
+      "sha256": "010e51951ea931d4317a0f6cdc78df152af55f72b7672b19162c5aaa030f731e",
+      "exit_code": 0,
+      "started_at_utc": "2026-10-17T22:36:17.865490+00:00",
+      "ended_at_utc": "2026-10-17T22:36:18.866808+00:00"
+    },
+    {
+      "log": "probe-build.log",
+      "sha256": "9c7d7102399990719e22da014d137e576a9547695f6fe45c7aa4e1bae7cc055a",
+      "exit_code": 0,
+      "started_at_utc": "2026-10-17T22:36:18.947663+00:00",
+      "ended_at_utc": "2026-10-17T22:40:12.125233+00:00"
+    },
+    {
+      "log": "probe-stale-tests.log",
+      "sha256": "6a756b53cba3b4f5c323b2f18d326e78a371fe59598fee37a39dcf98c1eee82f",
+      "exit_code": 0,
+      "started_at_utc": "2026-10-17T22:40:12.125370+00:00",
+      "ended_at_utc": "2026-10-17T22:40:14.128838+00:00"
+    }
+  ],
+  "lock_sha256": "72cb7346158f4c3514922cc7b9020f9b9d290aec78e047264a738d52afe6ed68",
+  "locked_metadata_passes": 2,
+  "package_entries": 733,
+  "package_entries_equal_pre_fix_lock": true,
+  "unused_patch_entries": 5,
+  "actual_binaries": {
+    "agentd": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/target/dev-small/codex-hepta-agentd",
+      "bytes": 329001344,
+      "sha256": "f476f9bb435c5127839c48ae7135d5a6fa7695ff5253460fdd8d19d7b084d4fa",
+      "elf_machine": 62
+    },
+    "observer": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-02/observer-target/debug/hepta-observe",
+      "bytes": 13883672,
+      "sha256": "de5aa738234b7ebfdf35afb5e78cf0296962f76625ae1e3fffdc44ba682b7a55",
+      "elf_machine": 62
+    },
+    "probe": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/target/dev-small/hepta-original-observer-probe",
+      "bytes": 29114728,
+      "sha256": "46c8f20bef00d5e4b76ae7fcba784937bc1c4d9a33d6b416cd4acc1b96d43365",
+      "elf_machine": 62
+    }
+  },
+  "actual_rust_stale_contract_tests_passed": [
+    "original_session_probe::tests::actual_stop_can_publish_draining_after_the_last_live_capture",
+    "original_session_probe::tests::stale_cut_cannot_rebind_spawn_erase_history_or_claim_fresh_success"
+  ],
+  "scope": "Actual original-linked external probe build, observer build and two Rust contract tests; original process lifecycle and persistent Session runtime require separate runtime receipt",
+  "stock_fresh_work_gate_reexecuted": false
+}

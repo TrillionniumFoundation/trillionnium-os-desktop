@@ -1,0 +1,53 @@
+{
+  "label": "after",
+  "script_revision": "35f379101c0863027e971ccb91faf8da71cf929c",
+  "script_sha256": "8d7761b6a4bdc3bafe00cdf0b5a1cda35aac0fada91a965c467aaa9909192734",
+  "command": [
+    "sudo",
+    "-n",
+    "-u",
+    "vscode",
+    "env",
+    "-i",
+    "PATH=/usr/bin:/bin",
+    "TMPDIR=/tmp/trill-runtime-owner-r5-z1_r1r33/fixtures",
+    "/usr/bin/bash",
+    "-c",
+    "id -u; exec bash \"$1\" \"$2\"",
+    "bash",
+    "/tmp/trill-runtime-owner-r5-z1_r1r33/after.sh",
+    "/tmp/trill-runtime-owner-r5-z1_r1r33/bin"
+  ],
+  "started_at_utc": "2026-10-17T13:32:13.529542+00:00",
+  "copied_logs": [
+    {
+      "path": "console.log",
+      "sha256": "985db2f723c7aaddc35b324f84e5ce58136c0db2cc806e3497fb8e5b301436bb",
+      "bytes": 1053
+    },
+    {
+      "path": "foreign_lock.log",
+      "sha256": "907987b9836a3aa3b66fa21e925655b708c89f4f4d2f6d1168ea243ccb7ad0b8",
+      "bytes": 169
+    },
+    {
+      "path": "foreign_runtime.log",
+      "sha256": "e29b4e33a495260a43be5636388b511b4442366e6c0ec9f5b0df6219a508958e",
+      "bytes": 172
+    },
+    {
+      "path": "foreign_subdir.log",
+      "sha256": "1af1dc933f26c9344da72d6f0566aa168c7c071941767a12e2c901c86ccb0ab8",
+      "bytes": 176
+    },
+    {
+      "path": "owned.log",
+      "sha256": "3c84ee55410c1889fd9a80cffdcc8696d992d7b10ec610444e4d1d6dfecf7260",
+      "bytes": 262
+    }
+  ],
+  "exit_code": 0,
+  "caller_uid_line_observed": true,
+  "ended_at_utc": "2026-10-17T13:32:14.709846+00:00",
+  "expected_result_observed": true
+}

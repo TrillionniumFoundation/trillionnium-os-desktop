@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "agent": "A10-rust-desktop",
+  "observed_at_utc": "2026-10-16T11:48:21Z",
+  "execution_environment": "ChatGPT isolated Linux x86_64 container; no cargo/rustc or Wayland compositor",
+  "git_branch": "agents/A10-rust-desktop",
+  "git_blobs": {
+    "support/ui/smoke-cleanup.sh": "ccbdb3335521ae7b1a01989680dff110a43add90",
+    "tests/ui/test-smoke-cleanup.sh": "c6b5a788e9a675c9a70c98f03c70a7089efdd866",
+    "tests/ui/smoke-wayland.sh": "5a73391e2786e092cce93ea75a344990282d7b9e",
+    "tests/ui/check-host.sh": "25738b0ad6a3d87253176fa7d7191088ac20b525"
+  },
+  "observations": [
+    {
+      "command": "bash -n tests/ui/test-smoke-cleanup.sh tests/ui/smoke-wayland.sh tests/ui/check-host.sh support/ui/smoke-cleanup.sh",
+      "exit_code": 0,
+      "verdict": "passed"
+    },
+    {
+      "command": "bash tests/ui/test-smoke-cleanup.sh",
+      "repeat": 25,
+      "passed": 25,
+      "failed": 0,
+      "verdict": "passed",
+      "notes": "Each run copies /bin/sleep under a temporary trill-app-window path; starts two separate Linux child processes with distinct XDG_RUNTIME_DIR; only the test's matching process is stopped, and the other remains alive until fixture cleanup."
+    },
+    {
+      "command": "bash tests/ui/check-host.sh",
+      "exit_code": 127,
+      "verdict": "blocked",
+      "stderr": "cargo: command not found",
+      "notes": "Preceding host process cleanup test passed before build stopped."
+    }
+  ],
+  "not_executed": [
+    "cargo build",
+    "cargo test",
+    "rustfmt",
+    "headless-Weston live smoke",
+    "new Rust kernel boot",
+    "live Chinese IME",
+    "real GPU reset",
+    "Hepta adapter"
+  ],
+  "interpretation": "Actual Linux process cleanup isolation passed. No Rust source compile, GUI render, or Asterinas native desktop acceptance is evidenced."
+}

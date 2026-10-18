@@ -1,0 +1,92 @@
+{
+  "started_at_utc": "2026-10-17T22:17:34.804145+00:00",
+  "status": "passed",
+  "migrations": [
+    {
+      "source": "/dev/shm/trill-hepta-r4-enuzuex9/probe-check-02/target",
+      "destination": "/workspace/scratch/98f315e377b2/next-tools/r6-retained-cache-migration-01/check-target",
+      "label": "check-target",
+      "status": "migrated_verified_original_path_preserved",
+      "manifest_path": "/workspace/scratch/98f315e377b2/next-tools/r6-retained-cache-migration-02/check-target-members.json.gz",
+      "manifest_sha256": "57c50e280bfba2c5f0de0e079cc7b0cf938db293e49a81a2278a8a7917a1cc44",
+      "uncompressed_manifest_sha256": "e2d0c9d818f24748cd7730a3d46a747ff9f5ac0a40330d935e3493b3f38566b3",
+      "entries": 12258,
+      "files": 10386,
+      "file_bytes": 1653171601,
+      "reuses_verified_failed_attempt_disk_copy": true,
+      "verified_copy_matches_source": true,
+      "resources_after": {
+        "disk_free_bytes": 7724449792,
+        "ram_filesystem_free_bytes": 1677553664,
+        "memory_stat": "anon 126832640\nfile 6083399680\nkernel 690024448\nkernel_stack 638976\npagetables 3641344\nsec_pagetables 0\npercpu 2112\nsock 0\nvmalloc 0\nshmem 3548164096\nfile_mapped 36864\nfile_dirty 1413120\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 4194304\nshmem_thp 0\ninactive_anon 1154195456\nactive_anon 2520764416\ninactive_file 529326080\nactive_file 2005909504\nunevictable 0\nslab_reclaimable 618756848\nslab_unreclaimable 66941232\nslab 685698080\nworkingset_refault_anon 0\nworkingset_refault_file 27586594\nworkingset_activate_anon 0\nworkingset_activate_file 12612092\nworkingset_restore_anon 0\nworkingset_restore_file 8406415\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgscan 40816968\npgsteal 40564934\npswpin 0\npswpout 0\npgscan_kswapd 252147\npgscan_direct 40564821\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 249882\npgsteal_direct 40315052\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 473652653\npgmajfault 9287\npgrefill 20274599\npgactivate 12937674\npgdeactivate 20172652\npglazyfree 88\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nthp_fault_alloc 1051\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\n",
+        "memory_events": "low 0\nhigh 0\nmax 610241\noom 0\noom_kill 0\noom_group_kill 0\n"
+      },
+      "independently_reverified_in_continuation": true
+    },
+    {
+      "source": "/dev/shm/trill-hepta-r4-enuzuex9/cargo",
+      "destination": "/workspace/scratch/98f315e377b2/next-tools/r6-retained-cache-migration-02/cargo-cache",
+      "label": "cargo-cache",
+      "status": "migrated_verified_original_path_preserved",
+      "manifest_path": "/workspace/scratch/98f315e377b2/next-tools/r6-retained-cache-migration-02/cargo-cache-members.json.gz",
+      "manifest_sha256": "93e09c45d56d48b521f90449133bdeae645b71e4661c123c32df8d73330c369c",
+      "uncompressed_manifest_sha256": "2e2abba674272682ca18eba6e2fa9c856cdb7623d938dde4449bb01bca9e5bb7",
+      "entries": 67933,
+      "files": 56912,
+      "file_bytes": 1587708151,
+      "verified_copy_matches_source": true,
+      "copied_root_mode_before": 493,
+      "copied_root_mode_after": 448,
+      "resources_after": {
+        "disk_free_bytes": 5005701120,
+        "ram_filesystem_free_bytes": 3332542464,
+        "memory_stat": "anon 184385536\nfile 5783568384\nkernel 736055296\nkernel_stack 638976\npagetables 3780608\nsec_pagetables 0\npercpu 2288\nsock 0\nvmalloc 0\nshmem 1893175296\nfile_mapped 36864\nfile_dirty 479232\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 2097152\nshmem_thp 0\ninactive_anon 752529408\nactive_anon 1324867584\ninactive_file 531501056\nactive_file 3358892032\nunevictable 0\nslab_reclaimable 715448960\nslab_unreclaimable 16145008\nslab 731593968\nworkingset_refault_anon 0\nworkingset_refault_file 28483733\nworkingset_activate_anon 0\nworkingset_activate_file 13461879\nworkingset_restore_anon 0\nworkingset_restore_file 9052049\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgscan 42182277\npgsteal 41797923\npswpin 0\npswpout 0\npgscan_kswapd 603347\npgscan_direct 41578930\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 473734\npgsteal_direct 41324189\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 474644006\npgmajfault 9356\npgrefill 21446247\npgactivate 13690173\npgdeactivate 21344300\npglazyfree 88\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nthp_fault_alloc 1051\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\n",
+        "memory_events": "low 0\nhigh 0\nmax 633056\noom 0\noom_kill 0\noom_group_kill 0\n"
+      }
+    }
+  ],
+  "source_before": {
+    "commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+    "clean": true,
+    "lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389"
+  },
+  "resources_before": {
+    "disk_free_bytes": 5005701120,
+    "ram_filesystem_free_bytes": 1677553664,
+    "memory_stat": "anon 116527104\nfile 7508348928\nkernel 871567360\nkernel_stack 655360\npagetables 3887104\nsec_pagetables 0\npercpu 2112\nsock 0\nvmalloc 0\nshmem 3548164096\nfile_mapped 208896\nfile_dirty 13082624\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 2097152\nshmem_thp 0\ninactive_anon 684666880\nactive_anon 2979860480\ninactive_file 686718976\nactive_file 3273408512\nunevictable 0\nslab_reclaimable 804737904\nslab_unreclaimable 62244872\nslab 866982776\nworkingset_refault_anon 0\nworkingset_refault_file 27839333\nworkingset_activate_anon 0\nworkingset_activate_file 12817493\nworkingset_restore_anon 0\nworkingset_restore_file 8407663\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgscan 41520482\npgsteal 41136416\npswpin 0\npswpout 0\npgscan_kswapd 603347\npgscan_direct 40917135\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 473734\npgsteal_direct 40662682\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 474476852\npgmajfault 9354\npgrefill 20642471\npgactivate 13509793\npgdeactivate 20540524\npglazyfree 88\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nthp_fault_alloc 1051\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\n",
+    "memory_events": "low 0\nhigh 0\nmax 615807\noom 0\noom_kill 0\noom_group_kill 0\n"
+  },
+  "previous_failed_attempts": [
+    {
+      "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/r6-retained-cache-migration-01/receipt.json",
+      "sha256": "cff8e9ac31d2d9c63df78cfabaa3b10d3250b14f20a8e54a28d8d6efe4d5a09d",
+      "status": "failed"
+    },
+    {
+      "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/r6-retained-cache-migration-02/receipt.json",
+      "sha256": "221f9db60e561bdd3fac2a914ad106834f95d5410ef433f77e7af9ac39713a45",
+      "status": "failed"
+    }
+  ],
+  "definition_source_sha256": "a70638fd4bfd99774224904c55578c688ea5d67082cf6718c08e8bb9dbc158be",
+  "directory_mtime_equivalence_required": false,
+  "file_bytes_modes_mtimes_types_and_symlinks_strict": true,
+  "original_source_modified": false,
+  "historical_logs_modified": false,
+  "compilers_modified": false,
+  "qualified_ui_elfs_modified": false,
+  "cache_contents_preserved": true,
+  "original_cache_access_paths_preserved": true,
+  "source_after": {
+    "commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+    "clean": true,
+    "lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389"
+  },
+  "resources_after": {
+    "disk_free_bytes": 5005701120,
+    "ram_filesystem_free_bytes": 3332542464,
+    "memory_stat": "anon 186843136\nfile 5783793664\nkernel 732983296\nkernel_stack 638976\npagetables 3956736\nsec_pagetables 0\npercpu 2112\nsock 0\nvmalloc 0\nshmem 1893175296\nfile_mapped 229376\nfile_dirty 491520\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 2097152\nshmem_thp 0\ninactive_anon 754958336\nactive_anon 1324871680\ninactive_file 530350080\nactive_file 3360169984\nunevictable 0\nslab_reclaimable 714116832\nslab_unreclaimable 14214176\nslab 728331008\nworkingset_refault_anon 0\nworkingset_refault_file 28483788\nworkingset_activate_anon 0\nworkingset_activate_file 13461879\nworkingset_restore_anon 0\nworkingset_restore_file 9052049\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgscan 42182277\npgsteal 41797923\npswpin 0\npswpout 0\npgscan_kswapd 603347\npgscan_direct 41578930\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 473734\npgsteal_direct 41324189\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 474645667\npgmajfault 9358\npgrefill 21446247\npgactivate 13690484\npgdeactivate 21344300\npglazyfree 88\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nthp_fault_alloc 1051\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\n",
+    "memory_events": "low 0\nhigh 0\nmax 633056\noom 0\noom_kill 0\noom_group_kill 0\n"
+  },
+  "ended_at_utc": "2026-10-17T22:18:01.593074+00:00"
+}

@@ -1,0 +1,249 @@
+{
+  "started_at_utc": "2026-10-17T22:59:44.123540+00:00",
+  "qualification": "staged_original_agentd_persistent_session_runtime",
+  "status": "running",
+  "desktop": {
+    "commit": "145e94c364243789b88c23b1292f9d4d9ca9a0e9",
+    "tree": "98dee80a7ec855a84c777b350fed8ef675e31fc1",
+    "clean": true,
+    "subtrees": {
+      "services/hepta-os": "7ebe43051e1cebb8049ba50e9da4a9fb59d1a0c7",
+      "ui": "22959f24a71b5ece8286a962abc19d9fe3ab6ffc"
+    },
+    "inputs": {
+      "tests/integration/hepta/run_original_agentd.py": "21dd4a2e0621240a75f5ce37bad93da0a37352fbaa78554a50e048abe6a45fd0",
+      "tests/integration/hepta/original_agentd_probe.rs": "d297d6b5c7e39c3c98a4cb051d54ebdfc58757d04ca5ca265a023f4fb7fb276c",
+      "tests/integration/hepta/original_session_probe.rs": "7660c76f640cf612f57a2ee6a2ea7d8b09e8ac332c20fd44d8e7c8bbcb0663c5",
+      "services/hepta-os/Cargo.toml": "6d33aced708f1f6d3637e065825dd1718a4b187876e96edf1f7aefb0f437bfee",
+      "services/hepta-os/Cargo.lock": "a1aed4d1f513036cbe03912359f3dfbb2c6d93c5210b8d18244d95be9008a875",
+      "services/hepta-os/UPSTREAM_CONTRACT.json": "24efcccd98b6ac6a56cb34b36f5bdb10785d955efd86c32fed308bac1505f7ef",
+      "ui/Cargo.toml": "2c59194ffc1ed3bc0d5118f275498c1e09bd49f6ce71b80db709927b317a7628",
+      "ui/Cargo.lock": "e484809d742a264a296046b0d272e843d167b02b634232e793ef702757cc70e1"
+    }
+  },
+  "original_build": {
+    "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-03/receipt.json",
+    "receipt_sha256": "1dd50ac0a0a1856a787bf3ba6556407e13d85591daac1bf154639f063eb63f00",
+    "original": {
+      "commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+      "tree": "15c9d6ea07bf3832de82825a6cc1e8c958dd3d45",
+      "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+      "clean_checkout": true
+    },
+    "binary": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/target/dev-small/codex-hepta-agentd",
+      "bytes": 329001344,
+      "sha256": "f476f9bb435c5127839c48ae7135d5a6fa7695ff5253460fdd8d19d7b084d4fa",
+      "elf_class": 64,
+      "elf_machine": 62,
+      "architecture": "x86_64"
+    },
+    "previous_attempt_receipt_sha256": null,
+    "initial_admission": {
+      "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/receipt.json",
+      "receipt_sha256": "9a8f0853019123980f5bbd2213f477465935c10048eced027018161a70631625",
+      "minimum_free_bytes": 8589934592,
+      "free_bytes_at_admission": 12099153920
+    },
+    "previous_attempt": {
+      "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-02/receipt.json",
+      "receipt_sha256": "bbf9330b962ffa48f17895e47fe18e601d96d4271fa6686ed472bae9ca6a9361",
+      "status": "failed",
+      "stop_reason": "observed_memory_reserve_reached"
+    },
+    "resource_recovery": {
+      "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/r6-retained-cache-migration-03/receipt.json",
+      "receipt_sha256": "1f6854af7ec3f66e6a2426ae70e85d7813fe2cf3a658628b948045094a5ec735"
+    },
+    "previous_failed_migrations": [
+      {
+        "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/r6-retained-cache-migration-01/receipt.json",
+        "receipt_sha256": "cff8e9ac31d2d9c63df78cfabaa3b10d3250b14f20a8e54a28d8d6efe4d5a09d",
+        "status": "failed"
+      },
+      {
+        "receipt_path": "/workspace/scratch/98f315e377b2/next-tools/r6-retained-cache-migration-02/receipt.json",
+        "receipt_sha256": "221f9db60e561bdd3fac2a914ad106834f95d5410ef433f77e7af9ac39713a45",
+        "status": "failed"
+      }
+    ],
+    "fresh_full_gate_preflight_applied_at_this_attempt": false,
+    "stock_fresh_work_gate_reexecuted": false,
+    "source_build_kind": "new_R6_target_copied_from_retained_warm_cache"
+  },
+  "helper_version": 3,
+  "consumer_source_reuse": {
+    "compiled_source_commit": "c50d7b9b688135a22ced2f7f3cbe21c3028d8e17",
+    "runtime_source_commit": "145e94c364243789b88c23b1292f9d4d9ca9a0e9",
+    "linked_source_inputs": {
+      "tests/integration/hepta/run_original_agentd.py": {
+        "built_git_object": "b0b04b01a28eb1b4ac08c38c47f6c14e1c7e4ca9",
+        "current_git_object": "b0b04b01a28eb1b4ac08c38c47f6c14e1c7e4ca9",
+        "identical": true
+      },
+      "tests/integration/hepta/original_agentd_probe.rs": {
+        "built_git_object": "668bb0e9d8a9d599b2d9a0b5c9a348fe6e2e4aa2",
+        "current_git_object": "668bb0e9d8a9d599b2d9a0b5c9a348fe6e2e4aa2",
+        "identical": true
+      },
+      "tests/integration/hepta/original_session_probe.rs": {
+        "built_git_object": "d1149f58b3a0067e167054ff89cf276ccfd40f91",
+        "current_git_object": "d1149f58b3a0067e167054ff89cf276ccfd40f91",
+        "identical": true
+      },
+      "services/hepta-os/src": {
+        "built_git_object": "8e116828e92f8186a08348bce2f0df47fcb699dd",
+        "current_git_object": "8e116828e92f8186a08348bce2f0df47fcb699dd",
+        "identical": true
+      },
+      "services/hepta-os/Cargo.toml": {
+        "built_git_object": "6441a6eeec92fec5de448f1b9ab3125620761553",
+        "current_git_object": "6441a6eeec92fec5de448f1b9ab3125620761553",
+        "identical": true
+      },
+      "services/hepta-os/Cargo.lock": {
+        "built_git_object": "7c2c444263cef0f974e883c3d7d0e22e95585098",
+        "current_git_object": "7c2c444263cef0f974e883c3d7d0e22e95585098",
+        "identical": true
+      },
+      "services/hepta-os/UPSTREAM_CONTRACT.json": {
+        "built_git_object": "b82cf4290cbd8b9198ca29365ed3bc89c3fd92f8",
+        "current_git_object": "b82cf4290cbd8b9198ca29365ed3bc89c3fd92f8",
+        "identical": true
+      }
+    },
+    "recompiled_for_runtime_source": false,
+    "reuse_reason": "all probe, gate and observer executable inputs are identical"
+  },
+  "previous_runtime_receipts": [
+    {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/runtime-01/receipt.json",
+      "sha256": "6aa7ad9371be2d2257926f6c619d1b70e64a8465bd4d11b8c1e2cbf3e8e64637",
+      "status": "failed",
+      "error": {
+        "type": "RuntimeError",
+        "detail": "command failed with exit 1: original-session-process.log"
+      },
+      "live_agentd_acceptance": "failed",
+      "persistent_session_acceptance": "failed"
+    },
+    {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/runtime-02/receipt.json",
+      "sha256": "cb79e60baf9aa571da1e73b0a6b727cc88b2587849a328188332c7779eac17c1",
+      "status": "passed",
+      "error": null,
+      "live_agentd_acceptance": "passed",
+      "persistent_session_acceptance": "passed"
+    }
+  ],
+  "consumer_build_receipt": {
+    "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-02/receipt.json",
+    "sha256": "c5ba7cd15f9cddc301e3004168ca0a68ceb9b59f1d91d90eb1d94b298dd8447b"
+  },
+  "ui_build": {
+    "build_receipt_path": "/workspace/scratch/98f315e377b2/next-tools/ui-r6-freshness-build/green-03/receipt.json",
+    "build_receipt_sha256": "40c2a5074ee2105ac2a5e1938f16d5764ad2addd91bd727ca06f4f5b5b5b3564",
+    "source_commit": "84f0070b6e7e01238a8dac6044748b15101c9497",
+    "source_tree": "9c8e3627a970f9c3f2bea9bbdde583adeb4bc313",
+    "current_ui_subtree_matches_build": true,
+    "linked_source_inputs": {
+      "ui": {
+        "built_git_object": "22959f24a71b5ece8286a962abc19d9fe3ab6ffc",
+        "current_git_object": "22959f24a71b5ece8286a962abc19d9fe3ab6ffc",
+        "identical": true
+      },
+      "services/hepta-os/src": {
+        "built_git_object": "8e116828e92f8186a08348bce2f0df47fcb699dd",
+        "current_git_object": "8e116828e92f8186a08348bce2f0df47fcb699dd",
+        "identical": true
+      },
+      "services/hepta-os/Cargo.toml": {
+        "built_git_object": "6441a6eeec92fec5de448f1b9ab3125620761553",
+        "current_git_object": "6441a6eeec92fec5de448f1b9ab3125620761553",
+        "identical": true
+      },
+      "services/hepta-os/Cargo.lock": {
+        "built_git_object": "7c2c444263cef0f974e883c3d7d0e22e95585098",
+        "current_git_object": "7c2c444263cef0f974e883c3d7d0e22e95585098",
+        "identical": true
+      }
+    },
+    "binaries": {
+      "session": {
+        "path": "/workspace/scratch/98f315e377b2/next-tools/ui-r6-freshness-build/target/debug/trill-session",
+        "bytes": 3527792,
+        "sha256": "f152e6413742baa3349aded2283f9aff41bfe1bc552586aa260ade6327d5d16d",
+        "elf_class": 64,
+        "elf_machine": 62,
+        "architecture": "x86_64"
+      },
+      "ctl": {
+        "path": "/workspace/scratch/98f315e377b2/next-tools/ui-r6-freshness-build/target/debug/trill-ctl",
+        "bytes": 1494736,
+        "sha256": "ba85b891f91a88ac3ad5240535f5dd6261c47eadbcc1bb64593add0a0aa2b598",
+        "elf_class": 64,
+        "elf_machine": 62,
+        "architecture": "x86_64"
+      }
+    }
+  },
+  "binaries_before": {
+    "agentd": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/target/dev-small/codex-hepta-agentd",
+      "bytes": 329001344,
+      "sha256": "f476f9bb435c5127839c48ae7135d5a6fa7695ff5253460fdd8d19d7b084d4fa",
+      "elf_class": 64,
+      "elf_machine": 62,
+      "architecture": "x86_64"
+    },
+    "probe": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/target/dev-small/hepta-original-observer-probe",
+      "bytes": 29114728,
+      "sha256": "46c8f20bef00d5e4b76ae7fcba784937bc1c4d9a33d6b416cd4acc1b96d43365",
+      "elf_class": 64,
+      "elf_machine": 62,
+      "architecture": "x86_64"
+    },
+    "observer": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-02/observer-target/debug/hepta-observe",
+      "bytes": 13883672,
+      "sha256": "de5aa738234b7ebfdf35afb5e78cf0296962f76625ae1e3fffdc44ba682b7a55",
+      "elf_class": 64,
+      "elf_machine": 62,
+      "architecture": "x86_64"
+    },
+    "session": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/ui-r6-freshness-build/target/debug/trill-session",
+      "bytes": 3527792,
+      "sha256": "f152e6413742baa3349aded2283f9aff41bfe1bc552586aa260ade6327d5d16d",
+      "elf_class": 64,
+      "elf_machine": 62,
+      "architecture": "x86_64"
+    },
+    "ctl": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/ui-r6-freshness-build/target/debug/trill-ctl",
+      "bytes": 1494736,
+      "sha256": "ba85b891f91a88ac3ad5240535f5dd6261c47eadbcc1bb64593add0a0aa2b598",
+      "elf_class": 64,
+      "elf_machine": 62,
+      "architecture": "x86_64"
+    }
+  },
+  "steps": [],
+  "stock_fresh_work_gate_reexecuted": false,
+  "runtime_probe_attempted": true,
+  "live_agentd_acceptance": "failed",
+  "persistent_session_acceptance": "failed",
+  "shell_capture_qualification": "separate_consumer_receipt_required",
+  "phase_dir": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/runtime-03/phases",
+  "capture_ack_seconds": 120,
+  "capture_abort_request_path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/runtime-03/abort-request.json",
+  "objective_submission": false,
+  "model_turn": false,
+  "device_effect": false,
+  "helper_sha256": {
+    "run_session.py": "9a09a995361121bc9f167dee33dd3ff075d0a12c349b74bf4ad78842a53adbd6",
+    "common.py": "5d9976b96e93d0ce39c2df402e9f310fe1755811c479ad422d9bec01ff46f4ff"
+  },
+  "private_original_state_root": "/tmp/hp-z7vv3cr6"
+}

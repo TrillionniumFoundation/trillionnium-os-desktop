@@ -1,0 +1,31 @@
+{
+  "status": "starting_pixels_reviewed_capture_still_failed",
+  "reviewer": "A10 implementation agent /root/r6_shell_live",
+  "independent_from_implementation": false,
+  "method": "view_image original-resolution inspection of the sole actual XGetImage PNG",
+  "recorded_unix_ms": 1792278404189,
+  "capture_receipt_sha256": "b028a7bf3c1017592952719e6e77f9a4f3bf7d41cee9d8c35bcd65b0b6b341b2",
+  "capture_passed": false,
+  "ack_written": false,
+  "error": "live runtime metadata changed: health",
+  "image": {
+    "file": "phase-1-starting.png",
+    "sha256": "1c2bd97c058dd4af757632e041cf2ac059f2dcf3444df836db3df25fb5dbf65c",
+    "visible_agent_id": "22222222-2222-4222-8222-222222222222",
+    "visible_connection": "observed",
+    "visible_spawn_generation": 1,
+    "visible_current_generation": 1,
+    "visible_process_id": 612929,
+    "visible_lifecycle": "starting",
+    "visible_ready": false,
+    "visible_promotion_ready": true,
+    "visible_fenced": false,
+    "visible_read_cursor": 3,
+    "visible_latest_cursor": 3,
+    "visible_sampled_unix_ms": 1792276960161,
+    "session_online_label_visible": true,
+    "objective_submission_unavailable_visible": true,
+    "legible": true
+  },
+  "interpretation": "Original Starting legitimately progressed promotion_ready false to true and event cursor 2 to 3 within one fixed identity/lifecycle. Full-health equality in the initial capture oracle was too strict. This attempt remains failed and did not acknowledge phase 1."
+}

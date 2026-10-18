@@ -1,0 +1,557 @@
+{
+  "reviewer": "/root/r6_review_ci",
+  "reviewed_utc": "2026-10-17T23:12:07.268167+00:00",
+  "status": "passed",
+  "independent_from_implementation": true,
+  "product_processes_or_tests_started_by_reviewer": false,
+  "method": "Each original PNG opened individually with view_image; manually transcribed visible facts then compared to raw before/after Session snapshots, owner phase/ACK/process logs, source Git objects and actual executable bytes.",
+  "capture_receipt": {
+    "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-shell-02/capture-receipt.json",
+    "bytes": 42011,
+    "sha256": "b1e3d15b1dd802dca5bc231569bf8ac04c594f57a04c68dab43f1db61f6a8981"
+  },
+  "runtime_receipt": {
+    "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/runtime-02/receipt.json",
+    "bytes": 65311,
+    "sha256": "cb79e60baf9aa571da1e73b0a6b727cc88b2587849a328188332c7779eac17c1"
+  },
+  "namespace_receipt": {
+    "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-shell-02/namespace.json",
+    "bytes": 2604,
+    "sha256": "0f97a8777d30b7c2c61f21e5c7a83c067d2f0bd096a46daac3f5ef6578398aaa"
+  },
+  "source_provenance": {
+    "harness_commit": "28843c6632fe63db6b3fecb4d05888e90976fd16",
+    "harness_tree": "759c42b36d965174dc00a39b7f28e962ed667d85",
+    "production_ui_commit": "35f379101c0863027e971ccb91faf8da71cf929c",
+    "production_source_tree": "48433c4f1e55de53e8c298193765949996eb18a0",
+    "unchanged_ui_subtree": "037f318be7140ef046eac1e9cabe230c07eb7059",
+    "tracked_sources": {
+      "harness": {
+        "path": "tests/ui/probe-original-hepta-shell.py",
+        "git_blob": "d7d4889736f26bdb9bde155c7987a6ef20e9718a",
+        "sha256": "971c8a92ca2fe205784f2ebde3c4dceaf4615527f20df256071995157aa68265",
+        "bytes": 35068
+      },
+      "pixels": {
+        "path": "tests/ui/x11-ime-client.py",
+        "git_blob": "d17b931dcc3866124e7972e09ae90143bf943006",
+        "sha256": "0ad32bbdbef36ff157efd15bccb43cd4603f2b8258a53698bdce68a3c7c057f2",
+        "bytes": 17204
+      },
+      "guard": {
+        "path": "tests/integration/hepta/run_original_agentd.py",
+        "git_blob": "b0b04b01a28eb1b4ac08c38c47f6c14e1c7e4ca9",
+        "sha256": "21dd4a2e0621240a75f5ce37bad93da0a37352fbaa78554a50e048abe6a45fd0",
+        "bytes": 30386
+      }
+    },
+    "binaries": {
+      "trill-shell": {
+        "path": "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-shell",
+        "bytes": 24153992,
+        "sha256": "81e9bcbf79c4060c3047ad0c80df711bfd855f2f47c3900522927d37404d776f"
+      },
+      "trill-session": {
+        "path": "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-session",
+        "bytes": 3527808,
+        "sha256": "5c29cfd7f11455000d7c3d9c0cc2c58fb7fe8761ab326da34c794d0f3481924f"
+      },
+      "trill-ctl": {
+        "path": "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-ctl",
+        "bytes": 1494736,
+        "sha256": "920093314640ad1dd721425ec78457f4ca74c83f9c1a0a878d4ddfee4924a882"
+      }
+    },
+    "package_stage_sha256": "a9757073710b43c5383c2d594c4c944712a946466d90e47f2522aceab6c338b0",
+    "font_sha256": "27251f8f257e831f4b876408a7d0ef88ae2c18fe0cbb6780bd18fe6bad8ddb10",
+    "unchanged_session_path_dependency": {
+      "services/hepta-os/src": "8e116828e92f8186a08348bce2f0df47fcb699dd",
+      "services/hepta-os/Cargo.toml": "6441a6eeec92fec5de448f1b9ab3125620761553",
+      "services/hepta-os/Cargo.lock": "7c2c444263cef0f974e883c3d7d0e22e95585098"
+    }
+  },
+  "original": {
+    "commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+    "tree": "15c9d6ea07bf3832de82825a6cc1e8c958dd3d45",
+    "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+    "clean_checkout": true
+  },
+  "original_acceptance_record": {
+    "checks": [
+      "original_starting",
+      "original_running",
+      "bounded_capabilities_events",
+      "missing_run_read",
+      "same_process_draining",
+      "original_restart",
+      "old_spawn_rejected",
+      "controlled_stop"
+    ],
+    "device_effect": false,
+    "event": "acceptance_pass",
+    "evidence_class": "original_agentd_process_readonly_observer",
+    "model_turn": false,
+    "new_spawn": 5,
+    "objective_submission": false,
+    "old_spawn": 1
+  },
+  "session_acceptance_record": {
+    "checks": [
+      "persistent_session_starting",
+      "persistent_session_running",
+      "persistent_session_draining",
+      "same_worker_same_instance",
+      "old_spawn_stale_ipc_responsive",
+      "explicit_session_replacement",
+      "replacement_running",
+      "stopped_stale_ipc_responsive"
+    ],
+    "device_effect": false,
+    "event": "session_acceptance_pass",
+    "evidence_class": "original_agentd_persistent_session_readonly",
+    "first_session_instance": "b4122eb42acae07a5d5b97c1c496e2fd",
+    "first_session_pid": 615562,
+    "model_turn": false,
+    "objective_submission": false,
+    "replacement_session_instance": "b4b8c3aa629eeac9d5968a060d2b0559",
+    "replacement_session_pid": 615926,
+    "shell_capture_qualified_by_this_record": false
+  },
+  "actual_executables_rehashed_after_both_runs": {
+    "agentd": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/target/dev-small/codex-hepta-agentd",
+      "bytes": 329001344,
+      "sha256": "f476f9bb435c5127839c48ae7135d5a6fa7695ff5253460fdd8d19d7b084d4fa",
+      "elf_class": 64,
+      "elf_machine": 62,
+      "execution_by_reviewer": false
+    },
+    "probe": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/original-r6-build-01/target/dev-small/hepta-original-observer-probe",
+      "bytes": 29114728,
+      "sha256": "46c8f20bef00d5e4b76ae7fcba784937bc1c4d9a33d6b416cd4acc1b96d43365",
+      "elf_class": 64,
+      "elf_machine": 62,
+      "execution_by_reviewer": false
+    },
+    "observer": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/build-02/observer-target/debug/hepta-observe",
+      "bytes": 13883672,
+      "sha256": "de5aa738234b7ebfdf35afb5e78cf0296962f76625ae1e3fffdc44ba682b7a55",
+      "elf_class": 64,
+      "elf_machine": 62,
+      "execution_by_reviewer": false
+    },
+    "session": {
+      "path": "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-session",
+      "bytes": 3527808,
+      "sha256": "5c29cfd7f11455000d7c3d9c0cc2c58fb7fe8761ab326da34c794d0f3481924f",
+      "elf_class": 64,
+      "elf_machine": 62,
+      "execution_by_reviewer": false
+    },
+    "ctl": {
+      "path": "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-ctl",
+      "bytes": 1494736,
+      "sha256": "920093314640ad1dd721425ec78457f4ca74c83f9c1a0a878d4ddfee4924a882",
+      "elf_class": 64,
+      "elf_machine": 62,
+      "execution_by_reviewer": false
+    },
+    "shell": {
+      "path": "/dev/shm/trill-ui-r5-nsniox8o/target/debug/trill-shell",
+      "bytes": 24153992,
+      "sha256": "81e9bcbf79c4060c3047ad0c80df711bfd855f2f47c3900522927d37404d776f",
+      "elf_class": 64,
+      "elf_machine": 62,
+      "execution_by_reviewer": false
+    }
+  },
+  "runtime_five_ELF_pre_post_match": true,
+  "source_helper_and_component_closure_verified": true,
+  "raw_runtime_artifacts_verified": [
+    {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/runtime-02/allocation.json",
+      "bytes": 10827,
+      "sha256": "2c60b56238aa931d98e3f0baf6ab111117d45b791ec805a615c09af1fb8ccdc9"
+    },
+    {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/runtime-02/original-session-process.log",
+      "bytes": 23225,
+      "sha256": "e981e0e8b8005dbec0946be59e0183b9858888697fc973e533558a24662d7f1b"
+    },
+    {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/runtime-02/phases/ack-1.json",
+      "bytes": 88,
+      "sha256": "4a8a020f457f66b14a0d10ced65c8b29c94b27ae27a571f99587ab7f31a75526"
+    },
+    {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/runtime-02/phases/ack-2.json",
+      "bytes": 87,
+      "sha256": "f7b562afa48936f48f0808c613d6567d7ffe5951cc87ee1b1152e2dd3b81c20c"
+    },
+    {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/runtime-02/phases/ack-3.json",
+      "bytes": 88,
+      "sha256": "c8cb2fb7666f7f787db67c54ea6c9ee05d08126b997943f1d8df21d0999abe42"
+    },
+    {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/runtime-02/phases/ack-4.json",
+      "bytes": 95,
+      "sha256": "b5045133c82d39cf407977222ba12a6ab51d7b0c8e938462928be9283ac9ece2"
+    },
+    {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/runtime-02/phases/ack-5.json",
+      "bytes": 97,
+      "sha256": "2e381a100f6acb5669c6eae60903deea2183153bf944430e40a92bf4f2cc7be7"
+    },
+    {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/runtime-02/phases/ack-6.json",
+      "bytes": 93,
+      "sha256": "7e8f11959ce757ace2debc73ec89a76f3e2b6056d9548a59ef9bfe9a1a7d4c18"
+    },
+    {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/runtime-02/phases/phase-1.json",
+      "bytes": 1823,
+      "sha256": "bc001fbc85fde3ccf0bdcc93f043e66f36560e67ef79d1e76d07d58e4f35f475"
+    },
+    {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/runtime-02/phases/phase-2.json",
+      "bytes": 1960,
+      "sha256": "f16c1d8357974009120e9dc81b52a7615317a322f1d86c87764cfa3f9669c92f"
+    },
+    {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/runtime-02/phases/phase-3.json",
+      "bytes": 2101,
+      "sha256": "ed1f8ea0819e501c9cdcd55618f0a5f28022c19eb502ae004bafecadb590b3d2"
+    },
+    {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/runtime-02/phases/phase-4.json",
+      "bytes": 4665,
+      "sha256": "77f9cf8f62a68b9923e1ad452ef11e5c6b920a164fdda96b9accd79ede39222e"
+    },
+    {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/runtime-02/phases/phase-5.json",
+      "bytes": 1980,
+      "sha256": "7025092462d6100bf3c095b2efd61e5dbc0cd15f628d52ec9e253c5a46ce1619"
+    },
+    {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/runtime-02/phases/phase-6.json",
+      "bytes": 4235,
+      "sha256": "4bd0cc68ded14e346d9e834f514db672d67f544f10f3c78497418136343a1180"
+    },
+    {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/runtime-02/runtime-records.json",
+      "bytes": 38736,
+      "sha256": "dac42a600dd75dc3669566fcf82c8e9222514e0233b3b3c666718bdbbfff1c99"
+    },
+    {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/runtime-02/session-1.log",
+      "bytes": 153,
+      "sha256": "0e4268801944deb713b42fc966efddabf15c5103be786619d29fa4ff4998ee7d"
+    },
+    {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-runtime/runtime-02/session-2.log",
+      "bytes": 153,
+      "sha256": "926d5555146a3236068044c44b0de6e78f779c9212229ab9e1670db7907c65a4"
+    }
+  ],
+  "shell_pid": 615673,
+  "shell_window": {
+    "xid": "2097155",
+    "pid": 615673,
+    "class": "trill-shell"
+  },
+  "one_shell_all_six_phases": true,
+  "first_session": {
+    "pid": 615562,
+    "instance": "b4122eb42acae07a5d5b97c1c496e2fd",
+    "worker_tid": 615564
+  },
+  "replacement_session": {
+    "pid": 615926,
+    "instance": "b4b8c3aa629eeac9d5968a060d2b0559",
+    "worker_tid": 615929
+  },
+  "cleanup": {
+    "recorded_session_stops": [
+      {
+        "event": "session_stopped",
+        "exit_code": null,
+        "session_instance": "b4122eb42acae07a5d5b97c1c496e2fd",
+        "session_pid": 615562,
+        "signal": 9,
+        "worker_tid": 615564
+      },
+      {
+        "event": "session_stopped",
+        "exit_code": null,
+        "session_instance": "b4b8c3aa629eeac9d5968a060d2b0559",
+        "session_pid": 615926,
+        "signal": 9,
+        "worker_tid": 615929
+      }
+    ],
+    "recorded_shell_display_stops": [
+      {
+        "label": "rust-shell",
+        "pid": 615673,
+        "observed_returncode": -15
+      },
+      {
+        "label": "xvfb",
+        "pid": 615632,
+        "observed_returncode": 0
+      }
+    ],
+    "probe_exit_code": 0,
+    "probe_guard_disarmed": true,
+    "private_state_removed": "/tmp/hp-wl_fcxn_",
+    "actual_process_ids_absent_at_review": [
+      615531,
+      615532,
+      615562,
+      615564,
+      615632,
+      615673,
+      615755,
+      615926,
+      615929
+    ]
+  },
+  "images": [
+    {
+      "sequence": 1,
+      "phase": "starting",
+      "screenshot": {
+        "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-shell-02/phase-1-starting.png",
+        "bytes": 120516,
+        "sha256": "789d490ddc62a804a1defd6c2ef8ee037db9e18ae3a54273d894acc970623954"
+      },
+      "manual_visual_review": "passed",
+      "visible_main_and_inspector_status": "OBSERVED · READ ONLY",
+      "visible_diagnostic": null,
+      "visible_historical_warning": false,
+      "visible_sample_unix_ms": 1792277794233,
+      "visible_agent_id": "22222222-2222-4222-8222-222222222222",
+      "visible_spawn_generation": 1,
+      "visible_current_generation": 1,
+      "visible_health": {
+        "process_id": 615532,
+        "lifecycle": "starting",
+        "ready": false,
+        "promotion_ready": true,
+        "fenced": false
+      },
+      "visible_next_and_latest_cursor": 3,
+      "before_observation_sample_unix_ms": 1792277791224,
+      "after_observation_sample_unix_ms": 1792277794233,
+      "visible_sample_within_actual_before_after_range": true,
+      "session_pid": 615562,
+      "session_instance": "b4122eb42acae07a5d5b97c1c496e2fd",
+      "worker_tid": 615564,
+      "actual_peer_pid_uid_matched_both_sides": true,
+      "stale_retention_verification": null,
+      "owner_phase_sha256": "bc001fbc85fde3ccf0bdcc93f043e66f36560e67ef79d1e76d07d58e4f35f475",
+      "ack_sha256": "4a8a020f457f66b14a0d10ced65c8b29c94b27ae27a571f99587ab7f31a75526"
+    },
+    {
+      "sequence": 2,
+      "phase": "running",
+      "screenshot": {
+        "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-shell-02/phase-2-running.png",
+        "bytes": 121528,
+        "sha256": "13056f4fb8c901b87020f778c1073ee299f09a62b05a874be4fa398a90ce6200"
+      },
+      "manual_visual_review": "passed",
+      "visible_main_and_inspector_status": "OBSERVED · READ ONLY",
+      "visible_diagnostic": null,
+      "visible_historical_warning": false,
+      "visible_sample_unix_ms": 1792277797242,
+      "visible_agent_id": "22222222-2222-4222-8222-222222222222",
+      "visible_spawn_generation": 1,
+      "visible_current_generation": 2,
+      "visible_health": {
+        "process_id": 615532,
+        "lifecycle": "running",
+        "ready": true,
+        "promotion_ready": true,
+        "fenced": false
+      },
+      "visible_next_and_latest_cursor": 4,
+      "before_observation_sample_unix_ms": 1792277795236,
+      "after_observation_sample_unix_ms": 1792277797242,
+      "visible_sample_within_actual_before_after_range": true,
+      "session_pid": 615562,
+      "session_instance": "b4122eb42acae07a5d5b97c1c496e2fd",
+      "worker_tid": 615564,
+      "actual_peer_pid_uid_matched_both_sides": true,
+      "stale_retention_verification": null,
+      "owner_phase_sha256": "f16c1d8357974009120e9dc81b52a7615317a322f1d86c87764cfa3f9669c92f",
+      "ack_sha256": "f7b562afa48936f48f0808c613d6567d7ffe5951cc87ee1b1152e2dd3b81c20c"
+    },
+    {
+      "sequence": 3,
+      "phase": "draining",
+      "screenshot": {
+        "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-shell-02/phase-3-draining.png",
+        "bytes": 124520,
+        "sha256": "37e369f3afbec554c4345339dc4c24a7a84ab032f8aded3e08f7d8bb33ccbbc4"
+      },
+      "manual_visual_review": "passed",
+      "visible_main_and_inspector_status": "OBSERVED · READ ONLY",
+      "visible_diagnostic": null,
+      "visible_historical_warning": false,
+      "visible_sample_unix_ms": 1792277800252,
+      "visible_agent_id": "22222222-2222-4222-8222-222222222222",
+      "visible_spawn_generation": 1,
+      "visible_current_generation": 3,
+      "visible_health": {
+        "process_id": 615532,
+        "lifecycle": "draining",
+        "ready": false,
+        "promotion_ready": false,
+        "fenced": false
+      },
+      "visible_next_and_latest_cursor": 6,
+      "before_observation_sample_unix_ms": 1792277799249,
+      "after_observation_sample_unix_ms": 1792277801255,
+      "visible_sample_within_actual_before_after_range": true,
+      "session_pid": 615562,
+      "session_instance": "b4122eb42acae07a5d5b97c1c496e2fd",
+      "worker_tid": 615564,
+      "actual_peer_pid_uid_matched_both_sides": true,
+      "stale_retention_verification": null,
+      "owner_phase_sha256": "ed1f8ea0819e501c9cdcd55618f0a5f28022c19eb502ae004bafecadb590b3d2",
+      "ack_sha256": "c8cb2fb7666f7f787db67c54ea6c9ee05d08126b997943f1d8df21d0999abe42"
+    },
+    {
+      "sequence": 4,
+      "phase": "old_spawn_stale",
+      "screenshot": {
+        "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-shell-02/phase-4-old_spawn_stale.png",
+        "bytes": 133275,
+        "sha256": "82c6bade18b0924045c0b6e04d696c43be6d360bf542accb5fc1adbd123c695d"
+      },
+      "manual_visual_review": "passed",
+      "visible_main_and_inspector_status": "STALE · CURRENT STATE UNKNOWN",
+      "visible_diagnostic": "protocol_mismatch",
+      "visible_historical_warning": true,
+      "visible_sample_unix_ms": 1792277801255,
+      "visible_agent_id": "22222222-2222-4222-8222-222222222222",
+      "visible_spawn_generation": 1,
+      "visible_current_generation": 3,
+      "visible_health": {
+        "process_id": 615532,
+        "lifecycle": "draining",
+        "ready": false,
+        "promotion_ready": false,
+        "fenced": false
+      },
+      "visible_next_and_latest_cursor": 6,
+      "before_observation_sample_unix_ms": 1792277801255,
+      "after_observation_sample_unix_ms": 1792277801255,
+      "visible_sample_within_actual_before_after_range": true,
+      "session_pid": 615562,
+      "session_instance": "b4122eb42acae07a5d5b97c1c496e2fd",
+      "worker_tid": 615564,
+      "actual_peer_pid_uid_matched_both_sides": true,
+      "stale_retention_verification": {
+        "first_failure_unix_ms": 1792277803256,
+        "held_later_failure_unix_ms": 1792277804260,
+        "before_failure_unix_ms": 1792277804260,
+        "after_failure_unix_ms": 1792277806262,
+        "preceding_live_sample_unix_ms": 1792277799249,
+        "entire_last_observation_preserved": true
+      },
+      "owner_phase_sha256": "77f9cf8f62a68b9923e1ad452ef11e5c6b920a164fdda96b9accd79ede39222e",
+      "ack_sha256": "b5045133c82d39cf407977222ba12a6ab51d7b0c8e938462928be9283ac9ece2"
+    },
+    {
+      "sequence": 5,
+      "phase": "recovered_running",
+      "screenshot": {
+        "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-shell-02/phase-5-recovered_running.png",
+        "bytes": 121810,
+        "sha256": "6062f206323c26afd1adfe18c0214d7e325313d0605ea09876efd7c9d4321e6e"
+      },
+      "manual_visual_review": "passed",
+      "visible_main_and_inspector_status": "OBSERVED · READ ONLY",
+      "visible_diagnostic": null,
+      "visible_historical_warning": false,
+      "visible_sample_unix_ms": 1792277809180,
+      "visible_agent_id": "22222222-2222-4222-8222-222222222222",
+      "visible_spawn_generation": 5,
+      "visible_current_generation": 6,
+      "visible_health": {
+        "process_id": 615755,
+        "lifecycle": "running",
+        "ready": true,
+        "promotion_ready": true,
+        "fenced": false
+      },
+      "visible_next_and_latest_cursor": 4,
+      "before_observation_sample_unix_ms": 1792277807173,
+      "after_observation_sample_unix_ms": 1792277809180,
+      "visible_sample_within_actual_before_after_range": true,
+      "session_pid": 615926,
+      "session_instance": "b4b8c3aa629eeac9d5968a060d2b0559",
+      "worker_tid": 615929,
+      "actual_peer_pid_uid_matched_both_sides": true,
+      "stale_retention_verification": null,
+      "owner_phase_sha256": "7025092462d6100bf3c095b2efd61e5dbc0cd15f628d52ec9e253c5a46ce1619",
+      "ack_sha256": "2e381a100f6acb5669c6eae60903deea2183153bf944430e40a92bf4f2cc7be7"
+    },
+    {
+      "sequence": 6,
+      "phase": "stopped_stale",
+      "screenshot": {
+        "path": "/workspace/scratch/98f315e377b2/next-tools/r6-original-shell-02/phase-6-stopped_stale.png",
+        "bytes": 130049,
+        "sha256": "01a7e9811ed71439a0660267e430345869ccfc2cd2b96921782db6ffb3a41f02"
+      },
+      "manual_visual_review": "passed",
+      "visible_main_and_inspector_status": "STALE · CURRENT STATE UNKNOWN",
+      "visible_diagnostic": "unavailable",
+      "visible_historical_warning": true,
+      "visible_sample_unix_ms": 1792277809180,
+      "visible_agent_id": "22222222-2222-4222-8222-222222222222",
+      "visible_spawn_generation": 5,
+      "visible_current_generation": 6,
+      "visible_health": {
+        "process_id": 615755,
+        "lifecycle": "running",
+        "ready": true,
+        "promotion_ready": true,
+        "fenced": false
+      },
+      "visible_next_and_latest_cursor": 4,
+      "before_observation_sample_unix_ms": 1792277809180,
+      "after_observation_sample_unix_ms": 1792277809180,
+      "visible_sample_within_actual_before_after_range": true,
+      "session_pid": 615926,
+      "session_instance": "b4b8c3aa629eeac9d5968a060d2b0559",
+      "worker_tid": 615929,
+      "actual_peer_pid_uid_matched_both_sides": true,
+      "stale_retention_verification": {
+        "first_failure_unix_ms": 1792277810180,
+        "held_later_failure_unix_ms": 1792277811183,
+        "before_failure_unix_ms": 1792277811183,
+        "after_failure_unix_ms": 1792277813184,
+        "preceding_live_sample_unix_ms": 1792277807173,
+        "entire_last_observation_preserved": true
+      },
+      "owner_phase_sha256": "4bd0cc68ded14e346d9e834f514db672d67f544f10f3c78497418136343a1180",
+      "ack_sha256": "7e8f11959ce757ace2debc73ec89a76f3e2b6056d9548a59ef9bfe9a1a7d4c18"
+    }
+  ],
+  "limitations": [
+    "Linux x86_64 host process integration with private Xvfb framebuffer; no physical display or input tested.",
+    "ACK is coordination only; visual acceptance is this separate reviewer observation.",
+    "Only first phase has TRILL_HEPTA_LAYOUT_V1 marker; all six pixel judgments used actual images.",
+    "No synthetic Agentd fixture or renderer-memory injection in these runs.",
+    "No objective submission, model invocation, device effect, HOS2 kernel, Android/iOS qualification or arbitrary-descendant cleanup claim.",
+    "Original build03 resumed the previously admitted target; the stock fresh 8GiB gate was not rerun."
+  ]
+}

@@ -1,0 +1,46 @@
+rustc 1.88.0 (6b00bc388 2025-06-23)
+binary: rustc
+commit-hash: 6b00bc3880198600130e1cf62b8f8a93494488cc
+commit-date: 2025-06-23
+host: x86_64-unknown-linux-gnu
+release: 1.88.0
+LLVM version: 20.1.5
+cargo 1.88.0 (873a06493 2025-05-10)
+release: 1.88.0
+commit-hash: 873a0649350c486caf67be772828a4f36bb4734c
+commit-date: 2025-05-10
+host: x86_64-unknown-linux-gnu
+libgit2: 1.9.0 (sys:0.20.0 vendored)
+libcurl: 8.12.1-DEV (sys:0.4.80+curl-8.12.1 vendored ssl:OpenSSL/3.4.1)
+ssl: OpenSSL 3.4.1 11 Feb 2025
+os: Ubuntu 24.4.0 (noble) [64-bit]
+weston 13.0.0
+PRETTY_NAME="Ubuntu 24.04.3 LTS"
+NAME="Ubuntu"
+VERSION_ID="24.04"
+VERSION="24.04.3 LTS (Noble Numbat)"
+VERSION_CODENAME=noble
+ID=ubuntu
+ID_LIKE=debian
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+UBUNTU_CODENAME=noble
+LOGO=ubuntu-logo
+README.md is present and exactly zero bytes
+ui/Cargo.lock
+diff --git a/ui/session/tests/ipc_reconnect.rs b/ui/session/tests/ipc_reconnect.rs
+index 5c0efce..badd251 100644
+--- a/ui/session/tests/ipc_reconnect.rs
++++ b/ui/session/tests/ipc_reconnect.rs
+@@ -137,8 +137,7 @@ fn private_socket_survives_client_disconnect_and_reports_owned_task() {
+     // shell metacharacters, or a fallback to an arbitrary command.
+     let mut injected = std::os::unix::net::UnixStream::connect(&socket).unwrap();
+     let malformed = format!(
+-        r#"{{"type":"launch","workspace":"personal","app":"../../bin/sh","expected_instance":"{}"}}"#,
+-        session_instance
++        r#"{{"type":"launch","workspace":"personal","app":"../../bin/sh","expected_instance":"{session_instance}"}}"#,
+     );
+     injected.write_all(malformed.as_bytes()).unwrap();
+     injected.write_all(b"\n").unwrap();

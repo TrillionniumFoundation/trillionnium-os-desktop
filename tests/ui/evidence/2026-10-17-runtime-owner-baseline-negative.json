@@ -1,0 +1,43 @@
+{
+  "schema": "a10-real-linux-runtime-owner-baseline-negative-v1",
+  "date_utc": "2026-10-17",
+  "tested_source_commit": "fcc57bd2a64cc7ee84731b432a94b51689355af7",
+  "actual_ci_built_elf_bundle": "a10-linux-host-binaries-39015860337.tar.gz",
+  "source_ci_run": 39015860337,
+  "subject": "Linux host real trill-session; not new Asterinas guest or production service",
+  "test": {
+    "effective_process_uid": 0,
+    "runtime_directory_uid": 65534,
+    "runtime_mode": "0700",
+    "actual_session_exit_code": 124,
+    "timeout_seconds": 1,
+    "stdout_prefix": "trill-session pid=",
+    "observed_created_paths": [
+      "trillionnium-ui",
+      "trillionnium-ui/session.lock",
+      "trillionnium-ui/session.sock"
+    ],
+    "observed_session_socket_mode": "0600",
+    "outcome": "FAIL baseline: root bypassed foreign-owner private runtime and bound real Unix socket",
+    "isolated_temp_directory": true,
+    "cleaned_up": true
+  },
+  "remedy": {
+    "commit": "6666ca44bbd79b6aaf7f6979e459098d4ac0a80b",
+    "assertion_script_blob": "ce755233d40e2a2f3e1537ee366b4f9fac268c8e",
+    "gates": [
+      "foreign runtime before mkdir",
+      "foreign UI child before bind",
+      "foreign lock before bind",
+      "same UID positive 0600 socket"
+    ],
+    "exact_new_head_compiled_test_result": "PENDING independent Actions runner"
+  },
+  "not_attested": [
+    "A05 trusted CapSpace",
+    "A07 final-effect owner",
+    "physical GPU",
+    "Wayland candidate IME",
+    "Asterinas graphical boot"
+  ]
+}

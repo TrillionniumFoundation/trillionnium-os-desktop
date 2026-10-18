@@ -1,0 +1,168 @@
+{
+  "schema_version": 1,
+  "evidence_class": "linux_host_read_only_session_and_scripted_v2_fixture",
+  "source_commit": "b53d7fbb406581ead53fd4b98d28ffc6b5f52c5c",
+  "source_tree": "87d3cd65d9a587fe5610f7112e541d47e7a8d98e",
+  "a10_source_base_commit": "f093fb3d5e97156e3bdd13fae06d1a3860d874b1",
+  "a07_original_adapter_commit": "66b013e0202151a526fedd6c30fdaecd5a6654ab",
+  "a07_local_adapter_commit": "1a1ef6b9c0b8f9ddd74a5e800229c487e08120da",
+  "a07_paths_unchanged_since_local_adapter_commit": true,
+  "upstream_hepta_commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+  "created_at_utc": "2026-10-17T10:27:23.411505+00:00",
+  "toolchain": {
+    "pin": "nightly-2026-07-21",
+    "rustc_verbose": "rustc 1.99.0-nightly (87e5904f5 2026-07-20)\nbinary: rustc\ncommit-hash: 87e5904f5eb6398af6b22eac2802c78934260c48\ncommit-date: 2026-07-20\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.0-nightly\nLLVM version: 22.1.8",
+    "cargo": "cargo 1.99.0-nightly (3efb1f477 2026-07-17)"
+  },
+  "host": "Linux x86_64",
+  "checks": [
+    {
+      "command": "cargo fmt --manifest-path ui/Cargo.toml --all -- --check",
+      "exit_code": 0,
+      "log": "rustfmt.log"
+    },
+    {
+      "command": "cargo clippy --manifest-path ui/Cargo.toml --workspace --all-targets --locked --offline -- -D warnings",
+      "exit_code": 0,
+      "log": "cargo-clippy.log"
+    },
+    {
+      "command": "cargo test --manifest-path ui/Cargo.toml --workspace --locked --offline",
+      "exit_code": 0,
+      "log": "cargo-test.log",
+      "passed_tests": 66
+    },
+    {
+      "command": "python3 tests/ui/probe-hepta-session.py --session <shared-target>/debug/trill-session --output tests/ui/evidence/2026-10-17-hepta-observer/session-observer-probe.json",
+      "exit_code": 0,
+      "log": "session-observer-probe.log"
+    },
+    {
+      "command": "bash -n tests/ui/check-host.sh",
+      "exit_code": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    },
+    {
+      "command": "cargo test --manifest-path services/hepta-os/Cargo.toml --locked --offline",
+      "exit_code": 0,
+      "log": "hepta-cargo-test.log",
+      "passed_tests": 14
+    },
+    {
+      "command": "cargo fmt --manifest-path services/hepta-os/Cargo.toml --all -- --check",
+      "exit_code": 0,
+      "log": "hepta-rustfmt.log"
+    },
+    {
+      "command": "individual bash -n checks and YAML/path validation",
+      "exit_code": 0,
+      "log": "host-gate-checks.json"
+    }
+  ],
+  "execution_notes": [
+    "The UI formatter and Clippy checked identical Rust source bytes immediately before c699766c1c0783b7e19156b631938b2f6b28feda; source file hashes and Rust subtree identities are recorded.",
+    "The 66 UI Cargo tests and final runtime probe ran after c699766c1c0783b7e19156b631938b2f6b28feda and before the CI-only b53d7fbb406581ead53fd4b98d28ffc6b5f52c5c commit.",
+    "The sandbox denied AF_UNIX bind. Private local socket tests ran after automatic approval review allowed the explicitly authorized local probe.",
+    "The positive endpoint is the committed scripted v2 fixture with a real process PID and Unix socket, not upstream Agentd.",
+    "The final candidate source adds only host-script and A00-coordinated CI workflow changes after the recorded UI/runtime checks. The full UI tree and A07 sources/fixtures are identical to the runtime-tested commit.",
+    "The separate 14-test facade suite and final shell/YAML/path checks ran after the final candidate source commit.",
+    "Raw log bytes are preserved, including trailing blank lines. Whitespace checks exclude raw evidence."
+  ],
+  "test_breakdown": {
+    "app_window": 8,
+    "ctl": 2,
+    "session_unit": 21,
+    "hepta_negative_ipc": 2,
+    "session_reconnect": 1,
+    "shell": 19,
+    "core": 13,
+    "hepta_facade_unit": 1,
+    "hepta_facade_socket_contract": 13
+  },
+  "runtime_probe": {
+    "connection_before_shutdown": "observed",
+    "connection_after_shutdown": "stale",
+    "host_action_after_disconnect_ms": 100.349,
+    "renderer_write_requests_rejected": true,
+    "session_binary_sha256": "de77ea95498d2a63d13b8bdd4236c2287c0bc6d9610abaf5ca41b7ed959f5b67"
+  },
+  "root_readme_bytes": 0,
+  "services_is_normal_directory": true,
+  "full_check_host_script_executed": false,
+  "qualification_limits": {
+    "original_agentd_started": false,
+    "authenticated_objective_submitted": false,
+    "device_effect_exercised": false,
+    "physical_gui_or_gpu_tested": false,
+    "cjk_font_or_live_ime_acceptance": false,
+    "target_kernel_tested": false,
+    "android_ios_or_wasm_transport_tested": false
+  },
+  "source_files_sha256": {
+    "services/hepta-os/CONTRACT.md": "50939a1b4d70093aefc97bd1a2d037a5c5c4d0fb712d54f86fb3af63927c14f4",
+    "services/hepta-os/Cargo.lock": "a1aed4d1f513036cbe03912359f3dfbb2c6d93c5210b8d18244d95be9008a875",
+    "services/hepta-os/Cargo.toml": "6d33aced708f1f6d3637e065825dd1718a4b187876e96edf1f7aefb0f437bfee",
+    "services/hepta-os/README.md": "1a8154ea9160c3236aadbf1223345da51d7c6b98dbe59c5089a8b1df36212a32",
+    "services/hepta-os/RUN.md": "46b524b3f0770e1ba6e70503dfbf9219b1cb773aba026a22048779841e627bea",
+    "services/hepta-os/UPSTREAM_CONTRACT.json": "110728395b3792f7b5314c0ffb07d478774c762c718ad39f2bd19e545026ff74",
+    "services/hepta-os/src/bin/hepta-observe.rs": "2a7b3eafc7b795e63bf43ef01e41e12a73f5d097c906bdd69f5d11049bc083b7",
+    "services/hepta-os/src/client.rs": "6eb598341e588222436e0aeefdcce790a9eaefe1a3a420d63bf3f893b7319316",
+    "services/hepta-os/src/lib.rs": "dba0ce93395079c6eb19f7889373b592f745c22d32b254a416bae537e711b4a1",
+    "services/hepta-os/src/wire.rs": "7bd36c22e86b1eaf937326afc1490886b5ebad309af39e1955c9f8d266949f90",
+    "services/hepta-os/tests/fixtures/agentd_v2_payloads.json": "39ef56ee68985615da2fe6c404e3bbb3b6a8b1b8603c684a73de891c13d3049f",
+    "services/hepta-os/tests/socket_contract.rs": "cf6d6039728a99a36929e686acec144aa1126e435bef726fe079019e39bba733",
+    "support/ui/HEPTA_OBSERVER.md": "3540ac311f9bc64872f5a18f0ded5e995d016abb62546810a311a390e8c7eef0",
+    "support/ui/INTEGRATION_CONTRACTS.md": "ea8d627541ef4d93588c390c4a806a5224d0d82ae812f8c6244fd7bc6e282b12",
+    "support/ui/RUN.md": "02554c2671ae5331c49520bc98d75e704a924ba0f8f213381d90ddda6da86eb6",
+    "tests/integration/hepta/EVIDENCE.md": "e9e5af6a0faa5b6f4646410aec8f6898451b354a88e1daa995ff61482c0bb54c",
+    "tests/integration/hepta/README.md": "1698f95761c58c1aafb1b21a4aec8e4aa7c7e048af53bdb25a6bc928514d10a8",
+    "tests/integration/hepta/agentd_fixture.py": "f0e6860ca3634b0a1e656b1f19741d135a3b73676350fe28b15d5f01791d26f2",
+    "tests/integration/hepta/check_upstream_contract.py": "7270fd445ea8c2ea9a0ba4274da4f736582e4f86da0fdb884871f5fb1b79d03f",
+    "tests/ui/TESTPLAN.md": "569f2b6087de6ade23d07ff7d8029ff4a3d9745f663d22382a5380d57a99d1be",
+    "tests/ui/check-host.sh": "60f89d814914d5bb1e7bd2fb0c227157cdfa577918b1837fc2509dd39a63864b",
+    "tests/ui/probe-hepta-session.py": "0c7e7f95448df6f995fd95870660dc496de78871704defa1ba28bd996c28e605",
+    "ui/Cargo.lock": "62b00185ec1b839abb55ff24b94809d9b8c704a1097030f5aa66e037a4ca17a5",
+    "ui/app-window/src/main.rs": "88109c5d34acb0ac5e2f54db811d126f4afc7797c2cd3a7c06aa16a05b83bcc3",
+    "ui/core/src/hepta.rs": "45732a0dfae47029da5b8758596506579d1da8e7b0fa1fab1edb38f90fc0ce8e",
+    "ui/core/src/lib.rs": "9e40efa092427442a80a7a21a4dc4f821bd70eb76855c8f2446b958168cb6f6a",
+    "ui/session/Cargo.toml": "fe5bd8c473661b09de4a02e27283b1ca29b7aabb8562a78e76f25a6e906c3130",
+    "ui/session/src/hepta.rs": "3ce594073cabbd4d10078766fa66c0496d887dc7fc6d47cf15936a28e85ad714",
+    "ui/session/src/main.rs": "c7916b84b71571eb7bbd3c6f826adc2b0092d1708663a301a4e3d67efd833bf3",
+    "ui/session/tests/hepta_observer.rs": "42dffd42f6f848f4acbfdaf22a7e091834b1e8c313872ab2b9301c39b73bfad9",
+    "ui/shell/src/hepta_panel.rs": "5e5937b8bd492d9cdbbeb333743836ab78b688b6dc619cab1073122bd2af776d",
+    "ui/shell/src/main.rs": "2d31a522a97a8957ad77fcbf7d7d6ee9d2bcd3d70e414cd873858899b3fb6e46",
+    ".github/workflows/a10-host.yml": "d85ebf279e2f1647ada075da946ada130bb81cb6348dea8a3bf8334d37a4e7c2"
+  },
+  "evidence_files_sha256": {
+    "cargo-test.log": "2602e432ed9d55a2ca5f83b3facf8b5d51f354e06bd54cecf8aff0303c8aaa79",
+    "cargo-clippy.log": "5b4bd9758b6bb77a8ec8a5db4d36e4ff4727bb929c4c5fd7f11bb66ff8b0a56f",
+    "rustfmt.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "session-observer-probe.json": "8f6585818cd460f7620dbf3c189e1b211af940079c8c1aa229e5c4b0dbca61ff",
+    "session-observer-probe.log": "cec7d1e1aed344ad8e0bdf0e07df0e73dd51ea6fc6c81577dea5da068e261b2d",
+    "hepta-cargo-test.log": "c766d9563777c16bbfe549a0751cfc8b6fbfe34472eaa334c6a80ecaacdea1cc",
+    "hepta-rustfmt.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "host-gate-checks.json": "b134c2dda665e382e0c56b77c78ce69a28c997ac94d6fd88e24555b25f75b3c5"
+  },
+  "tested_runtime_source_commit": "c699766c1c0783b7e19156b631938b2f6b28feda",
+  "tested_runtime_source_tree": "d86983e5f6ce7c8305d17d930bdc6ca249a19684",
+  "runtime_source_equivalence": {
+    "ui_tree": "eabe56b41213d0893aa2f724aae362b43e50f26b",
+    "ui_tree_identical_to_tested_runtime_commit": true,
+    "services_hepta_os_tree": "27cc435926813a9e9acd2504d9241ab49341bfb9",
+    "a07_source_and_fixtures_identical_to_tested_runtime_commit": true,
+    "changes_after_runtime_checks": [
+      "tests/ui/check-host.sh",
+      ".github/workflows/a10-host.yml"
+    ]
+  },
+  "total_rust_tests_passed": 80,
+  "ci_matrix": {
+    "rust_version": "1.88.0",
+    "rust_1_88_executed": false,
+    "weston_executed": false,
+    "full_workflow_executed": false
+  }
+}

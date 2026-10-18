@@ -1,0 +1,55 @@
+{
+  "reviewer": "/root/r6_review_ci",
+  "reviewed_utc": "2026-10-17T22:48:40.921234+00:00",
+  "status": "failed_capture_attempt_with_one_independently_reviewed_real_frame",
+  "source_commit": "c50d7b9b688135a22ced2f7f3cbe21c3028d8e17",
+  "capture_receipt_sha256": "b028a7bf3c1017592952719e6e77f9a4f3bf7d41cee9d8c35bcd65b0b6b341b2",
+  "screenshot": {
+    "file": "phase-1-starting.png",
+    "width": 1440,
+    "height": 1000,
+    "bytes": 120669,
+    "sha256": "1c2bd97c058dd4af757632e041cf2ac059f2dcf3444df836db3df25fb5dbf65c",
+    "capture_api": "XGetImage_actual_private_root_framebuffer",
+    "visual_review_required": true
+  },
+  "visual_review": {
+    "actual_image_viewed": true,
+    "visible_hepta_page": true,
+    "connection": "OBSERVED \u00b7 READ ONLY",
+    "agent_id": "22222222-2222-4222-8222-222222222222",
+    "spawn_generation": 1,
+    "current_generation": 1,
+    "process_id": 612929,
+    "lifecycle": "starting",
+    "ready": false,
+    "promotion_ready": true,
+    "fenced": false,
+    "sampled_unix_ms_visible": 1792276960161,
+    "event_cursor_visible": 3,
+    "new_event_visible": "app_server_ready",
+    "same_values_in_saved_after_snapshot": true,
+    "objective_submission_visible": "unavailable",
+    "HOS2_visible": "NOT OBSERVED"
+  },
+  "failure_cause": "Harness required whole-health equality during a held Starting lifecycle; original asynchronous app-server readiness legally advanced promotion_ready and appended an event without changing identity, generation, lifecycle or ready",
+  "raw_source_proof": [
+    "immutable f8c9419: codex-rs/hepta-agentd/src/state.rs mark_app_server_ready",
+    "immutable f8c9419: codex-rs/hepta-agentd/src/state_control.rs Health response",
+    "immutable f8c9419: codex-rs/hepta-agentd/src/runtime.rs monitor_runtime"
+  ],
+  "six_phase_capture_qualified": false,
+  "ack_proves_pixels": false,
+  "after_snapshot_was_written_but_validation_failed": true,
+  "files": {
+    "phase-1-starting.json": "b105faa9092312adef46c7c9f39ac42968cae4f9804a05a6a0bb2521afc51fe2",
+    "phase-1-starting-before.snapshot.json": "42fd7f8b53721884282c364239428988edbc69fd03b1d86ec46f3948e2c057af",
+    "phase-1-starting-after.snapshot.json": "1622f31a8695abdf74af684883c091fb9ec5f46e8fb23efc46c81310fbbbf8b4",
+    "phase-1-starting.png": "1c2bd97c058dd4af757632e041cf2ac059f2dcf3444df836db3df25fb5dbf65c"
+  },
+  "limits": [
+    "Only this first frame was visually reviewed; no six-phase continuity claim",
+    "Failed after validation prevented capture acknowledgement; actual runtime failure remains separately preserved",
+    "Original app_server_ready is represented by a bounded event; projection does not expose the full original health object"
+  ]
+}

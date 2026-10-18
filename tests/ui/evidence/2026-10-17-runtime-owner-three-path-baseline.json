@@ -1,0 +1,55 @@
+{
+  "schema": "a10-real-linux-owner-violation-three-path-baseline-v1",
+  "observation_date": "2026-10-17",
+  "fixed_source": "NOT tested in this receipt; current branch must pass new native Rust tests",
+  "source_commit": "fcc57bd2a64cc7ee84731b432a94b51689355af7",
+  "ci_run": 39015860337,
+  "elf_sha256": "cc37cb9d0463b1b292a37496f96e23c7cb906e763711695ac857435dac43c76c",
+  "caller_effective_uid": 0,
+  "host": "Linux isolated /tmp; no production runtime, external service or Asterinas guest",
+  "timeout_seconds_per_probe": 0.5,
+  "probes": [
+    {
+      "id": "foreign_runtime",
+      "runtime_uid": 65534,
+      "runtime_mode": "0700",
+      "cross_owned_resource": "XDG_RUNTIME_DIR",
+      "old_elf_exit_code": 124,
+      "socket_bound": true,
+      "expected_after_fix": "immediate PermissionDenied before creation of UI subtree"
+    },
+    {
+      "id": "foreign_subdir",
+      "runtime_uid": 0,
+      "runtime_mode": "0700",
+      "cross_owned_resource": "trillionnium-ui directory (UID 65534, mode 0700)",
+      "old_elf_exit_code": 124,
+      "socket_bound": true,
+      "expected_after_fix": "immediate PermissionDenied before socket bind"
+    },
+    {
+      "id": "foreign_lock",
+      "runtime_uid": 0,
+      "runtime_mode": "0700",
+      "cross_owned_resource": "session.lock (UID 65534, mode 0600)",
+      "old_elf_exit_code": 124,
+      "socket_bound": true,
+      "expected_after_fix": "immediate PermissionDenied before socket bind"
+    }
+  ],
+  "actual_baseline": "FAIL: all three old Rust Session processes bound real 0600 sockets despite foreign-owned host metadata; terminated by timeout",
+  "cleanup": "all three isolated Session processes terminated and disposable runtime deleted",
+  "remediation_commit": "6666ca44bbd79b6aaf7f6979e459098d4ac0a80b",
+  "blocking_test": "tests/ui/test-runtime-owner.sh",
+  "blocking_test_exact_blob": "23ae461b09420c29df02ee7e3743682fa2f58259",
+  "new_exact_head_CI_status": "not yet observed green",
+  "not_equivalent_to": [
+    "same-UID isolation",
+    "Hepta authority",
+    "A05 trusted CapSpace",
+    "A07 durable FinalUse",
+    "real Wayland compositor",
+    "physical GPU",
+    "Asterinas boot"
+  ]
+}

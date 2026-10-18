@@ -1,0 +1,79 @@
+{
+  "reviewer": "/root/r6_review_ci",
+  "reviewed_utc": "2026-10-17T23:16:05.779964+00:00",
+  "source_commit": "f0924a6e48c68101ec09b01ef2f69aec330a3da7",
+  "run_id": 39073273425,
+  "run_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39073273425",
+  "status": "completed",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "id": 117515138978,
+      "name": "ui-source-guard",
+      "conclusion": "success",
+      "started_at": "2026-10-17T22:18:36Z",
+      "completed_at": "2026-10-17T22:18:52Z"
+    },
+    {
+      "id": 117518904862,
+      "name": "native-rust-and-wayland",
+      "conclusion": "success",
+      "started_at": "2026-10-17T22:44:10Z",
+      "completed_at": "2026-10-17T22:47:10Z"
+    }
+  ],
+  "artifact": {
+    "id": 12117635274,
+    "bytes": 17397171,
+    "sha256": "96ddfb7b68df3892ef6b4a43fd329453f540c0698c65938fa5de4ccf111d2941",
+    "expires_at": "2027-01-15T22:00:25Z",
+    "zip_and_inner_tar_hash_verified": true,
+    "large_zip_and_executables_included_in_this_git_archive": false
+  },
+  "rust_test_scope": {
+    "ui_workspace_passed": 81,
+    "observer_passed": 17,
+    "support_ui_passed": 39,
+    "tests_ui_passed": 8,
+    "total_passed": 145,
+    "failed": 0,
+    "ignored": 2,
+    "ignored_reason": "Two real CJK font tests require explicit host font fixture"
+  },
+  "separate_python_process_guard_tests_passed": 6,
+  "new_original_shell_capture_python_tests_executed_by_this_workflow": false,
+  "actual_native_runtime_executables_before_packaging": {
+    "session_sha256": "6a4090c0ca92a4b06457ca8363e638c3959075860831ac1299641e2e1a1f5c9e",
+    "shell_sha256": "a482d599442e9ca62f5cab26eb25ec63586708863fb1ed5fa968580bfb89f298"
+  },
+  "package_executable_hashes_separately_verified": true,
+  "package_bytes_are_post_build_strip_and_differ_from_runtime_hashes": true,
+  "passed_host_scope": [
+    "source guard",
+    "Rust workspace and observer contract tests",
+    "strict Clippy and fmt",
+    "actual Session IPC ownership and bidirectional peer refusal",
+    "scripted Agentd UDS fixture with stale retention",
+    "actual egui Hepta-page layout from that fixture",
+    "headless Weston Shell/app layouts and observed cancellation",
+    "compositor crash/restart with same Session",
+    "packaged Linux ELF replay without display"
+  ],
+  "explicit_limits": [
+    "Original Hepta was not started by this A10 workflow.",
+    "Layout marker is not independent compositor-pixel verification.",
+    "No persistent original-Hepta six-phase Shell claim from this workflow.",
+    "No objective submission, model turn, device effect, HOS2 or mobile qualification.",
+    "Success belongs only to f0924a6e; it is not inherited by later 84e08165 or any future evidence head."
+  ],
+  "prior_queued_snapshot_preserved": {
+    "directory": "../2026-10-17-f092-ci",
+    "status_at_earlier_observation": "queued",
+    "historical_archive_modified": false
+  },
+  "raw_native_job_log": {
+    "bytes": 172099,
+    "sha256": "5288e25836d085cb16d7a51c7d78ad9eed1881ee8e8ba621397a624acab59d24",
+    "connector_content_exactly_compared_before_archiving": true
+  }
+}
