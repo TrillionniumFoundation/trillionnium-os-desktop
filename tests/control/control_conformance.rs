@@ -6,9 +6,9 @@
 
 use os_control::{
     with_parent, BootId, CapSpaceId, ControlCore, DeliveryError, DeliveryRequest, DeliveryState,
-    DeliveryStatus, HistoryAck, LogicalOperationId, NamespaceIdentity, OperationBinding, OwnerId,
-    OwnerReceipt, PublishOutcome, PublisherId, ReserveAttempt, ResourceDomain, ResourceDomainId,
-    ResourceError, StableObjectId, CPU_PERIOD_NS,
+    DeliveryStatus, HistoryAck, LogicalOperationId, NamespaceIdentity, OperationBinding,
+    OriginalOwnerAuthority, OwnerId, OwnerReceipt, PublishOutcome, PublisherId, ReserveAttempt,
+    ResourceDomain, ResourceDomainId, ResourceError, StableObjectId, CPU_PERIOD_NS,
 };
 use std::sync::{Arc, Barrier};
 use std::thread;
@@ -37,13 +37,8 @@ fn owner(n: u128) -> OwnerId {
     OwnerId::from_u128(n)
 }
 
-fn ack(core: &ControlCore, through: u64) -> HistoryAck {
-    HistoryAck::from_owner_receipt(
-        core.identity(),
-        through,
-        OwnerReceipt::new(owner(9000), [0xA5; 32]),
-    )
-    .unwrap()
+fn ack(authority: &OriginalOwnerAuthority, through: u64) -> HistoryAck {
+    authority.history_ack(through, [0xA5; 32]).unwrap()
 }
 
 fn root(n: u128, cap: u64) -> ResourceDomain {
@@ -365,7 +360,7 @@ fn malformed_install_budget_is_rejected_before_consuming_global_sequence() {
     );
     assert_eq!(core.next_sequence(), 2);
     let view = core.delivery_view_for(owner(9000)).unwrap();
-    core.retire_through(&view, ack(&core, 1), &authority)
+    core.retire_through(&view, ack(&authority, 1), &authority)
         .unwrap();
     // Once a syntactically valid D is reserved, a stale CAS revision is an
     // immutable semantic rejection, not another structural parse error.
@@ -1181,7 +1176,7 @@ fn hanging_prefix_blocks_retire_but_read_and_full_window_recovery_remain_availab
         DeliveryState::Terminal
     );
     assert_eq!(
-        core.retire_through(&view, ack(&core, 4), &owner_authority),
+        core.retire_through(&view, ack(&owner_authority, 4), &owner_authority),
         Err(DeliveryError::PendingPrefix)
     );
     first.as_ref().map(|token| {
@@ -1195,7 +1190,7 @@ fn hanging_prefix_blocks_retire_but_read_and_full_window_recovery_remain_availab
         .unwrap()
     });
     let retired = core
-        .retire_through(&view, ack(&core, 4), &owner_authority)
+        .retire_through(&view, ack(&owner_authority, 4), &owner_authority)
         .unwrap();
     assert_eq!(retired.retired_through, 4);
     let token5 = core
@@ -1226,7 +1221,7 @@ fn ten_thousand_writes_are_bounded_and_old_sequences_do_not_reappear() {
             core.commit(&token, who, sequence).unwrap().status,
             Some(DeliveryStatus::Ok)
         );
-        core.retire_through(&view, ack(&core, sequence), &owner_authority)
+        core.retire_through(&view, ack(&owner_authority, sequence), &owner_authority)
             .unwrap();
     }
     assert_eq!(core.retired_through(), 10_000);
@@ -1389,7 +1384,7 @@ fn concurrent_query_publish_and_retire_observe_whole_states() {
     query.join().unwrap();
     assert_eq!(published.status, Some(DeliveryStatus::Ok));
     let retired = core
-        .retire_through(&view, ack(&core, 1), &owner_authority)
+        .retire_through(&view, ack(&owner_authority, 1), &owner_authority)
         .unwrap();
     assert_eq!(retired.retired_through, 1);
     assert_eq!(
@@ -1430,7 +1425,7 @@ fn query_and_retire_race_has_only_terminal_or_retired_observations() {
     let retire = thread::spawn(move || {
         retire_barrier.wait();
         retire_core
-            .retire_through(&retire_view, ack(&retire_core, 1), &owner_authority)
+            .retire_through(&retire_view, ack(&owner_authority, 1), &owner_authority)
             .unwrap();
     });
     query.join().unwrap();
@@ -1508,13 +1503,13 @@ fn read_only_history_view_cannot_advance_the_ack_frontier() {
         DeliveryState::Terminal
     );
     assert_eq!(
-        core.retire_through(&observer, ack(&core, 1), &owner_authority),
+        core.retire_through(&observer, ack(&owner_authority, 1), &owner_authority),
         Err(DeliveryError::PermissionDenied)
     );
     assert_eq!(core.retired_through(), 0);
     let owner_view = core.delivery_view_for(owner(9000)).unwrap();
     assert_eq!(
-        core.retire_through(&owner_view, ack(&core, 1), &owner_authority)
+        core.retire_through(&owner_view, ack(&owner_authority, 1), &owner_authority)
             .unwrap()
             .retired_through,
         1
@@ -1535,7 +1530,19 @@ fn forged_ack_or_foreign_owner_handle_cannot_retire_terminal_history() {
     core.commit(&token, who, 1).unwrap();
     let view = core.delivery_view_for(owner(9000)).unwrap();
     assert_eq!(
-        core.retire_through(&view, ack(&core, 1), &alien_owner),
+        core.retire_through(&view, ack(&original_owner, 1), &alien_owner),
+        Err(DeliveryError::PermissionDenied)
+    );
+    // Matching the owner ID is insufficient: a caller-created digest has no
+    // private namespace tag and must not erase a terminal result.
+    let forged_owner_receipt = HistoryAck::from_owner_receipt(
+        core.identity(),
+        1,
+        OwnerReceipt::new(owner(9000), [0xAA; 32]),
+    )
+    .unwrap();
+    assert_eq!(
+        core.retire_through(&view, forged_owner_receipt, &original_owner),
         Err(DeliveryError::PermissionDenied)
     );
     let forged =
@@ -1551,14 +1558,14 @@ fn forged_ack_or_foreign_owner_handle_cannot_retire_terminal_history() {
         DeliveryState::Terminal
     );
     assert_eq!(
-        core.retire_through(&view, ack(&core, 1), &original_owner)
+        core.retire_through(&view, ack(&original_owner, 1), &original_owner)
             .unwrap()
             .retired_through,
         1
     );
     core.lose_history();
     assert_eq!(
-        core.retire_through(&view, ack(&core, 1), &original_owner),
+        core.retire_through(&view, ack(&original_owner, 1), &original_owner),
         Err(DeliveryError::HistoryLost)
     );
 }
@@ -1836,7 +1843,7 @@ fn copyout_retry_racing_with_retirement_never_reopens_a_delivery() {
         let retire_core = Arc::clone(&core);
         let retire = thread::spawn(move || {
             retire_start.wait();
-            retire_core.retire_through(&view, ack(&retire_core, 1), &authority)
+            retire_core.retire_through(&view, ack(&authority, 1), &authority)
         });
         start.wait();
         match retry.join().unwrap() {
@@ -2384,7 +2391,7 @@ fn a02_codec_accepts_every_real_a03_delivery_state() {
 
     let unseen = a02_roundtrip_delivery(core.query_delivery(&view, 3).unwrap()).unwrap();
     assert_eq!(unseen.state, WireState::NotSeen);
-    core.retire_through(&view, ack(&core, 2), &authority)
+    core.retire_through(&view, ack(&authority, 2), &authority)
         .unwrap();
     let retired = a02_roundtrip_delivery(core.query_delivery(&view, 1).unwrap()).unwrap();
     assert_eq!(retired.state, WireState::Retired);
@@ -2428,12 +2435,7 @@ fn a02_history_max_query_is_read_only_and_never_an_executable_delivery() {
     forged.status = None;
     assert_eq!(forged.hos2_saved_status_code(), None);
 
-    let invalid_retirement = HistoryAck::from_owner_receipt(
-        core.identity(),
-        u64::MAX,
-        OwnerReceipt::new(owner(9000), [1; 32]),
-    )
-    .unwrap();
+    let invalid_retirement = authority.history_ack(u64::MAX, [1; 32]).unwrap();
     assert_eq!(
         core.retire_through(&view, invalid_retirement, &authority),
         Err(DeliveryError::NotSeen)
@@ -2547,7 +2549,7 @@ fn invariant_audit_keeps_hanging_prefix_and_capacity_exhaustion_nonterminal() {
         DeliveryState::Reserved
     );
     assert_eq!(
-        core.retire_through(&view, ack(&core, 8), &authority),
+        core.retire_through(&view, ack(&authority, 8), &authority),
         Err(DeliveryError::PendingPrefix)
     );
     assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
@@ -2561,7 +2563,7 @@ fn invariant_audit_keeps_hanging_prefix_and_capacity_exhaustion_nonterminal() {
     )
     .unwrap();
     assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
-    core.retire_through(&view, ack(&core, 8), &authority)
+    core.retire_through(&view, ack(&authority, 8), &authority)
         .unwrap();
     assert_eq!(core.retired_through(), 8);
     assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
@@ -2581,7 +2583,7 @@ fn invariant_audit_keeps_hanging_prefix_and_capacity_exhaustion_nonterminal() {
         if sequence % 127 == 0 {
             assert_eq!(core.validate_invariants_for_host_model(), Ok(()));
         }
-        core.retire_through(&view, ack(&core, sequence), &authority)
+        core.retire_through(&view, ack(&authority, sequence), &authority)
             .unwrap();
     }
     assert_eq!(core.retired_through(), 10_000);
@@ -2620,7 +2622,7 @@ fn concurrent_window_invariant_audits_never_see_half_committed_results() {
             let outcome = producer_core.commit(&token, who, sequence).unwrap();
             assert_eq!(outcome.status, Some(DeliveryStatus::Ok));
             producer_core
-                .retire_through(&view, ack(&producer_core, sequence), &authority)
+                .retire_through(&view, ack(&authority, sequence), &authority)
                 .unwrap();
         }
     });
