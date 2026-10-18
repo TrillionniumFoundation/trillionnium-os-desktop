@@ -524,7 +524,7 @@ impl super::SubControlStatic for CpuController {
 }
 
 impl super::SubController<CpuController> {
-    /// Accounts one [`Jiffies`] of CPU time for this cgroup and all of its ancestors.
+    /// Charges a scheduler TSC interval to this cgroup and all of its ancestors.
     fn charge_bandwidth_hierarchy(&self, from: u64, until: u64) {
         let mut node = Some(self);
         while let Some(current) = node {
@@ -598,33 +598,41 @@ pub(crate) fn charge_task_cpu(task: &Task, from: u64, until: u64) {
     let Some(thread) = task.as_posix_thread() else {
         return;
     };
-    let Some(process) = thread.weak_process().upgrade() else {
-        // A dead POSIX process cannot be upgraded during deferred task
-        // cleanup. Charge the interval against the thread-owned cgroup
-        // snapshot captured while the process was alive; otherwise the last
-        // [from, until) interval disappears from cpu.stat and quota debt.
-        if let Some(cgroup) = thread.cpu_cgroup() {
-            let cpu = cgroup.controller().cpu.read();
-            cpu.get().charge_bandwidth_hierarchy(from, until);
-        } else {
-            let cpu = CgroupSystem::singleton().controller().cpu.read();
-            cpu.get().charge_bandwidth_hierarchy(from, until);
+    if let Some(process) = thread.weak_process().upgrade() {
+        // Read the binding before the zombie flag. Observing the root binding
+        // published by exit must also observe the preceding zombie transition.
+        // Preserve a present process binding even before a zombie is detached:
+        // a concurrent migration may not have updated the backup yet.
+        let guard = process.cgroup();
+        if guard.get().is_some() || !process.status().is_zombie() {
+            if let Some(group) = guard.get() {
+                group
+                    .controller()
+                    .cpu
+                    .read_with(&guard)
+                    .charge_bandwidth_hierarchy(from, until);
+            } else {
+                CgroupSystem::singleton()
+                    .controller()
+                    .cpu
+                    .read_with(&guard)
+                    .charge_bandwidth_hierarchy(from, until);
+            }
+            return;
         }
-        return;
-    };
-    let guard = process.cgroup();
-    if let Some(group) = guard.get() {
-        group
-            .controller()
-            .cpu
-            .read_with(&guard)
-            .charge_bandwidth_hierarchy(from, until);
+    }
+
+    // exit_process() clears process.cgroup before the scheduler's final
+    // debit, and a parent may still retain the zombie Process Arc. A detached
+    // zombie and an already-reaped process both need the thread-owned lease so
+    // the final [from, until) interval reaches the old leaf and every ancestor.
+    // This settles quota bandwidth/debt; cpu.stat usage has its own tick path.
+    if let Some(cgroup) = thread.cpu_cgroup() {
+        let cpu = cgroup.controller().cpu.read();
+        cpu.get().charge_bandwidth_hierarchy(from, until);
     } else {
-        CgroupSystem::singleton()
-            .controller()
-            .cpu
-            .read_with(&guard)
-            .charge_bandwidth_hierarchy(from, until);
+        let cpu = CgroupSystem::singleton().controller().cpu.read();
+        cpu.get().charge_bandwidth_hierarchy(from, until);
     }
 }
 
@@ -644,6 +652,9 @@ pub(crate) fn charge_cpu_time(process: &Process, stat_kind: CpuStatKind) {
             .charge_cpu_time(&cgroup_guard, stat_kind);
     }
 }
+
+#[cfg(ktest)]
+mod final_charge_regressions;
 
 #[cfg(ktest)]
 mod quota_debt_regressions {
