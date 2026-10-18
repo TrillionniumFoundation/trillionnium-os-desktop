@@ -39,7 +39,13 @@ def build_document():
             response(4, delivery(state), request_id=OPAQUE_ID),
             dict(state=state, saved_status=0, sequence=1,
                  zero_metadata=True), 0))
-    for status in range(1, 12):
+    for state, name in ((3, 'not_seen'), (4, 'history_lost')):
+        result.append(vector(
+            f'delivery_{name}_sequence_max', 'response', 4,
+            response(4, delivery(state, sequence=U64_MAX), request_id=OPAQUE_ID),
+            dict(state=state, saved_status=0, sequence=U64_MAX,
+                 zero_metadata=True), 0))
+    for status in range(1, 10):
         result.append(vector(
             f'delivery_terminal_error_{status}', 'response', 4,
             response(4, delivery(1, status), request_id=OPAQUE_ID),
