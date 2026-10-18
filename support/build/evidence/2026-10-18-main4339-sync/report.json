@@ -1,0 +1,69 @@
+{
+  "schema": "trillionnium.a01.main4339-sync.v1",
+  "scope": "Source equivalence bridge and actual updated A02 host gate; no new kernel, QEMU, ktest, or A03 matrix execution.",
+  "bridge_commit": "d9ccc523141ec46baef2a0dfe0afe49e4f97f523",
+  "bridge_tree": "315b2b84319a88442fb054f434ccc2fdc436e47e",
+  "integrated_main": "4339acedd2d433f838c7b5fd445709c539043a77",
+  "actual_latest_native_producer": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+  "actual_latest_native_report": "../2026-10-18-main355-followup/REPORT.md",
+  "initial_absent_target_native_producer": "c22891b593f77c98ff4ea94d7aecb54f32222651",
+  "initial_native_report": "../2026-10-18-current-main/REPORT.md",
+  "native_source_bridge": {
+    "receipt": "source-bridge.json",
+    "sha256": "9e0c9ff84c09172cf5decc5f5ff54287a418dc92a342d60831b2972fbb938735",
+    "passed": true,
+    "selected_files": 3010,
+    "byte_mode_blob_hash_unchanged": 3008,
+    "differences": [
+      "support/build/README.md",
+      "support/upstream-lock.json (reporting/history fields only)"
+    ],
+    "all_kernel_files_unchanged": 2941,
+    "actual_external_abi_unchanged": true,
+    "build_programs_and_fixed_pins_unchanged": true,
+    "owner_core_ostd_and_abi_equal_integrated_main": true,
+    "static_fixed_input_checks_passed": 118,
+    "fixed_input_receipt_byte_identical_to_native": true
+  },
+  "actual_abi_gate": {
+    "producer": "d9ccc523141ec46baef2a0dfe0afe49e4f97f523",
+    "summary": "abi-summary.json",
+    "archive": "abi-owner-gate.tar.gz",
+    "archive_sha256": "d1788cfd8f34030d79d9591d30cdf101cb32a62aed5aa80fcda2692184b3791c",
+    "archive_bytes": 47142,
+    "passed": true,
+    "exit_code": 0,
+    "checks_passed": 13,
+    "checks_total": 13,
+    "rust_passed": 78,
+    "rust_includes_doctest": true,
+    "python_passed": 62,
+    "python_optimized_passed_separately": 62,
+    "compiled_mutants_killed": 20,
+    "all_mutants_compiled": true,
+    "source_input_count": 28,
+    "source_manifest_sha256": "824039f4b32af55586b5560e17af26474e98ff8c81c11db9d1925c1e97313485",
+    "status_scope": "tracked-clean before and after; whole-worktree cleanliness is separately observed by the bridge, not inferred from this gate"
+  },
+  "validation_boundaries": {
+    "new_native_builds": 0,
+    "new_qemu_boots": 0,
+    "new_ktest_runs": 0,
+    "new_a03_matrix_runs": 0,
+    "old_ktest_producer": "c22891b593f77c98ff4ea94d7aecb54f32222651",
+    "old_ktest_reported_passes": 374,
+    "old_ktest_soft_skips": 3,
+    "old_ktest_exercised_lower_bound": 371,
+    "cross_host_reproducibility_claimed": false,
+    "full_project_acceptance": false,
+    "latest_native_boot_producer_must_remain": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+    "future_evidence_commit_is_a_separate_identity": true
+  },
+  "remaining_environment_issue": {
+    "late_manifest_entry_absent_at_bridge": true,
+    "late_manifest_quarantined": true,
+    "late_manifest_writer_identified": false,
+    "evidence": "../2026-10-18-main355-followup/late-manifest/observation.json"
+  },
+  "handoff": "../2026-10-18-main355-followup/HANDOFF.md"
+}

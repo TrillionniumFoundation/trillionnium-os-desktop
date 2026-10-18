@@ -6,7 +6,25 @@ complete Asterinas **v0.19.0**, commit
 `96605cf64aeae2d34f29b97e85eff9315fe10a8e`. Upstream documentation, attribution,
 and `LICENSE-MPL` are preserved. The project root README stays empty.
 
-## Latest main integration — 2026-10-18
+## Latest main sync and source bridge — 2026-10-18
+
+Main `4339acedd2d433f838c7b5fd445709c539043a77` is incorporated by ordinary
+merge `d9ccc523141ec46baef2a0dfe0afe49e4f97f523`. Its updated A02 gate
+passed 13/13 checks: 78 Rust tests, 62 Python tests in each separate mode,
+and all 20 compiled mutation checks. The [sync report](evidence/2026-10-18-main4339-sync/REPORT.md)
+preserves the raw gate output and an independent source bridge.
+
+All 2,941 kernel files, the actual external ABI and build programs are
+identical to the successful native producer `40c901c6` below. Of the same
+3,010 selected inputs, only this README and upstream-lock reporting/history
+fields differ; all 118 fixed-input checks produce the identical receipt.
+No new native execution is claimed for d9ccc523 or the following evidence
+commit. The latest actual build/boot remains 40c901c6; the earlier kernel
+regression remains c22891b. The [A00/A05/A06 handoff](evidence/2026-10-18-main355-followup/HANDOFF.md)
+still matches the integrated owner sources. The late manifest entry is
+absent after quarantine, but its writer remains unidentified.
+
+## Rebuild after main ABI update — 2026-10-18
 
 Main advanced during the first pipeline to
 `3551e1e0e017e2973da7e2b8ab811ece25c258c0`, changing the external ABI
