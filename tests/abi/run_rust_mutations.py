@@ -24,7 +24,7 @@ from typing import Any
 
 
 EXPECTED_TEST_COUNT = 8
-EXPECTED_SEMANTIC_TEST_COUNT = 12
+EXPECTED_SEMANTIC_TEST_COUNT = 15
 EXPECTED_PROFILE_TEST_COUNT = 7
 EXPECTED_SNAPSHOT_TEST_COUNT = 5
 EXPECTED_NEGATIVE_TEST_COUNT = 21
@@ -150,7 +150,7 @@ PROFILE_MUTANTS = (
         PROFILE_TESTS[6],
         tuple(
             (
-                f"|| {value}.cumulative_cpu_ns > {value}.sample_boottime_ns",
+                f"|| {value}.cumulative_cpu_ns - {value}.window_consumed_ns > {value}.window_start_ns",
                 "|| false",
             )
             for value in ("out", "v")

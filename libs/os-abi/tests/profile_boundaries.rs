@@ -425,6 +425,14 @@ fn read_usage_rejects_impossible_or_misaligned_cpu_snapshots() {
             Error::InvalidField,
         ),
         (
+            "cumulative CPU would imply pre-window usage before boot origin",
+            ReadUsageResponse {
+                cumulative_cpu_ns: 140_000_000,
+                ..usage_profile()
+            },
+            Error::InvalidField,
+        ),
+        (
             "cap exceeds the fixed period",
             ReadUsageResponse {
                 active_cap_ns: CPU_PERIOD_NS + 1,
