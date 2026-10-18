@@ -1,0 +1,96 @@
+{
+  "recorded_at_utc": "2026-10-18T06:51:33.486990+00:00",
+  "reviewer": "root",
+  "review_type": "manual visual inspection; not OCR or layout-marker inference",
+  "source_commit": "25298f5d87cf3db90deefe9c0405ecd241dc6581",
+  "source_tree": "9584997da412dd10c0960f69011b40a4b26d2862",
+  "capture_receipt": {
+    "bytes": 32329,
+    "sha256": "0130a74e38541d0a9cdfabed0d44f6aa74de1735ce2fb773bc6b1bc26bb53b4f"
+  },
+  "verdict": "English_Runtime_card_passed_with_known_font_limitation",
+  "images_actually_viewed": 3,
+  "images": [
+    {
+      "sequence": 1,
+      "phase": "compiled_run_projected",
+      "file": "phase-1-compiled_run_projected.png",
+      "bytes": 128063,
+      "sha256": "724bcd24eb8d6462a26475ac99a4847d93070a567f1f1cbb634ce0c86a4d4586",
+      "width": 1440,
+      "height": 1000,
+      "review_method": "root viewed original PNG with view_image during the live task",
+      "observations": {
+        "status": "OBSERVED · READ ONLY",
+        "owner_phase": "admitted",
+        "revision": 1,
+        "run_generation": 2,
+        "authority_epoch": 1,
+        "terminal_observed": false,
+        "run_id_visible": "run.desktop-compiled",
+        "owner_pid_visible": 323523,
+        "spawn_current_visible": [
+          1,
+          2
+        ],
+        "note": "English known-run card is visible and readable. PNG sample sequence may lie between the before/after snapshots; no byte-equality claim across a live sampling interval."
+      }
+    },
+    {
+      "sequence": 2,
+      "phase": "old_endpoint_run_stale",
+      "file": "phase-2-old_endpoint_run_stale.png",
+      "bytes": 145229,
+      "sha256": "e68e2d7ec2b038d69d650774c0e15b87a09bc131ebc66d12613f7c6941b04a8a",
+      "width": 1440,
+      "height": 1000,
+      "review_method": "root viewed original PNG with view_image during the live task",
+      "observations": {
+        "status": "STALE · CURRENT RUN STATE UNKNOWN",
+        "diagnostic": "protocol_mismatch",
+        "last_observation_preserved": true,
+        "run_id_visible": "run.desktop-compiled",
+        "owner_pid_visible": 323523,
+        "spawn_current_visible": [
+          1,
+          2
+        ],
+        "observation_gap_text_visible": true,
+        "note": "Stale card preserves admitted/revision 1/generation 2/epoch 1/terminal false. It does not present old health as current. Phase-2 history is checked before/after; phase-1 and phase-2 PNG samples need not be identical."
+      }
+    },
+    {
+      "sequence": 3,
+      "phase": "replacement_run_projection_missing",
+      "file": "phase-3-replacement_run_projection_missing.png",
+      "bytes": 129733,
+      "sha256": "9958922769c3d52d8594830fbe3714a4c2c9b048625a4e9f40be7ef99a05f671",
+      "width": 1440,
+      "height": 1000,
+      "review_method": "root viewed original PNG with view_image during the live task",
+      "observations": {
+        "status": "PROJECTION MISSING · CURRENT RUN STATE UNKNOWN",
+        "run_id_visible": "run.desktop-compiled",
+        "owner_pid_visible": 323803,
+        "spawn_current_visible": [
+          5,
+          6
+        ],
+        "last_observation": null,
+        "admission_and_durable_outcome_unknown_text_visible": true,
+        "no_successful_observation_text_visible": true,
+        "note": "New owner health is visible; absent current in-memory run projection is explicitly unknown and is not rendered as never submitted, resumed or completed."
+      }
+    }
+  ],
+  "limitations": [
+    "A Chinese suffix after Objective submission unavailable renders as missing-font boxes in all three PNGs. Whole-UI CJK rendering is not qualified by this run.",
+    "No keyboard/IME, physical display/input, GPU, Wayland pixels, Asterinas or mobile qualification.",
+    "Visible admitted and terminal false describe the original owner run projection, not a model turn or device result.",
+    "Capture ACKs coordinate the probe and do not independently certify pixels."
+  ],
+  "same_shell_pid_from_capture_receipt": 323732,
+  "same_window_xid_from_capture_receipt": "2097155",
+  "labels_rechecked_at_utc": "2026-10-18T07:02:45.412302+00:00",
+  "label_clarification": "Root reopened all three original PNGs to distinguish the run-card label from the separate runtime-health heading; the exact run-card labels include RUN in phases 2 and 3."
+}

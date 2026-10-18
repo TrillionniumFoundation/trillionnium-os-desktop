@@ -1,0 +1,94 @@
+{
+  "source_commit": "25298f5d87cf3db90deefe9c0405ecd241dc6581",
+  "source_tree": "9584997da412dd10c0960f69011b40a4b26d2862",
+  "started_at_utc": "2026-10-18T06:36:27.393505+00:00",
+  "receipt_inputs": {
+    "agentd": {
+      "path": "/workspace/scratch/499c7902de8e/nextstep-hepta-build/native-build-02/receipt.json",
+      "sha256": "230d5af097aeaabe2c054b9f12eb3725a2c7ed61629545d923e5b24daba73a88"
+    },
+    "probe": {
+      "path": "/workspace/scratch/499c7902de8e/nextstep-hepta-build/probe-build-01/receipt.json",
+      "sha256": "ef592d8b9de6dee7294d6814d1d796e104f87b5cb19caf5514aaa9c8287b4c8c"
+    },
+    "cli": {
+      "path": "/workspace/scratch/499c7902de8e/nextstep-objective-evidence/cli-integration-build/build-receipt.json",
+      "sha256": "75d3bfa4a8c27ad65233b12756e8a42f88e5b8641bb4048a0503e627854125e6"
+    },
+    "ui": {
+      "path": "/workspace/scratch/499c7902de8e/nextstep-objective-evidence/ui-integration-01/build-receipt.json",
+      "sha256": "73dd9d9b53a95d05edc0c5778de13c7bf619f4274c7d5d3dc27f62dac5dd8f6f"
+    }
+  },
+  "source_inputs_match_build_receipts": true,
+  "command": [
+    "python3",
+    "-B",
+    "tests/integration/hepta/run_original_objective.py",
+    "--hepta-source",
+    "/workspace/scratch/499c7902de8e/audit2-hepta",
+    "--work-dir",
+    "/workspace/scratch/499c7902de8e/nextstep-hepta-objective-session-runtime-01",
+    "--target-dir",
+    "/workspace/scratch/499c7902de8e/nextstep-hepta-build/target",
+    "--execute",
+    "--offline",
+    "--agentd-bin",
+    "/workspace/scratch/499c7902de8e/nextstep-hepta-build/target/dev-small/codex-hepta-agentd",
+    "--probe-bin",
+    "/workspace/scratch/499c7902de8e/nextstep-hepta-build/target/dev-small/hepta-original-objective-probe",
+    "--observer-bin",
+    "/workspace/scratch/499c7902de8e/implementation-tools/integration-target/debug/hepta-observe",
+    "--submitter-bin",
+    "/workspace/scratch/499c7902de8e/implementation-tools/integration-target/debug/hepta-submit",
+    "--session-bin",
+    "/workspace/scratch/499c7902de8e/implementation-tools/a10-target/debug/trill-session",
+    "--ctl-bin",
+    "/workspace/scratch/499c7902de8e/implementation-tools/a10-target/debug/trill-ctl",
+    "--session-phase-dir",
+    "/workspace/scratch/499c7902de8e/nextstep-objective-phase-01",
+    "--session-ack-seconds",
+    "120"
+  ],
+  "binaries": {
+    "agentd": {
+      "path": "/workspace/scratch/499c7902de8e/nextstep-hepta-build/target/dev-small/codex-hepta-agentd",
+      "bytes": 328940800,
+      "sha256": "51b18242912ac9c4694d2174da8ed510070b7b6d6689f008177bc11349f6cc5a"
+    },
+    "probe": {
+      "path": "/workspace/scratch/499c7902de8e/nextstep-hepta-build/target/dev-small/hepta-original-objective-probe",
+      "bytes": 36796104,
+      "sha256": "37a46986eb9a66394d34d9331101ee2b37e9963737973ce5509b05aa5635a179"
+    },
+    "observer": {
+      "path": "/workspace/scratch/499c7902de8e/implementation-tools/integration-target/debug/hepta-observe",
+      "bytes": 14476304,
+      "sha256": "7e04a64b79a4e66c07f1fb5ff861284d4b2c61b38b6fd0e48bedae67f3255c8a"
+    },
+    "submitter": {
+      "path": "/workspace/scratch/499c7902de8e/implementation-tools/integration-target/debug/hepta-submit",
+      "bytes": 14271896,
+      "sha256": "7f29927f783bba469d8f08bdd452b427ecf4edd75a43c34c0efd2928068bf94b"
+    },
+    "session": {
+      "path": "/workspace/scratch/499c7902de8e/implementation-tools/a10-target/debug/trill-session",
+      "bytes": 18461416,
+      "sha256": "67a283c1eb2211df7e5433a8ace2c0f8078f1cf0b92728232d85af2fdecb5b7e"
+    },
+    "ctl": {
+      "path": "/workspace/scratch/499c7902de8e/implementation-tools/a10-target/debug/trill-ctl",
+      "bytes": 7982528,
+      "sha256": "4cee100fb6839ccc0260a2a0f46a3b6086f6ed0397a667d6a07d92bfd7ede0ab"
+    }
+  },
+  "session_requested": true,
+  "phase_dir": "/workspace/scratch/499c7902de8e/nextstep-objective-phase-01",
+  "exit_code": 0,
+  "ended_at_utc": "2026-10-18T06:36:46.268640+00:00",
+  "status": "passed",
+  "report_sha256": "8c230bcc38f77467b49c29f2dec3ce35f74f2e2f034e15174c559aef95eb7a18",
+  "report_status": "passed",
+  "runtime_executed": true,
+  "runtime_record_count": 25
+}

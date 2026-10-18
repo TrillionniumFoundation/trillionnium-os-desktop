@@ -264,10 +264,12 @@ def run_ui(output, report, env, command, spawn, alive):
                 window_for('notes', task['pid'], 'trill-app-window')
                 ui['notes_task'] = task['id']
             elif action == 'finish':
-                draft = output / 'state/trillionnium-ui/local-drafts-v1.json'
+                draft = output / 'state/trillionnium-ui/local-context-drafts-v2.json'
                 require(draft.is_file(), 'actual Shell export missing')
                 exported = json.loads(draft.read_bytes())
-                require(exported == {'version': 1, 'drafts': ['你好']}, 'actual Shell text did not match IME sample')
+                require(exported == {'version': 2, 'drafts': [
+                    {'workspace': 'personal', 'text': '你好', 'contexts': []}
+                ]}, 'actual Shell text/context export did not match IME sample')
                 require(any(s['target'] == 'shell' and s['text'] == '你好' for s in ui['clipboard_samples']),
                     'actual Shell clipboard text did not match IME sample')
                 # A different expected value excludes a stale Shell clipboard

@@ -79,6 +79,10 @@ cargo test --manifest-path ui/Cargo.toml --workspace --locked
 # A path dependency is built, but its own unit/integration tests are not
 # included by the UI workspace command. Run A07's frozen suite explicitly.
 cargo test --manifest-path services/hepta-os/Cargo.toml --locked
+# This adapter stays disabled for the Shell. Exercise its explicitly enabled
+# local UDS/error boundary separately; no original issuer or owner is started.
+cargo check --manifest-path services/hepta-os/Cargo.toml --locked --offline --no-default-features --all-targets
+cargo test --manifest-path services/hepta-os/Cargo.toml --locked --offline --features objective-transport
 # Actual Session/facade/Unix IPC against an explicitly scripted fixed-v2
 # fixture. Its provenance says that upstream Agentd and effects were not run.
 ui_target="${CARGO_TARGET_DIR:-$PWD/ui/target}"

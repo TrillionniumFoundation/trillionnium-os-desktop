@@ -42,6 +42,7 @@ fn session_command(runtime: &PathBuf) -> Command {
         .env_remove("TRILL_HEPTA_AGENT_ID")
         .env_remove("TRILL_HEPTA_SPAWN_GENERATION")
         .env_remove("TRILL_HEPTA_PEER_UID")
+        .env_remove("TRILL_HEPTA_RUN_ID")
         .stdin(Stdio::null())
         .stdout(Stdio::null())
         .stderr(Stdio::null());

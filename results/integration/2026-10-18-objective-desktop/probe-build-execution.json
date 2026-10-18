@@ -1,0 +1,56 @@
+{
+  "started_at_utc": "2026-10-18T06:15:12.767756+00:00",
+  "source_commit": "cf2f61f73078f7310e60ea894c8ed83d51ef27b0",
+  "source_tree": "b40282b3a20c5fe238f88641ce499b5872b09949",
+  "command": [
+    "python3",
+    "-B",
+    "tests/integration/hepta/run_original_objective.py",
+    "--hepta-source",
+    "/workspace/scratch/499c7902de8e/audit2-hepta",
+    "--work-dir",
+    "/workspace/scratch/499c7902de8e/nextstep-hepta-objective-build-01",
+    "--target-dir",
+    "/workspace/scratch/499c7902de8e/nextstep-hepta-build/target",
+    "--rustup",
+    "/workspace/scratch/499c7902de8e/implementation-tools/cargo/bin/rustup",
+    "--offline"
+  ],
+  "cwd": "/workspace/scratch/499c7902de8e/nextstep-integration",
+  "runtime_executed": false,
+  "sources_before": {
+    "tests/integration/hepta/original_objective_fixture.rs": "4abdcb7ee3a0c3cf8f8302c8af18656f2d2c41bfa4862b137991a6124ef4f272",
+    "tests/integration/hepta/original_objective_profile.json": "56d81a70d4a7481614a9ebc5494173b08dcf79072230b9b61cd0a9c01454dd02",
+    "tests/integration/hepta/original_objective_session.rs": "51d8b992b8d45f597e78b4179da55c3ebaaec1d0caf1b7c49c30e5d53624d5f0",
+    "tests/integration/hepta/original_objective_probe.rs": "7aaf85c90cdde3dd1e011fb4b745453e848bfc04dfaceb59f257d08d9b225eef",
+    "tests/integration/hepta/run_original_objective.py": "9ea5d7b2f6801f88240257effe78dbbceb126d63f7132f37b0f2edd7c2486df4",
+    "tests/integration/hepta/run_original_agentd.py": "21dd4a2e0621240a75f5ce37bad93da0a37352fbaa78554a50e048abe6a45fd0",
+    "tests/integration/hepta/original_objective_owner.rs": "f01310e679872217af747192c3329218f2d6045972c77718d7f358384eb88eda"
+  },
+  "build_environment": {
+    "CARGO_HOME": "/workspace/scratch/499c7902de8e/nextstep-hepta-build/cargo",
+    "RUSTUP_HOME": "/workspace/scratch/499c7902de8e/implementation-tools/rustup",
+    "PATH": "/workspace/scratch/499c7902de8e/implementation-tools/cargo/bin:/root/.codex/tmp/arg0/codex-arg0J2erGI:/opt/codex/codex-path:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback"
+  },
+  "serialization": "Cargo shares the original target lock; it may wait for the original Agentd build.",
+  "exit_code": 0,
+  "ended_at_utc": "2026-10-18T06:33:16.148023+00:00",
+  "sources_after": {
+    "tests/integration/hepta/original_objective_fixture.rs": "4abdcb7ee3a0c3cf8f8302c8af18656f2d2c41bfa4862b137991a6124ef4f272",
+    "tests/integration/hepta/original_objective_profile.json": "56d81a70d4a7481614a9ebc5494173b08dcf79072230b9b61cd0a9c01454dd02",
+    "tests/integration/hepta/original_objective_session.rs": "51d8b992b8d45f597e78b4179da55c3ebaaec1d0caf1b7c49c30e5d53624d5f0",
+    "tests/integration/hepta/original_objective_probe.rs": "7aaf85c90cdde3dd1e011fb4b745453e848bfc04dfaceb59f257d08d9b225eef",
+    "tests/integration/hepta/run_original_objective.py": "9ea5d7b2f6801f88240257effe78dbbceb126d63f7132f37b0f2edd7c2486df4",
+    "tests/integration/hepta/run_original_agentd.py": "21dd4a2e0621240a75f5ce37bad93da0a37352fbaa78554a50e048abe6a45fd0",
+    "tests/integration/hepta/original_objective_owner.rs": "f01310e679872217af747192c3329218f2d6045972c77718d7f358384eb88eda"
+  },
+  "source_inputs_unchanged": true,
+  "status": "passed",
+  "runner_report_sha256": "692cb2200f6a3885719b0c41c5014eda0e4de46315eee659300098bb488d1404",
+  "binary": {
+    "path": "/workspace/scratch/499c7902de8e/nextstep-hepta-build/target/dev-small/hepta-original-objective-probe",
+    "bytes": 36796104,
+    "sha256": "37a46986eb9a66394d34d9331101ee2b37e9963737973ce5509b05aa5635a179"
+  },
+  "resolved_lock_sha256": "9f3e5258526c84e3069a9d05cc064daea9acf5a9f2a648ca709ae24f5d7c7eb2"
+}

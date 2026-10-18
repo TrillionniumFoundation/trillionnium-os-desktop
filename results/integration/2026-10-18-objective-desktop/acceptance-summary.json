@@ -1,0 +1,221 @@
+{
+  "schema": "trillionnium.r8-objective-desktop-evidence.v1",
+  "recorded_at_utc": "2026-10-18T06:51:33.488912+00:00",
+  "pull_request": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/192",
+  "qualified_source": {
+    "local_commit": "25298f5d87cf3db90deefe9c0405ecd241dc6581",
+    "same_tree_remote_commit": "ca5e7d8473690df1bf7636de0808e58414c40abe",
+    "tree": "9584997da412dd10c0960f69011b40a4b26d2862",
+    "ui_tree": "42857c1bda95681f0c482fef8eb8da0f53979020",
+    "services_tree": "1858e84d4d420716fbf629b90fd870e5d53e5078",
+    "hepta_os_tree": "088c3e553aee22745773b32d39f3bea61566e48b",
+    "parents_of_remote_code_commit": [
+      "89e06fa83b6614e9b20ea946b4399b0ac5293f4b",
+      "c4d4224c9daf1a5b22997930000f43001525d531"
+    ]
+  },
+  "original_hepta": {
+    "commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+    "tree": "15c9d6ea07bf3832de82825a6cc1e8c958dd3d45",
+    "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+    "clean_checkout": true
+  },
+  "ui_tests": {
+    "passed": 125,
+    "failed": 0,
+    "ignored": 2
+  },
+  "ui_build_receipt": "ui-build.json",
+  "cli_frozen_tests": {
+    "passed": 41,
+    "failed": 0,
+    "source_commit": "fbaa6fa9582424a1c02bd71d9b1edaaaa4fe53c2",
+    "actual_receipt": "cli-checks.json",
+    "scope": "scripted UDS/library/CLI/doc tests, separately from actual original-owner runtime"
+  },
+  "python_contracts": {
+    "receipt_parser": 12,
+    "actual_new_capture_ci_step": 10
+  },
+  "runtimes": [
+    {
+      "mode": "core",
+      "status": "passed",
+      "started_at_utc": "2026-10-18T06:35:12.149357+00:00",
+      "ended_at_utc": "2026-10-18T06:35:19.001115+00:00",
+      "runtime_record_count": 20,
+      "checks": [
+        "compiled_original_admission",
+        "exact_replay_same_publication",
+        "explicit_abstain_durable_without_run",
+        "invalid_signature_owner_rejected",
+        "body_generation_fenced_before_send",
+        "revoked_issuer_owner_rejected",
+        "owner_restart_retains_historical_journal",
+        "old_spawn_not_accepted",
+        "original_journal_matches_receipts",
+        "controlled_stop"
+      ],
+      "explicit_submission_attempts": 7,
+      "session_phases": [],
+      "original_acceptance_record": {
+        "canonical_intelligence": false,
+        "checks": [
+          "compiled_original_admission",
+          "exact_replay_same_publication",
+          "explicit_abstain_durable_without_run",
+          "invalid_signature_owner_rejected",
+          "body_generation_fenced_before_send",
+          "revoked_issuer_owner_rejected",
+          "owner_restart_retains_historical_journal",
+          "old_spawn_not_accepted",
+          "original_journal_matches_receipts",
+          "controlled_stop"
+        ],
+        "device_effect": false,
+        "event": "acceptance_pass",
+        "evidence_class": "original_agentd_signed_objective_admission",
+        "historical_run_resumed": false,
+        "isolated_test_issuer": true,
+        "model_turn": false,
+        "operations_dispatch": false,
+        "original_commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+        "production_issuer": false,
+        "session_projection": false
+      },
+      "report": "core-runtime.json",
+      "execution": "core-execution.json"
+    },
+    {
+      "mode": "session",
+      "status": "passed",
+      "started_at_utc": "2026-10-18T06:36:27.393505+00:00",
+      "ended_at_utc": "2026-10-18T06:36:46.268640+00:00",
+      "runtime_record_count": 25,
+      "checks": [
+        "compiled_original_admission",
+        "exact_replay_same_publication",
+        "explicit_abstain_durable_without_run",
+        "invalid_signature_owner_rejected",
+        "body_generation_fenced_before_send",
+        "revoked_issuer_owner_rejected",
+        "owner_restart_retains_historical_journal",
+        "old_spawn_not_accepted",
+        "original_journal_matches_receipts",
+        "controlled_stop"
+      ],
+      "explicit_submission_attempts": 7,
+      "session_phases": [
+        "compiled_run_projected",
+        "old_endpoint_run_stale",
+        "replacement_run_projection_missing"
+      ],
+      "original_acceptance_record": {
+        "canonical_intelligence": false,
+        "checks": [
+          "compiled_original_admission",
+          "exact_replay_same_publication",
+          "explicit_abstain_durable_without_run",
+          "invalid_signature_owner_rejected",
+          "body_generation_fenced_before_send",
+          "revoked_issuer_owner_rejected",
+          "owner_restart_retains_historical_journal",
+          "old_spawn_not_accepted",
+          "original_journal_matches_receipts",
+          "controlled_stop"
+        ],
+        "device_effect": false,
+        "event": "acceptance_pass",
+        "evidence_class": "original_agentd_signed_objective_admission",
+        "historical_run_resumed": false,
+        "isolated_test_issuer": true,
+        "model_turn": false,
+        "operations_dispatch": false,
+        "original_commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+        "production_issuer": false,
+        "session_projection": true
+      },
+      "report": "session-runtime.json",
+      "execution": "session-execution.json"
+    }
+  ],
+  "native_binaries": {
+    "agentd": {
+      "path": "/workspace/scratch/499c7902de8e/nextstep-hepta-build/target/dev-small/codex-hepta-agentd",
+      "bytes": 328940800,
+      "sha256": "51b18242912ac9c4694d2174da8ed510070b7b6d6689f008177bc11349f6cc5a"
+    },
+    "probe": {
+      "path": "/workspace/scratch/499c7902de8e/nextstep-hepta-build/target/dev-small/hepta-original-objective-probe",
+      "bytes": 36796104,
+      "sha256": "37a46986eb9a66394d34d9331101ee2b37e9963737973ce5509b05aa5635a179"
+    },
+    "observer": {
+      "path": "/workspace/scratch/499c7902de8e/implementation-tools/integration-target/debug/hepta-observe",
+      "bytes": 14476304,
+      "sha256": "7e04a64b79a4e66c07f1fb5ff861284d4b2c61b38b6fd0e48bedae67f3255c8a"
+    },
+    "submitter": {
+      "path": "/workspace/scratch/499c7902de8e/implementation-tools/integration-target/debug/hepta-submit",
+      "bytes": 14271896,
+      "sha256": "7f29927f783bba469d8f08bdd452b427ecf4edd75a43c34c0efd2928068bf94b"
+    },
+    "session": {
+      "path": "/workspace/scratch/499c7902de8e/implementation-tools/a10-target/debug/trill-session",
+      "bytes": 18461416,
+      "sha256": "67a283c1eb2211df7e5433a8ace2c0f8078f1cf0b92728232d85af2fdecb5b7e"
+    },
+    "ctl": {
+      "path": "/workspace/scratch/499c7902de8e/implementation-tools/a10-target/debug/trill-ctl",
+      "bytes": 7982528,
+      "sha256": "4cee100fb6839ccc0260a2a0f46a3b6086f6ed0397a667d6a07d92bfd7ede0ab"
+    },
+    "shell": {
+      "path": "/workspace/scratch/499c7902de8e/implementation-tools/a10-target/debug/trill-shell",
+      "bytes": 142690776,
+      "sha256": "93ee96b6ad1d1bcf5d3ddfabff3eacc1b7e49a4d894274c8bcea888b7bab0fdb"
+    }
+  },
+  "shell_capture": {
+    "passed": true,
+    "same_shell_pid": 323732,
+    "same_window_xid": "2097155",
+    "phases": 3,
+    "actual_pngs": 3,
+    "visual_review": "visual-review.json",
+    "english_runtime_only": true,
+    "cjk_font_limitation_observed": true
+  },
+  "scope": {
+    "linux_x86_64_host": true,
+    "isolated_test_issuer": true,
+    "original_hepta_modified": false,
+    "production_issuer": false,
+    "model_turn": false,
+    "canonical_intelligence": false,
+    "operations_dispatch": false,
+    "device_effect": false,
+    "historical_run_resumed": false,
+    "online_durable_reconciliation": false,
+    "asterinas_g1": false,
+    "asterinas_g2": false,
+    "mobile": false
+  },
+  "raw_receipt_copy_map": {
+    "native-agentd-build.json": "nextstep-hepta-build/native-build-02/receipt.json",
+    "probe-build.json": "nextstep-hepta-objective-build-01/report.json",
+    "probe-build-execution.json": "nextstep-hepta-build/probe-build-01/receipt.json",
+    "cli-checks.json": "nextstep-objective-evidence/cli-02/execution.json",
+    "cli-build.json": "nextstep-objective-evidence/cli-integration-build/build-receipt.json",
+    "ui-build.json": "nextstep-objective-evidence/ui-integration-01/build-receipt.json",
+    "core-runtime.json": "nextstep-hepta-objective-core-runtime-01/report.json",
+    "session-runtime.json": "nextstep-hepta-objective-session-runtime-01/report.json",
+    "core-execution.json": "nextstep-objective-evidence/objective-core-runtime-01/execution.json",
+    "session-execution.json": "nextstep-objective-evidence/objective-session-runtime-01/execution.json",
+    "capture-receipt.json": "nextstep-objective-capture-01/capture-receipt.json",
+    "namespace.json": "nextstep-objective-capture-01/namespace.json",
+    "pr191-publication.json": "nextstep-ci-evidence/pr191-publication.json",
+    "pr191-merge-ci-success.json": "nextstep-ci-evidence/pr191-merge-ci-success.json"
+  },
+  "ci_note": "Local execution and exact tree publication are recorded here. New PR/merge CI is separately timestamped; no CI success is inherited from another head."
+}
