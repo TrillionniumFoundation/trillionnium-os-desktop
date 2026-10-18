@@ -6,9 +6,9 @@
 
 use os_control::{
     BootId, CapSpaceId, ControlCore, DeliveryError, DeliveryObservation, DeliveryState,
-    DeliveryStatus, HistoryAck, ManagementGrantConfig, ManagementGrantId, ManagementGrantSnapshot,
+    DeliveryStatus, ManagementGrantConfig, ManagementGrantId, ManagementGrantSnapshot,
     ManagementGrantState, NativeDeliveryRequest, NativeGrant, NativeResourceError,
-    NativeResourceState, NativeResourceUpdate, NativeTarget, OwnerId, OwnerReceipt, PublishOutcome,
+    NativeResourceState, NativeResourceUpdate, NativeTarget, OwnerId, PublishOutcome,
     PublisherId, RequestBinding, ReserveToken, ResourceDomainId, StableObjectId, CPU_PERIOD_NS,
 };
 use std::panic::{catch_unwind, AssertUnwindSafe};
@@ -437,12 +437,7 @@ fn unwind_after_effect_fences_new_deliveries_and_owner_writes_without_resetting_
         core.query_delivery(&view, 1).unwrap().state,
         DeliveryState::Reserved
     );
-    let ack = HistoryAck::from_owner_receipt(
-        core.identity(),
-        3,
-        OwnerReceipt::new(history_owner(), [0xc7; 32]),
-    )
-    .unwrap();
+    let ack = authority.history_ack(3, [0xc7; 32]).unwrap();
     assert_eq!(
         core.retire_through(&view, ack, &authority),
         Err(DeliveryError::PendingPrefix)
