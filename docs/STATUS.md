@@ -38,6 +38,8 @@
 
 ### 主干的新变化与下一条产品主线
 
+合入前主干已普通合入 [A02/A03 PR #185](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/185)，到达 `4339acedd2d433f838c7b5fd445709c539043a77`。本次三份文档继续保留这些新增历史：A02 的独立 Python wire 判定器补齐 prior-window 与不可能的终态/保留序号检查；A03 的 HistoryAck 需要既有 original-owner authority 生成的私有 namespace instance tag，并使用进程内不复用的计数器避免地址复用后旧 ACK 授权新 namespace。值解析器不因此获得退役权限。该变更仍是宿主模型的 receipt 绑定，未实现原版 durable K/fsync 或原生设备效果；本轮没有重跑其门禁，具体实现见 [固定 API 契约](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/4339acedd2d433f838c7b5fd445709c539043a77/libs/os-control/API_CONTRACT.md)。
+
 主干 A02 `3551e1e0` 补充 N0 prior-window CPU 上界、QueryDelivery 保留序号与终态语义，以及对应源码/边界用例。本轮未重跑这些用例。A06 `b7a83887` 新增线程持有 cgroup 计费快照和删除租约；这是退出计费源码补强，不能宣称最终计费 / IRQ / SMP 已通过。复核发现仍需处理的具体边界：进程已 zombie 且 cgroup 被清空，但父进程尚持有 Process、Weak 仍可 upgrade 时，尾段计费可能回落到 root，而未使用保留的叶子快照。该源码发现与后续修复/客体验证分开记录。
 
 当前 UI 是 Rust eframe/egui/glow 的 Linux host 原生程序，真实 Hepta 数据已进入可见界面。它仍是只读运行链路：没有 objective 提交、模型 turn、可信 issuer 替换、authority/账本替换或设备效果；`TrustedReadOnlyOrganV1` 也不是 OS 沙箱。下一步以全 Rust 聊天 / 任务 / 应用工作区承载真实上下文，运行监控和控制台作为工作区内页面；可信 ObjectiveStart 适配器位于只读 organ 外，原始封套来自既有 issuer，durable K↔D、撤销与结果仍由既有 owner 提供。具体设计与错误语义见 [DESKTOP_UX 第 6 节](DESKTOP_UX.md#6-以-hepta-为核心的-ai-原生-ui)。
