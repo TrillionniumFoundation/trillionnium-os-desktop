@@ -9,6 +9,9 @@
 
 mod wire;
 
+#[cfg(feature = "objective-history")]
+pub mod history;
+
 use crate::client::{require_blocking_context, validate_socket};
 use crate::{EndpointConfig, ObserverError, MAX_FRAME_BYTES, POLL_TIMEOUT_MS};
 use serde_json::value::RawValue;
@@ -389,6 +392,24 @@ async fn exchange(
     frame: &[u8],
     bytes_written: &mut usize,
 ) -> Result<SubmissionStatus, SubmissionIssue> {
+    let response = exchange_raw(
+        config,
+        expected_peer_pid,
+        metadata_gate,
+        frame,
+        bytes_written,
+    )
+    .await?;
+    wire::classify_response(&response, config, request_id, run_id)
+}
+
+async fn exchange_raw(
+    config: &EndpointConfig,
+    expected_peer_pid: u32,
+    metadata_gate: &Arc<Semaphore>,
+    frame: &[u8],
+    bytes_written: &mut usize,
+) -> Result<Vec<u8>, SubmissionIssue> {
     validate_socket(config, metadata_gate)
         .await
         .map_err(|error| match error {
@@ -422,7 +443,7 @@ async fn exchange(
     {
         return Err(SubmissionIssue::ProtocolMismatch);
     }
-    wire::classify_response(&response, config, request_id, run_id)
+    Ok(response)
 }
 
 async fn write_frame<W: AsyncWrite + Unpin>(

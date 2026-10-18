@@ -36,6 +36,38 @@ schema, exit codes and lost-output handling are specified in
 The caller supplies an existing signed envelope and its trusted endpoint;
 these commands do not provision an issuer or enable submission in the UI.
 
+## Optional retained-request admission history
+
+The default-off history feature includes the existing ObjectiveStart transport
+and adds a dedicated one-read client. Its full input/output and anchor ownership
+contract is [OBJECTIVE_HISTORY.md](OBJECTIVE_HISTORY.md). Run the complete feature
+suite so the shared transport retains its original observer/submission checks:
+
+```sh
+cargo +1.88.0 test --locked --manifest-path services/hepta-os/Cargo.toml \
+  --features objective-history
+cargo +1.88.0 clippy --locked --manifest-path services/hepta-os/Cargo.toml \
+  --features objective-history --all-targets -- -D warnings
+cargo +1.88.0 check --locked --manifest-path services/hepta-os/Cargo.toml \
+  --no-default-features
+cargo +1.88.0 build --locked --manifest-path services/hepta-os/Cargo.toml \
+  --features objective-history --bins
+```
+
+`hepta-history` takes the current trusted endpoint/AgentId/spawn/UID/PID/request ID
+and optionally the previously retained anchor sequence/chain. Supply the exact
+original signed envelope on stdin, close stdin, and bound the child process.
+Historical publication never implies a current run or effect, and no query
+outcome authorizes resubmission. The default Session/Shell has no new command.
+
+For actual original-owner qualification, follow
+[OBJECTIVE_HISTORY_PROBE.md](../../tests/integration/hepta/OBJECTIVE_HISTORY_PROBE.md).
+That separate runner requires the exact committed extension contract and
+original source/lock; the older R8 fixed-source gate continues to use `f8c9419d`.
+Preparation, source checks, unit tests, and actual native process qualification
+are recorded separately. No build of the lightweight client requires the full
+original workspace, while the real Agentd/probe does.
+
 ## Source-derived conformance
 
 Use an authorized local checkout of the fixed Hepta revision. The first
