@@ -347,6 +347,10 @@ def inside(output):
         report['completed_unix_ms'] = now()
         save()
         write(output / 'capture-receipt.json', report)
+    # Cleanup errors recorded by finally must also fail the namespace process.
+    # A successful action sequence alone cannot qualify leaked/lost children.
+    require(report['status'] == 'completed_native_capture_requires_independent_visual_review',
+        'native capture or owned cleanup failed; inner raw receipt retained')
 
 
 def outside(args):
@@ -414,7 +418,15 @@ def outside(args):
             harness_source_unchanged=sources(ROOT) == harness_before,
             executable_bytes_unchanged=binaries(binary_dir) == actual_binaries,
             namespace_guard_armed_after=group.armed if group else None)
-        record['status'] = 'completed' if record.get('exit_code') == 0 and failure is None and all(record[k]
+        try:
+            inner_path = output / 'inside/capture-receipt.json'
+            inner_receipt = json.loads(inner_path.read_text())
+            record['inner_receipt_status'] = inner_receipt['status']
+            record['inner_receipt_sha256'] = digest(inner_path)
+        except (OSError, ValueError, KeyError) as error:
+            record['inner_receipt_error'] = repr(error)
+        inner_complete = record.get('inner_receipt_status') == 'completed_native_capture_requires_independent_visual_review'
+        record['status'] = 'completed' if inner_complete and record.get('exit_code') == 0 and failure is None and all(record[k]
             for k in ('product_source_unchanged', 'harness_source_unchanged', 'executable_bytes_unchanged')) else 'failed'
         write(output / 'receipt.json', record)
     require(record['status'] == 'completed', 'native capture failed; raw evidence retained')

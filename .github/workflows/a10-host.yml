@@ -126,6 +126,9 @@ jobs:
           mkdir -p "$RUNNER_TEMP/a10"
           cargo clippy --manifest-path ui/Cargo.toml --workspace --all-targets \
             --locked --offline -- -D warnings 2>&1 | tee "$RUNNER_TEMP/a10/clippy.log"
+          cargo clippy --manifest-path services/hepta-os/Cargo.toml --all-targets \
+            --locked --offline --features objective-transport -- -D warnings \
+            2>&1 | tee "$RUNNER_TEMP/a10/objective-transport-clippy.log"
       - name: Test original-Agentd gate cleanup with disposable Linux children
         run: |
           set -euo pipefail
