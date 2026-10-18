@@ -1534,8 +1534,11 @@ impl HistoryAck {
         through: u64,
         receipt: OwnerReceipt,
     ) -> Result<Self, DeliveryError> {
-        if through == 0 || !receipt.owner.is_nonzero() || receipt.receipt_digest == [0; 32]
-            || !namespace.boot_id().is_nonzero() || !namespace.cap_space_id().is_nonzero()
+        if through == 0
+            || !receipt.owner.is_nonzero()
+            || receipt.receipt_digest == [0; 32]
+            || !namespace.boot_id().is_nonzero()
+            || !namespace.cap_space_id().is_nonzero()
         {
             return Err(DeliveryError::InvalidAck);
         }
