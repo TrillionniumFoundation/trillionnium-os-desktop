@@ -4,7 +4,8 @@
 
 use os_control::{
     with_parent, BootId, CapSpaceId, ControlCore, DeliveryError, DeliveryRequest, DeliveryState,
-    DeliveryStatus, HistoryAck, OwnerId, PublishOutcome, PublisherId, ResourceDomain,
+    DeliveryStatus, HistoryAck, OriginalOwnerAuthority, OwnerId, PublishOutcome, PublisherId,
+    ResourceDomain,
     ResourceDomainId, ResourceError, StableObjectId, CPU_PERIOD_NS,
 };
 use std::sync::atomic::{AtomicUsize, Ordering};
