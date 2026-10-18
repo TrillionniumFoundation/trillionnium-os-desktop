@@ -419,3 +419,35 @@ fn concurrent_retire_query_and_loss_keep_history_monotonic_and_complete() {
         core.validate_invariants_for_host_model().unwrap();
     }
 }
+
+#[test]
+fn matching_owner_receipt_without_namespace_tag_cannot_retire_terminal_result() {
+    let (core, authority) = core(760_500);
+    let target = target(760_500);
+    let grant = target.grant(publisher()).unwrap();
+    let token = core
+        .reserve(DeliveryRequest::new(1, grant, 1, 7), publisher())
+        .unwrap();
+    core.commit(&token, publisher(), 1).unwrap();
+    let view = core.delivery_view_for(owner()).unwrap();
+    let forged = HistoryAck::from_owner_receipt(
+        core.identity(),
+        1,
+        os_control::OwnerReceipt::new(owner(), [0xD4; 32]),
+    )
+    .unwrap();
+    assert_eq!(
+        core.retire_through(&view, forged, &authority),
+        Err(DeliveryError::PermissionDenied)
+    );
+    assert_eq!(
+        core.query_delivery(&view, 1).unwrap().state,
+        DeliveryState::Terminal
+    );
+    core.retire_through(
+        &view,
+        authority.history_ack(1, [0xD4; 32]).unwrap(),
+        &authority,
+    )
+    .unwrap();
+}
