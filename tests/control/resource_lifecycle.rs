@@ -3,9 +3,9 @@
 //! scheduler, and their owner receipts do not prove durable Hepta commits.
 
 use os_control::{
-    with_parent, BootId, CapSpaceId, ControlCore, DeliveryRequest, HistoryAck, OwnerId,
-    PublisherId, ResourceDomain, ResourceDomainId, ResourceError, StableObjectId, CPU_PERIOD_NS,
-    MAX_RESOURCE_DEPTH,
+    with_parent, BootId, CapSpaceId, ControlCore, DeliveryRequest, OwnerId,
+    PublisherId, ResourceDomain, ResourceDomainId, ResourceError, StableObjectId,
+    CPU_PERIOD_NS, MAX_RESOURCE_DEPTH,
 };
 use std::sync::{Arc, Barrier};
 use std::thread;
