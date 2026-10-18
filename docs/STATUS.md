@@ -1,6 +1,52 @@
 # 当前状态
 
-## 2026-10-17：原版 Agentd ARM 运行、Rust XIM 输入与 UID 拒绝
+## 2026-10-18：R6 原版 Hepta 持续 Session、真实 Rust Shell 与新鲜度修复
+
+**本节文档基于 main `3551e1e0e017e2973da7e2b8ab811ece25c258c0`；R6 的实际本地执行日期为 2026-10-17 UTC。**本次仅更新 STATUS、INDEX、DESKTOP_UX，保留主干后来新增的 A06 `b7a8388726b67394398431e74d2e5d2079ff375f` 和 A02 `3551e1e0`。A07/A10 产品代码仍在 [Draft #157](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/157)，固定已发布候选为 [`89aa8fa62d30b00259cb33174260c134edf1a70b`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/89aa8fa62d30b00259cb33174260c134edf1a70b)，完整 tree `5fa4057019ee044ed9bc3337ae78d90496f8b923`，A10 owner 仍为 `45552fbd8f79ea713509908ac4b08a3fd44a95bc`。主干文档合入不表示该产品候选已合入，R6 的 UI/原版运行不为后来新增的内核代码授予运行资格。
+
+**本轮已实际闭合固定原版 Hepta → 持续 Session → 同一个真实 Rust Shell 窗口。**旧 R5 与新 GREEN03 分别完成一次完整六阶段运行；每轮原版 8 项、持续 Session 8 项通过，各有同 Shell PID/XID 的 6 张成功截图和 6 个协调 ACK。12 张成功 PNG 与首轮失败 PNG 均有 A10、独立审查和 root 的逐张人工记录；ACK 只证明协调，不能代替像素审查。完整入口见 [R6 完整交付索引](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/89aa8fa62d30b00259cb33174260c134edf1a70b/tests/integration/hepta/evidence/2026-10-17-r6/README.md)、[三轮原版 / Session 运行](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/89aa8fa62d30b00259cb33174260c134edf1a70b/tests/integration/hepta/evidence/2026-10-17-original-session-runtime/README.md) 和 [13 张原图、快照、ACK 与逐图审查](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/89aa8fa62d30b00259cb33174260c134edf1a70b/tests/ui/evidence/2026-10-17-original-hepta-shell/README.md)。
+
+| 本轮实际增量 | 结果与资格范围 |
+| --- | --- |
+| 原版真实构建 | 固定原版 `f8c9419df6ddeb36ff8b522a50219981fb8d9345` 的 native Agentd 最终真实链接成功，ELF 为 329,001,344 字节，SHA256 `f476f9bb435c5127839c48ae7135d5a6fa7695ff5253460fdd8d19d7b084d4fa`。首次 E0460、第二次资源守卫停止、缓存迁移失败和最终成功均保留；不冒充冷构建或最低资源资格。见 [原版 native Agentd 构建](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/89aa8fa62d30b00259cb33174260c134edf1a70b/tests/integration/hepta/evidence/2026-10-17-native-agentd-build/README.md) |
+| 外部消费者锁与真实链接 | 首次 `--locked` 拒绝已复现；仅在外部 probe 省去同目标、未使用的 SSH patch 别名，原版 manifest/lock 不变。实际 resolve graph 仍为 733 packages、unused patch 6→5；连续两次 locked metadata 通过，随后 probe / observer 实际链接和 2 项 Rust stale 测试通过。见 [原版消费者构建与锁诊断](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/89aa8fa62d30b00259cb33174260c134edf1a70b/tests/integration/hepta/evidence/2026-10-17-original-session-build/README.md) |
+| 持续六阶段原版链路 | Starting → Running → Draining → 原版重启后旧 Session stale → 显式新可信 Session 恢复 Running → 原版停止后 stale。旧 Session 的 PID/instance/worker 在前四阶段不变，新 Session 在后两阶段不变，原 Shell 窗口始终保留；失去原版时 Session IPC 仍响应。见 [三轮原版 / Session 运行](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/89aa8fa62d30b00259cb33174260c134edf1a70b/tests/integration/hepta/evidence/2026-10-17-original-session-runtime/README.md) |
+| 真实 Shell 与旧历史保留 | 旧轮最终保留 Running/current6，新轮最终保留实际采到的 Draining/current7；这是原版退出采样时序差异，不能作为 UI 修复的效果证明。首次 stale 后，后续失败样本的完整最后成功观测保持不变；阶段前后的快照可夹住真实 PNG 采样，不要求与事后快照逐字相等。见 [13 张原图、快照、ACK 与逐图审查](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/89aa8fa62d30b00259cb33174260c134edf1a70b/tests/ui/evidence/2026-10-17-original-hepta-shell/README.md) |
+| 可见观测新鲜度修复 | 修复旧 Observed 队列响应在 UI 暂停后误刷新本地时钟的问题。原版样本年龄与本地单调 receipt 年龄均须 ≤7000ms，7001ms 已过期。真实 RED 为 1 pass / 5 intended fail；保留误复用旧缓存的 GREEN01 失败、GREEN02 严格 Clippy 失败，最终 GREEN03 的 6 freshness + 2 layout、Clippy、fmt、四程序构建通过。见 [完整 RED/GREEN 与编译来源](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/89aa8fa62d30b00259cb33174260c134edf1a70b/tests/ui/evidence/2026-10-17-observation-freshness/README.md) |
+| 捕获判定器修复 | 首次真实尝试因 Starting 的合法 readiness 变化被旧全 health 等值比较误拒绝：仅 1 张 Starting PNG、0 ACK，原 120 秒 deadline 真实 exit1。修复只允许安全且有界的同来源生命周期晋级，保留来源、代际、历史与新鲜度约束；最终 8 项 Python 契约通过。旧失败、源文件和收据不改写。见 [13 张原图、快照、ACK 与逐图审查](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/89aa8fa62d30b00259cb33174260c134edf1a70b/tests/ui/evidence/2026-10-17-original-hepta-shell/README.md) |
+| 最终源码检查 | 2026-10-17 23:09:05–23:09:07 UTC，5 项 manifest/lock + 6 项实际自有进程守卫 + 6 项 synthetic receipt，共 17 passed；原始日志与实际执行源码分别绑定，不计为新一轮 Rust、Agentd 或 Shell 执行。见 [17 项 Python 实录](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/89aa8fa62d30b00259cb33174260c134edf1a70b/tests/integration/hepta/evidence/2026-10-17-original-session-checks/README.md) |
+| CI 覆盖补齐 | `.github/workflows/a10-host.yml` 自动调用既有 8 项捕获契约。实际从提交提取精确 run block 并本地执行一次，8 passed；实际 SIGKILL/reap 检查也保留。执行来源为本地 `632f5f0b27bc4c051f1b13dbb162e3c7cb9727ef` / 同树远端 `9a9c4fac92c5b3e5595845efbea72efe869763b4`。本地执行不等于 GitHub 已完成该新 HEAD。见 [CI 步骤与实际本地执行](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/89aa8fa62d30b00259cb33174260c134edf1a70b/tests/ui/evidence/2026-10-17-original-shell-ci/README.md) |
+
+### 实际编译、运行与发布身份
+
+| 作用 | 实际本地源码 | 同树远端源码 |
+| --- | --- | --- |
+| 旧 R5 UI 构建 | `35f379101c0863027e971ccb91faf8da71cf929c` | `1974d9a94037440da358253e1f449b395daa4b64` |
+| 新 GREEN03 UI 构建 | `84f0070b6e7e01238a8dac6044748b15101c9497` | `88e9cdb124801c1d0fba5d2bb7e52a85a69a79f4` |
+| probe / observer 实际构建 | `c50d7b9b688135a22ced2f7f3cbe21c3028d8e17` | `028b664b4717c4dffc03dc638fa3e9a5d7a0b52a` |
+| 旧 UI 六阶段，22:56:31–22:56:55 UTC | `28843c6632fe63db6b3fecb4d05888e90976fd16` | `66dba7f40c2fa8fea2e7828ec2fd4db336bb681f` |
+| 新 UI 六阶段，22:59:44–23:00:08 UTC | `145e94c364243789b88c23b1292f9d4d9ca9a0e9` | `299794f90d4557cec4ee9a7fc92c397031fced4f` |
+| R6 代码与证据组合 | `47f62d68626b3c142fc176370c6f8b400fe89670` | `89aa8fa62d30b00259cb33174260c134edf1a70b` |
+
+新 Shell SHA256 为 `62d0f304d6a3a53db4bc605e374470a924a56bfeb63387b1c12f9f245f17536a`；Session 为 `f152e6413742baa3349aded2283f9aff41bfe1bc552586aa260ade6327d5d16d`；CLI 为 `ba85b891f91a88ac3ad5240535f5dd6261c47eadbcc1bb64593add0a0aa2b598`。AppWindow 构建产物仍为 R5 的 `08c3bbe84b5d6e773f367f9751a1432eaee327bf45a5b172150f34f165342510`，没有在这两轮六阶段链路中启动；四程序构建通过不表示四个二进制都重新编译或改变。源码闭包、实际 ELF 与对应执行收据共同绑定来源，后续证据提交不冒充重新编译。
+
+### CI 按精确提交记录
+
+2026-10-18 03:46:18 UTC 读回：旧 `84e08165d2e753fe1fc780e1972dbab4317e8499` 的 A10、ARM、G0 均已 success。A10 [run 39075838432](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39075838432) 于 2026-10-17 23:44:03 UTC 完成，native job 实际 Rust **151 passed / 2 CJK ignored**，另 **6 项 Python 进程守卫**；该旧 workflow 尚未调用后加的 8 项捕获契约。ARM [run 39075838558](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39075838558) 于 23:11:50 UTC success，真实原版 8 + Session 8、五个 ARM64 ELF 字节核验见 [84e 原版 ARM 持续 Session 实录](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/89aa8fa62d30b00259cb33174260c134edf1a70b/tests/integration/hepta/evidence/2026-10-17-84e-arm-ci/README.md)；该 ARM CI 没有启动 Shell 或捕获 UI 像素。先前归档的 queued 快照是其当时状态，保留原记录，由后来的实际完成补充。
+
+新发布 `89aa8fa62d30b00259cb33174260c134edf1a70b` 的 [A10 39093714607](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39093714607)、[ARM 39093714699](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39093714699)、[G0 39093714602](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39093714602) 在上述读回时均为 queued / conclusion null，不能继承 `84e` 的成功。更早 c0 的成功、f092 的 ARM 锁失败及后续 A10 成功分别见 [R6 完整交付索引](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/89aa8fa62d30b00259cb33174260c134edf1a70b/tests/integration/hepta/evidence/2026-10-17-r6/README.md) 中的固定实录。
+
+### 主干的新变化与下一条产品主线
+
+主干 A02 `3551e1e0` 补充 N0 prior-window CPU 上界、QueryDelivery 保留序号与终态语义，以及对应源码/边界用例。本轮未重跑这些用例。A06 `b7a83887` 新增线程持有 cgroup 计费快照和删除租约；这是退出计费源码补强，不能宣称最终计费 / IRQ / SMP 已通过。复核发现仍需处理的具体边界：进程已 zombie 且 cgroup 被清空，但父进程尚持有 Process、Weak 仍可 upgrade 时，尾段计费可能回落到 root，而未使用保留的叶子快照。该源码发现与后续修复/客体验证分开记录。
+
+当前 UI 是 Rust eframe/egui/glow 的 Linux host 原生程序，真实 Hepta 数据已进入可见界面。它仍是只读运行链路：没有 objective 提交、模型 turn、可信 issuer 替换、authority/账本替换或设备效果；`TrustedReadOnlyOrganV1` 也不是 OS 沙箱。下一步以全 Rust 聊天 / 任务 / 应用工作区承载真实上下文，运行监控和控制台作为工作区内页面；可信 ObjectiveStart 适配器位于只读 organ 外，原始封套来自既有 issuer，durable K↔D、撤销与结果仍由既有 owner 提供。具体设计与错误语义见 [DESKTOP_UX 第 6 节](DESKTOP_UX.md#6-以-hepta-为核心的-ai-原生-ui)。
+
+本轮真实窗口环境是私有 Xvfb 与软件 GL，不授予物理输入/显示、GPU、Wayland text-input v3、Asterinas 或移动设备资格。R5 XIM 的差异中文输入保留原有通过项，候选窗偏离 caret 仍为失败。根 README 为 0 字节；Asterinas `c4b7ed575b7b32773475b194d2ad41fb6d03765b` 与原版 Hepta pin 不变，原版 tree `15c9d6ea07bf3832de82825a6cc1e8c958dd3d45`、原版 lock SHA256 `8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389` 均保留。以下历史节的“本轮”“最终”“尚未”仅描述各自当时的源码和执行。
+
+---
+
+## 2026-10-17 R5 历史快照：原版 Agentd ARM 运行、Rust XIM 输入与 UID 拒绝
 
 **本节基于实际 main `eaabd20a2ae67573f76b3a6a8f64ca7a1ea8a9c2`。**该主干已普通合入 [文档 PR #167](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/167)；A07/A10 产品代码仍在 [Draft #157](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/157)，没有随本文进入 main。本轮组合保留 A10 owner `45552fbd8f79ea713509908ac4b08a3fd44a95bc` 的 runtime UID 检查及输入效果边界，并合入上述 main 文档历史，处理冲突时未覆盖 owner 改动。
 
