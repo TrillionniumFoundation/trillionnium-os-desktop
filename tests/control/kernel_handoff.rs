@@ -5,7 +5,7 @@
 
 use os_control::{
     BootId, CapSpaceId, ControlCore, DeliveryError, DeliveryRequest, DeliveryState, DeliveryStatus,
-    HistoryAck, OriginalOwnerAuthority, OwnerId, OwnerReceipt, PublishOutcome, PublisherId,
+    HistoryAck, OriginalOwnerAuthority, OwnerId, PublishOutcome, PublisherId,
     RequestBinding, ReserveAttempt, ResourceDomain, ResourceDomainId, StableObjectId,
     CPU_PERIOD_NS,
 };
@@ -50,9 +50,8 @@ fn success(binding: RequestBinding) -> PublishOutcome {
     }
 }
 
-fn ack(core: &ControlCore) -> HistoryAck {
-    HistoryAck::from_owner_receipt(core.identity(), 1, OwnerReceipt::new(owner(), [0x55; 32]))
-        .unwrap()
+fn ack(authority: &OriginalOwnerAuthority) -> HistoryAck {
+    authority.history_ack(1, [0x55; 32]).unwrap()
 }
 
 #[test]
@@ -241,7 +240,7 @@ fn panicking_callback_preserves_pending_prefix_and_cannot_be_executed_again() {
         DeliveryState::Reserved
     );
     assert_eq!(
-        core.retire_through(&view, ack(&core), &authority),
+        core.retire_through(&view, ack(&authority), &authority),
         Err(DeliveryError::PendingPrefix)
     );
     assert_eq!(core.retired_through(), 0);
@@ -324,7 +323,7 @@ fn invalid_callback_receipts_stay_pending_and_never_allow_another_effect() {
             DeliveryState::Reserved
         );
         assert_eq!(
-            core.retire_through(&view, ack(&core), &authority),
+            core.retire_through(&view, ack(&authority), &authority),
             Err(DeliveryError::PendingPrefix)
         );
         assert_eq!(
@@ -372,7 +371,7 @@ fn trusted_external_fence_can_publish_recovered_receipt_without_reexecuting() {
     assert_eq!(core.commit(&token, publisher(), 1).unwrap(), terminal);
     let view = core.delivery_view_for(owner()).unwrap();
     assert_eq!(
-        core.retire_through(&view, ack(&core), &authority)
+        core.retire_through(&view, ack(&authority), &authority)
             .unwrap()
             .retired_through,
         1
