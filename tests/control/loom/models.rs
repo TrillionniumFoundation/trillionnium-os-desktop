@@ -143,9 +143,7 @@ fn retire_and_query_linearize() {
             .publish(&token, publisher(), success(token.binding()))
             .unwrap();
         let view = core.delivery_view_for(owner()).unwrap();
-        let ack =
-            HistoryAck::from_owner_receipt(core.identity(), 1, OwnerReceipt::new(owner(), [1; 32]))
-                .unwrap();
+        let ack = authority.history_ack(1, [1; 32]).unwrap();
         let (a_core, a_view) = (core.clone(), view.clone());
         let a = thread::spawn(move || a_core.retire_through(&a_view, ack, &authority).unwrap());
         let (b_core, b_view) = (core.clone(), view.clone());
@@ -418,9 +416,7 @@ fn retire_execute_loss_threeway() {
             })
         });
         let (b_core, b_view) = (core.clone(), core.delivery_view_for(owner()).unwrap());
-        let ack =
-            HistoryAck::from_owner_receipt(core.identity(), 1, OwnerReceipt::new(owner(), [1; 32]))
-                .unwrap();
+        let ack = authority.history_ack(1, [1; 32]).unwrap();
         let retire = thread::spawn(move || b_core.retire_through(&b_view, ack, &authority));
         let c_core = core.clone();
         let loss = thread::spawn(move || c_core.lose_history());
@@ -851,14 +847,7 @@ fn overlapping_retirements_revalidate_smaller_prefix() {
         let second = core.reserve(second, publisher()).unwrap();
         let second_terminal = core.commit(&second, publisher(), 1).unwrap();
         let view = core.delivery_view_for(owner()).unwrap();
-        let ack = |through| {
-            HistoryAck::from_owner_receipt(
-                core.identity(),
-                through,
-                OwnerReceipt::new(owner(), [1; 32]),
-            )
-            .unwrap()
-        };
+        let ack = |through| authority.history_ack(through, [1; 32]).unwrap();
         let (a_core, a_view, a_authority, a_ack) =
             (core.clone(), view.clone(), authority.clone(), ack(1));
         let retire_one =

@@ -4,7 +4,7 @@
 
 use os_control::{
     BootId, CapSpaceId, ControlCore, DeliveryError, DeliveryState, DeliveryStatus, HistoryAck,
-    NativeDeliveryRequest, NativeGrant, NativeTarget, OwnerId, OwnerReceipt, PublishOutcome,
+    NativeDeliveryRequest, NativeGrant, NativeTarget, OwnerId, PublishOutcome,
     PublisherId, ReserveToken, ResourceDomainId, StableObjectId, WeakControlCore,
 };
 use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
@@ -116,13 +116,8 @@ fn reserve_owner(
     (token, weak)
 }
 
-fn ack(core: &ControlCore) -> HistoryAck {
-    HistoryAck::from_owner_receipt(
-        core.identity(),
-        1,
-        OwnerReceipt::new(owner_id(), [0x49; 32]),
-    )
-    .unwrap()
+fn ack(authority: &OriginalOwnerAuthority) -> HistoryAck {
+    authority.history_ack(1, [0x49; 32]).unwrap()
 }
 
 #[test]
@@ -166,7 +161,7 @@ fn retired_owner_drop_can_upgrade_weak_core_and_read_namespace_without_a_lock_cy
     )
     .unwrap();
     let view = core.delivery_view_for(owner_id()).unwrap();
-    core.retire_through(&view, ack(&core), &authority).unwrap();
+    core.retire_through(&view, ack(&authority), &authority).unwrap();
     report.join();
     assert!(weak_owner.upgrade().is_none());
     assert!(report.upgraded.load(Ordering::Acquire));
@@ -248,12 +243,12 @@ fn upgraded_core_neither_replays_old_d_nor_substitutes_a_foreign_retirement_auth
     let view = core.delivery_view_for(owner_id()).unwrap();
     let upgraded = weak.upgrade().unwrap();
     assert_eq!(
-        upgraded.retire_through(&view, ack(&core), &foreign_authority),
+        upgraded.retire_through(&view, ack(&authority), &foreign_authority),
         Err(DeliveryError::PermissionDenied)
     );
     assert_eq!(upgraded.query_delivery(&view, 1).unwrap(), terminal);
     upgraded
-        .retire_through(&view, ack(&core), &authority)
+        .retire_through(&view, ack(&authority), &authority)
         .unwrap();
     report.join();
     let callbacks = AtomicUsize::new(0);
@@ -271,7 +266,7 @@ fn upgraded_core_neither_replays_old_d_nor_substitutes_a_foreign_retirement_auth
         DeliveryState::HistoryLost
     );
     assert_eq!(
-        still_lost.retire_through(&view, ack(&core), &authority),
+        still_lost.retire_through(&view, ack(&authority), &authority),
         Err(DeliveryError::HistoryLost)
     );
     assert_eq!(
