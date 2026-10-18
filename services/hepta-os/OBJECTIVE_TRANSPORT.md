@@ -242,6 +242,12 @@ submission.
 
 ## Validation and remaining integration blockers
 
+The [frozen R7 local run](../../tests/integration/hepta/evidence/2026-10-18-objective-transport/README.md)
+on source `19c2185d27c1d788354e14af27999406bc927c4f` passed both feature profiles,
+35 Rust tests, strict Clippy/fmt, fourteen original-file identities and seven
+original-declaration wire checks. Its original logs and source/lock/toolchain
+bindings are retained. These results have the local fixture/source scope above.
+
 The regression suite covers exact raw transport, all five dispositions,
 conflict, precise refusal paths, ambiguous owner errors, unscoped overload,
 request/source/peer fencing, EOF and partial-response faults, extra frames,

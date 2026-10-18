@@ -1,0 +1,232 @@
+{
+  "status": "passed",
+  "started_at": "2026-10-18T04:17:27.239530+00:00",
+  "source_before": {
+    "head": "19c2185d27c1d788354e14af27999406bc927c4f",
+    "tree": "fc2019d43fcb06d7583e1d4904042e3ddcab229d",
+    "status": "",
+    "files": {
+      "services/hepta-os/CONTRACT.md": "9f65ed57e3cb6366fd38b1b5e0b329461b81590db7c37aa52cd2bf0d6b8938a9",
+      "services/hepta-os/Cargo.lock": "a1aed4d1f513036cbe03912359f3dfbb2c6d93c5210b8d18244d95be9008a875",
+      "services/hepta-os/Cargo.toml": "f9f9b188ac5067f1ad86d66bede2ffad8df2125a40a80b9b9e0c11e104ee311f",
+      "services/hepta-os/OBJECTIVE_TRANSPORT.md": "5d2b373d736f27b802475fd46c597334d523b14bc44bda9ccbb7b3707cbf65e9",
+      "services/hepta-os/OBJECTIVE_UPSTREAM_CONTRACT.json": "ba3005ee18c77ccf701c5dea063fa2f8d184b9aaebfbf912cd8d16287564d449",
+      "services/hepta-os/README.md": "6623f929b19d8ecfd0011fec9cc0333f138aa8160a0e8591aa41c1584141714d",
+      "services/hepta-os/RUN.md": "736f6479197d01ffb220cf4df3c944fd6b6a0ca9a8a280dfd639dd1e26912b4b",
+      "services/hepta-os/UPSTREAM_CONTRACT.json": "24efcccd98b6ac6a56cb34b36f5bdb10785d955efd86c32fed308bac1505f7ef",
+      "services/hepta-os/src/bin/hepta-observe.rs": "2a7b3eafc7b795e63bf43ef01e41e12a73f5d097c906bdd69f5d11049bc083b7",
+      "services/hepta-os/src/client.rs": "8669dc6c1e48c43108f3c2e1f8602e7602ac45e3e74239f638cdf92a3a99f5e8",
+      "services/hepta-os/src/lib.rs": "658fd8f841f6479897385a2d79c86072d29b2212c605262f983b8ba5e45ba63d",
+      "services/hepta-os/src/objective/mod.rs": "4d58183fff058d7febb90c6c720fe19c2fbe52998487bc6dfa761d48c1b5353e",
+      "services/hepta-os/src/objective/wire.rs": "3b75d3df94302076052b5daadf6f13b318610920b8e754f0893e6422f2efa39c",
+      "services/hepta-os/src/wire.rs": "6e1377eb6cc009a6289602da248c11e905a53c484437b602f048298521d07e0c",
+      "services/hepta-os/tests/fixtures/agentd_v2_payloads.json": "5c96555ad2a043ce8e651d9bfb4d9e05cb71cc57c60ad4288aba7270da84c0dd",
+      "services/hepta-os/tests/fixtures/objective_ingress_original_wire_only.json": "bb4e4330efcd1ef0390c75dbfd7f8e190d3290311919648aa24cd16942fa7de8",
+      "services/hepta-os/tests/objective_transport.rs": "4162a6e63f647938e0f4a7d7f2e70003153177e045f5ec1352ede15cb3616ae1",
+      "services/hepta-os/tests/socket_contract.rs": "189205cf47730dd085a0cd44d7b0eedf47f705f9d3e646ea86d13b41b475ff01",
+      "tests/integration/hepta/README.md": "7c1974d7fe55ac63492713b22d6ef72af272787dc22ab5f53e706768cda72e2c",
+      "tests/integration/hepta/check_objective_wire.py": "b559d2ef80e8a8e1f608d95396f24a819bba1b7641038d9e82915552f31576d7",
+      "tests/integration/hepta/check_upstream_contract.py": "d57927faebfc07115025423e923aa61a44e7027adf5318cc72798b247f4094d9"
+    }
+  },
+  "helper_sha256": "61163f150394c12b9a080b6c7f7b05be58a960cba0c17497dafae375469d14ae",
+  "steps": [
+    {
+      "name": "feature-off-check",
+      "command": [
+        "/workspace/scratch/98f315e377b2/next-tools/rust188/rustup/toolchains/1.88.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "check",
+        "--manifest-path",
+        "/workspace/scratch/98f315e377b2/next-r7-hepta/services/hepta-os/Cargo.toml",
+        "--locked",
+        "--offline",
+        "--no-default-features",
+        "--all-targets",
+        "-j",
+        "2"
+      ],
+      "started_at": "2026-10-18T04:17:27.361516+00:00",
+      "timeout_seconds": 120,
+      "log": "/workspace/scratch/98f315e377b2/next-tools/r7-objective-validation-01/feature-off-check.log",
+      "owned_process_id": 53779,
+      "exit_code": 0,
+      "elapsed_seconds": 1.068,
+      "completed_at": "2026-10-18T04:17:28.429873+00:00",
+      "log_sha256": "f15c33f303b09d482d7821733d1ab90416ea143f6e6a3df3bbff33c68175867a"
+    },
+    {
+      "name": "feature-on-tests",
+      "command": [
+        "/workspace/scratch/98f315e377b2/next-tools/rust188/rustup/toolchains/1.88.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "test",
+        "--manifest-path",
+        "/workspace/scratch/98f315e377b2/next-r7-hepta/services/hepta-os/Cargo.toml",
+        "--locked",
+        "--offline",
+        "--features",
+        "objective-transport",
+        "-j",
+        "2"
+      ],
+      "started_at": "2026-10-18T04:17:28.454902+00:00",
+      "timeout_seconds": 120,
+      "log": "/workspace/scratch/98f315e377b2/next-tools/r7-objective-validation-01/feature-on-tests.log",
+      "owned_process_id": 53860,
+      "exit_code": 0,
+      "elapsed_seconds": 18.584,
+      "completed_at": "2026-10-18T04:17:47.039132+00:00",
+      "log_sha256": "4550323f76961f8119471fd73140b6bf5b2794ff02fa5bdf07502883e44f7443"
+    },
+    {
+      "name": "strict-clippy",
+      "command": [
+        "/workspace/scratch/98f315e377b2/next-tools/rust188/rustup/toolchains/1.88.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "clippy",
+        "--manifest-path",
+        "/workspace/scratch/98f315e377b2/next-r7-hepta/services/hepta-os/Cargo.toml",
+        "--locked",
+        "--offline",
+        "--features",
+        "objective-transport",
+        "--all-targets",
+        "-j",
+        "2",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "started_at": "2026-10-18T04:17:47.063229+00:00",
+      "timeout_seconds": 120,
+      "log": "/workspace/scratch/98f315e377b2/next-tools/r7-objective-validation-01/strict-clippy.log",
+      "owned_process_id": 54913,
+      "exit_code": 0,
+      "elapsed_seconds": 1.22,
+      "completed_at": "2026-10-18T04:17:48.283368+00:00",
+      "log_sha256": "169b7fd217957dbe0c8937d9b7a2b7c058e678b8dc42cdbd7e7535011fab4d4d"
+    },
+    {
+      "name": "format-check",
+      "command": [
+        "/workspace/scratch/98f315e377b2/next-tools/rust188/rustup/toolchains/1.88.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "fmt",
+        "--manifest-path",
+        "/workspace/scratch/98f315e377b2/next-r7-hepta/services/hepta-os/Cargo.toml",
+        "--check"
+      ],
+      "started_at": "2026-10-18T04:17:48.311357+00:00",
+      "timeout_seconds": 120,
+      "log": "/workspace/scratch/98f315e377b2/next-tools/r7-objective-validation-01/format-check.log",
+      "owned_process_id": 54984,
+      "exit_code": 0,
+      "elapsed_seconds": 0.064,
+      "completed_at": "2026-10-18T04:17:48.375403+00:00",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "original-declaration-extract",
+      "command": [
+        "python3",
+        "/workspace/scratch/98f315e377b2/next-r7-hepta/tests/integration/hepta/check_objective_wire.py",
+        "--source-files",
+        "/workspace/scratch/98f315e377b2/next-tools/r7-objective-upstream-files",
+        "--emit-reference",
+        "/workspace/scratch/98f315e377b2/next-tools/r7-objective-validation-01/wire-reference"
+      ],
+      "started_at": "2026-10-18T04:17:48.400956+00:00",
+      "timeout_seconds": 120,
+      "log": "/workspace/scratch/98f315e377b2/next-tools/r7-objective-validation-01/original-declaration-extract.log",
+      "owned_process_id": 55019,
+      "exit_code": 0,
+      "elapsed_seconds": 0.065,
+      "completed_at": "2026-10-18T04:17:48.465832+00:00",
+      "log_sha256": "f72862defefc0cef56dd370c830f9504102c0e5ea182aa6be01a98881af8a95f"
+    },
+    {
+      "name": "original-declaration-wire-run",
+      "command": [
+        "/workspace/scratch/98f315e377b2/next-tools/rust188/rustup/toolchains/1.88.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "run",
+        "--manifest-path",
+        "/workspace/scratch/98f315e377b2/next-tools/r7-objective-validation-01/wire-reference/Cargo.toml",
+        "--locked",
+        "--offline",
+        "-j",
+        "2"
+      ],
+      "started_at": "2026-10-18T04:17:48.490558+00:00",
+      "timeout_seconds": 120,
+      "log": "/workspace/scratch/98f315e377b2/next-tools/r7-objective-validation-01/original-declaration-wire-run.log",
+      "owned_process_id": 55035,
+      "exit_code": 0,
+      "elapsed_seconds": 1.521,
+      "completed_at": "2026-10-18T04:17:50.011469+00:00",
+      "log_sha256": "6733847f187ff67bc0086f3fbb8ad09927e6f48b5e27504471182d412c012501"
+    }
+  ],
+  "qualification": "local feature/observer regression, disposable UDS fixtures and original wire declarations only",
+  "original_agentd_started": false,
+  "signature_created": false,
+  "original_objective_submitted": false,
+  "device_effect": false,
+  "toolchain": {
+    "cargo": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/rust188/rustup/toolchains/1.88.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "sha256": "de9be4299324f5c1f5d12103792d35e8b8ab195df3a374194b8ffc33562c7e3d",
+      "version": "cargo 1.88.0 (873a06493 2025-05-10)"
+    },
+    "rustc": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/rust188/rustup/toolchains/1.88.0-x86_64-unknown-linux-gnu/bin/rustc",
+      "sha256": "ac3e92e45fe15c789939deedf7614f4f9578cc9609cb9ead39c9b1808a316c5b",
+      "version": "rustc 1.88.0 (6b00bc388 2025-06-23)"
+    },
+    "rustfmt": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/rust188/rustup/toolchains/1.88.0-x86_64-unknown-linux-gnu/bin/rustfmt",
+      "sha256": "cf32a42bb26561ab14c74306b59b2739c5e9a9b20fd00c02f913a8589d77279e",
+      "version": "rustfmt 1.8.0-stable (6b00bc3880 2025-06-23)"
+    },
+    "clippy-driver": {
+      "path": "/workspace/scratch/98f315e377b2/next-tools/rust188/rustup/toolchains/1.88.0-x86_64-unknown-linux-gnu/bin/clippy-driver",
+      "sha256": "a7a873792a901a1c916939dfbaa56d6ca64c1458bc883c1d01b6efe7ba6aea81",
+      "version": "clippy 0.1.88 (6b00bc3880 2025-06-23)"
+    }
+  },
+  "toolchain_installation": {
+    "path": "/workspace/scratch/98f315e377b2/next-tools/rust188/installed-receipt.json",
+    "sha256": "a35b66285d5570974251df4c948326630e93ea09b223f3b6d467835e41b491b8"
+  },
+  "source_after": {
+    "head": "19c2185d27c1d788354e14af27999406bc927c4f",
+    "tree": "fc2019d43fcb06d7583e1d4904042e3ddcab229d",
+    "status": "",
+    "files": {
+      "services/hepta-os/CONTRACT.md": "9f65ed57e3cb6366fd38b1b5e0b329461b81590db7c37aa52cd2bf0d6b8938a9",
+      "services/hepta-os/Cargo.lock": "a1aed4d1f513036cbe03912359f3dfbb2c6d93c5210b8d18244d95be9008a875",
+      "services/hepta-os/Cargo.toml": "f9f9b188ac5067f1ad86d66bede2ffad8df2125a40a80b9b9e0c11e104ee311f",
+      "services/hepta-os/OBJECTIVE_TRANSPORT.md": "5d2b373d736f27b802475fd46c597334d523b14bc44bda9ccbb7b3707cbf65e9",
+      "services/hepta-os/OBJECTIVE_UPSTREAM_CONTRACT.json": "ba3005ee18c77ccf701c5dea063fa2f8d184b9aaebfbf912cd8d16287564d449",
+      "services/hepta-os/README.md": "6623f929b19d8ecfd0011fec9cc0333f138aa8160a0e8591aa41c1584141714d",
+      "services/hepta-os/RUN.md": "736f6479197d01ffb220cf4df3c944fd6b6a0ca9a8a280dfd639dd1e26912b4b",
+      "services/hepta-os/UPSTREAM_CONTRACT.json": "24efcccd98b6ac6a56cb34b36f5bdb10785d955efd86c32fed308bac1505f7ef",
+      "services/hepta-os/src/bin/hepta-observe.rs": "2a7b3eafc7b795e63bf43ef01e41e12a73f5d097c906bdd69f5d11049bc083b7",
+      "services/hepta-os/src/client.rs": "8669dc6c1e48c43108f3c2e1f8602e7602ac45e3e74239f638cdf92a3a99f5e8",
+      "services/hepta-os/src/lib.rs": "658fd8f841f6479897385a2d79c86072d29b2212c605262f983b8ba5e45ba63d",
+      "services/hepta-os/src/objective/mod.rs": "4d58183fff058d7febb90c6c720fe19c2fbe52998487bc6dfa761d48c1b5353e",
+      "services/hepta-os/src/objective/wire.rs": "3b75d3df94302076052b5daadf6f13b318610920b8e754f0893e6422f2efa39c",
+      "services/hepta-os/src/wire.rs": "6e1377eb6cc009a6289602da248c11e905a53c484437b602f048298521d07e0c",
+      "services/hepta-os/tests/fixtures/agentd_v2_payloads.json": "5c96555ad2a043ce8e651d9bfb4d9e05cb71cc57c60ad4288aba7270da84c0dd",
+      "services/hepta-os/tests/fixtures/objective_ingress_original_wire_only.json": "bb4e4330efcd1ef0390c75dbfd7f8e190d3290311919648aa24cd16942fa7de8",
+      "services/hepta-os/tests/objective_transport.rs": "4162a6e63f647938e0f4a7d7f2e70003153177e045f5ec1352ede15cb3616ae1",
+      "services/hepta-os/tests/socket_contract.rs": "189205cf47730dd085a0cd44d7b0eedf47f705f9d3e646ea86d13b41b475ff01",
+      "tests/integration/hepta/README.md": "7c1974d7fe55ac63492713b22d6ef72af272787dc22ab5f53e706768cda72e2c",
+      "tests/integration/hepta/check_objective_wire.py": "b559d2ef80e8a8e1f608d95396f24a819bba1b7641038d9e82915552f31576d7",
+      "tests/integration/hepta/check_upstream_contract.py": "d57927faebfc07115025423e923aa61a44e7027adf5318cc72798b247f4094d9"
+    }
+  },
+  "completed_at": "2026-10-18T04:17:50.040802+00:00",
+  "helper_sha256_after": "61163f150394c12b9a080b6c7f7b05be58a960cba0c17497dafae375469d14ae",
+  "reference_source_binding": {
+    "path": "/workspace/scratch/98f315e377b2/next-tools/r7-objective-validation-01/wire-reference/SOURCE_BINDING.json",
+    "sha256": "208a4b6f7b6ec59f99a4960941d320d848835416d2f894551921dc0bfdfad8b8"
+  },
+  "reference_lock_after_sha256": "1f41506f5602db061633aa260bc637fbc6be0aa2b61b466a2316f6164106c26a"
+}
