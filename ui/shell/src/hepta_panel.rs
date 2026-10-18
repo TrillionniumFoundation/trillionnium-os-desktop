@@ -4,11 +4,13 @@
 use eframe::egui::{self, RichText};
 use serde::Serialize;
 use std::io::{self, Write};
-use std::time::{Duration, Instant};
+#[cfg(test)]
+use std::time::Duration;
+use std::time::Instant;
 use trill_ui_core::hepta::{HeptaConnectionState, HeptaProjection};
+use trill_ui_core::observation::{self, FreshnessFailure};
 
 const LAYOUT_PROBE_PREFIX: &[u8] = b"TRILL_HEPTA_LAYOUT_V1 ";
-const MAX_OBSERVATION_AGE: Duration = Duration::from_secs(7);
 
 /// Both the local receipt and the original sample must be current. A response
 /// can wait in the Shell queue while the UI is paused; receiving it now must
@@ -20,23 +22,21 @@ fn freshness_failure(
     now: Instant,
     now_unix_ms: u64,
 ) -> Option<&'static str> {
-    let Some(observation) = &projection.last_observation else {
-        return Some("hepta_observation_missing");
-    };
-    let Some(received_age) = received_at.and_then(|received| now.checked_duration_since(received))
-    else {
-        return Some("session_snapshot_time_invalid");
-    };
-    if received_age > MAX_OBSERVATION_AGE {
-        return Some("session_snapshot_expired");
-    }
-    let Some(sample_age_ms) = now_unix_ms.checked_sub(observation.sampled_unix_ms) else {
-        return Some("hepta_observation_time_invalid");
-    };
-    if sample_age_ms > MAX_OBSERVATION_AGE.as_millis() as u64 {
-        return Some("hepta_observation_expired");
-    }
-    None
+    observation::freshness_failure(
+        projection
+            .last_observation
+            .as_ref()
+            .map(|observation| observation.sampled_unix_ms),
+        received_at.and_then(|received| now.checked_duration_since(received)),
+        now_unix_ms,
+    )
+    .map(|failure| match failure {
+        FreshnessFailure::SampleMissing => "hepta_observation_missing",
+        FreshnessFailure::ReceiptTimeInvalid => "session_snapshot_time_invalid",
+        FreshnessFailure::ReceiptExpired => "session_snapshot_expired",
+        FreshnessFailure::SampleTimeInvalid => "hepta_observation_time_invalid",
+        FreshnessFailure::SampleExpired => "hepta_observation_expired",
+    })
 }
 
 /// Downgrade only current-looking data, preserving the complete last success

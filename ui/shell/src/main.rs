@@ -1,15 +1,19 @@
 //! Rust AI-workspace shell for a Linux/Wayland host, not for the target kernel.
+mod conversation;
 mod hepta_panel;
 #[path = "../../host_fonts.rs"]
 mod host_fonts;
 mod local_drafts;
 
+use conversation::{DraftBook, HostObservation, WorkspaceTab};
 use eframe::egui::{self, Color32, RichText};
 use std::cmp::Reverse;
 use std::collections::VecDeque;
 use std::io::{self, Write};
 use std::sync::mpsc::{self, Receiver, SyncSender, TryRecvError};
 use std::time::{Duration, Instant};
+#[cfg(test)]
+use trill_ui_core::conversation::{LocalDraft, MAX_DRAFT_BYTES, MAX_LOCAL_DRAFTS};
 use trill_ui_core::hepta::HeptaProjection;
 use trill_ui_core::{
     request, AppKind, HostResources, HostWaylandObservation, HostWindowObservation, Request,
@@ -30,7 +34,7 @@ enum Page {
 impl Page {
     fn name(self) -> &'static str {
         match self {
-            Self::Conversation => "Conversation",
+            Self::Conversation => "Workspace / Chat",
             Self::Hepta => "Hepta / Runtime",
             Self::Tasks => "Tasks",
             Self::Apps => "Applications",
@@ -137,15 +141,6 @@ impl Bridge {
     }
 }
 
-struct ChatEntry {
-    role: &'static str,
-    text: String,
-}
-
-// UI-only local drafts, not a Hepta task ledger. Saving must never
-// silently evict earlier user text or drop the unsubmitted composer.
-const MAX_CHAT_ENTRIES: usize = 128; // Includes the local system notice.
-const MAX_DRAFT_BYTES: usize = 16 * 1024;
 /// An independently emitted Shell-side egui layout marker. This proves only
 /// that the Rust widget tree completed an update, not compositor presentation.
 const SHELL_FIRST_LAYOUT_MARKER: &[u8] = b"TRILL_SHELL_FIRST_FRAME_V1\n";
@@ -159,25 +154,6 @@ fn emit_shell_first_layout<W: Write>(emitted: &mut bool, output: &mut W) -> io::
     *emitted = true;
     output.write_all(SHELL_FIRST_LAYOUT_MARKER)?;
     output.flush()
-}
-
-fn may_restore_drafts(chat: &[ChatEntry], composer: &str) -> bool {
-    chat.len() == 1 && composer.is_empty()
-}
-
-fn collect_export_drafts(chat: &[ChatEntry], composer: &str) -> Result<Vec<String>, &'static str> {
-    if !composer.is_empty() {
-        return Err("Export refused: composer has unsaved text; prior export unchanged.");
-    }
-    let drafts: Vec<_> = chat
-        .iter()
-        .filter(|item| item.role == "You · not submitted")
-        .map(|item| item.text.clone())
-        .collect();
-    if drafts.is_empty() {
-        return Err("No saved local drafts; prior export unchanged.");
-    }
-    Ok(drafts)
 }
 
 /// Offer only an explicit *new* host process, never silent reattachment.
@@ -226,28 +202,11 @@ fn observed_host_line(task: &TaskRecord) -> String {
     )
 }
 
-fn save_local_draft(chat: &mut Vec<ChatEntry>, composer: &mut String) -> Result<(), &'static str> {
-    if composer.trim().is_empty() {
-        return Err("Draft is empty; nothing was saved");
-    }
-    if composer.len() > MAX_DRAFT_BYTES {
-        return Err("Draft exceeds 16 KiB; text remains in the composer");
-    }
-    if chat.len() >= MAX_CHAT_ENTRIES {
-        return Err("Local draft history is full; older messages were NOT evicted");
-    }
-    chat.push(ChatEntry {
-        role: "You · not submitted",
-        text: std::mem::take(composer),
-    });
-    Ok(())
-}
-
 struct Desktop {
     page: Page,
     workspace: Workspace,
-    composer: String,
-    chat: Vec<ChatEntry>,
+    drafts: DraftBook,
+    host_observation: HostObservation,
     tasks: Vec<TaskRecord>,
     selected: Option<u64>,
     resources: Option<HostResources>,
@@ -267,18 +226,30 @@ struct Desktop {
 
 impl Desktop {
     fn new(ctx: &egui::Context, options: StartupOptions) -> Self {
-        ctx.set_visuals(egui::Visuals::dark());
+        let mut visuals = egui::Visuals::dark();
+        visuals.panel_fill = Color32::from_rgb(13, 20, 30);
+        visuals.window_fill = Color32::from_rgb(18, 28, 40);
+        visuals.faint_bg_color = Color32::from_rgb(21, 34, 47);
+        visuals.selection.bg_fill = Color32::from_rgb(25, 91, 110);
+        visuals.widgets.active.bg_fill = Color32::from_rgb(27, 102, 123);
+        ctx.set_visuals(visuals);
         host_fonts::install(ctx);
         let bridge = Bridge::new();
         bridge.poll();
+        let mut drafts = DraftBook::default();
+        let page = match options.page {
+            Page::Tasks | Page::Workspaces => Page::Conversation,
+            Page::Console => {
+                drafts.set_tab(Workspace::Personal, WorkspaceTab::Console);
+                Page::Conversation
+            }
+            page => page,
+        };
         Self {
-            page: options.page,
+            page,
             workspace: Workspace::Personal,
-            composer: String::new(),
-            chat: vec![ChatEntry {
-                role: "System / local",
-                text: "Conversation messages stay local. The host Session may observe the Hepta runtime, but authenticated objective submission is unavailable. Launchable apps are real host subprocesses.".into(),
-            }],
+            drafts,
+            host_observation: HostObservation::default(),
             tasks: Vec::new(),
             selected: None,
             resources: None,
@@ -374,12 +345,19 @@ impl Desktop {
                             }
                         }
                     }
+                    let received_at = Instant::now();
+                    self.host_observation.observe(
+                        &session_instance,
+                        &tasks,
+                        resources.sampled_unix_ms,
+                        received_at,
+                    );
                     self.session_instance = Some(session_instance);
                     self.connected = true;
                     self.session_error.clear();
                     self.resources = Some(resources);
                     self.hepta = hepta;
-                    self.hepta_last_snapshot = Some(Instant::now());
+                    self.hepta_last_snapshot = Some(received_at);
                     for item in &tasks {
                         if let Some(previous) = self.tasks.iter().find(|old| old.id == item.id) {
                             if previous.state != item.state {
@@ -398,6 +376,7 @@ impl Desktop {
                         self.store_task(task);
                     } else {
                         self.connected = false;
+                        self.host_observation.disconnect(true);
                         self.hepta.mark_unavailable("host_session_changed");
                         self.notice("Task from changed/unobserved session ignored; refreshing before any status claim");
                         self.bridge.poll();
@@ -409,6 +388,7 @@ impl Desktop {
                 }) => {
                     if self.session_instance.as_deref() != Some(session_instance.as_str()) {
                         self.connected = false;
+                        self.host_observation.disconnect(true);
                         self.hepta.mark_unavailable("host_session_changed");
                         self.notice("Session generation changed; refreshing before new commands");
                         self.bridge.poll();
@@ -420,6 +400,7 @@ impl Desktop {
                         self.notice(format!("Session unavailable: {err}; no success inferred"));
                     }
                     self.connected = false;
+                    self.host_observation.disconnect(false);
                     self.resources = None;
                     self.hepta.mark_unavailable("host_session_unavailable");
                     self.session_error = err;
@@ -434,6 +415,7 @@ impl Desktop {
     fn receive_and_refresh_hepta(&mut self, clock: impl FnOnce() -> (Instant, u64)) {
         self.receive();
         let (now, now_unix_ms) = clock();
+        self.host_observation.expire(now, now_unix_ms);
         hepta_panel::expire_unfresh_observation(
             &mut self.hepta,
             self.hepta_last_snapshot,
@@ -444,14 +426,15 @@ impl Desktop {
 
     /// Explicit user-requested export. Never autosave chat or feed Hepta.
     fn export_drafts(&mut self) {
-        let drafts = match collect_export_drafts(&self.chat, &self.composer) {
+        let drafts = match self.drafts.export() {
             Ok(drafts) => drafts,
             Err(message) => {
                 self.notice(message);
                 return;
             }
         };
-        match local_drafts::state_dir().and_then(|dir| local_drafts::save_at(&dir, &drafts)) {
+        match local_drafts::state_dir().and_then(|dir| local_drafts::save_context_at(&dir, &drafts))
+        {
             Ok(path) => self.notice(format!(
                 "Exported {} local drafts to {} (PRIVATE PLAINTEXT; no Hepta upload)",
                 drafts.len(),
@@ -464,23 +447,25 @@ impl Desktop {
     }
 
     fn restore_drafts(&mut self) {
+        self.restore_drafts_from(local_drafts::state_dir());
+    }
+
+    fn restore_drafts_from(&mut self, directory: io::Result<std::path::PathBuf>) {
         // Import is deliberately non-destructive: never clear existing unsent
         // composer text or replace in-memory drafts without a fresh session.
-        if !may_restore_drafts(&self.chat, &self.composer) {
+        if !self.drafts.may_restore() {
             self.notice("Import refused: local chat/composer is not empty; nothing overwritten.");
             return;
         }
-        match local_drafts::state_dir().and_then(|dir| local_drafts::load_at(&dir)) {
+        match directory.and_then(|dir| local_drafts::load_context_at(&dir, self.workspace)) {
             Ok(drafts) => {
                 let count = drafts.len();
-                for text in drafts {
-                    self.chat.push(ChatEntry {
-                        role: "You · not submitted",
-                        text,
-                    });
+                if let Err(message) = self.drafts.restore(drafts) {
+                    self.notice(message);
+                    return;
                 }
                 self.notice(format!(
-                    "Restored {count} LOCAL ONLY drafts; Hepta not contacted."
+                    "Restored {count} LOCAL ONLY drafts. Saved quotes are historical; only current Session snapshots can resolve them."
                 ));
             }
             Err(error) => self.notice(format!(
@@ -489,138 +474,24 @@ impl Desktop {
         }
     }
 
-    fn conversation(&mut self, ui: &mut egui::Ui) {
-        ui.heading("Hepta / Conversation");
-        ui.colored_label(
-            warning(),
-            "LOCAL DRAFT ONLY · Authenticated objective submission unavailable",
-        );
-        hepta_panel::status(ui, &self.hepta);
-        ui.separator();
-        ui.group(|ui| {
-            ui.label(RichText::new("Local actions / 本地任务").strong());
-            ui.label("Explicitly launch a real host app, independently of the chat draft.");
-            ui.horizontal_wrapped(|ui| {
-                for app in AppKind::ALL {
-                    if ui
-                        .add_enabled(
-                            self.connected,
-                            egui::Button::new(format!("Open {}", app.name())),
-                        )
-                        .clicked_by(egui::PointerButton::Primary)
-                        && self.launch_host_app(self.workspace, app)
-                    {
-                        self.notice(format!(
-                            "Queued launch request for {}; NO success until session reports PID",
-                            app.name()
-                        ));
-                    }
-                }
-            });
-            if !self.connected {
-                ui.colored_label(warning(), "Host session offline · no launch attempted");
-            }
-            let recent: Vec<_> = self
-                .tasks
-                .iter()
-                .filter(|task| task.workspace == self.workspace)
-                .take(3)
-                .map(|task| (task.id, task.app, task.state))
-                .collect();
-            for (id, app, state) in recent {
-                ui.horizontal(|ui| {
-                    ui.label(format!("#{id} · {}", app.name()));
-                    ui.label(RichText::new(state.label()).color(state_color(state)));
-                    if ui.small_button("Details").clicked() {
-                        self.selected = Some(id);
-                        self.page = Page::Tasks;
-                    }
-                });
-            }
-        });
-        ui.separator();
-        egui::ScrollArea::vertical()
-            .max_height((ui.available_height() - 170.0).max(160.0))
-            .show(ui, |ui| {
-                for msg in &self.chat {
-                    ui.group(|ui| {
-                        ui.label(RichText::new(msg.role).strong().color(Color32::LIGHT_BLUE));
-                        ui.label(&msg.text);
-                    });
-                    ui.add_space(8.0);
-                }
-            });
-        ui.separator();
-        ui.label("Message / 消息 (Chinese IME requires host support; not yet verified)");
-        ui.add(
-            egui::TextEdit::multiline(&mut self.composer)
-                .id(egui::Id::new("hepta-local-composer"))
-                .hint_text("输入想法、任务草稿……")
-                .desired_rows(3)
-                .desired_width(f32::INFINITY),
-        );
-        if self.composer.len() > MAX_DRAFT_BYTES {
-            ui.colored_label(
-                warning(),
-                format!(
-                    "Draft too long: {} / {} bytes. Text has NOT been discarded.",
-                    self.composer.len(),
-                    MAX_DRAFT_BYTES
-                ),
-            );
-        }
-        if self.chat.len() >= MAX_CHAT_ENTRIES {
-            ui.colored_label(
-                warning(),
-                "Draft history full: no older content will be silently deleted.",
-            );
-        }
-        if ui
-            .add_enabled(
-                !self.composer.trim().is_empty(),
-                egui::Button::new("Save local draft"),
-            )
-            .clicked_by(egui::PointerButton::Primary)
-        {
-            match save_local_draft(&mut self.chat, &mut self.composer) {
-                Ok(()) => {
-                    self.notice("Draft stored in shell memory only. Not executed or sent to Hepta.")
-                }
-                Err(message) => self.notice(message),
-            }
-        }
-        ui.horizontal_wrapped(|ui| {
-            if ui
-                .button("Export drafts to local file")
-                .clicked_by(egui::PointerButton::Primary)
-            {
-                self.export_drafts();
-            }
-            if ui
-                .button("Restore local export")
-                .clicked_by(egui::PointerButton::Primary)
-            {
-                self.restore_drafts();
-            }
-        });
-        ui.small("Exports are private 0600 PLAINTEXT, only on explicit click. Import requires an empty local draft session. No Hepta upload.");
-        ui.small("Without export, Shell restart discards local drafts. App lifetimes belong to the separate session.");
-    }
-
     fn task_list(&mut self, ui: &mut egui::Ui) {
-        ui.heading("Tasks / 真实任务");
-        ui.label("Process statuses are observed by trill-session. No mock Hepta successes.");
-        if !self.connected {
-            ui.colored_label(
-                warning(),
-                "OFFLINE: any displayed tasks are last-known observations, not live states.",
-            );
-        }
+        ui.heading("Tasks / Host applications");
+        ui.colored_label(
+            if self.host_observation.is_current() {
+                success_color()
+            } else {
+                warning()
+            },
+            self.host_observation.label(),
+        );
+        ui.small("Quote an observed task in your draft, or inspect it in this workspace.");
         ui.separator();
         let visible: Vec<_> = self
+            .host_observation
             .tasks
             .iter()
             .filter(|task| task.workspace == self.workspace)
+            .cloned()
             .collect();
         if visible.is_empty() {
             ui.label("No host application tasks in this workspace.");
@@ -637,9 +508,30 @@ impl Desktop {
                     if clicked {
                         self.selected = Some(task.id);
                     }
-                    ui.label(RichText::new(task.state.label()).color(state_color(task.state)));
+                    ui.label(RichText::new(format!("HOST {}", task.state.label())).color(
+                        if self.host_observation.is_current() {
+                            state_color(task.state)
+                        } else {
+                            warning()
+                        },
+                    ));
                 });
                 ui.small(format!("PID {:?} · {}", task.pid, task.execution_mode));
+                ui.horizontal_wrapped(|ui| {
+                    if ui
+                        .add_enabled(
+                            self.host_observation.is_current(),
+                            egui::Button::new("Quote in draft"),
+                        )
+                        .clicked_by(egui::PointerButton::Primary)
+                    {
+                        self.quote_task(task.id);
+                    }
+                    if ui.small_button("Details").clicked() {
+                        self.selected = Some(task.id);
+                        self.show_workspace_tab(WorkspaceTab::Context);
+                    }
+                });
                 let window_status = self
                     .resources
                     .as_ref()
@@ -662,7 +554,7 @@ impl Desktop {
             "Host-local processes; workspace labels do NOT isolate OS permissions.",
         );
         ui.separator();
-        for kind in AppKind::ALL {
+        for kind in [AppKind::Notes, AppKind::Calculator] {
             ui.group(|ui| {
                 ui.horizontal(|ui| {
                     ui.vertical(|ui| {
@@ -670,18 +562,21 @@ impl Desktop {
                         ui.label("Separate Rust GUI process · independent Wayland/X11 window");
                     });
                     if ui
-                        .add_enabled(self.connected, egui::Button::new("Launch"))
+                        .add_enabled(
+                            self.host_observation.is_current(),
+                            egui::Button::new("Launch"),
+                        )
                         .clicked_by(egui::PointerButton::Primary)
                         && self.launch_host_app(self.workspace, kind)
                     {
-                        self.page = Page::Tasks;
+                        self.show_workspace_tab(WorkspaceTab::Tasks);
                     }
                 });
             });
             ui.add_space(12.0);
         }
         ui.label("Full shell and third-party Wayland apps: adapter not implemented.");
-        ui.small("Restricted Terminal is an explicit app process with an allowlist; it never invokes a shell or arbitrary host command.");
+        ui.small("The read-only Console is a tab in each chat workspace.");
         if !self.connected {
             ui.colored_label(warning(), "Start trill-session to enable launching.");
         }
@@ -706,7 +601,7 @@ impl Desktop {
             {
                 self.workspace = workspace;
                 self.selected = None;
-                self.page = Page::Tasks;
+                self.show_workspace_tab(WorkspaceTab::Tasks);
             }
         }
         ui.add_space(12.0);
@@ -720,23 +615,25 @@ impl Desktop {
             "READ ONLY · Not an executable terminal, Hepta log or security audit ledger",
         );
         ui.label(format!("Workspace: {}", self.workspace.name()));
-        if self.connected {
+        if self.host_observation.is_current() {
             ui.label(format!(
                 "Host session generation: {}",
                 self.session_instance.as_deref().unwrap_or("not observed"),
             ));
         } else {
-            ui.colored_label(warning(), "OFFLINE · observations may be stale");
+            ui.colored_label(warning(), self.host_observation.label());
         }
         ui.separator();
         ui.label(RichText::new("Observed host process lifecycle").strong());
         let observed: Vec<_> = self
+            .host_observation
             .tasks
             .iter()
             .filter(|task| task.workspace == self.workspace)
             .map(observed_host_line)
             .collect();
         egui::ScrollArea::vertical()
+            .id_salt(("console-processes", self.workspace.code()))
             .max_height(340.0)
             .show(ui, |ui| {
                 if observed.is_empty() {
@@ -750,6 +647,7 @@ impl Desktop {
         ui.separator();
         ui.label(RichText::new("Local Shell notices (latest 30, volatile)").strong());
         egui::ScrollArea::vertical()
+            .id_salt(("console-notices", self.workspace.code()))
             .max_height(240.0)
             .show(ui, |ui| {
                 if self.notices.is_empty() {
@@ -798,11 +696,11 @@ impl Desktop {
     }
 
     fn inspector(&mut self, ui: &mut egui::Ui) {
-        ui.heading("System / Inspector");
-        if self.connected {
-            ui.colored_label(success_color(), "HOST SESSION ONLINE");
+        ui.heading("Context / Inspector");
+        if self.host_observation.is_current() {
+            ui.colored_label(success_color(), self.host_observation.label());
         } else {
-            ui.colored_label(warning(), "SESSION OFFLINE · state may be stale");
+            ui.colored_label(warning(), self.host_observation.label());
             ui.small(&self.session_error);
         }
         hepta_panel::status(ui, &self.hepta);
@@ -851,6 +749,7 @@ impl Desktop {
         }
         ui.separator();
         if let Some(task) = self
+            .host_observation
             .tasks
             .iter()
             .find(|task| Some(task.id) == self.selected)
@@ -858,7 +757,13 @@ impl Desktop {
         {
             ui.label(RichText::new(format!("Task #{}", task.id)).strong());
             ui.label(task.app.name());
-            ui.label(RichText::new(task.state.label()).color(state_color(task.state)));
+            ui.label(RichText::new(format!("HOST {}", task.state.label())).color(
+                if self.host_observation.is_current() {
+                    state_color(task.state)
+                } else {
+                    warning()
+                },
+            ));
             ui.small(format!("Workspace: {}", task.workspace.name()));
             ui.small(format!("Execution: {}", task.execution_mode));
             ui.small(format!(
@@ -888,14 +793,25 @@ impl Desktop {
             } else {
                 ui.colored_label(warning(), "Native UI first frame: unobserved");
             }
-            ui.small(format!("Observed: {}", task.updated_unix_ms));
+            ui.small(format!("Last lifecycle change: {}", task.updated_unix_ms));
+            if ui
+                .add_enabled(
+                    self.host_observation.is_current(),
+                    egui::Button::new("Quote selected task in draft"),
+                )
+                .clicked_by(egui::PointerButton::Primary)
+            {
+                self.quote_task(task.id);
+            }
             ui.separator();
             ui.label(&task.detail);
-            if can_offer_fresh_window(
-                &task,
-                self.resources.as_ref().map(|sample| &sample.wayland),
-                self.connected,
-            ) {
+            if task.app != AppKind::Terminal
+                && can_offer_fresh_window(
+                    &task,
+                    self.resources.as_ref().map(|sample| &sample.wayland),
+                    self.host_observation.is_current(),
+                )
+            {
                 ui.colored_label(
                     warning(),
                     "Old client window unverified after compositor restart. A fresh process cannot restore unsaved app state.",
@@ -912,7 +828,7 @@ impl Desktop {
                     ));
                 }
             }
-            if self.connected
+            if self.host_observation.is_current()
                 && !task.state.is_terminal()
                 && ui
                     .button("Request termination")
@@ -927,8 +843,8 @@ impl Desktop {
                     self.notice("No authenticated session generation; cancellation not attempted");
                 }
             }
-            if !self.connected {
-                ui.small("No live task control while session offline.");
+            if !self.host_observation.is_current() {
+                ui.small("Task controls require a fresh complete Session snapshot.");
             }
         } else {
             ui.label("Select a task to inspect.");
@@ -967,16 +883,12 @@ impl eframe::App for Desktop {
                 ui.label("AI-native workspace · Linux host prototype");
                 ui.separator();
                 ui.colored_label(
-                    if self.connected {
+                    if self.host_observation.is_current() {
                         success_color()
                     } else {
                         warning()
                     },
-                    if self.connected {
-                        "SESSION ONLINE"
-                    } else {
-                        "SESSION OFFLINE"
-                    },
+                    self.host_observation.label(),
                 );
             });
         });
@@ -992,18 +904,11 @@ impl eframe::App for Desktop {
                     {
                         self.workspace = workspace;
                         self.selected = None;
+                        self.page = Page::Conversation;
                     }
                 }
                 ui.separator();
-                for page in [
-                    Page::Conversation,
-                    Page::Hepta,
-                    Page::Tasks,
-                    Page::Apps,
-                    Page::Workspaces,
-                    Page::Console,
-                    Page::Settings,
-                ] {
+                for page in [Page::Conversation, Page::Apps, Page::Settings] {
                     if ui
                         .selectable_label(self.page == page, page.name())
                         .clicked()
@@ -1012,15 +917,15 @@ impl eframe::App for Desktop {
                     }
                 }
                 ui.separator();
-                ui.small("Local shell ≠ compositor");
-                ui.small("Linux host ≠ new Rust kernel");
+                ui.small("Tasks, context and Console stay in your chat workspace.");
+                ui.small("Linux host · Rust native UI");
             });
-        egui::SidePanel::right("inspector")
-            .default_width(270.0)
-            .resizable(true)
-            .show(ctx, |ui| {
-                self.inspector(ui);
-            });
+        if self.page != Page::Conversation {
+            egui::SidePanel::right("inspector")
+                .default_width(270.0)
+                .resizable(true)
+                .show(ctx, |ui| self.inspector(ui));
+        }
         egui::CentralPanel::default().show(ctx, |ui| match self.page {
             Page::Conversation => self.conversation(ui),
             Page::Hepta => hepta_panel::runtime(ui, &self.hepta),
@@ -1127,15 +1032,15 @@ mod observation_freshness_tests {
     // Only the in-process response queue is synthetic here. The test consumes
     // it through Desktop's real receive and pre-draw state path; no Agentd,
     // compositor, device effect or physical display is claimed.
-    fn queued_desktop() -> (Desktop, ResponseSender) {
+    pub(super) fn queued_desktop() -> (Desktop, ResponseSender) {
         let (actions, _incoming_actions) = mpsc::sync_channel(8);
         let (polls, _incoming_polls) = mpsc::sync_channel(1);
         let (outgoing, rx) = mpsc::sync_channel(16);
         let desktop = Desktop {
             page: Page::Hepta,
             workspace: Workspace::Personal,
-            composer: String::new(),
-            chat: Vec::new(),
+            drafts: DraftBook::default(),
+            host_observation: HostObservation::default(),
             tasks: Vec::new(),
             selected: None,
             resources: None,
@@ -1521,98 +1426,508 @@ mod bridge_tests {
 }
 
 #[cfg(test)]
+mod workspace_context_tests {
+    use super::*;
+    use trill_ui_core::conversation::ContextRef;
+    const A: &str = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    const B: &str = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
+    type QueuedResponses = SyncSender<(bool, Result<Response, String>)>;
+
+    fn setup() -> (Desktop, QueuedResponses, Receiver<Request>) {
+        let (mut desktop, outgoing) = observation_freshness_tests::queued_desktop();
+        let (actions, incoming) = mpsc::sync_channel(8);
+        desktop.bridge.actions = actions;
+        desktop.page = Page::Conversation;
+        (desktop, outgoing, incoming)
+    }
+
+    fn snapshot(instance: &str, sample: u64, task: TaskRecord) -> Response {
+        Response::Snapshot {
+            tasks: vec![task],
+            resources: HostResources {
+                sampled_unix_ms: sample,
+                mem_total_kib: None,
+                mem_available_kib: None,
+                load_average_1m: None,
+                source: "response-queue regression fixture".into(),
+                wayland: HostWaylandObservation::default(),
+            },
+            session_instance: instance.into(),
+            hepta: HeptaProjection::default(),
+        }
+    }
+
+    fn draw(
+        desktop: &mut Desktop,
+        ctx: &egui::Context,
+        events: Vec<egui::Event>,
+    ) -> egui::FullOutput {
+        ctx.run(
+            egui::RawInput {
+                screen_rect: Some(egui::Rect::from_min_size(
+                    egui::Pos2::ZERO,
+                    egui::vec2(1500.0, 1100.0),
+                )),
+                events,
+                ..Default::default()
+            },
+            |ctx| {
+                egui::CentralPanel::default().show(ctx, |ui| desktop.conversation(ui));
+            },
+        )
+    }
+
+    fn visible_text(output: &egui::FullOutput) -> String {
+        output
+            .shapes
+            .iter()
+            .filter_map(|shape| match &shape.shape {
+                egui::Shape::Text(text) => Some(text.galley.job.text.as_str()),
+                _ => None,
+            })
+            .collect::<Vec<_>>()
+            .join("\n")
+    }
+
+    fn click(desktop: &mut Desktop, ctx: &egui::Context, label: &str) {
+        let output = draw(desktop, ctx, vec![]);
+        let pos = output
+            .shapes
+            .iter()
+            .find_map(|shape| match &shape.shape {
+                egui::Shape::Text(text) if text.galley.job.text == label => {
+                    Some(text.pos + text.galley.size() * 0.5)
+                }
+                _ => None,
+            })
+            .unwrap_or_else(|| panic!("button {label:?} missing: {}", visible_text(&output)));
+        for pressed in [true, false] {
+            draw(
+                desktop,
+                ctx,
+                vec![
+                    egui::Event::PointerMoved(pos),
+                    egui::Event::PointerButton {
+                        pos,
+                        button: egui::PointerButton::Primary,
+                        pressed,
+                        modifiers: egui::Modifiers::NONE,
+                    },
+                ],
+            );
+        }
+    }
+
+    #[test]
+    fn actual_workspace_clicks_quote_save_navigate_and_console_without_ipc() {
+        let (mut desktop, outgoing, requests) = setup();
+        let mut task = TaskRecord::new(1, Workspace::Personal, AppKind::Notes);
+        task.state = TaskState::Running;
+        task.pid = Some(42);
+        task.updated_unix_ms = 1;
+        outgoing
+            .send((false, Ok(snapshot(A, 20_000, task.clone()))))
+            .unwrap();
+        desktop.receive_and_refresh_hepta(|| (Instant::now(), 20_000));
+        desktop.drafts.composer_mut(Workspace::Personal).text = "检查这份笔记 📝".into();
+        let ctx = egui::Context::default();
+        click(&mut desktop, &ctx, "Quote in draft");
+        assert_eq!(
+            desktop.drafts.composer(Workspace::Personal).contexts.len(),
+            1
+        );
+        click(&mut desktop, &ctx, "Save local draft");
+        assert_eq!(desktop.drafts.drafts[0].text, "检查这份笔记 📝");
+        assert_eq!(desktop.drafts.drafts[0].contexts.len(), 1);
+        click(&mut desktop, &ctx, "Open task in workspace");
+        assert_eq!(desktop.selected, Some(1));
+        assert!(desktop.page == Page::Conversation);
+        assert_eq!(
+            desktop.drafts.tab(Workspace::Personal),
+            WorkspaceTab::Context
+        );
+        click(&mut desktop, &ctx, "Console");
+        let text = visible_text(&draw(&mut desktop, &ctx, vec![]));
+        assert!(text.contains("Console / Host observations"));
+        assert!(text.contains("HOST_PROCESS=RUNNING"));
+        assert!(text.contains("You · local draft · not submitted"));
+        assert!(
+            matches!(requests.try_recv(), Err(TryRecvError::Empty)),
+            "local interaction queued an operation"
+        );
+        outgoing
+            .send((false, Ok(snapshot(B, 21_000, task))))
+            .unwrap();
+        desktop.receive_and_refresh_hepta(|| (Instant::now(), 21_000));
+        assert_eq!(desktop.selected, None);
+        let text = visible_text(&draw(&mut desktop, &ctx, vec![]));
+        assert!(text.contains("Session changed; reference not rebound"));
+        assert!(!text.contains("Open task in workspace"));
+        let ContextRef::HostTask(reference) = &desktop.drafts.drafts[0].contexts[0] else {
+            unreachable!()
+        };
+        assert_eq!(reference.key.session_instance, A);
+        assert!(matches!(requests.try_recv(), Err(TryRecvError::Empty)));
+    }
+
+    fn overflowing_console() -> (Desktop, Receiver<Request>) {
+        let (mut desktop, outgoing, requests) = setup();
+        let mut records = Vec::new();
+        for workspace in Workspace::ALL {
+            desktop.drafts.set_tab(workspace, WorkspaceTab::Console);
+            for row in 0..30 {
+                let mut task = TaskRecord::new(records.len() as u64 + 1, workspace, AppKind::Notes);
+                // Bounded historical rows make both real Console regions
+                // overflow without pretending to launch host processes.
+                task.state = TaskState::Completed;
+                task.exit_code = Some(0);
+                task.updated_unix_ms = 1;
+                task.detail = format!("process-scroll-row-{row:02}");
+                records.push(task);
+            }
+        }
+        let mut response = snapshot(A, 20_000, records[0].clone());
+        if let Response::Snapshot { tasks, .. } = &mut response {
+            *tasks = records;
+        }
+        outgoing.send((false, Ok(response))).unwrap();
+        desktop.receive_and_refresh_hepta(|| (Instant::now(), 20_000));
+        for row in 0..30 {
+            desktop.notice(format!("local-scroll-notice-{row:02}"));
+        }
+        (desktop, requests)
+    }
+
+    #[derive(Debug)]
+    struct PaintedRow {
+        text: String,
+        rect: egui::Rect,
+        visible_rect: egui::Rect,
+    }
+
+    fn first_painted_row(output: &egui::FullOutput, marker: &str) -> PaintedRow {
+        output
+            .shapes
+            .iter()
+            .find_map(|shape| match &shape.shape {
+                egui::Shape::Text(text) if text.galley.job.text.contains(marker) => {
+                    let rect = egui::Rect::from_min_size(text.pos, text.galley.size());
+                    let visible_rect = rect.intersect(shape.clip_rect);
+                    visible_rect.is_positive().then(|| PaintedRow {
+                        text: text.galley.job.text.clone(),
+                        rect,
+                        visible_rect,
+                    })
+                }
+                _ => None,
+            })
+            .unwrap_or_else(|| panic!("no clipped visible row for {marker:?}"))
+    }
+
+    fn assert_same_row(before: &PaintedRow, after: &PaintedRow) {
+        assert_eq!(before.text, after.text, "a different scroll region moved");
+        assert!(
+            (before.rect.min.y - after.rect.min.y).abs() < 0.5,
+            "scroll position changed: {before:?} -> {after:?}"
+        );
+    }
+
+    fn settle_console(desktop: &mut Desktop, ctx: &egui::Context) -> egui::FullOutput {
+        let mut output = draw(desktop, ctx, vec![]);
+        for _ in 0..30 {
+            output = draw(desktop, ctx, vec![]);
+        }
+        output
+    }
+
+    fn wheel_console(
+        desktop: &mut Desktop,
+        ctx: &egui::Context,
+        position: egui::Pos2,
+        delta: f32,
+    ) -> egui::FullOutput {
+        draw(
+            desktop,
+            ctx,
+            vec![
+                egui::Event::PointerMoved(position),
+                egui::Event::MouseWheel {
+                    unit: egui::MouseWheelUnit::Point,
+                    delta: egui::vec2(0.0, delta),
+                    modifiers: egui::Modifiers::NONE,
+                },
+            ],
+        );
+        settle_console(desktop, ctx)
+    }
+
+    #[test]
+    fn actual_console_has_no_scroll_area_id_clash_in_any_workspace() {
+        let (mut desktop, requests) = overflowing_console();
+        let ctx = egui::Context::default();
+        ctx.options_mut(|options| options.warn_on_id_clash = true);
+        for workspace in Workspace::ALL {
+            desktop.workspace = workspace;
+            let text = visible_text(&settle_console(&mut desktop, &ctx));
+            assert!(text.contains("Observed host process lifecycle"));
+            assert!(text.contains("Local Shell notices (latest 30, volatile)"));
+            assert!(
+                !text.contains("use of ScrollArea ID"),
+                "actual Console painted an egui ScrollArea ID conflict: {text}"
+            );
+        }
+        assert!(matches!(requests.try_recv(), Err(TryRecvError::Empty)));
+    }
+
+    #[test]
+    fn actual_console_scrolls_regions_independently_and_restores_workspace_offsets() {
+        let (mut desktop, requests) = overflowing_console();
+        let ctx = egui::Context::default();
+        let initial = settle_console(&mut desktop, &ctx);
+        let initial_process = first_painted_row(&initial, "process-scroll-row-");
+        let initial_notice = first_painted_row(&initial, "local-scroll-notice-");
+        assert!(initial_process.text.ends_with("process-scroll-row-00"));
+        assert_eq!(initial_notice.text, "local-scroll-notice-29");
+
+        let process_scrolled = wheel_console(
+            &mut desktop,
+            &ctx,
+            initial_process.visible_rect.center(),
+            -350.0,
+        );
+        let moved_process = first_painted_row(&process_scrolled, "process-scroll-row-");
+        let unchanged_notice = first_painted_row(&process_scrolled, "local-scroll-notice-");
+        assert_ne!(initial_process.text, moved_process.text);
+        assert_same_row(&initial_notice, &unchanged_notice);
+
+        let notices_scrolled = wheel_console(
+            &mut desktop,
+            &ctx,
+            unchanged_notice.visible_rect.center(),
+            -150.0,
+        );
+        let final_process = first_painted_row(&notices_scrolled, "process-scroll-row-");
+        let moved_notice = first_painted_row(&notices_scrolled, "local-scroll-notice-");
+        assert_same_row(&moved_process, &final_process);
+        assert_ne!(initial_notice.text, moved_notice.text);
+
+        desktop.workspace = Workspace::Research;
+        let research = settle_console(&mut desktop, &ctx);
+        assert!(first_painted_row(&research, "process-scroll-row-")
+            .text
+            .ends_with("process-scroll-row-00"));
+        assert_eq!(
+            first_painted_row(&research, "local-scroll-notice-").text,
+            "local-scroll-notice-29"
+        );
+        desktop.workspace = Workspace::Personal;
+        let restored = settle_console(&mut desktop, &ctx);
+        assert_same_row(
+            &final_process,
+            &first_painted_row(&restored, "process-scroll-row-"),
+        );
+        assert_same_row(
+            &moved_notice,
+            &first_painted_row(&restored, "local-scroll-notice-"),
+        );
+        assert!(matches!(requests.try_recv(), Err(TryRecvError::Empty)));
+    }
+
+    #[test]
+    fn delayed_snapshot_is_visibly_stale_and_action_reply_cannot_refresh_it() {
+        let (mut desktop, outgoing, requests) = setup();
+        let mut task = TaskRecord::new(1, Workspace::Personal, AppKind::Notes);
+        task.state = TaskState::Running;
+        task.updated_unix_ms = 1;
+        outgoing
+            .send((false, Ok(snapshot(A, 10_000, task.clone()))))
+            .unwrap();
+        desktop.receive_and_refresh_hepta(|| (Instant::now(), 18_001));
+        assert!(!desktop.host_observation.is_current());
+        let ctx = egui::Context::default();
+        let text = visible_text(&draw(&mut desktop, &ctx, vec![]));
+        assert!(text.contains("HOST TASKS · STALE · CURRENT STATE UNKNOWN"));
+        task.state = TaskState::Completed;
+        outgoing
+            .send((
+                true,
+                Ok(Response::Task {
+                    task: task.clone(),
+                    session_instance: A.into(),
+                }),
+            ))
+            .unwrap();
+        desktop.receive_and_refresh_hepta(|| (Instant::now(), 18_002));
+        assert!(!desktop.host_observation.is_current());
+        assert_eq!(desktop.host_observation.tasks[0].state, TaskState::Running);
+        assert_eq!(desktop.host_observation.sampled_unix_ms, Some(10_000));
+        outgoing
+            .send((false, Ok(snapshot(A, 20_000, task))))
+            .unwrap();
+        desktop.receive_and_refresh_hepta(|| (Instant::now(), 20_000));
+        assert!(desktop.host_observation.is_current());
+        assert_eq!(
+            desktop.host_observation.tasks[0].state,
+            TaskState::Completed
+        );
+        assert!(matches!(requests.try_recv(), Err(TryRecvError::Empty)));
+    }
+
+    #[test]
+    #[cfg(target_os = "linux")]
+    fn actual_import_refuses_fifo_without_writer_and_never_restores_legacy() {
+        use std::ffi::CString;
+        use std::fs::{self, DirBuilder, OpenOptions};
+        use std::os::unix::ffi::OsStrExt;
+        use std::os::unix::fs::{DirBuilderExt, OpenOptionsExt};
+        use std::path::PathBuf;
+        unsafe extern "C" {
+            fn mkfifo(path: *const std::os::raw::c_char, mode: u32) -> i32;
+        }
+        struct PrivateDir(PathBuf);
+        impl Drop for PrivateDir {
+            fn drop(&mut self) {
+                let _ = fs::remove_dir_all(&self.0);
+            }
+        }
+        let dir = PrivateDir(std::env::temp_dir().join(format!(
+            "trill-fifo-import-{}-{}",
+            std::process::id(),
+            trill_ui_core::unix_ms()
+        )));
+        DirBuilder::new().mode(0o700).create(&dir.0).unwrap();
+        let legacy = dir.0.join("local-drafts-v1.json");
+        let original = br#"{"version":1,"drafts":["legacy must not be silently restored"]}"#;
+        OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .mode(0o600)
+            .open(&legacy)
+            .unwrap()
+            .write_all(original)
+            .unwrap();
+        let fifo = dir.0.join("local-context-drafts-v2.json");
+        let name = CString::new(fifo.as_os_str().as_bytes()).unwrap();
+        // Only this test-owned path is created, with no writer during the
+        // complete acceptance window. No global environment is changed.
+        assert_eq!(unsafe { mkfifo(name.as_ptr(), 0o600) }, 0);
+        let (mut desktop, _outgoing, requests) = setup();
+        let (finished, receive) = mpsc::sync_channel(1);
+        let import_dir = dir.0.clone();
+        let worker = std::thread::spawn(move || {
+            desktop.restore_drafts_from(Ok(import_dir));
+            finished.send(desktop).unwrap();
+        });
+        let first = receive.recv_timeout(Duration::from_secs(2));
+        let refused_without_writer = first.is_ok();
+        let mut cleanup_writer = None;
+        let returned = match first {
+            Ok(desktop) => desktop,
+            Err(mpsc::RecvTimeoutError::Timeout) => {
+                // RED-only cleanup: open our FIFO after the failed deadline
+                // to release a blocked reader, then join it. This writer
+                // cannot turn the no-writer acceptance predicate into PASS.
+                cleanup_writer = Some(
+                    OpenOptions::new()
+                        .write(true)
+                        .custom_flags(0o4000)
+                        .open(&fifo)
+                        .unwrap(),
+                );
+                receive
+                    .recv_timeout(Duration::from_secs(2))
+                    .expect("blocked FIFO reader did not finish after owned cleanup writer")
+            }
+            Err(error) => panic!("import worker ended without a result: {error}"),
+        };
+        worker.join().unwrap();
+        drop(cleanup_writer);
+        assert!(
+            returned.drafts.may_restore(),
+            "FIFO import changed the empty draft book"
+        );
+        assert!(returned
+            .notices
+            .back()
+            .unwrap()
+            .contains("Draft import FAILED"));
+        assert_eq!(fs::read(legacy).unwrap(), original);
+        assert!(matches!(requests.try_recv(), Err(TryRecvError::Empty)));
+        assert!(refused_without_writer, "FIFO import blocked for 2 seconds with no writer; only the later cleanup writer released it");
+    }
+}
+
+#[cfg(test)]
 mod draft_safety_tests {
     use super::*;
 
     #[test]
     fn full_chat_never_evicts_earlier_user_text_or_clears_composer() {
-        let mut chat = vec![ChatEntry {
-            role: "System",
-            text: "intro".into(),
-        }];
-        for i in 0..(MAX_CHAT_ENTRIES - 1) {
-            chat.push(ChatEntry {
-                role: "You",
-                text: format!("draft-{i}"),
-            });
+        let mut book = DraftBook::default();
+        for i in 0..MAX_LOCAL_DRAFTS {
+            book.composer_mut(Workspace::Personal).text = format!("draft-{i}");
+            book.save(Workspace::Personal).unwrap();
         }
-        let original_first = chat[1].text.clone();
-        let mut composer = "a valuable unsaved draft".to_owned();
-        assert!(save_local_draft(&mut chat, &mut composer).is_err());
-        assert_eq!(chat.len(), MAX_CHAT_ENTRIES);
-        assert_eq!(chat[1].text, original_first);
-        assert_eq!(composer, "a valuable unsaved draft");
-    }
-
-    #[test]
-    fn oversized_utf8_draft_is_not_truncated_or_saved() {
-        let mut chat = Vec::new();
-        let mut composer = "中文".repeat(MAX_DRAFT_BYTES / 6 + 1);
-        let original = composer.clone();
-        assert!(composer.len() > MAX_DRAFT_BYTES);
-        assert!(save_local_draft(&mut chat, &mut composer).is_err());
-        assert!(chat.is_empty());
-        assert_eq!(composer, original);
-    }
-
-    #[test]
-    fn import_refuses_to_overwrite_chat_or_unsubmitted_composer() {
-        let system = ChatEntry {
-            role: "System",
-            text: "intro".into(),
-        };
-        let saved = ChatEntry {
-            role: "You · not submitted",
-            text: "existing".into(),
-        };
-        assert!(may_restore_drafts(
-            &[ChatEntry {
-                role: "System",
-                text: "intro".into()
-            }],
-            ""
-        ));
-        assert!(!may_restore_drafts(&[system, saved], ""));
-        assert!(!may_restore_drafts(
-            &[ChatEntry {
-                role: "System",
-                text: "intro".into()
-            }],
-            "unfinished"
-        ));
-    }
-
-    #[test]
-    fn export_collection_never_omits_unsent_text_or_overwrites_old_backup() {
-        let chat = vec![
-            ChatEntry {
-                role: "System",
-                text: "intro".into(),
-            },
-            ChatEntry {
-                role: "You · not submitted",
-                text: "prior saved 中文".into(),
-            },
-        ];
-        assert!(collect_export_drafts(&chat, "unfinished composer").is_err());
-        assert!(collect_export_drafts(&chat[..1], "").is_err());
+        book.composer_mut(Workspace::Personal).text = "a valuable unsaved draft".into();
+        assert!(book.save(Workspace::Personal).is_err());
+        assert_eq!(book.drafts.len(), MAX_LOCAL_DRAFTS);
+        assert_eq!(book.drafts[0].text, "draft-0");
         assert_eq!(
-            collect_export_drafts(&chat, "").unwrap(),
-            vec!["prior saved 中文".to_owned()],
+            book.composer(Workspace::Personal).text,
+            "a valuable unsaved draft"
         );
     }
 
     #[test]
-    fn accepted_chinese_draft_is_stored_exactly_once() {
-        let mut chat = vec![ChatEntry {
-            role: "System",
-            text: "intro".into(),
+    fn oversized_utf8_draft_is_not_truncated_or_saved() {
+        let mut book = DraftBook::default();
+        let original = "中文".repeat(MAX_DRAFT_BYTES / 6 + 1);
+        book.composer_mut(Workspace::Personal).text = original.clone();
+        assert!(book.save(Workspace::Personal).is_err());
+        assert!(book.drafts.is_empty());
+        assert_eq!(book.composer(Workspace::Personal).text, original);
+    }
+
+    #[test]
+    fn import_refuses_to_overwrite_chat_or_unsubmitted_composer() {
+        let mut book = DraftBook::default();
+        let imported = vec![LocalDraft {
+            workspace: Workspace::Personal,
+            text: "imported".into(),
+            contexts: vec![],
         }];
-        let mut composer = "测试输入法：你好 📝".to_owned();
-        assert!(save_local_draft(&mut chat, &mut composer).is_ok());
-        assert_eq!(chat.len(), 2);
-        assert_eq!(chat[1].text, "测试输入法：你好 📝");
-        assert!(composer.is_empty());
+        assert!(book.may_restore());
+        book.composer_mut(Workspace::Build).text = "unfinished".into();
+        assert!(!book.may_restore());
+        assert!(book.restore(imported.clone()).is_err());
+        book.save(Workspace::Build).unwrap();
+        assert!(!book.may_restore());
+        assert!(book.restore(imported).is_err());
+        assert_eq!(book.drafts[0].text, "unfinished");
+    }
+
+    #[test]
+    fn export_collection_never_omits_unsent_text_or_overwrites_old_backup() {
+        let mut book = DraftBook::default();
+        assert!(book.export().is_err());
+        book.composer_mut(Workspace::Personal).text = "prior saved 中文".into();
+        book.save(Workspace::Personal).unwrap();
+        book.composer_mut(Workspace::Research).text = "unfinished composer".into();
+        assert!(book.export().is_err());
+        book.composer_mut(Workspace::Research).text.clear();
+        assert_eq!(book.export().unwrap()[0].text, "prior saved 中文");
+    }
+
+    #[test]
+    fn accepted_chinese_draft_is_stored_exactly_once() {
+        let mut book = DraftBook::default();
+        book.composer_mut(Workspace::Personal).text = "测试输入法：你好 📝".into();
+        assert!(book.save(Workspace::Personal).is_ok());
+        assert_eq!(book.drafts.len(), 1);
+        assert_eq!(book.drafts[0].text, "测试输入法：你好 📝");
+        assert!(book.composer(Workspace::Personal).text.is_empty());
+        assert!(book.save(Workspace::Personal).is_err());
+        assert_eq!(book.drafts.len(), 1);
     }
 }
 

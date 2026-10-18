@@ -17,6 +17,13 @@ read-only UI behavior and its separate acceptance limits, see
 [`HEPTA_OBSERVER.md`](HEPTA_OBSERVER.md). Authenticated objective submission
 is not configured; Conversation remains a local draft.
 
+The default Shell now opens Workspace / Chat with typed local draft/context
+references and embedded Tasks, Context and Console tabs. See
+[`CHAT_WORKSPACE.md`](CHAT_WORKSPACE.md) for the source identity model,
+shared snapshot freshness rule, v2 export/legacy import and exact test limits.
+Notes and Calculator remain explicit host launches; local chat actions do
+not submit an objective.
+
 For explicit host font selection, shared proportional/monospace CJK fallback,
 actual Pixman screenshots and the separate live-IME gate, see
 [`CJK_RENDERING.md`](CJK_RENDERING.md).

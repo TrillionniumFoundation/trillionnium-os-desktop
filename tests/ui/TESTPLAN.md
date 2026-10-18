@@ -1,5 +1,23 @@
 # A10 test matrix and provenance
 
+## Current chat workspace source
+
+The R7 Rust [chat workspace contract](../../support/ui/CHAT_WORKSPACE.md)
+documents typed local drafts, exact Session/task and original-runtime context
+references, complete-snapshot freshness, per-workspace composers and embedded
+Tasks / Context / Console tabs. Its queue/egui regressions prove local UI
+behavior only. The latest source still needs its own recorded native build,
+pixel and IME executions; earlier source-qualified artifacts are not reused
+as a claim that this UI was executed.
+
+The R6 [original Session/Shell evidence](evidence/2026-10-17-original-hepta-shell/README.md)
+records two real six-phase captures and preserves the first failed capture.
+The [freshness evidence](evidence/2026-10-17-observation-freshness/README.md)
+separately records actual RED/GREEN runs, and the
+[oracle CI hook evidence](evidence/2026-10-17-original-shell-ci/README.md)
+records the eight Python contract tests. These supersede the earlier
+original-Agentd `not_run` scope below for their exact recorded sources only.
+
 ## Host fonts and actual software-composited pixels
 
 `ui/host_fonts.rs` is shared by Shell and AppWindow. Its ordinary tests reject
@@ -22,7 +40,7 @@ The headless lifecycle scripts now explicitly select Pixman with no inherited
 Weston configuration. Historical no-op/layout receipts retain their original
 qualification and do not become pixel receipts after this source change.
 
-## Latest recorded Linux host result
+## Earlier recorded owner-sync Linux host result
 
 The [final 2026-10-17 owner integration evidence](evidence/2026-10-17-rust188-owner-sync/README.md)
 records the complete 137-test host gate, packaged ELF replay, Weston/Hepta
@@ -40,7 +58,7 @@ checks for all eight workflow Bash blocks on source `5f14fde` (same tree as
 published `7e7f4d3`). It verifies unchanged production UI/observer bytes; it
 does not re-label the earlier full Rust/Weston result as a new execution.
 The existing A10 workflow now enforces pinned all-target Clippy and those six
-process-guard tests. Original Agentd remains `not_run`.
+process-guard tests. Original Agentd was `not_run` in that earlier record.
 
 ## Earlier recorded source
 

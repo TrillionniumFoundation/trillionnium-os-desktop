@@ -1,6 +1,8 @@
 //! Host-only desktop prototype messages. These are NOT HOS2, a kernel permission
 //! protocol, or a trusted Hepta operation ledger.
+pub mod conversation;
 pub mod hepta;
+pub mod observation;
 
 use serde::{Deserialize, Serialize};
 
