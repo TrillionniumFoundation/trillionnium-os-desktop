@@ -5,7 +5,7 @@
 
 use os_control::{
     BootId, CapSpaceId, ControlCore, DeliveryError, DeliveryRequest, DeliveryState, DeliveryStatus,
-    HistoryAck, OwnerId, PublishOutcome, PublisherId, ResourceDomain,
+    OwnerId, PublishOutcome, PublisherId, ResourceDomain,
     ResourceDomainId, StableObjectId, CPU_PERIOD_NS,
 };
 
