@@ -18,6 +18,10 @@ const CONTEXT_FILE_NAME: &str = "local-context-drafts-v2.json";
 // by the kernel during open, not merely by an earlier path metadata check.
 #[cfg(target_os = "linux")]
 const LINUX_O_NOFOLLOW: i32 = 0o400000;
+// Open must reach the descriptor type check even for an unexpected FIFO
+// with no writer. O_NONBLOCK has no effect on ordinary regular-file reads.
+#[cfg(target_os = "linux")]
+const LINUX_O_NONBLOCK: i32 = 0o4000;
 
 #[derive(Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -240,7 +244,7 @@ fn load_payload(dir: &Path, name: &str) -> io::Result<Vec<u8>> {
     options.read(true);
     #[cfg(target_os = "linux")]
     {
-        options.custom_flags(LINUX_O_NOFOLLOW);
+        options.custom_flags(LINUX_O_NOFOLLOW | LINUX_O_NONBLOCK);
     }
     #[cfg(not(target_os = "linux"))]
     {

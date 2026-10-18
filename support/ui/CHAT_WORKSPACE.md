@@ -110,7 +110,8 @@ workspace has unsaved text or context, so a backup cannot silently omit them.
 No live/current flag, operation, grant or authority object is serialized.
 
 The existing 0700 directory, 0600 regular file, final-component no-follow,
-4 MiB bound, create-new temporary file, atomic rename and durability checks
+nonblocking open followed by a regular-file descriptor check, 4 MiB bound,
+create-new temporary file, atomic rename and durability checks
 are shared by both schemas. Import requires an entirely empty in-memory
 draft book and all composers empty. It prefers v2. Only true v2 absence permits
 legacy `local-drafts-v1.json` import; corrupted, oversized, insecure or symlink
@@ -133,6 +134,14 @@ and clicks the actual Quote / Save / Context / Console widgets. It requires
 the host operation queue to remain empty and verifies that an action reply
 cannot freshen a delayed complete snapshot. These are in-process contract
 tests, not original-Agentd execution or presented pixels.
+
+The actual Desktop import regression creates a private 0600 FIFO with no
+writer and requires rejection within two seconds, no fallback to an existing
+v1 file, an unchanged empty draft book and an empty operation queue. A RED
+timeout is cleaned up by opening only that owned FIFO's nonblocking writer
+after the failed deadline, then joining the reader. This cleanup cannot count
+as a successful no-writer rejection. Normal regular v2 imports and true
+v2-absence legacy imports remain separate positive controls.
 
 Run the pinned UI workspace tests, strict Clippy, formatter and native binary
 build with the commands in [RUN.md](RUN.md). Record the exact source, command,
