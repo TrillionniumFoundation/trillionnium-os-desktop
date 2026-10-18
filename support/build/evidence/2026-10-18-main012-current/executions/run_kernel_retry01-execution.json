@@ -1,0 +1,38 @@
+{
+  "schema": "trillionnium.a01.actual-stage.v1",
+  "stage": "run_kernel_retry01",
+  "source_commit": "b39e154ae5a1e9853f57e23f9bee84712ee8ef7e",
+  "project_tree": "80ceaa07562dd359572afdc6bfad473aa20d7271",
+  "kernel_tree": "065a20ff147bf1541acbdfd996338ab0267fbfc6",
+  "command": [
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/kernel.sh",
+    "run_kernel"
+  ],
+  "cwd": "/workspace/scratch/d7da9e7650f0/a01-current",
+  "started_at_utc": "2026-10-18T08:58:30.833090+00:00",
+  "driver_script_sha256": "4b21940fadd1689f6f418198886e3f0f84873274b1a625263b7673ad865c50a3",
+  "tool_sandbox_permissions": "require_escalated",
+  "environment": {
+    "CARGO_HOME": "/workspace/scratch/d7da9e7650f0/a01-current-runtime/cargo",
+    "RUSTUP_HOME": "/workspace/scratch/d7da9e7650f0/a01-current-runtime/rustup",
+    "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+    "CARGO_BUILD_JOBS": "2",
+    "A01_RUN_DIR": "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01",
+    "A01_SMP": "1",
+    "A01_QEMU_TIMEOUT": "300",
+    "A01_KTEST_TIMEOUT": "300",
+    "A01_BUSYBOX": "/workspace/scratch/d7da9e7650f0/a01-current-runtime/rootfs/usr/bin/busybox",
+    "A01_QEMU_BIOS": "/workspace/scratch/d7da9e7650f0/a01-current-runtime/rootfs/usr/share/seabios/bios-256k.bin",
+    "A01_QEMU_DATA_DIR": "/workspace/scratch/d7da9e7650f0/a01-current-runtime/rootfs/usr/share/qemu",
+    "QEMU_MODULE_DIR": "/workspace/scratch/d7da9e7650f0/a01-current-runtime/rootfs/usr/lib/x86_64-linux-gnu/qemu",
+    "VDSO_LIBRARY_DIR": "/workspace/scratch/d7da9e7650f0/a01-current-runtime/linux-vdso"
+  },
+  "source_before": "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/source/before-run_kernel_retry01.json",
+  "driver_pid": 195730,
+  "finished_at_utc": "2026-10-18T08:58:34.030317+00:00",
+  "elapsed_seconds": 3.1971252160001313,
+  "driver_exit_code": 0,
+  "source_inputs_unchanged": true,
+  "full_git_status_after": "",
+  "manifest_entry_present_after_stage": false
+}

@@ -1,0 +1,811 @@
+{
+  "schema": "trillionnium.a01.independent-publication-review.v1",
+  "started_at_utc": "2026-10-18T09:20:12.188207+00:00",
+  "finished_at_utc": "2026-10-18T09:20:12.747992+00:00",
+  "publication_directory": "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current",
+  "reviewed_native_producer": "b39e154ae5a1e9853f57e23f9bee84712ee8ef7e",
+  "producer_project_tree": "80ceaa07562dd359572afdc6bfad473aa20d7271",
+  "producer_kernel_tree": "065a20ff147bf1541acbdfd996338ab0267fbfc6",
+  "new_native_or_host_tests_executed": false,
+  "live_checkout_writes_by_reviewer": false,
+  "review_method": "Read publication prose, recorded JSON and source; decode archives in memory without extraction; verify digests, raw-copy mappings and selected semantic boundaries.",
+  "checks": [
+    {
+      "name": "published_native_identity_is_the_actual_producer",
+      "passed": true
+    },
+    {
+      "name": "publication_is_explicitly_not_a_new_native_build",
+      "passed": true
+    },
+    {
+      "name": "fresh_build_and_cached_retry_are_separate",
+      "passed": true
+    },
+    {
+      "name": "failure_before_qemu_and_later_success_preserved",
+      "passed": true
+    },
+    {
+      "name": "native_regression_counts_and_skip_boundary",
+      "passed": true
+    },
+    {
+      "name": "host_fixture_gate_separate_and_producer_bound",
+      "passed": true
+    },
+    {
+      "name": "new_dependency_summary_has_current_installation_receipts",
+      "passed": true
+    },
+    {
+      "name": "unavailable_and_unqualified_capabilities_remain_explicit",
+      "passed": true
+    },
+    {
+      "name": "native-records.tar.xz:outer_hash_and_size",
+      "passed": true
+    },
+    {
+      "name": "native-records.tar.xz:all_payload_hashes_modes_and_member_closure",
+      "passed": true
+    },
+    {
+      "name": "source-records.tar.xz:outer_hash_and_size",
+      "passed": true
+    },
+    {
+      "name": "source-records.tar.xz:all_payload_hashes_modes_and_member_closure",
+      "passed": true
+    },
+    {
+      "name": "guest-artifacts.tar.xz:outer_hash_and_size",
+      "passed": true
+    },
+    {
+      "name": "guest-artifacts.tar.xz:all_payload_hashes_modes_and_member_closure",
+      "passed": true
+    },
+    {
+      "name": "runtime-current.tar.gz:outer_hash_and_size",
+      "passed": true
+    },
+    {
+      "name": "host-gate.tar.gz:outer_hash_and_size",
+      "passed": true
+    },
+    {
+      "name": "all_archived_native_receipts_are_byte_exact_originals",
+      "passed": true
+    },
+    {
+      "name": "plain_review_copies_match_archived_originals",
+      "passed": true,
+      "detail": {
+        "plain_copy_count": 30
+      }
+    },
+    {
+      "name": "all_nine_source_captures_preserve_original_bytes_and_status",
+      "passed": true
+    },
+    {
+      "name": "independent_audit_identity_counts_and_separate_digest_shape",
+      "passed": true
+    },
+    {
+      "name": "upstream_retention_and_owner_change_counts_match_audit",
+      "passed": true
+    },
+    {
+      "name": "all_five_complete_archived_artifacts_match_actual_qemu_records",
+      "passed": true
+    },
+    {
+      "name": "first_full_build_elf_equals_actual_loaded_archived_elf",
+      "passed": true
+    },
+    {
+      "name": "full_boot_serial_hash_size_and_markers_match_independent_review",
+      "passed": true
+    },
+    {
+      "name": "latest_native_lock_fields_match_actual_source_and_results",
+      "passed": true
+    },
+    {
+      "name": "fixed_lock_configuration_unchanged_and_old_latest_records_retained_exactly",
+      "passed": true
+    },
+    {
+      "name": "publication_bridge_only_reports_two_metadata_changes",
+      "passed": true
+    },
+    {
+      "name": "live_owner_core_ostd_abi_match_main_and_root_readme_zero",
+      "passed": true
+    },
+    {
+      "name": "six_owner_final_charge_and_one_parity_cases_actually_passed",
+      "passed": true
+    },
+    {
+      "name": "handoff_queryabi_only_native_control_boundary_is_current",
+      "passed": true
+    },
+    {
+      "name": "unknown_writer_and_noncontinuous_cleanliness_preserved",
+      "passed": true
+    },
+    {
+      "name": "failed_first_attempt_and_both_quarantines_remain_archived",
+      "passed": true
+    },
+    {
+      "name": "publication_markdown_relative_links_resolve",
+      "passed": true,
+      "detail": []
+    }
+  ],
+  "checks_passed": 33,
+  "checks_failed": 0,
+  "content_review_passed": true,
+  "required_content_changes": [],
+  "final_seal": {
+    "owner": "root",
+    "status": "planned_after_review_copy",
+    "sha256sums_present_during_review": false,
+    "not_a_content_defect": true,
+    "remaining_action": "Root confirmed it will copy this final review, generate SHA256SUMS once all publication files are final, and preserve the sha256sum verification receipt before commit."
+  },
+  "archive_verifications": {
+    "native-records.tar.xz": {
+      "member_count": 85,
+      "payload_count": 84,
+      "sha256": "5b9890c4d36bab0a8d90899e982d8865c1e9a00a8e4a01cfb3af4c98784bbea4",
+      "size": 48148,
+      "all_payload_hashes_and_modes_match": true,
+      "manifest_sha256": "fffad25daf3581976658d00e16d34dd30d2acfd4f33e73a6f7d0ee45389d3718",
+      "regular_relative_unique_members": true
+    },
+    "source-records.tar.xz": {
+      "member_count": 40,
+      "payload_count": 39,
+      "sha256": "6013d38eeb8c797ec03984a6633ba86a95bf4b4be3a7a2710240997c79a217d9",
+      "size": 295316,
+      "all_payload_hashes_and_modes_match": true,
+      "manifest_sha256": "14db69c336a6011803eb7ae07d8c2efb78723415b5bdb6443101a1d2f4c8a680",
+      "regular_relative_unique_members": true
+    },
+    "guest-artifacts.tar.xz": {
+      "member_count": 6,
+      "payload_count": 5,
+      "sha256": "dbf024d66dc6e5d31702a9d8fed0826cb470784cf315a15fd7a73d16c853b22d",
+      "size": 5065300,
+      "all_payload_hashes_and_modes_match": true,
+      "manifest_sha256": "a0044340ef7ae7a54d95c373e57ffef5bd21645d032202772a6d9fa6240155f5",
+      "regular_relative_unique_members": true
+    }
+  },
+  "artifact_bindings_verified": [
+    {
+      "member": "boot/kernel.elf",
+      "passed": true,
+      "size": 8283136,
+      "sha256": "6518b6472efbc599498b71550ef9761f6f20e74814db0c9a81bff101ab036e55"
+    },
+    {
+      "member": "boot/initramfs.cpio.gz",
+      "passed": true,
+      "size": 1107990,
+      "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+    },
+    {
+      "member": "firmware/bios.bin",
+      "passed": true,
+      "size": 262144,
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    {
+      "member": "ktest/ostd.elf",
+      "passed": true,
+      "size": 2001544,
+      "sha256": "8370730e882d29ef00a9796577ec7aa118292a78fddc098c6b96956ad94c8862"
+    },
+    {
+      "member": "ktest/aster-core.elf",
+      "passed": true,
+      "size": 9509024,
+      "sha256": "b0ce473e72406820b57f8469b1a078a5d52d405a286b03b074b95f389c6e4133"
+    }
+  ],
+  "plain_review_copies_verified": 30,
+  "source_snapshot_count": 9,
+  "owner_source_diff_from_main": "",
+  "lock_changed_root_fields": [
+    "kernel",
+    "native_build_environment"
+  ],
+  "lock_changed_kernel_fields": [
+    "latest_main_source_integration",
+    "latest_native_boot",
+    "latest_native_validation",
+    "native_boot_history",
+    "native_validation_history"
+  ],
+  "manual_scope_conclusions": [
+    "One fresh absent-target kernel build followed by a cached successful boot retry; no empty Cargo download cache or second cold build is claimed.",
+    "The first refused boot is preserved as a driver failure before make/QEMU, distinct from the three successful real guests.",
+    "381 reported kernel test passes include 3 capability soft skips; the exercised-pass lower bound is 378. The 81 host fixture checks are separate.",
+    "A05/A06 core and shared OSTD/external ABI remain main-owned; handoff distinguishes unscheduled Process/Task regression coverage from full scheduler/SMP or native HOS2 effect qualification.",
+    "Both unknown manifest entries and raw nonempty statuses remain available alongside separately timed clean closure observations; no writer attribution is made.",
+    "Later evidence publication is metadata-only and is never presented as a separately built native producer."
+  ],
+  "scope_limits": [
+    "No tests, build tools or guest execution were repeated.",
+    "Runtime installation claims were cross-checked against current installation summary and the already independently verified archive hash; runtime package/signature checks were not rerun.",
+    "Final SHA256SUMS sealing and final GitHub publication are root-owned follow-up steps."
+  ],
+  "read_file_digests": {
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/report.json": {
+      "size": 6328,
+      "sha256": "62c6059d2b51372100a45c14bbc53f83095d87bb5f6ab25ea74826ab7c43c41a"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/source-summary.json": {
+      "size": 5488,
+      "sha256": "171e5625a419fd42460f3e1cb2b70047f121aea15d9d644fe85eee30dcc6a899"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/archive-index.json": {
+      "size": 1724,
+      "sha256": "2cdb468eb7e8ad928b9ff5fcb491d1250800cb751176d4a1f4d64f2962a489b0"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/artifact-bindings.json": {
+      "size": 5119,
+      "sha256": "01288d4f68e7187cfc46ab5055d1987e455da3ffb335ac6a99c84b9efd157366"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/publication-source-bridge.json": {
+      "size": 7662,
+      "sha256": "1a4413b0ac7d83d3bcec3226621f40a59863c97d2c30c9cdbd4a1f46c3dac696"
+    },
+    "/tmp/a01-current-build-review/native-review.json": {
+      "size": 44958,
+      "sha256": "f32896378c267e99470854fe4556d301a99e7049323909c15a5b3e1bac95d2e5"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/REPORT.md": {
+      "size": 15724,
+      "sha256": "219b719964ccd9eab01b39e2586a883664e3368405f65ef37f43df2220ea72a2"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/HANDOFF.md": {
+      "size": 10462,
+      "sha256": "b11ed4fec9c8c9832333f1c1efba1a1ecdcb50ce8ecf7863d034f54f0a0fa726"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/README.md": {
+      "size": 31926,
+      "sha256": "ca2ceeb7935f319b617c3c3fde27cd8061a844a60a6de268cbe56c9ab66d50f2"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/upstream-lock.json": {
+      "size": 85742,
+      "sha256": "e8161d06f3c7a1427e8c9ed464163950db373e228398b8b79c3fe7ad56447105"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/runtime-summary.json": {
+      "size": 3747,
+      "sha256": "ff8b75c2f51734ed09147d533fa8a4e8f5f91ae69e0629ebbcc08e5112cdb275"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/host-gate-summary.json": {
+      "size": 10718,
+      "sha256": "a318484b23f3c583c8e003dc315162cc8abbb5dd15907a515350e703c92f5e9e"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/boot/qemu.json": {
+      "size": 8483,
+      "sha256": "be216d2bed34ac6ff871220f864f4cc6929931e1b4b750ffed9e95d7d28792cf"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/ktest/result.json": {
+      "size": 1541,
+      "sha256": "e93867b04986fc9934e20a5b3ce4e4100394308df3a57bfcf2dd158de38ca0be"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/native-records.tar.xz": {
+      "size": 48148,
+      "sha256": "5b9890c4d36bab0a8d90899e982d8865c1e9a00a8e4a01cfb3af4c98784bbea4"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/source-records.tar.xz": {
+      "size": 295316,
+      "sha256": "6013d38eeb8c797ec03984a6633ba86a95bf4b4be3a7a2710240997c79a217d9"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/guest-artifacts.tar.xz": {
+      "size": 5065300,
+      "sha256": "dbf024d66dc6e5d31702a9d8fed0826cb470784cf315a15fd7a73d16c853b22d"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/runtime-current.tar.gz": {
+      "size": 397586,
+      "sha256": "61615a214530b7af47d0206db533c4ebef3298df07bc8d9522b231c2a9f51ca0"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/host-gate.tar.gz": {
+      "size": 387054,
+      "sha256": "42d89e0b97c962d65abecbc5f943689264fb4f25057dea2a67aea7fe5e03eee5"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/artifacts-first-build/capture.json": {
+      "size": 764,
+      "sha256": "64ac0312a201c6517f848ac53ee8d76c91df364950ddec14ecb0634d732acb27"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/boot-summary.json": {
+      "size": 713,
+      "sha256": "30d4938f9beed7aea193c446317205b6bbdd5605fbf881e621270a63e2aa1ecb"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/kernel-driver.log": {
+      "size": 64189,
+      "sha256": "4af3647d940ae66841ca299c13ceb89a89cd4cf33169f4b980686ef7cf0e23ef"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/kernel-execution.json": {
+      "size": 3182,
+      "sha256": "73d1629ebe6b41a78ceb842f6e85935dee4b66548bd464b9a108791efbd79d58"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/kernel/command.sh": {
+      "size": 704,
+      "sha256": "badecfdbf3b4c77293ab62d3a85bcfbfce91387818843036ee3ea9054430367f"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/kernel/environment.log": {
+      "size": 4368,
+      "sha256": "35e9ba0652c20a2c3638e2dd66b89d482f23cfb9ef07d10a4ceda4e9ae420cf1"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/kernel/initramfs-manifest.json": {
+      "size": 7121,
+      "sha256": "a26dd1a6286d9866eb4a93684fa6b076cfa11d7d6aad80db478cb0942e551f0d"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/kernel/kernel.log": {
+      "size": 63656,
+      "sha256": "12e00383f74398bb0b0c5f75eaef2fa27cec3fc7a7ff41cf732dd9a51b348ad2"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/kernel/log-exit-code.txt": {
+      "size": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/kernel/make-exit-code.txt": {
+      "size": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/kernel/manifest-cleanup-exit-code.txt": {
+      "size": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/kernel/manifest-cleanup.json": {
+      "size": 827,
+      "sha256": "9b4044d943f1beaa20bffed85a14c3ab1c4f6cd7bd9fc966f6f6f70dc3b9df6c"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/kernel/osdk/.crates.toml": {
+      "size": 122,
+      "sha256": "61c28a73c7caac0d212541dc8b8454ea6424716c9eef7005dc5fdd57260629ee"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/kernel/osdk/.crates2.json": {
+      "size": 506,
+      "sha256": "05874e647b14a96075c150da48f86d8e22cac897483e0bfab740d43ca6acdcb4"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/kernel/osdk/cargo-osdk.sha256": {
+      "size": 174,
+      "sha256": "9ab11b1020000e1bc613f85ddd8bfe45118d7fa23f48fa5c2e99518c2438304e"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/kernel/run-exit-code.txt": {
+      "size": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/kernel/source-inputs.json": {
+      "size": 1509,
+      "sha256": "eb8b17f849fd0d64f642567433cb09da8ecfbfca3adaacdff675738f1ce300dc"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest-driver.log": {
+      "size": 127,
+      "sha256": "83c279d06aebc008b606c2d31338ede626e2dad897286bb49f7f77f09db1bf67"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest-execution.json": {
+      "size": 2132,
+      "sha256": "43fa6e0272afd35b96863ca3ae997c2464d5447a948158e2a9cae861e90c8ce3"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/aster-core/generated.Cargo.lock": {
+      "size": 41033,
+      "sha256": "159b8682d27a7a21af98885ae48515234445c00fdf5e00b158fdc4aa952ff4ed"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/aster-core/guests/guest-001/qemu.json": {
+      "size": 7116,
+      "sha256": "147b13cddbac77937c5cc9e1c442c7276a187d36c374fe652cd196228d06bcb9"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/aster-core/guests/guest-001/serial.log": {
+      "size": 18059,
+      "sha256": "5ad6adb985afb8ff976db3c78d2ab14793ab86134b97028d6b1cf0309f189856"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/aster-core/osdk-exit-code.txt": {
+      "size": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/aster-core/osdk-test.log": {
+      "size": 63703,
+      "sha256": "73b1f335d0aea98c9bbd9d7024125803aabd6ea5ea4caf2a2b8278a50e246d79"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/aster-core/osdk-test.log.command.json": {
+      "size": 813,
+      "sha256": "dc9aa1697cdc15eb7aee0ee291dfc9c2e17f3c0bca22f7aba2f30569dbba98a0"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/aster-core/result.json": {
+      "size": 353,
+      "sha256": "5ee55d230749d94792d5514ce12ed87b831a09f0da0640401ba1cfce516a262c"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/aster-core/result.json.command.json": {
+      "size": 682,
+      "sha256": "f0eacd0cd62dd29d8a85f39d5877980b0462e936badd806286515195e4ac86c8"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/cargo-version.log": {
+      "size": 351,
+      "sha256": "1fd7bd42db99cffe020290fbdd2995474bca84729f7817172227917917b0dd55"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/cargo-version.log.command.json": {
+      "size": 417,
+      "sha256": "66526438d49faff7a7e1b05ac451feff0f8a6c1259583eaa7221f9dc456216b5"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/commands.json": {
+      "size": 1623,
+      "sha256": "95bcad44ced1d48bb274460b0d8460db04a5a097ba6dbd5d7785b74e7582791a"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/environment.json": {
+      "size": 2920,
+      "sha256": "fbca2207f2ffc2b0f50676460c8757c306b1238e31cb31ab91aee5c82e57b517"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/git-head.log": {
+      "size": 41,
+      "sha256": "2188a704074b35e9e28925c330062d881c212118a434180591921612692f70d7"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/git-head.log.command.json": {
+      "size": 406,
+      "sha256": "fbb1492f24e3377a0ef8804c0eb798ac564185231674a7027dae11ca5cdcb548"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/git-status.log": {
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/git-status.log.command.json": {
+      "size": 406,
+      "sha256": "d139715c229f42d99407a2eb9f65ea5993a34a9ee0c1a0e189abe2126bb13ae4"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/osdk-install.log": {
+      "size": 623,
+      "sha256": "89b341289371a4711222a58c50e3a8482a72b3fc300bb62525fbeb3e91487f8b"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/osdk-install.log.command.json": {
+      "size": 611,
+      "sha256": "c36fa30e0a488f5e4ba1220079569bfa8ae5b98fcf1ed78f56955281225724ed"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/osdk/.crates.toml": {
+      "size": 122,
+      "sha256": "61c28a73c7caac0d212541dc8b8454ea6424716c9eef7005dc5fdd57260629ee"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/osdk/.crates2.json": {
+      "size": 506,
+      "sha256": "05874e647b14a96075c150da48f86d8e22cac897483e0bfab740d43ca6acdcb4"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/ostd/generated.Cargo.lock": {
+      "size": 20185,
+      "sha256": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/ostd/guests/guest-001/qemu.json": {
+      "size": 7032,
+      "sha256": "5cba597f4fe805eaf28c77fd99ecaedd08645bd54482fd7f2fca9944e1a8408b"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/ostd/guests/guest-001/serial.log": {
+      "size": 23028,
+      "sha256": "b5a80a809cbb672c9e4e3e467c0b9c507a178db8a4178415b03f282dd62f3fa7"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/ostd/osdk-exit-code.txt": {
+      "size": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/ostd/osdk-test.log": {
+      "size": 27095,
+      "sha256": "aa890bc785ae256afd7a7e3a57a66199b4992cbf312fe777420fb14b8222ec5e"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/ostd/osdk-test.log.command.json": {
+      "size": 806,
+      "sha256": "8fb53dcba6c7b492198d22a09b788a3cbf647d43770af2518d4a1f58679d1b2c"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/ostd/result.json": {
+      "size": 451,
+      "sha256": "061d15cd72fc6ef8563e04ad5f90b598362bc46c5155321990427f4b55216ee2"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/ostd/result.json.command.json": {
+      "size": 670,
+      "sha256": "ef0297ce546103a3b999648ce11a66d6752b236e9f5f665d981b266db9d8fa67"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/result.json": {
+      "size": 1541,
+      "sha256": "e93867b04986fc9934e20a5b3ce4e4100394308df3a57bfcf2dd158de38ca0be"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/rustc-version.log": {
+      "size": 212,
+      "sha256": "d919107c9907c374b7605930746505ef72ce87cc21b641260c6225a7da9d8212"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/rustc-version.log.command.json": {
+      "size": 417,
+      "sha256": "d846866317720a9e9a064defa1a40c6761d1814c13eab022dd00c925175aa3bc"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/source-inputs.json": {
+      "size": 1509,
+      "sha256": "eb8b17f849fd0d64f642567433cb09da8ecfbfca3adaacdff675738f1ce300dc"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/source-inputs.json.command.json": {
+      "size": 539,
+      "sha256": "d4c162d5d33a90aeeb993b94c7547553f082772aac85925b318a5636ae83081a"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/post-ktest-manifest/OSDK.toml.observed": {
+      "size": 1019,
+      "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/post-ktest-manifest/closure.json": {
+      "size": 334,
+      "sha256": "9d4b6c5a774e063afe39a03a47d450bf092720d1cd4fa89592668360b2e41ef8"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/post-ktest-manifest/observation.json": {
+      "size": 1005,
+      "sha256": "5fc1f837f4eb2564f38ebfbceb0fd2a2f712769ff1ba842e9ea2a9f9eb1c5939"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/post-ktest-manifest/quarantine-jhqy8nth/OSDK.toml": {
+      "size": 1019,
+      "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/post-ktest-manifest/quarantine.json": {
+      "size": 998,
+      "sha256": "ae293c26c1687e42edb5ca3e8e0f0400aa4de44d9e8979a8aaf88c2c725f6195"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/prelaunch-failure/OSDK.toml.observed": {
+      "size": 1019,
+      "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/prelaunch-failure/observation.json": {
+      "size": 11477,
+      "sha256": "526dce258a514686605372458bfddb13aac50dd4f2ab2530bfaf5c3acf42a2cf"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/prelaunch-failure/quarantine-7hs1xz6n/OSDK.toml": {
+      "size": 1019,
+      "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/prelaunch-failure/quarantine.json": {
+      "size": 1276,
+      "sha256": "3ef762dae71762fe79bf5444a27bb11c9c62f8254032bf05ad7c7fa0b45c5048"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel-driver.log": {
+      "size": 397,
+      "sha256": "d07b6982fffecb73a28ee3eff6ca6bc9452aefb7595f40e1910fc331f5078dda"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel-execution.json": {
+      "size": 3235,
+      "sha256": "51cce1dd8b6d42e21b2da2b85312bbb57db114ddd1a7753d7451a82c5ae7e45a"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01-driver.log": {
+      "size": 114749,
+      "sha256": "aff528aca58990314b710ec968e4a3d2b2735ace8afe0021d13d6f41421fef27"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01-execution.json": {
+      "size": 2022,
+      "sha256": "851c26301112d4acfaa1e0c370f0859170dd728314ec92101ddbf48f18ef8e71"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01/command.sh": {
+      "size": 744,
+      "sha256": "b79231fc1f2a9f9c035ab1af8b5d66ff1c7c47605be9dba0a39546dbc3f8eea1"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01/environment.log": {
+      "size": 4404,
+      "sha256": "b4987be48ca6f47ab183b1d1ac9d804b0985ac22e963871b5d185b2a991fb3bd"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01/initramfs-manifest.json": {
+      "size": 7121,
+      "sha256": "a26dd1a6286d9866eb4a93684fa6b076cfa11d7d6aad80db478cb0942e551f0d"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01/log-exit-code.txt": {
+      "size": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01/make-exit-code.txt": {
+      "size": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01/manifest-cleanup-exit-code.txt": {
+      "size": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01/manifest-cleanup.json": {
+      "size": 827,
+      "sha256": "805a869db88d85499fd96732db6f13a31ac5141a7481963fa669b557762cbb22"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01/osdk/.crates.toml": {
+      "size": 122,
+      "sha256": "61c28a73c7caac0d212541dc8b8454ea6424716c9eef7005dc5fdd57260629ee"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01/osdk/.crates2.json": {
+      "size": 506,
+      "sha256": "05874e647b14a96075c150da48f86d8e22cac897483e0bfab740d43ca6acdcb4"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01/osdk/cargo-osdk.sha256": {
+      "size": 186,
+      "sha256": "5e497ccee4e403d6a708846e391023ec7ae8ce56abe52d6e4f0efc91a7e0726b"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01/qemu.json": {
+      "size": 8483,
+      "sha256": "be216d2bed34ac6ff871220f864f4cc6929931e1b4b750ffed9e95d7d28792cf"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01/run-exit-code.txt": {
+      "size": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01/run_kernel.log": {
+      "size": 114116,
+      "sha256": "17522ec3a6b53da11d0c8fab6d9622b24065e136c87c358cb0eebd6de5831aa4"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01/serial.log": {
+      "size": 72194,
+      "sha256": "0efe9f6156db9aa42574e35ab919c1a3e0aeea30b6a74ff0397e50c362a4ae1e"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01/source-inputs.json": {
+      "size": 1509,
+      "sha256": "eb8b17f849fd0d64f642567433cb09da8ecfbfca3adaacdff675738f1ce300dc"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/boot/command.sh": {
+      "size": 744,
+      "sha256": "b79231fc1f2a9f9c035ab1af8b5d66ff1c7c47605be9dba0a39546dbc3f8eea1"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/boot/manifest-cleanup.json": {
+      "size": 827,
+      "sha256": "805a869db88d85499fd96732db6f13a31ac5141a7481963fa669b557762cbb22"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/boot/serial.log": {
+      "size": 72194,
+      "sha256": "0efe9f6156db9aa42574e35ab919c1a3e0aeea30b6a74ff0397e50c362a4ae1e"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/boot/source-inputs.json": {
+      "size": 1509,
+      "sha256": "eb8b17f849fd0d64f642567433cb09da8ecfbfca3adaacdff675738f1ce300dc"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/kernel/command.sh": {
+      "size": 704,
+      "sha256": "badecfdbf3b4c77293ab62d3a85bcfbfce91387818843036ee3ea9054430367f"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/kernel/first-artifact.json": {
+      "size": 764,
+      "sha256": "64ac0312a201c6517f848ac53ee8d76c91df364950ddec14ecb0634d732acb27"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/kernel/manifest-cleanup.json": {
+      "size": 827,
+      "sha256": "9b4044d943f1beaa20bffed85a14c3ab1c4f6cd7bd9fc966f6f6f70dc3b9df6c"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/failures/prelaunch-failure/run_kernel-driver.log": {
+      "size": 397,
+      "sha256": "d07b6982fffecb73a28ee3eff6ca6bc9452aefb7595f40e1910fc331f5078dda"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/ktest/commands.json": {
+      "size": 1623,
+      "sha256": "95bcad44ced1d48bb274460b0d8460db04a5a097ba6dbd5d7785b74e7582791a"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/ktest/environment.json": {
+      "size": 2920,
+      "sha256": "fbca2207f2ffc2b0f50676460c8757c306b1238e31cb31ab91aee5c82e57b517"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/ktest/aster-core/result.json": {
+      "size": 353,
+      "sha256": "5ee55d230749d94792d5514ce12ed87b831a09f0da0640401ba1cfce516a262c"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/ktest/ostd/result.json": {
+      "size": 451,
+      "sha256": "061d15cd72fc6ef8563e04ad5f90b598362bc46c5155321990427f4b55216ee2"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/ktest/aster-core/guests/guest-001/qemu.json": {
+      "size": 7116,
+      "sha256": "147b13cddbac77937c5cc9e1c442c7276a187d36c374fe652cd196228d06bcb9"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/ktest/aster-core/guests/guest-001/serial.log": {
+      "size": 18059,
+      "sha256": "5ad6adb985afb8ff976db3c78d2ab14793ab86134b97028d6b1cf0309f189856"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/ktest/ostd/guests/guest-001/qemu.json": {
+      "size": 7032,
+      "sha256": "5cba597f4fe805eaf28c77fd99ecaedd08645bd54482fd7f2fca9944e1a8408b"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/ktest/ostd/guests/guest-001/serial.log": {
+      "size": 23028,
+      "sha256": "b5a80a809cbb672c9e4e3e467c0b9c507a178db8a4178415b03f282dd62f3fa7"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/failures/prelaunch-failure/observation.json": {
+      "size": 11477,
+      "sha256": "526dce258a514686605372458bfddb13aac50dd4f2ab2530bfaf5c3acf42a2cf"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/failures/prelaunch-failure/OSDK.toml.observed": {
+      "size": 1019,
+      "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/failures/prelaunch-failure/quarantine.json": {
+      "size": 1276,
+      "sha256": "3ef762dae71762fe79bf5444a27bb11c9c62f8254032bf05ad7c7fa0b45c5048"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/failures/post-ktest-manifest/observation.json": {
+      "size": 1005,
+      "sha256": "5fc1f837f4eb2564f38ebfbceb0fd2a2f712769ff1ba842e9ea2a9f9eb1c5939"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/failures/post-ktest-manifest/OSDK.toml.observed": {
+      "size": 1019,
+      "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/failures/post-ktest-manifest/closure.json": {
+      "size": 334,
+      "sha256": "9d4b6c5a774e063afe39a03a47d450bf092720d1cd4fa89592668360b2e41ef8"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/failures/post-ktest-manifest/quarantine.json": {
+      "size": 998,
+      "sha256": "ae293c26c1687e42edb5ca3e8e0f0400aa4de44d9e8979a8aaf88c2c725f6195"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/executions/run_kernel-execution.json": {
+      "size": 3235,
+      "sha256": "51cce1dd8b6d42e21b2da2b85312bbb57db114ddd1a7753d7451a82c5ae7e45a"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/executions/boot-summary.json": {
+      "size": 713,
+      "sha256": "30d4938f9beed7aea193c446317205b6bbdd5605fbf881e621270a63e2aa1ecb"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/executions/kernel-execution.json": {
+      "size": 3182,
+      "sha256": "73d1629ebe6b41a78ceb842f6e85935dee4b66548bd464b9a108791efbd79d58"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/executions/run_kernel_retry01-execution.json": {
+      "size": 2022,
+      "sha256": "851c26301112d4acfaa1e0c370f0859170dd728314ec92101ddbf48f18ef8e71"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/executions/ktest-execution.json": {
+      "size": 2132,
+      "sha256": "43fa6e0272afd35b96863ca3ae997c2464d5447a948158e2a9cae861e90c8ce3"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/source/after-kernel.json": {
+      "size": 1340398,
+      "sha256": "cf42a086b3741ece39787422f7754a763df6743f2beaf3aa6ec74c61a14be5de"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/source/after-ktest.json": {
+      "size": 1340436,
+      "sha256": "30c11a198ed965a198037d8c89f7e901d5bdb68b18a5080b39001aaf20a0c50d"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/source/after-native-quarantine.json": {
+      "size": 1340398,
+      "sha256": "220743f5e170da337d5639ba232076365c815d4309f0a19cc5acfcb912d0a929"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/source/after-run_kernel.json": {
+      "size": 1340436,
+      "sha256": "59e7a572f39acae623c574bc6822d13e027eb29f5c0f75aa2d61b88c9d1f6834"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/source/after-run_kernel_retry01.json": {
+      "size": 1340398,
+      "sha256": "f9800f2c6e3ea2ea11398b7258977e51ec2e2bf41b31cf334f8b31143a796c6b"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/source/before-ktest.json": {
+      "size": 1340398,
+      "sha256": "57a872b6504a14d62e19e899a766f36d5ab276e5a0b237b5a3d0880a93025358"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/source/before-run_kernel.json": {
+      "size": 1340436,
+      "sha256": "4d18b417b37e98407d2458bbba52fd78b2144bd4df671eedd4295b422d254b5d"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/source/before-run_kernel_retry01.json": {
+      "size": 1340398,
+      "sha256": "3f04e271804d7d5fa96647bcbff969892c1bbec37ed65e0f5c8a3aa277cf9296"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/source/before.json": {
+      "size": 1340201,
+      "sha256": "d05c59f4a8c5ba36e9834b6ead8cec51674126f06a600a4b11ef50f7362e4789"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/artifacts-first-build/kernel.elf": {
+      "size": 8283136,
+      "sha256": "6518b6472efbc599498b71550ef9761f6f20e74814db0c9a81bff101ab036e55"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current/review/publication-fixed-inputs.json": {
+      "size": 1509,
+      "sha256": "eb8b17f849fd0d64f642567433cb09da8ecfbfca3adaacdff675738f1ce300dc"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/README.md": {
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs": {
+      "size": 9584,
+      "sha256": "5133419b204d05e769b4a111a6e4285c9f50de482b65be15b5799312203e3979"
+    }
+  }
+}

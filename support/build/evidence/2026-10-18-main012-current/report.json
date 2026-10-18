@@ -1,0 +1,179 @@
+{
+  "schema": "trillionnium.a01.current-native-validation.v1",
+  "recorded_at_utc": "2026-10-18T09:12:50.727135+00:00",
+  "branch": "agents/A01-asterinas-boot",
+  "pull_request": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/22",
+  "source_commit": "b39e154ae5a1e9853f57e23f9bee84712ee8ef7e",
+  "project_tree": "80ceaa07562dd359572afdc6bfad473aa20d7271",
+  "kernel_tree": "065a20ff147bf1541acbdfd996338ab0267fbfc6",
+  "integrated_main": "01225ab0a20a9f25dd8313a7fad7652dd9154e30",
+  "fixed_upstream_commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+  "fixed_upstream_tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+  "toolchain": "nightly-2026-07-21",
+  "source_directory": "kernel/asterinas",
+  "source_summary": "source-summary.json",
+  "dependencies": {
+    "installed_this_run": true,
+    "native_packages": 57,
+    "signed_indexes_verified": 4,
+    "runtime_checks_passed": 17,
+    "summary": "runtime-summary.json",
+    "archive": "runtime-current.tar.gz",
+    "docker_nix_kvm_available": false,
+    "full_nixos_iso_downloaded": false,
+    "host_package_installation": false,
+    "complete_immutable_host_lock": false
+  },
+  "build": {
+    "passed": true,
+    "source_commit": "b39e154ae5a1e9853f57e23f9bee84712ee8ef7e",
+    "target_absent_before_build": true,
+    "cold_cargo_download_cache_claimed": false,
+    "command": "support/build/kernel.sh kernel",
+    "underlying_target": "make kernel",
+    "exit_code": 0,
+    "started_at_utc": "2026-10-18T08:49:31.749120+00:00",
+    "finished_at_utc": "2026-10-18T08:52:49.014296+00:00",
+    "elapsed_seconds": 197.2651785550006,
+    "compilation_lines": 284,
+    "kernel_sha256": "6518b6472efbc599498b71550ef9761f6f20e74814db0c9a81bff101ab036e55",
+    "kernel_bytes": 8283136
+  },
+  "first_boot_attempt": {
+    "command": "support/build/kernel.sh run_kernel",
+    "driver_exit_code": 1,
+    "qemu_launched": false,
+    "reason": "Existing untracked kernel/OSDK.toml refused before QEMU",
+    "evidence": "failures/prelaunch-failure/"
+  },
+  "successful_boot": {
+    "passed": true,
+    "source_commit": "b39e154ae5a1e9853f57e23f9bee84712ee8ef7e",
+    "raw_qemu_exit": 33,
+    "timed_out": false,
+    "kernel_bytes": 8283136,
+    "kernel_sha256": "6518b6472efbc599498b71550ef9761f6f20e74814db0c9a81bff101ab036e55",
+    "first_build_equals_loaded": true,
+    "serial_bytes": 72194,
+    "serial_sha256": "0efe9f6156db9aa42574e35ab919c1a3e0aeea30b6a74ff0397e50c362a4ae1e",
+    "duration_seconds": 0.969,
+    "marker_counts": {
+      "OSTD initialized. Preparing components.": 1,
+      "TRILLIONNIUM_A01_INIT_BEGIN": 1,
+      "TRILLIONNIUM_A01_CPU_COUNT=1": 1,
+      "Successfully booted.": 1,
+      "TRILLIONNIUM_A01_BOOT_OK": 1
+    },
+    "prior_attempt_failed_before_qemu": true,
+    "writer_identified": false,
+    "stage": "run_kernel_retry01",
+    "make_exit": 0,
+    "driver_exit": 0,
+    "target_cache_reused_from_this_fresh_build": true,
+    "new_second_cold_build_claimed": false,
+    "qemu_record": "boot/qemu.json",
+    "serial_log": "boot/serial.log",
+    "profile": {
+      "arch": "x86_64",
+      "machine": "q35",
+      "accel": "tcg",
+      "cpu": "max",
+      "vcpus": 1,
+      "memory_mib": 512,
+      "firmware": "SeaBIOS",
+      "serial": true,
+      "network": false,
+      "data_disks": false,
+      "installer_iso": false
+    }
+  },
+  "kernel_mode_regression": {
+    "source_commit": "b39e154ae5a1e9853f57e23f9bee84712ee8ef7e",
+    "passed": true,
+    "reported_passed": 381,
+    "soft_skipped": 3,
+    "exercised_passed_lower_bound": 378,
+    "failed": 0,
+    "filtered": 0,
+    "guests": [
+      {
+        "crate": "ostd",
+        "declared": 221,
+        "passed": 221,
+        "failed": 0,
+        "filtered": 0,
+        "soft_skipped": 3,
+        "soft_skip_reasons": [
+          "VMX unavailable",
+          "VMX unavailable",
+          "VMX/EPT invalidation unavailable"
+        ],
+        "exercised_passed_lower_bound": 218,
+        "observed_test_starts": 221,
+        "raw_qemu_exit": 33,
+        "guest": "guest-001"
+      },
+      {
+        "crate": "aster-core",
+        "declared": 160,
+        "passed": 160,
+        "failed": 0,
+        "filtered": 0,
+        "soft_skipped": 0,
+        "soft_skip_reasons": [],
+        "exercised_passed_lower_bound": 160,
+        "observed_test_starts": 160,
+        "raw_qemu_exit": 33,
+        "guest": "guest-001"
+      }
+    ],
+    "result": "ktest/result.json",
+    "all_source_inputs_unchanged": true
+  },
+  "host_gate": {
+    "source_commit": "b39e154ae5a1e9853f57e23f9bee84712ee8ef7e",
+    "passed": true,
+    "tests_passed": 81,
+    "selected_inputs": 131,
+    "tracked_inputs_unchanged": true,
+    "whole_worktree_continuously_clean_claimed": false,
+    "scope_note": "The recorded untracked manifest during parallel native compilation is retained in raw host snapshots.",
+    "summary": "host-gate-summary.json",
+    "archive": "host-gate.tar.gz"
+  },
+  "manifest_issue": {
+    "observed_this_run": true,
+    "writer_identified": false,
+    "observed_inodes": [
+      1720253,
+      1718453
+    ],
+    "preserved_and_quarantined_under_native_lock": true,
+    "guard_weakened": false,
+    "public_entry_absent_at_source_closure": true,
+    "full_git_status_empty_at_source_closure": true,
+    "full_git_status_was_nonempty_at_some_observations": true,
+    "all_observed_selected_tracked_inputs_unchanged": true,
+    "evidence": [
+      "failures/prelaunch-failure/",
+      "failures/post-ktest-manifest/"
+    ]
+  },
+  "native_guest_runs": 3,
+  "complete_boot_elf_archived": true,
+  "complete_test_elfs_archived": true,
+  "evidence_publication_separately_built": false,
+  "current_abi_gate_rerun": false,
+  "current_osdk_full_matrix_rerun": false,
+  "current_kernel_clippy_pass_claimed": false,
+  "full_project_acceptance": false,
+  "cross_host_reproducibility_claimed": false,
+  "handoff": "HANDOFF.md",
+  "archive_index": "archive-index.json",
+  "remaining": [
+    "Unidentified writer can recreate the public temporary manifest and block a future preflight.",
+    "This TCG environment has no KVM/VMX/EPT capability for three soft-skipped tests.",
+    "No complete immutable host lock or general cross-host byte reproduction is established.",
+    "HOS2 effect operations, durable K-D recovery, full scheduler lifecycle/SMP and G1/G2 remain owner work."
+  ]
+}

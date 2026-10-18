@@ -1,0 +1,89 @@
+{
+  "schema": "trillionnium.a01.publication-source-bridge.v1",
+  "captured_at_utc": "2026-10-18T09:15:11.310664+00:00",
+  "native_producer": "b39e154ae5a1e9853f57e23f9bee84712ee8ef7e",
+  "integrated_main": "01225ab0a20a9f25dd8313a7fad7652dd9154e30",
+  "producer_project_tree": "80ceaa07562dd359572afdc6bfad473aa20d7271",
+  "kernel_tree": "065a20ff147bf1541acbdfd996338ab0267fbfc6",
+  "selection_from": "source-records.tar.xz:source/before.json",
+  "producer_files_sha256": "193eb5a9b8a50244ff2f0ae197794b479d3f2c99af64e93b869e6f62dd73d8d0",
+  "selected_inputs": 3012,
+  "unchanged_inputs": 3010,
+  "metadata_changes": [
+    {
+      "before": {
+        "path": "support/build/README.md",
+        "git_mode": "100644",
+        "git_kind": "blob",
+        "git_blob": "b2929d215d7403044b3f52cf6f835b4a40966f92",
+        "worktree_mode": "100644",
+        "size": 29729,
+        "sha256": "59fab17e839fe1d62be505cc9b5857d2e89f81deb133bea73d4daddc33f917ff",
+        "worktree_git_blob": "b2929d215d7403044b3f52cf6f835b4a40966f92",
+        "matches_git": true
+      },
+      "after": {
+        "path": "support/build/README.md",
+        "worktree_mode": "100644",
+        "size": 31926,
+        "sha256": "ca2ceeb7935f319b617c3c3fde27cd8061a844a60a6de268cbe56c9ab66d50f2",
+        "worktree_git_blob": "e064101fbc70fb579ff3c4c9071365cdf8da5db7"
+      }
+    },
+    {
+      "before": {
+        "path": "support/upstream-lock.json",
+        "git_mode": "100644",
+        "git_kind": "blob",
+        "git_blob": "4e0bf38c78e38dc79ceffd1690b7f21c50e4b703",
+        "worktree_mode": "100644",
+        "size": 80926,
+        "sha256": "405f1b5ae2d093d234bda0faa657f503c237d350292fb1baf55ef947d01599cb",
+        "worktree_git_blob": "4e0bf38c78e38dc79ceffd1690b7f21c50e4b703",
+        "matches_git": true
+      },
+      "after": {
+        "path": "support/upstream-lock.json",
+        "worktree_mode": "100644",
+        "size": 85742,
+        "sha256": "e8161d06f3c7a1427e8c9ed464163950db373e228398b8b79c3fe7ad56447105",
+        "worktree_git_blob": "e99ee0bcf766dd9dc0b14e6e78b2c3c2d4e88d9a"
+      }
+    }
+  ],
+  "upstream_lock_changed_root_fields": [
+    "kernel",
+    "native_build_environment"
+  ],
+  "upstream_lock_changed_kernel_fields": [
+    "latest_main_source_integration",
+    "latest_native_boot",
+    "latest_native_validation",
+    "native_boot_history",
+    "native_validation_history"
+  ],
+  "all_fixed_configuration_and_historical_nonlatest_fields_preserved": true,
+  "owner_kernel_ostd_abi_diff_from_main": "",
+  "root_readme_bytes": 0,
+  "full_status_at_publication_review": " M support/build/README.md\n M support/upstream-lock.json\n?? support/build/evidence/2026-10-18-main012-current/HANDOFF.md\n?? support/build/evidence/2026-10-18-main012-current/REPORT.md\n?? support/build/evidence/2026-10-18-main012-current/archive-index.json\n?? support/build/evidence/2026-10-18-main012-current/artifact-bindings.json\n?? support/build/evidence/2026-10-18-main012-current/boot/command.sh\n?? support/build/evidence/2026-10-18-main012-current/boot/manifest-cleanup.json\n?? support/build/evidence/2026-10-18-main012-current/boot/qemu.json\n?? support/build/evidence/2026-10-18-main012-current/boot/serial.log\n?? support/build/evidence/2026-10-18-main012-current/boot/source-inputs.json\n?? support/build/evidence/2026-10-18-main012-current/executions/boot-summary.json\n?? support/build/evidence/2026-10-18-main012-current/executions/kernel-execution.json\n?? support/build/evidence/2026-10-18-main012-current/executions/ktest-execution.json\n?? support/build/evidence/2026-10-18-main012-current/executions/run_kernel-execution.json\n?? support/build/evidence/2026-10-18-main012-current/executions/run_kernel_retry01-execution.json\n?? support/build/evidence/2026-10-18-main012-current/failures/post-ktest-manifest/OSDK.toml.observed\n?? support/build/evidence/2026-10-18-main012-current/failures/post-ktest-manifest/closure.json\n?? support/build/evidence/2026-10-18-main012-current/failures/post-ktest-manifest/observation.json\n?? support/build/evidence/2026-10-18-main012-current/failures/post-ktest-manifest/quarantine.json\n?? support/build/evidence/2026-10-18-main012-current/failures/prelaunch-failure/OSDK.toml.observed\n?? support/build/evidence/2026-10-18-main012-current/failures/prelaunch-failure/observation.json\n?? support/build/evidence/2026-10-18-main012-current/failures/prelaunch-failure/quarantine.json\n?? support/build/evidence/2026-10-18-main012-current/failures/prelaunch-failure/run_kernel-driver.log\n?? support/build/evidence/2026-10-18-main012-current/guest-artifacts.tar.xz\n?? support/build/evidence/2026-10-18-main012-current/host-gate-summary.json\n?? support/build/evidence/2026-10-18-main012-current/host-gate.tar.gz\n?? support/build/evidence/2026-10-18-main012-current/kernel/command.sh\n?? support/build/evidence/2026-10-18-main012-current/kernel/first-artifact.json\n?? support/build/evidence/2026-10-18-main012-current/kernel/manifest-cleanup.json\n?? support/build/evidence/2026-10-18-main012-current/ktest/aster-core/guests/guest-001/qemu.json\n?? support/build/evidence/2026-10-18-main012-current/ktest/aster-core/guests/guest-001/serial.log\n?? support/build/evidence/2026-10-18-main012-current/ktest/aster-core/result.json\n?? support/build/evidence/2026-10-18-main012-current/ktest/commands.json\n?? support/build/evidence/2026-10-18-main012-current/ktest/environment.json\n?? support/build/evidence/2026-10-18-main012-current/ktest/ostd/guests/guest-001/qemu.json\n?? support/build/evidence/2026-10-18-main012-current/ktest/ostd/guests/guest-001/serial.log\n?? support/build/evidence/2026-10-18-main012-current/ktest/ostd/result.json\n?? support/build/evidence/2026-10-18-main012-current/ktest/result.json\n?? support/build/evidence/2026-10-18-main012-current/native-records.tar.xz\n?? support/build/evidence/2026-10-18-main012-current/report.json\n?? support/build/evidence/2026-10-18-main012-current/review/late-manifest-self-review.json\n?? support/build/evidence/2026-10-18-main012-current/review/package-evidence.py\n?? support/build/evidence/2026-10-18-main012-current/review/publication-fixed-inputs.json\n?? support/build/evidence/2026-10-18-main012-current/review/publication-fixed-inputs.stderr.log\n?? support/build/evidence/2026-10-18-main012-current/review/publish-report.py\n?? support/build/evidence/2026-10-18-main012-current/runtime-archive-verification.json\n?? support/build/evidence/2026-10-18-main012-current/runtime-current.tar.gz\n?? support/build/evidence/2026-10-18-main012-current/runtime-summary.json\n?? support/build/evidence/2026-10-18-main012-current/source-records.tar.xz\n?? support/build/evidence/2026-10-18-main012-current/source-summary.json\n",
+  "full_status_scope": "Expected untracked new A01 evidence plus the two tracked reporting changes; native receipts retain their own earlier status.",
+  "public_manifest_entry_present": false,
+  "fixed_pin_command": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "-B",
+      "-I",
+      "/workspace/scratch/d7da9e7650f0/a01-current/support/build/verify-source.py"
+    ],
+    "started_at_utc": "2026-10-18T09:15:11.269520+00:00",
+    "exit_code": 0,
+    "checked_files": 118,
+    "receipt": "review/publication-fixed-inputs.json",
+    "receipt_sha256": "eb8b17f849fd0d64f642567433cb09da8ecfbfca3adaacdff675738f1ce300dc",
+    "receipt_equal_to_native_build": true
+  },
+  "no_additional_build_or_qemu_execution": true,
+  "evidence_commit_itself_claimed_as_tested": false,
+  "passed": true,
+  "script_sha256": "d3c6bd7c5994fc51f2a63798ed904d191ada5aff1c7684187b39a0785f0c61f0"
+}

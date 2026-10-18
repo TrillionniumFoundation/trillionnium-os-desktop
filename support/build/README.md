@@ -6,7 +6,40 @@ complete Asterinas **v0.19.0**, commit
 `96605cf64aeae2d34f29b97e85eff9315fe10a8e`. Upstream documentation, attribution,
 and `LICENSE-MPL` are preserved. The project root README stays empty.
 
-## Latest main sync and source bridge — 2026-10-18
+## Current main cold build, boot and kernel tests — 2026-10-18
+
+Actual main `01225ab0a20a9f25dd8313a7fad7652dd9154e30` is the first parent of
+published source producer `b39e154ae5a1e9853f57e23f9bee84712ee8ef7e`; the ordinary
+merge preserves the existing A01 branch history. This run freshly installed the
+fixed native dependencies, completed an absent-target **make kernel** in 197.265
+seconds, and booted the resulting full Rust kernel with **make run_kernel**.
+QEMU q35/TCG used 1 vCPU, 512 MiB and a 1,107,990-byte initramfs; raw exit was 33.
+The complete ELF is 8,283,136 bytes, SHA256
+`6518b6472efbc599498b71550ef9761f6f20e74814db0c9a81bff101ab036e55`.
+The frozen first-produced ELF and actual loaded private copy are byte-identical.
+
+Both complete current kernel-mode suites ran: **OSTD 221** reported passes with
+three VMX/EPT capability soft skips, and **aster-core 160** passes with no skips,
+failures or filtering. Combined: 381 reported, **378 exercised lower bound**.
+Main's zombie final-charge and parity regressions are included. The current
+host build gate passed 81/81; all recorded native source inputs remain equal to
+the producer. A05/A06 core, OSTD and the actual external ABI equal main012.
+
+The first boot attempt was refused **before QEMU** after an unexpected untracked
+OSDK manifest appeared. Its original error/bytes/stat were preserved, and the
+file was reversibly quarantined under the native lock before the successful
+retry. Another appearance after ktests was also preserved and quarantined.
+The writer remains unidentified; the existing refusal/cleanup guards were not
+changed. The after-native source audit observed a clean worktree and no public
+manifest, without claiming that it stayed clean throughout execution.
+
+The [current report](evidence/2026-10-18-main012-current/REPORT.md) includes all
+commands, complete serial logs, actual artifacts, fixed dependency installation,
+source closure, failure evidence and [A00/A05/A06 handoff](evidence/2026-10-18-main012-current/HANDOFF.md).
+Its publication commit is evidence-only and is not a separately rebuilt native
+producer. Older results below keep their own source identities and scope.
+
+## Earlier main sync and source bridge — 2026-10-18
 
 Main `4339acedd2d433f838c7b5fd445709c539043a77` is incorporated by ordinary
 merge `d9ccc523141ec46baef2a0dfe0afe49e4f97f523`. Its updated A02 gate
@@ -19,8 +52,8 @@ identical to the successful native producer `40c901c6` below. Of the same
 3,010 selected inputs, only this README and upstream-lock reporting/history
 fields differ; all 118 fixed-input checks produce the identical receipt.
 No new native execution is claimed for d9ccc523 or the following evidence
-commit. The latest actual build/boot remains 40c901c6; the earlier kernel
-regression remains c22891b. The [A00/A05/A06 handoff](evidence/2026-10-18-main355-followup/HANDOFF.md)
+commit. At that source-bridge snapshot, the latest actual build/boot was 40c901c6
+and the kernel regression was c22891b. The [A00/A05/A06 handoff](evidence/2026-10-18-main355-followup/HANDOFF.md)
 still matches the integrated owner sources. The late manifest entry is
 absent after quarantine, but its writer remains unidentified.
 

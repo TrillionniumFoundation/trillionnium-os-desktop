@@ -1,0 +1,85 @@
+{
+  "recorded_at_utc": "2026-10-18T08:37:19.127252+00:00",
+  "scope": "Fresh isolated native dependency restoration after workspace pruning",
+  "environment_entry": "/workspace/scratch/d7da9e7650f0/a01-current-runtime/env.sh",
+  "installation_steps": {
+    "rust-install": {
+      "start_utc": "2026-10-18T08:34:02.737251+00:00",
+      "end_utc": "2026-10-18T08:34:26.738372+00:00",
+      "exit_code": 0,
+      "log_sha256": "6c270bdf05a0d4f14e21526fe48ee0d57b5c038dfee3c465a2a4d5895d79d3a8"
+    },
+    "native-install": {
+      "start_utc": "2026-10-18T08:34:02.209714+00:00",
+      "end_utc": "2026-10-18T08:34:43.382805+00:00",
+      "exit_code": 0,
+      "log_sha256": "4135f722fb4ff3142a7cf18db4c9fc46e919f08271a8987878a0b7c3eaa19f1d"
+    },
+    "vdso-install": {
+      "start_utc": "2026-10-18T08:34:03.135379+00:00",
+      "end_utc": "2026-10-18T08:34:03.692480+00:00",
+      "exit_code": 0,
+      "log_sha256": "f496febc496cbaa78cc9dfac98c570e767150bbbea196a90efb1efdf67168871"
+    },
+    "cargo-binutils-install": {
+      "start_utc": "2026-10-18T08:35:13.684975+00:00",
+      "end_utc": "2026-10-18T08:35:28.028436+00:00",
+      "exit_code": 0,
+      "log_sha256": "5f87443e59db9d171f5772292fb5b11344b615da133a8bb56ef777278ba02841"
+    },
+    "runtime-checks": {
+      "start_utc": "2026-10-18T08:36:04.960496+00:00",
+      "end_utc": "2026-10-18T08:36:06.657842+00:00",
+      "exit_code": 0,
+      "log_sha256": "10ef91b52241cfcda68a585e8f6f09c8cb94008041252373edcd201ef8bce48a"
+    }
+  },
+  "native_packages_verified": 57,
+  "snapshot": "https://snapshot.ubuntu.com/ubuntu/20260828T000000Z/",
+  "runtime_checks_passed": 17,
+  "runtime_checks_failed": 0,
+  "qemu_machine_created": false,
+  "kernel_built_or_booted_by_this_agent": false,
+  "fixed_toolchain": "nightly-2026-07-21",
+  "rustc_commit": "87e5904f5eb6398af6b22eac2802c78934260c48",
+  "vdso_commit": "8af571775a3d3a1df3e84fc9709b9d6b160c771a",
+  "vdso_tree": "8e0a300d78c2a020ccc79f1253bc27a8301416e6",
+  "artifacts": {
+    "seabios": {
+      "path": "/workspace/scratch/d7da9e7650f0/a01-current-runtime/rootfs/usr/share/seabios/bios-256k.bin",
+      "resolved_path": "/workspace/scratch/d7da9e7650f0/a01-current-runtime/rootfs/usr/share/seabios/bios-256k.bin",
+      "size": 262144,
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    "busybox": {
+      "path": "/workspace/scratch/d7da9e7650f0/a01-current-runtime/rootfs/usr/bin/busybox",
+      "resolved_path": "/workspace/scratch/d7da9e7650f0/a01-current-runtime/rootfs/usr/bin/busybox",
+      "size": 2124608,
+      "sha256": "dbac288c29ba568459550a2da9e7ae0ded6b1fc728ee9fad3044c44e62d6ac14"
+    },
+    "vdso_x86_64": {
+      "path": "/workspace/scratch/d7da9e7650f0/a01-current-runtime/linux-vdso/vdso_x86_64.so",
+      "resolved_path": "/workspace/scratch/d7da9e7650f0/a01-current-runtime/linux-vdso/vdso_x86_64.so",
+      "size": 28760,
+      "sha256": "27cd7bf576a92fa48a891c05988f52fac35b7374d5b9650d6b035e477c5d93a3"
+    },
+    "initramfs": {
+      "path": "/workspace/scratch/d7da9e7650f0/a01-current-runtime/initramfs.cpio.gz",
+      "resolved_path": "/workspace/scratch/d7da9e7650f0/a01-current-runtime/initramfs.cpio.gz",
+      "size": 1107990,
+      "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+    }
+  },
+  "effective_binary_input_count": 70,
+  "unavailable": {
+    "docker": null,
+    "nix": null,
+    "nix-build": null
+  },
+  "kvm_device_exists": false,
+  "host_dependencies_reused": true,
+  "complete_immutable_host_dependency_lock": false,
+  "cross_host_bit_reproducibility_claimed": false,
+  "historical_evidence_source_commit": "7b28d9cfe9556835c4bf1ac5d1c1ec078c449b77",
+  "historical_execution_logs_reused_as_current": false
+}

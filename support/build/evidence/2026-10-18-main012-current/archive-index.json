@@ -1,0 +1,41 @@
+{
+  "source_commit": "b39e154ae5a1e9853f57e23f9bee84712ee8ef7e",
+  "created_at_utc": "2026-10-18T09:07:07.175044+00:00",
+  "archives": [
+    {
+      "path": "native-records.tar.xz",
+      "size": 48148,
+      "sha256": "5b9890c4d36bab0a8d90899e982d8865c1e9a00a8e4a01cfb3af4c98784bbea4",
+      "member_count": 85,
+      "all_members_verified": true
+    },
+    {
+      "path": "source-records.tar.xz",
+      "size": 295316,
+      "sha256": "6013d38eeb8c797ec03984a6633ba86a95bf4b4be3a7a2710240997c79a217d9",
+      "member_count": 40,
+      "all_members_verified": true
+    },
+    {
+      "path": "guest-artifacts.tar.xz",
+      "size": 5065300,
+      "sha256": "dbf024d66dc6e5d31702a9d8fed0826cb470784cf315a15fd7a73d16c853b22d",
+      "member_count": 6,
+      "all_members_verified": true
+    },
+    {
+      "path": "runtime-current.tar.gz",
+      "size": 397586,
+      "sha256": "61615a214530b7af47d0206db533c4ebef3298df07bc8d9522b231c2a9f51ca0",
+      "previously_independently_verified": true
+    },
+    {
+      "path": "host-gate.tar.gz",
+      "size": 387054,
+      "sha256": "42d89e0b97c962d65abecbc5f943689264fb4f25057dea2a67aea7fe5e03eee5",
+      "previously_independently_verified": true
+    }
+  ],
+  "native_archive_scope": "All actual native output regular files except SDK executable binaries, boot input binaries and per-stage source manifests. Repeated boot binaries are represented once in guest-artifacts; every source receipt is in source-records. SDK hashes, installation receipts and commands are retained.",
+  "artifact_archive_scope": "The complete actual loaded boot ELF/initramfs/BIOS, plus both complete test ELFs with hashes matched after testing; no stripped or reconstructed kernel substitution."
+}
