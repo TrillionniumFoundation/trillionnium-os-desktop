@@ -6,10 +6,10 @@
 
 use os_control::{
     BootId, CapSpaceId, ControlCore, DeliveryError, DeliveryObservation, DeliveryState,
-    DeliveryStatus, HistoryAck, ManagementGrantConfig, ManagementGrantId, ManagementGrantSnapshot,
+    DeliveryStatus, ManagementGrantConfig, ManagementGrantId, ManagementGrantSnapshot,
     ManagementGrantState, NativeDeliveryRequest, NativeGrant, NativeResourceError,
-    NativeResourceState, NativeResourceUpdate, NativeTarget, OwnerId, PublishOutcome, PublisherId,
-    RequestBinding, ReserveToken, ResourceDomainId, StableObjectId, CPU_PERIOD_NS,
+    NativeResourceState, NativeResourceUpdate, NativeTarget, OwnerId, PublishOutcome,
+    PublisherId, RequestBinding, ReserveToken, ResourceDomainId, StableObjectId, CPU_PERIOD_NS,
 };
 use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::sync::{Arc, Mutex, MutexGuard, PoisonError};
