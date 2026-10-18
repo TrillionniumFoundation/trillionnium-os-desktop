@@ -4,6 +4,10 @@
 //! or implementation of `TrustedReadOnlyOrganV1`. It performs host I/O outside
 //! that organ contract. Call its blocking API from a dedicated session worker;
 //! never pass the Agentd endpoint or a generic RPC method to a renderer.
+//!
+//! The default-disabled `objective-transport` feature exposes a separate,
+//! single-attempt trusted-host boundary in `objective`. It is not part of
+//! `ObserverClient`, the CLI, or `TrustedReadOnlyOrganV1`.
 
 #![forbid(unsafe_code)]
 
@@ -15,6 +19,9 @@ use std::path::PathBuf;
 mod client;
 #[cfg(target_os = "linux")]
 mod wire;
+
+#[cfg(all(feature = "objective-transport", target_os = "linux"))]
+pub mod objective;
 
 #[cfg(target_os = "linux")]
 pub use client::ObserverClient;

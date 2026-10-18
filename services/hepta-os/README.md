@@ -1,7 +1,7 @@
-# Hepta read-only host observer
+# Hepta host observer and optional ObjectiveStart transport
 
 `hepta-os-observer` is the first concrete A10 Session → Hepta client slice. It
-speaks the existing, fixed Agentd v2 JSON-over-UDS control wire and exposes only
+speaks the existing, fixed Agentd v2 JSON-over-UDS control wire. Its default API exposes only
 `health`, `capabilities`, `events`, and `run_status`. The public API projects
 bounded metadata and omits the upstream workspace paths, signing inputs,
 session-ingress address, and arbitrary payloads.
@@ -11,9 +11,11 @@ roundtrips, strict negative cases and source-derived wire conformance are now
 joined by an [executed original Agentd ARM64 read-only gate](../../tests/integration/hepta/evidence/2026-10-17-original-agentd-arm/README.md).
 Fixed Hepta `f8c9419df6ddeb36ff8b522a50219981fb8d9345` was built and run unchanged;
 all eight lifecycle/read checks passed, and three downloaded ELF hashes match
-the executed receipt. This gate uses fresh observer CLI instances. Continuous
-Session-to-original-Agentd observation and Shell projection remain unqualified;
-model turns, HOS2 delivery, device actions and Asterinas execution are not claimed.
+the executed receipt. The later [two original continuous Session runs](../../tests/integration/hepta/evidence/2026-10-17-original-session-runtime/README.md)
+each passed the original eight checks plus eight Session checks, with six real
+Shell phases. Their compiled inputs, controlled restart/stop and cleanup are
+recorded separately. Model turns, HOS2 delivery, device actions and Asterinas
+execution are not claimed.
 This is a candidate for owner adoption, not completion of A07's durable effect
 acceptance gate. [Evidence and remaining gates](../../tests/integration/hepta/EVIDENCE.md)
 are recorded separately.
@@ -26,6 +28,7 @@ are recorded separately.
 | Events | Bounded process-local lifecycle metadata with exact cursor/gap validation |
 | Known run lookup | Existing owner state; historical generation preserved; no task listing |
 | Objective input | Remains an offline UI draft until the authenticated owner adapter is assembled |
+| Optional `objective-transport` feature | Separate trusted-host, one-attempt UDS transport of an existing raw issuer envelope; default disabled and no UI/Session command |
 | Device control/HOS2 | Not provided by this crate |
 | Windows/Android/Asterinas | No qualified transport here; non-Linux builds return `unsupported_platform` |
 
@@ -33,10 +36,16 @@ are recorded separately.
 
 The trusted Session process owns `ObserverClient` on a dedicated background
 worker. The renderer consumes an application projection, never this crate's
-endpoint configuration. The crate has no raw JSON request API, no process
+endpoint configuration. The observer has no raw JSON request API. The crate has no process
 launcher, no discovery of sockets or credentials, no signing code, and no
 persistent state. It does not copy Agentd, a policy owner, or an operation
 ledger.
+
+The separate [ObjectiveStart transport](OBJECTIVE_TRANSPORT.md) accepts only the
+original ingress shape and performs structural checks, not authentication.
+It preserves raw issuer/source inputs, consumes one transport attempt, and
+retains `SubmitUnknown` after any unresolved delivery. Its real local socket
+tests use scripted fixtures and provide no original-owner admission evidence.
 
 This observer performs host I/O outside the organ boundary. It is **not** an
 implementation of `TrustedReadOnlyOrganV1`, whose handler must not perform I/O or
@@ -81,3 +90,5 @@ blocked job until the OS returns it.
 Read [RUN.md](RUN.md) for reproducible commands, [CONTRACT.md](CONTRACT.md) for
 wire and projection rules, and [UPSTREAM_CONTRACT.json](UPSTREAM_CONTRACT.json)
 for the reviewed source hashes. Root `README.md` remains intentionally empty.
+The optional feature's complete wire, typed outcomes and remaining owner
+integration requirements are in [OBJECTIVE_TRANSPORT.md](OBJECTIVE_TRANSPORT.md).
