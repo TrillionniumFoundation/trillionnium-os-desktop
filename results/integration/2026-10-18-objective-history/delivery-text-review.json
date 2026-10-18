@@ -1,0 +1,212 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-10-18T10:40:58.796548+00:00",
+  "reviewer": "/root/r9_g1_contract",
+  "status": "passed_limited_delivery_text_review",
+  "findings": [],
+  "blockers": [],
+  "required_fixes": [],
+  "inputs": [
+    {
+      "path": "/workspace/scratch/499c7902de8e/r9-integration/results/integration/2026-10-18-objective-history/README.md",
+      "bytes": 19764,
+      "sha256": "74c60fc52f71bb2cfbf8674c01f5cc5c91cac81a481a20999009f7cb09887107"
+    },
+    {
+      "path": "/workspace/scratch/499c7902de8e/r9-integration/results/integration/2026-10-18-objective-history/acceptance-summary.json",
+      "bytes": 14991,
+      "sha256": "134f73f932872bba8658153e3bfc1f2634cfbda32d25aeeaa6e96d4c1d06cb1c"
+    },
+    {
+      "path": "/workspace/scratch/499c7902de8e/r9-integration/docs/STATUS.md",
+      "bytes": 129830,
+      "sha256": "3f83c6c561825d7660ed8a044fca60b51dcf971297c83d97a82cc22bb6753509"
+    },
+    {
+      "path": "/workspace/scratch/499c7902de8e/r9-integration/docs/INDEX.md",
+      "bytes": 14173,
+      "sha256": "48ce2224da1442df5c5cbb74b70f135d3d8df0da308fa749962d7fd7301d2d94"
+    },
+    {
+      "path": "/workspace/scratch/499c7902de8e/r9-integration/docs/agents/R8_NEXT_SLICE.md",
+      "bytes": 22195,
+      "sha256": "3f8d5bb206c057a04a0deb3309caca660e6eaaf96572ca9ea9b67515a7fb9f66"
+    }
+  ],
+  "scope": "Requested delivery README/acceptance summary and current R9 STATUS/INDEX/R8_NEXT_SLICE prose; compare against already-qualified receipts. No new module inventory or source audit.",
+  "checks": [
+    {
+      "area": "actual counts",
+      "result": "consistent",
+      "values": {
+        "checks": 15,
+        "history_queries": 13,
+        "objective_request_attempts": 5,
+        "real_submit_cli_requests": 4,
+        "original_protocol_harness_requests": 1,
+        "published_objective_requests": 4,
+        "controlled_supervisor_restarts": 3,
+        "recovery_resubmissions": 0
+      },
+      "references": [
+        "README.md:3,29,34-50",
+        "acceptance-summary.json:68-156",
+        "docs/STATUS.md:12",
+        "docs/INDEX.md:57",
+        "docs/agents/R8_NEXT_SLICE.md:36"
+      ]
+    },
+    {
+      "area": "test attribution",
+      "result": "consistent",
+      "fixed_suites": [
+        {
+          "source_commit": "c080896189b6d5c1e411a28b7614c8fcdc33b188",
+          "passed": 51
+        },
+        {
+          "source_commit": "ee0a2e5eee299fc0f272c3ceb09ef70f2cbfaf73",
+          "passed": 134
+        },
+        {
+          "source_commit": "d1d40f64eadd0210f5f6abc003cd479a0e1ee010",
+          "passed": 173
+        }
+      ],
+      "qualification": "134 plus 173 is explicitly not a final-head full-suite rerun; owner dev-dependency feature unification is separate from native05 actual features=[].",
+      "references": [
+        "README.md:25-32",
+        "acceptance-summary.json:185-208",
+        "docs/STATUS.md:9-10",
+        "docs/agents/R8_NEXT_SLICE.md:36"
+      ]
+    },
+    {
+      "area": "execution sources and contract",
+      "result": "consistent",
+      "desktop_execution_commit": "207ff9da7dac83c57b0cbae46c4b03ecfba3baa9",
+      "desktop_execution_tree": "8d5de807c41090e3d987764daec9c235ebd022a1",
+      "desktop_same_tree_published_commit": "46dcb2d691827f7aa3ad7903dae09d39fd338126",
+      "owner_commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+      "owner_tree": "f4ef891d43baf90d6eebd29921a5ed03222ef3ab",
+      "contract_sha256": "f0fc1110233dc38542097c6f9f7ef2e3f6ca5eb215fa2b4447e556cd7ac46981",
+      "basis": "Existing runtime, independent review and manifest receipt fields; no source validator or ELF rehash repeated."
+    },
+    {
+      "area": "unknown and postpublication rejection",
+      "result": "scope preserved",
+      "qualification": "Generic objective_owner_request_rejected and publication #4 plus null RunStatus are observations; CapacityExceeded is explicitly source/default-capacity inference. No safe-retry or nonpublication inference.",
+      "references": [
+        "README.md:40,52,54",
+        "acceptance-summary.json:283-293",
+        "docs/STATUS.md:21-23",
+        "docs/agents/R8_NEXT_SLICE.md:42-52"
+      ]
+    },
+    {
+      "area": "harness loss and controlled faults",
+      "result": "scope preserved",
+      "qualification": "Original-protocol harness loss is distinguished from unexecuted hepta-submit CLI lost reply. Three controlled restarts, including two stopped-owner storage faults, are not described as mid-write crash/power-loss qualification.",
+      "references": [
+        "README.md:39,46-50,54,123",
+        "acceptance-summary.json:282-285",
+        "docs/agents/R8_NEXT_SLICE.md:39,46-50"
+      ]
+    },
+    {
+      "area": "expiry and revocation",
+      "result": "consistent",
+      "qualification": "Same retained request after real 22,434 ms wait / expiry+3 ms; revoked fifth request is distinct, rejected without append, with no recovery resubmission or regrant.",
+      "references": [
+        "README.md:45,48-49",
+        "acceptance-summary.json:151-155,291",
+        "docs/agents/R8_NEXT_SLICE.md:42"
+      ]
+    },
+    {
+      "area": "G1 and A04",
+      "result": "scope preserved",
+      "qualification": "G1 remains source audit at 01225ab0; shared revision/controller incarnation comes before trusted init and five operations. A04 three detailed handbooks are fixed 25c681d candidate documents, absent from execution tree, not merged documentation coverage.",
+      "references": [
+        "README.md:78,86,102-109",
+        "acceptance-summary.json:218-222",
+        "docs/INDEX.md:29,40,54-57,62",
+        "docs/agents/R8_NEXT_SLICE.md:80-94"
+      ]
+    },
+    {
+      "area": "delivery metadata and paths",
+      "result": "consistent",
+      "qualification": "Archive counts/size/hash strings and primary count agree with frozen manifest metadata; archive content was not reopened or rehashed.",
+      "raw_archive": {
+        "name": "raw-evidence.tar.xz",
+        "bytes": 24308524,
+        "sha256": "4f8ae8d38933ff594d1e3c84db30f8a9efe2457276f08d1ea84ab4e1e85c2e4f"
+      },
+      "archive_entries": 321,
+      "primary_copies": 20,
+      "local_link_occurrences_checked": 176,
+      "missing_required_local_paths": []
+    }
+  ],
+  "deferred_publication_files": [
+    {
+      "path": "/workspace/scratch/499c7902de8e/r9-integration/results/integration/2026-10-18-objective-history/publication-status.json",
+      "currently_exists": false,
+      "reason": "Assigned to root/CI agent for subsequent publication; not a broken-link finding in this review."
+    },
+    {
+      "path": "/workspace/scratch/499c7902de8e/r9-integration/results/integration/2026-10-18-objective-history/artifact-manifest.json",
+      "currently_exists": false,
+      "reason": "Assigned to root/CI agent for subsequent publication; not a broken-link finding in this review."
+    }
+  ],
+  "already_qualified_evidence_compared": [
+    {
+      "path": "/workspace/scratch/499c7902de8e/r9-integration/results/integration/2026-10-18-objective-history/history-runtime.json",
+      "bytes": 78186,
+      "sha256": "edbfff169707cd2946a549f9edeaf0548eefbb6765e757e7039dabf0fe430f4b"
+    },
+    {
+      "path": "/workspace/scratch/499c7902de8e/r9-integration/results/integration/2026-10-18-objective-history/client-checks.json",
+      "bytes": 9765,
+      "sha256": "58f862545091d6c228539427f88981a19b7d95c3131165ccc9430dc5d64399d6"
+    },
+    {
+      "path": "/workspace/scratch/499c7902de8e/r9-integration/results/integration/2026-10-18-objective-history/owner-protocol-ledger-tests.json",
+      "bytes": 44931,
+      "sha256": "e53bcaa62592de976101f9c1b9392b556babda4f943b983337d88d8b0c8219fa"
+    },
+    {
+      "path": "/workspace/scratch/499c7902de8e/r9-integration/results/integration/2026-10-18-objective-history/owner-agentd-tests.json",
+      "bytes": 44908,
+      "sha256": "3a2ebdd8a696e04107fd17d0a7cf56d638de1db45e367205666e289332c8d566"
+    },
+    {
+      "path": "/workspace/scratch/499c7902de8e/r9-integration/results/integration/2026-10-18-objective-history/owner-final-review.json",
+      "bytes": 8893,
+      "sha256": "c0e5f57112fe5b14d6b3a0c7f2e1c8a390a3fcb413334e020508d9895dea3da2"
+    },
+    {
+      "path": "/workspace/scratch/499c7902de8e/r9-integration/results/integration/2026-10-18-objective-history/raw-evidence-manifest.json",
+      "bytes": 103599,
+      "sha256": "dfd259f8443ddadea0689f5289365a460fe01e36a4c8f90ef3d7e0700e82a988"
+    },
+    {
+      "path": "/workspace/scratch/499c7902de8e/r9-evidence/history-probe/runtime-review.json",
+      "bytes": 36566,
+      "sha256": "03b92691e7b36804f53d7ef011e76e69685105cd33675fc48c8ac8eb42d764aa"
+    }
+  ],
+  "actions_not_taken": [
+    "No Rust/Cargo command",
+    "No validator rerun",
+    "No native/runtime re-execution",
+    "No ELF read or rehash",
+    "No archive unpack or rehash",
+    "No kernel/source changes",
+    "No remote CI polling or PR mutation",
+    "No repeated full module inventory"
+  ],
+  "publication_scope": "This review does not qualify later publication-status.json/artifact-manifest.json or any subsequent text revision; those are separately owned finalization steps."
+}

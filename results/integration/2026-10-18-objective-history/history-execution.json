@@ -1,0 +1,108 @@
+{
+  "schema": "hepta.objective-history-execution.v1",
+  "started_at_utc": "2026-10-18T10:10:52.988105+00:00",
+  "status": "passed",
+  "probe_build_mode": "runner",
+  "cache_profile": "existing native cache",
+  "source_sha256": {
+    "objective_history_probe.rs": "10014a30f70f5de47aef8ddca585fd997f57e8bd38bbdf4a35bde553b981c82a",
+    "objective_history_client.rs": "cc982282714772dee35e0311cbbd77c00bb296a35975b4864dec0bf8d98f7137",
+    "original_objective_owner.rs": "f01310e679872217af747192c3329218f2d6045972c77718d7f358384eb88eda",
+    "original_objective_fixture.rs": "4abdcb7ee3a0c3cf8f8302c8af18656f2d2c41bfa4862b137991a6124ef4f272",
+    "original_objective_profile.json": "56d81a70d4a7481614a9ebc5494173b08dcf79072230b9b61cd0a9c01454dd02",
+    "run_objective_history.py": "a81294b55949931fb30abd9d3c19ba553842c017d0eaf6defb152698c34d9f49",
+    "run_original_objective.py": "9ea5d7b2f6801f88240257effe78dbbceb126d63f7132f37b0f2edd7c2486df4",
+    "run_original_agentd.py": "21dd4a2e0621240a75f5ce37bad93da0a37352fbaa78554a50e048abe6a45fd0"
+  },
+  "free_before": 1467252736,
+  "upstream_before": {
+    "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+    "tree": "f4ef891d43baf90d6eebd29921a5ed03222ef3ab",
+    "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+    "clean_checkout": true,
+    "reviewed_files": 36
+  },
+  "native_build_receipt": {
+    "path": "/workspace/scratch/499c7902de8e/r9-evidence/native-agentd-05/receipt.json",
+    "sha256": "0c70dc9057668a31d439686e441c56b163da71e13aac0c9cdda8f2d42544869d"
+  },
+  "contract": {
+    "path": "/workspace/scratch/499c7902de8e/r9-integration/services/hepta-os/OBJECTIVE_HISTORY_CONTRACT.json",
+    "sha256": "f0fc1110233dc38542097c6f9f7ef2e3f6ca5eb215fa2b4447e556cd7ac46981",
+    "desktop_commit": "207ff9da7dac83c57b0cbae46c4b03ecfba3baa9"
+  },
+  "input_binaries": {
+    "agentd": {
+      "path": "/workspace/scratch/499c7902de8e/r9-evidence/native-agentd-05/codex-hepta-agentd",
+      "bytes": 329024000,
+      "sha256": "a8f8aefa2199a2e41c22b8251145f064e3af767ff5357475ddb527beb86761cb"
+    },
+    "observer": {
+      "path": "/workspace/scratch/499c7902de8e/implementation-tools/integration-target/debug/hepta-observe",
+      "bytes": 15046512,
+      "sha256": "a79114fc2e04e2ee226e225c7f5da8da7bc395878e5a67eff0a347aa85fed728"
+    },
+    "submitter": {
+      "path": "/workspace/scratch/499c7902de8e/implementation-tools/integration-target/debug/hepta-submit",
+      "bytes": 14842384,
+      "sha256": "c0155afd9f450006e85b5c8e5957a8db2b5aaa12fd0aa0dacabf213255d75233"
+    },
+    "history": {
+      "path": "/workspace/scratch/499c7902de8e/implementation-tools/integration-target/debug/hepta-history",
+      "bytes": 15181152,
+      "sha256": "10f24fce4c681fce18890b338c879bbbeb0f3bae61335c7de3d88f5b2d4ce6eb"
+    }
+  },
+  "profile_environment": {
+    "CARGO_HOME": "/workspace/scratch/499c7902de8e/nextstep-hepta-build/cargo",
+    "RUSTUP_HOME": "/workspace/scratch/499c7902de8e/implementation-tools/rustup",
+    "PATH": "/workspace/scratch/499c7902de8e/implementation-tools/cargo/bin:/usr/local/bin:/usr/bin:/bin",
+    "CARGO_TARGET_DIR": "/workspace/scratch/499c7902de8e/nextstep-hepta-build/target",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_BUILD_JOBS": "1"
+  },
+  "command": [
+    "python3",
+    "-B",
+    "tests/integration/hepta/run_objective_history.py",
+    "--hepta-source",
+    "/workspace/scratch/499c7902de8e/r9-hepta-owner",
+    "--work-dir",
+    "/workspace/scratch/499c7902de8e/r9-evidence/history-runtime-01/work",
+    "--target-dir",
+    "/workspace/scratch/499c7902de8e/nextstep-hepta-build/target",
+    "--rustup",
+    "/workspace/scratch/499c7902de8e/implementation-tools/cargo/bin/rustup",
+    "--execute",
+    "--offline",
+    "--agentd-bin",
+    "/workspace/scratch/499c7902de8e/r9-evidence/native-agentd-05/codex-hepta-agentd",
+    "--observer-bin",
+    "/workspace/scratch/499c7902de8e/implementation-tools/integration-target/debug/hepta-observe",
+    "--submitter-bin",
+    "/workspace/scratch/499c7902de8e/implementation-tools/integration-target/debug/hepta-submit",
+    "--history-bin",
+    "/workspace/scratch/499c7902de8e/implementation-tools/integration-target/debug/hepta-history"
+  ],
+  "cwd": "/workspace/scratch/499c7902de8e/r9-integration",
+  "exit_code": 0,
+  "runner_report": {
+    "path": "/workspace/scratch/499c7902de8e/r9-evidence/history-runtime-01/work/report.json",
+    "sha256": "edbfff169707cd2946a549f9edeaf0548eefbb6765e757e7039dabf0fe430f4b",
+    "status": "passed",
+    "runtime_executed": true,
+    "error": null
+  },
+  "probe_build_completed": true,
+  "upstream_after": {
+    "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+    "tree": "f4ef891d43baf90d6eebd29921a5ed03222ef3ab",
+    "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+    "clean_checkout": true,
+    "reviewed_files": 36
+  },
+  "source_inputs_unchanged": true,
+  "ended_at_utc": "2026-10-18T10:16:27.620004+00:00",
+  "free_after": 1066201088,
+  "driver_log_sha256": "edbfff169707cd2946a549f9edeaf0548eefbb6765e757e7039dabf0fe430f4b"
+}

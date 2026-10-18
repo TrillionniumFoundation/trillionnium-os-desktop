@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "source_commit": "01225ab0a20a9f25dd8313a7fad7652dd9154e30",
+  "source_tree": "592e13cc526a247ec4246a4cfe8458e07392d0e1",
+  "document": "docs/agents/R9_G1_OWNER_SEAM.md",
+  "document_sha256": "ec4149438e260bfa545279ed9fc26062ef01a5984ae0514e5ba6012ae8744617",
+  "decision": "shared_revision_and_controller_incarnation_together_before_trusted_init_capspace_activation",
+  "source_files_bound": 26,
+  "fixed_commit_links_checked": 22,
+  "kernel_source_changed": false,
+  "kernel_build_run": false,
+  "guest_run": false,
+  "new_ioctls_enabled": false,
+  "g1_closed": false,
+  "key_findings": [
+    "native ioctl only QueryAbi",
+    "Process Arc and exec_epoch identity already integrated",
+    "actual CPU budget owner is SubController<CpuController>",
+    "os-control not aster-core runtime dependency yet",
+    "Linux cpu.max has no shared resource revision",
+    "RCU controller replacement needs permanent old-owner lifecycle fence",
+    "unbound controller must be closed before late metadata binding",
+    "raw TSC aligned quota window is not calibrated BOOTTIME-aligned HOS2 window",
+    "cpu.stat Jiffies and bandwidth TSC accounting cannot be spliced into same-version HOS2 usage",
+    "scheduler current-run settlement is not exposed to configuration mutation",
+    "ancestor epoch and budget checks need common linearization",
+    "portable-spin is not IRQ-safe backend evidence"
+  ],
+  "implementation_or_runtime_claims": []
+}

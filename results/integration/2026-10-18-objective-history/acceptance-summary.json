@@ -1,0 +1,328 @@
+{
+  "schema_version": 1,
+  "generated_at_utc": "2026-10-18T10:33:30.033771+00:00",
+  "status": "passed_known_objective_publication_history_only",
+  "basis": "Completed original owner runtime and two independent read-only reviews; this file is an index, not another execution.",
+  "desktop_execution_commit": "207ff9da7dac83c57b0cbae46c4b03ecfba3baa9",
+  "desktop_same_tree_published_commit": "46dcb2d691827f7aa3ad7903dae09d39fd338126",
+  "desktop_execution_tree": "8d5de807c41090e3d987764daec9c235ebd022a1",
+  "owner": {
+    "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+    "tree": "f4ef891d43baf90d6eebd29921a5ed03222ef3ab",
+    "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+    "clean_checkout": true,
+    "reviewed_files": 36
+  },
+  "compiled_source_binding": {
+    "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+    "tree": "f4ef891d43baf90d6eebd29921a5ed03222ef3ab",
+    "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+    "contract_sha256": "f0fc1110233dc38542097c6f9f7ef2e3f6ca5eb215fa2b4447e556cd7ac46981",
+    "probe_inputs": {
+      "objective_history_probe.rs": "10014a30f70f5de47aef8ddca585fd997f57e8bd38bbdf4a35bde553b981c82a",
+      "objective_history_client.rs": "cc982282714772dee35e0311cbbd77c00bb296a35975b4864dec0bf8d98f7137",
+      "original_objective_owner.rs": "f01310e679872217af747192c3329218f2d6045972c77718d7f358384eb88eda",
+      "original_objective_fixture.rs": "4abdcb7ee3a0c3cf8f8302c8af18656f2d2c41bfa4862b137991a6124ef4f272",
+      "original_objective_profile.json": "56d81a70d4a7481614a9ebc5494173b08dcf79072230b9b61cd0a9c01454dd02",
+      "run_objective_history.py": "a81294b55949931fb30abd9d3c19ba553842c017d0eaf6defb152698c34d9f49",
+      "run_original_objective.py": "9ea5d7b2f6801f88240257effe78dbbceb126d63f7132f37b0f2edd7c2486df4",
+      "run_original_agentd.py": "21dd4a2e0621240a75f5ce37bad93da0a37352fbaa78554a50e048abe6a45fd0"
+    }
+  },
+  "host_architecture": "x86_64",
+  "native_build": {
+    "receipt": "native-agentd-build.json",
+    "attempt": "native-agentd-05",
+    "status": "built_not_executed",
+    "command": [
+      "/workspace/scratch/499c7902de8e/implementation-tools/cargo/bin/rustup",
+      "run",
+      "1.95.0",
+      "cargo",
+      "build",
+      "--locked",
+      "--offline",
+      "--profile",
+      "dev-small",
+      "--no-default-features",
+      "-p",
+      "codex-hepta-agentd",
+      "--bin",
+      "codex-hepta-agentd",
+      "-j1",
+      "-vv"
+    ],
+    "interval_utc": [
+      "2026-10-18T10:02:35.148191+00:00",
+      "2026-10-18T10:10:23.714016+00:00"
+    ],
+    "features_observed_in_actual_agentd_rustc": [],
+    "existing_cache_used": true,
+    "prior_failed_attempts": [
+      "native-agentd-01",
+      "native-agentd-02",
+      "native-agentd-03",
+      "native-agentd-04"
+    ]
+  },
+  "runtime": {
+    "receipt": "history-runtime.json",
+    "wrapper": "history-execution.json",
+    "runtime_executed": true,
+    "probe_build_mode": "runner",
+    "interval_utc": [
+      "2026-10-18T10:10:52.988105+00:00",
+      "2026-10-18T10:16:27.620004+00:00"
+    ],
+    "record_counts": {
+      "owner_running": 4,
+      "submission_observed": 4,
+      "history_query_observed": 13,
+      "objective_history_check": 15,
+      "objective_response_discarded": 1,
+      "acceptance_pass": 1
+    },
+    "checks": [
+      "live_compiled_publication",
+      "live_abstain_publication",
+      "retained_anchor_covers_publication",
+      "harness_lost_response_then_history",
+      "postpublication_submit_unknown_history_published",
+      "wrong_anchor_unknown",
+      "earlier_anchor_unknown",
+      "changed_signed_request_unknown",
+      "restart_projection_missing_history_published",
+      "expired_request_history_still_published",
+      "rollback_retained_anchor_unknown",
+      "truncated_tail_retained_anchor_unknown",
+      "revoked_issuer_history_still_published",
+      "revoked_new_submission_rejected",
+      "controlled_stop"
+    ],
+    "objective_request_attempts": 5,
+    "real_submit_cli_requests": 4,
+    "original_protocol_harness_requests": 1,
+    "published_objective_requests": 4,
+    "controlled_supervisor_restarts": 3,
+    "recovery_resubmissions": 0,
+    "journal_byte_review": {
+      "original_prefix_lengths": [
+        4203,
+        8264,
+        12410,
+        16589
+      ],
+      "rollback_matches_first_complete_prefix": true,
+      "truncation_equals_full_journal_without_last_byte": true,
+      "recovered_tail_matches_original_third_prefix": true,
+      "retained_anchor": {
+        "sequence": 4,
+        "chain_digest": "0b4bf3e2dac5e6ed0b17d2d11ab48a409d0f128a89aaf26cfa948375679efa1d"
+      },
+      "fault_records_match_saved_bytes": [
+        {
+          "before_sha256": "5911e4a9e2a2c0592581d969630dadc277fac88425bd58297e8eda0102a2eeb7",
+          "fault": "11-rollback-prefix",
+          "injected_bytes": 4203,
+          "injected_sha256": "198802348f6d9bef54536c9b65125a20958b42e148b7bf4f601319e77da32814",
+          "new_pid": 438209,
+          "new_spawn": 9,
+          "old_spawn": 5,
+          "owner_confirmed_stopped_before_fault": true,
+          "recovered_bytes": 4203,
+          "recovered_sha256": "198802348f6d9bef54536c9b65125a20958b42e148b7bf4f601319e77da32814",
+          "recovery_owner": "original_agentd"
+        },
+        {
+          "before_sha256": "198802348f6d9bef54536c9b65125a20958b42e148b7bf4f601319e77da32814",
+          "fault": "12-truncated-tail",
+          "injected_bytes": 16588,
+          "injected_sha256": "c81c31f507363b44a764919db31df09625ba269f15208d252c7cbf11ed92c4d9",
+          "new_pid": 438343,
+          "new_spawn": 13,
+          "old_spawn": 9,
+          "owner_confirmed_stopped_before_fault": true,
+          "recovered_bytes": 12410,
+          "recovered_sha256": "36c9457ba334171514b4248c6e2cd1d456b8ab86128afd43aad1b341c646b5b2",
+          "recovery_owner": "original_agentd"
+        }
+      ]
+    },
+    "actual_expiry_observation": {
+      "expires_at_ms": 1792318579819,
+      "observed_at_ms": 1792318579822,
+      "wait_elapsed_ms": 22434,
+      "wait_bound_ms": 30000
+    }
+  },
+  "binary_identities": {
+    "probe": {
+      "path": "/workspace/scratch/499c7902de8e/nextstep-hepta-build/target/dev-small/hepta-objective-history-probe",
+      "bytes": 36935872,
+      "sha256": "65ec78d80d2a54960564b42f36d14fef423b4419e408022d122b858ba03f0d63"
+    },
+    "agentd": {
+      "path": "/workspace/scratch/499c7902de8e/r9-evidence/native-agentd-05/codex-hepta-agentd",
+      "bytes": 329024000,
+      "sha256": "a8f8aefa2199a2e41c22b8251145f064e3af767ff5357475ddb527beb86761cb"
+    },
+    "observer": {
+      "path": "/workspace/scratch/499c7902de8e/implementation-tools/integration-target/debug/hepta-observe",
+      "bytes": 15046512,
+      "sha256": "a79114fc2e04e2ee226e225c7f5da8da7bc395878e5a67eff0a347aa85fed728"
+    },
+    "submitter": {
+      "path": "/workspace/scratch/499c7902de8e/implementation-tools/integration-target/debug/hepta-submit",
+      "bytes": 14842384,
+      "sha256": "c0155afd9f450006e85b5c8e5957a8db2b5aaa12fd0aa0dacabf213255d75233"
+    },
+    "history": {
+      "path": "/workspace/scratch/499c7902de8e/implementation-tools/integration-target/debug/hepta-history",
+      "bytes": 15181152,
+      "sha256": "10f24fce4c681fce18890b338c879bbbeb0f3bae61335c7de3d88f5b2d4ce6eb"
+    }
+  },
+  "scoped_tests": [
+    {
+      "source_commit": "c080896189b6d5c1e411a28b7614c8fcdc33b188",
+      "scope": "desktop hepta-os suite including history; strict all-target Clippy, default-off check, fmt and three CLI builds",
+      "passed": 51,
+      "receipt": "client-checks.json",
+      "reused_compiled_inputs": 12
+    },
+    {
+      "source_commit": "ee0a2e5eee299fc0f272c3ceb09ef70f2cbfaf73",
+      "scope": "owner protocol and ledger --lib suites",
+      "passed": 134,
+      "existing_ignored": 1,
+      "receipt": "owner-protocol-ledger-tests.json"
+    },
+    {
+      "source_commit": "d1d40f64eadd0210f5f6abc003cd479a0e1ee010",
+      "scope": "owner Agentd --lib only",
+      "passed": 173,
+      "existing_ignored": 0,
+      "receipt": "owner-agentd-tests.json"
+    }
+  ],
+  "test_scope_caveat": "134 and 173 ran at different pre-final commits; 307 is not a final-head full-suite run. Despite no-default command flags, owner test dev-dependencies unified default/production-cognitive-write features. The final native05 Agentd lib/bin actually had features=[].",
+  "final_owner_fix_and_fmt": "owner-final-validation.json",
+  "module_documentation": {
+    "module_count": 11,
+    "index_local_links": 53,
+    "index_local_missing": 0,
+    "index_external_links": 5,
+    "one_hop_manuals": 47,
+    "nested_local_links_checked": 225,
+    "nested_local_missing": 0,
+    "coverage_verdict": "All 11 modules have concrete accessible development/technical/validation entry points, with shared contracts and a material external-candidate exception for A04. This is documentation coverage, not module completion.",
+    "local_candidate_exception": "A04 three linked handbooks are absent from the reviewed tree and exist only at fixed candidate25c681d; PR8 remains open draft and unmerged at the API observation.",
+    "new_runtime_claims": 0
+  },
+  "g1_qualification": "source audit only; no kernel edit, build or runtime in R9",
+  "non_claims": {
+    "canonical_intelligence": false,
+    "checks": [
+      "live_compiled_publication",
+      "live_abstain_publication",
+      "retained_anchor_covers_publication",
+      "harness_lost_response_then_history",
+      "postpublication_submit_unknown_history_published",
+      "wrong_anchor_unknown",
+      "earlier_anchor_unknown",
+      "changed_signed_request_unknown",
+      "restart_projection_missing_history_published",
+      "expired_request_history_still_published",
+      "rollback_retained_anchor_unknown",
+      "truncated_tail_retained_anchor_unknown",
+      "revoked_issuer_history_still_published",
+      "revoked_new_submission_rejected",
+      "controlled_stop"
+    ],
+    "device_effect": false,
+    "event": "acceptance_pass",
+    "evidence_class": "original_owner_objective_admission_history",
+    "hepta_submit_cli_lost_reply_executed": false,
+    "historical_run_resumed": false,
+    "isolated_test_issuer": true,
+    "model_turn": false,
+    "not_executed": [
+      "caller_anchor_co_rollback",
+      "production_issuer",
+      "effect_reconciliation",
+      "kernel_g1",
+      "kernel_g2"
+    ],
+    "objective_request_attempts": 5,
+    "operations_dispatch": false,
+    "operations_k_or_d_created": false,
+    "production_issuer": false,
+    "published_objective_requests": 4,
+    "recovery_resubmissions": 0,
+    "source_binding": {
+      "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+      "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+      "contract_sha256": "f0fc1110233dc38542097c6f9f7ef2e3f6ca5eb215fa2b4447e556cd7ac46981",
+      "probe_inputs": {
+        "objective_history_client.rs": "cc982282714772dee35e0311cbbd77c00bb296a35975b4864dec0bf8d98f7137",
+        "objective_history_probe.rs": "10014a30f70f5de47aef8ddca585fd997f57e8bd38bbdf4a35bde553b981c82a",
+        "original_objective_fixture.rs": "4abdcb7ee3a0c3cf8f8302c8af18656f2d2c41bfa4862b137991a6124ef4f272",
+        "original_objective_owner.rs": "f01310e679872217af747192c3329218f2d6045972c77718d7f358384eb88eda",
+        "original_objective_profile.json": "56d81a70d4a7481614a9ebc5494173b08dcf79072230b9b61cd0a9c01454dd02",
+        "run_objective_history.py": "a81294b55949931fb30abd9d3c19ba553842c017d0eaf6defb152698c34d9f49",
+        "run_original_agentd.py": "21dd4a2e0621240a75f5ce37bad93da0a37352fbaa78554a50e048abe6a45fd0",
+        "run_original_objective.py": "9ea5d7b2f6801f88240257effe78dbbceb126d63f7132f37b0f2edd7c2486df4"
+      },
+      "tree": "f4ef891d43baf90d6eebd29921a5ed03222ef3ab"
+    }
+  },
+  "limitations": [
+    "Local x86_64 Linux native execution with existing cache; new remote ARM64 history job remains a separate CI gate.",
+    "Original owner and isolated test signing issuer; no production issuer, Operations dispatch/effect reconciliation, model turn, device effect, historical run resume or kernel G1/G2 qualification.",
+    "Lost-response case uses the original-protocol harness; it does not execute a lost-response hepta-submit CLI case.",
+    "Actual hepta-submit postpublication result is submit_unknown/objective_owner_request_rejected with a matching compiled publication and null RunStatus. CapacityExceeded is a fixed-source/default-capacity inference; its specific original error bytes were not captured.",
+    "Two storage faults are injected after a confirmed controlled owner stop. Byte recovery is established; a mid-write crash or power-loss event is not.",
+    "A retained anchor detects missing covered history after reopen in these cases; caller-anchor co-rollback and live disk re-reading are not established.",
+    "Historical publication and Unknown do not establish current authorization, execution, success, or a safe retry.",
+    "Existing scoped owner suites ran at ee0/d1 before final Box/fmt; this actual runtime uses final 2be source and does not relabel those 307 unit tests as rerun at final head.",
+    "Independent read-only audit of one completed native runtime and saved instrumentation; no second runtime executed.",
+    "RunStatus-null and owner-stopped facts are guarded by the frozen compiled probe against real original owner APIs before emitting evidence. Separate per-assert raw control replies are not all saved.",
+    "Generic rejection is directly observed. Exact CapacityExceeded text is inferred only from fixed source and two prior active runs.",
+    "The fifth revoked Objective is an explicit new negative test, never a recovery resubmission. Objective request/run identities are not Operations K.",
+    "History resolves known exact-request publication. It does not restore grants, replay effects, start an old run, detect caller and journal joint rollback, or prove whole S2/G1/G2.",
+    "Native build and runtime used an existing explicitly repaired cache; no clean-cache build claim."
+  ],
+  "not_executed": [
+    "caller_anchor_co_rollback",
+    "production_issuer",
+    "effect_reconciliation",
+    "kernel_g1",
+    "kernel_g2",
+    "hepta_submit_cli_lost_reply",
+    "abrupt_process_crash_or_power_loss",
+    "cold_native_build_resource_qualification"
+  ],
+  "independent_reviews": [
+    "history-runtime-independent-review.json",
+    "history-runtime-contract-review.json",
+    "native-agentd-review.json",
+    "owner-final-review.json",
+    "consumer-review.json"
+  ],
+  "raw_archive": {
+    "name": "raw-evidence.tar.xz",
+    "bytes": 24308524,
+    "sha256": "4f8ae8d38933ff594d1e3c84db30f8a9efe2457276f08d1ea84ab4e1e85c2e4f"
+  },
+  "raw_archive_entries": 321,
+  "publication_note": "Code PR heads are pinned separately. Documentation/evidence publication does not constitute rerunning their tests, remote ARM64 CI, G1 or G2.",
+  "archive_persistence": {
+    "manifest": "archive-parts.json",
+    "parts": 16,
+    "reconstruction_script": "restore-evidence.py",
+    "complete_archive_sha256": "4f8ae8d38933ff594d1e3c84db30f8a9efe2457276f08d1ea84ab4e1e85c2e4f",
+    "local_reconstruction_status": "reconstructed_and_verified",
+    "transfer_receipt": "archive-transfer.json"
+  },
+  "remote_publication_status": "publication-status.json"
+}

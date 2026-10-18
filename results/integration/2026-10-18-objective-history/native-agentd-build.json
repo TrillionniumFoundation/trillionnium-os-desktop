@@ -1,0 +1,241 @@
+{
+  "schema": "hepta.objective-history-native-build.v1",
+  "started_at_utc": "2026-10-18T10:02:35.148191+00:00",
+  "status": "built_not_executed",
+  "runtime_executed": false,
+  "cache_profile": "existing native cache; not a cold-build or minimum-resource qualification",
+  "host_architecture": "x86_64",
+  "free_before": 1966153728,
+  "before": {
+    "desktop_commit": "207ff9da7dac83c57b0cbae46c4b03ecfba3baa9",
+    "desktop_tree": "8d5de807c41090e3d987764daec9c235ebd022a1",
+    "desktop_clean": true,
+    "contract": {
+      "path": "/workspace/scratch/499c7902de8e/r9-integration/services/hepta-os/OBJECTIVE_HISTORY_CONTRACT.json",
+      "sha256": "f0fc1110233dc38542097c6f9f7ef2e3f6ca5eb215fa2b4447e556cd7ac46981",
+      "desktop_commit": "207ff9da7dac83c57b0cbae46c4b03ecfba3baa9"
+    },
+    "owner": {
+      "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+      "tree": "f4ef891d43baf90d6eebd29921a5ed03222ef3ab",
+      "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+      "clean_checkout": true,
+      "reviewed_files": 36
+    },
+    "reviewed_owner_inputs": {
+      "codex-rs/Cargo.toml": "0e3fc0b7dc3ec907e02059a1bc79579077c8e5d1a0ac936b4f1bd984e94afdb4",
+      "codex-rs/hepta-agent-protocol/src/authbus.rs": "5e3b3de7deee49156ab1621027396a3a5f88f9a8131a59e9170a741fca5d7748",
+      "codex-rs/hepta-agent-protocol/src/lib.rs": "4ed07854ecbd6d940d19e46de9c3af036588c655945eb211e1bbad0bac88c238",
+      "codex-rs/hepta-agent-protocol/src/objective_history.rs": "166b680eebf5ac99da848ad51aaa28cf0e1c703571a6dabab53669f974fdc7b5",
+      "codex-rs/hepta-agent-protocol/src/objective_history_tests.rs": "3a56464ebae2a020bac59086fbe1876e8ee5f59f5f766d85a6e22d09976c3bcb",
+      "codex-rs/hepta-agent-protocol/src/objective_tests.rs": "596b8f9bc7b6caf686519c5a4779efddb082dc300f1b8ad13b4a2a8f00b784f7",
+      "codex-rs/hepta-agentd/Cargo.toml": "011528024bbcb547a2aa256904b6102a05f17af7c91ace5300d7559e4ab8d94b",
+      "codex-rs/hepta-agentd/OBJECTIVE_HISTORY.md": "1098131edad8657803553095ac27c00b912c13cb1af0f18a70f76b162823205d",
+      "codex-rs/hepta-agentd/src/authbus_ingress.rs": "bec2b35373a7fd6cb9c4ccd1808c827d800a974c2d431870f12bbe70336ccfa0",
+      "codex-rs/hepta-agentd/src/authbus_trust.rs": "a6d71f68d7c0b34dfc8e122cb9378f54555ddd193d54b5d8fe3f80487e358531",
+      "codex-rs/hepta-agentd/src/client.rs": "b9a911ec6d181cb9db7e6e7f7f588325b7421822cad2212feaed38d5f69bed81",
+      "codex-rs/hepta-agentd/src/config.rs": "354d6ffd820362b55928c0736a438e69d2608186b70bd25ce039fb45b2f55587",
+      "codex-rs/hepta-agentd/src/control.rs": "ba9f1d6d19deeec39b9f139b980aa327157dcd2213e8c1778b480d82466cb0e9",
+      "codex-rs/hepta-agentd/src/lane_b_runtime.rs": "3f5fe2640e6ffaa08ac09f7bc4e386b6976d07103b42c9def17409ae3a459b31",
+      "codex-rs/hepta-agentd/src/lib.rs": "bb6afc9efee904deb8f34459bf7b0daa6241c9e333a6f42731ec04f5f7fb8e32",
+      "codex-rs/hepta-agentd/src/objective_history.rs": "ad34a605ae5cb096f60c4b694f812b683c778a1b4cb8cf746e583d005562a944",
+      "codex-rs/hepta-agentd/src/objective_history_tests.rs": "405cc9ef95e8985fe36653c06a6e266b0010a956b1b96ace6897dc404f85b12b",
+      "codex-rs/hepta-agentd/src/objective_runtime.rs": "1687e6085d89a976e7a7f2b3e59c59bedde83b393767458ebc0497b2f6f1a338",
+      "codex-rs/hepta-agentd/src/objective_runtime_tests.rs": "2d3efe444098b2fdae3f77ebb11360ffa1fb994ee39d54b27b01d84f3d2d6adb",
+      "codex-rs/hepta-agentd/src/runtime.rs": "34f8468a75327e539a9810b88fdbb03dfc10484e813a9f3f548f4926d7f85c24",
+      "codex-rs/hepta-agentd/src/state.rs": "d2a84277f007ab4599ce3a00edeb7a2bf93425d20cc4a918a817d807c1b21b3a",
+      "codex-rs/hepta-agentd/src/state_control.rs": "686fc4a1693a8f31769727a7f94f9450031f0cb016741abd9c8396647ae4fc24",
+      "codex-rs/hepta-authbus/src/lib.rs": "8ab2216e84304a9bd4b029758e27bc4d01665e0b2f45331a8832ca85b1e28371",
+      "codex-rs/hepta-authbus/src/signed.rs": "35c9189bbf4e0375d435083c39c9f4855b1b8effa73e1e7fc4747bc894a06c7f",
+      "codex-rs/hepta-fleet/src/model.rs": "64ecaff8ecfc2a60129e300eb24f460160f01636a65fe8d9ace4ea6b5a400d4e",
+      "codex-rs/hepta-intelligence/src/objective_run.rs": "f21862e82f65ac2053fee218f1c093078cdafd44ed66bd8641d99cb1a9e3d53b",
+      "codex-rs/hepta-learning-ledger/src/lib.rs": "c4465e8aa84450940a3a32c4d1b2edd04e5155b4f171e750c724aefeef3c5b0b",
+      "codex-rs/hepta-learning-ledger/src/run_start.rs": "95573f1ffd1db0b484b9cf39915d11e1de45fcf0c60e7b1bd04ed5c5782d382b",
+      "codex-rs/hepta-learning-ledger/src/run_start_publication.rs": "87d42f85e02f5c6b79513a8ce6163e0719884bd56437aa7497f736f3b0750815",
+      "codex-rs/hepta-learning-ledger/src/run_start_publication_tests.rs": "f5d7e74622068bf9a18befa0d8fc20ba642cee5e9b437a93a17e5270a1f88906",
+      "codex-rs/hepta-learning-ledger/src/run_start_tests.rs": "6aa57f320f6ac4a98b21e82e4a38ef474ab1f14bbfad2179e6fc0f193ff300a7",
+      "codex-rs/hepta-objective/src/admission_profile_json.rs": "7abefc95f4fffc0a1fe1e56f60fbe614253cc711d9dc8e98443622a5a18eddcb",
+      "codex-rs/hepta-objective/src/objective_admission.rs": "43f17945a996dfdec3cd7925620a5239130d438cdfcc5d2824f55e839572e495",
+      "codex-rs/hepta-types/src/digest.rs": "8bfa9aa8424a4a60d4f2f7044099a080a07e9bf3cff958690c3a4e9046a4b4e2",
+      "codex-rs/hepta-types/src/identity.rs": "5e73c7848a46cd72f22fed856890ff4978204a6a0d2a0088dfe4a974796515f3",
+      "codex-rs/rust-toolchain.toml": "570656042681cfd8795403a455baf9a33035331a07db0645e866bbcea89a3d64"
+    },
+    "client_compiled_inputs": {
+      "services/hepta-os/Cargo.lock": "a1aed4d1f513036cbe03912359f3dfbb2c6d93c5210b8d18244d95be9008a875",
+      "services/hepta-os/Cargo.toml": "8cace1d1bfa958c9da8d989db1a3e677381a2e7a82ad8c53d310cceece7564a9",
+      "services/hepta-os/src/bin/hepta-history.rs": "c65a9063b3f9ad85e9b8fb88c6b0729e076ff9dbd5502072f099c5519d7390e1",
+      "services/hepta-os/src/bin/hepta-observe.rs": "2a7b3eafc7b795e63bf43ef01e41e12a73f5d097c906bdd69f5d11049bc083b7",
+      "services/hepta-os/src/bin/hepta-submit.rs": "f856132b9f9e47512058421e42ca89a450bdad808b0943ef5030458d93b64fba",
+      "services/hepta-os/src/client.rs": "8669dc6c1e48c43108f3c2e1f8602e7602ac45e3e74239f638cdf92a3a99f5e8",
+      "services/hepta-os/src/lib.rs": "3904ceed5853d3ea930ea329faa78f5611ee6cf5f90178919a8f2d8db7c39162",
+      "services/hepta-os/src/objective/history.rs": "8ffef61985d3a441b525f99f2e18e18c8a713de3cd34a212144feff01f31b00c",
+      "services/hepta-os/src/objective/history_wire.rs": "fafebdb789251ece6fbaf4e93567fd59e61bd49a6fac6bfd969b06ee4abcf004",
+      "services/hepta-os/src/objective/mod.rs": "4475f5267ed20fbc97fdfe82fe6300f80574e75f6f2da5679f21c213b94b7f09",
+      "services/hepta-os/src/objective/wire.rs": "2c10d53d69de62872a942e2652b4282b6242076d3aace0b2bd6f6c73b3760e6f",
+      "services/hepta-os/src/wire.rs": "6e1377eb6cc009a6289602da248c11e905a53c484437b602f048298521d07e0c"
+    },
+    "client_build_receipt": {
+      "path": "/workspace/scratch/499c7902de8e/r9-evidence/desktop-checks-03/execution.json",
+      "sha256": "58f862545091d6c228539427f88981a19b7d95c3131165ccc9430dc5d64399d6",
+      "source_commit": "c080896189b6d5c1e411a28b7614c8fcdc33b188",
+      "binaries": [
+        {
+          "path": "/workspace/scratch/499c7902de8e/implementation-tools/integration-target/debug/hepta-observe",
+          "bytes": 15046512,
+          "sha256": "a79114fc2e04e2ee226e225c7f5da8da7bc395878e5a67eff0a347aa85fed728"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/implementation-tools/integration-target/debug/hepta-submit",
+          "bytes": 14842384,
+          "sha256": "c0155afd9f450006e85b5c8e5957a8db2b5aaa12fd0aa0dacabf213255d75233"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/implementation-tools/integration-target/debug/hepta-history",
+          "bytes": 15181152,
+          "sha256": "10f24fce4c681fce18890b338c879bbbeb0f3bae61335c7de3d88f5b2d4ce6eb"
+        }
+      ],
+      "reuse_scope": "same exact compiled inputs and existing three CLI ELF files"
+    }
+  },
+  "profile_environment": {
+    "CARGO_HOME": "/workspace/scratch/499c7902de8e/nextstep-hepta-build/cargo",
+    "RUSTUP_HOME": "/workspace/scratch/499c7902de8e/implementation-tools/rustup",
+    "PATH": "/workspace/scratch/499c7902de8e/implementation-tools/cargo/bin:/usr/local/bin:/usr/bin:/bin",
+    "CARGO_TARGET_DIR": "/workspace/scratch/499c7902de8e/nextstep-hepta-build/target",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_BUILD_JOBS": "1",
+    "RUSTUP_NO_UPDATE_CHECK": "1",
+    "CARGO_TERM_COLOR": "never"
+  },
+  "tool_versions": {
+    "rustc": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.95.0\nLLVM version: 22.1.2\n",
+    "cargo": "cargo 1.95.0 (f2d3ce0bd 2026-03-21)\nrelease: 1.95.0\ncommit-hash: f2d3ce0bd7f24a49f8f72d9000448f8838c4e850\ncommit-date: 2026-03-21\nhost: x86_64-unknown-linux-gnu\nlibgit2: 1.9.2 (sys:0.20.4 vendored)\nlibcurl: 8.15.0-DEV (sys:0.4.83+curl-8.15.0 vendored ssl:OpenSSL/3.5.4)\nssl: OpenSSL 3.5.4 30 Sep 2025\nos: Ubuntu 24.4.0 (noble) [64-bit]\n"
+  },
+  "command": [
+    "/workspace/scratch/499c7902de8e/implementation-tools/cargo/bin/rustup",
+    "run",
+    "1.95.0",
+    "cargo",
+    "build",
+    "--locked",
+    "--offline",
+    "--profile",
+    "dev-small",
+    "--no-default-features",
+    "-p",
+    "codex-hepta-agentd",
+    "--bin",
+    "codex-hepta-agentd",
+    "-j1",
+    "-vv"
+  ],
+  "cwd": "/workspace/scratch/499c7902de8e/r9-hepta-owner/codex-rs",
+  "deadline_seconds": 3600,
+  "compiler_output_binary": {
+    "path": "/workspace/scratch/499c7902de8e/nextstep-hepta-build/target/dev-small/codex-hepta-agentd",
+    "bytes": 329024000,
+    "sha256": "a8f8aefa2199a2e41c22b8251145f064e3af767ff5357475ddb527beb86761cb"
+  },
+  "binary": {
+    "path": "/workspace/scratch/499c7902de8e/r9-evidence/native-agentd-05/codex-hepta-agentd",
+    "bytes": 329024000,
+    "sha256": "a8f8aefa2199a2e41c22b8251145f064e3af767ff5357475ddb527beb86761cb"
+  },
+  "after": {
+    "desktop_commit": "207ff9da7dac83c57b0cbae46c4b03ecfba3baa9",
+    "desktop_tree": "8d5de807c41090e3d987764daec9c235ebd022a1",
+    "desktop_clean": true,
+    "contract": {
+      "path": "/workspace/scratch/499c7902de8e/r9-integration/services/hepta-os/OBJECTIVE_HISTORY_CONTRACT.json",
+      "sha256": "f0fc1110233dc38542097c6f9f7ef2e3f6ca5eb215fa2b4447e556cd7ac46981",
+      "desktop_commit": "207ff9da7dac83c57b0cbae46c4b03ecfba3baa9"
+    },
+    "owner": {
+      "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+      "tree": "f4ef891d43baf90d6eebd29921a5ed03222ef3ab",
+      "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+      "clean_checkout": true,
+      "reviewed_files": 36
+    },
+    "reviewed_owner_inputs": {
+      "codex-rs/Cargo.toml": "0e3fc0b7dc3ec907e02059a1bc79579077c8e5d1a0ac936b4f1bd984e94afdb4",
+      "codex-rs/hepta-agent-protocol/src/authbus.rs": "5e3b3de7deee49156ab1621027396a3a5f88f9a8131a59e9170a741fca5d7748",
+      "codex-rs/hepta-agent-protocol/src/lib.rs": "4ed07854ecbd6d940d19e46de9c3af036588c655945eb211e1bbad0bac88c238",
+      "codex-rs/hepta-agent-protocol/src/objective_history.rs": "166b680eebf5ac99da848ad51aaa28cf0e1c703571a6dabab53669f974fdc7b5",
+      "codex-rs/hepta-agent-protocol/src/objective_history_tests.rs": "3a56464ebae2a020bac59086fbe1876e8ee5f59f5f766d85a6e22d09976c3bcb",
+      "codex-rs/hepta-agent-protocol/src/objective_tests.rs": "596b8f9bc7b6caf686519c5a4779efddb082dc300f1b8ad13b4a2a8f00b784f7",
+      "codex-rs/hepta-agentd/Cargo.toml": "011528024bbcb547a2aa256904b6102a05f17af7c91ace5300d7559e4ab8d94b",
+      "codex-rs/hepta-agentd/OBJECTIVE_HISTORY.md": "1098131edad8657803553095ac27c00b912c13cb1af0f18a70f76b162823205d",
+      "codex-rs/hepta-agentd/src/authbus_ingress.rs": "bec2b35373a7fd6cb9c4ccd1808c827d800a974c2d431870f12bbe70336ccfa0",
+      "codex-rs/hepta-agentd/src/authbus_trust.rs": "a6d71f68d7c0b34dfc8e122cb9378f54555ddd193d54b5d8fe3f80487e358531",
+      "codex-rs/hepta-agentd/src/client.rs": "b9a911ec6d181cb9db7e6e7f7f588325b7421822cad2212feaed38d5f69bed81",
+      "codex-rs/hepta-agentd/src/config.rs": "354d6ffd820362b55928c0736a438e69d2608186b70bd25ce039fb45b2f55587",
+      "codex-rs/hepta-agentd/src/control.rs": "ba9f1d6d19deeec39b9f139b980aa327157dcd2213e8c1778b480d82466cb0e9",
+      "codex-rs/hepta-agentd/src/lane_b_runtime.rs": "3f5fe2640e6ffaa08ac09f7bc4e386b6976d07103b42c9def17409ae3a459b31",
+      "codex-rs/hepta-agentd/src/lib.rs": "bb6afc9efee904deb8f34459bf7b0daa6241c9e333a6f42731ec04f5f7fb8e32",
+      "codex-rs/hepta-agentd/src/objective_history.rs": "ad34a605ae5cb096f60c4b694f812b683c778a1b4cb8cf746e583d005562a944",
+      "codex-rs/hepta-agentd/src/objective_history_tests.rs": "405cc9ef95e8985fe36653c06a6e266b0010a956b1b96ace6897dc404f85b12b",
+      "codex-rs/hepta-agentd/src/objective_runtime.rs": "1687e6085d89a976e7a7f2b3e59c59bedde83b393767458ebc0497b2f6f1a338",
+      "codex-rs/hepta-agentd/src/objective_runtime_tests.rs": "2d3efe444098b2fdae3f77ebb11360ffa1fb994ee39d54b27b01d84f3d2d6adb",
+      "codex-rs/hepta-agentd/src/runtime.rs": "34f8468a75327e539a9810b88fdbb03dfc10484e813a9f3f548f4926d7f85c24",
+      "codex-rs/hepta-agentd/src/state.rs": "d2a84277f007ab4599ce3a00edeb7a2bf93425d20cc4a918a817d807c1b21b3a",
+      "codex-rs/hepta-agentd/src/state_control.rs": "686fc4a1693a8f31769727a7f94f9450031f0cb016741abd9c8396647ae4fc24",
+      "codex-rs/hepta-authbus/src/lib.rs": "8ab2216e84304a9bd4b029758e27bc4d01665e0b2f45331a8832ca85b1e28371",
+      "codex-rs/hepta-authbus/src/signed.rs": "35c9189bbf4e0375d435083c39c9f4855b1b8effa73e1e7fc4747bc894a06c7f",
+      "codex-rs/hepta-fleet/src/model.rs": "64ecaff8ecfc2a60129e300eb24f460160f01636a65fe8d9ace4ea6b5a400d4e",
+      "codex-rs/hepta-intelligence/src/objective_run.rs": "f21862e82f65ac2053fee218f1c093078cdafd44ed66bd8641d99cb1a9e3d53b",
+      "codex-rs/hepta-learning-ledger/src/lib.rs": "c4465e8aa84450940a3a32c4d1b2edd04e5155b4f171e750c724aefeef3c5b0b",
+      "codex-rs/hepta-learning-ledger/src/run_start.rs": "95573f1ffd1db0b484b9cf39915d11e1de45fcf0c60e7b1bd04ed5c5782d382b",
+      "codex-rs/hepta-learning-ledger/src/run_start_publication.rs": "87d42f85e02f5c6b79513a8ce6163e0719884bd56437aa7497f736f3b0750815",
+      "codex-rs/hepta-learning-ledger/src/run_start_publication_tests.rs": "f5d7e74622068bf9a18befa0d8fc20ba642cee5e9b437a93a17e5270a1f88906",
+      "codex-rs/hepta-learning-ledger/src/run_start_tests.rs": "6aa57f320f6ac4a98b21e82e4a38ef474ab1f14bbfad2179e6fc0f193ff300a7",
+      "codex-rs/hepta-objective/src/admission_profile_json.rs": "7abefc95f4fffc0a1fe1e56f60fbe614253cc711d9dc8e98443622a5a18eddcb",
+      "codex-rs/hepta-objective/src/objective_admission.rs": "43f17945a996dfdec3cd7925620a5239130d438cdfcc5d2824f55e839572e495",
+      "codex-rs/hepta-types/src/digest.rs": "8bfa9aa8424a4a60d4f2f7044099a080a07e9bf3cff958690c3a4e9046a4b4e2",
+      "codex-rs/hepta-types/src/identity.rs": "5e73c7848a46cd72f22fed856890ff4978204a6a0d2a0088dfe4a974796515f3",
+      "codex-rs/rust-toolchain.toml": "570656042681cfd8795403a455baf9a33035331a07db0645e866bbcea89a3d64"
+    },
+    "client_compiled_inputs": {
+      "services/hepta-os/Cargo.lock": "a1aed4d1f513036cbe03912359f3dfbb2c6d93c5210b8d18244d95be9008a875",
+      "services/hepta-os/Cargo.toml": "8cace1d1bfa958c9da8d989db1a3e677381a2e7a82ad8c53d310cceece7564a9",
+      "services/hepta-os/src/bin/hepta-history.rs": "c65a9063b3f9ad85e9b8fb88c6b0729e076ff9dbd5502072f099c5519d7390e1",
+      "services/hepta-os/src/bin/hepta-observe.rs": "2a7b3eafc7b795e63bf43ef01e41e12a73f5d097c906bdd69f5d11049bc083b7",
+      "services/hepta-os/src/bin/hepta-submit.rs": "f856132b9f9e47512058421e42ca89a450bdad808b0943ef5030458d93b64fba",
+      "services/hepta-os/src/client.rs": "8669dc6c1e48c43108f3c2e1f8602e7602ac45e3e74239f638cdf92a3a99f5e8",
+      "services/hepta-os/src/lib.rs": "3904ceed5853d3ea930ea329faa78f5611ee6cf5f90178919a8f2d8db7c39162",
+      "services/hepta-os/src/objective/history.rs": "8ffef61985d3a441b525f99f2e18e18c8a713de3cd34a212144feff01f31b00c",
+      "services/hepta-os/src/objective/history_wire.rs": "fafebdb789251ece6fbaf4e93567fd59e61bd49a6fac6bfd969b06ee4abcf004",
+      "services/hepta-os/src/objective/mod.rs": "4475f5267ed20fbc97fdfe82fe6300f80574e75f6f2da5679f21c213b94b7f09",
+      "services/hepta-os/src/objective/wire.rs": "2c10d53d69de62872a942e2652b4282b6242076d3aace0b2bd6f6c73b3760e6f",
+      "services/hepta-os/src/wire.rs": "6e1377eb6cc009a6289602da248c11e905a53c484437b602f048298521d07e0c"
+    },
+    "client_build_receipt": {
+      "path": "/workspace/scratch/499c7902de8e/r9-evidence/desktop-checks-03/execution.json",
+      "sha256": "58f862545091d6c228539427f88981a19b7d95c3131165ccc9430dc5d64399d6",
+      "source_commit": "c080896189b6d5c1e411a28b7614c8fcdc33b188",
+      "binaries": [
+        {
+          "path": "/workspace/scratch/499c7902de8e/implementation-tools/integration-target/debug/hepta-observe",
+          "bytes": 15046512,
+          "sha256": "a79114fc2e04e2ee226e225c7f5da8da7bc395878e5a67eff0a347aa85fed728"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/implementation-tools/integration-target/debug/hepta-submit",
+          "bytes": 14842384,
+          "sha256": "c0155afd9f450006e85b5c8e5957a8db2b5aaa12fd0aa0dacabf213255d75233"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/implementation-tools/integration-target/debug/hepta-history",
+          "bytes": 15181152,
+          "sha256": "10f24fce4c681fce18890b338c879bbbeb0f3bae61335c7de3d88f5b2d4ce6eb"
+        }
+      ],
+      "reuse_scope": "same exact compiled inputs and existing three CLI ELF files"
+    }
+  },
+  "source_and_client_inputs_unchanged": true,
+  "ended_at_utc": "2026-10-18T10:10:23.714016+00:00",
+  "free_after": 1467359232,
+  "build_log_sha256": "4f085ad210c672d41d2859f97108702ff1099425fb2df499dfbeeeefeaf12170"
+}
