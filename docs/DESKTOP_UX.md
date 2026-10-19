@@ -2,13 +2,19 @@
 
 版本0.3。原生桌面以Rust实现，对话/任务/应用工作区是主界面，终端/日志只是任务内选项；恢复入口可以简化但不能代替日常UI。状态见STATUS。
 
-## 当前 R8 增量
+## 当前 R9：运行事实的总年龄与提交丢失边界
+
+Runtime 与 known-run 已采用各自独立的完整单调年龄上界，规则见第 4.1 节。本轮真实 Desktop 队列/egui 反例显示，6,000 ms 的 Session 样本、20 ms IPC 往返与 1,991 ms UI 排队不能继续保持 Observed；7,000 ms 正例保持有效。同 Session 缺历史、失败尝试和重复旧帧不刷新旧样本。
+
+最终源码实际完成 UI workspace 137 passed / 0 failed / 2 既有 CJK ignored、严格 Clippy、fmt 与四程序构建；真实 CLI EOF 前及完整发送/回复前两个 SIGKILL 用例也已进入 43 项服务 feature suite。源身份、原始 RED/编译/lint 失败及最终结果见 [R9 证据](../results/integration/2026-10-18-runtime-process-boundaries/README.md)。这次新增本地验证没有捕获新的窗口或启动原版 Agentd；以下 R8/R6 像素与原版运行仍保持各自原来源。
+
+## R8 已合入的原版准入与窗口基线
 
 [PR #192](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/192) 将 #190 的 Rust 聊天/任务工作区与独立可信 ObjectiveStart CLI、指定 run 的 Session/Shell 投影组合。实际执行源码为 `25298f5d87cf3db90deefe9c0405ecd241dc6581`，同树远端 `ca5e7d8473690df1bf7636de0808e58414c40abe`；tree `9584997da412dd10c0960f69011b40a4b26d2862`。完整 UI workspace 125 passed / 0 failed / 2 既有 CJK ignored，严格 Clippy、fmt 和实际 bins 构建通过，见 [本轮实录](../results/integration/2026-10-18-objective-desktop/README.md)。
 
 本轮新构建固定原版 Hepta f8 并实际完成两轮 ObjectiveStart，每轮 10 个核心检查 / 7 次明确提交尝试；后一轮运行真实 Session 和同一个 Shell 窗口，三张新图依次为已观察准入、旧来源 stale、替换 owner 后当前 run 投影缺失/unknown。隔离测试 issuer 的签名认证、原 journal 与回执绑定已通过；产品生产 issuer 和模型/设备效果仍未接通。三图的英文 Runtime 卡片已逐张检查，顶部中文后缀缺字方框作为环境限制保留；不是 CJK/IME 或完整工作区输入资格。
 
-以下协议路线和第 6 节描述当前设计；R5/R6 与上一轮 audit-followthrough 的固定执行记录保留其原源码与范围，不覆盖本段新结果。
+以下协议路线和第 6 节描述当前设计；R5/R6 与上一轮 audit-followthrough 的固定执行记录保留其原源码与范围。当前 Runtime/known-run 总年龄规则以第 4.1 节和对应源码为准，不能继续沿用 R8 当时 Runtime 分项年龄的判定。
 
 ## 1. 协议路线
 
@@ -46,11 +52,15 @@ Hepta/模型失效时仍可启动应用、切换窗口、使用文件和停止�
 
 ### 4.1 原版观测的可见新鲜度
 
-Session 已收到回复不表示里面的原版样本仍新鲜。Shell 在实际绘制前，对原版 `sampled_unix_ms` 与本地单调 receipt 时钟分别检查年龄：两者均须 ≤7000ms，7001ms 已失效；未来时间、无法计算或缺失 receipt 不能保持 Observed。存在 observation 时 `sampled_unix_ms` 是必需的 u64；整个 `last_observation` 缺失则是没有成功历史，不能虚构成一个缺时间字段的样本。源码与定向复跑见 [OBSERVATION_FRESHNESS](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/89aa8fa62d30b00259cb33174260c134edf1a70b/ui/shell/OBSERVATION_FRESHNESS.md)。
+Session 已收到回复不表示里面的原版样本仍新鲜。Runtime health 与 known-run 各自有独立样本序号和单调采样年龄；Shell 在实际绘制前计算其保守总年龄：**Session 快照时的样本年龄 + 完整 IPC 往返时间 + 实际接收至当前绘制的单调时间**。总值须 ≤7,000 ms，7,001 ms 已失效；墙钟仍用于拒绝未来时间或已明确过期的时间戳，回拨不能减少单调总年龄。不能把三个分量分别小于 7 秒解释成总年龄有效。
+
+Runtime 的采样起点在完整只读 poll 开始之前，成功序号只在整个 poll 成功后推进；失败或独立 known-run 查询不重置 Runtime 年龄。Shell 对同一 Session / AgentId / spawn / PID 的同一成功序号保留并推进既有年龄上界，后到帧声称更小年龄、临时缺失历史、重复快照或 Session IPC 在线均不能让旧样本重新变新。同源同序号不得清零既有上界；更高成功序号或显式 Session/来源变更可建立新年龄上界，合法的新鲜样本可恢复 Observed。缺失、零值或回退的序号、缺失年龄、反向或溢出的时钟按未知处理，不授予 Observed。
+
+存在 observation 时 `sampled_unix_ms` 仍是必需的 u64；整个 `last_observation` 缺失则是没有成功历史。新字段是可选 `runtime_sample_clock`：新 Shell 读取缺该字段的旧快照会保留历史并显示未知，旧 Shell 的严格反序列化会拒绝新字段。因此 Session、Shell 与 ctl 应作为匹配版本部署；不能声称双向混合版本兼容。数据契约、具体身份和定向命令见当前 [OBSERVATION_FRESHNESS](../ui/shell/OBSERVATION_FRESHNESS.md) 与 [HEPTA_OBSERVER](../support/ui/HEPTA_OBSERVER.md)。
 
 有历史而过期时显示 **STALE / CURRENT STATE UNKNOWN**；没有历史时显示 **UNAVAILABLE / CURRENT STATE UNKNOWN**。保留完整最后成功观测和 Session 尝试时间，Session IPC 的连接状态单独报告。已有非 Observed 状态保留原诊断；Observed 因过期或无效时间降级时显示新的过期/时间错误诊断。随后合法的新 Snapshot 可以恢复 Observed，旧队列响应不能仅凭本地刚收到就变成新鲜。可见控件和 LayoutProbe 使用同一判定。
 
-该缺陷已在真实接收队列与 egui 可见标题回归中复现：RED 为 1 pass / 5 intended fail，其中真实 egui 标题明确错误显示 OBSERVED；最终 GREEN 为 6 freshness + 2 layout 通过，严格 Clippy、fmt 与四程序构建通过。中间误复用旧缓存与测试 helper 的 Clippy 失败均保留，见 [完整 RED/GREEN 与编译来源](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/89aa8fa62d30b00259cb33174260c134edf1a70b/tests/ui/evidence/2026-10-17-observation-freshness/README.md)。这是 synthetic 队列/控件回归；另以新二进制实际跑完整六阶段原版窗口，见 [13 张原图、快照、ACK 与逐图审查](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/89aa8fa62d30b00259cb33174260c134edf1a70b/tests/ui/evidence/2026-10-17-original-hepta-shell/README.md)。旧 R5 四 ELF 在当时验证中保留，旧轮仅启动 Shell、Session 和 CLI；新旧六阶段都未启动 AppWindow，不据此扩展它的运行资格。
+**R6 历史回归：**当时的队列接收缺陷在真实接收队列与 egui 可见标题中复现，RED 为 1 pass / 5 intended fail，最终 GREEN 为 6 freshness + 2 layout 通过，严格 Clippy、fmt 与四程序构建通过。中间误复用旧缓存与测试 helper 的 Clippy 失败均保留，见 [R6 完整 RED/GREEN 与编译来源](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/89aa8fa62d30b00259cb33174260c134edf1a70b/tests/ui/evidence/2026-10-17-observation-freshness/README.md)。这些计数不属于本轮总年龄修复。R6 另以相应二进制实际跑完整六阶段原版窗口，见 [13 张原图、快照、ACK 与逐图审查](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/89aa8fa62d30b00259cb33174260c134edf1a70b/tests/ui/evidence/2026-10-17-original-hepta-shell/README.md)。旧 R5 四 ELF 在当时验证中保留，旧轮仅启动 Shell、Session 和 CLI；新旧六阶段都未启动 AppWindow，不据此扩展它的运行资格。
 
 ## 5. 验证
 
@@ -85,6 +95,8 @@ Shell 的启动、新窗口、终止以及 `Save local draft`、`Export drafts t
 
 当前主界面已采用全 Rust Workspace/Chat，提供 Personal/Research/Build 分区、typed 本地草稿、任务上下文、Tasks 与控制台页面，具体结构和持久化范围见 [CHAT_WORKSPACE](../support/ui/CHAT_WORKSPACE.md)。R8 的实际整树回归包括这些实现，新增原版截图限定为 Runtime 页；完整工作区 IME、无障碍、真实产品提交和跨平台交互继续逐项验收。界面以明确的来源和状态表达执行事实，不能用模型文字代替原 owner 的进度与结果。
 
+2026-10-19 补充实际工作区两页：已发布 `5060ac6` 对应的固定四 ELF 在私有 X11 显示中运行，XTEST 从 Chat 选择嵌入 Console，始终保持同一 Session 和 Shell 窗口；两张 1440×1000 原图、真实输入、前后快照、依赖恢复失败及逐图复核见 [整合证据](../results/integration/2026-10-19-main-sync/README.md)。这次 Hepta 未配置，画面只确认本地草稿和宿主观测布局；没有执行 IME 输入、任务提交或移动适配。随后 history 整合产生的新七 ELF 与这次旧四 ELF 的身份分别记录。
+
 聊天草稿应使用 typed 本地模型，并能引用实际任务和来源上下文。宿主任务引用由 `(session_instance, task_id)` 标识；Session 换代后保留旧引用为历史，不按同名 task_id 静默重绑。原版 Hepta 观测另以 AgentId / spawn 标识，不能把宿主 TaskRecord 命名为原版 objective。任务状态变化时间不等于观测时间：上下文卡是否仍为当前事实，应检查 Snapshot 的采样时间与本地 receipt 年龄。草稿保存、导出、恢复与原版接收 / 执行分别显示。
 
 | 工作区对象 | 应显示的内容 | 事实 owner |
@@ -96,6 +108,8 @@ Shell 的启动、新窗口、终止以及 `Save local draft`、`Export drafts t
 
 ### 6.2 可信意图入口与平台接合
 
-位于 `TrustedReadOnlyOrganV1` 外的单次有界 ObjectiveStart 传输与 hepta-submit CLI 已实现，并用隔离测试 issuer 对固定原版 owner 实际验证；完整命令和错误语义见 [OBJECTIVE_TRANSPORT](../services/hepta-os/OBJECTIVE_TRANSPORT.md)。结构检查仍不替代原版认证；一旦可能发出请求而没有明确结果，就保留 SubmitUnknown 及原身份。通用错误可能发生在持久发布之后，不能判为“没有提交”，也不能自动换 ID、重签或跨 spawn 重发。下一步是接既有生产 issuer/provider、首次发送前保存原请求的 owner，以及原版持久 unknown 核对接口；具体工作与完成判据见 [R8_NEXT_SLICE 的 S1/S2](agents/R8_NEXT_SLICE.md)。这些产品装配完成前，Shell 本地草稿和任务上下文仍不提交 objective。
+位于 `TrustedReadOnlyOrganV1` 外的单次有界 ObjectiveStart 传输与 hepta-submit CLI 已实现，并用隔离测试 issuer 对固定原版 owner 实际验证；完整命令和错误语义见 [OBJECTIVE_TRANSPORT](../services/hepta-os/OBJECTIVE_TRANSPORT.md)。结构检查仍不替代原版认证；一旦可能发出请求而没有明确结果，就保留 SubmitUnknown 及原身份。通用错误可能发生在持久发布之后，不能判为“没有提交”，也不能自动换 ID、重签或跨 spawn 重发。
+
+默认 f8 仍没有历史查询 RPC。独立固定的原 owner `2be5fc0` 已扩展窄只读 ObjectiveAdmission，default-off 的 hepta-history 使用保留的准确签名请求和可选 anchor，查询运行中的原 owner 既有 mutex 与已恢复 journal 索引，既不再次提交，也不创建第二份 ledger；开发与技术边界见 [OBJECTIVE_HISTORY](../services/hepta-os/OBJECTIVE_HISTORY.md)。其固定桌面 `46dcb2d` 的实际 ARM 故障运行完成 15 检查 / 13 查询，覆盖丢回复后的 publication、重启、过期、撤销和保留 anchor 的回滚/截断拒绝；这些原始证据在 [整合归档](../results/integration/2026-10-19-main-sync/README.md) 中保持独立来源。历史 publication 不证明模型运行或设备效果完成。下一步是既有生产 issuer/provider 与首次发送前保存原请求及 anchor 的 owner 接合，再将这些有限事实投影到 Rust UI；具体工作与完成判据见 [R8_NEXT_SLICE 的 S1/S2](agents/R8_NEXT_SLICE.md)。这些产品装配完成前，Shell 本地草稿和任务上下文仍不提交 objective。
 
 随后接既有持久结果 owner、durable K↔D、撤销与确认退役；cancel_requested 与真实停止分开显示。UI 不创建新的 authority/operations owner，也不直接持有设备效果权限。桌面、Web 和移动端可以共享 Rust 领域模型、类型与协议，但 compositor、显示/输入、IME、触控、缩放旋转和设备效果必须分别验收。字体、像素、交互、原版只读运行与设备执行各自交付真实记录；某项通过不等于整个原生系统完成。

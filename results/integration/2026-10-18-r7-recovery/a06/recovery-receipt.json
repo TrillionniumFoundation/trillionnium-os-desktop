@@ -1,0 +1,189 @@
+{
+  "schema": "a06-maintenance-recovery-v1",
+  "status": "payloads_and_independent_review_recovered_with_original_byte_hashes",
+  "restored_from": "functions store: original 45000-character chunks and parsed payloads captured before workspace maintenance",
+  "payloads": [
+    {
+      "head": "cc1f438c5bcbe863b89386a35b9fa025a32dcdb3",
+      "bytes": 158346,
+      "sha256": "912bcfba13a07a5d9daadee0f7e8ea5b0e0d982bda0fef890cec305eeccb4f5c",
+      "tree": "df06a14d3733ced4a597f20c2e8d6dc1816d8b37",
+      "parents": [
+        "4339acedd2d433f838c7b5fd445709c539043a77"
+      ],
+      "status": "passed"
+    },
+    {
+      "head": "64f855512b2e78e895248ba49f908eccd7232679",
+      "bytes": 69735,
+      "sha256": "955027b6d95dcc24ed9e5a6e6ae0a5aee58b5e2d88ad336d6fa8576804277ae2",
+      "tree": "6f72771c6192b364821c1dd99cd4348a827d56bc",
+      "parents": [
+        "cc1f438c5bcbe863b89386a35b9fa025a32dcdb3"
+      ],
+      "status": "passed"
+    },
+    {
+      "head": "d22c5e4dd06e7a2f329752d8f6caada3c687bb70",
+      "bytes": 830273,
+      "sha256": "b0e415a0d1e2917fd6accd119258849329eb3a8847162d982db453caec52b294",
+      "tree": "5cc839f08c5c5c9d031ab0322f32ced8e51aec2c",
+      "parents": [
+        "64f855512b2e78e895248ba49f908eccd7232679"
+      ],
+      "status": "passed"
+    }
+  ],
+  "review": {
+    "file": "a06-main-dedup-independent-review.json",
+    "original_git_path": "results/integration/2026-10-18-r7-cpu-crosscheck/main-dedup-independent-review.json",
+    "bytes": 8857,
+    "sha256": "1e117596e59988ab08efa9a8f1d8fe58b310203379ca773ee0fb862a08ae7823",
+    "readback_verified": true
+  },
+  "binary": {
+    "bytes_restored": false,
+    "base64_available_in_known_stores": false,
+    "references": [
+      {
+        "path": "results/integration/2026-10-18-r7-cpu-crosscheck/experiment/apt-metadata/archive.ubuntu.com_ubuntu_dists_noble_InRelease.gz",
+        "sha": "2c62f7e622ba1cce8f85155f553aea0cbb66b8cc",
+        "bytes": 89006,
+        "base64_chars": 118676
+      },
+      {
+        "path": "results/integration/2026-10-18-r7-cpu-crosscheck/experiment/execution-01/fetch-kernel.resources.jsonl.gz",
+        "sha": "ee8626ce143eb79f989efbf8d8ceb5f5497cb228",
+        "bytes": 535,
+        "base64_chars": 716
+      },
+      {
+        "path": "results/integration/2026-10-18-r7-cpu-crosscheck/experiment/execution-01/fetch-osdk.resources.jsonl.gz",
+        "sha": "d2734b924498c617c51b5abbb0f686872e4b71c5",
+        "bytes": 403,
+        "base64_chars": 540
+      },
+      {
+        "path": "results/integration/2026-10-18-r7-cpu-crosscheck/experiment/execution-01/fetch-stdlib.resources.jsonl.gz",
+        "sha": "be832d7bff922bd63c7b30bb0fbc603a208378be",
+        "bytes": 262,
+        "base64_chars": 352
+      },
+      {
+        "path": "results/integration/2026-10-18-r7-cpu-crosscheck/experiment/execution-01/prepare-locks.resources.jsonl.gz",
+        "sha": "a4c7a9d2e2aadcaaaa04fc201955671382643b66",
+        "bytes": 206,
+        "base64_chars": 276
+      },
+      {
+        "path": "results/integration/2026-10-18-r7-cpu-crosscheck/experiment/execution-01/real-aster-core.resources.jsonl.gz",
+        "sha": "e788b5c1a96bb6f3609b96a5d6c6c0664079a328",
+        "bytes": 20677,
+        "base64_chars": 27572
+      },
+      {
+        "path": "results/integration/2026-10-18-r7-cpu-crosscheck/experiment/execution-01/source-after.json.gz",
+        "sha": "595770f026966624d1639431d07695f552c8755b",
+        "bytes": 150511,
+        "base64_chars": 200684
+      },
+      {
+        "path": "results/integration/2026-10-18-r7-cpu-crosscheck/experiment/execution-01/source-before.json.gz",
+        "sha": "595770f026966624d1639431d07695f552c8755b",
+        "bytes": 150511,
+        "base64_chars": 200684
+      },
+      {
+        "path": "results/integration/2026-10-18-r7-cpu-crosscheck/experiment/execution-02/prepare-locks.resources.jsonl.gz",
+        "sha": "cf960f33a72a1cf98243920af3d0e1312b8445f7",
+        "bytes": 251,
+        "base64_chars": 336
+      },
+      {
+        "path": "results/integration/2026-10-18-r7-cpu-crosscheck/experiment/execution-02/real-aster-core.resources.jsonl.gz",
+        "sha": "a0e1d1eb32bd9cb3995f396b5dacbc3a00b4614e",
+        "bytes": 10283,
+        "base64_chars": 13712
+      },
+      {
+        "path": "results/integration/2026-10-18-r7-cpu-crosscheck/experiment/execution-02/source-after.json.gz",
+        "sha": "2c7c569e336a986841d3f96993cda472f1f41225",
+        "bytes": 150527,
+        "base64_chars": 200704
+      },
+      {
+        "path": "results/integration/2026-10-18-r7-cpu-crosscheck/experiment/execution-02/source-before.json.gz",
+        "sha": "2c7c569e336a986841d3f96993cda472f1f41225",
+        "bytes": 150527,
+        "base64_chars": 200704
+      },
+      {
+        "path": "results/integration/2026-10-18-r7-cpu-crosscheck/experiment/nightly-01/channel-rust-nightly.toml.gz",
+        "sha": "6b4e5f74f019968672dc8a3e810ca02fcfce9ab5",
+        "bytes": 85205,
+        "base64_chars": 113608
+      }
+    ],
+    "unique_shas": [
+      "2c62f7e622ba1cce8f85155f553aea0cbb66b8cc",
+      "ee8626ce143eb79f989efbf8d8ceb5f5497cb228",
+      "d2734b924498c617c51b5abbb0f686872e4b71c5",
+      "be832d7bff922bd63c7b30bb0fbc603a208378be",
+      "a4c7a9d2e2aadcaaaa04fc201955671382643b66",
+      "e788b5c1a96bb6f3609b96a5d6c6c0664079a328",
+      "595770f026966624d1639431d07695f552c8755b",
+      "cf960f33a72a1cf98243920af3d0e1312b8445f7",
+      "a0e1d1eb32bd9cb3995f396b5dacbc3a00b4614e",
+      "2c7c569e336a986841d3f96993cda472f1f41225",
+      "6b4e5f74f019968672dc8a3e810ca02fcfce9ab5"
+    ],
+    "qualification": "Original compressed content was not read before the first create_tree call blocked. SHA/length references are preserved; no re-compression, reconstruction or substitute content is claimed."
+  },
+  "contained_texts": {
+    "count": 133,
+    "zero_byte_files": [
+      "results/integration/2026-10-18-r7-cpu-crosscheck/experiment/namespace-preflight-01/stdout.json",
+      "results/integration/2026-10-18-r7-cpu-crosscheck/experiment/namespace-preflight-02/stdout.json",
+      "results/integration/2026-10-18-r7-cpu-crosscheck/experiment/namespace-preflight-03/stderr.log",
+      "results/integration/2026-10-18-r7-cpu-crosscheck/experiment/native-01/extract.log",
+      "results/integration/2026-10-18-r7-cpu-crosscheck/experiment/native-02/extract.log",
+      "results/integration/2026-10-18-r7-cpu-crosscheck/experiment/native-03/extract.log",
+      "results/integration/2026-10-18-r7-cpu-crosscheck/experiment/native-04/extract.log",
+      "results/integration/2026-10-18-r7-cpu-crosscheck/experiment/source-fix-03/diff-check.log",
+      "results/integration/2026-10-18-r7-cpu-crosscheck/experiment/source-fix-03/rustfmt.log"
+    ],
+    "qualification": "All 133 UTF-8 original contents, including CRLF serial bytes, remain exactly present in the verified d22 JSON payload."
+  },
+  "optional_expansion": {
+    "present_files": 95,
+    "matched_files": 93,
+    "byte_mismatches": [
+      {
+        "path": "results/integration/2026-10-18-r7-cpu-crosscheck/experiment/execution-02/ktest/aster-core/guests/guest-001/serial.log",
+        "actual_bytes": 17333,
+        "expected_bytes": 17532,
+        "actual_sha256": "f12eaaa94152904c738916a4ecd2555128e75f0b5e05df742dc193b0ef70796a",
+        "expected_sha256": "631c794425ca8d6326cc9b1479f7e01243b5aa4a02041ddc588ed64f0e1410de",
+        "crlf_normalization_only": true
+      },
+      {
+        "path": "results/integration/2026-10-18-r7-cpu-crosscheck/experiment/execution-02/ktest/aster-core/osdk-test.log",
+        "actual_bytes": 58263,
+        "expected_bytes": 58462,
+        "actual_sha256": "6af599329e822d00cbcd1dd2268b6253f269525978d74066ac7494aec8047d23",
+        "expected_sha256": "c252a062fe914d320b2afa634b8d28815079dfa1c3567a1f746dc4b2142fcfb9",
+        "crlf_normalization_only": true
+      }
+    ],
+    "mode_differences": [],
+    "directory": "d22-text",
+    "qualified_for_original_byte_publication": false,
+    "disposition": "Stopped optional bulk apply_patch expansion. Some carriage returns were normalized by text patch handling and expansion is incomplete. This directory must not be used as the original byte archive or complete checkout. Use the verified complete JSON payload as authority."
+  },
+  "publication": {
+    "performed_during_recovery": false,
+    "remote_ref_written": false,
+    "original_interrupted_call": "cc1 create_tree aborted after 1326.0s with no result; no commit/ref was created by this agent in that attempt."
+  },
+  "tests_or_compilation_repeated": false
+}

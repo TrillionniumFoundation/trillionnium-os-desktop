@@ -1,0 +1,246 @@
+#!/usr/bin/env bash
+# Checks real Linux Wayland app/shell process survival, NOT target-kernel boot.
+set -euo pipefail
+# Many validation probes use Python assert: -O must never disable blockers.
+export PYTHONOPTIMIZE=0
+cd "$(dirname "$0")/../.."
+: "${XDG_RUNTIME_DIR:?Run inside an active Wayland desktop session}"
+: "${WAYLAND_DISPLAY:?A Wayland compositor socket is required}"
+if [[ "$WAYLAND_DISPLAY" = /* ]]; then
+    compositor_socket="$WAYLAND_DISPLAY"
+else
+    compositor_socket="$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY"
+fi
+[[ -S "$compositor_socket" ]] || { echo "No Wayland socket: $compositor_socket" >&2; exit 2; }
+cargo build --manifest-path ui/Cargo.toml --workspace --bins --locked
+ui_binaries="${CARGO_TARGET_DIR:-$PWD/ui/target}/debug"
+ctl="$ui_binaries/trill-ctl"
+session_bin="$ui_binaries/trill-session"
+shell_bin="$ui_binaries/trill-shell"
+runtime="$(mktemp -d "${XDG_RUNTIME_DIR%/}/trill-ui-smoke.XXXXXXXX")"
+chmod 700 "$runtime"
+export XDG_RUNTIME_DIR="$runtime" WAYLAND_DISPLAY="$compositor_socket"
+# Do not allow a healthy X11 fallback to masquerade as a Wayland smoke.
+unset DISPLAY
+session_pid=""
+shell_pid=""
+task_id=""
+task2_id=""
+task3_id=""
+error_task_id=""
+app_pid=""
+app2_pid=""
+app3_pid=""
+error_app_pid=""
+
+# Reuse the same ownership-scoped cleanup tested without a compositor.
+source support/ui/smoke-cleanup.sh
+
+cleanup() {
+    # Logs are retained only at an explicitly supplied path.
+    if [[ -n "${A10_SMOKE_LOG_DIR:-}" ]]; then
+        mkdir -p -- "$A10_SMOKE_LOG_DIR" || true
+        cp "$runtime/"*.log "$A10_SMOKE_LOG_DIR/" 2>/dev/null || true
+    fi
+    if [[ -n "$task_id" ]]; then "$ctl" cancel "$task_id" "$instance" >/dev/null 2>&1 || true; fi
+    if [[ -n "$task2_id" ]]; then "$ctl" cancel "$task2_id" "$instance" >/dev/null 2>&1 || true; fi
+    if [[ -n "$task3_id" ]]; then "$ctl" cancel "$task3_id" "$instance" >/dev/null 2>&1 || true; fi
+    if [[ -n "$error_task_id" ]]; then "$ctl" cancel "$error_task_id" "$instance" >/dev/null 2>&1 || true; fi
+    # The separate Session process may already have crashed, leaving native
+    # clients running. Clean up only the exact, uniquely scoped test clients.
+    kill_owned_app "$app_pid"
+    kill_owned_app "$app2_pid"
+    kill_owned_app "$app3_pid"
+    kill_owned_app "$error_app_pid"
+    if [[ -n "$shell_pid" ]]; then kill "$shell_pid" 2>/dev/null || true; wait "$shell_pid" 2>/dev/null || true; fi
+    if [[ -n "$session_pid" ]]; then kill "$session_pid" 2>/dev/null || true; wait "$session_pid" 2>/dev/null || true; fi
+    [[ -d "$runtime" ]] && rm -rf -- "$runtime"
+}
+trap cleanup EXIT
+
+# Process liveness is weaker than an actual Rust/egui widget update.
+# Use a one-shot shell-emitted marker, separate from the child app signals.
+wait_shell_layout() {
+    local logfile="$1" seen=0 count
+    for _ in {1..100}; do
+        if [[ -f "$logfile" ]] &&
+            grep -Fxq "TRILL_SHELL_FIRST_FRAME_V1" "$logfile"; then
+            seen=1
+            break
+        fi
+        if ! host_process_alive "$shell_pid"; then
+            echo "Shell exited before completing its first egui layout" >&2
+            [[ ! -f "$logfile" ]] || tail -80 "$logfile" >&2
+            return 1
+        fi
+        sleep 0.1
+    done
+    if [[ "$seen" != 1 ]]; then
+        echo "Shell timed out before its first egui layout" >&2
+        [[ ! -f "$logfile" ]] || tail -80 "$logfile" >&2
+        return 1
+    fi
+    count="$(grep -Fxc "TRILL_SHELL_FIRST_FRAME_V1" "$logfile" || true)"
+    if [[ "$count" != 1 ]]; then
+        echo "Shell emitted $count first-layout markers (expected exactly one)" >&2
+        return 1
+    fi
+    host_process_alive "$shell_pid" || { echo "Shell died after first layout" >&2; return 1; }
+}
+
+"$session_bin" >"$runtime/session.log" 2>&1 &
+session_pid=$!
+initial=""
+for _ in {1..100}; do
+    if initial="$("$ctl" snapshot 2>/dev/null)"; then break; fi
+    host_process_alive "$session_pid" 2>/dev/null || { cat "$runtime/session.log" >&2; exit 1; }
+    sleep 0.1
+done
+[[ -n "$initial" ]] || { echo "Session startup timeout" >&2; exit 1; }
+instance="$(printf '%s' "$initial" | python3 -c 'import json,sys;print(json.load(sys.stdin)["session_instance"])')"
+"$shell_bin" >"$runtime/shell.log" 2>&1 &
+shell_pid=$!
+wait_shell_layout "$runtime/shell.log"
+response="$("$ctl" launch personal notes)"
+task_id="$(printf '%s' "$response" | python3 -c 'import json,sys;print(json.load(sys.stdin)["task"]["id"])')"
+app_pid="$(printf '%s' "$response" | python3 -c 'import json,sys;d=json.load(sys.stdin)["task"];assert d["state"]=="running" and d["pid"];print(d["pid"])')"
+second="$("$ctl" launch research calculator)"
+task2_id="$(printf '%s' "$second" | python3 -c 'import json,sys;print(json.load(sys.stdin)["task"]["id"])')"
+app2_pid="$(printf '%s' "$second" | python3 -c 'import json,sys;d=json.load(sys.stdin)["task"];assert d["state"]=="running" and d["pid"];print(d["pid"])')"
+third="$("$ctl" launch build terminal)"
+task3_id="$(printf '%s' "$third" | python3 -c 'import json,sys;print(json.load(sys.stdin)["task"]["id"])')"
+app3_pid="$(printf '%s' "$third" | python3 -c 'import json,sys;d=json.load(sys.stdin)["task"];assert d["state"]=="running" and d["pid"] and d["execution_mode"]=="linux_host_process_restricted_terminal";print(d["pid"])')"
+[[ "$app_pid" != "$app2_pid" && "$app_pid" != "$app3_pid" && "$app2_pid" != "$app3_pid" ]] || {
+    echo "Distinct apps must have distinct PIDs" >&2
+    exit 1
+}
+for pid in "$app_pid" "$app2_pid" "$app3_pid"; do
+    real_exe="$(readlink "/proc/$pid/exe" 2>/dev/null || true)"
+    [[ "$real_exe" == */trill-app-window ]] || {
+        echo "PID $pid is not the expected native Rust app executable: $real_exe" >&2
+        exit 1
+    }
+done
+# PID existence alone cannot prove the Rust GUI even reached App::update.
+# The session reads an exact one-frame marker from each owned child pipe.
+ready=0
+for _ in {1..100}; do
+    observed="$("$ctl" snapshot)"
+    if printf '%s' "$observed" | python3 -c '
+import json,sys
+d=json.load(sys.stdin)
+required=((int(sys.argv[1]),int(sys.argv[2])),(int(sys.argv[3]),int(sys.argv[4])),(int(sys.argv[5]),int(sys.argv[6])))
+# First frames are expected to be PENDING during readiness polling. Return a
+# quiet not-ready status; only a real timeout is printed as a failure.
+if not all(any(t["id"] == id and t["pid"] == pid and t["state"] == "running" and
+               t["ui_first_frame_unix_ms"] is not None for t in d["tasks"])
+           for id,pid in required):
+    raise SystemExit(1)
+' "$task_id" "$app_pid" "$task2_id" "$app2_pid" "$task3_id" "$app3_pid"; then
+        ready=1
+        break
+    fi
+    sleep 0.1
+done
+if [[ "$ready" -ne 1 ]]; then
+    echo "At least one native app never reached its first egui update" >&2
+    printf '%s\n' "$observed" >&2
+    cat "$runtime/session.log" >&2
+    exit 1
+fi
+host_process_alive "$app_pid" || { echo "Notes died before shell restart" >&2; exit 1; }
+host_process_alive "$app2_pid" || { echo "Calculator died before shell restart" >&2; exit 1; }
+host_process_alive "$app3_pid" || { echo "Restricted Terminal died before shell restart" >&2; exit 1; }
+
+# Exercise a real failure path before the shell restart. Killing the owned
+# child is the test stimulus; only the session's subsequent wait observation
+# may classify it as FAILED. This is host-process evidence, not a Hepta
+# operation result or a compositor failure claim.
+error_response="$("$ctl" launch personal calculator)"
+error_task_id="$(printf '%s' "$error_response" | python3 -c 'import json,sys;print(json.load(sys.stdin)["task"]["id"])')"
+error_app_pid="$(printf '%s' "$error_response" | python3 -c 'import json,sys;d=json.load(sys.stdin)["task"];assert d["state"]=="running" and d["pid"];print(d["pid"])')"
+kill "$error_app_pid"
+error_state=""
+error_snapshot=""
+for _ in {1..100}; do
+    error_snapshot="$("$ctl" snapshot)"
+    error_state="$(printf '%s' "$error_snapshot" | python3 -c '
+import json,sys
+d=json.load(sys.stdin)
+task=next(t for t in d["tasks"] if t["id"] == int(sys.argv[1]))
+print(task["state"])
+' "$error_task_id")"
+    if [[ "$error_state" == "failed" ]]; then
+        break
+    fi
+    sleep 0.1
+done
+[[ "$error_state" == "failed" ]] || {
+    echo "Killed child did not become an observed FAILED task" >&2
+    printf '%s\n' "$error_snapshot" >&2
+    exit 1
+}
+error_detail="$(printf '%s' "$error_snapshot" | python3 -c '
+import json,sys
+d=json.load(sys.stdin)
+task=next(t for t in d["tasks"] if t["id"] == int(sys.argv[1]))
+print(task["detail"])
+' "$error_task_id")"
+[[ "$error_detail" == *"non-successful process exit"* ]] || {
+    echo "FAILED task did not preserve observed exit detail" >&2
+    exit 1
+}
+error_task_id=""
+error_app_pid=""
+
+kill "$shell_pid"
+wait "$shell_pid" 2>/dev/null || true
+shell_pid=""
+host_process_alive "$app_pid" || { echo "Shell exit killed Notes" >&2; exit 1; }
+host_process_alive "$app2_pid" || { echo "Shell exit killed Calculator" >&2; exit 1; }
+host_process_alive "$app3_pid" || { echo "Shell exit killed Restricted Terminal" >&2; exit 1; }
+actual="$("$ctl" snapshot)"
+printf '%s' "$actual" | python3 -c '
+import json,sys
+d=json.load(sys.stdin)
+assert d["session_instance"] == sys.argv[1]
+assert any(t["id"] == int(sys.argv[2]) and t["state"] == "running" and
+           t["pid"] == int(sys.argv[3]) and t["ui_first_frame_unix_ms"] is not None
+           for t in d["tasks"]), "Notes ownership/first frame lost"
+assert any(t["id"] == int(sys.argv[4]) and t["state"] == "running" and
+           t["pid"] == int(sys.argv[5]) and t["ui_first_frame_unix_ms"] is not None
+           for t in d["tasks"]), "Calculator ownership/first frame lost"
+assert any(t["id"] == int(sys.argv[6]) and t["state"] == "running" and
+           t["pid"] == int(sys.argv[7]) and t["ui_first_frame_unix_ms"] is not None and
+           t["execution_mode"] == "linux_host_process_restricted_terminal"
+           for t in d["tasks"]), "Restricted Terminal ownership/first frame lost"
+' "$instance" "$task_id" "$app_pid" "$task2_id" "$app2_pid" "$task3_id" "$app3_pid"
+"$shell_bin" >"$runtime/shell-restart.log" 2>&1 &
+shell_pid=$!
+wait_shell_layout "$runtime/shell-restart.log"
+"$ctl" cancel "$task_id" "$instance" >/dev/null
+"$ctl" cancel "$task2_id" "$instance" >/dev/null
+"$ctl" cancel "$task3_id" "$instance" >/dev/null
+terminal=""
+for _ in {1..100}; do
+    terminal="$("$ctl" snapshot)"
+    if printf '%s' "$terminal" | python3 -c '
+import json,sys
+d=json.load(sys.stdin)
+tasks=[t for t in d["tasks"] if t["id"] in (int(sys.argv[1]),int(sys.argv[2]),int(sys.argv[3]))]
+sys.exit(0 if len(tasks) == 3 and all(t["state"] in ("cancelled","failed","completed") for t in tasks) else 1)
+' "$task_id" "$task2_id" "$task3_id"; then break; fi
+    sleep 0.1
+done
+printf '%s' "$terminal" | python3 -c '
+import json,sys
+d=json.load(sys.stdin)
+for id in (int(sys.argv[1]),int(sys.argv[2]),int(sys.argv[3])):
+    t=next(t for t in d["tasks"] if t["id"] == id)
+    assert t["state"] == "cancelled", f"Expected SIGKILL confirmation, got {t}"
+' "$task_id" "$task2_id" "$task3_id"
+task_id=""
+task2_id=""
+task3_id=""
+printf 'Wayland host Shell first layout, restarted Shell layout, three app layouts and observed cancellation: PASS\n'
+printf 'NOT VERIFIED: real CJK candidates, compositor restart, GPU reset or Asterinas boot.\n'

@@ -1,0 +1,468 @@
+{
+  "schema": "r9-workflow-and-projection-compatibility-readonly-review-v1",
+  "recorded_at_utc": "2026-10-18T15:25:23.192185+00:00",
+  "reviewer": "/root/r6_review_ci",
+  "status": "no_source_level_blocker_found",
+  "source_scope": {
+    "head_at_read": "09cf259676e2a81a998c14f1e1fddf4cc94b80df",
+    "origin_main": "f9e306f76154590e096a42f70ce9de0a7c859e60",
+    "github_main_separately_read_back_as": "f9e306f76154590e096a42f70ce9de0a7c859e60",
+    "committed_changed_path_count": 48,
+    "uncommitted_tracked_path_count": 13,
+    "untracked_path_count": 84,
+    "union_path_count": 141,
+    "working_changes_are_provisional": true
+  },
+  "workflows": [
+    {
+      "path": ".github/workflows/a01-boot-evidence.yml",
+      "name": "A01 boot-evidence host regressions",
+      "trigger_definitions": {
+        "pull_request": {
+          "paths": [
+            "support/build/**",
+            "support/upstream-lock.json",
+            "README.md",
+            "kernel/asterinas/**",
+            "kernel/asterinas/osdk/src/commands/**",
+            "kernel/asterinas/osdk/tests/commands/**",
+            ".github/workflows/a01-boot-evidence.yml"
+          ]
+        },
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "support/build/**",
+            "support/upstream-lock.json",
+            "README.md",
+            "kernel/asterinas/**",
+            "kernel/asterinas/osdk/src/commands/**",
+            "kernel/asterinas/osdk/tests/commands/**",
+            ".github/workflows/a01-boot-evidence.yml"
+          ]
+        }
+      },
+      "matching_current_paths": [],
+      "predicted_current_pr_trigger": false,
+      "source_sha256": "284b57ef0c382a20eb894046eca2ee0f7d7451eaedfae54953826eb8d4d62238"
+    },
+    {
+      "path": ".github/workflows/a02-pinned-host-acceptance.yml",
+      "name": "A02 pinned-nightly HOS2 host acceptance",
+      "trigger_definitions": {
+        "pull_request": {
+          "paths": [
+            "libs/os-abi/**",
+            "tests/abi/**",
+            "tests/golden/**",
+            "support/upstream-lock.json",
+            ".github/workflows/a02-pinned-host-acceptance.yml"
+          ]
+        },
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "libs/os-abi/**",
+            "tests/abi/**",
+            "tests/golden/**",
+            "support/upstream-lock.json",
+            ".github/workflows/a02-pinned-host-acceptance.yml"
+          ]
+        },
+        "workflow_dispatch": ""
+      },
+      "matching_current_paths": [],
+      "predicted_current_pr_trigger": false,
+      "source_sha256": "ece9d4ecc34a020c04e0b237253adb331dd3a653821693126127e334e4c5c306"
+    },
+    {
+      "path": ".github/workflows/a03-native-models.yml",
+      "name": "A03 native Loom and allocation safety",
+      "trigger_definitions": {
+        "pull_request": {
+          "paths": [
+            "libs/os-control/**",
+            "tests/control/**",
+            "support/upstream-lock.json",
+            "README.md",
+            ".github/workflows/a03-native-models.yml"
+          ]
+        },
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "libs/os-control/**",
+            "tests/control/**",
+            "support/upstream-lock.json",
+            "README.md",
+            ".github/workflows/a03-native-models.yml"
+          ]
+        },
+        "workflow_dispatch": ""
+      },
+      "matching_current_paths": [],
+      "predicted_current_pr_trigger": false,
+      "source_sha256": "beb39b3b2c982bb2e500eda7b932e9dfdae7be60287da1afbdc6dba98fc4bc64"
+    },
+    {
+      "path": ".github/workflows/a06-kernel.yml",
+      "name": "A06 exact kernel scheduler and QEMU tests",
+      "trigger_definitions": {
+        "pull_request": {
+          "paths": [
+            "kernel/asterinas/**",
+            "libs/os-abi/**",
+            "support/build/kernel.sh",
+            "support/build/ktest/**",
+            "support/build/prepare-host.sh",
+            "support/upstream-lock.json",
+            "tests/kernel/control/**",
+            "tests/organ_backend/**",
+            ".github/workflows/a06-kernel.yml"
+          ]
+        },
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "kernel/asterinas/**",
+            "libs/os-abi/**",
+            "support/build/kernel.sh",
+            "support/build/ktest/**",
+            "support/build/prepare-host.sh",
+            "support/upstream-lock.json",
+            "tests/kernel/control/**",
+            "tests/organ_backend/**",
+            ".github/workflows/a06-kernel.yml"
+          ]
+        },
+        "workflow_dispatch": ""
+      },
+      "matching_current_paths": [],
+      "predicted_current_pr_trigger": false,
+      "source_sha256": "a6ba07c1d487362ddab0b70e85be4264318a61f1bed06a20b562a2b619d36944"
+    },
+    {
+      "path": ".github/workflows/a08-host.yml",
+      "name": "A08 Android source integrity and host probes",
+      "trigger_definitions": {
+        "pull_request": {
+          "paths": [
+            "compat/android/**",
+            "support/android/**",
+            "tests/workloads/android/**",
+            ".github/workflows/a08-host.yml",
+            "README.md"
+          ]
+        },
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "compat/android/**",
+            "support/android/**",
+            "tests/workloads/android/**",
+            ".github/workflows/a08-host.yml",
+            "README.md"
+          ]
+        },
+        "workflow_dispatch": ""
+      },
+      "matching_current_paths": [],
+      "predicted_current_pr_trigger": false,
+      "source_sha256": "febd34c412fc9da2ec2485aa37b8d76dcc68125f6a44a53b69a63618f8e62ef8"
+    },
+    {
+      "path": ".github/workflows/a09-hardware.yml",
+      "name": "A09 hardware-model regressions",
+      "trigger_definitions": {
+        "pull_request": {
+          "paths": [
+            "support/hardware/**",
+            "support/vmm/**",
+            "tests/hardware/**",
+            ".github/workflows/a09-hardware.yml"
+          ]
+        },
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "support/hardware/**",
+            "support/vmm/**",
+            "tests/hardware/**",
+            ".github/workflows/a09-hardware.yml"
+          ]
+        }
+      },
+      "matching_current_paths": [],
+      "predicted_current_pr_trigger": false,
+      "source_sha256": "6b6ef1f309aad1081f38efe0249ed27f05f8f1d0a05cdadf871c92abcfa47ca3"
+    },
+    {
+      "path": ".github/workflows/a10-host.yml",
+      "name": "A10 Rust Wayland host integration",
+      "trigger_definitions": {
+        "pull_request": {
+          "paths": [
+            "ui/**",
+            "tests/ui/**",
+            "support/ui/**",
+            "libs/os-abi/**",
+            "services/hepta-os/**",
+            "tests/integration/hepta/**",
+            ".github/workflows/a10-host.yml",
+            "README.md"
+          ]
+        },
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "ui/**",
+            "tests/ui/**",
+            "support/ui/**",
+            "libs/os-abi/**",
+            "services/hepta-os/**",
+            "tests/integration/hepta/**",
+            ".github/workflows/a10-host.yml",
+            "README.md"
+          ]
+        },
+        "workflow_dispatch": ""
+      },
+      "matching_current_paths": [
+        "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+        "services/hepta-os/tests/objective_cli.rs",
+        "support/ui/HEPTA_OBSERVER.md",
+        "ui/core/src/conversation.rs",
+        "ui/core/src/hepta.rs",
+        "ui/session/src/hepta.rs",
+        "ui/session/tests/hepta_run.rs",
+        "ui/shell/OBSERVATION_FRESHNESS.md",
+        "ui/shell/src/hepta_panel.rs",
+        "ui/shell/src/main.rs"
+      ],
+      "predicted_current_pr_trigger": true,
+      "source_sha256": "1babc1636c109558928959f50d0ede9e063c454e05410ecf43147023f1999a8a"
+    },
+    {
+      "path": ".github/workflows/g0-contracts.yml",
+      "name": "G0 scoped host contracts",
+      "trigger_definitions": {
+        "pull_request": {
+          "paths": [
+            "tests/abi/**",
+            "tests/golden/**",
+            "tests/spec/**",
+            "tests/control/**",
+            "tests/organ_backend/**",
+            "tests/kernel/control/**",
+            "libs/os-abi/**",
+            "libs/os-control/**",
+            ".github/workflows/g0-contracts.yml"
+          ]
+        },
+        "push": {
+          "branches": [
+            "main"
+          ],
+          "paths": [
+            "tests/abi/**",
+            "tests/golden/**",
+            "tests/spec/**",
+            "tests/control/**",
+            "tests/organ_backend/**",
+            "tests/kernel/control/**",
+            "libs/os-abi/**",
+            "libs/os-control/**",
+            ".github/workflows/g0-contracts.yml"
+          ]
+        }
+      },
+      "matching_current_paths": [],
+      "predicted_current_pr_trigger": false,
+      "source_sha256": "b9b9b700cd0d98ea5446ffe88a970b1674f742f9b31fa64296387b1b4bf2e24c"
+    },
+    {
+      "path": ".github/workflows/hepta-original-agentd.yml",
+      "name": "Hepta original Agentd, ObjectiveStart and Session qualification (ARM64)",
+      "trigger_definitions": {
+        "pull_request": {
+          "paths": [
+            "services/hepta-os/**",
+            "tests/integration/hepta/**",
+            "ui/core/**",
+            "ui/session/**",
+            "ui/Cargo.toml",
+            "ui/Cargo.lock",
+            ".github/workflows/hepta-original-agentd.yml"
+          ]
+        },
+        "workflow_dispatch": ""
+      },
+      "matching_current_paths": [
+        "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+        "services/hepta-os/tests/objective_cli.rs",
+        "ui/core/src/conversation.rs",
+        "ui/core/src/hepta.rs",
+        "ui/session/src/hepta.rs",
+        "ui/session/tests/hepta_run.rs"
+      ],
+      "predicted_current_pr_trigger": true,
+      "source_sha256": "09f3e468c409c82a9c3fcb34c0a692bd6929a3133f774c1e4c61786e3136cc5a"
+    }
+  ],
+  "expected_new_pr_workflows": [
+    "A10 Rust Wayland host integration",
+    "Hepta original Agentd, ObjectiveStart and Session qualification (ARM64)"
+  ],
+  "expected_jobs": [
+    "ui-source-guard",
+    "native-rust-and-wayland",
+    "original-agentd"
+  ],
+  "a10_has_ui_condition": {
+    "ui_manifest_present": true,
+    "root_readme_bytes": 0,
+    "source_and_native_checkout": "github.event.pull_request.head.sha || github.sha",
+    "explicit_objective_feature_suite_in_check_host": true,
+    "feature_off_check_in_check_host": true,
+    "strict_objective_clippy_in_workflow": true
+  },
+  "kernel_trigger_matches": [],
+  "projection_review": {
+    "runtime_sample_clock": "Optional serialized sibling of last_observation; successful new Session snapshots include it. Matching Session/ctl/Shell deployment remains required by strict serde.",
+    "old_four_key_restriction_found": false,
+    "runtime_sample_attempt_equality_required_by_verifiers": false,
+    "retained_constraints": [
+      "Original runtime positive checks validate attempt and sample freshness separately.",
+      "Original runtime stale check permits sample <= later failed attempt.",
+      "Objective run sample <= completed attempt is a separate run-read ordering constraint.",
+      "Objective stale comparisons pin the run last_observation and run last_attempt across failed health polls; outer runtime attempts must advance.",
+      "Snapshot and projection objects are read by named fields; added runtime_sample_clock does not change existing key-count assertions."
+    ],
+    "new_clock_sequence_age_independently_validated_by_existing_python_gates": false,
+    "new_clock_validation_boundary": "New Rust regressions and the later exact R9 candidate runtime must establish new clock behavior; accepting an added JSON field is not proof of its age or sequence semantics.",
+    "affected_source_references": [
+      "tests/integration/hepta/run_original_agentd.py:336-382",
+      "tests/integration/hepta/run_original_objective.py:175-244",
+      "tests/integration/hepta/original_session_probe.rs:468-565",
+      "tests/integration/hepta/original_objective_session.rs:297-393",
+      "ui/core/src/hepta.rs:186-210",
+      "ui/session/src/hepta.rs:376-421,450-546"
+    ]
+  },
+  "inputs": [
+    {
+      "path": ".github/workflows/a01-boot-evidence.yml",
+      "sha256": "284b57ef0c382a20eb894046eca2ee0f7d7451eaedfae54953826eb8d4d62238",
+      "bytes": 4180
+    },
+    {
+      "path": ".github/workflows/a02-pinned-host-acceptance.yml",
+      "sha256": "ece9d4ecc34a020c04e0b237253adb331dd3a653821693126127e334e4c5c306",
+      "bytes": 6440
+    },
+    {
+      "path": ".github/workflows/a03-native-models.yml",
+      "sha256": "beb39b3b2c982bb2e500eda7b932e9dfdae7be60287da1afbdc6dba98fc4bc64",
+      "bytes": 6147
+    },
+    {
+      "path": ".github/workflows/a06-kernel.yml",
+      "sha256": "a6ba07c1d487362ddab0b70e85be4264318a61f1bed06a20b562a2b619d36944",
+      "bytes": 5360
+    },
+    {
+      "path": ".github/workflows/a08-host.yml",
+      "sha256": "febd34c412fc9da2ec2485aa37b8d76dcc68125f6a44a53b69a63618f8e62ef8",
+      "bytes": 2512
+    },
+    {
+      "path": ".github/workflows/a09-hardware.yml",
+      "sha256": "6b6ef1f309aad1081f38efe0249ed27f05f8f1d0a05cdadf871c92abcfa47ca3",
+      "bytes": 1143
+    },
+    {
+      "path": ".github/workflows/a10-host.yml",
+      "sha256": "1babc1636c109558928959f50d0ede9e063c454e05410ecf43147023f1999a8a",
+      "bytes": 7075
+    },
+    {
+      "path": ".github/workflows/g0-contracts.yml",
+      "sha256": "b9b9b700cd0d98ea5446ffe88a970b1674f742f9b31fa64296387b1b4bf2e24c",
+      "bytes": 8669
+    },
+    {
+      "path": ".github/workflows/hepta-original-agentd.yml",
+      "sha256": "09f3e468c409c82a9c3fcb34c0a692bd6929a3133f774c1e4c61786e3136cc5a",
+      "bytes": 24675
+    },
+    {
+      "path": "tests/ui/check-host.sh",
+      "sha256": "3e4f0a89f58031794faaeb897c1d5601fd8d1b755e1246fe1fba2a9ccc352daf",
+      "bytes": 7830
+    },
+    {
+      "path": "tests/integration/hepta/run_original_agentd.py",
+      "sha256": "21dd4a2e0621240a75f5ce37bad93da0a37352fbaa78554a50e048abe6a45fd0",
+      "bytes": 30386
+    },
+    {
+      "path": "tests/integration/hepta/run_original_objective.py",
+      "sha256": "9ea5d7b2f6801f88240257effe78dbbceb126d63f7132f37b0f2edd7c2486df4",
+      "bytes": 25458
+    },
+    {
+      "path": "tests/integration/hepta/original_session_probe.rs",
+      "sha256": "7660c76f640cf612f57a2ee6a2ea7d8b09e8ac332c20fd44d8e7c8bbcb0663c5",
+      "bytes": 24902
+    },
+    {
+      "path": "tests/integration/hepta/original_objective_session.rs",
+      "sha256": "51d8b992b8d45f597e78b4179da55c3ebaaec1d0caf1b7c49c30e5d53624d5f0",
+      "bytes": 18301
+    },
+    {
+      "path": "tests/ui/probe-hepta-session.py",
+      "sha256": "0c7e7f95448df6f995fd95870660dc496de78871704defa1ba28bd996c28e605",
+      "bytes": 8309
+    },
+    {
+      "path": "tests/ui/probe-original-hepta-shell.py",
+      "sha256": "971c8a92ca2fe205784f2ebde3c4dceaf4615527f20df256071995157aa68265",
+      "bytes": 35068
+    },
+    {
+      "path": "tests/ui/probe-original-objective-shell.py",
+      "sha256": "c1e1c94f42f0a30cd694f458259667ca9ec111503e269325acf5e976a4d3af32",
+      "bytes": 41554
+    },
+    {
+      "path": "ui/core/src/hepta.rs",
+      "sha256": "d5f1639d3db790fdd1db533e9a729c38c778db754aff87ef3da7fd76aec514a9",
+      "bytes": 13513
+    },
+    {
+      "path": "ui/session/src/hepta.rs",
+      "sha256": "81f53d565cd0cf6abd532f502d2014e3e54ca8c4ea315253da3f5d17cd5e0c7d",
+      "bytes": 46323
+    }
+  ],
+  "workflow_changes": false,
+  "manual_dispatch": false,
+  "tests_or_runtime_executed_in_this_review": false,
+  "future_r9_ci_result_claimed": false,
+  "r8_result_inherited_as_r9": false
+}

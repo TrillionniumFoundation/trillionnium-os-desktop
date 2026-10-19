@@ -304,17 +304,17 @@ def bounded_command(command, cwd, environment, log_path, timeout_seconds):
         )
         group = ChildGroup(process)
         try:
-            status = group.wait_exit(timeout_seconds)
+            group.wait_exit(timeout_seconds)
         except subprocess.TimeoutExpired:
             terminate_group(group)
             raise GateError("command_deadline_exceeded") from None
         except KeyboardInterrupt:
             terminate_group(group)
             raise GateError("command_interrupted") from None
-        if status.si_code != os.CLD_EXITED or status.si_status != 0:
-            code = terminate_group(group)
-        else:
-            code = group.reap()
+        # Exit 0 describes the leader, not whether its descendants stopped.
+        # Keep that real exit status and its WNOWAIT identity anchor through
+        # the same bounded group cleanup used for failures, before reaping.
+        code = terminate_group(group)
     if code != 0:
         raise GateError(f"command_failed_exit_{code}")
 

@@ -1,0 +1,271 @@
+{
+  "schema": "r9-original-arm-exact-5060-completion-review-v1",
+  "recorded_at_utc": "2026-10-19T01:20:00.740380+00:00",
+  "status": "verified_ci_failure_with_readonly_acceptance",
+  "workflow_conclusion": "failure",
+  "objective_outer_gate_status": "failed",
+  "objective_error": "[Errno 39] Directory not empty: 'plugins'",
+  "objective_raw_acceptance_is_not_successful_gate_qualification": true,
+  "objective_report_has_runtime_records": false,
+  "objective_postruntime_record_validation_and_elf_rehash_not_reached": true,
+  "reviewer": "/root/r6_review_ci",
+  "run_id": 39182491155,
+  "job_id": 117838018950,
+  "run_attempt": 1,
+  "head": "5060ac6976b56b32647c728991e489cdee1cce9d",
+  "tree": "ae588699126910065c16b77d83f3ef20b53509f2",
+  "runner_labels": [
+    "ubuntu-24.04-arm"
+  ],
+  "job_started_at": "2026-10-19T00:49:24Z",
+  "job_completed_at": "2026-10-19T01:14:44Z",
+  "readonly_original_checks": [
+    "original_starting",
+    "original_running",
+    "bounded_capabilities_events",
+    "missing_run_read",
+    "same_process_draining",
+    "original_restart",
+    "old_spawn_rejected",
+    "controlled_stop"
+  ],
+  "readonly_session_checks": [
+    "persistent_session_starting",
+    "persistent_session_running",
+    "persistent_session_draining",
+    "same_worker_same_instance",
+    "old_spawn_stale_ipc_responsive",
+    "explicit_session_replacement",
+    "replacement_running",
+    "stopped_stale_ipc_responsive"
+  ],
+  "objective_core_checks": [
+    "compiled_original_admission",
+    "exact_replay_same_publication",
+    "explicit_abstain_durable_without_run",
+    "invalid_signature_owner_rejected",
+    "body_generation_fenced_before_send",
+    "revoked_issuer_owner_rejected",
+    "owner_restart_retains_historical_journal",
+    "old_spawn_not_accepted",
+    "original_journal_matches_receipts",
+    "controlled_stop"
+  ],
+  "objective_explicit_submissions": 7,
+  "objective_submission_exit_codes": [
+    0,
+    0,
+    0,
+    12,
+    10,
+    12,
+    12
+  ],
+  "readonly_session_phases": [
+    {
+      "phase": "starting",
+      "identity": [
+        "e60f0492e88a1b1ad5ce52088566c961",
+        23507,
+        23508
+      ]
+    },
+    {
+      "phase": "running",
+      "identity": [
+        "e60f0492e88a1b1ad5ce52088566c961",
+        23507,
+        23508
+      ]
+    },
+    {
+      "phase": "draining",
+      "identity": [
+        "e60f0492e88a1b1ad5ce52088566c961",
+        23507,
+        23508
+      ]
+    },
+    {
+      "phase": "old_spawn_stale",
+      "identity": [
+        "e60f0492e88a1b1ad5ce52088566c961",
+        23507,
+        23508
+      ]
+    },
+    {
+      "phase": "recovered_running",
+      "identity": [
+        "0f9488024505ab130b294988d640374c",
+        23706,
+        23708
+      ]
+    },
+    {
+      "phase": "stopped_stale",
+      "identity": [
+        "0f9488024505ab130b294988d640374c",
+        23706,
+        23708
+      ]
+    }
+  ],
+  "objective_session_phases": [
+    {
+      "phase": "compiled_run_projected",
+      "identity": [
+        "7c6001416ea1c7fb713c3003c4b450e5",
+        24052,
+        24054
+      ]
+    },
+    {
+      "phase": "old_endpoint_run_stale",
+      "identity": [
+        "7c6001416ea1c7fb713c3003c4b450e5",
+        24052,
+        24054
+      ]
+    },
+    {
+      "phase": "replacement_run_projection_missing",
+      "identity": [
+        "cb5fd7c7605bd3cbc37fcb0179621c77",
+        24202,
+        24204
+      ]
+    }
+  ],
+  "prerequisite_python_counts": [
+    5,
+    6,
+    6
+  ],
+  "objective_receipt_python_tests": 12,
+  "report_json_equal_actual_gate_stdout": true,
+  "readonly_report_equal_json_records_in_actual_runtime_log": true,
+  "objective_raw_runtime_log_reviewed_separately_from_failed_report": true,
+  "full_reports_present_in_raw_github_job_log": true,
+  "selected_original_artifact_members": [
+    {
+      "path": "identity/allocation.json",
+      "bytes": 478,
+      "sha256": "53a8e7b3262c1a1af536695485e17f69774aa4a6b3c363fb5009c9e4268d208c"
+    },
+    {
+      "path": "identity/consumer-source-trees.txt",
+      "bytes": 82,
+      "sha256": "d8ddbf5997f587af1013b34a5151e9741c701efeb1df7dfc88ce31fde980c188"
+    },
+    {
+      "path": "identity/desktop-before.txt",
+      "bytes": 82,
+      "sha256": "09e43e9081a28c4bf8a395791045911c2cffb65b08aa469f963113d87cbff54f"
+    },
+    {
+      "path": "identity/desktop-inputs.sha256",
+      "bytes": 999,
+      "sha256": "045cbee1679cb378b28d6772fda0839e324847b533e78d53c8fa9861a0e2b886"
+    },
+    {
+      "path": "identity/final-checkouts.json",
+      "bytes": 863,
+      "sha256": "27dd877e0db3c4e3f157bb15c20ec96953f03bcf117d207b76ff69231365fdae"
+    },
+    {
+      "path": "identity/hepta-before.txt",
+      "bytes": 82,
+      "sha256": "c72ff4ef7ab8f1ee7f6501a73950e194baa17add926b2d37e72be9fa4d9d1286"
+    },
+    {
+      "path": "identity/initial-locks.sha256",
+      "bytes": 894,
+      "sha256": "39e53ef9bfafea49987933ae46563a0b25047cce2cd24312dde43da1845a7c56"
+    },
+    {
+      "path": "report.json",
+      "bytes": 49410,
+      "sha256": "0643e66f317425a5b2c8399da9acdc0a9efaa47d0baff9ad5402f1754b0870ad"
+    },
+    {
+      "path": "objective-work/report.json",
+      "bytes": 5652,
+      "sha256": "1d0cf353d47aa58d3748e63c4f50a1ec8c276ebb4fc2b564a9f3289e922f03e9"
+    },
+    {
+      "path": "gate-exit-code.txt",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "objective-exit-code.txt",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "path": "logs/gate-prerequisites.log",
+      "bytes": 3423,
+      "sha256": "48e56c591a7d6c6186a7c8d0cdcab14764a729e5863af3e39e6f66828615b620"
+    },
+    {
+      "path": "logs/objective-receipt-contracts.log",
+      "bytes": 2229,
+      "sha256": "d45fe3019fab6a39f408d41475543d0f0e08d855814f228a3cbe32f641bddee6"
+    },
+    {
+      "path": "logs/native-setup.log",
+      "bytes": 8913,
+      "sha256": "c90679c1811b1301de87a129eaf1714af8af2f1a5a9529da58fbc4fed349583a"
+    },
+    {
+      "path": "logs/session-build.log",
+      "bytes": 1407,
+      "sha256": "0c5a6605d85bf9b3dfc3864e53de55e844c84611c1309fd6ef600280d02f4c40"
+    },
+    {
+      "path": "logs/submitter-build.log",
+      "bytes": 229,
+      "sha256": "2816341c27a6816001fd208b1b39c24ca24637028116fea9d880d3e308d8aa1e"
+    },
+    {
+      "path": "logs/upstream-checkout.log",
+      "bytes": 909,
+      "sha256": "6a5a0af41a18ce95205bfc61cddef0ecf622735a8e89929e58919f9debcb356a"
+    },
+    {
+      "path": "work/original_agentd_build.log",
+      "bytes": 78671,
+      "sha256": "d451071dfe4c15236046d5d56cd1b73cdd167f08bb52627e9d9aad72c28e1164"
+    },
+    {
+      "path": "work/original_library_probe_build.log",
+      "bytes": 14560,
+      "sha256": "6da5e49559b99e7565cb93ad5d1562ffb7ba6c857caaa2ae2bbd4c63838fca42"
+    },
+    {
+      "path": "work/original_agentd_process_probe.log",
+      "bytes": 22794,
+      "sha256": "ff6255311eba749fc311c69c65fa070a0bdb2e2c238f927d50fb3364b57bca3a"
+    },
+    {
+      "path": "objective-work/probe-build.log",
+      "bytes": 4357,
+      "sha256": "2c697759f85ade041c83291046f53509a2dc6bc7178e7a03010b161eec892fa4"
+    },
+    {
+      "path": "objective-work/runtime.log",
+      "bytes": 26515,
+      "sha256": "a6c51e299b4348c40c5ae6baca5d01ca4235cb9db189e861984fee105f9affb3"
+    },
+    {
+      "path": "objective-work/runtime-evidence/journal-inspection.json",
+      "bytes": 2250,
+      "sha256": "ad3b3d5e63dfcb249ee7216e964ce327bb0b3706e80d3430a7466de99ba731b1"
+    }
+  ],
+  "new_execution_by_reviewer": false,
+  "qualification_bound_to_r9_head_5060": true,
+  "qualification_inherited_to_any_later_sync_head": false,
+  "scope": "Native AArch64 original Agentd/read-only Session passed its gate and five-ELF binding. Objective raw log contains ten checks, seven explicit submissions and three known-run Session phases plus acceptance_pass, but its outer gate failed during private-root cleanup before post-runtime validation and ELF rehash. No Objective gate or six-ELF qualification is granted. No Shell pixels, production issuer, model turn, operations dispatch, device effect, canonical intelligence or resumed historical run."
+}

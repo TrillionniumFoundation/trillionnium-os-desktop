@@ -1,0 +1,173 @@
+{
+  "started_at_utc": "2026-10-18T10:47:53.101930+00:00",
+  "before": {
+    "commit": "46dcb2d691827f7aa3ad7903dae09d39fd338126",
+    "tree": "8d5de807c41090e3d987764daec9c235ebd022a1",
+    "status": "",
+    "source_sha256": {
+      ".github/workflows/hepta-objective-history.yml": "970cbf94ca4e4ef1bf68bb07b14f96cacfcb790638d4e23e60b9035b41e040d8",
+      "services/hepta-os/CONTRACT.md": "0ec2d9c0db139c0104a05fedc674887d00e05c2527d041591c174a3a294b5068",
+      "services/hepta-os/Cargo.lock": "a1aed4d1f513036cbe03912359f3dfbb2c6d93c5210b8d18244d95be9008a875",
+      "services/hepta-os/Cargo.toml": "8cace1d1bfa958c9da8d989db1a3e677381a2e7a82ad8c53d310cceece7564a9",
+      "services/hepta-os/OBJECTIVE_HISTORY.md": "75aa92f86005be8df59947ad1f92cb969c1975bab131c3182ca622679721a4f8",
+      "services/hepta-os/OBJECTIVE_HISTORY_CONTRACT.json": "f0fc1110233dc38542097c6f9f7ef2e3f6ca5eb215fa2b4447e556cd7ac46981",
+      "services/hepta-os/OBJECTIVE_TRANSPORT.md": "ad5b76ea3c937167b06ad293a4772acfcc666ab363e5586bdd6041c293de4b87",
+      "services/hepta-os/OBJECTIVE_UPSTREAM_CONTRACT.json": "ba3005ee18c77ccf701c5dea063fa2f8d184b9aaebfbf912cd8d16287564d449",
+      "services/hepta-os/README.md": "d03b6c1dbd0834ce9a42f9ee0af30044867eda1120a4bb5e5d07c556e9cf0046",
+      "services/hepta-os/RUN.md": "fb4748152277d443912fb6f3705b59f8da635594ac9e95fbad77206abc64b6f8",
+      "services/hepta-os/UPSTREAM_CONTRACT.json": "24efcccd98b6ac6a56cb34b36f5bdb10785d955efd86c32fed308bac1505f7ef",
+      "services/hepta-os/src/bin/hepta-history.rs": "c65a9063b3f9ad85e9b8fb88c6b0729e076ff9dbd5502072f099c5519d7390e1",
+      "services/hepta-os/src/bin/hepta-observe.rs": "2a7b3eafc7b795e63bf43ef01e41e12a73f5d097c906bdd69f5d11049bc083b7",
+      "services/hepta-os/src/bin/hepta-submit.rs": "f856132b9f9e47512058421e42ca89a450bdad808b0943ef5030458d93b64fba",
+      "services/hepta-os/src/client.rs": "8669dc6c1e48c43108f3c2e1f8602e7602ac45e3e74239f638cdf92a3a99f5e8",
+      "services/hepta-os/src/lib.rs": "3904ceed5853d3ea930ea329faa78f5611ee6cf5f90178919a8f2d8db7c39162",
+      "services/hepta-os/src/objective/history.rs": "8ffef61985d3a441b525f99f2e18e18c8a713de3cd34a212144feff01f31b00c",
+      "services/hepta-os/src/objective/history_wire.rs": "fafebdb789251ece6fbaf4e93567fd59e61bd49a6fac6bfd969b06ee4abcf004",
+      "services/hepta-os/src/objective/mod.rs": "4475f5267ed20fbc97fdfe82fe6300f80574e75f6f2da5679f21c213b94b7f09",
+      "services/hepta-os/src/objective/wire.rs": "2c10d53d69de62872a942e2652b4282b6242076d3aace0b2bd6f6c73b3760e6f",
+      "services/hepta-os/src/wire.rs": "6e1377eb6cc009a6289602da248c11e905a53c484437b602f048298521d07e0c",
+      "services/hepta-os/tests/fixtures/agentd_v2_payloads.json": "5c96555ad2a043ce8e651d9bfb4d9e05cb71cc57c60ad4288aba7270da84c0dd",
+      "services/hepta-os/tests/fixtures/objective_ingress_original_wire_only.json": "bb4e4330efcd1ef0390c75dbfd7f8e190d3290311919648aa24cd16942fa7de8",
+      "services/hepta-os/tests/objective_cli.rs": "a387b97f2445bafe234dfbd060bcfca68b1228a03f201d16670258d5c621a49c",
+      "services/hepta-os/tests/objective_history.rs": "6324f346cfd08d1cf7934c9e8bd89f119f3ee22abc6feb7247881b93bb7803f7",
+      "services/hepta-os/tests/objective_transport.rs": "4162a6e63f647938e0f4a7d7f2e70003153177e045f5ec1352ede15cb3616ae1",
+      "services/hepta-os/tests/socket_contract.rs": "189205cf47730dd085a0cd44d7b0eedf47f705f9d3e646ea86d13b41b475ff01",
+      "tests/integration/hepta/run_objective_history.py": "a81294b55949931fb30abd9d3c19ba553842c017d0eaf6defb152698c34d9f49",
+      "tests/integration/hepta/test_objective_history_contracts.py": "ad9a08f3d5241ce051fdab115c665034790350c402fad3f453f08dea5b302a91"
+    }
+  },
+  "steps": [
+    {
+      "name": "test",
+      "command": [
+        "rustup",
+        "run",
+        "1.88.0",
+        "cargo",
+        "test",
+        "--manifest-path",
+        "services/hepta-os/Cargo.toml",
+        "--locked",
+        "--features",
+        "objective-history"
+      ],
+      "started_at_utc": "2026-10-18T10:47:53.101947+00:00",
+      "exit_code": 0,
+      "ended_at_utc": "2026-10-18T10:48:29.558068+00:00"
+    },
+    {
+      "name": "clippy",
+      "command": [
+        "rustup",
+        "run",
+        "1.88.0",
+        "cargo",
+        "clippy",
+        "--manifest-path",
+        "services/hepta-os/Cargo.toml",
+        "--locked",
+        "--offline",
+        "--all-targets",
+        "--features",
+        "objective-history",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "started_at_utc": "2026-10-18T10:48:29.558315+00:00",
+      "exit_code": 0,
+      "ended_at_utc": "2026-10-18T10:48:37.672916+00:00"
+    },
+    {
+      "name": "default-off",
+      "command": [
+        "rustup",
+        "run",
+        "1.88.0",
+        "cargo",
+        "check",
+        "--manifest-path",
+        "services/hepta-os/Cargo.toml",
+        "--locked",
+        "--offline",
+        "--no-default-features"
+      ],
+      "started_at_utc": "2026-10-18T10:48:37.673194+00:00",
+      "exit_code": 0,
+      "ended_at_utc": "2026-10-18T10:48:38.542650+00:00"
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "rustup",
+        "run",
+        "1.88.0",
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "services/hepta-os/Cargo.toml",
+        "--",
+        "--check"
+      ],
+      "started_at_utc": "2026-10-18T10:48:38.543061+00:00",
+      "exit_code": 0,
+      "ended_at_utc": "2026-10-18T10:48:38.643553+00:00"
+    },
+    {
+      "name": "history-contracts",
+      "command": [
+        "python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-v",
+        "-s",
+        "tests/integration/hepta",
+        "-p",
+        "test_objective_history_contracts.py"
+      ],
+      "started_at_utc": "2026-10-18T10:48:38.643991+00:00",
+      "exit_code": 0,
+      "ended_at_utc": "2026-10-18T10:48:38.910867+00:00"
+    }
+  ],
+  "after": {
+    "commit": "46dcb2d691827f7aa3ad7903dae09d39fd338126",
+    "tree": "8d5de807c41090e3d987764daec9c235ebd022a1",
+    "status": "",
+    "source_sha256": {
+      ".github/workflows/hepta-objective-history.yml": "970cbf94ca4e4ef1bf68bb07b14f96cacfcb790638d4e23e60b9035b41e040d8",
+      "services/hepta-os/CONTRACT.md": "0ec2d9c0db139c0104a05fedc674887d00e05c2527d041591c174a3a294b5068",
+      "services/hepta-os/Cargo.lock": "a1aed4d1f513036cbe03912359f3dfbb2c6d93c5210b8d18244d95be9008a875",
+      "services/hepta-os/Cargo.toml": "8cace1d1bfa958c9da8d989db1a3e677381a2e7a82ad8c53d310cceece7564a9",
+      "services/hepta-os/OBJECTIVE_HISTORY.md": "75aa92f86005be8df59947ad1f92cb969c1975bab131c3182ca622679721a4f8",
+      "services/hepta-os/OBJECTIVE_HISTORY_CONTRACT.json": "f0fc1110233dc38542097c6f9f7ef2e3f6ca5eb215fa2b4447e556cd7ac46981",
+      "services/hepta-os/OBJECTIVE_TRANSPORT.md": "ad5b76ea3c937167b06ad293a4772acfcc666ab363e5586bdd6041c293de4b87",
+      "services/hepta-os/OBJECTIVE_UPSTREAM_CONTRACT.json": "ba3005ee18c77ccf701c5dea063fa2f8d184b9aaebfbf912cd8d16287564d449",
+      "services/hepta-os/README.md": "d03b6c1dbd0834ce9a42f9ee0af30044867eda1120a4bb5e5d07c556e9cf0046",
+      "services/hepta-os/RUN.md": "fb4748152277d443912fb6f3705b59f8da635594ac9e95fbad77206abc64b6f8",
+      "services/hepta-os/UPSTREAM_CONTRACT.json": "24efcccd98b6ac6a56cb34b36f5bdb10785d955efd86c32fed308bac1505f7ef",
+      "services/hepta-os/src/bin/hepta-history.rs": "c65a9063b3f9ad85e9b8fb88c6b0729e076ff9dbd5502072f099c5519d7390e1",
+      "services/hepta-os/src/bin/hepta-observe.rs": "2a7b3eafc7b795e63bf43ef01e41e12a73f5d097c906bdd69f5d11049bc083b7",
+      "services/hepta-os/src/bin/hepta-submit.rs": "f856132b9f9e47512058421e42ca89a450bdad808b0943ef5030458d93b64fba",
+      "services/hepta-os/src/client.rs": "8669dc6c1e48c43108f3c2e1f8602e7602ac45e3e74239f638cdf92a3a99f5e8",
+      "services/hepta-os/src/lib.rs": "3904ceed5853d3ea930ea329faa78f5611ee6cf5f90178919a8f2d8db7c39162",
+      "services/hepta-os/src/objective/history.rs": "8ffef61985d3a441b525f99f2e18e18c8a713de3cd34a212144feff01f31b00c",
+      "services/hepta-os/src/objective/history_wire.rs": "fafebdb789251ece6fbaf4e93567fd59e61bd49a6fac6bfd969b06ee4abcf004",
+      "services/hepta-os/src/objective/mod.rs": "4475f5267ed20fbc97fdfe82fe6300f80574e75f6f2da5679f21c213b94b7f09",
+      "services/hepta-os/src/objective/wire.rs": "2c10d53d69de62872a942e2652b4282b6242076d3aace0b2bd6f6c73b3760e6f",
+      "services/hepta-os/src/wire.rs": "6e1377eb6cc009a6289602da248c11e905a53c484437b602f048298521d07e0c",
+      "services/hepta-os/tests/fixtures/agentd_v2_payloads.json": "5c96555ad2a043ce8e651d9bfb4d9e05cb71cc57c60ad4288aba7270da84c0dd",
+      "services/hepta-os/tests/fixtures/objective_ingress_original_wire_only.json": "bb4e4330efcd1ef0390c75dbfd7f8e190d3290311919648aa24cd16942fa7de8",
+      "services/hepta-os/tests/objective_cli.rs": "a387b97f2445bafe234dfbd060bcfca68b1228a03f201d16670258d5c621a49c",
+      "services/hepta-os/tests/objective_history.rs": "6324f346cfd08d1cf7934c9e8bd89f119f3ee22abc6feb7247881b93bb7803f7",
+      "services/hepta-os/tests/objective_transport.rs": "4162a6e63f647938e0f4a7d7f2e70003153177e045f5ec1352ede15cb3616ae1",
+      "services/hepta-os/tests/socket_contract.rs": "189205cf47730dd085a0cd44d7b0eedf47f705f9d3e646ea86d13b41b475ff01",
+      "tests/integration/hepta/run_objective_history.py": "a81294b55949931fb30abd9d3c19ba553842c017d0eaf6defb152698c34d9f49",
+      "tests/integration/hepta/test_objective_history_contracts.py": "ad9a08f3d5241ce051fdab115c665034790350c402fad3f453f08dea5b302a91"
+    }
+  },
+  "ended_at_utc": "2026-10-18T10:48:38.944438+00:00",
+  "status": "passed"
+}

@@ -1,0 +1,2401 @@
+﻿2026-10-19T00:49:25.9238639Z Current runner version: '2.337.0'
+2026-10-19T00:49:25.9267557Z ##[group]Runner Image Provisioner
+2026-10-19T00:49:25.9268487Z Hosted Compute Agent
+2026-10-19T00:49:25.9269283Z Version: 20261012.601
+2026-10-19T00:49:25.9269940Z Commit: f3dc54e1fb89da6852db922499a0233137369e1d
+2026-10-19T00:49:25.9270697Z Build Date: 2026-10-12T17:48:21Z
+2026-10-19T00:49:25.9271488Z Worker ID: {6e2088d7-be0e-475c-8578-afc075e3fa5c}
+2026-10-19T00:49:25.9272199Z Region: southcentralus
+2026-10-19T00:49:25.9273212Z Cloud: Azure
+2026-10-19T00:49:25.9273777Z ##[endgroup]
+2026-10-19T00:49:25.9275697Z ##[group]Operating System
+2026-10-19T00:49:25.9276490Z Ubuntu
+2026-10-19T00:49:25.9277056Z 24.04.5
+2026-10-19T00:49:25.9277614Z LTS
+2026-10-19T00:49:25.9278140Z ##[endgroup]
+2026-10-19T00:49:25.9278735Z ##[group]Runner Image
+2026-10-19T00:49:25.9279427Z Image: ubuntu-24.04-arm
+2026-10-19T00:49:25.9280009Z Version: 20261012.149.1
+2026-10-19T00:49:25.9281434Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24-arm64/20261012.149/images/ubuntu/Ubuntu2404-Arm64-Readme.md
+2026-10-19T00:49:25.9283385Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24-arm64%2F20261012.149
+2026-10-19T00:49:25.9284438Z ##[endgroup]
+2026-10-19T00:49:25.9285574Z ##[group]GITHUB_TOKEN Permissions
+2026-10-19T00:49:25.9288328Z Contents: read
+2026-10-19T00:49:25.9289112Z Metadata: read
+2026-10-19T00:49:25.9289673Z ##[endgroup]
+2026-10-19T00:49:25.9293021Z Secret source: Actions
+2026-10-19T00:49:25.9294055Z Cache mode: write
+2026-10-19T00:49:25.9295005Z Prepare workflow directory
+2026-10-19T00:49:25.9941918Z Prepare all required actions
+2026-10-19T00:49:25.9999502Z Getting action download info
+2026-10-19T00:49:26.2621624Z Download action repository 'actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd' (SHA:de0fac2e4500dabe0009e67214ff5f5447ce83dd)
+2026-10-19T00:49:26.4593295Z Download action repository 'actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-10-19T00:49:26.6688760Z Complete job name: original-agentd
+2026-10-19T00:49:26.7429030Z ##[group]Run set -euo pipefail
+2026-10-19T00:49:26.7429940Z [36;1mset -euo pipefail[0m
+2026-10-19T00:49:26.7430653Z [36;1mumask 077[0m
+2026-10-19T00:49:26.7431483Z [36;1m# Runner paths are unavailable in job-level expression contexts.[0m
+2026-10-19T00:49:26.7432956Z [36;1mexport HEPTA_CI_ROOT="$RUNNER_TEMP/hepta-original-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"[0m
+2026-10-19T00:49:26.7433990Z [36;1mtest ! -e "$HEPTA_CI_ROOT"[0m
+2026-10-19T00:49:26.7434670Z [36;1mmkdir -m 700 "$HEPTA_CI_ROOT"[0m
+2026-10-19T00:49:26.7435650Z [36;1mmkdir -m 700 "$HEPTA_CI_ROOT/logs" "$HEPTA_CI_ROOT/identity" "$HEPTA_CI_ROOT/locks"[0m
+2026-10-19T00:49:26.7436851Z [36;1mprintf 'HEPTA_CI_ROOT=%s\nCARGO_HOME=%s/cargo-home\nRUSTUP_HOME=%s/rustup-home\n' \[0m
+2026-10-19T00:49:26.7437963Z [36;1m  "$HEPTA_CI_ROOT" "$HEPTA_CI_ROOT" "$HEPTA_CI_ROOT" >> "$GITHUB_ENV"[0m
+2026-10-19T00:49:26.7438810Z [36;1mpython3 - <<'PY'[0m
+2026-10-19T00:49:26.7439623Z [36;1mfrom datetime import datetime, timezone[0m
+2026-10-19T00:49:26.7440413Z [36;1mimport json, os, platform[0m
+2026-10-19T00:49:26.7441238Z [36;1mfrom pathlib import Path[0m
+2026-10-19T00:49:26.7441847Z [36;1mrecord = {[0m
+2026-10-19T00:49:26.7442963Z [36;1m    "recorded_at_utc": datetime.now(timezone.utc).isoformat(),[0m
+2026-10-19T00:49:26.7443956Z [36;1m    "expected_desktop_commit": os.environ["DESKTOP_SHA"],[0m
+2026-10-19T00:49:26.7444960Z [36;1m    "expected_hepta_commit": os.environ["HEPTA_PIN"],[0m
+2026-10-19T00:49:26.7446230Z [36;1m    "run_url": f'{os.environ["GITHUB_SERVER_URL"]}/{os.environ["GITHUB_REPOSITORY"]}/actions/runs/{os.environ["GITHUB_RUN_ID"]}',[0m
+2026-10-19T00:49:26.7447486Z [36;1m    "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],[0m
+2026-10-19T00:49:26.7448347Z [36;1m    "event": os.environ["GITHUB_EVENT_NAME"],[0m
+2026-10-19T00:49:26.7449131Z [36;1m    "runner_os": os.environ["RUNNER_OS"],[0m
+2026-10-19T00:49:26.7449945Z [36;1m    "runner_arch": os.environ["RUNNER_ARCH"],[0m
+2026-10-19T00:49:26.7451228Z [36;1m    "machine": platform.machine(),[0m
+2026-10-19T00:49:26.7451963Z [36;1m    "qualification_at_allocation": "not_run",[0m
+2026-10-19T00:49:26.7453406Z [36;1m}[0m
+2026-10-19T00:49:26.7454259Z [36;1mwith (Path(os.environ["HEPTA_CI_ROOT"]) / "identity/allocation.json").open("x") as stream:[0m
+2026-10-19T00:49:26.7455311Z [36;1m    json.dump(record, stream, indent=2)[0m
+2026-10-19T00:49:26.7456032Z [36;1m    stream.write("\n")[0m
+2026-10-19T00:49:26.7456640Z [36;1mPY[0m
+2026-10-19T00:49:26.7457248Z [36;1mtest "$RUNNER_OS" = Linux[0m
+2026-10-19T00:49:26.7457924Z [36;1mtest "$RUNNER_ARCH" = ARM64[0m
+2026-10-19T00:49:26.7458891Z [36;1mtest "$(uname -m)" = aarch64[0m
+2026-10-19T00:49:26.7557468Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-19T00:49:26.7558935Z env:
+2026-10-19T00:49:26.7559594Z   DESKTOP_SHA: 5060ac6976b56b32647c728991e489cdee1cce9d
+2026-10-19T00:49:26.7560397Z   HEPTA_PIN: f8c9419df6ddeb36ff8b522a50219981fb8d9345
+2026-10-19T00:49:26.7561231Z   GIT_TERMINAL_PROMPT: 0
+2026-10-19T00:49:26.7561836Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-19T00:49:26.7562839Z ##[endgroup]
+2026-10-19T00:49:26.8257622Z ##[group]Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+2026-10-19T00:49:26.8258746Z with:
+2026-10-19T00:49:26.8259360Z   ref: 5060ac6976b56b32647c728991e489cdee1cce9d
+2026-10-19T00:49:26.8260103Z   fetch-depth: 1
+2026-10-19T00:49:26.8260686Z   persist-credentials: false
+2026-10-19T00:49:26.8261431Z   repository: TrillionniumFoundation/trillionnium-os-desktop
+2026-10-19T00:49:26.8265566Z   token: ***
+2026-10-19T00:49:26.8266168Z   ssh-strict: true
+2026-10-19T00:49:26.8266812Z   ssh-user: git
+2026-10-19T00:49:26.8267365Z   clean: true
+2026-10-19T00:49:26.8267951Z   sparse-checkout-cone-mode: true
+2026-10-19T00:49:26.8268652Z   fetch-tags: false
+2026-10-19T00:49:26.8269252Z   show-progress: true
+2026-10-19T00:49:26.8269839Z   lfs: false
+2026-10-19T00:49:26.8270428Z   submodules: false
+2026-10-19T00:49:26.8271094Z   set-safe-directory: true
+2026-10-19T00:49:26.8271730Z env:
+2026-10-19T00:49:26.8272521Z   DESKTOP_SHA: 5060ac6976b56b32647c728991e489cdee1cce9d
+2026-10-19T00:49:26.8273851Z   HEPTA_PIN: f8c9419df6ddeb36ff8b522a50219981fb8d9345
+2026-10-19T00:49:26.8274610Z   GIT_TERMINAL_PROMPT: 0
+2026-10-19T00:49:26.8275221Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-19T00:49:26.8276086Z   HEPTA_CI_ROOT: /home/runner/work/_temp/hepta-original-39182491155-1
+2026-10-19T00:49:26.8277109Z   CARGO_HOME: /home/runner/work/_temp/hepta-original-39182491155-1/cargo-home
+2026-10-19T00:49:26.8278170Z   RUSTUP_HOME: /home/runner/work/_temp/hepta-original-39182491155-1/rustup-home
+2026-10-19T00:49:26.8279079Z ##[endgroup]
+2026-10-19T00:49:26.9120876Z Syncing repository: TrillionniumFoundation/trillionnium-os-desktop
+2026-10-19T00:49:26.9123793Z ##[group]Getting Git version info
+2026-10-19T00:49:26.9125123Z Working directory is '/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop'
+2026-10-19T00:49:26.9126590Z [command]/usr/bin/git version
+2026-10-19T00:49:26.9153844Z git version 2.55.0
+2026-10-19T00:49:26.9165980Z ##[endgroup]
+2026-10-19T00:49:26.9185878Z Temporarily overriding HOME='/home/runner/work/_temp/9cd0caaf-9930-42c7-87b5-ad7d6d3ac765' before making global git config changes
+2026-10-19T00:49:26.9187522Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-19T00:49:26.9189615Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop
+2026-10-19T00:49:26.9215579Z Deleting the contents of '/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop'
+2026-10-19T00:49:26.9220260Z ##[group]Initializing the repository
+2026-10-19T00:49:26.9224795Z [command]/usr/bin/git init /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop
+2026-10-19T00:49:26.9304681Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-19T00:49:26.9305917Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-19T00:49:26.9307657Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-19T00:49:26.9308522Z hint: call:
+2026-10-19T00:49:26.9309096Z hint:
+2026-10-19T00:49:26.9309821Z hint: 	git config --global init.defaultBranch <name>
+2026-10-19T00:49:26.9311180Z hint:
+2026-10-19T00:49:26.9312082Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-19T00:49:26.9313432Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-19T00:49:26.9314309Z hint:
+2026-10-19T00:49:26.9314970Z hint: 	git branch -m <name>
+2026-10-19T00:49:26.9315551Z hint:
+2026-10-19T00:49:26.9316325Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-19T00:49:26.9317608Z Initialized empty Git repository in /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/.git/
+2026-10-19T00:49:26.9320150Z [command]/usr/bin/git remote add origin https://github.com/TrillionniumFoundation/trillionnium-os-desktop
+2026-10-19T00:49:26.9343418Z ##[endgroup]
+2026-10-19T00:49:26.9344858Z ##[group]Disabling automatic garbage collection
+2026-10-19T00:49:26.9346767Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-19T00:49:26.9378914Z ##[endgroup]
+2026-10-19T00:49:26.9380120Z ##[group]Setting up auth
+2026-10-19T00:49:26.9381123Z Removing SSH command configuration
+2026-10-19T00:49:26.9384702Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-19T00:49:26.9417169Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-19T00:49:26.9696892Z Removing HTTP extra header
+2026-10-19T00:49:26.9705506Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-19T00:49:26.9764459Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-19T00:49:26.9950233Z Removing includeIf entries pointing to credentials config files
+2026-10-19T00:49:26.9956794Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-19T00:49:26.9995664Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-19T00:49:27.0202940Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-23b4e161-56c3-4660-817c-772d44ab18fe.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-19T00:49:27.0243503Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/.git.path /home/runner/work/_temp/git-credentials-23b4e161-56c3-4660-817c-772d44ab18fe.config
+2026-10-19T00:49:27.0277365Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-23b4e161-56c3-4660-817c-772d44ab18fe.config
+2026-10-19T00:49:27.0310066Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-23b4e161-56c3-4660-817c-772d44ab18fe.config
+2026-10-19T00:49:27.0350686Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-23b4e161-56c3-4660-817c-772d44ab18fe.config
+2026-10-19T00:49:27.0380904Z ##[endgroup]
+2026-10-19T00:49:27.0382030Z ##[group]Fetching the repository
+2026-10-19T00:49:27.0387434Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin 5060ac6976b56b32647c728991e489cdee1cce9d
+2026-10-19T00:49:28.9597591Z From https://github.com/TrillionniumFoundation/trillionnium-os-desktop
+2026-10-19T00:49:28.9599819Z  * branch            5060ac6976b56b32647c728991e489cdee1cce9d -> FETCH_HEAD
+2026-10-19T00:49:28.9606844Z [command]/usr/bin/git rev-parse --verify --quiet 5060ac6976b56b32647c728991e489cdee1cce9d^{object}
+2026-10-19T00:49:28.9631830Z 5060ac6976b56b32647c728991e489cdee1cce9d
+2026-10-19T00:49:28.9636020Z ##[endgroup]
+2026-10-19T00:49:28.9637615Z ##[group]Determining the checkout info
+2026-10-19T00:49:28.9639323Z ##[endgroup]
+2026-10-19T00:49:28.9641421Z [command]/usr/bin/git sparse-checkout disable
+2026-10-19T00:49:28.9685462Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-19T00:49:28.9715423Z ##[group]Checking out the ref
+2026-10-19T00:49:28.9718751Z [command]/usr/bin/git checkout --progress --force 5060ac6976b56b32647c728991e489cdee1cce9d
+2026-10-19T00:49:29.2200139Z Note: switching to '5060ac6976b56b32647c728991e489cdee1cce9d'.
+2026-10-19T00:49:29.2200729Z 
+2026-10-19T00:49:29.2201048Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-19T00:49:29.2201836Z changes and commit them, and you can discard any commits you make in this
+2026-10-19T00:49:29.2203013Z state without impacting any branches by switching back to a branch.
+2026-10-19T00:49:29.2203731Z 
+2026-10-19T00:49:29.2204051Z If you want to create a new branch to retain commits you create, you may
+2026-10-19T00:49:29.2204768Z do so (now or later) by using -c with the switch command. Example:
+2026-10-19T00:49:29.2205115Z 
+2026-10-19T00:49:29.2205274Z   git switch -c <new-branch-name>
+2026-10-19T00:49:29.2205572Z 
+2026-10-19T00:49:29.2205794Z Or undo this operation with:
+2026-10-19T00:49:29.2206164Z 
+2026-10-19T00:49:29.2206326Z   git switch -
+2026-10-19T00:49:29.2206509Z 
+2026-10-19T00:49:29.2206821Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-19T00:49:29.2207161Z 
+2026-10-19T00:49:29.2207547Z HEAD is now at 5060ac6 fix(ui): bound Runtime freshness across Session and IPC
+2026-10-19T00:49:29.2210313Z ##[endgroup]
+2026-10-19T00:49:29.2252623Z [command]/usr/bin/git log -1 --format=%H
+2026-10-19T00:49:29.2277586Z 5060ac6976b56b32647c728991e489cdee1cce9d
+2026-10-19T00:49:29.2286352Z ##[group]Removing auth
+2026-10-19T00:49:29.2286841Z Removing SSH command configuration
+2026-10-19T00:49:29.2290931Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-19T00:49:29.2320593Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-19T00:49:29.2531463Z Removing HTTP extra header
+2026-10-19T00:49:29.2534671Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-19T00:49:29.2567677Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-19T00:49:29.2775662Z Removing includeIf entries pointing to credentials config files
+2026-10-19T00:49:29.2777344Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-19T00:49:29.2801824Z includeif.gitdir:/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/.git.path
+2026-10-19T00:49:29.2803887Z includeif.gitdir:/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/.git/worktrees/*.path
+2026-10-19T00:49:29.2804663Z includeif.gitdir:/github/workspace/.git.path
+2026-10-19T00:49:29.2805269Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-19T00:49:29.2811946Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/.git.path
+2026-10-19T00:49:29.2833875Z /home/runner/work/_temp/git-credentials-23b4e161-56c3-4660-817c-772d44ab18fe.config
+2026-10-19T00:49:29.2843976Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/.git.path /home/runner/work/_temp/git-credentials-23b4e161-56c3-4660-817c-772d44ab18fe.config
+2026-10-19T00:49:29.2878367Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/.git/worktrees/*.path
+2026-10-19T00:49:29.2900498Z /home/runner/work/_temp/git-credentials-23b4e161-56c3-4660-817c-772d44ab18fe.config
+2026-10-19T00:49:29.2909253Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-23b4e161-56c3-4660-817c-772d44ab18fe.config
+2026-10-19T00:49:29.2943396Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-10-19T00:49:29.2970139Z /github/runner_temp/git-credentials-23b4e161-56c3-4660-817c-772d44ab18fe.config
+2026-10-19T00:49:29.2977010Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-23b4e161-56c3-4660-817c-772d44ab18fe.config
+2026-10-19T00:49:29.3014184Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-19T00:49:29.3036751Z /github/runner_temp/git-credentials-23b4e161-56c3-4660-817c-772d44ab18fe.config
+2026-10-19T00:49:29.3042856Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-23b4e161-56c3-4660-817c-772d44ab18fe.config
+2026-10-19T00:49:29.3076062Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-19T00:49:29.3284593Z Removing credentials config '/home/runner/work/_temp/git-credentials-23b4e161-56c3-4660-817c-772d44ab18fe.config'
+2026-10-19T00:49:29.3295900Z ##[endgroup]
+2026-10-19T00:49:29.3427221Z ##[group]Run set -euo pipefail
+2026-10-19T00:49:29.3427893Z [36;1mset -euo pipefail[0m
+2026-10-19T00:49:29.3428489Z [36;1mtest "$(git rev-parse HEAD)" = "$DESKTOP_SHA"[0m
+2026-10-19T00:49:29.3429036Z [36;1mtest -z "$(git status --porcelain=v1 --untracked-files=all)"[0m
+2026-10-19T00:49:29.3429576Z [36;1mtest -f README.md && test ! -s README.md[0m
+2026-10-19T00:49:29.3430115Z [36;1mfor path in services/hepta-os/Cargo.toml services/hepta-os/Cargo.lock \[0m
+2026-10-19T00:49:29.3430653Z [36;1m  services/hepta-os/UPSTREAM_CONTRACT.json \[0m
+2026-10-19T00:49:29.3431242Z [36;1m  tests/integration/hepta/run_original_agentd.py \[0m
+2026-10-19T00:49:29.3431737Z [36;1m  tests/integration/hepta/original_agentd_probe.rs \[0m
+2026-10-19T00:49:29.3432519Z [36;1m  tests/integration/hepta/original_session_probe.rs \[0m
+2026-10-19T00:49:29.3433062Z [36;1m  tests/integration/hepta/run_original_objective.py \[0m
+2026-10-19T00:49:29.3433734Z [36;1m  tests/integration/hepta/original_objective_probe.rs \[0m
+2026-10-19T00:49:29.3434325Z [36;1m  tests/integration/hepta/original_objective_owner.rs \[0m
+2026-10-19T00:49:29.3434851Z [36;1m  tests/integration/hepta/original_objective_fixture.rs \[0m
+2026-10-19T00:49:29.3435469Z [36;1m  tests/integration/hepta/original_objective_session.rs \[0m
+2026-10-19T00:49:29.3436007Z [36;1m  tests/integration/hepta/original_objective_profile.json \[0m
+2026-10-19T00:49:29.3436650Z [36;1m  tests/integration/hepta/test_original_objective_receipts.py \[0m
+2026-10-19T00:49:29.3437212Z [36;1m  services/hepta-os/src/bin/hepta-submit.rs \[0m
+2026-10-19T00:49:29.3437713Z [36;1m  ui/session/Cargo.toml ui/session/src/hepta.rs ui/Cargo.lock \[0m
+2026-10-19T00:49:29.3438317Z [36;1m  tests/integration/hepta/test_original_build_manifest.py \[0m
+2026-10-19T00:49:29.3438859Z [36;1m  tests/integration/hepta/test_original_session_receipts.py \[0m
+2026-10-19T00:49:29.3439910Z [36;1m  tests/integration/hepta/test_original_process_guard.py; do[0m
+2026-10-19T00:49:29.3440466Z [36;1m  test -s "$path"[0m
+2026-10-19T00:49:29.3440820Z [36;1mdone[0m
+2026-10-19T00:49:29.3441332Z [36;1mgit rev-parse HEAD HEAD^{tree} > "$HEPTA_CI_ROOT/identity/desktop-before.txt"[0m
+2026-10-19T00:49:29.3442829Z [36;1msha256sum services/hepta-os/Cargo.toml services/hepta-os/Cargo.lock \[0m
+2026-10-19T00:49:29.3443554Z [36;1m  services/hepta-os/UPSTREAM_CONTRACT.json \[0m
+2026-10-19T00:49:29.3444073Z [36;1m  tests/integration/hepta/run_original_agentd.py \[0m
+2026-10-19T00:49:29.3444558Z [36;1m  tests/integration/hepta/original_agentd_probe.rs \[0m
+2026-10-19T00:49:29.3445116Z [36;1m  tests/integration/hepta/original_session_probe.rs \[0m
+2026-10-19T00:49:29.3445639Z [36;1m  ui/Cargo.toml ui/Cargo.lock ui/session/Cargo.toml \[0m
+2026-10-19T00:49:29.3446203Z [36;1m  .github/workflows/hepta-original-agentd.yml \[0m
+2026-10-19T00:49:29.3446695Z [36;1m  > "$HEPTA_CI_ROOT/identity/desktop-inputs.sha256"[0m
+2026-10-19T00:49:29.3447254Z [36;1mcp services/hepta-os/Cargo.lock "$HEPTA_CI_ROOT/locks/observer-Cargo.lock"[0m
+2026-10-19T00:49:29.3447885Z [36;1mcp ui/Cargo.lock "$HEPTA_CI_ROOT/locks/ui-Cargo.lock"[0m
+2026-10-19T00:49:29.3448522Z [36;1mgit rev-parse HEAD:ui HEAD:services/hepta-os > "$HEPTA_CI_ROOT/identity/consumer-source-trees.txt"[0m
+2026-10-19T00:49:29.3449409Z [36;1mcp services/hepta-os/UPSTREAM_CONTRACT.json "$HEPTA_CI_ROOT/locks/UPSTREAM_CONTRACT.json"[0m
+2026-10-19T00:49:29.3504906Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-19T00:49:29.3505587Z env:
+2026-10-19T00:49:29.3505985Z   DESKTOP_SHA: 5060ac6976b56b32647c728991e489cdee1cce9d
+2026-10-19T00:49:29.3506491Z   HEPTA_PIN: f8c9419df6ddeb36ff8b522a50219981fb8d9345
+2026-10-19T00:49:29.3506926Z   GIT_TERMINAL_PROMPT: 0
+2026-10-19T00:49:29.3507263Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-19T00:49:29.3507773Z   HEPTA_CI_ROOT: /home/runner/work/_temp/hepta-original-39182491155-1
+2026-10-19T00:49:29.3508346Z   CARGO_HOME: /home/runner/work/_temp/hepta-original-39182491155-1/cargo-home
+2026-10-19T00:49:29.3509290Z   RUSTUP_HOME: /home/runner/work/_temp/hepta-original-39182491155-1/rustup-home
+2026-10-19T00:49:29.3509931Z ##[endgroup]
+2026-10-19T00:49:29.5979576Z ##[group]Run set -euo pipefail
+2026-10-19T00:49:29.5980253Z [36;1mset -euo pipefail[0m
+2026-10-19T00:49:29.5980710Z [36;1m# init + shallow fetch selects the immutable commit directly, with[0m
+2026-10-19T00:49:29.5981343Z [36;1m# no owner branch checkout, credential helper, token or upstream write.[0m
+2026-10-19T00:49:29.5981947Z [36;1mhepta_source="$HEPTA_CI_ROOT/hepta-source"[0m
+2026-10-19T00:49:29.5982648Z [36;1mtest ! -e "$hepta_source"[0m
+2026-10-19T00:49:29.5983081Z [36;1m{[0m
+2026-10-19T00:49:29.5983417Z [36;1m  git init "$hepta_source"[0m
+2026-10-19T00:49:29.5984053Z [36;1m  git -C "$hepta_source" remote add origin https://github.com/TrillionniumFoundation/hepta-private-ci.git[0m
+2026-10-19T00:49:29.5984805Z [36;1m  git -C "$hepta_source" -c credential.helper= -c core.askPass= \[0m
+2026-10-19T00:49:29.5985321Z [36;1m    fetch --depth=1 --no-tags origin "$HEPTA_PIN"[0m
+2026-10-19T00:49:29.5985968Z [36;1m  git -C "$hepta_source" checkout --detach "$HEPTA_PIN"[0m
+2026-10-19T00:49:29.5986544Z [36;1m  test "$(git -C "$hepta_source" rev-parse HEAD)" = "$HEPTA_PIN"[0m
+2026-10-19T00:49:29.5987146Z [36;1m  test -z "$(git -C "$hepta_source" status --porcelain=v1 --untracked-files=all)"[0m
+2026-10-19T00:49:29.5987772Z [36;1m} > "$HEPTA_CI_ROOT/logs/upstream-checkout.log" 2>&1[0m
+2026-10-19T00:49:29.5988404Z [36;1mgit -C "$hepta_source" rev-parse HEAD HEAD^{tree} > "$HEPTA_CI_ROOT/identity/hepta-before.txt"[0m
+2026-10-19T00:49:29.5989181Z [36;1mcp "$hepta_source/codex-rs/Cargo.lock" "$HEPTA_CI_ROOT/locks/hepta-original-Cargo.lock"[0m
+2026-10-19T00:49:29.5989940Z [36;1mcp "$hepta_source/codex-rs/Cargo.toml" "$HEPTA_CI_ROOT/locks/hepta-original-Cargo.toml"[0m
+2026-10-19T00:49:29.5990708Z [36;1mcp "$hepta_source/codex-rs/rust-toolchain.toml" "$HEPTA_CI_ROOT/locks/hepta-original-rust-toolchain.toml"[0m
+2026-10-19T00:49:29.5991525Z [36;1msha256sum "$HEPTA_CI_ROOT"/locks/* > "$HEPTA_CI_ROOT/identity/initial-locks.sha256"[0m
+2026-10-19T00:49:29.6044249Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-19T00:49:29.6045023Z env:
+2026-10-19T00:49:29.6045368Z   DESKTOP_SHA: 5060ac6976b56b32647c728991e489cdee1cce9d
+2026-10-19T00:49:29.6045971Z   HEPTA_PIN: f8c9419df6ddeb36ff8b522a50219981fb8d9345
+2026-10-19T00:49:29.6046392Z   GIT_TERMINAL_PROMPT: 0
+2026-10-19T00:49:29.6046829Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-19T00:49:29.6047275Z   HEPTA_CI_ROOT: /home/runner/work/_temp/hepta-original-39182491155-1
+2026-10-19T00:49:29.6047838Z   CARGO_HOME: /home/runner/work/_temp/hepta-original-39182491155-1/cargo-home
+2026-10-19T00:49:29.6048516Z   RUSTUP_HOME: /home/runner/work/_temp/hepta-original-39182491155-1/rustup-home
+2026-10-19T00:49:29.6048994Z ##[endgroup]
+2026-10-19T00:49:34.2148404Z ##[group]Run set -euo pipefail
+2026-10-19T00:49:34.2148953Z [36;1mset -euo pipefail[0m
+2026-10-19T00:49:34.2149216Z [36;1m{[0m
+2026-10-19T00:49:34.2149665Z [36;1m  python3 -m unittest discover -v -s tests/integration/hepta -p test_original_build_manifest.py[0m
+2026-10-19T00:49:34.2150416Z [36;1m  python3 -m unittest discover -v -s tests/integration/hepta -p test_original_process_guard.py[0m
+2026-10-19T00:49:34.2151149Z [36;1m  python3 -m unittest discover -v -s tests/integration/hepta -p test_original_session_receipts.py[0m
+2026-10-19T00:49:34.2151751Z [36;1m} > "$HEPTA_CI_ROOT/logs/gate-prerequisites.log" 2>&1[0m
+2026-10-19T00:49:34.2204636Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-19T00:49:34.2205170Z env:
+2026-10-19T00:49:34.2205459Z   DESKTOP_SHA: 5060ac6976b56b32647c728991e489cdee1cce9d
+2026-10-19T00:49:34.2205896Z   HEPTA_PIN: f8c9419df6ddeb36ff8b522a50219981fb8d9345
+2026-10-19T00:49:34.2206237Z   GIT_TERMINAL_PROMPT: 0
+2026-10-19T00:49:34.2206588Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-19T00:49:34.2206954Z   HEPTA_CI_ROOT: /home/runner/work/_temp/hepta-original-39182491155-1
+2026-10-19T00:49:34.2207474Z   CARGO_HOME: /home/runner/work/_temp/hepta-original-39182491155-1/cargo-home
+2026-10-19T00:49:34.2208083Z   RUSTUP_HOME: /home/runner/work/_temp/hepta-original-39182491155-1/rustup-home
+2026-10-19T00:49:34.2208658Z   HEPTA_ORIGINAL_SOURCE: /home/runner/work/_temp/hepta-original-39182491155-1/hepta-source
+2026-10-19T00:49:34.2209100Z ##[endgroup]
+2026-10-19T00:49:35.2764808Z ##[group]Run set -euo pipefail
+2026-10-19T00:49:35.2765307Z [36;1mset -euo pipefail[0m
+2026-10-19T00:49:35.2765787Z [36;1m# Fixed f8c9419 source: rust-ci-full-nextest-platform.yml installs[0m
+2026-10-19T00:49:35.2766330Z [36;1m# build-essential/pkg-config/libcap-dev/bubblewrap on native Linux.[0m
+2026-10-19T00:49:35.2766971Z [36;1m# hepta-browser-servo-worker-dev.yml also records cmake/libssl-dev.[0m
+2026-10-19T00:49:35.2767501Z [36;1m# The minimal real Agentd graph needs no Servo/V8 replacement profile.[0m
+2026-10-19T00:49:35.2767890Z [36;1m{[0m
+2026-10-19T00:49:35.2768183Z [36;1m  sudo apt-get update[0m
+2026-10-19T00:49:35.2768612Z [36;1m  sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \[0m
+2026-10-19T00:49:35.2769781Z [36;1m    build-essential pkg-config libcap-dev bubblewrap cmake perl libssl-dev binutils[0m
+2026-10-19T00:49:35.2770406Z [36;1m  rustup toolchain install 1.95.0 --profile minimal[0m
+2026-10-19T00:49:35.2770952Z [36;1m  rustup toolchain install 1.88.0 --profile minimal[0m
+2026-10-19T00:49:35.2771364Z [36;1m  rustup run 1.95.0 rustc -Vv[0m
+2026-10-19T00:49:35.2771652Z [36;1m  rustup run 1.95.0 cargo -Vv[0m
+2026-10-19T00:49:35.2771970Z [36;1m  rustup run 1.88.0 rustc -Vv[0m
+2026-10-19T00:49:35.2772491Z [36;1m  rustup run 1.88.0 cargo -Vv[0m
+2026-10-19T00:49:35.2772819Z [36;1m  cc --version[0m
+2026-10-19T00:49:35.2773092Z [36;1m  c++ --version[0m
+2026-10-19T00:49:35.2773334Z [36;1m  cmake --version[0m
+2026-10-19T00:49:35.2773648Z [36;1m  pkg-config --modversion openssl libcap[0m
+2026-10-19T00:49:35.2774170Z [36;1m  dpkg-query -W build-essential pkg-config libcap-dev bubblewrap cmake perl libssl-dev binutils[0m
+2026-10-19T00:49:35.2774660Z [36;1m  df -B1 "$HEPTA_CI_ROOT"[0m
+2026-10-19T00:49:35.2775032Z [36;1m  cat /etc/os-release[0m
+2026-10-19T00:49:35.2775678Z [36;1m} > "$HEPTA_CI_ROOT/logs/native-setup.log" 2>&1[0m
+2026-10-19T00:49:35.2811734Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-19T00:49:35.2812162Z env:
+2026-10-19T00:49:35.2812922Z   DESKTOP_SHA: 5060ac6976b56b32647c728991e489cdee1cce9d
+2026-10-19T00:49:35.2813317Z   HEPTA_PIN: f8c9419df6ddeb36ff8b522a50219981fb8d9345
+2026-10-19T00:49:35.2813697Z   GIT_TERMINAL_PROMPT: 0
+2026-10-19T00:49:35.2813967Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-19T00:49:35.2814339Z   HEPTA_CI_ROOT: /home/runner/work/_temp/hepta-original-39182491155-1
+2026-10-19T00:49:35.2814860Z   CARGO_HOME: /home/runner/work/_temp/hepta-original-39182491155-1/cargo-home
+2026-10-19T00:49:35.2815372Z   RUSTUP_HOME: /home/runner/work/_temp/hepta-original-39182491155-1/rustup-home
+2026-10-19T00:49:35.2815800Z ##[endgroup]
+2026-10-19T00:50:01.0284460Z ##[group]Run set -euo pipefail
+2026-10-19T00:50:01.0284965Z [36;1mset -euo pipefail[0m
+2026-10-19T00:50:01.0285456Z [36;1m# These are production binaries, with the committed UI lockfile and[0m
+2026-10-19T00:50:01.0285990Z [36;1m# no fixture/provider override. The runtime gate records their hashes.[0m
+2026-10-19T00:50:01.0286564Z [36;1mCARGO_TARGET_DIR="$HEPTA_CI_ROOT/session-target" CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=1 \[0m
+2026-10-19T00:50:01.0287184Z [36;1m  rustup run 1.88.0 cargo build --locked --manifest-path ui/Cargo.toml \[0m
+2026-10-19T00:50:01.0287661Z [36;1m    -p trill-session --bin trill-session --bin trill-ctl \[0m
+2026-10-19T00:50:01.0288138Z [36;1m    > "$HEPTA_CI_ROOT/logs/session-build.log" 2>&1[0m
+2026-10-19T00:50:01.0328929Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-19T00:50:01.0329471Z env:
+2026-10-19T00:50:01.0329727Z   DESKTOP_SHA: 5060ac6976b56b32647c728991e489cdee1cce9d
+2026-10-19T00:50:01.0330284Z   HEPTA_PIN: f8c9419df6ddeb36ff8b522a50219981fb8d9345
+2026-10-19T00:50:01.0330612Z   GIT_TERMINAL_PROMPT: 0
+2026-10-19T00:50:01.0330934Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-19T00:50:01.0331283Z   HEPTA_CI_ROOT: /home/runner/work/_temp/hepta-original-39182491155-1
+2026-10-19T00:50:01.0331767Z   CARGO_HOME: /home/runner/work/_temp/hepta-original-39182491155-1/cargo-home
+2026-10-19T00:50:01.0332649Z   RUSTUP_HOME: /home/runner/work/_temp/hepta-original-39182491155-1/rustup-home
+2026-10-19T00:50:01.0333061Z ##[endgroup]
+2026-10-19T00:50:27.8460133Z ##[group]Run set -euo pipefail
+2026-10-19T00:50:27.8460714Z [36;1mset -euo pipefail[0m
+2026-10-19T00:50:27.8461115Z [36;1m# The runner owns fresh work/report creation, the 8 GiB resource[0m
+2026-10-19T00:50:27.8461625Z [36;1m# preflight, locked builds, private process roots, the eight original[0m
+2026-10-19T00:50:27.8462179Z [36;1m# owner checks and eight additional continuous Session assertions.[0m
+2026-10-19T00:50:27.8462968Z [36;1m# No inherited model/provider configuration or credential is supplied.[0m
+2026-10-19T00:50:27.8463399Z [36;1mset +e[0m
+2026-10-19T00:50:27.8463735Z [36;1mpython3 tests/integration/hepta/run_original_agentd.py \[0m
+2026-10-19T00:50:27.8464184Z [36;1m  --hepta-source "$HEPTA_CI_ROOT/hepta-source" \[0m
+2026-10-19T00:50:27.8464605Z [36;1m  --work-dir "$HEPTA_CI_ROOT/work" \[0m
+2026-10-19T00:50:27.8464945Z [36;1m  --report "$HEPTA_CI_ROOT/report.json" \[0m
+2026-10-19T00:50:27.8465468Z [36;1m  --session-bin "$HEPTA_CI_ROOT/session-target/debug/trill-session" \[0m
+2026-10-19T00:50:27.8465981Z [36;1m  --ctl-bin "$HEPTA_CI_ROOT/session-target/debug/trill-ctl" \[0m
+2026-10-19T00:50:27.8466392Z [36;1m  --execute > "$HEPTA_CI_ROOT/logs/gate.log" 2>&1[0m
+2026-10-19T00:50:27.8466780Z [36;1mgate_exit=$?[0m
+2026-10-19T00:50:27.8467011Z [36;1mset -e[0m
+2026-10-19T00:50:27.8467345Z [36;1mprintf '%s\n' "$gate_exit" > "$HEPTA_CI_ROOT/gate-exit-code.txt"[0m
+2026-10-19T00:50:27.8467759Z [36;1mcat "$HEPTA_CI_ROOT/logs/gate.log"[0m
+2026-10-19T00:50:27.8468047Z [36;1mexit "$gate_exit"[0m
+2026-10-19T00:50:27.8504184Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-19T00:50:27.8504713Z env:
+2026-10-19T00:50:27.8505243Z   DESKTOP_SHA: 5060ac6976b56b32647c728991e489cdee1cce9d
+2026-10-19T00:50:27.8505606Z   HEPTA_PIN: f8c9419df6ddeb36ff8b522a50219981fb8d9345
+2026-10-19T00:50:27.8505999Z   GIT_TERMINAL_PROMPT: 0
+2026-10-19T00:50:27.8506259Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-19T00:50:27.8506737Z   HEPTA_CI_ROOT: /home/runner/work/_temp/hepta-original-39182491155-1
+2026-10-19T00:50:27.8507221Z   CARGO_HOME: /home/runner/work/_temp/hepta-original-39182491155-1/cargo-home
+2026-10-19T00:50:27.8507731Z   RUSTUP_HOME: /home/runner/work/_temp/hepta-original-39182491155-1/rustup-home
+2026-10-19T00:50:27.8508176Z ##[endgroup]
+2026-10-19T01:13:51.8706717Z {
+2026-10-19T01:13:51.8708493Z   "recorded_at_utc": "2026-10-19T00:50:27.896773+00:00",
+2026-10-19T01:13:51.8709234Z   "evidence_class": "original_agentd_readonly_acceptance_gate",
+2026-10-19T01:13:51.8709560Z   "status": "passed",
+2026-10-19T01:13:51.8709762Z   "large_build_attempted": true,
+2026-10-19T01:13:51.8710003Z   "runtime_probe_attempted": true,
+2026-10-19T01:13:51.8710270Z   "live_agentd_acceptance": "passed",
+2026-10-19T01:13:51.8710533Z   "persistent_session_acceptance": "passed",
+2026-10-19T01:13:51.8710792Z   "required_toolchains": {
+2026-10-19T01:13:51.8710997Z     "upstream": "1.95.0",
+2026-10-19T01:13:51.8711252Z     "observer": "1.88.0"
+2026-10-19T01:13:51.8711444Z   },
+2026-10-19T01:13:51.8711610Z   "profile": {
+2026-10-19T01:13:51.8711798Z     "agentd_default_features": false,
+2026-10-19T01:13:51.8712055Z     "supervisor_production_authority": false,
+2026-10-19T01:13:51.8712553Z     "objective_issuer": false,
+2026-10-19T01:13:51.8712771Z     "model_turn": false,
+2026-10-19T01:13:51.8713562Z     "device_effect_provider": false
+2026-10-19T01:13:51.8713781Z   },
+2026-10-19T01:13:51.8713926Z   "steps": [
+2026-10-19T01:13:51.8714080Z     {
+2026-10-19T01:13:51.8714237Z       "step": "observer_build",
+2026-10-19T01:13:51.8714439Z       "command": [
+2026-10-19T01:13:51.8714627Z         "/home/runner/.cargo/bin/rustup",
+2026-10-19T01:13:51.8714875Z         "run",
+2026-10-19T01:13:51.8715060Z         "1.88.0",
+2026-10-19T01:13:51.8715229Z         "cargo",
+2026-10-19T01:13:51.8715518Z         "build",
+2026-10-19T01:13:51.8715715Z         "--locked",
+2026-10-19T01:13:51.8715939Z         "--manifest-path",
+2026-10-19T01:13:51.8716775Z         "/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/services/hepta-os/Cargo.toml",
+2026-10-19T01:13:51.8717295Z         "--bin",
+2026-10-19T01:13:51.8717471Z         "hepta-observe"
+2026-10-19T01:13:51.8717651Z       ],
+2026-10-19T01:13:51.8717812Z       "status": "passed"
+2026-10-19T01:13:51.8717994Z     },
+2026-10-19T01:13:51.8718136Z     {
+2026-10-19T01:13:51.8718302Z       "step": "original_agentd_build",
+2026-10-19T01:13:51.8718526Z       "command": [
+2026-10-19T01:13:51.8718712Z         "/home/runner/.cargo/bin/rustup",
+2026-10-19T01:13:51.8718936Z         "run",
+2026-10-19T01:13:51.8719092Z         "1.95.0",
+2026-10-19T01:13:51.8719253Z         "cargo",
+2026-10-19T01:13:51.8719415Z         "build",
+2026-10-19T01:13:51.8719590Z         "--locked",
+2026-10-19T01:13:51.8719761Z         "--profile",
+2026-10-19T01:13:51.8719946Z         "dev-small",
+2026-10-19T01:13:51.8720137Z         "--no-default-features",
+2026-10-19T01:13:51.8720373Z         "-p",
+2026-10-19T01:13:51.8720552Z         "codex-hepta-agentd",
+2026-10-19T01:13:51.8720761Z         "--bin",
+2026-10-19T01:13:51.8720937Z         "codex-hepta-agentd",
+2026-10-19T01:13:51.8721137Z         "-j1"
+2026-10-19T01:13:51.8721298Z       ],
+2026-10-19T01:13:51.8721458Z       "status": "passed"
+2026-10-19T01:13:51.8721643Z     },
+2026-10-19T01:13:51.8721788Z     {
+2026-10-19T01:13:51.8721959Z       "step": "original_probe_resolution",
+2026-10-19T01:13:51.8722400Z       "command": [
+2026-10-19T01:13:51.8722627Z         "/home/runner/.cargo/bin/rustup",
+2026-10-19T01:13:51.8722857Z         "run",
+2026-10-19T01:13:51.8723012Z         "1.95.0",
+2026-10-19T01:13:51.8723171Z         "cargo",
+2026-10-19T01:13:51.8723330Z         "metadata",
+2026-10-19T01:13:51.8723507Z         "--format-version",
+2026-10-19T01:13:51.8724002Z         "1",
+2026-10-19T01:13:51.8724167Z         "--manifest-path",
+2026-10-19T01:13:51.8724492Z         "/home/runner/work/_temp/hepta-original-39182491155-1/work/probe/Cargo.toml"
+2026-10-19T01:13:51.8724842Z       ],
+2026-10-19T01:13:51.8724999Z       "status": "passed"
+2026-10-19T01:13:51.8725185Z     },
+2026-10-19T01:13:51.8725383Z     {
+2026-10-19T01:13:51.8725568Z       "step": "original_probe_locked_metadata_1",
+2026-10-19T01:13:51.8725819Z       "command": [
+2026-10-19T01:13:51.8726003Z         "/home/runner/.cargo/bin/rustup",
+2026-10-19T01:13:51.8726227Z         "run",
+2026-10-19T01:13:51.8726383Z         "1.95.0",
+2026-10-19T01:13:51.8726540Z         "cargo",
+2026-10-19T01:13:51.8726701Z         "metadata",
+2026-10-19T01:13:51.8726867Z         "--locked",
+2026-10-19T01:13:51.8727045Z         "--format-version",
+2026-10-19T01:13:51.8727239Z         "1",
+2026-10-19T01:13:51.8727406Z         "--manifest-path",
+2026-10-19T01:13:51.8727729Z         "/home/runner/work/_temp/hepta-original-39182491155-1/work/probe/Cargo.toml"
+2026-10-19T01:13:51.8728085Z       ],
+2026-10-19T01:13:51.8728244Z       "status": "passed"
+2026-10-19T01:13:51.8728428Z     },
+2026-10-19T01:13:51.8728572Z     {
+2026-10-19T01:13:51.8728774Z       "step": "original_probe_locked_metadata_2",
+2026-10-19T01:13:51.8729036Z       "command": [
+2026-10-19T01:13:51.8729226Z         "/home/runner/.cargo/bin/rustup",
+2026-10-19T01:13:51.8729455Z         "run",
+2026-10-19T01:13:51.8729616Z         "1.95.0",
+2026-10-19T01:13:51.8729777Z         "cargo",
+2026-10-19T01:13:51.8729939Z         "metadata",
+2026-10-19T01:13:51.8730110Z         "--locked",
+2026-10-19T01:13:51.8730286Z         "--format-version",
+2026-10-19T01:13:51.8730483Z         "1",
+2026-10-19T01:13:51.8730656Z         "--manifest-path",
+2026-10-19T01:13:51.8730975Z         "/home/runner/work/_temp/hepta-original-39182491155-1/work/probe/Cargo.toml"
+2026-10-19T01:13:51.8731327Z       ],
+2026-10-19T01:13:51.8731484Z       "status": "passed"
+2026-10-19T01:13:51.8731674Z     },
+2026-10-19T01:13:51.8731819Z     {
+2026-10-19T01:13:51.8731996Z       "step": "original_library_probe_build",
+2026-10-19T01:13:51.8732710Z       "command": [
+2026-10-19T01:13:51.8732919Z         "/home/runner/.cargo/bin/rustup",
+2026-10-19T01:13:51.8733145Z         "run",
+2026-10-19T01:13:51.8733543Z         "1.95.0",
+2026-10-19T01:13:51.8733770Z         "cargo",
+2026-10-19T01:13:51.8733933Z         "build",
+2026-10-19T01:13:51.8734096Z         "--locked",
+2026-10-19T01:13:51.8734269Z         "--profile",
+2026-10-19T01:13:51.8734445Z         "dev-small",
+2026-10-19T01:13:51.8734629Z         "--manifest-path",
+2026-10-19T01:13:51.8734954Z         "/home/runner/work/_temp/hepta-original-39182491155-1/work/probe/Cargo.toml",
+2026-10-19T01:13:51.8735309Z         "-j1"
+2026-10-19T01:13:51.8735464Z       ],
+2026-10-19T01:13:51.8735619Z       "status": "passed"
+2026-10-19T01:13:51.8735799Z     },
+2026-10-19T01:13:51.8736042Z     {
+2026-10-19T01:13:51.8736228Z       "step": "original_agentd_process_probe",
+2026-10-19T01:13:51.8736489Z       "status": "passed"
+2026-10-19T01:13:51.8736677Z     }
+2026-10-19T01:13:51.8736825Z   ],
+2026-10-19T01:13:51.8736973Z   "upstream": {
+2026-10-19T01:13:51.8737194Z     "commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+2026-10-19T01:13:51.8737515Z     "tree": "15c9d6ea07bf3832de82825a6cc1e8c958dd3d45",
+2026-10-19T01:13:51.8737947Z     "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+2026-10-19T01:13:51.8738383Z     "clean_checkout": true
+2026-10-19T01:13:51.8738661Z   },
+2026-10-19T01:13:51.8738821Z   "session_input_binaries": {
+2026-10-19T01:13:51.8739026Z     "session": {
+2026-10-19T01:13:51.8739401Z       "path": "/home/runner/work/_temp/hepta-original-39182491155-1/session-target/debug/trill-session",
+2026-10-19T01:13:51.8739830Z       "bytes": 18350768,
+2026-10-19T01:13:51.8740140Z       "sha256": "6c01b44979c947499d9756e88b11d82b17be07580210042dfa3115df721b0cc7",
+2026-10-19T01:13:51.8740573Z       "provenance": "prebuilt_input_caller_must_bind_build_to_source"
+2026-10-19T01:13:51.8741138Z     },
+2026-10-19T01:13:51.8741290Z     "ctl": {
+2026-10-19T01:13:51.8741635Z       "path": "/home/runner/work/_temp/hepta-original-39182491155-1/session-target/debug/trill-ctl",
+2026-10-19T01:13:51.8742046Z       "bytes": 7798360,
+2026-10-19T01:13:51.8742733Z       "sha256": "4f4b9a773b449ab70f659c037862bb98df9e98a8de83009935f6b195d9cbe33c",
+2026-10-19T01:13:51.8743176Z       "provenance": "prebuilt_input_caller_must_bind_build_to_source"
+2026-10-19T01:13:51.8743479Z     }
+2026-10-19T01:13:51.8743646Z   },
+2026-10-19T01:13:51.8743795Z   "resources": {
+2026-10-19T01:13:51.8743968Z     "free_bytes": 113993216000,
+2026-10-19T01:13:51.8744182Z     "minimum_free_bytes": 8589934592,
+2026-10-19T01:13:51.8744477Z     "bound_kind": "conservative_build_estimate_not_measured_size"
+2026-10-19T01:13:51.8744772Z   },
+2026-10-19T01:13:51.8744927Z   "installed_toolchains": [
+2026-10-19T01:13:51.8745145Z     "1.88.0-aarch64-unknown-linux-gnu",
+2026-10-19T01:13:51.8745436Z     "1.95.0-aarch64-unknown-linux-gnu (active, default)"
+2026-10-19T01:13:51.8745703Z   ],
+2026-10-19T01:13:51.8745851Z   "blockers": [],
+2026-10-19T01:13:51.8746032Z   "probe_patch_omission": {
+2026-10-19T01:13:51.8746389Z     "origin": "ssh://git@github.com/openai-oss-forks/tungstenite-rs.git",
+2026-10-19T01:13:51.8746732Z     "package": "tungstenite",
+2026-10-19T01:13:51.8746930Z     "target": {
+2026-10-19T01:13:51.8747180Z       "git": "https://github.com/openai-oss-forks/tungstenite-rs",
+2026-10-19T01:13:51.8747528Z       "rev": "4fffad30fe373adbdcffab9545e9e9bf4f2fc19f"
+2026-10-19T01:13:51.8747788Z     },
+2026-10-19T01:13:51.8747956Z     "retained_origin": "crates-io",
+2026-10-19T01:13:51.8748285Z     "reason": "Cargo 1.95 does not canonicalize unused patches across origins"
+2026-10-19T01:13:51.8748612Z   },
+2026-10-19T01:13:51.8748775Z   "probe_lock_validation": {
+2026-10-19T01:13:51.8748984Z     "omitted_patch": {
+2026-10-19T01:13:51.8749272Z       "origin": "ssh://git@github.com/openai-oss-forks/tungstenite-rs.git",
+2026-10-19T01:13:51.8749620Z       "package": "tungstenite",
+2026-10-19T01:13:51.8749824Z       "target": {
+2026-10-19T01:13:51.8750080Z         "git": "https://github.com/openai-oss-forks/tungstenite-rs",
+2026-10-19T01:13:51.8750741Z         "rev": "4fffad30fe373adbdcffab9545e9e9bf4f2fc19f"
+2026-10-19T01:13:51.8751038Z       },
+2026-10-19T01:13:51.8751207Z       "retained_origin": "crates-io",
+2026-10-19T01:13:51.8751541Z       "reason": "Cargo 1.95 does not canonicalize unused patches across origins"
+2026-10-19T01:13:51.8751869Z     },
+2026-10-19T01:13:51.8752033Z     "omitted_target_unused": true,
+2026-10-19T01:13:51.8752476Z     "shared_package_identities_checked": 732
+2026-10-19T01:13:51.8752720Z   },
+2026-10-19T01:13:51.8752879Z   "probe_lock_stability": {
+2026-10-19T01:13:51.8753205Z     "sha256": "72cb7346158f4c3514922cc7b9020f9b9d290aec78e047264a738d52afe6ed68",
+2026-10-19T01:13:51.8753564Z     "locked_metadata_passes": 2
+2026-10-19T01:13:51.8753765Z   },
+2026-10-19T01:13:51.8753927Z   "binary_sha256": {
+2026-10-19T01:13:51.8754225Z     "agentd": "d67046f691e6d6b6c5114f3779b3972ad57e58684624693b92c1ae0722d9db27",
+2026-10-19T01:13:51.8754713Z     "observer": "83991f4de3cae7e9eed8aff8be7ca9008715d72c0fcd235b5d41c0e1d5da9ece",
+2026-10-19T01:13:51.8755210Z     "probe": "24aeeec76a8f8a3b72b35b5843d6cb661793779e32c8bb55f9ddca690435ce9e"
+2026-10-19T01:13:51.8755552Z   },
+2026-10-19T01:13:51.8755880Z   "probe_resolved_lock_sha256": "72cb7346158f4c3514922cc7b9020f9b9d290aec78e047264a738d52afe6ed68",
+2026-10-19T01:13:51.8756465Z   "probe_source_sha256": "d297d6b5c7e39c3c98a4cb051d54ebdfc58757d04ca5ca265a023f4fb7fb276c",
+2026-10-19T01:13:51.8757061Z   "session_probe_source_sha256": "7660c76f640cf612f57a2ee6a2ea7d8b09e8ac332c20fd44d8e7c8bbcb0663c5",
+2026-10-19T01:13:51.8757495Z   "observer_source_sha256": {
+2026-10-19T01:13:51.8757913Z     "services/hepta-os/CONTRACT.md": "e3c1f8cbb742b8a983947b6f48566d794bcb9a8ff636d5aff49017c67cafb5a8",
+2026-10-19T01:13:51.8758550Z     "services/hepta-os/Cargo.lock": "a1aed4d1f513036cbe03912359f3dfbb2c6d93c5210b8d18244d95be9008a875",
+2026-10-19T01:13:51.8759430Z     "services/hepta-os/Cargo.toml": "7ca5e7cab7d0b6c48eb1008c14b0bc3c9bb87d55c29e0eeebb21cdff17a5adbd",
+2026-10-19T01:13:51.8760113Z     "services/hepta-os/OBJECTIVE_TRANSPORT.md": "d530d33986a384a5e4fc4985517ac49c48e6478c93f54bb3c5f8ed8b6ce29cdd",
+2026-10-19T01:13:51.8760872Z     "services/hepta-os/OBJECTIVE_UPSTREAM_CONTRACT.json": "ba3005ee18c77ccf701c5dea063fa2f8d184b9aaebfbf912cd8d16287564d449",
+2026-10-19T01:13:51.8761589Z     "services/hepta-os/README.md": "ec76d55ffd34809e22f752c87864045af27c03ba89bdc7a96144ccecfdd2a50c",
+2026-10-19T01:13:51.8762343Z     "services/hepta-os/RUN.md": "3390de14c67074b58b6db4ffdd8a198b2f3d334b98db5ee25754b9b63d1fc361",
+2026-10-19T01:13:51.8763046Z     "services/hepta-os/UPSTREAM_CONTRACT.json": "24efcccd98b6ac6a56cb34b36f5bdb10785d955efd86c32fed308bac1505f7ef",
+2026-10-19T01:13:51.8763781Z     "services/hepta-os/src/bin/hepta-observe.rs": "2a7b3eafc7b795e63bf43ef01e41e12a73f5d097c906bdd69f5d11049bc083b7",
+2026-10-19T01:13:51.8764510Z     "services/hepta-os/src/bin/hepta-submit.rs": "f856132b9f9e47512058421e42ca89a450bdad808b0943ef5030458d93b64fba",
+2026-10-19T01:13:51.8765185Z     "services/hepta-os/src/client.rs": "8669dc6c1e48c43108f3c2e1f8602e7602ac45e3e74239f638cdf92a3a99f5e8",
+2026-10-19T01:13:51.8765818Z     "services/hepta-os/src/lib.rs": "3904ceed5853d3ea930ea329faa78f5611ee6cf5f90178919a8f2d8db7c39162",
+2026-10-19T01:13:51.8766479Z     "services/hepta-os/src/objective/mod.rs": "4d58183fff058d7febb90c6c720fe19c2fbe52998487bc6dfa761d48c1b5353e",
+2026-10-19T01:13:51.8767174Z     "services/hepta-os/src/objective/wire.rs": "3b75d3df94302076052b5daadf6f13b318610920b8e754f0893e6422f2efa39c",
+2026-10-19T01:13:51.8767828Z     "services/hepta-os/src/wire.rs": "6e1377eb6cc009a6289602da248c11e905a53c484437b602f048298521d07e0c",
+2026-10-19T01:13:51.8768550Z     "services/hepta-os/tests/fixtures/agentd_v2_payloads.json": "5c96555ad2a043ce8e651d9bfb4d9e05cb71cc57c60ad4288aba7270da84c0dd",
+2026-10-19T01:13:51.8769442Z     "services/hepta-os/tests/fixtures/objective_ingress_original_wire_only.json": "bb4e4330efcd1ef0390c75dbfd7f8e190d3290311919648aa24cd16942fa7de8",
+2026-10-19T01:13:51.8770462Z     "services/hepta-os/tests/objective_cli.rs": "f1cafe25930066e92f93e0b8b8ec06fbe218a353dfa180c421a513fb8e4d684b",
+2026-10-19T01:13:51.8771221Z     "services/hepta-os/tests/objective_transport.rs": "4162a6e63f647938e0f4a7d7f2e70003153177e045f5ec1352ede15cb3616ae1",
+2026-10-19T01:13:51.8771949Z     "services/hepta-os/tests/socket_contract.rs": "189205cf47730dd085a0cd44d7b0eedf47f705f9d3e646ea86d13b41b475ff01"
+2026-10-19T01:13:51.8772882Z   },
+2026-10-19T01:13:51.8773044Z   "runtime_records": [
+2026-10-19T01:13:51.8773223Z     {
+2026-10-19T01:13:51.8773406Z       "agent_id": "22222222-2222-4222-8222-222222222222",
+2026-10-19T01:13:51.8773676Z       "event": "trusted_endpoint",
+2026-10-19T01:13:51.8773982Z       "evidence_class": "original_agentd_probe_in_progress_not_pass",
+2026-10-19T01:13:51.8774306Z       "peer_uid": 1001,
+2026-10-19T01:13:51.8774621Z       "socket_path": "/tmp/hp-m6on8wb_/fleet/run/aeirceircejbcfarceirceircei.ctl",
+2026-10-19T01:13:51.8774984Z       "spawn_generation": 1
+2026-10-19T01:13:51.8775175Z     },
+2026-10-19T01:13:51.8775318Z     {
+2026-10-19T01:13:51.8775483Z       "event": "phase_observed",
+2026-10-19T01:13:51.8775693Z       "observation": {
+2026-10-19T01:13:51.8775914Z         "agent_id": "22222222-2222-4222-8222-222222222222",
+2026-10-19T01:13:51.8776176Z         "capabilities": [
+2026-10-19T01:13:51.8776362Z           {
+2026-10-19T01:13:51.8776538Z             "id": "automation.calendar_v2",
+2026-10-19T01:13:51.8776775Z             "major": 1,
+2026-10-19T01:13:51.8776964Z             "minor": 0
+2026-10-19T01:13:51.8777139Z           },
+2026-10-19T01:13:51.8777294Z           {
+2026-10-19T01:13:51.8777486Z             "id": "cognitive.context.revalidate",
+2026-10-19T01:13:51.8777746Z             "major": 1,
+2026-10-19T01:13:51.8777928Z             "minor": 0
+2026-10-19T01:13:51.8778396Z           },
+2026-10-19T01:13:51.8778550Z           {
+2026-10-19T01:13:51.8778712Z             "id": "run.lifecycle",
+2026-10-19T01:13:51.8778925Z             "major": 1,
+2026-10-19T01:13:51.8779103Z             "minor": 1
+2026-10-19T01:13:51.8779274Z           }
+2026-10-19T01:13:51.8779433Z         ],
+2026-10-19T01:13:51.8779598Z         "current_generation": 1,
+2026-10-19T01:13:51.8779807Z         "events": [
+2026-10-19T01:13:51.8779973Z           {
+2026-10-19T01:13:51.8780130Z             "cursor": 1,
+2026-10-19T01:13:51.8780325Z             "generation": null,
+2026-10-19T01:13:51.8780542Z             "kind": "bootstrapped",
+2026-10-19T01:13:51.8780763Z             "lifecycle": null
+2026-10-19T01:13:51.8780957Z           },
+2026-10-19T01:13:51.8781112Z           {
+2026-10-19T01:13:51.8781270Z             "cursor": 2,
+2026-10-19T01:13:51.8781473Z             "generation": 1,
+2026-10-19T01:13:51.8781679Z             "kind": "lifecycle",
+2026-10-19T01:13:51.8781901Z             "lifecycle": "starting"
+2026-10-19T01:13:51.8782112Z           }
+2026-10-19T01:13:51.8782635Z         ],
+2026-10-19T01:13:51.8782798Z         "health": {
+2026-10-19T01:13:51.8782972Z           "fenced": false,
+2026-10-19T01:13:51.8783172Z           "lifecycle": "starting",
+2026-10-19T01:13:51.8783396Z           "process_id": 23483,
+2026-10-19T01:13:51.8783608Z           "promotion_ready": false,
+2026-10-19T01:13:51.8783824Z           "ready": false
+2026-10-19T01:13:51.8784009Z         },
+2026-10-19T01:13:51.8784170Z         "history_gap": false,
+2026-10-19T01:13:51.8784479Z         "latest_cursor": 2,
+2026-10-19T01:13:51.8784743Z         "next_cursor": 2,
+2026-10-19T01:13:51.8784944Z         "spawn_generation": 1
+2026-10-19T01:13:51.8785140Z       }
+2026-10-19T01:13:51.8785282Z     },
+2026-10-19T01:13:51.8785424Z     {
+2026-10-19T01:13:51.8785567Z       "ack": {
+2026-10-19T01:13:51.8785735Z         "phase": "starting",
+2026-10-19T01:13:51.8785932Z         "sequence": 1,
+2026-10-19T01:13:51.8786179Z         "session_instance": "e60f0492e88a1b1ad5ce52088566c961"
+2026-10-19T01:13:51.8786460Z       },
+2026-10-19T01:13:51.8786625Z       "ack_timeout_seconds": 60,
+2026-10-19T01:13:51.8786864Z       "capture_ack_is_coordination_only": true,
+2026-10-19T01:13:51.8787391Z       "event": "session_phase_observed",
+2026-10-19T01:13:51.8787645Z       "original": {
+2026-10-19T01:13:51.8787819Z         "active": true,
+2026-10-19T01:13:51.8788038Z         "agent_id": "22222222-2222-4222-8222-222222222222",
+2026-10-19T01:13:51.8788297Z         "healthy": false,
+2026-10-19T01:13:51.8788490Z         "process_id": 23483,
+2026-10-19T01:13:51.8788696Z         "spawn_generation": 1
+2026-10-19T01:13:51.8788891Z       },
+2026-10-19T01:13:51.8789049Z       "phase": "starting",
+2026-10-19T01:13:51.8789255Z       "recorded_unix_ms": 1792372425679,
+2026-10-19T01:13:51.8789517Z       "runtime_dir": "/tmp/hp-m6on8wb_/ui-runtime",
+2026-10-19T01:13:51.8789772Z       "sequence": 1,
+2026-10-19T01:13:51.8790006Z       "session_instance": "e60f0492e88a1b1ad5ce52088566c961",
+2026-10-19T01:13:51.8790297Z       "session_pid": 23507,
+2026-10-19T01:13:51.8790630Z       "session_socket_path": "/tmp/hp-m6on8wb_/ui-runtime/trillionnium-ui/session.sock",
+2026-10-19T01:13:51.8790996Z       "snapshot": {
+2026-10-19T01:13:51.8791167Z         "hepta": {
+2026-10-19T01:13:51.8791352Z           "connection": "observed",
+2026-10-19T01:13:51.8791583Z           "error_code": null,
+2026-10-19T01:13:51.8791802Z           "last_attempt_unix_ms": 1792372425581,
+2026-10-19T01:13:51.8792052Z           "last_observation": {
+2026-10-19T01:13:51.8792540Z             "agent_id": "22222222-2222-4222-8222-222222222222",
+2026-10-19T01:13:51.8792824Z             "capabilities": [
+2026-10-19T01:13:51.8793021Z               {
+2026-10-19T01:13:51.8793206Z                 "id": "automation.calendar_v2",
+2026-10-19T01:13:51.8793450Z                 "major": 1,
+2026-10-19T01:13:51.8793638Z                 "minor": 0
+2026-10-19T01:13:51.8793824Z               },
+2026-10-19T01:13:51.8794275Z               {
+2026-10-19T01:13:51.8794480Z                 "id": "cognitive.context.revalidate",
+2026-10-19T01:13:51.8794740Z                 "major": 1,
+2026-10-19T01:13:51.8794929Z                 "minor": 0
+2026-10-19T01:13:51.8795136Z               },
+2026-10-19T01:13:51.8795304Z               {
+2026-10-19T01:13:51.8795482Z                 "id": "run.lifecycle",
+2026-10-19T01:13:51.8795703Z                 "major": 1,
+2026-10-19T01:13:51.8795897Z                 "minor": 1
+2026-10-19T01:13:51.8796080Z               }
+2026-10-19T01:13:51.8796239Z             ],
+2026-10-19T01:13:51.8796422Z             "capabilities_truncated": false,
+2026-10-19T01:13:51.8796672Z             "current_generation": 1,
+2026-10-19T01:13:51.8796891Z             "events": [
+2026-10-19T01:13:51.8797069Z               {
+2026-10-19T01:13:51.8797237Z                 "cursor": 1,
+2026-10-19T01:13:51.8797445Z                 "generation": null,
+2026-10-19T01:13:51.8797672Z                 "kind": "bootstrapped",
+2026-10-19T01:13:51.8797912Z                 "lifecycle": null
+2026-10-19T01:13:51.8798114Z               },
+2026-10-19T01:13:51.8798274Z               {
+2026-10-19T01:13:51.8798441Z                 "cursor": 2,
+2026-10-19T01:13:51.8798641Z                 "generation": 1,
+2026-10-19T01:13:51.8798859Z                 "kind": "lifecycle",
+2026-10-19T01:13:51.8799086Z                 "lifecycle": "starting"
+2026-10-19T01:13:51.8799302Z               }
+2026-10-19T01:13:51.8799459Z             ],
+2026-10-19T01:13:51.8799646Z             "events_omitted_from_view": 0,
+2026-10-19T01:13:51.8799879Z             "health": {
+2026-10-19T01:13:51.8800073Z               "fenced": false,
+2026-10-19T01:13:51.8800286Z               "lifecycle": "starting",
+2026-10-19T01:13:51.8800523Z               "process_id": 23483,
+2026-10-19T01:13:51.8800750Z               "promotion_ready": false,
+2026-10-19T01:13:51.8800978Z               "ready": false
+2026-10-19T01:13:51.8801169Z             },
+2026-10-19T01:13:51.8801343Z             "history_gap": false,
+2026-10-19T01:13:51.8801567Z             "latest_cursor": 2,
+2026-10-19T01:13:51.8801778Z             "next_cursor": 2,
+2026-10-19T01:13:51.8802000Z             "sampled_unix_ms": 1792372425578,
+2026-10-19T01:13:51.8802494Z             "source_changed": false,
+2026-10-19T01:13:51.8803090Z             "spawn_generation": 1
+2026-10-19T01:13:51.8803319Z           },
+2026-10-19T01:13:51.8803490Z           "runtime_sample_clock": {
+2026-10-19T01:13:51.8803722Z             "observation_sequence": 1,
+2026-10-19T01:13:51.8803967Z             "sample_age_at_snapshot_ms": 101
+2026-10-19T01:13:51.8804198Z           }
+2026-10-19T01:13:51.8804347Z         },
+2026-10-19T01:13:51.8804500Z         "resources": {
+2026-10-19T01:13:51.8804690Z           "load_average_1m": 1.01,
+2026-10-19T01:13:51.8804915Z           "mem_available_kib": 14857892,
+2026-10-19T01:13:51.8805148Z           "mem_total_kib": 16330088,
+2026-10-19T01:13:51.8805376Z           "sampled_unix_ms": 1792372425678,
+2026-10-19T01:13:51.8805710Z           "source": "Linux host /proc and Wayland socket metadata (NOT HOS2)",
+2026-10-19T01:13:51.8806031Z           "wayland": {
+2026-10-19T01:13:51.8806228Z             "sampled_unix_ms": 1792372425678,
+2026-10-19T01:13:51.8806484Z             "socket_observation_epoch": 1,
+2026-10-19T01:13:51.8806732Z             "status": "unconfigured"
+2026-10-19T01:13:51.8806946Z           }
+2026-10-19T01:13:51.8807096Z         },
+2026-10-19T01:13:51.8807315Z         "session_instance": "e60f0492e88a1b1ad5ce52088566c961",
+2026-10-19T01:13:51.8807596Z         "tasks": [],
+2026-10-19T01:13:51.8807780Z         "type": "snapshot"
+2026-10-19T01:13:51.8807968Z       },
+2026-10-19T01:13:51.8808133Z       "stale_verification": null,
+2026-10-19T01:13:51.8808350Z       "worker_tid": 23508
+2026-10-19T01:13:51.8808531Z     },
+2026-10-19T01:13:51.8808674Z     {
+2026-10-19T01:13:51.8808835Z       "event": "phase_observed",
+2026-10-19T01:13:51.8809047Z       "observation": {
+2026-10-19T01:13:51.8809263Z         "agent_id": "22222222-2222-4222-8222-222222222222",
+2026-10-19T01:13:51.8809816Z         "capabilities": [
+2026-10-19T01:13:51.8810010Z           {
+2026-10-19T01:13:51.8810185Z             "id": "automation.calendar_v2",
+2026-10-19T01:13:51.8810421Z             "major": 1,
+2026-10-19T01:13:51.8810601Z             "minor": 0
+2026-10-19T01:13:51.8810777Z           },
+2026-10-19T01:13:51.8810931Z           {
+2026-10-19T01:13:51.8811117Z             "id": "cognitive.context.revalidate",
+2026-10-19T01:13:51.8811401Z             "major": 1,
+2026-10-19T01:13:51.8811586Z             "minor": 0
+2026-10-19T01:13:51.8811762Z           },
+2026-10-19T01:13:51.8811919Z           {
+2026-10-19T01:13:51.8812091Z             "id": "run.lifecycle",
+2026-10-19T01:13:51.8812683Z             "major": 1,
+2026-10-19T01:13:51.8812878Z             "minor": 1
+2026-10-19T01:13:51.8813056Z           }
+2026-10-19T01:13:51.8813206Z         ],
+2026-10-19T01:13:51.8813373Z         "current_generation": 2,
+2026-10-19T01:13:51.8813583Z         "events": [
+2026-10-19T01:13:51.8813760Z           {
+2026-10-19T01:13:51.8813918Z             "cursor": 1,
+2026-10-19T01:13:51.8814112Z             "generation": null,
+2026-10-19T01:13:51.8814330Z             "kind": "bootstrapped",
+2026-10-19T01:13:51.8814556Z             "lifecycle": null
+2026-10-19T01:13:51.8814755Z           },
+2026-10-19T01:13:51.8814915Z           {
+2026-10-19T01:13:51.8815074Z             "cursor": 2,
+2026-10-19T01:13:51.8815271Z             "generation": 1,
+2026-10-19T01:13:51.8815481Z             "kind": "lifecycle",
+2026-10-19T01:13:51.8815695Z             "lifecycle": "starting"
+2026-10-19T01:13:51.8815910Z           },
+2026-10-19T01:13:51.8816062Z           {
+2026-10-19T01:13:51.8816219Z             "cursor": 3,
+2026-10-19T01:13:51.8816413Z             "generation": null,
+2026-10-19T01:13:51.8816630Z             "kind": "app_server_ready",
+2026-10-19T01:13:51.8816869Z             "lifecycle": null
+2026-10-19T01:13:51.8817065Z           },
+2026-10-19T01:13:51.8817221Z           {
+2026-10-19T01:13:51.8817382Z             "cursor": 4,
+2026-10-19T01:13:51.8817577Z             "generation": 2,
+2026-10-19T01:13:51.8817784Z             "kind": "lifecycle",
+2026-10-19T01:13:51.8818000Z             "lifecycle": "running"
+2026-10-19T01:13:51.8818209Z           }
+2026-10-19T01:13:51.8818360Z         ],
+2026-10-19T01:13:51.8818792Z         "health": {
+2026-10-19T01:13:51.8819021Z           "fenced": false,
+2026-10-19T01:13:51.8819224Z           "lifecycle": "running",
+2026-10-19T01:13:51.8819448Z           "process_id": 23483,
+2026-10-19T01:13:51.8819663Z           "promotion_ready": true,
+2026-10-19T01:13:51.8819879Z           "ready": true
+2026-10-19T01:13:51.8820057Z         },
+2026-10-19T01:13:51.8820220Z         "history_gap": false,
+2026-10-19T01:13:51.8820426Z         "latest_cursor": 4,
+2026-10-19T01:13:51.8820625Z         "next_cursor": 4,
+2026-10-19T01:13:51.8820823Z         "spawn_generation": 1
+2026-10-19T01:13:51.8821023Z       }
+2026-10-19T01:13:51.8821171Z     },
+2026-10-19T01:13:51.8821323Z     {
+2026-10-19T01:13:51.8821479Z       "ack": {
+2026-10-19T01:13:51.8821656Z         "phase": "running",
+2026-10-19T01:13:51.8821853Z         "sequence": 2,
+2026-10-19T01:13:51.8822094Z         "session_instance": "e60f0492e88a1b1ad5ce52088566c961"
+2026-10-19T01:13:51.8822637Z       },
+2026-10-19T01:13:51.8822821Z       "ack_timeout_seconds": 60,
+2026-10-19T01:13:51.8823067Z       "capture_ack_is_coordination_only": true,
+2026-10-19T01:13:51.8823337Z       "event": "session_phase_observed",
+2026-10-19T01:13:51.8823569Z       "original": {
+2026-10-19T01:13:51.8823744Z         "active": true,
+2026-10-19T01:13:51.8823965Z         "agent_id": "22222222-2222-4222-8222-222222222222",
+2026-10-19T01:13:51.8824230Z         "healthy": true,
+2026-10-19T01:13:51.8824427Z         "process_id": 23483,
+2026-10-19T01:13:51.8824635Z         "spawn_generation": 1
+2026-10-19T01:13:51.8824831Z       },
+2026-10-19T01:13:51.8824991Z       "phase": "running",
+2026-10-19T01:13:51.8825197Z       "recorded_unix_ms": 1792372426681,
+2026-10-19T01:13:51.8825775Z       "runtime_dir": "/tmp/hp-m6on8wb_/ui-runtime",
+2026-10-19T01:13:51.8826032Z       "sequence": 2,
+2026-10-19T01:13:51.8826270Z       "session_instance": "e60f0492e88a1b1ad5ce52088566c961",
+2026-10-19T01:13:51.8826552Z       "session_pid": 23507,
+2026-10-19T01:13:51.8826893Z       "session_socket_path": "/tmp/hp-m6on8wb_/ui-runtime/trillionnium-ui/session.sock",
+2026-10-19T01:13:51.8827267Z       "snapshot": {
+2026-10-19T01:13:51.8827441Z         "hepta": {
+2026-10-19T01:13:51.8827623Z           "connection": "observed",
+2026-10-19T01:13:51.8827846Z           "error_code": null,
+2026-10-19T01:13:51.8828069Z           "last_attempt_unix_ms": 1792372426585,
+2026-10-19T01:13:51.8828320Z           "last_observation": {
+2026-10-19T01:13:51.8828561Z             "agent_id": "22222222-2222-4222-8222-222222222222",
+2026-10-19T01:13:51.8828831Z             "capabilities": [
+2026-10-19T01:13:51.8829028Z               {
+2026-10-19T01:13:51.8829219Z                 "id": "automation.calendar_v2",
+2026-10-19T01:13:51.8829476Z                 "major": 1,
+2026-10-19T01:13:51.8829666Z                 "minor": 0
+2026-10-19T01:13:51.8829852Z               },
+2026-10-19T01:13:51.8830014Z               {
+2026-10-19T01:13:51.8830222Z                 "id": "cognitive.context.revalidate",
+2026-10-19T01:13:51.8830489Z                 "major": 1,
+2026-10-19T01:13:51.8830692Z                 "minor": 0
+2026-10-19T01:13:51.8830879Z               },
+2026-10-19T01:13:51.8831041Z               {
+2026-10-19T01:13:51.8831232Z                 "id": "run.lifecycle",
+2026-10-19T01:13:51.8831464Z                 "major": 1,
+2026-10-19T01:13:51.8831655Z                 "minor": 1
+2026-10-19T01:13:51.8831846Z               }
+2026-10-19T01:13:51.8832007Z             ],
+2026-10-19T01:13:51.8832192Z             "capabilities_truncated": false,
+2026-10-19T01:13:51.8832682Z             "current_generation": 2,
+2026-10-19T01:13:51.8832910Z             "events": [
+2026-10-19T01:13:51.8833087Z               {
+2026-10-19T01:13:51.8833266Z                 "cursor": 1,
+2026-10-19T01:13:51.8833473Z                 "generation": null,
+2026-10-19T01:13:51.8833697Z                 "kind": "bootstrapped",
+2026-10-19T01:13:51.8833928Z                 "lifecycle": null
+2026-10-19T01:13:51.8834130Z               },
+2026-10-19T01:13:51.8834580Z               {
+2026-10-19T01:13:51.8834770Z                 "cursor": 2,
+2026-10-19T01:13:51.8834973Z                 "generation": 1,
+2026-10-19T01:13:51.8835185Z                 "kind": "lifecycle",
+2026-10-19T01:13:51.8835409Z                 "lifecycle": "starting"
+2026-10-19T01:13:51.8835628Z               },
+2026-10-19T01:13:51.8835787Z               {
+2026-10-19T01:13:51.8836050Z                 "cursor": 3,
+2026-10-19T01:13:51.8836260Z                 "generation": null,
+2026-10-19T01:13:51.8836493Z                 "kind": "app_server_ready",
+2026-10-19T01:13:51.8836734Z                 "lifecycle": null
+2026-10-19T01:13:51.8836940Z               },
+2026-10-19T01:13:51.8837101Z               {
+2026-10-19T01:13:51.8837274Z                 "cursor": 4,
+2026-10-19T01:13:51.8837477Z                 "generation": 2,
+2026-10-19T01:13:51.8837691Z                 "kind": "lifecycle",
+2026-10-19T01:13:51.8837919Z                 "lifecycle": "running"
+2026-10-19T01:13:51.8838131Z               }
+2026-10-19T01:13:51.8838294Z             ],
+2026-10-19T01:13:51.8838474Z             "events_omitted_from_view": 0,
+2026-10-19T01:13:51.8838705Z             "health": {
+2026-10-19T01:13:51.8838890Z               "fenced": false,
+2026-10-19T01:13:51.8839103Z               "lifecycle": "running",
+2026-10-19T01:13:51.8839334Z               "process_id": 23483,
+2026-10-19T01:13:51.8839565Z               "promotion_ready": true,
+2026-10-19T01:13:51.8839793Z               "ready": true
+2026-10-19T01:13:51.8839980Z             },
+2026-10-19T01:13:51.8840150Z             "history_gap": false,
+2026-10-19T01:13:51.8840366Z             "latest_cursor": 4,
+2026-10-19T01:13:51.8840576Z             "next_cursor": 4,
+2026-10-19T01:13:51.8841068Z             "sampled_unix_ms": 1792372426581,
+2026-10-19T01:13:51.8841313Z             "source_changed": false,
+2026-10-19T01:13:51.8841539Z             "spawn_generation": 1
+2026-10-19T01:13:51.8841751Z           },
+2026-10-19T01:13:51.8841919Z           "runtime_sample_clock": {
+2026-10-19T01:13:51.8842153Z             "observation_sequence": 2,
+2026-10-19T01:13:51.8842669Z             "sample_age_at_snapshot_ms": 100
+2026-10-19T01:13:51.8842904Z           }
+2026-10-19T01:13:51.8843053Z         },
+2026-10-19T01:13:51.8843207Z         "resources": {
+2026-10-19T01:13:51.8843398Z           "load_average_1m": 1.01,
+2026-10-19T01:13:51.8843621Z           "mem_available_kib": 14871404,
+2026-10-19T01:13:51.8843854Z           "mem_total_kib": 16330088,
+2026-10-19T01:13:51.8844082Z           "sampled_unix_ms": 1792372426681,
+2026-10-19T01:13:51.8844410Z           "source": "Linux host /proc and Wayland socket metadata (NOT HOS2)",
+2026-10-19T01:13:51.8844737Z           "wayland": {
+2026-10-19T01:13:51.8844941Z             "sampled_unix_ms": 1792372426680,
+2026-10-19T01:13:51.8845196Z             "socket_observation_epoch": 1,
+2026-10-19T01:13:51.8845440Z             "status": "unconfigured"
+2026-10-19T01:13:51.8845652Z           }
+2026-10-19T01:13:51.8845801Z         },
+2026-10-19T01:13:51.8846020Z         "session_instance": "e60f0492e88a1b1ad5ce52088566c961",
+2026-10-19T01:13:51.8846301Z         "tasks": [],
+2026-10-19T01:13:51.8846485Z         "type": "snapshot"
+2026-10-19T01:13:51.8846670Z       },
+2026-10-19T01:13:51.8846839Z       "stale_verification": null,
+2026-10-19T01:13:51.8847057Z       "worker_tid": 23508
+2026-10-19T01:13:51.8847243Z     },
+2026-10-19T01:13:51.8847391Z     {
+2026-10-19T01:13:51.8847550Z       "event": "ready_window",
+2026-10-19T01:13:51.8847758Z       "hold_seconds": 0
+2026-10-19T01:13:51.8847933Z     },
+2026-10-19T01:13:51.8848078Z     {
+2026-10-19T01:13:51.8848239Z       "event": "phase_observed",
+2026-10-19T01:13:51.8848458Z       "observation": {
+2026-10-19T01:13:51.8848680Z         "agent_id": "22222222-2222-4222-8222-222222222222",
+2026-10-19T01:13:51.8848960Z         "capabilities": [
+2026-10-19T01:13:51.8849152Z           {
+2026-10-19T01:13:51.8849333Z             "id": "automation.calendar_v2",
+2026-10-19T01:13:51.8849572Z             "major": 1,
+2026-10-19T01:13:51.8850021Z             "minor": 0
+2026-10-19T01:13:51.8850231Z           },
+2026-10-19T01:13:51.8850384Z           {
+2026-10-19T01:13:51.8850574Z             "id": "cognitive.context.revalidate",
+2026-10-19T01:13:51.8850828Z             "major": 1,
+2026-10-19T01:13:51.8851007Z             "minor": 0
+2026-10-19T01:13:51.8851179Z           },
+2026-10-19T01:13:51.8851334Z           {
+2026-10-19T01:13:51.8851501Z             "id": "run.lifecycle",
+2026-10-19T01:13:51.8851712Z             "major": 1,
+2026-10-19T01:13:51.8851892Z             "minor": 1
+2026-10-19T01:13:51.8852064Z           }
+2026-10-19T01:13:51.8852541Z         ],
+2026-10-19T01:13:51.8852765Z         "current_generation": 3,
+2026-10-19T01:13:51.8852979Z         "events": [
+2026-10-19T01:13:51.8853160Z           {
+2026-10-19T01:13:51.8853319Z             "cursor": 1,
+2026-10-19T01:13:51.8853510Z             "generation": null,
+2026-10-19T01:13:51.8853726Z             "kind": "bootstrapped",
+2026-10-19T01:13:51.8853948Z             "lifecycle": null
+2026-10-19T01:13:51.8854152Z           },
+2026-10-19T01:13:51.8854306Z           {
+2026-10-19T01:13:51.8854463Z             "cursor": 2,
+2026-10-19T01:13:51.8854656Z             "generation": 1,
+2026-10-19T01:13:51.8854865Z             "kind": "lifecycle",
+2026-10-19T01:13:51.8855082Z             "lifecycle": "starting"
+2026-10-19T01:13:51.8855293Z           },
+2026-10-19T01:13:51.8855447Z           {
+2026-10-19T01:13:51.8855601Z             "cursor": 3,
+2026-10-19T01:13:51.8855798Z             "generation": null,
+2026-10-19T01:13:51.8856010Z             "kind": "app_server_ready",
+2026-10-19T01:13:51.8856239Z             "lifecycle": null
+2026-10-19T01:13:51.8856436Z           },
+2026-10-19T01:13:51.8856589Z           {
+2026-10-19T01:13:51.8857062Z             "cursor": 4,
+2026-10-19T01:13:51.8857257Z             "generation": 2,
+2026-10-19T01:13:51.8857462Z             "kind": "lifecycle",
+2026-10-19T01:13:51.8857674Z             "lifecycle": "running"
+2026-10-19T01:13:51.8857878Z           },
+2026-10-19T01:13:51.8858035Z           {
+2026-10-19T01:13:51.8858193Z             "cursor": 5,
+2026-10-19T01:13:51.8858386Z             "generation": 3,
+2026-10-19T01:13:51.8858592Z             "kind": "lifecycle",
+2026-10-19T01:13:51.8858808Z             "lifecycle": "draining"
+2026-10-19T01:13:51.8859017Z           },
+2026-10-19T01:13:51.8859174Z           {
+2026-10-19T01:13:51.8859329Z             "cursor": 6,
+2026-10-19T01:13:51.8859522Z             "generation": null,
+2026-10-19T01:13:51.8859728Z             "kind": "draining",
+2026-10-19T01:13:51.8859935Z             "lifecycle": null
+2026-10-19T01:13:51.8860135Z           }
+2026-10-19T01:13:51.8860282Z         ],
+2026-10-19T01:13:51.8860431Z         "health": {
+2026-10-19T01:13:51.8860616Z           "fenced": false,
+2026-10-19T01:13:51.8860814Z           "lifecycle": "draining",
+2026-10-19T01:13:51.8861042Z           "process_id": 23483,
+2026-10-19T01:13:51.8861259Z           "promotion_ready": false,
+2026-10-19T01:13:51.8861477Z           "ready": false
+2026-10-19T01:13:51.8861672Z         },
+2026-10-19T01:13:51.8861832Z         "history_gap": false,
+2026-10-19T01:13:51.8862043Z         "latest_cursor": 6,
+2026-10-19T01:13:51.8862483Z         "next_cursor": 6,
+2026-10-19T01:13:51.8862698Z         "spawn_generation": 1
+2026-10-19T01:13:51.8862893Z       }
+2026-10-19T01:13:51.8863039Z     },
+2026-10-19T01:13:51.8863183Z     {
+2026-10-19T01:13:51.8863327Z       "ack": {
+2026-10-19T01:13:51.8863500Z         "phase": "draining",
+2026-10-19T01:13:51.8863703Z         "sequence": 3,
+2026-10-19T01:13:51.8863946Z         "session_instance": "e60f0492e88a1b1ad5ce52088566c961"
+2026-10-19T01:13:51.8864222Z       },
+2026-10-19T01:13:51.8864388Z       "ack_timeout_seconds": 60,
+2026-10-19T01:13:51.8864635Z       "capture_ack_is_coordination_only": true,
+2026-10-19T01:13:51.8864904Z       "event": "session_phase_observed",
+2026-10-19T01:13:51.8865132Z       "original": {
+2026-10-19T01:13:51.8865309Z         "active": true,
+2026-10-19T01:13:51.8865823Z         "agent_id": "22222222-2222-4222-8222-222222222222",
+2026-10-19T01:13:51.8866108Z         "healthy": true,
+2026-10-19T01:13:51.8866310Z         "process_id": 23483,
+2026-10-19T01:13:51.8866519Z         "spawn_generation": 1
+2026-10-19T01:13:51.8866714Z       },
+2026-10-19T01:13:51.8866885Z       "phase": "draining",
+2026-10-19T01:13:51.8867094Z       "recorded_unix_ms": 1792372427784,
+2026-10-19T01:13:51.8867356Z       "runtime_dir": "/tmp/hp-m6on8wb_/ui-runtime",
+2026-10-19T01:13:51.8867612Z       "sequence": 3,
+2026-10-19T01:13:51.8867844Z       "session_instance": "e60f0492e88a1b1ad5ce52088566c961",
+2026-10-19T01:13:51.8868129Z       "session_pid": 23507,
+2026-10-19T01:13:51.8868462Z       "session_socket_path": "/tmp/hp-m6on8wb_/ui-runtime/trillionnium-ui/session.sock",
+2026-10-19T01:13:51.8868844Z       "snapshot": {
+2026-10-19T01:13:51.8869016Z         "hepta": {
+2026-10-19T01:13:51.8869199Z           "connection": "observed",
+2026-10-19T01:13:51.8869423Z           "error_code": null,
+2026-10-19T01:13:51.8869651Z           "last_attempt_unix_ms": 1792372427588,
+2026-10-19T01:13:51.8869907Z           "last_observation": {
+2026-10-19T01:13:51.8870147Z             "agent_id": "22222222-2222-4222-8222-222222222222",
+2026-10-19T01:13:51.8870416Z             "capabilities": [
+2026-10-19T01:13:51.8870610Z               {
+2026-10-19T01:13:51.8870798Z                 "id": "automation.calendar_v2",
+2026-10-19T01:13:51.8871044Z                 "major": 1,
+2026-10-19T01:13:51.8871242Z                 "minor": 0
+2026-10-19T01:13:51.8871427Z               },
+2026-10-19T01:13:51.8871588Z               {
+2026-10-19T01:13:51.8871787Z                 "id": "cognitive.context.revalidate",
+2026-10-19T01:13:51.8872050Z                 "major": 1,
+2026-10-19T01:13:51.8872693Z                 "minor": 0
+2026-10-19T01:13:51.8872877Z               },
+2026-10-19T01:13:51.8873037Z               {
+2026-10-19T01:13:51.8873211Z                 "id": "run.lifecycle",
+2026-10-19T01:13:51.8873434Z                 "major": 1,
+2026-10-19T01:13:51.8873623Z                 "minor": 1
+2026-10-19T01:13:51.8873812Z               }
+2026-10-19T01:13:51.8873972Z             ],
+2026-10-19T01:13:51.8874153Z             "capabilities_truncated": false,
+2026-10-19T01:13:51.8874401Z             "current_generation": 3,
+2026-10-19T01:13:51.8874622Z             "events": [
+2026-10-19T01:13:51.8874801Z               {
+2026-10-19T01:13:51.8874969Z                 "cursor": 1,
+2026-10-19T01:13:51.8875171Z                 "generation": null,
+2026-10-19T01:13:51.8875397Z                 "kind": "bootstrapped",
+2026-10-19T01:13:51.8875631Z                 "lifecycle": null
+2026-10-19T01:13:51.8875836Z               },
+2026-10-19T01:13:51.8875999Z               {
+2026-10-19T01:13:51.8876169Z                 "cursor": 2,
+2026-10-19T01:13:51.8876388Z                 "generation": 1,
+2026-10-19T01:13:51.8876604Z                 "kind": "lifecycle",
+2026-10-19T01:13:51.8876834Z                 "lifecycle": "starting"
+2026-10-19T01:13:51.8877052Z               },
+2026-10-19T01:13:51.8877213Z               {
+2026-10-19T01:13:51.8877388Z                 "cursor": 3,
+2026-10-19T01:13:51.8877599Z                 "generation": null,
+2026-10-19T01:13:51.8877827Z                 "kind": "app_server_ready",
+2026-10-19T01:13:51.8878067Z                 "lifecycle": null
+2026-10-19T01:13:51.8878274Z               },
+2026-10-19T01:13:51.8878437Z               {
+2026-10-19T01:13:51.8878606Z                 "cursor": 4,
+2026-10-19T01:13:51.8878811Z                 "generation": 2,
+2026-10-19T01:13:51.8879162Z                 "kind": "lifecycle",
+2026-10-19T01:13:51.8879428Z                 "lifecycle": "running"
+2026-10-19T01:13:51.8879645Z               },
+2026-10-19T01:13:51.8879805Z               {
+2026-10-19T01:13:51.8879983Z                 "cursor": 5,
+2026-10-19T01:13:51.8880189Z                 "generation": 3,
+2026-10-19T01:13:51.8880401Z                 "kind": "lifecycle",
+2026-10-19T01:13:51.8880625Z                 "lifecycle": "draining"
+2026-10-19T01:13:51.8880846Z               },
+2026-10-19T01:13:51.8881248Z               {
+2026-10-19T01:13:51.8881442Z                 "cursor": 6,
+2026-10-19T01:13:51.8881645Z                 "generation": null,
+2026-10-19T01:13:51.8881865Z                 "kind": "draining",
+2026-10-19T01:13:51.8882084Z                 "lifecycle": null
+2026-10-19T01:13:51.8882517Z               }
+2026-10-19T01:13:51.8882679Z             ],
+2026-10-19T01:13:51.8882857Z             "events_omitted_from_view": 0,
+2026-10-19T01:13:51.8883087Z             "health": {
+2026-10-19T01:13:51.8883274Z               "fenced": false,
+2026-10-19T01:13:51.8883485Z               "lifecycle": "draining",
+2026-10-19T01:13:51.8883716Z               "process_id": 23483,
+2026-10-19T01:13:51.8883940Z               "promotion_ready": false,
+2026-10-19T01:13:51.8884180Z               "ready": false
+2026-10-19T01:13:51.8884369Z             },
+2026-10-19T01:13:51.8884540Z             "history_gap": false,
+2026-10-19T01:13:51.8884758Z             "latest_cursor": 6,
+2026-10-19T01:13:51.8884965Z             "next_cursor": 6,
+2026-10-19T01:13:51.8885188Z             "sampled_unix_ms": 1792372427585,
+2026-10-19T01:13:51.8885431Z             "source_changed": false,
+2026-10-19T01:13:51.8885657Z             "spawn_generation": 1
+2026-10-19T01:13:51.8885867Z           },
+2026-10-19T01:13:51.8886036Z           "runtime_sample_clock": {
+2026-10-19T01:13:51.8886271Z             "observation_sequence": 3,
+2026-10-19T01:13:51.8886520Z             "sample_age_at_snapshot_ms": 199
+2026-10-19T01:13:51.8886752Z           }
+2026-10-19T01:13:51.8886908Z         },
+2026-10-19T01:13:51.8887070Z         "resources": {
+2026-10-19T01:13:51.8887261Z           "load_average_1m": 1.01,
+2026-10-19T01:13:51.8887486Z           "mem_available_kib": 14887576,
+2026-10-19T01:13:51.8888039Z           "mem_total_kib": 16330088,
+2026-10-19T01:13:51.8888275Z           "sampled_unix_ms": 1792372427783,
+2026-10-19T01:13:51.8888612Z           "source": "Linux host /proc and Wayland socket metadata (NOT HOS2)",
+2026-10-19T01:13:51.8888987Z           "wayland": {
+2026-10-19T01:13:51.8889190Z             "sampled_unix_ms": 1792372427783,
+2026-10-19T01:13:51.8889445Z             "socket_observation_epoch": 1,
+2026-10-19T01:13:51.8889689Z             "status": "unconfigured"
+2026-10-19T01:13:51.8889903Z           }
+2026-10-19T01:13:51.8890050Z         },
+2026-10-19T01:13:51.8890263Z         "session_instance": "e60f0492e88a1b1ad5ce52088566c961",
+2026-10-19T01:13:51.8890541Z         "tasks": [],
+2026-10-19T01:13:51.8890724Z         "type": "snapshot"
+2026-10-19T01:13:51.8890915Z       },
+2026-10-19T01:13:51.8891079Z       "stale_verification": null,
+2026-10-19T01:13:51.8891299Z       "worker_tid": 23508
+2026-10-19T01:13:51.8891482Z     },
+2026-10-19T01:13:51.8891626Z     {
+2026-10-19T01:13:51.8891793Z       "event": "phase_observed",
+2026-10-19T01:13:51.8892005Z       "observation": {
+2026-10-19T01:13:51.8892557Z         "agent_id": "22222222-2222-4222-8222-222222222222",
+2026-10-19T01:13:51.8892852Z         "capabilities": [
+2026-10-19T01:13:51.8893037Z           {
+2026-10-19T01:13:51.8893220Z             "id": "automation.calendar_v2",
+2026-10-19T01:13:51.8893455Z             "major": 1,
+2026-10-19T01:13:51.8893641Z             "minor": 0
+2026-10-19T01:13:51.8893812Z           },
+2026-10-19T01:13:51.8893966Z           {
+2026-10-19T01:13:51.8894153Z             "id": "cognitive.context.revalidate",
+2026-10-19T01:13:51.8894404Z             "major": 1,
+2026-10-19T01:13:51.8894584Z             "minor": 0
+2026-10-19T01:13:51.8894755Z           },
+2026-10-19T01:13:51.8894907Z           {
+2026-10-19T01:13:51.8895072Z             "id": "run.lifecycle",
+2026-10-19T01:13:51.8895286Z             "major": 1,
+2026-10-19T01:13:51.8895466Z             "minor": 1
+2026-10-19T01:13:51.8895644Z           }
+2026-10-19T01:13:51.8895795Z         ],
+2026-10-19T01:13:51.8895964Z         "current_generation": 6,
+2026-10-19T01:13:51.8896172Z         "events": [
+2026-10-19T01:13:51.8896338Z           {
+2026-10-19T01:13:51.8896497Z             "cursor": 1,
+2026-10-19T01:13:51.8897088Z             "generation": null,
+2026-10-19T01:13:51.8897336Z             "kind": "bootstrapped",
+2026-10-19T01:13:51.8897561Z             "lifecycle": null
+2026-10-19T01:13:51.8897756Z           },
+2026-10-19T01:13:51.8897909Z           {
+2026-10-19T01:13:51.8898064Z             "cursor": 2,
+2026-10-19T01:13:51.8898256Z             "generation": 5,
+2026-10-19T01:13:51.8898458Z             "kind": "lifecycle",
+2026-10-19T01:13:51.8898670Z             "lifecycle": "starting"
+2026-10-19T01:13:51.8898880Z           },
+2026-10-19T01:13:51.8899033Z           {
+2026-10-19T01:13:51.8899186Z             "cursor": 3,
+2026-10-19T01:13:51.8899379Z             "generation": null,
+2026-10-19T01:13:51.8899590Z             "kind": "app_server_ready",
+2026-10-19T01:13:51.8899828Z             "lifecycle": null
+2026-10-19T01:13:51.8900021Z           },
+2026-10-19T01:13:51.8900172Z           {
+2026-10-19T01:13:51.8900327Z             "cursor": 4,
+2026-10-19T01:13:51.8900520Z             "generation": 6,
+2026-10-19T01:13:51.8900731Z             "kind": "lifecycle",
+2026-10-19T01:13:51.8900944Z             "lifecycle": "running"
+2026-10-19T01:13:51.8901147Z           }
+2026-10-19T01:13:51.8901294Z         ],
+2026-10-19T01:13:51.8901444Z         "health": {
+2026-10-19T01:13:51.8901620Z           "fenced": false,
+2026-10-19T01:13:51.8901826Z           "lifecycle": "running",
+2026-10-19T01:13:51.8902044Z           "process_id": 23609,
+2026-10-19T01:13:51.8902488Z           "promotion_ready": true,
+2026-10-19T01:13:51.8902714Z           "ready": true
+2026-10-19T01:13:51.8902895Z         },
+2026-10-19T01:13:51.8903073Z         "history_gap": false,
+2026-10-19T01:13:51.8903281Z         "latest_cursor": 4,
+2026-10-19T01:13:51.8903476Z         "next_cursor": 4,
+2026-10-19T01:13:51.8903985Z         "spawn_generation": 5
+2026-10-19T01:13:51.8904182Z       }
+2026-10-19T01:13:51.8904328Z     },
+2026-10-19T01:13:51.8904470Z     {
+2026-10-19T01:13:51.8904629Z       "event": "phase_observed",
+2026-10-19T01:13:51.8904840Z       "observation": {
+2026-10-19T01:13:51.8905061Z         "agent_id": "22222222-2222-4222-8222-222222222222",
+2026-10-19T01:13:51.8905323Z         "capabilities": [
+2026-10-19T01:13:51.8905513Z           {
+2026-10-19T01:13:51.8905685Z             "id": "automation.calendar_v2",
+2026-10-19T01:13:51.8905921Z             "major": 1,
+2026-10-19T01:13:51.8906102Z             "minor": 0
+2026-10-19T01:13:51.8906279Z           },
+2026-10-19T01:13:51.8906434Z           {
+2026-10-19T01:13:51.8906625Z             "id": "cognitive.context.revalidate",
+2026-10-19T01:13:51.8906880Z             "major": 1,
+2026-10-19T01:13:51.8907064Z             "minor": 0
+2026-10-19T01:13:51.8907237Z           },
+2026-10-19T01:13:51.8907389Z           {
+2026-10-19T01:13:51.8907567Z             "id": "run.lifecycle",
+2026-10-19T01:13:51.8907783Z             "major": 1,
+2026-10-19T01:13:51.8907962Z             "minor": 1
+2026-10-19T01:13:51.8908137Z           }
+2026-10-19T01:13:51.8908286Z         ],
+2026-10-19T01:13:51.8908453Z         "current_generation": 6,
+2026-10-19T01:13:51.8908667Z         "events": [
+2026-10-19T01:13:51.8908837Z           {
+2026-10-19T01:13:51.8908994Z             "cursor": 1,
+2026-10-19T01:13:51.8909191Z             "generation": null,
+2026-10-19T01:13:51.8909411Z             "kind": "bootstrapped",
+2026-10-19T01:13:51.8909633Z             "lifecycle": null
+2026-10-19T01:13:51.8909831Z           },
+2026-10-19T01:13:51.8909987Z           {
+2026-10-19T01:13:51.8910252Z             "cursor": 2,
+2026-10-19T01:13:51.8910450Z             "generation": 5,
+2026-10-19T01:13:51.8910653Z             "kind": "lifecycle",
+2026-10-19T01:13:51.8910869Z             "lifecycle": "starting"
+2026-10-19T01:13:51.8911085Z           },
+2026-10-19T01:13:51.8911244Z           {
+2026-10-19T01:13:51.8911415Z             "cursor": 3,
+2026-10-19T01:13:51.8911610Z             "generation": null,
+2026-10-19T01:13:51.8911827Z             "kind": "app_server_ready",
+2026-10-19T01:13:51.8912058Z             "lifecycle": null
+2026-10-19T01:13:51.8912523Z           },
+2026-10-19T01:13:51.8912964Z           {
+2026-10-19T01:13:51.8913170Z             "cursor": 4,
+2026-10-19T01:13:51.8913365Z             "generation": 6,
+2026-10-19T01:13:51.8913570Z             "kind": "lifecycle",
+2026-10-19T01:13:51.8913785Z             "lifecycle": "running"
+2026-10-19T01:13:51.8913988Z           }
+2026-10-19T01:13:51.8914133Z         ],
+2026-10-19T01:13:51.8914284Z         "health": {
+2026-10-19T01:13:51.8914461Z           "fenced": false,
+2026-10-19T01:13:51.8914659Z           "lifecycle": "running",
+2026-10-19T01:13:51.8914876Z           "process_id": 23609,
+2026-10-19T01:13:51.8915094Z           "promotion_ready": true,
+2026-10-19T01:13:51.8915307Z           "ready": true
+2026-10-19T01:13:51.8915481Z         },
+2026-10-19T01:13:51.8915651Z         "history_gap": false,
+2026-10-19T01:13:51.8915857Z         "latest_cursor": 4,
+2026-10-19T01:13:51.8916057Z         "next_cursor": 4,
+2026-10-19T01:13:51.8916258Z         "spawn_generation": 5
+2026-10-19T01:13:51.8916452Z       }
+2026-10-19T01:13:51.8916593Z     },
+2026-10-19T01:13:51.8916744Z     {
+2026-10-19T01:13:51.8916893Z       "ack": {
+2026-10-19T01:13:51.8917065Z         "phase": "old_spawn_stale",
+2026-10-19T01:13:51.8917290Z         "sequence": 4,
+2026-10-19T01:13:51.8917531Z         "session_instance": "e60f0492e88a1b1ad5ce52088566c961"
+2026-10-19T01:13:51.8917805Z       },
+2026-10-19T01:13:51.8917970Z       "ack_timeout_seconds": 60,
+2026-10-19T01:13:51.8918213Z       "capture_ack_is_coordination_only": true,
+2026-10-19T01:13:51.8918478Z       "event": "session_phase_observed",
+2026-10-19T01:13:51.8918711Z       "original": {
+2026-10-19T01:13:51.8918890Z         "active": true,
+2026-10-19T01:13:51.8919111Z         "agent_id": "22222222-2222-4222-8222-222222222222",
+2026-10-19T01:13:51.8919647Z         "healthy": true,
+2026-10-19T01:13:51.8919847Z         "process_id": 23609,
+2026-10-19T01:13:51.8920058Z         "spawn_generation": 5
+2026-10-19T01:13:51.8920258Z       },
+2026-10-19T01:13:51.8920419Z       "phase": "old_spawn_stale",
+2026-10-19T01:13:51.8920648Z       "recorded_unix_ms": 1792372429688,
+2026-10-19T01:13:51.8920912Z       "runtime_dir": "/tmp/hp-m6on8wb_/ui-runtime",
+2026-10-19T01:13:51.8921168Z       "sequence": 4,
+2026-10-19T01:13:51.8921403Z       "session_instance": "e60f0492e88a1b1ad5ce52088566c961",
+2026-10-19T01:13:51.8921685Z       "session_pid": 23507,
+2026-10-19T01:13:51.8922016Z       "session_socket_path": "/tmp/hp-m6on8wb_/ui-runtime/trillionnium-ui/session.sock",
+2026-10-19T01:13:51.8922659Z       "snapshot": {
+2026-10-19T01:13:51.8922903Z         "hepta": {
+2026-10-19T01:13:51.8923084Z           "connection": "stale",
+2026-10-19T01:13:51.8923314Z           "error_code": "protocol_mismatch",
+2026-10-19T01:13:51.8923576Z           "last_attempt_unix_ms": 1792372429589,
+2026-10-19T01:13:51.8923836Z           "last_observation": {
+2026-10-19T01:13:51.8924078Z             "agent_id": "22222222-2222-4222-8222-222222222222",
+2026-10-19T01:13:51.8924347Z             "capabilities": [
+2026-10-19T01:13:51.8924546Z               {
+2026-10-19T01:13:51.8924741Z                 "id": "automation.calendar_v2",
+2026-10-19T01:13:51.8924994Z                 "major": 1,
+2026-10-19T01:13:51.8925192Z                 "minor": 0
+2026-10-19T01:13:51.8925378Z               },
+2026-10-19T01:13:51.8925537Z               {
+2026-10-19T01:13:51.8925736Z                 "id": "cognitive.context.revalidate",
+2026-10-19T01:13:51.8925996Z                 "major": 1,
+2026-10-19T01:13:51.8926191Z                 "minor": 0
+2026-10-19T01:13:51.8926380Z               },
+2026-10-19T01:13:51.8926543Z               {
+2026-10-19T01:13:51.8926716Z                 "id": "run.lifecycle",
+2026-10-19T01:13:51.8926942Z                 "major": 1,
+2026-10-19T01:13:51.8927137Z                 "minor": 1
+2026-10-19T01:13:51.8927339Z               }
+2026-10-19T01:13:51.8927500Z             ],
+2026-10-19T01:13:51.8927686Z             "capabilities_truncated": false,
+2026-10-19T01:13:51.8927941Z             "current_generation": 3,
+2026-10-19T01:13:51.8928169Z             "events": [
+2026-10-19T01:13:51.8928647Z               {
+2026-10-19T01:13:51.8928855Z                 "cursor": 1,
+2026-10-19T01:13:51.8929062Z                 "generation": null,
+2026-10-19T01:13:51.8929291Z                 "kind": "bootstrapped",
+2026-10-19T01:13:51.8929524Z                 "lifecycle": null
+2026-10-19T01:13:51.8929727Z               },
+2026-10-19T01:13:51.8929900Z               {
+2026-10-19T01:13:51.8930067Z                 "cursor": 2,
+2026-10-19T01:13:51.8930269Z                 "generation": 1,
+2026-10-19T01:13:51.8930482Z                 "kind": "lifecycle",
+2026-10-19T01:13:51.8930711Z                 "lifecycle": "starting"
+2026-10-19T01:13:51.8930933Z               },
+2026-10-19T01:13:51.8931095Z               {
+2026-10-19T01:13:51.8931273Z                 "cursor": 3,
+2026-10-19T01:13:51.8931479Z                 "generation": null,
+2026-10-19T01:13:51.8931709Z                 "kind": "app_server_ready",
+2026-10-19T01:13:51.8931948Z                 "lifecycle": null
+2026-10-19T01:13:51.8932158Z               },
+2026-10-19T01:13:51.8932719Z               {
+2026-10-19T01:13:51.8932900Z                 "cursor": 4,
+2026-10-19T01:13:51.8933103Z                 "generation": 2,
+2026-10-19T01:13:51.8933321Z                 "kind": "lifecycle",
+2026-10-19T01:13:51.8933552Z                 "lifecycle": "running"
+2026-10-19T01:13:51.8933768Z               },
+2026-10-19T01:13:51.8933928Z               {
+2026-10-19T01:13:51.8934096Z                 "cursor": 5,
+2026-10-19T01:13:51.8934298Z                 "generation": 3,
+2026-10-19T01:13:51.8934512Z                 "kind": "lifecycle",
+2026-10-19T01:13:51.8934738Z                 "lifecycle": "draining"
+2026-10-19T01:13:51.8934965Z               },
+2026-10-19T01:13:51.8935449Z               {
+2026-10-19T01:13:51.8935618Z                 "cursor": 6,
+2026-10-19T01:13:51.8935820Z                 "generation": null,
+2026-10-19T01:13:51.8936135Z                 "kind": "draining",
+2026-10-19T01:13:51.8936360Z                 "lifecycle": null
+2026-10-19T01:13:51.8936569Z               }
+2026-10-19T01:13:51.8937092Z             ],
+2026-10-19T01:13:51.8937273Z             "events_omitted_from_view": 0,
+2026-10-19T01:13:51.8937506Z             "health": {
+2026-10-19T01:13:51.8937691Z               "fenced": false,
+2026-10-19T01:13:51.8937913Z               "lifecycle": "draining",
+2026-10-19T01:13:51.8938145Z               "process_id": 23483,
+2026-10-19T01:13:51.8938372Z               "promotion_ready": false,
+2026-10-19T01:13:51.8938601Z               "ready": false
+2026-10-19T01:13:51.8938788Z             },
+2026-10-19T01:13:51.8938958Z             "history_gap": false,
+2026-10-19T01:13:51.8939175Z             "latest_cursor": 6,
+2026-10-19T01:13:51.8939400Z             "next_cursor": 6,
+2026-10-19T01:13:51.8939626Z             "sampled_unix_ms": 1792372427585,
+2026-10-19T01:13:51.8939870Z             "source_changed": false,
+2026-10-19T01:13:51.8940107Z             "spawn_generation": 1
+2026-10-19T01:13:51.8940312Z           },
+2026-10-19T01:13:51.8940490Z           "runtime_sample_clock": {
+2026-10-19T01:13:51.8940724Z             "observation_sequence": 3,
+2026-10-19T01:13:51.8940974Z             "sample_age_at_snapshot_ms": 2103
+2026-10-19T01:13:51.8941215Z           }
+2026-10-19T01:13:51.8941368Z         },
+2026-10-19T01:13:51.8941521Z         "resources": {
+2026-10-19T01:13:51.8941714Z           "load_average_1m": 0.93,
+2026-10-19T01:13:51.8941940Z           "mem_available_kib": 14943912,
+2026-10-19T01:13:51.8942178Z           "mem_total_kib": 16330088,
+2026-10-19T01:13:51.8942679Z           "sampled_unix_ms": 1792372429687,
+2026-10-19T01:13:51.8943013Z           "source": "Linux host /proc and Wayland socket metadata (NOT HOS2)",
+2026-10-19T01:13:51.8943338Z           "wayland": {
+2026-10-19T01:13:51.8943546Z             "sampled_unix_ms": 1792372429687,
+2026-10-19T01:13:51.8943801Z             "socket_observation_epoch": 1,
+2026-10-19T01:13:51.8944046Z             "status": "unconfigured"
+2026-10-19T01:13:51.8944259Z           }
+2026-10-19T01:13:51.8944410Z         },
+2026-10-19T01:13:51.8944930Z         "session_instance": "e60f0492e88a1b1ad5ce52088566c961",
+2026-10-19T01:13:51.8945241Z         "tasks": [],
+2026-10-19T01:13:51.8945424Z         "type": "snapshot"
+2026-10-19T01:13:51.8945616Z       },
+2026-10-19T01:13:51.8945776Z       "stale_verification": {
+2026-10-19T01:13:51.8945990Z         "first_stale_snapshot": {
+2026-10-19T01:13:51.8946201Z           "hepta": {
+2026-10-19T01:13:51.8946386Z             "connection": "stale",
+2026-10-19T01:13:51.8946626Z             "error_code": "protocol_mismatch",
+2026-10-19T01:13:51.8946891Z             "last_attempt_unix_ms": 1792372428588,
+2026-10-19T01:13:51.8947148Z             "last_observation": {
+2026-10-19T01:13:51.8947408Z               "agent_id": "22222222-2222-4222-8222-222222222222",
+2026-10-19T01:13:51.8947684Z               "capabilities": [
+2026-10-19T01:13:51.8947883Z                 {
+2026-10-19T01:13:51.8948076Z                   "id": "automation.calendar_v2",
+2026-10-19T01:13:51.8948331Z                   "major": 1,
+2026-10-19T01:13:51.8948536Z                   "minor": 0
+2026-10-19T01:13:51.8948725Z                 },
+2026-10-19T01:13:51.8948890Z                 {
+2026-10-19T01:13:51.8949098Z                   "id": "cognitive.context.revalidate",
+2026-10-19T01:13:51.8949357Z                   "major": 1,
+2026-10-19T01:13:51.8949561Z                   "minor": 0
+2026-10-19T01:13:51.8949749Z                 },
+2026-10-19T01:13:51.8949914Z                 {
+2026-10-19T01:13:51.8950098Z                   "id": "run.lifecycle",
+2026-10-19T01:13:51.8950328Z                   "major": 1,
+2026-10-19T01:13:51.8950532Z                   "minor": 1
+2026-10-19T01:13:51.8950731Z                 }
+2026-10-19T01:13:51.8951227Z               ],
+2026-10-19T01:13:51.8951421Z               "capabilities_truncated": false,
+2026-10-19T01:13:51.8951679Z               "current_generation": 3,
+2026-10-19T01:13:51.8951902Z               "events": [
+2026-10-19T01:13:51.8952086Z                 {
+2026-10-19T01:13:51.8952166Z                   "cursor": 1,
+2026-10-19T01:13:51.8952486Z                   "generation": null,
+2026-10-19T01:13:51.8952580Z                   "kind": "bootstrapped",
+2026-10-19T01:13:51.8952657Z                   "lifecycle": null
+2026-10-19T01:13:51.8952725Z                 },
+2026-10-19T01:13:51.8952791Z                 {
+2026-10-19T01:13:51.8952861Z                   "cursor": 2,
+2026-10-19T01:13:51.8952941Z                   "generation": 1,
+2026-10-19T01:13:51.8953017Z                   "kind": "lifecycle",
+2026-10-19T01:13:51.8953098Z                   "lifecycle": "starting"
+2026-10-19T01:13:51.8953159Z                 },
+2026-10-19T01:13:51.8953227Z                 {
+2026-10-19T01:13:51.8953300Z                   "cursor": 3,
+2026-10-19T01:13:51.8953385Z                   "generation": null,
+2026-10-19T01:13:51.8953477Z                   "kind": "app_server_ready",
+2026-10-19T01:13:51.8953553Z                   "lifecycle": null
+2026-10-19T01:13:51.8953617Z                 },
+2026-10-19T01:13:51.8953683Z                 {
+2026-10-19T01:13:51.8953759Z                   "cursor": 4,
+2026-10-19T01:13:51.8953832Z                   "generation": 2,
+2026-10-19T01:13:51.8953915Z                   "kind": "lifecycle",
+2026-10-19T01:13:51.8953998Z                   "lifecycle": "running"
+2026-10-19T01:13:51.8954061Z                 },
+2026-10-19T01:13:51.8954126Z                 {
+2026-10-19T01:13:51.8954199Z                   "cursor": 5,
+2026-10-19T01:13:51.8954277Z                   "generation": 3,
+2026-10-19T01:13:51.8954353Z                   "kind": "lifecycle",
+2026-10-19T01:13:51.8954436Z                   "lifecycle": "draining"
+2026-10-19T01:13:51.8954498Z                 },
+2026-10-19T01:13:51.8954564Z                 {
+2026-10-19T01:13:51.8954644Z                   "cursor": 6,
+2026-10-19T01:13:51.8954721Z                   "generation": null,
+2026-10-19T01:13:51.8954804Z                   "kind": "draining",
+2026-10-19T01:13:51.8954878Z                   "lifecycle": null
+2026-10-19T01:13:51.8955212Z                 }
+2026-10-19T01:13:51.8955306Z               ],
+2026-10-19T01:13:51.8955403Z               "events_omitted_from_view": 0,
+2026-10-19T01:13:51.8955476Z               "health": {
+2026-10-19T01:13:51.8955548Z                 "fenced": false,
+2026-10-19T01:13:51.8955631Z                 "lifecycle": "draining",
+2026-10-19T01:13:51.8955706Z                 "process_id": 23483,
+2026-10-19T01:13:51.8955791Z                 "promotion_ready": false,
+2026-10-19T01:13:51.8955861Z                 "ready": false
+2026-10-19T01:13:51.8955926Z               },
+2026-10-19T01:13:51.8956003Z               "history_gap": false,
+2026-10-19T01:13:51.8956082Z               "latest_cursor": 6,
+2026-10-19T01:13:51.8956165Z               "next_cursor": 6,
+2026-10-19T01:13:51.8956253Z               "sampled_unix_ms": 1792372427585,
+2026-10-19T01:13:51.8956336Z               "source_changed": false,
+2026-10-19T01:13:51.8956415Z               "spawn_generation": 1
+2026-10-19T01:13:51.8956481Z             },
+2026-10-19T01:13:51.8956565Z             "runtime_sample_clock": {
+2026-10-19T01:13:51.8956653Z               "observation_sequence": 3,
+2026-10-19T01:13:51.8956747Z               "sample_age_at_snapshot_ms": 1201
+2026-10-19T01:13:51.8956813Z             }
+2026-10-19T01:13:51.8956878Z           },
+2026-10-19T01:13:51.8956946Z           "resources": {
+2026-10-19T01:13:51.8957028Z             "load_average_1m": 0.93,
+2026-10-19T01:13:51.8957111Z             "mem_available_kib": 14928036,
+2026-10-19T01:13:51.8957276Z             "mem_total_kib": 16330088,
+2026-10-19T01:13:51.8957366Z             "sampled_unix_ms": 1792372428785,
+2026-10-19T01:13:51.8957543Z             "source": "Linux host /proc and Wayland socket metadata (NOT HOS2)",
+2026-10-19T01:13:51.8957807Z             "wayland": {
+2026-10-19T01:13:51.8957899Z               "sampled_unix_ms": 1792372428785,
+2026-10-19T01:13:51.8957993Z               "socket_observation_epoch": 1,
+2026-10-19T01:13:51.8958073Z               "status": "unconfigured"
+2026-10-19T01:13:51.8958144Z             }
+2026-10-19T01:13:51.8958207Z           },
+2026-10-19T01:13:51.8958339Z           "session_instance": "e60f0492e88a1b1ad5ce52088566c961",
+2026-10-19T01:13:51.8958405Z           "tasks": [],
+2026-10-19T01:13:51.8958482Z           "type": "snapshot"
+2026-10-19T01:13:51.8958547Z         },
+2026-10-19T01:13:51.8958679Z         "later_failure_preserves_exact_last_observation": true,
+2026-10-19T01:13:51.8958769Z         "preceding_live_observation": {
+2026-10-19T01:13:51.8958876Z           "agent_id": "22222222-2222-4222-8222-222222222222",
+2026-10-19T01:13:51.8958956Z           "capabilities": [
+2026-10-19T01:13:51.8959017Z             {
+2026-10-19T01:13:51.8959112Z               "id": "automation.calendar_v2",
+2026-10-19T01:13:51.8959190Z               "major": 1,
+2026-10-19T01:13:51.8959257Z               "minor": 0
+2026-10-19T01:13:51.8959325Z             },
+2026-10-19T01:13:51.8959387Z             {
+2026-10-19T01:13:51.8959493Z               "id": "cognitive.context.revalidate",
+2026-10-19T01:13:51.8959565Z               "major": 1,
+2026-10-19T01:13:51.8959636Z               "minor": 0
+2026-10-19T01:13:51.8959698Z             },
+2026-10-19T01:13:51.8959763Z             {
+2026-10-19T01:13:51.8959846Z               "id": "run.lifecycle",
+2026-10-19T01:13:51.8959914Z               "major": 1,
+2026-10-19T01:13:51.8959986Z               "minor": 1
+2026-10-19T01:13:51.8960048Z             }
+2026-10-19T01:13:51.8960114Z           ],
+2026-10-19T01:13:51.8960204Z           "capabilities_truncated": false,
+2026-10-19T01:13:51.8960287Z           "current_generation": 3,
+2026-10-19T01:13:51.8960354Z           "events": [
+2026-10-19T01:13:51.8960419Z             {
+2026-10-19T01:13:51.8960492Z               "cursor": 1,
+2026-10-19T01:13:51.8960576Z               "generation": null,
+2026-10-19T01:13:51.8960665Z               "kind": "bootstrapped",
+2026-10-19T01:13:51.8960739Z               "lifecycle": null
+2026-10-19T01:13:51.8960804Z             },
+2026-10-19T01:13:51.8960867Z             {
+2026-10-19T01:13:51.8961089Z               "cursor": 2,
+2026-10-19T01:13:51.8961193Z               "generation": 1,
+2026-10-19T01:13:51.8961280Z               "kind": "lifecycle",
+2026-10-19T01:13:51.8961364Z               "lifecycle": "starting"
+2026-10-19T01:13:51.8961426Z             },
+2026-10-19T01:13:51.8961495Z             {
+2026-10-19T01:13:51.8961564Z               "cursor": 3,
+2026-10-19T01:13:51.8961642Z               "generation": null,
+2026-10-19T01:13:51.8961725Z               "kind": "app_server_ready",
+2026-10-19T01:13:51.8961803Z               "lifecycle": null
+2026-10-19T01:13:51.8961870Z             },
+2026-10-19T01:13:51.8961932Z             {
+2026-10-19T01:13:51.8962004Z               "cursor": 4,
+2026-10-19T01:13:51.8962084Z               "generation": 2,
+2026-10-19T01:13:51.8962164Z               "kind": "lifecycle",
+2026-10-19T01:13:51.8962514Z               "lifecycle": "running"
+2026-10-19T01:13:51.8962595Z             },
+2026-10-19T01:13:51.8962660Z             {
+2026-10-19T01:13:51.8962736Z               "cursor": 5,
+2026-10-19T01:13:51.8962813Z               "generation": 3,
+2026-10-19T01:13:51.8962886Z               "kind": "lifecycle",
+2026-10-19T01:13:51.8962969Z               "lifecycle": "draining"
+2026-10-19T01:13:51.8963032Z             },
+2026-10-19T01:13:51.8963097Z             {
+2026-10-19T01:13:51.8963165Z               "cursor": 6,
+2026-10-19T01:13:51.8963246Z               "generation": null,
+2026-10-19T01:13:51.8963321Z               "kind": "draining",
+2026-10-19T01:13:51.8963397Z               "lifecycle": null
+2026-10-19T01:13:51.8963463Z             }
+2026-10-19T01:13:51.8963525Z           ],
+2026-10-19T01:13:51.8963612Z           "events_omitted_from_view": 0,
+2026-10-19T01:13:51.8963947Z           "health": {
+2026-10-19T01:13:51.8964025Z             "fenced": false,
+2026-10-19T01:13:51.8964102Z             "lifecycle": "draining",
+2026-10-19T01:13:51.8964185Z             "process_id": 23483,
+2026-10-19T01:13:51.8964266Z             "promotion_ready": false,
+2026-10-19T01:13:51.8964344Z             "ready": false
+2026-10-19T01:13:51.8964408Z           },
+2026-10-19T01:13:51.8964481Z           "history_gap": false,
+2026-10-19T01:13:51.8964560Z           "latest_cursor": 6,
+2026-10-19T01:13:51.8964630Z           "next_cursor": 6,
+2026-10-19T01:13:51.8964717Z           "sampled_unix_ms": 1792372427585,
+2026-10-19T01:13:51.8964794Z           "source_changed": false,
+2026-10-19T01:13:51.8964875Z           "spawn_generation": 1
+2026-10-19T01:13:51.8964939Z         }
+2026-10-19T01:13:51.8965006Z       },
+2026-10-19T01:13:51.8965079Z       "worker_tid": 23508
+2026-10-19T01:13:51.8965140Z     },
+2026-10-19T01:13:51.8965203Z     {
+2026-10-19T01:13:51.8965283Z       "event": "session_stopped",
+2026-10-19T01:13:51.8965363Z       "exit_code": null,
+2026-10-19T01:13:51.8965498Z       "session_instance": "e60f0492e88a1b1ad5ce52088566c961",
+2026-10-19T01:13:51.8965576Z       "session_pid": 23507,
+2026-10-19T01:13:51.8965641Z       "signal": 9,
+2026-10-19T01:13:51.8965715Z       "worker_tid": 23508
+2026-10-19T01:13:51.8965784Z     },
+2026-10-19T01:13:51.8965844Z     {
+2026-10-19T01:13:51.8965911Z       "ack": {
+2026-10-19T01:13:51.8965994Z         "phase": "recovered_running",
+2026-10-19T01:13:51.8966069Z         "sequence": 5,
+2026-10-19T01:13:51.8966193Z         "session_instance": "0f9488024505ab130b294988d640374c"
+2026-10-19T01:13:51.8966259Z       },
+2026-10-19T01:13:51.8966341Z       "ack_timeout_seconds": 60,
+2026-10-19T01:13:51.8966440Z       "capture_ack_is_coordination_only": true,
+2026-10-19T01:13:51.8966528Z       "event": "session_phase_observed",
+2026-10-19T01:13:51.8966593Z       "original": {
+2026-10-19T01:13:51.8966666Z         "active": true,
+2026-10-19T01:13:51.8966771Z         "agent_id": "22222222-2222-4222-8222-222222222222",
+2026-10-19T01:13:51.8966853Z         "healthy": true,
+2026-10-19T01:13:51.8966927Z         "process_id": 23609,
+2026-10-19T01:13:51.8967006Z         "spawn_generation": 5
+2026-10-19T01:13:51.8967073Z       },
+2026-10-19T01:13:51.8967364Z       "phase": "recovered_running",
+2026-10-19T01:13:51.8967471Z       "recorded_unix_ms": 1792372429892,
+2026-10-19T01:13:51.8967578Z       "runtime_dir": "/tmp/hp-m6on8wb_/ui-runtime",
+2026-10-19T01:13:51.8967651Z       "sequence": 5,
+2026-10-19T01:13:51.8967770Z       "session_instance": "0f9488024505ab130b294988d640374c",
+2026-10-19T01:13:51.8967847Z       "session_pid": 23706,
+2026-10-19T01:13:51.8968057Z       "session_socket_path": "/tmp/hp-m6on8wb_/ui-runtime/trillionnium-ui/session.sock",
+2026-10-19T01:13:51.8968127Z       "snapshot": {
+2026-10-19T01:13:51.8968196Z         "hepta": {
+2026-10-19T01:13:51.8968274Z           "connection": "observed",
+2026-10-19T01:13:51.8968350Z           "error_code": null,
+2026-10-19T01:13:51.8968442Z           "last_attempt_unix_ms": 1792372429694,
+2026-10-19T01:13:51.8968521Z           "last_observation": {
+2026-10-19T01:13:51.8968625Z             "agent_id": "22222222-2222-4222-8222-222222222222",
+2026-10-19T01:13:51.8968704Z             "capabilities": [
+2026-10-19T01:13:51.8968774Z               {
+2026-10-19T01:13:51.8968865Z                 "id": "automation.calendar_v2",
+2026-10-19T01:13:51.8968937Z                 "major": 1,
+2026-10-19T01:13:51.8969005Z                 "minor": 0
+2026-10-19T01:13:51.8969071Z               },
+2026-10-19T01:13:51.8969133Z               {
+2026-10-19T01:13:51.8969242Z                 "id": "cognitive.context.revalidate",
+2026-10-19T01:13:51.8969310Z                 "major": 1,
+2026-10-19T01:13:51.8969384Z                 "minor": 0
+2026-10-19T01:13:51.8969450Z               },
+2026-10-19T01:13:51.8969511Z               {
+2026-10-19T01:13:51.8969592Z                 "id": "run.lifecycle",
+2026-10-19T01:13:51.8969660Z                 "major": 1,
+2026-10-19T01:13:51.8969914Z                 "minor": 1
+2026-10-19T01:13:51.8969977Z               }
+2026-10-19T01:13:51.8970044Z             ],
+2026-10-19T01:13:51.8970136Z             "capabilities_truncated": false,
+2026-10-19T01:13:51.8970219Z             "current_generation": 6,
+2026-10-19T01:13:51.8970293Z             "events": [
+2026-10-19T01:13:51.8970357Z               {
+2026-10-19T01:13:51.8970432Z                 "cursor": 1,
+2026-10-19T01:13:51.8970509Z                 "generation": null,
+2026-10-19T01:13:51.8970595Z                 "kind": "bootstrapped",
+2026-10-19T01:13:51.8970671Z                 "lifecycle": null
+2026-10-19T01:13:51.8970738Z               },
+2026-10-19T01:13:51.8970803Z               {
+2026-10-19T01:13:51.8970878Z                 "cursor": 2,
+2026-10-19T01:13:51.8970955Z                 "generation": 5,
+2026-10-19T01:13:51.8971030Z                 "kind": "lifecycle",
+2026-10-19T01:13:51.8971121Z                 "lifecycle": "starting"
+2026-10-19T01:13:51.8971185Z               },
+2026-10-19T01:13:51.8971258Z               {
+2026-10-19T01:13:51.8971335Z                 "cursor": 3,
+2026-10-19T01:13:51.8971415Z                 "generation": null,
+2026-10-19T01:13:51.8971501Z                 "kind": "app_server_ready",
+2026-10-19T01:13:51.8971575Z                 "lifecycle": null
+2026-10-19T01:13:51.8971644Z               },
+2026-10-19T01:13:51.8971706Z               {
+2026-10-19T01:13:51.8971781Z                 "cursor": 4,
+2026-10-19T01:13:51.8971856Z                 "generation": 6,
+2026-10-19T01:13:51.8971934Z                 "kind": "lifecycle",
+2026-10-19T01:13:51.8972016Z                 "lifecycle": "running"
+2026-10-19T01:13:51.8972084Z               }
+2026-10-19T01:13:51.8972150Z             ],
+2026-10-19T01:13:51.8972536Z             "events_omitted_from_view": 0,
+2026-10-19T01:13:51.8972648Z             "health": {
+2026-10-19T01:13:51.8972727Z               "fenced": false,
+2026-10-19T01:13:51.8972811Z               "lifecycle": "running",
+2026-10-19T01:13:51.8972887Z               "process_id": 23609,
+2026-10-19T01:13:51.8972981Z               "promotion_ready": true,
+2026-10-19T01:13:51.8973051Z               "ready": true
+2026-10-19T01:13:51.8973119Z             },
+2026-10-19T01:13:51.8973198Z             "history_gap": false,
+2026-10-19T01:13:51.8973272Z             "latest_cursor": 4,
+2026-10-19T01:13:51.8973643Z             "next_cursor": 4,
+2026-10-19T01:13:51.8973769Z             "sampled_unix_ms": 1792372429690,
+2026-10-19T01:13:51.8973851Z             "source_changed": false,
+2026-10-19T01:13:51.8973927Z             "spawn_generation": 5
+2026-10-19T01:13:51.8973991Z           },
+2026-10-19T01:13:51.8974074Z           "runtime_sample_clock": {
+2026-10-19T01:13:51.8974157Z             "observation_sequence": 1,
+2026-10-19T01:13:51.8974249Z             "sample_age_at_snapshot_ms": 201
+2026-10-19T01:13:51.8974313Z           }
+2026-10-19T01:13:51.8974377Z         },
+2026-10-19T01:13:51.8974448Z         "resources": {
+2026-10-19T01:13:51.8974526Z           "load_average_1m": 0.93,
+2026-10-19T01:13:51.8974613Z           "mem_available_kib": 14944440,
+2026-10-19T01:13:51.8974691Z           "mem_total_kib": 16330088,
+2026-10-19T01:13:51.8974776Z           "sampled_unix_ms": 1792372429891,
+2026-10-19T01:13:51.8974950Z           "source": "Linux host /proc and Wayland socket metadata (NOT HOS2)",
+2026-10-19T01:13:51.8975025Z           "wayland": {
+2026-10-19T01:13:51.8975113Z             "sampled_unix_ms": 1792372429891,
+2026-10-19T01:13:51.8975205Z             "socket_observation_epoch": 1,
+2026-10-19T01:13:51.8975284Z             "status": "unconfigured"
+2026-10-19T01:13:51.8975348Z           }
+2026-10-19T01:13:51.8975414Z         },
+2026-10-19T01:13:51.8975538Z         "session_instance": "0f9488024505ab130b294988d640374c",
+2026-10-19T01:13:51.8975609Z         "tasks": [],
+2026-10-19T01:13:51.8975681Z         "type": "snapshot"
+2026-10-19T01:13:51.8975747Z       },
+2026-10-19T01:13:51.8975826Z       "stale_verification": null,
+2026-10-19T01:13:51.8975901Z       "worker_tid": 23708
+2026-10-19T01:13:51.8976155Z     },
+2026-10-19T01:13:51.8976218Z     {
+2026-10-19T01:13:51.8976287Z       "ack": {
+2026-10-19T01:13:51.8976366Z         "phase": "stopped_stale",
+2026-10-19T01:13:51.8976487Z         "sequence": 6,
+2026-10-19T01:13:51.8976612Z         "session_instance": "0f9488024505ab130b294988d640374c"
+2026-10-19T01:13:51.8976680Z       },
+2026-10-19T01:13:51.8976759Z       "ack_timeout_seconds": 60,
+2026-10-19T01:13:51.8976861Z       "capture_ack_is_coordination_only": true,
+2026-10-19T01:13:51.8976945Z       "event": "session_phase_observed",
+2026-10-19T01:13:51.8977015Z       "original": {
+2026-10-19T01:13:51.8977089Z         "active": false,
+2026-10-19T01:13:51.8977190Z         "agent_id": "22222222-2222-4222-8222-222222222222",
+2026-10-19T01:13:51.8977264Z         "healthy": false,
+2026-10-19T01:13:51.8977339Z         "process_id": null,
+2026-10-19T01:13:51.8977422Z         "spawn_generation": null
+2026-10-19T01:13:51.8977483Z       },
+2026-10-19T01:13:51.8977564Z       "phase": "stopped_stale",
+2026-10-19T01:13:51.8977650Z       "recorded_unix_ms": 1792372431697,
+2026-10-19T01:13:51.8977758Z       "runtime_dir": "/tmp/hp-m6on8wb_/ui-runtime",
+2026-10-19T01:13:51.8977828Z       "sequence": 6,
+2026-10-19T01:13:51.8977949Z       "session_instance": "0f9488024505ab130b294988d640374c",
+2026-10-19T01:13:51.8978030Z       "session_pid": 23706,
+2026-10-19T01:13:51.8978244Z       "session_socket_path": "/tmp/hp-m6on8wb_/ui-runtime/trillionnium-ui/session.sock",
+2026-10-19T01:13:51.8978318Z       "snapshot": {
+2026-10-19T01:13:51.8978382Z         "hepta": {
+2026-10-19T01:13:51.8978461Z           "connection": "stale",
+2026-10-19T01:13:51.8978547Z           "error_code": "unavailable",
+2026-10-19T01:13:51.8978639Z           "last_attempt_unix_ms": 1792372431694,
+2026-10-19T01:13:51.8978717Z           "last_observation": {
+2026-10-19T01:13:51.8978822Z             "agent_id": "22222222-2222-4222-8222-222222222222",
+2026-10-19T01:13:51.8978901Z             "capabilities": [
+2026-10-19T01:13:51.8978964Z               {
+2026-10-19T01:13:51.8979064Z                 "id": "automation.calendar_v2",
+2026-10-19T01:13:51.8979136Z                 "major": 1,
+2026-10-19T01:13:51.8979210Z                 "minor": 0
+2026-10-19T01:13:51.8979275Z               },
+2026-10-19T01:13:51.8979337Z               {
+2026-10-19T01:13:51.8979629Z                 "id": "cognitive.context.revalidate",
+2026-10-19T01:13:51.8979727Z                 "major": 1,
+2026-10-19T01:13:51.8979800Z                 "minor": 0
+2026-10-19T01:13:51.8979862Z               },
+2026-10-19T01:13:51.8979927Z               {
+2026-10-19T01:13:51.8980011Z                 "id": "run.lifecycle",
+2026-10-19T01:13:51.8980079Z                 "major": 1,
+2026-10-19T01:13:51.8980152Z                 "minor": 1
+2026-10-19T01:13:51.8980214Z               }
+2026-10-19T01:13:51.8980280Z             ],
+2026-10-19T01:13:51.8980370Z             "capabilities_truncated": false,
+2026-10-19T01:13:51.8980453Z             "current_generation": 6,
+2026-10-19T01:13:51.8980519Z             "events": [
+2026-10-19T01:13:51.8980590Z               {
+2026-10-19T01:13:51.8980663Z                 "cursor": 1,
+2026-10-19T01:13:51.8980739Z                 "generation": null,
+2026-10-19T01:13:51.8980822Z                 "kind": "bootstrapped",
+2026-10-19T01:13:51.8980902Z                 "lifecycle": null
+2026-10-19T01:13:51.8980971Z               },
+2026-10-19T01:13:51.8981034Z               {
+2026-10-19T01:13:51.8981108Z                 "cursor": 2,
+2026-10-19T01:13:51.8981183Z                 "generation": 5,
+2026-10-19T01:13:51.8981261Z                 "kind": "lifecycle",
+2026-10-19T01:13:51.8981344Z                 "lifecycle": "starting"
+2026-10-19T01:13:51.8981406Z               },
+2026-10-19T01:13:51.8981472Z               {
+2026-10-19T01:13:51.8981544Z                 "cursor": 3,
+2026-10-19T01:13:51.8981623Z                 "generation": null,
+2026-10-19T01:13:51.8981708Z                 "kind": "app_server_ready",
+2026-10-19T01:13:51.8981788Z                 "lifecycle": null
+2026-10-19T01:13:51.8981987Z               },
+2026-10-19T01:13:51.8982052Z               {
+2026-10-19T01:13:51.8982126Z                 "cursor": 4,
+2026-10-19T01:13:51.8982200Z                 "generation": 6,
+2026-10-19T01:13:51.8982565Z                 "kind": "lifecycle",
+2026-10-19T01:13:51.8982665Z                 "lifecycle": "running"
+2026-10-19T01:13:51.8982732Z               }
+2026-10-19T01:13:51.8982792Z             ],
+2026-10-19T01:13:51.8982883Z             "events_omitted_from_view": 0,
+2026-10-19T01:13:51.8982951Z             "health": {
+2026-10-19T01:13:51.8983028Z               "fenced": false,
+2026-10-19T01:13:51.8983111Z               "lifecycle": "running",
+2026-10-19T01:13:51.8983188Z               "process_id": 23609,
+2026-10-19T01:13:51.8983274Z               "promotion_ready": true,
+2026-10-19T01:13:51.8983343Z               "ready": true
+2026-10-19T01:13:51.8983409Z             },
+2026-10-19T01:13:51.8983483Z             "history_gap": false,
+2026-10-19T01:13:51.8983560Z             "latest_cursor": 4,
+2026-10-19T01:13:51.8983642Z             "next_cursor": 4,
+2026-10-19T01:13:51.8983728Z             "sampled_unix_ms": 1792372429690,
+2026-10-19T01:13:51.8983813Z             "source_changed": false,
+2026-10-19T01:13:51.8983890Z             "spawn_generation": 5
+2026-10-19T01:13:51.8983957Z           },
+2026-10-19T01:13:51.8984040Z           "runtime_sample_clock": {
+2026-10-19T01:13:51.8984125Z             "observation_sequence": 1,
+2026-10-19T01:13:51.8984215Z             "sample_age_at_snapshot_ms": 2006
+2026-10-19T01:13:51.8984283Z           }
+2026-10-19T01:13:51.8984351Z         },
+2026-10-19T01:13:51.8984422Z         "resources": {
+2026-10-19T01:13:51.8984503Z           "load_average_1m": 0.93,
+2026-10-19T01:13:51.8984582Z           "mem_available_kib": 15000348,
+2026-10-19T01:13:51.8984663Z           "mem_total_kib": 16330088,
+2026-10-19T01:13:51.8984745Z           "sampled_unix_ms": 1792372431696,
+2026-10-19T01:13:51.8984919Z           "source": "Linux host /proc and Wayland socket metadata (NOT HOS2)",
+2026-10-19T01:13:51.8984995Z           "wayland": {
+2026-10-19T01:13:51.8985080Z             "sampled_unix_ms": 1792372431696,
+2026-10-19T01:13:51.8985172Z             "socket_observation_epoch": 1,
+2026-10-19T01:13:51.8985254Z             "status": "unconfigured"
+2026-10-19T01:13:51.8985591Z           }
+2026-10-19T01:13:51.8985697Z         },
+2026-10-19T01:13:51.8985831Z         "session_instance": "0f9488024505ab130b294988d640374c",
+2026-10-19T01:13:51.8985899Z         "tasks": [],
+2026-10-19T01:13:51.8985979Z         "type": "snapshot"
+2026-10-19T01:13:51.8986046Z       },
+2026-10-19T01:13:51.8986122Z       "stale_verification": {
+2026-10-19T01:13:51.8986204Z         "first_stale_snapshot": {
+2026-10-19T01:13:51.8986268Z           "hepta": {
+2026-10-19T01:13:51.8986349Z             "connection": "stale",
+2026-10-19T01:13:51.8986429Z             "error_code": "unavailable",
+2026-10-19T01:13:51.8986524Z             "last_attempt_unix_ms": 1792372430694,
+2026-10-19T01:13:51.8986600Z             "last_observation": {
+2026-10-19T01:13:51.8986716Z               "agent_id": "22222222-2222-4222-8222-222222222222",
+2026-10-19T01:13:51.8986797Z               "capabilities": [
+2026-10-19T01:13:51.8986859Z                 {
+2026-10-19T01:13:51.8986957Z                   "id": "automation.calendar_v2",
+2026-10-19T01:13:51.8987030Z                   "major": 1,
+2026-10-19T01:13:51.8987107Z                   "minor": 0
+2026-10-19T01:13:51.8987170Z                 },
+2026-10-19T01:13:51.8987236Z                 {
+2026-10-19T01:13:51.8987348Z                   "id": "cognitive.context.revalidate",
+2026-10-19T01:13:51.8987416Z                   "major": 1,
+2026-10-19T01:13:51.8987490Z                   "minor": 0
+2026-10-19T01:13:51.8987552Z                 },
+2026-10-19T01:13:51.8987617Z                 {
+2026-10-19T01:13:51.8987698Z                   "id": "run.lifecycle",
+2026-10-19T01:13:51.8987770Z                   "major": 1,
+2026-10-19T01:13:51.8987840Z                   "minor": 1
+2026-10-19T01:13:51.8988105Z                 }
+2026-10-19T01:13:51.8988173Z               ],
+2026-10-19T01:13:51.8988271Z               "capabilities_truncated": false,
+2026-10-19T01:13:51.8988355Z               "current_generation": 6,
+2026-10-19T01:13:51.8988423Z               "events": [
+2026-10-19T01:13:51.8988487Z                 {
+2026-10-19T01:13:51.8988565Z                   "cursor": 1,
+2026-10-19T01:13:51.8988646Z                   "generation": null,
+2026-10-19T01:13:51.8988728Z                   "kind": "bootstrapped",
+2026-10-19T01:13:51.8988812Z                   "lifecycle": null
+2026-10-19T01:13:51.8988880Z                 },
+2026-10-19T01:13:51.8988941Z                 {
+2026-10-19T01:13:51.8989015Z                   "cursor": 2,
+2026-10-19T01:13:51.8989089Z                   "generation": 5,
+2026-10-19T01:13:51.8989170Z                   "kind": "lifecycle",
+2026-10-19T01:13:51.8989250Z                   "lifecycle": "starting"
+2026-10-19T01:13:51.8989317Z                 },
+2026-10-19T01:13:51.8989383Z                 {
+2026-10-19T01:13:51.8989457Z                   "cursor": 3,
+2026-10-19T01:13:51.8989540Z                   "generation": null,
+2026-10-19T01:13:51.8989626Z                   "kind": "app_server_ready",
+2026-10-19T01:13:51.8989706Z                   "lifecycle": null
+2026-10-19T01:13:51.8989771Z                 },
+2026-10-19T01:13:51.8989841Z                 {
+2026-10-19T01:13:51.8989913Z                   "cursor": 4,
+2026-10-19T01:13:51.8989994Z                   "generation": 6,
+2026-10-19T01:13:51.8990078Z                   "kind": "lifecycle",
+2026-10-19T01:13:51.8990157Z                   "lifecycle": "running"
+2026-10-19T01:13:51.8990225Z                 }
+2026-10-19T01:13:51.8990287Z               ],
+2026-10-19T01:13:51.8990380Z               "events_omitted_from_view": 0,
+2026-10-19T01:13:51.8990450Z               "health": {
+2026-10-19T01:13:51.8990527Z                 "fenced": false,
+2026-10-19T01:13:51.8990605Z                 "lifecycle": "running",
+2026-10-19T01:13:51.8990687Z                 "process_id": 23609,
+2026-10-19T01:13:51.8990777Z                 "promotion_ready": true,
+2026-10-19T01:13:51.8990847Z                 "ready": true
+2026-10-19T01:13:51.8990915Z               },
+2026-10-19T01:13:51.8990998Z               "history_gap": false,
+2026-10-19T01:13:51.8991240Z               "latest_cursor": 4,
+2026-10-19T01:13:51.8991339Z               "next_cursor": 4,
+2026-10-19T01:13:51.8991435Z               "sampled_unix_ms": 1792372429690,
+2026-10-19T01:13:51.8991522Z               "source_changed": false,
+2026-10-19T01:13:51.8991600Z               "spawn_generation": 5
+2026-10-19T01:13:51.8991667Z             },
+2026-10-19T01:13:51.8991747Z             "runtime_sample_clock": {
+2026-10-19T01:13:51.8991834Z               "observation_sequence": 1,
+2026-10-19T01:13:51.8991931Z               "sample_age_at_snapshot_ms": 1104
+2026-10-19T01:13:51.8991999Z             }
+2026-10-19T01:13:51.8992061Z           },
+2026-10-19T01:13:51.8992135Z           "resources": {
+2026-10-19T01:13:51.8992465Z             "load_average_1m": 0.93,
+2026-10-19T01:13:51.8992572Z             "mem_available_kib": 14984976,
+2026-10-19T01:13:51.8992654Z             "mem_total_kib": 16330088,
+2026-10-19T01:13:51.8992738Z             "sampled_unix_ms": 1792372430794,
+2026-10-19T01:13:51.8992918Z             "source": "Linux host /proc and Wayland socket metadata (NOT HOS2)",
+2026-10-19T01:13:51.8993057Z             "wayland": {
+2026-10-19T01:13:51.8993150Z               "sampled_unix_ms": 1792372430794,
+2026-10-19T01:13:51.8993241Z               "socket_observation_epoch": 1,
+2026-10-19T01:13:51.8993321Z               "status": "unconfigured"
+2026-10-19T01:13:51.8993387Z             }
+2026-10-19T01:13:51.8993449Z           },
+2026-10-19T01:13:51.8993579Z           "session_instance": "0f9488024505ab130b294988d640374c",
+2026-10-19T01:13:51.8993646Z           "tasks": [],
+2026-10-19T01:13:51.8993723Z           "type": "snapshot"
+2026-10-19T01:13:51.8993788Z         },
+2026-10-19T01:13:51.8993925Z         "later_failure_preserves_exact_last_observation": true,
+2026-10-19T01:13:51.8994241Z         "preceding_live_observation": {
+2026-10-19T01:13:51.8994345Z           "agent_id": "22222222-2222-4222-8222-222222222222",
+2026-10-19T01:13:51.8994424Z           "capabilities": [
+2026-10-19T01:13:51.8994486Z             {
+2026-10-19T01:13:51.8994585Z               "id": "automation.calendar_v2",
+2026-10-19T01:13:51.8994653Z               "major": 1,
+2026-10-19T01:13:51.8994725Z               "minor": 0
+2026-10-19T01:13:51.8994793Z             },
+2026-10-19T01:13:51.8994854Z             {
+2026-10-19T01:13:51.8994960Z               "id": "cognitive.context.revalidate",
+2026-10-19T01:13:51.8995028Z               "major": 1,
+2026-10-19T01:13:51.8995098Z               "minor": 0
+2026-10-19T01:13:51.8995160Z             },
+2026-10-19T01:13:51.8995227Z             {
+2026-10-19T01:13:51.8995304Z               "id": "run.lifecycle",
+2026-10-19T01:13:51.8995375Z               "major": 1,
+2026-10-19T01:13:51.8995444Z               "minor": 1
+2026-10-19T01:13:51.8995513Z             }
+2026-10-19T01:13:51.8995578Z           ],
+2026-10-19T01:13:51.8995666Z           "capabilities_truncated": false,
+2026-10-19T01:13:51.8995747Z           "current_generation": 6,
+2026-10-19T01:13:51.8995819Z           "events": [
+2026-10-19T01:13:51.8995886Z             {
+2026-10-19T01:13:51.8995957Z               "cursor": 1,
+2026-10-19T01:13:51.8996040Z               "generation": null,
+2026-10-19T01:13:51.8996128Z               "kind": "bootstrapped",
+2026-10-19T01:13:51.8996202Z               "lifecycle": null
+2026-10-19T01:13:51.8996269Z             },
+2026-10-19T01:13:51.8996331Z             {
+2026-10-19T01:13:51.8996403Z               "cursor": 2,
+2026-10-19T01:13:51.8996476Z               "generation": 5,
+2026-10-19T01:13:51.8996561Z               "kind": "lifecycle",
+2026-10-19T01:13:51.8996639Z               "lifecycle": "starting"
+2026-10-19T01:13:51.8996705Z             },
+2026-10-19T01:13:51.8996771Z             {
+2026-10-19T01:13:51.8996841Z               "cursor": 3,
+2026-10-19T01:13:51.8996927Z               "generation": null,
+2026-10-19T01:13:51.8997008Z               "kind": "app_server_ready",
+2026-10-19T01:13:51.8997087Z               "lifecycle": null
+2026-10-19T01:13:51.8997150Z             },
+2026-10-19T01:13:51.8997219Z             {
+2026-10-19T01:13:51.8997473Z               "cursor": 4,
+2026-10-19T01:13:51.8997584Z               "generation": 6,
+2026-10-19T01:13:51.8997666Z               "kind": "lifecycle",
+2026-10-19T01:13:51.8997743Z               "lifecycle": "running"
+2026-10-19T01:13:51.8997808Z             }
+2026-10-19T01:13:51.8997868Z           ],
+2026-10-19T01:13:51.8997957Z           "events_omitted_from_view": 0,
+2026-10-19T01:13:51.8998024Z           "health": {
+2026-10-19T01:13:51.8998100Z             "fenced": false,
+2026-10-19T01:13:51.8998179Z             "lifecycle": "running",
+2026-10-19T01:13:51.8998258Z             "process_id": 23609,
+2026-10-19T01:13:51.8998341Z             "promotion_ready": true,
+2026-10-19T01:13:51.8998410Z             "ready": true
+2026-10-19T01:13:51.8998479Z           },
+2026-10-19T01:13:51.8998551Z           "history_gap": false,
+2026-10-19T01:13:51.8998628Z           "latest_cursor": 4,
+2026-10-19T01:13:51.8998702Z           "next_cursor": 4,
+2026-10-19T01:13:51.8998789Z           "sampled_unix_ms": 1792372429690,
+2026-10-19T01:13:51.8998873Z           "source_changed": false,
+2026-10-19T01:13:51.8998949Z           "spawn_generation": 5
+2026-10-19T01:13:51.8999015Z         }
+2026-10-19T01:13:51.8999078Z       },
+2026-10-19T01:13:51.8999153Z       "worker_tid": 23708
+2026-10-19T01:13:51.8999215Z     },
+2026-10-19T01:13:51.8999279Z     {
+2026-10-19T01:13:51.8999361Z       "event": "session_stopped",
+2026-10-19T01:13:51.8999435Z       "exit_code": null,
+2026-10-19T01:13:51.8999567Z       "session_instance": "0f9488024505ab130b294988d640374c",
+2026-10-19T01:13:51.8999640Z       "session_pid": 23706,
+2026-10-19T01:13:51.8999708Z       "signal": 9,
+2026-10-19T01:13:51.8999781Z       "worker_tid": 23708
+2026-10-19T01:13:51.9000033Z     },
+2026-10-19T01:13:51.9000093Z     {
+2026-10-19T01:13:51.9000166Z       "checks": [
+2026-10-19T01:13:51.9000253Z         "persistent_session_starting",
+2026-10-19T01:13:51.9000340Z         "persistent_session_running",
+2026-10-19T01:13:51.9000428Z         "persistent_session_draining",
+2026-10-19T01:13:51.9000511Z         "same_worker_same_instance",
+2026-10-19T01:13:51.9000600Z         "old_spawn_stale_ipc_responsive",
+2026-10-19T01:13:51.9000685Z         "explicit_session_replacement",
+2026-10-19T01:13:51.9000767Z         "replacement_running",
+2026-10-19T01:13:51.9000851Z         "stopped_stale_ipc_responsive"
+2026-10-19T01:13:51.9000916Z       ],
+2026-10-19T01:13:51.9000993Z       "device_effect": false,
+2026-10-19T01:13:51.9001084Z       "event": "session_acceptance_pass",
+2026-10-19T01:13:51.9001249Z       "evidence_class": "original_agentd_persistent_session_readonly",
+2026-10-19T01:13:51.9001392Z       "first_session_instance": "e60f0492e88a1b1ad5ce52088566c961",
+2026-10-19T01:13:51.9001482Z       "first_session_pid": 23507,
+2026-10-19T01:13:51.9001556Z       "model_turn": false,
+2026-10-19T01:13:51.9001641Z       "objective_submission": false,
+2026-10-19T01:13:51.9001801Z       "replacement_session_instance": "0f9488024505ab130b294988d640374c",
+2026-10-19T01:13:51.9001897Z       "replacement_session_pid": 23706,
+2026-10-19T01:13:51.9002011Z       "shell_capture_qualified_by_this_record": false
+2026-10-19T01:13:51.9002072Z     },
+2026-10-19T01:13:51.9002137Z     {
+2026-10-19T01:13:51.9002443Z       "checks": [
+2026-10-19T01:13:51.9002550Z         "original_starting",
+2026-10-19T01:13:51.9002625Z         "original_running",
+2026-10-19T01:13:51.9002714Z         "bounded_capabilities_events",
+2026-10-19T01:13:51.9002786Z         "missing_run_read",
+2026-10-19T01:13:51.9002867Z         "same_process_draining",
+2026-10-19T01:13:51.9002943Z         "original_restart",
+2026-10-19T01:13:51.9003019Z         "old_spawn_rejected",
+2026-10-19T01:13:51.9003094Z         "controlled_stop"
+2026-10-19T01:13:51.9003161Z       ],
+2026-10-19T01:13:51.9003238Z       "device_effect": false,
+2026-10-19T01:13:51.9003319Z       "event": "acceptance_pass",
+2026-10-19T01:13:51.9003478Z       "evidence_class": "original_agentd_process_readonly_observer",
+2026-10-19T01:13:51.9003555Z       "model_turn": false,
+2026-10-19T01:13:51.9003875Z       "new_spawn": 5,
+2026-10-19T01:13:51.9003984Z       "objective_submission": false,
+2026-10-19T01:13:51.9004053Z       "old_spawn": 1
+2026-10-19T01:13:51.9004118Z     }
+2026-10-19T01:13:51.9004177Z   ]
+2026-10-19T01:13:51.9004248Z }
+2026-10-19T01:13:51.9062198Z ##[group]Run set -euo pipefail
+2026-10-19T01:13:51.9062838Z [36;1mset -euo pipefail[0m
+2026-10-19T01:13:51.9062965Z [36;1mtest "$(git rev-parse HEAD)" = "$DESKTOP_SHA"[0m
+2026-10-19T01:13:51.9063129Z [36;1mtest -z "$(git status --porcelain=v1 --untracked-files=all)"[0m
+2026-10-19T01:13:51.9063201Z [36;1mpython3 - <<'PY'[0m
+2026-10-19T01:13:51.9063329Z [36;1mimport hashlib, json, os, stat, struct, tarfile[0m
+2026-10-19T01:13:51.9063429Z [36;1mfrom pathlib import Path[0m
+2026-10-19T01:13:51.9063494Z [36;1m[0m
+2026-10-19T01:13:51.9063572Z [36;1mdef digest(path):[0m
+2026-10-19T01:13:51.9063656Z [36;1m    result = hashlib.sha256()[0m
+2026-10-19T01:13:51.9063752Z [36;1m    with path.open("rb") as stream:[0m
+2026-10-19T01:13:51.9063901Z [36;1m        for chunk in iter(lambda: stream.read(1024 * 1024), b""):[0m
+2026-10-19T01:13:51.9063991Z [36;1m            result.update(chunk)[0m
+2026-10-19T01:13:51.9064078Z [36;1m    return result.hexdigest()[0m
+2026-10-19T01:13:51.9064169Z [36;1m[0m
+2026-10-19T01:13:51.9064276Z [36;1mroot = Path(os.environ["HEPTA_CI_ROOT"])[0m
+2026-10-19T01:13:51.9064373Z [36;1mreport_path = root / "report.json"[0m
+2026-10-19T01:13:51.9064486Z [36;1mreport = json.loads(report_path.read_text())[0m
+2026-10-19T01:13:51.9064722Z [36;1mif report.get("status") != "passed" or report.get("live_agentd_acceptance") != "passed":[0m
+2026-10-19T01:13:51.9065030Z [36;1m    raise SystemExit("Actual runtime acceptance is required; preflight success cannot publish ELF files")[0m
+2026-10-19T01:13:51.9065496Z [36;1mif report.get("persistent_session_acceptance") != "passed":[0m
+2026-10-19T01:13:51.9065706Z [36;1m    raise SystemExit("Actual continuous Session acceptance is also required")[0m
+2026-10-19T01:13:51.9065893Z [36;1mif report.get("upstream", {}).get("commit") != os.environ["HEPTA_PIN"]:[0m
+2026-10-19T01:13:51.9066102Z [36;1m    raise SystemExit("Runtime receipt does not bind the fixed original source")[0m
+2026-10-19T01:13:51.9066185Z [36;1mbinaries = {[0m
+2026-10-19T01:13:51.9066369Z [36;1m    "agentd": root / "work/original-target/dev-small/codex-hepta-agentd",[0m
+2026-10-19T01:13:51.9066598Z [36;1m    "probe": root / "work/original-target/dev-small/hepta-original-observer-probe",[0m
+2026-10-19T01:13:51.9066766Z [36;1m    "observer": root / "work/observer-target/debug/hepta-observe",[0m
+2026-10-19T01:13:51.9066908Z [36;1m    "session": root / "session-target/debug/trill-session",[0m
+2026-10-19T01:13:51.9067036Z [36;1m    "ctl": root / "session-target/debug/trill-ctl",[0m
+2026-10-19T01:13:51.9067099Z [36;1m}[0m
+2026-10-19T01:13:51.9067173Z [36;1mmanifest = {[0m
+2026-10-19T01:13:51.9067291Z [36;1m    "desktop_commit": os.environ["DESKTOP_SHA"],[0m
+2026-10-19T01:13:51.9067402Z [36;1m    "hepta_commit": os.environ["HEPTA_PIN"],[0m
+2026-10-19T01:13:51.9067506Z [36;1m    "report_sha256": digest(report_path),[0m
+2026-10-19T01:13:51.9067756Z [36;1m    "qualification": "original_agentd_and_persistent_session_readonly_acceptance_passed",[0m
+2026-10-19T01:13:51.9067874Z [36;1m    "platform": "aarch64-unknown-linux-gnu",[0m
+2026-10-19T01:13:51.9068076Z [36;1m    "objective_submission": False, "model_turn": False, "device_effect": False,[0m
+2026-10-19T01:13:51.9068185Z [36;1m    "shell_pixel_qualification": "not_run",[0m
+2026-10-19T01:13:51.9068261Z [36;1m    "binaries": {},[0m
+2026-10-19T01:13:51.9068321Z [36;1m}[0m
+2026-10-19T01:13:51.9068421Z [36;1mfor name, path in binaries.items():[0m
+2026-10-19T01:13:51.9068745Z [36;1m    if path.is_symlink() or not stat.S_ISREG(path.stat().st_mode) or not os.access(path, os.X_OK):[0m
+2026-10-19T01:13:51.9068939Z [36;1m        raise SystemExit(f"Missing regular executable: {name}")[0m
+2026-10-19T01:13:51.9069036Z [36;1m    with path.open("rb") as stream:[0m
+2026-10-19T01:13:51.9069122Z [36;1m        header = stream.read(20)[0m
+2026-10-19T01:13:51.9069387Z [36;1m    if len(header) != 20 or header[:6] != b"\x7fELF\x02\x01" or struct.unpack("<H", header[18:20])[0] != 183:[0m
+2026-10-19T01:13:51.9069799Z [36;1m        raise SystemExit(f"Not an actual ELF64 little-endian AArch64 binary: {name}")[0m
+2026-10-19T01:13:51.9069916Z [36;1m    actual = digest(path)[0m
+2026-10-19T01:13:51.9070154Z [36;1m    executed_hash = (report.get("session_input_binaries", {}).get(name, {}).get("sha256")[0m
+2026-10-19T01:13:51.9070368Z [36;1m                     if name in ("session", "ctl") else report.get("binary_sha256", {}).get(name))[0m
+2026-10-19T01:13:51.9070461Z [36;1m    if executed_hash != actual:[0m
+2026-10-19T01:13:51.9070683Z [36;1m        raise SystemExit(f"ELF hash differs from the executed runtime receipt: {name}")[0m
+2026-10-19T01:13:51.9070954Z [36;1m    manifest["binaries"][name] = {"filename": path.name, "sha256": actual, "bytes": path.stat().st_size}[0m
+2026-10-19T01:13:51.9071039Z [36;1moutput = root / "artifacts"[0m
+2026-10-19T01:13:51.9071118Z [36;1moutput.mkdir(mode=0o700)[0m
+2026-10-19T01:13:51.9071252Z [36;1mmanifest_path = output / "binary-manifest.json"[0m
+2026-10-19T01:13:51.9071423Z [36;1mmanifest_path.write_text(json.dumps(manifest, indent=2) + "\n")[0m
+2026-10-19T01:13:51.9071506Z [36;1msums = output / "SHA256SUMS"[0m
+2026-10-19T01:13:51.9071789Z [36;1msums.write_text("".join(f'{item["sha256"]}  {item["filename"]}\n' for item in manifest["binaries"].values()))[0m
+2026-10-19T01:13:51.9071969Z [36;1marchive = output / "hepta-original-agentd-aarch64-linux.tar.gz"[0m
+2026-10-19T01:13:51.9072191Z [36;1mwith tarfile.open(archive, "x:gz") as bundle:[0m
+2026-10-19T01:13:51.9072586Z [36;1m    for path in [*binaries.values(), manifest_path, sums, report_path]:[0m
+2026-10-19T01:13:51.9072744Z [36;1m        bundle.add(path, arcname=path.name, recursive=False)[0m
+2026-10-19T01:13:51.9072949Z [36;1m(output / "archive.sha256").write_text(f"{digest(archive)}  {archive.name}\n")[0m
+2026-10-19T01:13:51.9073015Z [36;1mPY[0m
+2026-10-19T01:13:51.9109095Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-19T01:13:51.9109180Z env:
+2026-10-19T01:13:51.9109316Z   DESKTOP_SHA: 5060ac6976b56b32647c728991e489cdee1cce9d
+2026-10-19T01:13:51.9109436Z   HEPTA_PIN: f8c9419df6ddeb36ff8b522a50219981fb8d9345
+2026-10-19T01:13:51.9109516Z   GIT_TERMINAL_PROMPT: 0
+2026-10-19T01:13:51.9109597Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-19T01:13:51.9109760Z   HEPTA_CI_ROOT: /home/runner/work/_temp/hepta-original-39182491155-1
+2026-10-19T01:13:51.9109943Z   CARGO_HOME: /home/runner/work/_temp/hepta-original-39182491155-1/cargo-home
+2026-10-19T01:13:51.9110145Z   RUSTUP_HOME: /home/runner/work/_temp/hepta-original-39182491155-1/rustup-home
+2026-10-19T01:13:51.9110218Z ##[endgroup]
+2026-10-19T01:14:12.5654950Z ##[group]Run set -euo pipefail
+2026-10-19T01:14:12.5655293Z [36;1mset -euo pipefail[0m
+2026-10-19T01:14:12.5655600Z [36;1mpython3 -B -m unittest discover -v -s tests/integration/hepta \[0m
+2026-10-19T01:14:12.5655977Z [36;1m  -p test_original_objective_receipts.py \[0m
+2026-10-19T01:14:12.5656335Z [36;1m  > "$HEPTA_CI_ROOT/logs/objective-receipt-contracts.log" 2>&1[0m
+2026-10-19T01:14:12.5656855Z [36;1mCARGO_TARGET_DIR="$HEPTA_CI_ROOT/work/observer-target" CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=1 \[0m
+2026-10-19T01:14:12.5657351Z [36;1m  rustup run 1.88.0 cargo build --locked --offline \[0m
+2026-10-19T01:14:12.5657702Z [36;1m    --manifest-path services/hepta-os/Cargo.toml \[0m
+2026-10-19T01:14:12.5658065Z [36;1m    --features objective-transport --bin hepta-submit \[0m
+2026-10-19T01:14:12.5658438Z [36;1m    > "$HEPTA_CI_ROOT/logs/submitter-build.log" 2>&1[0m
+2026-10-19T01:14:12.5658826Z [36;1m# Reuse the unchanged original Agentd and locked build cache. This[0m
+2026-10-19T01:14:12.5659300Z [36;1m# run owns a fresh disposable fleet and a random test-only issuer;[0m
+2026-10-19T01:14:12.5659738Z [36;1m# it does not use a production issuer, model turn or device adapter.[0m
+2026-10-19T01:14:12.5660067Z [36;1mset +e[0m
+2026-10-19T01:14:12.5660338Z [36;1mpython3 -B tests/integration/hepta/run_original_objective.py \[0m
+2026-10-19T01:14:12.5660725Z [36;1m  --hepta-source "$HEPTA_CI_ROOT/hepta-source" \[0m
+2026-10-19T01:14:12.5661053Z [36;1m  --work-dir "$HEPTA_CI_ROOT/objective-work" \[0m
+2026-10-19T01:14:12.5661402Z [36;1m  --target-dir "$HEPTA_CI_ROOT/work/original-target" \[0m
+2026-10-19T01:14:12.5661859Z [36;1m  --agentd-bin "$HEPTA_CI_ROOT/work/original-target/dev-small/codex-hepta-agentd" \[0m
+2026-10-19T01:14:12.5662653Z [36;1m  --observer-bin "$HEPTA_CI_ROOT/work/observer-target/debug/hepta-observe" \[0m
+2026-10-19T01:14:12.5663164Z [36;1m  --submitter-bin "$HEPTA_CI_ROOT/work/observer-target/debug/hepta-submit" \[0m
+2026-10-19T01:14:12.5663642Z [36;1m  --session-bin "$HEPTA_CI_ROOT/session-target/debug/trill-session" \[0m
+2026-10-19T01:14:12.5664066Z [36;1m  --ctl-bin "$HEPTA_CI_ROOT/session-target/debug/trill-ctl" \[0m
+2026-10-19T01:14:12.5664486Z [36;1m  --execute --offline > "$HEPTA_CI_ROOT/logs/objective-gate.log" 2>&1[0m
+2026-10-19T01:14:12.5664862Z [36;1mobjective_exit=$?[0m
+2026-10-19T01:14:12.5665066Z [36;1mset -e[0m
+2026-10-19T01:14:12.5665358Z [36;1mprintf '%s\n' "$objective_exit" > "$HEPTA_CI_ROOT/objective-exit-code.txt"[0m
+2026-10-19T01:14:12.5665755Z [36;1mcat "$HEPTA_CI_ROOT/logs/objective-gate.log"[0m
+2026-10-19T01:14:12.5666031Z [36;1mexit "$objective_exit"[0m
+2026-10-19T01:14:12.5701351Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-19T01:14:12.5701669Z env:
+2026-10-19T01:14:12.5701879Z   DESKTOP_SHA: 5060ac6976b56b32647c728991e489cdee1cce9d
+2026-10-19T01:14:12.5702902Z   HEPTA_PIN: f8c9419df6ddeb36ff8b522a50219981fb8d9345
+2026-10-19T01:14:12.5703176Z   GIT_TERMINAL_PROMPT: 0
+2026-10-19T01:14:12.5703466Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-19T01:14:12.5703768Z   HEPTA_CI_ROOT: /home/runner/work/_temp/hepta-original-39182491155-1
+2026-10-19T01:14:12.5704196Z   CARGO_HOME: /home/runner/work/_temp/hepta-original-39182491155-1/cargo-home
+2026-10-19T01:14:12.5704659Z   RUSTUP_HOME: /home/runner/work/_temp/hepta-original-39182491155-1/rustup-home
+2026-10-19T01:14:12.5705027Z ##[endgroup]
+2026-10-19T01:14:35.6195144Z {
+2026-10-19T01:14:35.6197462Z   "recorded_at_utc": "2026-10-19T01:14:16.109357+00:00",
+2026-10-19T01:14:35.6197798Z   "schema": "hepta.original-objective-probe.v1",
+2026-10-19T01:14:35.6198073Z   "status": "failed",
+2026-10-19T01:14:35.6198363Z   "runtime_executed": true,
+2026-10-19T01:14:35.6198577Z   "steps": [
+2026-10-19T01:14:35.6198736Z     {
+2026-10-19T01:14:35.6198906Z       "label": "probe-resolution",
+2026-10-19T01:14:35.6199149Z       "command": [
+2026-10-19T01:14:35.6199338Z         "/home/runner/.cargo/bin/rustup",
+2026-10-19T01:14:35.6199564Z         "run",
+2026-10-19T01:14:35.6200079Z         "1.95.0",
+2026-10-19T01:14:35.6200273Z         "cargo",
+2026-10-19T01:14:35.6200436Z         "metadata",
+2026-10-19T01:14:35.6200603Z         "--offline",
+2026-10-19T01:14:35.6200784Z         "--format-version",
+2026-10-19T01:14:35.6200976Z         "1"
+2026-10-19T01:14:35.6201126Z       ]
+2026-10-19T01:14:35.6201271Z     },
+2026-10-19T01:14:35.6201418Z     {
+2026-10-19T01:14:35.6201586Z       "label": "probe-locked-metadata",
+2026-10-19T01:14:35.6201817Z       "command": [
+2026-10-19T01:14:35.6202003Z         "/home/runner/.cargo/bin/rustup",
+2026-10-19T01:14:35.6202466Z         "run",
+2026-10-19T01:14:35.6202640Z         "1.95.0",
+2026-10-19T01:14:35.6202800Z         "cargo",
+2026-10-19T01:14:35.6202960Z         "metadata",
+2026-10-19T01:14:35.6203128Z         "--locked",
+2026-10-19T01:14:35.6203295Z         "--offline",
+2026-10-19T01:14:35.6203486Z         "--format-version",
+2026-10-19T01:14:35.6203676Z         "1"
+2026-10-19T01:14:35.6203830Z       ]
+2026-10-19T01:14:35.6203973Z     },
+2026-10-19T01:14:35.6204125Z     {
+2026-10-19T01:14:35.6204286Z       "label": "probe-build",
+2026-10-19T01:14:35.6204488Z       "command": [
+2026-10-19T01:14:35.6204676Z         "/home/runner/.cargo/bin/rustup",
+2026-10-19T01:14:35.6204906Z         "run",
+2026-10-19T01:14:35.6205065Z         "1.95.0",
+2026-10-19T01:14:35.6205224Z         "cargo",
+2026-10-19T01:14:35.6205474Z         "build",
+2026-10-19T01:14:35.6205637Z         "--locked",
+2026-10-19T01:14:35.6205805Z         "--offline",
+2026-10-19T01:14:35.6205982Z         "--profile",
+2026-10-19T01:14:35.6206157Z         "dev-small",
+2026-10-19T01:14:35.6206326Z         "--bin",
+2026-10-19T01:14:35.6206523Z         "hepta-original-objective-probe",
+2026-10-19T01:14:35.6206764Z         "-j1"
+2026-10-19T01:14:35.6206917Z       ]
+2026-10-19T01:14:35.6207058Z     }
+2026-10-19T01:14:35.6207214Z   ],
+2026-10-19T01:14:35.6207362Z   "source_sha256": {
+2026-10-19T01:14:35.6207768Z     "original_objective_probe.rs": "7aaf85c90cdde3dd1e011fb4b745453e848bfc04dfaceb59f257d08d9b225eef",
+2026-10-19T01:14:35.6208393Z     "original_objective_owner.rs": "f01310e679872217af747192c3329218f2d6045972c77718d7f358384eb88eda",
+2026-10-19T01:14:35.6209021Z     "original_objective_fixture.rs": "4abdcb7ee3a0c3cf8f8302c8af18656f2d2c41bfa4862b137991a6124ef4f272",
+2026-10-19T01:14:35.6209666Z     "original_objective_profile.json": "56d81a70d4a7481614a9ebc5494173b08dcf79072230b9b61cd0a9c01454dd02",
+2026-10-19T01:14:35.6210304Z     "original_objective_session.rs": "51d8b992b8d45f597e78b4179da55c3ebaaec1d0caf1b7c49c30e5d53624d5f0",
+2026-10-19T01:14:35.6210933Z     "run_original_objective.py": "9ea5d7b2f6801f88240257effe78dbbceb126d63f7132f37b0f2edd7c2486df4",
+2026-10-19T01:14:35.6211530Z     "run_original_agentd.py": "21dd4a2e0621240a75f5ce37bad93da0a37352fbaa78554a50e048abe6a45fd0"
+2026-10-19T01:14:35.6211930Z   },
+2026-10-19T01:14:35.6212656Z   "upstream": {
+2026-10-19T01:14:35.6212988Z     "commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+2026-10-19T01:14:35.6213308Z     "tree": "15c9d6ea07bf3832de82825a6cc1e8c958dd3d45",
+2026-10-19T01:14:35.6213737Z     "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+2026-10-19T01:14:35.6214135Z     "clean_checkout": true
+2026-10-19T01:14:35.6214318Z   },
+2026-10-19T01:14:35.6214468Z   "patch_omission": {
+2026-10-19T01:14:35.6214760Z     "origin": "ssh://git@github.com/openai-oss-forks/tungstenite-rs.git",
+2026-10-19T01:14:35.6215096Z     "package": "tungstenite",
+2026-10-19T01:14:35.6215298Z     "target": {
+2026-10-19T01:14:35.6215543Z       "git": "https://github.com/openai-oss-forks/tungstenite-rs",
+2026-10-19T01:14:35.6215887Z       "rev": "4fffad30fe373adbdcffab9545e9e9bf4f2fc19f"
+2026-10-19T01:14:35.6216145Z     },
+2026-10-19T01:14:35.6216310Z     "retained_origin": "crates-io",
+2026-10-19T01:14:35.6216635Z     "reason": "Cargo 1.95 does not canonicalize unused patches across origins"
+2026-10-19T01:14:35.6216968Z   },
+2026-10-19T01:14:35.6217479Z   "runner": "/home/runner/work/_temp/hepta-original-39182491155-1/objective-work/probe",
+2026-10-19T01:14:35.6217977Z   "runner_binary": "hepta-original-objective-probe",
+2026-10-19T01:14:35.6218271Z   "session_projection_requested": true,
+2026-10-19T01:14:35.6218660Z   "native_input_source_binding": "caller_supplied_build_provenance_required_for_each_elf",
+2026-10-19T01:14:35.6219189Z   "target": "/home/runner/work/_temp/hepta-original-39182491155-1/work/original-target",
+2026-10-19T01:14:35.6219564Z   "lock_validation": {
+2026-10-19T01:14:35.6219749Z     "omitted_patch": {
+2026-10-19T01:14:35.6220035Z       "origin": "ssh://git@github.com/openai-oss-forks/tungstenite-rs.git",
+2026-10-19T01:14:35.6220373Z       "package": "tungstenite",
+2026-10-19T01:14:35.6220577Z       "target": {
+2026-10-19T01:14:35.6220825Z         "git": "https://github.com/openai-oss-forks/tungstenite-rs",
+2026-10-19T01:14:35.6221184Z         "rev": "4fffad30fe373adbdcffab9545e9e9bf4f2fc19f"
+2026-10-19T01:14:35.6221449Z       },
+2026-10-19T01:14:35.6221617Z       "retained_origin": "crates-io",
+2026-10-19T01:14:35.6221952Z       "reason": "Cargo 1.95 does not canonicalize unused patches across origins"
+2026-10-19T01:14:35.6222597Z     },
+2026-10-19T01:14:35.6222765Z     "omitted_target_unused": true,
+2026-10-19T01:14:35.6223009Z     "shared_package_identities_checked": 735
+2026-10-19T01:14:35.6223243Z   },
+2026-10-19T01:14:35.6223562Z   "resolved_lock_sha256": "9f3e5258526c84e3069a9d05cc064daea9acf5a9f2a648ca709ae24f5d7c7eb2",
+2026-10-19T01:14:35.6223959Z   "binaries": {
+2026-10-19T01:14:35.6224125Z     "probe": {
+2026-10-19T01:14:35.6224591Z       "path": "/home/runner/work/_temp/hepta-original-39182491155-1/work/original-target/dev-small/hepta-original-objective-probe",
+2026-10-19T01:14:35.6225124Z       "bytes": 29411712,
+2026-10-19T01:14:35.6225440Z       "sha256": "6caeaedffde2528a4f2d191cc01c3e8f0962c7a5b6a5953b2032e2e9504d6360"
+2026-10-19T01:14:35.6225803Z     },
+2026-10-19T01:14:35.6225949Z     "agentd": {
+2026-10-19T01:14:35.6226375Z       "path": "/home/runner/work/_temp/hepta-original-39182491155-1/work/original-target/dev-small/codex-hepta-agentd",
+2026-10-19T01:14:35.6226857Z       "bytes": 268391592,
+2026-10-19T01:14:35.6227159Z       "sha256": "d67046f691e6d6b6c5114f3779b3972ad57e58684624693b92c1ae0722d9db27"
+2026-10-19T01:14:35.6227495Z     },
+2026-10-19T01:14:35.6227642Z     "observer": {
+2026-10-19T01:14:35.6228034Z       "path": "/home/runner/work/_temp/hepta-original-39182491155-1/work/observer-target/debug/hepta-observe",
+2026-10-19T01:14:35.6228516Z       "bytes": 13678320,
+2026-10-19T01:14:35.6228832Z       "sha256": "83991f4de3cae7e9eed8aff8be7ca9008715d72c0fcd235b5d41c0e1d5da9ece"
+2026-10-19T01:14:35.6229185Z     },
+2026-10-19T01:14:35.6229335Z     "submitter": {
+2026-10-19T01:14:35.6229723Z       "path": "/home/runner/work/_temp/hepta-original-39182491155-1/work/observer-target/debug/hepta-submit",
+2026-10-19T01:14:35.6230511Z       "bytes": 14101976,
+2026-10-19T01:14:35.6230817Z       "sha256": "615ae1d4e747ea844b30670926096750d935c7c48c6dda159fb8ce20babf215b"
+2026-10-19T01:14:35.6231162Z     },
+2026-10-19T01:14:35.6231309Z     "session": {
+2026-10-19T01:14:35.6231675Z       "path": "/home/runner/work/_temp/hepta-original-39182491155-1/session-target/debug/trill-session",
+2026-10-19T01:14:35.6232099Z       "bytes": 18350768,
+2026-10-19T01:14:35.6232732Z       "sha256": "6c01b44979c947499d9756e88b11d82b17be07580210042dfa3115df721b0cc7"
+2026-10-19T01:14:35.6233070Z     },
+2026-10-19T01:14:35.6233213Z     "ctl": {
+2026-10-19T01:14:35.6233549Z       "path": "/home/runner/work/_temp/hepta-original-39182491155-1/session-target/debug/trill-ctl",
+2026-10-19T01:14:35.6233963Z       "bytes": 7798360,
+2026-10-19T01:14:35.6234261Z       "sha256": "4f4b9a773b449ab70f659c037862bb98df9e98a8de83009935f6b195d9cbe33c"
+2026-10-19T01:14:35.6234604Z     }
+2026-10-19T01:14:35.6234745Z   },
+2026-10-19T01:14:35.6234895Z   "runtime_command": [
+2026-10-19T01:14:35.6235362Z     "/home/runner/work/_temp/hepta-original-39182491155-1/work/original-target/dev-small/hepta-original-objective-probe",
+2026-10-19T01:14:35.6236265Z     "/home/runner/work/_temp/hepta-original-39182491155-1/work/original-target/dev-small/codex-hepta-agentd",
+2026-10-19T01:14:35.6236989Z     "/home/runner/work/_temp/hepta-original-39182491155-1/work/observer-target/debug/hepta-observe",
+2026-10-19T01:14:35.6237604Z     "/home/runner/work/_temp/hepta-original-39182491155-1/work/observer-target/debug/hepta-submit",
+2026-10-19T01:14:35.6238025Z     "/tmp/ho-r4bdlpg_",
+2026-10-19T01:14:35.6238211Z     "--session-bin",
+2026-10-19T01:14:35.6238558Z     "/home/runner/work/_temp/hepta-original-39182491155-1/session-target/debug/trill-session",
+2026-10-19T01:14:35.6238956Z     "--ctl-bin",
+2026-10-19T01:14:35.6239271Z     "/home/runner/work/_temp/hepta-original-39182491155-1/session-target/debug/trill-ctl"
+2026-10-19T01:14:35.6239644Z   ],
+2026-10-19T01:14:35.6239837Z   "error": "[Errno 39] Directory not empty: 'plugins'"
+2026-10-19T01:14:35.6240103Z }
+2026-10-19T01:14:35.6252703Z ##[error]Process completed with exit code 1.
+2026-10-19T01:14:35.6313441Z ##[group]Run set -euo pipefail
+2026-10-19T01:14:35.6313760Z [36;1mset -euo pipefail[0m
+2026-10-19T01:14:35.6313975Z [36;1mpython3 - <<'PY'[0m
+2026-10-19T01:14:35.6314209Z [36;1mfrom datetime import datetime, timezone[0m
+2026-10-19T01:14:35.6314501Z [36;1mimport hashlib, json, os, subprocess[0m
+2026-10-19T01:14:35.6314774Z [36;1mfrom pathlib import Path[0m
+2026-10-19T01:14:35.6315030Z [36;1mroot = Path(os.environ["HEPTA_CI_ROOT"])[0m
+2026-10-19T01:14:35.6315448Z [36;1mrecord = {"recorded_at_utc": datetime.now(timezone.utc).isoformat(), "checkouts": {}}[0m
+2026-10-19T01:14:35.6316050Z [36;1mfor name, path in [("desktop", Path(os.environ["GITHUB_WORKSPACE"])), ("hepta", root / "hepta-source")]:[0m
+2026-10-19T01:14:35.6316493Z [36;1m    state = {}[0m
+2026-10-19T01:14:35.6316976Z [36;1m    for label, args in [("identity", ["rev-parse", "HEAD", "HEAD^{tree}"]), ("status", ["status", "--porcelain=v1", "--untracked-files=all"])]:[0m
+2026-10-19T01:14:35.6317737Z [36;1m        result = subprocess.run(["git", "-C", str(path), *args], capture_output=True, text=True, timeout=30)[0m
+2026-10-19T01:14:35.6318377Z [36;1m        state[label] = {"exit_code": result.returncode, "stdout": result.stdout, "stderr": result.stderr}[0m
+2026-10-19T01:14:35.6318988Z [36;1m    lock = path / ("codex-rs/Cargo.lock" if name == "hepta" else "services/hepta-os/Cargo.lock")[0m
+2026-10-19T01:14:35.6319405Z [36;1m    if lock.is_file():[0m
+2026-10-19T01:14:35.6319746Z [36;1m        state["cargo_lock_sha256"] = hashlib.sha256(lock.read_bytes()).hexdigest()[0m
+2026-10-19T01:14:35.6320137Z [36;1m    record["checkouts"][name] = state[0m
+2026-10-19T01:14:35.6320500Z [36;1mwith (root / "identity/final-checkouts.json").open("x") as stream:[0m
+2026-10-19T01:14:35.6320870Z [36;1m    json.dump(record, stream, indent=2)[0m
+2026-10-19T01:14:35.6321134Z [36;1m    stream.write("\n")[0m
+2026-10-19T01:14:35.6321669Z [36;1mPY[0m
+2026-10-19T01:14:35.6355537Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-19T01:14:35.6355839Z env:
+2026-10-19T01:14:35.6356048Z   DESKTOP_SHA: 5060ac6976b56b32647c728991e489cdee1cce9d
+2026-10-19T01:14:35.6356357Z   HEPTA_PIN: f8c9419df6ddeb36ff8b522a50219981fb8d9345
+2026-10-19T01:14:35.6356628Z   GIT_TERMINAL_PROMPT: 0
+2026-10-19T01:14:35.6356833Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-19T01:14:35.6357129Z   HEPTA_CI_ROOT: /home/runner/work/_temp/hepta-original-39182491155-1
+2026-10-19T01:14:35.6357556Z   CARGO_HOME: /home/runner/work/_temp/hepta-original-39182491155-1/cargo-home
+2026-10-19T01:14:35.6358015Z   RUSTUP_HOME: /home/runner/work/_temp/hepta-original-39182491155-1/rustup-home
+2026-10-19T01:14:35.6358363Z ##[endgroup]
+2026-10-19T01:14:35.7196656Z ##[group]Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+2026-10-19T01:14:35.7197105Z with:
+2026-10-19T01:14:35.7197325Z   name: hepta-original-agentd-elf-39182491155-1
+2026-10-19T01:14:35.7197626Z   if-no-files-found: error
+2026-10-19T01:14:35.7197832Z   retention-days: 14
+2026-10-19T01:14:35.7199067Z   path: /home/runner/work/_temp/hepta-original-39182491155-1/artifacts/hepta-original-agentd-aarch64-linux.tar.gz
+/home/runner/work/_temp/hepta-original-39182491155-1/artifacts/binary-manifest.json
+/home/runner/work/_temp/hepta-original-39182491155-1/artifacts/SHA256SUMS
+/home/runner/work/_temp/hepta-original-39182491155-1/artifacts/archive.sha256
+
+2026-10-19T01:14:35.7200362Z   compression-level: 6
+2026-10-19T01:14:35.7200548Z   overwrite: false
+2026-10-19T01:14:35.7200734Z   include-hidden-files: false
+2026-10-19T01:14:35.7200946Z env:
+2026-10-19T01:14:35.7201140Z   DESKTOP_SHA: 5060ac6976b56b32647c728991e489cdee1cce9d
+2026-10-19T01:14:35.7201489Z   HEPTA_PIN: f8c9419df6ddeb36ff8b522a50219981fb8d9345
+2026-10-19T01:14:35.7201765Z   GIT_TERMINAL_PROMPT: 0
+2026-10-19T01:14:35.7201972Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-19T01:14:35.7202675Z   HEPTA_CI_ROOT: /home/runner/work/_temp/hepta-original-39182491155-1
+2026-10-19T01:14:35.7203139Z   CARGO_HOME: /home/runner/work/_temp/hepta-original-39182491155-1/cargo-home
+2026-10-19T01:14:35.7203601Z   RUSTUP_HOME: /home/runner/work/_temp/hepta-original-39182491155-1/rustup-home
+2026-10-19T01:14:35.7203946Z ##[endgroup]
+2026-10-19T01:14:35.8649157Z (node:24249) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-19T01:14:35.8649810Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-19T01:14:35.8754031Z Multiple search paths detected. Calculating the least common ancestor of all paths
+2026-10-19T01:14:35.8756442Z The least common ancestor is /home/runner/work/_temp/hepta-original-39182491155-1/artifacts. This will be the root directory of the artifact
+2026-10-19T01:14:35.8757300Z With the provided path, there will be 4 files uploaded
+2026-10-19T01:14:35.8783106Z Artifact name is valid!
+2026-10-19T01:14:35.8783541Z Root directory input is valid!
+2026-10-19T01:14:36.1803462Z Beginning upload of artifact content to blob storage
+2026-10-19T01:14:36.4146065Z (node:24249) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-19T01:14:36.8479510Z Uploaded bytes 8388608
+2026-10-19T01:14:37.0609376Z Uploaded bytes 16777216
+2026-10-19T01:14:37.2169900Z Uploaded bytes 25165824
+2026-10-19T01:14:37.2863311Z Uploaded bytes 33554432
+2026-10-19T01:14:37.4524944Z Uploaded bytes 41943040
+2026-10-19T01:14:37.6488879Z Uploaded bytes 50331648
+2026-10-19T01:14:37.8620187Z Uploaded bytes 58720256
+2026-10-19T01:14:38.1478310Z Uploaded bytes 67108864
+2026-10-19T01:14:38.3538727Z Uploaded bytes 75497472
+2026-10-19T01:14:38.4943145Z Uploaded bytes 83886080
+2026-10-19T01:14:38.6083111Z Uploaded bytes 87430279
+2026-10-19T01:14:38.6497593Z Finished uploading artifact content to blob storage!
+2026-10-19T01:14:38.6499521Z SHA256 digest of uploaded artifact zip is 21109455a792762484e08135bd57c1d2fe9ea931c6e93ab5b0a6ae730f69ff87
+2026-10-19T01:14:38.6501524Z Finalizing artifact upload
+2026-10-19T01:14:38.8704530Z Artifact hepta-original-agentd-elf-39182491155-1.zip successfully finalized. Artifact ID 12157567155
+2026-10-19T01:14:38.8705768Z Artifact hepta-original-agentd-elf-39182491155-1 has been successfully uploaded! Final size is 87430279 bytes. Artifact ID is 12157567155
+2026-10-19T01:14:38.8708300Z Artifact download URL: https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39182491155/artifacts/12157567155
+2026-10-19T01:14:38.8907637Z ##[group]Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+2026-10-19T01:14:38.8908041Z with:
+2026-10-19T01:14:38.8908265Z   name: hepta-original-agentd-evidence-39182491155-1
+2026-10-19T01:14:38.8908558Z   if-no-files-found: error
+2026-10-19T01:14:38.8908772Z   retention-days: 14
+2026-10-19T01:14:38.8913357Z   path: /home/runner/work/_temp/hepta-original-39182491155-1/logs/
+/home/runner/work/_temp/hepta-original-39182491155-1/identity/
+/home/runner/work/_temp/hepta-original-39182491155-1/locks/
+/home/runner/work/_temp/hepta-original-39182491155-1/report.json
+/home/runner/work/_temp/hepta-original-39182491155-1/gate-exit-code.txt
+/home/runner/work/_temp/hepta-original-39182491155-1/objective-exit-code.txt
+/home/runner/work/_temp/hepta-original-39182491155-1/objective-work/report.json
+/home/runner/work/_temp/hepta-original-39182491155-1/objective-work/*.log
+/home/runner/work/_temp/hepta-original-39182491155-1/objective-work/runtime-evidence/
+/home/runner/work/_temp/hepta-original-39182491155-1/objective-work/probe/Cargo.toml
+/home/runner/work/_temp/hepta-original-39182491155-1/objective-work/probe/Cargo.lock
+/home/runner/work/_temp/hepta-original-39182491155-1/objective-work/probe/src/
+/home/runner/work/_temp/hepta-original-39182491155-1/work/*.log
+/home/runner/work/_temp/hepta-original-39182491155-1/work/probe/Cargo.toml
+/home/runner/work/_temp/hepta-original-39182491155-1/work/probe/Cargo.lock
+/home/runner/work/_temp/hepta-original-39182491155-1/work/probe/src/main.rs
+/home/runner/work/_temp/hepta-original-39182491155-1/work/probe/src/original_session_probe.rs
+
+2026-10-19T01:14:38.8917926Z   compression-level: 6
+2026-10-19T01:14:38.8918118Z   overwrite: false
+2026-10-19T01:14:38.8918306Z   include-hidden-files: false
+2026-10-19T01:14:38.8918517Z env:
+2026-10-19T01:14:38.8918722Z   DESKTOP_SHA: 5060ac6976b56b32647c728991e489cdee1cce9d
+2026-10-19T01:14:38.8919039Z   HEPTA_PIN: f8c9419df6ddeb36ff8b522a50219981fb8d9345
+2026-10-19T01:14:38.8919321Z   GIT_TERMINAL_PROMPT: 0
+2026-10-19T01:14:38.8919533Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-19T01:14:38.8919947Z   HEPTA_CI_ROOT: /home/runner/work/_temp/hepta-original-39182491155-1
+2026-10-19T01:14:38.8920386Z   CARGO_HOME: /home/runner/work/_temp/hepta-original-39182491155-1/cargo-home
+2026-10-19T01:14:38.8920855Z   RUSTUP_HOME: /home/runner/work/_temp/hepta-original-39182491155-1/rustup-home
+2026-10-19T01:14:38.8921219Z ##[endgroup]
+2026-10-19T01:14:39.0417681Z (node:24262) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-19T01:14:39.0418360Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-19T01:14:39.0654849Z Multiple search paths detected. Calculating the least common ancestor of all paths
+2026-10-19T01:14:39.0656576Z The least common ancestor is /home/runner/work/_temp/hepta-original-39182491155-1. This will be the root directory of the artifact
+2026-10-19T01:14:39.0657196Z With the provided path, there will be 83 files uploaded
+2026-10-19T01:14:39.0657611Z Artifact name is valid!
+2026-10-19T01:14:39.0657817Z Root directory input is valid!
+2026-10-19T01:14:39.4033784Z Beginning upload of artifact content to blob storage
+2026-10-19T01:14:39.6527403Z (node:24262) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-19T01:14:39.9873336Z Uploaded bytes 1701840
+2026-10-19T01:14:40.0345437Z Finished uploading artifact content to blob storage!
+2026-10-19T01:14:40.0346256Z SHA256 digest of uploaded artifact zip is d615f6123262c95cd932a36d95aefc6f7939b18fdad2ab858e4254678d0e59a9
+2026-10-19T01:14:40.0347801Z Finalizing artifact upload
+2026-10-19T01:14:40.2825362Z Artifact hepta-original-agentd-evidence-39182491155-1.zip successfully finalized. Artifact ID 12157118836
+2026-10-19T01:14:40.2826841Z Artifact hepta-original-agentd-evidence-39182491155-1 has been successfully uploaded! Final size is 1701840 bytes. Artifact ID is 12157118836
+2026-10-19T01:14:40.2832370Z Artifact download URL: https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39182491155/artifacts/12157118836
+2026-10-19T01:14:40.3035834Z Post job cleanup.
+2026-10-19T01:14:40.3807726Z [command]/usr/bin/git version
+2026-10-19T01:14:40.3826181Z git version 2.55.0
+2026-10-19T01:14:40.3869333Z Temporarily overriding HOME='/home/runner/work/_temp/3cd0bb97-854d-42e2-8b61-4289363040c3' before making global git config changes
+2026-10-19T01:14:40.3870935Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-19T01:14:40.3879385Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop
+2026-10-19T01:14:40.3902193Z Removing SSH command configuration
+2026-10-19T01:14:40.3909044Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-19T01:14:40.3942020Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-19T01:14:40.4153019Z Removing HTTP extra header
+2026-10-19T01:14:40.4153661Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-19T01:14:40.4176907Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-19T01:14:40.4378029Z Removing includeIf entries pointing to credentials config files
+2026-10-19T01:14:40.4387167Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-19T01:14:40.4421723Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-19T01:14:40.4764189Z Cleaning up orphan processes
+2026-10-19T01:14:40.5193026Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

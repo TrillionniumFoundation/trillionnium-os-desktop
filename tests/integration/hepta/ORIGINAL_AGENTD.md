@@ -197,8 +197,10 @@ unreaped child throughout TERM, the three-second grace period, and KILL. That
 retained kernel identity prevents its numeric PID/PGID from being recycled
 before the final group signal. Each signal performs another non-reaping check.
 Only after all signals finish does the guard permanently disarm signaling and
-use `waitpid` for the final reap and actual exit status. A successful command
-is reaped without group signals.
+use `waitpid` for the final reap and actual exit status. This cleanup also
+applies when the leader exits successfully: exit zero does not prove that its
+same-group descendants stopped. The leader's actual zero status is retained
+while the existing bounded TERM/grace/KILL path runs under that identity anchor.
 
 An `ECHILD` result permanently revokes the guard's identity anchor. The guard
 then fails with `child_identity_lost` and never signals that numeric group
@@ -228,6 +230,19 @@ the initial `a92d8ed` harness observed actual ECHILD at its mocked first TERM
 call after `Popen.wait()` had already reaped the exit-1 child. The repaired
 regression requires that same child to remain waitable until both signal
 boundaries finish. These are process-guard tests, not an original Agentd run.
+
+The six-test count above describes the 2026-10-17 source, including its old
+success-path policy. On 2026-10-19, the current seven-test guard suite additionally
+proved that an exit-zero leader cannot leave its real same-group plugin writer
+active at the reap boundary. A private fixture subreaper owns both children;
+bounded socket handshakes verify peer credentials and group identity, WNOWAIT
+checks precede each signal, and a pidfd observes writer exit before leader reap.
+The unchanged two focused tests first failed against the old production bytes
+and then passed after the success-path fix. The current related suite passed
+47 tests (7 guard, 6 Session receipts, 12 Objective receipts, 22 history
+contracts). Five fixed-original build-manifest tests were not run in that local
+environment because the full original checkout was absent. Raw results and
+the distinct failed ARM run are in the [integration archive](../../../results/integration/2026-10-19-main-sync/README.md).
 
 ## Why no downloaded original binary was used
 

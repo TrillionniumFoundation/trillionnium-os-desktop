@@ -1,0 +1,30 @@
+test_success_cleans_group_only_while_actual_exit_zero_leader_is_waitable (test_original_process_guard.OriginalProcessGuardTests.test_success_cleans_group_only_while_actual_exit_zero_leader_is_waitable) ... FAIL
+test_successful_leader_cannot_leave_a_same_group_plugin_writer (test_original_process_guard.OriginalProcessGuardTests.test_successful_leader_cannot_leave_a_same_group_plugin_writer) ... FAIL
+
+======================================================================
+FAIL: test_success_cleans_group_only_while_actual_exit_zero_leader_is_waitable (test_original_process_guard.OriginalProcessGuardTests.test_success_cleans_group_only_while_actual_exit_zero_leader_is_waitable)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/98f315e377b2/recovery-r7/r9-main-sync-20261019/tests/integration/hepta/test_original_process_guard.py", line 349, in test_success_cleans_group_only_while_actual_exit_zero_leader_is_waitable
+    self.assertEqual(observed, [signal.SIGTERM, signal.SIGKILL])
+AssertionError: Lists differ: [] != [<Signals.SIGTERM: 15>, <Signals.SIGKILL: 9>]
+
+Second list contains 2 additional elements.
+First extra element 0:
+<Signals.SIGTERM: 15>
+
+- []
++ [<Signals.SIGTERM: 15>, <Signals.SIGKILL: 9>]
+
+======================================================================
+FAIL: test_successful_leader_cannot_leave_a_same_group_plugin_writer (test_original_process_guard.OriginalProcessGuardTests.test_successful_leader_cannot_leave_a_same_group_plugin_writer)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/98f315e377b2/recovery-r7/r9-main-sync-20261019/tests/integration/hepta/test_original_process_guard.py", line 374, in test_successful_leader_cannot_leave_a_same_group_plugin_writer
+    self.assertTrue(proof["writer_exited_before_leader_reap"],
+AssertionError: False is not true : successful leader left a live same-group writer at the reap boundary
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.157s
+
+FAILED (failures=2)

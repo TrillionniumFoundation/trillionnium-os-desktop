@@ -1,0 +1,152 @@
+{
+  "changed_production_definitions": [
+    "bounded_command"
+  ],
+  "ci_failure": {
+    "actual_ci_writer_identity_captured": false,
+    "link_to_success_path_defect": "source inference supported by a separate deterministic real-process reproduction",
+    "objective_raw_runtime_acceptance_does_not_override_outer_failure": true,
+    "outer_error": "[Errno 39] Directory not empty: 'plugins'",
+    "readonly_original_eight_and_session_eight_plus_five_elf_package": "passed on old head only"
+  },
+  "executions": {
+    "green-01": {
+      "actual_exit_code": 0,
+      "classification": "two focused tests passed",
+      "finished_at": "2026-10-19T01:34:39.641895+00:00",
+      "receipt_sha256": "2f09b24446c9a34938b18f263e66069ce533272f97515f1ae1ead97f867c182d",
+      "scope": "focused",
+      "started_at": "2026-10-19T01:34:36.343240+00:00"
+    },
+    "red-01": {
+      "actual_exit_code": 1,
+      "classification": "one intended failure plus fixture blocked by sandbox AF_UNIX bind EPERM; not a complete RED",
+      "finished_at": "2026-10-19T01:33:20.910097+00:00",
+      "receipt_sha256": "24a5ebe3e46e68f6ef39d40d6a9f00caa0ac3c6f8eded68040f1b2305c9deb74",
+      "scope": "focused",
+      "started_at": "2026-10-19T01:33:20.666917+00:00"
+    },
+    "red-02": {
+      "actual_exit_code": 1,
+      "classification": "two intended assertion failures, real live writer and write proven",
+      "finished_at": "2026-10-19T01:33:54.854714+00:00",
+      "receipt_sha256": "c21b4777a3499f15ea4dc77363b3886f402722a7c0cd27959ace16e2e8cb9410",
+      "scope": "focused",
+      "started_at": "2026-10-19T01:33:54.564651+00:00"
+    },
+    "related-01": {
+      "actual_exit_code": 0,
+      "classification": "47 related tests passed; no skips",
+      "counts": {
+        "test_objective_history_contracts": 22,
+        "test_original_objective_receipts": 12,
+        "test_original_process_guard": 7,
+        "test_original_session_receipts": 6
+      },
+      "finished_at": "2026-10-19T01:36:03.108253+00:00",
+      "receipt_sha256": "a6f205325557a896dff272db3ff7789fe859f8ef9ff20aed6a2984b50e0db802",
+      "scope": "related",
+      "started_at": "2026-10-19T01:35:59.553438+00:00"
+    }
+  },
+  "failed_ci_head": "5060ac6976b56b32647c728991e489cdee1cce9d",
+  "failed_ci_overall_conclusion": "failure",
+  "failed_ci_run": 39182491155,
+  "fixture": {
+    "isolated_subreaper_process": true,
+    "numeric_pid_reuse_attempted": false,
+    "postcondition": "all fixture children reaped, then actual P_ALL ECHILD",
+    "readiness": "bounded AF_UNIX handshake with actual SO_PEERCRED and same-PGID checks, never sleep timing",
+    "signals": "WNOWAIT anchor checked before every real owned process-group signal",
+    "unittest_parent_subreaper_state_changed": false,
+    "writer_exit": "pidfd observation before leader reap; actual adopted child wait status and final reap"
+  },
+  "production_change": "Every observed leader completion uses the existing anchored TERM/grace/KILL then sole-reap path; actual leader business exit status is retained.",
+  "qualification_limits": [
+    "No new original Hepta daemon, Rust build, ARM run, target OS or device execution occurred here.",
+    "The five fixed-original build-manifest tests were not executed locally because their full unchanged original checkout is absent; they were not silently skipped.",
+    "Receipt and history contract tests use synthetic records or disposable Git fixtures and do not qualify original-owner runtime.",
+    "The new production path reuses the existing bounded owned-group cleanup contract. It is not a new proof for arbitrary daemonized descendants that escape the group.",
+    "New exact integrated HEAD CI is required before replacing the failed old-head qualification.",
+    "Execution receipts classify expected process exit codes; this report separately identifies the red-01 sandbox fixture failure."
+  ],
+  "real_process_proofs": {
+    "green-01": {
+      "command_returned_success": true,
+      "fixture_children_all_reaped": true,
+      "leader_exit_code": 0,
+      "leader_pid": 592620,
+      "leader_reaped": true,
+      "leader_waitable_at_reap_boundary": true,
+      "signals": [
+        15,
+        9
+      ],
+      "writer_exited_before_leader_reap": true,
+      "writer_group_matches_leader": true,
+      "writer_pid": 592621,
+      "writer_reaped": true,
+      "writer_wait_status": {
+        "code": 2,
+        "status": 15
+      },
+      "writer_wrote_after_leader_exit": false
+    },
+    "red-02": {
+      "command_returned_success": true,
+      "fixture_children_all_reaped": true,
+      "leader_exit_code": 0,
+      "leader_pid": 592099,
+      "leader_reaped": true,
+      "leader_waitable_at_reap_boundary": true,
+      "signals": [],
+      "writer_exited_before_leader_reap": false,
+      "writer_group_matches_leader": true,
+      "writer_pid": 592100,
+      "writer_reaped": true,
+      "writer_wait_status": {
+        "code": 2,
+        "status": 9
+      },
+      "writer_wrote_after_leader_exit": true
+    },
+    "related-01": {
+      "command_returned_success": true,
+      "fixture_children_all_reaped": true,
+      "leader_exit_code": 0,
+      "leader_pid": 593318,
+      "leader_reaped": true,
+      "leader_waitable_at_reap_boundary": true,
+      "signals": [
+        15,
+        9
+      ],
+      "writer_exited_before_leader_reap": true,
+      "writer_group_matches_leader": true,
+      "writer_pid": 593319,
+      "writer_reaped": true,
+      "writer_wait_status": {
+        "code": 2,
+        "status": 15
+      },
+      "writer_wrote_after_leader_exit": false
+    }
+  },
+  "reviewed_at": "2026-10-19T01:39:01.932673+00:00",
+  "schema": "r9-anchored-success-cleanup-review-v1",
+  "source_binding": {
+    "dirty_integration_worktree_patch_is_the_executed_source": true,
+    "execution_base_head": "5060ac6976b56b32647c728991e489cdee1cce9d",
+    "green_guard_sha256": "22a27a8fbe4386187b3bf9716a6a40b0d4416fc706d1fd99a4f9eee8b55b98a8",
+    "identical_test_sha256": "963cef9fc2969b484affcffb8a3689a9dc1343d7a7444988c00c16c9d50ffbe8",
+    "production_test_pre_post_bytes_verified": true,
+    "red_guard_bytes_equal_exact_failed_ci_git_blob": true,
+    "red_guard_sha256": "21dd4a2e0621240a75f5ce37bad93da0a37352fbaa78554a50e048abe6a45fd0"
+  },
+  "status": "local_python_fix_verified_new_exact_head_ci_still_required",
+  "unchanged_production_definitions": [
+    "ChildGroup",
+    "terminate_group",
+    "child_anchor_available"
+  ]
+}

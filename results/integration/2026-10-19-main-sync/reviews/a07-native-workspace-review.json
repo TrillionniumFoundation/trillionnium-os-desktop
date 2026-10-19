@@ -1,0 +1,71 @@
+{
+  "schema": "r9-a07-two-page-native-independent-review-v1",
+  "reviewed_at": "2026-10-19T01:17:25.203494+00:00",
+  "reviewer": "A07",
+  "status": "passed_for_two_visible_pages",
+  "method": "Actual view_image inspection of both PNGs, plus independently read raw screenshot/snapshot/cleanup receipts; no new UI execution by reviewer.",
+  "execution_source": {
+    "local_head": "2bc512a445f30a53ac4c579fece1ff91c03c8741",
+    "tree": "ae588699126910065c16b77d83f3ef20b53509f2",
+    "status_at_capture": ""
+  },
+  "screenshots": [
+    {
+      "file": "initial.png",
+      "sha256": "418ba2bdfd86234e80bb1376c82a6d48553bea538c0e565f4a3572105b1fbbad",
+      "bytes": 87112,
+      "visual_status": "passed_for_visible_scope",
+      "observation": "Visually inspected the actual PNG: default Personal/Chat, local draft not submitted, composer, Tasks tab, explicit empty host applications. Labels and controls legible; no red ID clash or visible overlap."
+    },
+    {
+      "file": "action-002-screenshot.png",
+      "sha256": "2d64764cc883803bb2c908c4f1c1a3989e7a681e77e8e60e733e7ed5d100687f",
+      "bytes": 101494,
+      "visual_status": "passed_for_visible_scope",
+      "observation": "Visually inspected the actual PNG: embedded Console tab selected beside Tasks and Context; read-only host observations and local notices empty; displayed session 4673be60fa79a390b65a827836b94d16; no red ID clash. Shared Chat composer remains visible."
+    }
+  ],
+  "actual_snapshot_count": 6,
+  "all_snapshots_same_session_empty_tasks_hepta_not_configured": true,
+  "actual_shell_namespace_pid": 10,
+  "actual_window_xid": "4194307",
+  "outer_receipt_sha256": "6fb8b4edebb6bc7124a93c2cc7533ddac02d6fbd5bcb55c92479863df35738b7",
+  "inner_receipt_sha256": "311e653a3896c38b8f1a3e3f9b27feea84ddc853ced6b39ad12d6e2a7f429092",
+  "outer_status": "completed",
+  "outer_exit_code": 0,
+  "reported_source_harness_elf_unchanged": {
+    "product_source_unchanged": true,
+    "harness_source_unchanged": true,
+    "executable_bytes_unchanged": true
+  },
+  "cleanup_receipts": [
+    {
+      "label": "Shell",
+      "namespace_pid": 10,
+      "exit_code": -15,
+      "guard_armed_after": false,
+      "completed_unix_ms": 1792372081086
+    },
+    {
+      "label": "Session-A",
+      "namespace_pid": 7,
+      "exit_code": -15,
+      "guard_armed_after": false,
+      "completed_unix_ms": 1792372084087
+    },
+    {
+      "label": "Xvfb",
+      "namespace_pid": 3,
+      "exit_code": 0,
+      "guard_armed_after": false,
+      "completed_unix_ms": 1792372087087
+    }
+  ],
+  "scope_limits": [
+    "Only default Chat/Tasks and the embedded empty Console were visually reviewed.",
+    "No original Hepta runtime configured or started; no objective, task lifecycle, authority, or device effect qualification.",
+    "No pixel review of known-run freshness, stale/reconnect, IME, physical hardware, or mobile behavior.",
+    "Black unused framebuffer margins outside the smaller actual application window are visible; they are not app content.",
+    "Binary identities and pre/post stability are reported by original capture receipts; this review does not claim a new build or fresh full ELF audit."
+  ]
+}

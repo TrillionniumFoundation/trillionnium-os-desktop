@@ -1,0 +1,263 @@
+{
+  "schema": "r8-original-arm-completion-review-v1",
+  "recorded_at_utc": "2026-10-18T15:13:46.413805+00:00",
+  "status": "passed",
+  "reviewer": "/root/r6_review_ci",
+  "run_id": 39106645234,
+  "job_id": 117613820420,
+  "run_attempt": 1,
+  "head": "05a7cd23f0a4b90b154ef0c45be89093b129f767",
+  "tree": "592e13cc526a247ec4246a4cfe8458e07392d0e1",
+  "runner_labels": [
+    "ubuntu-24.04-arm"
+  ],
+  "job_started_at": "2026-10-18T07:11:37Z",
+  "job_completed_at": "2026-10-18T07:36:49Z",
+  "readonly_original_checks": [
+    "original_starting",
+    "original_running",
+    "bounded_capabilities_events",
+    "missing_run_read",
+    "same_process_draining",
+    "original_restart",
+    "old_spawn_rejected",
+    "controlled_stop"
+  ],
+  "readonly_session_checks": [
+    "persistent_session_starting",
+    "persistent_session_running",
+    "persistent_session_draining",
+    "same_worker_same_instance",
+    "old_spawn_stale_ipc_responsive",
+    "explicit_session_replacement",
+    "replacement_running",
+    "stopped_stale_ipc_responsive"
+  ],
+  "objective_core_checks": [
+    "compiled_original_admission",
+    "exact_replay_same_publication",
+    "explicit_abstain_durable_without_run",
+    "invalid_signature_owner_rejected",
+    "body_generation_fenced_before_send",
+    "revoked_issuer_owner_rejected",
+    "owner_restart_retains_historical_journal",
+    "old_spawn_not_accepted",
+    "original_journal_matches_receipts",
+    "controlled_stop"
+  ],
+  "objective_explicit_submissions": 7,
+  "objective_submission_exit_codes": [
+    0,
+    0,
+    0,
+    12,
+    10,
+    12,
+    12
+  ],
+  "readonly_session_phases": [
+    {
+      "phase": "starting",
+      "identity": [
+        "ce62ce5f11fb7d779ef869ef1ad4585d",
+        23580,
+        23582
+      ]
+    },
+    {
+      "phase": "running",
+      "identity": [
+        "ce62ce5f11fb7d779ef869ef1ad4585d",
+        23580,
+        23582
+      ]
+    },
+    {
+      "phase": "draining",
+      "identity": [
+        "ce62ce5f11fb7d779ef869ef1ad4585d",
+        23580,
+        23582
+      ]
+    },
+    {
+      "phase": "old_spawn_stale",
+      "identity": [
+        "ce62ce5f11fb7d779ef869ef1ad4585d",
+        23580,
+        23582
+      ]
+    },
+    {
+      "phase": "recovered_running",
+      "identity": [
+        "723f9c7163b243dbf561cdd2880259d4",
+        23780,
+        23782
+      ]
+    },
+    {
+      "phase": "stopped_stale",
+      "identity": [
+        "723f9c7163b243dbf561cdd2880259d4",
+        23780,
+        23782
+      ]
+    }
+  ],
+  "objective_session_phases": [
+    {
+      "phase": "compiled_run_projected",
+      "identity": [
+        "751682cadeaebfc63e1ef47d98f4ae8e",
+        24129,
+        24130
+      ]
+    },
+    {
+      "phase": "old_endpoint_run_stale",
+      "identity": [
+        "751682cadeaebfc63e1ef47d98f4ae8e",
+        24129,
+        24130
+      ]
+    },
+    {
+      "phase": "replacement_run_projection_missing",
+      "identity": [
+        "e62e183d44d9c891927182a918a3c30e",
+        24282,
+        24284
+      ]
+    }
+  ],
+  "prerequisite_python_counts": [
+    5,
+    6,
+    6
+  ],
+  "objective_receipt_python_tests": 12,
+  "report_json_equal_actual_gate_stdout": true,
+  "reports_equal_json_records_in_actual_runtime_logs": true,
+  "full_reports_present_in_raw_github_job_log": true,
+  "selected_original_artifact_members": [
+    {
+      "path": "identity/allocation.json",
+      "bytes": 478,
+      "sha256": "9f08b4d3a9b8a428a6050a6a4333e62f3cc63590f01c70ec61ba586a206184ca"
+    },
+    {
+      "path": "identity/consumer-source-trees.txt",
+      "bytes": 82,
+      "sha256": "e4ef423bb9511f850395ae726933cd52fcca0fd9978416c3df0aa197dea2d2a9"
+    },
+    {
+      "path": "identity/desktop-before.txt",
+      "bytes": 82,
+      "sha256": "5598b861cc1e54f2139e8c7ad214528e155df3d1feb75d6a79bedab20090c436"
+    },
+    {
+      "path": "identity/desktop-inputs.sha256",
+      "bytes": 999,
+      "sha256": "045cbee1679cb378b28d6772fda0839e324847b533e78d53c8fa9861a0e2b886"
+    },
+    {
+      "path": "identity/final-checkouts.json",
+      "bytes": 863,
+      "sha256": "1fe056c1a9671cf91495568556896e400e8e59afcc3ddb9e6ebdbc9c892cc1f8"
+    },
+    {
+      "path": "identity/hepta-before.txt",
+      "bytes": 82,
+      "sha256": "c72ff4ef7ab8f1ee7f6501a73950e194baa17add926b2d37e72be9fa4d9d1286"
+    },
+    {
+      "path": "identity/initial-locks.sha256",
+      "bytes": 894,
+      "sha256": "83b2551ba2277b3e1fe8b5bd71875e32dd70baa6a23c3f465174c6d990c15da5"
+    },
+    {
+      "path": "report.json",
+      "bytes": 48326,
+      "sha256": "04f1deaf1da6f767f9feb3a9f0e016d8aa1b9fb427050889fd7b745846e313ce"
+    },
+    {
+      "path": "objective-work/report.json",
+      "bytes": 46037,
+      "sha256": "f6313709ece32b111e7c8b91fdf56fecb7b82556bb2bc9ab9c059a39eec7d1ec"
+    },
+    {
+      "path": "gate-exit-code.txt",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "objective-exit-code.txt",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "logs/gate-prerequisites.log",
+      "bytes": 3423,
+      "sha256": "5eb60253e007d6b435ef4ed08d30d53cc7282f9c5f1e24e3b163486c8e430ace"
+    },
+    {
+      "path": "logs/objective-receipt-contracts.log",
+      "bytes": 2229,
+      "sha256": "d45fe3019fab6a39f408d41475543d0f0e08d855814f228a3cbe32f641bddee6"
+    },
+    {
+      "path": "logs/native-setup.log",
+      "bytes": 8913,
+      "sha256": "b457ecace3f8e8c6c6fb558be1f299d76c4d04053464ec8d1a2a9b03c093ab66"
+    },
+    {
+      "path": "logs/session-build.log",
+      "bytes": 1407,
+      "sha256": "978d64525f25435be618a2d5ff0a4c1fc59d625455adfb5f051be9a47d9b4678"
+    },
+    {
+      "path": "logs/submitter-build.log",
+      "bytes": 229,
+      "sha256": "824cedafd80f8f1837b4322bb8a2538d3c90ecefbd10a12716b2d8ac7847d741"
+    },
+    {
+      "path": "logs/upstream-checkout.log",
+      "bytes": 909,
+      "sha256": "32c2321fc3871cec8309e9c69c82a0606921136bd380bf9a8d58847ead90e3f4"
+    },
+    {
+      "path": "work/original_agentd_build.log",
+      "bytes": 78671,
+      "sha256": "5a2fd61b62c27ef1b514d587a968352bd32a13ec7c00402ae3d9f272841f3ef1"
+    },
+    {
+      "path": "work/original_library_probe_build.log",
+      "bytes": 14560,
+      "sha256": "ed783474015d412227ee4fb478fda180d15747fb610af0388732bce479bca741"
+    },
+    {
+      "path": "work/original_agentd_process_probe.log",
+      "bytes": 22134,
+      "sha256": "4bebbc0b624ec15880168c552d950f3b015adb246e27dc3ee814306cdbb6578e"
+    },
+    {
+      "path": "objective-work/probe-build.log",
+      "bytes": 4357,
+      "sha256": "240028f0c0e30f9d958e3e9ffc4faa42c2bd46fc20934834115b5d590ed1fd8a"
+    },
+    {
+      "path": "objective-work/runtime.log",
+      "bytes": 26186,
+      "sha256": "764b87216ad6db1811eac9815c8ece37b670e19c4746a9c7ab6723390d1f9e70"
+    },
+    {
+      "path": "objective-work/runtime-evidence/journal-inspection.json",
+      "bytes": 2250,
+      "sha256": "7f5177f8558ea950300aeae444cce65adebe11388bf17571620f5f82b394aebe"
+    }
+  ],
+  "new_execution_by_reviewer": false,
+  "qualification_bound_to_r9": false,
+  "scope": "Native AArch64 original Agentd/read-only Session and separately isolated original ObjectiveStart with known-run Session. Seven means explicit submissions, not seven Session tests. No Shell pixels, production issuer, model turn, operations dispatch, device effect, canonical intelligence or resumed historical run."
+}

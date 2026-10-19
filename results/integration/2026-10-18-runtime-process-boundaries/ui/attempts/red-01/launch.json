@@ -1,0 +1,37 @@
+{
+  "command": [
+    "/workspace/scratch/98f315e377b2/recovery-r7/rust-1.88/bin/cargo",
+    "test",
+    "--manifest-path",
+    "ui/Cargo.toml",
+    "--locked",
+    "-p",
+    "trill-shell",
+    "runtime_total_age_",
+    "--",
+    "--nocapture"
+  ],
+  "cwd": "/workspace/scratch/98f315e377b2/recovery-r7/repo",
+  "environment": {
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_HOME": "/dev/shm/trill-r9-cargo",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "CARGO_PROFILE_TEST_DEBUG": "0",
+    "CARGO_TARGET_DIR": "/dev/shm/trill-r9-target-ui"
+  },
+  "path_prefix": "/workspace/scratch/98f315e377b2/recovery-r7/rust-1.88/bin",
+  "runner_sha256": "6ca188409884d76a346055b6e14e2f4c32010f98e98b44c87e33a6d7d666505c",
+  "started_unix": 1792335199.6910243,
+  "timeout_seconds": 1200,
+  "tools": {
+    "cargo": {
+      "sha256": "de9be4299324f5c1f5d12103792d35e8b8ab195df3a374194b8ffc33562c7e3d",
+      "version": "cargo 1.88.0 (873a06493 2025-05-10)"
+    },
+    "rustc": {
+      "sha256": "ac3e92e45fe15c789939deedf7614f4f9578cc9609cb9ead39c9b1808a316c5b",
+      "version": "rustc 1.88.0 (6b00bc388 2025-06-23)"
+    }
+  }
+}

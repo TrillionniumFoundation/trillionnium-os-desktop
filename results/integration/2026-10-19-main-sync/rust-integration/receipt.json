@@ -1,0 +1,291 @@
+{
+  "binaries": {
+    "hepta-history": {
+      "bytes": 2590576,
+      "elf64_little_endian_x86_64": true,
+      "path": "/dev/shm/trill-r9-target-hepta/debug/hepta-history",
+      "sha256": "5f4297b5041e3e1198febed510bceaba38bc78e727df7fa8326cdac86ca78b51"
+    },
+    "hepta-observe": {
+      "bytes": 2582072,
+      "elf64_little_endian_x86_64": true,
+      "path": "/dev/shm/trill-r9-target-hepta/debug/hepta-observe",
+      "sha256": "d4aaac8a3512a61702f182fee9a02342bcd5fab70115a9fa1bfe0df3f4451f9e"
+    },
+    "hepta-submit": {
+      "bytes": 2305976,
+      "elf64_little_endian_x86_64": true,
+      "path": "/dev/shm/trill-r9-target-hepta/debug/hepta-submit",
+      "sha256": "1a055aed788cc0cc4c3b180685985def4422afeb40031b5ad3b4a94b94987da6"
+    },
+    "trill-app-window": {
+      "bytes": 22607968,
+      "elf64_little_endian_x86_64": true,
+      "path": "/dev/shm/trill-r9-target-ui/debug/trill-app-window",
+      "sha256": "298b5d8eeaa60a9100071ca3ca6df0a4a1fbbe85c18e42b57d8bd687a559b0b8"
+    },
+    "trill-ctl": {
+      "bytes": 1620672,
+      "elf64_little_endian_x86_64": true,
+      "path": "/dev/shm/trill-r9-target-ui/debug/trill-ctl",
+      "sha256": "30b1d049de5d9f9a609288045e48d1d9183326c16e20c93afaf42d1dee683ddf"
+    },
+    "trill-session": {
+      "bytes": 3665352,
+      "elf64_little_endian_x86_64": true,
+      "path": "/dev/shm/trill-r9-target-ui/debug/trill-session",
+      "sha256": "c0677cf8347019d73cd6e6c905a0d187d2a6c41422e4387811b04e3e42a57e6b"
+    },
+    "trill-shell": {
+      "bytes": 24552760,
+      "elf64_little_endian_x86_64": true,
+      "path": "/dev/shm/trill-r9-target-ui/debug/trill-shell",
+      "sha256": "f24fefa390141bfecce3a39b29a3b64c587307be0528190c826e072a24288d93"
+    }
+  },
+  "commands": [
+    {
+      "command": [
+        "/workspace/scratch/98f315e377b2/recovery-r7/rust-1.88/bin/cargo",
+        "test",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "--workspace",
+        "--locked",
+        "--offline"
+      ],
+      "completed_at_utc": "2026-10-19T01:20:40.145145+00:00",
+      "cwd": "/workspace/scratch/98f315e377b2/recovery-r7/r9-main-sync-20261019",
+      "exit_code": 0,
+      "name": "ui-tests",
+      "owned_leader_pid": 525628,
+      "source_after_sha256": "1118965074d4dccff0377a27d2e5b27829c2b45860573a31f0386c9ae296f1f2",
+      "source_before_sha256": "1118965074d4dccff0377a27d2e5b27829c2b45860573a31f0386c9ae296f1f2",
+      "source_equal": true,
+      "started_at_utc": "2026-10-19T01:20:22.280294+00:00",
+      "stderr": "01-ui-tests.stderr.log",
+      "stdout": "01-ui-tests.stdout.log",
+      "target_dir": "/dev/shm/trill-r9-target-ui"
+    },
+    {
+      "command": [
+        "/workspace/scratch/98f315e377b2/recovery-r7/rust-1.88/bin/cargo",
+        "test",
+        "--manifest-path",
+        "services/hepta-os/Cargo.toml",
+        "--all-features",
+        "--locked",
+        "--offline"
+      ],
+      "completed_at_utc": "2026-10-19T01:20:59.852549+00:00",
+      "cwd": "/workspace/scratch/98f315e377b2/recovery-r7/r9-main-sync-20261019",
+      "exit_code": 0,
+      "name": "hepta-all-features-tests",
+      "owned_leader_pid": 526355,
+      "source_after_sha256": "1118965074d4dccff0377a27d2e5b27829c2b45860573a31f0386c9ae296f1f2",
+      "source_before_sha256": "1118965074d4dccff0377a27d2e5b27829c2b45860573a31f0386c9ae296f1f2",
+      "source_equal": true,
+      "started_at_utc": "2026-10-19T01:20:40.155581+00:00",
+      "stderr": "02-hepta-all-features-tests.stderr.log",
+      "stdout": "02-hepta-all-features-tests.stdout.log",
+      "target_dir": "/dev/shm/trill-r9-target-hepta"
+    },
+    {
+      "command": [
+        "/workspace/scratch/98f315e377b2/recovery-r7/rust-1.88/bin/cargo",
+        "check",
+        "--manifest-path",
+        "services/hepta-os/Cargo.toml",
+        "--no-default-features",
+        "--all-targets",
+        "--locked",
+        "--offline"
+      ],
+      "completed_at_utc": "2026-10-19T01:21:00.541545+00:00",
+      "cwd": "/workspace/scratch/98f315e377b2/recovery-r7/r9-main-sync-20261019",
+      "exit_code": 0,
+      "name": "hepta-default-check",
+      "owned_leader_pid": 527261,
+      "source_after_sha256": "1118965074d4dccff0377a27d2e5b27829c2b45860573a31f0386c9ae296f1f2",
+      "source_before_sha256": "1118965074d4dccff0377a27d2e5b27829c2b45860573a31f0386c9ae296f1f2",
+      "source_equal": true,
+      "started_at_utc": "2026-10-19T01:20:59.864116+00:00",
+      "stderr": "03-hepta-default-check.stderr.log",
+      "stdout": "03-hepta-default-check.stdout.log",
+      "target_dir": "/dev/shm/trill-r9-target-hepta"
+    },
+    {
+      "command": [
+        "/workspace/scratch/98f315e377b2/recovery-r7/rust-1.88/bin/cargo",
+        "clippy",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "--workspace",
+        "--all-targets",
+        "--locked",
+        "--offline",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "completed_at_utc": "2026-10-19T01:21:03.140896+00:00",
+      "cwd": "/workspace/scratch/98f315e377b2/recovery-r7/r9-main-sync-20261019",
+      "exit_code": 0,
+      "name": "ui-clippy",
+      "owned_leader_pid": 527325,
+      "source_after_sha256": "1118965074d4dccff0377a27d2e5b27829c2b45860573a31f0386c9ae296f1f2",
+      "source_before_sha256": "1118965074d4dccff0377a27d2e5b27829c2b45860573a31f0386c9ae296f1f2",
+      "source_equal": true,
+      "started_at_utc": "2026-10-19T01:21:00.550255+00:00",
+      "stderr": "04-ui-clippy.stderr.log",
+      "stdout": "04-ui-clippy.stdout.log",
+      "target_dir": "/dev/shm/trill-r9-target-ui"
+    },
+    {
+      "command": [
+        "/workspace/scratch/98f315e377b2/recovery-r7/rust-1.88/bin/cargo",
+        "clippy",
+        "--manifest-path",
+        "services/hepta-os/Cargo.toml",
+        "--all-features",
+        "--all-targets",
+        "--locked",
+        "--offline",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "completed_at_utc": "2026-10-19T01:21:04.784851+00:00",
+      "cwd": "/workspace/scratch/98f315e377b2/recovery-r7/r9-main-sync-20261019",
+      "exit_code": 0,
+      "name": "hepta-all-features-clippy",
+      "owned_leader_pid": 527425,
+      "source_after_sha256": "1118965074d4dccff0377a27d2e5b27829c2b45860573a31f0386c9ae296f1f2",
+      "source_before_sha256": "1118965074d4dccff0377a27d2e5b27829c2b45860573a31f0386c9ae296f1f2",
+      "source_equal": true,
+      "started_at_utc": "2026-10-19T01:21:03.150391+00:00",
+      "stderr": "05-hepta-all-features-clippy.stderr.log",
+      "stdout": "05-hepta-all-features-clippy.stdout.log",
+      "target_dir": "/dev/shm/trill-r9-target-hepta"
+    },
+    {
+      "command": [
+        "/workspace/scratch/98f315e377b2/recovery-r7/rust-1.88/bin/cargo",
+        "fmt",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "completed_at_utc": "2026-10-19T01:21:05.016643+00:00",
+      "cwd": "/workspace/scratch/98f315e377b2/recovery-r7/r9-main-sync-20261019",
+      "exit_code": 0,
+      "name": "ui-fmt",
+      "owned_leader_pid": 527515,
+      "source_after_sha256": "1118965074d4dccff0377a27d2e5b27829c2b45860573a31f0386c9ae296f1f2",
+      "source_before_sha256": "1118965074d4dccff0377a27d2e5b27829c2b45860573a31f0386c9ae296f1f2",
+      "source_equal": true,
+      "started_at_utc": "2026-10-19T01:21:04.793583+00:00",
+      "stderr": "06-ui-fmt.stderr.log",
+      "stdout": "06-ui-fmt.stdout.log",
+      "target_dir": "/dev/shm/trill-r9-target-ui"
+    },
+    {
+      "command": [
+        "/workspace/scratch/98f315e377b2/recovery-r7/rust-1.88/bin/cargo",
+        "fmt",
+        "--manifest-path",
+        "services/hepta-os/Cargo.toml",
+        "--",
+        "--check"
+      ],
+      "completed_at_utc": "2026-10-19T01:21:05.147017+00:00",
+      "cwd": "/workspace/scratch/98f315e377b2/recovery-r7/r9-main-sync-20261019",
+      "exit_code": 0,
+      "name": "hepta-fmt",
+      "owned_leader_pid": 527525,
+      "source_after_sha256": "1118965074d4dccff0377a27d2e5b27829c2b45860573a31f0386c9ae296f1f2",
+      "source_before_sha256": "1118965074d4dccff0377a27d2e5b27829c2b45860573a31f0386c9ae296f1f2",
+      "source_equal": true,
+      "started_at_utc": "2026-10-19T01:21:05.024789+00:00",
+      "stderr": "07-hepta-fmt.stderr.log",
+      "stdout": "07-hepta-fmt.stdout.log",
+      "target_dir": "/dev/shm/trill-r9-target-hepta"
+    },
+    {
+      "command": [
+        "/workspace/scratch/98f315e377b2/recovery-r7/rust-1.88/bin/cargo",
+        "build",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "--workspace",
+        "--bins",
+        "--locked",
+        "--offline"
+      ],
+      "completed_at_utc": "2026-10-19T01:21:08.442279+00:00",
+      "cwd": "/workspace/scratch/98f315e377b2/recovery-r7/r9-main-sync-20261019",
+      "exit_code": 0,
+      "name": "ui-bins",
+      "owned_leader_pid": 527534,
+      "source_after_sha256": "1118965074d4dccff0377a27d2e5b27829c2b45860573a31f0386c9ae296f1f2",
+      "source_before_sha256": "1118965074d4dccff0377a27d2e5b27829c2b45860573a31f0386c9ae296f1f2",
+      "source_equal": true,
+      "started_at_utc": "2026-10-19T01:21:05.157626+00:00",
+      "stderr": "08-ui-bins.stderr.log",
+      "stdout": "08-ui-bins.stdout.log",
+      "target_dir": "/dev/shm/trill-r9-target-ui"
+    },
+    {
+      "command": [
+        "/workspace/scratch/98f315e377b2/recovery-r7/rust-1.88/bin/cargo",
+        "build",
+        "--manifest-path",
+        "services/hepta-os/Cargo.toml",
+        "--bins",
+        "--all-features",
+        "--locked",
+        "--offline"
+      ],
+      "completed_at_utc": "2026-10-19T01:21:08.522430+00:00",
+      "cwd": "/workspace/scratch/98f315e377b2/recovery-r7/r9-main-sync-20261019",
+      "exit_code": 0,
+      "name": "hepta-all-features-bins",
+      "owned_leader_pid": 527595,
+      "source_after_sha256": "1118965074d4dccff0377a27d2e5b27829c2b45860573a31f0386c9ae296f1f2",
+      "source_before_sha256": "1118965074d4dccff0377a27d2e5b27829c2b45860573a31f0386c9ae296f1f2",
+      "source_equal": true,
+      "started_at_utc": "2026-10-19T01:21:08.449841+00:00",
+      "stderr": "09-hepta-all-features-bins.stderr.log",
+      "stdout": "09-hepta-all-features-bins.stdout.log",
+      "target_dir": "/dev/shm/trill-r9-target-hepta"
+    }
+  ],
+  "completed_at_utc": "2026-10-19T01:21:08.531529+00:00",
+  "environment": {
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_HOME": "/dev/shm/trill-r9-cargo",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "CARGO_PROFILE_TEST_DEBUG": "0",
+    "LC_ALL": "C.UTF-8",
+    "PATH": "/workspace/scratch/98f315e377b2/recovery-r7/rust-1.88/bin:/root/.codex/tmp/arg0/codex-arg0kfAGaq:/opt/codex/codex-path:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback",
+    "RUSTC": "/workspace/scratch/98f315e377b2/recovery-r7/rust-1.88/bin/rustc",
+    "RUSTFLAGS": null,
+    "TZ": "UTC"
+  },
+  "runner_sha256": "208d6cf409275508694ba790eacb9fc0a984570c756cf81ec8f48d8cfda81271",
+  "schema": 1,
+  "scope": "Current Rust product and CLI integration on Linux host; no original Agentd, compositor or device execution",
+  "source_after_sha256": "1118965074d4dccff0377a27d2e5b27829c2b45860573a31f0386c9ae296f1f2",
+  "source_before_sha256": "1118965074d4dccff0377a27d2e5b27829c2b45860573a31f0386c9ae296f1f2",
+  "source_equal": true,
+  "source_patch_sha256": "64d46831f0884abb52a910660a7d9ab56acdab90de679fa20261baa1174104db",
+  "started_at_utc": "2026-10-19T01:20:22.272271+00:00",
+  "status": "passed",
+  "versions": {
+    "cargo": "cargo 1.88.0 (873a06493 2025-05-10)\nrelease: 1.88.0\ncommit-hash: 873a0649350c486caf67be772828a4f36bb4734c\ncommit-date: 2025-05-10\nhost: x86_64-unknown-linux-gnu\nlibgit2: 1.9.0 (sys:0.20.0 vendored)\nlibcurl: 8.12.1-DEV (sys:0.4.80+curl-8.12.1 vendored ssl:OpenSSL/3.4.1)\nssl: OpenSSL 3.4.1 11 Feb 2025\nos: Ubuntu 24.4.0 (noble) [64-bit]\n",
+    "rustc": "rustc 1.88.0 (6b00bc388 2025-06-23)\nbinary: rustc\ncommit-hash: 6b00bc3880198600130e1cf62b8f8a93494488cc\ncommit-date: 2025-06-23\nhost: x86_64-unknown-linux-gnu\nrelease: 1.88.0\nLLVM version: 20.1.5\n"
+  }
+}

@@ -1,0 +1,470 @@
+{
+  "schema": "r7-recovery-archive-independent-review-v1",
+  "reviewer": "/root/r6_original_session",
+  "started_at_utc": "2026-10-18T14:59:04.662418+00:00",
+  "completed_at_utc": "2026-10-18T14:59:04.816036+00:00",
+  "source_head_at_review": "00796f6f6e10027e12b83d37d9ab4b8ab913f72e",
+  "source_tree_at_review": "9336e6e6daab3b45d5f92a9eaa4161395603036f",
+  "status": "passed_with_declared_historical_gaps",
+  "archive_path": "/workspace/scratch/98f315e377b2/recovery-r7/repo/results/integration/2026-10-18-r7-recovery",
+  "root_checksum_coverage": {
+    "file_count_including_sums": 42,
+    "listed_file_count": 41,
+    "bytes_including_sums": 3622442,
+    "sha256sums_sha256": "bb342e951c6e554ee3e0187d591e55f8d4da80865a319449fa02fd8172b4db1c",
+    "all_regular_files_except_SHA256SUMS_itself_covered": true
+  },
+  "root_text": {
+    "count": 864,
+    "utf8_bytes": 5026251,
+    "all_sha256_and_canonical_git_blob_ids_match": true,
+    "zip_crc_all_pass": true,
+    "archive_sha256": "7719dc40f5a6bf32bde432e80ba271d3b897234802419ae1e292fd8c438a0013",
+    "original_sha_list_files": [
+      "results/integration/2026-10-18-r7-workspace/ci-objective/SHA256SUMS",
+      "tests/ui/evidence/2026-10-18-chat-workspace-native/SHA256SUMS",
+      "tests/ui/evidence/2026-10-18-chat-workspace-rust/SHA256SUMS",
+      "tests/ui/evidence/2026-10-18-console-scroll/SHA256SUMS",
+      "tests/ui/evidence/2026-10-18-integrated-ui/SHA256SUMS"
+    ],
+    "original_sha_entries_present_and_verified": 832,
+    "original_sha_entries_missing": 35,
+    "missing_paths": 35,
+    "missing_unique_blobs": 32,
+    "missing_types": {
+      ".gz": 13,
+      ".png": 22
+    },
+    "metadata_and_preupload_binding_match": true
+  },
+  "a06": {
+    "original_json_files": 6,
+    "all_six_byte_hashes_match": true,
+    "three_payload_original_receipt_hashes_match": true,
+    "missing_paths": 13,
+    "missing_unique_blobs": 11,
+    "serial_original_utf8_crlf_bytes": 17532,
+    "serial_sha256": "631c794425ca8d6326cc9b1479f7e01243b5aa4a02041ddc588ed64f0e1410de",
+    "incomplete_normalized_expansion_excluded": true
+  },
+  "combined_missing": {
+    "distinct_paths": 48,
+    "distinct_git_blobs": 43,
+    "no_overlap_between_root_and_a06_missing_paths": true
+  },
+  "arm": {
+    "file_count": 27,
+    "bytes": 1282210,
+    "comparison_stage": "/workspace/scratch/98f315e377b2/recovery-r7/arm/archive-stage",
+    "every_file_byte_for_byte_equal": true,
+    "checksum_coverage": {
+      "file_count_including_sums": 27,
+      "listed_file_count": 26,
+      "bytes_including_sums": 1282210,
+      "sha256sums_sha256": "e110eb81e11b42c2b9bd6e6bfff92c3d88e5d579b511538f098a70dab88de569",
+      "all_regular_files_except_SHA256SUMS_itself_covered": true
+    },
+    "old_complete_curated_stage_recovered": false,
+    "exact_old_material_files": 16,
+    "new_recovery_curation_files": 11,
+    "large_elf_artifact_downloaded_or_read": false
+  },
+  "historical_docs_not_overwritten": [
+    {
+      "path": "docs/DESKTOP_UX.md",
+      "current_main_sha256": "57ad08c472fb80cf2dffea7dde2b7a04d48e4d52819cb7eab8d46ddfbe877fdc",
+      "fixed_f9e306_sha256": "57ad08c472fb80cf2dffea7dde2b7a04d48e4d52819cb7eab8d46ddfbe877fdc",
+      "archived_historical_sha256": "393b79b33666f383a30d63f4956428323cdcd1b83b372bec09732df5d2fbefd4",
+      "current_equals_fixed_f9e306": true,
+      "current_is_not_archived_historical_bytes": true,
+      "scope": "Root is concurrently applying the separately reviewed module-doc navigation updates. Differences from f9e306 are not attributed to archive extraction."
+    },
+    {
+      "path": "docs/INDEX.md",
+      "current_main_sha256": "75f0b38ae5e85d8a68b68b2818e370f81bd5e936271696abdde5f78733c0e7ad",
+      "fixed_f9e306_sha256": "b55d510a870103c7aff641d03cb9db8455c7ff8bb8c071a6b2ffcf3c68782b36",
+      "archived_historical_sha256": "029dd253412151435d65b0a3cd673964ed12f17bfdd2ff7f8432456a936ef643",
+      "current_equals_fixed_f9e306": false,
+      "current_is_not_archived_historical_bytes": true,
+      "scope": "Root is concurrently applying the separately reviewed module-doc navigation updates. Differences from f9e306 are not attributed to archive extraction."
+    },
+    {
+      "path": "docs/STATUS.md",
+      "current_main_sha256": "2f2087f9a7c8052c234df0b09ea7c4089c2768397ac774678044b09af3c70380",
+      "fixed_f9e306_sha256": "2f2087f9a7c8052c234df0b09ea7c4089c2768397ac774678044b09af3c70380",
+      "archived_historical_sha256": "988e7986542c0f5e630c7ca7a045b290386d153e641252e27847bd3c8075e480",
+      "current_equals_fixed_f9e306": true,
+      "current_is_not_archived_historical_bytes": true,
+      "scope": "Root is concurrently applying the separately reviewed module-doc navigation updates. Differences from f9e306 are not attributed to archive extraction."
+    }
+  ],
+  "readme_relative_links": [
+    {
+      "from": "README.md",
+      "target": "../../../docs/STATUS.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "../2026-10-18-objective-desktop/README.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "retained-r7-text.zip",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "a06-retained-source-payloads.zip",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "arm/README.md",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "recovery-manifest.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "metadata/blob-preupload-source-binding.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "a06-recovery-manifest.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "metadata/root-payload-meta.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "metadata/a10-final-doc-review-recovered-notes.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "metadata/blob-preupload-recovery-status.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "metadata/first-blob-readback.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "a06-retained-source-payloads.zip",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "a06-recovery-manifest.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "a06/original-64f-guest-serial.log",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "a06/a06-main-dedup-independent-review.json",
+      "exists": true
+    },
+    {
+      "from": "README.md",
+      "target": "a06/recovery-receipt.json",
+      "exists": true
+    },
+    {
+      "from": "arm/README.md",
+      "target": "readback/run-api.json",
+      "exists": true
+    },
+    {
+      "from": "arm/README.md",
+      "target": "readback/jobs-api.json",
+      "exists": true
+    },
+    {
+      "from": "arm/README.md",
+      "target": "readback/artifacts-api.json",
+      "exists": true
+    },
+    {
+      "from": "arm/README.md",
+      "target": "selected/report.json",
+      "exists": true
+    },
+    {
+      "from": "arm/README.md",
+      "target": "selected/work/original_agentd_process_probe.log",
+      "exists": true
+    },
+    {
+      "from": "arm/README.md",
+      "target": "selected/gate-exit-code.txt",
+      "exists": true
+    },
+    {
+      "from": "arm/README.md",
+      "target": "review/phase-summary.json",
+      "exists": true
+    },
+    {
+      "from": "arm/README.md",
+      "target": "evidence-12125674093.zip",
+      "exists": true
+    },
+    {
+      "from": "arm/README.md",
+      "target": "review/zip-members.json",
+      "exists": true
+    },
+    {
+      "from": "arm/README.md",
+      "target": "readback/job-117592347821.log.gz",
+      "exists": true
+    },
+    {
+      "from": "arm/README.md",
+      "target": "readback/readback-receipt.json",
+      "exists": true
+    },
+    {
+      "from": "arm/README.md",
+      "target": "review/source-binding.json",
+      "exists": true
+    },
+    {
+      "from": "arm/README.md",
+      "target": "selected/identity/final-checkouts.json",
+      "exists": true
+    },
+    {
+      "from": "arm/README.md",
+      "target": "MANIFEST.json",
+      "exists": true
+    },
+    {
+      "from": "arm/README.md",
+      "target": "review/independent-review.json",
+      "exists": true
+    },
+    {
+      "from": "arm/README.md",
+      "target": "verify_readback.py",
+      "exists": true
+    },
+    {
+      "from": "arm/README.md",
+      "target": "SHA256SUMS",
+      "exists": true
+    },
+    {
+      "from": "arm/README.md",
+      "target": "review/five-elf-binding-review.json",
+      "exists": true
+    },
+    {
+      "from": "arm/README.md",
+      "target": "review/binding-step-as-logged.txt",
+      "exists": true
+    },
+    {
+      "from": "arm/README.md",
+      "target": "source/.github/workflows/hepta-original-agentd.yml",
+      "exists": true
+    }
+  ],
+  "scope_review": {
+    "root_explicit_no_complete_old_tree": true,
+    "root_explicit_missing_R7_png_cannot_be_reopened": true,
+    "new_R8_png_not_substituted": true,
+    "A06_historical_157_not_reassigned_to_195": true,
+    "arm_original_read_only_8_plus_8_not_objective_or_device": true,
+    "new_curation_times_not_backdated": true,
+    "no_current_main_docs_overwritten_by_old_zip": true
+  },
+  "no_issues_found_in_review_scope": true,
+  "archive_bytes_unchanged_during_review": true,
+  "review_operations": "Read/hash/decode ZIP and JSON only; no archived commands, builds, tests, UI, daemon, issuer, objective or publication executed. Other agents may edit product sources outside this archive; no clean-worktree claim.",
+  "file_inventory": {
+    "README.md": {
+      "bytes": 5617,
+      "sha256": "6193a4a63e20759a305e464f4b873e38ac1f816dad0f2f43ee68ab51a2c642d9"
+    },
+    "SHA256SUMS": {
+      "bytes": 4081,
+      "sha256": "bb342e951c6e554ee3e0187d591e55f8d4da80865a319449fa02fd8172b4db1c"
+    },
+    "a06/a06-main-dedup-independent-review.json": {
+      "bytes": 8857,
+      "sha256": "1e117596e59988ab08efa9a8f1d8fe58b310203379ca773ee0fb862a08ae7823"
+    },
+    "a06/original-64f-guest-serial.log": {
+      "bytes": 17532,
+      "sha256": "631c794425ca8d6326cc9b1479f7e01243b5aa4a02041ddc588ed64f0e1410de"
+    },
+    "a06/recovery-receipt.json": {
+      "bytes": 8558,
+      "sha256": "70fa86a762aa9178236f302098afc128924b82000e53bdef1554d0f3f983c1b6"
+    },
+    "a06-recovery-manifest.json": {
+      "bytes": 5055,
+      "sha256": "087b98a6c50002f7db16fe2681462792116817f287392f9ca4fa67972794dfe7"
+    },
+    "a06-retained-source-payloads.zip": {
+      "bytes": 242341,
+      "sha256": "5e39da0f59ff43103e5f8f61efbee4cf4bfddd5ad6df0a04235f5f0c4b01803b"
+    },
+    "arm/MANIFEST.json": {
+      "bytes": 7007,
+      "sha256": "241d5fd3419f688afa9fa452a615ea6a2763ae438f030a255b4279bafa4ec4d5"
+    },
+    "arm/README.md": {
+      "bytes": 6717,
+      "sha256": "222d91e1341e28a53ce733723e648ed18bd873f476115de4c06ca32b8df521ad"
+    },
+    "arm/SHA256SUMS": {
+      "bytes": 2530,
+      "sha256": "e110eb81e11b42c2b9bd6e6bfff92c3d88e5d579b511538f098a70dab88de569"
+    },
+    "arm/evidence-12125674093.zip": {
+      "bytes": 1040029,
+      "sha256": "aaed616d85f52cd0c51672bd2bd22f43746bbf9c06c4c325002be3269594506c"
+    },
+    "arm/readback/artifacts-api.json": {
+      "bytes": 1828,
+      "sha256": "0aae62ee36c02c7482458daca007f03ef14585c69468625d1db74d80b7b0a2c3"
+    },
+    "arm/readback/job-117592347821.log.gz": {
+      "bytes": 25995,
+      "sha256": "563751ef8be61cb1f1639ae0634e6f5849a1ccd036eecf286554dda7a557b9e7"
+    },
+    "arm/readback/jobs-api.json": {
+      "bytes": 3079,
+      "sha256": "f7187544271c6d23833ef7803879f72b485ca03d768589f6e1ba1f703aa322af"
+    },
+    "arm/readback/readback-receipt.json": {
+      "bytes": 1553,
+      "sha256": "5ce3780ef32ffb34e8bf6d767cf63aaec0fa1f17c595d7ffb28688558a929bfb"
+    },
+    "arm/readback/run-api.json": {
+      "bytes": 15535,
+      "sha256": "4ee702c5d91a8e00ccbcada426e825ab7e62045cf5b8d28b44b010e756b85556"
+    },
+    "arm/review/binding-step-as-logged.txt": {
+      "bytes": 3351,
+      "sha256": "e9e58a8932cc35cd0cecd25aa2c51e94f289ba733dc5f8435a4ab087e6298b3f"
+    },
+    "arm/review/five-elf-binding-review.json": {
+      "bytes": 1940,
+      "sha256": "8f29d70d4dc391f6ff997de45a9e076653de7bd2c7b78b88a458f1db1d116f0f"
+    },
+    "arm/review/independent-review.json": {
+      "bytes": 2052,
+      "sha256": "fef7853bca192d5220d52b04061a24d62521e4b9f431d1af36fbb900088d6701"
+    },
+    "arm/review/phase-summary.json": {
+      "bytes": 14307,
+      "sha256": "ac3fd4dae6df642175e4c9235e05d4fbb36d6db94071e1151cb86ca195a97d84"
+    },
+    "arm/review/source-binding.json": {
+      "bytes": 8420,
+      "sha256": "c9492ac6db293ceffe106b3c7388a8206e39848274f1eee8c05d447960fe1e96"
+    },
+    "arm/review/zip-members.json": {
+      "bytes": 9455,
+      "sha256": "251d6d62fdbcc76e5decc7f1388fb2befa69da6ce2c33f4e805517e33a54fd7b"
+    },
+    "arm/selected/gate-exit-code.txt": {
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "arm/selected/identity/allocation.json": {
+      "bytes": 478,
+      "sha256": "b66c3d6eda80524405659c061c089447a4593dfd70caede25ccc1ebb5e1711b5"
+    },
+    "arm/selected/identity/consumer-source-trees.txt": {
+      "bytes": 82,
+      "sha256": "06e9421778d2b0b0bf7b58189f0278e538f48b0bb9ac727c194ff314b5bad745"
+    },
+    "arm/selected/identity/desktop-before.txt": {
+      "bytes": 82,
+      "sha256": "8254bb2bd6d0e551f200cca3817f627c167be834f5884230fba7f06831a49931"
+    },
+    "arm/selected/identity/desktop-inputs.sha256": {
+      "bytes": 999,
+      "sha256": "52259b931e59da2d095073bfa58e8967793320ffc95bf943f09727c4e1ae985d"
+    },
+    "arm/selected/identity/final-checkouts.json": {
+      "bytes": 863,
+      "sha256": "ce670ae59372197e6a60bb59ecf6d9376fe5848b6cd55b3cc41bc0a2175ac131"
+    },
+    "arm/selected/identity/hepta-before.txt": {
+      "bytes": 82,
+      "sha256": "c72ff4ef7ab8f1ee7f6501a73950e194baa17add926b2d37e72be9fa4d9d1286"
+    },
+    "arm/selected/report.json": {
+      "bytes": 48085,
+      "sha256": "20c73808d638bee2759e4b473ec8c351912198d510fd885a919f4f87bcbf8229"
+    },
+    "arm/selected/work/original_agentd_process_probe.log": {
+      "bytes": 22126,
+      "sha256": "3ba66707219de3da85377946cca18fafed81b54b2097961ba186d34cc413fd3f"
+    },
+    "arm/source/.github/workflows/hepta-original-agentd.yml": {
+      "bytes": 16897,
+      "sha256": "34525d76f857c38ed5b8d75362042c041839b84785b294b42b7c07e638cc4510"
+    },
+    "arm/source/tests/integration/hepta/run_original_agentd.py": {
+      "bytes": 30386,
+      "sha256": "21dd4a2e0621240a75f5ce37bad93da0a37352fbaa78554a50e048abe6a45fd0"
+    },
+    "arm/verify_readback.py": {
+      "bytes": 18330,
+      "sha256": "0e53de7b85ed5c35c2a7317a0a15e8e03371ae0bf7dbd8f2ed4f6302cb39f5a1"
+    },
+    "metadata/a10-final-doc-review-recovered-notes.json": {
+      "bytes": 3826,
+      "sha256": "ebca0d0fd1b623ac59d08ec38a7486344ea0bf32434432a70482580c857dd8be"
+    },
+    "metadata/blob-preupload-recovery-status.json": {
+      "bytes": 1748,
+      "sha256": "3117b5bbae397bd6003afcfbb97f6fd1e66cfe5998cde4dc0caf15c174a7f5b1"
+    },
+    "metadata/blob-preupload-source-binding.json": {
+      "bytes": 11257,
+      "sha256": "62ae392f1cd357c486251333ff920788c984fc57cb95b1f62ec5ef1ddd7c2023"
+    },
+    "metadata/first-blob-readback.json": {
+      "bytes": 1033,
+      "sha256": "f383fe281c7744609218044f75dbcae821d39788f5cef2a8bf2f78435cd0a992"
+    },
+    "metadata/root-payload-meta.json": {
+      "bytes": 8477,
+      "sha256": "7d72b22de17bbba700cd36ab150b55a42303aa71b3d71d934efa90a9ba1c475a"
+    },
+    "recovery-manifest.json": {
+      "bytes": 469149,
+      "sha256": "a876b382faea79e5d0dd7f94126d9560315c094ab7c2f352be5f10f08feaa252"
+    },
+    "retained-r7-text.zip": {
+      "bytes": 1550587,
+      "sha256": "7719dc40f5a6bf32bde432e80ba271d3b897234802419ae1e292fd8c438a0013"
+    },
+    "verify-recovery.py": {
+      "bytes": 2114,
+      "sha256": "06d32e72f8bedcd5db717c6a9b5d6b87eaf9b87a7b48cc609c1074abc4c45eeb"
+    }
+  }
+}

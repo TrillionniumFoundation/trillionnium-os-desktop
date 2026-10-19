@@ -1,0 +1,117 @@
+{
+  "head": "5060ac6976b56b32647c728991e489cdee1cce9d",
+  "observations": [
+    {
+      "scope": "readonly",
+      "phase": "starting",
+      "session_instance": "e60f0492e88a1b1ad5ce52088566c961",
+      "session_pid": 23507,
+      "worker_tid": 23508,
+      "connection": "observed",
+      "clock": {
+        "observation_sequence": 1,
+        "sample_age_at_snapshot_ms": 101
+      }
+    },
+    {
+      "scope": "readonly",
+      "phase": "running",
+      "session_instance": "e60f0492e88a1b1ad5ce52088566c961",
+      "session_pid": 23507,
+      "worker_tid": 23508,
+      "connection": "observed",
+      "clock": {
+        "observation_sequence": 2,
+        "sample_age_at_snapshot_ms": 100
+      }
+    },
+    {
+      "scope": "readonly",
+      "phase": "draining",
+      "session_instance": "e60f0492e88a1b1ad5ce52088566c961",
+      "session_pid": 23507,
+      "worker_tid": 23508,
+      "connection": "observed",
+      "clock": {
+        "observation_sequence": 3,
+        "sample_age_at_snapshot_ms": 199
+      }
+    },
+    {
+      "scope": "readonly",
+      "phase": "old_spawn_stale",
+      "session_instance": "e60f0492e88a1b1ad5ce52088566c961",
+      "session_pid": 23507,
+      "worker_tid": 23508,
+      "connection": "stale",
+      "clock": {
+        "observation_sequence": 3,
+        "sample_age_at_snapshot_ms": 2103
+      }
+    },
+    {
+      "scope": "readonly",
+      "phase": "recovered_running",
+      "session_instance": "0f9488024505ab130b294988d640374c",
+      "session_pid": 23706,
+      "worker_tid": 23708,
+      "connection": "observed",
+      "clock": {
+        "observation_sequence": 1,
+        "sample_age_at_snapshot_ms": 201
+      }
+    },
+    {
+      "scope": "readonly",
+      "phase": "stopped_stale",
+      "session_instance": "0f9488024505ab130b294988d640374c",
+      "session_pid": 23706,
+      "worker_tid": 23708,
+      "connection": "stale",
+      "clock": {
+        "observation_sequence": 1,
+        "sample_age_at_snapshot_ms": 2006
+      }
+    },
+    {
+      "scope": "objective_raw_failed_gate",
+      "phase": "compiled_run_projected",
+      "session_instance": "7c6001416ea1c7fb713c3003c4b450e5",
+      "session_pid": 24052,
+      "worker_tid": 24054,
+      "connection": "observed",
+      "clock": {
+        "observation_sequence": 2,
+        "sample_age_at_snapshot_ms": 98
+      }
+    },
+    {
+      "scope": "objective_raw_failed_gate",
+      "phase": "old_endpoint_run_stale",
+      "session_instance": "7c6001416ea1c7fb713c3003c4b450e5",
+      "session_pid": 24052,
+      "worker_tid": 24054,
+      "connection": "stale",
+      "clock": {
+        "observation_sequence": 2,
+        "sample_age_at_snapshot_ms": 2102
+      }
+    },
+    {
+      "scope": "objective_raw_failed_gate",
+      "phase": "replacement_run_projection_missing",
+      "session_instance": "cb5fd7c7605bd3cbc37fcb0179621c77",
+      "session_pid": 24202,
+      "worker_tid": 24204,
+      "connection": "observed",
+      "clock": {
+        "observation_sequence": 1,
+        "sample_age_at_snapshot_ms": 201
+      }
+    }
+  ],
+  "readonly_six_actual_snapshots_contain_runtime_clock": true,
+  "objective_three_raw_snapshots_contain_runtime_clock": true,
+  "objective_overall_gate_qualification_granted": false,
+  "scope": "Actual matching Session/ctl wire output and recorded metadata only. This review does not replace R9 Rust freshness tests or grant Shell-pixel qualification."
+}

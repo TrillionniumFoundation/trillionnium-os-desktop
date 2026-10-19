@@ -224,11 +224,29 @@ if a numeric exit code is available. The CLI does not make process crashes
 exactly once, and it supplies no reconciliation or replay command. A valid
 `not_sent` or refusal from another invocation cannot clear an earlier unknown.
 
-The CLI's six Linux subprocess regressions exercise exact input preservation,
-lost replies, invalid input, non-UTF-8 arguments, peer-PID fencing and closed
-stdout after a real socket write. They use disposable fixtures and establish
-the process/transport contract; original-owner authentication and durable
-publication require the separate original-process qualification.
+The CLI's eight Linux subprocess regressions exercise exact input preservation,
+lost replies, invalid input, non-UTF-8 arguments, peer-PID fencing, closed
+stdout after a real socket write, and the two process-loss boundaries below.
+They use disposable fixtures and establish the process/transport contract;
+original-owner authentication and durable publication require the separate
+original-process qualification.
+
+| Process-loss boundary | Independent fixture evidence | Meaning to the request owner |
+| --- | --- | --- |
+| Original input written while its pipe remains open, then SIGKILL | The producer handshake proves the exact input was written and EOF withheld; the reaped CLI produced no receipt and the listener has no connection | The fixture can prove no connection. A caller possessing only absent output has no complete `not_sent` receipt |
+| Exact complete ObjectiveStart frame read by the peer, then SIGKILL before any reply | The peer handshake confirms the original bytes and frame identity; after reap there is no receipt, second frame or retry connection | A full send without a delivered receipt retains uncertainty; this is not an emitted `submit_unknown` record or proof of publication |
+
+Both tests retain the original input in the caller, use handshake channels
+rather than sleeps to choose the fault point, and require signal 9 plus a
+completed wait/reap of the actual `hepta-submit` child. Neither introduces
+durable pending storage or an online journal reader. The existing request
+owner must still save the exact envelope before starting the child and own
+reconciliation after process loss. Run the focused boundary cases with:
+
+```sh
+cargo +1.88.0 test --manifest-path services/hepta-os/Cargo.toml --locked \
+  --features objective-transport --test objective_cli killed_ -- --nocapture
+```
 
 ## Complete response and typed outcomes
 

@@ -10,7 +10,8 @@ use std::time::{Duration, Instant};
 use trill_ui_core::hepta::{
     bounded_hepta_text, HeptaCapabilityObservation, HeptaConnectionState, HeptaEventObservation,
     HeptaHealthObservation, HeptaProjection, HeptaRunConnectionState, HeptaRunObservation,
-    HeptaRunProjection, HeptaRuntimeObservation, MAX_HEPTA_CAPABILITIES, MAX_HEPTA_EVENTS,
+    HeptaRunProjection, HeptaRuntimeObservation, HeptaRuntimeSampleClock, MAX_HEPTA_CAPABILITIES,
+    MAX_HEPTA_EVENTS,
 };
 use trill_ui_core::observation::{self, FreshnessFailure};
 use trill_ui_core::unix_ms;
@@ -84,6 +85,7 @@ impl EndpointSettings {
 struct Update {
     projection: HeptaProjection,
     runtime_reported_at: Instant,
+    runtime_sampled_at: Option<Instant>,
     run_sampled_at: Instant,
 }
 
@@ -91,6 +93,7 @@ pub struct HeptaMonitor {
     latest: HeptaProjection,
     updates: Option<Receiver<Update>>,
     last_update: Instant,
+    last_runtime_sample: Option<Instant>,
     last_run_sample: Instant,
     stop: Option<Sender<()>>,
 }
@@ -101,6 +104,7 @@ impl Default for HeptaMonitor {
             latest: HeptaProjection::not_configured(),
             updates: None,
             last_update: Instant::now(),
+            last_runtime_sample: None,
             last_run_sample: Instant::now(),
             stop: None,
         }
@@ -140,6 +144,7 @@ impl HeptaMonitor {
             .name("hepta-read-only-observer".into())
             .spawn(move || {
                 let mut projection = worker_initial;
+                let mut runtime_sampled_at = None;
                 let mut run_sampled_at = started_at;
                 let mut client = match ObserverClient::new(config) {
                     Ok(client) => client,
@@ -149,6 +154,7 @@ impl HeptaMonitor {
                         let _ = sender.try_send(Update {
                             projection,
                             runtime_reported_at: Instant::now(),
+                            runtime_sampled_at,
                             run_sampled_at,
                         });
                         return;
@@ -159,11 +165,22 @@ impl HeptaMonitor {
                     if !matches!(stopping.try_recv(), Err(TryRecvError::Empty)) {
                         break;
                     }
+                    // The runtime payload spans health/capabilities/events/
+                    // closing health RPCs. A slow successful poll must not
+                    // make its earlier observations younger on completion.
+                    let read_started_at = Instant::now();
+                    let sampled_unix_ms = unix_ms();
                     let healthy = match client.poll(cursor, MAX_HEPTA_EVENTS as u16) {
                         Ok(observation) => {
                             cursor = observation.next_cursor;
-                            projection = project_observation(observation, &projection, unix_ms());
-                            true
+                            projection =
+                                project_observation(observation, &projection, sampled_unix_ms);
+                            projection.last_attempt_unix_ms = Some(unix_ms());
+                            let observed = projection.connection == HeptaConnectionState::Observed;
+                            if observed {
+                                runtime_sampled_at = Some(read_started_at);
+                            }
+                            observed
                         }
                         Err(error) => {
                             // A read cursor can be resynchronized. This is NOT
@@ -187,6 +204,7 @@ impl HeptaMonitor {
                     let _ = sender.try_send(Update {
                         projection: projection.clone(),
                         runtime_reported_at,
+                        runtime_sampled_at,
                         run_sampled_at,
                     });
                     if !matches!(stopping.try_recv(), Err(TryRecvError::Empty)) {
@@ -225,6 +243,7 @@ impl HeptaMonitor {
                                 // Neither a slow nor successful run read may
                                 // renew the separately sampled runtime health.
                                 runtime_reported_at,
+                                runtime_sampled_at,
                                 run_sampled_at,
                             });
                         }
@@ -240,6 +259,7 @@ impl HeptaMonitor {
                 latest: initial,
                 updates: None,
                 last_update: started_at,
+                last_runtime_sample: None,
                 last_run_sample: started_at,
                 stop: None,
             };
@@ -252,6 +272,7 @@ impl HeptaMonitor {
             latest: initial,
             updates: Some(updates),
             last_update: started_at,
+            last_runtime_sample: None,
             last_run_sample: started_at,
             stop: Some(stop),
         }
@@ -273,6 +294,7 @@ impl HeptaMonitor {
                 Ok(update) => {
                     self.latest = update.projection;
                     self.last_update = update.runtime_reported_at;
+                    self.last_runtime_sample = update.runtime_sampled_at;
                     self.last_run_sample = update.run_sampled_at;
                 }
                 Err(TryRecvError::Empty) => break,
@@ -305,6 +327,25 @@ impl HeptaMonitor {
         {
             self.latest
                 .mark_runtime_unavailable("observer_update_timeout");
+        }
+        if self.latest.connection == HeptaConnectionState::Observed {
+            if let Some(failure) = observation::freshness_failure(
+                self.latest
+                    .last_observation
+                    .as_ref()
+                    .map(|sample| sample.sampled_unix_ms),
+                self.last_runtime_sample
+                    .and_then(|sampled| now.checked_duration_since(sampled)),
+                now_unix_ms,
+            ) {
+                self.latest.mark_runtime_unavailable(match failure {
+                    FreshnessFailure::SampleMissing => "hepta_observation_missing",
+                    FreshnessFailure::ReceiptTimeInvalid => "observer_sample_time_invalid",
+                    FreshnessFailure::ReceiptExpired => "observer_update_timeout",
+                    FreshnessFailure::SampleTimeInvalid => "hepta_observation_time_invalid",
+                    FreshnessFailure::SampleExpired => "hepta_observation_expired",
+                });
+            }
         }
         if let Some(run) = &mut self.latest.run {
             let age = now.checked_duration_since(self.last_run_sample);
@@ -339,17 +380,36 @@ impl HeptaMonitor {
 
     fn snapshot_at(&self, now: Instant) -> HeptaProjection {
         let mut projection = self.latest.clone();
+        projection.runtime_sample_clock = projection.last_observation.as_ref().and_then(|_| {
+            let mut clock = self.latest.runtime_sample_clock.as_deref().copied()?;
+            let sampled_at = self.last_runtime_sample?;
+            clock.sample_age_at_snapshot_ms = rounded_age_ms(sampled_at, now)?;
+            Some(Box::new(clock))
+        });
+        if projection.connection == HeptaConnectionState::Observed {
+            match projection.runtime_sample_clock.as_deref().copied() {
+                None => projection.mark_runtime_unavailable("observer_sample_time_invalid"),
+                Some(clock) if clock.observation_sequence == 0 => {
+                    projection.mark_runtime_unavailable("observer_sample_sequence_invalid");
+                }
+                Some(clock)
+                    if u128::from(clock.sample_age_at_snapshot_ms)
+                        > UPDATE_DEADLINE.as_millis() =>
+                {
+                    projection.mark_runtime_unavailable("observer_update_timeout");
+                }
+                _ => {}
+            }
+        }
         if let Some(run) = &mut projection.run {
             // Keep immutable observation history separate from its advancing
             // age. This includes time spent in the bounded worker queue and
             // remains meaningful if the wall clock rolls back before Shell
             // receives its first snapshot of this sample.
-            run.sample_age_at_snapshot_ms = run.last_observation.as_ref().and_then(|_| {
-                now.checked_duration_since(self.last_run_sample).map(|age| {
-                    // Rounding down could admit a sample past the deadline.
-                    u64::try_from(age.as_nanos().div_ceil(1_000_000)).unwrap_or(u64::MAX)
-                })
-            });
+            run.sample_age_at_snapshot_ms = run
+                .last_observation
+                .as_ref()
+                .and_then(|_| rounded_age_ms(self.last_run_sample, now));
             if run.last_observation.is_some() && run.connection == HeptaRunConnectionState::Observed
             {
                 match run.sample_age_at_snapshot_ms {
@@ -363,6 +423,13 @@ impl HeptaMonitor {
         }
         projection
     }
+}
+
+fn rounded_age_ms(sampled_at: Instant, now: Instant) -> Option<u64> {
+    now.checked_duration_since(sampled_at).map(|age| {
+        // Rounding down could admit a sample past the deadline.
+        u64::try_from(age.as_nanos().div_ceil(1_000_000)).unwrap_or(u64::MAX)
+    })
 }
 
 impl Drop for HeptaMonitor {
@@ -380,6 +447,17 @@ fn project_observation(
     previous: &HeptaProjection,
     sampled_unix_ms: u64,
 ) -> HeptaProjection {
+    let Some(observation_sequence) = previous
+        .runtime_sample_clock
+        .as_deref()
+        .map_or(0, |clock| clock.observation_sequence)
+        .checked_add(1)
+    else {
+        let mut unavailable = previous.clone();
+        unavailable.last_attempt_unix_ms = Some(sampled_unix_ms);
+        unavailable.mark_runtime_unavailable("observer_sample_sequence_exhausted");
+        return unavailable;
+    };
     let old = previous.last_observation.as_ref();
     let identity_changed = old.is_some_and(|old| {
         // The facade validates the full configured agent identity. Never
@@ -456,6 +534,12 @@ fn project_observation(
         last_attempt_unix_ms: Some(sampled_unix_ms),
         error_code: None,
         last_observation: Some(last_observation),
+        runtime_sample_clock: Some(Box::new(HeptaRuntimeSampleClock {
+            observation_sequence,
+            // Snapshot serialization supplies the actual advancing age from
+            // the worker's successful read-start Instant, including queueing.
+            sample_age_at_snapshot_ms: 0,
+        })),
         run,
     }
 }
@@ -677,6 +761,7 @@ mod tests {
             latest: HeptaProjection::connecting(),
             updates: Some(updates),
             last_update: Instant::now(),
+            last_runtime_sample: None,
             last_run_sample: Instant::now(),
             stop: None,
         };
@@ -773,6 +858,7 @@ mod tests {
                 .send(Update {
                     projection,
                     runtime_reported_at: if expired_run { now } else { old },
+                    runtime_sampled_at: Some(if expired_run { now } else { old }),
                     run_sampled_at: if expired_run { old } else { now },
                 })
                 .unwrap();
@@ -780,6 +866,7 @@ mod tests {
                 latest: HeptaProjection::default(),
                 updates: Some(updates),
                 last_update: now,
+                last_runtime_sample: None,
                 last_run_sample: now,
                 stop: None,
             };
@@ -830,6 +917,7 @@ mod tests {
                 last_run_sample: now - Duration::from_millis(mono_ms),
                 updates: None,
                 last_update: now,
+                last_runtime_sample: None,
                 stop: None,
             };
             let history = monitor
@@ -858,6 +946,7 @@ mod tests {
             },
             updates: None,
             last_update: sampled_at,
+            last_runtime_sample: None,
             last_run_sample: sampled_at,
             stop: None,
         };
@@ -912,5 +1001,142 @@ mod tests {
             .unwrap()
             .get("sample_age_at_snapshot_ms")
             .is_none());
+    }
+
+    #[test]
+    fn runtime_snapshot_reports_rounded_successful_sample_age_and_preserves_its_history() {
+        let sampled_at = Instant::now();
+        let monitor = HeptaMonitor {
+            latest: project_observation(
+                observation(20, 1, 1, false),
+                &HeptaProjection::default(),
+                10_000,
+            ),
+            updates: None,
+            last_update: sampled_at,
+            last_runtime_sample: Some(sampled_at),
+            last_run_sample: sampled_at,
+            stop: None,
+        };
+        let history = monitor.latest.last_observation.clone();
+        for (elapsed_ns, age_ms) in [
+            (0, 0),
+            (1, 1),
+            (999_999, 1),
+            (1_000_000, 1),
+            (7_000_000_000, 7_000),
+            (7_000_000_001, 7_001),
+        ] {
+            let view = monitor.snapshot_at(sampled_at + Duration::from_nanos(elapsed_ns));
+            assert_eq!(
+                view.runtime_sample_clock,
+                Some(Box::new(HeptaRuntimeSampleClock {
+                    observation_sequence: 1,
+                    sample_age_at_snapshot_ms: age_ms
+                }))
+            );
+            assert_eq!(
+                view.connection,
+                if age_ms > 7_000 {
+                    HeptaConnectionState::Stale
+                } else {
+                    HeptaConnectionState::Observed
+                }
+            );
+            assert_eq!(view.last_observation, history);
+            assert_eq!(view.last_attempt_unix_ms, Some(10_000));
+        }
+        let reversed = monitor.snapshot_at(sampled_at - Duration::from_nanos(1));
+        assert!(reversed.runtime_sample_clock.is_none());
+        assert_eq!(reversed.connection, HeptaConnectionState::Stale);
+        assert_eq!(reversed.last_observation, history);
+        assert_eq!(
+            monitor
+                .latest
+                .runtime_sample_clock
+                .as_deref()
+                .unwrap()
+                .observation_sequence,
+            1
+        );
+    }
+
+    #[test]
+    fn runtime_success_sequence_survives_failed_attempts_and_never_wraps() {
+        let now = Instant::now();
+        let mut view = project_observation(
+            observation(20, 1, 1, false),
+            &HeptaProjection::default(),
+            10_000,
+        );
+        assert_eq!(
+            view.runtime_sample_clock
+                .as_deref()
+                .unwrap()
+                .observation_sequence,
+            1
+        );
+        let history = view.last_observation.clone();
+        view.last_attempt_unix_ms = Some(15_000);
+        view.mark_runtime_unavailable("protocol_mismatch");
+        let monitor = HeptaMonitor {
+            latest: view.clone(),
+            updates: None,
+            last_update: now,
+            last_runtime_sample: Some(now - Duration::from_millis(5_000)),
+            last_run_sample: now,
+            stop: None,
+        };
+        for elapsed_ms in [0, 1_000] {
+            let failed = monitor.snapshot_at(now + Duration::from_millis(elapsed_ms));
+            assert_eq!(
+                failed
+                    .runtime_sample_clock
+                    .as_deref()
+                    .unwrap()
+                    .observation_sequence,
+                1
+            );
+            assert_eq!(
+                failed
+                    .runtime_sample_clock
+                    .as_deref()
+                    .unwrap()
+                    .sample_age_at_snapshot_ms,
+                5_000 + elapsed_ms
+            );
+            assert_eq!(failed.last_observation, history);
+            assert_eq!(failed.last_attempt_unix_ms, Some(15_000));
+            assert_eq!(failed.error_code.as_deref(), Some("protocol_mismatch"));
+        }
+        let mut fresh = project_observation(observation(20, 2, 1, false), &view, 16_000);
+        assert_eq!(
+            fresh
+                .runtime_sample_clock
+                .as_deref()
+                .unwrap()
+                .observation_sequence,
+            2
+        );
+        fresh
+            .runtime_sample_clock
+            .as_mut()
+            .unwrap()
+            .observation_sequence = u64::MAX;
+        let exhausted = project_observation(observation(20, 3, 1, false), &fresh, 17_000);
+        assert_eq!(exhausted.connection, HeptaConnectionState::Stale);
+        assert_eq!(
+            exhausted.error_code.as_deref(),
+            Some("observer_sample_sequence_exhausted")
+        );
+        assert_eq!(
+            exhausted
+                .runtime_sample_clock
+                .as_deref()
+                .unwrap()
+                .observation_sequence,
+            u64::MAX
+        );
+        assert_eq!(exhausted.last_observation, fresh.last_observation);
     }
 }

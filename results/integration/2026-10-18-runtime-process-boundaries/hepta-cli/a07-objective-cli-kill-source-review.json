@@ -1,0 +1,34 @@
+{
+  "schema": "a07-objective-cli-sigkill-source-review-v1",
+  "recorded_at_utc": "2026-10-18T15:03:16.389801+00:00",
+  "reviewer": "/root/r6_original_session",
+  "repository_head_at_read": "00796f6f6e10027e12b83d37d9ab4b8ab913f72e",
+  "source_path": "services/hepta-os/tests/objective_cli.rs",
+  "source_bytes": 18082,
+  "source_sha256": "f1cafe25930066e92f93e0b8b8ec06fbe218a353dfa180c421a513fb8e4d684b",
+  "fixture_bytes": 872,
+  "fixture_sha256": "bb4e4330efcd1ef0390c75dbfd7f8e190d3290311919648aa24cd16942fa7de8",
+  "status": "no_source_level_blocker_found",
+  "reviewed_symbols": [
+    "OwnedCli",
+    "OwnedCli::kill_and_reap",
+    "OwnedCli::drop",
+    "accept",
+    "killed_before_stdin_eof_has_no_receipt_or_connection",
+    "killed_after_complete_request_has_no_receipt_and_no_retry"
+  ],
+  "findings": [],
+  "checks": {
+    "same_owned_child_kill_then_wait_and_try_wait_signal_9": true,
+    "raw_input_producer_write_handshake_while_stdin_kept_open": true,
+    "entire_one_frame_peer_read_handshake_before_kill": true,
+    "eight_second_handshake_and_accept_read_waits": true,
+    "holds_sender_clone_retains_EOF_response_hold_until_child_reaped_even_on_panic": true,
+    "original_raw_envelope_retained_and_compared": true,
+    "no_response_and_no_reconnect_expected": true,
+    "no_missing_output_to_NotSent_or_emitted_SubmitUnknown_relabel": true,
+    "no_claim_of_original_owner_admission_or_durable_reconciliation": true,
+    "existing_transport_and_issuer_authority_not_changed": true
+  },
+  "scope": "Read-only source review of Linux test fixtures. No test, CLI, daemon, issuer, objective or UI process launched by this reviewer. Execution receipts belong to the owning agent. This is not an original Agentd acceptance or persistent request-owner proof."
+}

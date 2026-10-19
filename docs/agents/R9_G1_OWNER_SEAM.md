@@ -118,6 +118,8 @@ A03 四种 lock role 也不能全部替换为 IRQ-disabled spinlock：`SlotExecu
 
 ## 5. 附带发现与本工单边界
 
+**2026-10-19 主干复核补记：**下段保留固定 `01225ab` 的原审计；其中 parser 缺口已由后续合入的 [PR #195](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/195) 修复。当前 `cpu.rs` 调用 `CpuMaxConfig::parse`，显式非法周期、溢出和多余字段在预算 owner 锁及状态变更前拒绝，具体源码与复跑见 [CPU_MAX_CONFIG](../../tests/organ_backend/CPU_MAX_CONFIG.md)。该项不再是下一步待修 parser；本工单的共享 revision、实例失效、统一结算/时钟与可信权限装配仍需分别完成。
+
 `cpu.max` 当前 parser 对“提供但无法解析”的 period 退回原 period，且未显式拒绝多余 token；源码范围为 [cpu.rs:482–504][cpu-write]。这是静态读取发现，未在本轮客体复现，需单列最小 parser 负例和兼容决定后修复；不要把它包装成本轮 G1 已修复。它也说明 native adapter 不能通过拼字符串调用 Linux 文件写入口来替代已校验的 typed CAS。
 
 当前未发现必须丢弃 Asterinas/OSTD 的结构性证据。缺口可定位到原 owner 生命周期、统一计费、权限激活与 lock backend 的明确位置；先按这些位置接合。只有同一 W0/W1/profile 下可重现且局部修复不能满足要求的隔离、延迟或维护反例，才进入替换 OSTD 上层或独立 Rust kernel 的比较，不因尚未装配的接口启动第二套产品内核。

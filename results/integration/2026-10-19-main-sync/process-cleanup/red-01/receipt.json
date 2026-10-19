@@ -1,0 +1,44 @@
+{
+  "command": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "-B",
+    "-m",
+    "unittest",
+    "-v",
+    "test_original_process_guard.OriginalProcessGuardTests.test_success_cleans_group_only_while_actual_exit_zero_leader_is_waitable",
+    "test_original_process_guard.OriginalProcessGuardTests.test_successful_leader_cannot_leave_a_same_group_plugin_writer"
+  ],
+  "cwd": "/workspace/scratch/98f315e377b2/recovery-r7/r9-main-sync-20261019/tests/integration/hepta",
+  "exit_code": 1,
+  "expected_exit": 1,
+  "finished_at": "2026-10-19T01:33:20.910097+00:00",
+  "head_unchanged": true,
+  "helper_sha256": "0f4df2243ba84330bd96a550a495dd7076feb4c3877014e39b120f1385a755a8",
+  "input_files_unchanged": true,
+  "logs": {
+    "stderr.log": {
+      "bytes": 2560,
+      "sha256": "665f9e8b1f653cfb661b6fa0b16706a443b9a8cfdfdb12e592a68e9a553b9956"
+    },
+    "stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "original_hepta_started": false,
+  "python": {
+    "executable": "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "version": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]"
+  },
+  "runtime_scope": "real disposable Linux children and Python gate contracts only",
+  "rust_build": false,
+  "schema": "r9-anchored-success-cleanup-execution-v1",
+  "scope": "focused",
+  "source_after_sha256": "f2f80070bad9770df51296c4815cacd4c512af56f8c66f56cd371aec5e46ecef",
+  "source_before_sha256": "f2f80070bad9770df51296c4815cacd4c512af56f8c66f56cd371aec5e46ecef",
+  "source_head_is_not_execution_commit": true,
+  "source_is_dirty_integration_worktree": true,
+  "started_at": "2026-10-19T01:33:20.666917+00:00",
+  "status": "expected_result",
+  "timeout_seconds": 90
+}
