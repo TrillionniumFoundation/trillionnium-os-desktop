@@ -607,7 +607,7 @@ impl CpuChargeOwner {
             // authoritative even if migration has not updated the backup yet.
             let guard = process.cgroup();
             if guard.get().is_some() || !process.status().is_zombie() {
-                let owner = Self::from_cgroup(guard.get().cloned());
+                let owner = Self::from_cgroup(guard.get().map(|cgroup| cgroup.clone()));
                 thread.retain_cpu_charge_owner(owner.clone());
                 return Some(owner);
             }
