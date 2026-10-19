@@ -776,7 +776,9 @@ impl Broker {
         if self.replays.len() >= MAX_REPLAY_ENTRIES {
             let oldest = self.replays.keys().next().cloned();
             if let Some(oldest) = oldest {
-                self.replays.remove(&oldest);
+                if let Some(removed) = self.replays.remove(&oldest) {
+                    self.operations.remove(&removed.key);
+                }
             }
         }
         self.replays.insert(
