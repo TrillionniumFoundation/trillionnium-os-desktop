@@ -215,7 +215,7 @@ def run_probe(output: Path, revision: str | None, env: dict[str, str], cargo: st
             target.write_bytes(data)
         manifests = {
             "Cargo.toml": '[workspace]\nmembers = ["os-control", "lock-trace", "fixture"]\nresolver = "2"\n',
-            "os-control/Cargo.toml": '[package]\nname = "os-control"\nversion = "0.0.0"\nedition = "2021"\n[features]\ndefault = ["std"]\nstd = []\nportable-spin = []\n[dependencies]\n' + ('lock-trace = { path = "../lock-trace" }\n' if historical else '') + '[lints.rust]\nunsafe_code = "forbid"\n',
+            "os-control/Cargo.toml": '[package]\nname = "os-control"\nversion = "0.0.0"\nedition = "2021"\n[features]\ndefault = ["std"]\nstd = []\nportable-spin = []\n[dependencies]\n' + ('lock-trace = { path = "../lock-trace" }\n' if historical else '') + '[lints.rust]\nunsafe_code = "forbid"\nunexpected_cfgs = { level = "warn", check-cfg = ["cfg(ktest)"] }\n',
             "lock-trace/Cargo.toml": '[package]\nname = "lock-trace"\nversion = "0.0.0"\nedition = "2021"\n',
             "fixture/Cargo.toml": '[package]\nname = "lock-alloc-fixture"\nversion = "0.0.0"\nedition = "2021"\n[features]\npublic-backend = []\ndefault = ' + ('[]\n' if historical else '["public-backend"]\n') + '[dependencies]\nos-control = { path = "../os-control" }\nlock-trace = { path = "../lock-trace" }\n',
         }
