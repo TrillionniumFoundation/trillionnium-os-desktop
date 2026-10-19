@@ -478,7 +478,13 @@ impl super::SubControl for CpuController {
                 let config = max_config::CpuMaxConfig::parse(content)
                     .map_err(|_| Error::InvalidOperation)?;
 
-                control.max.lock().reconfigure(config, read_tsc())?;
+                // The local running interval belongs to the old configuration.
+                // Lock order: local runqueue -> each original bandwidth owner.
+                // The callback and settlement use the same captured timestamp;
+                // the budget lock is never held while entering the runqueue.
+                crate::sched::with_current_cpu_bandwidth_settled(|now| {
+                    control.max.lock().reconfigure(config, now)
+                })?;
 
                 Ok(len)
             }
@@ -636,6 +642,9 @@ mod config_regressions;
 
 #[cfg(ktest)]
 mod final_charge_regressions;
+
+#[cfg(ktest)]
+mod bandwidth_settlement_regressions;
 
 #[cfg(ktest)]
 mod quota_debt_regressions {
