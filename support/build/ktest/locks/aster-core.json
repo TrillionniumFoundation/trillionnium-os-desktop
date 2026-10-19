@@ -1,16 +1,30 @@
 {
-  "schema": 1,
+  "schema": 3,
   "crate": "aster-core",
   "toolchain": "nightly-2026-07-21",
+  "seed_tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+  "seed_blob": "77d8f4be4cdc7365cd73a2e9f7638d46f3608b40",
   "seed_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
-  "normalized_sha256": "159b8682d27a7a21af98885ae48515234445c00fdf5e00b158fdc4aa952ff4ed",
+  "working_root_lock_sha256": "af94d71680ecf3b9631e21c958263d5e41229033214f88dcff858bb14765a666",
+  "normalized_sha256": "85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150",
   "seed_package_count": 234,
-  "package_count": 199,
+  "package_count": 200,
   "added_local_package": "aster-core-osdk-bin",
   "external_drift": [],
+  "added_local_packages": [
+    "aster-core-osdk-bin",
+    "os-control"
+  ],
+  "prefetch_lock_sha256": "85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150",
   "metadata_exit": 0,
   "locked_metadata_exit": 0,
   "commands": [
+    [
+      "cargo",
+      "+nightly-2026-07-21",
+      "fetch",
+      "--locked"
+    ],
     [
       "cargo",
       "+nightly-2026-07-21",
@@ -277,6 +291,9 @@
       "alloc",
       "race"
     ],
+    "path+file://${PROJECT}/libs/os-control#0.1.0": [
+      "portable-spin"
+    ],
     "path+file://${ASTERINAS}/osdk/deps/frame-allocator#osdk-frame-allocator@0.19.0": [],
     "path+file://${ASTERINAS}/osdk/deps/heap-allocator#osdk-heap-allocator@0.19.0": [],
     "path+file://${ASTERINAS}/osdk/deps/test-kernel#osdk-test-kernel@0.19.0": [],
@@ -475,7 +492,7 @@
     "osdk/src/base_crate/mod.rs": "490aa4fc7a57362e1816c3778690de6d4d1af9508c2d4aec2e2c9524b4a74676",
     "osdk/src/base_crate/Cargo.toml.template": "7b9098b341d09bfcb335699cb7bba4061eaab285b99ec94d2294047f889cd51a",
     "osdk/src/commands/test.rs": "a1f35b4d72e2235cacd368b421bf992a9d58c0537b21882f6f37cb8d1cee23bf",
-    "Cargo.toml": "52c00575e48ccc738efdaacc8f035db77c23d0f9d769b3b519f8fe423d3c1106",
-    "kernel/core/Cargo.toml": "177678640798c8c4b70d41c11a2becdff9911e2013fd3c2345346f843383ab2c"
+    "Cargo.toml": "153bea9f3a0ec926947f9e7207ab458222453cf162283d88a6d25fdeb837048d",
+    "kernel/core/Cargo.toml": "8a5ca474b72fbc81120c41232607e59d0533c736f74315754d64045a868ce6e4"
   }
 }

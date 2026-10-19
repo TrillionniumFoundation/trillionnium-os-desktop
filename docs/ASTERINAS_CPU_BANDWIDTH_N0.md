@@ -4,6 +4,12 @@ Updated: 2026-10-18; final-debit change based on main `3551e1e0e017e2973da7e2b8a
 
 ## Current integrated evidence and next implementation boundary
 
+The [G1-a owner development manual](ASTERINAS_CPU_OWNER_G1A.md) describes the
+next source slice: shared `cpu.max` revision and irreversible real-controller
+detachment, its actual-owner ktests, dependency pins and remaining qualification
+limits. Added test source is not a new runtime receipt; the historical results
+below keep their original source bindings.
+
 The [2026-10-17 integrated receipt](../results/organ-backend/2026-10-17/a05-a06-integrated-acceptance.json) binds tested source `b913202b2e487126319e60813a54163666b9a2ad` to equivalent remote merge commit `eaf5242233b799356b7daa73898a14d240832abb`, tree `b852e0037af8f84c22a8fc7347fa55d8183e07e6`. It records ten real quota probes across the selected one/two-vCPU profiles, three read-only QueryAbi probes, and kernel regression with 374 reported passes, three VMX/EPT soft skips, and an actual executed lower bound of 371. These historical receipts do not automatically qualify a later HEAD.
 
 | Integrated sample | Configured CPU | Observed CPU percent |

@@ -212,6 +212,8 @@ fn calculate_priority(
 fn metadata() -> json::JsonValue {
     let mut cmd = Command::new(env!("CARGO"));
     cmd.arg("metadata");
+    // Preserve the full component graph without rewriting its explicit lock.
+    cmd.arg("--locked");
     cmd.arg("--format-version").arg("1");
     let output = cmd.output().unwrap();
 

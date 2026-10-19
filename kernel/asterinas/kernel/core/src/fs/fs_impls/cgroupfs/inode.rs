@@ -103,10 +103,10 @@ impl Inode for CgroupInode {
         // Serialize deletion with process migration and final-charge lease
         // updates. A zombie thread may still own the node until its deferred
         // scheduler debit has been observed and its RCU lease drops.
-        let _membership_guard = CgroupMembership::write_lock();
+        let mut membership_guard = CgroupMembership::write_lock();
 
         // This will succeed only if the child is empty and has not been removed.
-        target_node.mark_as_dead()?;
+        target_node.mark_as_dead(&mut membership_guard)?;
 
         // This is guaranteed to remove `child` because the dentry lock prevents
         // concurrent modification to the children, and there are no races because

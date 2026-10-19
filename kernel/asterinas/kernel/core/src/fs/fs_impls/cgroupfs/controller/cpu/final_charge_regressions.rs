@@ -107,7 +107,7 @@ impl Drop for Hierarchy {
 
 fn budget(controller: &Controller) -> CpuMax {
     let cpu = controller.cpu.read();
-    let value = *cpu
+    let value = cpu
         .get()
         .inner
         .as_ref()
@@ -116,13 +116,14 @@ fn budget(controller: &Controller) -> CpuMax {
         .as_ref()
         .unwrap()
         .max
-        .lock();
+        .lock()
+        .max;
     value
 }
 
 fn replace_budget(controller: &Controller, budget: CpuMax) {
     let cpu = controller.cpu.read();
-    *cpu.get()
+    cpu.get()
         .inner
         .as_ref()
         .unwrap()
@@ -130,7 +131,8 @@ fn replace_budget(controller: &Controller, budget: CpuMax) {
         .as_ref()
         .unwrap()
         .max
-        .lock() = budget;
+        .lock()
+        .max = budget;
 }
 
 #[ktest]

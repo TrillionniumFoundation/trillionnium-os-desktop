@@ -98,6 +98,7 @@ path = "../../tests/control/api_compat.rs"
 
 [lints.rust]
 unsafe_code = "forbid"
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(ktest)'] }
 
 [dev-dependencies]
 hos2-os-abi = { path = "../os-abi" }

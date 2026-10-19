@@ -7,7 +7,13 @@ on:
     paths:
       - "kernel/asterinas/**"
       - "libs/os-abi/**"
+      - "libs/os-control/**"
       - "support/build/kernel.sh"
+      - "support/build/verify-source.py"
+      - "support/build/minimal/**"
+      - "support/build/minimal.mk"
+      - "support/build/check-boot.py"
+      - "support/build/record-qemu.py"
       - "support/build/ktest/**"
       - "support/build/prepare-host.sh"
       - "support/upstream-lock.json"
@@ -19,7 +25,13 @@ on:
     paths:
       - "kernel/asterinas/**"
       - "libs/os-abi/**"
+      - "libs/os-control/**"
       - "support/build/kernel.sh"
+      - "support/build/verify-source.py"
+      - "support/build/minimal/**"
+      - "support/build/minimal.mk"
+      - "support/build/check-boot.py"
+      - "support/build/record-qemu.py"
       - "support/build/ktest/**"
       - "support/build/prepare-host.sh"
       - "support/upstream-lock.json"
@@ -58,7 +70,12 @@ jobs:
 
       - name: Prepare fixed OSDK test locks
         shell: bash
-        run: python3 -I support/build/ktest/prepare-locks.py
+        run: |
+          set -euo pipefail
+          prepared="${RUNNER_TEMP}/a06-prepared-locks"
+          python3 -I support/build/ktest/prepare-locks.py --output-dir "$prepared"
+          cmp "$prepared/ostd.Cargo.lock" support/build/ktest/locks/ostd.Cargo.lock
+          cmp "$prepared/aster-core.Cargo.lock" support/build/ktest/locks/aster-core.Cargo.lock
 
       - name: Run complete OSTD and aster-core kernel tests in real QEMU
         id: ktest
@@ -88,6 +105,16 @@ jobs:
           if seen != {"ostd", "aster-core"}:
               raise SystemExit(f"A06 ktest guest crate set is incomplete: {seen!r}")
           PY
+
+      - name: Build ordinary G1 product and verify QueryAbi with all four disabled operations
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I tests/kernel/control/run_queryabi_candidate_guest.py \
+            --expected-source-head "$(git rev-parse HEAD)" \
+            --expected-source-tree "$(git rev-parse HEAD^{tree})" \
+            --target-dir "${RUNNER_TEMP}/a06-target" \
+            --output "${RUNNER_TEMP}/a06-queryabi-candidate"
 
       - name: Build exact A06 SMP=2 candidate kernel
         shell: bash
@@ -130,9 +157,14 @@ jobs:
           name: a06-exact-kernel-ktest-${{ github.run_id }}
           path: |
             ${{ runner.temp }}/a06-ktest
+            ${{ runner.temp }}/a06-prepared-locks
+            ${{ runner.temp }}/a06-queryabi-candidate
             ${{ runner.temp }}/a06-kernel-build
             ${{ runner.temp }}/a06-probe-1vcpu
             ${{ runner.temp }}/a06-probe-2vcpu
             ${{ runner.temp }}/a06-kernel.sha256
+            ${{ runner.temp }}/a06-target/osdk/asterinas/asterinas-osdk-bin.elf
+            kernel/asterinas/target/osdk/aster-core/aster-core-osdk-bin.elf
+            kernel/asterinas/target/osdk/ostd/ostd-osdk-bin.elf
             support/build/ktest/locks
           if-no-files-found: error
