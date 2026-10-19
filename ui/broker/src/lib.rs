@@ -134,8 +134,8 @@ impl PeerAuthenticator for SameUidAuthenticator {
 pub fn peer_credentials_from_unix(
     stream: &std::os::unix::net::UnixStream,
 ) -> Result<PeerCredentials, AuthError> {
-    let cred = trill_ui_core::host_peer::linux_socket_peer_credentials(stream)
-        .map_err(AuthError::Io)?;
+    let cred =
+        trill_ui_core::host_peer::linux_socket_peer_credentials(stream).map_err(AuthError::Io)?;
     Ok(PeerCredentials {
         pid: cred.pid,
         uid: cred.uid,
@@ -263,7 +263,9 @@ impl OfflineDraft {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case", deny_unknown_fields)]
 pub enum Request {
-    Draft { draft: OfflineDraft },
+    Draft {
+        draft: OfflineDraft,
+    },
     Submit {
         request_id: String,
         intent: DurableIntent,
@@ -411,7 +413,9 @@ impl fmt::Display for BrokerError {
             Self::InvalidRequestId => write!(f, "invalid request_id"),
             Self::SessionUnknown => write!(f, "unknown or expired session"),
             Self::NotificationLimit => write!(f, "notification limit exceeded"),
-            Self::ReplayConflict => write!(f, "request id replay conflicts with the original payload"),
+            Self::ReplayConflict => {
+                write!(f, "request id replay conflicts with the original payload")
+            }
             Self::OperationUnknown => write!(f, "operation is not in the broker cache"),
             Self::OwnerReceiptNotConfirmed => write!(f, "owner receipt is not confirmed"),
             Self::DeliveryMismatch => write!(f, "delivery binding does not match"),
@@ -508,9 +512,10 @@ impl Broker {
             }
         }
         let id = self.next_session;
-        self.next_session = self.next_session.checked_add(1).ok_or_else(|| {
-            AuthError::Broker(BrokerError::InvalidRequestId)
-        })?;
+        self.next_session = self
+            .next_session
+            .checked_add(1)
+            .ok_or_else(|| AuthError::Broker(BrokerError::InvalidRequestId))?;
         self.sessions.insert(
             id,
             SessionRecord {
@@ -600,7 +605,11 @@ impl Broker {
         delivery: BootDelivery,
         fence: GenerationFence,
     ) -> Response {
-        if let Err(error) = intent.validate().and(fence.validate()).and(delivery.validate()) {
+        if let Err(error) = intent
+            .validate()
+            .and(fence.validate())
+            .and(delivery.validate())
+        {
             return invalid_response(error);
         }
         let Some(record) = self.operations.get(&intent.key) else {
@@ -646,7 +655,8 @@ impl Broker {
             return Err(BrokerError::NotificationLimit);
         }
         let oldest = self.notifications.front().map(|item| item.sequence);
-        let reconcile_required = oldest.is_some_and(|oldest| after_sequence.saturating_add(1) < oldest)
+        let reconcile_required = oldest
+            .is_some_and(|oldest| after_sequence.saturating_add(1) < oldest)
             || self.dropped_before_sequence.is_some();
         let items = self
             .notifications
@@ -655,9 +665,7 @@ impl Broker {
             .take(usize::from(max_items))
             .cloned()
             .collect::<Vec<_>>();
-        let next_sequence = items
-            .last()
-            .map_or(after_sequence, |item| item.sequence);
+        let next_sequence = items.last().map_or(after_sequence, |item| item.sequence);
         Ok(NotificationPage {
             items,
             next_sequence,
@@ -761,9 +769,7 @@ fn validate_token(value: &str, name: &'static str) -> Result<(), BrokerError> {
 }
 
 fn validate_digest(value: &str, name: &'static str) -> Result<(), BrokerError> {
-    if value.len() != MAX_DIGEST_BYTES
-        || !value.bytes().all(|byte| byte.is_ascii_hexdigit())
-    {
+    if value.len() != MAX_DIGEST_BYTES || !value.bytes().all(|byte| byte.is_ascii_hexdigit()) {
         return Err(BrokerError::InvalidDigest(name));
     }
     Ok(())
@@ -851,7 +857,9 @@ mod tests {
     #[test]
     fn same_uid_authentication_rejects_foreign_peer_and_bad_hello() {
         let auth = SameUidAuthenticator { expected_uid: 1000 };
-        assert!(auth.authenticate(&hello(vec![Capability::Observe]), peer(1000)).is_ok());
+        assert!(auth
+            .authenticate(&hello(vec![Capability::Observe]), peer(1000))
+            .is_ok());
         assert_eq!(
             auth.authenticate(&hello(vec![Capability::Observe]), peer(1001))
                 .unwrap_err()
@@ -995,7 +1003,9 @@ mod tests {
                 fence(),
             );
         }
-        let page = broker.pull_notifications(0, MAX_NOTIFICATIONS as u16).unwrap();
+        let page = broker
+            .pull_notifications(0, MAX_NOTIFICATIONS as u16)
+            .unwrap();
         assert!(page.reconcile_required);
         assert!(page.dropped_before_sequence.is_some());
         assert_eq!(page.items.len(), MAX_NOTIFICATIONS);
