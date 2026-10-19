@@ -58,9 +58,13 @@ impl UnixControlMessage {
         }
     }
 
-    pub(crate) fn write_to(&self, writer: &mut VmWriter) -> Result<(CControlHeader, RecvFlags)> {
+    pub(crate) fn write_to(
+        &self,
+        writer: &mut VmWriter,
+        flags: RecvFlags,
+    ) -> Result<(CControlHeader, RecvFlags)> {
         match &self.0 {
-            Message::Files(msg) => msg.write_to(writer),
+            Message::Files(msg) => msg.write_to(writer, flags),
             Message::Cred(msg) => msg.write_to(writer),
         }
     }
@@ -113,7 +117,11 @@ impl FileMessage {
         Ok(FileMessage { files })
     }
 
-    fn write_to(&self, writer: &mut VmWriter) -> Result<(CControlHeader, RecvFlags)> {
+    fn write_to(
+        &self,
+        writer: &mut VmWriter,
+        flags: RecvFlags,
+    ) -> Result<(CControlHeader, RecvFlags)> {
         let nfiles = self
             .files
             .len()
@@ -136,12 +144,15 @@ impl FileMessage {
 
         let current = Task::current().unwrap();
         let file_table = current.as_thread_local().unwrap().borrow_file_table();
+        let fd_flags = if flags.contains(RecvFlags::MSG_CMSG_CLOEXEC) {
+            FdFlags::CLOEXEC
+        } else {
+            FdFlags::empty()
+        };
         for file in self.files[..nfiles].iter() {
-            // TODO: Deal with the `O_CLOEXEC` flag.
-            let fd = file_table
-                .unwrap()
-                .write()
-                .insert(file.clone(), FdFlags::empty());
+            // Publish the descriptor with its final flags; setting CLOEXEC after insertion
+            // would allow a concurrent exec to inherit it in between.
+            let fd = file_table.unwrap().write().insert(file.clone(), fd_flags);
             // Perhaps we should remove the inserted files from the file table if we cannot write
             // the file descriptor back to user space? However, even Linux cannot handle every
             // corner case (https://elixir.bootlin.com/linux/v6.15.2/source/net/core/scm.c#L357).

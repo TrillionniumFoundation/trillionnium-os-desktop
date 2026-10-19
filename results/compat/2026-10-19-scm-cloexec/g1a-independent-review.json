@@ -1,0 +1,82 @@
+{
+  "reviewed_head": "107afb7436ca17177262fdfef2e6b5dfee13597a",
+  "reviewed_tree": "65ddb50cd303f3c43a8226141c5298dca369db5d",
+  "recommendation": "No blocking issue found for the G1-a scope; latest exact CI and artifacts passed. Merge subject to root integration of current main.",
+  "raw_artifact_sha256": "593abd9f59ece10daebe4926f6c6cfc8965c622f62dadb94c04feaaadad375bd",
+  "source_files_compared_to_independent_github_tree": 5851,
+  "before_after_source_snapshots_identical": true,
+  "ktest_environment_inputs_match_tree": true,
+  "ktest": {
+    "passed": true,
+    "crates": [
+      {
+        "passed": true,
+        "guests": [
+          {
+            "crate": "ostd",
+            "declared": 221,
+            "passed": 221,
+            "failed": 0,
+            "filtered": 0,
+            "soft_skipped": 3,
+            "soft_skip_reasons": [
+              "VMX unavailable",
+              "VMX unavailable",
+              "VMX/EPT invalidation unavailable"
+            ],
+            "exercised_passed_lower_bound": 218,
+            "observed_test_starts": 221,
+            "raw_qemu_exit": 33,
+            "guest": "guest-001"
+          }
+        ]
+      },
+      {
+        "passed": true,
+        "guests": [
+          {
+            "crate": "aster-core",
+            "declared": 179,
+            "passed": 179,
+            "failed": 0,
+            "filtered": 0,
+            "soft_skipped": 0,
+            "soft_skip_reasons": [],
+            "exercised_passed_lower_bound": 179,
+            "observed_test_starts": 179,
+            "raw_qemu_exit": 33,
+            "guest": "guest-001"
+          }
+        ]
+      }
+    ]
+  },
+  "kernel_artifacts": {
+    "aster-core": {
+      "elf_sha256": "d78a8b2858685e0494df84a7800de9dbea9d3f4a4a0ff530856a1a71e450b1ad",
+      "serial_sha256": "98ee577a23e73c52375acc39ef70343c8ddf28ceb2f35630071f80e8e8552cd0",
+      "raw_qemu_exit": 33
+    },
+    "ostd": {
+      "elf_sha256": "7df49c1c7f436d2ea4d9b5f21719a23aedaf7b66c76b774e992b28e27adc8811",
+      "serial_sha256": "d1a615c462a303f55ce9f31bc33c28d6d6e56a88a5111f1cee2358cdc0bc26d1",
+      "raw_qemu_exit": 33
+    }
+  },
+  "owner_tests_in_raw_serial": 10,
+  "ordinary_kernel_sha256": "f8785d9371f27b1f5e9ccd40da66ea25823ca50bfc7c431a89f20f88a45c4681",
+  "ordinary_queryabi_exact_markers": 14,
+  "queryabi_disabled_effect_operations": 4,
+  "quota_observed_cpu_percent": [
+    0.9,
+    0.819,
+    0.826,
+    0.875
+  ],
+  "product_limits": [
+    "QueryAbi only",
+    "No product init binding",
+    "No native authority/effect/history operations",
+    "No BOOTTIME/HOS2/SMP qualification from these tests"
+  ]
+}

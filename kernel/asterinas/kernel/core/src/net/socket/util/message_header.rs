@@ -101,12 +101,16 @@ impl ControlMessage {
         }
     }
 
-    pub(crate) fn write_all_to(msgs: &[Self], writer: &mut VmWriter) -> (usize, RecvFlags) {
+    pub(crate) fn write_all_to(
+        msgs: &[Self],
+        writer: &mut VmWriter,
+        flags: RecvFlags,
+    ) -> (usize, RecvFlags) {
         let mut len = 0;
         let mut output_flags = RecvFlags::empty();
 
         for msg in msgs.iter() {
-            let (header, message_flags) = match msg.write_to(writer) {
+            let (header, message_flags) = match msg.write_to(writer, flags) {
                 Ok(result) => result,
                 // This occurs when the buffer is too short or when some page faults cannot be
                 // handled. However, at this point, there is no good way to report the errors to
@@ -129,9 +133,13 @@ impl ControlMessage {
         (len, output_flags)
     }
 
-    fn write_to(&self, writer: &mut VmWriter) -> Result<(CControlHeader, RecvFlags)> {
+    fn write_to(
+        &self,
+        writer: &mut VmWriter,
+        flags: RecvFlags,
+    ) -> Result<(CControlHeader, RecvFlags)> {
         match self {
-            Self::Unix(msg) => msg.write_to(writer),
+            Self::Unix(msg) => msg.write_to(writer, flags),
         }
     }
 }

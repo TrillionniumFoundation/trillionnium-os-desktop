@@ -1,0 +1,119 @@
+{
+  "reviewed_head": "1c05412e2b340bbc8cd2b8a3389ae0ecce538991",
+  "tree": "2b873aa43445c8a02351f5900074a38c6fa4820d",
+  "artifact_id": 12162515747,
+  "artifact_sha256": "d9623e880bf559392f92c6bc9359a02629b6ff548e853e9f05cf1598b711fbbd",
+  "all_three_source_snapshots_equal": true,
+  "git_mode_blob_size_match_count": 6397,
+  "build_input_hashes_match": true,
+  "ktest": {
+    "passed": true,
+    "crates": [
+      {
+        "passed": true,
+        "guests": [
+          {
+            "crate": "ostd",
+            "declared": 221,
+            "passed": 221,
+            "failed": 0,
+            "filtered": 0,
+            "soft_skipped": 3,
+            "soft_skip_reasons": [
+              "VMX unavailable",
+              "VMX unavailable",
+              "VMX/EPT invalidation unavailable"
+            ],
+            "exercised_passed_lower_bound": 218,
+            "observed_test_starts": 221,
+            "raw_qemu_exit": 33,
+            "guest": "guest-001"
+          }
+        ]
+      },
+      {
+        "passed": true,
+        "guests": [
+          {
+            "crate": "aster-core",
+            "declared": 179,
+            "passed": 179,
+            "failed": 0,
+            "filtered": 0,
+            "soft_skipped": 0,
+            "soft_skip_reasons": [],
+            "exercised_passed_lower_bound": 179,
+            "observed_test_starts": 179,
+            "raw_qemu_exit": 33,
+            "guest": "guest-001"
+          }
+        ]
+      }
+    ]
+  },
+  "ktest_kernel_sha256": {
+    "aster-core": "3cbaaad8d8d2ef6b70f43e97ed518ce8f6f82f862b224aaf5c730e3859742741",
+    "ostd": "c5bb9adca6675d5e99a9659f3a0d566aedf214e832a89fde8b28ba9ce3915639"
+  },
+  "ordinary_kernel_sha256": "f8785d9371f27b1f5e9ccd40da66ea25823ca50bfc7c431a89f20f88a45c4681",
+  "queryabi_markers": {
+    "HEPTA_DISABLED_INSTALL_BUDGET_OK": 1,
+    "HEPTA_DISABLED_QUERY_DELIVERY_OK": 1,
+    "HEPTA_DISABLED_READ_USAGE_OK": 1,
+    "HEPTA_DISABLED_RETIRE_THROUGH_OK": 1,
+    "HEPTA_DUP_SESSION_STABLE": 1,
+    "HEPTA_EXEC_CAPSPACE_ROTATED": 1,
+    "HEPTA_EXEC_EPOCH_DENIED": 1,
+    "HEPTA_EXEC_PREIMAGE_QUERYABI_OK": 1,
+    "HEPTA_FORK_CAPSPACE_DISTINCT": 1,
+    "HEPTA_FORK_INHERITED_FD_DENIED": 1,
+    "HEPTA_NONROOT_OPEN_DENIED": 1,
+    "HEPTA_QUERYABI_CANDIDATE_OK disabled_operations=4": 1,
+    "HEPTA_QUERYABI_OK ops=QueryAbi_only, process_bound_session=yes, denied_invalid=yes": 1,
+    "TRILLIONNIUM_A01_BOOT_OK": 1
+  },
+  "quota_runs": {
+    "1vcpu": [
+      {
+        "index": 1,
+        "qemu_exit": 33,
+        "guest_complete": true,
+        "panic": false,
+        "policy_rt": false,
+        "cpu_percent": 1.0
+      },
+      {
+        "index": 2,
+        "qemu_exit": 33,
+        "guest_complete": true,
+        "panic": false,
+        "policy_rt": false,
+        "cpu_percent": 0.91
+      }
+    ],
+    "2vcpu": [
+      {
+        "index": 1,
+        "qemu_exit": 33,
+        "guest_complete": true,
+        "panic": false,
+        "policy_rt": false,
+        "cpu_percent": 0.905
+      },
+      {
+        "index": 2,
+        "qemu_exit": 33,
+        "guest_complete": true,
+        "panic": false,
+        "policy_rt": false,
+        "cpu_percent": 1.0
+      }
+    ]
+  },
+  "owner_test_serial_lines": [
+    "test aster_core::fs::fs_impls::cgroupfs::controller::cpu::config_regressions::single_quota_write_keeps_the_current_owner_period ... ok",
+    "test aster_core::fs::fs_impls::cgroupfs::controller::cpu::final_charge_regressions::live_migrations_change_the_owner_without_replaying_prior_debits ... ok",
+    "test aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::tests::last_revision_succeeds_then_real_owner_writes_fail_without_wrapping ... ok"
+  ],
+  "recommendation": "No new scoped G1-a blocker; recommend normal merge once A00 completes its final remote-head check. This does not qualify the remaining G1-b/c/d work."
+}

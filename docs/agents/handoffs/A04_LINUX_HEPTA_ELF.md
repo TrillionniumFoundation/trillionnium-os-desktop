@@ -2,9 +2,9 @@
 
 路径核对基线：2026-10-18 的本轮候选 `09cf259676e2a81a998c14f1e1fddf4cc94b80df`，基于实际 main `f9e306f76154590e096a42f70ce9de0a7c859e60`；这两个输入均未包含下述 A04 实现目录。
 A04 候选固定为 `25c681d944e4efa92f2772cf773e03ae811bc345`，来源为 [PR #8](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/8)。
-本手册由 A00 协调，实现与测试工具 owner 为 A04；本次只核对源码、命令入口和既有材料，没有重新构建、运行 ELF 或启动 QEMU。
+本手册由 A00 协调，实现与测试工具 owner 为 A04；原始交接复核仅核对源码和既有材料。2026-10-19 的新增 CLOEXEC 修复、真实 Linux/旧内核对照及持续 CI 入口见下述独立手册。
 
-**主干尚无 `compat/linux/`、`support/rootfs/`、`tests/workloads/linux/` 三个目录。下文 A04 命令只能在固定候选的独立 checkout 根目录执行。**
+**完整 `compat/linux/`、`support/rootfs/` 和原 A04 工作负载工具仍在固定候选。下文原 A04 命令只能在该候选的独立 checkout 根目录执行。** 本轮 `tests/workloads/linux/` 新增 [SCM_RIGHTS / CLOEXEC 独立开发与验证手册](../../../tests/workloads/linux/SCM_RIGHTS_CLOEXEC.md)及 27 项真实探针；它不替代固定四 ELF 的完整验收。
 主干已有 A01 构建入口、Asterinas 源码和 A05/A06 实现；这些模块的进展不能代替 A04 对相同 ELF 的差分验收。
 完整规范仍见 [Linux 兼容规格](../../LINUX_COMPATIBILITY.md)，完整候选手册分别为：
 
