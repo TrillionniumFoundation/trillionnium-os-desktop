@@ -330,6 +330,38 @@ pub struct OperationReply {
     pub reason: BrokerReason,
 }
 
+/// Receipt shape reserved for the authenticated original owner. The broker
+/// does not expose an owner writer in this pre-A07 seam; a future owner adapter
+/// must verify its signature and Final-use binding before applying this value.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct OwnerReceipt {
+    pub key: OperationKey,
+    pub delivery: BootDelivery,
+    pub fence: GenerationFence,
+    pub state: OperationState,
+    pub effect_digest: Option<String>,
+    pub confirmed_by_owner: bool,
+}
+
+impl OwnerReceipt {
+    pub fn validate(&self) -> Result<(), BrokerError> {
+        self.key.validate()?;
+        self.delivery.validate()?;
+        self.fence.validate()?;
+        if !self.confirmed_by_owner || self.state == OperationState::Unknown {
+            return Err(BrokerError::OwnerReceiptNotConfirmed);
+        }
+        if let Some(digest) = &self.effect_digest {
+            validate_digest(digest, "effect_digest")?;
+        }
+        if self.state == OperationState::Completed && self.effect_digest.is_none() {
+            return Err(BrokerError::OwnerReceiptNotConfirmed);
+        }
+        Ok(())
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Notification {
@@ -916,6 +948,36 @@ mod tests {
         assert!(delivery_json.get("delivery_id").is_some());
         assert!(delivery_json.get("scope_id").is_none());
         assert!(delivery_json.get("payload_digest").is_none());
+    }
+
+    #[test]
+    fn owner_receipt_cannot_turn_unknown_into_terminal_without_owner_confirmation() {
+        let mut receipt = OwnerReceipt {
+            key: intent("operation-receipt").key,
+            delivery: delivery("delivery-receipt"),
+            fence: fence(),
+            state: OperationState::Completed,
+            effect_digest: Some("c".repeat(64)),
+            confirmed_by_owner: true,
+        };
+        assert!(receipt.validate().is_ok());
+        receipt.confirmed_by_owner = false;
+        assert_eq!(
+            receipt.validate(),
+            Err(BrokerError::OwnerReceiptNotConfirmed)
+        );
+        receipt.confirmed_by_owner = true;
+        receipt.state = OperationState::Unknown;
+        assert_eq!(
+            receipt.validate(),
+            Err(BrokerError::OwnerReceiptNotConfirmed)
+        );
+        receipt.state = OperationState::Completed;
+        receipt.effect_digest = None;
+        assert_eq!(
+            receipt.validate(),
+            Err(BrokerError::OwnerReceiptNotConfirmed)
+        );
     }
 
     #[test]
