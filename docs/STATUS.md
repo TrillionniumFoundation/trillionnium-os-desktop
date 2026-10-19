@@ -1,5 +1,24 @@
 # 当前状态
 
+## 2026-10-19 接续：原 CPU owner 和 SCM_RIGHTS 已合入，继续同核验收
+
+本节以实际 main `7e859b98c58053b88ea2baabc3e5f645fd38dca5` / tree `354adb549b064c78477932ca943309694eb54356` 为已合入基线。下面分别记录已完成的精确提交验收与正在集成的后续切片；后面的历史节保留各自原始来源和失败，不能用旧计数替代新候选的执行。
+
+| 增量 | 已完成证据与范围 |
+| --- | --- |
+| Runtime 与原版进程清理 [#196](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/196) | 已普通合入 `e15ae6a63edb5d4e7c475a001be82111d451b653`。成功样本总年龄和同序号时钟锚修复保留；原版 CLI 的成功退出也先清理同组子进程，再唯一回收 leader。精确发布提交的 UI、ARM/history 和代码检查成功，原始失败与本地组合证据仍见下节。 |
+| G1-a 原 CPU owner [#197](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/197) | 已普通合入 `71ce079c3218a8692476e4113b60c9d2c0d2a172`。原带宽 owner 统一配置 revision，并对脱离控制器实例不可逆失效；[A06 run 39196471075](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196471075) 实际 core 179/179，OSTD 报告 221 passed，其中 3 项明确 VMX soft skip，因此实际执行通过下界为 218。普通启动和 QueryAbi 原始 QEMU exit 33，全部四个效果操作仍关闭。此结果不代表 G1-b/c/d 完成。 |
+| SCM_RIGHTS/CLOEXEC [#198](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/198) | 已普通合入本节 main。原 recvmsg 标志沿原控制消息路径传递，在原 FileTable 安装时原子设置 CLOEXEC；[A06 run 39198594211](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39198594211) 在 Linux 与普通 guest 执行同一新 probe ELF `9b80de2bb994d86d32592f5c2a4824c8406b41c1aedc74df299755c807065fb1`，各 27/27，实际 probe exit 0，guest QEMU exit 33。原 core/OSTD、QueryAbi 和有限配额门槛一并成功。归档 [原始 RED](../results/compat/2026-10-19-scm-cloexec/README.md) 保留旧内核 3 PASS / 24 FAIL；相同历史 ELF 在新内核另实际复跑 27/27。 |
+
+#198 的产品构建实际源 head 为 `dafa1eba79cb1e17f880b5f0c5d57a80510d5d68`，tree 与本节 main 一致，普通 kernel ELF SHA256 为 `1145311a1335b866196019dfeea5937a86d4cbc4ff1efb222e8a229137b3737b`。CI artifact `12162813771` 的 ZIP SHA256 为 `bce2548f17c9b9d22bfc10e398999dacea07e2c8942f497a87435c3d38e76545`；三份源码快照字节相同，6426 个源码路径、mode、Git blob、size 和 SHA256 已独立核对。新候选仍必须重新构建，不能继承该普通 ELF 的资格。
+
+### 本候选新增实现，等待新内核 CI
+
+- A06 [本地配置前结算](../tests/organ_backend/CPU_CONFIG_SETTLEMENT.md) 已在 [#199](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/199) 发布并在此组合：原调度运行段先记入原 owner，再配置，后续仅计未结算尾段。四个确定性内核反例明确使用颠倒结算顺序的变体；该变体 179 PASS / 4 FAIL、QEMU 65，修复后本地 core 183/183、QEMU 33。宿主 IPC 拒绝与源快照中的未跟踪 Python 缓存事实均保留，不能据此宣称干净源码门禁；本候选 CI 另执行完整原门禁和四组固定普通客体时间判据。
+- A04 [RLIMIT_NOFILE 分配与接收](../tests/workloads/linux/RLIMIT_NOFILE.md) 在原 FileTable 增加可撤销 FD 预约，覆盖调用进程的 soft limit、阻塞 accept、双 FD 原子失败、复制错误和 SCM_RIGHTS 部分接收。[完整固定对照](../results/compat/2026-10-19-rlimit-nofile/README.md) 保留同一 ELF `c3533e3b343ffb719e22d736aba4f9bc9c3040826547530f24e0556292b1ea3e` 的 Linux 37/37，以及上述旧普通内核的 0 PASS / 37 FAIL、实际 probe 1 / QEMU 33、无超时或 panic。首次串口日志超过旧 8 MiB 限制的失败也保留。新分配实现的编译和同 ELF guest GREEN 仍待本候选 CI，文档/归档完整性通过不能替代它。
+
+G1-b 的 BOOTTIME、同版本使用量与控制器/成员迁移结算，G1-c 的可信授予，G1-d 的完整 HOS2 操作，以及 S1–S5 的原版 Hepta 持久效果仍按各自原 owner 推进。新的 FD 分配 profile 不替代固定 Debian 13 四 ELF/rootfs 的完整兼容资格，也不覆盖 sender-side SCM_RIGHTS in-flight 上限、Android/GPU 或 moto XT2363-4 实机。Asterinas v0.19.0、nightly-2026-07-21、默认 Hepta pin 和 HOS2 wire 均保持原边界；根 README 为 0 字节。
+
 ## 2026-10-19：整合 Runtime 修复与已合入的原 owner 历史扩展
 
 本分支在已发布 Runtime 修复 `5060ac6976b56b32647c728991e489cdee1cce9d` 上，保留并合入实际 main `aab50f347deb53fc79ac13ea3b84f846fefc70a7`（[PR #193](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/193)）。源码自动合并，冲突仅在本状态页和文档索引；两条实现与历史原始证据均保留。随后普通合并仅含文档/证据的 main `0c2bf0fc1ba473325a0266c7bd476b1ddbf66383`（[PR #194](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/194)），协调索引、状态与 S1–S5 三份文档；60 个 Rust 输入及本次 Python 修复字节未变。下列两节 R9 记录来自不同执行输入，其测试计数不合并成整合后新 HEAD 的验收。

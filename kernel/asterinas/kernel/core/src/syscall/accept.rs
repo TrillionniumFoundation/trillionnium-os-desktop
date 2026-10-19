@@ -4,7 +4,7 @@ use super::SyscallReturn;
 use crate::{
     fs::file::{
         CreationFlags, StatusFlags,
-        file_table::{FdFlags, RawFileDesc, get_file_fast},
+        file_table::{FdFlags, FileTable, RawFileDesc, get_file_fast},
     },
     prelude::*,
     util::net::write_socket_addr_to_user,
@@ -46,11 +46,20 @@ fn do_accept(
     flags: Flags,
     ctx: &Context,
 ) -> Result<SyscallReturn> {
-    let mut file_table = ctx.thread_local.borrow_file_table_mut();
-    let file = get_file_fast!(&mut file_table, sockfd.try_into()?);
+    let file = {
+        let mut file_table = ctx.thread_local.borrow_file_table_mut();
+        get_file_fast!(&mut file_table, sockfd.try_into()?).into_owned()
+    };
     let socket = file.as_socket_or_err()?;
 
     let is_nonblocking = flags.contains(Flags::SOCK_NONBLOCK);
+    let fd_flags = if flags.contains(Flags::SOCK_CLOEXEC) {
+        FdFlags::CLOEXEC
+    } else {
+        FdFlags::empty()
+    };
+    // Do not consume the pending connection if the caller has no available descriptor.
+    let reserved = FileTable::reserve_fd(ctx, fd_flags)?;
 
     let (connected_socket, socket_addr) = {
         socket
@@ -62,20 +71,11 @@ fn do_accept(
             })?
     };
 
-    let fd_flags = if flags.contains(Flags::SOCK_CLOEXEC) {
-        FdFlags::CLOEXEC
-    } else {
-        FdFlags::empty()
-    };
-
     if sockaddr_ptr != 0 {
         write_socket_addr_to_user(&socket_addr, sockaddr_ptr, addrlen_ptr)?;
     }
 
-    let fd = {
-        let mut file_table_locked = file_table.unwrap().write();
-        file_table_locked.insert(connected_socket, fd_flags)
-    };
+    let fd = reserved.install(connected_socket);
 
     Ok(SyscallReturn::Return(fd.into()))
 }

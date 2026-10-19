@@ -6,11 +6,16 @@ use core::{
 };
 
 use aster_util::{ranged_integer::RangedU32, slot_vec::SlotVec};
-use ostd::sync::RwArc;
+use ostd::{sync::RwArc, task::Task};
 
 use super::file_handle::FileLike;
 use crate::{
-    fs::vfs::range_lock::RangeLockOwner, prelude::*, process::posix_thread::FileTableRefMut,
+    fs::vfs::range_lock::RangeLockOwner,
+    prelude::*,
+    process::{
+        posix_thread::FileTableRefMut,
+        rlimit::{ResourceLimits, ResourceType, SYSCTL_NR_OPEN},
+    },
 };
 
 /// Represents a validated, non-negative file descriptor.
@@ -103,7 +108,21 @@ impl TryFrom<RawFileDesc> for FileDesc {
 /// [`Self::fork_from`]). The file table's address is used as a [`RangeLockOwner`], so users should
 /// not try to move the file table to a different address.
 pub(crate) struct FileTable {
-    table: SlotVec<FileTableEntry>,
+    table: SlotVec<FileTableSlot>,
+}
+
+enum FileTableSlot {
+    Reserved(FdFlags),
+    File(FileTableEntry),
+}
+
+impl FileTableSlot {
+    fn entry(&self) -> Option<&FileTableEntry> {
+        match self {
+            Self::File(entry) => Some(entry),
+            Self::Reserved(_) => None,
+        }
+    }
 }
 
 impl FileTable {
@@ -114,11 +133,17 @@ impl FileTable {
         })
     }
 
-    /// Creates a new file table containing clones of all entries in `parent`.
+    /// Creates a new file table containing clones of the installed entries in `parent`.
+    ///
+    /// An in-progress allocation belongs to its original table and must not be inherited.
     pub(crate) fn fork_from(parent: &Self) -> RwArc<Self> {
-        RwArc::new(Self {
-            table: parent.table.clone(),
-        })
+        let mut table = SlotVec::new();
+        for (idx, slot) in parent.table.idxes_and_items() {
+            if let Some(entry) = slot.entry() {
+                table.put_at(idx, FileTableSlot::File(entry.clone()));
+            }
+        }
+        RwArc::new(Self { table })
     }
 
     /// Returns the range-lock owner of `file_table`.
@@ -134,33 +159,87 @@ impl FileTable {
         self.table.slots_len()
     }
 
+    /// Reserves the lowest available FD below this caller's current soft limit.
+    ///
+    /// Reserve before work that may block or have side effects, then install only after
+    /// fallible setup and user copyout succeed. Dropping the reservation releases the slot.
+    pub(crate) fn reserve_fd(ctx: &Context, flags: FdFlags) -> Result<FileDescReservation> {
+        let file_table = ctx.thread_local.borrow_file_table().unwrap().clone();
+        Self::reserve_in(file_table, ctx.process.resource_limits(), flags)
+    }
+
+    /// Reserves an FD for a file operation that has no explicit syscall context.
+    pub(crate) fn reserve_current_fd(flags: FdFlags) -> Result<FileDescReservation> {
+        let current_task = Task::current().unwrap();
+        let file_table = current_task
+            .as_thread_local()
+            .unwrap()
+            .borrow_file_table()
+            .unwrap()
+            .clone();
+        Self::reserve_in(file_table, current!().resource_limits(), flags)
+    }
+
+    fn reserve_in(
+        file_table: RwArc<Self>,
+        limits: &ResourceLimits,
+        flags: FdFlags,
+    ) -> Result<FileDescReservation> {
+        let fd = {
+            let mut locked = file_table.write();
+            let fd = locked.first_free_fd(0, Self::nofile_limit(limits))?;
+            locked.table.put_at(fd, FileTableSlot::Reserved(flags));
+            (fd as RawFileDesc).try_into().unwrap()
+        };
+        Ok(FileDescReservation {
+            file_table,
+            fd: Some(fd),
+        })
+    }
+
+    fn nofile_limit(limits: &ResourceLimits) -> usize {
+        // A table can be shared by processes with different limits (CLONE_FILES), so the
+        // limit belongs to the allocating caller, not to the table. It is a bound on the
+        // descriptor number, not the number of installed entries after a limit reduction.
+        limits
+            .get_rlimit(ResourceType::RLIMIT_NOFILE)
+            .get_cur()
+            .min(SYSCTL_NR_OPEN) as usize
+    }
+
+    fn first_free_fd(&self, start: usize, limit: usize) -> Result<usize> {
+        // Preserve SlotVec's constant-time append path for the usual dense file table.
+        if self.table.len() != self.len() {
+            for fd in start..self.len().min(limit) {
+                if self.table.get(fd).is_none() {
+                    return Ok(fd);
+                }
+            }
+        }
+        let fd = start.max(self.len());
+        if fd < limit {
+            return Ok(fd);
+        }
+        return_errno_with_message!(Errno::EMFILE, "the file descriptor limit is exhausted")
+    }
+
     /// Duplicates `fd` onto the lowest-numbered available descriptor equal to
-    /// or greater than `ceil_fd`.
+    /// or greater than `ceil_fd`. `None` implements `dup`; `Some` implements the
+    /// additional lower-bound validation required by `F_DUPFD` and `F_DUPFD_CLOEXEC`.
     pub(crate) fn dup_ceil(
         &mut self,
         fd: FileDesc,
-        ceil_fd: FileDesc,
+        ceil_fd: Option<FileDesc>,
         flags: FdFlags,
+        limits: &ResourceLimits,
     ) -> Result<FileDesc> {
         let entry = self.duplicate_entry(fd, flags)?;
-
-        // Get the lowest-numbered available fd equal to or greater than `ceil_fd`.
-        let get_min_free_fd = || -> usize {
-            let ceil_fd = ceil_fd.into();
-            if self.table.get(ceil_fd).is_none() {
-                return ceil_fd;
-            }
-
-            for idx in ceil_fd + 1..self.len() {
-                if self.table.get(idx).is_none() {
-                    return idx;
-                }
-            }
-            self.len()
-        };
-
-        let min_free_fd = get_min_free_fd();
-        self.table.put_at(min_free_fd, entry);
+        let limit = Self::nofile_limit(limits);
+        if ceil_fd.is_some_and(|fd| usize::from(fd) >= limit) {
+            return_errno_with_message!(Errno::EINVAL, "the FD lower bound exceeds the limit");
+        }
+        let min_free_fd = self.first_free_fd(ceil_fd.unwrap_or(FileDesc::ZERO).into(), limit)?;
+        self.table.put_at(min_free_fd, FileTableSlot::File(entry));
         // Resource limits guarantee the table never exceeds `i32::MAX` entries.
         Ok((min_free_fd as RawFileDesc).try_into().unwrap())
     }
@@ -171,30 +250,36 @@ impl FileTable {
         fd: FileDesc,
         new_fd: FileDesc,
         flags: FdFlags,
+        limits: &ResourceLimits,
     ) -> Result<Option<ClosedFile>> {
+        if usize::from(new_fd) >= Self::nofile_limit(limits) {
+            return_errno_with_message!(Errno::EBADF, "the target FD exceeds the limit");
+        }
         let entry = self.duplicate_entry(fd, flags)?;
+        if matches!(
+            self.table.get(new_fd.into()),
+            Some(FileTableSlot::Reserved(_))
+        ) {
+            // Match Linux dup2/dup3 when another thread has allocated this number but
+            // has not installed its file. Replacing it would corrupt that allocation.
+            return_errno_with_message!(Errno::EBUSY, "the target FD is reserved");
+        }
         let closed_file = self.close_file(new_fd);
-        self.table.put_at(new_fd.into(), entry);
+        self.table.put_at(new_fd.into(), FileTableSlot::File(entry));
         Ok(closed_file)
     }
 
     fn duplicate_entry(&self, fd: FileDesc, flags: FdFlags) -> Result<FileTableEntry> {
-        let file = self
-            .table
-            .get(fd.into())
-            .map(|entry| entry.file.clone())
-            .ok_or_else(|| Error::with_message(Errno::EBADF, "the FD does not exist"))?;
-        Ok(FileTableEntry::new(file, flags))
-    }
-
-    pub(crate) fn insert(&mut self, item: Arc<dyn FileLike>, flags: FdFlags) -> FileDesc {
-        let entry = FileTableEntry::new(item, flags);
-        // Resource limits guarantee the table never exceeds `i32::MAX` entries.
-        (self.table.put(entry) as RawFileDesc).try_into().unwrap()
+        Ok(FileTableEntry::new(self.get_file(fd)?.clone(), flags))
     }
 
     pub(crate) fn close_file(&mut self, fd: FileDesc) -> Option<ClosedFile> {
-        let removed_entry = self.table.remove(fd.into())?;
+        // Reserved descriptors are not yet visible to close or any file lookup. Only
+        // their reservation may release them, so failed copyout cannot close a reused FD.
+        self.table.get(fd.into())?.entry()?;
+        let FileTableSlot::File(removed_entry) = self.table.remove(fd.into()).unwrap() else {
+            unreachable!();
+        };
         // POSIX record locks are process-associated and Linux drops them when any fd for the inode is
         // closed by that process, even if duplicated descriptors still exist.
         //
@@ -209,6 +294,16 @@ impl FileTable {
         self.close_files(|entry| entry.flags().contains(FdFlags::CLOEXEC))
     }
 
+    pub(crate) fn mark_close_on_exec(&mut self, fd: FileDesc) {
+        match self.table.get_mut(fd.into()) {
+            Some(FileTableSlot::File(entry)) => {
+                entry.set_flags(entry.flags() | FdFlags::CLOEXEC);
+            }
+            Some(FileTableSlot::Reserved(flags)) => *flags |= FdFlags::CLOEXEC,
+            None => (),
+        }
+    }
+
     fn close_files<F>(&mut self, should_close: F) -> Vec<ClosedFile>
     where
         F: Fn(&FileTableEntry) -> bool,
@@ -217,7 +312,8 @@ impl FileTable {
         let closed_fds: Vec<FileDesc> = self
             .table
             .idxes_and_items()
-            .filter_map(|(idx, entry)| {
+            .filter_map(|(idx, slot)| {
+                let entry = slot.entry()?;
                 if should_close(entry) {
                     // Resource limits guarantee the table never exceeds `i32::MAX` entries.
                     Some((idx as RawFileDesc).try_into().unwrap())
@@ -237,6 +333,7 @@ impl FileTable {
     pub(crate) fn get_file(&self, fd: FileDesc) -> Result<&Arc<dyn FileLike>> {
         self.table
             .get(fd.into())
+            .and_then(FileTableSlot::entry)
             .map(|entry| entry.file())
             .ok_or_else(|| Error::with_message(Errno::EBADF, "the FD does not exist"))
     }
@@ -244,20 +341,59 @@ impl FileTable {
     pub(crate) fn get_entry(&self, fd: FileDesc) -> Result<&FileTableEntry> {
         self.table
             .get(fd.into())
-            .ok_or_else(|| Error::with_message(Errno::EBADF, "the FD does not exist"))
-    }
-
-    pub(crate) fn get_entry_mut(&mut self, fd: FileDesc) -> Result<&mut FileTableEntry> {
-        self.table
-            .get_mut(fd.into())
+            .and_then(FileTableSlot::entry)
             .ok_or_else(|| Error::with_message(Errno::EBADF, "the FD does not exist"))
     }
 
     pub(crate) fn fds_and_files(&self) -> impl Iterator<Item = (FileDesc, &'_ Arc<dyn FileLike>)> {
         // Resource limits guarantee the table never exceeds `i32::MAX` entries.
-        self.table
-            .idxes_and_items()
-            .map(|(idx, entry)| ((idx as RawFileDesc).try_into().unwrap(), entry.file()))
+        self.table.idxes_and_items().filter_map(|(idx, slot)| {
+            Some((
+                (idx as RawFileDesc).try_into().unwrap(),
+                slot.entry()?.file(),
+            ))
+        })
+    }
+}
+
+/// An unpublished descriptor in its original file table.
+///
+/// The reservation holds no lock or thread-local borrow across file creation, blocking IO,
+/// or user-memory access. An error releases precisely this slot; successful installation
+/// publishes the file with its final FD flags in one file-table critical section.
+#[must_use = "dropping an unused reservation releases its descriptor"]
+pub(crate) struct FileDescReservation {
+    file_table: RwArc<FileTable>,
+    fd: Option<FileDesc>,
+}
+
+impl FileDescReservation {
+    pub(crate) fn fd(&self) -> FileDesc {
+        self.fd.unwrap()
+    }
+
+    pub(crate) fn install(mut self, file: Arc<dyn FileLike>) -> FileDesc {
+        let fd = self.fd.take().unwrap();
+        let mut locked = self.file_table.write();
+        let slot = locked.table.get_mut(fd.into()).unwrap();
+        let FileTableSlot::Reserved(flags) = slot else {
+            unreachable!("an FD reservation must own an unpublished slot");
+        };
+        *slot = FileTableSlot::File(FileTableEntry::new(file, *flags));
+        fd
+    }
+}
+
+impl Drop for FileDescReservation {
+    fn drop(&mut self) {
+        if let Some(fd) = self.fd.take() {
+            let mut locked = self.file_table.write();
+            debug_assert!(matches!(
+                locked.table.get(fd.into()),
+                Some(FileTableSlot::Reserved(_))
+            ));
+            locked.table.remove(fd.into());
+        }
     }
 }
 

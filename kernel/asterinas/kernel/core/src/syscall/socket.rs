@@ -2,7 +2,10 @@
 
 use super::SyscallReturn;
 use crate::{
-    fs::file::{FileLike, file_table::FdFlags},
+    fs::file::{
+        FileLike,
+        file_table::{FdFlags, FileTable},
+    },
     net::socket::{
         ip::{DatagramSocket, IpAddressFamily, StreamSocket},
         netlink::{
@@ -98,16 +101,12 @@ pub(super) fn sys_socket(
         _ => return_errno_with_message!(Errno::EAFNOSUPPORT, "unsupported domain"),
     };
 
-    let fd = {
-        let file_table = ctx.thread_local.borrow_file_table();
-        let mut file_table_locked = file_table.unwrap().write();
-        let fd_flags = if sock_flags.contains(SockFlags::SOCK_CLOEXEC) {
-            FdFlags::CLOEXEC
-        } else {
-            FdFlags::empty()
-        };
-        file_table_locked.insert(file_like, fd_flags)
+    let fd_flags = if sock_flags.contains(SockFlags::SOCK_CLOEXEC) {
+        FdFlags::CLOEXEC
+    } else {
+        FdFlags::empty()
     };
+    let fd = FileTable::reserve_fd(ctx, fd_flags)?.install(file_like);
 
     Ok(SyscallReturn::Return(fd.into()))
 }

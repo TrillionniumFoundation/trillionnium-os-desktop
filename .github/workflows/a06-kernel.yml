@@ -20,6 +20,7 @@ on:
       - "tests/kernel/control/**"
       - "tests/organ_backend/**"
       - "tests/workloads/linux/**"
+      - "tests/integration/hepta/run_original_agentd.py"
       - ".github/workflows/a06-kernel.yml"
   push:
     branches: [main]
@@ -39,6 +40,7 @@ on:
       - "tests/kernel/control/**"
       - "tests/organ_backend/**"
       - "tests/workloads/linux/**"
+      - "tests/integration/hepta/run_original_agentd.py"
       - ".github/workflows/a06-kernel.yml"
   workflow_dispatch:
 
@@ -147,6 +149,29 @@ jobs:
               raise SystemExit('Linux SCM_RIGHTS reference is incomplete or differs')
           PY
 
+      - name: Freeze one RLIMIT_NOFILE probe and verify all 37 cases on original Linux
+        shell: bash
+        run: |
+          set -euo pipefail
+          out="${RUNNER_TEMP}/a04-nofile-build"
+          mkdir "$out"
+          python3 -I -B -m unittest discover -s tests/workloads/linux -p 'test_rlimit_nofile_guest.py' -v \
+            > "$out/runner-tests.log" 2>&1
+          python3 -I -B -O -m unittest discover -s tests/workloads/linux -p 'test_rlimit_nofile_guest.py' -v \
+            > "$out/runner-tests-optimized.log" 2>&1
+          cc --version > "$out/compiler-version.txt"
+          uname -a > "$out/linux-version.txt"
+          cc -O2 -std=c11 -Wall -Wextra -Werror -static -pthread \
+            tests/workloads/linux/rlimit_nofile_probe.c -o "$out/probe.elf" \
+            > "$out/compile.log" 2>&1
+          sha256sum tests/workloads/linux/rlimit_nofile_probe.c "$out/probe.elf" > "$out/inputs.sha256"
+          sha256sum "$out/probe.elf" > "$out/probe.sha256"
+          probe_sha=$(cut -d' ' -f1 "$out/probe.sha256")
+          python3 -I -B tests/workloads/linux/run_rlimit_nofile_guest.py reference \
+            --probe-elf "$out/probe.elf" --expected-probe-sha256 "$probe_sha" \
+            --output "${RUNNER_TEMP}/a04-nofile-linux"
+          sha256sum --check "$out/probe.sha256"
+
       - name: Build ordinary G1 product and verify QueryAbi with all four disabled operations
         shell: bash
         run: |
@@ -173,6 +198,23 @@ jobs:
             --probe-elf "$probe" --expected-probe-sha256 "$probe_sha" \
             --a01-initramfs support/build/evidence/2026-10-16/artifacts/initramfs.cpio.gz \
             --output "${RUNNER_TEMP}/a04-scm-guest"
+
+      - name: Verify the same RLIMIT_NOFILE ELF on the exact ordinary kernel
+        shell: bash
+        run: |
+          set -euo pipefail
+          # The reference executes a private copy and records its actual exit.
+          # The guest consumes that validated copy and the original frozen hash.
+          sha256sum --check "${RUNNER_TEMP}/a04-nofile-build/probe.sha256"
+          probe_sha=$(cut -d' ' -f1 "${RUNNER_TEMP}/a04-nofile-build/probe.sha256")
+          python3 -I -B tests/workloads/linux/run_rlimit_nofile_guest.py guest \
+            --linux-reference "${RUNNER_TEMP}/a04-nofile-linux" \
+            --expected-probe-sha256 "$probe_sha" \
+            --product-evidence "${RUNNER_TEMP}/a06-queryabi-candidate" \
+            --expected-source-head "$(git rev-parse HEAD)" \
+            --expected-source-tree "$(git rev-parse HEAD^{tree})" \
+            --a01-initramfs support/build/evidence/2026-10-16/artifacts/initramfs.cpio.gz \
+            --output "${RUNNER_TEMP}/a04-nofile-guest"
 
       - name: Verify local CPU settlement with fixed ordinary-kernel timing criteria
         shell: bash
@@ -243,6 +285,9 @@ jobs:
             ${{ runner.temp }}/a06-queryabi-candidate
             ${{ runner.temp }}/a04-scm-linux
             ${{ runner.temp }}/a04-scm-guest
+            ${{ runner.temp }}/a04-nofile-build
+            ${{ runner.temp }}/a04-nofile-linux
+            ${{ runner.temp }}/a04-nofile-guest
             ${{ runner.temp }}/a06-cpu-config-*
             ${{ runner.temp }}/a06-kernel-build
             ${{ runner.temp }}/a06-probe-1vcpu

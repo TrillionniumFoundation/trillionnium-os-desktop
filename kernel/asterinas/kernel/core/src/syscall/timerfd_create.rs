@@ -2,7 +2,7 @@
 
 use super::{ClockId, SyscallReturn};
 use crate::{
-    fs::file::file_table::FdFlags,
+    fs::file::file_table::{FdFlags, FileTable},
     prelude::*,
     time::{
         clockid_t,
@@ -23,16 +23,12 @@ pub(super) fn sys_timerfd_create(
 
     let timerfd_file = TimerfdFile::new(clock_id, flags, ctx)?;
 
-    let fd = {
-        let file_table = ctx.thread_local.borrow_file_table();
-        let mut file_table_locked = file_table.unwrap().write();
-        let fd_flags = if flags.contains(TFDFlags::TFD_CLOEXEC) {
-            FdFlags::CLOEXEC
-        } else {
-            FdFlags::empty()
-        };
-        file_table_locked.insert(Arc::new(timerfd_file), fd_flags)
+    let fd_flags = if flags.contains(TFDFlags::TFD_CLOEXEC) {
+        FdFlags::CLOEXEC
+    } else {
+        FdFlags::empty()
     };
+    let fd = FileTable::reserve_fd(ctx, fd_flags)?.install(Arc::new(timerfd_file));
 
     Ok(SyscallReturn::Return(fd.into()))
 }

@@ -3,11 +3,7 @@
 use bitflags::bitflags;
 
 use super::SyscallReturn;
-use crate::{
-    fs::file::file_table::{FdFlags, RawFileDesc},
-    prelude::*,
-    process::ContextUnshareAdminApi,
-};
+use crate::{fs::file::file_table::RawFileDesc, prelude::*, process::ContextUnshareAdminApi};
 
 bitflags! {
     struct CloseRangeFlags: u32 {
@@ -86,9 +82,7 @@ pub(super) fn sys_close_range(
             let fd = fd.cast_signed().try_into().unwrap();
 
             if flags.contains(CloseRangeFlags::CLOEXEC) {
-                if let Ok(entry) = file_table_locked.get_entry_mut(fd) {
-                    entry.set_flags(entry.flags() | FdFlags::CLOEXEC);
-                }
+                file_table_locked.mark_close_on_exec(fd);
             } else if let Some(file) = file_table_locked.close_file(fd) {
                 files_to_drop.push(file);
             }

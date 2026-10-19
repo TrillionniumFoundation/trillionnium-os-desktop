@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use crate::{
-    fs::file::file_table::{FdFlags, RawFileDesc, get_file_fast},
+    fs::file::file_table::{FdFlags, FileTable, RawFileDesc, get_file_fast},
     prelude::*,
     process::{
         PidFile,
@@ -25,8 +25,10 @@ pub(super) fn sys_pidfd_getfd(
         pidfd, targetfd, flags
     );
 
-    let mut file_table = ctx.thread_local.borrow_file_table_mut();
-    let file = get_file_fast!(&mut file_table, pidfd.try_into()?);
+    let file = {
+        let mut file_table = ctx.thread_local.borrow_file_table_mut();
+        get_file_fast!(&mut file_table, pidfd.try_into()?).into_owned()
+    };
     let Some(pid_file) = file.downcast_ref::<PidFile>() else {
         return_errno_with_message!(Errno::EBADF, "the file is not a PID file");
     };
@@ -55,10 +57,7 @@ pub(super) fn sys_pidfd_getfd(
         .clone();
 
     // Duplicate the file descriptor into the caller's file descriptor table.
-    let new_fd = {
-        let mut file_table_locked = file_table.unwrap().write();
-        file_table_locked.insert(target_file, FdFlags::CLOEXEC)
-    };
+    let new_fd = FileTable::reserve_fd(ctx, FdFlags::CLOEXEC)?.install(target_file);
 
     Ok(SyscallReturn::Return(new_fd.into()))
 }

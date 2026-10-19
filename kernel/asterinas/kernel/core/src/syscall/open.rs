@@ -7,7 +7,7 @@ use crate::{
         file::{
             AccessMode, CreationFlags, FileLike, InodeHandle, InodeMode, InodeType, OpenArgs,
             StatusFlags,
-            file_table::{FdFlags, RawFileDesc},
+            file_table::{FdFlags, FileTable, RawFileDesc},
         },
         vfs::{
             inode::HardLinkability,
@@ -31,37 +31,29 @@ pub(super) fn sys_openat(
         dirfd, path, flags, mode
     );
 
+    let mask_mode = mode & !ctx.thread_local.borrow_fs().umask().get();
+    let open_args = OpenArgs::from_flags_and_mode(flags, InodeMode::from_bits_truncate(mask_mode))?;
+    let fd_flags = if open_args.creation_flags.contains(CreationFlags::O_CLOEXEC) {
+        FdFlags::CLOEXEC
+    } else {
+        FdFlags::empty()
+    };
+    // Exhaustion must be detected before O_CREAT/O_TRUNC or a blocking device open.
+    let reserved = FileTable::reserve_fd(ctx, fd_flags)?;
+
     let file_handle = {
         let path = path.to_string_lossy();
         let fs_path = FsPath::from_fd_at(dirfd, path.as_ref(), EmptyPathStr::Reject)?;
 
         let fs_ref = ctx.thread_local.borrow_fs();
-        let mask_mode = mode & !fs_ref.umask().get();
-
         let path_resolver = fs_ref.resolver().read();
-        do_open(
-            &path_resolver,
-            &fs_path,
-            flags,
-            InodeMode::from_bits_truncate(mask_mode),
-        )
-        .map_err(|err| match err.error() {
+        do_open(&path_resolver, &fs_path, open_args).map_err(|err| match err.error() {
             Errno::EINTR => Error::new(Errno::ERESTARTSYS),
             _ => err,
         })?
     };
 
-    let fd = {
-        let file_table = ctx.thread_local.borrow_file_table();
-        let mut file_table_locked = file_table.unwrap().write();
-        let fd_flags =
-            if CreationFlags::from_bits_truncate(flags).contains(CreationFlags::O_CLOEXEC) {
-                FdFlags::CLOEXEC
-            } else {
-                FdFlags::empty()
-            };
-        file_table_locked.insert(file_handle.clone(), fd_flags)
-    };
+    let fd = reserved.install(file_handle.clone());
     fs::vfs::notify::on_open(file_handle.common());
     Ok(SyscallReturn::Return(fd.into()))
 }
@@ -84,11 +76,8 @@ pub(super) fn sys_creat(path_addr: Vaddr, mode: u16, ctx: &Context) -> Result<Sy
 fn do_open(
     path_resolver: &PathResolver,
     fs_path: &FsPath,
-    flags: u32,
-    mode: InodeMode,
+    open_args: OpenArgs,
 ) -> Result<Arc<dyn FileLike>> {
-    let open_args = OpenArgs::from_flags_and_mode(flags, mode)?;
-
     if open_args.is_tmpfile() {
         return do_open_tmpfile(path_resolver, fs_path, &open_args);
     }
