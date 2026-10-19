@@ -43,7 +43,7 @@
 
 | 故障 / 边界 | R9 实际观测与后续资格 |
 | --- | --- |
-| 完整发送后丢响应 | 原协议 qualification harness 丢弃响应，随后准确原请求查到 publication，未重投；没有执行 `hepta-submit` CLI 丢回复故障。 |
+| 完整发送后丢响应 | 原协议 qualification harness 丢弃响应，随后准确原请求查到 publication，未重投；本 history 运行没有执行 `hepta-submit` CLI 丢回复故障；下方独立 CLI 被杀回归保持它自己的 scripted-peer 来源。 |
 | 持久发布后提交返回错误 | 真实 `hepta-submit` 返回 `submit_unknown / objective_owner_request_rejected`，同请求查到第 4 条 compiled publication，`RunStatus: null`。`CapacityExceeded` 是固定源码/默认容量推论，具体原始错误字节未观测。 |
 | 原 owner 受控重启，RunStatus 返回 null | retained anchor 覆盖原 publication，历史仍可查询；不恢复历史 run，也不伪造“未受理”。本轮三次受控重启不等于 crash/power-loss 资格。 |
 | journal 回滚、尾部截断、错误或过早 anchor、原签名变更 | 对应 `anchor_missing`、`anchor_mismatch`、`publication_outside_anchor` 或 `no_matching_publication` 均保持 unknown；原始与故障字节、摘要和原 owner 恢复结果归档。 |
@@ -51,6 +51,7 @@
 
 **后续实现与完成判定：**接入生产请求 owner 对准确原信封、身份、anchor 及覆盖范围的持久保存；Session/Shell 增加“提交结果未知”“历史已发布”“效果待核对”“已确认效果”的安全投影，只有对应 owner 的完整、匹配且新鲜的证据能推进状态。效果恢复通过原 Operations owner 读取旧 `K=(scope_id,operation_id)`，接替时沿 `adopt_unsettled_generation` fence 旧 writer，再用目的端独立证据结算；`NotSeen`、历史丢失、超时、当前 cap 恰好相同均不能生成 `NotApplied`。真实效果存储提交、写入中途 crash/reopen 与旧 K 接替仍需各自可复跑的收据，不能用本轮历史查询通过代替；观察权限不成为执行或重试权限，恢复者不新建 K、不盲重发、不清除未知。
 
+**R9 已完成的有界增量：**[真实 CLI 进程丢失回归](../../results/integration/2026-10-18-runtime-process-boundaries/hepta-cli/README.md) 新增两个实际 `hepta-submit` SIGKILL/reap 用例：调用方持有 EOF 时终止，以及 peer 已读取完整原帧、尚未回复时终止。用 channel 握手固定故障点，保留准确原输入，断言没有输出回执、第二帧或自动重连。前者的独立 fixture 可证明当次没有连接，后者证明完整发送而结果未知；调用方仅看到 CLI 无输出时不能据此合成 `NotSent` 或 `NotApplied`。完整 feature suite 43 项通过，新增两项已包含其中。该 CLI 丢失实验本身未实现首次发送前的产品持久保存或 durable reconciliation；原 owner `2be` 在线查询已经由上方独立原版运行验证，生产请求/anchor 保存、UI 投影和效果核对仍按 S1/S2 判据推进。
 
 ## S3：从原 authority/Operations 接到一个受限 OS adapter
 

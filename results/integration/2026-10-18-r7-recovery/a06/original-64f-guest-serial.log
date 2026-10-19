@@ -1,0 +1,199 @@
+c[?7l[2J[0mSeaBIOS (version 1.16.3-debian-1.16.3-2)
+Booting from ROM..
+[ktest runner] running 520 tests in 16 crates
+
+[ktest runner] skipping crate "aster-bigtcp".
+
+[ktest runner] skipping crate "aster-cmdline".
+
+running 157 tests in crate "aster-core"
+
+test aster_core::events::event_file::tests::event_file_read_consumes_counter ... [32mok[39m
+test aster_core::events::event_file::tests::event_file_respects_semaphore_mode ... [32mok[39m
+test aster_core::events::event_file::tests::event_file_signal_consume_and_poll ... [32mok[39m
+test aster_core::events::event_file::tests::kernel_event_file_rejects_non_eventfd ... [32mok[39m
+test aster_core::events::event_file::tests::event_file_reports_kernel_signal_overflow ... [32mok[39m
+test aster_core::events::event_file::tests::kernel_event_file_owns_state_after_file_drop ... [32mok[39m
+test aster_core::fs::file::inode_attr::mode::test::mkmod_and_chmod ... [32mok[39m
+test aster_core::fs::fs_impls::cgroupfs::cgroup_ns::tests::virtualize_cgroup_path_for_sibling ... [32mok[39m
+test aster_core::fs::fs_impls::cgroupfs::cgroup_ns::tests::virtualize_cgroup_path_for_ancestor ... [32mok[39m
+test aster_core::fs::fs_impls::cgroupfs::cgroup_ns::tests::virtualize_cgroup_path_for_same_node ... [32mok[39m
+test aster_core::fs::fs_impls::cgroupfs::cgroup_ns::tests::virtualize_cgroup_path_for_descendant ... [32mok[39m
+test aster_core::fs::fs_impls::cgroupfs::controller::cpu::final_debit_regressions::live_sibling_migration_charges_actual_destination ... [32mok[39m
+test aster_core::fs::fs_impls::cgroupfs::controller::cpu::final_debit_regressions::live_root_migration_charges_root_without_old_leaf_debt ... [32mok[39m
+test aster_core::fs::fs_impls::cgroupfs::controller::cpu::final_debit_regressions::unreaped_zombie_debits_retained_leaf_and_ancestor_debt ... [32mok[39m
+test aster_core::fs::fs_impls::cgroupfs::controller::cpu::final_debit_regressions::destroyed_process_debits_retained_task_before_lease_release ... [32mok[39m
+test aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::unused_budget_must_not_accumulate_as_credit ... [32mok[39m
+test aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::overrun_must_carry_then_repay_without_refill ... [32mok[39m
+test aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::reconfiguration_in_same_window_must_not_refill ... [32mok[39m
+test aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::idle_skipped_periods_never_subsidize_late_burst ... [32mok[39m
+test aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::skipped_periods_pay_down_debt_but_never_mint_credit ... [32mok[39m
+test aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::cpu_stat_projection_must_not_close_unsettled_quota_window ... [32mok[39m
+test aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::cpu_stat_projection_cannot_rewind_accounting_or_mint_credit ... [32mok[39m
+test aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::earlier_clock_value_cannot_reopen_or_refill_previous_period ... [32mok[39m
+test aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::charging_500_intervals_matches_simple_period_by_period_reference ... [32mok[39m
+test aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::crossing_splits_already_charged_and_new_cpu_without_double_count ... [32mok[39m
+test aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::scheduler_runtime_crossing_tick_window_keeps_previous_cpu_charge ... [32mok[39m
+test aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::long_continuous_interval_has_constant_time_bounded_debt_accounting ... [32mok[39m
+test aster_core::fs::fs_impls::configfs::test::config_fs ... [32mok[39m
+test aster_core::fs::fs_impls::devtmpfs::tests::delete_node_keeps_unmarked_node ... [32mok[39m
+test aster_core::fs::fs_impls::devtmpfs::tests::delete_node_keeps_device_id_mismatch ... [32mok[39m
+test aster_core::fs::fs_impls::devtmpfs::tests::delete_node_keeps_nonempty_parent_dir ... [32mok[39m
+test aster_core::fs::fs_impls::devtmpfs::tests::create_node_marks_ancestor_dirs_and_device_node ... [32mok[39m
+test aster_core::fs::fs_impls::ext2::fs::test::persist_and_reload_inode ... [32mok[39m
+test aster_core::fs::fs_impls::ext2::fs::test::stat_minixdf_reports_total ... [32mok[39m
+test aster_core::fs::fs_impls::ext2::fs::test::stat_bsddf_subtracts_overhead ... [32mok[39m
+test aster_core::fs::fs_impls::ext2::fs::test::load_group_descs_valid_image_ok ... [32mok[39m
+test aster_core::fs::fs_impls::ext2::fs::test::load_block_bitmap_valid_image_ok ... [32mok[39m
+test aster_core::fs::fs_impls::ext2::fs::test::block_alloc_and_free_single_group_ok ... [32mok[39m
+test aster_core::fs::fs_impls::ext2::fs::test::inode_alloc_and_free_single_group_ok ... [32mok[39m
+test aster_core::fs::fs_impls::ext2::fs::test::sync_metadata_writes_primary_and_backup ... [32mok[39m
+test aster_core::fs::fs_impls::ext2::fs::test::block_alloc_and_free_invalid_returns_err ... [32mok[39m
+test aster_core::fs::fs_impls::ext2::fs::test::inode_alloc_and_free_invalid_returns_err ... [32mok[39m
+test aster_core::fs::fs_impls::ext2::inode::block_manager::block_ptr_tree::test::approx_hole_blocks_scans ... [32mok[39m
+test aster_core::fs::fs_impls::ext2::inode::block_manager::block_ptr_tree::test::block_alloc_direct_range_ok ... [32mok[39m
+test aster_core::fs::fs_impls::ext2::inode::block_manager::block_ptr_tree::test::block_alloc_indirect_range_ok ... [32mok[39m
+test aster_core::fs::fs_impls::ext2::inode::block_manager::block_ptr_tree::test::truncate_indirect_frees_shared_path ... [32mok[39m
+test aster_core::fs::fs_impls::ext2::inode::block_manager::block_ptr_tree::test::block_ptr_tree_direct_and_indirect_ok ... [32mok[39m
+test aster_core::fs::fs_impls::ext2::inode::block_manager::block_ptr_tree::test::truncate_releases_all_indirect_blocks ... [32mok[39m
+test aster_core::fs::fs_impls::ext2::inode::block_manager::block_ptr_tree::test::block_ptr_tree_out_of_range_iblock_returns_err ... [32mok[39m
+test aster_core::fs::fs_impls::ext2::inode::block_manager::block_ptr_tree::test::free_block_subtree_recursively_releases_blocks ... [32mok[39m
+test aster_core::fs::fs_impls::ext2::inode::block_manager::block_ptr_tree::test::block_ptr_tree_get_block_range_returns_contiguous_runs ... [32mok[39m
+test aster_core::fs::fs_impls::ext2::inode::dir::dir_entry::test::min_rec_len_ok ... [32mok[39m
+test aster_core::fs::fs_impls::ext2::inode::dir::dir_entry::test::iter_valid_entries_ok ... [32mok[39m
+test aster_core::fs::fs_impls::ext2::inode::dir::dir_entry::test::iter_bad_entry_returns_eio ... [32mok[39m
+test aster_core::fs::fs_impls::ext2::inode::dir::dir_entry::test::min_rec_len_boundary_values ... [32mok[39m
+test aster_core::fs::fs_impls::ext2::inode::dir::dir_entry::test::iter_all_zero_block_returns_eio ... [32mok[39m
+test aster_core::fs::fs_impls::ext2::inode::dir::dir_entry::test::iter_deleted_entry_yields_empty_name ... [32mok[39m
+test aster_core::fs::fs_impls::ext2::inode::dir::test::unlink_last_link_deallocates_on_drop ... [32mok[39m
+test aster_core::fs::fs_impls::ext2::inode::file::test::file_write_enospc_rollback ... [32mok[39m
+test aster_core::fs::fs_impls::ext2::inode::file::test::file_sparse_buffered_write_preserves_mmap_dirty_tail ... [32mok[39m
+test aster_core::fs::fs_impls::ext2::inode::file::test::falloc_allocate_returns_enospc_after_consuming_blocks ... [32mok[39m
+test aster_core::fs::fs_impls::ext2::inode::io_range::test::io_range_iter_yields_mapped_and_holes ... [32mok[39m
+test aster_core::fs::fs_impls::ext2::super_block::test::sparse_super_backup_groups ... [32mok[39m
+test aster_core::fs::fs_impls::ext2::super_block::test::max_file_size_matches_ext2_4k_limit ... [32mok[39m
+test aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_valueless_keys ... [32mok[39m
+test aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_volatile_alias ... [32mok[39m
+test aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_new_key_conflicts ... [32mok[39m
+test aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_requires_lowerdir ... [32mok[39m
+test aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_bool_option_domains ... [32mok[39m
+test aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_lowerdir_layer_list ... [32mok[39m
+test aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_redirect_dir_domain ... [32mok[39m
+test aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_lowerdir_plus_append ... [32mok[39m
+test aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_override_creds_forms ... [32mok[39m
+test aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_uuid_and_xino_values ... [32mok[39m
+test aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_datadir_plus_rejected ... [32mok[39m
+test aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_rejects_duplicate_keys ... [32mok[39m
+test aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_literal_value_semantics ... [32mok[39m
+test aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_rejects_bare_valued_keys ... [32mok[39m
+test aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_upperdir_workdir_pairing ... [32mok[39m
+test aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_verity_and_fsync_domains ... [32mok[39m
+test aster_core::fs::fs_impls::overlayfs::inode::identity::test::xino_encodes_fsid_in_high_bits ... [32mok[39m
+test aster_core::fs::fs_impls::overlayfs::inode::identity::test::fallback_ino_allocates_from_one ... [32mok[39m
+test aster_core::fs::fs_impls::overlayfs::inode::identity::test::origin_record_resolves_to_layer ... [32mok[39m
+test aster_core::fs::fs_impls::overlayfs::inode::identity::test::xino_on_forces_encoding_on_same_fs ... [32mok[39m
+test aster_core::fs::fs_impls::overlayfs::inode::identity::test::xino_off_or_overflow_takes_fallback ... [32mok[39m
+test aster_core::fs::fs_impls::overlayfs::inode::identity::test::layer_table_resolves_persistent_names ... [32mok[39m
+test aster_core::fs::fs_impls::overlayfs::inode::identity::test::origin_record_decode_rejects_malformed ... [32mok[39m
+test aster_core::fs::fs_impls::overlayfs::inode::identity::test::identity_mode_resolves_from_mount_facts ... [32mok[39m
+test aster_core::fs::fs_impls::overlayfs::inode::identity::test::origin_record_roundtrip_preserves_identity ... [32mok[39m
+test aster_core::fs::fs_impls::procfs::uptime::tests::uptime_centiseconds_are_truncated ... [32mok[39m
+test aster_core::fs::fs_impls::sysfs::test::read_attr ... [32mok[39m
+test aster_core::fs::fs_impls::sysfs::test::read_link ... [32mok[39m
+test aster_core::fs::fs_impls::sysfs::test::write_attr ... [32mok[39m
+test aster_core::fs::fs_impls::sysfs::test::leaf_lookup ... [32mok[39m
+test aster_core::fs::fs_impls::sysfs::test::root_lookup ... [32mok[39m
+test aster_core::fs::fs_impls::sysfs::test::readdir_leaf ... [32mok[39m
+test aster_core::fs::fs_impls::sysfs::test::branch_lookup ... [32mok[39m
+test aster_core::fs::fs_impls::sysfs::test::mode_permissions ... [32mok[39m
+test aster_core::fs::fs_impls::sysfs::test::cached_child_lookup_observes_tree_changes ... [32mok[39m
+test aster_core::fs::fs_impls::sysfs::test::cached_attr_lookup_observes_snapshot_changes ... [32mok[39m
+test aster_core::fs::fs_impls::sysfs::test::cached_attr_lookup_observes_permission_changes ... [32mok[39m
+test aster_core::fs::pipe::common::test::read_empty ... [32mok[39m
+test aster_core::fs::pipe::common::test::write_full ... [32mok[39m
+test aster_core::fs::pipe::common::test::read_closed ... [32mok[39m
+test aster_core::fs::pipe::common::test::write_closed ... [32mok[39m
+test aster_core::fs::pipe::common::test::write_atomicity ... [32mok[39m
+test aster_core::fs::utils::id_bitmap::test::bitmap_alloc_out_of_bounds ... [32mok[39m
+test aster_core::fs::vfs::path::resolver::test::path_split_basename ... [32mok[39m
+test aster_core::fs::vfs::path::resolver::test::fs_path_from_fd_at_policy_matrix ... [32mok[39m
+test aster_core::fs::vfs::path::resolver::test::fs_path_from_fd_at_rejects_too_long ... [32mok[39m
+test aster_core::net::socket::netlink::kobject_uevent::message::test::uuid ... [32mok[39m
+test aster_core::net::socket::netlink::kobject_uevent::message::test::synthetic_uevent ... [32mok[39m
+test aster_core::net::socket::netlink::kobject_uevent::message::test::multicast_synthetic_uevent ... [32mok[39m
+test aster_core::process::program_loader::shebang::test::parse_shebang_line_with_multiple_args ... [32mok[39m
+test aster_core::process::signal::pause::test::waiter_pause ... [32mok[39m
+test aster_core::process::signal::poll::test::notify_after ... [32mok[39m
+test aster_core::process::signal::poll::test::notify_before ... [32mok[39m
+test aster_core::process::signal::poll::test::notify_middle ... [32mok[39m
+test aster_core::process::signal::poll::test::nested_notify_before ... [32mok[39m
+test aster_core::process::signal::poll::test::nested_notify_inside ... [32mok[39m
+test aster_core::process::signal::poll::test::nested_notify_between ... [32mok[39m
+test aster_core::process::sync::condvar::test::wait ... [32mok[39m
+test aster_core::process::sync::condvar::test::wait_while ... [32mok[39m
+test aster_core::process::sync::condvar::test::wait_timeout ... [32mok[39m
+test aster_core::process::sync::condvar::test::wait_timeout_while ... [32mok[39m
+test aster_core::syscall::sysinfo::tests::as_secs_round_up ... [32mok[39m
+test aster_core::thread::kernel_thread::tests::unmapped_vmar_access_returns_page_fault ... [32mok[39m
+test aster_core::thread::kernel_thread::tests::associated_vmar_is_reactivated_after_context_switch ... [32mok[39m
+test aster_core::thread::softirqd::test::softirq_and_softirqd ... [32mok[39m
+test aster_core::util::ioctl::test::invalid ... [32mok[39m
+test aster_core::util::ioctl::test::eviocgbit ... [32mok[39m
+test aster_core::util::ioctl::test::tiocsctty ... [32mok[39m
+test aster_core::util::read_cstring::test::read_multiple_cstring ... [32mok[39m
+test aster_core::util::read_cstring::test::read_cstring_until_end ... [32mok[39m
+test aster_core::util::read_cstring::test::read_cstring_from_multiread ... [32mok[39m
+test aster_core::util::ring_buffer::test::rb_write_read_all_with_ext ... [32mok[39m
+test aster_core::util::ring_buffer::test::rb_write_read_one_with_ext ... [32mok[39m
+test aster_core::vm::page_cache::tests::delayed_io_completion ... [32mok[39m
+test aster_core::vm::page_cache::tests::concurrent_page_faults ... [32mok[39m
+test aster_core::vm::page_cache::tests::concurrent_read_and_write ... [32mok[39m
+test aster_core::vm::page_cache::tests::persistent_backend_errors ...ERROR: block: failed to do Read on the device with error status: IoError
+ERROR: block: failed to do Read on the device with error status: IoError
+ [32mok[39m
+test aster_core::vm::page_cache::tests::concurrent_write_and_evict ... [32mok[39m
+test aster_core::vm::page_cache::tests::concurrent_write_and_flush ... [32mok[39m
+test aster_core::vm::page_cache::tests::concurrent_commit_and_truncate ... [32mok[39m
+test aster_core::vm::page_cache::vmo::options::test::resize ... [32mok[39m
+test aster_core::vm::page_cache::vmo::options::test::alloc_vmo ... [32mok[39m
+test aster_core::vm::page_cache::vmo::options::test::write_and_read ... [32mok[39m
+test aster_core::vm::page_cache::vmo::options::test::alloc_continuous_vmo ... [32mok[39m
+test aster_core::vm::vmar::interval_set::tests::find ... [32mok[39m
+test aster_core::vm::vmar::interval_set::tests::iter ... [32mok[39m
+test aster_core::vm::vmar::interval_set::tests::take ... [32mok[39m
+test aster_core::vm::vmar::interval_set::tests::clear ... [32mok[39m
+test aster_core::vm::vmar::interval_set::tests::remove ... [32mok[39m
+test aster_core::vm::vmar::interval_set::tests::take_one ... [32mok[39m
+test aster_core::vm::vmar::interval_set::tests::insert_and_find_one ... [32mok[39m
+test aster_core::vm::vmar::vmar_impls::fork::test::cow_copy_pt_basic ... [32mok[39m
+test aster_core::vm::vmar::vmar_impls::fork::test::cow_copy_pt_iomem ... [32mok[39m
+
+test result: [32mok[39m. 157 passed; 0 failed; 0 filtered out.
+
+[ktest runner] skipping crate "aster-device".
+
+[ktest runner] skipping crate "aster-framebuffer".
+
+[ktest runner] skipping crate "aster-nvme".
+
+[ktest runner] skipping crate "aster-softirq".
+
+[ktest runner] skipping crate "aster-systree".
+
+[ktest runner] skipping crate "aster-util".
+
+[ktest runner] skipping crate "dma-pool".
+
+[ktest runner] skipping crate "osdk-frame-allocator".
+
+[ktest runner] skipping crate "osdk-heap-allocator".
+
+[ktest runner] skipping crate "osdk-test-kernel".
+
+[ktest runner] skipping crate "ostd".
+
+[ktest runner] skipping crate "ring-buffer".
+
+[ktest runner] skipping crate "xarray".
+
+[ktest runner] All crates tested.

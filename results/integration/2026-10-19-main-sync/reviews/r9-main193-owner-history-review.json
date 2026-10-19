@@ -1,0 +1,884 @@
+{
+  "schema": "a10.r9-main193-owner-history-source-review.v1",
+  "reviewed_at_utc": "2026-10-19T01:28:39.592981+00:00",
+  "reviewer": "/root/r6_shell_live",
+  "result": "read_only_source_review_complete",
+  "scope": {
+    "fixed_desktop_commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+    "fixed_desktop_tree": "731027391dd92f577d4baadd66a096640dec102f",
+    "separately_pinned_owner_commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+    "owner_tree": "f4ef891d43baf90d6eebd29921a5ed03222ef3ab",
+    "original_baseline_commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+    "product_changes": false,
+    "checkout_changes": false,
+    "builds": false,
+    "tests_executed": false,
+    "original_agentd_started": false,
+    "issuer_or_provider_created": false,
+    "pin_upgraded": false,
+    "new_guest_or_device_qualification": false,
+    "boundary": "This report establishes source paths, semantics and stated qualification limits. It is not a native execution receipt. PR193 CI at 46dcb2d is a separately assigned subsequent verification and is not transferred to aab50 or R9-sync."
+  },
+  "short_answers": [
+    {
+      "question": "Is this only a proposed contract or an actual original-owner extension?",
+      "answer": "Actual source implementation: the separately pinned original Hepta commit adds ObjectiveAdmission request/payload and AgentdClient::objective_admission, dispatches to the existing ObjectiveRuntimeHost, and exposes narrow read methods on its existing DurableRunStartJournal. f8 itself has neither the new wire variant nor this read method.",
+      "references": [
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "services/hepta-os/OBJECTIVE_HISTORY_CONTRACT.json",
+          "lines": [
+            1,
+            13
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/services/hepta-os/OBJECTIVE_HISTORY_CONTRACT.json#L1-L13"
+        },
+        {
+          "repository": "TrillionniumFoundation/hepta-private-ci",
+          "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+          "path": "codex-rs/hepta-agent-protocol/src/lib.rs",
+          "lines": [
+            578,
+            592
+          ],
+          "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5/codex-rs/hepta-agent-protocol/src/lib.rs#L578-L592"
+        },
+        {
+          "repository": "TrillionniumFoundation/hepta-private-ci",
+          "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+          "path": "codex-rs/hepta-agentd/src/client.rs",
+          "lines": [
+            161,
+            180
+          ],
+          "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5/codex-rs/hepta-agentd/src/client.rs#L161-L180"
+        },
+        {
+          "repository": "TrillionniumFoundation/hepta-private-ci",
+          "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+          "path": "codex-rs/hepta-agentd/src/state_control.rs",
+          "lines": [
+            214,
+            245
+          ],
+          "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5/codex-rs/hepta-agentd/src/state_control.rs#L214-L245"
+        }
+      ]
+    },
+    {
+      "question": "Which existing f8 owner is reused?",
+      "answer": "ObjectiveRuntimeHost.state: Mutex<ObjectiveHostState> owns the original DurableRunStartJournal and highest_sequences replay frontier. The extension locks that same state and compares the original RunStart authentication, canonical typed-body digest and configured profile; it does not create a desktop database or another owner. Existing f8 get/get_conflict/authentication_records are reused, with publication and verify_anchor newly added on the same journal.",
+      "references": [
+        {
+          "repository": "TrillionniumFoundation/hepta-private-ci",
+          "commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+          "path": "codex-rs/hepta-agentd/src/objective_runtime.rs",
+          "lines": [
+            63,
+            100
+          ],
+          "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-agentd/src/objective_runtime.rs#L63-L100"
+        },
+        {
+          "repository": "TrillionniumFoundation/hepta-private-ci",
+          "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+          "path": "codex-rs/hepta-agentd/src/objective_history.rs",
+          "lines": [
+            14,
+            149
+          ],
+          "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5/codex-rs/hepta-agentd/src/objective_history.rs#L14-L149"
+        },
+        {
+          "repository": "TrillionniumFoundation/hepta-private-ci",
+          "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+          "path": "codex-rs/hepta-learning-ledger/src/run_start_publication.rs",
+          "lines": [
+            18,
+            53
+          ],
+          "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5/codex-rs/hepta-learning-ledger/src/run_start_publication.rs#L18-L53"
+        },
+        {
+          "repository": "TrillionniumFoundation/hepta-private-ci",
+          "commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+          "path": "codex-rs/hepta-learning-ledger/src/run_start.rs",
+          "lines": [
+            415,
+            488
+          ],
+          "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-learning-ledger/src/run_start.rs#L415-L488"
+        }
+      ]
+    },
+    {
+      "question": "Does durable history require the owner to be stopped?",
+      "answer": "No for the new history query. It reads the running owner's already recovered, exclusively owned in-memory journal prefix under the owner mutex. Only storage-fault injection is constrained to a confirmed stopped disposable owner. Original startup recovery may truncate an incomplete tail; the query itself performs no open/recover/append/truncate or frontier update.",
+      "references": [
+        {
+          "repository": "TrillionniumFoundation/hepta-private-ci",
+          "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+          "path": "codex-rs/hepta-agentd/src/objective_history.rs",
+          "lines": [
+            14,
+            32
+          ],
+          "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5/codex-rs/hepta-agentd/src/objective_history.rs#L14-L32"
+        },
+        {
+          "repository": "TrillionniumFoundation/hepta-private-ci",
+          "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+          "path": "codex-rs/hepta-learning-ledger/src/run_start_publication.rs",
+          "lines": [
+            18,
+            53
+          ],
+          "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5/codex-rs/hepta-learning-ledger/src/run_start_publication.rs#L18-L53"
+        },
+        {
+          "repository": "TrillionniumFoundation/hepta-private-ci",
+          "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+          "path": "codex-rs/hepta-agentd/src/objective_runtime.rs",
+          "lines": [
+            424,
+            464
+          ],
+          "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5/codex-rs/hepta-agentd/src/objective_runtime.rs#L424-L464"
+        },
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "tests/integration/hepta/objective_history_probe.rs",
+          "lines": [
+            97,
+            138
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/tests/integration/hepta/objective_history_probe.rs#L97-L138"
+        },
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "tests/integration/hepta/objective_history_probe.rs",
+          "lines": [
+            161,
+            183
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/tests/integration/hepta/objective_history_probe.rs#L161-L183"
+        }
+      ]
+    },
+    {
+      "question": "Which part of S2 does this close?",
+      "answer": "It implements the previously missing online original-request to immutable RunStart publication read seam, with historical outcome and retained-anchor bounds separated from current RunStatus. It does not by itself close production request/anchor retention, reliable caller unknown-state handoff, safe Session/Shell history projection or K-to-effect-terminal reconciliation. Source implementation is not equivalent to completed runtime qualification.",
+      "references": [
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "docs/agents/R8_NEXT_SLICE.md",
+          "lines": [
+            34,
+            54
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/docs/agents/R8_NEXT_SLICE.md#L34-L54"
+        },
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "services/hepta-os/OBJECTIVE_HISTORY.md",
+          "lines": [
+            198,
+            202
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/services/hepta-os/OBJECTIVE_HISTORY.md#L198-L202"
+        }
+      ]
+    },
+    {
+      "question": "Does this make production issuer, HOS2 K↔D or G1 available?",
+      "answer": "No. The qualification fixture remains an isolated issuer; no production durable request owner, final-use grant provider or restricted effect adapter is installed. G1 remains a staged owner-seam plan. At fixed aab50 the actual ioctl still advertises only QueryAbi and rejects other known operations.",
+      "references": [
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "tests/integration/hepta/objective_history_probe.rs",
+          "lines": [
+            627,
+            638
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/tests/integration/hepta/objective_history_probe.rs#L627-L638"
+        },
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "docs/agents/R8_NEXT_SLICE.md",
+          "lines": [
+            21,
+            32
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/docs/agents/R8_NEXT_SLICE.md#L21-L32"
+        },
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "docs/agents/R8_NEXT_SLICE.md",
+          "lines": [
+            56,
+            77
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/docs/agents/R8_NEXT_SLICE.md#L56-L77"
+        },
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "docs/agents/R9_G1_OWNER_SEAM.md",
+          "lines": [
+            97,
+            117
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/docs/agents/R9_G1_OWNER_SEAM.md#L97-L117"
+        },
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs",
+          "lines": [
+            204,
+            225
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs#L204-L225"
+        }
+      ]
+    }
+  ],
+  "owner_route": [
+    {
+      "step": 1,
+      "component": "Trusted caller and retained original request",
+      "behavior": "Caller supplies exact original AuthBusObjectiveIngress plus separately trusted current endpoint AgentId/spawn/UID/PID/request ID. Optional anchor must be retained from an earlier trusted owner reply; it is not reconstructed from the file now being checked.",
+      "references": [
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "services/hepta-os/OBJECTIVE_HISTORY.md",
+          "lines": [
+            58,
+            96
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/services/hepta-os/OBJECTIVE_HISTORY.md#L58-L96"
+        },
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "services/hepta-os/src/bin/hepta-history.rs",
+          "lines": [
+            50,
+            94
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/services/hepta-os/src/bin/hepta-history.rs#L50-L94"
+        }
+      ]
+    },
+    {
+      "step": 2,
+      "component": "Dedicated default-off Rust history transport",
+      "behavior": "ObjectiveHistoryClient::query_once consumes itself; original JSON is preserved with RawValue, historical body spawn is not replaced by current outer spawn. It shares private bounded exchange_raw only. It classifies sent failures as Unknown and zero-query-byte failures as QueryNotSent, never as original non-admission.",
+      "references": [
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "services/hepta-os/Cargo.toml",
+          "lines": [
+            9,
+            15
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/services/hepta-os/Cargo.toml#L9-L15"
+        },
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "services/hepta-os/src/objective/history.rs",
+          "lines": [
+            192,
+            255
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/services/hepta-os/src/objective/history.rs#L192-L255"
+        },
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "services/hepta-os/src/objective/history_wire.rs",
+          "lines": [
+            33,
+            55
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/services/hepta-os/src/objective/history_wire.rs#L33-L55"
+        }
+      ]
+    },
+    {
+      "step": 3,
+      "component": "Original Agentd control wire and dispatch",
+      "behavior": "Schema 2 gains ObjectiveAdmission under its separate owner pin. The original response method first fences outer spawn against the current Agentd identity, then obtains the already configured objective_runtime. It advertises objective.admission.read when that owner exists; absence returns owner_unavailable.",
+      "references": [
+        {
+          "repository": "TrillionniumFoundation/hepta-private-ci",
+          "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+          "path": "codex-rs/hepta-agentd/src/state_control.rs",
+          "lines": [
+            45,
+            56
+          ],
+          "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5/codex-rs/hepta-agentd/src/state_control.rs#L45-L56"
+        },
+        {
+          "repository": "TrillionniumFoundation/hepta-private-ci",
+          "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+          "path": "codex-rs/hepta-agentd/src/state_control.rs",
+          "lines": [
+            126,
+            140
+          ],
+          "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5/codex-rs/hepta-agentd/src/state_control.rs#L126-L140"
+        },
+        {
+          "repository": "TrillionniumFoundation/hepta-private-ci",
+          "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+          "path": "codex-rs/hepta-agentd/src/state_control.rs",
+          "lines": [
+            238,
+            245
+          ],
+          "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5/codex-rs/hepta-agentd/src/state_control.rs#L238-L245"
+        }
+      ]
+    },
+    {
+      "step": 4,
+      "component": "Same original ObjectiveRuntimeHost and journal",
+      "behavior": "admission_history locks its existing state and calls read_publication. The owner reconstructs historical claims and canonical body digest, compares complete retained authentication including signature bytes and owner-derived scope, compares profile, then reads publication metadata and recorded disposition. No new authority authentication or submission is performed.",
+      "references": [
+        {
+          "repository": "TrillionniumFoundation/hepta-private-ci",
+          "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+          "path": "codex-rs/hepta-agentd/src/objective_runtime.rs",
+          "lines": [
+            55,
+            101
+          ],
+          "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5/codex-rs/hepta-agentd/src/objective_runtime.rs#L55-L101"
+        },
+        {
+          "repository": "TrillionniumFoundation/hepta-private-ci",
+          "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+          "path": "codex-rs/hepta-agentd/src/objective_history.rs",
+          "lines": [
+            14,
+            149
+          ],
+          "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5/codex-rs/hepta-agentd/src/objective_history.rs#L14-L149"
+        },
+        {
+          "repository": "TrillionniumFoundation/hepta-private-ci",
+          "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+          "path": "codex-rs/hepta-agentd/src/objective_runtime.rs",
+          "lines": [
+            345,
+            397
+          ],
+          "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5/codex-rs/hepta-agentd/src/objective_runtime.rs#L345-L397"
+        }
+      ]
+    },
+    {
+      "step": 5,
+      "component": "Original in-memory durable-prefix read",
+      "behavior": "publication reads by_run/records and verify_anchor checks the retained sequence and chain against records. Both reject poisoned state. They do not access the underlying file. Current-owner memory does not detect in-flight disk tampering; a independently retained external anchor can detect a missing/changed covered prefix after startup recovery.",
+      "references": [
+        {
+          "repository": "TrillionniumFoundation/hepta-private-ci",
+          "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+          "path": "codex-rs/hepta-learning-ledger/src/run_start_publication.rs",
+          "lines": [
+            18,
+            53
+          ],
+          "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5/codex-rs/hepta-learning-ledger/src/run_start_publication.rs#L18-L53"
+        },
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "services/hepta-os/OBJECTIVE_HISTORY.md",
+          "lines": [
+            77,
+            96
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/services/hepta-os/OBJECTIVE_HISTORY.md#L77-L96"
+        }
+      ]
+    },
+    {
+      "step": 6,
+      "component": "Narrow returned publication",
+      "behavior": "Client checks exact original identity, current outer identity/generation range, nonzero bounded sequence, digest shapes, anchor upper bound and same-sequence chain. It does not independently recompute signature/body/publication/chain. Output omits original source/signature/socket path. Historical compiled is not admission success or device completion; conflict and explicit abstain remain distinct.",
+      "references": [
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "services/hepta-os/src/objective/history_wire.rs",
+          "lines": [
+            86,
+            166
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/services/hepta-os/src/objective/history_wire.rs#L86-L166"
+        },
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "services/hepta-os/src/bin/hepta-history.rs",
+          "lines": [
+            97,
+            138
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/services/hepta-os/src/bin/hepta-history.rs#L97-L138"
+        },
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "services/hepta-os/OBJECTIVE_HISTORY.md",
+          "lines": [
+            41,
+            56
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/services/hepta-os/OBJECTIVE_HISTORY.md#L41-L56"
+        }
+      ]
+    }
+  ],
+  "uncertainty_and_identity": {
+    "run_status_null": "The current in-memory projection can be null after restart or after publication followed by a later rejection. It cannot establish that the original request was never durably published.",
+    "query_not_sent": "Only this read query sent zero bytes; it does not reclassify the old ObjectiveStart.",
+    "unknown": "Missing/wrong anchor, no matching publication, expired/corrupt transport or absent current owner preserves original uncertainty; no automatic reissue, new run ID or retry is authorized.",
+    "historical_expiry_and_revocation": "The stored authentication must exactly match. Old expiry or later issuer revocation does not erase an already published record. New ObjectiveStart still goes through current trust/readiness/expiry/spawn checks.",
+    "restart_binding": "The original body spawn stays old; current outer spawn and peer PID are newly supplied by the trusted launcher. Querying with the old outer identity is fenced. The extension does not attach history to a replacement Session or render it in Shell.",
+    "storage_limit": "Without retained anchor the result is only current owner journal observation. Co-rollback of journal and caller anchor, and running-disk tamper detection, are outside this mechanism.",
+    "references": [
+      {
+        "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+        "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+        "path": "services/hepta-os/OBJECTIVE_HISTORY.md",
+        "lines": [
+          41,
+          96
+        ],
+        "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/services/hepta-os/OBJECTIVE_HISTORY.md#L41-L96"
+      },
+      {
+        "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+        "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+        "path": "services/hepta-os/src/objective/history_wire.rs",
+        "lines": [
+          96,
+          103
+        ],
+        "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/services/hepta-os/src/objective/history_wire.rs#L96-L103"
+      },
+      {
+        "repository": "TrillionniumFoundation/hepta-private-ci",
+        "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+        "path": "codex-rs/hepta-agentd/src/state_control.rs",
+        "lines": [
+          540,
+          548
+        ],
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5/codex-rs/hepta-agentd/src/state_control.rs#L540-L548"
+      }
+    ]
+  },
+  "regression_and_runtime_scope": {
+    "desktop_tests": "Ten Linux UDS tests use scripted responses. They exercise request bytes, old-body/current-peer identities, bounded/invalid anchors, strict reply parsing, unknown/conflict classification, no reconnect after loss/deadline, zero write for wrong peer, and finite CLI output. They are not cryptographic owner qualification.",
+    "original_owner_tests": "Four read-publication tests in the separately pinned Agentd source construct stored records and cover reopen/expiry, every retained field, trusted-anchor coverage and distinct abstain/conflict. This audit read them and did not execute them.",
+    "runtime_probe_declared_checks": 15,
+    "runtime_probe_declared_history_queries": 13,
+    "runtime_probe_declared_objective_requests": 5,
+    "runtime_probe_declared_publications_before_storage_faults": 4,
+    "runtime_probe_expected_native_elves": 5,
+    "runtime_probe": "Actual code starts original Fleet/Supervisor with isolated signed fixtures, submits compiled/abstain, deliberately drops one harness request response, tests a later post-publication rejection, queries after normal restart and actual expiry, then injects rollback/truncation only after stop. It queries original history online after restart, tests history under revoked issuer plus a distinct rejected new request, and stops the owner.",
+    "loss_case_limit": "Deliberate response loss is an original-protocol harness sender, not a hepta-submit CLI loss execution.",
+    "capacity_cause_limit": "The third active compiled request is expected to reject after publication given the original two-slot default and two observed active runs. The specific CapacityExceeded error bytes are intentionally not observed; the causal label is a source-based inference.",
+    "validator_limit": "Twenty-two synthetic source/receipt tests validate the gate's classifier and source binding, not execution of the original owner.",
+    "prepare_or_build_is_not_runtime": "--prepare-only returns prepared_not_built_or_executed; a built or prebuilt probe without --execute returns probe_available_runtime_not_executed. Both can exit zero and do not qualify runtime. Only passed with verified actual records/ELFs/source does.",
+    "fixed_main_documented_prior_results": {
+      "desktop_rust": 51,
+      "desktop_source": "c080896189b6d5c1e411a28b7614c8fcdc33b188",
+      "upstream_protocol_ledger_passed": 134,
+      "upstream_protocol_ledger_skipped": 1,
+      "upstream_protocol_ledger_source": "ee0a2e5eee299fc0f272c3ceb09ef70f2cbfaf73",
+      "upstream_agentd_lib_passed": 173,
+      "upstream_agentd_lib_source": "d1d40f64eadd0210f5f6abc003cd479a0e1ee010",
+      "qualification": "These are declarations in fixed docs/STATUS, not test logs verified by this source audit. 307 is a sum of two different upstream source executions, not the final 2be suite.",
+      "documented_native_status": "Fixed docs/STATUS lines 10-12 say native history qualification and GitHub workflow results were pending at writing time.",
+      "subsequent_ci": "Parent has since identified successful PR193 history run 39115155092 at exact head 46dcb2d691827f7aa3ad7903dae09d39fd338126. Its raw logs/artifacts are a separate follow-up, pending this reviewer's independent verification at the time this source report is sealed."
+    },
+    "references": [
+      {
+        "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+        "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+        "path": "services/hepta-os/tests/objective_history.rs",
+        "lines": [
+          187,
+          536
+        ],
+        "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/services/hepta-os/tests/objective_history.rs#L187-L536"
+      },
+      {
+        "repository": "TrillionniumFoundation/hepta-private-ci",
+        "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+        "path": "codex-rs/hepta-agentd/src/objective_history_tests.rs",
+        "lines": [
+          77,
+          258
+        ],
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5/codex-rs/hepta-agentd/src/objective_history_tests.rs#L77-L258"
+      },
+      {
+        "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+        "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+        "path": "tests/integration/hepta/objective_history_probe.rs",
+        "lines": [
+          26,
+          42
+        ],
+        "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/tests/integration/hepta/objective_history_probe.rs#L26-L42"
+      },
+      {
+        "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+        "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+        "path": "tests/integration/hepta/objective_history_probe.rs",
+        "lines": [
+          141,
+          638
+        ],
+        "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/tests/integration/hepta/objective_history_probe.rs#L141-L638"
+      },
+      {
+        "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+        "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+        "path": "tests/integration/hepta/objective_history_client.rs",
+        "lines": [
+          177,
+          225
+        ],
+        "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/tests/integration/hepta/objective_history_client.rs#L177-L225"
+      },
+      {
+        "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+        "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+        "path": "tests/integration/hepta/run_objective_history.py",
+        "lines": [
+          309,
+          363
+        ],
+        "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/tests/integration/hepta/run_objective_history.py#L309-L363"
+      },
+      {
+        "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+        "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+        "path": "docs/STATUS.md",
+        "lines": [
+          7,
+          19
+        ],
+        "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/docs/STATUS.md#L7-L19"
+      }
+    ]
+  },
+  "remaining_blockers": [
+    {
+      "id": "deployment_version",
+      "classification": "profile boundary",
+      "issue": "A fixed f8 Agentd does not implement ObjectiveAdmission. The new default-off client must use a qualified 2be owner profile or a later explicitly qualified compatible source. The new source contract does not rewrite old f8 runtime evidence.",
+      "closure": "Keep both pins/profiles and bind the new actual owner build, client, probe and five ELFs. Do not reuse an f8 Agentd ELF as the new history owner.",
+      "references": [
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "services/hepta-os/OBJECTIVE_HISTORY_CONTRACT.json",
+          "lines": [
+            1,
+            13
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/services/hepta-os/OBJECTIVE_HISTORY_CONTRACT.json#L1-L13"
+        },
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "services/hepta-os/OBJECTIVE_HISTORY.md",
+          "lines": [
+            8,
+            20
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/services/hepta-os/OBJECTIVE_HISTORY.md#L8-L20"
+        }
+      ]
+    },
+    {
+      "id": "production_request_owner",
+      "classification": "S1 and caller side S2 integration gap",
+      "issue": "The caller must already retain immutable original intent/envelope and trusted anchor; this client persists none of them. No production issuer/provider or durable unknown-state handoff is installed by this change.",
+      "closure": "Identify and connect the existing issuer/request owner's durable entry point and trusted launcher identities, with absence explicitly unconfigured; never use Shell LocalDraft as the ledger.",
+      "references": [
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "docs/agents/R8_NEXT_SLICE.md",
+          "lines": [
+            21,
+            32
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/docs/agents/R8_NEXT_SLICE.md#L21-L32"
+        },
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "services/hepta-os/OBJECTIVE_HISTORY.md",
+          "lines": [
+            79,
+            96
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/services/hepta-os/OBJECTIVE_HISTORY.md#L79-L96"
+        }
+      ]
+    },
+    {
+      "id": "safe_ui_projection",
+      "classification": "S2 presentation gap",
+      "issue": "Session/Shell gain no history query or submit command in PR193. Current Runtime and known-run observations cannot be relabeled historical publication.",
+      "closure": "A future restricted typed projection must retain exact request/source identity, historical disposition, explicit unknown and appropriate freshness without exposing envelope/signing material or privileged socket to the renderer.",
+      "references": [
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "services/hepta-os/OBJECTIVE_HISTORY.md",
+          "lines": [
+            36,
+            39
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/services/hepta-os/OBJECTIVE_HISTORY.md#L36-L39"
+        },
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "docs/agents/R8_NEXT_SLICE.md",
+          "lines": [
+            42,
+            45
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/docs/agents/R8_NEXT_SLICE.md#L42-L45"
+        }
+      ]
+    },
+    {
+      "id": "operations_and_delivery",
+      "classification": "S2 effect recovery and S3 gap",
+      "issue": "RunStart request/run/message/publication identity is not Operations K or HOS2 D. No durable K↔D co-record, target adapter, independently observed D terminal, writer-adoption fencing, acknowledgement/retirement or final-use provider is added.",
+      "closure": "Use the original DurableOperationStore/Dispatcher and final-use authority/provider seams for one stable destination. Persist K↔D and exact content before ioctl; reconcile through independent destination evidence, preserving Indeterminate where history is missing.",
+      "references": [
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "docs/agents/R8_NEXT_SLICE.md",
+          "lines": [
+            38,
+            54
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/docs/agents/R8_NEXT_SLICE.md#L38-L54"
+        },
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "docs/agents/R8_NEXT_SLICE.md",
+          "lines": [
+            56,
+            77
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/docs/agents/R8_NEXT_SLICE.md#L56-L77"
+        }
+      ]
+    },
+    {
+      "id": "g1_real_resource_owner",
+      "classification": "S4 implementation gap",
+      "issue": "The actual CPU owner still stores SpinLock<CpuMax, LocalIrqDisabled> with no NativeResourceState/revision incarnation fence. Ordinary cpu.max writes call the existing reconfigure; HOS2 remains QueryAbi-only. The G1 document is a proposed implementation order, not a delivered API.",
+      "closure": "First integrate same-lock shared revision and irreversible current-controller invalidation, then unified charge/BOOTTIME observation, then trusted Process/image/CapSpace grants and real kernel lock backend, and finally the five operations with same-kernel positive/negative evidence.",
+      "references": [
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs",
+          "lines": [
+            51,
+            83
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs#L51-L83"
+        },
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs",
+          "lines": [
+            454,
+            470
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs#L454-L470"
+        },
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs",
+          "lines": [
+            204,
+            225
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs#L204-L225"
+        },
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "docs/agents/R9_G1_OWNER_SEAM.md",
+          "lines": [
+            29,
+            117
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/docs/agents/R9_G1_OWNER_SEAM.md#L29-L117"
+        }
+      ]
+    },
+    {
+      "id": "g2_and_devices",
+      "classification": "S5 and platform qualification gap",
+      "issue": "No Agentd-to-Asterinas effect run, reboot/revoke recovery, model execution, mobile/device action, or G2 qualification is implied by the history read slice.",
+      "closure": "After S1-S4 and required host/guest semantics, qualify a single original owner operation through real K/D/object/revision/terminal/retirement in the specified guest profile.",
+      "references": [
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "docs/agents/R8_NEXT_SLICE.md",
+          "lines": [
+            97,
+            105
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/docs/agents/R8_NEXT_SLICE.md#L97-L105"
+        },
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "tests/integration/hepta/objective_history_probe.rs",
+          "lines": [
+            627,
+            638
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/tests/integration/hepta/objective_history_probe.rs#L627-L638"
+        }
+      ]
+    }
+  ],
+  "source_blocking_defects_found": [],
+  "documentation_precision": [
+    {
+      "severity": "non-blocking historical-status clarification",
+      "path": "docs/agents/R9_G1_OWNER_SEAM.md",
+      "lines": [
+        119,
+        121
+      ],
+      "finding": "The incidental cpu.max parser issue describes the document's fixed 01225 audit. It is already fixed in aab50 through 48b4e1f63960d567865d01d2f91356d03160203f: write_attr calls CpuMaxConfig::parse before taking the owner lock; the parser rejects extra tokens and an explicitly invalid/overflowing period.",
+      "minimal_recommendation": "Preserve the historical source binding and append a short closure note referencing 48b4e1f. Do not repeat this as an open G1 prerequisite; shared revision/incarnation/accounting remain open independently.",
+      "references": [
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "docs/agents/R9_G1_OWNER_SEAM.md",
+          "lines": [
+            3,
+            5
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/docs/agents/R9_G1_OWNER_SEAM.md#L3-L5"
+        },
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "docs/agents/R9_G1_OWNER_SEAM.md",
+          "lines": [
+            119,
+            123
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/docs/agents/R9_G1_OWNER_SEAM.md#L119-L123"
+        },
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs",
+          "lines": [
+            454,
+            469
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs#L454-L469"
+        },
+        {
+          "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+          "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+          "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/max_config.rs",
+          "lines": [
+            24,
+            52
+          ],
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/aab50f347deb53fc79ac13ea3b84f846fefc70a7/kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/max_config.rs#L24-L52"
+        }
+      ]
+    }
+  ],
+  "source_provenance": {
+    "inventory_file": "r9-main193-source-inventory.json",
+    "inventory_bytes": 18758,
+    "inventory_sha256": "f6c5e6b68ec78fed6a0bba0f0567120fe993b0ce4900d2945649a065a212eaa1",
+    "desktop_paths_read_or_bound": 24,
+    "desktop_merge_changed_paths": 22,
+    "original_extension_files_independently_fetched_and_contract_hash_verified": 8,
+    "original_base_files_independently_fetched_and_git_blob_verified": 3,
+    "full_36_file_contract_not_revalidated": true,
+    "original_cargo_lock_not_downloaded": true,
+    "read_methods": [
+      "git show fixed object",
+      "git diff first-parent vs fixed merge",
+      "GitHub fetch_file at fixed 2be/f8",
+      "GitHub Git commit metadata",
+      "local SHA-256 and Git blob identity verification"
+    ],
+    "no_checkout_or_source_mutations": true,
+    "unchanged_from_first_parent": [
+      "services/hepta-os/UPSTREAM_CONTRACT.json",
+      "services/hepta-os/OBJECTIVE_UPSTREAM_CONTRACT.json",
+      "services/hepta-os/Cargo.lock",
+      "ui",
+      "kernel",
+      "libs",
+      "support/upstream-lock.json"
+    ],
+    "working_checkout_before": {
+      "head": "2bc512a445f30a53ac4c579fece1ff91c03c8741",
+      "tree": "ae588699126910065c16b77d83f3ef20b53509f2",
+      "status": ""
+    },
+    "working_checkout_after": {
+      "head": "2bc512a445f30a53ac4c579fece1ff91c03c8741",
+      "tree": "ae588699126910065c16b77d83f3ef20b53509f2",
+      "status": ""
+    }
+  },
+  "handoff": {
+    "source_review_complete": true,
+    "next_separate_task": "Independently inspect PR193 run 39115155092 logs and small evidence artifacts; no large ELF downloads, no new runtime, preserve exact 46dcb2d source attribution.",
+    "original_native_workspace_stage_unchanged": true
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "verification": "passed",
+  "full_summaries": [
+    [
+      2,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      0
+    ],
+    [
+      8,
+      0,
+      0
+    ],
+    [
+      15,
+      0,
+      0
+    ],
+    [
+      16,
+      0,
+      0
+    ],
+    [
+      2,
+      0,
+      0
+    ]
+  ],
+  "changed_service_files": [
+    "services/hepta-os/tests/objective_cli.rs"
+  ],
+  "verified_inputs": 20,
+  "source_patch_sha256": "077347ec84b75f57f7a73e0944772a94027549f0adb4e487ee4c8c97b86c7a56",
+  "all_logs_raw_hashes_match": true,
+  "test_and_cli_elf_rehash_match": true,
+  "receipt_sha256": "78d9ead5ad5ae17441d8019a6cb78ccabdc7a00fb48c8c8a423216a68c4fbdff",
+  "readback_view": "require_escalated, same approved /dev/shm view as actual build; default sandbox view does not expose these executables",
+  "additional_test_execution": false,
+  "verification_only_corrections": [
+    "Initial default-view ELF readback could not see the approved memory cache; same-view readback verified both files.",
+    "Initial changed-file expectation improperly used a later workspace diff including a parent documentation edit. Captured execution sources prove only objective_cli.rs differed from execution HEAD; source snapshots and test logs were never changed."
+  ]
+}

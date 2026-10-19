@@ -1,0 +1,518 @@
+name: Hepta Objective history source and ARM64 qualification
+
+on:
+  pull_request:
+    paths:
+      - 'services/hepta-os/**'
+      - 'tests/integration/hepta/**'
+      - '.github/workflows/hepta-objective-history.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DESKTOP_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  GIT_TERMINAL_PROMPT: '0'
+  PYTHONDONTWRITEBYTECODE: '1'
+  CARGO_INCREMENTAL: '0'
+  CARGO_BUILD_JOBS: '1'
+
+# The R8 original-agentd workflow retains its separate fixed f8 qualification.
+# This gate requires the committed new history contract and exact owner source.
+jobs:
+  history-transport:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Allocate fresh transport evidence outside the checkout
+        run: |
+          set -euo pipefail
+          umask 077
+          export HEPTA_HISTORY_CI_ROOT="$RUNNER_TEMP/hepta-history-transport-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          test ! -e "$HEPTA_HISTORY_CI_ROOT"
+          mkdir -m 700 "$HEPTA_HISTORY_CI_ROOT"
+          mkdir -m 700 "$HEPTA_HISTORY_CI_ROOT/logs" "$HEPTA_HISTORY_CI_ROOT/identity"
+          printf 'HEPTA_HISTORY_CI_ROOT=%s\nCARGO_TARGET_DIR=%s/target\n' \
+            "$HEPTA_HISTORY_CI_ROOT" "$HEPTA_HISTORY_CI_ROOT" >> "$GITHUB_ENV"
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        id: checkout
+        with:
+          ref: ${{ env.DESKTOP_SHA }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Install the exact desktop compiler and lint components
+        id: toolchain
+        run: |
+          set -euo pipefail
+          {
+            rustup toolchain install 1.88.0 --profile minimal --component rustfmt --component clippy
+            rustup run 1.88.0 rustc -Vv
+            rustup run 1.88.0 cargo -Vv
+            uname -m
+          } 2>&1 | tee "$HEPTA_HISTORY_CI_ROOT/logs/toolchain.log"
+
+      - name: Test the explicit history feature, strict Clippy, default-off build and formatting
+        id: checks
+        run: |
+          set -euo pipefail
+          python3 -B - <<'PY'
+          from datetime import datetime, timezone
+          import hashlib, json, os, subprocess
+          from pathlib import Path
+
+          root = Path(os.environ["HEPTA_HISTORY_CI_ROOT"])
+          def now():
+              return datetime.now(timezone.utc).isoformat()
+          def git(*args):
+              return subprocess.check_output(["git", *args], text=True).strip()
+          def require(condition, issue):
+              if not condition:
+                  raise SystemExit(issue)
+          def state():
+              paths = subprocess.check_output(["git", "ls-files", "-z", "--",
+                  "services/hepta-os", "tests/integration/hepta/test_objective_history_contracts.py",
+                  "tests/integration/hepta/run_objective_history.py",
+                  ".github/workflows/hepta-objective-history.yml"]).decode().split("\0")
+              return {"commit": git("rev-parse", "HEAD"), "tree": git("rev-parse", "HEAD^{tree}"),
+                  "status": git("status", "--porcelain=v1", "--untracked-files=all"),
+                  "source_sha256": {path: hashlib.sha256(Path(path).read_bytes()).hexdigest()
+                                    for path in paths if path}}
+          before = state()
+          require(before["commit"] == os.environ["DESKTOP_SHA"] and not before["status"],
+                  "desktop_checkout_identity_or_cleanliness_mismatch")
+          require(Path("README.md").is_file() and Path("README.md").stat().st_size == 0,
+                  "root_readme_must_be_empty")
+          for path in ["services/hepta-os/src/objective/history.rs",
+                       "services/hepta-os/src/objective/history_wire.rs",
+                       "services/hepta-os/src/bin/hepta-history.rs",
+                       "services/hepta-os/tests/objective_history.rs",
+                       "tests/integration/hepta/test_objective_history_contracts.py"]:
+              require(Path(path).stat().st_size > 0, "history_source_missing: " + path)
+          (root / "identity/before.json").write_text(json.dumps(before, indent=2) + "\n")
+          cargo = ["rustup", "run", "1.88.0", "cargo"]
+          manifest = ["--manifest-path", "services/hepta-os/Cargo.toml"]
+          commands = [
+              ("test", cargo + ["test", *manifest, "--locked", "--features", "objective-history"]),
+              ("clippy", cargo + ["clippy", *manifest, "--locked", "--offline", "--all-targets",
+                                 "--features", "objective-history", "--", "-D", "warnings"]),
+              ("default-off", cargo + ["check", *manifest, "--locked", "--offline", "--no-default-features"]),
+              ("fmt", cargo + ["fmt", *manifest, "--", "--check"]),
+              ("history-contracts", ["python3", "-B", "-m", "unittest", "discover", "-v",
+                                    "-s", "tests/integration/hepta", "-p", "test_objective_history_contracts.py"]),
+          ]
+          receipt = {"started_at_utc": now(), "before": before, "steps": []}
+          for name, command in commands:
+              item = {"name": name, "command": command, "started_at_utc": now()}
+              with (root / "logs" / (name + ".log")).open("x") as stream:
+                  result = subprocess.run(command, stdout=stream, stderr=subprocess.STDOUT)
+              item.update(exit_code=result.returncode, ended_at_utc=now())
+              receipt["steps"].append(item)
+              (root / "checks.json").write_text(json.dumps(receipt, indent=2) + "\n")
+          receipt.update(after=state(), ended_at_utc=now())
+          passed = receipt["before"] == receipt["after"] and all(
+              step["exit_code"] == 0 for step in receipt["steps"])
+          receipt["status"] = "passed" if passed else "failed"
+          (root / "checks.json").write_text(json.dumps(receipt, indent=2) + "\n")
+          print(json.dumps({"status": receipt["status"], "steps": receipt["steps"]}, indent=2))
+          raise SystemExit(0 if passed else 1)
+          PY
+
+      - name: Preserve transport checkout and step outcomes even on failure
+        if: ${{ always() }}
+        env:
+          STEP_RESULTS: ${{ toJSON(steps) }}
+        run: |
+          set -euo pipefail
+          python3 -B - <<'PY'
+          from datetime import datetime, timezone
+          import json, os, subprocess
+          from pathlib import Path
+          root = Path(os.environ["HEPTA_HISTORY_CI_ROOT"])
+          record = {"recorded_at_utc": datetime.now(timezone.utc).isoformat(),
+                    "expected_desktop_commit": os.environ["DESKTOP_SHA"],
+                    "steps": json.loads(os.environ["STEP_RESULTS"]), "checkout": {}}
+          for name, args in [("identity", ["rev-parse", "HEAD", "HEAD^{tree}"]),
+                             ("status", ["status", "--porcelain=v1", "--untracked-files=all"])]:
+              result = subprocess.run(["git", *args], capture_output=True, text=True, timeout=30)
+              record["checkout"][name] = {"exit_code": result.returncode,
+                  "stdout": result.stdout, "stderr": result.stderr}
+          (root / "identity/final.json").write_text(json.dumps(record, indent=2) + "\n")
+          PY
+
+      - name: Upload transport logs and exact-source receipts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: hepta-history-transport-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            ${{ env.HEPTA_HISTORY_CI_ROOT }}/logs/
+            ${{ env.HEPTA_HISTORY_CI_ROOT }}/identity/
+            ${{ env.HEPTA_HISTORY_CI_ROOT }}/checks.json
+
+  original-owner-history:
+    needs: history-transport
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 180
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Allocate fresh native evidence and isolated tool homes
+        run: |
+          set -euo pipefail
+          umask 077
+          export HEPTA_HISTORY_CI_ROOT="$RUNNER_TEMP/hepta-history-native-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          test ! -e "$HEPTA_HISTORY_CI_ROOT"
+          mkdir -m 700 "$HEPTA_HISTORY_CI_ROOT"
+          mkdir -m 700 "$HEPTA_HISTORY_CI_ROOT/logs" "$HEPTA_HISTORY_CI_ROOT/identity" "$HEPTA_HISTORY_CI_ROOT/locks"
+          printf 'HEPTA_HISTORY_CI_ROOT=%s\nCARGO_HOME=%s/cargo-home\nRUSTUP_HOME=%s/rustup-home\n' \
+            "$HEPTA_HISTORY_CI_ROOT" "$HEPTA_HISTORY_CI_ROOT" "$HEPTA_HISTORY_CI_ROOT" >> "$GITHUB_ENV"
+          python3 -B - <<'PY'
+          from datetime import datetime, timezone
+          import json, os, platform
+          from pathlib import Path
+          record = {"recorded_at_utc": datetime.now(timezone.utc).isoformat(),
+              "expected_desktop_commit": os.environ["DESKTOP_SHA"],
+              "run_url": f'{os.environ["GITHUB_SERVER_URL"]}/{os.environ["GITHUB_REPOSITORY"]}/actions/runs/{os.environ["GITHUB_RUN_ID"]}',
+              "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"], "event": os.environ["GITHUB_EVENT_NAME"],
+              "runner_os": os.environ["RUNNER_OS"], "runner_arch": os.environ["RUNNER_ARCH"],
+              "machine": platform.machine(), "qualification_at_allocation": "not_run"}
+          (Path(os.environ["HEPTA_HISTORY_CI_ROOT"]) / "identity/allocation.json").write_text(
+              json.dumps(record, indent=2) + "\n")
+          PY
+          test "$RUNNER_OS" = Linux
+          test "$RUNNER_ARCH" = ARM64
+          test "$(uname -m)" = aarch64
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        id: checkout
+        with:
+          ref: ${{ env.DESKTOP_SHA }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Read only the exact committed history contract and retain source hashes
+        id: contract
+        run: |
+          set -euo pipefail
+          python3 -B - <<'PY'
+          from datetime import datetime, timezone
+          import json, os, shutil, subprocess, sys
+          from pathlib import Path
+          sys.path.insert(0, str(Path("tests/integration/hepta").resolve()))
+          import run_objective_history as history
+          original = history.original
+          root = Path(os.environ["HEPTA_HISTORY_CI_ROOT"])
+          desktop = Path.cwd()
+          history.need(original.git(desktop, "rev-parse", "HEAD") == os.environ["DESKTOP_SHA"],
+                       "desktop_head_mismatch")
+          history.need(not original.git(desktop, "status", "--porcelain=v1", "--untracked-files=all"),
+                       "desktop_checkout_not_clean")
+          history.need(Path("README.md").is_file() and Path("README.md").stat().st_size == 0,
+                       "root_readme_must_be_empty")
+          contract, binding = history.read_contract(history.CONTRACT)
+          paths = set(subprocess.check_output(["git", "ls-files", "-z", "--",
+              "services/hepta-os"]).decode().rstrip("\0").split("\0"))
+          paths.update("tests/integration/hepta/" + name for name in history.SOURCES)
+          paths.add(".github/workflows/hepta-objective-history.yml")
+          record = {"recorded_at_utc": datetime.now(timezone.utc).isoformat(),
+              "commit": os.environ["DESKTOP_SHA"], "tree": original.git(desktop, "rev-parse", "HEAD^{tree}"),
+              "consumer_tree": original.git(desktop, "rev-parse", "HEAD:services/hepta-os"),
+              "contract": binding, "expected_hepta_commit": contract["commit"],
+              "source_sha256": {path: original.sha256(Path(path)) for path in sorted(paths)}}
+          (root / "identity/desktop-before.json").write_text(json.dumps(record, indent=2) + "\n")
+          shutil.copyfile(history.CONTRACT, root / "locks/OBJECTIVE_HISTORY_CONTRACT.json")
+          shutil.copyfile("services/hepta-os/Cargo.lock", root / "locks/desktop-Cargo.lock")
+          with open(os.environ["GITHUB_ENV"], "a") as stream:
+              stream.write(f'HEPTA_PIN={contract["commit"]}\nHEPTA_BASE={contract["base_commit"]}\n')
+          PY
+
+      - name: Fetch the fixed owner and enough ancestry to verify its declared base
+        id: owner_source
+        run: |
+          set -euo pipefail
+          hepta_source="$HEPTA_HISTORY_CI_ROOT/hepta-source"
+          test ! -e "$hepta_source"
+          {
+            git init "$hepta_source"
+            git -C "$hepta_source" remote add origin https://github.com/TrillionniumFoundation/hepta-private-ci.git
+            # A depth-one checkout cannot establish the new contract's base ancestry.
+            # No moving branch, credential helper, source patch or old-PIN override.
+            git -C "$hepta_source" -c credential.helper= -c core.askPass= \
+              fetch --depth=64 --no-tags origin "$HEPTA_PIN" "$HEPTA_BASE"
+            git -C "$hepta_source" checkout --detach "$HEPTA_PIN"
+          } > "$HEPTA_HISTORY_CI_ROOT/logs/upstream-checkout.log" 2>&1
+          python3 -B - <<'PY'
+          import json, os, shutil, sys
+          from pathlib import Path
+          sys.path.insert(0, str(Path("tests/integration/hepta").resolve()))
+          import run_objective_history as history
+          root = Path(os.environ["HEPTA_HISTORY_CI_ROOT"])
+          source = root / "hepta-source"
+          contract, _ = history.read_contract(history.CONTRACT)
+          record = history.verify_source(source, contract)
+          (root / "identity/hepta-before.json").write_text(json.dumps(record, indent=2) + "\n")
+          for name in ["Cargo.lock", "Cargo.toml", "rust-toolchain.toml"]:
+              shutil.copyfile(source / "codex-rs" / name, root / "locks" / ("hepta-" + name))
+          PY
+
+      - name: Install pinned compilers and original Linux native prerequisites
+        id: toolchains
+        run: |
+          set -euo pipefail
+          {
+            sudo apt-get update
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+              build-essential pkg-config libcap-dev bubblewrap cmake perl libssl-dev binutils
+            rustup toolchain install 1.95.0 --profile minimal
+            rustup toolchain install 1.88.0 --profile minimal
+            rustup run 1.95.0 rustc -Vv
+            rustup run 1.95.0 cargo -Vv
+            rustup run 1.88.0 rustc -Vv
+            rustup run 1.88.0 cargo -Vv
+            cc --version
+            cmake --version
+            pkg-config --modversion openssl libcap
+            dpkg-query -W build-essential pkg-config libcap-dev bubblewrap cmake perl libssl-dev binutils
+            df -B1 "$HEPTA_HISTORY_CI_ROOT"
+            cat /etc/os-release
+          } > "$HEPTA_HISTORY_CI_ROOT/logs/native-setup.log" 2>&1
+
+      - name: Build the exact original Agentd and three desktop CLIs with committed locks
+        id: builds
+        run: |
+          set -euo pipefail
+          python3 -B - <<'PY'
+          from datetime import datetime, timezone
+          import json, os, shutil, subprocess, sys
+          from pathlib import Path
+          sys.path.insert(0, str(Path("tests/integration/hepta").resolve()))
+          import run_objective_history as history
+          original = history.original
+          root = Path(os.environ["HEPTA_HISTORY_CI_ROOT"])
+          source = root / "hepta-source"
+          contract, contract_binding = history.read_contract(history.CONTRACT)
+          before = history.verify_source(source, contract)
+          free = shutil.disk_usage(root).free
+          history.need(free >= 8 * 1024**3, "original_native_gate_requires_8_gib_free_before_building")
+          def now():
+              return datetime.now(timezone.utc).isoformat()
+          steps = [
+              ("original-agentd", source / "codex-rs", root / "hepta-target",
+               ["rustup", "run", "1.95.0", "cargo", "build", "--locked", "--profile", "dev-small",
+                "--no-default-features", "-p", "codex-hepta-agentd", "--bin", "codex-hepta-agentd", "-j1"]),
+              ("desktop-clis", Path.cwd(), root / "desktop-target",
+               ["rustup", "run", "1.88.0", "cargo", "build", "--locked", "--manifest-path",
+                "services/hepta-os/Cargo.toml", "--features", "objective-history", "--bins", "-j1"]),
+          ]
+          receipt = {"started_at_utc": now(), "desktop_commit": os.environ["DESKTOP_SHA"],
+              "contract": contract_binding, "upstream_before": before, "free_before": free, "steps": []}
+          (root / "identity/builds.json").write_text(json.dumps(receipt, indent=2) + "\n")
+          for name, cwd, target, command in steps:
+              item = {"name": name, "cwd": str(cwd), "target": str(target),
+                      "command": command, "started_at_utc": now()}
+              with (root / "logs" / (name + "-build.log")).open("x") as stream:
+                  result = subprocess.run(command, cwd=cwd, env=original.build_environment(target),
+                                          stdout=stream, stderr=subprocess.STDOUT)
+              item.update(exit_code=result.returncode, ended_at_utc=now())
+              receipt["steps"].append(item)
+              (root / "identity/builds.json").write_text(json.dumps(receipt, indent=2) + "\n")
+              if result.returncode:
+                  raise SystemExit(result.returncode)
+          receipt.update(upstream_after=history.verify_source(source, contract), ended_at_utc=now())
+          history.need(receipt["upstream_before"] == receipt["upstream_after"],
+                       "upstream_changed_during_build")
+          receipt["status"] = "passed"
+          (root / "identity/builds.json").write_text(json.dumps(receipt, indent=2) + "\n")
+          PY
+
+      - name: Build the source-bound probe and execute real isolated history and storage faults
+        id: runtime
+        run: |
+          set -euo pipefail
+          # Fresh CI may need supervisor/probe dependencies beyond Agentd's graph.
+          # The runner validates its initial resolution, then uses locked builds.
+          # It receives no prebuilt probe and no production issuer or provider.
+          set +e
+          python3 -B tests/integration/hepta/run_objective_history.py \
+            --hepta-source "$HEPTA_HISTORY_CI_ROOT/hepta-source" \
+            --work-dir "$HEPTA_HISTORY_CI_ROOT/work" \
+            --target-dir "$HEPTA_HISTORY_CI_ROOT/hepta-target" \
+            --agentd-bin "$HEPTA_HISTORY_CI_ROOT/hepta-target/dev-small/codex-hepta-agentd" \
+            --observer-bin "$HEPTA_HISTORY_CI_ROOT/desktop-target/debug/hepta-observe" \
+            --submitter-bin "$HEPTA_HISTORY_CI_ROOT/desktop-target/debug/hepta-submit" \
+            --history-bin "$HEPTA_HISTORY_CI_ROOT/desktop-target/debug/hepta-history" \
+            --execute > "$HEPTA_HISTORY_CI_ROOT/logs/history-gate.log" 2>&1
+          runtime_exit=$?
+          set -e
+          printf '%s\n' "$runtime_exit" > "$HEPTA_HISTORY_CI_ROOT/runtime-exit-code.txt"
+          cat "$HEPTA_HISTORY_CI_ROOT/logs/history-gate.log"
+          exit "$runtime_exit"
+
+      - name: Preserve final identities and reject changed source even after a failed attempt
+        id: final_source
+        if: ${{ always() }}
+        env:
+          STEP_RESULTS: ${{ toJSON(steps) }}
+        run: |
+          set -euo pipefail
+          python3 -B - <<'PY'
+          from datetime import datetime, timezone
+          import hashlib, json, os, subprocess
+          from pathlib import Path
+          root = Path(os.environ["HEPTA_HISTORY_CI_ROOT"])
+          record = {"recorded_at_utc": datetime.now(timezone.utc).isoformat(),
+              "steps": json.loads(os.environ["STEP_RESULTS"]), "checkouts": {}}
+          for name, path in [("desktop", Path.cwd()), ("hepta", root / "hepta-source")]:
+              state = {}
+              for label, args in [("identity", ["rev-parse", "HEAD", "HEAD^{tree}"]),
+                                  ("status", ["status", "--porcelain=v1", "--untracked-files=all"])]:
+                  result = subprocess.run(["git", "-C", str(path), *args],
+                                          capture_output=True, text=True, timeout=30)
+                  state[label] = {"exit_code": result.returncode,
+                                  "stdout": result.stdout, "stderr": result.stderr}
+              record["checkouts"][name] = state
+          try:
+              before = json.loads((root / "identity/desktop-before.json").read_text())
+              owner_before = json.loads((root / "identity/hepta-before.json").read_text())
+              for name, expected in [("desktop", [before["commit"], before["tree"]]),
+                                     ("hepta", [owner_before["commit"], owner_before["tree"]])]:
+                  state = record["checkouts"][name]
+                  if state["identity"]["exit_code"] != 0 or state["identity"]["stdout"].splitlines() != expected:
+                      raise ValueError(name + "_checkout_identity_changed")
+                  if state["status"]["exit_code"] != 0 or state["status"]["stdout"].strip():
+                      raise ValueError(name + "_checkout_not_clean")
+              record["source_sha256"] = {path: hashlib.sha256(Path(path).read_bytes()).hexdigest()
+                                         for path in before["source_sha256"]}
+              if record["source_sha256"] != before["source_sha256"]:
+                  raise ValueError("desktop_source_hash_changed")
+              record["unchanged"] = True
+          except Exception as error:
+              record.update(unchanged=False, verification_error=str(error))
+          (root / "identity/final-checkouts.json").write_text(json.dumps(record, indent=2) + "\n")
+          raise SystemExit(0 if record["unchanged"] else 1)
+          PY
+
+      - name: Bind successful runtime receipts to five actual ARM64 ELF files
+        id: package
+        if: ${{ success() && steps.runtime.outcome == 'success' && steps.final_source.outcome == 'success' }}
+        run: |
+          set -euo pipefail
+          python3 -B - <<'PY'
+          import json, os, stat, struct, sys, tarfile
+          from pathlib import Path
+          sys.path.insert(0, str(Path("tests/integration/hepta").resolve()))
+          import run_objective_history as history
+          original = history.original
+          need = history.need
+          root = Path(os.environ["HEPTA_HISTORY_CI_ROOT"])
+          source = root / "hepta-source"
+          contract, contract_record = history.read_contract(history.CONTRACT)
+          upstream = history.verify_source(source, contract)
+          report_path = root / "work/report.json"
+          report = json.loads(report_path.read_text())
+          builds = json.loads((root / "identity/builds.json").read_text())
+          need(report["status"] == "passed" and report["runtime_executed"] is True,
+               "actual_history_runtime_acceptance_required")
+          need(builds["status"] == "passed" and len(builds["steps"]) == 2
+               and all(step["exit_code"] == 0 for step in builds["steps"]), "both_native_builds_required")
+          need(builds["contract"] == contract_record
+               and builds["upstream_before"] == builds["upstream_after"] == upstream
+               and builds["desktop_commit"] == os.environ["DESKTOP_SHA"], "build_receipt_source_mismatch")
+          need(report["upstream"] == upstream and report["contract"] == contract_record,
+               "runtime_receipt_source_mismatch")
+          need(report.get("prebuilt_probe_requires_caller_build_binding") is not True,
+               "ci_must_compile_its_own_probe")
+          need(original.sha256(root / "work/probe/Cargo.lock") == report["resolved_lock_sha256"]
+               and original.verify_runner_lock(source, root / "work/probe") == report["lock_validation"],
+               "resolved_probe_lock_changed")
+          binding = {"commit": contract["commit"], "tree": upstream["tree"],
+              "cargo_lock_sha256": upstream["cargo_lock_sha256"],
+              "contract_sha256": contract_record["sha256"],
+              "probe_inputs": {name: original.sha256(history.HERE / name) for name in history.SOURCES}}
+          need(report["compiled_source_binding"] == binding and report["source_sha256"] == binding["probe_inputs"],
+               "compiled_probe_source_mismatch")
+          history.verify_records(report["runtime_records"], binding)
+          accepted = next(item for item in report["runtime_records"] if item.get("event") == "acceptance_pass")
+          expected = {
+              "agentd": root / "hepta-target/dev-small/codex-hepta-agentd",
+              "probe": root / "hepta-target/dev-small/hepta-objective-history-probe",
+              "observer": root / "desktop-target/debug/hepta-observe",
+              "submitter": root / "desktop-target/debug/hepta-submit",
+              "history": root / "desktop-target/debug/hepta-history",
+          }
+          need(set(report["binaries"]) == set(expected), "five_exact_native_inputs_required")
+          manifest = {"desktop_commit": os.environ["DESKTOP_SHA"],
+              "desktop_tree": original.git(Path.cwd(), "rev-parse", "HEAD^{tree}"),
+              "upstream": upstream, "compiled_source_binding": binding,
+              "report_sha256": original.sha256(report_path),
+              "build_receipt_sha256": original.sha256(root / "identity/builds.json"),
+              "qualification": "isolated_original_owner_objective_history_passed",
+              "platform": "aarch64-unknown-linux-gnu", "acceptance": accepted, "binaries": {}}
+          for name, path in expected.items():
+              recorded = report["binaries"][name]
+              need(Path(recorded["path"]) == path, "unexpected_binary_path: " + name)
+              need(not path.is_symlink() and stat.S_ISREG(path.stat().st_mode) and os.access(path, os.X_OK),
+                   "regular_executable_required: " + name)
+              with path.open("rb") as stream:
+                  header = stream.read(20)
+              need(len(header) == 20 and header[:6] == b"\x7fELF\x02\x01"
+                   and struct.unpack("<H", header[18:20])[0] == 183, "aarch64_elf64_required: " + name)
+              actual = original.sha256(path)
+              need(actual == recorded["sha256"] and path.stat().st_size == recorded["bytes"],
+                   "binary_changed_after_execution: " + name)
+              manifest["binaries"][name] = {"filename": path.name, "sha256": actual, "bytes": path.stat().st_size}
+          output = root / "artifacts"
+          output.mkdir(mode=0o700)
+          manifest_path = output / "binary-manifest.json"
+          manifest_path.write_text(json.dumps(manifest, indent=2) + "\n")
+          sums = output / "SHA256SUMS"
+          sums.write_text("".join(f'{item["sha256"]}  {item["filename"]}\n' for item in manifest["binaries"].values()))
+          archive = output / "hepta-objective-history-aarch64-linux.tar.gz"
+          with tarfile.open(archive, "x:gz") as bundle:
+              for path in [*expected.values(), manifest_path, sums, report_path]:
+                  bundle.add(path, arcname=path.name, recursive=False)
+          (output / "archive.sha256").write_text(f"{original.sha256(archive)}  {archive.name}\n")
+          PY
+
+      - name: Upload only the qualified ELF bundle and hashes
+        if: ${{ always() && steps.package.outcome == 'success' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: hepta-objective-history-elf-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            ${{ env.HEPTA_HISTORY_CI_ROOT }}/artifacts/hepta-objective-history-aarch64-linux.tar.gz
+            ${{ env.HEPTA_HISTORY_CI_ROOT }}/artifacts/binary-manifest.json
+            ${{ env.HEPTA_HISTORY_CI_ROOT }}/artifacts/SHA256SUMS
+            ${{ env.HEPTA_HISTORY_CI_ROOT }}/artifacts/archive.sha256
+
+      - name: Preserve actual logs, locks, public fixtures and failure receipts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: hepta-objective-history-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          retention-days: 14
+          # Test signing keys exist only in probe memory. Upload this allowlist,
+          # never the disposable fleet/home, tool caches, targets or .git data.
+          path: |
+            ${{ env.HEPTA_HISTORY_CI_ROOT }}/logs/
+            ${{ env.HEPTA_HISTORY_CI_ROOT }}/identity/
+            ${{ env.HEPTA_HISTORY_CI_ROOT }}/locks/
+            ${{ env.HEPTA_HISTORY_CI_ROOT }}/runtime-exit-code.txt
+            ${{ env.HEPTA_HISTORY_CI_ROOT }}/work/report.json
+            ${{ env.HEPTA_HISTORY_CI_ROOT }}/work/*.log
+            ${{ env.HEPTA_HISTORY_CI_ROOT }}/work/runtime-evidence/
+            ${{ env.HEPTA_HISTORY_CI_ROOT }}/work/probe/Cargo.toml
+            ${{ env.HEPTA_HISTORY_CI_ROOT }}/work/probe/Cargo.lock
+            ${{ env.HEPTA_HISTORY_CI_ROOT }}/work/probe/src/

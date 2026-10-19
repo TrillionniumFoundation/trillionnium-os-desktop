@@ -1,0 +1,470 @@
+{
+  "schema": "r9.main194.readonly-overlap-review.v1",
+  "recorded_at_utc": "2026-10-19T01:49:06.398853+00:00",
+  "reviewer": "A10",
+  "status": "no_product_overlap_document_merge_guidance",
+  "base": {
+    "commit": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+    "tree": "731027391dd92f577d4baadd66a096640dec102f"
+  },
+  "new_main": {
+    "commit": "0c2bf0fc1ba473325a0266c7bd476b1ddbf66383",
+    "tree": "4a1e4e6bdf6d769fbd181f8484fe0742a00b2af7",
+    "parents": [
+      "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+      "7a786836357816990bd3633901f6951d107b7593"
+    ]
+  },
+  "pr": {
+    "number": 194,
+    "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/194",
+    "state": "closed",
+    "merged": true,
+    "merged_at_utc": "2026-10-19T01:16:52Z",
+    "head": "7a786836357816990bd3633901f6951d107b7593",
+    "commits": 3
+  },
+  "new_commits": [
+    "0c2bf0fc1ba473325a0266c7bd476b1ddbf66383 aab50f347deb53fc79ac13ea3b84f846fefc70a7 7a786836357816990bd3633901f6951d107b7593 Merge PR #194: R9 native audit and verified ARM64 history evidence",
+    "7a786836357816990bd3633901f6951d107b7593 1461afab03305d8b2d404b3c1d9849eac5bea6d5 aab50f347deb53fc79ac13ea3b84f846fefc70a7 docs: preserve original ARM64 history evidence and dated recovery review",
+    "1461afab03305d8b2d404b3c1d9849eac5bea6d5 24b5c127a5c4bfb2747369526995c133de18543b docs: preserve exact-head R9 transport CI evidence",
+    "24b5c127a5c4bfb2747369526995c133de18543b 46dcb2d691827f7aa3ad7903dae09d39fd338126 docs: record R9 native Objective history qualification"
+  ],
+  "changed_paths": [
+    {
+      "status": "M",
+      "path": "docs/INDEX.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/STATUS.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/agents/R8_NEXT_SLICE.md"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history-ci/README.md"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history-ci/arm-allocation.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history-ci/arm-binary-manifest.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history-ci/arm-builds.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history-ci/arm-elf-artifact-review-20261019.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history-ci/arm-elf-recovery-acquisition-20261019.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history-ci/arm-final-checkouts.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history-ci/arm-history-artifact-review-rebuilt-20261019.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history-ci/arm-history-evidence.zip"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history-ci/arm-history-recovery-acquisition-20261019.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history-ci/arm-history-recovery-github-metadata-20261019.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history-ci/arm-history-recovery-jobs-20261019.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history-ci/arm-history-runtime.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history-ci/artifact-manifest.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history-ci/desktop193-ordinary-merge-20261019.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history-ci/owner-architecture-terminal-observation-20261019.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history-ci/resume-gates-observation-20261019.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history-ci/review/assemble-arm-history-recovery-review-20261019.py"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history-ci/review/recovered-review-arm-runtime-original.py"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history-ci/review/recovered-review-arm-source-original.py"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history-ci/review/review-arm-elf-20261019.py"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history-ci/review/review-arm-runtime-recovery-20261019.py"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history-ci/review/review-arm-source-recovery-20261019.py"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history-ci/transport-artifact-github-metadata.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history-ci/transport-artifact-review.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history-ci/transport-checks.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history-ci/transport-evidence.zip"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/README.md"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/acceptance-summary.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/archive-parts.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/archive-parts/000.part"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/archive-parts/001.part"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/archive-parts/002.part"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/archive-parts/003.part"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/archive-parts/004.part"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/archive-parts/005.part"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/archive-parts/006.part"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/archive-parts/007.part"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/archive-parts/008.part"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/archive-parts/009.part"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/archive-parts/010.part"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/archive-parts/011.part"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/archive-parts/012.part"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/archive-parts/013.part"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/archive-parts/014.part"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/archive-parts/015.part"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/archive-transfer.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/artifact-manifest.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/client-checks.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/consumer-review.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/delivery-finalization.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/delivery-text-review.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/desktop-code-publication.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/g1-source-audit.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/history-contract-review.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/history-execution.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/history-runtime-contract-review.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/history-runtime-independent-review.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/history-runtime.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/module-documentation-review.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/native-agentd-build.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/native-agentd-review.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/owner-agentd-tests.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/owner-code-publication.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/owner-final-review.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/owner-final-validation.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/owner-normal-auto-merge.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/owner-protocol-ledger-tests.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/probe-source-review.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/publication-status.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/raw-evidence-manifest.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/restore-evidence.py"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/workflow-actionlint.json"
+    },
+    {
+      "status": "A",
+      "path": "results/integration/2026-10-18-objective-history/workflow-static-review.json"
+    }
+  ],
+  "change_counts": {
+    "total": 77,
+    "modified_docs": 3,
+    "added_results_evidence": 74,
+    "product_source": 0,
+    "workflows": 0,
+    "runtime_guard_source": 0
+  },
+  "unchanged_git_objects": [
+    {
+      "path": "ui",
+      "base_git_object": "42857c1bda95681f0c482fef8eb8da0f53979020",
+      "main_git_object": "42857c1bda95681f0c482fef8eb8da0f53979020",
+      "equal": true
+    },
+    {
+      "path": "services/hepta-os",
+      "base_git_object": "cd786e3e4e2822c5f0f983dfebfc5c4acdcc958a",
+      "main_git_object": "cd786e3e4e2822c5f0f983dfebfc5c4acdcc958a",
+      "equal": true
+    },
+    {
+      "path": "libs",
+      "base_git_object": "573a4861f2324254ff6d0ae18195923f4b81b8fa",
+      "main_git_object": "573a4861f2324254ff6d0ae18195923f4b81b8fa",
+      "equal": true
+    },
+    {
+      "path": "kernel",
+      "base_git_object": "2afa9a8ba14d2bafa4e820d19aecc25bad916d00",
+      "main_git_object": "2afa9a8ba14d2bafa4e820d19aecc25bad916d00",
+      "equal": true
+    },
+    {
+      "path": "tests/integration/hepta",
+      "base_git_object": "3d4c291b96d9e0472b0307376029ab51ec196b53",
+      "main_git_object": "3d4c291b96d9e0472b0307376029ab51ec196b53",
+      "equal": true
+    },
+    {
+      "path": "tests/ui",
+      "base_git_object": "bd2d4fc378481a12acf6d0c9411b1b5e6c85b567",
+      "main_git_object": "bd2d4fc378481a12acf6d0c9411b1b5e6c85b567",
+      "equal": true
+    },
+    {
+      "path": "support/ui",
+      "base_git_object": "299d0b8fdaea2d4c3e139f58967d939cfdc172fe",
+      "main_git_object": "299d0b8fdaea2d4c3e139f58967d939cfdc172fe",
+      "equal": true
+    },
+    {
+      "path": ".github/workflows",
+      "base_git_object": "863f8b074c2b512acc7dee854f5a50411dc08b73",
+      "main_git_object": "863f8b074c2b512acc7dee854f5a50411dc08b73",
+      "equal": true
+    },
+    {
+      "path": "support/upstream-lock.json",
+      "base_git_object": "11c1a12ebcd1b7c3457806c52ff52916e7835363",
+      "main_git_object": "11c1a12ebcd1b7c3457806c52ff52916e7835363",
+      "equal": true
+    }
+  ],
+  "current_sync_docs_snapshot": {
+    "root": "/workspace/scratch/98f315e377b2/recovery-r7/r9-main-sync-20261019",
+    "head_at_read": "ade66ef89c6d3efa4cef9df13bdd0f10881591e4",
+    "files": {
+      "docs/INDEX.md": {
+        "bytes": 21224,
+        "sha256": "533aded1032d4a45832eaea1695335b9ae56fa5a3be51c3a1fbc54108ae67a42",
+        "base_blob": "b8a9bed7e3d3ec78620a450d08cebf50bf5e4ce6",
+        "main_blob": "da47198126edf9eaac352faf49c3712f5254bf28"
+      },
+      "docs/STATUS.md": {
+        "bytes": 138868,
+        "sha256": "920136cda247fb47bb062d09c8ff1e376f6adde78ed189dd1df9943b06b2c9fb",
+        "base_blob": "6e72961f4018a5e2a3b920aeb5793a0eaa68f5c9",
+        "main_blob": "300da2987f3d7b102174008322f637ba1077379e"
+      },
+      "docs/agents/R8_NEXT_SLICE.md": {
+        "bytes": 23840,
+        "sha256": "bfdaeabf179572cbe5bf05865b218c3caed1dbed2863e837864516e41e3c8f85",
+        "base_blob": "adc5933ad4d7ec022c969a11b4ee1567e9fb9181",
+        "main_blob": "8bd24febe904e9df35117cf773ffa3d6cffb7dfb"
+      }
+    },
+    "root_may_continue_editing": true
+  },
+  "rust_closure_effect": {
+    "main_delta_changes_ui_services_abi_build_inputs": false,
+    "current_root_reported_closure_files": 60,
+    "current_root_reported_closure_sha256": "1118965074d4dccff0377a27d2e5b27829c2b45860573a31f0386c9ae296f1f2",
+    "reason": "Entire changed path list contains only docs and results; UI, services/hepta-os, libs, kernel, tests and workflows trees are identical between aab and 0c. This proves this main advance adds no build input delta. It does not transfer the recorded Rust execution to a yet-uncreated merge or replace its post-merge input identity check.",
+    "new_rust_tests_required_for_this_delta": false
+  },
+  "documentation_merge_guidance": [
+    {
+      "file": "docs/INDEX.md",
+      "main_delta": "A04 fixed-207 candidate-only detailed manuals; A07 new 2be online history and exact46d ARM success; shared11module handbook coverage precision.",
+      "preserve_sync": "Keep the added A04 main handoff link, A06 cpu.max entry, and current 137/53/60-closure summary.",
+      "precision": "Three detailed manuals absent at fixed207 is compatible with the newly added main handoff. Do not remove the handoff or turn dated candidate-manual absence into a claim of no current A04 entry."
+    },
+    {
+      "file": "docs/agents/R8_NEXT_SLICE.md",
+      "main_delta": "Marks owner query tested and distinguishes f8 stop-file probe from 2be active-owner history; explicit lost-response/capacity inference/storage fault limits.",
+      "preserve_sync": "Keep the two actual hepta-submit SIGKILL/reap regression cases at sync line54.",
+      "minimal_wording_fix": "Scope that paragraph to the CLI-loss experiment itself: it did not implement product request persistence or durable reconciliation; the 2be online query is independently implemented/tested above. Scope the main table statement that hepta-submit CLI loss was not executed to this fixed207/46d history run; the other real CLI kill tests keep their own source and fixture qualification."
+    },
+    {
+      "file": "docs/STATUS.md",
+      "main_delta": "Adds actual x86 and ARM owner-history runtime evidence and distinguishes earlier pending snapshots, exact inputs, five ELF recovery review and G1 planning.",
+      "preserve_sync": "Keep current top section: 01:20–01:21 60-input closure111896/UI137/Hepta53/sevenELF; original ARM cleanup failure/47Python; two real R9 screenshots; old execution source boundaries.",
+      "precision": "Merge new194 history section as its own dated evidence. Its prior independent342466280-byte fiveELF recovery review is not this A10 small-artifact review. A10 did not download the large ELF bundle. Do not add old43/51 results to form current53 or transfer old15runtime results to the new head."
+    }
+  ],
+  "review_scope": [
+    "Read Git commit/tree identities and exact77path delta",
+    "Read all three new-main documentation patches",
+    "Read matching current sync documentation context",
+    "Compare nine relevant Git tree/blob identities",
+    "No edits to repository/index/product, no builds, no test execution, no new ELF or archive downloads"
+  ],
+  "limitations": [
+    "An initial git diff --stat attempted a missing promisor evidence blob and failed due unavailable browser-proxy; tree-only name/status and object comparisons then completed without fetching archive bytes. No evidence contents or execution qualification were inferred from file names.",
+    "The new results archives themselves were not re-audited in this task. The preceding independently sealed PR193 CI review remains unchanged."
+  ]
+}

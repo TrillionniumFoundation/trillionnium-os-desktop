@@ -1,0 +1,50 @@
+{
+  "health": {
+    "type": "health",
+    "promotion_ready": true,
+    "ready": true,
+    "fenced": false,
+    "lifecycle": "running",
+    "process_id": 0,
+    "workspace": "/private-fixture/workspace",
+    "home_root": "/private-fixture/home",
+    "run_root": "/private-fixture/run"
+  },
+  "capabilities": {
+    "type": "capabilities",
+    "schema_version": 1,
+    "capabilities": [
+      {"id": "run.lifecycle", "major": 1, "minor": 1},
+      {"id": "objective.start", "major": 1, "minor": 0},
+      {"id": "fixture:future", "major": 2, "minor": 3}
+    ]
+  },
+  "events": {
+    "type": "events",
+    "events": [
+      {"cursor": 1, "kind": {"type": "bootstrapped"}},
+      {"cursor": 2, "kind": {"type": "lifecycle", "lifecycle": "running", "generation": 8}},
+      {"cursor": 3, "kind": {"type": "app_server_ready"}}
+    ],
+    "gap": false,
+    "next_cursor": 3,
+    "latest_cursor": 3
+  },
+  "run_status": {
+    "type": "run_status",
+    "run": {
+      "run_id": "fixture:run-1",
+      "revision": 4,
+      "phase": "indeterminate",
+      "context_digest": null,
+      "authority_epoch": 9,
+      "generation": 6,
+      "fence_digest": "1111111111111111111111111111111111111111111111111111111111111111",
+      "deadline_ms": 1000,
+      "cancel_reason": "private fixture detail: do not project",
+      "cancel_ack_deadline_ms": null,
+      "terminal_observed": false,
+      "idempotent": false
+    }
+  }
+}

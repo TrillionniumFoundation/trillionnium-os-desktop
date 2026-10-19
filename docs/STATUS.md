@@ -1,5 +1,20 @@
 # 当前状态
 
+## 2026-10-19：整合 Runtime 修复与已合入的原 owner 历史扩展
+
+本分支在已发布 Runtime 修复 `5060ac6976b56b32647c728991e489cdee1cce9d` 上，保留并合入实际 main `aab50f347deb53fc79ac13ea3b84f846fefc70a7`（[PR #193](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/193)）。源码自动合并，冲突仅在本状态页和文档索引；两条实现与历史原始证据均保留。随后普通合并仅含文档/证据的 main `0c2bf0fc1ba473325a0266c7bd476b1ddbf66383`（[PR #194](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/194)），协调索引、状态与 S1–S5 三份文档；60 个 Rust 输入及本次 Python 修复字节未变。下列两节 R9 记录来自不同执行输入，其测试计数不合并成整合后新 HEAD 的验收。
+
+默认原版 Hepta 仍固定为 f8；新的 Objective 历史客户端仅针对独立 contract 指定的原 owner 扩展，并未替换默认 pin。它读取既有 owner 已恢复前缀中的历史 publication；当前 RunStatus、模型执行和 Operations/设备效果仍分别判断。既有 S1–S5 的在线查询子项按该明确扩展推进，生产请求持久保存、UI 历史投影、K↔D 与 G1/G2 仍需各自实现和实际验证。
+
+| 整合后新证据 | 已核实结果与来源 |
+| --- | --- |
+| 本地完整 Rust 组合 | 2026-10-19 01:20–01:21 UTC，`5060ac6` + 实际 main `aab50f3` 的冻结合并输入，60 个 UI/Hepta/ABI 文件闭包 `1118965074d4dccff0377a27d2e5b27829c2b45860573a31f0386c9ae296f1f2` 前后不变：UI **137 passed / 2 既有字体 ignored**；Hepta **all-features 53 passed**；默认关闭 check、两组严格 Clippy、fmt 和七个实际 ELF 构建通过。不是下列旧 43/51 项结果的相加。 |
+| 真实成功退出清理缺陷 | `5060ac6` 的 ARM run **39182491155 失败**：只读原版与 Session 各 8 项完成，但 Objective 外层在 `TemporaryDirectory` 清理 `plugins` 时失败，未达到最终六 ELF 绑定。真实 Python 反例证明 exit-0 leader 被回收后，同组 writer 仍能写文件。修复保留 WNOWAIT 身份锚，成功也经过原有 TERM/grace/KILL 后唯一回收；同一测试 **2 项 RED → 2 项 GREEN**，相关 suite **47/47** 通过。源码因果来自独立复现，CI 没有捕获实际 writer PID；不能把原日志里的 acceptance 标记转记为完整 Objective 通过。 |
+| 两张真实 Rust 工作区原图 | 2026-10-19 对已发布 `5060ac6` 的固定四 ELF，实际 Xvfb/XTEST 完成 Chat 和嵌入 Console 两页；同一 Session、同一 Shell PID/XID，1440×1000 原始 PNG 保留。该次未配置 Hepta，没有提交或设备动作；字体像素不授予 IME、Wayland 输入、移动端或两项 ignored 测试资格。首次缺少 X11 依赖的失败也保留。 |
+| 已合入 history 的真实 ARM 运行 | 独立复核 [run 39115155092](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39115155092)：桌面 `46dcb2d` + 原 owner `2be5fc0`，实际 **15 检查 / 13 history 查询 / 5 请求尝试 / 4 publications / 0 重投**，传输 51 项 Rust 与 22 项 Python 通过。查询发生在运行中的原 owner，保持 RunStatus null 与历史 publication 的区别。原版 36 输入、锁和五 ELF 的完整绑定由 CI 执行；本轮另核对原始收据与桌面输入，未下载大 ELF 包。该结果不转记为整合后的新 HEAD。 |
+
+完整原始日志、失败、来源绑定、独立审查和两张原图见 [2026-10-19 整合证据](../results/integration/2026-10-19-main-sync/README.md)。新的 Python 修复没有改变上述 60 个 Rust 输入。发布后的实际新 HEAD 仍需重新完成原版 f8、独立 history owner 与 A10 CI；此前成功运行各自保留固定身份。以下章节作为历史记录保留，早期“尚未执行”的描述不覆盖本节新取得的事实。
+
 ## 2026-10-18 R9：原 owner 准入历史实测与 G1 接缝
 
 **原 Hepta owner 的在线历史查询已分别在 x86_64 与 ARM64 Linux 上通过真实进程验证：受控重启后，即使当前 `RunStatus: null`，仍可核对准确原请求的持久 publication。** 默认关闭的 `objective-history` 接受原请求 owner 保留的准确签名信封，当前端点身份由可信 launcher 提供；可携带以前保存的 anchor，查询不重投、不授予权限、不恢复 run。开发与技术契约见 [OBJECTIVE_HISTORY](../services/hepta-os/OBJECTIVE_HISTORY.md)，复跑入口见 [OBJECTIVE_HISTORY_PROBE](../tests/integration/hepta/OBJECTIVE_HISTORY_PROBE.md)，[R9 实际证据索引](../results/integration/2026-10-18-objective-history/README.md) 保留构建、运行、独立审查和失败尝试。原 owner 改动仍作为独立 [PR #2815](https://github.com/TrillionniumFoundation/hepta-private-ci/pull/2815)，原 f8 基线和旧 R8 契约保留。
@@ -26,7 +41,28 @@ R9 原 owner 固定为已发布 [`2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5`](htt
 
 ---
 
-## 2026-10-18 R8：可信提交、原版 run 与真实桌面
+## 2026-10-18 R9：Runtime 总年龄与 CLI 进程丢失边界
+
+**本轮已修复 Runtime health 在总年龄超过 7 秒后仍显示 Observed 的实际回归，并增加两个真实 CLI 被 SIGKILL 的发送边界测试。**代码从 main `f9e306f76154590e096a42f70ce9de0a7c859e60` 继续，保留 #192、#195 的全部已合入实现；UI 最终实际执行来源为 `09cf259676e2a81a998c14f1e1fddf4cc94b80df` 加当时冻结补丁，完整 UI/observer 闭包 SHA-256 为 `d720db71872f8c263b73ab3b5ad9702a856898a32b7cfde312cfe805156d0fe0`。后续文档/发布提交不改写原执行身份，完整来源与失败见 [R9 实际证据](../results/integration/2026-10-18-runtime-process-boundaries/README.md)。
+
+| 本轮增量 | 已实际核实的结果 |
+| --- | --- |
+| Runtime 的完整时钟链 | Session 从完整 poll 开始前计时，仅成功后推进样本序号。Shell 使用样本年龄 + 完整 IPC RTT + 实际 receipt 至绘制时间的总上界；8,011 ms 的真实队列/egui RED 已复现并修复，7,000 ms 边界继续有效。 |
+| 同来源历史与独立 run | 同 Session 临时缺历史、同序号年轻帧、失败尝试与墙钟回拨不重新刷新旧 Runtime；新的 Runtime clock 与 known-run clock 独立，过期互不冒充。实际 Session/scripted UDS 回归覆盖慢完整 poll、独立慢 run 和连续旧 spawn 失败。 |
+| 最终 UI 验证 | 最终 boxed clock 源码完整 workspace **137 passed / 0 failed / 2 既有 CJK ignored**，无过滤；严格 workspace/all-targets Clippy、fmt、四程序 bins 构建均通过，四次闭包前后相同。保留 test-01 的 fixture 编译失败、clippy-01 的 enum 大小失败和全部中间结果。 |
+| 真实 CLI 终止边界 | EOF 仍被持有时终止，以及 peer 已读完整原帧但回复尚未发送时终止，均实际 SIGKILL/reap、无回执、无重试。完整 objective feature **43 passed**，含新增两项；feature-off check、strict Clippy、fmt 通过。没有输出不能合成为 NotSent 或持久未受理。 |
+| 文档与模块交接 | 固定基线 A00–A10 共 11 模块都有真实开发/技术入口，53 次本地链接/49 个目标通过。新增 A04 主干交接手册，明确固定候选独立 checkout 与同 ELF 条件；A04 实现仍在 Draft #8。补 A06 实际 cgroup owner 和 cpu.max 输入契约。 |
+| 历史证据补全 | R7 可恢复原文与明确缺失清单已归档；R8 ARM run 39106645234 的最终成功、原始日志和来源已独立复核。它们保持历史身份，不能替代 R9 的运行或丢失原图。 |
+
+Runtime clock 是新增可选 wire 字段：新 Shell 接收旧帧时对缺 clock 的 Runtime 历史显示 unknown，旧严格 decoder 会拒绝新字段，因此 **Session、Shell、ctl 必须匹配部署**。源码与完整规则见 [DESKTOP_UX 第 4.1 节](DESKTOP_UX.md#41-原版观测的可见新鲜度) 和 [当前新鲜度手册](../ui/shell/OBSERVATION_FRESHNESS.md)。
+
+本轮新增的本地运行是 Rust/实际 CLI/Session/scripted UDS/egui 测试，没有新启动原版 Agentd、捕获 compositor 像素或执行设备效果。R8 真实原版与窗口证据继续有效但只属于其固定来源。当前仍是 Rust eframe/egui 的 Linux host 开发桌面；production issuer、首次发送前的原请求持久保存、原 owner 在线结果核对、K↔D、四个 HOS2 效果操作、Asterinas G1/G2、显示/输入与移动设备接合仍按 [既有 S1–S5 工单](agents/R8_NEXT_SLICE.md) 推进。
+
+下列历史节保留各自源码、日期、计数与失败，其中“当前”“本轮”“尚未”等仅描述该轮。根 README 继续严格为 0 字节，上游 pins 未变。
+
+---
+
+## 2026-10-18 R8：已合入的可信提交、原版 run 与真实桌面
 
 **当前增量已实际完成独立可信 CLI → 原版 ObjectiveStart 准入/journal → 持续 Session → 同一 Rust Shell 三阶段窗口。** 本节绑定实际本地输入 `25298f5d87cf3db90deefe9c0405ecd241dc6581` 与同树发布 [`ca5e7d8473690df1bf7636de0808e58414c40abe`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/ca5e7d8473690df1bf7636de0808e58414c40abe)，tree `9584997da412dd10c0960f69011b40a4b26d2862`；交付 [PR #192](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/192) 完整纳入 #190 工作区候选与 #191 主干修复的开发历史。固定原版 Hepta 仍为 `f8c9419df6ddeb36ff8b522a50219981fb8d9345`，源码、manifest 和 lock 未改。详见 [本轮完整证据](../results/integration/2026-10-18-objective-desktop/README.md)。
 
@@ -39,7 +75,9 @@ R9 原 owner 固定为已发布 [`2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5`](htt
 | run 新鲜度 | 使用 Session 单调样本年龄 + 实际 IPC RTT + 真正接收至绘制的时间上界，组合值须 ≤7,000 ms；首个排队旧帧与墙钟回拨不能让样本重新变新。既有 runtime health 仍按其原双时钟规则检查。 |
 | A06 / CI 修复 | #191 只修 cfg(ktest) 奇数周期 oracle，生产函数字节不变。完整客体 aster-core 160/160；OSTD 框架报告 221 passed，其中原 VMX/EPT 有 3 个 soft skip，至少 218 个实际执行。#191 merge 的三项 CI 已 completed/success，原始记录见本轮索引；不将它们转记给 #192 的不同 head。 |
 
-**当前范围：**这是一条 Linux host 上真实的原版准入与可见投影链路。截图的英文 Runtime 卡片通过；顶部中文后缀在该隔离字体环境出现缺字方框，CJK/IME 和整机显示资格未通过本轮验证。原版回执中的 admitted 不代表模型 turn 或设备完成。生产 issuer 接入、原 owner 在线持久结果核对、durable K↔D、最终使用授权、撤销/确认退役、HOS2 四个待实现操作、Asterinas G1/G2、显示/输入和移动适配继续推进，具体实现顺序与完成判据见 [R8_NEXT_SLICE](agents/R8_NEXT_SLICE.md)。
+**R8 ARM 完成后的补充复核：**[run 39106645234](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39106645234) / job `117613820420` 已于 2026-10-18 07:36:49 UTC completed/success，实际 head 为 `05a7cd23f0a4b90b154ef0c45be89093b129f767`，tree `592e13cc526a247ec4246a4cfe8458e07392d0e1`。2026-10-18 下午独立读回 API、完整 job 日志与小证据 ZIP：原版只读 8 + Session 8（六阶段）、原版 Objective 10 核心检查 / 7 次明确提交 / 三个 Session 阶段通过，Python 前置 17 和 Objective receipt 12 通过；39 次哈希核对覆盖 33 个独立源码路径。五/六输入 ARM ELF 的包装记录与报告已核对，本次未下载大 ELF 包独立重算其字节。详见 [R8 ARM 完成证据](../results/integration/2026-10-18-runtime-process-boundaries/r8-arm-completion/README.md)。这是旧固定 head 的实际完成补充，不授予后来的 R9、内核或 Shell 像素资格。
+
+**R8 已通过的范围：**这是一条 Linux host 上真实的原版准入与可见投影链路。截图的英文 Runtime 卡片通过；顶部中文后缀在该隔离字体环境出现缺字方框，CJK/IME 和整机显示资格未通过该轮验证。原版回执中的 admitted 不代表模型 turn 或设备完成。生产 issuer 接入、原 owner 在线持久结果核对、durable K↔D、最终使用授权、撤销/确认退役、HOS2 四个待实现操作、Asterinas G1/G2、显示/输入和移动适配继续推进，具体实现顺序与完成判据见 [R8_NEXT_SLICE](agents/R8_NEXT_SLICE.md)。
 
 下面各历史节保留各自的实际源码、日期、计数和失败；其中“本轮”“当前”“尚未”只描述该历史轮次，不覆盖本节新增结果。根 README 继续为 0 字节。
 

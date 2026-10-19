@@ -56,11 +56,31 @@ converted into a success.
 | `unavailable` | Configuration/connection/validation failed before any successful observation; current runtime state is unknown |
 | `stale` | A prior successful observation is retained, but the latest attempt or the host Session transport failed; current runtime state is unknown |
 
-If the worker stops or gives no update for seven seconds, the Session marks
-the view unavailable or stale. If Shell stops receiving Session snapshots
-for seven seconds, it separately marks its Hepta view stale. Losing host
-IPC marks it stale immediately after the bounded request fails. Restarting
-the Session creates a new view; it never claims to recover complete history.
+Session records the complete runtime poll's monotonic start and conservative
+`sampled_unix_ms` before its first health read. Only a validated success
+advances the runtime success sequence; `last_attempt_unix_ms` records the
+attempt's completion separately. Failed attempts and known-run reads do not
+advance the successful runtime sequence or retimestamp its original clock.
+
+Each snapshot with runtime history includes `hepta.runtime_sample_clock`
+containing `observation_sequence` and `sample_age_at_snapshot_ms`. This age
+runs from the complete poll's start to snapshot creation, rounded up to
+milliseconds. The Session expires an over-seven-second or invalid successful
+sample. Shell separately bounds the sum of that source age, the whole IPC
+round trip and time since actual transport receipt, while also rejecting an
+expired/future source wall timestamp. Wall-clock rollback cannot renew an
+old sample. Same-source repeated frames preserve the larger advancing bound,
+without repeatedly adding overlapping round trips. The source includes
+Session instance, original AgentId, spawn generation and process PID; normal
+current-generation lifecycle changes do not reset it. Same-Session missing
+history cannot erase an earlier successful clock.
+
+Losing host IPC marks the view stale immediately after the bounded request
+fails. A lost worker preserves existing history as stale; a first poll that
+remains connecting beyond seven seconds becomes unavailable. Restarting the
+Session creates a new view; it never claims to recover complete history.
+All expiry paths preserve any
+retained owner observation and the original attempt timestamp.
 
 The displayed metadata is limited to 16 capabilities and the last 16 event
 entries, with 96-byte strings, control characters, bidi overrides/isolates,
@@ -133,8 +153,8 @@ corresponding binary directory instead of `ui/target/debug`.
 still opens Conversation. An additional explicit `--hepta-layout-probe`
 prints exactly one `TRILL_HEPTA_LAYOUT_V1` JSON line to stdout after that page
 has completed an egui widget update while the Session is connected and the
-projection is `observed`. Both the last snapshot receipt and its runtime
-sample must be no older than seven seconds. The line binds the displayed
+projection is `observed`. Its runtime total monotonic age bound and source
+wall age must each be no older than seven seconds. The line binds the displayed
 AgentId, spawn/current generations, PID and sample timestamp. No endpoint,
 payload or objective text is logged. It is a layout diagnostic, not proof
 of compositor presentation or an executed operation.
@@ -151,9 +171,13 @@ sharing the same UID and do not provide cryptographic Hepta authentication.
 A05/A07 must supply the trusted launcher configuration and any stronger
 cross-domain process boundary.
 
-The IPC schema changed additively. The new Shell can read an older snapshot
-as `NOT OBSERVED`; an older strict Shell may reject a new snapshot. Deploy
-the Session, Shell and `trill-ctl` built from the same source together.
+The IPC schema changed additively. Older snapshots without any Hepta view
+remain `NOT OBSERVED`. A snapshot with runtime history but no
+`runtime_sample_clock` parses in the new Shell and becomes stale/unknown;
+absence is never a zero-age success. New snapshots add this clock even when
+no known run is configured. An older strict decoder rejects the added field.
+Deploy Session, Shell and `trill-ctl` built from matching source together;
+strict unknown-field rejection remains enabled.
 
 ## Observe one already-known run
 
@@ -178,9 +202,10 @@ health read with the facade's five-second total deadline and peer/identity/
 generation checks. No new worker is created per read. The Session event loop
 continues to serve snapshots and host actions while either read is pending.
 
-With the run variable absent, `hepta.run` is omitted entirely and the previous
-snapshot shape is retained. With it present, deploy the new Session, Shell
-and `trill-ctl` together: older strict decoders cannot read the added field.
+With the run variable absent, `hepta.run` is omitted entirely. The independent
+runtime clock is still included when runtime history exists. With a run
+configured, older strict decoders also cannot read the additional run field;
+matching Session, Shell and `trill-ctl` builds are required in both cases.
 The exact additional structure is:
 
 ```json
@@ -262,10 +287,10 @@ it retains the larger of the old bound advanced to the new receipt and the
 new source-age-plus-round-trip bound. This cannot rejuvenate the sample and
 does not repeatedly add overlapping round trips. A higher successful-read
 sequence or an explicit new Session/run source starts a new age bound.
-This total monotonic age rule is specific to the configured run projection.
-Runtime health keeps its existing separate source-wall/receipt checks,
-using the same actual Bridge receipt timestamp. See
-`ui/shell/OBSERVATION_FRESHNESS.md` for the exact distinction and regressions.
+Runtime health uses the same total-age arithmetic with its own independent
+successful sample and source identity. Neither projection can renew the
+other's clock. See `ui/shell/OBSERVATION_FRESHNESS.md` for the exact source
+bindings, wire compatibility and regressions.
 
 The **Hepta / Runtime** page displays an independent known-run card even
 when only stale run history remains. It shows the exact run ID, original
@@ -285,15 +310,21 @@ The stalled peer is an explicit fault fixture, not a successful Agentd run.
 
 `ui/session/tests/hepta_run.rs` runs the actual Session against a scripted
 fixed-v2 UDS peer. It verifies a full 128-byte selected ID, typed owner-only
-projection, null and old-spawn history retention, missing-run opt-out wire
-compatibility, and responsive host dispatch during a held run read. The
-delayed successful read must retain the earlier health timestamp exactly.
+projection, null and old-spawn history retention, omitted run data with the
+independent runtime clock, and responsive host dispatch during held runtime
+and run reads. A slow successful runtime poll must report its complete read
+age. A delayed successful run read must retain the earlier runtime sample,
+attempt timestamp and success sequence exactly. Two later failed runtime
+polls preserve the complete runtime history and success sequence while its
+monotonic age continues to advance.
 Session and Shell tests independently cover the 7,000/7,001 ms boundary,
 monotonic expiry, clock rollback, queued samples and repeated snapshots.
-The configured-run regressions also check rounded source age, a first queued
-frame across rollback, a combined age over the limit when every component
-is below it, and preservation of the advancing bound without double counting
-round trips. A bounded channel handshake checks actual Bridge timestamp
+Runtime and configured-run regressions also check rounded source age, a first
+queued frame across rollback, a combined age over the limit when every
+component is below it, and preservation of the advancing bound without
+double counting round trips. Runtime cases additionally cover source changes,
+same-Session missing history, missing clock metadata and visible/layout
+agreement. A bounded channel handshake checks actual Bridge timestamp
 ordering without a scheduling sleep. The real Session UDS fixture checks
 that a held run read contributes at least its hold time to the reported age.
 An egui runtime-page test checks the visible run fields and unknown-state

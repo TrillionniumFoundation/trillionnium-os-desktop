@@ -1,0 +1,915 @@
+{
+  "schema": "r9.pr193.history-ci-independent-review.v1",
+  "recorded_at_utc": "2026-10-19T01:44:13.864561+00:00",
+  "status": "passed_with_explicit_scope",
+  "reviewer": "A10",
+  "new_workloads_compilations_or_owner_processes_executed": false,
+  "execution_source": {
+    "desktop_commit": "46dcb2d691827f7aa3ad7903dae09d39fd338126",
+    "desktop_tree": "8d5de807c41090e3d987764daec9c235ebd022a1",
+    "owner_commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+    "owner_tree": "f4ef891d43baf90d6eebd29921a5ed03222ef3ab",
+    "workflow_run": 39115155092,
+    "run_attempt": 1
+  },
+  "api": {
+    "seven_checks_completed_success": true,
+    "full_logs_and_artifacts_reviewed_jobs": [
+      117639353718,
+      117655596136
+    ],
+    "other_five_checks": "API status only; their workloads were not independently reviewed in this task"
+  },
+  "transport": {
+    "rust_passed": 51,
+    "rust_failed": 0,
+    "rust_ignored": 0,
+    "python_contract_passed": 22,
+    "strict_clippy_default_off_fmt": "passed",
+    "compiler": "Rust 1.88.0",
+    "steps": [
+      {
+        "name": "test",
+        "command": [
+          "rustup",
+          "run",
+          "1.88.0",
+          "cargo",
+          "test",
+          "--manifest-path",
+          "services/hepta-os/Cargo.toml",
+          "--locked",
+          "--features",
+          "objective-history"
+        ],
+        "started_at_utc": "2026-10-18T10:47:53.101947+00:00",
+        "exit_code": 0,
+        "ended_at_utc": "2026-10-18T10:48:29.558068+00:00"
+      },
+      {
+        "name": "clippy",
+        "command": [
+          "rustup",
+          "run",
+          "1.88.0",
+          "cargo",
+          "clippy",
+          "--manifest-path",
+          "services/hepta-os/Cargo.toml",
+          "--locked",
+          "--offline",
+          "--all-targets",
+          "--features",
+          "objective-history",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "started_at_utc": "2026-10-18T10:48:29.558315+00:00",
+        "exit_code": 0,
+        "ended_at_utc": "2026-10-18T10:48:37.672916+00:00"
+      },
+      {
+        "name": "default-off",
+        "command": [
+          "rustup",
+          "run",
+          "1.88.0",
+          "cargo",
+          "check",
+          "--manifest-path",
+          "services/hepta-os/Cargo.toml",
+          "--locked",
+          "--offline",
+          "--no-default-features"
+        ],
+        "started_at_utc": "2026-10-18T10:48:37.673194+00:00",
+        "exit_code": 0,
+        "ended_at_utc": "2026-10-18T10:48:38.542650+00:00"
+      },
+      {
+        "name": "fmt",
+        "command": [
+          "rustup",
+          "run",
+          "1.88.0",
+          "cargo",
+          "fmt",
+          "--manifest-path",
+          "services/hepta-os/Cargo.toml",
+          "--",
+          "--check"
+        ],
+        "started_at_utc": "2026-10-18T10:48:38.543061+00:00",
+        "exit_code": 0,
+        "ended_at_utc": "2026-10-18T10:48:38.643553+00:00"
+      },
+      {
+        "name": "history-contracts",
+        "command": [
+          "python3",
+          "-B",
+          "-m",
+          "unittest",
+          "discover",
+          "-v",
+          "-s",
+          "tests/integration/hepta",
+          "-p",
+          "test_objective_history_contracts.py"
+        ],
+        "started_at_utc": "2026-10-18T10:48:38.643991+00:00",
+        "exit_code": 0,
+        "ended_at_utc": "2026-10-18T10:48:38.910867+00:00"
+      }
+    ]
+  },
+  "original_runtime": {
+    "records": {
+      "owner_running": 4,
+      "submission_observed": 4,
+      "history_query_observed": 13,
+      "objective_history_check": 15,
+      "objective_response_discarded": 1,
+      "acceptance_pass": 1
+    },
+    "checks": [
+      "live_compiled_publication",
+      "live_abstain_publication",
+      "retained_anchor_covers_publication",
+      "harness_lost_response_then_history",
+      "postpublication_submit_unknown_history_published",
+      "wrong_anchor_unknown",
+      "earlier_anchor_unknown",
+      "changed_signed_request_unknown",
+      "restart_projection_missing_history_published",
+      "expired_request_history_still_published",
+      "rollback_retained_anchor_unknown",
+      "truncated_tail_retained_anchor_unknown",
+      "revoked_issuer_history_still_published",
+      "revoked_new_submission_rejected",
+      "controlled_stop"
+    ],
+    "acceptance": {
+      "canonical_intelligence": false,
+      "checks": [
+        "live_compiled_publication",
+        "live_abstain_publication",
+        "retained_anchor_covers_publication",
+        "harness_lost_response_then_history",
+        "postpublication_submit_unknown_history_published",
+        "wrong_anchor_unknown",
+        "earlier_anchor_unknown",
+        "changed_signed_request_unknown",
+        "restart_projection_missing_history_published",
+        "expired_request_history_still_published",
+        "rollback_retained_anchor_unknown",
+        "truncated_tail_retained_anchor_unknown",
+        "revoked_issuer_history_still_published",
+        "revoked_new_submission_rejected",
+        "controlled_stop"
+      ],
+      "device_effect": false,
+      "event": "acceptance_pass",
+      "evidence_class": "original_owner_objective_admission_history",
+      "hepta_submit_cli_lost_reply_executed": false,
+      "historical_run_resumed": false,
+      "isolated_test_issuer": true,
+      "model_turn": false,
+      "not_executed": [
+        "caller_anchor_co_rollback",
+        "production_issuer",
+        "effect_reconciliation",
+        "kernel_g1",
+        "kernel_g2"
+      ],
+      "objective_request_attempts": 5,
+      "operations_dispatch": false,
+      "operations_k_or_d_created": false,
+      "production_issuer": false,
+      "published_objective_requests": 4,
+      "recovery_resubmissions": 0,
+      "source_binding": {
+        "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+        "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+        "contract_sha256": "f0fc1110233dc38542097c6f9f7ef2e3f6ca5eb215fa2b4447e556cd7ac46981",
+        "probe_inputs": {
+          "objective_history_client.rs": "cc982282714772dee35e0311cbbd77c00bb296a35975b4864dec0bf8d98f7137",
+          "objective_history_probe.rs": "10014a30f70f5de47aef8ddca585fd997f57e8bd38bbdf4a35bde553b981c82a",
+          "original_objective_fixture.rs": "4abdcb7ee3a0c3cf8f8302c8af18656f2d2c41bfa4862b137991a6124ef4f272",
+          "original_objective_owner.rs": "f01310e679872217af747192c3329218f2d6045972c77718d7f358384eb88eda",
+          "original_objective_profile.json": "56d81a70d4a7481614a9ebc5494173b08dcf79072230b9b61cd0a9c01454dd02",
+          "run_objective_history.py": "a81294b55949931fb30abd9d3c19ba553842c017d0eaf6defb152698c34d9f49",
+          "run_original_agentd.py": "21dd4a2e0621240a75f5ce37bad93da0a37352fbaa78554a50e048abe6a45fd0",
+          "run_original_objective.py": "9ea5d7b2f6801f88240257effe78dbbceb126d63f7132f37b0f2edd7c2486df4"
+        },
+        "tree": "f4ef891d43baf90d6eebd29921a5ed03222ef3ab"
+      }
+    },
+    "owner_epochs": [
+      {
+        "event": "owner_running",
+        "observation": {
+          "agent_id": "33333333-3333-4333-8333-333333333333",
+          "capabilities": [
+            {
+              "id": "automation.calendar_v2",
+              "major": 1,
+              "minor": 0
+            },
+            {
+              "id": "cognitive.context.revalidate",
+              "major": 1,
+              "minor": 0
+            },
+            {
+              "id": "objective.admission.read",
+              "major": 1,
+              "minor": 0
+            },
+            {
+              "id": "objective.start",
+              "major": 1,
+              "minor": 0
+            },
+            {
+              "id": "run.lifecycle",
+              "major": 1,
+              "minor": 1
+            }
+          ],
+          "current_generation": 2,
+          "events": [
+            {
+              "cursor": 1,
+              "generation": null,
+              "kind": "bootstrapped",
+              "lifecycle": null
+            },
+            {
+              "cursor": 2,
+              "generation": 1,
+              "kind": "lifecycle",
+              "lifecycle": "starting"
+            },
+            {
+              "cursor": 3,
+              "generation": null,
+              "kind": "app_server_ready",
+              "lifecycle": null
+            },
+            {
+              "cursor": 4,
+              "generation": 2,
+              "kind": "lifecycle",
+              "lifecycle": "running"
+            }
+          ],
+          "health": {
+            "fenced": false,
+            "lifecycle": "running",
+            "process_id": 23360,
+            "promotion_ready": true,
+            "ready": true
+          },
+          "history_gap": false,
+          "latest_cursor": 4,
+          "next_cursor": 4,
+          "spawn_generation": 1
+        },
+        "spawn_generation": 1
+      },
+      {
+        "event": "owner_running",
+        "observation": {
+          "agent_id": "33333333-3333-4333-8333-333333333333",
+          "capabilities": [
+            {
+              "id": "automation.calendar_v2",
+              "major": 1,
+              "minor": 0
+            },
+            {
+              "id": "cognitive.context.revalidate",
+              "major": 1,
+              "minor": 0
+            },
+            {
+              "id": "objective.admission.read",
+              "major": 1,
+              "minor": 0
+            },
+            {
+              "id": "objective.start",
+              "major": 1,
+              "minor": 0
+            },
+            {
+              "id": "run.lifecycle",
+              "major": 1,
+              "minor": 1
+            }
+          ],
+          "current_generation": 6,
+          "events": [
+            {
+              "cursor": 1,
+              "generation": null,
+              "kind": "bootstrapped",
+              "lifecycle": null
+            },
+            {
+              "cursor": 2,
+              "generation": 5,
+              "kind": "lifecycle",
+              "lifecycle": "starting"
+            },
+            {
+              "cursor": 3,
+              "generation": null,
+              "kind": "app_server_ready",
+              "lifecycle": null
+            },
+            {
+              "cursor": 4,
+              "generation": 6,
+              "kind": "lifecycle",
+              "lifecycle": "running"
+            }
+          ],
+          "health": {
+            "fenced": false,
+            "lifecycle": "running",
+            "process_id": 23477,
+            "promotion_ready": true,
+            "ready": true
+          },
+          "history_gap": false,
+          "latest_cursor": 4,
+          "next_cursor": 4,
+          "spawn_generation": 5
+        },
+        "spawn_generation": 5
+      },
+      {
+        "event": "owner_running",
+        "observation": {
+          "agent_id": "33333333-3333-4333-8333-333333333333",
+          "capabilities": [
+            {
+              "id": "automation.calendar_v2",
+              "major": 1,
+              "minor": 0
+            },
+            {
+              "id": "cognitive.context.revalidate",
+              "major": 1,
+              "minor": 0
+            },
+            {
+              "id": "objective.admission.read",
+              "major": 1,
+              "minor": 0
+            },
+            {
+              "id": "objective.start",
+              "major": 1,
+              "minor": 0
+            },
+            {
+              "id": "run.lifecycle",
+              "major": 1,
+              "minor": 1
+            }
+          ],
+          "current_generation": 10,
+          "events": [
+            {
+              "cursor": 1,
+              "generation": null,
+              "kind": "bootstrapped",
+              "lifecycle": null
+            },
+            {
+              "cursor": 2,
+              "generation": 9,
+              "kind": "lifecycle",
+              "lifecycle": "starting"
+            },
+            {
+              "cursor": 3,
+              "generation": null,
+              "kind": "app_server_ready",
+              "lifecycle": null
+            },
+            {
+              "cursor": 4,
+              "generation": 10,
+              "kind": "lifecycle",
+              "lifecycle": "running"
+            }
+          ],
+          "health": {
+            "fenced": false,
+            "lifecycle": "running",
+            "process_id": 23591,
+            "promotion_ready": true,
+            "ready": true
+          },
+          "history_gap": false,
+          "latest_cursor": 4,
+          "next_cursor": 4,
+          "spawn_generation": 9
+        },
+        "spawn_generation": 9
+      },
+      {
+        "event": "owner_running",
+        "observation": {
+          "agent_id": "33333333-3333-4333-8333-333333333333",
+          "capabilities": [
+            {
+              "id": "automation.calendar_v2",
+              "major": 1,
+              "minor": 0
+            },
+            {
+              "id": "cognitive.context.revalidate",
+              "major": 1,
+              "minor": 0
+            },
+            {
+              "id": "objective.admission.read",
+              "major": 1,
+              "minor": 0
+            },
+            {
+              "id": "objective.start",
+              "major": 1,
+              "minor": 0
+            },
+            {
+              "id": "run.lifecycle",
+              "major": 1,
+              "minor": 1
+            }
+          ],
+          "current_generation": 14,
+          "events": [
+            {
+              "cursor": 1,
+              "generation": null,
+              "kind": "bootstrapped",
+              "lifecycle": null
+            },
+            {
+              "cursor": 2,
+              "generation": 13,
+              "kind": "lifecycle",
+              "lifecycle": "starting"
+            },
+            {
+              "cursor": 3,
+              "generation": null,
+              "kind": "app_server_ready",
+              "lifecycle": null
+            },
+            {
+              "cursor": 4,
+              "generation": 14,
+              "kind": "lifecycle",
+              "lifecycle": "running"
+            }
+          ],
+          "health": {
+            "fenced": false,
+            "lifecycle": "running",
+            "process_id": 23682,
+            "promotion_ready": true,
+            "ready": true
+          },
+          "history_gap": false,
+          "latest_cursor": 4,
+          "next_cursor": 4,
+          "spawn_generation": 13
+        },
+        "spawn_generation": 13
+      }
+    ],
+    "queries": [
+      {
+        "label": "01-compiled",
+        "status": "historical_publication",
+        "exit_code": 0,
+        "identity": {
+          "agent_id": "33333333-3333-4333-8333-333333333333",
+          "expires_at_ms": 1792323108303,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.1",
+          "message_sequence": 1,
+          "original_spawn_generation": 1,
+          "peer_pid": 23360,
+          "peer_uid": 1001,
+          "request_id": 201,
+          "run_id": "run.history-compiled",
+          "spawn_generation": 1
+        },
+        "journal_sha256": "2a4f74584e4d86f16e2b6a0d82c0c9687e687e04e710660e0f29609c3108a8b4",
+        "journal_unchanged_ci_assertion": true
+      },
+      {
+        "label": "02-abstain",
+        "status": "historical_publication",
+        "exit_code": 0,
+        "identity": {
+          "agent_id": "33333333-3333-4333-8333-333333333333",
+          "expires_at_ms": 1792322893326,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.2",
+          "message_sequence": 2,
+          "original_spawn_generation": 1,
+          "peer_pid": 23360,
+          "peer_uid": 1001,
+          "request_id": 202,
+          "run_id": "run.history-abstain",
+          "spawn_generation": 1
+        },
+        "journal_sha256": "adf6cd919e7de899842cc415007d973fe0670bb7f71d31fe120471ef885fd68e",
+        "journal_unchanged_ci_assertion": true
+      },
+      {
+        "label": "03-covered-by-second",
+        "status": "historical_publication",
+        "exit_code": 0,
+        "identity": {
+          "agent_id": "33333333-3333-4333-8333-333333333333",
+          "expires_at_ms": 1792323108303,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.1",
+          "message_sequence": 1,
+          "original_spawn_generation": 1,
+          "peer_pid": 23360,
+          "peer_uid": 1001,
+          "request_id": 203,
+          "run_id": "run.history-compiled",
+          "spawn_generation": 1
+        },
+        "journal_sha256": "adf6cd919e7de899842cc415007d973fe0670bb7f71d31fe120471ef885fd68e",
+        "journal_unchanged_ci_assertion": true
+      },
+      {
+        "label": "04-lost-response",
+        "status": "historical_publication",
+        "exit_code": 0,
+        "identity": {
+          "agent_id": "33333333-3333-4333-8333-333333333333",
+          "expires_at_ms": 1792323108352,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.3",
+          "message_sequence": 3,
+          "original_spawn_generation": 1,
+          "peer_pid": 23360,
+          "peer_uid": 1001,
+          "request_id": 204,
+          "run_id": "run.history-lost-response",
+          "spawn_generation": 1
+        },
+        "journal_sha256": "8d5c51bf385c5c3c38fafa3d1d51f0781889b9cdf3902210d282b0c394609d69",
+        "journal_unchanged_ci_assertion": true
+      },
+      {
+        "label": "05-postpublication-capacity",
+        "status": "historical_publication",
+        "exit_code": 0,
+        "identity": {
+          "agent_id": "33333333-3333-4333-8333-333333333333",
+          "expires_at_ms": 1792323108380,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.4",
+          "message_sequence": 4,
+          "original_spawn_generation": 1,
+          "peer_pid": 23360,
+          "peer_uid": 1001,
+          "request_id": 205,
+          "run_id": "run.history-postpublication-capacity",
+          "spawn_generation": 1
+        },
+        "journal_sha256": "be083bc00c939346e3861ece9624766d5d9e619221efc73e4182073960c401bd",
+        "journal_unchanged_ci_assertion": true
+      },
+      {
+        "label": "06-wrong-anchor",
+        "status": "unknown",
+        "exit_code": 12,
+        "identity": {
+          "agent_id": "33333333-3333-4333-8333-333333333333",
+          "expires_at_ms": 1792323108303,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.1",
+          "message_sequence": 1,
+          "original_spawn_generation": 1,
+          "peer_pid": 23360,
+          "peer_uid": 1001,
+          "request_id": 301,
+          "run_id": "run.history-compiled",
+          "spawn_generation": 1
+        },
+        "journal_sha256": "be083bc00c939346e3861ece9624766d5d9e619221efc73e4182073960c401bd",
+        "journal_unchanged_ci_assertion": true
+      },
+      {
+        "label": "07-earlier-anchor",
+        "status": "unknown",
+        "exit_code": 12,
+        "identity": {
+          "agent_id": "33333333-3333-4333-8333-333333333333",
+          "expires_at_ms": 1792322893326,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.2",
+          "message_sequence": 2,
+          "original_spawn_generation": 1,
+          "peer_pid": 23360,
+          "peer_uid": 1001,
+          "request_id": 302,
+          "run_id": "run.history-abstain",
+          "spawn_generation": 1
+        },
+        "journal_sha256": "be083bc00c939346e3861ece9624766d5d9e619221efc73e4182073960c401bd",
+        "journal_unchanged_ci_assertion": true
+      },
+      {
+        "label": "08-changed-signature",
+        "status": "unknown",
+        "exit_code": 12,
+        "identity": {
+          "agent_id": "33333333-3333-4333-8333-333333333333",
+          "expires_at_ms": 1792323108303,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.1",
+          "message_sequence": 1,
+          "original_spawn_generation": 1,
+          "peer_pid": 23360,
+          "peer_uid": 1001,
+          "request_id": 303,
+          "run_id": "run.history-compiled",
+          "spawn_generation": 1
+        },
+        "journal_sha256": "be083bc00c939346e3861ece9624766d5d9e619221efc73e4182073960c401bd",
+        "journal_unchanged_ci_assertion": true
+      },
+      {
+        "label": "09-after-restart",
+        "status": "historical_publication",
+        "exit_code": 0,
+        "identity": {
+          "agent_id": "33333333-3333-4333-8333-333333333333",
+          "expires_at_ms": 1792323108352,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.3",
+          "message_sequence": 3,
+          "original_spawn_generation": 1,
+          "peer_pid": 23477,
+          "peer_uid": 1001,
+          "request_id": 304,
+          "run_id": "run.history-lost-response",
+          "spawn_generation": 5
+        },
+        "journal_sha256": "be083bc00c939346e3861ece9624766d5d9e619221efc73e4182073960c401bd",
+        "journal_unchanged_ci_assertion": true
+      },
+      {
+        "label": "10-expired-history",
+        "status": "historical_publication",
+        "exit_code": 0,
+        "identity": {
+          "agent_id": "33333333-3333-4333-8333-333333333333",
+          "expires_at_ms": 1792322893326,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.2",
+          "message_sequence": 2,
+          "original_spawn_generation": 1,
+          "peer_pid": 23477,
+          "peer_uid": 1001,
+          "request_id": 308,
+          "run_id": "run.history-abstain",
+          "spawn_generation": 5
+        },
+        "journal_sha256": "be083bc00c939346e3861ece9624766d5d9e619221efc73e4182073960c401bd",
+        "journal_unchanged_ci_assertion": true
+      },
+      {
+        "label": "11-rollback-anchor",
+        "status": "unknown",
+        "exit_code": 12,
+        "identity": {
+          "agent_id": "33333333-3333-4333-8333-333333333333",
+          "expires_at_ms": 1792323108303,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.1",
+          "message_sequence": 1,
+          "original_spawn_generation": 1,
+          "peer_pid": 23591,
+          "peer_uid": 1001,
+          "request_id": 305,
+          "run_id": "run.history-compiled",
+          "spawn_generation": 9
+        },
+        "journal_sha256": "2a4f74584e4d86f16e2b6a0d82c0c9687e687e04e710660e0f29609c3108a8b4",
+        "journal_unchanged_ci_assertion": true
+      },
+      {
+        "label": "12-truncated-anchor",
+        "status": "unknown",
+        "exit_code": 12,
+        "identity": {
+          "agent_id": "33333333-3333-4333-8333-333333333333",
+          "expires_at_ms": 1792323108380,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.4",
+          "message_sequence": 4,
+          "original_spawn_generation": 1,
+          "peer_pid": 23682,
+          "peer_uid": 1001,
+          "request_id": 306,
+          "run_id": "run.history-postpublication-capacity",
+          "spawn_generation": 13
+        },
+        "journal_sha256": "8d5c51bf385c5c3c38fafa3d1d51f0781889b9cdf3902210d282b0c394609d69",
+        "journal_unchanged_ci_assertion": true
+      },
+      {
+        "label": "13-revoked-history",
+        "status": "historical_publication",
+        "exit_code": 0,
+        "identity": {
+          "agent_id": "33333333-3333-4333-8333-333333333333",
+          "expires_at_ms": 1792323108303,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.1",
+          "message_sequence": 1,
+          "original_spawn_generation": 1,
+          "peer_pid": 23682,
+          "peer_uid": 1001,
+          "request_id": 307,
+          "run_id": "run.history-compiled",
+          "spawn_generation": 13
+        },
+        "journal_sha256": "8d5c51bf385c5c3c38fafa3d1d51f0781889b9cdf3902210d282b0c394609d69",
+        "journal_unchanged_ci_assertion": true
+      }
+    ],
+    "submissions": [
+      {
+        "label": "01-compiled",
+        "status": "admitted",
+        "exit_code": 0
+      },
+      {
+        "label": "02-abstain",
+        "status": "admitted",
+        "exit_code": 0
+      },
+      {
+        "label": "05-postpublication-capacity",
+        "status": "submit_unknown",
+        "exit_code": 12
+      },
+      {
+        "label": "14-revoked-negative",
+        "status": "submit_unknown",
+        "exit_code": 12
+      }
+    ],
+    "probe_and_agentd_compiler": "Rust 1.95.0",
+    "desktop_cli_compiler": "Rust 1.88.0"
+  },
+  "independently_checked_retained_bytes": {
+    "artifact_zip_digest_and_bytes": [
+      {
+        "file": "hepta-history-transport-evidence-39115155092-1.zip",
+        "artifact_id": 12134590062,
+        "bytes": 8945,
+        "sha256": "d3585d52ffd97d0e2ad88575fc1aeb38675b500331e1ee16fa9ca97e146c29d3",
+        "members_verified_against_extracted_bytes": 9
+      },
+      {
+        "file": "hepta-objective-history-evidence-39115155092-1.zip",
+        "artifact_id": 12134664375,
+        "bytes": 852554,
+        "sha256": "2717d25e42c9a1329e07bce92459db89a3109f72313ebac3e6010ddc8f1accd4",
+        "members_verified_against_extracted_bytes": 99
+      }
+    ],
+    "artifact_members": 108,
+    "complete_raw_runtime_equals_report": true,
+    "gate_report_equals_embedded_full_job_log": true,
+    "desktop_files_bound_to_fixed_git_commit": 36,
+    "owner_desktop_before_after_paths": 35,
+    "transport_desktop_before_after_paths": 29,
+    "probe_inputs_matched": 8,
+    "profile_bytes_equal_compiled_fixture": true,
+    "original_cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+    "generated_probe_lock_sha256": "9f3e5258526c84e3069a9d05cc064daea9acf5a9f2a648ca709ae24f5d7c7eb2",
+    "original_root_manifest_sha256": "0e3fc0b7dc3ec907e02059a1bc79579077c8e5d1a0ac936b4f1bd984e94afdb4",
+    "query_output_records_matched": 13,
+    "submit_cli_output_records_matched": 4,
+    "all_13_query_message_identity_pairs_matched": true
+  },
+  "ci_side_assertions_not_independent_local_elf_execution": {
+    "owner_source": "CI verifies clean exact 2be commit/tree, f8 ancestry, all 36 contracted files and original Cargo.lock; prior sealed source audit independently reviewed 8 owner files, not all 36",
+    "binaries": {
+      "probe": {
+        "path": "/home/runner/work/_temp/hepta-history-native-39115155092-1/hepta-target/dev-small/hepta-objective-history-probe",
+        "bytes": 29411712,
+        "sha256": "22c3b394861c847b551a476bd1924b682363a07097cae9946036f336cefdd665"
+      },
+      "agentd": {
+        "path": "/home/runner/work/_temp/hepta-history-native-39115155092-1/hepta-target/dev-small/codex-hepta-agentd",
+        "bytes": 268457128,
+        "sha256": "622687b607c4f8aa983f082e169b06f2b7a89b12917e16384245965b156c7549"
+      },
+      "observer": {
+        "path": "/home/runner/work/_temp/hepta-history-native-39115155092-1/desktop-target/debug/hepta-observe",
+        "bytes": 14911296,
+        "sha256": "4da1165dd5bd925dff732edace85b4c2289faf735d640310ff8b1bd408a22f92"
+      },
+      "submitter": {
+        "path": "/home/runner/work/_temp/hepta-history-native-39115155092-1/desktop-target/debug/hepta-submit",
+        "bytes": 14664856,
+        "sha256": "c8e1df3fbc707c368133a2751bb1877b5ce96bd9c24c4322ab8cbc533ccdf5e3"
+      },
+      "history": {
+        "path": "/home/runner/work/_temp/hepta-history-native-39115155092-1/desktop-target/debug/hepta-history",
+        "bytes": 15021288,
+        "sha256": "671abf2c3e73032a7b89c262f8fdea5e00d2251423e52697c5deca47e773c88f"
+      }
+    },
+    "five_elf_guard": "Successful packaging step verifies regular executable paths, ELF64 little endian/AArch64 e_machine=183, recorded byte length and SHA256 after execution",
+    "binary_manifest": "Stored only in the large ELF artifact; neither its raw manifest nor ELF bytes were downloaded in this review",
+    "large_elf_artifact_downloaded": false,
+    "journal_and_fault_assertions": "Raw before/injected/recovered journals and exact query/request outputs are preserved in the small owner ZIP; this seal does not claim independently decoding every journal frame",
+    "cleanup": "Original controlled_stop record is active=false and CI job completed; no independent local process-tree observation of the remote runner"
+  },
+  "interpretation": [
+    "ObjectiveAdmission queried an online original 2be owner across spawn generations 1,5,9,13; owner-stopped intervals are for storage fault injection, not the query API prerequisite.",
+    "Compiled or explicit-abstain durable publication is admission history. RunStatus null neither disproves a publication nor resumes a run.",
+    "The harness sent the lost-response request through the original protocol and read zero response bytes. It did not execute hepta-submit CLI reply-loss recovery.",
+    "A separate actual hepta-submit returned submit_unknown/objective_owner_request_rejected after durable publication; history found publication 4. Capacity is a source-based inference, not an error detail returned in the wire response.",
+    "Wrong/earlier anchor and altered signed request remain unknown. Restart history, expiry, retained-anchor rollback/truncation and revoked-issuer history were actually exercised under an isolated test issuer.",
+    "No production issuer, model turn, device effect, Operations K/D or dispatch, kernel G1/G2, Session/Shell history integration, caller anchor+journal co-rollback, or historical run resumption was qualified."
+  ],
+  "source_nontransfer": "These runtime results belong only to desktop 46dcb2d + original 2be. They are not executions of main aab50f, R9 2bc/506, R9-sync, or the original f8 profile.",
+  "prior_source_audit": {
+    "path": "reviews/r9-main193-owner-history-review.json",
+    "sha256": "fc8a409f93fa95c7d2fd5fbcbdf5734475975b00c02c6a69ac296ffe9e2e9c93",
+    "unchanged": true
+  },
+  "storage": [
+    {
+      "raw_path": "logs/owner-job.log",
+      "raw_bytes": 196182,
+      "raw_sha256": "60c742c4f9768365d1334e03b795a393789e168680b5ff6a859f7802ed360a29",
+      "stored_path": "logs/owner-job.log.gz",
+      "stored_bytes": 33641,
+      "stored_sha256": "15510bc57c0287d9bcd4b0dc9b4f0dcc8713cdadde022623b210b87a32e3b07a",
+      "encoding": "gzip",
+      "mtime": 0,
+      "roundtrip_exact": true
+    },
+    {
+      "raw_path": "logs/transport-job.log",
+      "raw_bytes": 38761,
+      "raw_sha256": "ee14add0ee999b4b349505ae69b1543a0473cd153285417c74eb87ec2d81335e",
+      "stored_path": "logs/transport-job.log.gz",
+      "stored_bytes": 8834,
+      "stored_sha256": "a9c8ab02192c9836ecce95fe9e543dd4a86d94c58cb641231ab6cae528a95330",
+      "encoding": "gzip",
+      "mtime": 0,
+      "roundtrip_exact": true
+    },
+    {
+      "raw_path": "owner/work/runtime.log",
+      "raw_bytes": 50463,
+      "raw_sha256": "6fc446ae2d0928c2c2096ee22b4cdb64442da3aa5c5c4f5ad82c11c1a022c48b",
+      "stored_path": "owner/work/runtime.log.gz",
+      "stored_bytes": 4921,
+      "stored_sha256": "f73e599a55247514a536b6ae8f8239631ed32bff2709cafcdae1185efc1a9137",
+      "encoding": "gzip",
+      "mtime": 0,
+      "roundtrip_exact": true
+    }
+  ]
+}

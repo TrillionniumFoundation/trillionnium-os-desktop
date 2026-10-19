@@ -228,7 +228,7 @@ struct Desktop {
     selected: Option<u64>,
     resources: Option<HostResources>,
     hepta: HeptaProjection,
-    hepta_last_snapshot: Option<Instant>,
+    hepta_runtime_clock: hepta_panel::RuntimeReceiptClock,
     hepta_run_clock: hepta_panel::RunReceiptClock,
     connected: bool,
     session_instance: Option<String>,
@@ -272,7 +272,7 @@ impl Desktop {
             selected: None,
             resources: None,
             hepta: HeptaProjection::default(),
-            hepta_last_snapshot: None,
+            hepta_runtime_clock: hepta_panel::RuntimeReceiptClock::default(),
             hepta_run_clock: hepta_panel::RunReceiptClock::default(),
             connected: false,
             session_instance: None,
@@ -370,6 +370,12 @@ impl Desktop {
                             }
                         }
                     }
+                    self.hepta_runtime_clock.observe(
+                        &session_instance,
+                        &mut hepta,
+                        request_started_at,
+                        received_at,
+                    );
                     self.hepta_run_clock.observe(
                         &session_instance,
                         hepta.run.as_deref_mut(),
@@ -387,7 +393,6 @@ impl Desktop {
                     self.session_error.clear();
                     self.resources = Some(resources);
                     self.hepta = hepta;
-                    self.hepta_last_snapshot = Some(received_at);
                     for item in &tasks {
                         if let Some(previous) = self.tasks.iter().find(|old| old.id == item.id) {
                             if previous.state != item.state {
@@ -448,7 +453,7 @@ impl Desktop {
         self.host_observation.expire(now, now_unix_ms);
         hepta_panel::expire_unfresh_observation(
             &mut self.hepta,
-            self.hepta_last_snapshot,
+            &self.hepta_runtime_clock,
             now,
             now_unix_ms,
         );
@@ -977,7 +982,7 @@ impl eframe::App for Desktop {
             // only bounded runtime metadata, not a presented compositor frame.
             let _ = self.hepta_layout_probe.emit_after_runtime_layout(
                 &self.hepta,
-                self.hepta_last_snapshot,
+                &self.hepta_runtime_clock,
                 Instant::now(),
                 trill_ui_core::unix_ms(),
                 &mut io::stdout(),
@@ -1043,6 +1048,7 @@ mod observation_freshness_tests {
     use super::*;
     use trill_ui_core::hepta::{
         HeptaConnectionState, HeptaHealthObservation, HeptaRuntimeObservation,
+        HeptaRuntimeSampleClock,
     };
 
     type ResponseSender = SyncSender<BridgeReply>;
@@ -1053,6 +1059,10 @@ mod observation_freshness_tests {
             last_attempt_unix_ms: Some(sampled_unix_ms),
             error_code: None,
             run: None,
+            runtime_sample_clock: Some(Box::new(HeptaRuntimeSampleClock {
+                observation_sequence: 1,
+                sample_age_at_snapshot_ms: 0,
+            })),
             last_observation: Some(HeptaRuntimeObservation {
                 sampled_unix_ms,
                 agent_id: "11111111-1111-4111-8111-111111111111".into(),
@@ -1093,7 +1103,7 @@ mod observation_freshness_tests {
             selected: None,
             resources: None,
             hepta: HeptaProjection::default(),
-            hepta_last_snapshot: None,
+            hepta_runtime_clock: hepta_panel::RuntimeReceiptClock::default(),
             hepta_run_clock: hepta_panel::RunReceiptClock::default(),
             connected: false,
             session_instance: None,
@@ -1168,6 +1178,190 @@ mod observation_freshness_tests {
     }
 
     #[test]
+    fn runtime_total_age_includes_source_age_rtt_and_queue_after_wall_clock_rollback() {
+        let (mut desktop, outgoing) = queued_desktop();
+        let now = Instant::now();
+        let mut sample = observed(10_000);
+        sample.runtime_sample_clock = Some(Box::new(HeptaRuntimeSampleClock {
+            observation_sequence: 1,
+            sample_age_at_snapshot_ms: 6_000,
+        }));
+        enqueue_at(
+            &outgoing,
+            sample.clone(),
+            now - Duration::from_millis(2_011),
+            now - Duration::from_millis(1_991),
+        );
+        // The successful sample was already 6 seconds old inside this IPC.
+        // A 20 ms round trip and 1,991 ms queue delay put its conservative
+        // total age at 8,011 ms. Wall time has rolled back to a 6 second age;
+        // separately checking wall age and receipt age would report fresh.
+        desktop.receive_and_refresh_hepta(|| (now, 16_000));
+        let text = actual_status_text(&desktop.hepta);
+        assert!(
+            text.contains("STALE · CURRENT STATE UNKNOWN"),
+            "the actual runtime status wrongly renewed its freshness: {text:?}"
+        );
+        assert!(!text.contains("OBSERVED · READ ONLY"));
+        assert_eq!(desktop.hepta.last_observation, sample.last_observation);
+        assert_eq!(
+            desktop.hepta.last_attempt_unix_ms,
+            sample.last_attempt_unix_ms
+        );
+        assert!(desktop.connected);
+    }
+
+    #[test]
+    fn runtime_total_age_accepts_the_exact_seven_second_boundary() {
+        let (mut desktop, outgoing) = queued_desktop();
+        let now = Instant::now();
+        let mut sample = observed(10_000);
+        sample.runtime_sample_clock = Some(Box::new(HeptaRuntimeSampleClock {
+            observation_sequence: 1,
+            sample_age_at_snapshot_ms: 6_000,
+        }));
+        enqueue_at(
+            &outgoing,
+            sample.clone(),
+            now - Duration::from_millis(1_000),
+            now - Duration::from_millis(980),
+        );
+        desktop.receive_and_refresh_hepta(|| (now, 16_000));
+        assert_eq!(desktop.hepta.connection, HeptaConnectionState::Observed);
+        assert!(actual_status_text(&desktop.hepta).contains("OBSERVED · READ ONLY"));
+        assert_eq!(desktop.hepta.last_observation, sample.last_observation);
+    }
+
+    #[test]
+    fn runtime_clock_metadata_is_required_and_invalid_ages_are_visibly_unknown() {
+        for (clock, request_offset_ns, expected_code) in [
+            (None, 0, "hepta_observation_age_missing"),
+            (
+                Some(Box::new(HeptaRuntimeSampleClock {
+                    observation_sequence: 0,
+                    sample_age_at_snapshot_ms: 0,
+                })),
+                0,
+                "hepta_observation_sequence_invalid",
+            ),
+            (
+                Some(Box::new(HeptaRuntimeSampleClock {
+                    observation_sequence: 1,
+                    sample_age_at_snapshot_ms: u64::MAX,
+                })),
+                0,
+                "session_snapshot_expired",
+            ),
+            (
+                Some(Box::new(HeptaRuntimeSampleClock {
+                    observation_sequence: 1,
+                    sample_age_at_snapshot_ms: 0,
+                })),
+                1,
+                "session_snapshot_time_invalid",
+            ),
+        ] {
+            let (mut desktop, outgoing) = queued_desktop();
+            let mut sample = observed(10_000);
+            sample.runtime_sample_clock = clock;
+            // With None, serialization omits the field exactly as an older
+            // Session would. Missing metadata parses but cannot be fresh.
+            let wire = serde_json::to_vec(&sample).unwrap();
+            let decoded = serde_json::from_slice(&wire).unwrap();
+            let now = Instant::now();
+            enqueue_at(
+                &outgoing,
+                decoded,
+                now + Duration::from_nanos(request_offset_ns),
+                now,
+            );
+            desktop.receive_and_refresh_hepta(|| (now, 10_000));
+            assert_eq!(desktop.hepta.connection, HeptaConnectionState::Stale);
+            assert_eq!(desktop.hepta.error_code.as_deref(), Some(expected_code));
+            assert_eq!(desktop.hepta.last_observation, sample.last_observation);
+            assert_eq!(
+                desktop.hepta.last_attempt_unix_ms,
+                sample.last_attempt_unix_ms
+            );
+            assert!(actual_status_text(&desktop.hepta).contains("STALE · CURRENT STATE UNKNOWN"));
+        }
+    }
+
+    #[test]
+    fn expired_runtime_total_age_does_not_expire_a_separately_fresh_known_run() {
+        use trill_ui_core::hepta::HeptaRunConnectionState;
+        let (mut desktop, outgoing) = queued_desktop();
+        let mut sample = observed(10_000);
+        sample
+            .runtime_sample_clock
+            .as_mut()
+            .unwrap()
+            .sample_age_at_snapshot_ms = 6_000;
+        sample.run = Some(Box::new(run_view(16_000)));
+        let now = Instant::now();
+        enqueue_at(
+            &outgoing,
+            sample.clone(),
+            now - Duration::from_millis(1_001),
+            now - Duration::from_millis(981),
+        );
+        desktop.receive_and_refresh_hepta(|| (now, 16_000));
+        assert_eq!(desktop.hepta.connection, HeptaConnectionState::Stale);
+        assert_eq!(
+            desktop.hepta.error_code.as_deref(),
+            Some("session_snapshot_expired")
+        );
+        assert_eq!(desktop.hepta.last_observation, sample.last_observation);
+        assert_eq!(desktop.hepta.run, sample.run);
+        assert_eq!(
+            desktop.hepta.run.as_ref().unwrap().connection,
+            HeptaRunConnectionState::Observed
+        );
+    }
+
+    #[test]
+    fn missing_runtime_history_from_the_same_session_cannot_reset_a_previous_sample_age() {
+        let (mut desktop, outgoing) = queued_desktop();
+        let now = Instant::now();
+        let mut sample = observed(10_000);
+        sample
+            .runtime_sample_clock
+            .as_mut()
+            .unwrap()
+            .sample_age_at_snapshot_ms = 6_000;
+        enqueue_at(&outgoing, sample.clone(), now, now);
+        desktop.receive_and_refresh_hepta(|| (now, 10_000));
+        assert_eq!(desktop.hepta.connection, HeptaConnectionState::Observed);
+        let middle = now + Duration::from_millis(500);
+        enqueue_at(
+            &outgoing,
+            HeptaProjection {
+                connection: HeptaConnectionState::Observed,
+                ..Default::default()
+            },
+            middle,
+            middle,
+        );
+        desktop.receive_and_refresh_hepta(|| (middle, 10_000));
+        assert_eq!(desktop.hepta.connection, HeptaConnectionState::Unavailable);
+        sample
+            .runtime_sample_clock
+            .as_mut()
+            .unwrap()
+            .sample_age_at_snapshot_ms = 0;
+        let later = now + Duration::from_millis(1_001);
+        enqueue_at(&outgoing, sample.clone(), later, later);
+        desktop.receive_and_refresh_hepta(|| (later, 10_000));
+        assert_eq!(desktop.hepta.connection, HeptaConnectionState::Stale);
+        assert_eq!(
+            desktop.hepta.error_code.as_deref(),
+            Some("session_snapshot_expired")
+        );
+        assert_eq!(desktop.hepta.last_observation, sample.last_observation);
+        assert!(actual_status_text(&desktop.hepta).contains("STALE · CURRENT STATE UNKNOWN"));
+    }
+
+    #[test]
     fn a_queued_old_observed_response_is_visibly_stale_before_drawing() {
         let (mut desktop, outgoing) = queued_desktop();
         let old = observed(10_000);
@@ -1209,10 +1403,9 @@ mod observation_freshness_tests {
             (7001, HeptaConnectionState::Stale),
         ] {
             let (mut desktop, outgoing) = queued_desktop();
-            enqueue(&outgoing, observed(10_000));
-            desktop.receive();
             let now = Instant::now();
-            desktop.hepta_last_snapshot = Some(now - Duration::from_millis(age_ms));
+            let received = now - Duration::from_millis(age_ms);
+            enqueue_at(&outgoing, observed(10_000), received, received);
             desktop.receive_and_refresh_hepta(|| (now, 10_000));
             assert_eq!(
                 desktop.hepta.connection, expected,
@@ -1251,10 +1444,17 @@ mod observation_freshness_tests {
         for future in [false, true] {
             let (mut desktop, outgoing) = queued_desktop();
             let old = observed(10_000);
-            enqueue(&outgoing, old.clone());
-            desktop.receive();
             let now = Instant::now();
-            desktop.hepta_last_snapshot = future.then_some(now + Duration::from_millis(1));
+            let received = if future {
+                now + Duration::from_millis(1)
+            } else {
+                now
+            };
+            enqueue_at(&outgoing, old.clone(), received, received);
+            desktop.receive();
+            if !future {
+                desktop.hepta_runtime_clock = hepta_panel::RuntimeReceiptClock::default();
+            }
             desktop.receive_and_refresh_hepta(|| (now, 10_000));
             assert_eq!(desktop.hepta.connection, HeptaConnectionState::Stale);
             assert_eq!(desktop.hepta.last_observation, old.last_observation);
@@ -1267,7 +1467,12 @@ mod observation_freshness_tests {
         enqueue(&outgoing, observed(10_000));
         desktop.receive_and_refresh_hepta(|| (Instant::now(), 18_001));
         assert_eq!(desktop.hepta.connection, HeptaConnectionState::Stale);
-        let fresh = observed(18_001);
+        let mut fresh = observed(18_001);
+        fresh
+            .runtime_sample_clock
+            .as_mut()
+            .unwrap()
+            .observation_sequence = 2;
         enqueue(&outgoing, fresh.clone());
         desktop.receive_and_refresh_hepta(|| (Instant::now(), 18_001));
         assert_eq!(desktop.hepta, fresh);
@@ -1401,7 +1606,10 @@ mod observation_freshness_tests {
         // makes the source appear only one millisecond old; actual IPC receipt
         // still proves this queued response has exceeded the deadline.
         desktop.receive_and_refresh_hepta(|| (now, 10_001));
-        assert_eq!(desktop.hepta_last_snapshot, Some(received));
+        assert_eq!(
+            desktop.hepta_runtime_clock.age_at(now),
+            Some(Duration::from_millis(7_001))
+        );
         assert_eq!(desktop.hepta.connection, HeptaConnectionState::Stale);
         let run = desktop.hepta.run.as_ref().unwrap();
         assert_eq!(run.connection, HeptaRunConnectionState::Stale);

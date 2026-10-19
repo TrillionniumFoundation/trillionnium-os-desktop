@@ -1,0 +1,138 @@
+{
+  "schema": "a06-main-and-independent-branch-review-v1",
+  "reviewed_utc": "2026-10-18T05:07:07.842227+00:00",
+  "main_head": "01caff4fb3651f57ea32e648ade5a351d20df569",
+  "main_fix_merge": "8ea35f55a38949f511f0855cd168dfd1d672acc8",
+  "independent_head": "64f855512b2e78e895248ba49f908eccd7232679",
+  "main_source_inputs": {
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs": {
+      "sha256": "318138f9f25bbb9765b2c53851c4f5fab195fb592b318a1f114976bf2941863f",
+      "git_blob": "3fa8755919913ec3b6810003be6f589f3f7fa18c"
+    },
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/final_charge_regressions.rs": {
+      "sha256": "14d934c0e1763cdaff5128651a39dbf6ce0e2314c6f5042c87413841f7661168",
+      "git_blob": "4d1f2f28385742503d2f30823a85a07981dbc5c8"
+    },
+    "kernel/asterinas/kernel/core/src/process/test_util.rs": {
+      "sha256": "3a436aa9baca6b328346e57a76eb2ce6c63c1b482ab87a1adbf0e3e3c08dc217",
+      "git_blob": "1cfd8fe07cfa16195c517e31295bbbabed962deb"
+    },
+    "kernel/asterinas/kernel/core/src/process/posix_thread/mod.rs": {
+      "sha256": "ce2a0a6ede6f765022cfe68cc157b4485cc37913e7fd59fcc2549c3b2d2dbe2e",
+      "git_blob": "390eb52a4b64bd21f91202f7093afb1baabf8a91"
+    },
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/systree_node.rs": {
+      "sha256": "246d4b953646c048b1913bbd22c24b53e200554e2b3ddc522bd770794e8ea606",
+      "git_blob": "974a55f8d108b1ed84f6bb762eea9746157c962a"
+    },
+    "kernel/asterinas/kernel/core/src/process/process/mod.rs": {
+      "sha256": "258b6e24b37446a5e432b63b8cf1f95100904437be30cc17d6b0bbcd2899f6ca",
+      "git_blob": "065556c65ef14c989abe17946876d33dfaef7d0e"
+    },
+    "kernel/asterinas/kernel/core/src/process/clone.rs": {
+      "sha256": "65f9ca173761a05ef62e3f391038da90514f23bec2c78828805d0347c2e01e36",
+      "git_blob": "74a0c8828d96de599b7d826eb76fd1f284298c5f"
+    }
+  },
+  "main_archive_sha256": "cab03301d28e0cf06b0d3663729b1d3981158791e48e5c13f5cc84f0206de2d4",
+  "main_archive_crc_checked": true,
+  "main_archive_members": 237,
+  "only_selected_final_a06_members_sha_verified": true,
+  "main_final_ktest_evidence": {
+    "final-positive-full-core": {
+      "serial_sha256": "f6531d8460530ddc0f16250759c37d33d3a0d362d80a125d05af332ce9ddcad4",
+      "qemu_json_sha256": "f931573b8e2a722dd23495e4592b214a2b29074e2925f1161fb2eaa125dc9fcf",
+      "environment_sha256": "b580b6eb3372b86eb3d893944f8e4c5442dbc0227ae0aa0e6a282c53f2cad84c",
+      "summary": [
+        "ok",
+        "159",
+        "0",
+        "0"
+      ],
+      "test_starts": 159,
+      "raw_exit": 33,
+      "kernel_sha256": "50e78cb6284ae6d7a54e49d34e944a3f072c8cedac05b60ce634be9a9f5de0b6",
+      "final_charge_test_lines": [
+        "test aster_core::fs::fs_impls::cgroupfs::controller::cpu::final_charge_regressions::live_process_binding_wins_over_a_stale_final_charge_snapshot ... ok",
+        "test aster_core::fs::fs_impls::cgroupfs::controller::cpu::final_charge_regressions::reaped_process_final_interval_uses_the_same_retained_hierarchy ... ok",
+        "test aster_core::fs::fs_impls::cgroupfs::controller::cpu::final_charge_regressions::zombie_before_detachment_preserves_its_present_process_binding ... ok",
+        "test aster_core::fs::fs_impls::cgroupfs::controller::cpu::final_charge_regressions::live_migrations_change_the_owner_without_replaying_prior_debits ... ok",
+        "test aster_core::fs::fs_impls::cgroupfs::controller::cpu::final_charge_regressions::unreaped_zombie_final_interval_debits_old_leaf_and_ancestors_once ... ok",
+        "test aster_core::fs::fs_impls::cgroupfs::controller::cpu::final_charge_regressions::zombie_final_interval_crossing_a_window_preserves_positive_quota_debt ... ok"
+      ]
+    },
+    "final-negative-full-core-v2": {
+      "serial_sha256": "79e175d69a5d09855bf3bf40628bb3f8f6d7c4dbfc8dbd0b782f20f006a1968c",
+      "qemu_json_sha256": "53ed24d519b4d69a59b1198f6abaea8d386ddc26d60f3f30945190b628fd7c3f",
+      "environment_sha256": "df29eb4772255b2a25fe9fe5891533df15abb9d76f4f93c91c719e460965da11",
+      "summary": [
+        "FAILED",
+        "157",
+        "2",
+        "0"
+      ],
+      "test_starts": 159,
+      "raw_exit": 65,
+      "kernel_sha256": "700e3b3750fa42aa05b7e90e80af12f7e1e431720dbc8a2a1a04c084c9f0428e",
+      "final_charge_test_lines": [
+        "test aster_core::fs::fs_impls::cgroupfs::controller::cpu::final_charge_regressions::live_process_binding_wins_over_a_stale_final_charge_snapshot ... ok",
+        "test aster_core::fs::fs_impls::cgroupfs::controller::cpu::final_charge_regressions::reaped_process_final_interval_uses_the_same_retained_hierarchy ... ok",
+        "test aster_core::fs::fs_impls::cgroupfs::controller::cpu::final_charge_regressions::zombie_before_detachment_preserves_its_present_process_binding ... ok",
+        "test aster_core::fs::fs_impls::cgroupfs::controller::cpu::final_charge_regressions::live_migrations_change_the_owner_without_replaying_prior_debits ... ok",
+        "test aster_core::fs::fs_impls::cgroupfs::controller::cpu::final_charge_regressions::unreaped_zombie_final_interval_debits_old_leaf_and_ancestors_once ... FAILED",
+        "test aster_core::fs::fs_impls::cgroupfs::controller::cpu::final_charge_regressions::zombie_final_interval_crossing_a_window_preserves_positive_quota_debt ... FAILED"
+      ]
+    }
+  },
+  "main_test_names": [
+    "unreaped_zombie_final_interval_debits_old_leaf_and_ancestors_once",
+    "reaped_process_final_interval_uses_the_same_retained_hierarchy",
+    "live_migrations_change_the_owner_without_replaying_prior_debits",
+    "live_process_binding_wins_over_a_stale_final_charge_snapshot",
+    "zombie_before_detachment_preserves_its_present_process_binding",
+    "zombie_final_interval_crossing_a_window_preserves_positive_quota_debt"
+  ],
+  "independent_result": {
+    "source": "64f855512b2e78e895248ba49f908eccd7232679",
+    "passed": 157,
+    "failed": 0,
+    "filtered": 0,
+    "soft_skipped": 0,
+    "new_tests": 4,
+    "receipt_sha256": "1a64f9689f9fab446ca3f8e7201292ff6ee85e00601b97ae08725db508756035"
+  },
+  "conclusion": "Retain current main production fix and existing six regressions; do not merge the independent branch duplicate implementation or factories. Preserve its 157/EBUSY result as separately bound research evidence.",
+  "production_selection_comparison": {
+    "present_process_binding": "Both hold the Process RCU binding and charge it regardless of zombie flag.",
+    "absent_live_process_binding": "Both charge the singleton root.",
+    "absent_zombie_process_binding": "Both use the retained thread hierarchy.",
+    "destroyed_process": "Both use retained thread hierarchy.",
+    "ordering": "Both read Process cgroup before testing zombie; no sleeping membership lock added to charge path."
+  },
+  "coverage_comparison": {
+    "shared": [
+      "unreaped Process",
+      "destroyed Process",
+      "live root/sibling migration",
+      "positive quota debt across window"
+    ],
+    "main_additional": [
+      "live Process binding dominates explicitly stale backup",
+      "zombie before detach with present binding dominates stale backup",
+      "successive live intervals demonstrate no replay/double debit"
+    ],
+    "independent_additional": [
+      "actual mark_as_dead EBUSY while TaskSet still holds a Task",
+      "actual mark_as_dead EBUSY while a Task outlives Process",
+      "successful deletion after final Process/Task lease release"
+    ],
+    "possible_targeted_followup": "If new qualification is desired, add only the explicit deletion lifecycle cases to main existing test module using its existing test_util factory, and retain a fresh main-based source/QEMU receipt. No additional compile was performed by this comparison."
+  },
+  "lease_api_comparison": {
+    "main": "cpu_cgroup returns Arc<CgroupNode> after its temporary RCU reader drops.",
+    "independent": "with_cpu_cgroup callback retains CpuCgroupLease RCU projection throughout actual budget debit.",
+    "evidence_limit": "The stronger API alone is not proof of an exploitable or reachable main defect. Production migration entry obtains membership write lock and refuses zombies; post-detach zombie snapshots are retained, and destroyed Process cannot migrate. A concurrent snapshot rewrite while using this fallback has not been demonstrated. Non-main-thread removal and later live migration remain an explicitly separate lifecycle question.",
+    "blocker": "No new concrete P2 asserted on this basis."
+  },
+  "main_extra_qualification_not_reassigned": "Main archive separately records final positive159, controlled negative157+2, production ELF and four limited1/2vCPU probes. This review checked selected positive/negative raw ktest records, not all production probe logs; none is attributed to independent64f or to R7 UI. No counts were aggregated across heads."
+}

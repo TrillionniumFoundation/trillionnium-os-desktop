@@ -1,0 +1,111 @@
+{
+  "created_at": "2026-10-18T14:59:47.555874+00:00",
+  "steps": [
+    {
+      "name": "fetch",
+      "argv": [
+        "/workspace/scratch/98f315e377b2/recovery-r7/rust-1.88/bin/cargo",
+        "fetch",
+        "--manifest-path",
+        "services/hepta-os/Cargo.toml",
+        "--locked"
+      ],
+      "timeout_seconds": 600
+    },
+    {
+      "name": "focused-kill",
+      "argv": [
+        "/workspace/scratch/98f315e377b2/recovery-r7/rust-1.88/bin/cargo",
+        "test",
+        "--manifest-path",
+        "services/hepta-os/Cargo.toml",
+        "--locked",
+        "--offline",
+        "--features",
+        "objective-transport",
+        "--test",
+        "objective_cli",
+        "killed_",
+        "--",
+        "--nocapture"
+      ],
+      "timeout_seconds": 300
+    },
+    {
+      "name": "full-feature-suite",
+      "argv": [
+        "/workspace/scratch/98f315e377b2/recovery-r7/rust-1.88/bin/cargo",
+        "test",
+        "--manifest-path",
+        "services/hepta-os/Cargo.toml",
+        "--locked",
+        "--offline",
+        "--features",
+        "objective-transport"
+      ],
+      "timeout_seconds": 300
+    },
+    {
+      "name": "feature-off-check",
+      "argv": [
+        "/workspace/scratch/98f315e377b2/recovery-r7/rust-1.88/bin/cargo",
+        "check",
+        "--manifest-path",
+        "services/hepta-os/Cargo.toml",
+        "--locked",
+        "--offline",
+        "--no-default-features",
+        "--all-targets"
+      ],
+      "timeout_seconds": 300
+    },
+    {
+      "name": "strict-clippy",
+      "argv": [
+        "/workspace/scratch/98f315e377b2/recovery-r7/rust-1.88/bin/cargo",
+        "clippy",
+        "--manifest-path",
+        "services/hepta-os/Cargo.toml",
+        "--locked",
+        "--offline",
+        "--features",
+        "objective-transport",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "timeout_seconds": 300
+    },
+    {
+      "name": "fmt-check",
+      "argv": [
+        "/workspace/scratch/98f315e377b2/recovery-r7/rust-1.88/bin/cargo",
+        "fmt",
+        "--manifest-path",
+        "services/hepta-os/Cargo.toml",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "timeout_seconds": 120
+    }
+  ],
+  "source_before_sha256": "ccb56cc37bd18d9860110164695be0220c7797fde040b47b0aa28e688b9a4142",
+  "profile": {
+    "SSL_CERT_FILE": "/usr/local/share/ca-certificates/nebula-dns.crt",
+    "PATH": "/workspace/scratch/98f315e377b2/recovery-r7/rust-1.88/bin:/usr/bin:/bin",
+    "CARGO_HOME": "/dev/shm/trill-r9-cargo",
+    "CARGO_TARGET_DIR": "/dev/shm/trill-r9-target-hepta",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_BUILD_JOBS": "1",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "CARGO_PROFILE_TEST_DEBUG": "0",
+    "LANG": "C.UTF-8",
+    "RUSTC": "/workspace/scratch/98f315e377b2/recovery-r7/rust-1.88/bin/rustc",
+    "RUSTDOC": "/workspace/scratch/98f315e377b2/recovery-r7/rust-1.88/bin/rustdoc"
+  },
+  "guard_sha256": "21dd4a2e0621240a75f5ce37bad93da0a37352fbaa78554a50e048abe6a45fd0",
+  "helper_sha256": "651f4ac5ddd06172548cbdf022c85f182d89affb8a9e262e9aa7c42ff8e6eeb6",
+  "scope": "Scripted private UDS fixtures and actual owned hepta-submit subprocesses; no production ledger, original daemon, UI or kernel guest."
+}

@@ -1,0 +1,141 @@
+{
+  "recorded_at_utc": "2026-10-19T01:14:16.109357+00:00",
+  "schema": "hepta.original-objective-probe.v1",
+  "status": "failed",
+  "runtime_executed": true,
+  "steps": [
+    {
+      "label": "probe-resolution",
+      "command": [
+        "/home/runner/.cargo/bin/rustup",
+        "run",
+        "1.95.0",
+        "cargo",
+        "metadata",
+        "--offline",
+        "--format-version",
+        "1"
+      ]
+    },
+    {
+      "label": "probe-locked-metadata",
+      "command": [
+        "/home/runner/.cargo/bin/rustup",
+        "run",
+        "1.95.0",
+        "cargo",
+        "metadata",
+        "--locked",
+        "--offline",
+        "--format-version",
+        "1"
+      ]
+    },
+    {
+      "label": "probe-build",
+      "command": [
+        "/home/runner/.cargo/bin/rustup",
+        "run",
+        "1.95.0",
+        "cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "--profile",
+        "dev-small",
+        "--bin",
+        "hepta-original-objective-probe",
+        "-j1"
+      ]
+    }
+  ],
+  "source_sha256": {
+    "original_objective_probe.rs": "7aaf85c90cdde3dd1e011fb4b745453e848bfc04dfaceb59f257d08d9b225eef",
+    "original_objective_owner.rs": "f01310e679872217af747192c3329218f2d6045972c77718d7f358384eb88eda",
+    "original_objective_fixture.rs": "4abdcb7ee3a0c3cf8f8302c8af18656f2d2c41bfa4862b137991a6124ef4f272",
+    "original_objective_profile.json": "56d81a70d4a7481614a9ebc5494173b08dcf79072230b9b61cd0a9c01454dd02",
+    "original_objective_session.rs": "51d8b992b8d45f597e78b4179da55c3ebaaec1d0caf1b7c49c30e5d53624d5f0",
+    "run_original_objective.py": "9ea5d7b2f6801f88240257effe78dbbceb126d63f7132f37b0f2edd7c2486df4",
+    "run_original_agentd.py": "21dd4a2e0621240a75f5ce37bad93da0a37352fbaa78554a50e048abe6a45fd0"
+  },
+  "upstream": {
+    "commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+    "tree": "15c9d6ea07bf3832de82825a6cc1e8c958dd3d45",
+    "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+    "clean_checkout": true
+  },
+  "patch_omission": {
+    "origin": "ssh://git@github.com/openai-oss-forks/tungstenite-rs.git",
+    "package": "tungstenite",
+    "target": {
+      "git": "https://github.com/openai-oss-forks/tungstenite-rs",
+      "rev": "4fffad30fe373adbdcffab9545e9e9bf4f2fc19f"
+    },
+    "retained_origin": "crates-io",
+    "reason": "Cargo 1.95 does not canonicalize unused patches across origins"
+  },
+  "runner": "/home/runner/work/_temp/hepta-original-39182491155-1/objective-work/probe",
+  "runner_binary": "hepta-original-objective-probe",
+  "session_projection_requested": true,
+  "native_input_source_binding": "caller_supplied_build_provenance_required_for_each_elf",
+  "target": "/home/runner/work/_temp/hepta-original-39182491155-1/work/original-target",
+  "lock_validation": {
+    "omitted_patch": {
+      "origin": "ssh://git@github.com/openai-oss-forks/tungstenite-rs.git",
+      "package": "tungstenite",
+      "target": {
+        "git": "https://github.com/openai-oss-forks/tungstenite-rs",
+        "rev": "4fffad30fe373adbdcffab9545e9e9bf4f2fc19f"
+      },
+      "retained_origin": "crates-io",
+      "reason": "Cargo 1.95 does not canonicalize unused patches across origins"
+    },
+    "omitted_target_unused": true,
+    "shared_package_identities_checked": 735
+  },
+  "resolved_lock_sha256": "9f3e5258526c84e3069a9d05cc064daea9acf5a9f2a648ca709ae24f5d7c7eb2",
+  "binaries": {
+    "probe": {
+      "path": "/home/runner/work/_temp/hepta-original-39182491155-1/work/original-target/dev-small/hepta-original-objective-probe",
+      "bytes": 29411712,
+      "sha256": "6caeaedffde2528a4f2d191cc01c3e8f0962c7a5b6a5953b2032e2e9504d6360"
+    },
+    "agentd": {
+      "path": "/home/runner/work/_temp/hepta-original-39182491155-1/work/original-target/dev-small/codex-hepta-agentd",
+      "bytes": 268391592,
+      "sha256": "d67046f691e6d6b6c5114f3779b3972ad57e58684624693b92c1ae0722d9db27"
+    },
+    "observer": {
+      "path": "/home/runner/work/_temp/hepta-original-39182491155-1/work/observer-target/debug/hepta-observe",
+      "bytes": 13678320,
+      "sha256": "83991f4de3cae7e9eed8aff8be7ca9008715d72c0fcd235b5d41c0e1d5da9ece"
+    },
+    "submitter": {
+      "path": "/home/runner/work/_temp/hepta-original-39182491155-1/work/observer-target/debug/hepta-submit",
+      "bytes": 14101976,
+      "sha256": "615ae1d4e747ea844b30670926096750d935c7c48c6dda159fb8ce20babf215b"
+    },
+    "session": {
+      "path": "/home/runner/work/_temp/hepta-original-39182491155-1/session-target/debug/trill-session",
+      "bytes": 18350768,
+      "sha256": "6c01b44979c947499d9756e88b11d82b17be07580210042dfa3115df721b0cc7"
+    },
+    "ctl": {
+      "path": "/home/runner/work/_temp/hepta-original-39182491155-1/session-target/debug/trill-ctl",
+      "bytes": 7798360,
+      "sha256": "4f4b9a773b449ab70f659c037862bb98df9e98a8de83009935f6b195d9cbe33c"
+    }
+  },
+  "runtime_command": [
+    "/home/runner/work/_temp/hepta-original-39182491155-1/work/original-target/dev-small/hepta-original-objective-probe",
+    "/home/runner/work/_temp/hepta-original-39182491155-1/work/original-target/dev-small/codex-hepta-agentd",
+    "/home/runner/work/_temp/hepta-original-39182491155-1/work/observer-target/debug/hepta-observe",
+    "/home/runner/work/_temp/hepta-original-39182491155-1/work/observer-target/debug/hepta-submit",
+    "/tmp/ho-r4bdlpg_",
+    "--session-bin",
+    "/home/runner/work/_temp/hepta-original-39182491155-1/session-target/debug/trill-session",
+    "--ctl-bin",
+    "/home/runner/work/_temp/hepta-original-39182491155-1/session-target/debug/trill-ctl"
+  ],
+  "error": "[Errno 39] Directory not empty: 'plugins'"
+}

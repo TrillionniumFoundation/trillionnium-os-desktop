@@ -1,0 +1,392 @@
+{
+  "schema": "r9-a10-exact-head-completion-review-v1",
+  "reviewer": "/root/r6_review_ci",
+  "recorded_at_utc": "2026-10-19T01:00:33.203189+00:00",
+  "status": "passed",
+  "head": "5060ac6976b56b32647c728991e489cdee1cce9d",
+  "tree": "ae588699126910065c16b77d83f3ef20b53509f2",
+  "run_id": 39182491046,
+  "run_attempt": 1,
+  "run_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39182491046",
+  "jobs": [
+    {
+      "id": 117838018520,
+      "name": "ui-source-guard",
+      "started_at": "2026-10-19T00:49:22Z",
+      "completed_at": "2026-10-19T00:49:40Z",
+      "conclusion": "success",
+      "labels": [
+        "ubuntu-24.04"
+      ]
+    },
+    {
+      "id": 117838093786,
+      "name": "native-rust-and-wayland",
+      "started_at": "2026-10-19T00:49:43Z",
+      "completed_at": "2026-10-19T00:52:08Z",
+      "conclusion": "success",
+      "labels": [
+        "ubuntu-24.04"
+      ]
+    }
+  ],
+  "cargo_groups": [
+    {
+      "scope": "ui_workspace",
+      "actual_command": "cargo test --manifest-path ui/Cargo.toml --workspace --locked",
+      "passed": 137,
+      "ignored": 2,
+      "summaries": [
+        {
+          "raw_job_log_line": 1557,
+          "component": "Running unittests src/main.rs (ui/target/debug/deps/trill_app_window-c3e57055d815f6b1)",
+          "passed": 11,
+          "failed": 0,
+          "ignored": 1
+        },
+        {
+          "raw_job_log_line": 1565,
+          "component": "Running unittests src/bin/trill-ctl.rs (ui/target/debug/deps/trill_ctl-74b9915fd8f77395)",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "raw_job_log_line": 1601,
+          "component": "Running unittests src/main.rs (ui/target/debug/deps/trill_session-2e90bda1943fde9a)",
+          "passed": 30,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "raw_job_log_line": 1609,
+          "component": "Running tests/hepta_observer.rs (ui/target/debug/deps/hepta_observer-de9ebfef0d02c4ef)",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "raw_job_log_line": 1619,
+          "component": "Running tests/hepta_run.rs (ui/target/debug/deps/hepta_run-2c98591b9d389754)",
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "raw_job_log_line": 1626,
+          "component": "Running tests/ipc_reconnect.rs (ui/target/debug/deps/ipc_reconnect-f58ca89260fdbabc)",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "raw_job_log_line": 1696,
+          "component": "Running unittests src/main.rs (ui/target/debug/deps/trill_shell-2669ebad7b8931f3)",
+          "passed": 63,
+          "failed": 0,
+          "ignored": 1
+        },
+        {
+          "raw_job_log_line": 1726,
+          "component": "Running unittests src/lib.rs (ui/target/debug/deps/trill_ui_core-46e7e54ad8c6174d)",
+          "passed": 24,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "raw_job_log_line": 1732,
+          "component": "Doc-tests trill_ui_core",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0
+        }
+      ]
+    },
+    {
+      "scope": "hepta_default",
+      "actual_command": "cargo test --manifest-path services/hepta-os/Cargo.toml --locked",
+      "passed": 17,
+      "ignored": 0,
+      "summaries": [
+        {
+          "raw_job_log_line": 1759,
+          "component": "Running unittests src/lib.rs (services/hepta-os/target/debug/deps/hepta_os_observer-8d54bd2c8869899b)",
+          "passed": 1,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "raw_job_log_line": 1765,
+          "component": "Running unittests src/bin/hepta-observe.rs (services/hepta-os/target/debug/deps/hepta_observe-0ae6387b7913ab22)",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "raw_job_log_line": 1771,
+          "component": "Running tests/objective_cli.rs (services/hepta-os/target/debug/deps/objective_cli-fddb042c4a30a6ed)",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "raw_job_log_line": 1777,
+          "component": "Running tests/objective_transport.rs (services/hepta-os/target/debug/deps/objective_transport-45b7acbf9bd7cb1c)",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "raw_job_log_line": 1799,
+          "component": "Running tests/socket_contract.rs (services/hepta-os/target/debug/deps/socket_contract-6371c4dfed219c20)",
+          "passed": 16,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "raw_job_log_line": 1805,
+          "component": "Doc-tests hepta_os_observer",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0
+        }
+      ]
+    },
+    {
+      "scope": "hepta_objective_feature",
+      "actual_command": "cargo test --manifest-path services/hepta-os/Cargo.toml --locked --offline --features objective-transport",
+      "passed": 43,
+      "ignored": 0,
+      "summaries": [
+        {
+          "raw_job_log_line": 1829,
+          "component": "Running unittests src/lib.rs (services/hepta-os/target/debug/deps/hepta_os_observer-e51cd419474fbcf9)",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "raw_job_log_line": 1835,
+          "component": "Running unittests src/bin/hepta-observe.rs (services/hepta-os/target/debug/deps/hepta_observe-5c74bb9aff559112)",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "raw_job_log_line": 1841,
+          "component": "Running unittests src/bin/hepta-submit.rs (services/hepta-os/target/debug/deps/hepta_submit-328f4c7910f478d4)",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "raw_job_log_line": 1855,
+          "component": "Running tests/objective_cli.rs (services/hepta-os/target/debug/deps/objective_cli-c68226d4285d7e05)",
+          "passed": 8,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "raw_job_log_line": 1876,
+          "component": "Running tests/objective_transport.rs (services/hepta-os/target/debug/deps/objective_transport-c278bd407a307ced)",
+          "passed": 15,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "raw_job_log_line": 1898,
+          "component": "Running tests/socket_contract.rs (services/hepta-os/target/debug/deps/socket_contract-835e8a3cfbe603ac)",
+          "passed": 16,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "raw_job_log_line": 1906,
+          "component": "Doc-tests hepta_os_observer",
+          "passed": 2,
+          "failed": 0,
+          "ignored": 0
+        }
+      ]
+    },
+    {
+      "scope": "support_ui",
+      "actual_command": "cargo test --manifest-path support/ui/Cargo.toml --locked",
+      "passed": 39,
+      "ignored": 0,
+      "summaries": [
+        {
+          "raw_job_log_line": 1956,
+          "component": "Running unittests src/lib.rs (support/ui/target/debug/deps/trill_ui_boundary-bbab4310e85d85ee)",
+          "passed": 39,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "raw_job_log_line": 1962,
+          "component": "Doc-tests trill_ui_boundary",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0
+        }
+      ]
+    },
+    {
+      "scope": "tests_ui_contracts",
+      "actual_command": "cargo test --manifest-path tests/ui/Cargo.toml --locked",
+      "passed": 8,
+      "ignored": 0,
+      "summaries": [
+        {
+          "raw_job_log_line": 1970,
+          "component": "Running unittests src/lib.rs (tests/ui/target/debug/deps/trillionnium_ui_contracts-73bc9d69455540fc)",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "raw_job_log_line": 1984,
+          "component": "Running tests/contract.rs (tests/ui/target/debug/deps/contract-367fb568e96617b7)",
+          "passed": 8,
+          "failed": 0,
+          "ignored": 0
+        },
+        {
+          "raw_job_log_line": 1990,
+          "component": "Doc-tests trillionnium_ui_contracts",
+          "passed": 0,
+          "failed": 0,
+          "ignored": 0
+        }
+      ]
+    }
+  ],
+  "aggregate_distinct_rust_test_count_claimed": false,
+  "count_note": "Default A07 baseline tests execute again under the objective feature. Counts are grouped by actual command; they are not summed into a distinct-test total.",
+  "sigkill_cli_regressions_passed": [
+    "killed_before_stdin_eof_has_no_receipt_or_connection",
+    "killed_after_complete_request_has_no_receipt_and_no_retry"
+  ],
+  "python_groups": [
+    {
+      "scope": "original_process_guard",
+      "passed": 6
+    },
+    {
+      "scope": "original_shell_contracts",
+      "passed": 8
+    },
+    {
+      "scope": "original_objective_shell_contracts",
+      "passed": 10
+    }
+  ],
+  "feature_off_all_targets_check": "passed",
+  "strict_clippy_ui_and_feature_hepta": "passed",
+  "rustfmt_four_manifests": "passed",
+  "committed_ui_lock_enforcement": "passed",
+  "observed_pass_markers": [
+    "A10 host flock: PASS",
+    "A10 scoped smoke cleanup: PASS",
+    "A10 actual zombie process liveness guard: PASS",
+    "PASS: Session/facade/UDS fixture observation and stale-state retention",
+    "A10 REAL RUNTIME OWNERSHIP PASS",
+    "A10 SO_PEERCRED live BIDIRECTIONAL refusal PASS",
+    "A10 REAL forged Session refusal PASS",
+    "A10 STRICT REQUEST IPC PASS: 8 forged frames rejected",
+    "A10 REAL Linux ELF replay PASSED",
+    "A10 host Rust checks passed",
+    "Wayland host Shell first layout, restarted Shell layout, three app layouts and observed cancellation: PASS",
+    "PASS: actual Rust Hepta-page egui layout consumed a fresh Session projection from the scripted UDS fixture",
+    "Compositor crash/restart PASS: same Session, socket epoch change, new Wayland client first layout, confirmed cancellation",
+    "A10 Weston headless client/session and crash/restart smoke: PASSED on this Linux runner"
+  ],
+  "unverified_in_this_run": [
+    "X11 mapping (optional tools absent)",
+    "CJK candidate interaction",
+    "two real-font tests (ignored without selected host font)",
+    "pre-crash client window continuity",
+    "physical GPU reset",
+    "Asterinas target graphics"
+  ],
+  "hepta_wayland_page_source": "scripted UDS fixture; not original Agentd",
+  "separate_original_arm_run_id": 39182491155,
+  "arm_status_at_poll02": "in_progress; no completion qualification in this A10 archive",
+  "default_codeql_run_id": 39182489120,
+  "default_codeql_scope": "Dynamic GitHub code-scanning run; not part of the nine repository workflow path predictions.",
+  "exact_head_check_snapshot": [
+    {
+      "id": 117838143069,
+      "name": "CodeQL",
+      "head_sha": "5060ac6976b56b32647c728991e489cdee1cce9d",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-19T00:49:53Z",
+      "completed_at": "2026-10-19T00:49:56Z",
+      "details_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/runs/117838143069"
+    },
+    {
+      "id": 117838093786,
+      "name": "native-rust-and-wayland",
+      "head_sha": "5060ac6976b56b32647c728991e489cdee1cce9d",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-19T00:49:43Z",
+      "completed_at": "2026-10-19T00:52:08Z",
+      "details_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39182491046/job/117838093786"
+    },
+    {
+      "id": 117838018950,
+      "name": "original-agentd",
+      "head_sha": "5060ac6976b56b32647c728991e489cdee1cce9d",
+      "status": "in_progress",
+      "conclusion": null,
+      "started_at": "2026-10-19T00:49:24Z",
+      "completed_at": null,
+      "details_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39182491155/job/117838018950"
+    },
+    {
+      "id": 117838018520,
+      "name": "ui-source-guard",
+      "head_sha": "5060ac6976b56b32647c728991e489cdee1cce9d",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-19T00:49:22Z",
+      "completed_at": "2026-10-19T00:49:40Z",
+      "details_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39182491046/job/117838018520"
+    },
+    {
+      "id": 117838016177,
+      "name": "Analyze (python)",
+      "head_sha": "5060ac6976b56b32647c728991e489cdee1cce9d",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-19T00:49:22Z",
+      "completed_at": "2026-10-19T00:50:03Z",
+      "details_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39182489120/job/117838016177"
+    }
+  ],
+  "codeql_note": "Both CodeQL and Analyze (python) completed successfully. This is a check-status observation, not a security-completeness claim.",
+  "artifact_metadata_only": {
+    "id": 12157021582,
+    "name": "a10-host-evidence",
+    "size_in_bytes": 17613832,
+    "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/artifacts/12157021582",
+    "archive_download_url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/artifacts/12157021582/zip",
+    "expired": false,
+    "created_at": "2026-10-19T00:52:06Z",
+    "expires_at": "2027-01-17T00:49:19Z",
+    "updated_at": "2026-10-19T00:52:06Z",
+    "digest": "sha256:9f21774fff8c40e6ab852f1f345a3b4c64f981a548a64b924aea2320d957fbc3",
+    "workflow_run": {
+      "id": 39182491046,
+      "repository_id": 1421656803,
+      "head_repository_id": 1421656803,
+      "head_branch": "agents/A00-r9-followthrough-20261018",
+      "head_sha": "5060ac6976b56b32647c728991e489cdee1cce9d"
+    }
+  },
+  "new_execution_by_reviewer": false,
+  "inherited_r8_qualification": false,
+  "raw_log_note": "Connector-decoded full UTF-8 job logs preserved unchanged including initial BOM; no binary job-log ZIP download was made."
+}

@@ -1,0 +1,173 @@
+Get:1 https://packages.microsoft.com/ubuntu/24.04/prod noble InRelease [3600 B]
+Get:2 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [618 kB]
+Get:3 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [557 kB]
+Get:4 https://packages.microsoft.com/ubuntu/24.04/prod noble/main armhf Packages [12.4 kB]
+Hit:5 http://ports.ubuntu.com/ubuntu-ports noble InRelease
+Get:6 http://ports.ubuntu.com/ubuntu-ports noble-updates InRelease [126 kB]
+Get:7 http://ports.ubuntu.com/ubuntu-ports noble-backports InRelease [126 kB]
+Get:8 http://ports.ubuntu.com/ubuntu-ports noble-security InRelease [126 kB]
+Get:9 http://ports.ubuntu.com/ubuntu-ports noble-updates/main arm64 Packages [1451 kB]
+Get:10 http://ports.ubuntu.com/ubuntu-ports noble-updates/main Translation-en [308 kB]
+Get:11 http://ports.ubuntu.com/ubuntu-ports noble-updates/universe arm64 Packages [1747 kB]
+Get:12 http://ports.ubuntu.com/ubuntu-ports noble-updates/universe Translation-en [342 kB]
+Get:13 http://ports.ubuntu.com/ubuntu-ports noble-updates/restricted arm64 Packages [2678 kB]
+Get:14 http://ports.ubuntu.com/ubuntu-ports noble-updates/restricted Translation-en [411 kB]
+Get:15 http://ports.ubuntu.com/ubuntu-ports noble-security/main arm64 Packages [1205 kB]
+Get:16 http://ports.ubuntu.com/ubuntu-ports noble-security/main Translation-en [231 kB]
+Get:17 http://ports.ubuntu.com/ubuntu-ports noble-security/universe arm64 Packages [1298 kB]
+Get:18 http://ports.ubuntu.com/ubuntu-ports noble-security/universe Translation-en [246 kB]
+Get:19 http://ports.ubuntu.com/ubuntu-ports noble-security/restricted arm64 Packages [2573 kB]
+Get:20 http://ports.ubuntu.com/ubuntu-ports noble-security/restricted Translation-en [392 kB]
+Fetched 14.5 MB in 4s (3797 kB/s)
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+pkg-config is already the newest version (1.8.1-2build1).
+perl is already the newest version (5.38.2-3.2ubuntu0.6).
+perl set to manually installed.
+libssl-dev is already the newest version (3.0.13-0ubuntu3.16).
+binutils is already the newest version (2.42-4ubuntu2.10).
+The following additional packages will be installed:
+  cmake-data libjsoncpp25 librhash0
+Suggested packages:
+  cmake-doc cmake-format elpa-cmake-mode ninja-build manpages-dev
+The following NEW packages will be installed:
+  bubblewrap build-essential cmake cmake-data libcap-dev libjsoncpp25
+  librhash0
+0 upgraded, 7 newly installed, 0 to remove and 44 not upgraded.
+Need to get 13.2 MB of archives.
+After this operation, 47.9 MB of additional disk space will be used.
+Get:1 http://ports.ubuntu.com/ubuntu-ports noble-security/main arm64 bubblewrap arm64 0.9.0-1ubuntu0.3 [50.0 kB]
+Get:2 http://ports.ubuntu.com/ubuntu-ports noble/main arm64 build-essential arm64 12.10ubuntu1 [4932 B]
+Get:3 http://ports.ubuntu.com/ubuntu-ports noble/main arm64 libjsoncpp25 arm64 1.9.5-6build1 [78.2 kB]
+Get:4 http://ports.ubuntu.com/ubuntu-ports noble/main arm64 librhash0 arm64 1.4.3-3build1 [126 kB]
+Get:5 http://ports.ubuntu.com/ubuntu-ports noble/main arm64 cmake-data all 3.28.3-1build7 [2155 kB]
+Get:6 http://ports.ubuntu.com/ubuntu-ports noble/main arm64 cmake arm64 3.28.3-1build7 [10.3 MB]
+Get:7 http://ports.ubuntu.com/ubuntu-ports noble-updates/main arm64 libcap-dev arm64 1:2.66-5ubuntu2.4 [507 kB]
+Fetched 13.2 MB in 3s (4996 kB/s)
+Selecting previously unselected package bubblewrap.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 203258 files and directories currently installed.)
+Preparing to unpack .../0-bubblewrap_0.9.0-1ubuntu0.3_arm64.deb ...
+Unpacking bubblewrap (0.9.0-1ubuntu0.3) ...
+Selecting previously unselected package build-essential.
+Preparing to unpack .../1-build-essential_12.10ubuntu1_arm64.deb ...
+Unpacking build-essential (12.10ubuntu1) ...
+Selecting previously unselected package libjsoncpp25:arm64.
+Preparing to unpack .../2-libjsoncpp25_1.9.5-6build1_arm64.deb ...
+Unpacking libjsoncpp25:arm64 (1.9.5-6build1) ...
+Selecting previously unselected package librhash0:arm64.
+Preparing to unpack .../3-librhash0_1.4.3-3build1_arm64.deb ...
+Unpacking librhash0:arm64 (1.4.3-3build1) ...
+Selecting previously unselected package cmake-data.
+Preparing to unpack .../4-cmake-data_3.28.3-1build7_all.deb ...
+Unpacking cmake-data (3.28.3-1build7) ...
+Selecting previously unselected package cmake.
+Preparing to unpack .../5-cmake_3.28.3-1build7_arm64.deb ...
+Unpacking cmake (3.28.3-1build7) ...
+Selecting previously unselected package libcap-dev:arm64.
+Preparing to unpack .../6-libcap-dev_1%3a2.66-5ubuntu2.4_arm64.deb ...
+Unpacking libcap-dev:arm64 (1:2.66-5ubuntu2.4) ...
+Setting up bubblewrap (0.9.0-1ubuntu0.3) ...
+Setting up libjsoncpp25:arm64 (1.9.5-6build1) ...
+Setting up librhash0:arm64 (1.4.3-3build1) ...
+Setting up build-essential (12.10ubuntu1) ...
+Setting up cmake-data (3.28.3-1build7) ...
+Setting up libcap-dev:arm64 (1:2.66-5ubuntu2.4) ...
+Setting up cmake (3.28.3-1build7) ...
+Processing triggers for man-db (2.12.0-4build2) ...
+Not building database; man-db/auto-update is not 'true'.
+Processing triggers for libc-bin (2.39-0ubuntu8.9) ...
+
+Running kernel seems to be up-to-date.
+
+No services need to be restarted.
+
+No containers need to be restarted.
+
+No user sessions are running outdated binaries.
+
+No VM guests are running outdated hypervisor (qemu) binaries on this host.
+info: syncing channel updates for 1.95.0-aarch64-unknown-linux-gnu
+info: latest update on 2026-04-16 for version 1.95.0 (59807616e 2026-04-14)
+info: downloading 3 components
+
+  1.95.0-aarch64-unknown-linux-gnu installed - rustc 1.95.0 (59807616e 2026-04-14)
+
+info: default toolchain set to 1.95.0-aarch64-unknown-linux-gnu
+info: syncing channel updates for 1.88.0-aarch64-unknown-linux-gnu
+info: latest update on 2025-06-26 for version 1.88.0 (6b00bc388 2025-06-23)
+info: downloading 3 components
+
+  1.88.0-aarch64-unknown-linux-gnu installed - rustc 1.88.0 (6b00bc388 2025-06-23)
+
+rustc 1.95.0 (59807616e 2026-04-14)
+binary: rustc
+commit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860
+commit-date: 2026-04-14
+host: aarch64-unknown-linux-gnu
+release: 1.95.0
+LLVM version: 22.1.2
+cargo 1.95.0 (f2d3ce0bd 2026-03-21)
+release: 1.95.0
+commit-hash: f2d3ce0bd7f24a49f8f72d9000448f8838c4e850
+commit-date: 2026-03-21
+host: aarch64-unknown-linux-gnu
+libgit2: 1.9.2 (sys:0.20.4 vendored)
+libcurl: 8.15.0-DEV (sys:0.4.83+curl-8.15.0 vendored ssl:OpenSSL/3.5.4)
+ssl: OpenSSL 3.5.4 30 Sep 2025
+os: Ubuntu 24.4.0 (noble) [64-bit]
+rustc 1.88.0 (6b00bc388 2025-06-23)
+binary: rustc
+commit-hash: 6b00bc3880198600130e1cf62b8f8a93494488cc
+commit-date: 2025-06-23
+host: aarch64-unknown-linux-gnu
+release: 1.88.0
+LLVM version: 20.1.5
+cargo 1.88.0 (873a06493 2025-05-10)
+release: 1.88.0
+commit-hash: 873a0649350c486caf67be772828a4f36bb4734c
+commit-date: 2025-05-10
+host: aarch64-unknown-linux-gnu
+libgit2: 1.9.0 (sys:0.20.0 vendored)
+libcurl: 8.12.1-DEV (sys:0.4.80+curl-8.12.1 vendored ssl:OpenSSL/3.4.1)
+ssl: OpenSSL 3.4.1 11 Feb 2025
+os: Ubuntu 24.4.0 (noble) [64-bit]
+cc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+Copyright (C) 2023 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+c++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+Copyright (C) 2023 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+cmake version 3.31.6
+
+CMake suite maintained and supported by Kitware (kitware.com/cmake).
+3.0.13
+2.66
+binutils	2.42-4ubuntu2.10
+bubblewrap	0.9.0-1ubuntu0.3
+build-essential	12.10ubuntu1
+cmake	3.28.3-1build7
+libcap-dev:arm64	1:2.66-5ubuntu2.4
+libssl-dev:arm64	3.0.13-0ubuntu3.16
+perl	5.38.2-3.2ubuntu0.6
+pkg-config:arm64	1.8.1-2build1
+Filesystem        1B-blocks        Used    Available Use% Mounted on
+/dev/root      154894188544 40680366080 114197045248  27% /
+PRETTY_NAME="Ubuntu 24.04.5 LTS"
+NAME="Ubuntu"
+VERSION_ID="24.04"
+VERSION="24.04.5 LTS (Noble Numbat)"
+VERSION_CODENAME=noble
+ID=ubuntu
+ID_LIKE=debian
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+UBUNTU_CODENAME=noble
+LOGO=ubuntu-logo

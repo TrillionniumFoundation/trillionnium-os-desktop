@@ -12,13 +12,11 @@ use trill_ui_core::observation::{self, FreshnessFailure};
 
 const LAYOUT_PROBE_PREFIX: &[u8] = b"TRILL_HEPTA_LAYOUT_V1 ";
 
-/// Both the local receipt and the original sample must be current. A response
-/// can wait in the Shell queue while the UI is paused; receiving it now must
-/// not reset the age of its runtime observation. Clock rollback is unknown,
-/// not a zero-age success. Shared by visible state and the layout diagnostic.
+/// A complete monotonic age bound and the original wall-clock sample must
+/// both be current. Shared by visible state and the layout diagnostic.
 fn freshness_failure(
     projection: &HeptaProjection,
-    received_at: Option<Instant>,
+    clock: &RuntimeReceiptClock,
     now: Instant,
     now_unix_ms: u64,
 ) -> Option<&'static str> {
@@ -27,7 +25,7 @@ fn freshness_failure(
             .last_observation
             .as_ref()
             .map(|observation| observation.sampled_unix_ms),
-        received_at.and_then(|received| now.checked_duration_since(received)),
+        clock.age_for(projection, now),
         now_unix_ms,
     )
     .map(|failure| match failure {
@@ -44,14 +42,122 @@ fn freshness_failure(
 /// restore Observed; existing unknown-state diagnostics are kept unchanged.
 pub fn expire_unfresh_observation(
     projection: &mut HeptaProjection,
-    received_at: Option<Instant>,
+    clock: &RuntimeReceiptClock,
     now: Instant,
     now_unix_ms: u64,
 ) {
     if projection.connection == HeptaConnectionState::Observed {
-        if let Some(code) = freshness_failure(projection, received_at, now, now_unix_ms) {
+        if let Some(code) = freshness_failure(projection, clock, now, now_unix_ms) {
             projection.mark_runtime_unavailable(code);
         }
+    }
+}
+
+#[derive(PartialEq, Eq)]
+struct RuntimeSource {
+    session_instance: String,
+    agent_id: String,
+    spawn_generation: u64,
+    process_id: u32,
+}
+
+/// A runtime clock is separate from the known run and scoped to the actual
+/// Session and original process identity. Lifecycle generation changes do
+/// not replace that process or reset a repeated successful sample's budget.
+#[derive(Default)]
+pub struct RuntimeReceiptClock {
+    source: Option<RuntimeSource>,
+    sequence: Option<u64>,
+    anchor: Option<ReceiptAgeAnchor>,
+}
+
+impl RuntimeReceiptClock {
+    pub fn observe(
+        &mut self,
+        session_instance: &str,
+        projection: &mut HeptaProjection,
+        request_started_at: Instant,
+        received_at: Instant,
+    ) {
+        let Some(sample) = &projection.last_observation else {
+            // A missing-history frame from the same Session is unknown; it
+            // cannot erase a successful sample's already accumulated age.
+            if self
+                .source
+                .as_ref()
+                .is_some_and(|source| source.session_instance != session_instance)
+            {
+                *self = Self::default();
+            }
+            return;
+        };
+        let source = RuntimeSource {
+            session_instance: session_instance.into(),
+            agent_id: sample.agent_id.clone(),
+            spawn_generation: sample.spawn_generation,
+            process_id: sample.health.process_id,
+        };
+        if self.source.as_ref() != Some(&source) {
+            self.source = Some(source);
+            self.sequence = None;
+            self.anchor = None;
+        }
+        // Historical states keep their original diagnostic. They cannot
+        // refresh a successful receipt merely because another poll arrived.
+        if projection.connection != HeptaConnectionState::Observed {
+            return;
+        }
+        if session_instance.is_empty() || sample.agent_id.is_empty() {
+            projection.mark_runtime_unavailable("hepta_observation_identity_invalid");
+            return;
+        }
+        let Some(sample_clock) = projection.runtime_sample_clock.as_deref().copied() else {
+            projection.mark_runtime_unavailable("hepta_observation_age_missing");
+            return;
+        };
+        if sample_clock.observation_sequence == 0 {
+            projection.mark_runtime_unavailable("hepta_observation_sequence_invalid");
+            return;
+        }
+        if self
+            .sequence
+            .is_some_and(|sequence| sample_clock.observation_sequence < sequence)
+        {
+            projection.mark_runtime_unavailable("hepta_observation_sequence_regressed");
+            return;
+        }
+        let previous = (self.sequence == Some(sample_clock.observation_sequence))
+            .then_some(self.anchor)
+            .flatten();
+        let Some(anchor) = ReceiptAgeAnchor::from_snapshot(
+            previous,
+            sample_clock.sample_age_at_snapshot_ms,
+            request_started_at,
+            received_at,
+        ) else {
+            projection.mark_runtime_unavailable("session_snapshot_time_invalid");
+            return;
+        };
+        self.sequence = Some(sample_clock.observation_sequence);
+        self.anchor = Some(anchor);
+    }
+
+    pub fn age_at(&self, now: Instant) -> Option<Duration> {
+        self.anchor.and_then(|anchor| anchor.age_at(now))
+    }
+
+    fn age_for(&self, projection: &HeptaProjection, now: Instant) -> Option<Duration> {
+        let source = self.source.as_ref()?;
+        let sample = projection.last_observation.as_ref()?;
+        let sample_clock = projection.runtime_sample_clock.as_deref()?;
+        if self.sequence != Some(sample_clock.observation_sequence)
+            || source.agent_id != sample.agent_id
+            || source.spawn_generation != sample.spawn_generation
+            || source.process_id != sample.health.process_id
+        {
+            return None;
+        }
+        self.age_at(now)
     }
 }
 
@@ -63,16 +169,38 @@ pub fn expire_unfresh_observation(
 pub struct RunReceiptClock {
     source: Option<(String, String)>,
     sequence: Option<u64>,
-    anchor: Option<RunAgeAnchor>,
+    anchor: Option<ReceiptAgeAnchor>,
 }
 
 #[derive(Clone, Copy)]
-struct RunAgeAnchor {
+struct ReceiptAgeAnchor {
     received_at: Instant,
     age_at_receipt: Duration,
 }
 
-impl RunAgeAnchor {
+impl ReceiptAgeAnchor {
+    fn from_snapshot(
+        previous: Option<Self>,
+        source_age_ms: u64,
+        request_started_at: Instant,
+        received_at: Instant,
+    ) -> Option<Self> {
+        // The source snapshot occurs inside this request. The full RTT
+        // conservatively bounds its unmeasured transfer time, including a
+        // first response that is queued while wall time rolls back.
+        let rtt = received_at.checked_duration_since(request_started_at)?;
+        let mut age_at_receipt = Duration::from_millis(source_age_ms).checked_add(rtt)?;
+        if let Some(previous) = previous {
+            // Advance an old bound once; overlapping RTTs must not be added
+            // repeatedly, nor can a younger repeated frame undo elapsed time.
+            age_at_receipt = age_at_receipt.max(previous.age_at(received_at)?);
+        }
+        Some(Self {
+            received_at,
+            age_at_receipt,
+        })
+    }
+
     fn age_at(self, now: Instant) -> Option<Duration> {
         self.age_at_receipt
             .checked_add(now.checked_duration_since(self.received_at)?)
@@ -118,32 +246,20 @@ impl RunReceiptClock {
             run.mark_unavailable("run_observation_age_missing");
             return;
         };
-        // The source snapshot occurs inside this request. The full RTT is
-        // a conservative upper bound on its unmeasured transfer time; using
-        // only receipt age could rejuvenate the first queued response.
-        let Some(mut age_at_receipt) = received_at
-            .checked_duration_since(request_started_at)
-            .and_then(|rtt| Duration::from_millis(source_age_ms).checked_add(rtt))
-        else {
+        let previous = (self.sequence == Some(sample.observation_sequence))
+            .then_some(self.anchor)
+            .flatten();
+        let Some(anchor) = ReceiptAgeAnchor::from_snapshot(
+            previous,
+            source_age_ms,
+            request_started_at,
+            received_at,
+        ) else {
             run.mark_unavailable("run_receipt_time_invalid");
             return;
         };
-        if self.sequence == Some(sample.observation_sequence) {
-            if let Some(anchor) = self.anchor {
-                let Some(previous_age) = anchor.age_at(received_at) else {
-                    run.mark_unavailable("run_receipt_time_invalid");
-                    return;
-                };
-                // Advance the old bound once, rather than adding overlapping
-                // RTTs or trusting a repeated frame with a younger source age.
-                age_at_receipt = age_at_receipt.max(previous_age);
-            }
-        }
         self.sequence = Some(sample.observation_sequence);
-        self.anchor = Some(RunAgeAnchor {
-            received_at,
-            age_at_receipt,
-        });
+        self.anchor = Some(anchor);
     }
 
     pub fn age_at(&self, now: Instant) -> Option<Duration> {
@@ -209,7 +325,7 @@ impl LayoutProbe {
     pub fn emit_after_runtime_layout<W: Write>(
         &mut self,
         projection: &HeptaProjection,
-        received_at: Option<Instant>,
+        clock: &RuntimeReceiptClock,
         now: Instant,
         now_unix_ms: u64,
         output: &mut W,
@@ -218,7 +334,7 @@ impl LayoutProbe {
         {
             return Ok(());
         }
-        if freshness_failure(projection, received_at, now, now_unix_ms).is_some() {
+        if freshness_failure(projection, clock, now, now_unix_ms).is_some() {
             return Ok(());
         }
         let Some(observation) = &projection.last_observation else {
@@ -391,7 +507,9 @@ fn run_card(ui: &mut egui::Ui, run: &HeptaRunProjection) {
 #[cfg(test)]
 mod probe_tests {
     use super::*;
-    use trill_ui_core::hepta::{HeptaHealthObservation, HeptaRuntimeObservation};
+    use trill_ui_core::hepta::{
+        HeptaHealthObservation, HeptaRuntimeObservation, HeptaRuntimeSampleClock,
+    };
 
     fn observed() -> HeptaProjection {
         HeptaProjection {
@@ -399,6 +517,10 @@ mod probe_tests {
             last_attempt_unix_ms: Some(10_000),
             error_code: None,
             run: None,
+            runtime_sample_clock: Some(Box::new(HeptaRuntimeSampleClock {
+                observation_sequence: 1,
+                sample_age_at_snapshot_ms: 0,
+            })),
             last_observation: Some(HeptaRuntimeObservation {
                 sampled_unix_ms: 10_000,
                 agent_id: "11111111-1111-4111-8111-111111111111".into(),
@@ -423,12 +545,184 @@ mod probe_tests {
         }
     }
 
+    fn receipt_clock(received: Option<Instant>) -> RuntimeReceiptClock {
+        let mut clock = RuntimeReceiptClock::default();
+        if let Some(received) = received {
+            clock.observe("layout-test-session", &mut observed(), received, received);
+        }
+        clock
+    }
+
+    #[test]
+    fn runtime_repeated_samples_share_one_advancing_budget_with_the_layout_gate() {
+        let now = Instant::now();
+        let mut view = observed();
+        let history = view.last_observation.clone();
+        view.runtime_sample_clock
+            .as_mut()
+            .unwrap()
+            .sample_age_at_snapshot_ms = 4_000;
+        let mut clock = RuntimeReceiptClock::default();
+        clock.observe(
+            "session-a",
+            &mut view,
+            now - Duration::from_millis(200),
+            now,
+        );
+        assert_eq!(clock.age_at(now), Some(Duration::from_millis(4_200)));
+        view.runtime_sample_clock
+            .as_mut()
+            .unwrap()
+            .sample_age_at_snapshot_ms = 5_000;
+        clock.observe(
+            "session-a",
+            &mut view,
+            now + Duration::from_millis(800),
+            now + Duration::from_millis(1_000),
+        );
+        assert_eq!(
+            clock.age_at(now + Duration::from_millis(1_000)),
+            Some(Duration::from_millis(5_200))
+        );
+        view.runtime_sample_clock
+            .as_mut()
+            .unwrap()
+            .sample_age_at_snapshot_ms = 0;
+        clock.observe(
+            "session-a",
+            &mut view,
+            now + Duration::from_millis(1_900),
+            now + Duration::from_millis(2_000),
+        );
+        for (elapsed_ms, expected) in [
+            (2_800, HeptaConnectionState::Observed),
+            (2_801, HeptaConnectionState::Stale),
+        ] {
+            let at = now + Duration::from_millis(elapsed_ms);
+            let mut rendered = view.clone();
+            expire_unfresh_observation(&mut rendered, &clock, at, 10_000);
+            assert_eq!(rendered.connection, expected);
+            assert_eq!(rendered.last_observation, history);
+            let mut marker = Vec::new();
+            // Use the original current-looking projection as input: checking
+            // the marker after a caller already staled it would be too weak.
+            LayoutProbe::new(true)
+                .emit_after_runtime_layout(&view, &clock, at, 10_000, &mut marker)
+                .unwrap();
+            assert_eq!(marker.is_empty(), expected == HeptaConnectionState::Stale);
+        }
+    }
+
+    #[test]
+    fn runtime_clock_is_bound_to_session_agent_spawn_and_process_but_not_lifecycle_revision() {
+        let now = Instant::now();
+        for source_part in 0..4 {
+            let mut view = observed();
+            view.runtime_sample_clock = Some(Box::new(HeptaRuntimeSampleClock {
+                observation_sequence: 9,
+                sample_age_at_snapshot_ms: 6_000,
+            }));
+            let mut clock = RuntimeReceiptClock::default();
+            clock.observe("session-a", &mut view, now, now);
+            // A normal lifecycle generation change cannot rejuvenate the
+            // same successful sample, even if its new claimed age is zero.
+            view.last_observation.as_mut().unwrap().current_generation += 1;
+            view.runtime_sample_clock
+                .as_mut()
+                .unwrap()
+                .sample_age_at_snapshot_ms = 0;
+            let later = now + Duration::from_millis(1_001);
+            clock.observe("session-a", &mut view, later, later);
+            expire_unfresh_observation(&mut view, &clock, later, 10_000);
+            assert_eq!(view.connection, HeptaConnectionState::Stale);
+
+            let mut replacement = observed();
+            let session = if source_part == 0 {
+                "session-b"
+            } else {
+                "session-a"
+            };
+            let identity = replacement.last_observation.as_mut().unwrap();
+            match source_part {
+                1 => identity.agent_id = "22222222-2222-4222-8222-222222222222".into(),
+                2 => identity.spawn_generation += 1,
+                3 => identity.health.process_id += 1,
+                _ => {}
+            }
+            replacement.runtime_sample_clock = None;
+            clock.observe(session, &mut replacement, later, later);
+            assert_eq!(replacement.connection, HeptaConnectionState::Stale);
+            assert_eq!(
+                replacement.error_code.as_deref(),
+                Some("hepta_observation_age_missing")
+            );
+            assert_eq!(
+                clock.age_at(later),
+                None,
+                "new source inherited an old clock"
+            );
+
+            replacement.connection = HeptaConnectionState::Observed;
+            replacement.error_code = None;
+            replacement.runtime_sample_clock = Some(Box::new(HeptaRuntimeSampleClock {
+                observation_sequence: 1,
+                sample_age_at_snapshot_ms: 1_000,
+            }));
+            clock.observe(session, &mut replacement, later, later);
+            expire_unfresh_observation(&mut replacement, &clock, later, 10_000);
+            assert_eq!(replacement.connection, HeptaConnectionState::Observed);
+            assert_eq!(clock.age_at(later), Some(Duration::from_millis(1_000)));
+        }
+    }
+
+    #[test]
+    fn runtime_sequence_regression_is_unknown_and_only_a_new_success_can_reset_its_age() {
+        let now = Instant::now();
+        let mut view = observed();
+        view.runtime_sample_clock = Some(Box::new(HeptaRuntimeSampleClock {
+            observation_sequence: 2,
+            sample_age_at_snapshot_ms: 6_000,
+        }));
+        let mut clock = RuntimeReceiptClock::default();
+        clock.observe("session-a", &mut view, now, now);
+        view.runtime_sample_clock = Some(Box::new(HeptaRuntimeSampleClock {
+            observation_sequence: 1,
+            sample_age_at_snapshot_ms: 0,
+        }));
+        let history = view.last_observation.clone();
+        clock.observe("session-a", &mut view, now, now);
+        assert_eq!(view.connection, HeptaConnectionState::Stale);
+        assert_eq!(
+            view.error_code.as_deref(),
+            Some("hepta_observation_sequence_regressed")
+        );
+        assert_eq!(view.last_observation, history);
+        assert_eq!(clock.age_at(now), Some(Duration::from_millis(6_000)));
+        view.connection = HeptaConnectionState::Observed;
+        view.error_code = None;
+        view.runtime_sample_clock = Some(Box::new(HeptaRuntimeSampleClock {
+            observation_sequence: 3,
+            sample_age_at_snapshot_ms: 0,
+        }));
+        let later = now + Duration::from_secs(8);
+        clock.observe("session-a", &mut view, later, later);
+        expire_unfresh_observation(&mut view, &clock, later, 10_000);
+        assert_eq!(view.connection, HeptaConnectionState::Observed);
+        assert_eq!(clock.age_at(later), Some(Duration::ZERO));
+    }
+
     #[test]
     fn a_generic_frame_or_stale_projection_cannot_satisfy_runtime_layout_probe() {
         let now = Instant::now();
         let mut output = Vec::new();
         LayoutProbe::new(false)
-            .emit_after_runtime_layout(&observed(), Some(now), now, 10_000, &mut output)
+            .emit_after_runtime_layout(
+                &observed(),
+                &receipt_clock(Some(now)),
+                now,
+                10_000,
+                &mut output,
+            )
             .unwrap();
         for connection in [
             HeptaConnectionState::NotObserved,
@@ -440,7 +734,13 @@ mod probe_tests {
             let mut projection = observed();
             projection.connection = connection;
             LayoutProbe::new(true)
-                .emit_after_runtime_layout(&projection, Some(now), now, 10_000, &mut output)
+                .emit_after_runtime_layout(
+                    &projection,
+                    &receipt_clock(Some(now)),
+                    now,
+                    10_000,
+                    &mut output,
+                )
                 .unwrap();
         }
         for (received, sample_now) in [
@@ -450,7 +750,13 @@ mod probe_tests {
             (Some(now), 9_999),
         ] {
             LayoutProbe::new(true)
-                .emit_after_runtime_layout(&observed(), received, now, sample_now, &mut output)
+                .emit_after_runtime_layout(
+                    &observed(),
+                    &receipt_clock(received),
+                    now,
+                    sample_now,
+                    &mut output,
+                )
                 .unwrap();
         }
         assert!(
@@ -466,7 +772,13 @@ mod probe_tests {
         let mut output = Vec::new();
         for _ in 0..2 {
             probe
-                .emit_after_runtime_layout(&observed(), Some(now), now, 10_005, &mut output)
+                .emit_after_runtime_layout(
+                    &observed(),
+                    &receipt_clock(Some(now)),
+                    now,
+                    10_005,
+                    &mut output,
+                )
                 .unwrap();
         }
         assert_eq!(output.iter().filter(|byte| **byte == b'\n').count(), 1);

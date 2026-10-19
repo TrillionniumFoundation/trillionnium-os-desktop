@@ -1,0 +1,220 @@
+diff --git a/services/hepta-os/tests/objective_cli.rs b/services/hepta-os/tests/objective_cli.rs
+index 7e1f81a..4136d3d 100644
+--- a/services/hepta-os/tests/objective_cli.rs
++++ b/services/hepta-os/tests/objective_cli.rs
+@@ -6,9 +6,11 @@ use std::io::{BufRead, BufReader, Read, Write};
+ use std::os::unix::ffi::OsStringExt;
+ use std::os::unix::fs::{MetadataExt, PermissionsExt};
+ use std::os::unix::net::{UnixListener, UnixStream};
++use std::os::unix::process::ExitStatusExt;
+ use std::path::PathBuf;
+ use std::process::{Child, Command, Output, Stdio};
+ use std::sync::atomic::{AtomicU64, Ordering};
++use std::sync::mpsc;
+ use std::thread;
+ use std::time::{Duration, Instant};
+ 
+@@ -101,6 +103,88 @@ fn document(output: &Output) -> Value {
+     serde_json::from_slice(&output.stdout).unwrap()
+ }
+ 
++// This owner alone kills and reaps the actual CLI. Keeping Child until wait()
++// returns also prevents a failed assertion from dropping an unreaped process.
++struct OwnedCli {
++    child: Option<Child>,
++    holds: Vec<mpsc::Sender<()>>,
++}
++
++impl OwnedCli {
++    fn new(endpoint: &Endpoint) -> Self {
++        let uid = fs::metadata(&endpoint.socket).unwrap().uid();
++        let child = Command::new(env!("CARGO_BIN_EXE_hepta-submit"))
++            .arg(&endpoint.socket)
++            .args([
++                AGENT,
++                "3",
++                &uid.to_string(),
++                &std::process::id().to_string(),
++                "41",
++            ])
++            .stdin(Stdio::piped())
++            .stdout(Stdio::piped())
++            .stderr(Stdio::piped())
++            .spawn()
++            .unwrap();
++        Self {
++            child: Some(child),
++            holds: Vec::new(),
++        }
++    }
++
++    fn child(&mut self) -> &mut Child {
++        self.child.as_mut().unwrap()
++    }
++
++    fn retain_hold(&mut self, release: &mpsc::Sender<()>) {
++        // On panic, dropping the caller's sender must not release EOF/reply
++        // before this owner kills and reaps the child. Fields drop afterward.
++        self.holds.push(release.clone());
++    }
++
++    fn kill_and_reap(&mut self) -> Output {
++        let child = self.child();
++        child.kill().unwrap();
++        let status = child.wait().unwrap();
++        assert_eq!(status.signal(), Some(9), "expected our SIGKILL fault");
++        assert_eq!(child.try_wait().unwrap(), Some(status));
++        // The sole child has been reaped before reading its now-closed pipes.
++        // A transport timeout or an ordinary exit is not this fault scenario.
++        let mut stdout = Vec::new();
++        child
++            .stdout
++            .take()
++            .unwrap()
++            .take(8_193)
++            .read_to_end(&mut stdout)
++            .unwrap();
++        let mut stderr = Vec::new();
++        child
++            .stderr
++            .take()
++            .unwrap()
++            .take(1_025)
++            .read_to_end(&mut stderr)
++            .unwrap();
++        drop(self.child.take());
++        Output {
++            status,
++            stdout,
++            stderr,
++        }
++    }
++}
++
++impl Drop for OwnedCli {
++    fn drop(&mut self) {
++        if let Some(mut child) = self.child.take() {
++            let _ = child.kill();
++            let _ = child.wait();
++        }
++    }
++}
++
+ #[test]
+ fn trusted_cli_keeps_original_wire_and_projects_only_admission_metadata() {
+     let endpoint = Endpoint::new();
+@@ -297,3 +381,114 @@ fn closed_stdout_reports_lost_result_after_the_single_owner_attempt() {
+         std::io::ErrorKind::WouldBlock
+     );
+ }
++
++#[test]
++fn killed_before_stdin_eof_has_no_receipt_or_connection() {
++    let endpoint = Endpoint::new();
++    let retained = RAW.trim_end_matches('\n').as_bytes().to_vec();
++    let supplied = retained.clone();
++    let mut cli = OwnedCli::new(&endpoint);
++    let mut stdin = cli.child().stdin.take().unwrap();
++    let (input_written, input_ready) = mpsc::sync_channel(1);
++    let (release_input, hold_input) = mpsc::channel();
++    cli.retain_hold(&release_input);
++    let producer = thread::spawn(move || {
++        stdin.write_all(&supplied).unwrap();
++        input_written.send(supplied).unwrap();
++        // The writer stays open until the test releases it, including during
++        // SIGKILL/reap. Disconnection also releases it on assertion failure.
++        let _ = hold_input.recv();
++        drop(stdin);
++    });
++
++    let written = input_ready.recv_timeout(Duration::from_secs(8)).unwrap();
++    assert_eq!(written, retained);
++    // The handshake proves that the producer wrote the entire original input
++    // and still withholds EOF, not that a particular internal read has run.
++    let output = cli.kill_and_reap();
++    release_input.send(()).unwrap();
++    producer.join().unwrap();
++
++    assert!(output.stdout.is_empty());
++    assert!(output.stderr.is_empty());
++    assert_eq!(written, RAW.trim_end_matches('\n').as_bytes());
++    endpoint.listener.set_nonblocking(true).unwrap();
++    assert_eq!(
++        endpoint.listener.accept().unwrap_err().kind(),
++        std::io::ErrorKind::WouldBlock
++    );
++    // This fixture independently proves no connection before EOF. A launcher
++    // with only the missing output has no exit-10/not_sent receipt and must
++    // retain uncertainty. The test does not install a persistent request owner.
++}
++
++#[test]
++fn killed_after_complete_request_has_no_receipt_and_no_retry() {
++    let endpoint = Endpoint::new();
++    let retained = RAW.trim_end_matches('\n').as_bytes().to_vec();
++    let expected = retained.clone();
++    let listener = endpoint.listener.try_clone().unwrap();
++    let (frame_observed, frame_ready) = mpsc::sync_channel(1);
++    let (release_owner, hold_reply) = mpsc::channel();
++    let owner = thread::spawn(move || {
++        let socket = accept(&listener);
++        socket
++            .set_read_timeout(Some(Duration::from_secs(8)))
++            .unwrap();
++        let mut reader = BufReader::new(socket);
++        let mut frame = Vec::new();
++        (&mut reader)
++            .take(65_537)
++            .read_until(b'\n', &mut frame)
++            .unwrap();
++        assert!(frame.len() <= 65_536 && frame.ends_with(b"\n"));
++        assert_eq!(
++            frame
++                .windows(expected.len())
++                .filter(|part| *part == expected.as_slice())
++                .count(),
++            1,
++            "the complete original issuer input must appear exactly once"
++        );
++        let request: Value = serde_json::from_slice(&frame).unwrap();
++        assert_eq!(request["schema_version"], 2);
++        assert_eq!(request["request_id"], 41);
++        assert_eq!(request["spawn_generation"], 3);
++        assert_eq!(request["method"]["type"], "objective_start");
++        assert_eq!(
++            request["method"]["request"],
++            serde_json::from_slice::<Value>(&expected).unwrap()
++        );
++        frame_observed.send(frame.clone()).unwrap();
++        // No owner response is emitted. Only an explicit release (or the
++        // caller's failure cleanup) lets this fixture inspect the disconnect.
++        let _ = hold_reply.recv();
++        let mut extra = [0];
++        assert_eq!(reader.read(&mut extra).unwrap(), 0, "no second frame");
++        assert_eq!(
++            listener.accept().unwrap_err().kind(),
++            std::io::ErrorKind::WouldBlock,
++            "the reaped CLI must not reconnect"
++        );
++        frame
++    });
++    let mut cli = OwnedCli::new(&endpoint);
++    cli.retain_hold(&release_owner);
++    cli.child()
++        .stdin
++        .take()
++        .unwrap()
++        .write_all(&retained)
++        .unwrap();
++
++    let observed = frame_ready.recv_timeout(Duration::from_secs(8)).unwrap();
++    let output = cli.kill_and_reap();
++    release_owner.send(()).unwrap();
++    assert_eq!(owner.join().unwrap(), observed);
++    assert!(output.stdout.is_empty());
++    assert!(output.stderr.is_empty());
++    assert_eq!(retained, RAW.trim_end_matches('\n').as_bytes());
++    // The peer proved a full send, while no CLI receipt reached the caller.
++    // This is a sent-unknown process-loss case, not an emitted SubmitUnknown
++    // record, original-owner publication, or durable reconciliation evidence.
++}
