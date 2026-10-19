@@ -1,12 +1,126 @@
 {
-  "schema_version": 1,
-  "scope": "R9 remote CI addendum files in this commit; original native/runtime archive is separately frozen.",
-  "self_exclusion": "artifact-manifest.json is bound by its Git commit to avoid a self-reference.",
+  "schema_version": 2,
+  "scope": "R9 exact-source remote CI evidence plus explicitly dated 2026-10-19 recovery reviews; original native/archive directory unchanged.",
+  "self_exclusion": "artifact-manifest.json is bound by its Git commit.",
+  "excluded": [
+    {
+      "artifact_id": 12135470347,
+      "name": "original ARM ELF ZIP",
+      "bytes": 90606774,
+      "sha256": "1a145400d57620ecbcdcf533134ce4f2c45a47d58c5e95735c4192adb993bb63",
+      "reason": "Original bundle downloaded and independently inspected, but not copied into this Git directory; acquisition, actual-byte review and original manifest are included; GitHub retention is stated in README."
+    }
+  ],
   "files": [
     {
       "path": "README.md",
-      "bytes": 3988,
-      "sha256": "7f1edfcab22d4902c8b04a7b65af8396a2c480f75a2930e9627fa1f48941f152"
+      "bytes": 12951,
+      "sha256": "13b239b464cfbcbfc925d904f23843fc6566b07c0580833db037d503d7ef2f31"
+    },
+    {
+      "path": "arm-allocation.json",
+      "bytes": 407,
+      "sha256": "38919fcacbf615c2af7c7f8487d277e7d40fb60c14eab161ea7069f38daf402c"
+    },
+    {
+      "path": "arm-binary-manifest.json",
+      "bytes": 5350,
+      "sha256": "1cec6fd702e47f476665af9548cfcf5f9c5222385dc6883b3bae4eb0c17f6c3b"
+    },
+    {
+      "path": "arm-builds.json",
+      "bytes": 2447,
+      "sha256": "732a1f90741f6a3e39bd93e6faf69d0561530d852bb488b8ba852984ca35ddba"
+    },
+    {
+      "path": "arm-elf-artifact-review-20261019.json",
+      "bytes": 4421,
+      "sha256": "8f3893b8e54acf6e224fd35a2f80b6b7e2ee0bf515fd5cb3640b05c5d07ac652"
+    },
+    {
+      "path": "arm-elf-recovery-acquisition-20261019.json",
+      "bytes": 471,
+      "sha256": "569e303688d57179859f33a6c9975e65e735da315a8de560ff3f0f1a4c27fcd2"
+    },
+    {
+      "path": "arm-final-checkouts.json",
+      "bytes": 5592,
+      "sha256": "181f5e96d4f6536c1164ab990ef0b7729663ae8d26375193a7d524e4cb939da6"
+    },
+    {
+      "path": "arm-history-artifact-review-rebuilt-20261019.json",
+      "bytes": 146541,
+      "sha256": "b158afd612e0828610b15278fb9c0b93386b6147f0e03ce151bc4ed12a3d029f"
+    },
+    {
+      "path": "arm-history-evidence.zip",
+      "bytes": 852554,
+      "sha256": "2717d25e42c9a1329e07bce92459db89a3109f72313ebac3e6010ddc8f1accd4"
+    },
+    {
+      "path": "arm-history-recovery-acquisition-20261019.json",
+      "bytes": 871,
+      "sha256": "f176b9519d37e30e608c97d9830d6a7ee89af551e40ddbdda9c9dadbfb1eca84"
+    },
+    {
+      "path": "arm-history-recovery-github-metadata-20261019.json",
+      "bytes": 23066,
+      "sha256": "86aa3b13737ff748a756511dcf25e40fb5936e518180309d85dc711cb13e7a5d"
+    },
+    {
+      "path": "arm-history-recovery-jobs-20261019.json",
+      "bytes": 11163,
+      "sha256": "0c0e07703503638a815b7b85d61f266e4a851d749a270c9970cd63ed67e914d6"
+    },
+    {
+      "path": "arm-history-runtime.json",
+      "bytes": 78175,
+      "sha256": "703545addc305db4fb055a801b4b9bfa7b4e5cb088fb8179b92f9b106aef9ca3"
+    },
+    {
+      "path": "desktop193-ordinary-merge-20261019.json",
+      "bytes": 697,
+      "sha256": "a68b7ce62bae42cc46a62599e84c878d88eb8f0c1a328258b0d7c4d1a30f2581"
+    },
+    {
+      "path": "owner-architecture-terminal-observation-20261019.json",
+      "bytes": 22331,
+      "sha256": "1c1ae50159dbc6c0b60e13c6e9cec29490cf850d7d4203338ce02c572b0502c9"
+    },
+    {
+      "path": "resume-gates-observation-20261019.json",
+      "bytes": 275148,
+      "sha256": "2927495c6d01d7b69950c7ac5e21a5ef2fa58a652d8b4418b4ce106dfba98476"
+    },
+    {
+      "path": "review/assemble-arm-history-recovery-review-20261019.py",
+      "bytes": 7632,
+      "sha256": "270fbc302238a3f71f8446b789f14f5b651b0f75b658fc132d73862efe51e38d"
+    },
+    {
+      "path": "review/recovered-review-arm-runtime-original.py",
+      "bytes": 27715,
+      "sha256": "9f9bb9f3ef4cef42a924d42f2600fd3b7a21c01ec9de6c67193f3f56aa1b3c0b"
+    },
+    {
+      "path": "review/recovered-review-arm-source-original.py",
+      "bytes": 20649,
+      "sha256": "4ece06e26fcb21fb98c05be646a9e3129e26afeddb70d15c971d5e7b26f189d7"
+    },
+    {
+      "path": "review/review-arm-elf-20261019.py",
+      "bytes": 7897,
+      "sha256": "0cce950a5c9511dfbfbe80d0d1dab572aef4c65281e131cf7c906b8a2e8c2933"
+    },
+    {
+      "path": "review/review-arm-runtime-recovery-20261019.py",
+      "bytes": 27952,
+      "sha256": "2413606e6b322671aec003200c1a36c217e5d9ccb42ee01ec7e54e6e923a0bc5"
+    },
+    {
+      "path": "review/review-arm-source-recovery-20261019.py",
+      "bytes": 20896,
+      "sha256": "4cc4c12e2f4b242955005befe309ee0a567bb40d1e55bbcc6fc6e31356d3788c"
     },
     {
       "path": "transport-artifact-github-metadata.json",

@@ -1,0 +1,74 @@
+{
+  "started_at_utc": "2026-10-18T11:06:03.940218+00:00",
+  "desktop_commit": "46dcb2d691827f7aa3ad7903dae09d39fd338126",
+  "contract": {
+    "path": "/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/services/hepta-os/OBJECTIVE_HISTORY_CONTRACT.json",
+    "sha256": "f0fc1110233dc38542097c6f9f7ef2e3f6ca5eb215fa2b4447e556cd7ac46981",
+    "desktop_commit": "46dcb2d691827f7aa3ad7903dae09d39fd338126"
+  },
+  "upstream_before": {
+    "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+    "tree": "f4ef891d43baf90d6eebd29921a5ed03222ef3ab",
+    "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+    "clean_checkout": true,
+    "reviewed_files": 36
+  },
+  "free_before": 114196418560,
+  "steps": [
+    {
+      "name": "original-agentd",
+      "cwd": "/home/runner/work/_temp/hepta-history-native-39115155092-1/hepta-source/codex-rs",
+      "target": "/home/runner/work/_temp/hepta-history-native-39115155092-1/hepta-target",
+      "command": [
+        "rustup",
+        "run",
+        "1.95.0",
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "dev-small",
+        "--no-default-features",
+        "-p",
+        "codex-hepta-agentd",
+        "--bin",
+        "codex-hepta-agentd",
+        "-j1"
+      ],
+      "started_at_utc": "2026-10-18T11:06:03.940376+00:00",
+      "exit_code": 0,
+      "ended_at_utc": "2026-10-18T11:23:06.822717+00:00"
+    },
+    {
+      "name": "desktop-clis",
+      "cwd": "/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop",
+      "target": "/home/runner/work/_temp/hepta-history-native-39115155092-1/desktop-target",
+      "command": [
+        "rustup",
+        "run",
+        "1.88.0",
+        "cargo",
+        "build",
+        "--locked",
+        "--manifest-path",
+        "services/hepta-os/Cargo.toml",
+        "--features",
+        "objective-history",
+        "--bins",
+        "-j1"
+      ],
+      "started_at_utc": "2026-10-18T11:23:06.823293+00:00",
+      "exit_code": 0,
+      "ended_at_utc": "2026-10-18T11:23:24.094478+00:00"
+    }
+  ],
+  "upstream_after": {
+    "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+    "tree": "f4ef891d43baf90d6eebd29921a5ed03222ef3ab",
+    "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+    "clean_checkout": true,
+    "reviewed_files": 36
+  },
+  "ended_at_utc": "2026-10-18T11:23:24.166967+00:00",
+  "status": "passed"
+}
