@@ -458,6 +458,9 @@ struct OperationRecord {
 #[derive(Clone, Debug)]
 struct ReplayRecord {
     key: OperationKey,
+    delivery: BootDelivery,
+    fence: GenerationFence,
+    reply: OperationReply,
 }
 
 #[derive(Clone, Debug)]
@@ -515,7 +518,7 @@ impl Broker {
         self.next_session = self
             .next_session
             .checked_add(1)
-            .ok_or_else(|| AuthError::Broker(BrokerError::InvalidRequestId))?;
+            .ok_or(AuthError::Broker(BrokerError::InvalidRequestId))?;
         self.sessions.insert(
             id,
             SessionRecord {
@@ -560,19 +563,26 @@ impl Broker {
                 }
             }
             Request::Submit {
-                request_id: _,
-                intent: _,
-                delivery: _,
-                fence: _,
+                request_id,
+                intent,
+                delivery,
+                fence,
+            } => {
+                if !record.granted.contains(&Capability::SubmitEffect) {
+                    return denied_capability(Capability::SubmitEffect);
+                }
+                self.owner_unavailable(request_id, intent, delivery, fence)
             }
-            | Request::Cancel {
-                request_id: _,
-                intent: _,
-                delivery: _,
-                fence: _,
-            } => Response::Denied {
-                code: DenialCode::CapabilityNotGranted,
-                detail: "effect submission and cancellation remain disabled until A05/A07 owner integration".to_owned(),
+            Request::Cancel {
+                request_id,
+                intent,
+                delivery,
+                fence,
+            } => {
+                if !record.granted.contains(&Capability::CancelEffect) {
+                    return denied_capability(Capability::CancelEffect);
+                }
+                self.owner_unavailable(request_id, intent, delivery, fence)
             },
             Request::Reconcile {
                 intent,
@@ -596,6 +606,44 @@ impl Broker {
                     Err(error) => invalid_response(error),
                 }
             }
+        }
+    }
+
+    fn owner_unavailable(
+        &mut self,
+        request_id: String,
+        intent: DurableIntent,
+        delivery: BootDelivery,
+        fence: GenerationFence,
+    ) -> Response {
+        if let Err(error) = intent.validate().and(fence.validate()).and(delivery.validate()) {
+            return invalid_response(error);
+        }
+        let reply = OperationReply {
+            key: intent.key.clone(),
+            delivery: delivery.clone(),
+            state: OperationState::Unknown,
+            disposition: ActionDisposition::NotForwarded,
+            reason: BrokerReason::EffectOwnerUnavailable,
+        };
+        let record = OperationRecord {
+            intent,
+            delivery,
+            fence,
+            reply,
+        };
+        match self.remember(request_id, record) {
+            Ok((reply, inserted)) => {
+                if inserted {
+                    self.emit(
+                        reply.key.clone(),
+                        reply.state.clone(),
+                        reply.reason.clone(),
+                    );
+                }
+                Response::Operation { reply }
+            }
+            Err(error) => invalid_response(error),
         }
     }
 
@@ -674,15 +722,22 @@ impl Broker {
         })
     }
 
-    fn remember(&mut self, request_id: String, record: OperationRecord) -> Result<(), BrokerError> {
+    fn remember(
+        &mut self,
+        request_id: String,
+        record: OperationRecord,
+    ) -> Result<(OperationReply, bool), BrokerError> {
         if request_id.is_empty() || request_id.len() > MAX_REQUEST_ID_BYTES {
             return Err(BrokerError::InvalidRequestId);
         }
         if let Some(existing) = self.replays.get(&request_id) {
-            if existing.key != record.intent.key {
+            if existing.key != record.intent.key
+                || existing.delivery != record.delivery
+                || existing.fence != record.fence
+            {
                 return Err(BrokerError::ReplayConflict);
             }
-            return Ok(());
+            return Ok((existing.reply.clone(), false));
         }
         if self.replays.len() >= MAX_REPLAY_ENTRIES {
             let oldest = self.replays.keys().next().cloned();
@@ -694,10 +749,13 @@ impl Broker {
             request_id,
             ReplayRecord {
                 key: record.intent.key.clone(),
+                delivery: record.delivery.clone(),
+                fence: record.fence.clone(),
+                reply: record.reply.clone(),
             },
         );
-        self.operations.insert(record.intent.key.clone(), record);
-        Ok(())
+        self.operations.insert(record.intent.key.clone(), record.clone());
+        Ok((record.reply, true))
     }
 
     fn emit(&mut self, key: OperationKey, state: OperationState, reason: BrokerReason) {
@@ -737,8 +795,10 @@ impl Broker {
             fence,
             reply: reply.clone(),
         };
-        self.remember(request_id.to_owned(), record).unwrap();
-        self.emit(reply.key.clone(), reply.state.clone(), reply.reason.clone());
+        let (reply, inserted) = self.remember(request_id.to_owned(), record).unwrap();
+        if inserted {
+            self.emit(reply.key.clone(), reply.state.clone(), reply.reason.clone());
+        }
     }
 }
 
