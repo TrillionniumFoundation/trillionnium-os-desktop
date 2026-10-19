@@ -1,0 +1,2296 @@
+{
+  "schema_version": 1,
+  "schema": "hepta.objective-history-publication-status.v1",
+  "observation_started_at_utc": "2026-10-18 10:38:28 UTC",
+  "observation_completed_at_utc": "2026-10-18 10:39:34 UTC",
+  "saved_at_utc": "2026-10-18 10:42:29 UTC",
+  "scope": "Read-only current source PR publication and exact-head CI state after Ready and normal owner auto-merge enablement. Selected API fields retain the status facts used here; this file was added after the immutable raw archive was produced.",
+  "observations": [
+    {
+      "key": "desktop_pr",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/pulls/193",
+      "observed_at_utc": "2026-10-18 10:38:28 UTC",
+      "selected_api_fields": {
+        "number": 193,
+        "html_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/193",
+        "state": "open",
+        "draft": false,
+        "merged": false,
+        "mergeable": true,
+        "mergeable_state": "unstable",
+        "merged_at": null,
+        "closed_at": null,
+        "created_at": "2026-10-18T09:23:37Z",
+        "updated_at": "2026-10-18T10:36:28Z",
+        "auto_merge": null,
+        "head": {
+          "ref": "agents/r9-durable-objective-20261018",
+          "sha": "46dcb2d691827f7aa3ad7903dae09d39fd338126"
+        },
+        "base": {
+          "ref": "main",
+          "sha": "01225ab0a20a9f25dd8313a7fad7652dd9154e30"
+        },
+        "api_merge_commit_sha": "03fccb654e674f905c7d6c17d5fa62633ba805c1",
+        "api_merge_commit_sha_is_actual_merged_result": false
+      }
+    },
+    {
+      "key": "desktop_checks",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/commits/46dcb2d691827f7aa3ad7903dae09d39fd338126/check-runs?per_page=100",
+      "observed_at_utc": "2026-10-18 10:38:28 UTC",
+      "selected_api_fields": {
+        "total_count": 6,
+        "check_runs": [
+          {
+            "id": 117651800400,
+            "name": "native-rust-and-wayland",
+            "head_sha": "46dcb2d691827f7aa3ad7903dae09d39fd338126",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-18T10:29:06Z",
+            "completed_at": null,
+            "details_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39115155001/job/117651800400",
+            "output": {
+              "title": null,
+              "summary": null,
+              "annotations_count": 0
+            }
+          },
+          {
+            "id": 117650953301,
+            "name": "CodeQL",
+            "head_sha": "46dcb2d691827f7aa3ad7903dae09d39fd338126",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-18T10:24:41Z",
+            "completed_at": "2026-10-18T10:24:44Z",
+            "details_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/runs/117650953301",
+            "output": {
+              "title": "No new alerts in code changed by this pull request",
+              "summary": "[View all branch alerts](/TrillionniumFoundation/trillionnium-os-desktop/security/code-scanning?query=pr%3A193+tool%3ACodeQL+is%3Aopen).",
+              "annotations_count": 0
+            }
+          },
+          {
+            "id": 117639353771,
+            "name": "original-agentd",
+            "head_sha": "46dcb2d691827f7aa3ad7903dae09d39fd338126",
+            "status": "in_progress",
+            "conclusion": null,
+            "started_at": "2026-10-18T10:13:59Z",
+            "completed_at": null,
+            "details_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39115155060/job/117639353771",
+            "output": {
+              "title": null,
+              "summary": null,
+              "annotations_count": 0
+            }
+          },
+          {
+            "id": 117639353718,
+            "name": "history-transport",
+            "head_sha": "46dcb2d691827f7aa3ad7903dae09d39fd338126",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-18T09:23:41Z",
+            "completed_at": null,
+            "details_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39115155092/job/117639353718",
+            "output": {
+              "title": null,
+              "summary": null,
+              "annotations_count": 0
+            }
+          },
+          {
+            "id": 117639353635,
+            "name": "ui-source-guard",
+            "head_sha": "46dcb2d691827f7aa3ad7903dae09d39fd338126",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-18T10:28:50Z",
+            "completed_at": "2026-10-18T10:29:06Z",
+            "details_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39115155001/job/117639353635",
+            "output": {
+              "title": null,
+              "summary": null,
+              "annotations_count": 1
+            }
+          },
+          {
+            "id": 117639351069,
+            "name": "Analyze (python)",
+            "head_sha": "46dcb2d691827f7aa3ad7903dae09d39fd338126",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-18T10:23:51Z",
+            "completed_at": "2026-10-18T10:24:50Z",
+            "details_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39115153336/job/117639351069",
+            "output": {
+              "title": null,
+              "summary": null,
+              "annotations_count": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "desktop_runs",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/runs?head_sha=46dcb2d691827f7aa3ad7903dae09d39fd338126&per_page=100",
+      "observed_at_utc": "2026-10-18 10:38:28 UTC",
+      "selected_api_fields": {
+        "total_count": 4,
+        "workflow_runs": [
+          {
+            "id": 39115155092,
+            "name": "Hepta Objective history source and ARM64 qualification",
+            "head_sha": "46dcb2d691827f7aa3ad7903dae09d39fd338126",
+            "status": "queued",
+            "conclusion": null,
+            "path": ".github/workflows/hepta-objective-history.yml",
+            "event": "pull_request",
+            "created_at": "2026-10-18T09:23:41Z",
+            "updated_at": "2026-10-18T09:23:41Z",
+            "run_started_at": "2026-10-18T09:23:41Z",
+            "run_attempt": 1,
+            "html_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39115155092"
+          },
+          {
+            "id": 39115155060,
+            "name": "Hepta original Agentd, ObjectiveStart and Session qualification (ARM64)",
+            "head_sha": "46dcb2d691827f7aa3ad7903dae09d39fd338126",
+            "status": "in_progress",
+            "conclusion": null,
+            "path": ".github/workflows/hepta-original-agentd.yml",
+            "event": "pull_request",
+            "created_at": "2026-10-18T09:23:41Z",
+            "updated_at": "2026-10-18T10:14:00Z",
+            "run_started_at": "2026-10-18T09:23:41Z",
+            "run_attempt": 1,
+            "html_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39115155060"
+          },
+          {
+            "id": 39115155001,
+            "name": "A10 Rust Wayland host integration",
+            "head_sha": "46dcb2d691827f7aa3ad7903dae09d39fd338126",
+            "status": "queued",
+            "conclusion": null,
+            "path": ".github/workflows/a10-host.yml",
+            "event": "pull_request",
+            "created_at": "2026-10-18T09:23:41Z",
+            "updated_at": "2026-10-18T10:29:06Z",
+            "run_started_at": "2026-10-18T09:23:41Z",
+            "run_attempt": 1,
+            "html_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39115155001"
+          },
+          {
+            "id": 39115153336,
+            "name": "PR #193",
+            "head_sha": "46dcb2d691827f7aa3ad7903dae09d39fd338126",
+            "status": "completed",
+            "conclusion": "success",
+            "path": "dynamic/github-code-scanning/codeql",
+            "event": "dynamic",
+            "created_at": "2026-10-18T09:23:39Z",
+            "updated_at": "2026-10-18T10:24:51Z",
+            "run_started_at": "2026-10-18T09:23:39Z",
+            "run_attempt": 1,
+            "html_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39115153336"
+          }
+        ]
+      }
+    },
+    {
+      "key": "desktop_branch",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/branches/main",
+      "observed_at_utc": "2026-10-18 10:38:28 UTC",
+      "selected_api_fields": {
+        "name": "main",
+        "commit_sha": "01225ab0a20a9f25dd8313a7fad7652dd9154e30",
+        "protected": false,
+        "protection": {
+          "enabled": false,
+          "required_status_checks": {
+            "enforcement_level": "off",
+            "contexts": [],
+            "checks": []
+          }
+        },
+        "protection_url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/branches/main/protection"
+      }
+    },
+    {
+      "key": "desktop_repository",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop",
+      "observed_at_utc": "2026-10-18 10:38:28 UTC",
+      "selected_api_fields": {
+        "full_name": "TrillionniumFoundation/trillionnium-os-desktop",
+        "html_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop",
+        "default_branch": "main",
+        "allow_auto_merge": false,
+        "allow_merge_commit": true,
+        "allow_squash_merge": true,
+        "allow_rebase_merge": true,
+        "archived": false,
+        "disabled": false
+      }
+    },
+    {
+      "key": "desktop_protection",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/branches/main/protection",
+      "observed_at_utc": "2026-10-18 10:38:28 UTC",
+      "error": {
+        "error": "GitHub API error 403: {\"message\":\"Resource not accessible by integration\",\"documentation_url\":\"https://docs.github.com/rest/branches/branch-protection#get-branch-protection\",\"status\":\"403\"}",
+        "error_code": "FORBIDDEN",
+        "error_data": {
+          "message": "Resource not accessible by integration",
+          "documentation_url": "https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
+          "status": "403"
+        }
+      }
+    },
+    {
+      "key": "owner_pr",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/hepta-private-ci/pulls/2815",
+      "observed_at_utc": "2026-10-18 10:38:28 UTC",
+      "selected_api_fields": {
+        "number": 2815,
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/pull/2815",
+        "state": "open",
+        "draft": false,
+        "merged": false,
+        "mergeable": true,
+        "mergeable_state": "blocked",
+        "merged_at": null,
+        "closed_at": null,
+        "created_at": "2026-10-18T08:14:07Z",
+        "updated_at": "2026-10-18T10:36:25Z",
+        "auto_merge": {
+          "commit_message": null,
+          "commit_title": null,
+          "merge_method": "squash",
+          "enabled_by": {
+            "login": "ProfHepta",
+            "id": 102159240,
+            "node_id": "U_kgDOBhbTiA",
+            "avatar_url": "https://avatars.githubusercontent.com/u/102159240?v=4",
+            "gravatar_id": "",
+            "url": "https://api.github.com/users/ProfHepta",
+            "html_url": "https://github.com/ProfHepta",
+            "followers_url": "https://api.github.com/users/ProfHepta/followers",
+            "following_url": "https://api.github.com/users/ProfHepta/following{/other_user}",
+            "gists_url": "https://api.github.com/users/ProfHepta/gists{/gist_id}",
+            "starred_url": "https://api.github.com/users/ProfHepta/starred{/owner}{/repo}",
+            "subscriptions_url": "https://api.github.com/users/ProfHepta/subscriptions",
+            "organizations_url": "https://api.github.com/users/ProfHepta/orgs",
+            "repos_url": "https://api.github.com/users/ProfHepta/repos",
+            "events_url": "https://api.github.com/users/ProfHepta/events{/privacy}",
+            "received_events_url": "https://api.github.com/users/ProfHepta/received_events",
+            "type": "User",
+            "user_view_type": "public",
+            "site_admin": false
+          }
+        },
+        "head": {
+          "ref": "agents/r9-objective-admission-20261018",
+          "sha": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5"
+        },
+        "base": {
+          "ref": "main",
+          "sha": "f8c9419df6ddeb36ff8b522a50219981fb8d9345"
+        },
+        "api_merge_commit_sha": "9512be09515ff76282421f4aafd6bc14bdc2fabf",
+        "api_merge_commit_sha_is_actual_merged_result": false
+      }
+    },
+    {
+      "key": "owner_checks",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/hepta-private-ci/commits/2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5/check-runs?per_page=100",
+      "observed_at_utc": "2026-10-18 10:38:28 UTC",
+      "selected_api_fields": {
+        "total_count": 14,
+        "check_runs": [
+          {
+            "id": 117651557845,
+            "name": "Blob size policy / Blob size policy",
+            "head_sha": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-18T10:27:51Z",
+            "completed_at": null,
+            "details_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39114831266/job/117651557845",
+            "output": {
+              "title": null,
+              "summary": null,
+              "annotations_count": 0
+            }
+          },
+          {
+            "id": 117651557742,
+            "name": "Codespell / Check for spelling errors",
+            "head_sha": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-18T10:27:51Z",
+            "completed_at": null,
+            "details_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39114831266/job/117651557742",
+            "output": {
+              "title": null,
+              "summary": null,
+              "annotations_count": 0
+            }
+          },
+          {
+            "id": 117651557358,
+            "name": "Select blocking CI scope",
+            "head_sha": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-18T10:27:51Z",
+            "completed_at": null,
+            "details_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39114831266/job/117651557358",
+            "output": {
+              "title": null,
+              "summary": null,
+              "annotations_count": 0
+            }
+          },
+          {
+            "id": 117649944750,
+            "name": "Architecture convergence (source-head)",
+            "head_sha": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-18T10:19:27Z",
+            "completed_at": null,
+            "details_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39114831280/job/117649944750",
+            "output": {
+              "title": null,
+              "summary": null,
+              "annotations_count": 0
+            }
+          },
+          {
+            "id": 117649944536,
+            "name": "Architecture convergence (base-merge)",
+            "head_sha": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-18T10:19:27Z",
+            "completed_at": null,
+            "details_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39114831280/job/117649944536",
+            "output": {
+              "title": null,
+              "summary": null,
+              "annotations_count": 0
+            }
+          },
+          {
+            "id": 117649845043,
+            "name": "CodeQL",
+            "head_sha": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+            "status": "completed",
+            "conclusion": "neutral",
+            "started_at": "2026-10-18T10:18:55Z",
+            "completed_at": "2026-10-18T10:18:58Z",
+            "details_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/runs/117649845043",
+            "output": {
+              "title": "1 configuration not found",
+              "summary": "**Warning**: Code scanning cannot determine the alerts introduced by this pull request, because 1 configuration present on `refs/heads/main` was not found:\n\n### Default setup\n\n* :question:&nbsp;&nbsp;`/language:rust`\n\n\n[View all branch alerts](/TrillionniumFoundation/hepta-private-ci/security/code-scanning?query=pr%3A2815+tool%3ACodeQL+is%3Aopen).",
+              "annotations_count": 0
+            }
+          },
+          {
+            "id": 117648874598,
+            "name": "Build ${{ matrix.variant }} ${{ matrix.target }}",
+            "head_sha": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+            "status": "completed",
+            "conclusion": "skipped",
+            "started_at": "2026-10-18T10:13:55Z",
+            "completed_at": "2026-10-18T10:13:55Z",
+            "details_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39114831265/job/117648874598",
+            "output": {
+              "title": null,
+              "summary": null,
+              "annotations_count": 0
+            }
+          },
+          {
+            "id": 117648874526,
+            "name": "Build ptrcomp-sandbox ${{ matrix.target }} from source",
+            "head_sha": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+            "status": "completed",
+            "conclusion": "skipped",
+            "started_at": "2026-10-18T10:13:55Z",
+            "completed_at": "2026-10-18T10:13:55Z",
+            "details_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39114831265/job/117648874526",
+            "output": {
+              "title": null,
+              "summary": null,
+              "annotations_count": 0
+            }
+          },
+          {
+            "id": 117638391510,
+            "name": "metadata",
+            "head_sha": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-18T10:13:24Z",
+            "completed_at": "2026-10-18T10:13:55Z",
+            "details_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39114831265/job/117638391510",
+            "output": {
+              "title": null,
+              "summary": null,
+              "annotations_count": 1
+            }
+          },
+          {
+            "id": 117638387539,
+            "name": "Analyze (python)",
+            "head_sha": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-18T10:28:46Z",
+            "completed_at": "2026-10-18T10:30:08Z",
+            "details_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39114829499/job/117638387539",
+            "output": {
+              "title": null,
+              "summary": null,
+              "annotations_count": 1
+            }
+          },
+          {
+            "id": 117638387504,
+            "name": "Analyze (c-cpp)",
+            "head_sha": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-18T10:23:57Z",
+            "completed_at": "2026-10-18T10:25:02Z",
+            "details_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39114829499/job/117638387504",
+            "output": {
+              "title": null,
+              "summary": null,
+              "annotations_count": 1
+            }
+          },
+          {
+            "id": 117638387457,
+            "name": "Analyze (javascript-typescript)",
+            "head_sha": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-18T10:19:45Z",
+            "completed_at": "2026-10-18T10:20:52Z",
+            "details_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39114829499/job/117638387457",
+            "output": {
+              "title": null,
+              "summary": null,
+              "annotations_count": 1
+            }
+          },
+          {
+            "id": 117638387453,
+            "name": "Analyze (actions)",
+            "head_sha": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-18T10:18:17Z",
+            "completed_at": "2026-10-18T10:19:04Z",
+            "details_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39114829499/job/117638387453",
+            "output": {
+              "title": null,
+              "summary": null,
+              "annotations_count": 1
+            }
+          },
+          {
+            "id": 117638387256,
+            "name": "Analyze (rust)",
+            "head_sha": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+            "status": "in_progress",
+            "conclusion": null,
+            "started_at": "2026-10-18T10:14:26Z",
+            "completed_at": null,
+            "details_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39114829499/job/117638387256",
+            "output": {
+              "title": null,
+              "summary": null,
+              "annotations_count": 0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "owner_runs",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/hepta-private-ci/actions/runs?head_sha=2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5&per_page=100",
+      "observed_at_utc": "2026-10-18 10:38:28 UTC",
+      "selected_api_fields": {
+        "total_count": 4,
+        "workflow_runs": [
+          {
+            "id": 39114831265,
+            "name": "v8-canary",
+            "head_sha": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+            "status": "completed",
+            "conclusion": "success",
+            "path": ".github/workflows/v8-canary.yml",
+            "event": "pull_request",
+            "created_at": "2026-10-18T09:18:44Z",
+            "updated_at": "2026-10-18T10:13:55Z",
+            "run_started_at": "2026-10-18T09:18:44Z",
+            "run_attempt": 1,
+            "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39114831265"
+          },
+          {
+            "id": 39114831280,
+            "name": "Hepta architecture convergence",
+            "head_sha": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+            "status": "queued",
+            "conclusion": null,
+            "path": ".github/workflows/hepta-architecture-convergence.yml",
+            "event": "pull_request",
+            "created_at": "2026-10-18T09:18:44Z",
+            "updated_at": "2026-10-18T10:19:27Z",
+            "run_started_at": "2026-10-18T09:18:44Z",
+            "run_attempt": 1,
+            "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39114831280"
+          },
+          {
+            "id": 39114831266,
+            "name": "blocking-ci",
+            "head_sha": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+            "status": "queued",
+            "conclusion": null,
+            "path": ".github/workflows/blocking-ci.yml",
+            "event": "pull_request",
+            "created_at": "2026-10-18T09:18:44Z",
+            "updated_at": "2026-10-18T10:27:51Z",
+            "run_started_at": "2026-10-18T09:18:44Z",
+            "run_attempt": 1,
+            "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39114831266"
+          },
+          {
+            "id": 39114829499,
+            "name": "PR #2815",
+            "head_sha": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+            "status": "in_progress",
+            "conclusion": null,
+            "path": "dynamic/github-code-scanning/codeql",
+            "event": "dynamic",
+            "created_at": "2026-10-18T09:18:42Z",
+            "updated_at": "2026-10-18T10:28:47Z",
+            "run_started_at": "2026-10-18T09:18:42Z",
+            "run_attempt": 1,
+            "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39114829499"
+          }
+        ]
+      }
+    },
+    {
+      "key": "owner_branch",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/hepta-private-ci/branches/main",
+      "observed_at_utc": "2026-10-18 10:38:28 UTC",
+      "selected_api_fields": {
+        "name": "main",
+        "commit_sha": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+        "protected": true,
+        "protection": {
+          "enabled": true,
+          "required_status_checks": {
+            "enforcement_level": "non_admins",
+            "contexts": [
+              "CI required",
+              "Architecture required"
+            ],
+            "checks": [
+              {
+                "context": "CI required",
+                "app_id": 15368
+              },
+              {
+                "context": "Architecture required",
+                "app_id": 15368
+              }
+            ]
+          }
+        },
+        "protection_url": "https://api.github.com/repos/TrillionniumFoundation/hepta-private-ci/branches/main/protection"
+      }
+    },
+    {
+      "key": "owner_repository",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/hepta-private-ci",
+      "observed_at_utc": "2026-10-18 10:38:28 UTC",
+      "selected_api_fields": {
+        "full_name": "TrillionniumFoundation/hepta-private-ci",
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci",
+        "default_branch": "main",
+        "allow_auto_merge": true,
+        "allow_merge_commit": true,
+        "allow_squash_merge": true,
+        "allow_rebase_merge": true,
+        "archived": false,
+        "disabled": false
+      }
+    },
+    {
+      "key": "owner_protection",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/hepta-private-ci/branches/main/protection",
+      "observed_at_utc": "2026-10-18 10:38:28 UTC",
+      "error": {
+        "error": "GitHub API error 403: {\"message\":\"Resource not accessible by integration\",\"documentation_url\":\"https://docs.github.com/rest/branches/branch-protection#get-branch-protection\",\"status\":\"403\"}",
+        "error_code": "FORBIDDEN",
+        "error_data": {
+          "message": "Resource not accessible by integration",
+          "documentation_url": "https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
+          "status": "403"
+        }
+      }
+    },
+    {
+      "key": "desktop_jobs_39115155092",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39115155092/jobs?per_page=100",
+      "observed_at_utc": "2026-10-18 10:38:55 UTC",
+      "selected_api_fields": {
+        "total_count": 1,
+        "jobs": [
+          {
+            "id": 117639353718,
+            "run_id": 39115155092,
+            "name": "history-transport",
+            "head_sha": "46dcb2d691827f7aa3ad7903dae09d39fd338126",
+            "status": "queued",
+            "conclusion": null,
+            "labels": [
+              "ubuntu-24.04"
+            ],
+            "runner_id": 0,
+            "runner_name": "",
+            "runner_group_id": 0,
+            "runner_group_name": "",
+            "started_at": "2026-10-18T09:23:41Z",
+            "completed_at": null,
+            "steps": [],
+            "html_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39115155092/job/117639353718"
+          }
+        ]
+      }
+    },
+    {
+      "key": "desktop_jobs_39115155060",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39115155060/jobs?per_page=100",
+      "observed_at_utc": "2026-10-18 10:38:55 UTC",
+      "selected_api_fields": {
+        "total_count": 1,
+        "jobs": [
+          {
+            "id": 117639353771,
+            "run_id": 39115155060,
+            "name": "original-agentd",
+            "head_sha": "46dcb2d691827f7aa3ad7903dae09d39fd338126",
+            "status": "completed",
+            "conclusion": "success",
+            "labels": [
+              "ubuntu-24.04-arm"
+            ],
+            "runner_id": 1000164669,
+            "runner_name": "GitHub Actions 1000164669",
+            "runner_group_id": 0,
+            "runner_group_name": "GitHub Actions",
+            "started_at": "2026-10-18T10:13:59Z",
+            "completed_at": "2026-10-18T10:38:38Z",
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 1,
+                "started_at": "2026-10-18T10:14:00Z",
+                "completed_at": "2026-10-18T10:14:01Z"
+              },
+              {
+                "name": "Allocate fresh evidence and isolated build homes",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 2,
+                "started_at": "2026-10-18T10:14:01Z",
+                "completed_at": "2026-10-18T10:14:01Z"
+              },
+              {
+                "name": "Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 3,
+                "started_at": "2026-10-18T10:14:01Z",
+                "completed_at": "2026-10-18T10:14:03Z"
+              },
+              {
+                "name": "Require the exact combined candidate and its real gate sources",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 4,
+                "started_at": "2026-10-18T10:14:03Z",
+                "completed_at": "2026-10-18T10:14:03Z"
+              },
+              {
+                "name": "Fetch only the fixed original Hepta source without credentials",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 5,
+                "started_at": "2026-10-18T10:14:03Z",
+                "completed_at": "2026-10-18T10:14:08Z"
+              },
+              {
+                "name": "Verify the generated manifest and Linux process cleanup prerequisites",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 6,
+                "started_at": "2026-10-18T10:14:08Z",
+                "completed_at": "2026-10-18T10:14:09Z"
+              },
+              {
+                "name": "Install pinned compilers and original Linux native prerequisites",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 7,
+                "started_at": "2026-10-18T10:14:09Z",
+                "completed_at": "2026-10-18T10:14:39Z"
+              },
+              {
+                "name": "Build the actual Session and ctl from this exact candidate",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 8,
+                "started_at": "2026-10-18T10:14:39Z",
+                "completed_at": "2026-10-18T10:14:58Z"
+              },
+              {
+                "name": "Run original Agentd and the continuous read-only Session probe",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 9,
+                "started_at": "2026-10-18T10:14:58Z",
+                "completed_at": "2026-10-18T10:37:19Z"
+              },
+              {
+                "name": "Bind both successful runtime qualifications to five actual ARM64 ELF files",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 10,
+                "started_at": "2026-10-18T10:37:19Z",
+                "completed_at": "2026-10-18T10:37:39Z"
+              },
+              {
+                "name": "Submit signed test objectives to the original owner and observe the known run through Session",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 11,
+                "started_at": "2026-10-18T10:37:39Z",
+                "completed_at": "2026-10-18T10:38:04Z"
+              },
+              {
+                "name": "Bind the isolated objective and known-run Session results to six actual ARM64 ELF files",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 12,
+                "started_at": "2026-10-18T10:38:04Z",
+                "completed_at": "2026-10-18T10:38:26Z"
+              },
+              {
+                "name": "Preserve final checkout identities without claiming an unrun gate passed",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 13,
+                "started_at": "2026-10-18T10:38:26Z",
+                "completed_at": "2026-10-18T10:38:26Z"
+              },
+              {
+                "name": "Upload successful original ELF bundle and execution hashes",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 14,
+                "started_at": "2026-10-18T10:38:26Z",
+                "completed_at": "2026-10-18T10:38:29Z"
+              },
+              {
+                "name": "Upload the independently qualified original objective ELF bundle",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 15,
+                "started_at": "2026-10-18T10:38:29Z",
+                "completed_at": "2026-10-18T10:38:32Z"
+              },
+              {
+                "name": "Upload actual logs, locks, reports and source identities even on failure",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 16,
+                "started_at": "2026-10-18T10:38:32Z",
+                "completed_at": "2026-10-18T10:38:34Z"
+              },
+              {
+                "name": "Post Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 32,
+                "started_at": "2026-10-18T10:38:34Z",
+                "completed_at": "2026-10-18T10:38:34Z"
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 33,
+                "started_at": "2026-10-18T10:38:34Z",
+                "completed_at": "2026-10-18T10:38:34Z"
+              }
+            ],
+            "html_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39115155060/job/117639353771"
+          }
+        ]
+      }
+    },
+    {
+      "key": "desktop_jobs_39115155001",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39115155001/jobs?per_page=100",
+      "observed_at_utc": "2026-10-18 10:38:55 UTC",
+      "selected_api_fields": {
+        "total_count": 2,
+        "jobs": [
+          {
+            "id": 117639353635,
+            "run_id": 39115155001,
+            "name": "ui-source-guard",
+            "head_sha": "46dcb2d691827f7aa3ad7903dae09d39fd338126",
+            "status": "completed",
+            "conclusion": "success",
+            "labels": [
+              "ubuntu-24.04"
+            ],
+            "runner_id": 1000164796,
+            "runner_name": "GitHub Actions 1000164796",
+            "runner_group_id": 0,
+            "runner_group_name": "GitHub Actions",
+            "started_at": "2026-10-18T10:28:50Z",
+            "completed_at": "2026-10-18T10:29:06Z",
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 1,
+                "started_at": "2026-10-18T10:28:51Z",
+                "completed_at": "2026-10-18T10:28:51Z"
+              },
+              {
+                "name": "Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 2,
+                "started_at": "2026-10-18T10:28:51Z",
+                "completed_at": "2026-10-18T10:29:04Z"
+              },
+              {
+                "name": "Verify A00 bootstrap versus A10 source diff and empty README",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 3,
+                "started_at": "2026-10-18T10:29:04Z",
+                "completed_at": "2026-10-18T10:29:04Z"
+              },
+              {
+                "name": "Post Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 6,
+                "started_at": "2026-10-18T10:29:04Z",
+                "completed_at": "2026-10-18T10:29:04Z"
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 7,
+                "started_at": "2026-10-18T10:29:04Z",
+                "completed_at": "2026-10-18T10:29:04Z"
+              }
+            ],
+            "html_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39115155001/job/117639353635"
+          },
+          {
+            "id": 117651800400,
+            "run_id": 39115155001,
+            "name": "native-rust-and-wayland",
+            "head_sha": "46dcb2d691827f7aa3ad7903dae09d39fd338126",
+            "status": "queued",
+            "conclusion": null,
+            "labels": [
+              "ubuntu-24.04"
+            ],
+            "runner_id": 0,
+            "runner_name": "",
+            "runner_group_id": 0,
+            "runner_group_name": "",
+            "started_at": "2026-10-18T10:29:06Z",
+            "completed_at": null,
+            "steps": [],
+            "html_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39115155001/job/117651800400"
+          }
+        ]
+      }
+    },
+    {
+      "key": "desktop_jobs_39115153336",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39115153336/jobs?per_page=100",
+      "observed_at_utc": "2026-10-18 10:38:55 UTC",
+      "selected_api_fields": {
+        "total_count": 1,
+        "jobs": [
+          {
+            "id": 117639351069,
+            "run_id": 39115153336,
+            "name": "Analyze (python)",
+            "head_sha": "46dcb2d691827f7aa3ad7903dae09d39fd338126",
+            "status": "completed",
+            "conclusion": "success",
+            "labels": [
+              "ubuntu-latest"
+            ],
+            "runner_id": 1000164750,
+            "runner_name": "GitHub Actions 1000164750",
+            "runner_group_id": 0,
+            "runner_group_name": "GitHub Actions",
+            "started_at": "2026-10-18T10:23:51Z",
+            "completed_at": "2026-10-18T10:24:50Z",
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 1,
+                "started_at": "2026-10-18T10:23:52Z",
+                "completed_at": "2026-10-18T10:23:53Z"
+              },
+              {
+                "name": "Checkout repository",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 2,
+                "started_at": "2026-10-18T10:23:53Z",
+                "completed_at": "2026-10-18T10:23:55Z"
+              },
+              {
+                "name": "Setup proxy for registries",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 3,
+                "started_at": "2026-10-18T10:23:55Z",
+                "completed_at": "2026-10-18T10:23:56Z"
+              },
+              {
+                "name": "Initialize CodeQL",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 4,
+                "started_at": "2026-10-18T10:23:56Z",
+                "completed_at": "2026-10-18T10:24:12Z"
+              },
+              {
+                "name": "Perform CodeQL Analysis",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 5,
+                "started_at": "2026-10-18T10:24:12Z",
+                "completed_at": "2026-10-18T10:24:47Z"
+              },
+              {
+                "name": "Post Perform CodeQL Analysis",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 7,
+                "started_at": "2026-10-18T10:24:47Z",
+                "completed_at": "2026-10-18T10:24:48Z"
+              },
+              {
+                "name": "Post Initialize CodeQL",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 8,
+                "started_at": "2026-10-18T10:24:48Z",
+                "completed_at": "2026-10-18T10:24:48Z"
+              },
+              {
+                "name": "Post Setup proxy for registries",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 9,
+                "started_at": "2026-10-18T10:24:48Z",
+                "completed_at": "2026-10-18T10:24:49Z"
+              },
+              {
+                "name": "Post Checkout repository",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 10,
+                "started_at": "2026-10-18T10:24:49Z",
+                "completed_at": "2026-10-18T10:24:49Z"
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 11,
+                "started_at": "2026-10-18T10:24:49Z",
+                "completed_at": "2026-10-18T10:24:49Z"
+              }
+            ],
+            "html_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39115153336/job/117639351069"
+          }
+        ]
+      }
+    },
+    {
+      "key": "owner_jobs_39114831265",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/hepta-private-ci/actions/runs/39114831265/jobs?per_page=100",
+      "observed_at_utc": "2026-10-18 10:38:55 UTC",
+      "selected_api_fields": {
+        "total_count": 3,
+        "jobs": [
+          {
+            "id": 117638391510,
+            "run_id": 39114831265,
+            "name": "metadata",
+            "head_sha": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+            "status": "completed",
+            "conclusion": "success",
+            "labels": [
+              "ubuntu-latest"
+            ],
+            "runner_id": 1000164661,
+            "runner_name": "GitHub Actions 1000164661",
+            "runner_group_id": 0,
+            "runner_group_name": "GitHub Actions",
+            "started_at": "2026-10-18T10:13:24Z",
+            "completed_at": "2026-10-18T10:13:55Z",
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 1,
+                "started_at": "2026-10-18T10:13:25Z",
+                "completed_at": "2026-10-18T10:13:25Z"
+              },
+              {
+                "name": "Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 2,
+                "started_at": "2026-10-18T10:13:25Z",
+                "completed_at": "2026-10-18T10:13:52Z"
+              },
+              {
+                "name": "Set up Python",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 3,
+                "started_at": "2026-10-18T10:13:52Z",
+                "completed_at": "2026-10-18T10:13:52Z"
+              },
+              {
+                "name": "Resolve exact v8 crate version",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 4,
+                "started_at": "2026-10-18T10:13:52Z",
+                "completed_at": "2026-10-18T10:13:52Z"
+              },
+              {
+                "name": "Detect V8 canary changes",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 5,
+                "started_at": "2026-10-18T10:13:52Z",
+                "completed_at": "2026-10-18T10:13:52Z"
+              },
+              {
+                "name": "Check for a clean worktree",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 6,
+                "started_at": "2026-10-18T10:13:52Z",
+                "completed_at": "2026-10-18T10:13:53Z"
+              },
+              {
+                "name": "Post Set up Python",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 11,
+                "started_at": "2026-10-18T10:13:53Z",
+                "completed_at": "2026-10-18T10:13:53Z"
+              },
+              {
+                "name": "Post Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 12,
+                "started_at": "2026-10-18T10:13:53Z",
+                "completed_at": "2026-10-18T10:13:53Z"
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 13,
+                "started_at": "2026-10-18T10:13:53Z",
+                "completed_at": "2026-10-18T10:13:53Z"
+              }
+            ],
+            "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39114831265/job/117638391510"
+          },
+          {
+            "id": 117648874526,
+            "run_id": 39114831265,
+            "name": "Build ptrcomp-sandbox ${{ matrix.target }} from source",
+            "head_sha": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+            "status": "completed",
+            "conclusion": "skipped",
+            "labels": [],
+            "runner_id": null,
+            "runner_name": null,
+            "runner_group_id": null,
+            "runner_group_name": null,
+            "started_at": "2026-10-18T10:13:55Z",
+            "completed_at": "2026-10-18T10:13:55Z",
+            "steps": [],
+            "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39114831265/job/117648874526"
+          },
+          {
+            "id": 117648874598,
+            "run_id": 39114831265,
+            "name": "Build ${{ matrix.variant }} ${{ matrix.target }}",
+            "head_sha": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+            "status": "completed",
+            "conclusion": "skipped",
+            "labels": [],
+            "runner_id": null,
+            "runner_name": null,
+            "runner_group_id": null,
+            "runner_group_name": null,
+            "started_at": "2026-10-18T10:13:55Z",
+            "completed_at": "2026-10-18T10:13:55Z",
+            "steps": [],
+            "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39114831265/job/117648874598"
+          }
+        ]
+      }
+    },
+    {
+      "key": "owner_jobs_39114831280",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/hepta-private-ci/actions/runs/39114831280/jobs?per_page=100",
+      "observed_at_utc": "2026-10-18 10:38:55 UTC",
+      "selected_api_fields": {
+        "total_count": 2,
+        "jobs": [
+          {
+            "id": 117649944536,
+            "run_id": 39114831280,
+            "name": "Architecture convergence (base-merge)",
+            "head_sha": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+            "status": "queued",
+            "conclusion": null,
+            "labels": [
+              "ubuntu-24.04-arm"
+            ],
+            "runner_id": 0,
+            "runner_name": "",
+            "runner_group_id": 0,
+            "runner_group_name": "",
+            "started_at": "2026-10-18T10:19:27Z",
+            "completed_at": null,
+            "steps": [],
+            "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39114831280/job/117649944536"
+          },
+          {
+            "id": 117649944750,
+            "run_id": 39114831280,
+            "name": "Architecture convergence (source-head)",
+            "head_sha": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+            "status": "queued",
+            "conclusion": null,
+            "labels": [
+              "ubuntu-24.04-arm"
+            ],
+            "runner_id": 0,
+            "runner_name": "",
+            "runner_group_id": 0,
+            "runner_group_name": "",
+            "started_at": "2026-10-18T10:19:27Z",
+            "completed_at": null,
+            "steps": [],
+            "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39114831280/job/117649944750"
+          }
+        ]
+      }
+    },
+    {
+      "key": "owner_jobs_39114831266",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/hepta-private-ci/actions/runs/39114831266/jobs?per_page=100",
+      "observed_at_utc": "2026-10-18 10:38:55 UTC",
+      "selected_api_fields": {
+        "total_count": 3,
+        "jobs": [
+          {
+            "id": 117651557358,
+            "run_id": 39114831266,
+            "name": "Select blocking CI scope",
+            "head_sha": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+            "status": "queued",
+            "conclusion": null,
+            "labels": [
+              "ubuntu-24.04"
+            ],
+            "runner_id": 0,
+            "runner_name": "",
+            "runner_group_id": 0,
+            "runner_group_name": "",
+            "started_at": "2026-10-18T10:27:51Z",
+            "completed_at": null,
+            "steps": [],
+            "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39114831266/job/117651557358"
+          },
+          {
+            "id": 117651557742,
+            "run_id": 39114831266,
+            "name": "Codespell / Check for spelling errors",
+            "head_sha": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+            "status": "queued",
+            "conclusion": null,
+            "labels": [
+              "ubuntu-latest"
+            ],
+            "runner_id": 0,
+            "runner_name": "",
+            "runner_group_id": 0,
+            "runner_group_name": "",
+            "started_at": "2026-10-18T10:27:51Z",
+            "completed_at": null,
+            "steps": [],
+            "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39114831266/job/117651557742"
+          },
+          {
+            "id": 117651557845,
+            "run_id": 39114831266,
+            "name": "Blob size policy / Blob size policy",
+            "head_sha": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+            "status": "queued",
+            "conclusion": null,
+            "labels": [
+              "ubuntu-24.04"
+            ],
+            "runner_id": 0,
+            "runner_name": "",
+            "runner_group_id": 0,
+            "runner_group_name": "",
+            "started_at": "2026-10-18T10:27:51Z",
+            "completed_at": null,
+            "steps": [],
+            "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39114831266/job/117651557845"
+          }
+        ]
+      }
+    },
+    {
+      "key": "owner_jobs_39114829499",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/hepta-private-ci/actions/runs/39114829499/jobs?per_page=100",
+      "observed_at_utc": "2026-10-18 10:38:55 UTC",
+      "selected_api_fields": {
+        "total_count": 5,
+        "jobs": [
+          {
+            "id": 117638387256,
+            "run_id": 39114829499,
+            "name": "Analyze (rust)",
+            "head_sha": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+            "status": "in_progress",
+            "conclusion": null,
+            "labels": [
+              "ubuntu-latest"
+            ],
+            "runner_id": 1000164676,
+            "runner_name": "GitHub Actions 1000164676",
+            "runner_group_id": 0,
+            "runner_group_name": "GitHub Actions",
+            "started_at": "2026-10-18T10:14:26Z",
+            "completed_at": null,
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 1,
+                "started_at": "2026-10-18T10:14:27Z",
+                "completed_at": "2026-10-18T10:14:29Z"
+              },
+              {
+                "name": "Checkout repository",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 2,
+                "started_at": "2026-10-18T10:14:29Z",
+                "completed_at": "2026-10-18T10:14:34Z"
+              },
+              {
+                "name": "Setup proxy for registries",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 3,
+                "started_at": "2026-10-18T10:14:34Z",
+                "completed_at": "2026-10-18T10:14:35Z"
+              },
+              {
+                "name": "Initialize CodeQL",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 4,
+                "started_at": "2026-10-18T10:14:35Z",
+                "completed_at": "2026-10-18T10:14:46Z"
+              },
+              {
+                "name": "Autobuild",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 5,
+                "started_at": "2026-10-18T10:14:46Z",
+                "completed_at": "2026-10-18T10:14:47Z"
+              },
+              {
+                "name": "Perform CodeQL Analysis",
+                "status": "in_progress",
+                "conclusion": null,
+                "number": 6,
+                "started_at": "2026-10-18T10:14:47Z",
+                "completed_at": null
+              },
+              {
+                "name": "Post Perform CodeQL Analysis",
+                "status": "pending",
+                "conclusion": null,
+                "number": 9,
+                "started_at": null,
+                "completed_at": null
+              },
+              {
+                "name": "Post Initialize CodeQL",
+                "status": "pending",
+                "conclusion": null,
+                "number": 10,
+                "started_at": null,
+                "completed_at": null
+              },
+              {
+                "name": "Post Setup proxy for registries",
+                "status": "pending",
+                "conclusion": null,
+                "number": 11,
+                "started_at": null,
+                "completed_at": null
+              },
+              {
+                "name": "Post Checkout repository",
+                "status": "pending",
+                "conclusion": null,
+                "number": 12,
+                "started_at": null,
+                "completed_at": null
+              }
+            ],
+            "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39114829499/job/117638387256"
+          },
+          {
+            "id": 117638387453,
+            "run_id": 39114829499,
+            "name": "Analyze (actions)",
+            "head_sha": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+            "status": "completed",
+            "conclusion": "success",
+            "labels": [
+              "ubuntu-latest"
+            ],
+            "runner_id": 1000164707,
+            "runner_name": "GitHub Actions 1000164707",
+            "runner_group_id": 0,
+            "runner_group_name": "GitHub Actions",
+            "started_at": "2026-10-18T10:18:17Z",
+            "completed_at": "2026-10-18T10:19:04Z",
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 1,
+                "started_at": "2026-10-18T10:18:18Z",
+                "completed_at": "2026-10-18T10:18:20Z"
+              },
+              {
+                "name": "Checkout repository",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 2,
+                "started_at": "2026-10-18T10:18:20Z",
+                "completed_at": "2026-10-18T10:18:25Z"
+              },
+              {
+                "name": "Setup proxy for registries",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 3,
+                "started_at": "2026-10-18T10:18:25Z",
+                "completed_at": "2026-10-18T10:18:25Z"
+              },
+              {
+                "name": "Initialize CodeQL",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 4,
+                "started_at": "2026-10-18T10:18:25Z",
+                "completed_at": "2026-10-18T10:18:34Z"
+              },
+              {
+                "name": "Autobuild",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 5,
+                "started_at": "2026-10-18T10:18:34Z",
+                "completed_at": "2026-10-18T10:18:35Z"
+              },
+              {
+                "name": "Perform CodeQL Analysis",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 6,
+                "started_at": "2026-10-18T10:18:35Z",
+                "completed_at": "2026-10-18T10:19:01Z"
+              },
+              {
+                "name": "Post Perform CodeQL Analysis",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 9,
+                "started_at": "2026-10-18T10:19:01Z",
+                "completed_at": "2026-10-18T10:19:01Z"
+              },
+              {
+                "name": "Post Initialize CodeQL",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 10,
+                "started_at": "2026-10-18T10:19:01Z",
+                "completed_at": "2026-10-18T10:19:02Z"
+              },
+              {
+                "name": "Post Setup proxy for registries",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 11,
+                "started_at": "2026-10-18T10:19:02Z",
+                "completed_at": "2026-10-18T10:19:02Z"
+              },
+              {
+                "name": "Post Checkout repository",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 12,
+                "started_at": "2026-10-18T10:19:02Z",
+                "completed_at": "2026-10-18T10:19:02Z"
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 13,
+                "started_at": "2026-10-18T10:19:02Z",
+                "completed_at": "2026-10-18T10:19:02Z"
+              }
+            ],
+            "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39114829499/job/117638387453"
+          },
+          {
+            "id": 117638387457,
+            "run_id": 39114829499,
+            "name": "Analyze (javascript-typescript)",
+            "head_sha": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+            "status": "completed",
+            "conclusion": "success",
+            "labels": [
+              "ubuntu-latest"
+            ],
+            "runner_id": 1000164722,
+            "runner_name": "GitHub Actions 1000164722",
+            "runner_group_id": 0,
+            "runner_group_name": "GitHub Actions",
+            "started_at": "2026-10-18T10:19:45Z",
+            "completed_at": "2026-10-18T10:20:52Z",
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 1,
+                "started_at": "2026-10-18T10:19:46Z",
+                "completed_at": "2026-10-18T10:19:47Z"
+              },
+              {
+                "name": "Checkout repository",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 2,
+                "started_at": "2026-10-18T10:19:47Z",
+                "completed_at": "2026-10-18T10:19:52Z"
+              },
+              {
+                "name": "Setup proxy for registries",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 3,
+                "started_at": "2026-10-18T10:19:52Z",
+                "completed_at": "2026-10-18T10:19:53Z"
+              },
+              {
+                "name": "Initialize CodeQL",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 4,
+                "started_at": "2026-10-18T10:19:53Z",
+                "completed_at": "2026-10-18T10:20:08Z"
+              },
+              {
+                "name": "Autobuild",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 5,
+                "started_at": "2026-10-18T10:20:08Z",
+                "completed_at": "2026-10-18T10:20:09Z"
+              },
+              {
+                "name": "Perform CodeQL Analysis",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 6,
+                "started_at": "2026-10-18T10:20:09Z",
+                "completed_at": "2026-10-18T10:20:48Z"
+              },
+              {
+                "name": "Post Perform CodeQL Analysis",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 9,
+                "started_at": "2026-10-18T10:20:48Z",
+                "completed_at": "2026-10-18T10:20:48Z"
+              },
+              {
+                "name": "Post Initialize CodeQL",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 10,
+                "started_at": "2026-10-18T10:20:48Z",
+                "completed_at": "2026-10-18T10:20:49Z"
+              },
+              {
+                "name": "Post Setup proxy for registries",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 11,
+                "started_at": "2026-10-18T10:20:49Z",
+                "completed_at": "2026-10-18T10:20:49Z"
+              },
+              {
+                "name": "Post Checkout repository",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 12,
+                "started_at": "2026-10-18T10:20:49Z",
+                "completed_at": "2026-10-18T10:20:49Z"
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 13,
+                "started_at": "2026-10-18T10:20:49Z",
+                "completed_at": "2026-10-18T10:20:49Z"
+              }
+            ],
+            "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39114829499/job/117638387457"
+          },
+          {
+            "id": 117638387504,
+            "run_id": 39114829499,
+            "name": "Analyze (c-cpp)",
+            "head_sha": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+            "status": "completed",
+            "conclusion": "success",
+            "labels": [
+              "ubuntu-latest"
+            ],
+            "runner_id": 1000164751,
+            "runner_name": "GitHub Actions 1000164751",
+            "runner_group_id": 0,
+            "runner_group_name": "GitHub Actions",
+            "started_at": "2026-10-18T10:23:57Z",
+            "completed_at": "2026-10-18T10:25:02Z",
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 1,
+                "started_at": "2026-10-18T10:23:58Z",
+                "completed_at": "2026-10-18T10:23:59Z"
+              },
+              {
+                "name": "Checkout repository",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 2,
+                "started_at": "2026-10-18T10:23:59Z",
+                "completed_at": "2026-10-18T10:24:04Z"
+              },
+              {
+                "name": "Setup proxy for registries",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 3,
+                "started_at": "2026-10-18T10:24:04Z",
+                "completed_at": "2026-10-18T10:24:05Z"
+              },
+              {
+                "name": "Initialize CodeQL",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 4,
+                "started_at": "2026-10-18T10:24:05Z",
+                "completed_at": "2026-10-18T10:24:21Z"
+              },
+              {
+                "name": "Autobuild",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 5,
+                "started_at": "2026-10-18T10:24:21Z",
+                "completed_at": "2026-10-18T10:24:22Z"
+              },
+              {
+                "name": "Perform CodeQL Analysis",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 6,
+                "started_at": "2026-10-18T10:24:22Z",
+                "completed_at": "2026-10-18T10:24:58Z"
+              },
+              {
+                "name": "Post Perform CodeQL Analysis",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 9,
+                "started_at": "2026-10-18T10:24:58Z",
+                "completed_at": "2026-10-18T10:24:59Z"
+              },
+              {
+                "name": "Post Initialize CodeQL",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 10,
+                "started_at": "2026-10-18T10:24:59Z",
+                "completed_at": "2026-10-18T10:24:59Z"
+              },
+              {
+                "name": "Post Setup proxy for registries",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 11,
+                "started_at": "2026-10-18T10:24:59Z",
+                "completed_at": "2026-10-18T10:25:00Z"
+              },
+              {
+                "name": "Post Checkout repository",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 12,
+                "started_at": "2026-10-18T10:25:00Z",
+                "completed_at": "2026-10-18T10:25:00Z"
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 13,
+                "started_at": "2026-10-18T10:25:00Z",
+                "completed_at": "2026-10-18T10:25:00Z"
+              }
+            ],
+            "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39114829499/job/117638387504"
+          },
+          {
+            "id": 117638387539,
+            "run_id": 39114829499,
+            "name": "Analyze (python)",
+            "head_sha": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+            "status": "completed",
+            "conclusion": "success",
+            "labels": [
+              "ubuntu-latest"
+            ],
+            "runner_id": 1000164795,
+            "runner_name": "GitHub Actions 1000164795",
+            "runner_group_id": 0,
+            "runner_group_name": "GitHub Actions",
+            "started_at": "2026-10-18T10:28:46Z",
+            "completed_at": "2026-10-18T10:30:08Z",
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 1,
+                "started_at": "2026-10-18T10:28:47Z",
+                "completed_at": "2026-10-18T10:28:47Z"
+              },
+              {
+                "name": "Checkout repository",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 2,
+                "started_at": "2026-10-18T10:28:47Z",
+                "completed_at": "2026-10-18T10:28:53Z"
+              },
+              {
+                "name": "Setup proxy for registries",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 3,
+                "started_at": "2026-10-18T10:28:53Z",
+                "completed_at": "2026-10-18T10:28:53Z"
+              },
+              {
+                "name": "Initialize CodeQL",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 4,
+                "started_at": "2026-10-18T10:28:53Z",
+                "completed_at": "2026-10-18T10:29:06Z"
+              },
+              {
+                "name": "Autobuild",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 5,
+                "started_at": "2026-10-18T10:29:06Z",
+                "completed_at": "2026-10-18T10:29:07Z"
+              },
+              {
+                "name": "Perform CodeQL Analysis",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 6,
+                "started_at": "2026-10-18T10:29:07Z",
+                "completed_at": "2026-10-18T10:30:06Z"
+              },
+              {
+                "name": "Post Perform CodeQL Analysis",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 9,
+                "started_at": "2026-10-18T10:30:06Z",
+                "completed_at": "2026-10-18T10:30:06Z"
+              },
+              {
+                "name": "Post Initialize CodeQL",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 10,
+                "started_at": "2026-10-18T10:30:06Z",
+                "completed_at": "2026-10-18T10:30:06Z"
+              },
+              {
+                "name": "Post Setup proxy for registries",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 11,
+                "started_at": "2026-10-18T10:30:06Z",
+                "completed_at": "2026-10-18T10:30:07Z"
+              },
+              {
+                "name": "Post Checkout repository",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 12,
+                "started_at": "2026-10-18T10:30:07Z",
+                "completed_at": "2026-10-18T10:30:07Z"
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 13,
+                "started_at": "2026-10-18T10:30:07Z",
+                "completed_at": "2026-10-18T10:30:07Z"
+              }
+            ],
+            "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39114829499/job/117638387539"
+          }
+        ]
+      }
+    },
+    {
+      "key": "desktop_checks_final",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/commits/46dcb2d691827f7aa3ad7903dae09d39fd338126/check-runs?per_page=100",
+      "observed_at_utc": "2026-10-18 10:39:34 UTC",
+      "selected_api_fields": {
+        "total_count": 6,
+        "check_runs": [
+          {
+            "id": 117651800400,
+            "name": "native-rust-and-wayland",
+            "head_sha": "46dcb2d691827f7aa3ad7903dae09d39fd338126",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-18T10:29:06Z",
+            "completed_at": null,
+            "details_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39115155001/job/117651800400",
+            "output": {
+              "title": null,
+              "summary": null,
+              "annotations_count": 0
+            }
+          },
+          {
+            "id": 117650953301,
+            "name": "CodeQL",
+            "head_sha": "46dcb2d691827f7aa3ad7903dae09d39fd338126",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-18T10:24:41Z",
+            "completed_at": "2026-10-18T10:24:44Z",
+            "details_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/runs/117650953301",
+            "output": {
+              "title": "No new alerts in code changed by this pull request",
+              "summary": "[View all branch alerts](/TrillionniumFoundation/trillionnium-os-desktop/security/code-scanning?query=pr%3A193+tool%3ACodeQL+is%3Aopen).",
+              "annotations_count": 0
+            }
+          },
+          {
+            "id": 117639353771,
+            "name": "original-agentd",
+            "head_sha": "46dcb2d691827f7aa3ad7903dae09d39fd338126",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-18T10:13:59Z",
+            "completed_at": "2026-10-18T10:38:38Z",
+            "details_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39115155060/job/117639353771",
+            "output": {
+              "title": null,
+              "summary": null,
+              "annotations_count": 1
+            }
+          },
+          {
+            "id": 117639353718,
+            "name": "history-transport",
+            "head_sha": "46dcb2d691827f7aa3ad7903dae09d39fd338126",
+            "status": "queued",
+            "conclusion": null,
+            "started_at": "2026-10-18T09:23:41Z",
+            "completed_at": null,
+            "details_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39115155092/job/117639353718",
+            "output": {
+              "title": null,
+              "summary": null,
+              "annotations_count": 0
+            }
+          },
+          {
+            "id": 117639353635,
+            "name": "ui-source-guard",
+            "head_sha": "46dcb2d691827f7aa3ad7903dae09d39fd338126",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-18T10:28:50Z",
+            "completed_at": "2026-10-18T10:29:06Z",
+            "details_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39115155001/job/117639353635",
+            "output": {
+              "title": null,
+              "summary": null,
+              "annotations_count": 1
+            }
+          },
+          {
+            "id": 117639351069,
+            "name": "Analyze (python)",
+            "head_sha": "46dcb2d691827f7aa3ad7903dae09d39fd338126",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-18T10:23:51Z",
+            "completed_at": "2026-10-18T10:24:50Z",
+            "details_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39115153336/job/117639351069",
+            "output": {
+              "title": null,
+              "summary": null,
+              "annotations_count": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "desktop_original_run_final",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39115155060",
+      "observed_at_utc": "2026-10-18 10:39:34 UTC",
+      "selected_api_fields": {
+        "id": 39115155060,
+        "name": "Hepta original Agentd, ObjectiveStart and Session qualification (ARM64)",
+        "head_sha": "46dcb2d691827f7aa3ad7903dae09d39fd338126",
+        "status": "completed",
+        "conclusion": "success",
+        "path": ".github/workflows/hepta-original-agentd.yml",
+        "event": "pull_request",
+        "created_at": "2026-10-18T09:23:41Z",
+        "updated_at": "2026-10-18T10:38:39Z",
+        "run_started_at": "2026-10-18T09:23:41Z",
+        "run_attempt": 1,
+        "html_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39115155060"
+      }
+    }
+  ],
+  "current_status": {
+    "desktop": {
+      "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+      "pr": 193,
+      "head": "46dcb2d691827f7aa3ad7903dae09d39fd338126",
+      "state": "open",
+      "draft": false,
+      "merged": false,
+      "mergeable_state": "unstable",
+      "auto_merge": null,
+      "repository_allow_auto_merge": false,
+      "check_counts": {
+        "queued": 2,
+        "success": 4
+      },
+      "checks_observed_at_utc": "2026-10-18 10:39:34 UTC",
+      "all_current_checks_passed": false,
+      "main_commit": "01225ab0a20a9f25dd8313a7fad7652dd9154e30"
+    },
+    "owner": {
+      "repository": "TrillionniumFoundation/hepta-private-ci",
+      "pr": 2815,
+      "head": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+      "state": "open",
+      "draft": false,
+      "merged": false,
+      "mergeable_state": "blocked",
+      "auto_merge": {
+        "commit_message": null,
+        "commit_title": null,
+        "merge_method": "squash",
+        "enabled_by": {
+          "login": "ProfHepta",
+          "id": 102159240,
+          "node_id": "U_kgDOBhbTiA",
+          "avatar_url": "https://avatars.githubusercontent.com/u/102159240?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/ProfHepta",
+          "html_url": "https://github.com/ProfHepta",
+          "followers_url": "https://api.github.com/users/ProfHepta/followers",
+          "following_url": "https://api.github.com/users/ProfHepta/following{/other_user}",
+          "gists_url": "https://api.github.com/users/ProfHepta/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/ProfHepta/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/ProfHepta/subscriptions",
+          "organizations_url": "https://api.github.com/users/ProfHepta/orgs",
+          "repos_url": "https://api.github.com/users/ProfHepta/repos",
+          "events_url": "https://api.github.com/users/ProfHepta/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/ProfHepta/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        }
+      },
+      "repository_allow_auto_merge": true,
+      "check_counts": {
+        "queued": 5,
+        "neutral": 1,
+        "skipped": 2,
+        "success": 5,
+        "in_progress": 1
+      },
+      "checks_observed_at_utc": "2026-10-18 10:38:28 UTC",
+      "all_current_checks_passed": false,
+      "main_commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+      "required_contexts": {
+        "enforcement_level": "non_admins",
+        "contexts": [
+          "CI required",
+          "Architecture required"
+        ],
+        "checks": [
+          {
+            "context": "CI required",
+            "app_id": 15368
+          },
+          {
+            "context": "Architecture required",
+            "app_id": 15368
+          }
+        ]
+      },
+      "normal_auto_merge_enabled": true,
+      "auto_merge_completed": false,
+      "admin_bypass_requested": false
+    }
+  },
+  "required_gates": {
+    "owner": {
+      "contexts": [
+        "CI required",
+        "Architecture required"
+      ],
+      "context_source": "Current GET /branches/main embedded protection.required_status_checks; full /protection endpoint remains 403.",
+      "ci_required": {
+        "terminal_check_generated": false,
+        "workflow_run_id": 39114831266,
+        "workflow_status": "queued",
+        "generated_jobs": 3,
+        "generated_jobs_all_queued": true
+      },
+      "architecture_required": {
+        "terminal_check_generated": false,
+        "workflow_run_id": 39114831280,
+        "workflow_status": "queued",
+        "generated_jobs": 2,
+        "generated_jobs_all_queued": true,
+        "lanes": [
+          "base-merge",
+          "source-head"
+        ],
+        "native_jobs_executed": false
+      }
+    },
+    "desktop_history": {
+      "workflow_run_id": 39115155092,
+      "transport_job_id": 117639353718,
+      "transport_status": "queued",
+      "transport_runner_id": 0,
+      "transport_step_count": 0,
+      "original_owner_history_job_generated": false,
+      "original_owner_history_runtime_started": false,
+      "original_owner_history_runtime_passed": false
+    },
+    "desktop_host": {
+      "workflow_run_id": 39115155001,
+      "source_guard": "success",
+      "native_rust_and_wayland_job_id": 117651800400,
+      "native_status": "queued"
+    },
+    "desktop_original_f8_owner": {
+      "workflow_run_id": 39115155060,
+      "job_id": 117639353771,
+      "status": "completed",
+      "conclusion": "success",
+      "completed_at": "2026-10-18T10:38:38Z",
+      "runner_label": "ubuntu-24.04-arm",
+      "all_recorded_steps_success": true,
+      "evidence_level": "Exact-head GitHub job/run/check metadata and step statuses; this task did not download or byte-audit this run's artifacts.",
+      "satisfies_new_r9_history_arm64_gate": false
+    }
+  },
+  "protection_visibility": {
+    "desktop_branch": {
+      "observed_at_utc": "2026-10-18 10:38:28 UTC",
+      "protected": false,
+      "protection": {
+        "enabled": false,
+        "required_status_checks": {
+          "enforcement_level": "off",
+          "contexts": [],
+          "checks": []
+        }
+      }
+    },
+    "owner_branch": {
+      "observed_at_utc": "2026-10-18 10:38:28 UTC",
+      "protected": true,
+      "protection": {
+        "enabled": true,
+        "required_status_checks": {
+          "enforcement_level": "non_admins",
+          "contexts": [
+            "CI required",
+            "Architecture required"
+          ],
+          "checks": [
+            {
+              "context": "CI required",
+              "app_id": 15368
+            },
+            {
+              "context": "Architecture required",
+              "app_id": 15368
+            }
+          ]
+        }
+      }
+    },
+    "full_protection_endpoint": {
+      "desktop": "403 Resource not accessible by integration",
+      "owner": "403 Resource not accessible by integration",
+      "scope": "Full settings remain inaccessible through these endpoint calls. The successful branch response independently supplies limited current protection/required-check evidence; a 403 is not evidence of absent protection or changed settings."
+    },
+    "settings_changed_by_this_review": false
+  },
+  "ready_event_comparison": {
+    "baseline": {
+      "path": "/workspace/scratch/499c7902de8e/r9-evidence/ci/final-heads-checks-101140.json",
+      "sha256": "7929567cdae4d1d272281a6b501e28097777c24f3485b294f1d11863566926fa",
+      "observed_at_utc": "2026-10-18 10:12:01 UTC",
+      "runs": {
+        "desktop": [
+          39115155001,
+          39115155060,
+          39115155092,
+          39115153336
+        ],
+        "owner": [
+          39114831265,
+          39114831280,
+          39114831266,
+          39114829499
+        ]
+      },
+      "checks": {
+        "desktop": [
+          117639353771,
+          117639353718,
+          117639353635,
+          117639351069
+        ],
+        "owner": [
+          117638391510,
+          117638387539,
+          117638387504,
+          117638387457,
+          117638387453,
+          117638387256
+        ]
+      }
+    },
+    "comparison": {
+      "desktop": {
+        "previous_run_ids": [
+          39115155001,
+          39115155060,
+          39115155092,
+          39115153336
+        ],
+        "current_run_ids": [
+          39115155092,
+          39115155060,
+          39115155001,
+          39115153336
+        ],
+        "new_run_ids_since_baseline": [],
+        "new_check_ids_since_baseline": [
+          117651800400,
+          117650953301
+        ],
+        "all_observed_run_created_times_precede_ready_actions": true
+      },
+      "owner": {
+        "previous_run_ids": [
+          39114831265,
+          39114831280,
+          39114831266,
+          39114829499
+        ],
+        "current_run_ids": [
+          39114831265,
+          39114831280,
+          39114831266,
+          39114829499
+        ],
+        "new_run_ids_since_baseline": [],
+        "new_check_ids_since_baseline": [
+          117651557845,
+          117651557742,
+          117651557358,
+          117649944750,
+          117649944536,
+          117649845043,
+          117648874598,
+          117648874526
+        ],
+        "all_observed_run_created_times_precede_ready_actions": true
+      }
+    },
+    "assessment": "No new workflow run IDs were observed relative to the 10:11–10:12 snapshot. New check/job records appeared within the same existing runs. The run API exposes event=pull_request/dynamic, not the pull-request activity subtype; this review does not attribute queue release or execution to Ready.",
+    "ready_specific_new_run_proved": false,
+    "queue_cause_established": false
+  },
+  "temporal_transition": {
+    "description": "The original-agentd check/run was in progress at 10:38:28; its job completed successfully at 10:38:38 and was read at 10:38:55. A single adaptive reread confirmed the exact-head check and run success at 10:39:34.",
+    "older_in_progress_observation_retained": true
+  },
+  "normal_auto_merge_operation": {
+    "path": "/workspace/scratch/499c7902de8e/r9-evidence/ci/owner-normal-auto-merge.json",
+    "sha256": "d413f38be78c1eceec0eab465197d4c8322a7342b90dfce8c0173515779d7359",
+    "observed_at_utc": "2026-10-18 10:37:01 UTC",
+    "source_head_unchanged": true,
+    "admin_bypass_requested": false,
+    "after_state": "open",
+    "after_draft": false,
+    "after_head": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+    "after_merge_method": "squash"
+  },
+  "local_qualification_scope": {
+    "status": "passed",
+    "architecture": "x86_64 Linux",
+    "owner_commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+    "desktop_local_commit": "207ff9da7dac83c57b0cbae46c4b03ecfba3baa9",
+    "runner_report_sha256": "edbfff169707cd2946a549f9edeaf0548eefbb6765e757e7039dabf0fe430f4b",
+    "runtime_rerun_in_this_task": false,
+    "source_or_elf_revalidated_in_this_task": false,
+    "replaces_remote_arm64_or_required_ci": false
+  },
+  "archive_boundary": {
+    "immutable_archive": {
+      "path": "/workspace/scratch/499c7902de8e/r9-integration/results/integration/2026-10-18-objective-history/raw-evidence-manifest.json",
+      "sha256": "dfd259f8443ddadea0689f5289365a460fe01e36a4c8f90ef3d7e0700e82a988",
+      "archive": {
+        "name": "raw-evidence.tar.xz",
+        "bytes": 24308524,
+        "sha256": "4f8ae8d38933ff594d1e3c84db30f8a9efe2457276f08d1ea84ab4e1e85c2e4f"
+      },
+      "entries": 321,
+      "primary_files": 20,
+      "archive_bytes_rehashed_in_this_task": false
+    },
+    "publication_status_in_raw_archive": false,
+    "reason": "Created after successful archive publication; root will bind this file separately in the final artifact manifest.",
+    "archive_or_original_receipts_modified": false
+  },
+  "actions_performed_by_this_reviewer": [
+    "Read GitHub PR/check/run/job/branch/repository metadata",
+    "Read full protection endpoints and retain their 403 responses",
+    "Read existing local metadata for comparison and operation identity",
+    "Create this post-archive publication-status.json"
+  ],
+  "actions_not_performed_by_this_reviewer": [
+    "Merge or mutate a PR",
+    "Change repository/branch settings",
+    "Dispatch, rerun or cancel CI",
+    "Build, rerun runtime, revalidate native ELF, repack or modify immutable evidence"
+  ]
+}

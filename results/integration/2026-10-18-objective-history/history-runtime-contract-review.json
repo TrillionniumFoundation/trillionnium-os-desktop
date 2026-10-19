@@ -1,0 +1,942 @@
+{
+  "schema_version": 1,
+  "status": "passed_scoped_runtime_review",
+  "evidence_class": "independent_read_only_review_of_executed_original_owner_objective_history",
+  "started_at_utc": "2026-10-18T10:27:58.835540+00:00",
+  "completed_at_utc": "2026-10-18T10:28:00.027935+00:00",
+  "runtime_window": {
+    "started_at_utc": "2026-10-18T10:10:52.988105+00:00",
+    "ended_at_utc": "2026-10-18T10:16:27.620004+00:00",
+    "includes_runner_probe_build": true
+  },
+  "source_binding": {
+    "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+    "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+    "contract_sha256": "f0fc1110233dc38542097c6f9f7ef2e3f6ca5eb215fa2b4447e556cd7ac46981",
+    "probe_inputs": {
+      "objective_history_client.rs": "cc982282714772dee35e0311cbbd77c00bb296a35975b4864dec0bf8d98f7137",
+      "objective_history_probe.rs": "10014a30f70f5de47aef8ddca585fd997f57e8bd38bbdf4a35bde553b981c82a",
+      "original_objective_fixture.rs": "4abdcb7ee3a0c3cf8f8302c8af18656f2d2c41bfa4862b137991a6124ef4f272",
+      "original_objective_owner.rs": "f01310e679872217af747192c3329218f2d6045972c77718d7f358384eb88eda",
+      "original_objective_profile.json": "56d81a70d4a7481614a9ebc5494173b08dcf79072230b9b61cd0a9c01454dd02",
+      "run_objective_history.py": "a81294b55949931fb30abd9d3c19ba553842c017d0eaf6defb152698c34d9f49",
+      "run_original_agentd.py": "21dd4a2e0621240a75f5ce37bad93da0a37352fbaa78554a50e048abe6a45fd0",
+      "run_original_objective.py": "9ea5d7b2f6801f88240257effe78dbbceb126d63f7132f37b0f2edd7c2486df4"
+    },
+    "tree": "f4ef891d43baf90d6eebd29921a5ed03222ef3ab"
+  },
+  "upstream_verified_now": {
+    "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+    "tree": "f4ef891d43baf90d6eebd29921a5ed03222ef3ab",
+    "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+    "clean_checkout": true,
+    "reviewed_files": 36
+  },
+  "desktop_clean_verified_now": true,
+  "contract_verified_now": {
+    "path": "/workspace/scratch/499c7902de8e/r9-integration/services/hepta-os/OBJECTIVE_HISTORY_CONTRACT.json",
+    "sha256": "f0fc1110233dc38542097c6f9f7ef2e3f6ca5eb215fa2b4447e556cd7ac46981",
+    "desktop_commit": "207ff9da7dac83c57b0cbae46c4b03ecfba3baa9"
+  },
+  "inputs": [
+    {
+      "path": "/workspace/scratch/499c7902de8e/r9-evidence/history-runtime-01/receipt.json",
+      "bytes": 5111,
+      "sha256": "9879c30c741879cee5cd8fa148991b43e49349a38f4368780c16b52626953df1"
+    },
+    {
+      "path": "/workspace/scratch/499c7902de8e/r9-evidence/history-runtime-01/work/report.json",
+      "bytes": 78186,
+      "sha256": "edbfff169707cd2946a549f9edeaf0548eefbb6765e757e7039dabf0fe430f4b"
+    },
+    {
+      "path": "/workspace/scratch/499c7902de8e/r9-evidence/history-runtime-01/work/runtime.log",
+      "bytes": 50399,
+      "sha256": "0ae2fdb59410b95970a5091602146e5d6b9e0d5d67124e484d18bde951e855a4"
+    },
+    {
+      "path": "/workspace/scratch/499c7902de8e/r9-evidence/history-runtime-01/driver.log",
+      "bytes": 78186,
+      "sha256": "edbfff169707cd2946a549f9edeaf0548eefbb6765e757e7039dabf0fe430f4b"
+    },
+    {
+      "path": "/workspace/scratch/499c7902de8e/r9-evidence/history-runtime-01/work/probe/src/objective_history_source_binding.json",
+      "bytes": 1064,
+      "sha256": "a0c9cdf53ef21599bcf265cf8b8e0886540c8325d2b2cc00f7b25a7be147c6c2"
+    },
+    {
+      "path": "/workspace/scratch/499c7902de8e/r9-evidence/history-probe/final-contract-review.json",
+      "bytes": 14323,
+      "sha256": "7b753fbd3cefdc6bb4aac26649de3da39a5dbdbc7e6fb4f1dcb272c79319de24"
+    },
+    {
+      "path": "/workspace/scratch/499c7902de8e/r9-evidence/history-probe/native05-review.json",
+      "bytes": 5802,
+      "sha256": "f83a309d62573d270e95af78fb3095b2ad2235c5c4a9e76d7afea36a05f5dd3e"
+    },
+    {
+      "path": "/workspace/scratch/499c7902de8e/r9-evidence/native-agentd-05/receipt.json",
+      "bytes": 17950,
+      "sha256": "0c70dc9057668a31d439686e441c56b163da71e13aac0c9cdda8f2d42544869d"
+    }
+  ],
+  "executed_review_operations": [
+    "read_contract and verify_source on final frozen trees",
+    "verify_records on actual raw/report-identical JSON records",
+    "independent event, identity, peer, full-frame length, generation, anchor and saved CLI output comparisons",
+    "Ed25519 verification of five saved Objective envelopes against saved public issuer key, using the exact source-defined canonical claims",
+    "saved journal byte-prefix and stopped-fault record comparisons"
+  ],
+  "reviewer_rust_executed": false,
+  "reviewer_runtime_replayed": false,
+  "reviewer_active_target_accessed": false,
+  "source_or_cache_modified": false,
+  "counts": {
+    "raw_log_records": 38,
+    "owner_running": 4,
+    "submission_observed": 4,
+    "history_query_observed": 13,
+    "objective_history_check": 15,
+    "objective_response_discarded": 1,
+    "acceptance_pass": 1,
+    "original_objective_request_attempts": 5,
+    "distinct_objective_run_ids": 5,
+    "distinct_objective_message_ids": 5,
+    "published_objective_requests": 4,
+    "controlled_supervisor_restarts": 3,
+    "recovery_resubmissions": 0
+  },
+  "raw_records_equal_report": true,
+  "frozen_python_verify_records": "passed",
+  "checks": [
+    {
+      "check": "live_compiled_publication",
+      "raw_log_line": 4,
+      "status": "passed_on_actual_record",
+      "history_request_id": 201,
+      "history_status": "historical_publication",
+      "publication_sequence": 1,
+      "issue": null
+    },
+    {
+      "check": "live_abstain_publication",
+      "raw_log_line": 7,
+      "status": "passed_on_actual_record",
+      "history_request_id": 202,
+      "history_status": "historical_publication",
+      "publication_sequence": 2,
+      "issue": null,
+      "observed_run_status": null
+    },
+    {
+      "check": "retained_anchor_covers_publication",
+      "raw_log_line": 9,
+      "status": "passed_on_actual_record",
+      "history_request_id": 203,
+      "history_status": "historical_publication",
+      "publication_sequence": 1,
+      "issue": null
+    },
+    {
+      "check": "harness_lost_response_then_history",
+      "raw_log_line": 12,
+      "status": "passed_on_actual_record",
+      "history_request_id": 204,
+      "history_status": "historical_publication",
+      "publication_sequence": 3,
+      "issue": null,
+      "resubmission_count": 0
+    },
+    {
+      "check": "postpublication_submit_unknown_history_published",
+      "raw_log_line": 15,
+      "status": "passed_on_actual_record",
+      "history_request_id": 205,
+      "history_status": "historical_publication",
+      "publication_sequence": 4,
+      "issue": null,
+      "observed_run_status": null,
+      "resubmission_count": 0
+    },
+    {
+      "check": "wrong_anchor_unknown",
+      "raw_log_line": 17,
+      "status": "passed_on_actual_record",
+      "history_request_id": 301,
+      "history_status": "unknown",
+      "publication_sequence": null,
+      "issue": "anchor_mismatch"
+    },
+    {
+      "check": "earlier_anchor_unknown",
+      "raw_log_line": 19,
+      "status": "passed_on_actual_record",
+      "history_request_id": 302,
+      "history_status": "unknown",
+      "publication_sequence": null,
+      "issue": "publication_outside_anchor"
+    },
+    {
+      "check": "changed_signed_request_unknown",
+      "raw_log_line": 21,
+      "status": "passed_on_actual_record",
+      "history_request_id": 303,
+      "history_status": "unknown",
+      "publication_sequence": null,
+      "issue": "no_matching_publication"
+    },
+    {
+      "check": "restart_projection_missing_history_published",
+      "raw_log_line": 24,
+      "status": "passed_on_actual_record",
+      "history_request_id": 304,
+      "history_status": "historical_publication",
+      "publication_sequence": 3,
+      "issue": null,
+      "observed_run_status": null,
+      "resubmission_count": 0
+    },
+    {
+      "check": "expired_request_history_still_published",
+      "raw_log_line": 26,
+      "status": "passed_on_actual_record",
+      "history_request_id": 308,
+      "history_status": "historical_publication",
+      "publication_sequence": 2,
+      "issue": null,
+      "resubmission_count": 0
+    },
+    {
+      "check": "rollback_retained_anchor_unknown",
+      "raw_log_line": 29,
+      "status": "passed_on_actual_record",
+      "history_request_id": 305,
+      "history_status": "unknown",
+      "publication_sequence": null,
+      "issue": "anchor_missing",
+      "resubmission_count": 0
+    },
+    {
+      "check": "truncated_tail_retained_anchor_unknown",
+      "raw_log_line": 32,
+      "status": "passed_on_actual_record",
+      "history_request_id": 306,
+      "history_status": "unknown",
+      "publication_sequence": null,
+      "issue": "anchor_missing",
+      "resubmission_count": 0
+    },
+    {
+      "check": "revoked_issuer_history_still_published",
+      "raw_log_line": 34,
+      "status": "passed_on_actual_record",
+      "history_request_id": 307,
+      "history_status": "historical_publication",
+      "publication_sequence": 1,
+      "issue": null
+    },
+    {
+      "check": "revoked_new_submission_rejected",
+      "raw_log_line": 36,
+      "status": "passed_on_actual_record"
+    },
+    {
+      "check": "controlled_stop",
+      "raw_log_line": 37,
+      "status": "passed_on_actual_record"
+    }
+  ],
+  "owner_lifecycle": [
+    {
+      "raw_log_line": 1,
+      "spawn_generation": 1,
+      "current_generation": 2,
+      "peer_pid": 437817,
+      "agent_id": "33333333-3333-4333-8333-333333333333"
+    },
+    {
+      "raw_log_line": 22,
+      "spawn_generation": 5,
+      "current_generation": 6,
+      "peer_pid": 437977,
+      "agent_id": "33333333-3333-4333-8333-333333333333"
+    },
+    {
+      "raw_log_line": 27,
+      "spawn_generation": 9,
+      "current_generation": 10,
+      "peer_pid": 438209,
+      "agent_id": "33333333-3333-4333-8333-333333333333"
+    },
+    {
+      "raw_log_line": 30,
+      "spawn_generation": 13,
+      "current_generation": 14,
+      "peer_pid": 438343,
+      "agent_id": "33333333-3333-4333-8333-333333333333"
+    }
+  ],
+  "request_identities": [
+    {
+      "request_number": 1,
+      "request_id": 101,
+      "message_id": "message.desktop-isolated.1",
+      "message_sequence": 1,
+      "run_id": "run.history-compiled",
+      "original_spawn_generation": 1,
+      "expires_at_ms": 1792318794710,
+      "signed_body_sha256": "4ffd52ee1c8d56096659ae0a869e271dc4816b8cbf7eec36bcc26e3eca1c9569",
+      "saved_envelope": {
+        "path": "/workspace/scratch/499c7902de8e/r9-evidence/history-runtime-01/work/runtime-evidence/01-compiled-request.json",
+        "bytes": 2699,
+        "sha256": "4c7339fd3694f3e0d4c9731729e189113edc41c9e3785ee26a16210825b589d2"
+      },
+      "public_key_ed25519_signature_valid": true,
+      "purpose": "original_objective_request"
+    },
+    {
+      "request_number": 2,
+      "request_id": 102,
+      "message_id": "message.desktop-isolated.2",
+      "message_sequence": 2,
+      "run_id": "run.history-abstain",
+      "original_spawn_generation": 1,
+      "expires_at_ms": 1792318579819,
+      "signed_body_sha256": "3796cff3aa8aecd1a6801adc52083ebf824ce2fd2f53ff18816559201e0cec80",
+      "saved_envelope": {
+        "path": "/workspace/scratch/499c7902de8e/r9-evidence/history-runtime-01/work/runtime-evidence/02-abstain-request.json",
+        "bytes": 2689,
+        "sha256": "3b9a46044cd540ae86dc9ac65923ed25f6e00b1118ba6534307c0320c434ca85"
+      },
+      "public_key_ed25519_signature_valid": true,
+      "purpose": "original_objective_request"
+    },
+    {
+      "request_number": 3,
+      "request_id": 103,
+      "message_id": "message.desktop-isolated.3",
+      "message_sequence": 3,
+      "run_id": "run.history-lost-response",
+      "original_spawn_generation": 1,
+      "expires_at_ms": 1792318794940,
+      "signed_body_sha256": "db84b1209fb279969d4243a6a78bee9ce819f0450cca17e6b15e72a4046ec480",
+      "saved_envelope": {
+        "path": "/workspace/scratch/499c7902de8e/r9-evidence/history-runtime-01/work/runtime-evidence/03-lost-response-request.json",
+        "bytes": 2709,
+        "sha256": "788600e937bb266188ba76ac50f865b9bd466b115ee1e89b584b98004cdd8927"
+      },
+      "public_key_ed25519_signature_valid": true,
+      "purpose": "original_objective_request"
+    },
+    {
+      "request_number": 4,
+      "request_id": 104,
+      "message_id": "message.desktop-isolated.4",
+      "message_sequence": 4,
+      "run_id": "run.history-postpublication-capacity",
+      "original_spawn_generation": 1,
+      "expires_at_ms": 1792318795083,
+      "signed_body_sha256": "648fb2e3476f5f9fa40c4554077851b0ac893276aac76e95a1f1f29f08e15e47",
+      "saved_envelope": {
+        "path": "/workspace/scratch/499c7902de8e/r9-evidence/history-runtime-01/work/runtime-evidence/05-postpublication-capacity-request.json",
+        "bytes": 2731,
+        "sha256": "ac93ac957051bb3fab164e923dea908b0472bfa944de6854ddf1acd2d4741dc4"
+      },
+      "public_key_ed25519_signature_valid": true,
+      "purpose": "original_objective_request"
+    },
+    {
+      "request_number": 5,
+      "request_id": 105,
+      "message_id": "message.desktop-isolated.5",
+      "message_sequence": 5,
+      "run_id": "run.history-revoked-negative",
+      "original_spawn_generation": 13,
+      "expires_at_ms": 1792318824975,
+      "signed_body_sha256": "4de81666ae47022ab0873e5ecee4f5be6ffb35c09c16c5b2b107efbdd8c72b7d",
+      "saved_envelope": {
+        "path": "/workspace/scratch/499c7902de8e/r9-evidence/history-runtime-01/work/runtime-evidence/14-revoked-negative-request.json",
+        "bytes": 2716,
+        "sha256": "6a5fceeb32baad3389045fc7a67bf6caca2aee6b90a6f47e88da466d1e80ee3c"
+      },
+      "public_key_ed25519_signature_valid": true,
+      "purpose": "distinct_revoked_negative_not_recovery_retry"
+    }
+  ],
+  "cli_submissions": [
+    {
+      "raw_log_line": 2,
+      "label": "01-compiled",
+      "request_id": 101,
+      "run_id": "run.history-compiled",
+      "bytes_written": 2805,
+      "status": "admitted",
+      "issue": null,
+      "exit_code": 0,
+      "saved_input_and_output_cross_checked": true
+    },
+    {
+      "raw_log_line": 5,
+      "label": "02-abstain",
+      "request_id": 102,
+      "run_id": "run.history-abstain",
+      "bytes_written": 2795,
+      "status": "admitted",
+      "issue": null,
+      "exit_code": 0,
+      "saved_input_and_output_cross_checked": true
+    },
+    {
+      "raw_log_line": 13,
+      "label": "05-postpublication-capacity",
+      "request_id": 104,
+      "run_id": "run.history-postpublication-capacity",
+      "bytes_written": 2837,
+      "status": "submit_unknown",
+      "issue": "objective_owner_request_rejected",
+      "exit_code": 12,
+      "saved_input_and_output_cross_checked": true
+    },
+    {
+      "raw_log_line": 35,
+      "label": "14-revoked-negative",
+      "request_id": 105,
+      "run_id": "run.history-revoked-negative",
+      "bytes_written": 2823,
+      "status": "submit_unknown",
+      "issue": "objective_owner_request_rejected",
+      "exit_code": 12,
+      "saved_input_and_output_cross_checked": true
+    }
+  ],
+  "queries": [
+    {
+      "raw_log_line": 3,
+      "label": "01-compiled",
+      "request_id": 201,
+      "run_id": "run.history-compiled",
+      "current_spawn_generation": 1,
+      "original_spawn_generation": 1,
+      "peer_pid": 437817,
+      "bytes_written": 2833,
+      "status": "historical_publication",
+      "issue": null,
+      "publication_sequence": 1,
+      "anchor": null,
+      "anchor_coverage": "current_owner_journal",
+      "response_generation": 2,
+      "journal_sha256": "198802348f6d9bef54536c9b65125a20958b42e148b7bf4f601319e77da32814",
+      "journal_unchanged": true,
+      "saved_input_and_output_cross_checked": true
+    },
+    {
+      "raw_log_line": 6,
+      "label": "02-abstain",
+      "request_id": 202,
+      "run_id": "run.history-abstain",
+      "current_spawn_generation": 1,
+      "original_spawn_generation": 1,
+      "peer_pid": 437817,
+      "bytes_written": 2823,
+      "status": "historical_publication",
+      "issue": null,
+      "publication_sequence": 2,
+      "anchor": null,
+      "anchor_coverage": "current_owner_journal",
+      "response_generation": 2,
+      "journal_sha256": "eab78c8faee9c37d0c179881dc256bf7bf86a9dad48fd196c585291a82a44d09",
+      "journal_unchanged": true,
+      "saved_input_and_output_cross_checked": true
+    },
+    {
+      "raw_log_line": 8,
+      "label": "03-covered-by-second",
+      "request_id": 203,
+      "run_id": "run.history-compiled",
+      "current_spawn_generation": 1,
+      "original_spawn_generation": 1,
+      "peer_pid": 437817,
+      "bytes_written": 2925,
+      "status": "historical_publication",
+      "issue": null,
+      "publication_sequence": 1,
+      "anchor": {
+        "chain_digest": "37620370f29b087f1df2017a94e868eeecf897c472f01b9b528490205bb5f9ea",
+        "sequence": 2
+      },
+      "anchor_coverage": "retained_anchor",
+      "response_generation": 2,
+      "journal_sha256": "eab78c8faee9c37d0c179881dc256bf7bf86a9dad48fd196c585291a82a44d09",
+      "journal_unchanged": true,
+      "saved_input_and_output_cross_checked": true
+    },
+    {
+      "raw_log_line": 11,
+      "label": "04-lost-response",
+      "request_id": 204,
+      "run_id": "run.history-lost-response",
+      "current_spawn_generation": 1,
+      "original_spawn_generation": 1,
+      "peer_pid": 437817,
+      "bytes_written": 2843,
+      "status": "historical_publication",
+      "issue": null,
+      "publication_sequence": 3,
+      "anchor": null,
+      "anchor_coverage": "current_owner_journal",
+      "response_generation": 2,
+      "journal_sha256": "36c9457ba334171514b4248c6e2cd1d456b8ab86128afd43aad1b341c646b5b2",
+      "journal_unchanged": true,
+      "saved_input_and_output_cross_checked": true
+    },
+    {
+      "raw_log_line": 14,
+      "label": "05-postpublication-capacity",
+      "request_id": 205,
+      "run_id": "run.history-postpublication-capacity",
+      "current_spawn_generation": 1,
+      "original_spawn_generation": 1,
+      "peer_pid": 437817,
+      "bytes_written": 2865,
+      "status": "historical_publication",
+      "issue": null,
+      "publication_sequence": 4,
+      "anchor": null,
+      "anchor_coverage": "current_owner_journal",
+      "response_generation": 2,
+      "journal_sha256": "5911e4a9e2a2c0592581d969630dadc277fac88425bd58297e8eda0102a2eeb7",
+      "journal_unchanged": true,
+      "saved_input_and_output_cross_checked": true
+    },
+    {
+      "raw_log_line": 16,
+      "label": "06-wrong-anchor",
+      "request_id": 301,
+      "run_id": "run.history-compiled",
+      "current_spawn_generation": 1,
+      "original_spawn_generation": 1,
+      "peer_pid": 437817,
+      "bytes_written": 2925,
+      "status": "unknown",
+      "issue": "anchor_mismatch",
+      "publication_sequence": null,
+      "anchor": {
+        "chain_digest": "1b4bf3e2dac5e6ed0b17d2d11ab48a409d0f128a89aaf26cfa948375679efa1d",
+        "sequence": 4
+      },
+      "anchor_coverage": null,
+      "response_generation": null,
+      "journal_sha256": "5911e4a9e2a2c0592581d969630dadc277fac88425bd58297e8eda0102a2eeb7",
+      "journal_unchanged": true,
+      "saved_input_and_output_cross_checked": true
+    },
+    {
+      "raw_log_line": 18,
+      "label": "07-earlier-anchor",
+      "request_id": 302,
+      "run_id": "run.history-abstain",
+      "current_spawn_generation": 1,
+      "original_spawn_generation": 1,
+      "peer_pid": 437817,
+      "bytes_written": 2915,
+      "status": "unknown",
+      "issue": "publication_outside_anchor",
+      "publication_sequence": null,
+      "anchor": {
+        "chain_digest": "75bc08ed9e0d9e10157910ccfa897f7ddfcfcad40dd410979f2b5865b5281b83",
+        "sequence": 1
+      },
+      "anchor_coverage": null,
+      "response_generation": null,
+      "journal_sha256": "5911e4a9e2a2c0592581d969630dadc277fac88425bd58297e8eda0102a2eeb7",
+      "journal_unchanged": true,
+      "saved_input_and_output_cross_checked": true
+    },
+    {
+      "raw_log_line": 20,
+      "label": "08-changed-signature",
+      "request_id": 303,
+      "run_id": "run.history-compiled",
+      "current_spawn_generation": 1,
+      "original_spawn_generation": 1,
+      "peer_pid": 437817,
+      "bytes_written": 2925,
+      "status": "unknown",
+      "issue": "no_matching_publication",
+      "publication_sequence": null,
+      "anchor": {
+        "chain_digest": "0b4bf3e2dac5e6ed0b17d2d11ab48a409d0f128a89aaf26cfa948375679efa1d",
+        "sequence": 4
+      },
+      "anchor_coverage": null,
+      "response_generation": null,
+      "journal_sha256": "5911e4a9e2a2c0592581d969630dadc277fac88425bd58297e8eda0102a2eeb7",
+      "journal_unchanged": true,
+      "saved_input_and_output_cross_checked": true
+    },
+    {
+      "raw_log_line": 23,
+      "label": "09-after-restart",
+      "request_id": 304,
+      "run_id": "run.history-lost-response",
+      "current_spawn_generation": 5,
+      "original_spawn_generation": 1,
+      "peer_pid": 437977,
+      "bytes_written": 2935,
+      "status": "historical_publication",
+      "issue": null,
+      "publication_sequence": 3,
+      "anchor": {
+        "chain_digest": "0b4bf3e2dac5e6ed0b17d2d11ab48a409d0f128a89aaf26cfa948375679efa1d",
+        "sequence": 4
+      },
+      "anchor_coverage": "retained_anchor",
+      "response_generation": 6,
+      "journal_sha256": "5911e4a9e2a2c0592581d969630dadc277fac88425bd58297e8eda0102a2eeb7",
+      "journal_unchanged": true,
+      "saved_input_and_output_cross_checked": true
+    },
+    {
+      "raw_log_line": 25,
+      "label": "10-expired-history",
+      "request_id": 308,
+      "run_id": "run.history-abstain",
+      "current_spawn_generation": 5,
+      "original_spawn_generation": 1,
+      "peer_pid": 437977,
+      "bytes_written": 2915,
+      "status": "historical_publication",
+      "issue": null,
+      "publication_sequence": 2,
+      "anchor": {
+        "chain_digest": "0b4bf3e2dac5e6ed0b17d2d11ab48a409d0f128a89aaf26cfa948375679efa1d",
+        "sequence": 4
+      },
+      "anchor_coverage": "retained_anchor",
+      "response_generation": 6,
+      "journal_sha256": "5911e4a9e2a2c0592581d969630dadc277fac88425bd58297e8eda0102a2eeb7",
+      "journal_unchanged": true,
+      "saved_input_and_output_cross_checked": true
+    },
+    {
+      "raw_log_line": 28,
+      "label": "11-rollback-anchor",
+      "request_id": 305,
+      "run_id": "run.history-compiled",
+      "current_spawn_generation": 9,
+      "original_spawn_generation": 1,
+      "peer_pid": 438209,
+      "bytes_written": 2925,
+      "status": "unknown",
+      "issue": "anchor_missing",
+      "publication_sequence": null,
+      "anchor": {
+        "chain_digest": "0b4bf3e2dac5e6ed0b17d2d11ab48a409d0f128a89aaf26cfa948375679efa1d",
+        "sequence": 4
+      },
+      "anchor_coverage": null,
+      "response_generation": null,
+      "journal_sha256": "198802348f6d9bef54536c9b65125a20958b42e148b7bf4f601319e77da32814",
+      "journal_unchanged": true,
+      "saved_input_and_output_cross_checked": true
+    },
+    {
+      "raw_log_line": 31,
+      "label": "12-truncated-anchor",
+      "request_id": 306,
+      "run_id": "run.history-postpublication-capacity",
+      "current_spawn_generation": 13,
+      "original_spawn_generation": 1,
+      "peer_pid": 438343,
+      "bytes_written": 2958,
+      "status": "unknown",
+      "issue": "anchor_missing",
+      "publication_sequence": null,
+      "anchor": {
+        "chain_digest": "0b4bf3e2dac5e6ed0b17d2d11ab48a409d0f128a89aaf26cfa948375679efa1d",
+        "sequence": 4
+      },
+      "anchor_coverage": null,
+      "response_generation": null,
+      "journal_sha256": "36c9457ba334171514b4248c6e2cd1d456b8ab86128afd43aad1b341c646b5b2",
+      "journal_unchanged": true,
+      "saved_input_and_output_cross_checked": true
+    },
+    {
+      "raw_log_line": 33,
+      "label": "13-revoked-history",
+      "request_id": 307,
+      "run_id": "run.history-compiled",
+      "current_spawn_generation": 13,
+      "original_spawn_generation": 1,
+      "peer_pid": 438343,
+      "bytes_written": 2926,
+      "status": "historical_publication",
+      "issue": null,
+      "publication_sequence": 1,
+      "anchor": {
+        "chain_digest": "75bc08ed9e0d9e10157910ccfa897f7ddfcfcad40dd410979f2b5865b5281b83",
+        "sequence": 1
+      },
+      "anchor_coverage": "retained_anchor",
+      "response_generation": 14,
+      "journal_sha256": "36c9457ba334171514b4248c6e2cd1d456b8ab86128afd43aad1b341c646b5b2",
+      "journal_unchanged": true,
+      "saved_input_and_output_cross_checked": true
+    }
+  ],
+  "publications": [
+    {
+      "chain_digest": "75bc08ed9e0d9e10157910ccfa897f7ddfcfcad40dd410979f2b5865b5281b83",
+      "expires_at_ms": 1792318794710,
+      "issuer_id": "issuer.desktop-isolated-objective.v1",
+      "key_epoch": 1,
+      "message_id": "message.desktop-isolated.1",
+      "message_sequence": 1,
+      "original_spawn_generation": 1,
+      "outcome": {
+        "hard_constraint_digest": "d4aef904620474f4b7ca3c4a9b9fe3ea739f5365f1d17249d3a797a324ce1a83",
+        "objective_digest": "1441e6e66482752647ffa34568dbcee2e300e064158b85f4b86ddf5adaf114f3",
+        "type": "compiled"
+      },
+      "profile_digest": "a5075629f184d0319b2bf5b46be50e317be7abd5ca3bdc4b9d81222dc9f3215f",
+      "publication_digest": "03a66b1a7096f0406276299832762d80cba539979c8390221d86732625d0ca50",
+      "publication_sequence": 1,
+      "run_id": "run.history-compiled",
+      "signed_body_digest": "4ffd52ee1c8d56096659ae0a869e271dc4816b8cbf7eec36bcc26e3eca1c9569"
+    },
+    {
+      "chain_digest": "37620370f29b087f1df2017a94e868eeecf897c472f01b9b528490205bb5f9ea",
+      "expires_at_ms": 1792318579819,
+      "issuer_id": "issuer.desktop-isolated-objective.v1",
+      "key_epoch": 1,
+      "message_id": "message.desktop-isolated.2",
+      "message_sequence": 2,
+      "original_spawn_generation": 1,
+      "outcome": {
+        "hard_constraint_digest": "d4aef904620474f4b7ca3c4a9b9fe3ea739f5365f1d17249d3a797a324ce1a83",
+        "objective_digest": "99b884596e1a4734bad96057fcecdfd896daa2b2b76d43012ee284910a9ec0c7",
+        "type": "explicit_abstain"
+      },
+      "profile_digest": "a5075629f184d0319b2bf5b46be50e317be7abd5ca3bdc4b9d81222dc9f3215f",
+      "publication_digest": "69cb5d14fb92f1ee11334d560b1a0dacef35cf62e8e67532b1ede03369c2dbfd",
+      "publication_sequence": 2,
+      "run_id": "run.history-abstain",
+      "signed_body_digest": "3796cff3aa8aecd1a6801adc52083ebf824ce2fd2f53ff18816559201e0cec80"
+    },
+    {
+      "chain_digest": "0611c5486278307b6224769c9ee22f597ec3bfb17af6011b0ca44c5cbb3b98b6",
+      "expires_at_ms": 1792318794940,
+      "issuer_id": "issuer.desktop-isolated-objective.v1",
+      "key_epoch": 1,
+      "message_id": "message.desktop-isolated.3",
+      "message_sequence": 3,
+      "original_spawn_generation": 1,
+      "outcome": {
+        "hard_constraint_digest": "d4aef904620474f4b7ca3c4a9b9fe3ea739f5365f1d17249d3a797a324ce1a83",
+        "objective_digest": "3512f0d44eb5471b646fd306408cb9d462e1d8eb9acfba6fe99997e3a65fecbf",
+        "type": "compiled"
+      },
+      "profile_digest": "a5075629f184d0319b2bf5b46be50e317be7abd5ca3bdc4b9d81222dc9f3215f",
+      "publication_digest": "497a450380181a12f184f4f37724f639c3cd437a89f1e645b461f43cbf375885",
+      "publication_sequence": 3,
+      "run_id": "run.history-lost-response",
+      "signed_body_digest": "db84b1209fb279969d4243a6a78bee9ce819f0450cca17e6b15e72a4046ec480"
+    },
+    {
+      "chain_digest": "0b4bf3e2dac5e6ed0b17d2d11ab48a409d0f128a89aaf26cfa948375679efa1d",
+      "expires_at_ms": 1792318795083,
+      "issuer_id": "issuer.desktop-isolated-objective.v1",
+      "key_epoch": 1,
+      "message_id": "message.desktop-isolated.4",
+      "message_sequence": 4,
+      "original_spawn_generation": 1,
+      "outcome": {
+        "hard_constraint_digest": "d4aef904620474f4b7ca3c4a9b9fe3ea739f5365f1d17249d3a797a324ce1a83",
+        "objective_digest": "35554eab2e857df567cc0594cdd3de4d288d2fc6bf2b09e102e30281451c9554",
+        "type": "compiled"
+      },
+      "profile_digest": "a5075629f184d0319b2bf5b46be50e317be7abd5ca3bdc4b9d81222dc9f3215f",
+      "publication_digest": "861747b160a3f78729ac9218ed7bc475e864093c0688b421002ba1db2ed7f994",
+      "publication_sequence": 4,
+      "run_id": "run.history-postpublication-capacity",
+      "signed_body_digest": "648fb2e3476f5f9fa40c4554077851b0ac893276aac76e95a1f1f29f08e15e47"
+    }
+  ],
+  "harness_response_loss": {
+    "raw_log_line": 10,
+    "bytes_written": 2815,
+    "hepta_submit_cli_loss_case": false,
+    "message_id": "message.desktop-isolated.3",
+    "peer_pid": 437817,
+    "peer_uid": 0,
+    "request_frame_bytes": 2815,
+    "response_bytes_read": 0,
+    "response_discarded_by_harness": true,
+    "run_id": "run.history-lost-response",
+    "sender": "qualification_harness_original_protocol",
+    "spawn_generation": 1,
+    "submission_outcome": "unknown",
+    "request_id": 103,
+    "saved_exact_full_frame": {
+      "path": "/workspace/scratch/499c7902de8e/r9-evidence/history-runtime-01/work/runtime-evidence/03-lost-response-frame.jsonl",
+      "bytes": 2815,
+      "sha256": "f2b8a2e341f0bf31256ec58b20827d886bf0e2b2a9b5a7a5d23116977b19f495"
+    },
+    "history_query_attempts": 1,
+    "read_only_run_projection_waits": 1,
+    "source_guard": "tests/integration/hepta/objective_history_client.rs:177-228",
+    "qualification": "Original protocol peer-checked write_all/shutdown/drop; zero response reads. hepta-submit CLI response-loss path was not executed."
+  },
+  "postpublication_case": {
+    "actual_observed_issue": "objective_owner_request_rejected",
+    "actual_submission_status": "submit_unknown",
+    "publication_sequence": 4,
+    "run_status": null,
+    "active_runs_before_submission": [
+      {
+        "authority_epoch": 1,
+        "generation": 2,
+        "idempotent": false,
+        "phase": "admitted",
+        "revision": 1,
+        "run_id": "run.history-compiled",
+        "terminal_observed": false
+      },
+      {
+        "authority_epoch": 1,
+        "generation": 2,
+        "idempotent": false,
+        "phase": "admitted",
+        "revision": 1,
+        "run_id": "run.history-lost-response",
+        "terminal_observed": false
+      }
+    ],
+    "specific_capacity_error_text_observed": false,
+    "source_inference": "Original default run budget supplies two active slots; publication precedes start_current_run_start_record. CapacityExceeded is source-backed attribution from two prior admitted nonterminal runs, not captured original error bytes.",
+    "source_references": [
+      "codex-rs/hepta-fleet/src/model.rs:72",
+      "codex-rs/hepta-agentd/src/state.rs:112",
+      "codex-rs/hepta-agentd/src/objective_runtime.rs:218-313",
+      "codex-rs/hepta-agentd/src/lane_b_runtime.rs:205-206"
+    ],
+    "resubmission_count": 0
+  },
+  "expiry_case": {
+    "request_number": 2,
+    "expires_at_ms": 1792318579819,
+    "observed_at_ms": 1792318579822,
+    "observed_after_expiry_ms": 3,
+    "actual_wait_elapsed_ms": 22434,
+    "wait_bound_ms": 30000,
+    "saved_original_and_expired_query_envelopes_byte_identical": true,
+    "ed25519_valid_on_exact_saved_envelope": true,
+    "resubmission_count": 0,
+    "pre_submission_guard": "objective_history_probe.rs:199-208 checks now < expiry before the only submit; admitted receipt observed afterward",
+    "expiry_guard": "objective_history_probe.rs:473-510 reads actual wall clock and performs only history query after expiry",
+    "limit": "One real wall-clock expiry case; adverse clock shifts not qualified."
+  },
+  "stopped_storage_faults": [
+    {
+      "before_sha256": "5911e4a9e2a2c0592581d969630dadc277fac88425bd58297e8eda0102a2eeb7",
+      "fault": "11-rollback-prefix",
+      "injected_bytes": 4203,
+      "injected_sha256": "198802348f6d9bef54536c9b65125a20958b42e148b7bf4f601319e77da32814",
+      "new_pid": 438209,
+      "new_spawn": 9,
+      "old_spawn": 5,
+      "owner_confirmed_stopped_before_fault": true,
+      "recovered_bytes": 4203,
+      "recovered_sha256": "198802348f6d9bef54536c9b65125a20958b42e148b7bf4f601319e77da32814",
+      "recovery_owner": "original_agentd"
+    },
+    {
+      "before_sha256": "198802348f6d9bef54536c9b65125a20958b42e148b7bf4f601319e77da32814",
+      "fault": "12-truncated-tail",
+      "injected_bytes": 16588,
+      "injected_sha256": "c81c31f507363b44a764919db31df09625ba269f15208d252c7cbf11ed92c4d9",
+      "new_pid": 438343,
+      "new_spawn": 13,
+      "old_spawn": 9,
+      "owner_confirmed_stopped_before_fault": true,
+      "recovered_bytes": 12410,
+      "recovered_sha256": "36c9457ba334171514b4248c6e2cd1d456b8ab86128afd43aad1b341c646b5b2",
+      "recovery_owner": "original_agentd"
+    }
+  ],
+  "journal_prefixes": {
+    "publication_1_bytes": 4203,
+    "publication_2_bytes": 8264,
+    "publication_3_bytes": 12410,
+    "publication_4_bytes": 16589,
+    "truncated_fourth_frame_input_bytes": 16588,
+    "retained_anchor_4_matches_saved_file": true,
+    "all_saved_before_injected_recovered_bytes_compared": true,
+    "stop_guard": "objective_history_probe.rs:103-117 requires supervisor inactive and old-generation owner read error before saving or rewriting journal",
+    "scope": "One normal Supervisor restart and two controlled stopped-owner fault/restarts; no abrupt crash or power-loss test."
+  },
+  "revocation_case": {
+    "same_issuer_key_epoch_and_public_key": true,
+    "only_trust_revoked_field_changed": true,
+    "issuer_restored": false,
+    "historical_query_returned_publication_sequence": 1,
+    "negative_request_number": 5,
+    "negative_request_is_distinct": true,
+    "negative_current_spawn_generation": 13,
+    "negative_submission_status": "submit_unknown",
+    "negative_issue": "objective_owner_request_rejected",
+    "journal_unchanged": true,
+    "journal_assertion_source": "objective_history_probe.rs:602-619 hashes immediately before/after the single fresh negative submit; raw check line 36 follows successful comparison",
+    "standalone_after_negative_journal_snapshot_saved": false,
+    "new_authority_granted": false
+  },
+  "elf_receipt_links": {
+    "four_wrapper_input_elf_records_equal_runner_records": true,
+    "native05_independent_review": "r9-evidence/history-probe/native05-review.json",
+    "all_five_elf_rehash_review_owner": "/root/r9_ci_status",
+    "this_review_did_not_open_target_elfs": true
+  },
+  "source_defined_signature_verification": {
+    "implementation": "Python cryptography 50.0.2 Ed25519; no private signing key accessed",
+    "source_references": [
+      "codex-rs/hepta-authbus/src/signed.rs:38-49",
+      "codex-rs/hepta-authbus/src/lib.rs:228-231",
+      "codex-rs/hepta-types/src/digest.rs:22-26",
+      "tests/integration/hepta/original_objective_fixture.rs:149-165"
+    ],
+    "all_saved_request_bytes_round_trip_exactly": true,
+    "all_five_signatures_valid": true,
+    "changed_signature_negative_cryptographically_invalid": true,
+    "interpretation": "Offline validation corroborates saved fixture bytes; it is not new admission or authority."
+  },
+  "non_claims": {
+    "historical_publication_implies_current_run_or_effect": false,
+    "operations_k_or_d_created": false,
+    "device_effect_executed": false,
+    "model_turn_executed": false,
+    "historical_run_resumed": false,
+    "production_issuer_used": false,
+    "canonical_intelligence_qualified": false,
+    "whole_s2_closed": false,
+    "kernel_g1_or_g2_qualified": false
+  },
+  "not_executed": [
+    "caller_anchor_co_rollback",
+    "production_issuer",
+    "effect_reconciliation",
+    "kernel_g1",
+    "kernel_g2",
+    "hepta_submit_cli_lost_reply",
+    "abrupt_process_crash_or_power_loss",
+    "cold_native_build_resource_qualification"
+  ],
+  "limitations": [
+    "Independent read-only audit of one completed native runtime and saved instrumentation; no second runtime executed.",
+    "RunStatus-null and owner-stopped facts are guarded by the frozen compiled probe against real original owner APIs before emitting evidence. Separate per-assert raw control replies are not all saved.",
+    "Generic rejection is directly observed. Exact CapacityExceeded text is inferred only from fixed source and two prior active runs.",
+    "The fifth revoked Objective is an explicit new negative test, never a recovery resubmission. Objective request/run identities are not Operations K.",
+    "History resolves known exact-request publication. It does not restore grants, replay effects, start an old run, detect caller and journal joint rollback, or prove whole S2/G1/G2.",
+    "Native build and runtime used an existing explicitly repaired cache; no clean-cache build claim."
+  ]
+}

@@ -1,0 +1,114 @@
+{
+  "desktop_commit": "46dcb2d691827f7aa3ad7903dae09d39fd338126",
+  "desktop_tree": "8d5de807c41090e3d987764daec9c235ebd022a1",
+  "upstream": {
+    "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+    "tree": "f4ef891d43baf90d6eebd29921a5ed03222ef3ab",
+    "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+    "clean_checkout": true,
+    "reviewed_files": 36
+  },
+  "compiled_source_binding": {
+    "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+    "tree": "f4ef891d43baf90d6eebd29921a5ed03222ef3ab",
+    "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+    "contract_sha256": "f0fc1110233dc38542097c6f9f7ef2e3f6ca5eb215fa2b4447e556cd7ac46981",
+    "probe_inputs": {
+      "objective_history_probe.rs": "10014a30f70f5de47aef8ddca585fd997f57e8bd38bbdf4a35bde553b981c82a",
+      "objective_history_client.rs": "cc982282714772dee35e0311cbbd77c00bb296a35975b4864dec0bf8d98f7137",
+      "original_objective_owner.rs": "f01310e679872217af747192c3329218f2d6045972c77718d7f358384eb88eda",
+      "original_objective_fixture.rs": "4abdcb7ee3a0c3cf8f8302c8af18656f2d2c41bfa4862b137991a6124ef4f272",
+      "original_objective_profile.json": "56d81a70d4a7481614a9ebc5494173b08dcf79072230b9b61cd0a9c01454dd02",
+      "run_objective_history.py": "a81294b55949931fb30abd9d3c19ba553842c017d0eaf6defb152698c34d9f49",
+      "run_original_objective.py": "9ea5d7b2f6801f88240257effe78dbbceb126d63f7132f37b0f2edd7c2486df4",
+      "run_original_agentd.py": "21dd4a2e0621240a75f5ce37bad93da0a37352fbaa78554a50e048abe6a45fd0"
+    }
+  },
+  "report_sha256": "703545addc305db4fb055a801b4b9bfa7b4e5cb088fb8179b92f9b106aef9ca3",
+  "build_receipt_sha256": "732a1f90741f6a3e39bd93e6faf69d0561530d852bb488b8ba852984ca35ddba",
+  "qualification": "isolated_original_owner_objective_history_passed",
+  "platform": "aarch64-unknown-linux-gnu",
+  "acceptance": {
+    "canonical_intelligence": false,
+    "checks": [
+      "live_compiled_publication",
+      "live_abstain_publication",
+      "retained_anchor_covers_publication",
+      "harness_lost_response_then_history",
+      "postpublication_submit_unknown_history_published",
+      "wrong_anchor_unknown",
+      "earlier_anchor_unknown",
+      "changed_signed_request_unknown",
+      "restart_projection_missing_history_published",
+      "expired_request_history_still_published",
+      "rollback_retained_anchor_unknown",
+      "truncated_tail_retained_anchor_unknown",
+      "revoked_issuer_history_still_published",
+      "revoked_new_submission_rejected",
+      "controlled_stop"
+    ],
+    "device_effect": false,
+    "event": "acceptance_pass",
+    "evidence_class": "original_owner_objective_admission_history",
+    "hepta_submit_cli_lost_reply_executed": false,
+    "historical_run_resumed": false,
+    "isolated_test_issuer": true,
+    "model_turn": false,
+    "not_executed": [
+      "caller_anchor_co_rollback",
+      "production_issuer",
+      "effect_reconciliation",
+      "kernel_g1",
+      "kernel_g2"
+    ],
+    "objective_request_attempts": 5,
+    "operations_dispatch": false,
+    "operations_k_or_d_created": false,
+    "production_issuer": false,
+    "published_objective_requests": 4,
+    "recovery_resubmissions": 0,
+    "source_binding": {
+      "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+      "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+      "contract_sha256": "f0fc1110233dc38542097c6f9f7ef2e3f6ca5eb215fa2b4447e556cd7ac46981",
+      "probe_inputs": {
+        "objective_history_client.rs": "cc982282714772dee35e0311cbbd77c00bb296a35975b4864dec0bf8d98f7137",
+        "objective_history_probe.rs": "10014a30f70f5de47aef8ddca585fd997f57e8bd38bbdf4a35bde553b981c82a",
+        "original_objective_fixture.rs": "4abdcb7ee3a0c3cf8f8302c8af18656f2d2c41bfa4862b137991a6124ef4f272",
+        "original_objective_owner.rs": "f01310e679872217af747192c3329218f2d6045972c77718d7f358384eb88eda",
+        "original_objective_profile.json": "56d81a70d4a7481614a9ebc5494173b08dcf79072230b9b61cd0a9c01454dd02",
+        "run_objective_history.py": "a81294b55949931fb30abd9d3c19ba553842c017d0eaf6defb152698c34d9f49",
+        "run_original_agentd.py": "21dd4a2e0621240a75f5ce37bad93da0a37352fbaa78554a50e048abe6a45fd0",
+        "run_original_objective.py": "9ea5d7b2f6801f88240257effe78dbbceb126d63f7132f37b0f2edd7c2486df4"
+      },
+      "tree": "f4ef891d43baf90d6eebd29921a5ed03222ef3ab"
+    }
+  },
+  "binaries": {
+    "agentd": {
+      "filename": "codex-hepta-agentd",
+      "sha256": "622687b607c4f8aa983f082e169b06f2b7a89b12917e16384245965b156c7549",
+      "bytes": 268457128
+    },
+    "probe": {
+      "filename": "hepta-objective-history-probe",
+      "sha256": "22c3b394861c847b551a476bd1924b682363a07097cae9946036f336cefdd665",
+      "bytes": 29411712
+    },
+    "observer": {
+      "filename": "hepta-observe",
+      "sha256": "4da1165dd5bd925dff732edace85b4c2289faf735d640310ff8b1bd408a22f92",
+      "bytes": 14911296
+    },
+    "submitter": {
+      "filename": "hepta-submit",
+      "sha256": "c8e1df3fbc707c368133a2751bb1877b5ce96bd9c24c4322ab8cbc533ccdf5e3",
+      "bytes": 14664856
+    },
+    "history": {
+      "filename": "hepta-history",
+      "sha256": "671abf2c3e73032a7b89c262f8fdea5e00d2251423e52697c5deca47e773c88f",
+      "bytes": 15021288
+    }
+  }
+}

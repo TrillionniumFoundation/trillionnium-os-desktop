@@ -33,25 +33,24 @@
 
 ## S2：分别核对准入历史与实际效果终态
 
-**R9 接合更新：**已增加原 owner 独立的 `ObjectiveAdmission` 窄读接口与默认关闭的 `hepta-history` 客户端。精确扩展源码由 [独立合同](../../services/hepta-os/OBJECTIVE_HISTORY_CONTRACT.json) 固定，开发、协议与存储边界见 [history 契约](../../services/hepta-os/OBJECTIVE_HISTORY.md)，实际资格以 [STATUS](../STATUS.md) 和 [故障 probe](../../tests/integration/hepta/OBJECTIVE_HISTORY_PROBE.md) 的执行收据为准。下面“固定客户端没有 RPC”专指原 f8 基线，不能用新接口改写该历史事实。此增量只处理 `原请求 → 准入 publication`；原请求/anchor 的生产持久保存入口与 `K → 效果终态` 仍未因此闭合。
+**R9 已接通并实测的范围：**原 owner 独立的 `ObjectiveAdmission` 窄读接口与默认关闭的 `hepta-history` 客户端已通过本机 x86_64 Linux 真实运行。桌面输入 `207ff9da7dac83c57b0cbae46c4b03ecfba3baa9`、原 owner 最终 `2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5`，15 检查、13 history 查询、5 次独立 Objective 请求、4 条 durable publication、3 次 Supervisor 重启；恢复重投、model turn、Operations dispatch、设备效果及新 K/D 均为 0。[实际证据](../../results/integration/2026-10-18-objective-history/README.md) 和 [独立运行复核](../../results/integration/2026-10-18-objective-history/history-runtime-independent-review.json) 保留各输入与 ELF 绑定。精确扩展源码由 [独立合同](../../services/hepta-os/OBJECTIVE_HISTORY_CONTRACT.json) 固定，协议与存储边界见 [history 契约](../../services/hepta-os/OBJECTIVE_HISTORY.md)，复跑见 [故障 probe](../../tests/integration/hepta/OBJECTIVE_HISTORY_PROBE.md)。该增量完成的是准确 `原请求 → 历史 publication` 的 owner 查询；原请求/anchor 的生产持久保存入口与 `K → 效果终态` 仍未闭合。原 owner 的 134 项测试在 `ee0`、173 项在 `d1`，客户端 51 项在 `c080`；最终 native05 构建与本轮运行单独绑定 `2be`，不能重标为最终 HEAD 重跑了 307 项 owner 单测。随后 desktop `46dc…` / owner `2be…` 的 transport 与 ARM64 history 各自真实 success，51 Rust + 22 synthetic 与 ARM 15 场景 / 13 查询 / 5 请求 / 4 publication / 3 重启 / 0 重投分别记账；源码、原始 ZIP、签名、journal 和五 ELF 字节复核见 [CI 接续](../../results/integration/2026-10-18-objective-history-ci/README.md)。desktop #193 已合入 `aab50f3`；Hepta 自身剩余 CI 修复、原请求与 anchor 生产保存、UI 新投影及 Operations 效果链仍须各自闭合。
 
-**固定事实 / API：** 原 `objective_runtime` 可能先发布 RunStart journal，再因后续检查返回错误；`AgentdClient::run_status` 读取当前内存投影。固定客户端没有 ObjectiveStart 持久结果查询 RPC。`DurableRunStartJournal` 公开 `recover/get/authentication_records`，但恢复持文件锁且可能截断未确认尾部，不能把它当在线无副作用读取。[H3]、[H4]、[H10]
-这是一般 `recover` 的语义；[本轮 probe](../../tests/integration/hepta/original_objective_probe.rs) 停止 owner 后使用只读 `File` 与已确认 anchor，若遇需要截断的尾部则失败，不能写入修复。该受控校验不等于产品恢复服务。
+**原 f8 固定事实 / API：**原 `objective_runtime` 可能先发布 RunStart journal，再因后续检查返回错误；`AgentdClient::run_status` 读取当前内存投影。原 f8 客户端没有 ObjectiveStart 持久结果查询 RPC，新 `2be` 接口不改写该基线事实。`DurableRunStartJournal` 公开 `recover/get/authentication_records`，但恢复持文件锁且可能截断未确认尾部，不能把它当在线无副作用读取。[H3]、[H4]、[H10]
+[R8 的停机 probe](../../tests/integration/hepta/original_objective_probe.rs) 使用只读 `File` 与已确认 anchor，遇到需要截断的尾部则失败；R9 的在线查询由活动原 owner 读取其已恢复的内存前缀，不旁路恢复或读取活跃账本。R9 存储故障均先确认 owner 已受控停止，再改变测试 journal 字节，重新启动后由原 Agentd 自身恢复。它们证明这两类字节故障的 reopen 行为，不证明写入中途 crash 或断电恢复。
 原 `DurableOperationStore` 提供 `operation`、`unsettled_operations`、`mark_indeterminate`、`adopt_unsettled_generation`、`observe_terminal`；`ReconciliationReceiptV1` 的结构有效不等于来源可信，独立证据的主体与资源绑定仍由原宿主核验。[H5]
 
-最小交付先分开两类结果：`run_id → 原始准入 publication` 与 `K=(scope_id,operation_id) → 效果终态`。已发布不等于效果发生，当前投影缺失不等于未受理。
-准入恢复先走受控停机/独占 owner 的原 journal 公共 API，校验原 binding、已确认 anchor、authentication 与完整意图；损坏、本应保留的 anchor 缺失或不匹配保持 unknown，无可信历史锚点不能产生否定结论。在线产品查询需原 owner 提供窄读投影，固定 f8 尚无此 RPC，必须作为原 owner 接缝工单，不能在 desktop 发明调用名或旁路读取活跃账本。
-效果恢复通过原 Operations owner 读取旧 K；接替时沿 `adopt_unsettled_generation` fence 旧 writer，然后用目的端独立证据结算。`NotSeen`、历史丢失、超时、当前 cap 恰好相同均不能生成 `NotApplied`。
-Session/Shell 分别呈现“提交结果未知”“历史已发布”“效果待核对”“已确认效果”；只有原 owner 的完整、匹配且新鲜的投影能推进状态。观察权限不成为执行或重试权限。
+原 owner 查询精确匹配保留的原签名认证、canonical body、run/profile 与 publication；caller 给定的 anchor 必须匹配已恢复的链且覆盖目标 publication。更早的有效 anchor 不覆盖后续记录；已知 anchor 缺失、链不匹配或原请求变更保持 unknown。旧请求实际过期或隔离 issuer 撤销后仍可定位历史，不授予新的提交权；本轮撤销后的独立新请求被拒绝且 journal 不变。查询结果和所用 anchor/覆盖范围必须一同保留；查询不重新读磁盘，即使有 anchor 也不是实时磁盘篡改检测，caller anchor 与 journal 共同回滚未测试。无 anchor 或查询 unknown 均不能产生历史否定结论。
 
-| 故障注入点 | 必须保留的结果 |
+| 故障 / 边界 | R9 实际观测与后续资格 |
 | --- | --- |
-| 未发送、完整发送后丢响应、发布后进程退出 | 分别保留本次零发送或 unknown；不自动再次提交 |
-| 原 owner 重启，RunStatus 返回 null | 当前 projection missing；保留原 publication/unknown，不伪造历史否定 |
-| journal 截断、回滚、错误 anchor 或仅更换 publication digest | 拒绝伪终态；完整故障与原始文件摘要归档 |
-| 效果发生后源 owner 崩溃，随后接替 | 旧 K 不变；先 fence，再依独立原 D 终态恢复；旧 generation 的确认拒绝 |
+| 完整发送后丢响应 | 原协议 qualification harness 丢弃响应，随后准确原请求查到 publication，未重投；没有执行 `hepta-submit` CLI 丢回复故障。 |
+| 持久发布后提交返回错误 | 真实 `hepta-submit` 返回 `submit_unknown / objective_owner_request_rejected`，同请求查到第 4 条 compiled publication，`RunStatus: null`。`CapacityExceeded` 是固定源码/默认容量推论，具体原始错误字节未观测。 |
+| 原 owner 受控重启，RunStatus 返回 null | retained anchor 覆盖原 publication，历史仍可查询；不恢复历史 run，也不伪造“未受理”。本轮三次受控重启不等于 crash/power-loss 资格。 |
+| journal 回滚、尾部截断、错误或过早 anchor、原签名变更 | 对应 `anchor_missing`、`anchor_mismatch`、`publication_outside_anchor` 或 `no_matching_publication` 均保持 unknown；原始与故障字节、摘要和原 owner 恢复结果归档。 |
+| 效果发生后源 owner 崩溃，随后接替 | 本轮未执行。后续保留旧 K、fence 旧 writer，再依独立原 D 终态恢复；旧 generation 的确认必须拒绝。 |
 
-依赖 / 完成判定：真实存储提交和受控 crash/reopen 均有日志；所有注入点可复跑，恢复者不新建 K、不盲重发、不清除未知。在线查询未接通时，该部分继续标为未完成；不得用隔离 probe 的 journal 检查代替产品恢复服务。
+**后续实现与完成判定：**接入生产请求 owner 对准确原信封、身份、anchor 及覆盖范围的持久保存；Session/Shell 增加“提交结果未知”“历史已发布”“效果待核对”“已确认效果”的安全投影，只有对应 owner 的完整、匹配且新鲜的证据能推进状态。效果恢复通过原 Operations owner 读取旧 `K=(scope_id,operation_id)`，接替时沿 `adopt_unsettled_generation` fence 旧 writer，再用目的端独立证据结算；`NotSeen`、历史丢失、超时、当前 cap 恰好相同均不能生成 `NotApplied`。真实效果存储提交、写入中途 crash/reopen 与旧 K 接替仍需各自可复跑的收据，不能用本轮历史查询通过代替；观察权限不成为执行或重试权限，恢复者不新建 K、不盲重发、不清除未知。
+
 
 ## S3：从原 authority/Operations 接到一个受限 OS adapter
 

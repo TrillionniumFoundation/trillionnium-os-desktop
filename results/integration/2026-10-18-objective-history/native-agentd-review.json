@@ -1,0 +1,160 @@
+{
+  "active_target_read_or_modified": false,
+  "actual_agentd_features": [],
+  "actual_agentd_rustc_invocations": [
+    {
+      "actual_cfg": [],
+      "actual_feature_cfg": [],
+      "agentd_extern": [],
+      "check_cfg": [
+        "cfg(docsrs,test)",
+        "cfg(feature, values(\"default\", \"production-cognitive-write\", \"qualification-cognitive-write\", \"qualification-legacy-learning-write\"))"
+      ],
+      "codegen_options": [
+        "embed-bitcode=no",
+        "metadata=81da7c46ed97c0d9",
+        "extra-filename=-dca39501b528f669",
+        "strip=symbols"
+      ],
+      "crate_name": [
+        "codex_hepta_agentd"
+      ],
+      "crate_type": [
+        "lib"
+      ],
+      "log_line": 1095,
+      "raw_command_sha256": "3ff341677f70f89e9f7272a2191051e61bb5f656b50321d759aa66e11bae414e",
+      "rustc_executable": [
+        "/workspace/scratch/499c7902de8e/implementation-tools/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc"
+      ],
+      "source_argument": [
+        "hepta-agentd/src/lib.rs"
+      ]
+    },
+    {
+      "actual_cfg": [],
+      "actual_feature_cfg": [],
+      "agentd_extern": [
+        "codex_hepta_agentd=/workspace/scratch/499c7902de8e/nextstep-hepta-build/target/dev-small/deps/libcodex_hepta_agentd-dca39501b528f669.rlib"
+      ],
+      "check_cfg": [
+        "cfg(docsrs,test)",
+        "cfg(feature, values(\"default\", \"production-cognitive-write\", \"qualification-cognitive-write\", \"qualification-legacy-learning-write\"))"
+      ],
+      "codegen_options": [
+        "embed-bitcode=no",
+        "metadata=1fa6d04d4693a32e",
+        "extra-filename=-9ed34f6f42510f6d",
+        "strip=symbols"
+      ],
+      "crate_name": [
+        "codex_hepta_agentd"
+      ],
+      "crate_type": [
+        "bin"
+      ],
+      "log_line": 1154,
+      "raw_command_sha256": "d1f8c2484facb6abeedc3929b873f8c67052d97e474084847cbf335dddf9f638",
+      "rustc_executable": [
+        "/workspace/scratch/499c7902de8e/implementation-tools/rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc"
+      ],
+      "source_argument": [
+        "hepta-agentd/src/main.rs"
+      ]
+    }
+  ],
+  "actual_command": [
+    "/workspace/scratch/499c7902de8e/implementation-tools/cargo/bin/rustup",
+    "run",
+    "1.95.0",
+    "cargo",
+    "build",
+    "--locked",
+    "--offline",
+    "--profile",
+    "dev-small",
+    "--no-default-features",
+    "-p",
+    "codex-hepta-agentd",
+    "--bin",
+    "codex-hepta-agentd",
+    "-j1",
+    "-vv"
+  ],
+  "build_ended_at_utc": "2026-10-18T10:10:23.714016+00:00",
+  "build_started_at_utc": "2026-10-18T10:02:35.148191+00:00",
+  "client_compiled_inputs_checked": 12,
+  "compiler_output_hash_match_according_to_saved_receipt": true,
+  "compiler_output_target_reopened_by_review": false,
+  "contract": {
+    "desktop_commit": "207ff9da7dac83c57b0cbae46c4b03ecfba3baa9",
+    "path": "/workspace/scratch/499c7902de8e/r9-integration/services/hepta-os/OBJECTIVE_HISTORY_CONTRACT.json",
+    "sha256": "f0fc1110233dc38542097c6f9f7ef2e3f6ca5eb215fa2b4447e556cd7ac46981"
+  },
+  "copied_native_elf": {
+    "bytes": 329024000,
+    "path": "/workspace/scratch/499c7902de8e/r9-evidence/native-agentd-05/codex-hepta-agentd",
+    "sha256": "a8f8aefa2199a2e41c22b8251145f064e3af767ff5357475ddb527beb86761cb"
+  },
+  "current_sources_still_match": true,
+  "desktop": {
+    "clean": true,
+    "commit": "207ff9da7dac83c57b0cbae46c4b03ecfba3baa9",
+    "tree": "8d5de807c41090e3d987764daec9c235ebd022a1"
+  },
+  "elf_header": {
+    "class": 64,
+    "e_machine": 62,
+    "e_type": 3,
+    "endianness": "little",
+    "entrypoint": 85586368,
+    "pt_interp": true
+  },
+  "feature_interpretation": "--check-cfg lists permitted feature names; it does not activate them. Both actual Agentd lib/bin commands have no --cfg feature and no --test.",
+  "finished_marker": {
+    "line": 1155,
+    "text": "Finished `dev-small` profile [unoptimized] target(s) in 7m 44s"
+  },
+  "inputs": [
+    {
+      "bytes": 17950,
+      "path": "/workspace/scratch/499c7902de8e/r9-evidence/native-agentd-05/receipt.json",
+      "sha256": "0c70dc9057668a31d439686e441c56b163da71e13aac0c9cdda8f2d42544869d"
+    },
+    {
+      "bytes": 307406,
+      "path": "/workspace/scratch/499c7902de8e/r9-evidence/native-agentd-05/build.log",
+      "sha256": "4f085ad210c672d41d2859f97108702ff1099425fb2df499dfbeeeefeaf12170"
+    },
+    {
+      "bytes": 7938,
+      "path": "/workspace/scratch/499c7902de8e/r9-evidence/native-agentd-05/executed-helper.py",
+      "sha256": "ee05880b566822bca1fef03c73115eef05b715acdfde51943c4d5bd927e663be"
+    },
+    {
+      "bytes": 14323,
+      "path": "/workspace/scratch/499c7902de8e/r9-evidence/history-probe/final-contract-review.json",
+      "sha256": "7b753fbd3cefdc6bb4aac26649de3da39a5dbdbc7e6fb4f1dcb272c79319de24"
+    }
+  ],
+  "limitations": [
+    "Build used a repaired existing native cache, not a cold build or minimum-resource qualification.",
+    "This review accepts only the completed native05 build and independent copied ELF; it does not mark runtime checks passed.",
+    "An actual completed runtime report must still match the final expected source binding, binary identities and all 15 evidence checks."
+  ],
+  "owner": {
+    "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+    "clean_checkout": true,
+    "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+    "reviewed_files": 36,
+    "tree": "f4ef891d43baf90d6eebd29921a5ed03222ef3ab"
+  },
+  "owner_or_probe_runtime_executed_by_review": false,
+  "owner_reviewed_files": 36,
+  "recorded_at_utc": "2026-10-18T10:13:56.588749+00:00",
+  "runtime_qualification_status": "pending_actual_report",
+  "rust_executed_by_review": false,
+  "schema_version": 1,
+  "source_before_after_equal": true,
+  "status": "passed_native_build_review_only"
+}

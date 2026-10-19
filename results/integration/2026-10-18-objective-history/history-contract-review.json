@@ -1,0 +1,369 @@
+{
+  "after": {
+    "desktop": {
+      "commit": "207ff9da7dac83c57b0cbae46c4b03ecfba3baa9",
+      "status": "",
+      "tree": "8d5de807c41090e3d987764daec9c235ebd022a1"
+    },
+    "owner": {
+      "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+      "status": "",
+      "tree": "f4ef891d43baf90d6eebd29921a5ed03222ef3ab"
+    }
+  },
+  "before": {
+    "desktop": {
+      "commit": "207ff9da7dac83c57b0cbae46c4b03ecfba3baa9",
+      "status": "",
+      "tree": "8d5de807c41090e3d987764daec9c235ebd022a1"
+    },
+    "owner": {
+      "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+      "status": "",
+      "tree": "f4ef891d43baf90d6eebd29921a5ed03222ef3ab"
+    }
+  },
+  "completed_at_utc": "2026-10-18T09:22:10.329556+00:00",
+  "contract": {
+    "desktop_commit": "207ff9da7dac83c57b0cbae46c4b03ecfba3baa9",
+    "path": "/workspace/scratch/499c7902de8e/r9-integration/services/hepta-os/OBJECTIVE_HISTORY_CONTRACT.json",
+    "sha256": "f0fc1110233dc38542097c6f9f7ef2e3f6ca5eb215fa2b4447e556cd7ac46981"
+  },
+  "evidence_class": "lightweight_committed_source_and_contract_review",
+  "executed_entry_points": [
+    "run_objective_history.read_contract",
+    "run_objective_history.verify_source"
+  ],
+  "expected_runner_compiled_source_binding": {
+    "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+    "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+    "contract_sha256": "f0fc1110233dc38542097c6f9f7ef2e3f6ca5eb215fa2b4447e556cd7ac46981",
+    "probe_inputs": {
+      "objective_history_client.rs": "cc982282714772dee35e0311cbbd77c00bb296a35975b4864dec0bf8d98f7137",
+      "objective_history_probe.rs": "10014a30f70f5de47aef8ddca585fd997f57e8bd38bbdf4a35bde553b981c82a",
+      "original_objective_fixture.rs": "4abdcb7ee3a0c3cf8f8302c8af18656f2d2c41bfa4862b137991a6124ef4f272",
+      "original_objective_owner.rs": "f01310e679872217af747192c3329218f2d6045972c77718d7f358384eb88eda",
+      "original_objective_profile.json": "56d81a70d4a7481614a9ebc5494173b08dcf79072230b9b61cd0a9c01454dd02",
+      "run_objective_history.py": "a81294b55949931fb30abd9d3c19ba553842c017d0eaf6defb152698c34d9f49",
+      "run_original_agentd.py": "21dd4a2e0621240a75f5ce37bad93da0a37352fbaa78554a50e048abe6a45fd0",
+      "run_original_objective.py": "9ea5d7b2f6801f88240257effe78dbbceb126d63f7132f37b0f2edd7c2486df4"
+    },
+    "tree": "f4ef891d43baf90d6eebd29921a5ed03222ef3ab"
+  },
+  "frozen_probe_inputs_modified": false,
+  "limitations": [
+    "This review executes no Rust and no owner/probe runtime; it is not a replacement for the native build/runtime gate.",
+    "The expected source binding is an independently computed value; a generated or executed probe must still report that exact binding.",
+    "Compilation-to-ELF provenance still requires the paired build receipts; clean source and file hashes alone do not prove which compiler produced an ELF."
+  ],
+  "local_qualification_tree_equivalence": {
+    "commit_identity_still_pinned_to_final": true,
+    "final_commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+    "final_tree": "f4ef891d43baf90d6eebd29921a5ed03222ef3ab",
+    "local_commit": "00aa11c961e0046d9027f6757ff03c15762a62ff",
+    "local_tree": "f4ef891d43baf90d6eebd29921a5ed03222ef3ab",
+    "trees_equal": true
+  },
+  "owner_runtime_executed": false,
+  "path_and_blob_coverage": {
+    "changed_files_since_base": [
+      {
+        "path": "codex-rs/hepta-agent-protocol/src/lib.rs",
+        "status": "M"
+      },
+      {
+        "path": "codex-rs/hepta-agent-protocol/src/objective_history.rs",
+        "status": "A"
+      },
+      {
+        "path": "codex-rs/hepta-agent-protocol/src/objective_history_tests.rs",
+        "status": "A"
+      },
+      {
+        "path": "codex-rs/hepta-agent-protocol/src/objective_tests.rs",
+        "status": "M"
+      },
+      {
+        "path": "codex-rs/hepta-agentd/OBJECTIVE_HISTORY.md",
+        "status": "A"
+      },
+      {
+        "path": "codex-rs/hepta-agentd/src/client.rs",
+        "status": "M"
+      },
+      {
+        "path": "codex-rs/hepta-agentd/src/lib.rs",
+        "status": "M"
+      },
+      {
+        "path": "codex-rs/hepta-agentd/src/objective_history.rs",
+        "status": "A"
+      },
+      {
+        "path": "codex-rs/hepta-agentd/src/objective_history_tests.rs",
+        "status": "A"
+      },
+      {
+        "path": "codex-rs/hepta-agentd/src/objective_runtime.rs",
+        "status": "M"
+      },
+      {
+        "path": "codex-rs/hepta-agentd/src/objective_runtime_tests.rs",
+        "status": "M"
+      },
+      {
+        "path": "codex-rs/hepta-agentd/src/state_control.rs",
+        "status": "M"
+      },
+      {
+        "path": "codex-rs/hepta-learning-ledger/src/lib.rs",
+        "status": "M"
+      },
+      {
+        "path": "codex-rs/hepta-learning-ledger/src/run_start.rs",
+        "status": "M"
+      },
+      {
+        "path": "codex-rs/hepta-learning-ledger/src/run_start_publication.rs",
+        "status": "A"
+      },
+      {
+        "path": "codex-rs/hepta-learning-ledger/src/run_start_publication_tests.rs",
+        "status": "A"
+      },
+      {
+        "path": "codex-rs/hepta-learning-ledger/src/run_start_tests.rs",
+        "status": "M"
+      }
+    ],
+    "delta_review": "Protocol Published.publication boxed; owner wraps publication in Box::new; JSON payload shape remains unchanged by Serde Box transparency. Documentation clarifies retained query anchor and wraps prose. No other reviewed source blob changed.",
+    "exact_final_git_blob_checks": "passed by verify_source for all 36 entries",
+    "final_reviewed_file_list_sha256": "7a5a88ef85ce83ab35be242af10b84ffa9dacc52c459e37ef79aeb188d072870",
+    "final_vs_candidate_blob_changes": [
+      {
+        "candidate_sha256": "ee367cac46042bc58ba9728b810a5e5569f1d6bbf8ce4b5a38492414a0ce503a",
+        "final_sha256": "166b680eebf5ac99da848ad51aaa28cf0e1c703571a6dabab53669f974fdc7b5",
+        "path": "codex-rs/hepta-agent-protocol/src/objective_history.rs"
+      },
+      {
+        "candidate_sha256": "a42ebb8e7f9b0057e2879724b28cfcd9fb93d630e142e2cd1d1ea333b46b180e",
+        "final_sha256": "1098131edad8657803553095ac27c00b912c13cb1af0f18a70f76b162823205d",
+        "path": "codex-rs/hepta-agentd/OBJECTIVE_HISTORY.md"
+      },
+      {
+        "candidate_sha256": "eba2627adb002717196a52bd2c765c561b2e382dbbbe09170fdfd2c37f7216a1",
+        "final_sha256": "ad34a605ae5cb096f60c4b694f812b683c778a1b4cb8cf746e583d005562a944",
+        "path": "codex-rs/hepta-agentd/src/objective_history.rs"
+      }
+    ],
+    "reviewed_files": 36,
+    "reviewed_path_list_sha256": "93a0ed0a9aed0ad42e2b682aa371f03569e37fd89acdf6cf9c45dafe8c2bd821",
+    "unchanged_original_helpers": [
+      {
+        "path": "codex-rs/Cargo.toml",
+        "unchanged_since_base": true
+      },
+      {
+        "path": "codex-rs/hepta-agent-protocol/src/authbus.rs",
+        "unchanged_since_base": true
+      },
+      {
+        "path": "codex-rs/hepta-agentd/Cargo.toml",
+        "unchanged_since_base": true
+      },
+      {
+        "path": "codex-rs/hepta-agentd/src/authbus_ingress.rs",
+        "unchanged_since_base": true
+      },
+      {
+        "path": "codex-rs/hepta-agentd/src/authbus_trust.rs",
+        "unchanged_since_base": true
+      },
+      {
+        "path": "codex-rs/hepta-agentd/src/config.rs",
+        "unchanged_since_base": true
+      },
+      {
+        "path": "codex-rs/hepta-agentd/src/control.rs",
+        "unchanged_since_base": true
+      },
+      {
+        "path": "codex-rs/hepta-agentd/src/lane_b_runtime.rs",
+        "unchanged_since_base": true
+      },
+      {
+        "path": "codex-rs/hepta-agentd/src/runtime.rs",
+        "unchanged_since_base": true
+      },
+      {
+        "path": "codex-rs/hepta-agentd/src/state.rs",
+        "unchanged_since_base": true
+      },
+      {
+        "path": "codex-rs/hepta-authbus/src/lib.rs",
+        "unchanged_since_base": true
+      },
+      {
+        "path": "codex-rs/hepta-authbus/src/signed.rs",
+        "unchanged_since_base": true
+      },
+      {
+        "path": "codex-rs/hepta-fleet/src/model.rs",
+        "unchanged_since_base": true
+      },
+      {
+        "path": "codex-rs/hepta-intelligence/src/objective_run.rs",
+        "unchanged_since_base": true
+      },
+      {
+        "path": "codex-rs/hepta-objective/src/admission_profile_json.rs",
+        "unchanged_since_base": true
+      },
+      {
+        "path": "codex-rs/hepta-objective/src/objective_admission.rs",
+        "unchanged_since_base": true
+      },
+      {
+        "path": "codex-rs/hepta-types/src/digest.rs",
+        "unchanged_since_base": true
+      },
+      {
+        "path": "codex-rs/hepta-types/src/identity.rs",
+        "unchanged_since_base": true
+      },
+      {
+        "path": "codex-rs/rust-toolchain.toml",
+        "unchanged_since_base": true
+      }
+    ]
+  },
+  "planned_native_scope": {
+    "distinct_objective_requests": 5,
+    "durable_publications_before_faults": 4,
+    "explicit_supervisor_restarts": 3,
+    "hepta_submit_cli_lost_reply_executed": false,
+    "history_cli_calls": 13,
+    "operations_k_or_d_created": false,
+    "runtime_checks": 15
+  },
+  "prior_input_review": {
+    "candidate_commit": "d1d40f64eadd0210f5f6abc003cd479a0e1ee010",
+    "path": "/workspace/scratch/499c7902de8e/r9-evidence/history-probe/contract-input-review.json",
+    "sha256": "42ecd064e46a1a4f01607e0cdb0152aa5d4e71431083bcef4ca3a1c4ebe25b41"
+  },
+  "probe_inputs": {
+    "count": 8,
+    "frozen_commit": "de91dc3572163b4c1c7a991081f2f2a1cce88e1e",
+    "input_map_sha256": "e110a8b2d1925ff70031ab2bdb9f5e34f4c7350ba31b75a9935ead7589466282",
+    "inputs": [
+      {
+        "bytes": 21845,
+        "equals_final_desktop_committed_blob": true,
+        "equals_frozen_probe_commit": true,
+        "name": "objective_history_probe.rs",
+        "prior_evidence_manifest_sha_available": true,
+        "relative_path": "tests/integration/hepta/objective_history_probe.rs",
+        "sha256": "10014a30f70f5de47aef8ddca585fd997f57e8bd38bbdf4a35bde553b981c82a"
+      },
+      {
+        "bytes": 8345,
+        "equals_final_desktop_committed_blob": true,
+        "equals_frozen_probe_commit": true,
+        "name": "objective_history_client.rs",
+        "prior_evidence_manifest_sha_available": true,
+        "relative_path": "tests/integration/hepta/objective_history_client.rs",
+        "sha256": "cc982282714772dee35e0311cbbd77c00bb296a35975b4864dec0bf8d98f7137"
+      },
+      {
+        "bytes": 14105,
+        "equals_final_desktop_committed_blob": true,
+        "equals_frozen_probe_commit": true,
+        "name": "original_objective_owner.rs",
+        "prior_evidence_manifest_sha_available": true,
+        "relative_path": "tests/integration/hepta/original_objective_owner.rs",
+        "sha256": "f01310e679872217af747192c3329218f2d6045972c77718d7f358384eb88eda"
+      },
+      {
+        "bytes": 7663,
+        "equals_final_desktop_committed_blob": true,
+        "equals_frozen_probe_commit": true,
+        "name": "original_objective_fixture.rs",
+        "prior_evidence_manifest_sha_available": true,
+        "relative_path": "tests/integration/hepta/original_objective_fixture.rs",
+        "sha256": "4abdcb7ee3a0c3cf8f8302c8af18656f2d2c41bfa4862b137991a6124ef4f272"
+      },
+      {
+        "bytes": 3561,
+        "equals_final_desktop_committed_blob": true,
+        "equals_frozen_probe_commit": true,
+        "name": "original_objective_profile.json",
+        "prior_evidence_manifest_sha_available": false,
+        "relative_path": "tests/integration/hepta/original_objective_profile.json",
+        "sha256": "56d81a70d4a7481614a9ebc5494173b08dcf79072230b9b61cd0a9c01454dd02"
+      },
+      {
+        "bytes": 22624,
+        "equals_final_desktop_committed_blob": true,
+        "equals_frozen_probe_commit": true,
+        "name": "run_objective_history.py",
+        "prior_evidence_manifest_sha_available": true,
+        "relative_path": "tests/integration/hepta/run_objective_history.py",
+        "sha256": "a81294b55949931fb30abd9d3c19ba553842c017d0eaf6defb152698c34d9f49"
+      },
+      {
+        "bytes": 25458,
+        "equals_final_desktop_committed_blob": true,
+        "equals_frozen_probe_commit": true,
+        "name": "run_original_objective.py",
+        "prior_evidence_manifest_sha_available": false,
+        "relative_path": "tests/integration/hepta/run_original_objective.py",
+        "sha256": "9ea5d7b2f6801f88240257effe78dbbceb126d63f7132f37b0f2edd7c2486df4"
+      },
+      {
+        "bytes": 30386,
+        "equals_final_desktop_committed_blob": true,
+        "equals_frozen_probe_commit": true,
+        "name": "run_original_agentd.py",
+        "prior_evidence_manifest_sha_available": true,
+        "relative_path": "tests/integration/hepta/run_original_agentd.py",
+        "sha256": "21dd4a2e0621240a75f5ce37bad93da0a37352fbaa78554a50e048abe6a45fd0"
+      }
+    ],
+    "original_five_file_manifest": {
+      "all_entries_match": true,
+      "path": "/workspace/scratch/499c7902de8e/r9-evidence/history-probe/source-manifest.json",
+      "sha256": "55c972ef7865667791f0046854608124231b8eb1ad9a6bc5fe868d96adcffeab"
+    },
+    "prior_read_only_manifest": {
+      "path": "/workspace/scratch/499c7902de8e/r9-evidence/history-probe/read-only-review.json",
+      "sha256": "5fc2a331b046061de000d8ee6b15eb2aa4ba2d06af04a7cc17e12211e68171c9"
+    }
+  },
+  "root_checkout_modified": false,
+  "rust_executed": false,
+  "schema_version": 1,
+  "started_at_utc": "2026-10-18T09:22:08.615708+00:00",
+  "status": "passed",
+  "supplemental_contract_field_review": {
+    "field": "max_journal_records",
+    "independent_source_review_passed": true,
+    "ledger_constant": 4096,
+    "product_host_constant": 4096,
+    "runner_read_contract_enforces_this_extra_field": false,
+    "value": 4096
+  },
+  "upstream": {
+    "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+    "clean_checkout": true,
+    "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+    "reviewed_files": 36,
+    "tree": "f4ef891d43baf90d6eebd29921a5ed03222ef3ab"
+  },
+  "upstream_after": {
+    "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+    "clean_checkout": true,
+    "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+    "reviewed_files": 36,
+    "tree": "f4ef891d43baf90d6eebd29921a5ed03222ef3ab"
+  }
+}

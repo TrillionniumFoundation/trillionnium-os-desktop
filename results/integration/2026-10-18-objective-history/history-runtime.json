@@ -1,0 +1,2005 @@
+{
+  "schema": "hepta.objective-history-probe.v1",
+  "status": "passed",
+  "recorded_at_utc": "2026-10-18T10:10:54.497760+00:00",
+  "runtime_executed": true,
+  "steps": [
+    {
+      "label": "resolution",
+      "command": [
+        "/workspace/scratch/499c7902de8e/implementation-tools/cargo/bin/rustup",
+        "run",
+        "1.95.0",
+        "cargo",
+        "metadata",
+        "--offline",
+        "--format-version",
+        "1"
+      ]
+    },
+    {
+      "label": "locked-metadata",
+      "command": [
+        "/workspace/scratch/499c7902de8e/implementation-tools/cargo/bin/rustup",
+        "run",
+        "1.95.0",
+        "cargo",
+        "metadata",
+        "--locked",
+        "--offline",
+        "--format-version",
+        "1"
+      ]
+    },
+    {
+      "label": "build",
+      "command": [
+        "/workspace/scratch/499c7902de8e/implementation-tools/cargo/bin/rustup",
+        "run",
+        "1.95.0",
+        "cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "--profile",
+        "dev-small",
+        "--bin",
+        "hepta-objective-history-probe",
+        "-j1"
+      ]
+    }
+  ],
+  "source_sha256": {
+    "objective_history_probe.rs": "10014a30f70f5de47aef8ddca585fd997f57e8bd38bbdf4a35bde553b981c82a",
+    "objective_history_client.rs": "cc982282714772dee35e0311cbbd77c00bb296a35975b4864dec0bf8d98f7137",
+    "original_objective_owner.rs": "f01310e679872217af747192c3329218f2d6045972c77718d7f358384eb88eda",
+    "original_objective_fixture.rs": "4abdcb7ee3a0c3cf8f8302c8af18656f2d2c41bfa4862b137991a6124ef4f272",
+    "original_objective_profile.json": "56d81a70d4a7481614a9ebc5494173b08dcf79072230b9b61cd0a9c01454dd02",
+    "run_objective_history.py": "a81294b55949931fb30abd9d3c19ba553842c017d0eaf6defb152698c34d9f49",
+    "run_original_objective.py": "9ea5d7b2f6801f88240257effe78dbbceb126d63f7132f37b0f2edd7c2486df4",
+    "run_original_agentd.py": "21dd4a2e0621240a75f5ce37bad93da0a37352fbaa78554a50e048abe6a45fd0"
+  },
+  "contract": {
+    "path": "/workspace/scratch/499c7902de8e/r9-integration/services/hepta-os/OBJECTIVE_HISTORY_CONTRACT.json",
+    "sha256": "f0fc1110233dc38542097c6f9f7ef2e3f6ca5eb215fa2b4447e556cd7ac46981",
+    "desktop_commit": "207ff9da7dac83c57b0cbae46c4b03ecfba3baa9"
+  },
+  "upstream": {
+    "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+    "tree": "f4ef891d43baf90d6eebd29921a5ed03222ef3ab",
+    "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+    "clean_checkout": true,
+    "reviewed_files": 36
+  },
+  "compiled_source_binding": {
+    "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+    "tree": "f4ef891d43baf90d6eebd29921a5ed03222ef3ab",
+    "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+    "contract_sha256": "f0fc1110233dc38542097c6f9f7ef2e3f6ca5eb215fa2b4447e556cd7ac46981",
+    "probe_inputs": {
+      "objective_history_probe.rs": "10014a30f70f5de47aef8ddca585fd997f57e8bd38bbdf4a35bde553b981c82a",
+      "objective_history_client.rs": "cc982282714772dee35e0311cbbd77c00bb296a35975b4864dec0bf8d98f7137",
+      "original_objective_owner.rs": "f01310e679872217af747192c3329218f2d6045972c77718d7f358384eb88eda",
+      "original_objective_fixture.rs": "4abdcb7ee3a0c3cf8f8302c8af18656f2d2c41bfa4862b137991a6124ef4f272",
+      "original_objective_profile.json": "56d81a70d4a7481614a9ebc5494173b08dcf79072230b9b61cd0a9c01454dd02",
+      "run_objective_history.py": "a81294b55949931fb30abd9d3c19ba553842c017d0eaf6defb152698c34d9f49",
+      "run_original_objective.py": "9ea5d7b2f6801f88240257effe78dbbceb126d63f7132f37b0f2edd7c2486df4",
+      "run_original_agentd.py": "21dd4a2e0621240a75f5ce37bad93da0a37352fbaa78554a50e048abe6a45fd0"
+    }
+  },
+  "patch_omission": {
+    "origin": "ssh://git@github.com/openai-oss-forks/tungstenite-rs.git",
+    "package": "tungstenite",
+    "target": {
+      "git": "https://github.com/openai-oss-forks/tungstenite-rs",
+      "rev": "4fffad30fe373adbdcffab9545e9e9bf4f2fc19f"
+    },
+    "retained_origin": "crates-io",
+    "reason": "Cargo 1.95 does not canonicalize unused patches across origins"
+  },
+  "runner": "/workspace/scratch/499c7902de8e/r9-evidence/history-runtime-01/work/probe",
+  "target": "/workspace/scratch/499c7902de8e/nextstep-hepta-build/target",
+  "lock_validation": {
+    "omitted_patch": {
+      "origin": "ssh://git@github.com/openai-oss-forks/tungstenite-rs.git",
+      "package": "tungstenite",
+      "target": {
+        "git": "https://github.com/openai-oss-forks/tungstenite-rs",
+        "rev": "4fffad30fe373adbdcffab9545e9e9bf4f2fc19f"
+      },
+      "retained_origin": "crates-io",
+      "reason": "Cargo 1.95 does not canonicalize unused patches across origins"
+    },
+    "omitted_target_unused": true,
+    "shared_package_identities_checked": 735
+  },
+  "resolved_lock_sha256": "9f3e5258526c84e3069a9d05cc064daea9acf5a9f2a648ca709ae24f5d7c7eb2",
+  "binaries": {
+    "probe": {
+      "path": "/workspace/scratch/499c7902de8e/nextstep-hepta-build/target/dev-small/hepta-objective-history-probe",
+      "bytes": 36935872,
+      "sha256": "65ec78d80d2a54960564b42f36d14fef423b4419e408022d122b858ba03f0d63"
+    },
+    "agentd": {
+      "path": "/workspace/scratch/499c7902de8e/r9-evidence/native-agentd-05/codex-hepta-agentd",
+      "bytes": 329024000,
+      "sha256": "a8f8aefa2199a2e41c22b8251145f064e3af767ff5357475ddb527beb86761cb"
+    },
+    "observer": {
+      "path": "/workspace/scratch/499c7902de8e/implementation-tools/integration-target/debug/hepta-observe",
+      "bytes": 15046512,
+      "sha256": "a79114fc2e04e2ee226e225c7f5da8da7bc395878e5a67eff0a347aa85fed728"
+    },
+    "submitter": {
+      "path": "/workspace/scratch/499c7902de8e/implementation-tools/integration-target/debug/hepta-submit",
+      "bytes": 14842384,
+      "sha256": "c0155afd9f450006e85b5c8e5957a8db2b5aaa12fd0aa0dacabf213255d75233"
+    },
+    "history": {
+      "path": "/workspace/scratch/499c7902de8e/implementation-tools/integration-target/debug/hepta-history",
+      "bytes": 15181152,
+      "sha256": "10f24fce4c681fce18890b338c879bbbeb0f3bae61335c7de3d88f5b2d4ce6eb"
+    }
+  },
+  "runtime_command": [
+    "/workspace/scratch/499c7902de8e/nextstep-hepta-build/target/dev-small/hepta-objective-history-probe",
+    "/workspace/scratch/499c7902de8e/r9-evidence/native-agentd-05/codex-hepta-agentd",
+    "/workspace/scratch/499c7902de8e/implementation-tools/integration-target/debug/hepta-observe",
+    "/workspace/scratch/499c7902de8e/implementation-tools/integration-target/debug/hepta-submit",
+    "/workspace/scratch/499c7902de8e/implementation-tools/integration-target/debug/hepta-history",
+    "/tmp/hh-sbqhpbtl"
+  ],
+  "runtime_records": [
+    {
+      "event": "owner_running",
+      "observation": {
+        "agent_id": "33333333-3333-4333-8333-333333333333",
+        "capabilities": [
+          {
+            "id": "automation.calendar_v2",
+            "major": 1,
+            "minor": 0
+          },
+          {
+            "id": "cognitive.context.revalidate",
+            "major": 1,
+            "minor": 0
+          },
+          {
+            "id": "objective.admission.read",
+            "major": 1,
+            "minor": 0
+          },
+          {
+            "id": "objective.start",
+            "major": 1,
+            "minor": 0
+          },
+          {
+            "id": "run.lifecycle",
+            "major": 1,
+            "minor": 1
+          }
+        ],
+        "current_generation": 2,
+        "events": [
+          {
+            "cursor": 1,
+            "generation": null,
+            "kind": "bootstrapped",
+            "lifecycle": null
+          },
+          {
+            "cursor": 2,
+            "generation": 1,
+            "kind": "lifecycle",
+            "lifecycle": "starting"
+          },
+          {
+            "cursor": 3,
+            "generation": null,
+            "kind": "app_server_ready",
+            "lifecycle": null
+          },
+          {
+            "cursor": 4,
+            "generation": 2,
+            "kind": "lifecycle",
+            "lifecycle": "running"
+          }
+        ],
+        "health": {
+          "fenced": false,
+          "lifecycle": "running",
+          "process_id": 437817,
+          "promotion_ready": true,
+          "ready": true
+        },
+        "history_gap": false,
+        "latest_cursor": 4,
+        "next_cursor": 4,
+        "spawn_generation": 1
+      },
+      "spawn_generation": 1
+    },
+    {
+      "event": "submission_observed",
+      "exit_code": 0,
+      "label": "01-compiled",
+      "result": {
+        "bytes_written": 2805,
+        "identity": {
+          "agent_id": "33333333-3333-4333-8333-333333333333",
+          "artifact_set_digest": "1d0e1751efbbb9603c7bf62fdb6bfad32de2b865b3b101dd03064c7157e98606",
+          "authority_epoch": 1,
+          "expires_at_ms": 1792318794710,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.1",
+          "model_tuple_digest": "e5cd357ceabc033b88c297218205e6e18a3d72211cee77536dc913e25754674c",
+          "objective_revision": 1,
+          "peer_pid": 437817,
+          "peer_uid": 0,
+          "preference_state_digest": "6d63e78072b8dccce467558d624a3fb2b87bcda7e10856b9738551ad05422bfc",
+          "prompt_registry_digest": "7c3f8abe527e056e040df0d1b737c761dac1093926254874cdef877f5e3eece1",
+          "request_id": 101,
+          "run_id": "run.history-compiled",
+          "runtime_body_digest": "f8d8784ddb3c5ad89f24977042a64f0931e244236cba8a229be6fa88393033be",
+          "sequence": 1,
+          "spawn_generation": 1
+        },
+        "receipt": {
+          "chain_digest": "75bc08ed9e0d9e10157910ccfa897f7ddfcfcad40dd410979f2b5865b5281b83",
+          "disposition": "compiled",
+          "hard_constraint_digest": "d4aef904620474f4b7ca3c4a9b9fe3ea739f5365f1d17249d3a797a324ce1a83",
+          "idempotent": false,
+          "objective_digest": "1441e6e66482752647ffa34568dbcee2e300e064158b85f4b86ddf5adaf114f3",
+          "publication_digest": "03a66b1a7096f0406276299832762d80cba539979c8390221d86732625d0ca50",
+          "response_generation": 2,
+          "run_id": "run.history-compiled"
+        },
+        "request_frame_bytes": 2805,
+        "schema_version": 1,
+        "status": "admitted"
+      }
+    },
+    {
+      "event": "history_query_observed",
+      "exit_code": 0,
+      "journal_sha256": "198802348f6d9bef54536c9b65125a20958b42e148b7bf4f601319e77da32814",
+      "journal_unchanged": true,
+      "label": "01-compiled",
+      "result": {
+        "anchor": null,
+        "anchor_coverage": "current_owner_journal",
+        "bytes_written": 2833,
+        "identity": {
+          "agent_id": "33333333-3333-4333-8333-333333333333",
+          "expires_at_ms": 1792318794710,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.1",
+          "message_sequence": 1,
+          "original_spawn_generation": 1,
+          "peer_pid": 437817,
+          "peer_uid": 0,
+          "request_id": 201,
+          "run_id": "run.history-compiled",
+          "spawn_generation": 1
+        },
+        "publication": {
+          "chain_digest": "75bc08ed9e0d9e10157910ccfa897f7ddfcfcad40dd410979f2b5865b5281b83",
+          "expires_at_ms": 1792318794710,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.1",
+          "message_sequence": 1,
+          "original_spawn_generation": 1,
+          "outcome": {
+            "hard_constraint_digest": "d4aef904620474f4b7ca3c4a9b9fe3ea739f5365f1d17249d3a797a324ce1a83",
+            "objective_digest": "1441e6e66482752647ffa34568dbcee2e300e064158b85f4b86ddf5adaf114f3",
+            "type": "compiled"
+          },
+          "profile_digest": "a5075629f184d0319b2bf5b46be50e317be7abd5ca3bdc4b9d81222dc9f3215f",
+          "publication_digest": "03a66b1a7096f0406276299832762d80cba539979c8390221d86732625d0ca50",
+          "publication_sequence": 1,
+          "run_id": "run.history-compiled",
+          "signed_body_digest": "4ffd52ee1c8d56096659ae0a869e271dc4816b8cbf7eec36bcc26e3eca1c9569"
+        },
+        "request_frame_bytes": 2833,
+        "response_generation": 2,
+        "schema_version": 1,
+        "status": "historical_publication"
+      }
+    },
+    {
+      "check": "live_compiled_publication",
+      "event": "objective_history_check",
+      "evidence": {
+        "history": {
+          "anchor": null,
+          "anchor_coverage": "current_owner_journal",
+          "bytes_written": 2833,
+          "identity": {
+            "agent_id": "33333333-3333-4333-8333-333333333333",
+            "expires_at_ms": 1792318794710,
+            "issuer_id": "issuer.desktop-isolated-objective.v1",
+            "key_epoch": 1,
+            "message_id": "message.desktop-isolated.1",
+            "message_sequence": 1,
+            "original_spawn_generation": 1,
+            "peer_pid": 437817,
+            "peer_uid": 0,
+            "request_id": 201,
+            "run_id": "run.history-compiled",
+            "spawn_generation": 1
+          },
+          "publication": {
+            "chain_digest": "75bc08ed9e0d9e10157910ccfa897f7ddfcfcad40dd410979f2b5865b5281b83",
+            "expires_at_ms": 1792318794710,
+            "issuer_id": "issuer.desktop-isolated-objective.v1",
+            "key_epoch": 1,
+            "message_id": "message.desktop-isolated.1",
+            "message_sequence": 1,
+            "original_spawn_generation": 1,
+            "outcome": {
+              "hard_constraint_digest": "d4aef904620474f4b7ca3c4a9b9fe3ea739f5365f1d17249d3a797a324ce1a83",
+              "objective_digest": "1441e6e66482752647ffa34568dbcee2e300e064158b85f4b86ddf5adaf114f3",
+              "type": "compiled"
+            },
+            "profile_digest": "a5075629f184d0319b2bf5b46be50e317be7abd5ca3bdc4b9d81222dc9f3215f",
+            "publication_digest": "03a66b1a7096f0406276299832762d80cba539979c8390221d86732625d0ca50",
+            "publication_sequence": 1,
+            "run_id": "run.history-compiled",
+            "signed_body_digest": "4ffd52ee1c8d56096659ae0a869e271dc4816b8cbf7eec36bcc26e3eca1c9569"
+          },
+          "request_frame_bytes": 2833,
+          "response_generation": 2,
+          "schema_version": 1,
+          "status": "historical_publication"
+        },
+        "submission": {
+          "bytes_written": 2805,
+          "identity": {
+            "agent_id": "33333333-3333-4333-8333-333333333333",
+            "artifact_set_digest": "1d0e1751efbbb9603c7bf62fdb6bfad32de2b865b3b101dd03064c7157e98606",
+            "authority_epoch": 1,
+            "expires_at_ms": 1792318794710,
+            "issuer_id": "issuer.desktop-isolated-objective.v1",
+            "key_epoch": 1,
+            "message_id": "message.desktop-isolated.1",
+            "model_tuple_digest": "e5cd357ceabc033b88c297218205e6e18a3d72211cee77536dc913e25754674c",
+            "objective_revision": 1,
+            "peer_pid": 437817,
+            "peer_uid": 0,
+            "preference_state_digest": "6d63e78072b8dccce467558d624a3fb2b87bcda7e10856b9738551ad05422bfc",
+            "prompt_registry_digest": "7c3f8abe527e056e040df0d1b737c761dac1093926254874cdef877f5e3eece1",
+            "request_id": 101,
+            "run_id": "run.history-compiled",
+            "runtime_body_digest": "f8d8784ddb3c5ad89f24977042a64f0931e244236cba8a229be6fa88393033be",
+            "sequence": 1,
+            "spawn_generation": 1
+          },
+          "receipt": {
+            "chain_digest": "75bc08ed9e0d9e10157910ccfa897f7ddfcfcad40dd410979f2b5865b5281b83",
+            "disposition": "compiled",
+            "hard_constraint_digest": "d4aef904620474f4b7ca3c4a9b9fe3ea739f5365f1d17249d3a797a324ce1a83",
+            "idempotent": false,
+            "objective_digest": "1441e6e66482752647ffa34568dbcee2e300e064158b85f4b86ddf5adaf114f3",
+            "publication_digest": "03a66b1a7096f0406276299832762d80cba539979c8390221d86732625d0ca50",
+            "response_generation": 2,
+            "run_id": "run.history-compiled"
+          },
+          "request_frame_bytes": 2805,
+          "schema_version": 1,
+          "status": "admitted"
+        }
+      }
+    },
+    {
+      "event": "submission_observed",
+      "exit_code": 0,
+      "label": "02-abstain",
+      "result": {
+        "bytes_written": 2795,
+        "identity": {
+          "agent_id": "33333333-3333-4333-8333-333333333333",
+          "artifact_set_digest": "1d0e1751efbbb9603c7bf62fdb6bfad32de2b865b3b101dd03064c7157e98606",
+          "authority_epoch": 1,
+          "expires_at_ms": 1792318579819,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.2",
+          "model_tuple_digest": "e5cd357ceabc033b88c297218205e6e18a3d72211cee77536dc913e25754674c",
+          "objective_revision": 1,
+          "peer_pid": 437817,
+          "peer_uid": 0,
+          "preference_state_digest": "6d63e78072b8dccce467558d624a3fb2b87bcda7e10856b9738551ad05422bfc",
+          "prompt_registry_digest": "7c3f8abe527e056e040df0d1b737c761dac1093926254874cdef877f5e3eece1",
+          "request_id": 102,
+          "run_id": "run.history-abstain",
+          "runtime_body_digest": "f8d8784ddb3c5ad89f24977042a64f0931e244236cba8a229be6fa88393033be",
+          "sequence": 2,
+          "spawn_generation": 1
+        },
+        "receipt": {
+          "chain_digest": "37620370f29b087f1df2017a94e868eeecf897c472f01b9b528490205bb5f9ea",
+          "disposition": "explicit_abstain",
+          "hard_constraint_digest": "d4aef904620474f4b7ca3c4a9b9fe3ea739f5365f1d17249d3a797a324ce1a83",
+          "idempotent": false,
+          "objective_digest": "99b884596e1a4734bad96057fcecdfd896daa2b2b76d43012ee284910a9ec0c7",
+          "publication_digest": "69cb5d14fb92f1ee11334d560b1a0dacef35cf62e8e67532b1ede03369c2dbfd",
+          "response_generation": 2,
+          "run_id": "run.history-abstain"
+        },
+        "request_frame_bytes": 2795,
+        "schema_version": 1,
+        "status": "admitted"
+      }
+    },
+    {
+      "event": "history_query_observed",
+      "exit_code": 0,
+      "journal_sha256": "eab78c8faee9c37d0c179881dc256bf7bf86a9dad48fd196c585291a82a44d09",
+      "journal_unchanged": true,
+      "label": "02-abstain",
+      "result": {
+        "anchor": null,
+        "anchor_coverage": "current_owner_journal",
+        "bytes_written": 2823,
+        "identity": {
+          "agent_id": "33333333-3333-4333-8333-333333333333",
+          "expires_at_ms": 1792318579819,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.2",
+          "message_sequence": 2,
+          "original_spawn_generation": 1,
+          "peer_pid": 437817,
+          "peer_uid": 0,
+          "request_id": 202,
+          "run_id": "run.history-abstain",
+          "spawn_generation": 1
+        },
+        "publication": {
+          "chain_digest": "37620370f29b087f1df2017a94e868eeecf897c472f01b9b528490205bb5f9ea",
+          "expires_at_ms": 1792318579819,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.2",
+          "message_sequence": 2,
+          "original_spawn_generation": 1,
+          "outcome": {
+            "hard_constraint_digest": "d4aef904620474f4b7ca3c4a9b9fe3ea739f5365f1d17249d3a797a324ce1a83",
+            "objective_digest": "99b884596e1a4734bad96057fcecdfd896daa2b2b76d43012ee284910a9ec0c7",
+            "type": "explicit_abstain"
+          },
+          "profile_digest": "a5075629f184d0319b2bf5b46be50e317be7abd5ca3bdc4b9d81222dc9f3215f",
+          "publication_digest": "69cb5d14fb92f1ee11334d560b1a0dacef35cf62e8e67532b1ede03369c2dbfd",
+          "publication_sequence": 2,
+          "run_id": "run.history-abstain",
+          "signed_body_digest": "3796cff3aa8aecd1a6801adc52083ebf824ce2fd2f53ff18816559201e0cec80"
+        },
+        "request_frame_bytes": 2823,
+        "response_generation": 2,
+        "schema_version": 1,
+        "status": "historical_publication"
+      }
+    },
+    {
+      "check": "live_abstain_publication",
+      "event": "objective_history_check",
+      "evidence": {
+        "history": {
+          "anchor": null,
+          "anchor_coverage": "current_owner_journal",
+          "bytes_written": 2823,
+          "identity": {
+            "agent_id": "33333333-3333-4333-8333-333333333333",
+            "expires_at_ms": 1792318579819,
+            "issuer_id": "issuer.desktop-isolated-objective.v1",
+            "key_epoch": 1,
+            "message_id": "message.desktop-isolated.2",
+            "message_sequence": 2,
+            "original_spawn_generation": 1,
+            "peer_pid": 437817,
+            "peer_uid": 0,
+            "request_id": 202,
+            "run_id": "run.history-abstain",
+            "spawn_generation": 1
+          },
+          "publication": {
+            "chain_digest": "37620370f29b087f1df2017a94e868eeecf897c472f01b9b528490205bb5f9ea",
+            "expires_at_ms": 1792318579819,
+            "issuer_id": "issuer.desktop-isolated-objective.v1",
+            "key_epoch": 1,
+            "message_id": "message.desktop-isolated.2",
+            "message_sequence": 2,
+            "original_spawn_generation": 1,
+            "outcome": {
+              "hard_constraint_digest": "d4aef904620474f4b7ca3c4a9b9fe3ea739f5365f1d17249d3a797a324ce1a83",
+              "objective_digest": "99b884596e1a4734bad96057fcecdfd896daa2b2b76d43012ee284910a9ec0c7",
+              "type": "explicit_abstain"
+            },
+            "profile_digest": "a5075629f184d0319b2bf5b46be50e317be7abd5ca3bdc4b9d81222dc9f3215f",
+            "publication_digest": "69cb5d14fb92f1ee11334d560b1a0dacef35cf62e8e67532b1ede03369c2dbfd",
+            "publication_sequence": 2,
+            "run_id": "run.history-abstain",
+            "signed_body_digest": "3796cff3aa8aecd1a6801adc52083ebf824ce2fd2f53ff18816559201e0cec80"
+          },
+          "request_frame_bytes": 2823,
+          "response_generation": 2,
+          "schema_version": 1,
+          "status": "historical_publication"
+        },
+        "run_status": null,
+        "submission": {
+          "bytes_written": 2795,
+          "identity": {
+            "agent_id": "33333333-3333-4333-8333-333333333333",
+            "artifact_set_digest": "1d0e1751efbbb9603c7bf62fdb6bfad32de2b865b3b101dd03064c7157e98606",
+            "authority_epoch": 1,
+            "expires_at_ms": 1792318579819,
+            "issuer_id": "issuer.desktop-isolated-objective.v1",
+            "key_epoch": 1,
+            "message_id": "message.desktop-isolated.2",
+            "model_tuple_digest": "e5cd357ceabc033b88c297218205e6e18a3d72211cee77536dc913e25754674c",
+            "objective_revision": 1,
+            "peer_pid": 437817,
+            "peer_uid": 0,
+            "preference_state_digest": "6d63e78072b8dccce467558d624a3fb2b87bcda7e10856b9738551ad05422bfc",
+            "prompt_registry_digest": "7c3f8abe527e056e040df0d1b737c761dac1093926254874cdef877f5e3eece1",
+            "request_id": 102,
+            "run_id": "run.history-abstain",
+            "runtime_body_digest": "f8d8784ddb3c5ad89f24977042a64f0931e244236cba8a229be6fa88393033be",
+            "sequence": 2,
+            "spawn_generation": 1
+          },
+          "receipt": {
+            "chain_digest": "37620370f29b087f1df2017a94e868eeecf897c472f01b9b528490205bb5f9ea",
+            "disposition": "explicit_abstain",
+            "hard_constraint_digest": "d4aef904620474f4b7ca3c4a9b9fe3ea739f5365f1d17249d3a797a324ce1a83",
+            "idempotent": false,
+            "objective_digest": "99b884596e1a4734bad96057fcecdfd896daa2b2b76d43012ee284910a9ec0c7",
+            "publication_digest": "69cb5d14fb92f1ee11334d560b1a0dacef35cf62e8e67532b1ede03369c2dbfd",
+            "response_generation": 2,
+            "run_id": "run.history-abstain"
+          },
+          "request_frame_bytes": 2795,
+          "schema_version": 1,
+          "status": "admitted"
+        }
+      }
+    },
+    {
+      "event": "history_query_observed",
+      "exit_code": 0,
+      "journal_sha256": "eab78c8faee9c37d0c179881dc256bf7bf86a9dad48fd196c585291a82a44d09",
+      "journal_unchanged": true,
+      "label": "03-covered-by-second",
+      "result": {
+        "anchor": {
+          "chain_digest": "37620370f29b087f1df2017a94e868eeecf897c472f01b9b528490205bb5f9ea",
+          "sequence": 2
+        },
+        "anchor_coverage": "retained_anchor",
+        "bytes_written": 2925,
+        "identity": {
+          "agent_id": "33333333-3333-4333-8333-333333333333",
+          "expires_at_ms": 1792318794710,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.1",
+          "message_sequence": 1,
+          "original_spawn_generation": 1,
+          "peer_pid": 437817,
+          "peer_uid": 0,
+          "request_id": 203,
+          "run_id": "run.history-compiled",
+          "spawn_generation": 1
+        },
+        "publication": {
+          "chain_digest": "75bc08ed9e0d9e10157910ccfa897f7ddfcfcad40dd410979f2b5865b5281b83",
+          "expires_at_ms": 1792318794710,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.1",
+          "message_sequence": 1,
+          "original_spawn_generation": 1,
+          "outcome": {
+            "hard_constraint_digest": "d4aef904620474f4b7ca3c4a9b9fe3ea739f5365f1d17249d3a797a324ce1a83",
+            "objective_digest": "1441e6e66482752647ffa34568dbcee2e300e064158b85f4b86ddf5adaf114f3",
+            "type": "compiled"
+          },
+          "profile_digest": "a5075629f184d0319b2bf5b46be50e317be7abd5ca3bdc4b9d81222dc9f3215f",
+          "publication_digest": "03a66b1a7096f0406276299832762d80cba539979c8390221d86732625d0ca50",
+          "publication_sequence": 1,
+          "run_id": "run.history-compiled",
+          "signed_body_digest": "4ffd52ee1c8d56096659ae0a869e271dc4816b8cbf7eec36bcc26e3eca1c9569"
+        },
+        "request_frame_bytes": 2925,
+        "response_generation": 2,
+        "schema_version": 1,
+        "status": "historical_publication"
+      }
+    },
+    {
+      "check": "retained_anchor_covers_publication",
+      "event": "objective_history_check",
+      "evidence": {
+        "history": {
+          "anchor": {
+            "chain_digest": "37620370f29b087f1df2017a94e868eeecf897c472f01b9b528490205bb5f9ea",
+            "sequence": 2
+          },
+          "anchor_coverage": "retained_anchor",
+          "bytes_written": 2925,
+          "identity": {
+            "agent_id": "33333333-3333-4333-8333-333333333333",
+            "expires_at_ms": 1792318794710,
+            "issuer_id": "issuer.desktop-isolated-objective.v1",
+            "key_epoch": 1,
+            "message_id": "message.desktop-isolated.1",
+            "message_sequence": 1,
+            "original_spawn_generation": 1,
+            "peer_pid": 437817,
+            "peer_uid": 0,
+            "request_id": 203,
+            "run_id": "run.history-compiled",
+            "spawn_generation": 1
+          },
+          "publication": {
+            "chain_digest": "75bc08ed9e0d9e10157910ccfa897f7ddfcfcad40dd410979f2b5865b5281b83",
+            "expires_at_ms": 1792318794710,
+            "issuer_id": "issuer.desktop-isolated-objective.v1",
+            "key_epoch": 1,
+            "message_id": "message.desktop-isolated.1",
+            "message_sequence": 1,
+            "original_spawn_generation": 1,
+            "outcome": {
+              "hard_constraint_digest": "d4aef904620474f4b7ca3c4a9b9fe3ea739f5365f1d17249d3a797a324ce1a83",
+              "objective_digest": "1441e6e66482752647ffa34568dbcee2e300e064158b85f4b86ddf5adaf114f3",
+              "type": "compiled"
+            },
+            "profile_digest": "a5075629f184d0319b2bf5b46be50e317be7abd5ca3bdc4b9d81222dc9f3215f",
+            "publication_digest": "03a66b1a7096f0406276299832762d80cba539979c8390221d86732625d0ca50",
+            "publication_sequence": 1,
+            "run_id": "run.history-compiled",
+            "signed_body_digest": "4ffd52ee1c8d56096659ae0a869e271dc4816b8cbf7eec36bcc26e3eca1c9569"
+          },
+          "request_frame_bytes": 2925,
+          "response_generation": 2,
+          "schema_version": 1,
+          "status": "historical_publication"
+        }
+      }
+    },
+    {
+      "event": "objective_response_discarded",
+      "evidence": {
+        "bytes_written": 2815,
+        "hepta_submit_cli_loss_case": false,
+        "message_id": "message.desktop-isolated.3",
+        "peer_pid": 437817,
+        "peer_uid": 0,
+        "request_frame_bytes": 2815,
+        "response_bytes_read": 0,
+        "response_discarded_by_harness": true,
+        "run_id": "run.history-lost-response",
+        "sender": "qualification_harness_original_protocol",
+        "spawn_generation": 1,
+        "submission_outcome": "unknown"
+      }
+    },
+    {
+      "event": "history_query_observed",
+      "exit_code": 0,
+      "journal_sha256": "36c9457ba334171514b4248c6e2cd1d456b8ab86128afd43aad1b341c646b5b2",
+      "journal_unchanged": true,
+      "label": "04-lost-response",
+      "result": {
+        "anchor": null,
+        "anchor_coverage": "current_owner_journal",
+        "bytes_written": 2843,
+        "identity": {
+          "agent_id": "33333333-3333-4333-8333-333333333333",
+          "expires_at_ms": 1792318794940,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.3",
+          "message_sequence": 3,
+          "original_spawn_generation": 1,
+          "peer_pid": 437817,
+          "peer_uid": 0,
+          "request_id": 204,
+          "run_id": "run.history-lost-response",
+          "spawn_generation": 1
+        },
+        "publication": {
+          "chain_digest": "0611c5486278307b6224769c9ee22f597ec3bfb17af6011b0ca44c5cbb3b98b6",
+          "expires_at_ms": 1792318794940,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.3",
+          "message_sequence": 3,
+          "original_spawn_generation": 1,
+          "outcome": {
+            "hard_constraint_digest": "d4aef904620474f4b7ca3c4a9b9fe3ea739f5365f1d17249d3a797a324ce1a83",
+            "objective_digest": "3512f0d44eb5471b646fd306408cb9d462e1d8eb9acfba6fe99997e3a65fecbf",
+            "type": "compiled"
+          },
+          "profile_digest": "a5075629f184d0319b2bf5b46be50e317be7abd5ca3bdc4b9d81222dc9f3215f",
+          "publication_digest": "497a450380181a12f184f4f37724f639c3cd437a89f1e645b461f43cbf375885",
+          "publication_sequence": 3,
+          "run_id": "run.history-lost-response",
+          "signed_body_digest": "db84b1209fb279969d4243a6a78bee9ce819f0450cca17e6b15e72a4046ec480"
+        },
+        "request_frame_bytes": 2843,
+        "response_generation": 2,
+        "schema_version": 1,
+        "status": "historical_publication"
+      }
+    },
+    {
+      "check": "harness_lost_response_then_history",
+      "event": "objective_history_check",
+      "evidence": {
+        "history": {
+          "anchor": null,
+          "anchor_coverage": "current_owner_journal",
+          "bytes_written": 2843,
+          "identity": {
+            "agent_id": "33333333-3333-4333-8333-333333333333",
+            "expires_at_ms": 1792318794940,
+            "issuer_id": "issuer.desktop-isolated-objective.v1",
+            "key_epoch": 1,
+            "message_id": "message.desktop-isolated.3",
+            "message_sequence": 3,
+            "original_spawn_generation": 1,
+            "peer_pid": 437817,
+            "peer_uid": 0,
+            "request_id": 204,
+            "run_id": "run.history-lost-response",
+            "spawn_generation": 1
+          },
+          "publication": {
+            "chain_digest": "0611c5486278307b6224769c9ee22f597ec3bfb17af6011b0ca44c5cbb3b98b6",
+            "expires_at_ms": 1792318794940,
+            "issuer_id": "issuer.desktop-isolated-objective.v1",
+            "key_epoch": 1,
+            "message_id": "message.desktop-isolated.3",
+            "message_sequence": 3,
+            "original_spawn_generation": 1,
+            "outcome": {
+              "hard_constraint_digest": "d4aef904620474f4b7ca3c4a9b9fe3ea739f5365f1d17249d3a797a324ce1a83",
+              "objective_digest": "3512f0d44eb5471b646fd306408cb9d462e1d8eb9acfba6fe99997e3a65fecbf",
+              "type": "compiled"
+            },
+            "profile_digest": "a5075629f184d0319b2bf5b46be50e317be7abd5ca3bdc4b9d81222dc9f3215f",
+            "publication_digest": "497a450380181a12f184f4f37724f639c3cd437a89f1e645b461f43cbf375885",
+            "publication_sequence": 3,
+            "run_id": "run.history-lost-response",
+            "signed_body_digest": "db84b1209fb279969d4243a6a78bee9ce819f0450cca17e6b15e72a4046ec480"
+          },
+          "request_frame_bytes": 2843,
+          "response_generation": 2,
+          "schema_version": 1,
+          "status": "historical_publication"
+        },
+        "history_query_attempts": 1,
+        "journal_sha256": "36c9457ba334171514b4248c6e2cd1d456b8ab86128afd43aad1b341c646b5b2",
+        "loss": {
+          "bytes_written": 2815,
+          "hepta_submit_cli_loss_case": false,
+          "message_id": "message.desktop-isolated.3",
+          "peer_pid": 437817,
+          "peer_uid": 0,
+          "request_frame_bytes": 2815,
+          "response_bytes_read": 0,
+          "response_discarded_by_harness": true,
+          "run_id": "run.history-lost-response",
+          "sender": "qualification_harness_original_protocol",
+          "spawn_generation": 1,
+          "submission_outcome": "unknown"
+        },
+        "read_only_run_projection_waits": 1,
+        "resubmission_count": 0
+      }
+    },
+    {
+      "event": "submission_observed",
+      "exit_code": 12,
+      "label": "05-postpublication-capacity",
+      "result": {
+        "bytes_written": 2837,
+        "identity": {
+          "agent_id": "33333333-3333-4333-8333-333333333333",
+          "artifact_set_digest": "1d0e1751efbbb9603c7bf62fdb6bfad32de2b865b3b101dd03064c7157e98606",
+          "authority_epoch": 1,
+          "expires_at_ms": 1792318795083,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.4",
+          "model_tuple_digest": "e5cd357ceabc033b88c297218205e6e18a3d72211cee77536dc913e25754674c",
+          "objective_revision": 1,
+          "peer_pid": 437817,
+          "peer_uid": 0,
+          "preference_state_digest": "6d63e78072b8dccce467558d624a3fb2b87bcda7e10856b9738551ad05422bfc",
+          "prompt_registry_digest": "7c3f8abe527e056e040df0d1b737c761dac1093926254874cdef877f5e3eece1",
+          "request_id": 104,
+          "run_id": "run.history-postpublication-capacity",
+          "runtime_body_digest": "f8d8784ddb3c5ad89f24977042a64f0931e244236cba8a229be6fa88393033be",
+          "sequence": 4,
+          "spawn_generation": 1
+        },
+        "issue": "objective_owner_request_rejected",
+        "request_frame_bytes": 2837,
+        "schema_version": 1,
+        "status": "submit_unknown"
+      }
+    },
+    {
+      "event": "history_query_observed",
+      "exit_code": 0,
+      "journal_sha256": "5911e4a9e2a2c0592581d969630dadc277fac88425bd58297e8eda0102a2eeb7",
+      "journal_unchanged": true,
+      "label": "05-postpublication-capacity",
+      "result": {
+        "anchor": null,
+        "anchor_coverage": "current_owner_journal",
+        "bytes_written": 2865,
+        "identity": {
+          "agent_id": "33333333-3333-4333-8333-333333333333",
+          "expires_at_ms": 1792318795083,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.4",
+          "message_sequence": 4,
+          "original_spawn_generation": 1,
+          "peer_pid": 437817,
+          "peer_uid": 0,
+          "request_id": 205,
+          "run_id": "run.history-postpublication-capacity",
+          "spawn_generation": 1
+        },
+        "publication": {
+          "chain_digest": "0b4bf3e2dac5e6ed0b17d2d11ab48a409d0f128a89aaf26cfa948375679efa1d",
+          "expires_at_ms": 1792318795083,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.4",
+          "message_sequence": 4,
+          "original_spawn_generation": 1,
+          "outcome": {
+            "hard_constraint_digest": "d4aef904620474f4b7ca3c4a9b9fe3ea739f5365f1d17249d3a797a324ce1a83",
+            "objective_digest": "35554eab2e857df567cc0594cdd3de4d288d2fc6bf2b09e102e30281451c9554",
+            "type": "compiled"
+          },
+          "profile_digest": "a5075629f184d0319b2bf5b46be50e317be7abd5ca3bdc4b9d81222dc9f3215f",
+          "publication_digest": "861747b160a3f78729ac9218ed7bc475e864093c0688b421002ba1db2ed7f994",
+          "publication_sequence": 4,
+          "run_id": "run.history-postpublication-capacity",
+          "signed_body_digest": "648fb2e3476f5f9fa40c4554077851b0ac893276aac76e95a1f1f29f08e15e47"
+        },
+        "request_frame_bytes": 2865,
+        "response_generation": 2,
+        "schema_version": 1,
+        "status": "historical_publication"
+      }
+    },
+    {
+      "check": "postpublication_submit_unknown_history_published",
+      "event": "objective_history_check",
+      "evidence": {
+        "active_run_ids": [
+          "run.history-compiled",
+          "run.history-lost-response"
+        ],
+        "active_runs_before_submission": [
+          {
+            "authority_epoch": 1,
+            "generation": 2,
+            "idempotent": false,
+            "phase": "admitted",
+            "revision": 1,
+            "run_id": "run.history-compiled",
+            "terminal_observed": false
+          },
+          {
+            "authority_epoch": 1,
+            "generation": 2,
+            "idempotent": false,
+            "phase": "admitted",
+            "revision": 1,
+            "run_id": "run.history-lost-response",
+            "terminal_observed": false
+          }
+        ],
+        "history": {
+          "anchor": null,
+          "anchor_coverage": "current_owner_journal",
+          "bytes_written": 2865,
+          "identity": {
+            "agent_id": "33333333-3333-4333-8333-333333333333",
+            "expires_at_ms": 1792318795083,
+            "issuer_id": "issuer.desktop-isolated-objective.v1",
+            "key_epoch": 1,
+            "message_id": "message.desktop-isolated.4",
+            "message_sequence": 4,
+            "original_spawn_generation": 1,
+            "peer_pid": 437817,
+            "peer_uid": 0,
+            "request_id": 205,
+            "run_id": "run.history-postpublication-capacity",
+            "spawn_generation": 1
+          },
+          "publication": {
+            "chain_digest": "0b4bf3e2dac5e6ed0b17d2d11ab48a409d0f128a89aaf26cfa948375679efa1d",
+            "expires_at_ms": 1792318795083,
+            "issuer_id": "issuer.desktop-isolated-objective.v1",
+            "key_epoch": 1,
+            "message_id": "message.desktop-isolated.4",
+            "message_sequence": 4,
+            "original_spawn_generation": 1,
+            "outcome": {
+              "hard_constraint_digest": "d4aef904620474f4b7ca3c4a9b9fe3ea739f5365f1d17249d3a797a324ce1a83",
+              "objective_digest": "35554eab2e857df567cc0594cdd3de4d288d2fc6bf2b09e102e30281451c9554",
+              "type": "compiled"
+            },
+            "profile_digest": "a5075629f184d0319b2bf5b46be50e317be7abd5ca3bdc4b9d81222dc9f3215f",
+            "publication_digest": "861747b160a3f78729ac9218ed7bc475e864093c0688b421002ba1db2ed7f994",
+            "publication_sequence": 4,
+            "run_id": "run.history-postpublication-capacity",
+            "signed_body_digest": "648fb2e3476f5f9fa40c4554077851b0ac893276aac76e95a1f1f29f08e15e47"
+          },
+          "request_frame_bytes": 2865,
+          "response_generation": 2,
+          "schema_version": 1,
+          "status": "historical_publication"
+        },
+        "resubmission_count": 0,
+        "run_status": null,
+        "source_inference": "original_default_run_capacity_exhausted",
+        "specific_original_error_bytes_observed": false,
+        "submission": {
+          "bytes_written": 2837,
+          "identity": {
+            "agent_id": "33333333-3333-4333-8333-333333333333",
+            "artifact_set_digest": "1d0e1751efbbb9603c7bf62fdb6bfad32de2b865b3b101dd03064c7157e98606",
+            "authority_epoch": 1,
+            "expires_at_ms": 1792318795083,
+            "issuer_id": "issuer.desktop-isolated-objective.v1",
+            "key_epoch": 1,
+            "message_id": "message.desktop-isolated.4",
+            "model_tuple_digest": "e5cd357ceabc033b88c297218205e6e18a3d72211cee77536dc913e25754674c",
+            "objective_revision": 1,
+            "peer_pid": 437817,
+            "peer_uid": 0,
+            "preference_state_digest": "6d63e78072b8dccce467558d624a3fb2b87bcda7e10856b9738551ad05422bfc",
+            "prompt_registry_digest": "7c3f8abe527e056e040df0d1b737c761dac1093926254874cdef877f5e3eece1",
+            "request_id": 104,
+            "run_id": "run.history-postpublication-capacity",
+            "runtime_body_digest": "f8d8784ddb3c5ad89f24977042a64f0931e244236cba8a229be6fa88393033be",
+            "sequence": 4,
+            "spawn_generation": 1
+          },
+          "issue": "objective_owner_request_rejected",
+          "request_frame_bytes": 2837,
+          "schema_version": 1,
+          "status": "submit_unknown"
+        }
+      }
+    },
+    {
+      "event": "history_query_observed",
+      "exit_code": 12,
+      "journal_sha256": "5911e4a9e2a2c0592581d969630dadc277fac88425bd58297e8eda0102a2eeb7",
+      "journal_unchanged": true,
+      "label": "06-wrong-anchor",
+      "result": {
+        "anchor": {
+          "chain_digest": "1b4bf3e2dac5e6ed0b17d2d11ab48a409d0f128a89aaf26cfa948375679efa1d",
+          "sequence": 4
+        },
+        "bytes_written": 2925,
+        "identity": {
+          "agent_id": "33333333-3333-4333-8333-333333333333",
+          "expires_at_ms": 1792318794710,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.1",
+          "message_sequence": 1,
+          "original_spawn_generation": 1,
+          "peer_pid": 437817,
+          "peer_uid": 0,
+          "request_id": 301,
+          "run_id": "run.history-compiled",
+          "spawn_generation": 1
+        },
+        "issue": "anchor_mismatch",
+        "request_frame_bytes": 2925,
+        "schema_version": 1,
+        "status": "unknown"
+      }
+    },
+    {
+      "check": "wrong_anchor_unknown",
+      "event": "objective_history_check",
+      "evidence": {
+        "history": {
+          "anchor": {
+            "chain_digest": "1b4bf3e2dac5e6ed0b17d2d11ab48a409d0f128a89aaf26cfa948375679efa1d",
+            "sequence": 4
+          },
+          "bytes_written": 2925,
+          "identity": {
+            "agent_id": "33333333-3333-4333-8333-333333333333",
+            "expires_at_ms": 1792318794710,
+            "issuer_id": "issuer.desktop-isolated-objective.v1",
+            "key_epoch": 1,
+            "message_id": "message.desktop-isolated.1",
+            "message_sequence": 1,
+            "original_spawn_generation": 1,
+            "peer_pid": 437817,
+            "peer_uid": 0,
+            "request_id": 301,
+            "run_id": "run.history-compiled",
+            "spawn_generation": 1
+          },
+          "issue": "anchor_mismatch",
+          "request_frame_bytes": 2925,
+          "schema_version": 1,
+          "status": "unknown"
+        }
+      }
+    },
+    {
+      "event": "history_query_observed",
+      "exit_code": 12,
+      "journal_sha256": "5911e4a9e2a2c0592581d969630dadc277fac88425bd58297e8eda0102a2eeb7",
+      "journal_unchanged": true,
+      "label": "07-earlier-anchor",
+      "result": {
+        "anchor": {
+          "chain_digest": "75bc08ed9e0d9e10157910ccfa897f7ddfcfcad40dd410979f2b5865b5281b83",
+          "sequence": 1
+        },
+        "bytes_written": 2915,
+        "identity": {
+          "agent_id": "33333333-3333-4333-8333-333333333333",
+          "expires_at_ms": 1792318579819,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.2",
+          "message_sequence": 2,
+          "original_spawn_generation": 1,
+          "peer_pid": 437817,
+          "peer_uid": 0,
+          "request_id": 302,
+          "run_id": "run.history-abstain",
+          "spawn_generation": 1
+        },
+        "issue": "publication_outside_anchor",
+        "request_frame_bytes": 2915,
+        "schema_version": 1,
+        "status": "unknown"
+      }
+    },
+    {
+      "check": "earlier_anchor_unknown",
+      "event": "objective_history_check",
+      "evidence": {
+        "history": {
+          "anchor": {
+            "chain_digest": "75bc08ed9e0d9e10157910ccfa897f7ddfcfcad40dd410979f2b5865b5281b83",
+            "sequence": 1
+          },
+          "bytes_written": 2915,
+          "identity": {
+            "agent_id": "33333333-3333-4333-8333-333333333333",
+            "expires_at_ms": 1792318579819,
+            "issuer_id": "issuer.desktop-isolated-objective.v1",
+            "key_epoch": 1,
+            "message_id": "message.desktop-isolated.2",
+            "message_sequence": 2,
+            "original_spawn_generation": 1,
+            "peer_pid": 437817,
+            "peer_uid": 0,
+            "request_id": 302,
+            "run_id": "run.history-abstain",
+            "spawn_generation": 1
+          },
+          "issue": "publication_outside_anchor",
+          "request_frame_bytes": 2915,
+          "schema_version": 1,
+          "status": "unknown"
+        }
+      }
+    },
+    {
+      "event": "history_query_observed",
+      "exit_code": 12,
+      "journal_sha256": "5911e4a9e2a2c0592581d969630dadc277fac88425bd58297e8eda0102a2eeb7",
+      "journal_unchanged": true,
+      "label": "08-changed-signature",
+      "result": {
+        "anchor": {
+          "chain_digest": "0b4bf3e2dac5e6ed0b17d2d11ab48a409d0f128a89aaf26cfa948375679efa1d",
+          "sequence": 4
+        },
+        "bytes_written": 2925,
+        "identity": {
+          "agent_id": "33333333-3333-4333-8333-333333333333",
+          "expires_at_ms": 1792318794710,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.1",
+          "message_sequence": 1,
+          "original_spawn_generation": 1,
+          "peer_pid": 437817,
+          "peer_uid": 0,
+          "request_id": 303,
+          "run_id": "run.history-compiled",
+          "spawn_generation": 1
+        },
+        "issue": "no_matching_publication",
+        "request_frame_bytes": 2925,
+        "schema_version": 1,
+        "status": "unknown"
+      }
+    },
+    {
+      "check": "changed_signed_request_unknown",
+      "event": "objective_history_check",
+      "evidence": {
+        "history": {
+          "anchor": {
+            "chain_digest": "0b4bf3e2dac5e6ed0b17d2d11ab48a409d0f128a89aaf26cfa948375679efa1d",
+            "sequence": 4
+          },
+          "bytes_written": 2925,
+          "identity": {
+            "agent_id": "33333333-3333-4333-8333-333333333333",
+            "expires_at_ms": 1792318794710,
+            "issuer_id": "issuer.desktop-isolated-objective.v1",
+            "key_epoch": 1,
+            "message_id": "message.desktop-isolated.1",
+            "message_sequence": 1,
+            "original_spawn_generation": 1,
+            "peer_pid": 437817,
+            "peer_uid": 0,
+            "request_id": 303,
+            "run_id": "run.history-compiled",
+            "spawn_generation": 1
+          },
+          "issue": "no_matching_publication",
+          "request_frame_bytes": 2925,
+          "schema_version": 1,
+          "status": "unknown"
+        }
+      }
+    },
+    {
+      "event": "owner_running",
+      "observation": {
+        "agent_id": "33333333-3333-4333-8333-333333333333",
+        "capabilities": [
+          {
+            "id": "automation.calendar_v2",
+            "major": 1,
+            "minor": 0
+          },
+          {
+            "id": "cognitive.context.revalidate",
+            "major": 1,
+            "minor": 0
+          },
+          {
+            "id": "objective.admission.read",
+            "major": 1,
+            "minor": 0
+          },
+          {
+            "id": "objective.start",
+            "major": 1,
+            "minor": 0
+          },
+          {
+            "id": "run.lifecycle",
+            "major": 1,
+            "minor": 1
+          }
+        ],
+        "current_generation": 6,
+        "events": [
+          {
+            "cursor": 1,
+            "generation": null,
+            "kind": "bootstrapped",
+            "lifecycle": null
+          },
+          {
+            "cursor": 2,
+            "generation": 5,
+            "kind": "lifecycle",
+            "lifecycle": "starting"
+          },
+          {
+            "cursor": 3,
+            "generation": null,
+            "kind": "app_server_ready",
+            "lifecycle": null
+          },
+          {
+            "cursor": 4,
+            "generation": 6,
+            "kind": "lifecycle",
+            "lifecycle": "running"
+          }
+        ],
+        "health": {
+          "fenced": false,
+          "lifecycle": "running",
+          "process_id": 437977,
+          "promotion_ready": true,
+          "ready": true
+        },
+        "history_gap": false,
+        "latest_cursor": 4,
+        "next_cursor": 4,
+        "spawn_generation": 5
+      },
+      "spawn_generation": 5
+    },
+    {
+      "event": "history_query_observed",
+      "exit_code": 0,
+      "journal_sha256": "5911e4a9e2a2c0592581d969630dadc277fac88425bd58297e8eda0102a2eeb7",
+      "journal_unchanged": true,
+      "label": "09-after-restart",
+      "result": {
+        "anchor": {
+          "chain_digest": "0b4bf3e2dac5e6ed0b17d2d11ab48a409d0f128a89aaf26cfa948375679efa1d",
+          "sequence": 4
+        },
+        "anchor_coverage": "retained_anchor",
+        "bytes_written": 2935,
+        "identity": {
+          "agent_id": "33333333-3333-4333-8333-333333333333",
+          "expires_at_ms": 1792318794940,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.3",
+          "message_sequence": 3,
+          "original_spawn_generation": 1,
+          "peer_pid": 437977,
+          "peer_uid": 0,
+          "request_id": 304,
+          "run_id": "run.history-lost-response",
+          "spawn_generation": 5
+        },
+        "publication": {
+          "chain_digest": "0611c5486278307b6224769c9ee22f597ec3bfb17af6011b0ca44c5cbb3b98b6",
+          "expires_at_ms": 1792318794940,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.3",
+          "message_sequence": 3,
+          "original_spawn_generation": 1,
+          "outcome": {
+            "hard_constraint_digest": "d4aef904620474f4b7ca3c4a9b9fe3ea739f5365f1d17249d3a797a324ce1a83",
+            "objective_digest": "3512f0d44eb5471b646fd306408cb9d462e1d8eb9acfba6fe99997e3a65fecbf",
+            "type": "compiled"
+          },
+          "profile_digest": "a5075629f184d0319b2bf5b46be50e317be7abd5ca3bdc4b9d81222dc9f3215f",
+          "publication_digest": "497a450380181a12f184f4f37724f639c3cd437a89f1e645b461f43cbf375885",
+          "publication_sequence": 3,
+          "run_id": "run.history-lost-response",
+          "signed_body_digest": "db84b1209fb279969d4243a6a78bee9ce819f0450cca17e6b15e72a4046ec480"
+        },
+        "request_frame_bytes": 2935,
+        "response_generation": 6,
+        "schema_version": 1,
+        "status": "historical_publication"
+      }
+    },
+    {
+      "check": "restart_projection_missing_history_published",
+      "event": "objective_history_check",
+      "evidence": {
+        "history": {
+          "anchor": {
+            "chain_digest": "0b4bf3e2dac5e6ed0b17d2d11ab48a409d0f128a89aaf26cfa948375679efa1d",
+            "sequence": 4
+          },
+          "anchor_coverage": "retained_anchor",
+          "bytes_written": 2935,
+          "identity": {
+            "agent_id": "33333333-3333-4333-8333-333333333333",
+            "expires_at_ms": 1792318794940,
+            "issuer_id": "issuer.desktop-isolated-objective.v1",
+            "key_epoch": 1,
+            "message_id": "message.desktop-isolated.3",
+            "message_sequence": 3,
+            "original_spawn_generation": 1,
+            "peer_pid": 437977,
+            "peer_uid": 0,
+            "request_id": 304,
+            "run_id": "run.history-lost-response",
+            "spawn_generation": 5
+          },
+          "publication": {
+            "chain_digest": "0611c5486278307b6224769c9ee22f597ec3bfb17af6011b0ca44c5cbb3b98b6",
+            "expires_at_ms": 1792318794940,
+            "issuer_id": "issuer.desktop-isolated-objective.v1",
+            "key_epoch": 1,
+            "message_id": "message.desktop-isolated.3",
+            "message_sequence": 3,
+            "original_spawn_generation": 1,
+            "outcome": {
+              "hard_constraint_digest": "d4aef904620474f4b7ca3c4a9b9fe3ea739f5365f1d17249d3a797a324ce1a83",
+              "objective_digest": "3512f0d44eb5471b646fd306408cb9d462e1d8eb9acfba6fe99997e3a65fecbf",
+              "type": "compiled"
+            },
+            "profile_digest": "a5075629f184d0319b2bf5b46be50e317be7abd5ca3bdc4b9d81222dc9f3215f",
+            "publication_digest": "497a450380181a12f184f4f37724f639c3cd437a89f1e645b461f43cbf375885",
+            "publication_sequence": 3,
+            "run_id": "run.history-lost-response",
+            "signed_body_digest": "db84b1209fb279969d4243a6a78bee9ce819f0450cca17e6b15e72a4046ec480"
+          },
+          "request_frame_bytes": 2935,
+          "response_generation": 6,
+          "schema_version": 1,
+          "status": "historical_publication"
+        },
+        "new_pid": 437977,
+        "new_spawn": 5,
+        "old_pid": 437817,
+        "old_spawn": 1,
+        "resubmission_count": 0,
+        "run_status": null
+      }
+    },
+    {
+      "event": "history_query_observed",
+      "exit_code": 0,
+      "journal_sha256": "5911e4a9e2a2c0592581d969630dadc277fac88425bd58297e8eda0102a2eeb7",
+      "journal_unchanged": true,
+      "label": "10-expired-history",
+      "result": {
+        "anchor": {
+          "chain_digest": "0b4bf3e2dac5e6ed0b17d2d11ab48a409d0f128a89aaf26cfa948375679efa1d",
+          "sequence": 4
+        },
+        "anchor_coverage": "retained_anchor",
+        "bytes_written": 2915,
+        "identity": {
+          "agent_id": "33333333-3333-4333-8333-333333333333",
+          "expires_at_ms": 1792318579819,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.2",
+          "message_sequence": 2,
+          "original_spawn_generation": 1,
+          "peer_pid": 437977,
+          "peer_uid": 0,
+          "request_id": 308,
+          "run_id": "run.history-abstain",
+          "spawn_generation": 5
+        },
+        "publication": {
+          "chain_digest": "37620370f29b087f1df2017a94e868eeecf897c472f01b9b528490205bb5f9ea",
+          "expires_at_ms": 1792318579819,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.2",
+          "message_sequence": 2,
+          "original_spawn_generation": 1,
+          "outcome": {
+            "hard_constraint_digest": "d4aef904620474f4b7ca3c4a9b9fe3ea739f5365f1d17249d3a797a324ce1a83",
+            "objective_digest": "99b884596e1a4734bad96057fcecdfd896daa2b2b76d43012ee284910a9ec0c7",
+            "type": "explicit_abstain"
+          },
+          "profile_digest": "a5075629f184d0319b2bf5b46be50e317be7abd5ca3bdc4b9d81222dc9f3215f",
+          "publication_digest": "69cb5d14fb92f1ee11334d560b1a0dacef35cf62e8e67532b1ede03369c2dbfd",
+          "publication_sequence": 2,
+          "run_id": "run.history-abstain",
+          "signed_body_digest": "3796cff3aa8aecd1a6801adc52083ebf824ce2fd2f53ff18816559201e0cec80"
+        },
+        "request_frame_bytes": 2915,
+        "response_generation": 6,
+        "schema_version": 1,
+        "status": "historical_publication"
+      }
+    },
+    {
+      "check": "expired_request_history_still_published",
+      "event": "objective_history_check",
+      "evidence": {
+        "expires_at_ms": 1792318579819,
+        "history": {
+          "anchor": {
+            "chain_digest": "0b4bf3e2dac5e6ed0b17d2d11ab48a409d0f128a89aaf26cfa948375679efa1d",
+            "sequence": 4
+          },
+          "anchor_coverage": "retained_anchor",
+          "bytes_written": 2915,
+          "identity": {
+            "agent_id": "33333333-3333-4333-8333-333333333333",
+            "expires_at_ms": 1792318579819,
+            "issuer_id": "issuer.desktop-isolated-objective.v1",
+            "key_epoch": 1,
+            "message_id": "message.desktop-isolated.2",
+            "message_sequence": 2,
+            "original_spawn_generation": 1,
+            "peer_pid": 437977,
+            "peer_uid": 0,
+            "request_id": 308,
+            "run_id": "run.history-abstain",
+            "spawn_generation": 5
+          },
+          "publication": {
+            "chain_digest": "37620370f29b087f1df2017a94e868eeecf897c472f01b9b528490205bb5f9ea",
+            "expires_at_ms": 1792318579819,
+            "issuer_id": "issuer.desktop-isolated-objective.v1",
+            "key_epoch": 1,
+            "message_id": "message.desktop-isolated.2",
+            "message_sequence": 2,
+            "original_spawn_generation": 1,
+            "outcome": {
+              "hard_constraint_digest": "d4aef904620474f4b7ca3c4a9b9fe3ea739f5365f1d17249d3a797a324ce1a83",
+              "objective_digest": "99b884596e1a4734bad96057fcecdfd896daa2b2b76d43012ee284910a9ec0c7",
+              "type": "explicit_abstain"
+            },
+            "profile_digest": "a5075629f184d0319b2bf5b46be50e317be7abd5ca3bdc4b9d81222dc9f3215f",
+            "publication_digest": "69cb5d14fb92f1ee11334d560b1a0dacef35cf62e8e67532b1ede03369c2dbfd",
+            "publication_sequence": 2,
+            "run_id": "run.history-abstain",
+            "signed_body_digest": "3796cff3aa8aecd1a6801adc52083ebf824ce2fd2f53ff18816559201e0cec80"
+          },
+          "request_frame_bytes": 2915,
+          "response_generation": 6,
+          "schema_version": 1,
+          "status": "historical_publication"
+        },
+        "observed_at_ms": 1792318579822,
+        "resubmission_count": 0,
+        "wait_bound_ms": 30000,
+        "wait_elapsed_ms": 22434
+      }
+    },
+    {
+      "event": "owner_running",
+      "observation": {
+        "agent_id": "33333333-3333-4333-8333-333333333333",
+        "capabilities": [
+          {
+            "id": "automation.calendar_v2",
+            "major": 1,
+            "minor": 0
+          },
+          {
+            "id": "cognitive.context.revalidate",
+            "major": 1,
+            "minor": 0
+          },
+          {
+            "id": "objective.admission.read",
+            "major": 1,
+            "minor": 0
+          },
+          {
+            "id": "objective.start",
+            "major": 1,
+            "minor": 0
+          },
+          {
+            "id": "run.lifecycle",
+            "major": 1,
+            "minor": 1
+          }
+        ],
+        "current_generation": 10,
+        "events": [
+          {
+            "cursor": 1,
+            "generation": null,
+            "kind": "bootstrapped",
+            "lifecycle": null
+          },
+          {
+            "cursor": 2,
+            "generation": 9,
+            "kind": "lifecycle",
+            "lifecycle": "starting"
+          },
+          {
+            "cursor": 3,
+            "generation": null,
+            "kind": "app_server_ready",
+            "lifecycle": null
+          },
+          {
+            "cursor": 4,
+            "generation": 10,
+            "kind": "lifecycle",
+            "lifecycle": "running"
+          }
+        ],
+        "health": {
+          "fenced": false,
+          "lifecycle": "running",
+          "process_id": 438209,
+          "promotion_ready": true,
+          "ready": true
+        },
+        "history_gap": false,
+        "latest_cursor": 4,
+        "next_cursor": 4,
+        "spawn_generation": 9
+      },
+      "spawn_generation": 9
+    },
+    {
+      "event": "history_query_observed",
+      "exit_code": 12,
+      "journal_sha256": "198802348f6d9bef54536c9b65125a20958b42e148b7bf4f601319e77da32814",
+      "journal_unchanged": true,
+      "label": "11-rollback-anchor",
+      "result": {
+        "anchor": {
+          "chain_digest": "0b4bf3e2dac5e6ed0b17d2d11ab48a409d0f128a89aaf26cfa948375679efa1d",
+          "sequence": 4
+        },
+        "bytes_written": 2925,
+        "identity": {
+          "agent_id": "33333333-3333-4333-8333-333333333333",
+          "expires_at_ms": 1792318794710,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.1",
+          "message_sequence": 1,
+          "original_spawn_generation": 1,
+          "peer_pid": 438209,
+          "peer_uid": 0,
+          "request_id": 305,
+          "run_id": "run.history-compiled",
+          "spawn_generation": 9
+        },
+        "issue": "anchor_missing",
+        "request_frame_bytes": 2925,
+        "schema_version": 1,
+        "status": "unknown"
+      }
+    },
+    {
+      "check": "rollback_retained_anchor_unknown",
+      "event": "objective_history_check",
+      "evidence": {
+        "fault": {
+          "before_sha256": "5911e4a9e2a2c0592581d969630dadc277fac88425bd58297e8eda0102a2eeb7",
+          "fault": "11-rollback-prefix",
+          "injected_bytes": 4203,
+          "injected_sha256": "198802348f6d9bef54536c9b65125a20958b42e148b7bf4f601319e77da32814",
+          "new_pid": 438209,
+          "new_spawn": 9,
+          "old_spawn": 5,
+          "owner_confirmed_stopped_before_fault": true,
+          "recovered_bytes": 4203,
+          "recovered_sha256": "198802348f6d9bef54536c9b65125a20958b42e148b7bf4f601319e77da32814",
+          "recovery_owner": "original_agentd"
+        },
+        "history": {
+          "anchor": {
+            "chain_digest": "0b4bf3e2dac5e6ed0b17d2d11ab48a409d0f128a89aaf26cfa948375679efa1d",
+            "sequence": 4
+          },
+          "bytes_written": 2925,
+          "identity": {
+            "agent_id": "33333333-3333-4333-8333-333333333333",
+            "expires_at_ms": 1792318794710,
+            "issuer_id": "issuer.desktop-isolated-objective.v1",
+            "key_epoch": 1,
+            "message_id": "message.desktop-isolated.1",
+            "message_sequence": 1,
+            "original_spawn_generation": 1,
+            "peer_pid": 438209,
+            "peer_uid": 0,
+            "request_id": 305,
+            "run_id": "run.history-compiled",
+            "spawn_generation": 9
+          },
+          "issue": "anchor_missing",
+          "request_frame_bytes": 2925,
+          "schema_version": 1,
+          "status": "unknown"
+        },
+        "resubmission_count": 0
+      }
+    },
+    {
+      "event": "owner_running",
+      "observation": {
+        "agent_id": "33333333-3333-4333-8333-333333333333",
+        "capabilities": [
+          {
+            "id": "automation.calendar_v2",
+            "major": 1,
+            "minor": 0
+          },
+          {
+            "id": "cognitive.context.revalidate",
+            "major": 1,
+            "minor": 0
+          },
+          {
+            "id": "objective.admission.read",
+            "major": 1,
+            "minor": 0
+          },
+          {
+            "id": "objective.start",
+            "major": 1,
+            "minor": 0
+          },
+          {
+            "id": "run.lifecycle",
+            "major": 1,
+            "minor": 1
+          }
+        ],
+        "current_generation": 14,
+        "events": [
+          {
+            "cursor": 1,
+            "generation": null,
+            "kind": "bootstrapped",
+            "lifecycle": null
+          },
+          {
+            "cursor": 2,
+            "generation": 13,
+            "kind": "lifecycle",
+            "lifecycle": "starting"
+          },
+          {
+            "cursor": 3,
+            "generation": null,
+            "kind": "app_server_ready",
+            "lifecycle": null
+          },
+          {
+            "cursor": 4,
+            "generation": 14,
+            "kind": "lifecycle",
+            "lifecycle": "running"
+          }
+        ],
+        "health": {
+          "fenced": false,
+          "lifecycle": "running",
+          "process_id": 438343,
+          "promotion_ready": true,
+          "ready": true
+        },
+        "history_gap": false,
+        "latest_cursor": 4,
+        "next_cursor": 4,
+        "spawn_generation": 13
+      },
+      "spawn_generation": 13
+    },
+    {
+      "event": "history_query_observed",
+      "exit_code": 12,
+      "journal_sha256": "36c9457ba334171514b4248c6e2cd1d456b8ab86128afd43aad1b341c646b5b2",
+      "journal_unchanged": true,
+      "label": "12-truncated-anchor",
+      "result": {
+        "anchor": {
+          "chain_digest": "0b4bf3e2dac5e6ed0b17d2d11ab48a409d0f128a89aaf26cfa948375679efa1d",
+          "sequence": 4
+        },
+        "bytes_written": 2958,
+        "identity": {
+          "agent_id": "33333333-3333-4333-8333-333333333333",
+          "expires_at_ms": 1792318795083,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.4",
+          "message_sequence": 4,
+          "original_spawn_generation": 1,
+          "peer_pid": 438343,
+          "peer_uid": 0,
+          "request_id": 306,
+          "run_id": "run.history-postpublication-capacity",
+          "spawn_generation": 13
+        },
+        "issue": "anchor_missing",
+        "request_frame_bytes": 2958,
+        "schema_version": 1,
+        "status": "unknown"
+      }
+    },
+    {
+      "check": "truncated_tail_retained_anchor_unknown",
+      "event": "objective_history_check",
+      "evidence": {
+        "fault": {
+          "before_sha256": "198802348f6d9bef54536c9b65125a20958b42e148b7bf4f601319e77da32814",
+          "fault": "12-truncated-tail",
+          "injected_bytes": 16588,
+          "injected_sha256": "c81c31f507363b44a764919db31df09625ba269f15208d252c7cbf11ed92c4d9",
+          "new_pid": 438343,
+          "new_spawn": 13,
+          "old_spawn": 9,
+          "owner_confirmed_stopped_before_fault": true,
+          "recovered_bytes": 12410,
+          "recovered_sha256": "36c9457ba334171514b4248c6e2cd1d456b8ab86128afd43aad1b341c646b5b2",
+          "recovery_owner": "original_agentd"
+        },
+        "history": {
+          "anchor": {
+            "chain_digest": "0b4bf3e2dac5e6ed0b17d2d11ab48a409d0f128a89aaf26cfa948375679efa1d",
+            "sequence": 4
+          },
+          "bytes_written": 2958,
+          "identity": {
+            "agent_id": "33333333-3333-4333-8333-333333333333",
+            "expires_at_ms": 1792318795083,
+            "issuer_id": "issuer.desktop-isolated-objective.v1",
+            "key_epoch": 1,
+            "message_id": "message.desktop-isolated.4",
+            "message_sequence": 4,
+            "original_spawn_generation": 1,
+            "peer_pid": 438343,
+            "peer_uid": 0,
+            "request_id": 306,
+            "run_id": "run.history-postpublication-capacity",
+            "spawn_generation": 13
+          },
+          "issue": "anchor_missing",
+          "request_frame_bytes": 2958,
+          "schema_version": 1,
+          "status": "unknown"
+        },
+        "resubmission_count": 0
+      }
+    },
+    {
+      "event": "history_query_observed",
+      "exit_code": 0,
+      "journal_sha256": "36c9457ba334171514b4248c6e2cd1d456b8ab86128afd43aad1b341c646b5b2",
+      "journal_unchanged": true,
+      "label": "13-revoked-history",
+      "result": {
+        "anchor": {
+          "chain_digest": "75bc08ed9e0d9e10157910ccfa897f7ddfcfcad40dd410979f2b5865b5281b83",
+          "sequence": 1
+        },
+        "anchor_coverage": "retained_anchor",
+        "bytes_written": 2926,
+        "identity": {
+          "agent_id": "33333333-3333-4333-8333-333333333333",
+          "expires_at_ms": 1792318794710,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.1",
+          "message_sequence": 1,
+          "original_spawn_generation": 1,
+          "peer_pid": 438343,
+          "peer_uid": 0,
+          "request_id": 307,
+          "run_id": "run.history-compiled",
+          "spawn_generation": 13
+        },
+        "publication": {
+          "chain_digest": "75bc08ed9e0d9e10157910ccfa897f7ddfcfcad40dd410979f2b5865b5281b83",
+          "expires_at_ms": 1792318794710,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.1",
+          "message_sequence": 1,
+          "original_spawn_generation": 1,
+          "outcome": {
+            "hard_constraint_digest": "d4aef904620474f4b7ca3c4a9b9fe3ea739f5365f1d17249d3a797a324ce1a83",
+            "objective_digest": "1441e6e66482752647ffa34568dbcee2e300e064158b85f4b86ddf5adaf114f3",
+            "type": "compiled"
+          },
+          "profile_digest": "a5075629f184d0319b2bf5b46be50e317be7abd5ca3bdc4b9d81222dc9f3215f",
+          "publication_digest": "03a66b1a7096f0406276299832762d80cba539979c8390221d86732625d0ca50",
+          "publication_sequence": 1,
+          "run_id": "run.history-compiled",
+          "signed_body_digest": "4ffd52ee1c8d56096659ae0a869e271dc4816b8cbf7eec36bcc26e3eca1c9569"
+        },
+        "request_frame_bytes": 2926,
+        "response_generation": 14,
+        "schema_version": 1,
+        "status": "historical_publication"
+      }
+    },
+    {
+      "check": "revoked_issuer_history_still_published",
+      "event": "objective_history_check",
+      "evidence": {
+        "history": {
+          "anchor": {
+            "chain_digest": "75bc08ed9e0d9e10157910ccfa897f7ddfcfcad40dd410979f2b5865b5281b83",
+            "sequence": 1
+          },
+          "anchor_coverage": "retained_anchor",
+          "bytes_written": 2926,
+          "identity": {
+            "agent_id": "33333333-3333-4333-8333-333333333333",
+            "expires_at_ms": 1792318794710,
+            "issuer_id": "issuer.desktop-isolated-objective.v1",
+            "key_epoch": 1,
+            "message_id": "message.desktop-isolated.1",
+            "message_sequence": 1,
+            "original_spawn_generation": 1,
+            "peer_pid": 438343,
+            "peer_uid": 0,
+            "request_id": 307,
+            "run_id": "run.history-compiled",
+            "spawn_generation": 13
+          },
+          "publication": {
+            "chain_digest": "75bc08ed9e0d9e10157910ccfa897f7ddfcfcad40dd410979f2b5865b5281b83",
+            "expires_at_ms": 1792318794710,
+            "issuer_id": "issuer.desktop-isolated-objective.v1",
+            "key_epoch": 1,
+            "message_id": "message.desktop-isolated.1",
+            "message_sequence": 1,
+            "original_spawn_generation": 1,
+            "outcome": {
+              "hard_constraint_digest": "d4aef904620474f4b7ca3c4a9b9fe3ea739f5365f1d17249d3a797a324ce1a83",
+              "objective_digest": "1441e6e66482752647ffa34568dbcee2e300e064158b85f4b86ddf5adaf114f3",
+              "type": "compiled"
+            },
+            "profile_digest": "a5075629f184d0319b2bf5b46be50e317be7abd5ca3bdc4b9d81222dc9f3215f",
+            "publication_digest": "03a66b1a7096f0406276299832762d80cba539979c8390221d86732625d0ca50",
+            "publication_sequence": 1,
+            "run_id": "run.history-compiled",
+            "signed_body_digest": "4ffd52ee1c8d56096659ae0a869e271dc4816b8cbf7eec36bcc26e3eca1c9569"
+          },
+          "request_frame_bytes": 2926,
+          "response_generation": 14,
+          "schema_version": 1,
+          "status": "historical_publication"
+        },
+        "issuer_restored": false,
+        "issuer_revoked": true
+      }
+    },
+    {
+      "event": "submission_observed",
+      "exit_code": 12,
+      "label": "14-revoked-negative",
+      "result": {
+        "bytes_written": 2823,
+        "identity": {
+          "agent_id": "33333333-3333-4333-8333-333333333333",
+          "artifact_set_digest": "1d0e1751efbbb9603c7bf62fdb6bfad32de2b865b3b101dd03064c7157e98606",
+          "authority_epoch": 1,
+          "expires_at_ms": 1792318824975,
+          "issuer_id": "issuer.desktop-isolated-objective.v1",
+          "key_epoch": 1,
+          "message_id": "message.desktop-isolated.5",
+          "model_tuple_digest": "e5cd357ceabc033b88c297218205e6e18a3d72211cee77536dc913e25754674c",
+          "objective_revision": 1,
+          "peer_pid": 438343,
+          "peer_uid": 0,
+          "preference_state_digest": "6d63e78072b8dccce467558d624a3fb2b87bcda7e10856b9738551ad05422bfc",
+          "prompt_registry_digest": "7c3f8abe527e056e040df0d1b737c761dac1093926254874cdef877f5e3eece1",
+          "request_id": 105,
+          "run_id": "run.history-revoked-negative",
+          "runtime_body_digest": "f8d8784ddb3c5ad89f24977042a64f0931e244236cba8a229be6fa88393033be",
+          "sequence": 5,
+          "spawn_generation": 13
+        },
+        "issue": "objective_owner_request_rejected",
+        "request_frame_bytes": 2823,
+        "schema_version": 1,
+        "status": "submit_unknown"
+      }
+    },
+    {
+      "check": "revoked_new_submission_rejected",
+      "event": "objective_history_check",
+      "evidence": {
+        "journal_unchanged": true,
+        "purpose": "distinct_revoked_negative_not_recovery_retry",
+        "submission": {
+          "bytes_written": 2823,
+          "identity": {
+            "agent_id": "33333333-3333-4333-8333-333333333333",
+            "artifact_set_digest": "1d0e1751efbbb9603c7bf62fdb6bfad32de2b865b3b101dd03064c7157e98606",
+            "authority_epoch": 1,
+            "expires_at_ms": 1792318824975,
+            "issuer_id": "issuer.desktop-isolated-objective.v1",
+            "key_epoch": 1,
+            "message_id": "message.desktop-isolated.5",
+            "model_tuple_digest": "e5cd357ceabc033b88c297218205e6e18a3d72211cee77536dc913e25754674c",
+            "objective_revision": 1,
+            "peer_pid": 438343,
+            "peer_uid": 0,
+            "preference_state_digest": "6d63e78072b8dccce467558d624a3fb2b87bcda7e10856b9738551ad05422bfc",
+            "prompt_registry_digest": "7c3f8abe527e056e040df0d1b737c761dac1093926254874cdef877f5e3eece1",
+            "request_id": 105,
+            "run_id": "run.history-revoked-negative",
+            "runtime_body_digest": "f8d8784ddb3c5ad89f24977042a64f0931e244236cba8a229be6fa88393033be",
+            "sequence": 5,
+            "spawn_generation": 13
+          },
+          "issue": "objective_owner_request_rejected",
+          "request_frame_bytes": 2823,
+          "schema_version": 1,
+          "status": "submit_unknown"
+        }
+      }
+    },
+    {
+      "check": "controlled_stop",
+      "event": "objective_history_check",
+      "evidence": {
+        "active": false
+      }
+    },
+    {
+      "canonical_intelligence": false,
+      "checks": [
+        "live_compiled_publication",
+        "live_abstain_publication",
+        "retained_anchor_covers_publication",
+        "harness_lost_response_then_history",
+        "postpublication_submit_unknown_history_published",
+        "wrong_anchor_unknown",
+        "earlier_anchor_unknown",
+        "changed_signed_request_unknown",
+        "restart_projection_missing_history_published",
+        "expired_request_history_still_published",
+        "rollback_retained_anchor_unknown",
+        "truncated_tail_retained_anchor_unknown",
+        "revoked_issuer_history_still_published",
+        "revoked_new_submission_rejected",
+        "controlled_stop"
+      ],
+      "device_effect": false,
+      "event": "acceptance_pass",
+      "evidence_class": "original_owner_objective_admission_history",
+      "hepta_submit_cli_lost_reply_executed": false,
+      "historical_run_resumed": false,
+      "isolated_test_issuer": true,
+      "model_turn": false,
+      "not_executed": [
+        "caller_anchor_co_rollback",
+        "production_issuer",
+        "effect_reconciliation",
+        "kernel_g1",
+        "kernel_g2"
+      ],
+      "objective_request_attempts": 5,
+      "operations_dispatch": false,
+      "operations_k_or_d_created": false,
+      "production_issuer": false,
+      "published_objective_requests": 4,
+      "recovery_resubmissions": 0,
+      "source_binding": {
+        "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+        "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+        "contract_sha256": "f0fc1110233dc38542097c6f9f7ef2e3f6ca5eb215fa2b4447e556cd7ac46981",
+        "probe_inputs": {
+          "objective_history_client.rs": "cc982282714772dee35e0311cbbd77c00bb296a35975b4864dec0bf8d98f7137",
+          "objective_history_probe.rs": "10014a30f70f5de47aef8ddca585fd997f57e8bd38bbdf4a35bde553b981c82a",
+          "original_objective_fixture.rs": "4abdcb7ee3a0c3cf8f8302c8af18656f2d2c41bfa4862b137991a6124ef4f272",
+          "original_objective_owner.rs": "f01310e679872217af747192c3329218f2d6045972c77718d7f358384eb88eda",
+          "original_objective_profile.json": "56d81a70d4a7481614a9ebc5494173b08dcf79072230b9b61cd0a9c01454dd02",
+          "run_objective_history.py": "a81294b55949931fb30abd9d3c19ba553842c017d0eaf6defb152698c34d9f49",
+          "run_original_agentd.py": "21dd4a2e0621240a75f5ce37bad93da0a37352fbaa78554a50e048abe6a45fd0",
+          "run_original_objective.py": "9ea5d7b2f6801f88240257effe78dbbceb126d63f7132f37b0f2edd7c2486df4"
+        },
+        "tree": "f4ef891d43baf90d6eebd29921a5ed03222ef3ab"
+      }
+    }
+  ]
+}
