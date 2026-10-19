@@ -29,6 +29,10 @@ ROOT = Path(__file__).resolve().parents[3]
 spec = importlib.util.spec_from_file_location("product_boot_check", ROOT / "support/build/check-boot.py")
 boot_check = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(boot_check)
+LIFECYCLE_MARKERS = (
+    "HEPTA_EXEC_EFAULT_SESSION_STABLE", "HEPTA_EXEC_ENOENT_SESSION_STABLE",
+    "HEPTA_THREAD_SESSION_SHARED", "HEPTA_NONLAST_THREAD_EXIT_SESSION_STABLE",
+)
 OP_MARKERS = (
     "HEPTA_DISABLED_READ_USAGE_OK", "HEPTA_DISABLED_INSTALL_BUDGET_OK",
     "HEPTA_DISABLED_QUERY_DELIVERY_OK", "HEPTA_DISABLED_RETIRE_THROUGH_OK",
@@ -147,10 +151,11 @@ def evaluate_guest(raw, code, timed_out):
     require(len(raw) <= replay.MAX_SERIAL_BYTES, "candidate serial exceeds evidence limit")
     text = boot_check.ANSI.sub("", raw.decode(errors="replace"))
     lines = text.splitlines()
-    markers = (*replay.REQUIRED_SECURITY_MARKERS, *OP_MARKERS,
+    markers = (*replay.REQUIRED_SECURITY_MARKERS, *LIFECYCLE_MARKERS, *OP_MARKERS,
                replay.EXPECTED_SUCCESS, CANDIDATE_MARKER, FINAL_BOOT_MARKER)
     counts = {marker: lines.count(marker) for marker in markers}
-    order = (replay.EXPECTED_SUCCESS, *OP_MARKERS, CANDIDATE_MARKER, FINAL_BOOT_MARKER)
+    order = (replay.EXPECTED_SUCCESS, *LIFECYCLE_MARKERS, *OP_MARKERS,
+             CANDIDATE_MARKER, FINAL_BOOT_MARKER)
     exact = all(value == 1 for value in counts.values())
     ordered = exact and [lines.index(m) for m in order] == sorted(lines.index(m) for m in order)
     no_fail = not any(marker in text for marker in (*boot_check.FATAL_PANICS, "Kernel panic", "HEPTA_QUERYABI_FAIL"))
@@ -192,7 +197,8 @@ def run_candidate(args, output, result):
     result["stage"] = "compile_original_probe_wrapper"
     guest_source = Path(__file__).with_name("queryabi_candidate_guest.c")
     guest_elf = output / "hos2-queryabi"
-    command = [args.cc, "-std=c11", "-O2", "-Wall", "-Wextra", "-Werror", "-static", str(guest_source), "-o", str(guest_elf)]
+    command = [args.cc, "-std=c11", "-O2", "-Wall", "-Wextra", "-Werror", "-pthread", "-static",
+               str(guest_source), "-o", str(guest_elf)]
     compiled = subprocess.run(command, capture_output=True, timeout=60)
     (output / "compile.log").write_bytes(compiled.stdout + compiled.stderr)
     result.update(compiler_command=command, compile_exit=compiled.returncode)

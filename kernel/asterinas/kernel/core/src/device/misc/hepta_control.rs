@@ -11,7 +11,7 @@ use spin::Once;
 
 use crate::{
     context::current_userspace,
-    device::{registry::char, Device, DeviceType},
+    device::{Device, DeviceType, registry::char},
     events::IoEvents,
     fs::{
         devtmpfs::DevtmpfsNodeMeta,
@@ -23,8 +23,10 @@ use crate::{
         Transport,
     },
     prelude::*,
-    process::signal::{PollHandle, Pollable},
-    process::Process,
+    process::{
+        Process, ProcessImageKey,
+        signal::{PollHandle, Pollable},
+    },
     util::{ioctl::RawIoctl, random},
 };
 
@@ -53,12 +55,12 @@ fn nonzero_random_id() -> [u8; 16] {
 // Assign a checked boot-local full u64 nonce on the authoritative Process
 // object and pair it atomically with that image's exec epoch. The full boot
 // identity is separately returned in HOSR and included in delivery D.
-fn process_session_id(process: &Process) -> Result<([u8; 16], u64)> {
-    let (exec_epoch, nonce) = process.hepta_capspace_session()?;
+fn process_session_id(process: &Process) -> Result<([u8; 16], ProcessImageKey)> {
+    let key = process.hepta_capspace_session()?;
     let mut id = [0u8; 16];
     id[..8].copy_from_slice(&BOOT_ID.get().unwrap()[..8]);
-    id[8..].copy_from_slice(&nonce.to_le_bytes());
-    Ok((id, exec_epoch))
+    id[8..].copy_from_slice(&key.nonce().to_le_bytes());
+    Ok((id, key))
 }
 
 #[derive(Debug)]
@@ -85,11 +87,11 @@ impl Device for HeptaControlDevice {
         let process = Process::current().ok_or_else(|| {
             Error::with_message(Errno::EPERM, "HOS2 control requires a process session")
         })?;
-        let (space_id, exec_epoch) = process_session_id(&process)?;
+        let (space_id, image_key) = process_session_id(&process)?;
         Ok(Box::new(HeptaControlFile {
             space_id,
             process: Arc::downgrade(&process),
-            exec_epoch,
+            image_key,
         }))
     }
 }
@@ -97,13 +99,13 @@ impl Device for HeptaControlDevice {
 struct HeptaControlFile {
     space_id: [u8; 16],
     process: Weak<Process>,
-    exec_epoch: u64,
+    image_key: ProcessImageKey,
 }
 
 impl HeptaControlFile {
     /// Verify the current caller is the exact process image that opened this
-    /// file. Forked children have a different process-start identity; execve
-    /// advances the image epoch. Neither can reuse the inherited fd.
+    /// file. Fork has another Process allocation; irreversible exec or exit
+    /// closes the old image before teardown. Neither can reuse an inherited fd.
     fn check_session(&self) -> Result<()> {
         let current = Process::current().ok_or_else(|| {
             Error::with_message(Errno::EPERM, "HOS2 control requires a process session")
@@ -114,13 +116,7 @@ impl HeptaControlFile {
         if !Arc::ptr_eq(&owner, &current) {
             return_errno_with_message!(Errno::EPERM, "HOS2 control fd belongs to another process")
         }
-        if current.hepta_exec_epoch() != self.exec_epoch {
-            return_errno_with_message!(
-                Errno::ESTALE,
-                "HOS2 control fd belongs to an old exec image"
-            )
-        }
-        Ok(())
+        current.check_hepta_capspace_session(self.image_key)
     }
 }
 

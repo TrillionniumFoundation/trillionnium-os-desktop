@@ -16,6 +16,9 @@ use crate::{
 /// [`do_exit`]: crate::process::posix_thread::do_exit
 /// [`do_exit_group`]: crate::process::posix_thread::do_exit_group
 pub(super) fn exit_process(current_process: &Process) {
+    // Last-thread admission already marked Closing under TaskSet. Complete
+    // closure before dropping the VMAR; CPU debit leases keep their own life.
+    current_process.close_hepta_image();
     current_process.status().set_vfork_child(false);
 
     // Drop fields in `Process`.

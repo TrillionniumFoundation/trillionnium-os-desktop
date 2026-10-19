@@ -9,6 +9,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
 PROCESS = ROOT / "kernel/asterinas/kernel/core/src/process/process/mod.rs"
+IMAGE = PROCESS.with_name("image.rs")
 DEVICE = ROOT / "kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs"
 GUEST = ROOT / "tests/kernel/control/queryabi_guest.c"
 
@@ -31,28 +32,39 @@ class CapSpaceIdentityContract(unittest.TestCase):
         self.assertEqual(len({new(1), new(2), new(1 << 32), new((1 << 64) - 1)}), 4)
 
     def test_process_uses_checked_unique_nonwrapping_image_nonce(self):
-        source = PROCESS.read_text()
+        process = PROCESS.read_text()
+        source = IMAGE.read_text()
         self.assertIn("static NEXT_HEPTA_CAPSPACE_NONCE: AtomicU64 = AtomicU64::new(1)", source)
-        self.assertIn("hepta_space_identity: Mutex<(u64, u64)>", source)
-        self.assertIn("hepta_space_identity: Mutex::new((0, 0))", source)
-        method = source.split("pub(crate) fn hepta_capspace_session(", 1)[1]
-        self.assertIn("let mut identity = self.hepta_space_identity.lock()", method)
-        self.assertIn("fetch_update(Ordering::AcqRel, Ordering::Acquire", method)
+        self.assertIn("hepta_image: Mutex<ProcessImageState>", process)
+        self.assertIn("hepta_image: Mutex::new(ProcessImageState::new())", process)
+        self.assertNotIn("hepta_exec_epoch: AtomicU64", process)
+        method = source.split("fn session(", 1)[1].split("fn check_session(", 1)[0]
+        self.assertRegex(method, r"fetch_update\(\s*Ordering::AcqRel,\s*Ordering::Acquire,")
         self.assertIn("current.checked_add(1)", method)
         self.assertIn("Errno::ENOSPC", method)
-        self.assertIn("*identity = (epoch, nonce)", method)
-        self.assertIn("*identity = (next, 0)", method)
+        self.assertIn("self.phase != ImagePhase::Live", method)
+        self.assertIn("self.phase = ImagePhase::Closed", method)
+        commit = source.split("fn commit_exec(", 1)[1].split("fn claim_unprepared_run(", 1)[0]
+        self.assertRegex(commit, r"self\s*\.epoch\s*\.checked_add\(1\)")
+        self.assertIn("Errno::EOVERFLOW", commit)
+        self.assertIn("self.nonce = 0", commit)
 
-    def test_open_uses_same_atomic_exec_nonce_pair_and_no_truncated_ticks(self):
+    def test_open_uses_one_locked_image_key_and_no_truncated_ticks(self):
         source = DEVICE.read_text()
         value = source.split("fn process_session_id(", 1)[1].split("\n}", 1)[0]
         self.assertIn("process.hepta_capspace_session()?", value)
-        self.assertIn("nonce.to_le_bytes()", value)
+        self.assertIn("key.nonce().to_le_bytes()", value)
         self.assertNotIn("start_time()", value)
         self.assertNotIn("as u32", value)
-        self.assertIn("let (space_id, exec_epoch) = process_session_id(&process)?", source)
+        self.assertIn("let (space_id, image_key) = process_session_id(&process)?", source)
         self.assertIn("Arc::ptr_eq(&owner, &current)", source)
-        self.assertIn("current.hepta_exec_epoch() != self.exec_epoch", source)
+        self.assertIn("current.check_hepta_capspace_session(self.image_key)", source)
+        image = IMAGE.read_text()
+        self.assertIn("self.hepta_image.lock().check_session(key)", image)
+        check = image.split("fn check_session(", 1)[1].split("fn begin_close(", 1)[0]
+        for condition in ("self.phase != ImagePhase::Live", "self.nonce == 0",
+                          "self.epoch != key.epoch", "self.nonce != key.nonce"):
+            self.assertIn(condition, check)
 
     def test_guest_asserts_fresh_child_and_exec_images_do_not_reuse_id(self):
         source = GUEST.read_text()

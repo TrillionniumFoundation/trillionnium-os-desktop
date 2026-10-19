@@ -83,7 +83,8 @@ class CandidateAcceptance(unittest.TestCase):
 
     def test_all_guest_markers_require_exact_single_root_completion(self):
         markers = (*candidate.replay.REQUIRED_SECURITY_MARKERS, candidate.replay.EXPECTED_SUCCESS,
-                   *candidate.OP_MARKERS, candidate.CANDIDATE_MARKER, candidate.FINAL_BOOT_MARKER)
+                   *candidate.LIFECYCLE_MARKERS, *candidate.OP_MARKERS,
+                   candidate.CANDIDATE_MARKER, candidate.FINAL_BOOT_MARKER)
         raw = ("\n".join(markers) + "\n").encode()
         self.assertTrue(candidate.evaluate_guest(raw, 33, False)["passed"])
         for marker in markers:
@@ -92,6 +93,9 @@ class CandidateAcceptance(unittest.TestCase):
                     self.assertFalse(candidate.evaluate_guest(changed, 33, False)["passed"])
         reversed_root = "\n".join((*markers[:-6], *reversed(markers[-6:]))).encode()
         self.assertFalse(candidate.evaluate_guest(reversed_root, 33, False)["passed"])
+        reversed_lifecycle = raw.replace("\n".join(candidate.LIFECYCLE_MARKERS).encode(),
+                                         "\n".join(reversed(candidate.LIFECYCLE_MARKERS)).encode())
+        self.assertFalse(candidate.evaluate_guest(reversed_lifecycle, 33, False)["passed"])
         for code, timeout in ((65, False), (33, True), (True, False)):
             self.assertFalse(candidate.evaluate_guest(raw, code, timeout)["passed"])
         self.assertFalse(candidate.evaluate_guest(raw + b"panicked at\n", 33, False)["passed"])

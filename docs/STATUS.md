@@ -1,5 +1,13 @@
 # 当前状态
 
+## 2026-10-19 R12 候选：原 Process 映像生命周期与一次性启动
+
+在 main `7c675e1d3efe46587edeebe14bd90ac1a842ffbf` 上接入原 Process 的同锁 epoch／nonce／Live／Closing／Closed 与首次启动状态。不可逆 exec、group／最后线程退出先关闭旧会话；前边界 exec 失败及普通非最后线程退出保持当前映像。原 init 装载后取得 private PreparedInitialProcess，绑定实际 Process／VMAR／Task／key，消费后才登记并首次调度。实现和锁序见 [技术手册](ASTERINAS_PROCESS_IMAGE_G1C.md)，18项真实对象 core 回归与完整原 CI 验收要求见 [开发手册](../tests/kernel/control/PROCESS_IMAGE_G1C.md)。
+
+普通 candidate guest 增加 EFAULT／ENOENT exec 失败、同 Process pthread 和非最后线程 exit 的真实检查，保留原 A05 文件与全部旧标记，合计18个精确标记。新增探针严格静态编译与8项 host 来源／解析测试已通过；它在原 #205 普通 ELF 上的兼容预检实际 QEMU33、18标记各一次。这不是本候选新内核结果；完整 core 预计238、OSTD、七负控与普通 Linux／CPU 组合仍须由本候选固定 CI 逐项验收。
+
+HOS2 仍仅 QueryAbi；本切片没有不可变静态映像认证或 native grant，没有开放四项资源操作。原 CPU owner／尾账／BOOTTIME 与七负控均保留。新 grant 必须先闭合 proc-mem旧handle、ptrace写、forced VM write／COW、跨Process CLONE_VM 等实际别名，再在原资源owner锁下复查／撤销；完整 Hepta K↔D、W1、SMP／设备／移动端按各自范围继续推进。下方历史状态保持各自记录时间。
+
 ## 2026-10-19 R11：G1-b 内部纳秒记账与完整同核验收已合入
 
 [#205](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/205) 于 **11:34:07 UTC** 正常合入 `b8d5af3f82aa8c262560fd52a79408a18e18bde1`；其 tree `8eb809136a402cc54ba049b1e40dd174308c923f` 与实际执行 head `4d3011cf9f92e25fc1b0d7371e9cdbbd5a8b7930` 完全一致。五项检查全部成功；完整原件与四份独立产物审查见 [本轮全模块报告](../results/integration/2026-10-19-g1b-usage/README.md) 和 [最终源码/合并绑定](../results/integration/2026-10-19-g1b-usage/source-publication/final-state.json)。

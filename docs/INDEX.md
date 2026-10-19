@@ -1,5 +1,7 @@
 # 开发文档入口
 
+R12 接续候选：[G1-c 技术手册](ASTERINAS_PROCESS_IMAGE_G1C.md) 与 [开发／验证手册](../tests/kernel/control/PROCESS_IMAGE_G1C.md) 对应原 Process 映像关闭、不可逆 exec／exit、一次性 init 启动及18项新增 core 对象回归；普通 candidate guest 扩为18个精确标记。完整新产品 CI 待本候选实际验收，仍只开放 QueryAbi。下面 R11 的62个入口和计数保留其冻结时点。
+
 当前完成状态：[#205](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/205) 已正常合入，实际执行 `4d3011cf…` 的完整 core220/OSTD221（3软跳过）、七完整负控、普通 Linux32 与 CPU 原门槛已独立核实。[全模块审计与内核路线](../results/integration/2026-10-19-g1b-usage/README.md) 给出 **A00–A10 的62个文档／契约／验证入口**、当前主干与历史资格，以及具体 G1-c/d、W1、桌面／Android／设备实施顺序；[机器矩阵](../results/integration/2026-10-19-g1b-usage/module-matrix.json) 固定文档身份和剩余门禁。当前仍只开放 QueryAbi，四项资源操作和生产授权未开放。以下轮次与旧计数保留各自时点，最新运行状态以 [STATUS](STATUS.md) 顶节及本轮报告为准。
 
 此前接续（#205 完整验收前的记录）：[原 CPU owner 纳秒记账技术手册](ASTERINAS_CPU_USAGE_G1B.md)、[G1-b 开发与验证手册](../tests/organ_backend/CPU_USAGE_G1B.md)、[完整 Linux32 已合入的独立证据](../results/compat/2026-10-19-full-linux/README.md)、[CPU owner 已合并的独立证据](../results/organ-backend/2026-10-19-owner-retention/README.md)、[原时钟/调度交接 CI](../tests/organ_backend/CPU_CLOCK_HANDOFF_CI.md)、[当前状态](STATUS.md)。当时 G1-b 本地 WIP core 220 已通过，最终候选 CI 尚待验收；当前完整结果见上方。新内核与完整 Linux/Hepta/设备资格各自按实际执行闭合。
@@ -32,6 +34,7 @@
 | [R10 实际 CPU owner 与证据](../results/integration/2026-10-19-g1-owner/README.md) | 真实 G1-a owner、首次编译/隐式写锁失败、两个完整内核目标、独立复核、普通产品候选与 Hepta 安全债务 |
 | [G1-a 开发与技术手册](ASTERINAS_CPU_OWNER_G1A.md) | 同锁 cpu.max revision、一次绑定、不可逆 detached、锁序、错误与十项真实 owner 回归；生产授权未启用 |
 | [G1-b 技术手册](ASTERINAS_CPU_USAGE_G1B.md)、[开发与验证手册](../tests/organ_backend/CPU_USAGE_G1B.md) | 原账本 BOOTTIME 纳秒累计、独立 CFS cycles、同次结算/同锁 usage、持久故障与原 owner 寿命；19 项新增回归及七个原生产反向控制；用户态四操作仍未开放 |
+| [G1-c 技术手册](ASTERINAS_PROCESS_IMAGE_G1C.md)、[开发与验证手册](../tests/kernel/control/PROCESS_IMAGE_G1C.md) | 原 Process 同锁映像身份与关闭、VMAR → TaskSet → image 锁序、private prepared 一次性启动；18项新增 core 回归与普通 QueryAbi18；不可变映像与 grant 仍待接合 |
 | [普通产品 QueryAbi 回归](../tests/kernel/control/README.md) | 保留旧 A05 fixed replay；新候选使用独立固定 source/tree，普通 boot 与四项禁用操作分别验证 |
 | [R8_NEXT_SLICE](agents/R8_NEXT_SLICE.md) | 已有 issuer、持久核对、受限 OS adapter 与 Asterinas G1/G2 的具体下一工单 |
 | [R9_G1_OWNER_SEAM](agents/R9_G1_OWNER_SEAM.md) | 固定实际 CPU owner 的共享 revision、控制器 incarnation、锁序和 BOOTTIME 接缝；源审计，不是新内核运行资格 |

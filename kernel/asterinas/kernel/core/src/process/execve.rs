@@ -76,6 +76,10 @@ pub(crate) fn do_execve(
         );
     }
     task_set.start_execve();
+    // This admission is irreversible. Fence the old image before signalling
+    // its other threads; a failed loader/argument check above leaves it live.
+    // Lock order is TaskSet -> image, with no owner/RQ work under either lock.
+    ctx.process.begin_hepta_image_close();
 
     // Terminate all other threads
     sigkill_other_threads(ctx.task, &task_set);
@@ -96,14 +100,10 @@ pub(crate) fn do_execve(
     );
 
     if res.is_ok() {
-        // A successful image replacement fences every control fd opened by
-        // the old image.  The epoch is process-scoped (threads share it) and
-        // is checked by the native HOS2 ioctl before any operation is parsed.
-        // If the monotonic fence is exhausted, fail-stop the process rather
-        // than allowing an old fd to become valid again after wraparound.
-        if let Err(err) = ctx.process.advance_hepta_exec_epoch() {
-            ctx.posix_thread
-                .enqueue_signal(Box::new(KernelSignal::new(SIGKILL)));
+        // The old image remains fenced. Only a successful replacement can
+        // commit a new epoch; it has no inherited namespace or authority.
+        // Counter exhaustion closes the image and follows the fatal path.
+        if let Err(err) = ctx.process.commit_hepta_exec_image() {
             res = Err(err);
         }
     }
@@ -112,6 +112,9 @@ pub(crate) fn do_execve(
         ctx.posix_thread
             .ptrace_may_stop_on(PtraceEvent::Exec(former_tid), ctx, user_context);
     } else {
+        // A post-admission failure cannot restore old-image discovery even
+        // while SIGKILL or the last-thread cleanup is still pending.
+        ctx.process.close_hepta_image();
         ctx.posix_thread
             .enqueue_signal(Box::new(KernelSignal::new(SIGKILL)));
     }
