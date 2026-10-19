@@ -1,0 +1,116 @@
+{
+  "schema": 1,
+  "started_at": "2026-10-19T01:33:52.106973+00:00",
+  "status": "installed",
+  "budget_bytes": 4000000000,
+  "downloads": [
+    {
+      "url": "https://github.com/EmbarkStudios/cargo-deny/releases/download/0.19.0/cargo-deny-0.19.0-x86_64-unknown-linux-musl.tar.gz.sha256",
+      "final_host": "release-assets.githubusercontent.com",
+      "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/downloads/cargo-deny-0.19.0-x86_64-unknown-linux-musl.tar.gz.sha256",
+      "bytes": 64,
+      "sha256": "0ae3ac071bfd45a87d1786df23b4847929de8c6d1891d3346826107fd4632b9d",
+      "expected_sha256": "0ae3ac071bfd45a87d1786df23b4847929de8c6d1891d3346826107fd4632b9d"
+    },
+    {
+      "url": "https://github.com/EmbarkStudios/cargo-deny/releases/download/0.19.0/cargo-deny-0.19.0-x86_64-unknown-linux-musl.tar.gz",
+      "final_host": "release-assets.githubusercontent.com",
+      "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/downloads/cargo-deny-0.19.0-x86_64-unknown-linux-musl.tar.gz",
+      "bytes": 8265108,
+      "sha256": "0e8c2aa59128612c90d9e09c02204e912f29a5b8d9a64671b94608cbe09e064f",
+      "expected_sha256": "0e8c2aa59128612c90d9e09c02204e912f29a5b8d9a64671b94608cbe09e064f"
+    },
+    {
+      "url": "https://static.rust-lang.org/rustup/archive/1.28.2/x86_64-unknown-linux-gnu/rustup-init.sha256",
+      "final_host": "static.rust-lang.org",
+      "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/downloads/rustup-init.sha256",
+      "bytes": 80,
+      "sha256": "fda213f7e5b0860abe98f2500ccef7cefd7a4c358833388a0a3d9fba43865fd8",
+      "expected_sha256": null
+    },
+    {
+      "url": "https://static.rust-lang.org/rustup/archive/1.28.2/x86_64-unknown-linux-gnu/rustup-init",
+      "final_host": "static.rust-lang.org",
+      "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/downloads/rustup-init",
+      "bytes": 20889000,
+      "sha256": "20a06e644b0d9bd2fbdbfd52d42540bdde820ea7df86e92e533c073da0cdd43c",
+      "expected_sha256": "20a06e644b0d9bd2fbdbfd52d42540bdde820ea7df86e92e533c073da0cdd43c"
+    }
+  ],
+  "commands": [
+    {
+      "argv": [
+        "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/downloads/rustup-init",
+        "-y",
+        "--no-modify-path",
+        "--profile",
+        "minimal",
+        "--default-toolchain",
+        "1.95.0-x86_64-unknown-linux-gnu"
+      ],
+      "started_at": "2026-10-19T01:33:54.645520+00:00",
+      "log": "/workspace/scratch/499c7902de8e/r10-evidence/owner-ci/new-head/deny-repro-01/rustup-install.log",
+      "environment_overrides": {
+        "CARGO_HOME": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home",
+        "RUSTUP_HOME": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/rustup-home",
+        "RUSTUP_INIT_SKIP_PATH_CHECK": "yes",
+        "RUSTUP_NO_UPDATE_CHECK": "1"
+      },
+      "exit_code": 0,
+      "completed_at": "2026-10-19T01:34:11.892038+00:00"
+    }
+  ],
+  "diagnostic_only": true,
+  "product_build_performed": false,
+  "cargo_deny_binary": {
+    "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/bin/cargo-deny",
+    "bytes": 16086896,
+    "sha256": "06f9d1a0ba92b201bff1215b6dc24e669b212c151ecd52cae5d38aab73931d3c"
+  },
+  "versions": {
+    "cargo-deny": {
+      "argv": [
+        "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/bin/cargo-deny",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stdout": "cargo-deny 0.19.0\n",
+      "stderr": ""
+    },
+    "rustup": {
+      "argv": [
+        "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/bin/rustup",
+        "--version"
+      ],
+      "exit_code": 0,
+      "stdout": "rustup 1.28.2 (e4f3ad6f8 2025-04-28)\n",
+      "stderr": "info: This is the version for the rustup toolchain manager, not the rustc compiler.\ninfo: The currently active `rustc` version is `rustc 1.95.0 (59807616e 2026-04-14)`\n"
+    },
+    "rustc": {
+      "argv": [
+        "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/bin/rustup",
+        "run",
+        "1.95.0",
+        "rustc",
+        "-vV"
+      ],
+      "exit_code": 0,
+      "stdout": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.95.0\nLLVM version: 22.1.2\n",
+      "stderr": ""
+    },
+    "cargo": {
+      "argv": [
+        "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/bin/rustup",
+        "run",
+        "1.95.0",
+        "cargo",
+        "-V"
+      ],
+      "exit_code": 0,
+      "stdout": "cargo 1.95.0 (f2d3ce0bd 2026-03-21)\n",
+      "stderr": ""
+    }
+  },
+  "completed_at": "2026-10-19T01:34:12.000634+00:00",
+  "local_bytes_including_source": 838942036
+}

@@ -1,0 +1,46 @@
+{
+  "schema": "r10.archive-restoration-review.v1",
+  "started_at_utc": "2026-10-19T02:53:23.892923+00:00",
+  "finished_at_utc": "2026-10-19T02:53:24.000743+00:00",
+  "argv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "-I",
+    "/workspace/scratch/499c7902de8e/r10-g1-delivery/results/integration/2026-10-19-g1-owner/review/restore-r10-archives.py",
+    "--manifest",
+    "/workspace/scratch/499c7902de8e/r10-g1-delivery/results/integration/2026-10-19-g1-owner/archive-parts.json",
+    "--output-root",
+    "/workspace/scratch/499c7902de8e/r10-evidence/r10-delivery-review/archive-restoration-roundtrip"
+  ],
+  "returncode": 0,
+  "stdout": "{\n  \"status\": \"verified\",\n  \"verify_only\": false,\n  \"archives\": [\n    {\n      \"path\": \"g1-evidence/raw-evidence.tar.xz\",\n      \"bytes\": 10602828,\n      \"sha256\": \"6a20eefe453be83e04ad74ac99e79206d20034025c30a743f9a95ce2e6b370fd\",\n      \"parts\": 7,\n      \"existing_archive_verified\": false,\n      \"restored\": true,\n      \"all_part_identities_verified\": true\n    },\n    {\n      \"path\": \"hepta-security/raw-evidence.tar.xz\",\n      \"bytes\": 2752828,\n      \"sha256\": \"8f46f3080bd9645a57ed44c8910c616b9035d4ddaf84e6cd6fb3d4bd7e1311ac\",\n      \"parts\": 2,\n      \"existing_archive_verified\": false,\n      \"restored\": true,\n      \"all_part_identities_verified\": true\n    }\n  ]\n}\n",
+  "stderr": "",
+  "helper": {
+    "path": "review/restore-r10-archives.py",
+    "bytes": 4047,
+    "sha256": "6b180fbfcdf48c0ec42d01029ad25a016a4729cdd9008ed508448d753c8453ce"
+  },
+  "parts_manifest": {
+    "path": "archive-parts.json",
+    "bytes": 2568,
+    "sha256": "926c4cf8b977491218b77fb278f5f1858f4d4f7ffd59dca5d54d9bdcaf82fb7a"
+  },
+  "source_archives_unchanged": true,
+  "restored_archives": [
+    {
+      "path": "g1-evidence/raw-evidence.tar.xz",
+      "bytes": 10602828,
+      "sha256": "6a20eefe453be83e04ad74ac99e79206d20034025c30a743f9a95ce2e6b370fd",
+      "parts": 7,
+      "byte_identity_with_original": true
+    },
+    {
+      "path": "hepta-security/raw-evidence.tar.xz",
+      "bytes": 2752828,
+      "sha256": "8f46f3080bd9645a57ed44c8910c616b9035d4ddaf84e6cd6fb3d4bd7e1311ac",
+      "parts": 2,
+      "byte_identity_with_original": true
+    }
+  ],
+  "products_reexecuted": false,
+  "status": "passed_exact_original_archive_restoration"
+}

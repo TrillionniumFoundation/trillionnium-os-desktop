@@ -1,0 +1,17 @@
+{
+  "schema": "r10.pr198.reviewer-parser-correction.v1",
+  "classification": "independent reviewer parser error, not a product execution failure",
+  "original_script": {
+    "path": "review_pr198_attempt01.py",
+    "bytes": 28192,
+    "sha256": "7c2a84894f3a7da1ecf77046cb27cf6dd9701464c5447bed8d351ae36992e13e"
+  },
+  "original_receipt": {
+    "path": "pr198-source-artifact-review.json",
+    "bytes": 1060,
+    "sha256": "b3314a836d626fbebbef2f56d46bd8f4db888ceb03302bc26075b3e08132a1c5"
+  },
+  "observed_reason": "The first reader required each ktest start, diagnostic output and final ok to be one line. Actual serial has 1 aster-core and 7 OSTD test blocks with intervening diagnostics before a separate ok. Fixed reader requires distinct complete test blocks and terminal ok before the next test/result.",
+  "product_reexecutions": 0,
+  "archive_bytes_modified": false
+}

@@ -1,0 +1,296 @@
+{
+  "schema": 1,
+  "kind": "new_local_diagnostic_not_original_job_log",
+  "remote_head": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+  "local_equivalent_commit": "1b0fedb8c2b510106848f6feaf530c9b3698399d",
+  "expected_tree": "a3e718280a7e17b8c4a226a0232bf18c23fd3586",
+  "original_run_id": 39185139893,
+  "original_job_id": 117846024659,
+  "started_at": "2026-10-19T01:35:44.652962+00:00",
+  "status": "deny_failed",
+  "budget_bytes": 4000000000,
+  "environment_overrides": {
+    "CARGO_HOME": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home",
+    "RUSTUP_HOME": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/rustup-home",
+    "RUSTUP_TOOLCHAIN": "1.95.0-x86_64-unknown-linux-gnu",
+    "CARGO_NET_GIT_FETCH_WITH_CLI": "false",
+    "CARGO_TERM_COLOR": "always",
+    "RUSTUP_NO_UPDATE_CHECK": "1"
+  },
+  "differences_from_original_action": [
+    "Host GNU Linux rather than the pinned Alpine/musl container",
+    "Explicit --locked asserts an unchanged lockfile; same action --all-features/check selection",
+    "New execution time and freshly fetched remote registry/advisory state",
+    "No optional Git credentials or SSH inputs; no CI setup action or container"
+  ],
+  "commands": [
+    {
+      "name": "locked-metadata",
+      "argv": [
+        "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/bin/rustup",
+        "run",
+        "1.95.0",
+        "cargo",
+        "metadata",
+        "--format-version",
+        "1",
+        "--locked",
+        "--all-features",
+        "--manifest-path",
+        "./codex-rs/Cargo.toml"
+      ],
+      "cwd": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro",
+      "started_at": "2026-10-19T01:35:45.160696+00:00",
+      "timeout_seconds": 600,
+      "before": {
+        "commit": "1b0fedb8c2b510106848f6feaf530c9b3698399d",
+        "tree": "a3e718280a7e17b8c4a226a0232bf18c23fd3586",
+        "status_porcelain": "",
+        "files": [
+          {
+            "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/codex-rs/Cargo.lock",
+            "bytes": 418038,
+            "sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389"
+          },
+          {
+            "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/codex-rs/Cargo.toml",
+            "bytes": 21574,
+            "sha256": "0e3fc0b7dc3ec907e02059a1bc79579077c8e5d1a0ac936b4f1bd984e94afdb4"
+          },
+          {
+            "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/codex-rs/deny.toml",
+            "bytes": 18803,
+            "sha256": "3713c011667dcbeda9edf1b2644a813f2b5253ebb7b2f3e98ea60aab69407352"
+          },
+          {
+            "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/.github/workflows/cargo-deny.yml",
+            "bytes": 890,
+            "sha256": "e01faafdaa914009b834ad07ad3a46137eac70b2874d88182a46cd24f100e843"
+          },
+          {
+            "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/.github/workflows/blocking-ci.yml",
+            "bytes": 8778,
+            "sha256": "96eb7f9ea698ea353c757c3ba9f4a82a3ea448b45f676a208e09187748f4b9e3"
+          }
+        ]
+      },
+      "exit_code": 0,
+      "completed_at": "2026-10-19T01:36:39.498028+00:00",
+      "elapsed_seconds": 54.305949948997295,
+      "stdout": {
+        "path": "/workspace/scratch/499c7902de8e/r10-evidence/owner-ci/new-head/deny-repro-01/locked-metadata.json",
+        "bytes": 8407381,
+        "sha256": "b03563e38042d51d3f49e77eaecd0a01b432fc24445c9a3715a0847cb972a93b"
+      },
+      "stderr": {
+        "path": "/workspace/scratch/499c7902de8e/r10-evidence/owner-ci/new-head/deny-repro-01/locked-metadata.stderr.log",
+        "bytes": 60605,
+        "sha256": "fb92f50f7345dbe581743d5e1e00e655ce5579a2f3ed34ec3e77e4647bcb46c1"
+      },
+      "after": {
+        "commit": "1b0fedb8c2b510106848f6feaf530c9b3698399d",
+        "tree": "a3e718280a7e17b8c4a226a0232bf18c23fd3586",
+        "status_porcelain": "",
+        "files": [
+          {
+            "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/codex-rs/Cargo.lock",
+            "bytes": 418038,
+            "sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389"
+          },
+          {
+            "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/codex-rs/Cargo.toml",
+            "bytes": 21574,
+            "sha256": "0e3fc0b7dc3ec907e02059a1bc79579077c8e5d1a0ac936b4f1bd984e94afdb4"
+          },
+          {
+            "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/codex-rs/deny.toml",
+            "bytes": 18803,
+            "sha256": "3713c011667dcbeda9edf1b2644a813f2b5253ebb7b2f3e98ea60aab69407352"
+          },
+          {
+            "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/.github/workflows/cargo-deny.yml",
+            "bytes": 890,
+            "sha256": "e01faafdaa914009b834ad07ad3a46137eac70b2874d88182a46cd24f100e843"
+          },
+          {
+            "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/.github/workflows/blocking-ci.yml",
+            "bytes": 8778,
+            "sha256": "96eb7f9ea698ea353c757c3ba9f4a82a3ea448b45f676a208e09187748f4b9e3"
+          }
+        ]
+      },
+      "local_bytes": 3282887667,
+      "source_unchanged": true
+    },
+    {
+      "name": "cargo-deny",
+      "argv": [
+        "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/bin/cargo-deny",
+        "--log-level",
+        "warn",
+        "--manifest-path",
+        "./codex-rs/Cargo.toml",
+        "--all-features",
+        "--locked",
+        "check"
+      ],
+      "cwd": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro",
+      "started_at": "2026-10-19T01:36:40.985083+00:00",
+      "timeout_seconds": 600,
+      "before": {
+        "commit": "1b0fedb8c2b510106848f6feaf530c9b3698399d",
+        "tree": "a3e718280a7e17b8c4a226a0232bf18c23fd3586",
+        "status_porcelain": "",
+        "files": [
+          {
+            "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/codex-rs/Cargo.lock",
+            "bytes": 418038,
+            "sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389"
+          },
+          {
+            "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/codex-rs/Cargo.toml",
+            "bytes": 21574,
+            "sha256": "0e3fc0b7dc3ec907e02059a1bc79579077c8e5d1a0ac936b4f1bd984e94afdb4"
+          },
+          {
+            "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/codex-rs/deny.toml",
+            "bytes": 18803,
+            "sha256": "3713c011667dcbeda9edf1b2644a813f2b5253ebb7b2f3e98ea60aab69407352"
+          },
+          {
+            "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/.github/workflows/cargo-deny.yml",
+            "bytes": 890,
+            "sha256": "e01faafdaa914009b834ad07ad3a46137eac70b2874d88182a46cd24f100e843"
+          },
+          {
+            "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/.github/workflows/blocking-ci.yml",
+            "bytes": 8778,
+            "sha256": "96eb7f9ea698ea353c757c3ba9f4a82a3ea448b45f676a208e09187748f4b9e3"
+          }
+        ]
+      },
+      "exit_code": 1,
+      "completed_at": "2026-10-19T01:36:52.359198+00:00",
+      "elapsed_seconds": 11.344402112001262,
+      "stdout": {
+        "path": "/workspace/scratch/499c7902de8e/r10-evidence/owner-ci/new-head/deny-repro-01/cargo-deny.log",
+        "bytes": 13717460,
+        "sha256": "d91f5e6d8d9961b81aebaf6873d85a1dc7ac70e1a009e5e1036e026ebc179175"
+      },
+      "stderr": {
+        "path": "/workspace/scratch/499c7902de8e/r10-evidence/owner-ci/new-head/deny-repro-01/cargo-deny.log",
+        "bytes": 13717460,
+        "sha256": "d91f5e6d8d9961b81aebaf6873d85a1dc7ac70e1a009e5e1036e026ebc179175"
+      },
+      "after": {
+        "commit": "1b0fedb8c2b510106848f6feaf530c9b3698399d",
+        "tree": "a3e718280a7e17b8c4a226a0232bf18c23fd3586",
+        "status_porcelain": "",
+        "files": [
+          {
+            "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/codex-rs/Cargo.lock",
+            "bytes": 418038,
+            "sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389"
+          },
+          {
+            "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/codex-rs/Cargo.toml",
+            "bytes": 21574,
+            "sha256": "0e3fc0b7dc3ec907e02059a1bc79579077c8e5d1a0ac936b4f1bd984e94afdb4"
+          },
+          {
+            "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/codex-rs/deny.toml",
+            "bytes": 18803,
+            "sha256": "3713c011667dcbeda9edf1b2644a813f2b5253ebb7b2f3e98ea60aab69407352"
+          },
+          {
+            "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/.github/workflows/cargo-deny.yml",
+            "bytes": 890,
+            "sha256": "e01faafdaa914009b834ad07ad3a46137eac70b2874d88182a46cd24f100e843"
+          },
+          {
+            "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/.github/workflows/blocking-ci.yml",
+            "bytes": 8778,
+            "sha256": "96eb7f9ea698ea353c757c3ba9f4a82a3ea448b45f676a208e09187748f4b9e3"
+          }
+        ]
+      },
+      "local_bytes": 3343951918,
+      "source_unchanged": true
+    }
+  ],
+  "product_build_performed": false,
+  "source_before": {
+    "commit": "1b0fedb8c2b510106848f6feaf530c9b3698399d",
+    "tree": "a3e718280a7e17b8c4a226a0232bf18c23fd3586",
+    "status_porcelain": "",
+    "files": [
+      {
+        "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/codex-rs/Cargo.lock",
+        "bytes": 418038,
+        "sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389"
+      },
+      {
+        "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/codex-rs/Cargo.toml",
+        "bytes": 21574,
+        "sha256": "0e3fc0b7dc3ec907e02059a1bc79579077c8e5d1a0ac936b4f1bd984e94afdb4"
+      },
+      {
+        "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/codex-rs/deny.toml",
+        "bytes": 18803,
+        "sha256": "3713c011667dcbeda9edf1b2644a813f2b5253ebb7b2f3e98ea60aab69407352"
+      },
+      {
+        "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/.github/workflows/cargo-deny.yml",
+        "bytes": 890,
+        "sha256": "e01faafdaa914009b834ad07ad3a46137eac70b2874d88182a46cd24f100e843"
+      },
+      {
+        "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/.github/workflows/blocking-ci.yml",
+        "bytes": 8778,
+        "sha256": "96eb7f9ea698ea353c757c3ba9f4a82a3ea448b45f676a208e09187748f4b9e3"
+      }
+    ]
+  },
+  "advisory_databases": [
+    {
+      "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/advisory-dbs/advisory-db-3157b0e258782691",
+      "commit": "999ec89d5d3f10f20be14750ec8c2d8b44e0ac9b",
+      "tree": "7fab15e592b35835decefbb43f6578c70565e4d9"
+    }
+  ],
+  "source_after": {
+    "commit": "1b0fedb8c2b510106848f6feaf530c9b3698399d",
+    "tree": "a3e718280a7e17b8c4a226a0232bf18c23fd3586",
+    "status_porcelain": "",
+    "files": [
+      {
+        "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/codex-rs/Cargo.lock",
+        "bytes": 418038,
+        "sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389"
+      },
+      {
+        "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/codex-rs/Cargo.toml",
+        "bytes": 21574,
+        "sha256": "0e3fc0b7dc3ec907e02059a1bc79579077c8e5d1a0ac936b4f1bd984e94afdb4"
+      },
+      {
+        "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/codex-rs/deny.toml",
+        "bytes": 18803,
+        "sha256": "3713c011667dcbeda9edf1b2644a813f2b5253ebb7b2f3e98ea60aab69407352"
+      },
+      {
+        "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/.github/workflows/cargo-deny.yml",
+        "bytes": 890,
+        "sha256": "e01faafdaa914009b834ad07ad3a46137eac70b2874d88182a46cd24f100e843"
+      },
+      {
+        "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/.github/workflows/blocking-ci.yml",
+        "bytes": 8778,
+        "sha256": "96eb7f9ea698ea353c757c3ba9f4a82a3ea448b45f676a208e09187748f4b9e3"
+      }
+    ]
+  },
+  "source_unchanged": true,
+  "completed_at": "2026-10-19T01:36:53.836716+00:00",
+  "local_bytes": 3343955913
+}

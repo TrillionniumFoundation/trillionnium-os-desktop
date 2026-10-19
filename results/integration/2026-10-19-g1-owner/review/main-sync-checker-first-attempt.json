@@ -1,0 +1,20 @@
+{
+  "schema": "r10.main-sync-source-checker-first-attempt.v1",
+  "recorded_at_utc": "2026-10-19T05:01:55.083980+00:00",
+  "command": [
+    "python",
+    "results/integration/2026-10-19-g1-owner/review/review-main-sync-integration.py",
+    "--repo",
+    "/workspace/scratch/499c7902de8e/r10-g1-delivery-main-sync",
+    "--mode",
+    "source"
+  ],
+  "exit_code": 1,
+  "failed_assertion": "file.is_file() and not file.is_symlink()",
+  "path": "kernel/asterinas/.claude/skills/aster-code-review",
+  "original_helper_sha256": "14f510efa8f4b368886490062be1b097e5ad98709bdb58ea8fb3d1ab0ab010bb",
+  "original_helper_path": "review/main-sync-checker-first-attempt.py",
+  "meaning": "The initial delivery-only checker incorrectly restricted all existing main source objects to regular files. The fixed checker must bind Git mode120000 to raw symlink target bytes. This is not a product failure or a source mutation.",
+  "product_tests_run": 0,
+  "old_frozen_delivery_changed": false
+}

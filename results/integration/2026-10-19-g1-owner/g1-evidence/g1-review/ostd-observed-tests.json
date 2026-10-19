@@ -1,0 +1,1336 @@
+{
+  "source_head": "12e0547d2e6394548b15764b06346422c4fff31e",
+  "raw_serial": {
+    "path": "r10-evidence/g1-a-ostd-01/execution/ostd/guests/guest-001/serial.log",
+    "bytes": 23028,
+    "sha256": "30001c815c7954c1b988c11b0939434caec27597d098e4bd388145bde5fe3b26"
+  },
+  "tests": [
+    {
+      "name": "ostd::arch::vm::ept::test::leaf_encoding",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 78
+    },
+    {
+      "name": "ostd::arch::vm::vmx::test::multiple_vmx_guards_lifecycle",
+      "terminal": "ok",
+      "soft_skip_reason": "VMX unavailable",
+      "serial_line": 79
+    },
+    {
+      "name": "ostd::arch::vm::vmx::vmcs::test::switch_and_reuse_vmcs",
+      "terminal": "ok",
+      "soft_skip_reason": "VMX unavailable",
+      "serial_line": 80
+    },
+    {
+      "name": "ostd::boot::memory_region::test::sort_full_non_overlapping",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 81
+    },
+    {
+      "name": "ostd::boot::memory_region::test::into_non_overlapping_drops_usable_subpage_regions",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 82
+    },
+    {
+      "name": "ostd::cpu::local::test::cpu_local",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 83
+    },
+    {
+      "name": "ostd::cpu::local::test::cpu_local_cell",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 84
+    },
+    {
+      "name": "ostd::io::io_mem::allocator::test::illegal_region",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 85
+    },
+    {
+      "name": "ostd::io::io_mem::allocator::test::conflict_region",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 99
+    },
+    {
+      "name": "ostd::io::io_mem::test::read_write_u8",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 110
+    },
+    {
+      "name": "ostd::io::io_mem::test::read_write_u16",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 111
+    },
+    {
+      "name": "ostd::io::io_mem::test::read_write_u32",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 112
+    },
+    {
+      "name": "ostd::io::io_mem::test::read_write_u64",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 113
+    },
+    {
+      "name": "ostd::io::io_mem::test::boundary_overlap",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 114
+    },
+    {
+      "name": "ostd::io::io_mem::test::copy_to_alignment_and_sizes",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 115
+    },
+    {
+      "name": "ostd::io::io_mem::test::copy_from_alignment_and_sizes",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 116
+    },
+    {
+      "name": "ostd::io::io_port::allocator::test::illegal_region",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 117
+    },
+    {
+      "name": "ostd::io::io_port::allocator::test::conflict_region",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 118
+    },
+    {
+      "name": "ostd::io::io_port::allocator::test::overlapping_region",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 124
+    },
+    {
+      "name": "ostd::irq::top_half::test::alloc_and_free_irq",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 135
+    },
+    {
+      "name": "ostd::irq::top_half::test::register_and_unregister_callback",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 136
+    },
+    {
+      "name": "ostd::log::bridge::test::bridge_map_log_level",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 137
+    },
+    {
+      "name": "ostd::log::bridge::test::bridge_map_level_filter",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 138
+    },
+    {
+      "name": "ostd::log::level::test::level_ordering",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 139
+    },
+    {
+      "name": "ostd::log::level::test::level_filter_enabled",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 140
+    },
+    {
+      "name": "ostd::log::level::test::level_from_u8_clamping",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 141
+    },
+    {
+      "name": "ostd::log::level::test::level_filter_from_level",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 142
+    },
+    {
+      "name": "ostd::mm::dma::test::dma_coherent::read_write",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 143
+    },
+    {
+      "name": "ostd::mm::dma::test::dma_coherent::reader_writer",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 144
+    },
+    {
+      "name": "ostd::mm::dma::test::dma_coherent::read_write_once",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 145
+    },
+    {
+      "name": "ostd::mm::dma::test::dma_coherent::zero_length_operations",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 146
+    },
+    {
+      "name": "ostd::mm::dma::test::dma_coherent::alloc_uninit_dma_coherent",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 147
+    },
+    {
+      "name": "ostd::mm::dma::test::dma_coherent::alloc_with_coherent_device",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 148
+    },
+    {
+      "name": "ostd::mm::dma::test::dma_coherent::complex_read_write_patterns",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 149
+    },
+    {
+      "name": "ostd::mm::dma::test::dma_stream::to_device",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 150
+    },
+    {
+      "name": "ostd::mm::dma::test::dma_stream::read_write",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 151
+    },
+    {
+      "name": "ostd::mm::dma::test::dma_stream::from_device",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 152
+    },
+    {
+      "name": "ostd::mm::dma::test::dma_stream::reader_writer",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 153
+    },
+    {
+      "name": "ostd::mm::dma::test::dma_stream::streaming_map",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 154
+    },
+    {
+      "name": "ostd::mm::dma::test::dma_stream::alloc_dma_stream",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 155
+    },
+    {
+      "name": "ostd::mm::dma::test::dma_stream::sync_invalid_ranges",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 156
+    },
+    {
+      "name": "ostd::mm::dma::test::dma_stream::alloc_uninit_dma_stream",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 157
+    },
+    {
+      "name": "ostd::mm::dma::test::dma_stream::streaming_boundary_conditions",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 158
+    },
+    {
+      "name": "ostd::mm::frame::allocator::test_alloc_dealloc",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 159
+    },
+    {
+      "name": "ostd::mm::frame::test::frame::frame_drop",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 160
+    },
+    {
+      "name": "ostd::mm::frame::test::frame::frame_clone",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 161
+    },
+    {
+      "name": "ostd::mm::frame::test::frame::frame_to_uframe",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 162
+    },
+    {
+      "name": "ostd::mm::frame::test::frame::frame_allocation",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 163
+    },
+    {
+      "name": "ostd::mm::frame::test::frame::frame_conversions",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 164
+    },
+    {
+      "name": "ostd::mm::frame::test::frame_ref::frame_impls_non_null_ptr",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 165
+    },
+    {
+      "name": "ostd::mm::frame::test::frame_ref::frame_ref_preserves_refcnt",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 166
+    },
+    {
+      "name": "ostd::mm::frame::test::linked_list::linked_list_push_pop",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 167
+    },
+    {
+      "name": "ostd::mm::frame::test::linked_list::linked_list_cursor_at",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 168
+    },
+    {
+      "name": "ostd::mm::frame::test::linked_list::linked_list_cursor_ops",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 169
+    },
+    {
+      "name": "ostd::mm::frame::test::segment::segment_drop",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 170
+    },
+    {
+      "name": "ostd::mm::frame::test::segment::segment_slice",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 171
+    },
+    {
+      "name": "ostd::mm::frame::test::segment::segment_split",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 172
+    },
+    {
+      "name": "ostd::mm::frame::test::segment::frame_to_segment",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 173
+    },
+    {
+      "name": "ostd::mm::frame::test::segment::segment_creation",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 174
+    },
+    {
+      "name": "ostd::mm::frame::test::segment::segment_iteration",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 175
+    },
+    {
+      "name": "ostd::mm::frame::test::segment::segment_to_segment",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 176
+    },
+    {
+      "name": "ostd::mm::frame::test::segment::segment_slice_empty",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 177
+    },
+    {
+      "name": "ostd::mm::frame::test::segment::segment_to_usegment",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 178
+    },
+    {
+      "name": "ostd::mm::frame::test::segment::max_segment_creation",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 179
+    },
+    {
+      "name": "ostd::mm::frame::test::segment::invalid_segment_split",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 180
+    },
+    {
+      "name": "ostd::mm::frame::test::segment::empty_segment_creation",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 181
+    },
+    {
+      "name": "ostd::mm::frame::test::segment::zeroed_segment_creation",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 182
+    },
+    {
+      "name": "ostd::mm::frame::test::segment::segment_iter_partial_drop",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 183
+    },
+    {
+      "name": "ostd::mm::frame::test::segment::segment_slice_out_of_bounds",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 184
+    },
+    {
+      "name": "ostd::mm::frame::test::untyped::untyped_frame_reader_writer",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 185
+    },
+    {
+      "name": "ostd::mm::frame::test::untyped::untyped_segment_reader_writer",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 186
+    },
+    {
+      "name": "ostd::mm::frame::unaccepted::test::partition_units_evenly",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 187
+    },
+    {
+      "name": "ostd::mm::frame::unaccepted::test::partition_units_sparse_cpus",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 188
+    },
+    {
+      "name": "ostd::mm::frame::unaccepted::test::partition_units_byte_remainder",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 189
+    },
+    {
+      "name": "ostd::mm::frame::unaccepted::test::partition_units_partial_byte_tail",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 190
+    },
+    {
+      "name": "ostd::mm::kspace::test::manual_paddr_to_vaddr",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 191
+    },
+    {
+      "name": "ostd::mm::kspace::test::kvirt_area_tracked_drop",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 192
+    },
+    {
+      "name": "ostd::mm::kspace::test::kvirt_area_untracked_drop",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 193
+    },
+    {
+      "name": "ostd::mm::kspace::test::kvirt_area_tracked_map_pages",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 194
+    },
+    {
+      "name": "ostd::mm::kspace::test::kvirt_area_untracked_map_pages",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 195
+    },
+    {
+      "name": "ostd::mm::page_table::test::arch_pte_impls::zeroed_pte_is_absent_pte",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 196
+    },
+    {
+      "name": "ostd::mm::page_table::test::arch_pte_impls::cast_pt_pte_preserves_repr",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 197
+    },
+    {
+      "name": "ostd::mm::page_table::test::arch_pte_impls::cast_frame_pte_preserves_repr",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 198
+    },
+    {
+      "name": "ostd::mm::page_table::test::arch_pte_impls::cast_absent_pte_preserves_repr",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 199
+    },
+    {
+      "name": "ostd::mm::page_table::test::boot_pt::map_protect",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 200
+    },
+    {
+      "name": "ostd::mm::page_table::test::boot_pt::map_base_page",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 201
+    },
+    {
+      "name": "ostd::mm::page_table::test::boot_pt::protect_base_page_unmapped",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 202
+    },
+    {
+      "name": "ostd::mm::page_table::test::boot_pt::map_base_page_already_mapped",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 203
+    },
+    {
+      "name": "ostd::mm::page_table::test::create_page_table::new_kernel_page_table",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 204
+    },
+    {
+      "name": "ostd::mm::page_table::test::create_page_table::create_user_page_table",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 205
+    },
+    {
+      "name": "ostd::mm::page_table::test::lock_levels::map_above_locked_level",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 206
+    },
+    {
+      "name": "ostd::mm::page_table::test::lock_levels::map_huge_pages_with_minimum_lock_level",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 207
+    },
+    {
+      "name": "ostd::mm::page_table::test::mapping::mixed_granularity_map_unmap",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 208
+    },
+    {
+      "name": "ostd::mm::page_table::test::mapping::mixed_granularity_protect_query",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 209
+    },
+    {
+      "name": "ostd::mm::page_table::test::navigation::jump",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 210
+    },
+    {
+      "name": "ostd::mm::page_table::test::navigation::find_next",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 211
+    },
+    {
+      "name": "ostd::mm::page_table::test::navigation::jump_from_guard_level_end",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 212
+    },
+    {
+      "name": "ostd::mm::page_table::test::navigation::jump_near_address_space_end",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 213
+    },
+    {
+      "name": "ostd::mm::page_table::test::navigation::find_next_keeps_va_around_barrier",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 214
+    },
+    {
+      "name": "ostd::mm::page_table::test::navigation::find_next_rejects_overflowing_len",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 215
+    },
+    {
+      "name": "ostd::mm::page_table::test::navigation::jump_from_end_and_query_huge_middle",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 216
+    },
+    {
+      "name": "ostd::mm::page_table::test::overlapping_mappings::unaligned_map",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 217
+    },
+    {
+      "name": "ostd::mm::page_table::test::overlapping_mappings::overlapping_mappings",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 218
+    },
+    {
+      "name": "ostd::mm::page_table::test::page_properties::map_preserves_page_property",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 219
+    },
+    {
+      "name": "ostd::mm::page_table::test::protection_and_query::base_protect_query",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 220
+    },
+    {
+      "name": "ostd::mm::page_table::test::protection_and_query::protect_next_empty_entry",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 221
+    },
+    {
+      "name": "ostd::mm::page_table::test::protection_and_query::protect_next_touches_empty_range",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 222
+    },
+    {
+      "name": "ostd::mm::page_table::test::range_checks::range_check",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 223
+    },
+    {
+      "name": "ostd::mm::page_table::test::range_checks::boundary_conditions",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 224
+    },
+    {
+      "name": "ostd::mm::page_table::test::range_checks::end_boundary_mapping",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 225
+    },
+    {
+      "name": "ostd::mm::page_table::test::range_checks::start_boundary_mapping",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 226
+    },
+    {
+      "name": "ostd::mm::page_table::test::range_checks::overflow_boundary_mapping",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 227
+    },
+    {
+      "name": "ostd::mm::page_table::test::test_utils::test_subset_iter",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 228
+    },
+    {
+      "name": "ostd::mm::page_table::test::unmap::take_large_takes_subtree",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 229
+    },
+    {
+      "name": "ostd::mm::page_table::test::unmap::take_next_takes_something",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 230
+    },
+    {
+      "name": "ostd::mm::test::io::fill_infallible",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 231
+    },
+    {
+      "name": "ostd::mm::test::io::read_val_segment",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 232
+    },
+    {
+      "name": "ostd::mm::test::io::fill_zeros_segment",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 233
+    },
+    {
+      "name": "ostd::mm::test::io::read_slice_segment",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 234
+    },
+    {
+      "name": "ostd::mm::test::io::fallible_read_write",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 235
+    },
+    {
+      "name": "ostd::mm::test::io::fill_zeros_fallible",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 236
+    },
+    {
+      "name": "ostd::mm::test::io::write_slice_segment",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 237
+    },
+    {
+      "name": "ostd::mm::test::io::atomic_load_fallible",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 238
+    },
+    {
+      "name": "ostd::mm::test::io::skip_read_infallible",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 239
+    },
+    {
+      "name": "ostd::mm::test::io::write_val_infallible",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 240
+    },
+    {
+      "name": "ostd::mm::test::io::limit_read_infallible",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 241
+    },
+    {
+      "name": "ostd::mm::test::io::partial_read_fallible",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 242
+    },
+    {
+      "name": "ostd::mm::test::io::skip_write_infallible",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 243
+    },
+    {
+      "name": "ostd::mm::test::io::limit_write_infallible",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 244
+    },
+    {
+      "name": "ostd::mm::test::io::partial_write_fallible",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 245
+    },
+    {
+      "name": "ostd::mm::test::io::read_write_val_fallible",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 246
+    },
+    {
+      "name": "ostd::mm::test::io::read_write_u32_infallible",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 247
+    },
+    {
+      "name": "ostd::mm::test::io::read_write_once_infallible",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 248
+    },
+    {
+      "name": "ostd::mm::test::io::read_write_slice_infallible",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 249
+    },
+    {
+      "name": "ostd::mm::test::io::read_write_struct_infallible",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 250
+    },
+    {
+      "name": "ostd::mm::test::io::invalid_read_write_infallible",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 251
+    },
+    {
+      "name": "ostd::mm::test::io::read_beyond_buffer_infallible",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 252
+    },
+    {
+      "name": "ostd::mm::test::io::write_beyond_buffer_infallible",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 253
+    },
+    {
+      "name": "ostd::mm::test::io::atomic_compare_exchange_fallible",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 254
+    },
+    {
+      "name": "ostd::mm::test::io::invalid_args_read_write_fallible",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 255
+    },
+    {
+      "name": "ostd::mm::test::io::read_write_slice_vmio_infallible",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 256
+    },
+    {
+      "name": "ostd::mm::test::vmspace::protect_next",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 257
+    },
+    {
+      "name": "ostd::mm::test::vmspace::vmspace_activate",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 258
+    },
+    {
+      "name": "ostd::mm::test::vmspace::vmspace_creation",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 259
+    },
+    {
+      "name": "ostd::mm::test::vmspace::vmspace_map_twice",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 260
+    },
+    {
+      "name": "ostd::mm::test::vmspace::vmspace_map_unmap",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 261
+    },
+    {
+      "name": "ostd::mm::test::vmspace::cursor_mut_flusher",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 262
+    },
+    {
+      "name": "ostd::mm::test::vmspace::overlapping_cursors",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 263
+    },
+    {
+      "name": "ostd::mm::test::vmspace::vmspace_unmap_twice",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 264
+    },
+    {
+      "name": "ostd::mm::test::vmspace::vmspace_reader_writer",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 265
+    },
+    {
+      "name": "ostd::mm::test::vmspace::protect_out_range_page",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 266
+    },
+    {
+      "name": "ostd::mm::test::vmspace::unaligned_unmap_panics",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 267
+    },
+    {
+      "name": "ostd::mm::test::vmspace::vmspace_map_query_iomem",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 268
+    },
+    {
+      "name": "ostd::mm::test::vmspace::vmspace_iomem_persistence",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 270
+    },
+    {
+      "name": "ostd::mm::test::vmspace::vmspace_map_iomem_with_offset",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 272
+    },
+    {
+      "name": "ostd::smp::test::pending_ipis_can_be_extended",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 274
+    },
+    {
+      "name": "ostd::smp::test::pending_ipis_waits_for_all_cpus",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 275
+    },
+    {
+      "name": "ostd::smp::test::pending_ipis_waits_for_remote_cpu",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 276
+    },
+    {
+      "name": "ostd::smp::test::inter_processor_call_runs_on_current_cpu",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 277
+    },
+    {
+      "name": "ostd::sync::mutex::test::try_lock_does_not_unlock",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 278
+    },
+    {
+      "name": "ostd::sync::rcu::non_null::either::test::alignment",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 279
+    },
+    {
+      "name": "ostd::sync::rcu::non_null::either::test::left_pointer",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 280
+    },
+    {
+      "name": "ostd::sync::rcu::non_null::either::test::right_pointer",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 281
+    },
+    {
+      "name": "ostd::sync::rcu::non_null::either::test::rcu_store_load",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 282
+    },
+    {
+      "name": "ostd::sync::rwarc::test::lockless_get",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 283
+    },
+    {
+      "name": "ostd::sync::wait::test::queue_wake_all",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 284
+    },
+    {
+      "name": "ostd::sync::wait::test::queue_wake_one",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 285
+    },
+    {
+      "name": "ostd::sync::wait::test::waiter_wake_drop",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 286
+    },
+    {
+      "name": "ostd::sync::wait::test::waiter_wake_async",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 287
+    },
+    {
+      "name": "ostd::sync::wait::test::waiter_wake_twice",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 288
+    },
+    {
+      "name": "ostd::sync::wait::test::waiter_wake_reorder",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 289
+    },
+    {
+      "name": "ostd::task::test::spawn_task",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 290
+    },
+    {
+      "name": "ostd::task::test::create_task",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 291
+    },
+    {
+      "name": "ostd::test::expect_panic",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 292
+    },
+    {
+      "name": "ostd::test::failing_assertion",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 293
+    },
+    {
+      "name": "ostd::test::trivial_assertion",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 294
+    },
+    {
+      "name": "ostd::util::id_set::id_set_tests::id_set_full",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 295
+    },
+    {
+      "name": "ostd::util::id_set::id_set_tests::id_set_iter",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 296
+    },
+    {
+      "name": "ostd::util::id_set::id_set_tests::id_set_empty",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 297
+    },
+    {
+      "name": "ostd::util::id_set::id_set_tests::iter_in_range",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 298
+    },
+    {
+      "name": "ostd::util::id_set::id_set_tests::id_set_default",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 299
+    },
+    {
+      "name": "ostd::util::id_set::id_set_tests::id_set_from_id",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 300
+    },
+    {
+      "name": "ostd::util::id_set::id_set_tests::id_set_iter_full",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 301
+    },
+    {
+      "name": "ostd::util::id_set::id_set_tests::iter_in_range_to",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 302
+    },
+    {
+      "name": "ostd::util::id_set::id_set_tests::id_set_add_remove",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 303
+    },
+    {
+      "name": "ostd::util::id_set::id_set_tests::iter_in_range_from",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 304
+    },
+    {
+      "name": "ostd::util::id_set::id_set_tests::iter_in_range_full",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 305
+    },
+    {
+      "name": "ostd::util::id_set::id_set_tests::id_set_add_all_clear",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 306
+    },
+    {
+      "name": "ostd::util::id_set::id_set_tests::id_set_cardinality_one",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 307
+    },
+    {
+      "name": "ostd::util::id_set::id_set_tests::id_set_iter_multi_part",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 308
+    },
+    {
+      "name": "ostd::util::id_set::id_set_tests::iter_in_half_unbounded",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 309
+    },
+    {
+      "name": "ostd::util::id_set::id_set_tests::iter_in_range_next_part",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 310
+    },
+    {
+      "name": "ostd::util::id_set::id_set_tests::iter_in_unbounded_bounds",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 311
+    },
+    {
+      "name": "ostd::util::id_set::id_set_tests::id_set_exact_part_boundary",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 312
+    },
+    {
+      "name": "ostd::util::id_set::id_set_tests::iter_in_range_to_inclusive",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 313
+    },
+    {
+      "name": "ostd::util::id_set::id_set_tests::id_set_add_remove_multi_part",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 314
+    },
+    {
+      "name": "ostd::util::id_set::id_set_tests::iter_in_range_ends_after_last",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 315
+    },
+    {
+      "name": "ostd::util::id_set::id_set_tests::id_set_just_over_part_boundary",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 316
+    },
+    {
+      "name": "ostd::util::id_set::id_set_tests::iter_in_range_starts_after_last",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 317
+    },
+    {
+      "name": "ostd::util::id_set::id_set_tests::iter_in_bound_tuple_exclusive_inclusive",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 318
+    },
+    {
+      "name": "ostd::util::id_set::id_set_tests::iter_in_bound_tuple_inclusive_exclusive",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 319
+    },
+    {
+      "name": "ostd::util::id_set::id_set_tests::id_set_is_full_with_less_than_full_last_part",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 320
+    },
+    {
+      "name": "ostd::util::ops::test::range_difference_a_empty",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 321
+    },
+    {
+      "name": "ostd::util::ops::test::range_difference_b_empty",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 322
+    },
+    {
+      "name": "ostd::util::ops::test::range_intersection_empty",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 323
+    },
+    {
+      "name": "ostd::util::ops::test::range_difference_all_same",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 324
+    },
+    {
+      "name": "ostd::util::ops::test::range_difference_all_empty",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 325
+    },
+    {
+      "name": "ostd::util::ops::test::range_difference_contained",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 326
+    },
+    {
+      "name": "ostd::util::ops::test::range_difference_left_same",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 327
+    },
+    {
+      "name": "ostd::util::ops::test::range_difference_right_same",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 328
+    },
+    {
+      "name": "ostd::util::ops::test::range_intersection_disjoint",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 329
+    },
+    {
+      "name": "ostd::util::ops::test::range_intersection_contained",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 330
+    },
+    {
+      "name": "ostd::util::ops::test::range_intersection_overlapping",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 331
+    },
+    {
+      "name": "ostd::util::ops::test::range_difference_left_intersected",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 332
+    },
+    {
+      "name": "ostd::util::ops::test::range_difference_right_intersected",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 333
+    },
+    {
+      "name": "ostd::util::range_counter::test::add_remove_range",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 334
+    },
+    {
+      "name": "ostd::util::range_counter::test::add_remove_covering",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 335
+    },
+    {
+      "name": "ostd::util::range_counter::test::add_remove_overlapping_end",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 336
+    },
+    {
+      "name": "ostd::util::range_counter::test::add_remove_partial_overlap",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 337
+    },
+    {
+      "name": "ostd::util::range_counter::test::add_remove_overlapping_beginning",
+      "terminal": "ok",
+      "soft_skip_reason": null,
+      "serial_line": 338
+    },
+    {
+      "name": "ostd::vm::gpm_space::test::guest_mapping_lifecycle",
+      "terminal": "ok",
+      "soft_skip_reason": "VMX/EPT invalidation unavailable",
+      "serial_line": 339
+    }
+  ]
+}

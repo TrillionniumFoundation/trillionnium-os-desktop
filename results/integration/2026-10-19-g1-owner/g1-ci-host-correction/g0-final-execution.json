@@ -1,0 +1,154 @@
+{
+  "schema": 1,
+  "started_at": "2026-10-19T03:34:09.462943+00:00",
+  "expected_commit": "bccb817e0d3f1987f59c1b9e7d94e939d2e6d1d3",
+  "expected_tree": "65ddb50cd303f3c43a8226141c5298dca369db5d",
+  "prior_pass_retained": "g0-abi-fmt/receipt.json: unchanged ABI inputs at bc778b6",
+  "plan": [
+    {
+      "name": "g0-abi-test-02",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/499c7902de8e/r10-evidence/g1-ci-correction-host/abi-command.py",
+        "g0-abi-test-02",
+        "test"
+      ]
+    },
+    {
+      "name": "g0-abi-clippy",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-B",
+        "/workspace/scratch/499c7902de8e/r10-evidence/g1-ci-correction-host/abi-command.py",
+        "g0-abi-clippy",
+        "clippy"
+      ]
+    },
+    {
+      "name": "g0-control-fmt",
+      "argv": [
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "libs/os-control/Cargo.toml",
+        "--",
+        "--check"
+      ]
+    },
+    {
+      "name": "g0-control-test",
+      "argv": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "libs/os-control/Cargo.toml",
+        "--locked",
+        "--offline",
+        "--verbose"
+      ]
+    },
+    {
+      "name": "g0-control-clippy",
+      "argv": [
+        "cargo",
+        "clippy",
+        "--manifest-path",
+        "libs/os-control/Cargo.toml",
+        "--locked",
+        "--offline",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ]
+    },
+    {
+      "name": "g0-portable-test",
+      "argv": [
+        "cargo",
+        "test",
+        "--manifest-path",
+        "libs/os-control/Cargo.toml",
+        "--locked",
+        "--offline",
+        "--no-default-features",
+        "--features",
+        "portable-spin",
+        "--verbose"
+      ]
+    },
+    {
+      "name": "g0-portable-clippy",
+      "argv": [
+        "cargo",
+        "clippy",
+        "--manifest-path",
+        "libs/os-control/Cargo.toml",
+        "--locked",
+        "--offline",
+        "--no-default-features",
+        "--features",
+        "portable-spin",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ]
+    },
+    {
+      "name": "g0-portable-rlib",
+      "argv": [
+        "cargo",
+        "build",
+        "--manifest-path",
+        "libs/os-control/Cargo.toml",
+        "--locked",
+        "--offline",
+        "--no-default-features",
+        "--features",
+        "portable-spin",
+        "--lib",
+        "--target",
+        "x86_64-unknown-none",
+        "--verbose"
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "name": "g0-abi-test-02",
+      "exit_code": 0
+    },
+    {
+      "name": "g0-abi-clippy",
+      "exit_code": 0
+    },
+    {
+      "name": "g0-control-fmt",
+      "exit_code": 0
+    },
+    {
+      "name": "g0-control-test",
+      "exit_code": 0
+    },
+    {
+      "name": "g0-control-clippy",
+      "exit_code": 0
+    },
+    {
+      "name": "g0-portable-test",
+      "exit_code": 0
+    },
+    {
+      "name": "g0-portable-clippy",
+      "exit_code": 0
+    },
+    {
+      "name": "g0-portable-rlib",
+      "exit_code": 0
+    }
+  ],
+  "passed": true,
+  "completed_at": "2026-10-19T03:34:49.728637+00:00"
+}

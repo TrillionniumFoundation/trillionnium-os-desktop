@@ -1,0 +1,706 @@
+{
+  "schema": "r10.pr198.source-artifact-independent-review.v1",
+  "reviewer": "/root/r9_g1_contract",
+  "started_at_utc": "2026-10-19T04:58:44.913537+00:00",
+  "review_script_sha256": "87a093f2df505e7bbee5bc225c73639cb81526eee342f963bdaa1152a7a6fd03",
+  "source": {
+    "head": "dafa1eba79cb1e17f880b5f0c5d57a80510d5d68",
+    "merge": "7e859b98c58053b88ea2baabc3e5f645fd38dca5",
+    "tree": "354adb549b064c78477932ca943309694eb54356",
+    "base": "71ce079c3218a8692476e4113b60c9d2c0d2a172",
+    "changed_paths": [
+      {
+        "path": ".github/workflows/a06-kernel.yml",
+        "mode": "100644",
+        "git_blob": "1dd4f258f3f50664dcd65a2592d68508b07ba397",
+        "bytes": 10053,
+        "sha256": "4a4addd80cb72ac1b94d686f886f024a2d44b9561a3077e266ac4f44ebd57a69"
+      },
+      {
+        "path": "docs/INDEX.md",
+        "mode": "100644",
+        "git_blob": "a061f3e1029b8fecdc7dec87d0b78756dfc52dda",
+        "bytes": 16837,
+        "sha256": "8adcc68d600171e976869bf5efda2dd3539a3ea250fd2e0c0faa1b0bba70bb5d"
+      },
+      {
+        "path": "docs/agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+        "mode": "100644",
+        "git_blob": "e3f3bab37f6effdce3ec5f0a0c86d904b96d6482",
+        "bytes": 16450,
+        "sha256": "ef2df5f82ab4f88a5efbbf8495506bfb272dcf28db948a62c5c68d536163aad3"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/net/socket/unix/ctrl_msg.rs",
+        "mode": "100644",
+        "git_blob": "be2ff1ca7069a9da9e52bac8c870a65a8df2c27f",
+        "bytes": 12281,
+        "sha256": "faec77bae16dd4c3679ead1dfa031e0283228bd81af0362252ecd1dbd85154dc"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/net/socket/util/message_flags.rs",
+        "mode": "100644",
+        "git_blob": "878aede32511ca48d91b5778ea8bd5f44e073b82",
+        "bytes": 2183,
+        "sha256": "3480122ccc58d6aea409ee5efbe9ebff200954b32c22d0d6c09845bf572c4095"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/net/socket/util/message_header.rs",
+        "mode": "100644",
+        "git_blob": "6cc199828cac2cdaa6406efe894c3c8ba7681bf7",
+        "bytes": 6929,
+        "sha256": "0bd03a9280c41279687c39ea71d7bfe561a9bcae6a63d67ccd82efdedb02d8b8"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/syscall/recvmsg.rs",
+        "mode": "100644",
+        "git_blob": "7dc08d9bc966bb2fd176bf729acb8a4d56936304",
+        "bytes": 2192,
+        "sha256": "86fe57826894007eaa78b7785617b891e45b27a1f4d563c2769dbbffbd735123"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/util/net/socket.rs",
+        "mode": "100644",
+        "git_blob": "24aac7b5ea67a2998b63adba589e04e74a8312d1",
+        "bytes": 6512,
+        "sha256": "33148f412464be90b4f3cbf20c683e05bd14d2471e3bce6dc00b41e0422b244e"
+      },
+      {
+        "path": "results/compat/2026-10-19-scm-cloexec/MANIFEST.json",
+        "mode": "100644",
+        "git_blob": "353c0962147b0fc421e7cfd2cb29b2ca75cfba4d",
+        "bytes": 4118,
+        "sha256": "007b60a1cc66d3580fc44985364c832650315052e40489ec039288e7f934436d"
+      },
+      {
+        "path": "results/compat/2026-10-19-scm-cloexec/README.md",
+        "mode": "100644",
+        "git_blob": "2f8fc6f16fa52eda33583b98d064f29a40f24bae",
+        "bytes": 2070,
+        "sha256": "aa59c0a6c03021b9b2ca89e5839f57b1355b505be2b466de75f920a4284c4937"
+      },
+      {
+        "path": "results/compat/2026-10-19-scm-cloexec/compile.log",
+        "mode": "100644",
+        "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "results/compat/2026-10-19-scm-cloexec/g1a-independent-review.json",
+        "mode": "100644",
+        "git_blob": "78f60b9eff23d84b8ed6baec8d6ce76b9a02d53e",
+        "bytes": 2613,
+        "sha256": "f415e95a06f6eedb7f3adcb53652687beddf404d8ca55c7d2186ea4dc91742f6"
+      },
+      {
+        "path": "results/compat/2026-10-19-scm-cloexec/g1a-new-head-review.json",
+        "mode": "100644",
+        "git_blob": "ee746b964e8d6259884f32a9bda4d2a8fc208f88",
+        "bytes": 3834,
+        "sha256": "dd4197ec59e8f12a08d3463496664724c957a9bcdac1a8b5a47129c55090b9c8"
+      },
+      {
+        "path": "results/compat/2026-10-19-scm-cloexec/independent-review.json",
+        "mode": "100644",
+        "git_blob": "ad94a5c0a8b4d7f2f357f45daad214683a9bbd92",
+        "bytes": 874,
+        "sha256": "785605706c56c158e4ac5d6fae59900a941505bff1a20c5ef7c8db1258a86631"
+      },
+      {
+        "path": "results/compat/2026-10-19-scm-cloexec/kernel.elf.gz",
+        "mode": "100644",
+        "git_blob": "24f96995acc1b5793d7d647270a51703a0a46e45",
+        "bytes": 2587960,
+        "sha256": "e3e500006b0cfa067981b8afbf6ad13333bae872384b83916c5e313709662523"
+      },
+      {
+        "path": "results/compat/2026-10-19-scm-cloexec/linux-reference-unrestricted.json",
+        "mode": "100644",
+        "git_blob": "f86a1229dc14bb66a73d76c591551d7f3d42e047",
+        "bytes": 636,
+        "sha256": "2689e4215a10fa205c0c37ed8ca1a0f498bb91ae743910c841b9e573f05bd1ef"
+      },
+      {
+        "path": "results/compat/2026-10-19-scm-cloexec/linux-reference-unrestricted.stderr.log",
+        "mode": "100644",
+        "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "results/compat/2026-10-19-scm-cloexec/linux-reference-unrestricted.stdout.log",
+        "mode": "100644",
+        "git_blob": "8e171c7e7392dee24d5cffa280dc17b7060f6b4f",
+        "bytes": 1912,
+        "sha256": "05c93c49ac14c4c033912282356e234450e3f3f4e13014e758f9a714f57b52e1"
+      },
+      {
+        "path": "results/compat/2026-10-19-scm-cloexec/linux-reference.json",
+        "mode": "100644",
+        "git_blob": "81e2b0c6804b4d0b5b6dd4d97987821db4b6a336",
+        "bytes": 984,
+        "sha256": "fcc4314e36f3790becab6b94040b8c37c99e0f223c99f49e56830cfe6a1f2f07"
+      },
+      {
+        "path": "results/compat/2026-10-19-scm-cloexec/linux-reference.stderr.log",
+        "mode": "100644",
+        "git_blob": "0480641c7e7a9f02aac38488f2e1561710584981",
+        "bytes": 387,
+        "sha256": "d3d5a5ee1fe8909f87bd3da43dc58a9b4924b82b68828792e7c42ad48e611fa6"
+      },
+      {
+        "path": "results/compat/2026-10-19-scm-cloexec/linux-reference.stdout.log",
+        "mode": "100644",
+        "git_blob": "61061d46a347aaf80ab9247c42b50784adf692ce",
+        "bytes": 1918,
+        "sha256": "994515cf4512d76a1ff5e697d483a9d8755879d128a0c54213cebfc8979fe825"
+      },
+      {
+        "path": "results/compat/2026-10-19-scm-cloexec/original-product-receipt.json",
+        "mode": "100644",
+        "git_blob": "3b748da6923dbbab7ddb6b3bfd829503b56ce8ef",
+        "bytes": 3360,
+        "sha256": "24dfb21ecba2feed66942b3dc548466a300042459109f496c422f45c65383590"
+      },
+      {
+        "path": "results/compat/2026-10-19-scm-cloexec/original-source-snapshot.json.gz",
+        "mode": "100644",
+        "git_blob": "43b90d3e3ec290ef8cf00e9fc7c32133b3387744",
+        "bytes": 399513,
+        "sha256": "9b0f8e2987f9dfcf38dce04c0cb063766bdd3b28b6951b5fb0e7b0dbc6398572"
+      },
+      {
+        "path": "results/compat/2026-10-19-scm-cloexec/ownership-check.json",
+        "mode": "100644",
+        "git_blob": "be8824dacc8c94e311fc32407223fbf069f7c612",
+        "bytes": 7085,
+        "sha256": "55f082fec6c560f1ec258cb1b44fb2d276dc273aa2002fd9315cc7fc56071afc"
+      },
+      {
+        "path": "results/compat/2026-10-19-scm-cloexec/prior-attempts/cloexec-red-01/result.json",
+        "mode": "100644",
+        "git_blob": "377f861a09edf41d598721f97687940ace286de1",
+        "bytes": 2371,
+        "sha256": "d665084e25ddbb1253be1af73125d7da1f31bce134c10798f09dbceda1b238e0"
+      },
+      {
+        "path": "results/compat/2026-10-19-scm-cloexec/prior-attempts/cloexec-red-01/serial.log.gz",
+        "mode": "100644",
+        "git_blob": "c2aac3dd11f47722949631f02e383190a4aec4f5",
+        "bytes": 90,
+        "sha256": "987eb88bdf5019ead3ae9f633f03a8d055d3f291f808856d35ab466744ffd37b"
+      },
+      {
+        "path": "results/compat/2026-10-19-scm-cloexec/prior-attempts/cloexec-red-02/result.json",
+        "mode": "100644",
+        "git_blob": "39921c2fb3cb0332a523f1eda78ba8e7ceb67561",
+        "bytes": 5069,
+        "sha256": "45bf4ece38484aebf7b6b740edadb2315b7f508c39f1a4dbe09aafc3182f69c8"
+      },
+      {
+        "path": "results/compat/2026-10-19-scm-cloexec/prior-attempts/cloexec-red-02/serial.log.gz",
+        "mode": "100644",
+        "git_blob": "067694cce9521f1c47e1838dae88de98ffe43790",
+        "bytes": 8041,
+        "sha256": "60a1776b2d544f54195b00d0483c857c217ed4bc7651abf716fbde0e1cef0095"
+      },
+      {
+        "path": "results/compat/2026-10-19-scm-cloexec/probe.elf.gz",
+        "mode": "100644",
+        "git_blob": "2154091b40672ec3a894db325d616c23fb1ac517",
+        "bytes": 349933,
+        "sha256": "05b7c4834d547b9d915204ab89de726564a474615dab48b64ba6c66a8977697a"
+      },
+      {
+        "path": "results/compat/2026-10-19-scm-cloexec/qemu-inputs.json",
+        "mode": "100644",
+        "git_blob": "7a121df1f94f26e538af64c557aeba7a559ebc5e",
+        "bytes": 3669,
+        "sha256": "d620d6af79e610951da9a79cdc430efbb1067f63cba39f31a2fa116d5389273f"
+      },
+      {
+        "path": "results/compat/2026-10-19-scm-cloexec/qemu-launcher.sh",
+        "mode": "100644",
+        "git_blob": "96a881594945c78d3d90e8447b3742ea62afdb0b",
+        "bytes": 334,
+        "sha256": "a8f639cdea3d44b5db7be507e2d67f83b41ab9a4d876781c6c30e986861ff36b"
+      },
+      {
+        "path": "results/compat/2026-10-19-scm-cloexec/red-result.json",
+        "mode": "100644",
+        "git_blob": "1781bb71e5f3eb16122717647c8e1fabc3d74325",
+        "bytes": 5278,
+        "sha256": "19aa9bc4df449131f5912aa2222a8b8dc7ddd2983ac4b042a10538814f28c907"
+      },
+      {
+        "path": "results/compat/2026-10-19-scm-cloexec/red-serial.log.gz",
+        "mode": "100644",
+        "git_blob": "1ee3abcedf90a537ac778e4d05c4f529abeb37f0",
+        "bytes": 8005,
+        "sha256": "0140fec375abc39d78aa3b57a72e76945d5352de00f875dc977f0bf4ea0da332"
+      },
+      {
+        "path": "tests/workloads/linux/SCM_RIGHTS_CLOEXEC.md",
+        "mode": "100644",
+        "git_blob": "9ea0b83e06452f0929566a57540386e8f9d18ca0",
+        "bytes": 5241,
+        "sha256": "4a2d919cea0414de00c520978e001837f227942752bfb67e6237ff134df6937b"
+      },
+      {
+        "path": "tests/workloads/linux/run_scm_rights_cloexec_guest.py",
+        "mode": "100644",
+        "git_blob": "3f008cb6f88637a351d5b53e52e51b49672222bf",
+        "bytes": 11957,
+        "sha256": "1d501766dd611652797643f047bde8ac6ac2d6e41225e74eca51817d44a7965d"
+      },
+      {
+        "path": "tests/workloads/linux/scm_rights_cloexec_probe.c",
+        "mode": "100644",
+        "git_blob": "27123e1fe0bb6bbdd4000b41ffbb14986375783e",
+        "bytes": 12784,
+        "sha256": "bd9c11eb31710d096e406cd0d3fa206f837dd58e6f8106a79ddbba796862a037"
+      },
+      {
+        "path": "tests/workloads/linux/test_scm_rights_cloexec_guest.py",
+        "mode": "100644",
+        "git_blob": "c137ae21badc7ebf73c15bded876f706b7c682ca",
+        "bytes": 4437,
+        "sha256": "5d76a37e5c70c1920f4f4665e09e7bc90bf49e16f764259c31b77113ed9c94ba"
+      }
+    ],
+    "production_paths": [
+      "kernel/asterinas/kernel/core/src/net/socket/unix/ctrl_msg.rs",
+      "kernel/asterinas/kernel/core/src/net/socket/util/message_flags.rs",
+      "kernel/asterinas/kernel/core/src/net/socket/util/message_header.rs",
+      "kernel/asterinas/kernel/core/src/syscall/recvmsg.rs",
+      "kernel/asterinas/kernel/core/src/util/net/socket.rs"
+    ],
+    "unchanged_helpers": [
+      {
+        "path": "kernel/asterinas/kernel/core/src/fs/file/file_table.rs",
+        "mode": "100644",
+        "git_blob": "f73004b975060c9bcd9cb1720baa0a7478867165",
+        "bytes": 13253,
+        "sha256": "7eb1a315b7e97054d949e56ff65a0dcd19ae225c374c1ea83a33948283ff2104",
+        "unchanged_from_G1_base": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/process/execve.rs",
+        "mode": "100644",
+        "git_blob": "9a89aed0a41be2839821d83cc7f9d91937fbad19",
+        "bytes": 13001,
+        "sha256": "6a2e83f655d7f1fc5a84669d607d0f24e6ffef2598ec95a6f009ca8ddcaaf77f",
+        "unchanged_from_G1_base": true
+      },
+      {
+        "path": "tests/organ_backend/run_guest_probe.py",
+        "mode": "100644",
+        "git_blob": "3ac1e16e2a99908b792f0b72ed727fa4af8f8042",
+        "bytes": 7541,
+        "sha256": "4bc5803f32ddc98b59af60f8acc03ff8a13d938f41d7a3b60d64581530867c5a",
+        "unchanged_from_G1_base": true
+      }
+    ],
+    "all_source_files_bound_to_Git": 6426,
+    "all_source_tracked_bytes": 103947441,
+    "three_snapshot_bytes_sha256": "8757e432c2a04cdbd57dc7d68117fb4bf3d10ed3635aa5617c1ac4ce4f1ef356",
+    "root_README_bytes": 0,
+    "G1_cpu_controller_os_control_HOS2_unchanged": true
+  },
+  "ci": {
+    "run": 39198594211,
+    "attempt": 1,
+    "job": 117886620994,
+    "started_at": "2026-10-19T04:15:56Z",
+    "completed_at": "2026-10-19T04:22:23Z",
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1,
+        "started_at": "2026-10-19T04:15:57Z",
+        "completed_at": "2026-10-19T04:15:57Z"
+      },
+      {
+        "name": "Run actions/checkout@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2,
+        "started_at": "2026-10-19T04:15:57Z",
+        "completed_at": "2026-10-19T04:16:12Z"
+      },
+      {
+        "name": "Install disposable kernel-test host dependencies",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3,
+        "started_at": "2026-10-19T04:16:12Z",
+        "completed_at": "2026-10-19T04:16:28Z"
+      },
+      {
+        "name": "Install pinned Rust toolchain and verify VDSO input",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4,
+        "started_at": "2026-10-19T04:16:28Z",
+        "completed_at": "2026-10-19T04:16:55Z"
+      },
+      {
+        "name": "Prepare fixed OSDK test locks",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 5,
+        "started_at": "2026-10-19T04:16:55Z",
+        "completed_at": "2026-10-19T04:16:58Z"
+      },
+      {
+        "name": "Run complete OSTD and aster-core kernel tests in real QEMU",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 6,
+        "started_at": "2026-10-19T04:16:58Z",
+        "completed_at": "2026-10-19T04:20:14Z"
+      },
+      {
+        "name": "Freeze one SCM_RIGHTS probe and verify all 27 cases on original Linux",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 7,
+        "started_at": "2026-10-19T04:20:14Z",
+        "completed_at": "2026-10-19T04:20:15Z"
+      },
+      {
+        "name": "Build ordinary G1 product and verify QueryAbi with all four disabled operations",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 8,
+        "started_at": "2026-10-19T04:20:15Z",
+        "completed_at": "2026-10-19T04:21:58Z"
+      },
+      {
+        "name": "Verify the same SCM_RIGHTS ELF on the exact ordinary kernel",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 9,
+        "started_at": "2026-10-19T04:21:58Z",
+        "completed_at": "2026-10-19T04:22:00Z"
+      },
+      {
+        "name": "Build exact A06 SMP=2 candidate kernel",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 10,
+        "started_at": "2026-10-19T04:22:00Z",
+        "completed_at": "2026-10-19T04:22:00Z"
+      },
+      {
+        "name": "Run bounded one-vCPU quota and two-vCPU exit-lifecycle probes",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 11,
+        "started_at": "2026-10-19T04:22:00Z",
+        "completed_at": "2026-10-19T04:22:18Z"
+      },
+      {
+        "name": "Upload exact A06 kernel and raw QEMU evidence",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 12,
+        "started_at": "2026-10-19T04:22:18Z",
+        "completed_at": "2026-10-19T04:22:21Z"
+      },
+      {
+        "name": "Post Run actions/checkout@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 24,
+        "started_at": "2026-10-19T04:22:21Z",
+        "completed_at": "2026-10-19T04:22:21Z"
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 25,
+        "started_at": "2026-10-19T04:22:21Z",
+        "completed_at": "2026-10-19T04:22:21Z"
+      }
+    ],
+    "observed_exact_head_checks": 4,
+    "observation_times": {
+      "run": "2026-10-19T04:47:06.769Z",
+      "jobs": "2026-10-19T04:47:06.828Z",
+      "checks": "2026-10-19T04:47:07.053Z"
+    }
+  },
+  "artifact": {
+    "id": 12162813771,
+    "zip_bytes": 23402372,
+    "zip_sha256": "bce2548f17c9b9d22bfc10e398999dacea07e2c8942f497a87435c3d38e76545",
+    "members": 93,
+    "uncompressed_bytes": 56623284,
+    "all_member_CRC_read_checks_passed": true
+  },
+  "SCM_CLOEXEC_current_CI": {
+    "profile": "three Unix socket types times nine fixed scenarios",
+    "linux_version": "Linux runnervm8k3b6 6.17.0-1022-azure #22-Ubuntu SMP Mon Jul 27 17:24:03 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux",
+    "linux_cases": 27,
+    "guest_cases": 27,
+    "cases": [
+      "stream.plain_receive",
+      "stream.cloexec_multifd",
+      "stream.peek_cloexec_then_plain",
+      "stream.peek_plain_then_cloexec",
+      "stream.truncated_control",
+      "stream.discarded_control",
+      "stream.no_control_message",
+      "stream.credentials_with_rights",
+      "stream.exec_inheritance",
+      "datagram.plain_receive",
+      "datagram.cloexec_multifd",
+      "datagram.peek_cloexec_then_plain",
+      "datagram.peek_plain_then_cloexec",
+      "datagram.truncated_control",
+      "datagram.discarded_control",
+      "datagram.no_control_message",
+      "datagram.credentials_with_rights",
+      "datagram.exec_inheritance",
+      "seqpacket.plain_receive",
+      "seqpacket.cloexec_multifd",
+      "seqpacket.peek_cloexec_then_plain",
+      "seqpacket.peek_plain_then_cloexec",
+      "seqpacket.truncated_control",
+      "seqpacket.discarded_control",
+      "seqpacket.no_control_message",
+      "seqpacket.credentials_with_rights",
+      "seqpacket.exec_inheritance"
+    ],
+    "same_actual_probe": {
+      "bytes": 808328,
+      "sha256": "9b80de2bb994d86d32592f5c2a4824c8406b41c1aedc74df299755c807065fb1"
+    },
+    "ordinary_kernel": {
+      "bytes": 8395328,
+      "sha256": "1145311a1335b866196019dfeea5937a86d4cbc4ff1efb222e8a229137b3737b"
+    },
+    "raw_serial": {
+      "bytes": 118164,
+      "sha256": "f810e3fd17795da4b50ead382eae0bc17a2cd3d65526d83a13080834d0b2f33a"
+    },
+    "probe_exit": 0,
+    "raw_QEMU_exit": 33,
+    "elapsed_seconds": 0.916034489000026,
+    "QEMU_version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)\nCopyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers\n",
+    "qemu_argv": [
+      "/usr/bin/qemu-system-x86_64",
+      "-kernel",
+      "/home/runner/work/_temp/a04-scm-guest/kernel.elf",
+      "-initrd",
+      "/home/runner/work/_temp/a04-scm-guest/initramfs.cpio.gz",
+      "-append",
+      "earlycon console=ttyS0 loglevel=info SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --",
+      "-machine",
+      "q35",
+      "-accel",
+      "tcg",
+      "-cpu",
+      "max",
+      "-bios",
+      "/home/runner/work/_temp/a04-scm-guest/bios.bin",
+      "-m",
+      "512M",
+      "-smp",
+      "1",
+      "-nodefaults",
+      "-no-user-config",
+      "-no-reboot",
+      "-nographic",
+      "-display",
+      "none",
+      "-monitor",
+      "none",
+      "-serial",
+      "stdio",
+      "-device",
+      "isa-debug-exit,iobase=0xf4,iosize=0x04"
+    ],
+    "original_initramfs_members": 25,
+    "injected_initramfs_members": 26,
+    "unchanged_all_other_initramfs_members": true,
+    "runner_host_regressions": [
+      {
+        "member": "_temp/a04-scm-linux/runner-tests.log",
+        "distinct_tests": 8,
+        "bytes": 1356,
+        "sha256": "d6d80197a57363f2a317e725c9c179f621fc5e01d1e8331a94756a954bc368b0"
+      },
+      {
+        "member": "_temp/a04-scm-linux/runner-tests-optimized.log",
+        "distinct_tests": 8,
+        "bytes": 1356,
+        "sha256": "d6d80197a57363f2a317e725c9c179f621fc5e01d1e8331a94756a954bc368b0"
+      }
+    ]
+  },
+  "G1_regression_scope": {
+    "ktests": [
+      {
+        "crate": "aster-core",
+        "reported_passed": 179,
+        "soft_skips": [],
+        "executed_passed_lower_bound": 179,
+        "raw_exit": 33,
+        "serial": {
+          "bytes": 20888,
+          "sha256": "98ee577a23e73c52375acc39ef70343c8ddf28ceb2f35630071f80e8e8552cd0"
+        },
+        "elf": {
+          "bytes": 9638696,
+          "sha256": "b1ffced8846adb1119201249423146039ef9aa61f83b163c23092a620e28bc04"
+        }
+      },
+      {
+        "crate": "ostd",
+        "reported_passed": 221,
+        "soft_skips": [
+          [
+            "ostd::arch::vm::vmx::test::multiple_vmx_guards_lifecycle",
+            "[skipped: VMX unavailable] ok"
+          ],
+          [
+            "ostd::arch::vm::vmx::vmcs::test::switch_and_reuse_vmcs",
+            "[skipped: VMX unavailable] ok"
+          ],
+          [
+            "ostd::vm::gpm_space::test::guest_mapping_lifecycle",
+            "[skipped: VMX/EPT invalidation unavailable] ok"
+          ]
+        ],
+        "executed_passed_lower_bound": 218,
+        "raw_exit": 33,
+        "serial": {
+          "bytes": 23028,
+          "sha256": "3df48e26fa5d067d2f4e035e3deb5d30cdc5b8e1e2152f19e9b4f608ef964361"
+        },
+        "elf": {
+          "bytes": 2008840,
+          "sha256": "2b7a43db228e89428f207efea8fe80bcd69a55eb9237ed93215800db5db9ac5e"
+        }
+      }
+    ],
+    "reported_total": 400,
+    "soft_skip_count": 3,
+    "executed_passed_lower_bound": 397,
+    "owner_tests": 10,
+    "QueryAbi_exact_markers": 14,
+    "effect_operations_still_disabled": 4,
+    "quota_receipts": [
+      {
+        "configured_vcpus": 1,
+        "recorded_percentages": [
+          0.8,
+          1.0
+        ],
+        "raw_serial_members": [
+          "_temp/a06-probe-1vcpu/serial-1.log",
+          "_temp/a06-probe-1vcpu/serial-2.log"
+        ],
+        "scope": "receipt and archived serial identities retained; no broader quota oracle rerun"
+      },
+      {
+        "configured_vcpus": 2,
+        "recorded_percentages": [
+          0.955,
+          1.0
+        ],
+        "raw_serial_members": [
+          "_temp/a06-probe-2vcpu/serial-1.log",
+          "_temp/a06-probe-2vcpu/serial-2.log"
+        ],
+        "scope": "receipt and archived serial identities retained; no broader quota oracle rerun"
+      }
+    ],
+    "reported_guest_invocations": 9
+  },
+  "legacy_RED": {
+    "original_manifest_members": 24,
+    "probe": {
+      "bytes": 808304,
+      "sha256": "0723be7d0ba01f6a94fd4766e4aaf98bc6590de4bbfe431455aefcba8e8eeb56"
+    },
+    "kernel": {
+      "bytes": 8405480,
+      "sha256": "f8785d9371f27b1f5e9ccd40da66ea25823ca50bfc7c431a89f20f88a45c4681"
+    },
+    "Linux_host": [
+      "Linux",
+      "2313cba36518",
+      "6.18.55",
+      "#1 SMP Wed Oct 14 19:45:18 UTC 2026",
+      "x86_64"
+    ],
+    "linux_passed": 27,
+    "old_kernel_passed": 3,
+    "old_kernel_failed": 24,
+    "old_kernel_probe_exit": 1,
+    "old_kernel_raw_QEMU_exit": 33,
+    "historical_new_kernel_status_retained": "pending exact candidate CI",
+    "PR_body_additional_0723_on_new_kernel_GREEN_independently_verified": false
+  },
+  "source_semantics": [
+    {
+      "path": "kernel/asterinas/kernel/core/src/syscall/recvmsg.rs",
+      "lines": [
+        21,
+        43,
+        55
+      ],
+      "finding": "Recognized caller flags survive the socket receive and flow into ancillary writing after dropping the initial file-table borrow. Returned flags union original socket and control flags with only the caller CMSG_CLOEXEC bit."
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/net/socket/unix/ctrl_msg.rs",
+      "lines": [
+        107,
+        147,
+        155
+      ],
+      "finding": "SCM_RIGHTS stores file Arcs without sender descriptor flags. Receive chooses CLOEXEC or empty from this call and inserts each descriptor with final flags under the original table write guard."
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/file/file_table.rs",
+      "lines": [
+        190,
+        208,
+        373
+      ],
+      "finding": "Existing insert constructs FileTableEntry including its AtomicU8 flags before table.put publishes it. close_files_on_exec selects CLOEXEC entries."
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/execve.rs",
+      "lines": [
+        382,
+        388
+      ],
+      "finding": "Existing exec unshares the file table and takes its write guard for close_files_on_exec. This supports atomic descriptor publication by code inspection; no concurrent-exec stress run is inferred."
+    }
+  ],
+  "limits": [
+    "The 27-case exec scenario checks fork/exec inheritance and cleanup; it is not a concurrent descriptor-install/exec race stress test.",
+    "FileTable resource limits, FD reservation/failure rollback and copyout-fault semantics remain separate work; the five-path patch does not close RLIMIT_NOFILE.",
+    "Three full source snapshots cover the ordinary-product/QueryAbi interval before the additional SCM guest. The SCM runner separately binds its source helpers and unchanged guest inputs; no full post-SCM Git snapshot is claimed.",
+    "The current CI ELF is 9b80... on Linux 6.17.0-1022-azure and the new kernel. Historical 0723... Linux 6.18.55/old-kernel RED is separately preserved. Additional 0723... new-kernel GREEN is a PR-body claim not independently evidenced in this retrieved ZIP.",
+    "No downloaded executable, product test, Cargo or QEMU was run in this review. Old source-qualified G1-a conclusions are retained under their original heads; this new CI is a separate fixed-source result.",
+    "This does not grant general SMP/IRQ, native authority or HOS2 effect, fixed Debian13 four-ELF profile, full Linux compatibility, Hepta device-effect, ARM kernel or physical/mobile device qualification."
+  ],
+  "member_manifest": {
+    "path": "pr198-a06-members.json",
+    "bytes": 22461,
+    "sha256": "afd3ca33c322995f2698bfb7ce659091091448e26034df4ce5507de637e7dec8"
+  },
+  "status": "passed",
+  "blocking_findings": [],
+  "completed_at_utc": "2026-10-19T04:58:46.292147+00:00",
+  "checks_completed": 6975
+}

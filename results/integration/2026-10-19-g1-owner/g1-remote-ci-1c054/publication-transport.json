@@ -1,0 +1,67 @@
+{
+  "schema": "r10.ci-original-archive-parts-publication.v1",
+  "completed_at_utc": "2026-10-19T04:02:16.940206+00:00",
+  "original_frozen_manifest": {
+    "path": "1c054-frozen-files.json",
+    "bytes": 3499,
+    "sha256": "21b8d2f289502883cba16148d6876a74cf5d235428baa7a19e90e3963875bdc7"
+  },
+  "original_archive": {
+    "path": "a06-exact-kernel-ktest-39196471075.zip",
+    "bytes": 18446493,
+    "sha256": "d9623e880bf559392f92c6bc9359a02629b6ff548e853e9f05cf1598b711fbbd"
+  },
+  "original_archive_body_in_git_delivery": false,
+  "original_preserved_outside_git_delivery": "/workspace/scratch/499c7902de8e/r10-evidence/r10-delivery-review/1c054-a06-exact-kernel-ktest-39196471075.zip",
+  "original_frozen_manifest_unchanged": true,
+  "parts_manifest": {
+    "path": "archive-parts.json",
+    "bytes": 3076,
+    "sha256": "e0b80c8511db4f2e52374cbf65f84ffaa3bceabd77646cf00d89e674cacb23e4"
+  },
+  "split_execution": {
+    "argv": [
+      "python3",
+      "-I",
+      "/workspace/scratch/499c7902de8e/r10-evidence/r10-delivery-review/split-r10-archives.py",
+      "--root",
+      "/workspace/scratch/499c7902de8e/r10-g1-delivery/results/integration/2026-10-19-g1-owner/g1-remote-ci-1c054",
+      "--config",
+      "/workspace/scratch/499c7902de8e/r10-g1-delivery/results/integration/2026-10-19-g1-owner/g1-remote-ci-1c054/archive-parts-config.json",
+      "--receipt",
+      "/workspace/scratch/499c7902de8e/r10-g1-delivery/results/integration/2026-10-19-g1-owner/g1-remote-ci-1c054/archive-parts-execution.json"
+    ],
+    "exit_code": 0,
+    "output": "{\"schema\": \"r10.archive-parts-execution.v1\", \"completed_at_utc\": \"2026-10-19T04:02:15.945570+00:00\", \"manifest\": {\"path\": \"archive-parts.json\", \"bytes\": 3076, \"sha256\": \"e0b80c8511db4f2e52374cbf65f84ffaa3bceabd77646cf00d89e674cacb23e4\"}, \"archive_count\": 1, \"parts_count\": 12, \"all_original_archives_unchanged\": true, \"all_part_bytes_and_roundtrip_hashes_verified\": true, \"archive_recompression\": false}\n"
+  },
+  "actual_empty_directory_restore": {
+    "argv": [
+      "python3",
+      "-I",
+      "/workspace/scratch/499c7902de8e/r10-evidence/r10-delivery-review/restore-r10-archives.py",
+      "--manifest",
+      "/workspace/scratch/499c7902de8e/r10-g1-delivery/results/integration/2026-10-19-g1-owner/g1-remote-ci-1c054/archive-parts.json",
+      "--output-root",
+      "/workspace/scratch/499c7902de8e/r10-evidence/r10-delivery-review/ci-1c054-actual-restoration"
+    ],
+    "exit_code": 0,
+    "output": "{\n  \"status\": \"verified\",\n  \"verify_only\": false,\n  \"archives\": [\n    {\n      \"path\": \"a06-exact-kernel-ktest-39196471075.zip\",\n      \"bytes\": 18446493,\n      \"sha256\": \"d9623e880bf559392f92c6bc9359a02629b6ff548e853e9f05cf1598b711fbbd\",\n      \"parts\": 12,\n      \"existing_archive_verified\": false,\n      \"restored\": true,\n      \"all_part_identities_verified\": true\n    }\n  ]\n}\n"
+  },
+  "restored_archive": "/workspace/scratch/499c7902de8e/r10-evidence/r10-delivery-review/ci-1c054-actual-restoration/a06-exact-kernel-ktest-39196471075.zip",
+  "source_archive_absent_before_and_after_restore": true,
+  "original_restored_bytes_equal": true,
+  "archive_not_recompressed_or_modified": true,
+  "all_zip_members_independently_verified_before_and_after_restore": {
+    "archive": "a06-exact-kernel-ktest-39196471075.zip",
+    "member_manifest": "a06-artifact-members.json",
+    "member_manifest_sha256": "ff4a69ac867c5aeeef466a847c2b7030f03e6abb6543b9041f88c5c0970942ce",
+    "regular_members": 76,
+    "uncompressed_bytes": 44759885,
+    "safe_paths_no_symlinks_no_duplicates": true,
+    "all_member_size_sha256_crc32_verified": true,
+    "zip_crc_test_passed": true,
+    "no_member_executed": true
+  },
+  "no_product_execution_or_producer_worktree_access": true,
+  "instructions": "Run ../review/restore-r10-archives.py with this directory archive-parts.json and a new --output-root. The restored ZIP matches the original frozen manifest. Internal ZIP paths are read after restoration/extraction; the ZIP body is intentionally absent from the Git tree."
+}

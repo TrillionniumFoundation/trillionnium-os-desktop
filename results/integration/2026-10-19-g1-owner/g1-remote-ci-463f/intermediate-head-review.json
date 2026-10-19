@@ -1,0 +1,171 @@
+{
+  "schema": "r10.g1-pr197.intermediate-head-review.v1",
+  "reviewed_at_utc": "2026-10-19T03:35:52.076462+00:00",
+  "remote_head": "463f70e36df6571faf6db45975d433ca10b0ddf6",
+  "same_tree_local_commit": "bc778b6b8114e5017a467c0566f5777d85abafaf",
+  "tree": "0218fa196b3ebb7a3f91c77906ab4ce30a67afe8",
+  "all_relevant_gates_passed": false,
+  "jobs_observation": "observation-002-jobs-terminal.json",
+  "gate_conclusions": {
+    "g0_jobs": "success",
+    "a03_jobs": "failure",
+    "a06_jobs": "success"
+  },
+  "a03": {
+    "artifact": {
+      "path": "a03-native-models-39194495110.zip",
+      "bytes": 15017,
+      "sha256": "6cb66276eb8bbb50ec0ccafd76d2d9ab5691b5d3dd1227129c4303542e7a6469"
+    },
+    "loom_actual_models": {
+      "default_shim": 13,
+      "public_backend": 6
+    },
+    "loom_exit_code": 0,
+    "loom_source_hashes_rechecked_against_git": 12,
+    "loom_source_unchanged": true,
+    "allocator_build": {
+      "argv": [
+        "/home/runner/.cargo/bin/cargo",
+        "build",
+        "--offline",
+        "--manifest-path",
+        "/tmp/hos2-lock-alloc-jjdgy6q8/Cargo.toml",
+        "-p",
+        "lock-alloc-fixture"
+      ],
+      "cwd": "/tmp/hos2-lock-alloc-jjdgy6q8",
+      "elapsed_seconds": 0.567488,
+      "returncode": 0,
+      "stderr": "build.stderr.log",
+      "stderr_sha256": "33c16e134ac26cfa2e9743397d3ddf3617a40a227e7014442173cfc990a3a986",
+      "stdout": "build.stdout.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "timed_out": false
+    },
+    "allocator_format": {
+      "argv": [
+        "/home/runner/.cargo/bin/cargo",
+        "fmt",
+        "--all",
+        "--check"
+      ],
+      "cwd": "/tmp/hos2-lock-alloc-jjdgy6q8",
+      "elapsed_seconds": 0.05503,
+      "returncode": 0,
+      "stderr": "format.stderr.log",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "format.stdout.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "timed_out": false
+    },
+    "allocator_clippy": {
+      "argv": [
+        "/home/runner/.cargo/bin/cargo",
+        "clippy",
+        "--offline",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/tmp/hos2-lock-alloc-jjdgy6q8",
+      "elapsed_seconds": 0.260316,
+      "returncode": 101,
+      "stderr": "clippy.stderr.log",
+      "stderr_sha256": "3e95de8961eb602af41e66db94fa83b0ca3ee0fe447b3eef5316a2a8d91d9044",
+      "stdout": "clippy.stdout.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "timed_out": false
+    },
+    "allocator_observed_stderr": "    Checking lock-trace v0.0.0 (/tmp/hos2-lock-alloc-jjdgy6q8/lock-trace)\n    Checking os-control v0.0.0 (/tmp/hos2-lock-alloc-jjdgy6q8/os-control)\nerror: unexpected `cfg` condition name: `ktest`\n   --> os-control/src/resource_state.rs:163:11\n    |\n163 |     #[cfg(ktest)]\n    |           ^^^^^ help: there is a config with a similar name: `test`\n    |\n    = help: consider using a Cargo feature instead\n    = help: or consider adding in `Cargo.toml` the `check-cfg` lint config for the lint:\n             [lints.rust]\n             unexpected_cfgs = { level = \"warn\", check-cfg = ['cfg(ktest)'] }\n    = help: or consider adding `println!(\"cargo::rustc-check-cfg=cfg(ktest)\");` to the top of the `build.rs`\n    = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration\n    = note: `-D unexpected-cfgs` implied by `-D warnings`\n    = help: to override `-D warnings` add `#[allow(unexpected_cfgs)]`\n\nerror: could not compile `os-control` (lib) due to 1 previous error\nwarning: build failed, waiting for other jobs to finish...\nerror: could not compile `os-control` (lib test) due to 1 previous error\n",
+    "generated_os_control_manifest": {
+      "contents": "[package]\nname = \"os-control\"\nversion = \"0.0.0\"\nedition = \"2021\"\n[features]\ndefault = [\"std\"]\nstd = []\nportable-spin = []\n[dependencies]\n[lints.rust]\nunsafe_code = \"forbid\"\n",
+      "sha256": "e8ee650969e6fe7784e290be0d7f38fb0206fe8426481b8be2bc5320566f1ec2"
+    },
+    "allocator_execution_field_present": false,
+    "limits": [
+      "current_check_executed=true denotes entry into the driver; the preflight Clippy failed before the allocator fixture run was recorded.",
+      "No current_zero allocation result is claimed; this was not an expected negative allocator control.",
+      "These are bounded host models, not kernel allocator or IRQ proof."
+    ]
+  },
+  "a06": {
+    "artifact": {
+      "path": "a06-exact-kernel-ktest-39194495150.zip",
+      "bytes": 18334024,
+      "sha256": "f5d8ac6cad22e90fc1ce3102447b1487eb6962ae95a4971c118edd9513115018"
+    },
+    "inspection_scope": "Archive safety/CRC/all-member digest manifest, actual QueryAbi markers and report, three source-snapshot byte equality. Full per-Git-file/ELF/lock independent review is reserved for the final corrected head; this intermediate record does not borrow f744 qualification.",
+    "reported_ktest": {
+      "passed": true,
+      "crates": [
+        {
+          "passed": true,
+          "guests": [
+            {
+              "crate": "ostd",
+              "declared": 221,
+              "passed": 221,
+              "failed": 0,
+              "filtered": 0,
+              "soft_skipped": 3,
+              "soft_skip_reasons": [
+                "VMX unavailable",
+                "VMX unavailable",
+                "VMX/EPT invalidation unavailable"
+              ],
+              "exercised_passed_lower_bound": 218,
+              "observed_test_starts": 221,
+              "raw_qemu_exit": 33,
+              "guest": "guest-001"
+            }
+          ]
+        },
+        {
+          "passed": true,
+          "guests": [
+            {
+              "crate": "aster-core",
+              "declared": 179,
+              "passed": 179,
+              "failed": 0,
+              "filtered": 0,
+              "soft_skipped": 0,
+              "soft_skip_reasons": [],
+              "exercised_passed_lower_bound": 179,
+              "observed_test_starts": 179,
+              "raw_qemu_exit": 33,
+              "guest": "guest-001"
+            }
+          ]
+        }
+      ]
+    },
+    "queryabi_exact_marker_counts": {
+      "HEPTA_DISABLED_INSTALL_BUDGET_OK": 1,
+      "HEPTA_DISABLED_QUERY_DELIVERY_OK": 1,
+      "HEPTA_DISABLED_READ_USAGE_OK": 1,
+      "HEPTA_DISABLED_RETIRE_THROUGH_OK": 1,
+      "HEPTA_DUP_SESSION_STABLE": 1,
+      "HEPTA_EXEC_CAPSPACE_ROTATED": 1,
+      "HEPTA_EXEC_EPOCH_DENIED": 1,
+      "HEPTA_EXEC_PREIMAGE_QUERYABI_OK": 1,
+      "HEPTA_FORK_CAPSPACE_DISTINCT": 1,
+      "HEPTA_FORK_INHERITED_FD_DENIED": 1,
+      "HEPTA_NONROOT_OPEN_DENIED": 1,
+      "HEPTA_QUERYABI_CANDIDATE_OK disabled_operations=4": 1,
+      "HEPTA_QUERYABI_OK ops=QueryAbi_only, process_bound_session=yes, denied_invalid=yes": 1,
+      "TRILLIONNIUM_A01_BOOT_OK": 1
+    },
+    "queryabi_source_head": "463f70e36df6571faf6db45975d433ca10b0ddf6",
+    "queryabi_source_tree": "0218fa196b3ebb7a3f91c77906ab4ce30a67afe8",
+    "queryabi_source_file_count": 5851,
+    "three_snapshot_bytes_equal": true,
+    "snapshot_sha256": "91caf62fd96a0837c2ed224fbe200666bc8c3ed61138af72439bdb71556d21ad",
+    "product_elf_sha256_observed": "f8785d9371f27b1f5e9ccd40da66ea25823ca50bfc7c431a89f20f88a45c4681"
+  },
+  "no_product_or_runtime_reexecution": true,
+  "no_pr_or_workflow_mutation": true
+}

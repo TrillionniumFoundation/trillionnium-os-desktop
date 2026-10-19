@@ -1,0 +1,81 @@
+{
+  "schema": 1,
+  "phase": "G1-a producer handoff before guest execution",
+  "observed_at": "2026-10-19T01:33:06.061701+00:00",
+  "source": {
+    "path": "/workspace/scratch/499c7902de8e/r10-g1-owner",
+    "head": "be6d8408878dc25fce3188e1fc759aa227bf8678",
+    "tree": "9992584208a8b03a97454e654ed603a47058f5fa",
+    "parent": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+    "clean": true
+  },
+  "files_sha256": {
+    ".github/workflows/a06-kernel.yml": "59e3fbefe3c83814c55a5fb4f15dcc408a9fb91a315a293661aee6f75fc087fe",
+    "docs/ASTERINAS_CPU_BANDWIDTH_N0.md": "e5e53019c21dd75a5413af5a617c1fb0a076d073598266c39db6ad66b6cc7788",
+    "docs/ASTERINAS_CPU_OWNER_G1A.md": "daaaad75d12dfa518a27d7282798cdea005bf86942062341fff663c559047c76",
+    "kernel/asterinas/Cargo.toml": "153bea9f3a0ec926947f9e7207ab458222453cf162283d88a6d25fdeb837048d",
+    "kernel/asterinas/kernel/core/Cargo.toml": "8a5ca474b72fbc81120c41232607e59d0533c736f74315754d64045a868ce6e4",
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs": "ea74592acf422da93d9fa4dd1de8dc89808e778c69930562943e1c3580e8ae3c",
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/config_regressions.rs": "598e1d9882ff40a84722c4fc2ba3f9decc5c781c628c2850c74fbcf558c72830",
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/final_charge_regressions.rs": "6dad5fdcea16fe58c421c21f8440f15726a19237c112e6188d6f59fe9f84f3bf",
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs": "88fc48cc18e45cffe91a5bcca71454543a7acef134ffc52aab6c6d630712422d",
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/tests.rs": "f4e613e21bee44c77b207919d621c751f49830ef2476b0ae8e3c96ed9b7b5a02",
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/mod.rs": "e72a5cca40ce4429d0d7d5ec2caa3592f29f9adb329a437e9f8026bca969fa7b",
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/inode.rs": "1b7aad53f6c667a9292fb4e7ed2bd93121371dcc1f11c63f60a7031c96251cf8",
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/systree_node.rs": "1f215e696b6356bd67fd7cda5c00ab6babbf5f7dce45c6da5eacee0b8661b302",
+    "libs/os-control/Cargo.toml": "57dbfcb0521f45a62574534da0db7de3db15a8910d81b67b2ccbdc6326d3a20f",
+    "libs/os-control/src/resource_state.rs": "045f8bf459736dc9f63fd9dc1e78cc0f2371694a3ee28f53058202f7716ab68a",
+    "support/build/README.md": "2b66cb8dda2bf11e4fe908d78bfc777bf12d89a044bc4fd054898a90db0f986c",
+    "support/build/ktest/README.md": "0913a1b1c0c75627909a85d344298d9cd4a5867c1bbd51096b191e9051727091",
+    "support/build/ktest/locks/aster-core.Cargo.lock": "85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150",
+    "support/build/ktest/locks/aster-core.json": "ef4a6856ce78a9e4f7e8f2a08130147d646b813ecff34a5d647d9dc4ee2d0cd6",
+    "support/build/ktest/locks/ostd.json": "fa65f950c867097e08feb28d371698c29e9ee9e9eb1ba4a780ce1c5e874f87c3",
+    "support/build/ktest/prepare-locks.py": "8fe769fbcfa3869ba2fb7f411812eff1830b8763f10619f83a8974c03e85be7a",
+    "support/build/minimal/Cargo.lock": "e54bc99b3df5e21a1fdcd88d89b32ac478e73c7b4bf69ae0b1084f59d56fc506",
+    "support/build/verify-source.py": "9847a7fdca5485659cacc0107176f85abe81c67cf404ac0c09ac26404a5bee94"
+  },
+  "checks": {
+    "verify_source": {
+      "exit": 0,
+      "checked_files": 118,
+      "receipt": "source-inputs.json"
+    },
+    "aster_core_lock": {
+      "exit": 0,
+      "packages": 200,
+      "receipt": "prepare-locks-02.log"
+    },
+    "ostd_lock": {
+      "exit": 0,
+      "packages": 97,
+      "receipt": "prepare-ostd-lock-01.log"
+    },
+    "selected_rustfmt": {
+      "exit": 0,
+      "scope": "8 explicitly selected files; cpu.rs retains pre-existing unrelated formatting, touched sections formatted"
+    },
+    "diff_check": {
+      "exit": 0
+    },
+    "static_source": {
+      "receipt": "light-source-checks.json"
+    }
+  },
+  "not_run": [
+    "Rust kernel compilation",
+    "kernel ktests",
+    "QueryAbi guest regression",
+    "actual unmapped-user-address page fault",
+    "run-base Cargo locked resolution"
+  ],
+  "next_command": [
+    "python3",
+    "-I",
+    "support/build/ktest/run.py",
+    "--crate",
+    "aster-core",
+    "--skip-osdk-install",
+    "--output",
+    "/absolute/fresh/g1a-ktest"
+  ]
+}

@@ -1,0 +1,575 @@
+{
+  "schema": "r10.report-main-sync-source-integration.v1",
+  "reviewed_at_utc": "2026-10-19T05:06:59.119485+00:00",
+  "incoming_main": "7e859b98c58053b88ea2baabc3e5f645fd38dca5",
+  "incoming_tree": "354adb549b064c78477932ca943309694eb54356",
+  "incoming_parents": [
+    "71ce079c3218a8692476e4113b60c9d2c0d2a172",
+    "dafa1eba79cb1e17f880b5f0c5d57a80510d5d68"
+  ],
+  "previous_main": "71ce079c3218a8692476e4113b60c9d2c0d2a172",
+  "pre_sync_delivery": {
+    "commit": "bc309bebba52622dd165a657447306a2cf32928e",
+    "tree": "477f6e9fdb9be7a15c94f9d534eb8ec033ecc47b"
+  },
+  "incoming_tracked_file_count": 6426,
+  "all_report_external_files_checked": 6424,
+  "all_report_external_file_bytes": 103791575,
+  "all_report_external_modes_and_Git_blobs_equal_incoming_main": true,
+  "incoming_changes": [
+    {
+      "path": ".github/workflows/a06-kernel.yml",
+      "mode": "100644",
+      "bytes": 10053,
+      "sha256": "4a4addd80cb72ac1b94d686f886f024a2d44b9561a3077e266ac4f44ebd57a69",
+      "git_blob": "1dd4f258f3f50664dcd65a2592d68508b07ba397",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "1dd4f258f3f50664dcd65a2592d68508b07ba397"
+      },
+      "resolution": "Exact incoming bytes and mode retained."
+    },
+    {
+      "path": "docs/INDEX.md",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "a061f3e1029b8fecdc7dec87d0b78756dfc52dda"
+      },
+      "resolution": "Only authorized INDEX prose changes; all incoming targets retained.",
+      "incoming_distinct_targets": 82
+    },
+    {
+      "path": "docs/agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+      "mode": "100644",
+      "bytes": 16450,
+      "sha256": "ef2df5f82ab4f88a5efbbf8495506bfb272dcf28db948a62c5c68d536163aad3",
+      "git_blob": "e3f3bab37f6effdce3ec5f0a0c86d904b96d6482",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "e3f3bab37f6effdce3ec5f0a0c86d904b96d6482"
+      },
+      "resolution": "Exact incoming bytes and mode retained."
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/net/socket/unix/ctrl_msg.rs",
+      "mode": "100644",
+      "bytes": 12281,
+      "sha256": "faec77bae16dd4c3679ead1dfa031e0283228bd81af0362252ecd1dbd85154dc",
+      "git_blob": "be2ff1ca7069a9da9e52bac8c870a65a8df2c27f",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "be2ff1ca7069a9da9e52bac8c870a65a8df2c27f"
+      },
+      "resolution": "Exact incoming bytes and mode retained."
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/net/socket/util/message_flags.rs",
+      "mode": "100644",
+      "bytes": 2183,
+      "sha256": "3480122ccc58d6aea409ee5efbe9ebff200954b32c22d0d6c09845bf572c4095",
+      "git_blob": "878aede32511ca48d91b5778ea8bd5f44e073b82",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "878aede32511ca48d91b5778ea8bd5f44e073b82"
+      },
+      "resolution": "Exact incoming bytes and mode retained."
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/net/socket/util/message_header.rs",
+      "mode": "100644",
+      "bytes": 6929,
+      "sha256": "0bd03a9280c41279687c39ea71d7bfe561a9bcae6a63d67ccd82efdedb02d8b8",
+      "git_blob": "6cc199828cac2cdaa6406efe894c3c8ba7681bf7",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "6cc199828cac2cdaa6406efe894c3c8ba7681bf7"
+      },
+      "resolution": "Exact incoming bytes and mode retained."
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/syscall/recvmsg.rs",
+      "mode": "100644",
+      "bytes": 2192,
+      "sha256": "86fe57826894007eaa78b7785617b891e45b27a1f4d563c2769dbbffbd735123",
+      "git_blob": "7dc08d9bc966bb2fd176bf729acb8a4d56936304",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "7dc08d9bc966bb2fd176bf729acb8a4d56936304"
+      },
+      "resolution": "Exact incoming bytes and mode retained."
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/util/net/socket.rs",
+      "mode": "100644",
+      "bytes": 6512,
+      "sha256": "33148f412464be90b4f3cbf20c683e05bd14d2471e3bce6dc00b41e0422b244e",
+      "git_blob": "24aac7b5ea67a2998b63adba589e04e74a8312d1",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "24aac7b5ea67a2998b63adba589e04e74a8312d1"
+      },
+      "resolution": "Exact incoming bytes and mode retained."
+    },
+    {
+      "path": "results/compat/2026-10-19-scm-cloexec/MANIFEST.json",
+      "mode": "100644",
+      "bytes": 4118,
+      "sha256": "007b60a1cc66d3580fc44985364c832650315052e40489ec039288e7f934436d",
+      "git_blob": "353c0962147b0fc421e7cfd2cb29b2ca75cfba4d",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "353c0962147b0fc421e7cfd2cb29b2ca75cfba4d"
+      },
+      "resolution": "Exact incoming bytes and mode retained."
+    },
+    {
+      "path": "results/compat/2026-10-19-scm-cloexec/README.md",
+      "mode": "100644",
+      "bytes": 2070,
+      "sha256": "aa59c0a6c03021b9b2ca89e5839f57b1355b505be2b466de75f920a4284c4937",
+      "git_blob": "2f8fc6f16fa52eda33583b98d064f29a40f24bae",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "2f8fc6f16fa52eda33583b98d064f29a40f24bae"
+      },
+      "resolution": "Exact incoming bytes and mode retained."
+    },
+    {
+      "path": "results/compat/2026-10-19-scm-cloexec/compile.log",
+      "mode": "100644",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+      },
+      "resolution": "Exact incoming bytes and mode retained."
+    },
+    {
+      "path": "results/compat/2026-10-19-scm-cloexec/g1a-independent-review.json",
+      "mode": "100644",
+      "bytes": 2613,
+      "sha256": "f415e95a06f6eedb7f3adcb53652687beddf404d8ca55c7d2186ea4dc91742f6",
+      "git_blob": "78f60b9eff23d84b8ed6baec8d6ce76b9a02d53e",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "78f60b9eff23d84b8ed6baec8d6ce76b9a02d53e"
+      },
+      "resolution": "Exact incoming bytes and mode retained."
+    },
+    {
+      "path": "results/compat/2026-10-19-scm-cloexec/g1a-new-head-review.json",
+      "mode": "100644",
+      "bytes": 3834,
+      "sha256": "dd4197ec59e8f12a08d3463496664724c957a9bcdac1a8b5a47129c55090b9c8",
+      "git_blob": "ee746b964e8d6259884f32a9bda4d2a8fc208f88",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "ee746b964e8d6259884f32a9bda4d2a8fc208f88"
+      },
+      "resolution": "Exact incoming bytes and mode retained."
+    },
+    {
+      "path": "results/compat/2026-10-19-scm-cloexec/independent-review.json",
+      "mode": "100644",
+      "bytes": 874,
+      "sha256": "785605706c56c158e4ac5d6fae59900a941505bff1a20c5ef7c8db1258a86631",
+      "git_blob": "ad94a5c0a8b4d7f2f357f45daad214683a9bbd92",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "ad94a5c0a8b4d7f2f357f45daad214683a9bbd92"
+      },
+      "resolution": "Exact incoming bytes and mode retained."
+    },
+    {
+      "path": "results/compat/2026-10-19-scm-cloexec/kernel.elf.gz",
+      "mode": "100644",
+      "bytes": 2587960,
+      "sha256": "e3e500006b0cfa067981b8afbf6ad13333bae872384b83916c5e313709662523",
+      "git_blob": "24f96995acc1b5793d7d647270a51703a0a46e45",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "24f96995acc1b5793d7d647270a51703a0a46e45"
+      },
+      "resolution": "Exact incoming bytes and mode retained."
+    },
+    {
+      "path": "results/compat/2026-10-19-scm-cloexec/linux-reference-unrestricted.json",
+      "mode": "100644",
+      "bytes": 636,
+      "sha256": "2689e4215a10fa205c0c37ed8ca1a0f498bb91ae743910c841b9e573f05bd1ef",
+      "git_blob": "f86a1229dc14bb66a73d76c591551d7f3d42e047",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "f86a1229dc14bb66a73d76c591551d7f3d42e047"
+      },
+      "resolution": "Exact incoming bytes and mode retained."
+    },
+    {
+      "path": "results/compat/2026-10-19-scm-cloexec/linux-reference-unrestricted.stderr.log",
+      "mode": "100644",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+      },
+      "resolution": "Exact incoming bytes and mode retained."
+    },
+    {
+      "path": "results/compat/2026-10-19-scm-cloexec/linux-reference-unrestricted.stdout.log",
+      "mode": "100644",
+      "bytes": 1912,
+      "sha256": "05c93c49ac14c4c033912282356e234450e3f3f4e13014e758f9a714f57b52e1",
+      "git_blob": "8e171c7e7392dee24d5cffa280dc17b7060f6b4f",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "8e171c7e7392dee24d5cffa280dc17b7060f6b4f"
+      },
+      "resolution": "Exact incoming bytes and mode retained."
+    },
+    {
+      "path": "results/compat/2026-10-19-scm-cloexec/linux-reference.json",
+      "mode": "100644",
+      "bytes": 984,
+      "sha256": "fcc4314e36f3790becab6b94040b8c37c99e0f223c99f49e56830cfe6a1f2f07",
+      "git_blob": "81e2b0c6804b4d0b5b6dd4d97987821db4b6a336",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "81e2b0c6804b4d0b5b6dd4d97987821db4b6a336"
+      },
+      "resolution": "Exact incoming bytes and mode retained."
+    },
+    {
+      "path": "results/compat/2026-10-19-scm-cloexec/linux-reference.stderr.log",
+      "mode": "100644",
+      "bytes": 387,
+      "sha256": "d3d5a5ee1fe8909f87bd3da43dc58a9b4924b82b68828792e7c42ad48e611fa6",
+      "git_blob": "0480641c7e7a9f02aac38488f2e1561710584981",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "0480641c7e7a9f02aac38488f2e1561710584981"
+      },
+      "resolution": "Exact incoming bytes and mode retained."
+    },
+    {
+      "path": "results/compat/2026-10-19-scm-cloexec/linux-reference.stdout.log",
+      "mode": "100644",
+      "bytes": 1918,
+      "sha256": "994515cf4512d76a1ff5e697d483a9d8755879d128a0c54213cebfc8979fe825",
+      "git_blob": "61061d46a347aaf80ab9247c42b50784adf692ce",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "61061d46a347aaf80ab9247c42b50784adf692ce"
+      },
+      "resolution": "Exact incoming bytes and mode retained."
+    },
+    {
+      "path": "results/compat/2026-10-19-scm-cloexec/original-product-receipt.json",
+      "mode": "100644",
+      "bytes": 3360,
+      "sha256": "24dfb21ecba2feed66942b3dc548466a300042459109f496c422f45c65383590",
+      "git_blob": "3b748da6923dbbab7ddb6b3bfd829503b56ce8ef",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "3b748da6923dbbab7ddb6b3bfd829503b56ce8ef"
+      },
+      "resolution": "Exact incoming bytes and mode retained."
+    },
+    {
+      "path": "results/compat/2026-10-19-scm-cloexec/original-source-snapshot.json.gz",
+      "mode": "100644",
+      "bytes": 399513,
+      "sha256": "9b0f8e2987f9dfcf38dce04c0cb063766bdd3b28b6951b5fb0e7b0dbc6398572",
+      "git_blob": "43b90d3e3ec290ef8cf00e9fc7c32133b3387744",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "43b90d3e3ec290ef8cf00e9fc7c32133b3387744"
+      },
+      "resolution": "Exact incoming bytes and mode retained."
+    },
+    {
+      "path": "results/compat/2026-10-19-scm-cloexec/ownership-check.json",
+      "mode": "100644",
+      "bytes": 7085,
+      "sha256": "55f082fec6c560f1ec258cb1b44fb2d276dc273aa2002fd9315cc7fc56071afc",
+      "git_blob": "be8824dacc8c94e311fc32407223fbf069f7c612",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "be8824dacc8c94e311fc32407223fbf069f7c612"
+      },
+      "resolution": "Exact incoming bytes and mode retained."
+    },
+    {
+      "path": "results/compat/2026-10-19-scm-cloexec/prior-attempts/cloexec-red-01/result.json",
+      "mode": "100644",
+      "bytes": 2371,
+      "sha256": "d665084e25ddbb1253be1af73125d7da1f31bce134c10798f09dbceda1b238e0",
+      "git_blob": "377f861a09edf41d598721f97687940ace286de1",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "377f861a09edf41d598721f97687940ace286de1"
+      },
+      "resolution": "Exact incoming bytes and mode retained."
+    },
+    {
+      "path": "results/compat/2026-10-19-scm-cloexec/prior-attempts/cloexec-red-01/serial.log.gz",
+      "mode": "100644",
+      "bytes": 90,
+      "sha256": "987eb88bdf5019ead3ae9f633f03a8d055d3f291f808856d35ab466744ffd37b",
+      "git_blob": "c2aac3dd11f47722949631f02e383190a4aec4f5",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "c2aac3dd11f47722949631f02e383190a4aec4f5"
+      },
+      "resolution": "Exact incoming bytes and mode retained."
+    },
+    {
+      "path": "results/compat/2026-10-19-scm-cloexec/prior-attempts/cloexec-red-02/result.json",
+      "mode": "100644",
+      "bytes": 5069,
+      "sha256": "45bf4ece38484aebf7b6b740edadb2315b7f508c39f1a4dbe09aafc3182f69c8",
+      "git_blob": "39921c2fb3cb0332a523f1eda78ba8e7ceb67561",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "39921c2fb3cb0332a523f1eda78ba8e7ceb67561"
+      },
+      "resolution": "Exact incoming bytes and mode retained."
+    },
+    {
+      "path": "results/compat/2026-10-19-scm-cloexec/prior-attempts/cloexec-red-02/serial.log.gz",
+      "mode": "100644",
+      "bytes": 8041,
+      "sha256": "60a1776b2d544f54195b00d0483c857c217ed4bc7651abf716fbde0e1cef0095",
+      "git_blob": "067694cce9521f1c47e1838dae88de98ffe43790",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "067694cce9521f1c47e1838dae88de98ffe43790"
+      },
+      "resolution": "Exact incoming bytes and mode retained."
+    },
+    {
+      "path": "results/compat/2026-10-19-scm-cloexec/probe.elf.gz",
+      "mode": "100644",
+      "bytes": 349933,
+      "sha256": "05b7c4834d547b9d915204ab89de726564a474615dab48b64ba6c66a8977697a",
+      "git_blob": "2154091b40672ec3a894db325d616c23fb1ac517",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "2154091b40672ec3a894db325d616c23fb1ac517"
+      },
+      "resolution": "Exact incoming bytes and mode retained."
+    },
+    {
+      "path": "results/compat/2026-10-19-scm-cloexec/qemu-inputs.json",
+      "mode": "100644",
+      "bytes": 3669,
+      "sha256": "d620d6af79e610951da9a79cdc430efbb1067f63cba39f31a2fa116d5389273f",
+      "git_blob": "7a121df1f94f26e538af64c557aeba7a559ebc5e",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "7a121df1f94f26e538af64c557aeba7a559ebc5e"
+      },
+      "resolution": "Exact incoming bytes and mode retained."
+    },
+    {
+      "path": "results/compat/2026-10-19-scm-cloexec/qemu-launcher.sh",
+      "mode": "100644",
+      "bytes": 334,
+      "sha256": "a8f639cdea3d44b5db7be507e2d67f83b41ab9a4d876781c6c30e986861ff36b",
+      "git_blob": "96a881594945c78d3d90e8447b3742ea62afdb0b",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "96a881594945c78d3d90e8447b3742ea62afdb0b"
+      },
+      "resolution": "Exact incoming bytes and mode retained."
+    },
+    {
+      "path": "results/compat/2026-10-19-scm-cloexec/red-result.json",
+      "mode": "100644",
+      "bytes": 5278,
+      "sha256": "19aa9bc4df449131f5912aa2222a8b8dc7ddd2983ac4b042a10538814f28c907",
+      "git_blob": "1781bb71e5f3eb16122717647c8e1fabc3d74325",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "1781bb71e5f3eb16122717647c8e1fabc3d74325"
+      },
+      "resolution": "Exact incoming bytes and mode retained."
+    },
+    {
+      "path": "results/compat/2026-10-19-scm-cloexec/red-serial.log.gz",
+      "mode": "100644",
+      "bytes": 8005,
+      "sha256": "0140fec375abc39d78aa3b57a72e76945d5352de00f875dc977f0bf4ea0da332",
+      "git_blob": "1ee3abcedf90a537ac778e4d05c4f529abeb37f0",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "1ee3abcedf90a537ac778e4d05c4f529abeb37f0"
+      },
+      "resolution": "Exact incoming bytes and mode retained."
+    },
+    {
+      "path": "tests/workloads/linux/SCM_RIGHTS_CLOEXEC.md",
+      "mode": "100644",
+      "bytes": 5241,
+      "sha256": "4a2d919cea0414de00c520978e001837f227942752bfb67e6237ff134df6937b",
+      "git_blob": "9ea0b83e06452f0929566a57540386e8f9d18ca0",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "9ea0b83e06452f0929566a57540386e8f9d18ca0"
+      },
+      "resolution": "Exact incoming bytes and mode retained."
+    },
+    {
+      "path": "tests/workloads/linux/run_scm_rights_cloexec_guest.py",
+      "mode": "100644",
+      "bytes": 11957,
+      "sha256": "1d501766dd611652797643f047bde8ac6ac2d6e41225e74eca51817d44a7965d",
+      "git_blob": "3f008cb6f88637a351d5b53e52e51b49672222bf",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "3f008cb6f88637a351d5b53e52e51b49672222bf"
+      },
+      "resolution": "Exact incoming bytes and mode retained."
+    },
+    {
+      "path": "tests/workloads/linux/scm_rights_cloexec_probe.c",
+      "mode": "100644",
+      "bytes": 12784,
+      "sha256": "bd9c11eb31710d096e406cd0d3fa206f837dd58e6f8106a79ddbba796862a037",
+      "git_blob": "27123e1fe0bb6bbdd4000b41ffbb14986375783e",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "27123e1fe0bb6bbdd4000b41ffbb14986375783e"
+      },
+      "resolution": "Exact incoming bytes and mode retained."
+    },
+    {
+      "path": "tests/workloads/linux/test_scm_rights_cloexec_guest.py",
+      "mode": "100644",
+      "bytes": 4437,
+      "sha256": "5d76a37e5c70c1920f4f4665e09e7bc90bf49e16f764259c31b77113ed9c94ba",
+      "git_blob": "c137ae21badc7ebf73c15bded876f706b7c682ca",
+      "incoming": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "c137ae21badc7ebf73c15bded876f706b7c682ca"
+      },
+      "resolution": "Exact incoming bytes and mode retained."
+    }
+  ],
+  "incoming_changed_paths": 37,
+  "changed_production_paths": [
+    "kernel/asterinas/kernel/core/src/net/socket/unix/ctrl_msg.rs",
+    "kernel/asterinas/kernel/core/src/net/socket/util/message_flags.rs",
+    "kernel/asterinas/kernel/core/src/net/socket/util/message_header.rs",
+    "kernel/asterinas/kernel/core/src/syscall/recvmsg.rs",
+    "kernel/asterinas/kernel/core/src/util/net/socket.rs"
+  ],
+  "only_report_overlap": "docs/INDEX.md",
+  "incoming_INDEX_targets_preserved": true,
+  "G1_product_prefix_comparison": {
+    "paths": [
+      "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/config_regressions.rs",
+      "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/final_charge_regressions.rs",
+      "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/max_config.rs",
+      "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs",
+      "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/tests.rs",
+      "kernel/asterinas/kernel/core/src/syscall/ioctl.rs",
+      "kernel/asterinas/ostd/src/arch/arm/cpu/context.rs",
+      "kernel/asterinas/ostd/src/arch/arm/cpu/fpu.S",
+      "kernel/asterinas/ostd/src/arch/arm/cpu/local.rs",
+      "kernel/asterinas/ostd/src/arch/arm/cpu/mod.rs",
+      "kernel/asterinas/ostd/src/arch/loongarch/cpu/context.rs",
+      "kernel/asterinas/ostd/src/arch/loongarch/cpu/local.rs",
+      "kernel/asterinas/ostd/src/arch/loongarch/cpu/mod.rs",
+      "kernel/asterinas/ostd/src/arch/riscv/cpu/context.rs",
+      "kernel/asterinas/ostd/src/arch/riscv/cpu/extension.rs",
+      "kernel/asterinas/ostd/src/arch/riscv/cpu/fpu.S",
+      "kernel/asterinas/ostd/src/arch/riscv/cpu/local.rs",
+      "kernel/asterinas/ostd/src/arch/riscv/cpu/mod.rs",
+      "kernel/asterinas/ostd/src/arch/x86/cpu/context/mod.rs",
+      "kernel/asterinas/ostd/src/arch/x86/cpu/context/tdx.rs",
+      "kernel/asterinas/ostd/src/arch/x86/cpu/cpuid.rs",
+      "kernel/asterinas/ostd/src/arch/x86/cpu/extension.rs",
+      "kernel/asterinas/ostd/src/arch/x86/cpu/local.rs",
+      "kernel/asterinas/ostd/src/arch/x86/cpu/mod.rs",
+      "kernel/asterinas/ostd/src/cpu/id.rs",
+      "kernel/asterinas/ostd/src/cpu/local/cell.rs",
+      "kernel/asterinas/ostd/src/cpu/local/dyn_cpu_local.rs",
+      "kernel/asterinas/ostd/src/cpu/local/mod.rs",
+      "kernel/asterinas/ostd/src/cpu/local/single_instr.rs",
+      "kernel/asterinas/ostd/src/cpu/local/static_cpu_local.rs",
+      "kernel/asterinas/ostd/src/cpu/mod.rs",
+      "libs/os-abi/Cargo.toml",
+      "libs/os-abi/src/lib.rs",
+      "libs/os-abi/tests/golden_vectors.rs",
+      "libs/os-abi/tests/mutation_kill.rs",
+      "libs/os-abi/tests/negative_vectors.rs",
+      "libs/os-abi/tests/profile_boundaries.rs",
+      "libs/os-abi/tests/response_snapshot.rs",
+      "libs/os-abi/tests/semantic_edges.rs",
+      "libs/os-abi/tests/transport_preflight.rs",
+      "libs/os-abi/tests/transport_vectors.rs",
+      "libs/os-control/.gitignore",
+      "libs/os-control/API_CONTRACT.md",
+      "libs/os-control/Cargo.lock",
+      "libs/os-control/Cargo.toml",
+      "libs/os-control/src/lib.rs",
+      "libs/os-control/src/locking.rs",
+      "libs/os-control/src/management.rs",
+      "libs/os-control/src/native.rs",
+      "libs/os-control/src/resource_state.rs",
+      "libs/os-control/src/sync.rs"
+    ],
+    "all_blob_and_mode_equal_previous_main": true,
+    "meaning": "This is exact byte preservation of selected existing G1 CPU/cgroup, native, ABI and control inputs, not a new runtime qualification."
+  },
+  "root_README_bytes": 0,
+  "runtime_scope": {
+    "G1_full_run_head": "1c05412e2b340bbc8cd2b8a3389ae0ecce538991",
+    "G1_full_run_tree": "2b873aa43445c8a02351f5900074a38c6fa4820d",
+    "old_runtime_extended_to_incoming_tree": false,
+    "PR198_scope": "Its independent source and Actions artifact review is a separate record; this helper does not run or reclassify it."
+  },
+  "no_product_execution": true,
+  "status": "passed_incoming_main_exact_product_and_history_preservation"
+}

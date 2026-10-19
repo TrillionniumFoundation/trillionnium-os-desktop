@@ -1,0 +1,13 @@
+{
+  "schema": "r10.pr198.source-artifact-independent-review.v1",
+  "reviewer": "/root/r9_g1_contract",
+  "started_at_utc": "2026-10-19T04:57:30.893475+00:00",
+  "review_script_sha256": "7c2a84894f3a7da1ecf77046cb27cf6dd9701464c5447bed8d351ae36992e13e",
+  "status": "failed",
+  "blocking_findings": [
+    "all actual ktest starts and OK endings"
+  ],
+  "traceback": "Traceback (most recent call last):\n  File \"/workspace/scratch/499c7902de8e/r10-evidence/g1-delivery-main-sync-review/review_pr198.py\", line 358, in main\n    result = review()\n             ^^^^^^^^\n  File \"/workspace/scratch/499c7902de8e/r10-evidence/g1-delivery-main-sync-review/review_pr198.py\", line 240, in review\n    need(len(started) == len({x[0] for x in started}) == expected_total and\n  File \"/workspace/scratch/499c7902de8e/r10-evidence/g1-delivery-main-sync-review/review_pr198.py\", line 37, in need\n    raise ValueError(label)\nValueError: all actual ktest starts and OK endings\n",
+  "completed_at_utc": "2026-10-19T04:57:32.081157+00:00",
+  "checks_completed": 6929
+}

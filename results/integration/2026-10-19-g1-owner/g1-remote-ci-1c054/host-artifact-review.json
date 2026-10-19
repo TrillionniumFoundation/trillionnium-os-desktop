@@ -1,0 +1,927 @@
+{
+  "schema": "r10.g1-pr197.final-host-artifact-review.v1",
+  "review_started_at_utc": "2026-10-19T03:55:30.747654+00:00",
+  "review_completed_at_utc": "2026-10-19T03:55:30.864668+00:00",
+  "blocking_findings": [],
+  "head": "1c05412e2b340bbc8cd2b8a3389ae0ecce538991",
+  "tree": "2b873aa43445c8a02351f5900074a38c6fa4820d",
+  "same_tree_local": "1ca738c6310c50565804c2ea2a5d413a74bbe80a",
+  "g0": {
+    "job": {
+      "id": 117880228265,
+      "run_id": 39196471000,
+      "workflow_name": "G0 scoped host contracts",
+      "head_branch": "agents/r10-g1-cpu-owner-20261019",
+      "run_url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196471000",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOVLzC488AAAAbcjWJqQ",
+      "head_sha": "1c05412e2b340bbc8cd2b8a3389ae0ecce538991",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/jobs/117880228265",
+      "html_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196471000/job/117880228265",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-19T03:49:07Z",
+      "started_at": "2026-10-19T03:49:09Z",
+      "completed_at": "2026-10-19T03:49:58Z",
+      "name": "host-contracts",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-19T03:49:10Z",
+          "completed_at": "2026-10-19T03:49:11Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-19T03:49:11Z",
+          "completed_at": "2026-10-19T03:49:25Z"
+        },
+        {
+          "name": "Verify independent HOS2 golden fixtures",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-19T03:49:25Z",
+          "completed_at": "2026-10-19T03:49:25Z"
+        },
+        {
+          "name": "Verify canonical HOS2 semantic edge corpus and independent generator",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-19T03:49:25Z",
+          "completed_at": "2026-10-19T03:49:26Z"
+        },
+        {
+          "name": "Verify independent native 32-byte HOS2 ioctl transport golden",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-19T03:49:26Z",
+          "completed_at": "2026-10-19T03:49:26Z"
+        },
+        {
+          "name": "Python wire mutations and recovery specification",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-10-19T03:49:26Z",
+          "completed_at": "2026-10-19T03:49:28Z"
+        },
+        {
+          "name": "Guest archive safety model (host only, no QEMU)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-10-19T03:49:28Z",
+          "completed_at": "2026-10-19T03:49:28Z"
+        },
+        {
+          "name": "Host A05 QueryAbi wire and ENOTTY smoke (no kernel driver)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-10-19T03:49:28Z",
+          "completed_at": "2026-10-19T03:49:29Z"
+        },
+        {
+          "name": "Compile native A05 QueryAbi guest probe when present (host compiler only)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-10-19T03:49:29Z",
+          "completed_at": "2026-10-19T03:49:30Z"
+        },
+        {
+          "name": "A05 pinned QueryAbi replay host regressions (no QEMU)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-10-19T03:49:30Z",
+          "completed_at": "2026-10-19T03:49:31Z"
+        },
+        {
+          "name": "Require canonical Rust crate manifests and install lint components",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-10-19T03:49:31Z",
+          "completed_at": "2026-10-19T03:49:31Z"
+        },
+        {
+          "name": "Report real host Rust toolchain and install lint components",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-10-19T03:49:31Z",
+          "completed_at": "2026-10-19T03:49:31Z"
+        },
+        {
+          "name": "Host Rust no_std ABI crate",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-10-19T03:49:31Z",
+          "completed_at": "2026-10-19T03:49:39Z"
+        },
+        {
+          "name": "Host Rust ABI strict rustfmt and Clippy",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-10-19T03:49:39Z",
+          "completed_at": "2026-10-19T03:49:41Z"
+        },
+        {
+          "name": "Host Rust control model",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-10-19T03:49:41Z",
+          "completed_at": "2026-10-19T03:49:46Z"
+        },
+        {
+          "name": "Host Rust control strict rustfmt and Clippy",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16,
+          "started_at": "2026-10-19T03:49:46Z",
+          "completed_at": "2026-10-19T03:49:48Z"
+        },
+        {
+          "name": "Host A03 no_std portable-spin model and strict Clippy (not kernel IRQ)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17,
+          "started_at": "2026-10-19T03:49:48Z",
+          "completed_at": "2026-10-19T03:49:54Z"
+        },
+        {
+          "name": "Cross-build A03 portable-spin rlib for x86_64-unknown-none (not kernel link)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18,
+          "started_at": "2026-10-19T03:49:54Z",
+          "completed_at": "2026-10-19T03:49:56Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 36,
+          "started_at": "2026-10-19T03:49:56Z",
+          "completed_at": "2026-10-19T03:49:57Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 37,
+          "started_at": "2026-10-19T03:49:57Z",
+          "completed_at": "2026-10-19T03:49:57Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117880228265",
+      "labels": [
+        "ubuntu-24.04"
+      ],
+      "runner_id": 1000172802,
+      "runner_name": "GitHub Actions 1000172802",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    "actual_checkout_commit": "5f5e5bfc6e6679a2328c86914455b458676826e7",
+    "actual_checkout_tree": "2b873aa43445c8a02351f5900074a38c6fa4820d",
+    "log": {
+      "path": "g0-job-117880228265.log",
+      "bytes": 231693,
+      "sha256": "4c372be79c70328bfe2e6dba0331712ee45913a23824aeb3e5b93b23c29c5a92"
+    },
+    "candidate_host_fixture_occurrences": {
+      "test_clean_real_git_bytes_and_reviewed_identity": 2,
+      "test_changed_bytes_hidden_from_git_status_still_fail": 2,
+      "test_untracked_source_input_is_not_omitted_from_admission": 2,
+      "test_changed_symlink_target_hidden_from_git_status_fails": 2,
+      "test_executable_mode_drift_is_not_hidden_by_git_filemode_setting": 2,
+      "test_n0_profile_cannot_add_hardware_or_change_cpu": 2,
+      "test_all_guest_markers_require_exact_single_root_completion": 2,
+      "test_boot_receipt_rejects_source_lock_and_artifact_substitution": 2
+    },
+    "suite_summaries": [
+      {
+        "line": 394,
+        "text": "2026-10-19T03:49:27.8246662Z Ran 62 tests in 0.903s"
+      },
+      {
+        "line": 435,
+        "text": "2026-10-19T03:49:28.0136682Z Ran 36 tests in 0.081s"
+      },
+      {
+        "line": 450,
+        "text": "2026-10-19T03:49:28.1075529Z Ran 5 tests in 0.001s"
+      },
+      {
+        "line": 460,
+        "text": "2026-10-19T03:49:28.4751605Z Ran 5 tests in 0.001s"
+      },
+      {
+        "line": 482,
+        "text": "2026-10-19T03:49:29.0578379Z Ran 8 tests in 0.005s"
+      },
+      {
+        "line": 495,
+        "text": "2026-10-19T03:49:29.3537272Z Ran 8 tests in 0.005s"
+      },
+      {
+        "line": 565,
+        "text": "2026-10-19T03:49:30.0727115Z \u001b[36;1m    if ! grep -Eq '^Ran [1-9][0-9]* tests? in ' \"$logfile\"; then\u001b[0m"
+      },
+      {
+        "line": 593,
+        "text": "2026-10-19T03:49:30.3188161Z Ran 16 tests in 0.134s"
+      },
+      {
+        "line": 614,
+        "text": "2026-10-19T03:49:31.0366721Z Ran 16 tests in 0.134s"
+      },
+      {
+        "line": 672,
+        "text": "2026-10-19T03:49:38.0223204Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      },
+      {
+        "line": 685,
+        "text": "2026-10-19T03:49:38.0490597Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s"
+      },
+      {
+        "line": 700,
+        "text": "2026-10-19T03:49:38.0515432Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      },
+      {
+        "line": 727,
+        "text": "2026-10-19T03:49:38.0546882Z test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      },
+      {
+        "line": 739,
+        "text": "2026-10-19T03:49:38.0913524Z test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s"
+      },
+      {
+        "line": 751,
+        "text": "2026-10-19T03:49:38.0938286Z test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      },
+      {
+        "line": 771,
+        "text": "2026-10-19T03:49:38.0996888Z test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s"
+      },
+      {
+        "line": 783,
+        "text": "2026-10-19T03:49:38.1017298Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      },
+      {
+        "line": 794,
+        "text": "2026-10-19T03:49:38.1036308Z test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      },
+      {
+        "line": 801,
+        "text": "2026-10-19T03:49:39.1465916Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s"
+      },
+      {
+        "line": 856,
+        "text": "2026-10-19T03:49:46.1090632Z test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s"
+      },
+      {
+        "line": 865,
+        "text": "2026-10-19T03:49:46.1111904Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      },
+      {
+        "line": 873,
+        "text": "2026-10-19T03:49:46.2018527Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s"
+      },
+      {
+        "line": 887,
+        "text": "2026-10-19T03:49:46.2050346Z test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      },
+      {
+        "line": 973,
+        "text": "2026-10-19T03:49:46.3567420Z test result: ok. 81 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s"
+      },
+      {
+        "line": 985,
+        "text": "2026-10-19T03:49:46.3604267Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      },
+      {
+        "line": 999,
+        "text": "2026-10-19T03:49:46.4334677Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s"
+      },
+      {
+        "line": 1013,
+        "text": "2026-10-19T03:49:46.4648053Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s"
+      },
+      {
+        "line": 1035,
+        "text": "2026-10-19T03:49:46.4681961Z test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      },
+      {
+        "line": 1046,
+        "text": "2026-10-19T03:49:46.4695866Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      },
+      {
+        "line": 1063,
+        "text": "2026-10-19T03:49:46.4900230Z test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s"
+      },
+      {
+        "line": 1071,
+        "text": "2026-10-19T03:49:46.4917924Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      },
+      {
+        "line": 1080,
+        "text": "2026-10-19T03:49:46.5060581Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s"
+      },
+      {
+        "line": 1101,
+        "text": "2026-10-19T03:49:46.5365286Z test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s"
+      },
+      {
+        "line": 1112,
+        "text": "2026-10-19T03:49:46.5392195Z test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      },
+      {
+        "line": 1126,
+        "text": "2026-10-19T03:49:46.5413757Z test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      },
+      {
+        "line": 1137,
+        "text": "2026-10-19T03:49:46.6456156Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s"
+      },
+      {
+        "line": 1155,
+        "text": "2026-10-19T03:49:46.6528796Z test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s"
+      },
+      {
+        "line": 1171,
+        "text": "2026-10-19T03:49:46.6598427Z test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s"
+      },
+      {
+        "line": 1180,
+        "text": "2026-10-19T03:49:46.6617276Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      },
+      {
+        "line": 1191,
+        "text": "2026-10-19T03:49:46.7033580Z test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s"
+      },
+      {
+        "line": 1198,
+        "text": "2026-10-19T03:49:46.7474072Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      },
+      {
+        "line": 1261,
+        "text": "2026-10-19T03:49:52.5894545Z test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s"
+      },
+      {
+        "line": 1271,
+        "text": "2026-10-19T03:49:52.5917639Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      },
+      {
+        "line": 1278,
+        "text": "2026-10-19T03:49:52.6772506Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s"
+      },
+      {
+        "line": 1291,
+        "text": "2026-10-19T03:49:52.6802649Z test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      },
+      {
+        "line": 1378,
+        "text": "2026-10-19T03:49:52.8274311Z test result: ok. 81 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s"
+      },
+      {
+        "line": 1390,
+        "text": "2026-10-19T03:49:52.8311380Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      },
+      {
+        "line": 1404,
+        "text": "2026-10-19T03:49:52.9010252Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s"
+      },
+      {
+        "line": 1418,
+        "text": "2026-10-19T03:49:52.9766062Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s"
+      },
+      {
+        "line": 1439,
+        "text": "2026-10-19T03:49:52.9797374Z test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      },
+      {
+        "line": 1451,
+        "text": "2026-10-19T03:49:52.9816777Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      },
+      {
+        "line": 1468,
+        "text": "2026-10-19T03:49:53.0034896Z test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s"
+      },
+      {
+        "line": 1477,
+        "text": "2026-10-19T03:49:53.0055429Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      },
+      {
+        "line": 1485,
+        "text": "2026-10-19T03:49:53.0177547Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s"
+      },
+      {
+        "line": 1506,
+        "text": "2026-10-19T03:49:53.0474568Z test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s"
+      },
+      {
+        "line": 1518,
+        "text": "2026-10-19T03:49:53.0514821Z test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      },
+      {
+        "line": 1531,
+        "text": "2026-10-19T03:49:53.0525940Z test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      },
+      {
+        "line": 1542,
+        "text": "2026-10-19T03:49:53.1619894Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s"
+      },
+      {
+        "line": 1560,
+        "text": "2026-10-19T03:49:53.1691156Z test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s"
+      },
+      {
+        "line": 1576,
+        "text": "2026-10-19T03:49:53.1758149Z test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s"
+      },
+      {
+        "line": 1585,
+        "text": "2026-10-19T03:49:53.1776373Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      },
+      {
+        "line": 1596,
+        "text": "2026-10-19T03:49:53.2128453Z test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s"
+      },
+      {
+        "line": 1603,
+        "text": "2026-10-19T03:49:53.2534436Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      }
+    ],
+    "scope": "Host wire/spec/model/strict lint/cross-rlib gates; no QEMU or device-control execution in G0."
+  },
+  "a03": {
+    "job": {
+      "id": 117880228851,
+      "run_id": 39196471043,
+      "workflow_name": "A03 native Loom and allocation safety",
+      "head_branch": "agents/r10-g1-cpu-owner-20261019",
+      "run_url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196471043",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOVLzC488AAAAbcjWL8w",
+      "head_sha": "1c05412e2b340bbc8cd2b8a3389ae0ecce538991",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/jobs/117880228851",
+      "html_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196471043/job/117880228851",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-19T03:49:07Z",
+      "started_at": "2026-10-19T03:49:10Z",
+      "completed_at": "2026-10-19T03:50:13Z",
+      "name": "exact-native-models",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-19T03:49:11Z",
+          "completed_at": "2026-10-19T03:49:12Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-19T03:49:12Z",
+          "completed_at": "2026-10-19T03:49:30Z"
+        },
+        {
+          "name": "Check exact HEAD and immutable inputs",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-19T03:49:30Z",
+          "completed_at": "2026-10-19T03:49:30Z"
+        },
+        {
+          "name": "Install exact pinned Rust and host lint tools",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-19T03:49:30Z",
+          "completed_at": "2026-10-19T03:49:40Z"
+        },
+        {
+          "name": "Execute bounded Loom models on exact A03 source (host only)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-19T03:49:40Z",
+          "completed_at": "2026-10-19T03:50:07Z"
+        },
+        {
+          "name": "Require complete native allocation probe or explicit bootstrap",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-10-19T03:50:07Z",
+          "completed_at": "2026-10-19T03:50:07Z"
+        },
+        {
+          "name": "Prove no internal-lock alloc, realloc or free (host only)",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-10-19T03:50:07Z",
+          "completed_at": "2026-10-19T03:50:09Z"
+        },
+        {
+          "name": "Upload raw model and allocator evidence even when rejected",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-10-19T03:50:09Z",
+          "completed_at": "2026-10-19T03:50:10Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16,
+          "started_at": "2026-10-19T03:50:10Z",
+          "completed_at": "2026-10-19T03:50:10Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17,
+          "started_at": "2026-10-19T03:50:10Z",
+          "completed_at": "2026-10-19T03:50:10Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117880228851",
+      "labels": [
+        "ubuntu-24.04"
+      ],
+      "runner_id": 1000172805,
+      "runner_name": "GitHub Actions 1000172805",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    "archive": {
+      "path": "a03-native-models-39196471043.zip",
+      "bytes": 16550,
+      "sha256": "ed32e27f320910fbd5f55c25aae9266095fff80a7b57100565ed02d28d2f5757"
+    },
+    "manifest": "a03-artifact-members.json",
+    "log": {
+      "path": "a03-job-117880228851.log",
+      "bytes": 62599,
+      "sha256": "af9965a12353db5e620ccf2642ef55f2947c586e7b1f7992f8d4b19fd5299c1b"
+    },
+    "loom": {
+      "default_shim": {
+        "models": {
+          "history_loss_and_callback_fence": 64,
+          "malformed_callback_reconcile_and_retry": 2442,
+          "management_revoke_and_native_commit_share_owner_lock": 14,
+          "native_metadata_compatibility_and_invalidation_share_owner": 230,
+          "native_typed_owner_same_token_effect_once": 52,
+          "overlapping_retirements_revalidate_smaller_prefix": 5161,
+          "publish_and_observe_never_tear": 92,
+          "reservation_loss_and_query_revalidate_admission": 14302,
+          "retire_and_query_linearize": 32,
+          "retire_execute_loss_threeway": 3188,
+          "revoke_and_commit_linearize": 22,
+          "same_d_reservation_and_effect_once": 916,
+          "two_deliveries_same_resource_cas": 160
+        },
+        "raw_log_sha256": "ee18e7eade9ca4d25f605f694a1ffd89c90a801b95b2d0f0784a090cd004600f",
+        "commands": [
+          {
+            "variant": "default_shim",
+            "argv": [
+              "cargo",
+              "fmt",
+              "--manifest-path",
+              "/tmp/os-control-loom-default_shim-o78eczg9/Cargo.toml",
+              "--",
+              "--check"
+            ],
+            "exit_code": 0
+          },
+          {
+            "variant": "default_shim",
+            "argv": [
+              "cargo",
+              "test",
+              "--locked",
+              "--manifest-path",
+              "/tmp/os-control-loom-default_shim-o78eczg9/Cargo.toml",
+              "--test",
+              "models",
+              "--",
+              "--nocapture",
+              "--test-threads=1"
+            ],
+            "exit_code": 0
+          },
+          {
+            "variant": "default_shim",
+            "argv": [
+              "cargo",
+              "clippy",
+              "--locked",
+              "--manifest-path",
+              "/tmp/os-control-loom-default_shim-o78eczg9/Cargo.toml",
+              "--test",
+              "models",
+              "--",
+              "-D",
+              "warnings"
+            ],
+            "exit_code": 0
+          }
+        ]
+      },
+      "public_backend": {
+        "models": {
+          "public_backend_history_loss_and_execution_fence": 64,
+          "public_backend_publish_and_observe_never_tear": 147,
+          "public_backend_retire_and_query_linearize": 47,
+          "public_backend_revoke_and_commit_linearize": 16,
+          "public_backend_same_d_reservation_and_effect_once": 252,
+          "public_backend_same_token_effect_once": 52
+        },
+        "raw_log_sha256": "624c8cc4eb4eef08ccb6a9de8a9645fb1f62821098e53fab5f5ed0fbcad3aef6",
+        "commands": [
+          {
+            "variant": "public_backend",
+            "argv": [
+              "cargo",
+              "fmt",
+              "--manifest-path",
+              "/tmp/os-control-loom-public_backend-sgr9nser/Cargo.toml",
+              "--",
+              "--check"
+            ],
+            "exit_code": 0
+          },
+          {
+            "variant": "public_backend",
+            "argv": [
+              "cargo",
+              "test",
+              "--locked",
+              "--manifest-path",
+              "/tmp/os-control-loom-public_backend-sgr9nser/Cargo.toml",
+              "--test",
+              "models_public",
+              "--",
+              "--nocapture",
+              "--test-threads=1"
+            ],
+            "exit_code": 0
+          },
+          {
+            "variant": "public_backend",
+            "argv": [
+              "cargo",
+              "clippy",
+              "--locked",
+              "--manifest-path",
+              "/tmp/os-control-loom-public_backend-sgr9nser/Cargo.toml",
+              "--test",
+              "models_public",
+              "--",
+              "-D",
+              "warnings"
+            ],
+            "exit_code": 0
+          }
+        ]
+      }
+    },
+    "loom_checked_Git_inputs": 12,
+    "allocator_source_modules": [
+      {
+        "bytes": 113663,
+        "path": "lib.rs",
+        "sha256": "4f582ba781420a86cc6420e57b5ef19de24c480a22f7aceaea496918b5e963b8"
+      },
+      {
+        "bytes": 3086,
+        "path": "locking.rs",
+        "sha256": "02f1b7680774b13c394ed9a7f93baeaefd0771dd32e85b6bcae004ec757166f7"
+      },
+      {
+        "bytes": 7125,
+        "path": "management.rs",
+        "sha256": "1b44ed9d89f3bd9aba90c8bcd3aeceb46bcd7332cbdd2bdd3fa40ff200d49340"
+      },
+      {
+        "bytes": 8844,
+        "path": "native.rs",
+        "sha256": "1967c2db5c7292127a5cb4a76c3448a9764710b4c44ebeb40a610dba6e16fd81"
+      },
+      {
+        "bytes": 13530,
+        "path": "resource_state.rs",
+        "sha256": "045f8bf459736dc9f63fd9dc1e78cc0f2371694a3ee28f53058202f7716ab68a"
+      },
+      {
+        "bytes": 1073,
+        "path": "sync.rs",
+        "sha256": "e2159cc41ef3a1073b1899615f70ea34cc9915052dd41811180bd3e3497784cd"
+      }
+    ],
+    "allocator_fixture_inputs": [
+      {
+        "bytes": 15910,
+        "path": "fixture.rs",
+        "sha256": "1e04f7ffb2ed86f5be25fe522d95f0f323febc81e4b444db25ea3ebd53d197d4"
+      },
+      {
+        "bytes": 21471,
+        "path": "run-checks.py",
+        "sha256": "3188aa734a2331f36633cdfc9140ce6e286a3c23bd52f300a0813e74c379337e"
+      },
+      {
+        "bytes": 5941,
+        "path": "sync_shim.rs",
+        "sha256": "c2ea51dbaad78e5bc691e460b80a23ae40374493be4165d4c9e93c9009590233"
+      }
+    ],
+    "allocator_commands": {
+      "build": {
+        "argv": [
+          "/home/runner/.cargo/bin/cargo",
+          "build",
+          "--offline",
+          "--manifest-path",
+          "/tmp/hos2-lock-alloc-0x02u7fh/Cargo.toml",
+          "-p",
+          "lock-alloc-fixture"
+        ],
+        "cwd": "/tmp/hos2-lock-alloc-0x02u7fh",
+        "elapsed_seconds": 0.7535,
+        "returncode": 0,
+        "stderr": "build.stderr.log",
+        "stderr_sha256": "93a8c72280ba80c220d5e124b6f36fdd2d1e1c46ad818311e741dc6b3398c92e",
+        "stdout": "build.stdout.log",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "timed_out": false
+      },
+      "format": {
+        "argv": [
+          "/home/runner/.cargo/bin/cargo",
+          "fmt",
+          "--all",
+          "--check"
+        ],
+        "cwd": "/tmp/hos2-lock-alloc-0x02u7fh",
+        "elapsed_seconds": 0.065292,
+        "returncode": 0,
+        "stderr": "format.stderr.log",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout": "format.stdout.log",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "timed_out": false
+      },
+      "clippy": {
+        "argv": [
+          "/home/runner/.cargo/bin/cargo",
+          "clippy",
+          "--offline",
+          "--workspace",
+          "--all-targets",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "cwd": "/tmp/hos2-lock-alloc-0x02u7fh",
+        "elapsed_seconds": 0.375837,
+        "returncode": 0,
+        "stderr": "clippy.stderr.log",
+        "stderr_sha256": "5138986ad9e39ee06b69d37ddcdbf5f93c644a16cf75ec90f84ddba2f7431156",
+        "stdout": "clippy.stdout.log",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "timed_out": false
+      },
+      "run": {
+        "argv": [
+          "/tmp/hos2-lock-alloc-0x02u7fh/target/debug/lock-alloc-fixture",
+          "--allocation-failure-controls"
+        ],
+        "cwd": "/tmp/hos2-lock-alloc-0x02u7fh",
+        "elapsed_seconds": 0.028168,
+        "returncode": 0,
+        "stderr": "run.stderr.log",
+        "stderr_sha256": "64b7dd57d728e37ab3cce031ab7b3d5c1d1024bb101d1a1b21a2da43933c7497",
+        "stdout": "run.stdout.log",
+        "stdout_sha256": "baf368b622934cad42fb6e28348ab911d279a3f189dafc4774f78a3f15f06711",
+        "timed_out": false
+      }
+    },
+    "generated_os_control_manifest": {
+      "contents": "[package]\nname = \"os-control\"\nversion = \"0.0.0\"\nedition = \"2021\"\n[features]\ndefault = [\"std\"]\nstd = []\nportable-spin = []\n[dependencies]\n[lints.rust]\nunsafe_code = \"forbid\"\nunexpected_cfgs = { level = \"warn\", check-cfg = [\"cfg(ktest)\"] }\n",
+      "sha256": "b238b643de587c573f8972a0d606f824e0f45b6c24fa0514c59835426bb87abe"
+    },
+    "actual_event_count": 26,
+    "actual_scenario_count": 19,
+    "scenario_names": [
+      "reserve_new",
+      "query_reserved",
+      "duplicate_reserved",
+      "native_wrong_type",
+      "execute_native",
+      "query_terminal",
+      "duplicate_terminal",
+      "publish_terminal_retry",
+      "retire_terminal",
+      "query_retired",
+      "callback_capture_drop",
+      "full_window_rejection",
+      "loss_full_window",
+      "hanging_prefix_query",
+      "hanging_prefix_retire",
+      "hanging_prefix_full",
+      "publish_pending",
+      "retire_released_prefix",
+      "ten_thousand_writes"
+    ],
+    "actual_summary": {
+      "event": "summary",
+      "name": "all_native_namespace_scenarios",
+      "alloc": 0,
+      "realloc": 0,
+      "dealloc": 0,
+      "allocated_bytes": 0,
+      "reallocated_bytes": 0,
+      "deallocated_bytes": 0
+    },
+    "actual_controls": {
+      "allocator_positive": {
+        "event": "control",
+        "name": "allocator_positive",
+        "alloc": 1,
+        "realloc": 1,
+        "dealloc": 1,
+        "allocated_bytes": 1,
+        "reallocated_bytes": 4097,
+        "deallocated_bytes": 4097
+      },
+      "failed_allocator_call_under_lock": {
+        "event": "control",
+        "name": "failed_allocator_call_under_lock",
+        "alloc": 1,
+        "realloc": 0,
+        "dealloc": 0,
+        "allocated_bytes": 16,
+        "reallocated_bytes": 0,
+        "deallocated_bytes": 0
+      },
+      "depth_tls_poison_unwind": {
+        "event": "control",
+        "name": "depth_tls_poison_unwind",
+        "passed": true
+      },
+      "fallible_ring_and_retirement": {
+        "event": "control",
+        "name": "fallible_ring_and_retirement",
+        "alloc": 0,
+        "realloc": 0,
+        "dealloc": 0,
+        "allocated_bytes": 0,
+        "reallocated_bytes": 0,
+        "deallocated_bytes": 0
+      }
+    },
+    "actual_failure_control": {
+      "event": "failure_control",
+      "injected_failures": 2,
+      "frontier_atomic": true,
+      "history_usable": true
+    },
+    "run_stderr_retained": "\nthread 'main' (3505) panicked at fixture/src/main.rs:129:9:\ninjected instrumentation poison control\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n",
+    "run_stdout_sha256": "baf368b622934cad42fb6e28348ab911d279a3f189dafc4774f78a3f15f06711"
+  },
+  "limits": [
+    "A03 tests are bounded host Loom and instrumented allocator models; they are not real kernel IRQ/allocator/OSTD proof.",
+    "The actual allocator command used only the current probe and two allocation-failure controls. Historical and callback negative source revisions were not requested in this CI execution.",
+    "The allocator positive and poison/unwind controls intentionally emit activity and a caught panic hook; raw stderr is preserved and runtime returned zero.",
+    "This A03 archive preserves actual commands, source-copy hashes and raw output, but does not contain the removed temporary allocator ELF; independent ELF identity verification belongs to the separate A06 artifact.",
+    "G0 uses the PR merge checkout, verified through GitHub Git API to have exactly the final-head tree. A03 uses the exact PR source head.",
+    "A06 was still running at the observation underlying this host review; its final artifact will be reviewed separately."
+  ],
+  "evidence_checks_completed": 90
+}

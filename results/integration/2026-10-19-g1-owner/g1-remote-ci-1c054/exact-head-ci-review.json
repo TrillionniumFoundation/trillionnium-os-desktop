@@ -1,0 +1,198 @@
+{
+  "schema": "r10.g1-pr197.exact-head-ci-acceptance.v1",
+  "reviewed_at_utc": "2026-10-19T04:00:18.956738+00:00",
+  "reviewer": "/root/r9_g1_contract",
+  "blocking_findings": [],
+  "source": {
+    "remote_head": "1c05412e2b340bbc8cd2b8a3389ae0ecce538991",
+    "tree": "2b873aa43445c8a02351f5900074a38c6fa4820d",
+    "same_tree_local_commit": "1ca738c6310c50565804c2ea2a5d413a74bbe80a",
+    "base_at_execution": "e15ae6a63edb5d4e7c475a001be82111d451b653",
+    "remote_parents": [
+      "107afb7436ca17177262fdfef2e6b5dfee13597a",
+      "e15ae6a63edb5d4e7c475a001be82111d451b653"
+    ]
+  },
+  "checks_observed_at_utc": "2026-10-19 03:56:00 UTC",
+  "source_observed_at_utc": "2026-10-19 03:59:00 UTC",
+  "pr_state_observed": {
+    "number": 197,
+    "state": "open",
+    "merged": false,
+    "mergeable_state": "clean"
+  },
+  "checks": [
+    {
+      "id": 117880420983,
+      "name": "CodeQL",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-19T03:49:58Z",
+      "completed_at": "2026-10-19T03:50:01Z"
+    },
+    {
+      "id": 117880228876,
+      "name": "host-evidence",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-19T03:49:09Z",
+      "completed_at": "2026-10-19T03:49:56Z"
+    },
+    {
+      "id": 117880228851,
+      "name": "exact-native-models",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-19T03:49:10Z",
+      "completed_at": "2026-10-19T03:50:13Z"
+    },
+    {
+      "id": 117880228659,
+      "name": "exact-kernel-ktest",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-19T03:49:09Z",
+      "completed_at": "2026-10-19T03:55:04Z"
+    },
+    {
+      "id": 117880228265,
+      "name": "host-contracts",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-19T03:49:09Z",
+      "completed_at": "2026-10-19T03:49:58Z"
+    },
+    {
+      "id": 117880221744,
+      "name": "Analyze (python)",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-19T03:49:08Z",
+      "completed_at": "2026-10-19T03:50:07Z"
+    }
+  ],
+  "all_six_ordinary_check_runs_success": true,
+  "g0": {
+    "run_id": 39196471000,
+    "job_id": 117880228265,
+    "all_20_steps_success": true,
+    "actual_checkout": "5f5e5bfc6e6679a2328c86914455b458676826e7",
+    "checkout_tree": "2b873aa43445c8a02351f5900074a38c6fa4820d",
+    "candidate_host_fixtures": 8,
+    "normal_and_optimized_occurrences_each": 2
+  },
+  "a03": {
+    "run_id": 39196471043,
+    "job_id": 117880228851,
+    "all_10_steps_success": true,
+    "artifact": {
+      "id": 12162068133,
+      "node_id": "MDg6QXJ0aWZhY3QxMjE2MjA2ODEzMw==",
+      "name": "a03-native-models-39196471043",
+      "size_in_bytes": 16550,
+      "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/artifacts/12162068133",
+      "archive_download_url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/artifacts/12162068133/zip",
+      "expired": false,
+      "digest": "sha256:ed32e27f320910fbd5f55c25aae9266095fff80a7b57100565ed02d28d2f5757",
+      "created_at": "2026-10-19T03:50:10Z",
+      "updated_at": "2026-10-19T03:50:10Z",
+      "expires_at": "2027-01-17T03:49:06Z",
+      "workflow_run": {
+        "id": 39196471043,
+        "repository_id": 1421656803,
+        "head_repository_id": 1421656803,
+        "head_branch": "agents/r10-g1-cpu-owner-20261019",
+        "head_sha": "1c05412e2b340bbc8cd2b8a3389ae0ecce538991"
+      }
+    },
+    "loom_models": {
+      "default_shim": 13,
+      "public_backend": 6
+    },
+    "strict_clippy_retained": true,
+    "allocator_current_executed": true,
+    "allocator_raw_events": 26,
+    "allocator_unique_zero_allocation_scenarios": 19
+  },
+  "a06": {
+    "run_id": 39196471075,
+    "attempt": 1,
+    "job_id": 117880228659,
+    "all_12_steps_success": true,
+    "started_at": "2026-10-19T03:49:09Z",
+    "completed_at": "2026-10-19T03:55:04Z",
+    "artifact": {
+      "id": 12162515747,
+      "node_id": "MDg6QXJ0aWZhY3QxMjE2MjUxNTc0Nw==",
+      "name": "a06-exact-kernel-ktest-39196471075",
+      "size_in_bytes": 18446493,
+      "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/artifacts/12162515747",
+      "archive_download_url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/artifacts/12162515747/zip",
+      "expired": false,
+      "digest": "sha256:d9623e880bf559392f92c6bc9359a02629b6ff548e853e9f05cf1598b711fbbd",
+      "created_at": "2026-10-19T03:55:02Z",
+      "updated_at": "2026-10-19T03:55:02Z",
+      "expires_at": "2027-01-17T03:49:06Z",
+      "workflow_run": {
+        "id": 39196471075,
+        "repository_id": 1421656803,
+        "head_repository_id": 1421656803,
+        "head_branch": "agents/r10-g1-cpu-owner-20261019",
+        "head_sha": "1c05412e2b340bbc8cd2b8a3389ae0ecce538991"
+      }
+    },
+    "counts": {
+      "reported_ktest_passes": 400,
+      "ktest_soft_skipped": 3,
+      "ktest_execution_lower_bound": 397,
+      "new_g1_ktests": 10,
+      "queryabi_exact_markers": 14,
+      "quota_guests": 4,
+      "total_guest_invocations": 8,
+      "elf_members": 7,
+      "unique_elf_bytes": 6
+    },
+    "source_files_rehashed": 6397,
+    "three_full_snapshot_byte_streams_equal": true,
+    "source_snapshot_sha256": "ec4f3e78113bdca4e64f174f7553a9ef004b62a70f2d1748c509ec35fc16a3ae",
+    "actual_configured_cpu_percent": {
+      "1": [
+        1.0,
+        0.91
+      ],
+      "2": [
+        0.905,
+        1.0
+      ]
+    }
+  },
+  "entry_reports": [
+    {
+      "path": "host-artifact-review.json",
+      "bytes": 35061,
+      "sha256": "5ba66625ebd9fd99530de18d0fd4874fc8dd9e4d09477bb856e442becdce0249"
+    },
+    {
+      "path": "a06-artifact-review.json",
+      "bytes": 53406,
+      "sha256": "b2b51f9071e4f2754d05e8ad7eccfc025fcf86faf5314781de76a8c2e0da08ba"
+    },
+    {
+      "path": "source-transition-review.json",
+      "bytes": 57744,
+      "sha256": "2bc76f9739a6635ecc274109dd85feb4dc33de563b154ccc26de1832d07ec116"
+    }
+  ],
+  "limits": [
+    "Acceptance belongs only to exact main-integrated source 1c05412e/tree2b873aa. This review does not merge the PR or declare later code accepted.",
+    "Six ordinary check runs succeeded. This is an observed CI result, not a statement that legacy branch protection independently requires all six check names.",
+    "G0 and A03 are actual host tests and bounded Loom/allocation experiments, not guest/device effects or kernel IRQ safety proof.",
+    "A06 has eight actual x86 QEMU guest invocations; 400 reported ktest passes include three explicit VMX/EPT soft skips, so the execution lower bound is 397.",
+    "The current source tree and every archived ordinary/QueryAbi snapshot have 6397 files; the earlier 107 source count 5851 is not reused.",
+    "Source-clean snapshots cover ordinary product boot and QueryAbi, not every ktest or the full later quota interval. Post-checkout cleanup success is not an extra final Git-clean sample.",
+    "Generated ktest lock bytes are archived and compared four ways. The product minimal generated lock is represented by the fixed runner measurement, not a separately archived generated raw file.",
+    "Four bounded quota guests, ten G1-a tests and four disabled-operation rejections do not establish full SMP, G1-b production authority, HOS2 resource installation, Hepta runtime durability or physical/mobile-device qualification.",
+    "No Rust build, QEMU, downloaded executable execution, CI rerun/cancel, PR mutation or merge was performed by this reviewer.",
+    "Previous f744/463f failures, 107 successful acceptance and local unknown OSDK residue remain separately preserved; this successful normal CI interval does not identify that local residue writer."
+  ]
+}

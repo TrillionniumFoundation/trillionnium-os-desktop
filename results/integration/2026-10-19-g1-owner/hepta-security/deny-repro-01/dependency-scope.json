@@ -1,0 +1,1834 @@
+{
+  "schema": 1,
+  "metadata_sha256": "b03563e38042d51d3f49e77eaecd0a01b432fc24445c9a3715a0847cb972a93b",
+  "locked_metadata_package_count": 1517,
+  "workspace_package_count": 193,
+  "dependencies": [
+    {
+      "package": "anymap2",
+      "version": "0.13.0",
+      "advisories": [
+        "RUSTSEC-2026-0319"
+      ],
+      "immediate_parents": [
+        {
+          "name": "matrix-sdk",
+          "version": "0.18.0",
+          "workspace": false,
+          "manifest": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/matrix-sdk-0.18.0/Cargo.toml",
+          "requirements": [
+            {
+              "req": "^0.13.0",
+              "kind": null,
+              "target": null,
+              "optional": false,
+              "features": []
+            }
+          ]
+        }
+      ],
+      "first_workspace_owners": [
+        {
+          "owner": "codex-hepta-matrix-sdk",
+          "path": [
+            {
+              "name": "codex-hepta-matrix-sdk",
+              "version": "0.0.0"
+            },
+            {
+              "name": "matrix-sdk",
+              "version": "0.18.0"
+            },
+            {
+              "name": "anymap2",
+              "version": "0.13.0"
+            }
+          ]
+        },
+        {
+          "owner": "codex-hepta-matrixd",
+          "path": [
+            {
+              "name": "codex-hepta-matrixd",
+              "version": "0.0.0"
+            },
+            {
+              "name": "matrix-sdk",
+              "version": "0.18.0"
+            },
+            {
+              "name": "anymap2",
+              "version": "0.13.0"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "package": "matrix-sdk-crypto",
+      "version": "0.18.0",
+      "advisories": [
+        "RUSTSEC-2026-0318"
+      ],
+      "immediate_parents": [
+        {
+          "name": "matrix-sdk-base",
+          "version": "0.18.0",
+          "workspace": false,
+          "manifest": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/matrix-sdk-base-0.18.0/Cargo.toml",
+          "requirements": [
+            {
+              "req": "^0.18.0",
+              "kind": null,
+              "target": null,
+              "optional": true,
+              "features": []
+            }
+          ]
+        },
+        {
+          "name": "matrix-sdk-indexeddb",
+          "version": "0.18.0",
+          "workspace": false,
+          "manifest": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/matrix-sdk-indexeddb-0.18.0/Cargo.toml",
+          "requirements": [
+            {
+              "req": "^0.18.0",
+              "kind": null,
+              "target": null,
+              "optional": true,
+              "features": [
+                "js"
+              ]
+            },
+            {
+              "req": "^0.18.0",
+              "kind": "dev",
+              "target": null,
+              "optional": false,
+              "features": [
+                "js",
+                "testing"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "matrix-sdk-sqlite",
+          "version": "0.18.0",
+          "workspace": false,
+          "manifest": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/codex-rs/third_party/matrix-sdk-sqlite-0.18.0/Cargo.toml",
+          "requirements": [
+            {
+              "req": "^0.18.0",
+              "kind": null,
+              "target": null,
+              "optional": true,
+              "features": []
+            },
+            {
+              "req": "^0.18.0",
+              "kind": "dev",
+              "target": null,
+              "optional": false,
+              "features": [
+                "testing"
+              ]
+            }
+          ]
+        }
+      ],
+      "first_workspace_owners": [
+        {
+          "owner": "codex-hepta-matrix-sdk",
+          "path": [
+            {
+              "name": "codex-hepta-matrix-sdk",
+              "version": "0.0.0"
+            },
+            {
+              "name": "matrix-sdk",
+              "version": "0.18.0"
+            },
+            {
+              "name": "matrix-sdk-base",
+              "version": "0.18.0"
+            },
+            {
+              "name": "matrix-sdk-crypto",
+              "version": "0.18.0"
+            }
+          ]
+        },
+        {
+          "owner": "codex-hepta-matrixd",
+          "path": [
+            {
+              "name": "codex-hepta-matrixd",
+              "version": "0.0.0"
+            },
+            {
+              "name": "matrix-sdk",
+              "version": "0.18.0"
+            },
+            {
+              "name": "matrix-sdk-base",
+              "version": "0.18.0"
+            },
+            {
+              "name": "matrix-sdk-crypto",
+              "version": "0.18.0"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "package": "rustls",
+      "version": "0.23.45",
+      "advisories": [
+        "RUSTSEC-2026-0346",
+        "RUSTSEC-2026-0347",
+        "RUSTSEC-2026-0348",
+        "RUSTSEC-2026-0349"
+      ],
+      "immediate_parents": [
+        {
+          "name": "aws-smithy-http-client",
+          "version": "1.1.12",
+          "workspace": false,
+          "manifest": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/aws-smithy-http-client-1.1.12/Cargo.toml",
+          "requirements": [
+            {
+              "req": "^0.21.8",
+              "kind": null,
+              "target": null,
+              "optional": true,
+              "features": []
+            },
+            {
+              "req": "^0.23.31",
+              "kind": null,
+              "target": null,
+              "optional": true,
+              "features": []
+            }
+          ]
+        },
+        {
+          "name": "codex-exec-server",
+          "version": "0.0.0",
+          "workspace": true,
+          "manifest": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/codex-rs/exec-server/Cargo.toml",
+          "requirements": [
+            {
+              "req": "^0.23",
+              "kind": "dev",
+              "target": null,
+              "optional": false,
+              "features": [
+                "aws_lc_rs",
+                "std"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "codex-hepta-bao-adapter",
+          "version": "0.0.0",
+          "workspace": true,
+          "manifest": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/codex-rs/hepta-bao-adapter/Cargo.toml",
+          "requirements": [
+            {
+              "req": "^0.23",
+              "kind": "dev",
+              "target": null,
+              "optional": false,
+              "features": [
+                "aws_lc_rs",
+                "std"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "codex-http-client",
+          "version": "0.0.0",
+          "workspace": true,
+          "manifest": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/codex-rs/http-client/Cargo.toml",
+          "requirements": [
+            {
+              "req": "^0.23",
+              "kind": null,
+              "target": null,
+              "optional": false,
+              "features": [
+                "aws_lc_rs",
+                "std"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "codex-utils-rustls-provider",
+          "version": "0.0.0",
+          "workspace": true,
+          "manifest": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/codex-rs/utils/rustls-provider/Cargo.toml",
+          "requirements": [
+            {
+              "req": "^0.23",
+              "kind": null,
+              "target": null,
+              "optional": false,
+              "features": [
+                "aws_lc_rs",
+                "std"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "codex-websocket-client",
+          "version": "0.0.0",
+          "workspace": true,
+          "manifest": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/codex-rs/websocket-client/Cargo.toml",
+          "requirements": [
+            {
+              "req": "^0.23",
+              "kind": null,
+              "target": null,
+              "optional": false,
+              "features": [
+                "aws_lc_rs",
+                "std"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "hyper-rustls",
+          "version": "0.27.7",
+          "workspace": false,
+          "manifest": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-rustls-0.27.7/Cargo.toml",
+          "requirements": [
+            {
+              "req": "^0.23",
+              "kind": null,
+              "target": null,
+              "optional": false,
+              "features": []
+            },
+            {
+              "req": "^0.23",
+              "kind": "dev",
+              "target": null,
+              "optional": false,
+              "features": [
+                "tls12"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "matrix-sdk",
+          "version": "0.18.0",
+          "workspace": false,
+          "manifest": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/matrix-sdk-0.18.0/Cargo.toml",
+          "requirements": [
+            {
+              "req": "^0.23.38",
+              "kind": null,
+              "target": "cfg(target_os = \"android\")",
+              "optional": false,
+              "features": []
+            }
+          ]
+        },
+        {
+          "name": "quinn",
+          "version": "0.11.9",
+          "workspace": false,
+          "manifest": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/quinn-0.11.9/Cargo.toml",
+          "requirements": [
+            {
+              "req": "^0.23.5",
+              "kind": null,
+              "target": null,
+              "optional": true,
+              "features": [
+                "std"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "quinn-proto",
+          "version": "0.11.14",
+          "workspace": false,
+          "manifest": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/quinn-proto-0.11.14/Cargo.toml",
+          "requirements": [
+            {
+              "req": "^0.23.5",
+              "kind": null,
+              "target": null,
+              "optional": true,
+              "features": [
+                "std"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "rama-tls-rustls",
+          "version": "0.3.0-alpha.4",
+          "workspace": false,
+          "manifest": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/rama-tls-rustls-0.3.0-alpha.4/Cargo.toml",
+          "requirements": [
+            {
+              "req": "^0.23",
+              "kind": null,
+              "target": null,
+              "optional": false,
+              "features": [
+                "logging",
+                "std",
+                "tls12",
+                "aws_lc_rs"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "reqwest",
+          "version": "0.12.28",
+          "workspace": false,
+          "manifest": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/reqwest-0.12.28/Cargo.toml",
+          "requirements": [
+            {
+              "req": "^0.23.4",
+              "kind": null,
+              "target": "cfg(not(target_arch = \"wasm32\"))",
+              "optional": true,
+              "features": [
+                "std",
+                "tls12"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "reqwest",
+          "version": "0.13.4",
+          "workspace": false,
+          "manifest": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/reqwest-0.13.4/Cargo.toml",
+          "requirements": [
+            {
+              "req": "^0.23.4",
+              "kind": null,
+              "target": "cfg(not(all(target_arch = \"wasm32\", any(target_os = \"unknown\", target_os = \"none\"))))",
+              "optional": true,
+              "features": [
+                "std",
+                "tls12"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "rustls-platform-verifier",
+          "version": "0.7.0",
+          "workspace": false,
+          "manifest": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/rustls-platform-verifier-0.7.0/Cargo.toml",
+          "requirements": [
+            {
+              "req": "^0.23.27",
+              "kind": null,
+              "target": null,
+              "optional": false,
+              "features": [
+                "std"
+              ]
+            },
+            {
+              "req": "^0.23",
+              "kind": "dev",
+              "target": null,
+              "optional": false,
+              "features": [
+                "ring"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "sqlx-core",
+          "version": "0.9.0",
+          "workspace": false,
+          "manifest": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/sqlx-core-0.9.0/Cargo.toml",
+          "requirements": [
+            {
+              "req": "^0.23.24",
+              "kind": null,
+              "target": null,
+              "optional": true,
+              "features": [
+                "std",
+                "tls12"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "tokio-rustls",
+          "version": "0.26.4",
+          "workspace": false,
+          "manifest": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/tokio-rustls-0.26.4/Cargo.toml",
+          "requirements": [
+            {
+              "req": "^0.23.27",
+              "kind": null,
+              "target": null,
+              "optional": false,
+              "features": [
+                "std"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "tokio-tungstenite",
+          "version": "0.28.0",
+          "workspace": false,
+          "manifest": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/git/checkouts/tokio-tungstenite-ea4445d9acecae62/0e5b2d7/Cargo.toml",
+          "requirements": [
+            {
+              "req": "^0.23.0",
+              "kind": null,
+              "target": null,
+              "optional": true,
+              "features": []
+            }
+          ]
+        },
+        {
+          "name": "tungstenite",
+          "version": "0.27.0",
+          "workspace": false,
+          "manifest": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/git/checkouts/tungstenite-rs-006aed970da0a0a9/4fffad3/Cargo.toml",
+          "requirements": [
+            {
+              "req": "^0.23.0",
+              "kind": null,
+              "target": null,
+              "optional": true,
+              "features": [
+                "std"
+              ]
+            }
+          ]
+        }
+      ],
+      "first_workspace_owners": [
+        {
+          "owner": "codex-exec-server",
+          "path": [
+            {
+              "name": "codex-exec-server",
+              "version": "0.0.0"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-hepta-bao-adapter",
+          "path": [
+            {
+              "name": "codex-hepta-bao-adapter",
+              "version": "0.0.0"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-http-client",
+          "path": [
+            {
+              "name": "codex-http-client",
+              "version": "0.0.0"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-utils-rustls-provider",
+          "path": [
+            {
+              "name": "codex-utils-rustls-provider",
+              "version": "0.0.0"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-websocket-client",
+          "path": [
+            {
+              "name": "codex-websocket-client",
+              "version": "0.0.0"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-hepta-matrix-sdk",
+          "path": [
+            {
+              "name": "codex-hepta-matrix-sdk",
+              "version": "0.0.0"
+            },
+            {
+              "name": "matrix-sdk",
+              "version": "0.18.0"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-hepta-matrixd",
+          "path": [
+            {
+              "name": "codex-hepta-matrixd",
+              "version": "0.0.0"
+            },
+            {
+              "name": "matrix-sdk",
+              "version": "0.18.0"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-network-proxy",
+          "path": [
+            {
+              "name": "codex-network-proxy",
+              "version": "0.0.0"
+            },
+            {
+              "name": "rama-tls-rustls",
+              "version": "0.3.0-alpha.4"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-code-mode",
+          "path": [
+            {
+              "name": "codex-code-mode",
+              "version": "0.0.0"
+            },
+            {
+              "name": "reqwest",
+              "version": "0.12.28"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-otel",
+          "path": [
+            {
+              "name": "codex-otel",
+              "version": "0.0.0"
+            },
+            {
+              "name": "reqwest",
+              "version": "0.12.28"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-responses-api-proxy",
+          "path": [
+            {
+              "name": "codex-responses-api-proxy",
+              "version": "0.0.0"
+            },
+            {
+              "name": "reqwest",
+              "version": "0.12.28"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-api",
+          "path": [
+            {
+              "name": "codex-api",
+              "version": "0.0.0"
+            },
+            {
+              "name": "tokio-tungstenite",
+              "version": "0.28.0"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-app-server",
+          "path": [
+            {
+              "name": "codex-app-server",
+              "version": "0.0.0"
+            },
+            {
+              "name": "tokio-tungstenite",
+              "version": "0.28.0"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-app-server-client",
+          "path": [
+            {
+              "name": "codex-app-server-client",
+              "version": "0.0.0"
+            },
+            {
+              "name": "tokio-tungstenite",
+              "version": "0.28.0"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-app-server-daemon",
+          "path": [
+            {
+              "name": "codex-app-server-daemon",
+              "version": "0.0.0"
+            },
+            {
+              "name": "tokio-tungstenite",
+              "version": "0.28.0"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-app-server-transport",
+          "path": [
+            {
+              "name": "codex-app-server-transport",
+              "version": "0.0.0"
+            },
+            {
+              "name": "tokio-tungstenite",
+              "version": "0.28.0"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-cli",
+          "path": [
+            {
+              "name": "codex-cli",
+              "version": "0.0.0"
+            },
+            {
+              "name": "tokio-tungstenite",
+              "version": "0.28.0"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-code-mode-host",
+          "path": [
+            {
+              "name": "codex-code-mode-host",
+              "version": "0.0.0"
+            },
+            {
+              "name": "tokio-tungstenite",
+              "version": "0.28.0"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-core",
+          "path": [
+            {
+              "name": "codex-core",
+              "version": "0.0.0"
+            },
+            {
+              "name": "tokio-tungstenite",
+              "version": "0.28.0"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-tui",
+          "path": [
+            {
+              "name": "codex-tui",
+              "version": "0.0.0"
+            },
+            {
+              "name": "tokio-tungstenite",
+              "version": "0.28.0"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "core_test_support",
+          "path": [
+            {
+              "name": "core_test_support",
+              "version": "0.0.0"
+            },
+            {
+              "name": "tokio-tungstenite",
+              "version": "0.28.0"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-app-server-test-client",
+          "path": [
+            {
+              "name": "codex-app-server-test-client",
+              "version": "0.0.0"
+            },
+            {
+              "name": "tungstenite",
+              "version": "0.27.0"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-rmcp-client",
+          "path": [
+            {
+              "name": "codex-rmcp-client",
+              "version": "0.0.0"
+            },
+            {
+              "name": "oauth2",
+              "version": "5.0.0"
+            },
+            {
+              "name": "reqwest",
+              "version": "0.12.28"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-feedback",
+          "path": [
+            {
+              "name": "codex-feedback",
+              "version": "0.0.0"
+            },
+            {
+              "name": "sentry",
+              "version": "0.46.1"
+            },
+            {
+              "name": "reqwest",
+              "version": "0.12.28"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-app-server-protocol",
+          "path": [
+            {
+              "name": "codex-app-server-protocol",
+              "version": "0.0.0"
+            },
+            {
+              "name": "rmcp",
+              "version": "3.1.3"
+            },
+            {
+              "name": "reqwest",
+              "version": "0.13.4"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-mcp",
+          "path": [
+            {
+              "name": "codex-mcp",
+              "version": "0.0.0"
+            },
+            {
+              "name": "rmcp",
+              "version": "3.1.3"
+            },
+            {
+              "name": "reqwest",
+              "version": "0.13.4"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-mcp-server",
+          "path": [
+            {
+              "name": "codex-mcp-server",
+              "version": "0.0.0"
+            },
+            {
+              "name": "rmcp",
+              "version": "3.1.3"
+            },
+            {
+              "name": "reqwest",
+              "version": "0.13.4"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-tools",
+          "path": [
+            {
+              "name": "codex-tools",
+              "version": "0.0.0"
+            },
+            {
+              "name": "rmcp",
+              "version": "3.1.3"
+            },
+            {
+              "name": "reqwest",
+              "version": "0.13.4"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "mcp_test_support",
+          "path": [
+            {
+              "name": "mcp_test_support",
+              "version": "0.0.0"
+            },
+            {
+              "name": "rmcp",
+              "version": "3.1.3"
+            },
+            {
+              "name": "reqwest",
+              "version": "0.13.4"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-hepta-agentd",
+          "path": [
+            {
+              "name": "codex-hepta-agentd",
+              "version": "0.0.0"
+            },
+            {
+              "name": "sqlx",
+              "version": "0.9.0"
+            },
+            {
+              "name": "sqlx-core",
+              "version": "0.9.0"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-hepta-authbus",
+          "path": [
+            {
+              "name": "codex-hepta-authbus",
+              "version": "0.0.0"
+            },
+            {
+              "name": "sqlx",
+              "version": "0.9.0"
+            },
+            {
+              "name": "sqlx-core",
+              "version": "0.9.0"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-hepta-automation",
+          "path": [
+            {
+              "name": "codex-hepta-automation",
+              "version": "0.0.0"
+            },
+            {
+              "name": "sqlx",
+              "version": "0.9.0"
+            },
+            {
+              "name": "sqlx-core",
+              "version": "0.9.0"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-hepta-evidence",
+          "path": [
+            {
+              "name": "codex-hepta-evidence",
+              "version": "0.0.0"
+            },
+            {
+              "name": "sqlx",
+              "version": "0.9.0"
+            },
+            {
+              "name": "sqlx-core",
+              "version": "0.9.0"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-hepta-matrix-store",
+          "path": [
+            {
+              "name": "codex-hepta-matrix-store",
+              "version": "0.0.0"
+            },
+            {
+              "name": "sqlx",
+              "version": "0.9.0"
+            },
+            {
+              "name": "sqlx-core",
+              "version": "0.9.0"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-hepta-memory",
+          "path": [
+            {
+              "name": "codex-hepta-memory",
+              "version": "0.0.0"
+            },
+            {
+              "name": "sqlx",
+              "version": "0.9.0"
+            },
+            {
+              "name": "sqlx-core",
+              "version": "0.9.0"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-hepta-operations",
+          "path": [
+            {
+              "name": "codex-hepta-operations",
+              "version": "0.0.0"
+            },
+            {
+              "name": "sqlx",
+              "version": "0.9.0"
+            },
+            {
+              "name": "sqlx-core",
+              "version": "0.9.0"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-hepta-runtime",
+          "path": [
+            {
+              "name": "codex-hepta-runtime",
+              "version": "0.0.0"
+            },
+            {
+              "name": "sqlx",
+              "version": "0.9.0"
+            },
+            {
+              "name": "sqlx-core",
+              "version": "0.9.0"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-hepta-shadow-qualification",
+          "path": [
+            {
+              "name": "codex-hepta-shadow-qualification",
+              "version": "0.0.0"
+            },
+            {
+              "name": "sqlx",
+              "version": "0.9.0"
+            },
+            {
+              "name": "sqlx-core",
+              "version": "0.9.0"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-state",
+          "path": [
+            {
+              "name": "codex-state",
+              "version": "0.0.0"
+            },
+            {
+              "name": "sqlx",
+              "version": "0.9.0"
+            },
+            {
+              "name": "sqlx-core",
+              "version": "0.9.0"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-thread-store",
+          "path": [
+            {
+              "name": "codex-thread-store",
+              "version": "0.0.0"
+            },
+            {
+              "name": "sqlx",
+              "version": "0.9.0"
+            },
+            {
+              "name": "sqlx-core",
+              "version": "0.9.0"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-code-mode-protocol",
+          "path": [
+            {
+              "name": "codex-code-mode-protocol",
+              "version": "0.0.0"
+            },
+            {
+              "name": "tonic",
+              "version": "0.14.3"
+            },
+            {
+              "name": "tokio-rustls",
+              "version": "0.26.4"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-config",
+          "path": [
+            {
+              "name": "codex-config",
+              "version": "0.0.0"
+            },
+            {
+              "name": "tonic",
+              "version": "0.14.3"
+            },
+            {
+              "name": "tokio-rustls",
+              "version": "0.26.4"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        },
+        {
+          "owner": "codex-aws-auth",
+          "path": [
+            {
+              "name": "codex-aws-auth",
+              "version": "0.0.0"
+            },
+            {
+              "name": "aws-config",
+              "version": "1.8.12"
+            },
+            {
+              "name": "aws-smithy-runtime",
+              "version": "1.9.5"
+            },
+            {
+              "name": "aws-smithy-http-client",
+              "version": "1.1.12"
+            },
+            {
+              "name": "rustls",
+              "version": "0.23.45"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "package": "unsafe-libyaml",
+      "version": "0.2.11",
+      "advisories": [
+        "RUSTSEC-2024-0449"
+      ],
+      "immediate_parents": [
+        {
+          "name": "serde_yaml",
+          "version": "0.9.34+deprecated",
+          "workspace": false,
+          "manifest": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/serde_yaml-0.9.34+deprecated/Cargo.toml",
+          "requirements": [
+            {
+              "req": "^0.2.11",
+              "kind": null,
+              "target": null,
+              "optional": false,
+              "features": []
+            }
+          ]
+        }
+      ],
+      "first_workspace_owners": [
+        {
+          "owner": "codex-core-plugins",
+          "path": [
+            {
+              "name": "codex-core-plugins",
+              "version": "0.0.0"
+            },
+            {
+              "name": "serde_yaml",
+              "version": "0.9.34+deprecated"
+            },
+            {
+              "name": "unsafe-libyaml",
+              "version": "0.2.11"
+            }
+          ]
+        },
+        {
+          "owner": "codex-external-agent-migration",
+          "path": [
+            {
+              "name": "codex-external-agent-migration",
+              "version": "0.0.0"
+            },
+            {
+              "name": "serde_yaml",
+              "version": "0.9.34+deprecated"
+            },
+            {
+              "name": "unsafe-libyaml",
+              "version": "0.2.11"
+            }
+          ]
+        },
+        {
+          "owner": "codex-skills",
+          "path": [
+            {
+              "name": "codex-skills",
+              "version": "0.0.0"
+            },
+            {
+              "name": "serde_yaml",
+              "version": "0.9.34+deprecated"
+            },
+            {
+              "name": "unsafe-libyaml",
+              "version": "0.2.11"
+            }
+          ]
+        },
+        {
+          "owner": "codex-skills-extension",
+          "path": [
+            {
+              "name": "codex-skills-extension",
+              "version": "0.0.0"
+            },
+            {
+              "name": "serde_yaml",
+              "version": "0.9.34+deprecated"
+            },
+            {
+              "name": "unsafe-libyaml",
+              "version": "0.2.11"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "package": "zbus_names",
+      "version": "3.0.0",
+      "advisories": [
+        "RUSTSEC-2026-0371"
+      ],
+      "immediate_parents": [
+        {
+          "name": "zbus",
+          "version": "4.4.0",
+          "workspace": false,
+          "manifest": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/zbus-4.4.0/Cargo.toml",
+          "requirements": [
+            {
+              "req": "^3.0",
+              "kind": null,
+              "target": null,
+              "optional": false,
+              "features": []
+            }
+          ]
+        }
+      ],
+      "first_workspace_owners": [
+        {
+          "owner": "codex-keyring-store",
+          "path": [
+            {
+              "name": "codex-keyring-store",
+              "version": "0.0.0"
+            },
+            {
+              "name": "keyring",
+              "version": "3.6.3"
+            },
+            {
+              "name": "zbus",
+              "version": "4.4.0"
+            },
+            {
+              "name": "zbus_names",
+              "version": "3.0.0"
+            }
+          ]
+        },
+        {
+          "owner": "codex-login",
+          "path": [
+            {
+              "name": "codex-login",
+              "version": "0.0.0"
+            },
+            {
+              "name": "keyring",
+              "version": "3.6.3"
+            },
+            {
+              "name": "zbus",
+              "version": "4.4.0"
+            },
+            {
+              "name": "zbus_names",
+              "version": "3.0.0"
+            }
+          ]
+        },
+        {
+          "owner": "codex-rmcp-client",
+          "path": [
+            {
+              "name": "codex-rmcp-client",
+              "version": "0.0.0"
+            },
+            {
+              "name": "keyring",
+              "version": "3.6.3"
+            },
+            {
+              "name": "zbus",
+              "version": "4.4.0"
+            },
+            {
+              "name": "zbus_names",
+              "version": "3.0.0"
+            }
+          ]
+        },
+        {
+          "owner": "codex-secrets",
+          "path": [
+            {
+              "name": "codex-secrets",
+              "version": "0.0.0"
+            },
+            {
+              "name": "keyring",
+              "version": "3.6.3"
+            },
+            {
+              "name": "zbus",
+              "version": "4.4.0"
+            },
+            {
+              "name": "zbus_names",
+              "version": "3.0.0"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "package": "zip",
+      "version": "2.4.2",
+      "advisories": [
+        "RUSTSEC-2026-0367",
+        "RUSTSEC-2026-0368",
+        "RUSTSEC-2026-0369"
+      ],
+      "immediate_parents": [
+        {
+          "name": "codex-core-plugins",
+          "version": "0.0.0",
+          "workspace": true,
+          "manifest": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/codex-rs/core-plugins/Cargo.toml",
+          "requirements": [
+            {
+              "req": "^2.4.2",
+              "kind": null,
+              "target": null,
+              "optional": false,
+              "features": []
+            }
+          ]
+        }
+      ],
+      "first_workspace_owners": [
+        {
+          "owner": "codex-core-plugins",
+          "path": [
+            {
+              "name": "codex-core-plugins",
+              "version": "0.0.0"
+            },
+            {
+              "name": "zip",
+              "version": "2.4.2"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "package": "zvariant",
+      "version": "4.2.0",
+      "advisories": [
+        "RUSTSEC-2026-0370"
+      ],
+      "immediate_parents": [
+        {
+          "name": "zbus",
+          "version": "4.4.0",
+          "workspace": false,
+          "manifest": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/zbus-4.4.0/Cargo.toml",
+          "requirements": [
+            {
+              "req": "^4.2.0",
+              "kind": null,
+              "target": null,
+              "optional": false,
+              "features": [
+                "enumflags2"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "zbus_names",
+          "version": "3.0.0",
+          "workspace": false,
+          "manifest": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/zbus_names-3.0.0/Cargo.toml",
+          "requirements": [
+            {
+              "req": "^4.0.0",
+              "kind": null,
+              "target": null,
+              "optional": false,
+              "features": [
+                "enumflags2"
+              ]
+            }
+          ]
+        }
+      ],
+      "first_workspace_owners": [
+        {
+          "owner": "codex-keyring-store",
+          "path": [
+            {
+              "name": "codex-keyring-store",
+              "version": "0.0.0"
+            },
+            {
+              "name": "keyring",
+              "version": "3.6.3"
+            },
+            {
+              "name": "zbus",
+              "version": "4.4.0"
+            },
+            {
+              "name": "zvariant",
+              "version": "4.2.0"
+            }
+          ]
+        },
+        {
+          "owner": "codex-login",
+          "path": [
+            {
+              "name": "codex-login",
+              "version": "0.0.0"
+            },
+            {
+              "name": "keyring",
+              "version": "3.6.3"
+            },
+            {
+              "name": "zbus",
+              "version": "4.4.0"
+            },
+            {
+              "name": "zvariant",
+              "version": "4.2.0"
+            }
+          ]
+        },
+        {
+          "owner": "codex-rmcp-client",
+          "path": [
+            {
+              "name": "codex-rmcp-client",
+              "version": "0.0.0"
+            },
+            {
+              "name": "keyring",
+              "version": "3.6.3"
+            },
+            {
+              "name": "zbus",
+              "version": "4.4.0"
+            },
+            {
+              "name": "zvariant",
+              "version": "4.2.0"
+            }
+          ]
+        },
+        {
+          "owner": "codex-secrets",
+          "path": [
+            {
+              "name": "codex-secrets",
+              "version": "0.0.0"
+            },
+            {
+              "name": "keyring",
+              "version": "3.6.3"
+            },
+            {
+              "name": "zbus",
+              "version": "4.4.0"
+            },
+            {
+              "name": "zvariant",
+              "version": "4.2.0"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "package": "zvariant_derive",
+      "version": "4.2.0",
+      "advisories": [
+        "RUSTSEC-2026-0372"
+      ],
+      "immediate_parents": [
+        {
+          "name": "zvariant",
+          "version": "4.2.0",
+          "workspace": false,
+          "manifest": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/zvariant-4.2.0/Cargo.toml",
+          "requirements": [
+            {
+              "req": "=4.2.0",
+              "kind": null,
+              "target": null,
+              "optional": false,
+              "features": []
+            }
+          ]
+        }
+      ],
+      "first_workspace_owners": [
+        {
+          "owner": "codex-keyring-store",
+          "path": [
+            {
+              "name": "codex-keyring-store",
+              "version": "0.0.0"
+            },
+            {
+              "name": "keyring",
+              "version": "3.6.3"
+            },
+            {
+              "name": "zbus",
+              "version": "4.4.0"
+            },
+            {
+              "name": "zvariant",
+              "version": "4.2.0"
+            },
+            {
+              "name": "zvariant_derive",
+              "version": "4.2.0"
+            }
+          ]
+        },
+        {
+          "owner": "codex-login",
+          "path": [
+            {
+              "name": "codex-login",
+              "version": "0.0.0"
+            },
+            {
+              "name": "keyring",
+              "version": "3.6.3"
+            },
+            {
+              "name": "zbus",
+              "version": "4.4.0"
+            },
+            {
+              "name": "zvariant",
+              "version": "4.2.0"
+            },
+            {
+              "name": "zvariant_derive",
+              "version": "4.2.0"
+            }
+          ]
+        },
+        {
+          "owner": "codex-rmcp-client",
+          "path": [
+            {
+              "name": "codex-rmcp-client",
+              "version": "0.0.0"
+            },
+            {
+              "name": "keyring",
+              "version": "3.6.3"
+            },
+            {
+              "name": "zbus",
+              "version": "4.4.0"
+            },
+            {
+              "name": "zvariant",
+              "version": "4.2.0"
+            },
+            {
+              "name": "zvariant_derive",
+              "version": "4.2.0"
+            }
+          ]
+        },
+        {
+          "owner": "codex-secrets",
+          "path": [
+            {
+              "name": "codex-secrets",
+              "version": "0.0.0"
+            },
+            {
+              "name": "keyring",
+              "version": "3.6.3"
+            },
+            {
+              "name": "zbus",
+              "version": "4.4.0"
+            },
+            {
+              "name": "zvariant",
+              "version": "4.2.0"
+            },
+            {
+              "name": "zvariant_derive",
+              "version": "4.2.0"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

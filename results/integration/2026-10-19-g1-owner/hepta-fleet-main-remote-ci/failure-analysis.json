@@ -1,0 +1,143 @@
+{
+  "schema": 1,
+  "repository": "TrillionniumFoundation/hepta-private-ci",
+  "fleet_source": "b34cb44f06db0a66acb3d25b183a2a05c4cebc7e",
+  "source_tree": "15a3b89f59052368e28ce5ed4943dc2ab638844b",
+  "base": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+  "run_id": 39195438433,
+  "job_id": 117877231475,
+  "failure_step": 8,
+  "job_conclusion": "failure",
+  "job_started_at": "2026-10-19T03:36:31Z",
+  "job_completed_at": "2026-10-19T03:52:59Z",
+  "observed_compiler_enospc_at": "2026-10-19T03:52:53.2331278Z",
+  "observed_runner_diagnostic_enospc_at": "2026-10-19T03:52:54.8054929Z",
+  "failed_compile_units": [
+    {
+      "package": "codex-app-server",
+      "unit": "test \"all\""
+    },
+    {
+      "package": "codex-exec-server",
+      "unit": "test \"capability_discovery\""
+    },
+    {
+      "package": "codex-core",
+      "unit": "lib test"
+    }
+  ],
+  "cause_supported_by_original_logs": "Compiler and runner both report no space left on device.",
+  "original_helper_source_or_clippy_failure_established": false,
+  "timeout_failure": false,
+  "artifact": {
+    "path": "artifacts/fleet-scoped-impact-12162530412.zip",
+    "bytes": 37960,
+    "sha256": "2d6965266359d5c7e1951b6f52cb5e0b0fa11b435e914c5506f73cad6ed17ad2"
+  },
+  "artifact_id": 12162530412,
+  "github_archive_digest_verified": true,
+  "native_command_log": {
+    "path": "artifacts/extracted/impact-test.json.e8e5550170934c51b6640e1cc2cea061.log",
+    "bytes": 161719,
+    "sha256": "446b27fd5f258475e5d7fec91b26909cb38207366176a269555f9f1dfd8fb391"
+  },
+  "actual_plan_package_count": 134,
+  "actual_plan_full_workspace": false,
+  "incomplete_execution_record": {
+    "base_sha": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+    "command": [
+      "python3",
+      "scripts/hepta_ci_dependencies.py",
+      "--base",
+      "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+      "--tested",
+      "b34cb44f06db0a66acb3d25b183a2a05c4cebc7e",
+      "--output",
+      "/home/runner/work/_temp/cargo-impact.json",
+      "--run"
+    ],
+    "command_exit_code": null,
+    "job": "hepta-scoped",
+    "lane": "source-head",
+    "run_attempt": "1",
+    "run_id": "39195438433",
+    "schema_version": 1,
+    "source_sha": "b34cb44f06db0a66acb3d25b183a2a05c4cebc7e",
+    "started_at": "2026-10-19T03:37:13.497259+00:00",
+    "status": "running",
+    "tested_sha": "b34cb44f06db0a66acb3d25b183a2a05c4cebc7e",
+    "working_directory": "/home/runner/work/hepta-private-ci/hepta-private-ci"
+  },
+  "completed_successful_suite_receipt_observed": false,
+  "execution_record_not_rewritten_from_job_status": true,
+  "build_configuration_observation": {
+    "cargo_profile_path": "codex-rs/target/debug",
+    "debuginfo_1_argument_observed": true,
+    "incremental_argument_observed": true,
+    "workspace_target_path_unchanged_by_workflow": true,
+    "no_cache_restore_step_in_fixed_scoped_workflow": true,
+    "no_sdk_cleanup_step_in_fixed_scoped_workflow": true,
+    "numeric_df_du_or_sdk_inventory_in_original_logs": false,
+    "runner_total_or_free_bytes": null,
+    "sdk_reclaimable_bytes": null,
+    "apt_additional_disk_estimate_kb_is_not_a_measurement": 3080,
+    "required_v8_inputs_are_not_proposed_as_disposable_cache": true
+  },
+  "log_records": [
+    {
+      "decoded_utf8_log": {
+        "path": "logs/job-117860094573.log",
+        "bytes": 18446,
+        "sha256": "517867de3acb43861952636e49234c03c8a68326bf345fa7026b3a3a45a544ea"
+      },
+      "lossless_xz": {
+        "path": "logs/job-117860094573.log.xz",
+        "bytes": 4088,
+        "sha256": "7471d1cabc736a1e02c2a1918f9ded4643d94edcfb473f05dd2df469e0e8ad5d"
+      }
+    },
+    {
+      "decoded_utf8_log": {
+        "path": "logs/job-117877091254.log",
+        "bytes": 1002674,
+        "sha256": "706bcda33045decde0aa0c1b3ad35dfce6b6b4276af8b4b62405a7729bd6132a"
+      },
+      "lossless_xz": {
+        "path": "logs/job-117877091254.log.xz",
+        "bytes": 69128,
+        "sha256": "165bf5b4c9b1c6ea05a6271078928fffb8cb0567cf3f9156fe6e5651d27ae652"
+      }
+    },
+    {
+      "decoded_utf8_log": {
+        "path": "logs/job-117877231475.log",
+        "bytes": 1189251,
+        "sha256": "beb055dcf6dafeb8b15944ad5a943cd4246647342d800cddae9cd8ecdd5f3dcf"
+      },
+      "lossless_xz": {
+        "path": "logs/job-117877231475.log.xz",
+        "bytes": 98580,
+        "sha256": "2ca5d186acf58b683734a023b8bdf4efcc7ff2833fc3ae43209e9e5a11c846a0"
+      }
+    },
+    {
+      "decoded_utf8_log": {
+        "path": "logs/job-117881115008.log",
+        "bytes": 18420,
+        "sha256": "a67a5352ffd77528fa388468d032a98168d2f5b050401c0a54bd2654504cfdd7"
+      },
+      "lossless_xz": {
+        "path": "logs/job-117881115008.log.xz",
+        "bytes": 4056,
+        "sha256": "36b6df3636eeacfd1e88e0c6e95ce499b4d9140c65d7ce7dd5601829ed5ef16e"
+      }
+    }
+  ],
+  "followup_candidate": {
+    "commit": "71d9db8fd48a317fe5930392799522f186188d6a",
+    "separate_evidence": "../hepta-scoped-disk-fix",
+    "original_scoped_job_not_rerun": true,
+    "candidate_remote_enospc_resolution_not_yet_proven": true
+  },
+  "no_remote_mutation_by_this_agent": true
+}

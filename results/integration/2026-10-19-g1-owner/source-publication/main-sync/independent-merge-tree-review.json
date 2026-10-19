@@ -1,0 +1,45 @@
+{
+  "schema": "r10.g1-pr197.merge-tree-independent-review.v1",
+  "reviewed_at_utc": "2026-10-19T04:03:05.690188+00:00",
+  "reviewer": "/root/r9_g1_contract",
+  "blocking_findings": [],
+  "input_receipt": {
+    "path": "r10-evidence/g1-main-sync-publication/observed-merge-receipt.json",
+    "bytes": 67171,
+    "sha256": "3b84076d4a30a4720db4ae349fa70cc6fc944421a72d1c31a2d54a72956c7af8",
+    "recorded_at_utc": "2026-10-19 04:00:47 UTC"
+  },
+  "qualification": {
+    "source_head": "1c05412e2b340bbc8cd2b8a3389ae0ecce538991",
+    "source_tree": "2b873aa43445c8a02351f5900074a38c6fa4820d",
+    "a06_run": 39196471075,
+    "a06_artifact": 12162515747,
+    "all_six_ordinary_check_runs_success": true,
+    "tracked_files_independently_rehashed_in_prior_review": 6397,
+    "frozen_manifest_path": "r10-evidence/g1-remote-ci-1c05412e/1c054-frozen-files.json",
+    "frozen_manifest_sha256": "21b8d2f289502883cba16148d6876a74cf5d235428baa7a19e90e3963875bdc7",
+    "a06_review_sha256": "b2b51f9071e4f2754d05e8ad7eccfc025fcf86faf5314781de76a8c2e0da08ba",
+    "exact_head_review_sha256": "dd60b061d28c4a133aa5a59ed3ae620532644271cb735cdc1f0e2b53f1f4cf2a"
+  },
+  "observed_merge": {
+    "commit": "71ce079c3218a8692476e4113b60c9d2c0d2a172",
+    "tree": "2b873aa43445c8a02351f5900074a38c6fa4820d",
+    "parents": [
+      "e15ae6a63edb5d4e7c475a001be82111d451b653",
+      "1c05412e2b340bbc8cd2b8a3389ae0ecce538991"
+    ],
+    "merged_at": "2026-10-19T03:59:41Z",
+    "merged_by_login": "Franksudoman",
+    "pr_state": "closed",
+    "pr_merged": true,
+    "pr_head": "1c05412e2b340bbc8cd2b8a3389ae0ecce538991",
+    "pr_base": "e15ae6a63edb5d4e7c475a001be82111d451b653"
+  },
+  "conclusion": "The GitHub-observed merge commit has exactly the qualified tree; both expected parents and the PR source head agree. Source qualification is preserved by tree identity.",
+  "scope": [
+    "This is a bounded read-only review of the saved original GitHub PR/Git API responses and frozen qualification reports. No merge request was made by this reviewer.",
+    "The root receipt reports that the merge had already been performed by another actor before its guard read. The embedded PR response independently identifies Franksudoman and the observed merge time.",
+    "This checks source-tree equivalence, not a new post-merge run, a claim about later main commits, or expanded G1/SMP/production authorization.",
+    "The original 20-file 1c evidence group is unchanged. This review is separate and can be appended to delivery."
+  ]
+}

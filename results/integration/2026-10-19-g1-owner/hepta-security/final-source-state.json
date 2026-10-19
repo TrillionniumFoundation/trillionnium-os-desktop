@@ -1,0 +1,58 @@
+{
+  "schema": 1,
+  "observed_at": "2026-10-19T02:06:39.735326+00:00",
+  "commit": "1b0fedb8c2b510106848f6feaf530c9b3698399d",
+  "tree": "a3e718280a7e17b8c4a226a0232bf18c23fd3586",
+  "status_porcelain": "",
+  "files": [
+    {
+      "path": "codex-rs/Cargo.lock",
+      "bytes": 418038,
+      "sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389"
+    },
+    {
+      "path": "codex-rs/Cargo.toml",
+      "bytes": 21574,
+      "sha256": "0e3fc0b7dc3ec907e02059a1bc79579077c8e5d1a0ac936b4f1bd984e94afdb4"
+    },
+    {
+      "path": "codex-rs/deny.toml",
+      "bytes": 18803,
+      "sha256": "3713c011667dcbeda9edf1b2644a813f2b5253ebb7b2f3e98ea60aab69407352"
+    },
+    {
+      "path": ".github/workflows/cargo-deny.yml",
+      "bytes": 890,
+      "sha256": "e01faafdaa914009b834ad07ad3a46137eac70b2874d88182a46cd24f100e843"
+    },
+    {
+      "path": ".github/workflows/blocking-ci.yml",
+      "bytes": 8778,
+      "sha256": "96eb7f9ea698ea353c757c3ba9f4a82a3ea448b45f676a208e09187748f4b9e3"
+    }
+  ],
+  "product_build_performed": false,
+  "dependencies_modified": false,
+  "policy_modified": false,
+  "ci_rerun_or_cancelled": false,
+  "remote_written_by_this_diagnostic": false,
+  "diagnostic_disk": {
+    "roots": [
+      {
+        "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools",
+        "regular_file_bytes": 3224241859
+      },
+      {
+        "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro",
+        "regular_file_bytes": 97456068
+      },
+      {
+        "path": "/workspace/scratch/499c7902de8e/r10-evidence/owner-ci/new-head",
+        "regular_file_bytes": 34360713
+      }
+    ],
+    "total_bytes": 3356058640,
+    "budget_bytes": 4000000000,
+    "method": "sum regular-file sizes, without following symlinks; measured before packaging"
+  }
+}

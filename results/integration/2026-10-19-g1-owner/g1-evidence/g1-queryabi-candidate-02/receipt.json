@@ -1,0 +1,39 @@
+{
+  "schema": "r10.g1-a.ordinary-product-queryabi-attempt.v1",
+  "source_head": "4e077aef4913179a68aa0d814018ce1a9d87cafc",
+  "source_tree": "4e42c3833746cd2684d0a75020d73286820457e6",
+  "started_at_utc": "2026-10-19T02:30:54.805946+00:00",
+  "command": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "-I",
+    "tests/kernel/control/run_queryabi_candidate_guest.py",
+    "--expected-source-head",
+    "4e077aef4913179a68aa0d814018ce1a9d87cafc",
+    "--expected-source-tree",
+    "4e42c3833746cd2684d0a75020d73286820457e6",
+    "--output",
+    "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-02/execution"
+  ],
+  "cwd": "/workspace/scratch/499c7902de8e/r10-g1-owner",
+  "finished_at_utc": "2026-10-19T02:30:55.846092+00:00",
+  "exit_code": 1,
+  "candidate_result": {
+    "cargo_target_dir": "/workspace/scratch/499c7902de8e/r10-g1-owner/kernel/asterinas/target",
+    "error": "ValueError: source checkout is dirty or has untracked inputs",
+    "hepta_durability": false,
+    "native_grants": false,
+    "native_resource_effects": false,
+    "passed": false,
+    "product_configuration": "ActionChoice::Run; no --cfg ktest",
+    "product_wrapper_exit": 1,
+    "production_ready": false,
+    "schema": "a06.g1-queryabi-product-candidate.v1",
+    "smp_qualification": false,
+    "source_file_count": 5851,
+    "source_head": "4e077aef4913179a68aa0d814018ce1a9d87cafc",
+    "source_tree": "4e42c3833746cd2684d0a75020d73286820457e6",
+    "stage": "ordinary_product_build_and_boot"
+  },
+  "candidate_result_sha256": "682e82f8489eadf5d847cf84d03c5e306db7ca549d4bbd010ef0eaa5c3c49239",
+  "accepted": false
+}

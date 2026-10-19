@@ -1,0 +1,114 @@
+{
+  "schema": 1,
+  "observed_at": "2026-10-19T01:39:05.814033+00:00",
+  "source_head": "be6d8408878dc25fce3188e1fc759aa227bf8678",
+  "isolated_worktree": "/workspace/scratch/499c7902de8e/r10-metadata-repro",
+  "no_compilation_or_guest": true,
+  "checks": [
+    {
+      "name": "core-no-deps",
+      "cwd": "/workspace/scratch/499c7902de8e/r10-metadata-repro/kernel/asterinas/kernel/core",
+      "argv": [
+        "cargo",
+        "metadata",
+        "--no-deps",
+        "--format-version",
+        "1"
+      ],
+      "exit": 0,
+      "before_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+      "after_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+      "root_lock_unchanged": true,
+      "stderr": "",
+      "stdout_sha256": "124f39a1bf95342d022c7a963c0d22ea1479d85023cd502846003ff12c031761"
+    },
+    {
+      "name": "core-no-deps-locked",
+      "cwd": "/workspace/scratch/499c7902de8e/r10-metadata-repro/kernel/asterinas/kernel/core",
+      "argv": [
+        "cargo",
+        "metadata",
+        "--no-deps",
+        "--format-version",
+        "1",
+        "--locked"
+      ],
+      "exit": 0,
+      "before_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+      "after_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+      "root_lock_unchanged": true,
+      "stderr": "",
+      "stdout_sha256": "124f39a1bf95342d022c7a963c0d22ea1479d85023cd502846003ff12c031761"
+    },
+    {
+      "name": "root-no-deps",
+      "cwd": "/workspace/scratch/499c7902de8e/r10-metadata-repro/kernel/asterinas",
+      "argv": [
+        "cargo",
+        "metadata",
+        "--no-deps",
+        "--format-version",
+        "1"
+      ],
+      "exit": 0,
+      "before_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+      "after_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+      "root_lock_unchanged": true,
+      "stderr": "",
+      "stdout_sha256": "845db6f41260ce1b715e9478b4131a7e7c5d648aeb76325efb4d972a788d299c"
+    },
+    {
+      "name": "root-no-deps-locked",
+      "cwd": "/workspace/scratch/499c7902de8e/r10-metadata-repro/kernel/asterinas",
+      "argv": [
+        "cargo",
+        "metadata",
+        "--no-deps",
+        "--format-version",
+        "1",
+        "--locked"
+      ],
+      "exit": 0,
+      "before_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+      "after_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+      "root_lock_unchanged": true,
+      "stderr": "",
+      "stdout_sha256": "845db6f41260ce1b715e9478b4131a7e7c5d648aeb76325efb4d972a788d299c"
+    },
+    {
+      "name": "ostd-no-deps",
+      "cwd": "/workspace/scratch/499c7902de8e/r10-metadata-repro/kernel/asterinas/ostd",
+      "argv": [
+        "cargo",
+        "metadata",
+        "--no-deps",
+        "--format-version",
+        "1"
+      ],
+      "exit": 0,
+      "before_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+      "after_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+      "root_lock_unchanged": true,
+      "stderr": "",
+      "stdout_sha256": "a891a303bd547e45c8f993fe5b43ebbd764b64ab305525feceeb57095c953d60"
+    },
+    {
+      "name": "kernel-no-deps",
+      "cwd": "/workspace/scratch/499c7902de8e/r10-metadata-repro/kernel/asterinas/kernel",
+      "argv": [
+        "cargo",
+        "metadata",
+        "--no-deps",
+        "--format-version",
+        "1"
+      ],
+      "exit": 0,
+      "before_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+      "after_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+      "root_lock_unchanged": true,
+      "stderr": "",
+      "stdout_sha256": "ab1a737091e571a68e57ede06109dff96ac6d3d8428a614a746809f2834ab2d2"
+    }
+  ],
+  "isolated_root_lock_restored": true
+}

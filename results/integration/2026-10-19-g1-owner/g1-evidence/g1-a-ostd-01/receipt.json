@@ -1,0 +1,50 @@
+{
+  "schema": "r10.g1-a.real-ostd-run.v1",
+  "started_at_utc": "2026-10-19T01:59:14.716632+00:00",
+  "source_head": "12e0547d2e6394548b15764b06346422c4fff31e",
+  "command": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "-I",
+    "support/build/ktest/run.py",
+    "--crate",
+    "ostd",
+    "--skip-osdk-install",
+    "--output",
+    "/workspace/scratch/499c7902de8e/r10-evidence/g1-a-ostd-01/execution"
+  ],
+  "cwd": "/workspace/scratch/499c7902de8e/r10-g1-owner",
+  "profile": "x86_64 q35 TCG max 1-vCPU 512MiB SeaBIOS vmm-direct multiboot",
+  "unfiltered_full_ostd": true,
+  "finished_at_utc": "2026-10-19T01:59:39.108884+00:00",
+  "exit_code": 0,
+  "source_unchanged": true,
+  "input_files": 2980,
+  "guest_result": {
+    "passed": true,
+    "crates": [
+      {
+        "passed": true,
+        "guests": [
+          {
+            "crate": "ostd",
+            "declared": 221,
+            "passed": 221,
+            "failed": 0,
+            "filtered": 0,
+            "soft_skipped": 3,
+            "soft_skip_reasons": [
+              "VMX unavailable",
+              "VMX unavailable",
+              "VMX/EPT invalidation unavailable"
+            ],
+            "exercised_passed_lower_bound": 218,
+            "observed_test_starts": 221,
+            "raw_qemu_exit": 33,
+            "guest": "guest-001"
+          }
+        ]
+      }
+    ]
+  },
+  "accepted": true
+}

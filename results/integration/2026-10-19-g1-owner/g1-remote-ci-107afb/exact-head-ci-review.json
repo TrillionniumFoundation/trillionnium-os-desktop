@@ -1,0 +1,160 @@
+{
+  "schema": "r10.g1-pr197.exact-head-ci-acceptance.v1",
+  "reviewed_at_utc": "2026-10-19T03:52:15.991287+00:00",
+  "reviewer": "/root/r9_g1_contract",
+  "blocking_findings": [],
+  "source": {
+    "remote_head": "107afb7436ca17177262fdfef2e6b5dfee13597a",
+    "tree": "65ddb50cd303f3c43a8226141c5298dca369db5d",
+    "same_tree_local_commit": "bccb817e0d3f1987f59c1b9e7d94e939d2e6d1d3",
+    "base_at_execution": "0c2bf0fc1ba473325a0266c7bd476b1ddbf66383"
+  },
+  "observed_at_utc": "2026-10-19 03:45:11 UTC",
+  "checks": [
+    {
+      "id": 117877278465,
+      "name": "CodeQL",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-19T03:36:40Z",
+      "completed_at": "2026-10-19T03:36:42Z"
+    },
+    {
+      "id": 117877088825,
+      "name": "host-evidence",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-19T03:35:56Z",
+      "completed_at": "2026-10-19T03:36:43Z"
+    },
+    {
+      "id": 117877088641,
+      "name": "exact-native-models",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-19T03:35:56Z",
+      "completed_at": "2026-10-19T03:37:05Z"
+    },
+    {
+      "id": 117877088598,
+      "name": "exact-kernel-ktest",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-19T03:35:56Z",
+      "completed_at": "2026-10-19T03:43:01Z"
+    },
+    {
+      "id": 117877088393,
+      "name": "host-contracts",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-19T03:35:56Z",
+      "completed_at": "2026-10-19T03:36:46Z"
+    },
+    {
+      "id": 117877082641,
+      "name": "Analyze (python)",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-19T03:35:55Z",
+      "completed_at": "2026-10-19T03:36:49Z"
+    }
+  ],
+  "all_six_check_runs_success": true,
+  "g0": {
+    "run_id": 39195437870,
+    "job_id": 117877088393,
+    "all_20_steps_success": true,
+    "actual_checkout": "1f6d2ea7d1ba1e0044d3d9dce8f36247b884be81",
+    "checkout_tree": "65ddb50cd303f3c43a8226141c5298dca369db5d",
+    "candidate_host_fixtures": 8,
+    "normal_and_optimized_occurrences_each": 2
+  },
+  "a03": {
+    "run_id": 39195437840,
+    "job_id": 117877088641,
+    "all_10_steps_success": true,
+    "loom_models": {
+      "default_shim": 13,
+      "public_backend": 6
+    },
+    "strict_clippy_retained": true,
+    "allocator_current_executed": true,
+    "allocator_raw_events": 26,
+    "allocator_unique_zero_allocation_scenarios": 19
+  },
+  "a06": {
+    "run_id": 39195437891,
+    "job_id": 117877088598,
+    "all_12_steps_success": true,
+    "artifact": {
+      "id": 12162141476,
+      "node_id": "MDg6QXJ0aWZhY3QxMjE2MjE0MTQ3Ng==",
+      "name": "a06-exact-kernel-ktest-39195437891",
+      "size_in_bytes": 18335208,
+      "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/artifacts/12162141476",
+      "archive_download_url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/artifacts/12162141476/zip",
+      "expired": false,
+      "digest": "sha256:593abd9f59ece10daebe4926f6c6cfc8965c622f62dadb94c04feaaadad375bd",
+      "created_at": "2026-10-19T03:42:59Z",
+      "updated_at": "2026-10-19T03:42:59Z",
+      "expires_at": "2027-01-17T03:35:53Z",
+      "workflow_run": {
+        "id": 39195437891,
+        "repository_id": 1421656803,
+        "head_repository_id": 1421656803,
+        "head_branch": "agents/r10-g1-cpu-owner-20261019",
+        "head_sha": "107afb7436ca17177262fdfef2e6b5dfee13597a"
+      }
+    },
+    "counts": {
+      "reported_ktest_passes": 400,
+      "ktest_soft_skipped": 3,
+      "ktest_execution_lower_bound": 397,
+      "new_g1_ktests": 10,
+      "queryabi_exact_markers": 14,
+      "quota_guests": 4,
+      "total_guest_invocations": 8,
+      "elf_members": 7,
+      "unique_elf_bytes": 6
+    },
+    "source_files_rehashed": 5851,
+    "three_full_snapshot_byte_streams_equal": true,
+    "actual_configured_cpu_percent": {
+      "1": [
+        0.9,
+        0.819
+      ],
+      "2": [
+        0.826,
+        0.875
+      ]
+    }
+  },
+  "entry_reports": [
+    {
+      "path": "host-artifact-review.json",
+      "bytes": 35063,
+      "sha256": "73dc7f4da92465d76813011ebf8726aa6951549b6e647c6d085f13784d76466b"
+    },
+    {
+      "path": "a06-artifact-review.json",
+      "bytes": 53336,
+      "sha256": "331830eacc44e075255c8320211b2f4981b37da3af5320d5bda289f79cbfbb4d"
+    },
+    {
+      "path": "source-transition-review.json",
+      "bytes": 2105,
+      "sha256": "5f54472d549bf8bcc7ca654a0d8c3177f85c8e3c20181a8d52fcac3a6aefcc04"
+    }
+  ],
+  "limits": [
+    "Acceptance belongs only to exact source 107afb74/tree65ddb50. The later main-integrated head 1c05412e has separate observations and still needs its own artifact acceptance.",
+    "G0 and A03 are actual host tests and bounded Loom/allocation experiments; they are not guest/device effects or kernel IRQ safety proof.",
+    "A06 has eight actual x86 QEMU guest invocations; 400 reported ktest passes include three explicit VMX/EPT soft skips, so the execution lower bound is 397.",
+    "Source-clean snapshots cover ordinary product boot and QueryAbi, not every ktest or the full later quota interval. Post-checkout cleanup success is not an extra final Git-clean sample.",
+    "Generated ktest lock bytes are archived and compared four ways. The product minimal generated lock is represented by the fixed runner measurement, not a separately archived generated raw file.",
+    "No Rust build, QEMU, downloaded executable execution, CI rerun/cancel, PR mutation or merge was performed by this reviewer.",
+    "Previous f744/463f failures and local unknown OSDK residue remain preserved and are not invalidated by this successful head."
+  ]
+}

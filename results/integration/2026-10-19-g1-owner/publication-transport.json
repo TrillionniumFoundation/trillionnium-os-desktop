@@ -1,0 +1,51 @@
+{
+  "schema": "r10.publication-transport.v1",
+  "prepared_at_utc": "2026-10-19T03:15:03.138446+00:00",
+  "reason": "The parent explicitly selected a parts-only Git publication for the 10.60 MB G1 archive to avoid the publication blob API limit; the original security and Bazel archive bodies remain directly delivered.",
+  "g1_archive": {
+    "path_after_restoration": "g1-evidence/raw-evidence.tar.xz",
+    "bytes": 10602828,
+    "sha256": "6a20eefe453be83e04ad74ac99e79206d20034025c30a743f9a95ce2e6b370fd",
+    "body_in_published_Git_tree": false,
+    "parts_count": 7,
+    "parts_manifest": "archive-parts.json",
+    "preserved_original_path": "/workspace/scratch/499c7902de8e/r10-evidence/r10-delivery-review/g1-raw-evidence.tar.xz",
+    "preserved_original_identity_verified": true,
+    "reconstructed_parts_identity_verified": true
+  },
+  "other_archives": [
+    {
+      "path": "hepta-security/raw-evidence.tar.xz",
+      "body_in_published_Git_tree": true,
+      "also_has_parts": true
+    },
+    {
+      "path": "hepta-bazel-followup/raw-evidence.tar.xz",
+      "body_in_published_Git_tree": true,
+      "also_has_parts": false
+    }
+  ],
+  "unchanged_internal_manifests": [
+    {
+      "path": "g1-evidence/files-manifest.json",
+      "bytes": 48537,
+      "sha256": "bbb1d140949fb4d63a46cc425ca4cf848aaffa8ba9b3c995438bfd3179275f9d"
+    },
+    {
+      "path": "g1-evidence/artifact-manifest.json",
+      "bytes": 12544,
+      "sha256": "bdba4df9caa1471649de2095f12fefb8d5befcde4cdb5cfdd4d7e61e40d4727b"
+    },
+    {
+      "path": "archive-parts.json",
+      "bytes": 2568,
+      "sha256": "926c4cf8b977491218b77fb278f5f1858f4d4f7ffd59dca5d54d9bdcaf82fb7a"
+    }
+  ],
+  "original_archive_bytes_changed": false,
+  "archive_recompression": false,
+  "frozen_execution_receipts_modified": false,
+  "product_or_tests_reexecuted": false,
+  "reader_action": "Run review/restore-r10-archives.py with archive-parts.json and a new output-root, then extract the restored G1 archive at its archive root. Internal artifact/files manifests describe the exact reconstructed package, not an assertion that its large body is present in Git.",
+  "status": "passed_preserved_original_and_parts_only_Git_transport"
+}

@@ -1,0 +1,147 @@
+{
+  "schema": 1,
+  "started_at": "2026-10-19T03:18:05.543323+00:00",
+  "completed_at": "2026-10-19T03:18:06.186830+00:00",
+  "status": "main_candidate_narrow_validation_passed",
+  "source": {
+    "commit": "e770156ba8b35c77829d189fc053dc5f9eb69f8b",
+    "tree": "15a3b89f59052368e28ce5ed4943dc2ab638844b",
+    "status_porcelain": ""
+  },
+  "parent": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+  "changed_paths_from_main": [
+    "codex-rs/hepta-fleet/src/authority_port.rs"
+  ],
+  "modified_file": {
+    "path": "codex-rs/hepta-fleet/src/authority_port.rs",
+    "bytes": 10287,
+    "sha256": "df499cff654ac55fef83c0a6da2b0ec9208dd04a893cb730d40bb48284048ac7"
+  },
+  "git_diff_check_exit": 0,
+  "baseline_comparison": {
+    "path": "baseline-comparison.json",
+    "bytes": 34582,
+    "sha256": "4306f094632d099987b9188d37016eb848a3a1647dffbd0404b8109fdf0b4c7a"
+  },
+  "commands": [
+    {
+      "name": "fmt-01",
+      "receipt": {
+        "path": "fmt-01/receipt.json",
+        "bytes": 4547,
+        "sha256": "dd3b06a0005cd67f34133e79980b1ec730a03f86d8d58364163fad972a2ace4a"
+      },
+      "argv": [
+        "/workspace/scratch/499c7902de8e/r10-fleet-fixture-tools/bin/just",
+        "fmt",
+        "--base",
+        "f8c9419df6ddeb36ff8b522a50219981fb8d9345"
+      ],
+      "started_at": "2026-10-19T03:13:07.751824+00:00",
+      "completed_at": "2026-10-19T03:13:07.905809+00:00",
+      "exit_code": 0,
+      "source_unchanged": true
+    },
+    {
+      "name": "fleet-tests-01",
+      "receipt": {
+        "path": "fleet-tests-01/receipt.json",
+        "bytes": 4637,
+        "sha256": "cce70b2ca493d1cda4812fa2c88dadd69b03454156e02610e6051cc2ac5196e7"
+      },
+      "argv": [
+        "/workspace/scratch/499c7902de8e/r10-fleet-fixture-tools/bin/just",
+        "test",
+        "-p",
+        "codex-hepta-fleet",
+        "--lib",
+        "--locked",
+        "--offline",
+        "--cargo-profile",
+        "dev-small",
+        "-j",
+        "1"
+      ],
+      "started_at": "2026-10-19T03:13:12.476718+00:00",
+      "completed_at": "2026-10-19T03:13:21.446227+00:00",
+      "exit_code": 0,
+      "source_unchanged": true
+    },
+    {
+      "name": "fleet-clippy-01",
+      "receipt": {
+        "path": "fleet-clippy-01/receipt.json",
+        "bytes": 4717,
+        "sha256": "a0455927f19e58969e34bd62c75235433b4a95cc51617020fa1f280d7abb56db"
+      },
+      "argv": [
+        "/workspace/scratch/499c7902de8e/r10-fleet-fixture-tools/bin/just",
+        "clippy",
+        "-p",
+        "codex-hepta-fleet",
+        "--lib",
+        "--locked",
+        "--offline",
+        "--profile",
+        "dev-small",
+        "-j",
+        "1",
+        "--",
+        "-D",
+        "clippy::unwrap_used",
+        "-D",
+        "clippy::expect_used"
+      ],
+      "started_at": "2026-10-19T03:13:54.134047+00:00",
+      "completed_at": "2026-10-19T03:14:03.337026+00:00",
+      "exit_code": 0,
+      "source_unchanged": true
+    }
+  ],
+  "tests": {
+    "run": 41,
+    "passed": 41,
+    "failed": 0,
+    "skipped": 0,
+    "fixture_pass_line": "        PASS [   0.010s] (12/41) codex-hepta-fleet authority_port::tests::allocation_issue_consumes_exact_live_kernel_authority_lease",
+    "metadata_warnings": [
+      "warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#proc-macro2@1.0.106` which wasn't produced by cargo metadata",
+      "warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#quote@1.0.45` which wasn't produced by cargo metadata",
+      "warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#generic-array@0.14.7` which wasn't produced by cargo metadata",
+      "warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#serde_core@1.0.228` which wasn't produced by cargo metadata",
+      "warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#rustix@1.1.4` which wasn't produced by cargo metadata",
+      "warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#zmij@1.0.19` which wasn't produced by cargo metadata",
+      "warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#curve25519-dalek@4.1.3` which wasn't produced by cargo metadata",
+      "warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#serde_json@1.0.149` which wasn't produced by cargo metadata",
+      "warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#libc@0.2.186` which wasn't produced by cargo metadata",
+      "warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#serde@1.0.228` which wasn't produced by cargo metadata",
+      "   Compilingwarning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#anyhow@1.0.103` which wasn't produced by cargo metadata",
+      "warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#getrandom@0.4.2` which wasn't produced by cargo metadata",
+      "warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#thiserror@2.0.18` which wasn't produced by cargo metadata"
+    ]
+  },
+  "strict_clippy": {
+    "unwrap_used": "deny",
+    "expect_used": "deny",
+    "exit_code": 0
+  },
+  "tool_installation_receipt": {
+    "path": "reused-tools-installation.json",
+    "bytes": 6990,
+    "sha256": "ac4551919ff06ca1a30caca2098273a5ec6f655c93d955c7bf1c5eb2d1005256"
+  },
+  "installed_component_binary_bytes_reverified": true,
+  "previous_evidence": {
+    "directory": "/workspace/scratch/499c7902de8e/r10-evidence/fleet-fixture-fix",
+    "files": 20,
+    "manifest_sha256": "c42b3bc1774bd150d15ea563ce8fc088dd47c23cf0b1919350d912fa495c4232",
+    "all_bytes_unchanged": true
+  },
+  "setup_failure_retained": "checkout-01.json",
+  "limitations": [
+    "Linux x86_64 Cargo validation only; no Bazel, macOS, ARM64 or Windows execution.",
+    "No claim that dependency security debt or Windows sandbox boundary failures are repaired.",
+    "No remote ref, PR, CI workflow, rerun or merge was changed.",
+    "The previous d32-based validation remains a separate immutable execution."
+  ]
+}

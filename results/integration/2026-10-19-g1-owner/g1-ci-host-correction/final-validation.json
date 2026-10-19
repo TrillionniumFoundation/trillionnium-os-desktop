@@ -1,0 +1,774 @@
+{
+  "schema": 1,
+  "started_at": "2026-10-19T03:44:10.884790+00:00",
+  "completed_at": "2026-10-19T03:44:11.063146+00:00",
+  "status": "requested_host_gates_passed",
+  "source": {
+    "commit": "bccb817e0d3f1987f59c1b9e7d94e939d2e6d1d3",
+    "tree": "65ddb50cd303f3c43a8226141c5298dca369db5d",
+    "status_porcelain": ""
+  },
+  "reviewed_paths": [
+    "tests/control/lock_alloc/run-checks.py",
+    "tests/control/loom/Cargo.toml",
+    "tests/spec/test_a01_ktest_lock_preflight.py",
+    "tests/spec/test_a06_kernel_output_contract.py"
+  ],
+  "source_inputs": {
+    "path": "source-inputs.json",
+    "bytes": 214964,
+    "sha256": "832a434c6e9a9e66e415a274168cb4c6197b69c4ece11faef316a1fe7a4f60bf"
+  },
+  "receipts": [
+    {
+      "receipt": {
+        "path": "clippy-install-01/receipt.json",
+        "bytes": 451641,
+        "sha256": "67eddb5f99022e224bfb9d03adce84216700ec59050fc3f30c77c62c84cd9198"
+      },
+      "name": "clippy-install-01",
+      "exit_code": 0,
+      "started_at": "2026-10-19T03:25:58.863447+00:00",
+      "completed_at": "2026-10-19T03:25:59.873061+00:00",
+      "source_commit": "bc778b6b8114e5017a467c0566f5777d85abafaf",
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "path": "g0-abi-clippy/receipt.json",
+        "bytes": 451752,
+        "sha256": "5def0f3c23e470831e5bdb5baa7f85a43b9d31284f68012ee16590fcea3d430f"
+      },
+      "name": "g0-abi-clippy",
+      "exit_code": 0,
+      "started_at": "2026-10-19T03:34:12.127235+00:00",
+      "completed_at": "2026-10-19T03:34:13.229991+00:00",
+      "source_commit": "bccb817e0d3f1987f59c1b9e7d94e939d2e6d1d3",
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "path": "g0-abi-fmt/receipt.json",
+        "bytes": 451634,
+        "sha256": "1559f4d1e846927ea39f654b1450134ee8e51e2273fa111c88fa184da23d0b21"
+      },
+      "name": "g0-abi-fmt",
+      "exit_code": 0,
+      "started_at": "2026-10-19T03:29:04.467601+00:00",
+      "completed_at": "2026-10-19T03:29:04.541137+00:00",
+      "source_commit": "bc778b6b8114e5017a467c0566f5777d85abafaf",
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "path": "g0-abi-test/receipt.json",
+        "bytes": 451665,
+        "sha256": "a821939c44e9f9675f716fc47a3e25ae966cd882626063e93290a5ac1f9d91aa"
+      },
+      "name": "g0-abi-test",
+      "exit_code": 101,
+      "started_at": "2026-10-19T03:29:04.686236+00:00",
+      "completed_at": "2026-10-19T03:29:04.720209+00:00",
+      "source_commit": "bc778b6b8114e5017a467c0566f5777d85abafaf",
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "path": "g0-abi-test-02/receipt.json",
+        "bytes": 451754,
+        "sha256": "132b936b2b888d8b6eaa2884955a90c0f80d235c11e0ad645e825bef4ea567b4"
+      },
+      "name": "g0-abi-test-02",
+      "exit_code": 0,
+      "started_at": "2026-10-19T03:34:09.556597+00:00",
+      "completed_at": "2026-10-19T03:34:11.972171+00:00",
+      "source_commit": "bccb817e0d3f1987f59c1b9e7d94e939d2e6d1d3",
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "path": "g0-control-clippy/receipt.json",
+        "bytes": 451715,
+        "sha256": "c4265f25ebe386a981f69c0af5bf4048c0b27a4ab2d210bad166db37198e4b7f"
+      },
+      "name": "g0-control-clippy",
+      "exit_code": 0,
+      "started_at": "2026-10-19T03:34:27.552887+00:00",
+      "completed_at": "2026-10-19T03:34:30.343345+00:00",
+      "source_commit": "bccb817e0d3f1987f59c1b9e7d94e939d2e6d1d3",
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "path": "g0-control-fmt/receipt.json",
+        "bytes": 451642,
+        "sha256": "f5d799eb6a9815a1ab7d51a641995538982757f4a884b6b7ec7a2709a39ebf6b"
+      },
+      "name": "g0-control-fmt",
+      "exit_code": 0,
+      "started_at": "2026-10-19T03:34:13.379902+00:00",
+      "completed_at": "2026-10-19T03:34:13.566248+00:00",
+      "source_commit": "bccb817e0d3f1987f59c1b9e7d94e939d2e6d1d3",
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "path": "g0-control-test/receipt.json",
+        "bytes": 451673,
+        "sha256": "280615308a21b49f25a4f84cca28e2a3ff45eaacc2d61c248554216d6e9b8de1"
+      },
+      "name": "g0-control-test",
+      "exit_code": 0,
+      "started_at": "2026-10-19T03:34:13.712403+00:00",
+      "completed_at": "2026-10-19T03:34:27.404657+00:00",
+      "source_commit": "bccb817e0d3f1987f59c1b9e7d94e939d2e6d1d3",
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "path": "g0-portable-clippy/receipt.json",
+        "bytes": 451784,
+        "sha256": "3ec7242c0b59b4f091acaadd790871e80d8ebcabe9f5084cdd4058cc3311f1fa"
+      },
+      "name": "g0-portable-clippy",
+      "exit_code": 0,
+      "started_at": "2026-10-19T03:34:45.721286+00:00",
+      "completed_at": "2026-10-19T03:34:48.479801+00:00",
+      "source_commit": "bccb817e0d3f1987f59c1b9e7d94e939d2e6d1d3",
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "path": "g0-portable-rlib/receipt.json",
+        "bytes": 451798,
+        "sha256": "31963a6231ac8360df95dacdbe4681a8a7c73caf758e31908bdbbb6059ea454a"
+      },
+      "name": "g0-portable-rlib",
+      "exit_code": 0,
+      "started_at": "2026-10-19T03:34:48.639272+00:00",
+      "completed_at": "2026-10-19T03:34:49.662129+00:00",
+      "source_commit": "bccb817e0d3f1987f59c1b9e7d94e939d2e6d1d3",
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "path": "g0-portable-test/receipt.json",
+        "bytes": 451742,
+        "sha256": "1562e182b2efeed107614ccbbdbd388e985a2f0e700df14a887ee9d3bead0893"
+      },
+      "name": "g0-portable-test",
+      "exit_code": 0,
+      "started_at": "2026-10-19T03:34:30.511943+00:00",
+      "completed_at": "2026-10-19T03:34:45.552614+00:00",
+      "source_commit": "bccb817e0d3f1987f59c1b9e7d94e939d2e6d1d3",
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "path": "lock-alloc-01/receipt.json",
+        "bytes": 451703,
+        "sha256": "3f8742110f2fc4160474fc9bfc7bab09caf282ba4ffb6e7bddd3fa2df246f8ce"
+      },
+      "name": "lock-alloc-01",
+      "exit_code": 1,
+      "started_at": "2026-10-19T03:27:26.801365+00:00",
+      "completed_at": "2026-10-19T03:27:28.674832+00:00",
+      "source_commit": "bc778b6b8114e5017a467c0566f5777d85abafaf",
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "path": "lock-alloc-02/receipt.json",
+        "bytes": 451703,
+        "sha256": "0c82e090376d72ffc86e4bd1dccfe6322d5e4d123fc24b5397737aeeb98893bf"
+      },
+      "name": "lock-alloc-02",
+      "exit_code": 0,
+      "started_at": "2026-10-19T03:34:40.318791+00:00",
+      "completed_at": "2026-10-19T03:34:43.146702+00:00",
+      "source_commit": "bccb817e0d3f1987f59c1b9e7d94e939d2e6d1d3",
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "path": "loom-fetch-01/receipt.json",
+        "bytes": 451658,
+        "sha256": "af0807cdb82dde5602032307a8de89bb1bd909f6a1ad1cd548173d709c5b3474"
+      },
+      "name": "loom-fetch-01",
+      "exit_code": 101,
+      "started_at": "2026-10-19T03:27:26.800380+00:00",
+      "completed_at": "2026-10-19T03:27:26.819407+00:00",
+      "source_commit": "bc778b6b8114e5017a467c0566f5777d85abafaf",
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "path": "loom-fetch-02/receipt.json",
+        "bytes": 451681,
+        "sha256": "48dd528f12d71ad9e0bfacc7f0e543e3a1ecb0f0b9e178a869a86ed77f1ced32"
+      },
+      "name": "loom-fetch-02",
+      "exit_code": 0,
+      "started_at": "2026-10-19T03:28:18.964065+00:00",
+      "completed_at": "2026-10-19T03:28:20.095786+00:00",
+      "source_commit": "bc778b6b8114e5017a467c0566f5777d85abafaf",
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "path": "loom-models-01/receipt.json",
+        "bytes": 451710,
+        "sha256": "073a1c244b23d3dd572670914fbe31f3afed4bc52fc59fcadc2a45ceba843da5"
+      },
+      "name": "loom-models-01",
+      "exit_code": 0,
+      "started_at": "2026-10-19T03:34:40.291793+00:00",
+      "completed_at": "2026-10-19T03:35:35.217620+00:00",
+      "source_commit": "bccb817e0d3f1987f59c1b9e7d94e939d2e6d1d3",
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "path": "worktree-add/receipt.json",
+        "bytes": 226714,
+        "sha256": "67a540c25e6a3bcb9988e0875016f36db4514251355fd4f99fd9a59afd739b1d"
+      },
+      "name": "worktree-add",
+      "exit_code": 0,
+      "started_at": "2026-10-19T03:25:14.533190+00:00",
+      "completed_at": "2026-10-19T03:25:15.110811+00:00",
+      "source_commit": "bc778b6b8114e5017a467c0566f5777d85abafaf",
+      "source_unchanged": false
+    }
+  ],
+  "g0_required_operations": [
+    "g0-abi-fmt",
+    "g0-abi-test-02",
+    "g0-abi-clippy",
+    "g0-control-fmt",
+    "g0-control-test",
+    "g0-control-clippy",
+    "g0-portable-test",
+    "g0-portable-clippy",
+    "g0-portable-rlib"
+  ],
+  "g0_counts": {
+    "g0-abi-test-02": {
+      "passed": 78,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 0,
+      "summary_rows": [
+        [
+          3,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          8,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          8,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          21,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          7,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          15,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          4,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "log": {
+        "path": "g0-abi-test-02/command.log",
+        "bytes": 16822,
+        "sha256": "55ad914dc45b1ae7123bac5ce85dfec10a36f6a6ce41d7020906e54ef52a812b"
+      }
+    },
+    "g0-control-test": {
+      "passed": 225,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 0,
+      "summary_rows": [
+        [
+          10,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          7,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          81,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          8,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          8,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          15,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          11,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          15,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          7,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          12,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          10,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "log": {
+        "path": "g0-control-test/command.log",
+        "bytes": 48614,
+        "sha256": "6cc5fc1aafb52cf918206c68e3ea122780c405b4fc05e9694ad8d4ed298414e7"
+      }
+    },
+    "g0-portable-test": {
+      "passed": 225,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 0,
+      "summary_rows": [
+        [
+          10,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          7,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          81,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          8,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          8,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          15,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          11,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          15,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          7,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          6,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          12,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          10,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          3,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          5,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "log": {
+        "path": "g0-portable-test/command.log",
+        "bytes": 51262,
+        "sha256": "fddc459f5811b5b270e43000089301f60505894218b4b8514e278fba0a35f26c"
+      }
+    }
+  },
+  "count_scope": "Control std and portable-spin execute overlapping cases; report each run separately.",
+  "loom": {
+    "models": 19,
+    "variants": {
+      "default_shim": {
+        "models": 13,
+        "schedule_sum": 26675,
+        "source_overrides": [
+          "src/sync.rs"
+        ]
+      },
+      "public_backend": {
+        "models": 6,
+        "schedule_sum": 578,
+        "source_overrides": []
+      }
+    },
+    "all_commands_passed": true,
+    "all_source_and_copy_hashes_verified": true,
+    "excluded": [
+      "std/alloc Arc and Weak reference-count atomics and finalization ordering",
+      "allocator internals and allocation failure",
+      "real kernel IRQ, preemption, SMP, lock adapters and scheduler mutation",
+      "real credentials and Hepta durable acknowledgement/crash recovery",
+      "more than three concurrent workers or more than three preemptions",
+      "panic/unwind recovery: Loom 0.7.2 Mutex::lock internally unwraps on poison",
+      "arbitrary request values and long sequence histories beyond each fixture"
+    ]
+  },
+  "allocator": {
+    "result": "current_zero",
+    "scenario_count": 19,
+    "summary": {
+      "alloc": 0,
+      "allocated_bytes": 0,
+      "dealloc": 0,
+      "deallocated_bytes": 0,
+      "event": "summary",
+      "name": "all_native_namespace_scenarios",
+      "realloc": 0,
+      "reallocated_bytes": 0
+    },
+    "injected_failures": 2,
+    "source_and_harness_unchanged": true,
+    "scope": "Current native namespace scenarios use byte-identical production modules and the public LockBackend API; only historical controls substitute a std mutex shim for sync.rs. The supplied backend measures thread-local internal-mutex depth and the process allocator records alloc/alloc_zeroed, realloc and dealloc calls (including injected failed attempts) while depth is nonzero. Positive controls, poison/unwind recovery and independent thread depth are checked. Summary includes scenario setup between named operations, excluding instrumentation controls. Callback coverage includes implicit cleanup of owned captures whose bodies only borrow them; explicit callback destruction, allocation and reentry remain the adapter's obligations. This is a std host harness: no Arc atomic ordering proof, exhaustive scheduling proof, portable-spin allocator proof, real kernel allocator/IRQ proof or host ResourceDomain allocation claim. Controlled allocation failures cover only the initial ring and retirement Vec try_reserve_exact paths; no general OOM guarantee is inferred."
+  },
+  "retained_failures": [
+    {
+      "receipt": "lock-alloc-01/receipt.json",
+      "source": "bc778b6b8114e5017a467c0566f5777d85abafaf",
+      "kind": "real_generated_manifest_cfg_registration_failure",
+      "runtime_executed": false
+    },
+    {
+      "receipt": "loom-fetch-01/receipt.json",
+      "kind": "offline_dependency_cache_missing",
+      "recovery": "fixed-lock network fetch; no dependency upgrade or lock mutation"
+    },
+    {
+      "receipt": "g0-abi-test/receipt.json",
+      "kind": "reviewer_added_locked_flag_on_originally_lockless_crate",
+      "recovery": "original workflow argument semantics; generated local-only lock archived and moved out of checkout"
+    }
+  ],
+  "root_spec": {
+    "receipt": {
+      "path": "root-spec/initial-validation.json",
+      "bytes": 1485,
+      "sha256": "01e5e6537831587cffff19a9f0759193e13a6c8a2e941882d14a18e045fef196"
+    },
+    "passed": 36,
+    "source": "bc778b6b8114e5017a467c0566f5777d85abafaf",
+    "independently_rerun": false,
+    "scope_note": "Untracked canonical OSDK residue is known and excluded from Git tree; this host-only check does not attest whole worktree cleanliness."
+  },
+  "tools": {
+    "toolchain": "nightly-2026-07-21",
+    "only_added_component": "clippy",
+    "previous_compiler_cargo_rustfmt_and_osdk_bytes_unchanged": true
+  },
+  "fleet_evidence": [
+    {
+      "directory": "/workspace/scratch/499c7902de8e/r10-evidence/fleet-fixture-fix",
+      "files": 20,
+      "manifest_sha256": "c42b3bc1774bd150d15ea563ce8fc088dd47c23cf0b1919350d912fa495c4232",
+      "all_original_delivery_bytes_unchanged": true
+    },
+    {
+      "directory": "/workspace/scratch/499c7902de8e/r10-evidence/fleet-fixture-main-fix",
+      "files": 25,
+      "manifest_sha256": "679cc06b07a26e9783ac5fde2d711383fe356763c4d6e1dac73390053d4ba868",
+      "all_original_delivery_bytes_unchanged": true
+    }
+  ],
+  "limitations": [
+    "Host validation only; portable target output is an rlib, not a kernel link or boot.",
+    "Bounded Loom schedules do not prove arbitrary histories, IRQ/SMP, Arc atomics or crash recovery.",
+    "No remote GitHub mutation, CI rerun, gate change or merge was performed."
+  ]
+}

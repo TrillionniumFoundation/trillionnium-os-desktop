@@ -1,0 +1,49 @@
+{
+  "schema": "r10.g1-pr197.final-source-transition.v1",
+  "reviewed_at_utc": "2026-10-19T03:37:10.367843+00:00",
+  "old_remote_head": "f744fb248a6d264676d0b892d21d6c4582d72d0f",
+  "old_same_tree_local": "4e077aef4913179a68aa0d814018ce1a9d87cafc",
+  "final_remote_head": "107afb7436ca17177262fdfef2e6b5dfee13597a",
+  "final_same_tree_local": "bccb817e0d3f1987f59c1b9e7d94e939d2e6d1d3",
+  "final_tree": "65ddb50cd303f3c43a8226141c5298dca369db5d",
+  "source_changes": [
+    {
+      "path": "tests/control/lock_alloc/run-checks.py",
+      "before_sha256": "1e95f96c5d67a8598705a4cda46186a8181aeb7ddbd0c06e30b8fd184f8536a4",
+      "after_sha256": "3188aa734a2331f36633cdfc9140ce6e286a3c23bd52f300a0813e74c379337e",
+      "before_bytes": 21405,
+      "after_bytes": 21471
+    },
+    {
+      "path": "tests/control/loom/Cargo.toml",
+      "before_sha256": "c010ea3b5503733602dea6ead0a6e815301ad63faddb1841ccc57b18bf483f38",
+      "after_sha256": "4f94dacaee56584b645fcdf8f90d796daf5264362d50cc5571bd175669371a7d",
+      "before_bytes": 521,
+      "after_bytes": 663
+    },
+    {
+      "path": "tests/spec/test_a01_ktest_lock_preflight.py",
+      "before_sha256": "caeb05a0d6097af775815ad3b716edc5781382d95e65c0a8002b348c4768abdf",
+      "after_sha256": "b1978bd91d0f0b2cd3dd2f92556385a03757d8fdc1fd95c73630719fc14d24ad",
+      "before_bytes": 3354,
+      "after_bytes": 6002
+    },
+    {
+      "path": "tests/spec/test_a06_kernel_output_contract.py",
+      "before_sha256": "2370de5babd3d70ada2fbd7125aef1894340f54512c81c5cdd1b10efabd4d6e9",
+      "after_sha256": "f114a60ec6ef0a3eb5b524f12cf1c7c5713eb1adff46a3810a586ea12bda8199",
+      "before_bytes": 1393,
+      "after_bytes": 1486
+    }
+  ],
+  "selected_execution_inputs_unchanged": {
+    "kernel/asterinas": true,
+    "libs/os-control": true,
+    "libs/os-abi": true,
+    "support/build": true,
+    "tests/kernel/control": true,
+    ".github/workflows/a06-kernel.yml": true,
+    "tests/organ_backend": true
+  },
+  "limit": "Only immutable Git object bytes were compared. This source comparison does not substitute for final-head CI or guest execution."
+}

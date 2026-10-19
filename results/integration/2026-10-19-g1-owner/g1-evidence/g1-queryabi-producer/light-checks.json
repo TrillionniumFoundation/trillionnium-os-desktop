@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "started_at_utc": "2026-10-19T02:10:33.865971+00:00",
+  "finished_at_utc": "2026-10-19T02:10:34.217256+00:00",
+  "base_head": "12e0547d2e6394548b15764b06346422c4fff31e",
+  "command": [
+    "python3",
+    "-I",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests/kernel/control",
+    "-p",
+    "test_queryabi*runner.py",
+    "-v"
+  ],
+  "exit": 0,
+  "host_test_count": 16,
+  "test_scope": "8 original replay fixtures + 8 candidate provenance/acceptance fixtures; no QEMU or ioctl",
+  "raw_log_sha256": "021d4f0d55c53c0ece3c050a3c62b62f3d60337592cea66543aa917b10c4ac9e",
+  "legacy_files_unchanged_sha256": {
+    "tests/kernel/control/queryabi_guest.c": "bed0eef9bdf8228bf58e23bd2b775501e8d5718ff11e554a600acc1b5469155b",
+    "tests/kernel/control/run_queryabi_guest.py": "3d981b41ae4905983c67d13d8d7abfbc29318fd6a41b848523eb4c0ac1400268"
+  },
+  "c_compile_only": {
+    "observed_exit": 0,
+    "tool_chunk_id": "c929e5",
+    "command": [
+      "cc",
+      "-std=c11",
+      "-O2",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-static",
+      "tests/kernel/control/queryabi_candidate_guest.c",
+      "-o",
+      "/workspace/scratch/499c7902de8e/r10-evidence/g1-owner/candidate-probe-compile-only"
+    ],
+    "elf_sha256": "ce90f36610300506edcd0826393020ff578e3055452a42ec731058b14d81ae8a",
+    "elf_size": 803832,
+    "executed": false
+  },
+  "ast_links_diff_checks_passed": true,
+  "source_files_sha256": {
+    ".github/workflows/a06-kernel.yml": "d4e78f600819248500437955dd8c0a0221e19626b58cdc71cc9be263d99edd89",
+    "tests/kernel/control/queryabi_candidate_guest.c": "790a6dbcaa963a7873dee0a29269f0e203306641a431890ff8f72e7c6b315f20",
+    "tests/kernel/control/run_queryabi_candidate_guest.py": "e02cfa6a786f8016f0fdb4714e539e6949094c32390cf9230a9039b0dd868a6f",
+    "tests/kernel/control/test_queryabi_candidate_runner.py": "18d3d350115cd9a5f2084b22b0f43c27bc7dbd389d84ceea97277510b69ffb42",
+    "tests/kernel/control/README.md": "e0fd1d980cf6d034d485a8995c7a2c72c062d82e7727f3af09bcb55ba3e78cc6"
+  }
+}
