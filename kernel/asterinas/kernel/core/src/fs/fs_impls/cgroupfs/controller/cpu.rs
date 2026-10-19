@@ -708,6 +708,9 @@ mod bandwidth_settlement_regressions;
 mod owner_retention_regressions;
 
 #[cfg(ktest)]
+mod scheduler_handoff_regressions;
+
+#[cfg(ktest)]
 mod quota_debt_regressions {
     use super::CpuMax;
     use ostd::prelude::ktest;

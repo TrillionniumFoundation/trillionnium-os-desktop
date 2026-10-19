@@ -1,0 +1,13 @@
+diff --git a/kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs b/kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs
+--- a/kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs
++++ b/kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs
+@@ -719,7 +719,8 @@
+         debug_assert!(self.dequeued.is_none());
+         current.0.0.schedule_info().cpu.set_to_none();
+         let task = current.0.0.clone();
+-        self.dequeued = Some(current);
++        // NEGATIVE CONTROL: discard the segment before selection finishes.
++        drop(current);
+         Some(task)
+     }
+ }

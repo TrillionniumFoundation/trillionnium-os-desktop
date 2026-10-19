@@ -54,12 +54,11 @@ pub(super) fn read_instant() -> Instant {
 
 fn update_clocksource() {
     let clock = CLOCK.get().unwrap();
-    clock.update();
+    let sample = clock.update();
 
     // Update vDSO data.
     if let Some(update_fn) = VDSO_DATA_HIGH_RES_UPDATE_FN.get() {
-        let (last_instant, last_cycles) = clock.last_record();
-        update_fn(last_instant, last_cycles);
+        update_fn(sample);
     }
 }
 

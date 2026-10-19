@@ -55,8 +55,76 @@ pub struct ClockSource {
     read_cycles: Arc<dyn Fn() -> u64 + Sync + Send>,
     base: ClockSourceBase,
     coeff: Coeff,
-    /// A record to an `Instant` and the corresponding cycles of this `ClockSource`.
-    last_record: RwLock<(Instant, u64), LocalIrqDisabled>,
+    /// A paired time/cycle record, including the unrounded sub-nanosecond phase.
+    last_record: RwLock<ClockSourceSample, LocalIrqDisabled>,
+}
+
+/// A single hardware-counter observation in its calibrated clock domain.
+///
+/// The fractional numerator is in units of `1 / 2^Coeff::shift()` nanoseconds.
+/// Keep it when publishing a new conversion base, including vDSO data. Rounding
+/// every refresh separately would permanently discard elapsed fractions.
+///
+/// Only a reliable sample pairs its instant with the observed counter. A
+/// backwards/overflowed observation retains the last usable base, flagged as
+/// unreliable; it is not a new accounting endpoint.
+#[derive(Clone, Copy, Debug)]
+pub struct ClockSourceSample {
+    instant: Instant,
+    cycles: u64,
+    fractional_numerator: u64,
+    reliable: bool,
+}
+
+impl ClockSourceSample {
+    fn origin(cycles: u64) -> Self {
+        Self {
+            instant: Instant::zero(),
+            cycles,
+            fractional_numerator: 0,
+            reliable: true,
+        }
+    }
+
+    pub fn instant(&self) -> Instant {
+        self.instant
+    }
+
+    pub fn cycles(&self) -> u64 {
+        self.cycles
+    }
+
+    pub fn fractional_numerator(&self) -> u64 {
+        self.fractional_numerator
+    }
+
+    /// Whether this clock has observed only valid counter samples.
+    pub fn is_reliable(&self) -> bool {
+        self.reliable
+    }
+
+    /// Returns an absolute nanosecond endpoint only for a reliable sample.
+    ///
+    /// Consumers with a u64 time ABI must also reject an unrepresentable time.
+    /// Taking differences of these absolute endpoints preserves rounding
+    /// across adjacent intervals; do not separately round every cycle delta.
+    pub fn checked_nanos(&self) -> Option<u64> {
+        if !self.reliable {
+            return None;
+        }
+        Duration::new(self.instant.secs(), self.instant.nanos())
+            .as_nanos()
+            .try_into()
+            .ok()
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+enum SampleFault {
+    Backwards,
+    ExcessiveDelay,
+    InvalidCoefficient,
+    Overflow,
 }
 
 impl ClockSource {
@@ -67,20 +135,33 @@ impl ClockSource {
     /// The `ClockSource` also calculates a reliable `Coeff` based on the counter's frequency and
     /// the maximum delay seconds. This `Coeff` is used to convert the number of cycles into
     /// the duration of time that has passed for those cycles.
+    /// Time starts at zero at the constructor's single counter observation.
+    /// System bootstrap subsequently applies the existing private RTC/TSC
+    /// calibration; maintenance never changes that origin.
     pub fn new(
         freq: u64,
         max_delay_secs: u64,
         read_cycles: Arc<dyn Fn() -> u64 + Sync + Send>,
     ) -> Self {
+        assert!(freq > 0, "clock source frequency must be nonzero");
         let base = ClockSourceBase::new(freq, max_delay_secs);
         // Too big `max_delay_secs` will lead to a low resolution `Coeff`.
-        debug_assert!(max_delay_secs < 600);
-        let coeff = Coeff::new(NANOS_PER_SECOND as u64, freq, max_delay_secs * freq);
+        debug_assert!(base.max_delay_secs < 600);
+        let max_cycles = base
+            .max_delay_secs
+            .checked_mul(freq)
+            .expect("clock source maximum interval must fit in u64");
+        let coeff = Coeff::new(NANOS_PER_SECOND as u64, freq, max_cycles);
+        assert!(
+            coeff.mult() > 0 && coeff.shift() <= 32,
+            "clock source coefficient must be representable"
+        );
+        let origin = ClockSourceSample::origin(read_cycles());
         Self {
             read_cycles,
             base,
             coeff,
-            last_record: RwLock::new((Instant::zero(), 0)),
+            last_record: RwLock::new(origin),
         }
     }
 
@@ -90,48 +171,85 @@ impl ClockSource {
     /// recorded cycles stored in the clocksource. Then `ClockSource` will convert
     /// the passed cycles into passed time and calculate the current instant.
     ///
-    /// Returns the calculated instant and instant cycles.
-    fn calculate_instant(&self) -> (Instant, u64) {
-        let (instant_cycles, last_instant, last_cycles) = {
+    /// A reliable result contains the calculated instant and the exact same
+    /// counter observation. Invalid results must not be used for accounting.
+    pub fn read_sample(&self) -> ClockSourceSample {
+        let (cycles, last) = {
             let last_record = self.last_record.read();
-            let (last_instant, last_cycles) = *last_record;
-            (self.read_cycles(), last_instant, last_cycles)
+            (self.read_cycles(), *last_record)
         };
-
-        let delta_nanos = match instant_cycles.checked_sub(last_cycles) {
-            Some(delta) => self.cycles_to_nanos_lossy(delta),
-            None => {
-                ostd::warn!(
-                    "The clock source becomes not reliable since TSC \
-                    has moved backwards from {} to {}",
-                    last_cycles,
-                    instant_cycles
-                );
-                0
-            }
-        };
-        let duration = Duration::from_nanos(delta_nanos);
-        (last_instant + duration, instant_cycles)
-    }
-
-    fn cycles_to_nanos_lossy(&self, cycles: u64) -> u64 {
-        let max_cycles = self.base.max_delay_secs * self.base.freq;
-        if cycles <= max_cycles {
-            self.coeff * cycles
-        } else {
-            ostd::warn!(
-                "The clock source becomes not reliable since an \
-                interval of {} cycles exceeds the maximum delay {}(s)",
-                cycles,
-                max_cycles
-            );
-            self.coeff * max_cycles
+        let (sample, fault) = self.calculate_sample(last, cycles);
+        if fault.is_some() {
+            // A failed read cannot become an authorizable sample merely by
+            // retrying. Do not overwrite a newer base with this read's stale
+            // values; only invalidate the current clock's reliability.
+            self.last_record.write().reliable = false;
         }
+        Self::report_fault(fault, last.cycles, cycles);
+        sample
     }
 
-    /// Uses an input instant and cycles to update the `last_record` in the `ClockSource`.
-    fn update_last_record(&self, record: (Instant, u64)) {
-        *self.last_record.write() = record;
+    /// Computes from one locked record; the caller reports faults after unlock.
+    fn calculate_sample(
+        &self,
+        last: ClockSourceSample,
+        cycles: u64,
+    ) -> (ClockSourceSample, Option<SampleFault>) {
+        let invalid = || ClockSourceSample {
+            reliable: false,
+            ..last
+        };
+        let Some(delta) = cycles.checked_sub(last.cycles) else {
+            // Keep the last known counter base. Rewinding it would count the
+            // same cycles again when the hardware counter catches back up.
+            return (invalid(), Some(SampleFault::Backwards));
+        };
+        let Some(max_cycles) = self.base.max_delay_secs.checked_mul(self.base.freq) else {
+            return (invalid(), Some(SampleFault::Overflow));
+        };
+        let shift = self.coeff.shift();
+        if shift > 32 || self.coeff.mult() == 0 {
+            return (invalid(), Some(SampleFault::InvalidCoefficient));
+        }
+        let denominator = 1_u64 << shift;
+        if last.fractional_numerator >= denominator {
+            return (invalid(), Some(SampleFault::Overflow));
+        }
+        // Preserve the existing lossy/clamped general-clock behavior, but
+        // mark that value unusable for an exact resource-accounting sample.
+        let fault = (delta > max_cycles).then_some(SampleFault::ExcessiveDelay);
+        let scaled = u128::from(delta.min(max_cycles))
+            .checked_mul(u128::from(self.coeff.mult()))
+            .and_then(|value| value.checked_add(u128::from(last.fractional_numerator)));
+        let Some(scaled) = scaled else {
+            return (invalid(), Some(SampleFault::Overflow));
+        };
+        let Ok(delta_nanos) = u64::try_from(scaled >> shift) else {
+            return (invalid(), Some(SampleFault::Overflow));
+        };
+        let Some(duration) = Duration::new(last.instant.secs(), last.instant.nanos())
+            .checked_add(Duration::from_nanos(delta_nanos))
+        else {
+            return (invalid(), Some(SampleFault::Overflow));
+        };
+        (
+            ClockSourceSample {
+                instant: Instant::from(duration),
+                cycles,
+                fractional_numerator: (scaled & u128::from(denominator - 1)) as u64,
+                reliable: last.reliable && fault.is_none(),
+            },
+            fault,
+        )
+    }
+
+    fn report_fault(fault: Option<SampleFault>, last_cycles: u64, cycles: u64) {
+        if let Some(fault) = fault {
+            ostd::warn!(
+                "Unreliable clock source sample: {:?}, previous cycles {}, observed cycles {}",
+                fault, last_cycles, cycles
+            );
+        }
     }
 
     /// Reads current cycles of the `ClockSource`.
@@ -141,7 +259,13 @@ impl ClockSource {
 
     /// Returns the last instant and last cycles recorded in the `ClockSource`.
     pub fn last_record(&self) -> (Instant, u64) {
-        return *self.last_record.read();
+        let record = self.last_record.read();
+        (record.instant, record.cycles)
+    }
+
+    /// Returns the whole conversion base, including the fractional phase.
+    pub fn last_sample(&self) -> ClockSourceSample {
+        *self.last_record.read()
     }
 
     /// Returns the maximum delay seconds for updating of the `ClockSource`.
@@ -161,18 +285,30 @@ impl ClockSource {
 
     /// Calibrates the recorded `Instant` to zero, and record the instant cycles.
     pub(crate) fn calibrate(&self, instant_cycles: u64) {
-        self.update_last_record((Instant::zero(), instant_cycles));
+        *self.last_record.write() = ClockSourceSample::origin(instant_cycles);
     }
 
-    /// Gets the instant to update the internal instant in the `ClockSource`.
-    pub(crate) fn update(&self) {
-        let (instant, instant_cycles) = self.calculate_instant();
-        self.update_last_record((instant, instant_cycles));
+    /// Refreshes the conversion base, preserving fractional elapsed time.
+    ///
+    /// This maintenance operation does not change the clock's origin. Once a
+    /// bad read or refresh is observed, later samples remain unreliable. Only
+    /// the private bootstrap calibration can establish a new origin.
+    pub fn update(&self) -> ClockSourceSample {
+        let (sample, fault, last_cycles, cycles) = {
+            let mut last = self.last_record.write();
+            let cycles = self.read_cycles();
+            let last_cycles = last.cycles;
+            let (sample, fault) = self.calculate_sample(*last, cycles);
+            *last = sample;
+            (sample, fault, last_cycles, cycles)
+        };
+        Self::report_fault(fault, last_cycles, cycles);
+        sample
     }
 
     /// Reads the instant corresponding to the current time.
     pub(crate) fn read_instant(&self) -> Instant {
-        self.calculate_instant().0
+        self.read_sample().instant
     }
 }
 

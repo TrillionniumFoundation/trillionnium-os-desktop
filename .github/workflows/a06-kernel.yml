@@ -122,6 +122,25 @@ jobs:
             --worktree "${RUNNER_TEMP}/a06-owner-negative-source" \
             --output "${RUNNER_TEMP}/a06-owner-negative"
 
+      - name: Prove paired-clock and scheduler-handoff regressions reject six frozen defects
+        shell: bash
+        env:
+          A01_KTEST_TIMEOUT: "300"
+        run: |
+          set -euo pipefail
+          for control in clocksource-drop-fraction vdso-drop-fraction vdso-skip-fault-mode \
+              handoff-drop-tail handoff-eligibility-first dequeue-drop-owner; do
+            # The first mutation rebuilt the original shared OSDK target.
+            # Every later control verifies the saved green ELF against the
+            # original successful QEMU record before changing any source.
+            python3 -I -B tests/organ_backend/run_cpu_owner_negative.py \
+              --control "$control" \
+              --green-evidence "${RUNNER_TEMP}/a06-ktest" \
+              --green-kernel "${RUNNER_TEMP}/a06-owner-negative/green-core-kernel.elf" \
+              --worktree "${RUNNER_TEMP}/a06-clock-handoff-source-$control" \
+              --output "${RUNNER_TEMP}/a06-clock-handoff-negative/$control"
+          done
+
       - name: Freeze one SCM_RIGHTS probe and verify all 27 cases on original Linux
         shell: bash
         run: |
@@ -296,6 +315,7 @@ jobs:
             ${{ runner.temp }}/a06-prepared-locks
             ${{ runner.temp }}/a06-queryabi-candidate
             ${{ runner.temp }}/a06-owner-negative
+            ${{ runner.temp }}/a06-clock-handoff-negative
             ${{ runner.temp }}/a06-owner-negative-source/kernel/asterinas/target/osdk/aster-core/aster-core-osdk-bin.elf
             ${{ runner.temp }}/a04-scm-linux
             ${{ runner.temp }}/a04-scm-guest

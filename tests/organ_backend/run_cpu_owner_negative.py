@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Require the retained-owner regression to fail only under its frozen old behavior.
+"""Require exact CPU/clock regressions to fail under their frozen old behavior.
 
 The original full kernel gate runs first in the candidate checkout. This entry
 creates a separate local Git commit containing the one production mutation,
@@ -24,12 +24,60 @@ ROOT = Path(__file__).resolve().parents[2]
 PATCH = ROOT / 'tests/organ_backend/cpu_owner_current_slot_negative.patch'
 PATCH_SHA = '96dbb29fec63b3946bcb18a95567a7a2d2191130cc3ec9f7feeafad29e1a28a2'
 CPU_PATH = 'kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs'
+SCHED_PATH = 'kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs'
+CLOCK_PATH = 'kernel/asterinas/kernel/core/comps/time/src/clocksource.rs'
+VDSO_PATH = 'kernel/asterinas/kernel/core/src/vdso.rs'
 PREFIX = 'aster_core::fs::fs_impls::cgroupfs::controller::cpu::owner_retention_regressions::'
 FAILED_NAMES = {PREFIX + name for name in (
     'controller_publication_charges_the_entire_prefix_to_the_old_incarnation',
     'retained_leaf_debits_its_original_ancestor_chain_after_parent_replacement',
     'exited_task_resumes_its_retained_incarnation_after_replacement_and_reap',
 )}
+CLOCK_PREFIX = 'aster_core::vdso::clocksource_regressions::'
+HANDOFF_PREFIX = 'aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::'
+HANDOFF_NAMES = (
+    'outgoing_tail_ends_at_the_incoming_segment_start',
+    'handoff_debits_the_old_window_before_rechecking_a_shared_ancestor',
+    'waiting_dequeue_retains_its_owner_through_selection_retries',
+    'exiting_dequeue_retains_its_owner_through_selection_retries',
+)
+
+# The caller can select only reviewed production mutations, never arbitrary
+# source, expected failures, count reductions or test filters. Each mutation
+# is applied separately to the same complete green source and suite.
+CONTROLS = {
+    'owner-current-slot': (PATCH.name, PATCH_SHA, CPU_PATH, FAILED_NAMES, 189),
+    'clocksource-drop-fraction': (
+        'clocksource_drop_fraction_negative.patch',
+        '6aeb53178b4facbe105c7fd4ff3e8086d5a9b57f2715f80781efc2764338a442',
+        CLOCK_PATH, {CLOCK_PREFIX + name for name in (
+            'fragmented_refreshes_preserve_fractional_time_and_endpoint_differences',
+            'vdso_and_kernel_share_the_fractional_phase_at_the_next_nanosecond',
+            'full_width_vdso_fraction_survives_second_rollover_and_checks_realtime_overflow')}, 201),
+    'vdso-drop-fraction': (
+        'vdso_drop_fraction_negative.patch',
+        'a1e116c7af6a57add22693b4fa985b8bb45809df3ad6765b52ea8efa979975c9',
+        VDSO_PATH, {CLOCK_PREFIX + name for name in (
+            'vdso_and_kernel_share_the_fractional_phase_at_the_next_nanosecond',
+            'full_width_vdso_fraction_survives_second_rollover_and_checks_realtime_overflow',
+            'mapped_vdso_publishes_the_phase_and_fault_mode_under_the_existing_sequence')}, 201),
+    'vdso-skip-fault-mode': (
+        'vdso_skip_fault_mode_negative.patch',
+        'da1f7c360136bfe330cba58acef4cf894d423043e1b3b9790958b923d4fcd452',
+        VDSO_PATH, {CLOCK_PREFIX + 'mapped_vdso_publishes_the_phase_and_fault_mode_under_the_existing_sequence'}, 201),
+    'handoff-drop-tail': (
+        'cpu_handoff_drop_tail_negative.patch',
+        'e91bc7080a8c352488f5371632f21e5e60681d65b8c60c3f53e97d954342b031',
+        SCHED_PATH, {HANDOFF_PREFIX + name for name in HANDOFF_NAMES}, 201),
+    'handoff-eligibility-first': (
+        'cpu_handoff_eligibility_first_negative.patch',
+        '35eb263b786e1f4700e734eb8105f27570059bcf9e9e7ad09a71ecb78b0d12dc',
+        SCHED_PATH, {HANDOFF_PREFIX + HANDOFF_NAMES[1]}, 201),
+    'dequeue-drop-owner': (
+        'cpu_dequeue_drop_owner_negative.patch',
+        'b6fc10180e9fe292249409c758151763401dddb39bb4b2851bf53f71b3c959dd',
+        SCHED_PATH, {HANDOFF_PREFIX + name for name in HANDOFF_NAMES[2:]}, 201),
+}
 
 
 def require(value, message):
@@ -54,6 +102,16 @@ def module(name, path):
 
 def git(root, *args):
     return subprocess.check_output(['git', *args], cwd=root)
+
+
+def checked_green_kernel(record, retained_path=None):
+    """A later mutation cannot replace the original successful ELF identity."""
+    artifact = record['artifacts']['-kernel']
+    path = retained_path if retained_path is not None else Path(artifact['path'])
+    data = Path(path).read_bytes()
+    require(sha(data) == artifact['sha256'] and len(data) == artifact['size'],
+            'green core ELF does not match the original QEMU record')
+    return data
 
 
 @contextmanager
@@ -126,6 +184,8 @@ def test_results(serial):
 
 
 def run(args, out, result):
+    patch_name, patch_sha, changed_path, failed_names, minimum_tests = CONTROLS[args.control]
+    patch = ROOT / 'tests/organ_backend' / patch_name
     candidate = module('owner_candidate', ROOT / 'tests/kernel/control/run_queryabi_candidate_guest.py')
     checker = module('owner_ktest_check', ROOT / 'support/build/ktest/check.py')
     head = git(ROOT, 'rev-parse', 'HEAD').decode().strip()
@@ -133,8 +193,8 @@ def run(args, out, result):
     before = candidate.source_snapshot(ROOT, head, tree)
     save(out / 'candidate-source-before.json', before)
     result.update(candidate_head=head, candidate_tree=tree)
-    require(sha(PATCH.read_bytes()) == PATCH_SHA, 'negative-control patch differs')
-    shutil.copyfile(PATCH, out / 'declared-negative-control.patch')
+    require(sha(patch.read_bytes()) == patch_sha, 'negative-control patch differs')
+    shutil.copyfile(patch, out / 'declared-negative-control.patch')
 
     green = args.green_evidence.resolve()
     green_env = json.loads((green / 'environment.json').read_text())
@@ -149,25 +209,21 @@ def run(args, out, result):
     green_record = json.loads((green_guests[0] / 'qemu.json').read_text())
     green_raw = (green_guests[0] / 'serial.log').read_bytes()
     status, green_tests = test_results(green_raw)
-    require(status == 'ok' and len(green_tests) >= 189 and FAILED_NAMES <= green_tests.keys(),
-            'green test denominator lacks the retained-owner regression')
+    require(status == 'ok' and len(green_tests) >= minimum_tests and failed_names <= green_tests.keys(),
+            'green test denominator lacks the selected complete regression')
     save(out / 'green-core-validation.json', green_report)
     result['green_serial_sha256'] = sha(green_raw)
-    green_elf = Path(green_record['artifacts']['-kernel']['path'])
-    green_bytes = green_elf.read_bytes()
-    require(sha(green_bytes) == green_record['artifacts']['-kernel']['sha256']
-            and len(green_bytes) == green_record['artifacts']['-kernel']['size'],
-            'green core ELF does not match the original QEMU record')
+    green_bytes = checked_green_kernel(green_record, args.green_kernel)
     (out / 'green-core-kernel.elf').write_bytes(green_bytes)
 
     negative = args.worktree.absolute()
     require(not negative.exists() and not negative.is_symlink(), 'negative worktree must be new')
     git(ROOT, 'worktree', 'add', '--detach', str(negative), head)
-    git(negative, 'apply', '--index', str(PATCH))
-    require(git(negative, 'diff', '--cached', '--name-only').decode().splitlines() == [CPU_PATH],
+    git(negative, 'apply', '--index', str(patch))
+    require(git(negative, 'diff', '--cached', '--name-only').decode().splitlines() == [changed_path],
             'negative mutation changed an unexpected path')
     git(negative, '-c', 'user.name=A06 negative control', '-c', 'user.email=a06-negative@example.invalid',
-        '-c', 'commit.gpgsign=false', 'commit', '-m', 'test: identified local current-slot CPU owner negative control')
+        '-c', 'commit.gpgsign=false', 'commit', '-m', 'test: identified local ' + args.control + ' negative control')
     negative_head = git(negative, 'rev-parse', 'HEAD').decode().strip()
     negative_tree = git(negative, 'rev-parse', 'HEAD^{tree}').decode().strip()
     result.update(negative_head=negative_head, negative_tree=negative_tree)
@@ -176,7 +232,7 @@ def run(args, out, result):
     save(out / 'negative-archive-source.json', archived_negative)
     changed = [name for name, record in before['files'].items()
                if archived_negative['files'].get(name) != record]
-    require(set(archived_negative['files']) == set(before['files']) and changed == [CPU_PATH],
+    require(set(archived_negative['files']) == set(before['files']) and changed == [changed_path],
             'negative source set differs beyond the declared CPU mutation')
 
     env = os.environ.copy()
@@ -223,7 +279,7 @@ def run(args, out, result):
     status, negative_tests = test_results(raw)
     require(status == 'FAILED' and negative_tests.keys() == green_tests.keys(),
             'negative denominator differs from the full green core suite')
-    require({name for name, outcome in negative_tests.items() if outcome == 'FAILED'} == FAILED_NAMES,
+    require({name for name, outcome in negative_tests.items() if outcome == 'FAILED'} == failed_names,
             'negative failed-name set differs')
     elf = Path(record['artifacts']['-kernel']['path'])
     data = elf.read_bytes()
@@ -233,8 +289,8 @@ def run(args, out, result):
     require((gate / 'aster-core/generated.Cargo.lock').read_bytes() ==
             (ROOT / 'support/build/ktest/locks/aster-core.Cargo.lock').read_bytes(), 'negative Cargo lock differs')
     result.update(passed=True, negative_control_detected=True, product_qualification=False,
-                  total_core_tests=len(green_tests), negative_passed=len(green_tests) - 3,
-                  negative_failed=sorted(FAILED_NAMES), raw_qemu_exit=65, timed_out=False,
+                  total_core_tests=len(green_tests), negative_passed=len(green_tests) - len(failed_names),
+                  negative_failed=sorted(failed_names), raw_qemu_exit=65, timed_out=False,
                   negative_kernel_sha256=sha(data), negative_serial_sha256=sha(raw),
                   green_kernel_sha256=sha(green_bytes),
                   same_osdk_binary_and_source_path=True,
@@ -243,14 +299,19 @@ def run(args, out, result):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--control', choices=sorted(CONTROLS), default='owner-current-slot')
     parser.add_argument('--green-evidence', type=Path, required=True)
+    parser.add_argument('--green-kernel', type=Path,
+                        help='Archived original green ELF, required after a prior mutation rebuilt the shared target')
     parser.add_argument('--worktree', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     out = args.output.absolute()
     out.mkdir(parents=True, exist_ok=False)
     result = {'schema': 'a06.cpu-owner-negative.v1', 'passed': False,
-              'product_qualification': False, 'patch_sha256': PATCH_SHA}
+              'product_qualification': False, 'control': args.control,
+              'patch_sha256': CONTROLS[args.control][1],
+              'declared_changed_path': CONTROLS[args.control][2]}
     save(out / 'result.json', result)
     try:
         run(args, out, result)

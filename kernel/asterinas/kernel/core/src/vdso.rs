@@ -15,7 +15,7 @@
 use alloc::sync::Arc;
 use core::{mem::ManuallyDrop, time::Duration};
 
-use aster_time::{Instant, read_monotonic_time};
+use aster_time::{ClockSourceSample, Instant, read_monotonic_time};
 use aster_util::coeff::Coeff;
 use ostd::{
     const_assert,
@@ -141,9 +141,9 @@ impl VdsoData {
         self.set_clock_mode(DEFAULT_CLOCK_MODE);
         self.set_coeff(coeff);
 
-        let (last_instant, last_cycles) = clocksource.last_record();
-        self.update_high_res_instant(last_instant, last_cycles);
-        self.update_coarse_res_instant(last_instant);
+        let sample = clocksource.last_sample();
+        self.update_high_res_instant(sample, *START_SECS_COUNT.get().unwrap());
+        self.update_coarse_res_instant(sample.instant());
     }
 
     fn set_clock_mode(&mut self, mode: VdsoClockMode) {
@@ -160,21 +160,49 @@ impl VdsoData {
         self.basetime[clockid].nanos_info = nanos_info;
     }
 
-    fn update_high_res_instant(&mut self, instant: Instant, instant_cycles: u64) {
-        self.last_cycles = instant_cycles;
+    fn update_high_res_instant(&mut self, sample: ClockSourceSample, realtime_base_secs: u64) {
+        let instant = sample.instant();
+        // The fixed Linux vDSO consumes a shifted nanosecond base. Preserve
+        // the same fractional phase as the kernel clock; dropping it here
+        // gives userspace a different clock at the next rounding boundary.
+        // Coeff currently chooses shift <= 32, so the largest normalized
+        // base is (1_000_000_000 << 32) - 1, which fits in u64.
+        let nanos_info = Self::shifted_high_res_nanos(sample, self.shift);
+        let realtime_secs = instant.secs().checked_add(realtime_base_secs);
+        let (Some(nanos_info), Some(realtime_secs)) = (nanos_info, realtime_secs) else {
+            // Never turn a lossy/backwards/overflowed sample into a TSC
+            // conversion base. Existing userspace falls back to syscalls.
+            // Maintenance must not re-enable this mode after a fault,
+            // including when an older callback publishes out of order.
+            self.set_clock_mode(VdsoClockMode::None);
+            return;
+        };
+        if sample.cycles() < self.last_cycles {
+            return;
+        }
+
+        self.last_cycles = sample.cycles();
         for clock_id in HIGH_RES_CLOCK_IDS {
             let secs = if clock_id == ClockId::CLOCK_REALTIME {
-                instant.secs() + START_SECS_COUNT.get().unwrap()
+                realtime_secs
             } else {
                 instant.secs()
             };
-
-            self.update_clock_instant(
-                clock_id as usize,
-                secs,
-                (instant.nanos() as u64) << self.shift as u64,
-            );
+            self.update_clock_instant(clock_id as usize, secs, nanos_info);
         }
+    }
+
+    fn shifted_high_res_nanos(sample: ClockSourceSample, shift: u32) -> Option<u64> {
+        if !sample.is_reliable() || shift > 32 || sample.instant().nanos() >= 1_000_000_000 {
+            return None;
+        }
+        let fractional_numerator = sample.fractional_numerator();
+        if fractional_numerator >= (1_u64 << shift) {
+            return None;
+        }
+        u64::from(sample.instant().nanos())
+            .checked_shl(shift)?
+            .checked_add(fractional_numerator)
     }
 
     fn update_coarse_res_instant(&mut self, instant: Instant) {
@@ -247,6 +275,10 @@ impl Vdso {
         let mut vdso_data = VdsoData::empty();
         vdso_data.init();
 
+        Self::from_data(vdso_data)
+    }
+
+    fn from_data(vdso_data: VdsoData) -> Self {
         let (vdso_vmo, data_frame) = {
             let vmo_options = VmoOptions::new(VDSO_VMO_LAYOUT.size);
             let vdso_vmo = vmo_options.alloc().unwrap();
@@ -280,16 +312,19 @@ impl Vdso {
         }
     }
 
-    fn update_high_res_instant(&self, instant: Instant, instant_cycles: u64) {
+    fn update_high_res_instant(&self, sample: ClockSourceSample, realtime_base_secs: u64) {
         let mut data = self.data.lock();
 
-        data.update_high_res_instant(instant, instant_cycles);
+        data.update_high_res_instant(sample, realtime_base_secs);
 
         // Update begins.
         self.begin_update_data_frame(&mut data);
 
         self.data_frame
-            .write_val(vdso_data_field_offset!(last_cycles), &instant_cycles)
+            .write_val(vdso_data_field_offset!(clock_mode), &data.clock_mode)
+            .unwrap();
+        self.data_frame
+            .write_val(vdso_data_field_offset!(last_cycles), &data.last_cycles)
             .unwrap();
         for clock_id in HIGH_RES_CLOCK_IDS {
             self.update_data_frame_instant(clock_id, &mut data);
@@ -354,10 +389,10 @@ impl Vdso {
 }
 
 /// Updates instants with respect to high-resolution clocks in vDSO data.
-fn update_vdso_high_res_instant(instant: Instant, instant_cycles: u64) {
+fn update_vdso_high_res_instant(sample: ClockSourceSample) {
     VDSO.get()
         .unwrap()
-        .update_high_res_instant(instant, instant_cycles);
+        .update_high_res_instant(sample, *START_SECS_COUNT.get().unwrap());
 }
 
 /// Updates instants with respect to coarse-resolution clocks in vDSO data.
@@ -467,3 +502,6 @@ const_assert!(
     VDSO_VMO_LAYOUT.data_offset + size_of::<VdsoData>()
         <= VDSO_VMO_LAYOUT.data_segment_offset + VDSO_VMO_LAYOUT.data_segment_size
 );
+
+#[cfg(ktest)]
+mod clocksource_regressions;
