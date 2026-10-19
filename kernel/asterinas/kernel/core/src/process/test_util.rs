@@ -42,7 +42,11 @@ pub(crate) fn new_unstarted_process_with_threads(count: usize) -> (Arc<Process>,
     );
     let mut tasks = Vec::with_capacity(count);
     for index in 0..count {
-        let tid = if index == 0 { pid } else { allocate_posix_tid() };
+        let tid = if index == 0 {
+            pid
+        } else {
+            allocate_posix_tid()
+        };
         let task = PosixThreadBuilder::new(
             tid,
             derive_thread_name("a06-charge-regression"),

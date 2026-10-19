@@ -11,7 +11,7 @@ use spin::Once;
 
 use crate::{
     context::current_userspace,
-    device::{registry::char, Device, DeviceType},
+    device::{Device, DeviceType, registry::char},
     events::IoEvents,
     fs::{
         devtmpfs::DevtmpfsNodeMeta,
@@ -23,8 +23,10 @@ use crate::{
         Transport,
     },
     prelude::*,
-    process::signal::{PollHandle, Pollable},
-    process::{Process, ProcessImageKey},
+    process::{
+        Process, ProcessImageKey,
+        signal::{PollHandle, Pollable},
+    },
     util::{ioctl::RawIoctl, random},
 };
 

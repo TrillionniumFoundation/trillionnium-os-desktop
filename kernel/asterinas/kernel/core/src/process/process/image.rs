@@ -68,17 +68,16 @@ impl ProcessImageState {
             return_errno_with_message!(Errno::ESTALE, "HOS2 process image is closing or closed");
         }
         if self.nonce == 0 {
-            self.nonce = match next_nonce.fetch_update(
-                Ordering::AcqRel,
-                Ordering::Acquire,
-                |current| current.checked_add(1),
-            ) {
-                Ok(nonce) => nonce,
-                Err(_) => {
-                    self.phase = ImagePhase::Closed;
-                    return_errno_with_message!(Errno::ENOSPC, "HOS2 CapSpace nonce exhausted");
-                }
-            };
+            self.nonce =
+                match next_nonce.fetch_update(Ordering::AcqRel, Ordering::Acquire, |current| {
+                    current.checked_add(1)
+                }) {
+                    Ok(nonce) => nonce,
+                    Err(_) => {
+                        self.phase = ImagePhase::Closed;
+                        return_errno_with_message!(Errno::ENOSPC, "HOS2 CapSpace nonce exhausted");
+                    }
+                };
         }
         Ok(ProcessImageKey {
             epoch: self.epoch,
@@ -117,9 +116,10 @@ impl ProcessImageState {
         // End the old image even if no new epoch can be allocated. Neither an
         // error nor a later open may make its old namespace live again.
         self.phase = ImagePhase::Closed;
-        let next = self.epoch.checked_add(1).ok_or_else(|| {
-            Error::with_message(Errno::EOVERFLOW, "HOS2 exec epoch exhausted")
-        })?;
+        let next = self
+            .epoch
+            .checked_add(1)
+            .ok_or_else(|| Error::with_message(Errno::EOVERFLOW, "HOS2 exec epoch exhausted"))?;
         self.epoch = next;
         self.nonce = 0;
         self.phase = ImagePhase::Live;
@@ -287,7 +287,10 @@ mod tests {
         process.hepta_image.lock().claim_unprepared_run().unwrap();
         let old_key = process.hepta_capspace_session().unwrap();
         process.begin_hepta_image_close();
-        assert_eq!(process.commit_hepta_exec_image().unwrap(), old_key.epoch + 1);
+        assert_eq!(
+            process.commit_hepta_exec_image().unwrap(),
+            old_key.epoch + 1
+        );
         let new_key = process.hepta_capspace_session().unwrap();
         assert_ne!(new_key.nonce, old_key.nonce);
         assert_eq!(new_key.epoch, old_key.epoch + 1);

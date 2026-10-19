@@ -45,7 +45,7 @@ class CapSpaceIdentityContract(unittest.TestCase):
         self.assertIn("self.phase != ImagePhase::Live", method)
         self.assertIn("self.phase = ImagePhase::Closed", method)
         commit = source.split("fn commit_exec(", 1)[1].split("fn claim_unprepared_run(", 1)[0]
-        self.assertRegex(commit, r"self\.epoch\s*\.checked_add\(1\)")
+        self.assertRegex(commit, r"self\s*\.epoch\s*\.checked_add\(1\)")
         self.assertIn("Errno::EOVERFLOW", commit)
         self.assertIn("self.nonce = 0", commit)
 
