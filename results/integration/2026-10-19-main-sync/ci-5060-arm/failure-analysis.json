@@ -1,0 +1,22 @@
+{
+  "head": "5060ac6976b56b32647c728991e489cdee1cce9d",
+  "run_id": 39182491155,
+  "job_id": 117838018950,
+  "workflow_conclusion": "failure",
+  "readonly_gate": "passed",
+  "readonly_five_elf_binding": "passed",
+  "objective_outer_gate": "failed",
+  "objective_error": "[Errno 39] Directory not empty: 'plugins'",
+  "objective_runtime_executed": true,
+  "raw_objective_check_count": 10,
+  "raw_objective_submission_count": 7,
+  "raw_objective_session_phase_count": 3,
+  "raw_objective_final_acceptance_record_present": true,
+  "runtime_records_missing_from_failed_outer_report": true,
+  "postruntime_verifier_and_elf_rehash_not_reached": true,
+  "objective_six_elf_binding": "skipped",
+  "cleanup_location": "Inferred from run_original_objective.py control flow: leaving TemporaryDirectory after evidence copy, before log validation/post-runtime ELF hashing. The failure receipt contains the OSError text but no traceback.",
+  "candidate_cause": "run_original_agentd.py bounded_command normal-exit path reaps the waitable group leader without signalling remaining same-group descendants. A remaining directory writer is consistent with ENOTEMPTY; its exact CI PID is not captured. Deterministic owned-child RED/GREEN regression is a separate pending follow-up.",
+  "no_rmtree_retry_or_gate_reinterpretation": true,
+  "source_pin_or_workflow_changed_by_reviewer": false
+}

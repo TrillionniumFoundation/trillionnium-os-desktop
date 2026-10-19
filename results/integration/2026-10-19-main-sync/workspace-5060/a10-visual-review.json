@@ -1,0 +1,70 @@
+{
+  "actual_input": [
+    {
+      "action": "click",
+      "x": 1040,
+      "y": 152
+    },
+    {
+      "action": "screenshot"
+    },
+    {
+      "action": "finish"
+    }
+  ],
+  "frame_geometry": "Unedited 1440x1000 root framebuffer; the 1360x840 Rust window and remaining black area are preserved.",
+  "inner_receipt": {
+    "bytes": 11932,
+    "sha256": "311e653a3896c38b8f1a3e3f9b27feea84ddc853ced6b39ad12d6e2a7f429092"
+  },
+  "limitations": [
+    "Current R9 two-page rendering only, not restored R7 captures.",
+    "No draft save, host-task lifecycle, Session replacement, independent scrolling or Runtime age pixel test in this slice.",
+    "No original Agentd, issuer, model, device, physical input, IME, GPU or mobile qualification.",
+    "Visible selected Chinese glyphs under this font configuration do not upgrade the two ignored font tests or prior IME failures."
+  ],
+  "method": "Each original PNG opened with view_image and inspected visually after actual XGetImage capture.",
+  "outer_receipt": {
+    "bytes": 610,
+    "sha256": "6fb8b4edebb6bc7124a93c2cc7533ddac02d6fbd5bcb55c92479863df35738b7"
+  },
+  "reviewed": [
+    {
+      "bytes": 87112,
+      "file": "initial.png",
+      "observed": [
+        "Workspace / Chat is the selected main route.",
+        "Local draft composer, save/export/restore controls and LOCAL DRAFT / NOT SUBMITTED label are visible.",
+        "Tasks, Context and Console are tabs in the right workspace pane; Tasks is selected.",
+        "The actual empty host-task state is visible; no task or AI result is fabricated.",
+        "Selected Message, Notes, Calculator and placeholder Chinese glyphs are visible with the explicitly loaded font."
+      ],
+      "sha256": "418ba2bdfd86234e80bb1376c82a6d48553bea538c0e565f4a3572105b1fbbad",
+      "visible_page": "Personal / Chat"
+    },
+    {
+      "bytes": 101494,
+      "file": "action-002-screenshot.png",
+      "observed": [
+        "Console is selected inside the same right workspace pane.",
+        "The left chat composer and main Workspace / Chat route remain visible.",
+        "Console / Host observations is read-only and displays the actual Session instance.",
+        "The host process and local notice sections show their empty states.",
+        "No red First use / Second use ScrollArea ID warning is visible in this captured frame."
+      ],
+      "sha256": "2d64764cc883803bb2c908c4f1c1a3989e7a681e77e8e60e733e7ed5d100687f",
+      "visible_page": "Personal / Chat with Console tab"
+    }
+  ],
+  "reviewer": "A10",
+  "session": {
+    "instance": "4673be60fa79a390b65a827836b94d16",
+    "namespace_pid": 7
+  },
+  "shell": {
+    "class": "trill-shell",
+    "namespace_pid": 10,
+    "xid": "4194307"
+  },
+  "status": "passed_within_current_two_page_scope"
+}

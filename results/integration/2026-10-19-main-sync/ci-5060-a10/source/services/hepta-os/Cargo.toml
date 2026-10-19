@@ -1,0 +1,32 @@
+[package]
+name = "hepta-os-observer"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.83"
+license = "MIT OR Apache-2.0"
+description = "Bounded read-only projection of the pinned Hepta Agentd control protocol"
+publish = false
+
+[features]
+default = []
+# Independent trusted-host transport; hepta-observe remains read-only.
+objective-transport = ["serde_json/raw_value"]
+
+[dependencies]
+serde = { version = "=1.0.219", features = ["derive"] }
+serde_json = "=1.0.140"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+tokio = { version = "=1.52.3", default-features = false, features = ["io-util", "net", "rt", "sync", "time"] }
+
+[[bin]]
+name = "hepta-observe"
+path = "src/bin/hepta-observe.rs"
+
+[[bin]]
+name = "hepta-submit"
+path = "src/bin/hepta-submit.rs"
+required-features = ["objective-transport"]
+
+[lints.rust]
+unsafe_code = "forbid"

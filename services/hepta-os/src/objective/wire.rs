@@ -121,7 +121,7 @@ pub(super) fn validate_envelope(raw: &str) -> Result<ObjectiveIdentity, Envelope
     })
 }
 
-fn valid_digest(value: &str) -> bool {
+pub(super) fn valid_digest(value: &str) -> bool {
     value.len() == 64
         && value
             .bytes()

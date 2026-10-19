@@ -1,0 +1,440 @@
+name: Hepta original Agentd, ObjectiveStart and Session qualification (ARM64)
+
+on:
+  pull_request:
+    paths:
+      - 'services/hepta-os/**'
+      - 'tests/integration/hepta/**'
+      - 'ui/core/**'
+      - 'ui/session/**'
+      - 'ui/Cargo.toml'
+      - 'ui/Cargo.lock'
+      - '.github/workflows/hepta-original-agentd.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# This workflow belongs with the A07 source in the combined Draft candidate.
+# Missing source fails closed; this is not a bootstrap-only main-branch check.
+jobs:
+  original-agentd:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 180
+    defaults:
+      run:
+        shell: bash
+    env:
+      DESKTOP_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      HEPTA_PIN: f8c9419df6ddeb36ff8b522a50219981fb8d9345
+      GIT_TERMINAL_PROMPT: '0'
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - name: Allocate fresh evidence and isolated build homes
+        run: |
+          set -euo pipefail
+          umask 077
+          # Runner paths are unavailable in job-level expression contexts.
+          export HEPTA_CI_ROOT="$RUNNER_TEMP/hepta-original-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          test ! -e "$HEPTA_CI_ROOT"
+          mkdir -m 700 "$HEPTA_CI_ROOT"
+          mkdir -m 700 "$HEPTA_CI_ROOT/logs" "$HEPTA_CI_ROOT/identity" "$HEPTA_CI_ROOT/locks"
+          printf 'HEPTA_CI_ROOT=%s\nCARGO_HOME=%s/cargo-home\nRUSTUP_HOME=%s/rustup-home\n' \
+            "$HEPTA_CI_ROOT" "$HEPTA_CI_ROOT" "$HEPTA_CI_ROOT" >> "$GITHUB_ENV"
+          python3 - <<'PY'
+          from datetime import datetime, timezone
+          import json, os, platform
+          from pathlib import Path
+          record = {
+              "recorded_at_utc": datetime.now(timezone.utc).isoformat(),
+              "expected_desktop_commit": os.environ["DESKTOP_SHA"],
+              "expected_hepta_commit": os.environ["HEPTA_PIN"],
+              "run_url": f'{os.environ["GITHUB_SERVER_URL"]}/{os.environ["GITHUB_REPOSITORY"]}/actions/runs/{os.environ["GITHUB_RUN_ID"]}',
+              "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
+              "event": os.environ["GITHUB_EVENT_NAME"],
+              "runner_os": os.environ["RUNNER_OS"],
+              "runner_arch": os.environ["RUNNER_ARCH"],
+              "machine": platform.machine(),
+              "qualification_at_allocation": "not_run",
+          }
+          with (Path(os.environ["HEPTA_CI_ROOT"]) / "identity/allocation.json").open("x") as stream:
+              json.dump(record, stream, indent=2)
+              stream.write("\n")
+          PY
+          test "$RUNNER_OS" = Linux
+          test "$RUNNER_ARCH" = ARM64
+          test "$(uname -m)" = aarch64
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2, also pinned by the original CI
+        with:
+          ref: ${{ env.DESKTOP_SHA }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Require the exact combined candidate and its real gate sources
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$DESKTOP_SHA"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+          test -f README.md && test ! -s README.md
+          for path in services/hepta-os/Cargo.toml services/hepta-os/Cargo.lock \
+            services/hepta-os/UPSTREAM_CONTRACT.json \
+            tests/integration/hepta/run_original_agentd.py \
+            tests/integration/hepta/original_agentd_probe.rs \
+            tests/integration/hepta/original_session_probe.rs \
+            tests/integration/hepta/run_original_objective.py \
+            tests/integration/hepta/original_objective_probe.rs \
+            tests/integration/hepta/original_objective_owner.rs \
+            tests/integration/hepta/original_objective_fixture.rs \
+            tests/integration/hepta/original_objective_session.rs \
+            tests/integration/hepta/original_objective_profile.json \
+            tests/integration/hepta/test_original_objective_receipts.py \
+            services/hepta-os/src/bin/hepta-submit.rs \
+            ui/session/Cargo.toml ui/session/src/hepta.rs ui/Cargo.lock \
+            tests/integration/hepta/test_original_build_manifest.py \
+            tests/integration/hepta/test_original_session_receipts.py \
+            tests/integration/hepta/test_original_process_guard.py; do
+            test -s "$path"
+          done
+          git rev-parse HEAD HEAD^{tree} > "$HEPTA_CI_ROOT/identity/desktop-before.txt"
+          sha256sum services/hepta-os/Cargo.toml services/hepta-os/Cargo.lock \
+            services/hepta-os/UPSTREAM_CONTRACT.json \
+            tests/integration/hepta/run_original_agentd.py \
+            tests/integration/hepta/original_agentd_probe.rs \
+            tests/integration/hepta/original_session_probe.rs \
+            ui/Cargo.toml ui/Cargo.lock ui/session/Cargo.toml \
+            .github/workflows/hepta-original-agentd.yml \
+            > "$HEPTA_CI_ROOT/identity/desktop-inputs.sha256"
+          cp services/hepta-os/Cargo.lock "$HEPTA_CI_ROOT/locks/observer-Cargo.lock"
+          cp ui/Cargo.lock "$HEPTA_CI_ROOT/locks/ui-Cargo.lock"
+          git rev-parse HEAD:ui HEAD:services/hepta-os > "$HEPTA_CI_ROOT/identity/consumer-source-trees.txt"
+          cp services/hepta-os/UPSTREAM_CONTRACT.json "$HEPTA_CI_ROOT/locks/UPSTREAM_CONTRACT.json"
+
+      - name: Fetch only the fixed original Hepta source without credentials
+        run: |
+          set -euo pipefail
+          # init + shallow fetch selects the immutable commit directly, with
+          # no owner branch checkout, credential helper, token or upstream write.
+          hepta_source="$HEPTA_CI_ROOT/hepta-source"
+          test ! -e "$hepta_source"
+          {
+            git init "$hepta_source"
+            git -C "$hepta_source" remote add origin https://github.com/TrillionniumFoundation/hepta-private-ci.git
+            git -C "$hepta_source" -c credential.helper= -c core.askPass= \
+              fetch --depth=1 --no-tags origin "$HEPTA_PIN"
+            git -C "$hepta_source" checkout --detach "$HEPTA_PIN"
+            test "$(git -C "$hepta_source" rev-parse HEAD)" = "$HEPTA_PIN"
+            test -z "$(git -C "$hepta_source" status --porcelain=v1 --untracked-files=all)"
+          } > "$HEPTA_CI_ROOT/logs/upstream-checkout.log" 2>&1
+          git -C "$hepta_source" rev-parse HEAD HEAD^{tree} > "$HEPTA_CI_ROOT/identity/hepta-before.txt"
+          cp "$hepta_source/codex-rs/Cargo.lock" "$HEPTA_CI_ROOT/locks/hepta-original-Cargo.lock"
+          cp "$hepta_source/codex-rs/Cargo.toml" "$HEPTA_CI_ROOT/locks/hepta-original-Cargo.toml"
+          cp "$hepta_source/codex-rs/rust-toolchain.toml" "$HEPTA_CI_ROOT/locks/hepta-original-rust-toolchain.toml"
+          sha256sum "$HEPTA_CI_ROOT"/locks/* > "$HEPTA_CI_ROOT/identity/initial-locks.sha256"
+
+      - name: Verify the generated manifest and Linux process cleanup prerequisites
+        env:
+          HEPTA_ORIGINAL_SOURCE: ${{ env.HEPTA_CI_ROOT }}/hepta-source
+        run: |
+          set -euo pipefail
+          {
+            python3 -m unittest discover -v -s tests/integration/hepta -p test_original_build_manifest.py
+            python3 -m unittest discover -v -s tests/integration/hepta -p test_original_process_guard.py
+            python3 -m unittest discover -v -s tests/integration/hepta -p test_original_session_receipts.py
+          } > "$HEPTA_CI_ROOT/logs/gate-prerequisites.log" 2>&1
+
+      - name: Install pinned compilers and original Linux native prerequisites
+        run: |
+          set -euo pipefail
+          # Fixed f8c9419 source: rust-ci-full-nextest-platform.yml installs
+          # build-essential/pkg-config/libcap-dev/bubblewrap on native Linux.
+          # hepta-browser-servo-worker-dev.yml also records cmake/libssl-dev.
+          # The minimal real Agentd graph needs no Servo/V8 replacement profile.
+          {
+            sudo apt-get update
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+              build-essential pkg-config libcap-dev bubblewrap cmake perl libssl-dev binutils
+            rustup toolchain install 1.95.0 --profile minimal
+            rustup toolchain install 1.88.0 --profile minimal
+            rustup run 1.95.0 rustc -Vv
+            rustup run 1.95.0 cargo -Vv
+            rustup run 1.88.0 rustc -Vv
+            rustup run 1.88.0 cargo -Vv
+            cc --version
+            c++ --version
+            cmake --version
+            pkg-config --modversion openssl libcap
+            dpkg-query -W build-essential pkg-config libcap-dev bubblewrap cmake perl libssl-dev binutils
+            df -B1 "$HEPTA_CI_ROOT"
+            cat /etc/os-release
+          } > "$HEPTA_CI_ROOT/logs/native-setup.log" 2>&1
+
+      - name: Build the actual Session and ctl from this exact candidate
+        run: |
+          set -euo pipefail
+          # These are production binaries, with the committed UI lockfile and
+          # no fixture/provider override. The runtime gate records their hashes.
+          CARGO_TARGET_DIR="$HEPTA_CI_ROOT/session-target" CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=1 \
+            rustup run 1.88.0 cargo build --locked --manifest-path ui/Cargo.toml \
+              -p trill-session --bin trill-session --bin trill-ctl \
+              > "$HEPTA_CI_ROOT/logs/session-build.log" 2>&1
+
+      - name: Run original Agentd and the continuous read-only Session probe
+        id: gate
+        run: |
+          set -euo pipefail
+          # The runner owns fresh work/report creation, the 8 GiB resource
+          # preflight, locked builds, private process roots, the eight original
+          # owner checks and eight additional continuous Session assertions.
+          # No inherited model/provider configuration or credential is supplied.
+          set +e
+          python3 tests/integration/hepta/run_original_agentd.py \
+            --hepta-source "$HEPTA_CI_ROOT/hepta-source" \
+            --work-dir "$HEPTA_CI_ROOT/work" \
+            --report "$HEPTA_CI_ROOT/report.json" \
+            --session-bin "$HEPTA_CI_ROOT/session-target/debug/trill-session" \
+            --ctl-bin "$HEPTA_CI_ROOT/session-target/debug/trill-ctl" \
+            --execute > "$HEPTA_CI_ROOT/logs/gate.log" 2>&1
+          gate_exit=$?
+          set -e
+          printf '%s\n' "$gate_exit" > "$HEPTA_CI_ROOT/gate-exit-code.txt"
+          cat "$HEPTA_CI_ROOT/logs/gate.log"
+          exit "$gate_exit"
+
+      - name: Bind both successful runtime qualifications to five actual ARM64 ELF files
+        id: package
+        if: ${{ success() && steps.gate.outcome == 'success' }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$DESKTOP_SHA"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+          python3 - <<'PY'
+          import hashlib, json, os, stat, struct, tarfile
+          from pathlib import Path
+
+          def digest(path):
+              result = hashlib.sha256()
+              with path.open("rb") as stream:
+                  for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+                      result.update(chunk)
+              return result.hexdigest()
+
+          root = Path(os.environ["HEPTA_CI_ROOT"])
+          report_path = root / "report.json"
+          report = json.loads(report_path.read_text())
+          if report.get("status") != "passed" or report.get("live_agentd_acceptance") != "passed":
+              raise SystemExit("Actual runtime acceptance is required; preflight success cannot publish ELF files")
+          if report.get("persistent_session_acceptance") != "passed":
+              raise SystemExit("Actual continuous Session acceptance is also required")
+          if report.get("upstream", {}).get("commit") != os.environ["HEPTA_PIN"]:
+              raise SystemExit("Runtime receipt does not bind the fixed original source")
+          binaries = {
+              "agentd": root / "work/original-target/dev-small/codex-hepta-agentd",
+              "probe": root / "work/original-target/dev-small/hepta-original-observer-probe",
+              "observer": root / "work/observer-target/debug/hepta-observe",
+              "session": root / "session-target/debug/trill-session",
+              "ctl": root / "session-target/debug/trill-ctl",
+          }
+          manifest = {
+              "desktop_commit": os.environ["DESKTOP_SHA"],
+              "hepta_commit": os.environ["HEPTA_PIN"],
+              "report_sha256": digest(report_path),
+              "qualification": "original_agentd_and_persistent_session_readonly_acceptance_passed",
+              "platform": "aarch64-unknown-linux-gnu",
+              "objective_submission": False, "model_turn": False, "device_effect": False,
+              "shell_pixel_qualification": "not_run",
+              "binaries": {},
+          }
+          for name, path in binaries.items():
+              if path.is_symlink() or not stat.S_ISREG(path.stat().st_mode) or not os.access(path, os.X_OK):
+                  raise SystemExit(f"Missing regular executable: {name}")
+              with path.open("rb") as stream:
+                  header = stream.read(20)
+              if len(header) != 20 or header[:6] != b"\x7fELF\x02\x01" or struct.unpack("<H", header[18:20])[0] != 183:
+                  raise SystemExit(f"Not an actual ELF64 little-endian AArch64 binary: {name}")
+              actual = digest(path)
+              executed_hash = (report.get("session_input_binaries", {}).get(name, {}).get("sha256")
+                               if name in ("session", "ctl") else report.get("binary_sha256", {}).get(name))
+              if executed_hash != actual:
+                  raise SystemExit(f"ELF hash differs from the executed runtime receipt: {name}")
+              manifest["binaries"][name] = {"filename": path.name, "sha256": actual, "bytes": path.stat().st_size}
+          output = root / "artifacts"
+          output.mkdir(mode=0o700)
+          manifest_path = output / "binary-manifest.json"
+          manifest_path.write_text(json.dumps(manifest, indent=2) + "\n")
+          sums = output / "SHA256SUMS"
+          sums.write_text("".join(f'{item["sha256"]}  {item["filename"]}\n' for item in manifest["binaries"].values()))
+          archive = output / "hepta-original-agentd-aarch64-linux.tar.gz"
+          with tarfile.open(archive, "x:gz") as bundle:
+              for path in [*binaries.values(), manifest_path, sums, report_path]:
+                  bundle.add(path, arcname=path.name, recursive=False)
+          (output / "archive.sha256").write_text(f"{digest(archive)}  {archive.name}\n")
+          PY
+
+      - name: Submit signed test objectives to the original owner and observe the known run through Session
+        id: objective
+        if: ${{ success() && steps.gate.outcome == 'success' }}
+        run: |
+          set -euo pipefail
+          python3 -B -m unittest discover -v -s tests/integration/hepta \
+            -p test_original_objective_receipts.py \
+            > "$HEPTA_CI_ROOT/logs/objective-receipt-contracts.log" 2>&1
+          CARGO_TARGET_DIR="$HEPTA_CI_ROOT/work/observer-target" CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=1 \
+            rustup run 1.88.0 cargo build --locked --offline \
+              --manifest-path services/hepta-os/Cargo.toml \
+              --features objective-transport --bin hepta-submit \
+              > "$HEPTA_CI_ROOT/logs/submitter-build.log" 2>&1
+          # Reuse the unchanged original Agentd and locked build cache. This
+          # run owns a fresh disposable fleet and a random test-only issuer;
+          # it does not use a production issuer, model turn or device adapter.
+          set +e
+          python3 -B tests/integration/hepta/run_original_objective.py \
+            --hepta-source "$HEPTA_CI_ROOT/hepta-source" \
+            --work-dir "$HEPTA_CI_ROOT/objective-work" \
+            --target-dir "$HEPTA_CI_ROOT/work/original-target" \
+            --agentd-bin "$HEPTA_CI_ROOT/work/original-target/dev-small/codex-hepta-agentd" \
+            --observer-bin "$HEPTA_CI_ROOT/work/observer-target/debug/hepta-observe" \
+            --submitter-bin "$HEPTA_CI_ROOT/work/observer-target/debug/hepta-submit" \
+            --session-bin "$HEPTA_CI_ROOT/session-target/debug/trill-session" \
+            --ctl-bin "$HEPTA_CI_ROOT/session-target/debug/trill-ctl" \
+            --execute --offline > "$HEPTA_CI_ROOT/logs/objective-gate.log" 2>&1
+          objective_exit=$?
+          set -e
+          printf '%s\n' "$objective_exit" > "$HEPTA_CI_ROOT/objective-exit-code.txt"
+          cat "$HEPTA_CI_ROOT/logs/objective-gate.log"
+          exit "$objective_exit"
+
+      - name: Bind the isolated objective and known-run Session results to six actual ARM64 ELF files
+        id: objective_package
+        if: ${{ success() && steps.objective.outcome == 'success' }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$DESKTOP_SHA"
+          test -z "$(git status --porcelain=v1 --untracked-files=all)"
+          python3 - <<'PY'
+          import hashlib, json, os, stat, struct, tarfile
+          from pathlib import Path
+          root = Path(os.environ["HEPTA_CI_ROOT"])
+          report_path = root / "objective-work/report.json"
+          report = json.loads(report_path.read_text())
+          if (report.get("status") != "passed" or report.get("runtime_executed") is not True
+                  or report.get("session_projection_requested") is not True
+                  or report.get("upstream", {}).get("commit") != os.environ["HEPTA_PIN"]):
+              raise SystemExit("Actual original objective and known-run Session qualification required")
+          def digest(path):
+              result = hashlib.sha256()
+              with path.open("rb") as stream:
+                  for block in iter(lambda: stream.read(1024 * 1024), b""):
+                      result.update(block)
+              return result.hexdigest()
+          for name, expected in report["source_sha256"].items():
+              if digest(Path("tests/integration/hepta") / name) != expected:
+                  raise SystemExit("Objective gate source changed after execution: " + name)
+          manifest = {
+              "desktop_commit": os.environ["DESKTOP_SHA"], "hepta_commit": os.environ["HEPTA_PIN"],
+              "report_sha256": digest(report_path), "platform": "aarch64-unknown-linux-gnu",
+              "qualification": "isolated_original_objective_and_known_run_session_passed",
+              "objective_submission": True, "isolated_test_issuer": True, "production_issuer": False,
+              "model_turn": False, "operations_dispatch": False, "device_effect": False,
+              "canonical_intelligence": False, "historical_run_resumed": False,
+              "shell_pixel_qualification": "not_run", "binaries": {},
+          }
+          if set(report["binaries"]) != {"probe", "agentd", "observer", "submitter", "session", "ctl"}:
+              raise SystemExit("Expected six executed native inputs")
+          paths = []
+          for name, executed in report["binaries"].items():
+              path = Path(executed["path"])
+              if path.is_symlink() or not stat.S_ISREG(path.stat().st_mode) or not os.access(path, os.X_OK):
+                  raise SystemExit("Missing regular objective executable: " + name)
+              with path.open("rb") as stream:
+                  header = stream.read(20)
+              if len(header) != 20 or header[:6] != b"\x7fELF\x02\x01" or struct.unpack("<H", header[18:20])[0] != 183:
+                  raise SystemExit("Not an ELF64 little-endian AArch64 executable: " + name)
+              if digest(path) != executed["sha256"]:
+                  raise SystemExit("Objective executable changed after execution: " + name)
+              manifest["binaries"][name] = {"filename": path.name, "sha256": executed["sha256"], "bytes": path.stat().st_size}
+              paths.append(path)
+          output = root / "artifacts"
+          manifest_path = output / "objective-binary-manifest.json"
+          manifest_path.write_text(json.dumps(manifest, indent=2) + "\n")
+          archive = output / "hepta-original-objective-aarch64-linux.tar.gz"
+          with tarfile.open(archive, "x:gz") as bundle:
+              for path in [*paths, manifest_path, report_path]:
+                  bundle.add(path, arcname=path.name, recursive=False)
+          (output / "objective-archive.sha256").write_text(f"{digest(archive)}  {archive.name}\n")
+          PY
+
+      - name: Preserve final checkout identities without claiming an unrun gate passed
+        if: ${{ always() }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from datetime import datetime, timezone
+          import hashlib, json, os, subprocess
+          from pathlib import Path
+          root = Path(os.environ["HEPTA_CI_ROOT"])
+          record = {"recorded_at_utc": datetime.now(timezone.utc).isoformat(), "checkouts": {}}
+          for name, path in [("desktop", Path(os.environ["GITHUB_WORKSPACE"])), ("hepta", root / "hepta-source")]:
+              state = {}
+              for label, args in [("identity", ["rev-parse", "HEAD", "HEAD^{tree}"]), ("status", ["status", "--porcelain=v1", "--untracked-files=all"])]:
+                  result = subprocess.run(["git", "-C", str(path), *args], capture_output=True, text=True, timeout=30)
+                  state[label] = {"exit_code": result.returncode, "stdout": result.stdout, "stderr": result.stderr}
+              lock = path / ("codex-rs/Cargo.lock" if name == "hepta" else "services/hepta-os/Cargo.lock")
+              if lock.is_file():
+                  state["cargo_lock_sha256"] = hashlib.sha256(lock.read_bytes()).hexdigest()
+              record["checkouts"][name] = state
+          with (root / "identity/final-checkouts.json").open("x") as stream:
+              json.dump(record, stream, indent=2)
+              stream.write("\n")
+          PY
+
+      - name: Upload successful original ELF bundle and execution hashes
+        if: ${{ always() && steps.package.outcome == 'success' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: hepta-original-agentd-elf-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            ${{ env.HEPTA_CI_ROOT }}/artifacts/hepta-original-agentd-aarch64-linux.tar.gz
+            ${{ env.HEPTA_CI_ROOT }}/artifacts/binary-manifest.json
+            ${{ env.HEPTA_CI_ROOT }}/artifacts/SHA256SUMS
+            ${{ env.HEPTA_CI_ROOT }}/artifacts/archive.sha256
+
+      - name: Upload the independently qualified original objective ELF bundle
+        if: ${{ always() && steps.objective_package.outcome == 'success' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: hepta-original-objective-elf-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            ${{ env.HEPTA_CI_ROOT }}/artifacts/hepta-original-objective-aarch64-linux.tar.gz
+            ${{ env.HEPTA_CI_ROOT }}/artifacts/objective-binary-manifest.json
+            ${{ env.HEPTA_CI_ROOT }}/artifacts/objective-archive.sha256
+
+      - name: Upload actual logs, locks, reports and source identities even on failure
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: hepta-original-agentd-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            ${{ env.HEPTA_CI_ROOT }}/logs/
+            ${{ env.HEPTA_CI_ROOT }}/identity/
+            ${{ env.HEPTA_CI_ROOT }}/locks/
+            ${{ env.HEPTA_CI_ROOT }}/report.json
+            ${{ env.HEPTA_CI_ROOT }}/gate-exit-code.txt
+            ${{ env.HEPTA_CI_ROOT }}/objective-exit-code.txt
+            ${{ env.HEPTA_CI_ROOT }}/objective-work/report.json
+            ${{ env.HEPTA_CI_ROOT }}/objective-work/*.log
+            ${{ env.HEPTA_CI_ROOT }}/objective-work/runtime-evidence/
+            ${{ env.HEPTA_CI_ROOT }}/objective-work/probe/Cargo.toml
+            ${{ env.HEPTA_CI_ROOT }}/objective-work/probe/Cargo.lock
+            ${{ env.HEPTA_CI_ROOT }}/objective-work/probe/src/
+            ${{ env.HEPTA_CI_ROOT }}/work/*.log
+            ${{ env.HEPTA_CI_ROOT }}/work/probe/Cargo.toml
+            ${{ env.HEPTA_CI_ROOT }}/work/probe/Cargo.lock
+            ${{ env.HEPTA_CI_ROOT }}/work/probe/src/main.rs
+            ${{ env.HEPTA_CI_ROOT }}/work/probe/src/original_session_probe.rs

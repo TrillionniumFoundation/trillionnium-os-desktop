@@ -1,0 +1,897 @@
+diff --git a/tests/integration/hepta/run_objective_history.py b/tests/integration/hepta/run_objective_history.py
+new file mode 100644
+index 0000000..de63274
+--- /dev/null
++++ b/tests/integration/hepta/run_objective_history.py
+@@ -0,0 +1,377 @@
++#!/usr/bin/env python3
++"""Build/run the separately pinned original-owner Objective history probe.
++
++Uses the tracked OBJECTIVE_HISTORY_CONTRACT, never overrides the R8 PIN.
++--prepare-only does not build or launch. Runtime inputs are four explicit ELFs;
++storage faults are restricted to the stopped disposable qualification owner.
++"""
++
++import argparse
++from datetime import datetime, timezone
++import hashlib
++import json
++import os
++from pathlib import Path
++import re
++import shutil
++import subprocess
++import tempfile
++import tomllib
++
++import run_original_agentd as original
++import run_original_objective as objective
++
++HERE = Path(__file__).resolve().parent
++ROOT = HERE.parents[2]
++CONTRACT = ROOT / "services/hepta-os/OBJECTIVE_HISTORY_CONTRACT.json"
++BINARY = "hepta-objective-history-probe"
++SOURCES = ["objective_history_probe.rs", "objective_history_client.rs",
++           "original_objective_owner.rs", "original_objective_fixture.rs",
++           "original_objective_profile.json", "run_objective_history.py",
++           "run_original_objective.py", "run_original_agentd.py"]
++CHECKS = ["live_compiled_publication", "live_abstain_publication",
++          "retained_anchor_covers_publication", "harness_lost_response_then_history",
++          "postpublication_submit_unknown_history_published",
++          "wrong_anchor_unknown", "earlier_anchor_unknown", "changed_signed_request_unknown",
++          "restart_projection_missing_history_published", "expired_request_history_still_published",
++          "rollback_retained_anchor_unknown",
++          "truncated_tail_retained_anchor_unknown", "revoked_issuer_history_still_published",
++          "revoked_new_submission_rejected", "controlled_stop"]
++FALSE_SCOPE = ["operations_dispatch", "device_effect", "model_turn", "production_issuer",
++               "canonical_intelligence", "historical_run_resumed", "operations_k_or_d_created",
++               "hepta_submit_cli_lost_reply_executed"]
++NOT_EXECUTED = ["caller_anchor_co_rollback", "production_issuer", "effect_reconciliation",
++                "kernel_g1", "kernel_g2"]
++
++
++def need(condition, issue):
++    if not condition:
++        raise original.GateError(issue)
++
++
++def sha_bytes(value):
++    return hashlib.sha256(value).hexdigest()
++
++
++def digest(value, length=64):
++    return isinstance(value, str) and re.fullmatch(f"[0-9a-f]{{{length}}}", value) is not None
++
++
++def git_bytes(source, ref):
++    return subprocess.check_output(["git", "-C", str(source), "show", ref],
++                                   stderr=subprocess.PIPE, timeout=30)
++
++
++def read_contract(path):
++    """Require the exact tracked document, not a working-tree PIN substitution."""
++    path = path.resolve(strict=True)
++    repository = Path(original.git(path.parent, "rev-parse", "--show-toplevel"))
++    relative = path.relative_to(repository).as_posix()
++    committed = git_bytes(repository, "HEAD:" + relative)
++    need(path.read_bytes() == committed, "history_contract_not_committed_exactly")
++    contract = json.loads(committed)
++    need(contract.get("schema_version") == 1
++         and contract.get("repository", "").removesuffix(".git").rstrip("/")
++         == "https://github.com/TrillionniumFoundation/hepta-private-ci"
++         and contract.get("base_commit") == original.PIN
++         and digest(contract.get("commit"), 40)
++         and contract["commit"] != original.PIN
++         and digest(contract.get("cargo_lock_sha256"))
++         and contract.get("control_schema_version") == 2
++         and contract.get("profile") == "linux-local-known-objective-history"
++         and contract.get("read_method_allowlist") == ["ObjectiveAdmission"]
++         and contract.get("max_control_frame_bytes_including_newline") == 65_536,
++         "history_contract_profile_invalid")
++    files = contract.get("files")
++    need(isinstance(files, list) and bool(files), "history_contract_files_missing")
++    names = set()
++    for entry in files:
++        relative_path = entry.get("path")
++        need(isinstance(relative_path, str) and relative_path.startswith("codex-rs/")
++             and not Path(relative_path).is_absolute() and ".." not in Path(relative_path).parts
++             and relative_path not in names and digest(entry.get("sha256")),
++             "history_contract_file_binding_invalid")
++        names.add(relative_path)
++    return contract, {"path": str(path), "sha256": sha_bytes(committed),
++                      "desktop_commit": original.git(repository, "rev-parse", "HEAD")}
++
++
++def verify_source(source, contract):
++    need(original.git(source, "rev-parse", "HEAD") == contract["commit"],
++         "history_upstream_commit_mismatch")
++    need(not original.git(source, "status", "--porcelain=v1", "--untracked-files=all"),
++         "history_upstream_checkout_not_clean")
++    subprocess.run(["git", "-C", str(source), "merge-base", "--is-ancestor",
++                    contract["base_commit"], contract["commit"]], check=True,
++                   stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, timeout=30)
++    lock = original.sha256(source / "codex-rs/Cargo.lock")
++    need(lock == contract["cargo_lock_sha256"], "history_upstream_lock_mismatch")
++    for entry in contract["files"]:
++        path = source / entry["path"]
++        need(path.resolve(strict=True).is_relative_to(source)
++             and original.sha256(path) == entry["sha256"]
++             and path.read_bytes() == git_bytes(source, contract["commit"] + ":" + entry["path"]),
++             "history_upstream_reviewed_file_mismatch")
++    toolchain = tomllib.loads((source / "codex-rs/rust-toolchain.toml").read_text())
++    need(toolchain["toolchain"]["channel"] == original.UPSTREAM_TOOLCHAIN,
++         "history_upstream_toolchain_mismatch")
++    return {"commit": contract["commit"], "tree": original.git(source, "rev-parse", "HEAD^{tree}"),
++            "cargo_lock_sha256": lock, "clean_checkout": True,
++            "reviewed_files": len(contract["files"])}
++
++
++def prepare_runner(source, runner, binding):
++    # Reuse the original crates, pinned lock identity checks and isolated owner.
++    # The old R8 probe/PIN/runner are neither changed nor used as the executable.
++    omission = objective.prepare_runner(source, runner)
++    text = (runner / "Cargo.toml").read_text()
++    text = text.replace(f'name="{objective.BINARY}"', f'name="{BINARY}"')
++    parsed = tomllib.loads(text)
++    tokio = dict(parsed["dependencies"]["tokio"])
++    tokio["features"] = sorted(set(tokio.get("features", [])) | {"io-util"})
++    text = "\n".join("tokio=" + original.toml_value(tokio) if line.startswith("tokio=") else line
++                     for line in text.splitlines()) + "\n"
++    (runner / "Cargo.toml").write_text(text)
++    shutil.copyfile(HERE / "objective_history_probe.rs", runner / "src/main.rs")
++    shutil.copyfile(HERE / "objective_history_client.rs", runner / "src/objective_history_client.rs")
++    (runner / "src/objective_history_source_binding.json").write_text(
++        json.dumps(binding, sort_keys=True, separators=(",", ":")) + "\n")
++    return omission
++
++
++def verify_records(records, binding):
++    """Cross-bind the actual CLI/owner/fault records; this is not a new runtime."""
++    try:
++        checks = [record for record in records if record.get("event") == "objective_history_check"]
++        passes = [record for record in records if record.get("event") == "acceptance_pass"]
++        need([record["check"] for record in checks] == CHECKS and len(passes) == 1
++             and passes[0]["checks"] == CHECKS, "history_checks_incomplete")
++        passed = passes[0]
++        need(passed["source_binding"] == binding and passed["isolated_test_issuer"] is True
++             and all(passed[field] is False for field in FALSE_SCOPE)
++             and passed["not_executed"] == NOT_EXECUTED
++             and passed["objective_request_attempts"] == 5
++             and passed["published_objective_requests"] == 4
++             and passed["recovery_resubmissions"] == 0, "history_scope_or_source_drift")
++        core = {record["check"]: record["evidence"] for record in checks}
++        observed = [record for record in records if record.get("event") == "history_query_observed"]
++        need(len(observed) == 13, "history_cli_queries_missing")
++        for record in observed:
++            result = record["result"]
++            need(record["journal_unchanged"] is True and digest(record["journal_sha256"])
++                 and result["schema_version"] == 1 and result["bytes_written"] > 0
++                 and result["bytes_written"] == result["request_frame_bytes"]
++                 and record["exit_code"] == {"historical_publication": 0, "unknown": 12}[result["status"]],
++                 "history_cli_transport_or_readonly_mismatch")
++        actual_results = [record["result"] for record in observed]
++        for name in CHECKS[:-2]:
++            need(core[name]["history"] in actual_results, "history_check_not_an_actual_cli_result")
++        first = core[CHECKS[0]]["history"]
++        second = core[CHECKS[1]]["history"]
++        lost = core[CHECKS[3]]["history"]
++        postpublication = core[CHECKS[4]]
++        capacity = postpublication["history"]
++        for sequence, result, disposition in [(1, first, "compiled"), (2, second, "explicit_abstain"),
++                                                (3, lost, "compiled"), (4, capacity, "compiled")]:
++            publication = result["publication"]
++            need(result["status"] == "historical_publication"
++                 and publication["publication_sequence"] == sequence
++                 and publication["outcome"]["type"] == disposition
++                 and all(digest(publication[field]) for field in
++                         ["publication_digest", "chain_digest", "signed_body_digest", "profile_digest"]),
++                 "history_publication_identity_invalid")
++        need(core[CHECKS[2]]["history"]["publication"] == first["publication"]
++             and core[CHECKS[2]]["history"]["anchor"] == {
++                 "sequence": 2, "chain_digest": second["publication"]["chain_digest"]},
++             "history_retained_anchor_disagreement")
++        need(all(core[CHECKS[index]]["resubmission_count"] == 0 for index in [3, 4, 8, 9, 10, 11]),
++             "history_recovery_resubmitted")
++        submissions = [record for record in records if record.get("event") == "submission_observed"]
++        loss_records = [record for record in records if record.get("event") == "objective_response_discarded"]
++        need(len(submissions) == 4 and len(loss_records) == 1, "history_submission_attempts_drift")
++        for submission in submissions:
++            result = submission["result"]
++            need(result["bytes_written"] > 0 and result["bytes_written"] == result["request_frame_bytes"]
++                 and submission["exit_code"] == {"admitted": 0, "submit_unknown": 12}[result["status"]],
++                 "history_submission_transport_mismatch")
++        for index, result in [(0, first), (1, second)]:
++            submission = submissions[index]["result"]
++            need(core[CHECKS[index]]["submission"] == submission and submission["status"] == "admitted"
++                 and submission["receipt"]["publication_digest"] == result["publication"]["publication_digest"]
++                 and submission["receipt"]["chain_digest"] == result["publication"]["chain_digest"]
++                 and submission["receipt"]["idempotent"] is False
++                 and submission["receipt"]["response_generation"] == result["response_generation"],
++                 "history_submission_receipt_not_bound")
++        loss = loss_records[0]["evidence"]
++        need(loss == core[CHECKS[3]]["loss"] and loss["response_bytes_read"] == 0
++             and loss["response_discarded_by_harness"] is True
++             and loss["hepta_submit_cli_loss_case"] is False
++             and loss["submission_outcome"] == "unknown" and loss["bytes_written"] > 0
++             and loss["bytes_written"] == loss["request_frame_bytes"]
++             and loss["run_id"] == lost["publication"]["run_id"]
++             and loss["peer_pid"] == first["identity"]["peer_pid"]
++             and loss["peer_uid"] == first["identity"]["peer_uid"], "history_loss_fault_not_bound")
++        rejected = submissions[2]["result"]
++        active = postpublication["active_runs_before_submission"]
++        need(postpublication["submission"] == rejected and rejected["status"] == "submit_unknown"
++             and rejected["issue"] == "objective_owner_request_rejected"
++             and rejected["identity"]["run_id"] == capacity["publication"]["run_id"]
++             and postpublication["run_status"] is None
++             and postpublication["source_inference"] == "original_default_run_capacity_exhausted"
++             and postpublication["specific_original_error_bytes_observed"] is False
++             and postpublication["active_run_ids"] == [first["publication"]["run_id"], lost["publication"]["run_id"]]
++             and len(active) == 2
++             and all(run["phase"] == "admitted" and run["terminal_observed"] is False for run in active),
++             "history_postpublication_error_not_bound")
++        for index, reason in [(5, "anchor_mismatch"), (6, "publication_outside_anchor"),
++                              (7, "no_matching_publication"), (10, "anchor_missing"), (11, "anchor_missing")]:
++            result = core[CHECKS[index]]["history"]
++            need(result["status"] == "unknown" and result["issue"] == reason
++                 and "publication" not in result, "history_unknown_promoted")
++        restart = core[CHECKS[8]]
++        need(restart["new_spawn"] > restart["old_spawn"] and restart["new_pid"] != restart["old_pid"]
++             and restart["run_status"] is None and restart["history"]["publication"] == lost["publication"]
++             and restart["history"]["identity"]["spawn_generation"] == restart["new_spawn"]
++             and restart["history"]["identity"]["original_spawn_generation"] == restart["old_spawn"],
++             "history_restart_identity_not_fenced")
++        expiry = core[CHECKS[9]]
++        need(expiry["history"]["publication"] == second["publication"]
++             and expiry["history"]["identity"]["spawn_generation"] == restart["new_spawn"]
++             and expiry["expires_at_ms"] == second["publication"]["expires_at_ms"]
++             and expiry["observed_at_ms"] > expiry["expires_at_ms"]
++             and 0 <= expiry["wait_elapsed_ms"] <= expiry["wait_bound_ms"] == 30_000
++             and expiry["history"]["anchor"] == {
++                 "sequence": 4, "chain_digest": capacity["publication"]["chain_digest"]},
++             "history_real_expiry_not_observed")
++        for index in [10, 11]:
++            fault = core[CHECKS[index]]["fault"]
++            need(fault["owner_confirmed_stopped_before_fault"] is True
++                 and fault["new_spawn"] > fault["old_spawn"]
++                 and fault["recovery_owner"] == "original_agentd"
++                 and all(digest(fault[field]) for field in ["before_sha256", "injected_sha256", "recovered_sha256"])
++                 and core[CHECKS[index]]["resubmission_count"] == 0, "history_fault_owner_not_stopped")
++        need(core[CHECKS[10]]["fault"]["recovered_sha256"] == observed[0]["journal_sha256"]
++             and core[CHECKS[10]]["fault"]["injected_sha256"] == observed[0]["journal_sha256"]
++             and core[CHECKS[10]]["fault"]["before_sha256"] == observed[4]["journal_sha256"]
++             and core[CHECKS[11]]["fault"]["before_sha256"] == observed[0]["journal_sha256"]
++             and core[CHECKS[11]]["fault"]["recovered_sha256"] == observed[3]["journal_sha256"],
++             "history_fault_did_not_recover_exact_prefix")
++        need(core[CHECKS[12]]["issuer_revoked"] is True and core[CHECKS[12]]["issuer_restored"] is False
++             and core[CHECKS[12]]["history"]["publication"] == first["publication"]
++             and core[CHECKS[13]]["submission"] == submissions[-1]["result"]
++             and submissions[-1]["result"]["status"] == "submit_unknown"
++             and submissions[-1]["result"]["issue"] == "objective_owner_request_rejected"
++             and core[CHECKS[13]]["journal_unchanged"] is True
++             and core[CHECKS[14]]["active"] is False, "history_revoke_or_stop_missing")
++    except (KeyError, IndexError, TypeError, ValueError) as error:
++        raise original.GateError("history_record_shape_invalid") from error
++
++
++def main():
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("--hepta-source", type=Path, required=True)
++    parser.add_argument("--contract", type=Path, default=CONTRACT,
++                        help="Exact tracked history contract; defaults to this desktop checkout")
++    parser.add_argument("--work-dir", type=Path, required=True)
++    parser.add_argument("--target-dir", type=Path)
++    parser.add_argument("--prepare-only", action="store_true")
++    parser.add_argument("--execute", action="store_true")
++    parser.add_argument("--offline", action="store_true")
++    parser.add_argument("--rustup", default=shutil.which("rustup") or "rustup")
++    for name in ["agentd", "observer", "submitter", "history", "probe"]:
++        parser.add_argument("--" + name + "-bin", type=Path)
++    args = parser.parse_args()
++    report = {"schema": "hepta.objective-history-probe.v1", "status": "preflight",
++              "recorded_at_utc": datetime.now(timezone.utc).isoformat(), "runtime_executed": False,
++              "steps": [], "source_sha256": {name: original.sha256(HERE / name) for name in SOURCES}}
++    work = args.work_dir.resolve()
++    owned_work = False
++    code = 1
++    try:
++        source = args.hepta_source.resolve(strict=True)
++        contract, contract_record = read_contract(args.contract)
++        report["contract"] = contract_record
++        report["upstream"] = verify_source(source, contract)
++        binding = {"commit": contract["commit"], "tree": report["upstream"]["tree"],
++                   "cargo_lock_sha256": report["upstream"]["cargo_lock_sha256"],
++                   "contract_sha256": contract_record["sha256"], "probe_inputs": report["source_sha256"]}
++        report["compiled_source_binding"] = binding
++        need(not work.exists() and not work.is_relative_to(source) and not work.is_relative_to(ROOT),
++             "history_work_must_be_new_and_outside_sources")
++        need(not (args.prepare_only and args.execute), "history_prepare_cannot_execute")
++        work.mkdir(mode=0o700)
++        owned_work = True
++        runner = work / "probe"
++        report["patch_omission"] = prepare_runner(source, runner, binding)
++        report["runner"] = str(runner)
++        target = args.target_dir.resolve() if args.target_dir else work / "target"
++        report["target"] = str(target)
++        if args.prepare_only:
++            report["status"] = "prepared_not_built_or_executed"
++        else:
++            probe = args.probe_bin
++            if probe is None:
++                flags = ["--offline"] if args.offline else []
++                lock = None
++                for label, arguments in [
++                    ("resolution", ["metadata", *flags, "--format-version", "1"]),
++                    ("locked-metadata", ["metadata", "--locked", *flags, "--format-version", "1"]),
++                    ("build", ["build", "--locked", *flags, "--profile", "dev-small", "--bin", BINARY, "-j1"]),
++                ]:
++                    command = [args.rustup, "run", original.UPSTREAM_TOOLCHAIN, "cargo", *arguments]
++                    report["steps"].append({"label": label, "command": command})
++                    original.bounded_command(command, runner, original.build_environment(target), work / f"{label}.log", 3600)
++                    report["lock_validation"] = original.verify_runner_lock(source, runner)
++                    current = original.sha256(runner / "Cargo.lock")
++                    need(lock is None or lock == current, "history_probe_lock_changed")
++                    lock = current
++                report["resolved_lock_sha256"] = lock
++                probe = target / "dev-small" / BINARY
++            else:
++                report["prebuilt_probe_requires_caller_build_binding"] = True
++            report["binaries"] = {"probe": objective.binary_record(probe)}
++            report["status"] = "probe_available_runtime_not_executed"
++            if args.execute:
++                for name in ["agentd", "observer", "submitter", "history"]:
++                    path = getattr(args, name + "_bin")
++                    need(path is not None, "history_execute_requires_four_explicit_binaries")
++                    report["binaries"][name] = objective.binary_record(path)
++                report["runtime_executed"] = True
++                log = work / "runtime.log"
++                with tempfile.TemporaryDirectory(prefix="hh-", dir="/tmp") as root:
++                    command = [report["binaries"][name]["path"] for name in
++                               ["probe", "agentd", "observer", "submitter", "history"]] + [root]
++                    report["runtime_command"] = command
++                    environment = {"PATH": "/usr/bin:/bin", "LANG": "C.UTF-8",
++                                   "HEPTA_COGNITIVE_RETRIEVAL_MODE": "compatibility"}
++                    try:
++                        original.bounded_command(command, ROOT, environment, log, 240)
++                    finally:
++                        evidence = Path(root) / "probe-evidence"
++                        if evidence.is_dir():
++                            shutil.copytree(evidence, work / "runtime-evidence")
++                need(log.stat().st_size <= 1024 * 1024, "history_runtime_log_bound_exceeded")
++                records = [json.loads(line) for line in log.read_text().splitlines() if line.startswith("{")]
++                report["runtime_records"] = records
++                verify_records(records, binding)
++                for binary in report["binaries"].values():
++                    need(original.sha256(Path(binary["path"])) == binary["sha256"], "history_native_input_changed")
++                report["status"] = "passed"
++        verify_source(source, contract)
++        need(read_contract(args.contract)[1] == contract_record, "history_contract_changed")
++        need(report["source_sha256"] == {name: original.sha256(HERE / name) for name in SOURCES},
++             "history_probe_source_changed")
++        code = 0
++    except Exception as error:
++        report["status"] = "failed"
++        report["error"] = str(error)
++    if owned_work:
++        with (work / "report.json").open("x") as stream:
++            json.dump(report, stream, indent=2)
++            stream.write("\n")
++    print(json.dumps(report, indent=2))
++    return code
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())
+diff --git a/tests/integration/hepta/run_original_agentd.py b/tests/integration/hepta/run_original_agentd.py
+index b0b04b0..b6d48c4 100644
+--- a/tests/integration/hepta/run_original_agentd.py
++++ b/tests/integration/hepta/run_original_agentd.py
+@@ -304,17 +304,17 @@ def bounded_command(command, cwd, environment, log_path, timeout_seconds):
+         )
+         group = ChildGroup(process)
+         try:
+-            status = group.wait_exit(timeout_seconds)
++            group.wait_exit(timeout_seconds)
+         except subprocess.TimeoutExpired:
+             terminate_group(group)
+             raise GateError("command_deadline_exceeded") from None
+         except KeyboardInterrupt:
+             terminate_group(group)
+             raise GateError("command_interrupted") from None
+-        if status.si_code != os.CLD_EXITED or status.si_status != 0:
+-            code = terminate_group(group)
+-        else:
+-            code = group.reap()
++        # Exit 0 describes the leader, not whether its descendants stopped.
++        # Keep that real exit status and its WNOWAIT identity anchor through
++        # the same bounded group cleanup used for failures, before reaping.
++        code = terminate_group(group)
+     if code != 0:
+         raise GateError(f"command_failed_exit_{code}")
+ 
+diff --git a/tests/integration/hepta/test_objective_history_contracts.py b/tests/integration/hepta/test_objective_history_contracts.py
+new file mode 100644
+index 0000000..9a3eef7
+--- /dev/null
++++ b/tests/integration/hepta/test_objective_history_contracts.py
+@@ -0,0 +1,232 @@
++#!/usr/bin/env python3
++"""Synthetic validator regressions. These are not original-owner runtime evidence."""
++
++import copy
++import hashlib
++import json
++from pathlib import Path
++import subprocess
++import tempfile
++import unittest
++from unittest.mock import patch
++
++import run_objective_history as history
++
++
++def synthetic_records():
++    binding = {"commit": "d" * 40, "tree": "e" * 40}
++    publications = []
++    for sequence, disposition in [(1, "compiled"), (2, "explicit_abstain"), (3, "compiled"), (4, "compiled")]:
++        publications.append({
++            "run_id": f"run.{sequence}", "publication_sequence": sequence,
++            "publication_digest": str(sequence) * 64, "chain_digest": str(sequence + 3) * 64,
++            "signed_body_digest": "7" * 64, "profile_digest": "8" * 64,
++            "expires_at_ms": 100_000,
++            "outcome": {"type": disposition},
++        })
++
++    def result(index, *, anchor=None, issue=None, spawn=1):
++        value = {"schema_version": 1, "status": "unknown" if issue else "historical_publication",
++                 "bytes_written": 200, "request_frame_bytes": 200,
++                 "identity": {"spawn_generation": spawn, "original_spawn_generation": 1,
++                              "peer_uid": 1000, "peer_pid": 123}, "anchor": anchor}
++        if issue:
++            value["issue"] = issue
++        else:
++            value["publication"] = copy.deepcopy(publications[index])
++            value["response_generation"] = spawn
++        return value
++
++    first = result(0)
++    second = result(1)
++    lost = result(2)
++    capacity = result(3)
++    covered = result(0, anchor={"sequence": 2, "chain_digest": publications[1]["chain_digest"]})
++    all_results = [first, second, covered, lost, capacity, result(0, issue="anchor_mismatch"),
++                   result(1, issue="publication_outside_anchor"), result(0, issue="no_matching_publication"),
++                   result(2, spawn=5), result(1, spawn=5,
++                       anchor={"sequence": 4, "chain_digest": publications[3]["chain_digest"]}),
++                   result(0, issue="anchor_missing", spawn=9),
++                   result(3, issue="anchor_missing", spawn=13), result(0, spawn=13)]
++    submissions = []
++    for value in [first, second]:
++        publication = value["publication"]
++        submissions.append({"status": "admitted", "bytes_written": 300, "request_frame_bytes": 300,
++            "receipt": {"publication_digest": publication["publication_digest"],
++                "chain_digest": publication["chain_digest"], "idempotent": False, "response_generation": 1}})
++    for run in ["run.4", "run.5"]:
++        submissions.append({"status": "submit_unknown", "issue": "objective_owner_request_rejected",
++            "bytes_written": 300, "request_frame_bytes": 300, "identity": {"run_id": run}})
++    loss = {"response_bytes_read": 0, "response_discarded_by_harness": True,
++            "hepta_submit_cli_loss_case": False, "submission_outcome": "unknown", "bytes_written": 300,
++            "request_frame_bytes": 300, "run_id": "run.3", "peer_pid": 123, "peer_uid": 1000}
++    checks = [{"history": value} for value in all_results]
++    checks[0]["submission"] = submissions[0]
++    checks[1]["submission"] = submissions[1]
++    checks[3].update({"loss": loss, "resubmission_count": 0})
++    checks[4].update({"submission": submissions[2], "run_status": None, "resubmission_count": 0,
++        "active_run_ids": ["run.1", "run.3"], "active_runs_before_submission": [
++            {"phase": "admitted", "terminal_observed": False}, {"phase": "admitted", "terminal_observed": False}],
++        "source_inference": "original_default_run_capacity_exhausted", "specific_original_error_bytes_observed": False})
++    checks[8].update({"old_spawn": 1, "new_spawn": 5, "old_pid": 123, "new_pid": 456,
++                      "run_status": None, "resubmission_count": 0})
++    checks[9].update({"expires_at_ms": 100_000, "observed_at_ms": 100_001,
++        "wait_elapsed_ms": 1, "wait_bound_ms": 30_000, "resubmission_count": 0})
++    for index, old, new, before, injected, recovered in [(10, 5, 9, "d", "a", "a"), (11, 9, 13, "a", "e", "c")]:
++        checks[index].update({"resubmission_count": 0, "fault": {
++            "owner_confirmed_stopped_before_fault": True, "old_spawn": old, "new_spawn": new,
++            "recovery_owner": "original_agentd", "before_sha256": before * 64,
++            "injected_sha256": injected * 64, "recovered_sha256": recovered * 64}})
++    checks[12].update({"issuer_revoked": True, "issuer_restored": False})
++    checks += [{"submission": submissions[-1], "journal_unchanged": True}, {"active": False}]
++    records = [{"event": "history_query_observed", "result": value,
++                "exit_code": 12 if value["status"] == "unknown" else 0, "journal_unchanged": True,
++                "journal_sha256": "abbcddddddacc"[index] * 64}
++               for index, value in enumerate(all_results)]
++    records += [{"event": "submission_observed", "result": value,
++                 "exit_code": 0 if value["status"] == "admitted" else 12} for value in submissions]
++    records += [{"event": "objective_response_discarded", "evidence": loss}]
++    records += [{"event": "objective_history_check", "check": name, "evidence": evidence}
++                for name, evidence in zip(history.CHECKS, checks, strict=True)]
++    records += [{"event": "acceptance_pass", "checks": history.CHECKS, "source_binding": binding,
++                 "isolated_test_issuer": True, "objective_request_attempts": 5,
++                 "published_objective_requests": 4, "recovery_resubmissions": 0,
++                 "not_executed": history.NOT_EXECUTED, **dict.fromkeys(history.FALSE_SCOPE, False)}]
++    return records, binding
++
++
++class ReceiptContracts(unittest.TestCase):
++    def setUp(self):
++        self.records, self.binding = synthetic_records()
++
++    def core(self, index):
++        return next(record["evidence"] for record in self.records
++                    if record.get("check") == history.CHECKS[index])
++
++    def reject(self):
++        with self.assertRaises(history.original.GateError):
++            history.verify_records(self.records, self.binding)
++
++    def test_synthetic_positive_validator_only(self):
++        history.verify_records(self.records, self.binding)
++
++    def test_new_owner_source_is_required(self):
++        self.binding = {"commit": "f" * 40}
++        self.reject()
++
++    def test_removed_real_cli_result_rejected(self):
++        self.records.pop(0)
++        self.reject()
++
++    def test_changed_submission_publication_rejected(self):
++        self.core(0)["submission"]["receipt"]["publication_digest"] = "f" * 64
++        self.reject()
++
++    def test_harness_loss_cannot_be_claimed_as_submit_cli_loss(self):
++        self.core(3)["loss"]["hepta_submit_cli_loss_case"] = True
++        self.reject()
++
++    def test_partial_send_does_not_qualify_loss_after_full_send(self):
++        self.core(3)["loss"]["bytes_written"] = 1
++        self.reject()
++
++    def test_recovery_resubmission_cannot_be_hidden_in_final_counts(self):
++        self.core(8)["resubmission_count"] = 1
++        self.reject()
++
++    def test_old_spawn_on_replacement_query_is_rejected(self):
++        self.core(8)["history"]["identity"]["spawn_generation"] = 1
++        self.reject()
++
++    def test_live_owner_file_mutation_cannot_be_marked_qualified(self):
++        self.core(10)["fault"]["owner_confirmed_stopped_before_fault"] = False
++        self.reject()
++
++    def test_truncation_must_recover_exact_previously_observed_prefix(self):
++        self.core(11)["fault"]["recovered_sha256"] = "f" * 64
++        self.reject()
++
++    def test_anchor_missing_cannot_be_promoted_to_publication(self):
++        value = self.core(11)["history"]
++        value["status"] = "historical_publication"
++        value["publication"] = self.core(3)["history"]["publication"]
++        self.reject()
++
++    def test_issuer_restoration_does_not_prove_revoked_history_read(self):
++        self.core(12)["issuer_restored"] = True
++        self.reject()
++
++    def test_postpublication_null_projection_is_required(self):
++        self.core(4)["run_status"] = {"phase": "admitted"}
++        self.reject()
++
++    def test_postpublication_rejection_must_bind_same_run(self):
++        self.core(4)["submission"]["identity"]["run_id"] = "different-run"
++        self.reject()
++
++    def test_capacity_inference_cannot_be_claimed_as_observed_error_bytes(self):
++        self.core(4)["specific_original_error_bytes_observed"] = True
++        self.reject()
++
++    def test_unexpired_query_cannot_be_claimed_as_real_expiry(self):
++        self.core(9)["observed_at_ms"] = self.core(9)["expires_at_ms"]
++        self.reject()
++
++    def test_unbounded_expiry_wait_cannot_be_qualified(self):
++        self.core(9)["wait_elapsed_ms"] = 30_001
++        self.reject()
++
++    def test_effect_scope_cannot_be_promoted(self):
++        self.records[-1]["operations_dispatch"] = True
++        self.reject()
++
++
++class SourceContracts(unittest.TestCase):
++    def setUp(self):
++        self.temporary = tempfile.TemporaryDirectory()
++        self.addCleanup(self.temporary.cleanup)
++        self.root = Path(self.temporary.name)
++        self.path = self.root / "contract.json"
++        self.contract = {"schema_version": 1,
++            "repository": "https://github.com/TrillionniumFoundation/hepta-private-ci",
++            "base_commit": history.original.PIN, "commit": "d" * 40,
++            "cargo_lock_sha256": "a" * 64, "control_schema_version": 2,
++            "profile": "linux-local-known-objective-history",
++            "read_method_allowlist": ["ObjectiveAdmission"],
++            "max_control_frame_bytes_including_newline": 65_536,
++            "files": [{"path": "codex-rs/hepta-agent-protocol/src/objective_history.rs", "sha256": "b" * 64}]}
++        self.write_contract()
++        subprocess.run(["git", "init", "-q", str(self.root)], check=True)
++        subprocess.run(["git", "-C", str(self.root), "add", "contract.json"], check=True)
++        subprocess.run(["git", "-C", str(self.root), "-c", "user.name=Contract Test",
++                        "-c", "user.email=contract-test@example.invalid", "commit", "-qm", "fixture"], check=True)
++
++    def write_contract(self):
++        self.path.write_text(json.dumps(self.contract) + "\n")
++
++    def test_tracked_contract_is_read_without_changing_old_pin(self):
++        original_pin = history.original.PIN
++        contract, evidence = history.read_contract(self.path)
++        self.assertEqual(contract, self.contract)
++        self.assertEqual(evidence["sha256"], hashlib.sha256(self.path.read_bytes()).hexdigest())
++        self.assertEqual(history.original.PIN, original_pin)
++
++    def test_uncommitted_pin_substitution_rejected(self):
++        self.contract["commit"] = "e" * 40
++        self.write_contract()
++        with self.assertRaisesRegex(history.original.GateError, "not_committed_exactly"):
++            history.read_contract(self.path)
++
++    def test_source_exact_head_is_checked_before_files(self):
++        with patch.object(history.original, "git", return_value="e" * 40):
++            with self.assertRaisesRegex(history.original.GateError, "commit_mismatch"):
++                history.verify_source(self.root, self.contract)
++
++    def test_dirty_owner_checkout_rejected(self):
++        with patch.object(history.original, "git", side_effect=["d" * 40, " M changed.rs"]):
++            with self.assertRaisesRegex(history.original.GateError, "not_clean"):
++                history.verify_source(self.root, self.contract)
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/tests/integration/hepta/test_original_process_guard.py b/tests/integration/hepta/test_original_process_guard.py
+index 3051b53..4df72f3 100644
+--- a/tests/integration/hepta/test_original_process_guard.py
++++ b/tests/integration/hepta/test_original_process_guard.py
+@@ -4,9 +4,14 @@ Never create actual PID/PGID reuse. Kernel WNOWAIT and ECHILD observations prove
+ the identity boundary while all deliberately stale signal attempts are mocked.
+ """
+ 
++import ctypes
++import json
+ import os
+ from pathlib import Path
++import select
+ import signal
++import socket
++import struct
+ import subprocess
+ import sys
+ import tempfile
+@@ -17,6 +22,170 @@ from unittest.mock import patch
+ import run_original_agentd as gate
+ 
+ 
++def successful_leader_writer_fixture():
++    """Isolate subreaper state and own both real fixture children completely."""
++    libc = ctypes.CDLL(None, use_errno=True)
++    if libc.prctl(36, 1, 0, 0, 0) != 0:  # PR_SET_CHILD_SUBREAPER
++        raise OSError(ctypes.get_errno(), "fixture subreaper unavailable")
++    writer_source = r'''
++import os, pathlib, socket, sys
++plugins = pathlib.Path(sys.argv[2])
++plugins.mkdir()
++with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as channel:
++    channel.settimeout(10)
++    channel.connect(sys.argv[1])
++    channel.sendall(str(os.getpid()).encode() + b"\n")
++    if channel.recv(1) != b"S":
++        raise SystemExit(91)
++    print("writer-ready", flush=True)
++    while True:
++        request = channel.recv(1)
++        if not request:
++            break
++        if request != b"W":
++            raise SystemExit(92)
++        (plugins / "after-leader-exit").write_bytes(b"owned-writer-still-active")
++        channel.sendall(b"written")
++'''
++    leader_source = r'''
++import os, subprocess, sys
++writer = subprocess.Popen([sys.executable, "-c", sys.argv[1], sys.argv[2], sys.argv[3]],
++                          stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
++                          stderr=subprocess.STDOUT, text=True)
++if writer.stdout.readline() != "writer-ready\n":
++    raise SystemExit(93)
++writer.stdout.close()
++os._exit(0)  # Deliberately leave the same-group writer for the guard to clean.
++'''
++    report = {"signals": [], "writer_wrote_after_leader_exit": False}
++    state = {"group": None, "writer_pid": None, "writer_pidfd": None, "channel": None}
++    original_wait = gate.ChildGroup.wait_exit
++    original_reap = gate.ChildGroup.reap
++    real_killpg = os.killpg
++
++    with tempfile.TemporaryDirectory(prefix="hp-guard-", dir="/tmp") as temporary:
++        root = Path(temporary)
++        listener = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
++        listener.settimeout(3)
++        listener.bind(str(root / "control.sock"))
++        listener.listen(1)
++
++        def writer_exited():
++            poller = select.poll()
++            poller.register(state["writer_pidfd"], select.POLLIN)
++            return bool(poller.poll(0))
++
++        def wait_with_handshake(group, timeout):
++            state["group"] = group
++            channel, _ = listener.accept()
++            state["channel"] = channel
++            channel.settimeout(3)
++            payload = b""
++            while not payload.endswith(b"\n"):
++                chunk = channel.recv(32)
++                if not chunk or len(payload) + len(chunk) > 32:
++                    raise RuntimeError("fixture writer identity handshake failed")
++                payload += chunk
++            pid = int(payload)
++            peer, uid, _ = struct.unpack("3i", channel.getsockopt(socket.SOL_SOCKET, socket.SO_PEERCRED, 12))
++            if peer != pid or uid != os.geteuid() or os.getpgid(pid) != group.process.pid:
++                raise RuntimeError("fixture writer is not the owned same-group peer")
++            state["writer_pid"] = pid
++            state["writer_pidfd"] = os.pidfd_open(pid)
++            report["leader_pid"] = group.process.pid
++            report["writer_pid"] = pid
++            report["writer_group_matches_leader"] = True
++            channel.sendall(b"S")  # Only now may the leader exit successfully.
++            return original_wait(group, timeout)
++
++        def anchored_signal(pid, signum):
++            status = os.waitid(os.P_PID, pid, os.WEXITED | os.WNOWAIT | os.WNOHANG)
++            if status is None or (status.si_pid, status.si_code, status.si_status) != (pid, os.CLD_EXITED, 0):
++                raise RuntimeError("successful leader lost its WNOWAIT signal anchor")
++            report["signals"].append(int(signum))
++            return real_killpg(pid, signum)
++
++        def checked_reap(group):
++            status = os.waitid(os.P_PID, group.process.pid, os.WEXITED | os.WNOWAIT | os.WNOHANG)
++            if status is None or status.si_code != os.CLD_EXITED or status.si_status != 0:
++                raise RuntimeError("successful leader lost its pre-reap identity")
++            report["leader_waitable_at_reap_boundary"] = True
++            report["writer_exited_before_leader_reap"] = writer_exited()
++            if not report["writer_exited_before_leader_reap"]:
++                state["channel"].sendall(b"W")
++                acknowledgment = b""
++                while len(acknowledgment) < len(b"written"):
++                    chunk = state["channel"].recv(len(b"written") - len(acknowledgment))
++                    if not chunk:
++                        raise RuntimeError("fixture writer closed before confirming its real write")
++                    acknowledgment += chunk
++                if acknowledgment != b"written":
++                    raise RuntimeError("fixture writer did not confirm its real write")
++                report["writer_wrote_after_leader_exit"] = (
++                    root / "plugins/after-leader-exit"
++                ).read_bytes() == b"owned-writer-still-active"
++            return original_reap(group)
++
++        try:
++            with patch.object(gate.ChildGroup, "wait_exit", new=wait_with_handshake), \
++                 patch.object(gate.ChildGroup, "reap", new=checked_reap), \
++                 patch.object(gate.os, "killpg", side_effect=anchored_signal):
++                gate.bounded_command(
++                    [sys.executable, "-c", leader_source, writer_source,
++                     str(root / "control.sock"), str(root / "plugins")],
++                    root, {"PATH": "/usr/bin:/bin"}, root / "command.log", 5,
++                )
++            report["command_returned_success"] = True
++            report["leader_exit_code"] = state["group"].process.returncode
++            try:
++                os.waitid(os.P_PID, report["leader_pid"], os.WEXITED | os.WNOWAIT | os.WNOHANG)
++            except ChildProcessError:
++                report["leader_reaped"] = True
++            else:
++                report["leader_reaped"] = False
++        finally:
++            group = state["group"]
++            if group is not None and group.armed:
++                # Patches have ended. Keep the real guard's owned anchor while
++                # cleaning an early fixture failure, before releasing its peer.
++                gate.terminate_group(group)
++            if state["writer_pidfd"] is not None:
++                if not writer_exited():
++                    signal.pidfd_send_signal(state["writer_pidfd"], signal.SIGKILL)
++                poller = select.poll()
++                poller.register(state["writer_pidfd"], select.POLLIN)
++                if not poller.poll(3000):
++                    raise RuntimeError("owned fixture writer did not exit for cleanup")
++                status = os.waitid(os.P_PID, state["writer_pid"], os.WEXITED | os.WNOWAIT | os.WNOHANG)
++                if status is None:
++                    raise RuntimeError("fixture writer is not the adopted waitable child")
++                report["writer_wait_status"] = {"code": status.si_code, "status": status.si_status}
++                pid, status = os.waitpid(state["writer_pid"], 0)
++                report["writer_reaped"] = pid == state["writer_pid"]
++                os.close(state["writer_pidfd"])
++            # This fresh fixture process owns only this descendant tree. Reap
++            # any adopted child from an early handshake failure too; never
++            # signal an unverified PID or leave a successful fixture with a
++            # waitable child. The normal path already reaped both identities.
++            cleanup_deadline = time.monotonic() + 3
++            while True:
++                try:
++                    status = os.waitid(os.P_ALL, 0, os.WEXITED | os.WNOWAIT | os.WNOHANG)
++                except ChildProcessError:
++                    report["fixture_children_all_reaped"] = True
++                    break
++                if status is not None:
++                    os.waitpid(status.si_pid, 0)
++                elif time.monotonic() >= cleanup_deadline:
++                    raise RuntimeError("owned fixture descendant cleanup remained incomplete")
++                else:
++                    time.sleep(0.01)  # Bounded cleanup polling, never readiness.
++            if state["channel"] is not None:
++                state["channel"].close()
++            listener.close()
++    print(json.dumps(report, sort_keys=True), flush=True)
++
++
+ class OriginalProcessGuardTests(unittest.TestCase):
+     def setUp(self):
+         self.assertTrue(gate.child_anchor_available(), "Linux waitable-child profile required")
+@@ -163,13 +332,54 @@ class OriginalProcessGuardTests(unittest.TestCase):
+         finally:
+             signal.signal(signal.SIGCHLD, original)
+ 
+-    def test_success_uses_actual_exit_status_and_does_not_signal_reaped_identity(self):
++    def test_success_cleans_group_only_while_actual_exit_zero_leader_is_waitable(self):
++        observed = []
++
++        def anchored_signal(pid, signum):
++            status = os.waitid(os.P_PID, pid, os.WEXITED | os.WNOWAIT | os.WNOHANG)
++            self.assertIsNotNone(status)
++            self.assertEqual((status.si_pid, status.si_code, status.si_status), (pid, os.CLD_EXITED, 0))
++            observed.append(signum)
++            return self.real_killpg(pid, signum)
++
+         with patch.object(gate.subprocess, "Popen", side_effect=self.spawn), \
+-             patch.object(gate.os, "killpg", side_effect=AssertionError("success cleanup must not signal")) as signal_spy:
++             patch.object(gate.os, "killpg", side_effect=anchored_signal), \
++             patch.object(gate, "GROUP_GRACE_SECONDS", 0.02):
+             self.command("pass")
+-            signal_spy.assert_not_called()
++        self.assertEqual(observed, [signal.SIGTERM, signal.SIGKILL])
+         self.assertEqual(self.children[0].returncode, 0)
++        with self.assertRaises(ChildProcessError):
++            os.waitid(os.P_PID, self.children[0].pid, os.WEXITED | os.WNOWAIT | os.WNOHANG)
++
++    def test_successful_leader_cannot_leave_a_same_group_plugin_writer(self):
++        # The fixture owns a private subreaper process; the unittest process
++        # does not change subreaper state or claim any unrelated descendants.
++        child = self.spawn(
++            [sys.executable, "-B", str(Path(__file__).resolve()), "--successful-writer-fixture"],
++            stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
++            text=True, start_new_session=True,
++        )
++        stdout, stderr = child.communicate(timeout=25)
++        self.assertEqual(child.returncode, 0, stderr)
++        self.assertEqual(stderr, "")
++        proof = json.loads(stdout)
++        print("owned successful-leader writer proof: " + json.dumps(proof, sort_keys=True), flush=True)
++        self.assertTrue(proof["writer_group_matches_leader"])
++        self.assertTrue(proof["leader_waitable_at_reap_boundary"])
++        self.assertTrue(proof["command_returned_success"])
++        self.assertEqual(proof["leader_exit_code"], 0)
++        self.assertTrue(proof["leader_reaped"])
++        self.assertTrue(proof["writer_reaped"])
++        self.assertTrue(proof["fixture_children_all_reaped"])
++        self.assertTrue(proof["writer_exited_before_leader_reap"],
++                        "successful leader left a live same-group writer at the reap boundary")
++        self.assertFalse(proof["writer_wrote_after_leader_exit"])
++        self.assertEqual(proof["writer_wait_status"], {"code": os.CLD_KILLED, "status": signal.SIGTERM})
++        self.assertEqual(proof["signals"], [signal.SIGTERM, signal.SIGKILL])
+ 
+ 
+ if __name__ == "__main__":
+-    unittest.main()
++    if sys.argv[1:] == ["--successful-writer-fixture"]:
++        successful_leader_writer_fixture()
++    else:
++        unittest.main()

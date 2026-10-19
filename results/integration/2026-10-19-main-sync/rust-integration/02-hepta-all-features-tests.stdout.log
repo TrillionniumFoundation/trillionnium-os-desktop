@@ -1,0 +1,98 @@
+
+running 2 tests
+test objective::tests::cancellation_after_a_real_partial_buffer_write_retains_unknown ... ok
+test client::tests::timed_out_metadata_keeps_its_admission_until_actual_worker_completion ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 8 tests
+test killed_before_stdin_eof_has_no_receipt_or_connection ... ok
+test closed_stdout_reports_lost_result_after_the_single_owner_attempt ... ok
+test invalid_input_is_not_sent_and_never_echoes_the_source ... ok
+test non_utf8_argument_is_a_finite_rejection_without_echo_or_connection ... ok
+test killed_after_complete_request_has_no_receipt_and_no_retry ... ok
+test wrong_trusted_peer_pid_sends_no_request_bytes ... ok
+test trusted_cli_keeps_original_wire_and_projects_only_admission_metadata ... ok
+test lost_owner_reply_retains_unknown_and_does_not_reconnect ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 10 tests
+test raw_history_query_keeps_old_body_spawn_and_current_peer_boundary ... ok
+test cli_preserves_anchor_and_emits_finite_history_without_source_or_signature ... ok
+test cli_invalid_input_and_unknown_owner_errors_never_clear_original_uncertainty ... ok
+test deserialized_out_of_range_anchor_and_oversize_query_do_not_connect ... ok
+test wrong_peer_is_zero_query_bytes_and_private_path_is_checked_before_connect ... ok
+test retained_anchor_is_sent_and_cannot_cover_a_later_or_different_record ... ok
+test every_owner_unknown_preserves_uncertainty_and_conflict_is_only_history ... ok
+test malformed_duplicate_extra_and_unscoped_responses_are_not_publication_proof ... ok
+test wrong_owner_request_authentication_metadata_and_anchor_shapes_fail_closed ... ok
+test query_loss_or_deadline_never_reconnects_or_submits ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.01s
+
+
+running 15 tests
+test execution_context_and_explicit_request_identity_are_checked_before_io ... ok
+test no_listener_or_wrong_spawn_is_zero_byte_not_sent_without_rebinding ... ok
+test eof_or_peer_loss_after_any_actual_bytes_keeps_the_original_unknown ... ok
+test peer_pid_mismatch_is_not_sent_and_never_adopts_the_connected_peer ... ok
+test private_path_uid_mode_and_socket_checks_precede_any_connection ... ok
+test only_exact_original_predispatch_errors_are_certain_for_this_sent_attempt ... ok
+test real_socket_transmits_exact_raw_envelope_once_and_keeps_original_identity ... ok
+test structural_checks_reject_changed_shape_duplicates_numbers_and_credentials_without_auth_claims ... ok
+test source_and_canonical_body_limits_are_utf8_bytes_without_source_normalization ... ok
+test original_dispositions_and_conflict_are_publication_responses_only ... ok
+test generic_rejection_unknown_errors_and_unscoped_overload_keep_unknown_and_redact_messages ... ok
+test request_bound_includes_the_outer_envelope_and_exact_final_newline ... ok
+test malformed_non_utf8_duplicate_extra_or_oversize_frames_cannot_establish_a_result ... ok
+test mismatched_response_identity_or_receipt_never_clears_uncertainty ... ok
+test deadline_after_a_verified_complete_request_is_unknown_without_retry ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.00s
+
+
+running 16 tests
+test endpoint_identity_private_directory_socket_modes_and_symlinks_are_enforced ... ok
+test missing_endpoint_fails_unavailable_without_creating_or_discovering_anything ... ok
+test actual_socket_projects_only_bounded_safe_observations_and_allows_no_effect_methods ... ok
+test bounded_frame_and_newline_requirements_are_enforced_on_the_socket ... ok
+test last_health_fence_discards_the_whole_partial_poll ... ok
+test historical_run_state_is_read_only_and_does_not_disclose_owner_inputs ... ok
+test owner_errors_and_overload_are_redacted_and_do_not_enable_retry_or_submission ... ok
+test promotion_inside_a_poll_preserves_prior_phase_events_and_final_current ... ok
+test event_gap_and_pagination_never_skip_unreturned_events ... ok
+test peer_pid_health_invariants_and_unexpected_privileged_payload_fail_closed ... ok
+test response_correlation_version_identity_and_generation_are_mandatory ... ok
+test malformed_capability_sets_and_unknown_fields_are_rejected ... ok
+test upstream_running_uses_spawn_plus_one_and_draining_uses_spawn_plus_two ... ok
+test event_integrity_gap_limits_and_cursor_ahead_are_checked ... ok
+test valid_offsets_do_not_allow_wrong_phase_future_events_or_rollbacks ... ok
+test stalled_socket_is_bounded_by_one_total_poll_deadline ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.33s
+
+
+running 2 tests
+test src/objective/mod.rs - objective::ObjectiveTransport (line 279) - compile fail ... ok
+test src/objective/mod.rs - objective::ProvidedObjective (line 58) - compile fail ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+

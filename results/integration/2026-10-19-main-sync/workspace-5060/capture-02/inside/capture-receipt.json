@@ -1,0 +1,485 @@
+{
+  "schema": "r9-native-two-page-capture-v1",
+  "host_task_lifecycle_exercised": false,
+  "scope": "two_pages_fresh_empty_session",
+  "status": "completed_native_capture_requires_independent_visual_review",
+  "started_unix_ms": 1792371996747,
+  "input_path": "XTEST_ASCII_and_primary_pointer_to_actual_X11_Rust_windows",
+  "original_agentd_started": false,
+  "objective_submitted": false,
+  "model_called": false,
+  "physical_input_qualified": false,
+  "IME_qualified": false,
+  "mobile_qualified": false,
+  "synthetic_egui_events_used": false,
+  "screenshots": [
+    {
+      "file": "initial.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 87112,
+      "sha256": "418ba2bdfd86234e80bb1376c82a6d48553bea538c0e565f4a3572105b1fbbad",
+      "capture_api": "XGetImage_actual_private_root_framebuffer",
+      "visual_review_required": true,
+      "captured_unix_ms": 1792371998057,
+      "shell": {
+        "xid": "4194307",
+        "namespace_pid": 10,
+        "class": "trill-shell"
+      },
+      "before_snapshot": "initial-before",
+      "after_snapshot": "initial-after"
+    },
+    {
+      "file": "action-002-screenshot.png",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 101494,
+      "sha256": "2d64764cc883803bb2c908c4f1c1a3989e7a681e77e8e60e733e7ed5d100687f",
+      "capture_api": "XGetImage_actual_private_root_framebuffer",
+      "visual_review_required": true,
+      "captured_unix_ms": 1792372047144,
+      "shell": {
+        "xid": "4194307",
+        "namespace_pid": 10,
+        "class": "trill-shell"
+      },
+      "before_snapshot": "action-002-screenshot-before",
+      "after_snapshot": "action-002-screenshot-after"
+    }
+  ],
+  "actions": [
+    {
+      "sequence": 1,
+      "request": {
+        "action": "click",
+        "x": 1040,
+        "y": 152
+      },
+      "started_unix_ms": 1792372037684,
+      "completed_unix_ms": 1792372038191
+    },
+    {
+      "sequence": 2,
+      "request": {
+        "action": "screenshot"
+      },
+      "started_unix_ms": 1792372046725,
+      "completed_unix_ms": 1792372047308
+    },
+    {
+      "sequence": 3,
+      "request": {
+        "action": "finish"
+      },
+      "started_unix_ms": 1792372077841,
+      "completed_unix_ms": 1792372078085
+    }
+  ],
+  "processes": [
+    {
+      "label": "Xvfb",
+      "namespace_pid": 3,
+      "command": [
+        "/usr/bin/Xvfb",
+        ":77",
+        "-screen",
+        "0",
+        "1440x1000x24",
+        "-nolisten",
+        "tcp",
+        "-noreset",
+        "-ac"
+      ]
+    },
+    {
+      "label": "display-ready-000",
+      "namespace_pid": 4,
+      "command": [
+        "xdpyinfo"
+      ]
+    },
+    {
+      "label": "Session-A",
+      "namespace_pid": 7,
+      "command": [
+        "/ui-bin/trill-session"
+      ]
+    },
+    {
+      "label": "session-a-ready-000",
+      "namespace_pid": 8,
+      "command": [
+        "/ui-bin/trill-ctl",
+        "snapshot"
+      ]
+    },
+    {
+      "label": "session-a-ready-001",
+      "namespace_pid": 9,
+      "command": [
+        "/ui-bin/trill-ctl",
+        "snapshot"
+      ]
+    },
+    {
+      "label": "Shell",
+      "namespace_pid": 10,
+      "command": [
+        "/ui-bin/trill-shell"
+      ]
+    },
+    {
+      "label": "shell-window-000",
+      "namespace_pid": 17,
+      "command": [
+        "xdotool",
+        "search",
+        "--all",
+        "--onlyvisible",
+        "--pid",
+        "10",
+        "--class",
+        "^trill-shell$"
+      ]
+    },
+    {
+      "label": "shell-window-001",
+      "namespace_pid": 18,
+      "command": [
+        "xdotool",
+        "search",
+        "--all",
+        "--onlyvisible",
+        "--pid",
+        "10",
+        "--class",
+        "^trill-shell$"
+      ]
+    },
+    {
+      "label": "shell-properties",
+      "namespace_pid": 19,
+      "command": [
+        "xprop",
+        "-id",
+        "4194307",
+        "WM_CLASS",
+        "_NET_WM_PID"
+      ]
+    },
+    {
+      "label": "initial-raise",
+      "namespace_pid": 20,
+      "command": [
+        "xdotool",
+        "windowraise",
+        "4194307"
+      ]
+    },
+    {
+      "label": "initial-before",
+      "namespace_pid": 21,
+      "command": [
+        "/ui-bin/trill-ctl",
+        "snapshot"
+      ]
+    },
+    {
+      "label": "initial-after",
+      "namespace_pid": 22,
+      "command": [
+        "/ui-bin/trill-ctl",
+        "snapshot"
+      ]
+    },
+    {
+      "label": "action-001-click-focus",
+      "namespace_pid": 23,
+      "command": [
+        "xdotool",
+        "windowfocus",
+        "--sync",
+        "4194307"
+      ]
+    },
+    {
+      "label": "action-001-click-focus-readback",
+      "namespace_pid": 24,
+      "command": [
+        "xdotool",
+        "getwindowfocus"
+      ]
+    },
+    {
+      "label": "action-001-click",
+      "namespace_pid": 25,
+      "command": [
+        "xdotool",
+        "mousemove",
+        "--window",
+        "4194307",
+        "1040",
+        "152",
+        "click",
+        "1"
+      ]
+    },
+    {
+      "label": "action-002-screenshot-raise",
+      "namespace_pid": 26,
+      "command": [
+        "xdotool",
+        "windowraise",
+        "4194307"
+      ]
+    },
+    {
+      "label": "action-002-screenshot-before",
+      "namespace_pid": 27,
+      "command": [
+        "/ui-bin/trill-ctl",
+        "snapshot"
+      ]
+    },
+    {
+      "label": "action-002-screenshot-after",
+      "namespace_pid": 28,
+      "command": [
+        "/ui-bin/trill-ctl",
+        "snapshot"
+      ]
+    },
+    {
+      "label": "action-003-finish-empty-session",
+      "namespace_pid": 29,
+      "command": [
+        "/ui-bin/trill-ctl",
+        "snapshot"
+      ]
+    },
+    {
+      "label": "action-003-finish-same-shell-window-000",
+      "namespace_pid": 30,
+      "command": [
+        "xdotool",
+        "search",
+        "--all",
+        "--onlyvisible",
+        "--pid",
+        "10",
+        "--class",
+        "^trill-shell$"
+      ]
+    },
+    {
+      "label": "action-003-finish-same-shell-properties",
+      "namespace_pid": 31,
+      "command": [
+        "xprop",
+        "-id",
+        "4194307",
+        "WM_CLASS",
+        "_NET_WM_PID"
+      ]
+    }
+  ],
+  "snapshot_observations": [
+    {
+      "label": "session-a-ready-001",
+      "recorded_unix_ms": 1792371997197,
+      "snapshot": {
+        "type": "snapshot",
+        "tasks": [],
+        "resources": {
+          "sampled_unix_ms": 1792371997194,
+          "mem_total_kib": 10206484,
+          "mem_available_kib": 4668836,
+          "load_average_1m": 1.48,
+          "source": "Linux host /proc and Wayland socket metadata (NOT HOS2)",
+          "wayland": {
+            "status": "unconfigured",
+            "socket_observation_epoch": 1,
+            "sampled_unix_ms": 1792371997194
+          }
+        },
+        "session_instance": "4673be60fa79a390b65a827836b94d16",
+        "hepta": {
+          "connection": "not_configured",
+          "last_attempt_unix_ms": null,
+          "error_code": null,
+          "last_observation": null
+        }
+      }
+    },
+    {
+      "label": "initial-before",
+      "recorded_unix_ms": 1792371997804,
+      "snapshot": {
+        "type": "snapshot",
+        "tasks": [],
+        "resources": {
+          "sampled_unix_ms": 1792371997796,
+          "mem_total_kib": 10206484,
+          "mem_available_kib": 4564828,
+          "load_average_1m": 1.48,
+          "source": "Linux host /proc and Wayland socket metadata (NOT HOS2)",
+          "wayland": {
+            "status": "unconfigured",
+            "socket_observation_epoch": 1,
+            "sampled_unix_ms": 1792371997796
+          }
+        },
+        "session_instance": "4673be60fa79a390b65a827836b94d16",
+        "hepta": {
+          "connection": "not_configured",
+          "last_attempt_unix_ms": null,
+          "error_code": null,
+          "last_observation": null
+        }
+      }
+    },
+    {
+      "label": "initial-after",
+      "recorded_unix_ms": 1792371998202,
+      "snapshot": {
+        "type": "snapshot",
+        "tasks": [],
+        "resources": {
+          "sampled_unix_ms": 1792371998198,
+          "mem_total_kib": 10206484,
+          "mem_available_kib": 4550480,
+          "load_average_1m": 1.61,
+          "source": "Linux host /proc and Wayland socket metadata (NOT HOS2)",
+          "wayland": {
+            "status": "unconfigured",
+            "socket_observation_epoch": 1,
+            "sampled_unix_ms": 1792371998198
+          }
+        },
+        "session_instance": "4673be60fa79a390b65a827836b94d16",
+        "hepta": {
+          "connection": "not_configured",
+          "last_attempt_unix_ms": null,
+          "error_code": null,
+          "last_observation": null
+        }
+      }
+    },
+    {
+      "label": "action-002-screenshot-before",
+      "recorded_unix_ms": 1792372046908,
+      "snapshot": {
+        "type": "snapshot",
+        "tasks": [],
+        "resources": {
+          "sampled_unix_ms": 1792372046902,
+          "mem_total_kib": 10206484,
+          "mem_available_kib": 4562984,
+          "load_average_1m": 1.54,
+          "source": "Linux host /proc and Wayland socket metadata (NOT HOS2)",
+          "wayland": {
+            "status": "unconfigured",
+            "socket_observation_epoch": 1,
+            "sampled_unix_ms": 1792372046902
+          }
+        },
+        "session_instance": "4673be60fa79a390b65a827836b94d16",
+        "hepta": {
+          "connection": "not_configured",
+          "last_attempt_unix_ms": null,
+          "error_code": null,
+          "last_observation": null
+        }
+      }
+    },
+    {
+      "label": "action-002-screenshot-after",
+      "recorded_unix_ms": 1792372047308,
+      "snapshot": {
+        "type": "snapshot",
+        "tasks": [],
+        "resources": {
+          "sampled_unix_ms": 1792372047303,
+          "mem_total_kib": 10206484,
+          "mem_available_kib": 4556232,
+          "load_average_1m": 1.54,
+          "source": "Linux host /proc and Wayland socket metadata (NOT HOS2)",
+          "wayland": {
+            "status": "unconfigured",
+            "socket_observation_epoch": 1,
+            "sampled_unix_ms": 1792372047303
+          }
+        },
+        "session_instance": "4673be60fa79a390b65a827836b94d16",
+        "hepta": {
+          "connection": "not_configured",
+          "last_attempt_unix_ms": null,
+          "error_code": null,
+          "last_observation": null
+        }
+      }
+    },
+    {
+      "label": "action-003-finish-empty-session",
+      "recorded_unix_ms": 1792372077973,
+      "snapshot": {
+        "type": "snapshot",
+        "tasks": [],
+        "resources": {
+          "sampled_unix_ms": 1792372077968,
+          "mem_total_kib": 10206484,
+          "mem_available_kib": 4670688,
+          "load_average_1m": 1.25,
+          "source": "Linux host /proc and Wayland socket metadata (NOT HOS2)",
+          "wayland": {
+            "status": "unconfigured",
+            "socket_observation_epoch": 1,
+            "sampled_unix_ms": 1792372077968
+          }
+        },
+        "session_instance": "4673be60fa79a390b65a827836b94d16",
+        "hepta": {
+          "connection": "not_configured",
+          "last_attempt_unix_ms": null,
+          "error_code": null,
+          "last_observation": null
+        }
+      }
+    }
+  ],
+  "exports": [],
+  "cleanup": [
+    {
+      "label": "Shell",
+      "namespace_pid": 10,
+      "exit_code": -15,
+      "guard_armed_after": false,
+      "completed_unix_ms": 1792372081086
+    },
+    {
+      "label": "Session-A",
+      "namespace_pid": 7,
+      "exit_code": -15,
+      "guard_armed_after": false,
+      "completed_unix_ms": 1792372084087
+    },
+    {
+      "label": "Xvfb",
+      "namespace_pid": 3,
+      "exit_code": 0,
+      "guard_armed_after": false,
+      "completed_unix_ms": 1792372087087
+    }
+  ],
+  "session_a": {
+    "namespace_pid": 7,
+    "instance": "4673be60fa79a390b65a827836b94d16"
+  },
+  "shell": {
+    "xid": "4194307",
+    "namespace_pid": 10,
+    "class": "trill-shell"
+  },
+  "completed_unix_ms": 1792372087087
+}

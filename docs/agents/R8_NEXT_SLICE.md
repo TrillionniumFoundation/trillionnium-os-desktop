@@ -33,6 +33,8 @@
 
 ## S2：分别核对准入历史与实际效果终态
 
+**R9 接合更新：**已增加原 owner 独立的 `ObjectiveAdmission` 窄读接口与默认关闭的 `hepta-history` 客户端。精确扩展源码由 [独立合同](../../services/hepta-os/OBJECTIVE_HISTORY_CONTRACT.json) 固定，开发、协议与存储边界见 [history 契约](../../services/hepta-os/OBJECTIVE_HISTORY.md)，实际资格以 [STATUS](../STATUS.md) 和 [故障 probe](../../tests/integration/hepta/OBJECTIVE_HISTORY_PROBE.md) 的执行收据为准。下面“固定客户端没有 RPC”专指原 f8 基线，不能用新接口改写该历史事实。此增量只处理 `原请求 → 准入 publication`；原请求/anchor 的生产持久保存入口与 `K → 效果终态` 仍未因此闭合。
+
 **固定事实 / API：** 原 `objective_runtime` 可能先发布 RunStart journal，再因后续检查返回错误；`AgentdClient::run_status` 读取当前内存投影。固定客户端没有 ObjectiveStart 持久结果查询 RPC。`DurableRunStartJournal` 公开 `recover/get/authentication_records`，但恢复持文件锁且可能截断未确认尾部，不能把它当在线无副作用读取。[H3]、[H4]、[H10]
 这是一般 `recover` 的语义；[本轮 probe](../../tests/integration/hepta/original_objective_probe.rs) 停止 owner 后使用只读 `File` 与已确认 anchor，若遇需要截断的尾部则失败，不能写入修复。该受控校验不等于产品恢复服务。
 原 `DurableOperationStore` 提供 `operation`、`unsettled_operations`、`mark_indeterminate`、`adopt_unsettled_generation`、`observe_terminal`；`ReconciliationReceiptV1` 的结构有效不等于来源可信，独立证据的主体与资源绑定仍由原宿主核验。[H5]
@@ -80,7 +82,9 @@ AuthBus 信封准入不能替代 `SignedFinalUseGrant`；最终授权由既有�
 
 **固定事实 / API：** 当前 `hepta_control.rs` 仅宣告 QueryAbi，其他已知操作返回 EOPNOTSUPP；A06 已有真实 cgroup CPU controller，A03 的 native namespace/授权 receipt 接缝仍非实际内核效果路径。[D1]、[D3]、[D4]
 
-实施顺序由 A05/A06 在一个集成树串行完成：
+**R9 源审计调整：**[固定 G1 owner 接缝](R9_G1_OWNER_SEAM.md) 已发现普通 `cpu.max` 与 native API 尚未共享 revision，RCU 替换后的旧 controller Arc 仍可能存活，raw TSC 计费窗口也尚未与 HOS2 BOOTTIME 纳秒对齐。因此先做同预算锁中的 shared revision + 不可逆 controller incarnation/detached fence，再做真实计费/时钟接合，最后才按下列逻辑依赖接入可信 init 和五操作；不能先授予尚未接到同一实际资源 owner 的写权限。该审计未修改或运行新内核。
+
+A05/A06 在一个集成树串行完成以下接合（实际开发先后以上述 R9 前置项为准）：
 
 1. 可信 init 在最终 exec 身份确定后激活单目标 resource.manage 和独立 resource.observe/history 权限；沿用真实 Process、exec_epoch、CapSpace 与 boot 绑定。open/dup/fork/传 FD 不增权，普通 exec 不自动重授。
 2. A05 复用 A02 codec 与 `ControlCore::reserve_native` / `execute_native_reserved`；A06 在其 owner 模块提供窄入口，固定实际 `SubController<CpuController>`，不包装另一个预算 owner。

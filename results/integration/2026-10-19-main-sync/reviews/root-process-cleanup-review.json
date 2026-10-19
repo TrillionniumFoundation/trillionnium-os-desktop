@@ -1,0 +1,95 @@
+{
+  "schema": "r9-root-success-cleanup-review-v1",
+  "reviewed_utc": "2026-10-19T01:43:17.808849+00:00",
+  "source_binding": {
+    "tests/integration/hepta/run_original_agentd.py": {
+      "bytes": 30487,
+      "sha256": "22a27a8fbe4386187b3bf9716a6a40b0d4416fc706d1fd99a4f9eee8b55b98a8"
+    },
+    "tests/integration/hepta/test_original_process_guard.py": {
+      "bytes": 18846,
+      "sha256": "963cef9fc2969b484affcffb8a3689a9dc1343d7a7444988c00c16c9d50ffbe8"
+    }
+  },
+  "reviewer": "root independent source and raw-log inspection",
+  "production_scope": [
+    "bounded_command success completion now uses existing terminate_group",
+    "ChildGroup, terminate_group and their ECHILD ownership rules unchanged"
+  ],
+  "verified": [
+    "RED production bytes match the old CI head as independently checked in agent stage",
+    "same test source in genuine two-failure RED and two-pass GREEN",
+    "real leader exit zero remains WNOWAIT-waitable before every actual group signal",
+    "same-group writer PID verified by SO_PEERCRED and actual PGID, bounded handshake; real write in RED",
+    "GREEN writer exits under SIGTERM before leader reap; actual leader exit remains zero",
+    "fixture owns its subreaper boundary and reaches actual P_ALL ECHILD after reaping both children",
+    "all 47 selected related tests execute without skips; original-build-manifest suite of five is not locally executed",
+    "red-01 sandbox EPERM is preserved as an incomplete reproduction",
+    "no arbitrary daemonized-descendant or new original-Agentd qualification inferred"
+  ],
+  "actual_process_proofs": {
+    "red-02": {
+      "command_returned_success": true,
+      "fixture_children_all_reaped": true,
+      "leader_exit_code": 0,
+      "leader_pid": 592099,
+      "leader_reaped": true,
+      "leader_waitable_at_reap_boundary": true,
+      "signals": [],
+      "writer_exited_before_leader_reap": false,
+      "writer_group_matches_leader": true,
+      "writer_pid": 592100,
+      "writer_reaped": true,
+      "writer_wait_status": {
+        "code": 2,
+        "status": 9
+      },
+      "writer_wrote_after_leader_exit": true
+    },
+    "green-01": {
+      "command_returned_success": true,
+      "fixture_children_all_reaped": true,
+      "leader_exit_code": 0,
+      "leader_pid": 592620,
+      "leader_reaped": true,
+      "leader_waitable_at_reap_boundary": true,
+      "signals": [
+        15,
+        9
+      ],
+      "writer_exited_before_leader_reap": true,
+      "writer_group_matches_leader": true,
+      "writer_pid": 592621,
+      "writer_reaped": true,
+      "writer_wait_status": {
+        "code": 2,
+        "status": 15
+      },
+      "writer_wrote_after_leader_exit": false
+    },
+    "related-01": {
+      "command_returned_success": true,
+      "fixture_children_all_reaped": true,
+      "leader_exit_code": 0,
+      "leader_pid": 593318,
+      "leader_reaped": true,
+      "leader_waitable_at_reap_boundary": true,
+      "signals": [
+        15,
+        9
+      ],
+      "writer_exited_before_leader_reap": true,
+      "writer_group_matches_leader": true,
+      "writer_pid": 593319,
+      "writer_reaped": true,
+      "writer_wait_status": {
+        "code": 2,
+        "status": 15
+      },
+      "writer_wrote_after_leader_exit": false
+    }
+  },
+  "reviewed_stage_sums_sha256": "d81e94aded8050a5d9f7c1985b01561071dca8834de2b1f62f64b9edf1cb3370",
+  "ci_qualification": "old 5060 ARM objective cleanup failure retained; new integrated head requires its own real CI",
+  "status": "source_and_local_evidence_review_passed"
+}
