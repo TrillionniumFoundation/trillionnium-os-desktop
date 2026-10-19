@@ -838,6 +838,21 @@ mod tests {
     }
 
     #[test]
+    fn durable_k_and_boot_local_d_are_distinct_wire_objects() {
+        let operation = intent("operation-k");
+        let delivery = delivery("delivery-d");
+        let operation_json = serde_json::to_value(&operation).unwrap();
+        let delivery_json = serde_json::to_value(&delivery).unwrap();
+        assert!(operation_json.get("key").is_some());
+        assert!(operation_json.get("boot_id").is_none());
+        assert!(operation_json.get("capspace_epoch").is_none());
+        assert!(delivery_json.get("boot_id").is_some());
+        assert!(delivery_json.get("delivery_id").is_some());
+        assert!(delivery_json.get("scope_id").is_none());
+        assert!(delivery_json.get("payload_digest").is_none());
+    }
+
+    #[test]
     fn same_uid_authentication_rejects_foreign_peer_and_bad_hello() {
         let auth = SameUidAuthenticator { expected_uid: 1000 };
         assert!(auth.authenticate(&hello(vec![Capability::Observe]), peer(1000)).is_ok());
