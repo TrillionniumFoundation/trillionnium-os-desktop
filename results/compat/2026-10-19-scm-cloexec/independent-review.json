@@ -1,0 +1,23 @@
+{
+  "reviewer": "independent A04 compat_closure agent; A00 integration follow-up",
+  "scope": [
+    "CLOEXEC kernel flags propagation",
+    "same ELF Linux and ordinary guest workflow",
+    "27-case verdict and initramfs handling"
+  ],
+  "finding": "CI previously computed a fresh probe hash after product build instead of reusing the Linux reference digest.",
+  "resolution": "Freeze probe.sha256 before Linux run; verify it after Linux and again before guest; guest receives that frozen hash.",
+  "regression_tests": {
+    "normal": 8,
+    "optimized": 8,
+    "passed": true
+  },
+  "approval": "Independent reviewer re-read workflow and confirmed the input-binding blocker closed before publication.",
+  "candidate_kernel_execution": "pending new exact-head CI",
+  "excluded": [
+    "RLIMIT_NOFILE",
+    "fixed Debian13 profile",
+    "Hepta effects",
+    "hardware"
+  ]
+}

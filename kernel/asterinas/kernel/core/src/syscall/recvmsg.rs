@@ -49,9 +49,11 @@ pub(super) fn sys_recvmsg(
 
     let control_messages = message_header.control_messages();
     let (control_len, control_flags) =
-        c_user_msghdr.write_control_messages_to_user(control_messages, &user_space)?;
+        c_user_msghdr.write_control_messages_to_user(control_messages, &user_space, flags)?;
     c_user_msghdr.msg_controllen = control_len as _;
-    c_user_msghdr.msg_flags = (output.flags() | control_flags).bits().cast_unsigned();
+    // Linux also returns this per-call flag, even if no descriptors were received.
+    let output_flags = output.flags() | control_flags | (flags & RecvFlags::MSG_CMSG_CLOEXEC);
+    c_user_msghdr.msg_flags = output_flags.bits().cast_unsigned();
 
     user_space.write_val(user_msghdr_ptr, &c_user_msghdr)?;
 

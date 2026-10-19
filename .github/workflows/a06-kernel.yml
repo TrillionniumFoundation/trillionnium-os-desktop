@@ -19,6 +19,7 @@ on:
       - "support/upstream-lock.json"
       - "tests/kernel/control/**"
       - "tests/organ_backend/**"
+      - "tests/workloads/linux/**"
       - ".github/workflows/a06-kernel.yml"
   push:
     branches: [main]
@@ -37,6 +38,7 @@ on:
       - "support/upstream-lock.json"
       - "tests/kernel/control/**"
       - "tests/organ_backend/**"
+      - "tests/workloads/linux/**"
       - ".github/workflows/a06-kernel.yml"
   workflow_dispatch:
 
@@ -106,6 +108,45 @@ jobs:
               raise SystemExit(f"A06 ktest guest crate set is incomplete: {seen!r}")
           PY
 
+      - name: Freeze one SCM_RIGHTS probe and verify all 27 cases on original Linux
+        shell: bash
+        run: |
+          set -euo pipefail
+          out="${RUNNER_TEMP}/a04-scm-linux"
+          mkdir "$out"
+          python3 -I -B -m unittest discover -s tests/workloads/linux -p 'test_scm_rights_cloexec_guest.py' -v \
+            > "$out/runner-tests.log" 2>&1
+          python3 -I -B -O -m unittest discover -s tests/workloads/linux -p 'test_scm_rights_cloexec_guest.py' -v \
+            > "$out/runner-tests-optimized.log" 2>&1
+          cc --version > "$out/compiler-version.txt"
+          uname -a > "$out/linux-version.txt"
+          cc -O2 -std=c11 -Wall -Wextra -Werror -static \
+            tests/workloads/linux/scm_rights_cloexec_probe.c -o "$out/probe.elf" \
+            > "$out/compile.log" 2>&1
+          sha256sum tests/workloads/linux/scm_rights_cloexec_probe.c "$out/probe.elf" > "$out/inputs.sha256"
+          sha256sum "$out/probe.elf" > "$out/probe.sha256"
+          set +e
+          "$out/probe.elf" > "$out/stdout.log" 2> "$out/stderr.log"
+          probe_exit=$?
+          set -e
+          printf '%s\n' "$probe_exit" > "$out/exit-code.txt"
+          test "$probe_exit" -eq 0
+          test ! -s "$out/stderr.log"
+          sha256sum --check "$out/probe.sha256"
+          python3 -I -B - "$out/stdout.log" <<'PY'
+          import importlib.util
+          from pathlib import Path
+          import sys
+          source = Path('tests/workloads/linux/run_scm_rights_cloexec_guest.py').resolve()
+          spec = importlib.util.spec_from_file_location('scm', source)
+          scm = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(scm)
+          expected = [f'SCM_CLOEXEC_CASE name={name} result=PASS line=0' for name in scm.CASE_ORDER]
+          expected.append(scm.COMPLETE)
+          if Path(sys.argv[1]).read_text().splitlines() != expected:
+              raise SystemExit('Linux SCM_RIGHTS reference is incomplete or differs')
+          PY
+
       - name: Build ordinary G1 product and verify QueryAbi with all four disabled operations
         shell: bash
         run: |
@@ -115,6 +156,23 @@ jobs:
             --expected-source-tree "$(git rev-parse HEAD^{tree})" \
             --target-dir "${RUNNER_TEMP}/a06-target" \
             --output "${RUNNER_TEMP}/a06-queryabi-candidate"
+
+      - name: Verify the same SCM_RIGHTS ELF on the exact ordinary kernel
+        shell: bash
+        run: |
+          set -euo pipefail
+          probe="${RUNNER_TEMP}/a04-scm-linux/probe.elf"
+          # Reuse the digest frozen before the Linux run; never approve a
+          # potentially different ELF by hashing it again after kernel build.
+          sha256sum --check "${RUNNER_TEMP}/a04-scm-linux/probe.sha256"
+          probe_sha=$(cut -d' ' -f1 "${RUNNER_TEMP}/a04-scm-linux/probe.sha256")
+          python3 -I -B tests/workloads/linux/run_scm_rights_cloexec_guest.py \
+            --product-evidence "${RUNNER_TEMP}/a06-queryabi-candidate" \
+            --expected-source-head "$(git rev-parse HEAD)" \
+            --expected-source-tree "$(git rev-parse HEAD^{tree})" \
+            --probe-elf "$probe" --expected-probe-sha256 "$probe_sha" \
+            --a01-initramfs support/build/evidence/2026-10-16/artifacts/initramfs.cpio.gz \
+            --output "${RUNNER_TEMP}/a04-scm-guest"
 
       - name: Build exact A06 SMP=2 candidate kernel
         shell: bash
@@ -159,6 +217,8 @@ jobs:
             ${{ runner.temp }}/a06-ktest
             ${{ runner.temp }}/a06-prepared-locks
             ${{ runner.temp }}/a06-queryabi-candidate
+            ${{ runner.temp }}/a04-scm-linux
+            ${{ runner.temp }}/a04-scm-guest
             ${{ runner.temp }}/a06-kernel-build
             ${{ runner.temp }}/a06-probe-1vcpu
             ${{ runner.temp }}/a06-probe-2vcpu
