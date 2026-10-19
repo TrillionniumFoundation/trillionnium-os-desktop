@@ -1,0 +1,759 @@
+{
+  "schema_version": 1,
+  "kind": "independent_g1c_published_documentation_review",
+  "reviewer": "/root/g1c_review",
+  "created_at_utc": "2026-10-19T12:47:53.385385+00:00",
+  "source_head": "72c8dff3f0145a7e16b7095d48a3e7faaf192685",
+  "source_tree": "e2089e2350772a6cb965b3131820abea499f767d",
+  "base_head": "7c675e1d3efe46587edeebe14bd90ac1a842ffbf",
+  "working_tree_clean": true,
+  "decision": "No blocking factual, local-link or qualification-scope defect found in the four reviewed documentation additions. This review does not establish any new kernel build or runtime qualification.",
+  "blocking_findings": [],
+  "documentation_inputs": [
+    {
+      "path": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "bytes": 10191,
+      "sha256": "3e7cbfae89f6ac6945087a38dbfd1eacd682901bb6cf9da9407e3af3f2fe4e1d",
+      "mode": "100644",
+      "kind": "blob",
+      "git_blob": "20adf47f31afdd7655afe73a802c35db018b7035",
+      "line_count": 119,
+      "content_review_scope": "full document",
+      "reviewed_text_sha256": "3e7cbfae89f6ac6945087a38dbfd1eacd682901bb6cf9da9407e3af3f2fe4e1d"
+    },
+    {
+      "path": "tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "bytes": 9336,
+      "sha256": "4a3b76b794070407ddd22e13a5f6bd99933549be839160f56e623dcf6b2bb8ee",
+      "mode": "100644",
+      "kind": "blob",
+      "git_blob": "7377bf53f7811187e47f83727c618a516129b1aa",
+      "line_count": 119,
+      "content_review_scope": "full document",
+      "reviewed_text_sha256": "4a3b76b794070407ddd22e13a5f6bd99933549be839160f56e623dcf6b2bb8ee"
+    },
+    {
+      "path": "docs/INDEX.md",
+      "bytes": 28161,
+      "sha256": "51849c8caac7fd2f3b008bf2986eb11a6eccaf5955ec5498b790acf53418e52b",
+      "mode": "100644",
+      "kind": "blob",
+      "git_blob": "8178dc1df23cbf509eecd5fdb807d2c6a05129a9",
+      "line_count": 101,
+      "content_review_scope": "all added lines against base; historical prose retained without new qualification",
+      "reviewed_text_sha256": "a29a422fc19ce173a62983aa50b5d87876d91195b73e87872cc4af8dc58d8c3e"
+    },
+    {
+      "path": "docs/STATUS.md",
+      "bytes": 173826,
+      "sha256": "2f2a4058921552b9c44daa613dba5f09a842290cece106e23c79629da04374fd",
+      "mode": "100644",
+      "kind": "blob",
+      "git_blob": "e69989eef13217037d807e8398f181dbde967aed",
+      "line_count": 715,
+      "content_review_scope": "all added lines against base; historical prose retained without new qualification",
+      "reviewed_text_sha256": "dfbf1deca0a55df4b868bb772f8065d4d23a896ed0d9cb622d201b8784c8f5d1"
+    }
+  ],
+  "local_links": [
+    {
+      "from": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "target": "../tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "resolved_path": "tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "exists_at_reviewed_commit": true
+    },
+    {
+      "from": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "target": "../kernel/asterinas/kernel/core/src/process/process/mod.rs",
+      "resolved_path": "kernel/asterinas/kernel/core/src/process/process/mod.rs",
+      "exists_at_reviewed_commit": true
+    },
+    {
+      "from": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "target": "../kernel/asterinas/kernel/core/src/process/process/image.rs",
+      "resolved_path": "kernel/asterinas/kernel/core/src/process/process/image.rs",
+      "exists_at_reviewed_commit": true
+    },
+    {
+      "from": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "target": "../kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+      "resolved_path": "kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+      "exists_at_reviewed_commit": true
+    },
+    {
+      "from": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "target": "../kernel/asterinas/kernel/core/src/process/execve.rs",
+      "resolved_path": "kernel/asterinas/kernel/core/src/process/execve.rs",
+      "exists_at_reviewed_commit": true
+    },
+    {
+      "from": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "target": "../kernel/asterinas/kernel/core/src/process/posix_thread/exit.rs",
+      "resolved_path": "kernel/asterinas/kernel/core/src/process/posix_thread/exit.rs",
+      "exists_at_reviewed_commit": true
+    },
+    {
+      "from": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "target": "../kernel/asterinas/kernel/core/src/process/exit.rs",
+      "resolved_path": "kernel/asterinas/kernel/core/src/process/exit.rs",
+      "exists_at_reviewed_commit": true
+    },
+    {
+      "from": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "target": "../kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs",
+      "resolved_path": "kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs",
+      "exists_at_reviewed_commit": true
+    },
+    {
+      "from": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "target": "../kernel/asterinas/kernel/core/src/process/execve.rs",
+      "resolved_path": "kernel/asterinas/kernel/core/src/process/execve.rs",
+      "exists_at_reviewed_commit": true
+    },
+    {
+      "from": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "target": "../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs",
+      "resolved_path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs",
+      "exists_at_reviewed_commit": true
+    },
+    {
+      "from": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "target": "../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs",
+      "resolved_path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs",
+      "exists_at_reviewed_commit": true
+    },
+    {
+      "from": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "target": "../kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs",
+      "resolved_path": "kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs",
+      "exists_at_reviewed_commit": true
+    },
+    {
+      "from": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "target": "../kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/pid/task/mem.rs",
+      "resolved_path": "kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/pid/task/mem.rs",
+      "exists_at_reviewed_commit": true
+    },
+    {
+      "from": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "target": "../kernel/asterinas/kernel/core/src/process/posix_thread/ptrace/mod.rs",
+      "resolved_path": "kernel/asterinas/kernel/core/src/process/posix_thread/ptrace/mod.rs",
+      "exists_at_reviewed_commit": true
+    },
+    {
+      "from": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "target": "../kernel/asterinas/kernel/core/src/syscall/ptrace.rs",
+      "resolved_path": "kernel/asterinas/kernel/core/src/syscall/ptrace.rs",
+      "exists_at_reviewed_commit": true
+    },
+    {
+      "from": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "target": "../kernel/asterinas/kernel/core/src/vm/vmar/vm_mapping.rs",
+      "resolved_path": "kernel/asterinas/kernel/core/src/vm/vmar/vm_mapping.rs",
+      "exists_at_reviewed_commit": true
+    },
+    {
+      "from": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "target": "../kernel/asterinas/kernel/core/src/process/clone.rs",
+      "resolved_path": "kernel/asterinas/kernel/core/src/process/clone.rs",
+      "exists_at_reviewed_commit": true
+    },
+    {
+      "from": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "target": "../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs",
+      "resolved_path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs",
+      "exists_at_reviewed_commit": true
+    },
+    {
+      "from": "tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "target": "../../../docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "resolved_path": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "exists_at_reviewed_commit": true
+    },
+    {
+      "from": "tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "target": "../../../kernel/asterinas/kernel/core/src/process/test_util.rs",
+      "resolved_path": "kernel/asterinas/kernel/core/src/process/test_util.rs",
+      "exists_at_reviewed_commit": true
+    },
+    {
+      "from": "tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "target": "../../../kernel/asterinas/kernel/core/src/process/posix_thread/exit.rs",
+      "resolved_path": "kernel/asterinas/kernel/core/src/process/posix_thread/exit.rs",
+      "exists_at_reviewed_commit": true
+    },
+    {
+      "from": "tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "target": "../../../kernel/asterinas/kernel/core/src/process/exit.rs",
+      "resolved_path": "kernel/asterinas/kernel/core/src/process/exit.rs",
+      "exists_at_reviewed_commit": true
+    },
+    {
+      "from": "tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "target": "../../../kernel/asterinas/kernel/core/src/process/process/image.rs",
+      "resolved_path": "kernel/asterinas/kernel/core/src/process/process/image.rs",
+      "exists_at_reviewed_commit": true
+    },
+    {
+      "from": "tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "target": "../../../kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+      "resolved_path": "kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+      "exists_at_reviewed_commit": true
+    },
+    {
+      "from": "tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "target": "README.md",
+      "resolved_path": "tests/kernel/control/README.md",
+      "exists_at_reviewed_commit": true
+    },
+    {
+      "from": "tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "target": "queryabi_guest.c",
+      "resolved_path": "tests/kernel/control/queryabi_guest.c",
+      "exists_at_reviewed_commit": true
+    },
+    {
+      "from": "tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "target": "run_queryabi_guest.py",
+      "resolved_path": "tests/kernel/control/run_queryabi_guest.py",
+      "exists_at_reviewed_commit": true
+    },
+    {
+      "from": "tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "target": "../../../.github/workflows/a06-kernel.yml",
+      "resolved_path": ".github/workflows/a06-kernel.yml",
+      "exists_at_reviewed_commit": true
+    },
+    {
+      "from": "tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "target": "../../../support/build/README.md",
+      "resolved_path": "support/build/README.md",
+      "exists_at_reviewed_commit": true
+    },
+    {
+      "from": "tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "target": "../../../support/build/ktest/README.md",
+      "resolved_path": "support/build/ktest/README.md",
+      "exists_at_reviewed_commit": true
+    },
+    {
+      "from": "tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "target": "../../organ_backend/CPU_USAGE_G1B.md",
+      "resolved_path": "tests/organ_backend/CPU_USAGE_G1B.md",
+      "exists_at_reviewed_commit": true
+    },
+    {
+      "from": "docs/INDEX.md",
+      "target": "ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "resolved_path": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "exists_at_reviewed_commit": true
+    },
+    {
+      "from": "docs/INDEX.md",
+      "target": "../tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "resolved_path": "tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "exists_at_reviewed_commit": true
+    },
+    {
+      "from": "docs/INDEX.md",
+      "target": "ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "resolved_path": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "exists_at_reviewed_commit": true
+    },
+    {
+      "from": "docs/INDEX.md",
+      "target": "../tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "resolved_path": "tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "exists_at_reviewed_commit": true
+    },
+    {
+      "from": "docs/STATUS.md",
+      "target": "ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "resolved_path": "docs/ASTERINAS_PROCESS_IMAGE_G1C.md",
+      "exists_at_reviewed_commit": true
+    },
+    {
+      "from": "docs/STATUS.md",
+      "target": "../tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "resolved_path": "tests/kernel/control/PROCESS_IMAGE_G1C.md",
+      "exists_at_reviewed_commit": true
+    }
+  ],
+  "local_link_count": 37,
+  "unique_local_target_count": 25,
+  "prior_source_review": {
+    "path": "g1c-review/implementation-review-v1.json",
+    "bytes": 21872,
+    "sha256": "d44abb50df776517e7a05dbffb6da30b03974e355c2b6586950ff40615cbd3b6"
+  },
+  "reviewed_source_identity_continuity": {
+    "source_files": [
+      {
+        "path": "kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs",
+        "bytes": 9446,
+        "sha256": "f9be1cdd0ac4d98bd7147e58b2e139823ceb00bdad0aa922dcf7194bb7245496",
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "20de4935368b9179db645152cfd0a0336d65f936",
+        "matches_prior_review": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/process/execve.rs",
+        "bytes": 13206,
+        "sha256": "058238edcd5851ff2d2a7718268b3954a457c88b8fa8bc8fe9ef26ea3f6a435a",
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "a33d31f3f022857f2900ede9e82030cb8d81b1f1",
+        "matches_prior_review": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/process/exit.rs",
+        "bytes": 7599,
+        "sha256": "58779e2cefc57428cd380ba4aa713a153c3b2773a417e5dddd591b7a47d5e9f6",
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "2de9bfd485f01cfbc41e864a3c9c96739acf94b0",
+        "matches_prior_review": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/process/mod.rs",
+        "bytes": 1700,
+        "sha256": "d7541cca98a2bf94d7ff607a5d19c8178cb6b3fab9bbfbaae54eba69b98e50f6",
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "2ed2fa39d58a159365547f89c5c8fda218ae103d",
+        "matches_prior_review": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/process/posix_thread/exit.rs",
+        "bytes": 6511,
+        "sha256": "f8fe124fe8251392662a31ebc1c9bba91c2c6f2f840d5304f49acaf06d55e4aa",
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "129e43a9345009848044a7dbae32898c0d0bb54a",
+        "matches_prior_review": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/process/process/mod.rs",
+        "bytes": 31779,
+        "sha256": "880d888c7129f1e91d6e410a9e9db88a96e5cc492298327f871b38a35a1ba739",
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "659784f4c45bf6fccb674b578a05605d3925cff3",
+        "matches_prior_review": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/process/process/image.rs",
+        "bytes": 12476,
+        "sha256": "12ad3f3b813d4f970129339db07c34c467871cc5b49558ab771bb636c6b83cd7",
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "bacaa3cc8ac678d3a231b060f80e7ea52af0decc",
+        "matches_prior_review": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+        "bytes": 12532,
+        "sha256": "cc0eb03c8e07a360ef00e86b7ae153c81521125060dde115da76c3dc5a28ffc8",
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "132dae040e84363939b86e39050c5a6f1c35e97f",
+        "matches_prior_review": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/process/test_util.rs",
+        "bytes": 2492,
+        "sha256": "2862c1b823638351f1fcdcbcf93ad77a69b92cfa13d1d66f5b0f271fec3f536d",
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "887321ce02735ce0e1a723be75c42ec147edd1c4",
+        "matches_prior_review": true
+      }
+    ],
+    "additional_reviewed_files": [
+      {
+        "path": "tests/kernel/control/queryabi_candidate_guest.c",
+        "bytes": 7014,
+        "sha256": "f48de0306d3bad5a1ce3171efdeccf18bf0c0e8f7472d5f3fbbfb45f569d455a",
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "5ee49c095840b558a0dea4b3c1f2fb34ea27deb6",
+        "matches_prior_review": true
+      },
+      {
+        "path": "tests/kernel/control/run_queryabi_candidate_guest.py",
+        "bytes": 16498,
+        "sha256": "7d7a9f92110c5d5ea4a312fddd7ca5061f82bcb7106fa89c7a13161d7d8891a5",
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "3c9bf43616f98a1cebe0cb2d84d7c1a8b4c1af93",
+        "matches_prior_review": true
+      },
+      {
+        "path": "tests/kernel/control/test_queryabi_candidate_runner.py",
+        "bytes": 9275,
+        "sha256": "2911a8b314675c4662415708661917e8d93b2928ad12a30c75eae2382f3b8bf5",
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "2f50481aa848037b0b2c8eb78296c787272fc69b",
+        "matches_prior_review": true
+      },
+      {
+        "path": "tests/spec/test_a05_capspace_nonce.py",
+        "bytes": 3989,
+        "sha256": "0bf11349c33aeb1e5859384a9171965d970bbf416f1f0ffd40e5aacbe134417e",
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "408f42f74f3e5cf499f3e2b1f0a1782ced8058f8",
+        "matches_prior_review": true
+      },
+      {
+        "path": "tests/kernel/control/README.md",
+        "bytes": 7707,
+        "sha256": "2b5cb37abc872fdd6dabe5221351c75497f8ca2140d131ae2a8d8f92efe125f8",
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "585f2ba58bda89ea8dd71fdbddac2ac9a2d2fafa",
+        "matches_prior_review": true
+      }
+    ],
+    "preserved_call_path_inputs": [
+      {
+        "path": "kernel/asterinas/kernel/core/src/process/clone.rs",
+        "bytes": 31177,
+        "sha256": "ab1af89d855655238ade17835ab2118214e4b04b6a6e1fe3e851b1ab4e9b2c43",
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "c172c82bf53e7c654f1088e174eb95774cae9ef5",
+        "matches_prior_review": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/process/task_set.rs",
+        "bytes": 4252,
+        "sha256": "abba4258a78c27253d210ff5704e96a94e5dffaabccfeb3911a9bc6553c75033",
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "bdb958f59db9f4e6419cd23e5830ea89967761e9",
+        "matches_prior_review": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/process/posix_thread/mod.rs",
+        "bytes": 18881,
+        "sha256": "57f25ccf4b575d68dd74ae12f1d8e802482466fc983679b6903f45f30efc1a8f",
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "2d9328988b9b279531651df86c56c6c6916f353d",
+        "matches_prior_review": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/process/posix_thread/builder.rs",
+        "bytes": 7172,
+        "sha256": "51ec85307cb020b67f9b99e6b310bfde877193bdf933b7c5e60835508fe8984f",
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "cf175e6b2f8a6444be5fc8101ac1caadc2f78e8f",
+        "matches_prior_review": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/process/process_vm/mod.rs",
+        "bytes": 9874,
+        "sha256": "d9990857783dd789d225a614f1855141d7d1f24976c585d457f9bac3483d37f5",
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "1ceca2e7c0c83a5cf7a984b4053b5713c0a04dba",
+        "matches_prior_review": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/process/program_loader/mod.rs",
+        "bytes": 7900,
+        "sha256": "3fe0e0cae3d9d127947a2b6ff1480bbd1cc83fd8651ec9d95533bd59f8ffeb1d",
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "dfde5635b94e68d73d1c494f3c2b4bca69c726a5",
+        "matches_prior_review": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/process/program_loader/elf/load_elf.rs",
+        "bytes": 18566,
+        "sha256": "230e083f73dcbf5d0fc1320189d6287ff3aea7bf6058b3c79d480f0281c0b093",
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "a550d70e1ba660eaae202a40c51b9e359c380625",
+        "matches_prior_review": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs",
+        "bytes": 8682,
+        "sha256": "1f7fb0e3e3129cc29b62d6ac0858d9e74716575e435d635c353f45b99cca6c2c",
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "0319b01d6d651ea38333974e8a4a3280e3409c9e",
+        "matches_prior_review": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs",
+        "bytes": 30592,
+        "sha256": "6b0cc85db8c868d9342ce4179f94fa1825420f30d6e8e7e2117495912e64e667",
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "a5e1027106fae3d0f280089d3da5e5a530661143",
+        "matches_prior_review": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/pid/task/mem.rs",
+        "bytes": 4058,
+        "sha256": "3089d61eef664894d5e9be99360ba966b11e6d702f6e0a1779a9371fa3cb373a",
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "1dbc74e045c38e53da8d9e056231e798e06b54e5",
+        "matches_prior_review": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/pid/task/maps.rs",
+        "bytes": 4089,
+        "sha256": "345534197ca146d0770193c1f432aa2f3497e36958ac3de3700dad631663fe86",
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "dd153a816a982388bfbd5fe8934d938d80150d80",
+        "matches_prior_review": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/thread/mod.rs",
+        "bytes": 4945,
+        "sha256": "017bf5db8926560f91c64a3b9a5f8d5ff0031726c50d7f4afb60c95c5bcf7147",
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "e09dfd949360de9171c973207501ff9e32df9699",
+        "matches_prior_review": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/syscall/execve.rs",
+        "bytes": 4521,
+        "sha256": "491c0302a5726f1f2f5ba65c2e638aa8f0e13d5be856ef265b228c252fb1ef19",
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "3f3e043b2d60f9f05738efafadb45e774c033a91",
+        "matches_prior_review": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/prelude.rs",
+        "bytes": 1121,
+        "sha256": "6b23b03ad576e28f403605c31cd2017cd99e048e7c256e61797fd1f2cb27ccc1",
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "565d34c9f264b329e6de7d22548bf07327e35b15",
+        "matches_prior_review": true
+      },
+      {
+        "path": "kernel/asterinas/ostd/src/task/mod.rs",
+        "bytes": 11168,
+        "sha256": "7458cb746d2a769313b4e12b525db56df1eba9aff09429cf535f53a7eed86b4f",
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "c3f6770d6214017c8955bc0160797a6936c63d3d",
+        "matches_prior_review": true
+      },
+      {
+        "path": "tests/kernel/control/queryabi_guest.c",
+        "bytes": 10823,
+        "sha256": "bed0eef9bdf8228bf58e23bd2b775501e8d5718ff11e554a600acc1b5469155b",
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "57b8f38073d155e682004e1e1ddceada6b304e32",
+        "matches_prior_review": true
+      },
+      {
+        "path": "tests/kernel/control/run_queryabi_guest.py",
+        "bytes": 9633,
+        "sha256": "3d981b41ae4905983c67d13d8d7abfbc29318fd6a41b848523eb4c0ac1400268",
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "d0e5be01c92071c5ee36d0fb084f271976e56719",
+        "matches_prior_review": true
+      }
+    ]
+  },
+  "verified_test_inventory": [
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/image.rs",
+      "name": "repeated_opens_share_one_process_image_namespace"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/image.rs",
+      "name": "separately_allocated_process_rejects_foreign_image_key"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/image.rs",
+      "name": "same_process_tasks_observe_one_live_image"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/image.rs",
+      "name": "closing_fences_old_sessions_before_image_replacement"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/image.rs",
+      "name": "failed_irreversible_replacement_never_reopens_the_old_image"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/image.rs",
+      "name": "successful_replacement_has_new_epoch_and_fresh_namespace"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/image.rs",
+      "name": "epoch_exhaustion_closes_the_real_process_without_wraparound"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/image.rs",
+      "name": "nonce_exhaustion_is_sticky_for_the_real_process_image"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/image.rs",
+      "name": "closed_image_cannot_be_prepared_or_scheduled_for_the_first_time"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+      "name": "initial_resume_claim_is_consumed_exactly_once"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+      "name": "prepared_initial_process_cannot_use_the_ordinary_first_run"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+      "name": "dropping_unconsumed_preparation_closes_only_its_image"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+      "name": "preparation_rejects_a_foreign_process_allocation"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+      "name": "preparation_rejects_a_foreign_main_task"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+      "name": "resume_rejects_replaced_vmar_and_cancels_the_prepared_image"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+      "name": "resume_rejects_a_foreign_task_pin"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+      "name": "prepared_old_epoch_cannot_resume_or_close_a_replacement_image"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+      "name": "prepared_exit_group_state_cannot_resume"
+    }
+  ],
+  "qualification_scope_checks": [
+    "The 18 new ktests are described as actual unstarted Process/VMAR/Task object cases; no exec/exit syscall fixture or loaded fixture execution is claimed.",
+    "220 plus 18 gives expected 238 core cases; the new product actual denominator, complete results and filters must still be checked in its raw serial.",
+    "Historical OSTD 221 reported includes three VMX soft skips; all 221 are not relabeled as executed.",
+    "Task VMAR provenance is attributed to the same private factory chain, not to an inaccessible unstarted Task ThreadLocal inspection.",
+    "Initial locking is VMAR -> TaskSet -> image; no new reverse TaskSet -> VMAR order is asserted.",
+    "EFAULT/ENOENT guest cases are pre-boundary failures; non-last-thread survival is distinguished from final Process exit and fatal post-boundary exec.",
+    "Prepared resume claims before PID/session publication and scheduling; Process first-run state is not reset by exec.",
+    "The four resource operations remain EOPNOTSUPP and QueryAbi remains the sole advertised operation.",
+    "Current image admission before user copy is not claimed to provide future canonical grant revoke/effect linearization.",
+    "Next static ELF trust requires actual immutable mapping bytes, proc-mem retained handles, ptrace writes, forced alien fault/COW and cross-Process CLONE_VM policy before native grant admission.",
+    "CPU owner retention and final debit are preserved; the same original owner synchronization is still required for future resource operations.",
+    "INDEX retains the R11 62-entry count as historical; neither the new manuals nor INDEX/STATUS grant SMP, Android, physical-device or complete Hepta authority qualification."
+  ],
+  "existing_host_log_support": [
+    {
+      "path": "local-host/spec.log",
+      "bytes": 5544,
+      "sha256": "1cf368c15cff79cd16b2b164ab8dfc6ef4564687ce8f00c1714bfa3e63b84724",
+      "reported_tests": 36,
+      "candidate_source_and_parser_tests": 0,
+      "recorded_result": "OK",
+      "review_activity": "existing raw host log inspected; not rerun"
+    },
+    {
+      "path": "local-host/control.log",
+      "bytes": 2758,
+      "sha256": "e51c4c4d1ab8337b764db0ac533c7207c625b905a7bd0adf5654d671595b66c5",
+      "reported_tests": 16,
+      "candidate_source_and_parser_tests": 8,
+      "recorded_result": "OK",
+      "review_activity": "existing raw host log inspected; not rerun"
+    },
+    {
+      "path": "local-host/control-optimized.log",
+      "bytes": 2758,
+      "sha256": "b67d199e8d1184f6b7455d26d3e57e8996affc6bf4df5400579409997db1a938",
+      "reported_tests": 16,
+      "candidate_source_and_parser_tests": 8,
+      "recorded_result": "OK",
+      "review_activity": "existing raw host log inspected; not rerun"
+    }
+  ],
+  "existing_old_product_probe_support": {
+    "record_path": "probe-preflight-old-4d3011cf/result.json",
+    "record_bytes": 3778,
+    "record_sha256": "f1ea9784a82671ac6fd061ff101604b2bf9271261eab70af766ed4da5c55a763",
+    "kernel_source_head": "4d3011cf9f92e25fc1b0d7371e9cdbbd5a8b7930",
+    "scope": "new C probe compatibility only, old #205 product; NOT G1-c kernel qualification",
+    "recorded_raw_exit_code": 33,
+    "recorded_timed_out": false,
+    "recorded_elapsed_seconds": 1.266631778998999,
+    "serial_bytes": 86018,
+    "serial_sha256": "d8a203ba6714356feaaf732ff04db5ec37155af31a52c1b538169b207dd3e55e",
+    "independently_counted_exact_line_markers": {
+      "HEPTA_EXEC_PREIMAGE_QUERYABI_OK": 1,
+      "HEPTA_EXEC_EPOCH_DENIED": 1,
+      "HEPTA_EXEC_CAPSPACE_ROTATED": 1,
+      "HEPTA_FORK_INHERITED_FD_DENIED": 1,
+      "HEPTA_FORK_CAPSPACE_DISTINCT": 1,
+      "HEPTA_NONROOT_OPEN_DENIED": 1,
+      "HEPTA_DUP_SESSION_STABLE": 1,
+      "HEPTA_EXEC_EFAULT_SESSION_STABLE": 1,
+      "HEPTA_EXEC_ENOENT_SESSION_STABLE": 1,
+      "HEPTA_THREAD_SESSION_SHARED": 1,
+      "HEPTA_NONLAST_THREAD_EXIT_SESSION_STABLE": 1,
+      "HEPTA_DISABLED_READ_USAGE_OK": 1,
+      "HEPTA_DISABLED_INSTALL_BUDGET_OK": 1,
+      "HEPTA_DISABLED_QUERY_DELIVERY_OK": 1,
+      "HEPTA_DISABLED_RETIRE_THROUGH_OK": 1,
+      "HEPTA_QUERYABI_OK ops=QueryAbi_only, process_bound_session=yes, denied_invalid=yes": 1,
+      "HEPTA_QUERYABI_CANDIDATE_OK disabled_operations=4": 1,
+      "TRILLIONNIUM_A01_BOOT_OK": 1
+    },
+    "input_files_verified": [
+      {
+        "path": "probe-preflight-old-4d3011cf/product-kernel.elf",
+        "bytes": 8388960,
+        "sha256": "1897671a81fab04dc8d5e995b42b62256ec2bd13043ad78a93684d46f60c0fe0"
+      },
+      {
+        "path": "probe-preflight-old-4d3011cf/bios.bin",
+        "bytes": 262144,
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+      },
+      {
+        "path": "probe-preflight-old-4d3011cf/base-initramfs.cpio.gz",
+        "bytes": 1107990,
+        "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+      },
+      {
+        "path": "probe-preflight-old-4d3011cf/initramfs.cpio.gz",
+        "bytes": 1511941,
+        "sha256": "f1a7296f424d06cde1fe2a9f5aceed0372f4be864c492b3917b692a0261a07bc"
+      }
+    ],
+    "review_activity": "existing receipt, serial and file bytes inspected; QEMU not rerun"
+  },
+  "activities": {
+    "product_source_modified": false,
+    "kernel_builds": 0,
+    "product_test_runs": 0,
+    "host_test_reruns": 0,
+    "remote_reads": 0,
+    "remote_writes": 0,
+    "ci_polling": 0,
+    "toolchain_installations": 0
+  },
+  "pending_separate_review": "Original A06 artifact/source/core/OSTD acceptance for the fixed 72c8 product; no current run status asserted here."
+}

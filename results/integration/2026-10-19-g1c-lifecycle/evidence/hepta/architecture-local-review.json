@@ -1,0 +1,49 @@
+{
+  "source": "43a638d4e25ebc5a8b06babcd1c75c9acac53179",
+  "main": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+  "patch_scope": [
+    "scripts/test_hepta_ci_exec.py"
+  ],
+  "baseline_observation": {
+    "command": [
+      "env",
+      "PYTHONDONTWRITEBYTECODE=1",
+      "python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-v",
+      "-s",
+      "scripts",
+      "-p",
+      "test_hepta_ci_exec*.py"
+    ],
+    "tests": 45,
+    "failures": 2,
+    "errors": 1,
+    "original_target_failures": [
+      "test_shell_preserves_test_targets_and_strict_lint_arguments",
+      "test_shell_test_failure_has_no_lint_pass_receipt"
+    ],
+    "additional_local_error": {
+      "test": "test_exited_parent_cannot_leave_a_running_pipe_holder",
+      "error": "ProcessLookupError at cleanup os.kill(child_pid, signal.SIGKILL)",
+      "scope": "Observed only in local baseline; unchanged test passed after fixture dependency fix; no root-cause fix or stability claim."
+    },
+    "raw_log_retention": "Initial terminal output observed in tool transcript; full raw combined log not separately captured."
+  },
+  "fixed_observation": {
+    "tests": 45,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "seconds": 9.41,
+    "raw_log": "architecture-fixed-exec.log",
+    "sha256": "6301411b86acfb718065b85b35416efbdc4e81dab7e84344bc79219ff85ca310"
+  },
+  "limits": [
+    "No Cargo workload executed by stand-in test executables.",
+    "Local tests do not replace remote required CI.",
+    "No production authority or UI completion qualification."
+  ]
+}

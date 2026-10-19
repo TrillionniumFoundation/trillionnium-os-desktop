@@ -1,0 +1,440 @@
+{
+  "schema_version": 1,
+  "kind": "independent_g1c_lifecycle_source_review",
+  "reviewer": "/root/g1c_review",
+  "created_at_utc": "2026-10-19T12:32:58.001429+00:00",
+  "base_commit": "7c675e1d3efe46587edeebe14bd90ac1a842ffbf",
+  "base_tree": "3d5902c8503e7b5fa79552d9fa657023f3f3520c",
+  "candidate_identity": "Working candidate bytes listed below; not yet a new committed or executed product qualification.",
+  "author_manifest": {
+    "path": "g1c-lifecycle/source-manifest.json",
+    "bytes": 4813,
+    "sha256": "b763fd851286823f0c1cc2c59ce32763cc4b4270c5179904f62c9bdd1254125c"
+  },
+  "decision": "No blocking source defect found in the reviewed lifecycle slice. Suitable for fixed-source complete build/runtime acceptance; this receipt does not approve an unexecuted product or enable new HOS2 operations.",
+  "blocking_findings": [],
+  "resolved_design_findings": [
+    {
+      "id": "R1",
+      "status": "implemented",
+      "evidence": "with_initial_image takes Process VMAR -> TaskSet -> image. Process::run and accepted exec/exit use TaskSet -> image. Image methods acquire no outer lock. Existing procfs VMAR -> main_thread/TaskSet remains unchanged."
+    },
+    {
+      "id": "R2",
+      "status": "implemented_with_bounded_origin_proof",
+      "evidence": "PreparedInitialProcess is private and non-Clone, constructed only after create_init_task succeeds. The same VmarHandle is moved into PosixThreadBuilder; token retains the matching Arc<Vmar>, Arc<Task> and Arc<Process>. with_initial_image checks Process VMAR, exact sole main Task, Task weak Process backlink and live TaskSet. FirstRun is canonical under the image lock; both prepared and ordinary Process start claim it before enqueue."
+    },
+    {
+      "id": "R3",
+      "status": "implemented",
+      "evidence": "session and check_session reject Closing/Closed. begin_close cannot reopen Closed; close is idempotent. commit_exec accepts only Closing, closes before checked epoch increment, clears nonce only for a new successful epoch and preserves first_run. Nonce allocator and epoch overflow are checked and terminal."
+    },
+    {
+      "id": "R4",
+      "status": "preserved",
+      "evidence": "Device still advertises QueryAbi only, max response payload 48 and no features. All four recognized resource operations remain EOPNOTSUPP; no resource grant, handle table, delivery table or budget ledger was introduced."
+    }
+  ],
+  "reviewed_call_paths": [
+    {
+      "id": "C1",
+      "property": "Failed exec before acceptance preserves the image",
+      "reasoning": "sys_execve first resolves/opens the supplied path. do_execve then reads argv/envp, resolves program/credentials and fully loads a new VMAR before TaskSet.start_execve. Every ? before that point leaves the old image state untouched. Existing EAGAIN when another exec/exit already owns TaskSet does not close a separate live image."
+    },
+    {
+      "id": "C2",
+      "property": "Irreversible exec closes before sibling signalling",
+      "reasoning": "Immediately after start_execve, begin_hepta_image_close runs under TaskSet before sigkill_other_threads. Success through do_execve_no_return is required for commit_hepta_exec_image; any failure or overflow closes before enqueuing SIGKILL. No failed path runs commit-new-image after close."
+    },
+    {
+      "id": "C3",
+      "property": "Exit closure precedes resource teardown",
+      "reasoning": "Accepted exit_group sets the group flag and closes image admission before sibling signalling. A non-last ordinary exit does not close. remove_exited=true closes under TaskSet before dropping files/thread VMAR; exit_process completes Closed before Process VMAR removal. Actual syscall body was reviewed; current unit fixtures do not execute a last-thread exit syscall."
+    },
+    {
+      "id": "C4",
+      "property": "Ordinary fork first-run expect is an internal invariant",
+      "reasoning": "Current only production Process::run call is clone_child after a fresh Process::new, sole Task insertion, cgroup assignment and membership-lock release. The new Task has not run. Merely publishing the PID and allowing signals does not execute that Task or mutate its Process first_run/exec/exit lifecycle. Prepared init uses a separate consuming path. Running, prepared or closed Process cannot silently enqueue through Process::run."
+    },
+    {
+      "id": "C5",
+      "property": "Prepared validation and failure do not publish an orphan",
+      "reasoning": "resume consumes/validates before bootstrap PID/session registration. No fallible preparation remains after registration. Failure consumes self and Drop cancels only the matching still-prepared key. Success sets consumed=true and Started before enqueue. All process locks are released before registration or Task.run."
+    },
+    {
+      "id": "C6",
+      "property": "Preparation binds exact original objects",
+      "reasoning": "Exact Process allocation is checked through the Task Weak backlink; Task is the sole main member, not exited; Process retains the exact VMAR Arc. Private create_init passed that same VmarHandle into create_init_task and builder. The unstarted Task ThreadLocal is not arbitrarily inspected: same-VMAR Task origin is proved by this restricted factory call path. An Arc<Vmar> pin is used, not an extra VmarHandle."
+    },
+    {
+      "id": "C7",
+      "property": "Accounting survives image closure",
+      "reasoning": "No new image method acquires CPU membership/runqueue/bandwidth locks, drops a CpuCgroupLease, resets cumulative/debt/revision or substitutes a new owner. Original CpuCgroupLease, clone membership handling, native CPU state and scheduler source bytes are unchanged. test_util extends actual unstarted Task construction; its temporary VmarHandle is dropped on return, leaving one handle per created Task."
+    },
+    {
+      "id": "C8",
+      "property": "Device retains exact Process and complete image key",
+      "reasoning": "Per-open file stores Weak<Process> and ProcessImageKey. check_session retains Arc equality before phase/epoch/nonce validation on the canonical image lock. Passing an fd or sharing credentials is not authority. The check still precedes user copies; admitted QueryAbi-only requests can finish without resource effects. Future resource operations require post-copy canonical owner admission."
+    }
+  ],
+  "guest_source_review": {
+    "status": "source reviewed; no guest executed by this reviewer",
+    "cases": [
+      "SYS_execve valid probe pathname with argv pointer 1 strictly requires EFAULT; original and fresh fds keep complete boot/space identity.",
+      "SYS_execve nonexistent pathname strictly requires ENOENT; original and fresh fds retain identity.",
+      "pthread worker checks same PID and distinct TID; shared old fd and fresh open match full 16-byte boot and CapSpace.",
+      "pthread_join provides completion synchronization; surviving main fd and fresh open remain valid after non-last exit.",
+      "Original successful exec child and original source remain unchanged, with candidate early-return preventing repeated added markers.",
+      "Runner requires all old markers plus four lifecycle and four disabled-operation markers exactly once and in the applicable order; final process and QEMU checks remain."
+    ],
+    "limits": [
+      "EFAULT and ENOENT cover pre-boundary failures, not fatal post-boundary exec.",
+      "New guest cases also pass the old QueryAbi implementation and are compatibility/non-regression checks; actual new lifecycle state logic must be exercised by the new kernel cases and new product build.",
+      "Guest non-last-thread survival is observable; no successful ioctl after final Process exit is claimed."
+    ]
+  },
+  "kernel_test_source_inventory": [
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/image.rs",
+      "name": "repeated_opens_share_one_process_image_namespace"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/image.rs",
+      "name": "separately_allocated_process_rejects_foreign_image_key"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/image.rs",
+      "name": "same_process_tasks_observe_one_live_image"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/image.rs",
+      "name": "closing_fences_old_sessions_before_image_replacement"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/image.rs",
+      "name": "failed_irreversible_replacement_never_reopens_the_old_image"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/image.rs",
+      "name": "successful_replacement_has_new_epoch_and_fresh_namespace"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/image.rs",
+      "name": "epoch_exhaustion_closes_the_real_process_without_wraparound"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/image.rs",
+      "name": "nonce_exhaustion_is_sticky_for_the_real_process_image"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/image.rs",
+      "name": "closed_image_cannot_be_prepared_or_scheduled_for_the_first_time"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+      "name": "initial_resume_claim_is_consumed_exactly_once"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+      "name": "prepared_initial_process_cannot_use_the_ordinary_first_run"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+      "name": "dropping_unconsumed_preparation_closes_only_its_image"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+      "name": "preparation_rejects_a_foreign_process_allocation"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+      "name": "preparation_rejects_a_foreign_main_task"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+      "name": "resume_rejects_replaced_vmar_and_cancels_the_prepared_image"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+      "name": "resume_rejects_a_foreign_task_pin"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+      "name": "prepared_old_epoch_cannot_resume_or_close_a_replacement_image"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+      "name": "prepared_exit_group_state_cannot_resume"
+    }
+  ],
+  "kernel_test_scope": "18 newly declared ktests, nine image-state and nine prepared-init. They allocate actual Process/Task/VMAR objects, invoke production lifecycle methods and mutate boundary setup in tests. No fixture Task is scheduled and no fixture executable is loaded. The prepared_old_epoch test deliberately simulates a lifecycle replacement on an unstarted fixture; it is not real exec evidence.",
+  "source_files": [
+    {
+      "path": "kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs",
+      "bytes": 9446,
+      "sha256": "f9be1cdd0ac4d98bd7147e58b2e139823ceb00bdad0aa922dcf7194bb7245496",
+      "git_blob": "20de4935368b9179db645152cfd0a0336d65f936",
+      "ktests": [],
+      "matches_author_manifest": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/execve.rs",
+      "bytes": 13206,
+      "sha256": "058238edcd5851ff2d2a7718268b3954a457c88b8fa8bc8fe9ef26ea3f6a435a",
+      "git_blob": "a33d31f3f022857f2900ede9e82030cb8d81b1f1",
+      "ktests": [],
+      "matches_author_manifest": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/exit.rs",
+      "bytes": 7599,
+      "sha256": "58779e2cefc57428cd380ba4aa713a153c3b2773a417e5dddd591b7a47d5e9f6",
+      "git_blob": "2de9bfd485f01cfbc41e864a3c9c96739acf94b0",
+      "ktests": [],
+      "matches_author_manifest": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/mod.rs",
+      "bytes": 1700,
+      "sha256": "d7541cca98a2bf94d7ff607a5d19c8178cb6b3fab9bbfbaae54eba69b98e50f6",
+      "git_blob": "2ed2fa39d58a159365547f89c5c8fda218ae103d",
+      "ktests": [],
+      "matches_author_manifest": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/posix_thread/exit.rs",
+      "bytes": 6511,
+      "sha256": "f8fe124fe8251392662a31ebc1c9bba91c2c6f2f840d5304f49acaf06d55e4aa",
+      "git_blob": "129e43a9345009848044a7dbae32898c0d0bb54a",
+      "ktests": [],
+      "matches_author_manifest": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/mod.rs",
+      "bytes": 31779,
+      "sha256": "880d888c7129f1e91d6e410a9e9db88a96e5cc492298327f871b38a35a1ba739",
+      "git_blob": "659784f4c45bf6fccb674b578a05605d3925cff3",
+      "ktests": [],
+      "matches_author_manifest": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/image.rs",
+      "bytes": 12476,
+      "sha256": "12ad3f3b813d4f970129339db07c34c467871cc5b49558ab771bb636c6b83cd7",
+      "git_blob": "bacaa3cc8ac678d3a231b060f80e7ea52af0decc",
+      "ktests": [
+        "repeated_opens_share_one_process_image_namespace",
+        "separately_allocated_process_rejects_foreign_image_key",
+        "same_process_tasks_observe_one_live_image",
+        "closing_fences_old_sessions_before_image_replacement",
+        "failed_irreversible_replacement_never_reopens_the_old_image",
+        "successful_replacement_has_new_epoch_and_fresh_namespace",
+        "epoch_exhaustion_closes_the_real_process_without_wraparound",
+        "nonce_exhaustion_is_sticky_for_the_real_process_image",
+        "closed_image_cannot_be_prepared_or_scheduled_for_the_first_time"
+      ],
+      "matches_author_manifest": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+      "bytes": 12532,
+      "sha256": "cc0eb03c8e07a360ef00e86b7ae153c81521125060dde115da76c3dc5a28ffc8",
+      "git_blob": "132dae040e84363939b86e39050c5a6f1c35e97f",
+      "ktests": [
+        "initial_resume_claim_is_consumed_exactly_once",
+        "prepared_initial_process_cannot_use_the_ordinary_first_run",
+        "dropping_unconsumed_preparation_closes_only_its_image",
+        "preparation_rejects_a_foreign_process_allocation",
+        "preparation_rejects_a_foreign_main_task",
+        "resume_rejects_replaced_vmar_and_cancels_the_prepared_image",
+        "resume_rejects_a_foreign_task_pin",
+        "prepared_old_epoch_cannot_resume_or_close_a_replacement_image",
+        "prepared_exit_group_state_cannot_resume"
+      ],
+      "matches_author_manifest": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/test_util.rs",
+      "bytes": 2492,
+      "sha256": "2862c1b823638351f1fcdcbcf93ad77a69b92cfa13d1d66f5b0f271fec3f536d",
+      "git_blob": "887321ce02735ce0e1a723be75c42ec147edd1c4",
+      "ktests": [],
+      "matches_author_manifest": true
+    }
+  ],
+  "additional_reviewed_files": [
+    {
+      "path": "tests/kernel/control/queryabi_candidate_guest.c",
+      "bytes": 7014,
+      "sha256": "f48de0306d3bad5a1ce3171efdeccf18bf0c0e8f7472d5f3fbbfb45f569d455a",
+      "git_blob": "5ee49c095840b558a0dea4b3c1f2fb34ea27deb6"
+    },
+    {
+      "path": "tests/kernel/control/run_queryabi_candidate_guest.py",
+      "bytes": 16498,
+      "sha256": "7d7a9f92110c5d5ea4a312fddd7ca5061f82bcb7106fa89c7a13161d7d8891a5",
+      "git_blob": "3c9bf43616f98a1cebe0cb2d84d7c1a8b4c1af93"
+    },
+    {
+      "path": "tests/kernel/control/test_queryabi_candidate_runner.py",
+      "bytes": 9275,
+      "sha256": "2911a8b314675c4662415708661917e8d93b2928ad12a30c75eae2382f3b8bf5",
+      "git_blob": "2f50481aa848037b0b2c8eb78296c787272fc69b"
+    },
+    {
+      "path": "tests/spec/test_a05_capspace_nonce.py",
+      "bytes": 3989,
+      "sha256": "0bf11349c33aeb1e5859384a9171965d970bbf416f1f0ffd40e5aacbe134417e",
+      "git_blob": "408f42f74f3e5cf499f3e2b1f0a1782ced8058f8"
+    },
+    {
+      "path": "tests/kernel/control/README.md",
+      "bytes": 7707,
+      "sha256": "2b5cb37abc872fdd6dabe5221351c75497f8ca2140d131ae2a8d8f92efe125f8",
+      "git_blob": "585f2ba58bda89ea8dd71fdbddac2ac9a2d2fafa"
+    }
+  ],
+  "preserved_call_path_inputs": [
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/clone.rs",
+      "bytes": 31177,
+      "sha256": "ab1af89d855655238ade17835ab2118214e4b04b6a6e1fe3e851b1ab4e9b2c43",
+      "git_blob": "c172c82bf53e7c654f1088e174eb95774cae9ef5",
+      "matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/task_set.rs",
+      "bytes": 4252,
+      "sha256": "abba4258a78c27253d210ff5704e96a94e5dffaabccfeb3911a9bc6553c75033",
+      "git_blob": "bdb958f59db9f4e6419cd23e5830ea89967761e9",
+      "matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/posix_thread/mod.rs",
+      "bytes": 18881,
+      "sha256": "57f25ccf4b575d68dd74ae12f1d8e802482466fc983679b6903f45f30efc1a8f",
+      "git_blob": "2d9328988b9b279531651df86c56c6c6916f353d",
+      "matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/posix_thread/builder.rs",
+      "bytes": 7172,
+      "sha256": "51ec85307cb020b67f9b99e6b310bfde877193bdf933b7c5e60835508fe8984f",
+      "git_blob": "cf175e6b2f8a6444be5fc8101ac1caadc2f78e8f",
+      "matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process_vm/mod.rs",
+      "bytes": 9874,
+      "sha256": "d9990857783dd789d225a614f1855141d7d1f24976c585d457f9bac3483d37f5",
+      "git_blob": "1ceca2e7c0c83a5cf7a984b4053b5713c0a04dba",
+      "matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/program_loader/mod.rs",
+      "bytes": 7900,
+      "sha256": "3fe0e0cae3d9d127947a2b6ff1480bbd1cc83fd8651ec9d95533bd59f8ffeb1d",
+      "git_blob": "dfde5635b94e68d73d1c494f3c2b4bca69c726a5",
+      "matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/program_loader/elf/load_elf.rs",
+      "bytes": 18566,
+      "sha256": "230e083f73dcbf5d0fc1320189d6287ff3aea7bf6058b3c79d480f0281c0b093",
+      "git_blob": "a550d70e1ba660eaae202a40c51b9e359c380625",
+      "matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs",
+      "bytes": 8682,
+      "sha256": "1f7fb0e3e3129cc29b62d6ac0858d9e74716575e435d635c353f45b99cca6c2c",
+      "git_blob": "0319b01d6d651ea38333974e8a4a3280e3409c9e",
+      "matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs",
+      "bytes": 30592,
+      "sha256": "6b0cc85db8c868d9342ce4179f94fa1825420f30d6e8e7e2117495912e64e667",
+      "git_blob": "a5e1027106fae3d0f280089d3da5e5a530661143",
+      "matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/pid/task/mem.rs",
+      "bytes": 4058,
+      "sha256": "3089d61eef664894d5e9be99360ba966b11e6d702f6e0a1779a9371fa3cb373a",
+      "git_blob": "1dbc74e045c38e53da8d9e056231e798e06b54e5",
+      "matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/pid/task/maps.rs",
+      "bytes": 4089,
+      "sha256": "345534197ca146d0770193c1f432aa2f3497e36958ac3de3700dad631663fe86",
+      "git_blob": "dd153a816a982388bfbd5fe8934d938d80150d80",
+      "matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/thread/mod.rs",
+      "bytes": 4945,
+      "sha256": "017bf5db8926560f91c64a3b9a5f8d5ff0031726c50d7f4afb60c95c5bcf7147",
+      "git_blob": "e09dfd949360de9171c973207501ff9e32df9699",
+      "matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/syscall/execve.rs",
+      "bytes": 4521,
+      "sha256": "491c0302a5726f1f2f5ba65c2e638aa8f0e13d5be856ef265b228c252fb1ef19",
+      "git_blob": "3f3e043b2d60f9f05738efafadb45e774c033a91",
+      "matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/prelude.rs",
+      "bytes": 1121,
+      "sha256": "6b23b03ad576e28f403605c31cd2017cd99e048e7c256e61797fd1f2cb27ccc1",
+      "git_blob": "565d34c9f264b329e6de7d22548bf07327e35b15",
+      "matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/ostd/src/task/mod.rs",
+      "bytes": 11168,
+      "sha256": "7458cb746d2a769313b4e12b525db56df1eba9aff09429cf535f53a7eed86b4f",
+      "git_blob": "c3f6770d6214017c8955bc0160797a6936c63d3d",
+      "matches_base": true
+    },
+    {
+      "path": "tests/kernel/control/queryabi_guest.c",
+      "bytes": 10823,
+      "sha256": "bed0eef9bdf8228bf58e23bd2b775501e8d5718ff11e554a600acc1b5469155b",
+      "git_blob": "57b8f38073d155e682004e1e1ddceada6b304e32",
+      "matches_base": true
+    },
+    {
+      "path": "tests/kernel/control/run_queryabi_guest.py",
+      "bytes": 9633,
+      "sha256": "3d981b41ae4905983c67d13d8d7abfbc29318fd6a41b848523eb4c0ac1400268",
+      "git_blob": "d0e5be01c92071c5ee36d0fb084f271976e56719",
+      "matches_base": true
+    }
+  ],
+  "diff_whitespace_check": {
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "next_positive_slice": "Use design-review-base7c675e1d.json for bounded immutable static-image and alien-write requirements. Those are future ReadUsage prerequisites and do not block this explicitly QueryAbi-only source slice.",
+  "activities": {
+    "product_source_edits": 0,
+    "rust_compilations": 0,
+    "product_tests": 0,
+    "runtime_executions": 0,
+    "toolchain_installs": 0,
+    "remote_writes": 0
+  },
+  "not_qualified_here": [
+    "authenticated final executable identity",
+    "native ReadUsage/InstallBudget/QueryDelivery/RetireThrough",
+    "canonical resource revocation or cross-CPU admission",
+    "new product runtime result",
+    "Hepta persistent K/D effects",
+    "complete SMP or physical-device behavior"
+  ]
+}

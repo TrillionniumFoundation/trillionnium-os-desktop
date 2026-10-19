@@ -1,0 +1,14 @@
+diff --git a/kernel/asterinas/kernel/core/src/vdso.rs b/kernel/asterinas/kernel/core/src/vdso.rs
+index 603a73e..dc5eb3c 100644
+--- a/kernel/asterinas/kernel/core/src/vdso.rs
++++ b/kernel/asterinas/kernel/core/src/vdso.rs
+@@ -320,9 +320,6 @@ impl Vdso {
+         // Update begins.
+         self.begin_update_data_frame(&mut data);
+ 
+-        self.data_frame
+-            .write_val(vdso_data_field_offset!(clock_mode), &data.clock_mode)
+-            .unwrap();
+         self.data_frame
+             .write_val(vdso_data_field_offset!(last_cycles), &data.last_cycles)
+             .unwrap();

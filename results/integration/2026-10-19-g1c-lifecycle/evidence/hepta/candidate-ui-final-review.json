@@ -1,0 +1,2452 @@
+{
+  "schema": "hepta.r12.actual-product-ui-cdp-final-review.v1",
+  "repository": "TrillionniumFoundation/hepta-private-ci",
+  "pr": 2885,
+  "head": "89933fdc84ed1151f04609a1881ab24aaef119b4",
+  "run_id": 39253698771,
+  "jobs_observed_at": "2026-10-19T14:03:44Z",
+  "scope": "Original six product cases per source/merge lane with passive CDP events. Distinct from the prior 12 synthetic-WASM local transport diagnostics. No workflow retry or source change.",
+  "lanes": {
+    "source": {
+      "artifact": {
+        "id": 12191530387,
+        "file": "candidate-product-gateway-source-899.zip",
+        "bytes": 2117670,
+        "sha256": "e6dc4efc5dde4049e4f9084b9468e997e4bf4d6d30dcb247e1894eb12d5f3461",
+        "crc": "passed",
+        "members": 150,
+        "official_metadata": {
+          "id": 12191530387,
+          "name": "product-gateway-source-head-89933fdc84ed1151f04609a1881ab24aaef119b4",
+          "size_in_bytes": 2117670,
+          "url": "https://api.github.com/repos/TrillionniumFoundation/hepta-private-ci/actions/artifacts/12191530387",
+          "archive_download_url": "https://api.github.com/repos/TrillionniumFoundation/hepta-private-ci/actions/artifacts/12191530387/zip",
+          "expired": false,
+          "created_at": "2026-10-19T13:29:32Z",
+          "expires_at": "2027-01-17T12:38:58Z",
+          "updated_at": "2026-10-19T13:29:32Z",
+          "digest": "sha256:e6dc4efc5dde4049e4f9084b9468e997e4bf4d6d30dcb247e1894eb12d5f3461",
+          "workflow_run": {
+            "id": 39253698771,
+            "repository_id": 1320694176,
+            "head_repository_id": 1320694176,
+            "head_branch": "agents/a00-ui-main-20261019",
+            "head_sha": "89933fdc84ed1151f04609a1881ab24aaef119b4"
+          }
+        },
+        "actual_bytes_and_sha256_match_official_metadata": true
+      },
+      "playwright_version": "1.63.0",
+      "report_member": "hepta-private-ci/hepta-private-ci/apps/hepta-control-ui/test-results/product-status-results.json",
+      "stats": {
+        "startTime": "2026-10-19T13:26:29.807Z",
+        "duration": 181032.994,
+        "expected": 5,
+        "skipped": 0,
+        "unexpected": 1,
+        "flaky": 0
+      },
+      "tests": [
+        {
+          "title": "actual missing-owner status 1280 timeout",
+          "expectedStatus": "passed",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration_ms": 21141,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "title": "actual missing-owner status 1280 navigation",
+          "expectedStatus": "passed",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration_ms": 19473,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "title": "actual missing-owner status 1280 background",
+          "expectedStatus": "passed",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration_ms": 17654,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "title": "actual missing-owner status 640 timeout",
+          "expectedStatus": "passed",
+          "status": "unexpected",
+          "results": [
+            {
+              "status": "timedOut",
+              "duration_ms": 90100,
+              "errors": [
+                {
+                  "message": "\u001b[31mTest timeout of 90000ms exceeded.\u001b[39m"
+                },
+                {
+                  "location": {
+                    "file": "/home/runner/work/hepta-private-ci/hepta-private-ci/apps/hepta-control-ui/e2e/robrix-product-status.spec.mjs",
+                    "column": 58,
+                    "line": 248
+                  },
+                  "message": "Error: page.unrouteAll: Target page, context or browser has been closed\n\n  246 |  cancellations.push({requestId:held.requestId,phase:scenario});\n  247 |  proofs[scenario]={ownerState:expectedState,ownerVerified:late.passed,transportVerified:/runtime unavailable\\s*\\(Transport\\)/i.test(late.text)};\n> 248 |  }finally{for(const release of pendingReleases)release();await page.unrouteAll({behavior:'ignoreErrors'});}\n      |                                                          ^\n  249 |  await Promise.all(finishedResponses);\n  250 |  expect(requests.map(item=>({method:item.method,path:new URL(item.url).pathname,phase:item.phase}))).toEqual([\n  251 |   {method:'GET',path:'/api/hepta/owner-status',phase:'initial'},\n    at /home/runner/work/hepta-private-ci/hepta-private-ci/apps/hepta-control-ui/e2e/robrix-product-status.spec.mjs:248:58"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "actual missing-owner status 640 navigation",
+          "expectedStatus": "passed",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration_ms": 13620,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "title": "actual missing-owner status 640 background",
+          "expectedStatus": "passed",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration_ms": 14499,
+              "errors": []
+            }
+          ]
+        }
+      ],
+      "all_case_native": [
+        {
+          "case": "robrix-product-status-actu-0368f-owner-status-640-navigation-chromium",
+          "scenario": "navigation",
+          "request_count": 3,
+          "native_completed": 2,
+          "native_failures": [
+            {
+              "event": "loadingFailed",
+              "phase": "navigation",
+              "ms": 11678.973,
+              "requestId": "21326.21",
+              "timestamp": 1030.941634,
+              "type": "Fetch",
+              "errorText": "net::ERR_ABORTED",
+              "canceled": true,
+              "request": {
+                "event": "requestWillBeSent",
+                "phase": "navigation",
+                "ms": 10739.907,
+                "requestId": "21326.21",
+                "path": "/api/hepta/owner-status",
+                "method": "GET",
+                "type": "Fetch",
+                "timestamp": 1030.003845
+              }
+            }
+          ],
+          "waits": [
+            {
+              "name": "held-owner.finish",
+              "state": "start",
+              "phase": "navigation",
+              "ms": 12655.473
+            },
+            {
+              "name": "held-owner.finish",
+              "state": "done",
+              "phase": "navigation",
+              "ms": 12760.572
+            }
+          ],
+          "overflow": {
+            "fontRequests": 0,
+            "fontEvents": 0,
+            "consoleEvents": 0,
+            "cdpFontEvents": 0,
+            "apiNetworkEvents": 0,
+            "apiWaits": 0
+          },
+          "faults": []
+        },
+        {
+          "case": "robrix-product-status-actu-53fb0-ng-owner-status-640-timeout-chromium",
+          "scenario": "timeout",
+          "request_count": 4,
+          "native_completed": 2,
+          "native_failures": [
+            {
+              "event": "loadingFailed",
+              "phase": "timeout",
+              "ms": 18149.806,
+              "requestId": "21200.21",
+              "timestamp": 946.616852,
+              "type": "Fetch",
+              "errorText": "net::ERR_ABORTED",
+              "canceled": true,
+              "request": {
+                "event": "requestWillBeSent",
+                "phase": "timeout",
+                "ms": 13147.154,
+                "requestId": "21200.21",
+                "path": "/api/hepta/owner-status",
+                "method": "GET",
+                "type": "Fetch",
+                "timestamp": 941.613658
+              }
+            },
+            {
+              "event": "loadingFailed",
+              "phase": "timeout",
+              "ms": 18153.487,
+              "requestId": "21200.22",
+              "timestamp": 946.620535,
+              "type": "Fetch",
+              "errorText": "net::ERR_ABORTED",
+              "canceled": true,
+              "request": {
+                "event": "requestWillBeSent",
+                "phase": "timeout",
+                "ms": 18149.77,
+                "requestId": "21200.22",
+                "path": "/api/hepta/runtime",
+                "method": "GET",
+                "type": "Fetch",
+                "timestamp": 946.615415
+              }
+            }
+          ],
+          "waits": [
+            {
+              "name": "timeout-runtime.finished",
+              "state": "start",
+              "phase": "timeout",
+              "ms": 18955.793
+            }
+          ],
+          "overflow": {
+            "fontRequests": 0,
+            "fontEvents": 0,
+            "consoleEvents": 0,
+            "cdpFontEvents": 0,
+            "apiNetworkEvents": 0,
+            "apiWaits": 0
+          },
+          "faults": []
+        },
+        {
+          "case": "robrix-product-status-actu-9b64d-g-owner-status-1280-timeout-chromium",
+          "scenario": "timeout",
+          "request_count": 4,
+          "native_completed": 3,
+          "native_failures": [
+            {
+              "event": "loadingFailed",
+              "phase": "timeout",
+              "ms": 19566.244,
+              "requestId": "21060.21",
+              "timestamp": 889.778265,
+              "type": "Fetch",
+              "errorText": "net::ERR_ABORTED",
+              "canceled": true,
+              "request": {
+                "event": "requestWillBeSent",
+                "phase": "timeout",
+                "ms": 14562.338,
+                "requestId": "21060.21",
+                "path": "/api/hepta/owner-status",
+                "method": "GET",
+                "type": "Fetch",
+                "timestamp": 884.774788
+              }
+            }
+          ],
+          "waits": [
+            {
+              "name": "timeout-runtime.finished",
+              "state": "start",
+              "phase": "timeout",
+              "ms": 20348.249
+            },
+            {
+              "name": "timeout-runtime.finished",
+              "state": "done",
+              "phase": "timeout",
+              "ms": 20348.855
+            },
+            {
+              "name": "held-owner.finish",
+              "state": "start",
+              "phase": "timeout",
+              "ms": 20348.864
+            },
+            {
+              "name": "held-owner.finish",
+              "state": "done",
+              "phase": "timeout",
+              "ms": 20354.161
+            }
+          ],
+          "overflow": {
+            "fontRequests": 0,
+            "fontEvents": 0,
+            "consoleEvents": 0,
+            "cdpFontEvents": 0,
+            "apiNetworkEvents": 0,
+            "apiWaits": 0
+          },
+          "faults": []
+        },
+        {
+          "case": "robrix-product-status-actu-c7ba4-wner-status-1280-navigation-chromium",
+          "scenario": "navigation",
+          "request_count": 3,
+          "native_completed": 2,
+          "native_failures": [
+            {
+              "event": "loadingFailed",
+              "phase": "navigation",
+              "ms": 17538.083,
+              "requestId": "21110.21",
+              "timestamp": 908.883459,
+              "type": "Fetch",
+              "errorText": "net::ERR_ABORTED",
+              "canceled": true,
+              "request": {
+                "event": "requestWillBeSent",
+                "phase": "navigation",
+                "ms": 16420.495,
+                "requestId": "21110.21",
+                "path": "/api/hepta/owner-status",
+                "method": "GET",
+                "type": "Fetch",
+                "timestamp": 907.765218
+              }
+            }
+          ],
+          "waits": [
+            {
+              "name": "held-owner.finish",
+              "state": "start",
+              "phase": "navigation",
+              "ms": 18427.222
+            },
+            {
+              "name": "held-owner.finish",
+              "state": "done",
+              "phase": "navigation",
+              "ms": 18585.841
+            }
+          ],
+          "overflow": {
+            "fontRequests": 0,
+            "fontEvents": 0,
+            "consoleEvents": 0,
+            "cdpFontEvents": 0,
+            "apiNetworkEvents": 0,
+            "apiWaits": 0
+          },
+          "faults": []
+        },
+        {
+          "case": "robrix-product-status-actu-d26eb-wner-status-1280-background-chromium",
+          "scenario": "background",
+          "request_count": 3,
+          "native_completed": 2,
+          "native_failures": [
+            {
+              "event": "loadingFailed",
+              "phase": "background",
+              "ms": 16768.115,
+              "requestId": "21158.21",
+              "timestamp": 927.57311,
+              "type": "Fetch",
+              "errorText": "net::ERR_ABORTED",
+              "canceled": true,
+              "request": {
+                "event": "requestWillBeSent",
+                "phase": "background",
+                "ms": 16459.787,
+                "requestId": "21158.21",
+                "path": "/api/hepta/owner-status",
+                "method": "GET",
+                "type": "Fetch",
+                "timestamp": 927.263994
+              }
+            }
+          ],
+          "waits": [
+            {
+              "name": "held-owner.finish",
+              "state": "start",
+              "phase": "background",
+              "ms": 16768.745
+            },
+            {
+              "name": "held-owner.finish",
+              "state": "done",
+              "phase": "background",
+              "ms": 16925.003
+            }
+          ],
+          "overflow": {
+            "fontRequests": 0,
+            "fontEvents": 0,
+            "consoleEvents": 0,
+            "cdpFontEvents": 0,
+            "apiNetworkEvents": 0,
+            "apiWaits": 0
+          },
+          "faults": []
+        },
+        {
+          "case": "robrix-product-status-actu-d90bd-owner-status-640-background-chromium",
+          "scenario": "background",
+          "request_count": 3,
+          "native_completed": 2,
+          "native_failures": [
+            {
+              "event": "loadingFailed",
+              "phase": "background",
+              "ms": 13733.811,
+              "requestId": "21374.21",
+              "timestamp": 1046.6247,
+              "type": "Fetch",
+              "errorText": "net::ERR_ABORTED",
+              "canceled": true,
+              "request": {
+                "event": "requestWillBeSent",
+                "phase": "background",
+                "ms": 13517.627,
+                "requestId": "21374.21",
+                "path": "/api/hepta/owner-status",
+                "method": "GET",
+                "type": "Fetch",
+                "timestamp": 1046.408117
+              }
+            }
+          ],
+          "waits": [
+            {
+              "name": "held-owner.finish",
+              "state": "start",
+              "phase": "background",
+              "ms": 13734.335
+            },
+            {
+              "name": "held-owner.finish",
+              "state": "done",
+              "phase": "background",
+              "ms": 13844.974
+            }
+          ],
+          "overflow": {
+            "fontRequests": 0,
+            "fontEvents": 0,
+            "consoleEvents": 0,
+            "cdpFontEvents": 0,
+            "apiNetworkEvents": 0,
+            "apiWaits": 0
+          },
+          "faults": []
+        }
+      ],
+      "640_timeout": {
+        "binding": {
+          "sourceSha": "89933fdc84ed1151f04609a1881ab24aaef119b4",
+          "sourceTree": "25b2a7b559549fba0d22fa7d62d78c76c13cd5ce",
+          "uiSourceIdentity": "5b3ffd2bdcd76285cccd7602ab8a101f6034b4bfb7809fd8d6c5002fe6953efb",
+          "uiManifestSha256": "026de9ca6037800af4df12c53aee250f700b4e20ead41fa8d68679b4324bf410",
+          "gateway": {
+            "sourceCommit": "89933fdc84ed1151f04609a1881ab24aaef119b4",
+            "sourceTree": "25b2a7b559549fba0d22fa7d62d78c76c13cd5ce",
+            "sourceHashes": {
+              "codex-rs/Cargo.lock": "7d919cbc82326f470d9448491a24a5f8606217e8f221fc48266176df37fecc3a",
+              "codex-rs/Cargo.toml": "0e3fc0b7dc3ec907e02059a1bc79579077c8e5d1a0ac936b4f1bd984e94afdb4",
+              "codex-rs/hepta-native-gateway/BUILD.bazel": "73dec956b0102055600d89ee58d1dc04cfc77670dfa7ccf07ffd429a299d97d6",
+              "codex-rs/hepta-native-gateway/Cargo.toml": "a13e4ba58685be73b9612d6a7d1caece142541612aae7b03f436ceb0f575fe26",
+              "codex-rs/hepta-native-gateway/examples/ui_product_preview.rs": "d97a5d3f7c82cbfc3bc7bbc926d1c75f95e7623b7cdf1f2eece6162d2a3c2050",
+              "codex-rs/hepta-native-gateway/src/http_origin.rs": "315f943d1317c687ea6e488298e340263d1b0080658e3be4ef18fc4baa315dc6",
+              "codex-rs/hepta-native-gateway/src/http_origin_tests.rs": "e921fb5a9f9bb2056765871fb477d9a0a484ea572c2a64dd383b4d2a62560434",
+              "codex-rs/hepta-native-gateway/src/http_transport.rs": "3d6a71772150589d1d844c9ab6c75b75efd1504bd0788ec925f51a43e12a9179",
+              "codex-rs/hepta-native-gateway/src/lib.rs": "3abf841a48345f1ada9251a2bd1d6ac79fce52e7cd4e366920bddb53466944bc",
+              "codex-rs/hepta-native-gateway/src/organ_request_tests.rs": "f9b7e0ff6358bc0167f8fc511d1c06e0ffbc6ab12a1a0a5aabc25f63d09b2da2",
+              "codex-rs/hepta-native-gateway/src/owner_status.rs": "29a8bb62da141f9896b8c9b75cbc450efdf80d43b6d176ea0ddb0373f98849e6",
+              "codex-rs/hepta-native-gateway/src/owner_status_tests.rs": "059b1673aebe1b043a0296508f65ecf222c04347965ada7f10994690f132b6c6",
+              "codex-rs/hepta-native-gateway/src/ui_bundle.rs": "667085974b0d18a23ecac7cd90c56a9137d4c8345c5d53dc1c522e9bd06088f6",
+              "codex-rs/hepta-native-gateway/src/ui_bundle_reader.rs": "ae2e16199344e1aac40d106560da31fd20838eb3091f206c3268381045b62b6d",
+              "codex-rs/hepta-native-gateway/src/ui_bundle_tests.rs": "3a3f05fdfc484ad397e1e204b587a758b1e1c04749bdd2f887da4e87af17d112",
+              "codex-rs/rust-toolchain.toml": "570656042681cfd8795403a455baf9a33035331a07db0645e866bbcea89a3d64"
+            },
+            "compiler": "rustc 1.95.0 (59807616e 2026-04-14)",
+            "binarySha256": "aab393cbd6a376267d08c6d0b19a17c959d1abf9be6d0382f38c5ec785273c9e",
+            "binaryBytes": 10869336
+          }
+        },
+        "runtime_request_id": "21200.22",
+        "runtime_events": [
+          {
+            "event": "requestWillBeSent",
+            "phase": "timeout",
+            "ms": 18149.77,
+            "requestId": "21200.22",
+            "path": "/api/hepta/runtime",
+            "method": "GET",
+            "type": "Fetch",
+            "timestamp": 946.615415
+          },
+          {
+            "event": "responseReceived",
+            "phase": "timeout",
+            "ms": 18152.954,
+            "requestId": "21200.22",
+            "path": "/api/hepta/runtime",
+            "timestamp": 946.619869,
+            "status": 503,
+            "protocol": "http/1.1",
+            "mimeType": "application/json",
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "headers": {
+              "contentLength": "79",
+              "transferEncoding": "",
+              "contentEncoding": "",
+              "cacheControl": "no-store"
+            }
+          },
+          {
+            "event": "dataReceived",
+            "phase": "timeout",
+            "ms": 18152.966,
+            "requestId": "21200.22",
+            "timestamp": 946.620125,
+            "dataLength": 79,
+            "encodedDataLength": 0
+          },
+          {
+            "event": "loadingFailed",
+            "phase": "timeout",
+            "ms": 18153.487,
+            "requestId": "21200.22",
+            "timestamp": 946.620535,
+            "type": "Fetch",
+            "errorText": "net::ERR_ABORTED",
+            "canceled": true
+          }
+        ],
+        "sdk_events": [
+          {
+            "type": "error",
+            "kind": "sdk-http-status-failure",
+            "path": "/makepad_platform/web.js",
+            "lineNumber": 637,
+            "columnNumber": 16,
+            "characters": 65,
+            "phase": "timeout",
+            "ms": 18153.312
+          }
+        ],
+        "sdk_raw_error_messages": [
+          {
+            "text": "[makepad][http][err] GET http://127.0.0.1:4175/api/hepta/owner-status AbortError: signal is aborted without reason tiles=-",
+            "url": "http://127.0.0.1:4175/makepad_platform/web.js",
+            "phase": "timeout"
+          },
+          {
+            "text": "[makepad][http][fail] 503 http://127.0.0.1:4175/api/hepta/runtime",
+            "url": "http://127.0.0.1:4175/makepad_platform/web.js",
+            "phase": "timeout"
+          }
+        ],
+        "waits": [
+          {
+            "name": "timeout-runtime.finished",
+            "state": "start",
+            "phase": "timeout",
+            "ms": 18955.793
+          }
+        ],
+        "playwright_responses": [
+          {
+            "id": 1,
+            "url": "http://127.0.0.1:4175/api/hepta/owner-status",
+            "method": "GET",
+            "phase": "initial",
+            "status": 200,
+            "finished": true,
+            "finishError": null
+          },
+          {
+            "id": 2,
+            "url": "http://127.0.0.1:4175/api/hepta/runtime",
+            "method": "GET",
+            "phase": "initial",
+            "status": 503,
+            "finished": true,
+            "finishError": null
+          },
+          {
+            "id": 4,
+            "url": "http://127.0.0.1:4175/api/hepta/runtime",
+            "method": "GET",
+            "phase": "timeout",
+            "status": 503,
+            "finished": false,
+            "finishError": "Error: Test timeout of 90000ms exceeded."
+          }
+        ],
+        "proofs": {
+          "initial": {
+            "ownerState": "notAttached",
+            "ownerVerified": true,
+            "transportVerified": true
+          }
+        },
+        "cancellations": [],
+        "ocr_passed": true,
+        "overflow": {
+          "fontRequests": 0,
+          "fontEvents": 0,
+          "consoleEvents": 0,
+          "cdpFontEvents": 0,
+          "apiNetworkEvents": 0,
+          "apiWaits": 0
+        }
+      },
+      "manifest_identity": {
+        "sha256": "026de9ca6037800af4df12c53aee250f700b4e20ead41fa8d68679b4324bf410",
+        "ui_source": "5b3ffd2bdcd76285cccd7602ab8a101f6034b4bfb7809fd8d6c5002fe6953efb",
+        "sdk": {
+          "bytes": 87890,
+          "sha256": "b70442ed46ab0663323a1d7debd5676cc1dc281ec57d0be2a86f81b9eec078fc"
+        },
+        "wasm_sha256": "7cd40149f2ecd787e24baefbd9892aa05add6351ab93cbe5789d4db05be306d5",
+        "upstream_makepad": {
+          "repository": "https://github.com/kevinaboos/makepad",
+          "revision": "337566c8b25d47f7e4fff6a202157b65bf183330"
+        }
+      },
+      "job": {
+        "id": 118063553356,
+        "name": "Rust UI foundation / source-head",
+        "status": "completed",
+        "conclusion": "failure",
+        "started_at": "2026-10-19T13:13:32Z",
+        "completed_at": "2026-10-19T13:39:32Z",
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39253698771/job/118063553356",
+        "head_sha": "89933fdc84ed1151f04609a1881ab24aaef119b4",
+        "run_id": 39253698771
+      },
+      "manifest_members": [
+        {
+          "path": "hepta-private-ci/hepta-private-ci/apps/hepta-control-ui/test-results/product-status/robrix-product-status-actu-0368f-owner-status-640-navigation-chromium/ui-build-manifest.json",
+          "bytes": 40152,
+          "sha256": "026de9ca6037800af4df12c53aee250f700b4e20ead41fa8d68679b4324bf410"
+        },
+        {
+          "path": "hepta-private-ci/hepta-private-ci/apps/hepta-control-ui/test-results/product-status/robrix-product-status-actu-53fb0-ng-owner-status-640-timeout-chromium/ui-build-manifest.json",
+          "bytes": 40152,
+          "sha256": "026de9ca6037800af4df12c53aee250f700b4e20ead41fa8d68679b4324bf410"
+        },
+        {
+          "path": "hepta-private-ci/hepta-private-ci/apps/hepta-control-ui/test-results/product-status/robrix-product-status-actu-9b64d-g-owner-status-1280-timeout-chromium/ui-build-manifest.json",
+          "bytes": 40152,
+          "sha256": "026de9ca6037800af4df12c53aee250f700b4e20ead41fa8d68679b4324bf410"
+        },
+        {
+          "path": "hepta-private-ci/hepta-private-ci/apps/hepta-control-ui/test-results/product-status/robrix-product-status-actu-c7ba4-wner-status-1280-navigation-chromium/ui-build-manifest.json",
+          "bytes": 40152,
+          "sha256": "026de9ca6037800af4df12c53aee250f700b4e20ead41fa8d68679b4324bf410"
+        },
+        {
+          "path": "hepta-private-ci/hepta-private-ci/apps/hepta-control-ui/test-results/product-status/robrix-product-status-actu-d26eb-wner-status-1280-background-chromium/ui-build-manifest.json",
+          "bytes": 40152,
+          "sha256": "026de9ca6037800af4df12c53aee250f700b4e20ead41fa8d68679b4324bf410"
+        },
+        {
+          "path": "hepta-private-ci/hepta-private-ci/apps/hepta-control-ui/test-results/product-status/robrix-product-status-actu-d90bd-owner-status-640-background-chromium/ui-build-manifest.json",
+          "bytes": 40152,
+          "sha256": "026de9ca6037800af4df12c53aee250f700b4e20ead41fa8d68679b4324bf410"
+        }
+      ],
+      "original_playwright_report": {
+        "member": "hepta-private-ci/hepta-private-ci/apps/hepta-control-ui/test-results/product-status-results.json",
+        "bytes": 245727,
+        "sha256": "368e3c02c0afbf974e52bb965c5ae854f20c719660a970ef51d2044928d1094c",
+        "extracted_file": "candidate-ui-source-original-six-results.json"
+      },
+      "all_case_counts": {
+        "cases": 6,
+        "request_count": 20,
+        "native_completed": 13,
+        "native_failed": 7,
+        "owner_failures": 6,
+        "runtime_failures": 1,
+        "all_overflow_counters_zero": true,
+        "all_fault_arrays_empty": true
+      },
+      "tested_commit_from_case_binding": "89933fdc84ed1151f04609a1881ab24aaef119b4"
+    },
+    "base": {
+      "artifact": {
+        "id": 12190760861,
+        "file": "candidate-product-gateway-base-a141.zip",
+        "bytes": 2123165,
+        "sha256": "e41f6e581c991262fc1b71019b267631e09e1289cfc8d1d0b653b9c2cb6a4594",
+        "crc": "passed",
+        "members": 153,
+        "official_metadata": {
+          "id": 12190760861,
+          "name": "product-gateway-base-merge-a1411851e988155fe3ca45c70e7fc31fdc09dd5c",
+          "size_in_bytes": 2123165,
+          "url": "https://api.github.com/repos/TrillionniumFoundation/hepta-private-ci/actions/artifacts/12190760861",
+          "archive_download_url": "https://api.github.com/repos/TrillionniumFoundation/hepta-private-ci/actions/artifacts/12190760861/zip",
+          "expired": false,
+          "created_at": "2026-10-19T13:30:52Z",
+          "expires_at": "2027-01-17T12:38:58Z",
+          "updated_at": "2026-10-19T13:30:52Z",
+          "digest": "sha256:e41f6e581c991262fc1b71019b267631e09e1289cfc8d1d0b653b9c2cb6a4594",
+          "workflow_run": {
+            "id": 39253698771,
+            "repository_id": 1320694176,
+            "head_repository_id": 1320694176,
+            "head_branch": "agents/a00-ui-main-20261019",
+            "head_sha": "89933fdc84ed1151f04609a1881ab24aaef119b4"
+          }
+        },
+        "actual_bytes_and_sha256_match_official_metadata": true
+      },
+      "playwright_version": "1.63.0",
+      "report_member": "hepta-private-ci/hepta-private-ci/apps/hepta-control-ui/test-results/product-status-results.json",
+      "stats": {
+        "startTime": "2026-10-19T13:29:31.143Z",
+        "duration": 80418.029,
+        "expected": 6,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "tests": [
+        {
+          "title": "actual missing-owner status 1280 timeout",
+          "expectedStatus": "passed",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration_ms": 15122,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "title": "actual missing-owner status 1280 navigation",
+          "expectedStatus": "passed",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration_ms": 13104,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "title": "actual missing-owner status 1280 background",
+          "expectedStatus": "passed",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration_ms": 12626,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "title": "actual missing-owner status 640 timeout",
+          "expectedStatus": "passed",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration_ms": 15984,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "title": "actual missing-owner status 640 navigation",
+          "expectedStatus": "passed",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration_ms": 11027,
+              "errors": []
+            }
+          ]
+        },
+        {
+          "title": "actual missing-owner status 640 background",
+          "expectedStatus": "passed",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "duration_ms": 10061,
+              "errors": []
+            }
+          ]
+        }
+      ],
+      "all_case_native": [
+        {
+          "case": "robrix-product-status-actu-0368f-owner-status-640-navigation-chromium",
+          "scenario": "navigation",
+          "request_count": 3,
+          "native_completed": 2,
+          "native_failures": [
+            {
+              "event": "loadingFailed",
+              "phase": "navigation",
+              "ms": 9812.061,
+              "requestId": "19577.21",
+              "timestamp": 541.771199,
+              "type": "Fetch",
+              "errorText": "net::ERR_ABORTED",
+              "canceled": true,
+              "request": {
+                "event": "requestWillBeSent",
+                "phase": "navigation",
+                "ms": 9270.192,
+                "requestId": "19577.21",
+                "path": "/api/hepta/owner-status",
+                "method": "GET",
+                "type": "Fetch",
+                "timestamp": 541.227956
+              }
+            }
+          ],
+          "waits": [
+            {
+              "name": "held-owner.finish",
+              "state": "start",
+              "phase": "navigation",
+              "ms": 10411.436
+            },
+            {
+              "name": "held-owner.finish",
+              "state": "done",
+              "phase": "navigation",
+              "ms": 10491.962
+            }
+          ],
+          "overflow": {
+            "fontRequests": 0,
+            "fontEvents": 0,
+            "consoleEvents": 0,
+            "cdpFontEvents": 0,
+            "apiNetworkEvents": 0,
+            "apiWaits": 0
+          },
+          "faults": []
+        },
+        {
+          "case": "robrix-product-status-actu-53fb0-ng-owner-status-640-timeout-chromium",
+          "scenario": "timeout",
+          "request_count": 4,
+          "native_completed": 3,
+          "native_failures": [
+            {
+              "event": "loadingFailed",
+              "phase": "timeout",
+              "ms": 14930.761,
+              "requestId": "19525.21",
+              "timestamp": 530.889902,
+              "type": "Fetch",
+              "errorText": "net::ERR_ABORTED",
+              "canceled": true,
+              "request": {
+                "event": "requestWillBeSent",
+                "phase": "timeout",
+                "ms": 9919.923,
+                "requestId": "19525.21",
+                "path": "/api/hepta/owner-status",
+                "method": "GET",
+                "type": "Fetch",
+                "timestamp": 525.879142
+              }
+            }
+          ],
+          "waits": [
+            {
+              "name": "timeout-runtime.finished",
+              "state": "start",
+              "phase": "timeout",
+              "ms": 15595.118
+            },
+            {
+              "name": "timeout-runtime.finished",
+              "state": "done",
+              "phase": "timeout",
+              "ms": 15595.431
+            },
+            {
+              "name": "held-owner.finish",
+              "state": "start",
+              "phase": "timeout",
+              "ms": 15595.438
+            },
+            {
+              "name": "held-owner.finish",
+              "state": "done",
+              "phase": "timeout",
+              "ms": 15597.652
+            }
+          ],
+          "overflow": {
+            "fontRequests": 0,
+            "fontEvents": 0,
+            "consoleEvents": 0,
+            "cdpFontEvents": 0,
+            "apiNetworkEvents": 0,
+            "apiWaits": 0
+          },
+          "faults": []
+        },
+        {
+          "case": "robrix-product-status-actu-9b64d-g-owner-status-1280-timeout-chromium",
+          "scenario": "timeout",
+          "request_count": 4,
+          "native_completed": 3,
+          "native_failures": [
+            {
+              "event": "loadingFailed",
+              "phase": "timeout",
+              "ms": 14037.283,
+              "requestId": "19368.21",
+              "timestamp": 489.168644,
+              "type": "Fetch",
+              "errorText": "net::ERR_ABORTED",
+              "canceled": true,
+              "request": {
+                "event": "requestWillBeSent",
+                "phase": "timeout",
+                "ms": 8966.115,
+                "requestId": "19368.21",
+                "path": "/api/hepta/owner-status",
+                "method": "GET",
+                "type": "Fetch",
+                "timestamp": 484.096476
+              }
+            }
+          ],
+          "waits": [
+            {
+              "name": "timeout-runtime.finished",
+              "state": "start",
+              "phase": "timeout",
+              "ms": 14614.449
+            },
+            {
+              "name": "timeout-runtime.finished",
+              "state": "done",
+              "phase": "timeout",
+              "ms": 14614.87
+            },
+            {
+              "name": "held-owner.finish",
+              "state": "start",
+              "phase": "timeout",
+              "ms": 14614.876
+            },
+            {
+              "name": "held-owner.finish",
+              "state": "done",
+              "phase": "timeout",
+              "ms": 14618.016
+            }
+          ],
+          "overflow": {
+            "fontRequests": 0,
+            "fontEvents": 0,
+            "consoleEvents": 0,
+            "cdpFontEvents": 0,
+            "apiNetworkEvents": 0,
+            "apiWaits": 0
+          },
+          "faults": []
+        },
+        {
+          "case": "robrix-product-status-actu-c7ba4-wner-status-1280-navigation-chromium",
+          "scenario": "navigation",
+          "request_count": 3,
+          "native_completed": 2,
+          "native_failures": [
+            {
+              "event": "loadingFailed",
+              "phase": "navigation",
+              "ms": 11906.401,
+              "requestId": "19421.21",
+              "timestamp": 502.135299,
+              "type": "Fetch",
+              "errorText": "net::ERR_ABORTED",
+              "canceled": true,
+              "request": {
+                "event": "requestWillBeSent",
+                "phase": "navigation",
+                "ms": 11220.767,
+                "requestId": "19421.21",
+                "path": "/api/hepta/owner-status",
+                "method": "GET",
+                "type": "Fetch",
+                "timestamp": 501.448527
+              }
+            }
+          ],
+          "waits": [
+            {
+              "name": "held-owner.finish",
+              "state": "start",
+              "phase": "navigation",
+              "ms": 12429.103
+            },
+            {
+              "name": "held-owner.finish",
+              "state": "done",
+              "phase": "navigation",
+              "ms": 12488.254
+            }
+          ],
+          "overflow": {
+            "fontRequests": 0,
+            "fontEvents": 0,
+            "consoleEvents": 0,
+            "cdpFontEvents": 0,
+            "apiNetworkEvents": 0,
+            "apiWaits": 0
+          },
+          "faults": []
+        },
+        {
+          "case": "robrix-product-status-actu-d26eb-wner-status-1280-background-chromium",
+          "scenario": "background",
+          "request_count": 3,
+          "native_completed": 2,
+          "native_failures": [
+            {
+              "event": "loadingFailed",
+              "phase": "background",
+              "ms": 12050.188,
+              "requestId": "19467.21",
+              "timestamp": 515.384739,
+              "type": "Fetch",
+              "errorText": "net::ERR_ABORTED",
+              "canceled": true,
+              "request": {
+                "event": "requestWillBeSent",
+                "phase": "background",
+                "ms": 11922.099,
+                "requestId": "19467.21",
+                "path": "/api/hepta/owner-status",
+                "method": "GET",
+                "type": "Fetch",
+                "timestamp": 515.25496
+              }
+            }
+          ],
+          "waits": [
+            {
+              "name": "held-owner.finish",
+              "state": "start",
+              "phase": "background",
+              "ms": 12051.992
+            },
+            {
+              "name": "held-owner.finish",
+              "state": "done",
+              "phase": "background",
+              "ms": 12113.391
+            }
+          ],
+          "overflow": {
+            "fontRequests": 0,
+            "fontEvents": 0,
+            "consoleEvents": 0,
+            "cdpFontEvents": 0,
+            "apiNetworkEvents": 0,
+            "apiWaits": 0
+          },
+          "faults": []
+        },
+        {
+          "case": "robrix-product-status-actu-d90bd-owner-status-640-background-chromium",
+          "scenario": "background",
+          "request_count": 3,
+          "native_completed": 2,
+          "native_failures": [
+            {
+              "event": "loadingFailed",
+              "phase": "background",
+              "ms": 9660.162,
+              "requestId": "19624.21",
+              "timestamp": 552.659714,
+              "type": "Fetch",
+              "errorText": "net::ERR_ABORTED",
+              "canceled": true,
+              "request": {
+                "event": "requestWillBeSent",
+                "phase": "background",
+                "ms": 9566.255,
+                "requestId": "19624.21",
+                "path": "/api/hepta/owner-status",
+                "method": "GET",
+                "type": "Fetch",
+                "timestamp": 552.565303
+              }
+            }
+          ],
+          "waits": [
+            {
+              "name": "held-owner.finish",
+              "state": "start",
+              "phase": "background",
+              "ms": 9574.277
+            },
+            {
+              "name": "held-owner.finish",
+              "state": "done",
+              "phase": "background",
+              "ms": 9576.492
+            }
+          ],
+          "overflow": {
+            "fontRequests": 0,
+            "fontEvents": 0,
+            "consoleEvents": 0,
+            "cdpFontEvents": 0,
+            "apiNetworkEvents": 0,
+            "apiWaits": 0
+          },
+          "faults": []
+        }
+      ],
+      "640_timeout": {
+        "binding": {
+          "sourceSha": "a1411851e988155fe3ca45c70e7fc31fdc09dd5c",
+          "sourceTree": "25b2a7b559549fba0d22fa7d62d78c76c13cd5ce",
+          "uiSourceIdentity": "5b3ffd2bdcd76285cccd7602ab8a101f6034b4bfb7809fd8d6c5002fe6953efb",
+          "uiManifestSha256": "026de9ca6037800af4df12c53aee250f700b4e20ead41fa8d68679b4324bf410",
+          "gateway": {
+            "sourceCommit": "a1411851e988155fe3ca45c70e7fc31fdc09dd5c",
+            "sourceTree": "25b2a7b559549fba0d22fa7d62d78c76c13cd5ce",
+            "sourceHashes": {
+              "codex-rs/Cargo.lock": "7d919cbc82326f470d9448491a24a5f8606217e8f221fc48266176df37fecc3a",
+              "codex-rs/Cargo.toml": "0e3fc0b7dc3ec907e02059a1bc79579077c8e5d1a0ac936b4f1bd984e94afdb4",
+              "codex-rs/hepta-native-gateway/BUILD.bazel": "73dec956b0102055600d89ee58d1dc04cfc77670dfa7ccf07ffd429a299d97d6",
+              "codex-rs/hepta-native-gateway/Cargo.toml": "a13e4ba58685be73b9612d6a7d1caece142541612aae7b03f436ceb0f575fe26",
+              "codex-rs/hepta-native-gateway/examples/ui_product_preview.rs": "d97a5d3f7c82cbfc3bc7bbc926d1c75f95e7623b7cdf1f2eece6162d2a3c2050",
+              "codex-rs/hepta-native-gateway/src/http_origin.rs": "315f943d1317c687ea6e488298e340263d1b0080658e3be4ef18fc4baa315dc6",
+              "codex-rs/hepta-native-gateway/src/http_origin_tests.rs": "e921fb5a9f9bb2056765871fb477d9a0a484ea572c2a64dd383b4d2a62560434",
+              "codex-rs/hepta-native-gateway/src/http_transport.rs": "3d6a71772150589d1d844c9ab6c75b75efd1504bd0788ec925f51a43e12a9179",
+              "codex-rs/hepta-native-gateway/src/lib.rs": "3abf841a48345f1ada9251a2bd1d6ac79fce52e7cd4e366920bddb53466944bc",
+              "codex-rs/hepta-native-gateway/src/organ_request_tests.rs": "f9b7e0ff6358bc0167f8fc511d1c06e0ffbc6ab12a1a0a5aabc25f63d09b2da2",
+              "codex-rs/hepta-native-gateway/src/owner_status.rs": "29a8bb62da141f9896b8c9b75cbc450efdf80d43b6d176ea0ddb0373f98849e6",
+              "codex-rs/hepta-native-gateway/src/owner_status_tests.rs": "059b1673aebe1b043a0296508f65ecf222c04347965ada7f10994690f132b6c6",
+              "codex-rs/hepta-native-gateway/src/ui_bundle.rs": "667085974b0d18a23ecac7cd90c56a9137d4c8345c5d53dc1c522e9bd06088f6",
+              "codex-rs/hepta-native-gateway/src/ui_bundle_reader.rs": "ae2e16199344e1aac40d106560da31fd20838eb3091f206c3268381045b62b6d",
+              "codex-rs/hepta-native-gateway/src/ui_bundle_tests.rs": "3a3f05fdfc484ad397e1e204b587a758b1e1c04749bdd2f887da4e87af17d112",
+              "codex-rs/rust-toolchain.toml": "570656042681cfd8795403a455baf9a33035331a07db0645e866bbcea89a3d64"
+            },
+            "compiler": "rustc 1.95.0 (59807616e 2026-04-14)",
+            "binarySha256": "aab393cbd6a376267d08c6d0b19a17c959d1abf9be6d0382f38c5ec785273c9e",
+            "binaryBytes": 10869336
+          }
+        },
+        "runtime_request_id": "19525.22",
+        "runtime_events": [
+          {
+            "event": "requestWillBeSent",
+            "phase": "timeout",
+            "ms": 14930.645,
+            "requestId": "19525.22",
+            "path": "/api/hepta/runtime",
+            "method": "GET",
+            "type": "Fetch",
+            "timestamp": 530.888809
+          },
+          {
+            "event": "responseReceived",
+            "phase": "timeout",
+            "ms": 14933.035,
+            "requestId": "19525.22",
+            "path": "/api/hepta/runtime",
+            "timestamp": 530.892434,
+            "status": 503,
+            "protocol": "http/1.1",
+            "mimeType": "application/json",
+            "fromDiskCache": false,
+            "fromServiceWorker": false,
+            "headers": {
+              "contentLength": "79",
+              "transferEncoding": "",
+              "contentEncoding": "",
+              "cacheControl": "no-store"
+            }
+          },
+          {
+            "event": "dataReceived",
+            "phase": "timeout",
+            "ms": 14933.404,
+            "requestId": "19525.22",
+            "timestamp": 530.892635,
+            "dataLength": 79,
+            "encodedDataLength": 79
+          },
+          {
+            "event": "loadingFinished",
+            "phase": "timeout",
+            "ms": 14933.409,
+            "requestId": "19525.22",
+            "timestamp": 530.892152,
+            "encodedDataLength": 259
+          }
+        ],
+        "sdk_events": [
+          {
+            "type": "error",
+            "kind": "sdk-http-status-failure",
+            "path": "/makepad_platform/web.js",
+            "lineNumber": 637,
+            "columnNumber": 16,
+            "characters": 65,
+            "phase": "timeout",
+            "ms": 14933.203
+          }
+        ],
+        "sdk_raw_error_messages": [
+          {
+            "text": "[makepad][http][err] GET http://127.0.0.1:4175/api/hepta/owner-status AbortError: signal is aborted without reason tiles=-",
+            "url": "http://127.0.0.1:4175/makepad_platform/web.js",
+            "phase": "timeout"
+          },
+          {
+            "text": "[makepad][http][fail] 503 http://127.0.0.1:4175/api/hepta/runtime",
+            "url": "http://127.0.0.1:4175/makepad_platform/web.js",
+            "phase": "timeout"
+          }
+        ],
+        "waits": [
+          {
+            "name": "timeout-runtime.finished",
+            "state": "start",
+            "phase": "timeout",
+            "ms": 15595.118
+          },
+          {
+            "name": "timeout-runtime.finished",
+            "state": "done",
+            "phase": "timeout",
+            "ms": 15595.431
+          },
+          {
+            "name": "held-owner.finish",
+            "state": "start",
+            "phase": "timeout",
+            "ms": 15595.438
+          },
+          {
+            "name": "held-owner.finish",
+            "state": "done",
+            "phase": "timeout",
+            "ms": 15597.652
+          }
+        ],
+        "playwright_responses": [
+          {
+            "id": 1,
+            "url": "http://127.0.0.1:4175/api/hepta/owner-status",
+            "method": "GET",
+            "phase": "initial",
+            "status": 200,
+            "finished": true,
+            "finishError": null
+          },
+          {
+            "id": 2,
+            "url": "http://127.0.0.1:4175/api/hepta/runtime",
+            "method": "GET",
+            "phase": "initial",
+            "status": 503,
+            "finished": true,
+            "finishError": null
+          },
+          {
+            "id": 4,
+            "url": "http://127.0.0.1:4175/api/hepta/runtime",
+            "method": "GET",
+            "phase": "timeout",
+            "status": 503,
+            "finished": true,
+            "finishError": null
+          }
+        ],
+        "proofs": {
+          "initial": {
+            "ownerState": "notAttached",
+            "ownerVerified": true,
+            "transportVerified": true
+          },
+          "timeout": {
+            "ownerState": "timedOut",
+            "ownerVerified": true,
+            "transportVerified": true
+          }
+        },
+        "cancellations": [
+          {
+            "requestId": 3,
+            "phase": "timeout"
+          }
+        ],
+        "ocr_passed": true,
+        "overflow": {
+          "fontRequests": 0,
+          "fontEvents": 0,
+          "consoleEvents": 0,
+          "cdpFontEvents": 0,
+          "apiNetworkEvents": 0,
+          "apiWaits": 0
+        }
+      },
+      "manifest_identity": {
+        "sha256": "026de9ca6037800af4df12c53aee250f700b4e20ead41fa8d68679b4324bf410",
+        "ui_source": "5b3ffd2bdcd76285cccd7602ab8a101f6034b4bfb7809fd8d6c5002fe6953efb",
+        "sdk": {
+          "bytes": 87890,
+          "sha256": "b70442ed46ab0663323a1d7debd5676cc1dc281ec57d0be2a86f81b9eec078fc"
+        },
+        "wasm_sha256": "7cd40149f2ecd787e24baefbd9892aa05add6351ab93cbe5789d4db05be306d5",
+        "upstream_makepad": {
+          "repository": "https://github.com/kevinaboos/makepad",
+          "revision": "337566c8b25d47f7e4fff6a202157b65bf183330"
+        }
+      },
+      "job": {
+        "id": 118063553876,
+        "name": "Rust UI foundation / base-merge",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T13:21:58Z",
+        "completed_at": "2026-10-19T13:37:32Z",
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39253698771/job/118063553876",
+        "head_sha": "89933fdc84ed1151f04609a1881ab24aaef119b4",
+        "run_id": 39253698771
+      },
+      "manifest_members": [
+        {
+          "path": "hepta-private-ci/hepta-private-ci/apps/hepta-control-ui/test-results/product-status/robrix-product-status-actu-0368f-owner-status-640-navigation-chromium/ui-build-manifest.json",
+          "bytes": 40152,
+          "sha256": "026de9ca6037800af4df12c53aee250f700b4e20ead41fa8d68679b4324bf410"
+        },
+        {
+          "path": "hepta-private-ci/hepta-private-ci/apps/hepta-control-ui/test-results/product-status/robrix-product-status-actu-53fb0-ng-owner-status-640-timeout-chromium/ui-build-manifest.json",
+          "bytes": 40152,
+          "sha256": "026de9ca6037800af4df12c53aee250f700b4e20ead41fa8d68679b4324bf410"
+        },
+        {
+          "path": "hepta-private-ci/hepta-private-ci/apps/hepta-control-ui/test-results/product-status/robrix-product-status-actu-9b64d-g-owner-status-1280-timeout-chromium/ui-build-manifest.json",
+          "bytes": 40152,
+          "sha256": "026de9ca6037800af4df12c53aee250f700b4e20ead41fa8d68679b4324bf410"
+        },
+        {
+          "path": "hepta-private-ci/hepta-private-ci/apps/hepta-control-ui/test-results/product-status/robrix-product-status-actu-c7ba4-wner-status-1280-navigation-chromium/ui-build-manifest.json",
+          "bytes": 40152,
+          "sha256": "026de9ca6037800af4df12c53aee250f700b4e20ead41fa8d68679b4324bf410"
+        },
+        {
+          "path": "hepta-private-ci/hepta-private-ci/apps/hepta-control-ui/test-results/product-status/robrix-product-status-actu-d26eb-wner-status-1280-background-chromium/ui-build-manifest.json",
+          "bytes": 40152,
+          "sha256": "026de9ca6037800af4df12c53aee250f700b4e20ead41fa8d68679b4324bf410"
+        },
+        {
+          "path": "hepta-private-ci/hepta-private-ci/apps/hepta-control-ui/test-results/product-status/robrix-product-status-actu-d90bd-owner-status-640-background-chromium/ui-build-manifest.json",
+          "bytes": 40152,
+          "sha256": "026de9ca6037800af4df12c53aee250f700b4e20ead41fa8d68679b4324bf410"
+        }
+      ],
+      "original_playwright_report": {
+        "member": "hepta-private-ci/hepta-private-ci/apps/hepta-control-ui/test-results/product-status-results.json",
+        "bytes": 221656,
+        "sha256": "cf2e6f5e56796801a1f50da7a649d613003590596278dc9f14453a79253fcf5a",
+        "extracted_file": "candidate-ui-base-original-six-results.json"
+      },
+      "all_case_counts": {
+        "cases": 6,
+        "request_count": 20,
+        "native_completed": 14,
+        "native_failed": 6,
+        "owner_failures": 6,
+        "runtime_failures": 0,
+        "all_overflow_counters_zero": true,
+        "all_fault_arrays_empty": true
+      },
+      "tested_commit_from_case_binding": "a1411851e988155fe3ca45c70e7fc31fdc09dd5c"
+    }
+  },
+  "comparison": {
+    "tested_tree_equal": true,
+    "whole_manifest_bytes_equal": true,
+    "manifest_hash_bound_in_both_audits": true,
+    "source_failure_precedes_finished_wait_ms": 802.306,
+    "source_runtime_native_failures": 1,
+    "base_runtime_native_failures": 0,
+    "source_owner_cancellation_events": 6,
+    "base_owner_cancellation_events": 6,
+    "all_12_case_manifest_bytes_equal": true,
+    "independently_rehashed_manifest": {
+      "file": "candidate-ui-shared-build-manifest.json",
+      "bytes": 40152,
+      "sha256": "026de9ca6037800af4df12c53aee250f700b4e20ead41fa8d68679b4324bf410"
+    }
+  },
+  "interpretation": {
+    "observed_facts": [
+      "Original source lane 6 cases: 5 passed, the 640 timeout case timed out; base lane original same 6 cases: 6 passed. No skipped or flaky cases in either report.",
+      "Source runtime request 21200.22 has 503 no-store, Content-Length 79 and 79-byte dataReceived; SDK503 then native net::ERR_ABORTED (canceled=true) occurred before the original response.finished wait began.",
+      "Native failure was already observed 802.306ms before the timeout-runtime.finished start marker. The later page.unrouteAll closed-page cleanup error is not the initiating native failure.",
+      "The separate source owner request 21200.21 was canceled as required by the timeout scenario; its event must not be confused with runtime 21200.22.",
+      "Source and base tested tree and all twelve whole manifest byte sequences are equal. Source has one unexpected runtime native failure; base has none.",
+      "The failed source case reached the Timed Out pixel/OCR proof, but never reached held-owner.finish or completed late-owner/cancellation qualification.",
+      "Both source and base original job conclusions are now terminal: source failure, base success; the lock-review job also succeeded."
+    ],
+    "causal_inference": {
+      "assessment": "The actual source event sequence strongly matches the separately reproduced and upstream-fixed Chromium response-body terminal-state reentry defect. The association is supported by the pinned SDK EOF source review and original-browser local controls; it is not a captured unique C++ call-chain proof.",
+      "upstream_commit": "62473ad0f747e245e514c93e741bb8e168a2a207",
+      "upstream_url": "https://github.com/chromium/chromium/commit/62473ad0f747e245e514c93e741bb8e168a2a207",
+      "local_primary_source": {
+        "file": "upstream-chromium-fix.json",
+        "bytes": 14806,
+        "sha256": "7b6504f3de98f572b8b7101508998eec3ec56143174ed7e45e77e9c088834c2b"
+      },
+      "actual_upstream_fix": "Publish the ReadableStreamBytesConsumer result/terminal state with HandleResult(result) before reentering bytes_consumer_client_->OnStateChange(); new CancelAfterDone and CancelAfterError tests preserve terminal semantics.",
+      "sdk_eof_review": "Pinned Makepad HTTP read loop does not unconditionally cancel or abort on natural EOF; the observed SDK503 path must not be repaired by blindly removing required active-request/limit/truncation cancellation.",
+      "sdk_revision": "337566c8b25d47f7e4fff6a202157b65bf183330",
+      "sdk_primary_source": "https://github.com/kevinaboos/makepad/blob/337566c8b25d47f7e4fff6a202157b65bf183330/platform/src/os/web/web.js",
+      "playwright_wait_relation": "Playwright 1.63.0 requestfailed stores/emits failure without resolving the response finished promise, whereas requestfinished resolves it. A previously observed native failure can therefore leave this original finished wait until the whole-test deadline/target close.",
+      "playwright_primary_sources": [
+        "https://github.com/microsoft/playwright/blob/v1.63.0/packages/playwright-core/src/client/browserContext.ts",
+        "https://github.com/microsoft/playwright/blob/v1.63.0/packages/playwright-core/src/client/network.ts"
+      ]
+    },
+    "not_proven": [
+      "No C++ stack was captured; alternative native causes have not been ruled out uniquely.",
+      "Exact byte count and SDK503 do not independently validate every response-body byte. No new body interception was introduced.",
+      "ZIPs contain manifests and receipts rather than SDK/WASM/gateway executables; their executable digests are recorded by CI, while the ZIP and manifest digests were independently verified locally.",
+      "A successful base lane with the same tree does not negate the failed source lane or demonstrate that the timing-dependent defect is fixed.",
+      "The prior 12 synthetic-WASM local diagnostics are distinct from these original 12 product executions and do not replace any original gate.",
+      "All repository check runs are not terminal in the latest snapshot; no claim that 52 checks passed."
+    ]
+  },
+  "extracted_files": [
+    {
+      "path": "candidate-ui-source-640-timeout-raw-request-audit.json",
+      "archive": "candidate-product-gateway-source-899.zip",
+      "member": "hepta-private-ci/hepta-private-ci/apps/hepta-control-ui/test-results/product-status/robrix-product-status-actu-53fb0-ng-owner-status-640-timeout-chromium/raw-request-audit.json",
+      "bytes": 60563,
+      "sha256": "61b70b66913ce7dffe00481c8015a3952dd670fa8efd5a3dd982ee5c8b76850b"
+    },
+    {
+      "path": "candidate-ui-source-640-timeout-timed-out-ocr.json",
+      "archive": "candidate-product-gateway-source-899.zip",
+      "member": "hepta-private-ci/hepta-private-ci/apps/hepta-control-ui/test-results/product-status/robrix-product-status-actu-53fb0-ng-owner-status-640-timeout-chromium/timed-out-ocr.json",
+      "bytes": 1026,
+      "sha256": "f9e550e86db2fb871a2b9ba3fd086ec706f0bbc433ef57f9f28b1cbe143db182"
+    },
+    {
+      "path": "candidate-ui-shared-build-manifest.json",
+      "archive": "candidate-product-gateway-source-899.zip",
+      "member": "hepta-private-ci/hepta-private-ci/apps/hepta-control-ui/test-results/product-status/robrix-product-status-actu-53fb0-ng-owner-status-640-timeout-chromium/ui-build-manifest.json",
+      "bytes": 40152,
+      "sha256": "026de9ca6037800af4df12c53aee250f700b4e20ead41fa8d68679b4324bf410"
+    },
+    {
+      "path": "candidate-ui-base-640-timeout-raw-request-audit.json",
+      "archive": "candidate-product-gateway-base-a141.zip",
+      "member": "hepta-private-ci/hepta-private-ci/apps/hepta-control-ui/test-results/product-status/robrix-product-status-actu-53fb0-ng-owner-status-640-timeout-chromium/raw-request-audit.json",
+      "bytes": 61344,
+      "sha256": "c981291b07aad6d271e6bc189f9615603d5ddd1ac6ac8e01f94089b8643a3f0b"
+    },
+    {
+      "path": "candidate-ui-base-640-timeout-timed-out-ocr.json",
+      "archive": "candidate-product-gateway-base-a141.zip",
+      "member": "hepta-private-ci/hepta-private-ci/apps/hepta-control-ui/test-results/product-status/robrix-product-status-actu-53fb0-ng-owner-status-640-timeout-chromium/timed-out-ocr.json",
+      "bytes": 1026,
+      "sha256": "f9e550e86db2fb871a2b9ba3fd086ec706f0bbc433ef57f9f28b1cbe143db182"
+    }
+  ],
+  "prior_snapshot": {
+    "file": "candidate-ui-review.json",
+    "bytes": 46672,
+    "sha256": "1e88f92250578b95b3c182fe817c4451cb1613705970430738c97e7b4c6855ee"
+  },
+  "official_jobs_snapshot": "ci-observation-20261019T140344Z.json",
+  "jobs": [
+    {
+      "id": 118063553356,
+      "run_id": 39253698771,
+      "workflow_name": "Rust UI product foundation",
+      "head_branch": "agents/a00-ui-main-20261019",
+      "run_url": "https://api.github.com/repos/TrillionniumFoundation/hepta-private-ci/actions/runs/39253698771",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOTrgxoM8AAAAbfSLbTA",
+      "head_sha": "89933fdc84ed1151f04609a1881ab24aaef119b4",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/hepta-private-ci/actions/jobs/118063553356",
+      "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39253698771/job/118063553356",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2026-10-19T12:38:58Z",
+      "started_at": "2026-10-19T13:13:32Z",
+      "completed_at": "2026-10-19T13:39:32Z",
+      "name": "Rust UI foundation / source-head",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-19T13:13:33Z",
+          "completed_at": "2026-10-19T13:13:35Z"
+        },
+        {
+          "name": "Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-19T13:13:35Z",
+          "completed_at": "2026-10-19T13:14:04Z"
+        },
+        {
+          "name": "Construct separately identified product merge",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 3,
+          "started_at": "2026-10-19T13:14:04Z",
+          "completed_at": "2026-10-19T13:14:04Z"
+        },
+        {
+          "name": "Bind exact source and preserve backend toolchain",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-19T13:14:04Z",
+          "completed_at": "2026-10-19T13:14:04Z"
+        },
+        {
+          "name": "Verify immutable merge checkout regression",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-19T13:14:04Z",
+          "completed_at": "2026-10-19T13:14:30Z"
+        },
+        {
+          "name": "Run actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-10-19T13:14:30Z",
+          "completed_at": "2026-10-19T13:14:31Z"
+        },
+        {
+          "name": "Install and verify official build inputs",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-10-19T13:14:31Z",
+          "completed_at": "2026-10-19T13:14:49Z"
+        },
+        {
+          "name": "Run actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-10-19T13:14:49Z",
+          "completed_at": "2026-10-19T13:14:50Z"
+        },
+        {
+          "name": "Install missing pinned official tools",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-10-19T13:14:50Z",
+          "completed_at": "2026-10-19T13:16:23Z"
+        },
+        {
+          "name": "Verify installed tool versions on every cache hit or miss",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-10-19T13:16:23Z",
+          "completed_at": "2026-10-19T13:16:23Z"
+        },
+        {
+          "name": "Run actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-10-19T13:16:23Z",
+          "completed_at": "2026-10-19T13:16:24Z"
+        },
+        {
+          "name": "Verify shared Rust presentation and renderer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-10-19T13:16:24Z",
+          "completed_at": "2026-10-19T13:17:29Z"
+        },
+        {
+          "name": "Build canonical strict-CSP no-threads artifact",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-10-19T13:17:29Z",
+          "completed_at": "2026-10-19T13:21:54Z"
+        },
+        {
+          "name": "Run actual browser renderer and capture layouts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-10-19T13:21:54Z",
+          "completed_at": "2026-10-19T13:24:07Z"
+        },
+        {
+          "name": "Require every default screenshot pixel check",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-10-19T13:24:07Z",
+          "completed_at": "2026-10-19T13:24:40Z"
+        },
+        {
+          "name": "Build source-bound actual gateway preview",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16,
+          "started_at": "2026-10-19T13:24:40Z",
+          "completed_at": "2026-10-19T13:26:21Z"
+        },
+        {
+          "name": "Execute bounded gateway transport and boundary regressions",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17,
+          "started_at": "2026-10-19T13:26:21Z",
+          "completed_at": "2026-10-19T13:26:28Z"
+        },
+        {
+          "name": "Exercise real gateway unavailable status and cancellation",
+          "status": "completed",
+          "conclusion": "failure",
+          "number": 18,
+          "started_at": "2026-10-19T13:26:28Z",
+          "completed_at": "2026-10-19T13:29:30Z"
+        },
+        {
+          "name": "Preserve actual gateway evidence separately",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19,
+          "started_at": "2026-10-19T13:29:30Z",
+          "completed_at": "2026-10-19T13:29:32Z"
+        },
+        {
+          "name": "Build explicitly labeled owner-fixture through the same renderer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20,
+          "started_at": "2026-10-19T13:29:32Z",
+          "completed_at": "2026-10-19T13:30:48Z"
+        },
+        {
+          "name": "Capture populated fixture and responsive transitions",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21,
+          "started_at": "2026-10-19T13:30:48Z",
+          "completed_at": "2026-10-19T13:34:57Z"
+        },
+        {
+          "name": "Require every populated screenshot pixel check",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22,
+          "started_at": "2026-10-19T13:34:57Z",
+          "completed_at": "2026-10-19T13:38:33Z"
+        },
+        {
+          "name": "Diagnose WebKit drawing buffer without changing product defaults",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 23,
+          "started_at": "2026-10-19T13:38:33Z",
+          "completed_at": "2026-10-19T13:39:09Z"
+        },
+        {
+          "name": "Confirm exact source after build and browser checks",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 24,
+          "started_at": "2026-10-19T13:39:09Z",
+          "completed_at": "2026-10-19T13:39:10Z"
+        },
+        {
+          "name": "Inventory every source-bound browser evidence file",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 25,
+          "started_at": "2026-10-19T13:39:10Z",
+          "completed_at": "2026-10-19T13:39:11Z"
+        },
+        {
+          "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 26,
+          "started_at": "2026-10-19T13:39:11Z",
+          "completed_at": "2026-10-19T13:39:12Z"
+        },
+        {
+          "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 27,
+          "started_at": "2026-10-19T13:39:12Z",
+          "completed_at": "2026-10-19T13:39:13Z"
+        },
+        {
+          "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 28,
+          "started_at": "2026-10-19T13:39:13Z",
+          "completed_at": "2026-10-19T13:39:15Z"
+        },
+        {
+          "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 29,
+          "started_at": "2026-10-19T13:39:15Z",
+          "completed_at": "2026-10-19T13:39:17Z"
+        },
+        {
+          "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 30,
+          "started_at": "2026-10-19T13:39:17Z",
+          "completed_at": "2026-10-19T13:39:19Z"
+        },
+        {
+          "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 31,
+          "started_at": "2026-10-19T13:39:19Z",
+          "completed_at": "2026-10-19T13:39:22Z"
+        },
+        {
+          "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 32,
+          "started_at": "2026-10-19T13:39:22Z",
+          "completed_at": "2026-10-19T13:39:24Z"
+        },
+        {
+          "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 33,
+          "started_at": "2026-10-19T13:39:24Z",
+          "completed_at": "2026-10-19T13:39:25Z"
+        },
+        {
+          "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 34,
+          "started_at": "2026-10-19T13:39:25Z",
+          "completed_at": "2026-10-19T13:39:27Z"
+        },
+        {
+          "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 35,
+          "started_at": "2026-10-19T13:39:27Z",
+          "completed_at": "2026-10-19T13:39:28Z"
+        },
+        {
+          "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 36,
+          "started_at": "2026-10-19T13:39:28Z",
+          "completed_at": "2026-10-19T13:39:30Z"
+        },
+        {
+          "name": "Install hash-pinned diagnostic browser (not acceptance)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 37,
+          "started_at": "2026-10-19T13:39:30Z",
+          "completed_at": "2026-10-19T13:39:30Z"
+        },
+        {
+          "name": "Compare unchanged product assertions and SDK transport (not acceptance)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 38,
+          "started_at": "2026-10-19T13:39:30Z",
+          "completed_at": "2026-10-19T13:39:30Z"
+        },
+        {
+          "name": "Compare Rust fixture font use and pixels (not acceptance)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 39,
+          "started_at": "2026-10-19T13:39:30Z",
+          "completed_at": "2026-10-19T13:39:30Z"
+        },
+        {
+          "name": "Require every diagnostic fixture semantic pixel check (not acceptance)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 40,
+          "started_at": "2026-10-19T13:39:30Z",
+          "completed_at": "2026-10-19T13:39:30Z"
+        },
+        {
+          "name": "Preserve failed and successful font diagnostic arms without changing acceptance",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 41,
+          "started_at": "2026-10-19T13:39:30Z",
+          "completed_at": "2026-10-19T13:39:30Z"
+        },
+        {
+          "name": "Post Run actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 81,
+          "started_at": "2026-10-19T13:39:30Z",
+          "completed_at": "2026-10-19T13:39:30Z"
+        },
+        {
+          "name": "Post Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 82,
+          "started_at": "2026-10-19T13:39:30Z",
+          "completed_at": "2026-10-19T13:39:30Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 83,
+          "started_at": "2026-10-19T13:39:30Z",
+          "completed_at": "2026-10-19T13:39:30Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/TrillionniumFoundation/hepta-private-ci/check-runs/118063553356",
+      "labels": [
+        "ubuntu-24.04"
+      ],
+      "runner_id": 1000175404,
+      "runner_name": "GitHub Actions 1000175404",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 118063553876,
+      "run_id": 39253698771,
+      "workflow_name": "Rust UI product foundation",
+      "head_branch": "agents/a00-ui-main-20261019",
+      "run_url": "https://api.github.com/repos/TrillionniumFoundation/hepta-private-ci/actions/runs/39253698771",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOTrgxoM8AAAAbfSLdVA",
+      "head_sha": "89933fdc84ed1151f04609a1881ab24aaef119b4",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/hepta-private-ci/actions/jobs/118063553876",
+      "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39253698771/job/118063553876",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-19T12:38:58Z",
+      "started_at": "2026-10-19T13:21:58Z",
+      "completed_at": "2026-10-19T13:37:32Z",
+      "name": "Rust UI foundation / base-merge",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-19T13:21:59Z",
+          "completed_at": "2026-10-19T13:22:01Z"
+        },
+        {
+          "name": "Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-19T13:22:01Z",
+          "completed_at": "2026-10-19T13:22:23Z"
+        },
+        {
+          "name": "Construct separately identified product merge",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-19T13:22:23Z",
+          "completed_at": "2026-10-19T13:22:23Z"
+        },
+        {
+          "name": "Bind exact source and preserve backend toolchain",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-19T13:22:23Z",
+          "completed_at": "2026-10-19T13:22:23Z"
+        },
+        {
+          "name": "Verify immutable merge checkout regression",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-19T13:22:23Z",
+          "completed_at": "2026-10-19T13:22:40Z"
+        },
+        {
+          "name": "Run actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-10-19T13:22:40Z",
+          "completed_at": "2026-10-19T13:22:40Z"
+        },
+        {
+          "name": "Install and verify official build inputs",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-10-19T13:22:40Z",
+          "completed_at": "2026-10-19T13:22:55Z"
+        },
+        {
+          "name": "Run actions/cache/restore@668228422ae6a00e4ad889ee87cd7109ec5666a7",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-10-19T13:22:55Z",
+          "completed_at": "2026-10-19T13:22:56Z"
+        },
+        {
+          "name": "Install missing pinned official tools",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 9,
+          "started_at": "2026-10-19T13:22:56Z",
+          "completed_at": "2026-10-19T13:22:56Z"
+        },
+        {
+          "name": "Verify installed tool versions on every cache hit or miss",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-10-19T13:22:56Z",
+          "completed_at": "2026-10-19T13:22:56Z"
+        },
+        {
+          "name": "Run actions/cache/save@668228422ae6a00e4ad889ee87cd7109ec5666a7",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 11,
+          "started_at": "2026-10-19T13:22:56Z",
+          "completed_at": "2026-10-19T13:22:56Z"
+        },
+        {
+          "name": "Verify shared Rust presentation and renderer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-10-19T13:22:56Z",
+          "completed_at": "2026-10-19T13:23:41Z"
+        },
+        {
+          "name": "Build canonical strict-CSP no-threads artifact",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-10-19T13:23:41Z",
+          "completed_at": "2026-10-19T13:26:39Z"
+        },
+        {
+          "name": "Run actual browser renderer and capture layouts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-10-19T13:26:39Z",
+          "completed_at": "2026-10-19T13:27:59Z"
+        },
+        {
+          "name": "Require every default screenshot pixel check",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-10-19T13:27:59Z",
+          "completed_at": "2026-10-19T13:28:20Z"
+        },
+        {
+          "name": "Build source-bound actual gateway preview",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16,
+          "started_at": "2026-10-19T13:28:20Z",
+          "completed_at": "2026-10-19T13:29:26Z"
+        },
+        {
+          "name": "Execute bounded gateway transport and boundary regressions",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17,
+          "started_at": "2026-10-19T13:29:26Z",
+          "completed_at": "2026-10-19T13:29:30Z"
+        },
+        {
+          "name": "Exercise real gateway unavailable status and cancellation",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18,
+          "started_at": "2026-10-19T13:29:30Z",
+          "completed_at": "2026-10-19T13:30:51Z"
+        },
+        {
+          "name": "Preserve actual gateway evidence separately",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19,
+          "started_at": "2026-10-19T13:30:51Z",
+          "completed_at": "2026-10-19T13:30:53Z"
+        },
+        {
+          "name": "Build explicitly labeled owner-fixture through the same renderer",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20,
+          "started_at": "2026-10-19T13:30:53Z",
+          "completed_at": "2026-10-19T13:31:51Z"
+        },
+        {
+          "name": "Capture populated fixture and responsive transitions",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21,
+          "started_at": "2026-10-19T13:31:51Z",
+          "completed_at": "2026-10-19T13:34:29Z"
+        },
+        {
+          "name": "Require every populated screenshot pixel check",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22,
+          "started_at": "2026-10-19T13:34:29Z",
+          "completed_at": "2026-10-19T13:36:48Z"
+        },
+        {
+          "name": "Diagnose WebKit drawing buffer without changing product defaults",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 23,
+          "started_at": "2026-10-19T13:36:48Z",
+          "completed_at": "2026-10-19T13:37:13Z"
+        },
+        {
+          "name": "Confirm exact source after build and browser checks",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 24,
+          "started_at": "2026-10-19T13:37:13Z",
+          "completed_at": "2026-10-19T13:37:13Z"
+        },
+        {
+          "name": "Inventory every source-bound browser evidence file",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 25,
+          "started_at": "2026-10-19T13:37:13Z",
+          "completed_at": "2026-10-19T13:37:14Z"
+        },
+        {
+          "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 26,
+          "started_at": "2026-10-19T13:37:14Z",
+          "completed_at": "2026-10-19T13:37:15Z"
+        },
+        {
+          "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 27,
+          "started_at": "2026-10-19T13:37:15Z",
+          "completed_at": "2026-10-19T13:37:16Z"
+        },
+        {
+          "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 28,
+          "started_at": "2026-10-19T13:37:16Z",
+          "completed_at": "2026-10-19T13:37:17Z"
+        },
+        {
+          "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 29,
+          "started_at": "2026-10-19T13:37:17Z",
+          "completed_at": "2026-10-19T13:37:19Z"
+        },
+        {
+          "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 30,
+          "started_at": "2026-10-19T13:37:19Z",
+          "completed_at": "2026-10-19T13:37:21Z"
+        },
+        {
+          "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 31,
+          "started_at": "2026-10-19T13:37:21Z",
+          "completed_at": "2026-10-19T13:37:23Z"
+        },
+        {
+          "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 32,
+          "started_at": "2026-10-19T13:37:23Z",
+          "completed_at": "2026-10-19T13:37:24Z"
+        },
+        {
+          "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 33,
+          "started_at": "2026-10-19T13:37:24Z",
+          "completed_at": "2026-10-19T13:37:25Z"
+        },
+        {
+          "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 34,
+          "started_at": "2026-10-19T13:37:25Z",
+          "completed_at": "2026-10-19T13:37:27Z"
+        },
+        {
+          "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 35,
+          "started_at": "2026-10-19T13:37:27Z",
+          "completed_at": "2026-10-19T13:37:28Z"
+        },
+        {
+          "name": "Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 36,
+          "started_at": "2026-10-19T13:37:28Z",
+          "completed_at": "2026-10-19T13:37:30Z"
+        },
+        {
+          "name": "Install hash-pinned diagnostic browser (not acceptance)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 37,
+          "started_at": "2026-10-19T13:37:30Z",
+          "completed_at": "2026-10-19T13:37:30Z"
+        },
+        {
+          "name": "Compare unchanged product assertions and SDK transport (not acceptance)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 38,
+          "started_at": "2026-10-19T13:37:30Z",
+          "completed_at": "2026-10-19T13:37:30Z"
+        },
+        {
+          "name": "Compare Rust fixture font use and pixels (not acceptance)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 39,
+          "started_at": "2026-10-19T13:37:30Z",
+          "completed_at": "2026-10-19T13:37:30Z"
+        },
+        {
+          "name": "Require every diagnostic fixture semantic pixel check (not acceptance)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 40,
+          "started_at": "2026-10-19T13:37:30Z",
+          "completed_at": "2026-10-19T13:37:30Z"
+        },
+        {
+          "name": "Preserve failed and successful font diagnostic arms without changing acceptance",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 41,
+          "started_at": "2026-10-19T13:37:30Z",
+          "completed_at": "2026-10-19T13:37:30Z"
+        },
+        {
+          "name": "Post Run actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 81,
+          "started_at": "2026-10-19T13:37:30Z",
+          "completed_at": "2026-10-19T13:37:30Z"
+        },
+        {
+          "name": "Post Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 82,
+          "started_at": "2026-10-19T13:37:30Z",
+          "completed_at": "2026-10-19T13:37:30Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 83,
+          "started_at": "2026-10-19T13:37:30Z",
+          "completed_at": "2026-10-19T13:37:30Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/TrillionniumFoundation/hepta-private-ci/check-runs/118063553876",
+      "labels": [
+        "ubuntu-24.04"
+      ],
+      "runner_id": 1000175568,
+      "runner_name": "GitHub Actions 1000175568",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    },
+    {
+      "id": 118063554284,
+      "run_id": 39253698771,
+      "workflow_name": "Rust UI product foundation",
+      "head_branch": "agents/a00-ui-main-20261019",
+      "run_url": "https://api.github.com/repos/TrillionniumFoundation/hepta-private-ci/actions/runs/39253698771",
+      "run_attempt": 1,
+      "node_id": "CR_kwDOTrgxoM8AAAAbfSLe7A",
+      "head_sha": "89933fdc84ed1151f04609a1881ab24aaef119b4",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/hepta-private-ci/actions/jobs/118063554284",
+      "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39253698771/job/118063554284",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-19T12:38:58Z",
+      "started_at": "2026-10-19T13:44:27Z",
+      "completed_at": "2026-10-19T13:45:19Z",
+      "name": "Generate UI dependency lock for review",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-19T13:44:28Z",
+          "completed_at": "2026-10-19T13:44:29Z"
+        },
+        {
+          "name": "Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-19T13:44:29Z",
+          "completed_at": "2026-10-19T13:44:35Z"
+        },
+        {
+          "name": "Bind the source before dependency generation",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-19T13:44:35Z",
+          "completed_at": "2026-10-19T13:44:35Z"
+        },
+        {
+          "name": "Prepare the original Bazel CI environment",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-19T13:44:35Z",
+          "completed_at": "2026-10-19T13:44:44Z"
+        },
+        {
+          "name": "Generate the lock using the repository entry point",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-19T13:44:44Z",
+          "completed_at": "2026-10-19T13:45:00Z"
+        },
+        {
+          "name": "Validate the generated lock with the original drift check",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-10-19T13:45:00Z",
+          "completed_at": "2026-10-19T13:45:14Z"
+        },
+        {
+          "name": "Upload the unchanged generation evidence for review",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-10-19T13:45:14Z",
+          "completed_at": "2026-10-19T13:45:16Z"
+        },
+        {
+          "name": "Post Prepare the original Bazel CI environment",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-10-19T13:45:16Z",
+          "completed_at": "2026-10-19T13:45:16Z"
+        },
+        {
+          "name": "Post Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-10-19T13:45:16Z",
+          "completed_at": "2026-10-19T13:45:17Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-10-19T13:45:17Z",
+          "completed_at": "2026-10-19T13:45:17Z"
+        }
+      ],
+      "check_run_url": "https://api.github.com/repos/TrillionniumFoundation/hepta-private-ci/check-runs/118063554284",
+      "labels": [
+        "ubuntu-24.04"
+      ],
+      "runner_id": 1000175743,
+      "runner_name": "GitHub Actions 1000175743",
+      "runner_group_id": 0,
+      "runner_group_name": "GitHub Actions"
+    }
+  ],
+  "official_artifact_metadata": {
+    "file": "candidate-ui-artifacts-metadata.json",
+    "bytes": 1841,
+    "sha256": "2b5c2ea55aa33625945d801fabde9fa8281ec71e499d66243276e000409c1599"
+  },
+  "time_basis": "Event ms values are delivered observer times relative to one test observer clock. The 802.306ms difference uses that same clock, not different cases, machines or raw CDP timestamps. The 90000ms value is the original whole-test deadline, not a claim that the finished() wait itself lasted a full 90 seconds.",
+  "original_source_job_log": {
+    "file": "ui-source-118063553356.log.xz",
+    "bytes": 131448,
+    "sha256": "ed88ffd698de1b64e7ebc51e6145a04640665d8cff55221330438c54e59e53d6",
+    "decoded_bytes": 1470409,
+    "decoded_sha256": "e98950ce731d776176a885d03f25f8149782ce8e563c9caa52f8727d0a3d4cba",
+    "compression": "xz",
+    "content_type": "UTF-8 GitHub Actions job log"
+  },
+  "browser_installation_evidence": {
+    "source_job_id": 118063553356,
+    "playwright": "1.63.0",
+    "chromium_installed_version": "153.0.8010.12",
+    "playwright_browser_revision": 1243,
+    "original_log_lines": [
+      {
+        "original_log_line": 8694,
+        "line": "2026-10-19T13:21:22.0861218Z Downloading Chrome for Testing 153.0.8010.12 (playwright chromium v1243) from https://cdn.playwright.dev/builds/cft/153.0.8010.12/linux64/chrome-linux64.zip"
+      },
+      {
+        "original_log_line": 8706,
+        "line": "2026-10-19T13:21:26.4381822Z Chrome for Testing 153.0.8010.12 (playwright chromium v1243) downloaded to /home/runner/.cache/ms-playwright/chromium-1243"
+      },
+      {
+        "original_log_line": 8720,
+        "line": "2026-10-19T13:21:27.0287404Z Downloading Chrome Headless Shell 153.0.8010.12 (playwright chromium-headless-shell v1243) from https://cdn.playwright.dev/builds/cft/153.0.8010.12/linux64/chrome-headless-shell-linux64.zip"
+      },
+      {
+        "original_log_line": 8732,
+        "line": "2026-10-19T13:21:30.2663073Z Chrome Headless Shell 153.0.8010.12 (playwright chromium-headless-shell v1243) downloaded to /home/runner/.cache/ms-playwright/chromium_headless_shell-1243"
+      }
+    ],
+    "limit": "Official original source job installs Chromium and Headless Shell 153.0.8010.12. Selected per-case audits do not include an independently hashed browser executable or a C++ call stack."
+  },
+  "constrained_next_step": {
+    "code_changes_in_this_followup": false,
+    "candidate_unchanged": true,
+    "original_browser_unchanged": true,
+    "workflow_reruns": 0,
+    "proposal": "Review an isolated backport of the actual upstream Chromium terminal-state fix, or a deliberately approved browser baseline incorporating it. Keep the original failed 153 artifacts as regression input and require the original six product cases in both source and merge lanes on the resulting candidate.",
+    "acceptance_invariants": [
+      "Original 90000ms whole-test deadline and original 27 expect assertions remain.",
+      "HTTP no-store and the existing bounded streaming body handling remain.",
+      "True truncation, declared/streamed oversize and explicit active owner cancellation remain failures/cancellations.",
+      "Runtime completion must remain native-completed; SDK503 or OCR success alone cannot satisfy it.",
+      "Do not change route-release order, swallow transport errors, skip a case or use diagnostic Chromium157 as a substitute pass."
+    ],
+    "optional_diagnosis_only": "A request-identity-bound failure observation can expose the existing native failure sooner while retaining strict native success. It is not the underlying transport fix and no such change has been applied."
+  },
+  "architecture_final_review": "architecture-final-review.json",
+  "all_checks_snapshot": {
+    "file": "ci-observation-20261019T140344Z.json",
+    "observed_at_utc": "2026-10-19T14:03:44Z",
+    "api_total_count": 49,
+    "returned": 49,
+    "counts": {
+      "queued": 5,
+      "success": 21,
+      "skipped": 6,
+      "neutral": 1,
+      "in_progress": 14,
+      "failure": 2
+    },
+    "all_returned_completed": false,
+    "scope_limit": "Check runs created and visible at this observation only; no claim that all planned fan-in jobs exist or that 52 checks passed."
+  }
+}

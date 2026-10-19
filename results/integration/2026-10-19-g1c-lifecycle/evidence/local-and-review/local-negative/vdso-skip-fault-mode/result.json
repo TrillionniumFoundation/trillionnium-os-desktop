@@ -1,0 +1,28 @@
+{
+  "all_other_source_files_unchanged": true,
+  "candidate_head": "104204016dcdea57ab73c091b1edd13008ae9a19",
+  "candidate_tree": "179b076747d19c3e07ee19a665e3968c33c598ce",
+  "control": "vdso-skip-fault-mode",
+  "declared_changed_path": "kernel/asterinas/kernel/core/src/vdso.rs",
+  "green_kernel_sha256": "bc457c4dd01c91a96e2891771b59888e84dc2cfefdee49d24f593aae189f0bbb",
+  "green_serial_sha256": "ef03a8cf19ba7ae395a964eda936385341f460ebf68c5211eee6c5b45b4b8696",
+  "negative_control_detected": true,
+  "negative_failed": [
+    "aster_core::vdso::clocksource_regressions::mapped_vdso_publishes_the_phase_and_fault_mode_under_the_existing_sequence"
+  ],
+  "negative_head": "6e949c052d258e31d91f3e808f8e8503b5856f08",
+  "negative_kernel_sha256": "b4a2e5b43b280d977fc00daf0ddd5aec7e208c239a833d7c228683a0bd695327",
+  "negative_passed": 237,
+  "negative_serial_sha256": "d8bcf2952e5868eb53f1fec82edee6efa5146ef1002386b26b25075876c4f49c",
+  "negative_tree": "3ca099c1fc383e4ac9228653b80b74bf8f95311e",
+  "original_gate_exit": 1,
+  "passed": true,
+  "patch_sha256": "da1f7c360136bfe330cba58acef4cf894d423043e1b3b9790958b923d4fcd452",
+  "product_qualification": false,
+  "raw_qemu_exit": 65,
+  "same_osdk_binary_and_source_path": true,
+  "schema": "a06.cpu-owner-negative.v1",
+  "source_snapshots_unchanged": true,
+  "timed_out": false,
+  "total_core_tests": 238
+}

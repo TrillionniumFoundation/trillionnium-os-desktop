@@ -1,0 +1,223 @@
+{
+  "cases": [
+    {
+      "line": 0,
+      "name": "open_exhaustion",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "lowered_limit_fd_number",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "zero_limit",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "dup_and_fcntl",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "open_no_side_effects",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "pipe_one_slot",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "socketpair_one_slot",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "pipe_copyout_fault",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "socketpair_copyout_fault",
+      "result": "PASS"
+    },
+    {
+      "line": 212,
+      "name": "accept_preserves_queue",
+      "result": "FAIL"
+    },
+    {
+      "line": 212,
+      "name": "accept_copyout_fault",
+      "result": "FAIL"
+    },
+    {
+      "line": 0,
+      "name": "socket_limit",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "eventfd_limit",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "timerfd_limit",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "epoll_limit",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "inotify_limit",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "memfd_limit",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "signalfd_limit_and_update",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "pidfd_open_limit",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "pty_peer_limit",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "allocators_compete",
+      "result": "PASS"
+    },
+    {
+      "line": 212,
+      "name": "reserved_dup2_collision",
+      "result": "FAIL"
+    },
+    {
+      "line": 212,
+      "name": "fork_ignores_reservation",
+      "result": "FAIL"
+    },
+    {
+      "line": 212,
+      "name": "cloexec_marks_reservation",
+      "result": "FAIL"
+    },
+    {
+      "line": 0,
+      "name": "shared_table_distinct_limits",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "stream_rights_none",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "stream_rights_partial",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "stream_rights_peek",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "stream_rights_copy_fault",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "datagram_rights_none",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "datagram_rights_partial",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "datagram_rights_peek",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "datagram_rights_copy_fault",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "seqpacket_rights_none",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "seqpacket_rights_partial",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "seqpacket_rights_peek",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "seqpacket_rights_copy_fault",
+      "result": "PASS"
+    }
+  ],
+  "cases_before_summary": true,
+  "cases_complete": true,
+  "cases_passed": false,
+  "command": [
+    "/workspace/scratch/499c7902de8e/r12-evidence/local-nofile-linux/probe.elf"
+  ],
+  "cpio_helper_sha256": "fc037a65aaf25fb3425befe8c74220e6ed76ea1767c368ba5d351e90a81f47e2",
+  "elapsed_seconds": 3.020880207004666,
+  "frozen_input_sha256": "931ce7bce5c9465e625469f39b0a5a05cc3b460706892a139b495324572b39ac",
+  "host_arch": "x86_64",
+  "host_kernel": "6.18.55",
+  "no_probe_failure": true,
+  "passed": false,
+  "pinned_debian13_qualification": false,
+  "probe_inputs_unchanged": true,
+  "probe_passed": false,
+  "probe_sha256": "80578a08abf6464dc10f2af3a1a793bbf46988981499934c9cfcbc58a590cae8",
+  "process_exit": 1,
+  "process_group_cleanup_completed": true,
+  "process_group_helper_sha256": "22a27a8fbe4386187b3bf9716a6a40b0d4416fc706d1fd99a4f9eee8b55b98a8",
+  "product_helper_sha256": "1d501766dd611652797643f047bde8ac6ac2d6e41225e74eca51817d44a7965d",
+  "runner_inputs_unchanged": true,
+  "runner_sha256": "adce5f93bbc8679c6aa0b08162baf0c1f8ae854ef346b78e585525062484ad1c",
+  "schema": "a04.rlimit-nofile-linux.v1",
+  "scope": "37 RLIMIT_NOFILE allocation/receiver cases",
+  "stderr_sha256": "70b3524ccaf2840dd2b6404ac8cd788b536a810251e1094d07bc7d5c1ab923bb",
+  "stdout_sha256": "20b2cc43efb8e741f4c579b0e84f341aee4dca5e666237449c48bd239bcb7460",
+  "summary_consistent": true,
+  "summary_totals": [
+    37,
+    32,
+    5
+  ],
+  "timed_out": false
+}

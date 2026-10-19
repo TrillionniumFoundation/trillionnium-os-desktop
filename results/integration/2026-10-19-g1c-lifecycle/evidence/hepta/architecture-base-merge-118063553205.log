@@ -1,0 +1,665 @@
+﻿2026-10-19T13:12:05.4620549Z Current runner version: '2.337.0'
+2026-10-19T13:12:05.4646106Z ##[group]Runner Image Provisioner
+2026-10-19T13:12:05.4646979Z Hosted Compute Agent
+2026-10-19T13:12:05.4647754Z Version: 20261012.601
+2026-10-19T13:12:05.4648396Z Commit: f3dc54e1fb89da6852db922499a0233137369e1d
+2026-10-19T13:12:05.4649251Z Build Date: 2026-10-12T17:48:21Z
+2026-10-19T13:12:05.4650006Z Worker ID: {fbbd8a0e-f9c3-49b3-bd6e-3c7cad683591}
+2026-10-19T13:12:05.4650724Z Region: northcentralus
+2026-10-19T13:12:05.4651417Z Cloud: Azure
+2026-10-19T13:12:05.4652003Z ##[endgroup]
+2026-10-19T13:12:05.4653996Z ##[group]Operating System
+2026-10-19T13:12:05.4654695Z Ubuntu
+2026-10-19T13:12:05.4655216Z 24.04.5
+2026-10-19T13:12:05.4655838Z LTS
+2026-10-19T13:12:05.4656359Z ##[endgroup]
+2026-10-19T13:12:05.4657018Z ##[group]Runner Image
+2026-10-19T13:12:05.4657643Z Image: ubuntu-24.04-arm
+2026-10-19T13:12:05.4658240Z Version: 20261012.149.1
+2026-10-19T13:12:05.4659655Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24-arm64/20261012.149/images/ubuntu/Ubuntu2404-Arm64-Readme.md
+2026-10-19T13:12:05.4661278Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24-arm64%2F20261012.149
+2026-10-19T13:12:05.4662521Z ##[endgroup]
+2026-10-19T13:12:05.4663614Z ##[group]GITHUB_TOKEN Permissions
+2026-10-19T13:12:05.4666064Z Contents: read
+2026-10-19T13:12:05.4666658Z Metadata: read
+2026-10-19T13:12:05.4667572Z ##[endgroup]
+2026-10-19T13:12:05.4670334Z Secret source: Actions
+2026-10-19T13:12:05.4671456Z Cache mode: write
+2026-10-19T13:12:05.4672708Z Prepare workflow directory
+2026-10-19T13:12:05.5194327Z Prepare all required actions
+2026-10-19T13:12:05.5240732Z Getting action download info
+2026-10-19T13:12:05.7844384Z Download action repository 'actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd' (SHA:de0fac2e4500dabe0009e67214ff5f5447ce83dd)
+2026-10-19T13:12:05.9299900Z Download action repository 'facebook/install-dotslash@1e4e7b3e07eaca387acb98f1d4720e0bee8dbb6a' (SHA:1e4e7b3e07eaca387acb98f1d4720e0bee8dbb6a)
+2026-10-19T13:12:06.0900366Z Download action repository 'taiki-e/install-action@44c6d64aa62cd779e873306675c7a58e86d6d532' (SHA:44c6d64aa62cd779e873306675c7a58e86d6d532)
+2026-10-19T13:12:06.3726471Z Download action repository 'actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-10-19T13:12:06.6328162Z Complete job name: Architecture convergence (base-merge)
+2026-10-19T13:12:06.7316492Z ##[group]Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+2026-10-19T13:12:06.7318166Z with:
+2026-10-19T13:12:06.7318903Z   ref: 89933fdc84ed1151f04609a1881ab24aaef119b4
+2026-10-19T13:12:06.7319922Z   fetch-depth: 1
+2026-10-19T13:12:06.7320640Z   persist-credentials: false
+2026-10-19T13:12:06.7321664Z   repository: TrillionniumFoundation/hepta-private-ci
+2026-10-19T13:12:06.7326320Z   token: ***
+2026-10-19T13:12:06.7326968Z   ssh-strict: true
+2026-10-19T13:12:06.7327802Z   ssh-user: git
+2026-10-19T13:12:06.7328427Z   clean: true
+2026-10-19T13:12:06.7329239Z   sparse-checkout-cone-mode: true
+2026-10-19T13:12:06.7330034Z   fetch-tags: false
+2026-10-19T13:12:06.7330697Z   show-progress: true
+2026-10-19T13:12:06.7331507Z   lfs: false
+2026-10-19T13:12:06.7332134Z   submodules: false
+2026-10-19T13:12:06.7333223Z   set-safe-directory: true
+2026-10-19T13:12:06.7334570Z env:
+2026-10-19T13:12:06.7335312Z   SOURCE_SHA: 89933fdc84ed1151f04609a1881ab24aaef119b4
+2026-10-19T13:12:06.7336521Z   BASE_SHA: f8c9419df6ddeb36ff8b522a50219981fb8d9345
+2026-10-19T13:12:06.7337430Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-19T13:12:06.7338221Z   CARGO_INCREMENTAL: 0
+2026-10-19T13:12:06.7338909Z   CARGO_BUILD_JOBS: 2
+2026-10-19T13:12:06.7339586Z   CARGO_PROFILE_TEST_DEBUG: 0
+2026-10-19T13:12:06.7340498Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-10-19T13:12:06.7341214Z ##[endgroup]
+2026-10-19T13:12:06.8185259Z Syncing repository: TrillionniumFoundation/hepta-private-ci
+2026-10-19T13:12:06.8187727Z ##[group]Getting Git version info
+2026-10-19T13:12:06.8188986Z Working directory is '/home/runner/work/hepta-private-ci/hepta-private-ci'
+2026-10-19T13:12:06.8191107Z [command]/usr/bin/git version
+2026-10-19T13:12:06.8279104Z git version 2.55.0
+2026-10-19T13:12:06.8298313Z ##[endgroup]
+2026-10-19T13:12:06.8312462Z Temporarily overriding HOME='/home/runner/work/_temp/0d48da30-543b-498d-a317-f019a28065a6' before making global git config changes
+2026-10-19T13:12:06.8314325Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-19T13:12:06.8316753Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/hepta-private-ci/hepta-private-ci
+2026-10-19T13:12:06.8344578Z Deleting the contents of '/home/runner/work/hepta-private-ci/hepta-private-ci'
+2026-10-19T13:12:06.8348892Z ##[group]Initializing the repository
+2026-10-19T13:12:06.8353139Z [command]/usr/bin/git init /home/runner/work/hepta-private-ci/hepta-private-ci
+2026-10-19T13:12:06.8428119Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-19T13:12:06.8433758Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-19T13:12:06.8435032Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-19T13:12:06.8436251Z hint: call:
+2026-10-19T13:12:06.8436861Z hint:
+2026-10-19T13:12:06.8437830Z hint: 	git config --global init.defaultBranch <name>
+2026-10-19T13:12:06.8438718Z hint:
+2026-10-19T13:12:06.8439588Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-19T13:12:06.8440974Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-19T13:12:06.8441923Z hint:
+2026-10-19T13:12:06.8442842Z hint: 	git branch -m <name>
+2026-10-19T13:12:06.8443559Z hint:
+2026-10-19T13:12:06.8444434Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-19T13:12:06.8445916Z Initialized empty Git repository in /home/runner/work/hepta-private-ci/hepta-private-ci/.git/
+2026-10-19T13:12:06.8448909Z [command]/usr/bin/git remote add origin https://github.com/TrillionniumFoundation/hepta-private-ci
+2026-10-19T13:12:06.8471848Z ##[endgroup]
+2026-10-19T13:12:06.8476184Z ##[group]Disabling automatic garbage collection
+2026-10-19T13:12:06.8477195Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-19T13:12:06.8495147Z ##[endgroup]
+2026-10-19T13:12:06.8496845Z ##[group]Setting up auth
+2026-10-19T13:12:06.8498134Z Removing SSH command configuration
+2026-10-19T13:12:06.8499812Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-19T13:12:06.8528159Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-19T13:12:06.8795296Z Removing HTTP extra header
+2026-10-19T13:12:06.8800034Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-19T13:12:06.8826696Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-19T13:12:06.8998412Z Removing includeIf entries pointing to credentials config files
+2026-10-19T13:12:06.9001659Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-19T13:12:06.9029620Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-19T13:12:06.9211529Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-5d0f8d71-29f6-4ae2-a0ea-a34b3cfb4689.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-19T13:12:06.9244179Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/hepta-private-ci/hepta-private-ci/.git.path /home/runner/work/_temp/git-credentials-5d0f8d71-29f6-4ae2-a0ea-a34b3cfb4689.config
+2026-10-19T13:12:06.9271755Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/hepta-private-ci/hepta-private-ci/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-5d0f8d71-29f6-4ae2-a0ea-a34b3cfb4689.config
+2026-10-19T13:12:06.9299728Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-5d0f8d71-29f6-4ae2-a0ea-a34b3cfb4689.config
+2026-10-19T13:12:06.9329498Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-5d0f8d71-29f6-4ae2-a0ea-a34b3cfb4689.config
+2026-10-19T13:12:06.9363144Z ##[endgroup]
+2026-10-19T13:12:06.9369292Z ##[group]Fetching the repository
+2026-10-19T13:12:06.9370786Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin 89933fdc84ed1151f04609a1881ab24aaef119b4
+2026-10-19T13:12:11.2134649Z From https://github.com/TrillionniumFoundation/hepta-private-ci
+2026-10-19T13:12:11.2136281Z  * branch            89933fdc84ed1151f04609a1881ab24aaef119b4 -> FETCH_HEAD
+2026-10-19T13:12:11.2138337Z [command]/usr/bin/git rev-parse --verify --quiet 89933fdc84ed1151f04609a1881ab24aaef119b4^{object}
+2026-10-19T13:12:11.2157080Z 89933fdc84ed1151f04609a1881ab24aaef119b4
+2026-10-19T13:12:11.2159993Z ##[endgroup]
+2026-10-19T13:12:11.2160926Z ##[group]Determining the checkout info
+2026-10-19T13:12:11.2162019Z ##[endgroup]
+2026-10-19T13:12:11.2164705Z [command]/usr/bin/git sparse-checkout disable
+2026-10-19T13:12:11.2240303Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-19T13:12:11.2332766Z ##[group]Checking out the ref
+2026-10-19T13:12:11.2340427Z [command]/usr/bin/git checkout --progress --force 89933fdc84ed1151f04609a1881ab24aaef119b4
+2026-10-19T13:12:11.6145312Z Note: switching to '89933fdc84ed1151f04609a1881ab24aaef119b4'.
+2026-10-19T13:12:11.6147660Z 
+2026-10-19T13:12:11.6148359Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-19T13:12:11.6149452Z changes and commit them, and you can discard any commits you make in this
+2026-10-19T13:12:11.6150610Z state without impacting any branches by switching back to a branch.
+2026-10-19T13:12:11.6151154Z 
+2026-10-19T13:12:11.6151567Z If you want to create a new branch to retain commits you create, you may
+2026-10-19T13:12:11.6152690Z do so (now or later) by using -c with the switch command. Example:
+2026-10-19T13:12:11.6153318Z 
+2026-10-19T13:12:11.6154159Z   git switch -c <new-branch-name>
+2026-10-19T13:12:11.6154943Z 
+2026-10-19T13:12:11.6155347Z Or undo this operation with:
+2026-10-19T13:12:11.6155973Z 
+2026-10-19T13:12:11.6156337Z   git switch -
+2026-10-19T13:12:11.6156803Z 
+2026-10-19T13:12:11.6157295Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-19T13:12:11.6157859Z 
+2026-10-19T13:12:11.6158521Z HEAD is now at 89933fd Fix CI fixture dependencies and observe original UI response completion
+2026-10-19T13:12:11.6160806Z ##[endgroup]
+2026-10-19T13:12:11.6196323Z [command]/usr/bin/git log -1 --format=%H
+2026-10-19T13:12:11.6218020Z 89933fdc84ed1151f04609a1881ab24aaef119b4
+2026-10-19T13:12:11.6226137Z ##[group]Removing auth
+2026-10-19T13:12:11.6226491Z Removing SSH command configuration
+2026-10-19T13:12:11.6229902Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-19T13:12:11.6255933Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-19T13:12:11.6435531Z Removing HTTP extra header
+2026-10-19T13:12:11.6439016Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-19T13:12:11.6465678Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-19T13:12:11.6645207Z Removing includeIf entries pointing to credentials config files
+2026-10-19T13:12:11.6648113Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-19T13:12:11.6668102Z includeif.gitdir:/home/runner/work/hepta-private-ci/hepta-private-ci/.git.path
+2026-10-19T13:12:11.6669402Z includeif.gitdir:/home/runner/work/hepta-private-ci/hepta-private-ci/.git/worktrees/*.path
+2026-10-19T13:12:11.6670056Z includeif.gitdir:/github/workspace/.git.path
+2026-10-19T13:12:11.6670531Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-19T13:12:11.6676385Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/hepta-private-ci/hepta-private-ci/.git.path
+2026-10-19T13:12:11.6697419Z /home/runner/work/_temp/git-credentials-5d0f8d71-29f6-4ae2-a0ea-a34b3cfb4689.config
+2026-10-19T13:12:11.6706513Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/hepta-private-ci/hepta-private-ci/.git.path /home/runner/work/_temp/git-credentials-5d0f8d71-29f6-4ae2-a0ea-a34b3cfb4689.config
+2026-10-19T13:12:11.6746085Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/hepta-private-ci/hepta-private-ci/.git/worktrees/*.path
+2026-10-19T13:12:11.6767722Z /home/runner/work/_temp/git-credentials-5d0f8d71-29f6-4ae2-a0ea-a34b3cfb4689.config
+2026-10-19T13:12:11.6775487Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/hepta-private-ci/hepta-private-ci/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-5d0f8d71-29f6-4ae2-a0ea-a34b3cfb4689.config
+2026-10-19T13:12:11.6947445Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-10-19T13:12:11.6968978Z /github/runner_temp/git-credentials-5d0f8d71-29f6-4ae2-a0ea-a34b3cfb4689.config
+2026-10-19T13:12:11.6975315Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-5d0f8d71-29f6-4ae2-a0ea-a34b3cfb4689.config
+2026-10-19T13:12:11.7050779Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-19T13:12:11.7071881Z /github/runner_temp/git-credentials-5d0f8d71-29f6-4ae2-a0ea-a34b3cfb4689.config
+2026-10-19T13:12:11.7077934Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-5d0f8d71-29f6-4ae2-a0ea-a34b3cfb4689.config
+2026-10-19T13:12:11.7150002Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-19T13:12:11.7330119Z Removing credentials config '/home/runner/work/_temp/git-credentials-5d0f8d71-29f6-4ae2-a0ea-a34b3cfb4689.config'
+2026-10-19T13:12:11.7338271Z ##[endgroup]
+2026-10-19T13:12:11.7562701Z ##[group]Run set -euo pipefail
+2026-10-19T13:12:11.7563255Z [36;1mset -euo pipefail[0m
+2026-10-19T13:12:11.7563821Z [36;1margs=(--full-history --commit "$SOURCE_SHA")[0m
+2026-10-19T13:12:11.7564229Z [36;1mif [[ -n "$BASE_SHA" && ! "$BASE_SHA" =~ ^0+$ ]]; then[0m
+2026-10-19T13:12:11.7564629Z [36;1m  args+=(--commit "$BASE_SHA")[0m
+2026-10-19T13:12:11.7565023Z [36;1mfi[0m
+2026-10-19T13:12:11.7565317Z [36;1mpython3 scripts/hepta_ci_history.py "${args[@]}"[0m
+2026-10-19T13:12:11.7680463Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-19T13:12:11.7680883Z env:
+2026-10-19T13:12:11.7681469Z   SOURCE_SHA: 89933fdc84ed1151f04609a1881ab24aaef119b4
+2026-10-19T13:12:11.7681847Z   BASE_SHA: f8c9419df6ddeb36ff8b522a50219981fb8d9345
+2026-10-19T13:12:11.7682465Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-19T13:12:11.7682759Z   CARGO_INCREMENTAL: 0
+2026-10-19T13:12:11.7682990Z   CARGO_BUILD_JOBS: 2
+2026-10-19T13:12:11.7683353Z   CARGO_PROFILE_TEST_DEBUG: 0
+2026-10-19T13:12:11.7683693Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-10-19T13:12:11.7686543Z   GH_TOKEN: ***
+2026-10-19T13:12:11.7686815Z ##[endgroup]
+2026-10-19T13:12:17.3112468Z ##[group]Run set -euo pipefail
+2026-10-19T13:12:17.3112948Z [36;1mset -euo pipefail[0m
+2026-10-19T13:12:17.3113350Z [36;1mtest -n "$PR_NUMBER"[0m
+2026-10-19T13:12:17.3114057Z [36;1mref_json="$(gh api "repos/$REPO/git/ref/pull/$PR_NUMBER/merge")"[0m
+2026-10-19T13:12:17.3114506Z [36;1mactual_sha="$(jq -er '.object.sha' <<<"$ref_json")"[0m
+2026-10-19T13:12:17.3115027Z [36;1mcommit_json="$(gh api "repos/$REPO/git/commits/$actual_sha")"[0m
+2026-10-19T13:12:17.3115480Z [36;1mmapfile -t parents < <(jq -r '.parents[].sha' <<<"$commit_json")[0m
+2026-10-19T13:12:17.3115912Z [36;1mtest "${#parents[@]}" -eq 2[0m
+2026-10-19T13:12:17.3116226Z [36;1mtest "${parents[0]}" = "$BASE_SHA"[0m
+2026-10-19T13:12:17.3116535Z [36;1mtest "${parents[1]}" = "$SOURCE_SHA"[0m
+2026-10-19T13:12:17.3116935Z [36;1mactual_tree="$(jq -er '.tree.sha' <<<"$commit_json")"[0m
+2026-10-19T13:12:17.3117409Z [36;1mexpected_tree="$(git merge-tree --write-tree "$BASE_SHA" "$SOURCE_SHA")"[0m
+2026-10-19T13:12:17.3117952Z [36;1mtest "$actual_tree" = "$expected_tree"[0m
+2026-10-19T13:12:17.3118396Z [36;1mprintf 'GITHUB_PROSPECTIVE_MERGE_SHA=%s\n' "$actual_sha" >> "$GITHUB_ENV"[0m
+2026-10-19T13:12:17.3118972Z [36;1mprintf 'GITHUB_PROSPECTIVE_MERGE_TREE=%s\n' "$actual_tree" >> "$GITHUB_ENV"[0m
+2026-10-19T13:12:17.3153476Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-19T13:12:17.3154059Z env:
+2026-10-19T13:12:17.3154320Z   SOURCE_SHA: 89933fdc84ed1151f04609a1881ab24aaef119b4
+2026-10-19T13:12:17.3154742Z   BASE_SHA: f8c9419df6ddeb36ff8b522a50219981fb8d9345
+2026-10-19T13:12:17.3155075Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-19T13:12:17.3155331Z   CARGO_INCREMENTAL: 0
+2026-10-19T13:12:17.3155639Z   CARGO_BUILD_JOBS: 2
+2026-10-19T13:12:17.3155876Z   CARGO_PROFILE_TEST_DEBUG: 0
+2026-10-19T13:12:17.3156231Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-10-19T13:12:17.3158895Z   GH_TOKEN: ***
+2026-10-19T13:12:17.3159213Z   REPO: TrillionniumFoundation/hepta-private-ci
+2026-10-19T13:12:17.3159635Z   PR_NUMBER: 2885
+2026-10-19T13:12:17.3159855Z ##[endgroup]
+2026-10-19T13:12:19.8809301Z Prepare all required actions
+2026-10-19T13:12:19.8880106Z ##[group]Run ./.github/actions/hepta-synthetic-merge
+2026-10-19T13:12:19.8880422Z with:
+2026-10-19T13:12:19.8880634Z   base-sha: f8c9419df6ddeb36ff8b522a50219981fb8d9345
+2026-10-19T13:12:19.8880949Z   source-sha: 89933fdc84ed1151f04609a1881ab24aaef119b4
+2026-10-19T13:12:19.8881219Z   pr-number: 2885
+2026-10-19T13:12:19.8881408Z   author-name: Hepta Docs CI
+2026-10-19T13:12:19.8881672Z   author-email: hepta-docs-ci@users.noreply.github.com
+2026-10-19T13:12:19.8881958Z   message: Synthetic merge
+2026-10-19T13:12:19.8882154Z env:
+2026-10-19T13:12:19.8882586Z   SOURCE_SHA: 89933fdc84ed1151f04609a1881ab24aaef119b4
+2026-10-19T13:12:19.8882906Z   BASE_SHA: f8c9419df6ddeb36ff8b522a50219981fb8d9345
+2026-10-19T13:12:19.8883189Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-19T13:12:19.8883406Z   CARGO_INCREMENTAL: 0
+2026-10-19T13:12:19.8883596Z   CARGO_BUILD_JOBS: 2
+2026-10-19T13:12:19.8883789Z   CARGO_PROFILE_TEST_DEBUG: 0
+2026-10-19T13:12:19.8884045Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-10-19T13:12:19.8884354Z   GITHUB_PROSPECTIVE_MERGE_SHA: c1a76c78972c82a6a1638d4331a1fb8ee6940473
+2026-10-19T13:12:19.8884792Z   GITHUB_PROSPECTIVE_MERGE_TREE: 25b2a7b559549fba0d22fa7d62d78c76c13cd5ce
+2026-10-19T13:12:19.8885125Z ##[endgroup]
+2026-10-19T13:12:19.8945855Z ##[start-action display=Construct deterministic merge candidate;id=synthetic.merge]
+2026-10-19T13:12:19.8972058Z ##[group]Run set -euo pipefail
+2026-10-19T13:12:19.8972527Z [36;1mset -euo pipefail[0m
+2026-10-19T13:12:19.8972751Z [36;1mtest -n "$BASE_SHA"[0m
+2026-10-19T13:12:19.8972964Z [36;1mtest -n "$SOURCE_SHA"[0m
+2026-10-19T13:12:19.8973183Z [36;1mtest -n "$PR_NUMBER"[0m
+2026-10-19T13:12:19.8973434Z [36;1mtest "$(git rev-parse HEAD)" = "$SOURCE_SHA"[0m
+2026-10-19T13:12:19.8973731Z [36;1mgit cat-file -e "$BASE_SHA^{commit}"[0m
+2026-10-19T13:12:19.8974018Z [36;1mgit cat-file -e "$SOURCE_SHA^{commit}"[0m
+2026-10-19T13:12:19.8974379Z [36;1mTREE="$(git merge-tree --write-tree "$BASE_SHA" "$SOURCE_SHA")"[0m
+2026-10-19T13:12:19.8974721Z [36;1m[[ "$TREE" =~ ^[0-9a-f]{40}$ ]][0m
+2026-10-19T13:12:19.8974981Z [36;1mexport GIT_AUTHOR_NAME="$AUTHOR_NAME"[0m
+2026-10-19T13:12:19.8975559Z [36;1mexport GIT_AUTHOR_EMAIL="$AUTHOR_EMAIL"[0m
+2026-10-19T13:12:19.8975856Z [36;1mexport GIT_COMMITTER_NAME="$AUTHOR_NAME"[0m
+2026-10-19T13:12:19.8976163Z [36;1mexport GIT_COMMITTER_EMAIL="$AUTHOR_EMAIL"[0m
+2026-10-19T13:12:19.8976468Z [36;1mexport GIT_AUTHOR_DATE='2000-01-01T00:00:00Z'[0m
+2026-10-19T13:12:19.8976782Z [36;1mexport GIT_COMMITTER_DATE="$GIT_AUTHOR_DATE"[0m
+2026-10-19T13:12:19.8977287Z [36;1mSHA="$(printf '%s for PR %s\n' "$MESSAGE" "$PR_NUMBER" | git commit-tree "$TREE" -p "$BASE_SHA" -p "$SOURCE_SHA")"[0m
+2026-10-19T13:12:19.8977756Z [36;1m[[ "$SHA" =~ ^[0-9a-f]{40}$ ]][0m
+2026-10-19T13:12:19.8978000Z [36;1mgit checkout --detach "$SHA"[0m
+2026-10-19T13:12:19.8978260Z [36;1mtest "$(git rev-parse HEAD)" = "$SHA"[0m
+2026-10-19T13:12:19.8978561Z [36;1mtest "$(git rev-parse HEAD^{tree})" = "$TREE"[0m
+2026-10-19T13:12:19.8978947Z [36;1mtest "$(git rev-list --parents -n 1 HEAD)" = "$SHA $BASE_SHA $SOURCE_SHA"[0m
+2026-10-19T13:12:19.8979351Z [36;1mprintf 'sha=%s\n' "$SHA" >> "$GITHUB_OUTPUT"[0m
+2026-10-19T13:12:19.8979667Z [36;1mprintf 'tree=%s\n' "$TREE" >> "$GITHUB_OUTPUT"[0m
+2026-10-19T13:12:19.9014692Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-19T13:12:19.9015077Z env:
+2026-10-19T13:12:19.9015292Z   SOURCE_SHA: 89933fdc84ed1151f04609a1881ab24aaef119b4
+2026-10-19T13:12:19.9015606Z   BASE_SHA: f8c9419df6ddeb36ff8b522a50219981fb8d9345
+2026-10-19T13:12:19.9015885Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-19T13:12:19.9016102Z   CARGO_INCREMENTAL: 0
+2026-10-19T13:12:19.9016290Z   CARGO_BUILD_JOBS: 2
+2026-10-19T13:12:19.9016480Z   CARGO_PROFILE_TEST_DEBUG: 0
+2026-10-19T13:12:19.9016697Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-10-19T13:12:19.9017000Z   GITHUB_PROSPECTIVE_MERGE_SHA: c1a76c78972c82a6a1638d4331a1fb8ee6940473
+2026-10-19T13:12:19.9017690Z   GITHUB_PROSPECTIVE_MERGE_TREE: 25b2a7b559549fba0d22fa7d62d78c76c13cd5ce
+2026-10-19T13:12:19.9018044Z   PR_NUMBER: 2885
+2026-10-19T13:12:19.9018229Z   AUTHOR_NAME: Hepta Docs CI
+2026-10-19T13:12:19.9018529Z   AUTHOR_EMAIL: hepta-docs-ci@users.noreply.github.com
+2026-10-19T13:12:19.9018816Z   MESSAGE: Synthetic merge
+2026-10-19T13:12:19.9019011Z ##[endgroup]
+2026-10-19T13:12:20.2448573Z Previous HEAD position was 89933fdc8 Fix CI fixture dependencies and observe original UI response completion
+2026-10-19T13:12:20.2450658Z HEAD is now at 04b6f3b75 Synthetic merge for PR 2885
+2026-10-19T13:12:20.2528907Z ##[end-action id=synthetic.merge;outcome=success;conclusion=success;duration_ms=358]
+2026-10-19T13:12:20.2589866Z ##[group]Run set -euo pipefail
+2026-10-19T13:12:20.2590255Z [36;1mset -euo pipefail[0m
+2026-10-19T13:12:20.2590553Z [36;1mtest "$(git rev-parse HEAD)" = "$CANDIDATE"[0m
+2026-10-19T13:12:20.2590991Z [36;1mgit diff --check[0m
+2026-10-19T13:12:20.2591305Z [36;1mprintf 'TESTED_SHA=%s\n' "$CANDIDATE" >> "$GITHUB_ENV"[0m
+2026-10-19T13:12:20.2591742Z [36;1mprintf 'HEPTA_CI_LANE=%s\n' "$LANE" >> "$GITHUB_ENV"[0m
+2026-10-19T13:12:20.2623695Z shell: /usr/bin/bash -e {0}
+2026-10-19T13:12:20.2624080Z env:
+2026-10-19T13:12:20.2624330Z   SOURCE_SHA: 89933fdc84ed1151f04609a1881ab24aaef119b4
+2026-10-19T13:12:20.2624740Z   BASE_SHA: f8c9419df6ddeb36ff8b522a50219981fb8d9345
+2026-10-19T13:12:20.2625064Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-19T13:12:20.2625343Z   CARGO_INCREMENTAL: 0
+2026-10-19T13:12:20.2625609Z   CARGO_BUILD_JOBS: 2
+2026-10-19T13:12:20.2625845Z   CARGO_PROFILE_TEST_DEBUG: 0
+2026-10-19T13:12:20.2626177Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-10-19T13:12:20.2626621Z   GITHUB_PROSPECTIVE_MERGE_SHA: c1a76c78972c82a6a1638d4331a1fb8ee6940473
+2026-10-19T13:12:20.2627093Z   GITHUB_PROSPECTIVE_MERGE_TREE: 25b2a7b559549fba0d22fa7d62d78c76c13cd5ce
+2026-10-19T13:12:20.2627473Z   CANDIDATE: 04b6f3b75fc6e4e728a9f2a7393c19a2b6cc5740
+2026-10-19T13:12:20.2627742Z   LANE: base-merge
+2026-10-19T13:12:20.2627914Z ##[endgroup]
+2026-10-19T13:12:20.2821022Z ##[group]Run set -euo pipefail
+2026-10-19T13:12:20.2821330Z [36;1mset -euo pipefail[0m
+2026-10-19T13:12:20.2821602Z [36;1mmkdir -p "$RUNNER_TEMP/hepta-command-records"[0m
+2026-10-19T13:12:20.2822178Z [36;1mpython3 -m unittest -v scripts.tests.test_hepta_ci_candidate[0m
+2026-10-19T13:12:20.2823279Z [36;1mpython3 scripts/hepta_ci_candidate.py --source "$SOURCE_SHA" --tested "$TESTED_SHA" --base "$BASE_SHA" --lane "$LANE" --github-output "$GITHUB_OUTPUT" | tee "$RUNNER_TEMP/hepta-command-records/candidate-tree.json"[0m
+2026-10-19T13:12:20.2852830Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-19T13:12:20.2853134Z env:
+2026-10-19T13:12:20.2853344Z   SOURCE_SHA: 89933fdc84ed1151f04609a1881ab24aaef119b4
+2026-10-19T13:12:20.2853656Z   BASE_SHA: f8c9419df6ddeb36ff8b522a50219981fb8d9345
+2026-10-19T13:12:20.2853940Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-19T13:12:20.2854157Z   CARGO_INCREMENTAL: 0
+2026-10-19T13:12:20.2854347Z   CARGO_BUILD_JOBS: 2
+2026-10-19T13:12:20.2854770Z   CARGO_PROFILE_TEST_DEBUG: 0
+2026-10-19T13:12:20.2854990Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-10-19T13:12:20.2855295Z   GITHUB_PROSPECTIVE_MERGE_SHA: c1a76c78972c82a6a1638d4331a1fb8ee6940473
+2026-10-19T13:12:20.2855737Z   GITHUB_PROSPECTIVE_MERGE_TREE: 25b2a7b559549fba0d22fa7d62d78c76c13cd5ce
+2026-10-19T13:12:20.2856116Z   TESTED_SHA: 04b6f3b75fc6e4e728a9f2a7393c19a2b6cc5740
+2026-10-19T13:12:20.2856394Z   HEPTA_CI_LANE: base-merge
+2026-10-19T13:12:20.2856596Z   LANE: base-merge
+2026-10-19T13:12:20.2856771Z ##[endgroup]
+2026-10-19T13:12:20.4988603Z test_different_merge_tree_requires_real_tests_not_only_compile (scripts.tests.test_hepta_ci_candidate.CandidatePlanTests.test_different_merge_tree_requires_real_tests_not_only_compile) ... ok
+2026-10-19T13:12:20.5217346Z test_identical_merge_reuses_tree_only_with_required_source_success (scripts.tests.test_hepta_ci_candidate.CandidatePlanTests.test_identical_merge_reuses_tree_only_with_required_source_success) ... ok
+2026-10-19T13:12:20.5369484Z test_invalid_identity_and_unknown_lane_fail_before_git (scripts.tests.test_hepta_ci_candidate.CandidatePlanTests.test_invalid_identity_and_unknown_lane_fail_before_git) ... ok
+2026-10-19T13:12:20.5573741Z test_parent_order_is_part_of_exact_merge_identity (scripts.tests.test_hepta_ci_candidate.CandidatePlanTests.test_parent_order_is_part_of_exact_merge_identity) ... ok
+2026-10-19T13:12:20.5749134Z test_source_always_executes_native_checks (scripts.tests.test_hepta_ci_candidate.CandidatePlanTests.test_source_always_executes_native_checks) ... ok
+2026-10-19T13:12:20.5947089Z test_source_lane_cannot_test_a_different_commit (scripts.tests.test_hepta_ci_candidate.CandidatePlanTests.test_source_lane_cannot_test_a_different_commit) ... ok
+2026-10-19T13:12:20.6177286Z test_synthetic_merge_alias_has_same_exact_tree_semantics (scripts.tests.test_hepta_ci_candidate.CandidatePlanTests.test_synthetic_merge_alias_has_same_exact_tree_semantics) ... ok
+2026-10-19T13:12:20.6376373Z test_wrong_checkout_cannot_reuse_a_receipt (scripts.tests.test_hepta_ci_candidate.CandidatePlanTests.test_wrong_checkout_cannot_reuse_a_receipt) ... ok
+2026-10-19T13:12:20.6376966Z 
+2026-10-19T13:12:20.6377114Z ----------------------------------------------------------------------
+2026-10-19T13:12:20.6377442Z Ran 8 tests in 0.165s
+2026-10-19T13:12:20.6377568Z 
+2026-10-19T13:12:20.6377633Z OK
+2026-10-19T13:12:20.6805685Z {"base_sha": "f8c9419df6ddeb36ff8b522a50219981fb8d9345", "lane": "base-merge", "native_execution_required": false, "requires_source_head_success": true, "schema_version": 1, "source_sha": "89933fdc84ed1151f04609a1881ab24aaef119b4", "source_tree": "25b2a7b559549fba0d22fa7d62d78c76c13cd5ce", "tested_sha": "04b6f3b75fc6e4e728a9f2a7393c19a2b6cc5740", "tested_tree": "25b2a7b559549fba0d22fa7d62d78c76c13cd5ce"}
+2026-10-19T13:12:20.6888752Z ##[group]Run set -euo pipefail
+2026-10-19T13:12:20.6889053Z [36;1mset -euo pipefail[0m
+2026-10-19T13:12:20.6889319Z [36;1mmkdir -p "$RUNNER_TEMP/hepta-command-records"[0m
+2026-10-19T13:12:20.6890073Z [36;1mpython3 scripts/hepta_ci_exec.py --output "$RUNNER_TEMP/hepta-command-records/scope-tests.json" --minimum-tests 1 -- python3 -m unittest -v scripts.tests.test_hepta_ci_scope[0m
+2026-10-19T13:12:20.6891061Z [36;1margs=(--head "$SOURCE_SHA" --github-output "$GITHUB_OUTPUT")[0m
+2026-10-19T13:12:20.6891404Z [36;1mif [ "$FULL_SCOPE" = "true" ]; then[0m
+2026-10-19T13:12:20.6891652Z [36;1m  args+=(--full)[0m
+2026-10-19T13:12:20.6891846Z [36;1melse[0m
+2026-10-19T13:12:20.6892025Z [36;1m  args+=(--base "$BASE_SHA")[0m
+2026-10-19T13:12:20.6892250Z [36;1mfi[0m
+2026-10-19T13:12:20.6892804Z [36;1mpython3 scripts/hepta_ci_scope.py "${args[@]}" | tee "$RUNNER_TEMP/hepta-command-records/scope.json"[0m
+2026-10-19T13:12:20.6923744Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-19T13:12:20.6924054Z env:
+2026-10-19T13:12:20.6924264Z   SOURCE_SHA: 89933fdc84ed1151f04609a1881ab24aaef119b4
+2026-10-19T13:12:20.6924576Z   BASE_SHA: f8c9419df6ddeb36ff8b522a50219981fb8d9345
+2026-10-19T13:12:20.6924858Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-19T13:12:20.6925073Z   CARGO_INCREMENTAL: 0
+2026-10-19T13:12:20.6925263Z   CARGO_BUILD_JOBS: 2
+2026-10-19T13:12:20.6925466Z   CARGO_PROFILE_TEST_DEBUG: 0
+2026-10-19T13:12:20.6925689Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-10-19T13:12:20.6925996Z   GITHUB_PROSPECTIVE_MERGE_SHA: c1a76c78972c82a6a1638d4331a1fb8ee6940473
+2026-10-19T13:12:20.6926432Z   GITHUB_PROSPECTIVE_MERGE_TREE: 25b2a7b559549fba0d22fa7d62d78c76c13cd5ce
+2026-10-19T13:12:20.6926814Z   TESTED_SHA: 04b6f3b75fc6e4e728a9f2a7393c19a2b6cc5740
+2026-10-19T13:12:20.6927091Z   HEPTA_CI_LANE: base-merge
+2026-10-19T13:12:20.6927296Z   FULL_SCOPE: false
+2026-10-19T13:12:20.6927476Z ##[endgroup]
+2026-10-19T13:12:20.8147663Z test_bad_paths_fail_instead_of_selecting_nothing (scripts.tests.test_hepta_ci_scope.ScopeTests.test_bad_paths_fail_instead_of_selecting_nothing) ... ok
+2026-10-19T13:12:20.8148683Z test_code_owned_markdown_is_not_assumed_pure_prose (scripts.tests.test_hepta_ci_scope.ScopeTests.test_code_owned_markdown_is_not_assumed_pure_prose) ... ok
+2026-10-19T13:12:20.8152573Z test_commit_id_validation_precedes_subprocess (scripts.tests.test_hepta_ci_scope.ScopeTests.test_commit_id_validation_precedes_subprocess) ... ok
+2026-10-19T13:12:20.8153919Z test_effectful_retirement_keeps_lifecycle_and_effect_tests (scripts.tests.test_hepta_ci_scope.ScopeTests.test_effectful_retirement_keeps_lifecycle_and_effect_tests) ... ok
+2026-10-19T13:12:20.8155174Z test_generated_module_projections_do_not_force_native_builds (scripts.tests.test_hepta_ci_scope.ScopeTests.test_generated_module_projections_do_not_force_native_builds) ... ok
+2026-10-19T13:12:20.8156300Z test_generated_projection_is_derived_only (scripts.tests.test_hepta_ci_scope.ScopeTests.test_generated_projection_is_derived_only) ... ok
+2026-10-19T13:12:20.8333175Z test_git_diff_covers_real_rename_and_deleted_path (scripts.tests.test_hepta_ci_scope.ScopeTests.test_git_diff_covers_real_rename_and_deleted_path) ... ok
+2026-10-19T13:12:20.8334872Z test_inference_local_change_does_not_run_browser_learning_or_objective (scripts.tests.test_hepta_ci_scope.ScopeTests.test_inference_local_change_does_not_run_browser_learning_or_objective) ... ok
+2026-10-19T13:12:20.8336066Z test_manual_full_keeps_all_groups_even_with_no_paths (scripts.tests.test_hepta_ci_scope.ScopeTests.test_manual_full_keeps_all_groups_even_with_no_paths) ... ok
+2026-10-19T13:12:20.8337115Z test_plasticity_change_runs_learning_and_lifecycle_only (scripts.tests.test_hepta_ci_scope.ScopeTests.test_plasticity_change_runs_learning_and_lifecycle_only) ... ok
+2026-10-19T13:12:20.8338275Z test_readme_and_ordinary_prose_do_not_prepare_native_dependencies (scripts.tests.test_hepta_ci_scope.ScopeTests.test_readme_and_ordinary_prose_do_not_prepare_native_dependencies) ... ok
+2026-10-19T13:12:20.8339634Z test_registry_is_runtime_consumed_lifecycle_input (scripts.tests.test_hepta_ci_scope.ScopeTests.test_registry_is_runtime_consumed_lifecycle_input) ... ok
+2026-10-19T13:12:20.8340627Z test_rename_keeps_source_and_destination_groups (scripts.tests.test_hepta_ci_scope.ScopeTests.test_rename_keeps_source_and_destination_groups) ... ok
+2026-10-19T13:12:20.8344015Z test_repository_policy_regressions_keep_their_python_scope (scripts.tests.test_hepta_ci_scope.ScopeTests.test_repository_policy_regressions_keep_their_python_scope) ... ok
+2026-10-19T13:12:20.8345337Z test_runtime_module_abi_stays_on_lifecycle_boundary (scripts.tests.test_hepta_ci_scope.ScopeTests.test_runtime_module_abi_stays_on_lifecycle_boundary) ... ok
+2026-10-19T13:12:20.8346378Z test_shared_types_and_agentd_keep_cross_domain_coverage (scripts.tests.test_hepta_ci_scope.ScopeTests.test_shared_types_and_agentd_keep_cross_domain_coverage) ... ok
+2026-10-19T13:12:20.8347434Z test_topology_contract_stays_on_lifecycle_boundary (scripts.tests.test_hepta_ci_scope.ScopeTests.test_topology_contract_stays_on_lifecycle_boundary) ... ok
+2026-10-19T13:12:20.8348419Z test_unknown_or_executable_document_selects_full (scripts.tests.test_hepta_ci_scope.ScopeTests.test_unknown_or_executable_document_selects_full) ... ok
+2026-10-19T13:12:20.8348950Z 
+2026-10-19T13:12:20.8349084Z ----------------------------------------------------------------------
+2026-10-19T13:12:20.8349393Z Ran 18 tests in 0.019s
+2026-10-19T13:12:20.8349517Z 
+2026-10-19T13:12:20.8349583Z OK
+2026-10-19T13:12:20.8684187Z {"after": {"commit": "04b6f3b75fc6e4e728a9f2a7393c19a2b6cc5740", "dirty": false, "parents": ["f8c9419df6ddeb36ff8b522a50219981fb8d9345", "89933fdc84ed1151f04609a1881ab24aaef119b4"], "tree": "25b2a7b559549fba0d22fa7d62d78c76c13cd5ce"}, "base_sha": "f8c9419df6ddeb36ff8b522a50219981fb8d9345", "before": {"commit": "04b6f3b75fc6e4e728a9f2a7393c19a2b6cc5740", "dirty": false, "parents": ["f8c9419df6ddeb36ff8b522a50219981fb8d9345", "89933fdc84ed1151f04609a1881ab24aaef119b4"], "tree": "25b2a7b559549fba0d22fa7d62d78c76c13cd5ce"}, "command": ["python3", "-m", "unittest", "-v", "scripts.tests.test_hepta_ci_scope"], "command_exit_code": 0, "elapsed_seconds": 0.1351512669999977, "exit_code": 0, "finished_at": "2026-10-19T13:12:20.866931+00:00", "job": "qualification", "lane": "base-merge", "log_bytes": 3009, "log_file": "scope-tests.json.e7685d1016594315abe3a82286c088b8.log", "log_sha256": "562fc92872983fc9e45f3445f3a193ce848a2924d8aba6fa32eb8c545f9bde80", "minimum_tests": 1, "observed_failed_tests": 0, "observed_passed_tests": 18, "output_limit_exceeded": false, "recomputed_merge_tree": "25b2a7b559549fba0d22fa7d62d78c76c13cd5ce", "returncode": 0, "run_attempt": "1", "run_id": "39253698625", "schema_version": 1, "source_sha": "89933fdc84ed1151f04609a1881ab24aaef119b4", "started_at": "2026-10-19T13:12:20.729399+00:00", "status": "passed", "tested_sha": "04b6f3b75fc6e4e728a9f2a7393c19a2b6cc5740", "timed_out": false, "working_directory": "/home/runner/work/hepta-private-ci/hepta-private-ci"}
+2026-10-19T13:12:20.9096326Z {"base": "f8c9419df6ddeb36ff8b522a50219981fb8d9345", "paths": [".github/workflows/ui-product-foundation.yml", "apps/hepta-control-ui/.gitignore", "apps/hepta-control-ui/CHAT_DESIGN.md", "apps/hepta-control-ui/MAIN_INTEGRATION.md", "apps/hepta-control-ui/PORT_SOURCE.json", "apps/hepta-control-ui/README.md", "apps/hepta-control-ui/e2e/robrix-buffer-diagnostic.spec.mjs", "apps/hepta-control-ui/e2e/robrix-font-transport.spec.mjs", "apps/hepta-control-ui/e2e/robrix-host.spec.mjs", "apps/hepta-control-ui/e2e/robrix-product-status.spec.mjs", "apps/hepta-control-ui/e2e/robrix-sidebar.spec.mjs", "apps/hepta-control-ui/package-lock.json", "apps/hepta-control-ui/package.json", "apps/hepta-control-ui/playwright.font-diagnostic.config.mjs", "apps/hepta-control-ui/playwright.product.config.mjs", "apps/hepta-control-ui/playwright.robrix.config.mjs", "apps/hepta-control-ui/rust/.config/nextest.toml", "apps/hepta-control-ui/rust/Cargo.lock", "apps/hepta-control-ui/rust/Cargo.toml", "apps/hepta-control-ui/rust/README.md", "apps/hepta-control-ui/rust/core/Cargo.toml", "apps/hepta-control-ui/rust/core/src/bin/hepta-control-theme.rs", "apps/hepta-control-ui/rust/core/src/canonical.rs", "apps/hepta-control-ui/rust/core/src/chat.rs", "apps/hepta-control-ui/rust/core/src/chat/basic_tests.rs", "apps/hepta-control-ui/rust/core/src/chat/fixtures.rs", "apps/hepta-control-ui/rust/core/src/chat/integration_tests.rs", "apps/hepta-control-ui/rust/core/src/chat/partition_tests.rs", "apps/hepta-control-ui/rust/core/src/chat_owner.rs", "apps/hepta-control-ui/rust/core/src/chat_owner_tests.rs", "apps/hepta-control-ui/rust/core/src/chat_timeline.rs", "apps/hepta-control-ui/rust/core/src/confirmation.rs", "apps/hepta-control-ui/rust/core/src/controller.rs", "apps/hepta-control-ui/rust/core/src/controller/recovery.rs", "apps/hepta-control-ui/rust/core/src/controller/types.rs", "apps/hepta-control-ui/rust/core/src/error.rs", "apps/hepta-control-ui/rust/core/src/ledger.rs", "apps/hepta-control-ui/rust/core/src/ledger/model.rs", "apps/hepta-control-ui/rust/core/src/lib.rs", "apps/hepta-control-ui/rust/core/src/owner_view.rs", "apps/hepta-control-ui/rust/core/src/owner_view_tests.rs", "apps/hepta-control-ui/rust/core/src/projection.rs", "apps/hepta-control-ui/rust/core/src/recovery.rs", "apps/hepta-control-ui/rust/core/src/runtime_view.rs", "apps/hepta-control-ui/rust/core/src/runtime_view_tests.rs", "apps/hepta-control-ui/rust/core/src/scheduler.rs", "apps/hepta-control-ui/rust/core/src/theme.rs", "apps/hepta-control-ui/rust/core/tests/canonical_differential.rs", "apps/hepta-control-ui/rust/core/tests/controller.rs", "apps/hepta-control-ui/rust/core/tests/fixtures/javascript-reference.json", "apps/hepta-control-ui/rust/core/tests/generate-differential.mjs", "apps/hepta-control-ui/rust/core/tests/unit/confirmation_tests.rs", "apps/hepta-control-ui/rust/core/tests/unit/projection_tests.rs", "apps/hepta-control-ui/rust/robrix-ui/Cargo.toml", "apps/hepta-control-ui/rust/robrix-ui/DESIGN_TOKENS.md", "apps/hepta-control-ui/rust/robrix-ui/DISPOSITION.json", "apps/hepta-control-ui/rust/robrix-ui/README.md", "apps/hepta-control-ui/rust/robrix-ui/UPSTREAM.json", "apps/hepta-control-ui/rust/robrix-ui/build.rs", "apps/hepta-control-ui/rust/robrix-ui/licenses/ROBRIX-MIT.txt", "apps/hepta-control-ui/rust/robrix-ui/patches/IME_BRIDGE_REVIEW.md", "apps/hepta-control-ui/rust/robrix-ui/patches/cargo-makepad-toolchain.json", "apps/hepta-control-ui/rust/robrix-ui/patches/cargo-makepad.Cargo.lock", "apps/hepta-control-ui/rust/robrix-ui/patches/makepad-font-consumer.json", "apps/hepta-control-ui/rust/robrix-ui/patches/makepad-font-consumer.patch", "apps/hepta-control-ui/rust/robrix-ui/patches/makepad-wasm-clock.json", "apps/hepta-control-ui/rust/robrix-ui/patches/makepad-wasm-clock.patch", "apps/hepta-control-ui/rust/robrix-ui/patches/makepad-wasm-fonts.json", "apps/hepta-control-ui/rust/robrix-ui/patches/makepad-wasm-fonts.patch", "apps/hepta-control-ui/rust/robrix-ui/patches/makepad-wasm-ime.json", "apps/hepta-control-ui/rust/robrix-ui/patches/makepad-wasm-ime.patch", "apps/hepta-control-ui/rust/robrix-ui/patches/makepad-wasm-instance-layout.json", "apps/hepta-control-ui/rust/robrix-ui/patches/makepad-wasm-instance-layout.patch", "apps/hepta-control-ui/rust/robrix-ui/patches/web-asset-paths.json", "apps/hepta-control-ui/rust/robrix-ui/resources/ASSETS.json", "apps/hepta-control-ui/rust/robrix-ui/resources/fonts/MANIFEST.json", "apps/hepta-control-ui/rust/robrix-ui/resources/fonts/NOTICE.txt", "apps/hepta-control-ui/rust/robrix-ui/resources/fonts/OFL.txt", "apps/hepta-control-ui/rust/robrix-ui/src/app.rs", "apps/hepta-control-ui/rust/robrix-ui/src/ime_pointer_gate.rs", "apps/hepta-control-ui/rust/robrix-ui/src/ime_pointer_gate_tests.rs", "apps/hepta-control-ui/rust/robrix-ui/src/ime_router.rs", "apps/hepta-control-ui/rust/robrix-ui/src/lib.rs", "apps/hepta-control-ui/rust/robrix-ui/src/main.rs", "apps/hepta-control-ui/rust/robrix-ui/src/native_host/mod.rs", "apps/hepta-control-ui/rust/robrix-ui/src/native_host/render.rs", "apps/hepta-control-ui/rust/robrix-ui/src/native_status.rs", "apps/hepta-control-ui/rust/robrix-ui/src/native_status_layout.rs", "apps/hepta-control-ui/rust/robrix-ui/src/presentation.rs", "apps/hepta-control-ui/rust/robrix-ui/src/presentation_tests.rs", "apps/hepta-control-ui/rust/robrix-ui/src/robrix/composer.rs", "apps/hepta-control-ui/rust/robrix-ui/src/robrix/dock.rs", "apps/hepta-control-ui/rust/robrix-ui/src/robrix/home.rs", "apps/hepta-control-ui/rust/robrix-ui/src/robrix/hover_highlight.rs", "apps/hepta-control-ui/rust/robrix-ui/src/robrix/mod.rs", "apps/hepta-control-ui/rust/robrix-ui/src/robrix/room.rs", "apps/hepta-control-ui/rust/robrix-ui/src/robrix/rooms.rs", "apps/hepta-control-ui/rust/robrix-ui/src/robrix/sidebar_fixture.rs", "apps/hepta-control-ui/rust/robrix-ui/src/robrix/styles.rs", "apps/hepta-control-ui/rust/robrix-ui/src/runtime_status.rs", "apps/hepta-control-ui/rust/robrix-ui/src/visual_theme.rs", "apps/hepta-control-ui/rust/web/Cargo.toml", "apps/hepta-control-ui/rust/web/src/app.rs", "apps/hepta-control-ui/rust/web/src/app/effects.rs", "apps/hepta-control-ui/rust/web/src/app/lifecycle.rs", "apps/hepta-control-ui/rust/web/src/app/maintenance.rs", "apps/hepta-control-ui/rust/web/src/dom.rs", "apps/hepta-control-ui/rust/web/src/dom/lists.rs", "apps/hepta-control-ui/rust/web/src/lib.rs", "apps/hepta-control-ui/rust/web/src/recovery.rs", "apps/hepta-control-ui/rust/web/src/recovery/browser.rs", "apps/hepta-control-ui/rust/web/src/recovery/directory.rs", "apps/hepta-control-ui/rust/web/src/recovery/storage_tests.rs", "apps/hepta-control-ui/rust/web/src/transport.rs", "apps/hepta-control-ui/rust/web/src/transport/browser.rs", "apps/hepta-control-ui/rust/web/src/transport/contract_tests.rs", "apps/hepta-control-ui/rust/web/src/transport/deadline.rs", "apps/hepta-control-ui/test/artifact-lifetime.test.mjs", "apps/hepta-control-ui/test/check-makepad-ime-dto.py", "apps/hepta-control-ui/test/fixtures/cjk-font-probe.rs", "apps/hepta-control-ui/test/fixtures/ime-router-probe.rs", "apps/hepta-control-ui/test/fixtures/robrix-render/README.md", "apps/hepta-control-ui/test/fixtures/robrix-render/header-navigation-266-default-1280.png", "apps/hepta-control-ui/test/fixtures/robrix-render/header-navigation-266-default-640.png", "apps/hepta-control-ui/test/fixtures/robrix-render/header-navigation-266-fixtures-1280.png", "apps/hepta-control-ui/test/fixtures/robrix-render/header-navigation-266-fixtures-640.png", "apps/hepta-control-ui/test/fixtures/robrix-render/header-navigation-266-source.json", "apps/hepta-control-ui/test/fixtures/robrix-render/navigation-neutral-06a-source.json", "apps/hepta-control-ui/test/fixtures/robrix-render/navigation-neutral-06a.png", "apps/hepta-control-ui/test/fixtures/robrix-render/region-d212-draft.png", "apps/hepta-control-ui/test/fixtures/robrix-render/region-d212-messages-scroll.png", "apps/hepta-control-ui/test/fixtures/robrix-render/region-d212-messages-tail.png", "apps/hepta-control-ui/test/fixtures/robrix-render/region-d212-navigation.png", "apps/hepta-control-ui/test/fixtures/robrix-render/region-d212-source.json", "apps/hepta-control-ui/test/fixtures/robrix-render/unreadable-e51a1d0f.png", "apps/hepta-control-ui/test/fixtures/robrix-render/webkit-010-messages.png", "apps/hepta-control-ui/test/fixtures/robrix-render/webkit-010-navigation.png", "apps/hepta-control-ui/test/fixtures/robrix-render/webkit-010-source.json", "apps/hepta-control-ui/test/font-breakpoint-diagnostic.test.mjs", "apps/hepta-control-ui/test/font-consumer-diagnostic.test.mjs", "apps/hepta-control-ui/test/font-delivery-diagnostic.test.mjs", "apps/hepta-control-ui/test/font-diagnostic-browser-identity.test.mjs", "apps/hepta-control-ui/test/makepad-cjk-font.test.mjs", "apps/hepta-control-ui/test/makepad-dsl.test.mjs", "apps/hepta-control-ui/test/makepad-font-patch.test.mjs", "apps/hepta-control-ui/test/makepad-ime-bridge.test.mjs", "apps/hepta-control-ui/test/makepad-ime-router.test.mjs", "apps/hepta-control-ui/test/makepad-instance-layout.test.mjs", "apps/hepta-control-ui/test/makepad-network-memory.test.mjs", "apps/hepta-control-ui/test/makepad-widget-borrow.test.mjs", "apps/hepta-control-ui/test/packaged-resource-set.test.mjs", "apps/hepta-control-ui/test/product-console-audit.test.mjs", "apps/hepta-control-ui/test/product-status-pixels.test.mjs", "apps/hepta-control-ui/test/robrix-font-readiness.test.mjs", "apps/hepta-control-ui/test/robrix-pixel-plan.test.mjs", "apps/hepta-control-ui/test/screenshot-readability.test.mjs", "apps/hepta-control-ui/test/static-makepad-bridge.test.mjs", "apps/hepta-control-ui/test/support/makepad-font-composition.mjs", "apps/hepta-control-ui/test/test_build_product_preview.py", "apps/hepta-control-ui/test/test_font_diagnostic_browser.py", "apps/hepta-control-ui/test/test_group_robrix_evidence.py", "apps/hepta-control-ui/test/test_prepare_fonts.py", "apps/hepta-control-ui/test/test_run_product.py", "apps/hepta-control-ui/test/visual-theme-contract.test.mjs", "apps/hepta-control-ui/tools/artifact-lock.py", "apps/hepta-control-ui/tools/build-product-preview.py", "apps/hepta-control-ui/tools/build-robrix.mjs", "apps/hepta-control-ui/tools/build.mjs", "apps/hepta-control-ui/tools/capture-xvfb-display.py", "apps/hepta-control-ui/tools/check-makepad-dsl.mjs", "apps/hepta-control-ui/tools/emit-static-makepad-bridge.mjs", "apps/hepta-control-ui/tools/font-consumer-diagnostic.mjs", "apps/hepta-control-ui/tools/font-delivery-diagnostic.mjs", "apps/hepta-control-ui/tools/font-diagnostic-browser-identity.mjs", "apps/hepta-control-ui/tools/font-transport-fixture.mjs", "apps/hepta-control-ui/tools/group-robrix-evidence.py", "apps/hepta-control-ui/tools/install-font-diagnostic-browser.py", "apps/hepta-control-ui/tools/install-official-nextest.py", "apps/hepta-control-ui/tools/owned-artifact-lease.mjs", "apps/hepta-control-ui/tools/prepare-fonts.py", "apps/hepta-control-ui/tools/prepare-makepad-platform.mjs", "apps/hepta-control-ui/tools/prepare-ocr-pixels.py", "apps/hepta-control-ui/tools/product-console-audit.mjs", "apps/hepta-control-ui/tools/product-status-pixels.mjs", "apps/hepta-control-ui/tools/robrix-font-readiness.mjs", "apps/hepta-control-ui/tools/robrix-pixel-plan.mjs", "apps/hepta-control-ui/tools/robrix-sidebar-evidence.mjs", "apps/hepta-control-ui/tools/robrix-source-identity.mjs", "apps/hepta-control-ui/tools/run-desktop.py", "apps/hepta-control-ui/tools/run-product-preview.py", "apps/hepta-control-ui/tools/run-product.py", "apps/hepta-control-ui/tools/serve-robrix.mjs", "apps/hepta-control-ui/tools/verify-font-diagnostic-evidence.mjs", "apps/hepta-control-ui/tools/verify-robrix-evidence.mjs", "apps/hepta-control-ui/tools/verify-robrix-pixels.mjs", "apps/hepta-native/resources/NATIVE-ASSETS.json", "apps/hepta-native/resources/notices/Noto-Sans-CJK-2.004-OFL.txt", "codex-rs/Cargo.lock", "codex-rs/hepta-native-gateway/Cargo.toml", "codex-rs/hepta-native-gateway/examples/ui_product_preview.rs", "codex-rs/hepta-native-gateway/src/http_origin.rs", "codex-rs/hepta-native-gateway/src/http_origin_tests.rs", "codex-rs/hepta-native-gateway/src/http_transport.rs", "codex-rs/hepta-native-gateway/src/lib.rs", "codex-rs/hepta-native-gateway/src/organ_request_tests.rs", "codex-rs/hepta-native-gateway/src/owner_status.rs", "codex-rs/hepta-native-gateway/src/owner_status_tests.rs", "codex-rs/hepta-native-gateway/src/ui_bundle.rs", "codex-rs/hepta-native-gateway/src/ui_bundle_reader.rs", "codex-rs/hepta-native-gateway/src/ui_bundle_tests.rs", "docs/modules/ui.control/TECHNICAL.md", "scripts/hepta_ci_dependencies.py", "scripts/hepta_ci_module_paths.py", "scripts/test_hepta_ci_exec.py", "scripts/test_hepta_ci_module_path_scopes.py", "scripts/test_ui_product_foundation_ci.py"], "scope": {"derived": true, "effects": true, "full_repo": true, "inference": true, "learning": true, "lifecycle": true, "native": true, "objective": true}, "source_head": "89933fdc84ed1151f04609a1881ab24aaef119b4"}
+2026-10-19T13:12:20.9170574Z ##[group]Run set -euo pipefail
+2026-10-19T13:12:20.9170881Z [36;1mset -euo pipefail[0m
+2026-10-19T13:12:20.9171552Z [36;1mpython3 scripts/hepta_ci_exec.py --output "$RUNNER_TEMP/hepta-command-records/runner-tests.json" -- python3 -m unittest discover -v -s scripts -p 'test_hepta_ci_exec*.py'[0m
+2026-10-19T13:12:20.9203860Z shell: /usr/bin/bash -e {0}
+2026-10-19T13:12:20.9204092Z env:
+2026-10-19T13:12:20.9204304Z   SOURCE_SHA: 89933fdc84ed1151f04609a1881ab24aaef119b4
+2026-10-19T13:12:20.9204618Z   BASE_SHA: f8c9419df6ddeb36ff8b522a50219981fb8d9345
+2026-10-19T13:12:20.9204902Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-19T13:12:20.9205124Z   CARGO_INCREMENTAL: 0
+2026-10-19T13:12:20.9205512Z   CARGO_BUILD_JOBS: 2
+2026-10-19T13:12:20.9205708Z   CARGO_PROFILE_TEST_DEBUG: 0
+2026-10-19T13:12:20.9205927Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-10-19T13:12:20.9206235Z   GITHUB_PROSPECTIVE_MERGE_SHA: c1a76c78972c82a6a1638d4331a1fb8ee6940473
+2026-10-19T13:12:20.9206704Z   GITHUB_PROSPECTIVE_MERGE_TREE: 25b2a7b559549fba0d22fa7d62d78c76c13cd5ce
+2026-10-19T13:12:20.9207090Z   TESTED_SHA: 04b6f3b75fc6e4e728a9f2a7393c19a2b6cc5740
+2026-10-19T13:12:20.9207369Z   HEPTA_CI_LANE: base-merge
+2026-10-19T13:12:20.9207593Z ##[endgroup]
+2026-10-19T13:12:21.1285728Z test_actual_command_success_binds_source_tree_parents_and_argv (test_hepta_ci_exec.ExecutionRecordTests.test_actual_command_success_binds_source_tree_parents_and_argv) ... ok
+2026-10-19T13:12:21.1987478Z test_conflicting_merge_never_dispatches_an_arbitrary_resolution (test_hepta_ci_exec.ExecutionRecordTests.test_conflicting_merge_never_dispatches_an_arbitrary_resolution) ... ok
+2026-10-19T13:12:21.2965553Z test_divergent_clean_merge_records_recomputed_tree (test_hepta_ci_exec.ExecutionRecordTests.test_divergent_clean_merge_records_recomputed_tree) ... ok
+2026-10-19T13:12:21.3448978Z test_existing_receipt_cannot_be_overwritten_or_reused (test_hepta_ci_exec.ExecutionRecordTests.test_existing_receipt_cannot_be_overwritten_or_reused) ... ok
+2026-10-19T13:12:21.4152012Z test_killed_command_is_failed_not_passed (test_hepta_ci_exec.ExecutionRecordTests.test_killed_command_is_failed_not_passed) ... ok
+2026-10-19T13:12:21.4793946Z test_matching_parents_with_wrong_tree_reject_before_command (test_hepta_ci_exec.ExecutionRecordTests.test_matching_parents_with_wrong_tree_reject_before_command) ... ok
+2026-10-19T13:12:21.5347402Z test_merge_lane_rejects_symbolic_base_identity (test_hepta_ci_exec.ExecutionRecordTests.test_merge_lane_rejects_symbolic_base_identity) ... ok
+2026-10-19T13:12:21.6088298Z test_nonzero_command_is_retained_and_not_converted_to_pass (test_hepta_ci_exec.ExecutionRecordTests.test_nonzero_command_is_retained_and_not_converted_to_pass) ... ok
+2026-10-19T13:12:21.7037951Z test_shallow_checkout_records_real_commit_parents_not_traversal_grafts (test_hepta_ci_exec.ExecutionRecordTests.test_shallow_checkout_records_real_commit_parents_not_traversal_grafts) ... ok
+2026-10-19T13:12:21.7571968Z test_source_lane_cannot_relabel_another_commit (test_hepta_ci_exec.ExecutionRecordTests.test_source_lane_cannot_relabel_another_commit) ... ok
+2026-10-19T13:12:21.8362585Z test_successful_command_mutating_source_still_fails (test_hepta_ci_exec.ExecutionRecordTests.test_successful_command_mutating_source_still_fails) ... ok
+2026-10-19T13:12:21.9698522Z test_synthetic_merge_accepts_only_exact_ordered_parents (test_hepta_ci_exec.ExecutionRecordTests.test_synthetic_merge_accepts_only_exact_ordered_parents) ... ok
+2026-10-19T13:12:22.1613526Z test_wrong_checkout_and_dirty_inputs_never_dispatch (test_hepta_ci_exec.ExecutionRecordTests.test_wrong_checkout_and_dirty_inputs_never_dispatch) ... ok
+2026-10-19T13:12:22.4871215Z test_shell_preserves_test_targets_and_strict_lint_arguments (test_hepta_ci_exec.WorkflowCommandBindingTests.test_shell_preserves_test_targets_and_strict_lint_arguments) ... ok
+2026-10-19T13:12:22.6572864Z test_shell_test_failure_has_no_lint_pass_receipt (test_hepta_ci_exec.WorkflowCommandBindingTests.test_shell_test_failure_has_no_lint_pass_receipt) ... ok
+2026-10-19T13:12:23.2185959Z test_cli_retains_failed_receipt_instead_of_successful_parent_exit (test_hepta_ci_exec_deadline.CommandDeadlineTests.test_cli_retains_failed_receipt_instead_of_successful_parent_exit) ... ok
+2026-10-19T13:12:23.9715095Z test_detached_pipe_holder_does_not_deadlock_stream_close (test_hepta_ci_exec_deadline.CommandDeadlineTests.test_detached_pipe_holder_does_not_deadlock_stream_close) ... ok
+2026-10-19T13:12:24.7234393Z test_diagnostics_before_timeout_survive (test_hepta_ci_exec_deadline.CommandDeadlineTests.test_diagnostics_before_timeout_survive) ... ok
+2026-10-19T13:12:25.4825132Z test_eof_is_not_completion (test_hepta_ci_exec_deadline.CommandDeadlineTests.test_eof_is_not_completion) ... ok
+2026-10-19T13:12:26.2350612Z test_exited_parent_cannot_leave_a_running_pipe_holder (test_hepta_ci_exec_deadline.CommandDeadlineTests.test_exited_parent_cannot_leave_a_running_pipe_holder) ... ok
+2026-10-19T13:12:26.2358304Z test_invalid_bounds_dispatch_nothing (test_hepta_ci_exec_deadline.CommandDeadlineTests.test_invalid_bounds_dispatch_nothing) ... ok
+2026-10-19T13:12:26.2507437Z test_normal_exit_is_not_a_timeout (test_hepta_ci_exec_deadline.CommandDeadlineTests.test_normal_exit_is_not_a_timeout) ... ok
+2026-10-19T13:12:26.2626600Z test_output_cap_remains_independent_of_deadline (test_hepta_ci_exec_deadline.CommandDeadlineTests.test_output_cap_remains_independent_of_deadline) ... ok
+2026-10-19T13:12:27.0141072Z test_silent_process_times_out (test_hepta_ci_exec_deadline.CommandDeadlineTests.test_silent_process_times_out) ... ok
+2026-10-19T13:12:27.0378717Z test_bounded_output_kills_command_and_preserves_bounded_prefix (test_hepta_ci_exec_output.CommandOutputTests.test_bounded_output_kills_command_and_preserves_bounded_prefix) ... ok
+2026-10-19T13:12:27.1107507Z test_compile_only_success_does_not_satisfy_test_gate (test_hepta_ci_exec_output.CommandOutputTests.test_compile_only_success_does_not_satisfy_test_gate) ... ok
+2026-10-19T13:12:27.2454488Z test_deleted_receipt_does_not_allow_overwriting_an_earlier_log (test_hepta_ci_exec_output.CommandOutputTests.test_deleted_receipt_does_not_allow_overwriting_an_earlier_log) ... ok
+2026-10-19T13:12:27.3301155Z test_empty_other_test_binaries_do_not_invalidate_real_selected_tests (test_hepta_ci_exec_output.CommandOutputTests.test_empty_other_test_binaries_do_not_invalidate_real_selected_tests) ... ok
+2026-10-19T13:12:27.3410078Z test_existing_log_cannot_be_reused (test_hepta_ci_exec_output.CommandOutputTests.test_existing_log_cannot_be_reused) ... ok
+2026-10-19T13:12:27.4146341Z test_ignored_tests_are_not_executed_tests (test_hepta_ci_exec_output.CommandOutputTests.test_ignored_tests_are_not_executed_tests) ... ok
+2026-10-19T13:12:27.4881589Z test_nextest_summary_does_not_double_count_nested_libtest (test_hepta_ci_exec_output.CommandOutputTests.test_nextest_summary_does_not_double_count_nested_libtest) ... ok
+2026-10-19T13:12:27.5595579Z test_no_test_requirement_keeps_existing_non_test_commands_compatible (test_hepta_ci_exec_output.CommandOutputTests.test_no_test_requirement_keeps_existing_non_test_commands_compatible) ... ok
+2026-10-19T13:12:27.6316153Z test_real_failure_output_and_digest_are_retained (test_hepta_ci_exec_output.CommandOutputTests.test_real_failure_output_and_digest_are_retained) ... ok
+2026-10-19T13:12:27.7235565Z test_real_unittest_empty_suite_fails_minimum (test_hepta_ci_exec_output.CommandOutputTests.test_real_unittest_empty_suite_fails_minimum) ... ok
+2026-10-19T13:12:27.8182923Z test_real_unittest_partial_skip_counts_only_success (test_hepta_ci_exec_output.CommandOutputTests.test_real_unittest_partial_skip_counts_only_success) ... ok
+2026-10-19T13:12:27.9122544Z test_real_unittest_skip_and_expected_failure_do_not_count_as_pass (test_hepta_ci_exec_output.CommandOutputTests.test_real_unittest_skip_and_expected_failure_do_not_count_as_pass) ... ok
+2026-10-19T13:12:28.0078162Z test_real_unittest_success_satisfies_minimum (test_hepta_ci_exec_output.CommandOutputTests.test_real_unittest_success_satisfies_minimum) ... ok
+2026-10-19T13:12:28.1057860Z test_real_unittest_unexpected_success_is_failure (test_hepta_ci_exec_output.CommandOutputTests.test_real_unittest_unexpected_success_is_failure) ... ok
+2026-10-19T13:12:28.1865277Z test_successful_source_mutation_is_still_rejected (test_hepta_ci_exec_output.CommandOutputTests.test_successful_source_mutation_is_still_rejected) ... ok
+2026-10-19T13:12:28.2588410Z test_swallowed_nextest_timeout_is_not_a_pass (test_hepta_ci_exec_output.CommandOutputTests.test_swallowed_nextest_timeout_is_not_a_pass) ... ok
+2026-10-19T13:12:28.3502934Z test_swallowed_unittest_failure_cannot_become_success (test_hepta_ci_exec_output.CommandOutputTests.test_swallowed_unittest_failure_cannot_become_success) ... ok
+2026-10-19T13:12:28.4218468Z test_unfinished_unittest_footer_is_not_success (test_hepta_ci_exec_output.CommandOutputTests.test_unfinished_unittest_footer_is_not_success) ... ok
+2026-10-19T13:12:28.4936992Z test_unittest_footer_at_eof_is_counted (test_hepta_ci_exec_output.CommandOutputTests.test_unittest_footer_at_eof_is_counted) ... ok
+2026-10-19T13:12:28.5473339Z test_wrong_source_never_creates_a_command_log (test_hepta_ci_exec_output.CommandOutputTests.test_wrong_source_never_creates_a_command_log) ... ok
+2026-10-19T13:12:28.6213756Z test_zero_tests_is_failure_even_with_process_success (test_hepta_ci_exec_output.CommandOutputTests.test_zero_tests_is_failure_even_with_process_success) ... ok
+2026-10-19T13:12:28.6214379Z 
+2026-10-19T13:12:28.6214514Z ----------------------------------------------------------------------
+2026-10-19T13:12:28.6214828Z Ran 45 tests in 7.575s
+2026-10-19T13:12:28.6214959Z 
+2026-10-19T13:12:28.6215024Z OK
+2026-10-19T13:12:28.6577689Z {"after": {"commit": "04b6f3b75fc6e4e728a9f2a7393c19a2b6cc5740", "dirty": false, "parents": ["f8c9419df6ddeb36ff8b522a50219981fb8d9345", "89933fdc84ed1151f04609a1881ab24aaef119b4"], "tree": "25b2a7b559549fba0d22fa7d62d78c76c13cd5ce"}, "base_sha": "f8c9419df6ddeb36ff8b522a50219981fb8d9345", "before": {"commit": "04b6f3b75fc6e4e728a9f2a7393c19a2b6cc5740", "dirty": false, "parents": ["f8c9419df6ddeb36ff8b522a50219981fb8d9345", "89933fdc84ed1151f04609a1881ab24aaef119b4"], "tree": "25b2a7b559549fba0d22fa7d62d78c76c13cd5ce"}, "command": ["python3", "-m", "unittest", "discover", "-v", "-s", "scripts", "-p", "test_hepta_ci_exec*.py"], "command_exit_code": 0, "elapsed_seconds": 7.698731903999999, "exit_code": 0, "finished_at": "2026-10-19T13:12:28.656206+00:00", "job": "qualification", "lane": "base-merge", "log_bytes": 7126, "log_file": "runner-tests.json.215e3e85437d43169363cbccbc8754e9.log", "log_sha256": "b9dffc1956d8ff27583071700472c9e29e57f0aff49d1c5d54aadfa4c787a244", "minimum_tests": 0, "observed_failed_tests": 0, "observed_passed_tests": 45, "output_limit_exceeded": false, "recomputed_merge_tree": "25b2a7b559549fba0d22fa7d62d78c76c13cd5ce", "returncode": 0, "run_attempt": "1", "run_id": "39253698625", "schema_version": 1, "source_sha": "89933fdc84ed1151f04609a1881ab24aaef119b4", "started_at": "2026-10-19T13:12:20.956794+00:00", "status": "passed", "tested_sha": "04b6f3b75fc6e4e728a9f2a7393c19a2b6cc5740", "timed_out": false, "working_directory": "/home/runner/work/hepta-private-ci/hepta-private-ci"}
+2026-10-19T13:12:28.6667833Z ##[group]Run set -euo pipefail
+2026-10-19T13:12:28.6668207Z [36;1mset -euo pipefail[0m
+2026-10-19T13:12:28.6669243Z [36;1mpython3 scripts/hepta_ci_exec.py --output "$RUNNER_TEMP/hepta-command-records/repository-controls.json" --minimum-tests 1 -- python3 -m unittest -v scripts.tests.test_hepta_repository_controls scripts.test_hepta_control_hardening scripts.test_hepta_candidate_transport_workflow[0m
+2026-10-19T13:12:28.6703181Z shell: /usr/bin/bash -e {0}
+2026-10-19T13:12:28.6703410Z env:
+2026-10-19T13:12:28.6703617Z   SOURCE_SHA: 89933fdc84ed1151f04609a1881ab24aaef119b4
+2026-10-19T13:12:28.6703944Z   BASE_SHA: f8c9419df6ddeb36ff8b522a50219981fb8d9345
+2026-10-19T13:12:28.6704225Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-19T13:12:28.6704439Z   CARGO_INCREMENTAL: 0
+2026-10-19T13:12:28.6704628Z   CARGO_BUILD_JOBS: 2
+2026-10-19T13:12:28.6704819Z   CARGO_PROFILE_TEST_DEBUG: 0
+2026-10-19T13:12:28.6705042Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-10-19T13:12:28.6705378Z   GITHUB_PROSPECTIVE_MERGE_SHA: c1a76c78972c82a6a1638d4331a1fb8ee6940473
+2026-10-19T13:12:28.6705821Z   GITHUB_PROSPECTIVE_MERGE_TREE: 25b2a7b559549fba0d22fa7d62d78c76c13cd5ce
+2026-10-19T13:12:28.6706202Z   TESTED_SHA: 04b6f3b75fc6e4e728a9f2a7393c19a2b6cc5740
+2026-10-19T13:12:28.6706478Z   HEPTA_CI_LANE: base-merge
+2026-10-19T13:12:28.6706679Z ##[endgroup]
+2026-10-19T13:12:28.7996590Z test_activation_is_not_self_authorized (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_activation_is_not_self_authorized) ... ok
+2026-10-19T13:12:28.8003756Z test_admin_bypass (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_admin_bypass) ... ok
+2026-10-19T13:12:28.8005010Z test_any_app_cannot_sign_evaluation (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_any_app_cannot_sign_evaluation) ... ok
+2026-10-19T13:12:28.8006129Z test_api_denial_cannot_be_replaced_with_source_policy (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_api_denial_cannot_be_replaced_with_source_policy) ... ok
+2026-10-19T13:12:28.8007146Z test_app_review_bypass (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_app_review_bypass) ... ok
+2026-10-19T13:12:28.8008077Z test_boolean_does_not_count_as_one_review (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_boolean_does_not_count_as_one_review) ... ok
+2026-10-19T13:12:28.8009279Z test_context_name_alone_is_not_an_independent_identity (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_context_name_alone_is_not_an_independent_identity) ... ok
+2026-10-19T13:12:28.8010626Z test_explicit_disabled_reviews_do_not_replace_independent_evaluation (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_explicit_disabled_reviews_do_not_replace_independent_evaluation) ... ok
+2026-10-19T13:12:28.8011756Z test_force_push_enabled (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_force_push_enabled) ... ok
+2026-10-19T13:12:28.8012910Z test_main_drift_during_observation_fails (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_main_drift_during_observation_fails) ... ok
+2026-10-19T13:12:28.8013846Z test_main_unprotected (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_main_unprotected) ... ok
+2026-10-19T13:12:28.8014850Z test_missing_codeowner_review_policy_fails_closed (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_missing_codeowner_review_policy_fails_closed) ... ok
+2026-10-19T13:12:28.8016001Z test_missing_conversation_policy_fails_closed (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_missing_conversation_policy_fails_closed) ... ok
+2026-10-19T13:12:28.8017086Z test_missing_extra_required_gate_fails (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_missing_extra_required_gate_fails) ... ok
+2026-10-19T13:12:28.8018510Z test_missing_review_policy_is_not_observed_disabled_policy (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_missing_review_policy_is_not_observed_disabled_policy) ... ok
+2026-10-19T13:12:28.8019610Z test_neutral_is_not_success (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_neutral_is_not_success) ... ok
+2026-10-19T13:12:28.8020574Z test_new_pending_invalidates_old_success (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_new_pending_invalidates_old_success) ... ok
+2026-10-19T13:12:28.8021518Z test_no_reviews_required (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_no_reviews_required) ... ok
+2026-10-19T13:12:28.8022510Z test_old_main_head (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_old_main_head) ... ok
+2026-10-19T13:12:28.8023419Z test_owner_may_disable_codeowner_review (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_owner_may_disable_codeowner_review) ... ok
+2026-10-19T13:12:28.8024462Z test_owner_may_disable_last_push_review (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_owner_may_disable_last_push_review) ... ok
+2026-10-19T13:12:28.8025534Z test_owner_may_disable_stale_review_dismissal (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_owner_may_disable_stale_review_dismissal) ... ok
+2026-10-19T13:12:28.8026615Z test_pagination_reads_beyond_first_page (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_pagination_reads_beyond_first_page) ... ok
+2026-10-19T13:12:28.8027677Z test_policy_drift_during_observation_fails (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_policy_drift_during_observation_fails) ... ok
+2026-10-19T13:12:28.8029073Z test_shared_actions_identity_is_not_independent (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_shared_actions_identity_is_not_independent) ... ok
+2026-10-19T13:12:28.8030088Z test_skipped_is_not_success (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_skipped_is_not_success) ... ok
+2026-10-19T13:12:28.8030935Z test_stale_base_allowed (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_stale_base_allowed) ... ok
+2026-10-19T13:12:28.8031790Z test_strict_observed_profile (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_strict_observed_profile) ... ok
+2026-10-19T13:12:28.8033063Z test_unbounded_pagination_fails_instead_of_certifying_prefix (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_unbounded_pagination_fails_instead_of_certifying_prefix) ... ok
+2026-10-19T13:12:28.8034201Z test_unknown_admin_enforcement (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_unknown_admin_enforcement) ... ok
+2026-10-19T13:12:28.8035195Z test_unknown_codeowner_policy_is_rejected (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_unknown_codeowner_policy_is_rejected) ... ok
+2026-10-19T13:12:28.8036299Z test_unknown_conversation_policy_fails_closed (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_unknown_conversation_policy_fails_closed) ... ok
+2026-10-19T13:12:28.8037318Z test_unknown_force_push_policy (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_unknown_force_push_policy) ... ok
+2026-10-19T13:12:28.8038451Z test_unknown_owner_policy_rejects_before_loading_check_history (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_unknown_owner_policy_rejects_before_loading_check_history) ... ok
+2026-10-19T13:12:28.8039739Z test_untrusted_success_cannot_replace_trusted_failure (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_untrusted_success_cannot_replace_trusted_failure) ... ok
+2026-10-19T13:12:28.8040767Z test_user_review_bypass (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_user_review_bypass) ... ok
+2026-10-19T13:12:28.8041638Z test_wrong_sha_check_not_reused (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_wrong_sha_check_not_reused) ... ok
+2026-10-19T13:12:28.8042760Z test_wrong_trusted_app (scripts.tests.test_hepta_repository_controls.RepositoryControlTests.test_wrong_trusted_app) ... ok
+2026-10-19T13:12:28.8043577Z test_api_has_a_request_timeout (scripts.test_hepta_control_hardening.CheckSourceTests.test_api_has_a_request_timeout) ... ok
+2026-10-19T13:12:28.8044428Z test_api_timeout_never_emits_success (scripts.test_hepta_control_hardening.CheckSourceTests.test_api_timeout_never_emits_success) ... ok
+2026-10-19T13:12:28.8045375Z test_boolean_observed_identity_is_not_app_one (scripts.test_hepta_control_hardening.CheckSourceTests.test_boolean_observed_identity_is_not_app_one) ... ok
+2026-10-19T13:12:28.8046412Z test_evaluator_cannot_also_publish_blocking_check (scripts.test_hepta_control_hardening.CheckSourceTests.test_evaluator_cannot_also_publish_blocking_check) ... ok
+2026-10-19T13:12:28.8047459Z test_extra_required_context_must_pin_its_source (scripts.test_hepta_control_hardening.CheckSourceTests.test_extra_required_context_must_pin_its_source) ... ok
+2026-10-19T13:12:28.8048404Z test_oversized_check_page_rejected (scripts.test_hepta_control_hardening.CheckSourceTests.test_oversized_check_page_rejected) ... ok
+2026-10-19T13:12:28.8049495Z test_owner_and_conversation_controls_cannot_be_inferred_from_fixture (scripts.test_hepta_control_hardening.CheckSourceTests.test_owner_and_conversation_controls_cannot_be_inferred_from_fixture) ... ok
+2026-10-19T13:12:28.8050775Z test_owner_can_disable_review_without_substituting_check_source (scripts.test_hepta_control_hardening.CheckSourceTests.test_owner_can_disable_review_without_substituting_check_source) ... ok
+2026-10-19T13:12:28.8052007Z test_unpinned_blocking_context_rejected (scripts.test_hepta_control_hardening.CheckSourceTests.test_unpinned_blocking_context_rejected) ... ok
+2026-10-19T13:12:28.8053067Z test_valid_distinct_pinned_sources (scripts.test_hepta_control_hardening.CheckSourceTests.test_valid_distinct_pinned_sources) ... ok
+2026-10-19T13:12:28.8054034Z test_wrong_branch_fails_before_collecting_checks (scripts.test_hepta_control_hardening.CheckSourceTests.test_wrong_branch_fails_before_collecting_checks) ... ok
+2026-10-19T13:12:28.8083998Z test_format_failure_is_retained_and_not_swallowed (scripts.test_hepta_control_hardening.FormattingCommandTests.test_format_failure_is_retained_and_not_swallowed) ... ok
+2026-10-19T13:12:28.8115901Z test_format_success_does_not_become_failure (scripts.test_hepta_control_hardening.FormattingCommandTests.test_format_success_does_not_become_failure) ... ok
+2026-10-19T13:12:28.9847399Z test_auth_network_policy_and_success_remain_unknown_observations (scripts.test_hepta_control_hardening.TransportObservationTests.test_auth_network_policy_and_success_remain_unknown_observations) ... ok
+2026-10-19T13:12:28.9855946Z test_cli_preserves_verified_controls_and_reports_transport_unknown (scripts.test_hepta_control_hardening.TransportObservationTests.test_cli_preserves_verified_controls_and_reports_transport_unknown) ... ok
+2026-10-19T13:12:28.9863362Z test_cli_transport_denial_cannot_replace_failed_live_protection (scripts.test_hepta_control_hardening.TransportObservationTests.test_cli_transport_denial_cannot_replace_failed_live_protection) ... ok
+2026-10-19T13:12:29.0097420Z test_explicit_authenticated_write_denial_is_narrow_observation (scripts.test_hepta_control_hardening.TransportObservationTests.test_explicit_authenticated_write_denial_is_narrow_observation) ... ok
+2026-10-19T13:12:29.0099692Z test_missing_token_and_bad_repository_never_access_network (scripts.test_hepta_control_hardening.TransportObservationTests.test_missing_token_and_bad_repository_never_access_network) ... ok
+2026-10-19T13:12:29.0101456Z test_read_api_failure_does_not_probe_or_pass (scripts.test_hepta_control_hardening.TransportObservationTests.test_read_api_failure_does_not_probe_or_pass) ... ok
+2026-10-19T13:12:29.0103088Z test_repository_identity_mismatch_rejected (scripts.test_hepta_control_hardening.TransportObservationTests.test_repository_identity_mismatch_rejected) ... ok
+2026-10-19T13:12:29.0291676Z test_response_size_is_bounded (scripts.test_hepta_control_hardening.TransportObservationTests.test_response_size_is_bounded) ... ok
+2026-10-19T13:12:29.0479278Z test_timeout_is_not_denial_and_closes_connection (scripts.test_hepta_control_hardening.TransportObservationTests.test_timeout_is_not_denial_and_closes_connection) ... ok
+2026-10-19T13:12:29.0481418Z test_advisory_observation_follows_behavior_and_does_not_replace_required_native_result (scripts.test_hepta_candidate_transport_workflow.CandidateTransportWorkflowTests.test_advisory_observation_follows_behavior_and_does_not_replace_required_native_result) ... ok
+2026-10-19T13:12:29.1193145Z test_explicit_denial_is_retained_without_claiming_other_permissions (scripts.test_hepta_candidate_transport_workflow.CandidateTransportWorkflowTests.test_explicit_denial_is_retained_without_claiming_other_permissions) ... ok
+2026-10-19T13:12:29.1194651Z test_prerequisites_and_lock_check_precede_native_builds (scripts.test_hepta_candidate_transport_workflow.CandidateTransportWorkflowTests.test_prerequisites_and_lock_check_precede_native_builds) ... ok
+2026-10-19T13:12:29.1915815Z test_timeout_is_unknown_not_a_permission_denial (scripts.test_hepta_candidate_transport_workflow.CandidateTransportWorkflowTests.test_timeout_is_unknown_not_a_permission_denial) ... ok
+2026-10-19T13:12:29.6142628Z test_unknown_transport_is_retained_without_claiming_write_denial (scripts.test_hepta_candidate_transport_workflow.CandidateTransportWorkflowTests.test_unknown_transport_is_retained_without_claiming_write_denial) ... ok
+2026-10-19T13:12:29.6143790Z 
+2026-10-19T13:12:29.6143942Z ----------------------------------------------------------------------
+2026-10-19T13:12:29.6144254Z Ran 65 tests in 0.815s
+2026-10-19T13:12:29.6144383Z 
+2026-10-19T13:12:29.6144447Z OK
+2026-10-19T13:12:29.6556136Z {"after": {"commit": "04b6f3b75fc6e4e728a9f2a7393c19a2b6cc5740", "dirty": false, "parents": ["f8c9419df6ddeb36ff8b522a50219981fb8d9345", "89933fdc84ed1151f04609a1881ab24aaef119b4"], "tree": "25b2a7b559549fba0d22fa7d62d78c76c13cd5ce"}, "base_sha": "f8c9419df6ddeb36ff8b522a50219981fb8d9345", "before": {"commit": "04b6f3b75fc6e4e728a9f2a7393c19a2b6cc5740", "dirty": false, "parents": ["f8c9419df6ddeb36ff8b522a50219981fb8d9345", "89933fdc84ed1151f04609a1881ab24aaef119b4"], "tree": "25b2a7b559549fba0d22fa7d62d78c76c13cd5ce"}, "command": ["python3", "-m", "unittest", "-v", "scripts.tests.test_hepta_repository_controls", "scripts.test_hepta_control_hardening", "scripts.test_hepta_candidate_transport_workflow"], "command_exit_code": 0, "elapsed_seconds": 0.946830913999996, "exit_code": 0, "finished_at": "2026-10-19T13:12:29.654065+00:00", "job": "qualification", "lane": "base-merge", "log_bytes": 10713, "log_file": "repository-controls.json.ffea07fb752a4be1bdb3e79c222732d9.log", "log_sha256": "14a2082da65a5305da96324695e80d411720f60036547bb1555796633b1d1517", "minimum_tests": 1, "observed_failed_tests": 0, "observed_passed_tests": 65, "output_limit_exceeded": false, "recomputed_merge_tree": "25b2a7b559549fba0d22fa7d62d78c76c13cd5ce", "returncode": 0, "run_attempt": "1", "run_id": "39253698625", "schema_version": 1, "source_sha": "89933fdc84ed1151f04609a1881ab24aaef119b4", "started_at": "2026-10-19T13:12:28.706599+00:00", "status": "passed", "tested_sha": "04b6f3b75fc6e4e728a9f2a7393c19a2b6cc5740", "timed_out": false, "working_directory": "/home/runner/work/hepta-private-ci/hepta-private-ci"}
+2026-10-19T13:12:29.6721341Z ##[group]Run set -euo pipefail
+2026-10-19T13:12:29.6721636Z [36;1mset -euo pipefail[0m
+2026-10-19T13:12:29.6721969Z [36;1m# Independent owner lanes remain in force; do not repeat their gates.[0m
+2026-10-19T13:12:29.6722980Z [36;1mpython3 scripts/hepta_ci_exec.py --output "$RUNNER_TEMP/hepta-command-records/derived.json" -- python3 scripts/hepta-module-docs.py refresh-derived --check[0m
+2026-10-19T13:12:29.6756078Z shell: /usr/bin/bash -e {0}
+2026-10-19T13:12:29.6756305Z env:
+2026-10-19T13:12:29.6756522Z   SOURCE_SHA: 89933fdc84ed1151f04609a1881ab24aaef119b4
+2026-10-19T13:12:29.6756843Z   BASE_SHA: f8c9419df6ddeb36ff8b522a50219981fb8d9345
+2026-10-19T13:12:29.6757125Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-19T13:12:29.6757341Z   CARGO_INCREMENTAL: 0
+2026-10-19T13:12:29.6757533Z   CARGO_BUILD_JOBS: 2
+2026-10-19T13:12:29.6757727Z   CARGO_PROFILE_TEST_DEBUG: 0
+2026-10-19T13:12:29.6757945Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-10-19T13:12:29.6758287Z   GITHUB_PROSPECTIVE_MERGE_SHA: c1a76c78972c82a6a1638d4331a1fb8ee6940473
+2026-10-19T13:12:29.6758726Z   GITHUB_PROSPECTIVE_MERGE_TREE: 25b2a7b559549fba0d22fa7d62d78c76c13cd5ce
+2026-10-19T13:12:29.6759104Z   TESTED_SHA: 04b6f3b75fc6e4e728a9f2a7393c19a2b6cc5740
+2026-10-19T13:12:29.6759390Z   HEPTA_CI_LANE: base-merge
+2026-10-19T13:12:29.6759593Z ##[endgroup]
+2026-10-19T13:12:29.7791687Z {"updatedDerived": [], "checkOnly": true}
+2026-10-19T13:12:29.8064735Z {"after": {"commit": "04b6f3b75fc6e4e728a9f2a7393c19a2b6cc5740", "dirty": false, "parents": ["f8c9419df6ddeb36ff8b522a50219981fb8d9345", "89933fdc84ed1151f04609a1881ab24aaef119b4"], "tree": "25b2a7b559549fba0d22fa7d62d78c76c13cd5ce"}, "base_sha": "f8c9419df6ddeb36ff8b522a50219981fb8d9345", "before": {"commit": "04b6f3b75fc6e4e728a9f2a7393c19a2b6cc5740", "dirty": false, "parents": ["f8c9419df6ddeb36ff8b522a50219981fb8d9345", "89933fdc84ed1151f04609a1881ab24aaef119b4"], "tree": "25b2a7b559549fba0d22fa7d62d78c76c13cd5ce"}, "command": ["python3", "scripts/hepta-module-docs.py", "refresh-derived", "--check"], "command_exit_code": 0, "elapsed_seconds": 0.09259955800000341, "exit_code": 0, "finished_at": "2026-10-19T13:12:29.804885+00:00", "job": "qualification", "lane": "base-merge", "log_bytes": 42, "log_file": "derived.json.232ff0e6478b4217b8a6c51b209b2f1a.log", "log_sha256": "dd338ae2d65000941c4a2c3afe356096d35c98d69ca23ec86c7b98ba0490ab1f", "minimum_tests": 0, "observed_failed_tests": 0, "observed_passed_tests": 0, "output_limit_exceeded": false, "recomputed_merge_tree": "25b2a7b559549fba0d22fa7d62d78c76c13cd5ce", "returncode": 0, "run_attempt": "1", "run_id": "39253698625", "schema_version": 1, "source_sha": "89933fdc84ed1151f04609a1881ab24aaef119b4", "started_at": "2026-10-19T13:12:29.711693+00:00", "status": "passed", "tested_sha": "04b6f3b75fc6e4e728a9f2a7393c19a2b6cc5740", "timed_out": false, "working_directory": "/home/runner/work/hepta-private-ci/hepta-private-ci"}
+2026-10-19T13:12:29.8158411Z ##[group]Run set -euo pipefail
+2026-10-19T13:12:29.8158728Z [36;1mset -euo pipefail[0m
+2026-10-19T13:12:29.8159056Z [36;1m# GET of receive-pack advertisement performs no ref, PR or settings[0m
+2026-10-19T13:12:29.8159510Z [36;1m# write. Do not test a credential by attempting same-value PATCHes:[0m
+2026-10-19T13:12:29.8159968Z [36;1m# concurrent owner changes can make a supposed no-op destructive.[0m
+2026-10-19T13:12:29.8160418Z [36;1m# This bounded observation is NOT proof of admin/PR-write denial or[0m
+2026-10-19T13:12:29.8160866Z [36;1m# independent credential custody. The strict activation observer[0m
+2026-10-19T13:12:29.8161299Z [36;1m# remains a separate gate; no missing protection is waived here.[0m
+2026-10-19T13:12:29.8161809Z [36;1mpython3 - <<'PYCODE' | tee "$RUNNER_TEMP/hepta-command-records/candidate-transport.json"[0m
+2026-10-19T13:12:29.8162230Z [36;1mimport json[0m
+2026-10-19T13:12:29.8162622Z [36;1mimport os[0m
+2026-10-19T13:12:29.8162972Z [36;1mfrom hepta_repository_controls import observe_write_transport_denial[0m
+2026-10-19T13:12:29.8163515Z [36;1mobservation = observe_write_transport_denial(os.environ["REPO"], os.environ["GH_TOKEN"])[0m
+2026-10-19T13:12:29.8164117Z [36;1mobservation.update(admin_denial_proven=False, pull_request_write_denial_proven=False)[0m
+2026-10-19T13:12:29.8164594Z [36;1mprint(json.dumps(observation, sort_keys=True))[0m
+2026-10-19T13:12:29.8164874Z [36;1mPYCODE[0m
+2026-10-19T13:12:29.8195238Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-19T13:12:29.8195541Z env:
+2026-10-19T13:12:29.8195749Z   SOURCE_SHA: 89933fdc84ed1151f04609a1881ab24aaef119b4
+2026-10-19T13:12:29.8196062Z   BASE_SHA: f8c9419df6ddeb36ff8b522a50219981fb8d9345
+2026-10-19T13:12:29.8196341Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-19T13:12:29.8196557Z   CARGO_INCREMENTAL: 0
+2026-10-19T13:12:29.8196749Z   CARGO_BUILD_JOBS: 2
+2026-10-19T13:12:29.8196943Z   CARGO_PROFILE_TEST_DEBUG: 0
+2026-10-19T13:12:29.8197173Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-10-19T13:12:29.8197481Z   GITHUB_PROSPECTIVE_MERGE_SHA: c1a76c78972c82a6a1638d4331a1fb8ee6940473
+2026-10-19T13:12:29.8197917Z   GITHUB_PROSPECTIVE_MERGE_TREE: 25b2a7b559549fba0d22fa7d62d78c76c13cd5ce
+2026-10-19T13:12:29.8198298Z   TESTED_SHA: 04b6f3b75fc6e4e728a9f2a7393c19a2b6cc5740
+2026-10-19T13:12:29.8198584Z   HEPTA_CI_LANE: base-merge
+2026-10-19T13:12:29.8201392Z   GH_TOKEN: ***
+2026-10-19T13:12:29.8201618Z   REPO: TrillionniumFoundation/hepta-private-ci
+2026-10-19T13:12:29.8201887Z   PYTHONPATH: scripts
+2026-10-19T13:12:29.8202075Z ##[endgroup]
+2026-10-19T13:12:30.3737470Z {"activation_authorized": false, "admin_denial_proven": false, "advisory": true, "credential_separation_proven": false, "http_status": 403, "observation_status": "unknown", "pull_request_write_denial_proven": false, "reason": "no_explicit_write_denial", "write_transport_denied": null}
+2026-10-19T13:12:30.3855385Z ##[group]Run set -euo pipefail
+2026-10-19T13:12:30.3855708Z [36;1mset -euo pipefail[0m
+2026-10-19T13:12:30.3855928Z [36;1mgit diff --check[0m
+2026-10-19T13:12:30.3856214Z [36;1mtest -z "$(git status --porcelain --untracked-files=no)"[0m
+2026-10-19T13:12:30.3889551Z shell: /usr/bin/bash -e {0}
+2026-10-19T13:12:30.3889775Z env:
+2026-10-19T13:12:30.3889989Z   SOURCE_SHA: 89933fdc84ed1151f04609a1881ab24aaef119b4
+2026-10-19T13:12:30.3890537Z   BASE_SHA: f8c9419df6ddeb36ff8b522a50219981fb8d9345
+2026-10-19T13:12:30.3890824Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-19T13:12:30.3891043Z   CARGO_INCREMENTAL: 0
+2026-10-19T13:12:30.3891238Z   CARGO_BUILD_JOBS: 2
+2026-10-19T13:12:30.3891433Z   CARGO_PROFILE_TEST_DEBUG: 0
+2026-10-19T13:12:30.3891651Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-10-19T13:12:30.3891960Z   GITHUB_PROSPECTIVE_MERGE_SHA: c1a76c78972c82a6a1638d4331a1fb8ee6940473
+2026-10-19T13:12:30.3892590Z   GITHUB_PROSPECTIVE_MERGE_TREE: 25b2a7b559549fba0d22fa7d62d78c76c13cd5ce
+2026-10-19T13:12:30.3893015Z   TESTED_SHA: 04b6f3b75fc6e4e728a9f2a7393c19a2b6cc5740
+2026-10-19T13:12:30.3893296Z   HEPTA_CI_LANE: base-merge
+2026-10-19T13:12:30.3893499Z ##[endgroup]
+2026-10-19T13:12:30.4148289Z ##[group]Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+2026-10-19T13:12:30.4148697Z with:
+2026-10-19T13:12:30.4148915Z   name: hepta-architecture-39253698625-1-base-merge
+2026-10-19T13:12:30.4149250Z   path: /home/runner/work/_temp/hepta-command-records/*
+2026-10-19T13:12:30.4149558Z   if-no-files-found: error
+2026-10-19T13:12:30.4149763Z   retention-days: 30
+2026-10-19T13:12:30.4149954Z   compression-level: 6
+2026-10-19T13:12:30.4150145Z   overwrite: false
+2026-10-19T13:12:30.4150336Z   include-hidden-files: false
+2026-10-19T13:12:30.4150543Z env:
+2026-10-19T13:12:30.4150741Z   SOURCE_SHA: 89933fdc84ed1151f04609a1881ab24aaef119b4
+2026-10-19T13:12:30.4151048Z   BASE_SHA: f8c9419df6ddeb36ff8b522a50219981fb8d9345
+2026-10-19T13:12:30.4151357Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-19T13:12:30.4151575Z   CARGO_INCREMENTAL: 0
+2026-10-19T13:12:30.4151761Z   CARGO_BUILD_JOBS: 2
+2026-10-19T13:12:30.4151954Z   CARGO_PROFILE_TEST_DEBUG: 0
+2026-10-19T13:12:30.4152203Z   CARGO_PROFILE_DEV_DEBUG: 0
+2026-10-19T13:12:30.4152806Z   GITHUB_PROSPECTIVE_MERGE_SHA: c1a76c78972c82a6a1638d4331a1fb8ee6940473
+2026-10-19T13:12:30.4153244Z   GITHUB_PROSPECTIVE_MERGE_TREE: 25b2a7b559549fba0d22fa7d62d78c76c13cd5ce
+2026-10-19T13:12:30.4153623Z   TESTED_SHA: 04b6f3b75fc6e4e728a9f2a7393c19a2b6cc5740
+2026-10-19T13:12:30.4153907Z   HEPTA_CI_LANE: base-merge
+2026-10-19T13:12:30.4154107Z ##[endgroup]
+2026-10-19T13:12:30.5459817Z (node:3676) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-19T13:12:30.5460462Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-19T13:12:30.5518820Z With the provided path, there will be 11 files uploaded
+2026-10-19T13:12:30.5523893Z Artifact name is valid!
+2026-10-19T13:12:30.5530271Z Root directory input is valid!
+2026-10-19T13:12:30.7980704Z Beginning upload of artifact content to blob storage
+2026-10-19T13:12:30.8245678Z (node:3676) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-19T13:12:30.9229631Z Uploaded bytes 10485
+2026-10-19T13:12:30.9557370Z Finished uploading artifact content to blob storage!
+2026-10-19T13:12:30.9558111Z SHA256 digest of uploaded artifact zip is 2d64a67c7a3071430c43b41706b4a6ffb80b1a8410abc2706ec7ad750ff14164
+2026-10-19T13:12:30.9559197Z Finalizing artifact upload
+2026-10-19T13:12:31.1794281Z Artifact hepta-architecture-39253698625-1-base-merge.zip successfully finalized. Artifact ID 12189320757
+2026-10-19T13:12:31.1795132Z Artifact hepta-architecture-39253698625-1-base-merge has been successfully uploaded! Final size is 10485 bytes. Artifact ID is 12189320757
+2026-10-19T13:12:31.1800036Z Artifact download URL: https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39253698625/artifacts/12189320757
+2026-10-19T13:12:31.1953830Z Post job cleanup.
+2026-10-19T13:12:31.2628358Z [command]/usr/bin/git version
+2026-10-19T13:12:31.2668026Z git version 2.55.0
+2026-10-19T13:12:31.2699772Z Temporarily overriding HOME='/home/runner/work/_temp/c1ebc813-87c1-497c-89c7-a97eccd61d03' before making global git config changes
+2026-10-19T13:12:31.2706600Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-19T13:12:31.2707270Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/hepta-private-ci/hepta-private-ci
+2026-10-19T13:12:31.2744039Z Removing SSH command configuration
+2026-10-19T13:12:31.2744655Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-19T13:12:31.2780053Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-19T13:12:31.2954369Z Removing HTTP extra header
+2026-10-19T13:12:31.2958967Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-19T13:12:31.2987381Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-19T13:12:31.3169329Z Removing includeIf entries pointing to credentials config files
+2026-10-19T13:12:31.3176313Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-19T13:12:31.3200927Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-19T13:12:31.3498772Z Cleaning up orphan processes
+2026-10-19T13:12:31.3810639Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

@@ -1,0 +1,20 @@
+diff --git a/kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs b/kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs
+index 7803e9f..7a2d9b8 100644
+--- a/kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs
++++ b/kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs
+@@ -698,9 +698,12 @@ impl CpuChargeOwner {
+     }
+ 
+     pub(crate) fn charge(&self, from: u64, until: u64) {
+-        // Management closure must not discard CPU time already incurred.
+-        // In particular, do not look up the node's current RCU incarnation.
+-        self.cpu.charge_bandwidth_hierarchy(from, until);
++        // NEGATIVE CONTROL: resolve the node's current incarnation at debit.
++        if let Some(group) = &self.cgroup {
++            group.controller().cpu.read().get().charge_bandwidth_hierarchy(from, until);
++        } else {
++            self.cpu.charge_bandwidth_hierarchy(from, until);
++        }
+     }
+ 
+     pub(crate) fn invalidate_accounting(&self) {

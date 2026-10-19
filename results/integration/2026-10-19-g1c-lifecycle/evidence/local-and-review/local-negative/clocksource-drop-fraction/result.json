@@ -1,0 +1,31 @@
+{
+  "all_other_source_files_unchanged": true,
+  "candidate_head": "104204016dcdea57ab73c091b1edd13008ae9a19",
+  "candidate_tree": "179b076747d19c3e07ee19a665e3968c33c598ce",
+  "control": "clocksource-drop-fraction",
+  "declared_changed_path": "kernel/asterinas/kernel/core/comps/time/src/clocksource.rs",
+  "green_kernel_sha256": "bc457c4dd01c91a96e2891771b59888e84dc2cfefdee49d24f593aae189f0bbb",
+  "green_serial_sha256": "ef03a8cf19ba7ae395a964eda936385341f460ebf68c5211eee6c5b45b4b8696",
+  "negative_control_detected": true,
+  "negative_failed": [
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::fragmented_three_ghz_runtime_keeps_absolute_endpoint_precision",
+    "aster_core::vdso::clocksource_regressions::fragmented_refreshes_preserve_fractional_time_and_endpoint_differences",
+    "aster_core::vdso::clocksource_regressions::full_width_vdso_fraction_survives_second_rollover_and_checks_realtime_overflow",
+    "aster_core::vdso::clocksource_regressions::vdso_and_kernel_share_the_fractional_phase_at_the_next_nanosecond"
+  ],
+  "negative_head": "8e66dcc51760b2287318fe5a4f75429cac0d5f9b",
+  "negative_kernel_sha256": "40801f9d0dbf786bbbe3104df114c54afd622aa5c2e4f676ce0a69b27b141212",
+  "negative_passed": 234,
+  "negative_serial_sha256": "cc11008a572508505ba21b5b7658c1eb87144b3d2c7cbed5aad53f7b16073a1e",
+  "negative_tree": "068c5536196a2a71fb87c24a4c98e56221332044",
+  "original_gate_exit": 1,
+  "passed": true,
+  "patch_sha256": "6aeb53178b4facbe105c7fd4ff3e8086d5a9b57f2715f80781efc2764338a442",
+  "product_qualification": false,
+  "raw_qemu_exit": 65,
+  "same_osdk_binary_and_source_path": true,
+  "schema": "a06.cpu-owner-negative.v1",
+  "source_snapshots_unchanged": true,
+  "timed_out": false,
+  "total_core_tests": 238
+}

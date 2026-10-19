@@ -1,0 +1,21 @@
+{
+  "schema": "a06.negative-review-field-correction.v1",
+  "created_at": "2026-10-19T14:08:16.447036+00:00",
+  "explanation": "The first local review encoded whether a cross-run expected_negative map was provided as negative_file_map_matches_independent_local_commit. That optional map is used only for official-versus-local comparison, so false on the first local report meant not applicable at that stage, not an unequal file map. The local path already independently reconstructed every snapshot tree, asserted equality to git rev-parse negative_head^{tree}, and checked the commit sole parent against fixed candidate HEAD. The corrected reporter initializes the optional check as null and only writes true after those unchanged local Git checks succeed; official rows retain the exact full map equality check. A method string now states the evidence for each row. All original runner, snapshot, serial and acceptance records are unchanged.",
+  "first_reports_preserved": "negative-review-first-attempt",
+  "corrected_reports": [
+    {
+      "path": "negative-sequence-review.json",
+      "sha256": "4b49ab4f3dc639f630476e692a87acefb44e12710bb13abe431ec52b4c0201bc",
+      "bytes": 51053
+    },
+    {
+      "path": "official-negative-sequence-review.json",
+      "sha256": "4efabf7505dde51108fad866689f0218f6f716f7479c7eb0d6b1918e596cd807",
+      "bytes": 51662
+    }
+  ],
+  "review_driver_sha256": "b82d9c3c082550567f5e9748e3ac9292b14b98579fc34be89da97a29c2672500",
+  "producer_or_test_rerun": false,
+  "qualification_conclusion_unchanged": true
+}

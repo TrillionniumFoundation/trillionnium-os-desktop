@@ -1,0 +1,3991 @@
+{
+  "schema_version": 1,
+  "kind": "independent_first_local_g1c_ktest_review",
+  "reviewer": "/root/g1c_review",
+  "created_at_utc": "2026-10-19T13:06:37.075807+00:00",
+  "source_head": "72c8dff3f0145a7e16b7095d48a3e7faaf192685",
+  "source_tree": "e2089e2350772a6cb965b3131820abea499f767d",
+  "decision": "Accept the first local fixed-toolchain full aster-core/OSTD execution at 72c8 within its recorded scope. No blocking source issue found in the four-file formatting delta. Final published source and original A06 qualification remain separate.",
+  "blocking_findings": [],
+  "phases": [
+    {
+      "name": "prepare-locks",
+      "command": [
+        "python3",
+        "-I",
+        "support/build/ktest/prepare-locks.py",
+        "--output-dir",
+        "/workspace/scratch/499c7902de8e/r12-evidence/local-prepared-locks"
+      ],
+      "exit_code": 0,
+      "seconds": 6.688928671996109,
+      "log_sha256": "d316a5bb5d02c64c5233d5d5b8a19e731abb7c2d2a126c52395fe6c71eb72795",
+      "verified_log": {
+        "path": "local-host/prepare-locks.log",
+        "bytes": 227,
+        "sha256": "d316a5bb5d02c64c5233d5d5b8a19e731abb7c2d2a126c52395fe6c71eb72795"
+      }
+    },
+    {
+      "name": "full-ktest",
+      "command": [
+        "python3",
+        "-I",
+        "support/build/ktest/run.py",
+        "--output",
+        "/workspace/scratch/499c7902de8e/r12-evidence/local-full-ktest"
+      ],
+      "exit_code": 0,
+      "seconds": 288.39107688199874,
+      "log_sha256": "ff2b6a3dc5724b0b467b3b08c945ebdd5e03594dcfbede41554050fdd5078f42",
+      "verified_log": {
+        "path": "local-host/full-ktest.log",
+        "bytes": 102,
+        "sha256": "ff2b6a3dc5724b0b467b3b08c945ebdd5e03594dcfbede41554050fdd5078f42"
+      }
+    }
+  ],
+  "attempt_receipt": {
+    "path": "local-host/full-ktest-attempt.json",
+    "bytes": 1063,
+    "sha256": "369b8c0a785a65778ece2fd11dd059e9bdef417786bfad547a53976126427cee"
+  },
+  "source_binding": {
+    "environment_records_clean_head": true,
+    "recorded_head_tree_exists_in_git": true,
+    "build_input_digests_match_source_head": [
+      {
+        "path": "kernel/asterinas/osdk/src/commands/build/mod.rs",
+        "mode": "100644",
+        "git_blob": "17466c91107ba445143b56e0c58c774d966dbcf2",
+        "bytes": 14267,
+        "sha256": "fe21586c32416e1ab0f06e0d01830f38adfdf37fc24a1e80d11478e54c3a44c8"
+      },
+      {
+        "path": "support/build/ktest/README.md",
+        "mode": "100644",
+        "git_blob": "29d70edd75ae446f6d815c0b222ab4cc8b7db760",
+        "bytes": 4682,
+        "sha256": "592a7eca726231ef18da1430c1cf0620b6813ad4de883046c1bfa7913019d5cd"
+      },
+      {
+        "path": "support/build/ktest/check.py",
+        "mode": "100755",
+        "git_blob": "eb825678b4196f0f1d953d3e342b69da85e78064",
+        "bytes": 4623,
+        "sha256": "503fcc6d1ed2f828d3ab9fdbf54f28df2148dea43afbd8d9abae65d34baa1373"
+      },
+      {
+        "path": "support/build/ktest/locks/aster-core.Cargo.lock",
+        "mode": "100644",
+        "git_blob": "07d086298d0f717f29891eafc9d6f13de92fbf6f",
+        "bytes": 41127,
+        "sha256": "85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150"
+      },
+      {
+        "path": "support/build/ktest/locks/aster-core.json",
+        "mode": "100644",
+        "git_blob": "e076fe60bbe62cbce8df3302fb3d2b6ff94b8fad",
+        "bytes": 20317,
+        "sha256": "f170057e878d925932f341c275b8d83a4f5ba76c5b11af1e534028147379c20c"
+      },
+      {
+        "path": "support/build/ktest/locks/ostd.Cargo.lock",
+        "mode": "100644",
+        "git_blob": "3d9c915cd2dc7a56b4764dc1e74fa56eab81ffcb",
+        "bytes": 20185,
+        "sha256": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6"
+      },
+      {
+        "path": "support/build/ktest/locks/ostd.json",
+        "mode": "100644",
+        "git_blob": "7b6d7b0b8de62423b22f41ea6117df7dd38f71dd",
+        "bytes": 10494,
+        "sha256": "2dcfe3665f95bb43fa310153e118e75ac899128407b0c28c6290348ab885f833"
+      },
+      {
+        "path": "support/build/ktest/prepare-locks.py",
+        "mode": "100755",
+        "git_blob": "aa4100e2d37c286d1a0e6867b6a796162d3897f3",
+        "bytes": 10353,
+        "sha256": "88b2ed07e5cbcdd8465f093475ecfecb184c2e19ab32e031bb527fb243348567"
+      },
+      {
+        "path": "support/build/ktest/record-qemu.py",
+        "mode": "100755",
+        "git_blob": "65bf21865f4b058c5365868cae62b0111dfd2a2c",
+        "bytes": 3496,
+        "sha256": "0db266f115090bdcac0e0b3944b42d2f555c301b30a713314f20af6a6f5a6a2a"
+      },
+      {
+        "path": "support/build/ktest/run.py",
+        "mode": "100755",
+        "git_blob": "81b7a374e6fd00427ee3dd2e79a0255de87e953f",
+        "bytes": 7443,
+        "sha256": "c70096ee2bd5b4e369da4bb45533fb8d8fea2892371678064d9bd55663187c29"
+      },
+      {
+        "path": "support/build/verify-source.py",
+        "mode": "100644",
+        "git_blob": "dfb398c485f10ea471142cdf4dfb2b7b0bd74687",
+        "bytes": 5832,
+        "sha256": "0b4dcbd04bf2bc201c187dc055d3c5f74ff51938f1506fe4c9590d7f0a1cf0c6"
+      }
+    ],
+    "upstream_build_inputs_independently_matched": 118,
+    "checked_upstream_and_derived_files": [
+      {
+        "path": "kernel/asterinas/Cargo.lock",
+        "mode": "100644",
+        "git_blob": "c8cb7e9616e0ea40442200deee461157793618dd",
+        "bytes": 49279,
+        "sha256": "af94d71680ecf3b9631e21c958263d5e41229033214f88dcff858bb14765a666"
+      },
+      {
+        "path": "kernel/asterinas/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "8f3117bdad25148ee19a8a9cd12ab7b155fb14ef",
+        "bytes": 12270,
+        "sha256": "153bea9f3a0ec926947f9e7207ab458222453cf162283d88a6d25fdeb837048d"
+      },
+      {
+        "path": "kernel/asterinas/LICENSE-MPL",
+        "mode": "100644",
+        "git_blob": "dbdb0fa8e51735c6e5d11c708e10dd7326b3b119",
+        "bytes": 16725,
+        "sha256": "86cf9656479f1edb82245b985f4a2cc0d503b945766ebeda4269c60b307699ae"
+      },
+      {
+        "path": "kernel/asterinas/Makefile",
+        "mode": "100644",
+        "git_blob": "2a906a643d6c463287ea5d633890250b5a046428",
+        "bytes": 18799,
+        "sha256": "f7d24eb8e81b58d4cf0342862318cbfcf63cd8cff8d0f6f69fb7656295192af6"
+      },
+      {
+        "path": "kernel/asterinas/OSDK.toml",
+        "mode": "100644",
+        "git_blob": "064fd551a285d71ff91ce9bf6fe4264d63b33034",
+        "bytes": 2089,
+        "sha256": "155af7cb53b4dffc679393b8fc7c2c1719a74134a0ec2b0812f0c4b53a6c609b"
+      },
+      {
+        "path": "kernel/asterinas/kernel/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "0b09fed8dd3907a51e8ff7b1f9e446848af5ae83",
+        "bytes": 629,
+        "sha256": "4f6a00f2dc54a2c15cc23d4354dff8cfde81dad8c58a707b6636840c61d1d727"
+      },
+      {
+        "path": "kernel/asterinas/kernel/comps/drm/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "a12a1e071d12aa749540d6d3c2995339226844fd",
+        "bytes": 474,
+        "sha256": "a3bc60bec4797f7160efd7af5284a7cfa494a79211130daeea61416455b30479"
+      },
+      {
+        "path": "kernel/asterinas/kernel/comps/i8042/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "09f5399425ca452549669cf032b8d77d1bf6a8bf",
+        "bytes": 417,
+        "sha256": "59f76aefd6209f36b0788d73d8494b8fd00c733c46dbef0be3607a0af4a5e19f"
+      },
+      {
+        "path": "kernel/asterinas/kernel/comps/simpledrm/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "d1e815fd37a3dda6acee9a1f708189c5d0211e48",
+        "bytes": 259,
+        "sha256": "fe0912a5d24f113943fa3716d4988b13a00adc35716934faa3ff2ebced74842f"
+      },
+      {
+        "path": "kernel/asterinas/kernel/comps/uart/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "7ce8f88959c8c1301d5a158999ee5627078f30c2",
+        "bytes": 561,
+        "sha256": "370aa88dc632e2ab8312571c2fa91537934d802778d7fbdaae0db633a038bba4"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "89efb73167bb92670ac6b0f7f115317dd564da36",
+        "bytes": 2504,
+        "sha256": "8a5ca474b72fbc81120c41232607e59d0533c736f74315754d64045a868ce6e4"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/comps/block/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "138f6ad1662525a0f08270afb12ab0026aa195e0",
+        "bytes": 527,
+        "sha256": "54a7285dfc1d868f1f2925763e96636d78c465ef7b855ef6cc007813c9f828e8"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/comps/cmdline/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "06c9136b3364d84fca71b0e07440cd41c30e14f2",
+        "bytes": 314,
+        "sha256": "4efce6e8cdc5972b53a5aeeecae60e59c30372663f3c0525e3b4a19f4e4e4019"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/comps/console/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "3d9b5771ffec30e67754efa99ee088bb98fa03b8",
+        "bytes": 287,
+        "sha256": "455d88958402268f051d0135ddd6e1fdbfb67c0862f8cee14cf5c5b2782dab65"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/comps/device/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "ce15d1e4a040ef4ac5044300d7a64c3d0ab87c70",
+        "bytes": 372,
+        "sha256": "e5fe11b5acc6aed35369a5b6e7c70ae559ea8c21bbbd6e96d1a78dd96bd3a7cf"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/comps/framebuffer/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "4be4c78c477b9f6928a41ca28b8fa2b4b400a278",
+        "bytes": 400,
+        "sha256": "ed2e9873ded0bb62a88f76692b6b0d1d592d80e1f2789f245679dbd996b88beb"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/comps/input/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "1cd5d25bc653831a42c54f37fad4ad3c5255f52b",
+        "bytes": 387,
+        "sha256": "bc511ee20030a626f817be32ffc9e5367bc4837b177aa9ba7a5947d1d628fdfb"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/comps/logger/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "db5d6fc17abbeef0a985360195528a859ce25b07",
+        "bytes": 413,
+        "sha256": "0be205db5b547e2050750d2c50d74c6b4fdc07cac1aec3d8d942e625730df59e"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/comps/mlsdisk/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "631fb405a02f7ddcc323a5b52d671b3dc5f4e67f",
+        "bytes": 613,
+        "sha256": "74e34cbb293fac7ef80d913440da54a72c645ab83c4773e1187981a657cee76e"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/comps/network/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "5f3ae241fff069ceb194ac0c1f742ad04ffc501f",
+        "bytes": 348,
+        "sha256": "3533556b83132c1fd6559d6b9cc4bb3cac9f150c854e9e4738d6a823c4826c44"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/comps/nvme/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "d3009ed0b466f21ad986f7bafdb2f458ec45d9f8",
+        "bytes": 374,
+        "sha256": "fdf0ff4e6d7f060cdc93d15a1a493d4181dc9bc43aaedfb2787469e13404d0a9"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/comps/pci/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "4656583bed63164ff26980be58417d1c0c6e8846",
+        "bytes": 550,
+        "sha256": "2b3dbca799e8b3799f9233761d4108e2bc4e456137e9ef02564436112607aa81"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/comps/softirq/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "de96255e26df0e5e5731d732ad508a7592e00f8d",
+        "bytes": 354,
+        "sha256": "e5a1da35ddbe8cde708679065fcbcca65d59191a9f889ce423cf8e62be755240"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/comps/systree/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "487d37b37141865ceb9533ef1e0c5c635983ef91",
+        "bytes": 397,
+        "sha256": "dabf99c5fef23da71779e1f4d445405163f907f1e0281e4579d3e7a254ef70f9"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/comps/time/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "8c108c7b2cd702764a1adb67a99d3e55d990c3a9",
+        "bytes": 628,
+        "sha256": "0009062f62462fa135e294dd29b0c3013ca77de3d6133aaf385d35c6b5135802"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/comps/virtio/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "793af7830dee23c9ab39ddf98883e1a7f6eaec71",
+        "bytes": 1245,
+        "sha256": "8f973eba5be9f0d59a76981ed90fcca18bd6658179eea9920ef7d427cb2d562d"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/aster-bigtcp/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "b522626e7a14ba283a263fcfd1b22376d57e1aec",
+        "bytes": 527,
+        "sha256": "49cf3f03650e213b38437e69cbfc0cc095ba05b24c63a7151a8bc918745818a1"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/aster-fuse/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "a8b9f5731219e2b63782f7bf889d8f06e7bbc6b3",
+        "bytes": 246,
+        "sha256": "9d409bf2bce9c76008eaf0d40d68dd62d186361df91dfcc4a519dbdbdf3d19dc"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/aster-rights-proc/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "130184c957f58858131fdaa9a77f4b4a397d3912",
+        "bytes": 318,
+        "sha256": "418ce335ea99821aba4cae384a952c170146ca58c871a88b95a5746196454a94"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/aster-rights/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "461c0583e584923efbf92df44f32ba52eface117",
+        "bytes": 300,
+        "sha256": "928cf3951fa21141024ca38b07e5441a808c3c291101ad2f96d512f535913982"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/aster-util/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "99e1b6b763caa0a6733b539271fe8f71c750a7f7",
+        "bytes": 484,
+        "sha256": "17bef4043fa45d5a6bc3d658dca6e3b36c7c9189b89dd5b09dbb24c58abd6deb"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/atomic-integer-wrapper/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "4cdb0c44b0364cc0a4e53fc59817b84a845b2ffe",
+        "bytes": 225,
+        "sha256": "a419518ff8d992039dcc44a4a7d2c6676e6342bd74c5f14e88c65546841a405c"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "d7b3c310f8580f74f1e4e440157af49891e25b74",
+        "bytes": 590,
+        "sha256": "fbddfc9f072a408425eb3791891f0ca2b21341f1ada9d272f00fdebbbc4d8df8"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/analysis/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "d76b6e2c496404e91d4f0996a558a94a67413596",
+        "bytes": 116,
+        "sha256": "76e1c92292b644468ba0ad7da0dbcba04af2dec14594a6012d4657dc95e64dcd"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/duplicate_lib_name_test/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "36a6c498a72e277cd377ed82ee3bdb8526e49ce2",
+        "bytes": 220,
+        "sha256": "8032ce0637979d4f659605db24435279b9fa5fde80d2894c488ee52d790dee1f"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/missing_toml_test/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "3bc7a75e56cf50b123fd74eb00774d5615beb6e5",
+        "bytes": 214,
+        "sha256": "d062755bf2ff87d3229fc99aa4b1371fe8e0e674f0347152cd533fdc680fd070"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/reexport_test/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "ce288216a33a40862845738056067e725548de0a",
+        "bytes": 59,
+        "sha256": "6ccf9670715881749361888c18f30b46b3f3d01540f34c97da4ce520daa6ccc7"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/reexport_test/bar/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "9291c232bc8d6b97aa1832bdb14204bf37dba918",
+        "bytes": 194,
+        "sha256": "b7a542396ebc315bff5b24438f46cdbd5ed00a0cf667c76144481b80678d2966"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/reexport_test/baz/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "47797d7cdfeb5d9baf7c1d53b2a3a2b4ec272892",
+        "bytes": 217,
+        "sha256": "c1417ee85f10532803ab2c5884acfb2b051dc137ae86fec4a4852957336d2fc1"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/reexport_test/foo/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "a7310b90dc5b3c25b630331f1be09833657a9211",
+        "bytes": 219,
+        "sha256": "2d464cb74167ffe2eef69a2882468bc3f82b658a966e2727951cebaf20ef6f46"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/regression_test/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "0be10c5763bc6b4e5b9016eed3f3a5eac696994d",
+        "bytes": 54,
+        "sha256": "ad1248e84e525f3e4a7b4c379b5dd082636bbb1f9488bc0699db51ddcd9a4a07"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/regression_test/bar1/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "82c10e1251defcb036e248f6fb2280635a8f0b67",
+        "bytes": 199,
+        "sha256": "20d84efee940c6a0ba190a4631442e1acc5dd24da037c87379a497762fb158e9"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/regression_test/foo1/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "5ea6853dcd6bc5578dbd5f1abba63eadfe6a911c",
+        "bytes": 220,
+        "sha256": "7a3c4c8ee988a03f6264378f6b7dee29665c5ba63d2f73970c4e0be0c20dbfc2"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/trait_method_test/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "b9e83256da6e1a07f267c21f73169530eea3905e",
+        "bytes": 54,
+        "sha256": "7b13f607f447bf0330ad214c39508a73b72b2853adc9a2ca9b14c480b3826bcd"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/trait_method_test/bar2/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "21cd8b5773e66b9b84111f39c2ad0861a8e6e5fb",
+        "bytes": 199,
+        "sha256": "a718b9c5953f0337a0fcd4b1d37f0cee5c442f3a98bf7e7f4c00397b3ad6d6da"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/trait_method_test/foo2/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "9e742f2103f4b7877c23e8d36a10d08c9ce467b4",
+        "bytes": 220,
+        "sha256": "3c25ab77af5be4ef7df2ee00757d5517e46f9ffbf6b914c8767c586dba857d2d"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/violate_policy_test/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "9d755804f01708699140d20230d3652d5379b67f",
+        "bytes": 54,
+        "sha256": "fd06c0de292a858c9457a2f7347e683e7bff253c572583e8be79982246057cce"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/violate_policy_test/bar3/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "1583ff4457bbb2189570e8dce4ac3414e4804574",
+        "bytes": 199,
+        "sha256": "54cf595c7d4861288677683d7a729c99efcc45faaeaee6be7e8c350adc4fdfb9"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/violate_policy_test/foo3/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "2646f3a8d7bdac1345f2cfe2f1d762ca44413733",
+        "bytes": 220,
+        "sha256": "813d0a388a0574bcc7c99908bd1da6e1466a124c658870913b6f54a169612488"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/component-macro/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "c1cb568380fc0e545fb2955812b34ef1aaacfeb8",
+        "bytes": 335,
+        "sha256": "4995c672d1f41513727277c529b01815c42e3350238b437c2f56681e585a52f6"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/component/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "f3180c4acb713de371ff72255a9cdbe966a21a5f",
+        "bytes": 314,
+        "sha256": "b638c5363d0b0ab55e3e2b7622184943deb86b43d8df7e69eb9ff926313b801b"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/component/tests/init-order/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "b546fe421efdb7ea3ded191b0be156df014730e4",
+        "bytes": 387,
+        "sha256": "471d1b8cd36b92a8bc6af1fd504b2b50a36bea18d8820f50a65811a6fcfb2566"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/component/tests/init-order/first-init/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "6f05d9e688fcb3255758b2e9ed912842bff7f8b4",
+        "bytes": 223,
+        "sha256": "dc0544e2d05e5fabe30ec342ba33cb58aada500a963390f746706c3a75c4183d"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/component/tests/init-order/second-init/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "b74d9b5adab6dbfecf8c6f740c55521005a6e7ad",
+        "bytes": 318,
+        "sha256": "23341322a779f29bcb038a1bd26ed97c5505452300ee608f4b508c4013604e48"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/component/tests/init-stage/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "07f263ddc8de3705dea1a058e07d3815d4b75421",
+        "bytes": 320,
+        "sha256": "5f0952bdb942e26fe3acac5a8b2b1973e656ac6e2d4b99d6c43b4abc5c7ee781"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/component/tests/init-stage/foo/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "e839c4ee49b18f6b10c4e666187bc5aca7ee7c6e",
+        "bytes": 219,
+        "sha256": "bfcd009475e43e899409641ef2b1df4819bbb75e379e4d8f1a8283b412d2a5ad"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/controlled/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "393351b2388f239cb9aaf5152041d5847fb89f4c",
+        "bytes": 265,
+        "sha256": "de74a41e3ceb9f6424a1fe30ab423b5eb0c3944e45693ac6fbeb6d7b4d5919f8"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/cpio-decoder/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "bd98005c971950e23843c19e9f82c73c542ee3e0",
+        "bytes": 280,
+        "sha256": "fcc846f4367a4ae91ef7682058bbec925687d2d784f67fd536ad8e502b9ec67f"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/device-id/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "5d89c0dd52e345e9c4d8577024c92b4d7304f59e",
+        "bytes": 262,
+        "sha256": "09d008d0e9abd4518df96289bdfc21a1c637946fd5b53b455a87e46a0768879e"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/dma-pool/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "f6e6d4e35fa84d7cd64d2f1699ff32c93c44a5ec",
+        "bytes": 316,
+        "sha256": "8d28a920dce043571a9336cf019812ecf4a253656dfd176a0ab838dfb949de26"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/fdt-util/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "e16838e2cad666e436a5a2e27b9ff9e3f9e7c66e",
+        "bytes": 488,
+        "sha256": "360285fb0360ac03ad26a6acdbf4230f88b944548cfd00037ce0f427b2ec6be4"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/io-util/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "71f149a7321f6e20e3de475d838685be5040c95c",
+        "bytes": 138,
+        "sha256": "6bd0df98e47ad086991703dba73ac44b42e28d22dc9622ee0e492d1338e4a891"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/jhash/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "5f043178ed51a3759196d53434969b6de41cb751",
+        "bytes": 110,
+        "sha256": "86da7efad20ea584909156a4a2e033ade34fddb522c1b26d965e624ccc691e23"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/keyable-arc/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "56a545fb0186075617da163359cd5c6736478918",
+        "bytes": 214,
+        "sha256": "909a8aed522a77e6932474ca82b0488ac13e9499e153a4a400d7f3d0e66ea8e4"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/logo-ascii-art/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "fd131ecbd3535f2e785b314f30e5f1db0dec4916",
+        "bytes": 357,
+        "sha256": "8461fe008cc1f45546ca76020859496b71f5e4259f4e250907a5361632723f6c"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/ring-buffer/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "6d3d9e9186c6b5dedc8b2f425f4f7cfb12a86aae",
+        "bytes": 203,
+        "sha256": "2de67922368827fff2cc1465627d538e9fbc9ec88279d7a0c3454b44ae01b320"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/short-vis-path/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "12d435ef040be0ad6edc6176d7a4045b7b5c37e9",
+        "bytes": 314,
+        "sha256": "89d545b1d2f72e23322019809a7ac0a53dedaf3de1323ce81de85e4d2dd3ea5a"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/short-vis-path/tests/syntax-and-behavior/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "5cc33670561a4cd1aac51711bdaba8e7eb8bf674",
+        "bytes": 140,
+        "sha256": "90ad9e76dc9c4b9ba09b25f8d50441d836bbdd8dda40628b579f6ebb6dd19152"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/sparse-id-alloc/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "2e1b39f24a81a12e68220388df1b74e710bd8b08",
+        "bytes": 339,
+        "sha256": "84018899d9181926e31f1e55aa60bfe578c98cd9cdc0e48fe72c4c3b579b5319"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/typeflags-util/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "afa65c5c427310e9da31cadbbb682b6348759930",
+        "bytes": 217,
+        "sha256": "6dffc5a4ff27f6c377e64fdf6e9f63f36864dc6d68f1f46d7440394bc7d2a65a"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/typeflags/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "47a72a437fffe2f9379704650046755ec62940b5",
+        "bytes": 389,
+        "sha256": "98a4d5465f77dd5095e5cf3f31c11ce4faeab0aa518eebd5e7146baec61cb83c"
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/xarray/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "cae91ce879e63c3da7b1113864f8ef6b0034f764",
+        "bytes": 231,
+        "sha256": "5c820dc4880c1d0e89bf727ea1e32d8fd86171a6c4cc4144645bf633fb25cbf4"
+      },
+      {
+        "path": "kernel/asterinas/osdk/Cargo.lock",
+        "mode": "100644",
+        "git_blob": "82dbdd75cedd73558dd3d5aa17e76376d66d6eaf",
+        "bytes": 35285,
+        "sha256": "99a21f72f6a9f1582553b34f06e80f86e539f38e62eab7a0847afd0906e75be3"
+      },
+      {
+        "path": "kernel/asterinas/osdk/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "a5bbae5c43417e4e65fe42b90662b7409c532469",
+        "bytes": 1166,
+        "sha256": "a13930fee211784f779a170a9f7c17ceb3ad017ab9805ba75a503a6597616190"
+      },
+      {
+        "path": "kernel/asterinas/osdk/deps/frame-allocator/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "e0acef481d74f272b40746e541530708ad60d735",
+        "bytes": 327,
+        "sha256": "ed7eb7be9823b88140e641256ed22687492293dfc38b14015904933f8af76bb2"
+      },
+      {
+        "path": "kernel/asterinas/osdk/deps/heap-allocator/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "dacae781741903e7be2b2f3b7067e192b9c26fcd",
+        "bytes": 321,
+        "sha256": "50ff2790cff95e93b91d9ac61e91e89d7d8236a073dd34afd234da0b3d6a8c68"
+      },
+      {
+        "path": "kernel/asterinas/osdk/deps/test-kernel/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "c22fa69cd833a11dd6116a8a8d1963a5d3bdf2f1",
+        "bytes": 422,
+        "sha256": "629282d4a97d169db2b491b0137c221083fa0438c225a8d713f09cbf29fa0905"
+      },
+      {
+        "path": "kernel/asterinas/osdk/tests/examples_in_book/work_in_workspace_templates/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "9bc2f769fb9d963fffe35cb722013a9427280100",
+        "bytes": 40,
+        "sha256": "b80afec4cc2ef11770499ed77037860e6ca3d4e4fd72b15ef334644634f5e63a"
+      },
+      {
+        "path": "kernel/asterinas/osdk/tests/examples_in_book/work_in_workspace_templates/myos/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "6bcc7350dc3ba3081940f05237671358e1eb41da",
+        "bytes": 45,
+        "sha256": "9bf58ee2e2ebfc626c892a29b2b1214b579a8a9d49a174be6433892bb568a6cb"
+      },
+      {
+        "path": "kernel/asterinas/ostd/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "7d459cc06cda3ced29eec97a91a2a9d21ffefe00",
+        "bytes": 2593,
+        "sha256": "1416286b44ff96f2ce0047d505ff33161c847b8aa5bf53261329c9ca36e99055"
+      },
+      {
+        "path": "kernel/asterinas/ostd/libs/align_ext/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "01e22d2fe2ae238b5f629d084189f8ae9ce39918",
+        "bytes": 367,
+        "sha256": "81995198ea3d43a78f5eef905df107284c60535921a8b07459159b419b3205e9"
+      },
+      {
+        "path": "kernel/asterinas/ostd/libs/id-alloc/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "b7c6545f046de97f0989ab318d9fd10c906a6d25",
+        "bytes": 346,
+        "sha256": "651ad8155a71f31161de0fb2aa3c43e380dcfde21e8acb3fa2c09e1073c6bdd8"
+      },
+      {
+        "path": "kernel/asterinas/ostd/libs/int-to-c-enum/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "6b6e6823eb45ee13de2caba31d45304671dca92e",
+        "bytes": 510,
+        "sha256": "279ee5b1971fb5e7147b139f146d65a72ead0d39bbae4c8b10966a18526aef24"
+      },
+      {
+        "path": "kernel/asterinas/ostd/libs/int-to-c-enum/derive/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "d41b418666bdc27a58c358b6e3421bb4b7ccc50a",
+        "bytes": 418,
+        "sha256": "279b48ee79ca564d5d92e81b9c98a86a3e8f627a60b2a16a47d7b260a9f1ec2b"
+      },
+      {
+        "path": "kernel/asterinas/ostd/libs/linux-bzimage/boot-params/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "b3010367fe8936ea16123aa8ec30dab7feee88da",
+        "bytes": 340,
+        "sha256": "62c5787829507014953fbb5b22ad3d4fc8d7010db2278bde52df6ec35b8740b5"
+      },
+      {
+        "path": "kernel/asterinas/ostd/libs/linux-bzimage/builder/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "1acfeb0850d90edb4561315a47dd8ac34ec56603",
+        "bytes": 551,
+        "sha256": "637ed0d86d1d98556b7320d5bb8bbc8c502b10b03606b191884db49c3c8906fb"
+      },
+      {
+        "path": "kernel/asterinas/ostd/libs/linux-bzimage/setup/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "f258cda239f0d6be893978390b0a8b8091efe9cf",
+        "bytes": 820,
+        "sha256": "a50976b2d205cfb5f1be71c3666232a443184336ec3fcc344cca934af6ba7c1c"
+      },
+      {
+        "path": "kernel/asterinas/ostd/libs/ostd-macros/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "ad3665e045068fc2db866a00c51f2dc416921352",
+        "bytes": 462,
+        "sha256": "ae3392d1a34cbb228d4ce748bac1be041e44c3d9e21dac90dbf047cbed542b86"
+      },
+      {
+        "path": "kernel/asterinas/ostd/libs/ostd-pod/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "0b0e724563789281002f10c531025addc71cf4b1",
+        "bytes": 704,
+        "sha256": "1485257e37449f62b88bfbd361b2a61a3be4d5b7753919ae166877ced1b93ccb"
+      },
+      {
+        "path": "kernel/asterinas/ostd/libs/ostd-pod/macros/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "14e4cda1c42f9ae67ad982e6d26eb5a114d73abf",
+        "bytes": 540,
+        "sha256": "54e4c9e79a6797caf4d3d7945180648db9bd5c9805f2601d357d4e1bd30104c3"
+      },
+      {
+        "path": "kernel/asterinas/ostd/libs/ostd-test/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "6b14cd2bbf0e247d2045bc0be052e2520a13b4e5",
+        "bytes": 335,
+        "sha256": "0381667acc80a5cd0358854f07d3667ca9fd365e335065fb4e948c9d4bad3f43"
+      },
+      {
+        "path": "kernel/asterinas/ostd/libs/padding-struct/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "4fe6d78059123eaafb942ac5fc6bec40ce959038",
+        "bytes": 540,
+        "sha256": "90ae1d06c9d28279817ac41ef12093be233728cf19e579e5964e96b86fdde58f"
+      },
+      {
+        "path": "kernel/asterinas/rust-toolchain.toml",
+        "mode": "100644",
+        "git_blob": "3ac33bbae32686a33f317f2072734bf6f4e8d610",
+        "bytes": 339,
+        "sha256": "b2508d8c9cd57258fad2fc77737e07172846161f6a7dd726cbd8e974de69c6f7"
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "7668b277c9e542b7d32683e8c59c2884d56ed570",
+        "bytes": 603,
+        "sha256": "8162498576557a5be2793efeee0fc049ab4d59828e6871c38de05cb9c3944ab2"
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/common/framework/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "c50b0a07136b1365d8f24967a8807d721b4bb804",
+        "bytes": 329,
+        "sha256": "6dcc8acf0836ccc3704249da09cc774cb621bd6d0ff3ded49208736e00327d7f"
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/common/template/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "6544e1c6cf3cc43d688a2134d6a803470e8f1612",
+        "bytes": 219,
+        "sha256": "94d2df96d4c9ec5b2c2fb1f50ffa6fd64bb1f69081e475a7b9f0eccbc30e51d5"
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/common/test_macro/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "d9c6b311411c7d8f7a861dcd8240776c8ce5d7b9",
+        "bytes": 337,
+        "sha256": "e6983038d4107e7c35d81a6e541c21020e35588d687ec11dfe804a89d5747652"
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/ai-and-machine-learning/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "afe7857d401560262440c0865971e13c1abc3a3a",
+        "bytes": 231,
+        "sha256": "7908365630f89adcf8c13f617c8df8e8912bda43e0644b93f7334f26a61ecbf7"
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/cicd-and-devops/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "e098b9cd9c23c518aa5e34182bf1d7d3bb7cb133",
+        "bytes": 223,
+        "sha256": "858ca1743e27f8c761ba13357761f147a87d0bea3e8551fb78b92b431480853d"
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/communication/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "4176740552805b0dea9094f995bd1c7790a4c1fc",
+        "bytes": 221,
+        "sha256": "c004b17330cbcef2b366cf85ad5772079e874dbc1831238f83e28c2c2c13ec5d"
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/containerization-and-virtualization/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "0e051488b24b0cb616976f95b6a2df3cb6689da8",
+        "bytes": 243,
+        "sha256": "8eb602265a7e0cc6d5355e5cdaf5db8baa1684687180e121a5fef5bc3bffac76"
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/databases-and-middleware/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "007c7c3d069f6dcbf9840292be9189e6397a74e4",
+        "bytes": 232,
+        "sha256": "a45fda00be76e04ce67d6bc6f19b7c1a878ebdac47cee11962daa97df1b90dcd"
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/development-tools-go/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "1ab461390aa8978a8fe3f8b32c4a3f4e05eb42c1",
+        "bytes": 228,
+        "sha256": "07b25d6a4796932af8b0c5a7ab1c89ca9fa4aac26c062b36b7089459206d5fff"
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/development-tools-openjdk/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "990c6abaf05dd2959f6049d00f69104cdfaba00a",
+        "bytes": 233,
+        "sha256": "9e8ed23b6931f59c91040a4fa3eac4b5243a34690491b154d70eadc5d810589c"
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/development-tools-python/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "b8bc0e85aac28c346db37ee5ede69e1144e28189",
+        "bytes": 232,
+        "sha256": "23fd345b092e0ea7febc7aa48f8a0cc656f2aaf705e4fa901654f8be611ada36"
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/development-tools/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "f3540a2d66f41dfcbb893d22c8bebdc526265f8f",
+        "bytes": 225,
+        "sha256": "f4a750bfa1ac3c9fa34d2d6704024571e9941729a6717d7379c2c0ee5f15e7af"
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/drm/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "9ee757515289efcacbdd0f640a02583109bc9637",
+        "bytes": 211,
+        "sha256": "066c78696468eee4dd444fdf633ff93d9f45950ac96126dec3e2b2f288224d0b"
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/file-management-and-terminal/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "6039530e903bf94a86d6cb8df44eafa5e3642082",
+        "bytes": 236,
+        "sha256": "1fb79d7e7be8e85706430cc926defa000326460a79adc3c41da58c935f659c71"
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/hello/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "92c9df69c308806bbf146faf2aaee92b90e27f19",
+        "bytes": 213,
+        "sha256": "2c5a08e7d26c8564d59ae00e9aeaa936085eff464d57935b7f97bcab9b3765c5"
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/monitoring-and-observability/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "7f61d8959f31d05e10424a13218e5c45af43aa1f",
+        "bytes": 236,
+        "sha256": "d5086afe9221531af5b83dc2448015c41ce4003c9275c00fb2d109185ebd7751"
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/multimedia/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "605debe21f60c8665309998abf893d2805560dd2",
+        "bytes": 218,
+        "sha256": "e134e24b651f03a3ab63c392dfbf0d2b9bed38889191ce8e2eb3ebc238979dbe"
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/networking/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "d91cc881e0daa08afdb084bdd5148b8ba729d3ea",
+        "bytes": 218,
+        "sha256": "810cfba518bf7c4c522ab55c6efcbaa7f4eca218f84aadc55949082e96887251"
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/nix-and-nixos-tools/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "e2023fa5490e9fb8bd567012a8c87cc7fe790743",
+        "bytes": 227,
+        "sha256": "fed181781a1bfa8309745d31b477fbb5073f02f8340d838a578dbf84b2007df9"
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/office-and-productivity/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "b766380bfea227b3e28dfef1760ee8cac605b931",
+        "bytes": 231,
+        "sha256": "58a1be7cb5a9068e682fd2246d38a6bd0e283a672a4d3586429ccad45d4d7eea"
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/system-core/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "8d5d38b4eb5b1da7f152d87c5b44401a6aa0bd16",
+        "bytes": 219,
+        "sha256": "107bd3bfac0450c78993ccd242da4f278bc9275b6ed36f56a63fcf569bd750a1"
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/web-browsers/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "599759a93f9b30912a26a5b8632f0a3d4390b2de",
+        "bytes": 220,
+        "sha256": "8d098b86522ce8dd23da5c261d2fa957fbb2cda40de364599857c9477d5581c3"
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/web-servers-and-proxies/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "898cf4a5ce3da0bab74e3264aadc0c023d973999",
+        "bytes": 231,
+        "sha256": "ad6cf476fbc006cf795ca536e7cf0d1c63be2d7540d94a8bc45858d81a85d3f2"
+      },
+      {
+        "path": "kernel/asterinas/tools/sctrace/Cargo.toml",
+        "mode": "100644",
+        "git_blob": "b4a66e7902dcc122625366c4093a8347799cc314",
+        "bytes": 489,
+        "sha256": "bc6753c244848c7d0fdcf5a15898055273d6de98cdcac6ab0df1b5e31495598f"
+      }
+    ],
+    "previously_reviewed_source_files_match_recorded_head": [
+      {
+        "path": "kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs",
+        "mode": "100644",
+        "git_blob": "20de4935368b9179db645152cfd0a0336d65f936",
+        "bytes": 9446,
+        "sha256": "f9be1cdd0ac4d98bd7147e58b2e139823ceb00bdad0aa922dcf7194bb7245496"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/process/execve.rs",
+        "mode": "100644",
+        "git_blob": "a33d31f3f022857f2900ede9e82030cb8d81b1f1",
+        "bytes": 13206,
+        "sha256": "058238edcd5851ff2d2a7718268b3954a457c88b8fa8bc8fe9ef26ea3f6a435a"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/process/exit.rs",
+        "mode": "100644",
+        "git_blob": "2de9bfd485f01cfbc41e864a3c9c96739acf94b0",
+        "bytes": 7599,
+        "sha256": "58779e2cefc57428cd380ba4aa713a153c3b2773a417e5dddd591b7a47d5e9f6"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/process/mod.rs",
+        "mode": "100644",
+        "git_blob": "2ed2fa39d58a159365547f89c5c8fda218ae103d",
+        "bytes": 1700,
+        "sha256": "d7541cca98a2bf94d7ff607a5d19c8178cb6b3fab9bbfbaae54eba69b98e50f6"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/process/posix_thread/exit.rs",
+        "mode": "100644",
+        "git_blob": "129e43a9345009848044a7dbae32898c0d0bb54a",
+        "bytes": 6511,
+        "sha256": "f8fe124fe8251392662a31ebc1c9bba91c2c6f2f840d5304f49acaf06d55e4aa"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/process/process/mod.rs",
+        "mode": "100644",
+        "git_blob": "659784f4c45bf6fccb674b578a05605d3925cff3",
+        "bytes": 31779,
+        "sha256": "880d888c7129f1e91d6e410a9e9db88a96e5cc492298327f871b38a35a1ba739"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/process/process/image.rs",
+        "mode": "100644",
+        "git_blob": "bacaa3cc8ac678d3a231b060f80e7ea52af0decc",
+        "bytes": 12476,
+        "sha256": "12ad3f3b813d4f970129339db07c34c467871cc5b49558ab771bb636c6b83cd7"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+        "mode": "100644",
+        "git_blob": "132dae040e84363939b86e39050c5a6f1c35e97f",
+        "bytes": 12532,
+        "sha256": "cc0eb03c8e07a360ef00e86b7ae153c81521125060dde115da76c3dc5a28ffc8"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/process/test_util.rs",
+        "mode": "100644",
+        "git_blob": "887321ce02735ce0e1a723be75c42ec147edd1c4",
+        "bytes": 2492,
+        "sha256": "2862c1b823638351f1fcdcbcf93ad77a69b92cfa13d1d66f5b0f271fec3f536d"
+      },
+      {
+        "path": "tests/kernel/control/queryabi_candidate_guest.c",
+        "mode": "100644",
+        "git_blob": "5ee49c095840b558a0dea4b3c1f2fb34ea27deb6",
+        "bytes": 7014,
+        "sha256": "f48de0306d3bad5a1ce3171efdeccf18bf0c0e8f7472d5f3fbbfb45f569d455a"
+      },
+      {
+        "path": "tests/kernel/control/run_queryabi_candidate_guest.py",
+        "mode": "100644",
+        "git_blob": "3c9bf43616f98a1cebe0cb2d84d7c1a8b4c1af93",
+        "bytes": 16498,
+        "sha256": "7d7a9f92110c5d5ea4a312fddd7ca5061f82bcb7106fa89c7a13161d7d8891a5"
+      },
+      {
+        "path": "tests/kernel/control/test_queryabi_candidate_runner.py",
+        "mode": "100644",
+        "git_blob": "2f50481aa848037b0b2c8eb78296c787272fc69b",
+        "bytes": 9275,
+        "sha256": "2911a8b314675c4662415708661917e8d93b2928ad12a30c75eae2382f3b8bf5"
+      },
+      {
+        "path": "tests/spec/test_a05_capspace_nonce.py",
+        "mode": "100644",
+        "git_blob": "408f42f74f3e5cf499f3e2b1f0a1782ced8058f8",
+        "bytes": 3989,
+        "sha256": "0bf11349c33aeb1e5859384a9171965d970bbf416f1f0ffd40e5aacbe134417e"
+      },
+      {
+        "path": "tests/kernel/control/README.md",
+        "mode": "100644",
+        "git_blob": "585f2ba58bda89ea8dd71fdbddac2ac9a2d2fafa",
+        "bytes": 7707,
+        "sha256": "2b5cb37abc872fdd6dabe5221351c75497f8ca2140d131ae2a8d8f92efe125f8"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/process/clone.rs",
+        "mode": "100644",
+        "git_blob": "c172c82bf53e7c654f1088e174eb95774cae9ef5",
+        "bytes": 31177,
+        "sha256": "ab1af89d855655238ade17835ab2118214e4b04b6a6e1fe3e851b1ab4e9b2c43"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/process/task_set.rs",
+        "mode": "100644",
+        "git_blob": "bdb958f59db9f4e6419cd23e5830ea89967761e9",
+        "bytes": 4252,
+        "sha256": "abba4258a78c27253d210ff5704e96a94e5dffaabccfeb3911a9bc6553c75033"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/process/posix_thread/mod.rs",
+        "mode": "100644",
+        "git_blob": "2d9328988b9b279531651df86c56c6c6916f353d",
+        "bytes": 18881,
+        "sha256": "57f25ccf4b575d68dd74ae12f1d8e802482466fc983679b6903f45f30efc1a8f"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/process/posix_thread/builder.rs",
+        "mode": "100644",
+        "git_blob": "cf175e6b2f8a6444be5fc8101ac1caadc2f78e8f",
+        "bytes": 7172,
+        "sha256": "51ec85307cb020b67f9b99e6b310bfde877193bdf933b7c5e60835508fe8984f"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/process/process_vm/mod.rs",
+        "mode": "100644",
+        "git_blob": "1ceca2e7c0c83a5cf7a984b4053b5713c0a04dba",
+        "bytes": 9874,
+        "sha256": "d9990857783dd789d225a614f1855141d7d1f24976c585d457f9bac3483d37f5"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/process/program_loader/mod.rs",
+        "mode": "100644",
+        "git_blob": "dfde5635b94e68d73d1c494f3c2b4bca69c726a5",
+        "bytes": 7900,
+        "sha256": "3fe0e0cae3d9d127947a2b6ff1480bbd1cc83fd8651ec9d95533bd59f8ffeb1d"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/process/program_loader/elf/load_elf.rs",
+        "mode": "100644",
+        "git_blob": "a550d70e1ba660eaae202a40c51b9e359c380625",
+        "bytes": 18566,
+        "sha256": "230e083f73dcbf5d0fc1320189d6287ff3aea7bf6058b3c79d480f0281c0b093"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs",
+        "mode": "100644",
+        "git_blob": "0319b01d6d651ea38333974e8a4a3280e3409c9e",
+        "bytes": 8682,
+        "sha256": "1f7fb0e3e3129cc29b62d6ac0858d9e74716575e435d635c353f45b99cca6c2c"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs",
+        "mode": "100644",
+        "git_blob": "a5e1027106fae3d0f280089d3da5e5a530661143",
+        "bytes": 30592,
+        "sha256": "6b0cc85db8c868d9342ce4179f94fa1825420f30d6e8e7e2117495912e64e667"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/pid/task/mem.rs",
+        "mode": "100644",
+        "git_blob": "1dbc74e045c38e53da8d9e056231e798e06b54e5",
+        "bytes": 4058,
+        "sha256": "3089d61eef664894d5e9be99360ba966b11e6d702f6e0a1779a9371fa3cb373a"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/pid/task/maps.rs",
+        "mode": "100644",
+        "git_blob": "dd153a816a982388bfbd5fe8934d938d80150d80",
+        "bytes": 4089,
+        "sha256": "345534197ca146d0770193c1f432aa2f3497e36958ac3de3700dad631663fe86"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/thread/mod.rs",
+        "mode": "100644",
+        "git_blob": "e09dfd949360de9171c973207501ff9e32df9699",
+        "bytes": 4945,
+        "sha256": "017bf5db8926560f91c64a3b9a5f8d5ff0031726c50d7f4afb60c95c5bcf7147"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/syscall/execve.rs",
+        "mode": "100644",
+        "git_blob": "3f3e043b2d60f9f05738efafadb45e774c033a91",
+        "bytes": 4521,
+        "sha256": "491c0302a5726f1f2f5ba65c2e638aa8f0e13d5be856ef265b228c252fb1ef19"
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/prelude.rs",
+        "mode": "100644",
+        "git_blob": "565d34c9f264b329e6de7d22548bf07327e35b15",
+        "bytes": 1121,
+        "sha256": "6b23b03ad576e28f403605c31cd2017cd99e048e7c256e61797fd1f2cb27ccc1"
+      },
+      {
+        "path": "kernel/asterinas/ostd/src/task/mod.rs",
+        "mode": "100644",
+        "git_blob": "c3f6770d6214017c8955bc0160797a6936c63d3d",
+        "bytes": 11168,
+        "sha256": "7458cb746d2a769313b4e12b525db56df1eba9aff09429cf535f53a7eed86b4f"
+      },
+      {
+        "path": "tests/kernel/control/queryabi_guest.c",
+        "mode": "100644",
+        "git_blob": "57b8f38073d155e682004e1e1ddceada6b304e32",
+        "bytes": 10823,
+        "sha256": "bed0eef9bdf8228bf58e23bd2b775501e8d5718ff11e554a600acc1b5469155b"
+      },
+      {
+        "path": "tests/kernel/control/run_queryabi_guest.py",
+        "mode": "100644",
+        "git_blob": "d0e5be01c92071c5ee36d0fb084f271976e56719",
+        "bytes": 9633,
+        "sha256": "3d981b41ae4905983c67d13d8d7abfbc29318fd6a41b848523eb4c0ac1400268"
+      }
+    ],
+    "limitation": "The original runner source-inputs.json checks 118 upstream build/manifests inputs; it is not a complete product source byte/mode snapshot. The runner records clean Git HEAD and selected build input hashes, with the earlier independent selected-source review. No complete before/after all-product snapshot is claimed for this first local run."
+  },
+  "environment": {
+    "toolchain": "nightly-2026-07-21",
+    "rustc": "rustc 1.99.0-nightly (87e5904f5 2026-07-20)\nbinary: rustc\ncommit-hash: 87e5904f5eb6398af6b22eac2802c78934260c48\ncommit-date: 2026-07-20\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.0-nightly\nLLVM version: 22.1.8\n",
+    "cargo": "cargo 1.99.0-nightly (3efb1f477 2026-07-17)\nrelease: 1.99.0-nightly\ncommit-hash: 3efb1f477e99b42974b982d939fd100303cdf7db\ncommit-date: 2026-07-17\nhost: x86_64-unknown-linux-gnu\nlibgit2: 1.9.4 (sys:0.21.0 vendored)\nlibcurl: 8.21.0-DEV (sys:0.4.90+curl-8.21.0 vendored ssl:OpenSSL/3.6.3)\nssl: OpenSSL 3.6.3 9 Jun 2026\nos: Ubuntu 24.4.0 (noble) [64-bit]\n",
+    "git_head": "72c8dff3f0145a7e16b7095d48a3e7faaf192685",
+    "git_status": "",
+    "build_inputs_sha256": {
+      "kernel/asterinas/osdk/src/commands/build/mod.rs": "fe21586c32416e1ab0f06e0d01830f38adfdf37fc24a1e80d11478e54c3a44c8",
+      "support/build/ktest/README.md": "592a7eca726231ef18da1430c1cf0620b6813ad4de883046c1bfa7913019d5cd",
+      "support/build/ktest/check.py": "503fcc6d1ed2f828d3ab9fdbf54f28df2148dea43afbd8d9abae65d34baa1373",
+      "support/build/ktest/locks/aster-core.Cargo.lock": "85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150",
+      "support/build/ktest/locks/aster-core.json": "f170057e878d925932f341c275b8d83a4f5ba76c5b11af1e534028147379c20c",
+      "support/build/ktest/locks/ostd.Cargo.lock": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6",
+      "support/build/ktest/locks/ostd.json": "2dcfe3665f95bb43fa310153e118e75ac899128407b0c28c6290348ab885f833",
+      "support/build/ktest/prepare-locks.py": "88b2ed07e5cbcdd8465f093475ecfecb184c2e19ab32e031bb527fb243348567",
+      "support/build/ktest/record-qemu.py": "0db266f115090bdcac0e0b3944b42d2f555c301b30a713314f20af6a6f5a6a2a",
+      "support/build/ktest/run.py": "c70096ee2bd5b4e369da4bb45533fb8d8fea2892371678064d9bd55663187c29",
+      "support/build/verify-source.py": "0b4dcbd04bf2bc201c187dc055d3c5f74ff51938f1506fe4c9590d7f0a1cf0c6"
+    },
+    "osdk_sha256": "693ed05c73da6789ef996521c56ec7ef705403be5a18c8833b86ceeb3b04cb83",
+    "vdso_sha256": "27cd7bf576a92fa48a891c05988f52fac35b7374d5b9650d6b035e477c5d93a3",
+    "cargo_build_jobs": "2",
+    "test_name": null,
+    "osdk_install_skipped": false
+  },
+  "commands": [
+    {
+      "argv": [
+        "cargo",
+        "+nightly-2026-07-21",
+        "install",
+        "--locked",
+        "cargo-osdk",
+        "--path",
+        "osdk"
+      ],
+      "cwd": "/workspace/scratch/499c7902de8e/r12-g1c/kernel/asterinas"
+    },
+    {
+      "argv": [
+        "cargo",
+        "+nightly-2026-07-21",
+        "osdk",
+        "test",
+        "--release",
+        "--boot-method=vmm-direct",
+        "--grub-boot-protocol=multiboot",
+        "--qemu-exe=/workspace/scratch/499c7902de8e/r12-g1c/support/build/ktest/record-qemu.py",
+        "--kcmd-args=loglevel=error",
+        "--kcmd-args=earlycon",
+        "--kcmd-args=console=ttyS0"
+      ],
+      "cwd": "/workspace/scratch/499c7902de8e/r12-g1c/kernel/asterinas/ostd",
+      "lock_sha256": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6"
+    },
+    {
+      "argv": [
+        "cargo",
+        "+nightly-2026-07-21",
+        "osdk",
+        "test",
+        "--release",
+        "--boot-method=vmm-direct",
+        "--grub-boot-protocol=multiboot",
+        "--qemu-exe=/workspace/scratch/499c7902de8e/r12-g1c/support/build/ktest/record-qemu.py",
+        "--kcmd-args=loglevel=error",
+        "--kcmd-args=earlycon",
+        "--kcmd-args=console=ttyS0"
+      ],
+      "cwd": "/workspace/scratch/499c7902de8e/r12-g1c/kernel/asterinas/kernel/core",
+      "lock_sha256": "85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150"
+    }
+  ],
+  "tool_identity_checks": [
+    {
+      "path": "/workspace/scratch/499c7902de8e/r12-rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/rustc",
+      "bytes": 645184,
+      "sha256": "752104a1bd1bc3a59e6a2bd8ec02fa7113acf0e5083f9ee59d43e983ecc5d48f",
+      "version_matches_record": true,
+      "version": "rustc 1.99.0-nightly (87e5904f5 2026-07-20)\nbinary: rustc\ncommit-hash: 87e5904f5eb6398af6b22eac2802c78934260c48\ncommit-date: 2026-07-20\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.0-nightly\nLLVM version: 22.1.8\n"
+    },
+    {
+      "path": "/workspace/scratch/499c7902de8e/r12-rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+      "bytes": 40539896,
+      "sha256": "1e8bffe479c27798861dd7f0a3add4adb898879da0be8431fb48ff8c7cc78c03",
+      "version_matches_record": true,
+      "version": "cargo 1.99.0-nightly (3efb1f477 2026-07-17)\nrelease: 1.99.0-nightly\ncommit-hash: 3efb1f477e99b42974b982d939fd100303cdf7db\ncommit-date: 2026-07-17\nhost: x86_64-unknown-linux-gnu\nlibgit2: 1.9.4 (sys:0.21.0 vendored)\nlibcurl: 8.21.0-DEV (sys:0.4.90+curl-8.21.0 vendored ssl:OpenSSL/3.6.3)\nssl: OpenSSL 3.6.3 9 Jun 2026\nos: Ubuntu 24.4.0 (noble) [64-bit]\n"
+    },
+    {
+      "path": "/workspace/scratch/499c7902de8e/r12-cargo/bin/cargo-osdk",
+      "bytes": 8505648,
+      "sha256": "693ed05c73da6789ef996521c56ec7ef705403be5a18c8833b86ceeb3b04cb83",
+      "matches_environment_key": "osdk_sha256"
+    },
+    {
+      "path": "/workspace/scratch/499c7902de8e/r12-g1c/support/build/out/linux-vdso/vdso_x86_64.so",
+      "bytes": 28760,
+      "sha256": "27cd7bf576a92fa48a891c05988f52fac35b7374d5b9650d6b035e477c5d93a3",
+      "matches_environment_key": "vdso_sha256"
+    }
+  ],
+  "lock_identity_checks": [
+    {
+      "crate": "ostd",
+      "generated_lock": {
+        "path": "local-full-ktest/ostd/generated.Cargo.lock",
+        "bytes": 20185,
+        "sha256": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6"
+      },
+      "prepared_lock_metadata": {
+        "path": "local-prepared-locks/ostd.json",
+        "bytes": 10494,
+        "sha256": "2dcfe3665f95bb43fa310153e118e75ac899128407b0c28c6290348ab885f833"
+      },
+      "package_count": 97,
+      "external_packages_matching_original_seed": 82,
+      "generated_equals_fixed_git_and_prepared_bytes": true,
+      "external_drift": []
+    },
+    {
+      "crate": "aster-core",
+      "generated_lock": {
+        "path": "local-full-ktest/aster-core/generated.Cargo.lock",
+        "bytes": 41127,
+        "sha256": "85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150"
+      },
+      "prepared_lock_metadata": {
+        "path": "local-prepared-locks/aster-core.json",
+        "bytes": 20317,
+        "sha256": "f170057e878d925932f341c275b8d83a4f5ba76c5b11af1e534028147379c20c"
+      },
+      "package_count": 200,
+      "external_packages_matching_original_seed": 147,
+      "generated_equals_fixed_git_and_prepared_bytes": true,
+      "external_drift": []
+    }
+  ],
+  "kernel_output_identity_checks": [
+    {
+      "crate": "ostd",
+      "path": "g1c-review/first-local-inputs-72c8dff3/ostd-osdk-bin.elf",
+      "bytes": 2001240,
+      "sha256": "a6a454bdb0c8ea5fbe1280257047fc65a8cbd60ff0f487ea28a0b26d1236b8ba",
+      "matches_original_qemu_record": true,
+      "elf_type": 2,
+      "elf_machine": 3,
+      "elf_machine_scope": "ELF64 marked EM_386 by the original OSDK multiboot loader rewrite",
+      "recorded_build_path": "/workspace/scratch/499c7902de8e/r12-g1c/kernel/asterinas/target/osdk/ostd/ostd-osdk-bin.elf"
+    },
+    {
+      "crate": "aster-core",
+      "path": "g1c-review/first-local-inputs-72c8dff3/aster-core-osdk-bin.elf",
+      "bytes": 9965752,
+      "sha256": "04da6fa72d785481beb79fad4c28383f133f35dc0c25a50a2eb0a6bae76db049",
+      "matches_original_qemu_record": true,
+      "elf_type": 2,
+      "elf_machine": 3,
+      "elf_machine_scope": "ELF64 marked EM_386 by the original OSDK multiboot loader rewrite",
+      "recorded_build_path": "/workspace/scratch/499c7902de8e/r12-g1c/kernel/asterinas/target/osdk/aster-core/aster-core-osdk-bin.elf"
+    }
+  ],
+  "qemu_elf_loader_source": {
+    "path": "kernel/asterinas/osdk/src/commands/build/bin.rs",
+    "mode": "100644",
+    "git_blob": "e16aa4713f2b4a4f6bb0854dd3fa117905b9ccf1",
+    "bytes": 11911,
+    "sha256": "21ccf19d9bc1bb6850121e2604ec0abbecc1dc0ecf221c4cb5c2d65abfe31194"
+  },
+  "independently_enumerated_results": [
+    {
+      "crate": "ostd",
+      "declared": 221,
+      "uniquely_enumerated": 221,
+      "reported_passed": 221,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 3,
+      "exercised_passed_lower_bound": 218,
+      "raw_qemu_exit_code": 33,
+      "osdk_exit_code": 0,
+      "timed_out": false,
+      "qemu_duration_seconds": 0.815,
+      "serial": {
+        "path": "local-full-ktest/ostd/guests/guest-001/serial.log",
+        "bytes": 23028,
+        "sha256": "a055134563961fe00380c63b3fca26a4f29c29b3edc979b427b67ea6702d3cca"
+      },
+      "soft_skip_cases": [
+        {
+          "name": "ostd::arch::vm::vmx::test::multiple_vmx_guards_lifecycle",
+          "reason": "VMX unavailable"
+        },
+        {
+          "name": "ostd::arch::vm::vmx::vmcs::test::switch_and_reuse_vmcs",
+          "reason": "VMX unavailable"
+        },
+        {
+          "name": "ostd::vm::gpm_space::test::guest_mapping_lifecycle",
+          "reason": "VMX/EPT invalidation unavailable"
+        }
+      ],
+      "new_g1c_cases": [],
+      "all_cases": [
+        {
+          "name": "ostd::arch::vm::ept::test::leaf_encoding",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::arch::vm::vmx::test::multiple_vmx_guards_lifecycle",
+          "reported_result": "ok",
+          "soft_skip_reason": "VMX unavailable"
+        },
+        {
+          "name": "ostd::arch::vm::vmx::vmcs::test::switch_and_reuse_vmcs",
+          "reported_result": "ok",
+          "soft_skip_reason": "VMX unavailable"
+        },
+        {
+          "name": "ostd::boot::memory_region::test::sort_full_non_overlapping",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::boot::memory_region::test::into_non_overlapping_drops_usable_subpage_regions",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::cpu::local::test::cpu_local",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::cpu::local::test::cpu_local_cell",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::io::io_mem::allocator::test::illegal_region",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::io::io_mem::allocator::test::conflict_region",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::io::io_mem::test::read_write_u8",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::io::io_mem::test::read_write_u16",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::io::io_mem::test::read_write_u32",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::io::io_mem::test::read_write_u64",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::io::io_mem::test::boundary_overlap",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::io::io_mem::test::copy_to_alignment_and_sizes",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::io::io_mem::test::copy_from_alignment_and_sizes",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::io::io_port::allocator::test::illegal_region",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::io::io_port::allocator::test::conflict_region",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::io::io_port::allocator::test::overlapping_region",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::irq::top_half::test::alloc_and_free_irq",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::irq::top_half::test::register_and_unregister_callback",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::log::bridge::test::bridge_map_log_level",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::log::bridge::test::bridge_map_level_filter",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::log::level::test::level_ordering",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::log::level::test::level_filter_enabled",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::log::level::test::level_from_u8_clamping",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::log::level::test::level_filter_from_level",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::dma::test::dma_coherent::read_write",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::dma::test::dma_coherent::reader_writer",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::dma::test::dma_coherent::read_write_once",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::dma::test::dma_coherent::zero_length_operations",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::dma::test::dma_coherent::alloc_uninit_dma_coherent",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::dma::test::dma_coherent::alloc_with_coherent_device",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::dma::test::dma_coherent::complex_read_write_patterns",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::dma::test::dma_stream::to_device",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::dma::test::dma_stream::read_write",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::dma::test::dma_stream::from_device",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::dma::test::dma_stream::reader_writer",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::dma::test::dma_stream::streaming_map",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::dma::test::dma_stream::alloc_dma_stream",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::dma::test::dma_stream::sync_invalid_ranges",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::dma::test::dma_stream::alloc_uninit_dma_stream",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::dma::test::dma_stream::streaming_boundary_conditions",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::frame::allocator::test_alloc_dealloc",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::frame::test::frame::frame_drop",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::frame::test::frame::frame_clone",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::frame::test::frame::frame_to_uframe",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::frame::test::frame::frame_allocation",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::frame::test::frame::frame_conversions",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::frame::test::frame_ref::frame_impls_non_null_ptr",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::frame::test::frame_ref::frame_ref_preserves_refcnt",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::frame::test::linked_list::linked_list_push_pop",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::frame::test::linked_list::linked_list_cursor_at",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::frame::test::linked_list::linked_list_cursor_ops",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::frame::test::segment::segment_drop",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::frame::test::segment::segment_slice",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::frame::test::segment::segment_split",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::frame::test::segment::frame_to_segment",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::frame::test::segment::segment_creation",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::frame::test::segment::segment_iteration",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::frame::test::segment::segment_to_segment",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::frame::test::segment::segment_slice_empty",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::frame::test::segment::segment_to_usegment",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::frame::test::segment::max_segment_creation",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::frame::test::segment::invalid_segment_split",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::frame::test::segment::empty_segment_creation",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::frame::test::segment::zeroed_segment_creation",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::frame::test::segment::segment_iter_partial_drop",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::frame::test::segment::segment_slice_out_of_bounds",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::frame::test::untyped::untyped_frame_reader_writer",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::frame::test::untyped::untyped_segment_reader_writer",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::frame::unaccepted::test::partition_units_evenly",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::frame::unaccepted::test::partition_units_sparse_cpus",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::frame::unaccepted::test::partition_units_byte_remainder",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::frame::unaccepted::test::partition_units_partial_byte_tail",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::kspace::test::manual_paddr_to_vaddr",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::kspace::test::kvirt_area_tracked_drop",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::kspace::test::kvirt_area_untracked_drop",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::kspace::test::kvirt_area_tracked_map_pages",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::kspace::test::kvirt_area_untracked_map_pages",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::page_table::test::arch_pte_impls::zeroed_pte_is_absent_pte",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::page_table::test::arch_pte_impls::cast_pt_pte_preserves_repr",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::page_table::test::arch_pte_impls::cast_frame_pte_preserves_repr",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::page_table::test::arch_pte_impls::cast_absent_pte_preserves_repr",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::page_table::test::boot_pt::map_protect",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::page_table::test::boot_pt::map_base_page",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::page_table::test::boot_pt::protect_base_page_unmapped",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::page_table::test::boot_pt::map_base_page_already_mapped",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::page_table::test::create_page_table::new_kernel_page_table",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::page_table::test::create_page_table::create_user_page_table",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::page_table::test::lock_levels::map_above_locked_level",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::page_table::test::lock_levels::map_huge_pages_with_minimum_lock_level",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::page_table::test::mapping::mixed_granularity_map_unmap",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::page_table::test::mapping::mixed_granularity_protect_query",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::page_table::test::navigation::jump",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::page_table::test::navigation::find_next",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::page_table::test::navigation::jump_from_guard_level_end",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::page_table::test::navigation::jump_near_address_space_end",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::page_table::test::navigation::find_next_keeps_va_around_barrier",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::page_table::test::navigation::find_next_rejects_overflowing_len",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::page_table::test::navigation::jump_from_end_and_query_huge_middle",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::page_table::test::overlapping_mappings::unaligned_map",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::page_table::test::overlapping_mappings::overlapping_mappings",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::page_table::test::page_properties::map_preserves_page_property",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::page_table::test::protection_and_query::base_protect_query",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::page_table::test::protection_and_query::protect_next_empty_entry",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::page_table::test::protection_and_query::protect_next_touches_empty_range",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::page_table::test::range_checks::range_check",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::page_table::test::range_checks::boundary_conditions",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::page_table::test::range_checks::end_boundary_mapping",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::page_table::test::range_checks::start_boundary_mapping",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::page_table::test::range_checks::overflow_boundary_mapping",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::page_table::test::test_utils::test_subset_iter",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::page_table::test::unmap::take_large_takes_subtree",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::page_table::test::unmap::take_next_takes_something",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::io::fill_infallible",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::io::read_val_segment",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::io::fill_zeros_segment",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::io::read_slice_segment",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::io::fallible_read_write",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::io::fill_zeros_fallible",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::io::write_slice_segment",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::io::atomic_load_fallible",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::io::skip_read_infallible",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::io::write_val_infallible",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::io::limit_read_infallible",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::io::partial_read_fallible",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::io::skip_write_infallible",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::io::limit_write_infallible",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::io::partial_write_fallible",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::io::read_write_val_fallible",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::io::read_write_u32_infallible",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::io::read_write_once_infallible",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::io::read_write_slice_infallible",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::io::read_write_struct_infallible",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::io::invalid_read_write_infallible",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::io::read_beyond_buffer_infallible",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::io::write_beyond_buffer_infallible",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::io::atomic_compare_exchange_fallible",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::io::invalid_args_read_write_fallible",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::io::read_write_slice_vmio_infallible",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::vmspace::protect_next",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::vmspace::vmspace_activate",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::vmspace::vmspace_creation",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::vmspace::vmspace_map_twice",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::vmspace::vmspace_map_unmap",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::vmspace::cursor_mut_flusher",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::vmspace::overlapping_cursors",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::vmspace::vmspace_unmap_twice",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::vmspace::vmspace_reader_writer",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::vmspace::protect_out_range_page",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::vmspace::unaligned_unmap_panics",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::vmspace::vmspace_map_query_iomem",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::vmspace::vmspace_iomem_persistence",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::mm::test::vmspace::vmspace_map_iomem_with_offset",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::smp::test::pending_ipis_can_be_extended",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::smp::test::pending_ipis_waits_for_all_cpus",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::smp::test::pending_ipis_waits_for_remote_cpu",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::smp::test::inter_processor_call_runs_on_current_cpu",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::sync::mutex::test::try_lock_does_not_unlock",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::sync::rcu::non_null::either::test::alignment",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::sync::rcu::non_null::either::test::left_pointer",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::sync::rcu::non_null::either::test::right_pointer",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::sync::rcu::non_null::either::test::rcu_store_load",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::sync::rwarc::test::lockless_get",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::sync::wait::test::queue_wake_all",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::sync::wait::test::queue_wake_one",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::sync::wait::test::waiter_wake_drop",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::sync::wait::test::waiter_wake_async",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::sync::wait::test::waiter_wake_twice",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::sync::wait::test::waiter_wake_reorder",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::task::test::spawn_task",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::task::test::create_task",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::test::expect_panic",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::test::failing_assertion",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::test::trivial_assertion",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::id_set_full",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::id_set_iter",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::id_set_empty",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::iter_in_range",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::id_set_default",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::id_set_from_id",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::id_set_iter_full",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::iter_in_range_to",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::id_set_add_remove",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::iter_in_range_from",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::iter_in_range_full",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::id_set_add_all_clear",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::id_set_cardinality_one",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::id_set_iter_multi_part",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::iter_in_half_unbounded",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::iter_in_range_next_part",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::iter_in_unbounded_bounds",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::id_set_exact_part_boundary",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::iter_in_range_to_inclusive",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::id_set_add_remove_multi_part",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::iter_in_range_ends_after_last",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::id_set_just_over_part_boundary",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::iter_in_range_starts_after_last",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::iter_in_bound_tuple_exclusive_inclusive",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::iter_in_bound_tuple_inclusive_exclusive",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::id_set_is_full_with_less_than_full_last_part",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::ops::test::range_difference_a_empty",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::ops::test::range_difference_b_empty",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::ops::test::range_intersection_empty",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::ops::test::range_difference_all_same",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::ops::test::range_difference_all_empty",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::ops::test::range_difference_contained",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::ops::test::range_difference_left_same",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::ops::test::range_difference_right_same",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::ops::test::range_intersection_disjoint",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::ops::test::range_intersection_contained",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::ops::test::range_intersection_overlapping",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::ops::test::range_difference_left_intersected",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::ops::test::range_difference_right_intersected",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::range_counter::test::add_remove_range",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::range_counter::test::add_remove_covering",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::range_counter::test::add_remove_overlapping_end",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::range_counter::test::add_remove_partial_overlap",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::util::range_counter::test::add_remove_overlapping_beginning",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "ostd::vm::gpm_space::test::guest_mapping_lifecycle",
+          "reported_result": "ok",
+          "soft_skip_reason": "VMX/EPT invalidation unavailable"
+        }
+      ]
+    },
+    {
+      "crate": "aster-core",
+      "declared": 238,
+      "uniquely_enumerated": 238,
+      "reported_passed": 238,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 0,
+      "exercised_passed_lower_bound": 238,
+      "raw_qemu_exit_code": 33,
+      "osdk_exit_code": 0,
+      "timed_out": false,
+      "qemu_duration_seconds": 0.917,
+      "serial": {
+        "path": "local-full-ktest/aster-core/guests/guest-001/serial.log",
+        "bytes": 29552,
+        "sha256": "ef03a8cf19ba7ae395a964eda936385341f460ebf68c5211eee6c5b45b4b8696"
+      },
+      "soft_skip_cases": [],
+      "new_g1c_cases": [
+        {
+          "name": "aster_core::process::process::image::tests::same_process_tasks_observe_one_live_image",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::process::image::tests::repeated_opens_share_one_process_image_namespace",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::process::image::tests::closing_fences_old_sessions_before_image_replacement",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::process::image::tests::nonce_exhaustion_is_sticky_for_the_real_process_image",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::process::image::tests::separately_allocated_process_rejects_foreign_image_key",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::process::image::tests::successful_replacement_has_new_epoch_and_fresh_namespace",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::process::image::tests::epoch_exhaustion_closes_the_real_process_without_wraparound",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::process::image::tests::failed_irreversible_replacement_never_reopens_the_old_image",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::process::image::tests::closed_image_cannot_be_prepared_or_scheduled_for_the_first_time",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::process::init_proc::tests::resume_rejects_a_foreign_task_pin",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::process::init_proc::tests::preparation_rejects_a_foreign_main_task",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::process::init_proc::tests::prepared_exit_group_state_cannot_resume",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::process::init_proc::tests::initial_resume_claim_is_consumed_exactly_once",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::process::init_proc::tests::preparation_rejects_a_foreign_process_allocation",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::process::init_proc::tests::dropping_unconsumed_preparation_closes_only_its_image",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::process::init_proc::tests::prepared_initial_process_cannot_use_the_ordinary_first_run",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::process::init_proc::tests::resume_rejects_replaced_vmar_and_cancels_the_prepared_image",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::process::init_proc::tests::prepared_old_epoch_cannot_resume_or_close_a_replacement_image",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        }
+      ],
+      "all_cases": [
+        {
+          "name": "aster_core::events::event_file::tests::event_file_read_consumes_counter",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::events::event_file::tests::event_file_respects_semaphore_mode",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::events::event_file::tests::event_file_signal_consume_and_poll",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::events::event_file::tests::kernel_event_file_rejects_non_eventfd",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::events::event_file::tests::event_file_reports_kernel_signal_overflow",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::events::event_file::tests::kernel_event_file_owns_state_after_file_drop",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::file::inode_attr::mode::test::mkmod_and_chmod",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::cgroup_ns::tests::virtualize_cgroup_path_for_sibling",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::cgroup_ns::tests::virtualize_cgroup_path_for_ancestor",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::cgroup_ns::tests::virtualize_cgroup_path_for_same_node",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::cgroup_ns::tests::virtualize_cgroup_path_for_descendant",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::bandwidth_settlement_regressions::lowered_quota_includes_the_running_prefix_at_apply",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::bandwidth_settlement_regressions::same_value_write_settles_old_window_debt_before_advancing",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::bandwidth_settlement_regressions::final_debit_after_configuration_charges_only_the_remaining_suffix",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::bandwidth_settlement_regressions::repeated_configuration_partitions_bandwidth_without_consuming_cfs_runtime",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::config_regressions::single_quota_write_keeps_the_current_owner_period",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::config_regressions::invalid_cpu_max_write_does_not_change_budget_or_accounting",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::final_charge_regressions::live_process_binding_wins_over_a_stale_final_charge_snapshot",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::final_charge_regressions::reaped_process_final_interval_uses_the_same_retained_hierarchy",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::final_charge_regressions::zombie_before_detachment_preserves_its_present_process_binding",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::final_charge_regressions::live_migrations_change_the_owner_without_replaying_prior_debits",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::final_charge_regressions::unreaped_zombie_final_interval_debits_old_leaf_and_ancestors_once",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::final_charge_regressions::zombie_final_interval_crossing_a_window_preserves_positive_quota_debt",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::max_config::tests::rejects_invalid_or_overflowing_quota",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::max_config::tests::single_quota_preserves_the_current_period",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::max_config::tests::accepts_valid_quota_period_and_range_boundaries",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::max_config::tests::rejects_numeric_period_outside_the_supported_range",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::max_config::tests::rejects_extra_fields_instead_of_applying_a_valid_prefix",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::max_config::tests::rejects_overflowing_period_instead_of_preserving_the_old_period",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::max_config::tests::rejects_explicit_invalid_period_instead_of_preserving_the_old_period",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::tests::replacement_also_closes_an_unbound_old_arc",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::tests::malformed_writes_do_not_consume_the_bound_revision",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::tests::deleted_unbound_current_arc_cannot_be_bound_afterward",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::tests::deletion_keeps_bound_identity_revision_and_accounting",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::tests::binding_preserves_current_budget_and_cannot_be_repeated",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::tests::replacement_closes_bound_old_arc_and_does_not_inherit_metadata",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::tests::ordinary_cpu_max_write_advances_revision_without_refilling_debt",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::tests::ambiguous_metadata_mutation_stays_indeterminate_after_detachment",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::tests::final_charge_lease_blocks_deletion_until_the_real_debit_is_retained",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::tests::last_revision_succeeds_then_real_owner_writes_fail_without_wrapping",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::unavailable_clock_allows_only_unlimited_linux_recovery",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::backwards_usage_observation_permanently_fences_the_owner",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::reliable_clock_samples_cannot_rewind_the_runtime_endpoint",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::sampled_configuration_preserves_the_separate_cycle_cursor",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::same_value_and_lowered_cap_never_refill_the_original_owner",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::crossed_windows_preserve_cumulative_usage_and_separate_debt",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::late_same_value_reconfigure_preserves_window_usage_and_debt",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::returning_from_long_period_does_not_expose_pre_window_usage",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::deleted_owner_stays_closed_while_its_final_debit_is_retained",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::indeterminate_metadata_cannot_produce_usage_after_detachment",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::ordinary_linux_caps_outside_n0_never_become_native_snapshots",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::overlapping_owner_intervals_accumulate_without_a_clock_fault",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::cumulative_overflow_never_wraps_or_recovers_a_native_snapshot",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::unreliable_clock_sample_cannot_rewind_or_replay_cycle_runtime",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::backwards_same_value_configuration_cannot_reopen_an_old_window",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::fragmented_three_ghz_runtime_keeps_absolute_endpoint_precision",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::real_owner_wrapper_enforces_the_single_cpu_observation_profile",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::replacement_closes_the_old_snapshot_and_requires_a_new_binding",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::returning_from_short_period_waits_for_a_complete_native_window",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::owner_retention_regressions::zero_length_publication_changes_only_the_next_segment_owner",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::owner_retention_regressions::live_migration_partitions_leaf_time_and_charges_common_ancestors_once",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::owner_retention_regressions::controller_publication_charges_the_entire_prefix_to_the_old_incarnation",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::owner_retention_regressions::exited_task_resumes_its_retained_incarnation_after_replacement_and_reap",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::owner_retention_regressions::original_owner_reference_keeps_the_node_live_until_its_last_clone_drops",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::owner_retention_regressions::retained_leaf_debits_its_original_ancestor_chain_after_parent_replacement",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::unused_budget_must_not_accumulate_as_credit",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::overrun_must_carry_then_repay_without_refill",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::reconfiguration_in_same_window_must_not_refill",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::idle_skipped_periods_never_subsidize_late_burst",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::odd_and_even_completed_periods_preserve_every_clock",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::skipped_periods_pay_down_debt_but_never_mint_credit",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::cpu_stat_projection_must_not_close_unsettled_quota_window",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::cpu_stat_projection_cannot_rewind_accounting_or_mint_credit",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::earlier_clock_value_cannot_reopen_or_refill_previous_period",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::charging_500_intervals_matches_simple_period_by_period_reference",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::crossing_splits_already_charged_and_new_cpu_without_double_count",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::scheduler_runtime_crossing_tick_window_keeps_previous_cpu_charge",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::long_continuous_interval_has_constant_time_bounded_debt_accounting",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::outgoing_tail_ends_at_the_incoming_segment_start",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::exiting_dequeue_retains_its_owner_through_selection_retries",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::waiting_dequeue_retains_its_owner_through_selection_retries",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::handoff_debits_the_old_window_before_rechecking_a_shared_ancestor",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::configfs::test::config_fs",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::devtmpfs::tests::delete_node_keeps_unmarked_node",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::devtmpfs::tests::delete_node_keeps_device_id_mismatch",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::devtmpfs::tests::delete_node_keeps_nonempty_parent_dir",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::devtmpfs::tests::create_node_marks_ancestor_dirs_and_device_node",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::fs::test::persist_and_reload_inode",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::fs::test::stat_minixdf_reports_total",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::fs::test::stat_bsddf_subtracts_overhead",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::fs::test::load_group_descs_valid_image_ok",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::fs::test::load_block_bitmap_valid_image_ok",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::fs::test::block_alloc_and_free_single_group_ok",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::fs::test::inode_alloc_and_free_single_group_ok",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::fs::test::sync_metadata_writes_primary_and_backup",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::fs::test::block_alloc_and_free_invalid_returns_err",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::fs::test::inode_alloc_and_free_invalid_returns_err",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::block_manager::block_ptr_tree::test::approx_hole_blocks_scans",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::block_manager::block_ptr_tree::test::block_alloc_direct_range_ok",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::block_manager::block_ptr_tree::test::block_alloc_indirect_range_ok",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::block_manager::block_ptr_tree::test::truncate_indirect_frees_shared_path",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::block_manager::block_ptr_tree::test::block_ptr_tree_direct_and_indirect_ok",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::block_manager::block_ptr_tree::test::truncate_releases_all_indirect_blocks",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::block_manager::block_ptr_tree::test::block_ptr_tree_out_of_range_iblock_returns_err",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::block_manager::block_ptr_tree::test::free_block_subtree_recursively_releases_blocks",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::block_manager::block_ptr_tree::test::block_ptr_tree_get_block_range_returns_contiguous_runs",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::dir::dir_entry::test::min_rec_len_ok",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::dir::dir_entry::test::iter_valid_entries_ok",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::dir::dir_entry::test::iter_bad_entry_returns_eio",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::dir::dir_entry::test::min_rec_len_boundary_values",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::dir::dir_entry::test::iter_all_zero_block_returns_eio",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::dir::dir_entry::test::iter_deleted_entry_yields_empty_name",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::dir::test::unlink_last_link_deallocates_on_drop",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::file::test::file_write_enospc_rollback",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::file::test::file_sparse_buffered_write_preserves_mmap_dirty_tail",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::file::test::falloc_allocate_returns_enospc_after_consuming_blocks",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::io_range::test::io_range_iter_yields_mapped_and_holes",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::super_block::test::sparse_super_backup_groups",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::super_block::test::max_file_size_matches_ext2_4k_limit",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_valueless_keys",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_volatile_alias",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_new_key_conflicts",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_requires_lowerdir",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_bool_option_domains",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_lowerdir_layer_list",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_redirect_dir_domain",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_lowerdir_plus_append",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_override_creds_forms",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_uuid_and_xino_values",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_datadir_plus_rejected",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_rejects_duplicate_keys",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_literal_value_semantics",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_rejects_bare_valued_keys",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_upperdir_workdir_pairing",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_verity_and_fsync_domains",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::inode::identity::test::xino_encodes_fsid_in_high_bits",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::inode::identity::test::fallback_ino_allocates_from_one",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::inode::identity::test::origin_record_resolves_to_layer",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::inode::identity::test::xino_on_forces_encoding_on_same_fs",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::inode::identity::test::xino_off_or_overflow_takes_fallback",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::inode::identity::test::layer_table_resolves_persistent_names",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::inode::identity::test::origin_record_decode_rejects_malformed",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::inode::identity::test::identity_mode_resolves_from_mount_facts",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::inode::identity::test::origin_record_roundtrip_preserves_identity",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::procfs::uptime::tests::uptime_centiseconds_are_truncated",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::sysfs::test::read_attr",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::sysfs::test::read_link",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::sysfs::test::write_attr",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::sysfs::test::leaf_lookup",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::sysfs::test::root_lookup",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::sysfs::test::readdir_leaf",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::sysfs::test::branch_lookup",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::sysfs::test::mode_permissions",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::sysfs::test::cached_child_lookup_observes_tree_changes",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::sysfs::test::cached_attr_lookup_observes_snapshot_changes",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::fs_impls::sysfs::test::cached_attr_lookup_observes_permission_changes",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::pipe::common::test::read_empty",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::pipe::common::test::write_full",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::pipe::common::test::read_closed",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::pipe::common::test::write_closed",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::pipe::common::test::write_atomicity",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::utils::id_bitmap::test::bitmap_alloc_out_of_bounds",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::vfs::path::resolver::test::path_split_basename",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::vfs::path::resolver::test::fs_path_from_fd_at_policy_matrix",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::fs::vfs::path::resolver::test::fs_path_from_fd_at_rejects_too_long",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::net::socket::netlink::kobject_uevent::message::test::uuid",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::net::socket::netlink::kobject_uevent::message::test::synthetic_uevent",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::net::socket::netlink::kobject_uevent::message::test::multicast_synthetic_uevent",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::process::image::tests::same_process_tasks_observe_one_live_image",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::process::image::tests::repeated_opens_share_one_process_image_namespace",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::process::image::tests::closing_fences_old_sessions_before_image_replacement",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::process::image::tests::nonce_exhaustion_is_sticky_for_the_real_process_image",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::process::image::tests::separately_allocated_process_rejects_foreign_image_key",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::process::image::tests::successful_replacement_has_new_epoch_and_fresh_namespace",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::process::image::tests::epoch_exhaustion_closes_the_real_process_without_wraparound",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::process::image::tests::failed_irreversible_replacement_never_reopens_the_old_image",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::process::image::tests::closed_image_cannot_be_prepared_or_scheduled_for_the_first_time",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::process::init_proc::tests::resume_rejects_a_foreign_task_pin",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::process::init_proc::tests::preparation_rejects_a_foreign_main_task",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::process::init_proc::tests::prepared_exit_group_state_cannot_resume",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::process::init_proc::tests::initial_resume_claim_is_consumed_exactly_once",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::process::init_proc::tests::preparation_rejects_a_foreign_process_allocation",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::process::init_proc::tests::dropping_unconsumed_preparation_closes_only_its_image",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::process::init_proc::tests::prepared_initial_process_cannot_use_the_ordinary_first_run",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::process::init_proc::tests::resume_rejects_replaced_vmar_and_cancels_the_prepared_image",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::process::init_proc::tests::prepared_old_epoch_cannot_resume_or_close_a_replacement_image",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::program_loader::shebang::test::parse_shebang_line_with_multiple_args",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::signal::pause::test::waiter_pause",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::signal::poll::test::notify_after",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::signal::poll::test::notify_before",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::signal::poll::test::notify_middle",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::signal::poll::test::nested_notify_before",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::signal::poll::test::nested_notify_inside",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::signal::poll::test::nested_notify_between",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::sync::condvar::test::wait",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::sync::condvar::test::wait_while",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::sync::condvar::test::wait_timeout",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::process::sync::condvar::test::wait_timeout_while",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::syscall::sysinfo::tests::as_secs_round_up",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::thread::kernel_thread::tests::unmapped_vmar_access_returns_page_fault",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::thread::kernel_thread::tests::associated_vmar_is_reactivated_after_context_switch",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::thread::softirqd::test::softirq_and_softirqd",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::util::ioctl::test::invalid",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::util::ioctl::test::eviocgbit",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::util::ioctl::test::tiocsctty",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::util::read_cstring::test::read_multiple_cstring",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::util::read_cstring::test::read_cstring_until_end",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::util::read_cstring::test::read_cstring_from_multiread",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::util::ring_buffer::test::rb_write_read_all_with_ext",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::util::ring_buffer::test::rb_write_read_one_with_ext",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::vdso::clocksource_regressions::nonzero_origin_and_each_sample_use_one_counter_observation",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::vdso::clocksource_regressions::vdso_and_kernel_share_the_fractional_phase_at_the_next_nanosecond",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::vdso::clocksource_regressions::excessive_delay_is_clamped_but_never_a_reliable_accounting_endpoint",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::vdso::clocksource_regressions::backwards_refresh_keeps_the_counter_base_and_revokes_reliable_samples",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::vdso::clocksource_regressions::fragmented_refreshes_preserve_fractional_time_and_endpoint_differences",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::vdso::clocksource_regressions::vdso_rejects_invalid_phase_width_and_does_not_rewind_on_a_stale_callback",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::vdso::clocksource_regressions::mapped_vdso_publishes_the_phase_and_fault_mode_under_the_existing_sequence",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::vdso::clocksource_regressions::full_width_vdso_fraction_survives_second_rollover_and_checks_realtime_overflow",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::vm::page_cache::tests::delayed_io_completion",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::vm::page_cache::tests::concurrent_page_faults",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::vm::page_cache::tests::concurrent_read_and_write",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::vm::page_cache::tests::persistent_backend_errors",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::vm::page_cache::tests::concurrent_write_and_evict",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::vm::page_cache::tests::concurrent_write_and_flush",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::vm::page_cache::tests::concurrent_commit_and_truncate",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::vm::page_cache::vmo::options::test::resize",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::vm::page_cache::vmo::options::test::alloc_vmo",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::vm::page_cache::vmo::options::test::write_and_read",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::vm::page_cache::vmo::options::test::alloc_continuous_vmo",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::vm::vmar::interval_set::tests::find",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::vm::vmar::interval_set::tests::iter",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::vm::vmar::interval_set::tests::take",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::vm::vmar::interval_set::tests::clear",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::vm::vmar::interval_set::tests::remove",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::vm::vmar::interval_set::tests::take_one",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::vm::vmar::interval_set::tests::insert_and_find_one",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::vm::vmar::vmar_impls::fork::test::cow_copy_pt_basic",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        },
+        {
+          "name": "aster_core::vm::vmar::vmar_impls::fork::test::cow_copy_pt_iomem",
+          "reported_result": "ok",
+          "soft_skip_reason": null
+        }
+      ]
+    }
+  ],
+  "new_g1c_test_count": 18,
+  "formatting_review": {
+    "local_source_head": "ba0d049a3640ccff4734aa37d8e24eb7b3f61dcf",
+    "source_tree": "179b076747d19c3e07ee19a665e3968c33c598ce",
+    "parent": "72c8dff3f0145a7e16b7095d48a3e7faaf192685",
+    "diff_bytes": 5100,
+    "diff_sha256": "dfcaa744e74a3049fb4454363c9e0f55eed4645126520d6a487c63f2a15afd32",
+    "files": [
+      {
+        "before": {
+          "path": "kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs",
+          "mode": "100644",
+          "git_blob": "20de4935368b9179db645152cfd0a0336d65f936",
+          "bytes": 9446,
+          "sha256": "f9be1cdd0ac4d98bd7147e58b2e139823ceb00bdad0aa922dcf7194bb7245496"
+        },
+        "after": {
+          "path": "kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs",
+          "mode": "100644",
+          "git_blob": "2bdf6530456072df4a0bfa83a6a7c02528a5a4f9",
+          "bytes": 9456,
+          "sha256": "3a2dd825cbe6c09db0b3cce6f5cc58c6c9b0c7b817b2b28766e3470a3283f5f5"
+        }
+      },
+      {
+        "before": {
+          "path": "kernel/asterinas/kernel/core/src/process/process/image.rs",
+          "mode": "100644",
+          "git_blob": "bacaa3cc8ac678d3a231b060f80e7ea52af0decc",
+          "bytes": 12476,
+          "sha256": "12ad3f3b813d4f970129339db07c34c467871cc5b49558ab771bb636c6b83cd7"
+        },
+        "after": {
+          "path": "kernel/asterinas/kernel/core/src/process/process/image.rs",
+          "mode": "100644",
+          "git_blob": "4ffaddeb6ccde73114c656ece112ed9c04defb55",
+          "bytes": 12542,
+          "sha256": "8f00382cd3558109dba5a80cd9d0a8b9618eefbc58f7f01dd717644c0a7e0298"
+        }
+      },
+      {
+        "before": {
+          "path": "kernel/asterinas/kernel/core/src/process/test_util.rs",
+          "mode": "100644",
+          "git_blob": "887321ce02735ce0e1a723be75c42ec147edd1c4",
+          "bytes": 2492,
+          "sha256": "2862c1b823638351f1fcdcbcf93ad77a69b92cfa13d1d66f5b0f271fec3f536d"
+        },
+        "after": {
+          "path": "kernel/asterinas/kernel/core/src/process/test_util.rs",
+          "mode": "100644",
+          "git_blob": "788fc9eaeaef0a142d4a0909d27c70c76b63c627",
+          "bytes": 2532,
+          "sha256": "d3c5f14e4e3dfcbfdfdb390f588d1ce0b3a8ae7e9ecb84459f705e1965ad2ae0"
+        }
+      },
+      {
+        "before": {
+          "path": "tests/spec/test_a05_capspace_nonce.py",
+          "mode": "100644",
+          "git_blob": "408f42f74f3e5cf499f3e2b1f0a1782ced8058f8",
+          "bytes": 3989,
+          "sha256": "0bf11349c33aeb1e5859384a9171965d970bbf416f1f0ffd40e5aacbe134417e"
+        },
+        "after": {
+          "path": "tests/spec/test_a05_capspace_nonce.py",
+          "mode": "100644",
+          "git_blob": "6eae1d4fcef780ccb396f5f4074392f333096579",
+          "bytes": 3992,
+          "sha256": "ace9b216bb2622932d641c3c1945edda3209345e97a3866d8edf36d39877bf7f"
+        }
+      }
+    ],
+    "assessment": [
+      "hepta_control.rs only reorders and nests the same crate imports; exported names and call sites are unchanged.",
+      "image.rs only changes layout, adds a block around the identical closure return expression, and removes optional trailing punctuation introduced by the former multiline layout. The same checked_add, orderings, phase assignments and test assertions remain.",
+      "test_util.rs only expands the same if-expression over multiple lines.",
+      "The host source assertion permits whitespace between self and .epoch; it still requires self.epoch.checked_add(1) in commit_exec, with no runtime or kernel-test change."
+    ],
+    "execution_qualification": "No final-source execution qualification inferred from this first-head run."
+  },
+  "retained_receipt_files": [
+    {
+      "path": "local-full-ktest/aster-core/generated.Cargo.lock",
+      "bytes": 41127,
+      "sha256": "85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150"
+    },
+    {
+      "path": "local-full-ktest/aster-core/guests/guest-001/qemu.json",
+      "bytes": 4668,
+      "sha256": "dc8d719f39bd592d5c24ff44ce646ce3677e012633aec3c46f89834592ef9244"
+    },
+    {
+      "path": "local-full-ktest/aster-core/guests/guest-001/serial.log",
+      "bytes": 29552,
+      "sha256": "ef03a8cf19ba7ae395a964eda936385341f460ebf68c5211eee6c5b45b4b8696"
+    },
+    {
+      "path": "local-full-ktest/aster-core/osdk-exit-code.txt",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "local-full-ktest/aster-core/osdk-test.log",
+      "bytes": 75712,
+      "sha256": "903e46d3627bac74f7bb248f5197b5865ead0b833160177dd00229443529ecd1"
+    },
+    {
+      "path": "local-full-ktest/aster-core/result.json",
+      "bytes": 353,
+      "sha256": "dd2407f3452a519b911723059c58a225b5bf25137c76b3e799e71c995e298d6a"
+    },
+    {
+      "path": "local-full-ktest/commands.json",
+      "bytes": 1342,
+      "sha256": "b402f1a863533a433d056ebf534c5c7de0ae029282d63d7589af4e942e2b11dc"
+    },
+    {
+      "path": "local-full-ktest/environment.json",
+      "bytes": 2239,
+      "sha256": "f6c1772385fa4f4d3f20bf2746751cd21e2c8805e457d079cd900c806c1ff365"
+    },
+    {
+      "path": "local-full-ktest/osdk-install.log",
+      "bytes": 6667,
+      "sha256": "ae4c898b5d5644383802726af41b8493aa70bc0241123188c587b96ada465546"
+    },
+    {
+      "path": "local-full-ktest/ostd/generated.Cargo.lock",
+      "bytes": 20185,
+      "sha256": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6"
+    },
+    {
+      "path": "local-full-ktest/ostd/guests/guest-001/qemu.json",
+      "bytes": 4602,
+      "sha256": "d66ce68f17387e43b7e21f53f8be1da03438939d9692d8450fb40f4f437b1bed"
+    },
+    {
+      "path": "local-full-ktest/ostd/guests/guest-001/serial.log",
+      "bytes": 23028,
+      "sha256": "a055134563961fe00380c63b3fca26a4f29c29b3edc979b427b67ea6702d3cca"
+    },
+    {
+      "path": "local-full-ktest/ostd/osdk-exit-code.txt",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "local-full-ktest/ostd/osdk-test.log",
+      "bytes": 28310,
+      "sha256": "b371b4319baf583d10e24339f5a8d1c1c30c16e7dfdde57841f992daecd38ed2"
+    },
+    {
+      "path": "local-full-ktest/ostd/result.json",
+      "bytes": 451,
+      "sha256": "061d15cd72fc6ef8563e04ad5f90b598362bc46c5155321990427f4b55216ee2"
+    },
+    {
+      "path": "local-full-ktest/result.json",
+      "bytes": 1005,
+      "sha256": "82e48942524cf1148cdfb8c8b7caf5567b5808af0c117abe063d1ba3521d993f"
+    },
+    {
+      "path": "local-full-ktest/source-inputs.json",
+      "bytes": 1807,
+      "sha256": "f5e6fb492f869071dc0b90af2578824dd2ef9a87b82f541c857a78e25f3099a3"
+    }
+  ],
+  "activities": {
+    "product_source_writes": 0,
+    "new_kernel_builds": 0,
+    "new_test_runs": 0,
+    "toolchain_installs": 0,
+    "remote_reads": 0,
+    "remote_writes": 0,
+    "existing_elf_outputs_copied_after_hash_match": 2,
+    "read_only_version_queries": [
+      "rustc -Vv",
+      "cargo -Vv"
+    ]
+  },
+  "not_qualified_here": [
+    "Final published G1-c head",
+    "Original remote A06 run",
+    "Seven production negative controls",
+    "Ordinary product boot and QueryAbi guest",
+    "Linux/CPU combined workload acceptance",
+    "Static immutable image authentication",
+    "Native grants or HOS2 resource effects",
+    "SMP/device/mobile qualification"
+  ]
+}

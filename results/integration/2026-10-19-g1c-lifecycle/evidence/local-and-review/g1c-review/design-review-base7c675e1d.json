@@ -1,0 +1,438 @@
+{
+  "schema_version": 1,
+  "kind": "read_only_g1c_design_review",
+  "reviewer": "/root/g1c_review",
+  "created_at_utc": "2026-10-19T12:20:46.661213+00:00",
+  "source": {
+    "commit": "7c675e1d3efe46587edeebe14bd90ac1a842ffbf",
+    "tree": "3d5902c8503e7b5fa79552d9fa657023f3f3520c",
+    "repository": "TrillionniumFoundation/trillionnium-os-desktop"
+  },
+  "scope": "Independent design and selected actual call-path review. No candidate implementation is approved by this receipt. No product tests, builds, toolchain installation or remote writes.",
+  "minimum_implementation_scope": [
+    "Replace anonymous Process image tuple and independent epoch with one canonical mutex-protected lifecycle; no copied authority on new/fork Process.",
+    "Use private uncloneable prepared-init construction on the existing load-complete, never-scheduled path. Bind exact Process, VMAR, main Task and image key. Consume once before scheduling.",
+    "Close old image at irreversible exec admission, before signalling sibling threads; commit only a distinct empty image after success. Pre-boundary failures leave old session unchanged; fatal failure stays closed.",
+    "Close on accepted exit_group and final ordinary-thread exit. Non-last ordinary-thread exit retains the shared Process image.",
+    "Keep QueryAbi-only, all four resource operations disabled, no grant/handle placeholder table, no owner revoke framework or resource ledger duplication."
+  ],
+  "necessary_design_refinements": [
+    {
+      "id": "R1",
+      "severity": "implementation_constraint",
+      "finding": "Existing procfs mem/maps open holds Process VMAR, then main_thread obtains TaskSet. New preparation cannot nest TaskSet -> VMAR.",
+      "evidence": [
+        "kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/pid/task/mem.rs:45-48",
+        "kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/pid/task/maps.rs:48-51",
+        "kernel/asterinas/kernel/core/src/process/process/mod.rs:377"
+      ],
+      "required_order": "VMAR -> TaskSet -> image where all are required. TaskSet -> image alone is allowed. Never image -> TaskSet or VMAR; no Process/image lock in IRQ/runqueue accounting sections.",
+      "communication": "Sent to /root and /root/g1c_lifecycle before candidate edits."
+    },
+    {
+      "id": "R2",
+      "severity": "implementation_constraint",
+      "finding": "Thread has is_exited but no public Init state. OSTD Task::run delegates to run_new_task and does not provide a public never-started proof.",
+      "evidence": [
+        "kernel/asterinas/kernel/core/src/thread/mod.rs:85-139",
+        "kernel/asterinas/ostd/src/task/mod.rs:111-115"
+      ],
+      "required_fix": "Prove never-run by private constructor reachability and a canonical first-run claim shared with the ordinary Process startup path, not is_exited=false or a freely constructible token. Token consume rechecks exact live objects and closes/consumes on terminal failures. No OSTD change is necessary for the scoped lifecycle."
+    },
+    {
+      "id": "R3",
+      "severity": "implementation_constraint",
+      "finding": "Existing lazy open can allocate nonce whenever epoch pair is reset; new Closing/Closed phase must gate lazy allocation, not merely old-fd equality.",
+      "required_fix": "Closed and exhausted states never revive by open or a stale prepared token. Epoch and nonce use checked arithmetic; exhaustion must not allow alias or partial publication."
+    },
+    {
+      "id": "R4",
+      "severity": "scope_constraint",
+      "finding": "A prepared object proves allocation/lifecycle, not executable authentication or authorization.",
+      "required_fix": "Keep four effects closed. Do not claim trusted boot principal, canonical resource observe rights, revoke completion or durable Hepta delivery from this lifecycle patch."
+    }
+  ],
+  "guest_test_recommendations": [
+    {
+      "case": "pre-boundary-user-copy-failure",
+      "action": "Open QueryAbi in the current Process; record full boot and CapSpace bytes. Direct SYS_execve of valid probe path with invalid argv pointer must return EFAULT. The same fd and a new open must remain valid with identical boot/space.",
+      "scope": "Actual syscall user-copy failure before irreversible boundary; not a loader-stage or fatal exec test."
+    },
+    {
+      "case": "pre-boundary-lookup-or-format-failure",
+      "action": "Direct execve of nonexistent path expects ENOENT, or fixed malformed executable expects ENOEXEC. Requery original fd and fresh open, requiring unchanged full identity.",
+      "scope": "Record selected failure stage; nonexistent path alone does not cover new_vmar or segment-loading failures."
+    },
+    {
+      "case": "successful-real-exec",
+      "action": "Preserve original guest child that opens its own non-CLOEXEC fd, proves it valid before exec, executes the same probe, obtains ESTALE on old fd and a different namespace on reopen.",
+      "scope": "Do not substitute a parent fd already invalid due to fork, or an fd closed by CLOEXEC. Retain original seven lifecycle markers and four disabled-operation markers."
+    },
+    {
+      "case": "same-process-threads",
+      "action": "Optional pthread guest with full identity equality on same Process and dup; a non-last thread exits and surviving thread remains usable.",
+      "scope": "No need to infer close-on-final-exit from a foreign process, whose fd access was already denied."
+    },
+    {
+      "case": "kernel-object-only-boundaries",
+      "action": "Use actual unstarted Process/Task/VMAR objects for mismatched preparation, duplicate consumption, close idempotence, epoch/nonce exhaustion and detached old-key refusal.",
+      "scope": "Explicitly label as kernel-object regressions; no user-visible route currently exists to force nonce exhaustion or issue ioctl after final Process exit."
+    }
+  ],
+  "next_static_readusage_requirements": [
+    {
+      "id": "S1",
+      "call_paths": [
+        "process/program_loader/mod.rs::UndetectedExecutable::detect_format",
+        "process/program_loader/mod.rs::ProgramToLoad::from_executable",
+        "process/program_loader/elf/load_elf.rs::lookup_and_parse_ldso",
+        "process/program_loader/elf/load_elf.rs::map_segment_vmo"
+      ],
+      "finding": "The loader may replace a script with an interpreter and map file-backed private segments from Arc<FileLike>. ElfLoadInfo has only entry/stack.",
+      "needed": "First grant only for a directly loaded static ELF with no shebang or PT_INTERP, from an immutable measured byte source actually used to build mappings. Binding pathname or Arc allocation alone is insufficient. Preserve ordinary execution without grant for unsupported shapes."
+    },
+    {
+      "id": "S2",
+      "call_paths": [
+        "fs/fs_impls/procfs/pid/task/mem.rs::MemFileOps::open",
+        "fs/fs_impls/procfs/pid/task/mem.rs::MemFileHandle::write_at",
+        "process/posix_thread/ptrace/mod.rs::TraceeStatus::poke_data",
+        "syscall/ptrace.rs::sys_ptrace"
+      ],
+      "finding": "procfs mem checks access at open, then retained handles only check VMAR identity before read/write. Ptrace can alter data and register state. The present capability LSM permits same credentials or SYS_PTRACE subject to active other LSMs; no native-image exclusion appears at these paths.",
+      "needed": "Activation and later accesses must exclude or canonically fence both existing and future untrusted alien writers, including old mem handles, tracing register writes and clone/shared-VM aliases. Blocking new opens alone does not close retained-handle races. Whole-VMAR writable data/stack matters as well as text."
+    },
+    {
+      "id": "S3",
+      "call_paths": [
+        "vm/vmar/vmar_impls/map.rs::VmarMapOptions::new",
+        "vm/vmar/vmar_impls/access_alien.rs::query_page_with_required_flags",
+        "vm/vmar/vm_mapping.rs::check_perms_for_page_fault",
+        "vm/vmar/vmar_impls/protect.rs::Vmar::protect"
+      ],
+      "finding": "Default mapping may-permissions include write; alien access uses forced faults and COW can permit writing private read-only text. RX page flags alone do not prove immutable executable identity.",
+      "needed": "Use validated immutable source/mappings with constrained may-permissions or equivalent enforced exclusion, and cover shared backing changes/remapping. Do not announce a grant solely after hashing mutable file contents."
+    },
+    {
+      "id": "S4",
+      "call_paths": [
+        "device/misc/hepta_control.rs::HeptaControlFile::ioctl",
+        "fs/fs_impls/cgroupfs/controller/cpu/native.rs::Controller::read_native_cpu_usage_for_owner"
+      ],
+      "finding": "Current session check precedes user copies; internal G1-b observation supplies identity/revision/usage but explicitly no authorization.",
+      "needed": "After complete bounded request copy, resolve exact image/handle then release sleeping locks. At the original CPU owner mutation lock recheck canonical live observer grant/lease, owner instance and revision. Revoke must use the same admission synchronization. Keep N0 one CPU/100ms first and response capacity real."
+    },
+    {
+      "id": "S5",
+      "call_paths": [
+        "process/clone.rs::clone_vmar",
+        "process/clone.rs::clone_child",
+        "process/clone.rs::create_child_process"
+      ],
+      "finding": "A fresh Process can share VMAR through CLONE_VM without CLONE_THREAD. Empty child authority alone does not exclude the child from modifying a granted parent address space.",
+      "needed": "First positive profile must reject/close grant on unsupported shared-VM process creation or establish whole-VMAR writer ownership; future process_vm support must enter the same policy, not bypass it."
+    }
+  ],
+  "accounting_boundary": "Native image close must not clear CpuMax cumulative, debt, quota, revision or final CpuCgroupLease. Existing migration order is CgroupMembership -> TaskSet. Preserve original retained accounting until the final old run segment is settled.",
+  "inputs": [
+    {
+      "path": "kernel/asterinas/AGENTS.md",
+      "base_git_entry": "100644 blob 4832851335af91840cde7c7c4abe9463952e20c5\tkernel/asterinas/AGENTS.md",
+      "bytes": 4792,
+      "sha256": "e5d9f65c769df1846a48ec4709ed14d55043ecf9fdbcd5a0292a7ec03a867d10",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/book/src/to-contribute/coding-guidelines/for-development/README.md",
+      "base_git_entry": "100644 blob 6948b4ebef071d0aaaaa54b5ce7e1a77781d4fdd\tkernel/asterinas/book/src/to-contribute/coding-guidelines/for-development/README.md",
+      "bytes": 3151,
+      "sha256": "26a6bb4be10608ae159f89d340dafb64d0c25884a65b7be102ee9cb4c361b3d7",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/book/src/to-contribute/coding-guidelines/for-development/concurrency.md",
+      "base_git_entry": "100644 blob e8dfd73cd1c71e79a209f7a5967107de8ff23a0e\tkernel/asterinas/book/src/to-contribute/coding-guidelines/for-development/concurrency.md",
+      "bytes": 2553,
+      "sha256": "dc76c76451b9f6c2179b71939d27298671530b4a04155c9f43ccb312486df777",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/book/src/to-contribute/coding-guidelines/for-development/correctness.md",
+      "base_git_entry": "100644 blob 4774adc4fbc4c6fd445517be3770d3c84bb84489\tkernel/asterinas/book/src/to-contribute/coding-guidelines/for-development/correctness.md",
+      "bytes": 1957,
+      "sha256": "c0a25680753213e45138b0b92fbbe944200b7cf62585697a5d5fee6308f29c5a",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/book/src/to-contribute/coding-guidelines/for-development/resource-management.md",
+      "base_git_entry": "100644 blob 8b484355992ad460cf6811444bcea3413b5375ae\tkernel/asterinas/book/src/to-contribute/coding-guidelines/for-development/resource-management.md",
+      "bytes": 877,
+      "sha256": "ac80bb1ad5f3b0b14be0a0f7a26a901584d383588e23059c9b835d7d0a4f03a6",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/book/src/to-contribute/coding-guidelines/for-development/testing.md",
+      "base_git_entry": "100644 blob 263150219f3cc3aed59229a204959110ddcf1642\tkernel/asterinas/book/src/to-contribute/coding-guidelines/for-development/testing.md",
+      "bytes": 1853,
+      "sha256": "76641f1e1f48c2b606f0a8e4a6977184723448c37cbc0f86c381f3db1135634a",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/book/src/to-contribute/coding-guidelines/for-security/README.md",
+      "base_git_entry": "100644 blob d2f4cbb74094701b22bf820611b9685c3a27f1b5\tkernel/asterinas/book/src/to-contribute/coding-guidelines/for-security/README.md",
+      "bytes": 1231,
+      "sha256": "8e525beef3bb1de37c7a02ecd656a756d3c9bfb7e672773c4c9e5a8b78dd6077",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/book/src/to-contribute/coding-guidelines/for-security/security-properties.md",
+      "base_git_entry": "100644 blob 71f95ec179be51e5d70111774390ed9637b7f747\tkernel/asterinas/book/src/to-contribute/coding-guidelines/for-security/security-properties.md",
+      "bytes": 517,
+      "sha256": "526b12ca866f178dfffafec79a02fb0d88aa33ce78f091bf83040d0a005cca04",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/book/src/to-contribute/coding-guidelines/for-security/memory-safety.md",
+      "base_git_entry": "100644 blob e3a39879a09135d663d7751fe30e91f15f3832ec\tkernel/asterinas/book/src/to-contribute/coding-guidelines/for-security/memory-safety.md",
+      "bytes": 2518,
+      "sha256": "6470b3555eb53141f6c28c86cb87d620c19bf433d3245dd9655d17f2ce2d7969",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/mod.rs",
+      "base_git_entry": "100644 blob 065556c65ef14c989abe17946876d33dfaef7d0e\tkernel/asterinas/kernel/core/src/process/process/mod.rs",
+      "bytes": 33769,
+      "sha256": "258b6e24b37446a5e432b63b8cf1f95100904437be30cc17d6b0bbcd2899f6ca",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+      "base_git_entry": "100644 blob 145e02d8be6e3fd544490a3dd3125b844ad5804b\tkernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+      "bytes": 4611,
+      "sha256": "96e4f27a20d0e613aaf8420735580fce011717ef69fec378b80fce75f9080169",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/clone.rs",
+      "base_git_entry": "100644 blob c172c82bf53e7c654f1088e174eb95774cae9ef5\tkernel/asterinas/kernel/core/src/process/clone.rs",
+      "bytes": 31177,
+      "sha256": "ab1af89d855655238ade17835ab2118214e4b04b6a6e1fe3e851b1ab4e9b2c43",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/execve.rs",
+      "base_git_entry": "100644 blob 9a89aed0a41be2839821d83cc7f9d91937fbad19\tkernel/asterinas/kernel/core/src/process/execve.rs",
+      "bytes": 13001,
+      "sha256": "6a2e83f655d7f1fc5a84669d607d0f24e6ffef2598ec95a6f009ca8ddcaaf77f",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/exit.rs",
+      "base_git_entry": "100644 blob c29879578a8ea8402cce00b25aef55d683959fd3\tkernel/asterinas/kernel/core/src/process/exit.rs",
+      "bytes": 7403,
+      "sha256": "44e3b323b9bd55cd140989dd6d224631b00086066a531157f46db6c5733dcdfd",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/task_set.rs",
+      "base_git_entry": "100644 blob bdb958f59db9f4e6419cd23e5830ea89967761e9\tkernel/asterinas/kernel/core/src/process/task_set.rs",
+      "bytes": 4252,
+      "sha256": "abba4258a78c27253d210ff5704e96a94e5dffaabccfeb3911a9bc6553c75033",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/posix_thread/exit.rs",
+      "base_git_entry": "100644 blob 474c3468380c3aed6819a40ed850674099283642\tkernel/asterinas/kernel/core/src/process/posix_thread/exit.rs",
+      "bytes": 6016,
+      "sha256": "c48c21b8e9abc4590f097588b2d16c6072a43b2da0cdd67e426623acfcc26044",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/posix_thread/alien_access.rs",
+      "base_git_entry": "100644 blob 5978eb1ab098006cadbe64566e28a0c0cfb0cf64\tkernel/asterinas/kernel/core/src/process/posix_thread/alien_access.rs",
+      "bytes": 2482,
+      "sha256": "6b7d8ca25f5cbca5af0f248df1dc5031718da50d2f5af7cb75da863fd854ac04",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/posix_thread/builder.rs",
+      "base_git_entry": "100644 blob cf175e6b2f8a6444be5fc8101ac1caadc2f78e8f\tkernel/asterinas/kernel/core/src/process/posix_thread/builder.rs",
+      "bytes": 7172,
+      "sha256": "51ec85307cb020b67f9b99e6b310bfde877193bdf933b7c5e60835508fe8984f",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/posix_thread/ptrace/mod.rs",
+      "base_git_entry": "100644 blob ceee54e50be5d04fceb9cdd92f2cb39eb4d7db91\tkernel/asterinas/kernel/core/src/process/posix_thread/ptrace/mod.rs",
+      "bytes": 27231,
+      "sha256": "199e331433dd9aff172b221e0afeb31be6b3ab03c219384ed18f2e2f675c0c01",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process_vm/mod.rs",
+      "base_git_entry": "100644 blob 1ceca2e7c0c83a5cf7a984b4053b5713c0a04dba\tkernel/asterinas/kernel/core/src/process/process_vm/mod.rs",
+      "bytes": 9874,
+      "sha256": "d9990857783dd789d225a614f1855141d7d1f24976c585d457f9bac3483d37f5",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/program_loader/mod.rs",
+      "base_git_entry": "100644 blob dfde5635b94e68d73d1c494f3c2b4bca69c726a5\tkernel/asterinas/kernel/core/src/process/program_loader/mod.rs",
+      "bytes": 7900,
+      "sha256": "3fe0e0cae3d9d127947a2b6ff1480bbd1cc83fd8651ec9d95533bd59f8ffeb1d",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/program_loader/elf/load_elf.rs",
+      "base_git_entry": "100644 blob a550d70e1ba660eaae202a40c51b9e359c380625\tkernel/asterinas/kernel/core/src/process/program_loader/elf/load_elf.rs",
+      "bytes": 18566,
+      "sha256": "230e083f73dcbf5d0fc1320189d6287ff3aea7bf6058b3c79d480f0281c0b093",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/thread/mod.rs",
+      "base_git_entry": "100644 blob e09dfd949360de9171c973207501ff9e32df9699\tkernel/asterinas/kernel/core/src/thread/mod.rs",
+      "bytes": 4945,
+      "sha256": "017bf5db8926560f91c64a3b9a5f8d5ff0031726c50d7f4afb60c95c5bcf7147",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs",
+      "base_git_entry": "100644 blob 50394952de7f8fa878fd07e539947ab0cd8d000e\tkernel/asterinas/kernel/core/src/device/misc/hepta_control.rs",
+      "bytes": 9584,
+      "sha256": "5133419b204d05e769b4a111a6e4285c9f50de482b65be15b5799312203e3979",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/pid/task/mem.rs",
+      "base_git_entry": "100644 blob 1dbc74e045c38e53da8d9e056231e798e06b54e5\tkernel/asterinas/kernel/core/src/fs/fs_impls/procfs/pid/task/mem.rs",
+      "bytes": 4058,
+      "sha256": "3089d61eef664894d5e9be99360ba966b11e6d702f6e0a1779a9371fa3cb373a",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/procfs/pid/task/maps.rs",
+      "base_git_entry": "100644 blob dd153a816a982388bfbd5fe8934d938d80150d80\tkernel/asterinas/kernel/core/src/fs/fs_impls/procfs/pid/task/maps.rs",
+      "bytes": 4089,
+      "sha256": "345534197ca146d0770193c1f432aa2f3497e36958ac3de3700dad631663fe86",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/security/lsm/modules/capability.rs",
+      "base_git_entry": "100644 blob 825f6cd9ff9966a8b1d8f55333bcc056cca38a81\tkernel/asterinas/kernel/core/src/security/lsm/modules/capability.rs",
+      "bytes": 2863,
+      "sha256": "602a877ea18c3d6e1bd9fe3dc83dd256f3e3398b430ee8855f9cf2ada59d8f5f",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/security/lsm/hooks/alien_access.rs",
+      "base_git_entry": "100644 blob e23da831f25fdc0d6a599768e9af2d6b427fd1d6\tkernel/asterinas/kernel/core/src/security/lsm/hooks/alien_access.rs",
+      "bytes": 1507,
+      "sha256": "78098f15a1c9b9c0d07de2382e3143de0b37dbe13e6a9a4332548f844eb127a2",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/syscall/ptrace.rs",
+      "base_git_entry": "100644 blob 65562b43bd65d88669b0acc1bd91096a5426249e\tkernel/asterinas/kernel/core/src/syscall/ptrace.rs",
+      "bytes": 9066,
+      "sha256": "370ce6901fbf4e444c796cb4b40f867978b5f9509b5aeb0d3708aac7835de24b",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/vm/vmar/handle.rs",
+      "base_git_entry": "100644 blob c56d7ae37c1441dbfbb9a8e5f9d97ed349962cbd\tkernel/asterinas/kernel/core/src/vm/vmar/handle.rs",
+      "bytes": 1390,
+      "sha256": "2c3ba0a4d3144eb4c00bd153e2349059ff8d643c0bf9d552f8da12925baf5351",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/access_alien.rs",
+      "base_git_entry": "100644 blob 6fa576b09b1a21c491f05a1ac5d9315bd60b662b\tkernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/access_alien.rs",
+      "bytes": 6527,
+      "sha256": "420cd59df062ad9cca985c2273483c53de686ec06404c5a8eb6b495d93eb77d4",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/protect.rs",
+      "base_git_entry": "100644 blob e2dd5d4566c4125d9f0f3e3fb7da2b917488b283\tkernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/protect.rs",
+      "bytes": 3069,
+      "sha256": "7d0414bceda70b9aa13cac904a635104528151cbf28da26b07a19e0bc074d840",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/map.rs",
+      "base_git_entry": "100644 blob 5bd8e91c841e9698fa5acdb9d1f26585e3fd9785\tkernel/asterinas/kernel/core/src/vm/vmar/vmar_impls/map.rs",
+      "bytes": 17502,
+      "sha256": "171dc9f680c2e0be78f4769a416f7200f11be5214e6c52f4c6380e65e36fde11",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/vm/vmar/vm_mapping.rs",
+      "base_git_entry": "100644 blob fe7ed78752f03056bbb8e63c3d8f75c09e888f18\tkernel/asterinas/kernel/core/src/vm/vmar/vm_mapping.rs",
+      "bytes": 44282,
+      "sha256": "9181e6683764edea7b25c8e5cc0293b0fc439078246cf450ec9e6c27bf6b574d",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs",
+      "base_git_entry": "100644 blob 0319b01d6d651ea38333974e8a4a3280e3409c9e\tkernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs",
+      "bytes": 8682,
+      "sha256": "1f7fb0e3e3129cc29b62d6ac0858d9e74716575e435d635c353f45b99cca6c2c",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "kernel/asterinas/ostd/src/task/mod.rs",
+      "base_git_entry": "100644 blob c3f6770d6214017c8955bc0160797a6936c63d3d\tkernel/asterinas/ostd/src/task/mod.rs",
+      "bytes": 11168,
+      "sha256": "7458cb746d2a769313b4e12b525db56df1eba9aff09429cf535f53a7eed86b4f",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "tests/kernel/control/queryabi_guest.c",
+      "base_git_entry": "100644 blob 57b8f38073d155e682004e1e1ddceada6b304e32\ttests/kernel/control/queryabi_guest.c",
+      "bytes": 10823,
+      "sha256": "bed0eef9bdf8228bf58e23bd2b775501e8d5718ff11e554a600acc1b5469155b",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "tests/kernel/control/queryabi_candidate_guest.c",
+      "base_git_entry": "100644 blob 30308c97256f75e7cdca0d4bac9726662a7903af\ttests/kernel/control/queryabi_candidate_guest.c",
+      "bytes": 3367,
+      "sha256": "0bce7feb48b5f457c886cd3ebd860540828fd348c7d8ebb86bae1ac7ea4f3e7e",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "tests/kernel/control/README.md",
+      "base_git_entry": "100644 blob ede4502e8aa4c8c8e615a51c4d27f5e033c92ba7\ttests/kernel/control/README.md",
+      "bytes": 6184,
+      "sha256": "d33f83c5c134d0bfa9cd1a5d9c4c5445bee4d6700703b735983926891b8471b8",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "docs/SECURITY_AND_RECOVERY.md",
+      "base_git_entry": "100644 blob a81e25c3837b1e63a7f5a2b413149dcac27d68d7\tdocs/SECURITY_AND_RECOVERY.md",
+      "bytes": 7761,
+      "sha256": "d88ce6b112dd5e052885176825165ebd371925d8178ca88ef78db3b9243d4a49",
+      "local_at_freeze_matches_base": true
+    },
+    {
+      "path": "results/integration/2026-10-19-g1b-usage/g1c-design/process-exec-owner-design-4d3011cf.json",
+      "base_git_entry": "100644 blob ee4d7b24db9781c5daa19645e9ffa94b1aae4af2\tresults/integration/2026-10-19-g1b-usage/g1c-design/process-exec-owner-design-4d3011cf.json",
+      "bytes": 23663,
+      "sha256": "8f2d82e2c175f02735d9c269bb54e0f2364f1b364bc0b7bb8700eb45cd6e57dd",
+      "local_at_freeze_matches_base": true
+    }
+  ],
+  "activities": {
+    "product_source_edits": 0,
+    "product_tests": 0,
+    "builds": 0,
+    "runtime_executions": 0,
+    "toolchain_installs": 0,
+    "remote_writes": 0
+  },
+  "pending": [
+    "Read and independently review actual implementation diff after author declares a coherent candidate.",
+    "Record final candidate source identity and check source closure without substituting for root runtime acceptance."
+  ]
+}

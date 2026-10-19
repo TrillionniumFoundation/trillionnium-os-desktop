@@ -1,0 +1,370 @@
+{
+  "schema": "hepta.r12.local-ui-diagnostic-review.v1",
+  "project": "TrillionniumFoundation/hepta-private-ci",
+  "pr": 2885,
+  "source": {
+    "head": "43a638d4e25ebc5a8b06babcd1c75c9acac53179",
+    "tree": "84fdaf39799cef5676c2d3e2029f55c69d0ecd21",
+    "main": "f8c9419df6ddeb36ff8b522a50219981fb8d9345"
+  },
+  "candidate": {
+    "local_head": "0ab4aa6a4eca509159cb5ab9ba94e6208f863a37",
+    "tree": "25b2a7b559549fba0d22fa7d62d78c76c13cd5ce",
+    "remote_head_reported_by_root": "89933fdc84ed1151f04609a1881ab24aaef119b4",
+    "remote_parent_reported_by_root": "43a638d4e25ebc5a8b06babcd1c75c9acac53179",
+    "changed_files": [
+      "scripts/test_hepta_ci_exec.py",
+      "apps/hepta-control-ui/e2e/robrix-product-status.spec.mjs"
+    ],
+    "local_worktree_clean": true
+  },
+  "original_product_evidence": {
+    "run_id": 39217348025,
+    "artifact_id": 12170891842,
+    "file": "original-product-gateway.zip",
+    "artifact_name": "product-gateway-source-head-43a638d4e25ebc5a8b06babcd1c75c9acac53179",
+    "tests": 6,
+    "passed": 5,
+    "failed": 1,
+    "failed_case": "1280-timeout-chromium",
+    "timeout_seconds": 90,
+    "trace_config": "off",
+    "observed_sequence": [
+      "real owner request held after route.fetch validated response",
+      "owner SDK timeout/abort",
+      "runtime SDK emits 503 after reading body to EOF",
+      "TimedOut OCR passes",
+      "timeout runtime response.finished does not settle before test timeout",
+      "held response release and cancellation proof not reached before timeout"
+    ],
+    "raw_artifact_limit": "Original requestfailed entries lack event timestamps. The time of the original runtime native failure is unknown; teardown error does not establish its cause. Artifact does not contain executable Rust UI, gateway binary, or SDK asset bytes."
+  },
+  "sdk_source": {
+    "repo": "kevinaboos/makepad",
+    "revision": "337566c8b25d47f7e4fff6a202157b65bf183330",
+    "path": "platform/src/os/web/web.js",
+    "git_blob": "54a69acea9b920436477c7714d75797d1982cc54",
+    "snapshot": "upstream-makepad-web.js",
+    "license": "upstream-makepad-LICENSE",
+    "method_fixture": "pinned-network-methods.js",
+    "method_fixture_sha256": "2d2b0d3a14d5626b736831006e65300c56ecee4f62deff0382a42527ce264cf8",
+    "exact_method_blocks_verified": [
+      "network_http_dispatch",
+      "network_http_finish",
+      "js_network_http_cancel"
+    ],
+    "natural_eof_behavior": "break on done, join bounded chunks, deliver WASM response, finish request bookkeeping; no reader.cancel or AbortController.abort at natural EOF",
+    "abort_paths": [
+      "declared Content-Length exceeds max_body",
+      "streamed byte count exceeds max_body",
+      "20 second stall timer",
+      "explicit js_network_http_cancel"
+    ]
+  },
+  "local_execution": {
+    "scope": "Real loopback Node HTTP and exact pinned Makepad SDK methods with synthetic WASM exports. Does not execute the Rust UI or Rust gateway. CLI browser automation only; no production devices.",
+    "browser_inputs": [
+      {
+        "label": "153",
+        "binaryPath": "/workspace/scratch/499c7902de8e/r12-hepta-browsers/chrome-headless-shell-linux64/chrome-headless-shell",
+        "binarySha256": "ded93a9c9a53a1ae040f08124badcca95c938e9d5015ff340c3b5538c41bf39e",
+        "actualVersion": "153.0.8010.12"
+      },
+      {
+        "label": "157",
+        "binaryPath": "/workspace/scratch/499c7902de8e/r12-hepta-browsers/fixed157/chrome-headless-shell-linux64/chrome-headless-shell",
+        "binarySha256": "37164bfc553db9c17e11bc19c291738a1179c5b13529ec6f20a39bd665e91be0",
+        "actualVersion": "157.0.8099.0"
+      }
+    ],
+    "binary_identity_limit": "Binary path contents were SHA-256 hashed before launch and actual browser version observed. No /proc running-image hash was measured.",
+    "method_fixture_sha256": "2d2b0d3a14d5626b736831006e65300c56ecee4f62deff0382a42527ce264cf8",
+    "max_body": 262144,
+    "observation_deadline_ms": 1500,
+    "cases_executed": 12,
+    "valid_response_cases": [
+      {
+        "browser": "153",
+        "case": "complete-single-write",
+        "sdk_complete": true,
+        "sdk_controller_aborted": false,
+        "native_terminal": {
+          "settled": true,
+          "value": {
+            "kind": "requestfailed",
+            "ms": 40,
+            "error": "net::ERR_ABORTED"
+          }
+        },
+        "response_finished": {
+          "settled": false
+        }
+      },
+      {
+        "browser": "153",
+        "case": "complete-split",
+        "sdk_complete": true,
+        "sdk_controller_aborted": false,
+        "native_terminal": {
+          "settled": true,
+          "value": {
+            "kind": "requestfailed",
+            "ms": 54,
+            "error": "net::ERR_ABORTED"
+          }
+        },
+        "response_finished": {
+          "settled": false
+        }
+      },
+      {
+        "browser": "157",
+        "case": "complete-single-write",
+        "sdk_complete": true,
+        "sdk_controller_aborted": false,
+        "native_terminal": {
+          "settled": true,
+          "value": {
+            "kind": "requestfinished",
+            "ms": 31
+          }
+        },
+        "response_finished": {
+          "settled": true,
+          "value": null
+        }
+      },
+      {
+        "browser": "157",
+        "case": "complete-split",
+        "sdk_complete": true,
+        "sdk_controller_aborted": false,
+        "native_terminal": {
+          "settled": true,
+          "value": {
+            "kind": "requestfinished",
+            "ms": 57
+          }
+        },
+        "response_finished": {
+          "settled": true,
+          "value": null
+        }
+      }
+    ],
+    "negative_controls": [
+      {
+        "browser": "153",
+        "case": "truncated",
+        "expected_sdk_error_no_response": true,
+        "native_terminal": {
+          "settled": true,
+          "value": {
+            "kind": "requestfailed",
+            "ms": 58,
+            "error": "net::ERR_CONTENT_LENGTH_MISMATCH"
+          }
+        },
+        "sdk_cleanup": true
+      },
+      {
+        "browser": "153",
+        "case": "explicit-abort",
+        "expected_sdk_error_no_response": true,
+        "native_terminal": {
+          "settled": true,
+          "value": {
+            "kind": "requestfailed",
+            "ms": 126,
+            "error": "net::ERR_ABORTED"
+          }
+        },
+        "sdk_cleanup": true
+      },
+      {
+        "browser": "153",
+        "case": "declared-over-limit",
+        "expected_sdk_error_no_response": true,
+        "native_terminal": {
+          "settled": true,
+          "value": {
+            "kind": "requestfailed",
+            "ms": 30,
+            "error": "net::ERR_ABORTED"
+          }
+        },
+        "sdk_cleanup": true
+      },
+      {
+        "browser": "153",
+        "case": "streamed-over-limit",
+        "expected_sdk_error_no_response": true,
+        "native_terminal": {
+          "settled": true,
+          "value": {
+            "kind": "requestfailed",
+            "ms": 58,
+            "error": "net::ERR_ABORTED"
+          }
+        },
+        "sdk_cleanup": true
+      },
+      {
+        "browser": "157",
+        "case": "truncated",
+        "expected_sdk_error_no_response": true,
+        "native_terminal": {
+          "settled": true,
+          "value": {
+            "kind": "requestfailed",
+            "ms": 58,
+            "error": "net::ERR_CONTENT_LENGTH_MISMATCH"
+          }
+        },
+        "sdk_cleanup": true
+      },
+      {
+        "browser": "157",
+        "case": "explicit-abort",
+        "expected_sdk_error_no_response": true,
+        "native_terminal": {
+          "settled": true,
+          "value": {
+            "kind": "requestfailed",
+            "ms": 139,
+            "error": "net::ERR_ABORTED"
+          }
+        },
+        "sdk_cleanup": true
+      },
+      {
+        "browser": "157",
+        "case": "declared-over-limit",
+        "expected_sdk_error_no_response": true,
+        "native_terminal": {
+          "settled": true,
+          "value": {
+            "kind": "requestfailed",
+            "ms": 32,
+            "error": "net::ERR_ABORTED"
+          }
+        },
+        "sdk_cleanup": true
+      },
+      {
+        "browser": "157",
+        "case": "streamed-over-limit",
+        "expected_sdk_error_no_response": true,
+        "native_terminal": {
+          "settled": true,
+          "value": {
+            "kind": "requestfailed",
+            "ms": 61,
+            "error": "net::ERR_ABORTED"
+          }
+        },
+        "sdk_cleanup": true
+      }
+    ],
+    "source": "reproduce-response-boundaries.mjs",
+    "raw_result": "response-boundaries-reproduction.json",
+    "raw_stdout": "response-boundaries-exec.log",
+    "stdout_exit_code": 0,
+    "exit_code_scope": "Diagnostic program completion; native failure in valid Chromium 153 cases is retained as a failure, not converted to a passing product assertion."
+  },
+  "held_owner_experiment": {
+    "same_http_and_sdk": "response-finish-split-reproduction.json / response-finish-split-fixed-reproduction.json",
+    "orders": [
+      "late-release",
+      "early-release"
+    ],
+    "chromium_153": "Both release orders preserve SDK completed 503 and native ERR_ABORTED for initial and post-cancel runtime. Post-cancel native failures occur around 5.15 seconds before teardown.",
+    "chromium_157": "Both release orders have all six observed owner/runtime response objects complete natively; two explicit held-owner cancellations still fail natively as expected.",
+    "correction": "One-write transfer is not a guaranteed fix. Earlier one-write experiment completed four post-cancel target requests, but also had two initial runtime native failures."
+  },
+  "upstream_cause": {
+    "status": "Primary-source Chromium repair confirmed; association with original UI failure remains an inference pending new product CDP events.",
+    "commit": "62473ad0f747e245e514c93e741bb8e168a2a207",
+    "committed_at": "2026-10-06T21:44:48Z",
+    "cl": 8508456,
+    "source": "https://github.com/chromium/chromium/commit/62473ad0f747e245e514c93e741bb8e168a2a207",
+    "api_snapshot": "upstream-chromium-fix.json",
+    "production_change": "Record terminal HandleResult(result) before notifying client; callback reentry otherwise turns completion/error into cancellation.",
+    "trigger": "EOF arriving separately from final body data; not necessarily two server writes. No-store exposes direct BodyStreamBuffer path.",
+    "native_regressions": [
+      "CancelAfterDone",
+      "CancelAfterError"
+    ],
+    "not_supported_fixes": [
+      "releaseLock after EOF",
+      "changing JavaScript reader scheduling",
+      "combining server write calls",
+      "releasing held owner route before native wait"
+    ],
+    "constraints_retained": [
+      "no-store",
+      "bounded streaming body read",
+      "explicit owner cancellation",
+      "native runtime completion success condition",
+      "primary Chromium 153 product gate"
+    ]
+  },
+  "playwright_wait": {
+    "version": "1.63.0",
+    "local_source": "apps/hepta-control-ui/node_modules/playwright-core/lib/coreBundle.js",
+    "official_context_source": "https://github.com/microsoft/playwright/blob/v1.63.0/packages/playwright-core/src/client/browserContext.ts",
+    "official_network_source": "https://github.com/microsoft/playwright/blob/v1.63.0/packages/playwright-core/src/client/network.ts",
+    "observed_behavior": "RequestFailed emits failure but does not settle response._finishedPromise; RequestFinished resolves it null; response.finished races only target close.",
+    "consequence": "A real native failure after response headers can be hidden behind a wait until the 90 second test closes.",
+    "possible_followup": "Exact Request identity failure race can fail sooner while retaining original success requirement. This is diagnosis only and is not included in the frozen candidate."
+  },
+  "candidate_validation": {
+    "architecture": "architecture-local-review.json",
+    "node_test_file_direct_invocations": [
+      {
+        "path": "test/font-delivery-diagnostic.test.mjs",
+        "tests": 153,
+        "failures": 0
+      },
+      {
+        "path": "test/product-status-pixels.test.mjs",
+        "tests": 2,
+        "failures": 0
+      },
+      {
+        "path": "test/product-console-audit.test.mjs",
+        "tests": 5,
+        "failures": 0
+      }
+    ],
+    "node_counts_limit": "Separate direct invocation counts; no claim of 160 unique tests. Initial node --test invocation reported three test-file wrappers.",
+    "node_check": "passed for candidate E2E file",
+    "git_diff_check": "passed",
+    "source_guards": {
+      "extracted_expect_statement_sequence_before_after_equal": true,
+      "extracted_expect_count": 27,
+      "product_config_byte_equal": true,
+      "limit": "Source-level comparison, not formal proof or an E2E execution result."
+    },
+    "just_fmt": "just-fmt-attempt.json: actual attempt exits 127, just unavailable; required original CI formatting remains pending"
+  },
+  "candidate_ci_observation": {
+    "observed_at": "2026-10-19T12:46:24Z",
+    "architecture_run_id": 39253698625,
+    "ui_run_id": 39253698771,
+    "head": "89933fdc84ed1151f04609a1881ab24aaef119b4",
+    "architecture_jobs": "candidate-architecture-jobs-observation-1.json",
+    "ui_jobs": "candidate-ui-jobs-observation-1.json",
+    "state": "Five inspected Architecture/UI jobs queued, no runner_name or steps. API started_at is not evidence of execution.",
+    "limit": "This is a timestamped partial workflow observation; root reviews all terminal required checks."
+  },
+  "claims_not_made": [
+    "All 52 checks passing",
+    "New original six-case product UI run passing",
+    "Fixed 157 diagnostic replacing primary 153 product gate",
+    "Production device/authority qualification",
+    "Rust formatting or Rust workload execution locally",
+    "Main-applicable standalone fixture patch: dependency exists only on PR head",
+    "New remote write by this subagent"
+  ]
+}

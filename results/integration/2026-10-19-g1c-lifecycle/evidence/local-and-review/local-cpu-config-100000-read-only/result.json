@@ -1,0 +1,174 @@
+{
+  "inputs": {
+    "schema": "a06.cpu-config-settlement.v2",
+    "kernel_sha256": "1bdc27f45afb2789447473cdf100a8fd67c84111bcec650a1fa96c18edb6163b",
+    "original_initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+    "bios_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+    "probe_source_sha256": "f7293d02a6f332588d3397a57d2539079874f81564fa5105eab7db4c8184a85c",
+    "input_files": {
+      "kernel": {
+        "path": "/workspace/scratch/499c7902de8e/r12-evidence/local-ordinary-candidate-final/product-kernel.elf",
+        "size": 8314400,
+        "sha256": "1bdc27f45afb2789447473cdf100a8fd67c84111bcec650a1fa96c18edb6163b"
+      },
+      "original_initramfs": {
+        "path": "/workspace/scratch/499c7902de8e/r12-g1c/support/build/evidence/2026-10-16/artifacts/initramfs.cpio.gz",
+        "size": 1107990,
+        "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+      },
+      "bios": {
+        "path": "/usr/share/seabios/bios-256k.bin",
+        "size": 262144,
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+      },
+      "qemu": {
+        "path": "/usr/bin/qemu-system-x86_64",
+        "size": 26415624,
+        "sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854"
+      },
+      "compiler": {
+        "path": "/usr/bin/x86_64-linux-gnu-gcc-13",
+        "size": 1023032,
+        "sha256": "1b99826121ae6682a634e5efe09bd3e3df58ce58e0b28f849114ab5b89139c26"
+      },
+      "probe_source": {
+        "path": "/workspace/scratch/499c7902de8e/r12-g1c/tests/organ_backend/cpu_config_settlement_probe.c",
+        "size": 4711,
+        "sha256": "f7293d02a6f332588d3397a57d2539079874f81564fa5105eab7db4c8184a85c"
+      },
+      "runner": {
+        "path": "/workspace/scratch/499c7902de8e/r12-g1c/tests/organ_backend/run_cpu_config_settlement.py",
+        "size": 12455,
+        "sha256": "58b5c0e025f6bcdee172c78076064e6e8c869b0cc74ce769484b237b1df7de5a"
+      },
+      "archive_helper": {
+        "path": "/workspace/scratch/499c7902de8e/r12-g1c/tests/organ_backend/run_guest_probe.py",
+        "size": 7644,
+        "sha256": "fc037a65aaf25fb3425befe8c74220e6ed76ea1767c368ba5d351e90a81f47e2"
+      },
+      "compiled_source": {
+        "path": "/workspace/scratch/499c7902de8e/r12-evidence/local-cpu-config-100000-read-only/probe.c",
+        "size": 4761,
+        "sha256": "f2c27cff04faf54552930325cb4075679a85694308e2a84e5a584d13f15384b3"
+      },
+      "probe": {
+        "path": "/workspace/scratch/499c7902de8e/r12-evidence/local-cpu-config-100000-read-only/probe",
+        "size": 789984,
+        "sha256": "0fd570632ca8eac3cc1ce13981b74ebcda9802a4ba8d4ebbcd2f652768fce5a7"
+      },
+      "injected_initramfs": {
+        "path": "/workspace/scratch/499c7902de8e/r12-evidence/local-cpu-config-100000-read-only/initramfs.cpio.gz",
+        "size": 1451667,
+        "sha256": "11282a17c09474102f3d725830983d76b0f0526e6edb564db5a373c62d9a071a"
+      }
+    },
+    "compiled_source_sha256": "f2c27cff04faf54552930325cb4075679a85694308e2a84e5a584d13f15384b3",
+    "probe_sha256": "0fd570632ca8eac3cc1ce13981b74ebcda9802a4ba8d4ebbcd2f652768fce5a7",
+    "initramfs_sha256": "11282a17c09474102f3d725830983d76b0f0526e6edb564db5a373c62d9a071a",
+    "argv": [
+      "/usr/bin/qemu-system-x86_64",
+      "-kernel",
+      "/workspace/scratch/499c7902de8e/r12-evidence/local-ordinary-candidate-final/product-kernel.elf",
+      "-initrd",
+      "/workspace/scratch/499c7902de8e/r12-evidence/local-cpu-config-100000-read-only/initramfs.cpio.gz",
+      "-append",
+      "earlycon console=ttyS0 loglevel=info SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --",
+      "-machine",
+      "q35",
+      "-accel",
+      "tcg",
+      "-cpu",
+      "max",
+      "-bios",
+      "/usr/share/seabios/bios-256k.bin",
+      "-m",
+      "512M",
+      "-smp",
+      "1",
+      "-nodefaults",
+      "-no-user-config",
+      "-no-reboot",
+      "-nographic",
+      "-display",
+      "none",
+      "-monitor",
+      "none",
+      "-serial",
+      "stdio",
+      "-nic",
+      "none",
+      "-device",
+      "isa-debug-exit,iobase=0xf4,iosize=0x04"
+    ],
+    "qemu_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+    "qemu_version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)\nCopyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers",
+    "compiler_argv": [
+      "/usr/bin/x86_64-linux-gnu-gcc-13",
+      "-std=c11",
+      "-O2",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-static",
+      "/workspace/scratch/499c7902de8e/r12-evidence/local-cpu-config-100000-read-only/probe.c",
+      "-o",
+      "/workspace/scratch/499c7902de8e/r12-evidence/local-cpu-config-100000-read-only/probe"
+    ],
+    "period_us": 100000,
+    "quota_us": 1000,
+    "mode": "read-only",
+    "duration_seconds": 4,
+    "max_cpu_percent": 1.2,
+    "minimum_unlimited_percent": 70.0,
+    "max_serial_bytes": 8388608,
+    "single_vcpu": true,
+    "network": false,
+    "data_disks": false,
+    "hos2_qualification": false
+  },
+  "qemu_exit": 33,
+  "timed_out": false,
+  "input_receipt": {
+    "path": "/workspace/scratch/499c7902de8e/r12-evidence/local-cpu-config-100000-read-only/inputs.json",
+    "size": 4856,
+    "sha256": "90a187e40babdbc673bc2e9ca48e85e86420f095845e33b881b38e2b53895cbd"
+  },
+  "serial_sha256": "3d3ee8fbdced9f101e86f9a5803f1b5802cd5dff03b06407b0721104b500e665",
+  "serial_bytes": 104191,
+  "samples": [
+    {
+      "label": "unlimited",
+      "wall_ns": 250000295,
+      "cpu_ns": 252000000,
+      "operations": 450141,
+      "checksum": 15789683704003041665,
+      "cpu_percent": 100.79988105614035
+    },
+    {
+      "label": "read-only",
+      "wall_ns": 4000026241,
+      "cpu_ns": 38000000,
+      "operations": 92,
+      "checksum": 14122237866569708033,
+      "cpu_percent": 0.9499937678033847
+    }
+  ],
+  "events": [
+    "sample:unlimited",
+    "parameters",
+    "sample:read-only",
+    "stat",
+    "complete",
+    "exit0",
+    "boot"
+  ],
+  "malformed_marker_lines": [],
+  "ordered_exact_markers": true,
+  "measurements_valid": true,
+  "probe_process_exit": 0,
+  "guest_complete": true,
+  "timing_valid": true,
+  "passed": true,
+  "inputs_unchanged": true,
+  "changed_inputs": {}
+}
