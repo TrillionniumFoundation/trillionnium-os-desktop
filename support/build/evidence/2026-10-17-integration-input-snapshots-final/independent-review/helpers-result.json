@@ -1,0 +1,31 @@
+{
+  "scope": "Actual production Python helpers with owned temporary files only; no native tool, QEMU, GDB or Cargo execution.",
+  "recorder_sha256": "67f5767838036f9a7c0c9c594fc210cf4c67a6fbb6f4c084e6990503b2f4f36e",
+  "production_sha256_after": "67f5767838036f9a7c0c9c594fc210cf4c67a6fbb6f4c084e6990503b2f4f36e",
+  "shared_recorder_sha256": "387845415b54f1822c55ce4198586fae8047f7d3ea94008c84e0974871954098",
+  "checks": [
+    {
+      "check": "same_shared_source_accepted",
+      "passed": true
+    },
+    {
+      "check": "changed_shared_source_rejected",
+      "passed": true,
+      "error": "shared recorder source changed after input selection"
+    },
+    {
+      "check": "existing_snapshot_never_overwritten",
+      "passed": true
+    },
+    {
+      "check": "later_source_change_does_not_change_copy",
+      "passed": true
+    },
+    {
+      "check": "copy_stat_only_mutation_rejected",
+      "passed": true,
+      "error": "private input snapshot changed: -kernel"
+    }
+  ],
+  "passed": true
+}

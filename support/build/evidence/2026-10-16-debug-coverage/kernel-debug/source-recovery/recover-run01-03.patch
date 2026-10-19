@@ -1,0 +1,270 @@
+--- a/support/build/debug/README.md
++++ b/support/build/debug/README.md
+@@ -31,15 +31,6 @@
+ the hit against `nm`'s defined `T __ostd_main` address. A firmware register
+ read or a successful connection alone cannot pass.
+ 
+-Before connecting GDB, the helper reads 32 entry instruction bytes through each
+-ELF's executable `PT_LOAD` mapping and requires the original symbol ELF and
+-executed boot ELF to agree. The boot file's size and SHA256 must also match
+-QEMU's record. At the hardware breakpoint, GDB reads those same 32 bytes from
+-the live inferior and emits a separate verified-byte marker. The helper requires
+-both the matching PC and matching runtime bytes, and records both artifact
+-hashes in `entry-artifact-binding.json`. This binds the entry instructions;
+-it does not claim a comparison of every loaded guest byte.
+-
+ GDB disables breakpoints and detaches; then the complete kernel must finish
+ the minimal userspace boot, power off with raw QEMU status 33, and pass the
+ ordinary live boot checker. Debugger success alone does not pass this entry.
+--- a/support/build/debug/run.py
++++ b/support/build/debug/run.py
+@@ -13,7 +13,6 @@
+ import shutil
+ import signal
+ import socket
+-import struct
+ import subprocess
+ import sys
+ import time
+@@ -22,9 +21,6 @@
+ ENTRY = "__ostd_main"
+ HIT = re.compile(r"^A01_GDB_RUST_ENTRY_HIT pc=0x([0-9a-fA-F]+) entry=0x([0-9a-fA-F]+)$",
+                  re.MULTILINE)
+-ENTRY_BYTES = 32
+-BYTE_HIT = re.compile(r"^A01_GDB_RUST_ENTRY_BYTES pc=0x([0-9a-fA-F]+) size=32 bytes=([0-9a-fA-F]{64})$",
+-                      re.MULTILINE)
+ 
+ 
+ def require(condition, message):
+@@ -157,64 +153,7 @@
+     return addresses[0]
+ 
+ 
+-def elf_entry_bytes(path, address, machine):
+-    """Read the Rust entry from one executable ELF64 PT_LOAD file range."""
+-    path = Path(path)
+-    size = path.stat().st_size
+-    with path.open("rb") as source:
+-        header = source.read(64)
+-        require(len(header) == 64 and header[:7] == b"\x7fELF\x02\x01\x01",
+-                "entry artifact must be a complete little-endian ELF64 header")
+-        fields = struct.unpack("<16sHHIQQQIHHHHHH", header)
+-        require(fields[1] == 2 and fields[2] == machine and fields[3] == 1,
+-                "entry artifact must have the expected executable type and machine")
+-        offset, stride, count = fields[5], fields[9], fields[10]
+-        require(fields[8] == 64 and stride == 56 and count > 0
+-                and offset >= 64 and offset + count * stride <= size,
+-                "entry artifact has an invalid or truncated program-header table")
+-        require(type(address) is int and 0 < address <= (1 << 64) - ENTRY_BYTES,
+-                "Rust entry address is outside the ELF64 address range")
+-        locations = []
+-        for index in range(count):
+-            source.seek(offset + index * stride)
+-            program_header = source.read(56)
+-            require(len(program_header) == 56, "entry artifact program header is truncated")
+-            kind, flags, file_offset, virtual, _, file_size, memory_size, _ = struct.unpack(
+-                "<IIQQQQQQ", program_header)
+-            if kind != 1:
+-                continue
+-            require(file_size <= memory_size and file_offset + file_size <= size,
+-                    "entry artifact has a truncated PT_LOAD file range")
+-            if flags & 1 and virtual <= address and address + ENTRY_BYTES <= virtual + file_size:
+-                locations.append(file_offset + address - virtual)
+-        require(len(locations) == 1, "Rust entry must map to exactly one executable PT_LOAD range")
+-        source.seek(locations[0])
+-        entry = source.read(ENTRY_BYTES)
+-        require(len(entry) == ENTRY_BYTES, "Rust entry instruction bytes are truncated")
+-    return {"path": str(path), "size": size, "sha256": sha256(path),
+-            "elf_class": "ELF64", "elf_type": 2, "elf_machine": machine,
+-            "symbol": ENTRY, "address": hex(address),
+-            "entry_file_offset": locations[0], "entry_bytes": entry.hex()}
+-
+-
+-def bind_entry_artifacts(symbols, ready, address):
+-    original = elf_entry_bytes(symbols, address, 62)
+-    recorded = ready.get("artifacts", {}).get("-kernel", {})
+-    require(isinstance(recorded.get("path"), str), "QEMU record has no executed boot ELF path")
+-    boot_path = Path(recorded["path"])
+-    if not boot_path.is_absolute():
+-        boot_path = Path(ready["cwd"]) / boot_path
+-    boot = elf_entry_bytes(boot_path, address, 3)
+-    require(boot["sha256"] == recorded.get("sha256") and boot["size"] == recorded.get("size"),
+-            "executed boot ELF changed after QEMU recorded it")
+-    require(original["entry_bytes"] == boot["entry_bytes"],
+-            "original symbol ELF and executed boot ELF have different Rust entry bytes")
+-    return {"entry_address": hex(address), "entry_size": ENTRY_BYTES,
+-            "expected_bytes": original["entry_bytes"], "symbol_artifact": original,
+-            "boot_artifact": boot}
+-
+-
+-def gdb_script(port, address, expected_bytes):
++def gdb_script(port):
+     return f"""set pagination off
+ set confirm off
+ set language c
+@@ -230,14 +169,6 @@
+   quit 1
+ end
+ printf "A01_GDB_RUST_ENTRY_HIT pc=0x%lx entry=0x%lx\\n", (unsigned long)$pc, (unsigned long)&{ENTRY}
+-python
+-import gdb
+-pc = int(gdb.parse_and_eval("$pc"))
+-observed = bytes(gdb.selected_inferior().read_memory(pc, {ENTRY_BYTES}))
+-if pc != {address} or observed != bytes.fromhex("{expected_bytes.hex()}"):
+-    raise gdb.GdbError("A01_GDB_ENTRY_BYTES_MISMATCH")
+-gdb.write("A01_GDB_RUST_ENTRY_BYTES pc=0x%x size={ENTRY_BYTES} bytes=%s\\n" % (pc, observed.hex()))
+-end
+ bt
+ info source
+ info line *{ENTRY}
+@@ -249,23 +180,17 @@
+ """
+ 
+ 
+-def accept_gdb(status, log, expected_address, expected_bytes):
++def accept_gdb(status, log, expected_address):
+     require(status == 0, "GDB did not exit successfully")
+     text = log.read_text(errors="replace")
+     hits = HIT.findall(text)
+     require(len(hits) == 1, "GDB log lacks one verified Rust-entry hit")
+     pc, address = (int(value, 16) for value in hits[0])
+     require(pc == address == expected_address, "GDB PC does not match the Rust-entry symbol")
+-    byte_hits = BYTE_HIT.findall(text)
+-    require(len(byte_hits) == 1, "GDB log lacks one verified runtime Rust-entry byte read")
+-    byte_pc, runtime = byte_hits[0]
+-    require(int(byte_pc, 16) == expected_address and bytes.fromhex(runtime) == expected_bytes,
+-            "runtime Rust-entry bytes do not match the original symbol and boot ELFs")
+     require(text.count("A01_GDB_DETACHED") == 1, "GDB did not complete detach")
+     require("A01_GDB_WRONG_PC" not in text, "GDB stopped at the wrong PC")
+     return {"symbol": ENTRY, "pc": hex(pc), "entry_address": hex(address),
+-            "gdb_status": status, "detached": True,
+-            "runtime_entry_bytes": runtime.lower(), "entry_size": ENTRY_BYTES}
++            "gdb_status": status, "detached": True}
+ 
+ 
+ def accept_boot(status, directory):
+@@ -373,18 +298,22 @@
+         require(invoke([nm, "--defined-only", "--format=posix", str(symbols)],
+                        "symbols.log", 30) == 0, "nm failed for the original Rust ELF")
+         address = entry_address(output / "symbols.log")
+-        binding = bind_entry_artifacts(symbols, ready, address)
+-        write_json(output / "symbol-artifact.json", binding["symbol_artifact"])
+-        write_json(output / "entry-artifact-binding.json", binding)
+-        result["entry_artifact_binding"] = binding
+-        expected_bytes = bytes.fromhex(binding["expected_bytes"])
++        with symbols.open("rb") as original:
++            header = original.read(20)
++        require(len(header) == 20 and header[:6] == b"\x7fELF\x02\x01",
++                "original Rust symbol artifact must be little-endian ELF64")
++        machine = int.from_bytes(header[18:20], "little")
++        require(machine == 62, "original Rust symbol artifact must retain x86-64 e_machine 62")
++        write_json(output / "symbol-artifact.json", {"path": str(symbols), "size": symbols.stat().st_size,
++                   "sha256": sha256(symbols), "symbol": ENTRY, "address": hex(address),
++                   "elf_class": "ELF64", "elf_machine": machine})
+         script = output / "rust-entry.gdb"
+-        script.write_text(gdb_script(int(updates["A01_GDB_PORT"]), address, expected_bytes))
++        script.write_text(gdb_script(int(updates["A01_GDB_PORT"])))
+         result["stage"] = "gdb_rust_entry"
+         gdb_status = invoke([gdb, "--nx", "--batch", "--se=" + str(symbols), "-x", str(script)],
+                             "gdb.log", args.gdb_timeout)
+         (output / "gdb-exit-code.txt").write_text(str(gdb_status) + "\n")
+-        result["gdb"] = accept_gdb(gdb_status, output / "gdb.log", address, expected_bytes)
++        result["gdb"] = accept_gdb(gdb_status, output / "gdb.log", address)
+         result["stage"] = "boot_after_detach"
+         driver_status = driver.wait(args.boot_timeout)
+         (output / "driver-exit-code.txt").write_text(str(driver_status) + "\n")
+--- a/support/build/debug/test_debug.py
++++ b/support/build/debug/test_debug.py
+@@ -7,7 +7,6 @@
+ from pathlib import Path
+ import select
+ import socket
+-import struct
+ import subprocess
+ import sys
+ import tempfile
+@@ -21,56 +20,6 @@
+ 
+ 
+ class DebugTests(unittest.TestCase):
+-    def elf_fixture(self, path, code, *, machine=62, kind=2):
+-        entry, offset = 0xffffffff80001000, 4096
+-        raw = bytearray(offset + len(code))
+-        raw[:64] = struct.pack("<16sHHIQQQIHHHHHH", b"\x7fELF\x02\x01\x01" + b"\0" * 9,
+-                               kind, machine, 1, entry, 64, 0, 0, 64, 56, 1, 64, 0, 0)
+-        raw[64:120] = struct.pack("<IIQQQQQQ", 1, 5, offset, entry, entry,
+-                                  len(code), len(code), 4096)
+-        raw[offset:] = code
+-        path.write_bytes(raw)
+-        return entry
+-
+-    def test_entry_binding_uses_executable_load_bytes_and_recorded_boot_hash(self):
+-        with tempfile.TemporaryDirectory() as temporary:
+-            root = Path(temporary)
+-            original, boot = root / "symbols", root / "boot.elf"
+-            code = bytes(range(DEBUG.ENTRY_BYTES))
+-            entry = self.elf_fixture(original, code)
+-            self.elf_fixture(boot, code, machine=3)
+-            ready = {"cwd": str(root), "artifacts": {"-kernel": {
+-                "path": "boot.elf", "size": boot.stat().st_size,
+-                "sha256": DEBUG.sha256(boot)}}}
+-            binding = DEBUG.bind_entry_artifacts(original, ready, entry)
+-            self.assertEqual(binding["expected_bytes"], code.hex())
+-            self.assertEqual(binding["boot_artifact"]["sha256"], DEBUG.sha256(boot))
+-            self.assertEqual(binding["symbol_artifact"]["sha256"], DEBUG.sha256(original))
+-            self.elf_fixture(boot, bytes(reversed(code)), machine=3)
+-            # Even an updated, internally consistent QEMU record cannot make
+-            # different symbol/boot instructions pass this binding.
+-            ready["artifacts"]["-kernel"]["sha256"] = DEBUG.sha256(boot)
+-            with self.assertRaisesRegex(ValueError, "different Rust entry bytes"):
+-                DEBUG.bind_entry_artifacts(original, ready, entry)
+-            self.elf_fixture(boot, code, machine=3)
+-            with self.assertRaisesRegex(ValueError, "changed after QEMU"):
+-                DEBUG.bind_entry_artifacts(original, ready, entry)
+-
+-    def test_entry_binding_rejects_wrong_type_machine_and_truncated_elf(self):
+-        with tempfile.TemporaryDirectory() as temporary:
+-            path = Path(temporary) / "entry.elf"
+-            code = bytes(range(DEBUG.ENTRY_BYTES))
+-            for machine, kind in [(3, 2), (62, 1)]:
+-                entry = self.elf_fixture(path, code, machine=machine, kind=kind)
+-                with self.subTest(machine=machine, kind=kind), self.assertRaises(ValueError):
+-                    DEBUG.elf_entry_bytes(path, entry, 62)
+-            entry = self.elf_fixture(path, code)
+-            valid = path.read_bytes()
+-            for broken in [valid[:63], valid[:119], valid[:-1], valid[:4] + b"\x01" + valid[5:]]:
+-                path.write_bytes(broken)
+-                with self.subTest(size=len(broken)), self.assertRaises(ValueError):
+-                    DEBUG.elf_entry_bytes(path, entry, 62)
+-
+     def test_listener_stays_reserved_and_survives_explicit_fd_handoff(self):
+         with DEBUG.own_listener() as listener:
+             self.assertGreaterEqual(listener.fileno(), 64)
+@@ -110,24 +59,18 @@
+     def test_gdb_requires_matching_rust_pc_success_and_detach(self):
+         with tempfile.TemporaryDirectory() as temporary:
+             log = Path(temporary) / "gdb.log"
+-            code = bytes(range(DEBUG.ENTRY_BYTES))
+-            good = ("A01_GDB_RUST_ENTRY_HIT pc=0xffffffff80001000 entry=0xffffffff80001000\n"
+-                    "A01_GDB_RUST_ENTRY_BYTES pc=0xffffffff80001000 size=32 bytes=" + code.hex()
+-                    + "\nA01_GDB_DETACHED\n")
++            good = "A01_GDB_RUST_ENTRY_HIT pc=0xffffffff80001000 entry=0xffffffff80001000\nA01_GDB_DETACHED\n"
+             log.write_text(good)
+             address = 0xffffffff80001000
+-            self.assertTrue(DEBUG.accept_gdb(0, log, address, code)["detached"])
++            self.assertTrue(DEBUG.accept_gdb(0, log, address)["detached"])
+             for status, text in [(1, good), (0, "rip 0xfff0\n"),
+                                  (0, good.replace("pc=0xffffffff80001000", "pc=0xfff0")),
+                                  (0, good.replace("A01_GDB_DETACHED", "")),
+-                                 (0, good.replace(code.hex(), "ff" * DEBUG.ENTRY_BYTES)),
+-                                 (0, good.replace("size=32", "size=16")),
+-                                 (0, good.replace(code.hex(), code.hex()[:-2])),
+                                  (0, good + good)]:
+                 with self.subTest(status=status, text=text):
+                     log.write_text(text)
+                     with self.assertRaises(ValueError):
+-                        DEBUG.accept_gdb(status, log, address, code)
++                        DEBUG.accept_gdb(status, log, address)
+ 
+     def test_detach_does_not_make_failed_or_changed_boot_pass(self):
+         with tempfile.TemporaryDirectory() as temporary:

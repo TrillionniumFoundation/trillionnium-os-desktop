@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "status": "host_validated_pending_publish_and_real_full22",
+  "created_utc": "2026-10-17T01:38:51.319000+00:00",
+  "base_source_commit": "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+  "entry_isolation_dependency_commit": "fb508445fe63efdfdd596dc58e42c621b1fd3752",
+  "actual_host_tool_session": 32695,
+  "actual_exit_code": 0,
+  "source_files": {
+    "support/build/osdk-integration/record-qemu.py": "bc1225b431a103d7b04bc42054471e77db1a071166c6bdde096e5112da22c590",
+    "support/build/osdk-integration/test_private_tools.py": "71bc693fea9499f07015749a753b929c81c433303d24a8597eb9e236f371a025",
+    "support/build/osdk-integration/test_record_qemu.py": "9805aa6e00cbbee512fb613769874d53600979b77fae484085b83ffccb3925d3",
+    "support/build/osdk-integration/test_input_snapshots.py": "8fd18f792837b5c4873e3373637f2f0f4ff54139d8ea534f0533113b8249cd82",
+    "support/build/osdk-integration/README.md": "5e158f3f57779ba21506a5f03c9c57810344c4caf2dd0abfce5b52427c92bf2a"
+  },
+  "source_stable": true,
+  "suite_counts": [
+    {
+      "mode": "I",
+      "tests": 150,
+      "OK": true,
+      "log_sha256": "ad7a6e23672120a163c5d70eb89128085fae003ec9e11bb2dfc287a184115350"
+    },
+    {
+      "mode": "I-O",
+      "tests": 150,
+      "OK": true,
+      "log_sha256": "759b4dca31f847119732905fdbb601be8fbd2b3e481a59f4336a777ba7ded4e2"
+    }
+  ],
+  "changed_existing_recorder_functions": [
+    "main"
+  ],
+  "existing_helper_count": 14,
+  "all_existing_helpers_unchanged": true,
+  "normal_recorder_sha256": "387845415b54f1822c55ce4198586fae8047f7d3ea94008c84e0974871954098",
+  "diff_check_returncode": 0,
+  "diff_check_output": "",
+  "scope": "host fakeQEMU/capture fixtures plus native GDB lifecycle lease; no kernel build or VM acceptance in this phase",
+  "known_historical_limit": "initial 20/22 matrix case14 original myos boot bytes overwritten by case18;6/7 old kernel inputs retained, original serial and record untouched;observer draft NOT executed"
+}

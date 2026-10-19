@@ -1,0 +1,29 @@
+{
+  "all_passed": true,
+  "cases": [
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-main47288-abi/verify.py"
+      ],
+      "exit": 0,
+      "label": "isolated",
+      "stderr": "",
+      "stdout": "{\"result\": \"verified_offline\", \"source_commit\": \"47288c4465720d125658b392efc655b333c90868\", \"raw_files\": 37, \"consumed_source_files\": 29, \"checks\": 13, \"python\": [52, 52], \"rust\": 75, \"mutants\": 12, \"expected_negative_assertions\": 17, \"new_kernel_or_guest_test\": false}\n"
+    },
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-O",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-main47288-abi/verify.py"
+      ],
+      "exit": 0,
+      "label": "optimized-isolated",
+      "stderr": "",
+      "stdout": "{\"result\": \"verified_offline\", \"source_commit\": \"47288c4465720d125658b392efc655b333c90868\", \"raw_files\": 37, \"consumed_source_files\": 29, \"checks\": 13, \"python\": [52, 52], \"rust\": 75, \"mutants\": 12, \"expected_negative_assertions\": 17, \"new_kernel_or_guest_test\": false}\n"
+    }
+  ],
+  "source_sha256": "b6d2522489311f3fb4d2853bcc16a9c25f651fc1c55ee78660963c51b8197741"
+}

@@ -1,0 +1,187 @@
+{
+  "schema": "trillionnium.a01.main355-followup.v1",
+  "source": {
+    "head": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+    "project_tree": "74641cbc46cd1213756e8128fab26928d374335a",
+    "kernel_tree": "6c2904e53e79cedbbaf013a73a6173f4afa57010",
+    "upstream_commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+    "upstream_tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+    "file_count": 3010,
+    "files_sha256": "410b73b50cd2572d2afefda4ea73a8af884e204ba3d634996d58127677b942e8",
+    "script_sha256": "6f9ae236c1d2c6398e830ee9dba9d57195933e69b32c777df8038b59c874b4c9",
+    "phases": [
+      {
+        "phase": "before",
+        "captured_at_utc": "2026-10-18T03:28:15.887485+00:00",
+        "manifest": "source/before.json.gz",
+        "tracked_inputs_match_git": true,
+        "git_status_porcelain": "",
+        "matches_before": true
+      },
+      {
+        "phase": "after-kernel",
+        "captured_at_utc": "2026-10-18T03:30:07.913705+00:00",
+        "manifest": "source/after-kernel.json.gz",
+        "tracked_inputs_match_git": true,
+        "git_status_porcelain": "",
+        "matches_before": true
+      },
+      {
+        "phase": "after-run_kernel",
+        "captured_at_utc": "2026-10-18T03:30:11.445448+00:00",
+        "manifest": "source/after-run_kernel.json.gz",
+        "tracked_inputs_match_git": true,
+        "git_status_porcelain": "",
+        "matches_before": true
+      },
+      {
+        "phase": "after-abi",
+        "captured_at_utc": "2026-10-18T03:33:44.348424+00:00",
+        "manifest": "source/after-abi.json.gz",
+        "tracked_inputs_match_git": true,
+        "git_status_porcelain": "?? kernel/asterinas/kernel/OSDK.toml\n",
+        "matches_before": true
+      },
+      {
+        "phase": "after-quarantine",
+        "captured_at_utc": "2026-10-18T03:37:05.406425+00:00",
+        "manifest": "source/after-quarantine.json.gz",
+        "tracked_inputs_match_git": true,
+        "git_status_porcelain": "",
+        "matches_before": true
+      }
+    ],
+    "external_abi": {
+      "path": "libs/os-abi/src/lib.rs",
+      "git_mode": "100644",
+      "git_kind": "blob",
+      "git_blob": "276e59ef0de4df46c09b17a792c5c049024d07b3",
+      "worktree_mode": "100644",
+      "size": 47272,
+      "sha256": "826e6533bd7ed2f6527db819e9f0400867ca1e607cd0581a03970444c3e4b60f",
+      "worktree_git_blob": "276e59ef0de4df46c09b17a792c5c049024d07b3",
+      "matches_git": true
+    },
+    "all_tracked_inputs_equal_before": true,
+    "all_phases_full_worktree_clean": false,
+    "late_untracked_manifest": "late-manifest/observation.json",
+    "publication_note": "These receipts bind producer 40c901c6. Later evidence/README/lock changes are not a separately executed producer."
+  },
+  "source_commit": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+  "integrated_main": "3551e1e0e017e2973da7e2b8ab811ece25c258c0",
+  "project_tree": "74641cbc46cd1213756e8128fab26928d374335a",
+  "kernel_tree": "6c2904e53e79cedbbaf013a73a6173f4afa57010",
+  "kernel_ostd_external_abi_equal_integrated_main": true,
+  "toolchain": "nightly-2026-07-21",
+  "source_directory": "kernel/asterinas",
+  "fixed_source_inputs_checked": 118,
+  "execution": {
+    "source_commit": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+    "kernel_target_exists_before": true,
+    "cargo_build_jobs": "2",
+    "a01_smp": "1",
+    "started_at_utc": "2026-10-18T03:29:03.859572+00:00",
+    "phases": [
+      {
+        "stage": "kernel",
+        "argv": [
+          "support/build/kernel.sh",
+          "kernel"
+        ],
+        "cwd": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop",
+        "A01_RUN_DIR": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-main355-followup/kernel",
+        "started_at_utc": "2026-10-18T03:29:03.859664+00:00",
+        "finished_at_utc": "2026-10-18T03:30:07.511977+00:00",
+        "exit_code": 0
+      },
+      {
+        "stage": "run_kernel",
+        "argv": [
+          "support/build/kernel.sh",
+          "run_kernel"
+        ],
+        "cwd": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop",
+        "A01_RUN_DIR": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-main355-followup/run_kernel",
+        "started_at_utc": "2026-10-18T03:30:08.011327+00:00",
+        "finished_at_utc": "2026-10-18T03:30:11.006818+00:00",
+        "exit_code": 0
+      }
+    ],
+    "finished_at_utc": "2026-10-18T03:30:11.521355+00:00",
+    "passed": true
+  },
+  "build_scope": "Incremental source build after integrating main ABI semantics; original absent-target pipeline is separately preserved at c22891b.",
+  "compiling_lines": {
+    "kernel": 6,
+    "run_kernel": 0
+  },
+  "native_passed": true,
+  "boot_elf": {
+    "original_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/target/osdk/asterinas/asterinas-osdk-bin.elf",
+    "frozen_path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-main355-followup/artifacts/kernel-build.elf",
+    "bytes": 8303048,
+    "sha256": "1eb66b33baef6b338c232598d25f743dc83526a2715811b430e5a7208e249ecd"
+  },
+  "first_build_and_loaded_elf_equal": true,
+  "qemu": {
+    "receipt": "run_kernel/qemu.json",
+    "raw_exit_code": 33,
+    "timed_out": false,
+    "duration_seconds": 0.967,
+    "vcpus": 1,
+    "memory_mib": 512,
+    "machine": "q35",
+    "accelerator": "tcg",
+    "cpu": "max",
+    "firmware": "SeaBIOS",
+    "serial_sha256": "028f5736ac0a175f2b9409907f6cdc629cb70dfa9bcf0755abbe98c0bcf34d00",
+    "serial_bytes": 72331
+  },
+  "abi_gate": {
+    "summary": "abi-summary.json",
+    "archive": "abi-owner-gate.tar.gz",
+    "source_commit": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+    "passed": true,
+    "check_count": 13,
+    "checks_passed": 13,
+    "rust_passed": 78,
+    "python_passed": 60,
+    "python_optimized_passed_separately": 60,
+    "compiled_mutants_killed": 20,
+    "source_input_count": 28,
+    "source_manifest_sha256": "f117df18c61b3757f0f9da572ce0c659b9bc29c54438bf043886ff243bc8935b",
+    "source_status_scope": "Before/after source receipts use --untracked-files=no; they certify tracked-clean state only."
+  },
+  "previous_kernel_regression": {
+    "source_commit": "c22891b593f77c98ff4ea94d7aecb54f32222651",
+    "evidence": "../2026-10-18-current-main/ktest/result.json",
+    "reported_passed": 374,
+    "soft_skipped": 3,
+    "exercised_passed_lower_bound": 371,
+    "failed": 0,
+    "rerun_at_this_producer": false
+  },
+  "late_manifest": {
+    "observation": "late-manifest/observation.json",
+    "quarantine": "late-manifest/quarantine.json",
+    "quarantined_without_deleting": true,
+    "same_inode_and_bytes_preserved": true,
+    "writer_identified": false,
+    "root_cause_fixed": false,
+    "tracked_input_change_observed": false,
+    "temporary_full_worktree_status_not_clean": true,
+    "post_quarantine_full_status": ""
+  },
+  "independent_review": "independent-review.json",
+  "handoff": "HANDOFF.md",
+  "root_readme_bytes": 0,
+  "remaining": [
+    "Unknown writer of the post-boot untracked OSDK manifest",
+    "A05 trusted CapSpace activation and four effect/history operations",
+    "A06 final debit exit/reap/rmdir, migration and SMP validation",
+    "A07 durable owner/recovery and project G1/G2",
+    "VMX/EPT, full upstream userspace/device matrix and bare-metal acceptance",
+    "Complete immutable host lock and cross-host bit reproduction"
+  ],
+  "publication_note": "These receipts bind producer 40c901c6. Later evidence/README/lock changes are not a separately executed producer."
+}

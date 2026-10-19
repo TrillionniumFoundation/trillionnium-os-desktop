@@ -13,7 +13,7 @@ use crate::{
     config::{
         Config,
         manifest::{ProjectType, TomlManifest},
-        scheme::{BootMethod, BootProtocol},
+        scheme::{BootMethod, BootProtocol, MonitorTransport},
     },
 };
 
@@ -483,6 +483,13 @@ pub struct CommonArgs {
     )]
     pub qemu_exe: Option<PathBuf>,
     #[arg(
+        long = "qemu-monitor-transport",
+        help = "Transport for OSDK's managed QEMU monitor (TCP uses IPv4 loopback)",
+        value_name = "TRANSPORT",
+        global = true
+    )]
+    pub qemu_monitor_transport: Option<MonitorTransport>,
+    #[arg(
         long = "qemu-args",
         require_equals = true,
         help = "Extra arguments or overriding arguments for running QEMU",
@@ -507,4 +514,57 @@ pub struct CommonArgs {
     pub encoding: Option<PayloadEncoding>,
     #[arg(long = "coverage", help = "Enable coverage", global = true)]
     pub coverage: bool,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::config::scheme::{QemuScheme, Scheme};
+
+    #[test]
+    fn monitor_transport_cli_overrides_manifest_without_enabling_monitor() {
+        let cli = Cli::try_parse_from([
+            "cargo",
+            "osdk",
+            "run",
+            "--target-arch=x86_64",
+            "--qemu-monitor-transport=unix",
+        ])
+        .unwrap();
+        let CargoSubcommand::Osdk(OsdkSubcommand::Run(args)) = cli.cargo_subcommand else {
+            panic!("expected run arguments");
+        };
+        let directory = tempfile::tempdir().unwrap();
+        let scheme = Scheme {
+            work_dir: Some(directory.path().to_path_buf()),
+            qemu: Some(QemuScheme {
+                monitor_transport: Some(MonitorTransport::Tcp),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        let config = Config::new(&scheme, &args.common_args);
+        assert_eq!(config.run.qemu.monitor_transport, MonitorTransport::Unix);
+        assert_eq!(config.test.qemu.monitor_transport, MonitorTransport::Unix);
+        assert!(!config.run.qemu.with_monitor);
+        assert!(!config.test.qemu.with_monitor);
+    }
+
+    #[test]
+    fn monitor_transport_cli_accepts_tcp_and_rejects_addresses() {
+        assert!(
+            Cli::try_parse_from(["cargo", "osdk", "run", "--qemu-monitor-transport=tcp"]).is_ok()
+        );
+        for invalid in ["udp", "0.0.0.0:1234", "127.0.0.1:0"] {
+            assert!(
+                Cli::try_parse_from([
+                    "cargo",
+                    "osdk",
+                    "run",
+                    &format!("--qemu-monitor-transport={invalid}")
+                ])
+                .is_err()
+            );
+        }
+    }
 }

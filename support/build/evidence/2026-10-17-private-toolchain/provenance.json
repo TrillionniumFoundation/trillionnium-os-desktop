@@ -1,0 +1,36 @@
+{
+  "record_kind": "posthoc evidence archive assembled from retained restoration experiment outputs",
+  "native_source_directory": "/workspace/scratch/ae1a8cf05419/native-tools-restore",
+  "rust_source_directory": "/workspace/scratch/ae1a8cf05419/round2-restore",
+  "private_native_prefix": "/workspace/scratch/ae1a8cf05419/native-tools/root",
+  "archive_scope": "Only private-toolchain restoration; no new kernel build/boot claim is made by these paused-tool probes.",
+  "native_restoration_commands": [
+    {
+      "argv": [
+        "python3",
+        "/workspace/scratch/ae1a8cf05419/native-tools-restore/restore.py"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419"
+    },
+    {
+      "argv": [
+        "python3",
+        "/workspace/scratch/ae1a8cf05419/native-tools-restore/restore.py",
+        "--extract"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419"
+    }
+  ],
+  "native_controller_scope": "Original command receipts are retained byte-for-byte. Initial prepare receipts have the cwd logging error documented in controller-cwd-correction.json. Final experimental restore.py includes the subsequent correction and is not claimed as identical to initial prepare source.",
+  "validation_scope": "Actual argv, selected explicit environment, raw statuses, durations and logs retained in validation-results.json. Inline validation controller source was not separately retained.",
+  "signed_snapshot": "https://snapshot.ubuntu.com/ubuntu/20260828T000000Z/",
+  "signature_trust_root": {
+    "system_public_keyring_original_path": "/usr/share/keyrings/ubuntu-archive-keyring.gpg",
+    "archive_path": "signatures/ubuntu-archive-keyring.gpg",
+    "sha256": "80a36b0a6de2f69f49d2df75ef473ccde121e9e190b9ea01d20a4f63778d5c31",
+    "validsig_fingerprint": "F6ECB3762474EDA9D21B7022871920D1991BC93C"
+  },
+  "package_install_method": "curl verified signed package metadata -> dpkg-deb --extract into task-private prefix; no maintainer scripts",
+  "system_install_attempt": "before/ retains parent prepare-host --apt failure100; later private restoration did not retry/change sandbox",
+  "source_script_status": "Experimental recovery evidence, not a production installer or guarantee of completeness on another host."
+}

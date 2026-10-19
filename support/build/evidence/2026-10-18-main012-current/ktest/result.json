@@ -1,0 +1,59 @@
+{
+  "passed": true,
+  "crates": [
+    {
+      "passed": true,
+      "guests": [
+        {
+          "crate": "ostd",
+          "declared": 221,
+          "passed": 221,
+          "failed": 0,
+          "filtered": 0,
+          "soft_skipped": 3,
+          "soft_skip_reasons": [
+            "VMX unavailable",
+            "VMX unavailable",
+            "VMX/EPT invalidation unavailable"
+          ],
+          "exercised_passed_lower_bound": 218,
+          "observed_test_starts": 221,
+          "raw_qemu_exit": 33,
+          "guest": "guest-001"
+        }
+      ]
+    },
+    {
+      "passed": true,
+      "guests": [
+        {
+          "crate": "aster-core",
+          "declared": 160,
+          "passed": 160,
+          "failed": 0,
+          "filtered": 0,
+          "soft_skipped": 0,
+          "soft_skip_reasons": [],
+          "exercised_passed_lower_bound": 160,
+          "observed_test_starts": 160,
+          "raw_qemu_exit": 33,
+          "guest": "guest-001"
+        }
+      ]
+    }
+  ],
+  "toolchain": "nightly-2026-07-21",
+  "runner_sha256": "8bc8f712e7e1606d5744596bb390b1979b9d9559ca478dde5bba8c8670d1f59c",
+  "command_receipts": [
+    "aster-core/osdk-test.log.command.json",
+    "aster-core/result.json.command.json",
+    "cargo-version.log.command.json",
+    "git-head.log.command.json",
+    "git-status.log.command.json",
+    "osdk-install.log.command.json",
+    "ostd/osdk-test.log.command.json",
+    "ostd/result.json.command.json",
+    "rustc-version.log.command.json",
+    "source-inputs.json.command.json"
+  ]
+}

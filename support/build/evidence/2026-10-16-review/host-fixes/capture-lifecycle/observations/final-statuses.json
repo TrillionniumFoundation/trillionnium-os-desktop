@@ -1,0 +1,62 @@
+{
+  "kind": "real_child_supervision_no_vm",
+  "passed": true,
+  "cases": [
+    {
+      "mode": "helper_failure",
+      "result": [
+        125,
+        false
+      ],
+      "qemu_returncode": -9,
+      "capture": {
+        "pid": 86,
+        "process_group": 1,
+        "group_policy": "inherit recorder group; no capture session or group created",
+        "timed_out": false,
+        "raw_exit_code": 7,
+        "duration_seconds": 0.051,
+        "logs": {
+          "stdout": {
+            "path": "/workspace/scratch/ae1a8cf05419/next5-capture-lifecycle-patched-04-publish/statuses/helper_failure/coverage-capture-stdout.log",
+            "size": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "stderr": {
+            "path": "/workspace/scratch/ae1a8cf05419/next5-capture-lifecycle-patched-04-publish/statuses/helper_failure/coverage-capture-stderr.log",
+            "size": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        }
+      }
+    },
+    {
+      "mode": "qemu_failure_65",
+      "result": [
+        65,
+        false
+      ],
+      "qemu_returncode": 65,
+      "capture": {
+        "pid": 88,
+        "process_group": 1,
+        "group_policy": "inherit recorder group; no capture session or group created",
+        "timed_out": false,
+        "raw_exit_code": -15,
+        "duration_seconds": 0.052,
+        "logs": {
+          "stdout": {
+            "path": "/workspace/scratch/ae1a8cf05419/next5-capture-lifecycle-patched-04-publish/statuses/qemu_failure_65/coverage-capture-stdout.log",
+            "size": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "stderr": {
+            "path": "/workspace/scratch/ae1a8cf05419/next5-capture-lifecycle-patched-04-publish/statuses/qemu_failure_65/coverage-capture-stderr.log",
+            "size": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        }
+      }
+    }
+  ]
+}

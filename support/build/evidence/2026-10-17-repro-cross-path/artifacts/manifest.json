@@ -1,0 +1,106 @@
+{
+  "schema": 1,
+  "maximum_stored_chunk_bytes": 2097152,
+  "artifacts": [
+    {
+      "kind": "bios",
+      "original_bytes": 262144,
+      "original_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "encoding": "gzip wrapper restores exact original input bytes",
+      "bytes": 109289,
+      "sha256": "f8510d8b7852c919074672d812c33f21eb740d4ed172c567929e72c691198e16",
+      "chunks": [
+        {
+          "path": "artifacts/bios.input.gz",
+          "bytes": 109289,
+          "sha256": "f8510d8b7852c919074672d812c33f21eb740d4ed172c567929e72c691198e16"
+        }
+      ]
+    },
+    {
+      "kind": "initramfs",
+      "original_bytes": 1107990,
+      "original_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "encoding": "gzip wrapper restores exact original input bytes",
+      "bytes": 1106991,
+      "sha256": "1152f20fcb27d8739be344e3339db7fceab65fdb5ddbde573794f77fd61b822f",
+      "chunks": [
+        {
+          "path": "artifacts/initramfs.input.gz",
+          "bytes": 1106991,
+          "sha256": "1152f20fcb27d8739be344e3339db7fceab65fdb5ddbde573794f77fd61b822f"
+        }
+      ]
+    },
+    {
+      "kind": "kernel",
+      "original_bytes": 8286952,
+      "original_sha256": "8c540288c6af2a1a97121031643c1af4c4db395d7e8b4082d6edc4604449849a",
+      "encoding": "gzip wrapper restores exact original input bytes",
+      "bytes": 2570137,
+      "sha256": "25f05fa327dd7be41a41cdd0760b4c59e8aaa975751bff347b2b57f720569037",
+      "chunks": [
+        {
+          "path": "artifacts/kernel.input.gz.part-001",
+          "bytes": 2097152,
+          "sha256": "b249f79bee70245ac7f0969c38a5890a246723f6e94a4fc4e27cfbb4b2860480"
+        },
+        {
+          "path": "artifacts/kernel.input.gz.part-002",
+          "bytes": 472985,
+          "sha256": "504704ae064265f33fac3ad9c760f1434d93d87997496ae3f74466a83159ce92"
+        }
+      ]
+    }
+  ],
+  "original_paths": {
+    "normalized-cloud/A4/kernel-run/artifacts-k1cn8k_p/bios.bin": {
+      "artifact": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "bytes": 262144,
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "mode": 256
+    },
+    "normalized-cloud/A4/kernel-run/artifacts-k1cn8k_p/initramfs.cpio.gz": {
+      "artifact": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "bytes": 1107990,
+      "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "mode": 256
+    },
+    "normalized-cloud/A4/kernel-run/artifacts-k1cn8k_p/kernel.elf": {
+      "artifact": "8c540288c6af2a1a97121031643c1af4c4db395d7e8b4082d6edc4604449849a",
+      "bytes": 8286952,
+      "sha256": "8c540288c6af2a1a97121031643c1af4c4db395d7e8b4082d6edc4604449849a",
+      "mode": 256
+    },
+    "normalized-cloud/A4/kernel-run/initramfs.cpio.gz": {
+      "artifact": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "bytes": 1107990,
+      "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "mode": 420
+    },
+    "normalized-cloud/B4/kernel-run/artifacts-221lew9p/bios.bin": {
+      "artifact": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "bytes": 262144,
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "mode": 256
+    },
+    "normalized-cloud/B4/kernel-run/artifacts-221lew9p/initramfs.cpio.gz": {
+      "artifact": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "bytes": 1107990,
+      "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "mode": 256
+    },
+    "normalized-cloud/B4/kernel-run/artifacts-221lew9p/kernel.elf": {
+      "artifact": "8c540288c6af2a1a97121031643c1af4c4db395d7e8b4082d6edc4604449849a",
+      "bytes": 8286952,
+      "sha256": "8c540288c6af2a1a97121031643c1af4c4db395d7e8b4082d6edc4604449849a",
+      "mode": 256
+    },
+    "normalized-cloud/B4/kernel-run/initramfs.cpio.gz": {
+      "artifact": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "bytes": 1107990,
+      "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "mode": 420
+    }
+  }
+}

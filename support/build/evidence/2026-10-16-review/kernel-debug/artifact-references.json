@@ -1,0 +1,49 @@
+{
+  "kernel": {
+    "repository_path": "support/build/evidence/2026-10-16-debug-coverage/kernel-debug/artifacts/kernel.elf.gz",
+    "gzip_sha256": "7d580057c6fa71cbb8da1a2be58ddc874899028d07cb10b620b2dc3add81a7cb",
+    "gzip_bytes": 2242384,
+    "uncompressed_sha256": "fcec53875dec2ca19b20e285df94590e9c21036cdabec54799fbda6bddb84026",
+    "uncompressed_bytes": 5996200,
+    "retained_here": false,
+    "matches_recorded_executed_input": true
+  },
+  "initramfs": {
+    "repository_path": "support/build/evidence/2026-10-16-debug-coverage/kernel-debug/artifacts/initramfs.cpio.gz",
+    "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+    "bytes": 1107990,
+    "retained_here": false,
+    "matches_recorded_executed_input": true
+  },
+  "symbol": {
+    "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/target/x86_64-unknown-none/release/asterinas-osdk-bin",
+    "size": 111867352,
+    "sha256": "a1c7a44cb844553d00c2942760df0f2389919f1e530bfaa45081c7463d31e21a",
+    "elf_class": "ELF64",
+    "elf_type": 2,
+    "elf_machine": 62,
+    "symbol": "__ostd_main",
+    "address": "0xffffffff88426860",
+    "entry_file_offset": 4094048,
+    "entry_bytes": "41574156534883ec30e88226f2ff48c7c000605f8848c7c160685f884829c1b8",
+    "retained_here": false,
+    "raw_binary_retained_anywhere_in_this_evidence": false,
+    "rebuild_argv": [
+      "python3",
+      "-I",
+      "support/build/debug/run.py",
+      "--output",
+      "NEW_DIRECTORY",
+      "--gdb",
+      "PATH_TO_GDB"
+    ],
+    "rebuild_note": "Rebuild from the bound source commit with fixed nightly, VDSO and cargo-binutils setup. DWARF encodes absolute paths; no cross-host bit-for-bit guarantee."
+  },
+  "bios": {
+    "path": "/usr/share/seabios/bios-256k.bin",
+    "size": 262144,
+    "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+    "retained_here": false,
+    "dependency": "Standard SeaBIOS package; recorded input hash retained, no tool/firmware binary copied."
+  }
+}

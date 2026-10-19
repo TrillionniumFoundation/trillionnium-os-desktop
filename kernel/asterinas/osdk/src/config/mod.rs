@@ -100,6 +100,9 @@ fn apply_args_before_finalize(
         if let Some(bootdev_options) = &args.bootdev_append_options {
             qemu.bootdev_append_options = Some(bootdev_options.clone());
         }
+        if let Some(transport) = args.qemu_monitor_transport {
+            qemu.monitor_transport = Some(transport);
+        }
         if !args.qemu_daemons.is_empty() {
             qemu.with_daemons = Some(
                 args.qemu_daemons

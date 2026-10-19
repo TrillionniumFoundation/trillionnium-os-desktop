@@ -1,0 +1,7 @@
+{
+  "producer_commit": "a5af45537dea32039ea172ad0d7e381400c07d95",
+  "producer_complete_tree": "4cedffeb88c3f5fb450beedc37fad4dce0dda1f4",
+  "derived_kernel_tree": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da",
+  "commit_object": "tree 4cedffeb88c3f5fb450beedc37fad4dce0dda1f4\nparent 348bb39ad97179fff1d8f64724107e5d4d1f938c\nauthor Franksudoman <sunfocapital@gmail.com> 1792211191 +0800\ncommitter Franksudoman <sunfocapital@gmail.com> 1792211191 +0800\n\nA01: bind debug runs to the validated private OSDK executable\n\nResolve the source-specific private SDK and verify its receipt before launching the debug build, preserving source-root identity through the TCP GDB flow.\n\nValidation: 16 tests in isolated Python and 16 with optimization, plus independent old-failure/new-success ingress probes. Host checks establish wrapper behavior; real kernel TCP GDB execution is recorded separately.",
+  "scope": "Exact selected runtime/debug controls at successful debug producer D, with commit/tree/path/blob membership; not a second kernel import."
+}

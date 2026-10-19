@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "source": "Exact follow-up method reported by independent agent next5_monitor; not a retained original controller file and not rerun for archive.",
+  "original_controller_preserved_as_standalone_script": false,
+  "actual_launch_argv": [
+    "sys.executable",
+    "-I",
+    "/workspace/scratch/ae1a8cf05419/next6-runner-cleanup-entry-probe/probe.py"
+  ],
+  "actual_launch_cwd": "/workspace/scratch/ae1a8cf05419/next6-runner-cleanup-entry-probe",
+  "stdout_stderr": "console.log",
+  "steps": [
+    "Launch probe with subprocess.Popen, retaining that object; poll ready.json every0.01seconds with a5-second deadline.",
+    "Open pidfd using ready[pid], reported by this controlled child fixture. Controller/probe/child all originate by fork/exec in one namespace; no namespace switch or proc lookup.",
+    "Call process.send_signal(SIGINT) on owned probe Popen. Its second SIGTERM injection occurs after SIGINT was set to SIG_IGN but SIGTERM still had the raising handler.",
+    "Poll error.json; select the retained child pidfd, attempt actual TCP bind of the fixture address, and read case.command.json.",
+    "Assert pidfd not exited, listener not released, error signum SIGTERM, and no group_cleanup in command record.",
+    "After observing, cleanup via pidfd_send_signal(SIGKILL), await pidfd readiness up to3seconds, close descriptor, write parent-cleaned, then process.wait(timeout=5). Probe finally reaps its own directly owned children.",
+    "Persist observation.json and print the same object."
+  ],
+  "identity_description": "The child pidfd was opened from controlled fixture ready PID, not literally controller Popen.pid. Probe retained its OwnedSession internally. No /proc inference.",
+  "counting": "Independent reproduction of the same cleanup-transition defect; zero additional unique regression cases or kernel/VM results.",
+  "evidence_gap": "Original controller existed only in a tool-inline Python block; exact executable source was not saved. Probe.py, observation, injection, source hash and raw command files remain unchanged."
+}

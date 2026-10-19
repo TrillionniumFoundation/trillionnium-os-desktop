@@ -1,0 +1,68 @@
+{
+  "phase": "next8 full upstream kernel tests",
+  "source_commit": "5bcec614c1a075782b6ffaa5a5212fdee29be37d",
+  "source_tree": "00e70e58dfa0dbf4718db55240136683f0a23310",
+  "passed": true,
+  "crates": [
+    {
+      "crate": "ostd",
+      "passed": 221,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 3,
+      "soft_skip_reasons": [
+        "VMX unavailable",
+        "VMX unavailable",
+        "VMX/EPT invalidation unavailable"
+      ],
+      "exercised_passed_lower_bound": 218,
+      "raw_qemu_exit": 33,
+      "timed_out": false,
+      "serial_bytes": 23028,
+      "serial_sha256": "85f3cc2b69274521f3eeca0e699e667d462cd2d8fb58759e154bf885aa90a332",
+      "generated_lock_sha256": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6",
+      "actual_input_lock_sha256": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6"
+    },
+    {
+      "crate": "aster-core",
+      "passed": 141,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 0,
+      "soft_skip_reasons": [],
+      "exercised_passed_lower_bound": 141,
+      "raw_qemu_exit": 33,
+      "timed_out": false,
+      "serial_bytes": 15032,
+      "serial_sha256": "40b5431a766e7980cbde3e618aec95044ab13330bfe683a63f427af704a403f7",
+      "generated_lock_sha256": "159b8682d27a7a21af98885ae48515234445c00fdf5e00b158fdc4aa952ff4ed",
+      "actual_input_lock_sha256": "159b8682d27a7a21af98885ae48515234445c00fdf5e00b158fdc4aa952ff4ed"
+    }
+  ],
+  "declared_passes": 362,
+  "exercised_passed_lower_bound": 359,
+  "soft_skipped": 3,
+  "raw_qemu_exits": [
+    33,
+    33
+  ],
+  "outer_exit_code": 0,
+  "target_cache_reused": true,
+  "target_cache_note": "next8 clean A/B builds; this ktest invocation explicitly reuses B target cache",
+  "empty_target_claim": false,
+  "fixed_toolchain": "nightly-2026-07-21",
+  "source_binding": "source-binding.json",
+  "invocation": "readable/observer/invocation.json",
+  "counts_and_receipts": "counts.json",
+  "artifacts": "artifacts/manifest.json",
+  "raw_bundle": "raw.tar.gz",
+  "raw_members": "members.json",
+  "readables": "readable-index.json",
+  "not_claimed": [
+    "A06 quota or native HOS2 control acceptance",
+    "VMX/EPT hardware support",
+    "Empty-target build for this ktest invocation",
+    "Bit-for-bit comparison with prior-phase kernel artifacts"
+  ],
+  "no_new_run_during_packaging": true
+}

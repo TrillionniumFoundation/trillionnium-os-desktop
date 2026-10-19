@@ -1,0 +1,439 @@
+diff --git a/support/build/osdk-integration/README.md b/support/build/osdk-integration/README.md
+index 1b6659d..11c7772 100644
+--- a/support/build/osdk-integration/README.md
++++ b/support/build/osdk-integration/README.md
+@@ -166,8 +166,16 @@ The source must be a nonempty directory and the destination must be new and
+ outside it. Reads use the opened root directory and no-follow file descriptors;
+ selected symlinks, hardlinks, special files, identity changes and index-name
+ collisions fail closed. Limits are 128 MiB per selected file and 1 GiB total.
+-The destination parent must be trusted; per-file checks do not establish an
+-atomic snapshot of a concurrently changing entire run directory.
++Output directories are opened without following links. Files and both indexes
++are created exclusively relative to those pinned directory descriptors; index
++digests come from the exact written payloads. Completion verifies directory and
++file identities before removing `.archive-incomplete`. A failed new archive
++retains that marker and its partial evidence for diagnosis; it never recursively
++deletes a destination pathname. An existing destination remains untouched.
++The destination parent must be trusted; these checks do not establish an atomic
++snapshot of an entire concurrently changing run or a sandbox against same-user
++writers. A directory moved during output can retain partial custody at its new
++location, and the original destination may have been replaced by another writer.
+ 
+ Pure profile checks (no VM):
+ 
+diff --git a/support/build/osdk-integration/archive.py b/support/build/osdk-integration/archive.py
+index c560187..a021bd0 100755
+--- a/support/build/osdk-integration/archive.py
++++ b/support/build/osdk-integration/archive.py
+@@ -9,7 +9,6 @@ import hashlib
+ import json
+ import os
+ from pathlib import Path
+-import shutil
+ import stat
+ 
+ EXCLUDED_DIRS = frozenset({"target", "harness", "work", "tmp", "bin", "fixed-tmp", "__pycache__"})
+@@ -18,6 +17,98 @@ MAX_FILE_BYTES = 128 * 1024 * 1024
+ MAX_TOTAL_BYTES = 1024 * 1024 * 1024
+ OPEN_FLAGS = os.O_RDONLY | os.O_CLOEXEC | os.O_NONBLOCK | os.O_NOFOLLOW
+ DIRECTORY_FLAGS = OPEN_FLAGS | os.O_DIRECTORY
++INCOMPLETE = ".archive-incomplete"
++
++
++def identity(info):
++    return info.st_dev, info.st_ino
++
++
++def file_identity(info):
++    return (info.st_dev, info.st_ino, info.st_mode, info.st_nlink,
++            info.st_size, info.st_mtime_ns, info.st_ctime_ns)
++
++
++class ArchiveOutput:
++    """Keep writes and failure custody on opened directories, never path cleanup."""
++
++    def __init__(self, destination):
++        self.descriptors, self.links, self.files, self.digests = [], [], [], {}
++        self.directories = {}
++        try:
++            parent = os.open(destination.anchor, DIRECTORY_FLAGS)
++            self.descriptors.append(parent)
++            for name in destination.parts[1:-1]:
++                try:
++                    os.mkdir(name, mode=0o700, dir_fd=parent)
++                except FileExistsError:
++                    pass
++                child = os.open(name, DIRECTORY_FLAGS, dir_fd=parent)
++                self.descriptors.append(child)
++                self.links.append((parent, name, child))
++                parent = child
++            os.mkdir(destination.name, mode=0o700, dir_fd=parent)
++            created = os.stat(destination.name, dir_fd=parent, follow_symlinks=False)
++            self.root_fd = os.open(destination.name, DIRECTORY_FLAGS, dir_fd=parent)
++            self.descriptors.append(self.root_fd)
++            self.links.append((parent, destination.name, self.root_fd))
++            if identity(created) != identity(os.fstat(self.root_fd)):
++                raise ValueError("archive destination changed during open")
++            self.directories[()] = self.root_fd
++            self.write(Path(INCOMPLETE), b"Archive incomplete; success requires this marker to be absent.\n",
++                       indexed=False)
++        except BaseException:
++            self.close()
++            raise
++
++    def directory(self, parts):
++        current = self.root_fd
++        for index, name in enumerate(parts):
++            key = parts[:index + 1]
++            child = self.directories.get(key)
++            if child is None:
++                try:
++                    os.mkdir(name, mode=0o700, dir_fd=current)
++                except FileExistsError:
++                    pass
++                child = os.open(name, DIRECTORY_FLAGS, dir_fd=current)
++                self.descriptors.append(child)
++                self.links.append((current, name, child))
++                self.directories[key] = child
++            if identity(os.stat(name, dir_fd=current, follow_symlinks=False)) != identity(os.fstat(child)):
++                raise ValueError("archive destination directory changed")
++            current = child
++        return current
++
++    def write(self, relative, payload, indexed=True):
++        if relative.is_absolute() or not relative.parts or any(part in {".", ".."} for part in relative.parts):
++            raise ValueError(f"invalid archive output path: {relative}")
++        parent = self.directory(relative.parts[:-1])
++        flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_CLOEXEC | os.O_NOFOLLOW
++        descriptor = os.open(relative.name, flags, mode=0o600, dir_fd=parent)
++        with os.fdopen(descriptor, "wb") as stream:
++            stream.write(payload)
++            stream.flush()
++            captured = os.fstat(stream.fileno())
++            if not stat.S_ISREG(captured.st_mode) or captured.st_nlink != 1 or captured.st_size != len(payload):
++                raise ValueError(f"archive output changed during write: {relative}")
++        self.files.append((parent, relative.name, file_identity(captured)))
++        if indexed:
++            self.digests[relative.as_posix()] = hashlib.sha256(payload).hexdigest()
++
++    def finish(self):
++        for parent, name, child in self.links:
++            if identity(os.stat(name, dir_fd=parent, follow_symlinks=False)) != identity(os.fstat(child)):
++                raise ValueError("archive destination directory changed before completion")
++        for parent, name, expected in self.files:
++            if file_identity(os.stat(name, dir_fd=parent, follow_symlinks=False)) != expected:
++                raise ValueError(f"archive output changed before completion: {name}")
++        os.unlink(INCOMPLETE, dir_fd=self.root_fd)
++
++    def close(self):
++        for descriptor in reversed(self.descriptors):
++            os.close(descriptor)
++        self.descriptors.clear()
+ 
+ 
+ def read_regular(directory_fd, name):
+@@ -109,7 +200,7 @@ def archive(source, destination):
+     records = []
+     total = 0
+     archived_names = set()
+-    created = None
++    output = None
+     try:
+         opened_root = os.fstat(root_fd)
+         if (opened_root.st_dev, opened_root.st_ino) != (source_identity.st_dev,
+@@ -121,7 +212,9 @@ def archive(source, destination):
+             else:
+                 archived, data = item
+                 original = str(archived)
+-            if archived.parts[0] in {"archive.json", "evidence.sha256"}:
++            if archived.is_absolute() or not archived.parts or ".." in archived.parts:
++                raise ValueError(f"invalid archive evidence path: {archived}")
++            if archived.parts[0] in {"archive.json", "evidence.sha256", INCOMPLETE}:
+                 raise ValueError(f"evidence collides with archive index: {archived}")
+             if archived in archived_names:
+                 raise ValueError(f"duplicate archive destination: {archived}")
+@@ -129,35 +222,30 @@ def archive(source, destination):
+             total += len(data)
+             if total > MAX_TOTAL_BYTES:
+                 raise ValueError("evidence archive exceeds total size limit")
+-            if created is None:
++            if output is None:
+                 # Delayed allocation: empty/invalid sources never create a fake bundle.
+-                destination.mkdir(mode=0o700, parents=True, exist_ok=False)
+-                created = destination.stat()
+-            target = destination / archived
+-            target.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
++                output = ArchiveOutput(destination)
++            target = archived
+             if str(archived).endswith(".log") or str(archived).endswith(".metadata.json"):
+                 target = target.with_name(target.name + ".gz")
+-                target.write_bytes(gzip.compress(data, mtime=0))
++                payload = gzip.compress(data, mtime=0)
+             else:
+-                target.write_bytes(data)
+-            records.append({"source": original, "archived": str(target.relative_to(destination)),
++                payload = data
++            output.write(target, payload)
++            records.append({"source": original, "archived": str(target),
+                             "source_size": len(data), "source_sha256": hashlib.sha256(data).hexdigest()})
+         if not records:
+             raise ValueError("no permitted evidence files found (archive cannot be empty)")
+-        (destination / "archive.json").write_text(json.dumps({"schema": 1, "source": str(source),
+-            "excluded": sorted(EXCLUDED_DIRS), "files": records}, indent=2) + "\n")
+-        rows = [hashlib.sha256(path.read_bytes()).hexdigest() + "  " + str(path.relative_to(destination))
+-                for path in sorted(destination.rglob("*")) if path.is_file()]
+-        (destination / "evidence.sha256").write_text("\n".join(rows) + "\n")
+-    except BaseException:
+-        # Only clean the exact directory inode created by this invocation.
+-        # Never delete a pre-existing or concurrently replaced destination.
+-        if created is not None and not destination.is_symlink():
+-            current = destination.stat() if destination.exists() else None
+-            if current and (current.st_dev, current.st_ino) == (created.st_dev, created.st_ino):
+-                shutil.rmtree(destination)
+-        raise
++        output.write(Path("archive.json"), (json.dumps({"schema": 1, "source": str(source),
++            "excluded": sorted(EXCLUDED_DIRS), "files": records}, indent=2) + "\n").encode())
++        rows = [digest + "  " + name for name, digest in sorted(output.digests.items())]
++        output.write(Path("evidence.sha256"), ("\n".join(rows) + "\n").encode())
++        output.finish()
+     finally:
++        # A failed new archive retains its opened custody and incomplete marker.
++        # Never recursively delete a pathname that another writer can replace.
++        if output is not None:
++            output.close()
+         os.close(root_fd)
+     return len(records)
+ 
+diff --git a/support/build/osdk-integration/test_archive.py b/support/build/osdk-integration/test_archive.py
+index 302b5c8..a80d713 100644
+--- a/support/build/osdk-integration/test_archive.py
++++ b/support/build/osdk-integration/test_archive.py
+@@ -1,8 +1,10 @@
+ """Disposable archive safety regressions: no real credentials, QEMU or devices."""
+ import gzip
++import hashlib
+ import json
+ import os
+ from pathlib import Path
++import shutil
+ import tempfile
+ import unittest
+ from unittest import mock
+@@ -15,7 +17,12 @@ class ArchiveTests(unittest.TestCase):
+     def setUp(self):
+         self.temp = tempfile.TemporaryDirectory()
+         self.addCleanup(self.temp.cleanup)
+-        self.root = Path(self.temp.name)
++        setting = os.environ.get("A01_ARCHIVE_CUSTODY_OUT")
++        self.root = (Path(setting) / self._testMethodName
++                     if setting and self._testMethodName.startswith("test_custody_")
++                     else Path(self.temp.name))
++        if self.root != Path(self.temp.name):
++            self.root.mkdir(parents=True, exist_ok=False)
+         self.source = self.root / "generated"
+         self.source.mkdir()
+         self.dest = self.root / "bundle"
+@@ -95,7 +102,9 @@ class ArchiveTests(unittest.TestCase):
+         (self.source / "harness" / "Cargo.lock").write_text("real")
+         with self.assertRaises(ValueError):
+             archive(self.source, self.dest)
+-        self.assertFalse(self.dest.exists())
++        self.assertEqual((self.dest / "harness.Cargo.lock").read_text(), "decoy")
++        self.assertTrue((self.dest / ".archive-incomplete").is_file())
++        self.assertFalse((self.dest / "archive.json").exists())
+ 
+     def test_empty_archive_fails_closed(self):
+         (self.source / "code.rs").write_text("no evidence")
+@@ -126,7 +135,8 @@ class ArchiveTests(unittest.TestCase):
+         self.assertEqual((self.source / "normal.txt").read_text(), "normal")
+ 
+     def test_reserved_index_paths_cannot_replace_evidence(self):
+-        for candidate in ("archive.json", "archive.json/case.json", "evidence.sha256/case.json"):
++        for candidate in ("archive.json", "archive.json/case.json", "evidence.sha256/case.json",
++                          ".archive-incomplete/case.json"):
+             with self.subTest(candidate=candidate), tempfile.TemporaryDirectory() as temp:
+                 source = Path(temp) / "source"
+                 source.mkdir()
+@@ -205,13 +215,180 @@ class ArchiveTests(unittest.TestCase):
+             archive(self.source, self.dest)
+         self.assertFalse(self.dest.exists())
+ 
+-    def test_total_limit_cleans_only_new_bundle(self):
++    def test_total_limit_preserves_incomplete_new_custody(self):
+         (self.source / "first.json").write_bytes(b"12345")
+         (self.source / "second.json").write_bytes(b"67890")
+         with mock.patch.object(archive_module, "MAX_TOTAL_BYTES", 8):
+             with self.assertRaises(ValueError):
+                 archive(self.source, self.dest)
+-        self.assertFalse(self.dest.exists())
++        self.assertEqual((self.dest / "first.json").read_bytes(), b"12345")
++        self.assertTrue((self.dest / ".archive-incomplete").is_file())
++        self.assertFalse((self.dest / "archive.json").exists())
++
++    def test_custody_destination_subdirectory_swap_cannot_write_outside(self):
++        (self.source / "case").mkdir()
++        (self.source / "case/qemu.log").write_bytes(b"disposable selected log")
++        outside = self.root / "outside"
++        outside.mkdir()
++        (outside / "keep.txt").write_bytes(b"foreign sentinel must survive")
++        original_mkdir, fired = os.mkdir, []
++
++        def swap_after_mkdir(path, mode=0o777, *, dir_fd=None):
++            result = original_mkdir(path, mode, dir_fd=dir_fd)
++            if Path(path).name == "case" and not fired:
++                fired.append(True)
++                (self.dest / "case").rename(self.root / "held-case")
++                (self.dest / "case").symlink_to(outside, target_is_directory=True)
++            return result
++
++        error = None
++        with mock.patch.object(archive_module.os, "mkdir", swap_after_mkdir):
++            try:
++                archive(self.source, self.dest)
++            except (OSError, ValueError) as caught:
++                error = str(caught)
++        observation = {"kind": "real_filesystem_mkdir_boundary_swap_no_VM",
++            "source_sha256": hashlib.sha256(Path(archive_module.__file__).read_bytes()).hexdigest(),
++            "swap_fired": bool(fired), "archive_error": error,
++            "outside_entries": sorted(path.name for path in outside.iterdir()),
++            "outside_keep": (outside / "keep.txt").read_text(),
++            "outside_archive_file_exists": (outside / "qemu.log.gz").exists()}
++        (self.root / "observation.json").write_text(json.dumps(observation, indent=2) + "\n")
++        self.assertTrue(fired)
++        self.assertFalse(observation["outside_archive_file_exists"], observation)
++        self.assertEqual(observation["outside_entries"], ["keep.txt"])
++        self.assertIsNotNone(error)
++        self.assertEqual(observation["outside_keep"], "foreign sentinel must survive")
++
++    def test_custody_failed_cleanup_cannot_erase_swapped_foreign_directory(self):
++        (self.source / "first.json").write_bytes(b"12345")
++        (self.source / "second.json").write_bytes(b"67890")
++        original_rmtree, fired = shutil.rmtree, []
++
++        def swap_before_rmtree(path, *args, **kwargs):
++            if Path(path) == self.dest and not fired:
++                fired.append(True)
++                self.dest.rename(self.root / "held-bundle")
++                self.dest.mkdir()
++                (self.dest / "keep.txt").write_bytes(b"foreign replacement must survive")
++            return original_rmtree(path, *args, **kwargs)
++
++        with mock.patch.object(archive_module, "MAX_TOTAL_BYTES", 8), \
++                mock.patch.object(shutil, "rmtree", swap_before_rmtree):
++            with self.assertRaises(ValueError):
++                archive(self.source, self.dest)
++        observation = {"kind": "real_filesystem_path_cleanup_boundary_swap_no_VM",
++            "source_sha256": hashlib.sha256(Path(archive_module.__file__).read_bytes()).hexdigest(),
++            "unsafe_rmtree_called": bool(fired), "destination_exists": self.dest.exists(),
++            "foreign_keep_exists": (self.dest / "keep.txt").exists(),
++            "owned_incomplete_marker": (self.dest / ".archive-incomplete").is_file()}
++        (self.root / "observation.json").write_text(json.dumps(observation, indent=2) + "\n")
++        self.assertFalse(fired, observation)
++        self.assertTrue(observation["destination_exists"])
++        self.assertTrue(observation["owned_incomplete_marker"])
++
++    def test_custody_subdirectory_swap_after_open_keeps_writes_on_pinned_fd(self):
++        (self.source / "case").mkdir()
++        (self.source / "case/qemu.log").write_bytes(b"owned disposable log")
++        outside = self.root / "outside"
++        outside.mkdir()
++        original_open, fired = os.open, []
++
++        def swap_before_file_open(path, flags, *args, **kwargs):
++            if path == "qemu.log.gz" and flags & os.O_CREAT and not fired:
++                fired.append(True)
++                (self.dest / "case").rename(self.root / "held-case")
++                (self.dest / "case").symlink_to(outside, target_is_directory=True)
++            return original_open(path, flags, *args, **kwargs)
++
++        with mock.patch.object(archive_module.os, "open", swap_before_file_open):
++            with self.assertRaises(ValueError):
++                archive(self.source, self.dest)
++        self.assertTrue(fired)
++        self.assertEqual(list(outside.iterdir()), [])
++        self.assertEqual(gzip.decompress((self.root / "held-case/qemu.log.gz").read_bytes()),
++                         b"owned disposable log")
++        self.assertTrue((self.dest / ".archive-incomplete").is_file())
++
++    def test_custody_root_swap_after_open_preserves_foreign_directory_and_owned_marker(self):
++        (self.source / "first.json").write_bytes(b"owned payload")
++        original_open, fired = os.open, []
++
++        def swap_before_file_open(path, flags, *args, **kwargs):
++            if path == "first.json" and flags & os.O_CREAT and not fired:
++                fired.append(True)
++                self.dest.rename(self.root / "held-bundle")
++                self.dest.mkdir()
++                (self.dest / "keep.txt").write_bytes(b"foreign replacement")
++            return original_open(path, flags, *args, **kwargs)
++
++        with mock.patch.object(archive_module.os, "open", swap_before_file_open):
++            with self.assertRaises(ValueError):
++                archive(self.source, self.dest)
++        self.assertTrue(fired)
++        self.assertEqual(sorted(path.name for path in self.dest.iterdir()), ["keep.txt"])
++        self.assertEqual((self.dest / "keep.txt").read_bytes(), b"foreign replacement")
++        self.assertEqual((self.root / "held-bundle/first.json").read_bytes(), b"owned payload")
++        self.assertTrue((self.root / "held-bundle/.archive-incomplete").is_file())
++
++    def test_custody_exclusive_output_open_preserves_racing_existing_file(self):
++        (self.source / "first.json").write_bytes(b"owned payload")
++        original_open, fired = os.open, []
++
++        def add_foreign_before_open(path, flags, *args, **kwargs):
++            if path == "first.json" and flags & os.O_CREAT and not fired:
++                fired.append(True)
++                descriptor = original_open(path, flags, *args, **kwargs)
++                with os.fdopen(descriptor, "wb") as output:
++                    output.write(b"foreign entry must not be overwritten")
++            return original_open(path, flags, *args, **kwargs)
++
++        with mock.patch.object(archive_module.os, "open", add_foreign_before_open):
++            with self.assertRaises(FileExistsError):
++                archive(self.source, self.dest)
++        self.assertTrue(fired)
++        self.assertEqual((self.dest / "first.json").read_bytes(), b"foreign entry must not be overwritten")
++        self.assertTrue((self.dest / ".archive-incomplete").is_file())
++
++    def test_custody_manifest_symlink_cannot_overwrite_external_bytes(self):
++        (self.source / "first.json").write_bytes(b"owned payload")
++        outside = self.root / "outside.json"
++        outside.write_bytes(b"foreign index stand-in")
++        original_write = archive_module.ArchiveOutput.write
++
++        def add_index_symlink(owner, relative, payload, indexed=True):
++            if relative == Path("archive.json"):
++                (self.dest / "archive.json").symlink_to(outside)
++            return original_write(owner, relative, payload, indexed)
++
++        with mock.patch.object(archive_module.ArchiveOutput, "write", add_index_symlink):
++            with self.assertRaises(FileExistsError):
++                archive(self.source, self.dest)
++        self.assertEqual(outside.read_bytes(), b"foreign index stand-in")
++        self.assertTrue((self.dest / ".archive-incomplete").is_file())
++
++    def test_custody_indexes_use_exact_written_payloads_without_path_walks_or_reads(self):
++        (self.source / "case").mkdir()
++        (self.source / "case/qemu.log").write_bytes(b"exact raw bytes")
++        with mock.patch.object(Path, "rglob", side_effect=AssertionError("path traversal forbidden")), \
++                mock.patch.object(Path, "read_bytes", side_effect=AssertionError("path re-read forbidden")):
++            self.assertEqual(archive(self.source, self.dest), 1)
++        self.assertFalse((self.dest / ".archive-incomplete").exists())
++        rows = (self.dest / "evidence.sha256").read_text().splitlines()
++        self.assertEqual(len(rows), 2)
++        for row in rows:
++            digest, name = row.split("  ", 1)
++            self.assertEqual(hashlib.sha256((self.dest / name).read_bytes()).hexdigest(), digest)
++
++    def test_custody_symlink_destination_parent_is_not_traversed(self):
++        (self.source / "first.json").write_bytes(b"owned payload")
++        outside = self.root / "outside"
++        outside.mkdir()
++        alias = self.root / "alias"
++        alias.symlink_to(outside, target_is_directory=True)
++        with self.assertRaises(OSError):
++            archive(self.source, alias / "bundle")
++        self.assertEqual(list(outside.iterdir()), [])
+ 
+ 
+ if __name__ == "__main__":

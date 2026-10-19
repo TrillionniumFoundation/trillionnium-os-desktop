@@ -1,0 +1,146 @@
+{
+  "kind": "actual-Cargo-rustflags-precedence-reproducer",
+  "toolchain": "nightly-2026-07-21",
+  "no_kernel_or_vm": true,
+  "dependencies": 0,
+  "independent_target_directories": true,
+  "removed_environment_keys": [],
+  "records": [
+    {
+      "kind": "tool-version",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+        "-Vv"
+      ],
+      "exit_code": 0,
+      "executable_sha256": "1e8bffe479c27798861dd7f0a3add4adb898879da0be8431fb48ff8c7cc78c03"
+    },
+    {
+      "kind": "tool-version",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/rustc",
+        "-Vv"
+      ],
+      "exit_code": 0,
+      "executable_sha256": "752104a1bd1bc3a59e6a2bd8ec02fa7113acf0e5083f9ee59d43e983ecc5d48f"
+    },
+    {
+      "kind": "actual-fixed-cargo-tiny-independent-target",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+        "run",
+        "--manifest-path",
+        "/workspace/scratch/ae1a8cf05419/next9-encoded-flags/tiny-flags/Cargo.toml",
+        "--locked",
+        "--offline",
+        "--quiet"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/next9-encoded-flags/tiny-flags",
+      "environment": {
+        "RUSTFLAGS": "--cfg from_rustflags",
+        "CARGO_ENCODED_RUSTFLAGS": null,
+        "CARGO_TARGET_DIR": "/workspace/scratch/ae1a8cf05419/next9-encoded-flags/cargo-absent/target",
+        "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+        "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+        "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+        "RUSTC": "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/rustc",
+        "PATH": "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin:/usr/bin:/bin",
+        "CARGO_NET_OFFLINE": "true",
+        "CARGO_BUILD_JOBS": "1"
+      },
+      "encoded_present": false,
+      "exit_code": 0,
+      "duration_seconds": 0.135,
+      "stdout": "RUSTFLAGS=true;ENCODED=false\n",
+      "expected_stdout": "RUSTFLAGS=true;ENCODED=false\n",
+      "matched_expected": true,
+      "lock_before_sha256": "c7359aa5a5cf9ff35a63f2556492365e87976955cd824ec67e7fb79bf473ecbc",
+      "lock_after_sha256": "c7359aa5a5cf9ff35a63f2556492365e87976955cd824ec67e7fb79bf473ecbc",
+      "actual_executable": {
+        "path": "/workspace/scratch/ae1a8cf05419/next9-encoded-flags/cargo-absent/target/debug/a01-encoded-precedence",
+        "bytes": 4520608,
+        "sha256": "3bbf7b4b0ce0037f0be32bcb9ecd13d0df18a86c919ecd9a9ceaaec0f151942c",
+        "retained_only_as_scratch_target_cache": true
+      }
+    },
+    {
+      "kind": "actual-fixed-cargo-tiny-independent-target",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+        "run",
+        "--manifest-path",
+        "/workspace/scratch/ae1a8cf05419/next9-encoded-flags/tiny-flags/Cargo.toml",
+        "--locked",
+        "--offline",
+        "--quiet"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/next9-encoded-flags/tiny-flags",
+      "environment": {
+        "RUSTFLAGS": "--cfg from_rustflags",
+        "CARGO_ENCODED_RUSTFLAGS": "",
+        "CARGO_TARGET_DIR": "/workspace/scratch/ae1a8cf05419/next9-encoded-flags/cargo-empty/target",
+        "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+        "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+        "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+        "RUSTC": "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/rustc",
+        "PATH": "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin:/usr/bin:/bin",
+        "CARGO_NET_OFFLINE": "true",
+        "CARGO_BUILD_JOBS": "1"
+      },
+      "encoded_present": true,
+      "exit_code": 0,
+      "duration_seconds": 0.14,
+      "stdout": "RUSTFLAGS=false;ENCODED=false\n",
+      "expected_stdout": "RUSTFLAGS=false;ENCODED=false\n",
+      "matched_expected": true,
+      "lock_before_sha256": "c7359aa5a5cf9ff35a63f2556492365e87976955cd824ec67e7fb79bf473ecbc",
+      "lock_after_sha256": "c7359aa5a5cf9ff35a63f2556492365e87976955cd824ec67e7fb79bf473ecbc",
+      "actual_executable": {
+        "path": "/workspace/scratch/ae1a8cf05419/next9-encoded-flags/cargo-empty/target/debug/a01-encoded-precedence",
+        "bytes": 4520608,
+        "sha256": "740c8d5f09906027e204581a249c22a1638f2fcf0c1b429f9071d2a21191a713",
+        "retained_only_as_scratch_target_cache": true
+      }
+    },
+    {
+      "kind": "actual-fixed-cargo-tiny-independent-target",
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+        "run",
+        "--manifest-path",
+        "/workspace/scratch/ae1a8cf05419/next9-encoded-flags/tiny-flags/Cargo.toml",
+        "--locked",
+        "--offline",
+        "--quiet"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/next9-encoded-flags/tiny-flags",
+      "environment": {
+        "RUSTFLAGS": "--cfg from_rustflags",
+        "CARGO_ENCODED_RUSTFLAGS": "--cfg\u001ffrom_encoded",
+        "CARGO_TARGET_DIR": "/workspace/scratch/ae1a8cf05419/next9-encoded-flags/cargo-nonempty/target",
+        "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+        "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+        "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+        "RUSTC": "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/rustc",
+        "PATH": "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin:/usr/bin:/bin",
+        "CARGO_NET_OFFLINE": "true",
+        "CARGO_BUILD_JOBS": "1"
+      },
+      "encoded_present": true,
+      "exit_code": 0,
+      "duration_seconds": 0.128,
+      "stdout": "RUSTFLAGS=false;ENCODED=true\n",
+      "expected_stdout": "RUSTFLAGS=false;ENCODED=true\n",
+      "matched_expected": true,
+      "lock_before_sha256": "c7359aa5a5cf9ff35a63f2556492365e87976955cd824ec67e7fb79bf473ecbc",
+      "lock_after_sha256": "c7359aa5a5cf9ff35a63f2556492365e87976955cd824ec67e7fb79bf473ecbc",
+      "actual_executable": {
+        "path": "/workspace/scratch/ae1a8cf05419/next9-encoded-flags/cargo-nonempty/target/debug/a01-encoded-precedence",
+        "bytes": 4520608,
+        "sha256": "3ec44d3b1beaba379919f2829234977adec44af7eaa15e594ab9df9b76a6049d",
+        "retained_only_as_scratch_target_cache": true
+      }
+    }
+  ],
+  "all_cases_matched": true
+}

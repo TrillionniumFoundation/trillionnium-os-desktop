@@ -1,0 +1,9 @@
+{
+  "scope": "Metadata-only correction for the initial prepare phase controller log; original controller.jsonl retained unchanged.",
+  "initial_prepare_reported_cwd": "/workspace/scratch/ae1a8cf05419/native-tools-restore",
+  "actual_initial_prepare_launch_cwd": "/workspace/scratch/ae1a8cf05419",
+  "affected_entries": "Entries before extraction whose cwd field equals the script directory; original execute() recorded HERE instead of the actual inherited process cwd.",
+  "command_effect": "All source, output, keyring and list/cache arguments were absolute. Only the logged cwd label was incorrect.",
+  "later_extraction_records": "execute() was corrected before --extract; later entries use the actual process cwd.",
+  "source_boundary": "restore.py is the final experimental script after that logging correction and adding extraction; it is not claimed to be the byte-identical initial prepare script."
+}

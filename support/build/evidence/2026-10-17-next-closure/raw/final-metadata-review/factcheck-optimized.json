@@ -1,0 +1,940 @@
+{
+  "schema": "a01-independent-final-metadata-review/1",
+  "observed_utc": "2026-10-17T04:47:01.018382+00:00",
+  "lock_sha256": "cd60952f503cd7b75af95ddc3dce356fe53fff226b15d17a1b1701f215345dcc",
+  "baseline_commit": "1001161c45fed52b4735606c81bc039cad770db4",
+  "passed": true,
+  "checks": [
+    {
+      "check": "all fields other than exactly three authorized paths unchanged",
+      "passed": true,
+      "actual": {
+        "type": "dict",
+        "equal_value_omitted": true
+      },
+      "expected": {
+        "type": "dict",
+        "equal_value_omitted": true
+      }
+    },
+    {
+      "check": "pinned upstream commit",
+      "passed": true,
+      "actual": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+      "expected": "c4b7ed575b7b32773475b194d2ad41fb6d03765b"
+    },
+    {
+      "check": "pinned upstream tree",
+      "passed": true,
+      "actual": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+      "expected": "96605cf64aeae2d34f29b97e85eff9315fe10a8e"
+    },
+    {
+      "check": "pinned toolchain",
+      "passed": true,
+      "actual": "nightly-2026-07-21",
+      "expected": "nightly-2026-07-21"
+    },
+    {
+      "check": "container pin remains null",
+      "passed": true,
+      "actual": null,
+      "expected": null
+    },
+    {
+      "check": "broad reproducible readiness remains false",
+      "passed": true,
+      "actual": false,
+      "expected": false
+    },
+    {
+      "check": "retained reproduction note exact original",
+      "passed": true,
+      "actual": "Two absent-target full kernel builds at schema4 source 4e8c7083575cec69efabe8d2250dfdd040c8dee8, on the same actual host and two different actual source roots, produced byte-identical complete ELF/initramfs/BIOS inputs and both booted (raw QEMU33). The opt-in source-bound compiler/component path and Cargo metadata projection uses one Cargo job. Registry/toolchain caches were shared. Ordinary source d879a9d2 independently passed a cold make kernel followed by make run_kernel. Cross-host bit reproduction and a complete immutable host/container lock remain unestablished.",
+      "expected": "Two absent-target full kernel builds at schema4 source 4e8c7083575cec69efabe8d2250dfdd040c8dee8, on the same actual host and two different actual source roots, produced byte-identical complete ELF/initramfs/BIOS inputs and both booted (raw QEMU33). The opt-in source-bound compiler/component path and Cargo metadata projection uses one Cargo job. Registry/toolchain caches were shared. Ordinary source d879a9d2 independently passed a cold make kernel followed by make run_kernel. Cross-host bit reproduction and a complete immutable host/container lock remain unestablished."
+    },
+    {
+      "check": "root README byte length",
+      "passed": true,
+      "actual": 0,
+      "expected": 0
+    },
+    {
+      "check": "lock README claim",
+      "passed": true,
+      "actual": 0,
+      "expected": 0
+    },
+    {
+      "check": "actual hostname",
+      "passed": true,
+      "actual": "24f0ea2620fe",
+      "expected": "24f0ea2620fe"
+    },
+    {
+      "check": "actual boot ID",
+      "passed": true,
+      "actual": "952006db-88a3-4a56-8049-0adbbe2acfb2",
+      "expected": "952006db-88a3-4a56-8049-0adbbe2acfb2"
+    },
+    {
+      "check": "actual host full kernel and resource observations",
+      "passed": true,
+      "actual": {
+        "boot_id": "952006db-88a3-4a56-8049-0adbbe2acfb2",
+        "hostname": "24f0ea2620fe",
+        "kernel": "Linux version 6.18.55 (root@3cf029e815d2) (gcc (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0, GNU ld (GNU Binutils for Ubuntu) 2.38) #1 SMP Wed Oct 14 19:45:18 UTC 2026\n",
+        "cgroup_memory_max": "8589934592",
+        "cpu_max": "800000 100000"
+      },
+      "expected": {
+        "boot_id": "952006db-88a3-4a56-8049-0adbbe2acfb2",
+        "hostname": "24f0ea2620fe",
+        "kernel": "Linux version 6.18.55 (root@3cf029e815d2) (gcc (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0, GNU ld (GNU Binutils for Ubuntu) 2.38) #1 SMP Wed Oct 14 19:45:18 UTC 2026\n",
+        "cgroup_memory_max": "8589934592",
+        "cpu_max": "800000 100000"
+      }
+    },
+    {
+      "check": "signed package count",
+      "passed": true,
+      "actual": 57,
+      "expected": 57
+    },
+    {
+      "check": "native runtime command count",
+      "passed": true,
+      "actual": 19,
+      "expected": 19
+    },
+    {
+      "check": "fixed Rust commands count",
+      "passed": true,
+      "actual": 12,
+      "expected": 12
+    },
+    {
+      "check": "frozen input members",
+      "passed": true,
+      "actual": 226,
+      "expected": 226
+    },
+    {
+      "check": "system installation not claimed",
+      "passed": true,
+      "actual": false,
+      "expected": false
+    },
+    {
+      "check": "N2 source",
+      "passed": true,
+      "actual": "0a7037fdde1e4c21884ea4f490ff28134082d0a2",
+      "expected": "0a7037fdde1e4c21884ea4f490ff28134082d0a2"
+    },
+    {
+      "check": "N2 derived kernel tree",
+      "passed": true,
+      "actual": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da",
+      "expected": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da"
+    },
+    {
+      "check": "N2 controller count",
+      "passed": true,
+      "actual": 11,
+      "expected": 11
+    },
+    {
+      "check": "N2 all controller exits0",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "N2 279 cold compile lines",
+      "passed": true,
+      "actual": 279,
+      "expected": 279
+    },
+    {
+      "check": "N2 zero boot compile lines",
+      "passed": true,
+      "actual": 0,
+      "expected": 0
+    },
+    {
+      "check": "N2 absent target",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "N2 raw QEMU exit",
+      "passed": true,
+      "actual": 33,
+      "expected": 33
+    },
+    {
+      "check": "N2 no timeout",
+      "passed": true,
+      "actual": false,
+      "expected": false
+    },
+    {
+      "check": "N2 kernel digest",
+      "passed": true,
+      "actual": "5c2cee2a8806baf873149ce07f752cc3b1c633efd4199e0c8c0ba20ef5f325f7",
+      "expected": "5c2cee2a8806baf873149ce07f752cc3b1c633efd4199e0c8c0ba20ef5f325f7"
+    },
+    {
+      "check": "N2 initramfs digest",
+      "passed": true,
+      "actual": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "expected": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+    },
+    {
+      "check": "N2 bios digest",
+      "passed": true,
+      "actual": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "expected": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    {
+      "check": "N2 first kernel length",
+      "passed": true,
+      "actual": 8255688,
+      "expected": 8255688
+    },
+    {
+      "check": "N2 boot kernel length",
+      "passed": true,
+      "actual": 8255688,
+      "expected": 8255688
+    },
+    {
+      "check": "N2 first kernel hash",
+      "passed": true,
+      "actual": "5c2cee2a8806baf873149ce07f752cc3b1c633efd4199e0c8c0ba20ef5f325f7",
+      "expected": "5c2cee2a8806baf873149ce07f752cc3b1c633efd4199e0c8c0ba20ef5f325f7"
+    },
+    {
+      "check": "N2 serial digest",
+      "passed": true,
+      "actual": "01e1bd9cbe1cebdb28260ece6fe521f87bc1fc475fcb55ad2eff64204b4656e6",
+      "expected": "01e1bd9cbe1cebdb28260ece6fe521f87bc1fc475fcb55ad2eff64204b4656e6"
+    },
+    {
+      "check": "N2 complete first/loaded bytes observation",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "N2 complete private SDK equality observation",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "N2 no prelaunch global binary retained",
+      "passed": true,
+      "actual": false,
+      "expected": false
+    },
+    {
+      "check": "N2 no global complete-byte claim",
+      "passed": true,
+      "actual": false,
+      "expected": false
+    },
+    {
+      "check": "D source",
+      "passed": true,
+      "actual": "a5af45537dea32039ea172ad0d7e381400c07d95",
+      "expected": "a5af45537dea32039ea172ad0d7e381400c07d95"
+    },
+    {
+      "check": "D tool session",
+      "passed": true,
+      "actual": 67862,
+      "expected": 67862
+    },
+    {
+      "check": "D outer exit",
+      "passed": true,
+      "actual": 0,
+      "expected": 0
+    },
+    {
+      "check": "D controller count",
+      "passed": true,
+      "actual": 6,
+      "expected": 6
+    },
+    {
+      "check": "D all controller exits0",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "D actual177 compile lines",
+      "passed": true,
+      "actual": 177,
+      "expected": 177
+    },
+    {
+      "check": "D no cold claim",
+      "passed": true,
+      "actual": false,
+      "expected": false
+    },
+    {
+      "check": "D GDB exit",
+      "passed": true,
+      "actual": 0,
+      "expected": 0
+    },
+    {
+      "check": "D32-byte entry size",
+      "passed": true,
+      "actual": 32,
+      "expected": 32
+    },
+    {
+      "check": "D runtime entry matches symbol",
+      "passed": true,
+      "actual": "50e84a37f2ff48c7c7e82c5488e89e4a060048c7c000e05e8848c7c178e65e88",
+      "expected": "50e84a37f2ff48c7c7e82c5488e89e4a060048c7c000e05e8848c7c178e65e88"
+    },
+    {
+      "check": "D runtime entry matches loaded boot",
+      "passed": true,
+      "actual": "50e84a37f2ff48c7c7e82c5488e89e4a060048c7c000e05e8848c7c178e65e88",
+      "expected": "50e84a37f2ff48c7c7e82c5488e89e4a060048c7c000e05e8848c7c178e65e88"
+    },
+    {
+      "check": "D raw QEMU exit",
+      "passed": true,
+      "actual": 33,
+      "expected": 33
+    },
+    {
+      "check": "D detached",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "D initial prepare failure retained",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "K source",
+      "passed": true,
+      "actual": "ff0d09a2c2e0cba1d528d11a06083f588989a9f3",
+      "expected": "ff0d09a2c2e0cba1d528d11a06083f588989a9f3"
+    },
+    {
+      "check": "K controller count",
+      "passed": true,
+      "actual": 6,
+      "expected": 6
+    },
+    {
+      "check": "K all controller exits0",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "K passed total",
+      "passed": true,
+      "actual": 362,
+      "expected": 362
+    },
+    {
+      "check": "K failed total",
+      "passed": true,
+      "actual": 0,
+      "expected": 0
+    },
+    {
+      "check": "K soft_skipped total",
+      "passed": true,
+      "actual": 3,
+      "expected": 3
+    },
+    {
+      "check": "K exercised_passed_lower_bound total",
+      "passed": true,
+      "actual": 359,
+      "expected": 359
+    },
+    {
+      "check": "K raw exits",
+      "passed": true,
+      "actual": [
+        33,
+        33
+      ],
+      "expected": [
+        33,
+        33
+      ]
+    },
+    {
+      "check": "K reused target",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "K no cold claim",
+      "passed": true,
+      "actual": false,
+      "expected": false
+    },
+    {
+      "check": "K no immutable execution claim",
+      "passed": true,
+      "actual": false,
+      "expected": false
+    },
+    {
+      "check": "K no prelaunch snapshot execution claim",
+      "passed": true,
+      "actual": false,
+      "expected": false
+    },
+    {
+      "check": "K ostd original raw QEMU status",
+      "passed": true,
+      "actual": 33,
+      "expected": 33
+    },
+    {
+      "check": "K ostd no timeout",
+      "passed": true,
+      "actual": false,
+      "expected": false
+    },
+    {
+      "check": "K aster-core original raw QEMU status",
+      "passed": true,
+      "actual": 33,
+      "expected": 33
+    },
+    {
+      "check": "K aster-core no timeout",
+      "passed": true,
+      "actual": false,
+      "expected": false
+    },
+    {
+      "check": "cross-instance producer",
+      "passed": true,
+      "actual": "4e8c7083575cec69efabe8d2250dfdd040c8dee8",
+      "expected": "4e8c7083575cec69efabe8d2250dfdd040c8dee8"
+    },
+    {
+      "check": "two observed case IDs",
+      "passed": true,
+      "actual": [
+        "A4",
+        "C4"
+      ],
+      "expected": [
+        "A4",
+        "C4"
+      ]
+    },
+    {
+      "check": "two observed hostnames",
+      "passed": true,
+      "actual": [
+        "343e40cfefc1",
+        "24f0ea2620fe"
+      ],
+      "expected": [
+        "343e40cfefc1",
+        "24f0ea2620fe"
+      ]
+    },
+    {
+      "check": "all three actual complete byte comparisons",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "canonical descriptor equality bool",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "producer identities/counts equality",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "canonical descriptor maps independently equal",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "cargo producer key/count maps independently equal",
+      "passed": true,
+      "actual": true,
+      "expected": true
+    },
+    {
+      "check": "A4 canonical descriptors61",
+      "passed": true,
+      "actual": 61,
+      "expected": 61
+    },
+    {
+      "check": "A4 full ELF digest",
+      "passed": true,
+      "actual": "8c540288c6af2a1a97121031643c1af4c4db395d7e8b4082d6edc4604449849a",
+      "expected": "8c540288c6af2a1a97121031643c1af4c4db395d7e8b4082d6edc4604449849a"
+    },
+    {
+      "check": "A4 full ELF byte length",
+      "passed": true,
+      "actual": 8286952,
+      "expected": 8286952
+    },
+    {
+      "check": "A4 raw exit",
+      "passed": true,
+      "actual": 33,
+      "expected": 33
+    },
+    {
+      "check": "C4 canonical descriptors61",
+      "passed": true,
+      "actual": 61,
+      "expected": 61
+    },
+    {
+      "check": "C4 full ELF digest",
+      "passed": true,
+      "actual": "8c540288c6af2a1a97121031643c1af4c4db395d7e8b4082d6edc4604449849a",
+      "expected": "8c540288c6af2a1a97121031643c1af4c4db395d7e8b4082d6edc4604449849a"
+    },
+    {
+      "check": "C4 full ELF byte length",
+      "passed": true,
+      "actual": 8286952,
+      "expected": 8286952
+    },
+    {
+      "check": "C4 raw exit",
+      "passed": true,
+      "actual": 33,
+      "expected": 33
+    },
+    {
+      "check": "bounded reproduction arbitrary_host_reproduction_claimed",
+      "passed": true,
+      "actual": false,
+      "expected": false
+    },
+    {
+      "check": "bounded reproduction immutable_environment_claimed",
+      "passed": true,
+      "actual": false,
+      "expected": false
+    },
+    {
+      "check": "bounded reproduction provider_instance_attestation_claimed",
+      "passed": true,
+      "actual": false,
+      "expected": false
+    },
+    {
+      "check": "same literal dependency/profile environment",
+      "passed": true,
+      "actual": {
+        "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+        "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+        "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+        "VDSO_LIBRARY_DIR": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/linux-vdso",
+        "PKG_CONFIG_SYSROOT_DIR": "/workspace/scratch/ae1a8cf05419/native-tools/root"
+      },
+      "expected": {
+        "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+        "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+        "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+        "VDSO_LIBRARY_DIR": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/linux-vdso",
+        "PKG_CONFIG_SYSROOT_DIR": "/workspace/scratch/ae1a8cf05419/native-tools/root"
+      }
+    },
+    {
+      "check": "five NEW guests excludes historical A4",
+      "passed": true,
+      "actual": 5,
+      "expected": 5
+    },
+    {
+      "check": "five new raw QEMU exits",
+      "passed": true,
+      "actual": [
+        33,
+        33,
+        33,
+        33,
+        33
+      ],
+      "expected": [
+        33,
+        33,
+        33,
+        33,
+        33
+      ]
+    },
+    {
+      "check": "host ordinary check sum161",
+      "passed": true,
+      "actual": 161,
+      "expected": 161
+    },
+    {
+      "check": "bounded/open native_resource_control_accepted",
+      "passed": true,
+      "actual": false,
+      "expected": false
+    },
+    {
+      "check": "bounded/open default_unix_gdb_supported_on_this_host",
+      "passed": true,
+      "actual": false,
+      "expected": false
+    },
+    {
+      "check": "bounded/open vmx_ept_exercised",
+      "passed": true,
+      "actual": false,
+      "expected": false
+    },
+    {
+      "check": "bounded/open unknown_workspace_writer_identified",
+      "passed": true,
+      "actual": false,
+      "expected": false
+    },
+    {
+      "check": "bounded/open all_project_blockers_closed",
+      "passed": true,
+      "actual": false,
+      "expected": false
+    },
+    {
+      "check": "lock unchanged across read-only review",
+      "passed": true,
+      "actual": {
+        "type": "bytes",
+        "equal_value_omitted": true
+      },
+      "expected": {
+        "type": "bytes",
+        "equal_value_omitted": true
+      }
+    }
+  ],
+  "inputs": [
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/upstream-lock.json",
+      "bytes": 59470,
+      "sha256": "cd60952f503cd7b75af95ddc3dce356fe53fff226b15d17a1b1701f215345dcc",
+      "fd_identity": [
+        27,
+        1853126,
+        33188,
+        59470,
+        1792212096057984400,
+        1792212096057984400
+      ]
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/final-metadata-review/baseline-upstream-lock.json",
+      "bytes": 52826,
+      "sha256": "372a13199509b92358c795ac6c2dc262733c4f0fe60f02511d623407dc4f273e",
+      "fd_identity": [
+        27,
+        665810,
+        33188,
+        52826,
+        1792212127667632933,
+        1792212127667632933
+      ]
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/README.md",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "fd_identity": [
+        27,
+        1844222,
+        33188,
+        0,
+        1792209558213482042,
+        1792209558213482042
+      ]
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-cloud-restore-next/report.json",
+      "bytes": 3029,
+      "sha256": "23f86bb5c2c133f1f29f0b9a993535cc837598b6e710ad6ac8a9a420c1057e07",
+      "fd_identity": [
+        27,
+        295130,
+        33188,
+        3029,
+        1792210269176843569,
+        1792210269176843569
+      ]
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-debug-private-sdk-native/readable/controller/actual-host.json",
+      "bytes": 333,
+      "sha256": "641afef03a48a0e1930eebe89fe67580dc07cbf1c6117ffc412538873a7bc909",
+      "fd_identity": [
+        27,
+        527849,
+        33188,
+        333,
+        1792211713171231146,
+        1792211713171231146
+      ]
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-private-sdk-native/report.json",
+      "bytes": 1953,
+      "sha256": "bf5ee5938282ca3ede6caf7150df67f6e44943dbdfba139df526ecc98cd2bf47",
+      "fd_identity": [
+        27,
+        403824,
+        33188,
+        1953,
+        1792211140737502429,
+        1792211140737502429
+      ]
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-private-sdk-native/readable/kernel-boot/qemu.json",
+      "bytes": 7870,
+      "sha256": "2b810df0d9a4d67fe35e389a93bc5d11bc4ec3d0c161476489f231a7e694ab9c",
+      "fd_identity": [
+        27,
+        403830,
+        33188,
+        7870,
+        1792211140737904963,
+        1792211140737904963
+      ]
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-private-sdk-native/readable/controller-N2/commands.json",
+      "bytes": 31171,
+      "sha256": "fe40657bac4c101f42e90e6ee923bea2e7d14ae67faab608ce0577b2801bcc96",
+      "fd_identity": [
+        27,
+        404042,
+        33188,
+        31171,
+        1792211140738134883,
+        1792211140738134883
+      ]
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-private-sdk-native/sdk-bindings.json",
+      "bytes": 1904,
+      "sha256": "bd1ca2914ba3a058eade8dca54be21f58c4f195f4867075d08b1893319355b1f",
+      "fd_identity": [
+        27,
+        403823,
+        33188,
+        1904,
+        1792211140736305602,
+        1792211140736305602
+      ]
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-private-sdk-native/readable/kernel-boot/serial.log",
+      "bytes": 72255,
+      "sha256": "01e1bd9cbe1cebdb28260ece6fe521f87bc1fc475fcb55ad2eff64204b4656e6",
+      "fd_identity": [
+        27,
+        403829,
+        33188,
+        72255,
+        1792211140737606833,
+        1792211140737606833
+      ]
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-debug-private-sdk-native/report.json",
+      "bytes": 2624,
+      "sha256": "c1029961447543668debaffe3dc166d9b821c322ec347e8145b8d74df042049c",
+      "fd_identity": [
+        27,
+        527851,
+        33188,
+        2624,
+        1792211786822211623,
+        1792211786822211623
+      ]
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-debug-private-sdk-native/readable/retry/run/result.json",
+      "bytes": 2410,
+      "sha256": "bcd43463c56268d5eb1ddc241d8093e5be69a2e6c81d708fa367e0a3c6e9ee6c",
+      "fd_identity": [
+        27,
+        527814,
+        33188,
+        2410,
+        1792211713168493619,
+        1792211713168493619
+      ]
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-debug-private-sdk-native/readable/retry/controller/commands.json",
+      "bytes": 15287,
+      "sha256": "a012f5c7873a5ceee2e4b726e6f29126531df0a0550d73818f5a8a5f65fd5d41",
+      "fd_identity": [
+        27,
+        527804,
+        33188,
+        15287,
+        1792211713167517710,
+        1792211713167517710
+      ]
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-debug-private-sdk-native/readable/controller/root-completed-tool.json",
+      "bytes": 541,
+      "sha256": "74ce82db0be77b9f91e4f122c4463e0e2d7ca246be66e28bbc24210492bb2303",
+      "fd_identity": [
+        27,
+        527848,
+        33188,
+        541,
+        1792211713171158970,
+        1792211713171158970
+      ]
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-ktest-private-sdk-native/report.json",
+      "bytes": 2585,
+      "sha256": "885683862ca6946fa848e1e311d8aa70312edbdb62a901a112dd7f4e0cad1bac",
+      "fd_identity": [
+        27,
+        665025,
+        33188,
+        2585,
+        1792212004690751077,
+        1792212004690751077
+      ]
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-ktest-private-sdk-native/readable/runner-result.json",
+      "bytes": 1541,
+      "sha256": "2b009b939bbe769c5399abde798efc9716d24990b7e88c6b49886375382de3da",
+      "fd_identity": [
+        27,
+        665040,
+        33188,
+        1541,
+        1792212004692352250,
+        1792212004692352250
+      ]
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-ktest-private-sdk-native/readable/controller-commands.json",
+      "bytes": 15142,
+      "sha256": "dfe4d50661f04b0a85919286d162dc66bcf66eff5de73180a6ec334620435eea",
+      "fd_identity": [
+        27,
+        665039,
+        33188,
+        15142,
+        1792212004692299171,
+        1792212004692299171
+      ]
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-ktest-private-sdk-native/readable/run/ostd/guests/guest-001/qemu.json",
+      "bytes": 6814,
+      "sha256": "55dc9b8a5759977ce7be1599bcaa57219edb19707ac78481ff31a0dc001ae658",
+      "fd_identity": [
+        27,
+        665031,
+        33188,
+        6814,
+        1792212004691523567,
+        1792212004691523567
+      ]
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-ktest-private-sdk-native/readable/run/aster-core/guests/guest-001/qemu.json",
+      "bytes": 6898,
+      "sha256": "d76f5488a4d357f5c031c5f586344fe5fcd2606d93e469789fabaa0b75c6c77b",
+      "fd_identity": [
+        27,
+        665036,
+        33188,
+        6898,
+        1792212004692027861,
+        1792212004692027861
+      ]
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-repro-cross-instance/comparison.json",
+      "bytes": 65161,
+      "sha256": "4aca8972616f06adb40e0ea9b65993cd7a70c259c4ca11d873feb9eecd18cde7",
+      "fd_identity": [
+        27,
+        404481,
+        33188,
+        65161,
+        1792210765228680622,
+        1792210765228680622
+      ]
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-repro-cross-instance/live-comparison.json",
+      "bytes": 6724,
+      "sha256": "3400a9e4e78eec22566a6f4ba55e582336552e2df9f3164d59719a1411aa35da",
+      "fd_identity": [
+        27,
+        404482,
+        33188,
+        6724,
+        1792210765228967856,
+        1792210765228967856
+      ]
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/upstream-lock.json",
+      "bytes": 59470,
+      "sha256": "cd60952f503cd7b75af95ddc3dce356fe53fff226b15d17a1b1701f215345dcc",
+      "fd_identity": [
+        27,
+        1853126,
+        33188,
+        59470,
+        1792212096057984400,
+        1792212096057984400
+      ]
+    }
+  ],
+  "scope": "Read-only scalar/custody fact checks of completed evidence, no project code execution, no compile or VM. Existing source/report acceptance remains tied to original producer commits."
+}

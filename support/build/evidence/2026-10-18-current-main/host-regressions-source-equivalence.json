@@ -1,0 +1,163 @@
+{
+  "schema": 1,
+  "kind": "new read-only comparison of preserved historical source digests with immutable Git blobs",
+  "published_commit": "c22891b593f77c98ff4ea94d7aecb54f32222651",
+  "published_tree": "af19f57a5e275fb8712363d90e72eca88477ec3e",
+  "published_parents": [
+    "b7a8388726b67394398431e74d2e5d2079ff375f",
+    "bb34933fb2f7dc8bceffbce8f42e342799c96e6e"
+  ],
+  "historical_execution_source_state": "pre-commit merge working tree combining the recorded main and existing A01 branch; this provenance comes from the contemporaneous agent session",
+  "historical_execution_head_in_raw_receipts": null,
+  "qualification": "The initial 86-test receipts record source SHA256 values, not an execution HEAD. This comparison establishes only byte equivalence for their 13 recorded inputs; it does not retroactively say that all tests executed at a clean c22891b HEAD or bind the entire repository.",
+  "recorded_inputs": {
+    "support/build/record-qemu.py": {
+      "recorded_sha256": "86570f9cd5cc02fc91248f983c61e207020a0edebfb8c9e42a804a99ef3b513e",
+      "published_sha256": "86570f9cd5cc02fc91248f983c61e207020a0edebfb8c9e42a804a99ef3b513e",
+      "published_git_blob": "4a4edf25e068bc6e5ef2adb67110ebfbeb0d6392",
+      "published_size": 12764,
+      "matches": true,
+      "source_receipts": [
+        "boot_and_ktest_snapshot",
+        "ordinary-test_kernel_runner.py.json",
+        "ordinary-test_source_inputs.py.json"
+      ]
+    },
+    "support/build/check-boot.py": {
+      "recorded_sha256": "2ee1be040c622b248986efdeacab43eea6b2d730e0bad1a8bc0ba995c1915f80",
+      "published_sha256": "2ee1be040c622b248986efdeacab43eea6b2d730e0bad1a8bc0ba995c1915f80",
+      "published_git_blob": "1c01897379dbf5d8fbe309c4a15da1bf25980216",
+      "published_size": 3869,
+      "matches": true,
+      "source_receipts": [
+        "boot_and_ktest_snapshot",
+        "ordinary-test_kernel_runner.py.json",
+        "escalated-test_kernel_runner.py.json",
+        "ordinary-test_source_inputs.py.json"
+      ]
+    },
+    "support/build/tests/test_boot_evidence.py": {
+      "recorded_sha256": "f39815cb74b99d81cdfef1b1d08dd2398f1a474bb64c50c8cdda7e8e9022a994",
+      "published_sha256": "f39815cb74b99d81cdfef1b1d08dd2398f1a474bb64c50c8cdda7e8e9022a994",
+      "published_git_blob": "1995ca7eb4e4b58a55a946b6c9a3e176b71ae881",
+      "published_size": 29386,
+      "matches": true,
+      "source_receipts": [
+        "boot_and_ktest_snapshot"
+      ]
+    },
+    "support/build/ktest/record-qemu.py": {
+      "recorded_sha256": "52d50a46ad09be00566292bea64cf4b2b979badb84a11f055b5d06ef39e11c28",
+      "published_sha256": "52d50a46ad09be00566292bea64cf4b2b979badb84a11f055b5d06ef39e11c28",
+      "published_git_blob": "01420c79907b1b4291fc6c877a9e1754b0f54b85",
+      "published_size": 5180,
+      "matches": true,
+      "source_receipts": [
+        "boot_and_ktest_snapshot"
+      ]
+    },
+    "support/build/tests/test_ktest_private_inputs.py": {
+      "recorded_sha256": "e85ffc1f296429dc1d34a4728661cca2cfc589da4a9c7addcf6b41aba73cfe5a",
+      "published_sha256": "e85ffc1f296429dc1d34a4728661cca2cfc589da4a9c7addcf6b41aba73cfe5a",
+      "published_git_blob": "089f348fc0fdbe5d6ca449d946f8bb4c86baf006",
+      "published_size": 8252,
+      "matches": true,
+      "source_receipts": [
+        "boot_and_ktest_snapshot"
+      ]
+    },
+    "support/build/evidence/2026-10-16/acceptance/boot/serial.log": {
+      "recorded_sha256": "919269f73caca7f4b6a715f5ece8f189bc26487a844dc98e247af5fd60720016",
+      "published_sha256": "919269f73caca7f4b6a715f5ece8f189bc26487a844dc98e247af5fd60720016",
+      "published_git_blob": "3d46545cef6a30067f0ee437334dd07cf6fc76a0",
+      "published_size": 72331,
+      "matches": true,
+      "source_receipts": [
+        "boot_and_ktest_snapshot"
+      ]
+    },
+    "support/build/cleanup-manifest.py": {
+      "recorded_sha256": "6620d8be088f3602e673397081c5230aa5eb2cad54fd4080f21b3afe370a82c8",
+      "published_sha256": "6620d8be088f3602e673397081c5230aa5eb2cad54fd4080f21b3afe370a82c8",
+      "published_git_blob": "d0c45bf2791d00e9091d11b09ac85e17c10566a9",
+      "published_size": 6584,
+      "matches": true,
+      "source_receipts": [
+        "ordinary-test_kernel_runner.py.json",
+        "escalated-test_kernel_runner.py.json",
+        "ordinary-test_source_inputs.py.json"
+      ]
+    },
+    "support/build/verify-source.py": {
+      "recorded_sha256": "3ae120bc0432937b5069ba7b1c4ed23b38f838b85b0f1b9a2600a15a7b6bc667",
+      "published_sha256": "3ae120bc0432937b5069ba7b1c4ed23b38f838b85b0f1b9a2600a15a7b6bc667",
+      "published_git_blob": "dce41522838554a9e68b35682bbb20eccaf23ca0",
+      "published_size": 4103,
+      "matches": true,
+      "source_receipts": [
+        "ordinary-test_kernel_runner.py.json",
+        "ordinary-test_source_inputs.py.json"
+      ]
+    },
+    "support/build/kernel-supervisor.py": {
+      "recorded_sha256": "e002f2877f71f01feb279a099f0ddbc2debae1e977804e79d9843428bba681b6",
+      "published_sha256": "e002f2877f71f01feb279a099f0ddbc2debae1e977804e79d9843428bba681b6",
+      "published_git_blob": "553e620c63465dfc24ad1a306f5b575fbf187c11",
+      "published_size": 6028,
+      "matches": true,
+      "source_receipts": [
+        "ordinary-test_kernel_runner.py.json",
+        "escalated-test_kernel_runner.py.json",
+        "ordinary-test_source_inputs.py.json"
+      ]
+    },
+    "support/build/tests/test_kernel_runner.py": {
+      "recorded_sha256": "bff12ba7b3a2e68d95f626c9be337b0148286a95ec4ba95b1e467d6bb499f47f",
+      "published_sha256": "bff12ba7b3a2e68d95f626c9be337b0148286a95ec4ba95b1e467d6bb499f47f",
+      "published_git_blob": "405a577e613fda6926f7d808056be8ea2271eba6",
+      "published_size": 45195,
+      "matches": true,
+      "source_receipts": [
+        "ordinary-test_kernel_runner.py.json",
+        "escalated-test_kernel_runner.py.json"
+      ]
+    },
+    "support/build/kernel.sh": {
+      "recorded_sha256": "8c5c9744bd8d5079758604f1b188a7c520b39a198d5597aeb60bf7e5c1a1f2d0",
+      "published_sha256": "8c5c9744bd8d5079758604f1b188a7c520b39a198d5597aeb60bf7e5c1a1f2d0",
+      "published_git_blob": "b845e100736b4dbd8e76e0d6133515b666c39743",
+      "published_size": 10091,
+      "matches": true,
+      "source_receipts": [
+        "ordinary-test_kernel_runner.py.json",
+        "escalated-test_kernel_runner.py.json",
+        "ordinary-test_source_inputs.py.json"
+      ]
+    },
+    "support/build/minimal.mk": {
+      "recorded_sha256": "9fe262b0287831263217a72380ab24b8e79a3baf2bff4f5a3186c01558ad6635",
+      "published_sha256": "9fe262b0287831263217a72380ab24b8e79a3baf2bff4f5a3186c01558ad6635",
+      "published_git_blob": "078c9007adf9a5d812c9ace0a2076602b40b7951",
+      "published_size": 1561,
+      "matches": true,
+      "source_receipts": [
+        "ordinary-test_kernel_runner.py.json",
+        "escalated-test_kernel_runner.py.json",
+        "ordinary-test_source_inputs.py.json"
+      ]
+    },
+    "support/build/tests/test_source_inputs.py": {
+      "recorded_sha256": "2288d5ae528a323201813bd3c68469703fd04797815adfac133bacfdb6dc33d4",
+      "published_sha256": "2288d5ae528a323201813bd3c68469703fd04797815adfac133bacfdb6dc33d4",
+      "published_git_blob": "9449d0f2ba99cd9385b87f5e27cb5a261b8031d5",
+      "published_size": 4480,
+      "matches": true,
+      "source_receipts": [
+        "ordinary-test_source_inputs.py.json"
+      ]
+    }
+  },
+  "recorded_input_count": 13,
+  "matching_input_count": 13,
+  "all_recorded_inputs_match": true
+}

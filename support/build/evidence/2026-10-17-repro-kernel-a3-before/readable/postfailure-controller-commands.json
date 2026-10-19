@@ -1,0 +1,127 @@
+[
+  {
+    "name": "source-verification",
+    "argv": [
+      "python3",
+      "-I",
+      "support/build/verify-source.py"
+    ],
+    "cwd": "/tmp/trillionnium-a01-normalized-A3",
+    "started_utc": "2026-10-17T01:27:29.816785+00:00",
+    "finished_utc": "2026-10-17T01:27:29.899240+00:00",
+    "selected_environment": {
+      "PATH": "/root/.codex/tmp/arg0/codex-arg0z2lg97:/opt/codex/codex-path:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback",
+      "LANG": "C.UTF-8",
+      "LC_ALL": "C.UTF-8",
+      "TZ": "America/Los_Angeles",
+      "RUSTUP_TOOLCHAIN": null,
+      "CARGO_HOME": null,
+      "RUSTUP_HOME": null
+    },
+    "returncode": 0,
+    "log": "/workspace/scratch/ae1a8cf05419/normalized-cloud/controller-A3-postfailure/source-verification.log",
+    "log_bytes": 781,
+    "log_sha256": "5134613ae9a179a850327beb238d0433f3bb18e14dff8a24a1a0f5abf9db267e",
+    "scope": "New actual read-only postfailure command, explicitly separate from the terminated original three-command controller."
+  },
+  {
+    "name": "worktree-status",
+    "argv": [
+      "git",
+      "status",
+      "--porcelain=v1"
+    ],
+    "cwd": "/tmp/trillionnium-a01-normalized-A3",
+    "started_utc": "2026-10-17T01:27:29.899783+00:00",
+    "finished_utc": "2026-10-17T01:27:29.980378+00:00",
+    "selected_environment": {
+      "PATH": "/root/.codex/tmp/arg0/codex-arg0z2lg97:/opt/codex/codex-path:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback",
+      "LANG": "C.UTF-8",
+      "LC_ALL": "C.UTF-8",
+      "TZ": "America/Los_Angeles",
+      "RUSTUP_TOOLCHAIN": null,
+      "CARGO_HOME": null,
+      "RUSTUP_HOME": null
+    },
+    "returncode": 0,
+    "log": "/workspace/scratch/ae1a8cf05419/normalized-cloud/controller-A3-postfailure/worktree-status.log",
+    "log_bytes": 0,
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "scope": "New actual read-only postfailure command, explicitly separate from the terminated original three-command controller."
+  },
+  {
+    "name": "source-head",
+    "argv": [
+      "git",
+      "rev-parse",
+      "HEAD"
+    ],
+    "cwd": "/tmp/trillionnium-a01-normalized-A3",
+    "started_utc": "2026-10-17T01:27:29.980709+00:00",
+    "finished_utc": "2026-10-17T01:27:29.986067+00:00",
+    "selected_environment": {
+      "PATH": "/root/.codex/tmp/arg0/codex-arg0z2lg97:/opt/codex/codex-path:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback",
+      "LANG": "C.UTF-8",
+      "LC_ALL": "C.UTF-8",
+      "TZ": "America/Los_Angeles",
+      "RUSTUP_TOOLCHAIN": null,
+      "CARGO_HOME": null,
+      "RUSTUP_HOME": null
+    },
+    "returncode": 0,
+    "log": "/workspace/scratch/ae1a8cf05419/normalized-cloud/controller-A3-postfailure/source-head.log",
+    "log_bytes": 41,
+    "log_sha256": "78afd4bf6c591be5547f464dc1c52b3f47e9c3fcf4d64154f3bf383aa6375659",
+    "scope": "New actual read-only postfailure command, explicitly separate from the terminated original three-command controller."
+  },
+  {
+    "name": "source-tree",
+    "argv": [
+      "git",
+      "rev-parse",
+      "HEAD^{tree}"
+    ],
+    "cwd": "/tmp/trillionnium-a01-normalized-A3",
+    "started_utc": "2026-10-17T01:27:29.988062+00:00",
+    "finished_utc": "2026-10-17T01:27:29.992535+00:00",
+    "selected_environment": {
+      "PATH": "/root/.codex/tmp/arg0/codex-arg0z2lg97:/opt/codex/codex-path:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback",
+      "LANG": "C.UTF-8",
+      "LC_ALL": "C.UTF-8",
+      "TZ": "America/Los_Angeles",
+      "RUSTUP_TOOLCHAIN": null,
+      "CARGO_HOME": null,
+      "RUSTUP_HOME": null
+    },
+    "returncode": 0,
+    "log": "/workspace/scratch/ae1a8cf05419/normalized-cloud/controller-A3-postfailure/source-tree.log",
+    "log_bytes": 41,
+    "log_sha256": "fa1dd1b6e8b20046e6d06c49eb1740d994791bedd039efee989935ee112bea62",
+    "scope": "New actual read-only postfailure command, explicitly separate from the terminated original three-command controller."
+  },
+  {
+    "name": "derived-kernel-tree",
+    "argv": [
+      "git",
+      "rev-parse",
+      "HEAD:kernel/asterinas"
+    ],
+    "cwd": "/tmp/trillionnium-a01-normalized-A3",
+    "started_utc": "2026-10-17T01:27:29.992865+00:00",
+    "finished_utc": "2026-10-17T01:27:29.997984+00:00",
+    "selected_environment": {
+      "PATH": "/root/.codex/tmp/arg0/codex-arg0z2lg97:/opt/codex/codex-path:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback",
+      "LANG": "C.UTF-8",
+      "LC_ALL": "C.UTF-8",
+      "TZ": "America/Los_Angeles",
+      "RUSTUP_TOOLCHAIN": null,
+      "CARGO_HOME": null,
+      "RUSTUP_HOME": null
+    },
+    "returncode": 0,
+    "log": "/workspace/scratch/ae1a8cf05419/normalized-cloud/controller-A3-postfailure/derived-kernel-tree.log",
+    "log_bytes": 41,
+    "log_sha256": "1c4809fb7d621c6a5fc471fde708d0c74c9edd5b8f32b35e5edb6a9ad54ea1be",
+    "scope": "New actual read-only postfailure command, explicitly separate from the terminated original three-command controller."
+  }
+]

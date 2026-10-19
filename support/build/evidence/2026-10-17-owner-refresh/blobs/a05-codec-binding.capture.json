@@ -1,0 +1,13 @@
+{
+  "id": "a05-codec-binding",
+  "path": "kernel/asterinas/kernel/core/src/lib.rs",
+  "ref": "25cbffe6080bdf397f4911f85111cc966ac951d3",
+  "expected_git_blob": "1a1cc52dae2fa5c9b824c12409eba78760f1c0f6",
+  "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/git/blobs/1a1cc52dae2fa5c9b824c12409eba78760f1c0f6",
+  "started": "2026-10-17T01:11:24.038Z",
+  "ended": "2026-10-17T01:11:24.398Z",
+  "tool": "mcp__codex_apps__github_fetch",
+  "representation": "connector-unwrapped UTF-8 blob content; not raw GitHub JSON",
+  "isError": false,
+  "content": "// SPDX-License-Identifier: MPL-2.0\n\n//! The core of the Asterinas kernel.\n//!\n//! This crate implements the Linux ABI and the core kernel mechanisms.\n\n#![no_std]\n#![deny(unsafe_code)]\n#![feature(alloc_io)]\n#![feature(array_try_from_fn)]\n#![feature(associated_type_defaults)]\n#![feature(btree_cursors)]\n#![feature(debug_closure_helpers)]\n#![feature(format_args_nl)]\n#![feature(ip_as_octets)]\n#![feature(linked_list_cursors)]\n#![feature(linked_list_retain)]\n#![feature(panic_can_unwind)]\n#![feature(min_specialization)]\n#![feature(thin_box)]\n#![feature(unique_rc_arc)]\n#![feature(custom_inner_attributes)]\n\nextern crate alloc;\nextern crate lru;\n#[macro_use]\nextern crate getset;\n#[macro_use]\nextern crate ostd_pod;\n\n// Set this crate's log prefix for `ostd::log`.\nmacro_rules! __log_prefix {\n    () => {\n        \"\"\n    };\n}\n\n#[cfg_attr(target_arch = \"x86_64\", path = \"arch/x86/mod.rs\")]\n#[cfg_attr(target_arch = \"riscv64\", path = \"arch/riscv/mod.rs\")]\n#[cfg_attr(target_arch = \"loongarch64\", path = \"arch/loongarch/mod.rs\")]\n#[cfg_attr(target_arch = \"aarch64\", path = \"arch/arm/mod.rs\")]\nmod arch;\n\n// Single-source bridge to the experimental no_std HOS2 codec. This is\n// deliberately NOT a second wire implementation. A01 can replace the path\n// module with a locked Cargo path-dependency when the derived lock is updated.\n#[path = \"../../../../../libs/os-abi/src/lib.rs\"]\n#[allow(unused_attributes)]\npub(crate) mod hos2_os_abi;\n\npub mod context;\nmod cpu;\npub mod device;\nmod driver;\npub mod error;\npub mod events;\npub mod fs;\nmod init;\nmod ipc;\nmod net;\npub mod power;\npub mod prelude;\npub mod process;\nmod sched;\npub mod security;\nmod syscall;\nmod thread;\nmod time;\npub mod util;\n// TODO: Add vDSO support for LoongArch.\n#[cfg(not(target_arch = \"loongarch64\"))]\nmod vdso;\npub mod vm;\n\n/// Boots the Asterinas core kernel.\npub fn boot() {\n    init::main();\n}\n"
+}

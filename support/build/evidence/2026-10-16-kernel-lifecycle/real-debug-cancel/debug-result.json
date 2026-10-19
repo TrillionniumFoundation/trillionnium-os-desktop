@@ -1,0 +1,71 @@
+{
+  "passed": false,
+  "stage": "gdb_rust_entry",
+  "boot_directory": "/workspace/scratch/ae1a8cf05419/a01-next6-build/support/build/out/next6-real-debug-cancel-03/boot",
+  "entry_artifact_binding": {
+    "entry_address": "0xffffffff88422840",
+    "entry_size": 32,
+    "expected_bytes": "50e83a91f1ff48c7c7a8545488e8ee49060048c7c000105f8848c7c178165f88",
+    "symbol_artifact": {
+      "path": "/workspace/scratch/ae1a8cf05419/a01-next6-build/kernel/asterinas/target/x86_64-unknown-none/release/asterinas-osdk-bin",
+      "size": 111709176,
+      "sha256": "855e92c82ac3745d40320fd4451e8862e38e2fbfbf7b2c6e98f60d514018d6a8",
+      "elf_class": "ELF64",
+      "elf_type": 2,
+      "elf_machine": 62,
+      "symbol": "__ostd_main",
+      "address": "0xffffffff88422840",
+      "entry_file_offset": 4077632,
+      "entry_bytes": "50e83a91f1ff48c7c7a8545488e8ee49060048c7c000105f8848c7c178165f88"
+    },
+    "boot_artifact": {
+      "path": "/workspace/scratch/ae1a8cf05419/a01-next6-build/kernel/asterinas/target/osdk/asterinas/asterinas-osdk-bin.elf",
+      "size": 5975720,
+      "sha256": "89c7f0bab00172e4a8d038a3d5c38396d952ff44e4ab159bbe8765edbaa16313",
+      "elf_class": "ELF64",
+      "elf_type": 2,
+      "elf_machine": 3,
+      "symbol": "__ostd_main",
+      "address": "0xffffffff88422840",
+      "entry_file_offset": 4077632,
+      "entry_bytes": "50e83a91f1ff48c7c7a8545488e8ee49060048c7c000105f8848c7c178165f88"
+    }
+  },
+  "error": "interrupted by SIGTERM",
+  "owned_session_cleanup": [
+    {
+      "leader_pid": 266,
+      "status": 1,
+      "reaped": true,
+      "external_reap": false
+    },
+    {
+      "leader_pid": 264,
+      "status": 0,
+      "reaped": true,
+      "external_reap": false
+    },
+    {
+      "leader_pid": 45,
+      "status": -15,
+      "reaped": true,
+      "external_reap": false
+    },
+    {
+      "leader_pid": 30,
+      "status": 0,
+      "reaped": true,
+      "external_reap": false
+    },
+    {
+      "leader_pid": 20,
+      "status": 0,
+      "reaped": true,
+      "external_reap": false
+    }
+  ],
+  "interrupted_by": "SIGTERM",
+  "received_signals": [
+    "SIGTERM"
+  ]
+}

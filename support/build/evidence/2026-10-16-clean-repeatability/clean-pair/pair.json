@@ -1,0 +1,96 @@
+{
+  "kind": "same_host_same_absolute_path_two_clean_target_builds",
+  "source_commit": "5bcec614c1a075782b6ffaa5a5212fdee29be37d",
+  "source_tree": "00e70e58dfa0dbf4718db55240136683f0a23310",
+  "cwd": "/workspace/scratch/ae1a8cf05419/a01-next8-repeat",
+  "environment": {
+    "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+    "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+    "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+    "CARGO_NET_OFFLINE": "true",
+    "CARGO_TARGET_DIR": "/workspace/scratch/ae1a8cf05419/a01-next8-repeat/kernel/asterinas/target",
+    "CARGO_BUILD_JOBS": "2",
+    "VDSO_LIBRARY_DIR": "/workspace/scratch/ae1a8cf05419/linux-vdso",
+    "A01_QEMU_TIMEOUT": "300",
+    "ASTER_BUILD_TIMESTAMP": "Thu Jan  1 00:00:00 UTC 1970",
+    "SOURCE_DATE_EPOCH": "0",
+    "TZ": "UTC",
+    "LC_ALL": "C"
+  },
+  "explicitly_unset": [
+    "RUSTFLAGS",
+    "CARGO_ENCODED_RUSTFLAGS"
+  ],
+  "controller_sha256": "4d03a2958b58596762ed2501109c49a6c032e443a165834d4b4cafbf1929087e",
+  "started_utc": "2026-10-16T14:27:42.254406+00:00",
+  "host_identity": {
+    "nodename": "29609d47ba8e",
+    "effective_uid": 0,
+    "effective_username": "root"
+  },
+  "cross_directory_or_cross_host_reproducibility_claimed": false,
+  "runs": [
+    {
+      "label": "a",
+      "argv": [
+        "support/build/kernel.sh",
+        "run_kernel"
+      ],
+      "target_absent_before_launch": true,
+      "run_output": "/workspace/scratch/ae1a8cf05419/a01-next8-repeat/support/build/out/next8-clean-a",
+      "outer_exit": 0,
+      "started_utc": "2026-10-16T14:27:42.254980+00:00",
+      "entry_pid": 18,
+      "completed_utc": "2026-10-16T14:31:07.578548+00:00",
+      "console_sha256": "8c2400718cb14c7404e4a1675d1d8873064fef7e7339ab07619a5afd83562fd5",
+      "console_bytes": 92891,
+      "raw_qemu_exit": 33,
+      "kernel_sha256": "6c0c382ec88d2e59b58d50abb0ef3671635f30ce08c3b442d2bdc2204821d040",
+      "kernel_size": 8288088,
+      "kernel_read_identity": {
+        "st_dev": 27,
+        "st_ino": 1592450,
+        "st_size": 8288088,
+        "st_mtime_ns": 1792161066298604472,
+        "st_ctime_ns": 1792161066298621538
+      },
+      "initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "serial_sha256": "c2ada607f3b5c6c6c9fde912ae52efeeb4fde48ad35ce63426ead70e4c4e9fdb",
+      "kernel_gzip_sha256": "f17443efbe60e7db1b3490dd73981bb58418ae115031a425925058c129b25b23",
+      "git_status_after": ""
+    },
+    {
+      "label": "b",
+      "argv": [
+        "support/build/kernel.sh",
+        "run_kernel"
+      ],
+      "target_absent_before_launch": true,
+      "run_output": "/workspace/scratch/ae1a8cf05419/a01-next8-repeat/support/build/out/next8-clean-b",
+      "outer_exit": 0,
+      "started_utc": "2026-10-16T14:31:08.761207+00:00",
+      "entry_pid": 4942,
+      "completed_utc": "2026-10-16T14:33:15.005691+00:00",
+      "console_sha256": "69546752276c7b7a245167948aac6e8341c091e2a15e5fa59671e2fc213ae72e",
+      "console_bytes": 88388,
+      "raw_qemu_exit": 33,
+      "kernel_sha256": "6c0c382ec88d2e59b58d50abb0ef3671635f30ce08c3b442d2bdc2204821d040",
+      "kernel_size": 8288088,
+      "kernel_read_identity": {
+        "st_dev": 27,
+        "st_ino": 1590865,
+        "st_size": 8288088,
+        "st_mtime_ns": 1792161193675728100,
+        "st_ctime_ns": 1792161193675743002
+      },
+      "initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "serial_sha256": "82952b5c59bd2b56a7112115468c630c13185894bb3e644d4e8e81ef82823c91",
+      "kernel_gzip_sha256": "f17443efbe60e7db1b3490dd73981bb58418ae115031a425925058c129b25b23",
+      "git_status_after": ""
+    }
+  ],
+  "completed_utc": "2026-10-16T14:33:16.152779+00:00",
+  "all_public_boots_passed": true,
+  "same_host_same_path_kernel_equal": true,
+  "initramfs_equal": true
+}

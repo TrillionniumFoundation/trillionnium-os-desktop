@@ -1,0 +1,47 @@
+{"started_utc": "2026-10-17T01:08:09.080697+00:00", "completed_utc": "2026-10-17T01:08:09.166501+00:00", "repo_head": "e932e49191db61bb4b95d4dbbb891e4793908219", "script_sha256": "2cc9536d6af31737ad469f000244dafecbb8a80f30024743f3aff97c3707548d", "selected_file_count": 67, "matched_line_count": 46}
+.github/workflows/a01-boot-evidence.yml:27:     runs-on: ubuntu-24.04
+.github/workflows/a02-pinned-host-acceptance.yml:26:     runs-on: ubuntu-24.04
+.github/workflows/a09-hardware.yml:23:     runs-on: ubuntu-24.04
+.github/workflows/a10-host.yml:26:     runs-on: ubuntu-24.04
+.github/workflows/a10-host.yml:79:     runs-on: ubuntu-24.04
+.github/workflows/g0-contracts.yml:33:     runs-on: ubuntu-24.04
+docs/ANDROID_COMPATIBILITY.md:35: ## 6. AI代理专属边界
+docs/ASTERINAS_ORGAN_BACKEND.md:21: 这证明本轮重新运行了相同内核产物，不证明本轮从源重新构建、跨机器位级可复现、KVM、裸机、HOS2 或完整兼容。源码构建证据仍归 A01 原 PR。
+docs/HARDWARE_AND_DRIVERS.md:37: OSTD虚拟化基础与完整VMM/虚拟中断/设备模型/KVM兼容接口分开；Intel VMX、AMD SVM、ARM EL2分别核对源码和硬件前提。当前固定上游不等于本项目已支持任意后端。[OSTD RFC](SOURCES.md#ostd-vmm)
+docs/LINUX_COMPATIBILITY.md:19: 原生CapSpace不绕过Linux权限，Linux root/fd不绕过宿主资源域。文件、设备、调试、映射和cgroup入口最终检查同一个对象owner与授权范围。普通fd保持Linux dup/fork/exec语义；control fd有设备专属打开身份绑定。跨进程传递原始fd不复制发送者管理能力。细节以NATIVE_ABI为单一来源。
+docs/STATUS.md:145: | A01 OSDK 宿主回归 | **已合入 main**：[PR #15](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/15)，隔离 OSDK daemon 生命周期修复，按保留日志所列宿主单测 23/23、选定集成 13/13 通过；内核客体 362 reported、3 VMX/EPT soft skips，不代表 SMP/裸机/HOS2 验收。 |
+docs/agents/prompts/A00-integration.md:9: ## 专属任务 Prompt（可以全文复制）
+docs/agents/prompts/A00-integration.md:18: 【本 Agent 专属工作】
+docs/agents/prompts/A01-asterinas-boot.md:9: ## 专属任务 Prompt（可以全文复制）
+docs/agents/prompts/A01-asterinas-boot.md:18: 【本 Agent 专属工作】
+docs/agents/prompts/A02-hos2-wire.md:9: ## 专属任务 Prompt（可以全文复制）
+docs/agents/prompts/A02-hos2-wire.md:18: 【本 Agent 专属工作】
+docs/agents/prompts/A03-control-core.md:9: ## 专属任务 Prompt（可以全文复制）
+docs/agents/prompts/A03-control-core.md:18: 【本 Agent 专属工作】
+docs/agents/prompts/A04-linux-hepta-baseline.md:9: ## 专属任务 Prompt（可以全文复制）
+docs/agents/prompts/A04-linux-hepta-baseline.md:18: 【本 Agent 专属工作】
+docs/agents/prompts/A05-kernel-control.md:9: ## 专属任务 Prompt（可以全文复制）
+docs/agents/prompts/A05-kernel-control.md:18: 【本 Agent 专属工作】
+docs/agents/prompts/A06-scheduler-budget.md:9: ## 专属任务 Prompt（可以全文复制）
+docs/agents/prompts/A06-scheduler-budget.md:18: 【本 Agent 专属工作】
+docs/agents/prompts/A07-hepta-native.md:9: ## 专属任务 Prompt（可以全文复制）
+docs/agents/prompts/A07-hepta-native.md:18: 【本 Agent 专属工作】
+docs/agents/prompts/A08-android-compat.md:9: ## 专属任务 Prompt（可以全文复制）
+docs/agents/prompts/A08-android-compat.md:18: 【本 Agent 专属工作】
+docs/agents/prompts/A09-gpu-vmm.md:9: ## 专属任务 Prompt（可以全文复制）
+docs/agents/prompts/A09-gpu-vmm.md:18: 【本 Agent 专属工作】
+docs/agents/prompts/A09-gpu-vmm.md:20: 区分显示、软件图形、硬件图形、计算 API、本机模型执行和数值正确性。提出一组实际可运行的小矩阵运算/推理输入输出校验，测量发生在哪个 host/guest 内核。虚拟化分清 Intel VMX、AMD SVM、ARM EL2，不能因为 OSTD 上游有 VMX 例子就声称目标 AMD 可用。
+docs/agents/prompts/A10-rust-desktop.md:9: ## 专属任务 Prompt（可以全文复制）
+docs/agents/prompts/A10-rust-desktop.md:18: 【本 Agent 专属工作】
+support/build/README.md:18: guests and one explicit VMX soft skip. Two failed debug attempts and the initial
+support/build/README.md:41: OSTD/core reported 221/141 passes, with three VMX/EPT soft skips and a 359
+support/build/README.md:81: display, or KVM is needed for this profile.
+support/build/README.md:190: case explicitly takes its VMX-unavailable fallback. The full-run failure and
+support/build/README.md:203: one explicit VMX soft skip and eleven actual QEMU guests returning raw 33.
+support/build/README.md:241: soft-skipping VMX/EPT paths unavailable under TCG; the exercised pass lower
+support/build/ktest/README.md:79: in particular TCG does not establish VMX/EPT support. Runner pass counts must
+support/build/minimal/OSDK.toml:26: # require OVMF, GRUB, data disks, network access, a display, or KVM.
+support/build/osdk-integration/README.md:6: VMX virtualization, or desktop workloads.
+support/build/osdk-integration/README.md:168: replaced by a blanket success status. The hypervisor example's upstream VMX-
+support/build/osdk-integration/README.md:169: unavailable fallback is reported as a soft skip, never as a VMX success.
+support/build/repro/README.md:73: as evidence of a second host. Until actual full kernel builds, byte comparison

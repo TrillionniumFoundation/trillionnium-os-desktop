@@ -1,0 +1,29 @@
+test_empty_encoded_flags_reject_before_work_and_same_output_retries (__main__.RunnerLifecycleTests.test_empty_encoded_flags_reject_before_work_and_same_output_retries) ... FAIL
+test_nonempty_encoded_flags_reject_before_work_and_same_output_retries (__main__.RunnerLifecycleTests.test_nonempty_encoded_flags_reject_before_work_and_same_output_retries) ... FAIL
+
+======================================================================
+FAIL: test_empty_encoded_flags_reject_before_work_and_same_output_retries (__main__.RunnerLifecycleTests.test_empty_encoded_flags_reject_before_work_and_same_output_retries)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/next9-encoded-flags/baseline-lifecycle/test_runner_lifecycle.py", line 353, in test_empty_encoded_flags_reject_before_work_and_same_output_retries
+    self.exercise_encoded_flags_rejection("")
+  File "/workspace/scratch/ae1a8cf05419/next9-encoded-flags/baseline-lifecycle/test_runner_lifecycle.py", line 336, in exercise_encoded_flags_rejection
+    self.assertEqual(completed.returncode, 2, completed.stdout + completed.stderr)
+AssertionError: 0 != 2 : PASS: real kernel-mode tests; evidence: /tmp/tmpw9u7tu4i/missing-parent/evidence
+
+
+======================================================================
+FAIL: test_nonempty_encoded_flags_reject_before_work_and_same_output_retries (__main__.RunnerLifecycleTests.test_nonempty_encoded_flags_reject_before_work_and_same_output_retries)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/next9-encoded-flags/baseline-lifecycle/test_runner_lifecycle.py", line 356, in test_nonempty_encoded_flags_reject_before_work_and_same_output_retries
+    self.exercise_encoded_flags_rejection("--cfg\x1fhost_supplied_flag")
+  File "/workspace/scratch/ae1a8cf05419/next9-encoded-flags/baseline-lifecycle/test_runner_lifecycle.py", line 336, in exercise_encoded_flags_rejection
+    self.assertEqual(completed.returncode, 2, completed.stdout + completed.stderr)
+AssertionError: 0 != 2 : PASS: real kernel-mode tests; evidence: /tmp/tmpu8b17dah/missing-parent/evidence
+
+
+----------------------------------------------------------------------
+Ran 2 tests in 1.505s
+
+FAILED (failures=2)

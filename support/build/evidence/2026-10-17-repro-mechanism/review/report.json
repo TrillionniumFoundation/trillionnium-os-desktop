@@ -1,0 +1,81 @@
+{
+  "schema": 1,
+  "role": "independent_read_only_repro_profile_review",
+  "status": "approved_for_publish_as_host_tested_opt_in_entry_pending_actual_full_kernel_AB",
+  "source_sha256": {
+    "profile.py": "e1dc29bebb7fa8ee32e4eb2022b26785f1ace48535f714e4da79628b2e49ac2b",
+    "README.md": "10154dd06a7765a95e01cd95f60f34c4af93b968ad6c3067a54575d40644b0af",
+    "cargo-metadata-wrapper.py": "ba2a27ad16cd0b1a6236dc18c4246716990ca8429a0006fde527b00a26bbd730",
+    "run.py": "1f1d5c207e5cdac85cf1c0a8b4c54ea8a398d4134e53192532f0325a4780272c",
+    "rustc-wrapper.py": "fa966690f26ba59688cc92fc3908bc535f46ac25fdc66bf8e5fef7975c7a4b14",
+    "test_profile.py": "084ca13504eda89df264fac25eb48781e4398d56e2ca5c42e5572add0ad3971b"
+  },
+  "runtime_helper_sha256": {
+    "profile.py": "e1dc29bebb7fa8ee32e4eb2022b26785f1ace48535f714e4da79628b2e49ac2b",
+    "rustc-wrapper.py": "fa966690f26ba59688cc92fc3908bc535f46ac25fdc66bf8e5fef7975c7a4b14",
+    "cargo-metadata-wrapper.py": "ba2a27ad16cd0b1a6236dc18c4246716990ca8429a0006fde527b00a26bbd730"
+  },
+  "code_changes_by_reviewer": false,
+  "reviewed_semantics": {
+    "upstream_source": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/kernel/libs/comp-sys/component-macro/src/priority.rs",
+    "upstream_sha256": "7c89992761844d328e1f57d03f2b02b1d9cd869e80fd1d5279566de1fb4d0761",
+    "direct_component_dependency_predicate_preserved": true,
+    "workspace_substring_membership_predicate_preserved": true,
+    "missing_workspace_component_rejected": true,
+    "component_dependency_name_order_and_priorities_preserved": true,
+    "original_metadata_not_mutated": true,
+    "real_Cargo_toy_metadata_graphs_reviewed": 2,
+    "packages_each_graph": 24,
+    "previous_prototype_root_fragment_ID_omissions_corrected_each_graph": 5,
+    "synthetic_component_DAG_priorities": [
+      0,
+      1,
+      2
+    ]
+  },
+  "resolved_findings": [
+    {
+      "finding": "repository wrapper exec modes observed to revert to0644 across tool invocations; direct exec errno13 twice",
+      "resolution": "Runtime no longer executes source wrappers. Launcher exclusively materializes byte-bound three-file helper closure into owned profile; final actual private exec verifies wrapper modes0500 and child0. Cause of source-mode reversion remains unattributed."
+    },
+    {
+      "finding": "foreign FIFO blocks regular input before fstat",
+      "resolution": "O_NONBLOCK added; independent post-fix probe returns ValueError exit2 without timeout."
+    },
+    {
+      "finding": "dynamic import creates private helpers/__pycache__ and breaks exact-entry custody",
+      "resolution": "Both wrappers set sys.dont_write_bytecode before import; final private exec leaves exactly3 files, no pycache, unchanged snapshot."
+    },
+    {
+      "finding": "prelaunch target check precision and nested directories",
+      "resolution": "Target rechecked after profile flock and before output creation; policy says target_absent_at_prelaunch. Source/profile/output must be disjoint."
+    }
+  ],
+  "independent_execution_scope": {
+    "final_private_helper_direct_execs": 2,
+    "metadata_binding_files": 1,
+    "profile_snapshot_unchanged": true,
+    "new_full_suites": 0,
+    "new_Cargo_processes": 0,
+    "new_Rust_compilations": 0,
+    "new_guest_executions": 0
+  },
+  "limits": [
+    "Profile lock serializes this virtual input, not the later public kernel workspace lock; caller owns isolated worktrees with no competing builder.",
+    "Distinct-source paths, actual empty target compilation, full kernel ELF comparison and real QEMU boot remain root A01 acceptance duties.",
+    "Metadata fixtures are actual Cargo output from a toy workspace using the pinned macro mechanism, not full kernel metadata.",
+    "Semantic priority check is a Python transcription of inspected pinned Rust logic; it is not another Rust macro execution.",
+    "No independent-host or arbitrary-environment reproduction, no privileged-writer sandbox."
+  ],
+  "proof_files": [
+    "pre-fix-executable-probes.json",
+    "pre-fix-fifo-probe.json",
+    "post-fix-executable-probes.json",
+    "post-fix-fifo-probe.json",
+    "materialized-helper-bytecode-probe.json",
+    "materialized-helper-final-probe.json",
+    "semantic-review.json",
+    "semantic-probe.py",
+    "semantic-probe-first-attempt.json"
+  ]
+}

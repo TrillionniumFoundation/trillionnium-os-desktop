@@ -1,0 +1,102 @@
+{
+  "a01_initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+  "a01_kernel_sha256": "e884f5e50cf296833276016894a39337cd9ac13bc51f6b1f2dea3cc3a6904b63",
+  "a04_source_commit": "16d672881909a5a9197d82126032b7d962db7d76",
+  "artifact_retention": "Original accepted A01 kernel/initramfs are already tracked at support/build/evidence/2026-10-16/artifacts. Rootfs tar and frozen pack API retained here. All derived image hashes/manifests retained; duplicate derived images and kernel copies omitted.",
+  "canonical_serial_evidence": {
+    "all_snapshot_content_and_gzip_hashes_verified": true,
+    "known_writer_or_cause": null,
+    "later_raw_path_divergences": [
+      {
+        "canonical_snapshot_sha256": "8d752699dd2520b89a5b9b6ba0f3df1a704bafdc325704044f175931520fecd8",
+        "captured_fd_identity": {
+          "bytes": 185535,
+          "device": 27,
+          "inode": 131205
+        },
+        "captured_serial_sha256": "3403bdebe0f44f12a527dd887a97dbe0d5287361826211ede45cdebbc008b175",
+        "case": "sqlite_static.sqlite_wal_elf",
+        "current_raw_path_bytes": 160713,
+        "current_raw_path_inode": 132390,
+        "current_raw_path_sha256": "31cbe1cf38c23ebcd619dd10645440e1171b59079ffd51351ecb28f6a0b3e298"
+      }
+    ],
+    "snapshot_count": 28
+  },
+  "crlf_adapter_attempt": {
+    "cases": 28,
+    "corrected_offline_reparse_matches": 24,
+    "entry_sha256": "05c095f71a2b6c079bbea3461e0846f22c387359cbd573d295b5a169810183d3",
+    "new_guest_run_claimed_by_reparse": false,
+    "preserved": true,
+    "qualification_invalidated_by": "raw bytes decoding retained CRLF; original Path.read_text normalizes; runner-status regex rejected complete logs"
+  },
+  "full_original_suite_passed": false,
+  "full_w1_passed": false,
+  "initial_isolated_attempt": {
+    "cases": 28,
+    "entry_sha256": "181a571bf4f05f28de070144d134c1a04a9dcff476b81536be1cda1fb99c4654",
+    "fully_bound": false,
+    "gap_case": "static.ipc_epoll",
+    "recorded_matches": 24,
+    "serial_binding_gaps": 1
+  },
+  "isolated_diagnostic": {
+    "cases": 28,
+    "completed_failed": 2,
+    "driver_exit_code": 2,
+    "entry_sha256": "45c78dc4b4508b3766f8479b260c97068a0a10cbe19564b44c3b8ac3942f0674",
+    "failed_cases": [
+      "dynamic.fd_limit",
+      "dynamic.scm_rights",
+      "static.fd_limit",
+      "static.scm_rights"
+    ],
+    "matched": 24,
+    "parallel_guests": 2,
+    "profile": "a01-a04-isolated-case-v1",
+    "timed_out": 2,
+    "timeout_seconds_per_guest": 30
+  },
+  "kernel_upstream_commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+  "original_linux_controls": {
+    "exact_matches": 2,
+    "guest": false,
+    "same_pinned_static_elf_cases": [
+      "fd_limit",
+      "scm_rights"
+    ]
+  },
+  "original_suite": {
+    "completed_failed_cases": 1,
+    "exact_matched_cases": 8,
+    "packaged_cases": 28,
+    "qualification": "guest_failed_or_incomplete",
+    "raw_qemu_exit_code": null,
+    "runner_exit_code": 2,
+    "serial_sha256": "62d4527122004e158ec4ae6176e658b12d524b5bae303959d490026f93d1f5cc",
+    "timed_out": true,
+    "timeout_seconds": 180,
+    "unobserved_packaged_cases": 19
+  },
+  "owned_kernel_or_a04_source_modified": false,
+  "portable_entry_validation": {
+    "cases": 3,
+    "completed_failed": 1,
+    "entry_path": "support/build/linux-guest/isolate.py",
+    "entry_sha256": "ff7bc28305cd1bd0bc506ed84fe9ed78244980d4e915269442f12b875158d880",
+    "matched": 1,
+    "timed_out": 1
+  },
+  "rootfs_tar_bytes": 8837120,
+  "rootfs_tar_sha256": "df8df2e3cdcd308ef62a59268a4519e2923c9ff78145e46f26a4092725e80797",
+  "s1_block_persistence_verified": false,
+  "schema": 1,
+  "unported_workloads_outside_28": [
+    "sqlite_wal (Python)",
+    "uds_path (Python)",
+    "nss_tls (Python)",
+    "rust_tokio"
+  ],
+  "verified_rootfs_files": 17
+}

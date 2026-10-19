@@ -1,0 +1,122 @@
+{
+  "all_four_expected_outcomes": true,
+  "cases": [
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/a04-verifier-independent-review/corrected-review/race-case.py",
+        "/workspace/scratch/ae1a8cf05419/a04-verifier-independent-review/verify-reviewed-534b5fb52b71a9b35f56a71942bf43b525f84f74c87efec0dc5c952e12374752.py",
+        "/workspace/scratch/ae1a8cf05419/a04-verifier-independent-review/corrected-review/old-red-isolated",
+        "old-red"
+      ],
+      "exit": 0,
+      "name": "old-red-isolated",
+      "result": {
+        "bytes_match": false,
+        "error": null,
+        "expected_outcome_confirmed": true,
+        "incomplete_marker_present": false,
+        "injected": true,
+        "mode": "0o400",
+        "payload_executed": false,
+        "python_isolated": true,
+        "python_optimized": false,
+        "qemu_run": false,
+        "requested_sha256": "9af8e698a35d535a5d86525b1c7e4aa835658412dba5f622f50fa18f31b2250e",
+        "source_sha256": "534b5fb52b71a9b35f56a71942bf43b525f84f74c87efec0dc5c952e12374752",
+        "written_sha256": "7d69950f0d745727c3caf68b918d850958423be71fafea82ffb191df82874351"
+      }
+    },
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/a04-verifier-independent-review/corrected-review/race-case.py",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/handoffs/a04-exact-rootfs/verify.py",
+        "/workspace/scratch/ae1a8cf05419/a04-verifier-independent-review/corrected-review/new-green-isolated",
+        "new-green"
+      ],
+      "exit": 0,
+      "name": "new-green-isolated",
+      "result": {
+        "bytes_match": false,
+        "error": {
+          "reason": "output content changed during FD readback: rootfs.tar",
+          "type": "ValueError"
+        },
+        "expected_outcome_confirmed": true,
+        "incomplete_marker_present": true,
+        "injected": true,
+        "mode": "0o400",
+        "payload_executed": false,
+        "python_isolated": true,
+        "python_optimized": false,
+        "qemu_run": false,
+        "requested_sha256": "9af8e698a35d535a5d86525b1c7e4aa835658412dba5f622f50fa18f31b2250e",
+        "source_sha256": "4ef5ab0a24b4460e358b4443c956667f2974b80547234c31784ebcaae378bad9",
+        "written_sha256": "7d69950f0d745727c3caf68b918d850958423be71fafea82ffb191df82874351"
+      }
+    },
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-O",
+        "/workspace/scratch/ae1a8cf05419/a04-verifier-independent-review/corrected-review/race-case.py",
+        "/workspace/scratch/ae1a8cf05419/a04-verifier-independent-review/verify-reviewed-534b5fb52b71a9b35f56a71942bf43b525f84f74c87efec0dc5c952e12374752.py",
+        "/workspace/scratch/ae1a8cf05419/a04-verifier-independent-review/corrected-review/old-red-optimized-isolated",
+        "old-red"
+      ],
+      "exit": 0,
+      "name": "old-red-optimized-isolated",
+      "result": {
+        "bytes_match": false,
+        "error": null,
+        "expected_outcome_confirmed": true,
+        "incomplete_marker_present": false,
+        "injected": true,
+        "mode": "0o400",
+        "payload_executed": false,
+        "python_isolated": true,
+        "python_optimized": true,
+        "qemu_run": false,
+        "requested_sha256": "9af8e698a35d535a5d86525b1c7e4aa835658412dba5f622f50fa18f31b2250e",
+        "source_sha256": "534b5fb52b71a9b35f56a71942bf43b525f84f74c87efec0dc5c952e12374752",
+        "written_sha256": "7d69950f0d745727c3caf68b918d850958423be71fafea82ffb191df82874351"
+      }
+    },
+    {
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-O",
+        "/workspace/scratch/ae1a8cf05419/a04-verifier-independent-review/corrected-review/race-case.py",
+        "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/handoffs/a04-exact-rootfs/verify.py",
+        "/workspace/scratch/ae1a8cf05419/a04-verifier-independent-review/corrected-review/new-green-optimized-isolated",
+        "new-green"
+      ],
+      "exit": 0,
+      "name": "new-green-optimized-isolated",
+      "result": {
+        "bytes_match": false,
+        "error": {
+          "reason": "output content changed during FD readback: rootfs.tar",
+          "type": "ValueError"
+        },
+        "expected_outcome_confirmed": true,
+        "incomplete_marker_present": true,
+        "injected": true,
+        "mode": "0o400",
+        "payload_executed": false,
+        "python_isolated": true,
+        "python_optimized": true,
+        "qemu_run": false,
+        "requested_sha256": "9af8e698a35d535a5d86525b1c7e4aa835658412dba5f622f50fa18f31b2250e",
+        "source_sha256": "4ef5ab0a24b4460e358b4443c956667f2974b80547234c31784ebcaae378bad9",
+        "written_sha256": "7d69950f0d745727c3caf68b918d850958423be71fafea82ffb191df82874351"
+      }
+    }
+  ],
+  "corrected_source_sha256": "4ef5ab0a24b4460e358b4443c956667f2974b80547234c31784ebcaae378bad9"
+}

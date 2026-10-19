@@ -1,0 +1,66 @@
+{
+  "state": "completed actual private dependency restoration on distinct execution instance; no kernel acceptance",
+  "actual_host": "24f0ea2620fe",
+  "boot_id": "952006db-88a3-4a56-8049-0adbbe2acfb2",
+  "kernel": "Linux 6.18.55",
+  "cpu_model": "AMD EPYC 9V74 80-Core Processor",
+  "old_host_reference": "343e40cfefc1 / Linux 6.18.44 / Intel exposed CPU",
+  "same_public_dpkg_status_sha256": "315debd2c0d91242550234b1fc27842103bccdf4274aa75c59b6d1f51d07966e",
+  "native": {
+    "signed_InRelease": 3,
+    "signed_Packages_indexes": 6,
+    "exact_locked_packages": 57,
+    "download_bytes": 132706754,
+    "package_extractions_exit_zero": 57,
+    "native_runtime_commands_exit_zero": 19,
+    "executable_and_guest_firmware_identities_equal": 10,
+    "paused_QEMU_owned_child_passed": true,
+    "paused_QEMU_is_kernel_boot": false
+  },
+  "rust": {
+    "fresh_installer_size": 21113232,
+    "fresh_installer_sha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71",
+    "fresh_manifest_size": 929653,
+    "fresh_manifest_sha256": "c0b09f4e128768b2d6eab27050625a1ce974f8b39c07871370368cd82fbf8617",
+    "toolchain": "nightly-2026-07-21",
+    "rustc_commit": "87e5904f5eb6398af6b22eac2802c78934260c48",
+    "target": "x86_64-unknown-none",
+    "components": [
+      "rust-src",
+      "rustc-dev",
+      "llvm-tools-preview",
+      "rustfmt",
+      "clippy"
+    ],
+    "cargo_binutils": "0.4.0 --locked",
+    "original_eight_operations_exit_zero": true,
+    "additional_identity_checks_exit_zero": 4,
+    "global_cargo_osdk_installed": false
+  },
+  "vdso": {
+    "commit": "8af571775a3d3a1df3e84fc9709b9d6b160c771a",
+    "tree": "8e0a300d78c2a020ccc79f1253bc27a8301416e6",
+    "artifact_sha256": "27cd7bf576a92fa48a891c05988f52fac35b7374d5b9650d6b035e477c5d93a3"
+  },
+  "failed_current_dependency_commands": [],
+  "historical_failure_scope": "The prior 2026-10-17-private-toolchain phase retains original prepare-host.sh --apt exit100 and missing-QEMU-resource warning. Neither was rerun or silently converted to a pass in this restoration.",
+  "restrictions": {
+    "dev_kvm_present": false,
+    "default_AF_UNIX_socket_errno": 1,
+    "AF_UNIX_socketpair_passed": true,
+    "IPv4_loopback_passed": true,
+    "system_packages_installed": false,
+    "maintainer_scripts_executed": false,
+    "sandbox_or_namespace_or_capabilities_modified": false,
+    "Docker_or_Nix_installed": false
+  },
+  "frozen_regular_members": 226,
+  "frozen_bytes": 24124690,
+  "archive_sha256": "5a43f34b9424ce3ca69c5ba61854b6473aef9a4da1cb052aec23bae2ef934472",
+  "limits": [
+    "A different exposed host/kernel/CPU model is observed, not independently attested physical hardware.",
+    "The private prefix reuses unchanged system libc; this is not an immutable environment.",
+    "Only restoration is accepted here. Cross-instance kernel compilation, ELF equality and real guest acceptance are separate.",
+    "Offline verification checks preserved cryptographic inputs and original receipts, not a new dependency install or VM."
+  ]
+}

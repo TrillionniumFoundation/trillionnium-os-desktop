@@ -1,0 +1,267 @@
+﻿2026-10-16T21:06:56.0193291Z Current runner version: '2.337.0'
+2026-10-16T21:06:56.0261832Z ##[group]Runner Image Provisioner
+2026-10-16T21:06:56.0263629Z Hosted Compute Agent
+2026-10-16T21:06:56.0264640Z Version: 20261012.601
+2026-10-16T21:06:56.0265773Z Commit: f3dc54e1fb89da6852db922499a0233137369e1d
+2026-10-16T21:06:56.0266993Z Build Date: 2026-10-12T17:48:21Z
+2026-10-16T21:06:56.0268136Z Worker ID: {d5257d71-2944-437f-8832-4498f0e2cfc0}
+2026-10-16T21:06:56.0269514Z Region: eastus
+2026-10-16T21:06:56.0270391Z Cloud: Azure
+2026-10-16T21:06:56.0271473Z ##[endgroup]
+2026-10-16T21:06:56.0274029Z ##[group]Operating System
+2026-10-16T21:06:56.0275910Z Ubuntu
+2026-10-16T21:06:56.0276933Z 24.04.5
+2026-10-16T21:06:56.0277755Z LTS
+2026-10-16T21:06:56.0278750Z ##[endgroup]
+2026-10-16T21:06:56.0279718Z ##[group]Runner Image
+2026-10-16T21:06:56.0280651Z Image: ubuntu-24.04
+2026-10-16T21:06:56.0281786Z Version: 20261012.334.1
+2026-10-16T21:06:56.0284126Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-16T21:06:56.0286913Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261012.334
+2026-10-16T21:06:56.0288746Z ##[endgroup]
+2026-10-16T21:06:56.0290647Z ##[group]GITHUB_TOKEN Permissions
+2026-10-16T21:06:56.0293798Z Contents: read
+2026-10-16T21:06:56.0294804Z Metadata: read
+2026-10-16T21:06:56.0295853Z ##[endgroup]
+2026-10-16T21:06:56.0298954Z Secret source: Actions
+2026-10-16T21:06:56.0300449Z Cache mode: write
+2026-10-16T21:06:56.0301669Z Prepare workflow directory
+2026-10-16T21:06:56.0783666Z Prepare all required actions
+2026-10-16T21:06:56.0855394Z Getting action download info
+2026-10-16T21:06:56.2858398Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-16T21:06:56.7725289Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-10-16T21:06:57.0933335Z Complete job name: pinned-host-codec
+2026-10-16T21:06:57.1749993Z ##[group]Run actions/checkout@v4
+2026-10-16T21:06:57.1751064Z with:
+2026-10-16T21:06:57.1751503Z   fetch-depth: 0
+2026-10-16T21:06:57.1752006Z   ref: f0a5e45b7310fce245a22a528e56eb2672fb1deb
+2026-10-16T21:06:57.1753212Z   repository: TrillionniumFoundation/trillionnium-os-desktop
+2026-10-16T21:06:57.1757095Z   token: ***
+2026-10-16T21:06:57.1757533Z   ssh-strict: true
+2026-10-16T21:06:57.1757985Z   ssh-user: git
+2026-10-16T21:06:57.1758437Z   persist-credentials: true
+2026-10-16T21:06:57.1758920Z   clean: true
+2026-10-16T21:06:57.1759370Z   sparse-checkout-cone-mode: true
+2026-10-16T21:06:57.1759896Z   fetch-tags: false
+2026-10-16T21:06:57.1760349Z   show-progress: true
+2026-10-16T21:06:57.1760788Z   lfs: false
+2026-10-16T21:06:57.1761195Z   submodules: false
+2026-10-16T21:06:57.1761642Z   set-safe-directory: true
+2026-10-16T21:06:57.1762149Z   allow-unsafe-pr-checkout: false
+2026-10-16T21:06:57.1763228Z ##[endgroup]
+2026-10-16T21:06:57.2789005Z Syncing repository: TrillionniumFoundation/trillionnium-os-desktop
+2026-10-16T21:06:57.2791806Z ##[group]Getting Git version info
+2026-10-16T21:06:57.2793461Z Working directory is '/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop'
+2026-10-16T21:06:57.2795372Z [command]/usr/bin/git version
+2026-10-16T21:06:57.3927499Z git version 2.55.0
+2026-10-16T21:06:57.3950230Z ##[endgroup]
+2026-10-16T21:06:57.3968800Z Temporarily overriding HOME='/home/runner/work/_temp/c6d2581b-426c-496e-bfc7-98f7f1446eed' before making global git config changes
+2026-10-16T21:06:57.3971792Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-16T21:06:57.3975774Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop
+2026-10-16T21:06:57.4226069Z Deleting the contents of '/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop'
+2026-10-16T21:06:57.4231472Z ##[group]Initializing the repository
+2026-10-16T21:06:57.4235913Z [command]/usr/bin/git init /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop
+2026-10-16T21:06:57.4713994Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-16T21:06:57.4715429Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-16T21:06:57.4716761Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-16T21:06:57.4718091Z hint: call:
+2026-10-16T21:06:57.4718632Z hint:
+2026-10-16T21:06:57.4719418Z hint: 	git config --global init.defaultBranch <name>
+2026-10-16T21:06:57.4720674Z hint:
+2026-10-16T21:06:57.4721933Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-16T21:06:57.4723992Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-16T21:06:57.4725404Z hint:
+2026-10-16T21:06:57.4726204Z hint: 	git branch -m <name>
+2026-10-16T21:06:57.4727043Z hint:
+2026-10-16T21:06:57.4728169Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-16T21:06:57.4730402Z Initialized empty Git repository in /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/.git/
+2026-10-16T21:06:57.4734478Z [command]/usr/bin/git remote add origin https://github.com/TrillionniumFoundation/trillionnium-os-desktop
+2026-10-16T21:06:57.4988167Z ##[endgroup]
+2026-10-16T21:06:57.4989859Z ##[group]Disabling automatic garbage collection
+2026-10-16T21:06:57.4993399Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-16T21:06:57.5027509Z ##[endgroup]
+2026-10-16T21:06:57.5028243Z ##[group]Setting up auth
+2026-10-16T21:06:57.5034834Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-16T21:06:57.5070157Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-16T21:06:57.8408738Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-16T21:06:57.8447492Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-16T21:06:57.8673042Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-16T21:06:57.8709159Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-16T21:06:57.8938708Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-16T21:06:57.8981076Z ##[endgroup]
+2026-10-16T21:06:57.8990827Z ##[group]Fetching the repository
+2026-10-16T21:06:57.8993827Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+2026-10-16T21:07:02.2705943Z From https://github.com/TrillionniumFoundation/trillionnium-os-desktop
+2026-10-16T21:07:02.2707437Z  * [new branch]      agents/A00-a01-archive-ci -> origin/agents/A00-a01-archive-ci
+2026-10-16T21:07:02.2708607Z  * [new branch]      agents/A00-a01-archive-nofollow -> origin/agents/A00-a01-archive-nofollow
+2026-10-16T21:07:02.2709577Z  * [new branch]      agents/A00-a01-archive-safety -> origin/agents/A00-a01-archive-safety
+2026-10-16T21:07:02.2710527Z  * [new branch]      agents/A00-a01-boot-evidence-ci -> origin/agents/A00-a01-boot-evidence-ci
+2026-10-16T21:07:02.2711475Z  * [new branch]      agents/A00-a01-fd-evidence-archive -> origin/agents/A00-a01-fd-evidence-archive
+2026-10-16T21:07:02.2712971Z  * [new branch]      agents/A00-a02-clippy-chunk-parsing -> origin/agents/A00-a02-clippy-chunk-parsing
+2026-10-16T21:07:02.2714892Z  * [new branch]      agents/A00-a02-pinned-acceptance-ci -> origin/agents/A00-a02-pinned-acceptance-ci
+2026-10-16T21:07:02.2715989Z  * [new branch]      agents/A00-a03-ancestor-revoke-fence -> origin/agents/A00-a03-ancestor-revoke-fence
+2026-10-16T21:07:02.2716956Z  * [new branch]      agents/A00-a03-canonical-hepta-k -> origin/agents/A00-a03-canonical-hepta-k
+2026-10-16T21:07:02.2718181Z  * [new branch]      agents/A00-a03-clippy-rustfmt-20261016 -> origin/agents/A00-a03-clippy-rustfmt-20261016
+2026-10-16T21:07:02.2719129Z  * [new branch]      agents/A00-a03-clock-monotonicity -> origin/agents/A00-a03-clock-monotonicity
+2026-10-16T21:07:02.2720735Z  * [new branch]      agents/A00-a03-durable-owner-authority -> origin/agents/A00-a03-durable-owner-authority
+2026-10-16T21:07:02.2722061Z  * [new branch]      agents/A00-a03-hos2-status-failclosed -> origin/agents/A00-a03-hos2-status-failclosed
+2026-10-16T21:07:02.2723452Z  * [new branch]      agents/A00-a03-k-identity-immutable -> origin/agents/A00-a03-k-identity-immutable
+2026-10-16T21:07:02.2724456Z  * [new branch]      agents/A00-a03-k-owner-consolidated -> origin/agents/A00-a03-k-owner-consolidated
+2026-10-16T21:07:02.2725444Z  * [new branch]      agents/A00-a03-readusage-wire-invariant -> origin/agents/A00-a03-readusage-wire-invariant
+2026-10-16T21:07:02.2726470Z  * [new branch]      agents/A00-a03-resource-domain-atomicity -> origin/agents/A00-a03-resource-domain-atomicity
+2026-10-16T21:07:02.2727384Z  * [new branch]      agents/A00-a03-status-failclosed -> origin/agents/A00-a03-status-failclosed
+2026-10-16T21:07:02.2728171Z  * [new branch]      agents/A00-a05-enotty-strict -> origin/agents/A00-a05-enotty-strict
+2026-10-16T21:07:02.2728936Z  * [new branch]      agents/A00-a05-queryabi-ci -> origin/agents/A00-a05-queryabi-ci
+2026-10-16T21:07:02.2729869Z  * [new branch]      agents/A00-a06-boundary-debt -> origin/agents/A00-a06-boundary-debt
+2026-10-16T21:07:02.2730726Z  * [new branch]      agents/A00-a06-cpustat-readonly -> origin/agents/A00-a06-cpustat-readonly
+2026-10-16T21:07:02.2731679Z  * [new branch]      agents/A00-a06-cpustat-readonly-on-latest -> origin/agents/A00-a06-cpustat-readonly-on-latest
+2026-10-16T21:07:02.2733191Z  * [new branch]      agents/A00-a06-exact-smp-evidence-20261016 -> origin/agents/A00-a06-exact-smp-evidence-20261016
+2026-10-16T21:07:02.2734223Z  * [new branch]      agents/A00-a06-full-kernel-tests-20261016 -> origin/agents/A00-a06-full-kernel-tests-20261016
+2026-10-16T21:07:02.2735187Z  * [new branch]      agents/A00-a06-smp-longer-independent -> origin/agents/A00-a06-smp-longer-independent
+2026-10-16T21:07:02.2736092Z  * [new branch]      agents/A00-a06-stat-observe-verified -> origin/agents/A00-a06-stat-observe-verified
+2026-10-16T21:07:02.2736974Z  * [new branch]      agents/A00-a06-throttle-queue-safety -> origin/agents/A00-a06-throttle-queue-safety
+2026-10-16T21:07:02.2737815Z  * [new branch]      agents/A00-a09-evidence-guards -> origin/agents/A00-a09-evidence-guards
+2026-10-16T21:07:02.2738804Z  * [new branch]      agents/A00-a09-native-hard-timeout-regression -> origin/agents/A00-a09-native-hard-timeout-regression
+2026-10-16T21:07:02.2739817Z  * [new branch]      agents/A00-a09-native-worker-supervisor -> origin/agents/A00-a09-native-worker-supervisor
+2026-10-16T21:07:02.2740729Z  * [new branch]      agents/A00-a09-pgid-reuse-fence -> origin/agents/A00-a09-pgid-reuse-fence
+2026-10-16T21:07:02.2741588Z  * [new branch]      agents/A00-a09-tested-supervisor-core -> origin/agents/A00-a09-tested-supervisor-core
+2026-10-16T21:07:02.2742783Z  * [new branch]      agents/A00-a09-vfio-bounded-sysfs -> origin/agents/A00-a09-vfio-bounded-sysfs
+2026-10-16T21:07:02.2743725Z  * [new branch]      agents/A00-a09-worker-group-lifecycle -> origin/agents/A00-a09-worker-group-lifecycle
+2026-10-16T21:07:02.2744501Z  * [new branch]      agents/A00-a10-host-ci  -> origin/agents/A00-a10-host-ci
+2026-10-16T21:07:02.2745223Z  * [new branch]      agents/A00-g0-edge-golden-guard -> origin/agents/A00-g0-edge-golden-guard
+2026-10-16T21:07:02.2745947Z  * [new branch]      agents/A00-g0-fmt-clippy -> origin/agents/A00-g0-fmt-clippy
+2026-10-16T21:07:02.2746601Z  * [new branch]      agents/A00-integration  -> origin/agents/A00-integration
+2026-10-16T21:07:02.2747270Z  * [new branch]      agents/A01-asterinas-boot -> origin/agents/A01-asterinas-boot
+2026-10-16T21:07:02.2748178Z  * [new branch]      agents/A02-format-tests-verified -> origin/agents/A02-format-tests-verified
+2026-10-16T21:07:02.2748915Z  * [new branch]      agents/A02-hos2-wire    -> origin/agents/A02-hos2-wire
+2026-10-16T21:07:02.2749594Z  * [new branch]      agents/A02-rust-codec   -> origin/agents/A02-rust-codec
+2026-10-16T21:07:02.2750280Z  * [new branch]      agents/A03-control-core -> origin/agents/A03-control-core
+2026-10-16T21:07:02.2751056Z  * [new branch]      agents/A04-linux-hepta-baseline -> origin/agents/A04-linux-hepta-baseline
+2026-10-16T21:07:02.2751964Z  * [new branch]      agents/A05-hos2-queryabi-smoke -> origin/agents/A05-hos2-queryabi-smoke
+2026-10-16T21:07:02.2753669Z  * [new branch]      agents/A06-1khz-overshoot-debt -> origin/agents/A06-1khz-overshoot-debt
+2026-10-16T21:07:02.2754705Z  * [new branch]      agents/A06-1khz-quota-debt-experiment -> origin/agents/A06-1khz-quota-debt-experiment
+2026-10-16T21:07:02.2755757Z  * [new branch]      agents/A06-5khz-timer-precision-spike -> origin/agents/A06-5khz-timer-precision-spike
+2026-10-16T21:07:02.2756729Z  * [new branch]      agents/A06-cpu-bandwidth-n0 -> origin/agents/A06-cpu-bandwidth-n0
+2026-10-16T21:07:02.2758041Z  * [new branch]      agents/A06-cpustat-readonly-owner-integration -> origin/agents/A06-cpustat-readonly-owner-integration
+2026-10-16T21:07:02.2759081Z  * [new branch]      agents/A06-cross-period-charge -> origin/agents/A06-cross-period-charge
+2026-10-16T21:07:02.2760076Z  * [new branch]      agents/A06-irq-safe-cpu-max -> origin/agents/A06-irq-safe-cpu-max
+2026-10-16T21:07:02.2761052Z  * [new branch]      agents/A06-latest-head-QEMU-independent -> origin/agents/A06-latest-head-QEMU-independent
+2026-10-16T21:07:02.2762126Z  * [new branch]      agents/A06-repair-truncated-cpu-tests -> origin/agents/A06-repair-truncated-cpu-tests
+2026-10-16T21:07:02.2765121Z  * [new branch]      agents/A06-smp-exited-process-guard -> origin/agents/A06-smp-exited-process-guard
+2026-10-16T21:07:02.2766332Z  * [new branch]      agents/A08-android-compat -> origin/agents/A08-android-compat
+2026-10-16T21:07:02.2767248Z  * [new branch]      agents/A09-gpu-vmm      -> origin/agents/A09-gpu-vmm
+2026-10-16T21:07:02.2768052Z  * [new branch]      agents/A09-gpu-vmm-phase2 -> origin/agents/A09-gpu-vmm-phase2
+2026-10-16T21:07:02.2773299Z  * [new branch]      agents/A10-rust-desktop -> origin/agents/A10-rust-desktop
+2026-10-16T21:07:02.2774226Z  * [new branch]      agents/organ-audit-a02-bounds -> origin/agents/organ-audit-a02-bounds
+2026-10-16T21:07:02.2775117Z  * [new branch]      agents/organ-backend-validation -> origin/agents/organ-backend-validation
+2026-10-16T21:07:02.2775819Z  * [new branch]      main                    -> origin/main
+2026-10-16T21:07:02.2777804Z [command]/usr/bin/git rev-parse --verify --quiet f0a5e45b7310fce245a22a528e56eb2672fb1deb^{object}
+2026-10-16T21:07:02.2778510Z f0a5e45b7310fce245a22a528e56eb2672fb1deb
+2026-10-16T21:07:02.2779712Z ##[endgroup]
+2026-10-16T21:07:02.2780429Z ##[group]Determining the checkout info
+2026-10-16T21:07:02.2781263Z ##[endgroup]
+2026-10-16T21:07:02.2781684Z [command]/usr/bin/git sparse-checkout disable
+2026-10-16T21:07:02.2985716Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-16T21:07:02.3026744Z ##[group]Checking out the ref
+2026-10-16T21:07:02.3027598Z [command]/usr/bin/git checkout --progress --force f0a5e45b7310fce245a22a528e56eb2672fb1deb
+2026-10-16T21:07:02.5420719Z Note: switching to 'f0a5e45b7310fce245a22a528e56eb2672fb1deb'.
+2026-10-16T21:07:02.5421416Z 
+2026-10-16T21:07:02.5421817Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-16T21:07:02.5422980Z changes and commit them, and you can discard any commits you make in this
+2026-10-16T21:07:02.5423902Z state without impacting any branches by switching back to a branch.
+2026-10-16T21:07:02.5424432Z 
+2026-10-16T21:07:02.5424777Z If you want to create a new branch to retain commits you create, you may
+2026-10-16T21:07:02.5425614Z do so (now or later) by using -c with the switch command. Example:
+2026-10-16T21:07:02.5426431Z 
+2026-10-16T21:07:02.5426625Z   git switch -c <new-branch-name>
+2026-10-16T21:07:02.5426956Z 
+2026-10-16T21:07:02.5427131Z Or undo this operation with:
+2026-10-16T21:07:02.5427403Z 
+2026-10-16T21:07:02.5427573Z   git switch -
+2026-10-16T21:07:02.5427806Z 
+2026-10-16T21:07:02.5428221Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-16T21:07:02.5428795Z 
+2026-10-16T21:07:02.5429340Z HEAD is now at f0a5e45 ci(A00): gate A02 ABI source on fixed-nightly full host acceptance and mutation kills
+2026-10-16T21:07:02.5438547Z ##[endgroup]
+2026-10-16T21:07:02.5493231Z [command]/usr/bin/git log -1 --format=%H
+2026-10-16T21:07:02.5524120Z f0a5e45b7310fce245a22a528e56eb2672fb1deb
+2026-10-16T21:07:02.5830626Z ##[group]Run set -euo pipefail
+2026-10-16T21:07:02.5831088Z [36;1mset -euo pipefail[0m
+2026-10-16T21:07:02.5831416Z [36;1mtest -f README.md && test ! -s README.md[0m
+2026-10-16T21:07:02.5831769Z [36;1mpython3 - <<'PY'[0m
+2026-10-16T21:07:02.5832036Z [36;1mimport json[0m
+2026-10-16T21:07:02.5832617Z [36;1mfrom pathlib import Path[0m
+2026-10-16T21:07:02.5833053Z [36;1mlock = json.loads(Path('support/upstream-lock.json').read_text())[0m
+2026-10-16T21:07:02.5833466Z [36;1mexpected = {[0m
+2026-10-16T21:07:02.5833737Z [36;1m    'kernel.tag': 'v0.19.0',[0m
+2026-10-16T21:07:02.5834113Z [36;1m    'kernel.commit': 'c4b7ed575b7b32773475b194d2ad41fb6d03765b',[0m
+2026-10-16T21:07:02.5834535Z [36;1m    'kernel.toolchain': 'nightly-2026-07-21',[0m
+2026-10-16T21:07:02.5834952Z [36;1m    'hepta.commit': 'f8c9419df6ddeb36ff8b522a50219981fb8d9345',[0m
+2026-10-16T21:07:02.5835323Z [36;1m}[0m
+2026-10-16T21:07:02.5835563Z [36;1mfor key, wanted in expected.items():[0m
+2026-10-16T21:07:02.5835945Z [36;1m    section, field = key.split('.')[0m
+2026-10-16T21:07:02.5836280Z [36;1m    actual = lock.get(section, {}).get(field)[0m
+2026-10-16T21:07:02.5836626Z [36;1m    if actual != wanted:[0m
+2026-10-16T21:07:02.5837002Z [36;1m        raise SystemExit(f'Unexpected source pin {key}: {actual!r}')[0m
+2026-10-16T21:07:02.5837386Z [36;1mPY[0m
+2026-10-16T21:07:02.5837616Z [36;1mentry=tests/abi/run_acceptance.py[0m
+2026-10-16T21:07:02.5837913Z [36;1mif [[ -L "$entry" ]]; then[0m
+2026-10-16T21:07:02.5838249Z [36;1m  echo 'A02 acceptance entry is a symlink, refusing' >&2[0m
+2026-10-16T21:07:02.5838601Z [36;1m  exit 1[0m
+2026-10-16T21:07:02.5838803Z [36;1mfi[0m
+2026-10-16T21:07:02.5839036Z [36;1mif [[ -e "$entry" && ! -f "$entry" ]]; then[0m
+2026-10-16T21:07:02.5839419Z [36;1m  echo 'A02 acceptance entry is not a regular file' >&2[0m
+2026-10-16T21:07:02.5839749Z [36;1m  exit 1[0m
+2026-10-16T21:07:02.5839955Z [36;1mfi[0m
+2026-10-16T21:07:02.5840164Z [36;1mif [[ -f "$entry" ]]; then[0m
+2026-10-16T21:07:02.5840672Z [36;1m  for required in libs/os-abi/Cargo.toml tests/abi/run_rust_mutations.py tests/golden/generate_hos2.py; do[0m
+2026-10-16T21:07:02.5841241Z [36;1m    if [[ ! -f "$required" || -L "$required" ]]; then[0m
+2026-10-16T21:07:02.5841667Z [36;1m      echo "Missing or linked A02 acceptance input: $required" >&2[0m
+2026-10-16T21:07:02.5842037Z [36;1m      exit 1[0m
+2026-10-16T21:07:02.5842250Z [36;1m    fi[0m
+2026-10-16T21:07:02.5842700Z [36;1m  done[0m
+2026-10-16T21:07:02.5842948Z [36;1m  echo 'enabled=true' >> "$GITHUB_OUTPUT"[0m
+2026-10-16T21:07:02.5843378Z [36;1m  echo 'A02 fixed-nightly host acceptance is mandatory for this checkout.'[0m
+2026-10-16T21:07:02.5843783Z [36;1melse[0m
+2026-10-16T21:07:02.5844038Z [36;1m  if [[ "$EVENT_NAME" == workflow_dispatch ]]; then[0m
+2026-10-16T21:07:02.5844482Z [36;1m    echo 'Cannot dispatch without the A02 pinned acceptance runner.' >&2[0m
+2026-10-16T21:07:02.5844882Z [36;1m    exit 1[0m
+2026-10-16T21:07:02.5845102Z [36;1m  fi[0m
+2026-10-16T21:07:02.5845390Z [36;1m  if [[ -z "$BASE_SHA" || -z "$HEAD_SHA" || "$BASE_SHA" =~ ^0+$ ]] ||[0m
+2026-10-16T21:07:02.5845788Z [36;1m     ! git cat-file -e "$BASE_SHA^{commit}" ||[0m
+2026-10-16T21:07:02.5846343Z [36;1m     ! git cat-file -e "$HEAD_SHA^{commit}"; then[0m
+2026-10-16T21:07:02.5846763Z [36;1m    echo 'Cannot verify whether missing A02 runner was removed.' >&2[0m
+2026-10-16T21:07:02.5847136Z [36;1m    exit 1[0m
+2026-10-16T21:07:02.5847345Z [36;1m  fi[0m
+2026-10-16T21:07:02.5847744Z [36;1m  changed=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- libs/os-abi/ tests/abi/ tests/golden/)[0m
+2026-10-16T21:07:02.5848231Z [36;1m  if [[ -n "$changed" ]]; then[0m
+2026-10-16T21:07:02.5848673Z [36;1m    echo 'A02 source or golden files changed without the pinned acceptance runner:' >&2[0m
+2026-10-16T21:07:02.5849134Z [36;1m    printf '%s\n' "$changed" >&2[0m
+2026-10-16T21:07:02.5849408Z [36;1m    exit 1[0m
+2026-10-16T21:07:02.5849778Z [36;1m  fi[0m
+2026-10-16T21:07:02.5850027Z [36;1m  echo 'enabled=false' >> "$GITHUB_OUTPUT"[0m
+2026-10-16T21:07:02.5850500Z [36;1m  echo 'BOOTSTRAP ONLY: A02 runner not yet present; no fixed-nightly tests executed.'[0m
+2026-10-16T21:07:02.5850937Z [36;1mfi[0m
+2026-10-16T21:07:02.6873480Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-16T21:07:02.6873966Z env:
+2026-10-16T21:07:02.6874223Z   EVENT_NAME: pull_request
+2026-10-16T21:07:02.6874568Z   BASE_SHA: bc294f75bfb8c03d9963f5a12ea23b9589779d96
+2026-10-16T21:07:02.6874993Z   HEAD_SHA: f0a5e45b7310fce245a22a528e56eb2672fb1deb
+2026-10-16T21:07:02.6875361Z ##[endgroup]
+2026-10-16T21:07:02.7335716Z BOOTSTRAP ONLY: A02 runner not yet present; no fixed-nightly tests executed.
+2026-10-16T21:07:02.7557917Z Post job cleanup.
+2026-10-16T21:07:02.8424539Z [command]/usr/bin/git version
+2026-10-16T21:07:02.8468278Z git version 2.55.0
+2026-10-16T21:07:02.8510517Z Temporarily overriding HOME='/home/runner/work/_temp/c1179aa2-e92d-47f1-9c6a-3eaa1e248c1a' before making global git config changes
+2026-10-16T21:07:02.8512264Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-16T21:07:02.8516542Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop
+2026-10-16T21:07:02.8559059Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-16T21:07:02.8594176Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-16T21:07:02.8856467Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-16T21:07:02.8881013Z http.https://github.com/.extraheader
+2026-10-16T21:07:02.8895817Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-16T21:07:02.8937851Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-16T21:07:02.9201728Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-16T21:07:02.9242128Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-16T21:07:02.9681016Z Cleaning up orphan processes
+2026-10-16T21:07:02.9988543Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

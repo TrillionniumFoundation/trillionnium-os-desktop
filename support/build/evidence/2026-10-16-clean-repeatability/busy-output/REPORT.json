@@ -1,0 +1,109 @@
+{
+  "kind": "host-only public kernel runner busy-lock output ordering",
+  "kernel_build_or_boot_pass_claimed": false,
+  "source_binding": "source-binding.json",
+  "baseline": {
+    "published_source": "0a533b92d4a4df8e8e4643c1b7de00e83ba0fd9d",
+    "controller_member": "original/probe.py",
+    "observation": "baseline-observation.json",
+    "busy_stderr": "baseline-busy.stderr.log",
+    "retry_stderr": "baseline-retry.stderr.log",
+    "busy_exit_code": 1,
+    "busy_created_output_and_parent": true,
+    "busy_output_entries": [],
+    "same_lock_inode": true,
+    "same_command_retry_after_lock_release_exit_code": 1,
+    "retry_reason": "A01_RUN_DIR must be a new directory because the rejected busy call had already created it.",
+    "Rust_Cargo_QEMU_invoked": false,
+    "controller_stdout_note": "The original controller printed its observation in the tool response and wrote the identical baseline observation JSON; no separate controller stdout file was saved. Both child stdout files were empty and are retained in the raw tar."
+  },
+  "patched": {
+    "published_source": "5bcec614c1a075782b6ffaa5a5212fdee29be37d",
+    "published_tree": "00e70e58dfa0dbf4718db55240136683f0a23310",
+    "source_sha256": {
+      "support/build/kernel.sh": "77081012007e4de3f57630dfd6c4811e3dc228dd6aff4c6ce4dd13488a5e9dbb",
+      "support/build/tests/test_kernel_runner.py": "b9838c9a8d08dbe90ddc0e62684298f719ff1a329088fdc47c70f402c76a9c8a",
+      "support/build/README.md": "adeef4e3845ca353c891b2c9daef4643afdf225fee4c6d4b9125a74b39e674fb"
+    },
+    "change": "Acquire the persistent workspace flock before explicit/default output mkdir, retaining stable-inode locking and existing evidence refusal.",
+    "new_cases": [
+      "test_busy_lock_preserves_explicit_output_path_for_same_command_retry",
+      "test_busy_lock_preserves_default_output_for_same_command_retry"
+    ],
+    "case_results": "Both tests invoke the public shell entry, observe busy refusal without path allocation, release flock and rerun the same command successfully. Individual successful captured stdout is asserted by unittest and not retained as separate fixture logs.",
+    "tests_per_mode": 33,
+    "modes": [
+      {
+        "argv": [
+          "python3",
+          "-I",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "support/build/tests",
+          "-p",
+          "test_kernel_*.py",
+          "-v"
+        ],
+        "exit_code": 0,
+        "log": "tests-I.log"
+      },
+      {
+        "argv": [
+          "python3",
+          "-I",
+          "-O",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "support/build/tests",
+          "-p",
+          "test_kernel_*.py",
+          "-v"
+        ],
+        "exit_code": 0,
+        "log": "tests-IO.log"
+      }
+    ],
+    "build_environment_logging": [
+      "RUSTFLAGS",
+      "CARGO_ENCODED_RUSTFLAGS",
+      "CARGO_TARGET_DIR",
+      "ASTER_BUILD_TIMESTAMP"
+    ],
+    "environment_logging_contract": "Values are printed with quoted arguments to a fixed printf %s format; unset is explicitly <unset>. These are provenance fields, not a build profile override. No new mirror test is claimed for arbitrary flag values."
+  },
+  "intermediate_history": {
+    "retained_members": [
+      "original/patched/tests-I-before-provenance.log",
+      "original/patched/tests-IO-before-provenance.log"
+    ],
+    "outcome": "Both preceding 33-test suites passed before the small environment logging addition; final suites were rerun afterward. No failed host suite occurred. The real original failures are busy refusal consuming output and the subsequent same-command retry failure.",
+    "old_baseline_not_modified": true
+  },
+  "commands_and_original_report": "raw-evidence.tar.gz::original/patched/REPORT.json",
+  "raw_archive": {
+    "path": "raw-evidence.tar.gz",
+    "regular_members": 26,
+    "uncompressed_bytes": 173738,
+    "bytes": 44888,
+    "sha256": "b8c226b17fcd216bd1c63f972eba64801eaf5896b95933424b8f2e177f551918",
+    "member_index": "raw-members.json",
+    "all_members_byte_compared_to_original_inputs": true
+  },
+  "source_patch_reconstruction": "source-reconstruction.json",
+  "environment": {
+    "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+    "platform": "Linux-6.18.44-x86_64-with-glibc2.39",
+    "toolchain_installed_or_used_by_this_host_fixture": false
+  },
+  "limitations": [
+    "Host tools and initramfs are disposable Python/shell fixtures; no Rust, Cargo or QEMU was executed.",
+    "No actual clean-build repeatability or kernel-ELF equality is claimed by this archive.",
+    "The original historical absolute paths appear unchanged in raw receipts; reproduction paths are provided relatively in README.md.",
+    "No additional debug metadata or manifest-restorer hypothesis was tested as part of this fix."
+  ],
+  "archiving_actions": "Only this new busy-output repository directory was written; no production source/core/other evidence mutation, Git write, Cargo or VM launch."
+}

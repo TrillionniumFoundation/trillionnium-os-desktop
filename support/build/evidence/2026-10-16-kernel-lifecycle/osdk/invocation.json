@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "argv": [
+    "python3",
+    "-I",
+    "support/build/osdk-integration/run.py",
+    "--local-tcp",
+    "--coverage-gdb",
+    "--target-dir",
+    "support/build/out/osdk-capture-v2-02/target",
+    "--output",
+    "support/build/out/next6-osdk-full-01"
+  ],
+  "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+  "runtime_head": "287a92e65581f193d764f5ff85fbc3631bc0a9ab",
+  "runtime_tree": "515cd2babfb8a4372ef29a26f132ff2de19cbe15",
+  "git_status": "?? kernel/asterinas/kernel/OSDK.toml\n?? support/build/evidence/2026-10-16-kernel-lifecycle/\n",
+  "environment_updates": {
+    "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+    "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+    "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+    "CARGO_NET_OFFLINE": "true",
+    "VDSO_LIBRARY_DIR": "/workspace/scratch/ae1a8cf05419/linux-vdso",
+    "CARGO_BUILD_JOBS": "2"
+  },
+  "runner_sha256": "023df78aeedb663d10c48dad08a3ed0b2670e2c5094de1bf3ac75035b1bca761",
+  "explicit_target_cache_reuse": true,
+  "requested": "all22 explicit TCP/GDB coverage profile; pending actual result"
+}

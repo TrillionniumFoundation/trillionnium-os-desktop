@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "head": "692c9cf6ced7660304e2f94e31f034ab478830d6",
+  "scope": "read_only_build_setup_integrity_and_disposable_runner_signal_fixture",
+  "highest_confirmed_finding": {
+    "severity": "high impact development lifecycle defect",
+    "path": "support/build/kernel.sh",
+    "source_sha256": "ff4315024e5f9a690ce1c7bf8954d46b65d41e44542d5a4ff0d614833914f5e6",
+    "trigger": "Direct SIGTERM to the wrapper while its make|tee pipeline is running",
+    "actual_observation": {
+      "runner_pidfd_exited": true,
+      "make_pidfd_exited": false,
+      "dummy_child_pidfd_exited": false,
+      "manifest_present": false,
+      "make_TCP_lease_busy": true,
+      "dummy_child_TCP_lease_busy": true,
+      "workspace_lock_busy": true
+    },
+    "impact": "Wrapper exits and removes its owned manifest, while build descendants and owned TCP resources remain live and inherited workspace flock remains held, blocking later build calls.",
+    "reproduction": "python3 -I -B /workspace/scratch/ae1a8cf05419/next6-kernel-signal-audit.py",
+    "record": "next6-kernel-signal-audit/observation.json",
+    "fix_scope": "A01 runner subprocess/session supervision, INT/TERM forwarding, wait/reap and owned manifest cleanup; retain single group-owner and unreaped leader identity, pipeline/log failure handling, GDB inherited FD>=64, and lock inode semantics.",
+    "fixture_limit": "Copied unmodified runner, dummy make and Python TCP lease child. No real compiler, QEMU or kernel workload executed."
+  },
+  "verified_inputs": {
+    "fixed_source_check": "next6-source-check.json",
+    "fixed_source_check_count": 118,
+    "fixed_source_check_passed": true,
+    "original_upstream_tree_reachable_from_HEAD": true,
+    "pinned_tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+    "build_input_observation": "next6-build-inputs-readonly.json"
+  },
+  "production_manifest": {
+    "untracked": true,
+    "size": 1019,
+    "sha256_before": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f",
+    "sha256_after": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f",
+    "bytes_equal_minimal_manifest": true,
+    "note": "Observed only. The mechanism recreating this environment file remains unproven; not attributed to Git or cleanup."
+  },
+  "cleanup_evidence": {
+    "runner": true,
+    "make": true,
+    "dummy_child": true
+  },
+  "no_production_source_writes": true,
+  "new_builds": 0,
+  "new_vm_runs": 0,
+  "not_claimed": [
+    "cross-host bit reproducibility",
+    "new source acquisition",
+    "dependency installation",
+    "root-cause attribution of external manifest recreation"
+  ]
+}

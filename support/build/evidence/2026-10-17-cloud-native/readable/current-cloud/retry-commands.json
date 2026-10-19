@@ -1,0 +1,191 @@
+[
+  {
+    "name": "initial-status",
+    "argv": [
+      "git",
+      "status",
+      "--porcelain=v1"
+    ],
+    "cwd": "/workspace/scratch/ae1a8cf05419/a01-current-build",
+    "selected_environment": {
+      "PATH": "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin:/workspace/scratch/ae1a8cf05419/native-tools/root/usr/bin:/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/llvm-18/bin:/root/.codex/tmp/arg0/codex-arg0z2lg97:/opt/codex/codex-path:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback",
+      "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+      "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+      "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+      "CARGO_BUILD_JOBS": "2",
+      "CARGO_NET_GIT_FETCH_WITH_CLI": "true",
+      "LD_LIBRARY_PATH": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/x86_64-linux-gnu:/workspace/scratch/ae1a8cf05419/native-tools/root/lib/x86_64-linux-gnu:/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/llvm-18/lib",
+      "QEMU_MODULE_DIR": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/x86_64-linux-gnu/qemu",
+      "A01_BUSYBOX": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/bin/busybox",
+      "A01_QEMU_BIOS": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/seabios/bios-256k.bin",
+      "VDSO_LIBRARY_DIR": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/linux-vdso",
+      "CARGO_TARGET_DIR": "/workspace/scratch/ae1a8cf05419/a01-current-build/kernel/asterinas/target",
+      "PKG_CONFIG_LIBDIR": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/x86_64-linux-gnu/pkgconfig:/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/pkgconfig",
+      "PKG_CONFIG_SYSROOT_DIR": "/workspace/scratch/ae1a8cf05419/native-tools/root",
+      "A01_QEMU_TIMEOUT": "300"
+    },
+    "overrides": {
+      "A01_QEMU_DATA_DIR": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/qemu",
+      "A01_RUN_DIR": "/workspace/scratch/ae1a8cf05419/current-cloud/boot-data-retry"
+    },
+    "started": "2026-10-17T00:33:28.683673+00:00",
+    "log": "/workspace/scratch/ae1a8cf05419/current-cloud/retry-initial-status.log",
+    "pid": 3,
+    "returncode": 0,
+    "ended": "2026-10-17T00:33:28.716983+00:00",
+    "log_sha256": "361e312f4a76641a4d17baf99791ebf5365b6ebfff118196c3fe7e040bb1cb1e",
+    "log_size": 37
+  },
+  {
+    "name": "kernel-tree-binding",
+    "argv": [
+      "git",
+      "diff",
+      "--exit-code",
+      "0053c98e787391ef566305296ffd2b7c912a1095",
+      "31543f71a247add15ce8e026a25385c535746bca",
+      "--",
+      "kernel/asterinas"
+    ],
+    "cwd": "/workspace/scratch/ae1a8cf05419/a01-current-build",
+    "selected_environment": {
+      "PATH": "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin:/workspace/scratch/ae1a8cf05419/native-tools/root/usr/bin:/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/llvm-18/bin:/root/.codex/tmp/arg0/codex-arg0z2lg97:/opt/codex/codex-path:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback",
+      "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+      "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+      "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+      "CARGO_BUILD_JOBS": "2",
+      "CARGO_NET_GIT_FETCH_WITH_CLI": "true",
+      "LD_LIBRARY_PATH": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/x86_64-linux-gnu:/workspace/scratch/ae1a8cf05419/native-tools/root/lib/x86_64-linux-gnu:/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/llvm-18/lib",
+      "QEMU_MODULE_DIR": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/x86_64-linux-gnu/qemu",
+      "A01_BUSYBOX": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/bin/busybox",
+      "A01_QEMU_BIOS": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/seabios/bios-256k.bin",
+      "VDSO_LIBRARY_DIR": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/linux-vdso",
+      "CARGO_TARGET_DIR": "/workspace/scratch/ae1a8cf05419/a01-current-build/kernel/asterinas/target",
+      "PKG_CONFIG_LIBDIR": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/x86_64-linux-gnu/pkgconfig:/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/pkgconfig",
+      "PKG_CONFIG_SYSROOT_DIR": "/workspace/scratch/ae1a8cf05419/native-tools/root",
+      "A01_QEMU_TIMEOUT": "300"
+    },
+    "overrides": {
+      "A01_QEMU_DATA_DIR": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/qemu",
+      "A01_RUN_DIR": "/workspace/scratch/ae1a8cf05419/current-cloud/boot-data-retry"
+    },
+    "started": "2026-10-17T00:33:28.717514+00:00",
+    "log": "/workspace/scratch/ae1a8cf05419/current-cloud/retry-kernel-tree-binding.log",
+    "pid": 16,
+    "returncode": 0,
+    "ended": "2026-10-17T00:33:28.730408+00:00",
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "log_size": 0
+  },
+  {
+    "name": "checkout",
+    "argv": [
+      "git",
+      "checkout",
+      "--detach",
+      "31543f71a247add15ce8e026a25385c535746bca"
+    ],
+    "cwd": "/workspace/scratch/ae1a8cf05419/a01-current-build",
+    "selected_environment": {
+      "PATH": "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin:/workspace/scratch/ae1a8cf05419/native-tools/root/usr/bin:/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/llvm-18/bin:/root/.codex/tmp/arg0/codex-arg0z2lg97:/opt/codex/codex-path:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback",
+      "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+      "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+      "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+      "CARGO_BUILD_JOBS": "2",
+      "CARGO_NET_GIT_FETCH_WITH_CLI": "true",
+      "LD_LIBRARY_PATH": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/x86_64-linux-gnu:/workspace/scratch/ae1a8cf05419/native-tools/root/lib/x86_64-linux-gnu:/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/llvm-18/lib",
+      "QEMU_MODULE_DIR": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/x86_64-linux-gnu/qemu",
+      "A01_BUSYBOX": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/bin/busybox",
+      "A01_QEMU_BIOS": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/seabios/bios-256k.bin",
+      "VDSO_LIBRARY_DIR": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/linux-vdso",
+      "CARGO_TARGET_DIR": "/workspace/scratch/ae1a8cf05419/a01-current-build/kernel/asterinas/target",
+      "PKG_CONFIG_LIBDIR": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/x86_64-linux-gnu/pkgconfig:/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/pkgconfig",
+      "PKG_CONFIG_SYSROOT_DIR": "/workspace/scratch/ae1a8cf05419/native-tools/root",
+      "A01_QEMU_TIMEOUT": "300"
+    },
+    "overrides": {
+      "A01_QEMU_DATA_DIR": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/qemu",
+      "A01_RUN_DIR": "/workspace/scratch/ae1a8cf05419/current-cloud/boot-data-retry"
+    },
+    "started": "2026-10-17T00:33:28.731492+00:00",
+    "log": "/workspace/scratch/ae1a8cf05419/current-cloud/retry-checkout.log",
+    "pid": 17,
+    "returncode": 0,
+    "ended": "2026-10-17T00:33:28.798986+00:00",
+    "log_sha256": "64535a0b7dcbe125f80d214e789fdb7479e3d46fd5b1d3c62f191dd63180fb9d",
+    "log_size": 366
+  },
+  {
+    "name": "source-verification",
+    "argv": [
+      "python3",
+      "-I",
+      "support/build/verify-source.py"
+    ],
+    "cwd": "/workspace/scratch/ae1a8cf05419/a01-current-build",
+    "selected_environment": {
+      "PATH": "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin:/workspace/scratch/ae1a8cf05419/native-tools/root/usr/bin:/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/llvm-18/bin:/root/.codex/tmp/arg0/codex-arg0z2lg97:/opt/codex/codex-path:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback",
+      "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+      "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+      "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+      "CARGO_BUILD_JOBS": "2",
+      "CARGO_NET_GIT_FETCH_WITH_CLI": "true",
+      "LD_LIBRARY_PATH": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/x86_64-linux-gnu:/workspace/scratch/ae1a8cf05419/native-tools/root/lib/x86_64-linux-gnu:/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/llvm-18/lib",
+      "QEMU_MODULE_DIR": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/x86_64-linux-gnu/qemu",
+      "A01_BUSYBOX": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/bin/busybox",
+      "A01_QEMU_BIOS": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/seabios/bios-256k.bin",
+      "VDSO_LIBRARY_DIR": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/linux-vdso",
+      "CARGO_TARGET_DIR": "/workspace/scratch/ae1a8cf05419/a01-current-build/kernel/asterinas/target",
+      "PKG_CONFIG_LIBDIR": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/x86_64-linux-gnu/pkgconfig:/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/pkgconfig",
+      "PKG_CONFIG_SYSROOT_DIR": "/workspace/scratch/ae1a8cf05419/native-tools/root",
+      "A01_QEMU_TIMEOUT": "300"
+    },
+    "overrides": {
+      "A01_QEMU_DATA_DIR": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/qemu",
+      "A01_RUN_DIR": "/workspace/scratch/ae1a8cf05419/current-cloud/boot-data-retry"
+    },
+    "started": "2026-10-17T00:33:28.799957+00:00",
+    "log": "/workspace/scratch/ae1a8cf05419/current-cloud/retry-source-verification.log",
+    "pid": 42,
+    "returncode": 0,
+    "ended": "2026-10-17T00:33:28.949668+00:00",
+    "log_sha256": "5134613ae9a179a850327beb238d0433f3bb18e14dff8a24a1a0f5abf9db267e",
+    "log_size": 781
+  },
+  {
+    "name": "boot",
+    "argv": [
+      "support/build/kernel.sh",
+      "run_kernel"
+    ],
+    "cwd": "/workspace/scratch/ae1a8cf05419/a01-current-build",
+    "selected_environment": {
+      "PATH": "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin:/workspace/scratch/ae1a8cf05419/native-tools/root/usr/bin:/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/llvm-18/bin:/root/.codex/tmp/arg0/codex-arg0z2lg97:/opt/codex/codex-path:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback",
+      "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+      "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+      "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+      "CARGO_BUILD_JOBS": "2",
+      "CARGO_NET_GIT_FETCH_WITH_CLI": "true",
+      "LD_LIBRARY_PATH": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/x86_64-linux-gnu:/workspace/scratch/ae1a8cf05419/native-tools/root/lib/x86_64-linux-gnu:/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/llvm-18/lib",
+      "QEMU_MODULE_DIR": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/x86_64-linux-gnu/qemu",
+      "A01_BUSYBOX": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/bin/busybox",
+      "A01_QEMU_BIOS": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/seabios/bios-256k.bin",
+      "VDSO_LIBRARY_DIR": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/linux-vdso",
+      "CARGO_TARGET_DIR": "/workspace/scratch/ae1a8cf05419/a01-current-build/kernel/asterinas/target",
+      "PKG_CONFIG_LIBDIR": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/x86_64-linux-gnu/pkgconfig:/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/pkgconfig",
+      "PKG_CONFIG_SYSROOT_DIR": "/workspace/scratch/ae1a8cf05419/native-tools/root",
+      "A01_QEMU_TIMEOUT": "300"
+    },
+    "overrides": {
+      "A01_QEMU_DATA_DIR": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/qemu",
+      "A01_RUN_DIR": "/workspace/scratch/ae1a8cf05419/current-cloud/boot-data-retry"
+    },
+    "started": "2026-10-17T00:33:28.950374+00:00",
+    "log": "/workspace/scratch/ae1a8cf05419/current-cloud/retry-boot.log",
+    "pid": 44,
+    "returncode": 1,
+    "ended": "2026-10-17T00:33:29.167316+00:00",
+    "log_sha256": "67dd0ff7951b05adaea1e480942abca56d79dd27ff11eed43290e49820c8c6c1",
+    "log_size": 399
+  }
+]

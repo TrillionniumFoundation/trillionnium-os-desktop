@@ -1,0 +1,77 @@
+{
+  "OSDK": {
+    "reported_passed": 22,
+    "failed": 0,
+    "blocked": 0,
+    "soft_skips": 1,
+    "guest_count": 11,
+    "guest_raw_exit_counts": {
+      "33": 11
+    },
+    "cases_without_guests": 13
+  },
+  "rounding": {
+    "unit": "TSC clock tick",
+    "production_overcharge_demonstrated": false,
+    "native_result_unchanged": "151pass/2fail/raw65",
+    "proposal_applied": false,
+    "post_proposal_native_rerun": false
+  },
+  "CI_snapshot": {
+    "head": "42c0fbda192e61fbfad638e16aa74b67cf989bba",
+    "successful_checks": 3,
+    "final_new_head_validated": false
+  },
+  "pinned_owner_probe": {
+    "actual_owner_commands": [
+      0,
+      0
+    ],
+    "actual_guest_raw_exits": [
+      33,
+      33,
+      33,
+      33
+    ],
+    "one_CPU_percent": [
+      1.001,
+      1.1
+    ],
+    "two_CPU_percent": [
+      0.822,
+      0.9
+    ],
+    "configured_quota_percent": 1,
+    "explicit_sample_bound_percent": 3,
+    "all_serial_verdict": "INCONCLUSIVE_REQUIRES_TIMING_VALIDATION",
+    "strict1percent_accepted": false,
+    "full_matrix_accepted": false,
+    "final_debit_accepted": false,
+    "source_guards_and_postGit_clean": true,
+    "requested_duration_seconds": 1,
+    "observed_restricted_wall_ns": {
+      "single_vcpu": [
+        1099269967,
+        1000225763
+      ],
+      "two_vcpu": [
+        2797054263,
+        1999040082
+      ]
+    },
+    "actual_fixed_one_second_window_established": false
+  },
+  "QueryAbi_retry": {
+    "phase_child_exit": 0,
+    "phase_controller_passed": true,
+    "actual_guest_raw_exits": [
+      33,
+      33,
+      33
+    ],
+    "phase_source_clean": true,
+    "combined_enclosing_tool_session": 44537,
+    "combined_enclosing_tool_exit": 1,
+    "combined_tool_failure_phase": "later CPU probe"
+  }
+}

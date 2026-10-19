@@ -1,0 +1,43 @@
+{
+  "record_kind": "posthoc read-only host observation at packaging time; not claimed as a pre-restoration snapshot",
+  "observed_utc": "2026-10-17T00:28:55.367628+00:00",
+  "hostname": "343e40cfefc1",
+  "boot_id": "efe86a14-d9ff-4a57-b609-f4ed45e4c34f",
+  "platform": "Linux-6.18.44-x86_64-with-glibc2.39",
+  "process_status": {
+    "Uid": "0\t0\t0\t0",
+    "Gid": "0\t0\t0\t0",
+    "CapInh": "0000000000000000",
+    "CapPrm": "0000000000000000",
+    "CapEff": "0000000000000000",
+    "CapBnd": "0000000000000000",
+    "CapAmb": "0000000000000000",
+    "NoNewPrivs": "1",
+    "Seccomp": "2",
+    "Seccomp_filters": "1",
+    "Cpus_allowed_list": "0-8"
+  },
+  "cpu_max": "800000 100000",
+  "memory_max": "8589934592",
+  "dev_kvm_exists": false,
+  "prior_probe_observation": {
+    "record_kind": "posthoc transcription of earlier actual environment probe",
+    "af_unix_socket": {
+      "operation": "socket(AF_UNIX, SOCK_STREAM)",
+      "errno": 1,
+      "name": "EPERM",
+      "bind_attempted": false
+    },
+    "cpu_virtualization_flags_absent": [
+      "vmx",
+      "svm",
+      "ept",
+      "vpid",
+      "npt"
+    ],
+    "hypervisor_flag_present": true
+  },
+  "system_libc_replaced": false,
+  "sandbox_configuration_changed": false,
+  "namespace_privilege_changes": false
+}

@@ -1,0 +1,19 @@
+test_sources_replaced_during_version_still_load_original_three_copies (__main__.InputSnapshotCliTests.test_sources_replaced_during_version_still_load_original_three_copies) ... FAIL
+
+======================================================================
+FAIL: test_sources_replaced_during_version_still_load_original_three_copies (__main__.InputSnapshotCliTests.test_sources_replaced_during_version_still_load_original_three_copies)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/osdk-integration/test_input_snapshots.py", line 174, in test_sources_replaced_during_version_still_load_original_three_copies
+    self.assert_copies(record, json.loads(execution.read_text())["loaded"], self.initial)
+  File "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/osdk-integration/test_input_snapshots.py", line 152, in assert_copies
+    self.assertEqual(loaded[option]["sha256"], digest(original))
+AssertionError: 'd496c1430255acc4a66c5753f098b0c0bfc69b2d0d62b9912af6261cd40a8357' != '8f42ee5647c4e5074b56fa6fc31ecedec4fc830d2accdd96be7b2b503257aa37'
+- d496c1430255acc4a66c5753f098b0c0bfc69b2d0d62b9912af6261cd40a8357
++ 8f42ee5647c4e5074b56fa6fc31ecedec4fc830d2accdd96be7b2b503257aa37
+
+
+----------------------------------------------------------------------
+Ran 1 test in 0.246s
+
+FAILED (failures=1)

@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "source_commit": "efb02440ad6fff3b7a1a5d5019f660743d74ab32",
+  "source_tree": "bfae38050e0b6473df7a46a6e02669166cf3055f",
+  "read_before_further_target_reuse": true,
+  "actual_run_kernels_only": true,
+  "artifacts": [
+    {
+      "crate": "aster-core",
+      "QEMU_record": "aster-core/guests/guest-001/qemu.json",
+      "QEMU_raw_exit": 33,
+      "recorded_kernel": {
+        "path": "/workspace/scratch/ae1a8cf05419/a01-next6-build/kernel/asterinas/target/osdk/aster-core/aster-core-osdk-bin.elf",
+        "size": 6520680,
+        "sha256": "5b0e758a2bbfb4ba8dad18db9d4a14ab6f23e665eebf1d5c875b1989d418583e"
+      },
+      "source_file_identity": {
+        "device": 27,
+        "inode": 5227,
+        "size": 6520680,
+        "mtime_ns": 1792159113778585413,
+        "ctime_ns": 1792159113778597521
+      },
+      "artifact": "artifacts/aster-core.elf.gz",
+      "raw_size": 6520680,
+      "raw_sha256": "5b0e758a2bbfb4ba8dad18db9d4a14ab6f23e665eebf1d5c875b1989d418583e",
+      "gzip_size": 1966668,
+      "gzip_sha256": "4999606aca4ec2eeb02a8b818ec19ec7205cbff764d50939530fb9abe327a4f4",
+      "gzip_mtime": 0,
+      "decompressed_bytes_match_QEMU_record": true
+    },
+    {
+      "crate": "ostd",
+      "QEMU_record": "ostd/guests/guest-001/qemu.json",
+      "QEMU_raw_exit": 33,
+      "recorded_kernel": {
+        "path": "/workspace/scratch/ae1a8cf05419/a01-next6-build/kernel/asterinas/target/osdk/ostd/ostd-osdk-bin.elf",
+        "size": 2004424,
+        "sha256": "772fe2bf84a55651afb84d0cc1ed43c36e69175bccc451af7c0f6b0aa8fffa35"
+      },
+      "source_file_identity": {
+        "device": 27,
+        "inode": 7257,
+        "size": 2004424,
+        "mtime_ns": 1792159023369203014,
+        "ctime_ns": 1792159023369216214
+      },
+      "artifact": "artifacts/ostd.elf.gz",
+      "raw_size": 2004424,
+      "raw_sha256": "772fe2bf84a55651afb84d0cc1ed43c36e69175bccc451af7c0f6b0aa8fffa35",
+      "gzip_size": 580150,
+      "gzip_sha256": "4919594da1e30f146b0893f9f66bb8d03a7281fabe1ac32bc5c6902b68867410",
+      "gzip_mtime": 0,
+      "decompressed_bytes_match_QEMU_record": true
+    }
+  ]
+}

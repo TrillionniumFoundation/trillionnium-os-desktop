@@ -1,0 +1,273 @@
+{
+  "schema": 1,
+  "kind": "archive_output_custody_host_regression",
+  "baseline_commit": "01a344c6a293fd73b158e9e6ca93bd9904b69bbf",
+  "fixed_commit_binding": "Per-file SHA256 frozen snapshots; root A01 publishes code commit before evidence commit",
+  "upstream_review": {
+    "pr": 32,
+    "head": "a8d51bc2e1e0b46ef24d95517d5584fb98878f2a",
+    "branch": "agents/A00-a01-archive-safety",
+    "integration": "Targeted output/failure fix; older full source/test files were not imported"
+  },
+  "sources": {
+    "support/build/osdk-integration/archive.py": {
+      "baseline_sha256": "6bb543638261ac29bb0aab604457a238613ef4d52792547f4b37a71235cad266",
+      "fixed_sha256": "f5cb4da0541abe226e8f088f5d3f9469024c6018af44f671190b1ea6ce761f60"
+    },
+    "support/build/osdk-integration/test_archive.py": {
+      "baseline_sha256": "aec6583632e8b4ba197f49360b08177d59768b372724a6dcfea3d4f527f2d9d6",
+      "fixed_sha256": "9dc4eed04d57fe6e96fc952c09c6efb10925d04c359b8910f2efce5bcaf2f215"
+    },
+    "support/build/osdk-integration/README.md": {
+      "baseline_sha256": "1741f28759a2d09ffe617e58521ebd98c3e9a29d718ad917913de6de5bc5be7a",
+      "fixed_sha256": "1dee8ff41341a5a0c433865696b1d3d9f6a6e14ce9f9238f02da92429b15bffe"
+    }
+  },
+  "source_read_guard_AST_unchanged": {
+    "read_regular": true,
+    "source_files": true
+  },
+  "suites": [
+    {
+      "phase": "red",
+      "mode": "I",
+      "test_method_executions": 2,
+      "exit_code": 1,
+      "source_and_test_stable": true,
+      "invocation": "raw/red/I/invocation.json",
+      "console": "raw/red/I/console.log"
+    },
+    {
+      "phase": "red",
+      "mode": "IO",
+      "test_method_executions": 2,
+      "exit_code": 1,
+      "source_and_test_stable": true,
+      "invocation": "raw/red/IO/invocation.json",
+      "console": "raw/red/IO/console.log"
+    },
+    {
+      "phase": "green",
+      "mode": "I",
+      "test_method_executions": 28,
+      "exit_code": 0,
+      "source_and_test_stable": true,
+      "invocation": "raw/green/I/invocation.json",
+      "console": "raw/green/I/console.log"
+    },
+    {
+      "phase": "green",
+      "mode": "IO",
+      "test_method_executions": 28,
+      "exit_code": 0,
+      "source_and_test_stable": true,
+      "invocation": "raw/green/IO/invocation.json",
+      "console": "raw/green/IO/console.log"
+    }
+  ],
+  "counts": {
+    "original_scenarios_retained": 20,
+    "new_test_methods": 8,
+    "final_tests_each_python_mode": 28,
+    "final_test_method_executions_passed": 56,
+    "red_expected_assertion_failures": 4,
+    "historical_archive_CLI_rebuilds": 4,
+    "historical_payload_files_compared_each_mode": 360,
+    "historical_payload_comparisons_both_modes": 720,
+    "new_guest_executions": 0
+  },
+  "failure_semantics_updated": [
+    "Fixed-input duplicate collision preserves already-written decoy and incomplete marker",
+    "Total-size limit preserves first payload and incomplete marker instead of deleting the new bundle"
+  ],
+  "red_race_observations": [
+    {
+      "observation": "raw/red/I/fixtures/test_custody_destination_subdirectory_swap_cannot_write_outside/observation.json",
+      "kind": "real_filesystem_mkdir_boundary_swap_no_VM",
+      "source_sha256": "6bb543638261ac29bb0aab604457a238613ef4d52792547f4b37a71235cad266",
+      "swap_fired": true,
+      "archive_error": null,
+      "outside_entries": [
+        "keep.txt",
+        "qemu.log.gz"
+      ],
+      "outside_keep": "foreign sentinel must survive",
+      "outside_archive_file_exists": true
+    },
+    {
+      "observation": "raw/red/I/fixtures/test_custody_failed_cleanup_cannot_erase_swapped_foreign_directory/observation.json",
+      "kind": "real_filesystem_path_cleanup_boundary_swap_no_VM",
+      "source_sha256": "6bb543638261ac29bb0aab604457a238613ef4d52792547f4b37a71235cad266",
+      "unsafe_rmtree_called": true,
+      "destination_exists": false,
+      "foreign_keep_exists": false,
+      "owned_incomplete_marker": false
+    },
+    {
+      "observation": "raw/red/IO/fixtures/test_custody_destination_subdirectory_swap_cannot_write_outside/observation.json",
+      "kind": "real_filesystem_mkdir_boundary_swap_no_VM",
+      "source_sha256": "6bb543638261ac29bb0aab604457a238613ef4d52792547f4b37a71235cad266",
+      "swap_fired": true,
+      "archive_error": null,
+      "outside_entries": [
+        "keep.txt",
+        "qemu.log.gz"
+      ],
+      "outside_keep": "foreign sentinel must survive",
+      "outside_archive_file_exists": true
+    },
+    {
+      "observation": "raw/red/IO/fixtures/test_custody_failed_cleanup_cannot_erase_swapped_foreign_directory/observation.json",
+      "kind": "real_filesystem_path_cleanup_boundary_swap_no_VM",
+      "source_sha256": "6bb543638261ac29bb0aab604457a238613ef4d52792547f4b37a71235cad266",
+      "unsafe_rmtree_called": true,
+      "destination_exists": false,
+      "foreign_keep_exists": false,
+      "owned_incomplete_marker": false
+    }
+  ],
+  "historical_compatibility": {
+    "all_passed": true,
+    "archiver_sha256_before_and_after": "f5cb4da0541abe226e8f088f5d3f9469024c6018af44f671190b1ea6ce761f60",
+    "cases": [
+      {
+        "kind": "historical_evidence_rearchive_only_no_guest_execution",
+        "historical_directory": "support/build/evidence/2026-10-16-native-integration/osdk/attempt-07",
+        "historical_manifest_sha256": "f663235a9d712605eeac54193e73d4fcb80b07700d0ebd1920d63e5f5b63ba92",
+        "historical_checksum_file_sha256": "d7e3e9a47a78d0fe3a5a76cb19afe9f4d920a14c30619d2b3e3e60b6da77ab40",
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+          "-I",
+          "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/osdk-integration/archive.py",
+          "/workspace/scratch/ae1a8cf05419/archive-custody/compatibility/attempt-07/restored-source",
+          "/workspace/scratch/ae1a8cf05419/archive-custody/compatibility/attempt-07/rebuilt-I"
+        ],
+        "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+        "returncode": 0,
+        "mode": "I",
+        "archiver_sha256": "f5cb4da0541abe226e8f088f5d3f9469024c6018af44f671190b1ea6ce761f60",
+        "archived_payload_files_equal": 320,
+        "schema1_entries_equal_except_top_level_runtime_source_path": true,
+        "deterministic_gzip_and_plain_payload_bytes_equal": true,
+        "sha256sum_argv": [
+          "sha256sum",
+          "-c",
+          "evidence.sha256"
+        ],
+        "sha256sum_cwd": "/workspace/scratch/ae1a8cf05419/archive-custody/compatibility/attempt-07/rebuilt-I",
+        "sha256sum_exit": 0,
+        "historical_files_unchanged": true,
+        "complete_marker_absent": true
+      },
+      {
+        "kind": "historical_evidence_rearchive_only_no_guest_execution",
+        "historical_directory": "support/build/evidence/2026-10-16-native-integration/osdk/attempt-07",
+        "historical_manifest_sha256": "f663235a9d712605eeac54193e73d4fcb80b07700d0ebd1920d63e5f5b63ba92",
+        "historical_checksum_file_sha256": "d7e3e9a47a78d0fe3a5a76cb19afe9f4d920a14c30619d2b3e3e60b6da77ab40",
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+          "-I",
+          "-O",
+          "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/osdk-integration/archive.py",
+          "/workspace/scratch/ae1a8cf05419/archive-custody/compatibility/attempt-07/restored-source",
+          "/workspace/scratch/ae1a8cf05419/archive-custody/compatibility/attempt-07/rebuilt-IO"
+        ],
+        "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+        "returncode": 0,
+        "mode": "IO",
+        "archiver_sha256": "f5cb4da0541abe226e8f088f5d3f9469024c6018af44f671190b1ea6ce761f60",
+        "archived_payload_files_equal": 320,
+        "schema1_entries_equal_except_top_level_runtime_source_path": true,
+        "deterministic_gzip_and_plain_payload_bytes_equal": true,
+        "sha256sum_argv": [
+          "sha256sum",
+          "-c",
+          "evidence.sha256"
+        ],
+        "sha256sum_cwd": "/workspace/scratch/ae1a8cf05419/archive-custody/compatibility/attempt-07/rebuilt-IO",
+        "sha256sum_exit": 0,
+        "historical_files_unchanged": true,
+        "complete_marker_absent": true
+      },
+      {
+        "kind": "historical_evidence_rearchive_only_no_guest_execution",
+        "historical_directory": "support/build/evidence/2026-10-16-native-integration/osdk/attempt-10",
+        "historical_manifest_sha256": "9502b970c1734df6e90d84e6d879b961bf3cf6be95dd0ba961b7b07aa63bb943",
+        "historical_checksum_file_sha256": "d4bc3a250b58455155241992cd0f9c217c5a43fbb5fc8c1888a0a50921e92d9c",
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+          "-I",
+          "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/osdk-integration/archive.py",
+          "/workspace/scratch/ae1a8cf05419/archive-custody/compatibility/attempt-10/restored-source",
+          "/workspace/scratch/ae1a8cf05419/archive-custody/compatibility/attempt-10/rebuilt-I"
+        ],
+        "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+        "returncode": 0,
+        "mode": "I",
+        "archiver_sha256": "f5cb4da0541abe226e8f088f5d3f9469024c6018af44f671190b1ea6ce761f60",
+        "archived_payload_files_equal": 40,
+        "schema1_entries_equal_except_top_level_runtime_source_path": true,
+        "deterministic_gzip_and_plain_payload_bytes_equal": true,
+        "sha256sum_argv": [
+          "sha256sum",
+          "-c",
+          "evidence.sha256"
+        ],
+        "sha256sum_cwd": "/workspace/scratch/ae1a8cf05419/archive-custody/compatibility/attempt-10/rebuilt-I",
+        "sha256sum_exit": 0,
+        "historical_files_unchanged": true,
+        "complete_marker_absent": true
+      },
+      {
+        "kind": "historical_evidence_rearchive_only_no_guest_execution",
+        "historical_directory": "support/build/evidence/2026-10-16-native-integration/osdk/attempt-10",
+        "historical_manifest_sha256": "9502b970c1734df6e90d84e6d879b961bf3cf6be95dd0ba961b7b07aa63bb943",
+        "historical_checksum_file_sha256": "d4bc3a250b58455155241992cd0f9c217c5a43fbb5fc8c1888a0a50921e92d9c",
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+          "-I",
+          "-O",
+          "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/osdk-integration/archive.py",
+          "/workspace/scratch/ae1a8cf05419/archive-custody/compatibility/attempt-10/restored-source",
+          "/workspace/scratch/ae1a8cf05419/archive-custody/compatibility/attempt-10/rebuilt-IO"
+        ],
+        "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+        "returncode": 0,
+        "mode": "IO",
+        "archiver_sha256": "f5cb4da0541abe226e8f088f5d3f9469024c6018af44f671190b1ea6ce761f60",
+        "archived_payload_files_equal": 40,
+        "schema1_entries_equal_except_top_level_runtime_source_path": true,
+        "deterministic_gzip_and_plain_payload_bytes_equal": true,
+        "sha256sum_argv": [
+          "sha256sum",
+          "-c",
+          "evidence.sha256"
+        ],
+        "sha256sum_cwd": "/workspace/scratch/ae1a8cf05419/archive-custody/compatibility/attempt-10/rebuilt-IO",
+        "sha256sum_exit": 0,
+        "historical_files_unchanged": true,
+        "complete_marker_absent": true
+      }
+    ]
+  },
+  "independent_review": "raw/independent-review/REPORT.md",
+  "scope": [
+    "Output root and children held through directory FDs",
+    "mkdirat/openat without following symlinks; files and indexes O_EXCL",
+    "Checksums generated from exact payloads, no rglob or path reread",
+    "Pinned directory and file identities checked before successful completion",
+    "Failed owned custody preserved with .archive-incomplete; no recursive pathname deletion"
+  ],
+  "limits": [
+    "Trusted destination parent remains required",
+    "Checks protect directory identity after its FD was opened; initial mkdir-to-first-stat/open replacement with another real directory is not distinguished",
+    "No sandbox against same-user writers and no atomic snapshot of an entire mutable run",
+    "Moved partial custody may remain at its renamed location",
+    "Historical rearchive only; no kernel, QEMU, GDB or Cargo execution in this phase"
+  ],
+  "raw_exclusions": [
+    "Python bytecode",
+    "Reconstructed historical payload and rebuilt payload duplicates (old Git-bound copies retained in repository)",
+    "Symlink dereferencing (fixture links recorded as metadata only)"
+  ]
+}

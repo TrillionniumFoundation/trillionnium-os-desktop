@@ -1,0 +1,59 @@
+{
+  "kind": "capture_lifecycle_fixture_not_kernel",
+  "mode": "sigterm",
+  "baseline": false,
+  "source": {
+    "record-qemu.py": "975249776d9b08e0894b1112f876da0975825193215a3e6b88e1045895d3b504",
+    "capture.py": "7043aa006a901fcdb1e13a3adfade8e3f5f834d1841746343fea4a622bf585b1"
+  },
+  "real_gdb": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/bin/gdb",
+  "ready": {
+    "gdb_pid": 49,
+    "helper_pid": 37,
+    "group": 34,
+    "address": [
+      "127.0.0.1",
+      53237
+    ]
+  },
+  "qemu": {
+    "pid": 36,
+    "group": 34,
+    "address": [
+      "127.0.0.1",
+      55371
+    ]
+  },
+  "pids": {
+    "helper": 37,
+    "gdb": 49,
+    "qemu": 36
+  },
+  "pidfd_exited": {
+    "helper": true,
+    "gdb": true,
+    "qemu": true
+  },
+  "gdb_tcp_lease_released": true,
+  "qemu_tcp_lease_released": true,
+  "outer_command": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "-I",
+      "/workspace/scratch/ae1a8cf05419/next5-capture-lifecycle-patched-04-publish/sigterm/harness.py"
+    ],
+    "cwd": "/workspace/scratch/ae1a8cf05419/next5-capture-lifecycle-patched-04-publish/sigterm",
+    "raw_exit_code": 143,
+    "timed_out": false,
+    "interrupted_by": "SIGTERM",
+    "group_cleanup": {
+      "leader_pid": 34,
+      "leader_exit_code": -15,
+      "leader_reaped": true,
+      "external_reap_disarmed": false,
+      "identity_anchor": "waitid WNOWAIT until group signals precede leader reap"
+    },
+    "duration_seconds": 0.24
+  },
+  "passed": true
+}

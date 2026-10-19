@@ -1,0 +1,351 @@
+diff --git a/support/build/osdk-integration/run.py b/support/build/osdk-integration/run.py
+index 402e03a93..9bad85eb8 100755
+--- a/support/build/osdk-integration/run.py
++++ b/support/build/osdk-integration/run.py
+@@ -165,52 +165,44 @@ class RunnerInterrupted(BaseException):
+         super().__init__(signal.Signals(signum).name)
+ 
+ 
+-@contextmanager
+-def interruption_handlers():
+-    """Unwind owned commands and the runner lock on Ctrl-C or termination."""
+-    def interrupted(signum, _frame):
+-        raise RunnerInterrupted(signum)
+-    previous = {number: signal.getsignal(number) for number in (signal.SIGINT, signal.SIGTERM)}
+-    try:
+-        for number in previous:
+-            signal.signal(number, interrupted)
+-        yield
+-    finally:
+-        for number, handler in previous.items():
+-            signal.signal(number, handler)
++class Shutdown:
++    """Record asynchronous signals; raise only at owned-command checkpoints."""
+ 
++    def __init__(self):
++        self.signum = None
++        self.received = []
+ 
+-@contextmanager
+-def publish_owner():
+-    """Publish the Popen owner before a pending shutdown can unwind it."""
+-    # Deferring Python handlers preserves the child's signal mask across exec;
+-    # blocking with pthread_sigmask around Popen would also block it in the child.
+-    pending = []
+-    previous = {number: signal.getsignal(number) for number in (signal.SIGINT, signal.SIGTERM)}
+-    def remember(signum, _frame):
+-        pending.append(signum)
+-    try:
+-        for number in previous:
+-            signal.signal(number, remember)
+-        yield
+-    finally:
+-        for number, handler in previous.items():
+-            signal.signal(number, handler)
+-        if pending:
+-            raise RunnerInterrupted(pending[0])
++    def remember(self, signum, _frame):
++        if self.signum is None:
++            self.signum = signum
++        self.received.append(signal.Signals(signum).name)
++
++    def check(self):
++        if self.signum is not None:
++            raise RunnerInterrupted(self.signum)
++
++
++_active_shutdown = None
+ 
+ 
+ @contextmanager
+-def finish_cleanup():
+-    """A second shutdown request must not interrupt group cleanup and its record."""
++def interruption_handlers():
++    """Share a cooperative signal latch across the CLI and public command()."""
++    global _active_shutdown
++    if _active_shutdown is not None:
++        yield _active_shutdown
++        return
++    shutdown = Shutdown()
+     previous = {number: signal.getsignal(number) for number in (signal.SIGINT, signal.SIGTERM)}
++    _active_shutdown = shutdown
+     try:
+         for number in previous:
+-            signal.signal(number, signal.SIG_IGN)
+-        yield
++            signal.signal(number, shutdown.remember)
++        yield shutdown
+     finally:
+         for number, handler in previous.items():
+             signal.signal(number, handler)
++        _active_shutdown = None
+ 
+ 
+ class OwnedSession:
+@@ -244,10 +236,6 @@ class OwnedSession:
+         Descendant exit after SIGKILL is asynchronous; this runner does not adopt
+         or claim to reap grandchildren. No numeric group signal follows reap.
+         """
+-        with finish_cleanup():
+-            return self._stop(grace)
+-
+-    def _stop(self, grace):
+         if self.reaped or self.external_reap:
+             return self.status
+         self.exited()
+@@ -267,13 +255,16 @@ class OwnedSession:
+         self.reaped = True
+         return self.status
+ 
+-    def wait(self, timeout):
++    def wait(self, timeout, shutdown=None):
+         deadline = time.monotonic() + timeout
+-        while not self.exited():
++        while True:
++            if shutdown is not None:
++                shutdown.check()
++            if self.exited():
++                return self.stop()
+             if time.monotonic() >= deadline:
+                 raise subprocess.TimeoutExpired(self.process.args, timeout)
+             time.sleep(.01)
+-        return self.stop()
+ 
+ 
+ @contextmanager
+@@ -289,15 +280,26 @@ def locked_output(lock_path, output):
+ 
+ 
+ def command(command, cwd, env, output, timeout):
++    # Keep the existing public call signature, including for host-only callers.
++    # A standalone call installs its latch before any child can be created.
++    with interruption_handlers() as shutdown:
++        return _command(command, cwd, env, output, timeout, shutdown)
++
++
++def _command(command, cwd, env, output, timeout, shutdown):
+     record = {"argv": command, "cwd": str(cwd), "raw_exit_code": None, "timed_out": False}
+     output.with_suffix(".command.json").write_text(json.dumps(record, indent=2) + "\n")
+     started = time.monotonic()
+     owned = None
+     try:
+         with output.open("wb") as log:
+-            with publish_owner():
+-                owned = OwnedSession(command, cwd=cwd, env=env, output=log)
+-            record["raw_exit_code"] = owned.wait(timeout)
++            shutdown.check()
++            owned = OwnedSession(command, cwd=cwd, env=env, output=log)
++            # Handlers only remember requests, so Popen -> owner publication
++            # cannot unwind before this finally block can find the child.
++            shutdown.check()
++            record["raw_exit_code"] = owned.wait(timeout, shutdown)
++            shutdown.check()
+     except subprocess.TimeoutExpired:
+         record["timed_out"] = True
+         record["raw_exit_code"] = 124
+@@ -311,18 +313,30 @@ def command(command, cwd, env, output, timeout):
+         record["error"] = f"{type(error).__name__}: {error}"
+         raise
+     finally:
+-        with finish_cleanup():
+-            try:
+-                if owned is not None:
+-                    owned.stop()
+-            finally:
+-                if owned is not None:
+-                    record["group_cleanup"] = {"leader_pid": owned.process.pid,
+-                        "leader_exit_code": owned.status, "leader_reaped": owned.reaped,
+-                        "external_reap_disarmed": owned.external_reap,
+-                        "identity_anchor": "waitid WNOWAIT until group signals precede leader reap"}
+-                record["duration_seconds"] = round(time.monotonic() - started, 3)
+-                output.with_suffix(".command.json").write_text(json.dumps(record, indent=2) + "\n")
++        cleanup_failed = False
++        try:
++            if owned is not None:
++                owned.stop()
++        except BaseException as error:
++            cleanup_failed = True
++            record["cleanup_error"] = f"{type(error).__name__}: {error}"
++            raise
++        finally:
++            if owned is not None:
++                record["group_cleanup"] = {"leader_pid": owned.process.pid,
++                    "leader_exit_code": owned.status, "leader_reaped": owned.reaped,
++                    "external_reap_disarmed": owned.external_reap,
++                    "identity_anchor": "waitid WNOWAIT until group signals precede leader reap"}
++            if shutdown.signum is not None:
++                record["interrupted_by"] = signal.Signals(shutdown.signum).name
++                record["received_signals"] = shutdown.received
++                record["raw_exit_code"] = 128 + shutdown.signum
++            record["duration_seconds"] = round(time.monotonic() - started, 3)
++            output.with_suffix(".command.json").write_text(json.dumps(record, indent=2) + "\n")
++            # Also honor cancellation first received during normal cleanup;
++            # repeated signals cannot skip stop() or its completion record.
++            if not cleanup_failed:
++                shutdown.check()
+     return record
+ 
+ 
+@@ -572,8 +586,10 @@ def run_locked(args, here, project, upstream, output):
+ 
+ if __name__ == "__main__":
+     try:
+-        with interruption_handlers():
+-            raise SystemExit(main())
++        with interruption_handlers() as shutdown:
++            status = main()
++            shutdown.check()
++            raise SystemExit(status)
+     except RunnerInterrupted as error:
+         print(f"integration runner interrupted by {signal.Signals(error.signum).name}; owned commands stopped",
+               file=sys.stderr)
+diff --git a/support/build/osdk-integration/test_runner_lifecycle.py b/support/build/osdk-integration/test_runner_lifecycle.py
+index 5c067cfc4..4a1edf9da 100644
+--- a/support/build/osdk-integration/test_runner_lifecycle.py
++++ b/support/build/osdk-integration/test_runner_lifecycle.py
+@@ -53,6 +53,35 @@ spec.loader.exec_module(runner)
+ root = Path(sys.argv[2])
+ command = json.loads(sys.argv[3])
+ timeout = float(sys.argv[4])
++seam = sys.argv[5] if len(sys.argv) > 5 else ''
++fired = False
++real_stop, real_killpg, real_signal = runner.OwnedSession.stop, runner.os.killpg, runner.signal.signal
++
++def inject():
++    global fired
++    fired = True
++    (root / 'signal-seam.json').write_text(json.dumps({'seam': seam, 'signal': 'SIGTERM'}))
++    os.kill(os.getpid(), signal.SIGTERM)
++
++def stop_at_entry(self, *args, **kwargs):
++    if seam in ('cleanup-entry', 'normal-cleanup-entry') and not fired:
++        inject()
++    return real_stop(self, *args, **kwargs)
++
++def between_group_signals(pid, number):
++    result = real_killpg(pid, number)
++    if seam == 'between-group-signals' and not fired and number == signal.SIGTERM:
++        inject()
++    return result
++
++def record_handler_changes(number, handler):
++    if handler == signal.SIG_IGN:
++        (root / 'ignored-shutdown-signal').write_text(str(number))
++    return real_signal(number, handler)
++
++runner.OwnedSession.stop = stop_at_entry
++runner.os.killpg = between_group_signals
++runner.signal.signal = record_handler_changes
+ # The fallback permits the retained original runner to reproduce the old leak.
+ handlers = runner.interruption_handlers() if hasattr(runner, 'interruption_handlers') else contextlib.nullcontext()
+ with (root / 'worker.lock').open('a') as lock:
+@@ -79,7 +108,7 @@ class RunnerLifecycleTests(unittest.TestCase):
+             self.assertLess(time.monotonic(), deadline, "owned fixture readiness deadline expired")
+             time.sleep(.01)
+ 
+-    def exercise_exit(self, mode, leader_status=0):
++    def exercise_exit(self, mode, leader_status=0, seam=""):
+         with tempfile.TemporaryDirectory() as temporary:
+             root = Path(temporary)
+             ready, proceed = root / "ready.json", root / "proceed"
+@@ -89,7 +118,7 @@ class RunnerLifecycleTests(unittest.TestCase):
+             with (root / "worker.log").open("wb") as output:
+                 worker = subprocess.Popen([sys.executable, "-I", "-c", WORKER,
+                                            str(self.runner_path), str(root), json.dumps(argv),
+-                                           str(timeout)], stdout=output, stderr=subprocess.STDOUT,
++                                           str(timeout), seam], stdout=output, stderr=subprocess.STDOUT,
+                                           start_new_session=True)
+                 descriptor = None
+                 leader_descriptor = None
+@@ -111,7 +140,9 @@ class RunnerLifecycleTests(unittest.TestCase):
+                     elif mode in ("SIGINT", "SIGTERM"):
+                         os.kill(worker.pid, getattr(signal, mode))
+                     status = worker.wait(timeout=8)
+-                    expected_worker = 130 if mode == "SIGINT" else 143 if mode == "SIGTERM" else 0
++                    expected_signal = "SIGTERM" if seam == "normal-cleanup-entry" else \
++                        mode if mode in ("SIGINT", "SIGTERM") else None
++                    expected_worker = 128 + getattr(signal, expected_signal) if expected_signal else 0
+                     self.assertEqual(status, expected_worker, (root / "worker.log").read_text())
+                     self.assertTrue(poller.poll(2000), "TERM-ignoring descendant survived runner return")
+                     with socket.socket() as competitor:
+@@ -120,12 +151,18 @@ class RunnerLifecycleTests(unittest.TestCase):
+                         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                     record = json.loads((root / "command.command.json").read_text())
+                     expected_command = 124 if mode == "timeout" else expected_worker \
+-                        if mode in ("SIGINT", "SIGTERM") else leader_status
++                        if expected_signal else leader_status
+                     self.assertEqual(record["raw_exit_code"], expected_command)
+                     self.assertEqual(record["timed_out"], mode == "timeout")
+                     self.assertTrue(record["group_cleanup"]["leader_reaped"])
+-                    if mode in ("SIGINT", "SIGTERM"):
+-                        self.assertEqual(record["interrupted_by"], mode)
++                    if expected_signal:
++                        self.assertEqual(record["interrupted_by"], expected_signal)
++                    if seam:
++                        self.assertTrue((root / "signal-seam.json").is_file())
++                        self.assertEqual(record["received_signals"], ["SIGTERM"] if
++                                         seam == "normal-cleanup-entry" else ["SIGINT", "SIGTERM"])
++                    self.assertFalse((root / "ignored-shutdown-signal").exists(),
++                                     "cooperative cleanup must not sequentially ignore shutdown signals")
+                     self.assertIn("owned leader and descendant ready", (root / "command.log").read_text())
+                 finally:
+                     if worker.poll() is None:
+@@ -155,6 +192,17 @@ class RunnerLifecycleTests(unittest.TestCase):
+     def test_sigterm_cleans_group_and_preserves_interrupted_command_record(self):
+         self.exercise_exit("SIGTERM")
+ 
++    def test_second_signal_at_cleanup_entry_cannot_skip_stop_or_record(self):
++        # This entry replaces the former first SIG_IGN setup seam. The old
++        # sequential handler masking is gone; an actual second TERM is latched.
++        self.exercise_exit("SIGINT", seam="cleanup-entry")
++
++    def test_second_signal_between_group_signals_cannot_skip_kill_or_reap(self):
++        self.exercise_exit("SIGINT", seam="between-group-signals")
++
++    def test_first_signal_during_normal_cleanup_is_not_silently_ignored(self):
++        self.exercise_exit("normal", seam="normal-cleanup-entry")
++
+     def test_busy_lock_does_not_create_output_or_parent_directories(self):
+         with tempfile.TemporaryDirectory() as temporary:
+             root = Path(temporary)
+@@ -251,6 +299,40 @@ class RunnerLifecycleTests(unittest.TestCase):
+             self.assertEqual(record["raw_exit_code"], 9)
+             self.assertTrue(record["group_cleanup"]["leader_reaped"])
+ 
++    def test_repeated_shutdown_during_spawn_keeps_first_signal_and_reaps_owner(self):
++        with tempfile.TemporaryDirectory() as temporary:
++            root = Path(temporary)
++            real_popen = subprocess.Popen
++            descriptors = []
++
++            def repeated_shutdown(*args, **kwargs):
++                process = real_popen(*args, **kwargs)
++                descriptors.append(os.pidfd_open(process.pid))
++                os.kill(os.getpid(), signal.SIGTERM)
++                os.kill(os.getpid(), signal.SIGINT)
++                return process
++
++            try:
++                with mock.patch.object(RUNNER.subprocess, "Popen", side_effect=repeated_shutdown):
++                    with self.assertRaises(RUNNER.RunnerInterrupted) as interrupted:
++                        RUNNER.command([sys.executable, "-I", "-c", "import time; time.sleep(60)"],
++                                       root, os.environ.copy(), root / "spawn.log", 5)
++                self.assertEqual(interrupted.exception.signum, signal.SIGTERM)
++                poller = select.poll()
++                poller.register(descriptors[0], select.POLLIN)
++                self.assertTrue(poller.poll(2000))
++                record = json.loads((root / "spawn.command.json").read_text())
++                self.assertEqual(record["received_signals"], ["SIGTERM", "SIGINT"])
++                self.assertEqual(record["raw_exit_code"], 143)
++                self.assertTrue(record["group_cleanup"]["leader_reaped"])
++            finally:
++                for descriptor in descriptors:
++                    try:
++                        signal.pidfd_send_signal(descriptor, signal.SIGKILL)
++                    except ProcessLookupError:
++                        pass
++                    os.close(descriptor)
++
+ 
+ if __name__ == "__main__":
+     unittest.main()

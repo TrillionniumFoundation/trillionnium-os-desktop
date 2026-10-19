@@ -1,0 +1,84 @@
+{
+  "schema": 1,
+  "scope": "Read-only follow-up and exactly one bounded owned nonce control; no production code, cleanup strategy, service, kernel manifest or Git working tree was changed by this archival task.",
+  "second_attempt": {
+    "passed": false,
+    "stage": "build_and_qemu_ready",
+    "error": "kernel driver exited before GDB readiness",
+    "kernel_driver_message": "kernel/OSDK.toml already exists; refusing to replace it",
+    "result_reference": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/next4-kernel-debug-02/result.json",
+      "bytes": 590,
+      "sha256": "41b6c8fa57c071fd4a58c0a784ff4eea51b316cafc106d302cc4775cdc068b9e"
+    },
+    "driver_log_reference": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/next4-kernel-debug-02/kernel-driver.log",
+      "bytes": 56,
+      "sha256": "3ef01d7ea65d437362d526ccee585532872a101480ffa95f46f07ff857dcf2cb"
+    },
+    "full_rawlogs_archived_by_parent": true
+  },
+  "third_attempt": {
+    "passed": true,
+    "stage": "complete",
+    "gdb": {
+      "symbol": "__ostd_main",
+      "pc": "0xffffffff88426860",
+      "entry_address": "0xffffffff88426860",
+      "gdb_status": 0,
+      "detached": true
+    },
+    "boot": {
+      "driver_status": 0,
+      "raw_qemu_exit": 33,
+      "timed_out": false,
+      "serial_sha256": "726c942ded93d74e9d7ca13d5545e54cefc1f8c5b4edf117896a284915adf3be"
+    },
+    "result_reference": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/next4-kernel-debug-03/result.json",
+      "bytes": 1077,
+      "sha256": "bf0a9d94fc0041a60357ccee2f2b9570cfebefb17dccb3d912070a63892d1ce6"
+    },
+    "driver_log_reference": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/next4-kernel-debug-03/kernel-driver.log",
+      "bytes": 76897,
+      "sha256": "38b2a402d1a17e73f7c82bba8049f217b3135ea35bc06d6fb64ab2a01be25ffd"
+    },
+    "full_rawlogs_archived_by_parent": true,
+    "profile_observation": "post-third-reappearance.json",
+    "parent_reported_no_git_write_between_completion_and_observation": true,
+    "no_continuous_third_attempt_inotify_trace_claimed": true
+  },
+  "preserved_file": {
+    "metadata": "preservation.json",
+    "source_reference": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/next4-preserved-manifest/OSDK.toml",
+      "bytes": 1019,
+      "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f"
+    },
+    "file_not_duplicated_in_this_subdirectory": true
+  },
+  "readonly_git_and_sync_leads": {
+    "git_checks": "post-cleanup-reappearance.json",
+    "sync_mechanism": "sync-script-readonly.json",
+    "service_names_seen": [
+      "rsync --daemon",
+      "/bin/bash /usr/local/scripts/sync_share.sh",
+      "/bin/bash /usr/local/scripts/sync_share.sh"
+    ],
+    "service_exe_and_cwd_proc_access": "PermissionError; no elevation attempted",
+    "service_environment_or_authentication_configuration_read": false,
+    "actual_writer_pid_identified": false
+  },
+  "bounded_nonce_control": {
+    "record": "nonce-control.json",
+    "elapsed_seconds": 14.043,
+    "recreation_after_deletion_seconds": 2.261013,
+    "same_nonce_and_mtime": true,
+    "new_inode": true,
+    "events_include_rsync_temporary_transfer_names": true,
+    "probe_itself_invoked_git_kernel_or_service_operation": false,
+    "not_a_global_audit_of_unrelated_process_actions": true
+  },
+  "finding": "The environment was directly observed to recreate a removed owned nonce file through a temporary-file/.rsync-tmp/MOVED_TO sequence. This supports the observed synchronization mechanism but does not identify the syscall/PID that wrote historical OSDK.toml files. Historical writer remains unidentified."
+}

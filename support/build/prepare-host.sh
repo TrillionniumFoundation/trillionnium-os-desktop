@@ -7,7 +7,7 @@ if [[ ${1:-} == --apt ]]; then
     apt-get update
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         build-essential ca-certificates curl git python3 pkg-config libssl-dev \
-        clang lld qemu-system-x86 busybox-static
+        clang lld qemu-system-x86 busybox-static gdb binutils
 elif [[ $# != 0 ]]; then
     echo "usage: $0 [--apt] (the apt option requires root on a disposable host)" >&2
     exit 2
@@ -23,6 +23,8 @@ fi
 rustup toolchain install nightly-2026-07-21 --profile minimal \
     --component rust-src,rustc-dev,llvm-tools-preview \
     --target x86_64-unknown-none,riscv64imac-unknown-none-elf,loongarch64-unknown-none-softfloat,aarch64-unknown-none-softfloat
+# OSDK uses rust-strip when keeping a separate DWARF symbol ELF for debugging.
+cargo +nightly-2026-07-21 install --locked --version 0.4.0 cargo-binutils
 vdso_dir="$build_dir/out/linux-vdso"
 if [[ ! -d "$vdso_dir/.git" ]]; then
     git clone https://github.com/asterinas/linux_vdso.git "$vdso_dir"

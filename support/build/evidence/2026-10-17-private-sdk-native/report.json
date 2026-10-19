@@ -1,0 +1,47 @@
+{
+  "schema": "a01-private-sdk-native/1",
+  "case": "N2",
+  "producer_commit": "0a7037fdde1e4c21884ea4f490ff28134082d0a2",
+  "producer_complete_tree": "e9cb90e3504b5cb07fba5345af122315a487895f",
+  "derived_kernel_tree": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da",
+  "actual_controller_sha256": "2977c8c0b997e16b1c29a7b6babe7ffd00d0b2126505e04f40cb0ce5c4851950",
+  "controller_commands": 11,
+  "cold_target_absent_before_first_build": true,
+  "cold_make_kernel_passed": true,
+  "subsequent_make_run_kernel_passed": true,
+  "raw_qemu_exit": 33,
+  "profile_opt_in": false,
+  "first_kernel_elf": {
+    "source": "/tmp/trillionnium-a01-private-sdk-N2/kernel/asterinas/target/osdk/asterinas/asterinas-osdk-bin.elf",
+    "source_stat": {
+      "st_dev": 27,
+      "st_ino": 404611,
+      "st_mode": 33261,
+      "st_size": 8255688,
+      "st_mtime_ns": 1792211009171642547,
+      "st_ctime_ns": 1792211009171653744
+    },
+    "copy": "/workspace/scratch/ae1a8cf05419/private-sdk-native-N2/first-build-kernel.elf",
+    "size": 8255688,
+    "sha256": "5c2cee2a8806baf873149ce07f752cc3b1c633efd4199e0c8c0ba20ef5f325f7"
+  },
+  "first_and_boot_kernel_complete_bytes_equal": true,
+  "compile_lines": {
+    "kernel-build": 279,
+    "kernel-boot": 0
+  },
+  "actual_host": "24f0ea2620fe",
+  "cross_instance_elf_equality_claimed": false,
+  "immutable_host_claimed": false,
+  "all_project_blockers_closed": false,
+  "captured_original_files": 57,
+  "unique_binary_payloads": 4,
+  "source_controls": 80,
+  "packaged_utc": "2026-10-17T04:25:40.737302+00:00",
+  "limits": [
+    "Only an ordinary cold build and its subsequent warm boot are accepted here.",
+    "Private SDK paths are exclusive per action; byte equality between them is observed separately.",
+    "Global SDK identity stability is based on captured before/after observations, not prevention of arbitrary concurrent external writers.",
+    "No source target tree was captured or read by this packager."
+  ]
+}

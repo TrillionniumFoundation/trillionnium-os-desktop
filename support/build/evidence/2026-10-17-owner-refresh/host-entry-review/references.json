@@ -1,0 +1,458 @@
+{
+  "schema": 1,
+  "references": [
+    {
+      "path": ".github/workflows/a01-boot-evidence.yml",
+      "absolute_path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/.github/workflows/a01-boot-evidence.yml",
+      "source_sha256": "c28d8ec47ebcde0cf23338c62862ad5ce58d38b01abd8ce2d657fe74092d2d53",
+      "line_start": 25,
+      "line_end": 29,
+      "lines": [
+        {
+          "line": 25,
+          "text": "jobs:"
+        },
+        {
+          "line": 26,
+          "text": "  host-evidence:"
+        },
+        {
+          "line": 27,
+          "text": "    runs-on: ubuntu-24.04"
+        },
+        {
+          "line": 28,
+          "text": "    timeout-minutes: 15"
+        },
+        {
+          "line": 29,
+          "text": "    steps:"
+        }
+      ]
+    },
+    {
+      "path": ".github/workflows/a02-pinned-host-acceptance.yml",
+      "absolute_path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/.github/workflows/a02-pinned-host-acceptance.yml",
+      "source_sha256": "ece9d4ecc34a020c04e0b237253adb331dd3a653821693126127e334e4c5c306",
+      "line_start": 24,
+      "line_end": 28,
+      "lines": [
+        {
+          "line": 24,
+          "text": "jobs:"
+        },
+        {
+          "line": 25,
+          "text": "  pinned-host-codec:"
+        },
+        {
+          "line": 26,
+          "text": "    runs-on: ubuntu-24.04"
+        },
+        {
+          "line": 27,
+          "text": "    timeout-minutes: 45"
+        },
+        {
+          "line": 28,
+          "text": "    steps:"
+        }
+      ]
+    },
+    {
+      "path": ".github/workflows/a09-hardware.yml",
+      "absolute_path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/.github/workflows/a09-hardware.yml",
+      "source_sha256": "6b6ef1f309aad1081f38efe0249ed27f05f8f1d0a05cdadf871c92abcfa47ca3",
+      "line_start": 20,
+      "line_end": 29,
+      "lines": [
+        {
+          "line": 20,
+          "text": ""
+        },
+        {
+          "line": 21,
+          "text": "jobs:"
+        },
+        {
+          "line": 22,
+          "text": "  host-device-model:"
+        },
+        {
+          "line": 23,
+          "text": "    runs-on: ubuntu-24.04"
+        },
+        {
+          "line": 24,
+          "text": "    timeout-minutes: 15"
+        },
+        {
+          "line": 25,
+          "text": "    steps:"
+        },
+        {
+          "line": 26,
+          "text": "      - uses: actions/checkout@v4"
+        },
+        {
+          "line": 27,
+          "text": "      - name: CPU-only VFIO, CUDA-gate and cross-kernel evidence unit tests"
+        },
+        {
+          "line": 28,
+          "text": "        run: python3 -m unittest discover -s tests/hardware -p 'test_*.py' -v"
+        },
+        {
+          "line": 29,
+          "text": "      - name: Rust no_std device lifecycle unit and release tests"
+        }
+      ]
+    },
+    {
+      "path": ".github/workflows/a10-host.yml",
+      "absolute_path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/.github/workflows/a10-host.yml",
+      "source_sha256": "1e6b2064eef1208907eb0e5df5a345d5a42086ea90cc09de3859e3ddabc8f59b",
+      "line_start": 24,
+      "line_end": 28,
+      "lines": [
+        {
+          "line": 24,
+          "text": "jobs:"
+        },
+        {
+          "line": 25,
+          "text": "  ui-source-guard:"
+        },
+        {
+          "line": 26,
+          "text": "    runs-on: ubuntu-24.04"
+        },
+        {
+          "line": 27,
+          "text": "    timeout-minutes: 5"
+        },
+        {
+          "line": 28,
+          "text": "    outputs:"
+        }
+      ]
+    },
+    {
+      "path": ".github/workflows/a10-host.yml",
+      "absolute_path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/.github/workflows/a10-host.yml",
+      "source_sha256": "1e6b2064eef1208907eb0e5df5a345d5a42086ea90cc09de3859e3ddabc8f59b",
+      "line_start": 77,
+      "line_end": 81,
+      "lines": [
+        {
+          "line": 77,
+          "text": "    needs: ui-source-guard"
+        },
+        {
+          "line": 78,
+          "text": "    if: ${{ needs.ui-source-guard.outputs.has_ui == 'true' }}"
+        },
+        {
+          "line": 79,
+          "text": "    runs-on: ubuntu-24.04"
+        },
+        {
+          "line": 80,
+          "text": "    timeout-minutes: 45"
+        },
+        {
+          "line": 81,
+          "text": "    env:"
+        }
+      ]
+    },
+    {
+      "path": ".github/workflows/g0-contracts.yml",
+      "absolute_path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/.github/workflows/g0-contracts.yml",
+      "source_sha256": "464e52ec3390933242a5004f3352b521199cdf24e49a812d9ded27037bbeda97",
+      "line_start": 31,
+      "line_end": 35,
+      "lines": [
+        {
+          "line": 31,
+          "text": "jobs:"
+        },
+        {
+          "line": 32,
+          "text": "  host-contracts:"
+        },
+        {
+          "line": 33,
+          "text": "    runs-on: ubuntu-24.04"
+        },
+        {
+          "line": 34,
+          "text": "    timeout-minutes: 15"
+        },
+        {
+          "line": 35,
+          "text": "    steps:"
+        }
+      ]
+    },
+    {
+      "path": "support/build/repro/README.md",
+      "absolute_path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/repro/README.md",
+      "source_sha256": "cacdeaab6fea8bf7a85c6e106b9127f9af26ccd7c03ce6d1bdcd8f1d59a0e0ff",
+      "line_start": 71,
+      "line_end": 77,
+      "lines": [
+        {
+          "line": 71,
+          "text": "`policy.json` separately records actual host username/nodename/UID and the chosen"
+        },
+        {
+          "line": 72,
+          "text": "embedded build identity. The latter is labelled build metadata and never used"
+        },
+        {
+          "line": 73,
+          "text": "as evidence of a second host. Until actual full kernel builds, byte comparison"
+        },
+        {
+          "line": 74,
+          "text": "and QEMU boots pass, a successful native tiny fixture proves only the adapter"
+        },
+        {
+          "line": 75,
+          "text": "mechanism. No cross-host, hardware or arbitrary-environment reproducibility is"
+        },
+        {
+          "line": 76,
+          "text": "claimed. The forced fresh target also avoids claiming incremental-cache"
+        },
+        {
+          "line": 77,
+          "text": "correctness for compiler environment overrides."
+        }
+      ]
+    },
+    {
+      "path": "support/hardware/rtx4060-lab-profile.json",
+      "absolute_path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/hardware/rtx4060-lab-profile.json",
+      "source_sha256": "e8a10b9e0dbb58461f3ed9144395b85d6388e3d9f563874cac95b30feed09ffe",
+      "line_start": 1,
+      "line_end": 6,
+      "lines": [
+        {
+          "line": 1,
+          "text": "{"
+        },
+        {
+          "line": 2,
+          "text": "  \"schema\": \"a09.gpu-lab-profile.v1\","
+        },
+        {
+          "line": 3,
+          "text": "  \"state\": \"candidate_not_detected_or_authorized_on_accessible_hardware\","
+        },
+        {
+          "line": 4,
+          "text": "  \"base_main\": \"4b88b637e520f5a8f10d0e280fb9ee450abee8e4\","
+        },
+        {
+          "line": 5,
+          "text": "  \"kernel_pin\": \"c4b7ed575b7b32773475b194d2ad41fb6d03765b\","
+        },
+        {
+          "line": 6,
+          "text": "  \"selected_route\": \"linux_guest_driver_exclusive_gpu_passthrough_on_asterinas_vmm\","
+        }
+      ]
+    },
+    {
+      "path": "support/hardware/rtx4060-lab-profile.json",
+      "absolute_path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/hardware/rtx4060-lab-profile.json",
+      "source_sha256": "e8a10b9e0dbb58461f3ed9144395b85d6388e3d9f563874cac95b30feed09ffe",
+      "line_start": 18,
+      "line_end": 24,
+      "lines": [
+        {
+          "line": 18,
+          "text": "  \"physical_host\": {"
+        },
+        {
+          "line": 19,
+          "text": "    \"cpu\": null,"
+        },
+        {
+          "line": 20,
+          "text": "    \"board\": null,"
+        },
+        {
+          "line": 21,
+          "text": "    \"iommu\": null,"
+        },
+        {
+          "line": 22,
+          "text": "    \"hypervisor_backend\": null,"
+        },
+        {
+          "line": 23,
+          "text": "    \"verified_isolated_machine\": false"
+        },
+        {
+          "line": 24,
+          "text": "  },"
+        }
+      ]
+    },
+    {
+      "path": "support/hardware/rtx4060-lab-profile.json",
+      "absolute_path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/hardware/rtx4060-lab-profile.json",
+      "source_sha256": "e8a10b9e0dbb58461f3ed9144395b85d6388e3d9f563874cac95b30feed09ffe",
+      "line_start": 55,
+      "line_end": 62,
+      "lines": [
+        {
+          "line": 55,
+          "text": "    \"allowed_environment\": \"authorized_idle_disposable_lab_only\","
+        },
+        {
+          "line": 56,
+          "text": "    \"driver_rebind\": false,"
+        },
+        {
+          "line": 57,
+          "text": "    \"firmware_flash\": false,"
+        },
+        {
+          "line": 58,
+          "text": "    \"bios_modify\": false,"
+        },
+        {
+          "line": 59,
+          "text": "    \"prod_reset\": false,"
+        },
+        {
+          "line": 60,
+          "text": "    \"ollama\": false"
+        },
+        {
+          "line": 61,
+          "text": "  }"
+        },
+        {
+          "line": 62,
+          "text": "}"
+        }
+      ]
+    },
+    {
+      "path": "support/vmm/GATES.md",
+      "absolute_path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/vmm/GATES.md",
+      "source_sha256": "3ffe2e02c6aa4da993198b331a1ae86fffaba76a40cccbd4fd54117aaa554230",
+      "line_start": 6,
+      "line_end": 16,
+      "lines": [
+        {
+          "line": 6,
+          "text": "| --- | --- | --- |"
+        },
+        {
+          "line": 7,
+          "text": "| Intel VMX | ostd/src/arch/x86/vm/mod.rs, context.rs, ept.rs, vmx/ and ostd/src/vm/{gpm_space,guest_mode}.rs provide Intel VMX, EPT, guest context/exit primitives | No Linux boot VMM, PCI GPU passthrough, vCPU scheduling, virt IRQ, device model, recovery qualification |"
+        },
+        {
+          "line": 8,
+          "text": "| AMD SVM | No SVM-specific file in pinned x86 vm tree; implementation uses VMX/VMCS | Do not use VMX example as proof of AMD SVM/NPT/VMCB/VMRUN, even though visible virtual CPU is AMD |"
+        },
+        {
+          "line": 9,
+          "text": "| ARM EL2 | No ARM VM implementation found in pinned VM path | No ARM EL2, stage-2/SMMU/GIC guest virtualization pass |"
+        },
+        {
+          "line": 10,
+          "text": "| IOMMU | ostd/src/arch/x86/iommu/{dma_remapping,interrupt_remapping,invalidate,fault,registers} source surfaces exist | Not a complete GPU assignment API, validated IOMMU group/isolation, reset or AMD-Vi evidence |"
+        },
+        {
+          "line": 11,
+          "text": ""
+        },
+        {
+          "line": 12,
+          "text": "Execution-tool container: Linux 6.18.44, x86_64, no /dev/kvm, no forwarded vmx/svm flags; NO hypervisor run. Upstream osdk/tests/examples_in_book/write_a_hypervisor_in_100_lines_templates/lib.rs demonstrates a small VMX real-mode guest that prints serial and halts; not a Linux guest VM or a GPU VMM."
+        },
+        {
+          "line": 13,
+          "text": ""
+        },
+        {
+          "line": 14,
+          "text": "## Mandatory engineering gates for selected route C"
+        },
+        {
+          "line": 15,
+          "text": ""
+        },
+        {
+          "line": 16,
+          "text": "1. Discover actual architecture at runtime; reject VMX absent on Intel / SVM absent on AMD. If AMD target is chosen, implement/test SVM instead of attempting VMX commands. No aggressive emulation fallback."
+        }
+      ]
+    },
+    {
+      "path": "support/hardware/DECISION.md",
+      "absolute_path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/hardware/DECISION.md",
+      "source_sha256": "d59600c17d4145ebdeb349ffa94e7b1c9cfa83a0bec567ff352d28c0f02eed4a",
+      "line_start": 5,
+      "line_end": 9,
+      "lines": [
+        {
+          "line": 5,
+          "text": "## Actual authorized observation vs candidate"
+        },
+        {
+          "line": 6,
+          "text": ""
+        },
+        {
+          "line": 7,
+          "text": "The read-only probe ran in the execution-tool Linux container, NOT on a user-provided bare-metal GPU host. Visible environment: Linux 6.18.44, x86_64, virtual CPU model AMD EPYC 9V74 80-Core Processor (3 visible /proc/cpuinfo processor entries, not a claim about physical cores). PCI enumeration exposed host bridge 8086:0d57 and six VirtIO functions: 1af4:1042, 1af4:1041, 1af4:1044, 1af4:105b, 1af4:1053, 1af4:1045. No visible PCI display or compute-accelerator class, NVIDIA or AMD GPU, /dev/dri/renderD128, /dev/kfd, /dev/nvidiactl, /dev/nvidia0, /dev/vfio/vfio or /dev/kvm. No VMX/SVM flags, visible IOMMU group or DMAR/IVRS table. Absence in a restricted container DOES NOT prove physical host absence."
+        },
+        {
+          "line": 8,
+          "text": ""
+        },
+        {
+          "line": 9,
+          "text": "The real GPU's PCI vendor/device/subsystem IDs and BDF, GPU/NPU ID, loaded GSP/other firmware, driver version, IOMMU/interrupt remapping, VRAM/UMA topology, DMA reachability, command submission, queue count, synchronization/fences, reset availability and safety, and CUDA runtime version remain UNKNOWN/UNOBSERVED. They MUST NOT be fabricated from marketing specifications or another machine. See ../../tests/hardware/evidence/2026-10-16-container-probe.json."
+        }
+      ]
+    },
+    {
+      "path": "docs/HARDWARE_AND_DRIVERS.md",
+      "absolute_path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/docs/HARDWARE_AND_DRIVERS.md",
+      "source_sha256": "d31ad12248e97ca7cefdb98bc386fe5e0e3158dfbd131a281e6556cdd5bbcad3",
+      "line_start": 35,
+      "line_end": 39,
+      "lines": [
+        {
+          "line": 35,
+          "text": "## 6. VMM不是免费备选"
+        },
+        {
+          "line": 36,
+          "text": ""
+        },
+        {
+          "line": 37,
+          "text": "OSTD虚拟化基础与完整VMM/虚拟中断/设备模型/KVM兼容接口分开；Intel VMX、AMD SVM、ARM EL2分别核对源码和硬件前提。当前固定上游不等于本项目已支持任意后端。[OSTD RFC](SOURCES.md#ostd-vmm)"
+        },
+        {
+          "line": 38,
+          "text": ""
+        },
+        {
+          "line": 39,
+          "text": "只把VM列为允许路径，未完成具体后端/设备验证前不承诺“全Linux/Android可用”。调试用Linux/KVM宿主与最终由新内核托管VM是不同实验。"
+        }
+      ]
+    }
+  ]
+}

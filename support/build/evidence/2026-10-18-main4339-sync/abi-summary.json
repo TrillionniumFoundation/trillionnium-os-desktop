@@ -1,0 +1,197 @@
+{
+  "check_count": 13,
+  "checks": {
+    "bare_no_std": {
+      "elapsed_seconds": 0.13695,
+      "passed": true,
+      "returncode": 0
+    },
+    "clippy": {
+      "elapsed_seconds": 0.452215,
+      "passed": true,
+      "returncode": 0
+    },
+    "compiled_mutations": {
+      "elapsed_seconds": 13.718078,
+      "passed": true,
+      "returncode": 0
+    },
+    "golden_edges": {
+      "elapsed_seconds": 0.028433,
+      "passed": true,
+      "returncode": 0
+    },
+    "golden_hos2": {
+      "elapsed_seconds": 0.029126,
+      "passed": true,
+      "returncode": 0
+    },
+    "golden_transport": {
+      "elapsed_seconds": 0.028361,
+      "passed": true,
+      "returncode": 0
+    },
+    "python": {
+      "elapsed_seconds": 0.754492,
+      "passed": true,
+      "returncode": 0
+    },
+    "python_discovery": {
+      "elapsed_seconds": 0.097694,
+      "passed": true,
+      "returncode": 0
+    },
+    "python_mutations": {
+      "elapsed_seconds": 0.047732,
+      "passed": true,
+      "returncode": 0
+    },
+    "python_optimized": {
+      "elapsed_seconds": 1.0463,
+      "passed": true,
+      "returncode": 0
+    },
+    "rust": {
+      "elapsed_seconds": 0.20185,
+      "passed": true,
+      "returncode": 0
+    },
+    "rust_discovery": {
+      "elapsed_seconds": 1.566383,
+      "passed": true,
+      "returncode": 0
+    },
+    "rustfmt": {
+      "elapsed_seconds": 0.044057,
+      "passed": true,
+      "returncode": 0
+    }
+  },
+  "checks_passed": 13,
+  "command": {
+    "argv": [
+      "python3",
+      "-B",
+      "tests/abi/run_acceptance.py",
+      "--repo-root",
+      "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop",
+      "--toolchain",
+      "nightly-2026-07-21",
+      "--output-dir",
+      "/workspace/scratch/d7da9e7650f0/a01-runtime/review/a02-after-main-4339",
+      "--timeout",
+      "60",
+      "--mutation-timeout",
+      "900"
+    ],
+    "authorization_scope": "user-authorized existing owner gate; private loopback/network dependencies; no policy changes",
+    "cwd": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop",
+    "effective_selected_environment": {
+      "CARGO_BUILD_JOBS": "2",
+      "CARGO_HOME": "/workspace/scratch/d7da9e7650f0/a01-runtime/cargo",
+      "CARGO_TARGET_DIR": null,
+      "PATH": "/workspace/scratch/d7da9e7650f0/a01-runtime/bin:/workspace/scratch/d7da9e7650f0/a01-runtime/cargo/bin:/workspace/scratch/d7da9e7650f0/a01-runtime/rootfs/usr/bin:/workspace/scratch/d7da9e7650f0/a01-runtime/rootfs/usr/sbin:/root/.codex/tmp/arg0/codex-arg0kfAGaq:/opt/codex/codex-path:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback",
+      "RUSTC": null,
+      "RUSTDOC": null,
+      "RUSTUP_HOME": "/workspace/scratch/d7da9e7650f0/a01-runtime/rustup",
+      "RUSTUP_TOOLCHAIN": "nightly-2026-07-21"
+    },
+    "environment_script": {
+      "path": "/workspace/scratch/d7da9e7650f0/a01-runtime/env.sh",
+      "sha256": "2a5a7b26e546b68605a4fbdb52198998b5f9b3d95d3e030a4c2a1db8b2f28ae0",
+      "size": 1337
+    },
+    "fixed_toolchain": "nightly-2026-07-21",
+    "output_directory_absent_before_start": true,
+    "shell_setup": "source /workspace/scratch/d7da9e7650f0/a01-runtime/env.sh",
+    "started_at_utc": "2026-10-18T03:52:14.227477+00:00",
+    "tool_sandbox_permissions": "require_escalated"
+  },
+  "compiled_source_mutations": {
+    "all_compiled": true,
+    "all_expected_test_failures_observed": true,
+    "errors": [],
+    "expected_mutants": 20,
+    "expected_tests_by_suite": {
+      "mutation_kill": 8,
+      "negative_vectors": 21,
+      "profile_boundaries": 7,
+      "response_snapshot": 5,
+      "semantic_edges": 15
+    },
+    "mutants_killed": 20,
+    "schema": "hos2-rust-source-mutations-v6",
+    "success": true
+  },
+  "counting_notes": [
+    "Ordinary Python has 62 cases; optimized mode repeats those 62 and is reported separately.",
+    "The separately executed 9-case Python mutation subset is already included in the ordinary 62.",
+    "Rust has 78 cases including one doctest. Discovery, mutation baselines and mutant executions are not additive."
+  ],
+  "errors": [],
+  "exclusions": [
+    "Source snapshot text is bound by all 28 SHA256 and Git blob identities but is not duplicated.",
+    "Cargo target, binaries, caches, temporary mutation worktrees and existing runtime archive are not copied."
+  ],
+  "execution": {
+    "elapsed_seconds": 18.475088,
+    "finished_at_utc": "2026-10-18T03:52:32.702774+00:00",
+    "returncode": 0,
+    "started_at_utc": "2026-10-18T03:52:14.227477+00:00"
+  },
+  "golden_vectors": {
+    "golden_edges": 24,
+    "golden_hos2": 12,
+    "golden_transport": 1
+  },
+  "not_executed": [],
+  "python": {
+    "python": {
+      "actual": 62,
+      "complete": true,
+      "expected": 62
+    },
+    "python_mutations": {
+      "actual": 9,
+      "complete": true,
+      "expected": 9
+    },
+    "python_optimized": {
+      "actual": 62,
+      "complete": true,
+      "expected": 62
+    }
+  },
+  "reused_runtime_archive": {
+    "copied_into_this_archive": false,
+    "immutable_github_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/d9ccc523141ec46baef2a0dfe0afe49e4f97f523/support/build/evidence/2026-10-18-current-main/runtime.tar.gz",
+    "repository_relative_path": "support/build/evidence/2026-10-18-current-main/runtime.tar.gz",
+    "sha256": "c774a721c4e1bab20b88f854ecf4a3034a989955ea906e2afb2b463bb9c9b012",
+    "size": 385861
+  },
+  "rust": {
+    "complete": true,
+    "expected": 78,
+    "failed": 0,
+    "filtered_out": 0,
+    "ignored": 0,
+    "measured": 0,
+    "passed": 78
+  },
+  "schema": "a01-a02-main4339-owner-gate-evidence-v1",
+  "scope": "Existing A02 host codec gate after main 4339 merge; no new kernel or A03 matrix execution.",
+  "source": {
+    "all_inputs_equal_recorded_head_blobs": true,
+    "head": "d9ccc523141ec46baef2a0dfe0afe49e4f97f523",
+    "head_tree_and_28_input_hashes_unchanged": true,
+    "input_count": 28,
+    "input_manifest_sha256": "824039f4b32af55586b5560e17af26474e98ff8c81c11db9d1925c1e97313485",
+    "root_readme_bytes": 0,
+    "snapshot_inputs_verified_at_packaging": true,
+    "status_scope": "Source receipts record tracked-only porcelain, not complete-worktree status.",
+    "tracked_clean_before_and_after": true,
+    "tree": "315b2b84319a88442fb054f434ccc2fdc436e47e"
+  },
+  "success": true,
+  "toolchain": "nightly-2026-07-21"
+}

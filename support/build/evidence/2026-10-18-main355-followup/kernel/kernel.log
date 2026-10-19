@@ -1,0 +1,940 @@
+make: Entering directory '/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas'
+/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/minimal.mk:5: warning: overriding recipe for target 'initramfs'
+Makefile:323: warning: ignoring old recipe for target 'initramfs'
+/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/minimal.mk:10: warning: overriding recipe for target '/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-main355-followup/kernel/osdk/bin/cargo-osdk'
+Makefile:298: warning: ignoring old recipe for target '/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-main355-followup/kernel/osdk/bin/cargo-osdk'
+/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/minimal.mk:15: warning: overriding recipe for target 'install_osdk'
+Makefile:291: warning: ignoring old recipe for target 'install_osdk'
+/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/minimal.mk:25: warning: overriding recipe for target 'gdb_server'
+Makefile:419: warning: ignoring old recipe for target 'gdb_server'
+  Installing cargo-osdk v0.19.0 (/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/osdk)
+warning: default toolchain implicitly overridden with `nightly-2026-07-21-x86_64-unknown-linux-gnu` by environment variable
+  |
+  = help: use `cargo +stable install` if you meant to use the stable toolchain
+  = note: rustup selects the toolchain based on the parent environment and not the environment of the package being installed
+    Updating crates.io index
+    Finished `release` profile [optimized] target(s) in 0.94s
+  Installing /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-main355-followup/kernel/osdk/bin/cargo-osdk
+   Installed package `cargo-osdk v0.19.0 (/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/osdk)` (executable `cargo-osdk`)
+warning: unstable feature specified for `-Ctarget-feature`: `ermsb`
+  |
+  = note: this feature is not stably supported; its behavior can change in the future
+
+warning: `int-to-c-enum` (lib) generated 1 warning
+warning: `ostd-pod` (lib) generated 1 warning (1 duplicate)
+warning: `id-alloc` (lib) generated 1 warning (1 duplicate)
+warning: `align_ext` (lib) generated 1 warning (1 duplicate)
+warning: `linux-boot-params` (lib) generated 1 warning (1 duplicate)
+warning: `ostd-test` (lib) generated 1 warning (1 duplicate)
+warning: `ostd` (lib) generated 1 warning (1 duplicate)
+warning: `typeflags-util` (lib) generated 1 warning (1 duplicate)
+warning: `component` (lib) generated 1 warning (1 duplicate)
+warning: `aster-rights` (lib) generated 1 warning (1 duplicate)
+warning: `osdk-heap-allocator` (lib) generated 1 warning (1 duplicate)
+warning: `aster-util` (lib) generated 1 warning (1 duplicate)
+warning: `aster-softirq` (lib) generated 1 warning (1 duplicate)
+warning: `dma-pool` (lib) generated 1 warning (1 duplicate)
+warning: `device-id` (lib) generated 1 warning (1 duplicate)
+warning: `aster-console` (lib) generated 1 warning (1 duplicate)
+warning: `io-util` (lib) generated 1 warning (1 duplicate)
+warning: `jhash` (lib) generated 1 warning (1 duplicate)
+warning: `aster-bigtcp` (lib) generated 1 warning (1 duplicate)
+warning: `aster-block` (lib) generated 1 warning (1 duplicate)
+warning: `aster-pci` (lib) generated 1 warning (1 duplicate)
+warning: `aster-network` (lib) generated 1 warning (1 duplicate)
+warning: `aster-systree` (lib) generated 1 warning (1 duplicate)
+warning: `aster-cmdline` (lib) generated 1 warning (1 duplicate)
+warning: `aster-input` (lib) generated 1 warning (1 duplicate)
+warning: `aster-fuse` (lib) generated 1 warning (1 duplicate)
+warning: `aster-framebuffer` (lib) generated 1 warning (1 duplicate)
+warning: `aster-virtio` (lib) generated 1 warning (1 duplicate)
+warning: `aster-device` (lib) generated 1 warning (1 duplicate)
+warning: `aster-logger` (lib) generated 1 warning (1 duplicate)
+warning: `cpio-decoder` (lib) generated 1 warning (1 duplicate)
+warning: `aster-nvme` (lib) generated 1 warning (1 duplicate)
+warning: `osdk-frame-allocator` (lib) generated 1 warning (1 duplicate)
+warning: `aster-time` (lib) generated 1 warning (1 duplicate)
+warning: `ring-buffer` (lib) generated 1 warning (1 duplicate)
+warning: `xarray` (lib) generated 1 warning (1 duplicate)
+warning: `sparse-id-alloc` (lib) generated 1 warning (1 duplicate)
+warning: `logo-ascii-art` (lib) generated 1 warning (1 duplicate)
+warning: `keyable-arc` (lib) generated 1 warning (1 duplicate)
+   Compiling aster-core v0.1.0 (/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core)
+warning: `aster-uart` (lib) generated 1 warning (1 duplicate)
+warning: use of deprecated method `core::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/process/process/mod.rs:339:14
+    |
+339 |             .fetch_update(Ordering::AcqRel, Ordering::Acquire, |current| {
+    |              ^^^^^^^^^^^^
+    |
+    = note: `#[warn(deprecated)]` on by default
+help: replace the use of the deprecated method
+    |
+339 -             .fetch_update(Ordering::AcqRel, Ordering::Acquire, |current| {
+339 +             .try_update(Ordering::AcqRel, Ordering::Acquire, |current| {
+    |
+
+warning: use of deprecated method `core::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/process/process/mod.rs:353:14
+    |
+353 |             .fetch_update(Ordering::AcqRel, Ordering::Acquire, |current| {
+    |              ^^^^^^^^^^^^
+    |
+help: replace the use of the deprecated method
+    |
+353 -             .fetch_update(Ordering::AcqRel, Ordering::Acquire, |current| {
+353 +             .try_update(Ordering::AcqRel, Ordering::Acquire, |current| {
+    |
+
+warning: variant `InvalidStatus` is never constructed
+  --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:42:5
+   |
+24 | pub enum Error {
+   |          ----- variant in this enum
+...
+42 |     InvalidStatus,
+   |     ^^^^^^^^^^^^^
+   |
+   = note: `Error` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: multiple variants are never constructed
+  --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:79:5
+   |
+77 | pub enum Status {
+   |          ------ variants in this enum
+78 |     Ok = 0,
+79 |     InvalidInput = 1,
+   |     ^^^^^^^^^^^^
+80 |     PermissionDenied = 2,
+   |     ^^^^^^^^^^^^^^^^
+81 |     StaleHandle = 3,
+   |     ^^^^^^^^^^^
+82 |     Revoked = 4,
+   |     ^^^^^^^
+83 |     Conflict = 5,
+   |     ^^^^^^^^
+84 |     ResourceExhausted = 6,
+   |     ^^^^^^^^^^^^^^^^^
+85 |     Unsupported = 7,
+   |     ^^^^^^^^^^^
+86 |     Indeterminate = 8,
+   |     ^^^^^^^^^^^^^
+87 |     Busy = 9,
+   |     ^^^^
+88 |     OutOfOrder = 10,
+   |     ^^^^^^^^^^
+89 |     Retired = 11,
+   |     ^^^^^^^
+   |
+   = note: `Status` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: associated function `from_u16` is never used
+  --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:97:18
+   |
+92 | impl Status {
+   | ----------- associated function in this implementation
+...
+97 |     pub const fn from_u16(value: u16) -> Result<Self, Error> {
+   |                  ^^^^^^^^
+
+warning: function `required_response_frame_len` is never used
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:141:14
+    |
+141 | pub const fn required_response_frame_len(opcode: Opcode, status: Status) -> usize {
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: associated items `new`, `encode`, `decode_response_snapshot_for`, and `ensure_response_capacity` are never used
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:155:18
+    |
+154 | impl Transport {
+    | -------------- associated items in this implementation
+155 |     pub const fn new(
+    |                  ^^^
+...
+188 |     pub fn encode(&self, out: &mut [u8]) -> Result<usize, Error> {
+    |            ^^^^^^
+...
+263 |     pub fn decode_response_snapshot_for(
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+286 |     pub fn ensure_response_capacity(&self, opcode: Opcode, _status: Status) -> Result<(), Error> {
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: variants `Reserved`, `Terminal`, `Retired`, `NotSeen`, and `HistoryLost` are never constructed
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:381:5
+    |
+380 | pub enum DeliveryState {
+    |          ------------- variants in this enum
+381 |     Reserved = 0,
+    |     ^^^^^^^^
+382 |     Terminal = 1,
+    |     ^^^^^^^^
+383 |     Retired = 2,
+    |     ^^^^^^^
+384 |     NotSeen = 3,
+    |     ^^^^^^^
+385 |     HistoryLost = 4,
+    |     ^^^^^^^^^^^
+    |
+    = note: `DeliveryState` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: associated function `from_u16` is never used
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:392:18
+    |
+388 | impl DeliveryState {
+    | ------------------ associated function in this implementation
+...
+392 |     pub const fn from_u16(v: u16) -> Result<Self, Error> {
+    |                  ^^^^^^^^
+
+warning: variants `Empty`, `ReadUsage`, `InstallBudget`, `QueryDelivery`, and `RetireThrough` are never constructed
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:425:5
+    |
+423 | pub enum ResponsePayload {
+    |          --------------- variants in this enum
+424 |     /// Error responses carry no payload on the wire.
+425 |     Empty,
+    |     ^^^^^
+426 |     QueryAbi(QueryAbiResponse),
+427 |     ReadUsage(ReadUsageResponse),
+    |     ^^^^^^^^^
+428 |     InstallBudget(InstallBudgetResponse),
+    |     ^^^^^^^^^^^^^
+429 |     QueryDelivery(QueryDeliveryResponse),
+    |     ^^^^^^^^^^^^^
+430 |     RetireThrough(RetireThroughResponse),
+    |     ^^^^^^^^^^^^^
+    |
+    = note: `ResponsePayload` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+
+warning: function `parse_request` is never used
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:513:8
+    |
+513 | pub fn parse_request(bytes: &[u8]) -> Result<Request, Error> {
+    |        ^^^^^^^^^^^^^
+
+warning: function `encode_request` is never used
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:517:8
+    |
+517 | pub fn encode_request(request: &Request, out: &mut [u8]) -> Result<usize, Error> {
+    |        ^^^^^^^^^^^^^^
+
+warning: function `decode_response` is never used
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:544:8
+    |
+544 | pub fn decode_response(bytes: &[u8]) -> Result<Response, Error> {
+    |        ^^^^^^^^^^^^^^^
+
+warning: function `declared_response_len` is never used
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:636:8
+    |
+636 | pub fn declared_response_len(bytes: &[u8]) -> Result<usize, Error> {
+    |        ^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `decode_response_prefix` is never used
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:657:8
+    |
+657 | pub fn decode_response_prefix(bytes: &[u8]) -> Result<(Response, usize), Error> {
+    |        ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `decode_response_prefix_for` is never used
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:664:8
+    |
+664 | pub fn decode_response_prefix_for(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `decode_response_for` is never used
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:674:8
+    |
+674 | pub fn decode_response_for(bytes: &[u8], request: &Request) -> Result<Response, Error> {
+    |        ^^^^^^^^^^^^^^^^^^^
+
+warning: function `parse_response` is never used
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:681:8
+    |
+681 | pub fn parse_response(bytes: &[u8]) -> Result<Response, Error> {
+    |        ^^^^^^^^^^^^^^
+
+warning: associated items `decode` and `encode` are never used
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:726:12
+    |
+725 | impl Request {
+    | ------------ associated items in this implementation
+726 |     pub fn decode(bytes: &[u8]) -> Result<Self, Error> {
+    |            ^^^^^^
+...
+729 |     pub fn encode(&self, out: &mut [u8]) -> Result<usize, Error> {
+    |            ^^^^^^
+
+warning: associated items `decode`, `encode`, `matches_request`, and `validate_for` are never used
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:735:12
+    |
+734 | impl Response {
+    | ------------- associated items in this implementation
+735 |     pub fn decode(bytes: &[u8]) -> Result<Self, Error> {
+    |            ^^^^^^
+...
+738 |     pub fn encode(&self, out: &mut [u8]) -> Result<usize, Error> {
+    |            ^^^^^^
+...
+743 |     pub fn matches_request(&self, request: &Request) -> bool {
+    |            ^^^^^^^^^^^^^^^
+...
+748 |     pub fn validate_for(&self, request: &Request) -> Result<(), Error> {
+    |            ^^^^^^^^^^^^
+
+warning: function `install_budget_request_id` is never used
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:843:8
+    |
+843 | pub fn install_budget_request_id(sequence: u64) -> Result<[u8; 16], Error> {
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `install_budget_sequence` is never used
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:853:8
+    |
+853 | pub fn install_budget_sequence(id: &[u8; 16]) -> Result<u64, Error> {
+    |        ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `validate_request` is never used
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:873:4
+    |
+873 | fn validate_request(request: &Request) -> Result<(), Error> {
+    |    ^^^^^^^^^^^^^^^^
+
+warning: function `request_payload_len` is never used
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:918:4
+    |
+918 | fn request_payload_len(payload: &RequestPayload) -> usize {
+    |    ^^^^^^^^^^^^^^^^^^^
+
+warning: function `encode_request_payload` is never used
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:926:4
+    |
+926 | fn encode_request_payload(payload: &RequestPayload, out: &mut [u8]) {
+    |    ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `parse_read_usage_response` is never used
+    --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:1035:4
+     |
+1035 | fn parse_read_usage_response(p: &[u8]) -> Result<ReadUsageResponse, Error> {
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `parse_install_response` is never used
+    --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:1070:4
+     |
+1070 | fn parse_install_response(p: &[u8]) -> Result<InstallBudgetResponse, Error> {
+     |    ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `parse_query_delivery_response` is never used
+    --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:1081:4
+     |
+1081 | fn parse_query_delivery_response(p: &[u8]) -> Result<QueryDeliveryResponse, Error> {
+     |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `parse_retire_response` is never used
+    --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:1156:4
+     |
+1156 | fn parse_retire_response(p: &[u8]) -> Result<RetireThroughResponse, Error> {
+     |    ^^^^^^^^^^^^^^^^^^^^^
+
+warning: unreachable `pub` item
+ --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:8:1
+  |
+8 | pub const HOS2_MAGIC: [u8; 4] = *b"HOS2";
+  | ---^^^^^^^^^^^^^^^^^^^^^^^^^^
+  | |
+  | help: consider restricting its visibility: `pub(crate)`
+  |
+  = help: or consider exporting it for use by other crates
+  = note: requested on the command line with `-W unreachable-pub`
+
+warning: unreachable `pub` item
+ --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:9:1
+  |
+9 | pub const HOSR_MAGIC: [u8; 4] = *b"HOSR";
+  | ---^^^^^^^^^^^^^^^^^^^^^^^^^^
+  | |
+  | help: consider restricting its visibility: `pub(crate)`
+  |
+  = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+  --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:10:1
+   |
+10 | pub const HOS2_MAJOR: u16 = 2;
+   | ---^^^^^^^^^^^^^^^^^^^^^^
+   | |
+   | help: consider restricting its visibility: `pub(crate)`
+   |
+   = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+  --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:11:1
+   |
+11 | pub const HOS2_MINOR: u16 = 0;
+   | ---^^^^^^^^^^^^^^^^^^^^^^
+   | |
+   | help: consider restricting its visibility: `pub(crate)`
+   |
+   = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+  --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:12:1
+   |
+12 | pub const HEADER_LEN: usize = 64;
+   | ---^^^^^^^^^^^^^^^^^^^^^^^^
+   | |
+   | help: consider restricting its visibility: `pub(crate)`
+   |
+   = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+  --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:13:1
+   |
+13 | pub const TRANSPORT_LEN: usize = 32;
+   | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   | |
+   | help: consider restricting its visibility: `pub(crate)`
+   |
+   = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+  --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:14:1
+   |
+14 | pub const MAX_PAYLOAD: usize = 65_536;
+   | ---^^^^^^^^^^^^^^^^^^^^^^^^^
+   | |
+   | help: consider restricting its visibility: `pub(crate)`
+   |
+   = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+  --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:15:1
+   |
+15 | pub const MAX_FRAME: usize = HEADER_LEN + MAX_PAYLOAD;
+   | ---^^^^^^^^^^^^^^^^^^^^^^^
+   | |
+   | help: consider restricting its visibility: `pub(crate)`
+   |
+   = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+  --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:16:1
+   |
+16 | pub const CPU_PERIOD_NS: u64 = 100_000_000;
+   | ---^^^^^^^^^^^^^^^^^^^^^^^^^
+   | |
+   | help: consider restricting its visibility: `pub(crate)`
+   |
+   = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+  --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:24:1
+   |
+24 | pub enum Error {
+   | ---^^^^^^^^^^^
+   | |
+   | help: consider restricting its visibility: `pub(crate)`
+   |
+   = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+  --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:50:1
+   |
+50 | pub enum Opcode {
+   | ---^^^^^^^^^^^^
+   | |
+   | help: consider restricting its visibility: `pub(crate)`
+   |
+   = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+  --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:59:5
+   |
+59 |     pub const fn as_u16(self) -> u16 {
+   |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |     |
+   |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+  --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:63:5
+   |
+63 |     pub const fn from_u16(value: u16) -> Result<Self, Error> {
+   |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |     |
+   |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+  --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:77:1
+   |
+77 | pub enum Status {
+   | ---^^^^^^^^^^^^
+   | |
+   | help: consider restricting its visibility: `pub(crate)`
+   |
+   = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+  --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:93:5
+   |
+93 |     pub const fn as_u16(self) -> u16 {
+   |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |     |
+   |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+  --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:97:5
+   |
+97 |     pub const fn from_u16(value: u16) -> Result<Self, Error> {
+   |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |     |
+   |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:117:1
+    |
+117 | pub const fn response_payload_len(opcode: Opcode) -> usize {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:131:1
+    |
+131 | pub const fn response_frame_len(opcode: Opcode, status: Status) -> usize {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:141:1
+    |
+141 | pub const fn required_response_frame_len(opcode: Opcode, status: Status) -> usize {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:146:1
+    |
+146 | pub struct Transport {
+    | ---^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:155:5
+    |
+155 |       pub const fn new(
+    |       ^--
+    |       |
+    |  _____help: consider restricting its visibility: `pub(crate)`
+    | |
+156 | |         request_addr: u64,
+157 | |         response_addr: u64,
+158 | |         request_bytes: u32,
+159 | |         response_capacity: u32,
+160 | |     ) -> Self {
+    | |_____________^
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:170:5
+    |
+170 |     pub fn decode(bytes: &[u8]) -> Result<Self, Error> {
+    |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     |
+    |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:188:5
+    |
+188 |     pub fn encode(&self, out: &mut [u8]) -> Result<usize, Error> {
+    |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     |
+    |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:205:5
+    |
+205 |     pub fn validate(&self) -> Result<(), Error> {
+    |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     |
+    |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:240:5
+    |
+240 |     pub fn decode_request_snapshot(&self, snapshot: &[u8]) -> Result<Request, Error> {
+    |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     |
+    |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:263:5
+    |
+263 |       pub fn decode_response_snapshot_for(
+    |       ^--
+    |       |
+    |  _____help: consider restricting its visibility: `pub(crate)`
+    | |
+264 | |         &self,
+265 | |         snapshot: &[u8],
+266 | |         request: &Request,
+267 | |     ) -> Result<(Response, usize), Error> {
+    | |_________________________________________^
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:286:5
+    |
+286 |     pub fn ensure_response_capacity(&self, opcode: Opcode, _status: Status) -> Result<(), Error> {
+    |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     |
+    |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:291:5
+    |
+291 |     pub fn ensure_success_response_capacity(&self, opcode: Opcode) -> Result<(), Error> {
+    |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     |
+    |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:317:1
+    |
+317 | pub struct InstallBudgetRequest {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:325:1
+    |
+325 | pub struct DeliveryRequest {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:332:1
+    |
+332 | pub enum RequestPayload {
+    | ---^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:341:1
+    |
+341 | pub struct Request {
+    | ---^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:350:1
+    |
+350 | pub struct QueryAbiResponse {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:360:1
+    |
+360 | pub struct ReadUsageResponse {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:372:1
+    |
+372 | pub struct InstallBudgetResponse {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:380:1
+    |
+380 | pub enum DeliveryState {
+    | ---^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:389:5
+    |
+389 |     pub const fn as_u16(self) -> u16 {
+    |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     |
+    |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:392:5
+    |
+392 |     pub const fn from_u16(v: u16) -> Result<Self, Error> {
+    |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     |
+    |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:405:1
+    |
+405 | pub struct QueryDeliveryResponse {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:417:1
+    |
+417 | pub struct RetireThroughResponse {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:423:1
+    |
+423 | pub enum ResponsePayload {
+    | ---^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:434:1
+    |
+434 | pub struct Response {
+    | ---^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:443:1
+    |
+443 | pub fn decode_request(bytes: &[u8]) -> Result<Request, Error> {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:513:1
+    |
+513 | pub fn parse_request(bytes: &[u8]) -> Result<Request, Error> {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:517:1
+    |
+517 | pub fn encode_request(request: &Request, out: &mut [u8]) -> Result<usize, Error> {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:544:1
+    |
+544 | pub fn decode_response(bytes: &[u8]) -> Result<Response, Error> {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:636:1
+    |
+636 | pub fn declared_response_len(bytes: &[u8]) -> Result<usize, Error> {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:657:1
+    |
+657 | pub fn decode_response_prefix(bytes: &[u8]) -> Result<(Response, usize), Error> {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:664:1
+    |
+664 |   pub fn decode_response_prefix_for(
+    |   ^--
+    |   |
+    |  _help: consider restricting its visibility: `pub(crate)`
+    | |
+665 | |     bytes: &[u8],
+666 | |     request: &Request,
+667 | | ) -> Result<(Response, usize), Error> {
+    | |_____________________________________^
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:674:1
+    |
+674 | pub fn decode_response_for(bytes: &[u8], request: &Request) -> Result<Response, Error> {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:681:1
+    |
+681 | pub fn parse_response(bytes: &[u8]) -> Result<Response, Error> {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:685:1
+    |
+685 | pub fn encode_response(response: &Response, out: &mut [u8]) -> Result<usize, Error> {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:726:5
+    |
+726 |     pub fn decode(bytes: &[u8]) -> Result<Self, Error> {
+    |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     |
+    |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:729:5
+    |
+729 |     pub fn encode(&self, out: &mut [u8]) -> Result<usize, Error> {
+    |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     |
+    |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:735:5
+    |
+735 |     pub fn decode(bytes: &[u8]) -> Result<Self, Error> {
+    |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     |
+    |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:738:5
+    |
+738 |     pub fn encode(&self, out: &mut [u8]) -> Result<usize, Error> {
+    |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     |
+    |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:743:5
+    |
+743 |     pub fn matches_request(&self, request: &Request) -> bool {
+    |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     |
+    |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:748:5
+    |
+748 |     pub fn validate_for(&self, request: &Request) -> Result<(), Error> {
+    |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |     |
+    |     help: consider restricting its visibility: `pub(crate)`
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:843:1
+    |
+843 | pub fn install_budget_request_id(sequence: u64) -> Result<[u8; 16], Error> {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: unreachable `pub` item
+   --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:853:1
+    |
+853 | pub fn install_budget_sequence(id: &[u8; 16]) -> Result<u64, Error> {
+    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    | |
+    | help: consider restricting its visibility: `pub(crate)`
+    |
+    = help: or consider exporting it for use by other crates
+
+warning: this lint expectation is unfulfilled
+  --> /workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/device/registry/char.rs:92:10
+   |
+92 | #[expect(dead_code)]
+   |          ^^^^^^^^^
+   |
+   = note: `#[warn(unfulfilled_lint_expectations)]` on by default
+
+   Compiling aster-drm v0.1.0 (/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/comps/drm)
+warning: `aster-drm` (lib) generated 1 warning (1 duplicate)
+   Compiling aster-simpledrm v0.1.0 (/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/comps/simpledrm)
+warning: `aster-simpledrm` (lib) generated 1 warning (1 duplicate)
+   Compiling aster-i8042 v0.1.0 (/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/comps/i8042)
+warning: `aster-i8042` (lib) generated 1 warning (1 duplicate)
+   Compiling asterinas v0.1.0 (/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel)
+warning: `asterinas` (lib) generated 1 warning (1 duplicate)
+warning: `aster-core` (lib) generated 91 warnings (1 duplicate) (run `cargo fix --lib -p aster-core` to apply 62 suggestions)
+   Compiling asterinas-osdk-bin v0.1.0 (/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/target/osdk/asterinas-run-base)
+warning: `asterinas-osdk-bin` (bin "asterinas-osdk-bin") generated 1 warning (1 duplicate)
+    Finished `release` profile [optimized] target(s) in 1m 01s
+make: Leaving directory '/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas'

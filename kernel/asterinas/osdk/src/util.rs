@@ -6,7 +6,6 @@ use std::{
     fs::{self, File},
     io::{BufRead, BufReader, Result, Write},
     os::unix::fs::MetadataExt,
-    os::unix::net::UnixStream,
     path::{Path, PathBuf},
     process::Command,
     sync::{LazyLock, Mutex},
@@ -321,7 +320,7 @@ pub fn trace_panic_from_log(qemu_log: File, bin_path: PathBuf) {
 }
 
 /// Dump the coverage data from QEMU if the coverage information is found in the log.
-pub fn dump_coverage_from_qemu(qemu_log: File, monitor_socket: &mut UnixStream) {
+pub fn dump_coverage_from_qemu(qemu_log: File, monitor_socket: &mut impl Write) {
     const COVERAGE_SIGNATRUE: &str = "#### Coverage: ";
     let reader = rev_buf_reader::RevBufReader::new(qemu_log);
 

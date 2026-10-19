@@ -1,0 +1,86 @@
+{
+  "schema": 1,
+  "scope": "OSDK example kernels and tooling, not complete Asterinas kernel acceptance",
+  "profile_id": "osdk-native-local-tcp-gdb-capture-v2",
+  "selected_cases": 1,
+  "passed": 1,
+  "failed": 0,
+  "blocked": 0,
+  "soft_skip_count": 0,
+  "actual_guest_count": 1,
+  "code_publication_commit": "349a28ff9f78319e497d3fd7b58fe73b6e6e44b5",
+  "docs_publication_commit": "5f59dbb7baa34cf7c69e8730bc4642f061b36fa1",
+  "runtime_git_head": "8e5187ffd274df3ae1003905fc7928e2ddd9edb3",
+  "runtime_base_tree": "a58098875a9affc51d409d3aa52ea34fccd7cd6f",
+  "source_binding": "provenance/source-bindings.json",
+  "result": "result.json",
+  "invocation": "invocation.json",
+  "invocation_recorded_before_launch": true,
+  "archive_compatibility": "provenance/helper-compatibility.json",
+  "guests": [
+    {
+      "case": "commands::run::coverage_feature::basic_coverage",
+      "record": "case-01/guests/guest-001/qemu.json",
+      "qemu_pid": 560,
+      "raw_exit_code": 33,
+      "serial_logs": [
+        {
+          "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/next5-osdk-capture-exact-01/case-01/guests/guest-001/serial.log",
+          "size": 2823,
+          "sha256": "c12528641370309208c1340ec6a7b9080f7855675656f5b486d05714b9c448f2"
+        }
+      ],
+      "monitor_socket": {
+        "fd": 64,
+        "local": [
+          "127.0.0.1",
+          51354
+        ],
+        "peer": [
+          "127.0.0.1",
+          45195
+        ],
+        "connected": true,
+        "listening": false,
+        "handoff": "private-connected-inherited-fd",
+        "parent_copy_closed_after_spawn": true,
+        "qemu_pid": 560
+      },
+      "gdb_listener": {
+        "host": "127.0.0.1",
+        "port": 60019,
+        "requested_port": 0,
+        "fd": 3,
+        "bind_succeeded": true,
+        "held_until_qemu_spawn": true,
+        "bind_close_rebind_gap": false,
+        "handoff": "prebound-listener-inherited-fd",
+        "parent_copy_closed_after_spawn": true
+      },
+      "kernel": {
+        "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/osdk/basic_coverage/basic_coverage-osdk-bin.elf",
+        "size": 41563920,
+        "sha256": "2600cc9cc86f31382a64efb45e9e7d346f065cd966a059186f947c195c755598"
+      }
+    }
+  ],
+  "coverage": {
+    "validation": "case-01/coverage/result.json",
+    "capture_sidecar": "case-01/guests/guest-001/coverage-capture.json",
+    "guest_record": "case-01/guests/guest-001/qemu.json",
+    "raw_size": 2094456,
+    "raw_sha256": "a6a60289f3e9fed6c3f6ad17f1108e1a44aac61cac313e8ebc3b1611288eb9a1",
+    "total_functions": 5696,
+    "maximum_function_count": 383731,
+    "osdk_exit_code": 0,
+    "gdb_exit_code": 0,
+    "breakpoint": {
+      "symbol": "ostd::arch::power::try_poweroff",
+      "resolved_address": "0xffffffff880edfc0",
+      "actual_pc": "0xffffffff880edfc0"
+    },
+    "resumed_by_detach": true,
+    "artifacts": "artifacts.json"
+  },
+  "history_note": "This is only one exact coverage retry after the capture lifecycle fix, not a repeated complete 22-case matrix. The earlier full22 run and all historical results remain unchanged in their frozen archives."
+}

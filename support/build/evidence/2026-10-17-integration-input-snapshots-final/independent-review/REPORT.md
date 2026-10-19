@@ -1,0 +1,15 @@
+# Independent review: integration input snapshots
+
+Reviewed final recorder SHA `9f51c0edb4bd919a3ab95dbee718f79a453f4f529b24c067ef831381764b9d3a`, ordinary shared recorder SHA `387845415b54f1822c55ce4198586fae8047f7d3ea94008c84e0974871954098`, and final input-snapshot test SHA `fb3ac087283168172e7c9107db47c9f865f008cca01ded4d7ef55edddf5de5f8`.
+
+One timing issue was found and fixed: the initial snapshot candidate copied the coverage ELF after invoking QEMU's version probe. A valid source ELF replaced during that probe could therefore become the private symbol while kernel input already referred to earlier bytes. The initial independent host-only fixture retained this mixed-input result with a fake successful capture. It does not prove that an actual guest with mismatched symbols would pass GDB.
+
+A new targeted regression was replayed independently against the old `bc1225...` candidate and reordered `67f576...` candidate. The old candidate failed (test exit 1; fake capture exit 96, fake QEMU -9, wrapper125). The reordered candidate passed (test exit0; fake QEMU33/capture0, finalization and both snapshot checks true), retaining the original symbol SHA `f065ca80a1527a54f48645cb15652b29cdb0e99aa5eb4e3e561f447be2a005ae`. Original commands, full invocation records and statuses are retained separately from the initial mixed-input demonstration.
+
+The final alias revision changes only `snapshot_arguments` relative to the successfully replayed reorder. Exact function-source comparisons confirm that `main` and every other function are unchanged. Static review confirms supported double-hyphen inputs keep canonical metadata keys, while known option values such as an `-append` literal are not mistaken for artifact flags. No additional version-case rerun is represented as having occurred on this last hash.
+
+Five limited helper checks also passed: unchanged shared source accepted, changed shared source rejected, preexisting destination preserved, later original-source replacement leaves the copy unchanged, and a stat-only private-copy change is rejected. These used actual production helpers and temporary owned files, with no native tool, Cargo, GDB or VM execution.
+
+The stable-FD source checks, exclusive private copies, pre/post copy hash/stat checks, actual QEMU/capture arguments and downstream failure propagation are coherent. Original UNIX and opt-in TCP/capture policy remain unchanged. No remaining blocking issue was found. An atomic multi-file build snapshot or sandbox against arbitrary privileged writers is outside this contract.
+
+The repository remained read-only for this reviewer. Full test-suite and real 22-case integration results belong to the producer/root. Binary copies are retained in live outputs; the existing archive helper filters their suffixes, so root will preserve final public inputs explicitly with stable reads and deduplicated/chunked storage. This review does not claim that the generic archive helper already saved those binaries. No production implementation is duplicated in this bundle.

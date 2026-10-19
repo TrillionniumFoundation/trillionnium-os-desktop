@@ -1,0 +1,66 @@
+{
+  "schema": 1,
+  "source_ready": true,
+  "source_frozen": true,
+  "files": {
+    "support/build/debug/run.py": "edcd1e590cb95240d966fe03890339e005d4f5a72a07fe404be320a7b7fffadb",
+    "support/build/debug/test_debug.py": "d9c85314795c50aa772fd876c7fb8d97abefd3f8d9063d07daad5981a50a9109",
+    "support/build/debug/README.md": "f89996c747da38008021c061fccfd0a57eeab4c949584a9351f31278428a0ccf"
+  },
+  "scope": "Only these three debug helper files changed; no kernel, OSTD, QEMU recorder or Git writes by this subagent.",
+  "behavior": "Read 32 original-symbol and executed-boot bytes via unique executable ELF64 little-endian ET_EXEC PT_LOAD mappings, require machines 62/3, exact equal bytes, and boot file size/SHA equal QEMU ready record. Read live inferior bytes at hardware breakpoint; accept one independent runtime-byte marker matching both PC and original bytes. Retain separate PC hit and detach plus full post-detach boot checker.",
+  "host_checks": [
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "support/build/debug/test_debug.py"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+      "raw_exit_code": 0,
+      "passed": 7,
+      "duration_seconds": 0.519,
+      "log": "/workspace/scratch/ae1a8cf05419/debug-entry-bytes-host-I-01.log",
+      "log_sha256": "360b8b48ded3dbf45e8a797a063d4b3f436b8a4d65c201bd840b9c1f34b80a01"
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "-O",
+        "support/build/debug/test_debug.py"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+      "raw_exit_code": 0,
+      "passed": 7,
+      "duration_seconds": 0.564,
+      "log": "/workspace/scratch/ae1a8cf05419/debug-entry-bytes-host-IO-02.log",
+      "log_sha256": "fa5acc219cd08c1121f1efadbd872632c359c2421a3eaa843ff1002ebb0dc987"
+    }
+  ],
+  "negative_checks": [
+    "wrong original/boot entry bytes despite internally consistent changed boot record",
+    "recorded boot SHA mismatch",
+    "ELF wrong executable type or machine",
+    "truncated ELF header/program table/entry bytes",
+    "wrong ELF class",
+    "wrong runtime bytes, marker size, truncated runtime hex, PC/status/detach/duplicate markers"
+  ],
+  "diff_check": {
+    "argv": [
+      "git",
+      "diff",
+      "--check",
+      "--",
+      "support/build/debug/run.py",
+      "support/build/debug/test_debug.py",
+      "support/build/debug/README.md"
+    ],
+    "raw_exit_code": 0
+  },
+  "real_artifact_host_check": "/workspace/scratch/ae1a8cf05419/debug-entry-bytes-run03-host-binding.json",
+  "previous_independent_allocated_section_review": "/workspace/scratch/ae1a8cf05419/debug-run03-elf-binding-review.json",
+  "run03_boundary": "Run03 artifact host binding passed against its recorded hashes. Run03 original output is unchanged; it did not record live entry bytes. This later report does not retroactively claim a runtime byte comparison for run03.",
+  "new_guest_execution": "not started by this subagent; parent owns run04 validation",
+  "readonly_review_conclusion": "No additional blocking defect found in owned listening FD handoff, unreaped-owned-session cleanup, real entry-PC/detach acceptance or failed-run retention. Earlier symbol-vs-boot binding gap is addressed by the three-file change and needs the parent live run to establish runtime success."
+}

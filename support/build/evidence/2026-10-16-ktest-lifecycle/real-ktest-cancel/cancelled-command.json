@@ -1,0 +1,31 @@
+{
+  "argv": [
+    "cargo",
+    "+nightly-2026-07-21",
+    "osdk",
+    "test",
+    "--release",
+    "--boot-method=vmm-direct",
+    "--grub-boot-protocol=multiboot",
+    "--qemu-exe=/workspace/scratch/ae1a8cf05419/a01-next6-build/support/build/ktest/record-qemu.py",
+    "--kcmd-args=loglevel=error",
+    "--kcmd-args=earlycon",
+    "--kcmd-args=console=ttyS0"
+  ],
+  "cwd": "/workspace/scratch/ae1a8cf05419/a01-next6-build/kernel/asterinas/ostd",
+  "raw_exit_code": 13,
+  "exit_code": 143,
+  "error": "RunnerInterrupted: SIGTERM",
+  "group_cleanup": {
+    "leader_pid": 69,
+    "leader_exit_code": 13,
+    "leader_reaped": true,
+    "external_reap_disarmed": false,
+    "identity_anchor": "waitid WNOWAIT; final group signal before leader reap"
+  },
+  "interrupted_by": "SIGTERM",
+  "received_signals": [
+    "SIGTERM"
+  ],
+  "duration_seconds": 9.226
+}

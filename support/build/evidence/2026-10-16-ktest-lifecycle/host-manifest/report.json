@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "scope": "Host-only deterministic manifest ownership/lifecycle tests. Actual kernel/QEMU regressions belong to other directories in this phase.",
+  "baseline": {
+    "runner_exit_code": 0,
+    "foreign_manifest_deleted": true,
+    "owned_inode_checked": "27:1581458",
+    "foreign_inode_deleted": "27:1581465",
+    "observation": "baseline-observation.json",
+    "controller_and_original_command": "raw.tar.gz#baseline/",
+    "controller_receipt_is_posthoc_transcription": true,
+    "baseline_not_rerun_for_archival": true
+  },
+  "final": {
+    "publication_commit": "a770f31a868d805524065c65a2bcfcbcf10ede2e",
+    "source_binding": "source-binding.json",
+    "modes": [
+      {
+        "flags": "-I",
+        "passed": 31,
+        "failed": 0,
+        "raw_exit_code": 0,
+        "log": "raw.tar.gz#final/test-I.log"
+      },
+      {
+        "flags": "-I -O",
+        "passed": 31,
+        "failed": 0,
+        "raw_exit_code": 0,
+        "log": "raw.tar.gz#final/test-IO.log"
+      }
+    ],
+    "behavior": "Pin owned FD8 before publication; atomically capture into private0700 custody; delete only captured owned inode. Foreign regular/symlink/directory NOREPLACE restore or retained with explicit path/failure. Earlier nonzero status preserved; no continuous public-name occupancy guarantee."
+  },
+  "excluded_hypothesis": {
+    "report": "excluded-hypothesis.json",
+    "result": "Generated intermediate kernel/OSDK.toml is not selected by ostd or kernel/core: actual Cargo metadata workspace root plus loader source show current-dir then workspace-root only. No guard added for that unsupported hypothesis.",
+    "failed_trace": "raw.tar.gz#excluded-hypothesis/ostd-osdk.stderr.log",
+    "trace_limit": "PTRACE_TRACEME EPERM prevented the intended traced target. Metadata/source inference is not described as an observed OSDK open trace."
+  },
+  "raw_archive": "raw.tar.gz",
+  "member_index": "members.json",
+  "no_production_target_or_actual_manifest_included": true,
+  "archive_did_not_run_tests_or_VM": true
+}

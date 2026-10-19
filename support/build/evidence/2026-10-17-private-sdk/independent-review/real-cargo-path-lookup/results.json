@@ -1,0 +1,80 @@
+{
+  "all_passed": false,
+  "cargo": "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+  "cargo_sha256": "1e8bffe479c27798861dd7f0a3add4adb898879da0be8431fb48ff8c7cc78c03",
+  "cases": [
+    {
+      "cargo_home": "/workspace/scratch/ae1a8cf05419/sdk-root-independent-review/real-cargo-path-lookup/cargo-home",
+      "code": 0,
+      "name": "absolute",
+      "passed": true,
+      "path": "/workspace/scratch/ae1a8cf05419/sdk-root-independent-review/real-cargo-path-lookup/private/bin:/workspace/scratch/ae1a8cf05419/sdk-root-independent-review/real-cargo-path-lookup/cargo-home/bin:/usr/bin:/bin",
+      "result": {
+        "code": 0,
+        "selected": "PRIVATE"
+      },
+      "stderr": ""
+    },
+    {
+      "cargo_home": "/workspace/scratch/ae1a8cf05419/sdk-root-independent-review/real-cargo-path-lookup/cargo-home/.",
+      "code": 0,
+      "name": "absolute-dot",
+      "passed": true,
+      "path": "/workspace/scratch/ae1a8cf05419/sdk-root-independent-review/real-cargo-path-lookup/private/bin:/workspace/scratch/ae1a8cf05419/sdk-root-independent-review/real-cargo-path-lookup/cargo-home/./bin:/usr/bin:/bin",
+      "result": {
+        "code": 0,
+        "selected": "PRIVATE"
+      },
+      "stderr": ""
+    },
+    {
+      "cargo_home": "/workspace/scratch/ae1a8cf05419/sdk-root-independent-review/real-cargo-path-lookup/placeholder/../cargo-home",
+      "code": 0,
+      "name": "absolute-dotdot",
+      "passed": false,
+      "path": "/workspace/scratch/ae1a8cf05419/sdk-root-independent-review/real-cargo-path-lookup/private/bin:/workspace/scratch/ae1a8cf05419/sdk-root-independent-review/real-cargo-path-lookup/placeholder/../cargo-home/bin:/usr/bin:/bin",
+      "result": {
+        "code": 0,
+        "selected": "GLOBAL"
+      },
+      "stderr": ""
+    },
+    {
+      "cargo_home": "/workspace/scratch/ae1a8cf05419/sdk-root-independent-review/real-cargo-path-lookup/home-link",
+      "code": 0,
+      "name": "absolute-symlink",
+      "passed": true,
+      "path": "/workspace/scratch/ae1a8cf05419/sdk-root-independent-review/real-cargo-path-lookup/private/bin:/workspace/scratch/ae1a8cf05419/sdk-root-independent-review/real-cargo-path-lookup/home-link/bin:/usr/bin:/bin",
+      "result": {
+        "code": 0,
+        "selected": "PRIVATE"
+      },
+      "stderr": ""
+    },
+    {
+      "cargo_home": "/workspace/scratch/ae1a8cf05419/sdk-root-independent-review/real-cargo-path-lookup/cargo-home/",
+      "code": 0,
+      "name": "absolute-trailing-slash",
+      "passed": true,
+      "path": "/workspace/scratch/ae1a8cf05419/sdk-root-independent-review/real-cargo-path-lookup/private/bin:/workspace/scratch/ae1a8cf05419/sdk-root-independent-review/real-cargo-path-lookup/cargo-home//bin:/usr/bin:/bin",
+      "result": {
+        "code": 0,
+        "selected": "PRIVATE"
+      },
+      "stderr": ""
+    },
+    {
+      "cargo_home": "/workspace/scratch/ae1a8cf05419/sdk-root-independent-review/real-cargo-path-lookup/cargo-home",
+      "code": 47,
+      "name": "private-sdk-exit-47-no-global-fallback",
+      "passed": true,
+      "path": "/workspace/scratch/ae1a8cf05419/sdk-root-independent-review/real-cargo-path-lookup/private/bin:/workspace/scratch/ae1a8cf05419/sdk-root-independent-review/real-cargo-path-lookup/cargo-home/bin:/usr/bin:/bin",
+      "result": {
+        "code": 47,
+        "selected": "PRIVATE"
+      },
+      "stderr": ""
+    }
+  ],
+  "scope": "real pinned Cargo custom subcommand path lookup only, fake SDKs, no compiler/SDK install/QEMU"
+}

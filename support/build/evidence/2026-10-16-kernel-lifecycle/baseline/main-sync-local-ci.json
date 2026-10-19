@@ -1,0 +1,56 @@
+{
+  "schema": 1,
+  "main_merged": "f47540fb8165c8cc078d997f009f6f55ff731f06",
+  "merge_commit": "ce4f3515c2c83bb602f6d811f102235ce9777c42",
+  "source_paths": [
+    ".github/workflows/a01-boot-evidence.yml",
+    "docs/STATUS.md",
+    "results/organ-backend/2026-10-16/a05-queryabi-guest-refusal.json"
+  ],
+  "local_workflow_equivalent_only": true,
+  "github_ci_pass_claimed": false,
+  "checks": [
+    {
+      "command": [
+        "python3",
+        "-I",
+        "support/build/tests/test_boot_evidence.py"
+      ],
+      "passed": 15,
+      "exit": 0,
+      "log": "main-ci-boot-I.log"
+    },
+    {
+      "command": [
+        "python3",
+        "-I",
+        "-O",
+        "support/build/tests/test_boot_evidence.py"
+      ],
+      "passed": 15,
+      "exit": 0,
+      "log": "main-ci-boot-IO.log"
+    },
+    {
+      "command": [
+        "python3",
+        "-I",
+        "support/build/tests/test_kernel_runner.py"
+      ],
+      "passed": 10,
+      "exit": 0,
+      "log": "main-ci-worker-I.log"
+    },
+    {
+      "command": [
+        "python3",
+        "-I",
+        "-O",
+        "support/build/tests/test_kernel_runner.py"
+      ],
+      "passed": 10,
+      "exit": 0,
+      "log": "main-ci-worker-IO.log"
+    }
+  ]
+}

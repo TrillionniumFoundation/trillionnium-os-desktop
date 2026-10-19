@@ -1,0 +1,58 @@
+{
+  "schema": 1,
+  "created_utc": "2026-10-17T01:10:28.149748+00:00",
+  "scope": "New read-only diagnosis from retained actual input bytes; not a rerun of the original failing comparison command.",
+  "inputs": {
+    "-kernel": {
+      "A2": {
+        "bytes": 8293608,
+        "sha256": "e89063b19e5895aa64695ba27c04d7d53fd5d65e23adeb0aab06983a1a33794d"
+      },
+      "B2": {
+        "bytes": 8292192,
+        "sha256": "b5fda2500d15c250d022f81bf2d30c0778244faea021a5db34aa68665d68f763"
+      }
+    },
+    "-initrd": {
+      "A2": {
+        "bytes": 1107990,
+        "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+      },
+      "B2": {
+        "bytes": 1107990,
+        "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+      }
+    },
+    "-bios": {
+      "A2": {
+        "bytes": 262144,
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+      },
+      "B2": {
+        "bytes": 262144,
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+      }
+    }
+  },
+  "actual_complete_input_bytes_equal": {
+    "-kernel": false,
+    "-initrd": true,
+    "-bios": true
+  },
+  "comparison_passed": false,
+  "different_options": [
+    "-kernel"
+  ],
+  "A2_kernel_minus_B2_bytes": 1416,
+  "context_equalities": {
+    "producer_commit_equal": true,
+    "real_source_roots_equal": false,
+    "virtual_roots_equal": true,
+    "profile_code_hashes_equal": true,
+    "components_hash_equal": true,
+    "actual_host_equal": true,
+    "mapped_metadata_payload_sha256s_equal_by_call_order": true,
+    "original_metadata_payload_sha256s_equal_by_call_order": false,
+    "serial_payload_sha256_equal": false
+  }
+}

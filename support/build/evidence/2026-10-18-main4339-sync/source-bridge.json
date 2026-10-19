@@ -1,0 +1,427 @@
+{
+  "schema": "trillionnium.a01.main4339-source-bridge.v1",
+  "reviewer": "source_handoff_audit",
+  "started_at_utc": "2026-10-18T03:55:31.610942+00:00",
+  "finished_at_utc": "2026-10-18T03:55:32.085695+00:00",
+  "passed": true,
+  "method": "Read-only immutable Git tree/blob comparison and worktree byte/mode rehash of the exact previously captured selected input set; one permitted static verify-source.py invocation. No native build, QEMU, Cargo dependency resolution, ABI gate, ktest, or os-control test was run.",
+  "native_producer": {
+    "commit": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+    "project_tree": "74641cbc46cd1213756e8128fab26928d374335a",
+    "kernel_tree": "6c2904e53e79cedbbaf013a73a6173f4afa57010",
+    "capture": {
+      "path": "/tmp/a01-main355-before.json",
+      "bytes": 1339302,
+      "sha256": "30f53cf932a2cf9cf853a31fb241c5dd476440bc0bceaf2c1df6dc6379e91309"
+    },
+    "capture_files": 3010,
+    "capture_files_sha256": "410b73b50cd2572d2afefda4ea73a8af884e204ba3d634996d58127677b942e8",
+    "capture_selection": {
+      "prefixes": [
+        "kernel/asterinas/",
+        "libs/os-abi/src/",
+        "support/build/"
+      ],
+      "excluded_prefixes": [
+        "support/build/evidence/",
+        "support/build/out/",
+        "support/build/handoffs/"
+      ],
+      "explicit_paths": [
+        "README.md",
+        "support/upstream-lock.json"
+      ],
+      "source": "HEAD recursive Git tree; also reject selected index-only additions"
+    },
+    "capture_script_sha256": "6f9ae236c1d2c6398e830ee9dba9d57195933e69b32c777df8038b59c874b4c9",
+    "execution_type": "Previously completed incremental developer make kernel then make run_kernel; raw QEMU 33. This review does not create a new execution."
+  },
+  "bridge_head": {
+    "commit": "d9ccc523141ec46baef2a0dfe0afe49e4f97f523",
+    "project_tree": "315b2b84319a88442fb054f434ccc2fdc436e47e",
+    "kernel_tree": "6c2904e53e79cedbbaf013a73a6173f4afa57010",
+    "parents": [
+      "9bbf760067334b819263cfadcb943087fd5787f4",
+      "4339acedd2d433f838c7b5fd445709c539043a77"
+    ],
+    "merged_main": "4339acedd2d433f838c7b5fd445709c539043a77",
+    "worktree_status_before": "",
+    "worktree_status_after": "",
+    "root_readme_bytes": 0,
+    "owner_compared_paths": [
+      "kernel/asterinas/kernel",
+      "kernel/asterinas/ostd",
+      "libs/os-abi/src"
+    ],
+    "owner_paths_equal_merged_main": true,
+    "external_abi": {
+      "path": "libs/os-abi/src/lib.rs",
+      "git_mode": "100644",
+      "git_kind": "blob",
+      "git_blob": "276e59ef0de4df46c09b17a792c5c049024d07b3",
+      "worktree_mode": "100644",
+      "size": 47272,
+      "sha256": "826e6533bd7ed2f6527db819e9f0400867ca1e607cd0581a03970444c3e4b60f",
+      "worktree_git_blob": "276e59ef0de4df46c09b17a792c5c049024d07b3",
+      "matches_git": true
+    }
+  },
+  "selection": {
+    "prefixes": [
+      "kernel/asterinas/",
+      "libs/os-abi/src/",
+      "support/build/"
+    ],
+    "excluded_prefixes": [
+      "support/build/evidence/",
+      "support/build/out/",
+      "support/build/handoffs/"
+    ],
+    "explicit_paths": [
+      "README.md",
+      "support/upstream-lock.json"
+    ],
+    "selected_files": 3010,
+    "added": [],
+    "removed": [],
+    "unchanged": 3008,
+    "changed": 2,
+    "metadata_exception_paths": [
+      "support/build/README.md",
+      "support/upstream-lock.json"
+    ],
+    "scope_note": "All tracked kernel/asterinas files, actual external ABI source, and all tracked support/build files outside evidence/out/handoffs are included. The comparison includes build scripts, profiles, tests and supporting files; no runtime script is excluded as metadata. The two differing selected paths are the build README and upstream-lock reporting/history fields."
+  },
+  "hash_comparison_summary": {
+    "algorithm": "SHA256 of UTF-8 JSON with sort_keys=True and separators=(comma,colon), preserving the documented list order; per-file records compare Git mode, kind, blob, byte count and content SHA256.",
+    "comparison_order": "path ascending",
+    "all_comparison_records_sha256": "ba8e0f3590747fd20753148062c06b23d4c98fbe8cc0c73a966b25af46631121",
+    "unchanged_comparison_records_sha256": "0e61af8f3e230da18155e8783dfbae124cee97bc051d854a6ff4d113d9d43cde",
+    "current_selected_source_records_sha256": "d6e6e155656cdfd7b450dc926c471e27a407217bea81274e514edcdefe9b4156",
+    "groups": {
+      "kernel_all": {
+        "files": 2941,
+        "unchanged": 2941,
+        "changed": [],
+        "comparison_list_sha256": "4ed786876c9081e8d75b4ead3873dc8c6c5f229c385b288ca1fcb38e600dfade"
+      },
+      "external_abi": {
+        "files": 1,
+        "unchanged": 1,
+        "changed": [],
+        "comparison_list_sha256": "2878048aa95bb6570f8025b41bd868fdee885f75dc7e7bb6489ad69db702ec5e"
+      },
+      "support_build_excluding_evidence_out_handoffs": {
+        "files": 66,
+        "unchanged": 65,
+        "changed": [
+          "support/build/README.md"
+        ],
+        "comparison_list_sha256": "766d4938e5f0062b6bfac526c801cc08e5ebe0a61f58c9b4bc5b82be7149f6c8"
+      }
+    },
+    "historical_record_validation": "Every producer capture entry was checked against the actual producer Git tree and blob content; all bridge worktree bytes/modes were checked against bridge Git blobs."
+  },
+  "selected_differences": [
+    {
+      "path": "support/build/README.md",
+      "native": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "38bcec55dfd7037acee19869a331b4d10d040a02",
+        "bytes": 27343,
+        "sha256": "546438bfa46360f89e31ce69b48fa68859787e9b46f16b7047b36d948f8f5093"
+      },
+      "bridge": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "24782e6374517db0f5ae2b3fc8baf778f418c2e1",
+        "bytes": 28603,
+        "sha256": "523abb03fa294e36a2e4311a6f3a19320175449f4a879cc2cf60414a9e2be793"
+      },
+      "unchanged": false
+    },
+    {
+      "path": "support/upstream-lock.json",
+      "native": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "4672cfeb9102e26b9a7f5b63b02e7cb4c144ebfe",
+        "bytes": 74761,
+        "sha256": "6e8daf9d2b7e492ef0b7fafe029419c5d2d48d39793e3404fcc4377e5c529925"
+      },
+      "bridge": {
+        "mode": "100644",
+        "kind": "blob",
+        "git_blob": "5cf4c587708cd50e3e59fc1f7d1e22281878aef2",
+        "bytes": 79096,
+        "sha256": "d5f9b973225d90bc9693a11427b62a4a340473a3cd9a111b6388f8aef3c80524"
+      },
+      "unchanged": false
+    }
+  ],
+  "lock_metadata_boundary": {
+    "changed_json_pointers": [
+      "/kernel/latest_native_boot/boot_sha256",
+      "/kernel/latest_native_boot/boot_size",
+      "/kernel/latest_native_boot/code_commit",
+      "/kernel/latest_native_boot/evidence",
+      "/kernel/latest_native_boot/integrated_main",
+      "/kernel/latest_native_boot/late_manifest_quarantined",
+      "/kernel/latest_native_boot/late_manifest_writer_identified",
+      "/kernel/latest_native_boot/later_untracked_manifest_observed",
+      "/kernel/latest_native_boot/original_absent_target_pipeline_commit",
+      "/kernel/latest_native_boot/post_boot_git_status_empty",
+      "/kernel/latest_native_boot/post_git_status_empty",
+      "/kernel/latest_native_boot/post_quarantine_git_status_empty",
+      "/kernel/latest_native_boot/preceding_clean_kernel_build",
+      "/kernel/latest_native_boot/preceding_kernel_build",
+      "/kernel/latest_native_boot/serial_sha256",
+      "/kernel/latest_native_boot/source_tree",
+      "/kernel/latest_native_boot/stage_scope",
+      "/kernel/latest_native_boot/target_cache_source",
+      "/kernel/latest_native_validation/abi_gate",
+      "/kernel/latest_native_validation/base_main",
+      "/kernel/latest_native_validation/build_was_incremental",
+      "/kernel/latest_native_validation/evidence",
+      "/kernel/latest_native_validation/handoff",
+      "/kernel/latest_native_validation/host_gate_passed",
+      "/kernel/latest_native_validation/host_gate_source_scope",
+      "/kernel/latest_native_validation/kernel_mode_exercised_passed_lower_bound",
+      "/kernel/latest_native_validation/kernel_mode_failed",
+      "/kernel/latest_native_validation/kernel_mode_reported_passed",
+      "/kernel/latest_native_validation/kernel_mode_soft_skipped",
+      "/kernel/latest_native_validation/late_manifest_evidence",
+      "/kernel/latest_native_validation/late_manifest_writer_identified",
+      "/kernel/latest_native_validation/machine_readable_report",
+      "/kernel/latest_native_validation/osdk_host_existing_ignored",
+      "/kernel/latest_native_validation/osdk_host_passed",
+      "/kernel/latest_native_validation/previous_kernel_regression",
+      "/kernel/latest_native_validation/project_tree",
+      "/kernel/latest_native_validation/source_commit",
+      "/kernel/latest_native_validation/source_manifest",
+      "/kernel/native_boot_history",
+      "/kernel/native_validation_history",
+      "/native_build_environment"
+    ],
+    "all_changes_within_reporting_or_history_fields": true,
+    "fixed_pin_fields_unchanged": [
+      "kernel.commit",
+      "kernel.tree",
+      "kernel.toolchain"
+    ],
+    "note": "The lock file is not claimed byte-identical. The exact runtime pin projection and all 118 fixed-input results remain byte-identical; reporting/history values changed."
+  },
+  "static_fixed_input_check": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "-B",
+      "-I",
+      "support/build/verify-source.py"
+    ],
+    "cwd": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop",
+    "started_at_utc": "2026-10-18T03:55:32.008115+00:00",
+    "finished_at_utc": "2026-10-18T03:55:32.050872+00:00",
+    "exit_code": 0,
+    "stderr": "",
+    "stdout_bytes": 1509,
+    "stdout_sha256": "eb8b17f849fd0d64f642567433cb09da8ecfbfca3adaacdff675738f1ce300dc",
+    "result": {
+      "commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+      "tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+      "toolchain": "nightly-2026-07-21",
+      "pristine": false,
+      "checked_files": 118,
+      "input_sha256": {
+        "Cargo.lock": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+        "LICENSE-MPL": "86cf9656479f1edb82245b985f4a2cc0d503b945766ebeda4269c60b307699ae",
+        "Makefile": "f7d24eb8e81b58d4cf0342862318cbfcf63cd8cff8d0f6f69fb7656295192af6",
+        "OSDK.toml": "155af7cb53b4dffc679393b8fc7c2c1719a74134a0ec2b0812f0c4b53a6c609b",
+        "osdk/Cargo.lock": "1011e26a7070708d37f2062a84b309d2c228c177a9e5434bfe63917203c17a18",
+        "rust-toolchain.toml": "b2508d8c9cd57258fad2fc77737e07172846161f6a7dd726cbd8e974de69c6f7"
+      },
+      "errors": [],
+      "approved_host_osdk_derivations": {
+        "osdk/Cargo.lock": {
+          "upstream_git_blob": "82dbdd75cedd73558dd3d5aa17e76376d66d6eaf",
+          "derived_git_blob": "d6447860cf106f36f3d7dac306262269b9d34480",
+          "sha256": "1011e26a7070708d37f2062a84b309d2c228c177a9e5434bfe63917203c17a18",
+          "scope": "locked host OSDK FD-preservation dependency; kernel inputs unchanged"
+        },
+        "osdk/Cargo.toml": {
+          "upstream_git_blob": "a5bbae5c43417e4e65fe42b90662b7409c532469",
+          "derived_git_blob": "c8896161928332a77c683702680b1f7db9fc31ee",
+          "sha256": "39b9fa3d5cc822eb718bd3b14d872f50b48b285998f77ca5ebde38561a69c9ce",
+          "scope": "locked host OSDK FD-preservation dependency; kernel inputs unchanged"
+        }
+      },
+      "passed": true
+    },
+    "native_reference": {
+      "path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/support/build/out/2026-10-18-main355-followup/kernel/source-inputs.json",
+      "bytes": 1509,
+      "sha256": "eb8b17f849fd0d64f642567433cb09da8ecfbfca3adaacdff675738f1ce300dc"
+    },
+    "raw_stdout_equals_native_reference": true,
+    "parsed_result_equals_native_reference": true,
+    "executions_in_this_review": 1
+  },
+  "a03_dependency_scope": {
+    "manifests_parsed": 112,
+    "manifest_inventory_sha256": "01fc4f829d7c9b7f5385259dddb93899bd5fa9783c5d2feff10d8fda6e5dc7e4",
+    "cargo_lock_files_scanned": [
+      "kernel/asterinas/Cargo.lock",
+      "kernel/asterinas/kernel/libs/comp-sys/cargo-component/Cargo.lock",
+      "kernel/asterinas/kernel/libs/short-vis-path/Cargo.lock",
+      "kernel/asterinas/osdk/Cargo.lock",
+      "kernel/asterinas/test/nixos/Cargo.lock",
+      "kernel/asterinas/tools/sctrace/Cargo.lock"
+    ],
+    "kernel_and_abi_source_manifest_reference_files_scanned": 1687,
+    "reference_tokens": [
+      "os-control",
+      "os_control",
+      "libs/os-control"
+    ],
+    "reference_matches": [],
+    "os_control_lock_package_matches": [],
+    "tracked_changes_outside_native_selected_scope": [
+      "libs/os-control/API_CONTRACT.md",
+      "libs/os-control/src/lib.rs",
+      "tests/abi/test_golden_contract.py",
+      "tests/control/backend_no_std/src/lib.rs",
+      "tests/control/bounded_window.rs",
+      "tests/control/control_conformance.rs",
+      "tests/control/custom_lock_backend.rs",
+      "tests/control/delivery_adversarial.rs",
+      "tests/control/kernel_handoff.rs",
+      "tests/control/lock_alloc/fixture.rs",
+      "tests/control/loom/models.rs",
+      "tests/control/loom/models_public.rs",
+      "tests/control/native_bound_execution.rs",
+      "tests/control/native_failure_recovery.rs",
+      "tests/control/native_handoff.rs",
+      "tests/control/native_lifetime.rs",
+      "tests/control/native_resource_state.rs",
+      "tests/control/nonblocking_history.rs",
+      "tests/control/resource_lifecycle.rs",
+      "tests/control/status_boundary.rs",
+      "tests/control/token_retirement.rs"
+    ],
+    "conclusion": "Static scan of every tracked kernel Cargo manifest/lock and Rust source, plus the actual imported external ABI source, finds no os-control dependency or source reference. The core imports libs/os-abi/src/lib.rs directly. This supports excluding the changed A03 os-control model/tests from this kernel input bridge, not a claim that those changes were executed or validated.",
+    "a03_changed_code_or_tests_accepted_by_this_review": false
+  },
+  "late_manifest_observation": {
+    "path": "/workspace/scratch/d7da9e7650f0/trillionnium-os-desktop/kernel/asterinas/kernel/OSDK.toml",
+    "entry_present_at_this_audit": false,
+    "prior_late_entry_observed_and_quarantined": true,
+    "unknown_writer_identified": false,
+    "qualification": "The prior late untracked OSDK manifest appeared after the main355 boot evidence and was retained under ignored output by the root task. This audit observes no entry now and does not claim the worktree was clean at all earlier times or that the unknown-writer risk is closed."
+  },
+  "validation_boundary": {
+    "new_kernel_builds": 0,
+    "new_qemu_guests": 0,
+    "new_ktest_runs": 0,
+    "new_abi_gate_runs_by_this_reviewer": 0,
+    "new_a03_tests": 0,
+    "new_cold_build_claimed": false,
+    "cross_host_reproducibility_claimed": false,
+    "historical_kernel_regression": {
+      "producer_commit": "c22891b593f77c98ff4ea94d7aecb54f32222651",
+      "reported_passed": 374,
+      "soft_skipped": 3,
+      "exercised_passed_lower_bound": 371,
+      "rerun_at_bridge_head": false
+    },
+    "updated_abi_gate": "Separate owner-agent execution; no result is inferred or included here.",
+    "native_source_equivalence": "This receipt bridges unchanged native code/build inputs from the actual 40c901c6 producer to d9ccc523. It does not assert that the full d9 repository or newly changed A03 code/tests were built or run.",
+    "later_evidence_commit": "Any later receipt/README/lock commit must retain the actual native producer and this bridge commit as distinct identities."
+  },
+  "checks": [
+    {
+      "check": "current_head_is_published_bridge",
+      "passed": true
+    },
+    {
+      "check": "current_project_tree",
+      "passed": true
+    },
+    {
+      "check": "new_main_is_merge_parent",
+      "passed": true
+    },
+    {
+      "check": "worktree_clean_before_readonly_audit",
+      "passed": true
+    },
+    {
+      "check": "native_capture_identity_and_integrity",
+      "passed": true
+    },
+    {
+      "check": "selected_path_sets_are_identical",
+      "passed": true
+    },
+    {
+      "check": "all_selected_native_and_current_bytes_modes_blobs_hashes_bound",
+      "passed": true,
+      "files": 3010
+    },
+    {
+      "check": "only_selected_changes_are_report_metadata",
+      "passed": true
+    },
+    {
+      "check": "all_selected_nonmetadata_inputs_unchanged",
+      "passed": true
+    },
+    {
+      "check": "entire_kernel_subtree_equals_native_producer",
+      "passed": true
+    },
+    {
+      "check": "owner_kernel_ostd_and_abi_equal_latest_main",
+      "passed": true
+    },
+    {
+      "check": "external_abi_keeps_actual_native_producer_bytes",
+      "passed": true
+    },
+    {
+      "check": "lock_changes_only_validation_history_metadata",
+      "passed": true
+    },
+    {
+      "check": "fixed_pin_fields_exactly_unchanged",
+      "passed": true
+    },
+    {
+      "check": "no_os_control_dependency_or_rust_reference_in_current_kernel_workspace",
+      "passed": true
+    },
+    {
+      "check": "core_external_abi_import_is_retained",
+      "passed": true
+    },
+    {
+      "check": "late_untracked_manifest_not_present_at_audit",
+      "passed": true
+    },
+    {
+      "check": "root_readme_is_empty",
+      "passed": true
+    },
+    {
+      "check": "one_static_fixed_input_verification_passes",
+      "passed": true
+    },
+    {
+      "check": "fixed_input_verification_identical_to_native_receipt",
+      "passed": true
+    },
+    {
+      "check": "head_and_worktree_stable_during_readonly_audit",
+      "passed": true
+    }
+  ]
+}

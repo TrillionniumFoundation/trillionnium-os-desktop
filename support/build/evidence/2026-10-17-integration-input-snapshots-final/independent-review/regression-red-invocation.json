@@ -1,0 +1,441 @@
+{
+  "kind": "actual_recorder_CLI_with_host_fake_QEMU_and_optional_fake_capture_no_VM_no_GDB",
+  "argv": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "-I",
+    "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/fixture project/support/build/osdk-integration/record-qemu.py",
+    "-kernel",
+    "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/work with spaces/original kernel.elf",
+    "-initrd",
+    "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/work with spaces/original initramfs.cpio.gz",
+    "-gdb",
+    "tcp:127.0.0.1:0",
+    "-S"
+  ],
+  "cwd": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/work with spaces",
+  "returncode": 125,
+  "recorder_sha256": "bc1225b431a103d7b04bc42054471e77db1a071166c6bdde096e5112da22c590",
+  "shared_recorder_sha256": "387845415b54f1822c55ce4198586fae8047f7d3ea94008c84e0974871954098",
+  "selected_environment": {
+    "A01_INTEGRATION_RECORDER_SOURCE": "/workspace/scratch/ae1a8cf05419/coverage-freeze-timing-review/test_capture_cli_uses_private_em62_after_original_symbol_and_kernel_change/fixture project/support/build/osdk-integration/record-qemu.py",
+    "A01_INPUT_SNAPSHOTS_OUT": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225",
+    "A01_OSDK_CASE_OUTPUT": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001",
+    "A01_QEMU_BIOS": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/work with spaces/original BIOS.bin",
+    "A01_OSDK_LOCAL_TCP": "1",
+    "A01_OSDK_PROFILE": "osdk-native-local-tcp-gdb-capture-v2",
+    "A01_OSDK_GUEST_TIMEOUT": "8",
+    "FIXTURE_CASE": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001",
+    "FIXTURE_VERSION_MARKER": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/version-001.txt",
+    "FIXTURE_EXECUTION_RECORD": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/execution-001.json",
+    "FIXTURE_SOURCE_PATHS": "[\"/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/work with spaces/original kernel.elf\", \"/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/work with spaces/original BIOS.bin\", \"/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/work with spaces/original initramfs.cpio.gz\", \"/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/work with spaces/original symbol.elf\"]",
+    "FIXTURE_CAPTURE_DONE": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/capture-completed",
+    "A01_OSDK_COVERAGE_GDB": "1",
+    "A01_OSDK_COVERAGE_SYMBOL_ELF": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/work with spaces/original symbol.elf",
+    "FIXTURE_REPLACE_AT": "version",
+    "FIXTURE_WAIT_CAPTURE": "1",
+    "FIXTURE_ORIGINAL_SYMBOL": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/work with spaces/original symbol.elf"
+  },
+  "version_called": true,
+  "execution_called": true,
+  "record": {
+    "schema": 1,
+    "cwd": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/work with spaces",
+    "requested_osdk_args": [
+      "-kernel",
+      "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/work with spaces/original kernel.elf",
+      "-initrd",
+      "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/work with spaces/original initramfs.cpio.gz",
+      "-gdb",
+      "tcp:127.0.0.1:0",
+      "-S"
+    ],
+    "profile": {
+      "arch": "x86_64",
+      "machine": "q35",
+      "accel": "tcg",
+      "cpu": "max",
+      "vcpus": 1,
+      "memory_mib": 512,
+      "network": false,
+      "data_disks": false,
+      "firmware": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/artifacts/bios.bin"
+    },
+    "raw_exit_code": -9,
+    "timed_out": false,
+    "fixed_profile_args": [
+      "-kernel",
+      "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/work with spaces/original kernel.elf",
+      "-initrd",
+      "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/work with spaces/original initramfs.cpio.gz",
+      "-gdb",
+      "tcp:127.0.0.1:0",
+      "-S",
+      "-chardev",
+      "stdio,id=a01-record-serial,signal=off,logfile=/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/serial.log",
+      "-serial",
+      "chardev:a01-record-serial",
+      "-device",
+      "isa-debug-exit,iobase=0xf4,iosize=0x04",
+      "-machine",
+      "q35",
+      "-accel",
+      "tcg",
+      "-cpu",
+      "max",
+      "-m",
+      "512M",
+      "-smp",
+      "1",
+      "-bios",
+      "/usr/share/seabios/bios-256k.bin",
+      "-nodefaults",
+      "-no-user-config",
+      "-display",
+      "none"
+    ],
+    "shared_selector_source": {
+      "path": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/fixture project/support/build/record-qemu.py",
+      "size": 12352,
+      "sha256": "387845415b54f1822c55ce4198586fae8047f7d3ea94008c84e0974871954098"
+    },
+    "bios_selection": {
+      "origin": "A01_QEMU_BIOS",
+      "original_requested_path": "/usr/share/seabios/bios-256k.bin",
+      "selected_path": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/work with spaces/original BIOS.bin"
+    },
+    "data_selection": {
+      "origin": "requested_qemu_args",
+      "original_requested_paths": [],
+      "selected_path": null,
+      "appended": false
+    },
+    "selected_profile_args": [
+      "-kernel",
+      "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/work with spaces/original kernel.elf",
+      "-initrd",
+      "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/work with spaces/original initramfs.cpio.gz",
+      "-gdb",
+      "tcp:127.0.0.1:0",
+      "-S",
+      "-chardev",
+      "stdio,id=a01-record-serial,signal=off,logfile=/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/serial.log",
+      "-serial",
+      "chardev:a01-record-serial",
+      "-device",
+      "isa-debug-exit,iobase=0xf4,iosize=0x04",
+      "-machine",
+      "q35",
+      "-accel",
+      "tcg",
+      "-cpu",
+      "max",
+      "-m",
+      "512M",
+      "-smp",
+      "1",
+      "-bios",
+      "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/work with spaces/original BIOS.bin",
+      "-nodefaults",
+      "-no-user-config",
+      "-display",
+      "none"
+    ],
+    "profile_id": "osdk-native-local-tcp-gdb-capture-v2",
+    "control_transport": "loopback-tcp",
+    "control_endpoints": [
+      {
+        "kind": "gdb",
+        "role": "server",
+        "host": "127.0.0.1",
+        "port": 0,
+        "requested_value": "tcp:127.0.0.1:0"
+      }
+    ],
+    "gdb_readiness": {
+      "ready": false,
+      "marker_requested": false,
+      "startup_survival_seconds": 0.05
+    },
+    "gdb_listener": {
+      "host": "127.0.0.1",
+      "port": 53545,
+      "requested_port": 0,
+      "fd": 3,
+      "bind_succeeded": true,
+      "held_until_qemu_spawn": true,
+      "bind_close_rebind_gap": false,
+      "handoff": "prebound-listener-inherited-fd",
+      "parent_copy_closed_after_spawn": true
+    },
+    "snapshot_directory": {
+      "path": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/artifacts",
+      "stat": {
+        "dev": 27,
+        "ino": 920124,
+        "mode": 16832,
+        "size": 4096,
+        "mtime_ns": 1792201397639007297,
+        "ctime_ns": 1792201397639007297
+      },
+      "ownership": "new exclusive private directory retained as guest evidence"
+    },
+    "artifacts": {
+      "-kernel": {
+        "path": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/artifacts/kernel.elf",
+        "size": 28,
+        "sha256": "8f42ee5647c4e5074b56fa6fc31ecedec4fc830d2accdd96be7b2b503257aa37"
+      },
+      "-initrd": {
+        "path": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/artifacts/initramfs.cpio.gz",
+        "size": 33,
+        "sha256": "31448990b131701af9a1ede47ace69481243fa8203eebcdbae02926fbbde62e7"
+      },
+      "-bios": {
+        "path": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/artifacts/bios.bin",
+        "size": 29,
+        "sha256": "b5e8758dd001f3e4b0ccd91c35969582f7cc12586482ea436e8a9b1c17e4b355"
+      }
+    },
+    "artifact_sources": {
+      "-kernel": {
+        "requested_path": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/work with spaces/original kernel.elf",
+        "path": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/work with spaces/original kernel.elf",
+        "size": 28,
+        "sha256": "8f42ee5647c4e5074b56fa6fc31ecedec4fc830d2accdd96be7b2b503257aa37",
+        "stat": {
+          "dev": 27,
+          "ino": 920114,
+          "mode": 33188,
+          "size": 28,
+          "mtime_ns": 1792201397577464283,
+          "ctime_ns": 1792201397577464283
+        }
+      },
+      "-initrd": {
+        "requested_path": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/work with spaces/original initramfs.cpio.gz",
+        "path": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/work with spaces/original initramfs.cpio.gz",
+        "size": 33,
+        "sha256": "31448990b131701af9a1ede47ace69481243fa8203eebcdbae02926fbbde62e7",
+        "stat": {
+          "dev": 27,
+          "ino": 920116,
+          "mode": 33188,
+          "size": 33,
+          "mtime_ns": 1792201397577523044,
+          "ctime_ns": 1792201397577523044
+        }
+      },
+      "-bios": {
+        "requested_path": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/work with spaces/original BIOS.bin",
+        "path": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/work with spaces/original BIOS.bin",
+        "size": 29,
+        "sha256": "b5e8758dd001f3e4b0ccd91c35969582f7cc12586482ea436e8a9b1c17e4b355",
+        "stat": {
+          "dev": 27,
+          "ino": 920115,
+          "mode": 33188,
+          "size": 29,
+          "mtime_ns": 1792201397577500563,
+          "ctime_ns": 1792201397577500563
+        }
+      }
+    },
+    "artifact_snapshots": {
+      "-kernel": {
+        "path": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/artifacts/kernel.elf",
+        "size": 28,
+        "sha256": "8f42ee5647c4e5074b56fa6fc31ecedec4fc830d2accdd96be7b2b503257aa37",
+        "stat": {
+          "dev": 27,
+          "ino": 920127,
+          "mode": 33024,
+          "size": 28,
+          "mtime_ns": 1792201397641123860,
+          "ctime_ns": 1792201397641123860
+        },
+        "creation": "exclusive xb; read-only private copy; no source-path fallback"
+      },
+      "-initrd": {
+        "path": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/artifacts/initramfs.cpio.gz",
+        "size": 33,
+        "sha256": "31448990b131701af9a1ede47ace69481243fa8203eebcdbae02926fbbde62e7",
+        "stat": {
+          "dev": 27,
+          "ino": 920131,
+          "mode": 33024,
+          "size": 33,
+          "mtime_ns": 1792201397641537222,
+          "ctime_ns": 1792201397641537222
+        },
+        "creation": "exclusive xb; read-only private copy; no source-path fallback"
+      },
+      "-bios": {
+        "path": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/artifacts/bios.bin",
+        "size": 29,
+        "sha256": "b5e8758dd001f3e4b0ccd91c35969582f7cc12586482ea436e8a9b1c17e4b355",
+        "stat": {
+          "dev": 27,
+          "ino": 920133,
+          "mode": 33024,
+          "size": 29,
+          "mtime_ns": 1792201397641946407,
+          "ctime_ns": 1792201397641946407
+        },
+        "creation": "exclusive xb; read-only private copy; no source-path fallback"
+      },
+      "coverage-symbol": {
+        "path": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/artifacts/coverage-symbol.elf",
+        "size": 111,
+        "sha256": "b73765bfc8cd61556a15b7389fc85c0b1ca0d15ab4f1b67eacd53f71869b69de",
+        "stat": {
+          "dev": 27,
+          "ino": 920135,
+          "mode": 33024,
+          "size": 111,
+          "mtime_ns": 1792201397705450730,
+          "ctime_ns": 1792201397705450730
+        },
+        "creation": "exclusive xb; read-only private copy; no source-path fallback"
+      }
+    },
+    "argv": [
+      "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/executable host fixtures/qemu-system-x86_64",
+      "-kernel",
+      "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/artifacts/kernel.elf",
+      "-initrd",
+      "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/artifacts/initramfs.cpio.gz",
+      "-chardev",
+      "socket,id=a01-gdb0,fd=3,server=on,wait=off",
+      "-gdb",
+      "chardev:a01-gdb0",
+      "-S",
+      "-chardev",
+      "stdio,id=a01-record-serial,signal=off,logfile=/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/serial.log",
+      "-serial",
+      "chardev:a01-record-serial",
+      "-device",
+      "isa-debug-exit,iobase=0xf4,iosize=0x04",
+      "-machine",
+      "q35",
+      "-accel",
+      "tcg",
+      "-cpu",
+      "max",
+      "-m",
+      "512M",
+      "-smp",
+      "1",
+      "-bios",
+      "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/artifacts/bios.bin",
+      "-nodefaults",
+      "-no-user-config",
+      "-display",
+      "none"
+    ],
+    "shell_command": "'/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/executable host fixtures/qemu-system-x86_64' -kernel /workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/artifacts/kernel.elf -initrd /workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/artifacts/initramfs.cpio.gz -chardev socket,id=a01-gdb0,fd=3,server=on,wait=off -gdb chardev:a01-gdb0 -S -chardev stdio,id=a01-record-serial,signal=off,logfile=/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/serial.log -serial chardev:a01-record-serial -device isa-debug-exit,iobase=0xf4,iosize=0x04 -machine q35 -accel tcg -cpu max -m 512M -smp 1 -bios /workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/artifacts/bios.bin -nodefaults -no-user-config -display none",
+    "removed_profile_args": [],
+    "qemu": {
+      "path": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/executable host fixtures/qemu-system-x86_64",
+      "size": 2198,
+      "sha256": "5463d98acdeeade780416444e9f90d8d5ecfbcbd46c4bae39a7443c3c530979a"
+    },
+    "serial_sources": [
+      "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/serial.log"
+    ],
+    "qemu_version": "host fake QEMU; no VM",
+    "timeout_seconds": 8,
+    "coverage_symbol_source": {
+      "requested_path": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/work with spaces/original symbol.elf",
+      "path": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/work with spaces/original symbol.elf",
+      "size": 111,
+      "sha256": "b73765bfc8cd61556a15b7389fc85c0b1ca0d15ab4f1b67eacd53f71869b69de",
+      "stat": {
+        "dev": 27,
+        "ino": 920117,
+        "mode": 33188,
+        "size": 111,
+        "mtime_ns": 1792201397698231441,
+        "ctime_ns": 1792201397698231441
+      }
+    },
+    "capture": {
+      "mode": "gdb-before-poweroff",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/fixture project/support/build/osdk-integration/capture.py",
+        "--endpoint",
+        "127.0.0.1:53545",
+        "--symbol-elf",
+        "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/artifacts/coverage-symbol.elf",
+        "--serial-log",
+        "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/serial.log",
+        "--raw-output",
+        "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/work with spaces/coverage.profraw",
+        "--sidecar",
+        "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/coverage-capture.json",
+        "--kernel-sha256",
+        "8f42ee5647c4e5074b56fa6fc31ecedec4fc830d2accdd96be7b2b503257aa37",
+        "--guest-record",
+        "guests/guest-001/qemu.json",
+        "--timeout",
+        "180"
+      ],
+      "symbol_elf": {
+        "path": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/artifacts/coverage-symbol.elf",
+        "size": 111,
+        "sha256": "b73765bfc8cd61556a15b7389fc85c0b1ca0d15ab4f1b67eacd53f71869b69de"
+      },
+      "serial_source": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/serial.log",
+      "raw_output": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/work with spaces/coverage.profraw",
+      "sidecar_path": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/coverage-capture.json",
+      "raw_exit_code": 96,
+      "timed_out": false,
+      "finalized": false,
+      "pid": 10,
+      "process_group": 1,
+      "group_policy": "inherit recorder group; no capture session or group created",
+      "duration_seconds": 0.051,
+      "logs": {
+        "stdout": {
+          "path": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/coverage-capture-stdout.log",
+          "size": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/coverage-capture-stderr.log",
+          "size": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "finalization_error": "[Errno 2] No such file or directory: '/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/coverage-capture.json'"
+    },
+    "snapshot_verification": {
+      "before_qemu": true,
+      "after_qemu": false
+    },
+    "qemu_pid": 7,
+    "stream_logs": {
+      "stdout": {
+        "path": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/qemu-stdout.log",
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/qemu-stderr.log",
+        "size": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "serial_logs": [
+      {
+        "path": "/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/serial.log",
+        "size": 52,
+        "sha256": "81069ba65e31b6dc9aef5fefb4c00b05426daa62126c6adbec1f93091838c24e"
+      }
+    ],
+    "error": "FileNotFoundError: [Errno 2] No such file or directory: '/workspace/scratch/ae1a8cf05419/input-snapshot-source-review/red-bc1225/test_capture_cli_freezes_valid_symbols_before_qemu_version_probe/case-001/guests/guest-001/coverage-capture.json'",
+    "wrapper_exit_code": 125,
+    "duration_seconds": 0.179
+  }
+}

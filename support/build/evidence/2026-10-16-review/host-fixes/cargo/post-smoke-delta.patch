@@ -1,0 +1,22 @@
+--- a/support/build/osdk-integration/cargo.py
++++ b/support/build/osdk-integration/cargo.py
+@@ -12,7 +12,7 @@
+ SEED_SHA256 = "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316"
+ TOOLCHAIN = "nightly-2026-07-21"
+ ALIASES = {"b": "build", "c": "check", "d": "doc", "r": "run", "t": "test"}
+-RESOLVING = {"metadata", "build", "check", "test", "clippy", "run", "doc",
++RESOLVING = {"metadata", "build", "check", "test", "run", "doc",
+              "bench", "rustc", "rustdoc", "fetch", "tree", "pkgid"}
+ MANIFEST_ONLY = {"new", "init", "locate-project", "read-manifest", "verify-project",
+                  "version", "help"}
+--- a/support/build/osdk-integration/test_cargo.py
++++ b/support/build/osdk-integration/test_cargo.py
+@@ -127,7 +127,7 @@
+                                            "RUSTUP_AUTO_INSTALL": "0"})
+ 
+     def test_unknown_commands_toolchains_and_redirections_never_execute_cargo(self):
+-        requests = (("+nightly", "build"), ("+stable", "b"), ("external-command",),
++        requests = (("+nightly", "build"), ("+stable", "b"), ("external-command",), ("clippy",),
+                     ("--color", "always", "custom-alias"), ("help", "external-command"),
+                     ("--config", 'alias.x="!arbitrary"', "x"), ("--config=net.offline=false", "b"),
+                     ("b", "--config", "extra.toml"), ("-C", "elsewhere", "build"),

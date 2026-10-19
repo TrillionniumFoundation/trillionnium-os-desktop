@@ -1,0 +1,104 @@
+{
+  "aborted": false,
+  "aborted_cases": 0,
+  "case_count": 3,
+  "failed_completed": 1,
+  "full_w1_passed": false,
+  "matched": 1,
+  "original_unmodified_suite_passed": false,
+  "profile": "a01-a04-isolated-case-v1",
+  "received_signal": null,
+  "results": [
+    {
+      "aborted": false,
+      "case": "dynamic.smoke",
+      "case_result": {
+        "error": null,
+        "exit_code": 0,
+        "facts": {
+          "auxv_page_power_of_two": true,
+          "file_data": "AYNC",
+          "msync": true,
+          "ok": true,
+          "rename_unlink": true
+        },
+        "status": "pass"
+      },
+      "elapsed_seconds": 1.2896249294281006,
+      "exact_match": true,
+      "guest_execution_verified": true,
+      "initramfs_sha256": "884ce78694955b62ae17f1d4ec3d11af2bf0fabeb7c81aacdf94febacdf4012a",
+      "kernel_sha256": "e884f5e50cf296833276016894a39337cd9ac13bc51f6b1f2dea3cc3a6904b63",
+      "original_suite_qualification": false,
+      "qemu_pid": 11,
+      "qemu_reaped_exit_code": 33,
+      "raw_qemu_exit_code": 33,
+      "raw_serial_changed_after_capture": false,
+      "serial_fd_identity": {
+        "bytes": 88535,
+        "device": 27,
+        "inode": 132452
+      },
+      "serial_sha256": "b736780412e5ac6ddc4e967dcc287b1066e3bc04a9c9d53e0cf878d477f5a607",
+      "serial_snapshot_sha256": "be652169fecdeb3a67b0818121b3365853477cf6253dfe236d046ef642bb6f79",
+      "timed_out": false
+    },
+    {
+      "aborted": false,
+      "case": "static.fd_limit",
+      "case_result": {
+        "error": "guest exit failed or JSON output absent/invalid",
+        "exit_code": 20,
+        "facts": null,
+        "status": "fail"
+      },
+      "elapsed_seconds": 1.318443775177002,
+      "exact_match": false,
+      "guest_execution_verified": true,
+      "initramfs_sha256": "cc555767f0cad41db8f0a999437ebbbce94203a9bc6fb87a6c2f1dfdf6af8863",
+      "kernel_sha256": "e884f5e50cf296833276016894a39337cd9ac13bc51f6b1f2dea3cc3a6904b63",
+      "original_suite_qualification": false,
+      "qemu_pid": 14,
+      "qemu_reaped_exit_code": 33,
+      "raw_qemu_exit_code": 33,
+      "raw_serial_changed_after_capture": true,
+      "serial_fd_identity": {
+        "bytes": 134336,
+        "device": 27,
+        "inode": 132458
+      },
+      "serial_sha256": "9d86a2bae2eafc8f596b7d341c8df51482bd9e71a2c580584ccfca2550d6be7c",
+      "serial_snapshot_sha256": "0655bd7ee9e56663a4e5b6eb5d96203c67694b1f7be550315a73af35d82ea4c1",
+      "timed_out": false
+    },
+    {
+      "aborted": false,
+      "case": "static.scm_rights",
+      "case_result": {
+        "reason": "guest did not produce this case marker",
+        "status": "not_run"
+      },
+      "elapsed_seconds": 30.022467613220215,
+      "exact_match": false,
+      "guest_execution_verified": false,
+      "initramfs_sha256": "028820fc064673b25304d34b378107bd57d3c761059e7074ea4c8e3fce7054c6",
+      "kernel_sha256": "e884f5e50cf296833276016894a39337cd9ac13bc51f6b1f2dea3cc3a6904b63",
+      "original_suite_qualification": false,
+      "qemu_pid": 17,
+      "qemu_reaped_exit_code": 0,
+      "raw_qemu_exit_code": null,
+      "raw_serial_changed_after_capture": false,
+      "serial_fd_identity": {
+        "bytes": 83910,
+        "device": 27,
+        "inode": 132473
+      },
+      "serial_sha256": "128325e6d317d6964ceb2ca0b613bd4144c5f95a7a0b94918a97e903532f9cae",
+      "serial_snapshot_sha256": "99e3b5656dc061fdf595fa80b40c5c41af24ddbd82289c17d8ec2c3a8ca580c9",
+      "timed_out": true
+    }
+  ],
+  "selected_case_count": 3,
+  "skipped_cases": 0,
+  "timed_out": 1
+}

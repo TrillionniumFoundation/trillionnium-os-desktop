@@ -1,0 +1,164 @@
+{
+  "schema": "a01-owner-ci-observation/1",
+  "packaged_utc": "2026-10-17T00:19:34.810400+00:00",
+  "observation_scope": "Existing remote readbacks from this task only. No local tests, Cargo, QEMU, kernel build, tool install, branch operation or source change. The archival script validates retained metadata and hashes only.",
+  "per_request_client_timestamps_captured": false,
+  "timestamp_scope": "GitHub event timestamps remain original payload fields. Exact request client times were not captured and are not reconstructed. Packaging time is separate.",
+  "main": {
+    "sha": "bc294f75bfb8c03d9963f5a12ea23b9589779d96",
+    "tree": "39316103c8a1ee881703a38ad5c50a1cc96c055f",
+    "source_pins_unchanged": true
+  },
+  "a01": {
+    "pr": 22,
+    "head": "01a344c6a293fd73b158e9e6ca93bd9904b69bbf",
+    "state": "open",
+    "draft": false,
+    "mergeable_at_query": true,
+    "checks": [
+      {
+        "id": 117190614272,
+        "name": "CodeQL",
+        "status": "completed",
+        "conclusion": "success",
+        "completed_at": "2026-10-16T20:53:04Z"
+      },
+      {
+        "id": 117087809403,
+        "name": "host-evidence",
+        "status": "completed",
+        "conclusion": "success",
+        "completed_at": "2026-10-16T21:19:36Z"
+      },
+      {
+        "id": 117087796974,
+        "name": "Analyze (python)",
+        "status": "completed",
+        "conclusion": "success",
+        "completed_at": "2026-10-16T20:53:10Z"
+      }
+    ],
+    "actual_host_run": 38934897399,
+    "actual_host_job": 117087809403,
+    "actual_checkout": "e4677fe48628763831531cac5bbef8d358ce2f7c",
+    "head_and_checkout_tree": "351a2dc689ce515cf9a3a521cad192813cc15745",
+    "full_tree_equality": true,
+    "actual_host_counts_by_mode": [
+      {
+        "suite": "boot_evidence",
+        "ordinary_isolated": 23,
+        "optimized_isolated": 23
+      },
+      {
+        "suite": "kernel_runner",
+        "ordinary_isolated": 30,
+        "optimized_isolated": 30
+      },
+      {
+        "suite": "archive",
+        "ordinary_isolated": 20,
+        "optimized_isolated": 20
+      }
+    ],
+    "host_test_executions": 146,
+    "bootstrap_source_absence_branch_used": false,
+    "dispatch_blocker_closed_for_this_head_and_scoped_job": true,
+    "kernel_or_qemu_ci_run": false,
+    "newer_A01_heads_not_covered": true
+  },
+  "a02": {
+    "pr": 76,
+    "head": "606244b6109b1060b4916baa76e3fdd14dcc5240",
+    "state": "open",
+    "draft": false,
+    "stable_g0": {
+      "run": 38932550749,
+      "job": 117079887722,
+      "conclusion": "success",
+      "actual_rustc": "1.99.0 (b940084d7 2026-09-28)",
+      "fixed_kernel_nightly": false
+    },
+    "owner_supplied_fixed_nightly_record": {
+      "source_working_head": "00061b6bd0886e393e5ea4113ff999e15ed47bfd",
+      "record_found_at_ref": "606244b6109b1060b4916baa76e3fdd14dcc5240",
+      "check_count": 13,
+      "success": true,
+      "not_executed": [],
+      "original_inputs_unchanged": true,
+      "classification": "Existing owner configured-cloud record read remotely, not a newly executed independent acceptance. The owner source was validated before making merge606; it is identified by input_sha256, not assumed identical solely from source_head."
+    },
+    "main_adoption_proved": false,
+    "new_independent_fixed_nightly_test_run_by_this_task": false
+  },
+  "a00_workflow83": {
+    "head": "f0a5e45b7310fce245a22a528e56eb2672fb1deb",
+    "job": 117083661444,
+    "run": 38933667337,
+    "green_job_scope": "workflow-only bootstrap",
+    "actual_stdout": "2026-10-16T21:07:02.7335716Z BOOTSTRAP ONLY: A02 runner not yet present; no fixed-nightly tests executed.",
+    "fixed_nightly_suite_executed_by_this_job": false,
+    "green_job_not_13_step_acceptance": true
+  },
+  "a06": {
+    "pr": 18,
+    "head": "57b23ede7e242711ef142b672f04c896383a264a",
+    "draft": true,
+    "issue63_state": "open",
+    "cpu_source_blob": "45d93fe11506e6f6813142de1012352b958a5897",
+    "source_lines_start": 597,
+    "source_excerpt": "pub(crate) fn charge_task_cpu(task: &Task, from: u64, until: u64) {\n    let Some(thread) = task.as_posix_thread() else {\n        return;\n    };\n    let Some(process) = thread.weak_process().upgrade() else {\n        // A dead POSIX process cannot be upgraded during deferred task\n        // cleanup. Do not panic from a timer IRQ or runqueue update.\n        return;\n    };\n    let guard = process.cgroup();\n    if let Some(group) = guard.get() {\n        group\n            .controller()",
+    "source_finding": "Failed Weak<Process> upgrade still returns without settling possible positive pending interval. Source-level accounting concern, not a demonstrated QEMU undercharge exploit.",
+    "owner_ktest_record": {
+      "tested_source_commit": "c65578b2f76538cb6706e1089565ef73adccc8f0",
+      "owner_base_commit": "c86991d7363c964758ad75c0ea4ae5043abb3a1a",
+      "reported_passed": 374,
+      "soft_skipped": 3,
+      "executed_passed_lower_bound": 371,
+      "failed": 0,
+      "filtered": 0,
+      "scope": "Owner-retained OSTD221/core153 historical kernel/QEMU record; not rerun here and not final-debit, full SMP, strict-window or native HOS2 acceptance."
+    },
+    "stable_g0": {
+      "run": 38932286139,
+      "job": 117079015930,
+      "conclusion": "failure",
+      "reason": "chunks_exact_to_as_chunks in three ABI helpers; exit101",
+      "not_a_kernel_compile_failure": true,
+      "control_stages_skipped": [
+        12,
+        13
+      ]
+    }
+  },
+  "a05": {
+    "visible_owner_ref": "0013f91b435274d6fb55776e78ed5d351fb28657",
+    "latest_commit": "Linux ELF QueryAbi/ENOTTY smoke only",
+    "ioctl_source_blob": "23b0c75578b04756f34ee22e5495a56c458df2e4",
+    "scope": "Inspected branch and main STATUS still provide no implemented/accepted native five-operation CapSpace/ioctl path. Generic ioctl source does not itself prove a native HOS2 driver."
+  },
+  "a04": {
+    "pr": 8,
+    "head": "77edc6bfe0ca7770d9433fb9b4fd98e3a463ff78",
+    "draft": true,
+    "latest_commit": "preserve executable mutation harness mode",
+    "latest_owner_cloud_preflight": {
+      "exit": 2,
+      "status": "blocked_environment_or_input",
+      "reason": "QEMU unavailable",
+      "guest_execution_verified": false,
+      "raw_qemu_exit": null
+    },
+    "scope": "Owner record read here, not a fresh current-host probe. A01 earlier separate24/28 diagnostic remains separately attributed; this is no new guest result or fd-limit/SCM_RIGHTS fix."
+  },
+  "remaining_owners": {
+    "A01": "Archive destination-write substitution and failed-cleanup TOCTOU remain actionable in current01 source; separate repair task owns implementation.",
+    "A02/A00": "Adopt/revalidate owner606 and workflow83, distinguishing stable G0, bootstrap and real pinned13-step result.",
+    "A05": "Real CapSpace/ioctl five operations and observed fd-limit/SCM_RIGHTS compatibility corrections.",
+    "A06": "Final runtime settlement under original resource ownership, then exact-source kernel and quota acceptance.",
+    "A07": "Existing durable Hepta owner composition and K-to-D effects/recovery.",
+    "platform/A00/A09": "Supported AF_UNIX/VMX/independent-host/immutable environment and appropriate scoped hardware acceptance."
+  },
+  "all_project_blockers_closed": false,
+  "historical_A01_ktest359_not_replaced_by_owner371": true,
+  "root_lock_or_README_modified": false
+}

@@ -1,0 +1,92 @@
+{
+  "started_utc": "2026-10-17T01:09:28.632371+00:00",
+  "cwd": "/tmp/trillionnium-a01-main40ca002",
+  "argv": [
+    "sh",
+    "tests/control/run-validation.sh",
+    "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-17-owner-refresh/main-control-current/script-logs"
+  ],
+  "environment": {
+    "PATH": "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin:/root/.codex/tmp/arg0/codex-arg0z2lg97:/opt/codex/codex-path:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback",
+    "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+    "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+    "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+    "CARGO_TARGET_DIR": "/tmp/trillionnium-a01-main40ca002-control-target",
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_INCREMENTAL": "0",
+    "RUSTFLAGS": null,
+    "RUSTDOCFLAGS": null,
+    "CARGO_ENCODED_RUSTFLAGS": null,
+    "RUSTC_WRAPPER": null,
+    "RUSTC_WORKSPACE_WRAPPER": null,
+    "A03_CARGO": null,
+    "LD_LIBRARY_PATH": null
+  },
+  "git_head": "40ca002fac0726b366726d3353916637b29adeae",
+  "git_tree": "3d15019940246eb9a8cef85931dd92dec3c309bf",
+  "status_before": "",
+  "sources_before": {
+    "libs/os-control/Cargo.lock": {
+      "sha256": "15b34ba1f9cef4d5f09c54773b58c7a6d676a42046f763105bc51bf68e6c5c85",
+      "size": 438,
+      "blob": "3ff23f1c8d4a511a85de1a6795b233ff289329aa"
+    },
+    "libs/os-control/Cargo.toml": {
+      "sha256": "52dd3a60709269dbace64ef261b78ab5be515de66932db60b60bf586d26418f3",
+      "size": 1006,
+      "blob": "27ac5cc0e6dfc8ef1b222974029152f9d71c597c"
+    },
+    "libs/os-control/src/lib.rs": {
+      "sha256": "0dae32bfc3ac08a83b5c7269ebc35d14812bcc19ce2bcf84f76dc94fed964816",
+      "size": 89591,
+      "blob": "f8db3ca15f83be75be4453a2a934d80c355b877a"
+    },
+    "libs/os-control/src/sync.rs": {
+      "sha256": "c008828ccd16a6e9e9fa152b6829d5431f9ddb4d665cf19cca27a10216bffaf2",
+      "size": 1059,
+      "blob": "33ce599e922bc1f89c5bf893c482c34e66d06702"
+    },
+    "tests/control/control_conformance.rs": {
+      "sha256": "52bf03cb048673aec70417578b51e894048c072103f7f8dc301688eeb81593df",
+      "size": 105255,
+      "blob": "eaddc8f429df9de718f8111e8934b1d0a2f1364a"
+    },
+    "tests/control/delivery_adversarial.rs": {
+      "sha256": "14b60e7e6aa29620f94e7472968e1c367278a609ae3a2cab8cb9037ac3d14382",
+      "size": 15825,
+      "blob": "4cc908975df5add7a7d7af8571492a305964c05c"
+    },
+    "tests/control/evidence/2026-10-17/deep-before.rs": {
+      "sha256": "fc8e5ba06981010844dc9617be0e42c845728f1ff78d4cf53f061fa0caac74d7",
+      "size": 1186,
+      "blob": "d00cf49a7027b7f541ca7dabb1b034449959aaa6"
+    },
+    "tests/control/kernel_handoff.rs": {
+      "sha256": "7e1fa4d5fa55f3f11307a4bed43524543776c3e9b0302f397653e8ba88756e37",
+      "size": 14395,
+      "blob": "693f81c44be8b412f0667bfd11cfaf8fd94973e6"
+    },
+    "tests/control/nonblocking_history.rs": {
+      "sha256": "bb12ed1bc5d5b4df6b960a3c75c6ef1ef4ac7f853fde283dade5d768ce0de581",
+      "size": 19580,
+      "blob": "282249c5c29d6aff8ee6816e2742fab2ba3763f3"
+    },
+    "tests/control/resource_adversarial.rs": {
+      "sha256": "db4804fb8684ee6ae921fb04d3f810a70d5566e12d2c920c23093aa084feb641",
+      "size": 11206,
+      "blob": "0b444b908649d3630c513a51dd702b32f38b6e9f"
+    },
+    "tests/control/resource_lifecycle.rs": {
+      "sha256": "8b0652e3c910c7b648833f88531e4f454b721a8bd6fc4aa6e9c458947480f678",
+      "size": 9268,
+      "blob": "4ddf9a8196708f71ad399e598351f1ca00071eff"
+    },
+    "tests/control/run-validation.sh": {
+      "sha256": "5f5b3660288ee44e4ba2af1b3ffb010003c167b8936091db51dc06ca4e8f60a4",
+      "size": 1577,
+      "blob": "6921920ff485e5fc996b2347fa8cc7b1ab25a764"
+    }
+  },
+  "runner_sha256": "5d733a10e0c21e11f0cb2f2e18a28fc5ba04f85fa3b785a77b6ab786cd83bc7c",
+  "scope": "A03 control host validation only; no VM/kernel/Hepta durable acceptance"
+}

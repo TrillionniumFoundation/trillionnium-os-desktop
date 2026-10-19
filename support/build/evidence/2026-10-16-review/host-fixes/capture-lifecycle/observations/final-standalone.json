@@ -1,0 +1,63 @@
+{
+  "kind": "standalone_capture_term_fixture_not_kernel",
+  "ready": {
+    "gdb_pid": 101,
+    "helper_pid": 89,
+    "group": 1,
+    "address": [
+      "127.0.0.1",
+      60633
+    ]
+  },
+  "helper_returncode": 1,
+  "pidfd_exited": {
+    "helper": true,
+    "gdb": true
+  },
+  "gdb_tcp_lease_released": true,
+  "capture_sidecar": {
+    "schema": 1,
+    "profile_id": "osdk-native-local-tcp-gdb-capture-v2",
+    "passed": false,
+    "finalized": false,
+    "endpoint": "127.0.0.1:12345",
+    "kernel_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "guest_record": "fixture/qemu.json",
+    "gdb_exit_code": -9,
+    "timed_out": false,
+    "symbol_elf": {
+      "path": "/workspace/scratch/ae1a8cf05419/next5-capture-lifecycle-patched-04-publish/standalone/symbols.elf",
+      "size": 64,
+      "sha256": "175f7c04d8aba899227b47bb38b83e24dff845172c703589e27b398b6d4989f6"
+    },
+    "nm_command": {
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/next5-capture-lifecycle-patched-04-publish/standalone/tools/nm",
+        "-n",
+        "-C",
+        "/workspace/scratch/ae1a8cf05419/next5-capture-lifecycle-patched-04-publish/standalone/symbols.elf"
+      ],
+      "raw_exit_code": 0
+    },
+    "gdb_command": [
+      "/workspace/scratch/ae1a8cf05419/next5-capture-lifecycle-patched-04-publish/standalone/tools/gdb",
+      "--batch",
+      "-nx",
+      "--quiet",
+      "--se=/workspace/scratch/ae1a8cf05419/next5-capture-lifecycle-patched-04-publish/standalone/symbols.elf",
+      "-x",
+      "/workspace/scratch/ae1a8cf05419/next5-capture-lifecycle-patched-04-publish/standalone/capture.gdb"
+    ],
+    "gdb": {
+      "path": "/workspace/scratch/ae1a8cf05419/next5-capture-lifecycle-patched-04-publish/standalone/tools/gdb",
+      "size": 611,
+      "sha256": "18c9a9bdcdccd3b03c037e4abb44c2bb5c4a6e874d65fa6ab5daa773acf9c747"
+    },
+    "gdb_version": "GNU gdb (Ubuntu 15.1-1ubuntu1~24.04.1) 15.1\nCopyright (C) 2024 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law.\n",
+    "gdb_pid": 101,
+    "interrupted_by": "SIGTERM",
+    "error": "CaptureInterrupted: SIGTERM",
+    "duration_seconds": 0.12
+  },
+  "passed": true
+}

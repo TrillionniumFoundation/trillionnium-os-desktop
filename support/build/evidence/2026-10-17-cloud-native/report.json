@@ -1,0 +1,363 @@
+{
+  "schema": 1,
+  "phase": "2026-10-17-cloud-native",
+  "packaged_utc": "2026-10-17T00:42:16.027655+00:00",
+  "scope": "Packaging and hashing the terminated current-cloud baseline/retry only. This packaging did not rerun builds, tests, controllers or VMs; active normalized-cloud and target directories were excluded.",
+  "kernel_boot_passed": false,
+  "source": {
+    "producer_local_commit": "0053c98e787391ef566305296ffd2b7c912a1095",
+    "published_tree_equivalent_commit": "a8f1ed1252a7eaccf74b9a717f862413b7c6650d",
+    "retry_published_commit": "31543f71a247add15ce8e026a25385c535746bca",
+    "commits": {
+      "0053c98e787391ef566305296ffd2b7c912a1095": {
+        "tree": "8c1902eb85f94a9285a0b34689c8c696fd716c17",
+        "kernel_tree": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da",
+        "commit_object": "tree 8c1902eb85f94a9285a0b34689c8c696fd716c17\nparent f9a71fa7f9bd68423ca9e98a8e7317c3e3fb8ce5\nauthor A01 Rust Kernel Agent <a01@agents.trillionnium.local> 1792196479 -0700\ncommitter A01 Rust Kernel Agent <a01@agents.trillionnium.local> 1792196479 -0700\n\nfix(build): select private BIOS inputs with explicit provenance\n\nA01_QEMU_BIOS selects an absolute private regular BIOS while the recorder retains requested arguments, selection origin, and loaded snapshot provenance.\n"
+      },
+      "a8f1ed1252a7eaccf74b9a717f862413b7c6650d": {
+        "tree": "8c1902eb85f94a9285a0b34689c8c696fd716c17",
+        "kernel_tree": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da",
+        "commit_object": "tree 8c1902eb85f94a9285a0b34689c8c696fd716c17\nparent f9a71fa7f9bd68423ca9e98a8e7317c3e3fb8ce5\nauthor Franksudoman <sunfocapital@gmail.com> 1792196491 +0800\ncommitter Franksudoman <sunfocapital@gmail.com> 1792196491 +0800\n\nfix(build): select private BIOS inputs with explicit provenance\n\nA01_QEMU_BIOS selects an absolute private regular BIOS while the recorder retains requested arguments, selection origin, and loaded snapshot provenance."
+      },
+      "31543f71a247add15ce8e026a25385c535746bca": {
+        "tree": "8913083575cd63c00cdcfa14f6d747187b878777",
+        "kernel_tree": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da",
+        "commit_object": "tree 8913083575cd63c00cdcfa14f6d747187b878777\nparent a8f1ed1252a7eaccf74b9a717f862413b7c6650d\nauthor Franksudoman <sunfocapital@gmail.com> 1792196822 +0800\ncommitter Franksudoman <sunfocapital@gmail.com> 1792196822 +0800\n\nfix(build): select explicit private QEMU data directories\n\nValidate A01_QEMU_DATA_DIR before version probing, reject ambiguous requested -L arguments, and preserve selection provenance alongside requested and executed QEMU arguments."
+      }
+    },
+    "producer_and_first_published_full_trees_equal": true,
+    "all_three_kernel_trees_equal": true,
+    "historical_retry_diff_log": "readable/current-cloud/retry-kernel-tree-binding.log",
+    "producer_build_not_relabelled_as_retry_fresh_compile": true,
+    "selected_source_archive": "source/controls.tar.gz"
+  },
+  "upstream": {
+    "name": "Asterinas",
+    "version": "0.19.0",
+    "commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+    "tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+    "pinned_toolchain": "nightly-2026-07-21",
+    "source_verification": "readable/current-cloud/source-verification.log",
+    "checked_files": 118,
+    "pristine": false,
+    "passed": true
+  },
+  "environment": {
+    "host": "343e40cfefc1",
+    "distribution": "Ubuntu 24.04.3 LTS",
+    "kernel": "6.18.44",
+    "rustc": "1.99.0-nightly (87e5904f5 2026-07-20)",
+    "cargo": "1.99.0-nightly (3efb1f477 2026-07-17)",
+    "qemu_version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)\nCopyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers",
+    "qemu_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+    "gcc": "13.3.0",
+    "make": "4.3",
+    "kvm_available": false,
+    "acceleration": "tcg",
+    "vcpus": 1,
+    "memory": "512M",
+    "machine": "q35",
+    "cpu": "max",
+    "device": "isa-debug-exit,iobase=0xf4,iosize=0x04",
+    "build_environment_log": "readable/current-cloud/build/environment.log",
+    "boot_environment_log": "readable/current-cloud/boot/environment.log",
+    "complete_selected_environment_and_overrides": [
+      "readable/current-cloud/commands.json",
+      "readable/current-cloud/retry-commands.json"
+    ],
+    "offline_mode_claimed": false,
+    "build_timestamp_control": null,
+    "build_timestamp_observation": "ASTER_BUILD_TIMESTAMP=<unset>"
+  },
+  "build": {
+    "producer_commit": "0053c98e787391ef566305296ffd2b7c912a1095",
+    "published_identical_full_tree_commit": "a8f1ed1252a7eaccf74b9a717f862413b7c6650d",
+    "full_tree": "8c1902eb85f94a9285a0b34689c8c696fd716c17",
+    "controller": {
+      "name": "full-kernel-build",
+      "argv": [
+        "support/build/kernel.sh",
+        "kernel"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/a01-current-build",
+      "start": "2026-10-17T00:21:45.054059+00:00",
+      "selected_environment": {
+        "PATH": "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin:/workspace/scratch/ae1a8cf05419/native-tools/root/usr/bin:/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/llvm-18/bin:/root/.codex/tmp/arg0/codex-arg0z2lg97:/opt/codex/codex-path:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback",
+        "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+        "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+        "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+        "CARGO_BUILD_JOBS": "2",
+        "CARGO_NET_GIT_FETCH_WITH_CLI": "true",
+        "LD_LIBRARY_PATH": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/x86_64-linux-gnu:/workspace/scratch/ae1a8cf05419/native-tools/root/lib/x86_64-linux-gnu:/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/llvm-18/lib",
+        "QEMU_MODULE_DIR": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/x86_64-linux-gnu/qemu",
+        "A01_BUSYBOX": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/bin/busybox",
+        "A01_QEMU_BIOS": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/seabios/bios-256k.bin",
+        "VDSO_LIBRARY_DIR": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/linux-vdso",
+        "CARGO_TARGET_DIR": "/workspace/scratch/ae1a8cf05419/a01-current-build/kernel/asterinas/target",
+        "PKG_CONFIG_LIBDIR": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/x86_64-linux-gnu/pkgconfig:/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/pkgconfig",
+        "PKG_CONFIG_SYSROOT_DIR": "/workspace/scratch/ae1a8cf05419/native-tools/root",
+        "A01_QEMU_TIMEOUT": "300"
+      },
+      "log": "/workspace/scratch/ae1a8cf05419/current-cloud/full-kernel-build.log",
+      "pid": 7,
+      "returncode": 0,
+      "end": "2026-10-17T00:27:41.829698+00:00",
+      "log_sha256": "ce7c2a6951f804d8ddbd5c4ce957f04346e166b0977271c3e5e5fe99ddface08",
+      "log_size": 27153
+    },
+    "upstream_make_command_file": "readable/current-cloud/build/command.sh",
+    "worker_exit_code": 0,
+    "make_exit_code": 0,
+    "compiling_lines": 279,
+    "finished_lines": [
+      "    Finished `release` profile [optimized] target(s) in 2m 19s",
+      "    Finished `release` profile [optimized] target(s) in 3m 18s"
+    ],
+    "result": "Source make kernel completed. A separate absence-of-existing-target receipt and second clean-build comparison were not retained; no two-build reproducibility claim."
+  },
+  "boot": {
+    "producer_commit": "0053c98e787391ef566305296ffd2b7c912a1095",
+    "controller": {
+      "name": "full-kernel-boot",
+      "argv": [
+        "support/build/kernel.sh",
+        "run_kernel"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/a01-current-build",
+      "start": "2026-10-17T00:27:41.830533+00:00",
+      "selected_environment": {
+        "PATH": "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin:/workspace/scratch/ae1a8cf05419/native-tools/root/usr/bin:/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/llvm-18/bin:/root/.codex/tmp/arg0/codex-arg0z2lg97:/opt/codex/codex-path:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback",
+        "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+        "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+        "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+        "CARGO_BUILD_JOBS": "2",
+        "CARGO_NET_GIT_FETCH_WITH_CLI": "true",
+        "LD_LIBRARY_PATH": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/x86_64-linux-gnu:/workspace/scratch/ae1a8cf05419/native-tools/root/lib/x86_64-linux-gnu:/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/llvm-18/lib",
+        "QEMU_MODULE_DIR": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/x86_64-linux-gnu/qemu",
+        "A01_BUSYBOX": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/bin/busybox",
+        "A01_QEMU_BIOS": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/seabios/bios-256k.bin",
+        "VDSO_LIBRARY_DIR": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/linux-vdso",
+        "CARGO_TARGET_DIR": "/workspace/scratch/ae1a8cf05419/a01-current-build/kernel/asterinas/target",
+        "PKG_CONFIG_LIBDIR": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/x86_64-linux-gnu/pkgconfig:/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/pkgconfig",
+        "PKG_CONFIG_SYSROOT_DIR": "/workspace/scratch/ae1a8cf05419/native-tools/root",
+        "A01_QEMU_TIMEOUT": "300"
+      },
+      "log": "/workspace/scratch/ae1a8cf05419/current-cloud/full-kernel-boot.log",
+      "pid": 4972,
+      "returncode": 2,
+      "end": "2026-10-17T00:32:43.561638+00:00",
+      "log_sha256": "8e768027de8c1e6cdcc91f2c49a209a4b2ecc00a4c310356e32b637e1bd864f6",
+      "log_size": 5132
+    },
+    "upstream_make_command_file": "readable/current-cloud/boot/command.sh",
+    "qemu_record": "readable/current-cloud/boot/qemu.json",
+    "complete_serial": "readable/current-cloud/boot/serial.log",
+    "compiling_lines": 0,
+    "cached_build_finished": "Finished `release` profile [optimized] target(s) in 0.17s",
+    "make_exit_code": 2,
+    "worker_exit_code": 2,
+    "qemu_raw_exit_code": 124,
+    "qemu_recorder_exit_code": 124,
+    "timed_out": true,
+    "duration_seconds": 300.005,
+    "separate_underlying_wait_status": null,
+    "status_interpretation": "raw_exit_code=124 is the retained recorder timeout status; no distinct process wait signal/status is reconstructed. make and supervisor/controller returned 2.",
+    "serial_bytes": 217,
+    "serial_sha256": "059481cde0a84ddc41e45ed256f42862ed223c542b900d8dedaf3bf07b959076",
+    "auxiliary_rom_errors": [
+      "kvmvapic.bin",
+      "multiboot_dma.bin"
+    ],
+    "explicit_qemu_data_directory_selected": false,
+    "qemu_argv": [
+      "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/bin/qemu-system-x86_64",
+      "-kernel",
+      "/workspace/scratch/ae1a8cf05419/current-cloud/boot/artifacts-41iebhw4/kernel.elf",
+      "-initrd",
+      "/workspace/scratch/ae1a8cf05419/current-cloud/boot/artifacts-41iebhw4/initramfs.cpio.gz",
+      "-append",
+      "earlycon console=ttyS0 console=ttyS0 console=ttyS0 loglevel=info loglevel=info loglevel=info SHELL=/bin/sh SHELL=/bin/sh LOGNAME=root LOGNAME=root HOME=/ HOME=/ USER=root USER=root PATH=/bin:/sbin PATH=/bin:/sbin --",
+      "-machine",
+      "q35",
+      "-accel",
+      "tcg",
+      "-cpu",
+      "max",
+      "-bios",
+      "/workspace/scratch/ae1a8cf05419/current-cloud/boot/artifacts-41iebhw4/bios.bin",
+      "-m",
+      "512M",
+      "-smp",
+      "1",
+      "-nodefaults",
+      "-no-user-config",
+      "-no-reboot",
+      "-nographic",
+      "-display",
+      "none",
+      "-monitor",
+      "none",
+      "-serial",
+      "chardev:serial",
+      "-chardev",
+      "stdio,id=serial,signal=off,logfile=qemu.log",
+      "-device",
+      "isa-debug-exit,iobase=0xf4,iosize=0x04"
+    ],
+    "result": "Failed: SeaBIOS reported No bootable device.; no project kernel boot acceptance. The actual ELF, initramfs and BIOS snapshots are retained."
+  },
+  "retry": {
+    "checked_out_commit": "31543f71a247add15ce8e026a25385c535746bca",
+    "full_tree": "8913083575cd63c00cdcfa14f6d747187b878777",
+    "commands_file": "readable/current-cloud/retry-commands.json",
+    "controller": {
+      "name": "boot",
+      "argv": [
+        "support/build/kernel.sh",
+        "run_kernel"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/a01-current-build",
+      "selected_environment": {
+        "PATH": "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin:/workspace/scratch/ae1a8cf05419/native-tools/root/usr/bin:/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/llvm-18/bin:/root/.codex/tmp/arg0/codex-arg0z2lg97:/opt/codex/codex-path:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback",
+        "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+        "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+        "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+        "CARGO_BUILD_JOBS": "2",
+        "CARGO_NET_GIT_FETCH_WITH_CLI": "true",
+        "LD_LIBRARY_PATH": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/x86_64-linux-gnu:/workspace/scratch/ae1a8cf05419/native-tools/root/lib/x86_64-linux-gnu:/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/llvm-18/lib",
+        "QEMU_MODULE_DIR": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/x86_64-linux-gnu/qemu",
+        "A01_BUSYBOX": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/bin/busybox",
+        "A01_QEMU_BIOS": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/seabios/bios-256k.bin",
+        "VDSO_LIBRARY_DIR": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/linux-vdso",
+        "CARGO_TARGET_DIR": "/workspace/scratch/ae1a8cf05419/a01-current-build/kernel/asterinas/target",
+        "PKG_CONFIG_LIBDIR": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/lib/x86_64-linux-gnu/pkgconfig:/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/pkgconfig",
+        "PKG_CONFIG_SYSROOT_DIR": "/workspace/scratch/ae1a8cf05419/native-tools/root",
+        "A01_QEMU_TIMEOUT": "300"
+      },
+      "overrides": {
+        "A01_QEMU_DATA_DIR": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/qemu",
+        "A01_RUN_DIR": "/workspace/scratch/ae1a8cf05419/current-cloud/boot-data-retry"
+      },
+      "started": "2026-10-17T00:33:28.950374+00:00",
+      "log": "/workspace/scratch/ae1a8cf05419/current-cloud/retry-boot.log",
+      "pid": 44,
+      "returncode": 1,
+      "ended": "2026-10-17T00:33:29.167316+00:00",
+      "log_sha256": "67dd0ff7951b05adaea1e480942abca56d79dd27ff11eed43290e49820c8c6c1",
+      "log_size": 399
+    },
+    "explicit_data_directory_requested": "/workspace/scratch/ae1a8cf05419/native-tools/root/usr/share/qemu",
+    "exit_code": 1,
+    "qemu_raw_exit_code": null,
+    "qemu_recorder_exit_code": null,
+    "timed_out": null,
+    "new_build_started": false,
+    "new_vm_launched": false,
+    "qemu_record": null,
+    "serial": null,
+    "diagnostic": "kernel/OSDK.toml already exists; refusing to replace it",
+    "result": "Rejected in manifest preflight before make or QEMU. This is not a fresh compile or boot test of published 31543f71."
+  },
+  "cleanup": {
+    "build_receipt": {
+      "anchor": {
+        "device": 27,
+        "inode": 269443,
+        "mode": "100600",
+        "type": "regular"
+      },
+      "candidate": "/workspace/scratch/ae1a8cf05419/a01-current-build/kernel/asterinas/kernel/.a01-manifest-custody-splv__da/manifest",
+      "captured": {
+        "device": 27,
+        "inode": 269443,
+        "mode": "100600",
+        "type": "regular"
+      },
+      "continuous_public_path_occupancy_guaranteed": false,
+      "custody": "/workspace/scratch/ae1a8cf05419/a01-current-build/kernel/asterinas/kernel/.a01-manifest-custody-splv__da",
+      "custody_removed": true,
+      "helper_file": "/workspace/scratch/ae1a8cf05419/a01-current-build/support/build/cleanup-manifest.py",
+      "helper_sha256": "6620d8be088f3602e673397081c5230aa5eb2cad54fd4080f21b3afe370a82c8",
+      "manifest": "/workspace/scratch/ae1a8cf05419/a01-current-build/kernel/asterinas/kernel/OSDK.toml",
+      "outcome": "owned_removed",
+      "owned_fd": 8,
+      "passed": true,
+      "schema": 1
+    },
+    "boot_receipt": {
+      "anchor": {
+        "device": 27,
+        "inode": 286702,
+        "mode": "100600",
+        "type": "regular"
+      },
+      "candidate": "/workspace/scratch/ae1a8cf05419/a01-current-build/kernel/asterinas/kernel/.a01-manifest-custody-3drmpvdk/manifest",
+      "captured": {
+        "device": 27,
+        "inode": 269443,
+        "mode": "100600",
+        "type": "regular"
+      },
+      "continuous_public_path_occupancy_guaranteed": false,
+      "custody": "/workspace/scratch/ae1a8cf05419/a01-current-build/kernel/asterinas/kernel/.a01-manifest-custody-3drmpvdk",
+      "custody_removed": true,
+      "helper_file": "/workspace/scratch/ae1a8cf05419/a01-current-build/support/build/cleanup-manifest.py",
+      "helper_sha256": "6620d8be088f3602e673397081c5230aa5eb2cad54fd4080f21b3afe370a82c8",
+      "manifest": "/workspace/scratch/ae1a8cf05419/a01-current-build/kernel/asterinas/kernel/OSDK.toml",
+      "outcome": "foreign_restored",
+      "owned_fd": 8,
+      "passed": true,
+      "schema": 1
+    },
+    "foreign_manifest_metadata": {
+      "path": "/workspace/scratch/ae1a8cf05419/a01-current-build/kernel/asterinas/kernel/OSDK.toml",
+      "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f",
+      "size": 1019,
+      "mode": "0o100600",
+      "dev": 27,
+      "ino": 269443,
+      "mtime_ns": 1792196506287806310,
+      "ctime_ns": 1792197163381099759,
+      "scope": "read-only retained unexpected manifest; writer not attributed"
+    },
+    "foreign_manifest_bytes": "readable/current-cloud/retained-foreign-manifest.toml",
+    "writer_attribution": null,
+    "original_manifest_removed_by_packager": false,
+    "interpretation": "Build cleanup owned_removed; boot cleanup foreign_restored. passed=true verifies the helper outcome, not absence of the public manifest. Existing foreign bytes were preserved. Writer remains unknown."
+  },
+  "preservation": {
+    "captured_current_cloud_files": 40,
+    "captured_controllers": 2,
+    "stable_read_receipts": "capture.json",
+    "raw_text_metadata_controller_members": 37,
+    "raw_archive": "raw.tar.gz",
+    "readable_copy_directory": "readable/",
+    "raw_members_manifest": "raw-members.json",
+    "deduplicated_binary_input_count": 3,
+    "binary_logical_path_count": 5,
+    "binary_manifest": "artifacts/manifest.json",
+    "binary_chunk_maximum_bytes": 2097152,
+    "source_control_members": 23,
+    "source_archive": "source/controls.tar.gz",
+    "source_members_manifest": "source/members.json",
+    "original_empty_directories": [
+      "boot-data-retry"
+    ],
+    "no_executed_steps_inferred_after_first_failure": true
+  },
+  "limits": [
+    "No kernel boot success in this phase.",
+    "The ELF SHA is from the actual boot-time snapshot after the cached run_kernel build; no separate earlier build-stage ELF hash receipt is invented.",
+    "The source worktree was later checked out at 31543f71; that does not relabel the producer 0053c98e compilation.",
+    "No offline-build, immutable environment, reproducible-kernel or all-blockers-closed claim.",
+    "Original absolute paths are historical provenance; restoring inputs alone does not install the recorded host dependencies.",
+    "No unknown external manifest writer is identified or deleted.",
+    "Planned controller steps after its first failure were not executed and are not reported as passed."
+  ],
+  "verification": {
+    "command": "python3 -I support/build/evidence/2026-10-17-cloud-native/verify.py",
+    "checksum_manifest": "SHA256SUMS",
+    "restoration": "python3 -I support/build/evidence/2026-10-17-cloud-native/verify.py --restore /absolute/new-directory",
+    "verification_scope": "Only captured bytes, gzip/tar/member/chunk hashes, Git commit/blob identity, complete inventory and recorded failure/status semantics; never invokes Cargo, QEMU or captured commands."
+  }
+}

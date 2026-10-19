@@ -1,0 +1,41 @@
+{"command": ["/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3", "-I", "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/handoffs/a04-exact-rootfs/verify.py", "--repo", "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop", "--output", "/workspace/scratch/ae1a8cf05419/a04-input-recovery-audit/after-readback/ordinary-explicit-repo"], "cwd": "/tmp", "exit_code": 0, "finish_utc": "2026-10-17T04:09:22.879887+00:00", "label": "ordinary-explicit-repo", "start_utc": "2026-10-17T04:09:22.719365+00:00"}
+stdout:
+{"result": "exact_input_recovery_pass", "output": "/workspace/scratch/ae1a8cf05419/a04-input-recovery-audit/after-readback/ordinary-explicit-repo", "original_tar_sha256": "df8df2e3cdcd308ef62a59268a4519e2923c9ff78145e46f26a4092725e80797", "files": 17, "elf": 4, "new_qemu_execution": false}
+stderr:
+
+{"command": ["/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3", "-I", "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/handoffs/a04-exact-rootfs/verify.py", "--output", "/workspace/scratch/ae1a8cf05419/a04-input-recovery-audit/after-readback/ordinary-default-repo"], "cwd": "/tmp", "exit_code": 0, "finish_utc": "2026-10-17T04:09:23.055181+00:00", "label": "ordinary-default-repo", "start_utc": "2026-10-17T04:09:22.879966+00:00"}
+stdout:
+{"result": "exact_input_recovery_pass", "output": "/workspace/scratch/ae1a8cf05419/a04-input-recovery-audit/after-readback/ordinary-default-repo", "original_tar_sha256": "df8df2e3cdcd308ef62a59268a4519e2923c9ff78145e46f26a4092725e80797", "files": 17, "elf": 4, "new_qemu_execution": false}
+stderr:
+
+{"command": ["/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3", "-I", "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/handoffs/a04-exact-rootfs/verify.py", "--repo", "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop", "--output", "/workspace/scratch/ae1a8cf05419/a04-input-recovery-audit/after-readback/ordinary-existing-dir/destination"], "exit_code": 1, "expected_refusal": true, "finish_utc": "2026-10-17T04:09:23.212946+00:00", "foreign_sentinel_preserved": true, "label": "ordinary-existing-dir", "start_utc": "2026-10-17T04:09:23.055531+00:00"}
+stdout:
+stderr:
+input recovery failed: [Errno 17] File exists: 'destination'
+
+{"command": ["/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3", "-I", "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/handoffs/a04-exact-rootfs/verify.py", "--repo", "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop", "--output", "/workspace/scratch/ae1a8cf05419/a04-input-recovery-audit/after-readback/ordinary-existing-file/destination"], "exit_code": 1, "expected_refusal": true, "finish_utc": "2026-10-17T04:09:23.358265+00:00", "foreign_sentinel_preserved": true, "label": "ordinary-existing-file", "start_utc": "2026-10-17T04:09:23.213299+00:00"}
+stdout:
+stderr:
+input recovery failed: [Errno 17] File exists: 'destination'
+
+{"command": ["/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3", "-I", "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/handoffs/a04-exact-rootfs/verify.py", "--repo", "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop", "--output", "/workspace/scratch/ae1a8cf05419/a04-input-recovery-audit/after-readback/ordinary-symlink-ancestor/link/destination"], "exit_code": 1, "expected_refusal": true, "finish_utc": "2026-10-17T04:09:23.493854+00:00", "foreign_sentinel_preserved": true, "label": "ordinary-symlink-ancestor", "start_utc": "2026-10-17T04:09:23.358608+00:00"}
+stdout:
+stderr:
+input recovery failed: [Errno 20] Not a directory: 'link'
+
+{"command": ["/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3", "-I", "-m", "unittest", "discover", "-s", "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/handoffs/a04-exact-rootfs", "-p", "test_verify.py", "-v"], "exit_code": 0, "finish_utc": "2026-10-17T04:09:01.319491+00:00", "label": "ordinary-permanent-fixtures", "start_utc": "2026-10-17T04:09:01.190861+00:00"}
+stdout:
+stderr:
+test_directory_replacement_does_not_redirect_writes (test_verify.OutputCustodyTests.test_directory_replacement_does_not_redirect_writes) ... ok
+test_existing_directory_is_preserved (test_verify.OutputCustodyTests.test_existing_directory_is_preserved) ... ok
+test_existing_file_is_preserved (test_verify.OutputCustodyTests.test_existing_file_is_preserved) ... ok
+test_midwrite_error_retains_incomplete_marker (test_verify.OutputCustodyTests.test_midwrite_error_retains_incomplete_marker) ... ok
+test_plain_roundtrip_has_original_bytes_and_no_incomplete_marker (test_verify.OutputCustodyTests.test_plain_roundtrip_has_original_bytes_and_no_incomplete_marker) ... ok
+test_same_length_tamper_before_first_stat_is_refused (test_verify.OutputCustodyTests.test_same_length_tamper_before_first_stat_is_refused) ... ok
+test_symlink_ancestor_is_refused (test_verify.OutputCustodyTests.test_symlink_ancestor_is_refused) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.015s
+
+OK
+

@@ -1,0 +1,46 @@
+{
+  "passed_as_partial_host_result": true,
+  "all_green": false,
+  "frozen_original_files": 13,
+  "frozen_original_bytes": 76286,
+  "original_SUM_sha256": "bce5ae22f52526db83dc34d1e80faab31845133367700047f17172a822b2fcc7",
+  "original_sum_entries_verified": 12,
+  "raw_unique_regular_members_size_SHA_verified": 17,
+  "source_regular_members_byte_blob_mode_checked": 20,
+  "source_directory_members": 8,
+  "mode_boundary": "Exact Git modes independently checked; tar group-write differs as separately recorded; source archive preserved.",
+  "results": {
+    "rust_passed": 39,
+    "rust_failed_ignored_filtered": [
+      0,
+      0,
+      0
+    ],
+    "python_passed": 28,
+    "fmt_exit": 0,
+    "golden_hos2": 12,
+    "golden_transport32": 1,
+    "initial_controller_exit": 1,
+    "fixed_nightly_clippy_install_actual_exit": 0,
+    "clippy_retry_exit": 101
+  },
+  "clippy_red_diagnostics": [
+    "libs/os-abi/tests/mutation_kill.rs:21 chunks_exact_to_as_chunks",
+    "libs/os-abi/tests/transport_vectors.rs:14 chunks_exact_to_as_chunks"
+  ],
+  "original_initial_failure_and_retry_logs_retained": true,
+  "initial_raw_report_success_false_preserved": true,
+  "source_and_lock_after_records_unchanged": true,
+  "second_read_only_reviewer": {
+    "agent": "/root/next5_archive/repro_config",
+    "result": "consistent partial result; no blocker in evidence",
+    "review": "Actual saved compiler/lint/test logs, commands and immutable source confirm the counts and two diagnostics. No new compiler/test/VM invoked."
+  },
+  "limitations": [
+    "Host ABI codec/test evidence only; no guest ioctl/copyin/copyout/authorization/scheduler validation",
+    "Rust source mutation matrix not executed this phase",
+    "Fixed toolchain/shared dependency cache reused; not all-cache cold or cross-host proof",
+    "Remote Git object absent locally; remote mapping comes from saved publisher API receipt, not new independent network lookup"
+  ],
+  "archiver_scope": "Only saved inputs and immutable Git objects read; no live targets/manifests, Cargo/rustc/probe/VM, source/Git writes, root README/lock or other evidence directory edits."
+}
