@@ -5,7 +5,7 @@ This crate is the first implementation seam for issue #111. It is deliberately
 
 trill-ui-broker exposes a versioned, pointer-free UI protocol. The renderer or
 mobile client sees only bounded strings, digests, generations, boot-local
-delivery identifiers, and explicit unknown states. It never receives raw HOS2
+delivery identifiers, explicit generation fences (authority/body/resource/bridge/owner), and unknown states. It never receives raw HOS2
 pointers, CapSpace handles, signer material, Agentd UDS paths, PIDs as
 authority, or platform device handles.
 
