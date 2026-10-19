@@ -38,8 +38,19 @@ class A06FinalAccountingSource(unittest.TestCase):
         self.assertIn("guard.get().is_some() || !process.status().is_zombie()", body)
         scheduler = SCHED_RS.read_text()
         self.assertIn("bandwidth_owner: Option<CpuChargeOwner>", scheduler)
-        self.assertIn("owner.charge(self.bandwidth_accounted_through, now)", scheduler)
-        self.assertIn("self.bandwidth_owner = CpuChargeOwner::for_task(task)", scheduler)
+        start = scheduler.index("fn settle_bandwidth(&mut self, task: &Task,")
+        end = scheduler.index("fn with_bandwidth_settled", start)
+        settlement = scheduler[start:end]
+        self.assertIn(
+            "match (self.bandwidth_accounted_through_ns, now.boottime_ns)",
+            settlement,
+        )
+        self.assertIn("let Some(owner) = &self.bandwidth_owner", settlement)
+        self.assertLess(
+            settlement.index("owner.charge(from, until)"),
+            settlement.index("self.bandwidth_owner = CpuChargeOwner::for_task(task)"),
+            "the retained owner must receive its settled nanoseconds before rebinding",
+        )
 
     def test_migration_updates_all_live_thread_snapshots(self):
         source = CGROUP_RS.read_text()

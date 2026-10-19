@@ -22,7 +22,7 @@ import sys
 sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[2]
 PATCH = ROOT / 'tests/organ_backend/cpu_owner_current_slot_negative.patch'
-PATCH_SHA = '96dbb29fec63b3946bcb18a95567a7a2d2191130cc3ec9f7feeafad29e1a28a2'
+PATCH_SHA = '04b19a7a89b8f8591d9a18766390167201e999a9617febcd9d0c70902005f1bd'
 CPU_PATH = 'kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs'
 SCHED_PATH = 'kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs'
 CLOCK_PATH = 'kernel/asterinas/kernel/core/comps/time/src/clocksource.rs'
@@ -35,6 +35,7 @@ FAILED_NAMES = {PREFIX + name for name in (
 )}
 CLOCK_PREFIX = 'aster_core::vdso::clocksource_regressions::'
 HANDOFF_PREFIX = 'aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::'
+USAGE_PREFIX = 'aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::'
 HANDOFF_NAMES = (
     'outgoing_tail_ends_at_the_incoming_segment_start',
     'handoff_debits_the_old_window_before_rechecking_a_shared_ancestor',
@@ -53,7 +54,8 @@ CONTROLS = {
         CLOCK_PATH, {CLOCK_PREFIX + name for name in (
             'fragmented_refreshes_preserve_fractional_time_and_endpoint_differences',
             'vdso_and_kernel_share_the_fractional_phase_at_the_next_nanosecond',
-            'full_width_vdso_fraction_survives_second_rollover_and_checks_realtime_overflow')}, 201),
+            'full_width_vdso_fraction_survives_second_rollover_and_checks_realtime_overflow')} | {
+                USAGE_PREFIX + 'fragmented_three_ghz_runtime_keeps_absolute_endpoint_precision'}, 201),
     'vdso-drop-fraction': (
         'vdso_drop_fraction_negative.patch',
         'a1e116c7af6a57add22693b4fa985b8bb45809df3ad6765b52ea8efa979975c9',
@@ -67,11 +69,11 @@ CONTROLS = {
         VDSO_PATH, {CLOCK_PREFIX + 'mapped_vdso_publishes_the_phase_and_fault_mode_under_the_existing_sequence'}, 201),
     'handoff-drop-tail': (
         'cpu_handoff_drop_tail_negative.patch',
-        'e91bc7080a8c352488f5371632f21e5e60681d65b8c60c3f53e97d954342b031',
+        '2e9a87cdf9044f29dbcb8c932e72079eaf3fc9ecde791c9627b45b9b06257ffc',
         SCHED_PATH, {HANDOFF_PREFIX + name for name in HANDOFF_NAMES}, 201),
     'handoff-eligibility-first': (
         'cpu_handoff_eligibility_first_negative.patch',
-        '35eb263b786e1f4700e734eb8105f27570059bcf9e9e7ad09a71ecb78b0d12dc',
+        '8a90266278c3610c337e9ce780130e3a179ccce6942bbd4db05c53cfd805546c',
         SCHED_PATH, {HANDOFF_PREFIX + HANDOFF_NAMES[1]}, 201),
     'dequeue-drop-owner': (
         'cpu_dequeue_drop_owner_negative.patch',

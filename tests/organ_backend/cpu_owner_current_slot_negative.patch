@@ -1,7 +1,7 @@
 diff --git a/kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs b/kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs
 --- a/kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs
 +++ b/kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs
-@@ -635,9 +635,12 @@
+@@ -696,9 +696,12 @@
      }
  
      pub(crate) fn charge(&self, from: u64, until: u64) {
@@ -16,4 +16,4 @@ diff --git a/kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cp
 +        }
      }
  
-     pub(crate) fn belongs_to(&self, cgroup: Option<&Arc<CgroupNode>>) -> bool {
+     pub(crate) fn invalidate_accounting(&self) {

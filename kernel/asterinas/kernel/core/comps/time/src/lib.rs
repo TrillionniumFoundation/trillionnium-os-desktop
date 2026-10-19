@@ -85,8 +85,21 @@ pub fn read_monotonic_time() -> Duration {
 /// or if the absolute nanosecond endpoint does not fit in u64. No fallback
 /// counter domain or clamped accounting time is substituted.
 pub fn try_read_monotonic_sample() -> Option<ClockSourceSample> {
-    let sample = tsc::CLOCK.get()?.read_sample();
+    let sample = tsc::CLOCK.get()?.read_accounting_sample();
     sample.checked_nanos().map(|_| sample)
+}
+
+/// Initializes the original RTC/TSC source once for kernel owner tests.
+///
+/// This cannot replace an existing clock or reset its origin or fault state.
+#[cfg(ktest)]
+pub fn init_for_ktest() {
+    static INITIALIZED: Once<()> = Once::new();
+    INITIALIZED.call_once(|| {
+        if tsc::CLOCK.get().is_none() {
+            time_init().expect("initialize the original RTC/TSC clock for ktest");
+        }
+    });
 }
 
 /// Returns the default (TSC) clocksource.

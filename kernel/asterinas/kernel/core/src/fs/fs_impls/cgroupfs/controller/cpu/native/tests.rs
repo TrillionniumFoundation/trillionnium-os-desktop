@@ -12,7 +12,7 @@ use os_control::{
     CPU_PERIOD_NS, NativeResourceError, NativeResourceState, NativeResourceUpdate, NativeTarget,
     ResourceDomainId, StableObjectId,
 };
-use ostd::{arch::read_tsc, cpu::CpuId, mm::VmReader, panic, prelude::ktest};
+use ostd::{cpu::CpuId, mm::VmReader, panic, prelude::ktest};
 
 use super::super::{
     super::{Controller, SubControl, SubController, SubCtrlType},
@@ -36,6 +36,7 @@ struct Hierarchy {
 
 impl Hierarchy {
     fn new(name: &'static str) -> Self {
+        aster_time::init_for_ktest();
         aster_systree::init_for_ktest();
         let root = CgroupSystem::singleton();
         let enabled_root_cpu = !root
@@ -184,21 +185,25 @@ fn ordinary_cpu_max_write_advances_revision_without_refilling_debt() {
     write(&cpu, "1000 100000").unwrap();
     bind(hierarchy.leaf.controller(), &cpu, 30).unwrap();
     let control = cpu.inner.as_ref().unwrap().control().unwrap();
-    let quota = CpuMax::us_to_clocks(1_000);
+    let quota = CpuMax::us_to_ns(1_000);
     {
         let mut state = control.max.lock();
         // Exclude elapsed-window repayment from this configuration test. The
         // existing charge tests own clock/window integration qualification.
-        state.max.window_start = read_tsc().saturating_add(CpuMax::us_to_clocks(10_000_000));
-        state.max.used_clocks = quota;
-        state.max.carry_debt_clocks = quota / 2;
+        state.max.window_start_ns = aster_time::try_read_monotonic_sample()
+            .unwrap()
+            .checked_nanos()
+            .unwrap()
+            .saturating_add(CpuMax::us_to_ns(10_000_000));
+        state.max.used_ns = quota;
+        state.max.carry_debt_ns = quota / 2;
     }
     hierarchy.leaf.store_attr("cpu.max", "1000 100000").unwrap();
     {
         let state = control.max.lock();
         assert_eq!(state.native.as_ref().unwrap().revision(), 2);
-        assert_eq!(state.max.used_clocks, quota);
-        assert_eq!(state.max.carry_debt_clocks, quota / 2);
+        assert_eq!(state.max.used_ns, quota);
+        assert_eq!(state.max.carry_debt_ns, quota / 2);
     }
     assert_native_refused(
         &cpu,
@@ -442,8 +447,14 @@ fn final_charge_lease_blocks_deletion_until_the_real_debit_is_retained() {
     }
     // The real unstarted task retains its old leaf through the production
     // zombie lease. Only its explicit scheduler interval is charged here.
-    let period = CpuMax::us_to_clocks(100_000).max(1);
-    let start = (read_tsc() / period + 2) * period;
+    let period = CpuMax::us_to_ns(100_000).max(1);
+    let start = (aster_time::try_read_monotonic_sample()
+        .unwrap()
+        .checked_nanos()
+        .unwrap()
+        / period
+        + 2)
+        * period;
     old.inner
         .as_ref()
         .unwrap()
@@ -452,17 +463,17 @@ fn final_charge_lease_blocks_deletion_until_the_real_debit_is_retained() {
         .max
         .lock()
         .max
-        .window_start = start;
+        .window_start_ns = start;
     drop(process);
     charge_task_cpu(&task, start, start + 37);
-    assert_eq!(budget(&old).used_clocks, 37);
+    assert_eq!(budget(&old).used_ns, 37);
     assert_eq!(hierarchy.remove_leaf().unwrap_err().error(), Errno::EBUSY);
     drop(task);
     hierarchy.remove_leaf().unwrap();
-    assert_eq!(budget(&old).used_clocks, 37);
+    assert_eq!(budget(&old).used_ns, 37);
     assert_native_refused(&old, NativeResourceError::Invalidated);
     // A retained accounting reference must still settle already incurred time
     // after management closure; closing the incarnation must not erase debt.
     old.charge_bandwidth_hierarchy(start + 37, start + 53);
-    assert_eq!(budget(&old).used_clocks, 53);
+    assert_eq!(budget(&old).used_ns, 53);
 }

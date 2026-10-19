@@ -1,5 +1,7 @@
 # Paired clock and scheduler handoff: exact CI contract
 
+Historical scope: the 201-test suite and failure sets below belong to PR #203. The subsequent [CPU usage slice](CPU_USAGE_G1B.md) adds 19 core tests and one expected `clocksource-drop-fraction` failure, retaining the original seven controls and complete unfiltered gate. Its final candidate requires its own execution and source receipts.
+
 This integrates the production slices described in [CPU_BOOTTIME_CLOCK](CPU_BOOTTIME_CLOCK.md) and [CPU_SCHEDULER_HANDOFF](CPU_SCHEDULER_HANDOFF.md), on the reviewed [retained-owner baseline](../../results/organ-backend/2026-10-19-owner-retention/README.md). The implementation preserves the original clock, scheduler, controller ancestry and accounting ownership. It adds eight paired-clock/vDSO and four actual-runqueue regressions, for an expected 201 core tests at this source handoff. BOOTTIME bandwidth conversion and coherent native usage remain the following slice.
 
 ## Execution and source identity

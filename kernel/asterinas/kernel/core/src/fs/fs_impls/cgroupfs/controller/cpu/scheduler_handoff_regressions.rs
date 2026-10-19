@@ -10,7 +10,6 @@ use alloc::sync::Arc;
 
 use aster_systree::{SysBranchNode, SysNode};
 use ostd::{
-    arch::read_tsc,
     prelude::ktest,
     task::{Task, scheduler::UpdateFlags},
 };
@@ -40,6 +39,7 @@ struct Fixture {
 
 impl Fixture {
     fn new(name: &'static str) -> Self {
+        aster_time::init_for_ktest();
         aster_systree::init_for_ktest();
         let root = CgroupSystem::singleton();
         let enabled_root_cpu = !root
@@ -54,8 +54,14 @@ impl Fixture {
         let leaves = ["outgoing", "candidate"]
             .map(|name| Arc::downcast::<CgroupNode>(parent.create_child(name).unwrap()).unwrap());
         let original_root_budget = budget(&owner(root.controller()));
-        let period = CpuMax::us_to_clocks(100_000).max(1);
-        let start = (read_tsc() / period + 2) * period;
+        let period = CpuMax::us_to_ns(100_000).max(1);
+        let start = (aster_time::try_read_monotonic_sample()
+            .unwrap()
+            .checked_nanos()
+            .unwrap()
+            / period
+            + 2)
+            * period;
         for controller in [
             root.controller(),
             parent.controller(),
@@ -144,13 +150,17 @@ fn reset(owner: &SubController<CpuController>, start: u64, quota_usec: u64) {
         .max = CpuMax {
         quota_usec,
         period_usec: 100_000,
-        window_start: start,
-        used_clocks: 0,
-        carry_debt_clocks: 0,
+        window_start_ns: start,
+        used_ns: 0,
+        cumulative_ns: 0,
+        last_observed_ns: 0,
+        accounting_fault: false,
+        native_window_valid_from_ns: Some(0),
+        carry_debt_ns: 0,
         nr_periods: 0,
         nr_throttled: 0,
-        throttled_since: None,
-        throttled_clocks: 0,
+        throttled_since_ns: None,
+        throttled_ns: 0,
     };
 }
 
@@ -161,27 +171,15 @@ fn outgoing_tail_ends_at_the_incoming_segment_start() {
     rq.enqueue(fixture.tasks[1].clone());
     let next = rq.pick(&[fixture.start + 11, fixture.start + 29]).unwrap();
     assert!(Arc::ptr_eq(&next, &fixture.tasks[1]));
-    assert_eq!(
-        budget(&owner(fixture.leaves[0].controller())).used_clocks,
-        29
-    );
-    assert_eq!(
-        budget(&owner(fixture.leaves[1].controller())).used_clocks,
-        0
-    );
+    assert_eq!(budget(&owner(fixture.leaves[0].controller())).used_ns, 29);
+    assert_eq!(budget(&owner(fixture.leaves[1].controller())).used_ns, 0);
     assert_eq!(rq.cfs_runtime(), Some((fixture.start + 29, 0, 0)));
     rq.update(UpdateFlags::Tick, fixture.start + 47);
     assert_eq!(rq.cfs_runtime(), Some((fixture.start + 47, 18, 18)));
-    assert_eq!(
-        budget(&owner(fixture.leaves[0].controller())).used_clocks,
-        29
-    );
-    assert_eq!(
-        budget(&owner(fixture.leaves[1].controller())).used_clocks,
-        18
-    );
-    assert_eq!(budget(&owner(fixture.parent.controller())).used_clocks, 47);
-    assert_eq!(budget(&owner(fixture.root.controller())).used_clocks, 47);
+    assert_eq!(budget(&owner(fixture.leaves[0].controller())).used_ns, 29);
+    assert_eq!(budget(&owner(fixture.leaves[1].controller())).used_ns, 18);
+    assert_eq!(budget(&owner(fixture.parent.controller())).used_ns, 47);
+    assert_eq!(budget(&owner(fixture.root.controller())).used_ns, 47);
 }
 
 #[ktest]
@@ -189,8 +187,8 @@ fn handoff_debits_the_old_window_before_rechecking_a_shared_ancestor() {
     let fixture = Fixture::new("g1b-handoff-quota");
     let parent = owner(fixture.parent.controller());
     reset(&parent, fixture.start, 1_000);
-    let period = CpuMax::us_to_clocks(100_000).max(1);
-    let quota = CpuMax::us_to_clocks(1_000);
+    let period = CpuMax::us_to_ns(100_000).max(1);
+    let quota = CpuMax::us_to_ns(1_000);
     assert!(quota >= 4 && 2 * quota < period);
     let quarter = quota / 4;
     let boundary = fixture.start + period;
@@ -212,19 +210,16 @@ fn handoff_debits_the_old_window_before_rechecking_a_shared_ancestor() {
     assert!(rq.is_throttled(&fixture.tasks[1]));
     assert!(rq.is_throttled(&fixture.tasks[0]));
     let state = budget(&parent);
-    assert_eq!(state.window_start, boundary);
-    assert_eq!(state.carry_debt_clocks, quota);
-    assert_eq!(state.used_clocks, quarter + 5);
+    assert_eq!(state.window_start_ns, boundary);
+    assert_eq!(state.carry_debt_ns, quota);
+    assert_eq!(state.used_ns, quarter + 5);
     assert_eq!(
-        budget(&owner(fixture.leaves[0].controller())).used_clocks,
+        budget(&owner(fixture.leaves[0].controller())).used_ns,
         quarter + 5
     );
+    assert_eq!(budget(&owner(fixture.leaves[1].controller())).used_ns, 0);
     assert_eq!(
-        budget(&owner(fixture.leaves[1].controller())).used_clocks,
-        0
-    );
-    assert_eq!(
-        budget(&owner(fixture.root.controller())).used_clocks,
+        budget(&owner(fixture.root.controller())).used_ns,
         quarter + 5
     );
     assert_eq!(rq.cfs_runtime(), Some((cut + 5, 0, 0)));
@@ -242,42 +237,24 @@ fn exercise_dequeue(name: &'static str, flag: UpdateFlags) {
     let outgoing = rq.dequeue(fixture.start + 19).unwrap();
     assert!(Arc::ptr_eq(&outgoing, &fixture.tasks[0]));
     assert!(!rq.has_current());
-    assert_eq!(
-        budget(&owner(fixture.leaves[0].controller())).used_clocks,
-        19
-    );
+    assert_eq!(budget(&owner(fixture.leaves[0].controller())).used_ns, 19);
     // OSTD can retry selection with current() == None. The same old segment
     // remains the bandwidth owner, without extending CFS's finished slice.
     assert!(rq.pick(&[fixture.start + 29]).is_none());
-    assert_eq!(
-        budget(&owner(fixture.leaves[0].controller())).used_clocks,
-        29
-    );
+    assert_eq!(budget(&owner(fixture.leaves[0].controller())).used_ns, 29);
     assert!(!rq.update(UpdateFlags::Tick, fixture.start + 31));
     assert_eq!(rq.cfs_runtime(), Some((fixture.start + 11, 11, 11)));
-    assert_eq!(
-        budget(&owner(fixture.leaves[0].controller())).used_clocks,
-        31
-    );
+    assert_eq!(budget(&owner(fixture.leaves[0].controller())).used_ns, 31);
     rq.enqueue(fixture.tasks[1].clone());
     let next = rq.pick(&[fixture.start + 37, fixture.start + 41]).unwrap();
     assert!(Arc::ptr_eq(&next, &fixture.tasks[1]));
-    assert_eq!(
-        budget(&owner(fixture.leaves[0].controller())).used_clocks,
-        41
-    );
+    assert_eq!(budget(&owner(fixture.leaves[0].controller())).used_ns, 41);
     assert_eq!(rq.cfs_runtime(), Some((fixture.start + 41, 0, 0)));
     rq.update(UpdateFlags::Tick, fixture.start + 53);
-    assert_eq!(
-        budget(&owner(fixture.leaves[0].controller())).used_clocks,
-        41
-    );
-    assert_eq!(
-        budget(&owner(fixture.leaves[1].controller())).used_clocks,
-        12
-    );
-    assert_eq!(budget(&owner(fixture.parent.controller())).used_clocks, 53);
-    assert_eq!(budget(&owner(fixture.root.controller())).used_clocks, 53);
+    assert_eq!(budget(&owner(fixture.leaves[0].controller())).used_ns, 41);
+    assert_eq!(budget(&owner(fixture.leaves[1].controller())).used_ns, 12);
+    assert_eq!(budget(&owner(fixture.parent.controller())).used_ns, 53);
+    assert_eq!(budget(&owner(fixture.root.controller())).used_ns, 53);
 }
 
 #[ktest]

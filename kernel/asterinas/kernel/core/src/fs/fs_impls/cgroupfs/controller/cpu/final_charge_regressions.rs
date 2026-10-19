@@ -10,7 +10,7 @@
 use alloc::sync::Arc;
 
 use aster_systree::{SysBranchNode, SysNode};
-use ostd::{arch::read_tsc, prelude::ktest};
+use ostd::prelude::ktest;
 
 use super::{CpuMax, charge_task_cpu};
 use crate::{
@@ -35,6 +35,7 @@ struct Hierarchy {
 
 impl Hierarchy {
     fn new(name: &'static str) -> Self {
+        aster_time::init_for_ktest();
         aster_systree::init_for_ktest();
         let root = CgroupSystem::singleton();
         let enabled_root_cpu = !root
@@ -50,8 +51,14 @@ impl Hierarchy {
             .map(|name| Arc::downcast::<CgroupNode>(parent.create_child(name).unwrap()).unwrap());
 
         let original_root_budget = budget(root.controller());
-        let period = CpuMax::us_to_clocks(100_000).max(1);
-        let start = (read_tsc() / period + 2) * period;
+        let period = CpuMax::us_to_ns(100_000).max(1);
+        let start = (aster_time::try_read_monotonic_sample()
+            .unwrap()
+            .checked_nanos()
+            .unwrap()
+            / period
+            + 2)
+            * period;
         for controller in [
             root.controller(),
             parent.controller(),
@@ -63,13 +70,17 @@ impl Hierarchy {
                 CpuMax {
                     quota_usec: 1_000,
                     period_usec: 100_000,
-                    window_start: start,
-                    used_clocks: 0,
-                    carry_debt_clocks: 0,
+                    window_start_ns: start,
+                    used_ns: 0,
+                    cumulative_ns: 0,
+                    last_observed_ns: 0,
+                    accounting_fault: false,
+                    native_window_valid_from_ns: Some(0),
+                    carry_debt_ns: 0,
                     nr_periods: 0,
                     nr_throttled: 0,
-                    throttled_since: None,
-                    throttled_clocks: 0,
+                    throttled_since_ns: None,
+                    throttled_ns: 0,
                 },
             );
         }
@@ -86,10 +97,10 @@ impl Hierarchy {
     }
 
     fn assert_used(&self, old: u64, new: u64, parent: u64, root: u64) {
-        assert_eq!(budget(self.leaves[0].controller()).used_clocks, old);
-        assert_eq!(budget(self.leaves[1].controller()).used_clocks, new);
-        assert_eq!(budget(self.parent.controller()).used_clocks, parent);
-        assert_eq!(budget(self.root.controller()).used_clocks, root);
+        assert_eq!(budget(self.leaves[0].controller()).used_ns, old);
+        assert_eq!(budget(self.leaves[1].controller()).used_ns, new);
+        assert_eq!(budget(self.parent.controller()).used_ns, parent);
+        assert_eq!(budget(self.root.controller()).used_ns, root);
     }
 }
 
@@ -252,8 +263,8 @@ fn zombie_final_interval_crossing_a_window_preserves_positive_quota_debt() {
     CgroupMembership::write_lock()
         .move_process_to_node(process.clone(), &hierarchy.leaves[0])
         .unwrap();
-    let quota = CpuMax::us_to_clocks(1_000);
-    let boundary = hierarchy.start + CpuMax::us_to_clocks(100_000).max(1);
+    let quota = CpuMax::us_to_ns(1_000);
+    let boundary = hierarchy.start + CpuMax::us_to_ns(100_000).max(1);
     charge_task_cpu(&task, boundary - quota * 2, boundary - quota);
     test_util::mark_zombie(&process);
     CgroupMembership::write_lock().move_process_to_root(&process);
@@ -265,9 +276,9 @@ fn zombie_final_interval_crossing_a_window_preserves_positive_quota_debt() {
         hierarchy.root.controller(),
     ] {
         let budget = budget(controller);
-        assert_eq!(budget.window_start, boundary);
-        assert_eq!(budget.used_clocks, quota / 2);
-        assert_eq!(budget.carry_debt_clocks, quota);
+        assert_eq!(budget.window_start_ns, boundary);
+        assert_eq!(budget.used_ns, quota / 2);
+        assert_eq!(budget.carry_debt_ns, quota);
     }
-    assert_eq!(budget(hierarchy.leaves[1].controller()).used_clocks, 0);
+    assert_eq!(budget(hierarchy.leaves[1].controller()).used_ns, 0);
 }
