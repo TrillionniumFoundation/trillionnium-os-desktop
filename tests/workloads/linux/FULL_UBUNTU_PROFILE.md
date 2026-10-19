@@ -180,3 +180,9 @@ the generated script with `sh -n`; all required applets are present. These are h
 tests with explicit synthetic fixtures, **not** Linux32 or guest32 evidence.
 Real full-profile qualification remains pending the CI build, original Linux
 32-case execution, and the same-image ordinary-kernel run.
+
+## First complete-image CI failure and bounded repair
+
+Run [39213225541](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39213225541), head `a027fd01253f3c816f6e67233089ceaa8fb82914`, compiled all five ELF inputs and captured 673 runtime files (43,204,445 bytes), then failed before Linux or guest execution with `archive exceeds limit`. The full image's fixed 256 MiB bound was not passed to the inherited 16 MiB small-probe newc parser. Artifact `12168244389` is SHA-256 `5d6824523b02bfeb41199d103ce61c013639eacb96514821b095085b24054a62`.
+
+The parser now accepts a keyword-only positive integer bound while retaining its original 16 MiB default. Only the complete profile explicitly passes its already specified 256 MiB bound. The same captured bytes reproduce the original failure and then pass the corrected pack/validate roundtrip: 45,482,140 raw newc bytes, 16,653,770 gzip bytes, image SHA-256 `04aab3a89cc6a018e9111be0d5b7fa3a6586b8e80c8ac289e9501c3e95dfcca5`. The default small parser still rejects this image. The existing 27 runner tests remain, with two additional real large-image and invalid-bound regressions (29 total); SCM 8 and RLIMIT 18 related host regressions also pass. This forensic packaging replay does not execute or qualify the 32 Linux/guest workloads. The repaired exact-source CI must do that next.

@@ -1,5 +1,13 @@
 # 当前状态
 
+## 2026-10-19 最新接续：CPU owner 已合入，完整 Linux 镜像容量修复复跑
+
+[#201](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/201) 已经五项 checks 全成功、独立复核后合并为 main `378aa44c6097a1fe62283d10da42055a037e1ba4` / tree `388bc4539217aca074a081ac107733a19cbe2bd4`。候选 `c60f01bfe21f30436d5259bfdf33d411459b3404` 的 [run 39212968844](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39212968844) 原 core 189/189、OSTD 221 reported / 3 soft skips / 218 执行下界；6,461 个文件 mode/blob/size/SHA256 与执行快照一致。仅恢复 current-slot 计费的独立生产补丁，在同样 189 项 core 中产生精确 186 pass / 3 指定 fail、原 gate 1、QEMU 65，无超时。独立重放补丁并重建负控 Git tree，确认测试/runner 未改变；普通产品源树随后完整恢复。普通内核 `995b5739b200ab06ed2340d7330e3a55d0c1218154f99d529410da5d33f81cf4` 上 QueryAbi 14、SCM 27、RLIMIT 37、四个固定 CPU 时间判据和 1/2-vCPU 原探针通过。
+
+[#202](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/202) 已改以此 main 为基底。首轮 `a027fd01253f3c816f6e67233089ceaa8fb82914` 的 [run 39213225541](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39213225541) 在完整镜像构建时报 `archive exceeds limit`，32 项 Linux/guest 尚未执行。真实 artifact `12168244389` 的 673 个运行时文件共 43,204,445 字节；共享小探针解包器默认仅 16 MiB，完整 profile 的既定 256 MiB 上限未显式传入。
+
+最小修复保留小探针默认 16 MiB，增加严格正整数 `max_bytes` 参数，完整 profile 显式传既定 256 MiB；分解镜像总量、路径、元数据、重复成员与原始输入校验继续生效。原 artifact 字节重放旧失败后，新代码得到 45,482,140 字节 newc / 16,653,770 字节 gzip，逐项校验和默认小探针拒绝均通过；29 项完整 runner 回归与 SCM 8 / RLIMIT 18 相关回归通过。此结果仅闭合打包缺陷，新 Linux32 与 guest32 仍需实际 CI 全部通过。下方旧状态按各自记录时间保留，不覆盖本节新证据。
+
 ## 2026-10-19 接续：完整 Linux 32 项候选进入原 A06 验证
 
 已合入基线仍为下节 main `4e06eb02f19984269f9fac85391fa304619760f1`。本候选叠加 [#201](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/201) 的运行段原 CPU owner 保留，并引入 [完整 Ubuntu profile](../tests/workloads/linux/FULL_UBUNTU_PROFILE.md)。历史 #8 `25c681d944e4efa92f2772cf773e03ae811bc345` 的 67 项原源码/资料先原样导入，再以独立新 profile 增加运行时冻结和同输入 Linux/guest 执行。

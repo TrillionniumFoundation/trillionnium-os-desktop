@@ -223,13 +223,14 @@ echo "A04_FULL_PROCESS_EXIT=$full_profile_exit"
         changed.append(new_entry(name, mode, data, inode))
         inode += 1
     raw = common.pack(changed)
-    require(len(raw) <= MAX_IMAGE_BYTES and common.unpack(raw) == changed,
+    require(len(raw) <= MAX_IMAGE_BYTES
+            and common.unpack(raw, max_bytes=MAX_IMAGE_BYTES) == changed,
             'derived image roundtrip or size differs')
     return gzip.compress(raw, mtime=0)
 
 
 def validate_image(image, original, manifest, script):
-    entries = common.unpack(decompressed_image(image))
+    entries = common.unpack(decompressed_image(image), max_bytes=MAX_IMAGE_BYTES)
     by_name = {name: (fields, data) for name, fields, data in entries}
     require(len(by_name) == len(entries), 'duplicate derived image entry')
     files = {}
@@ -244,7 +245,8 @@ def validate_image(image, original, manifest, script):
     require(len(files) == manifest['file_count']
             and sum(len(data) for _, data in files.values()) == manifest['regular_bytes'],
             'frozen runtime denominator differs')
-    expected = common.unpack(decompressed_image(merge_image(original, files, script)))
+    expected = common.unpack(decompressed_image(merge_image(original, files, script)),
+                             max_bytes=MAX_IMAGE_BYTES)
     require(entries == expected, 'frozen image changed original metadata or includes unexpected entries')
     return entries
 

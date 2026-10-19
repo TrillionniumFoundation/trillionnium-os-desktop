@@ -184,6 +184,37 @@ class ContractAndObservationTests(unittest.TestCase):
 
 
 class ImageAndRuntimeTests(unittest.TestCase):
+    def test_complete_runtime_uses_explicit_bound_without_expanding_small_probe_default(self):
+        original, files, manifest, script, _ = fixture_image()
+        name = '/usr/lib/a04-fixture'
+        data = b'x' * (17 * 1024 * 1024)
+        files[name] = (0o444, data)
+        manifest['regular_bytes'] = len(data)
+        manifest['files'][0].update(bytes=len(data), sha256=m.sha(data))
+        image = m.merge_image(original, files, script)
+        raw = m.decompressed_image(image)
+        with self.assertRaisesRegex(ValueError, 'archive exceeds limit'):
+            m.common.unpack(raw)
+        entries = m.validate_image(image, original, manifest, script)
+        self.assertEqual(next(content for path, _, content in entries
+                              if path == name[1:]), data)
+        self.assertEqual(m.common.unpack(gzip.decompress(original)),
+                         m.common.unpack(gzip.decompress(original), max_bytes=m.MAX_IMAGE_BYTES))
+
+    def test_explicit_cpio_bound_and_decompressed_image_bound_still_reject_overflow(self):
+        original, _, manifest, script, image = fixture_image()
+        raw = gzip.decompress(image)
+        with self.assertRaisesRegex(ValueError, 'archive exceeds limit'):
+            m.common.unpack(raw, max_bytes=len(raw) - 1)
+        for invalid in (False, True, 0, -1, '268435456'):
+            with self.subTest(limit=invalid), self.assertRaises(ValueError):
+                m.common.unpack(raw, max_bytes=invalid)
+        with mock.patch.object(m, 'MAX_IMAGE_BYTES', len(raw) - 1):
+            with self.assertRaisesRegex(ValueError, 'decompressed image exceeds bound'):
+                m.validate_image(image, original, manifest, script)
+        with self.assertRaises(ValueError):
+            m.common.unpack(raw[:-16], max_bytes=m.MAX_IMAGE_BYTES)
+
     def test_original_newc_fields_and_bytes_survive_injection(self):
         original, _, manifest, script, image = fixture_image()
         actual = m.validate_image(image, original, manifest, script)
