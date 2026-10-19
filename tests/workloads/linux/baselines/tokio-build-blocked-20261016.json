@@ -1,0 +1,51 @@
+{
+  "build": {
+    "binary": "tests/workloads/linux/rust/target/release/a04-tokio-workload",
+    "binary_retained_in_git": false,
+    "binary_sha256": "1b998b3f9bb144312dea4e75149dbf4d01819422421803f065c038666b36d8c5",
+    "command": "cargo build --locked --release --manifest-path tests/workloads/linux/rust/Cargo.toml",
+    "direct_needed": [
+      "libgcc_s.so.1",
+      "libm.so.6",
+      "libc.so.6",
+      "/lib64/ld-linux-x86-64.so.2"
+    ],
+    "elf_interpreter": "/lib64/ld-linux-x86-64.so.2",
+    "exit_code": 0,
+    "status": "compiled"
+  },
+  "date": "2026-10-16",
+  "kind": "A04_RUST_TOKIO_LOCKED_BUILD_HOST_RUNTIME_BLOCKED",
+  "lock_validation": {
+    "command": "cargo tree --locked --offline --manifest-path tests/workloads/linux/rust/Cargo.toml",
+    "dependency_package_count": 36,
+    "status": "passed"
+  },
+  "profile": "linux-debian13-x86_64",
+  "qualification": {
+    "guest_execution_verified": false,
+    "kernel_compatibility_claimed": false,
+    "linux_reference_case_status": "not_run"
+  },
+  "runtime": {
+    "command": "tests/workloads/linux/rust/target/release/a04-tokio-workload NEW_PRIVATE_SCRATCH",
+    "exit_code": 1,
+    "reason": "managed host denies pathname AF_UNIX creation; no Tokio application result is credited",
+    "scratch_released": true,
+    "status": "blocked_environment_or_input",
+    "stderr": "Error: Os { code: 1, kind: PermissionDenied, message: \"Operation not permitted\" }"
+  },
+  "schema": 1,
+  "source": {
+    "cargo_lock": "tests/workloads/linux/rust/Cargo.lock",
+    "cargo_lock_sha256": "b38d7f2ae2d70dcd07bc58b5ecf050ae1d3ab19eb08acb4559f1a0c5929a1e42",
+    "manifest": "tests/workloads/linux/rust/Cargo.toml",
+    "manifest_sha256": "347c799ed98a98ae188802bb46f0af2885f1a7eeb26eb48436b4f932b19b24ce",
+    "source": "tests/workloads/linux/rust/src/main.rs",
+    "source_sha256": "4e4faf6c7be21fcaaca3bbbfbcab9e6b51561cbb1524385d170e4e0e97b485bc"
+  },
+  "toolchain": {
+    "cargo": "cargo 1.99.1 (5f94df478 2026-08-27)",
+    "rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)\nbinary: rustc\ncommit-hash: 58cf8f9c35b355199727627d07ae34a4e2846d67\ncommit-date: 2026-10-13\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.1\nLLVM version: 23.1.1"
+  }
+}

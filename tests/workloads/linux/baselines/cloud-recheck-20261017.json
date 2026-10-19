@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "kind": "A04_CLOUD_RECHECK",
+  "date": "2026-10-17",
+  "classification": "environment_or_owner_blocker; no kernel ABI conclusion",
+  "environment": {
+    "machine": "x86_64",
+    "system": "Linux",
+    "gcc": "gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0",
+    "python": "3.12.14",
+    "strace": "6.8",
+    "rustc": null,
+    "cargo": null,
+    "qemu_system_x86_64": null,
+    "qemu_img": null,
+    "seabios": null
+  },
+  "host_policy": {
+    "cap_eff": "0",
+    "no_new_privs": "1",
+    "seccomp": "2",
+    "seccomp_filters": "1",
+    "af_unix_socket_creation": "EPERM",
+    "af_unix_pathname_bind": "EPERM",
+    "af_unix_abstract_bind": "EPERM",
+    "socketpair": "allowed",
+    "ptrace_traceme": "EPERM"
+  },
+  "qemu_replay": {
+    "status": "blocked_environment_or_input",
+    "reason": "qemu-system-x86_64 and SeaBIOS are absent",
+    "exit_code": 2,
+    "guest_execution_verified": false,
+    "raw_qemu_exit_code": null
+  },
+  "ptrace_recheck": {
+    "command": "strace -qq -o NEW_PRIVATE_TRACE true",
+    "status": "blocked_environment_or_input",
+    "return_code": 1,
+    "trace_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "trace_bytes": 0,
+    "reason": "PTRACE_TRACEME: Operation not permitted"
+  },
+  "qualification": {
+    "guest_execution_verified": false,
+    "kernel_compatibility_claimed": false,
+    "hepta_tool_effect_claimed": false
+  }
+}

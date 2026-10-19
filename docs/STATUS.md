@@ -1,5 +1,15 @@
 # 当前状态
 
+## 2026-10-19 接续：完整 Linux 32 项候选进入原 A06 验证
+
+已合入基线仍为下节 main `4e06eb02f19984269f9fac85391fa304619760f1`。本候选叠加 [#201](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/201) 的运行段原 CPU owner 保留，并引入 [完整 Ubuntu profile](../tests/workloads/linux/FULL_UBUNTU_PROFILE.md)。历史 #8 `25c681d944e4efa92f2772cf773e03ae811bc345` 的 67 项原源码/资料先原样导入，再以独立新 profile 增加运行时冻结和同输入 Linux/guest 执行。
+
+新的 `linux-ubuntu24.04-x86_64-20261019` 固定 28 个原 C 场景、3 个原 Python 场景和实际 Tokio 1.47.1 锁定程序。构建保留五个 ELF、Python 3.12/标准库、ELF 依赖、OpenSSL/NSS/证书与完整 initrd；Linux 参考运行使用隔离 chroot 内的 UID/GID 65534，客体使用同一冻结镜像和普通产品 ELF。输入摘要在 Linux 运行前固定，32 项顺序、完整 stdout/stderr 字节、退出值、原始 QEMU 身份、源树和测试前后快照都参与判定。原 core/OSTD、SCM 27、RLIMIT 37、CPU 固定时间门槛和原 gate 保留。
+
+实际已执行的 [27 项解析与输入负向回归](../tests/workloads/linux/results/ubuntu-full-20261019-gates/README.md) 和原 BusyBox 脚本语法验证不能代替 32 项实际工作负载。此节写入时，新的构建、Linux 参考和普通 guest 仍待 CI；任何动态链接、NSS、TLS、SQLite、Tokio 或 syscall 缺口将按实际失败继续修复。旧 Debian 13 的四个原 ELF 和完整旧 rootfs 尚未恢复；Hepta W1、S1–S5、Android/GPU 和 XT2363-4 仍分别验收。
+
+#201 的 `55215724c770982c79ca0bbf92aa63f5bdf8210e` 在 [run 39210251034](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39210251034) 已通过原 core 189/189 与 OSTD 门禁，但新增反向解析器在真实设备日志插入测试名与结果之间时拒绝了该串口；该 run 保持失败，后续普通客体未执行。修复解析后发布为 `985f166f3dc8e97fddf5c7edbcfb4fba067a0e69`；六项解析回归、实际 189-pass 串口和历史 179-pass/4-fail 串口均已实读核验，其后原 OSDK 的编译期源码路径导致第二工作树依赖碰撞，仍未形成实际负控；最新 `c60f01bfe21f30436d5259bfdf33d411459b3404` 保留同一 OSDK 二进制和源码路径，在独立负控提交身份下执行并完整恢复候选，三个真实临时 Git 恢复回归已通过。当前新完整 core/负控/普通内核结果仍待执行。Asterinas、nightly、HOS2 和默认关闭的四效果操作不变，根 README 0 字节。
+
 ## 2026-10-19 接续：配置结算和 FD 限制已合入，推进原控制器生命周期
 
 本节已合入基线为 main `4e06eb02f19984269f9fac85391fa304619760f1` / tree `1cc9cccb6044a4b177eec0d74c0813eb08d59913`。后文保留之前尚待执行时的快照；以下新证据各自绑定实际执行提交，不能直接授予后续代码同样资格。

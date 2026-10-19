@@ -1,0 +1,40 @@
+{
+  "schema": 1,
+  "kind": "A04_ORIGINAL_LINUX_CHROOT_REFERENCE_EVIDENCE_NOT_GUEST",
+  "date": "2026-10-16",
+  "host": "original Linux x86_64 disposable chroot, fixed rootfs, no Asterinas guest",
+  "code_commit": "b30a90591468bdfb1957a70d4bda1d94aa6a965b",
+  "correction": "chroot_replay.exact_observation called missing guest._json_no_duplicate_fields; use existing strict guest._json_unique_guest_object",
+  "repro_before": "python3 -m unittest discover -s tests/workloads/linux -p 'test_*.py' -q returned 4 test errors (AttributeError)",
+  "commands": [
+    "python3 -m unittest discover -s tests/workloads/linux -p 'test_*.py' -q",
+    "python3 -O -m unittest discover -s tests/workloads/linux -p 'test_*.py' -q",
+    "python3 tests/workloads/linux/chroot_replay.py --tar FIXED_ROOTFS.tar --manifest support/rootfs/manifest-debian13-x86_64.json --reference tests/workloads/linux/baselines/linux-debian13-x86_64.json --output OUTPUT.json"
+  ],
+  "unit_normal": {
+    "passed": 76,
+    "failed": 0,
+    "errors": 0,
+    "output_sha256": "446fa8ba76b9fe8f4962f70b6823057522ce2731671e43c773585607baedfe3c"
+  },
+  "unit_optimized": {
+    "passed": 76,
+    "failed": 0,
+    "errors": 0,
+    "output_sha256": "8eff873d3a5ed05d14ba3da91156815247749d5fbe83f20861b671bad1c48fd7"
+  },
+  "chroot": {
+    "passed": 28,
+    "failed": 0,
+    "not_run": 4,
+    "verified_files": 17,
+    "full_result_sha256": "a25536e0113d9462b023f89a08b818f19f4d307e4044fa99badafefcfbb81ace"
+  },
+  "inputs": {
+    "rootfs_tar_sha256": "df8df2e3cdcd308ef62a59268a4519e2923c9ff78145e46f26a4092725e80797",
+    "rootfs_manifest_sha256": "55aa8369d4f912267139ef7626c752814d7dc833e49accc337529f2545fb94cb"
+  },
+  "qemu_guest_verified": false,
+  "real_hepta_w1_verified": false,
+  "tokio_verified": false
+}
