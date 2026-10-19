@@ -24,7 +24,8 @@ fn invalid_cpu_max_write_does_not_change_budget_or_accounting() {
     let controller = CpuController::new(true);
     let control = controller.control().unwrap();
     let before = {
-        let mut budget = control.max.lock();
+        let mut state = control.max.lock();
+        let budget = &mut state.max;
         budget.quota_usec = 10_000;
         budget.period_usec = 100_000;
         budget.window_start = 123;
@@ -52,7 +53,7 @@ fn invalid_cpu_max_write_does_not_change_budget_or_accounting() {
             ),
             "accepted {input:?}"
         );
-        assert_budget_unchanged(&before, &control.max.lock());
+        assert_budget_unchanged(&before, &control.max.lock().max);
     }
 }
 
@@ -60,7 +61,7 @@ fn invalid_cpu_max_write_does_not_change_budget_or_accounting() {
 fn single_quota_write_keeps_the_current_owner_period() {
     let controller = CpuController::new(true);
     let control = controller.control().unwrap();
-    control.max.lock().period_usec = 250_000;
+    control.max.lock().max.period_usec = 250_000;
 
     let input = b"2000\n";
     let mut reader = VmReader::from(&input[..]).to_fallible();
@@ -69,7 +70,8 @@ fn single_quota_write_keeps_the_current_owner_period() {
         input.len()
     );
 
-    let budget = control.max.lock();
+    let state = control.max.lock();
+    let budget = &state.max;
     assert_eq!(budget.quota_usec, 2_000);
     assert_eq!(budget.period_usec, 250_000);
 }

@@ -402,16 +402,21 @@ impl Controller {
                 SubCtrlType::Cpu => {
                     let mut new_controller: SubController<CpuController> =
                         SubController::new(Some(parent_controller));
-                    {
-                        let guard = child_node.controller().cpu.read();
-                        let previous_controller = guard.get();
-                        new_controller
-                            .inner
-                            .as_mut()
-                            .unwrap()
-                            .init_stats(previous_controller.inner.as_ref().unwrap());
-                    }
-                    child_node.controller().cpu.update(Arc::new(new_controller));
+                    let previous_controller = child_node.controller().cpu.read().get().clone();
+                    new_controller
+                        .inner
+                        .as_mut()
+                        .unwrap()
+                        .init_stats(previous_controller.inner.as_ref().unwrap());
+                    let new_controller = Arc::new(new_controller);
+                    // Allocate before closing the old incarnation. Its retained
+                    // accounting references may still settle CPU time afterward.
+                    previous_controller
+                        .inner
+                        .as_ref()
+                        .unwrap()
+                        .close_native_incarnation(cgroup_membership);
+                    child_node.controller().cpu.update(new_controller);
                 }
                 SubCtrlType::Memory => {
                     let new_controller = Arc::new(SubController::new(Some(parent_controller)));
@@ -444,8 +449,8 @@ impl Controller {
         // protected by `CgroupMembership` like controller activation and deactivation
         // and child node creation are serialized while the subtree updates are applied.
         //
-        // Concurrent child removal is still fine: If a child is removed, we may update
-        // a sub-controller that's about to be destroyed, which is harmless.
+        // Deletion holds this same membership writer, so it cannot publish a dead
+        // node while an updated controller is being installed below.
 
         // Update the direct children first.
         current_node.visit_children_with(0, &mut |child_node| {
@@ -475,6 +480,17 @@ impl Controller {
 
     pub(super) fn active_set(&self) -> SubCtrlSet {
         self.active_set.load(Ordering::Relaxed)
+    }
+
+    /// Closes the current CPU incarnation before its cgroup is marked dead.
+    pub(super) fn close_cpu_incarnation(&self, membership: &mut CgroupMembership) {
+        self.cpu
+            .read()
+            .get()
+            .inner
+            .as_ref()
+            .unwrap()
+            .close_native_incarnation(membership);
     }
 }
 

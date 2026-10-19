@@ -11,14 +11,26 @@ python3 -I support/build/ktest/prepare-locks.py
 python3 -I support/build/ktest/run.py
 ```
 
-Preparation is offline and uses `nightly-2026-07-21`. It mirrors the fixed
-OSDK test-base manifest into an isolated temporary directory, seeds its lock
-from the original root `Cargo.lock`, allows Cargo metadata to normalize that
-lock, then checks it again with `--locked`. Every external package version,
-source and checksum must belong to the original upstream lock. Separate
+Preparation uses `nightly-2026-07-21`. It mirrors the fixed OSDK test-base
+manifest into an isolated temporary directory, validates the committed derived
+lock against the immutable upstream seed, and populates a cold cache with
+`cargo fetch --locked`. It then replaces only that temporary lock with the
+original root `Cargo.lock` read from the fixed upstream Git blob, normalizes
+it with offline Cargo metadata, and
+checks it again with `--offline --locked`. Every external package version,
+source and checksum must belong to the original upstream lock. The only added
+local packages are each OSDK test-base and, for `aster-core`, this checkout's
+`os-control 0.1.0` with only `portable-spin`; `spin 0.9.9` is already pinned in
+the original lock. This feature selection does not qualify portable-spin as a
+kernel lock backend. The original Git seed is immutable; the working root lock
+is a separately validated 235-package local derivative, not a new seed. Its
+only changes from the 234-package seed are the core dependency edge and local
+`os-control` package. Complete component-macro metadata uses `--locked`, so it
+cannot implicitly update that working lock during compilation. Separate
 `locks/ostd.Cargo.lock` and `locks/aster-core.Cargo.lock` are committed; the
-run-base lock is not used for tests. Preparation may fail if the pinned Cargo
-dependencies have not been cached; it does not silently resolve newer versions.
+run-base lock is not used for tests. A failed fetch or drift audit stops
+preparation; it does not silently resolve newer versions. The G1-a derived
+aster-core lock contains 200 packages; the unchanged OSTD test lock has 97.
 
 The runner installs OSDK from the vendored source with `--locked`, then invokes
 `cargo osdk test` from `kernel/asterinas/ostd/` and
@@ -56,7 +68,8 @@ do not use the boot smoke's panic-string filter. Upstream tests that print
 in particular TCG does not establish VMX/EPT support. Runner pass counts must
 not be presented as proof that those skipped hardware paths ran.
 
-The preparation reports include resolved feature sets. Disabling generated
+The preparation reports include the original seed tree/blob/SHA256, working
+root-lock SHA256 and resolved feature sets. Disabling generated
 base default features alone does not necessarily disable OSTD's defaults,
 because the upstream test-kernel dependency also depends on OSTD.
 

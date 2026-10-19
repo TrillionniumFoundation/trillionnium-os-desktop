@@ -28,3 +28,5 @@ path = "models_public.rs"
 
 [lints.rust]
 unsafe_code = "forbid"
+# Recognize the kernel-only fixture name without enabling it in host models.
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(ktest)'] }

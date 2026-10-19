@@ -158,6 +158,22 @@ impl NativeResourceState {
         })
     }
 
+    /// Constructs canonical metadata at a valid revision boundary for kernel tests.
+    /// This fixture is absent from production builds; no reset API is provided.
+    #[cfg(ktest)]
+    pub fn new_at_revision_for_ktest(
+        id: ResourceDomainId,
+        stable_object_id: StableObjectId,
+        revision: u64,
+    ) -> Result<Self, NativeResourceError> {
+        if revision == 0 {
+            return Err(NativeResourceError::InvalidRevision);
+        }
+        let mut state = Self::new(id, stable_object_id)?;
+        state.revision = revision;
+        Ok(state)
+    }
+
     pub const fn id(&self) -> ResourceDomainId {
         self.id
     }

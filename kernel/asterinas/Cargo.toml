@@ -215,6 +215,9 @@ xarray = { path = "kernel/libs/xarray" }
 # Crates under kernel/libs/comp-sys
 component = { path = "kernel/libs/comp-sys/component" }
 
+# Downstream owner metadata only; portable-spin is not a kernel lock backend.
+os-control = { path = "../../libs/os-control", default-features = false, features = ["portable-spin"] }
+
 # Crates under osdk/deps
 osdk-frame-allocator = { path = "osdk/deps/frame-allocator" }
 osdk-heap-allocator = { path = "osdk/deps/heap-allocator" }

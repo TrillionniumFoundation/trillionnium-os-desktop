@@ -3,6 +3,8 @@
 
 Use --pristine for the initial import. Later kernel development may change
 Rust sources, while the default check continues to protect build input pins.
+The only build-input derivative is the explicitly enumerated G1-a local owner
+metadata dependency; --pristine still accepts only the original upstream tree.
 """
 import argparse
 import hashlib
@@ -18,7 +20,43 @@ SOURCE = ROOT / "kernel/asterinas"
 PINNED_COMMIT = "c4b7ed575b7b32773475b194d2ad41fb6d03765b"
 PINNED_TREE = "96605cf64aeae2d34f29b97e85eff9315fe10a8e"
 PINNED_TOOLCHAIN = "nightly-2026-07-21"
+ROOT_LOCK_SEED_SHA256 = "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316"
 BUILD_INPUTS = {"Cargo.lock", "osdk/Cargo.lock", "rust-toolchain.toml", "Makefile", "OSDK.toml", "LICENSE-MPL"}
+DOWNSTREAM_MANIFEST_ADDITIONS = {
+    "Cargo.toml": (
+        b"# Crates under osdk/deps\n",
+        b"# Downstream owner metadata only; portable-spin is not a kernel lock backend.\n"
+        b'os-control = { path = "../../libs/os-control", default-features = false, features = ["portable-spin"] }\n\n'
+        b"# Crates under osdk/deps\n",
+    ),
+    "kernel/core/Cargo.toml": (
+        b"miniz_oxide.workspace = true\n",
+        b"miniz_oxide.workspace = true\nos-control.workspace = true\n",
+    ),
+}
+ROOT_LOCK_ADDITIONS = (
+    (b' "miniz_oxide",\n "osdk-frame-allocator",\n',
+     b' "miniz_oxide",\n "os-control",\n "osdk-frame-allocator",\n'),
+    (b'[[package]]\nname = "osdk-frame-allocator"\n',
+     b'[[package]]\nname = "os-control"\nversion = "0.1.0"\ndependencies = [\n "spin",\n]\n\n'
+     b'[[package]]\nname = "osdk-frame-allocator"\n'),
+)
+
+
+def derive_downstream_input(name, original):
+    """Derive only exact local insertions from the original pinned Git blob."""
+    if name == "Cargo.lock":
+        if hashlib.sha256(original).hexdigest() != ROOT_LOCK_SEED_SHA256:
+            raise ValueError("original upstream root lock seed changed")
+        additions = ROOT_LOCK_ADDITIONS
+    else:
+        additions = (DOWNSTREAM_MANIFEST_ADDITIONS[name],)
+    derived = original
+    for needle, replacement in additions:
+        if derived.count(needle) != 1:
+            raise ValueError("fixed downstream insertion point is not unique")
+        derived = derived.replace(needle, replacement)
+    return derived
 
 
 def main():
@@ -35,7 +73,7 @@ def main():
     entries = subprocess.check_output(
         ["git", "ls-tree", "-rz", PINNED_TREE], cwd=ROOT
     ).split(b"\0")
-    checked, errors, inputs = 0, [], {}
+    checked, errors, inputs, downstream = 0, [], {}, {}
     for entry in filter(None, entries):
         metadata, raw_name = entry.split(b"\t", 1)
         mode, kind, expected = metadata.decode().split()
@@ -56,6 +94,16 @@ def main():
                 if actual_mode != mode:
                     raise ValueError(f"mode {actual_mode} != {mode}")
                 content = path.read_bytes()
+            if not args.pristine and (name in DOWNSTREAM_MANIFEST_ADDITIONS or name == "Cargo.lock"):
+                original = subprocess.check_output(["git", "cat-file", "blob", expected], cwd=ROOT)
+                derived = derive_downstream_input(name, original)
+                downstream[name] = {
+                    "upstream_blob": expected,
+                    "upstream_sha256": hashlib.sha256(original).hexdigest(),
+                    "derived_sha256": hashlib.sha256(derived).hexdigest(),
+                    "local_dependency": "os-control",
+                }
+                expected = hashlib.sha1(f"blob {len(derived)}\0".encode() + derived).hexdigest()
             actual = hashlib.sha1(f"blob {len(content)}\0".encode() + content).hexdigest()
             if actual != expected:
                 raise ValueError(f"blob {actual} != {expected}")
@@ -66,7 +114,10 @@ def main():
             errors.append(f"{name}: {error}")
     report = {"commit": PINNED_COMMIT, "tree": PINNED_TREE,
               "toolchain": PINNED_TOOLCHAIN, "pristine": args.pristine,
-              "checked_files": checked, "input_sha256": inputs, "errors": errors,
+              "checked_files": checked, "input_sha256": inputs,
+              "downstream_manifests": {n: v for n, v in downstream.items() if n.endswith("Cargo.toml")},
+              "downstream_locks": {n: v for n, v in downstream.items() if n == "Cargo.lock"},
+              "errors": errors,
               "passed": not errors}
     print(json.dumps(report, indent=2))
     return 1 if errors else 0

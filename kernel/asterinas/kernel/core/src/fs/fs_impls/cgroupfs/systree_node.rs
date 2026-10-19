@@ -542,8 +542,12 @@ impl CgroupNode {
     ///
     /// This will succeed only if the cgroup node is empty and is alive.
     /// Here, a cgroup node is considered empty if it has no child nodes and no
-    /// processes bound to it.
-    pub(super) fn mark_as_dead(&self) -> crate::prelude::Result<()> {
+    /// processes bound to it. The caller holds the membership writer through
+    /// the process/lease checks and closure of the current CPU incarnation.
+    pub(super) fn mark_as_dead(
+        &self,
+        membership: &mut CgroupMembership,
+    ) -> crate::prelude::Result<()> {
         let mut inner = self.inner.write();
         let Some(inner_ref) = inner.as_ref() else {
             return_errno_with_message!(Errno::ENOENT, "the cgroup node is already dead");
@@ -568,6 +572,9 @@ impl CgroupNode {
             );
         }
 
+        // All process, lease and child checks precede irreversible management
+        // closure. The original bandwidth counters remain available for reads.
+        self.controller.close_cpu_incarnation(membership);
         *inner = None;
 
         Ok(())

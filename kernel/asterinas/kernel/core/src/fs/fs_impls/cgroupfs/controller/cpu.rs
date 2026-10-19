@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MPL-2.0
 
 mod max_config;
+mod native;
 
 use alloc::sync::Arc;
 use core::sync::atomic::{AtomicU32, Ordering};
@@ -17,8 +18,12 @@ use ostd::{
     warn,
 };
 
+use self::native::CpuBandwidthState;
 use crate::{
-    fs::cgroupfs::systree_node::{CgroupSysNode, CgroupSystem},
+    fs::cgroupfs::{
+        CgroupMembership,
+        systree_node::{CgroupSysNode, CgroupSystem},
+    },
     process::{Process, posix_thread::AsPosixThread},
     thread::AsThread,
     util::ReadCString,
@@ -52,11 +57,12 @@ struct CpuStats {
 struct CpuControl {
     /// A value stores the configured relative CPU share for scheduler integration.
     weight: AtomicU32,
-    /// A value stores the configured CPU bandwidth limit for scheduler integration.
-    max: SpinLock<CpuMax, LocalIrqDisabled>,
+    /// The sole bandwidth accounting state and its configuration revision.
+    max: SpinLock<CpuBandwidthState, LocalIrqDisabled>,
 }
 
 /// A CPU bandwidth limit.
+#[cfg_attr(ktest, derive(Debug, Eq, PartialEq))]
 #[derive(Clone, Copy)]
 struct CpuMax {
     quota_usec: u64,
@@ -303,6 +309,13 @@ impl CpuController {
         self.control.as_ref().ok_or(Error::AttributeError)
     }
 
+    /// Closes management of this incarnation while retaining deferred CPU debits.
+    pub(super) fn close_native_incarnation(&self, _membership: &mut CgroupMembership) {
+        if let Some(control) = &self.control {
+            control.max.lock().detach();
+        }
+    }
+
     fn read_cpu_stat(&self, printer: &mut VmPrinter) -> Result<usize> {
         /// Converts a per-CPU counter expressed in jiffies to microseconds.
         fn counter_usec(counter: &PerCpuCounter) -> u64 {
@@ -324,7 +337,8 @@ impl CpuController {
             // User-memory writes can fault and reschedule: never hold the
             // scheduler's bandwidth lock while writing through VmPrinter.
             let (nr_periods, nr_throttled, throttled_usec) = {
-                let max = self.control.as_ref().unwrap().max.lock();
+                let state = self.control.as_ref().unwrap().max.lock();
+                let max = &state.max;
                 let now = read_tsc();
                 // A read must not roll a shared cgroup ahead of the running
                 // task's pending scheduler CPU charge. In particular, never
@@ -366,7 +380,7 @@ impl CpuControl {
 
         Self {
             weight: AtomicU32::new(DEFAULT_WEIGHT),
-            max: SpinLock::new(CpuMax {
+            max: SpinLock::new(CpuBandwidthState::new(CpuMax {
                 quota_usec: DEFAULT_QUOTA_USEC,
                 period_usec: DEFAULT_PERIOD_USEC,
                 window_start: 0,
@@ -376,7 +390,7 @@ impl CpuControl {
                 nr_throttled: 0,
                 throttled_since: None,
                 throttled_clocks: 0,
-            }),
+            })),
         }
     }
 }
@@ -405,7 +419,7 @@ impl super::SubControl for CpuController {
                 writeln!(printer, "{}", weight)?;
             }
             "cpu.max" => {
-                let max = *self.control()?.max.lock();
+                let max = self.control()?.max.lock().max;
                 if max.quota_usec == u64::MAX {
                     writeln!(printer, "max {}", max.period_usec)?;
                 } else {
@@ -464,9 +478,7 @@ impl super::SubControl for CpuController {
                 let config = max_config::CpuMaxConfig::parse(content)
                     .map_err(|_| Error::InvalidOperation)?;
 
-                let mut max = control.max.lock();
-                let next_period = config.period_usec.unwrap_or(max.period_usec);
-                max.reconfigure(config.quota_usec, next_period, read_tsc());
+                control.max.lock().reconfigure(config, read_tsc())?;
 
                 Ok(len)
             }
@@ -495,7 +507,7 @@ impl super::SubController<CpuController> {
         let mut node = Some(self);
         while let Some(current) = node {
             if let Some(control) = current.inner.as_ref().unwrap().control.as_ref() {
-                control.max.lock().charge(from, until);
+                control.max.lock().max.charge(from, until);
             }
             node = current.parent.as_deref();
         }
@@ -506,7 +518,7 @@ impl super::SubController<CpuController> {
         let mut available = true;
         while let Some(current) = node {
             if let Some(control) = current.inner.as_ref().unwrap().control.as_ref() {
-                available &= control.max.lock().eligible(now);
+                available &= control.max.lock().max.eligible(now);
             }
             node = current.parent.as_deref();
         }

@@ -1,7 +1,12 @@
 """A01 fixed-lock cold-runner preflight checks; no Rust/network required."""
 import importlib.util
+from contextlib import redirect_stdout
+import io
+import json
 from pathlib import Path
 import subprocess
+import sys
+import tempfile
 import unittest
 from unittest.mock import patch
 
@@ -13,17 +18,62 @@ spec.loader.exec_module(prepare)
 
 
 class ColdRunnerPreflightTests(unittest.TestCase):
-    def test_prefetch_only_uses_pinned_root_lock(self):
-        upstream = Path("/tmp/a01-pinned-asterinas")
-        with patch.object(prepare, "checked_cargo") as call:
-            prepare.prefetch_locked_upstream(upstream)
-        call.assert_called_once_with(
-            ["cargo", "+nightly-2026-07-21", "fetch", "--locked",
-             "--manifest-path", str(upstream / "Cargo.toml")],
-            cwd=upstream, label="prefetch immutable Asterinas Cargo.lock",
-        )
-        self.assertNotIn("--offline", call.call_args.args[0])
-        self.assertNotIn("--update", call.call_args.args[0])
+    def exercise_current_prefetch(self, *, mutate_fetch=False):
+        """Run real preparation/audits; substitute only Cargo execution."""
+        upstream = ROOT.parents[2] / "kernel/asterinas"
+        seed = prepare.original_seed(upstream)
+        bootstrap = (ROOT / "locks/ostd.Cargo.lock").read_bytes()
+        working_before = (upstream / "Cargo.lock").read_bytes()
+        calls = []
+
+        def cargo(command, *, cwd, label):
+            self.assertEqual(command[:2], ["cargo", "+nightly-2026-07-21"])
+            self.assertNotEqual(cwd, upstream)
+            self.assertNotIn("--update", command)
+            self.assertFalse(cwd.is_relative_to(upstream))
+            lock = cwd / "Cargo.lock"
+            calls.append(command)
+            if command[2] == "fetch":
+                self.assertEqual(command[2:], ["fetch", "--locked"])
+                self.assertEqual(lock.read_bytes(), bootstrap)
+                if mutate_fetch:
+                    lock.write_bytes(bootstrap + b"\n# unexpected mutation\n")
+                return subprocess.CompletedProcess(command, 0, "", "")
+            self.assertEqual(command[2], "metadata")
+            self.assertIn("--offline", command)
+            self.assertEqual(lock.read_bytes(), bootstrap if "--locked" in command else seed)
+            # A Cargo-free receipt fixture: the real package and immutable-seed
+            # audits still run. This does not claim dependency resolution.
+            lock.write_bytes(bootstrap)
+            metadata = {"packages": [], "resolve": {"nodes": []}}
+            return subprocess.CompletedProcess(command, 0, json.dumps(metadata), "")
+
+        with tempfile.TemporaryDirectory(prefix="a01-prefetch-output-") as output:
+            argv = ["prepare-locks.py", "--upstream", str(upstream), "--crate", "ostd",
+                    "--output-dir", output]
+            with patch.object(sys, "argv", argv), \
+                    patch.object(prepare, "checked_cargo", side_effect=cargo), \
+                    redirect_stdout(io.StringIO()):
+                if mutate_fetch:
+                    with self.assertRaisesRegex(SystemExit, "locked prefetch changed its input lock"):
+                        prepare.main()
+                    self.assertEqual(len(calls), 1)
+                else:
+                    prepare.main()
+                    self.assertEqual(len(calls), 3)
+                    self.assertEqual((Path(output) / "ostd.Cargo.lock").read_bytes(), bootstrap)
+                    report = json.loads((Path(output) / "ostd.json").read_text())
+                    self.assertEqual(report["seed_sha256"], prepare.SEED_SHA256)
+                    self.assertEqual(report["seed_package_count"], 234)
+                    self.assertEqual(report["package_count"], 97)
+                    self.assertEqual(report["external_drift"], [])
+        self.assertEqual((upstream / "Cargo.lock").read_bytes(), working_before)
+
+    def test_prefetch_audited_graph_then_normalizes_original_git_seed(self):
+        self.exercise_current_prefetch()
+
+    def test_prefetch_lock_mutation_stops_before_metadata(self):
+        self.exercise_current_prefetch(mutate_fetch=True)
 
     def test_offline_error_retains_underlying_cargo_diagnostic(self):
         argv = ["cargo", "+nightly-2026-07-21", "metadata", "--offline"]

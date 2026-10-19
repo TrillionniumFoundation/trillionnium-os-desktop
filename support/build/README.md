@@ -87,11 +87,19 @@ python3 support/build/verify-source.py
 
 This checks the fixed commit/tree/toolchain contract, upstream Cargo manifests
 and locks, license, root Makefile/OSDK manifest, and the empty project README.
+The only build-input derivative is the explicitly enumerated G1-a local
+`os-control` dependency in the workspace/core manifests and working root lock.
+The checker derives these exact insertions from the pinned upstream Git blobs
+and rejects every other byte change. The original root-lock Git seed retains
+SHA256 `6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316`;
+the working root lock adds only the local package and core dependency edge
+(234 to 235 packages). Its existing `spin` record and all other package records
+are unchanged. The original OSDK lock remains unchanged.
 `--pristine` checks every upstream file and Git mode against the original tree;
 it passes at import commit `7081fb9b34030af47b7a65d4e62a00fcf147de05`.
 Later intentional derivative edits are expected to fail that strict comparison.
 
-Derivative changes are confined to OSDK's host build tooling. Its
+The host build derivative includes OSDK's tooling. Its
 `osdk/src/commands/build/mod.rs` accepts `OSDK_CARGO_LOCK` and passes `--locked`
 to the generated-crate build. The daemon supervisor also cleans its original
 process group before reaping the leader; its regression fixtures use a TCP
@@ -102,10 +110,22 @@ a hard link. VSC launch configuration points to that actual symbol ELF and
 quotes target paths. Debugger integration waits are bounded.
 Lock installation uses a temporary file and atomic replacement, including
 when the supplied lock is the destination itself or a hard link to it.
-The generated OSDK base crate is a separate Cargo workspace; upstream's root
-lock alone does not freeze it. `minimal/Cargo.lock` is normalized from that
-fixed root lock: 203 packages, with no external version/source/checksum drift.
+The generated OSDK base crate is a separate Cargo workspace; the root lock
+alone does not freeze it. `minimal/Cargo.lock` is normalized from the original
+Git seed. Its original 203-package graph now adds only the local
+`os-control 0.1.0` owner metadata package and the `aster-core` dependency edge
+(204 packages); its `spin 0.9.9` dependency was already in the original lock.
+There is no external version/source/checksum drift. The G1-a kernel source,
+real owner locks and test boundaries are documented in the
+[CPU owner manual](../../docs/ASTERINAS_CPU_OWNER_G1A.md). Test lock preparation
+performs a verified `--locked` fetch before offline normalization from that
+fixed Git seed. It never uses the derived working root lock as a new seed.
 OSDK installation also uses its own original `osdk/Cargo.lock` with `--locked`.
+The component macro's `parse_metadata!` calls retain complete Cargo metadata
+with `--locked`, including dependencies outside the workspace. The working
+root and generated locks must remain unchanged during execution. The first
+G1-a build exposed an implicit root-lock rewrite in this full metadata call;
+isolated reproduction ruled out OSDK's existing `metadata --no-deps` queries.
 
 The native smoke uses QEMU 8.2.2; upstream's full development image uses QEMU
 10.2.1 and additional firmware/GRUB tooling. This is a recorded native-host

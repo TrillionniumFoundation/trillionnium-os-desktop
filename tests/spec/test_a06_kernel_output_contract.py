@@ -12,11 +12,9 @@ class A06KernelOutputContract(unittest.TestCase):
     def test_workflow_uses_generated_osdk_binary_name(self):
         source = WORKFLOW.read_text()
         expected = "osdk/asterinas/asterinas-osdk-bin.elf"
-        self.assertEqual(
-            source.count(expected),
-            2,
-            "the hash check and probe must consume the generated OSDK ELF",
-        )
+        self.assertIn(f'kernel="${{CARGO_TARGET_DIR}}/{expected}"', source)
+        self.assertIn(f"KERNEL: ${{{{ runner.temp }}}}/a06-target/{expected}", source)
+        self.assertIn(f"            ${{{{ runner.temp }}}}/a06-target/{expected}\n", source)
         self.assertNotIn("x86_64-unknown-none/release/asterinas-osdk-bin", source)
         self.assertIn("Machine:[[:space:]]+Intel 80386", source)
 
