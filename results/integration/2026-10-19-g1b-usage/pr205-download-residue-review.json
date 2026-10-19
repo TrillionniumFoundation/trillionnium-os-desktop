@@ -1,0 +1,75 @@
+{
+  "schema": 1,
+  "started_at_utc": "2026-10-19T11:27:56.954163+00:00",
+  "finished_at_utc": "2026-10-19T11:27:59.556875+00:00",
+  "before": [
+    {
+      "path": "/workspace/scratch/499c7902de8e/r11-evidence/pr205-runtime-review/original.zip",
+      "bytes": 154979607,
+      "inode": 14300,
+      "device": 27,
+      "nlink": 1,
+      "mode": "0o644",
+      "mtime_ns": 1792408741401676113,
+      "ctime_ns": 1792408741405675913
+    },
+    {
+      "path": "/workspace/scratch/499c7902de8e/r11-evidence/pr205-runtime-review/original.zip.partial",
+      "bytes": 99614720,
+      "inode": 14302,
+      "device": 27,
+      "nlink": 1,
+      "mode": "0o644",
+      "mtime_ns": 1792408734782007062,
+      "ctime_ns": 1792408746151585359
+    }
+  ],
+  "after": [
+    {
+      "path": "/workspace/scratch/499c7902de8e/r11-evidence/pr205-runtime-review/original.zip",
+      "bytes": 154979607,
+      "inode": 14300,
+      "device": 27,
+      "nlink": 1,
+      "mode": "0o644",
+      "mtime_ns": 1792408741401676113,
+      "ctime_ns": 1792408741405675913
+    },
+    {
+      "path": "/workspace/scratch/499c7902de8e/r11-evidence/pr205-runtime-review/original.zip.partial",
+      "bytes": 99614720,
+      "inode": 14302,
+      "device": 27,
+      "nlink": 1,
+      "mode": "0o644",
+      "mtime_ns": 1792408734782007062,
+      "ctime_ns": 1792408746151585359
+    }
+  ],
+  "metadata_stable": true,
+  "open_before": {
+    "matched_open_descriptors": [],
+    "process_fd_directories_inaccessible": 0
+  },
+  "open_after": {
+    "matched_open_descriptors": [],
+    "process_fd_directories_inaccessible": 0
+  },
+  "hashes": {
+    "original.zip": {
+      "sha256": "ef5d93159c1663fb30d3cf8e39e969525bbfa03b4fedc4db10ef4c87b035d655",
+      "bytes": 154979607
+    },
+    "original.zip.partial": {
+      "sha256": "f18e0ae25b2b9b88ddaf5897522c6f658e48462d84e31255e40593b92467e92d",
+      "bytes": 99614720
+    }
+  },
+  "partial_is_exact_full_zip_prefix": true,
+  "complete_archive_matches_official": true,
+  "scopes": [
+    "No file contents or permissions changed. No download restarted. Only exact two paths scanned in visible process fd targets; no argv or environment read.",
+    "A stable byte-identical intermediate prefix is observed. The origin of its remaining/reappearance after the recorded atomic rename is not inferred.",
+    "Absence of a visible writable fd is a bounded current observation, not a promise against unrelated future filesystem changes."
+  ]
+}

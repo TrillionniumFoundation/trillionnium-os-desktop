@@ -1,0 +1,136 @@
+{
+  "schema": 1,
+  "generated_at_utc": "2026-10-19T10:55:36.420130+00:00",
+  "identity": "New derived review of recovered original responses. Not the lost original review.json.",
+  "main": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+  "head": "43a638d4e25ebc5a8b06babcd1c75c9acac53179",
+  "tree": "84fdaf39799cef5676c2d3e2029f55c69d0ecd21",
+  "base": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+  "pr_observed_at": "2026-10-19T09:06:42.161Z",
+  "checks_observed_at": "2026-10-19T09:07:23.616Z",
+  "pr_state_at_original_observation": {
+    "state": "open",
+    "draft": true,
+    "merged": false,
+    "merged_at": null,
+    "mergeable_state": "blocked"
+  },
+  "checks_at_original_observation": {
+    "failure": 14,
+    "success": 22,
+    "skipped": 6,
+    "cancelled": 8,
+    "neutral": 1,
+    "in_progress": 1
+  },
+  "required_at_original_observation": [
+    {
+      "name": "CI required",
+      "id": 117967511210,
+      "status": "completed",
+      "conclusion": "failure",
+      "started_at": "2026-10-19T08:41:19Z",
+      "completed_at": "2026-10-19T08:41:30Z",
+      "details_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39217348118/job/117967511210"
+    },
+    {
+      "name": "Architecture required",
+      "id": 117944379036,
+      "status": "completed",
+      "conclusion": "failure",
+      "started_at": "2026-10-19T07:39:35Z",
+      "completed_at": "2026-10-19T07:39:39Z",
+      "details_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39217347985/job/117944379036"
+    }
+  ],
+  "changed_paths": 215,
+  "ui_paths": 194,
+  "gateway_paths": 12,
+  "byte_verified_original_source_reads": [
+    {
+      "path": "codex-rs/hepta-native-gateway/src/owner_status.rs",
+      "blob": "ef03630214a90a68258ecac57698cac2fe14f503",
+      "sha256": "29a8bb62da141f9896b8c9b75cbc450efdf80d43b6d176ea0ddb0373f98849e6",
+      "bytes": 5558,
+      "matches_saved_immutable_compare": true
+    },
+    {
+      "path": "codex-rs/hepta-native-gateway/src/lib.rs",
+      "blob": "4cddfeb48b340814631d7aa2422504ddea25537b",
+      "sha256": "3abf841a48345f1ada9251a2bd1d6ac79fce52e7cd4e366920bddb53466944bc",
+      "bytes": 27965,
+      "matches_saved_immutable_compare": true
+    },
+    {
+      "path": "codex-rs/hepta-native-gateway/src/http_transport.rs",
+      "blob": "6dd6388226a7600fade96fcc916a145fb06cc363",
+      "sha256": "3d6a71772150589d1d844c9ab6c75b75efd1504bd0788ec925f51a43e12a9179",
+      "bytes": 9873,
+      "matches_saved_immutable_compare": true
+    },
+    {
+      "path": "codex-rs/hepta-native-gateway/examples/ui_product_preview.rs",
+      "blob": "bead607ad26ec2b298305e258dce776bbee590e9",
+      "sha256": "d97a5d3f7c82cbfc3bc7bbc926d1c75f95e7623b7cdf1f2eece6162d2a3c2050",
+      "bytes": 384,
+      "matches_saved_immutable_compare": true
+    },
+    {
+      "path": "codex-rs/hepta-native-gateway/Cargo.toml",
+      "blob": "1902d731437c9338fdcd5c376749e42354bb6c70",
+      "sha256": "a13e4ba58685be73b9612d6a7d1caece142541612aae7b03f436ceb0f575fe26",
+      "bytes": 878,
+      "matches_saved_immutable_compare": true
+    },
+    {
+      "path": "apps/hepta-control-ui/rust/core/src/owner_view.rs",
+      "blob": "e9532863c105609a8ca88f1297132f0afea45699",
+      "sha256": "51baba679272803d868fcb5de408b4ac243595cafa304dffd2a3b74000dd13fb",
+      "bytes": 4994,
+      "matches_saved_immutable_compare": true
+    },
+    {
+      "path": "apps/hepta-control-ui/rust/web/src/transport/browser.rs",
+      "blob": "d17352d4b93845fb741b15f57ea50c7ee5e1e909",
+      "sha256": "764a0f6e7bb266136f63682741e27988155d0256b44e791e988a250c389a6eb4",
+      "bytes": 12057,
+      "matches_saved_immutable_compare": true
+    },
+    {
+      "path": "apps/hepta-control-ui/rust/web/src/app/effects.rs",
+      "blob": "0b2fc69be29bc73eff361fa51872c4b9cbb6fde8",
+      "sha256": "76081b107f51a8c1f7940a8dee4fbdf7e96b1384f5d2fb3524bf68b3b32cecce",
+      "bytes": 12472,
+      "matches_saved_immutable_compare": true
+    },
+    {
+      "path": "apps/hepta-control-ui/MAIN_INTEGRATION.md",
+      "blob": "c19704c2f71e77b0d091d7696a8ca14640ce5db1",
+      "sha256": "4fb19322a17e413fbdad34ec84d56da99d1511cdd65f9db825a999ab0ae5a591",
+      "bytes": 9806,
+      "matches_saved_immutable_compare": true
+    },
+    {
+      "path": "codex-rs/Cargo.lock",
+      "blob": "d88198271edf4692c92216d460c21059922801a2",
+      "sha256": "7d919cbc82326f470d9448491a24a5f8606217e8f221fc48266176df37fecc3a",
+      "bytes": 418081,
+      "matches_saved_immutable_compare": true
+    }
+  ],
+  "ui_original_log_result": "Six product-status instances: 5 pass, 1 fail. Chromium 1280 timeout exceeds 90 s, then page.unrouteAll reports a closed page/context/browser. Cleanup failure is not sufficient evidence of the initial timeout cause.",
+  "architecture_original_log_result": "45 executed tests, 43 pass and 2 fail in 7.696 s. Temporary shell fixture repository lacks the hepta_ci_module_paths dependency.",
+  "bounded_module_conclusion": "Candidate shared Rust UI and typed client/read-only gateway progress does not integrate original Objective/Operations owner, grant authority, HOS2 effects or Asterinas W1. Original review was not recovered; its source inputs and actual logs are recovered here for independent inspection.",
+  "missing_old_files": [
+    "README.md",
+    "review.json",
+    "changes.json",
+    "source-read-manifest.json",
+    "cargo-lock-comparison.json",
+    "log-manifest.json",
+    "api-compression-manifest.json",
+    "files-manifest.json",
+    "publication-files.json",
+    "build-review.py"
+  ]
+}

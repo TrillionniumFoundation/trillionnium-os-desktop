@@ -1,0 +1,54 @@
+{
+  "schema": 1,
+  "generated_at_utc": "2026-10-19T10:55:36.420130+00:00",
+  "identity": "New limited API-only recovery review; lost original runtime review, ZIP, extracted serials and ELFs are not recreated.",
+  "original_observation_interval_utc": [
+    "2026-10-19T08:23:12.032Z",
+    "2026-10-19T08:24:19.007Z"
+  ],
+  "source_head": "775061af51e6ee91fce290d5855e24a276292e14",
+  "pr203_historical_state_only": {
+    "state": "open",
+    "draft": true,
+    "merged": false,
+    "merged_at": null,
+    "merge_commit_sha": "1e2f80da05ab8077d4dc18f3e2f1dc27621b51f0"
+  },
+  "state_warning": "This recovered PR was read before the later actual merge. Do not treat the old draft/open value or prospective merge SHA as current or actual merged state.",
+  "checks_count": 5,
+  "checks_all_success": true,
+  "a06_job_metadata": [
+    {
+      "id": 117950707764,
+      "run_id": 39219341861,
+      "head_sha": "775061af51e6ee91fce290d5855e24a276292e14",
+      "name": "exact-kernel-ktest",
+      "status": "completed",
+      "conclusion": "success",
+      "started_at": "2026-10-19T07:57:12Z",
+      "completed_at": "2026-10-19T08:16:28Z"
+    }
+  ],
+  "artifact_metadata": [
+    {
+      "id": 12172041618,
+      "name": "a06-exact-kernel-ktest-39219341861",
+      "size_in_bytes": 153302416,
+      "digest": "sha256:7ec32457b02fe4fa897b32ce937f2c34d9cd0bfae034da4c5f74626ecfc539bf",
+      "expired": false,
+      "created_at": "2026-10-19T08:16:24Z",
+      "expires_at": "2027-01-17T07:57:09Z"
+    }
+  ],
+  "not_recovered": [
+    "original artifact ZIP bytes",
+    "extracted ELF and serial bytes",
+    "pr203-artifact-review.json",
+    "historical-selected-review.json",
+    "hepta-terminal-review.json",
+    "original files-manifest.json",
+    "original publication-files.json"
+  ],
+  "artifact_validation_claim": "Metadata only. A new official download may restore the exact archive if its bytes match the saved official SHA-256; no kernel/runtime result is independently revalidated by this recovery.",
+  "also_recovered": "Original 08:23–08:24 API responses for #199/#201/#202, Hepta #2815/#2882/#2883, and both main branches are included with their original timestamps."
+}

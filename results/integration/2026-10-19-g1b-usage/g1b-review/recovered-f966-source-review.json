@@ -1,0 +1,3690 @@
+{
+  "schema_version": 1,
+  "kind": "new_post_maintenance_fixed_git_review",
+  "reviewer": "/root/r9_g1_contract",
+  "started_at_utc": "2026-10-19T10:53:57.074209+00:00",
+  "completed_at_utc": "2026-10-19T10:54:02.939122+00:00",
+  "source": {
+    "repo": "/workspace/scratch/499c7902de8e/r11-g1b-usage",
+    "commit": "f9669912e2886190429187e14753d62b2060bd5f",
+    "tree": "659736e494be76de1d29e2e80972b126071e5cfe",
+    "parent": "00e2652c62ce6e34337d8f5bc3f3366b089c3d9c",
+    "git_only": true
+  },
+  "recovery_scope": "This is a newly generated review. Old JSON bytes are missing. Source hashes below were retained in original conversation tool outputs and compared to newly read fixed Git bytes. The original 20246-byte script alone was exactly recovered; it was not executed.",
+  "checks": {
+    "exact_remote_tree": true,
+    "exact_parent": true,
+    "exact_24_paths_and_7_docs": true,
+    "all_16_retained_historical_source_hashes_match": true,
+    "fixed_usage_file_35603_bytes": true,
+    "nineteen_distinct_usage_test_names": true,
+    "thirty_two_legacy_names_preserved": true,
+    "legacy_assert_counts_preserved": true,
+    "all_runner_functions_match_parent": true,
+    "all_168_lock_manifest_toolchain_inputs_unchanged": true,
+    "build_workflow_ostd_osdk_control_abi_subtrees_unchanged": true,
+    "lifecycle_hos2_and_parser_unchanged": true,
+    "all_301_links_resolve": true,
+    "three_original_historical_bodies_retained": true,
+    "four_disabled_operations_correct": true,
+    "max_recovery_scope_correct": true,
+    "root_readme_zero_bytes": true
+  },
+  "blocking": [],
+  "changed_files": [
+    {
+      "path": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "mode": "100644",
+      "kind": "blob",
+      "blob": "0271df14c3aae71abf40e1569571771de45c704a",
+      "bytes": 12861,
+      "sha256": "4ba1703fe6faca7bd50aa2046f45349e95fdae7d93c8c2da79c4812e64cb756f",
+      "base_entry": {
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "2c87c31bd07dc6b6243d0d7109be78a5af746777"
+      }
+    },
+    {
+      "path": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "mode": "100644",
+      "kind": "blob",
+      "blob": "5526fbade9977db6b43e9a616f6636b88836c4bf",
+      "bytes": 20312,
+      "sha256": "5cdc2c75382dd6925242212deabf9fb26ff956725a28567c6788bd6e68401ad8",
+      "base_entry": null
+    },
+    {
+      "path": "docs/INDEX.md",
+      "mode": "100644",
+      "kind": "blob",
+      "blob": "19599905f7f5f473bc2eb80ca9d20b4283a921f6",
+      "bytes": 26448,
+      "sha256": "e3c68ebccea46cc68465ff767a92a0d1c715991d9869f0e15f23499b8ef04acb",
+      "base_entry": {
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "614b5af1dad474639110a611402f2e4508562680"
+      }
+    },
+    {
+      "path": "docs/STATUS.md",
+      "mode": "100644",
+      "kind": "blob",
+      "blob": "1a3d67902703516de3bc6bc1f7c193050498f10f",
+      "bytes": 169801,
+      "sha256": "f7c753abade44ae0fae4e12d370ad897f18d10613cf020e95b2b7d89f021e3dd",
+      "base_entry": {
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "038b6579e9c0200fd77cedcd005ed25ab60e9e7c"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/comps/time/src/clocksource.rs",
+      "mode": "100644",
+      "kind": "blob",
+      "blob": "3f0abcd975c205758015d94a4723312b8df7e60f",
+      "bytes": 14544,
+      "sha256": "e780c0fcf590796482a3610bcf2f0a82ac220ea8770b7cc6dd89da0e056665cb",
+      "base_entry": {
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "89a668ea63c9114f8f6c9e0cbc06b98cabc7fcd5"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/comps/time/src/lib.rs",
+      "mode": "100644",
+      "kind": "blob",
+      "blob": "2841fd9a5b076948e12fd00d9fe102652a774774",
+      "bytes": 2967,
+      "sha256": "637eb2ef32c33cf387cb583fd79a319f6fe89c68682652d2b7fb1bca3175d1e1",
+      "base_entry": {
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "fa880802bd5c83a7ab517b1c49d924a7769cacf2"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs",
+      "mode": "100644",
+      "kind": "blob",
+      "blob": "7803e9f6adfde1b37a75fc3ead2a5fe18b601f0f",
+      "bytes": 42658,
+      "sha256": "b78cf58b0dabd34b3055748d4fc8a7e59ce37d90d092b32b72e06fee8814c4d0",
+      "base_entry": {
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "217957e01f34109e0f50a57d8db5a7ee19f54b5b"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/bandwidth_settlement_regressions.rs",
+      "mode": "100644",
+      "kind": "blob",
+      "blob": "fbcd939949e5da3e0765ecbc4051892a1deae54a",
+      "bytes": 7946,
+      "sha256": "d3064cc8d8fb667a5fe42ded1163d642c8af767ab5371bc67959dfe2e5bdd0f1",
+      "base_entry": {
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "f0de73faeabca74f7eafc7d1bc83d76ffb30e03f"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/config_regressions.rs",
+      "mode": "100644",
+      "kind": "blob",
+      "blob": "6f0155dfc07e52b61eaabb135830ef6e5e2a5cc4",
+      "bytes": 2547,
+      "sha256": "d4f40ce267c503a1b31936bc3208304a46a9658c5a7098dc551775703631e97c",
+      "base_entry": {
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "94009a390dc9e0e0dbb4774fd9ec30148d40a4aa"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/final_charge_regressions.rs",
+      "mode": "100644",
+      "kind": "blob",
+      "blob": "97dc46bd85ad7e133ec7d060432e5e30c233208d",
+      "bytes": 9820,
+      "sha256": "47c5e84e811082b485a4d0496a61eb56cd0b90c53da7161b662c670abf364196",
+      "base_entry": {
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "92fbcf8988f58b8c2d49faf099bce8420a232898"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs",
+      "mode": "100644",
+      "kind": "blob",
+      "blob": "0319b01d6d651ea38333974e8a4a3280e3409c9e",
+      "bytes": 8682,
+      "sha256": "1f7fb0e3e3129cc29b62d6ac0858d9e74716575e435d635c353f45b99cca6c2c",
+      "base_entry": {
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "86203ddc7e7bed417fe5c123bb3d63e79eaba4a2"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/tests.rs",
+      "mode": "100644",
+      "kind": "blob",
+      "blob": "4b8979113cd7912712ebeec89d722f45c0ada940",
+      "bytes": 16363,
+      "sha256": "479f26c87047fb4008ec4c501bd0769eb5a6a5c9ebd9182841846abed38b5991",
+      "base_entry": {
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "6fd32843b641ccd222ebf2113d464daabfde9875"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/usage_tests.rs",
+      "mode": "100644",
+      "kind": "blob",
+      "blob": "5bcc62c554b1f8ec074a66ed9fbbed3840c394e3",
+      "bytes": 35603,
+      "sha256": "9199dee49d804bb3b217a417362ed78043bcb6ae7a23f3bb29191d8f7c304dcb",
+      "base_entry": null
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/owner_retention_regressions.rs",
+      "mode": "100644",
+      "kind": "blob",
+      "blob": "3f0f232766913720b4d78d4ae39686ea9fc2a62a",
+      "bytes": 12923,
+      "sha256": "a146005f5c7ffdffdedbe8d06668854baaca2bcc607d219e65aece8847ed07f8",
+      "base_entry": {
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "15afa2cc814d52b7c4b2c01ba01b8f33287b06e4"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/scheduler_handoff_regressions.rs",
+      "mode": "100644",
+      "kind": "blob",
+      "blob": "555357e7dfad6c33d53c0e1bc7d51a93ba7b9cac",
+      "bytes": 9660,
+      "sha256": "4829561d607aed451106bc242c686777655538f7d2730fd0e44e9240a2b27e4b",
+      "base_entry": {
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "7257bc55644b9a13136e5b440fffe7c567728e8f"
+      }
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/sched/sched_class/clock.rs",
+      "mode": "100644",
+      "kind": "blob",
+      "blob": "3d675201d4f336637eb5fa88d3088b0a2f14ff91",
+      "bytes": 1232,
+      "sha256": "3fb6e0f2489d6b46af702626e68a9734a0ecb334211425b0511790822362988f",
+      "base_entry": null
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs",
+      "mode": "100644",
+      "kind": "blob",
+      "blob": "a5e1027106fae3d0f280089d3da5e5a530661143",
+      "bytes": 30592,
+      "sha256": "6b0cc85db8c868d9342ce4179f94fa1825420f30d6e8e7e2117495912e64e667",
+      "base_entry": {
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "6c83d6bb6ad51909ff5c50edc6883438fc6a101d"
+      }
+    },
+    {
+      "path": "tests/organ_backend/CPU_BOOTTIME_CLOCK.md",
+      "mode": "100644",
+      "kind": "blob",
+      "blob": "f3424c5da058f495996f79f405e612075082786c",
+      "bytes": 11633,
+      "sha256": "83e3d77a5e8febd62a92e9fe3409a92a30fded312555681eed7d3a36820a1787",
+      "base_entry": {
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "4406dc28c7dac6a92a5666ebec6c79cfc876ea09"
+      }
+    },
+    {
+      "path": "tests/organ_backend/CPU_CLOCK_HANDOFF_CI.md",
+      "mode": "100644",
+      "kind": "blob",
+      "blob": "31e1175716398f92fed216f4e5074cea1da0a270",
+      "bytes": 4644,
+      "sha256": "c2a454014d986da36a690a3600738ff29e0f8e92cf7b2e2331f9da2cddc35088",
+      "base_entry": {
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "f0d18ce332b2c141d06611ad8c5c2798c0168cca"
+      }
+    },
+    {
+      "path": "tests/organ_backend/CPU_USAGE_G1B.md",
+      "mode": "100644",
+      "kind": "blob",
+      "blob": "2551c0fdbc69f283b483fbfb9999088551b33850",
+      "bytes": 25135,
+      "sha256": "cc5bc52aee636774752bde4c296cef982d045d1e6272cf2eb00c193e7003f7b2",
+      "base_entry": null
+    },
+    {
+      "path": "tests/organ_backend/cpu_handoff_drop_tail_negative.patch",
+      "mode": "100644",
+      "kind": "blob",
+      "blob": "c18551a921ab25c6de7f81cff107ffcb231e7f92",
+      "bytes": 838,
+      "sha256": "2e9a87cdf9044f29dbcb8c932e72079eaf3fc9ecde791c9627b45b9b06257ffc",
+      "base_entry": {
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "652ec5c342f9ff46219c40b62561f75888b7afeb"
+      }
+    },
+    {
+      "path": "tests/organ_backend/cpu_handoff_eligibility_first_negative.patch",
+      "mode": "100644",
+      "kind": "blob",
+      "blob": "870a08ee9323bcfd0f59eb830b8a334f5af7eb4b",
+      "bytes": 1074,
+      "sha256": "8a90266278c3610c337e9ce780130e3a179ccce6942bbd4db05c53cfd805546c",
+      "base_entry": {
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "8229978a8c6116c862d4fc57671a0acc19903080"
+      }
+    },
+    {
+      "path": "tests/organ_backend/cpu_owner_current_slot_negative.patch",
+      "mode": "100644",
+      "kind": "blob",
+      "blob": "d7a0eea8f1a262ee037cfe1a88a408462767f8c5",
+      "bytes": 980,
+      "sha256": "04b19a7a89b8f8591d9a18766390167201e999a9617febcd9d0c70902005f1bd",
+      "base_entry": {
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "8db35d36bd1c330055cca4b90ddecd559691e88b"
+      }
+    },
+    {
+      "path": "tests/organ_backend/run_cpu_owner_negative.py",
+      "mode": "100644",
+      "kind": "blob",
+      "blob": "f9c4c71c82f18b25da40138081983b786693b71a",
+      "bytes": 19065,
+      "sha256": "2433f1b130997fbbb6b5e0dd4af67e994babae97aac334df33abf0e369c3fbc4",
+      "base_entry": {
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "82117ffaad32bb1ed32845616b43ec82328de422"
+      }
+    }
+  ],
+  "retained_historical_bindings": [
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs",
+      "bytes": 42658,
+      "sha256": "b78cf58b0dabd34b3055748d4fc8a7e59ce37d90d092b32b72e06fee8814c4d0",
+      "historical_expected_sha256": "b78cf58b0dabd34b3055748d4fc8a7e59ce37d90d092b32b72e06fee8814c4d0",
+      "matches": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs",
+      "bytes": 8682,
+      "sha256": "1f7fb0e3e3129cc29b62d6ac0858d9e74716575e435d635c353f45b99cca6c2c",
+      "historical_expected_sha256": "1f7fb0e3e3129cc29b62d6ac0858d9e74716575e435d635c353f45b99cca6c2c",
+      "matches": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/usage_tests.rs",
+      "bytes": 35603,
+      "sha256": "9199dee49d804bb3b217a417362ed78043bcb6ae7a23f3bb29191d8f7c304dcb",
+      "historical_expected_sha256": "9199dee49d804bb3b217a417362ed78043bcb6ae7a23f3bb29191d8f7c304dcb",
+      "matches": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs",
+      "bytes": 30592,
+      "sha256": "6b0cc85db8c868d9342ce4179f94fa1825420f30d6e8e7e2117495912e64e667",
+      "historical_expected_sha256": "6b0cc85db8c868d9342ce4179f94fa1825420f30d6e8e7e2117495912e64e667",
+      "matches": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/sched/sched_class/clock.rs",
+      "bytes": 1232,
+      "sha256": "3fb6e0f2489d6b46af702626e68a9734a0ecb334211425b0511790822362988f",
+      "historical_expected_sha256": "3fb6e0f2489d6b46af702626e68a9734a0ecb334211425b0511790822362988f",
+      "matches": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/comps/time/src/clocksource.rs",
+      "bytes": 14544,
+      "sha256": "e780c0fcf590796482a3610bcf2f0a82ac220ea8770b7cc6dd89da0e056665cb",
+      "historical_expected_sha256": "e780c0fcf590796482a3610bcf2f0a82ac220ea8770b7cc6dd89da0e056665cb",
+      "matches": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/comps/time/src/lib.rs",
+      "bytes": 2967,
+      "sha256": "637eb2ef32c33cf387cb583fd79a319f6fe89c68682652d2b7fb1bca3175d1e1",
+      "historical_expected_sha256": "637eb2ef32c33cf387cb583fd79a319f6fe89c68682652d2b7fb1bca3175d1e1",
+      "matches": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/vdso.rs",
+      "bytes": 17743,
+      "sha256": "344c56cfcaf752ef68f1325f4f12ab9332189937d7873d3d30c2c8a75e043ac4",
+      "historical_expected_sha256": "344c56cfcaf752ef68f1325f4f12ab9332189937d7873d3d30c2c8a75e043ac4",
+      "matches": true
+    },
+    {
+      "path": "tests/organ_backend/cpu_owner_current_slot_negative.patch",
+      "bytes": 980,
+      "sha256": "04b19a7a89b8f8591d9a18766390167201e999a9617febcd9d0c70902005f1bd",
+      "historical_expected_sha256": "04b19a7a89b8f8591d9a18766390167201e999a9617febcd9d0c70902005f1bd",
+      "matches": true
+    },
+    {
+      "path": "tests/organ_backend/clocksource_drop_fraction_negative.patch",
+      "bytes": 560,
+      "sha256": "6aeb53178b4facbe105c7fd4ff3e8086d5a9b57f2715f80781efc2764338a442",
+      "historical_expected_sha256": "6aeb53178b4facbe105c7fd4ff3e8086d5a9b57f2715f80781efc2764338a442",
+      "matches": true
+    },
+    {
+      "path": "tests/organ_backend/vdso_drop_fraction_negative.patch",
+      "bytes": 329,
+      "sha256": "a1e116c7af6a57add22693b4fa985b8bb45809df3ad6765b52ea8efa979975c9",
+      "historical_expected_sha256": "a1e116c7af6a57add22693b4fa985b8bb45809df3ad6765b52ea8efa979975c9",
+      "matches": true
+    },
+    {
+      "path": "tests/organ_backend/vdso_skip_fault_mode_negative.patch",
+      "bytes": 445,
+      "sha256": "da1f7c360136bfe330cba58acef4cf894d423043e1b3b9790958b923d4fcd452",
+      "historical_expected_sha256": "da1f7c360136bfe330cba58acef4cf894d423043e1b3b9790958b923d4fcd452",
+      "matches": true
+    },
+    {
+      "path": "tests/organ_backend/cpu_handoff_drop_tail_negative.patch",
+      "bytes": 838,
+      "sha256": "2e9a87cdf9044f29dbcb8c932e72079eaf3fc9ecde791c9627b45b9b06257ffc",
+      "historical_expected_sha256": "2e9a87cdf9044f29dbcb8c932e72079eaf3fc9ecde791c9627b45b9b06257ffc",
+      "matches": true
+    },
+    {
+      "path": "tests/organ_backend/cpu_handoff_eligibility_first_negative.patch",
+      "bytes": 1074,
+      "sha256": "8a90266278c3610c337e9ce780130e3a179ccce6942bbd4db05c53cfd805546c",
+      "historical_expected_sha256": "8a90266278c3610c337e9ce780130e3a179ccce6942bbd4db05c53cfd805546c",
+      "matches": true
+    },
+    {
+      "path": "tests/organ_backend/cpu_dequeue_drop_owner_negative.patch",
+      "bytes": 596,
+      "sha256": "b6fc10180e9fe292249409c758151763401dddb39bb4b2851bf53f71b3c959dd",
+      "historical_expected_sha256": "b6fc10180e9fe292249409c758151763401dddb39bb4b2851bf53f71b3c959dd",
+      "matches": true
+    },
+    {
+      "path": "tests/organ_backend/run_cpu_owner_negative.py",
+      "bytes": 19065,
+      "sha256": "2433f1b130997fbbb6b5e0dd4af67e994babae97aac334df33abf0e369c3fbc4",
+      "historical_expected_sha256": "2433f1b130997fbbb6b5e0dd4af67e994babae97aac334df33abf0e369c3fbc4",
+      "matches": true
+    }
+  ],
+  "usage_test_names": [
+    "fragmented_three_ghz_runtime_keeps_absolute_endpoint_precision",
+    "sampled_configuration_preserves_the_separate_cycle_cursor",
+    "crossed_windows_preserve_cumulative_usage_and_separate_debt",
+    "same_value_and_lowered_cap_never_refill_the_original_owner",
+    "returning_from_short_period_waits_for_a_complete_native_window",
+    "returning_from_long_period_does_not_expose_pre_window_usage",
+    "ordinary_linux_caps_outside_n0_never_become_native_snapshots",
+    "real_owner_wrapper_enforces_the_single_cpu_observation_profile",
+    "replacement_closes_the_old_snapshot_and_requires_a_new_binding",
+    "deleted_owner_stays_closed_while_its_final_debit_is_retained",
+    "indeterminate_metadata_cannot_produce_usage_after_detachment",
+    "unavailable_clock_allows_only_unlimited_linux_recovery",
+    "reliable_clock_samples_cannot_rewind_the_runtime_endpoint",
+    "backwards_usage_observation_permanently_fences_the_owner",
+    "backwards_same_value_configuration_cannot_reopen_an_old_window",
+    "cumulative_overflow_never_wraps_or_recovers_a_native_snapshot",
+    "unreliable_clock_sample_cannot_rewind_or_replay_cycle_runtime",
+    "late_same_value_reconfigure_preserves_window_usage_and_debt",
+    "overlapping_owner_intervals_accumulate_without_a_clock_fault"
+  ],
+  "legacy_test_names": [
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/bandwidth_settlement_regressions.rs",
+      "before_names": [
+        "same_value_write_settles_old_window_debt_before_advancing",
+        "repeated_configuration_partitions_bandwidth_without_consuming_cfs_runtime",
+        "lowered_quota_includes_the_running_prefix_at_apply",
+        "final_debit_after_configuration_charges_only_the_remaining_suffix"
+      ],
+      "after_names": [
+        "same_value_write_settles_old_window_debt_before_advancing",
+        "repeated_configuration_partitions_bandwidth_without_consuming_cfs_runtime",
+        "lowered_quota_includes_the_running_prefix_at_apply",
+        "final_debit_after_configuration_charges_only_the_remaining_suffix"
+      ],
+      "names_equal": true,
+      "before_asserts": 19,
+      "after_asserts": 19
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/config_regressions.rs",
+      "before_names": [
+        "invalid_cpu_max_write_does_not_change_budget_or_accounting",
+        "single_quota_write_keeps_the_current_owner_period"
+      ],
+      "after_names": [
+        "invalid_cpu_max_write_does_not_change_budget_or_accounting",
+        "single_quota_write_keeps_the_current_owner_period"
+      ],
+      "names_equal": true,
+      "before_asserts": 13,
+      "after_asserts": 13
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/final_charge_regressions.rs",
+      "before_names": [
+        "unreaped_zombie_final_interval_debits_old_leaf_and_ancestors_once",
+        "reaped_process_final_interval_uses_the_same_retained_hierarchy",
+        "live_migrations_change_the_owner_without_replaying_prior_debits",
+        "live_process_binding_wins_over_a_stale_final_charge_snapshot",
+        "zombie_before_detachment_preserves_its_present_process_binding",
+        "zombie_final_interval_crossing_a_window_preserves_positive_quota_debt"
+      ],
+      "after_names": [
+        "unreaped_zombie_final_interval_debits_old_leaf_and_ancestors_once",
+        "reaped_process_final_interval_uses_the_same_retained_hierarchy",
+        "live_migrations_change_the_owner_without_replaying_prior_debits",
+        "live_process_binding_wins_over_a_stale_final_charge_snapshot",
+        "zombie_before_detachment_preserves_its_present_process_binding",
+        "zombie_final_interval_crossing_a_window_preserves_positive_quota_debt"
+      ],
+      "names_equal": true,
+      "before_asserts": 14,
+      "after_asserts": 14
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/tests.rs",
+      "before_names": [
+        "binding_preserves_current_budget_and_cannot_be_repeated",
+        "ordinary_cpu_max_write_advances_revision_without_refilling_debt",
+        "malformed_writes_do_not_consume_the_bound_revision",
+        "replacement_closes_bound_old_arc_and_does_not_inherit_metadata",
+        "replacement_also_closes_an_unbound_old_arc",
+        "deleted_unbound_current_arc_cannot_be_bound_afterward",
+        "deletion_keeps_bound_identity_revision_and_accounting",
+        "last_revision_succeeds_then_real_owner_writes_fail_without_wrapping",
+        "ambiguous_metadata_mutation_stays_indeterminate_after_detachment",
+        "final_charge_lease_blocks_deletion_until_the_real_debit_is_retained"
+      ],
+      "after_names": [
+        "binding_preserves_current_budget_and_cannot_be_repeated",
+        "ordinary_cpu_max_write_advances_revision_without_refilling_debt",
+        "malformed_writes_do_not_consume_the_bound_revision",
+        "replacement_closes_bound_old_arc_and_does_not_inherit_metadata",
+        "replacement_also_closes_an_unbound_old_arc",
+        "deleted_unbound_current_arc_cannot_be_bound_afterward",
+        "deletion_keeps_bound_identity_revision_and_accounting",
+        "last_revision_succeeds_then_real_owner_writes_fail_without_wrapping",
+        "ambiguous_metadata_mutation_stays_indeterminate_after_detachment",
+        "final_charge_lease_blocks_deletion_until_the_real_debit_is_retained"
+      ],
+      "names_equal": true,
+      "before_asserts": 60,
+      "after_asserts": 60
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/owner_retention_regressions.rs",
+      "before_names": [
+        "controller_publication_charges_the_entire_prefix_to_the_old_incarnation",
+        "retained_leaf_debits_its_original_ancestor_chain_after_parent_replacement",
+        "live_migration_partitions_leaf_time_and_charges_common_ancestors_once",
+        "exited_task_resumes_its_retained_incarnation_after_replacement_and_reap",
+        "zero_length_publication_changes_only_the_next_segment_owner",
+        "original_owner_reference_keeps_the_node_live_until_its_last_clone_drops"
+      ],
+      "after_names": [
+        "controller_publication_charges_the_entire_prefix_to_the_old_incarnation",
+        "retained_leaf_debits_its_original_ancestor_chain_after_parent_replacement",
+        "live_migration_partitions_leaf_time_and_charges_common_ancestors_once",
+        "exited_task_resumes_its_retained_incarnation_after_replacement_and_reap",
+        "zero_length_publication_changes_only_the_next_segment_owner",
+        "original_owner_reference_keeps_the_node_live_until_its_last_clone_drops"
+      ],
+      "names_equal": true,
+      "before_asserts": 47,
+      "after_asserts": 47
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/scheduler_handoff_regressions.rs",
+      "before_names": [
+        "outgoing_tail_ends_at_the_incoming_segment_start",
+        "handoff_debits_the_old_window_before_rechecking_a_shared_ancestor",
+        "waiting_dequeue_retains_its_owner_through_selection_retries",
+        "exiting_dequeue_retains_its_owner_through_selection_retries"
+      ],
+      "after_names": [
+        "outgoing_tail_ends_at_the_incoming_segment_start",
+        "handoff_debits_the_old_window_before_rechecking_a_shared_ancestor",
+        "waiting_dequeue_retains_its_owner_through_selection_retries",
+        "exiting_dequeue_retains_its_owner_through_selection_retries"
+      ],
+      "names_equal": true,
+      "before_asserts": 36,
+      "after_asserts": 36
+    }
+  ],
+  "protected_files": [
+    {
+      "path": "kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs",
+      "mode": "100644",
+      "kind": "blob",
+      "blob": "50394952de7f8fa878fd07e539947ab0cd8d000e",
+      "unchanged": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/systree_node.rs",
+      "mode": "100644",
+      "kind": "blob",
+      "blob": "549b1abdcf927d081d62f08abe39c747c9ce2ead",
+      "unchanged": true
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/max_config.rs",
+      "mode": "100644",
+      "kind": "blob",
+      "blob": "39f3bbf95e637a2f323172294f9dd59270c9c96a",
+      "unchanged": true
+    },
+    {
+      "path": "kernel/asterinas/ostd/src/sync/rcu/mod.rs",
+      "mode": "100644",
+      "kind": "blob",
+      "blob": "0bb79997018f2ef2eafe56e255191efb3ee8b065",
+      "unchanged": true
+    }
+  ],
+  "unchanged_subtrees": [
+    {
+      "path": "support/build",
+      "base_tree": "24d85e5888ef894da06028a14be1d8693e0232a4",
+      "candidate_tree": "24d85e5888ef894da06028a14be1d8693e0232a4",
+      "unchanged": true
+    },
+    {
+      "path": ".github/workflows",
+      "base_tree": "28647c98f4c3f7d2e1a5ecdc55b66f67270358c0",
+      "candidate_tree": "28647c98f4c3f7d2e1a5ecdc55b66f67270358c0",
+      "unchanged": true
+    },
+    {
+      "path": "kernel/asterinas/ostd",
+      "base_tree": "5037563c4b9cbfc4826568e5c5c4d56d2891a904",
+      "candidate_tree": "5037563c4b9cbfc4826568e5c5c4d56d2891a904",
+      "unchanged": true
+    },
+    {
+      "path": "kernel/asterinas/osdk",
+      "base_tree": "84d2d2d5d34c301ee0699fc210077321f2adad51",
+      "candidate_tree": "84d2d2d5d34c301ee0699fc210077321f2adad51",
+      "unchanged": true
+    },
+    {
+      "path": "libs/os-control",
+      "base_tree": "f0f727d9f8ff77187603a163283a07193f17148e",
+      "candidate_tree": "f0f727d9f8ff77187603a163283a07193f17148e",
+      "unchanged": true
+    },
+    {
+      "path": "libs/os-abi",
+      "base_tree": "75a708cc77501ac2b21887840f69cc29c013b846",
+      "candidate_tree": "75a708cc77501ac2b21887840f69cc29c013b846",
+      "unchanged": true
+    }
+  ],
+  "lock_inventory": {
+    "selection": "Non-results paths ending .lock or named Cargo.toml/rust-toolchain.toml/rust-toolchain, including historical inputs outside results.",
+    "count": 168,
+    "entries": [
+      {
+        "path": "kernel/asterinas/Cargo.lock",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "c8cb7e9616e0ea40442200deee461157793618dd",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "8f3117bdad25148ee19a8a9cd12ab7b155fb14ef",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/flake.lock",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "703c5b248d82fa793bc3876f2d47773472d1b6be",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "0b09fed8dd3907a51e8ff7b1f9e446848af5ae83",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/comps/drm/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "a12a1e071d12aa749540d6d3c2995339226844fd",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/comps/i8042/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "09f5399425ca452549669cf032b8d77d1bf6a8bf",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/comps/simpledrm/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "d1e815fd37a3dda6acee9a1f708189c5d0211e48",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/comps/uart/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "7ce8f88959c8c1301d5a158999ee5627078f30c2",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "89efb73167bb92670ac6b0f7f115317dd564da36",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/comps/block/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "138f6ad1662525a0f08270afb12ab0026aa195e0",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/comps/cmdline/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "06c9136b3364d84fca71b0e07440cd41c30e14f2",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/comps/console/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "3d9b5771ffec30e67754efa99ee088bb98fa03b8",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/comps/device/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "ce15d1e4a040ef4ac5044300d7a64c3d0ab87c70",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/comps/framebuffer/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "4be4c78c477b9f6928a41ca28b8fa2b4b400a278",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/comps/input/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "1cd5d25bc653831a42c54f37fad4ad3c5255f52b",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/comps/logger/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "db5d6fc17abbeef0a985360195528a859ce25b07",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/comps/mlsdisk/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "631fb405a02f7ddcc323a5b52d671b3dc5f4e67f",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/comps/network/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "5f3ae241fff069ceb194ac0c1f742ad04ffc501f",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/comps/nvme/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "d3009ed0b466f21ad986f7bafdb2f458ec45d9f8",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/comps/pci/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "4656583bed63164ff26980be58417d1c0c6e8846",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/comps/softirq/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "de96255e26df0e5e5731d732ad508a7592e00f8d",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/comps/systree/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "487d37b37141865ceb9533ef1e0c5c635983ef91",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/comps/time/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "8c108c7b2cd702764a1adb67a99d3e55d990c3a9",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/comps/virtio/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "793af7830dee23c9ab39ddf98883e1a7f6eaec71",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/aster-bigtcp/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "b522626e7a14ba283a263fcfd1b22376d57e1aec",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/aster-fuse/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "a8b9f5731219e2b63782f7bf889d8f06e7bbc6b3",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/aster-rights-proc/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "130184c957f58858131fdaa9a77f4b4a397d3912",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/aster-rights/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "461c0583e584923efbf92df44f32ba52eface117",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/aster-util/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "99e1b6b763caa0a6733b539271fe8f71c750a7f7",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/atomic-integer-wrapper/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "4cdb0c44b0364cc0a4e53fc59817b84a845b2ffe",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/Cargo.lock",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "99716919572af8c7bdd0ac9f220f4d3512d54784",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "d7b3c310f8580f74f1e4e440157af49891e25b74",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/analysis/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "d76b6e2c496404e91d4f0996a558a94a67413596",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/duplicate_lib_name_test/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "36a6c498a72e277cd377ed82ee3bdb8526e49ce2",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/missing_toml_test/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "3bc7a75e56cf50b123fd74eb00774d5615beb6e5",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/reexport_test/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "ce288216a33a40862845738056067e725548de0a",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/reexport_test/bar/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "9291c232bc8d6b97aa1832bdb14204bf37dba918",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/reexport_test/baz/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "47797d7cdfeb5d9baf7c1d53b2a3a2b4ec272892",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/reexport_test/foo/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "a7310b90dc5b3c25b630331f1be09833657a9211",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/regression_test/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "0be10c5763bc6b4e5b9016eed3f3a5eac696994d",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/regression_test/bar1/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "82c10e1251defcb036e248f6fb2280635a8f0b67",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/regression_test/foo1/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "5ea6853dcd6bc5578dbd5f1abba63eadfe6a911c",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/trait_method_test/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "b9e83256da6e1a07f267c21f73169530eea3905e",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/trait_method_test/bar2/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "21cd8b5773e66b9b84111f39c2ad0861a8e6e5fb",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/trait_method_test/foo2/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "9e742f2103f4b7877c23e8d36a10d08c9ce467b4",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/violate_policy_test/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "9d755804f01708699140d20230d3652d5379b67f",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/violate_policy_test/bar3/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "1583ff4457bbb2189570e8dce4ac3414e4804574",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/cargo-component/tests/violate_policy_test/foo3/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "2646f3a8d7bdac1345f2cfe2f1d762ca44413733",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/component-macro/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "c1cb568380fc0e545fb2955812b34ef1aaacfeb8",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/component/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "f3180c4acb713de371ff72255a9cdbe966a21a5f",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/component/tests/init-order/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "b546fe421efdb7ea3ded191b0be156df014730e4",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/component/tests/init-order/first-init/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "6f05d9e688fcb3255758b2e9ed912842bff7f8b4",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/component/tests/init-order/second-init/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "b74d9b5adab6dbfecf8c6f740c55521005a6e7ad",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/component/tests/init-stage/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "07f263ddc8de3705dea1a058e07d3815d4b75421",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/component/tests/init-stage/foo/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "e839c4ee49b18f6b10c4e666187bc5aca7ee7c6e",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/comp-sys/controlled/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "393351b2388f239cb9aaf5152041d5847fb89f4c",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/cpio-decoder/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "bd98005c971950e23843c19e9f82c73c542ee3e0",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/device-id/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "5d89c0dd52e345e9c4d8577024c92b4d7304f59e",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/dma-pool/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "f6e6d4e35fa84d7cd64d2f1699ff32c93c44a5ec",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/fdt-util/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "e16838e2cad666e436a5a2e27b9ff9e3f9e7c66e",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/io-util/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "71f149a7321f6e20e3de475d838685be5040c95c",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/jhash/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "5f043178ed51a3759196d53434969b6de41cb751",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/keyable-arc/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "56a545fb0186075617da163359cd5c6736478918",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/logo-ascii-art/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "fd131ecbd3535f2e785b314f30e5f1db0dec4916",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/ring-buffer/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "6d3d9e9186c6b5dedc8b2f425f4f7cfb12a86aae",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/short-vis-path/Cargo.lock",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "45fbb3363cbb0726ebae14bddbf22e0818d791b1",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/short-vis-path/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "12d435ef040be0ad6edc6176d7a4045b7b5c37e9",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/short-vis-path/tests/syntax-and-behavior/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "5cc33670561a4cd1aac51711bdaba8e7eb8bf674",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/sparse-id-alloc/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "2e1b39f24a81a12e68220388df1b74e710bd8b08",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/typeflags-util/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "afa65c5c427310e9da31cadbbb682b6348759930",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/typeflags/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "47a72a437fffe2f9379704650046755ec62940b5",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/kernel/libs/xarray/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "cae91ce879e63c3da7b1113864f8ef6b0034f764",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/osdk/Cargo.lock",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "82dbdd75cedd73558dd3d5aa17e76376d66d6eaf",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/osdk/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "a5bbae5c43417e4e65fe42b90662b7409c532469",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/osdk/deps/frame-allocator/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "e0acef481d74f272b40746e541530708ad60d735",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/osdk/deps/heap-allocator/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "dacae781741903e7be2b2f3b7067e192b9c26fcd",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/osdk/deps/test-kernel/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "c22fa69cd833a11dd6116a8a8d1963a5d3bdf2f1",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/osdk/tests/examples_in_book/work_in_workspace_templates/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "9bc2f769fb9d963fffe35cb722013a9427280100",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/osdk/tests/examples_in_book/work_in_workspace_templates/myos/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "6bcc7350dc3ba3081940f05237671358e1eb41da",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/ostd/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "7d459cc06cda3ced29eec97a91a2a9d21ffefe00",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/ostd/libs/align_ext/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "01e22d2fe2ae238b5f629d084189f8ae9ce39918",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/ostd/libs/id-alloc/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "b7c6545f046de97f0989ab318d9fd10c906a6d25",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/ostd/libs/int-to-c-enum/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "6b6e6823eb45ee13de2caba31d45304671dca92e",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/ostd/libs/int-to-c-enum/derive/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "d41b418666bdc27a58c358b6e3421bb4b7ccc50a",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/ostd/libs/linux-bzimage/boot-params/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "b3010367fe8936ea16123aa8ec30dab7feee88da",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/ostd/libs/linux-bzimage/builder/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "1acfeb0850d90edb4561315a47dd8ac34ec56603",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/ostd/libs/linux-bzimage/setup/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "f258cda239f0d6be893978390b0a8b8091efe9cf",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/ostd/libs/ostd-macros/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "ad3665e045068fc2db866a00c51f2dc416921352",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/ostd/libs/ostd-pod/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "0b0e724563789281002f10c531025addc71cf4b1",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/ostd/libs/ostd-pod/macros/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "14e4cda1c42f9ae67ad982e6d26eb5a114d73abf",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/ostd/libs/ostd-test/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "6b14cd2bbf0e247d2045bc0be052e2520a13b4e5",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/ostd/libs/padding-struct/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "4fe6d78059123eaafb942ac5fc6bec40ce959038",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/rust-toolchain.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "3ac33bbae32686a33f317f2072734bf6f4e8d610",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/Cargo.lock",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "b292785177aed40cf5336b9edcc881c4877ba35c",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "7668b277c9e542b7d32683e8c59c2884d56ed570",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/common/framework/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "c50b0a07136b1365d8f24967a8807d721b4bb804",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/common/template/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "6544e1c6cf3cc43d688a2134d6a803470e8f1612",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/common/test_macro/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "d9c6b311411c7d8f7a861dcd8240776c8ce5d7b9",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/ai-and-machine-learning/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "afe7857d401560262440c0865971e13c1abc3a3a",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/cicd-and-devops/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "e098b9cd9c23c518aa5e34182bf1d7d3bb7cb133",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/communication/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "4176740552805b0dea9094f995bd1c7790a4c1fc",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/containerization-and-virtualization/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "0e051488b24b0cb616976f95b6a2df3cb6689da8",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/databases-and-middleware/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "007c7c3d069f6dcbf9840292be9189e6397a74e4",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/development-tools-go/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "1ab461390aa8978a8fe3f8b32c4a3f4e05eb42c1",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/development-tools-openjdk/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "990c6abaf05dd2959f6049d00f69104cdfaba00a",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/development-tools-python/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "b8bc0e85aac28c346db37ee5ede69e1144e28189",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/development-tools/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "f3540a2d66f41dfcbb893d22c8bebdc526265f8f",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/drm/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "9ee757515289efcacbdd0f640a02583109bc9637",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/file-management-and-terminal/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "6039530e903bf94a86d6cb8df44eafa5e3642082",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/hello/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "92c9df69c308806bbf146faf2aaee92b90e27f19",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/monitoring-and-observability/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "7f61d8959f31d05e10424a13218e5c45af43aa1f",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/multimedia/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "605debe21f60c8665309998abf893d2805560dd2",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/networking/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "d91cc881e0daa08afdb084bdd5148b8ba729d3ea",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/nix-and-nixos-tools/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "e2023fa5490e9fb8bd567012a8c87cc7fe790743",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/office-and-productivity/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "b766380bfea227b3e28dfef1760ee8cac605b931",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/system-core/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "8d5d38b4eb5b1da7f152d87c5b44401a6aa0bd16",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/web-browsers/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "599759a93f9b30912a26a5b8632f0a3d4390b2de",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/test/nixos/tests/web-servers-and-proxies/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "898cf4a5ce3da0bab74e3264aadc0c023d973999",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/tools/sctrace/Cargo.lock",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "4452df4e97784c19c45fd8620a749459b5ac0648",
+        "unchanged": true
+      },
+      {
+        "path": "kernel/asterinas/tools/sctrace/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "b4a66e7902dcc122625366c4093a8347799cc314",
+        "unchanged": true
+      },
+      {
+        "path": "libs/os-abi/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "d4fcfed8405155e257925b08fc7a8a7805ef81e1",
+        "unchanged": true
+      },
+      {
+        "path": "libs/os-control/Cargo.lock",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "3ff23f1c8d4a511a85de1a6795b233ff289329aa",
+        "unchanged": true
+      },
+      {
+        "path": "libs/os-control/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "994b513e9b69a278336186c9b5d33cde154c0ea4",
+        "unchanged": true
+      },
+      {
+        "path": "services/hepta-os/Cargo.lock",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "7c2c444263cef0f974e883c3d7d0e22e95585098",
+        "unchanged": true
+      },
+      {
+        "path": "services/hepta-os/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "4879e462999417d708304c161c3b4aeb3532e28b",
+        "unchanged": true
+      },
+      {
+        "path": "support/build/evidence/2026-10-16-daemon/acceptance/kernel-tests/aster-core/generated.Cargo.lock",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "6c720b80e46e860071e0769f31fb41c51a4729a2",
+        "unchanged": true
+      },
+      {
+        "path": "support/build/evidence/2026-10-16-daemon/acceptance/kernel-tests/ostd/generated.Cargo.lock",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "3d9c915cd2dc7a56b4764dc1e74fa56eab81ffcb",
+        "unchanged": true
+      },
+      {
+        "path": "support/build/evidence/2026-10-16-daemon/daemon-probes/harness/Cargo.lock",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "17b6c801b2d80336b0092115ba26e75448ffc317",
+        "unchanged": true
+      },
+      {
+        "path": "support/build/evidence/2026-10-16-daemon/daemon-probes/harness/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "748f8a16eea566e39017dd8da054ac846b9b1b2f",
+        "unchanged": true
+      },
+      {
+        "path": "support/build/evidence/2026-10-16-daemon/daemon-probes/patched-harness/Cargo.lock",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "17b6c801b2d80336b0092115ba26e75448ffc317",
+        "unchanged": true
+      },
+      {
+        "path": "support/build/evidence/2026-10-16-daemon/daemon-probes/patched-harness/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "748f8a16eea566e39017dd8da054ac846b9b1b2f",
+        "unchanged": true
+      },
+      {
+        "path": "support/build/evidence/2026-10-16-next/acceptance/kernel-tests/aster-core/generated.Cargo.lock",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "6c720b80e46e860071e0769f31fb41c51a4729a2",
+        "unchanged": true
+      },
+      {
+        "path": "support/build/evidence/2026-10-16-next/acceptance/kernel-tests/ostd/generated.Cargo.lock",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "3d9c915cd2dc7a56b4764dc1e74fa56eab81ffcb",
+        "unchanged": true
+      },
+      {
+        "path": "support/build/evidence/2026-10-16-next/initial-kernel-tests/aster-core-initial/aster-core/generated.Cargo.lock",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "6c720b80e46e860071e0769f31fb41c51a4729a2",
+        "unchanged": true
+      },
+      {
+        "path": "support/build/evidence/2026-10-16-next/initial-kernel-tests/ostd-initial/ostd/generated.Cargo.lock",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "3d9c915cd2dc7a56b4764dc1e74fa56eab81ffcb",
+        "unchanged": true
+      },
+      {
+        "path": "support/build/ktest/locks/aster-core.Cargo.lock",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "07d086298d0f717f29891eafc9d6f13de92fbf6f",
+        "unchanged": true
+      },
+      {
+        "path": "support/build/ktest/locks/ostd.Cargo.lock",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "3d9c915cd2dc7a56b4764dc1e74fa56eab81ffcb",
+        "unchanged": true
+      },
+      {
+        "path": "support/build/minimal/Cargo.lock",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "c29545d718190c97b990f364ea675381c19734f5",
+        "unchanged": true
+      },
+      {
+        "path": "support/ui/Cargo.lock",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "e7abb0e25cc21f85981cafd6e3818386ace49f40",
+        "unchanged": true
+      },
+      {
+        "path": "support/ui/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "0f65439cafe0a85301e84cb6255c1a4a8f7c8c5c",
+        "unchanged": true
+      },
+      {
+        "path": "support/vmm/device_lifecycle/Cargo.lock",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "cfdf7ced578bb11db39d192ed9e508ab138c6672",
+        "unchanged": true
+      },
+      {
+        "path": "support/vmm/device_lifecycle/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "6a226ebaa482b1762ede8b3d021b5a5fdf5009a7",
+        "unchanged": true
+      },
+      {
+        "path": "tests/control/backend_no_std/Cargo.lock",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "71f3ef7848529e07ebe595f9a4ef7632ec242978",
+        "unchanged": true
+      },
+      {
+        "path": "tests/control/backend_no_std/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "e0e84e705e660908374f242048795fd3011a2605",
+        "unchanged": true
+      },
+      {
+        "path": "tests/control/loom/Cargo.lock",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "9f840256091199786fc789c3d0b9177929f833da",
+        "unchanged": true
+      },
+      {
+        "path": "tests/control/loom/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "6312050160e354d80a4df5ae902497422470a057",
+        "unchanged": true
+      },
+      {
+        "path": "tests/integration/hepta/evidence/2026-10-17-84e-arm-ci/evidence/work/probe/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "ccb40ff11433080f3ebe66fd74e81ac29c322f9f",
+        "unchanged": true
+      },
+      {
+        "path": "tests/integration/hepta/evidence/2026-10-17-f092-a10-completion/artifact/ui-Cargo.lock",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "eac4ce1fc654f250c5f9995cc928380d0061c5f0",
+        "unchanged": true
+      },
+      {
+        "path": "tests/integration/hepta/evidence/2026-10-17-original-probe/original-r4-probe-resolution-02/resolved-Cargo.lock",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "a79ef4fea3e49acdb05feb4b75dce0944de0f04c",
+        "unchanged": true
+      },
+      {
+        "path": "tests/integration/hepta/evidence/2026-10-17-original-session-build/build-01/probe/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "4f24d7bb4a6d3100f113f7a1e26f3b5e5fc81586",
+        "unchanged": true
+      },
+      {
+        "path": "tests/integration/hepta/evidence/2026-10-17-original-session-build/build-02/probe/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "b334b86f8bbd57e2d197ae1e0a4d2405e72fb379",
+        "unchanged": true
+      },
+      {
+        "path": "tests/integration/hepta/evidence/2026-10-17-original-session-build/lock-diagnostic-01/probe/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "4f24d7bb4a6d3100f113f7a1e26f3b5e5fc81586",
+        "unchanged": true
+      },
+      {
+        "path": "tests/integration/hepta/evidence/2026-10-17-original-session-build/lock-diagnostic-02/probe/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "b334b86f8bbd57e2d197ae1e0a4d2405e72fb379",
+        "unchanged": true
+      },
+      {
+        "path": "tests/integration/hepta/evidence/2026-10-17-original-session-build/upstream-seed/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "d2703b590935ab17316e6c258657c0ce5ab7412a",
+        "unchanged": true
+      },
+      {
+        "path": "tests/integration/hepta/evidence/2026-10-17-original-session-build/upstream-seed/rust-toolchain.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "910c65114ec128a8317ee8257428451f3cd28230",
+        "unchanged": true
+      },
+      {
+        "path": "tests/integration/hepta/evidence/2026-10-18-objective-transport/validation-01/wire-reference/Cargo.lock",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "35ae8a087d9beaf266131ac8c50c15792dcc67cc",
+        "unchanged": true
+      },
+      {
+        "path": "tests/integration/hepta/evidence/2026-10-18-objective-transport/validation-01/wire-reference/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "b10fa70cb153760b2a6350e67cdb38231d16ffd6",
+        "unchanged": true
+      },
+      {
+        "path": "tests/ui/Cargo.lock",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "18391871eab4124cc9d20bd4a367ff40040f4e77",
+        "unchanged": true
+      },
+      {
+        "path": "tests/ui/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "13d806deb3174928e281be58f92d0053ac83de40",
+        "unchanged": true
+      },
+      {
+        "path": "tests/ui/evidence/2026-10-18-84e-a10-completion/artifact/trillionnium-os-desktop/trillionnium-os-desktop/ui/Cargo.lock",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "eac4ce1fc654f250c5f9995cc928380d0061c5f0",
+        "unchanged": true
+      },
+      {
+        "path": "tests/workloads/linux/rust/Cargo.lock",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "1f2f7d77f608b22452ac921a5d0348b9dd698f2a",
+        "unchanged": true
+      },
+      {
+        "path": "tests/workloads/linux/rust/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "cd812e0c31c80f3a60fe0f8fa2e439514a1d5e65",
+        "unchanged": true
+      },
+      {
+        "path": "ui/Cargo.lock",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "eac4ce1fc654f250c5f9995cc928380d0061c5f0",
+        "unchanged": true
+      },
+      {
+        "path": "ui/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "fe6d49c48fba67221b698c1a0f379e7692f6e770",
+        "unchanged": true
+      },
+      {
+        "path": "ui/app-window/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "3f3f0a03906903fc0d06f43956185b1e7746a320",
+        "unchanged": true
+      },
+      {
+        "path": "ui/core/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "b314e9c7d32e55577a45131f9b0c28c6936a814d",
+        "unchanged": true
+      },
+      {
+        "path": "ui/session/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "673ebfc31a03aec7c12498747becfa5851f55eee",
+        "unchanged": true
+      },
+      {
+        "path": "ui/shell/Cargo.toml",
+        "mode": "100644",
+        "kind": "blob",
+        "blob": "4eb8b4d5ba2240634c44c8d4dede48ddcc13fd3a",
+        "unchanged": true
+      }
+    ]
+  },
+  "local_links": {
+    "method": "Inline Markdown local target path existence in fixed Git tree; remote URLs and fragment anchors are not checked.",
+    "occurrences": 301,
+    "unique_targets": 156,
+    "entries": [
+      {
+        "source": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+        "line": 3,
+        "target": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+        "line": 6,
+        "target": "docs/agents/R9_G1_OWNER_SEAM.md",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+        "line": 9,
+        "target": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+        "line": 12,
+        "target": "kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+        "line": 20,
+        "target": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+        "line": 21,
+        "target": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+        "line": 22,
+        "target": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/mod.rs",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+        "line": 23,
+        "target": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/systree_node.rs",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+        "line": 23,
+        "target": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/inode.rs",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+        "line": 24,
+        "target": "libs/os-control/src/resource_state.rs",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+        "line": 25,
+        "target": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/tests.rs",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+        "line": 100,
+        "target": "support/build/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+        "line": 111,
+        "target": "support/build/ktest/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+        "line": 126,
+        "target": "support/build/ktest/locks/aster-core.json",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+        "line": 127,
+        "target": "support/build/minimal/Cargo.lock",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "line": 4,
+        "target": "tests/organ_backend/CPU_USAGE_G1B.md",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "line": 12,
+        "target": "kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "line": 18,
+        "target": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "line": 19,
+        "target": "tests/organ_backend/CPU_CONFIG_SETTLEMENT.md",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "line": 20,
+        "target": "tests/organ_backend/CPU_OWNER_RETENTION.md",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "line": 21,
+        "target": "tests/organ_backend/CPU_BOOTTIME_CLOCK.md",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "line": 22,
+        "target": "tests/organ_backend/CPU_SCHEDULER_HANDOFF.md",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "line": 28,
+        "target": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "line": 29,
+        "target": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "line": 30,
+        "target": "kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "line": 31,
+        "target": "kernel/asterinas/kernel/core/src/sched/sched_class/clock.rs",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "line": 32,
+        "target": "kernel/asterinas/kernel/core/comps/time/src/clocksource.rs",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "line": 32,
+        "target": "kernel/asterinas/kernel/core/comps/time/src/lib.rs",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "line": 33,
+        "target": "kernel/asterinas/kernel/core/src/time/clocks/system_wide.rs",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "line": 34,
+        "target": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/usage_tests.rs",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "line": 41,
+        "target": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "line": 42,
+        "target": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "line": 56,
+        "target": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/max_config.rs",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "line": 70,
+        "target": "kernel/asterinas/kernel/core/src/time/clocks/system_wide.rs",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "line": 71,
+        "target": "kernel/asterinas/kernel/core/comps/time/src/lib.rs",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "line": 78,
+        "target": "kernel/asterinas/kernel/core/comps/time/src/clocksource.rs",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "line": 79,
+        "target": "kernel/asterinas/kernel/core/src/vdso/clocksource_regressions.rs",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "line": 108,
+        "target": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "line": 109,
+        "target": "kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "line": 127,
+        "target": "kernel/asterinas/ostd/src/task/scheduler/mod.rs",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "line": 135,
+        "target": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/usage_tests.rs",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "line": 177,
+        "target": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "line": 198,
+        "target": "libs/os-control/src/lib.rs",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "line": 206,
+        "target": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "line": 206,
+        "target": "tests/organ_backend/CPU_OWNER_RETENTION.md",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "line": 207,
+        "target": "tests/organ_backend/CPU_SCHEDULER_HANDOFF.md",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "line": 218,
+        "target": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/tests.rs",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "line": 219,
+        "target": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/systree_node.rs",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "line": 220,
+        "target": "kernel/asterinas/kernel/core/src/process/test_util.rs",
+        "exists": true
+      },
+      {
+        "source": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "line": 221,
+        "target": "kernel/asterinas/ostd/src/sync/rcu/mod.rs",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 3,
+        "target": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 3,
+        "target": "tests/organ_backend/CPU_USAGE_G1B.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 3,
+        "target": "results/compat/2026-10-19-full-linux/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 3,
+        "target": "results/organ-backend/2026-10-19-owner-retention/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 3,
+        "target": "tests/organ_backend/CPU_CLOCK_HANDOFF_CI.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 3,
+        "target": "docs/STATUS.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 5,
+        "target": "docs/STATUS.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 17,
+        "target": "docs/PROJECT.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 18,
+        "target": "docs/ARCHITECTURE.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 19,
+        "target": "docs/NATIVE_ABI.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 20,
+        "target": "docs/HEPTA_INTEGRATION.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 21,
+        "target": "docs/SECURITY_AND_RECOVERY.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 22,
+        "target": "docs/LINUX_COMPATIBILITY.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 23,
+        "target": "docs/ANDROID_COMPATIBILITY.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 24,
+        "target": "docs/HARDWARE_AND_DRIVERS.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 25,
+        "target": "docs/DESKTOP_UX.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 26,
+        "target": "docs/ROADMAP.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 27,
+        "target": "docs/VALIDATION.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 28,
+        "target": "docs/DECISIONS.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 29,
+        "target": "docs/STATUS.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 30,
+        "target": "results/integration/2026-10-19-g1-owner/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 31,
+        "target": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 32,
+        "target": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 32,
+        "target": "tests/organ_backend/CPU_USAGE_G1B.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 33,
+        "target": "tests/kernel/control/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 34,
+        "target": "docs/agents/R8_NEXT_SLICE.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 35,
+        "target": "docs/agents/R9_G1_OWNER_SEAM.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 36,
+        "target": "services/hepta-os/OBJECTIVE_HISTORY.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 37,
+        "target": "docs/SOURCES.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 38,
+        "target": "support/upstream-lock.json",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 42,
+        "target": "tests/spec/test_recovery_contract.py",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 42,
+        "target": "tests/golden/hos2.json",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 42,
+        "target": "results/spec-recovery-v03.json",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 42,
+        "target": "libs/os-abi/src/lib.rs",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 42,
+        "target": "libs/os-control/API_CONTRACT.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 46,
+        "target": "docs/STATUS.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 46,
+        "target": "docs/R11_REPORT_INTEGRATION.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 48,
+        "target": "results/integration/2026-10-19-g1-owner/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 48,
+        "target": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 48,
+        "target": "tests/kernel/control/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 48,
+        "target": "results/integration/2026-10-19-g1-owner/g1-remote-ci-1c054/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 48,
+        "target": "results/integration/2026-10-19-g1-owner/source-publication/report-main-sync/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 48,
+        "target": "results/integration/2026-10-19-g1-owner/hepta-final-status/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 50,
+        "target": "results/integration/2026-10-18-runtime-process-boundaries/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 52,
+        "target": "results/integration/2026-10-19-main-sync/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 54,
+        "target": "services/hepta-os/OBJECTIVE_HISTORY.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 54,
+        "target": "tests/integration/hepta/OBJECTIVE_HISTORY_PROBE.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 54,
+        "target": "docs/STATUS.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 54,
+        "target": "docs/agents/R9_G1_OWNER_SEAM.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 56,
+        "target": "tests/organ_backend/CPU_CONFIG_SETTLEMENT.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 58,
+        "target": "tests/organ_backend/CPU_OWNER_RETENTION.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 58,
+        "target": "tests/organ_backend/run_cpu_owner_negative.py",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 60,
+        "target": "tests/workloads/linux/RLIMIT_NOFILE.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 60,
+        "target": "results/compat/2026-10-19-rlimit-nofile/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 62,
+        "target": "tests/workloads/linux/FULL_UBUNTU_PROFILE.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 62,
+        "target": "tests/workloads/linux/results/ubuntu-full-20261019-gates/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 64,
+        "target": "results/integration/2026-10-18-objective-desktop/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 64,
+        "target": "results/integration/2026-10-18-runtime-process-boundaries/r8-arm-completion/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 66,
+        "target": "results/integration/2026-10-18-audit-followthrough/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 66,
+        "target": "tests/integration/hepta/evidence/2026-10-17-r6/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 72,
+        "target": "docs/agents/PLAN.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 72,
+        "target": "docs/STATUS.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 72,
+        "target": "docs/ARCHITECTURE.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 72,
+        "target": "docs/DECISIONS.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 73,
+        "target": "support/build/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 73,
+        "target": "support/build/ktest/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 73,
+        "target": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 73,
+        "target": "results/integration/2026-10-19-g1-owner/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 73,
+        "target": "support/upstream-lock.json",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 74,
+        "target": "tests/abi/A02_REVIEW_CLOSURE_2026-10-17.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 74,
+        "target": "tests/abi/A02_EVIDENCE_INTEGRITY_2026-10-17.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 74,
+        "target": "results/integration/2026-10-18-audit-followthrough/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 74,
+        "target": "docs/NATIVE_ABI.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 74,
+        "target": "libs/os-abi/src/lib.rs",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 74,
+        "target": "results/integration/2026-10-19-g1-owner/g1-ci-host-correction/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 75,
+        "target": "tests/control/VALIDATION.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 75,
+        "target": "tests/control/run-validation.sh",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 75,
+        "target": "results/integration/2026-10-18-audit-followthrough/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 75,
+        "target": "libs/os-control/API_CONTRACT.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 75,
+        "target": "results/integration/2026-10-19-g1-owner/g1-ci-host-correction/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 76,
+        "target": "docs/agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 76,
+        "target": "tests/workloads/linux/SCM_RIGHTS_CLOEXEC.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 76,
+        "target": "docs/LINUX_COMPATIBILITY.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 76,
+        "target": "tests/workloads/linux/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 76,
+        "target": "support/rootfs/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 76,
+        "target": "compat/linux/GAPS.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 76,
+        "target": "results/integration/2026-10-19-g1-owner/source-publication/upstream-and-a04-current-api.json",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 77,
+        "target": "docs/agents/handoffs/A05_KERNEL_CONTROL.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 77,
+        "target": "tests/kernel/control/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 77,
+        "target": "docs/NATIVE_ABI.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 78,
+        "target": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 78,
+        "target": "results/integration/2026-10-19-g1-owner/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 78,
+        "target": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 78,
+        "target": "tests/organ_backend/CPU_MAX_CONFIG.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 78,
+        "target": "results/organ-backend/2026-10-17/a05-a06-integrated-acceptance.json",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 78,
+        "target": "results/integration/2026-10-18-audit-followthrough/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 78,
+        "target": "docs/ASTERINAS_ORGAN_BACKEND.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 78,
+        "target": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 78,
+        "target": "tests/organ_backend/CPU_USAGE_G1B.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 78,
+        "target": "results/organ-backend/2026-10-18/a06-odd-period-oracle/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 79,
+        "target": "results/integration/2026-10-19-g1-owner/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 79,
+        "target": "results/integration/2026-10-19-g1-owner/hepta-security/deny-repro-01/SECURITY_DEBT_DIAGNOSIS.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 79,
+        "target": "results/integration/2026-10-19-g1-owner/hepta-bazel-followup/BAZEL_FAILURE_DIAGNOSIS.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 79,
+        "target": "results/integration/2026-10-19-g1-owner/hepta-fleet-fixture-main-fix/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 79,
+        "target": "services/hepta-os/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 79,
+        "target": "services/hepta-os/CONTRACT.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 79,
+        "target": "services/hepta-os/RUN.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 79,
+        "target": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 79,
+        "target": "tests/integration/hepta/ORIGINAL_OBJECTIVE.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 79,
+        "target": "tests/integration/hepta/ORIGINAL_SESSION.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 79,
+        "target": "tests/integration/hepta/PROBE_LOCK_STABILITY.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 79,
+        "target": "services/hepta-os/OBJECTIVE_HISTORY.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 79,
+        "target": "tests/integration/hepta/OBJECTIVE_HISTORY_PROBE.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 79,
+        "target": "results/integration/2026-10-18-objective-history/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 79,
+        "target": "results/integration/2026-10-18-objective-history-ci/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 79,
+        "target": "results/integration/2026-10-18-objective-desktop/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 79,
+        "target": "docs/HEPTA_INTEGRATION.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 79,
+        "target": "docs/agents/R8_NEXT_SLICE.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 80,
+        "target": "support/android/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 80,
+        "target": "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 80,
+        "target": "results/integration/a08-host-main-20261017/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 80,
+        "target": "docs/ANDROID_COMPATIBILITY.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 80,
+        "target": "compat/android/INTERFACES.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 80,
+        "target": "compat/android/kernel-gaps.json",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 81,
+        "target": "support/vmm/device_lifecycle/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 81,
+        "target": "support/vmm/GATES.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 81,
+        "target": "docs/HARDWARE_AND_DRIVERS.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 81,
+        "target": "support/vmm/PROVENANCE.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 82,
+        "target": "support/ui/RUN.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 82,
+        "target": "support/ui/CHAT_WORKSPACE.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 82,
+        "target": "support/ui/HEPTA_OBSERVER.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 82,
+        "target": "ui/shell/OBSERVATION_FRESHNESS.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 82,
+        "target": "tests/ui/ORIGINAL_OBJECTIVE_SHELL.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 82,
+        "target": "support/ui/CJK_RENDERING.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 82,
+        "target": "support/ui/X11_IME.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 82,
+        "target": "results/integration/2026-10-18-objective-desktop/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 82,
+        "target": "docs/DESKTOP_UX.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 86,
+        "target": "results/integration/2026-10-18-objective-history/module-documentation-review.json",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 86,
+        "target": "docs/DESKTOP_UX.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 88,
+        "target": "results/integration/2026-10-18-r7-recovery/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 90,
+        "target": "results/integration/2026-10-19-g1-owner/module-documentation-delta.json",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 92,
+        "target": "results/integration/2026-10-19-g1-owner/hepta-fleet-main-remote-ci/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 92,
+        "target": "results/integration/2026-10-19-g1-owner/hepta-scoped-ci-storage-fix/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 96,
+        "target": "docs/agents/PLAN.md",
+        "exists": true
+      },
+      {
+        "source": "docs/INDEX.md",
+        "line": 96,
+        "target": "docs/agents/PROMPTS.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 5,
+        "target": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 5,
+        "target": "tests/organ_backend/CPU_USAGE_G1B.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 15,
+        "target": "docs/R11_REPORT_INTEGRATION.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 19,
+        "target": "results/compat/2026-10-19-full-linux/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 27,
+        "target": "results/organ-backend/2026-10-19-owner-retention/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 29,
+        "target": "tests/organ_backend/CPU_CLOCK_HANDOFF_CI.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 37,
+        "target": "docs/R11_REPORT_INTEGRATION.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 49,
+        "target": "tests/workloads/linux/FULL_UBUNTU_PROFILE.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 53,
+        "target": "tests/workloads/linux/results/ubuntu-full-20261019-gates/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 66,
+        "target": "results/compat/2026-10-19-rlimit-nofile/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 70,
+        "target": "tests/organ_backend/CPU_OWNER_RETENTION.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 82,
+        "target": "results/compat/2026-10-19-scm-cloexec/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 88,
+        "target": "tests/organ_backend/CPU_CONFIG_SETTLEMENT.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 89,
+        "target": "tests/workloads/linux/RLIMIT_NOFILE.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 89,
+        "target": "results/compat/2026-10-19-rlimit-nofile/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 97,
+        "target": "results/integration/2026-10-19-g1-owner/source-publication/report-main-sync/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 99,
+        "target": "results/integration/2026-10-19-g1-owner/g1-remote-ci-1c054/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 99,
+        "target": "results/integration/2026-10-19-g1-owner/source-publication/main-sync/independent-merge-tree-review.json",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 101,
+        "target": "results/integration/2026-10-19-g1-owner/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 105,
+        "target": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 109,
+        "target": "results/integration/2026-10-19-g1-owner/g1-remote-ci-f744/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 109,
+        "target": "results/integration/2026-10-19-g1-owner/g1-remote-ci-463f/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 109,
+        "target": "results/integration/2026-10-19-g1-owner/g1-remote-ci-107afb/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 110,
+        "target": "results/integration/2026-10-19-g1-owner/g1-ci-host-correction/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 111,
+        "target": "results/integration/2026-10-19-g1-owner/source-publication/main-sync/main-integration-source-review.json",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 113,
+        "target": "results/integration/2026-10-19-g1-owner/hepta-fleet-main-remote-ci/final-observation.json",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 114,
+        "target": "results/integration/2026-10-19-g1-owner/hepta-fleet-main-remote-ci/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 115,
+        "target": "results/integration/2026-10-19-g1-owner/hepta-scoped-ci-storage-fix/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 115,
+        "target": "results/integration/2026-10-19-g1-owner/source-publication/hepta-scoped-disk/initial-ci-and-fleet-status.json",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 116,
+        "target": "docs/agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 116,
+        "target": "tests/workloads/linux/SCM_RIGHTS_CLOEXEC.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 116,
+        "target": "results/integration/2026-10-19-g1-owner/module-documentation-delta.json",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 118,
+        "target": "results/integration/2026-10-19-g1-owner/hepta-final-status/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 139,
+        "target": "results/integration/2026-10-19-main-sync/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 143,
+        "target": "services/hepta-os/OBJECTIVE_HISTORY.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 143,
+        "target": "tests/integration/hepta/OBJECTIVE_HISTORY_PROBE.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 143,
+        "target": "results/integration/2026-10-18-objective-history/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 149,
+        "target": "results/integration/2026-10-18-objective-history/native-agentd-build.json",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 150,
+        "target": "results/integration/2026-10-18-objective-history/history-runtime.json",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 150,
+        "target": "results/integration/2026-10-18-objective-history/history-runtime-independent-review.json",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 151,
+        "target": "results/integration/2026-10-18-objective-history-ci/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 152,
+        "target": "results/integration/2026-10-18-objective-history/module-documentation-review.json",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 153,
+        "target": "docs/agents/R9_G1_OWNER_SEAM.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 157,
+        "target": "services/hepta-os/OBJECTIVE_HISTORY_CONTRACT.json",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 163,
+        "target": "docs/agents/R8_NEXT_SLICE.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 169,
+        "target": "results/integration/2026-10-18-runtime-process-boundaries/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 180,
+        "target": "docs/DESKTOP_UX.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 180,
+        "target": "ui/shell/OBSERVATION_FRESHNESS.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 182,
+        "target": "docs/agents/R8_NEXT_SLICE.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 190,
+        "target": "results/integration/2026-10-18-objective-desktop/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 201,
+        "target": "results/integration/2026-10-18-runtime-process-boundaries/r8-arm-completion/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 203,
+        "target": "docs/agents/R8_NEXT_SLICE.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 211,
+        "target": "results/integration/2026-10-18-audit-followthrough/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 272,
+        "target": "docs/DESKTOP_UX.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 358,
+        "target": "docs/DESKTOP_UX.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 358,
+        "target": "docs/INDEX.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 372,
+        "target": "results/integration/a08-host-main-20261017/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 372,
+        "target": "support/android/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 372,
+        "target": "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 390,
+        "target": "docs/INDEX.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 390,
+        "target": "docs/agents/handoffs/A05_KERNEL_CONTROL.md",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 403,
+        "target": "results/kernel/control/a05-main-combined-acceptance-20261017.json",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 442,
+        "target": "results/organ-backend/2026-10-17/a05-a06-integrated-acceptance.json",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 532,
+        "target": "tests/organ_backend/smp2/run_parallel_candidate.py",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 532,
+        "target": "results/organ-backend/2026-10-16/a06-smp-posix-exit-guard.json",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 541,
+        "target": "results/organ-backend/2026-10-16/a06-cpustat-readonly-independent-ktest.json",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 541,
+        "target": "results/organ-backend/2026-10-16/a06-cpustat-readonly-independent-qemu.json",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 639,
+        "target": "results/organ-backend/2026-10-16",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 653,
+        "target": "results/organ-backend/2026-10-16",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 669,
+        "target": "results/spec-recovery-v03.json",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 671,
+        "target": "tests/golden/hos2.json",
+        "exists": true
+      },
+      {
+        "source": "docs/STATUS.md",
+        "line": 677,
+        "target": "results/reference-iso-probe.json",
+        "exists": true
+      },
+      {
+        "source": "tests/organ_backend/CPU_BOOTTIME_CLOCK.md",
+        "line": 3,
+        "target": "tests/organ_backend/CPU_USAGE_G1B.md",
+        "exists": true
+      },
+      {
+        "source": "tests/organ_backend/CPU_BOOTTIME_CLOCK.md",
+        "line": 14,
+        "target": "kernel/asterinas/kernel/core/comps/time/src/clocksource.rs",
+        "exists": true
+      },
+      {
+        "source": "tests/organ_backend/CPU_BOOTTIME_CLOCK.md",
+        "line": 15,
+        "target": "kernel/asterinas/kernel/core/src/time/clocks/system_wide.rs",
+        "exists": true
+      },
+      {
+        "source": "tests/organ_backend/CPU_BOOTTIME_CLOCK.md",
+        "line": 18,
+        "target": "kernel/asterinas/kernel/core/comps/time/src/tsc.rs",
+        "exists": true
+      },
+      {
+        "source": "tests/organ_backend/CPU_BOOTTIME_CLOCK.md",
+        "line": 46,
+        "target": "kernel/asterinas/kernel/core/comps/time/src/lib.rs",
+        "exists": true
+      },
+      {
+        "source": "tests/organ_backend/CPU_BOOTTIME_CLOCK.md",
+        "line": 74,
+        "target": "kernel/asterinas/kernel/core/src/vdso.rs",
+        "exists": true
+      },
+      {
+        "source": "tests/organ_backend/CPU_BOOTTIME_CLOCK.md",
+        "line": 111,
+        "target": "kernel/asterinas/kernel/core/src/vdso/clocksource_regressions.rs",
+        "exists": true
+      },
+      {
+        "source": "tests/organ_backend/CPU_BOOTTIME_CLOCK.md",
+        "line": 140,
+        "target": "tests/organ_backend/clocksource_drop_fraction_negative.patch",
+        "exists": true
+      },
+      {
+        "source": "tests/organ_backend/CPU_BOOTTIME_CLOCK.md",
+        "line": 141,
+        "target": "tests/organ_backend/vdso_drop_fraction_negative.patch",
+        "exists": true
+      },
+      {
+        "source": "tests/organ_backend/CPU_BOOTTIME_CLOCK.md",
+        "line": 142,
+        "target": "tests/organ_backend/vdso_skip_fault_mode_negative.patch",
+        "exists": true
+      },
+      {
+        "source": "tests/organ_backend/CPU_CLOCK_HANDOFF_CI.md",
+        "line": 3,
+        "target": "tests/organ_backend/CPU_USAGE_G1B.md",
+        "exists": true
+      },
+      {
+        "source": "tests/organ_backend/CPU_CLOCK_HANDOFF_CI.md",
+        "line": 5,
+        "target": "tests/organ_backend/CPU_BOOTTIME_CLOCK.md",
+        "exists": true
+      },
+      {
+        "source": "tests/organ_backend/CPU_CLOCK_HANDOFF_CI.md",
+        "line": 5,
+        "target": "tests/organ_backend/CPU_SCHEDULER_HANDOFF.md",
+        "exists": true
+      },
+      {
+        "source": "tests/organ_backend/CPU_CLOCK_HANDOFF_CI.md",
+        "line": 5,
+        "target": "results/organ-backend/2026-10-19-owner-retention/README.md",
+        "exists": true
+      },
+      {
+        "source": "tests/organ_backend/CPU_USAGE_G1B.md",
+        "line": 3,
+        "target": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+        "exists": true
+      },
+      {
+        "source": "tests/organ_backend/CPU_USAGE_G1B.md",
+        "line": 12,
+        "target": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs",
+        "exists": true
+      },
+      {
+        "source": "tests/organ_backend/CPU_USAGE_G1B.md",
+        "line": 13,
+        "target": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs",
+        "exists": true
+      },
+      {
+        "source": "tests/organ_backend/CPU_USAGE_G1B.md",
+        "line": 14,
+        "target": "kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs",
+        "exists": true
+      },
+      {
+        "source": "tests/organ_backend/CPU_USAGE_G1B.md",
+        "line": 27,
+        "target": "tests/organ_backend/CPU_CLOCK_HANDOFF_CI.md",
+        "exists": true
+      },
+      {
+        "source": "tests/organ_backend/CPU_USAGE_G1B.md",
+        "line": 33,
+        "target": ".github/workflows/a06-kernel.yml",
+        "exists": true
+      },
+      {
+        "source": "tests/organ_backend/CPU_USAGE_G1B.md",
+        "line": 34,
+        "target": "support/build/README.md",
+        "exists": true
+      },
+      {
+        "source": "tests/organ_backend/CPU_USAGE_G1B.md",
+        "line": 35,
+        "target": "support/build/ktest/README.md",
+        "exists": true
+      },
+      {
+        "source": "tests/organ_backend/CPU_USAGE_G1B.md",
+        "line": 77,
+        "target": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/usage_tests.rs",
+        "exists": true
+      },
+      {
+        "source": "tests/organ_backend/CPU_USAGE_G1B.md",
+        "line": 144,
+        "target": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/tests.rs",
+        "exists": true
+      },
+      {
+        "source": "tests/organ_backend/CPU_USAGE_G1B.md",
+        "line": 145,
+        "target": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/systree_node.rs",
+        "exists": true
+      },
+      {
+        "source": "tests/organ_backend/CPU_USAGE_G1B.md",
+        "line": 148,
+        "target": "kernel/asterinas/ostd/src/sync/rcu/mod.rs",
+        "exists": true
+      },
+      {
+        "source": "tests/organ_backend/CPU_USAGE_G1B.md",
+        "line": 185,
+        "target": "tests/organ_backend/run_cpu_owner_negative.py",
+        "exists": true
+      },
+      {
+        "source": "tests/organ_backend/CPU_USAGE_G1B.md",
+        "line": 246,
+        "target": "tests/kernel/control/run_queryabi_candidate_guest.py",
+        "exists": true
+      },
+      {
+        "source": "tests/organ_backend/CPU_USAGE_G1B.md",
+        "line": 250,
+        "target": "tests/organ_backend/CPU_CONFIG_SETTLEMENT.md",
+        "exists": true
+      },
+      {
+        "source": "tests/organ_backend/CPU_USAGE_G1B.md",
+        "line": 296,
+        "target": ".github/workflows/a06-kernel.yml",
+        "exists": true
+      },
+      {
+        "source": "tests/organ_backend/CPU_USAGE_G1B.md",
+        "line": 300,
+        "target": "tests/workloads/linux/run_scm_rights_cloexec_guest.py",
+        "exists": true
+      },
+      {
+        "source": "tests/organ_backend/CPU_USAGE_G1B.md",
+        "line": 301,
+        "target": "tests/workloads/linux/run_rlimit_nofile_guest.py",
+        "exists": true
+      },
+      {
+        "source": "tests/organ_backend/CPU_USAGE_G1B.md",
+        "line": 304,
+        "target": "tests/workloads/linux/FULL_UBUNTU_PROFILE.md",
+        "exists": true
+      },
+      {
+        "source": "tests/organ_backend/CPU_USAGE_G1B.md",
+        "line": 305,
+        "target": "compat/linux/profiles/ubuntu24.04-x86_64-20261019.json",
+        "exists": true
+      }
+    ]
+  },
+  "historical_document_checks": [
+    {
+      "path": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "original_body_retained": true
+    },
+    {
+      "path": "tests/organ_backend/CPU_BOOTTIME_CLOCK.md",
+      "original_body_retained": true
+    },
+    {
+      "path": "tests/organ_backend/CPU_CLOCK_HANDOFF_CI.md",
+      "original_body_retained": true
+    }
+  ],
+  "historical_conclusions": {
+    "original_local_source": "83e122d40e5427f84efebb4b7a224f7131580e63",
+    "original_reported_tree": "659736e494be76de1d29e2e80972b126071e5cfe",
+    "original_reported_blocking": [],
+    "original_report_bytes_available": false,
+    "bounded_source_conclusion": "The reread immutable tree and 16 retained byte identities preserve the reviewed ns/cycles split, same-owner snapshot and fixture correction. This review confirms source identity and static contracts, not a newly run kernel.",
+    "wip_runtime": "Prior messages reported core03 220/220, raw QEMU33, serial SHA ab7ae20b3dafef9250d74e829fed703698f673061d47950eaa8e96fb12ef705e on dirty WIP. Those original local runtime bytes were not recovered and are not revalidated here."
+  },
+  "qualification_limits": [
+    "The exact PR205 head needs its own real A06 artifact; none is declared passed by this source review.",
+    "A descendant host-fixture fix needs its own commit and CI identity even if production bytes remain unchanged.",
+    "No trusted-init/Process authority or four HOS2 resource operations are opened. Same-CPU private observation does not prove full SMP, physical switch atomicity, Hepta K-to-D delivery or device support."
+  ],
+  "activities": {
+    "cargo_rust_qemu_invocations": 0,
+    "product_source_edits": 0,
+    "remote_writes": 0,
+    "old_script_execution": 0
+  }
+}

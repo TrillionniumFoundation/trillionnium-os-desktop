@@ -1,0 +1,60 @@
+{
+  "mode": "leaf",
+  "quota_us": 1000,
+  "period_us": 100000,
+  "duration_seconds": 1,
+  "max_cpu_percent": 3.0,
+  "candidate_sha256": "e1d5ec0f294d0fffe1c887f92e2b564aa9d967753e0d6f815894ca6490c779c5",
+  "initramfs_sha256": "681e903f494fb2a44238ce6ed52f0f597a96f6fd1c9e7ec313314203a28ca4dc",
+  "source_pin": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+  "host_cgroup_modified": false,
+  "guest_only": true,
+  "smp_qualified": false,
+  "hepta_hos2_qualified": false,
+  "runs": [
+    {
+      "index": 1,
+      "qemu_exit": 33,
+      "guest_complete": true,
+      "panic": false,
+      "policy_rt": false,
+      "cpu_percent": 1.0,
+      "samples": [
+        {
+          "label": "unlimited",
+          "wall_ns": 1000018192,
+          "cpu_ns": 998000000,
+          "iterations": 327500000
+        },
+        {
+          "label": "one-percent-configured",
+          "wall_ns": 1000175306,
+          "cpu_ns": 10000000,
+          "iterations": 2200000
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "qemu_exit": 33,
+      "guest_complete": true,
+      "panic": false,
+      "policy_rt": false,
+      "cpu_percent": 1.0,
+      "samples": [
+        {
+          "label": "unlimited",
+          "wall_ns": 1000025941,
+          "cpu_ns": 997000000,
+          "iterations": 327900000
+        },
+        {
+          "label": "one-percent-configured",
+          "wall_ns": 1000076451,
+          "cpu_ns": 10000000,
+          "iterations": 2200000
+        }
+      ]
+    }
+  ]
+}

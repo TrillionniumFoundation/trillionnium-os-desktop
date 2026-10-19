@@ -1,0 +1,202 @@
+{
+  "schema_version": 1,
+  "kind": "bounded_input_chain_supplement",
+  "reviewed_at_utc": "2026-10-19T11:30:38.409826+00:00",
+  "head": "4d3011cf9f92e25fc1b0d7371e9cdbbd5a8b7930",
+  "tree": "8eb809136a402cc54ba049b1e40dd174308c923f",
+  "primary_review_sha256": "4581b8b56ca6b0d54deecf486352cf085d10c39b0a28eba4d9883d4710418b93",
+  "archive_sha256": "ef5d93159c1663fb30d3cf8e39e969525bbfa03b4fedc4db10ef4c87b035d655",
+  "checks": [
+    {
+      "name": "all_preserved_CPU_config_input_records_and_argv",
+      "passed": true,
+      "detail": {
+        "configurations": 4,
+        "independently_checked_records_per_configuration": 9,
+        "host_QEMU_compiler_bytes_available": false,
+        "original_recorded_QEMU_compiler_binding_consistent": true
+      }
+    },
+    {
+      "name": "ordinary_guest_QEMU_paths_and_frozen_full_input",
+      "passed": true,
+      "detail": {
+        "guest_profiles": [
+          "scm27",
+          "nofile37",
+          "full32"
+        ],
+        "same_saved_ordinary_kernel": true,
+        "full_input_passed_false_is_pre_execution": true
+      }
+    },
+    {
+      "name": "two_CPU_init_preserves_original_archive",
+      "passed": true,
+      "detail": {
+        "only_added_paths": [
+          "bin/cpu-cap-probe",
+          ".hepta-disposable-guest"
+        ],
+        "only_init_edits": [
+          "cpu_count must equal2",
+          "invoke original bounded probe before BOOT_OK"
+        ],
+        "serial_AP_count": 1,
+        "combined_with_BSP_total": 2,
+        "additional_full_SMP_qualification": false
+      }
+    }
+  ],
+  "blocking": [],
+  "read_member_identities": {
+    "_temp/a06-queryabi-candidate/result.json": {
+      "bytes": 3360,
+      "sha256": "eac389ecd38659ff1fdb2413f1169885ff1eea31c5813b67c8a5f3c858cd5ee9"
+    },
+    "_temp/a06-queryabi-candidate/product-kernel.elf": {
+      "bytes": 8388960,
+      "sha256": "1897671a81fab04dc8d5e995b42b62256ec2bd13043ad78a93684d46f60c0fe0"
+    },
+    "_temp/a04-full-bundle/original-initramfs.cpio.gz": {
+      "bytes": 1107990,
+      "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+    },
+    "_temp/a06-queryabi-candidate/bios.bin": {
+      "bytes": 262144,
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    "_temp/a06-cpu-config-100000-read-only/result.json": {
+      "bytes": 6193,
+      "sha256": "ec5f3083582a4b34b726adbf8783968f357b5fd7c325ba57367814f7c4623203"
+    },
+    "_temp/a06-cpu-config-100000-read-only/inputs.json": {
+      "bytes": 4764,
+      "sha256": "21c308b77c63c24002cd344681513cf19fb6839fbd64d5ea8cb38ea272153f0c"
+    },
+    "_temp/a06-cpu-config-100000-read-only/probe.c": {
+      "bytes": 4761,
+      "sha256": "dafa2a0d7ee1147eb8ec3fd63d8d03771b556cde9cd07971d5cb13c26be5decd"
+    },
+    "_temp/a06-cpu-config-100000-read-only/probe": {
+      "bytes": 790008,
+      "sha256": "eb40069c8dc96ba546b82cff89f1daa8da88838dcbc9854e381db9f524bc5c3e"
+    },
+    "_temp/a06-cpu-config-100000-read-only/initramfs.cpio.gz": {
+      "bytes": 1451651,
+      "sha256": "edcd13dfdd586ed12b5ba29d42569e6299164eed255053959ebc1ba991591264"
+    },
+    "_temp/a06-cpu-config-100000-same-value/result.json": {
+      "bytes": 6202,
+      "sha256": "112da41b0623c8654a49d97ac48d17f4c0b9f4fb6c64cf3d8386b2e2b8403681"
+    },
+    "_temp/a06-cpu-config-100000-same-value/inputs.json": {
+      "bytes": 4771,
+      "sha256": "d598d630e06f89f9db5955be2129ea99c7c4787d15f10b1dcc010339ad79193a"
+    },
+    "_temp/a06-cpu-config-100000-same-value/probe.c": {
+      "bytes": 4761,
+      "sha256": "dafa2a0d7ee1147eb8ec3fd63d8d03771b556cde9cd07971d5cb13c26be5decd"
+    },
+    "_temp/a06-cpu-config-100000-same-value/probe": {
+      "bytes": 790008,
+      "sha256": "eb40069c8dc96ba546b82cff89f1daa8da88838dcbc9854e381db9f524bc5c3e"
+    },
+    "_temp/a06-cpu-config-100000-same-value/initramfs.cpio.gz": {
+      "bytes": 1451655,
+      "sha256": "f6656267c24376b795081095818da2a4b1041a6b8ee03b519a43191dde0e7db0"
+    },
+    "_temp/a06-cpu-config-2000-read-only/result.json": {
+      "bytes": 6183,
+      "sha256": "4bf10cf2a2ed3cda620f9ec4fa0145abcb75a2e9dfb824119fa5b87d3a6cf704"
+    },
+    "_temp/a06-cpu-config-2000-read-only/inputs.json": {
+      "bytes": 4751,
+      "sha256": "4e4e8efbfb4d48c2fc9a02ed898ceace4f2693edc3fc0fd7179f0c2a7ee3f3c1"
+    },
+    "_temp/a06-cpu-config-2000-read-only/probe.c": {
+      "bytes": 4761,
+      "sha256": "dafa2a0d7ee1147eb8ec3fd63d8d03771b556cde9cd07971d5cb13c26be5decd"
+    },
+    "_temp/a06-cpu-config-2000-read-only/probe": {
+      "bytes": 790008,
+      "sha256": "eb40069c8dc96ba546b82cff89f1daa8da88838dcbc9854e381db9f524bc5c3e"
+    },
+    "_temp/a06-cpu-config-2000-read-only/initramfs.cpio.gz": {
+      "bytes": 1451654,
+      "sha256": "4284a01e5add26d69d09eefc9dca641edf9acee712d73ce7937a4a7cb7f40ed7"
+    },
+    "_temp/a06-cpu-config-2000-same-value/result.json": {
+      "bytes": 6191,
+      "sha256": "e74c331dcc19364890eb98ac9262096251b8e558055ee60cb56d871e20604997"
+    },
+    "_temp/a06-cpu-config-2000-same-value/inputs.json": {
+      "bytes": 4758,
+      "sha256": "83425578923c6d5fb87eb0880b180b3d35ca65d85d54d0814c1a8ca500e58655"
+    },
+    "_temp/a06-cpu-config-2000-same-value/probe.c": {
+      "bytes": 4761,
+      "sha256": "dafa2a0d7ee1147eb8ec3fd63d8d03771b556cde9cd07971d5cb13c26be5decd"
+    },
+    "_temp/a06-cpu-config-2000-same-value/probe": {
+      "bytes": 790008,
+      "sha256": "eb40069c8dc96ba546b82cff89f1daa8da88838dcbc9854e381db9f524bc5c3e"
+    },
+    "_temp/a06-cpu-config-2000-same-value/initramfs.cpio.gz": {
+      "bytes": 1451654,
+      "sha256": "617a936d804f311502badfc4182aa399b0cf0dcd6e96d73fe4c8ead147742f61"
+    },
+    "_temp/a04-scm-guest/result.json": {
+      "bytes": 5064,
+      "sha256": "7bdaa0d3c80f4cd3d71de9ecce225f0b2bc034da6cc32ba09f6c20b7d4fbf7d9"
+    },
+    "_temp/a04-scm-guest/serial.log": {
+      "bytes": 118164,
+      "sha256": "5b69eef8b1b1081026aadd863ac4aa9f7129af8cada4d80c70544e91679aea48"
+    },
+    "_temp/a04-nofile-guest/result.json": {
+      "bytes": 6233,
+      "sha256": "b8559e974eabc2951b68ced8d1d5ee815257bcbd61f1462b1582df4d89f56248"
+    },
+    "_temp/a04-nofile-guest/serial.log": {
+      "bytes": 310717,
+      "sha256": "1632743785cbfda0b64e580a360eaf46ed86804f3285bd0cd16ed4920c06a479"
+    },
+    "_temp/a04-full-guest/result.json": {
+      "bytes": 21752,
+      "sha256": "3e95f6c2f3ce5f518f6ddf34a2c19d5fffcb015a21d6aaf0b0554b4970b2b787"
+    },
+    "_temp/a04-full-guest/serial.log": {
+      "bytes": 3531345,
+      "sha256": "e74b3ae259efa033636350a5ccb121ac9f548202e4eb9b648f7243e2f9cd50c5"
+    },
+    "_temp/a04-full-guest/input.json": {
+      "bytes": 3601,
+      "sha256": "9e336d62f83a8ecc03c9c325dd8772950db47c253502f08924bd38830d61b31d"
+    },
+    "_temp/a04-full-linux/result.json": {
+      "bytes": 25382,
+      "sha256": "9aff73d6579ceb86f319b79faea817845334229b54db213a66850b01ad95e181"
+    },
+    "_temp/a06-probe-2vcpu/initramfs.cpio.gz": {
+      "bytes": 1553061,
+      "sha256": "49420ed460ff18e4758af655ab242287ada718064ed0bb0e6e8658270c1f1fd3"
+    },
+    "_temp/a06-probe-2vcpu/serial-1.log": {
+      "bytes": 81818,
+      "sha256": "a23dd2e95ae8fb0594873c362982e1be17bfb3f95e26ea1eba226a6dca0fd6d2"
+    },
+    "_temp/a06-probe-2vcpu/serial-2.log": {
+      "bytes": 81817,
+      "sha256": "1a4fc364015f857ff8fcfb200c8d514aa59754491f4efd2de3bbfc96cb9b7168"
+    }
+  },
+  "limits": [
+    "This supplements archived byte/path bindings only; no product/test/archived helper was run.",
+    "Host QEMU/compiler files themselves remain unavailable, not independently rehashed."
+  ],
+  "activities": {
+    "product_runs": 0,
+    "product_mutations": 0
+  }
+}

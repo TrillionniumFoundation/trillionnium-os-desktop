@@ -1,0 +1,338 @@
+{
+  "schema": 1,
+  "prepared_at_utc": "2026-10-19T11:38:56.617318+00:00",
+  "kind": "exact executed source and normal merge, independently reviewed original artifact",
+  "source_head": "4d3011cf9f92e25fc1b0d7371e9cdbbd5a8b7930",
+  "source_tree": "8eb809136a402cc54ba049b1e40dd174308c923f",
+  "initial_main": "00e2652c62ce6e34337d8f5bc3f3366b089c3d9c",
+  "implementation_changed_files": 25,
+  "pr205": {
+    "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/205",
+    "merged": true,
+    "merged_at": "2026-10-19T11:34:07Z",
+    "merge_commit": "b8d5af3f82aa8c262560fd52a79408a18e18bde1",
+    "merge_tree": "8eb809136a402cc54ba049b1e40dd174308c923f",
+    "merge_parents": [
+      "00e2652c62ce6e34337d8f5bc3f3366b089c3d9c",
+      "4d3011cf9f92e25fc1b0d7371e9cdbbd5a8b7930"
+    ],
+    "product_tree_equals_executed_tree": true,
+    "method": "normal merge with exact expected head, followed by actual PR/ref/commit GETs"
+  },
+  "ci": {
+    "run_id": 39240728276,
+    "job_id": 118020615962,
+    "artifact_id": 12182038203,
+    "artifact_bytes": 154979607,
+    "artifact_sha256": "ef5d93159c1663fb30d3cf8e39e969525bbfa03b4fedc4db10ef4c87b035d655",
+    "head": "4d3011cf9f92e25fc1b0d7371e9cdbbd5a8b7930",
+    "checks": [
+      {
+        "name": "CodeQL",
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "4d3011cf9f92e25fc1b0d7371e9cdbbd5a8b7930",
+        "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/runs/118020953468"
+      },
+      {
+        "name": "host-contracts",
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "4d3011cf9f92e25fc1b0d7371e9cdbbd5a8b7930",
+        "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39240728311/job/118020616014"
+      },
+      {
+        "name": "exact-kernel-ktest",
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "4d3011cf9f92e25fc1b0d7371e9cdbbd5a8b7930",
+        "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39240728276/job/118020615962"
+      },
+      {
+        "name": "host-evidence",
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "4d3011cf9f92e25fc1b0d7371e9cdbbd5a8b7930",
+        "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39240728231/job/118020615740"
+      },
+      {
+        "name": "Analyze (python)",
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "4d3011cf9f92e25fc1b0d7371e9cdbbd5a8b7930",
+        "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39240724701/job/118020610051"
+      }
+    ],
+    "all_five_observed_checks_success": true
+  },
+  "qualification": {
+    "source_files": 7054,
+    "core_passed": 220,
+    "core_failed": 0,
+    "core_filtered": 0,
+    "core_soft_skipped": 0,
+    "ostd_reported_passed": 221,
+    "ostd_soft_skipped": 3,
+    "ostd_exercised_lower_bound": 218,
+    "reported_passed": 441,
+    "exercised_passed_lower_bound": 438,
+    "new_usage_test_count": 19,
+    "new_usage_tests_all_once_green": true,
+    "negative_control_count": 7,
+    "negative_failed_counts": [
+      3,
+      4,
+      3,
+      1,
+      4,
+      1,
+      2
+    ],
+    "negative_complete_core_tests_each": 220,
+    "ordinary_kernel_sha256": "1897671a81fab04dc8d5e995b42b62256ec2bd13043ad78a93684d46f60c0fe0",
+    "queryabi_markers": 14,
+    "scm_cases": 27,
+    "nofile_cases": 37,
+    "linux_cases": 32,
+    "guest_cases": 32,
+    "full32_stdout_byte_identical": true,
+    "full32_stderr_empty": true,
+    "runtime_files": 673,
+    "runtime_bytes": 43204445,
+    "runtime_elfs": 79,
+    "workload_elfs": {
+      "a04-tokio-workload": {
+        "bytes": 1088488,
+        "sha256": "a0ea355183dadc784f6a38d96c8ba4cf50be1fc5870a50a988733f279fec2ff7",
+        "elf_class": 64,
+        "machine": 62,
+        "has_interp": true
+      },
+      "probe_dynamic": {
+        "bytes": 44312,
+        "sha256": "fd9f926c6303560f49ba03dc2fad142327e005f3182683886e5eed3d85a8791a",
+        "elf_class": 64,
+        "machine": 62,
+        "has_interp": true
+      },
+      "probe_static": {
+        "bytes": 961112,
+        "sha256": "78a3e6e720e0a0e2ea04c13656bd3f67ad21a66c14e7b6cbc704456a06531ed1",
+        "elf_class": 64,
+        "machine": 62,
+        "has_interp": false
+      },
+      "sqlite_dynamic": {
+        "bytes": 17032,
+        "sha256": "142570068591ae50c1af63343cbdfb82d0292c04e14691a7a7f5692cdbff846e",
+        "elf_class": 64,
+        "machine": 62,
+        "has_interp": true
+      },
+      "sqlite_static": {
+        "bytes": 2771680,
+        "sha256": "3f53f961f82d529cbac105b608f6a03d62bf357236a209b2e17a01873c3c22a1",
+        "elf_class": 64,
+        "machine": 62,
+        "has_interp": false
+      }
+    },
+    "cpu_configurations": [
+      {
+        "period_us": 100000,
+        "mode": "read-only",
+        "original_limit_percent": 1.2,
+        "unlimited_percent": 98.79984587224044,
+        "wall_ns": 4099129963,
+        "cpu_ns": 38000000,
+        "cpu_percent": 0.9270259870509014,
+        "raw_qemu": 33,
+        "probe_sha256": "eb40069c8dc96ba546b82cff89f1daa8da88838dcbc9854e381db9f524bc5c3e",
+        "serial_sha256": "229c3bf82a896d2be20bd351eb61cdf3459d7902945c827e67f791385338be60"
+      },
+      {
+        "period_us": 100000,
+        "mode": "same-value",
+        "original_limit_percent": 1.2,
+        "unlimited_percent": 99.19991032328107,
+        "wall_ns": 4000419257,
+        "cpu_ns": 36000000,
+        "cpu_percent": 0.899905677061388,
+        "raw_qemu": 33,
+        "probe_sha256": "eb40069c8dc96ba546b82cff89f1daa8da88838dcbc9854e381db9f524bc5c3e",
+        "serial_sha256": "cbae59471c42041d0696491709631dc4dd5a68a9e6bbcc59dd0dc0171e17471e"
+      },
+      {
+        "period_us": 2000,
+        "mode": "read-only",
+        "original_limit_percent": 52.0,
+        "unlimited_percent": 99.19994722562808,
+        "wall_ns": 4002461609,
+        "cpu_ns": 1835000000,
+        "cpu_percent": 45.84678578487272,
+        "raw_qemu": 33,
+        "probe_sha256": "eb40069c8dc96ba546b82cff89f1daa8da88838dcbc9854e381db9f524bc5c3e",
+        "serial_sha256": "20e60ed4230004a7cac1dfb6ae484ba510368269e87bf822f9e33b6f39fbff45"
+      },
+      {
+        "period_us": 2000,
+        "mode": "same-value",
+        "original_limit_percent": 52.0,
+        "unlimited_percent": 99.59990279049488,
+        "wall_ns": 4001507491,
+        "cpu_ns": 1853000000,
+        "cpu_percent": 46.30754794705943,
+        "raw_qemu": 33,
+        "probe_sha256": "eb40069c8dc96ba546b82cff89f1daa8da88838dcbc9854e381db9f524bc5c3e",
+        "serial_sha256": "8f22c352191e9c5c004536d0d0927d39acb29b4d68fa2be5a6c56cc8876dfbb7"
+      }
+    ],
+    "quota_runs": [
+      {
+        "vcpus": 1,
+        "repeat": 1,
+        "samples": [
+          {
+            "label": "unlimited",
+            "wall_ns": 1000047046,
+            "cpu_ns": 997000000,
+            "iterations": 368800000
+          },
+          {
+            "label": "one-percent-configured",
+            "wall_ns": 1000367164,
+            "cpu_ns": 10000000,
+            "iterations": 2900000
+          }
+        ],
+        "original_limit_percent": 3.0,
+        "cpu_percent": 1.0,
+        "unlimited_percent": 99.69530973445823,
+        "raw_qemu": 33,
+        "serial_sha256": "f409358b4126dcd9e0285d60d9fc815b8224a7657a1f7952bc2892ebf2680c50"
+      },
+      {
+        "vcpus": 1,
+        "repeat": 2,
+        "samples": [
+          {
+            "label": "unlimited",
+            "wall_ns": 1000045189,
+            "cpu_ns": 997000000,
+            "iterations": 367600000
+          },
+          {
+            "label": "one-percent-configured",
+            "wall_ns": 1000287009,
+            "cpu_ns": 11000000,
+            "iterations": 3300000
+          }
+        ],
+        "original_limit_percent": 3.0,
+        "cpu_percent": 1.1,
+        "unlimited_percent": 99.69549486028276,
+        "raw_qemu": 33,
+        "serial_sha256": "ed309299d6a796360e7a2f86ba9dfbc9d9c3b5bd9605b596d7f015f101645abf"
+      },
+      {
+        "vcpus": 2,
+        "repeat": 1,
+        "samples": [
+          {
+            "label": "unlimited",
+            "wall_ns": 1012323376,
+            "cpu_ns": 2011000000,
+            "iterations": 0
+          },
+          {
+            "label": "one-percent-configured",
+            "wall_ns": 2099367830,
+            "cpu_ns": 19000000,
+            "iterations": 0
+          }
+        ],
+        "original_limit_percent": 3.0,
+        "cpu_percent": 0.905,
+        "unlimited_percent": 198.65193748128956,
+        "raw_qemu": 33,
+        "serial_sha256": "a23dd2e95ae8fb0594873c362982e1be17bfb3f95e26ea1eba226a6dca0fd6d2"
+      },
+      {
+        "vcpus": 2,
+        "repeat": 2,
+        "samples": [
+          {
+            "label": "unlimited",
+            "wall_ns": 1011105535,
+            "cpu_ns": 2010000000,
+            "iterations": 0
+          },
+          {
+            "label": "one-percent-configured",
+            "wall_ns": 1499147996,
+            "cpu_ns": 14000000,
+            "iterations": 0
+          }
+        ],
+        "original_limit_percent": 3.0,
+        "cpu_percent": 0.934,
+        "unlimited_percent": 198.79230509800345,
+        "raw_qemu": 33,
+        "serial_sha256": "1a4fc364015f857ff8fcfb200c8d514aa59754491f4efd2de3bbfc96cb9b7168"
+      }
+    ],
+    "same_ordinary_kernel_for_one_and_two_cpu": true
+  },
+  "independent_reviews": [
+    {
+      "path": "pr205-runtime-review/green-independent-review/review.json",
+      "bytes": 87032,
+      "sha256": "6a5f40808d290ee0d6832e47f7c7062937f2157a3c3dc85251535a355311b718",
+      "accepted": true
+    },
+    {
+      "path": "pr205-runtime-review/negative-independent-review/review.json",
+      "bytes": 64622,
+      "sha256": "6f1baa30800d674517e4e5a01cdaf2ef391dd16b16e531f4f0ea536e2a6cbe59",
+      "accepted": true
+    },
+    {
+      "path": "pr205-runtime-review/ordinary-cpu-review/review.json",
+      "bytes": 86455,
+      "sha256": "4581b8b56ca6b0d54deecf486352cf085d10c39b0a28eba4d9883d4710418b93",
+      "accepted": true
+    },
+    {
+      "path": "pr205-runtime-review/ordinary-cpu-review/input-chain-supplement.json",
+      "bytes": 7673,
+      "sha256": "50ce01aef55c035ba025a5bd9fd8ff44488afe8f517eef9dbe0a425971443ed3",
+      "accepted": true
+    }
+  ],
+  "remaining": [
+    "production final Process/exec and immutable image authorization",
+    "ReadUsage/InstallBudget/QueryDelivery/RetireThrough real userspace effects",
+    "original Hepta Operations durable K↔D and actual Asterinas W1",
+    "physical scheduler context-switch atomicity and full SMP",
+    "cpu.weight native revision and enforcement",
+    "native GUI, Android and actual device/hardware profiles"
+  ],
+  "hepta_latest": {
+    "status_review": "hepta-final-status/review.json",
+    "main": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+    "head": "43a638d4e25ebc5a8b06babcd1c75c9acac53179",
+    "state": "open",
+    "draft": true,
+    "merged": false,
+    "mergeable_state": "blocked",
+    "status_observed_at": "2026-10-19T11:18:05.491Z",
+    "counts": {
+      "failure": 14,
+      "success": 24,
+      "skipped": 6,
+      "cancelled": 8
+    },
+    "all_required_success": false
+  },
+  "report_publication_scope": "Documentation and evidence only; no further product execution is claimed."
+}

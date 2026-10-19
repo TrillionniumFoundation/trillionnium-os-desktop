@@ -1,0 +1,114 @@
+{
+  "schema_version": 1,
+  "kind": "frozen_publication_selection",
+  "frozen_at_utc": "2026-10-19T11:31:38.113438+00:00",
+  "head": "4d3011cf9f92e25fc1b0d7371e9cdbbd5a8b7930",
+  "tree": "8eb809136a402cc54ba049b1e40dd174308c923f",
+  "archive": {
+    "file": "../original.zip",
+    "bytes": 154979607,
+    "sha256": "ef5d93159c1663fb30d3cf8e39e969525bbfa03b4fedc4db10ef4c87b035d655",
+    "artifact_id": 12182038203,
+    "run_id": 39240728276,
+    "job_id": 118020615962
+  },
+  "files": [
+    {
+      "path": "review.py",
+      "bytes": 32316,
+      "sha256": "4595f3a05729570f8e981130a901d279079ca6eb78adc421fa620983aa448662"
+    },
+    {
+      "path": "review.json",
+      "bytes": 86455,
+      "sha256": "4581b8b56ca6b0d54deecf486352cf085d10c39b0a28eba4d9883d4710418b93"
+    },
+    {
+      "path": "input-chain-supplement.json",
+      "bytes": 7673,
+      "sha256": "50ce01aef55c035ba025a5bd9fd8ff44488afe8f517eef9dbe0a425971443ed3"
+    },
+    {
+      "path": "selected-evidence-manifest.json",
+      "bytes": 40689,
+      "sha256": "8aa5ce2f7c0dfab97c7fe26dbba08b7585988b461444e0619f9c44d6f44f83bc"
+    },
+    {
+      "path": "selected-evidence.zip",
+      "bytes": 534355,
+      "sha256": "a5079c114c19419df55aab78dcc5f8815368efa7e01e1084f19566896f2dd2d0"
+    }
+  ],
+  "primary_entry": "review.json",
+  "supplement": "input-chain-supplement.json",
+  "selected_raw_text_files": 203,
+  "selected_raw_text_bytes": 8438968,
+  "selected_zip_member_count": 204,
+  "summary": {
+    "scm_cases": 27,
+    "nofile_cases": 37,
+    "linux_and_guest_cases": 32,
+    "all32_stdout_byte_equal": true,
+    "all32_stderr_empty": true,
+    "runtime_files": 673,
+    "runtime_ELFs": 79,
+    "workload_ELFs": 5,
+    "ordinary_kernel": {
+      "bytes": 8388960,
+      "sha256": "1897671a81fab04dc8d5e995b42b62256ec2bd13043ad78a93684d46f60c0fe0",
+      "elf_class": 64,
+      "machine": 3,
+      "has_interp": false
+    },
+    "CPU_config_percent": [
+      0.9270259870509014,
+      0.899905677061388,
+      45.84678578487272,
+      46.30754794705943
+    ],
+    "CPU_original_bounds_percent": [
+      1.2,
+      1.2,
+      52.0,
+      52.0
+    ],
+    "quota_percent": [
+      {
+        "vcpus": 1,
+        "repeat": 1,
+        "percent": 1.0
+      },
+      {
+        "vcpus": 1,
+        "repeat": 2,
+        "percent": 1.1
+      },
+      {
+        "vcpus": 2,
+        "repeat": 1,
+        "percent": 0.905
+      },
+      {
+        "vcpus": 2,
+        "repeat": 2,
+        "percent": 0.934
+      }
+    ],
+    "quota_original_bound_percent": 3.0,
+    "raw_guest_serials_independently_decoded": 11,
+    "ordinary_boot_and_QueryAbi_sibling_review_additional_guests": 2,
+    "same_ELF_bytes_for_ordinary_and_1_2_vCPU_probes": true,
+    "full_SMP_qualified": false,
+    "HOS2_effects_qualified": false
+  },
+  "blocking": [],
+  "preservation": "ZIP selected members preserve original UTF-8 bytes including CR/whitespace. New review and supplement are separate; original official155MBZIP is not copied or altered. No signed downloadURL is included.",
+  "limits": [
+    "Read original records and fixed Git only; no Cargo/QEMU/ELF/archived helper execution or new product run.",
+    "Complete7054 Git inventory,220core/221OSTD and seven negative controls belong to the sibling independent review; only relatedsource subset and the three stored snapshots were checked here.",
+    "This proves fixed Ubuntu24.04 x86_64 Linux/guest cases, not original Debian13 restoration, original HeptaW1, Android, GUI or block-device crash/power-loss recovery.",
+    "One/two-vCPU quota results pass original gross-non-enforcement thresholds. They do not qualify fullSMP, physical-switch atomicity, RT scheduling, strict1percentSLA or nativeHOS2 effects.",
+    "Host QEMU/compiler executable hashes are original recorded identities; those host executables are not supplied in this ZIP and were not independently rehashed.",
+    "Historical WIP and older203 artifacts were not used as this run results."
+  ]
+}

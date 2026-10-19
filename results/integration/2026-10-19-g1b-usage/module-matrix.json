@@ -1,0 +1,1833 @@
+{
+  "schema": "r11.module-progress-matrix.recovery.v1",
+  "status": "pr205_exact_head_independently_qualified_and_normally_merged",
+  "prepared_at_utc": "2026-10-19T10:56:33.853Z",
+  "intended_report_path": "results/integration/2026-10-19-g1b-usage/README.md",
+  "recovery": {
+    "maintenance_time_parent_reported": "2026-10-19T10:46:00Z",
+    "old_artifacts": [
+      {
+        "name": "R11_AUDIT_DRAFT.md",
+        "bytes": 61576,
+        "sha256": "5e07af443f6bc9ed78f3f2c34b584831d4b67bfbde519ae1de87bd043e120fbd"
+      },
+      {
+        "name": "module-matrix.json",
+        "bytes": 89253,
+        "sha256": "984f2d78ffcd5b296614327b87d73120ca7281ae20ac091c28ecc0900b662ef5"
+      }
+    ],
+    "old_files_recovered_byte_exact": false,
+    "old_digests_are_only_historical_identity": true,
+    "original_local_wip_serial_elf_full_dirty_source_available": false,
+    "no_fabricated_old_review_or_manifest": true,
+    "note_href": "RECOVERY.md",
+    "previous_read_attempt": "Historical 00e CpuOwner manual blob was absent in partial clone; implicit fetch failed in sandbox. Current candidate objects were read instead; historical main blob identities are listed without claiming all old bytes recovered."
+  },
+  "fixed_main": {
+    "commit": "00e2652c62ce6e34337d8f5bc3f3366b089c3d9c",
+    "tree": "c9980015c74a6118bb49e5bdd17a6244974a41be",
+    "r10_subtree": "5f95cfc0be662f843a3547444670b85328579ff8",
+    "root_README_bytes": 0,
+    "pr203_actual_merge": "5218f67e7d15adabcfcadef041f1cf26b0447e99",
+    "pr203_merge_at_utc": "2026-10-19T08:35:37Z",
+    "pr204_actual_merge": "00e2652c62ce6e34337d8f5bc3f3366b089c3d9c"
+  },
+  "restored_candidate": {
+    "remote_head": "f9669912e2886190429187e14753d62b2060bd5f",
+    "tree": "659736e494be76de1d29e2e80972b126071e5cfe",
+    "parent": "00e2652c62ce6e34337d8f5bc3f3366b089c3d9c",
+    "root_README_bytes": 0,
+    "changed_paths": 24,
+    "previous_local_commit": "83e122d40e5427f84efebb4b7a224f7131580e63",
+    "tree_equals_previous_local_candidate": true,
+    "pr_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/205",
+    "runtime_inferred_from_source_identity": false
+  },
+  "pr205_initial_ci": {
+    "head": "f9669912e2886190429187e14753d62b2060bd5f",
+    "a06_run": 39239994032,
+    "a06_status": "separate_initial_head_not_accepted_for_latest_head",
+    "g0_status": "failure_parent_read_original_log",
+    "g0_diagnosis": "Old source-string assertion did not accept Option ns endpoints; parent preparing a one-file tests/spec correction.",
+    "g0_original_log_read_by_report_author": false,
+    "descendant_head": "4d3011cf9f92e25fc1b0d7371e9cdbbd5a8b7930",
+    "all_required_passed": null,
+    "final_artifact_id": null,
+    "merged_commit": null,
+    "qualification_not_inherited_from_pr203_or_wip": true
+  },
+  "pr203_historical_observation": {
+    "basis": "Pre-maintenance actual runtime review, restored published records and recovered original API, plus official byte-identical archive recovery. New bounded green/source review is completed; remaining negative controls, full32 and CPU timing were not re-reviewed. Original derived review JSON remains missing. A later narrow identity correction and original CPU JSON arithmetic check is recorded separately in pr203_identity_correction; it does not repeat timing/serial or full SMP validation.",
+    "source_head": "775061af51e6ee91fce290d5855e24a276292e14",
+    "source_tree": "afeb331293025ca7a63678167211de109e997110",
+    "actions_run": 39219341861,
+    "actions_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39219341861",
+    "artifact_id": 12172041618,
+    "artifact_bytes": 153302416,
+    "artifact_sha256": "7ec32457b02fe4fa897b32ce937f2c34d9cd0bfae034da4c5f74626ecfc539bf",
+    "zip_members": 1172,
+    "source_files": 6591,
+    "local_independent_review_json_currently_recovered": false,
+    "core": {
+      "passed": 201,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 0
+    },
+    "ostd": {
+      "reported_passed": 221,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 3,
+      "exercised_lower_bound": 218
+    },
+    "reported_total": 422,
+    "exercised_total_lower_bound": 419,
+    "queryabi_exact_markers": 14,
+    "scm_original_receipt_cases": 27,
+    "rlimit_original_receipt_cases": 37,
+    "scm_rlimit_independent_scope": "Bound original receipts, probe ELF, ordinary kernel and serial; no new complete SCM/RLIMIT marker parser.",
+    "linux": {
+      "reference_cases": 32,
+      "guest_cases": 32,
+      "stdout_equal": true,
+      "stderr_empty": true,
+      "runtime_files": 673,
+      "elfs": 79,
+      "workload_elfs": 5,
+      "profile": "Ubuntu24.04 x86_64",
+      "coverage": "28 C + 3 Python + 1 actual locked Tokio; not original Hepta W1"
+    },
+    "ordinary_kernel_sha256": "e1d5ec0f294d0fffe1c887f92e2b564aa9d967753e0d6f815894ca6490c779c5",
+    "negatives": [
+      {
+        "name": "owner-current-slot",
+        "passed": 198,
+        "failed": 3,
+        "complete_suite": 201,
+        "raw_qemu": 65
+      },
+      {
+        "name": "clocksource-drop-fraction",
+        "passed": 198,
+        "failed": 3,
+        "complete_suite": 201,
+        "raw_qemu": 65
+      },
+      {
+        "name": "vdso-drop-fraction",
+        "passed": 198,
+        "failed": 3,
+        "complete_suite": 201,
+        "raw_qemu": 65
+      },
+      {
+        "name": "vdso-skip-fault-mode",
+        "passed": 200,
+        "failed": 1,
+        "complete_suite": 201,
+        "raw_qemu": 65
+      },
+      {
+        "name": "handoff-drop-tail",
+        "passed": 197,
+        "failed": 4,
+        "complete_suite": 201,
+        "raw_qemu": 65
+      },
+      {
+        "name": "handoff-eligibility-first",
+        "passed": 200,
+        "failed": 1,
+        "complete_suite": 201,
+        "raw_qemu": 65
+      },
+      {
+        "name": "dequeue-drop-owner",
+        "passed": 199,
+        "failed": 2,
+        "complete_suite": 201,
+        "raw_qemu": 65
+      }
+    ],
+    "cpu_configurations": [
+      {
+        "period_us": 100000,
+        "mode": "read-only",
+        "observed_percent": 0.8998890162376829,
+        "limit_percent": 1.2
+      },
+      {
+        "period_us": 100000,
+        "mode": "same-value",
+        "observed_percent": 0.8781884375098683,
+        "limit_percent": 1.2
+      },
+      {
+        "period_us": 2000,
+        "mode": "read-only",
+        "observed_percent": 46.24669811293315,
+        "limit_percent": 52
+      },
+      {
+        "period_us": 2000,
+        "mode": "same-value",
+        "observed_percent": 46.29818820142657,
+        "limit_percent": 52
+      }
+    ],
+    "quota_1cpu_percent": [
+      1,
+      1
+    ],
+    "quota_2cpu_percent": [
+      0.834,
+      0.87
+    ],
+    "smp_qualified": false,
+    "host_tool_binaries_independently_recovered": false,
+    "archive_recovery": {
+      "recovered_at_utc": "2026-10-19T10:59:34.843365+00:00",
+      "producer_path": "r11-evidence/pr203-restored-artifact/original.zip",
+      "receipt_path": "r11-evidence/pr203-restored-artifact/archive-recovery.json",
+      "planned_report_href": "pr203-restored-artifact/archive-recovery.json",
+      "receipt_bytes": 611,
+      "receipt_sha256": "fe20d22c09406ae394656e2c258ec34d918779d519a27e214577cd022e85337b",
+      "archive_bytes": 153302416,
+      "sha256": "7ec32457b02fe4fa897b32ce937f2c34d9cd0bfae034da4c5f74626ecfc539bf",
+      "zip_members": 1172,
+      "uncompressed_bytes": 383208710,
+      "original_official_digest_equal": true,
+      "crc_valid": true,
+      "raw_members_available_from_restored_archive": true,
+      "old_derived_review_recovered": false,
+      "runtime_reexecution": false,
+      "archive_download_by_report_author": false,
+      "new_semantic_review_status": "bounded_green_review_completed_from_same_official_archive"
+    }
+  },
+  "g1b_wip_historical_observation": {
+    "basis": "Pre-maintenance execution and independent observation, also documented in surviving candidate manuals; current primary local bytes missing.",
+    "source_base": "00e2652c62ce6e34337d8f5bc3f3366b089c3d9c",
+    "dirty_paths": 17,
+    "upstream_inputs_receipt_count": 118,
+    "upstream_inputs_receipt_is_full_atomic_dirty_snapshot": false,
+    "passed": 220,
+    "failed": 0,
+    "filtered": 0,
+    "soft_skipped": 0,
+    "usage_tests": 19,
+    "raw_qemu": 33,
+    "serial_bytes": 27372,
+    "serial_sha256_historical": "ab7ae20b3dafef9250d74e829fed703698f673061d47950eaa8e96fb12ef705e",
+    "kernel_sha256_from_historical_record": "faa27084b90430750c3a29ac14606fe1759e84bdde7493d07ff5cffbce323215",
+    "serial_or_elf_rehashed_in_recovery": false,
+    "not_final_candidate_ci": true,
+    "failure_preserved_as_observation": {
+      "attempt": "diagnostic-unavailable-02",
+      "passed": 0,
+      "failed": 1,
+      "filtered": 216,
+      "raw_qemu": 65,
+      "reason": "mark_as_dead EBUSY: the cgroup has deferred CPU accounting leases",
+      "raw_log_available_now": false
+    },
+    "fixture_fix_sequence": [
+      "drop runtime",
+      "mark_zombie actual Process",
+      "move_process_to_root retaining current RCU lease",
+      "drop Process/TaskSet",
+      "drop final Task",
+      "original strict mark_as_dead"
+    ],
+    "fixture_source_recovered": true,
+    "manual_RCU_grace_or_gate_weakening": false,
+    "negative_candidate_expected_failures": [
+      3,
+      4,
+      3,
+      1,
+      4,
+      1,
+      2
+    ],
+    "additional_clock_negative": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::fragmented_three_ghz_runtime_keeps_absolute_endpoint_precision"
+  },
+  "usage_tests_restored": {
+    "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/usage_tests.rs",
+    "report_href": "../../../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/usage_tests.rs",
+    "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+    "bytes": 35603,
+    "sha256": "9199dee49d804bb3b217a417362ed78043bcb6ae7a23f3bb29191d8f7c304dcb",
+    "git_blob": "5bcc62c554b1f8ec074a66ed9fbbed3840c394e3",
+    "test_names": [
+      "fragmented_three_ghz_runtime_keeps_absolute_endpoint_precision",
+      "sampled_configuration_preserves_the_separate_cycle_cursor",
+      "crossed_windows_preserve_cumulative_usage_and_separate_debt",
+      "same_value_and_lowered_cap_never_refill_the_original_owner",
+      "returning_from_short_period_waits_for_a_complete_native_window",
+      "returning_from_long_period_does_not_expose_pre_window_usage",
+      "ordinary_linux_caps_outside_n0_never_become_native_snapshots",
+      "real_owner_wrapper_enforces_the_single_cpu_observation_profile",
+      "replacement_closes_the_old_snapshot_and_requires_a_new_binding",
+      "deleted_owner_stays_closed_while_its_final_debit_is_retained",
+      "indeterminate_metadata_cannot_produce_usage_after_detachment",
+      "unavailable_clock_allows_only_unlimited_linux_recovery",
+      "reliable_clock_samples_cannot_rewind_the_runtime_endpoint",
+      "backwards_usage_observation_permanently_fences_the_owner",
+      "backwards_same_value_configuration_cannot_reopen_an_old_window",
+      "cumulative_overflow_never_wraps_or_recovers_a_native_snapshot",
+      "unreliable_clock_sample_cannot_rewind_or_replay_cycle_runtime",
+      "late_same_value_reconfigure_preserves_window_usage_and_debt",
+      "overlapping_owner_intervals_accumulate_without_a_clock_fault"
+    ],
+    "execution_by_recovery_author": false
+  },
+  "hepta_observation": {
+    "observed_main_pr_utc": [
+      "2026-10-19T09:06:40.577Z",
+      "2026-10-19T09:06:42.161Z"
+    ],
+    "observed_checks_utc": "2026-10-19T09:07:23.616Z",
+    "main": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+    "pr": 2885,
+    "state": "open",
+    "draft": true,
+    "merged": false,
+    "mergeable_state": "blocked",
+    "head": "43a638d4e25ebc5a8b06babcd1c75c9acac53179",
+    "tree": "84fdaf39799cef5676c2d3e2029f55c69d0ecd21",
+    "changed_files": 215,
+    "categories": {
+      "UI": 194,
+      "gateway": 12,
+      "native_resources": 2,
+      "scripts": 4,
+      "workflow": 1,
+      "technical_document": 1,
+      "Cargo.lock": 1
+    },
+    "checks": {
+      "success": 22,
+      "failure": 14,
+      "cancelled": 8,
+      "skipped": 6,
+      "neutral": 1,
+      "in_progress": 1
+    },
+    "required": {
+      "CI required": "failure",
+      "Architecture required": "failure"
+    },
+    "actual_successful_steps": [
+      "shared Rust renderer",
+      "strict CSP build",
+      "default actual browser/pixel",
+      "gateway preview/transport",
+      "explicitly labelled fixture populated/pixel"
+    ],
+    "source_product_status": {
+      "passed": 5,
+      "failed": 1,
+      "cause_boundary": "Chromium1280 missing-owner90s timeout; subsequent unrouteAll closure error is not proven timeout root cause"
+    },
+    "architecture": {
+      "passed": 43,
+      "failed": 2,
+      "cause": "temporary fixture repository lacks scripts/hepta_ci_module_paths.py"
+    },
+    "original_Objective_Operations_implementation_changed": false,
+    "default_gateway_owner": "notattached",
+    "non_GET_status": 405,
+    "response_recovery": "22 original stored response objects and two full original job-log strings restored; all serialized JSON byte sizes match original outputs, 10 source Git blobs match saved immutable compare. Old full JSON SHA manifest missing.",
+    "old_derived_review_and_manifests_recovered_byte_exact": false,
+    "new_remote_polling_by_report_author": false,
+    "recovery": {
+      "producer_directory": "r11-evidence/hepta-current-review",
+      "manifest": "hepta-current-review/recovered-files-manifest.json",
+      "manifest_bytes": 12811,
+      "manifest_sha256": "21e06723e9508eff04f91ea72b848494b6b5e07b6f74def631dec6b90b5be9b0",
+      "producer_files": 50,
+      "producer_bytes": 7350350,
+      "publication_files": 28,
+      "publication_bytes": 743762,
+      "original_observation_not_repolled": true,
+      "new_derived_review": "hepta-current-review/recovery-review.json",
+      "original_derived_review_recovered": false,
+      "all_old_json_sha_independently_verified": false
+    }
+  },
+  "documentation_review": {
+    "modules": 11,
+    "distinct_targets": 62,
+    "exists_at_main": 60,
+    "candidate_only": 2,
+    "identity_method": "All 62 current candidate Git contents read after clone recovery; fixed main existence and blob identity separately read from ls-tree. Do not claim every old base blob was downloaded.",
+    "historical_R9_counts_not_relabelled_as_new": {
+      "modules": 11,
+      "index_local_links": 53,
+      "one_hop_manuals": 47,
+      "nested_links": 225
+    },
+    "a04_three_now_main": [
+      "tests/workloads/linux/README.md",
+      "support/rootfs/README.md",
+      "compat/linux/GAPS.md"
+    ],
+    "INDEX_stale_tail_requires_current_note": false,
+    "previous_83e_301_links_156_targets_review_json_missing_not_recreated": true,
+    "INDEX_history_note": "Fixed00e had two outdated A04 assertions; PR205 fixed both and is now normally merged. This report only adds current status and preserves historical records.",
+    "current_candidate_INDEX_corrections_read": true,
+    "entrypoint_kinds": "development/technical Markdown, shared contracts and validation entrypoints",
+    "identity_source": "f966 document bytes equal actual4d; original main path count belongs to fixed00e",
+    "all_62_paths_in_merged_product_tree": true
+  },
+  "modules": [
+    {
+      "id": "A00",
+      "name": "集成与证据治理",
+      "main_state": "#203/#204/#205已正常合入；本轮完整审计及原件清单归档",
+      "candidate_state": "本报告仅docs/results发布，不增加产品执行",
+      "validated_facts": [
+        "报告merge不增加产品执行；保留历史资格树",
+        "Current f966/4d INDEX corrects both historical A04 documentation statements; fix is already in candidate."
+      ],
+      "unclosed": [
+        "旧本地WIP原件和旧派生review的恢复边界保留；后续新源码按各自门禁验收"
+      ],
+      "next_gate": "维护同一原owner和证据链，按固定源码推进G1-c/d/W1",
+      "documentation": {
+        "development_paths": [
+          "docs/agents/PLAN.md",
+          "docs/STATUS.md",
+          "docs/VALIDATION.md"
+        ],
+        "technical_paths": [
+          "docs/ARCHITECTURE.md",
+          "docs/DECISIONS.md",
+          "docs/PROJECT.md"
+        ],
+        "concrete_entry_points": true,
+        "uses_shared_contracts": true
+      },
+      "overall_product_complete": false
+    },
+    {
+      "id": "A01",
+      "name": "源码、构建与启动",
+      "main_state": "完整固定Asterinas/OSDK/ordinary boot/ktest已合",
+      "candidate_state": "#205完整精确执行和同树正常merge已独立核实",
+      "validated_facts": [
+        "#203历史core201/OSTD221含3skip；6591source绑定",
+        "4d core220 + OSTD221 reported/3softskip，7054源/三快照/原ELF绑定独立通过"
+      ],
+      "unclosed": [
+        "x86 QEMU不能外推裸机/ARM64guest；旧203独立review原件丢失"
+      ],
+      "next_gate": "真实W1和新的硬件/ARM guest profile分别验收",
+      "documentation": {
+        "development_paths": [
+          "support/build/README.md",
+          "support/build/ktest/README.md"
+        ],
+        "technical_paths": [
+          "support/upstream-lock.json",
+          "docs/ASTERINAS_CPU_OWNER_G1A.md"
+        ],
+        "concrete_entry_points": true,
+        "uses_shared_contracts": true
+      },
+      "overall_product_complete": false
+    },
+    {
+      "id": "A02",
+      "name": "HOS2 wire ABI",
+      "main_state": "五操作codec及真实QueryAbi消费者已合",
+      "candidate_state": "本轮不新增codec功能",
+      "validated_facts": [
+        "历史R10 ABI78与#203 QueryAbi14"
+      ],
+      "unclosed": [
+        "五种报文不等于五操作已开放；真实copyout/replay/retire未闭合"
+      ],
+      "next_gate": "沿原ABI接内核四剩余效果并保留独立wire判据",
+      "documentation": {
+        "development_paths": [
+          "tests/abi/A02_REVIEW_CLOSURE_2026-10-17.md",
+          "tests/abi/A02_EVIDENCE_INTEGRITY_2026-10-17.md"
+        ],
+        "technical_paths": [
+          "docs/NATIVE_ABI.md"
+        ],
+        "concrete_entry_points": true,
+        "uses_shared_contracts": true
+      },
+      "overall_product_complete": false
+    },
+    {
+      "id": "A03",
+      "name": "control core与宿主模型",
+      "main_state": "原identity/revision/投递/终局/退役host模型已合",
+      "candidate_state": "G1-c/d原内核与持久owner接合未完成",
+      "validated_facts": [
+        "历史std225/portable225重叠；19Loom模型/27253schedules、19零分配场景"
+      ],
+      "unclosed": [
+        "host模型不授内核IRQ/SMP或持久效果资格"
+      ],
+      "next_gate": "接原owner同锁授权/CAS及原Operations K↔D",
+      "documentation": {
+        "development_paths": [
+          "tests/control/VALIDATION.md",
+          "tests/control/run-validation.sh"
+        ],
+        "technical_paths": [
+          "libs/os-control/API_CONTRACT.md",
+          "docs/NATIVE_ABI.md"
+        ],
+        "concrete_entry_points": true,
+        "uses_shared_contracts": true
+      },
+      "overall_product_complete": false
+    },
+    {
+      "id": "A04",
+      "name": "Linux ELF、rootfs与W1",
+      "main_state": "#202已导入三详细手册；SCM/RLIMIT/Ubuntu32已合",
+      "candidate_state": "真实原Hepta W1、更完整W2/W3未资格",
+      "validated_facts": [
+        "#203历史QueryAbi14/SCM27/RLIMIT37/Linux32同profile",
+        "4d当前SCM27/NOFILE37/Linux32/guest32逐项原字节一致，673运行时文件/79ELF/5workloadELF实际initramfs绑定"
+      ],
+      "unclosed": [
+        "旧Debian四原ELF/rootfs未恢复；sender in-flight FD、真实W1/真实块设备fsync/崩溃与跨系统重启恢复/GUI未闭合"
+      ],
+      "next_gate": "固定真实Agentd/AppServer ELF依赖/trace，跑W1及必要W2故障链",
+      "documentation": {
+        "development_paths": [
+          "tests/workloads/linux/README.md",
+          "support/rootfs/README.md",
+          "tests/workloads/linux/FULL_UBUNTU_PROFILE.md",
+          "tests/workloads/linux/RLIMIT_NOFILE.md",
+          "tests/workloads/linux/SCM_RIGHTS_CLOEXEC.md"
+        ],
+        "technical_paths": [
+          "docs/LINUX_COMPATIBILITY.md",
+          "compat/linux/GAPS.md",
+          "docs/agents/handoffs/A04_LINUX_HEPTA_ELF.md"
+        ],
+        "concrete_entry_points": true,
+        "uses_shared_contracts": false
+      },
+      "overall_product_complete": false
+    },
+    {
+      "id": "A05",
+      "name": "内核控制与最终授权",
+      "main_state": "真实FileLike/ioctl、Process/exec边界、QueryAbi已合",
+      "candidate_state": "生产bind/grant与四资源操作未开放",
+      "validated_facts": [
+        "#203历史ordinary14markers；f966保留QueryAbi-only",
+        "4d当前ordinary QueryAbi14与四操作disabled独立核实；尚无生产可信grant"
+      ],
+      "unclosed": [
+        "ReadUsage/InstallBudget/QueryDelivery/RetireThrough关闭；最终issuer/exec授权缺口"
+      ],
+      "next_gate": "可信最终Process/exec激活；旧PID/exec/boot、撤销和跨scope真实负例",
+      "documentation": {
+        "development_paths": [
+          "docs/agents/handoffs/A05_KERNEL_CONTROL.md",
+          "tests/kernel/control/README.md"
+        ],
+        "technical_paths": [
+          "docs/NATIVE_ABI.md",
+          "docs/SECURITY_AND_RECOVERY.md"
+        ],
+        "concrete_entry_points": true,
+        "uses_shared_contracts": true
+      },
+      "overall_product_complete": false
+    },
+    {
+      "id": "A06",
+      "name": "原CPU owner、带宽与用量",
+      "main_state": "G1-a/#199/#201/#203及#205内部纳秒记账/一致快照已正常合入",
+      "candidate_state": "4d完整CI和四份独立审查通过；同树b8d5af3f已合",
+      "validated_facts": [
+        "维护前WIP core220/19回归已观察；19源与2手册现可重读",
+        "core220=原201+新19；七完整负控3/4/3/1/4/1/2；普通Linux/CPU原门槛同核通过"
+      ],
+      "unclosed": [
+        "ReadUsage用户态正向授权、physical switch原子性、完整SMP、cpu.weight共享revision仍未闭合；旧WIP原件缺失单列历史"
+      ],
+      "next_gate": "G1-c原Process/exec可信映像与撤销，再接G1-d；不建第二CPU账本",
+      "documentation": {
+        "development_paths": [
+          "tests/organ_backend/CPU_USAGE_G1B.md",
+          "tests/organ_backend/CPU_CLOCK_HANDOFF_CI.md",
+          "tests/organ_backend/CPU_CONFIG_SETTLEMENT.md",
+          "tests/organ_backend/CPU_OWNER_RETENTION.md",
+          "tests/organ_backend/CPU_MAX_CONFIG.md"
+        ],
+        "technical_paths": [
+          "docs/ASTERINAS_CPU_USAGE_G1B.md",
+          "docs/ASTERINAS_CPU_OWNER_G1A.md",
+          "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+          "docs/ASTERINAS_ORGAN_BACKEND.md"
+        ],
+        "concrete_entry_points": true,
+        "uses_shared_contracts": true
+      },
+      "overall_product_complete": false
+    },
+    {
+      "id": "A07",
+      "name": "原Hepta owner与持久交付",
+      "main_state": "desktop只读observer/Session及默认关闭Objective/history客户已合",
+      "candidate_state": "Hepta main f8；#2885 Draft只读网关；原owner候选未合",
+      "validated_facts": [
+        "历史外部owner/history host场景保留；2885 preview/transport实际步骤成功",
+        "11:18固定43a638d4 checks全部52结束：24success/14failure/8cancelled/6skipped，两个实际required仍failure；main/head/base不变且未合入"
+      ],
+      "unclosed": [
+        "issuer/final-use/原请求首次发送前持久/K↔D/确认退役及Asterinas W1未闭合"
+      ],
+      "next_gate": "原K=(scope_id,operation_id)，Operations先持久K↔D再ioctl，同D恢复、确认后退役",
+      "documentation": {
+        "development_paths": [
+          "services/hepta-os/README.md",
+          "services/hepta-os/RUN.md",
+          "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+          "services/hepta-os/OBJECTIVE_HISTORY.md",
+          "tests/integration/hepta/ORIGINAL_OBJECTIVE.md",
+          "tests/integration/hepta/ORIGINAL_SESSION.md",
+          "tests/integration/hepta/OBJECTIVE_HISTORY_PROBE.md"
+        ],
+        "technical_paths": [
+          "services/hepta-os/CONTRACT.md",
+          "docs/HEPTA_INTEGRATION.md",
+          "services/hepta-os/OBJECTIVE_HISTORY_CONTRACT.json"
+        ],
+        "concrete_entry_points": true,
+        "uses_shared_contracts": true
+      },
+      "overall_product_complete": false
+    },
+    {
+      "id": "A08",
+      "name": "Android与APK",
+      "main_state": "host来源工具、接口与gap文档已合",
+      "candidate_state": "A0和Android guest未资格",
+      "validated_facts": [
+        "历史184host回归只属于原profile，本恢复者未运行"
+      ],
+      "unclosed": [
+        "AOSP/product/system/vendor、Binder/ART/MAC/Zygote/图形/APK场景缺口"
+      ],
+      "next_gate": "先x86_64/4KiB/softwaregraphics A0与原Android对照；ARM64/16KiB/BSP另验",
+      "documentation": {
+        "development_paths": [
+          "support/android/README.md",
+          "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/README.md"
+        ],
+        "technical_paths": [
+          "docs/ANDROID_COMPATIBILITY.md",
+          "compat/android/INTERFACES.md",
+          "compat/android/kernel-gaps.json"
+        ],
+        "concrete_entry_points": true,
+        "uses_shared_contracts": false
+      },
+      "overall_product_complete": false
+    },
+    {
+      "id": "A09",
+      "name": "设备、VMM与DMA",
+      "main_state": "metadata模型、来源和只读preflight已合",
+      "candidate_state": "实际IOMMU隔离/device owner/VMM/GPU/裸机未资格",
+      "validated_facts": [
+        "历史host状态机不是DMA/IRQ/reset运行"
+      ],
+      "unclosed": [
+        "共享IOMMU页表缺device/group参数；IntelVMX不证明完整VMM/SVM/ARMEL2"
+      ],
+      "next_gate": "固定一个设备和owner，证明DMA/alias/IRQ/quiesce/reset/kill/recovery",
+      "documentation": {
+        "development_paths": [
+          "support/vmm/device_lifecycle/README.md",
+          "support/vmm/GATES.md"
+        ],
+        "technical_paths": [
+          "docs/HARDWARE_AND_DRIVERS.md",
+          "support/vmm/PROVENANCE.md"
+        ],
+        "concrete_entry_points": true,
+        "uses_shared_contracts": false
+      },
+      "overall_product_complete": false
+    },
+    {
+      "id": "A10",
+      "name": "Rust Shell与共享UI",
+      "main_state": "desktop Linux host Shell/Session/CJK/XIM与真实只读投影已合",
+      "candidate_state": "Hepta #2885真实sharedUI Draft，两required失败",
+      "validated_facts": [
+        "历史desktop UI137/2CJK ignored；2885 shared renderer/CSP/default browser/pixel通过，状态5/6",
+        "11:18固定43a638d4 checks全部52结束：24success/14failure/8cancelled/6skipped，两个实际required仍failure；main/head/base不变且未合入"
+      ],
+      "unclosed": [
+        "typed mutation/recovery不证明原owner授权/效果；Asterinas图形及移动设备未资格"
+      ],
+      "next_gate": "先修真实missing-owner取消链和Architecture fixture helper，再接原owner终局事实",
+      "documentation": {
+        "development_paths": [
+          "support/ui/RUN.md",
+          "support/ui/CHAT_WORKSPACE.md",
+          "support/ui/HEPTA_OBSERVER.md",
+          "tests/ui/ORIGINAL_OBJECTIVE_SHELL.md"
+        ],
+        "technical_paths": [
+          "docs/DESKTOP_UX.md",
+          "ui/shell/OBSERVATION_FRESHNESS.md",
+          "support/ui/CJK_RENDERING.md",
+          "support/ui/X11_IME.md"
+        ],
+        "concrete_entry_points": true,
+        "uses_shared_contracts": false
+      },
+      "overall_product_complete": false
+    }
+  ],
+  "documents": [
+    {
+      "path": "compat/android/INTERFACES.md",
+      "report_href": "../../../compat/android/INTERFACES.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "a238f9f6f3a854ebfacd3d08d78a320400c23b44",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "a238f9f6f3a854ebfacd3d08d78a320400c23b44",
+      "bytes": 7406,
+      "sha256": "8729560f4b7edd5f8bb59e412a10984300c3b8562c06998c69e0184444561c21",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "compat/android/kernel-gaps.json",
+      "report_href": "../../../compat/android/kernel-gaps.json",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "019e2887ea051e715bd0db8038a8ebf738295377",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "019e2887ea051e715bd0db8038a8ebf738295377",
+      "bytes": 3558,
+      "sha256": "0fadc3646ffb58dea1b941c1f0415d27f2877756760b0d3ba522698d0f12a56d",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "compat/linux/GAPS.md",
+      "report_href": "../../../compat/linux/GAPS.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "071b6ab420123146120d64c1e52ee577066ed72e",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "071b6ab420123146120d64c1e52ee577066ed72e",
+      "bytes": 27683,
+      "sha256": "6787833d3dea709044d56294f6434da7140054d564099c880b71abd20f487b16",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "docs/ANDROID_COMPATIBILITY.md",
+      "report_href": "../../../docs/ANDROID_COMPATIBILITY.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "aa609b91438b5230f08fd84de76c38191659808f",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "aa609b91438b5230f08fd84de76c38191659808f",
+      "bytes": 4714,
+      "sha256": "daecdc2ce896bad8a4f3727d93669a761d75abdecd0a0316012cde1b76428dc4",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "docs/ARCHITECTURE.md",
+      "report_href": "../../../docs/ARCHITECTURE.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "d2427adbbe1c337e416866b39eb33d4e418dae64",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "d2427adbbe1c337e416866b39eb33d4e418dae64",
+      "bytes": 8056,
+      "sha256": "0a28073b9e3036f669c887ea80052a9aa6149f5ba7a4029de6c1720613485a4b",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "report_href": "../../../docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "f90d2bcdc40b826ab415d57920e075fbb0840bbd",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "f90d2bcdc40b826ab415d57920e075fbb0840bbd",
+      "bytes": 13854,
+      "sha256": "9d0ef3f8ae2367efadde9af0cda457a787a59c0e189a62b6a133f308c3b6d7c8",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "report_href": "../../../docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "2c87c31bd07dc6b6243d0d7109be78a5af746777",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "0271df14c3aae71abf40e1569571771de45c704a",
+      "bytes": 12861,
+      "sha256": "4ba1703fe6faca7bd50aa2046f45349e95fdae7d93c8c2da79c4812e64cb756f",
+      "candidate_content_changed_from_main": true,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "report_href": "../../../docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "exists_at_fixed_main": false,
+      "fixed_main_git_blob": null,
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "5526fbade9977db6b43e9a616f6636b88836c4bf",
+      "bytes": 20312,
+      "sha256": "5cdc2c75382dd6925242212deabf9fb26ff956725a28567c6788bd6e68401ad8",
+      "candidate_content_changed_from_main": true,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "docs/ASTERINAS_ORGAN_BACKEND.md",
+      "report_href": "../../../docs/ASTERINAS_ORGAN_BACKEND.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "72465453dc8897e099d5f9b7f6cb50a89c157310",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "72465453dc8897e099d5f9b7f6cb50a89c157310",
+      "bytes": 7262,
+      "sha256": "f00e39a335f5e11fd6fd13894172ec80bce2e2dcf3ac5c733caf1fe5c375cb74",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "docs/DECISIONS.md",
+      "report_href": "../../../docs/DECISIONS.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "041f2a8c3d643d00a9790b7b81c1f97651ba8883",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "041f2a8c3d643d00a9790b7b81c1f97651ba8883",
+      "bytes": 3195,
+      "sha256": "09a789fded953d0b63d2a0a4ac0e8ee45dd200950fe7f10eeb612639d6dece63",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "docs/DESKTOP_UX.md",
+      "report_href": "../../../docs/DESKTOP_UX.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "f3552eb43ed30d968d696a49d35e177a58292364",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "f3552eb43ed30d968d696a49d35e177a58292364",
+      "bytes": 27265,
+      "sha256": "ac7927de0e8a8a7ac19b386024b5dc15ffe99acac9a9aa3e414b7e63d75e0b23",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "docs/HARDWARE_AND_DRIVERS.md",
+      "report_href": "../../../docs/HARDWARE_AND_DRIVERS.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "8d8bf8f87a8e7ebef75e36230ef7b5c208fd57d5",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "8d8bf8f87a8e7ebef75e36230ef7b5c208fd57d5",
+      "bytes": 4303,
+      "sha256": "d31ad12248e97ca7cefdb98bc386fe5e0e3158dfbd131a281e6556cdd5bbcad3",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "docs/HEPTA_INTEGRATION.md",
+      "report_href": "../../../docs/HEPTA_INTEGRATION.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "4f44884bad43c620b0a601bc0ad325b904e1f6ee",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "4f44884bad43c620b0a601bc0ad325b904e1f6ee",
+      "bytes": 9995,
+      "sha256": "55314b700ba63ef946d3e36609cb20257a66ae3a1b0b05116614449441932de6",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "docs/LINUX_COMPATIBILITY.md",
+      "report_href": "../../../docs/LINUX_COMPATIBILITY.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "a9cc4b0aed0276fb4b9d3c998f62dcfd9e738886",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "a9cc4b0aed0276fb4b9d3c998f62dcfd9e738886",
+      "bytes": 3673,
+      "sha256": "15287db6dd59d0c7d0afb0e59367b9ba73b47532d4e1a5f228f21ba22d586e2e",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "docs/NATIVE_ABI.md",
+      "report_href": "../../../docs/NATIVE_ABI.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "de9f70ba71ff96ca5cf043d0650eca56c875de0e",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "de9f70ba71ff96ca5cf043d0650eca56c875de0e",
+      "bytes": 16969,
+      "sha256": "796ed1f10d2b51067d9b386d29288235656fc91deaef5febcea52c786a7cdd93",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "docs/PROJECT.md",
+      "report_href": "../../../docs/PROJECT.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "83a8d272eabe0638e5073312565f3d883ef7f5a1",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "83a8d272eabe0638e5073312565f3d883ef7f5a1",
+      "bytes": 3459,
+      "sha256": "f7061998bbc30192153c2e0c8e77dcbd9ffb6a6ae9208e44299203e55609ffa4",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "docs/SECURITY_AND_RECOVERY.md",
+      "report_href": "../../../docs/SECURITY_AND_RECOVERY.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "a81e25c3837b1e63a7f5a2b413149dcac27d68d7",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "a81e25c3837b1e63a7f5a2b413149dcac27d68d7",
+      "bytes": 7761,
+      "sha256": "d88ce6b112dd5e052885176825165ebd371925d8178ca88ef78db3b9243d4a49",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "docs/STATUS.md",
+      "report_href": "../../../docs/STATUS.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "038b6579e9c0200fd77cedcd005ed25ab60e9e7c",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "1a3d67902703516de3bc6bc1f7c193050498f10f",
+      "bytes": 169801,
+      "sha256": "f7c753abade44ae0fae4e12d370ad897f18d10613cf020e95b2b7d89f021e3dd",
+      "candidate_content_changed_from_main": true,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "docs/VALIDATION.md",
+      "report_href": "../../../docs/VALIDATION.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "33dc6e5a3003c8db3c79e04fdb4a9dae48c13d42",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "33dc6e5a3003c8db3c79e04fdb4a9dae48c13d42",
+      "bytes": 9799,
+      "sha256": "5add694562306c2eb694199e6054c83f765b1f99d4743710536e0d8b9aee9500",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "docs/agents/PLAN.md",
+      "report_href": "../../../docs/agents/PLAN.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "7e7a913e2e1c79de588df155ddd07bb4d9260e66",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "7e7a913e2e1c79de588df155ddd07bb4d9260e66",
+      "bytes": 6537,
+      "sha256": "f475400608032b476b6e651114e3c4d5b2646c94bccea2cf5fdc38c26bbc37ad",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "docs/agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+      "report_href": "../../../docs/agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "e3f3bab37f6effdce3ec5f0a0c86d904b96d6482",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "e3f3bab37f6effdce3ec5f0a0c86d904b96d6482",
+      "bytes": 16450,
+      "sha256": "ef2df5f82ab4f88a5efbbf8495506bfb272dcf28db948a62c5c68d536163aad3",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "docs/agents/handoffs/A05_KERNEL_CONTROL.md",
+      "report_href": "../../../docs/agents/handoffs/A05_KERNEL_CONTROL.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "778039922f3ca6c0b3be18121f89287254e35991",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "778039922f3ca6c0b3be18121f89287254e35991",
+      "bytes": 8119,
+      "sha256": "a2fcedab3cc7d26c6ed2fde521ce4864d566cd1b36bdd537f46abf6ad2090717",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "libs/os-control/API_CONTRACT.md",
+      "report_href": "../../../libs/os-control/API_CONTRACT.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "a553feabf21875059ca6023838d4ea1ac136035e",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "a553feabf21875059ca6023838d4ea1ac136035e",
+      "bytes": 56355,
+      "sha256": "68689e929de4a7709d7107a2991704e3c6e268d5855d48962c290f2acc0d0f54",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "services/hepta-os/CONTRACT.md",
+      "report_href": "../../../services/hepta-os/CONTRACT.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "7492454161a50afad4f1429321c750f8c6242d7c",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "7492454161a50afad4f1429321c750f8c6242d7c",
+      "bytes": 13953,
+      "sha256": "0ec2d9c0db139c0104a05fedc674887d00e05c2527d041591c174a3a294b5068",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "services/hepta-os/OBJECTIVE_HISTORY.md",
+      "report_href": "../../../services/hepta-os/OBJECTIVE_HISTORY.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "a50f34fffda2b714830132e39e2460b3ba662a4c",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "a50f34fffda2b714830132e39e2460b3ba662a4c",
+      "bytes": 13175,
+      "sha256": "75aa92f86005be8df59947ad1f92cb969c1975bab131c3182ca622679721a4f8",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "services/hepta-os/OBJECTIVE_HISTORY_CONTRACT.json",
+      "report_href": "../../../services/hepta-os/OBJECTIVE_HISTORY_CONTRACT.json",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "5ae4172e6dd0c54aba6fac19a7beba173052a527",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "5ae4172e6dd0c54aba6fac19a7beba173052a527",
+      "bytes": 6196,
+      "sha256": "f0fc1110233dc38542097c6f9f7ef2e3f6ca5eb215fa2b4447e556cd7ac46981",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "report_href": "../../../services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "61087d37d957c15d2e2f84de09461fbbdb93423a",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "61087d37d957c15d2e2f84de09461fbbdb93423a",
+      "bytes": 25323,
+      "sha256": "d530d33986a384a5e4fc4985517ac49c48e6478c93f54bb3c5f8ed8b6ce29cdd",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "services/hepta-os/README.md",
+      "report_href": "../../../services/hepta-os/README.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "9f0157e0b74048436e5611cf2efd94f99d4279c7",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "9f0157e0b74048436e5611cf2efd94f99d4279c7",
+      "bytes": 9593,
+      "sha256": "d03b6c1dbd0834ce9a42f9ee0af30044867eda1120a4bb5e5d07c556e9cf0046",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "services/hepta-os/RUN.md",
+      "report_href": "../../../services/hepta-os/RUN.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "aee7270d16f0f8a617a837ae2257fda03591c34a",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "aee7270d16f0f8a617a837ae2257fda03591c34a",
+      "bytes": 12909,
+      "sha256": "fb4748152277d443912fb6f3705b59f8da635594ac9e95fbad77206abc64b6f8",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "support/android/README.md",
+      "report_href": "../../../support/android/README.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "c154c2854b1d01e7038b7aecf157a0a5e4702d00",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "c154c2854b1d01e7038b7aecf157a0a5e4702d00",
+      "bytes": 36597,
+      "sha256": "e36a16853a4e6969ea112442f3d48d89069a1372b0f0061fbb63a29fdcd321a9",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "support/build/README.md",
+      "report_href": "../../../support/build/README.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "027418b5cb947a3dff16f3055cd8830a7def8a08",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "027418b5cb947a3dff16f3055cd8830a7def8a08",
+      "bytes": 11996,
+      "sha256": "1ab023f69259ca93a36a3f5db9abdef4c8d1413ec3c74d74e28e5aba7e9b3c22",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "support/build/ktest/README.md",
+      "report_href": "../../../support/build/ktest/README.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "29d70edd75ae446f6d815c0b222ab4cc8b7db760",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "29d70edd75ae446f6d815c0b222ab4cc8b7db760",
+      "bytes": 4682,
+      "sha256": "592a7eca726231ef18da1430c1cf0620b6813ad4de883046c1bfa7913019d5cd",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "support/rootfs/README.md",
+      "report_href": "../../../support/rootfs/README.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "050bb4fefd9a91f9355776eec273a8b729f05d01",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "050bb4fefd9a91f9355776eec273a8b729f05d01",
+      "bytes": 6864,
+      "sha256": "a1aa1f32dff239153a0c79ad813801b9f520fb711ed1625c730135cbc508c6e9",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "support/ui/CHAT_WORKSPACE.md",
+      "report_href": "../../../support/ui/CHAT_WORKSPACE.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "79d2ff4e6519fc3c5b3085b53f0b545d04aa0f55",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "79d2ff4e6519fc3c5b3085b53f0b545d04aa0f55",
+      "bytes": 12653,
+      "sha256": "f2b9c555d686e97020ed9f80033c38ddd1e3c90e83ded53e269251ca22eee503",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "support/ui/CJK_RENDERING.md",
+      "report_href": "../../../support/ui/CJK_RENDERING.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "9bbc80e6fe620a497cd014ccbd748b24914d6010",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "9bbc80e6fe620a497cd014ccbd748b24914d6010",
+      "bytes": 6959,
+      "sha256": "2cae8d32fa65a042f0f0c71f5c702fa9083e1ca8f49f05a9df53555670975d3e",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "support/ui/HEPTA_OBSERVER.md",
+      "report_href": "../../../support/ui/HEPTA_OBSERVER.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "ab9c837ac65f426928cbb9116ff9176c18341798",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "ab9c837ac65f426928cbb9116ff9176c18341798",
+      "bytes": 26375,
+      "sha256": "50185b6258b7c8b13fb47fab7833a3c1afba8e99ae808eb5ff268f9e03b6ce96",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "support/ui/RUN.md",
+      "report_href": "../../../support/ui/RUN.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "0481412d0a2b0fe7876ff28297917f76dba01688",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "0481412d0a2b0fe7876ff28297917f76dba01688",
+      "bytes": 17099,
+      "sha256": "c8204e59f72ab218d850a1bce99f9e1e7035d6334b69a245bc131d90b9b1aa1c",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "support/ui/X11_IME.md",
+      "report_href": "../../../support/ui/X11_IME.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "e607fe281b28362969a9f8d8cebbbea9bdae1afb",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "e607fe281b28362969a9f8d8cebbbea9bdae1afb",
+      "bytes": 11371,
+      "sha256": "03675d28ed3c142e49d72efccdf8de0beeb2e36759f052114b7df3d17c7b651c",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "support/upstream-lock.json",
+      "report_href": "../../../support/upstream-lock.json",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "11c1a12ebcd1b7c3457806c52ff52916e7835363",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "11c1a12ebcd1b7c3457806c52ff52916e7835363",
+      "bytes": 4657,
+      "sha256": "beb48f48a77101e5456ca78aa98d3c0f4c3a3f11ca29f422e2d576ff837cc592",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "support/vmm/GATES.md",
+      "report_href": "../../../support/vmm/GATES.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "0fae37d95d639f121eccf269e4d5d46cf4ed4d45",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "0fae37d95d639f121eccf269e4d5d46cf4ed4d45",
+      "bytes": 7044,
+      "sha256": "ca6ed05f200f498512509afd7cd19662d873c999a2792727afd0c1208a2946e0",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "support/vmm/PROVENANCE.md",
+      "report_href": "../../../support/vmm/PROVENANCE.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "117983a3a17d5a83fc9849eb27e00f4484d7f264",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "117983a3a17d5a83fc9849eb27e00f4484d7f264",
+      "bytes": 8418,
+      "sha256": "63d5ba3251f47c02be5d9fb79ac728959eb5d812016dd78407c9d9a11d41c7cb",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "support/vmm/device_lifecycle/README.md",
+      "report_href": "../../../support/vmm/device_lifecycle/README.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "f3abbf7f733872467cb5e2d5a7a36c1c244b555e",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "f3abbf7f733872467cb5e2d5a7a36c1c244b555e",
+      "bytes": 12178,
+      "sha256": "23f8c49e66ef9bf83e9535dc37d5fe37c0b0b5a101aef0ef9b5d04b203d5d314",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "tests/abi/A02_EVIDENCE_INTEGRITY_2026-10-17.md",
+      "report_href": "../../../tests/abi/A02_EVIDENCE_INTEGRITY_2026-10-17.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "7a84eaa0c27fc1dd32cb66542a7ebdbf957df1ae",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "7a84eaa0c27fc1dd32cb66542a7ebdbf957df1ae",
+      "bytes": 6279,
+      "sha256": "207c2cc4d702a95d9e16a2bd8805f3dec4b67e1ad19a6468411bf8bc4ed9f942",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "tests/abi/A02_REVIEW_CLOSURE_2026-10-17.md",
+      "report_href": "../../../tests/abi/A02_REVIEW_CLOSURE_2026-10-17.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "bf2d5542f238057d5500003220a12ad5a9babc3d",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "bf2d5542f238057d5500003220a12ad5a9babc3d",
+      "bytes": 7168,
+      "sha256": "d988512099957b3d2e102382acc4e9101a4d1ae3f929e9a1e0fa42d7b6a6ee22",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "tests/control/VALIDATION.md",
+      "report_href": "../../../tests/control/VALIDATION.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "93ed812c4b3f7c2905d94bc58f50e80adce38603",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "93ed812c4b3f7c2905d94bc58f50e80adce38603",
+      "bytes": 10066,
+      "sha256": "95a3283e6c497764926102dc79f56f5e9abd915506e33a45263e511287559a7f",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "tests/control/run-validation.sh",
+      "report_href": "../../../tests/control/run-validation.sh",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "7f2d8c303d92204dc0a6a3a6cce5c67b0d1c864a",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "7f2d8c303d92204dc0a6a3a6cce5c67b0d1c864a",
+      "bytes": 2521,
+      "sha256": "5aa862a211d226cd5cfc2007a640d52bd20a263652a94dd149d7c2121fde2023",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "tests/integration/hepta/OBJECTIVE_HISTORY_PROBE.md",
+      "report_href": "../../../tests/integration/hepta/OBJECTIVE_HISTORY_PROBE.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "482d3211d06f89bdb399b3a7325914c3c148b731",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "482d3211d06f89bdb399b3a7325914c3c148b731",
+      "bytes": 8520,
+      "sha256": "25b4eca15166c7076f6c246299cc1094805baeac25f05e887ab95b790df54c2c",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "tests/integration/hepta/ORIGINAL_OBJECTIVE.md",
+      "report_href": "../../../tests/integration/hepta/ORIGINAL_OBJECTIVE.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "06b94b7ec675497bdbd0164ce654deb8d84070ee",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "06b94b7ec675497bdbd0164ce654deb8d84070ee",
+      "bytes": 14703,
+      "sha256": "002b65a6226339b20f527fc831341b279e9ea8c891d29976c65ffd88e260a4ea",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "tests/integration/hepta/ORIGINAL_SESSION.md",
+      "report_href": "../../../tests/integration/hepta/ORIGINAL_SESSION.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "67d854fc1ab692694cec0bae934bedbfcb8128f4",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "67d854fc1ab692694cec0bae934bedbfcb8128f4",
+      "bytes": 6654,
+      "sha256": "deeb8035c88ebd20f46b2174fffc6d8f71c051d582d8fb60d9309751d23f4dfe",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "tests/kernel/control/README.md",
+      "report_href": "../../../tests/kernel/control/README.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "ede4502e8aa4c8c8e615a51c4d27f5e033c92ba7",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "ede4502e8aa4c8c8e615a51c4d27f5e033c92ba7",
+      "bytes": 6184,
+      "sha256": "d33f83c5c134d0bfa9cd1a5d9c4c5445bee4d6700703b735983926891b8471b8",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "tests/organ_backend/CPU_CLOCK_HANDOFF_CI.md",
+      "report_href": "../../../tests/organ_backend/CPU_CLOCK_HANDOFF_CI.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "f0d18ce332b2c141d06611ad8c5c2798c0168cca",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "31e1175716398f92fed216f4e5074cea1da0a270",
+      "bytes": 4644,
+      "sha256": "c2a454014d986da36a690a3600738ff29e0f8e92cf7b2e2331f9da2cddc35088",
+      "candidate_content_changed_from_main": true,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "tests/organ_backend/CPU_CONFIG_SETTLEMENT.md",
+      "report_href": "../../../tests/organ_backend/CPU_CONFIG_SETTLEMENT.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "c3da48f02424ba4ac9ed4f9ac5369f5985f3b89b",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "c3da48f02424ba4ac9ed4f9ac5369f5985f3b89b",
+      "bytes": 5493,
+      "sha256": "67abbe2a8e7a0c3fdf3b7a3954b78df98f15b8d731314a215b77cfe7b881bd78",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "tests/organ_backend/CPU_MAX_CONFIG.md",
+      "report_href": "../../../tests/organ_backend/CPU_MAX_CONFIG.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "c09642ffc478ae880e17db26495591a76dc2f57f",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "c09642ffc478ae880e17db26495591a76dc2f57f",
+      "bytes": 2992,
+      "sha256": "deac7a4ff0086818da259c3e29df84a5953dcc3310541dffc0e4b136b61eac15",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "tests/organ_backend/CPU_OWNER_RETENTION.md",
+      "report_href": "../../../tests/organ_backend/CPU_OWNER_RETENTION.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "bd85b9655e1f926cab20a077b26053eeea7d6991",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "bd85b9655e1f926cab20a077b26053eeea7d6991",
+      "bytes": 12503,
+      "sha256": "ace0a0d3e661675b5575aa45b1fff9f0e77ce3dd8e1ee50946860a3b1c48c554",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "tests/organ_backend/CPU_USAGE_G1B.md",
+      "report_href": "../../../tests/organ_backend/CPU_USAGE_G1B.md",
+      "exists_at_fixed_main": false,
+      "fixed_main_git_blob": null,
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "2551c0fdbc69f283b483fbfb9999088551b33850",
+      "bytes": 25135,
+      "sha256": "cc5bc52aee636774752bde4c296cef982d045d1e6272cf2eb00c193e7003f7b2",
+      "candidate_content_changed_from_main": true,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "tests/ui/ORIGINAL_OBJECTIVE_SHELL.md",
+      "report_href": "../../../tests/ui/ORIGINAL_OBJECTIVE_SHELL.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "c6fae5f4616aedce4e056144b8f4fa0124860962",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "c6fae5f4616aedce4e056144b8f4fa0124860962",
+      "bytes": 7846,
+      "sha256": "df434ca840e1aedf000e512646eab427ec18e4252b8296bff3e20611843ac133",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/README.md",
+      "report_href": "../../../tests/workloads/android/evidence/2026-10-17-commit-bound-audit/README.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "73aa0a6a52bfca931bd8b5a791df3767253e29a0",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "73aa0a6a52bfca931bd8b5a791df3767253e29a0",
+      "bytes": 7907,
+      "sha256": "63866c28fd6532994ce5dcff9050945fc085ff9f694437956cbe754c4896ca8f",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "tests/workloads/linux/FULL_UBUNTU_PROFILE.md",
+      "report_href": "../../../tests/workloads/linux/FULL_UBUNTU_PROFILE.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "b9cc5a15513bc7505fd0401700447ed7f4d8115a",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "b9cc5a15513bc7505fd0401700447ed7f4d8115a",
+      "bytes": 11692,
+      "sha256": "4b9cc887f2d8a55f80d4008f3222b49ee0bc5503848ea44df24e14244f5981bf",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "tests/workloads/linux/README.md",
+      "report_href": "../../../tests/workloads/linux/README.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "aab5533c1e508a02b4b439ad36a1b8097fd23b05",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "aab5533c1e508a02b4b439ad36a1b8097fd23b05",
+      "bytes": 26278,
+      "sha256": "338ff403c380431dcdb9b1676fd43e401f8285e03e6d8cbd8b02a1d7ce145610",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "tests/workloads/linux/RLIMIT_NOFILE.md",
+      "report_href": "../../../tests/workloads/linux/RLIMIT_NOFILE.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "afadb576a0a196edd102b7b125d91a0411fa29df",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "afadb576a0a196edd102b7b125d91a0411fa29df",
+      "bytes": 13638,
+      "sha256": "87389d206eaa8fe6957fb154de52c7b81c0ac28cc807d7497253e3fd2bc63993",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "tests/workloads/linux/SCM_RIGHTS_CLOEXEC.md",
+      "report_href": "../../../tests/workloads/linux/SCM_RIGHTS_CLOEXEC.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "9ea0b83e06452f0929566a57540386e8f9d18ca0",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "9ea0b83e06452f0929566a57540386e8f9d18ca0",
+      "bytes": 5241,
+      "sha256": "4a2d919cea0414de00c520978e001837f227942752bfb67e6237ff134df6937b",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    },
+    {
+      "path": "ui/shell/OBSERVATION_FRESHNESS.md",
+      "report_href": "../../../ui/shell/OBSERVATION_FRESHNESS.md",
+      "exists_at_fixed_main": true,
+      "fixed_main_git_blob": "fb09f89ab00debc9f9477385b6d0b612cf1a3a79",
+      "source_commit": "f9669912e2886190429187e14753d62b2060bd5f",
+      "git_mode": "100644",
+      "git_blob": "fb09f89ab00debc9f9477385b6d0b612cf1a3a79",
+      "bytes": 7891,
+      "sha256": "95c4d5aee8b51da2a8b323d884264c87592793a6024f1ffd89b20bca13e9b987",
+      "candidate_content_changed_from_main": false,
+      "recovery_verification": "current fixed candidate Git bytes read; main existence/blob from ls-tree; old base blob bytes not all fetched",
+      "same_blob_at_latest_candidate_by_single_file_git_diff": true
+    }
+  ],
+  "architecture": {
+    "recommendation": "continue_controlled_full_Asterinas_fork",
+    "upstream_ARM64_Tier2_not_project_mobile_qualification": true,
+    "framekernel_single_address_space_not_hardware_isolation_proof": true,
+    "next": [
+      "G1c final Process/exec and immutable image authorization",
+      "G1d original Operations K↔D",
+      "G2 actual Hepta W1 and necessary W2",
+      "W3 GUI",
+      "Android A0",
+      "actual device BSP"
+    ],
+    "reconsideration_requires": [
+      "fixed workload/hardware and predefined isolation/latency/recovery targets",
+      "reproducible structural counterexample under unchanged gates",
+      "compare local fork fix, userspace service isolation and OSTD upper-layer replacement",
+      "replacement prototype passes same positive/negative authorization/durability/workload gates, with rollback image"
+    ],
+    "replace_OSTD_requires_extra_proof": "Memory/IRQ/scheduler framework itself conflicts with explicit requirements and cannot be locally repaired; equivalent boot/isolation/device/recovery proof required.",
+    "read_only_organ_has_no_IO_or_capability": true,
+    "effects_use_original_Authority_Operations": true
+  },
+  "latest_candidate": {
+    "remote_head": "4d3011cf9f92e25fc1b0d7371e9cdbbd5a8b7930",
+    "tree": "8eb809136a402cc54ba049b1e40dd174308c923f",
+    "parent": "f9669912e2886190429187e14753d62b2060bd5f",
+    "local_same_tree": "58c705eb1648acd83abe5b0872a41b3c910aa6c1",
+    "pr_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/205",
+    "difference_from_restored_candidate": [
+      "tests/spec/test_a06_final_accounting_source.py"
+    ],
+    "difference_verified_by_fixed_git": true,
+    "product_workflow_negative_patches_and_all_report_documents_unchanged": true,
+    "normal_ci_passed": true,
+    "merged_commit": "b8d5af3f82aa8c262560fd52a79408a18e18bde1"
+  },
+  "pr205_latest_ci": {
+    "head": "4d3011cf9f92e25fc1b0d7371e9cdbbd5a8b7930",
+    "started_at_parent_reported_utc": "2026-10-19T10:53:54Z",
+    "a06_run": 39240728276,
+    "g0_run": 39240728311,
+    "a01_run": 39240728231,
+    "status": "completed_success_independently_reviewed_normal_merge",
+    "artifact_id": 12182038203,
+    "merged_commit": "b8d5af3f82aa8c262560fd52a79408a18e18bde1",
+    "not_inherited_from_f966_pr203_or_wip": true,
+    "local_host_tests_parent_reported": {
+      "spec_tests": 36,
+      "backend_tests": 26,
+      "passed": true,
+      "first_attempt_missing_seed_errors": 2,
+      "seed_restored_to_fixed_original_tree_and_lock": true,
+      "author_did_not_rerun": true
+    },
+    "all_five_observed_checks_success": true,
+    "artifact_sha256": "ef5d93159c1663fb30d3cf8e39e969525bbfa03b4fedc4db10ef4c87b035d655",
+    "merged_at": "2026-10-19T11:34:07Z",
+    "actual_review_paths": [
+      "pr205-runtime-review/green-independent-review/review.json",
+      "pr205-runtime-review/negative-independent-review/review.json",
+      "pr205-runtime-review/ordinary-cpu-review/review.json",
+      "pr205-runtime-review/ordinary-cpu-review/input-chain-supplement.json"
+    ]
+  },
+  "desktop_api_recovery": {
+    "producer_directory": "r11-evidence/desktop-progress-ci",
+    "original_responses": 25,
+    "original_observation_interval_utc": [
+      "2026-10-19T08:23:12.032Z",
+      "2026-10-19T08:24:19.007Z"
+    ],
+    "manifest": "desktop-progress-ci/recovered-files-manifest.json",
+    "manifest_bytes": 13643,
+    "manifest_sha256": "a2f4afcd9f36f36b01efc3b1f4bd1860ee0abc0f644e175cc16ffd120030b2e4",
+    "producer_files": 54,
+    "producer_bytes": 1768751,
+    "publication_files": 29,
+    "publication_bytes": 111779,
+    "scope": "Metadata-only recovery at 10:55; later 10:59 byte-identical archive recovery is separate and does not rewrite this frozen package."
+  },
+  "upstream_official_reference": {
+    "url": "https://asterinas.github.io/2026/10/13/announcing-asterinas-0.19.0.html",
+    "title": "Announcing Asterinas 0.19.0",
+    "published_date": "2026-10-13",
+    "opened_by_recovery_author": true,
+    "source_type": "official primary release announcement",
+    "capabilities": [
+      "DRM core, GEM dumb buffers and KMS; Xorg modesetting with Mesa software OpenGL",
+      "AArch64 QEMU virt minimal usable Tier2 port",
+      "OSTD Intel VMX foundation; full KVM-compatible dev/kvm remains future policy/interface work",
+      "Asterinas NixOS builds Asterinas with Nix/Cargo/rustc and boots the result in nested QEMU"
+    ],
+    "does_not_qualify_project": [
+      "Robrix/shared UI on Asterinas",
+      "hardware GPU acceleration",
+      "phone BSP",
+      "Hepta W1",
+      "project self-hosted reproducible build"
+    ]
+  },
+  "updated_at_utc": "2026-10-19T11:45:53.620367+00:00",
+  "pr203_restored_green_review": {
+    "producer_path": "r11-evidence/pr203-restored-artifact/green-independent-review/review.json",
+    "planned_report_href": "pr203-restored-artifact/green-independent-review/review.json",
+    "bytes": 82525,
+    "sha256": "02fe47643e57a0c6677d64a1fc0f90f2e5b84b3ae7b3b6f197a1529bdf9d4e3d",
+    "reviewed_at_utc": "2026-10-19T11:06:08.305640+00:00",
+    "kind": "new independent read of restored original archive; not old JSON reconstruction or product rerun",
+    "core_passed": 201,
+    "ostd_reported": 221,
+    "soft_skipped": 3,
+    "exercised_lower_bound": 419,
+    "source_files": 6591,
+    "source_paths_modes_blobs_match_fixed_775_git": true,
+    "all_source_blob_sizes_sha_rehashed": false,
+    "three_ELFs_stream_hashed": true,
+    "queryabi_markers_once": true,
+    "disabled_operations": 4,
+    "separately_not_rechecked": [
+      "seven negative controls",
+      "full32",
+      "SCM_RIGHTS",
+      "RLIMIT_NOFILE",
+      "CPU timing"
+    ],
+    "old_review_json_recovered": false
+  },
+  "g1c_next_design": {
+    "source_head": "4d3011cf9f92e25fc1b0d7371e9cdbbd5a8b7930",
+    "producer_path": "r11-evidence/g1c-design/process-exec-owner-design-4d3011cf.json",
+    "planned_report_href": "g1c-design/process-exec-owner-design-4d3011cf.json",
+    "bytes": 23663,
+    "sha256": "8f2d82e2c175f02735d9c269bb54e0f2364f1b364bc0b7bb8700eb45cd6e57dd",
+    "source_inputs": 19,
+    "implementation_or_execution_claim": false,
+    "blockers": [
+      "ElfLoadInfo lacks final immutable mapped-image authentication",
+      "canonical Process-image grant and exec/exit closure not implemented",
+      "current check_session is pre-usercopy; future post-copy owner-lock admission and revoke required"
+    ],
+    "lock_order": "membership -> tasks must not be reversed",
+    "NativeGrant_value_constructor_is_authority": false
+  },
+  "storage_acceptance_gate": {
+    "requirement": "fsync/crash and cross-system-reboot recovery on a real block-device path",
+    "controlled_virtual_block_device_allowed": true,
+    "physical_host_power_cut_required": false,
+    "process_kill_SQLite_test_alone_covers_cross_kernel_restart": false
+  },
+  "final_text_corrections": {
+    "paired_cut": "Settle the local runtime at the same paired cut, then verify RCU Arc and read the original bandwidth-lock snapshot; not a settlement before that timestamp.",
+    "pr203_review": "Bounded green/source review completed; other historical runtime scopes unchanged.",
+    "pr203_quota_kernel_identity": "Original #203 QueryAbi/1-vCPU/2-vCPU receipts bind the same e1d5ec0f ordinary kernel; independently streamed saved product-kernel.elf matches. No inference from shared target residue; no renewed full SMP or CPU timing qualification.",
+    "index_historical_status": "The earlier WIP/pending paragraph is explicitly labeled as preceding final #205 qualification."
+  },
+  "published_product_main": {
+    "commit": "b8d5af3f82aa8c262560fd52a79408a18e18bde1",
+    "tree": "8eb809136a402cc54ba049b1e40dd174308c923f",
+    "merged_at": "2026-10-19T11:34:07Z",
+    "executed_head": "4d3011cf9f92e25fc1b0d7371e9cdbbd5a8b7930",
+    "same_tree": true
+  },
+  "final_validation": "source-publication/final-state.json",
+  "hepta_latest_observation": {
+    "status_review": "hepta-final-status/review.json",
+    "main": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+    "head": "43a638d4e25ebc5a8b06babcd1c75c9acac53179",
+    "state": "open",
+    "draft": true,
+    "merged": false,
+    "mergeable_state": "blocked",
+    "status_observed_at": "2026-10-19T11:18:05.491Z",
+    "counts": {
+      "failure": 14,
+      "success": 24,
+      "skipped": 6,
+      "cancelled": 8
+    },
+    "all_required_success": false
+  },
+  "draft_author_actions": {
+    "git_worktree_mutations": 0,
+    "remote_writes": 0,
+    "remote_status_polling": 0,
+    "cargo_runs": 0,
+    "qemu_runs": 0,
+    "old_archives_repacked": false,
+    "files_written": [
+      "R11_AUDIT_DRAFT.md",
+      "module-matrix.json",
+      "RECOVERY.md"
+    ],
+    "public_primary_web_source_reads": 1
+  },
+  "publication_actions": {
+    "scope": "three docs plus current results only",
+    "product_PR205_normally_merged": true,
+    "new_product_test_runs_for_report": 0,
+    "source_execution_head": "4d3011cf9f92e25fc1b0d7371e9cdbbd5a8b7930",
+    "root_README_bytes": 0
+  },
+  "historical_recovery_draft_validation": {
+    "kind": "fixed_git_and_recovered_producer_link_identity_only",
+    "source_head": "4d3011cf9f92e25fc1b0d7371e9cdbbd5a8b7930",
+    "module_count": 11,
+    "document_contents_verified": 62,
+    "main_target_existence": 60,
+    "candidate_only_targets": 2,
+    "local_link_occurrences_in_report_and_recovery": 134,
+    "unique_local_targets": 80,
+    "unique_resolution_counts": {
+      "fixed_candidate_git": 67,
+      "producer_pending_publication": 10,
+      "draft_companion": 3
+    },
+    "missing_links": 0,
+    "old_artifact_repacking": false,
+    "product_tests_executed": false,
+    "new_CI_qualification_inferred": false,
+    "only_written_files": [
+      "R11_AUDIT_DRAFT.md",
+      "module-matrix.json",
+      "RECOVERY.md"
+    ],
+    "validated_at_utc": "2026-10-19T11:10:40.018639+00:00",
+    "g1c_and_new_green_receipt_sha_checked": true,
+    "current_candidate_INDEX_two_corrections_present": true
+  },
+  "report_documentation_updates": [
+    {
+      "path": "docs/STATUS.md",
+      "base_product_blob": "1a3d67902703516de3bc6bc1f7c193050498f10f",
+      "report_publication_blob": "3a0641ec8ee00cef1ca04342b0176b4fcca3021c",
+      "bytes": 172175,
+      "sha256": "b9877f3a77fc35a9122cd9bc9b7b1d24614cb5098b34668029b1314eb32902e0"
+    },
+    {
+      "path": "docs/INDEX.md",
+      "base_product_blob": "19599905f7f5f473bc2eb80ca9d20b4283a921f6",
+      "report_publication_blob": "3a84e7fae25203547c8062aecc64dafd1c089774",
+      "bytes": 27397,
+      "sha256": "a7881e005f73c4f081f220c5abb01315e53c17d86897fe7f2cc4f0814ae9c510"
+    },
+    {
+      "path": "docs/ASTERINAS_CPU_USAGE_G1B.md",
+      "base_product_blob": "5526fbade9977db6b43e9a616f6636b88836c4bf",
+      "report_publication_blob": "e53bc8db9ba8f881a4478190ad72fe1fdf5b79b6",
+      "bytes": 20707,
+      "sha256": "ee9156974ac96000384c73bebf1411ef23c144a03abd4fec2c73c2deb80ffe8b"
+    }
+  ],
+  "pr203_identity_correction": {
+    "review": "pr203-identity-correction/review.json",
+    "review_bytes": 11457,
+    "review_sha256": "e172db766dfc328286484a79e703dbe0debd53893aa412212264ef74480505c8",
+    "manifest": "pr203-identity-correction/files-manifest.json",
+    "manifest_sha256": "c107f879a270f1c640c3a00fec7ac8aad55fa4e2b3d3cb92780a4410866571e4",
+    "files": 10,
+    "bytes": 48760,
+    "scope": "Original QueryAbi/1-vCPU/2-vCPU receipt identity and independently streamed ordinary ELF; four historical CPU values checked only against original JSON samples, not newly parsed serial or renewed CPU/SMP qualification."
+  }
+}

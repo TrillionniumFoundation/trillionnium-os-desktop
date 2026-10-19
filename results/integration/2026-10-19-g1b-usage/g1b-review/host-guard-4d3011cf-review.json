@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "kind": "fixed_remote_host_guard_delta_review",
+  "reviewer": "/root/r9_g1_contract",
+  "reviewed_at_utc": "2026-10-19T10:56:59.008228+00:00",
+  "source": {
+    "original_remote": "f9669912e2886190429187e14753d62b2060bd5f",
+    "new_remote": "4d3011cf9f92e25fc1b0d7371e9cdbbd5a8b7930",
+    "remote_tree": "8eb809136a402cc54ba049b1e40dd174308c923f",
+    "remote_parent": "f9669912e2886190429187e14753d62b2060bd5f",
+    "local_commit": "58c705eb1648acd83abe5b0872a41b3c910aa6c1",
+    "local_tree": "8eb809136a402cc54ba049b1e40dd174308c923f"
+  },
+  "checks": {
+    "only_one_host_test_path_changes": true,
+    "new_remote_parent_exact": true,
+    "local_and_remote_trees_equal_expected": true,
+    "only_death_path_source_guard_function_updated": true,
+    "paired_ns_match_in_actual_function": true,
+    "retained_owner_borrow_present": true,
+    "actual_debit_precedes_rebind": true,
+    "production_scheduler_blob_unchanged": true
+  },
+  "blocking": [],
+  "changed_paths": [
+    "tests/spec/test_a06_final_accounting_source.py"
+  ],
+  "file": {
+    "path": "tests/spec/test_a06_final_accounting_source.py",
+    "old_bytes": 3269,
+    "old_sha256": "f4957e07aa35af5346f258df061cf228e8e7fc22495df8ba7c110e881cdae2f2",
+    "new_bytes": 3757,
+    "new_sha256": "9b90cedc3808390b2f292cafae9079f5f02555553af79ad9c9673c49acc30ae8",
+    "new_blob": "eb329eb501266c25d68e2f4e37c77750260ea51d"
+  },
+  "diff": "diff --git a/tests/spec/test_a06_final_accounting_source.py b/tests/spec/test_a06_final_accounting_source.py\nindex 42ed6e8..eb329eb 100644\n--- a/tests/spec/test_a06_final_accounting_source.py\n+++ b/tests/spec/test_a06_final_accounting_source.py\n@@ -38,8 +38,19 @@ class A06FinalAccountingSource(unittest.TestCase):\n         self.assertIn(\"guard.get().is_some() || !process.status().is_zombie()\", body)\n         scheduler = SCHED_RS.read_text()\n         self.assertIn(\"bandwidth_owner: Option<CpuChargeOwner>\", scheduler)\n-        self.assertIn(\"owner.charge(self.bandwidth_accounted_through, now)\", scheduler)\n-        self.assertIn(\"self.bandwidth_owner = CpuChargeOwner::for_task(task)\", scheduler)\n+        start = scheduler.index(\"fn settle_bandwidth(&mut self, task: &Task,\")\n+        end = scheduler.index(\"fn with_bandwidth_settled\", start)\n+        settlement = scheduler[start:end]\n+        self.assertIn(\n+            \"match (self.bandwidth_accounted_through_ns, now.boottime_ns)\",\n+            settlement,\n+        )\n+        self.assertIn(\"let Some(owner) = &self.bandwidth_owner\", settlement)\n+        self.assertLess(\n+            settlement.index(\"owner.charge(from, until)\"),\n+            settlement.index(\"self.bandwidth_owner = CpuChargeOwner::for_task(task)\"),\n+            \"the retained owner must receive its settled nanoseconds before rebinding\",\n+        )\n \n     def test_migration_updates_all_live_thread_snapshots(self):\n         source = CGROUP_RS.read_text()\n",
+  "prior_source_review": {
+    "path": "/workspace/scratch/499c7902de8e/r11-evidence/g1b-review/recovered-f966-source-review.json",
+    "bytes": 118875,
+    "sha256": "c8f6b5226f0a83dc8ebed6cf4214fdad7e2d51f24b73ebd20c2cf5b29b8394cb"
+  },
+  "manual_conclusion": "Guard now limits its string checks to actual settle_bandwidth, requires the paired Option ns match and retained owner borrow, and proves charge(from,until) text precedes re-resolution. Existing migration/death/lease guards remain. This is a narrow source-shape guard; it neither replaces behavioral ktests nor proves every control-flow or race property.",
+  "boundaries": [
+    "All paths except this host test are equal as Git mode/blob objects, so original production/static review binds mechanically.",
+    "No prior CI qualification is inherited by the new commit. New remote 4d3011cf requires its own exact-head A06 and host checks.",
+    "This reviewer ran no tests, Cargo, Rust or QEMU."
+  ]
+}

@@ -1,0 +1,1487 @@
+{
+  "schema": 1,
+  "started_at_utc": "2026-10-19T11:23:41.775008+00:00",
+  "finished_at_utc": "2026-10-19T11:23:45.152883+00:00",
+  "kind": "Independent read-only final A06 artifact review; no kernel build, QEMU run, or product test rerun.",
+  "head": "4d3011cf9f92e25fc1b0d7371e9cdbbd5a8b7930",
+  "tree": "8eb809136a402cc54ba049b1e40dd174308c923f",
+  "archive": {
+    "artifact_id": 12182038203,
+    "run_id": 39240728276,
+    "path": "/workspace/scratch/499c7902de8e/r11-evidence/pr205-runtime-review/original.zip",
+    "bytes": 154979607,
+    "sha256": "ef5d93159c1663fb30d3cf8e39e969525bbfa03b4fedc4db10ef4c87b035d655",
+    "members": 1172,
+    "all_crc_passed": true
+  },
+  "reviewed_fixed_runner": {
+    "path": "tests/organ_backend/run_cpu_owner_negative.py",
+    "sha256": "2433f1b130997fbbb6b5e0dd4af67e994babae97aac334df33abf0e369c3fbc4",
+    "method": "Restricted AST evaluation of immutable data assignments only; runner not imported or executed."
+  },
+  "independent_source_map_sha256": "bbe798727d88c8d0fb9300357e574c17bcc9399da74e8a0444b41cccfd05e704",
+  "independent_source_files": 7054,
+  "candidate_git_tree_recomputed": "8eb809136a402cc54ba049b1e40dd174308c923f",
+  "green_review": {
+    "path": "green-independent-review/review.json",
+    "sha256": "6a5f40808d290ee0d6832e47f7c7062937f2157a3c3dc85251535a355311b718"
+  },
+  "old_201_name_reference": {
+    "path": "/workspace/scratch/499c7902de8e/r11-evidence/pr203-restored-artifact/green-independent-review/review.json",
+    "sha256": "02fe47643e57a0c6677d64a1fc0f90f2e5b84b3ae7b3b6f197a1529bdf9d4e3d",
+    "head": "775061af51e6ee91fce290d5855e24a276292e14",
+    "kind": "Earlier independent read of byte-identical official #203 artifact; no old report identity fabricated."
+  },
+  "new_usage_tests": {
+    "source_path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/usage_tests.rs",
+    "bytes": 35603,
+    "sha256": "9199dee49d804bb3b217a417362ed78043bcb6ae7a23f3bb29191d8f7c304dcb",
+    "names": [
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::fragmented_three_ghz_runtime_keeps_absolute_endpoint_precision",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::sampled_configuration_preserves_the_separate_cycle_cursor",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::crossed_windows_preserve_cumulative_usage_and_separate_debt",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::same_value_and_lowered_cap_never_refill_the_original_owner",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::returning_from_short_period_waits_for_a_complete_native_window",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::returning_from_long_period_does_not_expose_pre_window_usage",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::ordinary_linux_caps_outside_n0_never_become_native_snapshots",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::real_owner_wrapper_enforces_the_single_cpu_observation_profile",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::replacement_closes_the_old_snapshot_and_requires_a_new_binding",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::deleted_owner_stays_closed_while_its_final_debit_is_retained",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::indeterminate_metadata_cannot_produce_usage_after_detachment",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::unavailable_clock_allows_only_unlimited_linux_recovery",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::reliable_clock_samples_cannot_rewind_the_runtime_endpoint",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::backwards_usage_observation_permanently_fences_the_owner",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::backwards_same_value_configuration_cannot_reopen_an_old_window",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::cumulative_overflow_never_wraps_or_recovers_a_native_snapshot",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::unreliable_clock_sample_cannot_rewind_or_replay_cycle_runtime",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::late_same_value_reconfigure_preserves_window_usage_and_debt",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::overlapping_owner_intervals_accumulate_without_a_clock_fault"
+    ],
+    "all_19_once_and_passed_green": true,
+    "green_names_exact_old_201_union_new_19": true
+  },
+  "controls": [
+    {
+      "control": "owner-current-slot",
+      "prefix": "_temp/a06-owner-negative",
+      "candidate_head": "4d3011cf9f92e25fc1b0d7371e9cdbbd5a8b7930",
+      "candidate_tree": "8eb809136a402cc54ba049b1e40dd174308c923f",
+      "negative_recorded_commit": "90eff8d2ed25ade9ed71e71abcbf58b1f2d87793",
+      "negative_tree_independently_recomputed": "6e4535c500151682c35ed53454de28b51ddece07",
+      "source_files": 7054,
+      "only_changed_path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs",
+      "original_file": {
+        "mode": "100644",
+        "git_blob": "7803e9f6adfde1b37a75fc3ead2a5fe18b601f0f",
+        "size": 42658,
+        "sha256": "b78cf58b0dabd34b3055748d4fc8a7e59ce37d90d092b32b72e06fee8814c4d0"
+      },
+      "mutated_file": {
+        "git_blob": "7a2d9b8869b1c97f10b427bc874951d53988686b",
+        "mode": "100644",
+        "sha256": "f54b6d6c90762078a477b6bf9cd7dc0680e614c932c39852fbedadc6512bc672",
+        "size": 42749
+      },
+      "declared_patch_sha256": "04b19a7a89b8f8591d9a18766390167201e999a9617febcd9d0c70902005f1bd",
+      "recorded_applied_patch_sha256": "2a5baec492d08c866e55d05d803a6e7d1c80b2bcfd50b0fdb22f6f18f314f85f",
+      "isolated_git_apply_checks": [
+        {
+          "patch": "declared",
+          "argv": [
+            "git",
+            "apply",
+            "--check",
+            "--verbose",
+            "-"
+          ],
+          "isolated_text_copy_only": true,
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "Checking patch kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs...\nHunk #1 succeeded at 698 (offset 2 lines).\n"
+        },
+        {
+          "patch": "declared",
+          "argv": [
+            "git",
+            "apply",
+            "--verbose",
+            "-"
+          ],
+          "isolated_text_copy_only": true,
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "Checking patch kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs...\nHunk #1 succeeded at 698 (offset 2 lines).\nApplied patch kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs cleanly.\n"
+        },
+        {
+          "patch": "recorded-applied",
+          "argv": [
+            "git",
+            "apply",
+            "--check",
+            "--verbose",
+            "-"
+          ],
+          "isolated_text_copy_only": true,
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "Checking patch kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs...\n"
+        },
+        {
+          "patch": "recorded-applied",
+          "argv": [
+            "git",
+            "apply",
+            "--verbose",
+            "-"
+          ],
+          "isolated_text_copy_only": true,
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "Checking patch kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs...\nApplied patch kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs cleanly.\n"
+        }
+      ],
+      "test_names_equal_complete_green_suite": true,
+      "complete_tests": 220,
+      "passed": 217,
+      "failed": 3,
+      "expected_exact_failed_names": [
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::owner_retention_regressions::controller_publication_charges_the_entire_prefix_to_the_old_incarnation",
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::owner_retention_regressions::exited_task_resumes_its_retained_incarnation_after_replacement_and_reap",
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::owner_retention_regressions::retained_leaf_debits_its_original_ancestor_chain_after_parent_replacement"
+      ],
+      "soft_skipped": 0,
+      "filtered": 0,
+      "original_runner_minimum_unchanged": 189,
+      "independent_required_denominator": 220,
+      "raw_qemu_exit": 65,
+      "original_gate_exit": 1,
+      "timed_out": false,
+      "same_recorded_toolchain_osdk_qemu_profile_and_locks_as_green": true,
+      "candidate_restored_and_source_snapshots_equal": true,
+      "review_passed": true
+    },
+    {
+      "control": "clocksource-drop-fraction",
+      "prefix": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction",
+      "candidate_head": "4d3011cf9f92e25fc1b0d7371e9cdbbd5a8b7930",
+      "candidate_tree": "8eb809136a402cc54ba049b1e40dd174308c923f",
+      "negative_recorded_commit": "6808f4b75dac2119d318b67b9b995d23e048f091",
+      "negative_tree_independently_recomputed": "8b57bdf1307a9a73165c9760b74271f614c14cfc",
+      "source_files": 7054,
+      "only_changed_path": "kernel/asterinas/kernel/core/comps/time/src/clocksource.rs",
+      "original_file": {
+        "mode": "100644",
+        "git_blob": "3f0abcd975c205758015d94a4723312b8df7e60f",
+        "size": 14544,
+        "sha256": "e780c0fcf590796482a3610bcf2f0a82ac220ea8770b7cc6dd89da0e056665cb"
+      },
+      "mutated_file": {
+        "git_blob": "b67cc70cb514d4f914671cdfbf2ffe7c7683bcce",
+        "mode": "100644",
+        "sha256": "4fbf8e4134f2ea6709716bc7aa591be6745d8bdd86241d3066cdf7e0fcc31700",
+        "size": 14637
+      },
+      "declared_patch_sha256": "6aeb53178b4facbe105c7fd4ff3e8086d5a9b57f2715f80781efc2764338a442",
+      "recorded_applied_patch_sha256": "fd894b672f2de74c0d837be063710474b4cd3b5feed819a022766f5a499c4207",
+      "isolated_git_apply_checks": [
+        {
+          "patch": "declared",
+          "argv": [
+            "git",
+            "apply",
+            "--check",
+            "--verbose",
+            "-"
+          ],
+          "isolated_text_copy_only": true,
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "Checking patch kernel/asterinas/kernel/core/comps/time/src/clocksource.rs...\nHunk #1 succeeded at 313 (offset 12 lines).\n"
+        },
+        {
+          "patch": "declared",
+          "argv": [
+            "git",
+            "apply",
+            "--verbose",
+            "-"
+          ],
+          "isolated_text_copy_only": true,
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "Checking patch kernel/asterinas/kernel/core/comps/time/src/clocksource.rs...\nHunk #1 succeeded at 313 (offset 12 lines).\nApplied patch kernel/asterinas/kernel/core/comps/time/src/clocksource.rs cleanly.\n"
+        },
+        {
+          "patch": "recorded-applied",
+          "argv": [
+            "git",
+            "apply",
+            "--check",
+            "--verbose",
+            "-"
+          ],
+          "isolated_text_copy_only": true,
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "Checking patch kernel/asterinas/kernel/core/comps/time/src/clocksource.rs...\n"
+        },
+        {
+          "patch": "recorded-applied",
+          "argv": [
+            "git",
+            "apply",
+            "--verbose",
+            "-"
+          ],
+          "isolated_text_copy_only": true,
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "Checking patch kernel/asterinas/kernel/core/comps/time/src/clocksource.rs...\nApplied patch kernel/asterinas/kernel/core/comps/time/src/clocksource.rs cleanly.\n"
+        }
+      ],
+      "test_names_equal_complete_green_suite": true,
+      "complete_tests": 220,
+      "passed": 216,
+      "failed": 4,
+      "expected_exact_failed_names": [
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::fragmented_three_ghz_runtime_keeps_absolute_endpoint_precision",
+        "aster_core::vdso::clocksource_regressions::fragmented_refreshes_preserve_fractional_time_and_endpoint_differences",
+        "aster_core::vdso::clocksource_regressions::full_width_vdso_fraction_survives_second_rollover_and_checks_realtime_overflow",
+        "aster_core::vdso::clocksource_regressions::vdso_and_kernel_share_the_fractional_phase_at_the_next_nanosecond"
+      ],
+      "soft_skipped": 0,
+      "filtered": 0,
+      "original_runner_minimum_unchanged": 201,
+      "independent_required_denominator": 220,
+      "raw_qemu_exit": 65,
+      "original_gate_exit": 1,
+      "timed_out": false,
+      "same_recorded_toolchain_osdk_qemu_profile_and_locks_as_green": true,
+      "candidate_restored_and_source_snapshots_equal": true,
+      "review_passed": true
+    },
+    {
+      "control": "vdso-drop-fraction",
+      "prefix": "_temp/a06-clock-handoff-negative/vdso-drop-fraction",
+      "candidate_head": "4d3011cf9f92e25fc1b0d7371e9cdbbd5a8b7930",
+      "candidate_tree": "8eb809136a402cc54ba049b1e40dd174308c923f",
+      "negative_recorded_commit": "80b208f8b7e9abaabe1c4ea1e03fcd3bfc88ca0a",
+      "negative_tree_independently_recomputed": "d68174218c03f35d901c5d0d8bf9e881156f7a00",
+      "source_files": 7054,
+      "only_changed_path": "kernel/asterinas/kernel/core/src/vdso.rs",
+      "original_file": {
+        "mode": "100644",
+        "git_blob": "603a73e1f2248ced0fde65da5694b8663005cd04",
+        "size": 17743,
+        "sha256": "344c56cfcaf752ef68f1325f4f12ab9332189937d7873d3d30c2c8a75e043ac4"
+      },
+      "mutated_file": {
+        "git_blob": "188343da057dfbf7f1a44012f3f75a275e70ba49",
+        "mode": "100644",
+        "sha256": "e329db8cce3cdc7f5a0b6815af865c971bddc9f53e2b75f442d7880d72138418",
+        "size": 17724
+      },
+      "declared_patch_sha256": "a1e116c7af6a57add22693b4fa985b8bb45809df3ad6765b52ea8efa979975c9",
+      "recorded_applied_patch_sha256": "39454a60f5378cdc35cd8ecd338ba7869dc798d74c458950b584a3f11887aff0",
+      "isolated_git_apply_checks": [
+        {
+          "patch": "declared",
+          "argv": [
+            "git",
+            "apply",
+            "--check",
+            "--verbose",
+            "-"
+          ],
+          "isolated_text_copy_only": true,
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "Checking patch kernel/asterinas/kernel/core/src/vdso.rs...\n"
+        },
+        {
+          "patch": "declared",
+          "argv": [
+            "git",
+            "apply",
+            "--verbose",
+            "-"
+          ],
+          "isolated_text_copy_only": true,
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "Checking patch kernel/asterinas/kernel/core/src/vdso.rs...\nApplied patch kernel/asterinas/kernel/core/src/vdso.rs cleanly.\n"
+        },
+        {
+          "patch": "recorded-applied",
+          "argv": [
+            "git",
+            "apply",
+            "--check",
+            "--verbose",
+            "-"
+          ],
+          "isolated_text_copy_only": true,
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "Checking patch kernel/asterinas/kernel/core/src/vdso.rs...\n"
+        },
+        {
+          "patch": "recorded-applied",
+          "argv": [
+            "git",
+            "apply",
+            "--verbose",
+            "-"
+          ],
+          "isolated_text_copy_only": true,
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "Checking patch kernel/asterinas/kernel/core/src/vdso.rs...\nApplied patch kernel/asterinas/kernel/core/src/vdso.rs cleanly.\n"
+        }
+      ],
+      "test_names_equal_complete_green_suite": true,
+      "complete_tests": 220,
+      "passed": 217,
+      "failed": 3,
+      "expected_exact_failed_names": [
+        "aster_core::vdso::clocksource_regressions::full_width_vdso_fraction_survives_second_rollover_and_checks_realtime_overflow",
+        "aster_core::vdso::clocksource_regressions::mapped_vdso_publishes_the_phase_and_fault_mode_under_the_existing_sequence",
+        "aster_core::vdso::clocksource_regressions::vdso_and_kernel_share_the_fractional_phase_at_the_next_nanosecond"
+      ],
+      "soft_skipped": 0,
+      "filtered": 0,
+      "original_runner_minimum_unchanged": 201,
+      "independent_required_denominator": 220,
+      "raw_qemu_exit": 65,
+      "original_gate_exit": 1,
+      "timed_out": false,
+      "same_recorded_toolchain_osdk_qemu_profile_and_locks_as_green": true,
+      "candidate_restored_and_source_snapshots_equal": true,
+      "review_passed": true
+    },
+    {
+      "control": "vdso-skip-fault-mode",
+      "prefix": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode",
+      "candidate_head": "4d3011cf9f92e25fc1b0d7371e9cdbbd5a8b7930",
+      "candidate_tree": "8eb809136a402cc54ba049b1e40dd174308c923f",
+      "negative_recorded_commit": "1d328c5d98758adf9fa263da551f855104326447",
+      "negative_tree_independently_recomputed": "8774880d5bfba26bf384f3c04d21278b8efe579b",
+      "source_files": 7054,
+      "only_changed_path": "kernel/asterinas/kernel/core/src/vdso.rs",
+      "original_file": {
+        "mode": "100644",
+        "git_blob": "603a73e1f2248ced0fde65da5694b8663005cd04",
+        "size": 17743,
+        "sha256": "344c56cfcaf752ef68f1325f4f12ab9332189937d7873d3d30c2c8a75e043ac4"
+      },
+      "mutated_file": {
+        "git_blob": "dc5eb3cfb6a68cbea8cd69d7f842c1a1e8d60897",
+        "mode": "100644",
+        "sha256": "e2640897933010bd5734fc33d1d6a0e197533729e17e4349ffe7db295b88483b",
+        "size": 17618
+      },
+      "declared_patch_sha256": "da1f7c360136bfe330cba58acef4cf894d423043e1b3b9790958b923d4fcd452",
+      "recorded_applied_patch_sha256": "a68524832c47c74e3fea60e58ceccb1d44e31ae4020d5e7f1014f9e4e1c6d0e0",
+      "isolated_git_apply_checks": [
+        {
+          "patch": "declared",
+          "argv": [
+            "git",
+            "apply",
+            "--check",
+            "--verbose",
+            "-"
+          ],
+          "isolated_text_copy_only": true,
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "Checking patch kernel/asterinas/kernel/core/src/vdso.rs...\n"
+        },
+        {
+          "patch": "declared",
+          "argv": [
+            "git",
+            "apply",
+            "--verbose",
+            "-"
+          ],
+          "isolated_text_copy_only": true,
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "Checking patch kernel/asterinas/kernel/core/src/vdso.rs...\nApplied patch kernel/asterinas/kernel/core/src/vdso.rs cleanly.\n"
+        },
+        {
+          "patch": "recorded-applied",
+          "argv": [
+            "git",
+            "apply",
+            "--check",
+            "--verbose",
+            "-"
+          ],
+          "isolated_text_copy_only": true,
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "Checking patch kernel/asterinas/kernel/core/src/vdso.rs...\n"
+        },
+        {
+          "patch": "recorded-applied",
+          "argv": [
+            "git",
+            "apply",
+            "--verbose",
+            "-"
+          ],
+          "isolated_text_copy_only": true,
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "Checking patch kernel/asterinas/kernel/core/src/vdso.rs...\nApplied patch kernel/asterinas/kernel/core/src/vdso.rs cleanly.\n"
+        }
+      ],
+      "test_names_equal_complete_green_suite": true,
+      "complete_tests": 220,
+      "passed": 219,
+      "failed": 1,
+      "expected_exact_failed_names": [
+        "aster_core::vdso::clocksource_regressions::mapped_vdso_publishes_the_phase_and_fault_mode_under_the_existing_sequence"
+      ],
+      "soft_skipped": 0,
+      "filtered": 0,
+      "original_runner_minimum_unchanged": 201,
+      "independent_required_denominator": 220,
+      "raw_qemu_exit": 65,
+      "original_gate_exit": 1,
+      "timed_out": false,
+      "same_recorded_toolchain_osdk_qemu_profile_and_locks_as_green": true,
+      "candidate_restored_and_source_snapshots_equal": true,
+      "review_passed": true
+    },
+    {
+      "control": "handoff-drop-tail",
+      "prefix": "_temp/a06-clock-handoff-negative/handoff-drop-tail",
+      "candidate_head": "4d3011cf9f92e25fc1b0d7371e9cdbbd5a8b7930",
+      "candidate_tree": "8eb809136a402cc54ba049b1e40dd174308c923f",
+      "negative_recorded_commit": "39edd6c4ef01ed859f424ec6b10393af72704751",
+      "negative_tree_independently_recomputed": "285761262556efbf6866af469be01f17dc426a69",
+      "source_files": 7054,
+      "only_changed_path": "kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs",
+      "original_file": {
+        "mode": "100644",
+        "git_blob": "a5e1027106fae3d0f280089d3da5e5a530661143",
+        "size": 30592,
+        "sha256": "6b0cc85db8c868d9342ce4179f94fa1825420f30d6e8e7e2117495912e64e667"
+      },
+      "mutated_file": {
+        "git_blob": "48f6e530b1f6710fe1b8c0e8cca2f6b4be2ccf58",
+        "mode": "100644",
+        "sha256": "cfce9a95e8935e968205bf759fc2d2bfb0886bfe2a3ba861e99331351c0f6d76",
+        "size": 30622
+      },
+      "declared_patch_sha256": "2e9a87cdf9044f29dbcb8c932e72079eaf3fc9ecde791c9627b45b9b06257ffc",
+      "recorded_applied_patch_sha256": "2beb0bfdfab046c75f154e389573a00aacec1f9ee5435a61dd0b1c7c06287cce",
+      "isolated_git_apply_checks": [
+        {
+          "patch": "declared",
+          "argv": [
+            "git",
+            "apply",
+            "--check",
+            "--verbose",
+            "-"
+          ],
+          "isolated_text_copy_only": true,
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "Checking patch kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs...\nHunk #1 succeeded at 685 (offset 6 lines).\n"
+        },
+        {
+          "patch": "declared",
+          "argv": [
+            "git",
+            "apply",
+            "--verbose",
+            "-"
+          ],
+          "isolated_text_copy_only": true,
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "Checking patch kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs...\nHunk #1 succeeded at 685 (offset 6 lines).\nApplied patch kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs cleanly.\n"
+        },
+        {
+          "patch": "recorded-applied",
+          "argv": [
+            "git",
+            "apply",
+            "--check",
+            "--verbose",
+            "-"
+          ],
+          "isolated_text_copy_only": true,
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "Checking patch kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs...\n"
+        },
+        {
+          "patch": "recorded-applied",
+          "argv": [
+            "git",
+            "apply",
+            "--verbose",
+            "-"
+          ],
+          "isolated_text_copy_only": true,
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "Checking patch kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs...\nApplied patch kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs cleanly.\n"
+        }
+      ],
+      "test_names_equal_complete_green_suite": true,
+      "complete_tests": 220,
+      "passed": 216,
+      "failed": 4,
+      "expected_exact_failed_names": [
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::exiting_dequeue_retains_its_owner_through_selection_retries",
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::handoff_debits_the_old_window_before_rechecking_a_shared_ancestor",
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::outgoing_tail_ends_at_the_incoming_segment_start",
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::waiting_dequeue_retains_its_owner_through_selection_retries"
+      ],
+      "soft_skipped": 0,
+      "filtered": 0,
+      "original_runner_minimum_unchanged": 201,
+      "independent_required_denominator": 220,
+      "raw_qemu_exit": 65,
+      "original_gate_exit": 1,
+      "timed_out": false,
+      "same_recorded_toolchain_osdk_qemu_profile_and_locks_as_green": true,
+      "candidate_restored_and_source_snapshots_equal": true,
+      "review_passed": true
+    },
+    {
+      "control": "handoff-eligibility-first",
+      "prefix": "_temp/a06-clock-handoff-negative/handoff-eligibility-first",
+      "candidate_head": "4d3011cf9f92e25fc1b0d7371e9cdbbd5a8b7930",
+      "candidate_tree": "8eb809136a402cc54ba049b1e40dd174308c923f",
+      "negative_recorded_commit": "6f656be610a5f115b70766356ab751625287d1ff",
+      "negative_tree_independently_recomputed": "3d6d71dd34c5c4a5bfde26554ec31a2b85272cb7",
+      "source_files": 7054,
+      "only_changed_path": "kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs",
+      "original_file": {
+        "mode": "100644",
+        "git_blob": "a5e1027106fae3d0f280089d3da5e5a530661143",
+        "size": 30592,
+        "sha256": "6b0cc85db8c868d9342ce4179f94fa1825420f30d6e8e7e2117495912e64e667"
+      },
+      "mutated_file": {
+        "git_blob": "8c3f3fda7174a98c787f0182aa9beb04132fe329",
+        "mode": "100644",
+        "sha256": "1556f6576390aa19ed88c9f267071dc7a346c80a91b2101afde1a5ac276cc7bf",
+        "size": 30731
+      },
+      "declared_patch_sha256": "8a90266278c3610c337e9ce780130e3a179ccce6942bbd4db05c53cfd805546c",
+      "recorded_applied_patch_sha256": "b9be6102c3a7c6008c33abf2b374aad6de8ca1876753e1de39436b9c7a458810",
+      "isolated_git_apply_checks": [
+        {
+          "patch": "declared",
+          "argv": [
+            "git",
+            "apply",
+            "--check",
+            "--verbose",
+            "-"
+          ],
+          "isolated_text_copy_only": true,
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "Checking patch kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs...\nHunk #1 succeeded at 685 (offset 6 lines).\n"
+        },
+        {
+          "patch": "declared",
+          "argv": [
+            "git",
+            "apply",
+            "--verbose",
+            "-"
+          ],
+          "isolated_text_copy_only": true,
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "Checking patch kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs...\nHunk #1 succeeded at 685 (offset 6 lines).\nApplied patch kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs cleanly.\n"
+        },
+        {
+          "patch": "recorded-applied",
+          "argv": [
+            "git",
+            "apply",
+            "--check",
+            "--verbose",
+            "-"
+          ],
+          "isolated_text_copy_only": true,
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "Checking patch kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs...\n"
+        },
+        {
+          "patch": "recorded-applied",
+          "argv": [
+            "git",
+            "apply",
+            "--verbose",
+            "-"
+          ],
+          "isolated_text_copy_only": true,
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "Checking patch kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs...\nApplied patch kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs cleanly.\n"
+        }
+      ],
+      "test_names_equal_complete_green_suite": true,
+      "complete_tests": 220,
+      "passed": 219,
+      "failed": 1,
+      "expected_exact_failed_names": [
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::handoff_debits_the_old_window_before_rechecking_a_shared_ancestor"
+      ],
+      "soft_skipped": 0,
+      "filtered": 0,
+      "original_runner_minimum_unchanged": 201,
+      "independent_required_denominator": 220,
+      "raw_qemu_exit": 65,
+      "original_gate_exit": 1,
+      "timed_out": false,
+      "same_recorded_toolchain_osdk_qemu_profile_and_locks_as_green": true,
+      "candidate_restored_and_source_snapshots_equal": true,
+      "review_passed": true
+    },
+    {
+      "control": "dequeue-drop-owner",
+      "prefix": "_temp/a06-clock-handoff-negative/dequeue-drop-owner",
+      "candidate_head": "4d3011cf9f92e25fc1b0d7371e9cdbbd5a8b7930",
+      "candidate_tree": "8eb809136a402cc54ba049b1e40dd174308c923f",
+      "negative_recorded_commit": "a168d6577f17dfea0a2e1dbcb94b682d766b1383",
+      "negative_tree_independently_recomputed": "38c2473f3043152302dbb7d35bed322b30adc66e",
+      "source_files": 7054,
+      "only_changed_path": "kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs",
+      "original_file": {
+        "mode": "100644",
+        "git_blob": "a5e1027106fae3d0f280089d3da5e5a530661143",
+        "size": 30592,
+        "sha256": "6b0cc85db8c868d9342ce4179f94fa1825420f30d6e8e7e2117495912e64e667"
+      },
+      "mutated_file": {
+        "git_blob": "3a1d2dc348c79c7cfcdc348db63ca7dbd6d658de",
+        "mode": "100644",
+        "sha256": "874f9c9cea7a30c704d9416459f534dfc75664243c2e27f51ae8927db7ebb4e8",
+        "size": 30652
+      },
+      "declared_patch_sha256": "b6fc10180e9fe292249409c758151763401dddb39bb4b2851bf53f71b3c959dd",
+      "recorded_applied_patch_sha256": "f36005840444c363956bd49b6cf5805a5759a37738420f24243290b487db0484",
+      "isolated_git_apply_checks": [
+        {
+          "patch": "declared",
+          "argv": [
+            "git",
+            "apply",
+            "--check",
+            "--verbose",
+            "-"
+          ],
+          "isolated_text_copy_only": true,
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "Checking patch kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs...\nHunk #1 succeeded at 761 (offset 42 lines).\n"
+        },
+        {
+          "patch": "declared",
+          "argv": [
+            "git",
+            "apply",
+            "--verbose",
+            "-"
+          ],
+          "isolated_text_copy_only": true,
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "Checking patch kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs...\nHunk #1 succeeded at 761 (offset 42 lines).\nApplied patch kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs cleanly.\n"
+        },
+        {
+          "patch": "recorded-applied",
+          "argv": [
+            "git",
+            "apply",
+            "--check",
+            "--verbose",
+            "-"
+          ],
+          "isolated_text_copy_only": true,
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "Checking patch kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs...\n"
+        },
+        {
+          "patch": "recorded-applied",
+          "argv": [
+            "git",
+            "apply",
+            "--verbose",
+            "-"
+          ],
+          "isolated_text_copy_only": true,
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "Checking patch kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs...\nApplied patch kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs cleanly.\n"
+        }
+      ],
+      "test_names_equal_complete_green_suite": true,
+      "complete_tests": 220,
+      "passed": 218,
+      "failed": 2,
+      "expected_exact_failed_names": [
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::exiting_dequeue_retains_its_owner_through_selection_retries",
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::waiting_dequeue_retains_its_owner_through_selection_retries"
+      ],
+      "soft_skipped": 0,
+      "filtered": 0,
+      "original_runner_minimum_unchanged": 201,
+      "independent_required_denominator": 220,
+      "raw_qemu_exit": 65,
+      "original_gate_exit": 1,
+      "timed_out": false,
+      "same_recorded_toolchain_osdk_qemu_profile_and_locks_as_green": true,
+      "candidate_restored_and_source_snapshots_equal": true,
+      "review_passed": true
+    }
+  ],
+  "negative_failed_counts_in_fixed_order": [
+    3,
+    4,
+    3,
+    1,
+    4,
+    1,
+    2
+  ],
+  "retained_elf_members_independently_stream_hashed": [
+    {
+      "archive_member": "_temp/a06-owner-negative/green-core-kernel.elf",
+      "sha256": "4e07b90b1801339349b880f21310eaf0a7552682a7bd998300884a3d03bdb500",
+      "bytes": 9883976,
+      "role": "owner-current-slot:retained-original-green",
+      "elf_class": 64,
+      "e_machine": 3,
+      "elf_note": "OSDK x86_64 QEMU multiboot marker; not an i386 product claim."
+    },
+    {
+      "archive_member": "_temp/a06-owner-negative/negative-control-kernel.elf",
+      "sha256": "991a6e4320a7630d71156330b096784d17568c9cc713e46685f4ea42ea1e8a26",
+      "bytes": 9882264,
+      "role": "owner-current-slot:negative",
+      "elf_class": 64,
+      "e_machine": 3,
+      "elf_note": "OSDK x86_64 QEMU multiboot marker; not an i386 product claim."
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/green-core-kernel.elf",
+      "sha256": "4e07b90b1801339349b880f21310eaf0a7552682a7bd998300884a3d03bdb500",
+      "bytes": 9883976,
+      "role": "clocksource-drop-fraction:retained-original-green",
+      "elf_class": 64,
+      "e_machine": 3,
+      "elf_note": "OSDK x86_64 QEMU multiboot marker; not an i386 product claim."
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/negative-control-kernel.elf",
+      "sha256": "ce2b9f0edaf72e0359a255d3f82c500e36324d734bec94c2bcd970371d6c1616",
+      "bytes": 9883104,
+      "role": "clocksource-drop-fraction:negative",
+      "elf_class": 64,
+      "e_machine": 3,
+      "elf_note": "OSDK x86_64 QEMU multiboot marker; not an i386 product claim."
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/green-core-kernel.elf",
+      "sha256": "4e07b90b1801339349b880f21310eaf0a7552682a7bd998300884a3d03bdb500",
+      "bytes": 9883976,
+      "role": "vdso-drop-fraction:retained-original-green",
+      "elf_class": 64,
+      "e_machine": 3,
+      "elf_note": "OSDK x86_64 QEMU multiboot marker; not an i386 product claim."
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/negative-control-kernel.elf",
+      "sha256": "8fd2fdeb0211c2320c5d3920d5815dc0cc78155794f45d9aa2cfcab1be953a01",
+      "bytes": 9879752,
+      "role": "vdso-drop-fraction:negative",
+      "elf_class": 64,
+      "e_machine": 3,
+      "elf_note": "OSDK x86_64 QEMU multiboot marker; not an i386 product claim."
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/green-core-kernel.elf",
+      "sha256": "4e07b90b1801339349b880f21310eaf0a7552682a7bd998300884a3d03bdb500",
+      "bytes": 9883976,
+      "role": "vdso-skip-fault-mode:retained-original-green",
+      "elf_class": 64,
+      "e_machine": 3,
+      "elf_note": "OSDK x86_64 QEMU multiboot marker; not an i386 product claim."
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/negative-control-kernel.elf",
+      "sha256": "aa527cd858647bb5812ef134bca950d7ce5025e35fcb60e628866560b58e02ed",
+      "bytes": 9894216,
+      "role": "vdso-skip-fault-mode:negative",
+      "elf_class": 64,
+      "e_machine": 3,
+      "elf_note": "OSDK x86_64 QEMU multiboot marker; not an i386 product claim."
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/green-core-kernel.elf",
+      "sha256": "4e07b90b1801339349b880f21310eaf0a7552682a7bd998300884a3d03bdb500",
+      "bytes": 9883976,
+      "role": "handoff-drop-tail:retained-original-green",
+      "elf_class": 64,
+      "e_machine": 3,
+      "elf_note": "OSDK x86_64 QEMU multiboot marker; not an i386 product claim."
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/negative-control-kernel.elf",
+      "sha256": "be8cab350b83be6c964553bc1518163f498f932e31bd1eaf4279d1e5656a062f",
+      "bytes": 9883920,
+      "role": "handoff-drop-tail:negative",
+      "elf_class": 64,
+      "e_machine": 3,
+      "elf_note": "OSDK x86_64 QEMU multiboot marker; not an i386 product claim."
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/green-core-kernel.elf",
+      "sha256": "4e07b90b1801339349b880f21310eaf0a7552682a7bd998300884a3d03bdb500",
+      "bytes": 9883976,
+      "role": "handoff-eligibility-first:retained-original-green",
+      "elf_class": 64,
+      "e_machine": 3,
+      "elf_note": "OSDK x86_64 QEMU multiboot marker; not an i386 product claim."
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/negative-control-kernel.elf",
+      "sha256": "4b8fe20505323c2d604026f8818cbc065c2479b29b3e5f89b50b87bd160d658b",
+      "bytes": 9883096,
+      "role": "handoff-eligibility-first:negative",
+      "elf_class": 64,
+      "e_machine": 3,
+      "elf_note": "OSDK x86_64 QEMU multiboot marker; not an i386 product claim."
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/green-core-kernel.elf",
+      "sha256": "4e07b90b1801339349b880f21310eaf0a7552682a7bd998300884a3d03bdb500",
+      "bytes": 9883976,
+      "role": "dequeue-drop-owner:retained-original-green",
+      "elf_class": 64,
+      "e_machine": 3,
+      "elf_note": "OSDK x86_64 QEMU multiboot marker; not an i386 product claim."
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/negative-control-kernel.elf",
+      "sha256": "dafc659592c7c43e29bf9d9f23defc2e92e4d7806abe86bd3f772bf9c2b91ca6",
+      "bytes": 9882112,
+      "role": "dequeue-drop-owner:negative",
+      "elf_class": 64,
+      "e_machine": 3,
+      "elf_note": "OSDK x86_64 QEMU multiboot marker; not an i386 product claim."
+    }
+  ],
+  "read_raw_member_identities": [
+    {
+      "archive_member": "_temp/a06-ktest/environment.json",
+      "bytes": 2239,
+      "sha256": "f6a5192c197b2a389271f8ded07a02ae02a511a173e22403a7d49a754275d9c9"
+    },
+    {
+      "archive_member": "_temp/a06-ktest/source-inputs.json",
+      "bytes": 1807,
+      "sha256": "f5e6fb492f869071dc0b90af2578824dd2ef9a87b82f541c857a78e25f3099a3"
+    },
+    {
+      "archive_member": "_temp/a06-ktest/aster-core/guests/guest-001/qemu.json",
+      "bytes": 4742,
+      "sha256": "c23c01fdb5e260f693d87eaf0ea351d5386ecd2fcb717953e6ec63346baa34a6"
+    },
+    {
+      "archive_member": "_temp/a06-ktest/commands.json",
+      "bytes": 1472,
+      "sha256": "90db230b3acb3ed698f1525d3e741d2a13fefc43e8c144ecfa8fc603677a0350"
+    },
+    {
+      "archive_member": "_temp/a06-owner-negative/result.json",
+      "bytes": 1751,
+      "sha256": "2f77657fb047c0938fabbaf21abc89a8cd55937df9d74f4acf62a3b0dbc9750e"
+    },
+    {
+      "archive_member": "_temp/a06-owner-negative/candidate-source-before.json",
+      "bytes": 1961044,
+      "sha256": "ebf161cce558d878222efd8e8398285f5d13401062499f9eb3ac381fcb00cd24"
+    },
+    {
+      "archive_member": "_temp/a06-owner-negative/candidate-source-after.json",
+      "bytes": 1961044,
+      "sha256": "ebf161cce558d878222efd8e8398285f5d13401062499f9eb3ac381fcb00cd24"
+    },
+    {
+      "archive_member": "_temp/a06-owner-negative/negative-source-before.json",
+      "bytes": 1961044,
+      "sha256": "a2c9c89b095db573f6742f32a3cd9b30ace5f33c11deb49f2fa5f8c6b000fd8f"
+    },
+    {
+      "archive_member": "_temp/a06-owner-negative/negative-source-after.json",
+      "bytes": 1961044,
+      "sha256": "a2c9c89b095db573f6742f32a3cd9b30ace5f33c11deb49f2fa5f8c6b000fd8f"
+    },
+    {
+      "archive_member": "_temp/a06-owner-negative/negative-archive-source.json",
+      "bytes": 1961028,
+      "sha256": "2038cd83f47efd52866e979fd9f85412eec5d266bcf672237ed71bfaf51d1900"
+    },
+    {
+      "archive_member": "_temp/a06-owner-negative/declared-negative-control.patch",
+      "bytes": 980,
+      "sha256": "04b19a7a89b8f8591d9a18766390167201e999a9617febcd9d0c70902005f1bd"
+    },
+    {
+      "archive_member": "_temp/a06-owner-negative/applied-negative-control.patch",
+      "bytes": 1034,
+      "sha256": "2a5baec492d08c866e55d05d803a6e7d1c80b2bcfd50b0fdb22f6f18f314f85f"
+    },
+    {
+      "archive_member": "_temp/a06-owner-negative/gate/environment.json",
+      "bytes": 2238,
+      "sha256": "93b77a1a7372cf32a6fc8c1d402b57b250f03cf6fa9cab48d4d004d0d9da0a20"
+    },
+    {
+      "archive_member": "_temp/a06-owner-negative/gate/source-inputs.json",
+      "bytes": 1807,
+      "sha256": "f5e6fb492f869071dc0b90af2578824dd2ef9a87b82f541c857a78e25f3099a3"
+    },
+    {
+      "archive_member": "_temp/a06-owner-negative/gate/commands.json",
+      "bytes": 614,
+      "sha256": "aeadfd6121e035af8afa28d5d5b478eb9bb953892e7f478b273e65cc10389926"
+    },
+    {
+      "archive_member": "_temp/a06-owner-negative/command.json",
+      "bytes": 640,
+      "sha256": "47716e74b15a5702edbbe9399c0e7cd876d0832561635b21b231c59bdfe1a3bc"
+    },
+    {
+      "archive_member": "_temp/a06-owner-negative/gate/aster-core/guests/guest-001/qemu.json",
+      "bytes": 4770,
+      "sha256": "71c5e325c9576ce71abc30fa6612fde87d328134e935c04343ce386889d202f9"
+    },
+    {
+      "archive_member": "_temp/a06-owner-negative/gate/aster-core/guests/guest-001/serial.log",
+      "bytes": 28285,
+      "sha256": "492ef9e1e3b52d0536145be864e8867dcc4a5c99b46a57a916fea5e4229140cc"
+    },
+    {
+      "archive_member": "_temp/a06-owner-negative/original-gate-exit.json",
+      "bytes": 21,
+      "sha256": "56296949d3a02e635b050fd6b4762f0f0b52c23d05b925203095f7daf8e19027"
+    },
+    {
+      "archive_member": "_temp/a06-owner-negative/green-core-validation.json",
+      "bytes": 261,
+      "sha256": "67a548a51dd2366600eacfd0d525c865b11e0f680da52ad6ff04f4a0e8de50fd"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/result.json",
+      "bytes": 1770,
+      "sha256": "50c36442ba8b470c7fd9b63b7450c6cccf29f4524d3c128755c7ff61c010c817"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/candidate-source-before.json",
+      "bytes": 1961044,
+      "sha256": "ebf161cce558d878222efd8e8398285f5d13401062499f9eb3ac381fcb00cd24"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/candidate-source-after.json",
+      "bytes": 1961044,
+      "sha256": "ebf161cce558d878222efd8e8398285f5d13401062499f9eb3ac381fcb00cd24"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/negative-source-before.json",
+      "bytes": 1961044,
+      "sha256": "ce329a898c73aeb38b667f452d9d9099b25ec100d87382f32efa2df666441b20"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/negative-source-after.json",
+      "bytes": 1961044,
+      "sha256": "ce329a898c73aeb38b667f452d9d9099b25ec100d87382f32efa2df666441b20"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/negative-archive-source.json",
+      "bytes": 1961053,
+      "sha256": "237a67aecba9495f07bbf5eb52c4f7fad2dff3eb0668b9502d1e119e3b612432"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/declared-negative-control.patch",
+      "bytes": 560,
+      "sha256": "6aeb53178b4facbe105c7fd4ff3e8086d5a9b57f2715f80781efc2764338a442"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/applied-negative-control.patch",
+      "bytes": 771,
+      "sha256": "fd894b672f2de74c0d837be063710474b4cd3b5feed819a022766f5a499c4207"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/gate/environment.json",
+      "bytes": 2238,
+      "sha256": "17fc66a0c7c19f753750308b7b035079920ba1dde83617b8f868e9397f1708fb"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/gate/source-inputs.json",
+      "bytes": 1807,
+      "sha256": "f5e6fb492f869071dc0b90af2578824dd2ef9a87b82f541c857a78e25f3099a3"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/gate/commands.json",
+      "bytes": 614,
+      "sha256": "aeadfd6121e035af8afa28d5d5b478eb9bb953892e7f478b273e65cc10389926"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/command.json",
+      "bytes": 699,
+      "sha256": "9e1c02bacc83c69766aa2230626abf546d8ff4a99853cf76e25f21394d87afea"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/gate/aster-core/guests/guest-001/qemu.json",
+      "bytes": 4838,
+      "sha256": "fce0eba548c4d45b8285fb9110cd3403e9165be4d4afbb5bfa577f12e57d9f0d"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/gate/aster-core/guests/guest-001/serial.log",
+      "bytes": 28619,
+      "sha256": "291d136dfca4884af1e9f569e9cdd1d3d9572a2b5c05a6122c3192a855623fd0"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/original-gate-exit.json",
+      "bytes": 21,
+      "sha256": "56296949d3a02e635b050fd6b4762f0f0b52c23d05b925203095f7daf8e19027"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/green-core-validation.json",
+      "bytes": 261,
+      "sha256": "67a548a51dd2366600eacfd0d525c865b11e0f680da52ad6ff04f4a0e8de50fd"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/result.json",
+      "bytes": 1605,
+      "sha256": "de4623da6552bed39943c030b47471a6bf78d490360dbd9f76f8eb42df69f9fd"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/candidate-source-before.json",
+      "bytes": 1961044,
+      "sha256": "ebf161cce558d878222efd8e8398285f5d13401062499f9eb3ac381fcb00cd24"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/candidate-source-after.json",
+      "bytes": 1961044,
+      "sha256": "ebf161cce558d878222efd8e8398285f5d13401062499f9eb3ac381fcb00cd24"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/negative-source-before.json",
+      "bytes": 1961044,
+      "sha256": "e949b4d0d1e4ad5466019fa8b3e7144dd2aa1da0fa7ee101513d2b4943cf9f2e"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/negative-source-after.json",
+      "bytes": 1961044,
+      "sha256": "e949b4d0d1e4ad5466019fa8b3e7144dd2aa1da0fa7ee101513d2b4943cf9f2e"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/negative-archive-source.json",
+      "bytes": 1961046,
+      "sha256": "61ee1327307eb9b97f135f4297ee1a824623a35926a418adbe7380cd30b7b2bc"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/declared-negative-control.patch",
+      "bytes": 329,
+      "sha256": "a1e116c7af6a57add22693b4fa985b8bb45809df3ad6765b52ea8efa979975c9"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/applied-negative-control.patch",
+      "bytes": 500,
+      "sha256": "39454a60f5378cdc35cd8ecd338ba7869dc798d74c458950b584a3f11887aff0"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/gate/environment.json",
+      "bytes": 2238,
+      "sha256": "ef56a83bf727d41565db6b1341d35b89fe78630fafb6f6eeef5e2ead5049f006"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/gate/source-inputs.json",
+      "bytes": 1807,
+      "sha256": "f5e6fb492f869071dc0b90af2578824dd2ef9a87b82f541c857a78e25f3099a3"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/gate/commands.json",
+      "bytes": 614,
+      "sha256": "aeadfd6121e035af8afa28d5d5b478eb9bb953892e7f478b273e65cc10389926"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/command.json",
+      "bytes": 685,
+      "sha256": "030741cd7bbfaee80efb9a8f37d30253b84d35afd3ba1c9037c161c2ff0a2d4e"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/gate/aster-core/guests/guest-001/qemu.json",
+      "bytes": 4824,
+      "sha256": "8fbcbe80f210cf039052a83d5de69bfda1a7cff65959ab8852321fde6e1b253e"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/gate/aster-core/guests/guest-001/serial.log",
+      "bytes": 28150,
+      "sha256": "45127d14708ae7f5806b6c9d6236d3d34b92477c13d9ed669c9597768be5837d"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/original-gate-exit.json",
+      "bytes": 21,
+      "sha256": "56296949d3a02e635b050fd6b4762f0f0b52c23d05b925203095f7daf8e19027"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/green-core-validation.json",
+      "bytes": 261,
+      "sha256": "67a548a51dd2366600eacfd0d525c865b11e0f680da52ad6ff04f4a0e8de50fd"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/result.json",
+      "bytes": 1362,
+      "sha256": "e0c3a41e6f450803b673b8d333a3cd5e81cede16ad91e653e81a9a3db34b7317"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/candidate-source-before.json",
+      "bytes": 1961044,
+      "sha256": "ebf161cce558d878222efd8e8398285f5d13401062499f9eb3ac381fcb00cd24"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/candidate-source-after.json",
+      "bytes": 1961044,
+      "sha256": "ebf161cce558d878222efd8e8398285f5d13401062499f9eb3ac381fcb00cd24"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/negative-source-before.json",
+      "bytes": 1961044,
+      "sha256": "cf7aa8e62305d35ad2ae3b14cb1822330b1d64bccabdc87ef600794d03d86ca6"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/negative-source-after.json",
+      "bytes": 1961044,
+      "sha256": "cf7aa8e62305d35ad2ae3b14cb1822330b1d64bccabdc87ef600794d03d86ca6"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/negative-archive-source.json",
+      "bytes": 1961048,
+      "sha256": "6af81e72ea02a6be564e762c25d8ddcbf8f18fe4b565c9089268614c2a76ea48"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/declared-negative-control.patch",
+      "bytes": 445,
+      "sha256": "da1f7c360136bfe330cba58acef4cf894d423043e1b3b9790958b923d4fcd452"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/applied-negative-control.patch",
+      "bytes": 592,
+      "sha256": "a68524832c47c74e3fea60e58ceccb1d44e31ae4020d5e7f1014f9e4e1c6d0e0"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/gate/environment.json",
+      "bytes": 2238,
+      "sha256": "00d25746341beb80449b7082adaf86129b663b84e95165e27fd6c0229714e230"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/gate/source-inputs.json",
+      "bytes": 1807,
+      "sha256": "f5e6fb492f869071dc0b90af2578824dd2ef9a87b82f541c857a78e25f3099a3"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/gate/commands.json",
+      "bytes": 614,
+      "sha256": "aeadfd6121e035af8afa28d5d5b478eb9bb953892e7f478b273e65cc10389926"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/command.json",
+      "bytes": 689,
+      "sha256": "58e3520a8448a18c3e7b3a8a8784209bf720e4ae58b541946f6e4f7372a87e64"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/gate/aster-core/guests/guest-001/qemu.json",
+      "bytes": 4828,
+      "sha256": "39f15939b4fafe98e844213c7c8c095e8084b3e1cb09981f144c6e6a19c1f6d5"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/gate/aster-core/guests/guest-001/serial.log",
+      "bytes": 27168,
+      "sha256": "72535132cbd07eb00d498aa267869cac4777fc98875133147fa7503ff43396c5"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/original-gate-exit.json",
+      "bytes": 21,
+      "sha256": "56296949d3a02e635b050fd6b4762f0f0b52c23d05b925203095f7daf8e19027"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/green-core-validation.json",
+      "bytes": 261,
+      "sha256": "67a548a51dd2366600eacfd0d525c865b11e0f680da52ad6ff04f4a0e8de50fd"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/result.json",
+      "bytes": 1850,
+      "sha256": "19f44ae2185a476dc7c1e7bc7399245bf020a2bec7d40e0582eb120379ed7128"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/candidate-source-before.json",
+      "bytes": 1961044,
+      "sha256": "ebf161cce558d878222efd8e8398285f5d13401062499f9eb3ac381fcb00cd24"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/candidate-source-after.json",
+      "bytes": 1961044,
+      "sha256": "ebf161cce558d878222efd8e8398285f5d13401062499f9eb3ac381fcb00cd24"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/negative-source-before.json",
+      "bytes": 1961044,
+      "sha256": "ccd8bc628c5717ad7e75ecef260fe605fbbe67010b0861780886b187f8ea7a79"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/negative-source-after.json",
+      "bytes": 1961044,
+      "sha256": "ccd8bc628c5717ad7e75ecef260fe605fbbe67010b0861780886b187f8ea7a79"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/negative-archive-source.json",
+      "bytes": 1961045,
+      "sha256": "bae902f7cde8058310acfb78c9f182ae62260289ac91c4d8d5fe8db066284dab"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/declared-negative-control.patch",
+      "bytes": 838,
+      "sha256": "2e9a87cdf9044f29dbcb8c932e72079eaf3fc9ecde791c9627b45b9b06257ffc"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/applied-negative-control.patch",
+      "bytes": 894,
+      "sha256": "2beb0bfdfab046c75f154e389573a00aacec1f9ee5435a61dd0b1c7c06287cce"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/gate/environment.json",
+      "bytes": 2238,
+      "sha256": "fb5b6ca5820a551701f36f80c457f7453cc4327449d0da78fcaf3cb50aaed76b"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/gate/source-inputs.json",
+      "bytes": 1807,
+      "sha256": "f5e6fb492f869071dc0b90af2578824dd2ef9a87b82f541c857a78e25f3099a3"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/gate/commands.json",
+      "bytes": 614,
+      "sha256": "aeadfd6121e035af8afa28d5d5b478eb9bb953892e7f478b273e65cc10389926"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/command.json",
+      "bytes": 683,
+      "sha256": "1c0869da66bf6206ab56779424b48718e8a9346029bf8f8be97f4492bb650453"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/gate/aster-core/guests/guest-001/qemu.json",
+      "bytes": 4822,
+      "sha256": "6a518839027d1041d69bb284d299a7a49fa1449fa906a61d6f52360b31e0c7c7"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/gate/aster-core/guests/guest-001/serial.log",
+      "bytes": 28688,
+      "sha256": "8c533877157fc0a87811a8cdc1e5ae51eca8b1156e63739ff63bf9065bc9a924"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/original-gate-exit.json",
+      "bytes": 21,
+      "sha256": "56296949d3a02e635b050fd6b4762f0f0b52c23d05b925203095f7daf8e19027"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/green-core-validation.json",
+      "bytes": 261,
+      "sha256": "67a548a51dd2366600eacfd0d525c865b11e0f680da52ad6ff04f4a0e8de50fd"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/result.json",
+      "bytes": 1416,
+      "sha256": "1ca60e7126cf14425b4be35cc31e7e6132312f826db7d75a2f44bf2c169be464"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/candidate-source-before.json",
+      "bytes": 1961044,
+      "sha256": "ebf161cce558d878222efd8e8398285f5d13401062499f9eb3ac381fcb00cd24"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/candidate-source-after.json",
+      "bytes": 1961044,
+      "sha256": "ebf161cce558d878222efd8e8398285f5d13401062499f9eb3ac381fcb00cd24"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/negative-source-before.json",
+      "bytes": 1961044,
+      "sha256": "d4be89fcf44dfe2d56129e56353721c334eb60799b17617fee00ec2fec2e0413"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/negative-source-after.json",
+      "bytes": 1961044,
+      "sha256": "d4be89fcf44dfe2d56129e56353721c334eb60799b17617fee00ec2fec2e0413"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/negative-archive-source.json",
+      "bytes": 1961053,
+      "sha256": "058ee0426c1a2fe8e51a6b1750dbc3c4ed0b5ade30725f27d8c0ba09be731b41"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/declared-negative-control.patch",
+      "bytes": 1074,
+      "sha256": "8a90266278c3610c337e9ce780130e3a179ccce6942bbd4db05c53cfd805546c"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/applied-negative-control.patch",
+      "bytes": 1130,
+      "sha256": "b9be6102c3a7c6008c33abf2b374aad6de8ca1876753e1de39436b9c7a458810"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/gate/environment.json",
+      "bytes": 2238,
+      "sha256": "44d86f7e8d63b7fa78a85b72e07d409b86b253021b9c26ea624d200a08089aa0"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/gate/source-inputs.json",
+      "bytes": 1807,
+      "sha256": "f5e6fb492f869071dc0b90af2578824dd2ef9a87b82f541c857a78e25f3099a3"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/gate/commands.json",
+      "bytes": 614,
+      "sha256": "aeadfd6121e035af8afa28d5d5b478eb9bb953892e7f478b273e65cc10389926"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/command.json",
+      "bytes": 699,
+      "sha256": "2eeaf0f440b309109c99903fa0289e198f7512cbf9ff368d64467aceb5f3cc4a"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/gate/aster-core/guests/guest-001/qemu.json",
+      "bytes": 4838,
+      "sha256": "803822b30eb53f0fbe25b28c4521962acc310fe0b7252a58f503bdf5d645febc"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/gate/aster-core/guests/guest-001/serial.log",
+      "bytes": 27154,
+      "sha256": "dd727461812495a763fefea614a32609387daec779c65170ecb20eba7f605c4c"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/original-gate-exit.json",
+      "bytes": 21,
+      "sha256": "56296949d3a02e635b050fd6b4762f0f0b52c23d05b925203095f7daf8e19027"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/green-core-validation.json",
+      "bytes": 261,
+      "sha256": "67a548a51dd2366600eacfd0d525c865b11e0f680da52ad6ff04f4a0e8de50fd"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/result.json",
+      "bytes": 1554,
+      "sha256": "a176b952ac0616bd735e986dce1d975d87d6f5dea5f7ae31f8d7f083ef069f16"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/candidate-source-before.json",
+      "bytes": 1961044,
+      "sha256": "ebf161cce558d878222efd8e8398285f5d13401062499f9eb3ac381fcb00cd24"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/candidate-source-after.json",
+      "bytes": 1961044,
+      "sha256": "ebf161cce558d878222efd8e8398285f5d13401062499f9eb3ac381fcb00cd24"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/negative-source-before.json",
+      "bytes": 1961044,
+      "sha256": "15cebd59ead06b5262929161ae60edb5b5d1121844c79fd2a5cd10a5c06ed78b"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/negative-source-after.json",
+      "bytes": 1961044,
+      "sha256": "15cebd59ead06b5262929161ae60edb5b5d1121844c79fd2a5cd10a5c06ed78b"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/negative-archive-source.json",
+      "bytes": 1961046,
+      "sha256": "41bd0fd553b90dfeb6ef33b81a2433ad83b0d2e29943609f0b20b238675c773a"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/declared-negative-control.patch",
+      "bytes": 596,
+      "sha256": "b6fc10180e9fe292249409c758151763401dddb39bb4b2851bf53f71b3c959dd"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/applied-negative-control.patch",
+      "bytes": 652,
+      "sha256": "f36005840444c363956bd49b6cf5805a5759a37738420f24243290b487db0484"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/gate/environment.json",
+      "bytes": 2238,
+      "sha256": "20723679b9464e3aca553aaef6b052b558f73aa588320023cad11e3c21a8ff4b"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/gate/source-inputs.json",
+      "bytes": 1807,
+      "sha256": "f5e6fb492f869071dc0b90af2578824dd2ef9a87b82f541c857a78e25f3099a3"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/gate/commands.json",
+      "bytes": 614,
+      "sha256": "aeadfd6121e035af8afa28d5d5b478eb9bb953892e7f478b273e65cc10389926"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/command.json",
+      "bytes": 685,
+      "sha256": "2cd6cc1dfe53274f39e287781ad4ea4d3f252e3753e8357f5630bfc5465304e2"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/gate/aster-core/guests/guest-001/qemu.json",
+      "bytes": 4824,
+      "sha256": "5efd6f36d479d33498042e79afdc7644efeab37b8483492f1a46edca9c5be8f9"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/gate/aster-core/guests/guest-001/serial.log",
+      "bytes": 27744,
+      "sha256": "42f1cc5367e8323b4de930ddaf01ddd2885b458b1d83d3fba4a99dc9e4e5b581"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/original-gate-exit.json",
+      "bytes": 21,
+      "sha256": "56296949d3a02e635b050fd6b4762f0f0b52c23d05b925203095f7daf8e19027"
+    },
+    {
+      "archive_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/green-core-validation.json",
+      "bytes": 261,
+      "sha256": "67a548a51dd2366600eacfd0d525c865b11e0f680da52ad6ff04f4a0e8de50fd"
+    }
+  ],
+  "archive_member_index": {
+    "path": "archive-member-index.json",
+    "bytes": 204308,
+    "sha256": "59b809292920b8a2e932e0089e591cae20dc209b80874800c5da104b804a42c7"
+  },
+  "scope_limits": [
+    "The seven complete 220-test negative runs detect only the seven frozen production mutations and exact assertion sets.",
+    "Negative tree/blob contents were independently recomputed. Local negative commit IDs are recorded identities; original raw commit objects are absent from this artifact.",
+    "Build, OSDK and QEMU identities are bound by original recorded inputs and fixed source. Host tool executables not retained in the artifact are not independently rehashed.",
+    "Only declared patches were applied to isolated temporary text copies, never to a checkout or executable. No artifact code or ELF was executed.",
+    "This review does not promote A10, original Hepta Objective/Operations authority, G1-c/d, physical cross-CPU scheduler qualification, ARM/device support, or true Asterinas W1."
+  ],
+  "passed": true
+}

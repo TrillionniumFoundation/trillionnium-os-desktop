@@ -1,0 +1,2442 @@
+{
+  "schema": 1,
+  "reviewed_at_utc": "2026-10-19T11:19:39.272090+00:00",
+  "kind": "New independent read of original artifact bytes, not a product rerun and not restoration of lost old report bytes.",
+  "archive": {
+    "path": "r11-evidence/pr205-runtime-review/original.zip",
+    "sha256": "ef5d93159c1663fb30d3cf8e39e969525bbfa03b4fedc4db10ef4c87b035d655",
+    "bytes": 154979607,
+    "members": 1172,
+    "uncompressed_bytes": 390078502
+  },
+  "head": "4d3011cf9f92e25fc1b0d7371e9cdbbd5a8b7930",
+  "tree": "8eb809136a402cc54ba049b1e40dd174308c923f",
+  "source_snapshots": [
+    {
+      "member": "_temp/a06-queryabi-candidate/source-before.json",
+      "sha256": "ebf161cce558d878222efd8e8398285f5d13401062499f9eb3ac381fcb00cd24",
+      "bytes": 1961044,
+      "file_count": 7054,
+      "all_paths_modes_blobs_match_exact_git_tree": true,
+      "all_independent_sha256_size_matches": true
+    },
+    {
+      "member": "_temp/a06-queryabi-candidate/source-after-boot.json",
+      "sha256": "ebf161cce558d878222efd8e8398285f5d13401062499f9eb3ac381fcb00cd24",
+      "bytes": 1961044,
+      "file_count": 7054,
+      "all_paths_modes_blobs_match_exact_git_tree": true,
+      "all_independent_sha256_size_matches": true
+    },
+    {
+      "member": "_temp/a06-queryabi-candidate/source-after-guest.json",
+      "sha256": "ebf161cce558d878222efd8e8398285f5d13401062499f9eb3ac381fcb00cd24",
+      "bytes": 1961044,
+      "file_count": 7054,
+      "all_paths_modes_blobs_match_exact_git_tree": true,
+      "all_independent_sha256_size_matches": true
+    }
+  ],
+  "source_file_count": 7054,
+  "crates": [
+    {
+      "crate": "aster-core",
+      "declared": 220,
+      "passed": 220,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 0,
+      "exercised_passed_lower_bound": 220,
+      "soft_skip_tests": [],
+      "tests": [
+        {
+          "name": "aster_core::events::event_file::tests::event_file_read_consumes_counter",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::events::event_file::tests::event_file_respects_semaphore_mode",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::events::event_file::tests::event_file_signal_consume_and_poll",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::events::event_file::tests::kernel_event_file_rejects_non_eventfd",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::events::event_file::tests::event_file_reports_kernel_signal_overflow",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::events::event_file::tests::kernel_event_file_owns_state_after_file_drop",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::file::inode_attr::mode::test::mkmod_and_chmod",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::cgroup_ns::tests::virtualize_cgroup_path_for_sibling",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::cgroup_ns::tests::virtualize_cgroup_path_for_ancestor",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::cgroup_ns::tests::virtualize_cgroup_path_for_same_node",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::cgroup_ns::tests::virtualize_cgroup_path_for_descendant",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::bandwidth_settlement_regressions::lowered_quota_includes_the_running_prefix_at_apply",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::bandwidth_settlement_regressions::same_value_write_settles_old_window_debt_before_advancing",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::bandwidth_settlement_regressions::final_debit_after_configuration_charges_only_the_remaining_suffix",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::bandwidth_settlement_regressions::repeated_configuration_partitions_bandwidth_without_consuming_cfs_runtime",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::config_regressions::single_quota_write_keeps_the_current_owner_period",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::config_regressions::invalid_cpu_max_write_does_not_change_budget_or_accounting",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::final_charge_regressions::live_process_binding_wins_over_a_stale_final_charge_snapshot",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::final_charge_regressions::reaped_process_final_interval_uses_the_same_retained_hierarchy",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::final_charge_regressions::zombie_before_detachment_preserves_its_present_process_binding",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::final_charge_regressions::live_migrations_change_the_owner_without_replaying_prior_debits",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::final_charge_regressions::unreaped_zombie_final_interval_debits_old_leaf_and_ancestors_once",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::final_charge_regressions::zombie_final_interval_crossing_a_window_preserves_positive_quota_debt",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::max_config::tests::rejects_invalid_or_overflowing_quota",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::max_config::tests::single_quota_preserves_the_current_period",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::max_config::tests::accepts_valid_quota_period_and_range_boundaries",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::max_config::tests::rejects_numeric_period_outside_the_supported_range",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::max_config::tests::rejects_extra_fields_instead_of_applying_a_valid_prefix",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::max_config::tests::rejects_overflowing_period_instead_of_preserving_the_old_period",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::max_config::tests::rejects_explicit_invalid_period_instead_of_preserving_the_old_period",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::tests::replacement_also_closes_an_unbound_old_arc",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::tests::malformed_writes_do_not_consume_the_bound_revision",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::tests::deleted_unbound_current_arc_cannot_be_bound_afterward",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::tests::deletion_keeps_bound_identity_revision_and_accounting",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::tests::binding_preserves_current_budget_and_cannot_be_repeated",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::tests::replacement_closes_bound_old_arc_and_does_not_inherit_metadata",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::tests::ordinary_cpu_max_write_advances_revision_without_refilling_debt",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::tests::ambiguous_metadata_mutation_stays_indeterminate_after_detachment",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::tests::final_charge_lease_blocks_deletion_until_the_real_debit_is_retained",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::tests::last_revision_succeeds_then_real_owner_writes_fail_without_wrapping",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::unavailable_clock_allows_only_unlimited_linux_recovery",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::backwards_usage_observation_permanently_fences_the_owner",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::reliable_clock_samples_cannot_rewind_the_runtime_endpoint",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::sampled_configuration_preserves_the_separate_cycle_cursor",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::same_value_and_lowered_cap_never_refill_the_original_owner",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::crossed_windows_preserve_cumulative_usage_and_separate_debt",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::late_same_value_reconfigure_preserves_window_usage_and_debt",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::returning_from_long_period_does_not_expose_pre_window_usage",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::deleted_owner_stays_closed_while_its_final_debit_is_retained",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::indeterminate_metadata_cannot_produce_usage_after_detachment",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::ordinary_linux_caps_outside_n0_never_become_native_snapshots",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::overlapping_owner_intervals_accumulate_without_a_clock_fault",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::cumulative_overflow_never_wraps_or_recovers_a_native_snapshot",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::unreliable_clock_sample_cannot_rewind_or_replay_cycle_runtime",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::backwards_same_value_configuration_cannot_reopen_an_old_window",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::fragmented_three_ghz_runtime_keeps_absolute_endpoint_precision",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::real_owner_wrapper_enforces_the_single_cpu_observation_profile",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::replacement_closes_the_old_snapshot_and_requires_a_new_binding",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::returning_from_short_period_waits_for_a_complete_native_window",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::owner_retention_regressions::zero_length_publication_changes_only_the_next_segment_owner",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::owner_retention_regressions::live_migration_partitions_leaf_time_and_charges_common_ancestors_once",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::owner_retention_regressions::controller_publication_charges_the_entire_prefix_to_the_old_incarnation",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::owner_retention_regressions::exited_task_resumes_its_retained_incarnation_after_replacement_and_reap",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::owner_retention_regressions::original_owner_reference_keeps_the_node_live_until_its_last_clone_drops",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::owner_retention_regressions::retained_leaf_debits_its_original_ancestor_chain_after_parent_replacement",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::unused_budget_must_not_accumulate_as_credit",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::overrun_must_carry_then_repay_without_refill",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::reconfiguration_in_same_window_must_not_refill",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::idle_skipped_periods_never_subsidize_late_burst",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::odd_and_even_completed_periods_preserve_every_clock",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::skipped_periods_pay_down_debt_but_never_mint_credit",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::cpu_stat_projection_must_not_close_unsettled_quota_window",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::cpu_stat_projection_cannot_rewind_accounting_or_mint_credit",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::earlier_clock_value_cannot_reopen_or_refill_previous_period",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::charging_500_intervals_matches_simple_period_by_period_reference",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::crossing_splits_already_charged_and_new_cpu_without_double_count",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::scheduler_runtime_crossing_tick_window_keeps_previous_cpu_charge",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::quota_debt_regressions::long_continuous_interval_has_constant_time_bounded_debt_accounting",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::outgoing_tail_ends_at_the_incoming_segment_start",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::exiting_dequeue_retains_its_owner_through_selection_retries",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::waiting_dequeue_retains_its_owner_through_selection_retries",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::handoff_debits_the_old_window_before_rechecking_a_shared_ancestor",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::configfs::test::config_fs",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::devtmpfs::tests::delete_node_keeps_unmarked_node",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::devtmpfs::tests::delete_node_keeps_device_id_mismatch",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::devtmpfs::tests::delete_node_keeps_nonempty_parent_dir",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::devtmpfs::tests::create_node_marks_ancestor_dirs_and_device_node",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::fs::test::persist_and_reload_inode",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::fs::test::stat_minixdf_reports_total",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::fs::test::stat_bsddf_subtracts_overhead",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::fs::test::load_group_descs_valid_image_ok",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::fs::test::load_block_bitmap_valid_image_ok",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::fs::test::block_alloc_and_free_single_group_ok",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::fs::test::inode_alloc_and_free_single_group_ok",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::fs::test::sync_metadata_writes_primary_and_backup",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::fs::test::block_alloc_and_free_invalid_returns_err",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::fs::test::inode_alloc_and_free_invalid_returns_err",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::block_manager::block_ptr_tree::test::approx_hole_blocks_scans",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::block_manager::block_ptr_tree::test::block_alloc_direct_range_ok",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::block_manager::block_ptr_tree::test::block_alloc_indirect_range_ok",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::block_manager::block_ptr_tree::test::truncate_indirect_frees_shared_path",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::block_manager::block_ptr_tree::test::block_ptr_tree_direct_and_indirect_ok",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::block_manager::block_ptr_tree::test::truncate_releases_all_indirect_blocks",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::block_manager::block_ptr_tree::test::block_ptr_tree_out_of_range_iblock_returns_err",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::block_manager::block_ptr_tree::test::free_block_subtree_recursively_releases_blocks",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::block_manager::block_ptr_tree::test::block_ptr_tree_get_block_range_returns_contiguous_runs",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::dir::dir_entry::test::min_rec_len_ok",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::dir::dir_entry::test::iter_valid_entries_ok",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::dir::dir_entry::test::iter_bad_entry_returns_eio",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::dir::dir_entry::test::min_rec_len_boundary_values",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::dir::dir_entry::test::iter_all_zero_block_returns_eio",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::dir::dir_entry::test::iter_deleted_entry_yields_empty_name",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::dir::test::unlink_last_link_deallocates_on_drop",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::file::test::file_write_enospc_rollback",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::file::test::file_sparse_buffered_write_preserves_mmap_dirty_tail",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::file::test::falloc_allocate_returns_enospc_after_consuming_blocks",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::inode::io_range::test::io_range_iter_yields_mapped_and_holes",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::super_block::test::sparse_super_backup_groups",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::ext2::super_block::test::max_file_size_matches_ext2_4k_limit",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_valueless_keys",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_volatile_alias",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_new_key_conflicts",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_requires_lowerdir",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_bool_option_domains",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_lowerdir_layer_list",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_redirect_dir_domain",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_lowerdir_plus_append",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_override_creds_forms",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_uuid_and_xino_values",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_datadir_plus_rejected",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_rejects_duplicate_keys",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_literal_value_semantics",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_rejects_bare_valued_keys",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_upperdir_workdir_pairing",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::fs::mount::options::test::parse_verity_and_fsync_domains",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::inode::identity::test::xino_encodes_fsid_in_high_bits",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::inode::identity::test::fallback_ino_allocates_from_one",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::inode::identity::test::origin_record_resolves_to_layer",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::inode::identity::test::xino_on_forces_encoding_on_same_fs",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::inode::identity::test::xino_off_or_overflow_takes_fallback",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::inode::identity::test::layer_table_resolves_persistent_names",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::inode::identity::test::origin_record_decode_rejects_malformed",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::inode::identity::test::identity_mode_resolves_from_mount_facts",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::overlayfs::inode::identity::test::origin_record_roundtrip_preserves_identity",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::procfs::uptime::tests::uptime_centiseconds_are_truncated",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::sysfs::test::read_attr",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::sysfs::test::read_link",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::sysfs::test::write_attr",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::sysfs::test::leaf_lookup",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::sysfs::test::root_lookup",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::sysfs::test::readdir_leaf",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::sysfs::test::branch_lookup",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::sysfs::test::mode_permissions",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::sysfs::test::cached_child_lookup_observes_tree_changes",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::sysfs::test::cached_attr_lookup_observes_snapshot_changes",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::fs_impls::sysfs::test::cached_attr_lookup_observes_permission_changes",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::pipe::common::test::read_empty",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::pipe::common::test::write_full",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::pipe::common::test::read_closed",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::pipe::common::test::write_closed",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::pipe::common::test::write_atomicity",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::utils::id_bitmap::test::bitmap_alloc_out_of_bounds",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::vfs::path::resolver::test::path_split_basename",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::vfs::path::resolver::test::fs_path_from_fd_at_policy_matrix",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::fs::vfs::path::resolver::test::fs_path_from_fd_at_rejects_too_long",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::net::socket::netlink::kobject_uevent::message::test::uuid",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::net::socket::netlink::kobject_uevent::message::test::synthetic_uevent",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::net::socket::netlink::kobject_uevent::message::test::multicast_synthetic_uevent",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::process::program_loader::shebang::test::parse_shebang_line_with_multiple_args",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::process::signal::pause::test::waiter_pause",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::process::signal::poll::test::notify_after",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::process::signal::poll::test::notify_before",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::process::signal::poll::test::notify_middle",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::process::signal::poll::test::nested_notify_before",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::process::signal::poll::test::nested_notify_inside",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::process::signal::poll::test::nested_notify_between",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::process::sync::condvar::test::wait",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::process::sync::condvar::test::wait_while",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::process::sync::condvar::test::wait_timeout",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::process::sync::condvar::test::wait_timeout_while",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::syscall::sysinfo::tests::as_secs_round_up",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::thread::kernel_thread::tests::unmapped_vmar_access_returns_page_fault",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::thread::kernel_thread::tests::associated_vmar_is_reactivated_after_context_switch",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::thread::softirqd::test::softirq_and_softirqd",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::util::ioctl::test::invalid",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::util::ioctl::test::eviocgbit",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::util::ioctl::test::tiocsctty",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::util::read_cstring::test::read_multiple_cstring",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::util::read_cstring::test::read_cstring_until_end",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::util::read_cstring::test::read_cstring_from_multiread",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::util::ring_buffer::test::rb_write_read_all_with_ext",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::util::ring_buffer::test::rb_write_read_one_with_ext",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::vdso::clocksource_regressions::nonzero_origin_and_each_sample_use_one_counter_observation",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::vdso::clocksource_regressions::vdso_and_kernel_share_the_fractional_phase_at_the_next_nanosecond",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::vdso::clocksource_regressions::excessive_delay_is_clamped_but_never_a_reliable_accounting_endpoint",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::vdso::clocksource_regressions::backwards_refresh_keeps_the_counter_base_and_revokes_reliable_samples",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::vdso::clocksource_regressions::fragmented_refreshes_preserve_fractional_time_and_endpoint_differences",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::vdso::clocksource_regressions::vdso_rejects_invalid_phase_width_and_does_not_rewind_on_a_stale_callback",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::vdso::clocksource_regressions::mapped_vdso_publishes_the_phase_and_fault_mode_under_the_existing_sequence",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::vdso::clocksource_regressions::full_width_vdso_fraction_survives_second_rollover_and_checks_realtime_overflow",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::vm::page_cache::tests::delayed_io_completion",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::vm::page_cache::tests::concurrent_page_faults",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::vm::page_cache::tests::concurrent_read_and_write",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::vm::page_cache::tests::persistent_backend_errors",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::vm::page_cache::tests::concurrent_write_and_evict",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::vm::page_cache::tests::concurrent_write_and_flush",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::vm::page_cache::tests::concurrent_commit_and_truncate",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::vm::page_cache::vmo::options::test::resize",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::vm::page_cache::vmo::options::test::alloc_vmo",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::vm::page_cache::vmo::options::test::write_and_read",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::vm::page_cache::vmo::options::test::alloc_continuous_vmo",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::vm::vmar::interval_set::tests::find",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::vm::vmar::interval_set::tests::iter",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::vm::vmar::interval_set::tests::take",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::vm::vmar::interval_set::tests::clear",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::vm::vmar::interval_set::tests::remove",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::vm::vmar::interval_set::tests::take_one",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::vm::vmar::interval_set::tests::insert_and_find_one",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::vm::vmar::vmar_impls::fork::test::cow_copy_pt_basic",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "aster_core::vm::vmar::vmar_impls::fork::test::cow_copy_pt_iomem",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        }
+      ],
+      "serial_member": "_temp/a06-ktest/aster-core/guests/guest-001/serial.log",
+      "serial_sha256": "ab7ae20b3dafef9250d74e829fed703698f673061d47950eaa8e96fb12ef705e",
+      "serial_bytes": 27372,
+      "qemu_member": "_temp/a06-ktest/aster-core/guests/guest-001/qemu.json",
+      "qemu_record_sha256": "c23c01fdb5e260f693d87eaf0ea351d5386ecd2fcb717953e6ec63346baa34a6",
+      "raw_qemu_exit": 33,
+      "timed_out": false,
+      "recorded_qemu_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+      "recorded_profile": {
+        "arch": "x86_64",
+        "machine": "q35",
+        "accel": "tcg",
+        "cpu": "max",
+        "vcpus": 1,
+        "memory_mib": 512,
+        "network": false,
+        "data_disks": false
+      }
+    },
+    {
+      "crate": "ostd",
+      "declared": 221,
+      "passed": 221,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 3,
+      "exercised_passed_lower_bound": 218,
+      "soft_skip_tests": [
+        {
+          "name": "ostd::arch::vm::vmx::test::multiple_vmx_guards_lifecycle",
+          "outcome": "ok",
+          "soft_skip_reasons": [
+            "VMX unavailable"
+          ]
+        },
+        {
+          "name": "ostd::arch::vm::vmx::vmcs::test::switch_and_reuse_vmcs",
+          "outcome": "ok",
+          "soft_skip_reasons": [
+            "VMX unavailable"
+          ]
+        },
+        {
+          "name": "ostd::vm::gpm_space::test::guest_mapping_lifecycle",
+          "outcome": "ok",
+          "soft_skip_reasons": [
+            "VMX/EPT invalidation unavailable"
+          ]
+        }
+      ],
+      "tests": [
+        {
+          "name": "ostd::arch::vm::ept::test::leaf_encoding",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::arch::vm::vmx::test::multiple_vmx_guards_lifecycle",
+          "outcome": "ok",
+          "soft_skip_reasons": [
+            "VMX unavailable"
+          ]
+        },
+        {
+          "name": "ostd::arch::vm::vmx::vmcs::test::switch_and_reuse_vmcs",
+          "outcome": "ok",
+          "soft_skip_reasons": [
+            "VMX unavailable"
+          ]
+        },
+        {
+          "name": "ostd::boot::memory_region::test::sort_full_non_overlapping",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::boot::memory_region::test::into_non_overlapping_drops_usable_subpage_regions",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::cpu::local::test::cpu_local",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::cpu::local::test::cpu_local_cell",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::io::io_mem::allocator::test::illegal_region",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::io::io_mem::allocator::test::conflict_region",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::io::io_mem::test::read_write_u8",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::io::io_mem::test::read_write_u16",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::io::io_mem::test::read_write_u32",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::io::io_mem::test::read_write_u64",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::io::io_mem::test::boundary_overlap",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::io::io_mem::test::copy_to_alignment_and_sizes",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::io::io_mem::test::copy_from_alignment_and_sizes",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::io::io_port::allocator::test::illegal_region",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::io::io_port::allocator::test::conflict_region",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::io::io_port::allocator::test::overlapping_region",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::irq::top_half::test::alloc_and_free_irq",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::irq::top_half::test::register_and_unregister_callback",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::log::bridge::test::bridge_map_log_level",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::log::bridge::test::bridge_map_level_filter",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::log::level::test::level_ordering",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::log::level::test::level_filter_enabled",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::log::level::test::level_from_u8_clamping",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::log::level::test::level_filter_from_level",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::dma::test::dma_coherent::read_write",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::dma::test::dma_coherent::reader_writer",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::dma::test::dma_coherent::read_write_once",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::dma::test::dma_coherent::zero_length_operations",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::dma::test::dma_coherent::alloc_uninit_dma_coherent",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::dma::test::dma_coherent::alloc_with_coherent_device",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::dma::test::dma_coherent::complex_read_write_patterns",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::dma::test::dma_stream::to_device",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::dma::test::dma_stream::read_write",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::dma::test::dma_stream::from_device",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::dma::test::dma_stream::reader_writer",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::dma::test::dma_stream::streaming_map",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::dma::test::dma_stream::alloc_dma_stream",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::dma::test::dma_stream::sync_invalid_ranges",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::dma::test::dma_stream::alloc_uninit_dma_stream",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::dma::test::dma_stream::streaming_boundary_conditions",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::frame::allocator::test_alloc_dealloc",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::frame::test::frame::frame_drop",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::frame::test::frame::frame_clone",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::frame::test::frame::frame_to_uframe",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::frame::test::frame::frame_allocation",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::frame::test::frame::frame_conversions",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::frame::test::frame_ref::frame_impls_non_null_ptr",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::frame::test::frame_ref::frame_ref_preserves_refcnt",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::frame::test::linked_list::linked_list_push_pop",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::frame::test::linked_list::linked_list_cursor_at",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::frame::test::linked_list::linked_list_cursor_ops",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::frame::test::segment::segment_drop",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::frame::test::segment::segment_slice",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::frame::test::segment::segment_split",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::frame::test::segment::frame_to_segment",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::frame::test::segment::segment_creation",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::frame::test::segment::segment_iteration",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::frame::test::segment::segment_to_segment",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::frame::test::segment::segment_slice_empty",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::frame::test::segment::segment_to_usegment",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::frame::test::segment::max_segment_creation",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::frame::test::segment::invalid_segment_split",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::frame::test::segment::empty_segment_creation",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::frame::test::segment::zeroed_segment_creation",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::frame::test::segment::segment_iter_partial_drop",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::frame::test::segment::segment_slice_out_of_bounds",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::frame::test::untyped::untyped_frame_reader_writer",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::frame::test::untyped::untyped_segment_reader_writer",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::frame::unaccepted::test::partition_units_evenly",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::frame::unaccepted::test::partition_units_sparse_cpus",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::frame::unaccepted::test::partition_units_byte_remainder",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::frame::unaccepted::test::partition_units_partial_byte_tail",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::kspace::test::manual_paddr_to_vaddr",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::kspace::test::kvirt_area_tracked_drop",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::kspace::test::kvirt_area_untracked_drop",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::kspace::test::kvirt_area_tracked_map_pages",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::kspace::test::kvirt_area_untracked_map_pages",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::page_table::test::arch_pte_impls::zeroed_pte_is_absent_pte",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::page_table::test::arch_pte_impls::cast_pt_pte_preserves_repr",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::page_table::test::arch_pte_impls::cast_frame_pte_preserves_repr",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::page_table::test::arch_pte_impls::cast_absent_pte_preserves_repr",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::page_table::test::boot_pt::map_protect",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::page_table::test::boot_pt::map_base_page",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::page_table::test::boot_pt::protect_base_page_unmapped",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::page_table::test::boot_pt::map_base_page_already_mapped",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::page_table::test::create_page_table::new_kernel_page_table",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::page_table::test::create_page_table::create_user_page_table",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::page_table::test::lock_levels::map_above_locked_level",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::page_table::test::lock_levels::map_huge_pages_with_minimum_lock_level",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::page_table::test::mapping::mixed_granularity_map_unmap",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::page_table::test::mapping::mixed_granularity_protect_query",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::page_table::test::navigation::jump",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::page_table::test::navigation::find_next",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::page_table::test::navigation::jump_from_guard_level_end",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::page_table::test::navigation::jump_near_address_space_end",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::page_table::test::navigation::find_next_keeps_va_around_barrier",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::page_table::test::navigation::find_next_rejects_overflowing_len",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::page_table::test::navigation::jump_from_end_and_query_huge_middle",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::page_table::test::overlapping_mappings::unaligned_map",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::page_table::test::overlapping_mappings::overlapping_mappings",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::page_table::test::page_properties::map_preserves_page_property",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::page_table::test::protection_and_query::base_protect_query",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::page_table::test::protection_and_query::protect_next_empty_entry",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::page_table::test::protection_and_query::protect_next_touches_empty_range",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::page_table::test::range_checks::range_check",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::page_table::test::range_checks::boundary_conditions",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::page_table::test::range_checks::end_boundary_mapping",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::page_table::test::range_checks::start_boundary_mapping",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::page_table::test::range_checks::overflow_boundary_mapping",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::page_table::test::test_utils::test_subset_iter",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::page_table::test::unmap::take_large_takes_subtree",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::page_table::test::unmap::take_next_takes_something",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::io::fill_infallible",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::io::read_val_segment",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::io::fill_zeros_segment",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::io::read_slice_segment",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::io::fallible_read_write",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::io::fill_zeros_fallible",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::io::write_slice_segment",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::io::atomic_load_fallible",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::io::skip_read_infallible",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::io::write_val_infallible",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::io::limit_read_infallible",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::io::partial_read_fallible",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::io::skip_write_infallible",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::io::limit_write_infallible",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::io::partial_write_fallible",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::io::read_write_val_fallible",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::io::read_write_u32_infallible",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::io::read_write_once_infallible",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::io::read_write_slice_infallible",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::io::read_write_struct_infallible",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::io::invalid_read_write_infallible",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::io::read_beyond_buffer_infallible",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::io::write_beyond_buffer_infallible",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::io::atomic_compare_exchange_fallible",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::io::invalid_args_read_write_fallible",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::io::read_write_slice_vmio_infallible",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::vmspace::protect_next",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::vmspace::vmspace_activate",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::vmspace::vmspace_creation",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::vmspace::vmspace_map_twice",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::vmspace::vmspace_map_unmap",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::vmspace::cursor_mut_flusher",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::vmspace::overlapping_cursors",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::vmspace::vmspace_unmap_twice",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::vmspace::vmspace_reader_writer",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::vmspace::protect_out_range_page",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::vmspace::unaligned_unmap_panics",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::vmspace::vmspace_map_query_iomem",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::vmspace::vmspace_iomem_persistence",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::mm::test::vmspace::vmspace_map_iomem_with_offset",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::smp::test::pending_ipis_can_be_extended",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::smp::test::pending_ipis_waits_for_all_cpus",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::smp::test::pending_ipis_waits_for_remote_cpu",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::smp::test::inter_processor_call_runs_on_current_cpu",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::sync::mutex::test::try_lock_does_not_unlock",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::sync::rcu::non_null::either::test::alignment",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::sync::rcu::non_null::either::test::left_pointer",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::sync::rcu::non_null::either::test::right_pointer",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::sync::rcu::non_null::either::test::rcu_store_load",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::sync::rwarc::test::lockless_get",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::sync::wait::test::queue_wake_all",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::sync::wait::test::queue_wake_one",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::sync::wait::test::waiter_wake_drop",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::sync::wait::test::waiter_wake_async",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::sync::wait::test::waiter_wake_twice",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::sync::wait::test::waiter_wake_reorder",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::task::test::spawn_task",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::task::test::create_task",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::test::expect_panic",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::test::failing_assertion",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::test::trivial_assertion",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::id_set_full",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::id_set_iter",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::id_set_empty",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::iter_in_range",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::id_set_default",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::id_set_from_id",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::id_set_iter_full",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::iter_in_range_to",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::id_set_add_remove",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::iter_in_range_from",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::iter_in_range_full",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::id_set_add_all_clear",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::id_set_cardinality_one",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::id_set_iter_multi_part",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::iter_in_half_unbounded",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::iter_in_range_next_part",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::iter_in_unbounded_bounds",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::id_set_exact_part_boundary",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::iter_in_range_to_inclusive",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::id_set_add_remove_multi_part",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::iter_in_range_ends_after_last",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::id_set_just_over_part_boundary",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::iter_in_range_starts_after_last",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::iter_in_bound_tuple_exclusive_inclusive",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::iter_in_bound_tuple_inclusive_exclusive",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::id_set::id_set_tests::id_set_is_full_with_less_than_full_last_part",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::ops::test::range_difference_a_empty",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::ops::test::range_difference_b_empty",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::ops::test::range_intersection_empty",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::ops::test::range_difference_all_same",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::ops::test::range_difference_all_empty",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::ops::test::range_difference_contained",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::ops::test::range_difference_left_same",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::ops::test::range_difference_right_same",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::ops::test::range_intersection_disjoint",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::ops::test::range_intersection_contained",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::ops::test::range_intersection_overlapping",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::ops::test::range_difference_left_intersected",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::ops::test::range_difference_right_intersected",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::range_counter::test::add_remove_range",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::range_counter::test::add_remove_covering",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::range_counter::test::add_remove_overlapping_end",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::range_counter::test::add_remove_partial_overlap",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::util::range_counter::test::add_remove_overlapping_beginning",
+          "outcome": "ok",
+          "soft_skip_reasons": []
+        },
+        {
+          "name": "ostd::vm::gpm_space::test::guest_mapping_lifecycle",
+          "outcome": "ok",
+          "soft_skip_reasons": [
+            "VMX/EPT invalidation unavailable"
+          ]
+        }
+      ],
+      "serial_member": "_temp/a06-ktest/ostd/guests/guest-001/serial.log",
+      "serial_sha256": "b078b2c187e0f245e7f89e907787c575552ba3bb575cc5302b5bb1c268cbac4c",
+      "serial_bytes": 23028,
+      "qemu_member": "_temp/a06-ktest/ostd/guests/guest-001/qemu.json",
+      "qemu_record_sha256": "cd35935d6471082c03097134b02614527aa0840de4dcf5bcb95fc2e3e650b061",
+      "raw_qemu_exit": 33,
+      "timed_out": false,
+      "recorded_qemu_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+      "recorded_profile": {
+        "arch": "x86_64",
+        "machine": "q35",
+        "accel": "tcg",
+        "cpu": "max",
+        "vcpus": 1,
+        "memory_mib": 512,
+        "network": false,
+        "data_disks": false
+      }
+    }
+  ],
+  "reported_passed": 441,
+  "soft_skipped": 3,
+  "exercised_passed_lower_bound": 438,
+  "kernels_independently_stream_hashed": [
+    {
+      "archive_member": "_temp/a06-owner-negative/green-core-kernel.elf",
+      "bytes": 9883976,
+      "sha256": "4e07b90b1801339349b880f21310eaf0a7552682a7bd998300884a3d03bdb500",
+      "elf_class": 64,
+      "endianness": "little",
+      "e_machine": 3,
+      "purpose": "OSDK QEMU multiboot marker for the x86_64 guest; not a claim of an i386 product."
+    },
+    {
+      "archive_member": "trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/target/osdk/ostd/ostd-osdk-bin.elf",
+      "bytes": 2008952,
+      "sha256": "07ad371f5f1dc29f91439fbebfd87e5e3fcce303dac815a4120f17851f0998f7",
+      "elf_class": 64,
+      "endianness": "little",
+      "e_machine": 3,
+      "purpose": "OSDK QEMU multiboot marker for the x86_64 guest; not a claim of an i386 product."
+    },
+    {
+      "archive_member": "_temp/a06-queryabi-candidate/product-kernel.elf",
+      "bytes": 8388960,
+      "sha256": "1897671a81fab04dc8d5e995b42b62256ec2bd13043ad78a93684d46f60c0fe0",
+      "elf_class": 64,
+      "endianness": "little",
+      "e_machine": 3,
+      "purpose": "OSDK QEMU multiboot marker for the x86_64 guest; not a claim of an i386 product."
+    }
+  ],
+  "product_queryabi": {
+    "receipt_sha256": "eac389ecd38659ff1fdb2413f1169885ff1eea31c5813b67c8a5f3c858cd5ee9",
+    "kernel_sha256": "1897671a81fab04dc8d5e995b42b62256ec2bd13043ad78a93684d46f60c0fe0",
+    "raw_qemu_exit": 33,
+    "serial_sha256": "08f3ce46a90b60f29c94b3859e5fde39c534fc96fa6d7a239882ec2158971850",
+    "each_recorded_marker_exactly_once": true,
+    "disabled_operations": 4,
+    "native_grants": false,
+    "native_resource_effects": false,
+    "hepta_durability": false
+  },
+  "reviewed_raw_member_identities": [
+    {
+      "archive_member": "_temp/a06-queryabi-candidate/source-before.json",
+      "bytes": 1961044,
+      "sha256": "ebf161cce558d878222efd8e8398285f5d13401062499f9eb3ac381fcb00cd24"
+    },
+    {
+      "archive_member": "_temp/a06-queryabi-candidate/source-after-boot.json",
+      "bytes": 1961044,
+      "sha256": "ebf161cce558d878222efd8e8398285f5d13401062499f9eb3ac381fcb00cd24"
+    },
+    {
+      "archive_member": "_temp/a06-queryabi-candidate/source-after-guest.json",
+      "bytes": 1961044,
+      "sha256": "ebf161cce558d878222efd8e8398285f5d13401062499f9eb3ac381fcb00cd24"
+    },
+    {
+      "archive_member": "_temp/a06-ktest/aster-core/guests/guest-001/qemu.json",
+      "bytes": 4742,
+      "sha256": "c23c01fdb5e260f693d87eaf0ea351d5386ecd2fcb717953e6ec63346baa34a6"
+    },
+    {
+      "archive_member": "_temp/a06-ktest/aster-core/guests/guest-001/serial.log",
+      "bytes": 27372,
+      "sha256": "ab7ae20b3dafef9250d74e829fed703698f673061d47950eaa8e96fb12ef705e"
+    },
+    {
+      "archive_member": "_temp/a06-ktest/aster-core/result.json",
+      "bytes": 353,
+      "sha256": "6b94184be06c5aa51842d9eac5bbd770ca7059d0b077f9c1e326d6fe88242ef7"
+    },
+    {
+      "archive_member": "_temp/a06-ktest/ostd/guests/guest-001/qemu.json",
+      "bytes": 4676,
+      "sha256": "cd35935d6471082c03097134b02614527aa0840de4dcf5bcb95fc2e3e650b061"
+    },
+    {
+      "archive_member": "_temp/a06-ktest/ostd/guests/guest-001/serial.log",
+      "bytes": 23028,
+      "sha256": "b078b2c187e0f245e7f89e907787c575552ba3bb575cc5302b5bb1c268cbac4c"
+    },
+    {
+      "archive_member": "_temp/a06-ktest/ostd/result.json",
+      "bytes": 451,
+      "sha256": "061d15cd72fc6ef8563e04ad5f90b598362bc46c5155321990427f4b55216ee2"
+    },
+    {
+      "archive_member": "_temp/a06-queryabi-candidate/result.json",
+      "bytes": 3360,
+      "sha256": "eac389ecd38659ff1fdb2413f1169885ff1eea31c5813b67c8a5f3c858cd5ee9"
+    },
+    {
+      "archive_member": "_temp/a06-queryabi-candidate/serial.log",
+      "bytes": 81803,
+      "sha256": "08f3ce46a90b60f29c94b3859e5fde39c534fc96fa6d7a239882ec2158971850"
+    }
+  ],
+  "scope_limits": [
+    "This script independently reviews the complete green core/OSTD suites and ordinary QueryAbi source/ELF/serial binding. It does not by itself qualify all seven negative controls, full32, SCM_RIGHTS, RLIMIT_NOFILE or CPU timing.",
+    "QEMU executable identities are preserved in original records; the host QEMU executable is not present in this artifact and is not independently rehashed here.",
+    "No code or executable from the archive was run. No old lost review SHA is reused."
+  ],
+  "passed": true
+}
