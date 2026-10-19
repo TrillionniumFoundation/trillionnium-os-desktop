@@ -1,0 +1,669 @@
+﻿2026-10-19T03:49:11.5134322Z Current runner version: '2.337.0'
+2026-10-19T03:49:11.5187403Z ##[group]Runner Image Provisioner
+2026-10-19T03:49:11.5188268Z Hosted Compute Agent
+2026-10-19T03:49:11.5188893Z Version: 20261012.601
+2026-10-19T03:49:11.5189519Z Commit: f3dc54e1fb89da6852db922499a0233137369e1d
+2026-10-19T03:49:11.5190463Z Build Date: 2026-10-12T17:48:21Z
+2026-10-19T03:49:11.5191318Z Worker ID: {ac3a08f1-2062-4e8c-b9bd-0dc88e1fecec}
+2026-10-19T03:49:11.5192042Z Region: westus2
+2026-10-19T03:49:11.5192586Z Cloud: Azure
+2026-10-19T03:49:11.5193131Z ##[endgroup]
+2026-10-19T03:49:11.5194461Z ##[group]Operating System
+2026-10-19T03:49:11.5195079Z Ubuntu
+2026-10-19T03:49:11.5195589Z 24.04.5
+2026-10-19T03:49:11.5196073Z LTS
+2026-10-19T03:49:11.5196609Z ##[endgroup]
+2026-10-19T03:49:11.5197164Z ##[group]Runner Image
+2026-10-19T03:49:11.5197859Z Image: ubuntu-24.04
+2026-10-19T03:49:11.5198409Z Version: 20261012.334.1
+2026-10-19T03:49:11.5199589Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-19T03:49:11.5201333Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261012.334
+2026-10-19T03:49:11.5202325Z ##[endgroup]
+2026-10-19T03:49:11.5203374Z ##[group]GITHUB_TOKEN Permissions
+2026-10-19T03:49:11.5205418Z Contents: read
+2026-10-19T03:49:11.5206004Z Metadata: read
+2026-10-19T03:49:11.5206526Z ##[endgroup]
+2026-10-19T03:49:11.5208484Z Secret source: Actions
+2026-10-19T03:49:11.5209350Z Cache mode: write
+2026-10-19T03:49:11.5210243Z Prepare workflow directory
+2026-10-19T03:49:11.5747010Z Prepare all required actions
+2026-10-19T03:49:11.5796526Z Getting action download info
+2026-10-19T03:49:11.9389175Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-19T03:49:12.0250398Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-10-19T03:49:12.2489465Z Complete job name: exact-native-models
+2026-10-19T03:49:12.3208940Z ##[group]Run actions/checkout@v4
+2026-10-19T03:49:12.3210024Z with:
+2026-10-19T03:49:12.3210543Z   fetch-depth: 0
+2026-10-19T03:49:12.3211123Z   ref: 1c05412e2b340bbc8cd2b8a3389ae0ecce538991
+2026-10-19T03:49:12.3212159Z   repository: TrillionniumFoundation/trillionnium-os-desktop
+2026-10-19T03:49:12.3216086Z   token: ***
+2026-10-19T03:49:12.3216612Z   ssh-strict: true
+2026-10-19T03:49:12.3217112Z   ssh-user: git
+2026-10-19T03:49:12.3217621Z   persist-credentials: true
+2026-10-19T03:49:12.3218216Z   clean: true
+2026-10-19T03:49:12.3218739Z   sparse-checkout-cone-mode: true
+2026-10-19T03:49:12.3219356Z   fetch-tags: false
+2026-10-19T03:49:12.3220085Z   show-progress: true
+2026-10-19T03:49:12.3220734Z   lfs: false
+2026-10-19T03:49:12.3221227Z   submodules: false
+2026-10-19T03:49:12.3221774Z   set-safe-directory: true
+2026-10-19T03:49:12.3222363Z   allow-unsafe-pr-checkout: false
+2026-10-19T03:49:12.3223156Z env:
+2026-10-19T03:49:12.3223637Z   RUSTUP_TOOLCHAIN: nightly-2026-07-21
+2026-10-19T03:49:12.3224448Z   EXACT_SHA: 1c05412e2b340bbc8cd2b8a3389ae0ecce538991
+2026-10-19T03:49:12.3225196Z   EVENT_BASE: e15ae6a63edb5d4e7c475a001be82111d451b653
+2026-10-19T03:49:12.3225923Z ##[endgroup]
+2026-10-19T03:49:12.4226446Z Syncing repository: TrillionniumFoundation/trillionnium-os-desktop
+2026-10-19T03:49:12.4229045Z ##[group]Getting Git version info
+2026-10-19T03:49:12.4230293Z Working directory is '/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop'
+2026-10-19T03:49:12.4231994Z [command]/usr/bin/git version
+2026-10-19T03:49:12.4304105Z git version 2.55.0
+2026-10-19T03:49:12.4324831Z ##[endgroup]
+2026-10-19T03:49:12.4340283Z Temporarily overriding HOME='/home/runner/work/_temp/36877dea-fb6c-49c3-bce8-dac87ae6e601' before making global git config changes
+2026-10-19T03:49:12.4349425Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-19T03:49:12.4351385Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop
+2026-10-19T03:49:12.4403110Z Deleting the contents of '/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop'
+2026-10-19T03:49:12.4406950Z ##[group]Initializing the repository
+2026-10-19T03:49:12.4412155Z [command]/usr/bin/git init /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop
+2026-10-19T03:49:12.4519115Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-19T03:49:12.4520928Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-19T03:49:12.4522377Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-19T03:49:12.4523143Z hint: call:
+2026-10-19T03:49:12.4523652Z hint:
+2026-10-19T03:49:12.4524246Z hint: 	git config --global init.defaultBranch <name>
+2026-10-19T03:49:12.4524893Z hint:
+2026-10-19T03:49:12.4525522Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-19T03:49:12.4526553Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-19T03:49:12.4527651Z hint:
+2026-10-19T03:49:12.4528172Z hint: 	git branch -m <name>
+2026-10-19T03:49:12.4528887Z hint:
+2026-10-19T03:49:12.4529765Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-19T03:49:12.4531278Z Initialized empty Git repository in /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/.git/
+2026-10-19T03:49:12.4541476Z [command]/usr/bin/git remote add origin https://github.com/TrillionniumFoundation/trillionnium-os-desktop
+2026-10-19T03:49:12.4580956Z ##[endgroup]
+2026-10-19T03:49:12.4582044Z ##[group]Disabling automatic garbage collection
+2026-10-19T03:49:12.4586540Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-19T03:49:12.4625944Z ##[endgroup]
+2026-10-19T03:49:12.4626802Z ##[group]Setting up auth
+2026-10-19T03:49:12.4634404Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-19T03:49:12.4665550Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-19T03:49:12.5031056Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-19T03:49:12.5067155Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-19T03:49:12.5287618Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-19T03:49:12.5317368Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-19T03:49:12.5501887Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-19T03:49:12.5540716Z ##[endgroup]
+2026-10-19T03:49:12.5541867Z ##[group]Fetching the repository
+2026-10-19T03:49:12.5550563Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+2026-10-19T03:49:29.9462924Z From https://github.com/TrillionniumFoundation/trillionnium-os-desktop
+2026-10-19T03:49:29.9466326Z  * [new branch]        agents/A00-a01-archive-ci -> origin/agents/A00-a01-archive-ci
+2026-10-19T03:49:29.9468834Z  * [new branch]        agents/A00-a01-archive-nofollow -> origin/agents/A00-a01-archive-nofollow
+2026-10-19T03:49:29.9472359Z  * [new branch]        agents/A00-a01-archive-safety -> origin/agents/A00-a01-archive-safety
+2026-10-19T03:49:29.9475518Z  * [new branch]        agents/A00-a01-avoid-sigpipe141-build -> origin/agents/A00-a01-avoid-sigpipe141-build
+2026-10-19T03:49:29.9479278Z  * [new branch]        agents/A00-a01-boot-evidence-ci -> origin/agents/A00-a01-boot-evidence-ci
+2026-10-19T03:49:29.9482271Z  * [new branch]        agents/A00-a01-fd-evidence-archive -> origin/agents/A00-a01-fd-evidence-archive
+2026-10-19T03:49:29.9485249Z  * [new branch]        agents/A00-a02-clippy-199 -> origin/agents/A00-a02-clippy-199
+2026-10-19T03:49:29.9487699Z  * [new branch]        agents/A00-a02-clippy-chunk-parsing -> origin/agents/A00-a02-clippy-chunk-parsing
+2026-10-19T03:49:29.9490774Z  * [new branch]        agents/A00-a02-pinned-acceptance-ci -> origin/agents/A00-a02-pinned-acceptance-ci
+2026-10-19T03:49:29.9494004Z  * [new branch]        agents/A00-a02-verified-workflow-stack -> origin/agents/A00-a02-verified-workflow-stack
+2026-10-19T03:49:29.9497240Z  * [new branch]        agents/A00-a03-ancestor-revoke-fence -> origin/agents/A00-a03-ancestor-revoke-fence
+2026-10-19T03:49:29.9505569Z  * [new branch]        agents/A00-a03-canonical-hepta-k -> origin/agents/A00-a03-canonical-hepta-k
+2026-10-19T03:49:29.9509721Z  * [new branch]        agents/A00-a03-clippy-rustfmt-20261016 -> origin/agents/A00-a03-clippy-rustfmt-20261016
+2026-10-19T03:49:29.9513870Z  * [new branch]        agents/A00-a03-clock-monotonicity -> origin/agents/A00-a03-clock-monotonicity
+2026-10-19T03:49:29.9517273Z  * [new branch]        agents/A00-a03-durable-owner-authority -> origin/agents/A00-a03-durable-owner-authority
+2026-10-19T03:49:29.9520976Z  * [new branch]        agents/A00-a03-hos2-status-failclosed -> origin/agents/A00-a03-hos2-status-failclosed
+2026-10-19T03:49:29.9524337Z  * [new branch]        agents/A00-a03-k-identity-immutable -> origin/agents/A00-a03-k-identity-immutable
+2026-10-19T03:49:29.9527471Z  * [new branch]        agents/A00-a03-k-owner-consolidated -> origin/agents/A00-a03-k-owner-consolidated
+2026-10-19T03:49:29.9530466Z  * [new branch]        agents/A00-a03-loom-alloc-ci -> origin/agents/A00-a03-loom-alloc-ci
+2026-10-19T03:49:29.9533561Z  * [new branch]        agents/A00-a03-loom-allocation-ci -> origin/agents/A00-a03-loom-allocation-ci
+2026-10-19T03:49:29.9537526Z  * [new branch]        agents/A00-a03-readusage-wire-invariant -> origin/agents/A00-a03-readusage-wire-invariant
+2026-10-19T03:49:29.9541980Z  * [new branch]        agents/A00-a03-resource-domain-atomicity -> origin/agents/A00-a03-resource-domain-atomicity
+2026-10-19T03:49:29.9545518Z  * [new branch]        agents/A00-a03-status-failclosed -> origin/agents/A00-a03-status-failclosed
+2026-10-19T03:49:29.9548366Z  * [new branch]        agents/A00-a05-enotty-strict -> origin/agents/A00-a05-enotty-strict
+2026-10-19T03:49:29.9552065Z  * [new branch]        agents/A00-a05-exec-fence-correct-probe -> origin/agents/A00-a05-exec-fence-correct-probe
+2026-10-19T03:49:29.9555119Z  * [new branch]        agents/A00-a05-queryabi-ci -> origin/agents/A00-a05-queryabi-ci
+2026-10-19T03:49:29.9558692Z  * [new branch]        agents/A00-a05-queryabi-copyout-negatives -> origin/agents/A00-a05-queryabi-copyout-negatives
+2026-10-19T03:49:29.9562469Z  * [new branch]        agents/A00-a05-queryabi-errno-contract -> origin/agents/A00-a05-queryabi-errno-contract
+2026-10-19T03:49:29.9566044Z  * [new branch]        agents/A00-a05-queryabi-guest-compile-ci -> origin/agents/A00-a05-queryabi-guest-compile-ci
+2026-10-19T03:49:29.9569999Z  * [new branch]        agents/A00-a05-queryabi-guest-reply-failclosed -> origin/agents/A00-a05-queryabi-guest-reply-failclosed
+2026-10-19T03:49:29.9573639Z  * [new branch]        agents/A00-a05-queryabi-native-replay -> origin/agents/A00-a05-queryabi-native-replay
+2026-10-19T03:49:29.9577824Z  * [new branch]        agents/A00-a05-queryabi-required-markers-20261017 -> origin/agents/A00-a05-queryabi-required-markers-20261017
+2026-10-19T03:49:29.9581795Z  * [new branch]        agents/A00-a05-replay-input-no-follow -> origin/agents/A00-a05-replay-input-no-follow
+2026-10-19T03:49:29.9585044Z  * [new branch]        agents/A00-a05-sealed-qemu-inputs -> origin/agents/A00-a05-sealed-qemu-inputs
+2026-10-19T03:49:29.9588342Z  * [new branch]        agents/A00-a05-session-epoch-rebased-20261017 -> origin/agents/A00-a05-session-epoch-rebased-20261017
+2026-10-19T03:49:29.9592247Z  * [new branch]        agents/A00-a05-unique-capspace-nonce -> origin/agents/A00-a05-unique-capspace-nonce
+2026-10-19T03:49:29.9596037Z  * [new branch]        agents/A00-a05-unique-capspace-revalidated-20261017 -> origin/agents/A00-a05-unique-capspace-revalidated-20261017
+2026-10-19T03:49:29.9600712Z  * [new branch]        agents/A00-a05-unique-process-space -> origin/agents/A00-a05-unique-process-space
+2026-10-19T03:49:29.9604070Z  * [new branch]        agents/A00-a06-boundary-debt -> origin/agents/A00-a06-boundary-debt
+2026-10-19T03:49:29.9606927Z  * [new branch]        agents/A00-a06-cpustat-readonly -> origin/agents/A00-a06-cpustat-readonly
+2026-10-19T03:49:29.9610873Z  * [new branch]        agents/A00-a06-cpustat-readonly-on-latest -> origin/agents/A00-a06-cpustat-readonly-on-latest
+2026-10-19T03:49:29.9614633Z  * [new branch]        agents/A00-a06-exact-smp-evidence-20261016 -> origin/agents/A00-a06-exact-smp-evidence-20261016
+2026-10-19T03:49:29.9618263Z  * [new branch]        agents/A00-a06-final-debit-lease-consolidated -> origin/agents/A00-a06-final-debit-lease-consolidated
+2026-10-19T03:49:29.9622113Z  * [new branch]        agents/A00-a06-full-kernel-tests-20261016 -> origin/agents/A00-a06-full-kernel-tests-20261016
+2026-10-19T03:49:29.9625829Z  * [new branch]        agents/A00-a06-generated-osdk-verified-20261017 -> origin/agents/A00-a06-generated-osdk-verified-20261017
+2026-10-19T03:49:29.9629652Z  * [new branch]        agents/A00-a06-main-integration-20261017 -> origin/agents/A00-a06-main-integration-20261017
+2026-10-19T03:49:29.9633578Z  * [new branch]        agents/A00-a06-main-push-exact-qemu -> origin/agents/A00-a06-main-push-exact-qemu
+2026-10-19T03:49:29.9636539Z  * [new branch]        agents/A00-a06-main-push-gate -> origin/agents/A00-a06-main-push-gate
+2026-10-19T03:49:29.9639608Z  * [new branch]        agents/A00-a06-smp-longer-independent -> origin/agents/A00-a06-smp-longer-independent
+2026-10-19T03:49:29.9643109Z  * [new branch]        agents/A00-a06-stat-observe-verified -> origin/agents/A00-a06-stat-observe-verified
+2026-10-19T03:49:29.9646374Z  * [new branch]        agents/A00-a06-throttle-queue-safety -> origin/agents/A00-a06-throttle-queue-safety
+2026-10-19T03:49:29.9649880Z  * [new branch]        agents/A00-a08-source-recovery-20261017 -> origin/agents/A00-a08-source-recovery-20261017
+2026-10-19T03:49:29.9653273Z  * [new branch]        agents/A00-a09-evidence-guards -> origin/agents/A00-a09-evidence-guards
+2026-10-19T03:49:29.9656537Z  * [new branch]        agents/A00-a09-native-hard-timeout-regression -> origin/agents/A00-a09-native-hard-timeout-regression
+2026-10-19T03:49:29.9660993Z  * [new branch]        agents/A00-a09-native-worker-supervisor -> origin/agents/A00-a09-native-worker-supervisor
+2026-10-19T03:49:29.9664078Z  * [new branch]        agents/A00-a09-pgid-reuse-fence -> origin/agents/A00-a09-pgid-reuse-fence
+2026-10-19T03:49:29.9667024Z  * [new branch]        agents/A00-a09-reaped-pid-no-signal -> origin/agents/A00-a09-reaped-pid-no-signal
+2026-10-19T03:49:29.9670343Z  * [new branch]        agents/A00-a09-tested-supervisor-core -> origin/agents/A00-a09-tested-supervisor-core
+2026-10-19T03:49:29.9673918Z  * [new branch]        agents/A00-a09-vfio-bounded-sysfs -> origin/agents/A00-a09-vfio-bounded-sysfs
+2026-10-19T03:49:29.9677184Z  * [new branch]        agents/A00-a09-worker-group-lifecycle -> origin/agents/A00-a09-worker-group-lifecycle
+2026-10-19T03:49:29.9680402Z  * [new branch]        agents/A00-a10-hepta-observer-20261017 -> origin/agents/A00-a10-hepta-observer-20261017
+2026-10-19T03:49:29.9683037Z  * [new branch]        agents/A00-a10-host-ci  -> origin/agents/A00-a10-host-ci
+2026-10-19T03:49:29.9685612Z  * [new branch]        agents/A00-audit-remediation-20261017 -> origin/agents/A00-audit-remediation-20261017
+2026-10-19T03:49:29.9688699Z  * [new branch]        agents/A00-cold-runner-nightly-20261017 -> origin/agents/A00-cold-runner-nightly-20261017
+2026-10-19T03:49:29.9691930Z  * [new branch]        agents/A00-g0-a05-guest-replay-host -> origin/agents/A00-g0-a05-guest-replay-host
+2026-10-19T03:49:29.9694874Z  * [new branch]        agents/A00-g0-control-portable-target -> origin/agents/A00-g0-control-portable-target
+2026-10-19T03:49:29.9697926Z  * [new branch]        agents/A00-g0-edge-golden-guard -> origin/agents/A00-g0-edge-golden-guard
+2026-10-19T03:49:29.9700413Z  * [new branch]        agents/A00-g0-fmt-clippy -> origin/agents/A00-g0-fmt-clippy
+2026-10-19T03:49:29.9702623Z  * [new branch]        agents/A00-integration  -> origin/agents/A00-integration
+2026-10-19T03:49:29.9705215Z  * [new branch]        agents/A00-main-host-recheck-20261017 -> origin/agents/A00-main-host-recheck-20261017
+2026-10-19T03:49:29.9708173Z  * [new branch]        agents/A00-native-ui-r4-docs-20261017 -> origin/agents/A00-native-ui-r4-docs-20261017
+2026-10-19T03:49:29.9711297Z  * [new branch]        agents/A00-next-integration-20261017 -> origin/agents/A00-next-integration-20261017
+2026-10-19T03:49:29.9714379Z  * [new branch]        agents/A00-organ-broker-contract-security -> origin/agents/A00-organ-broker-contract-security
+2026-10-19T03:49:29.9717649Z  * [new branch]        agents/A00-r5-native-progress-docs-20261017 -> origin/agents/A00-r5-native-progress-docs-20261017
+2026-10-19T03:49:29.9721143Z  * [new branch]        agents/A00-r6-ci-completion-review-20261018 -> origin/agents/A00-r6-ci-completion-review-20261018
+2026-10-19T03:49:29.9724309Z  * [new branch]        agents/A00-r6-live-session-docs-20261018 -> origin/agents/A00-r6-live-session-docs-20261018
+2026-10-19T03:49:29.9727196Z  * [new branch]        agents/A00-r7-workspace-20261018 -> origin/agents/A00-r7-workspace-20261018
+2026-10-19T03:49:29.9730043Z  * [new branch]        agents/A00-r9-followthrough-20261018 -> origin/agents/A00-r9-followthrough-20261018
+2026-10-19T03:49:29.9732637Z  * [new branch]        agents/A01-asterinas-boot -> origin/agents/A01-asterinas-boot
+2026-10-19T03:49:29.9735152Z  * [new branch]        agents/A02-format-tests-verified -> origin/agents/A02-format-tests-verified
+2026-10-19T03:49:29.9737513Z  * [new branch]        agents/A02-hos2-wire    -> origin/agents/A02-hos2-wire
+2026-10-19T03:49:29.9739681Z  * [new branch]        agents/A02-rust-codec   -> origin/agents/A02-rust-codec
+2026-10-19T03:49:29.9741902Z  * [new branch]        agents/A03-control-core -> origin/agents/A03-control-core
+2026-10-19T03:49:29.9744265Z  * [new branch]        agents/A04-linux-hepta-baseline -> origin/agents/A04-linux-hepta-baseline
+2026-10-19T03:49:29.9747258Z  * [new branch]        agents/A05-current-main-exact-gate-20261017 -> origin/agents/A05-current-main-exact-gate-20261017
+2026-10-19T03:49:29.9750753Z  * [new branch]        agents/A05-hardened-queryabi-replay-verified -> origin/agents/A05-hardened-queryabi-replay-verified
+2026-10-19T03:49:29.9753706Z  * [new branch]        agents/A05-hos2-queryabi-smoke -> origin/agents/A05-hos2-queryabi-smoke
+2026-10-19T03:49:29.9756345Z  * [new branch]        agents/A05-native-queryabi-bootstrap -> origin/agents/A05-native-queryabi-bootstrap
+2026-10-19T03:49:29.9759324Z  * [new branch]        agents/A05-nonce-rotation-stacked-20261017 -> origin/agents/A05-nonce-rotation-stacked-20261017
+2026-10-19T03:49:29.9762640Z  * [new branch]        agents/A05-process-session-fence-20261017 -> origin/agents/A05-process-session-fence-20261017
+2026-10-19T03:49:29.9765982Z  * [new branch]        agents/A05-process-session-fence-db2593-20261017 -> origin/agents/A05-process-session-fence-db2593-20261017
+2026-10-19T03:49:29.9769200Z  * [new branch]        agents/A05-process-session-fence-main -> origin/agents/A05-process-session-fence-main
+2026-10-19T03:49:29.9772442Z  * [new branch]        agents/A05-process-session-fence-main-20261017 -> origin/agents/A05-process-session-fence-main-20261017
+2026-10-19T03:49:29.9775928Z  * [new branch]        agents/A05-process-session-fence-main-v2 -> origin/agents/A05-process-session-fence-main-v2
+2026-10-19T03:49:29.9779301Z  * [new branch]        agents/A05-process-session-fence-main2-20261017 -> origin/agents/A05-process-session-fence-main2-20261017
+2026-10-19T03:49:29.9782486Z  * [new branch]        agents/A05-queryabi-guest-evidence -> origin/agents/A05-queryabi-guest-evidence
+2026-10-19T03:49:29.9785939Z  * [new branch]        agents/A05-queryabi-nonroot-dupfd-repro -> origin/agents/A05-queryabi-nonroot-dupfd-repro
+2026-10-19T03:49:29.9789319Z  * [new branch]        agents/A05-queryabi-owner-integration-verified -> origin/agents/A05-queryabi-owner-integration-verified
+2026-10-19T03:49:29.9792478Z  * [new branch]        agents/A06-1khz-overshoot-debt -> origin/agents/A06-1khz-overshoot-debt
+2026-10-19T03:49:29.9795186Z  * [new branch]        agents/A06-1khz-quota-debt-experiment -> origin/agents/A06-1khz-quota-debt-experiment
+2026-10-19T03:49:29.9798036Z  * [new branch]        agents/A06-5khz-timer-precision-spike -> origin/agents/A06-5khz-timer-precision-spike
+2026-10-19T03:49:29.9800750Z  * [new branch]        agents/A06-cpu-bandwidth-n0 -> origin/agents/A06-cpu-bandwidth-n0
+2026-10-19T03:49:29.9803498Z  * [new branch]        agents/A06-cpustat-readonly-owner-integration -> origin/agents/A06-cpustat-readonly-owner-integration
+2026-10-19T03:49:29.9806402Z  * [new branch]        agents/A06-cross-period-charge -> origin/agents/A06-cross-period-charge
+2026-10-19T03:49:29.9808733Z  * [new branch]        agents/A06-final-accounting -> origin/agents/A06-final-accounting
+2026-10-19T03:49:29.9811582Z  * [new branch]        agents/A06-final-debit-rcu-arc-clone-20261017 -> origin/agents/A06-final-debit-rcu-arc-clone-20261017
+2026-10-19T03:49:29.9814358Z  * [new branch]        agents/A06-irq-safe-cpu-max -> origin/agents/A06-irq-safe-cpu-max
+2026-10-19T03:49:29.9816889Z  * [new branch]        agents/A06-latest-head-QEMU-independent -> origin/agents/A06-latest-head-QEMU-independent
+2026-10-19T03:49:29.9819335Z  * [new branch]        agents/A06-main-rebase  -> origin/agents/A06-main-rebase
+2026-10-19T03:49:29.9821551Z  * [new branch]        agents/A06-odd-tsc-ktest-fix -> origin/agents/A06-odd-tsc-ktest-fix
+2026-10-19T03:49:29.9824054Z  * [new branch]        agents/A06-repair-truncated-cpu-tests -> origin/agents/A06-repair-truncated-cpu-tests
+2026-10-19T03:49:29.9826862Z  * [new branch]        agents/A06-smp-exited-process-guard -> origin/agents/A06-smp-exited-process-guard
+2026-10-19T03:49:29.9829404Z  * [new branch]        agents/A06-zombie-cgroup-lease -> origin/agents/A06-zombie-cgroup-lease
+2026-10-19T03:49:29.9832658Z  * [new branch]        agents/A06-zombie-cgroup-lease-current-main-20261017 -> origin/agents/A06-zombie-cgroup-lease-current-main-20261017
+2026-10-19T03:49:29.9836416Z  * [new branch]        agents/A06-zombie-cgroup-lease-current-main-20261017-v2 -> origin/agents/A06-zombie-cgroup-lease-current-main-20261017-v2
+2026-10-19T03:49:29.9840357Z  * [new branch]        agents/A06-zombie-cgroup-lease-current-main-20261017-v3 -> origin/agents/A06-zombie-cgroup-lease-current-main-20261017-v3
+2026-10-19T03:49:29.9843591Z  * [new branch]        agents/A06-zombie-cgroup-lease-main -> origin/agents/A06-zombie-cgroup-lease-main
+2026-10-19T03:49:29.9846277Z  * [new branch]        agents/A06-zombie-cgroup-lease-main2 -> origin/agents/A06-zombie-cgroup-lease-main2
+2026-10-19T03:49:29.9848943Z  * [new branch]        agents/A06-zombie-cgroup-lease-main3 -> origin/agents/A06-zombie-cgroup-lease-main3
+2026-10-19T03:49:29.9851915Z  * [new branch]        agents/A07-r7-objective-transport-20261018 -> origin/agents/A07-r7-objective-transport-20261018
+2026-10-19T03:49:29.9854499Z  * [new branch]        agents/A08-android-compat -> origin/agents/A08-android-compat
+2026-10-19T03:49:29.9856965Z  * [new branch]        agents/A09-cuda-parent-identity-20261017 -> origin/agents/A09-cuda-parent-identity-20261017
+2026-10-19T03:49:29.9859972Z  * [new branch]        agents/A09-exclusive-evidence-20261017 -> origin/agents/A09-exclusive-evidence-20261017
+2026-10-19T03:49:29.9862337Z  * [new branch]        agents/A09-gpu-vmm      -> origin/agents/A09-gpu-vmm
+2026-10-19T03:49:29.9864621Z  * [new branch]        agents/A09-gpu-vmm-dma-alias-20261017 -> origin/agents/A09-gpu-vmm-dma-alias-20261017
+2026-10-19T03:49:29.9866984Z  * [new branch]        agents/A09-gpu-vmm-phase2 -> origin/agents/A09-gpu-vmm-phase2
+2026-10-19T03:49:29.9869316Z  * [new branch]        agents/A09-host-clippy-fmt-20261017 -> origin/agents/A09-host-clippy-fmt-20261017
+2026-10-19T03:49:29.9872271Z  * [new branch]        agents/A10-r7-console-scroll-20261018 -> origin/agents/A10-r7-console-scroll-20261018
+2026-10-19T03:49:29.9874569Z  * [new branch]        agents/A10-rust-desktop -> origin/agents/A10-rust-desktop
+2026-10-19T03:49:29.9877099Z  * [new branch]        agents/a00-a06-odd-period-ci-20261018 -> origin/agents/a00-a06-odd-period-ci-20261018
+2026-10-19T03:49:29.9879401Z  * [new branch]        agents/a02-contract-104 -> origin/agents/a02-contract-104
+2026-10-19T03:49:29.9881812Z  * [new branch]        agents/a02-contract-104-cumulative -> origin/agents/a02-contract-104-cumulative
+2026-10-19T03:49:29.9884356Z  * [new branch]        agents/a02-contract-104-db2593-final -> origin/agents/a02-contract-104-db2593-final
+2026-10-19T03:49:29.9886770Z  * [new branch]        agents/a02-contract-104-db2593e -> origin/agents/a02-contract-104-db2593e
+2026-10-19T03:49:29.9889104Z  * [new branch]        agents/a02-contract-104-e59f8b2 -> origin/agents/a02-contract-104-e59f8b2
+2026-10-19T03:49:29.9891490Z  * [new branch]        agents/organ-audit-a02-bounds -> origin/agents/organ-audit-a02-bounds
+2026-10-19T03:49:29.9893747Z  * [new branch]        agents/organ-backend-validation -> origin/agents/organ-backend-validation
+2026-10-19T03:49:29.9896147Z  * [new branch]        agents/r10-g1-cpu-owner-20261019 -> origin/agents/r10-g1-cpu-owner-20261019
+2026-10-19T03:49:29.9898623Z  * [new branch]        agents/r8-objective-desktop-20261018 -> origin/agents/r8-objective-desktop-20261018
+2026-10-19T03:49:29.9901295Z  * [new branch]        agents/r9-durable-objective-20261018 -> origin/agents/r9-durable-objective-20261018
+2026-10-19T03:49:29.9903861Z  * [new branch]        agents/r9-history-evidence-20261018 -> origin/agents/r9-history-evidence-20261018
+2026-10-19T03:49:29.9905994Z  * [new branch]        ci/a06-workflow-main    -> origin/ci/a06-workflow-main
+2026-10-19T03:49:29.9908519Z  * [new branch]        docs/audit-followthrough-evidence-20261018 -> origin/docs/audit-followthrough-evidence-20261018
+2026-10-19T03:49:29.9911818Z  * [new branch]        docs/organ-control-broker-current-main-20261017 -> origin/docs/organ-control-broker-current-main-20261017
+2026-10-19T03:49:29.9914997Z  * [new branch]        feat/hepta-rust-desktop-validated-20261018 -> origin/feat/hepta-rust-desktop-validated-20261018
+2026-10-19T03:49:29.9917743Z  * [new branch]        fix/a01-a02-a06-current-main-20261018 -> origin/fix/a01-a02-a06-current-main-20261018
+2026-10-19T03:49:29.9920869Z  * [new branch]        fix/a01-lock-preflight-failure-receipt-20261017 -> origin/fix/a01-lock-preflight-failure-receipt-20261017
+2026-10-19T03:49:29.9923879Z  * [new branch]        fix/a02-a03-audit-followthrough-20261018 -> origin/fix/a02-a03-audit-followthrough-20261018
+2026-10-19T03:49:29.9926405Z  * [new branch]        fix/a02-n0-current-main-20261018 -> origin/fix/a02-n0-current-main-20261018
+2026-10-19T03:49:29.9928867Z  * [new branch]        fix/a02-n0-history-contract-20261017 -> origin/fix/a02-n0-history-contract-20261017
+2026-10-19T03:49:29.9931313Z  * [new branch]        fix/a02-n0-semantics-20261017 -> origin/fix/a02-n0-semantics-20261017
+2026-10-19T03:49:29.9933831Z  * [new branch]        fix/a03-authenticated-history-ack-20261017 -> origin/fix/a03-authenticated-history-ack-20261017
+2026-10-19T03:49:29.9937161Z  * [new branch]        fix/a03-authenticated-history-ack-current-main-20261018 -> origin/fix/a03-authenticated-history-ack-current-main-20261018
+2026-10-19T03:49:29.9940912Z  * [new branch]        fix/a03-authenticated-history-ack-main-3551e1e-20261018 -> origin/fix/a03-authenticated-history-ack-main-3551e1e-20261018
+2026-10-19T03:49:29.9944493Z  * [new branch]        fix/a03-authenticated-history-ack-main-b7a8388-20261018 -> origin/fix/a03-authenticated-history-ack-main-b7a8388-20261018
+2026-10-19T03:49:29.9948192Z  * [new branch]        fix/a03-authenticated-history-ack-main-b7a8388-20261018-r2 -> origin/fix/a03-authenticated-history-ack-main-b7a8388-20261018-r2
+2026-10-19T03:49:29.9951914Z  * [new branch]        fix/a05-fail-closed-effect-contract-20261017 -> origin/fix/a05-fail-closed-effect-contract-20261017
+2026-10-19T03:49:29.9954890Z  * [new branch]        fix/a06-candidate-matrix-import-20261017 -> origin/fix/a06-candidate-matrix-import-20261017
+2026-10-19T03:49:29.9957653Z  * [new branch]        fix/a06-cpu-max-strict-parser-20261018 -> origin/fix/a06-cpu-max-strict-parser-20261018
+2026-10-19T03:49:29.9960818Z  * [new branch]        fix/a06-final-accounting-current-main-20261018 -> origin/fix/a06-final-accounting-current-main-20261018
+2026-10-19T03:49:29.9963787Z  * [new branch]        fix/a06-final-debit-current-main-20261017 -> origin/fix/a06-final-debit-current-main-20261017
+2026-10-19T03:49:29.9966440Z  * [new branch]        fix/a06-generated-artifact-20261017 -> origin/fix/a06-generated-artifact-20261017
+2026-10-19T03:49:29.9968681Z  * [new branch]        fix/a06-pinned-toolchain -> origin/fix/a06-pinned-toolchain
+2026-10-19T03:49:29.9970761Z  * [new branch]        fix/a06-qemu-elf-20261017 -> origin/fix/a06-qemu-elf-20261017
+2026-10-19T03:49:29.9973209Z  * [new branch]        fix/a06-zombie-final-debit-verified-20261018 -> origin/fix/a06-zombie-final-debit-verified-20261018
+2026-10-19T03:49:29.9975701Z  * [new branch]        main                    -> origin/main
+2026-10-19T03:49:29.9977818Z  * [new branch]        organ-control-broker-contract-20261017 -> origin/organ-control-broker-contract-20261017
+2026-10-19T03:49:29.9980605Z  * [new branch]        review/A01-locked-ktest-cold-runner -> origin/review/A01-locked-ktest-cold-runner
+2026-10-19T03:49:29.9984663Z [command]/usr/bin/git rev-parse --verify --quiet 1c05412e2b340bbc8cd2b8a3389ae0ecce538991^{object}
+2026-10-19T03:49:29.9986588Z 1c05412e2b340bbc8cd2b8a3389ae0ecce538991
+2026-10-19T03:49:29.9989534Z ##[endgroup]
+2026-10-19T03:49:29.9991348Z ##[group]Determining the checkout info
+2026-10-19T03:49:29.9993184Z ##[endgroup]
+2026-10-19T03:49:29.9994361Z [command]/usr/bin/git sparse-checkout disable
+2026-10-19T03:49:29.9997475Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-19T03:49:30.0001244Z ##[group]Checking out the ref
+2026-10-19T03:49:30.0002889Z [command]/usr/bin/git checkout --progress --force 1c05412e2b340bbc8cd2b8a3389ae0ecce538991
+2026-10-19T03:49:30.3771940Z Note: switching to '1c05412e2b340bbc8cd2b8a3389ae0ecce538991'.
+2026-10-19T03:49:30.3773084Z 
+2026-10-19T03:49:30.3773441Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-19T03:49:30.3774063Z changes and commit them, and you can discard any commits you make in this
+2026-10-19T03:49:30.3775120Z state without impacting any branches by switching back to a branch.
+2026-10-19T03:49:30.3775497Z 
+2026-10-19T03:49:30.3775764Z If you want to create a new branch to retain commits you create, you may
+2026-10-19T03:49:30.3776422Z do so (now or later) by using -c with the switch command. Example:
+2026-10-19T03:49:30.3776749Z 
+2026-10-19T03:49:30.3777055Z   git switch -c <new-branch-name>
+2026-10-19T03:49:30.3777307Z 
+2026-10-19T03:49:30.3777539Z Or undo this operation with:
+2026-10-19T03:49:30.3777744Z 
+2026-10-19T03:49:30.3777981Z   git switch -
+2026-10-19T03:49:30.3778223Z 
+2026-10-19T03:49:30.3778573Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-19T03:49:30.3779000Z 
+2026-10-19T03:49:30.3779323Z HEAD is now at 1c05412e Merge current main Runtime and process-boundary fixes into G1 candidate
+2026-10-19T03:49:30.3795279Z ##[endgroup]
+2026-10-19T03:49:30.3837390Z [command]/usr/bin/git log -1 --format=%H
+2026-10-19T03:49:30.3863911Z 1c05412e2b340bbc8cd2b8a3389ae0ecce538991
+2026-10-19T03:49:30.4075522Z ##[group]Run set -euo pipefail
+2026-10-19T03:49:30.4076142Z [36;1mset -euo pipefail[0m
+2026-10-19T03:49:30.4076747Z [36;1mtest "$(git rev-parse HEAD)" = "$EXACT_SHA"[0m
+2026-10-19T03:49:30.4077241Z [36;1mtest -f README.md && test ! -s README.md[0m
+2026-10-19T03:49:30.4077691Z [36;1mpython3 - <<'PY'[0m
+2026-10-19T03:49:30.4078086Z [36;1mimport json[0m
+2026-10-19T03:49:30.4078679Z [36;1mfrom pathlib import Path[0m
+2026-10-19T03:49:30.4079243Z [36;1mlock = json.loads(Path('support/upstream-lock.json').read_text())[0m
+2026-10-19T03:49:30.4079935Z [36;1mfor section, field, expected in ([0m
+2026-10-19T03:49:30.4080386Z [36;1m    ('kernel','tag','v0.19.0'),[0m
+2026-10-19T03:49:30.4080954Z [36;1m    ('kernel','commit','c4b7ed575b7b32773475b194d2ad41fb6d03765b'),[0m
+2026-10-19T03:49:30.4081502Z [36;1m    ('kernel','toolchain','nightly-2026-07-21'),[0m
+2026-10-19T03:49:30.4082082Z [36;1m    ('hepta','commit','f8c9419df6ddeb36ff8b522a50219981fb8d9345'),[0m
+2026-10-19T03:49:30.4082668Z [36;1m):[0m
+2026-10-19T03:49:30.4083063Z [36;1m    if lock[section][field] != expected:[0m
+2026-10-19T03:49:30.4083566Z [36;1m        raise SystemExit(f'pin mismatch: {section}.{field}')[0m
+2026-10-19T03:49:30.4084051Z [36;1mPY[0m
+2026-10-19T03:49:30.4084908Z [36;1mfor path in libs/os-control/Cargo.toml tests/control/loom/Cargo.toml tests/control/loom/Cargo.lock tests/control/loom/models.rs tests/control/loom/sync.rs tests/control/loom/run-models.py; do[0m
+2026-10-19T03:49:30.4085853Z [36;1m  if [[ ! -f "$path" || -L "$path" ]]; then[0m
+2026-10-19T03:49:30.4086396Z [36;1m    echo "Missing or symlinked mandatory model input: $path" >&2[0m
+2026-10-19T03:49:30.4086882Z [36;1m    exit 1[0m
+2026-10-19T03:49:30.4087250Z [36;1m  fi[0m
+2026-10-19T03:49:30.4087617Z [36;1mdone[0m
+2026-10-19T03:49:30.4328844Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-19T03:49:30.4329389Z env:
+2026-10-19T03:49:30.4329767Z   RUSTUP_TOOLCHAIN: nightly-2026-07-21
+2026-10-19T03:49:30.4330819Z   EXACT_SHA: 1c05412e2b340bbc8cd2b8a3389ae0ecce538991
+2026-10-19T03:49:30.4331372Z   EVENT_BASE: e15ae6a63edb5d4e7c475a001be82111d451b653
+2026-10-19T03:49:30.4331841Z ##[endgroup]
+2026-10-19T03:49:30.4826407Z ##[group]Run set -euo pipefail
+2026-10-19T03:49:30.4826923Z [36;1mset -euo pipefail[0m
+2026-10-19T03:49:30.4827432Z [36;1mrustup toolchain install nightly-2026-07-21 --profile minimal[0m
+2026-10-19T03:49:30.4828169Z [36;1mrustup component add --toolchain nightly-2026-07-21 rustfmt clippy[0m
+2026-10-19T03:49:30.4828754Z [36;1mrustc -Vv[0m
+2026-10-19T03:49:30.4829153Z [36;1mcargo -Vv[0m
+2026-10-19T03:49:30.4873199Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-19T03:49:30.4873743Z env:
+2026-10-19T03:49:30.4874138Z   RUSTUP_TOOLCHAIN: nightly-2026-07-21
+2026-10-19T03:49:30.4875102Z   EXACT_SHA: 1c05412e2b340bbc8cd2b8a3389ae0ecce538991
+2026-10-19T03:49:30.4875624Z   EVENT_BASE: e15ae6a63edb5d4e7c475a001be82111d451b653
+2026-10-19T03:49:30.4876061Z ##[endgroup]
+2026-10-19T03:49:30.5384930Z info: syncing channel updates for nightly-2026-07-21-x86_64-unknown-linux-gnu
+2026-10-19T03:49:30.7690853Z info: latest update on 2026-07-21 for version 1.99.0-nightly (87e5904f5 2026-07-20)
+2026-10-19T03:49:30.7691824Z info: downloading 3 components
+2026-10-19T03:49:39.6370734Z 
+2026-10-19T03:49:39.6446099Z   nightly-2026-07-21-x86_64-unknown-linux-gnu installed - rustc 1.99.0-nightly (87e5904f5 2026-07-20)
+2026-10-19T03:49:39.6446968Z 
+2026-10-19T03:49:39.7198399Z info: downloading 2 components
+2026-10-19T03:49:40.5646176Z rustc 1.99.0-nightly (87e5904f5 2026-07-20)
+2026-10-19T03:49:40.5647700Z binary: rustc
+2026-10-19T03:49:40.5648471Z commit-hash: 87e5904f5eb6398af6b22eac2802c78934260c48
+2026-10-19T03:49:40.5649183Z commit-date: 2026-07-20
+2026-10-19T03:49:40.5649632Z host: x86_64-unknown-linux-gnu
+2026-10-19T03:49:40.5650657Z release: 1.99.0-nightly
+2026-10-19T03:49:40.5651193Z LLVM version: 22.1.8
+2026-10-19T03:49:40.5806292Z cargo 1.99.0-nightly (3efb1f477 2026-07-17)
+2026-10-19T03:49:40.5806778Z release: 1.99.0-nightly
+2026-10-19T03:49:40.5807200Z commit-hash: 3efb1f477e99b42974b982d939fd100303cdf7db
+2026-10-19T03:49:40.5807621Z commit-date: 2026-07-17
+2026-10-19T03:49:40.5808153Z host: x86_64-unknown-linux-gnu
+2026-10-19T03:49:40.5808621Z libgit2: 1.9.4 (sys:0.21.0 vendored)
+2026-10-19T03:49:40.5809190Z libcurl: 8.21.0-DEV (sys:0.4.90+curl-8.21.0 vendored ssl:OpenSSL/3.6.3)
+2026-10-19T03:49:40.5810325Z ssl: OpenSSL 3.6.3 9 Jun 2026
+2026-10-19T03:49:40.5810795Z os: Ubuntu 24.4.0 (noble) [64-bit]
+2026-10-19T03:49:40.5870411Z ##[group]Run set -euo pipefail
+2026-10-19T03:49:40.5870891Z [36;1mset -euo pipefail[0m
+2026-10-19T03:49:40.5871243Z [36;1mdir="$RUNNER_TEMP/a03-loom"[0m
+2026-10-19T03:49:40.5871694Z [36;1mpython3 -I tests/control/loom/run-models.py "$dir"[0m
+2026-10-19T03:49:40.5872151Z [36;1mpython3 - "$dir/results.json" <<'PY'[0m
+2026-10-19T03:49:40.5872531Z [36;1mimport json,sys[0m
+2026-10-19T03:49:40.5872919Z [36;1mv=json.load(open(sys.argv[1]))[0m
+2026-10-19T03:49:40.5873285Z [36;1mmodels=v.get('models')[0m
+2026-10-19T03:49:40.5874271Z [36;1mif (v.get('exit_code') != 0 or v.get('source_unchanged') is not True[0m
+2026-10-19T03:49:40.5874787Z [36;1m    or not isinstance(models,dict) or len(models)<10[0m
+2026-10-19T03:49:40.5875274Z [36;1m    or not all(isinstance(x,int) and x>0 for x in models.values())):[0m
+2026-10-19T03:49:40.5875873Z [36;1m    raise SystemExit('Loom result missing verified source/successful schedules')[0m
+2026-10-19T03:49:40.5876602Z [36;1mprint(f'PASS {len(models)} bounded host Loom models, not IRQ/SMP proof')[0m
+2026-10-19T03:49:40.5877064Z [36;1mPY[0m
+2026-10-19T03:49:40.5922379Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-19T03:49:40.5922879Z env:
+2026-10-19T03:49:40.5923205Z   RUSTUP_TOOLCHAIN: nightly-2026-07-21
+2026-10-19T03:49:40.5923696Z   EXACT_SHA: 1c05412e2b340bbc8cd2b8a3389ae0ecce538991
+2026-10-19T03:49:40.5924142Z   EVENT_BASE: e15ae6a63edb5d4e7c475a001be82111d451b653
+2026-10-19T03:49:40.5924527Z ##[endgroup]
+2026-10-19T03:49:40.6580855Z RUN cargo fmt --manifest-path /tmp/os-control-loom-default_shim-o78eczg9/Cargo.toml -- --check
+2026-10-19T03:49:40.7347912Z RUN cargo test --locked --manifest-path /tmp/os-control-loom-default_shim-o78eczg9/Cargo.toml --test models -- --nocapture --test-threads=1
+2026-10-19T03:49:54.5510552Z     Updating crates.io index
+2026-10-19T03:49:54.5511097Z  Downloading crates ...
+2026-10-19T03:49:54.5511490Z   Downloaded cc v1.8.0
+2026-10-19T03:49:54.5512018Z   Downloaded cfg-if v1.0.5
+2026-10-19T03:49:54.5512450Z   Downloaded aho-corasick v1.1.5
+2026-10-19T03:49:54.5512968Z   Downloaded find-msvc-tools v0.1.14
+2026-10-19T03:49:54.5513389Z   Downloaded matchers v0.2.0
+2026-10-19T03:49:54.5513730Z   Downloaded once_cell v1.21.4
+2026-10-19T03:49:54.5514111Z   Downloaded tracing-log v0.2.0
+2026-10-19T03:49:54.5514475Z   Downloaded shlex v2.0.1
+2026-10-19T03:49:54.5514830Z   Downloaded generator v0.8.11
+2026-10-19T03:49:54.5515154Z   Downloaded memchr v2.8.3
+2026-10-19T03:49:54.5515492Z   Downloaded rustversion v1.0.23
+2026-10-19T03:49:54.5515860Z   Downloaded log v0.4.34
+2026-10-19T03:49:54.5516179Z   Downloaded loom v0.7.2
+2026-10-19T03:49:54.5516513Z   Downloaded sharded-slab v0.1.7
+2026-10-19T03:49:54.5516850Z   Downloaded smallvec v1.16.3
+2026-10-19T03:49:54.5517176Z   Downloaded lazy_static v1.5.1
+2026-10-19T03:49:54.5517618Z   Downloaded nu-ansi-term v0.50.3
+2026-10-19T03:49:54.5517998Z   Downloaded pin-project-lite v0.2.17
+2026-10-19T03:49:54.5518378Z   Downloaded tracing-core v0.1.36
+2026-10-19T03:49:54.5518728Z   Downloaded scoped-tls v1.0.1
+2026-10-19T03:49:54.5519050Z   Downloaded tracing v0.1.44
+2026-10-19T03:49:54.5519447Z   Downloaded thread_local v1.1.10
+2026-10-19T03:49:54.5519925Z   Downloaded tracing-subscriber v0.3.23
+2026-10-19T03:49:54.5520319Z   Downloaded regex-syntax v0.8.11
+2026-10-19T03:49:54.5520677Z   Downloaded regex-automata v0.4.18
+2026-10-19T03:49:54.5521027Z   Downloaded libc v0.2.191
+2026-10-19T03:49:54.5521429Z    Compiling rustversion v1.0.23
+2026-10-19T03:49:54.5521840Z    Compiling shlex v2.0.1
+2026-10-19T03:49:54.5522261Z    Compiling find-msvc-tools v0.1.14
+2026-10-19T03:49:54.5522843Z    Compiling once_cell v1.21.4
+2026-10-19T03:49:54.5523279Z    Compiling regex-syntax v0.8.11
+2026-10-19T03:49:54.5523673Z    Compiling tracing-core v0.1.36
+2026-10-19T03:49:54.5524001Z    Compiling cc v1.8.0
+2026-10-19T03:49:54.5525063Z    Compiling log v0.4.34
+2026-10-19T03:49:54.5525446Z    Compiling libc v0.2.191
+2026-10-19T03:49:54.5525843Z    Compiling cfg-if v1.0.5
+2026-10-19T03:49:54.5526342Z    Compiling lazy_static v1.5.1
+2026-10-19T03:49:54.5526697Z    Compiling pin-project-lite v0.2.17
+2026-10-19T03:49:54.5527042Z    Compiling tracing v0.1.44
+2026-10-19T03:49:54.5527407Z    Compiling sharded-slab v0.1.7
+2026-10-19T03:49:54.5528018Z    Compiling regex-automata v0.4.18
+2026-10-19T03:49:54.5528369Z    Compiling generator v0.8.11
+2026-10-19T03:49:54.5528720Z    Compiling thread_local v1.1.10
+2026-10-19T03:49:54.5529062Z    Compiling tracing-log v0.2.0
+2026-10-19T03:49:54.5529448Z    Compiling nu-ansi-term v0.50.3
+2026-10-19T03:49:54.5530742Z    Compiling smallvec v1.16.3
+2026-10-19T03:49:54.5531180Z    Compiling scoped-tls v1.0.1
+2026-10-19T03:49:54.5531531Z    Compiling matchers v0.2.0
+2026-10-19T03:49:54.5531878Z    Compiling tracing-subscriber v0.3.23
+2026-10-19T03:49:54.5532409Z    Compiling loom v0.7.2
+2026-10-19T03:49:54.5532882Z    Compiling os-control-loom v0.0.0 (/tmp/os-control-loom-default_shim-o78eczg9)
+2026-10-19T03:49:54.5533595Z     Finished `test` profile [unoptimized + debuginfo] target(s) in 7.42s
+2026-10-19T03:49:54.5534184Z      Running models.rs (target/debug/deps/models-2d7967919b0ccd10)
+2026-10-19T03:49:54.5534460Z 
+2026-10-19T03:49:54.5534616Z running 13 tests
+2026-10-19T03:49:54.5535356Z test history_loss_and_callback_fence ... MODEL history_loss_and_callback_fence: schedules=64 max_threads=4 preemption_bound=3 max_branches=10000 max_permutations=none max_duration=none
+2026-10-19T03:49:54.5536170Z ok
+2026-10-19T03:49:54.5537309Z test malformed_callback_reconcile_and_retry ... MODEL malformed_callback_reconcile_and_retry: schedules=2442 max_threads=4 preemption_bound=3 max_branches=10000 max_permutations=none max_duration=none
+2026-10-19T03:49:54.5538528Z ok
+2026-10-19T03:49:54.5539317Z test management_revoke_and_native_commit_share_owner_lock ... MODEL management_revoke_and_native_commit_share_owner_lock: schedules=14 max_threads=4 preemption_bound=3 max_branches=10000 max_permutations=none max_duration=none
+2026-10-19T03:49:54.5540490Z ok
+2026-10-19T03:49:54.5541369Z test native_metadata_compatibility_and_invalidation_share_owner ... MODEL native_metadata_compatibility_and_invalidation_share_owner: schedules=230 max_threads=4 preemption_bound=3 max_branches=10000 max_permutations=none max_duration=none
+2026-10-19T03:49:54.5542228Z ok
+2026-10-19T03:49:54.5542980Z test native_typed_owner_same_token_effect_once ... MODEL native_typed_owner_same_token_effect_once: schedules=52 max_threads=4 preemption_bound=3 max_branches=10000 max_permutations=none max_duration=none
+2026-10-19T03:49:54.5543743Z ok
+2026-10-19T03:49:54.5544519Z test overlapping_retirements_revalidate_smaller_prefix ... MODEL overlapping_retirements_revalidate_smaller_prefix: schedules=5161 max_threads=4 preemption_bound=3 max_branches=10000 max_permutations=none max_duration=none
+2026-10-19T03:49:54.5545414Z ok
+2026-10-19T03:49:54.5546057Z test publish_and_observe_never_tear ... MODEL publish_and_observe_never_tear: schedules=92 max_threads=4 preemption_bound=3 max_branches=10000 max_permutations=none max_duration=none
+2026-10-19T03:49:54.5546859Z ok
+2026-10-19T03:49:54.5547643Z test reservation_loss_and_query_revalidate_admission ... MODEL reservation_loss_and_query_revalidate_admission: schedules=14302 max_threads=4 preemption_bound=3 max_branches=10000 max_permutations=none max_duration=none
+2026-10-19T03:49:54.5548462Z ok
+2026-10-19T03:49:54.5549174Z test retire_and_query_linearize ... MODEL retire_and_query_linearize: schedules=32 max_threads=4 preemption_bound=3 max_branches=10000 max_permutations=none max_duration=none
+2026-10-19T03:49:54.5550504Z ok
+2026-10-19T03:49:54.5551196Z test retire_execute_loss_threeway ... MODEL retire_execute_loss_threeway: schedules=3188 max_threads=4 preemption_bound=3 max_branches=10000 max_permutations=none max_duration=none
+2026-10-19T03:49:54.5551900Z ok
+2026-10-19T03:49:54.5552539Z test revoke_and_commit_linearize ... MODEL revoke_and_commit_linearize: schedules=22 max_threads=4 preemption_bound=3 max_branches=10000 max_permutations=none max_duration=none
+2026-10-19T03:49:54.5553578Z ok
+2026-10-19T03:49:54.5554257Z test same_d_reservation_and_effect_once ... MODEL same_d_reservation_and_effect_once: schedules=916 max_threads=4 preemption_bound=3 max_branches=10000 max_permutations=none max_duration=none
+2026-10-19T03:49:54.5555057Z ok
+2026-10-19T03:49:54.5555758Z test two_deliveries_same_resource_cas ... MODEL two_deliveries_same_resource_cas: schedules=160 max_threads=4 preemption_bound=3 max_branches=10000 max_permutations=none max_duration=none
+2026-10-19T03:49:54.5556505Z ok
+2026-10-19T03:49:54.5556646Z 
+2026-10-19T03:49:54.5556947Z test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.37s
+2026-10-19T03:49:54.5557389Z 
+2026-10-19T03:49:54.5557907Z RUN cargo clippy --locked --manifest-path /tmp/os-control-loom-default_shim-o78eczg9/Cargo.toml --test models -- -D warnings
+2026-10-19T03:49:57.7606253Z     Checking once_cell v1.21.4
+2026-10-19T03:49:57.7606698Z     Checking log v0.4.34
+2026-10-19T03:49:57.7607068Z     Checking cfg-if v1.0.5
+2026-10-19T03:49:57.7607587Z     Checking regex-syntax v0.8.11
+2026-10-19T03:49:57.7607975Z     Checking lazy_static v1.5.1
+2026-10-19T03:49:57.7608357Z     Checking pin-project-lite v0.2.17
+2026-10-19T03:49:57.7608737Z     Checking sharded-slab v0.1.7
+2026-10-19T03:49:57.7609069Z     Checking libc v0.2.191
+2026-10-19T03:49:57.7609431Z     Checking tracing-core v0.1.36
+2026-10-19T03:49:57.7609930Z     Checking tracing v0.1.44
+2026-10-19T03:49:57.7610413Z     Checking tracing-log v0.2.0
+2026-10-19T03:49:57.7610763Z     Checking thread_local v1.1.10
+2026-10-19T03:49:57.7611106Z     Checking smallvec v1.16.3
+2026-10-19T03:49:57.7611511Z     Checking nu-ansi-term v0.50.3
+2026-10-19T03:49:57.7611876Z     Checking scoped-tls v1.0.1
+2026-10-19T03:49:57.7612219Z     Checking regex-automata v0.4.18
+2026-10-19T03:49:57.7612579Z     Checking generator v0.8.11
+2026-10-19T03:49:57.7612928Z     Checking matchers v0.2.0
+2026-10-19T03:49:57.7613279Z     Checking tracing-subscriber v0.3.23
+2026-10-19T03:49:57.7613659Z     Checking loom v0.7.2
+2026-10-19T03:49:57.7614096Z     Checking os-control-loom v0.0.0 (/tmp/os-control-loom-default_shim-o78eczg9)
+2026-10-19T03:49:57.7614698Z     Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.17s
+2026-10-19T03:49:57.7819123Z RUN cargo fmt --manifest-path /tmp/os-control-loom-public_backend-sgr9nser/Cargo.toml -- --check
+2026-10-19T03:49:57.8582863Z RUN cargo test --locked --manifest-path /tmp/os-control-loom-public_backend-sgr9nser/Cargo.toml --test models_public -- --nocapture --test-threads=1
+2026-10-19T03:50:04.5463682Z    Compiling rustversion v1.0.23
+2026-10-19T03:50:04.5464159Z    Compiling find-msvc-tools v0.1.14
+2026-10-19T03:50:04.5464595Z    Compiling shlex v2.0.1
+2026-10-19T03:50:04.5464973Z    Compiling once_cell v1.21.4
+2026-10-19T03:50:04.5465320Z    Compiling tracing-core v0.1.36
+2026-10-19T03:50:04.5465824Z    Compiling cc v1.8.0
+2026-10-19T03:50:04.5466293Z    Compiling cfg-if v1.0.5
+2026-10-19T03:50:04.5466715Z    Compiling log v0.4.34
+2026-10-19T03:50:04.5467143Z    Compiling libc v0.2.191
+2026-10-19T03:50:04.5467563Z    Compiling regex-syntax v0.8.11
+2026-10-19T03:50:04.5468052Z    Compiling lazy_static v1.5.1
+2026-10-19T03:50:04.5468556Z    Compiling pin-project-lite v0.2.17
+2026-10-19T03:50:04.5469084Z    Compiling sharded-slab v0.1.7
+2026-10-19T03:50:04.5469551Z    Compiling tracing v0.1.44
+2026-10-19T03:50:04.5470132Z    Compiling tracing-log v0.2.0
+2026-10-19T03:50:04.5470599Z    Compiling thread_local v1.1.10
+2026-10-19T03:50:04.5471182Z    Compiling smallvec v1.16.3
+2026-10-19T03:50:04.5471760Z    Compiling nu-ansi-term v0.50.3
+2026-10-19T03:50:04.5472313Z    Compiling generator v0.8.11
+2026-10-19T03:50:04.5472778Z    Compiling regex-automata v0.4.18
+2026-10-19T03:50:04.5473259Z    Compiling scoped-tls v1.0.1
+2026-10-19T03:50:04.5473786Z    Compiling matchers v0.2.0
+2026-10-19T03:50:04.5474730Z    Compiling tracing-subscriber v0.3.23
+2026-10-19T03:50:04.5475276Z    Compiling loom v0.7.2
+2026-10-19T03:50:04.5476171Z    Compiling os-control-loom v0.0.0 (/tmp/os-control-loom-public_backend-sgr9nser)
+2026-10-19T03:50:04.5477100Z     Finished `test` profile [unoptimized + debuginfo] target(s) in 6.58s
+2026-10-19T03:50:04.5478071Z      Running models_public.rs (target/debug/deps/models_public-a75356c0285b8e3a)
+2026-10-19T03:50:04.5478567Z 
+2026-10-19T03:50:04.5478779Z running 6 tests
+2026-10-19T03:50:04.5480255Z test public_backend_history_loss_and_execution_fence ... MODEL public_backend_history_loss_and_execution_fence: schedules=64 max_threads=4 preemption_bound=3 max_branches=10000 max_permutations=none max_duration=none
+2026-10-19T03:50:04.5481564Z ok
+2026-10-19T03:50:04.5482729Z test public_backend_publish_and_observe_never_tear ... MODEL public_backend_publish_and_observe_never_tear: schedules=147 max_threads=4 preemption_bound=3 max_branches=10000 max_permutations=none max_duration=none
+2026-10-19T03:50:04.5483912Z ok
+2026-10-19T03:50:04.5485082Z test public_backend_retire_and_query_linearize ... MODEL public_backend_retire_and_query_linearize: schedules=47 max_threads=4 preemption_bound=3 max_branches=10000 max_permutations=none max_duration=none
+2026-10-19T03:50:04.5486366Z ok
+2026-10-19T03:50:04.5487573Z test public_backend_revoke_and_commit_linearize ... MODEL public_backend_revoke_and_commit_linearize: schedules=16 max_threads=4 preemption_bound=3 max_branches=10000 max_permutations=none max_duration=none
+2026-10-19T03:50:04.5488888Z ok
+2026-10-19T03:50:04.5491098Z test public_backend_same_d_reservation_and_effect_once ... MODEL public_backend_same_d_reservation_and_effect_once: schedules=252 max_threads=4 preemption_bound=3 max_branches=10000 max_permutations=none max_duration=none
+2026-10-19T03:50:04.5492293Z ok
+2026-10-19T03:50:04.5493344Z test public_backend_same_token_effect_once ... MODEL public_backend_same_token_effect_once: schedules=52 max_threads=4 preemption_bound=3 max_branches=10000 max_permutations=none max_duration=none
+2026-10-19T03:50:04.5494475Z ok
+2026-10-19T03:50:04.5494645Z 
+2026-10-19T03:50:04.5495061Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+2026-10-19T03:50:04.5495579Z 
+2026-10-19T03:50:04.5496407Z RUN cargo clippy --locked --manifest-path /tmp/os-control-loom-public_backend-sgr9nser/Cargo.toml --test models_public -- -D warnings
+2026-10-19T03:50:07.6386149Z     Checking once_cell v1.21.4
+2026-10-19T03:50:07.6386628Z     Checking regex-syntax v0.8.11
+2026-10-19T03:50:07.6387094Z     Checking cfg-if v1.0.5
+2026-10-19T03:50:07.6387428Z     Checking log v0.4.34
+2026-10-19T03:50:07.6387822Z     Checking pin-project-lite v0.2.17
+2026-10-19T03:50:07.6388204Z     Checking lazy_static v1.5.1
+2026-10-19T03:50:07.6388554Z     Checking sharded-slab v0.1.7
+2026-10-19T03:50:07.6388946Z     Checking libc v0.2.191
+2026-10-19T03:50:07.6389276Z     Checking tracing-core v0.1.36
+2026-10-19T03:50:07.6389647Z     Checking tracing v0.1.44
+2026-10-19T03:50:07.6390619Z     Checking tracing-log v0.2.0
+2026-10-19T03:50:07.6391114Z     Checking thread_local v1.1.10
+2026-10-19T03:50:07.6391627Z     Checking smallvec v1.16.3
+2026-10-19T03:50:07.6392084Z     Checking nu-ansi-term v0.50.3
+2026-10-19T03:50:07.6392610Z     Checking scoped-tls v1.0.1
+2026-10-19T03:50:07.6393160Z     Checking regex-automata v0.4.18
+2026-10-19T03:50:07.6393684Z     Checking generator v0.8.11
+2026-10-19T03:50:07.6394263Z     Checking matchers v0.2.0
+2026-10-19T03:50:07.6394772Z     Checking tracing-subscriber v0.3.23
+2026-10-19T03:50:07.6395316Z     Checking loom v0.7.2
+2026-10-19T03:50:07.6396050Z     Checking os-control-loom v0.0.0 (/tmp/os-control-loom-public_backend-sgr9nser)
+2026-10-19T03:50:07.6396928Z     Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.05s
+2026-10-19T03:50:07.6552939Z Evidence: /home/runner/work/_temp/a03-loom; source_unchanged=True; exit=0
+2026-10-19T03:50:07.6796738Z PASS 19 bounded host Loom models, not IRQ/SMP proof
+2026-10-19T03:50:07.6875317Z ##[group]Run set -euo pipefail
+2026-10-19T03:50:07.6875779Z [36;1mset -euo pipefail[0m
+2026-10-19T03:50:07.6876182Z [36;1mdir=tests/control/lock_alloc[0m
+2026-10-19T03:50:07.6876592Z [36;1mchecks=(run-checks.py fixture.rs sync_shim.rs)[0m
+2026-10-19T03:50:07.6877005Z [36;1mpresent=0[0m
+2026-10-19T03:50:07.6877322Z [36;1mfor file in "${checks[@]}"; do[0m
+2026-10-19T03:50:07.6877802Z [36;1m  if [[ -e "$dir/$file" || -L "$dir/$file" ]]; then present=$((present+1)); fi[0m
+2026-10-19T03:50:07.6878243Z [36;1mdone[0m
+2026-10-19T03:50:07.6878557Z [36;1mif (( present == 0 )); then[0m
+2026-10-19T03:50:07.6879042Z [36;1m  if [[ "$GITHUB_EVENT_NAME" != workflow_dispatch ]]; then[0m
+2026-10-19T03:50:07.6879678Z [36;1m    if [[ -z "$EVENT_BASE" || "$EVENT_BASE" =~ ^0+$ ]] || ! git cat-file -e "$EVENT_BASE^{commit}" 2>/dev/null; then[0m
+2026-10-19T03:50:07.6880489Z [36;1m      echo 'Cannot prove allocator probe absence against event base' >&2[0m
+2026-10-19T03:50:07.6881071Z [36;1m      exit 1[0m
+2026-10-19T03:50:07.6881393Z [36;1m    fi[0m
+2026-10-19T03:50:07.6881709Z [36;1m    for file in "${checks[@]}"; do[0m
+2026-10-19T03:50:07.6882136Z [36;1m      if git cat-file -e "$EVENT_BASE:$dir/$file" 2>/dev/null; then[0m
+2026-10-19T03:50:07.6882636Z [36;1m        echo "Allocator probe removed: $file" >&2[0m
+2026-10-19T03:50:07.6883043Z [36;1m        exit 1[0m
+2026-10-19T03:50:07.6883367Z [36;1m      fi[0m
+2026-10-19T03:50:07.6883700Z [36;1m    done[0m
+2026-10-19T03:50:07.6883968Z [36;1m  fi[0m
+2026-10-19T03:50:07.6884332Z [36;1m  echo 'has_probe=false' >> "$GITHUB_OUTPUT"[0m
+2026-10-19T03:50:07.6884845Z [36;1m  echo 'BOOTSTRAP ONLY: native lock allocation test absent, not verified'[0m
+2026-10-19T03:50:07.6885294Z [36;1melse[0m
+2026-10-19T03:50:07.6885621Z [36;1m  for file in "${checks[@]}"; do[0m
+2026-10-19T03:50:07.6886031Z [36;1m    if [[ ! -f "$dir/$file" || -L "$dir/$file" ]]; then[0m
+2026-10-19T03:50:07.6886524Z [36;1m      echo "Partial or symlinked allocator probe: $file" >&2[0m
+2026-10-19T03:50:07.6886998Z [36;1m      exit 1[0m
+2026-10-19T03:50:07.6887295Z [36;1m    fi[0m
+2026-10-19T03:50:07.6887585Z [36;1m  done[0m
+2026-10-19T03:50:07.6887911Z [36;1m  echo 'has_probe=true' >> "$GITHUB_OUTPUT"[0m
+2026-10-19T03:50:07.6888300Z [36;1mfi[0m
+2026-10-19T03:50:07.6930327Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-19T03:50:07.6930777Z env:
+2026-10-19T03:50:07.6931103Z   RUSTUP_TOOLCHAIN: nightly-2026-07-21
+2026-10-19T03:50:07.6931562Z   EXACT_SHA: 1c05412e2b340bbc8cd2b8a3389ae0ecce538991
+2026-10-19T03:50:07.6931996Z   EVENT_BASE: e15ae6a63edb5d4e7c475a001be82111d451b653
+2026-10-19T03:50:07.6932370Z ##[endgroup]
+2026-10-19T03:50:07.7079543Z ##[group]Run set -euo pipefail
+2026-10-19T03:50:07.7080164Z [36;1mset -euo pipefail[0m
+2026-10-19T03:50:07.7080607Z [36;1mdir="$RUNNER_TEMP/a03-lock-alloc"[0m
+2026-10-19T03:50:07.7081138Z [36;1mpython3 -I tests/control/lock_alloc/run-checks.py "$dir"[0m
+2026-10-19T03:50:07.7081584Z [36;1mpython3 - "$dir/execution.json" <<'PY'[0m
+2026-10-19T03:50:07.7082010Z [36;1mimport json,sys[0m
+2026-10-19T03:50:07.7082352Z [36;1mv=json.load(open(sys.argv[1]))[0m
+2026-10-19T03:50:07.7082831Z [36;1mif (v.get('passed') is not True or v.get('current_check_executed') is not True[0m
+2026-10-19T03:50:07.7083365Z [36;1m    or v.get('result') != 'current_zero'[0m
+2026-10-19T03:50:07.7083823Z [36;1m    or v.get('all_probes_used_identical_harness_bytes') is not True[0m
+2026-10-19T03:50:07.7084411Z [36;1m    or v.get('harness_fixtures_unchanged_during_execution') is not True):[0m
+2026-10-19T03:50:07.7085045Z [36;1m    raise SystemExit('Locked allocator model failed exact-source acceptance')[0m
+2026-10-19T03:50:07.7085712Z [36;1mprint('PASS current native model lock allocation guard; not kernel IRQ proof')[0m
+2026-10-19T03:50:07.7086177Z [36;1mPY[0m
+2026-10-19T03:50:07.7123478Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-19T03:50:07.7123888Z env:
+2026-10-19T03:50:07.7124279Z   RUSTUP_TOOLCHAIN: nightly-2026-07-21
+2026-10-19T03:50:07.7124839Z   EXACT_SHA: 1c05412e2b340bbc8cd2b8a3389ae0ecce538991
+2026-10-19T03:50:07.7125299Z   EVENT_BASE: e15ae6a63edb5d4e7c475a001be82111d451b653
+2026-10-19T03:50:07.7125731Z ##[endgroup]
+2026-10-19T03:50:08.9984726Z {"passed": true, "result": "current_zero", "current_check_executed": true, "report": "/home/runner/work/_temp/a03-lock-alloc/execution.json"}
+2026-10-19T03:50:09.0234976Z PASS current native model lock allocation guard; not kernel IRQ proof
+2026-10-19T03:50:09.0360723Z ##[group]Run actions/upload-artifact@v4
+2026-10-19T03:50:09.0361110Z with:
+2026-10-19T03:50:09.0361414Z   name: a03-native-models-39196471043
+2026-10-19T03:50:09.0361820Z   if-no-files-found: warn
+2026-10-19T03:50:09.0362272Z   path: /home/runner/work/_temp/a03-loom/
+/home/runner/work/_temp/a03-lock-alloc/
+
+2026-10-19T03:50:09.0362725Z   compression-level: 6
+2026-10-19T03:50:09.0363032Z   overwrite: false
+2026-10-19T03:50:09.0363324Z   include-hidden-files: false
+2026-10-19T03:50:09.0363658Z env:
+2026-10-19T03:50:09.0363964Z   RUSTUP_TOOLCHAIN: nightly-2026-07-21
+2026-10-19T03:50:09.0364347Z   EXACT_SHA: 1c05412e2b340bbc8cd2b8a3389ae0ecce538991
+2026-10-19T03:50:09.0364813Z   EVENT_BASE: e15ae6a63edb5d4e7c475a001be82111d451b653
+2026-10-19T03:50:09.0365185Z ##[endgroup]
+2026-10-19T03:50:09.2031458Z (node:3508) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-19T03:50:09.2032780Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-19T03:50:09.2127215Z Multiple search paths detected. Calculating the least common ancestor of all paths
+2026-10-19T03:50:09.2131090Z The least common ancestor is /home/runner/work/_temp. This will be the root directory of the artifact
+2026-10-19T03:50:09.2132312Z With the provided path, there will be 17 files uploaded
+2026-10-19T03:50:09.2134411Z Artifact name is valid!
+2026-10-19T03:50:09.2135091Z Root directory input is valid!
+2026-10-19T03:50:09.5925508Z Beginning upload of artifact content to blob storage
+2026-10-19T03:50:09.6285261Z (node:3508) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-19T03:50:09.9543907Z Uploaded bytes 16550
+2026-10-19T03:50:10.0274821Z Finished uploading artifact content to blob storage!
+2026-10-19T03:50:10.0275746Z SHA256 digest of uploaded artifact zip is ed32e27f320910fbd5f55c25aae9266095fff80a7b57100565ed02d28d2f5757
+2026-10-19T03:50:10.0283615Z Finalizing artifact upload
+2026-10-19T03:50:10.3413782Z Artifact a03-native-models-39196471043.zip successfully finalized. Artifact ID 12162068133
+2026-10-19T03:50:10.3414974Z Artifact a03-native-models-39196471043 has been successfully uploaded! Final size is 16550 bytes. Artifact ID is 12162068133
+2026-10-19T03:50:10.3421313Z Artifact download URL: https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196471043/artifacts/12162068133
+2026-10-19T03:50:10.3626022Z Post job cleanup.
+2026-10-19T03:50:10.4455789Z [command]/usr/bin/git version
+2026-10-19T03:50:10.4496317Z git version 2.55.0
+2026-10-19T03:50:10.4532732Z Temporarily overriding HOME='/home/runner/work/_temp/8ad5ef7e-c286-4b97-b74c-4c83f969bbcb' before making global git config changes
+2026-10-19T03:50:10.4534188Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-19T03:50:10.4537467Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop
+2026-10-19T03:50:10.4576910Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-19T03:50:10.4610134Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-19T03:50:10.4834794Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-19T03:50:10.4864463Z http.https://github.com/.extraheader
+2026-10-19T03:50:10.4875997Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-19T03:50:10.4941259Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-19T03:50:10.5151823Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-19T03:50:10.5198974Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-19T03:50:10.5555395Z Cleaning up orphan processes
+2026-10-19T03:50:10.5814080Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

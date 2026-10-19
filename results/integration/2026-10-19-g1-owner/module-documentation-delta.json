@@ -1,0 +1,3250 @@
+{
+  "schema": "r10.module-documentation-delta.v1",
+  "reviewed_at_utc": "2026-10-19T04:34:45.821372+00:00",
+  "source_commit": "1ca738c6310c50565804c2ea2a5d413a74bbe80a",
+  "source_tree": "2b873aa43445c8a02351f5900074a38c6fa4820d",
+  "main_base": "e15ae6a63edb5d4e7c475a001be82111d451b653",
+  "initial_historical_base": "0c2bf0fc1ba473325a0266c7bd476b1ddbf66383",
+  "documentation_overlay": {
+    "tracked_paths": [
+      "docs/INDEX.md",
+      "docs/STATUS.md"
+    ],
+    "new_results_prefix": "results/integration/2026-10-19-g1-owner/",
+    "meaning": "Explicit local delivery files over the immutable product source; a later docs commit/publication receipt binds these same bytes. This does not claim all overlays already exist in main."
+  },
+  "historical_baseline": {
+    "path": "results/integration/2026-10-18-objective-history/module-documentation-review.json",
+    "bytes": 56412,
+    "sha256": "ad9627bc6bcfdffa5baec8550796c8335aedc44da3ceafd03dec9aa06c016ede",
+    "reviewed_commit": "207ff9da7dac83c57b0cbae46c4b03ecfba3baa9",
+    "reviewed_tree": "8d5de807c41090e3d987764daec9c235ebd022a1",
+    "recorded_at_utc": "2026-10-18T10:08:04.407896+00:00",
+    "historical_summary": {
+      "module_count": 11,
+      "index_local_links": 53,
+      "index_local_missing": 0,
+      "index_external_links": 5,
+      "one_hop_manuals": 47,
+      "nested_local_links_checked": 225,
+      "nested_local_missing": 0,
+      "coverage_verdict": "All 11 modules have concrete accessible development/technical/validation entry points, with shared contracts and a material external-candidate exception for A04. This is documentation coverage, not module completion.",
+      "local_candidate_exception": "A04 three linked handbooks are absent from the reviewed tree and exist only at fixed candidate25c681d; PR8 remains open draft and unmerged at the API observation.",
+      "new_runtime_claims": 0
+    },
+    "historical_review_rerun": false,
+    "full_manual_content_review_repeated": false
+  },
+  "current_scope": {
+    "module_rows_checked": 11,
+    "index_local_targets_checked": 71,
+    "index_missing": 0,
+    "new_or_modified_manuals_substantively_read": 15,
+    "their_one_hop_local_targets_checked": 105,
+    "one_hop_missing": 0,
+    "historical_materials_byte_compared": 57,
+    "historical_material_status_counts": {
+      "unchanged": 45,
+      "changed": 12,
+      "missing": 0
+    },
+    "root_README_bytes": 0,
+    "cargo_invocations": 0,
+    "qemu_invocations": 0,
+    "module_runtime_tests": 0,
+    "new_runtime_qualification": false
+  },
+  "module_rows": [
+    {
+      "id": "A00",
+      "links": [
+        {
+          "from": "docs/INDEX.md",
+          "label": "PLAN",
+          "href": "agents/PLAN.md",
+          "scope": "local",
+          "path": "docs/agents/PLAN.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 6537,
+          "sha256": "f475400608032b476b6e651114e3c4d5b2646c94bccea2cf5fdc38c26bbc37ad"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "STATUS",
+          "href": "STATUS.md",
+          "scope": "local",
+          "path": "docs/STATUS.md",
+          "exists": true,
+          "origin": "uncommitted_delivery_overlay",
+          "bytes": 146309,
+          "sha256": "d638028e4b66c38b19276f415b5ab93abf92ed01839df8b1202ae14bded46408"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "ARCHITECTURE",
+          "href": "ARCHITECTURE.md",
+          "scope": "local",
+          "path": "docs/ARCHITECTURE.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 8056,
+          "sha256": "0a28073b9e3036f669c887ea80052a9aa6149f5ba7a4029de6c1720613485a4b"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "DECISIONS",
+          "href": "DECISIONS.md",
+          "scope": "local",
+          "path": "docs/DECISIONS.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 3195,
+          "sha256": "09a789fded953d0b63d2a0a4ac0e8ee45dd200950fe7f10eeb612639d6dece63"
+        }
+      ]
+    },
+    {
+      "id": "A01",
+      "links": [
+        {
+          "from": "docs/INDEX.md",
+          "label": "构建手册",
+          "href": "../support/build/README.md",
+          "scope": "local",
+          "path": "support/build/README.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 11996,
+          "sha256": "1ab023f69259ca93a36a3f5db9abdef4c8d1413ec3c74d74e28e5aba7e9b3c22"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "内核测试入口",
+          "href": "../support/build/ktest/README.md",
+          "scope": "local",
+          "path": "support/build/ktest/README.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 4682,
+          "sha256": "592a7eca726231ef18da1430c1cf0620b6813ad4de883046c1bfa7913019d5cd"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "G1-a 本地依赖与锁",
+          "href": "ASTERINAS_CPU_OWNER_G1A.md",
+          "scope": "local",
+          "path": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 12562,
+          "sha256": "fadc87a8ae04dad9072d0f6da396304da2479b7f39cfaaee18b70984e1cd717e"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "R10 实际证据",
+          "href": "../results/integration/2026-10-19-g1-owner/README.md",
+          "scope": "local",
+          "path": "results/integration/2026-10-19-g1-owner/README.md",
+          "exists": true,
+          "origin": "uncommitted_delivery_overlay",
+          "bytes": 67806,
+          "sha256": "2268d3923f43665e1fee612104d8d00daa55fb5563a1c15c85df071b2fce2994"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "固定来源",
+          "href": "../support/upstream-lock.json",
+          "scope": "local",
+          "path": "support/upstream-lock.json",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 4657,
+          "sha256": "beb48f48a77101e5456ca78aa98d3c0f4c3a3f11ca29f422e2d576ff837cc592"
+        }
+      ]
+    },
+    {
+      "id": "A02",
+      "links": [
+        {
+          "from": "docs/INDEX.md",
+          "label": "验收收敛与实际命令",
+          "href": "../tests/abi/A02_REVIEW_CLOSURE_2026-10-17.md",
+          "scope": "local",
+          "path": "tests/abi/A02_REVIEW_CLOSURE_2026-10-17.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 7168,
+          "sha256": "d988512099957b3d2e102382acc4e9101a4d1ae3f929e9a1e0fa42d7b6a6ee22"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "证据完整性",
+          "href": "../tests/abi/A02_EVIDENCE_INTEGRITY_2026-10-17.md",
+          "scope": "local",
+          "path": "tests/abi/A02_EVIDENCE_INTEGRITY_2026-10-17.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 6279,
+          "sha256": "207c2cc4d702a95d9e16a2bd8805f3dec4b67e1ad19a6468411bf8bc4ed9f942"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "2026-10-18 pinned 验收",
+          "href": "../results/integration/2026-10-18-audit-followthrough/README.md#a02",
+          "scope": "local",
+          "path": "results/integration/2026-10-18-audit-followthrough/README.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 17989,
+          "sha256": "240fa5082c4dd0d46d8eb40815307a4933946a3fb36ca34ea44dff0a4490593b",
+          "fragment": "a02",
+          "fragment_check": "not_part_of_this_target_presence_gate"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "NATIVE_ABI",
+          "href": "NATIVE_ABI.md",
+          "scope": "local",
+          "path": "docs/NATIVE_ABI.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 16969,
+          "sha256": "796ed1f10d2b51067d9b386d29288235656fc91deaef5febcea52c786a7cdd93"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "codec 源码",
+          "href": "../libs/os-abi/src/lib.rs",
+          "scope": "local",
+          "path": "libs/os-abi/src/lib.rs",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 47272,
+          "sha256": "826e6533bd7ed2f6527db819e9f0400867ca1e607cd0581a03970444c3e4b60f"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "独立 host 修正验证",
+          "href": "../results/integration/2026-10-19-g1-owner/g1-ci-host-correction/README.md",
+          "scope": "local",
+          "path": "results/integration/2026-10-19-g1-owner/g1-ci-host-correction/README.md",
+          "exists": true,
+          "origin": "uncommitted_delivery_overlay",
+          "bytes": 5394,
+          "sha256": "b0b962fc52b02eda905784c476e00e5514a60f5029282ffc135052b85afef349"
+        }
+      ]
+    },
+    {
+      "id": "A03",
+      "links": [
+        {
+          "from": "docs/INDEX.md",
+          "label": "验证手册",
+          "href": "../tests/control/VALIDATION.md",
+          "scope": "local",
+          "path": "tests/control/VALIDATION.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 10066,
+          "sha256": "95a3283e6c497764926102dc79f56f5e9abd915506e33a45263e511287559a7f"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "运行脚本",
+          "href": "../tests/control/run-validation.sh",
+          "scope": "local",
+          "path": "tests/control/run-validation.sh",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 2521,
+          "sha256": "5aa862a211d226cd5cfc2007a640d52bd20a263652a94dd149d7c2121fde2023"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "2026-10-18 双后端与证据复核",
+          "href": "../results/integration/2026-10-18-audit-followthrough/README.md#a03",
+          "scope": "local",
+          "path": "results/integration/2026-10-18-audit-followthrough/README.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 17989,
+          "sha256": "240fa5082c4dd0d46d8eb40815307a4933946a3fb36ca34ea44dff0a4490593b",
+          "fragment": "a03",
+          "fragment_check": "not_part_of_this_target_presence_gate"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "API_CONTRACT",
+          "href": "../libs/os-control/API_CONTRACT.md",
+          "scope": "local",
+          "path": "libs/os-control/API_CONTRACT.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 56355,
+          "sha256": "68689e929de4a7709d7107a2991704e3c6e268d5855d48962c290f2acc0d0f54"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "本轮 host 原始验证",
+          "href": "../results/integration/2026-10-19-g1-owner/g1-ci-host-correction/README.md",
+          "scope": "local",
+          "path": "results/integration/2026-10-19-g1-owner/g1-ci-host-correction/README.md",
+          "exists": true,
+          "origin": "uncommitted_delivery_overlay",
+          "bytes": 5394,
+          "sha256": "b0b962fc52b02eda905784c476e00e5514a60f5029282ffc135052b85afef349"
+        }
+      ]
+    },
+    {
+      "id": "A04",
+      "links": [
+        {
+          "from": "docs/INDEX.md",
+          "label": "构建、验证与主干交接",
+          "href": "agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+          "scope": "local",
+          "path": "docs/agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 16178,
+          "sha256": "92090675495144416c2b5625d918146a45def4bd27925624fd436343e0d35ec8"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "固定候选开发手册",
+          "href": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/25c681d944e4efa92f2772cf773e03ae811bc345/tests/workloads/linux/README.md",
+          "scope": "external_reference_not_refetched"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "rootfs 手册",
+          "href": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/25c681d944e4efa92f2772cf773e03ae811bc345/support/rootfs/README.md",
+          "scope": "external_reference_not_refetched"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "LINUX_COMPATIBILITY",
+          "href": "LINUX_COMPATIBILITY.md",
+          "scope": "local",
+          "path": "docs/LINUX_COMPATIBILITY.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 3673,
+          "sha256": "15287db6dd59d0c7d0afb0e59367b9ba73b47532d4e1a5f228f21ba22d586e2e"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "候选缺口",
+          "href": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/25c681d944e4efa92f2772cf773e03ae811bc345/compat/linux/GAPS.md",
+          "scope": "external_reference_not_refetched"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "Draft #8",
+          "href": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/8",
+          "scope": "external_reference_not_refetched"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "当前原 API 快照",
+          "href": "../results/integration/2026-10-19-g1-owner/source-publication/upstream-and-a04-current-api.json",
+          "scope": "local",
+          "path": "results/integration/2026-10-19-g1-owner/source-publication/upstream-and-a04-current-api.json",
+          "exists": true,
+          "origin": "uncommitted_delivery_overlay",
+          "bytes": 54761,
+          "sha256": "0cdf958938f42781df8716e1a1c20e4a262aee2293ebfdeb8cc66c83cc475976"
+        }
+      ]
+    },
+    {
+      "id": "A05",
+      "links": [
+        {
+          "from": "docs/INDEX.md",
+          "label": "实现、构建与调试手册",
+          "href": "agents/handoffs/A05_KERNEL_CONTROL.md",
+          "scope": "local",
+          "path": "docs/agents/handoffs/A05_KERNEL_CONTROL.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 8119,
+          "sha256": "a2fcedab3cc7d26c6ed2fde521ce4864d566cd1b36bdd537f46abf6ad2090717"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "R10 普通产品 QueryAbi 回归手册",
+          "href": "../tests/kernel/control/README.md",
+          "scope": "local",
+          "path": "tests/kernel/control/README.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 6184,
+          "sha256": "d33f83c5c134d0bfa9cd1a5d9c4c5445bee4d6700703b735983926891b8471b8"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "NATIVE_ABI",
+          "href": "NATIVE_ABI.md",
+          "scope": "local",
+          "path": "docs/NATIVE_ABI.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 16969,
+          "sha256": "796ed1f10d2b51067d9b386d29288235656fc91deaef5febcea52c786a7cdd93"
+        }
+      ]
+    },
+    {
+      "id": "A06",
+      "links": [
+        {
+          "from": "docs/INDEX.md",
+          "label": "R10 G1-a 开发与技术手册",
+          "href": "ASTERINAS_CPU_OWNER_G1A.md",
+          "scope": "local",
+          "path": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 12562,
+          "sha256": "fadc87a8ae04dad9072d0f6da396304da2479b7f39cfaaee18b70984e1cd717e"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "R10 实际证据",
+          "href": "../results/integration/2026-10-19-g1-owner/README.md",
+          "scope": "local",
+          "path": "results/integration/2026-10-19-g1-owner/README.md",
+          "exists": true,
+          "origin": "uncommitted_delivery_overlay",
+          "bytes": 67806,
+          "sha256": "2268d3923f43665e1fee612104d8d00daa55fb5563a1c15c85df071b2fce2994"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "CPU 实现及客体验证",
+          "href": "ASTERINAS_CPU_BANDWIDTH_N0.md",
+          "scope": "local",
+          "path": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 13854,
+          "sha256": "9d0ef3f8ae2367efadde9af0cda457a787a59c0e189a62b6a133f308c3b6d7c8"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "cpu.max 输入契约与复跑",
+          "href": "../tests/organ_backend/CPU_MAX_CONFIG.md",
+          "scope": "local",
+          "path": "tests/organ_backend/CPU_MAX_CONFIG.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 2992,
+          "sha256": "deac7a4ff0086818da259c3e29df84a5953dcc3310541dffc0e4b136b61eac15"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "既有集成收据",
+          "href": "../results/organ-backend/2026-10-17/a05-a06-integrated-acceptance.json",
+          "scope": "local",
+          "path": "results/organ-backend/2026-10-17/a05-a06-integrated-acceptance.json",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 7146,
+          "sha256": "f437b9689a0d62782de86fae8ebf0eee7bfb0c0c0f88062cf63da37c608ffc55"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "本轮实际执行与来源",
+          "href": "../results/integration/2026-10-18-audit-followthrough/README.md",
+          "scope": "local",
+          "path": "results/integration/2026-10-18-audit-followthrough/README.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 17989,
+          "sha256": "240fa5082c4dd0d46d8eb40815307a4933946a3fb36ca34ea44dff0a4490593b"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "资源 backend 接合",
+          "href": "ASTERINAS_ORGAN_BACKEND.md",
+          "scope": "local",
+          "path": "docs/ASTERINAS_ORGAN_BACKEND.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 7262,
+          "sha256": "f00e39a335f5e11fd6fd13894172ec80bce2e2dcf3ac5c733caf1fe5c375cb74"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "#188",
+          "href": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/188",
+          "scope": "external_reference_not_refetched"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "#191 奇数周期 oracle",
+          "href": "../results/organ-backend/2026-10-18/a06-odd-period-oracle/README.md",
+          "scope": "local",
+          "path": "results/organ-backend/2026-10-18/a06-odd-period-oracle/README.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 6149,
+          "sha256": "5b3aa6cf6d9048354b6c86fe8004dae485798f3de9a43afac65cc362bb153a2a"
+        }
+      ]
+    },
+    {
+      "id": "A07",
+      "links": [
+        {
+          "from": "docs/INDEX.md",
+          "label": "R10 原 owner CI 与安全债务",
+          "href": "../results/integration/2026-10-19-g1-owner/README.md",
+          "scope": "local",
+          "path": "results/integration/2026-10-19-g1-owner/README.md",
+          "exists": true,
+          "origin": "uncommitted_delivery_overlay",
+          "bytes": 67806,
+          "sha256": "2268d3923f43665e1fee612104d8d00daa55fb5563a1c15c85df071b2fce2994"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "完整安全技术报告",
+          "href": "../results/integration/2026-10-19-g1-owner/hepta-security/deny-repro-01/SECURITY_DEBT_DIAGNOSIS.md",
+          "scope": "local",
+          "path": "results/integration/2026-10-19-g1-owner/hepta-security/deny-repro-01/SECURITY_DEBT_DIAGNOSIS.md",
+          "exists": true,
+          "origin": "uncommitted_delivery_overlay",
+          "bytes": 17779,
+          "sha256": "1bb0b3092601152bf4130adf7142382776b6d6f66a3d469ecf87f2dd2d647ef4"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "原 Bazel / Windows 失败诊断",
+          "href": "../results/integration/2026-10-19-g1-owner/hepta-bazel-followup/BAZEL_FAILURE_DIAGNOSIS.md",
+          "scope": "local",
+          "path": "results/integration/2026-10-19-g1-owner/hepta-bazel-followup/BAZEL_FAILURE_DIAGNOSIS.md",
+          "exists": true,
+          "origin": "uncommitted_delivery_overlay",
+          "bytes": 11989,
+          "sha256": "b41da3eb84e91c3ef980db6acb39da7522dcb4a50b14c8405d466dd1b4851df0"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "Fleet fixture main 独立修复与窄域实测",
+          "href": "../results/integration/2026-10-19-g1-owner/hepta-fleet-fixture-main-fix/README.md",
+          "scope": "local",
+          "path": "results/integration/2026-10-19-g1-owner/hepta-fleet-fixture-main-fix/README.md",
+          "exists": true,
+          "origin": "uncommitted_delivery_overlay",
+          "bytes": 4034,
+          "sha256": "3c16b46b58dabfc18039c593a87ac8bdb4a883b2072087c01e781265998a231c"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "client 开发",
+          "href": "../services/hepta-os/README.md",
+          "scope": "local",
+          "path": "services/hepta-os/README.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 9593,
+          "sha256": "d03b6c1dbd0834ce9a42f9ee0af30044867eda1120a4bb5e5d07c556e9cf0046"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "只读契约",
+          "href": "../services/hepta-os/CONTRACT.md",
+          "scope": "local",
+          "path": "services/hepta-os/CONTRACT.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 13953,
+          "sha256": "0ec2d9c0db139c0104a05fedc674887d00e05c2527d041591c174a3a294b5068"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "运行手册",
+          "href": "../services/hepta-os/RUN.md",
+          "scope": "local",
+          "path": "services/hepta-os/RUN.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 12909,
+          "sha256": "fb4748152277d443912fb6f3705b59f8da635594ac9e95fbad77206abc64b6f8"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "可信 ObjectiveStart / CLI",
+          "href": "../services/hepta-os/OBJECTIVE_TRANSPORT.md",
+          "scope": "local",
+          "path": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 25323,
+          "sha256": "d530d33986a384a5e4fc4985517ac49c48e6478c93f54bb3c5f8ed8b6ce29cdd"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "原版 Objective 复跑",
+          "href": "../tests/integration/hepta/ORIGINAL_OBJECTIVE.md",
+          "scope": "local",
+          "path": "tests/integration/hepta/ORIGINAL_OBJECTIVE.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 14703,
+          "sha256": "002b65a6226339b20f527fc831341b279e9ea8c891d29976c65ffd88e260a4ea"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "原版持续 Session",
+          "href": "../tests/integration/hepta/ORIGINAL_SESSION.md",
+          "scope": "local",
+          "path": "tests/integration/hepta/ORIGINAL_SESSION.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 6654,
+          "sha256": "deeb8035c88ebd20f46b2174fffc6d8f71c051d582d8fb60d9309751d23f4dfe"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "外部锁稳定性",
+          "href": "../tests/integration/hepta/PROBE_LOCK_STABILITY.md",
+          "scope": "local",
+          "path": "tests/integration/hepta/PROBE_LOCK_STABILITY.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 5013,
+          "sha256": "760185ba3b65a31fc3f6ca8ea15958e0c4d5ebb16083ff14f074707dbe5af1e5"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "历史查询开发与技术契约",
+          "href": "../services/hepta-os/OBJECTIVE_HISTORY.md",
+          "scope": "local",
+          "path": "services/hepta-os/OBJECTIVE_HISTORY.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 13175,
+          "sha256": "75aa92f86005be8df59947ad1f92cb969c1975bab131c3182ca622679721a4f8"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "原 owner 历史故障复跑",
+          "href": "../tests/integration/hepta/OBJECTIVE_HISTORY_PROBE.md",
+          "scope": "local",
+          "path": "tests/integration/hepta/OBJECTIVE_HISTORY_PROBE.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 8520,
+          "sha256": "25b4eca15166c7076f6c246299cc1094805baeac25f05e887ab95b790df54c2c"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "R9 实际证据",
+          "href": "../results/integration/2026-10-18-objective-history/README.md",
+          "scope": "local",
+          "path": "results/integration/2026-10-18-objective-history/README.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 21089,
+          "sha256": "a3ce985d226a5b895cd4933c88fddc123d40fda131d08247d5881214485e4c82"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "最终提交 transport / ARM64 CI",
+          "href": "../results/integration/2026-10-18-objective-history-ci/README.md",
+          "scope": "local",
+          "path": "results/integration/2026-10-18-objective-history-ci/README.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 12951,
+          "sha256": "13b239b464cfbcbfc925d904f23843fc6566b07c0580833db037d503d7ef2f31"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "R8 固定历史",
+          "href": "../results/integration/2026-10-18-objective-desktop/README.md",
+          "scope": "local",
+          "path": "results/integration/2026-10-18-objective-desktop/README.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 18803,
+          "sha256": "f30e60e9e39167e5c157beaba3841786fc871ca0b87fe7528184bd5415b2983b"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "HEPTA_INTEGRATION",
+          "href": "HEPTA_INTEGRATION.md",
+          "scope": "local",
+          "path": "docs/HEPTA_INTEGRATION.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 9995,
+          "sha256": "55314b700ba63ef946d3e36609cb20257a66ae3a1b0b05116614449441932de6"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "S1–S5",
+          "href": "agents/R8_NEXT_SLICE.md",
+          "scope": "local",
+          "path": "docs/agents/R8_NEXT_SLICE.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 23644,
+          "sha256": "0c8e9b461fe41a509392280d03947bad3c10c5a0967e9ce476079cb020ecb8ae"
+        }
+      ]
+    },
+    {
+      "id": "A08",
+      "links": [
+        {
+          "from": "docs/INDEX.md",
+          "label": "开发手册",
+          "href": "../support/android/README.md",
+          "scope": "local",
+          "path": "support/android/README.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 36597,
+          "sha256": "e36a16853a4e6969ea112442f3d48d89069a1372b0f0061fbb63a29fdcd321a9"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "来源绑定与 184 项回归",
+          "href": "../tests/workloads/android/evidence/2026-10-17-commit-bound-audit/README.md",
+          "scope": "local",
+          "path": "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/README.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 7907,
+          "sha256": "63866c28fd6532994ce5dcff9050945fc085ff9f694437956cbe754c4896ca8f"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "main 组合实际验收",
+          "href": "../results/integration/a08-host-main-20261017/README.md",
+          "scope": "local",
+          "path": "results/integration/a08-host-main-20261017/README.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 3828,
+          "sha256": "576ed89be5111a47c4a3c9a276577de33d2a85928d415b4c64a9d3e437f54e2d"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "ANDROID_COMPATIBILITY",
+          "href": "ANDROID_COMPATIBILITY.md",
+          "scope": "local",
+          "path": "docs/ANDROID_COMPATIBILITY.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 4714,
+          "sha256": "daecdc2ce896bad8a4f3727d93669a761d75abdecd0a0316012cde1b76428dc4"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "接口技术契约",
+          "href": "../compat/android/INTERFACES.md",
+          "scope": "local",
+          "path": "compat/android/INTERFACES.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 7406,
+          "sha256": "8729560f4b7edd5f8bb59e412a10984300c3b8562c06998c69e0184444561c21"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "内核缺口",
+          "href": "../compat/android/kernel-gaps.json",
+          "scope": "local",
+          "path": "compat/android/kernel-gaps.json",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 3558,
+          "sha256": "0fadc3646ffb58dea1b941c1f0415d27f2877756760b0d3ba522698d0f12a56d"
+        }
+      ]
+    },
+    {
+      "id": "A09",
+      "links": [
+        {
+          "from": "docs/INDEX.md",
+          "label": "device lifecycle 开发手册",
+          "href": "../support/vmm/device_lifecycle/README.md",
+          "scope": "local",
+          "path": "support/vmm/device_lifecycle/README.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 12178,
+          "sha256": "23f8c49e66ef9bf83e9535dc37d5fe37c0b0b5a101aef0ef9b5d04b203d5d314"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "GATES",
+          "href": "../support/vmm/GATES.md",
+          "scope": "local",
+          "path": "support/vmm/GATES.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 7044,
+          "sha256": "ca6ed05f200f498512509afd7cd19662d873c999a2792727afd0c1208a2946e0"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "HARDWARE_AND_DRIVERS",
+          "href": "HARDWARE_AND_DRIVERS.md",
+          "scope": "local",
+          "path": "docs/HARDWARE_AND_DRIVERS.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 4303,
+          "sha256": "d31ad12248e97ca7cefdb98bc386fe5e0e3158dfbd131a281e6556cdd5bbcad3"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "来源",
+          "href": "../support/vmm/PROVENANCE.md",
+          "scope": "local",
+          "path": "support/vmm/PROVENANCE.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 8418,
+          "sha256": "63d5ba3251f47c02be5d9fb79ac728959eb5d812016dd78407c9d9a11d41c7cb"
+        }
+      ]
+    },
+    {
+      "id": "A10",
+      "links": [
+        {
+          "from": "docs/INDEX.md",
+          "label": "运行手册",
+          "href": "../support/ui/RUN.md",
+          "scope": "local",
+          "path": "support/ui/RUN.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 17099,
+          "sha256": "c8204e59f72ab218d850a1bce99f9e1e7035d6334b69a245bc131d90b9b1aa1c"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "聊天/任务工作区",
+          "href": "../support/ui/CHAT_WORKSPACE.md",
+          "scope": "local",
+          "path": "support/ui/CHAT_WORKSPACE.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 12653,
+          "sha256": "f2b9c555d686e97020ed9f80033c38ddd1e3c90e83ded53e269251ca22eee503"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "Session / known-run",
+          "href": "../support/ui/HEPTA_OBSERVER.md",
+          "scope": "local",
+          "path": "support/ui/HEPTA_OBSERVER.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 26375,
+          "sha256": "50185b6258b7c8b13fb47fab7833a3c1afba8e99ae808eb5ff268f9e03b6ce96"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "run 新鲜度",
+          "href": "../ui/shell/OBSERVATION_FRESHNESS.md",
+          "scope": "local",
+          "path": "ui/shell/OBSERVATION_FRESHNESS.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 7891,
+          "sha256": "95c4d5aee8b51da2a8b323d884264c87592793a6024f1ffd89b20bca13e9b987"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "真实 Objective 窗口复跑",
+          "href": "../tests/ui/ORIGINAL_OBJECTIVE_SHELL.md",
+          "scope": "local",
+          "path": "tests/ui/ORIGINAL_OBJECTIVE_SHELL.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 7846,
+          "sha256": "df434ca840e1aedf000e512646eab427ec18e4252b8296bff3e20611843ac133"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "字体",
+          "href": "../support/ui/CJK_RENDERING.md",
+          "scope": "local",
+          "path": "support/ui/CJK_RENDERING.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 6959,
+          "sha256": "2cae8d32fa65a042f0f0c71f5c702fa9083e1ca8f49f05a9df53555670975d3e"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "XIM",
+          "href": "../support/ui/X11_IME.md",
+          "scope": "local",
+          "path": "support/ui/X11_IME.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 11371,
+          "sha256": "03675d28ed3c142e49d72efccdf8de0beeb2e36759f052114b7df3d17c7b651c"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "本轮实录",
+          "href": "../results/integration/2026-10-18-objective-desktop/README.md",
+          "scope": "local",
+          "path": "results/integration/2026-10-18-objective-desktop/README.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 18803,
+          "sha256": "f30e60e9e39167e5c157beaba3841786fc871ca0b87fe7528184bd5415b2983b"
+        },
+        {
+          "from": "docs/INDEX.md",
+          "label": "DESKTOP_UX",
+          "href": "DESKTOP_UX.md",
+          "scope": "local",
+          "path": "docs/DESKTOP_UX.md",
+          "exists": true,
+          "origin": "fixed_source_commit",
+          "bytes": 27265,
+          "sha256": "ac7927de0e8a8a7ac19b386024b5dc15ffe99acac9a9aa3e414b7e63d75e0b23"
+        }
+      ]
+    }
+  ],
+  "substantively_reviewed_manual_deltas": [
+    {
+      "path": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 12562,
+      "sha256": "fadc87a8ae04dad9072d0f6da396304da2479b7f39cfaaee18b70984e1cd717e",
+      "review": "New detailed developer/technical manual read in full: source/dependencies, same real budget/revision, private binding/errors, detached lifecycle, lock order, fixed seed/working lock, ten ktests and qualification limits.",
+      "main_base_status": "new",
+      "main_base_sha256": null,
+      "initial_0c_status": "new"
+    },
+    {
+      "path": "support/build/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 11996,
+      "sha256": "1ab023f69259ca93a36a3f5db9abdef4c8d1413ec3c74d74e28e5aba7e9b3c22",
+      "review": "Actual R10 diff read: original Git seed versus exact working derivative, unchanged external package records, complete component metadata with --locked, run-base and OSDK provenance.",
+      "main_base_status": "modified",
+      "main_base_sha256": "b088a13b006b83a7f7f495a7c78e5d06e0a06e173e099e75bea7f529e860bae0",
+      "initial_0c_status": "modified"
+    },
+    {
+      "path": "support/build/ktest/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 4682,
+      "sha256": "592a7eca726231ef18da1430c1cf0620b6813ad4de883046c1bfa7913019d5cd",
+      "review": "Actual R10 diff read: verified locked fetch before offline normalization, immutable seed, 200/97 derived test locks, explicit features, source stability and soft-skip treatment.",
+      "main_base_status": "modified",
+      "main_base_sha256": "2c899f72c68f5f124f2396108dd6f59c8d14fea4a4bbd5dcd5a02ba75af55f7f",
+      "initial_0c_status": "modified"
+    },
+    {
+      "path": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 13854,
+      "sha256": "9d0ef3f8ae2367efadde9af0cda457a787a59c0e189a62b6a133f308c3b6d7c8",
+      "review": "Actual G1 and incoming e15 diffs read, then combined source checked: G1-a manual and e15 malformed cpu.max input-contract sections are both retained; original N0 execution identities remain separate.",
+      "main_base_status": "modified",
+      "main_base_sha256": "e84040e762ceacaac5135f521f317629e060a8fb7a44dbf848964f2fb23998eb",
+      "initial_0c_status": "modified"
+    },
+    {
+      "path": "tests/kernel/control/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 6184,
+      "sha256": "d33f83c5c134d0bfa9cd1a5d9c4c5445bee4d6700703b735983926891b8471b8",
+      "review": "New candidate manual read in full: source/head/tree gate, ordinary non-ktest boot first, same ELF QueryAbi guest, valid-shaped four disabled operations, markers, timeouts, original replay preservation and separate host-fixture scope.",
+      "main_base_status": "new",
+      "main_base_sha256": null,
+      "initial_0c_status": "new"
+    },
+    {
+      "path": "docs/agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 16178,
+      "sha256": "92090675495144416c2b5625d918146a45def4bd27925624fd436343e0d35ec8",
+      "review": "Incoming e15 164-line handoff read in full: actual candidate source owners, toolchain and binary pins, independent checkout/build/reference/rootfs/QEMU commands, full input/output/error semantics, same-ELF limits and current-main integration sequence. This is a concrete main developer/technical entry; the three original implementation directories and complete candidate manuals remain external.",
+      "main_base_status": "unchanged",
+      "main_base_sha256": "92090675495144416c2b5625d918146a45def4bd27925624fd436343e0d35ec8",
+      "initial_0c_status": "new"
+    },
+    {
+      "path": "docs/DESKTOP_UX.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 27265,
+      "sha256": "ac7927de0e8a8a7ac19b386024b5dc15ffe99acac9a9aa3e414b7e63d75e0b23",
+      "review": "Incoming e15 delta read: complete Runtime monotonic total age, independent known-run source clock, 7000/7001 ms boundary, matched Session/Shell/ctl deployment, CLI process-loss uncertainty, and separate identities for old pixels, original-owner history and new source integration.",
+      "main_base_status": "unchanged",
+      "main_base_sha256": "ac7927de0e8a8a7ac19b386024b5dc15ffe99acac9a9aa3e414b7e63d75e0b23",
+      "initial_0c_status": "modified"
+    },
+    {
+      "path": "docs/agents/PLAN.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 6537,
+      "sha256": "f475400608032b476b6e651114e3c4d5b2646c94bccea2cf5fdc38c26bbc37ad",
+      "review": "Incoming e15 delta read: A06 ownership includes the actual cgroup CPU controller and its cpu subtree, keeps one budget owner and coordinates shared OSTD changes.",
+      "main_base_status": "unchanged",
+      "main_base_sha256": "f475400608032b476b6e651114e3c4d5b2646c94bccea2cf5fdc38c26bbc37ad",
+      "initial_0c_status": "modified"
+    },
+    {
+      "path": "docs/agents/R8_NEXT_SLICE.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 23644,
+      "sha256": "0c8e9b461fe41a509392280d03947bad3c10c5a0967e9ce476079cb020ecb8ae",
+      "review": "Incoming e15 delta read: distinguish original protocol lost-reply qualification from actual CLI SIGKILL handshakes; retain missing receipt as uncertainty and leave durable request/anchor storage and S1/S2 product assembly open.",
+      "main_base_status": "unchanged",
+      "main_base_sha256": "0c8e9b461fe41a509392280d03947bad3c10c5a0967e9ce476079cb020ecb8ae",
+      "initial_0c_status": "modified"
+    },
+    {
+      "path": "docs/agents/R9_G1_OWNER_SEAM.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 20291,
+      "sha256": "3ca3980afcb188b528fd72cd2d3f1a3f2e796b050f18fd3fbe69164ed06c050a",
+      "review": "Incoming e15 delta read: retain the fixed historical audit while identifying #195 parser rejection as already integrated; later G1-a owner implementation is evidenced by its own new manual and tests, not silently inserted into this historical source audit.",
+      "main_base_status": "unchanged",
+      "main_base_sha256": "3ca3980afcb188b528fd72cd2d3f1a3f2e796b050f18fd3fbe69164ed06c050a",
+      "initial_0c_status": "modified"
+    },
+    {
+      "path": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 25323,
+      "sha256": "d530d33986a384a5e4fc4985517ac49c48e6478c93f54bb3c5f8ed8b6ce29cdd",
+      "review": "Incoming e15 delta read: real CLI EOF-before-send and full-frame-before-reply kill boundaries, handshake/peer evidence, no receipt or retry, exact caller-owned request preservation and remaining durable reconciliation work.",
+      "main_base_status": "unchanged",
+      "main_base_sha256": "d530d33986a384a5e4fc4985517ac49c48e6478c93f54bb3c5f8ed8b6ce29cdd",
+      "initial_0c_status": "modified"
+    },
+    {
+      "path": "support/ui/CHAT_WORKSPACE.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 12653,
+      "sha256": "f2b9c555d686e97020ed9f80033c38ddd1e3c90e83ded53e269251ca22eee503",
+      "review": "Incoming e15 delta read: Runtime and known-run total monotonic age with wall-time checks, preserved repeated-source age, visible/layout agreement, independent host-task rule and matched version deployment.",
+      "main_base_status": "unchanged",
+      "main_base_sha256": "f2b9c555d686e97020ed9f80033c38ddd1e3c90e83ded53e269251ca22eee503",
+      "initial_0c_status": "modified"
+    },
+    {
+      "path": "support/ui/HEPTA_OBSERVER.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 26375,
+      "sha256": "50185b6258b7c8b13fb47fab7833a3c1afba8e99ae808eb5ff268f9e03b6ce96",
+      "review": "Incoming e15 delta read: complete poll start and successful sequence ownership, failed-read and historical sample retention, separate Runtime/known-run clocks, source identity, stale dispatch and old/new strict decoder compatibility.",
+      "main_base_status": "unchanged",
+      "main_base_sha256": "50185b6258b7c8b13fb47fab7833a3c1afba8e99ae808eb5ff268f9e03b6ce96",
+      "initial_0c_status": "modified"
+    },
+    {
+      "path": "tests/integration/hepta/ORIGINAL_AGENTD.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 17537,
+      "sha256": "aa44a69e7685fce8cbfb8c93baed99dcb13991a94ac90b0affe647c2ba2a12ec",
+      "review": "Incoming e15 delta read: successful exit does not prove same-group descendants stopped; WNOWAIT identity anchor and bounded TERM/grace/KILL precede unique reap. Real RED/GREEN process-guard receipts and local skipped fixed-original manifest checks remain distinct.",
+      "main_base_status": "unchanged",
+      "main_base_sha256": "aa44a69e7685fce8cbfb8c93baed99dcb13991a94ac90b0affe647c2ba2a12ec",
+      "initial_0c_status": "modified"
+    },
+    {
+      "path": "ui/shell/OBSERVATION_FRESHNESS.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 7891,
+      "sha256": "95c4d5aee8b51da2a8b323d884264c87592793a6024f1ffd89b20bca13e9b987",
+      "review": "Incoming e15 replacement/delta read: three-term total bound, source and sequence rules, monotonic/wall failures, same-sample no rejuvenation/no duplicated RTT, matching wire builds, real queue/egui and scripted UDS regression scope.",
+      "main_base_status": "unchanged",
+      "main_base_sha256": "95c4d5aee8b51da2a8b323d884264c87592793a6024f1ffd89b20bca13e9b987",
+      "initial_0c_status": "modified"
+    }
+  ],
+  "new_manual_one_hop_targets": [
+    {
+      "from": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "label": "G1 owner 工单",
+      "href": "agents/R9_G1_OWNER_SEAM.md",
+      "scope": "local",
+      "path": "docs/agents/R9_G1_OWNER_SEAM.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 20291,
+      "sha256": "3ca3980afcb188b528fd72cd2d3f1a3f2e796b050f18fd3fbe69164ed06c050a"
+    },
+    {
+      "from": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "label": "A06 N0 手册",
+      "href": "ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "scope": "local",
+      "path": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 13854,
+      "sha256": "9d0ef3f8ae2367efadde9af0cda457a787a59c0e189a62b6a133f308c3b6d7c8"
+    },
+    {
+      "from": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "label": "HOS2 设备",
+      "href": "../kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs",
+      "scope": "local",
+      "path": "kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 9584,
+      "sha256": "5133419b204d05e769b4a111a6e4285c9f50de482b65be15b5799312203e3979"
+    },
+    {
+      "from": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "label": "cpu.rs",
+      "href": "../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs",
+      "scope": "local",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 36728,
+      "sha256": "ea74592acf422da93d9fa4dd1de8dc89808e778c69930562943e1c3580e8ae3c"
+    },
+    {
+      "from": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "label": "cpu/native.rs",
+      "href": "../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs",
+      "scope": "local",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 3452,
+      "sha256": "37b652c56060c838f43dd0d0a089e6cad460b898758edc9d32d065cfa9ea2dc3"
+    },
+    {
+      "from": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "label": "controller/mod.rs",
+      "href": "../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/mod.rs",
+      "scope": "local",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/mod.rs",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 19582,
+      "sha256": "e72a5cca40ce4429d0d7d5ec2caa3592f29f9adb329a437e9f8026bca969fa7b"
+    },
+    {
+      "from": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "label": "systree_node.rs",
+      "href": "../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/systree_node.rs",
+      "scope": "local",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/systree_node.rs",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 32731,
+      "sha256": "1f215e696b6356bd67fd7cda5c00ab6babbf5f7dce45c6da5eacee0b8661b302"
+    },
+    {
+      "from": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "label": "inode.rs",
+      "href": "../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/inode.rs",
+      "scope": "local",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/inode.rs",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 4253,
+      "sha256": "1b7aad53f6c667a9292fb4e7ed2bd93121371dcc1f11c63f60a7031c96251cf8"
+    },
+    {
+      "from": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "label": "resource_state.rs",
+      "href": "../libs/os-control/src/resource_state.rs",
+      "scope": "local",
+      "path": "libs/os-control/src/resource_state.rs",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 13530,
+      "sha256": "045f8bf459736dc9f63fd9dc1e78cc0f2371694a3ee28f53058202f7716ab68a"
+    },
+    {
+      "from": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "label": "cpu/native/tests.rs",
+      "href": "../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/tests.rs",
+      "scope": "local",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/tests.rs",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 16146,
+      "sha256": "f4e613e21bee44c77b207919d621c751f49830ef2476b0ae8e3c96ed9b7b5a02"
+    },
+    {
+      "from": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "label": "A01 构建手册",
+      "href": "../support/build/README.md",
+      "scope": "local",
+      "path": "support/build/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 11996,
+      "sha256": "1ab023f69259ca93a36a3f5db9abdef4c8d1413ec3c74d74e28e5aba7e9b3c22"
+    },
+    {
+      "from": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "label": "ktest 手册",
+      "href": "../support/build/ktest/README.md",
+      "scope": "local",
+      "path": "support/build/ktest/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 4682,
+      "sha256": "592a7eca726231ef18da1430c1cf0620b6813ad4de883046c1bfa7913019d5cd"
+    },
+    {
+      "from": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "label": "派生报告",
+      "href": "../support/build/ktest/locks/aster-core.json",
+      "scope": "local",
+      "path": "support/build/ktest/locks/aster-core.json",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 20317,
+      "sha256": "f170057e878d925932f341c275b8d83a4f5ba76c5b11af1e534028147379c20c"
+    },
+    {
+      "from": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "label": "minimal 锁",
+      "href": "../support/build/minimal/Cargo.lock",
+      "scope": "local",
+      "path": "support/build/minimal/Cargo.lock",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 41937,
+      "sha256": "e54bc99b3df5e21a1fdcd88d89b32ac478e73c7b4bf69ae0b1084f59d56fc506"
+    },
+    {
+      "from": "support/build/README.md",
+      "label": "CPU owner manual",
+      "href": "../../docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "scope": "local",
+      "path": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 12562,
+      "sha256": "fadc87a8ae04dad9072d0f6da396304da2479b7f39cfaaee18b70984e1cd717e"
+    },
+    {
+      "from": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "label": "PR #121",
+      "href": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/121",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "label": "Draft PR #18",
+      "href": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/18",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "label": "PR #195",
+      "href": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/195",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "label": "input contract and replay instructions",
+      "href": "../tests/organ_backend/CPU_MAX_CONFIG.md",
+      "scope": "local",
+      "path": "tests/organ_backend/CPU_MAX_CONFIG.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 2992,
+      "sha256": "deac7a4ff0086818da259c3e29df84a5953dcc3310541dffc0e4b136b61eac15"
+    },
+    {
+      "from": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "label": "G1-a owner development manual",
+      "href": "ASTERINAS_CPU_OWNER_G1A.md",
+      "scope": "local",
+      "path": "docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 12562,
+      "sha256": "fadc87a8ae04dad9072d0f6da396304da2479b7f39cfaaee18b70984e1cd717e"
+    },
+    {
+      "from": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "label": "2026-10-17 integrated receipt",
+      "href": "../results/organ-backend/2026-10-17/a05-a06-integrated-acceptance.json",
+      "scope": "local",
+      "path": "results/organ-backend/2026-10-17/a05-a06-integrated-acceptance.json",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 7146,
+      "sha256": "f437b9689a0d62782de86fae8ebf0eee7bfb0c0c0f88062cf63da37c608ffc55"
+    },
+    {
+      "from": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "label": "cgroup CPU controller",
+      "href": "../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs",
+      "scope": "local",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 36728,
+      "sha256": "ea74592acf422da93d9fa4dd1de8dc89808e778c69930562943e1c3580e8ae3c"
+    },
+    {
+      "from": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "label": "ClassScheduler",
+      "href": "../kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs",
+      "scope": "local",
+      "path": "kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 18626,
+      "sha256": "b40d8181f1203bd157c48c3e950d89dec660bfb38b69d803cf35cf1c29c5b731"
+    },
+    {
+      "from": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "label": "separate single-vCPU receipt",
+      "href": "../results/kernel/control/a05-main-combined-acceptance-20261017.json",
+      "scope": "local",
+      "path": "results/kernel/control/a05-main-combined-acceptance-20261017.json",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 3165,
+      "sha256": "e733457a2d5e92615a21bda5836e36a54d088263ea5b089756cc0d1203b01763"
+    },
+    {
+      "from": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "label": "PR #178",
+      "href": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/178",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "label": "six new kernel regressions",
+      "href": "../kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/final_charge_regressions.rs",
+      "scope": "local",
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/final_charge_regressions.rs",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 9533,
+      "sha256": "6dad5fdcea16fe58c421c21f8440f15726a19237c112e6188d6f59fe9f84f3bf"
+    },
+    {
+      "from": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "label": "test-only fixture",
+      "href": "../kernel/asterinas/kernel/core/src/process/test_util.rs",
+      "scope": "local",
+      "path": "kernel/asterinas/kernel/core/src/process/test_util.rs",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 1871,
+      "sha256": "3a436aa9baca6b328346e57a76eb2ce6c63c1b482ab87a1adbf0e3e3c08dc217"
+    },
+    {
+      "from": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "label": "ktest runbook",
+      "href": "../support/build/ktest/README.md",
+      "scope": "local",
+      "path": "support/build/ktest/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 4682,
+      "sha256": "592a7eca726231ef18da1430c1cf0620b6813ad4de883046c1bfa7913019d5cd"
+    },
+    {
+      "from": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "label": "Machine-readable results",
+      "href": "../results/organ-backend/2026-10-16/a06-cpu-bandwidth-n0.json",
+      "scope": "local",
+      "path": "results/organ-backend/2026-10-16/a06-cpu-bandwidth-n0.json",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 8355,
+      "sha256": "92d2f7dd79b6535f1fd1d866a0a6623b42056f53482fc6090a1ab8f8567f7ef4"
+    },
+    {
+      "from": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "label": "A01 build workflow",
+      "href": "../support/build/README.md",
+      "scope": "local",
+      "path": "support/build/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 11996,
+      "sha256": "1ab023f69259ca93a36a3f5db9abdef4c8d1413ec3c74d74e28e5aba7e9b3c22"
+    },
+    {
+      "from": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "label": "original machine result",
+      "href": "../results/organ-backend/2026-10-16/a06-aster-core-ktest.json",
+      "scope": "local",
+      "path": "results/organ-backend/2026-10-16/a06-aster-core-ktest.json",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 464,
+      "sha256": "72e30b5ae6d363967479dc2ba985a2298cae409a67587c679dc7520dbc7a36a6"
+    },
+    {
+      "from": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "label": "guard results",
+      "href": "../results/organ-backend/2026-10-16/a06-guard-checks.json",
+      "scope": "local",
+      "path": "results/organ-backend/2026-10-16/a06-guard-checks.json",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 215,
+      "sha256": "1edbc08089f8dd326834b26a83a5232d1d85d3fb8fe999ac786a53b791b717e5"
+    },
+    {
+      "from": "tests/kernel/control/README.md",
+      "label": "the build manual",
+      "href": "../../../support/build/README.md",
+      "scope": "local",
+      "path": "support/build/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 11996,
+      "sha256": "1ab023f69259ca93a36a3f5db9abdef4c8d1413ec3c74d74e28e5aba7e9b3c22"
+    },
+    {
+      "from": "tests/kernel/control/README.md",
+      "label": "HOS2 decoder",
+      "href": "../../../libs/os-abi/src/lib.rs",
+      "scope": "local",
+      "path": "libs/os-abi/src/lib.rs",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 47272,
+      "sha256": "826e6533bd7ed2f6527db819e9f0400867ca1e607cd0581a03970444c3e4b60f"
+    },
+    {
+      "from": "tests/kernel/control/README.md",
+      "label": "actual device",
+      "href": "../../../kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs",
+      "scope": "local",
+      "path": "kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 9584,
+      "sha256": "5133419b204d05e769b4a111a6e4285c9f50de482b65be15b5799312203e3979"
+    },
+    {
+      "from": "docs/agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+      "label": "PR #8",
+      "href": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/8",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "docs/agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+      "label": "Linux 兼容规格",
+      "href": "../../LINUX_COMPATIBILITY.md",
+      "scope": "local",
+      "path": "docs/LINUX_COMPATIBILITY.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 3673,
+      "sha256": "15287db6dd59d0c7d0afb0e59367b9ba73b47532d4e1a5f228f21ba22d586e2e"
+    },
+    {
+      "from": "docs/agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+      "label": "工作负载、构建、Linux 参照与 guest 重放",
+      "href": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/25c681d944e4efa92f2772cf773e03ae811bc345/tests/workloads/linux/README.md",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "docs/agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+      "label": "rootfs 捕获、清单、USTAR 与严格提取",
+      "href": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/25c681d944e4efa92f2772cf773e03ae811bc345/support/rootfs/README.md",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "docs/agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+      "label": "按来源和 owner 分类的缺口与历史交接",
+      "href": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/25c681d944e4efa92f2772cf773e03ae811bc345/compat/linux/GAPS.md",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "docs/agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+      "label": "A01 构建手册",
+      "href": "../../../support/build/README.md",
+      "scope": "local",
+      "path": "support/build/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 11996,
+      "sha256": "1ab023f69259ca93a36a3f5db9abdef4c8d1413ec3c74d74e28e5aba7e9b3c22"
+    },
+    {
+      "from": "docs/agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+      "label": "A05 实现手册",
+      "href": "A05_KERNEL_CONTROL.md",
+      "scope": "local",
+      "path": "docs/agents/handoffs/A05_KERNEL_CONTROL.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 8119,
+      "sha256": "a2fcedab3cc7d26c6ed2fde521ce4864d566cd1b36bdd537f46abf6ad2090717"
+    },
+    {
+      "from": "docs/agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+      "label": "A06 CPU owner",
+      "href": "../../ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "scope": "local",
+      "path": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 13854,
+      "sha256": "9d0ef3f8ae2367efadde9af0cda457a787a59c0e189a62b6a133f308c3b6d7c8"
+    },
+    {
+      "from": "docs/agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+      "label": "A07 Hepta 接合",
+      "href": "../../HEPTA_INTEGRATION.md",
+      "scope": "local",
+      "path": "docs/HEPTA_INTEGRATION.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 9995,
+      "sha256": "55314b700ba63ef946d3e36609cb20257a66ae3a1b0b05116614449441932de6"
+    },
+    {
+      "from": "docs/agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+      "label": "upstream-lock",
+      "href": "../../../support/upstream-lock.json",
+      "scope": "local",
+      "path": "support/upstream-lock.json",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 4657,
+      "sha256": "beb48f48a77101e5456ca78aa98d3c0f4c3a3f11ca29f422e2d576ff837cc592"
+    },
+    {
+      "from": "docs/agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+      "label": "原 rootfs 输入复核",
+      "href": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/25c681d944e4efa92f2772cf773e03ae811bc345/tests/workloads/linux/baselines/exact-rootfs-input-recheck-20261017.json",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "docs/agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+      "label": "R8 原版 Objective 接合实录",
+      "href": "../../../results/integration/2026-10-18-objective-desktop/README.md",
+      "scope": "local",
+      "path": "results/integration/2026-10-18-objective-desktop/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 18803,
+      "sha256": "f30e60e9e39167e5c157beaba3841786fc871ca0b87fe7528184bd5415b2983b"
+    },
+    {
+      "from": "docs/agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+      "label": "现有原版复跑入口",
+      "href": "../../../tests/integration/hepta/ORIGINAL_OBJECTIVE.md",
+      "scope": "local",
+      "path": "tests/integration/hepta/ORIGINAL_OBJECTIVE.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 14703,
+      "sha256": "002b65a6226339b20f527fc831341b279e9ea8c891d29976c65ffd88e260a4ea"
+    },
+    {
+      "from": "docs/agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+      "label": "13 项实际 guest capability 探针",
+      "href": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/25c681d944e4efa92f2772cf773e03ae811bc345/tests/workloads/linux/baselines/guest-qemu-probe-20261017.json",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "docs/DESKTOP_UX.md",
+      "label": "R9 证据",
+      "href": "../results/integration/2026-10-18-runtime-process-boundaries/README.md",
+      "scope": "local",
+      "path": "results/integration/2026-10-18-runtime-process-boundaries/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 12705,
+      "sha256": "22e3fd09e51603d74c014e15fa78bf50c5c9516d823f509aa101ae8483933d6f"
+    },
+    {
+      "from": "docs/DESKTOP_UX.md",
+      "label": "PR #192",
+      "href": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/192",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "docs/DESKTOP_UX.md",
+      "label": "本轮实录",
+      "href": "../results/integration/2026-10-18-objective-desktop/README.md",
+      "scope": "local",
+      "path": "results/integration/2026-10-18-objective-desktop/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 18803,
+      "sha256": "f30e60e9e39167e5c157beaba3841786fc871ca0b87fe7528184bd5415b2983b"
+    },
+    {
+      "from": "docs/DESKTOP_UX.md",
+      "label": "PR #187",
+      "href": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/187",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "docs/DESKTOP_UX.md",
+      "label": "STATUS",
+      "href": "STATUS.md",
+      "scope": "local",
+      "path": "docs/STATUS.md",
+      "exists": true,
+      "origin": "uncommitted_delivery_overlay",
+      "bytes": 146309,
+      "sha256": "d638028e4b66c38b19276f415b5ab93abf92ed01839df8b1202ae14bded46408"
+    },
+    {
+      "from": "docs/DESKTOP_UX.md",
+      "label": "#157",
+      "href": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/157",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "docs/DESKTOP_UX.md",
+      "label": "`89aa8fa62d30b00259cb33174260c134edf1a70b`",
+      "href": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/89aa8fa62d30b00259cb33174260c134edf1a70b",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "docs/DESKTOP_UX.md",
+      "label": "R6 完整交付索引",
+      "href": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/89aa8fa62d30b00259cb33174260c134edf1a70b/tests/integration/hepta/evidence/2026-10-17-r6/README.md",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "docs/DESKTOP_UX.md",
+      "label": "本轮索引",
+      "href": "../results/integration/2026-10-18-audit-followthrough/README.md",
+      "scope": "local",
+      "path": "results/integration/2026-10-18-audit-followthrough/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 17989,
+      "sha256": "240fa5082c4dd0d46d8eb40815307a4933946a3fb36ca34ea44dff0a4490593b"
+    },
+    {
+      "from": "docs/DESKTOP_UX.md",
+      "label": "构建/UID/定向回归实录",
+      "href": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/83b6a514164e29d536c5d2d4e078e04da4eeddb1/tests/ui/evidence/2026-10-17-owner-input/README.md",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "docs/DESKTOP_UX.md",
+      "label": "STATUS",
+      "href": "STATUS.md",
+      "scope": "local",
+      "path": "docs/STATUS.md",
+      "exists": true,
+      "origin": "uncommitted_delivery_overlay",
+      "bytes": 146309,
+      "sha256": "d638028e4b66c38b19276f415b5ab93abf92ed01839df8b1202ae14bded46408"
+    },
+    {
+      "from": "docs/DESKTOP_UX.md",
+      "label": "15 条定向测试与截图",
+      "href": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/661c958650e187cf677e4d5351d87e8bc8badbc5/tests/ui/evidence/2026-10-17-cjk-pixman/README.md",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "docs/DESKTOP_UX.md",
+      "label": "137 项与 no-op Weston 布局",
+      "href": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/tree/e743ee1a06956b51f86c16887f04cd4f518bcccd/tests/ui/evidence/2026-10-17-rust188-owner-sync",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "docs/DESKTOP_UX.md",
+      "label": "X.Org",
+      "href": "SOURCES.md#x11",
+      "scope": "local",
+      "path": "docs/SOURCES.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 7801,
+      "sha256": "0fedffa8dbd67988f40f815e007cddb7de1586f5f0f074dea438efb4127203e4",
+      "fragment": "x11",
+      "fragment_check": "not_part_of_this_target_presence_gate"
+    },
+    {
+      "from": "docs/DESKTOP_UX.md",
+      "label": "CJK_RENDERING",
+      "href": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/397db55e34a3a65d50635dec6a6aae7bcd573803/support/ui/CJK_RENDERING.md",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "docs/DESKTOP_UX.md",
+      "label": "OBSERVATION_FRESHNESS",
+      "href": "../ui/shell/OBSERVATION_FRESHNESS.md",
+      "scope": "local",
+      "path": "ui/shell/OBSERVATION_FRESHNESS.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 7891,
+      "sha256": "95c4d5aee8b51da2a8b323d884264c87592793a6024f1ffd89b20bca13e9b987"
+    },
+    {
+      "from": "docs/DESKTOP_UX.md",
+      "label": "HEPTA_OBSERVER",
+      "href": "../support/ui/HEPTA_OBSERVER.md",
+      "scope": "local",
+      "path": "support/ui/HEPTA_OBSERVER.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 26375,
+      "sha256": "50185b6258b7c8b13fb47fab7833a3c1afba8e99ae808eb5ff268f9e03b6ce96"
+    },
+    {
+      "from": "docs/DESKTOP_UX.md",
+      "label": "R6 完整 RED/GREEN 与编译来源",
+      "href": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/89aa8fa62d30b00259cb33174260c134edf1a70b/tests/ui/evidence/2026-10-17-observation-freshness/README.md",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "docs/DESKTOP_UX.md",
+      "label": "13 张原图、快照、ACK 与逐图审查",
+      "href": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/89aa8fa62d30b00259cb33174260c134edf1a70b/tests/ui/evidence/2026-10-17-original-hepta-shell/README.md",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "docs/DESKTOP_UX.md",
+      "label": "复跑方法、精确输入与来源校验",
+      "href": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/698d1bf47fadbdd0fc18fad191b3bd5f9744101f/support/ui/X11_IME.md",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "docs/DESKTOP_UX.md",
+      "label": "UI-05 实录与九张原始 PNG",
+      "href": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/2ec3e7ab3e472b19a350d309ee2d0338d62daeb3/tests/ui/evidence/2026-10-17-real-xim/README.md",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "docs/DESKTOP_UX.md",
+      "label": "winit XIM PreeditCallbacks 路径",
+      "href": "https://github.com/rust-windowing/winit/blob/e9809ef54b18499bb4f2cac945719ecc2a61061b/src/platform_impl/linux/x11/ime/context.rs#L344-L378",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "docs/DESKTOP_UX.md",
+      "label": "egui-winit 已转发 caret 位置",
+      "href": "https://github.com/emilk/egui/blob/1669e52a7ccfc3489c1b0999b9ed48894a0b3887/crates/egui-winit/src/lib.rs#L866-L890",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "docs/DESKTOP_UX.md",
+      "label": "CHAT_WORKSPACE",
+      "href": "../support/ui/CHAT_WORKSPACE.md",
+      "scope": "local",
+      "path": "support/ui/CHAT_WORKSPACE.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 12653,
+      "sha256": "f2b9c555d686e97020ed9f80033c38ddd1e3c90e83ded53e269251ca22eee503"
+    },
+    {
+      "from": "docs/DESKTOP_UX.md",
+      "label": "HEPTA_OBSERVER",
+      "href": "../support/ui/HEPTA_OBSERVER.md",
+      "scope": "local",
+      "path": "support/ui/HEPTA_OBSERVER.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 26375,
+      "sha256": "50185b6258b7c8b13fb47fab7833a3c1afba8e99ae808eb5ff268f9e03b6ce96"
+    },
+    {
+      "from": "docs/DESKTOP_UX.md",
+      "label": "三轮原版 / Session 运行",
+      "href": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/89aa8fa62d30b00259cb33174260c134edf1a70b/tests/integration/hepta/evidence/2026-10-17-original-session-runtime/README.md",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "docs/DESKTOP_UX.md",
+      "label": "13 张原图、快照、ACK 与逐图审查",
+      "href": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/89aa8fa62d30b00259cb33174260c134edf1a70b/tests/ui/evidence/2026-10-17-original-hepta-shell/README.md",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "docs/DESKTOP_UX.md",
+      "label": "state_control 的 ObjectiveStart 分支",
+      "href": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-agentd/src/state_control.rs#L206-L228",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "docs/DESKTOP_UX.md",
+      "label": "先做 readiness、过期、签名认证及发布前检查，再持久发布，并重查最新 readiness/trust 与 runtime 准入",
+      "href": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-agentd/src/objective_runtime.rs#L206-L327",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "docs/DESKTOP_UX.md",
+      "label": "RunStatus",
+      "href": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-agentd/src/state_control.rs#L523-L531",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "docs/DESKTOP_UX.md",
+      "label": "CHAT_WORKSPACE",
+      "href": "../support/ui/CHAT_WORKSPACE.md",
+      "scope": "local",
+      "path": "support/ui/CHAT_WORKSPACE.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 12653,
+      "sha256": "f2b9c555d686e97020ed9f80033c38ddd1e3c90e83ded53e269251ca22eee503"
+    },
+    {
+      "from": "docs/DESKTOP_UX.md",
+      "label": "整合证据",
+      "href": "../results/integration/2026-10-19-main-sync/README.md",
+      "scope": "local",
+      "path": "results/integration/2026-10-19-main-sync/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 10975,
+      "sha256": "1a39605cc4fbf3a977f1f41acda95cd4c416ce11a1a9dbaaa561f5f75856a4b3"
+    },
+    {
+      "from": "docs/DESKTOP_UX.md",
+      "label": "OBJECTIVE_TRANSPORT",
+      "href": "../services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "scope": "local",
+      "path": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 25323,
+      "sha256": "d530d33986a384a5e4fc4985517ac49c48e6478c93f54bb3c5f8ed8b6ce29cdd"
+    },
+    {
+      "from": "docs/DESKTOP_UX.md",
+      "label": "OBJECTIVE_HISTORY",
+      "href": "../services/hepta-os/OBJECTIVE_HISTORY.md",
+      "scope": "local",
+      "path": "services/hepta-os/OBJECTIVE_HISTORY.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 13175,
+      "sha256": "75aa92f86005be8df59947ad1f92cb969c1975bab131c3182ca622679721a4f8"
+    },
+    {
+      "from": "docs/DESKTOP_UX.md",
+      "label": "整合归档",
+      "href": "../results/integration/2026-10-19-main-sync/README.md",
+      "scope": "local",
+      "path": "results/integration/2026-10-19-main-sync/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 10975,
+      "sha256": "1a39605cc4fbf3a977f1f41acda95cd4c416ce11a1a9dbaaa561f5f75856a4b3"
+    },
+    {
+      "from": "docs/DESKTOP_UX.md",
+      "label": "R8_NEXT_SLICE 的 S1/S2",
+      "href": "agents/R8_NEXT_SLICE.md",
+      "scope": "local",
+      "path": "docs/agents/R8_NEXT_SLICE.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 23644,
+      "sha256": "0c8e9b461fe41a509392280d03947bad3c10c5a0967e9ce476079cb020ecb8ae"
+    },
+    {
+      "from": "docs/agents/PLAN.md",
+      "label": "STATUS",
+      "href": "../STATUS.md",
+      "scope": "local",
+      "path": "docs/STATUS.md",
+      "exists": true,
+      "origin": "uncommitted_delivery_overlay",
+      "bytes": 146309,
+      "sha256": "d638028e4b66c38b19276f415b5ab93abf92ed01839df8b1202ae14bded46408"
+    },
+    {
+      "from": "docs/agents/PLAN.md",
+      "label": "INDEX",
+      "href": "../INDEX.md",
+      "scope": "local",
+      "path": "docs/INDEX.md",
+      "exists": true,
+      "origin": "uncommitted_delivery_overlay",
+      "bytes": 21822,
+      "sha256": "d5564d02d21a5230eee677c79f3bd58de313a354ec012fbdffab0d0b9df7c386"
+    },
+    {
+      "from": "docs/agents/PLAN.md",
+      "label": "PROMPTS",
+      "href": "PROMPTS.md",
+      "scope": "local",
+      "path": "docs/agents/PROMPTS.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 1507,
+      "sha256": "7f21f1ac0d727479c5b39b29d7166977c3c76a8409ec9610756603dc1cf08dc0"
+    },
+    {
+      "from": "docs/agents/PLAN.md",
+      "label": "prompts/",
+      "href": "prompts/",
+      "scope": "local",
+      "path": "docs/agents/prompts",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 296,
+      "sha256": "6a1da2346d2ad121770636f38bc47af1daf1d20593adb11d58b9fd66e6ea817c"
+    },
+    {
+      "from": "docs/agents/R8_NEXT_SLICE.md",
+      "label": "ARCHITECTURE",
+      "href": "../ARCHITECTURE.md",
+      "scope": "local",
+      "path": "docs/ARCHITECTURE.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 8056,
+      "sha256": "0a28073b9e3036f669c887ea80052a9aa6149f5ba7a4029de6c1720613485a4b"
+    },
+    {
+      "from": "docs/agents/R8_NEXT_SLICE.md",
+      "label": "ROADMAP",
+      "href": "../ROADMAP.md",
+      "scope": "local",
+      "path": "docs/ROADMAP.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 6062,
+      "sha256": "09812263974d5160486fa9abcf7bac4c17c007f671b8c092dac2f8436e9b6a25"
+    },
+    {
+      "from": "docs/agents/R8_NEXT_SLICE.md",
+      "label": "PLAN",
+      "href": "PLAN.md",
+      "scope": "local",
+      "path": "docs/agents/PLAN.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 6537,
+      "sha256": "f475400608032b476b6e651114e3c4d5b2646c94bccea2cf5fdc38c26bbc37ad"
+    },
+    {
+      "from": "docs/agents/R8_NEXT_SLICE.md",
+      "label": "upstream-lock",
+      "href": "../../support/upstream-lock.json",
+      "scope": "local",
+      "path": "support/upstream-lock.json",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 4657,
+      "sha256": "beb48f48a77101e5456ca78aa98d3c0f4c3a3f11ca29f422e2d576ff837cc592"
+    },
+    {
+      "from": "docs/agents/R8_NEXT_SLICE.md",
+      "label": "本轮证据",
+      "href": "../../results/integration/2026-10-18-objective-desktop/README.md",
+      "scope": "local",
+      "path": "results/integration/2026-10-18-objective-desktop/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 18803,
+      "sha256": "f30e60e9e39167e5c157beaba3841786fc871ca0b87fe7528184bd5415b2983b"
+    },
+    {
+      "from": "docs/agents/R8_NEXT_SLICE.md",
+      "label": "实际证据",
+      "href": "../../results/integration/2026-10-18-objective-history/README.md",
+      "scope": "local",
+      "path": "results/integration/2026-10-18-objective-history/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 21089,
+      "sha256": "a3ce985d226a5b895cd4933c88fddc123d40fda131d08247d5881214485e4c82"
+    },
+    {
+      "from": "docs/agents/R8_NEXT_SLICE.md",
+      "label": "独立运行复核",
+      "href": "../../results/integration/2026-10-18-objective-history/history-runtime-independent-review.json",
+      "scope": "local",
+      "path": "results/integration/2026-10-18-objective-history/history-runtime-independent-review.json",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 35650,
+      "sha256": "46da446f30e124b06fdda9ce6ef3808f6e507ababf105965fa28fc3af1fe428b"
+    },
+    {
+      "from": "docs/agents/R8_NEXT_SLICE.md",
+      "label": "独立合同",
+      "href": "../../services/hepta-os/OBJECTIVE_HISTORY_CONTRACT.json",
+      "scope": "local",
+      "path": "services/hepta-os/OBJECTIVE_HISTORY_CONTRACT.json",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 6196,
+      "sha256": "f0fc1110233dc38542097c6f9f7ef2e3f6ca5eb215fa2b4447e556cd7ac46981"
+    },
+    {
+      "from": "docs/agents/R8_NEXT_SLICE.md",
+      "label": "history 契约",
+      "href": "../../services/hepta-os/OBJECTIVE_HISTORY.md",
+      "scope": "local",
+      "path": "services/hepta-os/OBJECTIVE_HISTORY.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 13175,
+      "sha256": "75aa92f86005be8df59947ad1f92cb969c1975bab131c3182ca622679721a4f8"
+    },
+    {
+      "from": "docs/agents/R8_NEXT_SLICE.md",
+      "label": "故障 probe",
+      "href": "../../tests/integration/hepta/OBJECTIVE_HISTORY_PROBE.md",
+      "scope": "local",
+      "path": "tests/integration/hepta/OBJECTIVE_HISTORY_PROBE.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 8520,
+      "sha256": "25b4eca15166c7076f6c246299cc1094805baeac25f05e887ab95b790df54c2c"
+    },
+    {
+      "from": "docs/agents/R8_NEXT_SLICE.md",
+      "label": "CI 接续",
+      "href": "../../results/integration/2026-10-18-objective-history-ci/README.md",
+      "scope": "local",
+      "path": "results/integration/2026-10-18-objective-history-ci/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 12951,
+      "sha256": "13b239b464cfbcbfc925d904f23843fc6566b07c0580833db037d503d7ef2f31"
+    },
+    {
+      "from": "docs/agents/R8_NEXT_SLICE.md",
+      "label": "R8 的停机 probe",
+      "href": "../../tests/integration/hepta/original_objective_probe.rs",
+      "scope": "local",
+      "path": "tests/integration/hepta/original_objective_probe.rs",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 21988,
+      "sha256": "7aaf85c90cdde3dd1e011fb4b745453e848bfc04dfaceb59f257d08d9b225eef"
+    },
+    {
+      "from": "docs/agents/R8_NEXT_SLICE.md",
+      "label": "真实 CLI 进程丢失回归",
+      "href": "../../results/integration/2026-10-18-runtime-process-boundaries/hepta-cli/README.md",
+      "scope": "local",
+      "path": "results/integration/2026-10-18-runtime-process-boundaries/hepta-cli/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 4672,
+      "sha256": "722289dac804fbc8bcbd148f2afb3c0ac2be4563eba285f3993b576e739798aa"
+    },
+    {
+      "from": "docs/agents/R8_NEXT_SLICE.md",
+      "label": "固定 G1 owner 接缝",
+      "href": "R9_G1_OWNER_SEAM.md",
+      "scope": "local",
+      "path": "docs/agents/R9_G1_OWNER_SEAM.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 20291,
+      "sha256": "3ca3980afcb188b528fd72cd2d3f1a3f2e796b050f18fd3fbe69164ed06c050a"
+    },
+    {
+      "from": "docs/agents/R8_NEXT_SLICE.md",
+      "label": "架构",
+      "href": "../ARCHITECTURE.md",
+      "scope": "local",
+      "path": "docs/ARCHITECTURE.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 8056,
+      "sha256": "0a28073b9e3036f669c887ea80052a9aa6149f5ba7a4029de6c1720613485a4b"
+    },
+    {
+      "from": "docs/agents/R8_NEXT_SLICE.md",
+      "label": "STATUS",
+      "href": "../STATUS.md",
+      "scope": "local",
+      "path": "docs/STATUS.md",
+      "exists": true,
+      "origin": "uncommitted_delivery_overlay",
+      "bytes": 146309,
+      "sha256": "d638028e4b66c38b19276f415b5ab93abf92ed01839df8b1202ae14bded46408"
+    },
+    {
+      "from": "docs/agents/R8_NEXT_SLICE.md",
+      "label": "本轮证据",
+      "href": "../../results/integration/2026-10-18-objective-desktop/README.md",
+      "scope": "local",
+      "path": "results/integration/2026-10-18-objective-desktop/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 18803,
+      "sha256": "f30e60e9e39167e5c157beaba3841786fc871ca0b87fe7528184bd5415b2983b"
+    },
+    {
+      "from": "docs/agents/R9_G1_OWNER_SEAM.md",
+      "label": "R8_NEXT_SLICE",
+      "href": "R8_NEXT_SLICE.md",
+      "scope": "local",
+      "path": "docs/agents/R8_NEXT_SLICE.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 23644,
+      "sha256": "0c8e9b461fe41a509392280d03947bad3c10c5a0967e9ce476079cb020ecb8ae"
+    },
+    {
+      "from": "docs/agents/R9_G1_OWNER_SEAM.md",
+      "label": "NATIVE_ABI",
+      "href": "../NATIVE_ABI.md",
+      "scope": "local",
+      "path": "docs/NATIVE_ABI.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 16969,
+      "sha256": "796ed1f10d2b51067d9b386d29288235656fc91deaef5febcea52c786a7cdd93"
+    },
+    {
+      "from": "docs/agents/R9_G1_OWNER_SEAM.md",
+      "label": "PLAN",
+      "href": "PLAN.md",
+      "scope": "local",
+      "path": "docs/agents/PLAN.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 6537,
+      "sha256": "f475400608032b476b6e651114e3c4d5b2646c94bccea2cf5fdc38c26bbc37ad"
+    },
+    {
+      "from": "docs/agents/R9_G1_OWNER_SEAM.md",
+      "label": "PR #195",
+      "href": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/195",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "docs/agents/R9_G1_OWNER_SEAM.md",
+      "label": "CPU_MAX_CONFIG",
+      "href": "../../tests/organ_backend/CPU_MAX_CONFIG.md",
+      "scope": "local",
+      "path": "tests/organ_backend/CPU_MAX_CONFIG.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 2992,
+      "sha256": "deac7a4ff0086818da259c3e29df84a5953dcc3310541dffc0e4b136b61eac15"
+    },
+    {
+      "from": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "label": "R6 original Agentd and continuous Session runs",
+      "href": "../../tests/integration/hepta/evidence/2026-10-17-original-session-runtime/README.md",
+      "scope": "local",
+      "path": "tests/integration/hepta/evidence/2026-10-17-original-session-runtime/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 6227,
+      "sha256": "6ca4e3fa80042d12c7af11a3a442e4ea763c5099c0f5c4f71b774b218cee2001"
+    },
+    {
+      "from": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "label": "2026-10-18 original-runtime runs",
+      "href": "../../results/integration/2026-10-18-objective-desktop/README.md",
+      "scope": "local",
+      "path": "results/integration/2026-10-18-objective-desktop/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 18803,
+      "sha256": "f30e60e9e39167e5c157beaba3841786fc871ca0b87fe7528184bd5415b2983b"
+    },
+    {
+      "from": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "label": "`hepta-private-ci@f8c9419df6ddeb36ff8b522a50219981fb8d9345`",
+      "href": "https://github.com/TrillionniumFoundation/hepta-private-ci/tree/f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "label": "OBJECTIVE_UPSTREAM_CONTRACT.json",
+      "href": "OBJECTIVE_UPSTREAM_CONTRACT.json",
+      "scope": "local",
+      "path": "services/hepta-os/OBJECTIVE_UPSTREAM_CONTRACT.json",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 6783,
+      "sha256": "ba3005ee18c77ccf701c5dea063fa2f8d184b9aaebfbf912cd8d16287564d449"
+    },
+    {
+      "from": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "label": "protocol/lib.rs",
+      "href": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-agent-protocol/src/lib.rs#L203-L210",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "label": "protocol/authbus.rs",
+      "href": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-agent-protocol/src/authbus.rs#L27-L81",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "label": "contracts/agent_id.rs",
+      "href": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-contracts/src/agent_id.rs",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "label": "types/identity.rs",
+      "href": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-types/src/identity.rs#L100-L124",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "label": "types/digest.rs",
+      "href": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-types/src/digest.rs#L103-L128",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "label": "state_control.rs",
+      "href": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-agentd/src/state_control.rs#L206-L228",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "label": "objective_runtime.rs",
+      "href": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-agentd/src/objective_runtime.rs#L140-L327",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "label": "control.rs",
+      "href": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-agentd/src/control.rs#L96-L164",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "label": "client.rs",
+      "href": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-agentd/src/client.rs#L718-L760",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "label": "authbus_trust.rs",
+      "href": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-agentd/src/authbus_trust.rs",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "label": "authbus_ingress.rs",
+      "href": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-agentd/src/authbus_ingress.rs",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "label": "authbus/lib.rs",
+      "href": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-authbus/src/lib.rs",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "label": "signed.rs",
+      "href": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-authbus/src/signed.rs",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "label": "protocol/objective_tests.rs",
+      "href": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-agent-protocol/src/objective_tests.rs#L7-L27",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "label": "publishes to its own durable journal before later checks",
+      "href": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-agentd/src/objective_runtime.rs#L206-L327",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "label": "RunStatus handler",
+      "href": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-agentd/src/state_control.rs#L523-L531",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "label": "frozen R7 local run",
+      "href": "../../tests/integration/hepta/evidence/2026-10-18-objective-transport/README.md",
+      "scope": "local",
+      "path": "tests/integration/hepta/evidence/2026-10-18-objective-transport/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 7663,
+      "sha256": "3be7d9fea354d18586ca202da4d62a2e3560abf47286480ee8791fee1bb69745"
+    },
+    {
+      "from": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "label": "RUN.md",
+      "href": "RUN.md",
+      "scope": "local",
+      "path": "services/hepta-os/RUN.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 12909,
+      "sha256": "fb4748152277d443912fb6f3705b59f8da635594ac9e95fbad77206abc64b6f8"
+    },
+    {
+      "from": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "label": "S1–S5",
+      "href": "../../docs/agents/R8_NEXT_SLICE.md",
+      "scope": "local",
+      "path": "docs/agents/R8_NEXT_SLICE.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 23644,
+      "sha256": "0c8e9b461fe41a509392280d03947bad3c10c5a0967e9ce476079cb020ecb8ae"
+    },
+    {
+      "from": "support/ui/CHAT_WORKSPACE.md",
+      "label": "the known-run contract",
+      "href": "HEPTA_OBSERVER.md#observe-one-already-known-run",
+      "scope": "local",
+      "path": "support/ui/HEPTA_OBSERVER.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 26375,
+      "sha256": "50185b6258b7c8b13fb47fab7833a3c1afba8e99ae808eb5ff268f9e03b6ce96",
+      "fragment": "observe-one-already-known-run",
+      "fragment_check": "not_part_of_this_target_presence_gate"
+    },
+    {
+      "from": "support/ui/CHAT_WORKSPACE.md",
+      "label": "the total-age specification",
+      "href": "../../ui/shell/OBSERVATION_FRESHNESS.md#independently-sampled-known-run",
+      "scope": "local",
+      "path": "ui/shell/OBSERVATION_FRESHNESS.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 7891,
+      "sha256": "95c4d5aee8b51da2a8b323d884264c87592793a6024f1ffd89b20bca13e9b987",
+      "fragment": "independently-sampled-known-run",
+      "fragment_check": "not_part_of_this_target_presence_gate"
+    },
+    {
+      "from": "support/ui/CHAT_WORKSPACE.md",
+      "label": "RUN.md",
+      "href": "RUN.md",
+      "scope": "local",
+      "path": "support/ui/RUN.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 17099,
+      "sha256": "c8204e59f72ab218d850a1bce99f9e1e7035d6334b69a245bc131d90b9b1aa1c"
+    },
+    {
+      "from": "support/ui/CHAT_WORKSPACE.md",
+      "label": "original Session/Shell captures",
+      "href": "../../tests/ui/evidence/2026-10-17-original-hepta-shell/README.md",
+      "scope": "local",
+      "path": "tests/ui/evidence/2026-10-17-original-hepta-shell/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 13131,
+      "sha256": "5a8718d70025e4080c7a47d1c3bd8118082eb61fef5b536eb68e1adb7240df33"
+    },
+    {
+      "from": "support/ui/CHAT_WORKSPACE.md",
+      "label": "freshness RED/GREEN evidence",
+      "href": "../../tests/ui/evidence/2026-10-17-observation-freshness/README.md",
+      "scope": "local",
+      "path": "tests/ui/evidence/2026-10-17-observation-freshness/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 6899,
+      "sha256": "b574fe909b09bfee04762bfb74acd8060d7a2687529d39439fe8b7ee848374ca"
+    },
+    {
+      "from": "support/ui/HEPTA_OBSERVER.md",
+      "label": "trusted ObjectiveStart command",
+      "href": "../../services/hepta-os/OBJECTIVE_TRANSPORT.md#trusted-single-attempt-command",
+      "scope": "local",
+      "path": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 25323,
+      "sha256": "d530d33986a384a5e4fc4985517ac49c48e6478c93f54bb3c5f8ed8b6ce29cdd",
+      "fragment": "trusted-single-attempt-command",
+      "fragment_check": "not_part_of_this_target_presence_gate"
+    },
+    {
+      "from": "support/ui/HEPTA_OBSERVER.md",
+      "label": "original-owner continuous Session/Shell gate",
+      "href": "ORIGINAL_HEPTA_SHELL.md",
+      "scope": "local",
+      "path": "support/ui/ORIGINAL_HEPTA_SHELL.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 10170,
+      "sha256": "cd5b4c6323d3493f01c599737e4d3156f45a842177ba7c710c925aefac3a33a2"
+    },
+    {
+      "from": "support/ui/HEPTA_OBSERVER.md",
+      "label": "R8 ObjectiveStart and desktop result",
+      "href": "../../results/integration/2026-10-18-objective-desktop/README.md",
+      "scope": "local",
+      "path": "results/integration/2026-10-18-objective-desktop/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 18803,
+      "sha256": "f30e60e9e39167e5c157beaba3841786fc871ca0b87fe7528184bd5415b2983b"
+    },
+    {
+      "from": "support/ui/HEPTA_OBSERVER.md",
+      "label": "fixed-source review",
+      "href": "../../tests/integration/hepta/LIVE_SOURCE_REVIEW.md",
+      "scope": "local",
+      "path": "tests/integration/hepta/LIVE_SOURCE_REVIEW.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 12372,
+      "sha256": "889aa45e1769e7dc216fe5ec6b7366bb4e14e86f9a39a8f79687c10fde29aa7b"
+    },
+    {
+      "from": "tests/integration/hepta/ORIGINAL_AGENTD.md",
+      "label": "Run 39037037916",
+      "href": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39037037916",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "tests/integration/hepta/ORIGINAL_AGENTD.md",
+      "label": "ARM evidence archive",
+      "href": "evidence/2026-10-17-original-agentd-arm/README.md",
+      "scope": "local",
+      "path": "tests/integration/hepta/evidence/2026-10-17-original-agentd-arm/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 8867,
+      "sha256": "4c553527b359d9c7ee05ac02e650e3ca013ce302e7672bdd8c166b7ea266ece9"
+    },
+    {
+      "from": "tests/integration/hepta/ORIGINAL_AGENTD.md",
+      "label": "persistent Session extension",
+      "href": "ORIGINAL_SESSION.md",
+      "scope": "local",
+      "path": "tests/integration/hepta/ORIGINAL_SESSION.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 6654,
+      "sha256": "deeb8035c88ebd20f46b2174fffc6d8f71c051d582d8fb60d9309751d23f4dfe"
+    },
+    {
+      "from": "tests/integration/hepta/ORIGINAL_AGENTD.md",
+      "label": "BUILD_REVIEW.md",
+      "href": "BUILD_REVIEW.md#real-resolution-and-compiler-checks",
+      "scope": "local",
+      "path": "tests/integration/hepta/BUILD_REVIEW.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 13254,
+      "sha256": "1456b3b16f08c5aafd0ddd00e6aef66f026ccf9e8dc7e8b59fc5ee164a78fef9",
+      "fragment": "real-resolution-and-compiler-checks",
+      "fragment_check": "not_part_of_this_target_presence_gate"
+    },
+    {
+      "from": "tests/integration/hepta/ORIGINAL_AGENTD.md",
+      "label": "the original-probe evidence archive",
+      "href": "evidence/2026-10-17-original-probe/README.md",
+      "scope": "local",
+      "path": "tests/integration/hepta/evidence/2026-10-17-original-probe/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 11972,
+      "sha256": "7f286228dd6791ba4e10d6a96d2afc5efd118839b4a61ffc0581fd1e819acf08"
+    },
+    {
+      "from": "tests/integration/hepta/ORIGINAL_AGENTD.md",
+      "label": "live-source review",
+      "href": "LIVE_SOURCE_REVIEW.md",
+      "scope": "local",
+      "path": "tests/integration/hepta/LIVE_SOURCE_REVIEW.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 12372,
+      "sha256": "889aa45e1769e7dc216fe5ec6b7366bb4e14e86f9a39a8f79687c10fde29aa7b"
+    },
+    {
+      "from": "tests/integration/hepta/ORIGINAL_AGENTD.md",
+      "label": "original_agentd_preflight_2026-10-17.json",
+      "href": "original_agentd_preflight_2026-10-17.json",
+      "scope": "local",
+      "path": "tests/integration/hepta/original_agentd_preflight_2026-10-17.json",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 1173,
+      "sha256": "531e7f557945e30b682369876a400b972497a2f9acba512e6ef54ca76bcc4e2c"
+    },
+    {
+      "from": "tests/integration/hepta/ORIGINAL_AGENTD.md",
+      "label": "`hepta-private-ci@f8c9419d`",
+      "href": "https://github.com/TrillionniumFoundation/hepta-private-ci/tree/f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "tests/integration/hepta/ORIGINAL_AGENTD.md",
+      "label": "`codex-rs/rust-toolchain.toml`",
+      "href": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/rust-toolchain.toml",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "tests/integration/hepta/ORIGINAL_AGENTD.md",
+      "label": "`hepta-agentd/Cargo.toml`",
+      "href": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-agentd/Cargo.toml",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "tests/integration/hepta/ORIGINAL_AGENTD.md",
+      "label": "`hepta-agentd/src/config.rs`",
+      "href": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-agentd/src/config.rs",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "tests/integration/hepta/ORIGINAL_AGENTD.md",
+      "label": "`hepta-agentd/src/app_runtime.rs`",
+      "href": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-agentd/src/app_runtime.rs",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "tests/integration/hepta/ORIGINAL_AGENTD.md",
+      "label": "`hepta-agentd/src/runtime.rs`",
+      "href": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-agentd/src/runtime.rs",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "tests/integration/hepta/ORIGINAL_AGENTD.md",
+      "label": "`hepta-agentd/tests/support/fleet.rs`",
+      "href": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-agentd/tests/support/fleet.rs",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "tests/integration/hepta/ORIGINAL_AGENTD.md",
+      "label": "`hepta-supervisor/src/unix.rs`",
+      "href": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-supervisor/src/unix.rs",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "tests/integration/hepta/ORIGINAL_AGENTD.md",
+      "label": "`app-server/tests/common/config.rs`",
+      "href": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/app-server/tests/common/config.rs",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "tests/integration/hepta/ORIGINAL_AGENTD.md",
+      "label": "`hepta-gap-agentd-process.yml`",
+      "href": "https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/.github/workflows/hepta-gap-agentd-process.yml",
+      "scope": "external_reference_not_refetched"
+    },
+    {
+      "from": "tests/integration/hepta/ORIGINAL_AGENTD.md",
+      "label": "lock stability record",
+      "href": "PROBE_LOCK_STABILITY.md",
+      "scope": "local",
+      "path": "tests/integration/hepta/PROBE_LOCK_STABILITY.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 5013,
+      "sha256": "760185ba3b65a31fc3f6ca8ea15958e0c4d5ebb16083ff14f074707dbe5af1e5"
+    },
+    {
+      "from": "tests/integration/hepta/ORIGINAL_AGENTD.md",
+      "label": "ORIGINAL_SESSION.md",
+      "href": "ORIGINAL_SESSION.md",
+      "scope": "local",
+      "path": "tests/integration/hepta/ORIGINAL_SESSION.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 6654,
+      "sha256": "deeb8035c88ebd20f46b2174fffc6d8f71c051d582d8fb60d9309751d23f4dfe"
+    },
+    {
+      "from": "tests/integration/hepta/ORIGINAL_AGENTD.md",
+      "label": "integration archive",
+      "href": "../../../results/integration/2026-10-19-main-sync/README.md",
+      "scope": "local",
+      "path": "results/integration/2026-10-19-main-sync/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 10975,
+      "sha256": "1a39605cc4fbf3a977f1f41acda95cd4c416ce11a1a9dbaaa561f5f75856a4b3"
+    },
+    {
+      "from": "tests/integration/hepta/ORIGINAL_AGENTD.md",
+      "label": "upstream_artifact_snapshot.json",
+      "href": "upstream_artifact_snapshot.json",
+      "scope": "local",
+      "path": "tests/integration/hepta/upstream_artifact_snapshot.json",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 17705,
+      "sha256": "8f3c71059011bf68762a9719970cf73244a6b85d3ce1a9b9b2c29cbd3b4ffe27"
+    }
+  ],
+  "historical_local_material_byte_comparison": [
+    {
+      "path": "compat/android/INTERFACES.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 7406,
+      "sha256": "8729560f4b7edd5f8bb59e412a10984300c3b8562c06998c69e0184444561c21",
+      "historical_bytes": 7406,
+      "historical_sha256": "8729560f4b7edd5f8bb59e412a10984300c3b8562c06998c69e0184444561c21",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "compat/android/kernel-gaps.json",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 3558,
+      "sha256": "0fadc3646ffb58dea1b941c1f0415d27f2877756760b0d3ba522698d0f12a56d",
+      "historical_bytes": 3558,
+      "historical_sha256": "0fadc3646ffb58dea1b941c1f0415d27f2877756760b0d3ba522698d0f12a56d",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "docs/ANDROID_COMPATIBILITY.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 4714,
+      "sha256": "daecdc2ce896bad8a4f3727d93669a761d75abdecd0a0316012cde1b76428dc4",
+      "historical_bytes": 4714,
+      "historical_sha256": "daecdc2ce896bad8a4f3727d93669a761d75abdecd0a0316012cde1b76428dc4",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "docs/ARCHITECTURE.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 8056,
+      "sha256": "0a28073b9e3036f669c887ea80052a9aa6149f5ba7a4029de6c1720613485a4b",
+      "historical_bytes": 8056,
+      "historical_sha256": "0a28073b9e3036f669c887ea80052a9aa6149f5ba7a4029de6c1720613485a4b",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 13854,
+      "sha256": "9d0ef3f8ae2367efadde9af0cda457a787a59c0e189a62b6a133f308c3b6d7c8",
+      "historical_bytes": 12394,
+      "historical_sha256": "a97b8c30ff8f100722b402ec2690a6fec12e9d1b32e86e7762641b20fda9e225",
+      "byte_status": "changed"
+    },
+    {
+      "path": "docs/ASTERINAS_ORGAN_BACKEND.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 7262,
+      "sha256": "f00e39a335f5e11fd6fd13894172ec80bce2e2dcf3ac5c733caf1fe5c375cb74",
+      "historical_bytes": 7262,
+      "historical_sha256": "f00e39a335f5e11fd6fd13894172ec80bce2e2dcf3ac5c733caf1fe5c375cb74",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "docs/DECISIONS.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 3195,
+      "sha256": "09a789fded953d0b63d2a0a4ac0e8ee45dd200950fe7f10eeb612639d6dece63",
+      "historical_bytes": 3195,
+      "historical_sha256": "09a789fded953d0b63d2a0a4ac0e8ee45dd200950fe7f10eeb612639d6dece63",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "docs/DESKTOP_UX.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 27265,
+      "sha256": "ac7927de0e8a8a7ac19b386024b5dc15ffe99acac9a9aa3e414b7e63d75e0b23",
+      "historical_bytes": 23735,
+      "historical_sha256": "57ad08c472fb80cf2dffea7dde2b7a04d48e4d52819cb7eab8d46ddfbe877fdc",
+      "byte_status": "changed"
+    },
+    {
+      "path": "docs/HARDWARE_AND_DRIVERS.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 4303,
+      "sha256": "d31ad12248e97ca7cefdb98bc386fe5e0e3158dfbd131a281e6556cdd5bbcad3",
+      "historical_bytes": 4303,
+      "historical_sha256": "d31ad12248e97ca7cefdb98bc386fe5e0e3158dfbd131a281e6556cdd5bbcad3",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "docs/HEPTA_INTEGRATION.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 9995,
+      "sha256": "55314b700ba63ef946d3e36609cb20257a66ae3a1b0b05116614449441932de6",
+      "historical_bytes": 9995,
+      "historical_sha256": "55314b700ba63ef946d3e36609cb20257a66ae3a1b0b05116614449441932de6",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "docs/LINUX_COMPATIBILITY.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 3673,
+      "sha256": "15287db6dd59d0c7d0afb0e59367b9ba73b47532d4e1a5f228f21ba22d586e2e",
+      "historical_bytes": 3673,
+      "historical_sha256": "15287db6dd59d0c7d0afb0e59367b9ba73b47532d4e1a5f228f21ba22d586e2e",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "docs/NATIVE_ABI.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 16969,
+      "sha256": "796ed1f10d2b51067d9b386d29288235656fc91deaef5febcea52c786a7cdd93",
+      "historical_bytes": 16969,
+      "historical_sha256": "796ed1f10d2b51067d9b386d29288235656fc91deaef5febcea52c786a7cdd93",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "docs/STATUS.md",
+      "exists": true,
+      "origin": "uncommitted_delivery_overlay",
+      "bytes": 146309,
+      "sha256": "d638028e4b66c38b19276f415b5ab93abf92ed01839df8b1202ae14bded46408",
+      "historical_bytes": 126420,
+      "historical_sha256": "24c1b07bde4d328a2e6190b967f1c31e7cee4c10799b1d92cff7e89facf9e57a",
+      "byte_status": "changed"
+    },
+    {
+      "path": "docs/VALIDATION.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 9799,
+      "sha256": "5add694562306c2eb694199e6054c83f765b1f99d4743710536e0d8b9aee9500",
+      "historical_bytes": 9799,
+      "historical_sha256": "5add694562306c2eb694199e6054c83f765b1f99d4743710536e0d8b9aee9500",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "docs/agents/PLAN.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 6537,
+      "sha256": "f475400608032b476b6e651114e3c4d5b2646c94bccea2cf5fdc38c26bbc37ad",
+      "historical_bytes": 6365,
+      "historical_sha256": "b5f4f8f4940c7d53632f6090a143b6ec61ff6b8c0277c2fa02dd7dee92f0dfda",
+      "byte_status": "changed"
+    },
+    {
+      "path": "docs/agents/R8_NEXT_SLICE.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 23644,
+      "sha256": "0c8e9b461fe41a509392280d03947bad3c10c5a0967e9ce476079cb020ecb8ae",
+      "historical_bytes": 20417,
+      "historical_sha256": "3dda71b73010f143b1a66b0d6a43a996794a0ad032c2fed6f9d4aaad81ce0007",
+      "byte_status": "changed"
+    },
+    {
+      "path": "docs/agents/R9_G1_OWNER_SEAM.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 20291,
+      "sha256": "3ca3980afcb188b528fd72cd2d3f1a3f2e796b050f18fd3fbe69164ed06c050a",
+      "historical_bytes": 19702,
+      "historical_sha256": "ec4149438e260bfa545279ed9fc26062ef01a5984ae0514e5ba6012ae8744617",
+      "byte_status": "changed"
+    },
+    {
+      "path": "docs/agents/handoffs/A05_KERNEL_CONTROL.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 8119,
+      "sha256": "a2fcedab3cc7d26c6ed2fde521ce4864d566cd1b36bdd537f46abf6ad2090717",
+      "historical_bytes": 8119,
+      "historical_sha256": "a2fcedab3cc7d26c6ed2fde521ce4864d566cd1b36bdd537f46abf6ad2090717",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "libs/os-abi/src/lib.rs",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 47272,
+      "sha256": "826e6533bd7ed2f6527db819e9f0400867ca1e607cd0581a03970444c3e4b60f",
+      "historical_bytes": 47272,
+      "historical_sha256": "826e6533bd7ed2f6527db819e9f0400867ca1e607cd0581a03970444c3e4b60f",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "libs/os-control/API_CONTRACT.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 56355,
+      "sha256": "68689e929de4a7709d7107a2991704e3c6e268d5855d48962c290f2acc0d0f54",
+      "historical_bytes": 56355,
+      "historical_sha256": "68689e929de4a7709d7107a2991704e3c6e268d5855d48962c290f2acc0d0f54",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "results/integration/2026-10-18-audit-followthrough/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 17989,
+      "sha256": "240fa5082c4dd0d46d8eb40815307a4933946a3fb36ca34ea44dff0a4490593b",
+      "historical_bytes": 17989,
+      "historical_sha256": "240fa5082c4dd0d46d8eb40815307a4933946a3fb36ca34ea44dff0a4490593b",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "results/integration/2026-10-18-objective-desktop/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 18803,
+      "sha256": "f30e60e9e39167e5c157beaba3841786fc871ca0b87fe7528184bd5415b2983b",
+      "historical_bytes": 18803,
+      "historical_sha256": "f30e60e9e39167e5c157beaba3841786fc871ca0b87fe7528184bd5415b2983b",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "results/integration/a08-host-main-20261017/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 3828,
+      "sha256": "576ed89be5111a47c4a3c9a276577de33d2a85928d415b4c64a9d3e437f54e2d",
+      "historical_bytes": 3828,
+      "historical_sha256": "576ed89be5111a47c4a3c9a276577de33d2a85928d415b4c64a9d3e437f54e2d",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "results/kernel/control/a05-main-combined-acceptance-20261017.json",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 3165,
+      "sha256": "e733457a2d5e92615a21bda5836e36a54d088263ea5b089756cc0d1203b01763",
+      "historical_bytes": 3165,
+      "historical_sha256": "e733457a2d5e92615a21bda5836e36a54d088263ea5b089756cc0d1203b01763",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "results/organ-backend/2026-10-17/a05-a06-integrated-acceptance.json",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 7146,
+      "sha256": "f437b9689a0d62782de86fae8ebf0eee7bfb0c0c0f88062cf63da37c608ffc55",
+      "historical_bytes": 7146,
+      "historical_sha256": "f437b9689a0d62782de86fae8ebf0eee7bfb0c0c0f88062cf63da37c608ffc55",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "results/organ-backend/2026-10-18/a06-odd-period-oracle/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 6149,
+      "sha256": "5b3aa6cf6d9048354b6c86fe8004dae485798f3de9a43afac65cc362bb153a2a",
+      "historical_bytes": 6149,
+      "historical_sha256": "5b3aa6cf6d9048354b6c86fe8004dae485798f3de9a43afac65cc362bb153a2a",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "services/hepta-os/CONTRACT.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 13953,
+      "sha256": "0ec2d9c0db139c0104a05fedc674887d00e05c2527d041591c174a3a294b5068",
+      "historical_bytes": 13953,
+      "historical_sha256": "0ec2d9c0db139c0104a05fedc674887d00e05c2527d041591c174a3a294b5068",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "services/hepta-os/OBJECTIVE_HISTORY.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 13175,
+      "sha256": "75aa92f86005be8df59947ad1f92cb969c1975bab131c3182ca622679721a4f8",
+      "historical_bytes": 13175,
+      "historical_sha256": "75aa92f86005be8df59947ad1f92cb969c1975bab131c3182ca622679721a4f8",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 25323,
+      "sha256": "d530d33986a384a5e4fc4985517ac49c48e6478c93f54bb3c5f8ed8b6ce29cdd",
+      "historical_bytes": 23877,
+      "historical_sha256": "ad5b76ea3c937167b06ad293a4772acfcc666ab363e5586bdd6041c293de4b87",
+      "byte_status": "changed"
+    },
+    {
+      "path": "services/hepta-os/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 9593,
+      "sha256": "d03b6c1dbd0834ce9a42f9ee0af30044867eda1120a4bb5e5d07c556e9cf0046",
+      "historical_bytes": 9593,
+      "historical_sha256": "d03b6c1dbd0834ce9a42f9ee0af30044867eda1120a4bb5e5d07c556e9cf0046",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "services/hepta-os/RUN.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 12909,
+      "sha256": "fb4748152277d443912fb6f3705b59f8da635594ac9e95fbad77206abc64b6f8",
+      "historical_bytes": 12909,
+      "historical_sha256": "fb4748152277d443912fb6f3705b59f8da635594ac9e95fbad77206abc64b6f8",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "support/android/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 36597,
+      "sha256": "e36a16853a4e6969ea112442f3d48d89069a1372b0f0061fbb63a29fdcd321a9",
+      "historical_bytes": 36597,
+      "historical_sha256": "e36a16853a4e6969ea112442f3d48d89069a1372b0f0061fbb63a29fdcd321a9",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "support/build/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 11996,
+      "sha256": "1ab023f69259ca93a36a3f5db9abdef4c8d1413ec3c74d74e28e5aba7e9b3c22",
+      "historical_bytes": 10521,
+      "historical_sha256": "b088a13b006b83a7f7f495a7c78e5d06e0a06e173e099e75bea7f529e860bae0",
+      "byte_status": "changed"
+    },
+    {
+      "path": "support/build/evidence/2026-10-16-boot-binding/REPORT.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 7496,
+      "sha256": "0ad4053d02ede9a28867183f131c61954e09978d217652f08f06f35d3e841911",
+      "historical_bytes": 7496,
+      "historical_sha256": "0ad4053d02ede9a28867183f131c61954e09978d217652f08f06f35d3e841911",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "support/build/evidence/2026-10-16-daemon/acceptance/kernel-tests/result.json",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 1005,
+      "sha256": "a26e2d598b981429eacf417a9b0cf0223b9798abc860f8b3146d4480b00e4c7a",
+      "historical_bytes": 1005,
+      "historical_sha256": "a26e2d598b981429eacf417a9b0cf0223b9798abc860f8b3146d4480b00e4c7a",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "support/build/ktest/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 4682,
+      "sha256": "592a7eca726231ef18da1430c1cf0620b6813ad4de883046c1bfa7913019d5cd",
+      "historical_bytes": 3739,
+      "historical_sha256": "2c899f72c68f5f124f2396108dd6f59c8d14fea4a4bbd5dcd5a02ba75af55f7f",
+      "byte_status": "changed"
+    },
+    {
+      "path": "support/ui/CHAT_WORKSPACE.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 12653,
+      "sha256": "f2b9c555d686e97020ed9f80033c38ddd1e3c90e83ded53e269251ca22eee503",
+      "historical_bytes": 11655,
+      "historical_sha256": "2348d85496c32e78ffcec17c01105edca510e97dbf3aa05a23706f64be5daad4",
+      "byte_status": "changed"
+    },
+    {
+      "path": "support/ui/CJK_RENDERING.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 6959,
+      "sha256": "2cae8d32fa65a042f0f0c71f5c702fa9083e1ca8f49f05a9df53555670975d3e",
+      "historical_bytes": 6959,
+      "historical_sha256": "2cae8d32fa65a042f0f0c71f5c702fa9083e1ca8f49f05a9df53555670975d3e",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "support/ui/HEPTA_OBSERVER.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 26375,
+      "sha256": "50185b6258b7c8b13fb47fab7833a3c1afba8e99ae808eb5ff268f9e03b6ce96",
+      "historical_bytes": 24367,
+      "historical_sha256": "6dcb3b83359cb72085db96f1d62ed44aaf38fc2567c9c1b140f90fd623722490",
+      "byte_status": "changed"
+    },
+    {
+      "path": "support/ui/RUN.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 17099,
+      "sha256": "c8204e59f72ab218d850a1bce99f9e1e7035d6334b69a245bc131d90b9b1aa1c",
+      "historical_bytes": 17099,
+      "historical_sha256": "c8204e59f72ab218d850a1bce99f9e1e7035d6334b69a245bc131d90b9b1aa1c",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "support/ui/X11_IME.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 11371,
+      "sha256": "03675d28ed3c142e49d72efccdf8de0beeb2e36759f052114b7df3d17c7b651c",
+      "historical_bytes": 11371,
+      "historical_sha256": "03675d28ed3c142e49d72efccdf8de0beeb2e36759f052114b7df3d17c7b651c",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "support/upstream-lock.json",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 4657,
+      "sha256": "beb48f48a77101e5456ca78aa98d3c0f4c3a3f11ca29f422e2d576ff837cc592",
+      "historical_bytes": 4657,
+      "historical_sha256": "beb48f48a77101e5456ca78aa98d3c0f4c3a3f11ca29f422e2d576ff837cc592",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "support/vmm/GATES.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 7044,
+      "sha256": "ca6ed05f200f498512509afd7cd19662d873c999a2792727afd0c1208a2946e0",
+      "historical_bytes": 7044,
+      "historical_sha256": "ca6ed05f200f498512509afd7cd19662d873c999a2792727afd0c1208a2946e0",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "support/vmm/PROVENANCE.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 8418,
+      "sha256": "63d5ba3251f47c02be5d9fb79ac728959eb5d812016dd78407c9d9a11d41c7cb",
+      "historical_bytes": 8418,
+      "historical_sha256": "63d5ba3251f47c02be5d9fb79ac728959eb5d812016dd78407c9d9a11d41c7cb",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "support/vmm/device_lifecycle/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 12178,
+      "sha256": "23f8c49e66ef9bf83e9535dc37d5fe37c0b0b5a101aef0ef9b5d04b203d5d314",
+      "historical_bytes": 12178,
+      "historical_sha256": "23f8c49e66ef9bf83e9535dc37d5fe37c0b0b5a101aef0ef9b5d04b203d5d314",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "tests/abi/A02_EVIDENCE_INTEGRITY_2026-10-17.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 6279,
+      "sha256": "207c2cc4d702a95d9e16a2bd8805f3dec4b67e1ad19a6468411bf8bc4ed9f942",
+      "historical_bytes": 6279,
+      "historical_sha256": "207c2cc4d702a95d9e16a2bd8805f3dec4b67e1ad19a6468411bf8bc4ed9f942",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "tests/abi/A02_REVIEW_CLOSURE_2026-10-17.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 7168,
+      "sha256": "d988512099957b3d2e102382acc4e9101a4d1ae3f929e9a1e0fa42d7b6a6ee22",
+      "historical_bytes": 7168,
+      "historical_sha256": "d988512099957b3d2e102382acc4e9101a4d1ae3f929e9a1e0fa42d7b6a6ee22",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "tests/control/VALIDATION.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 10066,
+      "sha256": "95a3283e6c497764926102dc79f56f5e9abd915506e33a45263e511287559a7f",
+      "historical_bytes": 10066,
+      "historical_sha256": "95a3283e6c497764926102dc79f56f5e9abd915506e33a45263e511287559a7f",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "tests/control/run-validation.sh",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 2521,
+      "sha256": "5aa862a211d226cd5cfc2007a640d52bd20a263652a94dd149d7c2121fde2023",
+      "historical_bytes": 2521,
+      "historical_sha256": "5aa862a211d226cd5cfc2007a640d52bd20a263652a94dd149d7c2121fde2023",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "tests/integration/hepta/OBJECTIVE_HISTORY_PROBE.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 8520,
+      "sha256": "25b4eca15166c7076f6c246299cc1094805baeac25f05e887ab95b790df54c2c",
+      "historical_bytes": 8520,
+      "historical_sha256": "25b4eca15166c7076f6c246299cc1094805baeac25f05e887ab95b790df54c2c",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "tests/integration/hepta/ORIGINAL_OBJECTIVE.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 14703,
+      "sha256": "002b65a6226339b20f527fc831341b279e9ea8c891d29976c65ffd88e260a4ea",
+      "historical_bytes": 14703,
+      "historical_sha256": "002b65a6226339b20f527fc831341b279e9ea8c891d29976c65ffd88e260a4ea",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "tests/integration/hepta/ORIGINAL_SESSION.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 6654,
+      "sha256": "deeb8035c88ebd20f46b2174fffc6d8f71c051d582d8fb60d9309751d23f4dfe",
+      "historical_bytes": 6654,
+      "historical_sha256": "deeb8035c88ebd20f46b2174fffc6d8f71c051d582d8fb60d9309751d23f4dfe",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "tests/integration/hepta/PROBE_LOCK_STABILITY.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 5013,
+      "sha256": "760185ba3b65a31fc3f6ca8ea15958e0c4d5ebb16083ff14f074707dbe5af1e5",
+      "historical_bytes": 5013,
+      "historical_sha256": "760185ba3b65a31fc3f6ca8ea15958e0c4d5ebb16083ff14f074707dbe5af1e5",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "tests/ui/ORIGINAL_OBJECTIVE_SHELL.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 7846,
+      "sha256": "df434ca840e1aedf000e512646eab427ec18e4252b8296bff3e20611843ac133",
+      "historical_bytes": 7846,
+      "historical_sha256": "df434ca840e1aedf000e512646eab427ec18e4252b8296bff3e20611843ac133",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "tests/ui/evidence/2026-10-17-real-xim/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 13383,
+      "sha256": "c140c49968a053c2df76f9ab715eac0e0b14940778a38754480b4cffbf12a802",
+      "historical_bytes": 13383,
+      "historical_sha256": "c140c49968a053c2df76f9ab715eac0e0b14940778a38754480b4cffbf12a802",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/README.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 7907,
+      "sha256": "63866c28fd6532994ce5dcff9050945fc085ff9f694437956cbe754c4896ca8f",
+      "historical_bytes": 7907,
+      "historical_sha256": "63866c28fd6532994ce5dcff9050945fc085ff9f694437956cbe754c4896ca8f",
+      "byte_status": "unchanged"
+    },
+    {
+      "path": "ui/shell/OBSERVATION_FRESHNESS.md",
+      "exists": true,
+      "origin": "fixed_source_commit",
+      "bytes": 7891,
+      "sha256": "95c4d5aee8b51da2a8b323d884264c87592793a6024f1ffd89b20bca13e9b987",
+      "historical_bytes": 7160,
+      "historical_sha256": "98302b92b969382930bad272890ac1140dfe37252451a9e0e3153338756fbaa7",
+      "byte_status": "changed"
+    }
+  ],
+  "A04_exception": [
+    {
+      "path": "tests/workloads/linux/README.md",
+      "external_commit": "25c681d944e4efa92f2772cf773e03ae811bc345",
+      "external_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/25c681d944e4efa92f2772cf773e03ae811bc345/tests/workloads/linux/README.md",
+      "exists_at_main_base": false,
+      "exists_at_r10_source": false,
+      "external_document_refetched_by_this_delta": false
+    },
+    {
+      "path": "support/rootfs/README.md",
+      "external_commit": "25c681d944e4efa92f2772cf773e03ae811bc345",
+      "external_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/25c681d944e4efa92f2772cf773e03ae811bc345/support/rootfs/README.md",
+      "exists_at_main_base": false,
+      "exists_at_r10_source": false,
+      "external_document_refetched_by_this_delta": false
+    },
+    {
+      "path": "compat/linux/GAPS.md",
+      "external_commit": "25c681d944e4efa92f2772cf773e03ae811bc345",
+      "external_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/25c681d944e4efa92f2772cf773e03ae811bc345/compat/linux/GAPS.md",
+      "exists_at_main_base": false,
+      "exists_at_r10_source": false,
+      "external_document_refetched_by_this_delta": false
+    }
+  ],
+  "A04_concrete_main_handoff": {
+    "path": "docs/agents/handoffs/A04_LINUX_HEPTA_ELF.md",
+    "exists": true,
+    "origin": "fixed_source_commit",
+    "bytes": 16178,
+    "sha256": "92090675495144416c2b5625d918146a45def4bd27925624fd436343e0d35ec8"
+  },
+  "A04_current_PR_observation": {
+    "source": "results/integration/2026-10-19-g1-owner/source-publication/upstream-and-a04-current-api.json",
+    "bytes": 54761,
+    "sha256": "0cdf958938f42781df8716e1a1c20e4a262aee2293ebfdeb8cc66c83cc475976",
+    "observed_at_utc": "2026-10-19 03:39:15 UTC",
+    "performed_by_root_API_read": true,
+    "head": "25c681d944e4efa92f2772cf773e03ae811bc345",
+    "state": "open",
+    "draft": true,
+    "merged": false,
+    "meaning": "A new root API observation was read from its immutable receipt; this documentation helper did not refetch remote candidate document contents."
+  },
+  "incoming_main_document_delta": {
+    "main": "e15ae6a63edb5d4e7c475a001be82111d451b653",
+    "changed_Markdown_from_0c": 13,
+    "INDEX_STATUS_three_way_merged": true,
+    "manual_overlap_with_G1": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+    "substantive_manuals_count_excludes_INDEX_STATUS": true
+  },
+  "findings": [
+    "A01 and A06 now link the concrete G1-a owner manual. A05 links the independent ordinary-candidate QueryAbi manual.",
+    "Shared contracts remain legitimate module documentation; this check does not create independent handbooks for every module.",
+    "Incoming e15 adds a concrete 164-line A04 main handoff, read substantively here. The three original complete manuals/implementation directories remain external and absent locally; it is no longer correct to call A04 wholly without a main handoff.",
+    "The 53 INDEX targets and 225 nested targets belong to the original R9 review; only counts in current_scope were executed by this new delta review.",
+    "Product tests, hardware support, security remediation and PR merge state are not established by target existence or documentation bytes."
+  ],
+  "blocking_missing_targets": [],
+  "status": "passed_explicit_source_plus_overlay_target_and_manual_delta_review"
+}

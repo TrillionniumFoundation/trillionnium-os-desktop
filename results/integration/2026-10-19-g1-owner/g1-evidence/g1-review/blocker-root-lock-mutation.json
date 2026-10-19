@@ -1,0 +1,51 @@
+{
+  "schema": "r10.g1.independent-root-lock-blocker.v1",
+  "recorded_at_utc": "2026-10-19T01:36:34.729911+00:00",
+  "finding_id": "G1-REVIEW-B01",
+  "severity": "blocking_for_source_bound_acceptance",
+  "status": "observed_unresolved",
+  "source_head": "be6d8408878dc25fce3188e1fc759aa227bf8678",
+  "source_tree": "9992584208a8b03a97454e654ed603a47058f5fa",
+  "tracked_status": " M kernel/asterinas/Cargo.lock\n",
+  "committed": {
+    "path": "root-lock-committed.Cargo.lock",
+    "bytes": 49185,
+    "sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+    "packages": 234
+  },
+  "working": {
+    "path": "root-lock-observed-working.Cargo.lock",
+    "bytes": 49279,
+    "sha256": "af94d71680ecf3b9631e21c958263d5e41229033214f88dcff858bb14765a666",
+    "packages": 235
+  },
+  "diff": {
+    "path": "root-lock-observed.patch",
+    "bytes": 664,
+    "sha256": "9872cb685ea2b58e254804b5e8cc72b8341c335d911a2b5330a7a96bb637db13"
+  },
+  "package_audit_with_current_working_seed": {
+    "admitted": false,
+    "reason": "aster-core: dependency drift from fixed upstream: [('aster-core-osdk-bin', '0.1.0', '', '')]"
+  },
+  "direct_facts": [
+    "The frozen commit stores the original 234-package root seed.",
+    "The read working file contains 235 packages and an additional local os-control package plus one aster-core dependency edge.",
+    "Independent reviewer did not invoke Cargo or write any producer file.",
+    "The original committed derived aster-core lock remains 200 packages and SHA 85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150."
+  ],
+  "unconfirmed_cause": "The main agent had started the real OSDK ktest build. A root-workspace Cargo metadata query is suspected; exact producing command is being inspected by the product/main agents.",
+  "required_resolution": "Preserve the failed attempt and mutated lock as evidence; ensure future OSDK metadata resolution does not change the immutable root seed. Do not repin the seed to the mutated lock to make this gate pass.",
+  "review_commands": [
+    "git status --short",
+    "git diff -- kernel/asterinas/Cargo.lock",
+    "SHA256 and TOML reads of current/committed locks",
+    "Python audit_packages function only"
+  ],
+  "scope": {
+    "cargo_calls": 0,
+    "kernel_builds": 0,
+    "kernel_runs": 0,
+    "producer_files_written": 0
+  }
+}

@@ -1,0 +1,1313 @@
+{
+  "schema": 1,
+  "remote_head": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+  "recipe": "cargo tree --locked --offline -p codex-hepta-agentd --no-default-features --edges normal --target <target>",
+  "scope_notes": [
+    "Only normal dependency edges are shown; no dev or build dependency root expansion. Proc-macro nodes can still occur on normal edges and are not proof of runtime linkage.",
+    "This is resolution/feature evidence, not compiled artifact inspection or a runtime trace.",
+    "No assertion that prior 15 qualification scenarios exercise any vulnerable API.",
+    "No-default disables Agentd default product-write feature only; it does not remove all normal Codex dependencies."
+  ],
+  "targets": [
+    {
+      "target": "aarch64-unknown-linux-gnu",
+      "stdout": {
+        "path": "/workspace/scratch/499c7902de8e/r10-evidence/owner-ci/new-head/deny-repro-01/agentd-no-default-normal-aarch64-unknown-linux-gnu.txt",
+        "sha256": "8aa669946b8a60184a95608570c5ee1008744e02109adf981d8f3d6a54daec2e"
+      },
+      "dependencies": [
+        {
+          "package": "anymap2",
+          "version": "0.13.0",
+          "present_in_selected_normal_dependency_graph": false,
+          "occurrences": 0,
+          "features_sets": [],
+          "proc_macro": false,
+          "one_observed_path": null,
+          "runtime_exploitability": "not_established_by_dependency_graph"
+        },
+        {
+          "package": "matrix-sdk-crypto",
+          "version": "0.18.0",
+          "present_in_selected_normal_dependency_graph": false,
+          "occurrences": 0,
+          "features_sets": [],
+          "proc_macro": false,
+          "one_observed_path": null,
+          "runtime_exploitability": "not_established_by_dependency_graph"
+        },
+        {
+          "package": "rustls",
+          "version": "0.23.45",
+          "present_in_selected_normal_dependency_graph": true,
+          "occurrences": 12,
+          "features_sets": [
+            [
+              "aws-lc-rs",
+              "aws_lc_rs",
+              "log",
+              "logging",
+              "prefer-post-quantum",
+              "ring",
+              "std",
+              "tls12"
+            ],
+            [
+              "ring",
+              "std",
+              "tls12"
+            ]
+          ],
+          "proc_macro": false,
+          "one_observed_path": {
+            "line": 190,
+            "features": [
+              "aws-lc-rs",
+              "aws_lc_rs",
+              "log",
+              "logging",
+              "prefer-post-quantum",
+              "ring",
+              "std",
+              "tls12"
+            ],
+            "proc_macro": false,
+            "path": [
+              {
+                "package": "codex-hepta-agentd",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-app-server",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "axum",
+                "version": "0.8.8",
+                "features": [
+                  "http1",
+                  "json",
+                  "tokio",
+                  "ws"
+                ],
+                "proc_macro": false
+              },
+              {
+                "package": "tokio-tungstenite",
+                "version": "0.28.0",
+                "features": [
+                  "__rustls-tls",
+                  "connect",
+                  "default",
+                  "handshake",
+                  "proxy",
+                  "rustls",
+                  "rustls-native-certs",
+                  "rustls-pki-types",
+                  "rustls-tls-native-roots",
+                  "stream",
+                  "tokio-rustls"
+                ],
+                "proc_macro": false
+              },
+              {
+                "package": "rustls",
+                "version": "0.23.45",
+                "features": [
+                  "aws-lc-rs",
+                  "aws_lc_rs",
+                  "log",
+                  "logging",
+                  "prefer-post-quantum",
+                  "ring",
+                  "std",
+                  "tls12"
+                ],
+                "proc_macro": false
+              }
+            ]
+          },
+          "runtime_exploitability": "not_established_by_dependency_graph"
+        },
+        {
+          "package": "unsafe-libyaml",
+          "version": "0.2.11",
+          "present_in_selected_normal_dependency_graph": true,
+          "occurrences": 1,
+          "features_sets": [
+            []
+          ],
+          "proc_macro": false,
+          "one_observed_path": {
+            "line": 3595,
+            "features": [],
+            "proc_macro": false,
+            "path": [
+              {
+                "package": "codex-hepta-agentd",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-app-server",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-agent-extension",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-core",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-core-plugins",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-skills",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "serde_yaml",
+                "version": "0.9.34+deprecated",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "unsafe-libyaml",
+                "version": "0.2.11",
+                "features": [],
+                "proc_macro": false
+              }
+            ]
+          },
+          "runtime_exploitability": "not_established_by_dependency_graph"
+        },
+        {
+          "package": "zbus_names",
+          "version": "3.0.0",
+          "present_in_selected_normal_dependency_graph": true,
+          "occurrences": 1,
+          "features_sets": [
+            []
+          ],
+          "proc_macro": false,
+          "one_observed_path": {
+            "line": 2554,
+            "features": [],
+            "proc_macro": false,
+            "path": [
+              {
+                "package": "codex-hepta-agentd",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-app-server",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-agent-extension",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-core",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-analytics",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-app-server-protocol",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-secrets",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-keyring-store",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "keyring",
+                "version": "3.6.3",
+                "features": [
+                  "async-secret-service",
+                  "crypto-rust",
+                  "linux-native",
+                  "linux-native-async-persistent"
+                ],
+                "proc_macro": false
+              },
+              {
+                "package": "secret-service",
+                "version": "4.0.0",
+                "features": [
+                  "crypto-rust"
+                ],
+                "proc_macro": false
+              },
+              {
+                "package": "zbus",
+                "version": "4.4.0",
+                "features": [
+                  "async-executor",
+                  "async-fs",
+                  "async-io",
+                  "async-lock",
+                  "async-task",
+                  "blocking",
+                  "default"
+                ],
+                "proc_macro": false
+              },
+              {
+                "package": "zbus_names",
+                "version": "3.0.0",
+                "features": [],
+                "proc_macro": false
+              }
+            ]
+          },
+          "runtime_exploitability": "not_established_by_dependency_graph"
+        },
+        {
+          "package": "zip",
+          "version": "2.4.2",
+          "present_in_selected_normal_dependency_graph": true,
+          "occurrences": 1,
+          "features_sets": [
+            [
+              "_deflate-any",
+              "aes",
+              "aes-crypto",
+              "bzip2",
+              "constant_time_eq",
+              "default",
+              "deflate",
+              "deflate-flate2",
+              "deflate-zopfli",
+              "deflate64",
+              "flate2",
+              "getrandom",
+              "hmac",
+              "lzma",
+              "lzma-rs",
+              "pbkdf2",
+              "sha1",
+              "time",
+              "xz",
+              "zeroize",
+              "zopfli",
+              "zstd"
+            ]
+          ],
+          "proc_macro": false,
+          "one_observed_path": {
+            "line": 3644,
+            "features": [
+              "_deflate-any",
+              "aes",
+              "aes-crypto",
+              "bzip2",
+              "constant_time_eq",
+              "default",
+              "deflate",
+              "deflate-flate2",
+              "deflate-zopfli",
+              "deflate64",
+              "flate2",
+              "getrandom",
+              "hmac",
+              "lzma",
+              "lzma-rs",
+              "pbkdf2",
+              "sha1",
+              "time",
+              "xz",
+              "zeroize",
+              "zopfli",
+              "zstd"
+            ],
+            "proc_macro": false,
+            "path": [
+              {
+                "package": "codex-hepta-agentd",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-app-server",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-agent-extension",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-core",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-core-plugins",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "zip",
+                "version": "2.4.2",
+                "features": [
+                  "_deflate-any",
+                  "aes",
+                  "aes-crypto",
+                  "bzip2",
+                  "constant_time_eq",
+                  "default",
+                  "deflate",
+                  "deflate-flate2",
+                  "deflate-zopfli",
+                  "deflate64",
+                  "flate2",
+                  "getrandom",
+                  "hmac",
+                  "lzma",
+                  "lzma-rs",
+                  "pbkdf2",
+                  "sha1",
+                  "time",
+                  "xz",
+                  "zeroize",
+                  "zopfli",
+                  "zstd"
+                ],
+                "proc_macro": false
+              }
+            ]
+          },
+          "runtime_exploitability": "not_established_by_dependency_graph"
+        },
+        {
+          "package": "zvariant",
+          "version": "4.2.0",
+          "present_in_selected_normal_dependency_graph": true,
+          "occurrences": 2,
+          "features_sets": [
+            [
+              "enumflags2"
+            ]
+          ],
+          "proc_macro": false,
+          "one_observed_path": {
+            "line": 2568,
+            "features": [
+              "enumflags2"
+            ],
+            "proc_macro": false,
+            "path": [
+              {
+                "package": "codex-hepta-agentd",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-app-server",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-agent-extension",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-core",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-analytics",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-app-server-protocol",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-secrets",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-keyring-store",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "keyring",
+                "version": "3.6.3",
+                "features": [
+                  "async-secret-service",
+                  "crypto-rust",
+                  "linux-native",
+                  "linux-native-async-persistent"
+                ],
+                "proc_macro": false
+              },
+              {
+                "package": "secret-service",
+                "version": "4.0.0",
+                "features": [
+                  "crypto-rust"
+                ],
+                "proc_macro": false
+              },
+              {
+                "package": "zbus",
+                "version": "4.4.0",
+                "features": [
+                  "async-executor",
+                  "async-fs",
+                  "async-io",
+                  "async-lock",
+                  "async-task",
+                  "blocking",
+                  "default"
+                ],
+                "proc_macro": false
+              },
+              {
+                "package": "zvariant",
+                "version": "4.2.0",
+                "features": [
+                  "enumflags2"
+                ],
+                "proc_macro": false
+              }
+            ]
+          },
+          "runtime_exploitability": "not_established_by_dependency_graph"
+        },
+        {
+          "package": "zvariant_derive",
+          "version": "4.2.0",
+          "present_in_selected_normal_dependency_graph": true,
+          "occurrences": 1,
+          "features_sets": [
+            []
+          ],
+          "proc_macro": true,
+          "one_observed_path": {
+            "line": 2562,
+            "features": [],
+            "proc_macro": true,
+            "path": [
+              {
+                "package": "codex-hepta-agentd",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-app-server",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-agent-extension",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-core",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-analytics",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-app-server-protocol",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-secrets",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-keyring-store",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "keyring",
+                "version": "3.6.3",
+                "features": [
+                  "async-secret-service",
+                  "crypto-rust",
+                  "linux-native",
+                  "linux-native-async-persistent"
+                ],
+                "proc_macro": false
+              },
+              {
+                "package": "secret-service",
+                "version": "4.0.0",
+                "features": [
+                  "crypto-rust"
+                ],
+                "proc_macro": false
+              },
+              {
+                "package": "zbus",
+                "version": "4.4.0",
+                "features": [
+                  "async-executor",
+                  "async-fs",
+                  "async-io",
+                  "async-lock",
+                  "async-task",
+                  "blocking",
+                  "default"
+                ],
+                "proc_macro": false
+              },
+              {
+                "package": "zbus_names",
+                "version": "3.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "zvariant",
+                "version": "4.2.0",
+                "features": [
+                  "enumflags2"
+                ],
+                "proc_macro": false
+              },
+              {
+                "package": "zvariant_derive",
+                "version": "4.2.0",
+                "features": [],
+                "proc_macro": true
+              }
+            ]
+          },
+          "runtime_exploitability": "not_established_by_dependency_graph"
+        }
+      ]
+    },
+    {
+      "target": "x86_64-unknown-linux-gnu",
+      "stdout": {
+        "path": "/workspace/scratch/499c7902de8e/r10-evidence/owner-ci/new-head/deny-repro-01/agentd-no-default-normal-x86_64-unknown-linux-gnu.txt",
+        "sha256": "3ea31c3a37657666ebfbd82ceefa5756e90fbd166165720f2f4d38108ec6a309"
+      },
+      "dependencies": [
+        {
+          "package": "anymap2",
+          "version": "0.13.0",
+          "present_in_selected_normal_dependency_graph": false,
+          "occurrences": 0,
+          "features_sets": [],
+          "proc_macro": false,
+          "one_observed_path": null,
+          "runtime_exploitability": "not_established_by_dependency_graph"
+        },
+        {
+          "package": "matrix-sdk-crypto",
+          "version": "0.18.0",
+          "present_in_selected_normal_dependency_graph": false,
+          "occurrences": 0,
+          "features_sets": [],
+          "proc_macro": false,
+          "one_observed_path": null,
+          "runtime_exploitability": "not_established_by_dependency_graph"
+        },
+        {
+          "package": "rustls",
+          "version": "0.23.45",
+          "present_in_selected_normal_dependency_graph": true,
+          "occurrences": 12,
+          "features_sets": [
+            [
+              "aws-lc-rs",
+              "aws_lc_rs",
+              "log",
+              "logging",
+              "prefer-post-quantum",
+              "ring",
+              "std",
+              "tls12"
+            ],
+            [
+              "ring",
+              "std",
+              "tls12"
+            ]
+          ],
+          "proc_macro": false,
+          "one_observed_path": {
+            "line": 189,
+            "features": [
+              "aws-lc-rs",
+              "aws_lc_rs",
+              "log",
+              "logging",
+              "prefer-post-quantum",
+              "ring",
+              "std",
+              "tls12"
+            ],
+            "proc_macro": false,
+            "path": [
+              {
+                "package": "codex-hepta-agentd",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-app-server",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "axum",
+                "version": "0.8.8",
+                "features": [
+                  "http1",
+                  "json",
+                  "tokio",
+                  "ws"
+                ],
+                "proc_macro": false
+              },
+              {
+                "package": "tokio-tungstenite",
+                "version": "0.28.0",
+                "features": [
+                  "__rustls-tls",
+                  "connect",
+                  "default",
+                  "handshake",
+                  "proxy",
+                  "rustls",
+                  "rustls-native-certs",
+                  "rustls-pki-types",
+                  "rustls-tls-native-roots",
+                  "stream",
+                  "tokio-rustls"
+                ],
+                "proc_macro": false
+              },
+              {
+                "package": "rustls",
+                "version": "0.23.45",
+                "features": [
+                  "aws-lc-rs",
+                  "aws_lc_rs",
+                  "log",
+                  "logging",
+                  "prefer-post-quantum",
+                  "ring",
+                  "std",
+                  "tls12"
+                ],
+                "proc_macro": false
+              }
+            ]
+          },
+          "runtime_exploitability": "not_established_by_dependency_graph"
+        },
+        {
+          "package": "unsafe-libyaml",
+          "version": "0.2.11",
+          "present_in_selected_normal_dependency_graph": true,
+          "occurrences": 1,
+          "features_sets": [
+            []
+          ],
+          "proc_macro": false,
+          "one_observed_path": {
+            "line": 3603,
+            "features": [],
+            "proc_macro": false,
+            "path": [
+              {
+                "package": "codex-hepta-agentd",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-app-server",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-agent-extension",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-core",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-core-plugins",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-skills",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "serde_yaml",
+                "version": "0.9.34+deprecated",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "unsafe-libyaml",
+                "version": "0.2.11",
+                "features": [],
+                "proc_macro": false
+              }
+            ]
+          },
+          "runtime_exploitability": "not_established_by_dependency_graph"
+        },
+        {
+          "package": "zbus_names",
+          "version": "3.0.0",
+          "present_in_selected_normal_dependency_graph": true,
+          "occurrences": 1,
+          "features_sets": [
+            []
+          ],
+          "proc_macro": false,
+          "one_observed_path": {
+            "line": 2562,
+            "features": [],
+            "proc_macro": false,
+            "path": [
+              {
+                "package": "codex-hepta-agentd",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-app-server",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-agent-extension",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-core",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-analytics",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-app-server-protocol",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-secrets",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-keyring-store",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "keyring",
+                "version": "3.6.3",
+                "features": [
+                  "async-secret-service",
+                  "crypto-rust",
+                  "linux-native",
+                  "linux-native-async-persistent"
+                ],
+                "proc_macro": false
+              },
+              {
+                "package": "secret-service",
+                "version": "4.0.0",
+                "features": [
+                  "crypto-rust"
+                ],
+                "proc_macro": false
+              },
+              {
+                "package": "zbus",
+                "version": "4.4.0",
+                "features": [
+                  "async-executor",
+                  "async-fs",
+                  "async-io",
+                  "async-lock",
+                  "async-task",
+                  "blocking",
+                  "default"
+                ],
+                "proc_macro": false
+              },
+              {
+                "package": "zbus_names",
+                "version": "3.0.0",
+                "features": [],
+                "proc_macro": false
+              }
+            ]
+          },
+          "runtime_exploitability": "not_established_by_dependency_graph"
+        },
+        {
+          "package": "zip",
+          "version": "2.4.2",
+          "present_in_selected_normal_dependency_graph": true,
+          "occurrences": 1,
+          "features_sets": [
+            [
+              "_deflate-any",
+              "aes",
+              "aes-crypto",
+              "bzip2",
+              "constant_time_eq",
+              "default",
+              "deflate",
+              "deflate-flate2",
+              "deflate-zopfli",
+              "deflate64",
+              "flate2",
+              "getrandom",
+              "hmac",
+              "lzma",
+              "lzma-rs",
+              "pbkdf2",
+              "sha1",
+              "time",
+              "xz",
+              "zeroize",
+              "zopfli",
+              "zstd"
+            ]
+          ],
+          "proc_macro": false,
+          "one_observed_path": {
+            "line": 3652,
+            "features": [
+              "_deflate-any",
+              "aes",
+              "aes-crypto",
+              "bzip2",
+              "constant_time_eq",
+              "default",
+              "deflate",
+              "deflate-flate2",
+              "deflate-zopfli",
+              "deflate64",
+              "flate2",
+              "getrandom",
+              "hmac",
+              "lzma",
+              "lzma-rs",
+              "pbkdf2",
+              "sha1",
+              "time",
+              "xz",
+              "zeroize",
+              "zopfli",
+              "zstd"
+            ],
+            "proc_macro": false,
+            "path": [
+              {
+                "package": "codex-hepta-agentd",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-app-server",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-agent-extension",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-core",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-core-plugins",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "zip",
+                "version": "2.4.2",
+                "features": [
+                  "_deflate-any",
+                  "aes",
+                  "aes-crypto",
+                  "bzip2",
+                  "constant_time_eq",
+                  "default",
+                  "deflate",
+                  "deflate-flate2",
+                  "deflate-zopfli",
+                  "deflate64",
+                  "flate2",
+                  "getrandom",
+                  "hmac",
+                  "lzma",
+                  "lzma-rs",
+                  "pbkdf2",
+                  "sha1",
+                  "time",
+                  "xz",
+                  "zeroize",
+                  "zopfli",
+                  "zstd"
+                ],
+                "proc_macro": false
+              }
+            ]
+          },
+          "runtime_exploitability": "not_established_by_dependency_graph"
+        },
+        {
+          "package": "zvariant",
+          "version": "4.2.0",
+          "present_in_selected_normal_dependency_graph": true,
+          "occurrences": 2,
+          "features_sets": [
+            [
+              "enumflags2"
+            ]
+          ],
+          "proc_macro": false,
+          "one_observed_path": {
+            "line": 2576,
+            "features": [
+              "enumflags2"
+            ],
+            "proc_macro": false,
+            "path": [
+              {
+                "package": "codex-hepta-agentd",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-app-server",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-agent-extension",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-core",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-analytics",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-app-server-protocol",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-secrets",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-keyring-store",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "keyring",
+                "version": "3.6.3",
+                "features": [
+                  "async-secret-service",
+                  "crypto-rust",
+                  "linux-native",
+                  "linux-native-async-persistent"
+                ],
+                "proc_macro": false
+              },
+              {
+                "package": "secret-service",
+                "version": "4.0.0",
+                "features": [
+                  "crypto-rust"
+                ],
+                "proc_macro": false
+              },
+              {
+                "package": "zbus",
+                "version": "4.4.0",
+                "features": [
+                  "async-executor",
+                  "async-fs",
+                  "async-io",
+                  "async-lock",
+                  "async-task",
+                  "blocking",
+                  "default"
+                ],
+                "proc_macro": false
+              },
+              {
+                "package": "zvariant",
+                "version": "4.2.0",
+                "features": [
+                  "enumflags2"
+                ],
+                "proc_macro": false
+              }
+            ]
+          },
+          "runtime_exploitability": "not_established_by_dependency_graph"
+        },
+        {
+          "package": "zvariant_derive",
+          "version": "4.2.0",
+          "present_in_selected_normal_dependency_graph": true,
+          "occurrences": 1,
+          "features_sets": [
+            []
+          ],
+          "proc_macro": true,
+          "one_observed_path": {
+            "line": 2570,
+            "features": [],
+            "proc_macro": true,
+            "path": [
+              {
+                "package": "codex-hepta-agentd",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-app-server",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-agent-extension",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-core",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-analytics",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-app-server-protocol",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-secrets",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "codex-keyring-store",
+                "version": "0.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "keyring",
+                "version": "3.6.3",
+                "features": [
+                  "async-secret-service",
+                  "crypto-rust",
+                  "linux-native",
+                  "linux-native-async-persistent"
+                ],
+                "proc_macro": false
+              },
+              {
+                "package": "secret-service",
+                "version": "4.0.0",
+                "features": [
+                  "crypto-rust"
+                ],
+                "proc_macro": false
+              },
+              {
+                "package": "zbus",
+                "version": "4.4.0",
+                "features": [
+                  "async-executor",
+                  "async-fs",
+                  "async-io",
+                  "async-lock",
+                  "async-task",
+                  "blocking",
+                  "default"
+                ],
+                "proc_macro": false
+              },
+              {
+                "package": "zbus_names",
+                "version": "3.0.0",
+                "features": [],
+                "proc_macro": false
+              },
+              {
+                "package": "zvariant",
+                "version": "4.2.0",
+                "features": [
+                  "enumflags2"
+                ],
+                "proc_macro": false
+              },
+              {
+                "package": "zvariant_derive",
+                "version": "4.2.0",
+                "features": [],
+                "proc_macro": true
+              }
+            ]
+          },
+          "runtime_exploitability": "not_established_by_dependency_graph"
+        }
+      ]
+    }
+  ]
+}

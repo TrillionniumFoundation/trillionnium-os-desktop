@@ -1,0 +1,104 @@
+{
+  "schema": 1,
+  "kind": "locked_offline_dependency_and_feature_graph_not_execution_trace",
+  "started_at": "2026-10-19T01:40:52.078304+00:00",
+  "before": {
+    "head": "1b0fedb8c2b510106848f6feaf530c9b3698399d",
+    "status": "",
+    "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+    "deny_policy_sha256": "3713c011667dcbeda9edf1b2644a813f2b5253ebb7b2f3e98ea60aab69407352"
+  },
+  "commands": [
+    {
+      "argv": [
+        "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/bin/rustup",
+        "run",
+        "1.95.0",
+        "cargo",
+        "tree",
+        "--locked",
+        "--offline",
+        "--manifest-path",
+        "./codex-rs/Cargo.toml",
+        "-p",
+        "codex-hepta-agentd",
+        "--no-default-features",
+        "--edges",
+        "normal",
+        "--target",
+        "x86_64-unknown-linux-gnu",
+        "--prefix",
+        "depth",
+        "--format",
+        "{p} features=[{f}]",
+        "--charset",
+        "ascii"
+      ],
+      "cwd": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro",
+      "started_at": "2026-10-19T01:40:52.107870+00:00",
+      "completed_at": "2026-10-19T01:40:53.013779+00:00",
+      "exit_code": 0,
+      "target": "x86_64-unknown-linux-gnu",
+      "stdout": {
+        "path": "/workspace/scratch/499c7902de8e/r10-evidence/owner-ci/new-head/deny-repro-01/agentd-no-default-normal-x86_64-unknown-linux-gnu.txt",
+        "bytes": 330024,
+        "sha256": "3ea31c3a37657666ebfbd82ceefa5756e90fbd166165720f2f4d38108ec6a309"
+      },
+      "stderr": {
+        "path": "/workspace/scratch/499c7902de8e/r10-evidence/owner-ci/new-head/deny-repro-01/agentd-no-default-normal-x86_64-unknown-linux-gnu.stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "argv": [
+        "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/bin/rustup",
+        "run",
+        "1.95.0",
+        "cargo",
+        "tree",
+        "--locked",
+        "--offline",
+        "--manifest-path",
+        "./codex-rs/Cargo.toml",
+        "-p",
+        "codex-hepta-agentd",
+        "--no-default-features",
+        "--edges",
+        "normal",
+        "--target",
+        "aarch64-unknown-linux-gnu",
+        "--prefix",
+        "depth",
+        "--format",
+        "{p} features=[{f}]",
+        "--charset",
+        "ascii"
+      ],
+      "cwd": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro",
+      "started_at": "2026-10-19T01:40:53.014061+00:00",
+      "completed_at": "2026-10-19T01:40:53.949863+00:00",
+      "exit_code": 0,
+      "target": "aarch64-unknown-linux-gnu",
+      "stdout": {
+        "path": "/workspace/scratch/499c7902de8e/r10-evidence/owner-ci/new-head/deny-repro-01/agentd-no-default-normal-aarch64-unknown-linux-gnu.txt",
+        "bytes": 329562,
+        "sha256": "8aa669946b8a60184a95608570c5ee1008744e02109adf981d8f3d6a54daec2e"
+      },
+      "stderr": {
+        "path": "/workspace/scratch/499c7902de8e/r10-evidence/owner-ci/new-head/deny-repro-01/agentd-no-default-normal-aarch64-unknown-linux-gnu.stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ],
+  "product_build_performed": false,
+  "after": {
+    "head": "1b0fedb8c2b510106848f6feaf530c9b3698399d",
+    "status": "",
+    "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+    "deny_policy_sha256": "3713c011667dcbeda9edf1b2644a813f2b5253ebb7b2f3e98ea60aab69407352"
+  },
+  "source_unchanged": true,
+  "completed_at": "2026-10-19T01:40:53.981204+00:00"
+}

@@ -1,0 +1,1161 @@
+{
+  "schema": "r10.queryabi.independent-three-attempt-runtime-review.v1",
+  "reviewed_at_utc": "2026-10-19T02:43:00.041939+00:00",
+  "verdict": "final_candidate_source_and_retained_attempt03_accepted_with_unresolved_environment_observation",
+  "code_blocking_findings": [],
+  "blocking": [
+    {
+      "id": "ENV-1",
+      "category": "later_workspace_environment_observation",
+      "observation": "After attempt03 had completed with its saved clean status, a later read-only git status again reported untracked kernel/asterinas/kernel/OSDK.toml. Root independently observed the same. Writer remains unknown.",
+      "direct_reviewer_tool_receipt": "exec_command chunk 1cce80: ?? kernel/asterinas/kernel/OSDK.toml",
+      "blocks": "An unqualified claim that the later/current workspace is clean or that this environment is reproducible without qualification.",
+      "does_not_change": "Attempt03's retained interval, three equal source snapshots, final in-cell clean status, raw guest evidence, or actual accepted=true result.",
+      "follow_up": "Cross-check unchanged strict admission/cleanup on ordinary GitHub CI. Do not add an ignore, weaken admission, attribute a writer from timestamps, or relabel this as a proved C/kernel defect."
+    }
+  ],
+  "source": {
+    "final_head": "4e077aef4913179a68aa0d814018ce1a9d87cafc",
+    "final_tree": "4e42c3833746cd2684d0a75020d73286820457e6",
+    "first_attempt_head": "85b6ebf5647067f9811dbe14794cf80720bee3fa",
+    "first_attempt_tree": "d2a537689cfb7199291cc3af75d5d3d71e67b568",
+    "tested_kernel_head": "12e0547d2e6394548b15764b06346422c4fff31e",
+    "kernel_os_control_os_abi_diff_from_tested": [],
+    "marker_fix_changed_files": [
+      "tests/kernel/control/README.md",
+      "tests/kernel/control/queryabi_candidate_guest.c"
+    ],
+    "legacy_a05_preserved": true,
+    "acceptance_and_source_gates_unchanged": true,
+    "all_snapshot_files_verified_against_raw_git_bytes": 5851,
+    "unique_git_blobs_for_both_heads": 4820,
+    "all_git_object_content_hashes_recomputed": true,
+    "reviewed_source_files": {
+      "tests/kernel/control/queryabi_guest.c": {
+        "mode": "100644",
+        "git_blob": "57b8f38073d155e682004e1e1ddceada6b304e32",
+        "sha256": "bed0eef9bdf8228bf58e23bd2b775501e8d5718ff11e554a600acc1b5469155b",
+        "size": 10823
+      },
+      "tests/kernel/control/run_queryabi_guest.py": {
+        "mode": "100644",
+        "git_blob": "d0e5be01c92071c5ee36d0fb084f271976e56719",
+        "sha256": "3d981b41ae4905983c67d13d8d7abfbc29318fd6a41b848523eb4c0ac1400268",
+        "size": 9633
+      },
+      "tests/kernel/control/run_queryabi_candidate_guest.py": {
+        "mode": "100644",
+        "git_blob": "d0491aa3db3facd5ef6f2d00b122a109b51409e3",
+        "sha256": "e02cfa6a786f8016f0fdb4714e539e6949094c32390cf9230a9039b0dd868a6f",
+        "size": 16239
+      },
+      "tests/kernel/control/test_queryabi_candidate_runner.py": {
+        "mode": "100644",
+        "git_blob": "642a7d83f6e8e2110db30c73b869efe89530a5a5",
+        "sha256": "18d3d350115cd9a5f2084b22b0f43c27bc7dbd389d84ceea97277510b69ffb42",
+        "size": 8944
+      },
+      "support/build/kernel.sh": {
+        "mode": "100755",
+        "git_blob": "b02532bbf128e589cbb14169e4f589f818944ed6",
+        "sha256": "78b7960950e614d432f5a3d88aa4e059a914d9f097ba05248ddcb2fecccd1e01",
+        "size": 4672
+      },
+      "support/build/verify-source.py": {
+        "mode": "100644",
+        "git_blob": "dfb398c485f10ea471142cdf4dfb2b7b0bd74687",
+        "sha256": "0b4dcbd04bf2bc201c187dc055d3c5f74ff51938f1506fe4c9590d7f0a1cf0c6",
+        "size": 5832
+      },
+      "support/build/check-boot.py": {
+        "mode": "100644",
+        "git_blob": "1c01897379dbf5d8fbe309c4a15da1bf25980216",
+        "sha256": "2ee1be040c622b248986efdeacab43eea6b2d730e0bad1a8bc0ba995c1915f80",
+        "size": 3869
+      },
+      ".github/workflows/a06-kernel.yml": {
+        "mode": "100644",
+        "git_blob": "4e94558fc56e02ccc05dd279d19b8482a2f31d29",
+        "sha256": "cfdf01ca9a7fdf4554f5fddb3ae2e0d518ec5ccfbcdf2a2503ac03be6874cb75",
+        "size": 6897
+      },
+      "tests/kernel/control/queryabi_candidate_guest.c": {
+        "mode": "100644",
+        "git_blob": "30308c97256f75e7cdca0d4bac9726662a7903af",
+        "sha256": "0bce7feb48b5f457c886cd3ebd860540828fd348c7d8ebb86bae1ac7ea4f3e7e",
+        "size": 3367
+      },
+      "tests/kernel/control/README.md": {
+        "mode": "100644",
+        "git_blob": "ede4502e8aa4c8c8e615a51c4d27f5e033c92ba7",
+        "sha256": "d33f83c5c134d0bfa9cd1a5d9c4c5445bee4d6700703b735983926891b8471b8",
+        "size": 6184
+      },
+      ".github/workflows/g0-contracts.yml": {
+        "mode": "100644",
+        "git_blob": "3729fc3790f6080bbed85ecf5812bd3ba56a66b6",
+        "sha256": "b9b9b700cd0d98ea5446ffe88a970b1674f742f9b31fa64296387b1b4bf2e24c",
+        "size": 8669
+      },
+      "libs/os-abi/src/lib.rs": {
+        "mode": "100644",
+        "git_blob": "276e59ef0de4df46c09b17a792c5c049024d07b3",
+        "sha256": "826e6533bd7ed2f6527db819e9f0400867ca1e607cd0581a03970444c3e4b60f",
+        "size": 47272
+      },
+      "kernel/asterinas/kernel/core/src/lib.rs": {
+        "mode": "100644",
+        "git_blob": "1a1cc52dae2fa5c9b824c12409eba78760f1c0f6",
+        "sha256": "52ebf8f97fcd33b4eec94ff7d0088c3a3331130cef1e2b12a839d82b23a83d2f",
+        "size": 1861
+      },
+      "kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs": {
+        "mode": "100644",
+        "git_blob": "50394952de7f8fa878fd07e539947ab0cd8d000e",
+        "sha256": "5133419b204d05e769b4a111a6e4285c9f50de482b65be15b5799312203e3979",
+        "size": 9584
+      },
+      "tests/organ_backend/run_guest_probe.py": {
+        "mode": "100644",
+        "git_blob": "3ac1e16e2a99908b792f0b72ed727fa4af8f8042",
+        "sha256": "4bc5803f32ddc98b59af60f8acc03ff8a13d938f41d7a3b60d64581530867c5a",
+        "size": 7541
+      }
+    }
+  },
+  "source_review": [
+    {
+      "topic": "atomic marker writer",
+      "finding": "candidate_puts bounds text with strnlen into a 256-byte local buffer, appends newline, and uses one write for all bytes. It retries a negative EINTR; short writes or other errors exit 91 and overlength exits 90. Include-local puts macro covers original parent/fork/exec marker sites without altering old A05 source; new markers call it explicitly.",
+      "qualification": "Successful one-write framing is exercised by real attempt03. EINTR, short-write and overlength branches are source-reviewed, not newly fault-injected."
+    },
+    {
+      "topic": "original process-lifetime behavior",
+      "finding": "Original main is called first; --exec-epoch-check returns directly. Original fork children use _exit and never run the four new parent checks. Seven legacy security markers each appear once in attempt03."
+    },
+    {
+      "topic": "known disabled operations",
+      "finding": "ReadUsage 64 bytes; InstallBudget 96 bytes with canonical sequence/revision 1, 100 ms period, 1 ms cap; QueryDelivery/RetireThrough 104 bytes using actual nonzero boot/space IDs and sequence 1. Target slot/generation are nonzero, reserved fields zero, response capacity128. The canonical HOS2 decoder accepts each shape before the current device rejects supported-but-disabled operations with EOPNOTSUPP. C accepts only -1 with exactly that errno."
+    },
+    {
+      "topic": "source and product provenance",
+      "finding": "All 5851 entries in every available source snapshot have matching complete fixed-Git paths, blob IDs, modes, lengths and SHA256. Fixed ordinary make run_kernel is retained with SMP1/TCG/no KVM. No production cfg(ktest) entry is used. The ordinary boot ELF is copied and bound to the second guest."
+    },
+    {
+      "topic": "CI and root artifact change",
+      "finding": "Fixed A06 source retains external prepare output plus exact comparisons of both test locks, full OSTD/core first, new candidate second, separate SMP2/quota next. Root's original five-line change retains actual core/OSTD test boot ELFs and later SMP2 product ELF and explains that separately from the copied candidate ELF."
+    },
+    {
+      "topic": "strict gates",
+      "finding": "The atomic-writer commit changes only candidate C and README. Source admission, literal-line acceptance, failure capture, timeout/exit oracles, original A05 files, kernel.sh and CI gates remain unchanged."
+    }
+  ],
+  "attempts": [
+    {
+      "attempt": 1,
+      "source_head": "85b6ebf5647067f9811dbe14794cf80720bee3fa",
+      "source_tree": "d2a537689cfb7199291cc3af75d5d3d71e67b568",
+      "started_at_utc": "2026-10-19T02:15:12.817318+00:00",
+      "finished_at_utc": "2026-10-19T02:17:31.429498+00:00",
+      "elapsed_wall_seconds": 138.61218,
+      "outer_exit": 1,
+      "accepted": false,
+      "inner_stage": "queryabi_candidate_guest",
+      "inner_error": "ValueError: source checkout is dirty or has untracked inputs",
+      "source_snapshots": [
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/execution/source-after-boot.json",
+          "bytes": 1610660,
+          "sha256": "26e6ea325472ec2c33d453495c1bbe3a45a10aaae9d2fd2ced935103b38183f6",
+          "head": "85b6ebf5647067f9811dbe14794cf80720bee3fa",
+          "tree": "d2a537689cfb7199291cc3af75d5d3d71e67b568",
+          "files": 5851,
+          "total_source_bytes": 89413897,
+          "all_git_blob_ids_modes_sizes_sha256_checked": true
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/execution/source-before.json",
+          "bytes": 1610660,
+          "sha256": "26e6ea325472ec2c33d453495c1bbe3a45a10aaae9d2fd2ced935103b38183f6",
+          "head": "85b6ebf5647067f9811dbe14794cf80720bee3fa",
+          "tree": "d2a537689cfb7199291cc3af75d5d3d71e67b568",
+          "files": 5851,
+          "total_source_bytes": 89413897,
+          "all_git_blob_ids_modes_sizes_sha256_checked": true
+        }
+      ],
+      "source_before_after_equal_within_available_snapshots": true,
+      "source_verifier": {
+        "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/execution/product-boot/source-inputs.json",
+        "bytes": 1807,
+        "sha256": "f5e6fb492f869071dc0b90af2578824dd2ef9a87b82f541c857a78e25f3099a3",
+        "checked_files": 118,
+        "fixed_git_inputs_matched": true
+      },
+      "original_initramfs": {
+        "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/execution/product-boot/initramfs.cpio.gz",
+        "bytes": 1107990,
+        "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+        "entries": 25,
+        "all_manifest_content_modes_uid_gid_mtime_checked": true,
+        "upstream_smoke_script_matches_fixed_git": true,
+        "busybox_sha256": "dbac288c29ba568459550a2da9e7ae0ded6b1fc728ee9fad3044c44e62d6ac14"
+      },
+      "diagnosis": "13 HEPTA bodies occur once but each is followed by a SYS_WRITE trace before its separate newline; literal-line oracle fails. A separate final source admission failure remains recorded.",
+      "qemu_guest_count": 2,
+      "ordinary_qemu": {
+        "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/execution/product-boot/qemu.json",
+        "bytes": 3135,
+        "sha256": "90dc1fe0b03c7276443f6da4b91198c7b1a7f8a546e52c12ed437884e2eecedb"
+      },
+      "ordinary_serial": {
+        "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/execution/product-boot/serial.log",
+        "bytes": 72287,
+        "sha256": "d618d1264883964b4e083816711f8e8d7965df9e2e51937a8dda8672876b2cdf"
+      },
+      "ordinary_profile": {
+        "machine": "q35",
+        "accel": "tcg",
+        "cpu": "max",
+        "vcpu": 1,
+        "memory": "512M",
+        "qemu_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+        "raw_exit": 33,
+        "timed_out": false,
+        "duration_seconds": 0.966
+      },
+      "candidate_profile": {
+        "raw_exit": 33,
+        "timed_out": false,
+        "duration_seconds": 0.966,
+        "same_n0_profile": true
+      },
+      "ordinary_product_command": [
+        "make",
+        "-C",
+        "/workspace/scratch/499c7902de8e/r10-g1-owner/kernel/asterinas",
+        "-f",
+        "Makefile",
+        "-f",
+        "/workspace/scratch/499c7902de8e/r10-g1-owner/support/build/minimal.mk",
+        "run_kernel",
+        "CARGO_OSDK=/workspace/scratch/499c7902de8e/implementation-tools/cargo/bin/cargo-osdk",
+        "A01_INITRAMFS=/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/execution/product-boot/initramfs.cpio.gz",
+        "A01_QEMU_WRAPPER=/workspace/scratch/499c7902de8e/r10-g1-owner/support/build/record-qemu.py",
+        "TARGET_ARCH=x86_64",
+        "SMP=1",
+        "MEM=512M",
+        "ENABLE_KVM=0",
+        "BOOT_PROTOCOL=multiboot",
+        "INITRAMFS=on",
+        "AUTO_TEST=none"
+      ],
+      "product_elf": {
+        "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/execution/product-kernel.elf",
+        "bytes": 8371096,
+        "sha256": "27c60a34e0a67e839d885ada14b43719131f8ec2e527d65e3f1dd6290f014a89",
+        "elf_class": "ELF64",
+        "endianness": "little",
+        "elf_type": "ET_EXEC",
+        "e_machine": 3,
+        "entry": "0x8001248",
+        "has_PT_INTERP": false
+      },
+      "probe_elf": {
+        "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/execution/hos2-queryabi",
+        "bytes": 803832,
+        "sha256": "ce90f36610300506edcd0826393020ff578e3055452a42ec731058b14d81ae8a",
+        "elf_class": "ELF64",
+        "endianness": "little",
+        "elf_type": "ET_EXEC",
+        "e_machine": 62,
+        "entry": "0x401830",
+        "has_PT_INTERP": false
+      },
+      "bios": {
+        "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/execution/bios.bin",
+        "bytes": 262144,
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+      },
+      "injected_initramfs": {
+        "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/execution/initramfs.cpio.gz",
+        "bytes": 1456918,
+        "sha256": "247a8dc2fc8f7306deb5126507f341144b2be62c35b45596591a4e2ec624918e",
+        "entries": 26,
+        "changed": [
+          "init"
+        ],
+        "added": [
+          "bin/hos2-queryabi"
+        ],
+        "removed": [],
+        "exact_injection_verified": true
+      },
+      "literal_marker_counts": {
+        "HEPTA_EXEC_PREIMAGE_QUERYABI_OK": 0,
+        "HEPTA_EXEC_EPOCH_DENIED": 0,
+        "HEPTA_EXEC_CAPSPACE_ROTATED": 0,
+        "HEPTA_FORK_INHERITED_FD_DENIED": 0,
+        "HEPTA_FORK_CAPSPACE_DISTINCT": 0,
+        "HEPTA_NONROOT_OPEN_DENIED": 0,
+        "HEPTA_DUP_SESSION_STABLE": 0,
+        "HEPTA_QUERYABI_OK ops=QueryAbi_only, process_bound_session=yes, denied_invalid=yes": 0,
+        "HEPTA_DISABLED_READ_USAGE_OK": 0,
+        "HEPTA_DISABLED_INSTALL_BUDGET_OK": 0,
+        "HEPTA_DISABLED_QUERY_DELIVERY_OK": 0,
+        "HEPTA_DISABLED_RETIRE_THROUGH_OK": 0,
+        "HEPTA_QUERYABI_CANDIDATE_OK disabled_operations=4": 0,
+        "TRILLIONNIUM_A01_BOOT_OK": 1
+      },
+      "body_occurrence_counts": {
+        "HEPTA_EXEC_PREIMAGE_QUERYABI_OK": 1,
+        "HEPTA_EXEC_EPOCH_DENIED": 1,
+        "HEPTA_EXEC_CAPSPACE_ROTATED": 1,
+        "HEPTA_FORK_INHERITED_FD_DENIED": 1,
+        "HEPTA_FORK_CAPSPACE_DISTINCT": 1,
+        "HEPTA_NONROOT_OPEN_DENIED": 1,
+        "HEPTA_DUP_SESSION_STABLE": 1,
+        "HEPTA_QUERYABI_OK ops=QueryAbi_only, process_bound_session=yes, denied_invalid=yes": 1,
+        "HEPTA_DISABLED_READ_USAGE_OK": 1,
+        "HEPTA_DISABLED_INSTALL_BUDGET_OK": 1,
+        "HEPTA_DISABLED_QUERY_DELIVERY_OK": 1,
+        "HEPTA_DISABLED_RETIRE_THROUGH_OK": 1,
+        "HEPTA_QUERYABI_CANDIDATE_OK disabled_operations=4": 1,
+        "TRILLIONNIUM_A01_BOOT_OK": 1
+      },
+      "all_bodies_ordered": true,
+      "retained_exact_evaluator_result": {
+        "marker_counts": {
+          "HEPTA_EXEC_PREIMAGE_QUERYABI_OK": 0,
+          "HEPTA_EXEC_EPOCH_DENIED": 0,
+          "HEPTA_EXEC_CAPSPACE_ROTATED": 0,
+          "HEPTA_FORK_INHERITED_FD_DENIED": 0,
+          "HEPTA_FORK_CAPSPACE_DISTINCT": 0,
+          "HEPTA_NONROOT_OPEN_DENIED": 0,
+          "HEPTA_DUP_SESSION_STABLE": 0,
+          "HEPTA_DISABLED_READ_USAGE_OK": 0,
+          "HEPTA_DISABLED_INSTALL_BUDGET_OK": 0,
+          "HEPTA_DISABLED_QUERY_DELIVERY_OK": 0,
+          "HEPTA_DISABLED_RETIRE_THROUGH_OK": 0,
+          "HEPTA_QUERYABI_OK ops=QueryAbi_only, process_bound_session=yes, denied_invalid=yes": 0,
+          "HEPTA_QUERYABI_CANDIDATE_OK disabled_operations=4": 0,
+          "TRILLIONNIUM_A01_BOOT_OK": 1
+        },
+        "exact_one_markers": false,
+        "ordered_root_completion": false,
+        "no_guest_failure": true,
+        "raw_serial_sha256": "26aa1440563c927eed986249b7c54354cd9f19e0fe34ea2e771fa26d96e44dc1",
+        "raw_serial_size": 82912,
+        "passed": false
+      },
+      "marker_line_numbers": {
+        "HEPTA_EXEC_PREIMAGE_QUERYABI_OK": [
+          697
+        ],
+        "HEPTA_EXEC_EPOCH_DENIED": [
+          715
+        ],
+        "HEPTA_EXEC_CAPSPACE_ROTATED": [
+          721
+        ],
+        "HEPTA_FORK_INHERITED_FD_DENIED": [
+          729
+        ],
+        "HEPTA_FORK_CAPSPACE_DISTINCT": [
+          735
+        ],
+        "HEPTA_NONROOT_OPEN_DENIED": [
+          740
+        ],
+        "HEPTA_DUP_SESSION_STABLE": [
+          744
+        ],
+        "HEPTA_QUERYABI_OK ops=QueryAbi_only, process_bound_session=yes, denied_invalid=yes": [
+          749
+        ],
+        "HEPTA_DISABLED_READ_USAGE_OK": [
+          755
+        ],
+        "HEPTA_DISABLED_INSTALL_BUDGET_OK": [
+          759
+        ],
+        "HEPTA_DISABLED_QUERY_DELIVERY_OK": [
+          763
+        ],
+        "HEPTA_DISABLED_RETIRE_THROUGH_OK": [
+          767
+        ],
+        "HEPTA_QUERYABI_CANDIDATE_OK disabled_operations=4": [
+          771
+        ],
+        "TRILLIONNIUM_A01_BOOT_OK": [
+          777
+        ]
+      },
+      "original_profile_fatal_marker_found": false,
+      "generated_lock": {
+        "expected_git_file": "support/build/minimal/Cargo.lock",
+        "packages": 204,
+        "sha256": "e54bc99b3df5e21a1fdcd88d89b32ac478e73c7b4bf69ae0b1084f59d56fc506",
+        "measurement": "Immutable reviewed runner verify_product_boot reads the actual generated run-base lock and requires exact byte equality before guest execution; saved result records the value.",
+        "independent_bytes": "Committed minimal lock is independently read from Git and counted. A separate raw generated-lock copy is not present in these attempt evidence directories; live owner target was deliberately not accessed."
+      },
+      "retained_files": [
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/execution/bios.bin",
+          "bytes": 262144,
+          "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/execution/compile.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/execution/hos2-queryabi",
+          "bytes": 803832,
+          "sha256": "ce90f36610300506edcd0826393020ff578e3055452a42ec731058b14d81ae8a"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/execution/initramfs.cpio.gz",
+          "bytes": 1456918,
+          "sha256": "247a8dc2fc8f7306deb5126507f341144b2be62c35b45596591a4e2ec624918e"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/execution/product-boot/command.sh",
+          "bytes": 567,
+          "sha256": "15099133d85a3d6eda4b267d9a7d0440186061e29818bcd8e2461a1e2cb7d1ec"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/execution/product-boot/environment.log",
+          "bytes": 2727,
+          "sha256": "bd7f9bade65ecb00e2e4ba8eb0dbad493ecfd495b10674330a53e990243e1618"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/execution/product-boot/initramfs-manifest.json",
+          "bytes": 7121,
+          "sha256": "a26dd1a6286d9866eb4a93684fa6b076cfa11d7d6aad80db478cb0942e551f0d"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/execution/product-boot/initramfs.cpio.gz",
+          "bytes": 1107990,
+          "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/execution/product-boot/log-exit-code.txt",
+          "bytes": 2,
+          "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/execution/product-boot/make-exit-code.txt",
+          "bytes": 2,
+          "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/execution/product-boot/qemu.json",
+          "bytes": 3135,
+          "sha256": "90dc1fe0b03c7276443f6da4b91198c7b1a7f8a546e52c12ed437884e2eecedb"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/execution/product-boot/run-exit-code.txt",
+          "bytes": 2,
+          "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/execution/product-boot/run_kernel.log",
+          "bytes": 121934,
+          "sha256": "7ee7a9fdfa94943dba20bdf54a4ca0fc900fff703252fdfae586a65047648b58"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/execution/product-boot/serial.log",
+          "bytes": 72287,
+          "sha256": "d618d1264883964b4e083816711f8e8d7965df9e2e51937a8dda8672876b2cdf"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/execution/product-boot/source-inputs.json",
+          "bytes": 1807,
+          "sha256": "f5e6fb492f869071dc0b90af2578824dd2ef9a87b82f541c857a78e25f3099a3"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/execution/product-kernel.elf",
+          "bytes": 8371096,
+          "sha256": "27c60a34e0a67e839d885ada14b43719131f8ec2e527d65e3f1dd6290f014a89"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/execution/product-wrapper.log",
+          "bytes": 122219,
+          "sha256": "cf04f8c21a1afd41725900c0940a6989b1f53d44b5decd9ea0ee5ccd042653da"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/execution/result.json",
+          "bytes": 3564,
+          "sha256": "dc09fda4cab74ec05f376d8923606f9928a91ceb32fd879a12dd6c63f08dec6b"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/execution/serial.log",
+          "bytes": 82912,
+          "sha256": "26aa1440563c927eed986249b7c54354cd9f19e0fe34ea2e771fa26d96e44dc1"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/execution/source-after-boot.json",
+          "bytes": 1610660,
+          "sha256": "26e6ea325472ec2c33d453495c1bbe3a45a10aaae9d2fd2ced935103b38183f6"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/execution/source-before.json",
+          "bytes": 1610660,
+          "sha256": "26e6ea325472ec2c33d453495c1bbe3a45a10aaae9d2fd2ced935103b38183f6"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/post-failure-forensics/forensics-helper.py",
+          "bytes": 3178,
+          "sha256": "5b5a7a8aff0b2c818275ec4824a8318bca5d77ee73eb04bd54a424ed16116461"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/post-failure-forensics/observed-OSDK.toml",
+          "bytes": 1019,
+          "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/post-failure-forensics/receipt.json",
+          "bytes": 1137,
+          "sha256": "a261d8e694f57bf59e022c1b762a06073110eae1309b81d989b5c1be77ff309c"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/receipt.json",
+          "bytes": 4698,
+          "sha256": "26e159e56535b9cbd14d6d2fd8466b46cde5c8598cee15941e4183b28e87fc55"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/runner.log",
+          "bytes": 148,
+          "sha256": "eb2f0a651b4e5404ef4a6940e78b1f7cff1a913292054d71cc032f184cc6495a"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/started.json",
+          "bytes": 728,
+          "sha256": "e7827e4ba4a0975a11fbb01e547a5403bada79de2b8c2bf80f1150f5d4222a16"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01/wrapper-source.py",
+          "bytes": 2129,
+          "sha256": "59a048e32d161844755df832bf430bfe004371e4a42b7b4d0174395ba18a11c9"
+        }
+      ]
+    },
+    {
+      "attempt": 2,
+      "source_head": "4e077aef4913179a68aa0d814018ce1a9d87cafc",
+      "source_tree": "4e42c3833746cd2684d0a75020d73286820457e6",
+      "started_at_utc": "2026-10-19T02:30:54.805946+00:00",
+      "finished_at_utc": "2026-10-19T02:30:55.846092+00:00",
+      "elapsed_wall_seconds": 1.040146,
+      "outer_exit": 1,
+      "accepted": false,
+      "inner_stage": "ordinary_product_build_and_boot",
+      "inner_error": "ValueError: source checkout is dirty or has untracked inputs",
+      "source_snapshots": [
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-02/execution/source-before.json",
+          "bytes": 1610660,
+          "sha256": "638e5f7addb8aefed30bce025f7a39766c015a2bcf97f75ecaaceeb4dd0381c4",
+          "head": "4e077aef4913179a68aa0d814018ce1a9d87cafc",
+          "tree": "4e42c3833746cd2684d0a75020d73286820457e6",
+          "files": 5851,
+          "total_source_bytes": 89415162,
+          "all_git_blob_ids_modes_sizes_sha256_checked": true
+        }
+      ],
+      "source_before_after_equal_within_available_snapshots": true,
+      "source_verifier": {
+        "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-02/execution/product-boot/source-inputs.json",
+        "bytes": 1807,
+        "sha256": "f5e6fb492f869071dc0b90af2578824dd2ef9a87b82f541c857a78e25f3099a3",
+        "checked_files": 118,
+        "fixed_git_inputs_matched": true
+      },
+      "original_initramfs": {
+        "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-02/execution/product-boot/initramfs.cpio.gz",
+        "bytes": 1107990,
+        "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+        "entries": 25,
+        "all_manifest_content_modes_uid_gid_mtime_checked": true,
+        "upstream_smoke_script_matches_fixed_git": true,
+        "busybox_sha256": "dbac288c29ba568459550a2da9e7ae0ded6b1fc728ee9fad3044c44e62d6ac14"
+      },
+      "outcome": "ordinary wrapper failed at temporary-manifest hard-link publication; no guest",
+      "qemu_guest_count": 0,
+      "publication_failure_log": {
+        "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-02/execution/product-wrapper.log",
+        "bytes": 223,
+        "sha256": "23c34e855f11586f02e48c6497373361f9c8d1b1756285b6c1c38744e8da0b2a"
+      },
+      "retained_files": [
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-02/execution/product-boot/environment.log",
+          "bytes": 2766,
+          "sha256": "b3df967b1f3d06899caa54953c04484aa19d03da685388c08e27a3e3ebd47d52"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-02/execution/product-boot/initramfs-manifest.json",
+          "bytes": 7121,
+          "sha256": "a26dd1a6286d9866eb4a93684fa6b076cfa11d7d6aad80db478cb0942e551f0d"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-02/execution/product-boot/initramfs.cpio.gz",
+          "bytes": 1107990,
+          "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-02/execution/product-boot/source-inputs.json",
+          "bytes": 1807,
+          "sha256": "f5e6fb492f869071dc0b90af2578824dd2ef9a87b82f541c857a78e25f3099a3"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-02/execution/product-wrapper.log",
+          "bytes": 223,
+          "sha256": "23c34e855f11586f02e48c6497373361f9c8d1b1756285b6c1c38744e8da0b2a"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-02/execution/result.json",
+          "bytes": 683,
+          "sha256": "682e82f8489eadf5d847cf84d03c5e306db7ca549d4bbd010ef0eaa5c3c49239"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-02/execution/source-before.json",
+          "bytes": 1610660,
+          "sha256": "638e5f7addb8aefed30bce025f7a39766c015a2bcf97f75ecaaceeb4dd0381c4"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-02/receipt.json",
+          "bytes": 1659,
+          "sha256": "ae8e01dbc8e0f07c2ec29a830b569908ed17bd344585f71aeef0847736216bd7"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-02/residue-forensics/isolated-retry-summary.json",
+          "bytes": 3893,
+          "sha256": "48592e246c37fa59417111c77b886c3e1b0e88a8e291e3e41758c84a2001cf30"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-02/residue-forensics/observed-OSDK.toml",
+          "bytes": 1019,
+          "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-02/residue-forensics/receipt.json",
+          "bytes": 442,
+          "sha256": "8e213f19e7286fb9d68d910c84565fb05734eb50d6d063db25bdd070134a374d"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-02/residue-forensics/retry-wrapper.log",
+          "bytes": 4638,
+          "sha256": "70a29ae0bcc933ce60dcbf6c7d3d200eca0f69634d3d9c9007425d2f4bb3d7c9"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-02/runner.log",
+          "bytes": 155,
+          "sha256": "e43d4b0bb155a9678e9a760a3402fcd738aaf1940146f0fb028d68df774a71af"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-02/started.json",
+          "bytes": 728,
+          "sha256": "ee5167dfafeb427496575d9686be2117d69a942660c08822aa5f503ec516c766"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-02/wrapper-source.py",
+          "bytes": 2129,
+          "sha256": "59a048e32d161844755df832bf430bfe004371e4a42b7b4d0174395ba18a11c9"
+        }
+      ]
+    },
+    {
+      "attempt": 3,
+      "source_head": "4e077aef4913179a68aa0d814018ce1a9d87cafc",
+      "source_tree": "4e42c3833746cd2684d0a75020d73286820457e6",
+      "started_at_utc": "2026-10-19T02:32:59.891165+00:00",
+      "finished_at_utc": "2026-10-19T02:33:05.032987+00:00",
+      "elapsed_wall_seconds": 5.141822,
+      "outer_exit": 0,
+      "accepted": true,
+      "inner_stage": "complete",
+      "inner_error": null,
+      "source_snapshots": [
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/execution/source-after-boot.json",
+          "bytes": 1610660,
+          "sha256": "638e5f7addb8aefed30bce025f7a39766c015a2bcf97f75ecaaceeb4dd0381c4",
+          "head": "4e077aef4913179a68aa0d814018ce1a9d87cafc",
+          "tree": "4e42c3833746cd2684d0a75020d73286820457e6",
+          "files": 5851,
+          "total_source_bytes": 89415162,
+          "all_git_blob_ids_modes_sizes_sha256_checked": true
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/execution/source-after-guest.json",
+          "bytes": 1610660,
+          "sha256": "638e5f7addb8aefed30bce025f7a39766c015a2bcf97f75ecaaceeb4dd0381c4",
+          "head": "4e077aef4913179a68aa0d814018ce1a9d87cafc",
+          "tree": "4e42c3833746cd2684d0a75020d73286820457e6",
+          "files": 5851,
+          "total_source_bytes": 89415162,
+          "all_git_blob_ids_modes_sizes_sha256_checked": true
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/execution/source-before.json",
+          "bytes": 1610660,
+          "sha256": "638e5f7addb8aefed30bce025f7a39766c015a2bcf97f75ecaaceeb4dd0381c4",
+          "head": "4e077aef4913179a68aa0d814018ce1a9d87cafc",
+          "tree": "4e42c3833746cd2684d0a75020d73286820457e6",
+          "files": 5851,
+          "total_source_bytes": 89415162,
+          "all_git_blob_ids_modes_sizes_sha256_checked": true
+        }
+      ],
+      "source_before_after_equal_within_available_snapshots": true,
+      "source_verifier": {
+        "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/execution/product-boot/source-inputs.json",
+        "bytes": 1807,
+        "sha256": "f5e6fb492f869071dc0b90af2578824dd2ef9a87b82f541c857a78e25f3099a3",
+        "checked_files": 118,
+        "fixed_git_inputs_matched": true
+      },
+      "original_initramfs": {
+        "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/execution/product-boot/initramfs.cpio.gz",
+        "bytes": 1107990,
+        "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+        "entries": 25,
+        "all_manifest_content_modes_uid_gid_mtime_checked": true,
+        "upstream_smoke_script_matches_fixed_git": true,
+        "busybox_sha256": "dbac288c29ba568459550a2da9e7ae0ded6b1fc728ee9fad3044c44e62d6ac14"
+      },
+      "diagnosis": "14 required exact lines, including 13 HEPTA markers and BOOT_OK, each occur once; unchanged original exact-line oracle accepts.",
+      "qemu_guest_count": 2,
+      "ordinary_qemu": {
+        "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/execution/product-boot/qemu.json",
+        "bytes": 3135,
+        "sha256": "11cf4398fd9b791953512f035016c2d7c307a1403dbe8c58fb45cb2bd67f887a"
+      },
+      "ordinary_serial": {
+        "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/execution/product-boot/serial.log",
+        "bytes": 72287,
+        "sha256": "9c77b3ccb1d5655c45b297da78bdf61a462c79dc1ab36c51514fa93649957192"
+      },
+      "ordinary_profile": {
+        "machine": "q35",
+        "accel": "tcg",
+        "cpu": "max",
+        "vcpu": 1,
+        "memory": "512M",
+        "qemu_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+        "raw_exit": 33,
+        "timed_out": false,
+        "duration_seconds": 1.017
+      },
+      "candidate_profile": {
+        "raw_exit": 33,
+        "timed_out": false,
+        "duration_seconds": 0.916,
+        "same_n0_profile": true
+      },
+      "ordinary_product_command": [
+        "make",
+        "-C",
+        "/workspace/scratch/499c7902de8e/r10-g1-owner/kernel/asterinas",
+        "-f",
+        "Makefile",
+        "-f",
+        "/workspace/scratch/499c7902de8e/r10-g1-owner/support/build/minimal.mk",
+        "run_kernel",
+        "CARGO_OSDK=/workspace/scratch/499c7902de8e/implementation-tools/cargo/bin/cargo-osdk",
+        "A01_INITRAMFS=/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/execution/product-boot/initramfs.cpio.gz",
+        "A01_QEMU_WRAPPER=/workspace/scratch/499c7902de8e/r10-g1-owner/support/build/record-qemu.py",
+        "TARGET_ARCH=x86_64",
+        "SMP=1",
+        "MEM=512M",
+        "ENABLE_KVM=0",
+        "BOOT_PROTOCOL=multiboot",
+        "INITRAMFS=on",
+        "AUTO_TEST=none"
+      ],
+      "product_elf": {
+        "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/execution/product-kernel.elf",
+        "bytes": 8371096,
+        "sha256": "27c60a34e0a67e839d885ada14b43719131f8ec2e527d65e3f1dd6290f014a89",
+        "elf_class": "ELF64",
+        "endianness": "little",
+        "elf_type": "ET_EXEC",
+        "e_machine": 3,
+        "entry": "0x8001248",
+        "has_PT_INTERP": false
+      },
+      "probe_elf": {
+        "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/execution/hos2-queryabi",
+        "bytes": 803752,
+        "sha256": "f9cd1d3aca3364f4b446849f5b31ef5b5f8034a9bc08f37ef4ea670847e5da3a",
+        "elf_class": "ELF64",
+        "endianness": "little",
+        "elf_type": "ET_EXEC",
+        "e_machine": 62,
+        "entry": "0x401820",
+        "has_PT_INTERP": false
+      },
+      "bios": {
+        "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/execution/bios.bin",
+        "bytes": 262144,
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+      },
+      "injected_initramfs": {
+        "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/execution/initramfs.cpio.gz",
+        "bytes": 1456526,
+        "sha256": "f65ca64ef10220d91e5b0f4b7d81b3f0b751debe4c191e2e28f2c07f15be59c4",
+        "entries": 26,
+        "changed": [
+          "init"
+        ],
+        "added": [
+          "bin/hos2-queryabi"
+        ],
+        "removed": [],
+        "exact_injection_verified": true
+      },
+      "literal_marker_counts": {
+        "HEPTA_EXEC_PREIMAGE_QUERYABI_OK": 1,
+        "HEPTA_EXEC_EPOCH_DENIED": 1,
+        "HEPTA_EXEC_CAPSPACE_ROTATED": 1,
+        "HEPTA_FORK_INHERITED_FD_DENIED": 1,
+        "HEPTA_FORK_CAPSPACE_DISTINCT": 1,
+        "HEPTA_NONROOT_OPEN_DENIED": 1,
+        "HEPTA_DUP_SESSION_STABLE": 1,
+        "HEPTA_QUERYABI_OK ops=QueryAbi_only, process_bound_session=yes, denied_invalid=yes": 1,
+        "HEPTA_DISABLED_READ_USAGE_OK": 1,
+        "HEPTA_DISABLED_INSTALL_BUDGET_OK": 1,
+        "HEPTA_DISABLED_QUERY_DELIVERY_OK": 1,
+        "HEPTA_DISABLED_RETIRE_THROUGH_OK": 1,
+        "HEPTA_QUERYABI_CANDIDATE_OK disabled_operations=4": 1,
+        "TRILLIONNIUM_A01_BOOT_OK": 1
+      },
+      "body_occurrence_counts": {
+        "HEPTA_EXEC_PREIMAGE_QUERYABI_OK": 1,
+        "HEPTA_EXEC_EPOCH_DENIED": 1,
+        "HEPTA_EXEC_CAPSPACE_ROTATED": 1,
+        "HEPTA_FORK_INHERITED_FD_DENIED": 1,
+        "HEPTA_FORK_CAPSPACE_DISTINCT": 1,
+        "HEPTA_NONROOT_OPEN_DENIED": 1,
+        "HEPTA_DUP_SESSION_STABLE": 1,
+        "HEPTA_QUERYABI_OK ops=QueryAbi_only, process_bound_session=yes, denied_invalid=yes": 1,
+        "HEPTA_DISABLED_READ_USAGE_OK": 1,
+        "HEPTA_DISABLED_INSTALL_BUDGET_OK": 1,
+        "HEPTA_DISABLED_QUERY_DELIVERY_OK": 1,
+        "HEPTA_DISABLED_RETIRE_THROUGH_OK": 1,
+        "HEPTA_QUERYABI_CANDIDATE_OK disabled_operations=4": 1,
+        "TRILLIONNIUM_A01_BOOT_OK": 1
+      },
+      "all_bodies_ordered": true,
+      "retained_exact_evaluator_result": {
+        "marker_counts": {
+          "HEPTA_EXEC_PREIMAGE_QUERYABI_OK": 1,
+          "HEPTA_EXEC_EPOCH_DENIED": 1,
+          "HEPTA_EXEC_CAPSPACE_ROTATED": 1,
+          "HEPTA_FORK_INHERITED_FD_DENIED": 1,
+          "HEPTA_FORK_CAPSPACE_DISTINCT": 1,
+          "HEPTA_NONROOT_OPEN_DENIED": 1,
+          "HEPTA_DUP_SESSION_STABLE": 1,
+          "HEPTA_DISABLED_READ_USAGE_OK": 1,
+          "HEPTA_DISABLED_INSTALL_BUDGET_OK": 1,
+          "HEPTA_DISABLED_QUERY_DELIVERY_OK": 1,
+          "HEPTA_DISABLED_RETIRE_THROUGH_OK": 1,
+          "HEPTA_QUERYABI_OK ops=QueryAbi_only, process_bound_session=yes, denied_invalid=yes": 1,
+          "HEPTA_QUERYABI_CANDIDATE_OK disabled_operations=4": 1,
+          "TRILLIONNIUM_A01_BOOT_OK": 1
+        },
+        "exact_one_markers": true,
+        "ordered_root_completion": true,
+        "no_guest_failure": true,
+        "raw_serial_sha256": "a7fa662807297c023d34d3a0611c275780d67745c3d08d09637b209d4ca2c445",
+        "raw_serial_size": 81716,
+        "passed": true
+      },
+      "marker_line_numbers": {
+        "HEPTA_EXEC_PREIMAGE_QUERYABI_OK": [
+          697
+        ],
+        "HEPTA_EXEC_EPOCH_DENIED": [
+          714
+        ],
+        "HEPTA_EXEC_CAPSPACE_ROTATED": [
+          719
+        ],
+        "HEPTA_FORK_INHERITED_FD_DENIED": [
+          726
+        ],
+        "HEPTA_FORK_CAPSPACE_DISTINCT": [
+          731
+        ],
+        "HEPTA_NONROOT_OPEN_DENIED": [
+          735
+        ],
+        "HEPTA_DUP_SESSION_STABLE": [
+          738
+        ],
+        "HEPTA_QUERYABI_OK ops=QueryAbi_only, process_bound_session=yes, denied_invalid=yes": [
+          742
+        ],
+        "HEPTA_DISABLED_READ_USAGE_OK": [
+          747
+        ],
+        "HEPTA_DISABLED_INSTALL_BUDGET_OK": [
+          750
+        ],
+        "HEPTA_DISABLED_QUERY_DELIVERY_OK": [
+          753
+        ],
+        "HEPTA_DISABLED_RETIRE_THROUGH_OK": [
+          756
+        ],
+        "HEPTA_QUERYABI_CANDIDATE_OK disabled_operations=4": [
+          759
+        ],
+        "TRILLIONNIUM_A01_BOOT_OK": [
+          764
+        ]
+      },
+      "original_profile_fatal_marker_found": false,
+      "generated_lock": {
+        "expected_git_file": "support/build/minimal/Cargo.lock",
+        "packages": 204,
+        "sha256": "e54bc99b3df5e21a1fdcd88d89b32ac478e73c7b4bf69ae0b1084f59d56fc506",
+        "measurement": "Immutable reviewed runner verify_product_boot reads the actual generated run-base lock and requires exact byte equality before guest execution; saved result records the value.",
+        "independent_bytes": "Committed minimal lock is independently read from Git and counted. A separate raw generated-lock copy is not present in these attempt evidence directories; live owner target was deliberately not accessed."
+      },
+      "retained_files": [
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/execution/bios.bin",
+          "bytes": 262144,
+          "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/execution/compile.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/execution/hos2-queryabi",
+          "bytes": 803752,
+          "sha256": "f9cd1d3aca3364f4b446849f5b31ef5b5f8034a9bc08f37ef4ea670847e5da3a"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/execution/initramfs.cpio.gz",
+          "bytes": 1456526,
+          "sha256": "f65ca64ef10220d91e5b0f4b7d81b3f0b751debe4c191e2e28f2c07f15be59c4"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/execution/product-boot/command.sh",
+          "bytes": 567,
+          "sha256": "ba594b699e1977e542f2ec05d3274c626966aec623d8c4c4c52ca8fd822a2724"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/execution/product-boot/environment.log",
+          "bytes": 2727,
+          "sha256": "f8d4e3fad00e9191fffcdb317cb4c729506080779c5db8b247d2ab3cec8eae1f"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/execution/product-boot/initramfs-manifest.json",
+          "bytes": 7121,
+          "sha256": "a26dd1a6286d9866eb4a93684fa6b076cfa11d7d6aad80db478cb0942e551f0d"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/execution/product-boot/initramfs.cpio.gz",
+          "bytes": 1107990,
+          "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/execution/product-boot/log-exit-code.txt",
+          "bytes": 2,
+          "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/execution/product-boot/make-exit-code.txt",
+          "bytes": 2,
+          "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/execution/product-boot/qemu.json",
+          "bytes": 3135,
+          "sha256": "11cf4398fd9b791953512f035016c2d7c307a1403dbe8c58fb45cb2bd67f887a"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/execution/product-boot/run-exit-code.txt",
+          "bytes": 2,
+          "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/execution/product-boot/run_kernel.log",
+          "bytes": 113290,
+          "sha256": "554be639d8a4218b9ab6085a9ebdc42a7565b5af92543ac42ecbd9815ad9a276"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/execution/product-boot/serial.log",
+          "bytes": 72287,
+          "sha256": "9c77b3ccb1d5655c45b297da78bdf61a462c79dc1ab36c51514fa93649957192"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/execution/product-boot/source-inputs.json",
+          "bytes": 1807,
+          "sha256": "f5e6fb492f869071dc0b90af2578824dd2ef9a87b82f541c857a78e25f3099a3"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/execution/product-kernel.elf",
+          "bytes": 8371096,
+          "sha256": "27c60a34e0a67e839d885ada14b43719131f8ec2e527d65e3f1dd6290f014a89"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/execution/product-wrapper.log",
+          "bytes": 113575,
+          "sha256": "6149ead7c4cf150d8aedc40d2633e6eea17e0d8bbfb8485eada73ba85f7e6ac3"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/execution/result.json",
+          "bytes": 3505,
+          "sha256": "869a2f8131c9768f6681623d8c3d57ed2470c5793dee0df82a28bbdff1b8d5fa"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/execution/serial.log",
+          "bytes": 81716,
+          "sha256": "a7fa662807297c023d34d3a0611c275780d67745c3d08d09637b209d4ca2c445"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/execution/source-after-boot.json",
+          "bytes": 1610660,
+          "sha256": "638e5f7addb8aefed30bce025f7a39766c015a2bcf97f75ecaaceeb4dd0381c4"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/execution/source-after-guest.json",
+          "bytes": 1610660,
+          "sha256": "638e5f7addb8aefed30bce025f7a39766c015a2bcf97f75ecaaceeb4dd0381c4"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/execution/source-before.json",
+          "bytes": 1610660,
+          "sha256": "638e5f7addb8aefed30bce025f7a39766c015a2bcf97f75ecaaceeb4dd0381c4"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/receipt.json",
+          "bytes": 4638,
+          "sha256": "70a29ae0bcc933ce60dcbf6c7d3d200eca0f69634d3d9c9007425d2f4bb3d7c9"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/runner.log",
+          "bytes": 131,
+          "sha256": "6fb507150b595d178c0fb8a23dfd57e94bf169c7e07a0fbf0701f2e36d02173c"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/started.json",
+          "bytes": 728,
+          "sha256": "b61536a8f5ea4f1c70a754beed1fce7464382880d6c286fce5c41d8dc18a26f0"
+        },
+        {
+          "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-03/wrapper-source.py",
+          "bytes": 2129,
+          "sha256": "59a048e32d161844755df832bf430bfe004371e4a42b7b4d0174395ba18a11c9"
+        }
+      ]
+    }
+  ],
+  "lock_inputs": {
+    "kernel/asterinas/Cargo.lock": {
+      "mode": "100644",
+      "git_blob": "c8cb7e9616e0ea40442200deee461157793618dd",
+      "sha256": "af94d71680ecf3b9631e21c958263d5e41229033214f88dcff858bb14765a666",
+      "size": 49279,
+      "packages": 235
+    },
+    "kernel/asterinas/osdk/Cargo.lock": {
+      "mode": "100644",
+      "git_blob": "82dbdd75cedd73558dd3d5aa17e76376d66d6eaf",
+      "sha256": "99a21f72f6a9f1582553b34f06e80f86e539f38e62eab7a0847afd0906e75be3",
+      "size": 35285,
+      "packages": 154
+    },
+    "support/build/minimal/Cargo.lock": {
+      "mode": "100644",
+      "git_blob": "c29545d718190c97b990f364ea675381c19734f5",
+      "sha256": "e54bc99b3df5e21a1fdcd88d89b32ac478e73c7b4bf69ae0b1084f59d56fc506",
+      "size": 41937,
+      "packages": 204
+    },
+    "support/build/ktest/locks/aster-core.Cargo.lock": {
+      "mode": "100644",
+      "git_blob": "07d086298d0f717f29891eafc9d6f13de92fbf6f",
+      "sha256": "85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150",
+      "size": 41127,
+      "packages": 200
+    },
+    "support/build/ktest/locks/ostd.Cargo.lock": {
+      "mode": "100644",
+      "git_blob": "3d9c915cd2dc7a56b4764dc1e74fa56eab81ffcb",
+      "sha256": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6",
+      "size": 20185,
+      "packages": 97
+    },
+    "original_upstream_seed": {
+      "git_blob": "77d8f4be4cdc7365cd73a2e9f7638d46f3608b40",
+      "sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+      "size": 49185,
+      "packages": 234
+    }
+  },
+  "runtime_scope": {
+    "platform": "x86_64 q35 / TCG / cpu=max / 1 vCPU / 512 MiB / fixed SeaBIOS",
+    "total_attempts": 3,
+    "accepted_attempts": 1,
+    "failed_attempts_retained": 2,
+    "actual_qemu_invocations_in_these_attempts": 4,
+    "ordinary_product_boots": 2,
+    "queryabi_guest_runs": 2,
+    "third_attempt_exact_markers": 14,
+    "third_attempt_legacy_security_markers": 7,
+    "third_attempt_disabled_operation_markers": 4,
+    "native_effects_executed": 0,
+    "physical_device_or_mobile_execution": false,
+    "hepta_runtime_execution": false,
+    "smp_qualification": false,
+    "kernel_ktest_counts": "Kept in the separate earlier 12e runtime review; not added to these guest marker counts."
+  },
+  "environment_chronology": {
+    "attempt01_failure_retained": true,
+    "attempt02_no_guest_failure_retained": true,
+    "attempt03_complete_and_final_in_cell_status_clean": true,
+    "isolated_completion_receipt": {
+      "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-02/residue-forensics/isolated-retry-summary.json",
+      "bytes": 3893,
+      "sha256": "48592e246c37fa59417111c77b886c3e1b0e88a8e291e3e41758c84a2001cf30"
+    },
+    "later_current_status_clean": false,
+    "residue_writer": "unknown",
+    "isolation_success_proves_writer_identity": false,
+    "saved_residue_sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f",
+    "root_deleted_only_evidenced_temporary_file_before_retries": "Described and hashed in retained root forensics; reviewer did not delete or copy any active-owner file."
+  },
+  "host_fixture_evidence": {
+    "receipt": {
+      "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-review/candidate-host-tests.json",
+      "bytes": 1121,
+      "sha256": "691eb84a508beaf326cd07e608cf821f2d50b8dda70839abdf3fad02b5297b7c"
+    },
+    "log": {
+      "path": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-review/candidate-host-tests.log",
+      "bytes": 1463,
+      "sha256": "1cbb8d6badc96d8f5f81945994c73e89e647d00442416221d3420a398750db74"
+    },
+    "count": 8,
+    "already_executed_before_this_review": true,
+    "scope": "Actual Python source/receipt fixtures only; not C, QEMU or ioctl execution, and not proof of the atomic-writer error branches."
+  },
+  "limitations": [
+    "Attempt01's later diagnostic body counting never changes its original false receipt; attempt02 never reached a guest.",
+    "Generated minimal lock equality is a retained measurement made by the source-bound runner. Its canonical Git bytes and package count are independently rechecked; a separate generated-lock raw copy is absent, and live owner target files were intentionally not accessed.",
+    "QEMU executable identity is the actual recorded measurement, cross-consistent with the pinned local environment. This review does not relaunch QEMU or independently reread a live executable.",
+    "An ordinary product boot and QueryAbi-only fail-closed checks do not establish trusted-init, grants, native resource effects, delivery semantics, Hepta integration, SMP, hardware or mobile readiness.",
+    "All rereads and validators in this review use frozen Git objects and saved evidence. No compiler, Cargo, QEMU, guest binary, shell content from the evidence, or runtime probe was executed."
+  ]
+}

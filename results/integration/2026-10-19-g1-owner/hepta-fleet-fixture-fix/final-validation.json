@@ -1,0 +1,196 @@
+{
+  "schema": 1,
+  "started_at": "2026-10-19T02:48:21.670711+00:00",
+  "completed_at": "2026-10-19T02:48:21.814687+00:00",
+  "status": "narrow_validation_passed",
+  "source": {
+    "commit": "3749e151fd1a39c4b568afdb9e03028974ad86be",
+    "tree": "eb9dc083dfb6f4f57a98f0380683444aba98326a",
+    "status_porcelain": ""
+  },
+  "parent_commit": "1b0fedb8c2b510106848f6feaf530c9b3698399d",
+  "base_remote_equivalent": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+  "changed_paths": [
+    "codex-rs/hepta-fleet/src/authority_port.rs"
+  ],
+  "changed_source": {
+    "path": "codex-rs/hepta-fleet/src/authority_port.rs",
+    "bytes": 10287,
+    "sha256": "df499cff654ac55fef83c0a6da2b0ec9208dd04a893cb730d40bb48284048ac7"
+  },
+  "original_helper_blobs": {
+    "f8c9419df6ddeb36ff8b522a50219981fb8d9345": "55e117dafe84709451a638bb8f6bafa41c38bd5a",
+    "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5": "55e117dafe84709451a638bb8f6bafa41c38bd5a",
+    "1b0fedb8c2b510106848f6feaf530c9b3698399d": "55e117dafe84709451a638bb8f6bafa41c38bd5a"
+  },
+  "git_diff_check_exit": 0,
+  "commands": [
+    {
+      "receipt": {
+        "path": "fmt-01/receipt.json",
+        "bytes": 4631,
+        "sha256": "65e6c9b481874699465ad087f2c9ca162d17566252c601b95d3f2b476061e4d3"
+      },
+      "name": "fmt-01",
+      "argv": [
+        "/workspace/scratch/499c7902de8e/r10-fleet-fixture-tools/bin/just",
+        "fmt",
+        "--base",
+        "1b0fedb8c2b510106848f6feaf530c9b3698399d"
+      ],
+      "started_at": "2026-10-19T02:41:48.808517+00:00",
+      "completed_at": "2026-10-19T02:41:48.994328+00:00",
+      "exit_code": 0,
+      "source_unchanged": false
+    },
+    {
+      "receipt": {
+        "path": "fleet-tests-01/receipt.json",
+        "bytes": 4632,
+        "sha256": "9e701040597767d0fb485a9b10c4b5c0f07b6adc44fa651a77565f766645dc3b"
+      },
+      "name": "fleet-tests-01",
+      "argv": [
+        "/workspace/scratch/499c7902de8e/r10-fleet-fixture-tools/bin/just",
+        "test",
+        "-p",
+        "codex-hepta-fleet",
+        "--lib",
+        "--locked",
+        "--offline",
+        "--cargo-profile",
+        "dev-small",
+        "-j",
+        "1"
+      ],
+      "started_at": "2026-10-19T02:42:24.947596+00:00",
+      "completed_at": "2026-10-19T02:43:03.626321+00:00",
+      "exit_code": 0,
+      "source_unchanged": true
+    },
+    {
+      "receipt": {
+        "path": "fleet-clippy-01/receipt.json",
+        "bytes": 4713,
+        "sha256": "bf81e9f75bdf6f1105c099acf40128478f533733be4d552f8223ba42647a35d7"
+      },
+      "name": "fleet-clippy-01",
+      "argv": [
+        "/workspace/scratch/499c7902de8e/r10-fleet-fixture-tools/bin/just",
+        "clippy",
+        "-p",
+        "codex-hepta-fleet",
+        "--lib",
+        "--locked",
+        "--offline",
+        "--profile",
+        "dev-small",
+        "-j",
+        "1",
+        "--",
+        "-D",
+        "clippy::unwrap_used",
+        "-D",
+        "clippy::expect_used"
+      ],
+      "started_at": "2026-10-19T02:45:18.391756+00:00",
+      "completed_at": "2026-10-19T02:45:38.594121+00:00",
+      "exit_code": 0,
+      "source_unchanged": true
+    }
+  ],
+  "tests": {
+    "run": 41,
+    "passed": 41,
+    "failed": 0,
+    "skipped": 0,
+    "fixture_pass_line": "        PASS [   0.009s] (12/41) codex-hepta-fleet authority_port::tests::allocation_issue_consumes_exact_live_kernel_authority_lease",
+    "metadata_warnings": [
+      "   Compilingwarning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#proc-macro2@1.0.106` which wasn't produced by cargo metadata",
+      "warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#quote@1.0.45` which wasn't produced by cargo metadata",
+      "warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#generic-array@0.14.7` which wasn't produced by cargo metadata",
+      "warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#serde_core@1.0.228` which wasn't produced by cargo metadata",
+      "warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#zmij@1.0.19` which wasn't produced by cargo metadata",
+      "warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#rustix@1.1.4` which wasn't produced by cargo metadata",
+      "warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#curve25519-dalek@4.1.3` which wasn't produced by cargo metadata",
+      "warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#serde_json@1.0.149` which wasn't produced by cargo metadata",
+      "warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#libc@0.2.186` which wasn't produced by cargo metadata",
+      "warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#serde@1.0.228` which wasn't produced by cargo metadata",
+      "warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#getrandom@0.4.2` which wasn't produced by cargo metadata",
+      "warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#anyhow@1.0.103` which wasn't produced by cargo metadata",
+      "warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#thiserror@2.0.18` which wasn't produced by cargo metadata"
+    ]
+  },
+  "strict_clippy": {
+    "unwrap_used": "deny",
+    "expect_used": "deny",
+    "exit_code": 0,
+    "warning_or_error_diagnostic_lines": 0
+  },
+  "unchanged_policy_lock_and_instructions": [
+    {
+      "path": "codex-rs/Cargo.lock",
+      "bytes": 418038,
+      "sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389"
+    },
+    {
+      "path": "codex-rs/Cargo.toml",
+      "bytes": 21574,
+      "sha256": "0e3fc0b7dc3ec907e02059a1bc79579077c8e5d1a0ac936b4f1bd984e94afdb4"
+    },
+    {
+      "path": "codex-rs/deny.toml",
+      "bytes": 18803,
+      "sha256": "3713c011667dcbeda9edf1b2644a813f2b5253ebb7b2f3e98ea60aab69407352"
+    },
+    {
+      "path": "codex-rs/clippy.toml",
+      "bytes": 2754,
+      "sha256": "323037ae6e8136646a8a80fd59724b32bbb3e3b2b7ea745ac79841443d4a71a9"
+    },
+    {
+      "path": ".bazelrc",
+      "bytes": 13589,
+      "sha256": "3dc5174e2b8a3c51aa88cbd0c9031e596f5c8a4fa90dac753ac6f39c1ad71db0"
+    },
+    {
+      "path": "AGENTS.md",
+      "bytes": 22519,
+      "sha256": "c3f80e8386eb170b00af1e21de40d770c4941e464915687e728e2d14a7e79480"
+    }
+  ],
+  "original_worktree": {
+    "commit": "1b0fedb8c2b510106848f6feaf530c9b3698399d",
+    "tree": "a3e718280a7e17b8c4a226a0232bf18c23fd3586",
+    "status_porcelain": ""
+  },
+  "frozen_packages": [
+    {
+      "directory": "/workspace/scratch/499c7902de8e/r10-evidence/owner-ci/security-debt-package",
+      "files_verified": 23,
+      "artifact_manifest": {
+        "path": "artifact-manifest.json",
+        "bytes": 5896,
+        "sha256": "d7606ca14b4d7924f063cf2b32e4806164fe7b2565e362426c95e929adc4fa5f"
+      },
+      "all_delivery_bytes_unchanged": true
+    },
+    {
+      "directory": "/workspace/scratch/499c7902de8e/r10-evidence/owner-ci/bazel-followup-package",
+      "files_verified": 15,
+      "artifact_manifest": {
+        "path": "artifact-manifest.json",
+        "bytes": 3272,
+        "sha256": "1017903c2c4330d5f84dd11b83a7c22bc20bde4655cbcb125d10bbd4650a53c7"
+      },
+      "all_delivery_bytes_unchanged": true
+    }
+  ],
+  "limitations": [
+    "Linux x86_64 Cargo validation only; no Bazel CI replay.",
+    "No macOS, ARM64, or Windows run was performed for this patch.",
+    "Windows sandbox boundary failures and dependency security debt remain unresolved.",
+    "Original remote d32 CI failures remain valid observations.",
+    "No GitHub ref, PR, workflow, gate, dependency, or policy was changed."
+  ]
+}

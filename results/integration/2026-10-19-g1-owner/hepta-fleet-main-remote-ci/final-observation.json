@@ -1,0 +1,855 @@
+{
+  "schema": 1,
+  "observation_window": {
+    "started_at": "2026-10-19T04:09:45.440Z",
+    "finished_at": "2026-10-19T04:09:46.200Z"
+  },
+  "saved_at": "2026-10-19T04:13:35.308Z",
+  "source_request_times": "Per-request start/end times in raw API records are authoritative.",
+  "no_remote_mutation": true,
+  "fleet_pr": {
+    "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/pull/2882",
+    "number": 2882,
+    "state": "open",
+    "draft": false,
+    "head": "b34cb44f06db0a66acb3d25b183a2a05c4cebc7e",
+    "base": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+    "base_ref": "main",
+    "mergeable": true,
+    "mergeable_state": "blocked",
+    "merged": false,
+    "merged_at": null,
+    "prospective_merge_sha": "62b3d71018cf66f4dce6d1db273d956497e38003",
+    "auto_merge": null
+  },
+  "owner_pr": {
+    "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/pull/2815",
+    "number": 2815,
+    "state": "open",
+    "draft": false,
+    "head": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+    "base": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+    "base_ref": "main",
+    "mergeable": true,
+    "mergeable_state": "blocked",
+    "merged": false,
+    "merged_at": null,
+    "prospective_merge_sha": "60a3376902982d79e85173d6aaf6bd631b4c4cf3",
+    "auto_merge": {
+      "commit_message": null,
+      "commit_title": null,
+      "merge_method": "squash",
+      "enabled_by": {
+        "login": "ProfHepta",
+        "id": 102159240,
+        "node_id": "U_kgDOBhbTiA",
+        "avatar_url": "https://avatars.githubusercontent.com/u/102159240?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/ProfHepta",
+        "html_url": "https://github.com/ProfHepta",
+        "followers_url": "https://api.github.com/users/ProfHepta/followers",
+        "following_url": "https://api.github.com/users/ProfHepta/following{/other_user}",
+        "gists_url": "https://api.github.com/users/ProfHepta/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/ProfHepta/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/ProfHepta/subscriptions",
+        "organizations_url": "https://api.github.com/users/ProfHepta/orgs",
+        "repos_url": "https://api.github.com/users/ProfHepta/repos",
+        "events_url": "https://api.github.com/users/ProfHepta/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/ProfHepta/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      }
+    }
+  },
+  "fleet_checks": {
+    "total_count": 24,
+    "counts": {
+      "success": 12,
+      "failure": 2,
+      "neutral": 1,
+      "skipped": 8,
+      "in_progress": 1
+    },
+    "checks": [
+      {
+        "id": 117882974089,
+        "name": "Architecture required",
+        "head_sha": "b34cb44f06db0a66acb3d25b183a2a05c4cebc7e",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T04:00:59Z",
+        "completed_at": "2026-10-19T04:01:02Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39195438324/job/117882974089"
+      },
+      {
+        "id": 117881115008,
+        "name": "CI required",
+        "head_sha": "b34cb44f06db0a66acb3d25b183a2a05c4cebc7e",
+        "status": "completed",
+        "conclusion": "failure",
+        "started_at": "2026-10-19T03:53:02Z",
+        "completed_at": "2026-10-19T03:53:12Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39195438433/job/117881115008"
+      },
+      {
+        "id": 117877277490,
+        "name": "CodeQL",
+        "head_sha": "b34cb44f06db0a66acb3d25b183a2a05c4cebc7e",
+        "status": "completed",
+        "conclusion": "neutral",
+        "started_at": "2026-10-19T03:36:40Z",
+        "completed_at": "2026-10-19T03:36:48Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/runs/117877277490"
+      },
+      {
+        "id": 117877243926,
+        "name": "Build ptrcomp-sandbox ${{ matrix.target }} from source",
+        "head_sha": "b34cb44f06db0a66acb3d25b183a2a05c4cebc7e",
+        "status": "completed",
+        "conclusion": "skipped",
+        "started_at": "2026-10-19T03:36:32Z",
+        "completed_at": "2026-10-19T03:36:31Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39195438344/job/117877243926"
+      },
+      {
+        "id": 117877243750,
+        "name": "Build ${{ matrix.variant }} ${{ matrix.target }}",
+        "head_sha": "b34cb44f06db0a66acb3d25b183a2a05c4cebc7e",
+        "status": "completed",
+        "conclusion": "skipped",
+        "started_at": "2026-10-19T03:36:32Z",
+        "completed_at": "2026-10-19T03:36:31Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39195438344/job/117877243750"
+      },
+      {
+        "id": 117877233875,
+        "name": "sdk",
+        "head_sha": "b34cb44f06db0a66acb3d25b183a2a05c4cebc7e",
+        "status": "completed",
+        "conclusion": "skipped",
+        "started_at": "2026-10-19T03:36:29Z",
+        "completed_at": "2026-10-19T03:36:29Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39195438433/job/117877233875"
+      },
+      {
+        "id": 117877232880,
+        "name": "Bazel",
+        "head_sha": "b34cb44f06db0a66acb3d25b183a2a05c4cebc7e",
+        "status": "completed",
+        "conclusion": "skipped",
+        "started_at": "2026-10-19T03:36:29Z",
+        "completed_at": "2026-10-19T03:36:29Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39195438433/job/117877232880"
+      },
+      {
+        "id": 117877232863,
+        "name": "cargo-deny",
+        "head_sha": "b34cb44f06db0a66acb3d25b183a2a05c4cebc7e",
+        "status": "completed",
+        "conclusion": "skipped",
+        "started_at": "2026-10-19T03:36:29Z",
+        "completed_at": "2026-10-19T03:36:29Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39195438433/job/117877232863"
+      },
+      {
+        "id": 117877232743,
+        "name": "rust-ci",
+        "head_sha": "b34cb44f06db0a66acb3d25b183a2a05c4cebc7e",
+        "status": "completed",
+        "conclusion": "skipped",
+        "started_at": "2026-10-19T03:36:29Z",
+        "completed_at": "2026-10-19T03:36:29Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39195438433/job/117877232743"
+      },
+      {
+        "id": 117877232688,
+        "name": "Lightweight prose and derived checks",
+        "head_sha": "b34cb44f06db0a66acb3d25b183a2a05c4cebc7e",
+        "status": "completed",
+        "conclusion": "skipped",
+        "started_at": "2026-10-19T03:36:29Z",
+        "completed_at": "2026-10-19T03:36:29Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39195438433/job/117877232688"
+      },
+      {
+        "id": 117877232446,
+        "name": "repo-checks",
+        "head_sha": "b34cb44f06db0a66acb3d25b183a2a05c4cebc7e",
+        "status": "completed",
+        "conclusion": "skipped",
+        "started_at": "2026-10-19T03:36:29Z",
+        "completed_at": "2026-10-19T03:36:29Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39195438433/job/117877232446"
+      },
+      {
+        "id": 117877231628,
+        "name": "Hepta contract gate / Validate canonical branch and contract metadata",
+        "head_sha": "b34cb44f06db0a66acb3d25b183a2a05c4cebc7e",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T03:36:31Z",
+        "completed_at": "2026-10-19T03:36:57Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39195438433/job/117877231628"
+      },
+      {
+        "id": 117877231475,
+        "name": "Hepta scoped native checks",
+        "head_sha": "b34cb44f06db0a66acb3d25b183a2a05c4cebc7e",
+        "status": "completed",
+        "conclusion": "failure",
+        "started_at": "2026-10-19T03:36:31Z",
+        "completed_at": "2026-10-19T03:52:59Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39195438433/job/117877231475"
+      },
+      {
+        "id": 117877091254,
+        "name": "Select blocking CI scope",
+        "head_sha": "b34cb44f06db0a66acb3d25b183a2a05c4cebc7e",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T03:35:58Z",
+        "completed_at": "2026-10-19T03:36:28Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39195438433/job/117877091254"
+      },
+      {
+        "id": 117877091112,
+        "name": "Codespell / Check for spelling errors",
+        "head_sha": "b34cb44f06db0a66acb3d25b183a2a05c4cebc7e",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T03:35:58Z",
+        "completed_at": "2026-10-19T03:36:30Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39195438433/job/117877091112"
+      },
+      {
+        "id": 117877091094,
+        "name": "Blob size policy / Blob size policy",
+        "head_sha": "b34cb44f06db0a66acb3d25b183a2a05c4cebc7e",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T03:35:57Z",
+        "completed_at": "2026-10-19T03:36:49Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39195438433/job/117877091094"
+      },
+      {
+        "id": 117877090502,
+        "name": "metadata",
+        "head_sha": "b34cb44f06db0a66acb3d25b183a2a05c4cebc7e",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T03:35:58Z",
+        "completed_at": "2026-10-19T03:36:31Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39195438344/job/117877090502"
+      },
+      {
+        "id": 117877090301,
+        "name": "Architecture convergence (source-head)",
+        "head_sha": "b34cb44f06db0a66acb3d25b183a2a05c4cebc7e",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T03:36:00Z",
+        "completed_at": "2026-10-19T04:00:56Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39195438324/job/117877090301"
+      },
+      {
+        "id": 117877090021,
+        "name": "Architecture convergence (base-merge)",
+        "head_sha": "b34cb44f06db0a66acb3d25b183a2a05c4cebc7e",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T03:35:59Z",
+        "completed_at": "2026-10-19T03:36:26Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39195438324/job/117877090021"
+      },
+      {
+        "id": 117877089572,
+        "name": "Analyze (actions)",
+        "head_sha": "b34cb44f06db0a66acb3d25b183a2a05c4cebc7e",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T03:35:58Z",
+        "completed_at": "2026-10-19T03:37:01Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39195437081/job/117877089572"
+      },
+      {
+        "id": 117877089510,
+        "name": "Analyze (rust)",
+        "head_sha": "b34cb44f06db0a66acb3d25b183a2a05c4cebc7e",
+        "status": "in_progress",
+        "conclusion": null,
+        "started_at": "2026-10-19T03:35:58Z",
+        "completed_at": null,
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39195437081/job/117877089510"
+      },
+      {
+        "id": 117877089439,
+        "name": "Analyze (c-cpp)",
+        "head_sha": "b34cb44f06db0a66acb3d25b183a2a05c4cebc7e",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T03:35:57Z",
+        "completed_at": "2026-10-19T03:36:57Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39195437081/job/117877089439"
+      },
+      {
+        "id": 117877089418,
+        "name": "Analyze (javascript-typescript)",
+        "head_sha": "b34cb44f06db0a66acb3d25b183a2a05c4cebc7e",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T03:35:57Z",
+        "completed_at": "2026-10-19T03:37:00Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39195437081/job/117877089418"
+      },
+      {
+        "id": 117877089161,
+        "name": "Analyze (python)",
+        "head_sha": "b34cb44f06db0a66acb3d25b183a2a05c4cebc7e",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T03:35:56Z",
+        "completed_at": "2026-10-19T03:37:35Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39195437081/job/117877089161"
+      }
+    ]
+  },
+  "owner_checks": {
+    "total_count": 49,
+    "counts": {
+      "failure": 8,
+      "success": 26,
+      "skipped": 6,
+      "cancelled": 9
+    },
+    "checks": [
+      {
+        "id": 117860094573,
+        "name": "CI required",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "failure",
+        "started_at": "2026-10-19T02:25:14Z",
+        "completed_at": "2026-10-19T02:25:23Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117860094573"
+      },
+      {
+        "id": 117859935693,
+        "name": "Bazel / Bazel test on windows-latest for x86_64-pc-windows-msvc",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "failure",
+        "started_at": "2026-10-19T02:25:08Z",
+        "completed_at": "2026-10-19T02:25:11Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117859935693"
+      },
+      {
+        "id": 117852485431,
+        "name": "Architecture required",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:53:06Z",
+        "completed_at": "2026-10-19T01:53:09Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139924/job/117852485431"
+      },
+      {
+        "id": 117846491622,
+        "name": "rust-ci / CI results (required)",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:26:16Z",
+        "completed_at": "2026-10-19T01:26:19Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846491622"
+      },
+      {
+        "id": 117846154778,
+        "name": "rust-ci / Rust benchmark smoke",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:24:51Z",
+        "completed_at": "2026-10-19T01:26:13Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846154778"
+      },
+      {
+        "id": 117846081050,
+        "name": "rust-ci / Argument comment lint package",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "skipped",
+        "started_at": "2026-10-19T01:24:29Z",
+        "completed_at": "2026-10-19T01:24:29Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846081050"
+      },
+      {
+        "id": 117846079920,
+        "name": "rust-ci / cargo shear",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:24:32Z",
+        "completed_at": "2026-10-19T01:25:16Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846079920"
+      },
+      {
+        "id": 117846079917,
+        "name": "rust-ci / Rust format",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:24:32Z",
+        "completed_at": "2026-10-19T01:25:13Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846079917"
+      },
+      {
+        "id": 117846079871,
+        "name": "rust-ci / Cargo manifest preflight",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:24:31Z",
+        "completed_at": "2026-10-19T01:24:48Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846079871"
+      },
+      {
+        "id": 117846034685,
+        "name": "CodeQL",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:24:18Z",
+        "completed_at": "2026-10-19T01:24:22Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/runs/117846034685"
+      },
+      {
+        "id": 117846025980,
+        "name": "Bazel / Bazel test on windows-latest for x86_64-pc-windows-msvc (native main)",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "skipped",
+        "started_at": "2026-10-19T01:24:15Z",
+        "completed_at": "2026-10-19T01:24:15Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846025980"
+      },
+      {
+        "id": 117846025841,
+        "name": "Hepta scoped native checks",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "skipped",
+        "started_at": "2026-10-19T01:24:15Z",
+        "completed_at": "2026-10-19T01:24:15Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846025841"
+      },
+      {
+        "id": 117846025734,
+        "name": "Lightweight prose and derived checks",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "skipped",
+        "started_at": "2026-10-19T01:24:15Z",
+        "completed_at": "2026-10-19T01:24:15Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846025734"
+      },
+      {
+        "id": 117846025128,
+        "name": "Bazel / Verify release build on windows-latest for x86_64-pc-windows-msvc",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:24:19Z",
+        "completed_at": "2026-10-19T01:57:52Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846025128"
+      },
+      {
+        "id": 117846025117,
+        "name": "Bazel / Bazel test on windows-latest for x86_64-pc-windows-msvc shard 2/4",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "failure",
+        "started_at": "2026-10-19T01:24:19Z",
+        "completed_at": "2026-10-19T02:07:07Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846025117"
+      },
+      {
+        "id": 117846025094,
+        "name": "Bazel / Bazel test on windows-latest for x86_64-pc-windows-msvc shard 3/4",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "failure",
+        "started_at": "2026-10-19T01:24:19Z",
+        "completed_at": "2026-10-19T02:20:34Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846025094"
+      },
+      {
+        "id": 117846025091,
+        "name": "Bazel / Bazel test on windows-latest for x86_64-pc-windows-msvc shard 1/4",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "failure",
+        "started_at": "2026-10-19T01:24:19Z",
+        "completed_at": "2026-10-19T02:19:51Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846025091"
+      },
+      {
+        "id": 117846025039,
+        "name": "Bazel / Bazel test on windows-latest for x86_64-pc-windows-msvc shard 4/4",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "cancelled",
+        "started_at": "2026-10-19T01:24:19Z",
+        "completed_at": "2026-10-19T02:24:32Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846025039"
+      },
+      {
+        "id": 117846024997,
+        "name": "Bazel / Bazel test on ubuntu-24.04 for x86_64-unknown-linux-musl",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "cancelled",
+        "started_at": "2026-10-19T01:24:18Z",
+        "completed_at": "2026-10-19T02:24:34Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024997"
+      },
+      {
+        "id": 117846024988,
+        "name": "Bazel / Bazel test on macos-15-intel for x86_64-apple-darwin",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "cancelled",
+        "started_at": "2026-10-19T01:24:25Z",
+        "completed_at": "2026-10-19T02:24:55Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024988"
+      },
+      {
+        "id": 117846024970,
+        "name": "Bazel / Verify release build on ubuntu-24.04 for x86_64-unknown-linux-gnu",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "cancelled",
+        "started_at": "2026-10-19T01:24:19Z",
+        "completed_at": "2026-10-19T02:24:37Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024970"
+      },
+      {
+        "id": 117846024965,
+        "name": "Bazel / Bazel test on ubuntu-24.04 for x86_64-unknown-linux-gnu",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "cancelled",
+        "started_at": "2026-10-19T01:24:18Z",
+        "completed_at": "2026-10-19T02:24:34Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024965"
+      },
+      {
+        "id": 117846024963,
+        "name": "Bazel / Bazel clippy on macos-15 for aarch64-apple-darwin",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "failure",
+        "started_at": "2026-10-19T01:24:23Z",
+        "completed_at": "2026-10-19T02:10:10Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024963"
+      },
+      {
+        "id": 117846024935,
+        "name": "Bazel / Bazel clippy on ubuntu-24.04 for x86_64-unknown-linux-gnu",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "failure",
+        "started_at": "2026-10-19T01:24:18Z",
+        "completed_at": "2026-10-19T02:01:02Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024935"
+      },
+      {
+        "id": 117846024926,
+        "name": "Bazel / Verify release build on macos-15 for aarch64-apple-darwin",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "cancelled",
+        "started_at": "2026-10-19T01:24:25Z",
+        "completed_at": "2026-10-19T02:24:45Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024926"
+      },
+      {
+        "id": 117846024913,
+        "name": "Bazel / Bazel test on macos-15 for aarch64-apple-darwin",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "cancelled",
+        "started_at": "2026-10-19T01:24:22Z",
+        "completed_at": "2026-10-19T02:24:46Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024913"
+      },
+      {
+        "id": 117846024906,
+        "name": "Bazel / Bazel clippy on windows-latest for x86_64-pc-windows-msvc",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "cancelled",
+        "started_at": "2026-10-19T01:24:19Z",
+        "completed_at": "2026-10-19T02:24:33Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024906"
+      },
+      {
+        "id": 117846024829,
+        "name": "sdk / sdks",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "cancelled",
+        "started_at": "2026-10-19T01:24:19Z",
+        "completed_at": "2026-10-19T02:24:37Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024829"
+      },
+      {
+        "id": 117846024773,
+        "name": "rust-ci / Detect changed areas",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:24:18Z",
+        "completed_at": "2026-10-19T01:24:29Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024773"
+      },
+      {
+        "id": 117846024769,
+        "name": "repo-checks / Native Hepta paths on windows-latest",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:24:19Z",
+        "completed_at": "2026-10-19T01:26:02Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024769"
+      },
+      {
+        "id": 117846024762,
+        "name": "repo-checks / Native Hepta paths on macos-15",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:24:27Z",
+        "completed_at": "2026-10-19T01:25:50Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024762"
+      },
+      {
+        "id": 117846024755,
+        "name": "repo-checks / build-test",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:24:19Z",
+        "completed_at": "2026-10-19T01:26:36Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024755"
+      },
+      {
+        "id": 117846024715,
+        "name": "repo-checks / Native Hepta paths on ubuntu-24.04",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:24:18Z",
+        "completed_at": "2026-10-19T01:25:01Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024715"
+      },
+      {
+        "id": 117846024710,
+        "name": "sdk / python-sdk",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:24:18Z",
+        "completed_at": "2026-10-19T01:25:30Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024710"
+      },
+      {
+        "id": 117846024659,
+        "name": "cargo-deny / cargo-deny",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "failure",
+        "started_at": "2026-10-19T01:24:19Z",
+        "completed_at": "2026-10-19T01:25:43Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024659"
+      },
+      {
+        "id": 117846024641,
+        "name": "Hepta contract gate / Validate canonical branch and contract metadata",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:24:18Z",
+        "completed_at": "2026-10-19T01:24:56Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024641"
+      },
+      {
+        "id": 117845977915,
+        "name": "Build ${{ matrix.variant }} ${{ matrix.target }}",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "skipped",
+        "started_at": "2026-10-19T01:24:03Z",
+        "completed_at": "2026-10-19T01:24:03Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139890/job/117845977915"
+      },
+      {
+        "id": 117845977228,
+        "name": "Build ptrcomp-sandbox ${{ matrix.target }} from source",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "skipped",
+        "started_at": "2026-10-19T01:24:03Z",
+        "completed_at": "2026-10-19T01:24:03Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139890/job/117845977228"
+      },
+      {
+        "id": 117845881604,
+        "name": "Codespell / Check for spelling errors",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:23:40Z",
+        "completed_at": "2026-10-19T01:24:07Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117845881604"
+      },
+      {
+        "id": 117845881584,
+        "name": "Architecture convergence (source-head)",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:23:42Z",
+        "completed_at": "2026-10-19T01:53:04Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139924/job/117845881584"
+      },
+      {
+        "id": 117845881503,
+        "name": "Blob size policy / Blob size policy",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:23:40Z",
+        "completed_at": "2026-10-19T01:24:19Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117845881503"
+      },
+      {
+        "id": 117845881374,
+        "name": "Select blocking CI scope",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:23:41Z",
+        "completed_at": "2026-10-19T01:24:15Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117845881374"
+      },
+      {
+        "id": 117845881329,
+        "name": "Architecture convergence (base-merge)",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:23:43Z",
+        "completed_at": "2026-10-19T01:24:10Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139924/job/117845881329"
+      },
+      {
+        "id": 117845880897,
+        "name": "metadata",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:23:40Z",
+        "completed_at": "2026-10-19T01:24:03Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139890/job/117845880897"
+      },
+      {
+        "id": 117845876260,
+        "name": "Analyze (c-cpp)",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:23:39Z",
+        "completed_at": "2026-10-19T01:24:37Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185137572/job/117845876260"
+      },
+      {
+        "id": 117845876257,
+        "name": "Analyze (python)",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:23:39Z",
+        "completed_at": "2026-10-19T01:25:16Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185137572/job/117845876257"
+      },
+      {
+        "id": 117845876233,
+        "name": "Analyze (javascript-typescript)",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:23:39Z",
+        "completed_at": "2026-10-19T01:24:47Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185137572/job/117845876233"
+      },
+      {
+        "id": 117845876215,
+        "name": "Analyze (actions)",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:23:39Z",
+        "completed_at": "2026-10-19T01:24:29Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185137572/job/117845876215"
+      },
+      {
+        "id": 117845876045,
+        "name": "Analyze (rust)",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:23:39Z",
+        "completed_at": "2026-10-19T03:19:11Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185137572/job/117845876045"
+      }
+    ]
+  },
+  "main_branch": {
+    "head": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+    "protected": true,
+    "protection": {
+      "enabled": true,
+      "required_status_checks": {
+        "enforcement_level": "non_admins",
+        "contexts": [
+          "CI required",
+          "Architecture required"
+        ],
+        "checks": [
+          {
+            "context": "CI required",
+            "app_id": 15368
+          },
+          {
+            "context": "Architecture required",
+            "app_id": 15368
+          }
+        ]
+      }
+    }
+  },
+  "complete_protection_endpoint": {
+    "isError": true,
+    "status": 403,
+    "message": "Resource not accessible by integration",
+    "does_not_negate_limited_successful_branch_response": true
+  },
+  "evidence_boundaries": [
+    "Fleet scoped native test/build failure is ENOSPC; no new successful complete scoped CI receipt.",
+    "Fleet scoped workflow does not invoke Clippy; skipped Bazel is not a lint pass.",
+    "Owner d32 full-repo CI failure remains separate from Fleet b34 ENOSPC.",
+    "Both PRs remain unmerged; prospective_merge_sha is not proof of a merge.",
+    "No rerun, cancel, dispatch, policy change or merge was performed."
+  ]
+}

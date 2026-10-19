@@ -1,0 +1,43 @@
+Updating 0c2bf0f..bccb817
+Fast-forward
+ .github/workflows/a06-kernel.yml                   |  34 +-
+ docs/ASTERINAS_CPU_BANDWIDTH_N0.md                 |   6 +
+ docs/ASTERINAS_CPU_OWNER_G1A.md                    | 161 +++++++
+ kernel/asterinas/Cargo.lock                        |   8 +
+ kernel/asterinas/Cargo.toml                        |   3 +
+ kernel/asterinas/kernel/core/Cargo.toml            |   1 +
+ .../src/fs/fs_impls/cgroupfs/controller/cpu.rs     |  36 +-
+ .../cgroupfs/controller/cpu/config_regressions.rs  |  10 +-
+ .../controller/cpu/final_charge_regressions.rs     |  10 +-
+ .../fs/fs_impls/cgroupfs/controller/cpu/native.rs  | 106 +++++
+ .../cgroupfs/controller/cpu/native/tests.rs        | 468 +++++++++++++++++++++
+ .../src/fs/fs_impls/cgroupfs/controller/mod.rs     |  40 +-
+ .../kernel/core/src/fs/fs_impls/cgroupfs/inode.rs  |   4 +-
+ .../core/src/fs/fs_impls/cgroupfs/systree_node.rs  |  11 +-
+ .../libs/comp-sys/component-macro/src/priority.rs  |   2 +
+ libs/os-control/Cargo.toml                         |   1 +
+ libs/os-control/src/resource_state.rs              |  16 +
+ support/build/README.md                            |  28 +-
+ support/build/ktest/README.md                      |  29 +-
+ support/build/ktest/locks/aster-core.Cargo.lock    |   8 +
+ support/build/ktest/locks/aster-core.json          |  27 +-
+ support/build/ktest/locks/ostd.json                |  17 +-
+ support/build/ktest/prepare-locks.py               |  98 +++--
+ support/build/minimal/Cargo.lock                   |   8 +
+ support/build/verify-source.py                     |  55 ++-
+ tests/control/lock_alloc/run-checks.py             |   2 +-
+ tests/control/loom/Cargo.toml                      |   2 +
+ tests/kernel/control/README.md                     | 102 +++++
+ tests/kernel/control/queryabi_candidate_guest.c    |  87 ++++
+ .../kernel/control/run_queryabi_candidate_guest.py | 264 ++++++++++++
+ .../control/test_queryabi_candidate_runner.py      | 153 +++++++
+ tests/spec/test_a01_ktest_lock_preflight.py        |  72 +++-
+ tests/spec/test_a06_kernel_output_contract.py      |   8 +-
+ 33 files changed, 1776 insertions(+), 101 deletions(-)
+ create mode 100644 docs/ASTERINAS_CPU_OWNER_G1A.md
+ create mode 100644 kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs
+ create mode 100644 kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/tests.rs
+ create mode 100644 tests/kernel/control/README.md
+ create mode 100644 tests/kernel/control/queryabi_candidate_guest.c
+ create mode 100644 tests/kernel/control/run_queryabi_candidate_guest.py
+ create mode 100644 tests/kernel/control/test_queryabi_candidate_runner.py

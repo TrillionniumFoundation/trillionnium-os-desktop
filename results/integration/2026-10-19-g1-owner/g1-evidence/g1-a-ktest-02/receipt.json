@@ -1,0 +1,46 @@
+{
+  "schema": "r10.g1-a.real-kernel-run.v1",
+  "started_at_utc": "2026-10-19T01:55:03.553104+00:00",
+  "source_head": "12e0547d2e6394548b15764b06346422c4fff31e",
+  "command": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "-I",
+    "support/build/ktest/run.py",
+    "--crate",
+    "aster-core",
+    "--skip-osdk-install",
+    "--output",
+    "/workspace/scratch/499c7902de8e/r10-evidence/g1-a-ktest-02/execution"
+  ],
+  "cwd": "/workspace/scratch/499c7902de8e/r10-g1-owner",
+  "profile": "x86_64 q35 TCG max 1-vCPU 512MiB SeaBIOS vmm-direct multiboot",
+  "unfiltered_full_aster_core": true,
+  "finished_at_utc": "2026-10-19T01:56:48.385676+00:00",
+  "exit_code": 0,
+  "source_unchanged": true,
+  "input_files": 2980,
+  "guest_result": {
+    "passed": true,
+    "crates": [
+      {
+        "passed": true,
+        "guests": [
+          {
+            "crate": "aster-core",
+            "declared": 179,
+            "passed": 179,
+            "failed": 0,
+            "filtered": 0,
+            "soft_skipped": 0,
+            "soft_skip_reasons": [],
+            "exercised_passed_lower_bound": 179,
+            "observed_test_starts": 179,
+            "raw_qemu_exit": 33,
+            "guest": "guest-001"
+          }
+        ]
+      }
+    ]
+  },
+  "accepted": true
+}

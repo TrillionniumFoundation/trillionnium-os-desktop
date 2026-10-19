@@ -1,0 +1,29 @@
+diff --git a/docs/ASTERINAS_CPU_BANDWIDTH_N0.md b/docs/ASTERINAS_CPU_BANDWIDTH_N0.md
+index 925b089..f90d2bc 100644
+--- a/docs/ASTERINAS_CPU_BANDWIDTH_N0.md
++++ b/docs/ASTERINAS_CPU_BANDWIDTH_N0.md
+@@ -2,6 +2,24 @@
+ 
+ Updated: 2026-10-18; final-debit change based on main `3551e1e0e017e2973da7e2b8ab811ece25c258c0`. **Kernel effect observed; not production-ready, not HOS2-authorized.** The cgroup CPU implementation is already in main through [PR #121](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/121). [Draft PR #18](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/18) retains the original development history; it is not the current integration state. Root README remains zero bytes.
+ 
++## Latest configuration input boundary
++
++[PR #195](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/195)
++is merged in main `f9e306f76154590e096a42f70ce9de0a7c859e60`.
++The production writer now rejects explicitly malformed or overflowing periods
++and extra `cpu.max` fields before taking the existing bandwidth mutation lock.
++An omitted period still uses the current owner's period. Rejection leaves
++quota, period, usage, debt and throttling state unchanged; this does not create
++a second resource owner or enable a new HOS2 operation.
++
++The [input contract and replay instructions](../tests/organ_backend/CPU_MAX_CONFIG.md)
++link the actual allocation-free parser, its seven shared host/kernel regression
++cases and the two real controller/`VmReader` kernel cases. This is an intentional
++strictness choice for malformed input, not byte-for-byte Linux parser
++compatibility. Those source additions and #195's own execution records are
++separate from the older 159/160-test and quota samples below; this documentation
++update does not rerun the kernel or extend SMP/G1/G2 qualification.
++
+ ## Current integrated evidence and next implementation boundary
+ 
+ The [G1-a owner development manual](ASTERINAS_CPU_OWNER_G1A.md) describes the

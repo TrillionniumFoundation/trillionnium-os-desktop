@@ -1,0 +1,144 @@
+{
+  "schema": "r10.g1-pr197.ci-api-observation.v1",
+  "head": "107afb7436ca17177262fdfef2e6b5dfee13597a",
+  "started_at_utc": "2026-10-19 03:44:01 UTC",
+  "finished_at_utc": "2026-10-19 03:44:01 UTC",
+  "observations": [
+    {
+      "key": "a06_jobs",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39195437891/jobs?per_page=100",
+      "tool": "mcp__codex_apps__github_fetch",
+      "is_error": false,
+      "response_body": "{\"total_count\":1,\"jobs\":[{\"id\":117877088598,\"run_id\":39195437891,\"workflow_name\":\"A06 exact kernel scheduler and QEMU tests\",\"head_branch\":\"agents/r10-g1-cpu-owner-20261019\",\"run_url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39195437891\",\"run_attempt\":1,\"node_id\":\"CR_kwDOVLzC488AAAAbcgWhVg\",\"head_sha\":\"107afb7436ca17177262fdfef2e6b5dfee13597a\",\"url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/jobs/117877088598\",\"html_url\":\"https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39195437891/job/117877088598\",\"status\":\"completed\",\"conclusion\":\"success\",\"created_at\":\"2026-10-19T03:35:53Z\",\"started_at\":\"2026-10-19T03:35:56Z\",\"completed_at\":\"2026-10-19T03:43:01Z\",\"name\":\"exact-kernel-ktest\",\"steps\":[{\"name\":\"Set up job\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":1,\"started_at\":\"2026-10-19T03:35:57Z\",\"completed_at\":\"2026-10-19T03:35:58Z\"},{\"name\":\"Run actions/checkout@v4\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":2,\"started_at\":\"2026-10-19T03:35:58Z\",\"completed_at\":\"2026-10-19T03:36:11Z\"},{\"name\":\"Install disposable kernel-test host dependencies\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":3,\"started_at\":\"2026-10-19T03:36:11Z\",\"completed_at\":\"2026-10-19T03:36:25Z\"},{\"name\":\"Install pinned Rust toolchain and verify VDSO input\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":4,\"started_at\":\"2026-10-19T03:36:25Z\",\"completed_at\":\"2026-10-19T03:36:48Z\"},{\"name\":\"Prepare fixed OSDK test locks\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":5,\"started_at\":\"2026-10-19T03:36:48Z\",\"completed_at\":\"2026-10-19T03:36:50Z\"},{\"name\":\"Run complete OSTD and aster-core kernel tests in real QEMU\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":6,\"started_at\":\"2026-10-19T03:36:50Z\",\"completed_at\":\"2026-10-19T03:40:33Z\"},{\"name\":\"Build ordinary G1 product and verify QueryAbi with all four disabled operations\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":7,\"started_at\":\"2026-10-19T03:40:33Z\",\"completed_at\":\"2026-10-19T03:42:35Z\"},{\"name\":\"Build exact A06 SMP=2 candidate kernel\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":8,\"started_at\":\"2026-10-19T03:42:35Z\",\"completed_at\":\"2026-10-19T03:42:36Z\"},{\"name\":\"Run bounded one-vCPU quota and two-vCPU exit-lifecycle probes\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":9,\"started_at\":\"2026-10-19T03:42:36Z\",\"completed_at\":\"2026-10-19T03:42:57Z\"},{\"name\":\"Upload exact A06 kernel and raw QEMU evidence\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":10,\"started_at\":\"2026-10-19T03:42:57Z\",\"completed_at\":\"2026-10-19T03:43:00Z\"},{\"name\":\"Post Run actions/checkout@v4\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":20,\"started_at\":\"2026-10-19T03:43:00Z\",\"completed_at\":\"2026-10-19T03:43:00Z\"},{\"name\":\"Complete job\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":21,\"started_at\":\"2026-10-19T03:43:00Z\",\"completed_at\":\"2026-10-19T03:43:00Z\"}],\"check_run_url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117877088598\",\"labels\":[\"ubuntu-24.04\"],\"runner_id\":1000172749,\"runner_name\":\"GitHub Actions 1000172749\",\"runner_group_id\":0,\"runner_group_name\":\"GitHub Actions\"}]}",
+      "response_json": {
+        "total_count": 1,
+        "jobs": [
+          {
+            "id": 117877088598,
+            "run_id": 39195437891,
+            "workflow_name": "A06 exact kernel scheduler and QEMU tests",
+            "head_branch": "agents/r10-g1-cpu-owner-20261019",
+            "run_url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39195437891",
+            "run_attempt": 1,
+            "node_id": "CR_kwDOVLzC488AAAAbcgWhVg",
+            "head_sha": "107afb7436ca17177262fdfef2e6b5dfee13597a",
+            "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/jobs/117877088598",
+            "html_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39195437891/job/117877088598",
+            "status": "completed",
+            "conclusion": "success",
+            "created_at": "2026-10-19T03:35:53Z",
+            "started_at": "2026-10-19T03:35:56Z",
+            "completed_at": "2026-10-19T03:43:01Z",
+            "name": "exact-kernel-ktest",
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 1,
+                "started_at": "2026-10-19T03:35:57Z",
+                "completed_at": "2026-10-19T03:35:58Z"
+              },
+              {
+                "name": "Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 2,
+                "started_at": "2026-10-19T03:35:58Z",
+                "completed_at": "2026-10-19T03:36:11Z"
+              },
+              {
+                "name": "Install disposable kernel-test host dependencies",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 3,
+                "started_at": "2026-10-19T03:36:11Z",
+                "completed_at": "2026-10-19T03:36:25Z"
+              },
+              {
+                "name": "Install pinned Rust toolchain and verify VDSO input",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 4,
+                "started_at": "2026-10-19T03:36:25Z",
+                "completed_at": "2026-10-19T03:36:48Z"
+              },
+              {
+                "name": "Prepare fixed OSDK test locks",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 5,
+                "started_at": "2026-10-19T03:36:48Z",
+                "completed_at": "2026-10-19T03:36:50Z"
+              },
+              {
+                "name": "Run complete OSTD and aster-core kernel tests in real QEMU",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 6,
+                "started_at": "2026-10-19T03:36:50Z",
+                "completed_at": "2026-10-19T03:40:33Z"
+              },
+              {
+                "name": "Build ordinary G1 product and verify QueryAbi with all four disabled operations",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 7,
+                "started_at": "2026-10-19T03:40:33Z",
+                "completed_at": "2026-10-19T03:42:35Z"
+              },
+              {
+                "name": "Build exact A06 SMP=2 candidate kernel",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 8,
+                "started_at": "2026-10-19T03:42:35Z",
+                "completed_at": "2026-10-19T03:42:36Z"
+              },
+              {
+                "name": "Run bounded one-vCPU quota and two-vCPU exit-lifecycle probes",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 9,
+                "started_at": "2026-10-19T03:42:36Z",
+                "completed_at": "2026-10-19T03:42:57Z"
+              },
+              {
+                "name": "Upload exact A06 kernel and raw QEMU evidence",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 10,
+                "started_at": "2026-10-19T03:42:57Z",
+                "completed_at": "2026-10-19T03:43:00Z"
+              },
+              {
+                "name": "Post Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 20,
+                "started_at": "2026-10-19T03:43:00Z",
+                "completed_at": "2026-10-19T03:43:00Z"
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 21,
+                "started_at": "2026-10-19T03:43:00Z",
+                "completed_at": "2026-10-19T03:43:00Z"
+              }
+            ],
+            "check_run_url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117877088598",
+            "labels": [
+              "ubuntu-24.04"
+            ],
+            "runner_id": 1000172749,
+            "runner_name": "GitHub Actions 1000172749",
+            "runner_group_id": 0,
+            "runner_group_name": "GitHub Actions"
+          }
+        ]
+      }
+    }
+  ]
+}

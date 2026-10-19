@@ -1,0 +1,666 @@
+{
+  "schema": "r10.g1.independent-final-source-review.v1",
+  "status": "no_additional_source_blocker_identified_runtime_qualification_separate",
+  "source_commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+  "source_tree": "6b03c4827a28c9dc34456e7aa5f855b2f1f4b72f",
+  "source_parent": "be6d8408878dc25fce3188e1fc759aa227bf8678",
+  "scope": {
+    "cargo_invocations": 0,
+    "kernel_compilations": 0,
+    "guest_executions": 0,
+    "producer_files_written": 0,
+    "method": "Read exact product source, lifecycle callers, scheduler/node lease path, shared metadata, ten ktest bodies, and root-owned failed-build evidence. Static gate fixture verification and the approved corrective patch are separate receipts."
+  },
+  "conclusion": "The corrective source addresses the two observed initial build blockers without adding production authorization or reducing full component metadata. Forty-seven bounded static gate checks pass. CPU owner state, one-way incarnation closure, and accounting/lifecycle source observations remain unchanged except for the required ArcRef borrow. This receipt does not claim the final candidate compiled, booted or passed any kernel test.",
+  "observations": [
+    {
+      "id": "G1-S01",
+      "paths": [
+        "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs:61",
+        "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs:23"
+      ],
+      "finding": "CpuBandwidthState stores the existing CpuMax plus optional canonical NativeResourceState and a separate permanent detached bit under the existing IRQ-disabled SpinLock. It introduces no second CPU budget, period timer, mutex or delivery ledger."
+    },
+    {
+      "id": "G1-S02",
+      "paths": [
+        "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs:237",
+        "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs:468",
+        "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs:39",
+        "libs/os-control/src/resource_state.rs:277"
+      ],
+      "finding": "The ordinary cpu.max writer copies/parses user data before locking, then uses one lock acquisition for real CpuMax reconfiguration and the same canonical metadata revision. Same-value configuration advances a bound revision; existing used quota and carried debt remain in the actual owner. Legitimate elapsed-window advancement remains existing CpuMax behavior."
+    },
+    {
+      "id": "G1-S03",
+      "paths": [
+        "libs/os-control/src/resource_state.rs:277",
+        "libs/os-control/src/resource_state.rs:294",
+        "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs:63"
+      ],
+      "finding": "Canonical configuration first checks the fence and checked revision increment, then sets Indeterminate before the callback, and commits the revision/clears the fence only after return. Exhaustion does not wrap or call the mutation; unwinding leaves the fence. Error mapping distinguishes overflow, invalidation and indeterminate."
+    },
+    {
+      "id": "G1-S04",
+      "paths": [
+        "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs:55",
+        "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/mod.rs:402"
+      ],
+      "finding": "RCU replacement constructs/allocates the new owner before closing the old owner and publishing the replacement. Detachment is permanent even when old metadata was None. Bound old identity/revision and old accounting are retained; replacement starts with no native metadata. Ordinary writes on detached old owners return IsDead."
+    },
+    {
+      "id": "G1-S05",
+      "paths": [
+        "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/inode.rs:109",
+        "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/systree_node.rs:547",
+        "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/mod.rs:486"
+      ],
+      "finding": "Deletion requires the membership writer, checks processes, outstanding CPU charge leases, and children before closing the CPU incarnation, and only then marks the node dead. Busy removal does not close the owner or cancel leases."
+    },
+    {
+      "id": "G1-S06",
+      "paths": [
+        "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs:506",
+        "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs:575",
+        "kernel/asterinas/kernel/core/src/process/posix_thread/mod.rs:127",
+        "kernel/asterinas/kernel/core/src/process/posix_thread/mod.rs:370"
+      ],
+      "finding": "Real charging and eligibility still use the actual CpuMax with no detached short-circuit. Deferred task leases retain CgroupNode and release through Drop; they do not pin a particular CpuController generation. The new tests prove node lifetime/tail-debit behavior and retained explicit old Arc accounting, not new attribution of scheduler intervals across controller toggles."
+    },
+    {
+      "id": "G1-S07",
+      "paths": [
+        "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs:72",
+        "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/systree_node.rs:547"
+      ],
+      "finding": "Binding and replacement/deletion use membership before the IRQ-disabled bandwidth lock. Binding checks the installed active Arc while holding membership, constructs NativeTarget before taking the budget lock, and writes metadata once. Existing node-inner ordering is retained. No portable mutex acquisition, blocking I/O or new allocation was found under the IRQ budget lock."
+    },
+    {
+      "id": "G1-S08",
+      "paths": [
+        "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs:77",
+        "libs/os-control/src/resource_state.rs:161",
+        "kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs"
+      ],
+      "finding": "The new binding method is private and called only from cfg(ktest) helpers. The sole canonical extreme-revision constructor is cfg(ktest). No production authority bootstrap, CapSpace grant, NativeResource execute path or write ioctl is wired. hepta_control remains QueryAbi only."
+    },
+    {
+      "id": "G1-S09",
+      "paths": [
+        "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/tests.rs:38",
+        "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/tests.rs:73"
+      ],
+      "finding": "The test harness uses real cgroup nodes, existing RCU controller toggles, real mark_as_dead, and existing Process/Task lease machinery. Its Drop cleanup restores root controller activation and saved bandwidth state. No new retained allocation or cleanup omission was identified by source inspection."
+    }
+  ],
+  "test_source_review": {
+    "declared_ktests": 10,
+    "runtime_success_claimed": false,
+    "tests": [
+      {
+        "name": "binding_preserves_current_budget_and_cannot_be_repeated",
+        "source_line": 158,
+        "asserted_scope": "Actual installed owner binding, unchanged existing budget, one-time metadata installation."
+      },
+      {
+        "name": "ordinary_cpu_max_write_advances_revision_without_refilling_debt",
+        "source_line": 181,
+        "asserted_scope": "Real write_attr path, shared revision increment, same-value no refill, stale native revision refusal."
+      },
+      {
+        "name": "malformed_writes_do_not_consume_the_bound_revision",
+        "source_line": 213,
+        "asserted_scope": "Seven malformed payloads through valid slice-backed VmReader; no metadata revision/budget change."
+      },
+      {
+        "name": "replacement_closes_bound_old_arc_and_does_not_inherit_metadata",
+        "source_line": 238,
+        "asserted_scope": "Real subtree toggle/RCU replacement, old metadata invalidation and accounting retention, no metadata transfer."
+      },
+      {
+        "name": "replacement_also_closes_an_unbound_old_arc",
+        "source_line": 301,
+        "asserted_scope": "An old Arc with metadata None cannot later bind or accept ordinary configuration."
+      },
+      {
+        "name": "deleted_unbound_current_arc_cannot_be_bound_afterward",
+        "source_line": 323,
+        "asserted_scope": "Real deletion closes even an unbound current owner."
+      },
+      {
+        "name": "deletion_keeps_bound_identity_revision_and_accounting",
+        "source_line": 341,
+        "asserted_scope": "Deleted bound owner keeps identity/revision/accounting and refuses native admission."
+      },
+      {
+        "name": "last_revision_succeeds_then_real_owner_writes_fail_without_wrapping",
+        "source_line": 363,
+        "asserted_scope": "Canonical cfg(ktest) MAX-1 fixture, actual owner write reaches MAX once, following write fails without callback/accounting change."
+      },
+      {
+        "name": "ambiguous_metadata_mutation_stays_indeterminate_after_detachment",
+        "source_line": 394,
+        "asserted_scope": "Injected callback unwind under real owner lock; canonical fence survives subsequent real replacement/detachment."
+      },
+      {
+        "name": "final_charge_lease_blocks_deletion_until_the_real_debit_is_retained",
+        "source_line": 427,
+        "asserted_scope": "Real unstarted Process/Task lease pins a migrated zombie node, actual charge_task_cpu with explicit 37-tick interval, deletion only after task Drop, retained explicit old Arc accepts further 16 ticks."
+      }
+    ],
+    "limits": [
+      "Slice-backed malformed-input tests are not actual unmapped-user-address EFAULT evidence.",
+      "Controlled TSC values and explicit intervals do not measure actual scheduler CPU consumption or demonstrate SMP races.",
+      "Task lease coverage is CgroupNode lifetime, not per-controller-generation scheduling attribution.",
+      "The private seam is uninstalled in production; successful tests would not prove trusted identity issuance, CapSpace or authority enforcement.",
+      "cpu.weight remains the previous unenforced atomic setting and is not part of this cpu.max revision slice."
+    ],
+    "runtime_result_in_this_receipt": null
+  },
+  "observed_blockers": [
+    {
+      "id": "G1-B01",
+      "severity": "historical_initial_candidate_blocker",
+      "finding": "The real first build changed the fixed working root lock from SHA 6b5de5... to af94d716... by adding the required local dependency. Its source unchanged check failed.",
+      "evidence": "r10-evidence/g1-review/blocker-root-lock-mutation.json",
+      "followup": "Verified exact root-lock derivative from immutable original Git seed; actual source gate rejects all other edits; prepare reads original Git blob and full component metadata now uses --locked. Initial failure and isolated reproduction are preserved.",
+      "reproduction_review": "r10-evidence/g1-review/component-metadata-reproduction-review.json",
+      "status": "source_correction_verified_post_fix_runtime_separate"
+    },
+    {
+      "id": "G1-B02",
+      "severity": "historical_initial_candidate_blocker",
+      "finding": "Initial native.rs:85 passed ArcRef to Arc::ptr_eq without borrowing, yielding real E0308 and preventing compilation.",
+      "evidence": "r10-evidence/g1-a-ktest-01/execution/aster-core/osdk-test.log:225",
+      "followup": "Verified the final native.rs differs from initial solely by the explicit borrow suggested by the actual compiler diagnostic. Kernel compilation is evaluated in a separate root-owned execution receipt.",
+      "status": "source_correction_verified_post_fix_runtime_separate"
+    }
+  ],
+  "remaining_acceptance": [
+    "Independently read root-owned final-candidate build input, generated lock and serial evidence when that run completes.",
+    "Keep actual new ktest identities/results separate from controlled source fixtures and hardware-skipped paths.",
+    "Do not extend this cpu.max G1-a evidence to G1-b trusted bootstrap, CapSpace, resource execute authorization, device effects, BOOTTIME conversion or SMP qualification."
+  ],
+  "superseded_cause_assumption": "OSDK util no-deps metadata was initially a static candidate, not a demonstrated writer. Six saved real producer counterexamples left the root lock unchanged; the later full component metadata reproduction establishes the actionable cause.",
+  "reviewed_at_utc": "2026-10-19T01:58:14.772025+00:00",
+  "code_files_sha256": {
+    ".github/workflows/a06-kernel.yml": "59e3fbefe3c83814c55a5fb4f15dcc408a9fb91a315a293661aee6f75fc087fe",
+    "docs/ASTERINAS_CPU_BANDWIDTH_N0.md": "e5e53019c21dd75a5413af5a617c1fb0a076d073598266c39db6ad66b6cc7788",
+    "docs/ASTERINAS_CPU_OWNER_G1A.md": "fadc87a8ae04dad9072d0f6da396304da2479b7f39cfaaee18b70984e1cd717e",
+    "kernel/asterinas/Cargo.lock": "af94d71680ecf3b9631e21c958263d5e41229033214f88dcff858bb14765a666",
+    "kernel/asterinas/Cargo.toml": "153bea9f3a0ec926947f9e7207ab458222453cf162283d88a6d25fdeb837048d",
+    "kernel/asterinas/kernel/core/Cargo.toml": "8a5ca474b72fbc81120c41232607e59d0533c736f74315754d64045a868ce6e4",
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs": "ea74592acf422da93d9fa4dd1de8dc89808e778c69930562943e1c3580e8ae3c",
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/config_regressions.rs": "598e1d9882ff40a84722c4fc2ba3f9decc5c781c628c2850c74fbcf558c72830",
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/final_charge_regressions.rs": "6dad5fdcea16fe58c421c21f8440f15726a19237c112e6188d6f59fe9f84f3bf",
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs": "37b652c56060c838f43dd0d0a089e6cad460b898758edc9d32d065cfa9ea2dc3",
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/tests.rs": "f4e613e21bee44c77b207919d621c751f49830ef2476b0ae8e3c96ed9b7b5a02",
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/mod.rs": "e72a5cca40ce4429d0d7d5ec2caa3592f29f9adb329a437e9f8026bca969fa7b",
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/inode.rs": "1b7aad53f6c667a9292fb4e7ed2bd93121371dcc1f11c63f60a7031c96251cf8",
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/systree_node.rs": "1f215e696b6356bd67fd7cda5c00ab6babbf5f7dce45c6da5eacee0b8661b302",
+    "kernel/asterinas/kernel/libs/comp-sys/component-macro/src/priority.rs": "e5c7ef1e4f02f512e6e08d84c87d0fe2f6f39ada659264c6a74df8b7043fb9b9",
+    "libs/os-control/Cargo.toml": "57dbfcb0521f45a62574534da0db7de3db15a8910d81b67b2ccbdc6326d3a20f",
+    "libs/os-control/src/resource_state.rs": "045f8bf459736dc9f63fd9dc1e78cc0f2371694a3ee28f53058202f7716ab68a",
+    "support/build/README.md": "1ab023f69259ca93a36a3f5db9abdef4c8d1413ec3c74d74e28e5aba7e9b3c22",
+    "support/build/ktest/README.md": "592a7eca726231ef18da1430c1cf0620b6813ad4de883046c1bfa7913019d5cd",
+    "support/build/ktest/locks/aster-core.Cargo.lock": "85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150",
+    "support/build/ktest/locks/aster-core.json": "f170057e878d925932f341c275b8d83a4f5ba76c5b11af1e534028147379c20c",
+    "support/build/ktest/locks/ostd.json": "2dcfe3665f95bb43fa310153e118e75ac899128407b0c28c6290348ab885f833",
+    "support/build/ktest/prepare-locks.py": "88b2ed07e5cbcdd8465f093475ecfecb184c2e19ab32e031bb527fb243348567",
+    "support/build/minimal/Cargo.lock": "e54bc99b3df5e21a1fdcd88d89b32ac478e73c7b4bf69ae0b1084f59d56fc506",
+    "support/build/verify-source.py": "0b4dcbd04bf2bc201c187dc055d3c5f74ff51938f1506fe4c9590d7f0a1cf0c6",
+    "kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs": "5133419b204d05e769b4a111a6e4285c9f50de482b65be15b5799312203e3979",
+    "kernel/asterinas/kernel/core/src/process/posix_thread/mod.rs": "ce2a0a6ede6f765022cfe68cc157b4485cc37913e7fd59fcc2549c3b2d2dbe2e",
+    "kernel/asterinas/kernel/libs/comp-sys/component-macro/src/lib.rs": "cbbecb3051bb5bd333ddc1b1636548b5c97c6b5164ef562bee8a0ed2e64e47bc",
+    "kernel/asterinas/kernel/core/src/init.rs": "86518b576e44c2232f3a7b4640d657181b09e179a9129f929e6ee6f3c99a7469",
+    "kernel/asterinas/osdk/src/util.rs": "7ec9276b0aabcbae7e954606d2fd7d4902f4d11f215b11199c83be3f8f2e681d",
+    "kernel/asterinas/osdk/src/base_crate/mod.rs": "490aa4fc7a57362e1816c3778690de6d4d1af9508c2d4aec2e2c9524b4a74676",
+    "kernel/asterinas/osdk/src/commands/test.rs": "a1f35b4d72e2235cacd368b421bf992a9d58c0537b21882f6f37cb8d1cee23bf",
+    "kernel/asterinas/osdk/Cargo.lock": "99a21f72f6a9f1582553b34f06e80f86e539f38e62eab7a0847afd0906e75be3",
+    "kernel/asterinas/rust-toolchain.toml": "b2508d8c9cd57258fad2fc77737e07172846161f6a7dd726cbd8e974de69c6f7",
+    "support/build/ktest/locks/ostd.Cargo.lock": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6",
+    "support/upstream-lock.json": "beb48f48a77101e5456ca78aa98d3c0f4c3a3f11ca29f422e2d576ff837cc592",
+    "libs/os-control/src/native.rs": "1967c2db5c7292127a5cb4a76c3448a9764710b4c44ebeb40a610dba6e16fd81"
+  },
+  "evidence_files": {
+    "r10-evidence/g1-a-ktest-01/receipt.json": {
+      "path": "r10-evidence/g1-a-ktest-01/receipt.json",
+      "bytes": 780,
+      "sha256": "2a9199e3a90c92937d9f50e9416c492553f6718155b56b444a81c681f954085d"
+    },
+    "r10-evidence/g1-a-ktest-01/execution/aster-core/osdk-test.log": {
+      "path": "r10-evidence/g1-a-ktest-01/execution/aster-core/osdk-test.log",
+      "bytes": 16054,
+      "sha256": "9c8fc4a7cc93d7a09751d7b5ecd04f99227965676edbf215d3bb21f6f9012547"
+    },
+    "r10-evidence/g1-review/blocker-root-lock-mutation.json": {
+      "path": "r10-evidence/g1-review/blocker-root-lock-mutation.json",
+      "bytes": 2341,
+      "sha256": "9404512fa0eb687cabe64c43f235f87d0aa8d746a8fdeef574cbd7b2638cc6aa"
+    },
+    "r10-evidence/g1-review/component-metadata-reproduction-review.json": {
+      "path": "r10-evidence/g1-review/component-metadata-reproduction-review.json",
+      "bytes": 19320,
+      "sha256": "70c975378a53756889ac166ba3a77cde517dc92f3e06ff3006ad38bab7f00fbc"
+    },
+    "r10-evidence/g1-owner/producer-handoff.json": {
+      "path": "r10-evidence/g1-owner/producer-handoff.json",
+      "bytes": 4314,
+      "sha256": "945d0c1fe21bb2b159f0174aaf39615d8c2fdb526147d3771197f99663ee17ce"
+    },
+    "r10-evidence/g1-owner/producer-handoff-02.json": {
+      "path": "r10-evidence/g1-owner/producer-handoff-02.json",
+      "bytes": 6081,
+      "sha256": "f5bd3d678566c9be26a27e224226f41bd7d74c5800c101644a5e68b59eb921f6"
+    },
+    "r10-evidence/g1-owner/root-lock-explicit-derivation.json": {
+      "path": "r10-evidence/g1-owner/root-lock-explicit-derivation.json",
+      "bytes": 1026,
+      "sha256": "a97f8bd0307c27dbc02c935e931c33656993a3fcd9a4e003049788bc73637e6a"
+    },
+    "r10-evidence/g1-review/static-gates.json": {
+      "path": "r10-evidence/g1-review/static-gates.json",
+      "bytes": 21212,
+      "sha256": "9c0bc2f201572c89de12b740e64a613e020bcb5c64ee422165bcaa389779cb0b"
+    },
+    "r10-evidence/g1-review/source-semantic-review-be6.json": {
+      "path": "r10-evidence/g1-review/source-semantic-review-be6.json",
+      "bytes": 16089,
+      "sha256": "498e28dd3a389b3b22074a751e4191976af1ea3fb3ac05802ad6398f6abb3e79"
+    }
+  },
+  "source_baseline": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+  "source_head_observed": "12e0547d2e6394548b15764b06346422c4fff31e",
+  "worktree_status_observed": "",
+  "source_file_bindings": {
+    ".github/workflows/a06-kernel.yml": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 5418,
+      "sha256": "59e3fbefe3c83814c55a5fb4f15dcc408a9fb91a315a293661aee6f75fc087fe",
+      "current_worktree_bytes_equal": true
+    },
+    "docs/ASTERINAS_CPU_BANDWIDTH_N0.md": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 12754,
+      "sha256": "e5e53019c21dd75a5413af5a617c1fb0a076d073598266c39db6ad66b6cc7788",
+      "current_worktree_bytes_equal": true
+    },
+    "docs/ASTERINAS_CPU_OWNER_G1A.md": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 12562,
+      "sha256": "fadc87a8ae04dad9072d0f6da396304da2479b7f39cfaaee18b70984e1cd717e",
+      "current_worktree_bytes_equal": true
+    },
+    "kernel/asterinas/Cargo.lock": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 49279,
+      "sha256": "af94d71680ecf3b9631e21c958263d5e41229033214f88dcff858bb14765a666",
+      "current_worktree_bytes_equal": true
+    },
+    "kernel/asterinas/Cargo.toml": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 12270,
+      "sha256": "153bea9f3a0ec926947f9e7207ab458222453cf162283d88a6d25fdeb837048d",
+      "current_worktree_bytes_equal": true
+    },
+    "kernel/asterinas/kernel/core/Cargo.toml": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 2504,
+      "sha256": "8a5ca474b72fbc81120c41232607e59d0533c736f74315754d64045a868ce6e4",
+      "current_worktree_bytes_equal": true
+    },
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 36728,
+      "sha256": "ea74592acf422da93d9fa4dd1de8dc89808e778c69930562943e1c3580e8ae3c",
+      "current_worktree_bytes_equal": true
+    },
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/config_regressions.rs": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 2531,
+      "sha256": "598e1d9882ff40a84722c4fc2ba3f9decc5c781c628c2850c74fbcf558c72830",
+      "current_worktree_bytes_equal": true
+    },
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/final_charge_regressions.rs": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 9533,
+      "sha256": "6dad5fdcea16fe58c421c21f8440f15726a19237c112e6188d6f59fe9f84f3bf",
+      "current_worktree_bytes_equal": true
+    },
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 3452,
+      "sha256": "37b652c56060c838f43dd0d0a089e6cad460b898758edc9d32d065cfa9ea2dc3",
+      "current_worktree_bytes_equal": true
+    },
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/tests.rs": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 16146,
+      "sha256": "f4e613e21bee44c77b207919d621c751f49830ef2476b0ae8e3c96ed9b7b5a02",
+      "current_worktree_bytes_equal": true
+    },
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/mod.rs": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 19582,
+      "sha256": "e72a5cca40ce4429d0d7d5ec2caa3592f29f9adb329a437e9f8026bca969fa7b",
+      "current_worktree_bytes_equal": true
+    },
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/inode.rs": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 4253,
+      "sha256": "1b7aad53f6c667a9292fb4e7ed2bd93121371dcc1f11c63f60a7031c96251cf8",
+      "current_worktree_bytes_equal": true
+    },
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/systree_node.rs": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 32731,
+      "sha256": "1f215e696b6356bd67fd7cda5c00ab6babbf5f7dce45c6da5eacee0b8661b302",
+      "current_worktree_bytes_equal": true
+    },
+    "kernel/asterinas/kernel/libs/comp-sys/component-macro/src/priority.rs": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 7999,
+      "sha256": "e5c7ef1e4f02f512e6e08d84c87d0fe2f6f39ada659264c6a74df8b7043fb9b9",
+      "current_worktree_bytes_equal": true
+    },
+    "libs/os-control/Cargo.toml": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 2309,
+      "sha256": "57dbfcb0521f45a62574534da0db7de3db15a8910d81b67b2ccbdc6326d3a20f",
+      "current_worktree_bytes_equal": true
+    },
+    "libs/os-control/src/resource_state.rs": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 13530,
+      "sha256": "045f8bf459736dc9f63fd9dc1e78cc0f2371694a3ee28f53058202f7716ab68a",
+      "current_worktree_bytes_equal": true
+    },
+    "support/build/README.md": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 11996,
+      "sha256": "1ab023f69259ca93a36a3f5db9abdef4c8d1413ec3c74d74e28e5aba7e9b3c22",
+      "current_worktree_bytes_equal": true
+    },
+    "support/build/ktest/README.md": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 4682,
+      "sha256": "592a7eca726231ef18da1430c1cf0620b6813ad4de883046c1bfa7913019d5cd",
+      "current_worktree_bytes_equal": true
+    },
+    "support/build/ktest/locks/aster-core.Cargo.lock": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 41127,
+      "sha256": "85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150",
+      "current_worktree_bytes_equal": true
+    },
+    "support/build/ktest/locks/aster-core.json": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 20317,
+      "sha256": "f170057e878d925932f341c275b8d83a4f5ba76c5b11af1e534028147379c20c",
+      "current_worktree_bytes_equal": true
+    },
+    "support/build/ktest/locks/ostd.json": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 10494,
+      "sha256": "2dcfe3665f95bb43fa310153e118e75ac899128407b0c28c6290348ab885f833",
+      "current_worktree_bytes_equal": true
+    },
+    "support/build/ktest/prepare-locks.py": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 10353,
+      "sha256": "88b2ed07e5cbcdd8465f093475ecfecb184c2e19ab32e031bb527fb243348567",
+      "current_worktree_bytes_equal": true
+    },
+    "support/build/minimal/Cargo.lock": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 41937,
+      "sha256": "e54bc99b3df5e21a1fdcd88d89b32ac478e73c7b4bf69ae0b1084f59d56fc506",
+      "current_worktree_bytes_equal": true
+    },
+    "support/build/verify-source.py": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 5832,
+      "sha256": "0b4dcbd04bf2bc201c187dc055d3c5f74ff51938f1506fe4c9590d7f0a1cf0c6",
+      "current_worktree_bytes_equal": true
+    },
+    "kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 9584,
+      "sha256": "5133419b204d05e769b4a111a6e4285c9f50de482b65be15b5799312203e3979",
+      "current_worktree_bytes_equal": true
+    },
+    "kernel/asterinas/kernel/core/src/process/posix_thread/mod.rs": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 17641,
+      "sha256": "ce2a0a6ede6f765022cfe68cc157b4485cc37913e7fd59fcc2549c3b2d2dbe2e",
+      "current_worktree_bytes_equal": true
+    },
+    "kernel/asterinas/kernel/libs/comp-sys/component-macro/src/lib.rs": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 2697,
+      "sha256": "cbbecb3051bb5bd333ddc1b1636548b5c97c6b5164ef562bee8a0ed2e64e47bc",
+      "current_worktree_bytes_equal": true
+    },
+    "kernel/asterinas/kernel/core/src/init.rs": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 8425,
+      "sha256": "86518b576e44c2232f3a7b4640d657181b09e179a9129f929e6ee6f3c99a7469",
+      "current_worktree_bytes_equal": true
+    },
+    "kernel/asterinas/osdk/src/util.rs": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 14320,
+      "sha256": "7ec9276b0aabcbae7e954606d2fd7d4902f4d11f215b11199c83be3f8f2e681d",
+      "current_worktree_bytes_equal": true
+    },
+    "kernel/asterinas/osdk/src/base_crate/mod.rs": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 12984,
+      "sha256": "490aa4fc7a57362e1816c3778690de6d4d1af9508c2d4aec2e2c9524b4a74676",
+      "current_worktree_bytes_equal": true
+    },
+    "kernel/asterinas/osdk/src/commands/test.rs": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 3871,
+      "sha256": "a1f35b4d72e2235cacd368b421bf992a9d58c0537b21882f6f37cb8d1cee23bf",
+      "current_worktree_bytes_equal": true
+    },
+    "kernel/asterinas/osdk/Cargo.lock": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 35285,
+      "sha256": "99a21f72f6a9f1582553b34f06e80f86e539f38e62eab7a0847afd0906e75be3",
+      "current_worktree_bytes_equal": true
+    },
+    "kernel/asterinas/rust-toolchain.toml": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 339,
+      "sha256": "b2508d8c9cd57258fad2fc77737e07172846161f6a7dd726cbd8e974de69c6f7",
+      "current_worktree_bytes_equal": true
+    },
+    "support/build/ktest/locks/ostd.Cargo.lock": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 20185,
+      "sha256": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6",
+      "current_worktree_bytes_equal": true
+    },
+    "support/upstream-lock.json": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 4657,
+      "sha256": "beb48f48a77101e5456ca78aa98d3c0f4c3a3f11ca29f422e2d576ff837cc592",
+      "current_worktree_bytes_equal": true
+    },
+    "libs/os-control/src/native.rs": {
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "bytes": 8844,
+      "sha256": "1967c2db5c7292127a5cb4a76c3448a9764710b4c44ebeb40a610dba6e16fd81",
+      "current_worktree_bytes_equal": true
+    }
+  },
+  "changed_files_from_baseline": [
+    ".github/workflows/a06-kernel.yml",
+    "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+    "docs/ASTERINAS_CPU_OWNER_G1A.md",
+    "kernel/asterinas/Cargo.lock",
+    "kernel/asterinas/Cargo.toml",
+    "kernel/asterinas/kernel/core/Cargo.toml",
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs",
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/config_regressions.rs",
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/final_charge_regressions.rs",
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs",
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/tests.rs",
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/mod.rs",
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/inode.rs",
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/systree_node.rs",
+    "kernel/asterinas/kernel/libs/comp-sys/component-macro/src/priority.rs",
+    "libs/os-control/Cargo.toml",
+    "libs/os-control/src/resource_state.rs",
+    "support/build/README.md",
+    "support/build/ktest/README.md",
+    "support/build/ktest/locks/aster-core.Cargo.lock",
+    "support/build/ktest/locks/aster-core.json",
+    "support/build/ktest/locks/ostd.json",
+    "support/build/ktest/prepare-locks.py",
+    "support/build/minimal/Cargo.lock",
+    "support/build/verify-source.py"
+  ],
+  "blocking_findings_on_corrected_source": [],
+  "corrective_patch_review": {
+    "initial_commit": "be6d8408878dc25fce3188e1fc759aa227bf8678",
+    "final_commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+    "changed_rust_behaviour": "Only explicit ArcRef borrowing and full component metadata --locked; all ten ktest source bodies unchanged.",
+    "native_borrow_only_verified": true,
+    "full_metadata_locked_only_verified": true,
+    "component_enumeration_reduced_to_no_deps": false,
+    "production_query_abi_endpoint_unchanged_from_baseline": true,
+    "old_immutable_working_lock_assumption_explicitly_corrected": true,
+    "immutable_upstream_seed": {
+      "tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+      "blob": "77d8f4be4cdc7365cd73a2e9f7638d46f3608b40",
+      "sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+      "source": "git cat-file blob, never working derived Cargo.lock"
+    },
+    "working_root_lock_sha256": "af94d71680ecf3b9631e21c958263d5e41229033214f88dcff858bb14765a666",
+    "working_root_derivation": "Exactly two byte insertions into the original Git blob, independently matched to actual working lock; all other package records remain identical.",
+    "pristine_mode": "Source inspection confirms both manifest and working-lock derivative exceptions are guarded by not args.pristine. A full pristine import was not rerun.",
+    "doc_review": [
+      "docs/ASTERINAS_CPU_OWNER_G1A.md",
+      "support/build/README.md",
+      "support/build/ktest/README.md"
+    ],
+    "doc_conclusion": "The revised docs distinguish immutable original Git seed from explicit working derivative, name the real initial compile/lock failures, correct the no-deps attribution, and do not claim guest success from metadata reproduction."
+  },
+  "static_gate_review": {
+    "receipt": {
+      "path": "r10-evidence/g1-review/static-gates.json",
+      "bytes": 21212,
+      "sha256": "9c0bc2f201572c89de12b740e64a613e020bcb5c64ee422165bcaa389779cb0b"
+    },
+    "cases": 47,
+    "accepted_positive_cases": 7,
+    "rejected_negative_cases": 40,
+    "actual_default_protected_files": 118,
+    "all_case_expectations_met": true,
+    "cargo_invocations": 0,
+    "producer_mutations": 0,
+    "actual_lock_deltas": [
+      {
+        "path": "kernel/asterinas/Cargo.lock",
+        "baseline": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+        "before_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+        "after_sha256": "af94d71680ecf3b9631e21c958263d5e41229033214f88dcff858bb14765a666",
+        "before_packages": 234,
+        "after_packages": 235,
+        "added_packages": [
+          [
+            "os-control",
+            "0.1.0",
+            ""
+          ]
+        ],
+        "removed_packages": [],
+        "changed_existing_packages": [
+          "aster-core 0.1.0: exactly one os-control dependency edge"
+        ],
+        "external_record_drift": [],
+        "all_other_package_records_equal": true
+      },
+      {
+        "path": "support/build/ktest/locks/aster-core.Cargo.lock",
+        "baseline": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+        "before_sha256": "159b8682d27a7a21af98885ae48515234445c00fdf5e00b158fdc4aa952ff4ed",
+        "after_sha256": "85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150",
+        "before_packages": 199,
+        "after_packages": 200,
+        "added_packages": [
+          [
+            "os-control",
+            "0.1.0",
+            ""
+          ]
+        ],
+        "removed_packages": [],
+        "changed_existing_packages": [
+          "aster-core 0.1.0: exactly one os-control dependency edge"
+        ],
+        "external_record_drift": [],
+        "all_other_package_records_equal": true
+      },
+      {
+        "path": "support/build/minimal/Cargo.lock",
+        "baseline": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+        "before_sha256": "b42d8fff136d80a5f8159356882096996991e05975d8da9c81ad9db9bdb06e10",
+        "after_sha256": "e54bc99b3df5e21a1fdcd88d89b32ac478e73c7b4bf69ae0b1084f59d56fc506",
+        "before_packages": 203,
+        "after_packages": 204,
+        "added_packages": [
+          [
+            "os-control",
+            "0.1.0",
+            ""
+          ]
+        ],
+        "removed_packages": [],
+        "changed_existing_packages": [
+          "aster-core 0.1.0: exactly one os-control dependency edge"
+        ],
+        "external_record_drift": [],
+        "all_other_package_records_equal": true
+      }
+    ],
+    "interpretation": "Full arbitrary working-root byte changes are rejected. Derived package admission also fixes external name/version/source/checksum tuples; complete actual package records were compared independently."
+  },
+  "derived_report_review": [
+    {
+      "crate": "aster-core",
+      "report": "support/build/ktest/locks/aster-core.json",
+      "report_sha256": "f170057e878d925932f341c275b8d83a4f5ba76c5b11af1e534028147379c20c",
+      "schema": 3,
+      "seed_git_identity_and_bytes_match": true,
+      "generator_input_hashes_match_frozen_source": true,
+      "normalized_lock_sha256": "85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150",
+      "packages": 200,
+      "producer_reported_metadata_exit": 0,
+      "producer_reported_locked_metadata_exit": 0,
+      "resolved_native_features": {
+        "path+file://${PROJECT}/libs/os-control#0.1.0": [
+          "portable-spin"
+        ]
+      },
+      "reviewer_executed_cargo": false
+    },
+    {
+      "crate": "ostd",
+      "report": "support/build/ktest/locks/ostd.json",
+      "report_sha256": "2dcfe3665f95bb43fa310153e118e75ac899128407b0c28c6290348ab885f833",
+      "schema": 3,
+      "seed_git_identity_and_bytes_match": true,
+      "generator_input_hashes_match_frozen_source": true,
+      "normalized_lock_sha256": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6",
+      "packages": 97,
+      "producer_reported_metadata_exit": 0,
+      "producer_reported_locked_metadata_exit": 0,
+      "resolved_native_features": {},
+      "reviewer_executed_cargo": false
+    }
+  ]
+}

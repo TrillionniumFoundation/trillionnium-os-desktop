@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "timestamp_utc": "2026-10-19T02:12:15.808145+00:00",
+  "head": "85c39072272e824f87acdcb37596d116ad2bac8e",
+  "tree": "8356d5049f63e6086408e61c4aa86958e421ea2c",
+  "clean": true,
+  "changed_files": {
+    ".github/workflows/a06-kernel.yml": "d4e78f600819248500437955dd8c0a0221e19626b58cdc71cc9be263d99edd89",
+    "tests/kernel/control/README.md": "ad766d2f3d33ad0d7a845d48be20edc9f236cc996e24b4516c4eed45d083c67c",
+    "tests/kernel/control/queryabi_candidate_guest.c": "790a6dbcaa963a7873dee0a29269f0e203306641a431890ff8f72e7c6b315f20",
+    "tests/kernel/control/run_queryabi_candidate_guest.py": "e02cfa6a786f8016f0fdb4714e539e6949094c32390cf9230a9039b0dd868a6f",
+    "tests/kernel/control/test_queryabi_candidate_runner.py": "18d3d350115cd9a5f2084b22b0f43c27bc7dbd389d84ceea97277510b69ffb42"
+  },
+  "tests_command": [
+    "python3",
+    "-I",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests/kernel/control",
+    "-p",
+    "test_queryabi*runner.py",
+    "-v"
+  ],
+  "tests_exit": 0,
+  "tests_count": 16,
+  "test_scope": "8 original + 8 candidate host fixtures; no real kernel/ioctl/guest",
+  "tests_log_sha256": "eb26430d0e96d86cae4f6ff1e0dd283f10d48d2526efbe7d28c89fb9bb81cd3a",
+  "actual_reviewed_source_snapshot": {
+    "tracked_files": 5777,
+    "all_file_git_blobs_and_modes_match": true,
+    "sha256": "6b0c84ee165148ee728897774d385be9349e686e644ad5c31ae59e666d986457"
+  },
+  "native_production_kernel_run": false,
+  "candidate_guest_run": false,
+  "next_root_command": [
+    "python3",
+    "-I",
+    "tests/kernel/control/run_queryabi_candidate_guest.py",
+    "--expected-source-head",
+    "<root-integrated-final-HEAD>",
+    "--expected-source-tree",
+    "<root-integrated-final-tree>",
+    "--output",
+    "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-candidate-01"
+  ],
+  "target_dir_default": "kernel/asterinas/target in original owner checkout; do not build in this isolated review worktree with its differently embedded OSDK path",
+  "legacy_files_unchanged": true,
+  "ci": "prepare-locks external reports+both byte cmp; full ktests then SMP1 product and candidate before existing SMP2/quota; common a06-target; upload each evidence set",
+  "owner_checkout_modified": false
+}

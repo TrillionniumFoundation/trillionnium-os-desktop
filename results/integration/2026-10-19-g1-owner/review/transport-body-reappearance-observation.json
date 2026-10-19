@@ -1,0 +1,20 @@
+{
+  "schema": "r10.transport-body-reappearance-observation.v1",
+  "observed_at_utc": "2026-10-19T03:42:21.027104+00:00",
+  "observation": [
+    {
+      "path": "results/integration/2026-10-19-g1-owner/g1-remote-ci-f744/a06-exact-kernel-ktest-39193294713.zip",
+      "observed_exists_after_tool_boundary": true,
+      "sha256": "bf5f89c4ef49d1be7c2e98240737982d9c38e5a3c787dc9428f475ae9f526135",
+      "excluded_from_preupload_and_intended_git_tree": true
+    },
+    {
+      "path": "results/integration/2026-10-19-g1-owner/g1-remote-ci-463f/a06-exact-kernel-ktest-39194495150.zip",
+      "observed_exists_after_tool_boundary": true,
+      "sha256": "f5d8ac6cad22e90fc1ce3102447b1487eb6962ae95a4971c118edd9513115018",
+      "excluded_from_preupload_and_intended_git_tree": true
+    }
+  ],
+  "scope": "Copies of frozen original CI ZIP bodies in the documentation delivery workspace only. Closed transport commands had observed them absent before and after actual restoration; a subsequent separate tool invocation observed them present again. Writer/cause not established. No producer worktree accessed or product execution performed.",
+  "publication_rule": "Explicitly select transport parts and omit original ZIP paths from preupload and the final Git index. Retain original bytes in the review directory and frozen producer evidence."
+}

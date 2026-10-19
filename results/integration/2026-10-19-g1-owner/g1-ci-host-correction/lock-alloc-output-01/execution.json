@@ -1,0 +1,206 @@
+{
+  "all_probes_used_identical_harness_bytes": true,
+  "callback_commit": "d172babcb3d6275ee0dfb0c9a58207eb2149eef9",
+  "current_check_executed": true,
+  "fixtures": [
+    {
+      "bytes": 15910,
+      "path": "fixture.rs",
+      "sha256": "1e04f7ffb2ed86f5be25fe522d95f0f323febc81e4b444db25ea3ebd53d197d4"
+    },
+    {
+      "bytes": 21405,
+      "path": "run-checks.py",
+      "sha256": "1e95f96c5d67a8598705a4cda46186a8181aeb7ddbd0c06e30b8fd184f8536a4"
+    },
+    {
+      "bytes": 5941,
+      "path": "sync_shim.rs",
+      "sha256": "c2ea51dbaad78e5bc691e460b80a23ae40374493be4165d4c9e93c9009590233"
+    }
+  ],
+  "harness_fixtures_unchanged_during_execution": true,
+  "historical_commit": "e59f8b2fce1287f1ea706dc94880824a9b586ae3",
+  "passed": false,
+  "probes": {
+    "current": {
+      "build": {
+        "argv": [
+          "/workspace/scratch/499c7902de8e/implementation-tools/cargo/bin/cargo",
+          "build",
+          "--offline",
+          "--manifest-path",
+          "/workspace/scratch/499c7902de8e/g1-ci-correction-host-tmp/hos2-lock-alloc-nunihwe7/Cargo.toml",
+          "-p",
+          "lock-alloc-fixture"
+        ],
+        "cwd": "/workspace/scratch/499c7902de8e/g1-ci-correction-host-tmp/hos2-lock-alloc-nunihwe7",
+        "elapsed_seconds": 1.285321,
+        "returncode": 0,
+        "stderr": "build.stderr.log",
+        "stderr_sha256": "ad780efe4ec987fe0de8531f8da84c234cd1abff443d8bcc4a38a4cd4fb55bf4",
+        "stdout": "build.stdout.log",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "timed_out": false
+      },
+      "clippy": {
+        "argv": [
+          "/workspace/scratch/499c7902de8e/implementation-tools/cargo/bin/cargo",
+          "clippy",
+          "--offline",
+          "--workspace",
+          "--all-targets",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "cwd": "/workspace/scratch/499c7902de8e/g1-ci-correction-host-tmp/hos2-lock-alloc-nunihwe7",
+        "elapsed_seconds": 0.416796,
+        "returncode": 101,
+        "stderr": "clippy.stderr.log",
+        "stderr_sha256": "a31ffbfe7bc582f5a75cfc113e27edd34c597393f688312f8ec04649aab1856b",
+        "stdout": "clippy.stdout.log",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "timed_out": false
+      },
+      "copied_source_inventory": [
+        {
+          "bytes": 113663,
+          "path": "lib.rs",
+          "sha256": "4f582ba781420a86cc6420e57b5ef19de24c480a22f7aceaea496918b5e963b8"
+        },
+        {
+          "bytes": 3086,
+          "path": "locking.rs",
+          "sha256": "02f1b7680774b13c394ed9a7f93baeaefd0771dd32e85b6bcae004ec757166f7"
+        },
+        {
+          "bytes": 7125,
+          "path": "management.rs",
+          "sha256": "1b44ed9d89f3bd9aba90c8bcd3aeceb46bcd7332cbdd2bdd3fa40ff200d49340"
+        },
+        {
+          "bytes": 8844,
+          "path": "native.rs",
+          "sha256": "1967c2db5c7292127a5cb4a76c3448a9764710b4c44ebeb40a610dba6e16fd81"
+        },
+        {
+          "bytes": 13530,
+          "path": "resource_state.rs",
+          "sha256": "045f8bf459736dc9f63fd9dc1e78cc0f2371694a3ee28f53058202f7716ab68a"
+        },
+        {
+          "bytes": 1073,
+          "path": "sync.rs",
+          "sha256": "e2159cc41ef3a1073b1899615f70ea34cc9915052dd41811180bd3e3497784cd"
+        }
+      ],
+      "error": "generated workspace format/clippy failed; this is never an expected negative result",
+      "fixture_sha256": "1e04f7ffb2ed86f5be25fe522d95f0f323febc81e4b444db25ea3ebd53d197d4",
+      "format": {
+        "argv": [
+          "/workspace/scratch/499c7902de8e/implementation-tools/cargo/bin/cargo",
+          "fmt",
+          "--all",
+          "--check"
+        ],
+        "cwd": "/workspace/scratch/499c7902de8e/g1-ci-correction-host-tmp/hos2-lock-alloc-nunihwe7",
+        "elapsed_seconds": 0.08764,
+        "returncode": 0,
+        "stderr": "format.stderr.log",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout": "format.stdout.log",
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "timed_out": false
+      },
+      "generated_manifests": {
+        "Cargo.toml": {
+          "contents": "[workspace]\nmembers = [\"os-control\", \"lock-trace\", \"fixture\"]\nresolver = \"2\"\n",
+          "sha256": "01df2d9bfdd23e8dbb0203d9f06fb7c0c6e0bf18fc00ef41ce9d65f26ee88f4a"
+        },
+        "fixture/Cargo.toml": {
+          "contents": "[package]\nname = \"lock-alloc-fixture\"\nversion = \"0.0.0\"\nedition = \"2021\"\n[features]\npublic-backend = []\ndefault = [\"public-backend\"]\n[dependencies]\nos-control = { path = \"../os-control\" }\nlock-trace = { path = \"../lock-trace\" }\n",
+          "sha256": "5d2a305a39b7d1bf37a52fde1040b84268e0818b90f6da0683f098f351f93624"
+        },
+        "lock-trace/Cargo.toml": {
+          "contents": "[package]\nname = \"lock-trace\"\nversion = \"0.0.0\"\nedition = \"2021\"\n",
+          "sha256": "7d897ae9d0ddf659a64787399f3a39330eaf80beb0694b08e1824c5b4f017540"
+        },
+        "os-control/Cargo.toml": {
+          "contents": "[package]\nname = \"os-control\"\nversion = \"0.0.0\"\nedition = \"2021\"\n[features]\ndefault = [\"std\"]\nstd = []\nportable-spin = []\n[dependencies]\n[lints.rust]\nunsafe_code = \"forbid\"\n",
+          "sha256": "e8ee650969e6fe7784e290be0d7f38fb0206fe8426481b8be2bc5320566f1ec2"
+        }
+      },
+      "lock_selection": "public_LockBackend_TrackingBackend",
+      "mode": "current_required_zero",
+      "only_source_substitution": null,
+      "passed": false,
+      "production_sources_byte_identical": true,
+      "replacement_sync_sha256": null,
+      "scope": "Current native namespace scenarios use byte-identical production modules and the public LockBackend API; only historical controls substitute a std mutex shim for sync.rs. The supplied backend measures thread-local internal-mutex depth and the process allocator records alloc/alloc_zeroed, realloc and dealloc calls (including injected failed attempts) while depth is nonzero. Positive controls, poison/unwind recovery and independent thread depth are checked. Summary includes scenario setup between named operations, excluding instrumentation controls. Callback coverage includes implicit cleanup of owned captures whose bodies only borrow them; explicit callback destruction, allocation and reentry remain the adapter's obligations. This is a std host harness: no Arc atomic ordering proof, exhaustive scheduling proof, portable-spin allocator proof, real kernel allocator/IRQ proof or host ResourceDomain allocation claim. Controlled allocation failures cover only the initial ring and retirement Vec try_reserve_exact paths; no general OOM guarantee is inferred.",
+      "shim_sha256": "c2ea51dbaad78e5bc691e460b80a23ae40374493be4165d4c9e93c9009590233",
+      "source_inventory": [
+        {
+          "bytes": 113663,
+          "path": "lib.rs",
+          "sha256": "4f582ba781420a86cc6420e57b5ef19de24c480a22f7aceaea496918b5e963b8"
+        },
+        {
+          "bytes": 3086,
+          "path": "locking.rs",
+          "sha256": "02f1b7680774b13c394ed9a7f93baeaefd0771dd32e85b6bcae004ec757166f7"
+        },
+        {
+          "bytes": 7125,
+          "path": "management.rs",
+          "sha256": "1b44ed9d89f3bd9aba90c8bcd3aeceb46bcd7332cbdd2bdd3fa40ff200d49340"
+        },
+        {
+          "bytes": 8844,
+          "path": "native.rs",
+          "sha256": "1967c2db5c7292127a5cb4a76c3448a9764710b4c44ebeb40a610dba6e16fd81"
+        },
+        {
+          "bytes": 13530,
+          "path": "resource_state.rs",
+          "sha256": "045f8bf459736dc9f63fd9dc1e78cc0f2371694a3ee28f53058202f7716ab68a"
+        },
+        {
+          "bytes": 1073,
+          "path": "sync.rs",
+          "sha256": "e2159cc41ef3a1073b1899615f70ea34cc9915052dd41811180bd3e3497784cd"
+        }
+      ],
+      "source_revision": "worktree",
+      "temporary_source_bytes_verified_after_execution": true,
+      "temporary_workspace_removed": true,
+      "worktree_source_bytes_unchanged_during_execution": true
+    }
+  },
+  "result": "failed",
+  "rustc": {
+    "argv": [
+      "/workspace/scratch/499c7902de8e/implementation-tools/cargo/bin/rustc",
+      "-Vv"
+    ],
+    "cwd": "/workspace/scratch/499c7902de8e/r10-g1-host-contract-fix",
+    "elapsed_seconds": 0.0131,
+    "returncode": 0,
+    "stderr": "rustc.stderr.log",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout": "rustc.stdout.log",
+    "stdout_sha256": "d919107c9907c374b7605930746505ef72ce87cc21b641260c6225a7da9d8212",
+    "timed_out": false
+  },
+  "rustup_toolchain": "nightly-2026-07-21",
+  "scope": "Current native namespace scenarios use byte-identical production modules and the public LockBackend API; only historical controls substitute a std mutex shim for sync.rs. The supplied backend measures thread-local internal-mutex depth and the process allocator records alloc/alloc_zeroed, realloc and dealloc calls (including injected failed attempts) while depth is nonzero. Positive controls, poison/unwind recovery and independent thread depth are checked. Summary includes scenario setup between named operations, excluding instrumentation controls. Callback coverage includes implicit cleanup of owned captures whose bodies only borrow them; explicit callback destruction, allocation and reentry remain the adapter's obligations. This is a std host harness: no Arc atomic ordering proof, exhaustive scheduling proof, portable-spin allocator proof, real kernel allocator/IRQ proof or host ResourceDomain allocation claim. Controlled allocation failures cover only the initial ring and retirement Vec try_reserve_exact paths; no general OOM guarantee is inferred.",
+  "toolchain_environment": {
+    "CARGO_ENCODED_RUSTFLAGS": null,
+    "CARGO_HOME": "/workspace/scratch/499c7902de8e/implementation-tools/cargo",
+    "RUSTC": "/workspace/scratch/499c7902de8e/implementation-tools/cargo/bin/rustc",
+    "RUSTC_WORKSPACE_WRAPPER": null,
+    "RUSTC_WRAPPER": null,
+    "RUSTFLAGS": null,
+    "RUSTUP_HOME": "/workspace/scratch/499c7902de8e/implementation-tools/rustup"
+  }
+}

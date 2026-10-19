@@ -1,0 +1,32 @@
+{
+  "schema": "r10.queryabi.independent-host-fixtures.v1",
+  "source_head": "85c39072272e824f87acdcb37596d116ad2bac8e",
+  "started_at_utc": "2026-10-19T02:17:49.374023+00:00",
+  "finished_at_utc": "2026-10-19T02:17:49.655810+00:00",
+  "command": [
+    "python3",
+    "-I",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests/kernel/control",
+    "-p",
+    "test_queryabi_candidate_runner.py",
+    "-v"
+  ],
+  "cwd": "/workspace/scratch/499c7902de8e/r10-g1-queryabi",
+  "exit_code": 0,
+  "host_fixture_count": 8,
+  "passed": true,
+  "source_before_clean": true,
+  "source_after_clean": true,
+  "source_head_unchanged": true,
+  "cargo_or_rust_builds": 0,
+  "qemu_or_ioctl_executions": 0,
+  "producer_files_written": 0,
+  "log": "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-review/candidate-host-tests.log",
+  "log_sha256": "1cbb8d6badc96d8f5f81945994c73e89e647d00442416221d3420a398750db74",
+  "scope": "Eight actual checked-in candidate source/provenance/acceptance fixtures, with real temporary Git repos and mocked boot receipts. No product boot, kernel effect or ioctl is exercised."
+}

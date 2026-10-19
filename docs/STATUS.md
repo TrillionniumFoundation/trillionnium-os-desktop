@@ -1,5 +1,31 @@
 # 当前状态
 
+## 2026-10-19 R10：真实 G1-a owner、普通产品、逐头 CI 与安全债务
+
+**真实 CPU owner 的一次 metadata 绑定、同锁 cpu.max revision 和不可逆 detach 已有内核运行证据；生产仍未调用绑定，HOS2 保持 QueryAbi-only。** 原 0c 基线的最终 107afb 已完成六个普通 CI checks 与实际原始产物复核。主干随后通过 #196 前移到 e15，本轮已保留 Runtime/进程边界和 A04 新手册，机械合成 local `1ca738c6310c50565804c2ea2a5d413a74bbe80a` / remote `1c05412e2b340bbc8cd2b8a3389ae0ecce538991`，tree `2b873aa43445c8a02351f5900074a38c6fa4820d`；[新组合完整CI与实际产物](../results/integration/2026-10-19-g1-owner/g1-remote-ci-1c054/README.md)也已独立接受：六checks全部success、普通boot/QueryAbi的三个6,397文件快照逐Git一致。03:59:41 UTC已由另一维护者合入同tree主干 `71ce079c3218a8692476e4113b60c9d2c0d2a172`；[独立merge复核](../results/integration/2026-10-19-g1-owner/source-publication/main-sync/independent-merge-tree-review.json)不另计post-merge运行。
+
+完整开发交接、失败、来源和可恢复原始材料见 [R10 报告](../results/integration/2026-10-19-g1-owner/README.md)。
+
+| 本轮范围 | 实际结果与边界 |
+| --- | --- |
+| 真实 G1-a owner | [具体手册](ASTERINAS_CPU_OWNER_G1A.md)记录 private once-bind、原 IRQ 预算锁、同值写 revision、无效输入不变、替换/删除不可逆 detached、极值和 indeterminate。cpu.weight 不在本轮 revision；Process/exec 可信授权、结算/BOOTTIME 与完整 G1 未闭合。 |
+| 初始真实失败及修正 | be6 完整 core build 报 E0308、工作根锁被完整 component metadata 隐式改写；原失败无 guest。六个 no-deps 反证及完整 metadata 复现查明具体调用，保留原 Git seed 并引入明确工作派生锁和完整 --locked。47 项独立静态门禁为 7 正/40 拒绝，不计内核运行。 |
+| 固定 12e 的两个内核目标 | core **179/179**、0 failed/filtered/soft skip，十项新 owner 回归各成功一次；OSTD **221 reported passed**，3 VMX/EPT soft skip，实际下界 218。两个目标共报告 400、实际下界397，四个2,980输入map逐Git/字节一致。没有执行完整上游crate矩阵。 |
+| 普通产品三轮 | 85b attempt01 raw 中有13个HEPTA标记，但 C 输出分帧与严格完整行验收不匹配，另有 untracked OSDK 残留，整体failed。4e attempt02 build因File exists失败、无guest。4e attempt03封闭运行普通boot/QueryAbi接受、14标记各一次、三个5,851输入快照相同、当次结束clean。后续残留再现的写者仍unknown；原false字段不改。 |
+| f744 → 463f → 107afb 普通 CI | [f744](../results/integration/2026-10-19-g1-owner/g1-remote-ci-f744/README.md) G0/A03失败、A06产物通过；[463f](../results/integration/2026-10-19-g1-owner/g1-remote-ci-463f/README.md) G0/A06通过、allocator前置Clippy失败；[107](../results/integration/2026-10-19-g1-owner/g1-remote-ci-107afb/README.md) 六checks全成功并实读原日志/ZIP。其A06有8真实guest、400报告含3skip/397下界、14标记和4个有限quota；严格source snapshot只覆盖普通boot/QueryAbi区间。 |
+| 四处 host 契约修正 | [bccb 原始验证](../results/integration/2026-10-19-g1-owner/g1-ci-host-correction/README.md)：ABI78、std225、portable225，Loom13+6模型与26,675+578 schedules，19锁内零计数场景；fmt/严格Clippy/bare rlib通过。重叠backend分别计数；原锁变更负例、真实前置失败和离线环境失败保留，没有放宽lint或source gate。 |
+| 并发 e15 主干 | [完整Git比较](../results/integration/2026-10-19-g1-owner/source-publication/main-sync/main-integration-source-review.json)覆盖567变化路径、22个非results；最终6,397tracked，33个G1路径仅N0手册需合并双方文字，其余产品/测试字节不变。INDEX保留对方新入口；本STATUS下方e15完整历史body原字节保留。 |
+| Hepta 原 owner 普通 CI | d32/#2815在[04:09:45–46冻结观察](../results/integration/2026-10-19-g1-owner/hepta-fleet-main-remote-ci/final-observation.json)中49checks已全部终态：26success/8failure/6skip/9cancel；8红为6实际job+2汇总gate，CI required failure、Architecture required success，仍open/unmerged/blocked。原远端deny日志未恢复；本机同源13拒绝=8漏洞+5unmaintained/8包，不冒充远端13。三原Bazel日志另查明helper lint及Windows编译/路径/删除边界失败，安全与Windows债务未解决；旧03:10快照原样保留。 |
+| Fleet 最小修复及真实远端失败 | 原parent-1b候选3749的20文件证据保留；单一helper修复重放main f8成e770，重新41tests/严格Clippy成功。[PR #2882](https://github.com/TrillionniumFoundation/hepta-private-ci/pull/2882) remote b34同树、仅一文件；其普通scoped CI编译134包时实际ENOSPC，03:52:59失败、CI required03:53:12失败，完整测试未完成，见[独立原失败包](../results/integration/2026-10-19-g1-owner/hepta-fleet-main-remote-ci/README.md)。该lane不跑Bazel Clippy。 |
+| 独立 CI 存储修复 | [Ready PR #2883](https://github.com/TrillionniumFoundation/hepta-private-ci/pull/2883) remote a8ce/local71d9同tree4688d8d，基于f8仅一workflow五行env，禁用增量和dev/test debug、Cargo编译并发2；scope/134包/命令/锁/features/nextest/timeout/required不变。[原验证](../results/integration/2026-10-19-g1-owner/hepta-scoped-ci-storage-fix/README.md)有actionlint、102个不同Python契约、18个既有小crate测试及实际compiler flags；[04:17:21原API](../results/integration/2026-10-19-g1-owner/source-publication/hepta-scoped-disk/initial-ci-and-fleet-status.json)为45checks：17success/20running/6skip/1neutral/1cargo-deny failure。原策略实际skip scoped，134包尚未重跑；deny日志读取Transport closed，不能填入旧本地13项。PR未合并。 |
+| 11 模块文档 | 固定207的R9 53/225历史审查不重记。e15新增具体164行[A04主干交接手册](agents/handoffs/A04_LINUX_HEPTA_ELF.md)，列源码、依赖、命令、错误与整合；旧三个候选目录/完整手册仍不在main。A01/A06已有本轮G1具体manual；本轮[独立检查](../results/integration/2026-10-19-g1-owner/module-documentation-delta.json)核对71个INDEX模块本地目标、实读15份新版手册并核对105个一跳目标，均无缺失，不将文档存在当成产品完成。 |
+
+**继续受控 Asterinas fork。** 固定上游源码已有ARM64 Tier2及Aarch64 OSDK支持，本项目的G1仅验收x86 QEMU；Hepta ARM Linux host历史通过不授予ARM内核/手机/Binder/GPU/SoC资格。下一步按G1-b统一结算/BOOTTIME/N0、G1-c最终Process/exec可信授权、G1-d五操作/CAS/重放/退役，随后G2真实Hepta issuer、持久请求/anchor、K↔D与Linux ELF，再逐profile接设备和UI。当前可作为受控Linux host交互候选，尚无生产桌面/手机控制资格；若出现可复现结构性阻碍，再评估复用OSTD重建上层或更深替换。
+
+以下是新主干 e15 合入时的完整状态与历史；其中日期、来源、计数和“当时未完成”保持各自范围。原R9的47报告与321素材archive不重打包，根README仍为0字节。
+
+---
+
 ## 2026-10-19：整合 Runtime 修复与已合入的原 owner 历史扩展
 
 本分支在已发布 Runtime 修复 `5060ac6976b56b32647c728991e489cdee1cce9d` 上，保留并合入实际 main `aab50f347deb53fc79ac13ea3b84f846fefc70a7`（[PR #193](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/193)）。源码自动合并，冲突仅在本状态页和文档索引；两条实现与历史原始证据均保留。随后普通合并仅含文档/证据的 main `0c2bf0fc1ba473325a0266c7bd476b1ddbf66383`（[PR #194](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/194)），协调索引、状态与 S1–S5 三份文档；60 个 Rust 输入及本次 Python 修复字节未变。下列两节 R9 记录来自不同执行输入，其测试计数不合并成整合后新 HEAD 的验收。

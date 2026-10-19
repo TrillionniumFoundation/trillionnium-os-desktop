@@ -1,0 +1,528 @@
+{
+  "schema": "r10.g1.independent-python-gate-review.v1",
+  "recorded_at_utc": "2026-10-19T01:54:56.418661+00:00",
+  "status": "passed_bounded_static_gate_checks",
+  "source_root": "/workspace/scratch/499c7902de8e/r10-g1-owner",
+  "source_head_observed": "12e0547d2e6394548b15764b06346422c4fff31e",
+  "source_head_before": "12e0547d2e6394548b15764b06346422c4fff31e",
+  "gate_source_sha256_before": {
+    "support/build/verify-source.py": "0b4dcbd04bf2bc201c187dc055d3c5f74ff51938f1506fe4c9590d7f0a1cf0c6",
+    "support/build/ktest/prepare-locks.py": "88b2ed07e5cbcdd8465f093475ecfecb184c2e19ab32e031bb527fb243348567"
+  },
+  "gate_source_sha256_after": {
+    "support/build/verify-source.py": "0b4dcbd04bf2bc201c187dc055d3c5f74ff51938f1506fe4c9590d7f0a1cf0c6",
+    "support/build/ktest/prepare-locks.py": "88b2ed07e5cbcdd8465f093475ecfecb184c2e19ab32e031bb527fb243348567"
+  },
+  "gate_sources_unchanged_during_check": true,
+  "cases": [
+    {
+      "name": "actual_prepare_reads_original_git_seed",
+      "scope": "actual_read_only_git_seed_load",
+      "expected_accept": true,
+      "observed_accept": true,
+      "reason": null,
+      "correct": true
+    },
+    {
+      "name": "derive_exact_working_root_lock_from_original_git_seed",
+      "scope": "actual_git_blob_pure_derivation",
+      "expected_accept": true,
+      "observed_accept": true,
+      "reason": null,
+      "correct": true
+    },
+    {
+      "name": "reject_changed_original_seed_before_derivation",
+      "scope": "admission_function_fixture",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "original upstream root lock seed changed",
+      "correct": true
+    },
+    {
+      "name": "reject_seed_tree_blob_identity_mismatch",
+      "scope": "admission_function_fixture",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "fixed upstream tree root-lock blob changed",
+      "correct": true
+    },
+    {
+      "name": "reject_seed_content_digest_mismatch",
+      "scope": "admission_function_fixture",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "original upstream root lock seed differs from the fixed v0.19.0 input",
+      "correct": true
+    },
+    {
+      "name": "actual_committed_aster_core_package_admission",
+      "scope": "actual_committed_lock",
+      "expected_accept": true,
+      "observed_accept": true,
+      "reason": null,
+      "correct": true
+    },
+    {
+      "name": "actual_committed_ostd_package_admission",
+      "scope": "actual_committed_lock",
+      "expected_accept": true,
+      "observed_accept": true,
+      "reason": null,
+      "correct": true
+    },
+    {
+      "name": "reject_another_new_local_package",
+      "scope": "admission_function_fixture",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "aster-core: dependency drift from fixed upstream: [('aster-core-osdk-bin', '0.1.0', '', ''), ('os-control', '0.1.0', '', ''), ('unexpected-local', '0.1.0', '', '')]",
+      "correct": true
+    },
+    {
+      "name": "reject_new_external_package",
+      "scope": "admission_function_fixture",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "aster-core: dependency drift from fixed upstream: [('aster-core-osdk-bin', '0.1.0', '', ''), ('os-control', '0.1.0', '', ''), ('unexpected-registry', '9.9.9', 'registry+https://github.com/rust-lang/crates.io-index', '0000000000000000000000000000000000000000000000000000000000000000')]",
+      "correct": true
+    },
+    {
+      "name": "reject_os_control_registry_substitution",
+      "scope": "admission_function_fixture",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "aster-core: expected only the local os-control package and pinned spin",
+      "correct": true
+    },
+    {
+      "name": "reject_os_control_version_change",
+      "scope": "admission_function_fixture",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "aster-core: expected only the local os-control package and pinned spin",
+      "correct": true
+    },
+    {
+      "name": "reject_os_control_extra_dependency",
+      "scope": "admission_function_fixture",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "aster-core: expected only the local os-control package and pinned spin",
+      "correct": true
+    },
+    {
+      "name": "reject_missing_aster_core_edge",
+      "scope": "admission_function_fixture",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "aster-core: missing its sole local os-control dependency",
+      "correct": true
+    },
+    {
+      "name": "reject_duplicate_aster_core_edge",
+      "scope": "admission_function_fixture",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "aster-core: missing its sole local os-control dependency",
+      "correct": true
+    },
+    {
+      "name": "reject_existing_external_checksum_drift",
+      "scope": "admission_function_fixture",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "aster-core: dependency drift from fixed upstream: [('acpi', '5.2.0', 'registry+https://github.com/rust-lang/crates.io-index', 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'), ('aster-core-osdk-bin', '0.1.0', '', ''), ('os-control', '0.1.0', '', '')]",
+      "correct": true
+    },
+    {
+      "name": "reject_existing_external_version_drift",
+      "scope": "admission_function_fixture",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "aster-core: dependency drift from fixed upstream: [('acpi', '99.99.99', 'registry+https://github.com/rust-lang/crates.io-index', '94476c7ef97af4c4d998b3f422c1b01d5211aad57c80ed200baf148d1f1efab6'), ('aster-core-osdk-bin', '0.1.0', '', ''), ('os-control', '0.1.0', '', '')]",
+      "correct": true
+    },
+    {
+      "name": "reject_duplicate_os_control_package",
+      "scope": "admission_function_fixture",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "aster-core: expected only the local os-control package and pinned spin",
+      "correct": true
+    },
+    {
+      "name": "reject_os_control_in_ostd_lock",
+      "scope": "admission_function_fixture",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "ostd: dependency drift from fixed upstream: [('os-control', '0.1.0', '', ''), ('ostd-osdk-bin', '0.19.0', '', '')]",
+      "correct": true
+    },
+    {
+      "name": "native_metadata_exact_checkout_path_and_feature",
+      "scope": "admission_function_fixture",
+      "expected_accept": true,
+      "observed_accept": true,
+      "reason": null,
+      "correct": true
+    },
+    {
+      "name": "reject_native_metadata_other_checkout",
+      "scope": "admission_function_fixture",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "aster-core: os-control must resolve from this checkout's libs/os-control",
+      "correct": true
+    },
+    {
+      "name": "reject_native_metadata_registry_source",
+      "scope": "admission_function_fixture",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "aster-core: os-control must resolve from this checkout's libs/os-control",
+      "correct": true
+    },
+    {
+      "name": "reject_native_metadata_std_feature",
+      "scope": "admission_function_fixture",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "aster-core: unexpected os-control features: ['portable-spin', 'std']",
+      "correct": true
+    },
+    {
+      "name": "reject_native_metadata_missing_portable_feature",
+      "scope": "admission_function_fixture",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "aster-core: unexpected os-control features: []",
+      "correct": true
+    },
+    {
+      "name": "reject_native_metadata_duplicate_package",
+      "scope": "admission_function_fixture",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "aster-core: os-control must resolve from this checkout's libs/os-control",
+      "correct": true
+    },
+    {
+      "name": "reject_native_metadata_in_ostd_graph",
+      "scope": "admission_function_fixture",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "ostd must not resolve os-control",
+      "correct": true
+    },
+    {
+      "name": "actual_default_source_verifier",
+      "scope": "actual_worktree_file_verification",
+      "expected_accept": true,
+      "observed_accept": true,
+      "correct": true,
+      "checked_files": 118,
+      "exit_code": 0
+    },
+    {
+      "name": "isolated_default_source_fixture_baseline",
+      "scope": "isolated_actual_verifier_with_read_only_git_adapter",
+      "expected_accept": true,
+      "observed_accept": true,
+      "reason": null,
+      "correct": true
+    },
+    {
+      "name": "reject_root_manifest_feature_change",
+      "scope": "isolated_actual_verifier_with_read_only_git_adapter",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "Cargo.toml: blob 3e82301db0225fe2fa4a6030249080135bbfb8c2 != 8f3117bdad25148ee19a8a9cd12ab7b155fb14ef",
+      "correct": true
+    },
+    {
+      "name": "reject_core_manifest_unrelated_dependency",
+      "scope": "isolated_actual_verifier_with_read_only_git_adapter",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "kernel/core/Cargo.toml: blob 5b2e944d35edfe3f992c2a617cf3d1e1aa523814 != 89efb73167bb92670ac6b0f7f115317dd564da36",
+      "correct": true
+    },
+    {
+      "name": "reject_unrelated_osdk_manifest_edit",
+      "scope": "isolated_actual_verifier_with_read_only_git_adapter",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "osdk/Cargo.toml: blob 1d58ef17e7267363914aed6d205c8d4f7c185e85 != a5bbae5c43417e4e65fe42b90662b7409c532469",
+      "correct": true
+    },
+    {
+      "name": "reject_root_lock_drift",
+      "scope": "isolated_actual_verifier_with_read_only_git_adapter",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "Cargo.lock: blob f26e63231375d5fb34703e7ea92a5fc6ddfd3bbe != c8cb7e9616e0ea40442200deee461157793618dd",
+      "correct": true
+    },
+    {
+      "name": "reject_working_root_external_version",
+      "scope": "isolated_actual_verifier_with_read_only_git_adapter",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "Cargo.lock: blob 2e6686a01b658da99dbb43f47beb5f907e63cd5f != c8cb7e9616e0ea40442200deee461157793618dd",
+      "correct": true
+    },
+    {
+      "name": "reject_working_root_external_source",
+      "scope": "isolated_actual_verifier_with_read_only_git_adapter",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "Cargo.lock: blob d9f720c1d4320cdfe0f2ef334d00349fe40e2051 != c8cb7e9616e0ea40442200deee461157793618dd",
+      "correct": true
+    },
+    {
+      "name": "reject_working_root_external_checksum",
+      "scope": "isolated_actual_verifier_with_read_only_git_adapter",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "Cargo.lock: blob 8cd07ff7a074bd3e9e3f73496aac9271012f3cfd != c8cb7e9616e0ea40442200deee461157793618dd",
+      "correct": true
+    },
+    {
+      "name": "reject_working_root_external_dependency_edge",
+      "scope": "isolated_actual_verifier_with_read_only_git_adapter",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "Cargo.lock: blob 38268e675013bbd1525ba82edbdc9552e3e282cf != c8cb7e9616e0ea40442200deee461157793618dd",
+      "correct": true
+    },
+    {
+      "name": "reject_working_root_added_local_package",
+      "scope": "isolated_actual_verifier_with_read_only_git_adapter",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "Cargo.lock: blob 338a503051b177dab89c6a4720ff60835cb08b1f != c8cb7e9616e0ea40442200deee461157793618dd",
+      "correct": true
+    },
+    {
+      "name": "reject_working_root_missing_native_edge",
+      "scope": "isolated_actual_verifier_with_read_only_git_adapter",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "Cargo.lock: blob 4df8b62b42a624f54ad778c530840da283436c60 != c8cb7e9616e0ea40442200deee461157793618dd",
+      "correct": true
+    },
+    {
+      "name": "reject_working_root_duplicate_native_edge",
+      "scope": "isolated_actual_verifier_with_read_only_git_adapter",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "Cargo.lock: blob 18ec17d12c8151f85badb4df2e552a194226fab0 != c8cb7e9616e0ea40442200deee461157793618dd",
+      "correct": true
+    },
+    {
+      "name": "reject_working_root_native_other_dependency",
+      "scope": "isolated_actual_verifier_with_read_only_git_adapter",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "Cargo.lock: blob 8dd3eca6f3effe6beb542eba6e666864f66399d5 != c8cb7e9616e0ea40442200deee461157793618dd",
+      "correct": true
+    },
+    {
+      "name": "reject_working_root_native_duplicate_package",
+      "scope": "isolated_actual_verifier_with_read_only_git_adapter",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "Cargo.lock: blob 1f1892a7fbd13d57c8b2ee12f4c5643913899e79 != c8cb7e9616e0ea40442200deee461157793618dd",
+      "correct": true
+    },
+    {
+      "name": "reject_working_root_spin_version_drift",
+      "scope": "isolated_actual_verifier_with_read_only_git_adapter",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "Cargo.lock: blob 959b7c2830c16301db9bab3717d3a1e28361f874 != c8cb7e9616e0ea40442200deee461157793618dd",
+      "correct": true
+    },
+    {
+      "name": "reject_working_root_original_unextended_seed",
+      "scope": "isolated_actual_verifier_with_read_only_git_adapter",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "Cargo.lock: blob 77d8f4be4cdc7365cd73a2e9f7638d46f3608b40 != c8cb7e9616e0ea40442200deee461157793618dd",
+      "correct": true
+    },
+    {
+      "name": "reject_osdk_lock_drift",
+      "scope": "isolated_actual_verifier_with_read_only_git_adapter",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "osdk/Cargo.lock: blob 1902512d7f0a07a811d592bd8cc62697187cb243 != 82dbdd75cedd73558dd3d5aa17e76376d66d6eaf",
+      "correct": true
+    },
+    {
+      "name": "reject_toolchain_drift",
+      "scope": "isolated_actual_verifier_with_read_only_git_adapter",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "rust-toolchain.toml: blob 4782df5787995e7ed18b2cbfeed6a658d1c0c0e1 != 3ac33bbae32686a33f317f2072734bf6f4e8d610",
+      "correct": true
+    },
+    {
+      "name": "reject_manifest_executable_mode_change",
+      "scope": "isolated_actual_verifier_with_read_only_git_adapter",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "kernel/core/Cargo.toml: mode 100755 != 100644",
+      "correct": true
+    },
+    {
+      "name": "reject_upstream_commit_pin_change",
+      "scope": "isolated_actual_verifier_with_read_only_git_adapter",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "fixed upstream inputs changed; coordinate with A00",
+      "correct": true
+    },
+    {
+      "name": "reject_nonempty_root_readme",
+      "scope": "isolated_actual_verifier_with_read_only_git_adapter",
+      "expected_accept": false,
+      "observed_accept": false,
+      "reason": "root README must be empty",
+      "correct": true
+    }
+  ],
+  "case_count": 47,
+  "immutable_seed": {
+    "git_tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+    "git_path": "Cargo.lock",
+    "sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+    "package_count": 234
+  },
+  "actual_source_verifier": {
+    "commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+    "tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+    "toolchain": "nightly-2026-07-21",
+    "pristine": false,
+    "checked_files": 118,
+    "input_sha256": {
+      "Cargo.lock": "af94d71680ecf3b9631e21c958263d5e41229033214f88dcff858bb14765a666",
+      "LICENSE-MPL": "86cf9656479f1edb82245b985f4a2cc0d503b945766ebeda4269c60b307699ae",
+      "Makefile": "f7d24eb8e81b58d4cf0342862318cbfcf63cd8cff8d0f6f69fb7656295192af6",
+      "OSDK.toml": "155af7cb53b4dffc679393b8fc7c2c1719a74134a0ec2b0812f0c4b53a6c609b",
+      "osdk/Cargo.lock": "99a21f72f6a9f1582553b34f06e80f86e539f38e62eab7a0847afd0906e75be3",
+      "rust-toolchain.toml": "b2508d8c9cd57258fad2fc77737e07172846161f6a7dd726cbd8e974de69c6f7"
+    },
+    "downstream_manifests": {
+      "Cargo.toml": {
+        "upstream_blob": "034636c01943abf240547c233803b43f07b0340a",
+        "upstream_sha256": "52c00575e48ccc738efdaacc8f035db77c23d0f9d769b3b519f8fe423d3c1106",
+        "derived_sha256": "153bea9f3a0ec926947f9e7207ab458222453cf162283d88a6d25fdeb837048d",
+        "local_dependency": "os-control"
+      },
+      "kernel/core/Cargo.toml": {
+        "upstream_blob": "ccda2552afb7e5d9bdeeb7a2a1da27deed0bae35",
+        "upstream_sha256": "177678640798c8c4b70d41c11a2becdff9911e2013fd3c2345346f843383ab2c",
+        "derived_sha256": "8a5ca474b72fbc81120c41232607e59d0533c736f74315754d64045a868ce6e4",
+        "local_dependency": "os-control"
+      }
+    },
+    "downstream_locks": {
+      "Cargo.lock": {
+        "upstream_blob": "77d8f4be4cdc7365cd73a2e9f7638d46f3608b40",
+        "upstream_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+        "derived_sha256": "af94d71680ecf3b9631e21c958263d5e41229033214f88dcff858bb14765a666",
+        "local_dependency": "os-control"
+      }
+    },
+    "errors": [],
+    "passed": true
+  },
+  "source_fixture_count": 21,
+  "lock_deltas": [
+    {
+      "path": "kernel/asterinas/Cargo.lock",
+      "baseline": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+      "before_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+      "after_sha256": "af94d71680ecf3b9631e21c958263d5e41229033214f88dcff858bb14765a666",
+      "before_packages": 234,
+      "after_packages": 235,
+      "added_packages": [
+        [
+          "os-control",
+          "0.1.0",
+          ""
+        ]
+      ],
+      "removed_packages": [],
+      "changed_existing_packages": [
+        "aster-core 0.1.0: exactly one os-control dependency edge"
+      ],
+      "external_record_drift": [],
+      "all_other_package_records_equal": true
+    },
+    {
+      "path": "support/build/ktest/locks/aster-core.Cargo.lock",
+      "baseline": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+      "before_sha256": "159b8682d27a7a21af98885ae48515234445c00fdf5e00b158fdc4aa952ff4ed",
+      "after_sha256": "85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150",
+      "before_packages": 199,
+      "after_packages": 200,
+      "added_packages": [
+        [
+          "os-control",
+          "0.1.0",
+          ""
+        ]
+      ],
+      "removed_packages": [],
+      "changed_existing_packages": [
+        "aster-core 0.1.0: exactly one os-control dependency edge"
+      ],
+      "external_record_drift": [],
+      "all_other_package_records_equal": true
+    },
+    {
+      "path": "support/build/minimal/Cargo.lock",
+      "baseline": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+      "before_sha256": "b42d8fff136d80a5f8159356882096996991e05975d8da9c81ad9db9bdb06e10",
+      "after_sha256": "e54bc99b3df5e21a1fdcd88d89b32ac478e73c7b4bf69ae0b1084f59d56fc506",
+      "before_packages": 203,
+      "after_packages": 204,
+      "added_packages": [
+        [
+          "os-control",
+          "0.1.0",
+          ""
+        ]
+      ],
+      "removed_packages": [],
+      "changed_existing_packages": [
+        "aster-core 0.1.0: exactly one os-control dependency edge"
+      ],
+      "external_record_drift": [],
+      "all_other_package_records_equal": true
+    }
+  ],
+  "pristine_mode_review": {
+    "method": "source branch inspection only",
+    "condition": "if not args.pristine and (name in DOWNSTREAM_MANIFEST_ADDITIONS or name == \"Cargo.lock\")",
+    "conclusion": "Neither downstream manifest nor downstream working-lock exceptions are applied in pristine mode.",
+    "whole_pristine_import_test_executed": false
+  },
+  "scope": {
+    "cargo_calls": 0,
+    "kernel_builds": 0,
+    "kernel_runs": 0,
+    "producer_files_written": 0,
+    "mutations": "ephemeral isolated review fixtures only"
+  },
+  "limitations": [
+    "Admission function fixtures and Python source-verifier fixtures are not Cargo graph-resolution or kernel runtime evidence.",
+    "Actual Cargo offline/locked metadata receipts are owned by the producer; this review compares their committed lock content independently.",
+    "The initial kernel build failed; compilation and the 10 new ktests after the corrective source changes remain owned by the main agent.",
+    "audit_packages fixes external name/version/source/checksum tuples; complete dependency-record equality is separately checked on actual locks and arbitrary working-root dependency edits are rejected by exact source derivation."
+  ],
+  "blocking_findings": []
+}

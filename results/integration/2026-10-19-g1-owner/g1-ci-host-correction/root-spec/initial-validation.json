@@ -1,0 +1,48 @@
+{
+  "schema": "r10.ci-contract-correction.v1",
+  "source_head": "bc778b6b8114e5017a467c0566f5777d85abafaf",
+  "source_tree": "0218fa196b3ebb7a3f91c77906ab4ce30a67afe8",
+  "changed_files": [
+    "tests/control/loom/Cargo.toml",
+    "tests/spec/test_a01_ktest_lock_preflight.py",
+    "tests/spec/test_a06_kernel_output_contract.py"
+  ],
+  "checks": [
+    {
+      "command": [
+        "python3",
+        "-I",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/spec",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "started_at_utc": "2026-10-19T03:20:06.008557+00:00",
+      "finished_at_utc": "2026-10-19T03:20:06.196343+00:00",
+      "exit_code": 0,
+      "log": "check-0.log",
+      "log_sha256": "b09669880e6670ed55d74a17686bd4cbb12e1484f860bf12d183262af1627204"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "started_at_utc": "2026-10-19T03:20:06.196377+00:00",
+      "finished_at_utc": "2026-10-19T03:20:06.204783+00:00",
+      "exit_code": 0,
+      "log": "check-1.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "kernel_and_product_build_inputs_unchanged": true,
+  "strict_warnings_not_weakened": true,
+  "ktest_not_enabled_in_host_models": true,
+  "root_worktree_note": "Untracked canonical OSDK residue is known and excluded from Git tree; this host-only check does not attest whole worktree cleanliness."
+}

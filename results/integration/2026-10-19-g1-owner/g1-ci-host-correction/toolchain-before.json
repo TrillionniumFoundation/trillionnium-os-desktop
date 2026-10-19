@@ -1,0 +1,62 @@
+{
+  "schema": 1,
+  "observed_at": "2026-10-19T03:25:48.585132+00:00",
+  "rustup_toolchain": "nightly-2026-07-21",
+  "commands": [
+    {
+      "argv": [
+        "rustup",
+        "component",
+        "list",
+        "--installed"
+      ],
+      "exit_code": 0,
+      "stdout": "cargo-x86_64-unknown-linux-gnu\nllvm-tools-x86_64-unknown-linux-gnu\nrust-src\nrust-std-aarch64-unknown-none-softfloat\nrust-std-loongarch64-unknown-none-softfloat\nrust-std-riscv64imac-unknown-none-elf\nrust-std-x86_64-unknown-linux-gnu\nrust-std-x86_64-unknown-none\nrustc-x86_64-unknown-linux-gnu\nrustc-dev-x86_64-unknown-linux-gnu\nrustfmt-x86_64-unknown-linux-gnu\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "rustc",
+        "-Vv"
+      ],
+      "exit_code": 0,
+      "stdout": "rustc 1.99.0-nightly (87e5904f5 2026-07-20)\nbinary: rustc\ncommit-hash: 87e5904f5eb6398af6b22eac2802c78934260c48\ncommit-date: 2026-07-20\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.0-nightly\nLLVM version: 22.1.8\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "cargo",
+        "-Vv"
+      ],
+      "exit_code": 0,
+      "stdout": "cargo 1.99.0-nightly (3efb1f477 2026-07-17)\nrelease: 1.99.0-nightly\ncommit-hash: 3efb1f477e99b42974b982d939fd100303cdf7db\ncommit-date: 2026-07-17\nhost: x86_64-unknown-linux-gnu\nlibgit2: 1.9.4 (sys:0.21.0 vendored)\nlibcurl: 8.21.0-DEV (sys:0.4.90+curl-8.21.0 vendored ssl:OpenSSL/3.6.3)\nssl: OpenSSL 3.6.3 9 Jun 2026\nos: Ubuntu 24.4.0 (noble) [64-bit]\n",
+      "stderr": ""
+    }
+  ],
+  "files": [
+    {
+      "path": "/workspace/scratch/499c7902de8e/implementation-tools/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/rustc",
+      "resolved_path": "/workspace/scratch/499c7902de8e/implementation-tools/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/rustc",
+      "bytes": 645184,
+      "sha256": "752104a1bd1bc3a59e6a2bd8ec02fa7113acf0e5083f9ee59d43e983ecc5d48f"
+    },
+    {
+      "path": "/workspace/scratch/499c7902de8e/implementation-tools/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+      "resolved_path": "/workspace/scratch/499c7902de8e/implementation-tools/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+      "bytes": 40539896,
+      "sha256": "1e8bffe479c27798861dd7f0a3add4adb898879da0be8431fb48ff8c7cc78c03"
+    },
+    {
+      "path": "/workspace/scratch/499c7902de8e/implementation-tools/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/rustfmt",
+      "resolved_path": "/workspace/scratch/499c7902de8e/implementation-tools/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/rustfmt",
+      "bytes": 5231024,
+      "sha256": "5e7ee8bc9eb06e5f52c423ca81d6b66558bfe9643a54d319825ae63eed6b6317"
+    },
+    {
+      "path": "/workspace/scratch/499c7902de8e/implementation-tools/cargo/bin/cargo-osdk",
+      "resolved_path": "/workspace/scratch/499c7902de8e/implementation-tools/cargo/bin/cargo-osdk",
+      "bytes": 8504760,
+      "sha256": "9bf344bb405c6eb96d1bdd1488eaf33d5465ddc8361fea1135ead7130ad65008"
+    }
+  ]
+}

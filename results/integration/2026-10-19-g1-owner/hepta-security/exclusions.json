@@ -1,0 +1,71 @@
+{
+  "schema": 1,
+  "created_at": "2026-10-19T02:06:41.634191+00:00",
+  "included_root": "/workspace/scratch/499c7902de8e/r10-evidence/owner-ci/new-head",
+  "excluded_existing_evidence_files": [
+    {
+      "file": {
+        "path": "deny-repro-01/cargo-deny.log",
+        "bytes": 13717460,
+        "sha256": "d91f5e6d8d9961b81aebaf6873d85a1dc7ac70e1a009e5e1036e026ebc179175"
+      },
+      "reason": "redundant uncompressed copy; all original bytes are retained losslessly in the included compressed file",
+      "replacement": {
+        "path": "deny-repro-01/cargo-deny.log.xz",
+        "bytes": 358668,
+        "sha256": "8abd8f649025c16af81d7f83c97d82bae6b2e1fd3fbbbd646b3d749de4fff44f"
+      },
+      "original_retained_locally": true
+    }
+  ],
+  "excluded_external_roots": [
+    {
+      "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools",
+      "reason": "isolated installed binaries, cargo/rustup caches, fetched repositories and tool downloads; tool/version/hash receipts and selected public source retained instead"
+    },
+    {
+      "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro",
+      "reason": "complete checkout is externally git-backed; precise commit/tree and reviewed source copies retained"
+    },
+    {
+      "path": "/workspace/scratch/499c7902de8e/r9-hepta-owner",
+      "reason": "original owner product checkout outside diagnostic evidence scope"
+    },
+    {
+      "path": "/workspace/scratch/499c7902de8e/r10-hepta-ci-fix",
+      "reason": "CI fix checkout outside diagnostic evidence scope"
+    }
+  ],
+  "forbidden_archive_components": [
+    ".git",
+    "target",
+    "Fleet",
+    "home",
+    "cargo-home",
+    "rustup-home",
+    "__pycache__",
+    ".aws",
+    ".ssh",
+    ".gnupg"
+  ],
+  "forbidden_artifact_suffixes": [
+    ".rlib",
+    ".rmeta",
+    ".o",
+    ".pyc",
+    ".pyo"
+  ],
+  "excluded_categories": [
+    "credentials or private keys",
+    "complete Cargo/Rustup/tool installation roots",
+    "complete workspace or checkout",
+    "compiled product binaries and compiler objects",
+    "packaging output or temporary files"
+  ],
+  "intentional_public_source_exceptions": [
+    "upstream-sources/*.crate: public crate source archives verified against registry/Cargo.lock checksums",
+    "upstream-sources/rusqlite-index-cache.bin: exact preserved public sparse-index bytes for the SQLite constraint proof, not a complete cache"
+  ],
+  "failed_evidence_omitted": false,
+  "intermediate_receipt_note": "execution-progress.json retains intermediate status=running; execution.json is the completed diagnostic receipt."
+}

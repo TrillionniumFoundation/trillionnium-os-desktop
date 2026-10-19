@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/workspace/scratch/499c7902de8e/r10-evidence/r10-delivery-review/prepare-ci-archive-transport.py", line 112, in <module>
+    main()
+  File "/workspace/scratch/499c7902de8e/r10-evidence/r10-delivery-review/prepare-ci-archive-transport.py", line 75, in main
+    original_zip_review = verify_zip(archive_path, root / args.member_manifest)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/499c7902de8e/r10-evidence/r10-delivery-review/prepare-ci-archive-transport.py", line 26, in verify_zip
+    members = expected['members']
+              ~~~~~~~~^^^^^^^^^^^
+KeyError: 'members'

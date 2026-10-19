@@ -1,0 +1,402 @@
+{
+  "schema": "r10.explicit-raw-whitespace-preservation.v1",
+  "at_utc": "2026-10-19T04:32:34.136166+00:00",
+  "first_stage_parent": "1ca738c6310c50565804c2ea2a5d413a74bbe80a",
+  "first_staged_tree": "0e0417c4dd14b6ab796ac1819df1b9d7bd2c0cdd",
+  "failed_check": {
+    "command": [
+      "git",
+      "diff",
+      "--cached",
+      "--check"
+    ],
+    "returncode": 2,
+    "meaning": "The unfiltered packaging whitespace gate rejected original evidence formatting; index byte/mode/manifest checks had already passed. This is a delivery-tool scope error, not a product failure.",
+    "stdout": {
+      "path": "review/staging-whitespace-unfiltered.stdout.log",
+      "bytes": 454933,
+      "sha256": "2c9b62e1c6b34b4d98736ea3693991d7bce8154a1e89b2b98c95aaebccbe7be5"
+    },
+    "stderr": {
+      "path": "review/staging-whitespace-unfiltered.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "original_first_delivery_manifest": {
+    "path": "review/staging-first-delivery-manifest.json",
+    "bytes": 100894,
+    "sha256": "cdf5adea5c46b92c4d7456012cf8bef77ffbefc36b7fb7ab35a8fac41c2804f1"
+  },
+  "original_diagnostic_path_count": 30,
+  "explicit_preserved_raw_paths": [
+    {
+      "path": "results/integration/2026-10-19-g1-owner/g1-ci-host-correction/reviewed-source.diff",
+      "mode": "100644",
+      "bytes": 7670,
+      "sha256": "01956b82b00ae3c3b5298f54296ecea33b585e51b420498ad1a7b55d28a2bff7",
+      "provenance": {
+        "manifest": "g1-ci-host-correction/artifact-manifest.json",
+        "bytes": 7670,
+        "sha256": "01956b82b00ae3c3b5298f54296ecea33b585e51b420498ad1a7b55d28a2bff7"
+      },
+      "reason": "Original producer-frozen serial/job output, patch context or report bytes; the cited original manifest and final package checks bind them."
+    },
+    {
+      "path": "results/integration/2026-10-19-g1-owner/g1-evidence/g1-a-ktest-01/root-lock-diff.patch",
+      "mode": "100644",
+      "bytes": 664,
+      "sha256": "9872cb685ea2b58e254804b5e8cc72b8341c335d911a2b5330a7a96bb637db13",
+      "provenance": {
+        "manifest": "g1-evidence/artifact-manifest.json",
+        "bytes": 664,
+        "sha256": "9872cb685ea2b58e254804b5e8cc72b8341c335d911a2b5330a7a96bb637db13"
+      },
+      "reason": "Original producer-frozen serial/job output, patch context or report bytes; the cited original manifest and final package checks bind them."
+    },
+    {
+      "path": "results/integration/2026-10-19-g1-owner/g1-evidence/g1-a-ktest-02/execution/aster-core/guests/guest-001/serial.log",
+      "mode": "100644",
+      "bytes": 20888,
+      "sha256": "98ee577a23e73c52375acc39ef70343c8ddf28ceb2f35630071f80e8e8552cd0",
+      "provenance": {
+        "manifest": "g1-evidence/artifact-manifest.json",
+        "bytes": 20888,
+        "sha256": "98ee577a23e73c52375acc39ef70343c8ddf28ceb2f35630071f80e8e8552cd0"
+      },
+      "reason": "Original producer-frozen serial/job output, patch context or report bytes; the cited original manifest and final package checks bind them."
+    },
+    {
+      "path": "results/integration/2026-10-19-g1-owner/g1-evidence/g1-a-ostd-01/execution/ostd/guests/guest-001/serial.log",
+      "mode": "100644",
+      "bytes": 23028,
+      "sha256": "30001c815c7954c1b988c11b0939434caec27597d098e4bd388145bde5fe3b26",
+      "provenance": {
+        "manifest": "g1-evidence/artifact-manifest.json",
+        "bytes": 23028,
+        "sha256": "30001c815c7954c1b988c11b0939434caec27597d098e4bd388145bde5fe3b26"
+      },
+      "reason": "Original producer-frozen serial/job output, patch context or report bytes; the cited original manifest and final package checks bind them."
+    },
+    {
+      "path": "results/integration/2026-10-19-g1-owner/g1-evidence/g1-queryabi-candidate-03/execution/serial.log",
+      "mode": "100644",
+      "bytes": 81716,
+      "sha256": "a7fa662807297c023d34d3a0611c275780d67745c3d08d09637b209d4ca2c445",
+      "provenance": {
+        "manifest": "g1-evidence/artifact-manifest.json",
+        "bytes": 81716,
+        "sha256": "a7fa662807297c023d34d3a0611c275780d67745c3d08d09637b209d4ca2c445"
+      },
+      "reason": "Original producer-frozen serial/job output, patch context or report bytes; the cited original manifest and final package checks bind them."
+    },
+    {
+      "path": "results/integration/2026-10-19-g1-owner/g1-remote-ci-107afb/a03-job-117877088641.log",
+      "mode": "100644",
+      "bytes": 62595,
+      "sha256": "d2d3efb195b1e4e03dcf9bcef2516155ae731d41533554d948f29d7b52059f73",
+      "provenance": {
+        "manifest": "g1-remote-ci-107afb/107afb-frozen-files.json",
+        "bytes": 62595,
+        "sha256": "d2d3efb195b1e4e03dcf9bcef2516155ae731d41533554d948f29d7b52059f73"
+      },
+      "reason": "Original producer-frozen serial/job output, patch context or report bytes; the cited original manifest and final package checks bind them."
+    },
+    {
+      "path": "results/integration/2026-10-19-g1-owner/g1-remote-ci-107afb/a06-job-117877088598.log",
+      "mode": "100644",
+      "bytes": 134376,
+      "sha256": "b74dd14909814ff542738fc40ee8a77c700a0fd3bb25912aeb03624c0b0ea2d0",
+      "provenance": {
+        "manifest": "g1-remote-ci-107afb/107afb-frozen-files.json",
+        "bytes": 134376,
+        "sha256": "b74dd14909814ff542738fc40ee8a77c700a0fd3bb25912aeb03624c0b0ea2d0"
+      },
+      "reason": "Original producer-frozen serial/job output, patch context or report bytes; the cited original manifest and final package checks bind them."
+    },
+    {
+      "path": "results/integration/2026-10-19-g1-owner/g1-remote-ci-107afb/g0-job-117877088393.log",
+      "mode": "100644",
+      "bytes": 231693,
+      "sha256": "70a8b67f2b4ec8068c969028b79afcedf43dee9c048cdb7c992552688cb4184f",
+      "provenance": {
+        "manifest": "g1-remote-ci-107afb/107afb-frozen-files.json",
+        "bytes": 231693,
+        "sha256": "70a8b67f2b4ec8068c969028b79afcedf43dee9c048cdb7c992552688cb4184f"
+      },
+      "reason": "Original producer-frozen serial/job output, patch context or report bytes; the cited original manifest and final package checks bind them."
+    },
+    {
+      "path": "results/integration/2026-10-19-g1-owner/g1-remote-ci-1c054/a03-job-117880228851.log",
+      "mode": "100644",
+      "bytes": 62599,
+      "sha256": "af9965a12353db5e620ccf2642ef55f2947c586e7b1f7992f8d4b19fd5299c1b",
+      "provenance": {
+        "manifest": "g1-remote-ci-1c054/1c054-frozen-files.json",
+        "bytes": 62599,
+        "sha256": "af9965a12353db5e620ccf2642ef55f2947c586e7b1f7992f8d4b19fd5299c1b"
+      },
+      "reason": "Original producer-frozen serial/job output, patch context or report bytes; the cited original manifest and final package checks bind them."
+    },
+    {
+      "path": "results/integration/2026-10-19-g1-owner/g1-remote-ci-1c054/a06-job-117880228659.log",
+      "mode": "100644",
+      "bytes": 134380,
+      "sha256": "be8e9bdc72f2750fd328297fa6d63d8a5ace5104fa9fb29476fa6defd2646882",
+      "provenance": {
+        "manifest": "g1-remote-ci-1c054/1c054-frozen-files.json",
+        "bytes": 134380,
+        "sha256": "be8e9bdc72f2750fd328297fa6d63d8a5ace5104fa9fb29476fa6defd2646882"
+      },
+      "reason": "Original producer-frozen serial/job output, patch context or report bytes; the cited original manifest and final package checks bind them."
+    },
+    {
+      "path": "results/integration/2026-10-19-g1-owner/g1-remote-ci-1c054/g0-job-117880228265.log",
+      "mode": "100644",
+      "bytes": 231693,
+      "sha256": "4c372be79c70328bfe2e6dba0331712ee45913a23824aeb3e5b93b23c29c5a92",
+      "provenance": {
+        "manifest": "g1-remote-ci-1c054/1c054-frozen-files.json",
+        "bytes": 231693,
+        "sha256": "4c372be79c70328bfe2e6dba0331712ee45913a23824aeb3e5b93b23c29c5a92"
+      },
+      "reason": "Original producer-frozen serial/job output, patch context or report bytes; the cited original manifest and final package checks bind them."
+    },
+    {
+      "path": "results/integration/2026-10-19-g1-owner/g1-remote-ci-463f/a03-job-117874197619.log",
+      "mode": "100644",
+      "bytes": 62558,
+      "sha256": "d85ff01990bf446b243be3918ae4e2f0ac980e970e5f3986f4d36d2fafd7757a",
+      "provenance": {
+        "manifest": "g1-remote-ci-463f/463f-frozen-files.json",
+        "bytes": 62558,
+        "sha256": "d85ff01990bf446b243be3918ae4e2f0ac980e970e5f3986f4d36d2fafd7757a"
+      },
+      "reason": "Original producer-frozen serial/job output, patch context or report bytes; the cited original manifest and final package checks bind them."
+    },
+    {
+      "path": "results/integration/2026-10-19-g1-owner/g1-remote-ci-463f/a06-job-117874197488.log",
+      "mode": "100644",
+      "bytes": 134371,
+      "sha256": "92b1d64ee4ed60c7c366d235516f33b78b1e76566e81b1a7743ed612f167114d",
+      "provenance": {
+        "manifest": "g1-remote-ci-463f/463f-frozen-files.json",
+        "bytes": 134371,
+        "sha256": "92b1d64ee4ed60c7c366d235516f33b78b1e76566e81b1a7743ed612f167114d"
+      },
+      "reason": "Original producer-frozen serial/job output, patch context or report bytes; the cited original manifest and final package checks bind them."
+    },
+    {
+      "path": "results/integration/2026-10-19-g1-owner/g1-remote-ci-463f/g0-job-117874197565.log",
+      "mode": "100644",
+      "bytes": 231690,
+      "sha256": "a9c2dae377fd3da759863efdcdab5b7cb7772c6fe612a7c34a0376bfb71414e7",
+      "provenance": {
+        "manifest": "g1-remote-ci-463f/463f-frozen-files.json",
+        "bytes": 231690,
+        "sha256": "a9c2dae377fd3da759863efdcdab5b7cb7772c6fe612a7c34a0376bfb71414e7"
+      },
+      "reason": "Original producer-frozen serial/job output, patch context or report bytes; the cited original manifest and final package checks bind them."
+    },
+    {
+      "path": "results/integration/2026-10-19-g1-owner/g1-remote-ci-f744/a03-job-117870537020.log",
+      "mode": "100644",
+      "bytes": 54924,
+      "sha256": "928422e73e6bf2d379dcbb3e0fdde22449e2de4b0b58975c5fdd42b00e5033ba",
+      "provenance": {
+        "manifest": "g1-remote-ci-f744/f744-frozen-files.json",
+        "bytes": 54924,
+        "sha256": "928422e73e6bf2d379dcbb3e0fdde22449e2de4b0b58975c5fdd42b00e5033ba"
+      },
+      "reason": "Original producer-frozen serial/job output, patch context or report bytes; the cited original manifest and final package checks bind them."
+    },
+    {
+      "path": "results/integration/2026-10-19-g1-owner/g1-remote-ci-f744/a06-job-117870536573.log",
+      "mode": "100644",
+      "bytes": 134376,
+      "sha256": "8088f057454401f06732fe30583b34333b7c7d9eaef5e994d7f52f321cce47a8",
+      "provenance": {
+        "manifest": "g1-remote-ci-f744/f744-frozen-files.json",
+        "bytes": 134376,
+        "sha256": "8088f057454401f06732fe30583b34333b7c7d9eaef5e994d7f52f321cce47a8"
+      },
+      "reason": "Original producer-frozen serial/job output, patch context or report bytes; the cited original manifest and final package checks bind them."
+    },
+    {
+      "path": "results/integration/2026-10-19-g1-owner/g1-remote-ci-f744/g0-job-117870536000.log",
+      "mode": "100644",
+      "bytes": 58643,
+      "sha256": "db7a4f74a1c5ccd5884c70cc2c5d561394ba17cf8b78980d313cb396962094a6",
+      "provenance": {
+        "manifest": "g1-remote-ci-f744/f744-frozen-files.json",
+        "bytes": 58643,
+        "sha256": "db7a4f74a1c5ccd5884c70cc2c5d561394ba17cf8b78980d313cb396962094a6"
+      },
+      "reason": "Original producer-frozen serial/job output, patch context or report bytes; the cited original manifest and final package checks bind them."
+    },
+    {
+      "path": "results/integration/2026-10-19-g1-owner/hepta-bazel-followup/BAZEL_FAILURE_DIAGNOSIS.md",
+      "mode": "100644",
+      "bytes": 11989,
+      "sha256": "b41da3eb84e91c3ef980db6acb39da7522dcb4a50b14c8405d466dd1b4851df0",
+      "provenance": {
+        "manifest": "hepta-bazel-followup/artifact-manifest.json",
+        "bytes": 11989,
+        "sha256": "b41da3eb84e91c3ef980db6acb39da7522dcb4a50b14c8405d466dd1b4851df0"
+      },
+      "reason": "Original producer-frozen serial/job output, patch context or report bytes; the cited original manifest and final package checks bind them."
+    },
+    {
+      "path": "results/integration/2026-10-19-g1-owner/hepta-bazel-followup/README.md",
+      "mode": "100644",
+      "bytes": 4875,
+      "sha256": "12950cdd42f250054b7fc4baaf9c4bea32a3871a5292f37cb83936d7fb0234c2",
+      "provenance": {
+        "manifest": "hepta-bazel-followup/artifact-manifest.json",
+        "bytes": 4875,
+        "sha256": "12950cdd42f250054b7fc4baaf9c4bea32a3871a5292f37cb83936d7fb0234c2"
+      },
+      "reason": "Original producer-frozen serial/job output, patch context or report bytes; the cited original manifest and final package checks bind them."
+    },
+    {
+      "path": "results/integration/2026-10-19-g1-owner/hepta-fleet-fixture-fix/fixture-admission-assert.patch",
+      "mode": "100644",
+      "bytes": 1807,
+      "sha256": "cae62c3b1ae9cad908e997c539c6123ace06a68239075be2885d46d1fad7268b",
+      "provenance": {
+        "manifest": "hepta-fleet-fixture-fix/files-manifest.json",
+        "bytes": 1807,
+        "sha256": "cae62c3b1ae9cad908e997c539c6123ace06a68239075be2885d46d1fad7268b"
+      },
+      "reason": "Original producer-frozen serial/job output, patch context or report bytes; the cited original manifest and final package checks bind them."
+    },
+    {
+      "path": "results/integration/2026-10-19-g1-owner/hepta-fleet-fixture-fix/source.diff",
+      "mode": "100644",
+      "bytes": 1444,
+      "sha256": "543b9c5c8d08ea8125c78476cbd1ff889da913667ddab5eff1ae307b5ff37202",
+      "provenance": {
+        "manifest": "hepta-fleet-fixture-fix/files-manifest.json",
+        "bytes": 1444,
+        "sha256": "543b9c5c8d08ea8125c78476cbd1ff889da913667ddab5eff1ae307b5ff37202"
+      },
+      "reason": "Original producer-frozen serial/job output, patch context or report bytes; the cited original manifest and final package checks bind them."
+    },
+    {
+      "path": "results/integration/2026-10-19-g1-owner/hepta-fleet-fixture-main-fix/fixture-admission-assert-main.patch",
+      "mode": "100644",
+      "bytes": 1807,
+      "sha256": "5e6c12dde9b848d0b07b2a5e6eab4648d329e837488545b6f14af44fc213e1d5",
+      "provenance": {
+        "manifest": "hepta-fleet-fixture-main-fix/files-manifest.json",
+        "bytes": 1807,
+        "sha256": "5e6c12dde9b848d0b07b2a5e6eab4648d329e837488545b6f14af44fc213e1d5"
+      },
+      "reason": "Original producer-frozen serial/job output, patch context or report bytes; the cited original manifest and final package checks bind them."
+    },
+    {
+      "path": "results/integration/2026-10-19-g1-owner/hepta-fleet-fixture-main-fix/source.diff",
+      "mode": "100644",
+      "bytes": 1444,
+      "sha256": "543b9c5c8d08ea8125c78476cbd1ff889da913667ddab5eff1ae307b5ff37202",
+      "provenance": {
+        "manifest": "hepta-fleet-fixture-main-fix/files-manifest.json",
+        "bytes": 1444,
+        "sha256": "543b9c5c8d08ea8125c78476cbd1ff889da913667ddab5eff1ae307b5ff37202"
+      },
+      "reason": "Original producer-frozen serial/job output, patch context or report bytes; the cited original manifest and final package checks bind them."
+    },
+    {
+      "path": "results/integration/2026-10-19-g1-owner/hepta-security/README.md",
+      "mode": "100644",
+      "bytes": 3591,
+      "sha256": "94add089e357d3ad5ece539367198e832cd35b24d131ea8c30fe33ce02d5bf2c",
+      "provenance": {
+        "manifest": "hepta-security/artifact-manifest.json",
+        "bytes": 3591,
+        "sha256": "94add089e357d3ad5ece539367198e832cd35b24d131ea8c30fe33ce02d5bf2c"
+      },
+      "reason": "Original producer-frozen serial/job output, patch context or report bytes; the cited original manifest and final package checks bind them."
+    },
+    {
+      "path": "results/integration/2026-10-19-g1-owner/hepta-security/deny-repro-01/SECURITY_DEBT_DIAGNOSIS.en.md",
+      "mode": "100644",
+      "bytes": 21047,
+      "sha256": "ae4f94e916d5ffc98d1f833286c5c867516d0b59e435fd41e1af46d214a1d580",
+      "provenance": {
+        "manifest": "hepta-security/artifact-manifest.json",
+        "bytes": 21047,
+        "sha256": "ae4f94e916d5ffc98d1f833286c5c867516d0b59e435fd41e1af46d214a1d580"
+      },
+      "reason": "Original producer-frozen serial/job output, patch context or report bytes; the cited original manifest and final package checks bind them."
+    },
+    {
+      "path": "results/integration/2026-10-19-g1-owner/source-publication/main-sync/n0-manual-merge.diff",
+      "mode": "100644",
+      "bytes": 2001,
+      "sha256": "c200912f84f8ab565ba0c6d221338d6a56a7ca4a92d547c09a194ec6a89b55c5",
+      "provenance": {
+        "manifest": "review/staging-first-delivery-manifest.json",
+        "meaning": "Raw Git source-diff/bundle-verification output already SHA-bound before the first stage; original source receipts remain separate."
+      },
+      "reason": "Recorded raw Git diff or bundle-verification output; its original context/trailing output spaces are preserved."
+    },
+    {
+      "path": "results/integration/2026-10-19-g1-owner/source/bundle-verify.log",
+      "mode": "100644",
+      "bytes": 405,
+      "sha256": "b4511bdbfc57514cf16fdc2aae6521731d843b8f232d99337f17d5acac4e8792",
+      "provenance": {
+        "manifest": "review/staging-first-delivery-manifest.json",
+        "meaning": "Raw Git source-diff/bundle-verification output already SHA-bound before the first stage; original source receipts remain separate."
+      },
+      "reason": "Recorded raw Git diff or bundle-verification output; its original context/trailing output spaces are preserved."
+    },
+    {
+      "path": "results/integration/2026-10-19-g1-owner/source/ci-host-contract-candidates/bundle-verify.log",
+      "mode": "100644",
+      "bytes": 356,
+      "sha256": "4bc80f316430a6c8742c27e78fe6be0fa1749baacb80e9cc3459a5b741e73981",
+      "provenance": {
+        "manifest": "review/staging-first-delivery-manifest.json",
+        "meaning": "Raw Git source-diff/bundle-verification output already SHA-bound before the first stage; original source receipts remain separate."
+      },
+      "reason": "Recorded raw Git diff or bundle-verification output; its original context/trailing output spaces are preserved."
+    },
+    {
+      "path": "results/integration/2026-10-19-g1-owner/source/ci-host-contract-candidates/source.diff",
+      "mode": "100644",
+      "bytes": 7670,
+      "sha256": "01956b82b00ae3c3b5298f54296ecea33b585e51b420498ad1a7b55d28a2bff7",
+      "provenance": {
+        "manifest": "review/staging-first-delivery-manifest.json",
+        "meaning": "Raw Git source-diff/bundle-verification output already SHA-bound before the first stage; original source receipts remain separate."
+      },
+      "reason": "Recorded raw Git diff or bundle-verification output; its original context/trailing output spaces are preserved."
+    },
+    {
+      "path": "results/integration/2026-10-19-g1-owner/source/main-sync-candidate/bundle-verify.log",
+      "mode": "100644",
+      "bytes": 386,
+      "sha256": "9953dbbedbac64c15f05902a2e0beef4f7d130f594402692adea03ca797a0456",
+      "provenance": {
+        "manifest": "review/staging-first-delivery-manifest.json",
+        "meaning": "Raw Git source-diff/bundle-verification output already SHA-bound before the first stage; original source receipts remain separate."
+      },
+      "reason": "Recorded raw Git diff or bundle-verification output; its original context/trailing output spaces are preserved."
+    },
+    {
+      "path": "results/integration/2026-10-19-g1-owner/review/staging-whitespace-unfiltered.stdout.log",
+      "mode": "100644",
+      "bytes": 454933,
+      "sha256": "2c9b62e1c6b34b4d98736ea3693991d7bce8154a1e89b2b98c95aaebccbe7be5",
+      "provenance": {
+        "source": "Same unchanged first staged tree, actual git diff --cached --check reproduction"
+      },
+      "reason": "Raw diagnostic output retained byte-for-byte, including the original lines that caused whitespace diagnostics."
+    }
+  ],
+  "gate_scope": "Only these exact path/size/SHA identities are excluded from formatting checks. Every other changed delivered path remains checked; there is no blanket results exclusion. All files still require manifest and Git blob/mode equality.",
+  "frozen_payload_bytes_modified": false,
+  "product_test_gates_changed": false
+}
