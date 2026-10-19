@@ -5,7 +5,7 @@ and its original fixed kernel/initramfs hashes. The G1 candidate entry point
 below builds a fresh ordinary product from a reviewed clean Git head/tree.
 Adding this entry point does not establish a passing guest result.
 
-## Ordinary G1 product and four unsupported operations
+## Ordinary G1 product, image lifecycle and four unsupported operations
 
 Prepare the native toolchain, source-built OSDK, vDSO, QEMU and static BusyBox
 as described in [the build manual](../../../support/build/README.md). From the
@@ -29,10 +29,12 @@ the committed minimal **204-package** lock byte for byte.
 The runner checks the ordinary boot result and then uses the same product ELF
 for a second guest. It reuses the original in-memory initramfs packer and the
 original C probe via an include wrapper. The original seven process-lifetime
-markers, the four markers below, both QueryAbi completion markers, and the
-final ordinary boot marker must each occur once. The new root completion must
-follow all four operation checks; the exec child returns only the original
-epoch-check result and cannot repeat them.
+markers, the four new image-lifecycle markers, the four operation markers
+below, both QueryAbi completion markers, and the final ordinary boot marker
+must each occur once: **18 exact markers**. After the original completion,
+the four lifecycle checks precede the four operation checks and candidate
+completion. The exec child returns only the original epoch-check result and
+cannot repeat them.
 
 The candidate wrapper emits each marker and its newline in one bounded
 `write` call. The included original probe uses unbuffered stdout, where libc
@@ -40,6 +42,24 @@ The candidate wrapper emits each marker and its newline in one bounded
 appear between the text and newline. The candidate handles `EINTR`, fails on
 a short write, and keeps the exact-line acceptance rule. The historical A05
 C source and replay runner remain byte for byte unchanged.
+
+The static candidate is compiled with `-pthread`. Its added checks use the
+actual ioctl and syscall paths in the ordinary product:
+
+| Lifecycle case | Required observation | Exact marker |
+| --- | --- | --- |
+| Existing executable, unreadable argv pointer | Direct `execve` returns `EFAULT`; old fd and a fresh open still return the complete original 16-byte boot and space identities | `HEPTA_EXEC_EFAULT_SESSION_STABLE` |
+| Absent executable | Direct `execve` returns `ENOENT`; the same old/fresh identity check passes | `HEPTA_EXEC_ENOENT_SESSION_STABLE` |
+| Another pthread in the same Process | Different TID, same PID; inherited fd and fresh open return the same boot and space identities | `HEPTA_THREAD_SESSION_SHARED` |
+| Non-last thread has exited and joined | The surviving thread's original fd and another fresh open remain valid in that image | `HEPTA_NONLAST_THREAD_EXIT_SESSION_STABLE` |
+
+Both exec failures precede acceptance of irreversible replacement by the
+original TaskSet. They do not test a post-boundary loader failure. Successful
+exec, stale inherited descriptors and the new image's different CapSpace
+remain covered by the unchanged original probe. An exited process cannot
+issue its own ioctl; closure on group/last-thread exit and one-shot initial
+startup require the actual core tests described in the
+[G1-c development manual](PROCESS_IMAGE_G1C.md).
 
 | Known operation | Valid request used in the real guest | Required result/marker |
 | --- | --- | --- |

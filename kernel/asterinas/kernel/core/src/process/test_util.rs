@@ -18,6 +18,14 @@ use crate::{
 /// Builds a POSIX process and its main task without adding either to the PID table
 /// or scheduling userspace. All constructors and cgroup/task fields are real.
 pub(crate) fn new_unstarted_process() -> (Arc<Process>, Arc<Task>) {
+    let (process, mut tasks) = new_unstarted_process_with_threads(1);
+    (process, tasks.pop().unwrap())
+}
+
+/// Builds a real task set whose threads all share one Process and VMAR. The
+/// caller owns cleanup; no task is registered in the PID table or scheduled.
+pub(crate) fn new_unstarted_process_with_threads(count: usize) -> (Arc<Process>, Vec<Arc<Task>>) {
+    assert!(count > 0);
     clocks::init_for_ktest();
     random::init();
 
@@ -32,17 +40,22 @@ pub(crate) fn new_unstarted_process() -> (Arc<Process>, Arc<Task>) {
         Arc::new(Mutex::new(SigDispositions::default())),
         UserNamespace::get_init_singleton().clone(),
     );
-    let task = PosixThreadBuilder::new(
-        pid,
-        derive_thread_name("a06-charge-regression"),
-        Box::new(UserContext::default()),
-        Credentials::new_root(),
-        vmar,
-    )
-    .process(Arc::downgrade(&process))
-    .build();
-    process.tasks().lock().insert(task.clone()).unwrap();
-    (process, task)
+    let mut tasks = Vec::with_capacity(count);
+    for index in 0..count {
+        let tid = if index == 0 { pid } else { allocate_posix_tid() };
+        let task = PosixThreadBuilder::new(
+            tid,
+            derive_thread_name("a06-charge-regression"),
+            Box::new(UserContext::default()),
+            Credentials::new_root(),
+            vmar.clone_handle(),
+        )
+        .process(Arc::downgrade(&process))
+        .build();
+        process.tasks().lock().insert(task.clone()).unwrap();
+        tasks.push(task);
+    }
+    (process, tasks)
 }
 
 /// Publishes the same zombie flag that precedes cgroup detachment in `exit_process`.

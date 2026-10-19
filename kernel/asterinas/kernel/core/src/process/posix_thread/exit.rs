@@ -66,8 +66,11 @@ fn exit_internal(
         let in_evecve = tasks.in_execve();
 
         if is_exiting_group && !has_exited_group && !in_evecve {
-            sigkill_other_threads(&current_task, &tasks);
             tasks.set_exited_group();
+            // TaskSet -> image: refuse discovery immediately at group-exit
+            // admission, before any other old-image thread is signalled.
+            posix_process.begin_hepta_image_close();
+            sigkill_other_threads(&current_task, &tasks);
         }
 
         // According to Linux's behavior, the last thread's exit code will become the process's
@@ -85,7 +88,13 @@ fn exit_internal(
         }
         current_thread.exit();
 
-        tasks.remove_exited(&current_task)
+        let is_last_thread = tasks.remove_exited(&current_task);
+        if is_last_thread {
+            // Ordinary non-final thread exit leaves the shared image live.
+            // The final thread fences it before files/VMAR/discovery teardown.
+            posix_process.begin_hepta_image_close();
+        }
+        is_last_thread
     };
 
     // This is put after `current_thread.exit()`,

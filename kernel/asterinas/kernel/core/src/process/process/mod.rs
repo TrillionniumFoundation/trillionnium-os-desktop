@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use core::{
-    sync::atomic::{AtomicBool, AtomicI16, AtomicU32, AtomicU64, Ordering},
+    sync::atomic::{AtomicBool, AtomicI16, AtomicU32, Ordering},
     time::Duration,
 };
 
 use ostd::timer::Jiffies;
 
-use self::timer_manager::PosixTimerManager;
+use self::{image::ProcessImageState, timer_manager::PosixTimerManager};
 use super::{
     pid_table::{self, PidTable},
     posix_thread::{AsPosixThread, FIRST_POSIX_TID},
@@ -36,6 +36,7 @@ use crate::{
     vm::vmar::Vmar,
 };
 
+mod image;
 mod init_proc;
 mod job_control;
 mod process_group;
@@ -43,12 +44,8 @@ mod session;
 mod terminal;
 mod timer_manager;
 
-/// Never reuse a boot-local HOS2 process-image namespace. Unlike a truncated
-/// PID/start-time tuple, a checked monotonically allocated nonce cannot
-/// alias a later Process after PID reuse or a long uptime.
-static NEXT_HEPTA_CAPSPACE_NONCE: AtomicU64 = AtomicU64::new(1);
-
 use atomic_integer_wrapper::define_atomic_version_of_integer_like_type;
+pub(crate) use image::ProcessImageKey;
 pub(crate) use init_proc::spawn_init_process;
 pub(crate) use job_control::JobControl;
 use ostd::{
@@ -156,10 +153,10 @@ pub struct Process {
     /// Process start time since boot.
     start_time: Jiffies,
 
-    /// Incremented after a successful execve to fence old-image fds.
-    hepta_exec_epoch: AtomicU64,
-    /// Lazy, process-image-scoped identity. Zero means not yet assigned.
-    hepta_space_identity: Mutex<(u64, u64)>,
+    /// Native image identity, irreversible close state and first-run claim.
+    /// Lock order: VMAR -> tasks -> image, or tasks -> image. Image methods
+    /// never acquire an outer lock or enter resource-accounting critical sections.
+    hepta_image: Mutex<ProcessImageState>,
 
     // Namespaces
     /// The user namespace
@@ -277,19 +274,23 @@ impl Process {
                 prof_clock,
                 timer_manager,
                 start_time: Jiffies::elapsed(),
-                hepta_exec_epoch: AtomicU64::new(0),
-                hepta_space_identity: Mutex::new((0, 0)),
+                hepta_image: Mutex::new(ProcessImageState::new()),
                 user_ns: Mutex::new(user_ns),
             }
         })
     }
 
-    /// Runs the process.
+    /// Runs a newly cloned, unprepared process for the first time.
+    /// Prepared init processes use their consuming resume path instead.
     pub(super) fn run(&self) {
         let tasks = self.tasks.lock();
         // when run the process, the process should has only one thread
         debug_assert!(tasks.as_slice().len() == 1);
         debug_assert!(!self.status().is_zombie());
+        self.hepta_image
+            .lock()
+            .claim_unprepared_run()
+            .expect("a newly cloned process has an unclaimed first run");
         let task = tasks.main().clone();
         // should not hold the lock when run thread
         drop(tasks);
@@ -316,50 +317,6 @@ impl Process {
     /// Returns the process start time since boot.
     pub(crate) fn start_time(&self) -> Jiffies {
         self.start_time
-    }
-
-    /// Returns the image-generation fence for native HOS2 sessions.
-    pub(crate) fn hepta_exec_epoch(&self) -> u64 {
-        self.hepta_exec_epoch.load(Ordering::Acquire)
-    }
-
-    /// Assign an irrevocably unique boot-local process-image namespace.
-    ///
-    /// The small per-process lock jointly serializes open with successful
-    /// execve. A caller receives a matching (exec_epoch, nonce) pair even
-    /// when two threads open concurrently or another thread enters exec.
-    /// A lost race cannot recycle an old nonce into a new image.
-    pub(crate) fn hepta_capspace_session(&self) -> Result<(u64, u64)> {
-        let mut identity = self.hepta_space_identity.lock();
-        let epoch = self.hepta_exec_epoch.load(Ordering::Acquire);
-        if identity.0 == epoch && identity.1 != 0 {
-            return Ok((epoch, identity.1));
-        }
-        let nonce = NEXT_HEPTA_CAPSPACE_NONCE
-            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |current| {
-                current.checked_add(1)
-            })
-            .map_err(|_| Error::with_message(Errno::ENOSPC, "HOS2 CapSpace nonce exhausted"))?;
-        *identity = (epoch, nonce);
-        Ok((epoch, nonce))
-    }
-
-    /// Advances the image-generation fence after a successful execve.
-    /// Wrapping is rejected so an old fd can never become valid again.
-    pub(crate) fn advance_hepta_exec_epoch(&self) -> Result<u64> {
-        let mut identity = self.hepta_space_identity.lock();
-        let next = self
-            .hepta_exec_epoch
-            .fetch_update(Ordering::AcqRel, Ordering::Acquire, |current| {
-                current.checked_add(1)
-            })
-            .map(|previous| previous + 1)
-            .map_err(|_| Error::with_message(Errno::EOVERFLOW, "HOS2 exec epoch exhausted"))?;
-        // Preserve the lock held across the epoch transition and identity
-        // invalidation. A concurrent open can only see the old pair or a
-        // newly allocated pair, never a new epoch with the old nonce.
-        *identity = (next, 0);
-        Ok(next)
     }
 
     pub(crate) fn tasks(&self) -> &Mutex<TaskSet> {

@@ -4,7 +4,7 @@
 
 use ostd::{arch::cpu::context::UserContext, task::Task, user::UserContextApi};
 
-use super::{Process, Session};
+use super::{Process, ProcessImageKey, Session, image::ProcessImageState};
 use crate::{
     fs::{
         thread_info::ThreadFsInfo,
@@ -13,15 +13,114 @@ use crate::{
     prelude::*,
     process::{
         Credentials, ProcessVm, ShebangScriptPath, UndetectedExecutable, UserNamespace, pid_table,
-        posix_thread::{PosixThreadBuilder, allocate_posix_tid, derive_thread_name},
+        posix_thread::{AsPosixThread, PosixThreadBuilder, allocate_posix_tid, derive_thread_name},
         program_loader::ProgramToLoad,
         rlimit::new_resource_limits_for_init,
         signal::sig_disposition::SigDispositions,
     },
     sched::Nice,
-    thread::Tid,
-    vm::vmar::VmarHandle,
+    thread::{AsThread, Tid},
+    vm::vmar::{Vmar, VmarHandle},
 };
+
+/// One loaded initial process that has never been scheduled.
+///
+/// Only `create_init_process`, after the actual loader and task builder succeed,
+/// constructs this value. It is deliberately not Clone. The VMAR pin identifies
+/// the loaded allocation; it does not authenticate immutable executable bytes.
+struct PreparedInitialProcess {
+    process: Arc<Process>,
+    vmar: Arc<Vmar>,
+    task: Arc<Task>,
+    key: ProcessImageKey,
+    consumed: bool,
+}
+
+impl PreparedInitialProcess {
+    fn new(process: Arc<Process>, vmar: Arc<Vmar>, task: Arc<Task>) -> Result<Self> {
+        let key = with_initial_image(&process, &vmar, &task, |image| image.prepare_initial())?;
+        Ok(Self {
+            process,
+            vmar,
+            task,
+            key,
+            consumed: false,
+        })
+    }
+
+    /// Claims the original Process first-run state without scheduling. Kept
+    /// separate so kernel regressions can validate real, unstarted objects
+    /// without executing their intentionally empty fixture user contexts.
+    fn claim_resume(&mut self) -> Result<()> {
+        with_initial_image(&self.process, &self.vmar, &self.task, |image| {
+            image.consume_initial(self.key)
+        })?;
+        self.consumed = true;
+        Ok(())
+    }
+
+    fn resume(mut self) -> Result<Arc<Process>> {
+        self.claim_resume()?;
+
+        // No fallible preparation remains after registration. All Process
+        // locks were released before the PID table or scheduler is entered.
+        set_bootstrap_session_and_group(&self.process);
+        let process = self.process.clone();
+        self.task.as_thread().unwrap().run();
+        Ok(process)
+    }
+}
+
+impl Drop for PreparedInitialProcess {
+    fn drop(&mut self) {
+        if !self.consumed {
+            // Cancel only this still-prepared image. A stale token cannot
+            // close a different image or re-enable a consumed first run.
+            self.process.hepta_image.lock().cancel_initial(self.key);
+        }
+        // Strong Process/Task/VMAR pins are dropped after the image lock.
+    }
+}
+
+/// Check and claim under the established VMAR -> TaskSet -> image order.
+/// `/proc/[pid]/mem` and `maps` already take VMAR before looking up main_thread.
+/// Never acquire VMAR after TaskSet or acquire an outer lock from image state.
+fn with_initial_image<R>(
+    process: &Arc<Process>,
+    vmar: &Arc<Vmar>,
+    task: &Arc<Task>,
+    action: impl FnOnce(&mut ProcessImageState) -> Result<R>,
+) -> Result<R> {
+    let current_vmar = process.vmar.lock();
+    let tasks = process.tasks().lock();
+    if !current_vmar
+        .as_ref()
+        .is_some_and(|current| Arc::ptr_eq(current, vmar))
+        || tasks.as_slice().len() != 1
+        || !Arc::ptr_eq(tasks.main(), task)
+        || tasks.has_exited_group()
+        || tasks.has_exited_main()
+        || tasks.in_execve()
+        || process.status().is_zombie()
+    {
+        return_errno_with_message!(Errno::ESTALE, "initial process binding changed");
+    }
+    let Some(posix_thread) = task.as_posix_thread() else {
+        return_errno_with_message!(Errno::ESTALE, "initial task is not a POSIX task");
+    };
+    if !posix_thread
+        .weak_process()
+        .upgrade()
+        .is_some_and(|owner| Arc::ptr_eq(&owner, process))
+        || task.as_thread().unwrap().is_exited()
+    {
+        return_errno_with_message!(
+            Errno::ESTALE,
+            "initial task belongs to an ended or foreign process"
+        );
+    }
+    action(&mut process.hepta_image.lock())
+}
 
 /// Creates and schedules the init process to run.
 pub(crate) fn spawn_init_process(
@@ -30,20 +129,7 @@ pub(crate) fn spawn_init_process(
     argv: Vec<CString>,
     envp: Vec<CString>,
 ) -> Result<Arc<Process>> {
-    let process = create_init_process(path_resolver, executable_path, argv, envp)?;
-
-    // Linux starts the init process without placing it in a process group or session.
-    // It joins one only after userspace first calls `setsid()`.
-    //
-    // Asterinas instead requires every process to belong to both a process group and
-    // a session. The init process is therefore placed in a bootstrap process group
-    // and session with PGID and SID set to zero. This preserves the same user-visible
-    // behavior.
-    set_bootstrap_session_and_group(&process);
-
-    process.run();
-
-    Ok(process)
+    create_init_process(path_resolver, executable_path, argv, envp)?.resume()
 }
 
 fn create_init_process(
@@ -51,7 +137,7 @@ fn create_init_process(
     executable_path: Path,
     argv: Vec<CString>,
     envp: Vec<CString>,
-) -> Result<Arc<Process>> {
+) -> Result<PreparedInitialProcess> {
     let fs = ThreadFsInfo::new(path_resolver);
 
     let pid = allocate_posix_tid();
@@ -72,13 +158,16 @@ fn create_init_process(
         user_ns,
     );
 
+    let loaded_vmar = vmar.clone_arc();
     let init_task = create_init_task(pid, &init_proc, fs, vmar, executable_path, argv, envp)?;
-    init_proc.tasks().lock().insert(init_task).unwrap();
+    init_proc.tasks().lock().insert(init_task.clone()).unwrap();
 
-    Ok(init_proc)
+    PreparedInitialProcess::new(init_proc, loaded_vmar, init_task)
 }
 
 fn set_bootstrap_session_and_group(process: &Arc<Process>) {
+    // Linux starts init without a process group or session. Asterinas requires
+    // both, so the bootstrap pair has PGID/SID zero until userspace setsid().
     // Locking order: PID table -> process group
     let mut pid_table = pid_table::pid_table_mut();
 
@@ -130,4 +219,131 @@ fn create_init_task(
             .process(Arc::downgrade(process))
             .fs(Arc::new(fs));
     Ok(thread_builder.build())
+}
+
+#[cfg(ktest)]
+mod tests {
+    use ostd::prelude::ktest;
+
+    use super::*;
+    use crate::process::test_util;
+
+    // Actual Process/VMAR/Task allocations, without a loaded executable or
+    // scheduling. Only the ordinary boot exercises loader -> prepare -> resume.
+    fn prepare_fixture() -> PreparedInitialProcess {
+        let (process, task) = test_util::new_unstarted_process();
+        let vmar = process.vmar.lock().as_ref().unwrap().clone();
+        PreparedInitialProcess::new(process, vmar, task).unwrap()
+    }
+
+    #[track_caller]
+    fn assert_stale<T: Debug>(result: Result<T>) {
+        assert_eq!(result.unwrap_err().error(), Errno::ESTALE);
+    }
+
+    #[ktest]
+    fn initial_resume_claim_is_consumed_exactly_once() {
+        let mut prepared = prepare_fixture();
+        let key = prepared.key;
+        prepared.claim_resume().unwrap();
+        assert_stale(prepared.claim_resume());
+        assert_eq!(prepared.process.hepta_capspace_session().unwrap(), key);
+        assert_stale(prepared.process.hepta_image.lock().claim_unprepared_run());
+    }
+
+    #[ktest]
+    fn prepared_initial_process_cannot_use_the_ordinary_first_run() {
+        let prepared = prepare_fixture();
+        assert_stale(prepared.process.hepta_image.lock().claim_unprepared_run());
+        assert!(
+            PreparedInitialProcess::new(
+                prepared.process.clone(),
+                prepared.vmar.clone(),
+                prepared.task.clone()
+            )
+            .is_err()
+        );
+    }
+
+    #[ktest]
+    fn dropping_unconsumed_preparation_closes_only_its_image() {
+        let prepared = prepare_fixture();
+        let process = prepared.process.clone();
+        let key = prepared.key;
+        drop(prepared);
+        assert_stale(process.hepta_capspace_session());
+        assert_stale(process.check_hepta_capspace_session(key));
+    }
+
+    #[ktest]
+    fn preparation_rejects_a_foreign_process_allocation() {
+        let prepared = prepare_fixture();
+        let (foreign, _foreign_task) = test_util::new_unstarted_process();
+        let foreign_key = foreign.hepta_capspace_session().unwrap();
+        assert!(
+            PreparedInitialProcess::new(
+                foreign.clone(),
+                prepared.vmar.clone(),
+                prepared.task.clone()
+            )
+            .is_err()
+        );
+        assert_eq!(foreign.hepta_capspace_session().unwrap(), foreign_key);
+    }
+
+    #[ktest]
+    fn preparation_rejects_a_foreign_main_task() {
+        let (process, _task) = test_util::new_unstarted_process();
+        let (_foreign, foreign_task) = test_util::new_unstarted_process();
+        let vmar = process.vmar.lock().as_ref().unwrap().clone();
+        assert!(PreparedInitialProcess::new(process, vmar, foreign_task).is_err());
+    }
+
+    #[ktest]
+    fn resume_rejects_replaced_vmar_and_cancels_the_prepared_image() {
+        let mut prepared = prepare_fixture();
+        let process = prepared.process.clone();
+        let replacement = VmarHandle::new(ProcessVm::new(
+            prepared.vmar.process_vm().executable_path().clone(),
+        ));
+        let old_vmar = process.lock_vmar().set_vmar(Some(replacement.clone_arc()));
+        assert_stale(prepared.claim_resume());
+        drop(prepared);
+        assert_stale(process.hepta_capspace_session());
+        let displaced = process.lock_vmar().set_vmar(old_vmar);
+        drop(displaced);
+    }
+
+    #[ktest]
+    fn resume_rejects_a_foreign_task_pin() {
+        let mut prepared = prepare_fixture();
+        let (_foreign, foreign_task) = test_util::new_unstarted_process();
+        prepared.task = foreign_task;
+        assert_stale(prepared.claim_resume());
+    }
+
+    #[ktest]
+    fn prepared_old_epoch_cannot_resume_or_close_a_replacement_image() {
+        let mut prepared = prepare_fixture();
+        let process = prepared.process.clone();
+        let old_key = prepared.key;
+        process.begin_hepta_image_close();
+        process.commit_hepta_exec_image().unwrap();
+        let new_key = process.hepta_capspace_session().unwrap();
+        assert_ne!(old_key, new_key);
+        assert_stale(prepared.claim_resume());
+        drop(prepared);
+        assert_eq!(process.hepta_capspace_session().unwrap(), new_key);
+    }
+
+    #[ktest]
+    fn prepared_exit_group_state_cannot_resume() {
+        let mut prepared = prepare_fixture();
+        {
+            let mut tasks = prepared.process.tasks().lock();
+            tasks.set_exited_group();
+            prepared.process.begin_hepta_image_close();
+        }
+        assert_stale(prepared.claim_resume());
+    }
 }
