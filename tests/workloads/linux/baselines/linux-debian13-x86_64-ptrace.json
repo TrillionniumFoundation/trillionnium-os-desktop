@@ -1,0 +1,564 @@
+{
+  "schema": 2,
+  "suite": "a04-linux-host-ptrace-syscall-observation",
+  "kind": "sanitized_compact_reference_evidence",
+  "source": "actual PTRACE_GET_SYSCALL_INFO on Debian13 x86_64 fixed staged ELF; no path/argument capture",
+  "host_linux_only": true,
+  "kernel_guest_verified": false,
+  "hepta_profile_verified": false,
+  "trace_private": true,
+  "notes": "Real fixed rootfs Linux host ptrace: 28/28 ELF cases; 62 x86_64 syscall kinds, 3668 completion events. Trace changes scheduling. Internal ERESTARTSYS is NOT user errno. Raw logs private; Hepta and new-kernel NOT run.",
+  "source_sha256": "29f1c5c58645769420c87ea31e4bd9fe5cb2dc2c050c6a8824cdfa3ed2032613",
+  "ptrace_tracer_sha256": "b9246eb93358b7013d767ba5fdb276979fa7b20bbd352f7d5dc5339f2b5514f3",
+  "reference_sha256": "ea38aa903ead1f72683ab10dcefeb756ec8b1e115dfccf49d8a9823c8a968026",
+  "rootfs_manifest_sha256": "55aa8369d4f912267139ef7626c752814d7dc833e49accc337529f2545fb94cb",
+  "syscall_table_sha256": "019a4aeb7b12789500d666d356189874ae8e4edc4d0e2b11b03491bbd7d01821",
+  "arch": "x86_64",
+  "counts": {
+    "pass": 28,
+    "fail": 0,
+    "blocked": 0
+  },
+  "observed_syscall_events": 3668,
+  "cases": {
+    "dynamic.async_fd": {
+      "status": "pass",
+      "syscall_events": 59,
+      "raw_trace_sha256": "96459a3487fbf99c4b72220de1b08d1d8e37cc5690684f7df32d3ab59dfe0b50"
+    },
+    "dynamic.cloexec": {
+      "status": "pass",
+      "syscall_events": 88,
+      "raw_trace_sha256": "004362d0d7862e5505ac750d71a24693f2db01981cad4e41b0ec5acdd975be81"
+    },
+    "dynamic.errno": {
+      "status": "pass",
+      "syscall_events": 50,
+      "raw_trace_sha256": "3e845751d8bebcbb5d18324b2b1c1d7e82866184a48d2f728b798f144c63cd45"
+    },
+    "dynamic.fd_limit": {
+      "status": "pass",
+      "syscall_events": 114,
+      "raw_trace_sha256": "270c8af943e1994e35d225c6d9ea6baeac619102f31d0618eedcb623b7a9dde7"
+    },
+    "dynamic.file_lock": {
+      "status": "pass",
+      "syscall_events": 75,
+      "raw_trace_sha256": "11072d033799d8ae683a0ba80d0e27830b8f1e295cc23129bf8ec5571d85fae7"
+    },
+    "dynamic.ipc_epoll": {
+      "status": "pass",
+      "syscall_events": 56,
+      "raw_trace_sha256": "190d4a5be90919511ad696cae2da1fb04afe15c0ad5c486809082fc4c6bf47a6"
+    },
+    "dynamic.mmap_cow": {
+      "status": "pass",
+      "syscall_events": 58,
+      "raw_trace_sha256": "40d4403483d97cb21eb9ac975e06144285c2492d07137754b347a1bb73d12c6f"
+    },
+    "dynamic.process": {
+      "status": "pass",
+      "syscall_events": 118,
+      "raw_trace_sha256": "a78d880366381f5e1822dbd778df17fa5fd0946b1a05c8cd217a51f678558b83"
+    },
+    "dynamic.robust_owner_death": {
+      "status": "pass",
+      "syscall_events": 52,
+      "raw_trace_sha256": "b81ccc226716f4962da04e2daba948b5cde6b809225379e2cfd605c961bb481c"
+    },
+    "dynamic.scm_rights": {
+      "status": "pass",
+      "syscall_events": 69,
+      "raw_trace_sha256": "0bda50058cb2261fd499e846ab8a5c7ef3efeeae22e84091ad24ab93abd8fd35"
+    },
+    "dynamic.smoke": {
+      "status": "pass",
+      "syscall_events": 58,
+      "raw_trace_sha256": "f0f7ba475d69f79ba430fe25d96b447e0086c74b7f329d8ce079b21c4d883885"
+    },
+    "dynamic.threads_futex": {
+      "status": "pass",
+      "syscall_events": 95,
+      "raw_trace_sha256": "04737aca78da27b5f5abe8960dbaec7796059e9c8aba9935a51937bb6d5f4086"
+    },
+    "dynamic.uds_peercred": {
+      "status": "pass",
+      "syscall_events": 72,
+      "raw_trace_sha256": "0693a4dff0bcd2885bb79db448ce4ddba01e26d5274b1f794f7092c99cb88341"
+    },
+    "sqlite_dynamic.sqlite_wal_elf": {
+      "status": "pass",
+      "syscall_events": 1105,
+      "raw_trace_sha256": "dcf30f75a1b3dadefba87766f225a2bced6fee8faeabcd52f81f260e563e3475"
+    },
+    "sqlite_static.sqlite_wal_elf": {
+      "status": "pass",
+      "syscall_events": 1060,
+      "raw_trace_sha256": "f816ddba1a32244471fec8d070ab6490a3b73b7b09b8b218179d8211179ca6bb"
+    },
+    "static.async_fd": {
+      "status": "pass",
+      "syscall_events": 30,
+      "raw_trace_sha256": "518e3b1b34c56ea0a430907169809c10fc2646859b858e07e09850965baf9a97"
+    },
+    "static.cloexec": {
+      "status": "pass",
+      "syscall_events": 43,
+      "raw_trace_sha256": "9f9f6cf00c902ee7b66197a6b1a4e87a7de2e212bc8880e07e0076c341272a1e"
+    },
+    "static.errno": {
+      "status": "pass",
+      "syscall_events": 21,
+      "raw_trace_sha256": "686b66a3c6390a17c64923040af3e146c620b60315fcf5ec84f2f26585bcb4f6"
+    },
+    "static.fd_limit": {
+      "status": "pass",
+      "syscall_events": 85,
+      "raw_trace_sha256": "3f6cfb6ce64618236e5883395e1afab7c348204690d37db0cc20ae9d935ecae3"
+    },
+    "static.file_lock": {
+      "status": "pass",
+      "syscall_events": 46,
+      "raw_trace_sha256": "5712ab18a8aef510f8121858e75d1383265eb35f5d0a33a7fb0098480b5d812d"
+    },
+    "static.ipc_epoll": {
+      "status": "pass",
+      "syscall_events": 27,
+      "raw_trace_sha256": "cfb3318073e2d21d4bb168f7d8332d94ade15d443f4b0f5da8fdb4e851bcd3d7"
+    },
+    "static.mmap_cow": {
+      "status": "pass",
+      "syscall_events": 29,
+      "raw_trace_sha256": "d21ef691e3561adacbc8ff9b36a28336a5613e86fd85fa70eb6154c00b759832"
+    },
+    "static.process": {
+      "status": "pass",
+      "syscall_events": 57,
+      "raw_trace_sha256": "eafced2ffd7221c0117eeeab5d8809e02242e92c524608b463c96e8699905a50"
+    },
+    "static.robust_owner_death": {
+      "status": "pass",
+      "syscall_events": 23,
+      "raw_trace_sha256": "9595d378f498c20aa623400a79127d75862a2987ce4658cfd72b9483f9f25c2e"
+    },
+    "static.scm_rights": {
+      "status": "pass",
+      "syscall_events": 40,
+      "raw_trace_sha256": "827d75f8d737a71b35d793816df9b72ce66bc259ffa3c62243e650a8cc854c3d"
+    },
+    "static.smoke": {
+      "status": "pass",
+      "syscall_events": 29,
+      "raw_trace_sha256": "3c2d7ec192477ecbeafa0241c1e0dc415ce8eaab3c83dc679e6a0628ccda23f5"
+    },
+    "static.threads_futex": {
+      "status": "pass",
+      "syscall_events": 66,
+      "raw_trace_sha256": "3a3b728f0e610f165f41be05b040e486c57507efdbcf46d9edd879af9778b1f8"
+    },
+    "static.uds_peercred": {
+      "status": "pass",
+      "syscall_events": 43,
+      "raw_trace_sha256": "7b1e83809f9b57b7740853a38a361fe183b3524e3e8947492c2a722c8971506f"
+    }
+  },
+  "aggregate_syscalls": [
+    {
+      "number": 0,
+      "name": "read",
+      "count": 63
+    },
+    {
+      "number": 1,
+      "name": "write",
+      "count": 46
+    },
+    {
+      "number": 3,
+      "name": "close",
+      "count": 209
+    },
+    {
+      "number": 5,
+      "name": "fstat",
+      "count": 193
+    },
+    {
+      "number": 8,
+      "name": "lseek",
+      "count": 6
+    },
+    {
+      "number": 9,
+      "name": "mmap",
+      "count": 224
+    },
+    {
+      "number": 10,
+      "name": "mprotect",
+      "count": 78
+    },
+    {
+      "number": 11,
+      "name": "munmap",
+      "count": 18
+    },
+    {
+      "number": 12,
+      "name": "brk",
+      "count": 134
+    },
+    {
+      "number": 13,
+      "name": "rt_sigaction",
+      "count": 4
+    },
+    {
+      "number": 14,
+      "name": "rt_sigprocmask",
+      "count": 100
+    },
+    {
+      "number": 15,
+      "name": "rt_sigreturn",
+      "count": 2
+    },
+    {
+      "number": 17,
+      "name": "pread64",
+      "count": 146
+    },
+    {
+      "number": 18,
+      "name": "pwrite64",
+      "count": 448
+    },
+    {
+      "number": 21,
+      "name": "access",
+      "count": 19
+    },
+    {
+      "number": 26,
+      "name": "msync",
+      "count": 6
+    },
+    {
+      "number": 28,
+      "name": "madvise",
+      "count": 8
+    },
+    {
+      "number": 39,
+      "name": "getpid",
+      "count": 42
+    },
+    {
+      "number": 41,
+      "name": "socket",
+      "count": 4
+    },
+    {
+      "number": 42,
+      "name": "connect",
+      "count": 2
+    },
+    {
+      "number": 45,
+      "name": "recvfrom",
+      "count": 2
+    },
+    {
+      "number": 46,
+      "name": "sendmsg",
+      "count": 2
+    },
+    {
+      "number": 47,
+      "name": "recvmsg",
+      "count": 2
+    },
+    {
+      "number": 48,
+      "name": "shutdown",
+      "count": 4
+    },
+    {
+      "number": 49,
+      "name": "bind",
+      "count": 2
+    },
+    {
+      "number": 50,
+      "name": "listen",
+      "count": 2
+    },
+    {
+      "number": 53,
+      "name": "socketpair",
+      "count": 4
+    },
+    {
+      "number": 55,
+      "name": "getsockopt",
+      "count": 2
+    },
+    {
+      "number": 56,
+      "name": "clone",
+      "count": 22
+    },
+    {
+      "number": 61,
+      "name": "wait4",
+      "count": 24
+    },
+    {
+      "number": 62,
+      "name": "kill",
+      "count": 2
+    },
+    {
+      "number": 72,
+      "name": "fcntl",
+      "count": 875
+    },
+    {
+      "number": 73,
+      "name": "flock",
+      "count": 8
+    },
+    {
+      "number": 74,
+      "name": "fsync",
+      "count": 6
+    },
+    {
+      "number": 75,
+      "name": "fdatasync",
+      "count": 120
+    },
+    {
+      "number": 77,
+      "name": "ftruncate",
+      "count": 20
+    },
+    {
+      "number": 82,
+      "name": "rename",
+      "count": 2
+    },
+    {
+      "number": 87,
+      "name": "unlink",
+      "count": 34
+    },
+    {
+      "number": 93,
+      "name": "fchown",
+      "count": 28
+    },
+    {
+      "number": 102,
+      "name": "getuid",
+      "count": 2
+    },
+    {
+      "number": 104,
+      "name": "getgid",
+      "count": 2
+    },
+    {
+      "number": 107,
+      "name": "geteuid",
+      "count": 28
+    },
+    {
+      "number": 158,
+      "name": "arch_prctl",
+      "count": 34
+    },
+    {
+      "number": 202,
+      "name": "futex",
+      "count": 14
+    },
+    {
+      "number": 218,
+      "name": "set_tid_address",
+      "count": 34
+    },
+    {
+      "number": 230,
+      "name": "clock_nanosleep",
+      "count": 10
+    },
+    {
+      "number": 232,
+      "name": "epoll_wait",
+      "count": 6
+    },
+    {
+      "number": 233,
+      "name": "epoll_ctl",
+      "count": 6
+    },
+    {
+      "number": 257,
+      "name": "openat",
+      "count": 226
+    },
+    {
+      "number": 262,
+      "name": "newfstatat",
+      "count": 177
+    },
+    {
+      "number": 267,
+      "name": "readlinkat",
+      "count": 17
+    },
+    {
+      "number": 273,
+      "name": "set_robust_list",
+      "count": 64
+    },
+    {
+      "number": 283,
+      "name": "timerfd_create",
+      "count": 2
+    },
+    {
+      "number": 286,
+      "name": "timerfd_settime",
+      "count": 2
+    },
+    {
+      "number": 288,
+      "name": "accept4",
+      "count": 2
+    },
+    {
+      "number": 290,
+      "name": "eventfd2",
+      "count": 2
+    },
+    {
+      "number": 291,
+      "name": "epoll_create1",
+      "count": 4
+    },
+    {
+      "number": 293,
+      "name": "pipe2",
+      "count": 4
+    },
+    {
+      "number": 302,
+      "name": "prlimit64",
+      "count": 38
+    },
+    {
+      "number": 318,
+      "name": "getrandom",
+      "count": 31
+    },
+    {
+      "number": 334,
+      "name": "rseq",
+      "count": 42
+    },
+    {
+      "number": 435,
+      "name": "clone3",
+      "count": 8
+    }
+  ],
+  "aggregate_internal_restarts": [
+    {
+      "number": 61,
+      "name": "wait4",
+      "internal_code": 512,
+      "count": 2
+    }
+  ],
+  "aggregate_syscall_errno": [
+    {
+      "number": 0,
+      "name": "read",
+      "errno": 11,
+      "errno_name": "EAGAIN",
+      "count": 2
+    },
+    {
+      "number": 3,
+      "name": "close",
+      "errno": 9,
+      "errno_name": "EBADF",
+      "count": 2
+    },
+    {
+      "number": 21,
+      "name": "access",
+      "errno": 2,
+      "errno_name": "ENOENT",
+      "count": 19
+    },
+    {
+      "number": 72,
+      "name": "fcntl",
+      "errno": 9,
+      "errno_name": "EBADF",
+      "count": 4
+    },
+    {
+      "number": 72,
+      "name": "fcntl",
+      "errno": 11,
+      "errno_name": "EAGAIN",
+      "count": 21
+    },
+    {
+      "number": 73,
+      "name": "flock",
+      "errno": 11,
+      "errno_name": "EAGAIN",
+      "count": 2
+    },
+    {
+      "number": 202,
+      "name": "futex",
+      "errno": 11,
+      "errno_name": "EAGAIN",
+      "count": 2
+    },
+    {
+      "number": 257,
+      "name": "openat",
+      "errno": 2,
+      "errno_name": "ENOENT",
+      "count": 53
+    },
+    {
+      "number": 257,
+      "name": "openat",
+      "errno": 17,
+      "errno_name": "EEXIST",
+      "count": 2
+    },
+    {
+      "number": 257,
+      "name": "openat",
+      "errno": 24,
+      "errno_name": "EMFILE",
+      "count": 2
+    },
+    {
+      "number": 262,
+      "name": "newfstatat",
+      "errno": 2,
+      "errno_name": "ENOENT",
+      "count": 83
+    }
+  ]
+}

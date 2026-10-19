@@ -1,0 +1,78 @@
+{
+  "schema": 1,
+  "kind": "A04_SQLITE_PRIVATE_SOURCE_BUILD_HOST_RECHECK",
+  "date": "2026-10-16",
+  "profile": "linux-debian13-x86_64",
+  "classification": "host_dependency_recheck; no kernel ABI conclusion",
+  "input": {
+    "source_package": "libsqlite3-sys",
+    "source_version": "0.37.0",
+    "source_files": {
+      "sqlite3.c": {
+        "sha256": "9512509b1bccb7461f79bea8aad6280ae4699e925fa4804381b71f59e7efb0c5",
+        "size": 9390466
+      },
+      "sqlite3.h": {
+        "sha256": "19585c8b5230e9d4f223bf31b709ece7b6a0bb3faf00d8310625d8e58cda1b1d",
+        "size": 671786
+      }
+    },
+    "source_origin": "Cargo registry source for the locked Rust workload dependency; no system package was installed",
+    "build_command": "cc -O2 -std=c11 -I<libsqlite3-sys-0.37.0>/sqlite3 -c sqlite3.c; cc -O2 -std=c11 -I<libsqlite3-sys-0.37.0>/sqlite3 <probe> sqlite3.o -lpthread -ldl -o <sqlite-static>; cc -O2 -std=c11 -I<libsqlite3-sys-0.37.0>/sqlite3 <probe> sqlite3.o -lpthread -ldl -o <sqlite-dynamic>",
+    "system_dependency_gap": "sqlite3.h and the libsqlite3.so linker symlink are absent in the managed cloud image"
+  },
+  "execution": {
+    "command": "python3 tests/workloads/linux/run.py --rust auto --binary-dir NEW_PRIVATE_DIR --output NEW_PRIVATE_REPORT",
+    "report_sha256": "0053fb09b32431843faac391732fe948d90beb3f3eea15ae2acfb1ed8f94aac2",
+    "counts": {
+      "pass": 28,
+      "fail": 4,
+      "not_run": 0
+    },
+    "passed_sqlite_cases": [
+      "sqlite_dynamic.sqlite_wal_elf",
+      "sqlite_static.sqlite_wal_elf",
+      "sqlite_wal"
+    ],
+    "passed_sqlite_facts": {
+      "journal_mode": "wal",
+      "concurrent_commits": 40,
+      "rows_after_reopen": 41,
+      "crash_exit_code": 37,
+      "uncommitted_visible": false,
+      "committed_visible": true,
+      "integrity_check": "ok",
+      "checkpoint_busy": 0
+    },
+    "remaining_failures": [
+      {
+        "case": "dynamic.uds_peercred",
+        "exit_code": 20,
+        "reason": "pathname AF_UNIX policy prevents bind"
+      },
+      {
+        "case": "static.uds_peercred",
+        "exit_code": 20,
+        "reason": "pathname AF_UNIX policy prevents bind"
+      },
+      {
+        "case": "uds_path",
+        "exit_code": 1,
+        "reason": "managed host returned EPERM for pathname AF_UNIX"
+      },
+      {
+        "case": "rust_tokio",
+        "exit_code": 1,
+        "reason": "managed host returned EPERM for pathname AF_UNIX"
+      }
+    ]
+  },
+  "qualification": {
+    "sqlite_source_build_verified": true,
+    "sqlite_wal_runtime_verified_on_original_linux": true,
+    "guest_execution_verified": false,
+    "kernel_compatibility_claimed": false,
+    "system_package_install_attempted": false,
+    "power_failure_durability_verified": false
+  }
+}
