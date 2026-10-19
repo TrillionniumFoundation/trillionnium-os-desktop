@@ -1,0 +1,15 @@
+diff --git a/scripts/test_hepta_ci_exec.py b/scripts/test_hepta_ci_exec.py
+index 8989e05..c93426f 100644
+--- a/scripts/test_hepta_ci_exec.py
++++ b/scripts/test_hepta_ci_exec.py
+@@ -276,6 +276,10 @@ class WorkflowCommandBindingTests(GitExecutionFixture):
+             RUNNER.with_name("hepta_ci_dependencies.py"),
+             self.repo / "scripts/hepta_ci_dependencies.py",
+         )
++        shutil.copyfile(
++            RUNNER.with_name("hepta_ci_module_paths.py"),
++            self.repo / "scripts/hepta_ci_module_paths.py",
++        )
+         (self.repo / "codex-rs/Cargo.toml").write_text(
+             '[workspace]\nmembers=["one", "two", "unrelated"]\n'
+         )

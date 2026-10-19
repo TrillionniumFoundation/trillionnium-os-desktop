@@ -1,0 +1,23 @@
+{
+  "schema": "r12.hepta.remaining-failure-annotation-attempt.v1",
+  "source_head": "89933fdc84ed1151f04609a1881ab24aaef119b4",
+  "purpose": "Read concrete diagnostics for two observed failures without rerunning or changing checks",
+  "attempts": [
+    {
+      "job_id": 118078508737,
+      "response": {
+        "error": "HTTPError: 400: GitHub Fetch URL is not an allowed public GitHub repository or search endpoint. (Response: None)",
+        "error_code": "INVALID_ARGUMENT"
+      }
+    },
+    {
+      "job_id": 118078509363,
+      "response": {
+        "error": "HTTPError: 400: GitHub Fetch URL is not an allowed public GitHub repository or search endpoint. (Response: None)",
+        "error_code": "INVALID_ARGUMENT"
+      }
+    }
+  ],
+  "result": "Connector does not support these annotation endpoints; no diagnostic cause inferred.",
+  "no_permission_or_approval_rejection": true
+}

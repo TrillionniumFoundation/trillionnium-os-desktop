@@ -1,0 +1,1068 @@
+{
+  "schema": "a06.independent.seven-negative-review.v1",
+  "started_at": "2026-10-19T14:08:04.296435+00:00",
+  "head": "104204016dcdea57ab73c091b1edd13008ae9a19",
+  "tree": "179b076747d19c3e07ee19a665e3968c33c598ce",
+  "fixed_original_runner_sha256": "2433f1b130997fbbb6b5e0dd4af67e994babae97aac334df33abf0e369c3fbc4",
+  "source_files": 7346,
+  "source_paths_modes_and_blobs_match_exact_git_tree": true,
+  "candidate_tree_independently_recomputed": "179b076747d19c3e07ee19a665e3968c33c598ce",
+  "new_lifecycle_tests": [
+    "aster_core::process::process::image::tests::closed_image_cannot_be_prepared_or_scheduled_for_the_first_time",
+    "aster_core::process::process::image::tests::closing_fences_old_sessions_before_image_replacement",
+    "aster_core::process::process::image::tests::epoch_exhaustion_closes_the_real_process_without_wraparound",
+    "aster_core::process::process::image::tests::failed_irreversible_replacement_never_reopens_the_old_image",
+    "aster_core::process::process::image::tests::nonce_exhaustion_is_sticky_for_the_real_process_image",
+    "aster_core::process::process::image::tests::repeated_opens_share_one_process_image_namespace",
+    "aster_core::process::process::image::tests::same_process_tasks_observe_one_live_image",
+    "aster_core::process::process::image::tests::separately_allocated_process_rejects_foreign_image_key",
+    "aster_core::process::process::image::tests::successful_replacement_has_new_epoch_and_fresh_namespace",
+    "aster_core::process::process::init_proc::tests::dropping_unconsumed_preparation_closes_only_its_image",
+    "aster_core::process::process::init_proc::tests::initial_resume_claim_is_consumed_exactly_once",
+    "aster_core::process::process::init_proc::tests::preparation_rejects_a_foreign_main_task",
+    "aster_core::process::process::init_proc::tests::preparation_rejects_a_foreign_process_allocation",
+    "aster_core::process::process::init_proc::tests::prepared_exit_group_state_cannot_resume",
+    "aster_core::process::process::init_proc::tests::prepared_initial_process_cannot_use_the_ordinary_first_run",
+    "aster_core::process::process::init_proc::tests::prepared_old_epoch_cannot_resume_or_close_a_replacement_image",
+    "aster_core::process::process::init_proc::tests::resume_rejects_a_foreign_task_pin",
+    "aster_core::process::process::init_proc::tests::resume_rejects_replaced_vmar_and_cancels_the_prepared_image"
+  ],
+  "old_220_reference_sha256": "6a5f40808d290ee0d6832e47f7c7062937f2157a3c3dc85251535a355311b718",
+  "independent_parser_sha256": "e526367ef05afde02d849a7ae98324d326b9c0e0fd94577691d7acb56d8dfee3",
+  "independent_constant_and_tree_helper_sha256": "81609f09809d5b9f9d638f625a98f86d128b95c014cf66011c4b28eb19c9510e",
+  "method": "Independent serial parser plus restricted AST constants; original runner not imported or executed. Only fixed diffs applied to disposable non-repository text copies.",
+  "kind": "independent official original seven controls",
+  "controls": [
+    {
+      "control": "owner-current-slot",
+      "review_passed": true,
+      "complete_tests": 238,
+      "passed": 235,
+      "failed": 3,
+      "expected_exact_failed_names": [
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::owner_retention_regressions::controller_publication_charges_the_entire_prefix_to_the_old_incarnation",
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::owner_retention_regressions::exited_task_resumes_its_retained_incarnation_after_replacement_and_reap",
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::owner_retention_regressions::retained_leaf_debits_its_original_ancestor_chain_after_parent_replacement"
+      ],
+      "new_lifecycle_18_all_passed": true,
+      "filtered": 0,
+      "soft_skipped": 0,
+      "original_runner_minimum_unchanged": 189,
+      "raw_qemu_exit": 65,
+      "original_gate_exit": 1,
+      "same_toolchain_osdk_source_path_qemu_profile_and_lock_as_green": true,
+      "candidate_restored_exactly": true,
+      "source_files": 7346,
+      "negative_recorded_head": "79f17c4f32dcffb678102e4a06bd1e29fcc56877",
+      "negative_tree_recomputed": "2543a2df21401a1a2d9b558c9e125a1c28f1d5d6",
+      "only_changed_path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs",
+      "declared_patch_sha256": "04b19a7a89b8f8591d9a18766390167201e999a9617febcd9d0c70902005f1bd",
+      "applied_patch_sha256": "2a5baec492d08c866e55d05d803a6e7d1c80b2bcfd50b0fdb22f6f18f314f85f",
+      "both_patches_verified_on_disposable_text_copy": true,
+      "negative_file_map_matches_independent_local_commit": true,
+      "local_commit_comparison_method": "Complete file map equals independently Git-verified local mutation",
+      "retained_elf_records": [
+        {
+          "recorded_sha256": "1089175e2e52742998c554e1751f3cf7d531d30ed7af1a94f1e0f2af94c3343d",
+          "bytes": 9984704,
+          "content_hash_independently_verified": false,
+          "method": "ZIP member length and 64-byte ELF header only; large ELF not extracted or read in full.",
+          "path_or_member": "_temp/a06-owner-negative/green-core-kernel.elf",
+          "elf_class": 64,
+          "e_machine": 3
+        },
+        {
+          "recorded_sha256": "9ff65662fdec0562702f1678d36c5f42062940f61ea4289552abad88a4b5e542",
+          "bytes": 9983928,
+          "content_hash_independently_verified": false,
+          "method": "ZIP member length and 64-byte ELF header only; large ELF not extracted or read in full.",
+          "path_or_member": "_temp/a06-owner-negative/negative-control-kernel.elf",
+          "elf_class": 64,
+          "e_machine": 3
+        }
+      ]
+    },
+    {
+      "control": "clocksource-drop-fraction",
+      "review_passed": true,
+      "complete_tests": 238,
+      "passed": 234,
+      "failed": 4,
+      "expected_exact_failed_names": [
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::fragmented_three_ghz_runtime_keeps_absolute_endpoint_precision",
+        "aster_core::vdso::clocksource_regressions::fragmented_refreshes_preserve_fractional_time_and_endpoint_differences",
+        "aster_core::vdso::clocksource_regressions::full_width_vdso_fraction_survives_second_rollover_and_checks_realtime_overflow",
+        "aster_core::vdso::clocksource_regressions::vdso_and_kernel_share_the_fractional_phase_at_the_next_nanosecond"
+      ],
+      "new_lifecycle_18_all_passed": true,
+      "filtered": 0,
+      "soft_skipped": 0,
+      "original_runner_minimum_unchanged": 201,
+      "raw_qemu_exit": 65,
+      "original_gate_exit": 1,
+      "same_toolchain_osdk_source_path_qemu_profile_and_lock_as_green": true,
+      "candidate_restored_exactly": true,
+      "source_files": 7346,
+      "negative_recorded_head": "6cf8b7560cdfa83b9009f594adfbc2b4d34ed3e8",
+      "negative_tree_recomputed": "068c5536196a2a71fb87c24a4c98e56221332044",
+      "only_changed_path": "kernel/asterinas/kernel/core/comps/time/src/clocksource.rs",
+      "declared_patch_sha256": "6aeb53178b4facbe105c7fd4ff3e8086d5a9b57f2715f80781efc2764338a442",
+      "applied_patch_sha256": "fd894b672f2de74c0d837be063710474b4cd3b5feed819a022766f5a499c4207",
+      "both_patches_verified_on_disposable_text_copy": true,
+      "negative_file_map_matches_independent_local_commit": true,
+      "local_commit_comparison_method": "Complete file map equals independently Git-verified local mutation",
+      "retained_elf_records": [
+        {
+          "recorded_sha256": "1089175e2e52742998c554e1751f3cf7d531d30ed7af1a94f1e0f2af94c3343d",
+          "bytes": 9984704,
+          "content_hash_independently_verified": false,
+          "method": "ZIP member length and 64-byte ELF header only; large ELF not extracted or read in full.",
+          "path_or_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/green-core-kernel.elf",
+          "elf_class": 64,
+          "e_machine": 3
+        },
+        {
+          "recorded_sha256": "01a70fdfe2bba911dbaa27e4ef89398b4fcb2f969e830426f8616123b5ba2748",
+          "bytes": 9984488,
+          "content_hash_independently_verified": false,
+          "method": "ZIP member length and 64-byte ELF header only; large ELF not extracted or read in full.",
+          "path_or_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/negative-control-kernel.elf",
+          "elf_class": 64,
+          "e_machine": 3
+        }
+      ]
+    },
+    {
+      "control": "vdso-drop-fraction",
+      "review_passed": true,
+      "complete_tests": 238,
+      "passed": 235,
+      "failed": 3,
+      "expected_exact_failed_names": [
+        "aster_core::vdso::clocksource_regressions::full_width_vdso_fraction_survives_second_rollover_and_checks_realtime_overflow",
+        "aster_core::vdso::clocksource_regressions::mapped_vdso_publishes_the_phase_and_fault_mode_under_the_existing_sequence",
+        "aster_core::vdso::clocksource_regressions::vdso_and_kernel_share_the_fractional_phase_at_the_next_nanosecond"
+      ],
+      "new_lifecycle_18_all_passed": true,
+      "filtered": 0,
+      "soft_skipped": 0,
+      "original_runner_minimum_unchanged": 201,
+      "raw_qemu_exit": 65,
+      "original_gate_exit": 1,
+      "same_toolchain_osdk_source_path_qemu_profile_and_lock_as_green": true,
+      "candidate_restored_exactly": true,
+      "source_files": 7346,
+      "negative_recorded_head": "fd1981df1f8087fb328e934b1f196a7e2a3c1812",
+      "negative_tree_recomputed": "e354e2f5d90bb11d8201b9344e66d84fc279ecc8",
+      "only_changed_path": "kernel/asterinas/kernel/core/src/vdso.rs",
+      "declared_patch_sha256": "a1e116c7af6a57add22693b4fa985b8bb45809df3ad6765b52ea8efa979975c9",
+      "applied_patch_sha256": "39454a60f5378cdc35cd8ecd338ba7869dc798d74c458950b584a3f11887aff0",
+      "both_patches_verified_on_disposable_text_copy": true,
+      "negative_file_map_matches_independent_local_commit": true,
+      "local_commit_comparison_method": "Complete file map equals independently Git-verified local mutation",
+      "retained_elf_records": [
+        {
+          "recorded_sha256": "1089175e2e52742998c554e1751f3cf7d531d30ed7af1a94f1e0f2af94c3343d",
+          "bytes": 9984704,
+          "content_hash_independently_verified": false,
+          "method": "ZIP member length and 64-byte ELF header only; large ELF not extracted or read in full.",
+          "path_or_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/green-core-kernel.elf",
+          "elf_class": 64,
+          "e_machine": 3
+        },
+        {
+          "recorded_sha256": "b3d6daf3c6370add0db6fd7caa36bfa1d7bc085daf9d4ef718c8865b296da6a3",
+          "bytes": 9985560,
+          "content_hash_independently_verified": false,
+          "method": "ZIP member length and 64-byte ELF header only; large ELF not extracted or read in full.",
+          "path_or_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/negative-control-kernel.elf",
+          "elf_class": 64,
+          "e_machine": 3
+        }
+      ]
+    },
+    {
+      "control": "vdso-skip-fault-mode",
+      "review_passed": true,
+      "complete_tests": 238,
+      "passed": 237,
+      "failed": 1,
+      "expected_exact_failed_names": [
+        "aster_core::vdso::clocksource_regressions::mapped_vdso_publishes_the_phase_and_fault_mode_under_the_existing_sequence"
+      ],
+      "new_lifecycle_18_all_passed": true,
+      "filtered": 0,
+      "soft_skipped": 0,
+      "original_runner_minimum_unchanged": 201,
+      "raw_qemu_exit": 65,
+      "original_gate_exit": 1,
+      "same_toolchain_osdk_source_path_qemu_profile_and_lock_as_green": true,
+      "candidate_restored_exactly": true,
+      "source_files": 7346,
+      "negative_recorded_head": "76771ececaed1cc8cd508597d097076f33e9449e",
+      "negative_tree_recomputed": "3ca099c1fc383e4ac9228653b80b74bf8f95311e",
+      "only_changed_path": "kernel/asterinas/kernel/core/src/vdso.rs",
+      "declared_patch_sha256": "da1f7c360136bfe330cba58acef4cf894d423043e1b3b9790958b923d4fcd452",
+      "applied_patch_sha256": "a68524832c47c74e3fea60e58ceccb1d44e31ae4020d5e7f1014f9e4e1c6d0e0",
+      "both_patches_verified_on_disposable_text_copy": true,
+      "negative_file_map_matches_independent_local_commit": true,
+      "local_commit_comparison_method": "Complete file map equals independently Git-verified local mutation",
+      "retained_elf_records": [
+        {
+          "recorded_sha256": "1089175e2e52742998c554e1751f3cf7d531d30ed7af1a94f1e0f2af94c3343d",
+          "bytes": 9984704,
+          "content_hash_independently_verified": false,
+          "method": "ZIP member length and 64-byte ELF header only; large ELF not extracted or read in full.",
+          "path_or_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/green-core-kernel.elf",
+          "elf_class": 64,
+          "e_machine": 3
+        },
+        {
+          "recorded_sha256": "1d54166df36adadccf6c8ec54a7a2abac9736162d594c99d0da937c4897f4046",
+          "bytes": 9989784,
+          "content_hash_independently_verified": false,
+          "method": "ZIP member length and 64-byte ELF header only; large ELF not extracted or read in full.",
+          "path_or_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/negative-control-kernel.elf",
+          "elf_class": 64,
+          "e_machine": 3
+        }
+      ]
+    },
+    {
+      "control": "handoff-drop-tail",
+      "review_passed": true,
+      "complete_tests": 238,
+      "passed": 234,
+      "failed": 4,
+      "expected_exact_failed_names": [
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::exiting_dequeue_retains_its_owner_through_selection_retries",
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::handoff_debits_the_old_window_before_rechecking_a_shared_ancestor",
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::outgoing_tail_ends_at_the_incoming_segment_start",
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::waiting_dequeue_retains_its_owner_through_selection_retries"
+      ],
+      "new_lifecycle_18_all_passed": true,
+      "filtered": 0,
+      "soft_skipped": 0,
+      "original_runner_minimum_unchanged": 201,
+      "raw_qemu_exit": 65,
+      "original_gate_exit": 1,
+      "same_toolchain_osdk_source_path_qemu_profile_and_lock_as_green": true,
+      "candidate_restored_exactly": true,
+      "source_files": 7346,
+      "negative_recorded_head": "07b30ea67632cf98ef30b3bac009b71cdc00ef17",
+      "negative_tree_recomputed": "175193310de0303c4e4c0e3f1e30c0b29195c560",
+      "only_changed_path": "kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs",
+      "declared_patch_sha256": "2e9a87cdf9044f29dbcb8c932e72079eaf3fc9ecde791c9627b45b9b06257ffc",
+      "applied_patch_sha256": "2beb0bfdfab046c75f154e389573a00aacec1f9ee5435a61dd0b1c7c06287cce",
+      "both_patches_verified_on_disposable_text_copy": true,
+      "negative_file_map_matches_independent_local_commit": true,
+      "local_commit_comparison_method": "Complete file map equals independently Git-verified local mutation",
+      "retained_elf_records": [
+        {
+          "recorded_sha256": "1089175e2e52742998c554e1751f3cf7d531d30ed7af1a94f1e0f2af94c3343d",
+          "bytes": 9984704,
+          "content_hash_independently_verified": false,
+          "method": "ZIP member length and 64-byte ELF header only; large ELF not extracted or read in full.",
+          "path_or_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/green-core-kernel.elf",
+          "elf_class": 64,
+          "e_machine": 3
+        },
+        {
+          "recorded_sha256": "80164df1e4c30677230074304260978f467f4c551ba97f21cf71269c41fb5673",
+          "bytes": 9989136,
+          "content_hash_independently_verified": false,
+          "method": "ZIP member length and 64-byte ELF header only; large ELF not extracted or read in full.",
+          "path_or_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/negative-control-kernel.elf",
+          "elf_class": 64,
+          "e_machine": 3
+        }
+      ]
+    },
+    {
+      "control": "handoff-eligibility-first",
+      "review_passed": true,
+      "complete_tests": 238,
+      "passed": 237,
+      "failed": 1,
+      "expected_exact_failed_names": [
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::handoff_debits_the_old_window_before_rechecking_a_shared_ancestor"
+      ],
+      "new_lifecycle_18_all_passed": true,
+      "filtered": 0,
+      "soft_skipped": 0,
+      "original_runner_minimum_unchanged": 201,
+      "raw_qemu_exit": 65,
+      "original_gate_exit": 1,
+      "same_toolchain_osdk_source_path_qemu_profile_and_lock_as_green": true,
+      "candidate_restored_exactly": true,
+      "source_files": 7346,
+      "negative_recorded_head": "64133a194a53d322b8435ae89005978eb532e7d6",
+      "negative_tree_recomputed": "f68e54fb7007274438cdc31bdfdcc3297d7c72d2",
+      "only_changed_path": "kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs",
+      "declared_patch_sha256": "8a90266278c3610c337e9ce780130e3a179ccce6942bbd4db05c53cfd805546c",
+      "applied_patch_sha256": "b9be6102c3a7c6008c33abf2b374aad6de8ca1876753e1de39436b9c7a458810",
+      "both_patches_verified_on_disposable_text_copy": true,
+      "negative_file_map_matches_independent_local_commit": true,
+      "local_commit_comparison_method": "Complete file map equals independently Git-verified local mutation",
+      "retained_elf_records": [
+        {
+          "recorded_sha256": "1089175e2e52742998c554e1751f3cf7d531d30ed7af1a94f1e0f2af94c3343d",
+          "bytes": 9984704,
+          "content_hash_independently_verified": false,
+          "method": "ZIP member length and 64-byte ELF header only; large ELF not extracted or read in full.",
+          "path_or_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/green-core-kernel.elf",
+          "elf_class": 64,
+          "e_machine": 3
+        },
+        {
+          "recorded_sha256": "b01840b9b02ce0f4055d6a7855d4dd09c8d9d69bb41ca30e8501ca5907eb4eed",
+          "bytes": 9984696,
+          "content_hash_independently_verified": false,
+          "method": "ZIP member length and 64-byte ELF header only; large ELF not extracted or read in full.",
+          "path_or_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/negative-control-kernel.elf",
+          "elf_class": 64,
+          "e_machine": 3
+        }
+      ]
+    },
+    {
+      "control": "dequeue-drop-owner",
+      "review_passed": true,
+      "complete_tests": 238,
+      "passed": 236,
+      "failed": 2,
+      "expected_exact_failed_names": [
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::exiting_dequeue_retains_its_owner_through_selection_retries",
+        "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::waiting_dequeue_retains_its_owner_through_selection_retries"
+      ],
+      "new_lifecycle_18_all_passed": true,
+      "filtered": 0,
+      "soft_skipped": 0,
+      "original_runner_minimum_unchanged": 201,
+      "raw_qemu_exit": 65,
+      "original_gate_exit": 1,
+      "same_toolchain_osdk_source_path_qemu_profile_and_lock_as_green": true,
+      "candidate_restored_exactly": true,
+      "source_files": 7346,
+      "negative_recorded_head": "629d06ed26ed838c56dca59b6c1728eb636f562f",
+      "negative_tree_recomputed": "9b4b49ad2c3bdb466984eaae80dfd3af8efa2001",
+      "only_changed_path": "kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs",
+      "declared_patch_sha256": "b6fc10180e9fe292249409c758151763401dddb39bb4b2851bf53f71b3c959dd",
+      "applied_patch_sha256": "f36005840444c363956bd49b6cf5805a5759a37738420f24243290b487db0484",
+      "both_patches_verified_on_disposable_text_copy": true,
+      "negative_file_map_matches_independent_local_commit": true,
+      "local_commit_comparison_method": "Complete file map equals independently Git-verified local mutation",
+      "retained_elf_records": [
+        {
+          "recorded_sha256": "1089175e2e52742998c554e1751f3cf7d531d30ed7af1a94f1e0f2af94c3343d",
+          "bytes": 9984704,
+          "content_hash_independently_verified": false,
+          "method": "ZIP member length and 64-byte ELF header only; large ELF not extracted or read in full.",
+          "path_or_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/green-core-kernel.elf",
+          "elf_class": 64,
+          "e_machine": 3
+        },
+        {
+          "recorded_sha256": "d0f06554436b44bbaf74b8ddb240857f955c47f131062c80ceb491481204bb9b",
+          "bytes": 9985304,
+          "content_hash_independently_verified": false,
+          "method": "ZIP member length and 64-byte ELF header only; large ELF not extracted or read in full.",
+          "path_or_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/negative-control-kernel.elf",
+          "elf_class": 64,
+          "e_machine": 3
+        }
+      ]
+    }
+  ],
+  "negative_failed_counts": [
+    3,
+    4,
+    3,
+    1,
+    4,
+    1,
+    2
+  ],
+  "api_record_sha256": "31514d23d8b70a2bc40c02f718502daf6e8217f7b8a2aab85419342c9aad8e25",
+  "archive": {
+    "path": "/workspace/scratch/499c7902de8e/r12-evidence/pr207-runtime-review/original.zip",
+    "sha256": "984adcb6fd87dbef0c4b68223e8bde1811a5e00a31a447c597e20810b073067d",
+    "bytes": 156126595,
+    "members": 1172,
+    "run_id": 39256580996,
+    "job_id": 118073271911,
+    "artifact_id": 12190114844
+  },
+  "all_official_mutant_file_maps_equal_git_verified_local_mutants": true,
+  "raw_archive_member_records": [
+    {
+      "path_or_member": "_temp/a06-ktest/environment.json",
+      "bytes": 2239,
+      "sha256": "d7549140c260f11dfb2a61413c2b1f41706a1f54575936b01e54fa1fa65ac0d5"
+    },
+    {
+      "path_or_member": "_temp/a06-ktest/result.json",
+      "bytes": 1005,
+      "sha256": "82e48942524cf1148cdfb8c8b7caf5567b5808af0c117abe063d1ba3521d993f"
+    },
+    {
+      "path_or_member": "_temp/a06-ktest/source-inputs.json",
+      "bytes": 1807,
+      "sha256": "f5e6fb492f869071dc0b90af2578824dd2ef9a87b82f541c857a78e25f3099a3"
+    },
+    {
+      "path_or_member": "_temp/a06-ktest/aster-core/guests/guest-001/qemu.json",
+      "bytes": 4742,
+      "sha256": "ebcc0d999242dae6553a18bc28e77669c5bbacde2d60820c4ae3fe63c5051b23"
+    },
+    {
+      "path_or_member": "_temp/a06-ktest/aster-core/guests/guest-001/serial.log",
+      "bytes": 29552,
+      "sha256": "ef03a8cf19ba7ae395a964eda936385341f460ebf68c5211eee6c5b45b4b8696"
+    },
+    {
+      "path_or_member": "_temp/a06-ktest/commands.json",
+      "bytes": 1472,
+      "sha256": "90db230b3acb3ed698f1525d3e741d2a13fefc43e8c144ecfa8fc603677a0350"
+    },
+    {
+      "path_or_member": "_temp/a06-owner-negative/result.json",
+      "bytes": 1751,
+      "sha256": "021cc822305ac76f2eaad78e1b6d2cde44c5855a9e888fe48abff4f572400e02"
+    },
+    {
+      "path_or_member": "_temp/a06-owner-negative/candidate-source-before.json",
+      "bytes": 2055615,
+      "sha256": "49c706d9fad0cd974b9b86d560006fd503d7889d3c6441bdd6cb67b94a2c8a22"
+    },
+    {
+      "path_or_member": "_temp/a06-owner-negative/candidate-source-after.json",
+      "bytes": 2055615,
+      "sha256": "49c706d9fad0cd974b9b86d560006fd503d7889d3c6441bdd6cb67b94a2c8a22"
+    },
+    {
+      "path_or_member": "_temp/a06-owner-negative/negative-source-before.json",
+      "bytes": 2055615,
+      "sha256": "bccd5bb06cf244792dcb1684eb07ef043734198b2f59fdcfeddb4f18858378c5"
+    },
+    {
+      "path_or_member": "_temp/a06-owner-negative/negative-source-after.json",
+      "bytes": 2055615,
+      "sha256": "bccd5bb06cf244792dcb1684eb07ef043734198b2f59fdcfeddb4f18858378c5"
+    },
+    {
+      "path_or_member": "_temp/a06-owner-negative/negative-archive-source.json",
+      "bytes": 2055599,
+      "sha256": "801294cc0e93f5c36725cfacf34282f8c47cd665a0b412c513f3674cd59ff41c"
+    },
+    {
+      "path_or_member": "_temp/a06-owner-negative/declared-negative-control.patch",
+      "bytes": 980,
+      "sha256": "04b19a7a89b8f8591d9a18766390167201e999a9617febcd9d0c70902005f1bd"
+    },
+    {
+      "path_or_member": "_temp/a06-owner-negative/applied-negative-control.patch",
+      "bytes": 1034,
+      "sha256": "2a5baec492d08c866e55d05d803a6e7d1c80b2bcfd50b0fdb22f6f18f314f85f"
+    },
+    {
+      "path_or_member": "_temp/a06-owner-negative/gate/environment.json",
+      "bytes": 2238,
+      "sha256": "2f8e9b17ee55649e77e6747faa9d9f7e92c821eaa8292039d466acaa7da368c8"
+    },
+    {
+      "path_or_member": "_temp/a06-owner-negative/gate/source-inputs.json",
+      "bytes": 1807,
+      "sha256": "f5e6fb492f869071dc0b90af2578824dd2ef9a87b82f541c857a78e25f3099a3"
+    },
+    {
+      "path_or_member": "_temp/a06-owner-negative/gate/commands.json",
+      "bytes": 614,
+      "sha256": "aeadfd6121e035af8afa28d5d5b478eb9bb953892e7f478b273e65cc10389926"
+    },
+    {
+      "path_or_member": "_temp/a06-owner-negative/command.json",
+      "bytes": 640,
+      "sha256": "27c6e7fb84f83578f713c555b24b89e2fac8af586a83ca853cf27ee377ccc352"
+    },
+    {
+      "path_or_member": "_temp/a06-owner-negative/gate/aster-core/guests/guest-001/qemu.json",
+      "bytes": 4770,
+      "sha256": "2f8f9bda81c8e4a7039bdba59a410b52390de6c597a2262be2cffa46babbd46e"
+    },
+    {
+      "path_or_member": "_temp/a06-owner-negative/gate/aster-core/guests/guest-001/serial.log",
+      "bytes": 30465,
+      "sha256": "137ae461affa837fc130e0b1e6095274bea3f04a1aa984330f0ca3cb9f3d8257"
+    },
+    {
+      "path_or_member": "_temp/a06-owner-negative/original-gate-exit.json",
+      "bytes": 21,
+      "sha256": "56296949d3a02e635b050fd6b4762f0f0b52c23d05b925203095f7daf8e19027"
+    },
+    {
+      "path_or_member": "_temp/a06-owner-negative/gate/aster-core/osdk-exit-code.txt",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "path_or_member": "_temp/a06-owner-negative/gate/aster-core/generated.Cargo.lock",
+      "bytes": 41127,
+      "sha256": "85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150"
+    },
+    {
+      "path_or_member": "_temp/a06-owner-negative/green-core-validation.json",
+      "bytes": 261,
+      "sha256": "84d1a7ce1816085184ff779d72deaa4cf5493e723dec9b26ce8c51e526201543"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/result.json",
+      "bytes": 1770,
+      "sha256": "5f980853a57c1a721876e0c025a0c04facf094ffb78fb3007d649303cd8e83b2"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/candidate-source-before.json",
+      "bytes": 2055615,
+      "sha256": "49c706d9fad0cd974b9b86d560006fd503d7889d3c6441bdd6cb67b94a2c8a22"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/candidate-source-after.json",
+      "bytes": 2055615,
+      "sha256": "49c706d9fad0cd974b9b86d560006fd503d7889d3c6441bdd6cb67b94a2c8a22"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/negative-source-before.json",
+      "bytes": 2055615,
+      "sha256": "f55eca94a87316452c09d40d1ac2d0416c7e4f4de3bf19e912f45f8c1baf4ae3"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/negative-source-after.json",
+      "bytes": 2055615,
+      "sha256": "f55eca94a87316452c09d40d1ac2d0416c7e4f4de3bf19e912f45f8c1baf4ae3"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/negative-archive-source.json",
+      "bytes": 2055624,
+      "sha256": "42400a417425281a007ab01cbab95262c2f3b161260ec92fce1b2ae0760a02a3"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/declared-negative-control.patch",
+      "bytes": 560,
+      "sha256": "6aeb53178b4facbe105c7fd4ff3e8086d5a9b57f2715f80781efc2764338a442"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/applied-negative-control.patch",
+      "bytes": 771,
+      "sha256": "fd894b672f2de74c0d837be063710474b4cd3b5feed819a022766f5a499c4207"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/gate/environment.json",
+      "bytes": 2238,
+      "sha256": "4558b05aa6201806f14bbe15e483cc557d27ab0059fbf821239c9b4e9415a9d4"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/gate/source-inputs.json",
+      "bytes": 1807,
+      "sha256": "f5e6fb492f869071dc0b90af2578824dd2ef9a87b82f541c857a78e25f3099a3"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/gate/commands.json",
+      "bytes": 614,
+      "sha256": "aeadfd6121e035af8afa28d5d5b478eb9bb953892e7f478b273e65cc10389926"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/command.json",
+      "bytes": 699,
+      "sha256": "57e315545a522054f07d565f7239dc0b7b25d0dd43db21678eb2f58a255c2bd4"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/gate/aster-core/guests/guest-001/qemu.json",
+      "bytes": 4838,
+      "sha256": "18672a479598b848e630eccd7f99fa4117f2d43de74ed5241d3d274381debb8e"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/gate/aster-core/guests/guest-001/serial.log",
+      "bytes": 30799,
+      "sha256": "e422bf2d8d0b741d0f01bf2e0a79bfe59db211adf373e22f9afd7c2e02cb79b7"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/original-gate-exit.json",
+      "bytes": 21,
+      "sha256": "56296949d3a02e635b050fd6b4762f0f0b52c23d05b925203095f7daf8e19027"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/gate/aster-core/osdk-exit-code.txt",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/gate/aster-core/generated.Cargo.lock",
+      "bytes": 41127,
+      "sha256": "85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/clocksource-drop-fraction/green-core-validation.json",
+      "bytes": 261,
+      "sha256": "84d1a7ce1816085184ff779d72deaa4cf5493e723dec9b26ce8c51e526201543"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/result.json",
+      "bytes": 1605,
+      "sha256": "714821951beae89d34796cd43cb062eeb8eac8dceabfa166f83d622bb8bc5602"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/candidate-source-before.json",
+      "bytes": 2055615,
+      "sha256": "49c706d9fad0cd974b9b86d560006fd503d7889d3c6441bdd6cb67b94a2c8a22"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/candidate-source-after.json",
+      "bytes": 2055615,
+      "sha256": "49c706d9fad0cd974b9b86d560006fd503d7889d3c6441bdd6cb67b94a2c8a22"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/negative-source-before.json",
+      "bytes": 2055615,
+      "sha256": "19fe3a4df8cfe7d37b81a3ec7bcb7aa3656c4ba085527f9f2d09b6ee9e6697a1"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/negative-source-after.json",
+      "bytes": 2055615,
+      "sha256": "19fe3a4df8cfe7d37b81a3ec7bcb7aa3656c4ba085527f9f2d09b6ee9e6697a1"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/negative-archive-source.json",
+      "bytes": 2055617,
+      "sha256": "ac5d5f27f18f604cfe511fc259751a9641bb121c4850fbb84445aa775d9a4e84"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/declared-negative-control.patch",
+      "bytes": 329,
+      "sha256": "a1e116c7af6a57add22693b4fa985b8bb45809df3ad6765b52ea8efa979975c9"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/applied-negative-control.patch",
+      "bytes": 500,
+      "sha256": "39454a60f5378cdc35cd8ecd338ba7869dc798d74c458950b584a3f11887aff0"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/gate/environment.json",
+      "bytes": 2238,
+      "sha256": "ef9c6fab2b3018d76ed2fd78ef8aaf313c701eef8c563e4663488f93a4426ba4"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/gate/source-inputs.json",
+      "bytes": 1807,
+      "sha256": "f5e6fb492f869071dc0b90af2578824dd2ef9a87b82f541c857a78e25f3099a3"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/gate/commands.json",
+      "bytes": 614,
+      "sha256": "aeadfd6121e035af8afa28d5d5b478eb9bb953892e7f478b273e65cc10389926"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/command.json",
+      "bytes": 685,
+      "sha256": "0d24aaee0f493320d1f3c4132d27794eee7343ccd2f1b46c5ee18e3af504adb3"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/gate/aster-core/guests/guest-001/qemu.json",
+      "bytes": 4824,
+      "sha256": "718f7e7fcb79ed9daab88163a3c6b1e24e4ed23b87c7fa220c1d09dfd82e2280"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/gate/aster-core/guests/guest-001/serial.log",
+      "bytes": 30330,
+      "sha256": "4920f21a4b9d82ca71e12e5b79c427049abf3e5c5eb5ab35da2cd2afac209ddf"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/original-gate-exit.json",
+      "bytes": 21,
+      "sha256": "56296949d3a02e635b050fd6b4762f0f0b52c23d05b925203095f7daf8e19027"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/gate/aster-core/osdk-exit-code.txt",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/gate/aster-core/generated.Cargo.lock",
+      "bytes": 41127,
+      "sha256": "85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/vdso-drop-fraction/green-core-validation.json",
+      "bytes": 261,
+      "sha256": "84d1a7ce1816085184ff779d72deaa4cf5493e723dec9b26ce8c51e526201543"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/result.json",
+      "bytes": 1362,
+      "sha256": "efcd4fa88c4ced6da1e70e6337862090479dcbef3cfddb9ef99bf6a462607b7f"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/candidate-source-before.json",
+      "bytes": 2055615,
+      "sha256": "49c706d9fad0cd974b9b86d560006fd503d7889d3c6441bdd6cb67b94a2c8a22"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/candidate-source-after.json",
+      "bytes": 2055615,
+      "sha256": "49c706d9fad0cd974b9b86d560006fd503d7889d3c6441bdd6cb67b94a2c8a22"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/negative-source-before.json",
+      "bytes": 2055615,
+      "sha256": "88ed10ffeef4a2e209da871cb67d3dc4c9fbdc6de0a67dba616d9dc921d41cf3"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/negative-source-after.json",
+      "bytes": 2055615,
+      "sha256": "88ed10ffeef4a2e209da871cb67d3dc4c9fbdc6de0a67dba616d9dc921d41cf3"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/negative-archive-source.json",
+      "bytes": 2055619,
+      "sha256": "94d7faf894eed8a57f7930b321450a365ee37882c0f7622a37688a0acb97f37a"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/declared-negative-control.patch",
+      "bytes": 445,
+      "sha256": "da1f7c360136bfe330cba58acef4cf894d423043e1b3b9790958b923d4fcd452"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/applied-negative-control.patch",
+      "bytes": 592,
+      "sha256": "a68524832c47c74e3fea60e58ceccb1d44e31ae4020d5e7f1014f9e4e1c6d0e0"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/gate/environment.json",
+      "bytes": 2238,
+      "sha256": "307fe7b281972a605ac7e4cb0b4edf4b5a597a0dbb3d1c740bb0a4c588d4d2a5"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/gate/source-inputs.json",
+      "bytes": 1807,
+      "sha256": "f5e6fb492f869071dc0b90af2578824dd2ef9a87b82f541c857a78e25f3099a3"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/gate/commands.json",
+      "bytes": 614,
+      "sha256": "aeadfd6121e035af8afa28d5d5b478eb9bb953892e7f478b273e65cc10389926"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/command.json",
+      "bytes": 689,
+      "sha256": "151f21a9dc5d9bc2ceba6970e7810245cd8273f407d8919570fab7ff296d5f18"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/gate/aster-core/guests/guest-001/qemu.json",
+      "bytes": 4828,
+      "sha256": "52c030edf8f449beb56d2e8677e86a673bf62cce806dae39d8e7ce9cede9dbda"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/gate/aster-core/guests/guest-001/serial.log",
+      "bytes": 29348,
+      "sha256": "7b51c0860b136e64e6c1d41806e13baf84c671195cab73f74fc9f939eaa364fb"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/original-gate-exit.json",
+      "bytes": 21,
+      "sha256": "56296949d3a02e635b050fd6b4762f0f0b52c23d05b925203095f7daf8e19027"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/gate/aster-core/osdk-exit-code.txt",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/gate/aster-core/generated.Cargo.lock",
+      "bytes": 41127,
+      "sha256": "85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/green-core-validation.json",
+      "bytes": 261,
+      "sha256": "84d1a7ce1816085184ff779d72deaa4cf5493e723dec9b26ce8c51e526201543"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/result.json",
+      "bytes": 1850,
+      "sha256": "c95782c0962400c19edcc00437f140979e01e8006034723245cbaeb053cf2e03"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/candidate-source-before.json",
+      "bytes": 2055615,
+      "sha256": "49c706d9fad0cd974b9b86d560006fd503d7889d3c6441bdd6cb67b94a2c8a22"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/candidate-source-after.json",
+      "bytes": 2055615,
+      "sha256": "49c706d9fad0cd974b9b86d560006fd503d7889d3c6441bdd6cb67b94a2c8a22"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/negative-source-before.json",
+      "bytes": 2055615,
+      "sha256": "d48ab253d85c73798213519a640ec80c7828e4941beb3844890dc02880878f57"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/negative-source-after.json",
+      "bytes": 2055615,
+      "sha256": "d48ab253d85c73798213519a640ec80c7828e4941beb3844890dc02880878f57"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/negative-archive-source.json",
+      "bytes": 2055616,
+      "sha256": "4f99e70237e3527f5fa20e089b5cc989c177fb91b530c64456db6780ca1ea022"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/declared-negative-control.patch",
+      "bytes": 838,
+      "sha256": "2e9a87cdf9044f29dbcb8c932e72079eaf3fc9ecde791c9627b45b9b06257ffc"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/applied-negative-control.patch",
+      "bytes": 894,
+      "sha256": "2beb0bfdfab046c75f154e389573a00aacec1f9ee5435a61dd0b1c7c06287cce"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/gate/environment.json",
+      "bytes": 2238,
+      "sha256": "e20c7e9cff5e7ed4f262b093c86c14254b33293180069925c9fb903a8eabb1ed"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/gate/source-inputs.json",
+      "bytes": 1807,
+      "sha256": "f5e6fb492f869071dc0b90af2578824dd2ef9a87b82f541c857a78e25f3099a3"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/gate/commands.json",
+      "bytes": 614,
+      "sha256": "aeadfd6121e035af8afa28d5d5b478eb9bb953892e7f478b273e65cc10389926"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/command.json",
+      "bytes": 683,
+      "sha256": "eaf78adb0188696fc5f07b2bdc97fd8db5ac8c265ff788ca67c4eb655b90464a"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/gate/aster-core/guests/guest-001/qemu.json",
+      "bytes": 4822,
+      "sha256": "97f035cf28de3c9e8bfcff74034e1432642096efec7c934d51b432a988d17dc1"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/gate/aster-core/guests/guest-001/serial.log",
+      "bytes": 30868,
+      "sha256": "672a2ad02276b00c1e7fb581f7e61577f991c8c9fa830c0fbb4b1165a9d90e4e"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/original-gate-exit.json",
+      "bytes": 21,
+      "sha256": "56296949d3a02e635b050fd6b4762f0f0b52c23d05b925203095f7daf8e19027"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/gate/aster-core/osdk-exit-code.txt",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/gate/aster-core/generated.Cargo.lock",
+      "bytes": 41127,
+      "sha256": "85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/handoff-drop-tail/green-core-validation.json",
+      "bytes": 261,
+      "sha256": "84d1a7ce1816085184ff779d72deaa4cf5493e723dec9b26ce8c51e526201543"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/result.json",
+      "bytes": 1416,
+      "sha256": "d1178a1e20818d04f77db5b366c8c16c2f21a3c4f849107937a58bcc36cfa43c"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/candidate-source-before.json",
+      "bytes": 2055615,
+      "sha256": "49c706d9fad0cd974b9b86d560006fd503d7889d3c6441bdd6cb67b94a2c8a22"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/candidate-source-after.json",
+      "bytes": 2055615,
+      "sha256": "49c706d9fad0cd974b9b86d560006fd503d7889d3c6441bdd6cb67b94a2c8a22"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/negative-source-before.json",
+      "bytes": 2055615,
+      "sha256": "128fb53414b2e071af047002de08ddcc4ef6b2a053105a94d26e79159f547529"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/negative-source-after.json",
+      "bytes": 2055615,
+      "sha256": "128fb53414b2e071af047002de08ddcc4ef6b2a053105a94d26e79159f547529"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/negative-archive-source.json",
+      "bytes": 2055624,
+      "sha256": "402a10946c952013f05c4a5e95a5b35bb366c53c3df2dd5f0908516c610958db"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/declared-negative-control.patch",
+      "bytes": 1074,
+      "sha256": "8a90266278c3610c337e9ce780130e3a179ccce6942bbd4db05c53cfd805546c"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/applied-negative-control.patch",
+      "bytes": 1130,
+      "sha256": "b9be6102c3a7c6008c33abf2b374aad6de8ca1876753e1de39436b9c7a458810"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/gate/environment.json",
+      "bytes": 2238,
+      "sha256": "b36559199f2791fda4ee6745fb67646121d801651e1172872654fa47fcd28935"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/gate/source-inputs.json",
+      "bytes": 1807,
+      "sha256": "f5e6fb492f869071dc0b90af2578824dd2ef9a87b82f541c857a78e25f3099a3"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/gate/commands.json",
+      "bytes": 614,
+      "sha256": "aeadfd6121e035af8afa28d5d5b478eb9bb953892e7f478b273e65cc10389926"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/command.json",
+      "bytes": 699,
+      "sha256": "62f5296616dcedbb384e77d07d74145804ef06e938d642ceec0c32908ce2a001"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/gate/aster-core/guests/guest-001/qemu.json",
+      "bytes": 4838,
+      "sha256": "d8ae246fc67c6c5496424f9924cf94b63cfe3a043d09bbff129785a4bb093c52"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/gate/aster-core/guests/guest-001/serial.log",
+      "bytes": 29334,
+      "sha256": "3294f07faa5ec5f3f88fc009a10611ed3453e7f5dc5822c5c36de6f54b221e2a"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/original-gate-exit.json",
+      "bytes": 21,
+      "sha256": "56296949d3a02e635b050fd6b4762f0f0b52c23d05b925203095f7daf8e19027"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/gate/aster-core/osdk-exit-code.txt",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/gate/aster-core/generated.Cargo.lock",
+      "bytes": 41127,
+      "sha256": "85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/handoff-eligibility-first/green-core-validation.json",
+      "bytes": 261,
+      "sha256": "84d1a7ce1816085184ff779d72deaa4cf5493e723dec9b26ce8c51e526201543"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/result.json",
+      "bytes": 1554,
+      "sha256": "915410e9ab47f220f63ca99217bd83d8c8174d7dc2f6b330489230b5b4bd4b38"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/candidate-source-before.json",
+      "bytes": 2055615,
+      "sha256": "49c706d9fad0cd974b9b86d560006fd503d7889d3c6441bdd6cb67b94a2c8a22"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/candidate-source-after.json",
+      "bytes": 2055615,
+      "sha256": "49c706d9fad0cd974b9b86d560006fd503d7889d3c6441bdd6cb67b94a2c8a22"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/negative-source-before.json",
+      "bytes": 2055615,
+      "sha256": "d304eb6219603f6be48752987267502873d7b2869d16edc34cc0104c5c17185a"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/negative-source-after.json",
+      "bytes": 2055615,
+      "sha256": "d304eb6219603f6be48752987267502873d7b2869d16edc34cc0104c5c17185a"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/negative-archive-source.json",
+      "bytes": 2055617,
+      "sha256": "6db499cfb5c3cc34132abd4f4fc6f876fc7aef21a118b30285997fbbcc69c861"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/declared-negative-control.patch",
+      "bytes": 596,
+      "sha256": "b6fc10180e9fe292249409c758151763401dddb39bb4b2851bf53f71b3c959dd"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/applied-negative-control.patch",
+      "bytes": 652,
+      "sha256": "f36005840444c363956bd49b6cf5805a5759a37738420f24243290b487db0484"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/gate/environment.json",
+      "bytes": 2238,
+      "sha256": "81d209193fe99e2f1a4d129da627e84ad4815b07ee326344fa6f88c531cdda1d"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/gate/source-inputs.json",
+      "bytes": 1807,
+      "sha256": "f5e6fb492f869071dc0b90af2578824dd2ef9a87b82f541c857a78e25f3099a3"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/gate/commands.json",
+      "bytes": 614,
+      "sha256": "aeadfd6121e035af8afa28d5d5b478eb9bb953892e7f478b273e65cc10389926"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/command.json",
+      "bytes": 685,
+      "sha256": "914519ad984b113d27da7b0c5a54195e4bc21fa9f05766dffd169be45762a814"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/gate/aster-core/guests/guest-001/qemu.json",
+      "bytes": 4824,
+      "sha256": "6064dd4854373c74e29e2391c2a3cfc92431b5ff0cbaf9e6d40281e94451c1c3"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/gate/aster-core/guests/guest-001/serial.log",
+      "bytes": 29924,
+      "sha256": "520413fc8777f12d44288c3a7aa88236d763962fe8c8cc198f2870b34db577ca"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/original-gate-exit.json",
+      "bytes": 21,
+      "sha256": "56296949d3a02e635b050fd6b4762f0f0b52c23d05b925203095f7daf8e19027"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/gate/aster-core/osdk-exit-code.txt",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/gate/aster-core/generated.Cargo.lock",
+      "bytes": 41127,
+      "sha256": "85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150"
+    },
+    {
+      "path_or_member": "_temp/a06-clock-handoff-negative/dequeue-drop-owner/green-core-validation.json",
+      "bytes": 261,
+      "sha256": "84d1a7ce1816085184ff779d72deaa4cf5493e723dec9b26ce8c51e526201543"
+    }
+  ],
+  "scope_limits": [
+    "All seven complete 238-name suites and all 18 lifecycle tests were parsed from original raw serials. No producer, QEMU or artifact executable ran.",
+    "Original source/OSDK/QEMU identities are checked against complete original receipts. Host executables absent from the artifact are not rehashed.",
+    "Official ELF members were not extracted or fully streamed; retained member sizes and 64-byte ELF headers plus recorded SHA identities were checked. The complete ZIP SHA matches the official artifact API digest.",
+    "Official negative commit objects are not present in the artifact; their complete tree/blob contents are independently checked and equal locally retained original mutations.",
+    "No broader HOS2 authority, native grants, physical SMP or storage qualification is inferred."
+  ],
+  "finished_at": "2026-10-19T14:08:06.598125+00:00",
+  "passed": true
+}

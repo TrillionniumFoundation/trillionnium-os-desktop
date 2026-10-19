@@ -1,0 +1,811 @@
+{
+  "scope": "Diagnostic transport only: exact pinned SDK methods and real HTTP; synthetic WASM sink; no Rust UI/gateway acceptance",
+  "sourceRevision": "337566c8b25d47f7e4fff6a202157b65bf183330",
+  "sdkMethodsSha256": "2d2b0d3a14d5626b736831006e65300c56ecee4f62deff0382a42527ce264cf8",
+  "maxBody": 262144,
+  "observationDeadlineMs": 1500,
+  "browserInputs": [
+    {
+      "label": "153",
+      "binaryPath": "/workspace/scratch/499c7902de8e/r12-hepta-browsers/chrome-headless-shell-linux64/chrome-headless-shell",
+      "binarySha256": "ded93a9c9a53a1ae040f08124badcca95c938e9d5015ff340c3b5538c41bf39e",
+      "actualVersion": "153.0.8010.12"
+    },
+    {
+      "label": "157",
+      "binaryPath": "/workspace/scratch/499c7902de8e/r12-hepta-browsers/fixed157/chrome-headless-shell-linux64/chrome-headless-shell",
+      "binarySha256": "37164bfc553db9c17e11bc19c291738a1179c5b13529ec6f20a39bd665e91be0",
+      "actualVersion": "157.0.8099.0"
+    }
+  ],
+  "results": [
+    {
+      "browser": "153",
+      "name": "complete-single-write",
+      "nativeTerminal": {
+        "settled": true,
+        "value": {
+          "kind": "requestfailed",
+          "ms": 40,
+          "error": "net::ERR_ABORTED"
+        }
+      },
+      "responseFinished": {
+        "settled": false
+      },
+      "application": {
+        "results": [
+          {
+            "kind": "response",
+            "status": 503,
+            "bytes": 79,
+            "body": "{\"product\":\"hepta\",\"status\":\"unavailable\",\"error\":\"legacy runtime unavailable\"}"
+          }
+        ],
+        "entryState": "done",
+        "recordedResponseBytes": 79,
+        "controllerAborted": false,
+        "activeRequests": 0,
+        "stallTimerCleared": true
+      },
+      "beforeTeardown": [
+        {
+          "kind": "response",
+          "ms": 40,
+          "status": 503
+        },
+        {
+          "kind": "requestfailed",
+          "ms": 40,
+          "error": "net::ERR_ABORTED"
+        }
+      ],
+      "afterTeardownEvents": [],
+      "expectedApplicationSignal": true,
+      "expectedNativeSignal": false,
+      "expectedSdkCleanup": true
+    },
+    {
+      "browser": "153",
+      "name": "complete-split",
+      "nativeTerminal": {
+        "settled": true,
+        "value": {
+          "kind": "requestfailed",
+          "ms": 54,
+          "error": "net::ERR_ABORTED"
+        }
+      },
+      "responseFinished": {
+        "settled": false
+      },
+      "application": {
+        "results": [
+          {
+            "kind": "response",
+            "status": 503,
+            "bytes": 79,
+            "body": "{\"product\":\"hepta\",\"status\":\"unavailable\",\"error\":\"legacy runtime unavailable\"}"
+          }
+        ],
+        "entryState": "done",
+        "recordedResponseBytes": 79,
+        "controllerAborted": false,
+        "activeRequests": 0,
+        "stallTimerCleared": true
+      },
+      "beforeTeardown": [
+        {
+          "kind": "response",
+          "ms": 25,
+          "status": 503
+        },
+        {
+          "kind": "requestfailed",
+          "ms": 54,
+          "error": "net::ERR_ABORTED"
+        }
+      ],
+      "afterTeardownEvents": [],
+      "expectedApplicationSignal": true,
+      "expectedNativeSignal": false,
+      "expectedSdkCleanup": true
+    },
+    {
+      "browser": "153",
+      "name": "truncated",
+      "nativeTerminal": {
+        "settled": true,
+        "value": {
+          "kind": "requestfailed",
+          "ms": 58,
+          "error": "net::ERR_CONTENT_LENGTH_MISMATCH"
+        }
+      },
+      "responseFinished": {
+        "settled": false
+      },
+      "application": {
+        "results": [
+          {
+            "kind": "error",
+            "error": "TypeError: network error"
+          }
+        ],
+        "entryState": "done",
+        "recordedResponseBytes": 0,
+        "controllerAborted": false,
+        "activeRequests": 0,
+        "stallTimerCleared": true
+      },
+      "beforeTeardown": [
+        {
+          "kind": "response",
+          "ms": 28,
+          "status": 503
+        },
+        {
+          "kind": "requestfailed",
+          "ms": 58,
+          "error": "net::ERR_CONTENT_LENGTH_MISMATCH"
+        }
+      ],
+      "afterTeardownEvents": [],
+      "expectedApplicationSignal": true,
+      "expectedNativeSignal": true,
+      "expectedSdkCleanup": true
+    },
+    {
+      "browser": "153",
+      "name": "explicit-abort",
+      "nativeTerminal": {
+        "settled": true,
+        "value": {
+          "kind": "requestfailed",
+          "ms": 126,
+          "error": "net::ERR_ABORTED"
+        }
+      },
+      "responseFinished": {
+        "settled": false
+      },
+      "application": {
+        "results": [
+          {
+            "kind": "error",
+            "error": "AbortError: BodyStreamBuffer was aborted"
+          }
+        ],
+        "entryState": "done",
+        "recordedResponseBytes": 0,
+        "controllerAborted": true,
+        "activeRequests": 0,
+        "stallTimerCleared": true
+      },
+      "beforeTeardown": [
+        {
+          "kind": "response",
+          "ms": 27,
+          "status": 503
+        },
+        {
+          "kind": "requestfailed",
+          "ms": 126,
+          "error": "net::ERR_ABORTED"
+        }
+      ],
+      "afterTeardownEvents": [],
+      "expectedApplicationSignal": true,
+      "expectedNativeSignal": true,
+      "expectedSdkCleanup": true
+    },
+    {
+      "browser": "153",
+      "name": "declared-over-limit",
+      "nativeTerminal": {
+        "settled": true,
+        "value": {
+          "kind": "requestfailed",
+          "ms": 30,
+          "error": "net::ERR_ABORTED"
+        }
+      },
+      "responseFinished": {
+        "settled": false
+      },
+      "application": {
+        "results": [
+          {
+            "kind": "error",
+            "error": "response body exceeds configured limit"
+          }
+        ],
+        "entryState": "done",
+        "recordedResponseBytes": 0,
+        "controllerAborted": true,
+        "activeRequests": 0,
+        "stallTimerCleared": true
+      },
+      "beforeTeardown": [
+        {
+          "kind": "response",
+          "ms": 29,
+          "status": 503
+        },
+        {
+          "kind": "requestfailed",
+          "ms": 30,
+          "error": "net::ERR_ABORTED"
+        }
+      ],
+      "afterTeardownEvents": [],
+      "expectedApplicationSignal": true,
+      "expectedNativeSignal": true,
+      "expectedSdkCleanup": true
+    },
+    {
+      "browser": "153",
+      "name": "streamed-over-limit",
+      "nativeTerminal": {
+        "settled": true,
+        "value": {
+          "kind": "requestfailed",
+          "ms": 58,
+          "error": "net::ERR_ABORTED"
+        }
+      },
+      "responseFinished": {
+        "settled": false
+      },
+      "application": {
+        "results": [
+          {
+            "kind": "error",
+            "error": "response body exceeds configured limit"
+          }
+        ],
+        "entryState": "done",
+        "recordedResponseBytes": 0,
+        "controllerAborted": true,
+        "activeRequests": 0,
+        "stallTimerCleared": true
+      },
+      "beforeTeardown": [
+        {
+          "kind": "response",
+          "ms": 31,
+          "status": 503
+        },
+        {
+          "kind": "requestfailed",
+          "ms": 58,
+          "error": "net::ERR_ABORTED"
+        }
+      ],
+      "afterTeardownEvents": [],
+      "expectedApplicationSignal": true,
+      "expectedNativeSignal": true,
+      "expectedSdkCleanup": true
+    },
+    {
+      "browser": "157",
+      "name": "complete-single-write",
+      "nativeTerminal": {
+        "settled": true,
+        "value": {
+          "kind": "requestfinished",
+          "ms": 31
+        }
+      },
+      "responseFinished": {
+        "settled": true,
+        "value": null
+      },
+      "application": {
+        "results": [
+          {
+            "kind": "response",
+            "status": 503,
+            "bytes": 79,
+            "body": "{\"product\":\"hepta\",\"status\":\"unavailable\",\"error\":\"legacy runtime unavailable\"}"
+          }
+        ],
+        "entryState": "done",
+        "recordedResponseBytes": 79,
+        "controllerAborted": false,
+        "activeRequests": 0,
+        "stallTimerCleared": true
+      },
+      "beforeTeardown": [
+        {
+          "kind": "response",
+          "ms": 31,
+          "status": 503
+        },
+        {
+          "kind": "requestfinished",
+          "ms": 31
+        }
+      ],
+      "afterTeardownEvents": [],
+      "expectedApplicationSignal": true,
+      "expectedNativeSignal": true,
+      "expectedSdkCleanup": true
+    },
+    {
+      "browser": "157",
+      "name": "complete-split",
+      "nativeTerminal": {
+        "settled": true,
+        "value": {
+          "kind": "requestfinished",
+          "ms": 57
+        }
+      },
+      "responseFinished": {
+        "settled": true,
+        "value": null
+      },
+      "application": {
+        "results": [
+          {
+            "kind": "response",
+            "status": 503,
+            "bytes": 79,
+            "body": "{\"product\":\"hepta\",\"status\":\"unavailable\",\"error\":\"legacy runtime unavailable\"}"
+          }
+        ],
+        "entryState": "done",
+        "recordedResponseBytes": 79,
+        "controllerAborted": false,
+        "activeRequests": 0,
+        "stallTimerCleared": true
+      },
+      "beforeTeardown": [
+        {
+          "kind": "response",
+          "ms": 28,
+          "status": 503
+        },
+        {
+          "kind": "requestfinished",
+          "ms": 57
+        }
+      ],
+      "afterTeardownEvents": [],
+      "expectedApplicationSignal": true,
+      "expectedNativeSignal": true,
+      "expectedSdkCleanup": true
+    },
+    {
+      "browser": "157",
+      "name": "truncated",
+      "nativeTerminal": {
+        "settled": true,
+        "value": {
+          "kind": "requestfailed",
+          "ms": 58,
+          "error": "net::ERR_CONTENT_LENGTH_MISMATCH"
+        }
+      },
+      "responseFinished": {
+        "settled": false
+      },
+      "application": {
+        "results": [
+          {
+            "kind": "error",
+            "error": "TypeError: network error"
+          }
+        ],
+        "entryState": "done",
+        "recordedResponseBytes": 0,
+        "controllerAborted": false,
+        "activeRequests": 0,
+        "stallTimerCleared": true
+      },
+      "beforeTeardown": [
+        {
+          "kind": "response",
+          "ms": 29,
+          "status": 503
+        },
+        {
+          "kind": "requestfailed",
+          "ms": 58,
+          "error": "net::ERR_CONTENT_LENGTH_MISMATCH"
+        }
+      ],
+      "afterTeardownEvents": [],
+      "expectedApplicationSignal": true,
+      "expectedNativeSignal": true,
+      "expectedSdkCleanup": true
+    },
+    {
+      "browser": "157",
+      "name": "explicit-abort",
+      "nativeTerminal": {
+        "settled": true,
+        "value": {
+          "kind": "requestfailed",
+          "ms": 139,
+          "error": "net::ERR_ABORTED"
+        }
+      },
+      "responseFinished": {
+        "settled": false
+      },
+      "application": {
+        "results": [
+          {
+            "kind": "error",
+            "error": "AbortError: signal is aborted without reason"
+          }
+        ],
+        "entryState": "done",
+        "recordedResponseBytes": 0,
+        "controllerAborted": true,
+        "activeRequests": 0,
+        "stallTimerCleared": true
+      },
+      "beforeTeardown": [
+        {
+          "kind": "response",
+          "ms": 48,
+          "status": 503
+        },
+        {
+          "kind": "requestfailed",
+          "ms": 139,
+          "error": "net::ERR_ABORTED"
+        }
+      ],
+      "afterTeardownEvents": [],
+      "expectedApplicationSignal": true,
+      "expectedNativeSignal": true,
+      "expectedSdkCleanup": true
+    },
+    {
+      "browser": "157",
+      "name": "declared-over-limit",
+      "nativeTerminal": {
+        "settled": true,
+        "value": {
+          "kind": "requestfailed",
+          "ms": 32,
+          "error": "net::ERR_ABORTED"
+        }
+      },
+      "responseFinished": {
+        "settled": false
+      },
+      "application": {
+        "results": [
+          {
+            "kind": "error",
+            "error": "response body exceeds configured limit"
+          }
+        ],
+        "entryState": "done",
+        "recordedResponseBytes": 0,
+        "controllerAborted": true,
+        "activeRequests": 0,
+        "stallTimerCleared": true
+      },
+      "beforeTeardown": [
+        {
+          "kind": "response",
+          "ms": 32,
+          "status": 503
+        },
+        {
+          "kind": "requestfailed",
+          "ms": 32,
+          "error": "net::ERR_ABORTED"
+        }
+      ],
+      "afterTeardownEvents": [],
+      "expectedApplicationSignal": true,
+      "expectedNativeSignal": true,
+      "expectedSdkCleanup": true
+    },
+    {
+      "browser": "157",
+      "name": "streamed-over-limit",
+      "nativeTerminal": {
+        "settled": true,
+        "value": {
+          "kind": "requestfailed",
+          "ms": 61,
+          "error": "net::ERR_ABORTED"
+        }
+      },
+      "responseFinished": {
+        "settled": false
+      },
+      "application": {
+        "results": [
+          {
+            "kind": "error",
+            "error": "response body exceeds configured limit"
+          }
+        ],
+        "entryState": "done",
+        "recordedResponseBytes": 0,
+        "controllerAborted": true,
+        "activeRequests": 0,
+        "stallTimerCleared": true
+      },
+      "beforeTeardown": [
+        {
+          "kind": "response",
+          "ms": 32,
+          "status": 503
+        },
+        {
+          "kind": "requestfailed",
+          "ms": 61,
+          "error": "net::ERR_ABORTED"
+        }
+      ],
+      "afterTeardownEvents": [],
+      "expectedApplicationSignal": true,
+      "expectedNativeSignal": true,
+      "expectedSdkCleanup": true
+    }
+  ],
+  "serverRecords": [
+    {
+      "pathname": "/",
+      "status": 200,
+      "written": 46,
+      "finished": true,
+      "closed": true
+    },
+    {
+      "pathname": "/sdk.js",
+      "status": 200,
+      "written": 7729,
+      "finished": true,
+      "closed": true
+    },
+    {
+      "pathname": "/control/complete-single-write",
+      "status": 503,
+      "written": 79,
+      "finished": true,
+      "closed": true
+    },
+    {
+      "pathname": "/",
+      "status": 200,
+      "written": 46,
+      "finished": true,
+      "closed": true
+    },
+    {
+      "pathname": "/sdk.js",
+      "status": 200,
+      "written": 7729,
+      "finished": true,
+      "closed": true
+    },
+    {
+      "pathname": "/control/complete-split",
+      "status": 503,
+      "written": 79,
+      "finished": true,
+      "closed": true
+    },
+    {
+      "pathname": "/",
+      "status": 200,
+      "written": 46,
+      "finished": true,
+      "closed": true
+    },
+    {
+      "pathname": "/sdk.js",
+      "status": 200,
+      "written": 7729,
+      "finished": true,
+      "closed": true
+    },
+    {
+      "pathname": "/control/truncated",
+      "status": 503,
+      "written": 79,
+      "finished": true,
+      "closed": true
+    },
+    {
+      "pathname": "/",
+      "status": 200,
+      "written": 46,
+      "finished": true,
+      "closed": true
+    },
+    {
+      "pathname": "/sdk.js",
+      "status": 200,
+      "written": 7729,
+      "finished": true,
+      "closed": true
+    },
+    {
+      "pathname": "/control/explicit-abort",
+      "status": 503,
+      "written": 6,
+      "finished": false,
+      "closed": true
+    },
+    {
+      "pathname": "/",
+      "status": 200,
+      "written": 46,
+      "finished": true,
+      "closed": true
+    },
+    {
+      "pathname": "/sdk.js",
+      "status": 200,
+      "written": 7729,
+      "finished": true,
+      "closed": true
+    },
+    {
+      "pathname": "/control/declared-over-limit",
+      "status": 503,
+      "written": 0,
+      "finished": false,
+      "closed": true
+    },
+    {
+      "pathname": "/",
+      "status": 200,
+      "written": 46,
+      "finished": true,
+      "closed": true
+    },
+    {
+      "pathname": "/sdk.js",
+      "status": 200,
+      "written": 7729,
+      "finished": true,
+      "closed": true
+    },
+    {
+      "pathname": "/control/streamed-over-limit",
+      "status": 503,
+      "written": 262145,
+      "finished": true,
+      "closed": true
+    },
+    {
+      "pathname": "/",
+      "status": 200,
+      "written": 46,
+      "finished": true,
+      "closed": true
+    },
+    {
+      "pathname": "/sdk.js",
+      "status": 200,
+      "written": 7729,
+      "finished": true,
+      "closed": true
+    },
+    {
+      "pathname": "/control/complete-single-write",
+      "status": 503,
+      "written": 79,
+      "finished": true,
+      "closed": true
+    },
+    {
+      "pathname": "/",
+      "status": 200,
+      "written": 46,
+      "finished": true,
+      "closed": true
+    },
+    {
+      "pathname": "/sdk.js",
+      "status": 200,
+      "written": 7729,
+      "finished": true,
+      "closed": true
+    },
+    {
+      "pathname": "/control/complete-split",
+      "status": 503,
+      "written": 79,
+      "finished": true,
+      "closed": true
+    },
+    {
+      "pathname": "/",
+      "status": 200,
+      "written": 46,
+      "finished": true,
+      "closed": true
+    },
+    {
+      "pathname": "/sdk.js",
+      "status": 200,
+      "written": 7729,
+      "finished": true,
+      "closed": true
+    },
+    {
+      "pathname": "/control/truncated",
+      "status": 503,
+      "written": 79,
+      "finished": true,
+      "closed": true
+    },
+    {
+      "pathname": "/",
+      "status": 200,
+      "written": 46,
+      "finished": true,
+      "closed": true
+    },
+    {
+      "pathname": "/sdk.js",
+      "status": 200,
+      "written": 7729,
+      "finished": true,
+      "closed": true
+    },
+    {
+      "pathname": "/control/explicit-abort",
+      "status": 503,
+      "written": 6,
+      "finished": false,
+      "closed": true
+    },
+    {
+      "pathname": "/",
+      "status": 200,
+      "written": 46,
+      "finished": true,
+      "closed": true
+    },
+    {
+      "pathname": "/sdk.js",
+      "status": 200,
+      "written": 7729,
+      "finished": true,
+      "closed": true
+    },
+    {
+      "pathname": "/control/declared-over-limit",
+      "status": 503,
+      "written": 0,
+      "finished": false,
+      "closed": true
+    },
+    {
+      "pathname": "/",
+      "status": 200,
+      "written": 46,
+      "finished": true,
+      "closed": true
+    },
+    {
+      "pathname": "/sdk.js",
+      "status": 200,
+      "written": 7729,
+      "finished": true,
+      "closed": true
+    },
+    {
+      "pathname": "/control/streamed-over-limit",
+      "status": 503,
+      "written": 262145,
+      "finished": true,
+      "closed": true
+    }
+  ]
+}

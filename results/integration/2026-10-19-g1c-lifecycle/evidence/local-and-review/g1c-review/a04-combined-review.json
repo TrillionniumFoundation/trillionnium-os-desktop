@@ -1,0 +1,61 @@
+{
+  "all_guests_same_ordinary_kernel_bios_qemu_one_vcpu_tcg": true,
+  "all_profile_stdout_contracts_equal_original_linux_and_guest": true,
+  "earlier_failed_default_environment_runs_retained": {
+    "nofile": "32 PASS / 5 FAIL, EPERM at AF_UNIX bind",
+    "scm": "24 PASS / 3 FAIL, EPERM at SO_PASSCRED"
+  },
+  "independent_receipts": [
+    {
+      "bytes": 19729,
+      "path": "/workspace/scratch/499c7902de8e/r12-evidence/g1c-review/a04-scm-nofile-review.json",
+      "sha256": "2ab914b7ec5cef3f517d1ca5bbfa6d205d2176c9d50bc59298b54c379aa01f44"
+    },
+    {
+      "bytes": 40704,
+      "path": "/workspace/scratch/499c7902de8e/r12-evidence/g1c-review/a04-full32-review.json",
+      "sha256": "99ba44ae2d4724c4cefd7fd941f81676e6bff52102ff683051b55ba57a06ef7b"
+    }
+  ],
+  "kernel_sha256": "1bdc27f45afb2789447473cdf100a8fd67c84111bcec650a1fa96c18edb6163b",
+  "ordinary_previous_independent_source_review_sha256": "1a741db53f4bb435a35a5b8927c049795785a2b9540f20ddd3bcc9bfff16cec6",
+  "ordinary_product_receipt_sha256": "01c27efaea56ed82b4866cfdc914d9f0f9052c68b4ecf2892ff8d6b080cb6eaa",
+  "ordinary_source_entries": 7346,
+  "ordinary_source_snapshot_sha256": "a18c3c4f37818086d8b73e2fe348f2491822bd02639aa4071421e91ffca6195f",
+  "passed": true,
+  "profiles": [
+    {
+      "guest": 27,
+      "linux": 27,
+      "name": "SCM_RIGHTS/CLOEXEC",
+      "probe_sha256": "a6f1f96753a9892df31fe2ce6a7f634bd10da2f6632b373a80f52a80e5fcddbd",
+      "qemu_exit": 33,
+      "serial_sha256": "5583b1e91d73553f421f894e3de4025423bf5336cff1453ae37be3d04773ded5"
+    },
+    {
+      "guest": 37,
+      "linux": 37,
+      "name": "RLIMIT_NOFILE",
+      "probe_sha256": "80578a08abf6464dc10f2af3a1a793bbf46988981499934c9cfcbc58a590cae8",
+      "qemu_exit": 33,
+      "serial_sha256": "e5decccc87d5d76d50c63fef244ebc5931c091e5c8648415d432aa7a358c8af4"
+    },
+    {
+      "frozen_image_sha256": "de1bae48508de4bde356263dc1e7e3e6af7dc969d8fcc1e084963f13e6baa606",
+      "frozen_inputs_sha256": "96aa95ba2105fc9092c860f301d78454b2cb92db6e8124858c109bb83b25f20a",
+      "guest": 32,
+      "linux": 32,
+      "name": "Ubuntu24.04 full32",
+      "qemu_exit": 33,
+      "serial_sha256": "26ba03520fa8b93423ddc292c50bb5d1f0cbab70ab6b9ee46938124bcd1caee7"
+    }
+  ],
+  "review_method": "Read-only explicit git104 source; independent original log/serial, JSON, SHA256, ELF program/dynamic headers and newc parsing. No producer import/execution, tests, builds, toolchain invocation, product or remote writes.",
+  "reviewed_at": "2026-10-19T13:36:30.290845+00:00",
+  "reviewer_program_sha256": "ab7d0646ee9972fea81354730ca2633f923eca623310577f76a4a1008d3e1433",
+  "schema": "g1c.independent.a04-combined-review.v1",
+  "scope": "Original local supplementary evidence only, with unchanged runners/contracts and distinct prior default-environment failures. No hosted CI green, pinned Debian13, original Hepta W1, storage crash durability, G1-d capability grant, SMP or desktop/mobile device qualification.",
+  "source_head": "104204016dcdea57ab73c091b1edd13008ae9a19",
+  "source_scope": "All three original ordinary snapshots rechecked identical. Full git104 7346-blob equality is delegated to the already completed and hashed ordinary independent review; no present-HEAD or clean-state dependency during negative-control work.",
+  "source_tree": "179b076747d19c3e07ee19a665e3968c33c598ce"
+}

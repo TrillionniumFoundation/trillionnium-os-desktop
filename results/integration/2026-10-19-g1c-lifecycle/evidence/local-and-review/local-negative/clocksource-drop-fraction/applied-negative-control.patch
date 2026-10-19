@@ -1,0 +1,16 @@
+diff --git a/kernel/asterinas/kernel/core/comps/time/src/clocksource.rs b/kernel/asterinas/kernel/core/comps/time/src/clocksource.rs
+index 3f0abcd..b67cc70 100644
+--- a/kernel/asterinas/kernel/core/comps/time/src/clocksource.rs
++++ b/kernel/asterinas/kernel/core/comps/time/src/clocksource.rs
+@@ -311,7 +311,10 @@ impl ClockSource {
+             let cycles = self.read_cycles();
+             let last_cycles = last.cycles;
+             let (sample, fault) = self.calculate_sample(*last, cycles);
+-            *last = sample;
++            *last = ClockSourceSample {
++                fractional_numerator: 0,
++                ..sample
++            };
+             (sample, fault, last_cycles, cycles)
+         };
+         Self::report_fault(fault, last_cycles, cycles);

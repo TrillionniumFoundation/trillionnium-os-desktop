@@ -1,0 +1,28 @@
+{
+  "all_other_source_files_unchanged": true,
+  "candidate_head": "104204016dcdea57ab73c091b1edd13008ae9a19",
+  "candidate_tree": "179b076747d19c3e07ee19a665e3968c33c598ce",
+  "control": "handoff-eligibility-first",
+  "declared_changed_path": "kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs",
+  "green_kernel_sha256": "bc457c4dd01c91a96e2891771b59888e84dc2cfefdee49d24f593aae189f0bbb",
+  "green_serial_sha256": "ef03a8cf19ba7ae395a964eda936385341f460ebf68c5211eee6c5b45b4b8696",
+  "negative_control_detected": true,
+  "negative_failed": [
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::handoff_debits_the_old_window_before_rechecking_a_shared_ancestor"
+  ],
+  "negative_head": "cc22ea854876f978af1e3370a14e8380e779e4b7",
+  "negative_kernel_sha256": "4f56a7183abd663253cb424259c8b482045451c69eb2bd47ab59bffa6f45093e",
+  "negative_passed": 237,
+  "negative_serial_sha256": "39d932507e2d4ad1825cd62b549e56e4d65ca80e7dba25468250ca416a4e594a",
+  "negative_tree": "f68e54fb7007274438cdc31bdfdcc3297d7c72d2",
+  "original_gate_exit": 1,
+  "passed": true,
+  "patch_sha256": "8a90266278c3610c337e9ce780130e3a179ccce6942bbd4db05c53cfd805546c",
+  "product_qualification": false,
+  "raw_qemu_exit": 65,
+  "same_osdk_binary_and_source_path": true,
+  "schema": "a06.cpu-owner-negative.v1",
+  "source_snapshots_unchanged": true,
+  "timed_out": false,
+  "total_core_tests": 238
+}

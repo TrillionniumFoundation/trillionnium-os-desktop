@@ -1,0 +1,30 @@
+{
+  "all_other_source_files_unchanged": true,
+  "candidate_head": "104204016dcdea57ab73c091b1edd13008ae9a19",
+  "candidate_tree": "179b076747d19c3e07ee19a665e3968c33c598ce",
+  "control": "owner-current-slot",
+  "declared_changed_path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs",
+  "green_kernel_sha256": "bc457c4dd01c91a96e2891771b59888e84dc2cfefdee49d24f593aae189f0bbb",
+  "green_serial_sha256": "ef03a8cf19ba7ae395a964eda936385341f460ebf68c5211eee6c5b45b4b8696",
+  "negative_control_detected": true,
+  "negative_failed": [
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::owner_retention_regressions::controller_publication_charges_the_entire_prefix_to_the_old_incarnation",
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::owner_retention_regressions::exited_task_resumes_its_retained_incarnation_after_replacement_and_reap",
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::owner_retention_regressions::retained_leaf_debits_its_original_ancestor_chain_after_parent_replacement"
+  ],
+  "negative_head": "161bc4034b9200ead99563d59c3080743e1a8b06",
+  "negative_kernel_sha256": "160fe2ea1ecbcd3019a84d58fc754b8d94ade72e62d91ec8f43c53d1d6cdfd9f",
+  "negative_passed": 235,
+  "negative_serial_sha256": "818f67f031340cf6202a4e1fadd177a0d2a5aa71701cd305d6f142dbb56f7635",
+  "negative_tree": "2543a2df21401a1a2d9b558c9e125a1c28f1d5d6",
+  "original_gate_exit": 1,
+  "passed": true,
+  "patch_sha256": "04b19a7a89b8f8591d9a18766390167201e999a9617febcd9d0c70902005f1bd",
+  "product_qualification": false,
+  "raw_qemu_exit": 65,
+  "same_osdk_binary_and_source_path": true,
+  "schema": "a06.cpu-owner-negative.v1",
+  "source_snapshots_unchanged": true,
+  "timed_out": false,
+  "total_core_tests": 238
+}

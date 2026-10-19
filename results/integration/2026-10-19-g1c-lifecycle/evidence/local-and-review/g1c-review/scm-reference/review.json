@@ -1,0 +1,494 @@
+{
+  "schema": "g1c.scm-linux-reference-independent-review.v1",
+  "reviewed_at_utc": "2026-10-19T13:16:52.571204+00:00",
+  "reviewer": "/root/g1c_review/scm_reference",
+  "review_method": "Read-only parsing and SHA-256 of existing local evidence; C source and Python runner constants parsed statically. No probe, runner, compiler, tests, installation, or remote operation was executed.",
+  "review_scope": {
+    "linux_reference_only": true,
+    "asterinas_guest_reviewed": false,
+    "product_bug_fix_claimed": false,
+    "source_files_modified": false,
+    "existing_evidence_modified": false
+  },
+  "source_identity": {
+    "expected_head": "104204016dcdea57ab73c091b1edd13008ae9a19",
+    "observed_head": "104204016dcdea57ab73c091b1edd13008ae9a19",
+    "expected_tree": "179b076747d19c3e07ee19a665e3968c33c598ce",
+    "observed_tree": "179b076747d19c3e07ee19a665e3968c33c598ce",
+    "files": [
+      {
+        "path": "r12-g1c/tests/workloads/linux/scm_rights_cloexec_probe.c",
+        "sha256": "bd9c11eb31710d096e406cd0d3fa206f837dd58e6f8106a79ddbba796862a037",
+        "bytes": 12784,
+        "matches_frozen_commit_blob": true
+      },
+      {
+        "path": "r12-g1c/tests/workloads/linux/run_scm_rights_cloexec_guest.py",
+        "sha256": "1d501766dd611652797643f047bde8ac6ac2d6e41225e74eca51817d44a7965d",
+        "bytes": 11957,
+        "matches_frozen_commit_blob": true
+      },
+      {
+        "path": "r12-g1c/tests/workloads/linux/test_scm_rights_cloexec_guest.py",
+        "sha256": "5d76a37e5c70c1920f4f4665e09e7bc90bf49e16f764259c31b77113ed9c94ba",
+        "bytes": 4437,
+        "matches_frozen_commit_blob": true
+      },
+      {
+        "path": "r12-g1c/tests/workloads/linux/SCM_RIGHTS_CLOEXEC.md",
+        "sha256": "4a2d919cea0414de00c520978e001837f227942752bfb67e6237ff134df6937b",
+        "bytes": 5241,
+        "matches_frozen_commit_blob": true
+      }
+    ],
+    "helper_sha256_matches_recorded_inputs": true,
+    "frozen_elf_sha256_matches_recorded_inputs": true
+  },
+  "original_contract": {
+    "socket_order": [
+      "stream",
+      "datagram",
+      "seqpacket"
+    ],
+    "scenario_order": [
+      "plain_receive",
+      "cloexec_multifd",
+      "peek_cloexec_then_plain",
+      "peek_plain_then_cloexec",
+      "truncated_control",
+      "discarded_control",
+      "no_control_message",
+      "credentials_with_rights",
+      "exec_inheritance"
+    ],
+    "case_count": 27,
+    "c_case_order_matches_runner_constants": true,
+    "expected_stdout_sha256": "05c93c49ac14c4c033912282356e234450e3f3f4e13014e758f9a714f57b52e1",
+    "credentials_assertion_source_line": 294
+  },
+  "elf_identity": {
+    "expected_sha256": "a6f1f96753a9892df31fe2ce6a7f634bd10da2f6632b373a80f52a80e5fcddbd",
+    "original_path": "r12-evidence/local-scm-linux/probe.elf",
+    "permitted_host_path": "r12-evidence/local-scm-linux-escalated/probe.elf",
+    "original_sha256": "a6f1f96753a9892df31fe2ce6a7f634bd10da2f6632b373a80f52a80e5fcddbd",
+    "permitted_host_sha256": "a6f1f96753a9892df31fe2ce6a7f634bd10da2f6632b373a80f52a80e5fcddbd",
+    "original_bytes": 808304,
+    "permitted_host_bytes": 808304,
+    "bytes_identical": true
+  },
+  "attempts": [
+    {
+      "name": "original_default_sandbox",
+      "directory": "r12-evidence/local-scm-linux",
+      "environment_provenance": "Parent task identifies this as the original default-sandbox attempt; later reference-attempt.json explicitly says its EPERM result is retained. Raw stderr directly establishes the SO_PASSCRED errno=1 failure.",
+      "case_count": 27,
+      "passed_cases": 24,
+      "failed_cases": 3,
+      "failed_case_names": [
+        "stream.credentials_with_rights",
+        "datagram.credentials_with_rights",
+        "seqpacket.credentials_with_rights"
+      ],
+      "recorded_actual_process_exit": 1,
+      "exit_evidence": "r12-evidence/local-scm-linux/exit-code.txt",
+      "stdout_exact_for_all_original_names_order_and_recorded_results": true,
+      "stdout_exact_success_contract": false,
+      "stderr_exact_three_so_passcred_assertions": true,
+      "errno_number": 1,
+      "errno_name": "EPERM",
+      "stdout_text": "SCM_CLOEXEC_CASE name=stream.plain_receive result=PASS line=0\nSCM_CLOEXEC_CASE name=stream.cloexec_multifd result=PASS line=0\nSCM_CLOEXEC_CASE name=stream.peek_cloexec_then_plain result=PASS line=0\nSCM_CLOEXEC_CASE name=stream.peek_plain_then_cloexec result=PASS line=0\nSCM_CLOEXEC_CASE name=stream.truncated_control result=PASS line=0\nSCM_CLOEXEC_CASE name=stream.discarded_control result=PASS line=0\nSCM_CLOEXEC_CASE name=stream.no_control_message result=PASS line=0\nSCM_CLOEXEC_CASE name=stream.credentials_with_rights result=FAIL line=294\nSCM_CLOEXEC_CASE name=stream.exec_inheritance result=PASS line=0\nSCM_CLOEXEC_CASE name=datagram.plain_receive result=PASS line=0\nSCM_CLOEXEC_CASE name=datagram.cloexec_multifd result=PASS line=0\nSCM_CLOEXEC_CASE name=datagram.peek_cloexec_then_plain result=PASS line=0\nSCM_CLOEXEC_CASE name=datagram.peek_plain_then_cloexec result=PASS line=0\nSCM_CLOEXEC_CASE name=datagram.truncated_control result=PASS line=0\nSCM_CLOEXEC_CASE name=datagram.discarded_control result=PASS line=0\nSCM_CLOEXEC_CASE name=datagram.no_control_message result=PASS line=0\nSCM_CLOEXEC_CASE name=datagram.credentials_with_rights result=FAIL line=294\nSCM_CLOEXEC_CASE name=datagram.exec_inheritance result=PASS line=0\nSCM_CLOEXEC_CASE name=seqpacket.plain_receive result=PASS line=0\nSCM_CLOEXEC_CASE name=seqpacket.cloexec_multifd result=PASS line=0\nSCM_CLOEXEC_CASE name=seqpacket.peek_cloexec_then_plain result=PASS line=0\nSCM_CLOEXEC_CASE name=seqpacket.peek_plain_then_cloexec result=PASS line=0\nSCM_CLOEXEC_CASE name=seqpacket.truncated_control result=PASS line=0\nSCM_CLOEXEC_CASE name=seqpacket.discarded_control result=PASS line=0\nSCM_CLOEXEC_CASE name=seqpacket.no_control_message result=PASS line=0\nSCM_CLOEXEC_CASE name=seqpacket.credentials_with_rights result=FAIL line=294\nSCM_CLOEXEC_CASE name=seqpacket.exec_inheritance result=PASS line=0\nSCM_CLOEXEC_COMPLETE total=27 passed=24 failed=3\n",
+      "stderr_text": "SCM_CLOEXEC_ASSERT line=294 expression=setsockopt(f.sockets[1], SOL_SOCKET, SO_PASSCRED, &enabled, sizeof(enabled)) == 0 errno=1\nSCM_CLOEXEC_ASSERT line=294 expression=setsockopt(f.sockets[1], SOL_SOCKET, SO_PASSCRED, &enabled, sizeof(enabled)) == 0 errno=1\nSCM_CLOEXEC_ASSERT line=294 expression=setsockopt(f.sockets[1], SOL_SOCKET, SO_PASSCRED, &enabled, sizeof(enabled)) == 0 errno=1\n"
+    },
+    {
+      "name": "same_frozen_elf_permitted_host_access",
+      "directory": "r12-evidence/local-scm-linux-escalated",
+      "environment_provenance": "reference-attempt.json records permitted host syscall access; this reviewer inspected the retained output and did not independently execute the command.",
+      "case_count": 27,
+      "passed_cases": 27,
+      "failed_cases": 0,
+      "failed_case_names": [],
+      "recorded_actual_process_exit": 0,
+      "exit_evidence": "r12-evidence/local-scm-linux-escalated/exit-code.txt",
+      "stdout_exact_success_contract": true,
+      "stderr_empty": true,
+      "stdout_text": "SCM_CLOEXEC_CASE name=stream.plain_receive result=PASS line=0\nSCM_CLOEXEC_CASE name=stream.cloexec_multifd result=PASS line=0\nSCM_CLOEXEC_CASE name=stream.peek_cloexec_then_plain result=PASS line=0\nSCM_CLOEXEC_CASE name=stream.peek_plain_then_cloexec result=PASS line=0\nSCM_CLOEXEC_CASE name=stream.truncated_control result=PASS line=0\nSCM_CLOEXEC_CASE name=stream.discarded_control result=PASS line=0\nSCM_CLOEXEC_CASE name=stream.no_control_message result=PASS line=0\nSCM_CLOEXEC_CASE name=stream.credentials_with_rights result=PASS line=0\nSCM_CLOEXEC_CASE name=stream.exec_inheritance result=PASS line=0\nSCM_CLOEXEC_CASE name=datagram.plain_receive result=PASS line=0\nSCM_CLOEXEC_CASE name=datagram.cloexec_multifd result=PASS line=0\nSCM_CLOEXEC_CASE name=datagram.peek_cloexec_then_plain result=PASS line=0\nSCM_CLOEXEC_CASE name=datagram.peek_plain_then_cloexec result=PASS line=0\nSCM_CLOEXEC_CASE name=datagram.truncated_control result=PASS line=0\nSCM_CLOEXEC_CASE name=datagram.discarded_control result=PASS line=0\nSCM_CLOEXEC_CASE name=datagram.no_control_message result=PASS line=0\nSCM_CLOEXEC_CASE name=datagram.credentials_with_rights result=PASS line=0\nSCM_CLOEXEC_CASE name=datagram.exec_inheritance result=PASS line=0\nSCM_CLOEXEC_CASE name=seqpacket.plain_receive result=PASS line=0\nSCM_CLOEXEC_CASE name=seqpacket.cloexec_multifd result=PASS line=0\nSCM_CLOEXEC_CASE name=seqpacket.peek_cloexec_then_plain result=PASS line=0\nSCM_CLOEXEC_CASE name=seqpacket.peek_plain_then_cloexec result=PASS line=0\nSCM_CLOEXEC_CASE name=seqpacket.truncated_control result=PASS line=0\nSCM_CLOEXEC_CASE name=seqpacket.discarded_control result=PASS line=0\nSCM_CLOEXEC_CASE name=seqpacket.no_control_message result=PASS line=0\nSCM_CLOEXEC_CASE name=seqpacket.credentials_with_rights result=PASS line=0\nSCM_CLOEXEC_CASE name=seqpacket.exec_inheritance result=PASS line=0\nSCM_CLOEXEC_COMPLETE total=27 passed=27 failed=0\n",
+      "stderr_text": "",
+      "reference_attempt_checks": {
+        "probe_sha256_matches_actual": true,
+        "stdout_sha256_matches_actual": true,
+        "stderr_sha256_matches_actual": true,
+        "exit_matches_raw_exit_code_file": true,
+        "case_count_matches_raw_stdout": true,
+        "original_27_case_stdout_exact_matches_independent_check": true,
+        "stderr_empty_matches_actual": true,
+        "probe_unchanged_matches_frozen_sha": true,
+        "original_probe_unchanged_matches_frozen_sha": true,
+        "passed_matches_all_checks": true,
+        "command_targets_reviewed_host_elf": true,
+        "original_frozen_probe_path_matches": true
+      },
+      "reference_attempt": {
+        "schema": "g1c.original-scm-frozen-probe-reference.v1",
+        "started_at": "2026-10-19T13:12:27.330186+00:00",
+        "command": [
+          "/workspace/scratch/499c7902de8e/r12-evidence/local-scm-linux-escalated/probe.elf"
+        ],
+        "probe_sha256": "a6f1f96753a9892df31fe2ce6a7f634bd10da2f6632b373a80f52a80e5fcddbd",
+        "original_frozen_probe": "/workspace/scratch/499c7902de8e/r12-evidence/local-scm-linux/probe.elf",
+        "scope": "Same original frozen 27-case ELF executed with permitted host syscall access; earlier default-sandbox EPERM result retained",
+        "exit_code": 0,
+        "seconds": 0.007909631000075024,
+        "finished_at": "2026-10-19T13:12:27.338091+00:00",
+        "original_27_case_stdout_exact": true,
+        "stderr_empty": true,
+        "probe_unchanged": true,
+        "original_probe_unchanged": true,
+        "stdout_sha256": "05c93c49ac14c4c033912282356e234450e3f3f4e13014e758f9a714f57b52e1",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "case_count": 27,
+        "passed": true
+      }
+    }
+  ],
+  "per_case_review": [
+    {
+      "ordinal": 1,
+      "name": "stream.plain_receive",
+      "expected_success_line": "SCM_CLOEXEC_CASE name=stream.plain_receive result=PASS line=0",
+      "default_sandbox_line": "SCM_CLOEXEC_CASE name=stream.plain_receive result=PASS line=0",
+      "permitted_host_line": "SCM_CLOEXEC_CASE name=stream.plain_receive result=PASS line=0",
+      "default_sandbox_matches_expected_recorded_result": true,
+      "permitted_host_matches_original_success_contract": true
+    },
+    {
+      "ordinal": 2,
+      "name": "stream.cloexec_multifd",
+      "expected_success_line": "SCM_CLOEXEC_CASE name=stream.cloexec_multifd result=PASS line=0",
+      "default_sandbox_line": "SCM_CLOEXEC_CASE name=stream.cloexec_multifd result=PASS line=0",
+      "permitted_host_line": "SCM_CLOEXEC_CASE name=stream.cloexec_multifd result=PASS line=0",
+      "default_sandbox_matches_expected_recorded_result": true,
+      "permitted_host_matches_original_success_contract": true
+    },
+    {
+      "ordinal": 3,
+      "name": "stream.peek_cloexec_then_plain",
+      "expected_success_line": "SCM_CLOEXEC_CASE name=stream.peek_cloexec_then_plain result=PASS line=0",
+      "default_sandbox_line": "SCM_CLOEXEC_CASE name=stream.peek_cloexec_then_plain result=PASS line=0",
+      "permitted_host_line": "SCM_CLOEXEC_CASE name=stream.peek_cloexec_then_plain result=PASS line=0",
+      "default_sandbox_matches_expected_recorded_result": true,
+      "permitted_host_matches_original_success_contract": true
+    },
+    {
+      "ordinal": 4,
+      "name": "stream.peek_plain_then_cloexec",
+      "expected_success_line": "SCM_CLOEXEC_CASE name=stream.peek_plain_then_cloexec result=PASS line=0",
+      "default_sandbox_line": "SCM_CLOEXEC_CASE name=stream.peek_plain_then_cloexec result=PASS line=0",
+      "permitted_host_line": "SCM_CLOEXEC_CASE name=stream.peek_plain_then_cloexec result=PASS line=0",
+      "default_sandbox_matches_expected_recorded_result": true,
+      "permitted_host_matches_original_success_contract": true
+    },
+    {
+      "ordinal": 5,
+      "name": "stream.truncated_control",
+      "expected_success_line": "SCM_CLOEXEC_CASE name=stream.truncated_control result=PASS line=0",
+      "default_sandbox_line": "SCM_CLOEXEC_CASE name=stream.truncated_control result=PASS line=0",
+      "permitted_host_line": "SCM_CLOEXEC_CASE name=stream.truncated_control result=PASS line=0",
+      "default_sandbox_matches_expected_recorded_result": true,
+      "permitted_host_matches_original_success_contract": true
+    },
+    {
+      "ordinal": 6,
+      "name": "stream.discarded_control",
+      "expected_success_line": "SCM_CLOEXEC_CASE name=stream.discarded_control result=PASS line=0",
+      "default_sandbox_line": "SCM_CLOEXEC_CASE name=stream.discarded_control result=PASS line=0",
+      "permitted_host_line": "SCM_CLOEXEC_CASE name=stream.discarded_control result=PASS line=0",
+      "default_sandbox_matches_expected_recorded_result": true,
+      "permitted_host_matches_original_success_contract": true
+    },
+    {
+      "ordinal": 7,
+      "name": "stream.no_control_message",
+      "expected_success_line": "SCM_CLOEXEC_CASE name=stream.no_control_message result=PASS line=0",
+      "default_sandbox_line": "SCM_CLOEXEC_CASE name=stream.no_control_message result=PASS line=0",
+      "permitted_host_line": "SCM_CLOEXEC_CASE name=stream.no_control_message result=PASS line=0",
+      "default_sandbox_matches_expected_recorded_result": true,
+      "permitted_host_matches_original_success_contract": true
+    },
+    {
+      "ordinal": 8,
+      "name": "stream.credentials_with_rights",
+      "expected_success_line": "SCM_CLOEXEC_CASE name=stream.credentials_with_rights result=PASS line=0",
+      "default_sandbox_line": "SCM_CLOEXEC_CASE name=stream.credentials_with_rights result=FAIL line=294",
+      "permitted_host_line": "SCM_CLOEXEC_CASE name=stream.credentials_with_rights result=PASS line=0",
+      "default_sandbox_matches_expected_recorded_result": true,
+      "permitted_host_matches_original_success_contract": true
+    },
+    {
+      "ordinal": 9,
+      "name": "stream.exec_inheritance",
+      "expected_success_line": "SCM_CLOEXEC_CASE name=stream.exec_inheritance result=PASS line=0",
+      "default_sandbox_line": "SCM_CLOEXEC_CASE name=stream.exec_inheritance result=PASS line=0",
+      "permitted_host_line": "SCM_CLOEXEC_CASE name=stream.exec_inheritance result=PASS line=0",
+      "default_sandbox_matches_expected_recorded_result": true,
+      "permitted_host_matches_original_success_contract": true
+    },
+    {
+      "ordinal": 10,
+      "name": "datagram.plain_receive",
+      "expected_success_line": "SCM_CLOEXEC_CASE name=datagram.plain_receive result=PASS line=0",
+      "default_sandbox_line": "SCM_CLOEXEC_CASE name=datagram.plain_receive result=PASS line=0",
+      "permitted_host_line": "SCM_CLOEXEC_CASE name=datagram.plain_receive result=PASS line=0",
+      "default_sandbox_matches_expected_recorded_result": true,
+      "permitted_host_matches_original_success_contract": true
+    },
+    {
+      "ordinal": 11,
+      "name": "datagram.cloexec_multifd",
+      "expected_success_line": "SCM_CLOEXEC_CASE name=datagram.cloexec_multifd result=PASS line=0",
+      "default_sandbox_line": "SCM_CLOEXEC_CASE name=datagram.cloexec_multifd result=PASS line=0",
+      "permitted_host_line": "SCM_CLOEXEC_CASE name=datagram.cloexec_multifd result=PASS line=0",
+      "default_sandbox_matches_expected_recorded_result": true,
+      "permitted_host_matches_original_success_contract": true
+    },
+    {
+      "ordinal": 12,
+      "name": "datagram.peek_cloexec_then_plain",
+      "expected_success_line": "SCM_CLOEXEC_CASE name=datagram.peek_cloexec_then_plain result=PASS line=0",
+      "default_sandbox_line": "SCM_CLOEXEC_CASE name=datagram.peek_cloexec_then_plain result=PASS line=0",
+      "permitted_host_line": "SCM_CLOEXEC_CASE name=datagram.peek_cloexec_then_plain result=PASS line=0",
+      "default_sandbox_matches_expected_recorded_result": true,
+      "permitted_host_matches_original_success_contract": true
+    },
+    {
+      "ordinal": 13,
+      "name": "datagram.peek_plain_then_cloexec",
+      "expected_success_line": "SCM_CLOEXEC_CASE name=datagram.peek_plain_then_cloexec result=PASS line=0",
+      "default_sandbox_line": "SCM_CLOEXEC_CASE name=datagram.peek_plain_then_cloexec result=PASS line=0",
+      "permitted_host_line": "SCM_CLOEXEC_CASE name=datagram.peek_plain_then_cloexec result=PASS line=0",
+      "default_sandbox_matches_expected_recorded_result": true,
+      "permitted_host_matches_original_success_contract": true
+    },
+    {
+      "ordinal": 14,
+      "name": "datagram.truncated_control",
+      "expected_success_line": "SCM_CLOEXEC_CASE name=datagram.truncated_control result=PASS line=0",
+      "default_sandbox_line": "SCM_CLOEXEC_CASE name=datagram.truncated_control result=PASS line=0",
+      "permitted_host_line": "SCM_CLOEXEC_CASE name=datagram.truncated_control result=PASS line=0",
+      "default_sandbox_matches_expected_recorded_result": true,
+      "permitted_host_matches_original_success_contract": true
+    },
+    {
+      "ordinal": 15,
+      "name": "datagram.discarded_control",
+      "expected_success_line": "SCM_CLOEXEC_CASE name=datagram.discarded_control result=PASS line=0",
+      "default_sandbox_line": "SCM_CLOEXEC_CASE name=datagram.discarded_control result=PASS line=0",
+      "permitted_host_line": "SCM_CLOEXEC_CASE name=datagram.discarded_control result=PASS line=0",
+      "default_sandbox_matches_expected_recorded_result": true,
+      "permitted_host_matches_original_success_contract": true
+    },
+    {
+      "ordinal": 16,
+      "name": "datagram.no_control_message",
+      "expected_success_line": "SCM_CLOEXEC_CASE name=datagram.no_control_message result=PASS line=0",
+      "default_sandbox_line": "SCM_CLOEXEC_CASE name=datagram.no_control_message result=PASS line=0",
+      "permitted_host_line": "SCM_CLOEXEC_CASE name=datagram.no_control_message result=PASS line=0",
+      "default_sandbox_matches_expected_recorded_result": true,
+      "permitted_host_matches_original_success_contract": true
+    },
+    {
+      "ordinal": 17,
+      "name": "datagram.credentials_with_rights",
+      "expected_success_line": "SCM_CLOEXEC_CASE name=datagram.credentials_with_rights result=PASS line=0",
+      "default_sandbox_line": "SCM_CLOEXEC_CASE name=datagram.credentials_with_rights result=FAIL line=294",
+      "permitted_host_line": "SCM_CLOEXEC_CASE name=datagram.credentials_with_rights result=PASS line=0",
+      "default_sandbox_matches_expected_recorded_result": true,
+      "permitted_host_matches_original_success_contract": true
+    },
+    {
+      "ordinal": 18,
+      "name": "datagram.exec_inheritance",
+      "expected_success_line": "SCM_CLOEXEC_CASE name=datagram.exec_inheritance result=PASS line=0",
+      "default_sandbox_line": "SCM_CLOEXEC_CASE name=datagram.exec_inheritance result=PASS line=0",
+      "permitted_host_line": "SCM_CLOEXEC_CASE name=datagram.exec_inheritance result=PASS line=0",
+      "default_sandbox_matches_expected_recorded_result": true,
+      "permitted_host_matches_original_success_contract": true
+    },
+    {
+      "ordinal": 19,
+      "name": "seqpacket.plain_receive",
+      "expected_success_line": "SCM_CLOEXEC_CASE name=seqpacket.plain_receive result=PASS line=0",
+      "default_sandbox_line": "SCM_CLOEXEC_CASE name=seqpacket.plain_receive result=PASS line=0",
+      "permitted_host_line": "SCM_CLOEXEC_CASE name=seqpacket.plain_receive result=PASS line=0",
+      "default_sandbox_matches_expected_recorded_result": true,
+      "permitted_host_matches_original_success_contract": true
+    },
+    {
+      "ordinal": 20,
+      "name": "seqpacket.cloexec_multifd",
+      "expected_success_line": "SCM_CLOEXEC_CASE name=seqpacket.cloexec_multifd result=PASS line=0",
+      "default_sandbox_line": "SCM_CLOEXEC_CASE name=seqpacket.cloexec_multifd result=PASS line=0",
+      "permitted_host_line": "SCM_CLOEXEC_CASE name=seqpacket.cloexec_multifd result=PASS line=0",
+      "default_sandbox_matches_expected_recorded_result": true,
+      "permitted_host_matches_original_success_contract": true
+    },
+    {
+      "ordinal": 21,
+      "name": "seqpacket.peek_cloexec_then_plain",
+      "expected_success_line": "SCM_CLOEXEC_CASE name=seqpacket.peek_cloexec_then_plain result=PASS line=0",
+      "default_sandbox_line": "SCM_CLOEXEC_CASE name=seqpacket.peek_cloexec_then_plain result=PASS line=0",
+      "permitted_host_line": "SCM_CLOEXEC_CASE name=seqpacket.peek_cloexec_then_plain result=PASS line=0",
+      "default_sandbox_matches_expected_recorded_result": true,
+      "permitted_host_matches_original_success_contract": true
+    },
+    {
+      "ordinal": 22,
+      "name": "seqpacket.peek_plain_then_cloexec",
+      "expected_success_line": "SCM_CLOEXEC_CASE name=seqpacket.peek_plain_then_cloexec result=PASS line=0",
+      "default_sandbox_line": "SCM_CLOEXEC_CASE name=seqpacket.peek_plain_then_cloexec result=PASS line=0",
+      "permitted_host_line": "SCM_CLOEXEC_CASE name=seqpacket.peek_plain_then_cloexec result=PASS line=0",
+      "default_sandbox_matches_expected_recorded_result": true,
+      "permitted_host_matches_original_success_contract": true
+    },
+    {
+      "ordinal": 23,
+      "name": "seqpacket.truncated_control",
+      "expected_success_line": "SCM_CLOEXEC_CASE name=seqpacket.truncated_control result=PASS line=0",
+      "default_sandbox_line": "SCM_CLOEXEC_CASE name=seqpacket.truncated_control result=PASS line=0",
+      "permitted_host_line": "SCM_CLOEXEC_CASE name=seqpacket.truncated_control result=PASS line=0",
+      "default_sandbox_matches_expected_recorded_result": true,
+      "permitted_host_matches_original_success_contract": true
+    },
+    {
+      "ordinal": 24,
+      "name": "seqpacket.discarded_control",
+      "expected_success_line": "SCM_CLOEXEC_CASE name=seqpacket.discarded_control result=PASS line=0",
+      "default_sandbox_line": "SCM_CLOEXEC_CASE name=seqpacket.discarded_control result=PASS line=0",
+      "permitted_host_line": "SCM_CLOEXEC_CASE name=seqpacket.discarded_control result=PASS line=0",
+      "default_sandbox_matches_expected_recorded_result": true,
+      "permitted_host_matches_original_success_contract": true
+    },
+    {
+      "ordinal": 25,
+      "name": "seqpacket.no_control_message",
+      "expected_success_line": "SCM_CLOEXEC_CASE name=seqpacket.no_control_message result=PASS line=0",
+      "default_sandbox_line": "SCM_CLOEXEC_CASE name=seqpacket.no_control_message result=PASS line=0",
+      "permitted_host_line": "SCM_CLOEXEC_CASE name=seqpacket.no_control_message result=PASS line=0",
+      "default_sandbox_matches_expected_recorded_result": true,
+      "permitted_host_matches_original_success_contract": true
+    },
+    {
+      "ordinal": 26,
+      "name": "seqpacket.credentials_with_rights",
+      "expected_success_line": "SCM_CLOEXEC_CASE name=seqpacket.credentials_with_rights result=PASS line=0",
+      "default_sandbox_line": "SCM_CLOEXEC_CASE name=seqpacket.credentials_with_rights result=FAIL line=294",
+      "permitted_host_line": "SCM_CLOEXEC_CASE name=seqpacket.credentials_with_rights result=PASS line=0",
+      "default_sandbox_matches_expected_recorded_result": true,
+      "permitted_host_matches_original_success_contract": true
+    },
+    {
+      "ordinal": 27,
+      "name": "seqpacket.exec_inheritance",
+      "expected_success_line": "SCM_CLOEXEC_CASE name=seqpacket.exec_inheritance result=PASS line=0",
+      "default_sandbox_line": "SCM_CLOEXEC_CASE name=seqpacket.exec_inheritance result=PASS line=0",
+      "permitted_host_line": "SCM_CLOEXEC_CASE name=seqpacket.exec_inheritance result=PASS line=0",
+      "default_sandbox_matches_expected_recorded_result": true,
+      "permitted_host_matches_original_success_contract": true
+    }
+  ],
+  "artifact_digests": [
+    {
+      "path": "r12-evidence/local-scm-linux/compile.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "r12-evidence/local-scm-linux/compiler-version.txt",
+      "bytes": 245,
+      "sha256": "3e8cc208c40f60832f67377aa1b03c3e7e858f20cd5d365464944700c0bd7ad1"
+    },
+    {
+      "path": "r12-evidence/local-scm-linux/exit-code.txt",
+      "bytes": 2,
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865"
+    },
+    {
+      "path": "r12-evidence/local-scm-linux/inputs.sha256",
+      "bytes": 252,
+      "sha256": "78f4e3d2ed5048ab20298cffa4edc6c0ff7c985d49041c5f8e3c998ae08849a3"
+    },
+    {
+      "path": "r12-evidence/local-scm-linux/linux-version.txt",
+      "bytes": 94,
+      "sha256": "3c6a9880b19a8763b011a2af6b038645eb24a887ce3ac14cd4c8ff0ac827264b"
+    },
+    {
+      "path": "r12-evidence/local-scm-linux/probe.elf",
+      "bytes": 808304,
+      "sha256": "a6f1f96753a9892df31fe2ce6a7f634bd10da2f6632b373a80f52a80e5fcddbd"
+    },
+    {
+      "path": "r12-evidence/local-scm-linux/probe.sha256",
+      "bytes": 137,
+      "sha256": "e9609702d422fe81f42a20c67f9c40ac71a29649fa5411d7a57fc3fc130127a3"
+    },
+    {
+      "path": "r12-evidence/local-scm-linux/runner-tests-optimized.log",
+      "bytes": 1356,
+      "sha256": "2e9a131d045be6db311082c2beb0ba82948b6c3070796921294c2bb5c68a7ad4"
+    },
+    {
+      "path": "r12-evidence/local-scm-linux/runner-tests.log",
+      "bytes": 1356,
+      "sha256": "d6d80197a57363f2a317e725c9c179f621fc5e01d1e8331a94756a954bc368b0"
+    },
+    {
+      "path": "r12-evidence/local-scm-linux/stderr.log",
+      "bytes": 387,
+      "sha256": "d3d5a5ee1fe8909f87bd3da43dc58a9b4924b82b68828792e7c42ad48e611fa6"
+    },
+    {
+      "path": "r12-evidence/local-scm-linux/stdout.log",
+      "bytes": 1918,
+      "sha256": "994515cf4512d76a1ff5e697d483a9d8755879d128a0c54213cebfc8979fe825"
+    },
+    {
+      "path": "r12-evidence/local-scm-linux-escalated/exit-code.txt",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "r12-evidence/local-scm-linux-escalated/probe.elf",
+      "bytes": 808304,
+      "sha256": "a6f1f96753a9892df31fe2ce6a7f634bd10da2f6632b373a80f52a80e5fcddbd"
+    },
+    {
+      "path": "r12-evidence/local-scm-linux-escalated/probe.sha256",
+      "bytes": 147,
+      "sha256": "0673396c405a08417dfc10d3a70165b080a7c0a99bc7b5be26cfce84a40eabf2"
+    },
+    {
+      "path": "r12-evidence/local-scm-linux-escalated/reference-attempt.json",
+      "bytes": 991,
+      "sha256": "75b118cb33bd3bacb6a163e253f8d9fee3b2c320c1233b0c10d87ec015c672db"
+    },
+    {
+      "path": "r12-evidence/local-scm-linux-escalated/stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "r12-evidence/local-scm-linux-escalated/stdout.log",
+      "bytes": 1912,
+      "sha256": "05c93c49ac14c4c033912282356e234450e3f3f4e13014e758f9a714f57b52e1"
+    }
+  ],
+  "finding": "The original default-sandbox failure remains 24/27 with three SO_PASSCRED errno=1 assertions and exit 1. A later retained host-access run of the byte-identical frozen ELF has all 27 original cases in exact order, exact PASS line=0 stdout, empty stderr, and recorded process exit 0. This completes only the Linux reference evidence check.",
+  "limits": [
+    "The review validates retained local artifacts and their internal agreement; it does not independently observe either process execution or kernel policy configuration.",
+    "The later same-ELF host-access pass supports treating the first EPERM result as an environment-specific reference attempt, not evidence of a product-code repair.",
+    "No Asterinas guest artifacts, guest markers, guest process exit, QEMU exit status, or source-to-guest binding were reviewed. Linux reference success alone does not establish guest success."
+  ],
+  "issues": [],
+  "linux_reference_review_passed": true,
+  "existing_inputs_unchanged_during_review": true
+}

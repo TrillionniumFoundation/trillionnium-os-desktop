@@ -1,0 +1,235 @@
+{
+  "schema": "r12.g1c.lifecycle.delivery-summary.v1",
+  "product": {
+    "head": "104204016dcdea57ab73c091b1edd13008ae9a19",
+    "tree": "179b076747d19c3e07ee19a665e3968c33c598ce",
+    "normal_merge": "9f66434889cc3bce31cfcccda950f0c48d6fa1b3",
+    "merged_at": "2026-10-19T14:15:35Z",
+    "pr": 207
+  },
+  "complete_original_gates": {
+    "local": true,
+    "official": true,
+    "core_passed": 238,
+    "ostd_reported_passed": 221,
+    "ostd_soft_skipped": 3,
+    "ostd_exercised_lower_bound": 218,
+    "new_core_tests": 18,
+    "ordinary_markers": 18,
+    "source_paths_in_three_snapshots": 7346,
+    "negative_failed_counts": [
+      3,
+      4,
+      3,
+      1,
+      4,
+      1,
+      2
+    ],
+    "scm_linux_and_guest_cases": 27,
+    "rlimit_linux_and_guest_cases": 37,
+    "ubuntu_linux_and_guest_cases": 32,
+    "official_cpu_configurations": [
+      {
+        "period_us": 100000,
+        "mode": "read-only",
+        "original_limit_percent": 1.2,
+        "unlimited_percent": 98.79991424167444,
+        "wall_ns": 4000050339,
+        "cpu_ns": 37000000,
+        "cpu_percent": 0.9249883592527459,
+        "raw_qemu": 33,
+        "probe_sha256": "bf1097dd523bd88bff0b24ce429b4ffd9063fe0440aee69f5fac3266a6dbf08f",
+        "serial_sha256": "b9348d6e6690975da6cef20323540bb5cd515f719330e2d141d1661a10689ec2"
+      },
+      {
+        "period_us": 100000,
+        "mode": "same-value",
+        "original_limit_percent": 1.2,
+        "unlimited_percent": 99.99996560001183,
+        "wall_ns": 4099140109,
+        "cpu_ns": 38000000,
+        "cpu_percent": 0.9270236925195083,
+        "raw_qemu": 33,
+        "probe_sha256": "bf1097dd523bd88bff0b24ce429b4ffd9063fe0440aee69f5fac3266a6dbf08f",
+        "serial_sha256": "97ed687ea5bb5d9319e40edaefe150c54a3f6763118004f6186837d2e59cbd83"
+      },
+      {
+        "period_us": 2000,
+        "mode": "read-only",
+        "original_limit_percent": 52.0,
+        "unlimited_percent": 99.59999243040058,
+        "wall_ns": 4000764130,
+        "cpu_ns": 1884000000,
+        "cpu_percent": 47.091004087761604,
+        "raw_qemu": 33,
+        "probe_sha256": "bf1097dd523bd88bff0b24ce429b4ffd9063fe0440aee69f5fac3266a6dbf08f",
+        "serial_sha256": "8d2516c2a1c34ee1b9476fe5ae369e2f8db0be31be36b0618765e71725f14966"
+      },
+      {
+        "period_us": 2000,
+        "mode": "same-value",
+        "original_limit_percent": 52.0,
+        "unlimited_percent": 99.59993545924182,
+        "wall_ns": 4000204370,
+        "cpu_ns": 1898000000,
+        "cpu_percent": 47.44757578473422,
+        "raw_qemu": 33,
+        "probe_sha256": "bf1097dd523bd88bff0b24ce429b4ffd9063fe0440aee69f5fac3266a6dbf08f",
+        "serial_sha256": "f922cc685bfba55e7005b4beee72ead3476c5e3dea84dadb40a5e205382a0668"
+      }
+    ],
+    "official_bounded_quota_runs": [
+      {
+        "vcpus": 1,
+        "repeat": 1,
+        "samples": [
+          {
+            "label": "unlimited",
+            "wall_ns": 1000037174,
+            "cpu_ns": 999000000,
+            "iterations": 706000000
+          },
+          {
+            "label": "one-percent-configured",
+            "wall_ns": 1000035531,
+            "cpu_ns": 9000000,
+            "iterations": 5300000
+          }
+        ],
+        "original_limit_percent": 3.0,
+        "cpu_percent": 0.9,
+        "unlimited_percent": 99.89628645544731,
+        "raw_qemu": 33,
+        "serial_sha256": "d76d722f7f83a3e3463d4f37cc02555dc1c8723db67a2e6262843f1ef299ead8"
+      },
+      {
+        "vcpus": 1,
+        "repeat": 2,
+        "samples": [
+          {
+            "label": "unlimited",
+            "wall_ns": 1000061475,
+            "cpu_ns": 998000000,
+            "iterations": 662500000
+          },
+          {
+            "label": "one-percent-configured",
+            "wall_ns": 1000138594,
+            "cpu_ns": 9000000,
+            "iterations": 5700000
+          }
+        ],
+        "original_limit_percent": 3.0,
+        "cpu_percent": 0.9,
+        "unlimited_percent": 99.79386517213854,
+        "raw_qemu": 33,
+        "serial_sha256": "71f2a19b0de50b587abbead9b96c9c36042216550708dc80de190dce951eca8b"
+      },
+      {
+        "vcpus": 2,
+        "repeat": 1,
+        "samples": [
+          {
+            "label": "unlimited",
+            "wall_ns": 1007901838,
+            "cpu_ns": 2005000000,
+            "iterations": 0
+          },
+          {
+            "label": "one-percent-configured",
+            "wall_ns": 2000292104,
+            "cpu_ns": 18000000,
+            "iterations": 0
+          }
+        ],
+        "original_limit_percent": 3.0,
+        "cpu_percent": 0.9,
+        "unlimited_percent": 198.92810236149208,
+        "raw_qemu": 33,
+        "serial_sha256": "ad0e102a237378ca5e57b3ffa4b0da4bb780c554aff585c86e8bdb64d9d22a75"
+      },
+      {
+        "vcpus": 2,
+        "repeat": 2,
+        "samples": [
+          {
+            "label": "unlimited",
+            "wall_ns": 1008804406,
+            "cpu_ns": 2006000000,
+            "iterations": 0
+          },
+          {
+            "label": "one-percent-configured",
+            "wall_ns": 2100276070,
+            "cpu_ns": 19000000,
+            "iterations": 0
+          }
+        ],
+        "original_limit_percent": 3.0,
+        "cpu_percent": 0.905,
+        "unlimited_percent": 198.84925046610076,
+        "raw_qemu": 33,
+        "serial_sha256": "ad96beb649a9110a04c76433e1a10890098b339970caddebd38dc3b7bd8e2a58"
+      }
+    ]
+  },
+  "module_count": 11,
+  "documentation_distinct_targets": 64,
+  "documentation_markdown": 60,
+  "documentation_other": 4,
+  "hepta": {
+    "head": "89933fdc84ed1151f04609a1881ab24aaef119b4",
+    "pr": 2885,
+    "draft": true,
+    "merged": false,
+    "architecture_required": "success",
+    "source_original_ui_passed": 5,
+    "source_original_ui_failed": 1,
+    "base_original_ui_passed": 6,
+    "snapshot": "2026-10-19T14:10:06Z",
+    "checks": {
+      "total": 49,
+      "success": 23,
+      "skipped": 6,
+      "neutral": 1,
+      "failure": 3,
+      "in_progress": 14,
+      "queued": 2
+    },
+    "all_terminal": false,
+    "failing_jobs": [
+      "Rust UI source-head",
+      "cargo-deny",
+      "macOS ARM64 Bazel verify-release-build"
+    ],
+    "detailed_cargo_deny_and_bazel_causes": "not established from available new-head original logs"
+  },
+  "still_false": {
+    "native_grants": false,
+    "immutable_image_authority": false,
+    "four_disabled_hos2_operations_enabled": false,
+    "hepta_durable_kernel_delivery": false,
+    "original_hepta_w1": false,
+    "full_smp": false,
+    "android_guest": false,
+    "native_asterinas_gui": false,
+    "mobile_device_qualification": false
+  },
+  "full_evidence_package": {
+    "schema": "trillionnium.r12.evidence-package-receipt.v1",
+    "created_at": "2026-10-19T14:21:43.333072+00:00",
+    "file": "Trillionnium_R12_G1c_20261019_Evidence.zip",
+    "bytes": 246987878,
+    "sha256": "1119a36a958a45e5f732d557f085452e88adbb432a34debf98502d526fefe123",
+    "file_count": 1436,
+    "symlink_count": 0,
+    "original_file_bytes": 587521665,
+    "unique_objects": 1168,
+    "unique_object_bytes": 382108689,
+    "excluded_items": 11,
+    "every_original_file_rehashed_after_packaging": true
+  },
+  "previous_failure_records_preserved": true,
+  "documentation_only_report_does_not_add_runtime_qualification": true
+}

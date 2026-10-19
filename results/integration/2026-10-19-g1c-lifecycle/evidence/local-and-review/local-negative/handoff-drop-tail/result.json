@@ -1,0 +1,31 @@
+{
+  "all_other_source_files_unchanged": true,
+  "candidate_head": "104204016dcdea57ab73c091b1edd13008ae9a19",
+  "candidate_tree": "179b076747d19c3e07ee19a665e3968c33c598ce",
+  "control": "handoff-drop-tail",
+  "declared_changed_path": "kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs",
+  "green_kernel_sha256": "bc457c4dd01c91a96e2891771b59888e84dc2cfefdee49d24f593aae189f0bbb",
+  "green_serial_sha256": "ef03a8cf19ba7ae395a964eda936385341f460ebf68c5211eee6c5b45b4b8696",
+  "negative_control_detected": true,
+  "negative_failed": [
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::exiting_dequeue_retains_its_owner_through_selection_retries",
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::handoff_debits_the_old_window_before_rechecking_a_shared_ancestor",
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::outgoing_tail_ends_at_the_incoming_segment_start",
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::waiting_dequeue_retains_its_owner_through_selection_retries"
+  ],
+  "negative_head": "bfbfdcb1d5a7d9fe5a53b33d8d00ce0c37d1ab26",
+  "negative_kernel_sha256": "eda18ff8122e7b3bc18769f621ba871db1b22839294b695fade39ead6b9a794a",
+  "negative_passed": 234,
+  "negative_serial_sha256": "98c6144fb21e90ded4fa1f1afbeda58f5f828346eb71bfc691037db56d93f7d2",
+  "negative_tree": "175193310de0303c4e4c0e3f1e30c0b29195c560",
+  "original_gate_exit": 1,
+  "passed": true,
+  "patch_sha256": "2e9a87cdf9044f29dbcb8c932e72079eaf3fc9ecde791c9627b45b9b06257ffc",
+  "product_qualification": false,
+  "raw_qemu_exit": 65,
+  "same_osdk_binary_and_source_path": true,
+  "schema": "a06.cpu-owner-negative.v1",
+  "source_snapshots_unchanged": true,
+  "timed_out": false,
+  "total_core_tests": 238
+}

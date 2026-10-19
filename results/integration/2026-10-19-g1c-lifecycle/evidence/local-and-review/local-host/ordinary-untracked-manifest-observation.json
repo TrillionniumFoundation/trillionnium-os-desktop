@@ -1,0 +1,15 @@
+{
+  "observed_at": "2026-10-19T13:09:35.173347+00:00",
+  "path": "/workspace/scratch/499c7902de8e/r12-g1c/kernel/asterinas/kernel/OSDK.toml",
+  "bytes": 1019,
+  "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f",
+  "inode": 278658,
+  "device": 27,
+  "mtime": "2026-10-19T13:04:38.737531+00:00",
+  "ctime": "2026-10-19T13:07:09.512399+00:00",
+  "mode": "0o100600",
+  "same_as_minimal": true,
+  "git_status": "?? kernel/asterinas/kernel/OSDK.toml\n",
+  "content": "# SPDX-License-Identifier: MPL-2.0\n# Temporarily installed as kernel/OSDK.toml by the build wrapper. The upstream\n# source tree remains unchanged after the wrapper exits.\n\nsupported_archs = [\"x86_64\"]\n\n[boot]\nmethod = \"vmm-direct\"\nkcmd_args = [\n    \"earlycon\",\n    \"console=ttyS0\",\n    \"loglevel=info\",\n    \"SHELL=/bin/sh\",\n    \"LOGNAME=root\",\n    \"HOME=/\",\n    \"USER=root\",\n    \"PATH=/bin:/sbin\",\n]\ninit_args = []\n\n[grub]\nboot_protocol = \"multiboot\"\n\n[qemu]\n# Direct multiboot ELF loading uses QEMU's packaged PC firmware; it does not\n# require OVMF, GRUB, data disks, network access, a display, or KVM.\nargs = \"\"\"\\\n    -machine q35 \\\n    -accel tcg \\\n    -cpu max \\\n    -bios /usr/share/seabios/bios-256k.bin \\\n    -m 512M \\\n    -smp 1 \\\n    -nodefaults \\\n    -no-user-config \\\n    -no-reboot \\\n    -nographic \\\n    -display none \\\n    -monitor none \\\n    -chardev stdio,id=serial,signal=off,logfile=qemu.log \\\n    -serial chardev:serial \\\n    -device isa-debug-exit,iobase=0xf4,iosize=0x04\n\"\"\"\nlog_file = \"qemu.log\"\n",
+  "processes": []
+}

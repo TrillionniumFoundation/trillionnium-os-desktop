@@ -1,0 +1,13 @@
+diff --git a/kernel/asterinas/kernel/core/src/vdso.rs b/kernel/asterinas/kernel/core/src/vdso.rs
+index 603a73e..188343d 100644
+--- a/kernel/asterinas/kernel/core/src/vdso.rs
++++ b/kernel/asterinas/kernel/core/src/vdso.rs
+@@ -202,7 +202,7 @@ impl VdsoData {
+         }
+         u64::from(sample.instant().nanos())
+             .checked_shl(shift)?
+-            .checked_add(fractional_numerator)
++            .checked_add(0)
+     }
+ 
+     fn update_coarse_res_instant(&mut self, instant: Instant) {

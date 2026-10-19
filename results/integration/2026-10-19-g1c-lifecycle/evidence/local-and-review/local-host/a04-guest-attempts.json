@@ -1,0 +1,72 @@
+{
+  "schema": "g1c.original-a04-guest-attempts.v1",
+  "source_head": "104204016dcdea57ab73c091b1edd13008ae9a19",
+  "source_tree": "179b076747d19c3e07ee19a665e3968c33c598ce",
+  "started_at": "2026-10-19T13:21:10.251213+00:00",
+  "phases": [
+    {
+      "name": "nofile-guest",
+      "command": [
+        "python3",
+        "-I",
+        "-B",
+        "tests/workloads/linux/run_rlimit_nofile_guest.py",
+        "guest",
+        "--linux-reference",
+        "/workspace/scratch/499c7902de8e/r12-evidence/local-nofile-linux-escalated",
+        "--expected-probe-sha256",
+        "80578a08abf6464dc10f2af3a1a793bbf46988981499934c9cfcbc58a590cae8",
+        "--product-evidence",
+        "/workspace/scratch/499c7902de8e/r12-evidence/local-ordinary-candidate-final",
+        "--expected-source-head",
+        "104204016dcdea57ab73c091b1edd13008ae9a19",
+        "--expected-source-tree",
+        "179b076747d19c3e07ee19a665e3968c33c598ce",
+        "--a01-initramfs",
+        "support/build/evidence/2026-10-16/artifacts/initramfs.cpio.gz",
+        "--output",
+        "/workspace/scratch/499c7902de8e/r12-evidence/local-nofile-guest"
+      ],
+      "started_at": "2026-10-19T13:21:10.251230+00:00",
+      "exit_code": 0,
+      "seconds": 2.1420316779986024,
+      "finished_at": "2026-10-19T13:21:12.393476+00:00",
+      "log_sha256": "5a5401f998a37de0153acd5e942172c4222ae9848668a8de27d15c00ba147377"
+    },
+    {
+      "name": "full32-guest",
+      "command": [
+        "/usr/bin/python3.12",
+        "-I",
+        "-B",
+        "tests/workloads/linux/run_full_ubuntu_profile.py",
+        "guest",
+        "--bundle",
+        "/workspace/scratch/499c7902de8e/r12-evidence/local-full-bundle",
+        "--expected-input-sha256",
+        "96aa95ba2105fc9092c860f301d78454b2cb92db6e8124858c109bb83b25f20a",
+        "--linux-reference",
+        "/workspace/scratch/499c7902de8e/r12-evidence/local-full-linux",
+        "--product-evidence",
+        "/workspace/scratch/499c7902de8e/r12-evidence/local-ordinary-candidate-final",
+        "--expected-source-head",
+        "104204016dcdea57ab73c091b1edd13008ae9a19",
+        "--expected-source-tree",
+        "179b076747d19c3e07ee19a665e3968c33c598ce",
+        "--bios",
+        "/usr/share/seabios/bios-256k.bin",
+        "--qemu",
+        "/usr/bin/qemu-system-x86_64",
+        "--output",
+        "/workspace/scratch/499c7902de8e/r12-evidence/local-full-guest"
+      ],
+      "started_at": "2026-10-19T13:21:12.393836+00:00",
+      "exit_code": 0,
+      "seconds": 68.63434382700507,
+      "finished_at": "2026-10-19T13:22:21.028536+00:00",
+      "log_sha256": "20804864b2d6191199f0eb66ef74c3f700132b52cb1eb9fa8688953f52396911"
+    }
+  ],
+  "passed": true,
+  "source_status_after": ""
+}

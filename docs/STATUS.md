@@ -1,5 +1,13 @@
 # 当前状态
 
+## 2026-10-19 R12：G1-c 生命周期切片 #207 已正常合并
+
+[#207](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/207) 于 14:15:35 UTC 正常合并为 `9f66434889cc3bce31cfcccda950f0c48d6fa1b3`；tree `179b076747d19c3e07ee19a665e3968c33c598ce` 与最终实际执行 head `104204016dcdea57ab73c091b1edd13008ae9a19` 相同。五项 CI checks 全部成功，官方 [A06 run](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39256580996) 的1172成员原件、完整 core238／OSTD221含3softskip、七负控3/4/3/1/4/1/2、普通7346源码三快照与18标记、SCM27／RLIMIT37／Ubuntu32以及CPU原门槛均独立核实。原普通 ELF、内核 ktest ELF、local／CI 输入与首次失败分别留证。
+
+实际新增原 Process 同锁映像生命周期、不可逆 exec／exit 关闭、private一次性 Process／VMAR／Task prepared 消费；18个新增真实内核对象测试及4个新增普通 guest 场景已执行。此次仍仅 QueryAbi，不提供不可变映像认证、生产 grant、四项资源效果、Hepta持久交付、完整SMP或手机资格。下一片沿同一原 owner 接静态映像认证、写别名／ptrace／CLONE_VM边界和最小ReadUsage。
+
+[本轮完整审计](../results/integration/2026-10-19-g1c-lifecycle/README.md)、[11模块／64入口矩阵](../results/integration/2026-10-19-g1c-lifecycle/module-matrix.json)及[施工单](../results/integration/2026-10-19-g1c-lifecycle/NEXT_IMPLEMENTATION.md)给出实现、原始失败、完整验证和各模块边界。Hepta #2885 新头 `89933fdc…` 的 Architecture 必需门禁已成功；UI 原 source 六例仍5通过1失败，真实CDP显示完整503后原生完成事件失败。14:10:06 UTC 的49 checks快照另有cargo-deny和macOS ARM64 Bazel失败，仍有16项运行或排队，不能合并。后续实际状态按新收据追加，下面原候选与历史记录保留原时点。
+
 ## 2026-10-19 R12 候选：原 Process 映像生命周期与一次性启动
 
 在 main `7c675e1d3efe46587edeebe14bd90ac1a842ffbf` 上接入原 Process 的同锁 epoch／nonce／Live／Closing／Closed 与首次启动状态。不可逆 exec、group／最后线程退出先关闭旧会话；前边界 exec 失败及普通非最后线程退出保持当前映像。原 init 装载后取得 private PreparedInitialProcess，绑定实际 Process／VMAR／Task／key，消费后才登记并首次调度。实现和锁序见 [技术手册](ASTERINAS_PROCESS_IMAGE_G1C.md)，18项真实对象 core 回归与完整原 CI 验收要求见 [开发手册](../tests/kernel/control/PROCESS_IMAGE_G1C.md)。

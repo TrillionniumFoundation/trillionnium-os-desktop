@@ -1,0 +1,30 @@
+{
+  "all_other_source_files_unchanged": true,
+  "candidate_head": "104204016dcdea57ab73c091b1edd13008ae9a19",
+  "candidate_tree": "179b076747d19c3e07ee19a665e3968c33c598ce",
+  "control": "vdso-drop-fraction",
+  "declared_changed_path": "kernel/asterinas/kernel/core/src/vdso.rs",
+  "green_kernel_sha256": "bc457c4dd01c91a96e2891771b59888e84dc2cfefdee49d24f593aae189f0bbb",
+  "green_serial_sha256": "ef03a8cf19ba7ae395a964eda936385341f460ebf68c5211eee6c5b45b4b8696",
+  "negative_control_detected": true,
+  "negative_failed": [
+    "aster_core::vdso::clocksource_regressions::full_width_vdso_fraction_survives_second_rollover_and_checks_realtime_overflow",
+    "aster_core::vdso::clocksource_regressions::mapped_vdso_publishes_the_phase_and_fault_mode_under_the_existing_sequence",
+    "aster_core::vdso::clocksource_regressions::vdso_and_kernel_share_the_fractional_phase_at_the_next_nanosecond"
+  ],
+  "negative_head": "833862260f260c244a7fe37c5e8ae79c94a31024",
+  "negative_kernel_sha256": "540769ada1ceb4987588d4fc298cbab49a7477d46317d9315113ad29350543a6",
+  "negative_passed": 235,
+  "negative_serial_sha256": "3296955b077e84d68d3bedf9cee93b9f7696073391de24abfdd66dd100a9ba8a",
+  "negative_tree": "e354e2f5d90bb11d8201b9344e66d84fc279ecc8",
+  "original_gate_exit": 1,
+  "passed": true,
+  "patch_sha256": "a1e116c7af6a57add22693b4fa985b8bb45809df3ad6765b52ea8efa979975c9",
+  "product_qualification": false,
+  "raw_qemu_exit": 65,
+  "same_osdk_binary_and_source_path": true,
+  "schema": "a06.cpu-owner-negative.v1",
+  "source_snapshots_unchanged": true,
+  "timed_out": false,
+  "total_core_tests": 238
+}

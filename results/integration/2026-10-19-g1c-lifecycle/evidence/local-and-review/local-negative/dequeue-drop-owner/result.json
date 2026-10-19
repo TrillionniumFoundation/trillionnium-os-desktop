@@ -1,0 +1,29 @@
+{
+  "all_other_source_files_unchanged": true,
+  "candidate_head": "104204016dcdea57ab73c091b1edd13008ae9a19",
+  "candidate_tree": "179b076747d19c3e07ee19a665e3968c33c598ce",
+  "control": "dequeue-drop-owner",
+  "declared_changed_path": "kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs",
+  "green_kernel_sha256": "bc457c4dd01c91a96e2891771b59888e84dc2cfefdee49d24f593aae189f0bbb",
+  "green_serial_sha256": "ef03a8cf19ba7ae395a964eda936385341f460ebf68c5211eee6c5b45b4b8696",
+  "negative_control_detected": true,
+  "negative_failed": [
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::exiting_dequeue_retains_its_owner_through_selection_retries",
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::waiting_dequeue_retains_its_owner_through_selection_retries"
+  ],
+  "negative_head": "c982bba80f03953320cd35fffbad899f08834091",
+  "negative_kernel_sha256": "3c73a1de1ef7f1a9801c06e78ed7854fa30b9acf3637cc3a3f3ae2979779c8c7",
+  "negative_passed": 236,
+  "negative_serial_sha256": "ca35a0184f5e504a2bdb88a0be44dec1be70e713eb9fc1df7ddbbf1c3c30f446",
+  "negative_tree": "9b4b49ad2c3bdb466984eaae80dfd3af8efa2001",
+  "original_gate_exit": 1,
+  "passed": true,
+  "patch_sha256": "b6fc10180e9fe292249409c758151763401dddb39bb4b2851bf53f71b3c959dd",
+  "product_qualification": false,
+  "raw_qemu_exit": 65,
+  "same_osdk_binary_and_source_path": true,
+  "schema": "a06.cpu-owner-negative.v1",
+  "source_snapshots_unchanged": true,
+  "timed_out": false,
+  "total_core_tests": 238
+}
