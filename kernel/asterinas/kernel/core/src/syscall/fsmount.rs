@@ -5,7 +5,7 @@ use crate::{
     fs::{
         file::{
             DetachedMountFile, FileLike, FsConfigFile,
-            file_table::{FdFlags, RawFileDesc, get_file_fast},
+            file_table::{FdFlags, FileTable, RawFileDesc, get_file_fast},
         },
         vfs::path::PerMountFlags,
     },
@@ -34,17 +34,13 @@ pub(super) fn sys_fsmount(
         .downcast_ref::<FsConfigFile>()
         .ok_or_else(|| Error::with_message(Errno::EINVAL, "the file is not a fs context"))?;
 
+    let reserved = FileTable::reserve_fd(ctx, FdFlags::from(flags))?;
     let current_ns_proxy = ctx.thread_local.borrow_ns_proxy();
     let current_mnt_ns = current_ns_proxy.unwrap().mnt_ns();
     let detached_mount =
         fs_config.create_detached_mount(per_mount_flags, Arc::downgrade(current_mnt_ns))?;
     let file = Arc::new(DetachedMountFile::new(detached_mount)) as Arc<dyn FileLike>;
-    let fd = ctx
-        .thread_local
-        .borrow_file_table()
-        .unwrap()
-        .write()
-        .insert(file, FdFlags::from(flags));
+    let fd = reserved.install(file);
     Ok(SyscallReturn::Return(fd.into()))
 }
 

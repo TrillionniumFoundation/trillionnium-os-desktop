@@ -19,7 +19,7 @@ use crate::{
     fs::{
         file::{
             AccessMode, CreationFlags, FileCommon, FileLike, StatusFlags,
-            file_table::{FdFlags, RawFileDesc, get_file_fast},
+            file_table::{FdFlags, FileTable, RawFileDesc, get_file_fast},
         },
         pseudofs::AnonInodeFs,
     },
@@ -93,13 +93,13 @@ fn create_new_signalfd(
     non_blocking: bool,
     fd_flags: FdFlags,
 ) -> Result<RawFileDesc> {
+    let reserved = FileTable::reserve_fd(ctx, fd_flags)?;
     let signal_file = {
         let atomic_mask = AtomicSigMask::new(mask);
         Arc::new(SignalFile::new(atomic_mask, non_blocking))
     };
 
-    let file_table = ctx.thread_local.borrow_file_table();
-    let fd = file_table.unwrap().write().insert(signal_file, fd_flags);
+    let fd = reserved.install(signal_file);
     Ok(fd.into())
 }
 

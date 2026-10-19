@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: MPL-2.0
 
 use crate::{
-    fs::file::{StatusFlags, file_table::FdFlags},
+    fs::file::{
+        StatusFlags,
+        file_table::{FdFlags, FileTable},
+    },
     prelude::*,
     process::{Pid, PidFile, pid_table},
     syscall::SyscallReturn,
@@ -25,11 +28,9 @@ pub(super) fn sys_pidfd_open(pid: Pid, flags: u32, ctx: &Context) -> Result<Sysc
 
     let pid_fd = {
         let pid_file = Arc::new(PidFile::new(process, is_nonblocking));
-        let file_table = ctx.thread_local.borrow_file_table();
-        let mut file_table_locked = file_table.unwrap().write();
         // "the close-on-exec flag is set on the file descriptor."
         // Reference: <https://man7.org/linux/man-pages/man2/pidfd_open.2.html>.
-        file_table_locked.insert(pid_file, FdFlags::CLOEXEC)
+        FileTable::reserve_fd(ctx, FdFlags::CLOEXEC)?.install(pid_file)
     };
 
     Ok(SyscallReturn::Return(pid_fd.into()))

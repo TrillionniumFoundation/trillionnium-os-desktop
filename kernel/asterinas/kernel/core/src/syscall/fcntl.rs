@@ -51,7 +51,12 @@ fn handle_dupfd(fd: FileDesc, arg: u64, flags: FdFlags, ctx: &Context) -> Result
         .map_err(|_| Error::with_message(Errno::EINVAL, "invalid fd"))?;
 
     let file_table = ctx.thread_local.borrow_file_table();
-    let new_fd = file_table.unwrap().write().dup_ceil(fd, ceil_fd, flags)?;
+    let new_fd = file_table.unwrap().write().dup_ceil(
+        fd,
+        Some(ceil_fd),
+        flags,
+        ctx.process.resource_limits(),
+    )?;
     Ok(SyscallReturn::Return(new_fd.into()))
 }
 

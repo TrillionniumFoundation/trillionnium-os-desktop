@@ -16,7 +16,11 @@ pub(crate) use fs_impls::{
 
 use crate::{
     fs::{
-        file::{AccessMode, InodeType, OpenArgs, file_table::FdFlags, mkmod},
+        file::{
+            AccessMode, InodeType, OpenArgs,
+            file_table::{FdFlags, FileTable},
+            mkmod,
+        },
         vfs::{
             path::{FsPath, Path, PathResolver, PerMountFlags},
             registry::FsAndRoot,
@@ -83,12 +87,12 @@ pub(crate) fn init_in_first_process(ctx: &Context) {
             .unwrap()
     };
 
-    let mut file_table_ref = ctx.thread_local.borrow_file_table_mut();
-    let mut file_table = file_table_ref.unwrap().write();
-
-    file_table.insert(Arc::new(stdin), FdFlags::empty());
-    file_table.insert(Arc::new(stdout), FdFlags::empty());
-    file_table.insert(Arc::new(stderr), FdFlags::empty());
+    // The initial process has an empty table and the boot-time soft limit is at least three.
+    for file in [stdin, stdout, stderr] {
+        FileTable::reserve_fd(ctx, FdFlags::empty())
+            .unwrap()
+            .install(Arc::new(file));
+    }
 }
 
 fn lookup_or_create_dev(path_resolver: &PathResolver) -> Result<Path> {

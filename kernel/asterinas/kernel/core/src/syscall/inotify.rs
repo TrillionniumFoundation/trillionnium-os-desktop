@@ -5,7 +5,7 @@ use crate::{
     fs::{
         file::{
             InodeType, Permission,
-            file_table::{FdFlags, RawFileDesc, get_file_fast},
+            file_table::{FdFlags, FileTable, RawFileDesc, get_file_fast},
         },
         vfs::{
             notify::inotify::{InotifyControls, InotifyEvents, InotifyFile},
@@ -30,15 +30,14 @@ fn do_inotify_init(flags: u32, ctx: &Context) -> Result<SyscallReturn> {
         .ok_or_else(|| Error::with_message(Errno::EINVAL, "invalid flags"))?;
 
     let is_nonblocking = flags.contains(InotifyFileFlags::NONBLOCK);
-    let file = InotifyFile::new(is_nonblocking)?;
-
     let fd_flags = if flags.contains(InotifyFileFlags::CLOEXEC) {
         FdFlags::CLOEXEC
     } else {
         FdFlags::empty()
     };
-    let file_table = ctx.thread_local.borrow_file_table();
-    let fd = file_table.unwrap().write().insert(file, fd_flags);
+    let reserved = FileTable::reserve_fd(ctx, fd_flags)?;
+    let file = InotifyFile::new(is_nonblocking)?;
+    let fd = reserved.install(file);
     Ok(SyscallReturn::Return(fd.into()))
 }
 

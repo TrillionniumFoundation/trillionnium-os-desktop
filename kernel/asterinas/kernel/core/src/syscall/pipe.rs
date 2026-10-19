@@ -7,7 +7,7 @@ use crate::{
     fs::{
         file::{
             CreationFlags, StatusFlags,
-            file_table::{FdFlags, RawFileDesc},
+            file_table::{FdFlags, FileTable, RawFileDesc},
         },
         pipe,
     },
@@ -34,33 +34,18 @@ pub(super) fn sys_pipe2(fds: Vaddr, flags: u32, ctx: &Context) -> Result<Syscall
         FdFlags::empty()
     };
 
-    let file_table = ctx.thread_local.borrow_file_table();
-    let mut file_table_locked = file_table.unwrap().write();
-
-    let reader_fd = file_table_locked.insert(pipe_reader, fd_flags);
-    let writer_fd = file_table_locked.insert(pipe_writer, fd_flags);
+    let reader = FileTable::reserve_fd(ctx, fd_flags)?;
+    let writer = FileTable::reserve_fd(ctx, fd_flags)?;
     let pipe_fds = PipeFds {
-        reader_raw_fd: reader_fd.into(),
-        writer_raw_fd: writer_fd.into(),
+        reader_raw_fd: reader.fd().into(),
+        writer_raw_fd: writer.fd().into(),
     };
     debug!("pipe_fds: {:?}", pipe_fds);
 
-    // Since `write_val` may sleep, we cannot hold the file table lock during its execution.
-    drop(file_table_locked);
-
-    if let Err(err) = ctx.user_space().write_val(fds, &pipe_fds) {
-        // FIXME: Introduce reserved FDs to ensure that the files are never visible to user space
-        // before `write_val` succeeds and cleanup closes the exact reserved FDs below.
-        let closed_files = {
-            let mut file_table_locked = file_table.unwrap().write();
-            [
-                file_table_locked.close_file(reader_fd),
-                file_table_locked.close_file(writer_fd),
-            ]
-        };
-        drop(closed_files);
-        return Err(err.into());
-    }
+    // Reservations hold no table lock across user copyout and release both slots on error.
+    ctx.user_space().write_val(fds, &pipe_fds)?;
+    reader.install(pipe_reader);
+    writer.install(pipe_writer);
 
     Ok(SyscallReturn::Return(0))
 }

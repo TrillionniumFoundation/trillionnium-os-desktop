@@ -790,31 +790,12 @@ fn clone_pidfd(
 
     let pidfd_addr = pidfd_addr.unwrap();
 
-    let fd = {
-        let pid_file = PidFile::new(child.clone(), false);
-        let file_table = ctx.thread_local.borrow_file_table();
-        let mut file_table_locked = file_table.unwrap().write();
-        file_table_locked.insert(Arc::new(pid_file), FdFlags::CLOEXEC)
-    };
-
-    // Since `write_val` may sleep, we cannot hold the file table lock during its execution.
-    match ctx
-        .user_space()
-        .write_val(pidfd_addr, &RawFileDesc::from(fd))
-    {
-        Ok(()) => Ok(()),
-        Err(err) => {
-            // FIXME: Introduce reserved FDs to ensure that the file is never visible to user space
-            // before `write_val` succeeds and cleanup closes the exact reserved FD below.
-            let closed_file = {
-                let file_table = ctx.thread_local.borrow_file_table();
-                let mut file_table_locked = file_table.unwrap().write();
-                file_table_locked.close_file(fd)
-            };
-            drop(closed_file);
-            Err(err.into())
-        }
-    }
+    let reserved = FileTable::reserve_fd(ctx, FdFlags::CLOEXEC)?;
+    let pid_file = PidFile::new(child.clone(), false);
+    ctx.user_space()
+        .write_val(pidfd_addr, &RawFileDesc::from(reserved.fd()))?;
+    reserved.install(Arc::new(pid_file));
+    Ok(())
 }
 
 fn clone_user_ns(

@@ -45,6 +45,8 @@ R9 在原 owner 独立扩展上增加已知请求的在线准入历史查询；�
 
 A06 的 [本地 CPU 配置前结算](../tests/organ_backend/CPU_CONFIG_SETTLEMENT.md) 给出原 runqueue/owner 锁序、带宽游标、四个确定性内核回归，以及 100 ms / 2 ms 两个周期的只读和同值写入客体验证命令。该增量保留原计费 owner；文档分别列出实际执行要求与尚未完成的 BOOTTIME、同版本使用量、控制器代际和 SMP 接合，不据此宣告全部 G1-b 完成。
 
+A04 的 [RLIMIT_NOFILE 开发与技术手册](../tests/workloads/linux/RLIMIT_NOFILE.md) 说明原 FileTable 的 FD 预约、调用进程 soft limit、并发/错误语义、37 项差分 probe 和严格同 ELF 运行命令；[固定 Linux 成功与旧内核失败归档](../results/compat/2026-10-19-rlimit-nofile/README.md) 保留完整原始字节、实际退出码和早期失败。该新增 profile 与旧 Debian 13 全套资格分别记录，修复后的普通内核必须在同一组合源码上重新验收。
+
 已合入 R8 的实际集成输入为 `25298f5d87cf3db90deefe9c0405ecd241dc6581`，同树发布 `ca5e7d8473690df1bf7636de0808e58414c40abe` / tree `9584997da412dd10c0960f69011b40a4b26d2862`，[PR #192](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/192) 纳入 #190 工作区候选及 #191 主干修复的完整历史。[R8 实际证据](../results/integration/2026-10-18-objective-desktop/README.md) 记录独立 CLI、两次原版准入运行、后一次的三个 Session/同一 Shell 阶段与三张实际截图；[R8 ARM 完成复核](../results/integration/2026-10-18-runtime-process-boundaries/r8-arm-completion/README.md) 另绑定 `05a7cd23` / run `39106645234` 的实际 success。默认 observer/Session/Shell 继续只读；隔离测试 issuer 的通过不代替生产 issuer 或设备效果。
 
 上一轮 #185/#187/#188/#189 的 A02 完整 pinned 验收、A03 双后端及有界并发、G0 和 A06 客体 1/2 vCPU 有限配置证据见 [audit-followthrough 索引](../results/integration/2026-10-18-audit-followthrough/README.md)。R6 两轮原版只读六阶段窗口属于 2026-10-17 实际运行，见 [R6 历史归档](../tests/integration/hepta/evidence/2026-10-17-r6/README.md)；旧测试计数和源码不转记给本轮。下面保留全部 A00–A10 的当前开发入口、技术契约和各自资格。
