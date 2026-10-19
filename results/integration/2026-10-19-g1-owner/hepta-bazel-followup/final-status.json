@@ -1,0 +1,232 @@
+{
+  "schema_version": 1,
+  "observation_started_at": "2026-10-19T02:24:28.075Z",
+  "observation_completed_at": "2026-10-19T02:24:29.300Z",
+  "head": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+  "raw_snapshot": "final-snapshot.json",
+  "pr": {
+    "state": "open",
+    "draft": false,
+    "merged": false,
+    "merged_at": null,
+    "mergeable_state": "blocked",
+    "auto_merge": {
+      "commit_message": null,
+      "commit_title": null,
+      "merge_method": "squash",
+      "enabled_by": {
+        "login": "ProfHepta",
+        "id": 102159240,
+        "node_id": "U_kgDOBhbTiA",
+        "avatar_url": "https://avatars.githubusercontent.com/u/102159240?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/ProfHepta",
+        "html_url": "https://github.com/ProfHepta",
+        "followers_url": "https://api.github.com/users/ProfHepta/followers",
+        "following_url": "https://api.github.com/users/ProfHepta/following{/other_user}",
+        "gists_url": "https://api.github.com/users/ProfHepta/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/ProfHepta/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/ProfHepta/subscriptions",
+        "organizations_url": "https://api.github.com/users/ProfHepta/orgs",
+        "repos_url": "https://api.github.com/users/ProfHepta/repos",
+        "events_url": "https://api.github.com/users/ProfHepta/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/ProfHepta/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      }
+    },
+    "head": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+    "base": "f8c9419df6ddeb36ff8b522a50219981fb8d9345"
+  },
+  "checks": {
+    "total": 47,
+    "totals": {
+      "success": 24,
+      "skipped": 6,
+      "neutral": 1,
+      "failure": 6,
+      "in_progress": 10
+    },
+    "required": [
+      {
+        "id": 117852485431,
+        "name": "Architecture required",
+        "status": "completed",
+        "conclusion": "success",
+        "completed_at": "2026-10-19T01:53:09Z"
+      }
+    ],
+    "ci_required_present": false,
+    "failures": [
+      {
+        "id": 117846025117,
+        "name": "Bazel / Bazel test on windows-latest for x86_64-pc-windows-msvc shard 2/4",
+        "completed_at": "2026-10-19T02:07:07Z",
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846025117",
+        "log_analyzed_in_this_followup": true
+      },
+      {
+        "id": 117846025094,
+        "name": "Bazel / Bazel test on windows-latest for x86_64-pc-windows-msvc shard 3/4",
+        "completed_at": "2026-10-19T02:20:34Z",
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846025094",
+        "log_analyzed_in_this_followup": false
+      },
+      {
+        "id": 117846025091,
+        "name": "Bazel / Bazel test on windows-latest for x86_64-pc-windows-msvc shard 1/4",
+        "completed_at": "2026-10-19T02:19:51Z",
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846025091",
+        "log_analyzed_in_this_followup": false
+      },
+      {
+        "id": 117846024963,
+        "name": "Bazel / Bazel clippy on macos-15 for aarch64-apple-darwin",
+        "completed_at": "2026-10-19T02:10:10Z",
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024963",
+        "log_analyzed_in_this_followup": true
+      },
+      {
+        "id": 117846024935,
+        "name": "Bazel / Bazel clippy on ubuntu-24.04 for x86_64-unknown-linux-gnu",
+        "completed_at": "2026-10-19T02:01:02Z",
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024935",
+        "log_analyzed_in_this_followup": true
+      },
+      {
+        "id": 117846024659,
+        "name": "cargo-deny / cargo-deny",
+        "completed_at": "2026-10-19T01:25:43Z",
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024659",
+        "log_analyzed_in_this_followup": false
+      }
+    ]
+  },
+  "blocking_run": {
+    "id": 39185139893,
+    "status": "in_progress",
+    "conclusion": null,
+    "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba"
+  },
+  "running_jobs": [
+    {
+      "id": 117846024829,
+      "name": "sdk / sdks",
+      "started_at": "2026-10-19T01:24:19Z",
+      "current_step": {
+        "name": "Build codex and code-mode host with Bazel",
+        "status": "in_progress",
+        "conclusion": null,
+        "number": 7,
+        "started_at": "2026-10-19T01:24:47Z",
+        "completed_at": null
+      }
+    },
+    {
+      "id": 117846024906,
+      "name": "Bazel / Bazel clippy on windows-latest for x86_64-pc-windows-msvc",
+      "started_at": "2026-10-19T01:24:19Z",
+      "current_step": {
+        "name": "Post Prepare Bazel CI",
+        "status": "in_progress",
+        "conclusion": null,
+        "number": 13,
+        "started_at": "2026-10-19T02:24:27Z",
+        "completed_at": null
+      }
+    },
+    {
+      "id": 117846024913,
+      "name": "Bazel / Bazel test on macos-15 for aarch64-apple-darwin",
+      "started_at": "2026-10-19T01:24:22Z",
+      "current_step": {
+        "name": "bazel test //...",
+        "status": "in_progress",
+        "conclusion": null,
+        "number": 6,
+        "started_at": "2026-10-19T01:24:37Z",
+        "completed_at": null
+      }
+    },
+    {
+      "id": 117846024926,
+      "name": "Bazel / Verify release build on macos-15 for aarch64-apple-darwin",
+      "started_at": "2026-10-19T01:24:25Z",
+      "current_step": {
+        "name": "bazel build verify-release-build targets",
+        "status": "in_progress",
+        "conclusion": null,
+        "number": 4,
+        "started_at": "2026-10-19T01:24:40Z",
+        "completed_at": null
+      }
+    },
+    {
+      "id": 117846024965,
+      "name": "Bazel / Bazel test on ubuntu-24.04 for x86_64-unknown-linux-gnu",
+      "started_at": "2026-10-19T01:24:18Z",
+      "current_step": {
+        "name": "bazel test //...",
+        "status": "in_progress",
+        "conclusion": null,
+        "number": 6,
+        "started_at": "2026-10-19T01:24:55Z",
+        "completed_at": null
+      }
+    },
+    {
+      "id": 117846024970,
+      "name": "Bazel / Verify release build on ubuntu-24.04 for x86_64-unknown-linux-gnu",
+      "started_at": "2026-10-19T01:24:19Z",
+      "current_step": {
+        "name": "bazel build verify-release-build targets",
+        "status": "in_progress",
+        "conclusion": null,
+        "number": 4,
+        "started_at": "2026-10-19T01:24:41Z",
+        "completed_at": null
+      }
+    },
+    {
+      "id": 117846024988,
+      "name": "Bazel / Bazel test on macos-15-intel for x86_64-apple-darwin",
+      "started_at": "2026-10-19T01:24:25Z",
+      "current_step": {
+        "name": "bazel test //...",
+        "status": "in_progress",
+        "conclusion": null,
+        "number": 6,
+        "started_at": "2026-10-19T01:24:59Z",
+        "completed_at": null
+      }
+    },
+    {
+      "id": 117846024997,
+      "name": "Bazel / Bazel test on ubuntu-24.04 for x86_64-unknown-linux-musl",
+      "started_at": "2026-10-19T01:24:18Z",
+      "current_step": {
+        "name": "bazel test //...",
+        "status": "in_progress",
+        "conclusion": null,
+        "number": 6,
+        "started_at": "2026-10-19T01:24:34Z",
+        "completed_at": null
+      }
+    },
+    {
+      "id": 117846025039,
+      "name": "Bazel / Bazel test on windows-latest for x86_64-pc-windows-msvc shard 4/4",
+      "started_at": "2026-10-19T01:24:19Z",
+      "current_step": {
+        "name": "Post Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+        "status": "in_progress",
+        "conclusion": null,
+        "number": 16,
+        "started_at": "2026-10-19T02:24:27Z",
+        "completed_at": null
+      }
+    }
+  ],
+  "scope": "Only the three originally assigned failed job logs were fetched/analyzed. New Windows shards 1 and 3 failures are status-only observations; no cause is inferred from shard 2. No CI mutation, rerun, cancel, compilation, dependency change or merge."
+}

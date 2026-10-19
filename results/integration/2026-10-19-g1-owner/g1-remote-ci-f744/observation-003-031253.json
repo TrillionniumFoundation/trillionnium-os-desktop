@@ -1,0 +1,457 @@
+{
+  "schema": "r10.g1-pr197.ci-api-observation.v1",
+  "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+  "head": "f744fb248a6d264676d0b892d21d6c4582d72d0f",
+  "started_at_utc": "2026-10-19 03:12:53 UTC",
+  "finished_at_utc": "2026-10-19 03:12:53 UTC",
+  "observations": [
+    {
+      "key": "a06",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39193294713/jobs?per_page=100",
+      "tool": "mcp__codex_apps__github_fetch",
+      "is_error": false,
+      "response_body": "{\"total_count\":1,\"jobs\":[{\"id\":117870536573,\"run_id\":39193294713,\"workflow_name\":\"A06 exact kernel scheduler and QEMU tests\",\"head_branch\":\"agents/r10-g1-cpu-owner-20261019\",\"run_url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39193294713\",\"run_attempt\":1,\"node_id\":\"CR_kwDOVLzC488AAAAbcaGnfQ\",\"head_sha\":\"f744fb248a6d264676d0b892d21d6c4582d72d0f\",\"url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/jobs/117870536573\",\"html_url\":\"https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39193294713/job/117870536573\",\"status\":\"in_progress\",\"conclusion\":null,\"created_at\":\"2026-10-19T03:09:00Z\",\"started_at\":\"2026-10-19T03:09:02Z\",\"completed_at\":null,\"name\":\"exact-kernel-ktest\",\"steps\":[{\"name\":\"Set up job\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":1,\"started_at\":\"2026-10-19T03:09:03Z\",\"completed_at\":\"2026-10-19T03:09:04Z\"},{\"name\":\"Run actions/checkout@v4\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":2,\"started_at\":\"2026-10-19T03:09:04Z\",\"completed_at\":\"2026-10-19T03:09:21Z\"},{\"name\":\"Install disposable kernel-test host dependencies\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":3,\"started_at\":\"2026-10-19T03:09:21Z\",\"completed_at\":\"2026-10-19T03:09:33Z\"},{\"name\":\"Install pinned Rust toolchain and verify VDSO input\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":4,\"started_at\":\"2026-10-19T03:09:33Z\",\"completed_at\":\"2026-10-19T03:09:59Z\"},{\"name\":\"Prepare fixed OSDK test locks\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":5,\"started_at\":\"2026-10-19T03:09:59Z\",\"completed_at\":\"2026-10-19T03:10:02Z\"},{\"name\":\"Run complete OSTD and aster-core kernel tests in real QEMU\",\"status\":\"in_progress\",\"conclusion\":null,\"number\":6,\"started_at\":\"2026-10-19T03:10:02Z\",\"completed_at\":null},{\"name\":\"Build ordinary G1 product and verify QueryAbi with all four disabled operations\",\"status\":\"pending\",\"conclusion\":null,\"number\":7,\"started_at\":null,\"completed_at\":null},{\"name\":\"Build exact A06 SMP=2 candidate kernel\",\"status\":\"pending\",\"conclusion\":null,\"number\":8,\"started_at\":null,\"completed_at\":null},{\"name\":\"Run bounded one-vCPU quota and two-vCPU exit-lifecycle probes\",\"status\":\"pending\",\"conclusion\":null,\"number\":9,\"started_at\":null,\"completed_at\":null},{\"name\":\"Upload exact A06 kernel and raw QEMU evidence\",\"status\":\"pending\",\"conclusion\":null,\"number\":10,\"started_at\":null,\"completed_at\":null},{\"name\":\"Post Run actions/checkout@v4\",\"status\":\"pending\",\"conclusion\":null,\"number\":20,\"started_at\":null,\"completed_at\":null}],\"check_run_url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117870536573\",\"labels\":[\"ubuntu-24.04\"],\"runner_id\":1000172520,\"runner_name\":\"GitHub Actions 1000172520\",\"runner_group_id\":0,\"runner_group_name\":\"GitHub Actions\"}]}",
+      "response_json": {
+        "total_count": 1,
+        "jobs": [
+          {
+            "id": 117870536573,
+            "run_id": 39193294713,
+            "workflow_name": "A06 exact kernel scheduler and QEMU tests",
+            "head_branch": "agents/r10-g1-cpu-owner-20261019",
+            "run_url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39193294713",
+            "run_attempt": 1,
+            "node_id": "CR_kwDOVLzC488AAAAbcaGnfQ",
+            "head_sha": "f744fb248a6d264676d0b892d21d6c4582d72d0f",
+            "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/jobs/117870536573",
+            "html_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39193294713/job/117870536573",
+            "status": "in_progress",
+            "conclusion": null,
+            "created_at": "2026-10-19T03:09:00Z",
+            "started_at": "2026-10-19T03:09:02Z",
+            "completed_at": null,
+            "name": "exact-kernel-ktest",
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 1,
+                "started_at": "2026-10-19T03:09:03Z",
+                "completed_at": "2026-10-19T03:09:04Z"
+              },
+              {
+                "name": "Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 2,
+                "started_at": "2026-10-19T03:09:04Z",
+                "completed_at": "2026-10-19T03:09:21Z"
+              },
+              {
+                "name": "Install disposable kernel-test host dependencies",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 3,
+                "started_at": "2026-10-19T03:09:21Z",
+                "completed_at": "2026-10-19T03:09:33Z"
+              },
+              {
+                "name": "Install pinned Rust toolchain and verify VDSO input",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 4,
+                "started_at": "2026-10-19T03:09:33Z",
+                "completed_at": "2026-10-19T03:09:59Z"
+              },
+              {
+                "name": "Prepare fixed OSDK test locks",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 5,
+                "started_at": "2026-10-19T03:09:59Z",
+                "completed_at": "2026-10-19T03:10:02Z"
+              },
+              {
+                "name": "Run complete OSTD and aster-core kernel tests in real QEMU",
+                "status": "in_progress",
+                "conclusion": null,
+                "number": 6,
+                "started_at": "2026-10-19T03:10:02Z",
+                "completed_at": null
+              },
+              {
+                "name": "Build ordinary G1 product and verify QueryAbi with all four disabled operations",
+                "status": "pending",
+                "conclusion": null,
+                "number": 7,
+                "started_at": null,
+                "completed_at": null
+              },
+              {
+                "name": "Build exact A06 SMP=2 candidate kernel",
+                "status": "pending",
+                "conclusion": null,
+                "number": 8,
+                "started_at": null,
+                "completed_at": null
+              },
+              {
+                "name": "Run bounded one-vCPU quota and two-vCPU exit-lifecycle probes",
+                "status": "pending",
+                "conclusion": null,
+                "number": 9,
+                "started_at": null,
+                "completed_at": null
+              },
+              {
+                "name": "Upload exact A06 kernel and raw QEMU evidence",
+                "status": "pending",
+                "conclusion": null,
+                "number": 10,
+                "started_at": null,
+                "completed_at": null
+              },
+              {
+                "name": "Post Run actions/checkout@v4",
+                "status": "pending",
+                "conclusion": null,
+                "number": 20,
+                "started_at": null,
+                "completed_at": null
+              }
+            ],
+            "check_run_url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117870536573",
+            "labels": [
+              "ubuntu-24.04"
+            ],
+            "runner_id": 1000172520,
+            "runner_name": "GitHub Actions 1000172520",
+            "runner_group_id": 0,
+            "runner_group_name": "GitHub Actions"
+          }
+        ]
+      }
+    },
+    {
+      "key": "g0",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39193294519/jobs?per_page=100",
+      "tool": "mcp__codex_apps__github_fetch",
+      "is_error": false,
+      "response_body": "{\"total_count\":1,\"jobs\":[{\"id\":117870536000,\"run_id\":39193294519,\"workflow_name\":\"G0 scoped host contracts\",\"head_branch\":\"agents/r10-g1-cpu-owner-20261019\",\"run_url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39193294519\",\"run_attempt\":1,\"node_id\":\"CR_kwDOVLzC488AAAAbcaGlQA\",\"head_sha\":\"f744fb248a6d264676d0b892d21d6c4582d72d0f\",\"url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/jobs/117870536000\",\"html_url\":\"https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39193294519/job/117870536000\",\"status\":\"completed\",\"conclusion\":\"failure\",\"created_at\":\"2026-10-19T03:09:00Z\",\"started_at\":\"2026-10-19T03:09:02Z\",\"completed_at\":\"2026-10-19T03:09:24Z\",\"name\":\"host-contracts\",\"steps\":[{\"name\":\"Set up job\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":1,\"started_at\":\"2026-10-19T03:09:03Z\",\"completed_at\":\"2026-10-19T03:09:04Z\"},{\"name\":\"Run actions/checkout@v4\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":2,\"started_at\":\"2026-10-19T03:09:04Z\",\"completed_at\":\"2026-10-19T03:09:20Z\"},{\"name\":\"Verify independent HOS2 golden fixtures\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":3,\"started_at\":\"2026-10-19T03:09:20Z\",\"completed_at\":\"2026-10-19T03:09:20Z\"},{\"name\":\"Verify canonical HOS2 semantic edge corpus and independent generator\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":4,\"started_at\":\"2026-10-19T03:09:20Z\",\"completed_at\":\"2026-10-19T03:09:20Z\"},{\"name\":\"Verify independent native 32-byte HOS2 ioctl transport golden\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":5,\"started_at\":\"2026-10-19T03:09:20Z\",\"completed_at\":\"2026-10-19T03:09:20Z\"},{\"name\":\"Python wire mutations and recovery specification\",\"status\":\"completed\",\"conclusion\":\"failure\",\"number\":6,\"started_at\":\"2026-10-19T03:09:20Z\",\"completed_at\":\"2026-10-19T03:09:22Z\"},{\"name\":\"Guest archive safety model (host only, no QEMU)\",\"status\":\"completed\",\"conclusion\":\"skipped\",\"number\":7,\"started_at\":\"2026-10-19T03:09:22Z\",\"completed_at\":\"2026-10-19T03:09:22Z\"},{\"name\":\"Host A05 QueryAbi wire and ENOTTY smoke (no kernel driver)\",\"status\":\"completed\",\"conclusion\":\"skipped\",\"number\":8,\"started_at\":\"2026-10-19T03:09:22Z\",\"completed_at\":\"2026-10-19T03:09:22Z\"},{\"name\":\"Compile native A05 QueryAbi guest probe when present (host compiler only)\",\"status\":\"completed\",\"conclusion\":\"skipped\",\"number\":9,\"started_at\":\"2026-10-19T03:09:22Z\",\"completed_at\":\"2026-10-19T03:09:22Z\"},{\"name\":\"A05 pinned QueryAbi replay host regressions (no QEMU)\",\"status\":\"completed\",\"conclusion\":\"skipped\",\"number\":10,\"started_at\":\"2026-10-19T03:09:22Z\",\"completed_at\":\"2026-10-19T03:09:22Z\"},{\"name\":\"Require canonical Rust crate manifests and install lint components\",\"status\":\"completed\",\"conclusion\":\"skipped\",\"number\":11,\"started_at\":\"2026-10-19T03:09:22Z\",\"completed_at\":\"2026-10-19T03:09:22Z\"},{\"name\":\"Report real host Rust toolchain and install lint components\",\"status\":\"completed\",\"conclusion\":\"skipped\",\"number\":12,\"started_at\":\"2026-10-19T03:09:22Z\",\"completed_at\":\"2026-10-19T03:09:22Z\"},{\"name\":\"Host Rust no_std ABI crate\",\"status\":\"completed\",\"conclusion\":\"skipped\",\"number\":13,\"started_at\":\"2026-10-19T03:09:22Z\",\"completed_at\":\"2026-10-19T03:09:22Z\"},{\"name\":\"Host Rust ABI strict rustfmt and Clippy\",\"status\":\"completed\",\"conclusion\":\"skipped\",\"number\":14,\"started_at\":\"2026-10-19T03:09:22Z\",\"completed_at\":\"2026-10-19T03:09:22Z\"},{\"name\":\"Host Rust control model\",\"status\":\"completed\",\"conclusion\":\"skipped\",\"number\":15,\"started_at\":\"2026-10-19T03:09:22Z\",\"completed_at\":\"2026-10-19T03:09:22Z\"},{\"name\":\"Host Rust control strict rustfmt and Clippy\",\"status\":\"completed\",\"conclusion\":\"skipped\",\"number\":16,\"started_at\":\"2026-10-19T03:09:22Z\",\"completed_at\":\"2026-10-19T03:09:22Z\"},{\"name\":\"Host A03 no_std portable-spin model and strict Clippy (not kernel IRQ)\",\"status\":\"completed\",\"conclusion\":\"skipped\",\"number\":17,\"started_at\":\"2026-10-19T03:09:22Z\",\"completed_at\":\"2026-10-19T03:09:22Z\"},{\"name\":\"Cross-build A03 portable-spin rlib for x86_64-unknown-none (not kernel link)\",\"status\":\"completed\",\"conclusion\":\"skipped\",\"number\":18,\"started_at\":\"2026-10-19T03:09:22Z\",\"completed_at\":\"2026-10-19T03:09:22Z\"},{\"name\":\"Post Run actions/checkout@v4\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":36,\"started_at\":\"2026-10-19T03:09:22Z\",\"completed_at\":\"2026-10-19T03:09:22Z\"},{\"name\":\"Complete job\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":37,\"started_at\":\"2026-10-19T03:09:22Z\",\"completed_at\":\"2026-10-19T03:09:22Z\"}],\"check_run_url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117870536000\",\"labels\":[\"ubuntu-24.04\"],\"runner_id\":1000172518,\"runner_name\":\"GitHub Actions 1000172518\",\"runner_group_id\":0,\"runner_group_name\":\"GitHub Actions\"}]}",
+      "response_json": {
+        "total_count": 1,
+        "jobs": [
+          {
+            "id": 117870536000,
+            "run_id": 39193294519,
+            "workflow_name": "G0 scoped host contracts",
+            "head_branch": "agents/r10-g1-cpu-owner-20261019",
+            "run_url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39193294519",
+            "run_attempt": 1,
+            "node_id": "CR_kwDOVLzC488AAAAbcaGlQA",
+            "head_sha": "f744fb248a6d264676d0b892d21d6c4582d72d0f",
+            "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/jobs/117870536000",
+            "html_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39193294519/job/117870536000",
+            "status": "completed",
+            "conclusion": "failure",
+            "created_at": "2026-10-19T03:09:00Z",
+            "started_at": "2026-10-19T03:09:02Z",
+            "completed_at": "2026-10-19T03:09:24Z",
+            "name": "host-contracts",
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 1,
+                "started_at": "2026-10-19T03:09:03Z",
+                "completed_at": "2026-10-19T03:09:04Z"
+              },
+              {
+                "name": "Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 2,
+                "started_at": "2026-10-19T03:09:04Z",
+                "completed_at": "2026-10-19T03:09:20Z"
+              },
+              {
+                "name": "Verify independent HOS2 golden fixtures",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 3,
+                "started_at": "2026-10-19T03:09:20Z",
+                "completed_at": "2026-10-19T03:09:20Z"
+              },
+              {
+                "name": "Verify canonical HOS2 semantic edge corpus and independent generator",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 4,
+                "started_at": "2026-10-19T03:09:20Z",
+                "completed_at": "2026-10-19T03:09:20Z"
+              },
+              {
+                "name": "Verify independent native 32-byte HOS2 ioctl transport golden",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 5,
+                "started_at": "2026-10-19T03:09:20Z",
+                "completed_at": "2026-10-19T03:09:20Z"
+              },
+              {
+                "name": "Python wire mutations and recovery specification",
+                "status": "completed",
+                "conclusion": "failure",
+                "number": 6,
+                "started_at": "2026-10-19T03:09:20Z",
+                "completed_at": "2026-10-19T03:09:22Z"
+              },
+              {
+                "name": "Guest archive safety model (host only, no QEMU)",
+                "status": "completed",
+                "conclusion": "skipped",
+                "number": 7,
+                "started_at": "2026-10-19T03:09:22Z",
+                "completed_at": "2026-10-19T03:09:22Z"
+              },
+              {
+                "name": "Host A05 QueryAbi wire and ENOTTY smoke (no kernel driver)",
+                "status": "completed",
+                "conclusion": "skipped",
+                "number": 8,
+                "started_at": "2026-10-19T03:09:22Z",
+                "completed_at": "2026-10-19T03:09:22Z"
+              },
+              {
+                "name": "Compile native A05 QueryAbi guest probe when present (host compiler only)",
+                "status": "completed",
+                "conclusion": "skipped",
+                "number": 9,
+                "started_at": "2026-10-19T03:09:22Z",
+                "completed_at": "2026-10-19T03:09:22Z"
+              },
+              {
+                "name": "A05 pinned QueryAbi replay host regressions (no QEMU)",
+                "status": "completed",
+                "conclusion": "skipped",
+                "number": 10,
+                "started_at": "2026-10-19T03:09:22Z",
+                "completed_at": "2026-10-19T03:09:22Z"
+              },
+              {
+                "name": "Require canonical Rust crate manifests and install lint components",
+                "status": "completed",
+                "conclusion": "skipped",
+                "number": 11,
+                "started_at": "2026-10-19T03:09:22Z",
+                "completed_at": "2026-10-19T03:09:22Z"
+              },
+              {
+                "name": "Report real host Rust toolchain and install lint components",
+                "status": "completed",
+                "conclusion": "skipped",
+                "number": 12,
+                "started_at": "2026-10-19T03:09:22Z",
+                "completed_at": "2026-10-19T03:09:22Z"
+              },
+              {
+                "name": "Host Rust no_std ABI crate",
+                "status": "completed",
+                "conclusion": "skipped",
+                "number": 13,
+                "started_at": "2026-10-19T03:09:22Z",
+                "completed_at": "2026-10-19T03:09:22Z"
+              },
+              {
+                "name": "Host Rust ABI strict rustfmt and Clippy",
+                "status": "completed",
+                "conclusion": "skipped",
+                "number": 14,
+                "started_at": "2026-10-19T03:09:22Z",
+                "completed_at": "2026-10-19T03:09:22Z"
+              },
+              {
+                "name": "Host Rust control model",
+                "status": "completed",
+                "conclusion": "skipped",
+                "number": 15,
+                "started_at": "2026-10-19T03:09:22Z",
+                "completed_at": "2026-10-19T03:09:22Z"
+              },
+              {
+                "name": "Host Rust control strict rustfmt and Clippy",
+                "status": "completed",
+                "conclusion": "skipped",
+                "number": 16,
+                "started_at": "2026-10-19T03:09:22Z",
+                "completed_at": "2026-10-19T03:09:22Z"
+              },
+              {
+                "name": "Host A03 no_std portable-spin model and strict Clippy (not kernel IRQ)",
+                "status": "completed",
+                "conclusion": "skipped",
+                "number": 17,
+                "started_at": "2026-10-19T03:09:22Z",
+                "completed_at": "2026-10-19T03:09:22Z"
+              },
+              {
+                "name": "Cross-build A03 portable-spin rlib for x86_64-unknown-none (not kernel link)",
+                "status": "completed",
+                "conclusion": "skipped",
+                "number": 18,
+                "started_at": "2026-10-19T03:09:22Z",
+                "completed_at": "2026-10-19T03:09:22Z"
+              },
+              {
+                "name": "Post Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 36,
+                "started_at": "2026-10-19T03:09:22Z",
+                "completed_at": "2026-10-19T03:09:22Z"
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 37,
+                "started_at": "2026-10-19T03:09:22Z",
+                "completed_at": "2026-10-19T03:09:22Z"
+              }
+            ],
+            "check_run_url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117870536000",
+            "labels": [
+              "ubuntu-24.04"
+            ],
+            "runner_id": 1000172518,
+            "runner_name": "GitHub Actions 1000172518",
+            "runner_group_id": 0,
+            "runner_group_name": "GitHub Actions"
+          }
+        ]
+      }
+    },
+    {
+      "key": "a03",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39193294782/jobs?per_page=100",
+      "tool": "mcp__codex_apps__github_fetch",
+      "is_error": false,
+      "response_body": "{\"total_count\":1,\"jobs\":[{\"id\":117870537020,\"run_id\":39193294782,\"workflow_name\":\"A03 native Loom and allocation safety\",\"head_branch\":\"agents/r10-g1-cpu-owner-20261019\",\"run_url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39193294782\",\"run_attempt\":1,\"node_id\":\"CR_kwDOVLzC488AAAAbcaGpPA\",\"head_sha\":\"f744fb248a6d264676d0b892d21d6c4582d72d0f\",\"url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/jobs/117870537020\",\"html_url\":\"https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39193294782/job/117870537020\",\"status\":\"completed\",\"conclusion\":\"failure\",\"created_at\":\"2026-10-19T03:09:00Z\",\"started_at\":\"2026-10-19T03:09:02Z\",\"completed_at\":\"2026-10-19T03:09:40Z\",\"name\":\"exact-native-models\",\"steps\":[{\"name\":\"Set up job\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":1,\"started_at\":\"2026-10-19T03:09:03Z\",\"completed_at\":\"2026-10-19T03:09:03Z\"},{\"name\":\"Run actions/checkout@v4\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":2,\"started_at\":\"2026-10-19T03:09:03Z\",\"completed_at\":\"2026-10-19T03:09:17Z\"},{\"name\":\"Check exact HEAD and immutable inputs\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":3,\"started_at\":\"2026-10-19T03:09:17Z\",\"completed_at\":\"2026-10-19T03:09:17Z\"},{\"name\":\"Install exact pinned Rust and host lint tools\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":4,\"started_at\":\"2026-10-19T03:09:17Z\",\"completed_at\":\"2026-10-19T03:09:26Z\"},{\"name\":\"Execute bounded Loom models on exact A03 source (host only)\",\"status\":\"completed\",\"conclusion\":\"failure\",\"number\":5,\"started_at\":\"2026-10-19T03:09:26Z\",\"completed_at\":\"2026-10-19T03:09:37Z\"},{\"name\":\"Require complete native allocation probe or explicit bootstrap\",\"status\":\"completed\",\"conclusion\":\"skipped\",\"number\":6,\"started_at\":\"2026-10-19T03:09:37Z\",\"completed_at\":\"2026-10-19T03:09:37Z\"},{\"name\":\"Prove no internal-lock alloc, realloc or free (host only)\",\"status\":\"completed\",\"conclusion\":\"skipped\",\"number\":7,\"started_at\":\"2026-10-19T03:09:37Z\",\"completed_at\":\"2026-10-19T03:09:37Z\"},{\"name\":\"Upload raw model and allocator evidence even when rejected\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":8,\"started_at\":\"2026-10-19T03:09:37Z\",\"completed_at\":\"2026-10-19T03:09:38Z\"},{\"name\":\"Post Run actions/checkout@v4\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":16,\"started_at\":\"2026-10-19T03:09:38Z\",\"completed_at\":\"2026-10-19T03:09:38Z\"},{\"name\":\"Complete job\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":17,\"started_at\":\"2026-10-19T03:09:38Z\",\"completed_at\":\"2026-10-19T03:09:38Z\"}],\"check_run_url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117870537020\",\"labels\":[\"ubuntu-24.04\"],\"runner_id\":1000172519,\"runner_name\":\"GitHub Actions 1000172519\",\"runner_group_id\":0,\"runner_group_name\":\"GitHub Actions\"}]}",
+      "response_json": {
+        "total_count": 1,
+        "jobs": [
+          {
+            "id": 117870537020,
+            "run_id": 39193294782,
+            "workflow_name": "A03 native Loom and allocation safety",
+            "head_branch": "agents/r10-g1-cpu-owner-20261019",
+            "run_url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39193294782",
+            "run_attempt": 1,
+            "node_id": "CR_kwDOVLzC488AAAAbcaGpPA",
+            "head_sha": "f744fb248a6d264676d0b892d21d6c4582d72d0f",
+            "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/jobs/117870537020",
+            "html_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39193294782/job/117870537020",
+            "status": "completed",
+            "conclusion": "failure",
+            "created_at": "2026-10-19T03:09:00Z",
+            "started_at": "2026-10-19T03:09:02Z",
+            "completed_at": "2026-10-19T03:09:40Z",
+            "name": "exact-native-models",
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 1,
+                "started_at": "2026-10-19T03:09:03Z",
+                "completed_at": "2026-10-19T03:09:03Z"
+              },
+              {
+                "name": "Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 2,
+                "started_at": "2026-10-19T03:09:03Z",
+                "completed_at": "2026-10-19T03:09:17Z"
+              },
+              {
+                "name": "Check exact HEAD and immutable inputs",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 3,
+                "started_at": "2026-10-19T03:09:17Z",
+                "completed_at": "2026-10-19T03:09:17Z"
+              },
+              {
+                "name": "Install exact pinned Rust and host lint tools",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 4,
+                "started_at": "2026-10-19T03:09:17Z",
+                "completed_at": "2026-10-19T03:09:26Z"
+              },
+              {
+                "name": "Execute bounded Loom models on exact A03 source (host only)",
+                "status": "completed",
+                "conclusion": "failure",
+                "number": 5,
+                "started_at": "2026-10-19T03:09:26Z",
+                "completed_at": "2026-10-19T03:09:37Z"
+              },
+              {
+                "name": "Require complete native allocation probe or explicit bootstrap",
+                "status": "completed",
+                "conclusion": "skipped",
+                "number": 6,
+                "started_at": "2026-10-19T03:09:37Z",
+                "completed_at": "2026-10-19T03:09:37Z"
+              },
+              {
+                "name": "Prove no internal-lock alloc, realloc or free (host only)",
+                "status": "completed",
+                "conclusion": "skipped",
+                "number": 7,
+                "started_at": "2026-10-19T03:09:37Z",
+                "completed_at": "2026-10-19T03:09:37Z"
+              },
+              {
+                "name": "Upload raw model and allocator evidence even when rejected",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 8,
+                "started_at": "2026-10-19T03:09:37Z",
+                "completed_at": "2026-10-19T03:09:38Z"
+              },
+              {
+                "name": "Post Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 16,
+                "started_at": "2026-10-19T03:09:38Z",
+                "completed_at": "2026-10-19T03:09:38Z"
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 17,
+                "started_at": "2026-10-19T03:09:38Z",
+                "completed_at": "2026-10-19T03:09:38Z"
+              }
+            ],
+            "check_run_url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117870537020",
+            "labels": [
+              "ubuntu-24.04"
+            ],
+            "runner_id": 1000172519,
+            "runner_name": "GitHub Actions 1000172519",
+            "runner_group_id": 0,
+            "runner_group_name": "GitHub Actions"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,156 @@
+{
+  "schema": 1,
+  "saved_at": "2026-10-19T04:17:54.732965+00:00",
+  "source": "71d9db8fd48a317fe5930392799522f186188d6a",
+  "tree": "4688d8dfc139f990b3d770c8c081050a5ace1d26",
+  "base": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+  "source_clean": true,
+  "changed_paths": [
+    ".github/workflows/blocking-ci.yml"
+  ],
+  "diff_numstat": "5\t0\t.github/workflows/blocking-ci.yml",
+  "all_command_receipts": [
+    {
+      "path": "actionlint-01/receipt.json",
+      "bytes": 11642,
+      "sha256": "d9b4e5c117e01942aac037546c6f92ff5b13223c43ca7ac8c6d7958c106c5683",
+      "name": "actionlint-01",
+      "started_at": "2026-10-19T04:03:24.311097+00:00",
+      "completed_at": "2026-10-19T04:03:24.319805+00:00",
+      "exit_code": 0,
+      "source_unchanged": true
+    },
+    {
+      "path": "cargo-flags-proof-01/receipt.json",
+      "bytes": 11654,
+      "sha256": "c4bbe16664d21ff1b621a6e7fe10dae69a2268cf4706efc3828899a77ee68be3",
+      "name": "cargo-flags-proof-01",
+      "started_at": "2026-10-19T04:05:22.069949+00:00",
+      "completed_at": "2026-10-19T04:05:22.290858+00:00",
+      "exit_code": 2,
+      "source_unchanged": true
+    },
+    {
+      "path": "cargo-flags-proof-02/receipt.json",
+      "bytes": 11691,
+      "sha256": "598f9a1046880d85ff1d87f7c7d1c80020a03ca283637c697965e53aafdfbea2",
+      "name": "cargo-flags-proof-02",
+      "started_at": "2026-10-19T04:06:20.997014+00:00",
+      "completed_at": "2026-10-19T04:06:25.154412+00:00",
+      "exit_code": 0,
+      "source_unchanged": true
+    },
+    {
+      "path": "execution-contracts-02/receipt.json",
+      "bytes": 11673,
+      "sha256": "d91073f5895db4c0a36a14b9ac195ffb74055561b0aaec8fc9351170d17fa2ad",
+      "name": "execution-contracts-02",
+      "started_at": "2026-10-19T04:05:20.825500+00:00",
+      "completed_at": "2026-10-19T04:05:30.507527+00:00",
+      "exit_code": 0,
+      "source_unchanged": true
+    },
+    {
+      "path": "fmt-check-01/receipt.json",
+      "bytes": 11628,
+      "sha256": "49c2314abe799530cf14c2897fcf78be57db519225d1712d16250784ae8581fd",
+      "name": "fmt-check-01",
+      "started_at": "2026-10-19T04:04:16.443815+00:00",
+      "completed_at": "2026-10-19T04:04:16.604636+00:00",
+      "exit_code": 0,
+      "source_unchanged": true
+    },
+    {
+      "path": "nextest-help-01/receipt.json",
+      "bytes": 11587,
+      "sha256": "9302d023c696f3aa14fddf19e2d77c1714381f45aa2db17fb4663a2ec2c05ed5",
+      "name": "nextest-help-01",
+      "started_at": "2026-10-19T04:05:49.235048+00:00",
+      "completed_at": "2026-10-19T04:05:49.246356+00:00",
+      "exit_code": 0,
+      "source_unchanged": true
+    },
+    {
+      "path": "original-impact-plan-01/receipt.json",
+      "bytes": 11919,
+      "sha256": "0b0c385f52c96d3e0675fc5f7485fdad3b86424e7c0a7e994fec29b5ad9c1777",
+      "name": "original-impact-plan-01",
+      "started_at": "2026-10-19T04:04:16.443895+00:00",
+      "completed_at": "2026-10-19T04:04:50.080003+00:00",
+      "exit_code": 0,
+      "source_unchanged": true
+    },
+    {
+      "path": "python-contracts-01/receipt.json",
+      "bytes": 11829,
+      "sha256": "0a5c83ad4c83257dd5e474eb99b2ea007a6e5356fd33e382521953e5224d6857",
+      "name": "python-contracts-01",
+      "started_at": "2026-10-19T04:03:23.050214+00:00",
+      "completed_at": "2026-10-19T04:03:30.354820+00:00",
+      "exit_code": 1,
+      "source_unchanged": true
+    }
+  ],
+  "unique_existing_python_tests_passed": 102,
+  "python_count_basis": "72 passed in the first invocation plus 45 passed in original executor discovery, with 15 overlapping tests. The first invocation also retains two module-loader errors.",
+  "small_existing_crate_tests_passed": 18,
+  "small_existing_crate": "codex-utils-string --lib",
+  "all_original_134_package_arguments_preserved": true,
+  "full_134_package_ci_run_locally_or_remotely_with_candidate": false,
+  "flags_observation_scope": "Only the recorded codex-utils-string library build and its dependency build scripts, not all 134 packages.",
+  "initial_invocation_failures_preserved": [
+    "python-contracts-01",
+    "cargo-flags-proof-01"
+  ],
+  "standalone_workflow_change_routes_to_full_repo": true,
+  "unchanged_products_locks_features_test_selection_and_failure_semantics": true,
+  "sdk_deletion_or_dependency_update": false,
+  "not_claimed": [
+    "remote ENOSPC resolution",
+    "134-package CI success",
+    "Fleet remote Bazel Clippy success",
+    "Windows boundary repair",
+    "security-debt resolution",
+    "kernel or device qualification"
+  ],
+  "publication_files": [
+    {
+      "path": "publication/blocking-ci.yml",
+      "bytes": 8892,
+      "sha256": "c744993fb945b17d16ab157d7ed6de155fae385ffb0b45eb5e31ccc1733a2175"
+    },
+    {
+      "path": "publication-manifest.json",
+      "bytes": 939,
+      "sha256": "8a16b6e79169f19269cf87ff8f0b9df6730f3bf04c95b40bbac11b9ca89ce6a6"
+    },
+    {
+      "path": "PR_DESCRIPTION.md",
+      "bytes": 3303,
+      "sha256": "25b8e9e615ea54708871e036a683b324014a63887f7108fb92b8810c797117a4"
+    },
+    {
+      "path": "change.patch",
+      "bytes": 641,
+      "sha256": "695a2a55928c3380b9805037fac98725a394a260c7acd15cda8cf44df70b69ee"
+    }
+  ],
+  "validation_summaries": [
+    {
+      "path": "semantic-review.json",
+      "bytes": 8040,
+      "sha256": "a2f6b11620e37365668559563176385c6d065eb5670d9f383906badc609636a3"
+    },
+    {
+      "path": "validation-review.json",
+      "bytes": 11874,
+      "sha256": "cdee369086129cafcb6971b342c03cc8809902f3704de8cffc0c25f4dd85ba17"
+    },
+    {
+      "path": "tool-manifest.json",
+      "bytes": 3297,
+      "sha256": "efcedfe48c6bd992f222ff5baad76ef42e9efa7b4394ccfc7916dceb799109c7"
+    }
+  ],
+  "remote_publication_status_managed_separately_by_parent": true
+}

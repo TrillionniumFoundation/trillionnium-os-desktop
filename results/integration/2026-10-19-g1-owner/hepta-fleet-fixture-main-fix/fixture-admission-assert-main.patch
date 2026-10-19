@@ -1,0 +1,54 @@
+From e770156ba8b35c77829d189fc053dc5f9eb69f8b Mon Sep 17 00:00:00 2001
+From: Codex <codex@openai.com>
+Date: Mon, 19 Oct 2026 11:42:24 +0900
+Subject: [PATCH] test(hepta-fleet): assert fixture host admission without
+ unwrap
+
+---
+ codex-rs/hepta-fleet/src/authority_port.rs | 30 ++++++++++++----------
+ 1 file changed, 16 insertions(+), 14 deletions(-)
+
+diff --git a/codex-rs/hepta-fleet/src/authority_port.rs b/codex-rs/hepta-fleet/src/authority_port.rs
+index 55e117daf..10bd9aef1 100644
+--- a/codex-rs/hepta-fleet/src/authority_port.rs
++++ b/codex-rs/hepta-fleet/src/authority_port.rs
+@@ -194,20 +194,22 @@ mod tests {
+ 
+     fn ledger() -> LeaseLedger {
+         let mut ledger = LeaseLedger::new();
+-        ledger
+-            .admit_host(HostObservation {
+-                host_id: "host-one".into(),
+-                failure_domain_id: "rack-one".into(),
+-                generation: 1,
+-                observed_at_ms: 1_000,
+-                valid_until_ms: 10_000,
+-                capacity: Resources {
+-                    cpu_millis: 1_000,
+-                    memory_bytes: 1 << 20,
+-                    accelerator_millis: 1_000,
+-                },
+-            })
+-            .unwrap();
++        let admission = ledger.admit_host(HostObservation {
++            host_id: "host-one".into(),
++            failure_domain_id: "rack-one".into(),
++            generation: 1,
++            observed_at_ms: 1_000,
++            valid_until_ms: 10_000,
++            capacity: Resources {
++                cpu_millis: 1_000,
++                memory_bytes: 1 << 20,
++                accelerator_millis: 1_000,
++            },
++        });
++        assert!(
++            admission.is_ok(),
++            "valid host fixture must be admitted: {admission:?}",
++        );
+         ledger
+     }
+ 
+-- 
+2.51.1
+

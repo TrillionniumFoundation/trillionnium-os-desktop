@@ -1,0 +1,65 @@
+{
+  "schema": "r10.ci-original-archive-parts-publication.v1",
+  "completed_at_utc": "2026-10-19T03:55:06.939229+00:00",
+  "original_frozen_manifest": {
+    "path": "107afb-frozen-files.json",
+    "bytes": 3641,
+    "sha256": "79bfaf1b4844242cc1f8becf0770ceed9d517650481dd8f23d6f85de0a3c7731"
+  },
+  "original_archive": {
+    "path": "a06-exact-kernel-ktest-39195437891.zip",
+    "bytes": 18335208,
+    "sha256": "593abd9f59ece10daebe4926f6c6cfc8965c622f62dadb94c04feaaadad375bd"
+  },
+  "original_archive_body_in_git_delivery": false,
+  "original_preserved_outside_git_delivery": "/workspace/scratch/499c7902de8e/r10-evidence/r10-delivery-review/107afb-a06-exact-kernel-ktest-39195437891.zip",
+  "original_frozen_manifest_unchanged": true,
+  "parts_manifest": {
+    "path": "archive-parts.json",
+    "bytes": 3076,
+    "sha256": "01120918e94ad4e7011b38382b4414acc9ec4004e247892896074c2fbcd132d8"
+  },
+  "split_execution": {
+    "argv": [
+      "python3",
+      "-I",
+      "/workspace/scratch/499c7902de8e/r10-evidence/r10-delivery-review/restore-r10-archives.py",
+      "--manifest",
+      "/workspace/scratch/499c7902de8e/r10-g1-delivery/results/integration/2026-10-19-g1-owner/g1-remote-ci-107afb/archive-parts.json",
+      "--verify-only"
+    ],
+    "exit_code": 0,
+    "output": "{\n  \"status\": \"verified\",\n  \"verify_only\": true,\n  \"archives\": [\n    {\n      \"path\": \"a06-exact-kernel-ktest-39195437891.zip\",\n      \"bytes\": 18335208,\n      \"sha256\": \"593abd9f59ece10daebe4926f6c6cfc8965c622f62dadb94c04feaaadad375bd\",\n      \"parts\": 12,\n      \"existing_archive_verified\": true,\n      \"restored\": false,\n      \"all_part_identities_verified\": true\n    }\n  ]\n}\n",
+    "meaning": "Revalidate already created parts; preserve their bytes and prior split receipt after a member-manifest schema mismatch in the delivery helper."
+  },
+  "actual_empty_directory_restore": {
+    "argv": [
+      "python3",
+      "-I",
+      "/workspace/scratch/499c7902de8e/r10-evidence/r10-delivery-review/restore-r10-archives.py",
+      "--manifest",
+      "/workspace/scratch/499c7902de8e/r10-g1-delivery/results/integration/2026-10-19-g1-owner/g1-remote-ci-107afb/archive-parts.json",
+      "--output-root",
+      "/workspace/scratch/499c7902de8e/r10-evidence/r10-delivery-review/ci-107afb-actual-restoration"
+    ],
+    "exit_code": 0,
+    "output": "{\n  \"status\": \"verified\",\n  \"verify_only\": false,\n  \"archives\": [\n    {\n      \"path\": \"a06-exact-kernel-ktest-39195437891.zip\",\n      \"bytes\": 18335208,\n      \"sha256\": \"593abd9f59ece10daebe4926f6c6cfc8965c622f62dadb94c04feaaadad375bd\",\n      \"parts\": 12,\n      \"existing_archive_verified\": false,\n      \"restored\": true,\n      \"all_part_identities_verified\": true\n    }\n  ]\n}\n"
+  },
+  "restored_archive": "/workspace/scratch/499c7902de8e/r10-evidence/r10-delivery-review/ci-107afb-actual-restoration/a06-exact-kernel-ktest-39195437891.zip",
+  "source_archive_absent_before_and_after_restore": true,
+  "original_restored_bytes_equal": true,
+  "archive_not_recompressed_or_modified": true,
+  "all_zip_members_independently_verified_before_and_after_restore": {
+    "archive": "a06-exact-kernel-ktest-39195437891.zip",
+    "member_manifest": "a06-artifact-members.json",
+    "member_manifest_sha256": "ffd9ddf2a178d22e9fbcdb99ce3121d0ab63e16a109edbedf3ec61108cb5031c",
+    "regular_members": 76,
+    "uncompressed_bytes": 44269138,
+    "safe_paths_no_symlinks_no_duplicates": true,
+    "all_member_size_sha256_crc32_verified": true,
+    "zip_crc_test_passed": true,
+    "no_member_executed": true
+  },
+  "no_product_execution_or_producer_worktree_access": true,
+  "instructions": "Run ../review/restore-r10-archives.py with this directory archive-parts.json and a new --output-root. The restored ZIP matches the original frozen manifest. Internal ZIP paths are read after restoration/extraction; the ZIP body is intentionally absent from the Git tree."
+}

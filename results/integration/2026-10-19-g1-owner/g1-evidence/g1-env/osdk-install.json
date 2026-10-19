@@ -1,0 +1,30 @@
+{
+  "schema": "r10.g1.host-preparation-step.v1",
+  "label": "osdk-install",
+  "started_at_utc": "2026-10-19T01:10:20.521109+00:00",
+  "cwd": "/workspace/scratch/499c7902de8e/r10-g1-owner/kernel/asterinas",
+  "command": [
+    "/workspace/scratch/499c7902de8e/implementation-tools/cargo/bin/cargo",
+    "+nightly-2026-07-21",
+    "install",
+    "--locked",
+    "cargo-osdk",
+    "--path",
+    "osdk"
+  ],
+  "environment": {
+    "CARGO_HOME": "/workspace/scratch/499c7902de8e/implementation-tools/cargo",
+    "RUSTUP_HOME": "/workspace/scratch/499c7902de8e/implementation-tools/rustup",
+    "CARGO_TARGET_DIR": "/workspace/scratch/499c7902de8e/implementation-tools/osdk-target",
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_NET_GIT_FETCH_WITH_CLI": "true",
+    "OSDK_LOCAL_DEV": "1",
+    "DEBIAN_FRONTEND": "noninteractive"
+  },
+  "kernel_or_production_runtime": false,
+  "exit_code": 0,
+  "completed_at_utc": "2026-10-19T01:12:00.025676+00:00",
+  "log_bytes": 7053,
+  "log_sha256": "2041ab11bfde1741175a4ceda7176838ebaebb0759f6c00a967baa188f1b75cd"
+}

@@ -1,0 +1,95 @@
+{
+  "schema": 2,
+  "frozen_at_utc": "2026-10-19T01:54:20.686819+00:00",
+  "checkout": "/workspace/scratch/499c7902de8e/r10-g1-owner",
+  "branch": "agents/r10-g1-cpu-owner-20261019",
+  "baseline": "aab50f347deb53fc79ac13ea3b84f846fefc70a7",
+  "previous_failed_candidate": "be6d8408878dc25fce3188e1fc759aa227bf8678",
+  "head": "12e0547d2e6394548b15764b06346422c4fff31e",
+  "tree": "6b03c4827a28c9dc34456e7aa5f855b2f1f4b72f",
+  "worktree_clean": true,
+  "changed_files": 25,
+  "changed_files_sha256": {
+    ".github/workflows/a06-kernel.yml": "59e3fbefe3c83814c55a5fb4f15dcc408a9fb91a315a293661aee6f75fc087fe",
+    "docs/ASTERINAS_CPU_BANDWIDTH_N0.md": "e5e53019c21dd75a5413af5a617c1fb0a076d073598266c39db6ad66b6cc7788",
+    "docs/ASTERINAS_CPU_OWNER_G1A.md": "fadc87a8ae04dad9072d0f6da396304da2479b7f39cfaaee18b70984e1cd717e",
+    "kernel/asterinas/Cargo.lock": "af94d71680ecf3b9631e21c958263d5e41229033214f88dcff858bb14765a666",
+    "kernel/asterinas/Cargo.toml": "153bea9f3a0ec926947f9e7207ab458222453cf162283d88a6d25fdeb837048d",
+    "kernel/asterinas/kernel/core/Cargo.toml": "8a5ca474b72fbc81120c41232607e59d0533c736f74315754d64045a868ce6e4",
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs": "ea74592acf422da93d9fa4dd1de8dc89808e778c69930562943e1c3580e8ae3c",
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/config_regressions.rs": "598e1d9882ff40a84722c4fc2ba3f9decc5c781c628c2850c74fbcf558c72830",
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/final_charge_regressions.rs": "6dad5fdcea16fe58c421c21f8440f15726a19237c112e6188d6f59fe9f84f3bf",
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs": "37b652c56060c838f43dd0d0a089e6cad460b898758edc9d32d065cfa9ea2dc3",
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/tests.rs": "f4e613e21bee44c77b207919d621c751f49830ef2476b0ae8e3c96ed9b7b5a02",
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/mod.rs": "e72a5cca40ce4429d0d7d5ec2caa3592f29f9adb329a437e9f8026bca969fa7b",
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/inode.rs": "1b7aad53f6c667a9292fb4e7ed2bd93121371dcc1f11c63f60a7031c96251cf8",
+    "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/systree_node.rs": "1f215e696b6356bd67fd7cda5c00ab6babbf5f7dce45c6da5eacee0b8661b302",
+    "kernel/asterinas/kernel/libs/comp-sys/component-macro/src/priority.rs": "e5c7ef1e4f02f512e6e08d84c87d0fe2f6f39ada659264c6a74df8b7043fb9b9",
+    "libs/os-control/Cargo.toml": "57dbfcb0521f45a62574534da0db7de3db15a8910d81b67b2ccbdc6326d3a20f",
+    "libs/os-control/src/resource_state.rs": "045f8bf459736dc9f63fd9dc1e78cc0f2371694a3ee28f53058202f7716ab68a",
+    "support/build/README.md": "1ab023f69259ca93a36a3f5db9abdef4c8d1413ec3c74d74e28e5aba7e9b3c22",
+    "support/build/ktest/README.md": "592a7eca726231ef18da1430c1cf0620b6813ad4de883046c1bfa7913019d5cd",
+    "support/build/ktest/locks/aster-core.Cargo.lock": "85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150",
+    "support/build/ktest/locks/aster-core.json": "f170057e878d925932f341c275b8d83a4f5ba76c5b11af1e534028147379c20c",
+    "support/build/ktest/locks/ostd.json": "2dcfe3665f95bb43fa310153e118e75ac899128407b0c28c6290348ab885f833",
+    "support/build/ktest/prepare-locks.py": "88b2ed07e5cbcdd8465f093475ecfecb184c2e19ab32e031bb527fb243348567",
+    "support/build/minimal/Cargo.lock": "e54bc99b3df5e21a1fdcd88d89b32ac478e73c7b4bf69ae0b1084f59d56fc506",
+    "support/build/verify-source.py": "0b4dcbd04bf2bc201c187dc055d3c5f74ff51938f1506fe4c9590d7f0a1cf0c6"
+  },
+  "lock_sha256": {
+    "kernel/asterinas/Cargo.lock": "af94d71680ecf3b9631e21c958263d5e41229033214f88dcff858bb14765a666",
+    "kernel/asterinas/osdk/Cargo.lock": "99a21f72f6a9f1582553b34f06e80f86e539f38e62eab7a0847afd0906e75be3",
+    "support/build/minimal/Cargo.lock": "e54bc99b3df5e21a1fdcd88d89b32ac478e73c7b4bf69ae0b1084f59d56fc506",
+    "support/build/ktest/locks/aster-core.Cargo.lock": "85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150",
+    "support/build/ktest/locks/ostd.Cargo.lock": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6"
+  },
+  "original_seed": {
+    "tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+    "blob": "77d8f4be4cdc7365cd73a2e9f7638d46f3608b40",
+    "sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+    "source": "git cat-file blob, never working derived Cargo.lock"
+  },
+  "first_failure_preserved": {
+    "directory": "../g1-a-ktest-01",
+    "compile_error": "E0308 ArcRef needs explicit borrow",
+    "qemu_started": false,
+    "test_pass_count": null,
+    "root_lock_change": "exact full metadata writer reproduced, explicit derivative now validated"
+  },
+  "light_validation": [
+    "source-inputs-02.json",
+    "light-source-checks-02.json",
+    "root-lock-explicit-derivation.json",
+    "full-metadata-locked-02.json",
+    "../g1-metadata-repro/component-writer-reproduction.json"
+  ],
+  "metadata_only_observations": {
+    "full_component_packages": 226,
+    "working_root_lock_packages": 235,
+    "original_seed_packages": 234,
+    "ostd_derived_packages": 97,
+    "aster_core_derived_packages": 200,
+    "root_lock_unchanged_during_actual_locked_full_metadata": true,
+    "both_derived_test_locks_regenerated_from_fixed_git_seed": true
+  },
+  "not_run_on_this_final_candidate": [
+    "kernel compilation",
+    "QEMU ktest",
+    "production kernel boot",
+    "QueryAbi guest regression",
+    "G1-b/C/D or SMP qualification"
+  ],
+  "next_root_command": [
+    "python3",
+    "-I",
+    "support/build/ktest/run.py",
+    "--crate",
+    "aster-core",
+    "--skip-osdk-install",
+    "--output",
+    "/workspace/scratch/499c7902de8e/r10-evidence/g1-a-ktest-02/execution"
+  ],
+  "osdk_reinstall_required": false,
+  "osdk_reason": "OSDK source unchanged; existing binary embeds this worktree path; macro is a separate kernel compile input",
+  "production_boundary": "QueryAbi-only; no trusted-init or grant/operation enabled; no ktest fixture in production cfg"
+}

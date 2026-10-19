@@ -1,0 +1,59 @@
+{
+  "schema": "r10.candidate-atomic-marker-correction.v1",
+  "observed_at_utc": "2026-10-19T02:28:44.443889+00:00",
+  "checks": [
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "log": "check-0.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": [
+        "python3",
+        "-I",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/kernel/control",
+        "-p",
+        "test_queryabi*runner.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "log": "check-1.log",
+      "log_sha256": "c5eeec7ab4e5abb9e79fb5db6ceeb97f2c789360fe94573df09f685aa9430d1d"
+    },
+    {
+      "command": [
+        "cc",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-static",
+        "tests/kernel/control/queryabi_candidate_guest.c",
+        "-o",
+        "/workspace/scratch/499c7902de8e/r10-evidence/g1-queryabi-correction-02/host-compile-only-probe"
+      ],
+      "exit_code": 0,
+      "log": "check-2.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "legacy_files_unchanged": [
+    "tests/kernel/control/queryabi_guest.c",
+    "tests/kernel/control/run_queryabi_guest.py"
+  ],
+  "host_fixtures_only": true,
+  "new_guest_run": false,
+  "failed_attempt_retained": true,
+  "strict_source_and_exact_line_gate_unchanged": true
+}

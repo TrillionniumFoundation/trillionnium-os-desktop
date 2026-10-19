@@ -1,0 +1,588 @@
+{
+  "schema": "r10.g1.independent-actual-kernel-runtime-review.v1",
+  "reviewed_at_utc": "2026-10-19T02:08:34.387211+00:00",
+  "status": "passed_saved_runtime_and_source_binding_review",
+  "source_commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+  "source_tree": "6b03c4827a28c9dc34456e7aa5f855b2f1f4b72f",
+  "reviewer_actions": {
+    "cargo_invocations": 0,
+    "kernel_builds": 0,
+    "guest_runs": 0,
+    "executed_kernel_or_downloaded_elfs": 0,
+    "producer_source_writes": 0,
+    "read_only_tools": "Git and Python byte/parser checks only",
+    "evidence_writes": "New review JSON files and verified copies of the two booted ELF files in this review directory."
+  },
+  "input_review": {
+    "files_in_each_snapshot": 2980,
+    "snapshots_compared": 4,
+    "all_four_snapshot_objects_equal": true,
+    "all_selected_input_bytes_match_frozen_git_blobs": true,
+    "all_selected_current_input_bytes_and_git_modes_match": true,
+    "inventory_covers_all_tracked_files_in": [
+      "kernel/asterinas/",
+      "libs/os-control/",
+      "support/build/"
+    ],
+    "inventory_excludes_archived_evidence_prefix": "support/build/evidence/",
+    "source_kind_counts": {
+      "file": 2979,
+      "symlink": 1
+    },
+    "total_selected_source_bytes": 12769863,
+    "original_upstream_git_seed_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+    "explicit_working_root_lock_sha256": "af94d71680ecf3b9631e21c958263d5e41229033214f88dcff858bb14765a666",
+    "no_source_lock_mutation_in_either_successful_run": true
+  },
+  "runs": [
+    {
+      "run_directory": "r10-evidence/g1-a-ktest-02",
+      "crate": "aster-core",
+      "source_head": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "source_tree": "6b03c4827a28c9dc34456e7aa5f855b2f1f4b72f",
+      "started_at_utc": "2026-10-19T01:55:03.553104+00:00",
+      "finished_at_utc": "2026-10-19T01:56:48.385676+00:00",
+      "wrapper_elapsed_seconds": 104.832572,
+      "actual_osdk_command": {
+        "argv": [
+          "cargo",
+          "+nightly-2026-07-21",
+          "osdk",
+          "test",
+          "--release",
+          "--boot-method=vmm-direct",
+          "--grub-boot-protocol=multiboot",
+          "--qemu-exe=/workspace/scratch/499c7902de8e/r10-g1-owner/support/build/ktest/record-qemu.py",
+          "--kcmd-args=loglevel=error",
+          "--kcmd-args=earlycon",
+          "--kcmd-args=console=ttyS0"
+        ],
+        "cwd": "/workspace/scratch/499c7902de8e/r10-g1-owner/kernel/asterinas/kernel/core",
+        "lock_sha256": "85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150"
+      },
+      "unfiltered_within_target_crate": true,
+      "source_input_files": 2980,
+      "source_maps_identical": true,
+      "generated_lock": {
+        "path": "r10-evidence/g1-a-ktest-02/execution/aster-core/generated.Cargo.lock",
+        "bytes": 41127,
+        "sha256": "85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150"
+      },
+      "generated_lock_matches_fixed_selected_input": true,
+      "actual_serial_result": {
+        "crate": "aster-core",
+        "declared": 179,
+        "passed": 179,
+        "failed": 0,
+        "filtered": 0,
+        "soft_skipped": 0,
+        "soft_skip_reasons": [],
+        "exercised_passed_lower_bound": 179,
+        "observed_test_starts": 179,
+        "raw_qemu_exit": 33,
+        "guest": "guest-001"
+      },
+      "registered_header": {
+        "tests": 542,
+        "crates": 16,
+        "not_executed_count": 363,
+        "excluded_crate_names": [
+          "aster-bigtcp",
+          "aster-cmdline",
+          "aster-device",
+          "aster-framebuffer",
+          "aster-nvme",
+          "aster-softirq",
+          "aster-systree",
+          "aster-util",
+          "dma-pool",
+          "osdk-frame-allocator",
+          "osdk-heap-allocator",
+          "osdk-test-kernel",
+          "ostd",
+          "ring-buffer",
+          "xarray"
+        ],
+        "interpretation": "Registration inventory; excluded crates were not exercised by this target-specific invocation."
+      },
+      "test_identity_list": {
+        "path": "r10-evidence/g1-review/aster-core-observed-tests.json",
+        "bytes": 35686,
+        "sha256": "56dea48443e7ae91ad29dc74a08335116a4e9c0ebf849d95330141c027114051"
+      },
+      "soft_skip_tests": [],
+      "raw_serial": {
+        "path": "r10-evidence/g1-a-ktest-02/execution/aster-core/guests/guest-001/serial.log",
+        "bytes": 20888,
+        "sha256": "98ee577a23e73c52375acc39ef70343c8ddf28ceb2f35630071f80e8e8552cd0"
+      },
+      "qemu_record": {
+        "path": "r10-evidence/g1-a-ktest-02/execution/aster-core/guests/guest-001/qemu.json",
+        "bytes": 4707,
+        "sha256": "5016ba82a68749f1e25a41e95b13c5a894c13cd68ccde3bd1f1ce2222b4dc022"
+      },
+      "qemu_duration_seconds": 0.715,
+      "raw_qemu_exit_code": 33,
+      "timed_out": false,
+      "actual_profile": {
+        "arch": "x86_64",
+        "machine": "q35",
+        "accel": "tcg",
+        "cpu": "max",
+        "vcpus": 1,
+        "memory_mib": 512,
+        "network": false,
+        "data_disks": false
+      },
+      "actual_kernel_elf": {
+        "path": "r10-g1-owner/kernel/asterinas/target/osdk/aster-core/aster-core-osdk-bin.elf",
+        "bytes": 9628168,
+        "sha256": "e9e08a0103173cf8e6bef67ebfe9ef41204b97f23f6b2aff5bad7574c68044e3",
+        "preserved_copy": {
+          "path": "r10-evidence/g1-review/elf/aster-core-osdk-bin.elf",
+          "bytes": 9628168,
+          "sha256": "e9e08a0103173cf8e6bef67ebfe9ef41204b97f23f6b2aff5bad7574c68044e3"
+        },
+        "elf_class": 64,
+        "endianness": "little",
+        "elf_type": 2,
+        "e_machine": 3,
+        "entry_hex": "0x8001248",
+        "machine_field_explanation": "The fixed x86_64 make_elf_for_qemu implementation writes EM_386 at offset 18 for QEMU multiboot; this is not an EM_X86_64 header."
+      },
+      "actual_qemu_binary": {
+        "path": "/usr/bin/qemu-system-x86_64",
+        "bytes": 26415624,
+        "sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854"
+      },
+      "recorded_qemu_version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)\nCopyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers",
+      "actual_bios": {
+        "path": "/usr/share/seabios/bios-256k.bin",
+        "bytes": 262144,
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+      },
+      "build_completed_release_profile": true,
+      "compile_log": {
+        "path": "r10-evidence/g1-a-ktest-02/execution/aster-core/osdk-test.log",
+        "bytes": 63220,
+        "sha256": "ea366028e89611cb21314bdd9525b9f2f5eea608324fbc1f665f251056dfd3fb"
+      },
+      "g1_a_new_tests": {
+        "expected": 10,
+        "observed_exactly_once": 10,
+        "ok": 10,
+        "soft_skipped": 0,
+        "records": [
+          {
+            "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::tests::replacement_also_closes_an_unbound_old_arc",
+            "terminal": "ok",
+            "soft_skip_reason": null,
+            "serial_line": 37
+          },
+          {
+            "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::tests::malformed_writes_do_not_consume_the_bound_revision",
+            "terminal": "ok",
+            "soft_skip_reason": null,
+            "serial_line": 38
+          },
+          {
+            "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::tests::deleted_unbound_current_arc_cannot_be_bound_afterward",
+            "terminal": "ok",
+            "soft_skip_reason": null,
+            "serial_line": 39
+          },
+          {
+            "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::tests::deletion_keeps_bound_identity_revision_and_accounting",
+            "terminal": "ok",
+            "soft_skip_reason": null,
+            "serial_line": 40
+          },
+          {
+            "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::tests::binding_preserves_current_budget_and_cannot_be_repeated",
+            "terminal": "ok",
+            "soft_skip_reason": null,
+            "serial_line": 41
+          },
+          {
+            "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::tests::replacement_closes_bound_old_arc_and_does_not_inherit_metadata",
+            "terminal": "ok",
+            "soft_skip_reason": null,
+            "serial_line": 42
+          },
+          {
+            "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::tests::ordinary_cpu_max_write_advances_revision_without_refilling_debt",
+            "terminal": "ok",
+            "soft_skip_reason": null,
+            "serial_line": 43
+          },
+          {
+            "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::tests::ambiguous_metadata_mutation_stays_indeterminate_after_detachment",
+            "terminal": "ok",
+            "soft_skip_reason": null,
+            "serial_line": 44
+          },
+          {
+            "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::tests::final_charge_lease_blocks_deletion_until_the_real_debit_is_retained",
+            "terminal": "ok",
+            "soft_skip_reason": null,
+            "serial_line": 45
+          },
+          {
+            "name": "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::tests::last_revision_succeeds_then_real_owner_writes_fail_without_wrapping",
+            "terminal": "ok",
+            "soft_skip_reason": null,
+            "serial_line": 46
+          }
+        ],
+        "source_test_file": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/tests.rs",
+        "source_test_sha256": "f4e613e21bee44c77b207919d621c751f49830ef2476b0ae8e3c96ed9b7b5a02"
+      }
+    },
+    {
+      "run_directory": "r10-evidence/g1-a-ostd-01",
+      "crate": "ostd",
+      "source_head": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "source_tree": "6b03c4827a28c9dc34456e7aa5f855b2f1f4b72f",
+      "started_at_utc": "2026-10-19T01:59:14.716632+00:00",
+      "finished_at_utc": "2026-10-19T01:59:39.108884+00:00",
+      "wrapper_elapsed_seconds": 24.392252,
+      "actual_osdk_command": {
+        "argv": [
+          "cargo",
+          "+nightly-2026-07-21",
+          "osdk",
+          "test",
+          "--release",
+          "--boot-method=vmm-direct",
+          "--grub-boot-protocol=multiboot",
+          "--qemu-exe=/workspace/scratch/499c7902de8e/r10-g1-owner/support/build/ktest/record-qemu.py",
+          "--kcmd-args=loglevel=error",
+          "--kcmd-args=earlycon",
+          "--kcmd-args=console=ttyS0"
+        ],
+        "cwd": "/workspace/scratch/499c7902de8e/r10-g1-owner/kernel/asterinas/ostd",
+        "lock_sha256": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6"
+      },
+      "unfiltered_within_target_crate": true,
+      "source_input_files": 2980,
+      "source_maps_identical": true,
+      "generated_lock": {
+        "path": "r10-evidence/g1-a-ostd-01/execution/ostd/generated.Cargo.lock",
+        "bytes": 20185,
+        "sha256": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6"
+      },
+      "generated_lock_matches_fixed_selected_input": true,
+      "actual_serial_result": {
+        "crate": "ostd",
+        "declared": 221,
+        "passed": 221,
+        "failed": 0,
+        "filtered": 0,
+        "soft_skipped": 3,
+        "soft_skip_reasons": [
+          "VMX unavailable",
+          "VMX unavailable",
+          "VMX/EPT invalidation unavailable"
+        ],
+        "exercised_passed_lower_bound": 218,
+        "observed_test_starts": 221,
+        "raw_qemu_exit": 33,
+        "guest": "guest-001"
+      },
+      "registered_header": {
+        "tests": 240,
+        "crates": 4,
+        "not_executed_count": 19,
+        "excluded_crate_names": [
+          "osdk-frame-allocator",
+          "osdk-heap-allocator",
+          "osdk-test-kernel"
+        ],
+        "interpretation": "Registration inventory; excluded crates were not exercised by this target-specific invocation."
+      },
+      "test_identity_list": {
+        "path": "r10-evidence/g1-review/ostd-observed-tests.json",
+        "bytes": 36490,
+        "sha256": "82a58fc9bfea6970093ece1f134366f1f54f983c57e5eab3e02665be7ef46c73"
+      },
+      "soft_skip_tests": [
+        {
+          "name": "ostd::arch::vm::vmx::test::multiple_vmx_guards_lifecycle",
+          "terminal": "ok",
+          "soft_skip_reason": "VMX unavailable",
+          "serial_line": 79
+        },
+        {
+          "name": "ostd::arch::vm::vmx::vmcs::test::switch_and_reuse_vmcs",
+          "terminal": "ok",
+          "soft_skip_reason": "VMX unavailable",
+          "serial_line": 80
+        },
+        {
+          "name": "ostd::vm::gpm_space::test::guest_mapping_lifecycle",
+          "terminal": "ok",
+          "soft_skip_reason": "VMX/EPT invalidation unavailable",
+          "serial_line": 339
+        }
+      ],
+      "raw_serial": {
+        "path": "r10-evidence/g1-a-ostd-01/execution/ostd/guests/guest-001/serial.log",
+        "bytes": 23028,
+        "sha256": "30001c815c7954c1b988c11b0939434caec27597d098e4bd388145bde5fe3b26"
+      },
+      "qemu_record": {
+        "path": "r10-evidence/g1-a-ostd-01/execution/ostd/guests/guest-001/qemu.json",
+        "bytes": 4639,
+        "sha256": "bee96cae1fe02af17a3a20f91c15953590fb6b5dd5272136f032e55191365a34"
+      },
+      "qemu_duration_seconds": 0.766,
+      "raw_qemu_exit_code": 33,
+      "timed_out": false,
+      "actual_profile": {
+        "arch": "x86_64",
+        "machine": "q35",
+        "accel": "tcg",
+        "cpu": "max",
+        "vcpus": 1,
+        "memory_mib": 512,
+        "network": false,
+        "data_disks": false
+      },
+      "actual_kernel_elf": {
+        "path": "r10-g1-owner/kernel/asterinas/target/osdk/ostd/ostd-osdk-bin.elf",
+        "bytes": 2002472,
+        "sha256": "344603a3383d68c0bc63869c443efb44c13f00cfdc6ca63f80e83451607b2b0c",
+        "preserved_copy": {
+          "path": "r10-evidence/g1-review/elf/ostd-osdk-bin.elf",
+          "bytes": 2002472,
+          "sha256": "344603a3383d68c0bc63869c443efb44c13f00cfdc6ca63f80e83451607b2b0c"
+        },
+        "elf_class": 64,
+        "endianness": "little",
+        "elf_type": 2,
+        "e_machine": 3,
+        "entry_hex": "0x8001248",
+        "machine_field_explanation": "The fixed x86_64 make_elf_for_qemu implementation writes EM_386 at offset 18 for QEMU multiboot; this is not an EM_X86_64 header."
+      },
+      "actual_qemu_binary": {
+        "path": "/usr/bin/qemu-system-x86_64",
+        "bytes": 26415624,
+        "sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854"
+      },
+      "recorded_qemu_version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)\nCopyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers",
+      "actual_bios": {
+        "path": "/usr/share/seabios/bios-256k.bin",
+        "bytes": 262144,
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+      },
+      "build_completed_release_profile": true,
+      "compile_log": {
+        "path": "r10-evidence/g1-a-ostd-01/execution/ostd/osdk-test.log",
+        "bytes": 24949,
+        "sha256": "e131604a0cca953c0abb31923251c97858d005c93b4282f98784e58c636facb8"
+      }
+    }
+  ],
+  "aggregate": {
+    "target_crates": 2,
+    "qemu_guests": 2,
+    "reported_passed": 400,
+    "failed": 0,
+    "filtered_within_target": 0,
+    "soft_skipped": 3,
+    "exercised_passed_lower_bound": 397,
+    "g1_a_new_tests_ok_exactly_once": 10,
+    "meaning": "400 test functions returned success. Three OSTD hardware-dependent tests explicitly returned a soft skip; at least 397 exercised their tested paths. Registered inventories and excluded crate tests are not added to these counts."
+  },
+  "tool_binding": {
+    "toolchain": "nightly-2026-07-21",
+    "rustc": "rustc 1.99.0-nightly (87e5904f5 2026-07-20)\nbinary: rustc\ncommit-hash: 87e5904f5eb6398af6b22eac2802c78934260c48\ncommit-date: 2026-07-20\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.0-nightly\nLLVM version: 22.1.8\n",
+    "cargo": "cargo 1.99.0-nightly (3efb1f477 2026-07-17)\nrelease: 1.99.0-nightly\ncommit-hash: 3efb1f477e99b42974b982d939fd100303cdf7db\ncommit-date: 2026-07-17\nhost: x86_64-unknown-linux-gnu\nlibgit2: 1.9.4 (sys:0.21.0 vendored)\nlibcurl: 8.21.0-DEV (sys:0.4.90+curl-8.21.0 vendored ssl:OpenSSL/3.6.3)\nssl: OpenSSL 3.6.3 9 Jun 2026\nos: Ubuntu 24.4.0 (noble) [64-bit]\n",
+    "osdk_sha256": "9bf344bb405c6eb96d1bdd1488eaf33d5465ddc8361fea1135ead7130ad65008",
+    "vdso_sha256": "27cd7bf576a92fa48a891c05988f52fac35b7374d5b9650d6b035e477c5d93a3",
+    "osdk_install_reused": true,
+    "qemu_profile": "Actual q35 / TCG / CPU max / one vCPU / 512 MiB / SeaBIOS",
+    "qemu_multiboot_elf_transform_source": {
+      "path": "kernel/asterinas/osdk/src/commands/build/bin.rs",
+      "commit": "12e0547d2e6394548b15764b06346422c4fff31e",
+      "sha256": "21ccf19d9bc1bb6850121e2604ec0abbecc1dc0ecf221c4cb5c2d65abfe31194",
+      "function": "make_elf_for_qemu",
+      "source_line": 207
+    }
+  },
+  "initial_failure_preserved": {
+    "run_directory": "r10-evidence/g1-a-ktest-01",
+    "source_commit": "be6d8408878dc25fce3188e1fc759aa227bf8678",
+    "started_at_utc": "2026-10-19T01:33:26.332596+00:00",
+    "finished_at_utc": "2026-10-19T01:34:58.106576+00:00",
+    "accepted": false,
+    "exit_code": 1,
+    "qemu_started": false,
+    "guest_test_results": null,
+    "compile_error": "E0308: ArcRef was not explicitly borrowed for Arc::ptr_eq",
+    "working_source_mutations": [
+      "kernel/asterinas/Cargo.lock"
+    ],
+    "root_lock_before_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+    "root_lock_after_sha256": "af94d71680ecf3b9631e21c958263d5e41229033214f88dcff858bb14765a666",
+    "input_paths_changed_from_initial_to_final_candidate": [
+      "kernel/asterinas/Cargo.lock",
+      "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs",
+      "kernel/asterinas/kernel/libs/comp-sys/component-macro/src/priority.rs",
+      "support/build/README.md",
+      "support/build/ktest/README.md",
+      "support/build/ktest/locks/aster-core.json",
+      "support/build/ktest/locks/ostd.json",
+      "support/build/ktest/prepare-locks.py",
+      "support/build/verify-source.py"
+    ],
+    "cause_correction": "Six saved no-deps metadata counterexamples do not support the initial OSDK-util suspicion. Full component metadata independently reproduced the exact mutated root lock. The final explicit derivative and full --locked command preserve source bytes."
+  },
+  "remaining_limits": [
+    "This is real single-vCPU x86_64 QEMU TCG kernel testing, not host unit tests. It does not qualify KVM, VMX/EPT, SMP, other architectures or physical devices.",
+    "The ten G1-a tests use real CPU owners/locks/RCU and lease paths, but controlled TSC fixtures and unstarted Process/Task objects do not measure actual scheduled CPU consumption.",
+    "Slice-backed invalid write tests do not prove an unmapped-user-address EFAULT.",
+    "Per-node deferred lease lifetime is covered; scheduling attribution across arbitrary controller-generation toggles is not newly qualified.",
+    "The native binding seam remains private and uninstalled in production. No trusted-init CapSpace grant, native execute authorization, clock-domain conversion or device effect was demonstrated.",
+    "No ordinary production boot or QueryAbi userspace regression is claimed by these kernel test receipts.",
+    "A success return from a hardware soft-skip test is not evidence that its unavailable hardware path ran."
+  ],
+  "evidence_files": {
+    "r10-evidence/g1-a-ktest-02/receipt.json": {
+      "path": "r10-evidence/g1-a-ktest-02/receipt.json",
+      "bytes": 1306,
+      "sha256": "22ad23868d9ca8589c389e64b6ef4ffa1ff667712bbf3912d605edba1909e645"
+    },
+    "r10-evidence/g1-a-ktest-02/started.json": {
+      "path": "r10-evidence/g1-a-ktest-02/started.json",
+      "bytes": 632,
+      "sha256": "583cfbba52e8bf9ef2be63c8bcf8bf7000881339a88da600c6df486ba6ec7021"
+    },
+    "r10-evidence/g1-a-ktest-02/source-before.json": {
+      "path": "r10-evidence/g1-a-ktest-02/source-before.json",
+      "bytes": 616455,
+      "sha256": "c062c348f77d037efaaaa73e1eec3406879621e424b9450c0ada93d92c9353f3"
+    },
+    "r10-evidence/g1-a-ktest-02/source-after.json": {
+      "path": "r10-evidence/g1-a-ktest-02/source-after.json",
+      "bytes": 616455,
+      "sha256": "c062c348f77d037efaaaa73e1eec3406879621e424b9450c0ada93d92c9353f3"
+    },
+    "r10-evidence/g1-a-ktest-02/runner.log": {
+      "path": "r10-evidence/g1-a-ktest-02/runner.log",
+      "bytes": 109,
+      "sha256": "f4fdcb2c14bfec3fcb95f26c4a5004faadcadd6b239e951477c1770e90399d67"
+    },
+    "r10-evidence/g1-a-ktest-02/execution/environment.json": {
+      "path": "r10-evidence/g1-a-ktest-02/execution/environment.json",
+      "bytes": 2238,
+      "sha256": "f97875f82fe6227beae88e668b5e9dae2660c3de7e19e0518792776521e27011"
+    },
+    "r10-evidence/g1-a-ktest-02/execution/source-inputs.json": {
+      "path": "r10-evidence/g1-a-ktest-02/execution/source-inputs.json",
+      "bytes": 1807,
+      "sha256": "f5e6fb492f869071dc0b90af2578824dd2ef9a87b82f541c857a78e25f3099a3"
+    },
+    "r10-evidence/g1-a-ktest-02/execution/commands.json": {
+      "path": "r10-evidence/g1-a-ktest-02/execution/commands.json",
+      "bytes": 572,
+      "sha256": "ac5f54fe07b504d0dcf21dcd0583b4584d2e9637787e0cc7b953afaa5f941f60"
+    },
+    "r10-evidence/g1-a-ktest-02/execution/result.json": {
+      "path": "r10-evidence/g1-a-ktest-02/execution/result.json",
+      "bytes": 465,
+      "sha256": "f0d196906ddf8662a356063dace30c5059072e657f5d5849e5116b0b0b52d576"
+    },
+    "r10-evidence/g1-a-ktest-02/execution/aster-core/result.json": {
+      "path": "r10-evidence/g1-a-ktest-02/execution/aster-core/result.json",
+      "bytes": 353,
+      "sha256": "731852ff07e7cafe9022240aa14a9f4efa3cbce1200e77336362d8bdfe30580f"
+    },
+    "r10-evidence/g1-a-ktest-02/execution/aster-core/osdk-exit-code.txt": {
+      "path": "r10-evidence/g1-a-ktest-02/execution/aster-core/osdk-exit-code.txt",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "r10-evidence/g1-a-ostd-01/receipt.json": {
+      "path": "r10-evidence/g1-a-ostd-01/receipt.json",
+      "bytes": 1413,
+      "sha256": "bb191c771628a690fa81afa17d177e8ead559a877fe9adb954e8c7acb90671b9"
+    },
+    "r10-evidence/g1-a-ostd-01/started.json": {
+      "path": "r10-evidence/g1-a-ostd-01/started.json",
+      "bytes": 617,
+      "sha256": "e9b6cf5d48b6ec46bedcf782f0a5e2ff1981037a054aca71000fb217e9821d58"
+    },
+    "r10-evidence/g1-a-ostd-01/source-before.json": {
+      "path": "r10-evidence/g1-a-ostd-01/source-before.json",
+      "bytes": 616455,
+      "sha256": "c062c348f77d037efaaaa73e1eec3406879621e424b9450c0ada93d92c9353f3"
+    },
+    "r10-evidence/g1-a-ostd-01/source-after.json": {
+      "path": "r10-evidence/g1-a-ostd-01/source-after.json",
+      "bytes": 616455,
+      "sha256": "c062c348f77d037efaaaa73e1eec3406879621e424b9450c0ada93d92c9353f3"
+    },
+    "r10-evidence/g1-a-ostd-01/runner.log": {
+      "path": "r10-evidence/g1-a-ostd-01/runner.log",
+      "bytes": 108,
+      "sha256": "eb5e63437e1e81e36fd54190005be8b42a601bf7937f57ada2d9d8a55101911b"
+    },
+    "r10-evidence/g1-a-ostd-01/execution/environment.json": {
+      "path": "r10-evidence/g1-a-ostd-01/execution/environment.json",
+      "bytes": 2238,
+      "sha256": "f97875f82fe6227beae88e668b5e9dae2660c3de7e19e0518792776521e27011"
+    },
+    "r10-evidence/g1-a-ostd-01/execution/source-inputs.json": {
+      "path": "r10-evidence/g1-a-ostd-01/execution/source-inputs.json",
+      "bytes": 1807,
+      "sha256": "f5e6fb492f869071dc0b90af2578824dd2ef9a87b82f541c857a78e25f3099a3"
+    },
+    "r10-evidence/g1-a-ostd-01/execution/commands.json": {
+      "path": "r10-evidence/g1-a-ostd-01/execution/commands.json",
+      "bytes": 565,
+      "sha256": "bba0ec5d4089b4722bb4c28afbeb4dbdd2e38255cd17107aff07700b739bbf7f"
+    },
+    "r10-evidence/g1-a-ostd-01/execution/result.json": {
+      "path": "r10-evidence/g1-a-ostd-01/execution/result.json",
+      "bytes": 579,
+      "sha256": "c80fd1e02fd682bb6077735cc40f0e6e8b4db897eac7f721328fc4842190d3e1"
+    },
+    "r10-evidence/g1-a-ostd-01/execution/ostd/result.json": {
+      "path": "r10-evidence/g1-a-ostd-01/execution/ostd/result.json",
+      "bytes": 451,
+      "sha256": "061d15cd72fc6ef8563e04ad5f90b598362bc46c5155321990427f4b55216ee2"
+    },
+    "r10-evidence/g1-a-ostd-01/execution/ostd/osdk-exit-code.txt": {
+      "path": "r10-evidence/g1-a-ostd-01/execution/ostd/osdk-exit-code.txt",
+      "bytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "r10-evidence/g1-review/source-review-final-12e0547d.json": {
+      "path": "r10-evidence/g1-review/source-review-final-12e0547d.json",
+      "bytes": 36920,
+      "sha256": "758b1351a6c426fdb10f7e6e7506415bf9a7a6fd7159d8a1fb01ce701466015b"
+    },
+    "r10-evidence/g1-review/static-gates.json": {
+      "path": "r10-evidence/g1-review/static-gates.json",
+      "bytes": 21212,
+      "sha256": "9c0bc2f201572c89de12b740e64a613e020bcb5c64ee422165bcaa389779cb0b"
+    },
+    "r10-evidence/g1-review/component-metadata-reproduction-review.json": {
+      "path": "r10-evidence/g1-review/component-metadata-reproduction-review.json",
+      "bytes": 19320,
+      "sha256": "70c975378a53756889ac166ba3a77cde517dc92f3e06ff3006ad38bab7f00fbc"
+    },
+    "r10-evidence/g1-a-ktest-01/receipt.json": {
+      "path": "r10-evidence/g1-a-ktest-01/receipt.json",
+      "bytes": 780,
+      "sha256": "2a9199e3a90c92937d9f50e9416c492553f6718155b56b444a81c681f954085d"
+    },
+    "r10-evidence/g1-a-ktest-01/execution/aster-core/osdk-test.log": {
+      "path": "r10-evidence/g1-a-ktest-01/execution/aster-core/osdk-test.log",
+      "bytes": 16054,
+      "sha256": "9c8fc4a7cc93d7a09751d7b5ecd04f99227965676edbf215d3bb21f6f9012547"
+    }
+  },
+  "blocking_findings": []
+}

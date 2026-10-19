@@ -1,0 +1,186 @@
+{
+  "schema": "r10.g1-pr197.host-retry-and-merge-source.v1",
+  "head": "1c05412e2b340bbc8cd2b8a3389ae0ecce538991",
+  "started_at_utc": "2026-10-19 03:54:21 UTC",
+  "finished_at_utc": "2026-10-19 03:54:25 UTC",
+  "observations": [
+    {
+      "key": "a03_jobs",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196471043/jobs?per_page=100",
+      "tool": "github_fetch",
+      "is_error": false,
+      "response_body": "{\"total_count\":1,\"jobs\":[{\"id\":117880228851,\"run_id\":39196471043,\"workflow_name\":\"A03 native Loom and allocation safety\",\"head_branch\":\"agents/r10-g1-cpu-owner-20261019\",\"run_url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196471043\",\"run_attempt\":1,\"node_id\":\"CR_kwDOVLzC488AAAAbcjWL8w\",\"head_sha\":\"1c05412e2b340bbc8cd2b8a3389ae0ecce538991\",\"url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/jobs/117880228851\",\"html_url\":\"https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196471043/job/117880228851\",\"status\":\"completed\",\"conclusion\":\"success\",\"created_at\":\"2026-10-19T03:49:07Z\",\"started_at\":\"2026-10-19T03:49:10Z\",\"completed_at\":\"2026-10-19T03:50:13Z\",\"name\":\"exact-native-models\",\"steps\":[{\"name\":\"Set up job\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":1,\"started_at\":\"2026-10-19T03:49:11Z\",\"completed_at\":\"2026-10-19T03:49:12Z\"},{\"name\":\"Run actions/checkout@v4\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":2,\"started_at\":\"2026-10-19T03:49:12Z\",\"completed_at\":\"2026-10-19T03:49:30Z\"},{\"name\":\"Check exact HEAD and immutable inputs\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":3,\"started_at\":\"2026-10-19T03:49:30Z\",\"completed_at\":\"2026-10-19T03:49:30Z\"},{\"name\":\"Install exact pinned Rust and host lint tools\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":4,\"started_at\":\"2026-10-19T03:49:30Z\",\"completed_at\":\"2026-10-19T03:49:40Z\"},{\"name\":\"Execute bounded Loom models on exact A03 source (host only)\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":5,\"started_at\":\"2026-10-19T03:49:40Z\",\"completed_at\":\"2026-10-19T03:50:07Z\"},{\"name\":\"Require complete native allocation probe or explicit bootstrap\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":6,\"started_at\":\"2026-10-19T03:50:07Z\",\"completed_at\":\"2026-10-19T03:50:07Z\"},{\"name\":\"Prove no internal-lock alloc, realloc or free (host only)\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":7,\"started_at\":\"2026-10-19T03:50:07Z\",\"completed_at\":\"2026-10-19T03:50:09Z\"},{\"name\":\"Upload raw model and allocator evidence even when rejected\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":8,\"started_at\":\"2026-10-19T03:50:09Z\",\"completed_at\":\"2026-10-19T03:50:10Z\"},{\"name\":\"Post Run actions/checkout@v4\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":16,\"started_at\":\"2026-10-19T03:50:10Z\",\"completed_at\":\"2026-10-19T03:50:10Z\"},{\"name\":\"Complete job\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":17,\"started_at\":\"2026-10-19T03:50:10Z\",\"completed_at\":\"2026-10-19T03:50:10Z\"}],\"check_run_url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117880228851\",\"labels\":[\"ubuntu-24.04\"],\"runner_id\":1000172805,\"runner_name\":\"GitHub Actions 1000172805\",\"runner_group_id\":0,\"runner_group_name\":\"GitHub Actions\"}]}",
+      "response_json": {
+        "total_count": 1,
+        "jobs": [
+          {
+            "id": 117880228851,
+            "run_id": 39196471043,
+            "workflow_name": "A03 native Loom and allocation safety",
+            "head_branch": "agents/r10-g1-cpu-owner-20261019",
+            "run_url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196471043",
+            "run_attempt": 1,
+            "node_id": "CR_kwDOVLzC488AAAAbcjWL8w",
+            "head_sha": "1c05412e2b340bbc8cd2b8a3389ae0ecce538991",
+            "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/jobs/117880228851",
+            "html_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196471043/job/117880228851",
+            "status": "completed",
+            "conclusion": "success",
+            "created_at": "2026-10-19T03:49:07Z",
+            "started_at": "2026-10-19T03:49:10Z",
+            "completed_at": "2026-10-19T03:50:13Z",
+            "name": "exact-native-models",
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 1,
+                "started_at": "2026-10-19T03:49:11Z",
+                "completed_at": "2026-10-19T03:49:12Z"
+              },
+              {
+                "name": "Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 2,
+                "started_at": "2026-10-19T03:49:12Z",
+                "completed_at": "2026-10-19T03:49:30Z"
+              },
+              {
+                "name": "Check exact HEAD and immutable inputs",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 3,
+                "started_at": "2026-10-19T03:49:30Z",
+                "completed_at": "2026-10-19T03:49:30Z"
+              },
+              {
+                "name": "Install exact pinned Rust and host lint tools",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 4,
+                "started_at": "2026-10-19T03:49:30Z",
+                "completed_at": "2026-10-19T03:49:40Z"
+              },
+              {
+                "name": "Execute bounded Loom models on exact A03 source (host only)",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 5,
+                "started_at": "2026-10-19T03:49:40Z",
+                "completed_at": "2026-10-19T03:50:07Z"
+              },
+              {
+                "name": "Require complete native allocation probe or explicit bootstrap",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 6,
+                "started_at": "2026-10-19T03:50:07Z",
+                "completed_at": "2026-10-19T03:50:07Z"
+              },
+              {
+                "name": "Prove no internal-lock alloc, realloc or free (host only)",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 7,
+                "started_at": "2026-10-19T03:50:07Z",
+                "completed_at": "2026-10-19T03:50:09Z"
+              },
+              {
+                "name": "Upload raw model and allocator evidence even when rejected",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 8,
+                "started_at": "2026-10-19T03:50:09Z",
+                "completed_at": "2026-10-19T03:50:10Z"
+              },
+              {
+                "name": "Post Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 16,
+                "started_at": "2026-10-19T03:50:10Z",
+                "completed_at": "2026-10-19T03:50:10Z"
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 17,
+                "started_at": "2026-10-19T03:50:10Z",
+                "completed_at": "2026-10-19T03:50:10Z"
+              }
+            ],
+            "check_run_url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117880228851",
+            "labels": [
+              "ubuntu-24.04"
+            ],
+            "runner_id": 1000172805,
+            "runner_name": "GitHub Actions 1000172805",
+            "runner_group_id": 0,
+            "runner_group_name": "GitHub Actions"
+          }
+        ]
+      }
+    },
+    {
+      "key": "g0_merge_commit",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/git/commits/5f5e5bfc6e6679a2328c86914455b458676826e7",
+      "tool": "github_fetch",
+      "is_error": false,
+      "response_body": "{\"sha\":\"5f5e5bfc6e6679a2328c86914455b458676826e7\",\"node_id\":\"C_kwDOVLzC49oAKDVmNWU1YmZjNmU2Njc5YTIzMjhjODY5MTQ0NTViNDU4Njc2ODI2ZTc\",\"url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/git/commits/5f5e5bfc6e6679a2328c86914455b458676826e7\",\"html_url\":\"https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/5f5e5bfc6e6679a2328c86914455b458676826e7\",\"author\":{\"name\":\"Qian QI\",\"email\":\"102159240+ProfHepta@users.noreply.github.com\",\"date\":\"2026-10-19T03:49:04Z\"},\"committer\":{\"name\":\"GitHub\",\"email\":\"noreply@github.com\",\"date\":\"2026-10-19T03:49:04Z\"},\"tree\":{\"sha\":\"2b873aa43445c8a02351f5900074a38c6fa4820d\",\"url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/git/trees/2b873aa43445c8a02351f5900074a38c6fa4820d\"},\"message\":\"Merge 1c05412e2b340bbc8cd2b8a3389ae0ecce538991 into e15ae6a63edb5d4e7c475a001be82111d451b653\",\"parents\":[{\"sha\":\"e15ae6a63edb5d4e7c475a001be82111d451b653\",\"url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/git/commits/e15ae6a63edb5d4e7c475a001be82111d451b653\",\"html_url\":\"https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/e15ae6a63edb5d4e7c475a001be82111d451b653\"},{\"sha\":\"1c05412e2b340bbc8cd2b8a3389ae0ecce538991\",\"url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/git/commits/1c05412e2b340bbc8cd2b8a3389ae0ecce538991\",\"html_url\":\"https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/1c05412e2b340bbc8cd2b8a3389ae0ecce538991\"}],\"verification\":{\"verified\":true,\"reason\":\"valid\",\"signature\":\"-----BEGIN PGP SIGNATURE-----\\n\\nwsFcBAABCAAQBQJq1ZMwCRC1aQ7uu5UhlAAAINoQABrBUQAUhw1GMfcDd/LkVaGM\\n+h/NZi0WAHGfoZPSuQDQsQexmGtLyQETJ+W+2oRzkmvLSD90sOkFW+bW7Zb6ep4M\\n2PFfRE+oO2h84IIjAmkKf6O8I0Na3TLuqhYQ4LmbpNz+hKuyZUGspXmQ9SsFWZbh\\nzNMT61g8Bu3Ib/iEtsZ94kBXzSXHubBPgdvZN6qQjrzrkz74rPEGDGeufaHqIt/R\\nnce+hcNi5JPlT5bKzxlgAVljUuA/RBezJXA+1M/Ynrl5gb6gjz5YxlkU3pgJTQd1\\nIwy+8vdAPWzrbQKjEkHeFZSQBfuVvBT7wIjVi+adllcXXapVsgiTD2njt4KfvlXt\\nDoZOHFJSqk6omPtcTCY6XrejyU9+0CsiOk3ZnWe4kmTcgX77p8SzBfnfsjB/a14A\\nP4ChrXBiUjhZzKxol0zi4HjipTzpx962DD7GG6+DCZ3XO7TmhvzgVPKtCRETZSNX\\niP0NzIaILrLjgkccXJK3bpGSCvN1fIWuSQhM/CuIzuvXbD6mD1fTUFzimaprNH+M\\n9tAXAGPrknAXR/bWnNL4znFafcx28LcQiFyxTUHdFjpl2tujefrSOfr2OD8LZmp4\\nZwbBZ3F1j0GSSajsWrk3DI1hB+HbGGW/kIjlI3nkYNK+IDjcE8V8ZktQbjsnbztC\\nuKkFYYrgUIpei1aB12Xp\\n=taem\\n-----END PGP SIGNATURE-----\\n\",\"payload\":\"tree 2b873aa43445c8a02351f5900074a38c6fa4820d\\nparent e15ae6a63edb5d4e7c475a001be82111d451b653\\nparent 1c05412e2b340bbc8cd2b8a3389ae0ecce538991\\nauthor Qian QI <102159240+ProfHepta@users.noreply.github.com> 1792381744 +0000\\ncommitter GitHub <noreply@github.com> 1792381744 +0000\\n\\nMerge 1c05412e2b340bbc8cd2b8a3389ae0ecce538991 into e15ae6a63edb5d4e7c475a001be82111d451b653\\n\",\"verified_at\":\"2026-10-19T03:49:05Z\"}}",
+      "response_json": {
+        "sha": "5f5e5bfc6e6679a2328c86914455b458676826e7",
+        "node_id": "C_kwDOVLzC49oAKDVmNWU1YmZjNmU2Njc5YTIzMjhjODY5MTQ0NTViNDU4Njc2ODI2ZTc",
+        "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/git/commits/5f5e5bfc6e6679a2328c86914455b458676826e7",
+        "html_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/5f5e5bfc6e6679a2328c86914455b458676826e7",
+        "author": {
+          "name": "Qian QI",
+          "email": "102159240+ProfHepta@users.noreply.github.com",
+          "date": "2026-10-19T03:49:04Z"
+        },
+        "committer": {
+          "name": "GitHub",
+          "email": "noreply@github.com",
+          "date": "2026-10-19T03:49:04Z"
+        },
+        "tree": {
+          "sha": "2b873aa43445c8a02351f5900074a38c6fa4820d",
+          "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/git/trees/2b873aa43445c8a02351f5900074a38c6fa4820d"
+        },
+        "message": "Merge 1c05412e2b340bbc8cd2b8a3389ae0ecce538991 into e15ae6a63edb5d4e7c475a001be82111d451b653",
+        "parents": [
+          {
+            "sha": "e15ae6a63edb5d4e7c475a001be82111d451b653",
+            "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/git/commits/e15ae6a63edb5d4e7c475a001be82111d451b653",
+            "html_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/e15ae6a63edb5d4e7c475a001be82111d451b653"
+          },
+          {
+            "sha": "1c05412e2b340bbc8cd2b8a3389ae0ecce538991",
+            "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/git/commits/1c05412e2b340bbc8cd2b8a3389ae0ecce538991",
+            "html_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/1c05412e2b340bbc8cd2b8a3389ae0ecce538991"
+          }
+        ],
+        "verification": {
+          "verified": true,
+          "reason": "valid",
+          "signature": "-----BEGIN PGP SIGNATURE-----\n\nwsFcBAABCAAQBQJq1ZMwCRC1aQ7uu5UhlAAAINoQABrBUQAUhw1GMfcDd/LkVaGM\n+h/NZi0WAHGfoZPSuQDQsQexmGtLyQETJ+W+2oRzkmvLSD90sOkFW+bW7Zb6ep4M\n2PFfRE+oO2h84IIjAmkKf6O8I0Na3TLuqhYQ4LmbpNz+hKuyZUGspXmQ9SsFWZbh\nzNMT61g8Bu3Ib/iEtsZ94kBXzSXHubBPgdvZN6qQjrzrkz74rPEGDGeufaHqIt/R\nnce+hcNi5JPlT5bKzxlgAVljUuA/RBezJXA+1M/Ynrl5gb6gjz5YxlkU3pgJTQd1\nIwy+8vdAPWzrbQKjEkHeFZSQBfuVvBT7wIjVi+adllcXXapVsgiTD2njt4KfvlXt\nDoZOHFJSqk6omPtcTCY6XrejyU9+0CsiOk3ZnWe4kmTcgX77p8SzBfnfsjB/a14A\nP4ChrXBiUjhZzKxol0zi4HjipTzpx962DD7GG6+DCZ3XO7TmhvzgVPKtCRETZSNX\niP0NzIaILrLjgkccXJK3bpGSCvN1fIWuSQhM/CuIzuvXbD6mD1fTUFzimaprNH+M\n9tAXAGPrknAXR/bWnNL4znFafcx28LcQiFyxTUHdFjpl2tujefrSOfr2OD8LZmp4\nZwbBZ3F1j0GSSajsWrk3DI1hB+HbGGW/kIjlI3nkYNK+IDjcE8V8ZktQbjsnbztC\nuKkFYYrgUIpei1aB12Xp\n=taem\n-----END PGP SIGNATURE-----\n",
+          "payload": "tree 2b873aa43445c8a02351f5900074a38c6fa4820d\nparent e15ae6a63edb5d4e7c475a001be82111d451b653\nparent 1c05412e2b340bbc8cd2b8a3389ae0ecce538991\nauthor Qian QI <102159240+ProfHepta@users.noreply.github.com> 1792381744 +0000\ncommitter GitHub <noreply@github.com> 1792381744 +0000\n\nMerge 1c05412e2b340bbc8cd2b8a3389ae0ecce538991 into e15ae6a63edb5d4e7c475a001be82111d451b653\n",
+          "verified_at": "2026-10-19T03:49:05Z"
+        }
+      }
+    }
+  ],
+  "logs": [
+    {
+      "file": "g0-job-117880228265.log",
+      "decoded_characters": 231691
+    },
+    {
+      "file": "a03-job-117880228851.log",
+      "decoded_characters": 62597
+    }
+  ],
+  "note": "a03_jobs retries the retained connector ConnectTimeout in observation-002; it was collected immediately before this recording interval. A connector timeout is not a job failure."
+}

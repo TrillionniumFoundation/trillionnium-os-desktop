@@ -1,0 +1,403 @@
+{
+  "schema": "r10.g1.host-environment-readiness.v1",
+  "recorded_at_utc": "2026-10-19T01:18:40.975631+00:00",
+  "status": "ready_for_product_owned_aster_core_ktest_after_derived_lock_freeze",
+  "host_preparation_completed": true,
+  "blockers": [],
+  "scope": {
+    "product_sources_edited_by_environment_agent": false,
+    "kernel_builds_by_environment_agent": 0,
+    "asterinas_guest_runs_by_environment_agent": 0,
+    "production_service_runs": 0,
+    "host_tool_builds": [
+      "cargo-osdk 0.19.0"
+    ],
+    "paused_qemu_instantiations": 1
+  },
+  "source_root": "/workspace/scratch/499c7902de8e/r10-g1-owner",
+  "tool_root": "/workspace/scratch/499c7902de8e/implementation-tools",
+  "environment_script": {
+    "path": "/workspace/scratch/499c7902de8e/implementation-tools/g1-env.sh",
+    "bytes": 622,
+    "sha256": "e2270ae1d32b90ea2cbcb7d7d75c68a09f9a398340f6c092c8d12b5951bf796d"
+  },
+  "fixed_toolchain": {
+    "name": "nightly-2026-07-21",
+    "rustc_version": "rustc 1.99.0-nightly (87e5904f5 2026-07-20)\nbinary: rustc\ncommit-hash: 87e5904f5eb6398af6b22eac2802c78934260c48\ncommit-date: 2026-07-20\nhost: x86_64-unknown-linux-gnu\nrelease: 1.99.0-nightly\nLLVM version: 22.1.8\n",
+    "cargo_version": "cargo 1.99.0-nightly (3efb1f477 2026-07-17)\nrelease: 1.99.0-nightly\ncommit-hash: 3efb1f477e99b42974b982d939fd100303cdf7db\ncommit-date: 2026-07-17\nhost: x86_64-unknown-linux-gnu\nlibgit2: 1.9.4 (sys:0.21.0 vendored)\nlibcurl: 8.21.0-DEV (sys:0.4.90+curl-8.21.0 vendored ssl:OpenSSL/3.6.3)\nssl: OpenSSL 3.6.3 9 Jun 2026\nos: Ubuntu 24.4.0 (noble) [64-bit]\n",
+    "installed_components": [
+      "cargo-x86_64-unknown-linux-gnu",
+      "llvm-tools-x86_64-unknown-linux-gnu",
+      "rust-src",
+      "rust-std-aarch64-unknown-none-softfloat",
+      "rust-std-loongarch64-unknown-none-softfloat",
+      "rust-std-riscv64imac-unknown-none-elf",
+      "rust-std-x86_64-unknown-linux-gnu",
+      "rust-std-x86_64-unknown-none",
+      "rustc-x86_64-unknown-linux-gnu",
+      "rustc-dev-x86_64-unknown-linux-gnu",
+      "rustfmt-x86_64-unknown-linux-gnu"
+    ],
+    "installed_targets": [
+      "aarch64-unknown-none-softfloat",
+      "loongarch64-unknown-none-softfloat",
+      "riscv64imac-unknown-none-elf",
+      "x86_64-unknown-linux-gnu",
+      "x86_64-unknown-none"
+    ],
+    "install_started_utc": "2026-10-19T01:08:06.551937+00:00",
+    "install_finished_utc": "2026-10-19T01:08:40.903843+00:00",
+    "install_exit_code": 0
+  },
+  "osdk": {
+    "version": "cargo-osdk 0.19.0",
+    "identity": {
+      "path": "/workspace/scratch/499c7902de8e/implementation-tools/cargo/bin/cargo-osdk",
+      "bytes": 8504760,
+      "sha256": "9bf344bb405c6eb96d1bdd1488eaf33d5465ddc8361fea1135ead7130ad65008",
+      "elf": {
+        "class": 2,
+        "endianness": 1,
+        "e_type": 3,
+        "e_machine": 62
+      }
+    },
+    "cargo_lock_sha256": "99a21f72f6a9f1582553b34f06e80f86e539f38e62eab7a0847afd0906e75be3",
+    "build_command": [
+      "/workspace/scratch/499c7902de8e/implementation-tools/cargo/bin/cargo",
+      "+nightly-2026-07-21",
+      "install",
+      "--locked",
+      "cargo-osdk",
+      "--path",
+      "osdk"
+    ],
+    "build_cwd": "/workspace/scratch/499c7902de8e/r10-g1-owner/kernel/asterinas",
+    "environment": {
+      "CARGO_HOME": "/workspace/scratch/499c7902de8e/implementation-tools/cargo",
+      "RUSTUP_HOME": "/workspace/scratch/499c7902de8e/implementation-tools/rustup",
+      "CARGO_TARGET_DIR": "/workspace/scratch/499c7902de8e/implementation-tools/osdk-target",
+      "CARGO_BUILD_JOBS": "2",
+      "CARGO_INCREMENTAL": "0",
+      "CARGO_NET_GIT_FETCH_WITH_CLI": "true",
+      "OSDK_LOCAL_DEV": "1",
+      "DEBIAN_FRONTEND": "noninteractive"
+    },
+    "build_started_utc": "2026-10-19T01:10:20.521109+00:00",
+    "build_finished_utc": "2026-10-19T01:12:00.025676+00:00",
+    "build_exit_code": 0,
+    "source_inputs_before_equals_after": true,
+    "tracked_osdk_input_count": 104,
+    "compiled_local_packages": [
+      {
+        "name": "ostd-pod-macros",
+        "version": "0.4.0",
+        "path": "/workspace/scratch/499c7902de8e/r10-g1-owner/kernel/asterinas/ostd/libs/ostd-pod/macros",
+        "equals_recorded_git_head": true
+      },
+      {
+        "name": "padding-struct",
+        "version": "0.2.0",
+        "path": "/workspace/scratch/499c7902de8e/r10-g1-owner/kernel/asterinas/ostd/libs/padding-struct",
+        "equals_recorded_git_head": true
+      },
+      {
+        "name": "ostd-pod",
+        "version": "0.4.0",
+        "path": "/workspace/scratch/499c7902de8e/r10-g1-owner/kernel/asterinas/ostd/libs/ostd-pod",
+        "equals_recorded_git_head": true
+      },
+      {
+        "name": "align_ext",
+        "version": "0.1.0",
+        "path": "/workspace/scratch/499c7902de8e/r10-g1-owner/kernel/asterinas/ostd/libs/align_ext",
+        "equals_recorded_git_head": true
+      },
+      {
+        "name": "linux-bzimage-builder",
+        "version": "0.19.0",
+        "path": "/workspace/scratch/499c7902de8e/r10-g1-owner/kernel/asterinas/ostd/libs/linux-bzimage/builder",
+        "equals_recorded_git_head": true
+      },
+      {
+        "name": "cargo-osdk",
+        "version": "0.19.0",
+        "path": "/workspace/scratch/499c7902de8e/r10-g1-owner/kernel/asterinas/osdk",
+        "equals_recorded_git_head": true
+      }
+    ],
+    "note": "OSDK_LOCAL_DEV=1 embeds the local source path. Rebuild the tool if this worktree path or the tool source graph changes. By post-build inspection, the product root manifest had acquired only the separate os-control declaration; its exact edit time relative to the Cargo manifest read was not recorded. The exact diff and local tool-source comparisons are preserved."
+  },
+  "qemu": {
+    "version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)",
+    "identity": {
+      "path": "/usr/bin/qemu-system-x86_64",
+      "bytes": 26415624,
+      "sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+      "elf": {
+        "class": 2,
+        "endianness": 1,
+        "e_type": 3,
+        "e_machine": 62
+      }
+    },
+    "firmware": {
+      "path": "/usr/share/seabios/bios-256k.bin",
+      "bytes": 262144,
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    "advertised_accelerators_output": "Accelerators supported in QEMU binary:\ntcg\nkvm\n",
+    "kvm_device_exists": false,
+    "docker_available": null,
+    "paused_probe": {
+      "status": "passed_host_instantiation_only",
+      "started_at_utc": "2026-10-19T01:15:41.697060+00:00",
+      "completed_at_utc": "2026-10-19T01:15:41.827812+00:00",
+      "qmp_status": {
+        "status": "prelaunch",
+        "singlestep": false,
+        "running": false
+      },
+      "kvm_query": {
+        "enabled": false,
+        "present": true
+      },
+      "exit_code": 0,
+      "loaded_kernel": false,
+      "guest_cpu_started": false
+    },
+    "planned_profile": {
+      "architecture": "x86_64",
+      "machine": "q35",
+      "accelerator": "tcg",
+      "cpu": "max",
+      "vcpus": 1,
+      "memory_mib": 512,
+      "firmware": "SeaBIOS",
+      "boot_method": "vmm-direct",
+      "boot_protocol": "multiboot",
+      "network": false,
+      "data_disks": false
+    }
+  },
+  "vdso": {
+    "repository": "https://github.com/asterinas/linux_vdso.git",
+    "commit": "8af571775a3d3a1df3e84fc9709b9d6b160c771a",
+    "tree": "8e0a300d78c2a020ccc79f1253bc27a8301416e6",
+    "identity": {
+      "path": "/workspace/scratch/499c7902de8e/implementation-tools/linux-vdso/vdso_x86_64.so",
+      "bytes": 28760,
+      "sha256": "27cd7bf576a92fa48a891c05988f52fac35b7374d5b9650d6b035e477c5d93a3",
+      "elf": {
+        "class": 2,
+        "endianness": 1,
+        "e_type": 3,
+        "e_machine": 62
+      }
+    }
+  },
+  "system_packages": [
+    "build-essential\t12.10ubuntu1\tii ",
+    "busybox-static\t1:1.36.1-6ubuntu3.1\tii ",
+    "ca-certificates\t20260601~24.04.1\tii ",
+    "clang\t1:18.0-59~exp2\tii ",
+    "cpio\t2.15+dfsg-1ubuntu2\tii ",
+    "curl\t8.5.0-2ubuntu10.13\tii ",
+    "git\t1:2.43.0-1ubuntu7.3\tii ",
+    "libssl-dev:amd64\t3.0.13-0ubuntu3.15\tii ",
+    "lld:amd64\t1:18.0-59~exp2\tii ",
+    "pkg-config:amd64\t1.8.1-2build1\tii ",
+    "python3\t3.12.3-0ubuntu2.1\tii ",
+    "qemu-system-data\t1:8.2.2+ds-0ubuntu1.18\tii ",
+    "qemu-system-x86\t1:8.2.2+ds-0ubuntu1.18\tii ",
+    "seabios\t1.16.3-2\tii "
+  ],
+  "dpkg_audit": {
+    "exit_code": 0,
+    "output": ""
+  },
+  "resources": {
+    "memory_max_bytes": 8589934592,
+    "cpu_max": "800000 100000",
+    "cargo_build_jobs": 2,
+    "cargo_incremental": 0,
+    "disk_bytes_observed": {
+      "total": 33770192896,
+      "used": 6427238400,
+      "free": 25608192000
+    }
+  },
+  "product_handoff": {
+    "run_directory": "/workspace/scratch/499c7902de8e/r10-g1-owner",
+    "shell_prelude": "source /workspace/scratch/499c7902de8e/implementation-tools/g1-env.sh",
+    "command": [
+      "python3",
+      "-I",
+      "support/build/ktest/run.py",
+      "--crate",
+      "aster-core",
+      "--skip-osdk-install",
+      "--output",
+      "/workspace/scratch/499c7902de8e/r10-evidence/g1-a-ktest-01"
+    ],
+    "command_not_executed_by_environment_agent": true,
+    "output_must_not_exist": true,
+    "preconditions": [
+      "Product agent freezes G1 source and the aster-core derived lock using its updated allowlist policy.",
+      "The fixed product root Cargo.lock seed remains bound by support/build/verify-source.py.",
+      "Do not run the old prepare-locks.py policy against the new os-control path dependency.",
+      "The product runner owns its kernel target and support/build/out-kernel.lock exclusively."
+    ],
+    "kernel_target_dir": "/workspace/scratch/499c7902de8e/r10-g1-owner/kernel/asterinas/target",
+    "kernel_dependencies_prefetched_by_environment_agent": false,
+    "notes": [
+      "The installed OSDK tool uses a separate implementation-tools/osdk-target cache.",
+      "Kernel dependency downloads, source derivation and actual runtime remain the product/main agents task."
+    ]
+  },
+  "profile_dependency_decisions": [
+    {
+      "component": "cargo-binutils",
+      "installed": false,
+      "reason": "Default x86 ktest leaves build.strip_elf=false. rust-strip is conditional on stripping and rust-objcopy is used for aarch64 image conversion, neither requested by this profile.",
+      "sources": [
+        "kernel/asterinas/osdk/src/config/scheme/action.rs",
+        "kernel/asterinas/osdk/src/commands/build/bin.rs",
+        "kernel/asterinas/OSDK.toml"
+      ]
+    },
+    {
+      "component": "GRUB/OVMF/xorriso/GDB",
+      "installed": false,
+      "reason": "The downstream fixed vmm-direct multiboot ktest wrapper uses SeaBIOS and does not invoke an ISO builder, UEFI firmware, debugger or userland initramfs.",
+      "sources": [
+        "support/build/ktest/run.py",
+        "support/build/ktest/record-qemu.py",
+        "support/build/ktest/README.md"
+      ]
+    }
+  ],
+  "limitations": [
+    "Host preparation is not an Asterinas ktest result.",
+    "TCG q35 1 vCPU does not establish KVM, VMX/EPT, SMP, physical desktop or mobile-device behavior.",
+    "System QEMU 8.2.2 follows the recorded native profile and is not the upstream Docker QEMU version.",
+    "The fresh G1 source and derived lock were intentionally not modified or validated by this environment-only task."
+  ],
+  "evidence": [
+    {
+      "path": "before.json",
+      "bytes": 2300,
+      "sha256": "0513cfb6b73a11ebf563b631838295e82d6253458371ad53b9c26cfe3d46ffa5"
+    },
+    {
+      "path": "rust-downloads.json",
+      "bytes": 1033,
+      "sha256": "c31bee074bacbbce9c374eba27e2921454ee6cc1ffeea7ccce77873d345cdf83"
+    },
+    {
+      "path": "rustup-init.json",
+      "bytes": 988,
+      "sha256": "76016c7bf680526988b9157e1c0582794914d843ab080feb8efec92033c731f0"
+    },
+    {
+      "path": "fixed-nightly.json",
+      "bytes": 1358,
+      "sha256": "ab94c8e508c14994cd0dcb3749db600a5ce0703d4c48a85047f82b42b0066f14"
+    },
+    {
+      "path": "rustc-version.log",
+      "bytes": 212,
+      "sha256": "d919107c9907c374b7605930746505ef72ce87cc21b641260c6225a7da9d8212"
+    },
+    {
+      "path": "cargo-version.log",
+      "bytes": 351,
+      "sha256": "1fd7bd42db99cffe020290fbdd2995474bca84729f7817172227917917b0dd55"
+    },
+    {
+      "path": "installed-components.log",
+      "bytes": 360,
+      "sha256": "0bb7bb42096d90880615d8e5cf947a802297333959a2821d903b6555fc1d197f"
+    },
+    {
+      "path": "installed-targets.log",
+      "bytes": 140,
+      "sha256": "36e5343812591efbccd7d12d26ea21d96a6735e343e98451c589360aeb20350c"
+    },
+    {
+      "path": "apt-update.json",
+      "bytes": 1044,
+      "sha256": "65dbc68d765b3c7a546684ee8bc4ec94fcb89f9a1c2ee76d30f5e5e12f4ff4a8"
+    },
+    {
+      "path": "apt-plan.json",
+      "bytes": 1343,
+      "sha256": "4ca31f3d2249b19c3e394d54085f18165f3bdfb3c1a3b0adae9afb5d64d190ed"
+    },
+    {
+      "path": "apt-install.json",
+      "bytes": 1328,
+      "sha256": "b9a3f9a6adc6ae97a5f60d82da3dc833b877910d0610d213c74774a9603dc703"
+    },
+    {
+      "path": "pinned-vdso.json",
+      "bytes": 933,
+      "sha256": "e97c0b4b62ac0fd25ab3eccdf60a2dfdb556b132b5c490f22af47564b51e8d28"
+    },
+    {
+      "path": "vdso-identity.json",
+      "bytes": 1344,
+      "sha256": "135c0a84fb39db183c2bf8b47f92c167d7a9428ff3545f9449780aa4ffa0a065"
+    },
+    {
+      "path": "osdk-source-before.json",
+      "bytes": 13969,
+      "sha256": "1b8974cc65ab173be9110c8c6ccd115b59a5046a2ee831af3559db795c467051"
+    },
+    {
+      "path": "osdk-install.json",
+      "bytes": 1074,
+      "sha256": "540100c547fdf68517d20c0754c4641ff4da81d2bc89fd0487c2bb7df7c2cea0"
+    },
+    {
+      "path": "osdk-install.log",
+      "bytes": 7053,
+      "sha256": "2041ab11bfde1741175a4ceda7176838ebaebb0759f6c00a967baa188f1b75cd"
+    },
+    {
+      "path": "tool-inspection.json",
+      "bytes": 54045,
+      "sha256": "b7d16bdc540b1c7b2bab832e3b1c57c6c0627a12055d41c7f531f6126414d2a1"
+    },
+    {
+      "path": "osdk-root-manifest-concurrent-product-diff.patch",
+      "bytes": 752,
+      "sha256": "79e41b8ab3face437d56bdc966d348ed387636ca2eacffae128a76a0b570f09d"
+    },
+    {
+      "path": "qemu-paused.json",
+      "bytes": 2567,
+      "sha256": "a98e925962a01872da2982f4b8e34c02c844022a26694d552d8157f432e9d1ee"
+    },
+    {
+      "path": "qemu-paused-qmp.log",
+      "bytes": 515,
+      "sha256": "b170848c8dd12cdb371616f0ddc59f9d1c9b1b896e5d453bc5b463b20ac0534e"
+    },
+    {
+      "path": "inspect-tools.py",
+      "bytes": 6524,
+      "sha256": "da1a7e81167ac4b93425c185e0bb50ea05fb0f0f5672ed26ebdb379473af6a33"
+    },
+    {
+      "path": "check-qemu-paused.py",
+      "bytes": 4130,
+      "sha256": "2106df4f88aea5669a534a396145e7a9286c5c4cc7f3b26258afe8663b46d05d"
+    },
+    {
+      "path": "run-step.py",
+      "bytes": 2474,
+      "sha256": "fed054a488ca91d2ba9ee29de43810584da05299d40cb7f93a96c77ede6c4713"
+    }
+  ]
+}

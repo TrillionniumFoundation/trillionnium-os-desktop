@@ -1,0 +1,314 @@
+{
+  "schema": 1,
+  "kind": "new_local_diagnostic_not_original_ci_log",
+  "remote_head": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+  "local_source": {
+    "commit": "1b0fedb8c2b510106848f6feaf530c9b3698399d",
+    "tree": "a3e718280a7e17b8c4a226a0232bf18c23fd3586",
+    "status_porcelain": "",
+    "files": [
+      {
+        "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/codex-rs/Cargo.lock",
+        "bytes": 418038,
+        "sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389"
+      },
+      {
+        "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/codex-rs/Cargo.toml",
+        "bytes": 21574,
+        "sha256": "0e3fc0b7dc3ec907e02059a1bc79579077c8e5d1a0ac936b4f1bd984e94afdb4"
+      },
+      {
+        "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/codex-rs/deny.toml",
+        "bytes": 18803,
+        "sha256": "3713c011667dcbeda9edf1b2644a813f2b5253ebb7b2f3e98ea60aab69407352"
+      },
+      {
+        "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/.github/workflows/cargo-deny.yml",
+        "bytes": 890,
+        "sha256": "e01faafdaa914009b834ad07ad3a46137eac70b2874d88182a46cd24f100e843"
+      },
+      {
+        "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-repro/.github/workflows/blocking-ci.yml",
+        "bytes": 8778,
+        "sha256": "96eb7f9ea698ea353c757c3ba9f4a82a3ea448b45f676a208e09187748f4b9e3"
+      }
+    ]
+  },
+  "advisory_database": {
+    "path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/advisory-dbs/advisory-db-3157b0e258782691",
+    "commit": "999ec89d5d3f10f20be14750ec8c2d8b44e0ac9b",
+    "tree": "7fab15e592b35835decefbb43f6578c70565e4d9"
+  },
+  "raw_log": {
+    "path": "/workspace/scratch/499c7902de8e/r10-evidence/owner-ci/new-head/deny-repro-01/cargo-deny.log",
+    "bytes": 13717460,
+    "sha256": "d91f5e6d8d9961b81aebaf6873d85a1dc7ac70e1a009e5e1036e026ebc179175"
+  },
+  "checks": {
+    "advisories": "FAILED",
+    "bans": "ok",
+    "licenses": "ok",
+    "sources": "ok"
+  },
+  "errors": [
+    {
+      "id": "RUSTSEC-2026-0319",
+      "category": "unmaintained",
+      "heading": "error[unmaintained]: anymap2 is unmaintained",
+      "package": "anymap2",
+      "locked_version": "0.13.0",
+      "solution_line": "No safe upgrade is available!",
+      "advisory_date": "2026-10-02",
+      "patched": [],
+      "unaffected": [],
+      "informational": "unmaintained",
+      "withdrawn": null,
+      "announcement": "https://github.com/rustsec/advisory-db/issues/3300#issuecomment-5939722190",
+      "source_path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/advisory-dbs/advisory-db-3157b0e258782691/crates/anymap2/RUSTSEC-2026-0319.md",
+      "source_relative_path": "crates/anymap2/RUSTSEC-2026-0319.md",
+      "source_sha256": "007e3cd8483c1048401637e8543b504adb01d7ba494642879aacc9846effc469",
+      "source_url": "https://github.com/RustSec/advisory-db/blob/999ec89d5d3f10f20be14750ec8c2d8b44e0ac9b/crates/anymap2/RUSTSEC-2026-0319.md"
+    },
+    {
+      "id": "RUSTSEC-2026-0318",
+      "category": "vulnerability",
+      "heading": "error[vulnerability]: Sending custom to-device messages may panics",
+      "package": "matrix-sdk-crypto",
+      "locked_version": "0.18.0",
+      "solution_line": "Upgrade to >=0.19.0 (try `cargo update -p matrix-sdk-crypto`)",
+      "advisory_date": "2026-09-29",
+      "patched": [
+        ">= 0.19.0"
+      ],
+      "unaffected": [],
+      "informational": null,
+      "withdrawn": null,
+      "announcement": "https://github.com/matrix-org/matrix-rust-sdk/pull/6670",
+      "source_path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/advisory-dbs/advisory-db-3157b0e258782691/crates/matrix-sdk-crypto/RUSTSEC-2026-0318.md",
+      "source_relative_path": "crates/matrix-sdk-crypto/RUSTSEC-2026-0318.md",
+      "source_sha256": "c0949dd67483de64aed6271c8ace350dc1b905ccb7b0a76e1efa3bfd553de6f0",
+      "source_url": "https://github.com/RustSec/advisory-db/blob/999ec89d5d3f10f20be14750ec8c2d8b44e0ac9b/crates/matrix-sdk-crypto/RUSTSEC-2026-0318.md"
+    },
+    {
+      "id": "RUSTSEC-2026-0346",
+      "category": "vulnerability",
+      "heading": "error[vulnerability]: `Debug` impls for client session values expose TLS secrets",
+      "package": "rustls",
+      "locked_version": "0.23.45",
+      "solution_line": "Upgrade to >=0.23.46 (try `cargo update -p rustls`)",
+      "advisory_date": "2026-10-14",
+      "patched": [
+        ">= 0.23.46"
+      ],
+      "unaffected": [
+        "< 0.21.0"
+      ],
+      "informational": null,
+      "withdrawn": null,
+      "announcement": "https://github.com/rustls/rustls/pull/3299",
+      "source_path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/advisory-dbs/advisory-db-3157b0e258782691/crates/rustls/RUSTSEC-2026-0346.md",
+      "source_relative_path": "crates/rustls/RUSTSEC-2026-0346.md",
+      "source_sha256": "04933c9695fedb8b523c96723f0e193e2f8fd1c0f22945dc82904571967cb9bd",
+      "source_url": "https://github.com/RustSec/advisory-db/blob/999ec89d5d3f10f20be14750ec8c2d8b44e0ac9b/crates/rustls/RUSTSEC-2026-0346.md"
+    },
+    {
+      "id": "RUSTSEC-2026-0347",
+      "category": "vulnerability",
+      "heading": "error[vulnerability]: Buffered application data sent to outer server after ECH rejection",
+      "package": "rustls",
+      "locked_version": "0.23.45",
+      "solution_line": "Upgrade to >=0.23.46 (try `cargo update -p rustls`)",
+      "advisory_date": "2026-10-14",
+      "patched": [
+        ">= 0.23.46"
+      ],
+      "unaffected": [
+        "< 0.23.44"
+      ],
+      "informational": null,
+      "withdrawn": null,
+      "announcement": "https://github.com/rustls/rustls/pull/3300",
+      "source_path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/advisory-dbs/advisory-db-3157b0e258782691/crates/rustls/RUSTSEC-2026-0347.md",
+      "source_relative_path": "crates/rustls/RUSTSEC-2026-0347.md",
+      "source_sha256": "b1b31d99c76e17daae8211937a0c28197c68c2e573caeba5875e0fc769c548a8",
+      "source_url": "https://github.com/RustSec/advisory-db/blob/999ec89d5d3f10f20be14750ec8c2d8b44e0ac9b/crates/rustls/RUSTSEC-2026-0347.md"
+    },
+    {
+      "id": "RUSTSEC-2026-0348",
+      "category": "vulnerability",
+      "heading": "error[vulnerability]: Brotli certificate decompression can allocate up to 1 GiB before authentication",
+      "package": "rustls",
+      "locked_version": "0.23.45",
+      "solution_line": "Upgrade to >=0.23.46 (try `cargo update -p rustls`)",
+      "advisory_date": "2026-10-14",
+      "patched": [
+        ">= 0.23.46"
+      ],
+      "unaffected": [
+        "< 0.23.9"
+      ],
+      "informational": null,
+      "withdrawn": null,
+      "announcement": "https://github.com/rustls/rustls/pull/3297",
+      "source_path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/advisory-dbs/advisory-db-3157b0e258782691/crates/rustls/RUSTSEC-2026-0348.md",
+      "source_relative_path": "crates/rustls/RUSTSEC-2026-0348.md",
+      "source_sha256": "99ec103400ea094e34211303d4b87ec52893cd60560e5b192b328f570fb23555",
+      "source_url": "https://github.com/RustSec/advisory-db/blob/999ec89d5d3f10f20be14750ec8c2d8b44e0ac9b/crates/rustls/RUSTSEC-2026-0348.md"
+    },
+    {
+      "id": "RUSTSEC-2026-0349",
+      "category": "vulnerability",
+      "heading": "error[vulnerability]: Unauthenticated ServerHello can downgrade later connections to classical key exchange",
+      "package": "rustls",
+      "locked_version": "0.23.45",
+      "solution_line": "Upgrade to >=0.23.46 (try `cargo update -p rustls`)",
+      "advisory_date": "2026-10-14",
+      "patched": [
+        ">= 0.23.46"
+      ],
+      "unaffected": [],
+      "informational": null,
+      "withdrawn": null,
+      "announcement": "https://github.com/rustls/rustls/pull/3355",
+      "source_path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/advisory-dbs/advisory-db-3157b0e258782691/crates/rustls/RUSTSEC-2026-0349.md",
+      "source_relative_path": "crates/rustls/RUSTSEC-2026-0349.md",
+      "source_sha256": "147d66906c11c601bdc4c47f26dc9e017340e310e86e177b34a8845453485876",
+      "source_url": "https://github.com/RustSec/advisory-db/blob/999ec89d5d3f10f20be14750ec8c2d8b44e0ac9b/crates/rustls/RUSTSEC-2026-0349.md"
+    },
+    {
+      "id": "RUSTSEC-2024-0449",
+      "category": "unmaintained",
+      "heading": "error[unmaintained]: unsafe-libyaml is unmaintained",
+      "package": "unsafe-libyaml",
+      "locked_version": "0.2.11",
+      "solution_line": "No safe upgrade is available!",
+      "advisory_date": "2024-03-25",
+      "patched": [],
+      "unaffected": [],
+      "informational": "unmaintained",
+      "withdrawn": null,
+      "announcement": "https://github.com/dtolnay/unsafe-libyaml",
+      "source_path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/advisory-dbs/advisory-db-3157b0e258782691/crates/unsafe-libyaml/RUSTSEC-2024-0449.md",
+      "source_relative_path": "crates/unsafe-libyaml/RUSTSEC-2024-0449.md",
+      "source_sha256": "99da8fa8d7ce73ca12b32cadedef33ff160d120dd63a338447a8fa70eac0d549",
+      "source_url": "https://github.com/RustSec/advisory-db/blob/999ec89d5d3f10f20be14750ec8c2d8b44e0ac9b/crates/unsafe-libyaml/RUSTSEC-2024-0449.md"
+    },
+    {
+      "id": "RUSTSEC-2026-0371",
+      "category": "unmaintained",
+      "heading": "error[unmaintained]: `zbus_names` is unmaintained",
+      "package": "zbus_names",
+      "locked_version": "3.0.0",
+      "solution_line": "No safe upgrade is available!",
+      "advisory_date": "2026-10-16",
+      "patched": [],
+      "unaffected": [],
+      "informational": "unmaintained",
+      "withdrawn": null,
+      "announcement": "https://github.com/z-galaxy/zbus/issues/2043",
+      "source_path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/advisory-dbs/advisory-db-3157b0e258782691/crates/zbus_names/RUSTSEC-2026-0371.md",
+      "source_relative_path": "crates/zbus_names/RUSTSEC-2026-0371.md",
+      "source_sha256": "3e618914dab3ef0d6d2434f42ac8aa1947cb1738fd156b4f0092d6c7ad53b394",
+      "source_url": "https://github.com/RustSec/advisory-db/blob/999ec89d5d3f10f20be14750ec8c2d8b44e0ac9b/crates/zbus_names/RUSTSEC-2026-0371.md"
+    },
+    {
+      "id": "RUSTSEC-2026-0367",
+      "category": "vulnerability",
+      "heading": "error[vulnerability]:  Insecure Preservation of SUID/SGID Bits during ZIP Extraction Leading to Potential Privilege Escalation",
+      "package": "zip",
+      "locked_version": "2.4.2",
+      "solution_line": "Upgrade to >=9.0.0 (try `cargo update -p zip`)",
+      "advisory_date": "2026-10-09",
+      "patched": [
+        ">= 9.0.0"
+      ],
+      "unaffected": [],
+      "informational": null,
+      "withdrawn": null,
+      "announcement": null,
+      "source_path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/advisory-dbs/advisory-db-3157b0e258782691/crates/zip/RUSTSEC-2026-0367.md",
+      "source_relative_path": "crates/zip/RUSTSEC-2026-0367.md",
+      "source_sha256": "a3ceec31db85c2e07a2b8daf0a7a17a5a624601bb256cedab4c508750ff677df",
+      "source_url": "https://github.com/RustSec/advisory-db/blob/999ec89d5d3f10f20be14750ec8c2d8b44e0ac9b/crates/zip/RUSTSEC-2026-0367.md"
+    },
+    {
+      "id": "RUSTSEC-2026-0368",
+      "category": "vulnerability",
+      "heading": "error[vulnerability]: zip: `ZipArchive::extract` creates symbolic links whose attacker-controlled targets are outside the destination directory",
+      "package": "zip",
+      "locked_version": "2.4.2",
+      "solution_line": "Upgrade to >=9.0.0 (try `cargo update -p zip`)",
+      "advisory_date": "2026-10-09",
+      "patched": [
+        ">= 9.0.0"
+      ],
+      "unaffected": [],
+      "informational": null,
+      "withdrawn": null,
+      "announcement": null,
+      "source_path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/advisory-dbs/advisory-db-3157b0e258782691/crates/zip/RUSTSEC-2026-0368.md",
+      "source_relative_path": "crates/zip/RUSTSEC-2026-0368.md",
+      "source_sha256": "c056588fb9936466517e99b8644aab34804502a01f34c6cae323bd40e4e63ba0",
+      "source_url": "https://github.com/RustSec/advisory-db/blob/999ec89d5d3f10f20be14750ec8c2d8b44e0ac9b/crates/zip/RUSTSEC-2026-0368.md"
+    },
+    {
+      "id": "RUSTSEC-2026-0369",
+      "category": "vulnerability",
+      "heading": "error[vulnerability]: ZipStreamReader::extract() and ZipArchive::extract() apply Unix permissions through symlinks without confining the target",
+      "package": "zip",
+      "locked_version": "2.4.2",
+      "solution_line": "Upgrade to >=9.0.0 (try `cargo update -p zip`)",
+      "advisory_date": "2026-10-10",
+      "patched": [
+        ">= 9.0.0"
+      ],
+      "unaffected": [],
+      "informational": null,
+      "withdrawn": null,
+      "announcement": null,
+      "source_path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/advisory-dbs/advisory-db-3157b0e258782691/crates/zip/RUSTSEC-2026-0369.md",
+      "source_relative_path": "crates/zip/RUSTSEC-2026-0369.md",
+      "source_sha256": "4bed2ec03d7b53525422dc136075476eaeb644e2ab3483547a525437ae722dc5",
+      "source_url": "https://github.com/RustSec/advisory-db/blob/999ec89d5d3f10f20be14750ec8c2d8b44e0ac9b/crates/zip/RUSTSEC-2026-0369.md"
+    },
+    {
+      "id": "RUSTSEC-2026-0370",
+      "category": "unmaintained",
+      "heading": "error[unmaintained]: `zvariant` is unmaintained",
+      "package": "zvariant",
+      "locked_version": "4.2.0",
+      "solution_line": "No safe upgrade is available!",
+      "advisory_date": "2026-10-16",
+      "patched": [],
+      "unaffected": [],
+      "informational": "unmaintained",
+      "withdrawn": null,
+      "announcement": "https://github.com/z-galaxy/zbus/issues/2043",
+      "source_path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/advisory-dbs/advisory-db-3157b0e258782691/crates/zvariant/RUSTSEC-2026-0370.md",
+      "source_relative_path": "crates/zvariant/RUSTSEC-2026-0370.md",
+      "source_sha256": "55991b6a4484c3541c8091cb16cf7446c8610de09ac642ab3ff88c332e394bf0",
+      "source_url": "https://github.com/RustSec/advisory-db/blob/999ec89d5d3f10f20be14750ec8c2d8b44e0ac9b/crates/zvariant/RUSTSEC-2026-0370.md"
+    },
+    {
+      "id": "RUSTSEC-2026-0372",
+      "category": "unmaintained",
+      "heading": "error[unmaintained]: `zvariant_derive` is unmaintained",
+      "package": "zvariant_derive",
+      "locked_version": "4.2.0",
+      "solution_line": "No safe upgrade is available!",
+      "advisory_date": "2026-10-16",
+      "patched": [],
+      "unaffected": [],
+      "informational": "unmaintained",
+      "withdrawn": null,
+      "announcement": "https://github.com/z-galaxy/zbus/issues/2043",
+      "source_path": "/workspace/scratch/499c7902de8e/r10-cargo-deny-tools/cargo-home/advisory-dbs/advisory-db-3157b0e258782691/crates/zvariant_derive/RUSTSEC-2026-0372.md",
+      "source_relative_path": "crates/zvariant_derive/RUSTSEC-2026-0372.md",
+      "source_sha256": "e03677b3351db11984e2fd3bd839b6368cfc3a93aca08c4401980264b228635d",
+      "source_url": "https://github.com/RustSec/advisory-db/blob/999ec89d5d3f10f20be14750ec8c2d8b44e0ac9b/crates/zvariant_derive/RUSTSEC-2026-0372.md"
+    }
+  ],
+  "warning_count": 85,
+  "source_unchanged": true,
+  "product_build_performed": false
+}

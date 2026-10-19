@@ -1,0 +1,3890 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-10-19T02:01:43.477Z",
+  "observation_started_at": "2026-10-19T01:56:31.362Z",
+  "observation_completed_at": "2026-10-19T01:56:32.629Z",
+  "source": {
+    "repo": "TrillionniumFoundation/hepta-private-ci",
+    "expected_head": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+    "tree": "a3e718280a7e17b8c4a226a0232bf18c23fd3586",
+    "local_equivalent": "1b0fedb8c2b510106848f6feaf530c9b3698399d"
+  },
+  "raw_snapshot": "round-07-final.json",
+  "all_observations_returned": true,
+  "pr": {
+    "number": 2815,
+    "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/pull/2815",
+    "state": "open",
+    "draft": false,
+    "head": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+    "base": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+    "merged": false,
+    "merged_at": null,
+    "mergeable": true,
+    "mergeable_state": "blocked",
+    "auto_merge": {
+      "commit_message": null,
+      "commit_title": null,
+      "merge_method": "squash",
+      "enabled_by": {
+        "login": "ProfHepta",
+        "id": 102159240,
+        "node_id": "U_kgDOBhbTiA",
+        "avatar_url": "https://avatars.githubusercontent.com/u/102159240?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/ProfHepta",
+        "html_url": "https://github.com/ProfHepta",
+        "followers_url": "https://api.github.com/users/ProfHepta/followers",
+        "following_url": "https://api.github.com/users/ProfHepta/following{/other_user}",
+        "gists_url": "https://api.github.com/users/ProfHepta/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/ProfHepta/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/ProfHepta/subscriptions",
+        "organizations_url": "https://api.github.com/users/ProfHepta/orgs",
+        "repos_url": "https://api.github.com/users/ProfHepta/repos",
+        "events_url": "https://api.github.com/users/ProfHepta/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/ProfHepta/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      }
+    },
+    "test_merge_commit_sha": "60a3376902982d79e85173d6aaf6bd631b4c4cf3",
+    "merge_commit_sha_is_not_a_completed_merge": true
+  },
+  "branch_evidence": {
+    "endpoint": "branches/main",
+    "protected": true,
+    "required_status_checks": {
+      "enforcement_level": "non_admins",
+      "contexts": [
+        "CI required",
+        "Architecture required"
+      ],
+      "checks": [
+        {
+          "context": "CI required",
+          "app_id": 15368
+        },
+        {
+          "context": "Architecture required",
+          "app_id": 15368
+        }
+      ]
+    },
+    "scope": "Successful branch response is limited evidence of the returned required contexts; the full /protection endpoint was not queried in this batch."
+  },
+  "checks": {
+    "total_count": 47,
+    "totals": {
+      "success": 23,
+      "skipped": 6,
+      "neutral": 1,
+      "in_progress": 16,
+      "failure": 1
+    },
+    "required": {
+      "CI required": [],
+      "Architecture required": [
+        {
+          "id": 117852485431,
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-19T01:53:06Z",
+          "completed_at": "2026-10-19T01:53:09Z",
+          "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139924/job/117852485431"
+        }
+      ]
+    },
+    "failures": [
+      {
+        "id": 117846024659,
+        "name": "cargo-deny / cargo-deny",
+        "status": "completed",
+        "conclusion": "failure",
+        "started_at": "2026-10-19T01:24:19Z",
+        "completed_at": "2026-10-19T01:25:43Z",
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024659"
+      }
+    ]
+  },
+  "runs": [
+    {
+      "id": 39185139893,
+      "name": "blocking-ci",
+      "path": ".github/workflows/blocking-ci.yml",
+      "event": "pull_request",
+      "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+      "status": "in_progress",
+      "conclusion": null,
+      "created_at": "2026-10-19T01:23:37Z",
+      "updated_at": "2026-10-19T01:26:17Z",
+      "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893"
+    },
+    {
+      "id": 39185139890,
+      "name": "v8-canary",
+      "path": ".github/workflows/v8-canary.yml",
+      "event": "pull_request",
+      "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-19T01:23:37Z",
+      "updated_at": "2026-10-19T01:24:03Z",
+      "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139890"
+    },
+    {
+      "id": 39185139924,
+      "name": "Hepta architecture convergence",
+      "path": ".github/workflows/hepta-architecture-convergence.yml",
+      "event": "pull_request",
+      "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-19T01:23:37Z",
+      "updated_at": "2026-10-19T01:53:09Z",
+      "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139924"
+    },
+    {
+      "id": 39185137572,
+      "name": "PR #2815",
+      "path": "dynamic/github-code-scanning/codeql",
+      "event": "dynamic",
+      "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+      "status": "in_progress",
+      "conclusion": null,
+      "created_at": "2026-10-19T01:23:35Z",
+      "updated_at": "2026-10-19T01:23:48Z",
+      "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185137572"
+    }
+  ],
+  "blocking": {
+    "run_id": 39185139893,
+    "job_total": 35,
+    "totals": {
+      "success": 15,
+      "failure": 1,
+      "in_progress": 15,
+      "skipped": 4
+    },
+    "jobs": [
+      {
+        "id": 117845881374,
+        "name": "Select blocking CI scope",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:23:41Z",
+        "completed_at": "2026-10-19T01:24:15Z",
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117845881374",
+        "runner_name": "GitHub Actions 1000171455",
+        "labels": [
+          "ubuntu-24.04"
+        ],
+        "current_steps": [],
+        "step_summary": [
+          {
+            "number": 1,
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:23:42Z",
+            "completed_at": "2026-10-19T01:23:42Z"
+          },
+          {
+            "number": 2,
+            "name": "Checkout exact candidate",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:23:42Z",
+            "completed_at": "2026-10-19T01:24:10Z"
+          },
+          {
+            "number": 3,
+            "name": "Select dependency impact",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:10Z",
+            "completed_at": "2026-10-19T01:24:11Z"
+          },
+          {
+            "number": 4,
+            "name": "Regression-test scoped fan-in policy",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:11Z",
+            "completed_at": "2026-10-19T01:24:11Z"
+          },
+          {
+            "number": 8,
+            "name": "Post Checkout exact candidate",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:11Z",
+            "completed_at": "2026-10-19T01:24:12Z"
+          },
+          {
+            "number": 9,
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:12Z",
+            "completed_at": "2026-10-19T01:24:12Z"
+          }
+        ]
+      },
+      {
+        "id": 117845881503,
+        "name": "Blob size policy / Blob size policy",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:23:40Z",
+        "completed_at": "2026-10-19T01:24:19Z",
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117845881503",
+        "runner_name": "GitHub Actions 1000171456",
+        "labels": [
+          "ubuntu-24.04"
+        ],
+        "current_steps": [],
+        "step_summary": [
+          {
+            "number": 1,
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:23:41Z",
+            "completed_at": "2026-10-19T01:23:48Z"
+          },
+          {
+            "number": 2,
+            "name": "Run openai/fence@e6b39c80c51cb2b2a39448ddeff74b3b886c0a63",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:23:48Z",
+            "completed_at": "2026-10-19T01:23:56Z"
+          },
+          {
+            "number": 3,
+            "name": "Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:23:56Z",
+            "completed_at": "2026-10-19T01:24:15Z"
+          },
+          {
+            "number": 4,
+            "name": "Determine comparison range",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:15Z",
+            "completed_at": "2026-10-19T01:24:15Z"
+          },
+          {
+            "number": 5,
+            "name": "Check changed blob sizes",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:15Z",
+            "completed_at": "2026-10-19T01:24:15Z"
+          },
+          {
+            "number": 6,
+            "name": "Check for a clean worktree",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:15Z",
+            "completed_at": "2026-10-19T01:24:16Z"
+          },
+          {
+            "number": 11,
+            "name": "Post Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:16Z",
+            "completed_at": "2026-10-19T01:24:16Z"
+          },
+          {
+            "number": 12,
+            "name": "Post Run openai/fence@e6b39c80c51cb2b2a39448ddeff74b3b886c0a63",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:16Z",
+            "completed_at": "2026-10-19T01:24:16Z"
+          },
+          {
+            "number": 13,
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:16Z",
+            "completed_at": "2026-10-19T01:24:16Z"
+          }
+        ]
+      },
+      {
+        "id": 117845881604,
+        "name": "Codespell / Check for spelling errors",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:23:40Z",
+        "completed_at": "2026-10-19T01:24:07Z",
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117845881604",
+        "runner_name": "GitHub Actions 1000171457",
+        "labels": [
+          "ubuntu-latest"
+        ],
+        "current_steps": [],
+        "step_summary": [
+          {
+            "number": 1,
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:23:41Z",
+            "completed_at": "2026-10-19T01:23:42Z"
+          },
+          {
+            "number": 2,
+            "name": "Build codespell-project/actions-codespell@8f01853be192eb0f849a5c7d721450e7a467c579",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:23:42Z",
+            "completed_at": "2026-10-19T01:23:52Z"
+          },
+          {
+            "number": 3,
+            "name": "Checkout",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:23:52Z",
+            "completed_at": "2026-10-19T01:23:56Z"
+          },
+          {
+            "number": 4,
+            "name": "Annotate locations with typos",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:23:56Z",
+            "completed_at": "2026-10-19T01:23:56Z"
+          },
+          {
+            "number": 5,
+            "name": "Codespell",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:23:56Z",
+            "completed_at": "2026-10-19T01:24:05Z"
+          },
+          {
+            "number": 6,
+            "name": "Check for a clean worktree",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:05Z",
+            "completed_at": "2026-10-19T01:24:05Z"
+          },
+          {
+            "number": 12,
+            "name": "Post Checkout",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:05Z",
+            "completed_at": "2026-10-19T01:24:05Z"
+          },
+          {
+            "number": 13,
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:05Z",
+            "completed_at": "2026-10-19T01:24:05Z"
+          }
+        ]
+      },
+      {
+        "id": 117846024641,
+        "name": "Hepta contract gate / Validate canonical branch and contract metadata",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:24:18Z",
+        "completed_at": "2026-10-19T01:24:56Z",
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024641",
+        "runner_name": "GitHub Actions 1000171460",
+        "labels": [
+          "ubuntu-24.04"
+        ],
+        "current_steps": [],
+        "step_summary": [
+          {
+            "number": 1,
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:19Z",
+            "completed_at": "2026-10-19T01:24:20Z"
+          },
+          {
+            "number": 2,
+            "name": "Check out repository",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:20Z",
+            "completed_at": "2026-10-19T01:24:49Z"
+          },
+          {
+            "number": 3,
+            "name": "Validate branch policy",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:49Z",
+            "completed_at": "2026-10-19T01:24:50Z"
+          },
+          {
+            "number": 4,
+            "name": "Validate canonical contract and readiness documents",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:50Z",
+            "completed_at": "2026-10-19T01:24:53Z"
+          },
+          {
+            "number": 8,
+            "name": "Post Check out repository",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:53Z",
+            "completed_at": "2026-10-19T01:24:53Z"
+          },
+          {
+            "number": 9,
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:53Z",
+            "completed_at": "2026-10-19T01:24:53Z"
+          }
+        ]
+      },
+      {
+        "id": 117846024659,
+        "name": "cargo-deny / cargo-deny",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "failure",
+        "started_at": "2026-10-19T01:24:19Z",
+        "completed_at": "2026-10-19T01:25:43Z",
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024659",
+        "runner_name": "GitHub Actions 1000171480",
+        "labels": [
+          "ubuntu-latest"
+        ],
+        "current_steps": [],
+        "step_summary": [
+          {
+            "number": 1,
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:19Z",
+            "completed_at": "2026-10-19T01:24:20Z"
+          },
+          {
+            "number": 2,
+            "name": "Build EmbarkStudios/cargo-deny-action@82eb9f621fbc699dd0918f3ea06864c14cc84246",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:20Z",
+            "completed_at": "2026-10-19T01:24:32Z"
+          },
+          {
+            "number": 3,
+            "name": "Checkout",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:32Z",
+            "completed_at": "2026-10-19T01:24:33Z"
+          },
+          {
+            "number": 4,
+            "name": "Run ./.github/actions/setup-ci-build",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:33Z",
+            "completed_at": "2026-10-19T01:24:34Z"
+          },
+          {
+            "number": 5,
+            "name": "Install Rust toolchain",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:34Z",
+            "completed_at": "2026-10-19T01:24:42Z"
+          },
+          {
+            "number": 6,
+            "name": "Run cargo-deny",
+            "status": "completed",
+            "conclusion": "failure",
+            "started_at": "2026-10-19T01:24:42Z",
+            "completed_at": "2026-10-19T01:25:41Z"
+          },
+          {
+            "number": 7,
+            "name": "Check for a clean worktree",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:25:41Z",
+            "completed_at": "2026-10-19T01:25:42Z"
+          },
+          {
+            "number": 14,
+            "name": "Post Checkout",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:25:42Z",
+            "completed_at": "2026-10-19T01:25:42Z"
+          },
+          {
+            "number": 15,
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:25:42Z",
+            "completed_at": "2026-10-19T01:25:42Z"
+          }
+        ]
+      },
+      {
+        "id": 117846024710,
+        "name": "sdk / python-sdk",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:24:18Z",
+        "completed_at": "2026-10-19T01:25:30Z",
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024710",
+        "runner_name": "GitHub Actions 1000171461",
+        "labels": [
+          "ubuntu-24.04"
+        ],
+        "current_steps": [],
+        "step_summary": [
+          {
+            "number": 1,
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:19Z",
+            "completed_at": "2026-10-19T01:24:19Z"
+          },
+          {
+            "number": 2,
+            "name": "Checkout repository",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:19Z",
+            "completed_at": "2026-10-19T01:24:25Z"
+          },
+          {
+            "number": 3,
+            "name": "Test Python SDK",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:25Z",
+            "completed_at": "2026-10-19T01:25:27Z"
+          },
+          {
+            "number": 4,
+            "name": "Check for a clean worktree",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:25:27Z",
+            "completed_at": "2026-10-19T01:25:28Z"
+          },
+          {
+            "number": 8,
+            "name": "Post Checkout repository",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:25:28Z",
+            "completed_at": "2026-10-19T01:25:28Z"
+          },
+          {
+            "number": 9,
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:25:28Z",
+            "completed_at": "2026-10-19T01:25:28Z"
+          }
+        ]
+      },
+      {
+        "id": 117846024715,
+        "name": "repo-checks / Native Hepta paths on ubuntu-24.04",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:24:18Z",
+        "completed_at": "2026-10-19T01:25:01Z",
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024715",
+        "runner_name": "GitHub Actions 1000171471",
+        "labels": [
+          "ubuntu-24.04"
+        ],
+        "current_steps": [],
+        "step_summary": [
+          {
+            "number": 1,
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:19Z",
+            "completed_at": "2026-10-19T01:24:20Z"
+          },
+          {
+            "number": 2,
+            "name": "Checkout repository",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:20Z",
+            "completed_at": "2026-10-19T01:24:25Z"
+          },
+          {
+            "number": 3,
+            "name": "Test wrappers on the native host",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:25Z",
+            "completed_at": "2026-10-19T01:24:26Z"
+          },
+          {
+            "number": 4,
+            "name": "Run ./.github/actions/setup-ci",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:26Z",
+            "completed_at": "2026-10-19T01:24:29Z"
+          },
+          {
+            "number": 5,
+            "name": "Run dtolnay/rust-toolchain@e081816240890017053eacbb1bdf337761dc5582",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:29Z",
+            "completed_at": "2026-10-19T01:24:37Z"
+          },
+          {
+            "number": 6,
+            "name": "Run taiki-e/install-action@44c6d64aa62cd779e873306675c7a58e86d6d532",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:37Z",
+            "completed_at": "2026-10-19T01:24:38Z"
+          },
+          {
+            "number": 7,
+            "name": "Test host-native state and fleet roots",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:38Z",
+            "completed_at": "2026-10-19T01:25:00Z"
+          },
+          {
+            "number": 8,
+            "name": "Check for a clean worktree",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:25:00Z",
+            "completed_at": "2026-10-19T01:25:00Z"
+          },
+          {
+            "number": 16,
+            "name": "Post Checkout repository",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:25:00Z",
+            "completed_at": "2026-10-19T01:25:00Z"
+          },
+          {
+            "number": 17,
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:25:00Z",
+            "completed_at": "2026-10-19T01:25:00Z"
+          }
+        ]
+      },
+      {
+        "id": 117846024755,
+        "name": "repo-checks / build-test",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:24:19Z",
+        "completed_at": "2026-10-19T01:26:36Z",
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024755",
+        "runner_name": "GitHub Actions 1000171481",
+        "labels": [
+          "ubuntu-latest"
+        ],
+        "current_steps": [],
+        "step_summary": [
+          {
+            "number": 1,
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:20Z",
+            "completed_at": "2026-10-19T01:24:22Z"
+          },
+          {
+            "number": 2,
+            "name": "Checkout repository",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:22Z",
+            "completed_at": "2026-10-19T01:24:28Z"
+          },
+          {
+            "number": 3,
+            "name": "Run ./.github/actions/setup-ci",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:28Z",
+            "completed_at": "2026-10-19T01:24:31Z"
+          },
+          {
+            "number": 4,
+            "name": "Verify codex-rs Cargo manifests inherit workspace settings",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:31Z",
+            "completed_at": "2026-10-19T01:24:40Z"
+          },
+          {
+            "number": 5,
+            "name": "Test Cargo manifest migration boundaries",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:40Z",
+            "completed_at": "2026-10-19T01:24:41Z"
+          },
+          {
+            "number": 6,
+            "name": "Verify Hepta privileged caller closed set",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:41Z",
+            "completed_at": "2026-10-19T01:25:49Z"
+          },
+          {
+            "number": 7,
+            "name": "Verify codex-tui does not import codex-core directly",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:25:49Z",
+            "completed_at": "2026-10-19T01:25:49Z"
+          },
+          {
+            "number": 8,
+            "name": "Verify Bazel clippy flags match Cargo workspace lints",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:25:49Z",
+            "completed_at": "2026-10-19T01:25:50Z"
+          },
+          {
+            "number": 9,
+            "name": "Test Bazel wrapper regression suite",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:25:50Z",
+            "completed_at": "2026-10-19T01:25:51Z"
+          },
+          {
+            "number": 10,
+            "name": "Test Codex package builder",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:25:51Z",
+            "completed_at": "2026-10-19T01:25:51Z"
+          },
+          {
+            "number": 11,
+            "name": "Test standalone installer",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:25:51Z",
+            "completed_at": "2026-10-19T01:25:53Z"
+          },
+          {
+            "number": 12,
+            "name": "Test macOS notarization",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:25:53Z",
+            "completed_at": "2026-10-19T01:25:53Z"
+          },
+          {
+            "number": 13,
+            "name": "Setup pnpm",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:25:53Z",
+            "completed_at": "2026-10-19T01:25:54Z"
+          },
+          {
+            "number": 14,
+            "name": "Setup Node.js",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:25:54Z",
+            "completed_at": "2026-10-19T01:25:55Z"
+          },
+          {
+            "number": 15,
+            "name": "Install dependencies",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:25:55Z",
+            "completed_at": "2026-10-19T01:26:07Z"
+          },
+          {
+            "number": 16,
+            "name": "Ensure root README.md contains only ASCII and certain Unicode code points",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:26:07Z",
+            "completed_at": "2026-10-19T01:26:07Z"
+          },
+          {
+            "number": 17,
+            "name": "Check root README ToC",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:26:07Z",
+            "completed_at": "2026-10-19T01:26:07Z"
+          },
+          {
+            "number": 18,
+            "name": "Install uv",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:26:07Z",
+            "completed_at": "2026-10-19T01:26:11Z"
+          },
+          {
+            "number": 19,
+            "name": "Check formatting (run `just fmt` to fix)",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:26:11Z",
+            "completed_at": "2026-10-19T01:26:30Z"
+          },
+          {
+            "number": 20,
+            "name": "Prettier (run `pnpm run format:fix` to fix)",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:26:30Z",
+            "completed_at": "2026-10-19T01:26:32Z"
+          },
+          {
+            "number": 21,
+            "name": "Check for a clean worktree",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:26:32Z",
+            "completed_at": "2026-10-19T01:26:32Z"
+          },
+          {
+            "number": 39,
+            "name": "Post Install uv",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:26:32Z",
+            "completed_at": "2026-10-19T01:26:33Z"
+          },
+          {
+            "number": 40,
+            "name": "Post Setup Node.js",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:26:33Z",
+            "completed_at": "2026-10-19T01:26:33Z"
+          },
+          {
+            "number": 41,
+            "name": "Post Setup pnpm",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:26:33Z",
+            "completed_at": "2026-10-19T01:26:33Z"
+          },
+          {
+            "number": 42,
+            "name": "Post Checkout repository",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:26:33Z",
+            "completed_at": "2026-10-19T01:26:34Z"
+          },
+          {
+            "number": 43,
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:26:34Z",
+            "completed_at": "2026-10-19T01:26:34Z"
+          }
+        ]
+      },
+      {
+        "id": 117846024762,
+        "name": "repo-checks / Native Hepta paths on macos-15",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:24:27Z",
+        "completed_at": "2026-10-19T01:25:50Z",
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024762",
+        "runner_name": "GitHub Actions 1000171459",
+        "labels": [
+          "macos-15"
+        ],
+        "current_steps": [],
+        "step_summary": [
+          {
+            "number": 1,
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:28Z",
+            "completed_at": "2026-10-19T01:24:30Z"
+          },
+          {
+            "number": 2,
+            "name": "Checkout repository",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:30Z",
+            "completed_at": "2026-10-19T01:24:40Z"
+          },
+          {
+            "number": 3,
+            "name": "Test wrappers on the native host",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:40Z",
+            "completed_at": "2026-10-19T01:24:43Z"
+          },
+          {
+            "number": 4,
+            "name": "Run ./.github/actions/setup-ci",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:43Z",
+            "completed_at": "2026-10-19T01:24:49Z"
+          },
+          {
+            "number": 5,
+            "name": "Run dtolnay/rust-toolchain@e081816240890017053eacbb1bdf337761dc5582",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:49Z",
+            "completed_at": "2026-10-19T01:25:03Z"
+          },
+          {
+            "number": 6,
+            "name": "Run taiki-e/install-action@44c6d64aa62cd779e873306675c7a58e86d6d532",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:25:03Z",
+            "completed_at": "2026-10-19T01:25:04Z"
+          },
+          {
+            "number": 7,
+            "name": "Test host-native state and fleet roots",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:25:04Z",
+            "completed_at": "2026-10-19T01:25:45Z"
+          },
+          {
+            "number": 8,
+            "name": "Check for a clean worktree",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:25:45Z",
+            "completed_at": "2026-10-19T01:25:46Z"
+          },
+          {
+            "number": 16,
+            "name": "Post Checkout repository",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:25:46Z",
+            "completed_at": "2026-10-19T01:25:47Z"
+          },
+          {
+            "number": 17,
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:25:47Z",
+            "completed_at": "2026-10-19T01:25:48Z"
+          }
+        ]
+      },
+      {
+        "id": 117846024769,
+        "name": "repo-checks / Native Hepta paths on windows-latest",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:24:19Z",
+        "completed_at": "2026-10-19T01:26:02Z",
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024769",
+        "runner_name": "GitHub Actions 1000171478",
+        "labels": [
+          "windows-latest"
+        ],
+        "current_steps": [],
+        "step_summary": [
+          {
+            "number": 1,
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:20Z",
+            "completed_at": "2026-10-19T01:24:21Z"
+          },
+          {
+            "number": 2,
+            "name": "Checkout repository",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:21Z",
+            "completed_at": "2026-10-19T01:24:36Z"
+          },
+          {
+            "number": 3,
+            "name": "Test wrappers on the native host",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:36Z",
+            "completed_at": "2026-10-19T01:24:41Z"
+          },
+          {
+            "number": 4,
+            "name": "Run ./.github/actions/setup-ci",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:41Z",
+            "completed_at": "2026-10-19T01:24:53Z"
+          },
+          {
+            "number": 5,
+            "name": "Run dtolnay/rust-toolchain@e081816240890017053eacbb1bdf337761dc5582",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:53Z",
+            "completed_at": "2026-10-19T01:25:03Z"
+          },
+          {
+            "number": 6,
+            "name": "Run taiki-e/install-action@44c6d64aa62cd779e873306675c7a58e86d6d532",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:25:03Z",
+            "completed_at": "2026-10-19T01:25:05Z"
+          },
+          {
+            "number": 7,
+            "name": "Test host-native state and fleet roots",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:25:05Z",
+            "completed_at": "2026-10-19T01:25:59Z"
+          },
+          {
+            "number": 8,
+            "name": "Check for a clean worktree",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:25:59Z",
+            "completed_at": "2026-10-19T01:25:59Z"
+          },
+          {
+            "number": 16,
+            "name": "Post Checkout repository",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:25:59Z",
+            "completed_at": "2026-10-19T01:26:01Z"
+          },
+          {
+            "number": 17,
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:26:01Z",
+            "completed_at": "2026-10-19T01:26:01Z"
+          }
+        ]
+      },
+      {
+        "id": 117846024773,
+        "name": "rust-ci / Detect changed areas",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:24:18Z",
+        "completed_at": "2026-10-19T01:24:29Z",
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024773",
+        "runner_name": "GitHub Actions 1000171470",
+        "labels": [
+          "ubuntu-24.04"
+        ],
+        "current_steps": [],
+        "step_summary": [
+          {
+            "number": 1,
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:19Z",
+            "completed_at": "2026-10-19T01:24:20Z"
+          },
+          {
+            "number": 2,
+            "name": "Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:20Z",
+            "completed_at": "2026-10-19T01:24:25Z"
+          },
+          {
+            "number": 3,
+            "name": "Fetch exact pull request comparison",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:25Z",
+            "completed_at": "2026-10-19T01:24:25Z"
+          },
+          {
+            "number": 4,
+            "name": "Test fast-feedback failure semantics",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:25Z",
+            "completed_at": "2026-10-19T01:24:26Z"
+          },
+          {
+            "number": 5,
+            "name": "Detect changed paths (no external action)",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:26Z",
+            "completed_at": "2026-10-19T01:24:26Z"
+          },
+          {
+            "number": 6,
+            "name": "Check for a clean worktree",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:26Z",
+            "completed_at": "2026-10-19T01:24:27Z"
+          },
+          {
+            "number": 12,
+            "name": "Post Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:27Z",
+            "completed_at": "2026-10-19T01:24:27Z"
+          },
+          {
+            "number": 13,
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:27Z",
+            "completed_at": "2026-10-19T01:24:27Z"
+          }
+        ]
+      },
+      {
+        "id": 117846024829,
+        "name": "sdk / sdks",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "in_progress",
+        "conclusion": null,
+        "started_at": "2026-10-19T01:24:19Z",
+        "completed_at": null,
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024829",
+        "runner_name": "GitHub Actions 1000171469",
+        "labels": [
+          "ubuntu-24.04"
+        ],
+        "current_steps": [
+          {
+            "name": "Build codex and code-mode host with Bazel",
+            "status": "in_progress",
+            "conclusion": null,
+            "number": 7,
+            "started_at": "2026-10-19T01:24:47Z",
+            "completed_at": null
+          }
+        ],
+        "step_summary": [
+          {
+            "number": 1,
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:20Z",
+            "completed_at": "2026-10-19T01:24:22Z"
+          },
+          {
+            "number": 2,
+            "name": "Checkout repository",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:22Z",
+            "completed_at": "2026-10-19T01:24:25Z"
+          },
+          {
+            "number": 3,
+            "name": "Install Linux bwrap build dependencies",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:25Z",
+            "completed_at": "2026-10-19T01:24:33Z"
+          },
+          {
+            "number": 4,
+            "name": "Setup pnpm",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:33Z",
+            "completed_at": "2026-10-19T01:24:34Z"
+          },
+          {
+            "number": 5,
+            "name": "Setup Node.js",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:34Z",
+            "completed_at": "2026-10-19T01:24:36Z"
+          },
+          {
+            "number": 6,
+            "name": "Set up Bazel CI",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:36Z",
+            "completed_at": "2026-10-19T01:24:47Z"
+          },
+          {
+            "number": 7,
+            "name": "Build codex and code-mode host with Bazel",
+            "status": "in_progress",
+            "conclusion": null,
+            "started_at": "2026-10-19T01:24:47Z",
+            "completed_at": null
+          },
+          {
+            "number": 8,
+            "name": "Warm up Bazel-built SDK executables",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 9,
+            "name": "Install dependencies",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 10,
+            "name": "Build SDK packages",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 11,
+            "name": "Lint SDK packages",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 12,
+            "name": "Test SDK packages",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 13,
+            "name": "Save bazel repository cache",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 14,
+            "name": "Check for a clean worktree",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 25,
+            "name": "Post Set up Bazel CI",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 26,
+            "name": "Post Setup Node.js",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 27,
+            "name": "Post Setup pnpm",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 28,
+            "name": "Post Checkout repository",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          }
+        ]
+      },
+      {
+        "id": 117846024906,
+        "name": "Bazel / Bazel clippy on windows-latest for x86_64-pc-windows-msvc",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "in_progress",
+        "conclusion": null,
+        "started_at": "2026-10-19T01:24:19Z",
+        "completed_at": null,
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024906",
+        "runner_name": "GitHub Actions 1000171473",
+        "labels": [
+          "windows-latest"
+        ],
+        "current_steps": [
+          {
+            "name": "bazel build --config=clippy lint targets",
+            "status": "in_progress",
+            "conclusion": null,
+            "number": 4,
+            "started_at": "2026-10-19T01:25:04Z",
+            "completed_at": null
+          }
+        ],
+        "step_summary": [
+          {
+            "number": 1,
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:20Z",
+            "completed_at": "2026-10-19T01:24:21Z"
+          },
+          {
+            "number": 2,
+            "name": "Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:21Z",
+            "completed_at": "2026-10-19T01:24:43Z"
+          },
+          {
+            "number": 3,
+            "name": "Prepare Bazel CI",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:43Z",
+            "completed_at": "2026-10-19T01:25:04Z"
+          },
+          {
+            "number": 4,
+            "name": "bazel build --config=clippy lint targets",
+            "status": "in_progress",
+            "conclusion": null,
+            "started_at": "2026-10-19T01:25:04Z",
+            "completed_at": null
+          },
+          {
+            "number": 5,
+            "name": "Upload Bazel execution logs",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 6,
+            "name": "Save bazel repository cache",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 7,
+            "name": "Check for a clean worktree",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 13,
+            "name": "Post Prepare Bazel CI",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 14,
+            "name": "Post Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          }
+        ]
+      },
+      {
+        "id": 117846024913,
+        "name": "Bazel / Bazel test on macos-15 for aarch64-apple-darwin",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "in_progress",
+        "conclusion": null,
+        "started_at": "2026-10-19T01:24:22Z",
+        "completed_at": null,
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024913",
+        "runner_name": "GitHub Actions 1000171462",
+        "labels": [
+          "macos-15"
+        ],
+        "current_steps": [
+          {
+            "name": "bazel test //...",
+            "status": "in_progress",
+            "conclusion": null,
+            "number": 6,
+            "started_at": "2026-10-19T01:24:37Z",
+            "completed_at": null
+          }
+        ],
+        "step_summary": [
+          {
+            "number": 1,
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:22Z",
+            "completed_at": "2026-10-19T01:24:23Z"
+          },
+          {
+            "number": 2,
+            "name": "Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:23Z",
+            "completed_at": "2026-10-19T01:24:29Z"
+          },
+          {
+            "number": 3,
+            "name": "Prepare Bazel CI",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:29Z",
+            "completed_at": "2026-10-19T01:24:37Z"
+          },
+          {
+            "number": 4,
+            "name": "Check rusty_v8 MODULE.bazel checksums",
+            "status": "completed",
+            "conclusion": "skipped",
+            "started_at": "2026-10-19T01:24:37Z",
+            "completed_at": "2026-10-19T01:24:37Z"
+          },
+          {
+            "number": 5,
+            "name": "Check MODULE.bazel.lock is up to date",
+            "status": "completed",
+            "conclusion": "skipped",
+            "started_at": "2026-10-19T01:24:37Z",
+            "completed_at": "2026-10-19T01:24:37Z"
+          },
+          {
+            "number": 6,
+            "name": "bazel test //...",
+            "status": "in_progress",
+            "conclusion": null,
+            "started_at": "2026-10-19T01:24:37Z",
+            "completed_at": null
+          },
+          {
+            "number": 7,
+            "name": "Upload Bazel execution logs",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 8,
+            "name": "Save bazel repository cache",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 9,
+            "name": "Check for a clean worktree",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 17,
+            "name": "Post Prepare Bazel CI",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 18,
+            "name": "Post Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          }
+        ]
+      },
+      {
+        "id": 117846024926,
+        "name": "Bazel / Verify release build on macos-15 for aarch64-apple-darwin",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "in_progress",
+        "conclusion": null,
+        "started_at": "2026-10-19T01:24:25Z",
+        "completed_at": null,
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024926",
+        "runner_name": "GitHub Actions 1000171463",
+        "labels": [
+          "macos-15"
+        ],
+        "current_steps": [
+          {
+            "name": "bazel build verify-release-build targets",
+            "status": "in_progress",
+            "conclusion": null,
+            "number": 4,
+            "started_at": "2026-10-19T01:24:40Z",
+            "completed_at": null
+          }
+        ],
+        "step_summary": [
+          {
+            "number": 1,
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:26Z",
+            "completed_at": "2026-10-19T01:24:27Z"
+          },
+          {
+            "number": 2,
+            "name": "Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:27Z",
+            "completed_at": "2026-10-19T01:24:32Z"
+          },
+          {
+            "number": 3,
+            "name": "Prepare Bazel CI",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:32Z",
+            "completed_at": "2026-10-19T01:24:40Z"
+          },
+          {
+            "number": 4,
+            "name": "bazel build verify-release-build targets",
+            "status": "in_progress",
+            "conclusion": null,
+            "started_at": "2026-10-19T01:24:40Z",
+            "completed_at": null
+          },
+          {
+            "number": 5,
+            "name": "Verify Bazel builds bwrap",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 6,
+            "name": "Upload Bazel execution logs",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 7,
+            "name": "Save bazel repository cache",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 8,
+            "name": "Check for a clean worktree",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 15,
+            "name": "Post Prepare Bazel CI",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 16,
+            "name": "Post Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          }
+        ]
+      },
+      {
+        "id": 117846024935,
+        "name": "Bazel / Bazel clippy on ubuntu-24.04 for x86_64-unknown-linux-gnu",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "in_progress",
+        "conclusion": null,
+        "started_at": "2026-10-19T01:24:18Z",
+        "completed_at": null,
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024935",
+        "runner_name": "GitHub Actions 1000171465",
+        "labels": [
+          "ubuntu-24.04"
+        ],
+        "current_steps": [
+          {
+            "name": "bazel build --config=clippy lint targets",
+            "status": "in_progress",
+            "conclusion": null,
+            "number": 4,
+            "started_at": "2026-10-19T01:24:35Z",
+            "completed_at": null
+          }
+        ],
+        "step_summary": [
+          {
+            "number": 1,
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:19Z",
+            "completed_at": "2026-10-19T01:24:20Z"
+          },
+          {
+            "number": 2,
+            "name": "Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:20Z",
+            "completed_at": "2026-10-19T01:24:25Z"
+          },
+          {
+            "number": 3,
+            "name": "Prepare Bazel CI",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:25Z",
+            "completed_at": "2026-10-19T01:24:35Z"
+          },
+          {
+            "number": 4,
+            "name": "bazel build --config=clippy lint targets",
+            "status": "in_progress",
+            "conclusion": null,
+            "started_at": "2026-10-19T01:24:35Z",
+            "completed_at": null
+          },
+          {
+            "number": 5,
+            "name": "Upload Bazel execution logs",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 6,
+            "name": "Save bazel repository cache",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 7,
+            "name": "Check for a clean worktree",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 13,
+            "name": "Post Prepare Bazel CI",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 14,
+            "name": "Post Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          }
+        ]
+      },
+      {
+        "id": 117846024963,
+        "name": "Bazel / Bazel clippy on macos-15 for aarch64-apple-darwin",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "in_progress",
+        "conclusion": null,
+        "started_at": "2026-10-19T01:24:23Z",
+        "completed_at": null,
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024963",
+        "runner_name": "GitHub Actions 1000171464",
+        "labels": [
+          "macos-15"
+        ],
+        "current_steps": [
+          {
+            "name": "bazel build --config=clippy lint targets",
+            "status": "in_progress",
+            "conclusion": null,
+            "number": 4,
+            "started_at": "2026-10-19T01:24:37Z",
+            "completed_at": null
+          }
+        ],
+        "step_summary": [
+          {
+            "number": 1,
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:23Z",
+            "completed_at": "2026-10-19T01:24:24Z"
+          },
+          {
+            "number": 2,
+            "name": "Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:24Z",
+            "completed_at": "2026-10-19T01:24:29Z"
+          },
+          {
+            "number": 3,
+            "name": "Prepare Bazel CI",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:29Z",
+            "completed_at": "2026-10-19T01:24:37Z"
+          },
+          {
+            "number": 4,
+            "name": "bazel build --config=clippy lint targets",
+            "status": "in_progress",
+            "conclusion": null,
+            "started_at": "2026-10-19T01:24:37Z",
+            "completed_at": null
+          },
+          {
+            "number": 5,
+            "name": "Upload Bazel execution logs",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 6,
+            "name": "Save bazel repository cache",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 7,
+            "name": "Check for a clean worktree",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 13,
+            "name": "Post Prepare Bazel CI",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 14,
+            "name": "Post Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          }
+        ]
+      },
+      {
+        "id": 117846024965,
+        "name": "Bazel / Bazel test on ubuntu-24.04 for x86_64-unknown-linux-gnu",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "in_progress",
+        "conclusion": null,
+        "started_at": "2026-10-19T01:24:18Z",
+        "completed_at": null,
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024965",
+        "runner_name": "GitHub Actions 1000171466",
+        "labels": [
+          "ubuntu-24.04"
+        ],
+        "current_steps": [
+          {
+            "name": "bazel test //...",
+            "status": "in_progress",
+            "conclusion": null,
+            "number": 6,
+            "started_at": "2026-10-19T01:24:55Z",
+            "completed_at": null
+          }
+        ],
+        "step_summary": [
+          {
+            "number": 1,
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:19Z",
+            "completed_at": "2026-10-19T01:24:20Z"
+          },
+          {
+            "number": 2,
+            "name": "Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:20Z",
+            "completed_at": "2026-10-19T01:24:25Z"
+          },
+          {
+            "number": 3,
+            "name": "Prepare Bazel CI",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:25Z",
+            "completed_at": "2026-10-19T01:24:35Z"
+          },
+          {
+            "number": 4,
+            "name": "Check rusty_v8 MODULE.bazel checksums",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:35Z",
+            "completed_at": "2026-10-19T01:24:38Z"
+          },
+          {
+            "number": 5,
+            "name": "Check MODULE.bazel.lock is up to date",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:38Z",
+            "completed_at": "2026-10-19T01:24:55Z"
+          },
+          {
+            "number": 6,
+            "name": "bazel test //...",
+            "status": "in_progress",
+            "conclusion": null,
+            "started_at": "2026-10-19T01:24:55Z",
+            "completed_at": null
+          },
+          {
+            "number": 7,
+            "name": "Upload Bazel execution logs",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 8,
+            "name": "Save bazel repository cache",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 9,
+            "name": "Check for a clean worktree",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 17,
+            "name": "Post Prepare Bazel CI",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 18,
+            "name": "Post Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          }
+        ]
+      },
+      {
+        "id": 117846024970,
+        "name": "Bazel / Verify release build on ubuntu-24.04 for x86_64-unknown-linux-gnu",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "in_progress",
+        "conclusion": null,
+        "started_at": "2026-10-19T01:24:19Z",
+        "completed_at": null,
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024970",
+        "runner_name": "GitHub Actions 1000171468",
+        "labels": [
+          "ubuntu-24.04"
+        ],
+        "current_steps": [
+          {
+            "name": "bazel build verify-release-build targets",
+            "status": "in_progress",
+            "conclusion": null,
+            "number": 4,
+            "started_at": "2026-10-19T01:24:41Z",
+            "completed_at": null
+          }
+        ],
+        "step_summary": [
+          {
+            "number": 1,
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:20Z",
+            "completed_at": "2026-10-19T01:24:21Z"
+          },
+          {
+            "number": 2,
+            "name": "Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:21Z",
+            "completed_at": "2026-10-19T01:24:26Z"
+          },
+          {
+            "number": 3,
+            "name": "Prepare Bazel CI",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:26Z",
+            "completed_at": "2026-10-19T01:24:41Z"
+          },
+          {
+            "number": 4,
+            "name": "bazel build verify-release-build targets",
+            "status": "in_progress",
+            "conclusion": null,
+            "started_at": "2026-10-19T01:24:41Z",
+            "completed_at": null
+          },
+          {
+            "number": 5,
+            "name": "Verify Bazel builds bwrap",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 6,
+            "name": "Upload Bazel execution logs",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 7,
+            "name": "Save bazel repository cache",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 8,
+            "name": "Check for a clean worktree",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 15,
+            "name": "Post Prepare Bazel CI",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 16,
+            "name": "Post Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          }
+        ]
+      },
+      {
+        "id": 117846024988,
+        "name": "Bazel / Bazel test on macos-15-intel for x86_64-apple-darwin",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "in_progress",
+        "conclusion": null,
+        "started_at": "2026-10-19T01:24:25Z",
+        "completed_at": null,
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024988",
+        "runner_name": "GitHub Actions 1000171479",
+        "labels": [
+          "macos-15-intel"
+        ],
+        "current_steps": [
+          {
+            "name": "bazel test //...",
+            "status": "in_progress",
+            "conclusion": null,
+            "number": 6,
+            "started_at": "2026-10-19T01:24:59Z",
+            "completed_at": null
+          }
+        ],
+        "step_summary": [
+          {
+            "number": 1,
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:27Z",
+            "completed_at": "2026-10-19T01:24:30Z"
+          },
+          {
+            "number": 2,
+            "name": "Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:30Z",
+            "completed_at": "2026-10-19T01:24:45Z"
+          },
+          {
+            "number": 3,
+            "name": "Prepare Bazel CI",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:45Z",
+            "completed_at": "2026-10-19T01:24:59Z"
+          },
+          {
+            "number": 4,
+            "name": "Check rusty_v8 MODULE.bazel checksums",
+            "status": "completed",
+            "conclusion": "skipped",
+            "started_at": "2026-10-19T01:24:59Z",
+            "completed_at": "2026-10-19T01:24:59Z"
+          },
+          {
+            "number": 5,
+            "name": "Check MODULE.bazel.lock is up to date",
+            "status": "completed",
+            "conclusion": "skipped",
+            "started_at": "2026-10-19T01:24:59Z",
+            "completed_at": "2026-10-19T01:24:59Z"
+          },
+          {
+            "number": 6,
+            "name": "bazel test //...",
+            "status": "in_progress",
+            "conclusion": null,
+            "started_at": "2026-10-19T01:24:59Z",
+            "completed_at": null
+          },
+          {
+            "number": 7,
+            "name": "Upload Bazel execution logs",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 8,
+            "name": "Save bazel repository cache",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 9,
+            "name": "Check for a clean worktree",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 17,
+            "name": "Post Prepare Bazel CI",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 18,
+            "name": "Post Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          }
+        ]
+      },
+      {
+        "id": 117846024997,
+        "name": "Bazel / Bazel test on ubuntu-24.04 for x86_64-unknown-linux-musl",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "in_progress",
+        "conclusion": null,
+        "started_at": "2026-10-19T01:24:18Z",
+        "completed_at": null,
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846024997",
+        "runner_name": "GitHub Actions 1000171467",
+        "labels": [
+          "ubuntu-24.04"
+        ],
+        "current_steps": [
+          {
+            "name": "bazel test //...",
+            "status": "in_progress",
+            "conclusion": null,
+            "number": 6,
+            "started_at": "2026-10-19T01:24:34Z",
+            "completed_at": null
+          }
+        ],
+        "step_summary": [
+          {
+            "number": 1,
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:19Z",
+            "completed_at": "2026-10-19T01:24:20Z"
+          },
+          {
+            "number": 2,
+            "name": "Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:20Z",
+            "completed_at": "2026-10-19T01:24:26Z"
+          },
+          {
+            "number": 3,
+            "name": "Prepare Bazel CI",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:26Z",
+            "completed_at": "2026-10-19T01:24:34Z"
+          },
+          {
+            "number": 4,
+            "name": "Check rusty_v8 MODULE.bazel checksums",
+            "status": "completed",
+            "conclusion": "skipped",
+            "started_at": "2026-10-19T01:24:34Z",
+            "completed_at": "2026-10-19T01:24:34Z"
+          },
+          {
+            "number": 5,
+            "name": "Check MODULE.bazel.lock is up to date",
+            "status": "completed",
+            "conclusion": "skipped",
+            "started_at": "2026-10-19T01:24:34Z",
+            "completed_at": "2026-10-19T01:24:34Z"
+          },
+          {
+            "number": 6,
+            "name": "bazel test //...",
+            "status": "in_progress",
+            "conclusion": null,
+            "started_at": "2026-10-19T01:24:34Z",
+            "completed_at": null
+          },
+          {
+            "number": 7,
+            "name": "Upload Bazel execution logs",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 8,
+            "name": "Save bazel repository cache",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 9,
+            "name": "Check for a clean worktree",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 17,
+            "name": "Post Prepare Bazel CI",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 18,
+            "name": "Post Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          }
+        ]
+      },
+      {
+        "id": 117846025039,
+        "name": "Bazel / Bazel test on windows-latest for x86_64-pc-windows-msvc shard 4/4",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "in_progress",
+        "conclusion": null,
+        "started_at": "2026-10-19T01:24:19Z",
+        "completed_at": null,
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846025039",
+        "runner_name": "GitHub Actions 1000171472",
+        "labels": [
+          "windows-latest"
+        ],
+        "current_steps": [
+          {
+            "name": "bazel test shard",
+            "status": "in_progress",
+            "conclusion": null,
+            "number": 6,
+            "started_at": "2026-10-19T01:24:46Z",
+            "completed_at": null
+          }
+        ],
+        "step_summary": [
+          {
+            "number": 1,
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:19Z",
+            "completed_at": "2026-10-19T01:24:20Z"
+          },
+          {
+            "number": 2,
+            "name": "Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:20Z",
+            "completed_at": "2026-10-19T01:24:29Z"
+          },
+          {
+            "number": 3,
+            "name": "Test BuildBuddy Bazel wrapper",
+            "status": "completed",
+            "conclusion": "skipped",
+            "started_at": "2026-10-19T01:24:29Z",
+            "completed_at": "2026-10-19T01:24:29Z"
+          },
+          {
+            "number": 4,
+            "name": "Prepare Bazel CI",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:29Z",
+            "completed_at": "2026-10-19T01:24:46Z"
+          },
+          {
+            "number": 5,
+            "name": "Smoke test the native MSVC header parser",
+            "status": "completed",
+            "conclusion": "skipped",
+            "started_at": "2026-10-19T01:24:46Z",
+            "completed_at": "2026-10-19T01:24:46Z"
+          },
+          {
+            "number": 6,
+            "name": "bazel test shard",
+            "status": "in_progress",
+            "conclusion": null,
+            "started_at": "2026-10-19T01:24:46Z",
+            "completed_at": null
+          },
+          {
+            "number": 7,
+            "name": "Upload Bazel execution logs",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 8,
+            "name": "Check for a clean worktree",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 15,
+            "name": "Post Prepare Bazel CI",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 16,
+            "name": "Post Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          }
+        ]
+      },
+      {
+        "id": 117846025091,
+        "name": "Bazel / Bazel test on windows-latest for x86_64-pc-windows-msvc shard 1/4",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "in_progress",
+        "conclusion": null,
+        "started_at": "2026-10-19T01:24:19Z",
+        "completed_at": null,
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846025091",
+        "runner_name": "GitHub Actions 1000171477",
+        "labels": [
+          "windows-latest"
+        ],
+        "current_steps": [
+          {
+            "name": "bazel test shard",
+            "status": "in_progress",
+            "conclusion": null,
+            "number": 6,
+            "started_at": "2026-10-19T01:25:41Z",
+            "completed_at": null
+          }
+        ],
+        "step_summary": [
+          {
+            "number": 1,
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:20Z",
+            "completed_at": "2026-10-19T01:24:20Z"
+          },
+          {
+            "number": 2,
+            "name": "Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:20Z",
+            "completed_at": "2026-10-19T01:24:31Z"
+          },
+          {
+            "number": 3,
+            "name": "Test BuildBuddy Bazel wrapper",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:31Z",
+            "completed_at": "2026-10-19T01:24:37Z"
+          },
+          {
+            "number": 4,
+            "name": "Prepare Bazel CI",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:37Z",
+            "completed_at": "2026-10-19T01:24:55Z"
+          },
+          {
+            "number": 5,
+            "name": "Smoke test the native MSVC header parser",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:55Z",
+            "completed_at": "2026-10-19T01:25:41Z"
+          },
+          {
+            "number": 6,
+            "name": "bazel test shard",
+            "status": "in_progress",
+            "conclusion": null,
+            "started_at": "2026-10-19T01:25:41Z",
+            "completed_at": null
+          },
+          {
+            "number": 7,
+            "name": "Upload Bazel execution logs",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 8,
+            "name": "Check for a clean worktree",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 15,
+            "name": "Post Prepare Bazel CI",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 16,
+            "name": "Post Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          }
+        ]
+      },
+      {
+        "id": 117846025094,
+        "name": "Bazel / Bazel test on windows-latest for x86_64-pc-windows-msvc shard 3/4",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "in_progress",
+        "conclusion": null,
+        "started_at": "2026-10-19T01:24:19Z",
+        "completed_at": null,
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846025094",
+        "runner_name": "GitHub Actions 1000171475",
+        "labels": [
+          "windows-latest"
+        ],
+        "current_steps": [
+          {
+            "name": "bazel test shard",
+            "status": "in_progress",
+            "conclusion": null,
+            "number": 6,
+            "started_at": "2026-10-19T01:24:56Z",
+            "completed_at": null
+          }
+        ],
+        "step_summary": [
+          {
+            "number": 1,
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:20Z",
+            "completed_at": "2026-10-19T01:24:20Z"
+          },
+          {
+            "number": 2,
+            "name": "Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:20Z",
+            "completed_at": "2026-10-19T01:24:33Z"
+          },
+          {
+            "number": 3,
+            "name": "Test BuildBuddy Bazel wrapper",
+            "status": "completed",
+            "conclusion": "skipped",
+            "started_at": "2026-10-19T01:24:33Z",
+            "completed_at": "2026-10-19T01:24:33Z"
+          },
+          {
+            "number": 4,
+            "name": "Prepare Bazel CI",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:33Z",
+            "completed_at": "2026-10-19T01:24:56Z"
+          },
+          {
+            "number": 5,
+            "name": "Smoke test the native MSVC header parser",
+            "status": "completed",
+            "conclusion": "skipped",
+            "started_at": "2026-10-19T01:24:56Z",
+            "completed_at": "2026-10-19T01:24:56Z"
+          },
+          {
+            "number": 6,
+            "name": "bazel test shard",
+            "status": "in_progress",
+            "conclusion": null,
+            "started_at": "2026-10-19T01:24:56Z",
+            "completed_at": null
+          },
+          {
+            "number": 7,
+            "name": "Upload Bazel execution logs",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 8,
+            "name": "Check for a clean worktree",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 15,
+            "name": "Post Prepare Bazel CI",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 16,
+            "name": "Post Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          }
+        ]
+      },
+      {
+        "id": 117846025117,
+        "name": "Bazel / Bazel test on windows-latest for x86_64-pc-windows-msvc shard 2/4",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "in_progress",
+        "conclusion": null,
+        "started_at": "2026-10-19T01:24:19Z",
+        "completed_at": null,
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846025117",
+        "runner_name": "GitHub Actions 1000171476",
+        "labels": [
+          "windows-latest"
+        ],
+        "current_steps": [
+          {
+            "name": "bazel test shard",
+            "status": "in_progress",
+            "conclusion": null,
+            "number": 6,
+            "started_at": "2026-10-19T01:24:55Z",
+            "completed_at": null
+          }
+        ],
+        "step_summary": [
+          {
+            "number": 1,
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:20Z",
+            "completed_at": "2026-10-19T01:24:20Z"
+          },
+          {
+            "number": 2,
+            "name": "Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:20Z",
+            "completed_at": "2026-10-19T01:24:33Z"
+          },
+          {
+            "number": 3,
+            "name": "Test BuildBuddy Bazel wrapper",
+            "status": "completed",
+            "conclusion": "skipped",
+            "started_at": "2026-10-19T01:24:33Z",
+            "completed_at": "2026-10-19T01:24:33Z"
+          },
+          {
+            "number": 4,
+            "name": "Prepare Bazel CI",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:33Z",
+            "completed_at": "2026-10-19T01:24:55Z"
+          },
+          {
+            "number": 5,
+            "name": "Smoke test the native MSVC header parser",
+            "status": "completed",
+            "conclusion": "skipped",
+            "started_at": "2026-10-19T01:24:55Z",
+            "completed_at": "2026-10-19T01:24:55Z"
+          },
+          {
+            "number": 6,
+            "name": "bazel test shard",
+            "status": "in_progress",
+            "conclusion": null,
+            "started_at": "2026-10-19T01:24:55Z",
+            "completed_at": null
+          },
+          {
+            "number": 7,
+            "name": "Upload Bazel execution logs",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 8,
+            "name": "Check for a clean worktree",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 15,
+            "name": "Post Prepare Bazel CI",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 16,
+            "name": "Post Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          }
+        ]
+      },
+      {
+        "id": 117846025128,
+        "name": "Bazel / Verify release build on windows-latest for x86_64-pc-windows-msvc",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "in_progress",
+        "conclusion": null,
+        "started_at": "2026-10-19T01:24:19Z",
+        "completed_at": null,
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846025128",
+        "runner_name": "GitHub Actions 1000171474",
+        "labels": [
+          "windows-latest"
+        ],
+        "current_steps": [
+          {
+            "name": "bazel build verify-release-build targets",
+            "status": "in_progress",
+            "conclusion": null,
+            "number": 4,
+            "started_at": "2026-10-19T01:24:53Z",
+            "completed_at": null
+          }
+        ],
+        "step_summary": [
+          {
+            "number": 1,
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:19Z",
+            "completed_at": "2026-10-19T01:24:20Z"
+          },
+          {
+            "number": 2,
+            "name": "Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:20Z",
+            "completed_at": "2026-10-19T01:24:31Z"
+          },
+          {
+            "number": 3,
+            "name": "Prepare Bazel CI",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:31Z",
+            "completed_at": "2026-10-19T01:24:53Z"
+          },
+          {
+            "number": 4,
+            "name": "bazel build verify-release-build targets",
+            "status": "in_progress",
+            "conclusion": null,
+            "started_at": "2026-10-19T01:24:53Z",
+            "completed_at": null
+          },
+          {
+            "number": 5,
+            "name": "Verify Bazel builds bwrap",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 6,
+            "name": "Upload Bazel execution logs",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 7,
+            "name": "Save bazel repository cache",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 8,
+            "name": "Check for a clean worktree",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 15,
+            "name": "Post Prepare Bazel CI",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          },
+          {
+            "number": 16,
+            "name": "Post Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "pending",
+            "conclusion": null,
+            "started_at": null,
+            "completed_at": null
+          }
+        ]
+      },
+      {
+        "id": 117846025734,
+        "name": "Lightweight prose and derived checks",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "skipped",
+        "started_at": "2026-10-19T01:24:15Z",
+        "completed_at": "2026-10-19T01:24:15Z",
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846025734",
+        "runner_name": null,
+        "labels": [
+          "ubuntu-24.04"
+        ],
+        "current_steps": [],
+        "step_summary": []
+      },
+      {
+        "id": 117846025841,
+        "name": "Hepta scoped native checks",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "skipped",
+        "started_at": "2026-10-19T01:24:15Z",
+        "completed_at": "2026-10-19T01:24:15Z",
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846025841",
+        "runner_name": null,
+        "labels": [
+          "ubuntu-24.04"
+        ],
+        "current_steps": [],
+        "step_summary": []
+      },
+      {
+        "id": 117846025980,
+        "name": "Bazel / Bazel test on windows-latest for x86_64-pc-windows-msvc (native main)",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "skipped",
+        "started_at": "2026-10-19T01:24:15Z",
+        "completed_at": "2026-10-19T01:24:15Z",
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846025980",
+        "runner_name": null,
+        "labels": [
+          "windows-latest"
+        ],
+        "current_steps": [],
+        "step_summary": []
+      },
+      {
+        "id": 117846079871,
+        "name": "rust-ci / Cargo manifest preflight",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:24:31Z",
+        "completed_at": "2026-10-19T01:24:48Z",
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846079871",
+        "runner_name": "GitHub Actions 1000171482",
+        "labels": [
+          "ubuntu-24.04"
+        ],
+        "current_steps": [],
+        "step_summary": [
+          {
+            "number": 1,
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:32Z",
+            "completed_at": "2026-10-19T01:24:33Z"
+          },
+          {
+            "number": 2,
+            "name": "Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:33Z",
+            "completed_at": "2026-10-19T01:24:35Z"
+          },
+          {
+            "number": 3,
+            "name": "Check local manifest graph before installing native prerequisites",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:35Z",
+            "completed_at": "2026-10-19T01:24:35Z"
+          },
+          {
+            "number": 4,
+            "name": "Run dtolnay/rust-toolchain@e081816240890017053eacbb1bdf337761dc5582",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:35Z",
+            "completed_at": "2026-10-19T01:24:45Z"
+          },
+          {
+            "number": 5,
+            "name": "Validate Cargo metadata for the actual checkout",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:45Z",
+            "completed_at": "2026-10-19T01:24:46Z"
+          },
+          {
+            "number": 6,
+            "name": "Check for a clean worktree",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:46Z",
+            "completed_at": "2026-10-19T01:24:46Z"
+          },
+          {
+            "number": 12,
+            "name": "Post Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:46Z",
+            "completed_at": "2026-10-19T01:24:47Z"
+          },
+          {
+            "number": 13,
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:47Z",
+            "completed_at": "2026-10-19T01:24:47Z"
+          }
+        ]
+      },
+      {
+        "id": 117846079917,
+        "name": "rust-ci / Rust format",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:24:32Z",
+        "completed_at": "2026-10-19T01:25:13Z",
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846079917",
+        "runner_name": "GitHub Actions 1000171483",
+        "labels": [
+          "ubuntu-24.04"
+        ],
+        "current_steps": [],
+        "step_summary": [
+          {
+            "number": 1,
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:33Z",
+            "completed_at": "2026-10-19T01:24:34Z"
+          },
+          {
+            "number": 2,
+            "name": "Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:34Z",
+            "completed_at": "2026-10-19T01:24:37Z"
+          },
+          {
+            "number": 3,
+            "name": "Run ./.github/actions/setup-ci",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:37Z",
+            "completed_at": "2026-10-19T01:24:41Z"
+          },
+          {
+            "number": 4,
+            "name": "Run dtolnay/rust-toolchain@e081816240890017053eacbb1bdf337761dc5582",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:41Z",
+            "completed_at": "2026-10-19T01:24:50Z"
+          },
+          {
+            "number": 5,
+            "name": "cargo fmt",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:50Z",
+            "completed_at": "2026-10-19T01:25:09Z"
+          },
+          {
+            "number": 6,
+            "name": "Check for a clean worktree",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:25:09Z",
+            "completed_at": "2026-10-19T01:25:10Z"
+          },
+          {
+            "number": 12,
+            "name": "Post Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:25:10Z",
+            "completed_at": "2026-10-19T01:25:10Z"
+          },
+          {
+            "number": 13,
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:25:10Z",
+            "completed_at": "2026-10-19T01:25:10Z"
+          }
+        ]
+      },
+      {
+        "id": 117846079920,
+        "name": "rust-ci / cargo shear",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:24:32Z",
+        "completed_at": "2026-10-19T01:25:16Z",
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846079920",
+        "runner_name": "GitHub Actions 1000171484",
+        "labels": [
+          "ubuntu-24.04"
+        ],
+        "current_steps": [],
+        "step_summary": [
+          {
+            "number": 1,
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:33Z",
+            "completed_at": "2026-10-19T01:24:34Z"
+          },
+          {
+            "number": 2,
+            "name": "Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:34Z",
+            "completed_at": "2026-10-19T01:24:37Z"
+          },
+          {
+            "number": 3,
+            "name": "Run ./.github/actions/setup-ci",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:37Z",
+            "completed_at": "2026-10-19T01:24:42Z"
+          },
+          {
+            "number": 4,
+            "name": "Run dtolnay/rust-toolchain@e081816240890017053eacbb1bdf337761dc5582",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:42Z",
+            "completed_at": "2026-10-19T01:24:49Z"
+          },
+          {
+            "number": 5,
+            "name": "Run taiki-e/install-action@44c6d64aa62cd779e873306675c7a58e86d6d532",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:49Z",
+            "completed_at": "2026-10-19T01:24:51Z"
+          },
+          {
+            "number": 6,
+            "name": "cargo shear",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:51Z",
+            "completed_at": "2026-10-19T01:25:13Z"
+          },
+          {
+            "number": 7,
+            "name": "Check for a clean worktree",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:25:13Z",
+            "completed_at": "2026-10-19T01:25:14Z"
+          },
+          {
+            "number": 14,
+            "name": "Post Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:25:14Z",
+            "completed_at": "2026-10-19T01:25:14Z"
+          },
+          {
+            "number": 15,
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:25:14Z",
+            "completed_at": "2026-10-19T01:25:14Z"
+          }
+        ]
+      },
+      {
+        "id": 117846081050,
+        "name": "rust-ci / Argument comment lint package",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "skipped",
+        "started_at": "2026-10-19T01:24:29Z",
+        "completed_at": "2026-10-19T01:24:29Z",
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846081050",
+        "runner_name": null,
+        "labels": [
+          "ubuntu-24.04"
+        ],
+        "current_steps": [],
+        "step_summary": []
+      },
+      {
+        "id": 117846154778,
+        "name": "rust-ci / Rust benchmark smoke",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:24:51Z",
+        "completed_at": "2026-10-19T01:26:13Z",
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846154778",
+        "runner_name": "GitHub Actions 1000171485",
+        "labels": [
+          "ubuntu-24.04"
+        ],
+        "current_steps": [],
+        "step_summary": [
+          {
+            "number": 1,
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:52Z",
+            "completed_at": "2026-10-19T01:24:52Z"
+          },
+          {
+            "number": 2,
+            "name": "Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:52Z",
+            "completed_at": "2026-10-19T01:24:54Z"
+          },
+          {
+            "number": 3,
+            "name": "Run ./.github/actions/setup-ci",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:54Z",
+            "completed_at": "2026-10-19T01:24:57Z"
+          },
+          {
+            "number": 4,
+            "name": "Run dtolnay/rust-toolchain@e081816240890017053eacbb1bdf337761dc5582",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:57Z",
+            "completed_at": "2026-10-19T01:25:05Z"
+          },
+          {
+            "number": 5,
+            "name": "Rust benchmark smoke test",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:25:05Z",
+            "completed_at": "2026-10-19T01:26:11Z"
+          },
+          {
+            "number": 6,
+            "name": "Check for a clean worktree",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:26:11Z",
+            "completed_at": "2026-10-19T01:26:11Z"
+          },
+          {
+            "number": 12,
+            "name": "Post Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:26:11Z",
+            "completed_at": "2026-10-19T01:26:11Z"
+          },
+          {
+            "number": 13,
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:26:11Z",
+            "completed_at": "2026-10-19T01:26:11Z"
+          }
+        ]
+      },
+      {
+        "id": 117846491622,
+        "name": "rust-ci / CI results (required)",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:26:16Z",
+        "completed_at": "2026-10-19T01:26:19Z",
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139893/job/117846491622",
+        "runner_name": "GitHub Actions 1000171486",
+        "labels": [
+          "ubuntu-24.04"
+        ],
+        "current_steps": [],
+        "step_summary": [
+          {
+            "number": 1,
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:26:17Z",
+            "completed_at": "2026-10-19T01:26:17Z"
+          },
+          {
+            "number": 2,
+            "name": "Summarize",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:26:17Z",
+            "completed_at": "2026-10-19T01:26:17Z"
+          },
+          {
+            "number": 3,
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:26:17Z",
+            "completed_at": "2026-10-19T01:26:17Z"
+          }
+        ]
+      }
+    ]
+  },
+  "architecture": {
+    "run_id": 39185139924,
+    "jobs": [
+      {
+        "id": 117845881329,
+        "name": "Architecture convergence (base-merge)",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:23:43Z",
+        "completed_at": "2026-10-19T01:24:10Z",
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139924/job/117845881329",
+        "runner_name": "GitHub Actions 1000171453",
+        "labels": [
+          "ubuntu-24.04-arm"
+        ],
+        "current_steps": [],
+        "step_summary": [
+          {
+            "number": 1,
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:23:44Z",
+            "completed_at": "2026-10-19T01:23:45Z"
+          },
+          {
+            "number": 2,
+            "name": "Check out exact candidate",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:23:45Z",
+            "completed_at": "2026-10-19T01:23:47Z"
+          },
+          {
+            "number": 3,
+            "name": "Fetch exact qualification history",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:23:47Z",
+            "completed_at": "2026-10-19T01:23:51Z"
+          },
+          {
+            "number": 4,
+            "name": "Verify GitHub prospective merge ref matches this exact candidate",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:23:51Z",
+            "completed_at": "2026-10-19T01:23:55Z"
+          },
+          {
+            "number": 5,
+            "name": "Construct the canonical prospective merge",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:23:55Z",
+            "completed_at": "2026-10-19T01:23:55Z"
+          },
+          {
+            "number": 6,
+            "name": "Bind tested identity",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:23:55Z",
+            "completed_at": "2026-10-19T01:23:55Z"
+          },
+          {
+            "number": 7,
+            "name": "Select exact-tree native execution",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:23:55Z",
+            "completed_at": "2026-10-19T01:23:56Z"
+          },
+          {
+            "number": 8,
+            "name": "Select affected architecture boundaries",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:23:56Z",
+            "completed_at": "2026-10-19T01:23:56Z"
+          },
+          {
+            "number": 9,
+            "name": "Test execution-record rejection and retained diagnostics",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:23:56Z",
+            "completed_at": "2026-10-19T01:24:04Z"
+          },
+          {
+            "number": 10,
+            "name": "Repository-control rejection regressions",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:04Z",
+            "completed_at": "2026-10-19T01:24:05Z"
+          },
+          {
+            "number": 11,
+            "name": "Prepare native prerequisites",
+            "status": "completed",
+            "conclusion": "skipped",
+            "started_at": "2026-10-19T01:24:05Z",
+            "completed_at": "2026-10-19T01:24:05Z"
+          },
+          {
+            "number": 12,
+            "name": "Run facebook/install-dotslash@1e4e7b3e07eaca387acb98f1d4720e0bee8dbb6a",
+            "status": "completed",
+            "conclusion": "skipped",
+            "started_at": "2026-10-19T01:24:05Z",
+            "completed_at": "2026-10-19T01:24:05Z"
+          },
+          {
+            "number": 13,
+            "name": "Expose DotSlash for existing integration tests",
+            "status": "completed",
+            "conclusion": "skipped",
+            "started_at": "2026-10-19T01:24:05Z",
+            "completed_at": "2026-10-19T01:24:05Z"
+          },
+          {
+            "number": 14,
+            "name": "Run taiki-e/install-action@44c6d64aa62cd779e873306675c7a58e86d6d532",
+            "status": "completed",
+            "conclusion": "skipped",
+            "started_at": "2026-10-19T01:24:05Z",
+            "completed_at": "2026-10-19T01:24:05Z"
+          },
+          {
+            "number": 15,
+            "name": "Resolve verified V8 artifacts",
+            "status": "completed",
+            "conclusion": "skipped",
+            "started_at": "2026-10-19T01:24:05Z",
+            "completed_at": "2026-10-19T01:24:05Z"
+          },
+          {
+            "number": 16,
+            "name": "Verify Cargo lock resolution and print exact resolver drift",
+            "status": "completed",
+            "conclusion": "skipped",
+            "started_at": "2026-10-19T01:24:05Z",
+            "completed_at": "2026-10-19T01:24:05Z"
+          },
+          {
+            "number": 17,
+            "name": "Inference owner regressions and streaming digest",
+            "status": "completed",
+            "conclusion": "skipped",
+            "started_at": "2026-10-19T01:24:05Z",
+            "completed_at": "2026-10-19T01:24:05Z"
+          },
+          {
+            "number": 18,
+            "name": "Durable operation and external-effect recovery",
+            "status": "completed",
+            "conclusion": "skipped",
+            "started_at": "2026-10-19T01:24:05Z",
+            "completed_at": "2026-10-19T01:24:05Z"
+          },
+          {
+            "number": 19,
+            "name": "Module lifecycle generations and migration rollback",
+            "status": "completed",
+            "conclusion": "skipped",
+            "started_at": "2026-10-19T01:24:05Z",
+            "completed_at": "2026-10-19T01:24:05Z"
+          },
+          {
+            "number": 20,
+            "name": "Objective and prompt policy convergence",
+            "status": "completed",
+            "conclusion": "skipped",
+            "started_at": "2026-10-19T01:24:05Z",
+            "completed_at": "2026-10-19T01:24:05Z"
+          },
+          {
+            "number": 21,
+            "name": "Converged authority and browser semantics",
+            "status": "completed",
+            "conclusion": "skipped",
+            "started_at": "2026-10-19T01:24:05Z",
+            "completed_at": "2026-10-19T01:24:05Z"
+          },
+          {
+            "number": 22,
+            "name": "Selected-artifact adoption and explicit rollback",
+            "status": "completed",
+            "conclusion": "skipped",
+            "started_at": "2026-10-19T01:24:05Z",
+            "completed_at": "2026-10-19T01:24:05Z"
+          },
+          {
+            "number": 23,
+            "name": "Compiled service lifecycle and actual process restart",
+            "status": "completed",
+            "conclusion": "skipped",
+            "started_at": "2026-10-19T01:24:05Z",
+            "completed_at": "2026-10-19T01:24:05Z"
+          },
+          {
+            "number": 24,
+            "name": "Derived-view drift",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:05Z",
+            "completed_at": "2026-10-19T01:24:05Z"
+          },
+          {
+            "number": 25,
+            "name": "Retain advisory candidate Git transport observation",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:05Z",
+            "completed_at": "2026-10-19T01:24:06Z"
+          },
+          {
+            "number": 26,
+            "name": "Verify unchanged reviewed source",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:06Z",
+            "completed_at": "2026-10-19T01:24:06Z"
+          },
+          {
+            "number": 27,
+            "name": "Retain exact source input on failure for reproducible diagnosis",
+            "status": "completed",
+            "conclusion": "skipped",
+            "started_at": "2026-10-19T01:24:06Z",
+            "completed_at": "2026-10-19T01:24:06Z"
+          },
+          {
+            "number": 28,
+            "name": "Retain command records and bounded stdout stderr",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:06Z",
+            "completed_at": "2026-10-19T01:24:07Z"
+          },
+          {
+            "number": 56,
+            "name": "Post Check out exact candidate",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:07Z",
+            "completed_at": "2026-10-19T01:24:07Z"
+          },
+          {
+            "number": 57,
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:07Z",
+            "completed_at": "2026-10-19T01:24:07Z"
+          }
+        ]
+      },
+      {
+        "id": 117845881584,
+        "name": "Architecture convergence (source-head)",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:23:42Z",
+        "completed_at": "2026-10-19T01:53:04Z",
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139924/job/117845881584",
+        "runner_name": "GitHub Actions 1000171454",
+        "labels": [
+          "ubuntu-24.04-arm"
+        ],
+        "current_steps": [],
+        "step_summary": [
+          {
+            "number": 1,
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:23:43Z",
+            "completed_at": "2026-10-19T01:23:45Z"
+          },
+          {
+            "number": 2,
+            "name": "Check out exact candidate",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:23:45Z",
+            "completed_at": "2026-10-19T01:23:50Z"
+          },
+          {
+            "number": 3,
+            "name": "Fetch exact qualification history",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:23:50Z",
+            "completed_at": "2026-10-19T01:23:55Z"
+          },
+          {
+            "number": 4,
+            "name": "Verify GitHub prospective merge ref matches this exact candidate",
+            "status": "completed",
+            "conclusion": "skipped",
+            "started_at": "2026-10-19T01:23:55Z",
+            "completed_at": "2026-10-19T01:23:55Z"
+          },
+          {
+            "number": 5,
+            "name": "Construct the canonical prospective merge",
+            "status": "completed",
+            "conclusion": "skipped",
+            "started_at": "2026-10-19T01:23:55Z",
+            "completed_at": "2026-10-19T01:23:55Z"
+          },
+          {
+            "number": 6,
+            "name": "Bind tested identity",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:23:55Z",
+            "completed_at": "2026-10-19T01:23:55Z"
+          },
+          {
+            "number": 7,
+            "name": "Select exact-tree native execution",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:23:55Z",
+            "completed_at": "2026-10-19T01:23:56Z"
+          },
+          {
+            "number": 8,
+            "name": "Select affected architecture boundaries",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:23:56Z",
+            "completed_at": "2026-10-19T01:23:56Z"
+          },
+          {
+            "number": 9,
+            "name": "Test execution-record rejection and retained diagnostics",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:23:56Z",
+            "completed_at": "2026-10-19T01:24:04Z"
+          },
+          {
+            "number": 10,
+            "name": "Repository-control rejection regressions",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:04Z",
+            "completed_at": "2026-10-19T01:24:05Z"
+          },
+          {
+            "number": 11,
+            "name": "Prepare native prerequisites",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:05Z",
+            "completed_at": "2026-10-19T01:24:17Z"
+          },
+          {
+            "number": 12,
+            "name": "Run facebook/install-dotslash@1e4e7b3e07eaca387acb98f1d4720e0bee8dbb6a",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:17Z",
+            "completed_at": "2026-10-19T01:24:18Z"
+          },
+          {
+            "number": 13,
+            "name": "Expose DotSlash for existing integration tests",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:18Z",
+            "completed_at": "2026-10-19T01:24:18Z"
+          },
+          {
+            "number": 14,
+            "name": "Run taiki-e/install-action@44c6d64aa62cd779e873306675c7a58e86d6d532",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:18Z",
+            "completed_at": "2026-10-19T01:24:22Z"
+          },
+          {
+            "number": 15,
+            "name": "Resolve verified V8 artifacts",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:22Z",
+            "completed_at": "2026-10-19T01:24:29Z"
+          },
+          {
+            "number": 16,
+            "name": "Verify Cargo lock resolution and print exact resolver drift",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:29Z",
+            "completed_at": "2026-10-19T01:24:46Z"
+          },
+          {
+            "number": 17,
+            "name": "Inference owner regressions and streaming digest",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:24:46Z",
+            "completed_at": "2026-10-19T01:25:06Z"
+          },
+          {
+            "number": 18,
+            "name": "Durable operation and external-effect recovery",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:25:06Z",
+            "completed_at": "2026-10-19T01:28:58Z"
+          },
+          {
+            "number": 19,
+            "name": "Module lifecycle generations and migration rollback",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:28:58Z",
+            "completed_at": "2026-10-19T01:31:07Z"
+          },
+          {
+            "number": 20,
+            "name": "Objective and prompt policy convergence",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:31:07Z",
+            "completed_at": "2026-10-19T01:31:17Z"
+          },
+          {
+            "number": 21,
+            "name": "Converged authority and browser semantics",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:31:17Z",
+            "completed_at": "2026-10-19T01:42:45Z"
+          },
+          {
+            "number": 22,
+            "name": "Selected-artifact adoption and explicit rollback",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:42:45Z",
+            "completed_at": "2026-10-19T01:43:15Z"
+          },
+          {
+            "number": 23,
+            "name": "Compiled service lifecycle and actual process restart",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:43:15Z",
+            "completed_at": "2026-10-19T01:52:58Z"
+          },
+          {
+            "number": 24,
+            "name": "Derived-view drift",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:52:58Z",
+            "completed_at": "2026-10-19T01:52:58Z"
+          },
+          {
+            "number": 25,
+            "name": "Retain advisory candidate Git transport observation",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:52:58Z",
+            "completed_at": "2026-10-19T01:53:01Z"
+          },
+          {
+            "number": 26,
+            "name": "Verify unchanged reviewed source",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:53:01Z",
+            "completed_at": "2026-10-19T01:53:01Z"
+          },
+          {
+            "number": 27,
+            "name": "Retain exact source input on failure for reproducible diagnosis",
+            "status": "completed",
+            "conclusion": "skipped",
+            "started_at": "2026-10-19T01:53:01Z",
+            "completed_at": "2026-10-19T01:53:01Z"
+          },
+          {
+            "number": 28,
+            "name": "Retain command records and bounded stdout stderr",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:53:01Z",
+            "completed_at": "2026-10-19T01:53:02Z"
+          },
+          {
+            "number": 56,
+            "name": "Post Check out exact candidate",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:53:02Z",
+            "completed_at": "2026-10-19T01:53:02Z"
+          },
+          {
+            "number": 57,
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:53:02Z",
+            "completed_at": "2026-10-19T01:53:02Z"
+          }
+        ]
+      },
+      {
+        "id": 117852485431,
+        "name": "Architecture required",
+        "head_sha": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+        "status": "completed",
+        "conclusion": "success",
+        "started_at": "2026-10-19T01:53:06Z",
+        "completed_at": "2026-10-19T01:53:09Z",
+        "html_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/39185139924/job/117852485431",
+        "runner_name": "GitHub Actions 1000171899",
+        "labels": [
+          "ubuntu-24.04"
+        ],
+        "current_steps": [],
+        "step_summary": [
+          {
+            "number": 1,
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:53:07Z",
+            "completed_at": "2026-10-19T01:53:07Z"
+          },
+          {
+            "number": 2,
+            "name": "Require both exact-candidate lanes",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:53:07Z",
+            "completed_at": "2026-10-19T01:53:07Z"
+          },
+          {
+            "number": 3,
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T01:53:07Z",
+            "completed_at": "2026-10-19T01:53:07Z"
+          }
+        ]
+      }
+    ]
+  },
+  "interpretation": [
+    "Architecture required succeeded; inspect preserved source-head steps separately from the base-merge conditionally skipped native scope.",
+    "CI required is not yet present; rust-ci / CI results (required) is a distinct check and does not substitute for it.",
+    "cargo-deny failed remotely, but remote job logs were not recovered. Local 13-error diagnosis is independently timestamped and is not a reconstruction of the original log.",
+    "Hepta scoped native checks is skipped under the existing full_repo scope policy. This run does not exercise the scoped job's changed timeout.",
+    "PR remains open and blocked with normal squash auto-merge enabled. No manual merge, rerun, cancellation, permission change or policy exception was performed.",
+    "This is a bounded status observation, not a completed blocking-ci result or an explanation for task duration."
+  ]
+}

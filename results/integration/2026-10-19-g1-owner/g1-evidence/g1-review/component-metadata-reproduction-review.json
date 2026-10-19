@@ -1,0 +1,391 @@
+{
+  "schema": "r10.g1.independent-component-metadata-reproduction-review.v1",
+  "reviewed_at_utc": "2026-10-19T01:47:29.917916+00:00",
+  "status": "saved_reproduction_evidence_verified",
+  "producer_reproduction_recorded_at_utc": "2026-10-19T01:42:51.868422+00:00",
+  "reviewer_executed_cargo_commands": 0,
+  "reviewer_compilations": 0,
+  "reviewer_guest_runs": 0,
+  "producer_source_commit": "be6d8408878dc25fce3188e1fc759aa227bf8678",
+  "producer_command_receipts": [
+    {
+      "name": "core-no-deps",
+      "producer_executed_argv": [
+        "cargo",
+        "metadata",
+        "--no-deps",
+        "--format-version",
+        "1"
+      ],
+      "producer_executed_cwd": "/workspace/scratch/499c7902de8e/r10-metadata-repro/kernel/asterinas/kernel/core",
+      "producer_reported_exit_code": 0,
+      "saved_after_lock_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+      "stdout_sha256": "124f39a1bf95342d022c7a963c0d22ea1479d85023cd502846003ff12c031761",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "independent_saved_file_checks_passed": true
+    },
+    {
+      "name": "core-no-deps-locked",
+      "producer_executed_argv": [
+        "cargo",
+        "metadata",
+        "--no-deps",
+        "--format-version",
+        "1",
+        "--locked"
+      ],
+      "producer_executed_cwd": "/workspace/scratch/499c7902de8e/r10-metadata-repro/kernel/asterinas/kernel/core",
+      "producer_reported_exit_code": 0,
+      "saved_after_lock_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+      "stdout_sha256": "124f39a1bf95342d022c7a963c0d22ea1479d85023cd502846003ff12c031761",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "independent_saved_file_checks_passed": true
+    },
+    {
+      "name": "root-no-deps",
+      "producer_executed_argv": [
+        "cargo",
+        "metadata",
+        "--no-deps",
+        "--format-version",
+        "1"
+      ],
+      "producer_executed_cwd": "/workspace/scratch/499c7902de8e/r10-metadata-repro/kernel/asterinas",
+      "producer_reported_exit_code": 0,
+      "saved_after_lock_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+      "stdout_sha256": "845db6f41260ce1b715e9478b4131a7e7c5d648aeb76325efb4d972a788d299c",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "independent_saved_file_checks_passed": true
+    },
+    {
+      "name": "root-no-deps-locked",
+      "producer_executed_argv": [
+        "cargo",
+        "metadata",
+        "--no-deps",
+        "--format-version",
+        "1",
+        "--locked"
+      ],
+      "producer_executed_cwd": "/workspace/scratch/499c7902de8e/r10-metadata-repro/kernel/asterinas",
+      "producer_reported_exit_code": 0,
+      "saved_after_lock_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+      "stdout_sha256": "845db6f41260ce1b715e9478b4131a7e7c5d648aeb76325efb4d972a788d299c",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "independent_saved_file_checks_passed": true
+    },
+    {
+      "name": "ostd-no-deps",
+      "producer_executed_argv": [
+        "cargo",
+        "metadata",
+        "--no-deps",
+        "--format-version",
+        "1"
+      ],
+      "producer_executed_cwd": "/workspace/scratch/499c7902de8e/r10-metadata-repro/kernel/asterinas/ostd",
+      "producer_reported_exit_code": 0,
+      "saved_after_lock_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+      "stdout_sha256": "a891a303bd547e45c8f993fe5b43ebbd764b64ab305525feceeb57095c953d60",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "independent_saved_file_checks_passed": true
+    },
+    {
+      "name": "kernel-no-deps",
+      "producer_executed_argv": [
+        "cargo",
+        "metadata",
+        "--no-deps",
+        "--format-version",
+        "1"
+      ],
+      "producer_executed_cwd": "/workspace/scratch/499c7902de8e/r10-metadata-repro/kernel/asterinas/kernel",
+      "producer_reported_exit_code": 0,
+      "saved_after_lock_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+      "stdout_sha256": "ab1a737091e571a68e57ede06109dff96ac6d3d8428a614a746809f2834ab2d2",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "independent_saved_file_checks_passed": true
+    },
+    {
+      "name": "component-original-full",
+      "producer_executed_argv": [
+        "cargo",
+        "metadata",
+        "--format-version",
+        "1"
+      ],
+      "producer_executed_cwd": "/workspace/scratch/499c7902de8e/r10-metadata-repro/kernel/asterinas/kernel/core",
+      "producer_reported_exit_code": 0,
+      "saved_after_lock_sha256": "af94d71680ecf3b9631e21c958263d5e41229033214f88dcff858bb14765a666",
+      "stdout_sha256": "85879a346fab359000a2683f302e98a061e9d2a7cfb52cb4fa96cb8e3f554150",
+      "stderr_sha256": "239ac943f7fde55afcb7393e37d81c0743dffe47ccb1866a1e4fc4535a550ef7",
+      "independent_saved_file_checks_passed": true
+    },
+    {
+      "name": "component-seed-locked",
+      "producer_executed_argv": [
+        "cargo",
+        "metadata",
+        "--format-version",
+        "1",
+        "--locked"
+      ],
+      "producer_executed_cwd": "/workspace/scratch/499c7902de8e/r10-metadata-repro/kernel/asterinas/kernel/core",
+      "producer_reported_exit_code": 101,
+      "saved_after_lock_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "3b1e9aee43563eab8aff4552d5d1b6bfcfc7a3600876dd976fe8505c5fd67794",
+      "independent_saved_file_checks_passed": true
+    },
+    {
+      "name": "component-working-delta-locked",
+      "producer_executed_argv": [
+        "cargo",
+        "metadata",
+        "--format-version",
+        "1",
+        "--locked"
+      ],
+      "producer_executed_cwd": "/workspace/scratch/499c7902de8e/r10-metadata-repro/kernel/asterinas/kernel/core",
+      "producer_reported_exit_code": 0,
+      "saved_after_lock_sha256": "af94d71680ecf3b9631e21c958263d5e41229033214f88dcff858bb14765a666",
+      "stdout_sha256": "85879a346fab359000a2683f302e98a061e9d2a7cfb52cb4fa96cb8e3f554150",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "independent_saved_file_checks_passed": true
+    }
+  ],
+  "immutable_upstream_seed": {
+    "git_tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+    "git_path": "Cargo.lock",
+    "sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+    "packages": 234
+  },
+  "explicit_working_lock_derivative": {
+    "sha256": "af94d71680ecf3b9631e21c958263d5e41229033214f88dcff858bb14765a666",
+    "packages": 235,
+    "added_package": {
+      "name": "os-control",
+      "version": "0.1.0",
+      "dependencies": [
+        "spin"
+      ]
+    },
+    "existing_package_change": "aster-core receives exactly one os-control dependency edge",
+    "all_other_package_records_equal": true,
+    "external_package_records_equal": true,
+    "not_a_new_seed": true
+  },
+  "full_metadata_comparison": {
+    "unlocked_and_declared_locked_json_equal": true,
+    "raw_stdout_bytes_equal": true,
+    "packages": 226,
+    "workspace_root": "/workspace/scratch/499c7902de8e/r10-metadata-repro/kernel/asterinas",
+    "unlocked_stdout_sha256": "85879a346fab359000a2683f302e98a061e9d2a7cfb52cb4fa96cb8e3f554150",
+    "locked_stdout_sha256": "85879a346fab359000a2683f302e98a061e9d2a7cfb52cb4fa96cb8e3f554150"
+  },
+  "cause_conclusions": {
+    "direct_reproduction": "Original full metadata command, executed by the producer in an isolated core cwd, changed the fixed root lock to exactly the bytes retained from the failed real build.",
+    "not_claimed": "The original failed build was not process/file-write traced; attribution combines its exact changed bytes with the isolated command reproduction and compile-time macro call chain.",
+    "retracted_candidate": "OSDK util --no-deps metadata was only a preliminary static suspicion. Six real producer counterexamples left the root seed unchanged and do not support that path as the writer.",
+    "call_chain": "aster-core init calls parse_metadata!; parse_metadata calls component_generate and get_component_toml_path, and both call full metadata. init_component itself does not call metadata.",
+    "correct_fix_scope": "Retain complete component package enumeration. Keep the original Git lock blob and SHA as the seed; explicitly verify the unique local working-lock derivative; use full metadata --locked.",
+    "assumption_correction": "The initial implementation assumption that the working root Cargo.lock could remain byte-identical to upstream while adding this dependency was contradicted by real full metadata resolution.",
+    "implementation_status": "Approved fix and post-fix execution are reviewed separately; this saved-evidence receipt is not a passing kernel test or fixed-build acceptance."
+  },
+  "code_sources": {
+    "kernel/asterinas/kernel/libs/comp-sys/component-macro/src/lib.rs": {
+      "source_commit": "be6d8408878dc25fce3188e1fc759aa227bf8678",
+      "sha256": "cbbecb3051bb5bd333ddc1b1636548b5c97c6b5164ef562bee8a0ed2e64e47bc"
+    },
+    "kernel/asterinas/kernel/libs/comp-sys/component-macro/src/priority.rs": {
+      "source_commit": "be6d8408878dc25fce3188e1fc759aa227bf8678",
+      "sha256": "7c89992761844d328e1f57d03f2b02b1d9cd869e80fd1d5279566de1fb4d0761"
+    },
+    "kernel/asterinas/kernel/core/src/init.rs": {
+      "source_commit": "be6d8408878dc25fce3188e1fc759aa227bf8678",
+      "sha256": "86518b576e44c2232f3a7b4640d657181b09e179a9129f929e6ee6f3c99a7469"
+    },
+    "kernel/asterinas/osdk/src/util.rs": {
+      "source_commit": "be6d8408878dc25fce3188e1fc759aa227bf8678",
+      "sha256": "7ec9276b0aabcbae7e954606d2fd7d4902f4d11f215b11199c83be3f8f2e681d"
+    }
+  },
+  "evidence_files": {
+    "r10-evidence/g1-metadata-repro/core-no-deps.stdout.json": {
+      "path": "r10-evidence/g1-metadata-repro/core-no-deps.stdout.json",
+      "bytes": 157843,
+      "sha256": "124f39a1bf95342d022c7a963c0d22ea1479d85023cd502846003ff12c031761"
+    },
+    "r10-evidence/g1-metadata-repro/core-no-deps.stderr.log": {
+      "path": "r10-evidence/g1-metadata-repro/core-no-deps.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "r10-evidence/g1-metadata-repro/core-no-deps.Cargo.lock": {
+      "path": "r10-evidence/g1-metadata-repro/core-no-deps.Cargo.lock",
+      "bytes": 49185,
+      "sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316"
+    },
+    "r10-evidence/g1-metadata-repro/core-no-deps-locked.stdout.json": {
+      "path": "r10-evidence/g1-metadata-repro/core-no-deps-locked.stdout.json",
+      "bytes": 157843,
+      "sha256": "124f39a1bf95342d022c7a963c0d22ea1479d85023cd502846003ff12c031761"
+    },
+    "r10-evidence/g1-metadata-repro/core-no-deps-locked.stderr.log": {
+      "path": "r10-evidence/g1-metadata-repro/core-no-deps-locked.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "r10-evidence/g1-metadata-repro/core-no-deps-locked.Cargo.lock": {
+      "path": "r10-evidence/g1-metadata-repro/core-no-deps-locked.Cargo.lock",
+      "bytes": 49185,
+      "sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316"
+    },
+    "r10-evidence/g1-metadata-repro/root-no-deps.stdout.json": {
+      "path": "r10-evidence/g1-metadata-repro/root-no-deps.stdout.json",
+      "bytes": 161918,
+      "sha256": "845db6f41260ce1b715e9478b4131a7e7c5d648aeb76325efb4d972a788d299c"
+    },
+    "r10-evidence/g1-metadata-repro/root-no-deps.stderr.log": {
+      "path": "r10-evidence/g1-metadata-repro/root-no-deps.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "r10-evidence/g1-metadata-repro/root-no-deps.Cargo.lock": {
+      "path": "r10-evidence/g1-metadata-repro/root-no-deps.Cargo.lock",
+      "bytes": 49185,
+      "sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316"
+    },
+    "r10-evidence/g1-metadata-repro/root-no-deps-locked.stdout.json": {
+      "path": "r10-evidence/g1-metadata-repro/root-no-deps-locked.stdout.json",
+      "bytes": 161918,
+      "sha256": "845db6f41260ce1b715e9478b4131a7e7c5d648aeb76325efb4d972a788d299c"
+    },
+    "r10-evidence/g1-metadata-repro/root-no-deps-locked.stderr.log": {
+      "path": "r10-evidence/g1-metadata-repro/root-no-deps-locked.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "r10-evidence/g1-metadata-repro/root-no-deps-locked.Cargo.lock": {
+      "path": "r10-evidence/g1-metadata-repro/root-no-deps-locked.Cargo.lock",
+      "bytes": 49185,
+      "sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316"
+    },
+    "r10-evidence/g1-metadata-repro/ostd-no-deps.stdout.json": {
+      "path": "r10-evidence/g1-metadata-repro/ostd-no-deps.stdout.json",
+      "bytes": 157826,
+      "sha256": "a891a303bd547e45c8f993fe5b43ebbd764b64ab305525feceeb57095c953d60"
+    },
+    "r10-evidence/g1-metadata-repro/ostd-no-deps.stderr.log": {
+      "path": "r10-evidence/g1-metadata-repro/ostd-no-deps.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "r10-evidence/g1-metadata-repro/ostd-no-deps.Cargo.lock": {
+      "path": "r10-evidence/g1-metadata-repro/ostd-no-deps.Cargo.lock",
+      "bytes": 49185,
+      "sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316"
+    },
+    "r10-evidence/g1-metadata-repro/kernel-no-deps.stdout.json": {
+      "path": "r10-evidence/g1-metadata-repro/kernel-no-deps.stdout.json",
+      "bytes": 157837,
+      "sha256": "ab1a737091e571a68e57ede06109dff96ac6d3d8428a614a746809f2834ab2d2"
+    },
+    "r10-evidence/g1-metadata-repro/kernel-no-deps.stderr.log": {
+      "path": "r10-evidence/g1-metadata-repro/kernel-no-deps.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "r10-evidence/g1-metadata-repro/kernel-no-deps.Cargo.lock": {
+      "path": "r10-evidence/g1-metadata-repro/kernel-no-deps.Cargo.lock",
+      "bytes": 49185,
+      "sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316"
+    },
+    "r10-evidence/g1-metadata-repro/component-original-full.stdout.json": {
+      "path": "r10-evidence/g1-metadata-repro/component-original-full.stdout.json",
+      "bytes": 892848,
+      "sha256": "85879a346fab359000a2683f302e98a061e9d2a7cfb52cb4fa96cb8e3f554150"
+    },
+    "r10-evidence/g1-metadata-repro/component-original-full.stderr.log": {
+      "path": "r10-evidence/g1-metadata-repro/component-original-full.stderr.log",
+      "bytes": 152,
+      "sha256": "239ac943f7fde55afcb7393e37d81c0743dffe47ccb1866a1e4fc4535a550ef7"
+    },
+    "r10-evidence/g1-metadata-repro/component-original-full.Cargo.lock": {
+      "path": "r10-evidence/g1-metadata-repro/component-original-full.Cargo.lock",
+      "bytes": 49279,
+      "sha256": "af94d71680ecf3b9631e21c958263d5e41229033214f88dcff858bb14765a666"
+    },
+    "r10-evidence/g1-metadata-repro/component-seed-locked.stdout.json": {
+      "path": "r10-evidence/g1-metadata-repro/component-seed-locked.stdout.json",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "r10-evidence/g1-metadata-repro/component-seed-locked.stderr.log": {
+      "path": "r10-evidence/g1-metadata-repro/component-seed-locked.stderr.log",
+      "bytes": 273,
+      "sha256": "3b1e9aee43563eab8aff4552d5d1b6bfcfc7a3600876dd976fe8505c5fd67794"
+    },
+    "r10-evidence/g1-metadata-repro/component-seed-locked.Cargo.lock": {
+      "path": "r10-evidence/g1-metadata-repro/component-seed-locked.Cargo.lock",
+      "bytes": 49185,
+      "sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316"
+    },
+    "r10-evidence/g1-metadata-repro/component-working-delta-locked.stdout.json": {
+      "path": "r10-evidence/g1-metadata-repro/component-working-delta-locked.stdout.json",
+      "bytes": 892848,
+      "sha256": "85879a346fab359000a2683f302e98a061e9d2a7cfb52cb4fa96cb8e3f554150"
+    },
+    "r10-evidence/g1-metadata-repro/component-working-delta-locked.stderr.log": {
+      "path": "r10-evidence/g1-metadata-repro/component-working-delta-locked.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "r10-evidence/g1-metadata-repro/component-working-delta-locked.Cargo.lock": {
+      "path": "r10-evidence/g1-metadata-repro/component-working-delta-locked.Cargo.lock",
+      "bytes": 49279,
+      "sha256": "af94d71680ecf3b9631e21c958263d5e41229033214f88dcff858bb14765a666"
+    },
+    "r10-evidence/g1-metadata-repro/metadata-calls.json": {
+      "path": "r10-evidence/g1-metadata-repro/metadata-calls.json",
+      "bytes": 3951,
+      "sha256": "02cb4b698e83339a06c27db99adf811a424f606e453d0b4dca8cd05b7d6dbd7a"
+    },
+    "r10-evidence/g1-metadata-repro/component-writer-reproduction.json": {
+      "path": "r10-evidence/g1-metadata-repro/component-writer-reproduction.json",
+      "bytes": 2668,
+      "sha256": "6beb94e7c67092658fd0dc7095835d2c3b576eed70f9236f7a0f9a465327c1e2"
+    },
+    "r10-evidence/g1-a-ktest-01/receipt.json": {
+      "path": "r10-evidence/g1-a-ktest-01/receipt.json",
+      "bytes": 780,
+      "sha256": "2a9199e3a90c92937d9f50e9416c492553f6718155b56b444a81c681f954085d"
+    },
+    "r10-evidence/g1-a-ktest-01/execution/aster-core/osdk-test.log": {
+      "path": "r10-evidence/g1-a-ktest-01/execution/aster-core/osdk-test.log",
+      "bytes": 16054,
+      "sha256": "9c8fc4a7cc93d7a09751d7b5ecd04f99227965676edbf215d3bb21f6f9012547"
+    },
+    "r10-evidence/g1-review/blocker-root-lock-mutation.json": {
+      "path": "r10-evidence/g1-review/blocker-root-lock-mutation.json",
+      "bytes": 2341,
+      "sha256": "9404512fa0eb687cabe64c43f235f87d0aa8d746a8fdeef574cbd7b2638cc6aa"
+    },
+    "r10-evidence/g1-review/root-lock-observed-working.Cargo.lock": {
+      "path": "r10-evidence/g1-review/root-lock-observed-working.Cargo.lock",
+      "bytes": 49279,
+      "sha256": "af94d71680ecf3b9631e21c958263d5e41229033214f88dcff858bb14765a666"
+    },
+    "r10-evidence/g1-review/root-lock-committed.Cargo.lock": {
+      "path": "r10-evidence/g1-review/root-lock-committed.Cargo.lock",
+      "bytes": 49185,
+      "sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316"
+    }
+  },
+  "limitations": [
+    "Reproduction commands were executed by the producer, not rerun by the reviewer.",
+    "--locked refusal with the original seed and success with the declared derivative are process results saved by the producer and cross-checked against stdout, stderr, and after-lock files.",
+    "No dependency graph was reduced to --no-deps in the full metadata comparison.",
+    "The original failed compile and lock mutation evidence remain retained without edits."
+  ]
+}

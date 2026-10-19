@@ -1,0 +1,82 @@
+{
+  "schema": "r10.hepta-latest-check-copy.v1",
+  "at_utc": "2026-10-19T04:20:12.879283+00:00",
+  "original_observed_at_utc": "2026-10-19T04:17:21.623Z",
+  "source": "/workspace/scratch/499c7902de8e/r10-evidence/hepta-scoped-disk-publication",
+  "files": [
+    {
+      "path": "initial-ci-and-fleet-status.json",
+      "bytes": 596619,
+      "sha256": "f9fb69df11b27ea1975991efddb654b59394df2ffb4151b988d847b2838e975f"
+    },
+    {
+      "path": "cargo-deny-log-attempt.json",
+      "bytes": 629,
+      "sha256": "a714a5c19fc3cad3e067af70d37daa0dace4b874f3148fda9994e7573238a068"
+    }
+  ],
+  "all_source_before_after_and_destination_equal": true,
+  "parsed_original_check_counts": {
+    "disk_checks": {
+      "total": 45,
+      "counts": {
+        "in_progress": 20,
+        "skipped": 6,
+        "success": 17,
+        "neutral": 1,
+        "failure": 1
+      },
+      "failed": [
+        {
+          "id": 117886607679,
+          "name": "cargo-deny / cargo-deny",
+          "head_sha": "a8ce72907288d1836612446b87cb1d5c184993ac",
+          "status": "completed",
+          "conclusion": "failure",
+          "completed_at": "2026-10-19T04:17:17Z"
+        }
+      ],
+      "disk_scoped": [
+        {
+          "id": 117886609136,
+          "name": "Hepta scoped native checks",
+          "head_sha": "a8ce72907288d1836612446b87cb1d5c184993ac",
+          "status": "completed",
+          "conclusion": "skipped",
+          "completed_at": "2026-10-19T04:15:50Z"
+        }
+      ]
+    },
+    "fleet_checks": {
+      "total": 24,
+      "counts": {
+        "success": 12,
+        "failure": 2,
+        "neutral": 1,
+        "skipped": 8,
+        "in_progress": 1
+      },
+      "failed": [
+        {
+          "id": 117881115008,
+          "name": "CI required",
+          "head_sha": "b34cb44f06db0a66acb3d25b183a2a05c4cebc7e",
+          "status": "completed",
+          "conclusion": "failure",
+          "completed_at": "2026-10-19T03:53:12Z"
+        },
+        {
+          "id": 117877231475,
+          "name": "Hepta scoped native checks",
+          "head_sha": "b34cb44f06db0a66acb3d25b183a2a05c4cebc7e",
+          "status": "completed",
+          "conclusion": "failure",
+          "completed_at": "2026-10-19T03:52:59Z"
+        }
+      ],
+      "disk_scoped": []
+    }
+  },
+  "no_new_remote_reads_or_product_execution": true,
+  "new_remote_cargo_deny_log_recovered": false
+}

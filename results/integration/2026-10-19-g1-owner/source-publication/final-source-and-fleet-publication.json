@@ -1,0 +1,147 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-10-19 03:37:39 UTC",
+  "desktop": {
+    "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+    "pr": 197,
+    "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/197",
+    "initial_head": "f744fb248a6d264676d0b892d21d6c4582d72d0f",
+    "intermediate_head": "463f70e36df6571faf6db45975d433ca10b0ddf6",
+    "published_head": "107afb7436ca17177262fdfef2e6b5dfee13597a",
+    "local_head": "bccb817e0d3f1987f59c1b9e7d94e939d2e6d1d3",
+    "tree": "65ddb50cd303f3c43a8226141c5298dca369db5d",
+    "base": "0c2bf0fc1ba473325a0266c7bd476b1ddbf66383",
+    "merge_performed": false
+  },
+  "fleet": {
+    "repository": "TrillionniumFoundation/hepta-private-ci",
+    "pr": 2882,
+    "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/pull/2882",
+    "published_head": "b34cb44f06db0a66acb3d25b183a2a05c4cebc7e",
+    "local_head": "e770156ba8b35c77829d189fc053dc5f9eb69f8b",
+    "tree": "15a3b89f59052368e28ce5ed4943dc2ab638844b",
+    "base": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+    "merge_performed": false
+  },
+  "results": {
+    "desktop_tree": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Action completed."
+        }
+      ],
+      "structuredContent": {
+        "sha": "65ddb50cd303f3c43a8226141c5298dca369db5d"
+      },
+      "isError": false
+    },
+    "desktop_commit": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Action completed."
+        }
+      ],
+      "structuredContent": {
+        "sha": "107afb7436ca17177262fdfef2e6b5dfee13597a"
+      },
+      "isError": false
+    },
+    "desktop_ref": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Action completed."
+        }
+      ],
+      "structuredContent": {
+        "success": true
+      },
+      "isError": false
+    },
+    "fleet_tree": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Action completed."
+        }
+      ],
+      "structuredContent": {
+        "sha": "15a3b89f59052368e28ce5ed4943dc2ab638844b"
+      },
+      "isError": false
+    },
+    "fleet_commit": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Action completed."
+        }
+      ],
+      "structuredContent": {
+        "sha": "b34cb44f06db0a66acb3d25b183a2a05c4cebc7e"
+      },
+      "isError": false
+    },
+    "fleet_branch": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Action completed."
+        }
+      ],
+      "structuredContent": {
+        "branch": "fix/fleet-fixture-admission-assert-main"
+      },
+      "isError": false
+    },
+    "fleet_pr": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Action completed."
+        }
+      ],
+      "structuredContent": {
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/pull/2882",
+        "number": 2882,
+        "state": "open",
+        "merged": false,
+        "mergeable": false,
+        "draft": false,
+        "body": "## Why\n\nThe existing Unix Fleet authority-test helper uses `Result::unwrap()` outside a test function, which fails the repository's strict Clippy policy. The original Ubuntu and macOS ARM Bazel logs identify the same helper; its input file already exists unchanged on main. `expect()` is also denied.\n\n## Change\n\nCapture the host admission result and assert success, retaining the result in the assertion message. All fixture values remain unchanged. This branch is based directly on main commit `f8c9419df6ddeb36ff8b522a50219981fb8d9345` and changes only `codex-rs/hepta-fleet/src/authority_port.rs`; it does not carry the separate Objective History or CI-timeout changes from #2815.\n\n## Validation on this exact main-based candidate\n\nPublished source `b34cb44f06db0a66acb3d25b183a2a05c4cebc7e` has the same Git tree as the locally validated commit below; the GitHub commit has a different commit identity.\n\n- Commit `e770156ba8b35c77829d189fc053dc5f9eb69f8b`, tree `15a3b89f59052368e28ce5ed4943dc2ab638844b`.\n- `just fmt --base <main>`: passed, source unchanged.\n- Repository `just test`, scoped to Fleet library tests: **41 passed, 0 failed, 0 skipped**, including the existing live authority-lease test that calls this helper.\n- Scoped `just clippy` with test targets and explicit denies for both `clippy::unwrap_used` and `clippy::expect_used`: passed.\n- Linux x86_64, Rust 1.95.0, locked/offline, one build job, dedicated target. All validation receipts bind this exact source; previous d32-based results are preserved separately.\n\nNo lint exemption, dependency update, policy change, or new test is included. These are local Cargo results, not a Bazel or cross-platform CI pass. Separately recorded Windows sandbox boundary failures and dependency security debt remain unresolved.\n",
+        "title": "test(hepta-fleet): assert fixture host admission without unwrap",
+        "base": "main",
+        "base_sha": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+        "head": "fix/fleet-fixture-admission-assert-main",
+        "head_sha": "b34cb44f06db0a66acb3d25b183a2a05c4cebc7e",
+        "head_repo_id": 1320694176,
+        "head_repo_full_name": "TrillionniumFoundation/hepta-private-ci",
+        "merge_commit_sha": null,
+        "user": {
+          "login": "ProfHepta",
+          "name": "ProfHepta",
+          "email": null,
+          "avatar_url": "https://avatars.githubusercontent.com/u/102159240?v=4",
+          "id": 102159240
+        },
+        "requested_reviewers": null,
+        "requested_team_reviewers": null,
+        "diff": null,
+        "comments": null,
+        "created_at": "2026-10-19T03:35:50Z",
+        "updated_at": "2026-10-19T03:35:50Z",
+        "closed_at": null,
+        "merged_at": null,
+        "commits": 1,
+        "changed_files": 1,
+        "additions": 16,
+        "deletions": 14,
+        "display_url": "https://github.com/TrillionniumFoundation/hepta-private-ci/pull/2882",
+        "display_title": "test(hepta-fleet): assert fixture host admission without unwrap"
+      },
+      "isError": false
+    }
+  }
+}

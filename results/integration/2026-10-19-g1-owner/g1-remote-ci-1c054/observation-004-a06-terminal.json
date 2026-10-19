@@ -1,0 +1,950 @@
+{
+  "schema": "r10.g1-pr197.exact-head-api-observation.v1",
+  "head": "1c05412e2b340bbc8cd2b8a3389ae0ecce538991",
+  "started_at_utc": "2026-10-19 03:56:00 UTC",
+  "finished_at_utc": "2026-10-19 03:56:00 UTC",
+  "observations": [
+    {
+      "key": "a06_jobs",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196471075/jobs?per_page=100",
+      "tool": "github_fetch",
+      "is_error": false,
+      "response_body": "{\"total_count\":1,\"jobs\":[{\"id\":117880228659,\"run_id\":39196471075,\"workflow_name\":\"A06 exact kernel scheduler and QEMU tests\",\"head_branch\":\"agents/r10-g1-cpu-owner-20261019\",\"run_url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196471075\",\"run_attempt\":1,\"node_id\":\"CR_kwDOVLzC488AAAAbcjWLMw\",\"head_sha\":\"1c05412e2b340bbc8cd2b8a3389ae0ecce538991\",\"url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/jobs/117880228659\",\"html_url\":\"https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196471075/job/117880228659\",\"status\":\"completed\",\"conclusion\":\"success\",\"created_at\":\"2026-10-19T03:49:07Z\",\"started_at\":\"2026-10-19T03:49:09Z\",\"completed_at\":\"2026-10-19T03:55:04Z\",\"name\":\"exact-kernel-ktest\",\"steps\":[{\"name\":\"Set up job\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":1,\"started_at\":\"2026-10-19T03:49:10Z\",\"completed_at\":\"2026-10-19T03:49:11Z\"},{\"name\":\"Run actions/checkout@v4\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":2,\"started_at\":\"2026-10-19T03:49:11Z\",\"completed_at\":\"2026-10-19T03:49:25Z\"},{\"name\":\"Install disposable kernel-test host dependencies\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":3,\"started_at\":\"2026-10-19T03:49:25Z\",\"completed_at\":\"2026-10-19T03:49:45Z\"},{\"name\":\"Install pinned Rust toolchain and verify VDSO input\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":4,\"started_at\":\"2026-10-19T03:49:45Z\",\"completed_at\":\"2026-10-19T03:50:06Z\"},{\"name\":\"Prepare fixed OSDK test locks\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":5,\"started_at\":\"2026-10-19T03:50:06Z\",\"completed_at\":\"2026-10-19T03:50:09Z\"},{\"name\":\"Run complete OSTD and aster-core kernel tests in real QEMU\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":6,\"started_at\":\"2026-10-19T03:50:09Z\",\"completed_at\":\"2026-10-19T03:53:11Z\"},{\"name\":\"Build ordinary G1 product and verify QueryAbi with all four disabled operations\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":7,\"started_at\":\"2026-10-19T03:53:11Z\",\"completed_at\":\"2026-10-19T03:54:42Z\"},{\"name\":\"Build exact A06 SMP=2 candidate kernel\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":8,\"started_at\":\"2026-10-19T03:54:42Z\",\"completed_at\":\"2026-10-19T03:54:42Z\"},{\"name\":\"Run bounded one-vCPU quota and two-vCPU exit-lifecycle probes\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":9,\"started_at\":\"2026-10-19T03:54:42Z\",\"completed_at\":\"2026-10-19T03:55:00Z\"},{\"name\":\"Upload exact A06 kernel and raw QEMU evidence\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":10,\"started_at\":\"2026-10-19T03:55:00Z\",\"completed_at\":\"2026-10-19T03:55:02Z\"},{\"name\":\"Post Run actions/checkout@v4\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":20,\"started_at\":\"2026-10-19T03:55:02Z\",\"completed_at\":\"2026-10-19T03:55:02Z\"},{\"name\":\"Complete job\",\"status\":\"completed\",\"conclusion\":\"success\",\"number\":21,\"started_at\":\"2026-10-19T03:55:02Z\",\"completed_at\":\"2026-10-19T03:55:02Z\"}],\"check_run_url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117880228659\",\"labels\":[\"ubuntu-24.04\"],\"runner_id\":1000172803,\"runner_name\":\"GitHub Actions 1000172803\",\"runner_group_id\":0,\"runner_group_name\":\"GitHub Actions\"}]}",
+      "response_json": {
+        "total_count": 1,
+        "jobs": [
+          {
+            "id": 117880228659,
+            "run_id": 39196471075,
+            "workflow_name": "A06 exact kernel scheduler and QEMU tests",
+            "head_branch": "agents/r10-g1-cpu-owner-20261019",
+            "run_url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196471075",
+            "run_attempt": 1,
+            "node_id": "CR_kwDOVLzC488AAAAbcjWLMw",
+            "head_sha": "1c05412e2b340bbc8cd2b8a3389ae0ecce538991",
+            "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/jobs/117880228659",
+            "html_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196471075/job/117880228659",
+            "status": "completed",
+            "conclusion": "success",
+            "created_at": "2026-10-19T03:49:07Z",
+            "started_at": "2026-10-19T03:49:09Z",
+            "completed_at": "2026-10-19T03:55:04Z",
+            "name": "exact-kernel-ktest",
+            "steps": [
+              {
+                "name": "Set up job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 1,
+                "started_at": "2026-10-19T03:49:10Z",
+                "completed_at": "2026-10-19T03:49:11Z"
+              },
+              {
+                "name": "Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 2,
+                "started_at": "2026-10-19T03:49:11Z",
+                "completed_at": "2026-10-19T03:49:25Z"
+              },
+              {
+                "name": "Install disposable kernel-test host dependencies",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 3,
+                "started_at": "2026-10-19T03:49:25Z",
+                "completed_at": "2026-10-19T03:49:45Z"
+              },
+              {
+                "name": "Install pinned Rust toolchain and verify VDSO input",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 4,
+                "started_at": "2026-10-19T03:49:45Z",
+                "completed_at": "2026-10-19T03:50:06Z"
+              },
+              {
+                "name": "Prepare fixed OSDK test locks",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 5,
+                "started_at": "2026-10-19T03:50:06Z",
+                "completed_at": "2026-10-19T03:50:09Z"
+              },
+              {
+                "name": "Run complete OSTD and aster-core kernel tests in real QEMU",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 6,
+                "started_at": "2026-10-19T03:50:09Z",
+                "completed_at": "2026-10-19T03:53:11Z"
+              },
+              {
+                "name": "Build ordinary G1 product and verify QueryAbi with all four disabled operations",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 7,
+                "started_at": "2026-10-19T03:53:11Z",
+                "completed_at": "2026-10-19T03:54:42Z"
+              },
+              {
+                "name": "Build exact A06 SMP=2 candidate kernel",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 8,
+                "started_at": "2026-10-19T03:54:42Z",
+                "completed_at": "2026-10-19T03:54:42Z"
+              },
+              {
+                "name": "Run bounded one-vCPU quota and two-vCPU exit-lifecycle probes",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 9,
+                "started_at": "2026-10-19T03:54:42Z",
+                "completed_at": "2026-10-19T03:55:00Z"
+              },
+              {
+                "name": "Upload exact A06 kernel and raw QEMU evidence",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 10,
+                "started_at": "2026-10-19T03:55:00Z",
+                "completed_at": "2026-10-19T03:55:02Z"
+              },
+              {
+                "name": "Post Run actions/checkout@v4",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 20,
+                "started_at": "2026-10-19T03:55:02Z",
+                "completed_at": "2026-10-19T03:55:02Z"
+              },
+              {
+                "name": "Complete job",
+                "status": "completed",
+                "conclusion": "success",
+                "number": 21,
+                "started_at": "2026-10-19T03:55:02Z",
+                "completed_at": "2026-10-19T03:55:02Z"
+              }
+            ],
+            "check_run_url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117880228659",
+            "labels": [
+              "ubuntu-24.04"
+            ],
+            "runner_id": 1000172803,
+            "runner_name": "GitHub Actions 1000172803",
+            "runner_group_id": 0,
+            "runner_group_name": "GitHub Actions"
+          }
+        ]
+      }
+    },
+    {
+      "key": "a06_artifacts",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196471075/artifacts?per_page=100",
+      "tool": "github_fetch",
+      "is_error": false,
+      "response_body": "{\"total_count\":1,\"artifacts\":[{\"id\":12162515747,\"node_id\":\"MDg6QXJ0aWZhY3QxMjE2MjUxNTc0Nw==\",\"name\":\"a06-exact-kernel-ktest-39196471075\",\"size_in_bytes\":18446493,\"url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/artifacts/12162515747\",\"archive_download_url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/artifacts/12162515747/zip\",\"expired\":false,\"digest\":\"sha256:d9623e880bf559392f92c6bc9359a02629b6ff548e853e9f05cf1598b711fbbd\",\"created_at\":\"2026-10-19T03:55:02Z\",\"updated_at\":\"2026-10-19T03:55:02Z\",\"expires_at\":\"2027-01-17T03:49:06Z\",\"workflow_run\":{\"id\":39196471075,\"repository_id\":1421656803,\"head_repository_id\":1421656803,\"head_branch\":\"agents/r10-g1-cpu-owner-20261019\",\"head_sha\":\"1c05412e2b340bbc8cd2b8a3389ae0ecce538991\"}}]}",
+      "response_json": {
+        "total_count": 1,
+        "artifacts": [
+          {
+            "id": 12162515747,
+            "node_id": "MDg6QXJ0aWZhY3QxMjE2MjUxNTc0Nw==",
+            "name": "a06-exact-kernel-ktest-39196471075",
+            "size_in_bytes": 18446493,
+            "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/artifacts/12162515747",
+            "archive_download_url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/artifacts/12162515747/zip",
+            "expired": false,
+            "digest": "sha256:d9623e880bf559392f92c6bc9359a02629b6ff548e853e9f05cf1598b711fbbd",
+            "created_at": "2026-10-19T03:55:02Z",
+            "updated_at": "2026-10-19T03:55:02Z",
+            "expires_at": "2027-01-17T03:49:06Z",
+            "workflow_run": {
+              "id": 39196471075,
+              "repository_id": 1421656803,
+              "head_repository_id": 1421656803,
+              "head_branch": "agents/r10-g1-cpu-owner-20261019",
+              "head_sha": "1c05412e2b340bbc8cd2b8a3389ae0ecce538991"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "checks",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/commits/1c05412e2b340bbc8cd2b8a3389ae0ecce538991/check-runs?per_page=100",
+      "tool": "github_fetch",
+      "is_error": false,
+      "response_body": "{\"total_count\":6,\"check_runs\":[{\"id\":117880420983,\"name\":\"CodeQL\",\"node_id\":\"CR_kwDOVLzC488AAAAbcjh6dw\",\"head_sha\":\"1c05412e2b340bbc8cd2b8a3389ae0ecce538991\",\"external_id\":\"\",\"url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117880420983\",\"html_url\":\"https://github.com/TrillionniumFoundation/trillionnium-os-desktop/runs/117880420983\",\"details_url\":\"https://github.com/TrillionniumFoundation/trillionnium-os-desktop/runs/117880420983\",\"status\":\"completed\",\"conclusion\":\"success\",\"started_at\":\"2026-10-19T03:49:58Z\",\"completed_at\":\"2026-10-19T03:50:01Z\",\"output\":{\"title\":\"No new alerts in code changed by this pull request\",\"summary\":\"[View all branch alerts](/TrillionniumFoundation/trillionnium-os-desktop/security/code-scanning?query=pr%3A197+tool%3ACodeQL+is%3Aopen).\",\"text\":null,\"annotations_count\":0,\"annotations_url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117880420983/annotations\"},\"check_suite\":{\"id\":106212875698},\"app\":{\"id\":57789,\"client_id\":\"Iv1.4643383dd86f00de\",\"slug\":\"github-advanced-security\",\"node_id\":\"MDM6QXBwNTc3ODk=\",\"owner\":{\"login\":\"github\",\"id\":9919,\"node_id\":\"MDEyOk9yZ2FuaXphdGlvbjk5MTk=\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/9919?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/github\",\"html_url\":\"https://github.com/github\",\"followers_url\":\"https://api.github.com/users/github/followers\",\"following_url\":\"https://api.github.com/users/github/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/github/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/github/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/github/subscriptions\",\"organizations_url\":\"https://api.github.com/users/github/orgs\",\"repos_url\":\"https://api.github.com/users/github/repos\",\"events_url\":\"https://api.github.com/users/github/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/github/received_events\",\"type\":\"Organization\",\"user_view_type\":\"public\",\"site_admin\":false},\"name\":\"GitHub Advanced Security\",\"description\":\"\",\"external_url\":\"https://github.com/features/security\",\"html_url\":\"https://github.com/apps/github-advanced-security\",\"created_at\":\"2020-03-17T21:25:09Z\",\"updated_at\":\"2026-09-14T08:13:48Z\",\"permissions\":{\"actions\":\"read\",\"checks\":\"write\",\"contents\":\"read\",\"copilot_requests\":\"write\",\"metadata\":\"read\",\"pull_requests\":\"read\"},\"events\":[]},\"pull_requests\":[{\"url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/pulls/197\",\"id\":4915241621,\"number\":197,\"head\":{\"ref\":\"agents/r10-g1-cpu-owner-20261019\",\"sha\":\"1c05412e2b340bbc8cd2b8a3389ae0ecce538991\",\"repo\":{\"id\":1421656803,\"url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop\",\"name\":\"trillionnium-os-desktop\"}},\"base\":{\"ref\":\"main\",\"sha\":\"e15ae6a63edb5d4e7c475a001be82111d451b653\",\"repo\":{\"id\":1421656803,\"url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop\",\"name\":\"trillionnium-os-desktop\"}}}]},{\"id\":117880228876,\"name\":\"host-evidence\",\"node_id\":\"CR_kwDOVLzC488AAAAbcjWMDA\",\"head_sha\":\"1c05412e2b340bbc8cd2b8a3389ae0ecce538991\",\"external_id\":\"c0d31fed-0c21-541a-9b83-61409dfc2f62\",\"url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117880228876\",\"html_url\":\"https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196471120/job/117880228876\",\"details_url\":\"https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196471120/job/117880228876\",\"status\":\"completed\",\"conclusion\":\"success\",\"started_at\":\"2026-10-19T03:49:09Z\",\"completed_at\":\"2026-10-19T03:49:56Z\",\"output\":{\"title\":null,\"summary\":null,\"text\":null,\"annotations_count\":1,\"annotations_url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117880228876/annotations\"},\"check_suite\":{\"id\":106212710416},\"app\":{\"id\":15368,\"client_id\":\"Iv1.05c79e9ad1f6bdfa\",\"slug\":\"github-actions\",\"node_id\":\"MDM6QXBwMTUzNjg=\",\"owner\":{\"login\":\"github\",\"id\":9919,\"node_id\":\"MDEyOk9yZ2FuaXphdGlvbjk5MTk=\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/9919?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/github\",\"html_url\":\"https://github.com/github\",\"followers_url\":\"https://api.github.com/users/github/followers\",\"following_url\":\"https://api.github.com/users/github/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/github/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/github/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/github/subscriptions\",\"organizations_url\":\"https://api.github.com/users/github/orgs\",\"repos_url\":\"https://api.github.com/users/github/repos\",\"events_url\":\"https://api.github.com/users/github/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/github/received_events\",\"type\":\"Organization\",\"user_view_type\":\"public\",\"site_admin\":false},\"name\":\"GitHub Actions\",\"description\":\"Automate your workflow from idea to production\",\"external_url\":\"https://help.github.com/en/actions\",\"html_url\":\"https://github.com/apps/github-actions\",\"created_at\":\"2018-07-30T09:30:17Z\",\"updated_at\":\"2026-06-18T16:17:48Z\",\"permissions\":{\"actions\":\"write\",\"administration\":\"read\",\"artifact_metadata\":\"write\",\"attestations\":\"write\",\"checks\":\"write\",\"code_quality\":\"write\",\"contents\":\"write\",\"copilot_requests\":\"write\",\"deployments\":\"write\",\"discussions\":\"write\",\"drives\":\"write\",\"issues\":\"write\",\"merge_queues\":\"write\",\"metadata\":\"read\",\"models\":\"read\",\"packages\":\"write\",\"pages\":\"write\",\"pull_requests\":\"write\",\"repository_hooks\":\"write\",\"repository_projects\":\"write\",\"security_events\":\"write\",\"statuses\":\"write\",\"vulnerability_alerts\":\"read\"},\"events\":[\"branch_protection_rule\",\"check_run\",\"check_suite\",\"create\",\"delete\",\"deployment\",\"deployment_status\",\"discussion\",\"discussion_comment\",\"fork\",\"gollum\",\"issues\",\"issue_comment\",\"label\",\"merge_group\",\"milestone\",\"page_build\",\"public\",\"pull_request\",\"pull_request_review\",\"pull_request_review_comment\",\"push\",\"registry_package\",\"release\",\"repository\",\"repository_dispatch\",\"status\",\"watch\",\"workflow_dispatch\",\"workflow_run\"]},\"pull_requests\":[{\"url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/pulls/197\",\"id\":4915241621,\"number\":197,\"head\":{\"ref\":\"agents/r10-g1-cpu-owner-20261019\",\"sha\":\"1c05412e2b340bbc8cd2b8a3389ae0ecce538991\",\"repo\":{\"id\":1421656803,\"url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop\",\"name\":\"trillionnium-os-desktop\"}},\"base\":{\"ref\":\"main\",\"sha\":\"e15ae6a63edb5d4e7c475a001be82111d451b653\",\"repo\":{\"id\":1421656803,\"url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop\",\"name\":\"trillionnium-os-desktop\"}}}]},{\"id\":117880228851,\"name\":\"exact-native-models\",\"node_id\":\"CR_kwDOVLzC488AAAAbcjWL8w\",\"head_sha\":\"1c05412e2b340bbc8cd2b8a3389ae0ecce538991\",\"external_id\":\"60bfa8a5-c5fc-597f-bbe8-33d1b7f8a884\",\"url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117880228851\",\"html_url\":\"https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196471043/job/117880228851\",\"details_url\":\"https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196471043/job/117880228851\",\"status\":\"completed\",\"conclusion\":\"success\",\"started_at\":\"2026-10-19T03:49:10Z\",\"completed_at\":\"2026-10-19T03:50:13Z\",\"output\":{\"title\":null,\"summary\":null,\"text\":null,\"annotations_count\":1,\"annotations_url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117880228851/annotations\"},\"check_suite\":{\"id\":106212710192},\"app\":{\"id\":15368,\"client_id\":\"Iv1.05c79e9ad1f6bdfa\",\"slug\":\"github-actions\",\"node_id\":\"MDM6QXBwMTUzNjg=\",\"owner\":{\"login\":\"github\",\"id\":9919,\"node_id\":\"MDEyOk9yZ2FuaXphdGlvbjk5MTk=\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/9919?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/github\",\"html_url\":\"https://github.com/github\",\"followers_url\":\"https://api.github.com/users/github/followers\",\"following_url\":\"https://api.github.com/users/github/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/github/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/github/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/github/subscriptions\",\"organizations_url\":\"https://api.github.com/users/github/orgs\",\"repos_url\":\"https://api.github.com/users/github/repos\",\"events_url\":\"https://api.github.com/users/github/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/github/received_events\",\"type\":\"Organization\",\"user_view_type\":\"public\",\"site_admin\":false},\"name\":\"GitHub Actions\",\"description\":\"Automate your workflow from idea to production\",\"external_url\":\"https://help.github.com/en/actions\",\"html_url\":\"https://github.com/apps/github-actions\",\"created_at\":\"2018-07-30T09:30:17Z\",\"updated_at\":\"2026-06-18T16:17:48Z\",\"permissions\":{\"actions\":\"write\",\"administration\":\"read\",\"artifact_metadata\":\"write\",\"attestations\":\"write\",\"checks\":\"write\",\"code_quality\":\"write\",\"contents\":\"write\",\"copilot_requests\":\"write\",\"deployments\":\"write\",\"discussions\":\"write\",\"drives\":\"write\",\"issues\":\"write\",\"merge_queues\":\"write\",\"metadata\":\"read\",\"models\":\"read\",\"packages\":\"write\",\"pages\":\"write\",\"pull_requests\":\"write\",\"repository_hooks\":\"write\",\"repository_projects\":\"write\",\"security_events\":\"write\",\"statuses\":\"write\",\"vulnerability_alerts\":\"read\"},\"events\":[\"branch_protection_rule\",\"check_run\",\"check_suite\",\"create\",\"delete\",\"deployment\",\"deployment_status\",\"discussion\",\"discussion_comment\",\"fork\",\"gollum\",\"issues\",\"issue_comment\",\"label\",\"merge_group\",\"milestone\",\"page_build\",\"public\",\"pull_request\",\"pull_request_review\",\"pull_request_review_comment\",\"push\",\"registry_package\",\"release\",\"repository\",\"repository_dispatch\",\"status\",\"watch\",\"workflow_dispatch\",\"workflow_run\"]},\"pull_requests\":[{\"url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/pulls/197\",\"id\":4915241621,\"number\":197,\"head\":{\"ref\":\"agents/r10-g1-cpu-owner-20261019\",\"sha\":\"1c05412e2b340bbc8cd2b8a3389ae0ecce538991\",\"repo\":{\"id\":1421656803,\"url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop\",\"name\":\"trillionnium-os-desktop\"}},\"base\":{\"ref\":\"main\",\"sha\":\"e15ae6a63edb5d4e7c475a001be82111d451b653\",\"repo\":{\"id\":1421656803,\"url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop\",\"name\":\"trillionnium-os-desktop\"}}}]},{\"id\":117880228659,\"name\":\"exact-kernel-ktest\",\"node_id\":\"CR_kwDOVLzC488AAAAbcjWLMw\",\"head_sha\":\"1c05412e2b340bbc8cd2b8a3389ae0ecce538991\",\"external_id\":\"051d00dc-b78a-5155-9253-2a88fb551451\",\"url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117880228659\",\"html_url\":\"https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196471075/job/117880228659\",\"details_url\":\"https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196471075/job/117880228659\",\"status\":\"completed\",\"conclusion\":\"success\",\"started_at\":\"2026-10-19T03:49:09Z\",\"completed_at\":\"2026-10-19T03:55:04Z\",\"output\":{\"title\":null,\"summary\":null,\"text\":null,\"annotations_count\":1,\"annotations_url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117880228659/annotations\"},\"check_suite\":{\"id\":106212710272},\"app\":{\"id\":15368,\"client_id\":\"Iv1.05c79e9ad1f6bdfa\",\"slug\":\"github-actions\",\"node_id\":\"MDM6QXBwMTUzNjg=\",\"owner\":{\"login\":\"github\",\"id\":9919,\"node_id\":\"MDEyOk9yZ2FuaXphdGlvbjk5MTk=\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/9919?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/github\",\"html_url\":\"https://github.com/github\",\"followers_url\":\"https://api.github.com/users/github/followers\",\"following_url\":\"https://api.github.com/users/github/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/github/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/github/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/github/subscriptions\",\"organizations_url\":\"https://api.github.com/users/github/orgs\",\"repos_url\":\"https://api.github.com/users/github/repos\",\"events_url\":\"https://api.github.com/users/github/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/github/received_events\",\"type\":\"Organization\",\"user_view_type\":\"public\",\"site_admin\":false},\"name\":\"GitHub Actions\",\"description\":\"Automate your workflow from idea to production\",\"external_url\":\"https://help.github.com/en/actions\",\"html_url\":\"https://github.com/apps/github-actions\",\"created_at\":\"2018-07-30T09:30:17Z\",\"updated_at\":\"2026-06-18T16:17:48Z\",\"permissions\":{\"actions\":\"write\",\"administration\":\"read\",\"artifact_metadata\":\"write\",\"attestations\":\"write\",\"checks\":\"write\",\"code_quality\":\"write\",\"contents\":\"write\",\"copilot_requests\":\"write\",\"deployments\":\"write\",\"discussions\":\"write\",\"drives\":\"write\",\"issues\":\"write\",\"merge_queues\":\"write\",\"metadata\":\"read\",\"models\":\"read\",\"packages\":\"write\",\"pages\":\"write\",\"pull_requests\":\"write\",\"repository_hooks\":\"write\",\"repository_projects\":\"write\",\"security_events\":\"write\",\"statuses\":\"write\",\"vulnerability_alerts\":\"read\"},\"events\":[\"branch_protection_rule\",\"check_run\",\"check_suite\",\"create\",\"delete\",\"deployment\",\"deployment_status\",\"discussion\",\"discussion_comment\",\"fork\",\"gollum\",\"issues\",\"issue_comment\",\"label\",\"merge_group\",\"milestone\",\"page_build\",\"public\",\"pull_request\",\"pull_request_review\",\"pull_request_review_comment\",\"push\",\"registry_package\",\"release\",\"repository\",\"repository_dispatch\",\"status\",\"watch\",\"workflow_dispatch\",\"workflow_run\"]},\"pull_requests\":[{\"url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/pulls/197\",\"id\":4915241621,\"number\":197,\"head\":{\"ref\":\"agents/r10-g1-cpu-owner-20261019\",\"sha\":\"1c05412e2b340bbc8cd2b8a3389ae0ecce538991\",\"repo\":{\"id\":1421656803,\"url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop\",\"name\":\"trillionnium-os-desktop\"}},\"base\":{\"ref\":\"main\",\"sha\":\"e15ae6a63edb5d4e7c475a001be82111d451b653\",\"repo\":{\"id\":1421656803,\"url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop\",\"name\":\"trillionnium-os-desktop\"}}}]},{\"id\":117880228265,\"name\":\"host-contracts\",\"node_id\":\"CR_kwDOVLzC488AAAAbcjWJqQ\",\"head_sha\":\"1c05412e2b340bbc8cd2b8a3389ae0ecce538991\",\"external_id\":\"86d19bc3-7fa0-5f26-a2fe-66ca90af4976\",\"url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117880228265\",\"html_url\":\"https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196471000/job/117880228265\",\"details_url\":\"https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196471000/job/117880228265\",\"status\":\"completed\",\"conclusion\":\"success\",\"started_at\":\"2026-10-19T03:49:09Z\",\"completed_at\":\"2026-10-19T03:49:58Z\",\"output\":{\"title\":null,\"summary\":null,\"text\":null,\"annotations_count\":1,\"annotations_url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117880228265/annotations\"},\"check_suite\":{\"id\":106212710079},\"app\":{\"id\":15368,\"client_id\":\"Iv1.05c79e9ad1f6bdfa\",\"slug\":\"github-actions\",\"node_id\":\"MDM6QXBwMTUzNjg=\",\"owner\":{\"login\":\"github\",\"id\":9919,\"node_id\":\"MDEyOk9yZ2FuaXphdGlvbjk5MTk=\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/9919?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/github\",\"html_url\":\"https://github.com/github\",\"followers_url\":\"https://api.github.com/users/github/followers\",\"following_url\":\"https://api.github.com/users/github/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/github/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/github/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/github/subscriptions\",\"organizations_url\":\"https://api.github.com/users/github/orgs\",\"repos_url\":\"https://api.github.com/users/github/repos\",\"events_url\":\"https://api.github.com/users/github/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/github/received_events\",\"type\":\"Organization\",\"user_view_type\":\"public\",\"site_admin\":false},\"name\":\"GitHub Actions\",\"description\":\"Automate your workflow from idea to production\",\"external_url\":\"https://help.github.com/en/actions\",\"html_url\":\"https://github.com/apps/github-actions\",\"created_at\":\"2018-07-30T09:30:17Z\",\"updated_at\":\"2026-06-18T16:17:48Z\",\"permissions\":{\"actions\":\"write\",\"administration\":\"read\",\"artifact_metadata\":\"write\",\"attestations\":\"write\",\"checks\":\"write\",\"code_quality\":\"write\",\"contents\":\"write\",\"copilot_requests\":\"write\",\"deployments\":\"write\",\"discussions\":\"write\",\"drives\":\"write\",\"issues\":\"write\",\"merge_queues\":\"write\",\"metadata\":\"read\",\"models\":\"read\",\"packages\":\"write\",\"pages\":\"write\",\"pull_requests\":\"write\",\"repository_hooks\":\"write\",\"repository_projects\":\"write\",\"security_events\":\"write\",\"statuses\":\"write\",\"vulnerability_alerts\":\"read\"},\"events\":[\"branch_protection_rule\",\"check_run\",\"check_suite\",\"create\",\"delete\",\"deployment\",\"deployment_status\",\"discussion\",\"discussion_comment\",\"fork\",\"gollum\",\"issues\",\"issue_comment\",\"label\",\"merge_group\",\"milestone\",\"page_build\",\"public\",\"pull_request\",\"pull_request_review\",\"pull_request_review_comment\",\"push\",\"registry_package\",\"release\",\"repository\",\"repository_dispatch\",\"status\",\"watch\",\"workflow_dispatch\",\"workflow_run\"]},\"pull_requests\":[{\"url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/pulls/197\",\"id\":4915241621,\"number\":197,\"head\":{\"ref\":\"agents/r10-g1-cpu-owner-20261019\",\"sha\":\"1c05412e2b340bbc8cd2b8a3389ae0ecce538991\",\"repo\":{\"id\":1421656803,\"url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop\",\"name\":\"trillionnium-os-desktop\"}},\"base\":{\"ref\":\"main\",\"sha\":\"e15ae6a63edb5d4e7c475a001be82111d451b653\",\"repo\":{\"id\":1421656803,\"url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop\",\"name\":\"trillionnium-os-desktop\"}}}]},{\"id\":117880221744,\"name\":\"Analyze (python)\",\"node_id\":\"CR_kwDOVLzC488AAAAbcjVwMA\",\"head_sha\":\"1c05412e2b340bbc8cd2b8a3389ae0ecce538991\",\"external_id\":\"62a18a75-0ad0-57e4-9ae3-d52e532cc103\",\"url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117880221744\",\"html_url\":\"https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196467803/job/117880221744\",\"details_url\":\"https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196467803/job/117880221744\",\"status\":\"completed\",\"conclusion\":\"success\",\"started_at\":\"2026-10-19T03:49:08Z\",\"completed_at\":\"2026-10-19T03:50:07Z\",\"output\":{\"title\":null,\"summary\":null,\"text\":null,\"annotations_count\":1,\"annotations_url\":\"https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117880221744/annotations\"},\"check_suite\":{\"id\":106212702056},\"app\":{\"id\":15368,\"client_id\":\"Iv1.05c79e9ad1f6bdfa\",\"slug\":\"github-actions\",\"node_id\":\"MDM6QXBwMTUzNjg=\",\"owner\":{\"login\":\"github\",\"id\":9919,\"node_id\":\"MDEyOk9yZ2FuaXphdGlvbjk5MTk=\",\"avatar_url\":\"https://avatars.githubusercontent.com/u/9919?v=4\",\"gravatar_id\":\"\",\"url\":\"https://api.github.com/users/github\",\"html_url\":\"https://github.com/github\",\"followers_url\":\"https://api.github.com/users/github/followers\",\"following_url\":\"https://api.github.com/users/github/following{/other_user}\",\"gists_url\":\"https://api.github.com/users/github/gists{/gist_id}\",\"starred_url\":\"https://api.github.com/users/github/starred{/owner}{/repo}\",\"subscriptions_url\":\"https://api.github.com/users/github/subscriptions\",\"organizations_url\":\"https://api.github.com/users/github/orgs\",\"repos_url\":\"https://api.github.com/users/github/repos\",\"events_url\":\"https://api.github.com/users/github/events{/privacy}\",\"received_events_url\":\"https://api.github.com/users/github/received_events\",\"type\":\"Organization\",\"user_view_type\":\"public\",\"site_admin\":false},\"name\":\"GitHub Actions\",\"description\":\"Automate your workflow from idea to production\",\"external_url\":\"https://help.github.com/en/actions\",\"html_url\":\"https://github.com/apps/github-actions\",\"created_at\":\"2018-07-30T09:30:17Z\",\"updated_at\":\"2026-06-18T16:17:48Z\",\"permissions\":{\"actions\":\"write\",\"administration\":\"read\",\"artifact_metadata\":\"write\",\"attestations\":\"write\",\"checks\":\"write\",\"code_quality\":\"write\",\"contents\":\"write\",\"copilot_requests\":\"write\",\"deployments\":\"write\",\"discussions\":\"write\",\"drives\":\"write\",\"issues\":\"write\",\"merge_queues\":\"write\",\"metadata\":\"read\",\"models\":\"read\",\"packages\":\"write\",\"pages\":\"write\",\"pull_requests\":\"write\",\"repository_hooks\":\"write\",\"repository_projects\":\"write\",\"security_events\":\"write\",\"statuses\":\"write\",\"vulnerability_alerts\":\"read\"},\"events\":[\"branch_protection_rule\",\"check_run\",\"check_suite\",\"create\",\"delete\",\"deployment\",\"deployment_status\",\"discussion\",\"discussion_comment\",\"fork\",\"gollum\",\"issues\",\"issue_comment\",\"label\",\"merge_group\",\"milestone\",\"page_build\",\"public\",\"pull_request\",\"pull_request_review\",\"pull_request_review_comment\",\"push\",\"registry_package\",\"release\",\"repository\",\"repository_dispatch\",\"status\",\"watch\",\"workflow_dispatch\",\"workflow_run\"]},\"pull_requests\":[]}]}",
+      "response_json": {
+        "total_count": 6,
+        "check_runs": [
+          {
+            "id": 117880420983,
+            "name": "CodeQL",
+            "node_id": "CR_kwDOVLzC488AAAAbcjh6dw",
+            "head_sha": "1c05412e2b340bbc8cd2b8a3389ae0ecce538991",
+            "external_id": "",
+            "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117880420983",
+            "html_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/runs/117880420983",
+            "details_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/runs/117880420983",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T03:49:58Z",
+            "completed_at": "2026-10-19T03:50:01Z",
+            "output": {
+              "title": "No new alerts in code changed by this pull request",
+              "summary": "[View all branch alerts](/TrillionniumFoundation/trillionnium-os-desktop/security/code-scanning?query=pr%3A197+tool%3ACodeQL+is%3Aopen).",
+              "text": null,
+              "annotations_count": 0,
+              "annotations_url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117880420983/annotations"
+            },
+            "check_suite": {
+              "id": 106212875698
+            },
+            "app": {
+              "id": 57789,
+              "client_id": "Iv1.4643383dd86f00de",
+              "slug": "github-advanced-security",
+              "node_id": "MDM6QXBwNTc3ODk=",
+              "owner": {
+                "login": "github",
+                "id": 9919,
+                "node_id": "MDEyOk9yZ2FuaXphdGlvbjk5MTk=",
+                "avatar_url": "https://avatars.githubusercontent.com/u/9919?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/github",
+                "html_url": "https://github.com/github",
+                "followers_url": "https://api.github.com/users/github/followers",
+                "following_url": "https://api.github.com/users/github/following{/other_user}",
+                "gists_url": "https://api.github.com/users/github/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/github/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/github/subscriptions",
+                "organizations_url": "https://api.github.com/users/github/orgs",
+                "repos_url": "https://api.github.com/users/github/repos",
+                "events_url": "https://api.github.com/users/github/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/github/received_events",
+                "type": "Organization",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "name": "GitHub Advanced Security",
+              "description": "",
+              "external_url": "https://github.com/features/security",
+              "html_url": "https://github.com/apps/github-advanced-security",
+              "created_at": "2020-03-17T21:25:09Z",
+              "updated_at": "2026-09-14T08:13:48Z",
+              "permissions": {
+                "actions": "read",
+                "checks": "write",
+                "contents": "read",
+                "copilot_requests": "write",
+                "metadata": "read",
+                "pull_requests": "read"
+              },
+              "events": []
+            },
+            "pull_requests": [
+              {
+                "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/pulls/197",
+                "id": 4915241621,
+                "number": 197,
+                "head": {
+                  "ref": "agents/r10-g1-cpu-owner-20261019",
+                  "sha": "1c05412e2b340bbc8cd2b8a3389ae0ecce538991",
+                  "repo": {
+                    "id": 1421656803,
+                    "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop",
+                    "name": "trillionnium-os-desktop"
+                  }
+                },
+                "base": {
+                  "ref": "main",
+                  "sha": "e15ae6a63edb5d4e7c475a001be82111d451b653",
+                  "repo": {
+                    "id": 1421656803,
+                    "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop",
+                    "name": "trillionnium-os-desktop"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": 117880228876,
+            "name": "host-evidence",
+            "node_id": "CR_kwDOVLzC488AAAAbcjWMDA",
+            "head_sha": "1c05412e2b340bbc8cd2b8a3389ae0ecce538991",
+            "external_id": "c0d31fed-0c21-541a-9b83-61409dfc2f62",
+            "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117880228876",
+            "html_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196471120/job/117880228876",
+            "details_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196471120/job/117880228876",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T03:49:09Z",
+            "completed_at": "2026-10-19T03:49:56Z",
+            "output": {
+              "title": null,
+              "summary": null,
+              "text": null,
+              "annotations_count": 1,
+              "annotations_url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117880228876/annotations"
+            },
+            "check_suite": {
+              "id": 106212710416
+            },
+            "app": {
+              "id": 15368,
+              "client_id": "Iv1.05c79e9ad1f6bdfa",
+              "slug": "github-actions",
+              "node_id": "MDM6QXBwMTUzNjg=",
+              "owner": {
+                "login": "github",
+                "id": 9919,
+                "node_id": "MDEyOk9yZ2FuaXphdGlvbjk5MTk=",
+                "avatar_url": "https://avatars.githubusercontent.com/u/9919?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/github",
+                "html_url": "https://github.com/github",
+                "followers_url": "https://api.github.com/users/github/followers",
+                "following_url": "https://api.github.com/users/github/following{/other_user}",
+                "gists_url": "https://api.github.com/users/github/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/github/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/github/subscriptions",
+                "organizations_url": "https://api.github.com/users/github/orgs",
+                "repos_url": "https://api.github.com/users/github/repos",
+                "events_url": "https://api.github.com/users/github/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/github/received_events",
+                "type": "Organization",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "name": "GitHub Actions",
+              "description": "Automate your workflow from idea to production",
+              "external_url": "https://help.github.com/en/actions",
+              "html_url": "https://github.com/apps/github-actions",
+              "created_at": "2018-07-30T09:30:17Z",
+              "updated_at": "2026-06-18T16:17:48Z",
+              "permissions": {
+                "actions": "write",
+                "administration": "read",
+                "artifact_metadata": "write",
+                "attestations": "write",
+                "checks": "write",
+                "code_quality": "write",
+                "contents": "write",
+                "copilot_requests": "write",
+                "deployments": "write",
+                "discussions": "write",
+                "drives": "write",
+                "issues": "write",
+                "merge_queues": "write",
+                "metadata": "read",
+                "models": "read",
+                "packages": "write",
+                "pages": "write",
+                "pull_requests": "write",
+                "repository_hooks": "write",
+                "repository_projects": "write",
+                "security_events": "write",
+                "statuses": "write",
+                "vulnerability_alerts": "read"
+              },
+              "events": [
+                "branch_protection_rule",
+                "check_run",
+                "check_suite",
+                "create",
+                "delete",
+                "deployment",
+                "deployment_status",
+                "discussion",
+                "discussion_comment",
+                "fork",
+                "gollum",
+                "issues",
+                "issue_comment",
+                "label",
+                "merge_group",
+                "milestone",
+                "page_build",
+                "public",
+                "pull_request",
+                "pull_request_review",
+                "pull_request_review_comment",
+                "push",
+                "registry_package",
+                "release",
+                "repository",
+                "repository_dispatch",
+                "status",
+                "watch",
+                "workflow_dispatch",
+                "workflow_run"
+              ]
+            },
+            "pull_requests": [
+              {
+                "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/pulls/197",
+                "id": 4915241621,
+                "number": 197,
+                "head": {
+                  "ref": "agents/r10-g1-cpu-owner-20261019",
+                  "sha": "1c05412e2b340bbc8cd2b8a3389ae0ecce538991",
+                  "repo": {
+                    "id": 1421656803,
+                    "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop",
+                    "name": "trillionnium-os-desktop"
+                  }
+                },
+                "base": {
+                  "ref": "main",
+                  "sha": "e15ae6a63edb5d4e7c475a001be82111d451b653",
+                  "repo": {
+                    "id": 1421656803,
+                    "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop",
+                    "name": "trillionnium-os-desktop"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": 117880228851,
+            "name": "exact-native-models",
+            "node_id": "CR_kwDOVLzC488AAAAbcjWL8w",
+            "head_sha": "1c05412e2b340bbc8cd2b8a3389ae0ecce538991",
+            "external_id": "60bfa8a5-c5fc-597f-bbe8-33d1b7f8a884",
+            "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117880228851",
+            "html_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196471043/job/117880228851",
+            "details_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196471043/job/117880228851",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T03:49:10Z",
+            "completed_at": "2026-10-19T03:50:13Z",
+            "output": {
+              "title": null,
+              "summary": null,
+              "text": null,
+              "annotations_count": 1,
+              "annotations_url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117880228851/annotations"
+            },
+            "check_suite": {
+              "id": 106212710192
+            },
+            "app": {
+              "id": 15368,
+              "client_id": "Iv1.05c79e9ad1f6bdfa",
+              "slug": "github-actions",
+              "node_id": "MDM6QXBwMTUzNjg=",
+              "owner": {
+                "login": "github",
+                "id": 9919,
+                "node_id": "MDEyOk9yZ2FuaXphdGlvbjk5MTk=",
+                "avatar_url": "https://avatars.githubusercontent.com/u/9919?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/github",
+                "html_url": "https://github.com/github",
+                "followers_url": "https://api.github.com/users/github/followers",
+                "following_url": "https://api.github.com/users/github/following{/other_user}",
+                "gists_url": "https://api.github.com/users/github/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/github/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/github/subscriptions",
+                "organizations_url": "https://api.github.com/users/github/orgs",
+                "repos_url": "https://api.github.com/users/github/repos",
+                "events_url": "https://api.github.com/users/github/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/github/received_events",
+                "type": "Organization",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "name": "GitHub Actions",
+              "description": "Automate your workflow from idea to production",
+              "external_url": "https://help.github.com/en/actions",
+              "html_url": "https://github.com/apps/github-actions",
+              "created_at": "2018-07-30T09:30:17Z",
+              "updated_at": "2026-06-18T16:17:48Z",
+              "permissions": {
+                "actions": "write",
+                "administration": "read",
+                "artifact_metadata": "write",
+                "attestations": "write",
+                "checks": "write",
+                "code_quality": "write",
+                "contents": "write",
+                "copilot_requests": "write",
+                "deployments": "write",
+                "discussions": "write",
+                "drives": "write",
+                "issues": "write",
+                "merge_queues": "write",
+                "metadata": "read",
+                "models": "read",
+                "packages": "write",
+                "pages": "write",
+                "pull_requests": "write",
+                "repository_hooks": "write",
+                "repository_projects": "write",
+                "security_events": "write",
+                "statuses": "write",
+                "vulnerability_alerts": "read"
+              },
+              "events": [
+                "branch_protection_rule",
+                "check_run",
+                "check_suite",
+                "create",
+                "delete",
+                "deployment",
+                "deployment_status",
+                "discussion",
+                "discussion_comment",
+                "fork",
+                "gollum",
+                "issues",
+                "issue_comment",
+                "label",
+                "merge_group",
+                "milestone",
+                "page_build",
+                "public",
+                "pull_request",
+                "pull_request_review",
+                "pull_request_review_comment",
+                "push",
+                "registry_package",
+                "release",
+                "repository",
+                "repository_dispatch",
+                "status",
+                "watch",
+                "workflow_dispatch",
+                "workflow_run"
+              ]
+            },
+            "pull_requests": [
+              {
+                "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/pulls/197",
+                "id": 4915241621,
+                "number": 197,
+                "head": {
+                  "ref": "agents/r10-g1-cpu-owner-20261019",
+                  "sha": "1c05412e2b340bbc8cd2b8a3389ae0ecce538991",
+                  "repo": {
+                    "id": 1421656803,
+                    "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop",
+                    "name": "trillionnium-os-desktop"
+                  }
+                },
+                "base": {
+                  "ref": "main",
+                  "sha": "e15ae6a63edb5d4e7c475a001be82111d451b653",
+                  "repo": {
+                    "id": 1421656803,
+                    "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop",
+                    "name": "trillionnium-os-desktop"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": 117880228659,
+            "name": "exact-kernel-ktest",
+            "node_id": "CR_kwDOVLzC488AAAAbcjWLMw",
+            "head_sha": "1c05412e2b340bbc8cd2b8a3389ae0ecce538991",
+            "external_id": "051d00dc-b78a-5155-9253-2a88fb551451",
+            "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117880228659",
+            "html_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196471075/job/117880228659",
+            "details_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196471075/job/117880228659",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T03:49:09Z",
+            "completed_at": "2026-10-19T03:55:04Z",
+            "output": {
+              "title": null,
+              "summary": null,
+              "text": null,
+              "annotations_count": 1,
+              "annotations_url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117880228659/annotations"
+            },
+            "check_suite": {
+              "id": 106212710272
+            },
+            "app": {
+              "id": 15368,
+              "client_id": "Iv1.05c79e9ad1f6bdfa",
+              "slug": "github-actions",
+              "node_id": "MDM6QXBwMTUzNjg=",
+              "owner": {
+                "login": "github",
+                "id": 9919,
+                "node_id": "MDEyOk9yZ2FuaXphdGlvbjk5MTk=",
+                "avatar_url": "https://avatars.githubusercontent.com/u/9919?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/github",
+                "html_url": "https://github.com/github",
+                "followers_url": "https://api.github.com/users/github/followers",
+                "following_url": "https://api.github.com/users/github/following{/other_user}",
+                "gists_url": "https://api.github.com/users/github/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/github/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/github/subscriptions",
+                "organizations_url": "https://api.github.com/users/github/orgs",
+                "repos_url": "https://api.github.com/users/github/repos",
+                "events_url": "https://api.github.com/users/github/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/github/received_events",
+                "type": "Organization",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "name": "GitHub Actions",
+              "description": "Automate your workflow from idea to production",
+              "external_url": "https://help.github.com/en/actions",
+              "html_url": "https://github.com/apps/github-actions",
+              "created_at": "2018-07-30T09:30:17Z",
+              "updated_at": "2026-06-18T16:17:48Z",
+              "permissions": {
+                "actions": "write",
+                "administration": "read",
+                "artifact_metadata": "write",
+                "attestations": "write",
+                "checks": "write",
+                "code_quality": "write",
+                "contents": "write",
+                "copilot_requests": "write",
+                "deployments": "write",
+                "discussions": "write",
+                "drives": "write",
+                "issues": "write",
+                "merge_queues": "write",
+                "metadata": "read",
+                "models": "read",
+                "packages": "write",
+                "pages": "write",
+                "pull_requests": "write",
+                "repository_hooks": "write",
+                "repository_projects": "write",
+                "security_events": "write",
+                "statuses": "write",
+                "vulnerability_alerts": "read"
+              },
+              "events": [
+                "branch_protection_rule",
+                "check_run",
+                "check_suite",
+                "create",
+                "delete",
+                "deployment",
+                "deployment_status",
+                "discussion",
+                "discussion_comment",
+                "fork",
+                "gollum",
+                "issues",
+                "issue_comment",
+                "label",
+                "merge_group",
+                "milestone",
+                "page_build",
+                "public",
+                "pull_request",
+                "pull_request_review",
+                "pull_request_review_comment",
+                "push",
+                "registry_package",
+                "release",
+                "repository",
+                "repository_dispatch",
+                "status",
+                "watch",
+                "workflow_dispatch",
+                "workflow_run"
+              ]
+            },
+            "pull_requests": [
+              {
+                "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/pulls/197",
+                "id": 4915241621,
+                "number": 197,
+                "head": {
+                  "ref": "agents/r10-g1-cpu-owner-20261019",
+                  "sha": "1c05412e2b340bbc8cd2b8a3389ae0ecce538991",
+                  "repo": {
+                    "id": 1421656803,
+                    "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop",
+                    "name": "trillionnium-os-desktop"
+                  }
+                },
+                "base": {
+                  "ref": "main",
+                  "sha": "e15ae6a63edb5d4e7c475a001be82111d451b653",
+                  "repo": {
+                    "id": 1421656803,
+                    "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop",
+                    "name": "trillionnium-os-desktop"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": 117880228265,
+            "name": "host-contracts",
+            "node_id": "CR_kwDOVLzC488AAAAbcjWJqQ",
+            "head_sha": "1c05412e2b340bbc8cd2b8a3389ae0ecce538991",
+            "external_id": "86d19bc3-7fa0-5f26-a2fe-66ca90af4976",
+            "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117880228265",
+            "html_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196471000/job/117880228265",
+            "details_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196471000/job/117880228265",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T03:49:09Z",
+            "completed_at": "2026-10-19T03:49:58Z",
+            "output": {
+              "title": null,
+              "summary": null,
+              "text": null,
+              "annotations_count": 1,
+              "annotations_url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117880228265/annotations"
+            },
+            "check_suite": {
+              "id": 106212710079
+            },
+            "app": {
+              "id": 15368,
+              "client_id": "Iv1.05c79e9ad1f6bdfa",
+              "slug": "github-actions",
+              "node_id": "MDM6QXBwMTUzNjg=",
+              "owner": {
+                "login": "github",
+                "id": 9919,
+                "node_id": "MDEyOk9yZ2FuaXphdGlvbjk5MTk=",
+                "avatar_url": "https://avatars.githubusercontent.com/u/9919?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/github",
+                "html_url": "https://github.com/github",
+                "followers_url": "https://api.github.com/users/github/followers",
+                "following_url": "https://api.github.com/users/github/following{/other_user}",
+                "gists_url": "https://api.github.com/users/github/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/github/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/github/subscriptions",
+                "organizations_url": "https://api.github.com/users/github/orgs",
+                "repos_url": "https://api.github.com/users/github/repos",
+                "events_url": "https://api.github.com/users/github/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/github/received_events",
+                "type": "Organization",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "name": "GitHub Actions",
+              "description": "Automate your workflow from idea to production",
+              "external_url": "https://help.github.com/en/actions",
+              "html_url": "https://github.com/apps/github-actions",
+              "created_at": "2018-07-30T09:30:17Z",
+              "updated_at": "2026-06-18T16:17:48Z",
+              "permissions": {
+                "actions": "write",
+                "administration": "read",
+                "artifact_metadata": "write",
+                "attestations": "write",
+                "checks": "write",
+                "code_quality": "write",
+                "contents": "write",
+                "copilot_requests": "write",
+                "deployments": "write",
+                "discussions": "write",
+                "drives": "write",
+                "issues": "write",
+                "merge_queues": "write",
+                "metadata": "read",
+                "models": "read",
+                "packages": "write",
+                "pages": "write",
+                "pull_requests": "write",
+                "repository_hooks": "write",
+                "repository_projects": "write",
+                "security_events": "write",
+                "statuses": "write",
+                "vulnerability_alerts": "read"
+              },
+              "events": [
+                "branch_protection_rule",
+                "check_run",
+                "check_suite",
+                "create",
+                "delete",
+                "deployment",
+                "deployment_status",
+                "discussion",
+                "discussion_comment",
+                "fork",
+                "gollum",
+                "issues",
+                "issue_comment",
+                "label",
+                "merge_group",
+                "milestone",
+                "page_build",
+                "public",
+                "pull_request",
+                "pull_request_review",
+                "pull_request_review_comment",
+                "push",
+                "registry_package",
+                "release",
+                "repository",
+                "repository_dispatch",
+                "status",
+                "watch",
+                "workflow_dispatch",
+                "workflow_run"
+              ]
+            },
+            "pull_requests": [
+              {
+                "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/pulls/197",
+                "id": 4915241621,
+                "number": 197,
+                "head": {
+                  "ref": "agents/r10-g1-cpu-owner-20261019",
+                  "sha": "1c05412e2b340bbc8cd2b8a3389ae0ecce538991",
+                  "repo": {
+                    "id": 1421656803,
+                    "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop",
+                    "name": "trillionnium-os-desktop"
+                  }
+                },
+                "base": {
+                  "ref": "main",
+                  "sha": "e15ae6a63edb5d4e7c475a001be82111d451b653",
+                  "repo": {
+                    "id": 1421656803,
+                    "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop",
+                    "name": "trillionnium-os-desktop"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": 117880221744,
+            "name": "Analyze (python)",
+            "node_id": "CR_kwDOVLzC488AAAAbcjVwMA",
+            "head_sha": "1c05412e2b340bbc8cd2b8a3389ae0ecce538991",
+            "external_id": "62a18a75-0ad0-57e4-9ae3-d52e532cc103",
+            "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117880221744",
+            "html_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196467803/job/117880221744",
+            "details_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39196467803/job/117880221744",
+            "status": "completed",
+            "conclusion": "success",
+            "started_at": "2026-10-19T03:49:08Z",
+            "completed_at": "2026-10-19T03:50:07Z",
+            "output": {
+              "title": null,
+              "summary": null,
+              "text": null,
+              "annotations_count": 1,
+              "annotations_url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/check-runs/117880221744/annotations"
+            },
+            "check_suite": {
+              "id": 106212702056
+            },
+            "app": {
+              "id": 15368,
+              "client_id": "Iv1.05c79e9ad1f6bdfa",
+              "slug": "github-actions",
+              "node_id": "MDM6QXBwMTUzNjg=",
+              "owner": {
+                "login": "github",
+                "id": 9919,
+                "node_id": "MDEyOk9yZ2FuaXphdGlvbjk5MTk=",
+                "avatar_url": "https://avatars.githubusercontent.com/u/9919?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/github",
+                "html_url": "https://github.com/github",
+                "followers_url": "https://api.github.com/users/github/followers",
+                "following_url": "https://api.github.com/users/github/following{/other_user}",
+                "gists_url": "https://api.github.com/users/github/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/github/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/github/subscriptions",
+                "organizations_url": "https://api.github.com/users/github/orgs",
+                "repos_url": "https://api.github.com/users/github/repos",
+                "events_url": "https://api.github.com/users/github/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/github/received_events",
+                "type": "Organization",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "name": "GitHub Actions",
+              "description": "Automate your workflow from idea to production",
+              "external_url": "https://help.github.com/en/actions",
+              "html_url": "https://github.com/apps/github-actions",
+              "created_at": "2018-07-30T09:30:17Z",
+              "updated_at": "2026-06-18T16:17:48Z",
+              "permissions": {
+                "actions": "write",
+                "administration": "read",
+                "artifact_metadata": "write",
+                "attestations": "write",
+                "checks": "write",
+                "code_quality": "write",
+                "contents": "write",
+                "copilot_requests": "write",
+                "deployments": "write",
+                "discussions": "write",
+                "drives": "write",
+                "issues": "write",
+                "merge_queues": "write",
+                "metadata": "read",
+                "models": "read",
+                "packages": "write",
+                "pages": "write",
+                "pull_requests": "write",
+                "repository_hooks": "write",
+                "repository_projects": "write",
+                "security_events": "write",
+                "statuses": "write",
+                "vulnerability_alerts": "read"
+              },
+              "events": [
+                "branch_protection_rule",
+                "check_run",
+                "check_suite",
+                "create",
+                "delete",
+                "deployment",
+                "deployment_status",
+                "discussion",
+                "discussion_comment",
+                "fork",
+                "gollum",
+                "issues",
+                "issue_comment",
+                "label",
+                "merge_group",
+                "milestone",
+                "page_build",
+                "public",
+                "pull_request",
+                "pull_request_review",
+                "pull_request_review_comment",
+                "push",
+                "registry_package",
+                "release",
+                "repository",
+                "repository_dispatch",
+                "status",
+                "watch",
+                "workflow_dispatch",
+                "workflow_run"
+              ]
+            },
+            "pull_requests": []
+          }
+        ]
+      }
+    }
+  ]
+}

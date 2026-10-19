@@ -1,0 +1,87 @@
+{
+  "schema": "r10.owner-ci-later-snapshot-copy.v1",
+  "copied_at_utc": "2026-10-19T03:15:03.350246+00:00",
+  "observed_at_utc": "2026-10-19 03:10:54 UTC",
+  "source_head": "d32e795f0d24df89fc57745f6fae70fbd0642eba",
+  "source": "/workspace/scratch/499c7902de8e/r10-evidence/owner-ci/current-status-after-g1-publication.json",
+  "destination": "/workspace/scratch/499c7902de8e/r10-g1-delivery/results/integration/2026-10-19-g1-owner/owner-ci-updates/current-status-after-g1-publication.json",
+  "bytes": 477097,
+  "sha256": "44f827e2adbf792e9cb418344f6a7d4d6c3e59e55c47fe13d41b7aa1553ec1c4",
+  "raw_source_before_and_after_and_copy_equal": true,
+  "check_count": 49,
+  "check_state_counts": {
+    "failure": 8,
+    "success": 24,
+    "skipped": 6,
+    "neutral": 1,
+    "cancelled": 9,
+    "in_progress": 1
+  },
+  "blocking_run_jobs": 37,
+  "failure_checks": [
+    {
+      "id": 117860094573,
+      "name": "CI required",
+      "completed_at": "2026-10-19T02:25:23Z",
+      "kind": "aggregate_gate"
+    },
+    {
+      "id": 117859935693,
+      "name": "Bazel / Bazel test on windows-latest for x86_64-pc-windows-msvc",
+      "completed_at": "2026-10-19T02:25:11Z",
+      "kind": "aggregate_gate"
+    },
+    {
+      "id": 117846025117,
+      "name": "Bazel / Bazel test on windows-latest for x86_64-pc-windows-msvc shard 2/4",
+      "completed_at": "2026-10-19T02:07:07Z",
+      "kind": "actual_job"
+    },
+    {
+      "id": 117846025094,
+      "name": "Bazel / Bazel test on windows-latest for x86_64-pc-windows-msvc shard 3/4",
+      "completed_at": "2026-10-19T02:20:34Z",
+      "kind": "actual_job"
+    },
+    {
+      "id": 117846025091,
+      "name": "Bazel / Bazel test on windows-latest for x86_64-pc-windows-msvc shard 1/4",
+      "completed_at": "2026-10-19T02:19:51Z",
+      "kind": "actual_job"
+    },
+    {
+      "id": 117846024963,
+      "name": "Bazel / Bazel clippy on macos-15 for aarch64-apple-darwin",
+      "completed_at": "2026-10-19T02:10:10Z",
+      "kind": "actual_job"
+    },
+    {
+      "id": 117846024935,
+      "name": "Bazel / Bazel clippy on ubuntu-24.04 for x86_64-unknown-linux-gnu",
+      "completed_at": "2026-10-19T02:01:02Z",
+      "kind": "actual_job"
+    },
+    {
+      "id": 117846024659,
+      "name": "cargo-deny / cargo-deny",
+      "completed_at": "2026-10-19T01:25:43Z",
+      "kind": "actual_job"
+    }
+  ],
+  "PR": {
+    "number": 2815,
+    "state": "open",
+    "draft": false,
+    "merged": false,
+    "mergeable_state": "blocked",
+    "base": "f8c9419df6ddeb36ff8b522a50219981fb8d9345"
+  },
+  "older_frozen_snapshots_modified": false,
+  "new_CI_or_product_runs": 0,
+  "limits": [
+    "Eight failing check objects include two aggregate gates and are not eight independent defects.",
+    "New shard 1/3 state and later cancellations do not establish a cause or substitute for missing logs.",
+    "The original 01:56 security snapshot, 02:16 root snapshot and 02:24 Bazel snapshot remain unchanged."
+  ],
+  "status": "passed_exact_append_and_snapshot_classification"
+}

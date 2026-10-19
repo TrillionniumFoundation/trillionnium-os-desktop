@@ -1,0 +1,1586 @@
+﻿2026-10-19T03:24:00.6833773Z Current runner version: '2.337.0'
+2026-10-19T03:24:00.6854984Z ##[group]Runner Image Provisioner
+2026-10-19T03:24:00.6855773Z Hosted Compute Agent
+2026-10-19T03:24:00.6856436Z Version: 20261012.601
+2026-10-19T03:24:00.6856951Z Commit: f3dc54e1fb89da6852db922499a0233137369e1d
+2026-10-19T03:24:00.6857579Z Build Date: 2026-10-12T17:48:21Z
+2026-10-19T03:24:00.6858129Z Worker ID: {2fbf9ad8-f015-4e5f-b28e-412da12eee78}
+2026-10-19T03:24:00.6858680Z Region: westus3
+2026-10-19T03:24:00.6859213Z Cloud: Azure
+2026-10-19T03:24:00.6859651Z ##[endgroup]
+2026-10-19T03:24:00.6860799Z ##[group]Operating System
+2026-10-19T03:24:00.6861356Z Ubuntu
+2026-10-19T03:24:00.6861768Z 24.04.5
+2026-10-19T03:24:00.6862269Z LTS
+2026-10-19T03:24:00.6862697Z ##[endgroup]
+2026-10-19T03:24:00.6863194Z ##[group]Runner Image
+2026-10-19T03:24:00.6863694Z Image: ubuntu-24.04
+2026-10-19T03:24:00.6864187Z Version: 20261012.334.1
+2026-10-19T03:24:00.6865267Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-19T03:24:00.6866823Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261012.334
+2026-10-19T03:24:00.6867634Z ##[endgroup]
+2026-10-19T03:24:00.6868613Z ##[group]GITHUB_TOKEN Permissions
+2026-10-19T03:24:00.6870168Z Contents: read
+2026-10-19T03:24:00.6870646Z Metadata: read
+2026-10-19T03:24:00.6871175Z ##[endgroup]
+2026-10-19T03:24:00.6872882Z Secret source: Actions
+2026-10-19T03:24:00.6873760Z Cache mode: write
+2026-10-19T03:24:00.6874331Z Prepare workflow directory
+2026-10-19T03:24:00.7140013Z Prepare all required actions
+2026-10-19T03:24:00.7197257Z Getting action download info
+2026-10-19T03:24:00.9908848Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-19T03:24:01.0715742Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-10-19T03:24:01.3224072Z Complete job name: exact-kernel-ktest
+2026-10-19T03:24:01.3914594Z ##[group]Run actions/checkout@v4
+2026-10-19T03:24:01.3915276Z with:
+2026-10-19T03:24:01.3915612Z   fetch-depth: 0
+2026-10-19T03:24:01.3916014Z   ref: 463f70e36df6571faf6db45975d433ca10b0ddf6
+2026-10-19T03:24:01.3916797Z   repository: TrillionniumFoundation/trillionnium-os-desktop
+2026-10-19T03:24:01.3920231Z   token: ***
+2026-10-19T03:24:01.3920578Z   ssh-strict: true
+2026-10-19T03:24:01.3920927Z   ssh-user: git
+2026-10-19T03:24:01.3921276Z   persist-credentials: true
+2026-10-19T03:24:01.3921666Z   clean: true
+2026-10-19T03:24:01.3922017Z   sparse-checkout-cone-mode: true
+2026-10-19T03:24:01.3922422Z   fetch-tags: false
+2026-10-19T03:24:01.3922780Z   show-progress: true
+2026-10-19T03:24:01.3923127Z   lfs: false
+2026-10-19T03:24:01.3923459Z   submodules: false
+2026-10-19T03:24:01.3923808Z   set-safe-directory: true
+2026-10-19T03:24:01.3924204Z   allow-unsafe-pr-checkout: false
+2026-10-19T03:24:01.3924798Z ##[endgroup]
+2026-10-19T03:24:01.4794174Z Syncing repository: TrillionniumFoundation/trillionnium-os-desktop
+2026-10-19T03:24:01.4795828Z ##[group]Getting Git version info
+2026-10-19T03:24:01.4796984Z Working directory is '/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop'
+2026-10-19T03:24:01.4798320Z [command]/usr/bin/git version
+2026-10-19T03:24:01.4881607Z git version 2.55.0
+2026-10-19T03:24:01.4910915Z ##[endgroup]
+2026-10-19T03:24:01.4917372Z Temporarily overriding HOME='/home/runner/work/_temp/50e24c74-9d49-429a-93f6-ee121b902ac1' before making global git config changes
+2026-10-19T03:24:01.4918454Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-19T03:24:01.4923142Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop
+2026-10-19T03:24:01.4966290Z Deleting the contents of '/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop'
+2026-10-19T03:24:01.4970790Z ##[group]Initializing the repository
+2026-10-19T03:24:01.4975254Z [command]/usr/bin/git init /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop
+2026-10-19T03:24:01.5048967Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-19T03:24:01.5050633Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-19T03:24:01.5051822Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-19T03:24:01.5052723Z hint: call:
+2026-10-19T03:24:01.5053218Z hint:
+2026-10-19T03:24:01.5053837Z hint: 	git config --global init.defaultBranch <name>
+2026-10-19T03:24:01.5054553Z hint:
+2026-10-19T03:24:01.5055223Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-19T03:24:01.5056463Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-19T03:24:01.5057392Z hint:
+2026-10-19T03:24:01.5057890Z hint: 	git branch -m <name>
+2026-10-19T03:24:01.5058457Z hint:
+2026-10-19T03:24:01.5059247Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-19T03:24:01.5060585Z Initialized empty Git repository in /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/.git/
+2026-10-19T03:24:01.5063232Z [command]/usr/bin/git remote add origin https://github.com/TrillionniumFoundation/trillionnium-os-desktop
+2026-10-19T03:24:01.5112107Z ##[endgroup]
+2026-10-19T03:24:01.5113040Z ##[group]Disabling automatic garbage collection
+2026-10-19T03:24:01.5116154Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-19T03:24:01.5146777Z ##[endgroup]
+2026-10-19T03:24:01.5147701Z ##[group]Setting up auth
+2026-10-19T03:24:01.5153688Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-19T03:24:01.5193007Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-19T03:24:01.7059057Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-19T03:24:01.7091471Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-19T03:24:01.7294843Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-19T03:24:01.7332664Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-19T03:24:01.7548888Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-19T03:24:01.7591844Z ##[endgroup]
+2026-10-19T03:24:01.7602871Z ##[group]Fetching the repository
+2026-10-19T03:24:01.7603845Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+2026-10-19T03:26:00.8752387Z From https://github.com/TrillionniumFoundation/trillionnium-os-desktop
+2026-10-19T03:26:00.8753025Z  * [new branch]        agents/A00-a01-archive-ci -> origin/agents/A00-a01-archive-ci
+2026-10-19T03:26:00.8753509Z  * [new branch]        agents/A00-a01-archive-nofollow -> origin/agents/A00-a01-archive-nofollow
+2026-10-19T03:26:00.8754018Z  * [new branch]        agents/A00-a01-archive-safety -> origin/agents/A00-a01-archive-safety
+2026-10-19T03:26:00.8754549Z  * [new branch]        agents/A00-a01-avoid-sigpipe141-build -> origin/agents/A00-a01-avoid-sigpipe141-build
+2026-10-19T03:26:00.8755132Z  * [new branch]        agents/A00-a01-boot-evidence-ci -> origin/agents/A00-a01-boot-evidence-ci
+2026-10-19T03:26:00.8755680Z  * [new branch]        agents/A00-a01-fd-evidence-archive -> origin/agents/A00-a01-fd-evidence-archive
+2026-10-19T03:26:00.8756173Z  * [new branch]        agents/A00-a02-clippy-199 -> origin/agents/A00-a02-clippy-199
+2026-10-19T03:26:00.8757088Z  * [new branch]        agents/A00-a02-clippy-chunk-parsing -> origin/agents/A00-a02-clippy-chunk-parsing
+2026-10-19T03:26:00.8758042Z  * [new branch]        agents/A00-a02-pinned-acceptance-ci -> origin/agents/A00-a02-pinned-acceptance-ci
+2026-10-19T03:26:00.8759362Z  * [new branch]        agents/A00-a02-verified-workflow-stack -> origin/agents/A00-a02-verified-workflow-stack
+2026-10-19T03:26:00.8760292Z  * [new branch]        agents/A00-a03-ancestor-revoke-fence -> origin/agents/A00-a03-ancestor-revoke-fence
+2026-10-19T03:26:00.8761140Z  * [new branch]        agents/A00-a03-canonical-hepta-k -> origin/agents/A00-a03-canonical-hepta-k
+2026-10-19T03:26:00.8762018Z  * [new branch]        agents/A00-a03-clippy-rustfmt-20261016 -> origin/agents/A00-a03-clippy-rustfmt-20261016
+2026-10-19T03:26:00.8762955Z  * [new branch]        agents/A00-a03-clock-monotonicity -> origin/agents/A00-a03-clock-monotonicity
+2026-10-19T03:26:00.8763894Z  * [new branch]        agents/A00-a03-durable-owner-authority -> origin/agents/A00-a03-durable-owner-authority
+2026-10-19T03:26:00.8764891Z  * [new branch]        agents/A00-a03-hos2-status-failclosed -> origin/agents/A00-a03-hos2-status-failclosed
+2026-10-19T03:26:00.8765633Z  * [new branch]        agents/A00-a03-k-identity-immutable -> origin/agents/A00-a03-k-identity-immutable
+2026-10-19T03:26:00.8766728Z  * [new branch]        agents/A00-a03-k-owner-consolidated -> origin/agents/A00-a03-k-owner-consolidated
+2026-10-19T03:26:00.8767343Z  * [new branch]        agents/A00-a03-loom-alloc-ci -> origin/agents/A00-a03-loom-alloc-ci
+2026-10-19T03:26:00.8768262Z  * [new branch]        agents/A00-a03-loom-allocation-ci -> origin/agents/A00-a03-loom-allocation-ci
+2026-10-19T03:26:00.8769051Z  * [new branch]        agents/A00-a03-readusage-wire-invariant -> origin/agents/A00-a03-readusage-wire-invariant
+2026-10-19T03:26:00.8769789Z  * [new branch]        agents/A00-a03-resource-domain-atomicity -> origin/agents/A00-a03-resource-domain-atomicity
+2026-10-19T03:26:00.8770611Z  * [new branch]        agents/A00-a03-status-failclosed -> origin/agents/A00-a03-status-failclosed
+2026-10-19T03:26:00.8771430Z  * [new branch]        agents/A00-a05-enotty-strict -> origin/agents/A00-a05-enotty-strict
+2026-10-19T03:26:00.8772355Z  * [new branch]        agents/A00-a05-exec-fence-correct-probe -> origin/agents/A00-a05-exec-fence-correct-probe
+2026-10-19T03:26:00.8773037Z  * [new branch]        agents/A00-a05-queryabi-ci -> origin/agents/A00-a05-queryabi-ci
+2026-10-19T03:26:00.8773845Z  * [new branch]        agents/A00-a05-queryabi-copyout-negatives -> origin/agents/A00-a05-queryabi-copyout-negatives
+2026-10-19T03:26:00.8774447Z  * [new branch]        agents/A00-a05-queryabi-errno-contract -> origin/agents/A00-a05-queryabi-errno-contract
+2026-10-19T03:26:00.8775449Z  * [new branch]        agents/A00-a05-queryabi-guest-compile-ci -> origin/agents/A00-a05-queryabi-guest-compile-ci
+2026-10-19T03:26:00.8776193Z  * [new branch]        agents/A00-a05-queryabi-guest-reply-failclosed -> origin/agents/A00-a05-queryabi-guest-reply-failclosed
+2026-10-19T03:26:00.8777234Z  * [new branch]        agents/A00-a05-queryabi-native-replay -> origin/agents/A00-a05-queryabi-native-replay
+2026-10-19T03:26:00.8778026Z  * [new branch]        agents/A00-a05-queryabi-required-markers-20261017 -> origin/agents/A00-a05-queryabi-required-markers-20261017
+2026-10-19T03:26:00.8847396Z  * [new branch]        agents/A00-a05-replay-input-no-follow -> origin/agents/A00-a05-replay-input-no-follow
+2026-10-19T03:26:00.8848610Z  * [new branch]        agents/A00-a05-sealed-qemu-inputs -> origin/agents/A00-a05-sealed-qemu-inputs
+2026-10-19T03:26:00.8849543Z  * [new branch]        agents/A00-a05-session-epoch-rebased-20261017 -> origin/agents/A00-a05-session-epoch-rebased-20261017
+2026-10-19T03:26:00.8850611Z  * [new branch]        agents/A00-a05-unique-capspace-nonce -> origin/agents/A00-a05-unique-capspace-nonce
+2026-10-19T03:26:00.8851526Z  * [new branch]        agents/A00-a05-unique-capspace-revalidated-20261017 -> origin/agents/A00-a05-unique-capspace-revalidated-20261017
+2026-10-19T03:26:00.8852449Z  * [new branch]        agents/A00-a05-unique-process-space -> origin/agents/A00-a05-unique-process-space
+2026-10-19T03:26:00.8853445Z  * [new branch]        agents/A00-a06-boundary-debt -> origin/agents/A00-a06-boundary-debt
+2026-10-19T03:26:00.8854171Z  * [new branch]        agents/A00-a06-cpustat-readonly -> origin/agents/A00-a06-cpustat-readonly
+2026-10-19T03:26:00.8855016Z  * [new branch]        agents/A00-a06-cpustat-readonly-on-latest -> origin/agents/A00-a06-cpustat-readonly-on-latest
+2026-10-19T03:26:00.8855956Z  * [new branch]        agents/A00-a06-exact-smp-evidence-20261016 -> origin/agents/A00-a06-exact-smp-evidence-20261016
+2026-10-19T03:26:00.8857184Z  * [new branch]        agents/A00-a06-final-debit-lease-consolidated -> origin/agents/A00-a06-final-debit-lease-consolidated
+2026-10-19T03:26:00.8858216Z  * [new branch]        agents/A00-a06-full-kernel-tests-20261016 -> origin/agents/A00-a06-full-kernel-tests-20261016
+2026-10-19T03:26:00.8859299Z  * [new branch]        agents/A00-a06-generated-osdk-verified-20261017 -> origin/agents/A00-a06-generated-osdk-verified-20261017
+2026-10-19T03:26:00.8860345Z  * [new branch]        agents/A00-a06-main-integration-20261017 -> origin/agents/A00-a06-main-integration-20261017
+2026-10-19T03:26:00.8861269Z  * [new branch]        agents/A00-a06-main-push-exact-qemu -> origin/agents/A00-a06-main-push-exact-qemu
+2026-10-19T03:26:00.8862097Z  * [new branch]        agents/A00-a06-main-push-gate -> origin/agents/A00-a06-main-push-gate
+2026-10-19T03:26:00.8862944Z  * [new branch]        agents/A00-a06-smp-longer-independent -> origin/agents/A00-a06-smp-longer-independent
+2026-10-19T03:26:00.8863862Z  * [new branch]        agents/A00-a06-stat-observe-verified -> origin/agents/A00-a06-stat-observe-verified
+2026-10-19T03:26:00.8864755Z  * [new branch]        agents/A00-a06-throttle-queue-safety -> origin/agents/A00-a06-throttle-queue-safety
+2026-10-19T03:26:00.8865719Z  * [new branch]        agents/A00-a08-source-recovery-20261017 -> origin/agents/A00-a08-source-recovery-20261017
+2026-10-19T03:26:00.8866861Z  * [new branch]        agents/A00-a09-evidence-guards -> origin/agents/A00-a09-evidence-guards
+2026-10-19T03:26:00.8867730Z  * [new branch]        agents/A00-a09-native-hard-timeout-regression -> origin/agents/A00-a09-native-hard-timeout-regression
+2026-10-19T03:26:00.8868702Z  * [new branch]        agents/A00-a09-native-worker-supervisor -> origin/agents/A00-a09-native-worker-supervisor
+2026-10-19T03:26:00.8869597Z  * [new branch]        agents/A00-a09-pgid-reuse-fence -> origin/agents/A00-a09-pgid-reuse-fence
+2026-10-19T03:26:00.8870378Z  * [new branch]        agents/A00-a09-reaped-pid-no-signal -> origin/agents/A00-a09-reaped-pid-no-signal
+2026-10-19T03:26:00.8871182Z  * [new branch]        agents/A00-a09-tested-supervisor-core -> origin/agents/A00-a09-tested-supervisor-core
+2026-10-19T03:26:00.8871996Z  * [new branch]        agents/A00-a09-vfio-bounded-sysfs -> origin/agents/A00-a09-vfio-bounded-sysfs
+2026-10-19T03:26:00.8872895Z  * [new branch]        agents/A00-a09-worker-group-lifecycle -> origin/agents/A00-a09-worker-group-lifecycle
+2026-10-19T03:26:00.8873810Z  * [new branch]        agents/A00-a10-hepta-observer-20261017 -> origin/agents/A00-a10-hepta-observer-20261017
+2026-10-19T03:26:00.8874566Z  * [new branch]        agents/A00-a10-host-ci  -> origin/agents/A00-a10-host-ci
+2026-10-19T03:26:00.8875335Z  * [new branch]        agents/A00-audit-remediation-20261017 -> origin/agents/A00-audit-remediation-20261017
+2026-10-19T03:26:00.8876654Z  * [new branch]        agents/A00-cold-runner-nightly-20261017 -> origin/agents/A00-cold-runner-nightly-20261017
+2026-10-19T03:26:00.8877647Z  * [new branch]        agents/A00-g0-a05-guest-replay-host -> origin/agents/A00-g0-a05-guest-replay-host
+2026-10-19T03:26:00.8878521Z  * [new branch]        agents/A00-g0-control-portable-target -> origin/agents/A00-g0-control-portable-target
+2026-10-19T03:26:00.8879363Z  * [new branch]        agents/A00-g0-edge-golden-guard -> origin/agents/A00-g0-edge-golden-guard
+2026-10-19T03:26:00.8880080Z  * [new branch]        agents/A00-g0-fmt-clippy -> origin/agents/A00-g0-fmt-clippy
+2026-10-19T03:26:00.8880907Z  * [new branch]        agents/A00-integration  -> origin/agents/A00-integration
+2026-10-19T03:26:00.8881711Z  * [new branch]        agents/A00-main-host-recheck-20261017 -> origin/agents/A00-main-host-recheck-20261017
+2026-10-19T03:26:00.8882631Z  * [new branch]        agents/A00-native-ui-r4-docs-20261017 -> origin/agents/A00-native-ui-r4-docs-20261017
+2026-10-19T03:26:00.8883500Z  * [new branch]        agents/A00-next-integration-20261017 -> origin/agents/A00-next-integration-20261017
+2026-10-19T03:26:00.8884640Z  * [new branch]        agents/A00-organ-broker-contract-security -> origin/agents/A00-organ-broker-contract-security
+2026-10-19T03:26:00.8885343Z  * [new branch]        agents/A00-r5-native-progress-docs-20261017 -> origin/agents/A00-r5-native-progress-docs-20261017
+2026-10-19T03:26:00.8885992Z  * [new branch]        agents/A00-r6-ci-completion-review-20261018 -> origin/agents/A00-r6-ci-completion-review-20261018
+2026-10-19T03:26:00.8886804Z  * [new branch]        agents/A00-r6-live-session-docs-20261018 -> origin/agents/A00-r6-live-session-docs-20261018
+2026-10-19T03:26:00.8887372Z  * [new branch]        agents/A00-r7-workspace-20261018 -> origin/agents/A00-r7-workspace-20261018
+2026-10-19T03:26:00.8887902Z  * [new branch]        agents/A00-r9-followthrough-20261018 -> origin/agents/A00-r9-followthrough-20261018
+2026-10-19T03:26:00.8888394Z  * [new branch]        agents/A01-asterinas-boot -> origin/agents/A01-asterinas-boot
+2026-10-19T03:26:00.8888864Z  * [new branch]        agents/A02-format-tests-verified -> origin/agents/A02-format-tests-verified
+2026-10-19T03:26:00.8889351Z  * [new branch]        agents/A02-hos2-wire    -> origin/agents/A02-hos2-wire
+2026-10-19T03:26:00.8889756Z  * [new branch]        agents/A02-rust-codec   -> origin/agents/A02-rust-codec
+2026-10-19T03:26:00.8890166Z  * [new branch]        agents/A03-control-core -> origin/agents/A03-control-core
+2026-10-19T03:26:00.8890757Z  * [new branch]        agents/A04-linux-hepta-baseline -> origin/agents/A04-linux-hepta-baseline
+2026-10-19T03:26:00.8891341Z  * [new branch]        agents/A05-current-main-exact-gate-20261017 -> origin/agents/A05-current-main-exact-gate-20261017
+2026-10-19T03:26:00.8891993Z  * [new branch]        agents/A05-hardened-queryabi-replay-verified -> origin/agents/A05-hardened-queryabi-replay-verified
+2026-10-19T03:26:00.8892564Z  * [new branch]        agents/A05-hos2-queryabi-smoke -> origin/agents/A05-hos2-queryabi-smoke
+2026-10-19T03:26:00.8893252Z  * [new branch]        agents/A05-native-queryabi-bootstrap -> origin/agents/A05-native-queryabi-bootstrap
+2026-10-19T03:26:00.8894186Z  * [new branch]        agents/A05-nonce-rotation-stacked-20261017 -> origin/agents/A05-nonce-rotation-stacked-20261017
+2026-10-19T03:26:00.8895126Z  * [new branch]        agents/A05-process-session-fence-20261017 -> origin/agents/A05-process-session-fence-20261017
+2026-10-19T03:26:00.8895800Z  * [new branch]        agents/A05-process-session-fence-db2593-20261017 -> origin/agents/A05-process-session-fence-db2593-20261017
+2026-10-19T03:26:00.8896592Z  * [new branch]        agents/A05-process-session-fence-main -> origin/agents/A05-process-session-fence-main
+2026-10-19T03:26:00.8897240Z  * [new branch]        agents/A05-process-session-fence-main-20261017 -> origin/agents/A05-process-session-fence-main-20261017
+2026-10-19T03:26:00.8897882Z  * [new branch]        agents/A05-process-session-fence-main-v2 -> origin/agents/A05-process-session-fence-main-v2
+2026-10-19T03:26:00.8898544Z  * [new branch]        agents/A05-process-session-fence-main2-20261017 -> origin/agents/A05-process-session-fence-main2-20261017
+2026-10-19T03:26:00.8899153Z  * [new branch]        agents/A05-queryabi-guest-evidence -> origin/agents/A05-queryabi-guest-evidence
+2026-10-19T03:26:00.8899733Z  * [new branch]        agents/A05-queryabi-nonroot-dupfd-repro -> origin/agents/A05-queryabi-nonroot-dupfd-repro
+2026-10-19T03:26:00.8900376Z  * [new branch]        agents/A05-queryabi-owner-integration-verified -> origin/agents/A05-queryabi-owner-integration-verified
+2026-10-19T03:26:00.8901122Z  * [new branch]        agents/A06-1khz-overshoot-debt -> origin/agents/A06-1khz-overshoot-debt
+2026-10-19T03:26:00.8901666Z  * [new branch]        agents/A06-1khz-quota-debt-experiment -> origin/agents/A06-1khz-quota-debt-experiment
+2026-10-19T03:26:00.8902238Z  * [new branch]        agents/A06-5khz-timer-precision-spike -> origin/agents/A06-5khz-timer-precision-spike
+2026-10-19T03:26:00.8902752Z  * [new branch]        agents/A06-cpu-bandwidth-n0 -> origin/agents/A06-cpu-bandwidth-n0
+2026-10-19T03:26:00.8903332Z  * [new branch]        agents/A06-cpustat-readonly-owner-integration -> origin/agents/A06-cpustat-readonly-owner-integration
+2026-10-19T03:26:00.8903913Z  * [new branch]        agents/A06-cross-period-charge -> origin/agents/A06-cross-period-charge
+2026-10-19T03:26:00.8904384Z  * [new branch]        agents/A06-final-accounting -> origin/agents/A06-final-accounting
+2026-10-19T03:26:00.8904942Z  * [new branch]        agents/A06-final-debit-rcu-arc-clone-20261017 -> origin/agents/A06-final-debit-rcu-arc-clone-20261017
+2026-10-19T03:26:00.8905535Z  * [new branch]        agents/A06-irq-safe-cpu-max -> origin/agents/A06-irq-safe-cpu-max
+2026-10-19T03:26:00.8906069Z  * [new branch]        agents/A06-latest-head-QEMU-independent -> origin/agents/A06-latest-head-QEMU-independent
+2026-10-19T03:26:00.8906785Z  * [new branch]        agents/A06-main-rebase  -> origin/agents/A06-main-rebase
+2026-10-19T03:26:00.8907232Z  * [new branch]        agents/A06-odd-tsc-ktest-fix -> origin/agents/A06-odd-tsc-ktest-fix
+2026-10-19T03:26:00.8907752Z  * [new branch]        agents/A06-repair-truncated-cpu-tests -> origin/agents/A06-repair-truncated-cpu-tests
+2026-10-19T03:26:00.8908493Z  * [new branch]        agents/A06-smp-exited-process-guard -> origin/agents/A06-smp-exited-process-guard
+2026-10-19T03:26:00.8909327Z  * [new branch]        agents/A06-zombie-cgroup-lease -> origin/agents/A06-zombie-cgroup-lease
+2026-10-19T03:26:00.8910524Z  * [new branch]        agents/A06-zombie-cgroup-lease-current-main-20261017 -> origin/agents/A06-zombie-cgroup-lease-current-main-20261017
+2026-10-19T03:26:00.8911832Z  * [new branch]        agents/A06-zombie-cgroup-lease-current-main-20261017-v2 -> origin/agents/A06-zombie-cgroup-lease-current-main-20261017-v2
+2026-10-19T03:26:00.8913177Z  * [new branch]        agents/A06-zombie-cgroup-lease-current-main-20261017-v3 -> origin/agents/A06-zombie-cgroup-lease-current-main-20261017-v3
+2026-10-19T03:26:00.8914265Z  * [new branch]        agents/A06-zombie-cgroup-lease-main -> origin/agents/A06-zombie-cgroup-lease-main
+2026-10-19T03:26:00.8915182Z  * [new branch]        agents/A06-zombie-cgroup-lease-main2 -> origin/agents/A06-zombie-cgroup-lease-main2
+2026-10-19T03:26:00.8916183Z  * [new branch]        agents/A06-zombie-cgroup-lease-main3 -> origin/agents/A06-zombie-cgroup-lease-main3
+2026-10-19T03:26:00.8917287Z  * [new branch]        agents/A07-r7-objective-transport-20261018 -> origin/agents/A07-r7-objective-transport-20261018
+2026-10-19T03:26:00.8918129Z  * [new branch]        agents/A08-android-compat -> origin/agents/A08-android-compat
+2026-10-19T03:26:00.8918990Z  * [new branch]        agents/A09-cuda-parent-identity-20261017 -> origin/agents/A09-cuda-parent-identity-20261017
+2026-10-19T03:26:00.8919969Z  * [new branch]        agents/A09-exclusive-evidence-20261017 -> origin/agents/A09-exclusive-evidence-20261017
+2026-10-19T03:26:00.8920761Z  * [new branch]        agents/A09-gpu-vmm      -> origin/agents/A09-gpu-vmm
+2026-10-19T03:26:00.8921537Z  * [new branch]        agents/A09-gpu-vmm-dma-alias-20261017 -> origin/agents/A09-gpu-vmm-dma-alias-20261017
+2026-10-19T03:26:00.8922327Z  * [new branch]        agents/A09-gpu-vmm-phase2 -> origin/agents/A09-gpu-vmm-phase2
+2026-10-19T03:26:00.8923124Z  * [new branch]        agents/A09-host-clippy-fmt-20261017 -> origin/agents/A09-host-clippy-fmt-20261017
+2026-10-19T03:26:00.8924212Z  * [new branch]        agents/A10-r7-console-scroll-20261018 -> origin/agents/A10-r7-console-scroll-20261018
+2026-10-19T03:26:00.8924963Z  * [new branch]        agents/A10-rust-desktop -> origin/agents/A10-rust-desktop
+2026-10-19T03:26:00.8925699Z  * [new branch]        agents/a00-a06-odd-period-ci-20261018 -> origin/agents/a00-a06-odd-period-ci-20261018
+2026-10-19T03:26:00.8926606Z  * [new branch]        agents/a02-contract-104 -> origin/agents/a02-contract-104
+2026-10-19T03:26:00.8927125Z  * [new branch]        agents/a02-contract-104-cumulative -> origin/agents/a02-contract-104-cumulative
+2026-10-19T03:26:00.8927990Z  * [new branch]        agents/a02-contract-104-db2593-final -> origin/agents/a02-contract-104-db2593-final
+2026-10-19T03:26:00.8928523Z  * [new branch]        agents/a02-contract-104-db2593e -> origin/agents/a02-contract-104-db2593e
+2026-10-19T03:26:00.8929337Z  * [new branch]        agents/a02-contract-104-e59f8b2 -> origin/agents/a02-contract-104-e59f8b2
+2026-10-19T03:26:00.8929898Z  * [new branch]        agents/organ-audit-a02-bounds -> origin/agents/organ-audit-a02-bounds
+2026-10-19T03:26:00.8930649Z  * [new branch]        agents/organ-backend-validation -> origin/agents/organ-backend-validation
+2026-10-19T03:26:00.8931262Z  * [new branch]        agents/r10-g1-cpu-owner-20261019 -> origin/agents/r10-g1-cpu-owner-20261019
+2026-10-19T03:26:00.8931968Z  * [new branch]        agents/r8-objective-desktop-20261018 -> origin/agents/r8-objective-desktop-20261018
+2026-10-19T03:26:00.8932714Z  * [new branch]        agents/r9-durable-objective-20261018 -> origin/agents/r9-durable-objective-20261018
+2026-10-19T03:26:00.8933475Z  * [new branch]        agents/r9-history-evidence-20261018 -> origin/agents/r9-history-evidence-20261018
+2026-10-19T03:26:00.8934111Z  * [new branch]        ci/a06-workflow-main    -> origin/ci/a06-workflow-main
+2026-10-19T03:26:00.8934727Z  * [new branch]        docs/audit-followthrough-evidence-20261018 -> origin/docs/audit-followthrough-evidence-20261018
+2026-10-19T03:26:00.8935809Z  * [new branch]        docs/organ-control-broker-current-main-20261017 -> origin/docs/organ-control-broker-current-main-20261017
+2026-10-19T03:26:00.8936952Z  * [new branch]        feat/hepta-rust-desktop-validated-20261018 -> origin/feat/hepta-rust-desktop-validated-20261018
+2026-10-19T03:26:00.8937591Z  * [new branch]        fix/a01-a02-a06-current-main-20261018 -> origin/fix/a01-a02-a06-current-main-20261018
+2026-10-19T03:26:00.8938228Z  * [new branch]        fix/a01-lock-preflight-failure-receipt-20261017 -> origin/fix/a01-lock-preflight-failure-receipt-20261017
+2026-10-19T03:26:00.8939202Z  * [new branch]        fix/a02-a03-audit-followthrough-20261018 -> origin/fix/a02-a03-audit-followthrough-20261018
+2026-10-19T03:26:00.8939978Z  * [new branch]        fix/a02-n0-current-main-20261018 -> origin/fix/a02-n0-current-main-20261018
+2026-10-19T03:26:00.8940760Z  * [new branch]        fix/a02-n0-history-contract-20261017 -> origin/fix/a02-n0-history-contract-20261017
+2026-10-19T03:26:00.8941435Z  * [new branch]        fix/a02-n0-semantics-20261017 -> origin/fix/a02-n0-semantics-20261017
+2026-10-19T03:26:00.8942000Z  * [new branch]        fix/a03-authenticated-history-ack-20261017 -> origin/fix/a03-authenticated-history-ack-20261017
+2026-10-19T03:26:00.8942720Z  * [new branch]        fix/a03-authenticated-history-ack-current-main-20261018 -> origin/fix/a03-authenticated-history-ack-current-main-20261018
+2026-10-19T03:26:00.8943924Z  * [new branch]        fix/a03-authenticated-history-ack-main-3551e1e-20261018 -> origin/fix/a03-authenticated-history-ack-main-3551e1e-20261018
+2026-10-19T03:26:00.8944790Z  * [new branch]        fix/a03-authenticated-history-ack-main-b7a8388-20261018 -> origin/fix/a03-authenticated-history-ack-main-b7a8388-20261018
+2026-10-19T03:26:00.8945871Z  * [new branch]        fix/a03-authenticated-history-ack-main-b7a8388-20261018-r2 -> origin/fix/a03-authenticated-history-ack-main-b7a8388-20261018-r2
+2026-10-19T03:26:00.8947062Z  * [new branch]        fix/a05-fail-closed-effect-contract-20261017 -> origin/fix/a05-fail-closed-effect-contract-20261017
+2026-10-19T03:26:00.8947722Z  * [new branch]        fix/a06-candidate-matrix-import-20261017 -> origin/fix/a06-candidate-matrix-import-20261017
+2026-10-19T03:26:00.8948883Z  * [new branch]        fix/a06-cpu-max-strict-parser-20261018 -> origin/fix/a06-cpu-max-strict-parser-20261018
+2026-10-19T03:26:00.8949772Z  * [new branch]        fix/a06-final-accounting-current-main-20261018 -> origin/fix/a06-final-accounting-current-main-20261018
+2026-10-19T03:26:00.8950559Z  * [new branch]        fix/a06-final-debit-current-main-20261017 -> origin/fix/a06-final-debit-current-main-20261017
+2026-10-19T03:26:00.8951473Z  * [new branch]        fix/a06-generated-artifact-20261017 -> origin/fix/a06-generated-artifact-20261017
+2026-10-19T03:26:00.8951973Z  * [new branch]        fix/a06-pinned-toolchain -> origin/fix/a06-pinned-toolchain
+2026-10-19T03:26:00.8952614Z  * [new branch]        fix/a06-qemu-elf-20261017 -> origin/fix/a06-qemu-elf-20261017
+2026-10-19T03:26:00.8953281Z  * [new branch]        fix/a06-zombie-final-debit-verified-20261018 -> origin/fix/a06-zombie-final-debit-verified-20261018
+2026-10-19T03:26:00.8953952Z  * [new branch]        main                    -> origin/main
+2026-10-19T03:26:00.8954554Z  * [new branch]        organ-control-broker-contract-20261017 -> origin/organ-control-broker-contract-20261017
+2026-10-19T03:26:00.8955308Z  * [new branch]        review/A01-locked-ktest-cold-runner -> origin/review/A01-locked-ktest-cold-runner
+2026-10-19T03:26:00.8957121Z [command]/usr/bin/git rev-parse --verify --quiet 463f70e36df6571faf6db45975d433ca10b0ddf6^{object}
+2026-10-19T03:26:00.8957686Z 463f70e36df6571faf6db45975d433ca10b0ddf6
+2026-10-19T03:26:00.8958635Z ##[endgroup]
+2026-10-19T03:26:00.8959098Z ##[group]Determining the checkout info
+2026-10-19T03:26:00.8959589Z ##[endgroup]
+2026-10-19T03:26:00.8959964Z [command]/usr/bin/git sparse-checkout disable
+2026-10-19T03:26:00.8960748Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-19T03:26:00.8961811Z ##[group]Checking out the ref
+2026-10-19T03:26:00.8962320Z [command]/usr/bin/git checkout --progress --force 463f70e36df6571faf6db45975d433ca10b0ddf6
+2026-10-19T03:26:01.2534064Z Note: switching to '463f70e36df6571faf6db45975d433ca10b0ddf6'.
+2026-10-19T03:26:01.2534450Z 
+2026-10-19T03:26:01.2534635Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-19T03:26:01.2535021Z changes and commit them, and you can discard any commits you make in this
+2026-10-19T03:26:01.2535476Z state without impacting any branches by switching back to a branch.
+2026-10-19T03:26:01.2535811Z 
+2026-10-19T03:26:01.2536049Z If you want to create a new branch to retain commits you create, you may
+2026-10-19T03:26:01.2536692Z do so (now or later) by using -c with the switch command. Example:
+2026-10-19T03:26:01.2536895Z 
+2026-10-19T03:26:01.2537002Z   git switch -c <new-branch-name>
+2026-10-19T03:26:01.2537154Z 
+2026-10-19T03:26:01.2537253Z Or undo this operation with:
+2026-10-19T03:26:01.2537407Z 
+2026-10-19T03:26:01.2537494Z   git switch -
+2026-10-19T03:26:01.2537625Z 
+2026-10-19T03:26:01.2537867Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-19T03:26:01.2538125Z 
+2026-10-19T03:26:01.2538335Z HEAD is now at 463f70e3 test: update G1 lock prefetch and known kernel cfg contracts
+2026-10-19T03:26:01.2539650Z ##[endgroup]
+2026-10-19T03:26:01.2579023Z [command]/usr/bin/git log -1 --format=%H
+2026-10-19T03:26:01.2604973Z 463f70e36df6571faf6db45975d433ca10b0ddf6
+2026-10-19T03:26:01.2781950Z ##[group]Run set -euo pipefail
+2026-10-19T03:26:01.2782310Z [36;1mset -euo pipefail[0m
+2026-10-19T03:26:01.2782538Z [36;1msudo apt-get update[0m
+2026-10-19T03:26:01.2782888Z [36;1msudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \[0m
+2026-10-19T03:26:01.2783367Z [36;1m  build-essential ca-certificates curl git python3 pkg-config libssl-dev \[0m
+2026-10-19T03:26:01.2783723Z [36;1m  clang lld qemu-system-x86 busybox-static[0m
+2026-10-19T03:26:01.3005929Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-19T03:26:01.3006260Z ##[endgroup]
+2026-10-19T03:26:01.4036133Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+2026-10-19T03:26:01.4489418Z Hit:2 http://azure.archive.ubuntu.com/ubuntu noble InRelease
+2026-10-19T03:26:01.4501936Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+2026-10-19T03:26:01.4531850Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+2026-10-19T03:26:01.4551995Z Get:6 https://packages.microsoft.com/ubuntu/24.04/prod noble InRelease [3600 B]
+2026-10-19T03:26:01.4580174Z Get:5 http://azure.archive.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+2026-10-19T03:26:01.5609938Z Get:7 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1397 kB]
+2026-10-19T03:26:01.5733108Z Get:8 http://azure.archive.ubuntu.com/ubuntu noble-updates/main Translation-en [308 kB]
+2026-10-19T03:26:01.5754544Z Get:9 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1704 kB]
+2026-10-19T03:26:01.5838008Z Get:10 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe Translation-en [342 kB]
+2026-10-19T03:26:01.5851636Z Get:11 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [1805 kB]
+2026-10-19T03:26:01.5944582Z Get:12 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted Translation-en [411 kB]
+2026-10-19T03:26:01.6549470Z Get:13 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [557 kB]
+2026-10-19T03:26:01.6655644Z Get:14 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [618 kB]
+2026-10-19T03:26:01.6724120Z Get:15 https://packages.microsoft.com/ubuntu/24.04/prod noble/main armhf Packages [12.4 kB]
+2026-10-19T03:26:01.7026280Z Get:16 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Packages [1144 kB]
+2026-10-19T03:26:01.7079309Z Get:17 http://azure.archive.ubuntu.com/ubuntu noble-security/main Translation-en [231 kB]
+2026-10-19T03:26:01.7109990Z Get:18 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1222 kB]
+2026-10-19T03:26:01.7165725Z Get:19 http://azure.archive.ubuntu.com/ubuntu noble-security/universe Translation-en [246 kB]
+2026-10-19T03:26:01.7641182Z Get:20 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [1713 kB]
+2026-10-19T03:26:01.7716565Z Get:21 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted Translation-en [392 kB]
+2026-10-19T03:26:08.7341553Z Fetched 12.5 MB in 1s (11.7 MB/s)
+2026-10-19T03:26:09.5439414Z Reading package lists...
+2026-10-19T03:26:09.5707890Z Reading package lists...
+2026-10-19T03:26:09.8034542Z Building dependency tree...
+2026-10-19T03:26:09.8041222Z Reading state information...
+2026-10-19T03:26:09.9912036Z ca-certificates is already the newest version (20260601~24.04.1).
+2026-10-19T03:26:09.9912703Z git is already the newest version (1:2.55.0-0ppa1~ubuntu24.04.2).
+2026-10-19T03:26:09.9913177Z git set to manually installed.
+2026-10-19T03:26:09.9913610Z python3 is already the newest version (3.12.3-0ubuntu2.1).
+2026-10-19T03:26:09.9914066Z pkg-config is already the newest version (1.8.1-2build1).
+2026-10-19T03:26:09.9914567Z libssl-dev is already the newest version (3.0.13-0ubuntu3.16).
+2026-10-19T03:26:09.9915075Z busybox-static is already the newest version (1:1.36.1-6ubuntu3.1).
+2026-10-19T03:26:09.9915528Z busybox-static set to manually installed.
+2026-10-19T03:26:09.9916636Z The following additional packages will be installed:
+2026-10-19T03:26:09.9917183Z   ipxe-qemu libbrlapi0.8 libcacard0 libcurl3t64-gnutls libcurl4t64 libdaxctl1
+2026-10-19T03:26:09.9917879Z   libfdt1 libndctl6 libpcsclite1 libpmem1 librdmacm1t64 liburing2
+2026-10-19T03:26:09.9918462Z   libusbredirparser1t64 qemu-system-common qemu-system-data seabios
+2026-10-19T03:26:09.9925185Z Suggested packages:
+2026-10-19T03:26:09.9925632Z   pcscd samba vde2
+2026-10-19T03:26:09.9925862Z Recommended packages:
+2026-10-19T03:26:09.9926132Z   qemu-utils ipxe-qemu-256k-compat-efi-roms ovmf qemu-system-gui
+2026-10-19T03:26:09.9926824Z   qemu-system-modules-spice qemu-system-modules-opengl qemu-block-extra
+2026-10-19T03:26:09.9927542Z   cpu-checker
+2026-10-19T03:26:10.0159594Z The following NEW packages will be installed:
+2026-10-19T03:26:10.0162529Z   build-essential clang ipxe-qemu libbrlapi0.8 libcacard0 libdaxctl1 libfdt1
+2026-10-19T03:26:10.0165401Z   libndctl6 libpcsclite1 libpmem1 librdmacm1t64 liburing2
+2026-10-19T03:26:10.0168969Z   libusbredirparser1t64 lld qemu-system-common qemu-system-data
+2026-10-19T03:26:10.0170118Z   qemu-system-x86 seabios
+2026-10-19T03:26:10.0174981Z The following packages will be upgraded:
+2026-10-19T03:26:10.0182188Z   curl libcurl3t64-gnutls libcurl4t64
+2026-10-19T03:26:10.0339602Z 3 upgraded, 18 newly installed, 0 to remove and 41 not upgraded.
+2026-10-19T03:26:10.0339954Z Need to get 17.3 MB of archives.
+2026-10-19T03:26:10.0340230Z After this operation, 83.9 MB of additional disk space will be used.
+2026-10-19T03:26:10.0340563Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+2026-10-19T03:26:10.1781887Z Get:2 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 build-essential amd64 12.10ubuntu1 [4928 B]
+2026-10-19T03:26:10.2429119Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 clang amd64 1:18.0-59~exp2 [5846 B]
+2026-10-19T03:26:10.3064720Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 curl amd64 8.5.0-2ubuntu10.16 [226 kB]
+2026-10-19T03:26:10.4246013Z Get:5 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 libcurl4t64 amd64 8.5.0-2ubuntu10.16 [344 kB]
+2026-10-19T03:26:10.5495750Z Get:6 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 ipxe-qemu all 1.21.1+git-20220113.fbbdc3926-0ubuntu2 [1565 kB]
+2026-10-19T03:26:10.7755558Z Get:7 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 libbrlapi0.8 amd64 6.6-4ubuntu5 [31.4 kB]
+2026-10-19T03:26:10.8395373Z Get:8 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 libpcsclite1 amd64 2.0.3-1build1 [21.4 kB]
+2026-10-19T03:26:10.9033040Z Get:9 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 libcacard0 amd64 1:2.8.0-3build4 [36.5 kB]
+2026-10-19T03:26:10.9671904Z Get:10 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 libcurl3t64-gnutls amd64 8.5.0-2ubuntu10.16 [337 kB]
+2026-10-19T03:26:11.0394098Z Get:11 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 libdaxctl1 amd64 77-2ubuntu2 [21.4 kB]
+2026-10-19T03:26:11.1030051Z Get:12 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 libndctl6 amd64 77-2ubuntu2 [62.8 kB]
+2026-10-19T03:26:11.1677539Z Get:13 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 libpmem1 amd64 1.13.1-1.1ubuntu2 [84.8 kB]
+2026-10-19T03:26:11.2328625Z Get:14 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 librdmacm1t64 amd64 50.0-2ubuntu0.2 [70.7 kB]
+2026-10-19T03:26:11.3069079Z Get:15 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 liburing2 amd64 2.5-1build1 [21.1 kB]
+2026-10-19T03:26:11.3715691Z Get:16 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 libusbredirparser1t64 amd64 0.13.0-2.1build1 [16.5 kB]
+2026-10-19T03:26:11.4363536Z Get:17 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 lld amd64 1:18.0-59~exp2 [5494 B]
+2026-10-19T03:26:11.5062474Z Get:18 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 qemu-system-common amd64 1:8.2.2+ds-0ubuntu1.18 [1255 kB]
+2026-10-19T03:26:11.9198661Z Get:19 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 qemu-system-data all 1:8.2.2+ds-0ubuntu1.18 [1796 kB]
+2026-10-19T03:26:12.0684131Z Get:20 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 libfdt1 amd64 1.7.0-2build1 [20.1 kB]
+2026-10-19T03:26:12.1330698Z Get:21 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 seabios all 1.16.3-2 [175 kB]
+2026-10-19T03:26:12.1997334Z Get:22 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 qemu-system-x86 amd64 1:8.2.2+ds-0ubuntu1.18 [11.2 MB]
+2026-10-19T03:26:12.6528029Z Fetched 17.3 MB in 2s (7206 kB/s)
+2026-10-19T03:26:12.6703970Z Selecting previously unselected package build-essential.
+2026-10-19T03:26:12.6959734Z (Reading database ... 
+2026-10-19T03:26:12.6959977Z (Reading database ... 5%
+2026-10-19T03:26:12.6960434Z (Reading database ... 10%
+2026-10-19T03:26:12.6960632Z (Reading database ... 15%
+2026-10-19T03:26:12.6960814Z (Reading database ... 20%
+2026-10-19T03:26:12.6960996Z (Reading database ... 25%
+2026-10-19T03:26:12.6961172Z (Reading database ... 30%
+2026-10-19T03:26:12.6961348Z (Reading database ... 35%
+2026-10-19T03:26:12.6961537Z (Reading database ... 40%
+2026-10-19T03:26:12.6961994Z (Reading database ... 45%
+2026-10-19T03:26:12.6962432Z (Reading database ... 50%
+2026-10-19T03:26:12.6996714Z (Reading database ... 55%
+2026-10-19T03:26:12.8403944Z (Reading database ... 60%
+2026-10-19T03:26:13.1086492Z (Reading database ... 65%
+2026-10-19T03:26:13.3145780Z (Reading database ... 70%
+2026-10-19T03:26:13.5181899Z (Reading database ... 75%
+2026-10-19T03:26:13.6601012Z (Reading database ... 80%
+2026-10-19T03:26:13.8628898Z (Reading database ... 85%
+2026-10-19T03:26:14.0217061Z (Reading database ... 90%
+2026-10-19T03:26:14.2189795Z (Reading database ... 95%
+2026-10-19T03:26:14.2190099Z (Reading database ... 100%
+2026-10-19T03:26:14.2190386Z (Reading database ... 203540 files and directories currently installed.)
+2026-10-19T03:26:14.2230690Z Preparing to unpack .../00-build-essential_12.10ubuntu1_amd64.deb ...
+2026-10-19T03:26:14.2340010Z Unpacking build-essential (12.10ubuntu1) ...
+2026-10-19T03:26:14.2512841Z Selecting previously unselected package clang.
+2026-10-19T03:26:14.2622581Z Preparing to unpack .../01-clang_1%3a18.0-59~exp2_amd64.deb ...
+2026-10-19T03:26:14.2629504Z Unpacking clang (1:18.0-59~exp2) ...
+2026-10-19T03:26:14.2922984Z Preparing to unpack .../02-curl_8.5.0-2ubuntu10.16_amd64.deb ...
+2026-10-19T03:26:14.2943096Z Unpacking curl (8.5.0-2ubuntu10.16) over (8.5.0-2ubuntu10.15) ...
+2026-10-19T03:26:14.3281020Z Preparing to unpack .../03-libcurl4t64_8.5.0-2ubuntu10.16_amd64.deb ...
+2026-10-19T03:26:14.3315486Z Unpacking libcurl4t64:amd64 (8.5.0-2ubuntu10.16) over (8.5.0-2ubuntu10.15) ...
+2026-10-19T03:26:14.3554294Z Selecting previously unselected package ipxe-qemu.
+2026-10-19T03:26:14.3666981Z Preparing to unpack .../04-ipxe-qemu_1.21.1+git-20220113.fbbdc3926-0ubuntu2_all.deb ...
+2026-10-19T03:26:14.3674248Z Unpacking ipxe-qemu (1.21.1+git-20220113.fbbdc3926-0ubuntu2) ...
+2026-10-19T03:26:14.4042784Z Selecting previously unselected package libbrlapi0.8:amd64.
+2026-10-19T03:26:14.4153829Z Preparing to unpack .../05-libbrlapi0.8_6.6-4ubuntu5_amd64.deb ...
+2026-10-19T03:26:14.4160917Z Unpacking libbrlapi0.8:amd64 (6.6-4ubuntu5) ...
+2026-10-19T03:26:14.4333957Z Selecting previously unselected package libpcsclite1:amd64.
+2026-10-19T03:26:14.4441992Z Preparing to unpack .../06-libpcsclite1_2.0.3-1build1_amd64.deb ...
+2026-10-19T03:26:14.4449023Z Unpacking libpcsclite1:amd64 (2.0.3-1build1) ...
+2026-10-19T03:26:14.4622380Z Selecting previously unselected package libcacard0:amd64.
+2026-10-19T03:26:14.4735134Z Preparing to unpack .../07-libcacard0_1%3a2.8.0-3build4_amd64.deb ...
+2026-10-19T03:26:14.4742062Z Unpacking libcacard0:amd64 (1:2.8.0-3build4) ...
+2026-10-19T03:26:14.5027464Z Preparing to unpack .../08-libcurl3t64-gnutls_8.5.0-2ubuntu10.16_amd64.deb ...
+2026-10-19T03:26:14.5047669Z Unpacking libcurl3t64-gnutls:amd64 (8.5.0-2ubuntu10.16) over (8.5.0-2ubuntu10.15) ...
+2026-10-19T03:26:14.5277004Z Selecting previously unselected package libdaxctl1:amd64.
+2026-10-19T03:26:14.5394750Z Preparing to unpack .../09-libdaxctl1_77-2ubuntu2_amd64.deb ...
+2026-10-19T03:26:14.5402434Z Unpacking libdaxctl1:amd64 (77-2ubuntu2) ...
+2026-10-19T03:26:14.5582089Z Selecting previously unselected package libndctl6:amd64.
+2026-10-19T03:26:14.5691330Z Preparing to unpack .../10-libndctl6_77-2ubuntu2_amd64.deb ...
+2026-10-19T03:26:14.5699120Z Unpacking libndctl6:amd64 (77-2ubuntu2) ...
+2026-10-19T03:26:14.5881699Z Selecting previously unselected package libpmem1:amd64.
+2026-10-19T03:26:14.5991729Z Preparing to unpack .../11-libpmem1_1.13.1-1.1ubuntu2_amd64.deb ...
+2026-10-19T03:26:14.5998240Z Unpacking libpmem1:amd64 (1.13.1-1.1ubuntu2) ...
+2026-10-19T03:26:14.6362929Z Selecting previously unselected package librdmacm1t64:amd64.
+2026-10-19T03:26:14.6473792Z Preparing to unpack .../12-librdmacm1t64_50.0-2ubuntu0.2_amd64.deb ...
+2026-10-19T03:26:14.6480521Z Unpacking librdmacm1t64:amd64 (50.0-2ubuntu0.2) ...
+2026-10-19T03:26:14.6668954Z Selecting previously unselected package liburing2:amd64.
+2026-10-19T03:26:14.6780661Z Preparing to unpack .../13-liburing2_2.5-1build1_amd64.deb ...
+2026-10-19T03:26:14.6788889Z Unpacking liburing2:amd64 (2.5-1build1) ...
+2026-10-19T03:26:14.6973127Z Selecting previously unselected package libusbredirparser1t64:amd64.
+2026-10-19T03:26:14.7087078Z Preparing to unpack .../14-libusbredirparser1t64_0.13.0-2.1build1_amd64.deb ...
+2026-10-19T03:26:14.7094239Z Unpacking libusbredirparser1t64:amd64 (0.13.0-2.1build1) ...
+2026-10-19T03:26:14.7269912Z Selecting previously unselected package lld:amd64.
+2026-10-19T03:26:14.7382713Z Preparing to unpack .../15-lld_1%3a18.0-59~exp2_amd64.deb ...
+2026-10-19T03:26:14.7388861Z Unpacking lld:amd64 (1:18.0-59~exp2) ...
+2026-10-19T03:26:14.7575832Z Selecting previously unselected package qemu-system-common.
+2026-10-19T03:26:14.7688722Z Preparing to unpack .../16-qemu-system-common_1%3a8.2.2+ds-0ubuntu1.18_amd64.deb ...
+2026-10-19T03:26:14.7696006Z Unpacking qemu-system-common (1:8.2.2+ds-0ubuntu1.18) ...
+2026-10-19T03:26:14.8545214Z Selecting previously unselected package qemu-system-data.
+2026-10-19T03:26:14.8662012Z Preparing to unpack .../17-qemu-system-data_1%3a8.2.2+ds-0ubuntu1.18_all.deb ...
+2026-10-19T03:26:14.8669502Z Unpacking qemu-system-data (1:8.2.2+ds-0ubuntu1.18) ...
+2026-10-19T03:26:14.9454672Z Selecting previously unselected package libfdt1:amd64.
+2026-10-19T03:26:14.9565766Z Preparing to unpack .../18-libfdt1_1.7.0-2build1_amd64.deb ...
+2026-10-19T03:26:14.9572724Z Unpacking libfdt1:amd64 (1.7.0-2build1) ...
+2026-10-19T03:26:14.9739131Z Selecting previously unselected package seabios.
+2026-10-19T03:26:14.9850049Z Preparing to unpack .../19-seabios_1.16.3-2_all.deb ...
+2026-10-19T03:26:14.9856778Z Unpacking seabios (1.16.3-2) ...
+2026-10-19T03:26:15.0091567Z Selecting previously unselected package qemu-system-x86.
+2026-10-19T03:26:15.0205884Z Preparing to unpack .../20-qemu-system-x86_1%3a8.2.2+ds-0ubuntu1.18_amd64.deb ...
+2026-10-19T03:26:15.0270705Z Unpacking qemu-system-x86 (1:8.2.2+ds-0ubuntu1.18) ...
+2026-10-19T03:26:15.4173069Z Setting up libcurl4t64:amd64 (8.5.0-2ubuntu10.16) ...
+2026-10-19T03:26:15.4189759Z Setting up lld:amd64 (1:18.0-59~exp2) ...
+2026-10-19T03:26:15.4203958Z Setting up libcurl3t64-gnutls:amd64 (8.5.0-2ubuntu10.16) ...
+2026-10-19T03:26:15.4217278Z Setting up libfdt1:amd64 (1.7.0-2build1) ...
+2026-10-19T03:26:15.4231321Z Setting up clang (1:18.0-59~exp2) ...
+2026-10-19T03:26:15.4414377Z Setting up libpcsclite1:amd64 (2.0.3-1build1) ...
+2026-10-19T03:26:15.4428458Z Setting up libdaxctl1:amd64 (77-2ubuntu2) ...
+2026-10-19T03:26:15.4442930Z Setting up qemu-system-data (1:8.2.2+ds-0ubuntu1.18) ...
+2026-10-19T03:26:15.4457753Z Setting up seabios (1.16.3-2) ...
+2026-10-19T03:26:15.4473103Z Setting up libusbredirparser1t64:amd64 (0.13.0-2.1build1) ...
+2026-10-19T03:26:15.4489180Z Setting up ipxe-qemu (1.21.1+git-20220113.fbbdc3926-0ubuntu2) ...
+2026-10-19T03:26:15.4504022Z Setting up libndctl6:amd64 (77-2ubuntu2) ...
+2026-10-19T03:26:15.4519419Z Setting up build-essential (12.10ubuntu1) ...
+2026-10-19T03:26:15.4532607Z Setting up librdmacm1t64:amd64 (50.0-2ubuntu0.2) ...
+2026-10-19T03:26:15.4545779Z Setting up curl (8.5.0-2ubuntu10.16) ...
+2026-10-19T03:26:15.4560416Z Setting up libbrlapi0.8:amd64 (6.6-4ubuntu5) ...
+2026-10-19T03:26:15.4574722Z Setting up liburing2:amd64 (2.5-1build1) ...
+2026-10-19T03:26:15.4588738Z Setting up libpmem1:amd64 (1.13.1-1.1ubuntu2) ...
+2026-10-19T03:26:15.4603295Z Setting up libcacard0:amd64 (1:2.8.0-3build4) ...
+2026-10-19T03:26:15.4617828Z Setting up qemu-system-common (1:8.2.2+ds-0ubuntu1.18) ...
+2026-10-19T03:26:15.5583914Z Created symlink /etc/systemd/system/multi-user.target.wants/qemu-kvm.service → /usr/lib/systemd/system/qemu-kvm.service.
+2026-10-19T03:26:15.8173748Z 
+2026-10-19T03:26:15.8174509Z Setting up qemu-system-x86 (1:8.2.2+ds-0ubuntu1.18) ...
+2026-10-19T03:26:15.8234893Z Processing triggers for hicolor-icon-theme (0.17-2) ...
+2026-10-19T03:26:16.1548507Z Processing triggers for libc-bin (2.39-0ubuntu8.9) ...
+2026-10-19T03:26:16.2862000Z Processing triggers for man-db (2.12.0-4build2) ...
+2026-10-19T03:26:16.2880689Z Not building database; man-db/auto-update is not 'true'.
+2026-10-19T03:26:16.7836990Z 
+2026-10-19T03:26:16.7837533Z Running kernel seems to be up-to-date.
+2026-10-19T03:26:16.7837765Z 
+2026-10-19T03:26:16.7837853Z Restarting services...
+2026-10-19T03:26:16.7986888Z  systemctl restart packagekit.service php8.3-fpm.service
+2026-10-19T03:26:16.9003420Z 
+2026-10-19T03:26:16.9004526Z No containers need to be restarted.
+2026-10-19T03:26:16.9004819Z 
+2026-10-19T03:26:16.9005053Z No user sessions are running outdated binaries.
+2026-10-19T03:26:16.9005384Z 
+2026-10-19T03:26:16.9005799Z No VM guests are running outdated hypervisor (qemu) binaries on this host.
+2026-10-19T03:26:17.9808219Z ##[group]Run set -euo pipefail
+2026-10-19T03:26:17.9808487Z [36;1mset -euo pipefail[0m
+2026-10-19T03:26:17.9808710Z [36;1mbash support/build/prepare-host.sh[0m
+2026-10-19T03:26:17.9867854Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-19T03:26:17.9868154Z ##[endgroup]
+2026-10-19T03:26:18.0259969Z info: syncing channel updates for nightly-2026-07-21-x86_64-unknown-linux-gnu
+2026-10-19T03:26:18.2325030Z info: latest update on 2026-07-21 for version 1.99.0-nightly (87e5904f5 2026-07-20)
+2026-10-19T03:26:18.2325499Z info: downloading 10 components
+2026-10-19T03:26:37.7984546Z 
+2026-10-19T03:26:37.8048172Z   nightly-2026-07-21-x86_64-unknown-linux-gnu installed - rustc 1.99.0-nightly (87e5904f5 2026-07-20)
+2026-10-19T03:26:37.8048716Z 
+2026-10-19T03:26:37.8104398Z Cloning into '/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/support/build/out/linux-vdso'...
+2026-10-19T03:26:38.2656654Z HEAD is now at 8af5717 Add vdso.so for arm
+2026-10-19T03:26:38.2695965Z /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/support/build/out/linux-vdso/vdso_x86_64.so: OK
+2026-10-19T03:26:38.2791636Z rustc 1.99.0-nightly (87e5904f5 2026-07-20)
+2026-10-19T03:26:38.2792082Z binary: rustc
+2026-10-19T03:26:38.2792311Z commit-hash: 87e5904f5eb6398af6b22eac2802c78934260c48
+2026-10-19T03:26:38.2792607Z commit-date: 2026-07-20
+2026-10-19T03:26:38.2792959Z host: x86_64-unknown-linux-gnu
+2026-10-19T03:26:38.2793326Z release: 1.99.0-nightly
+2026-10-19T03:26:38.2793648Z LLVM version: 22.1.8
+2026-10-19T03:26:38.2946846Z QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)
+2026-10-19T03:26:38.2947446Z Copyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers
+2026-10-19T03:26:38.2955923Z ready: support/build/kernel.sh kernel; support/build/kernel.sh run_kernel
+2026-10-19T03:26:38.2989524Z ##[group]Run set -euo pipefail
+2026-10-19T03:26:38.2989792Z [36;1mset -euo pipefail[0m
+2026-10-19T03:26:38.3005373Z [36;1mprepared="${RUNNER_TEMP}/a06-prepared-locks"[0m
+2026-10-19T03:26:38.3005937Z [36;1mpython3 -I support/build/ktest/prepare-locks.py --output-dir "$prepared"[0m
+2026-10-19T03:26:38.3006762Z [36;1mcmp "$prepared/ostd.Cargo.lock" support/build/ktest/locks/ostd.Cargo.lock[0m
+2026-10-19T03:26:38.3007407Z [36;1mcmp "$prepared/aster-core.Cargo.lock" support/build/ktest/locks/aster-core.Cargo.lock[0m
+2026-10-19T03:26:38.3062578Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-19T03:26:38.3062854Z ##[endgroup]
+2026-10-19T03:26:41.8670948Z ostd: 97 packages, sha256=bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6, no external drift
+2026-10-19T03:26:41.8671626Z aster-core: 200 packages, sha256=85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150, no external drift
+2026-10-19T03:26:41.8798029Z ##[group]Run set -euo pipefail
+2026-10-19T03:26:41.8798312Z [36;1mset -euo pipefail[0m
+2026-10-19T03:26:41.8798518Z [36;1mout="${RUNNER_TEMP}/a06-ktest"[0m
+2026-10-19T03:26:41.8798742Z [36;1mmkdir -p "${RUNNER_TEMP}"[0m
+2026-10-19T03:26:41.8799192Z [36;1mpython3 -I support/build/ktest/run.py --output "$out"[0m
+2026-10-19T03:26:41.8799467Z [36;1mtest -f "$out/result.json"[0m
+2026-10-19T03:26:41.8799693Z [36;1mpython3 - "$out/result.json" <<'PY'[0m
+2026-10-19T03:26:41.8799917Z [36;1mimport json[0m
+2026-10-19T03:26:41.8800094Z [36;1mimport sys[0m
+2026-10-19T03:26:41.8800286Z [36;1mreport = json.load(open(sys.argv[1]))[0m
+2026-10-19T03:26:41.8800537Z [36;1mif report.get("passed") is not True:[0m
+2026-10-19T03:26:41.8800812Z [36;1m    raise SystemExit("A06 ktest report is not passed")[0m
+2026-10-19T03:26:41.8801081Z [36;1mcrates = report.get("crates")[0m
+2026-10-19T03:26:41.8801371Z [36;1mif not isinstance(crates, list) or len(crates) != 2:[0m
+2026-10-19T03:26:41.8801757Z [36;1m    raise SystemExit("A06 ktest report does not contain both required crates")[0m
+2026-10-19T03:26:41.8802063Z [36;1mseen = set()[0m
+2026-10-19T03:26:41.8802242Z [36;1mfor item in crates:[0m
+2026-10-19T03:26:41.8802494Z [36;1m    if item.get("passed") is not True or not item.get("guests"):[0m
+2026-10-19T03:26:41.8802845Z [36;1m        raise SystemExit(f"A06 ktest crate is incomplete: {item!r}")[0m
+2026-10-19T03:26:41.8803194Z [36;1m    seen.update(guest.get("crate") for guest in item["guests"])[0m
+2026-10-19T03:26:41.8803487Z [36;1mif seen != {"ostd", "aster-core"}:[0m
+2026-10-19T03:26:41.8803788Z [36;1m    raise SystemExit(f"A06 ktest guest crate set is incomplete: {seen!r}")[0m
+2026-10-19T03:26:41.8804077Z [36;1mPY[0m
+2026-10-19T03:26:41.8859716Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-19T03:26:41.8859983Z env:
+2026-10-19T03:26:41.8860144Z   A01_KTEST_TIMEOUT: 300
+2026-10-19T03:26:41.8860326Z ##[endgroup]
+2026-10-19T03:29:32.2240972Z PASS: real kernel-mode tests; evidence: /home/runner/work/_temp/a06-ktest
+2026-10-19T03:29:32.2505568Z ##[group]Run set -euo pipefail
+2026-10-19T03:29:32.2505834Z [36;1mset -euo pipefail[0m
+2026-10-19T03:29:32.2506111Z [36;1mpython3 -I tests/kernel/control/run_queryabi_candidate_guest.py \[0m
+2026-10-19T03:29:32.2506657Z [36;1m  --expected-source-head "$(git rev-parse HEAD)" \[0m
+2026-10-19T03:29:32.2506971Z [36;1m  --expected-source-tree "$(git rev-parse HEAD^{tree})" \[0m
+2026-10-19T03:29:32.2507273Z [36;1m  --target-dir "${RUNNER_TEMP}/a06-target" \[0m
+2026-10-19T03:29:32.2507543Z [36;1m  --output "${RUNNER_TEMP}/a06-queryabi-candidate"[0m
+2026-10-19T03:29:32.2561141Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-19T03:29:32.2561411Z ##[endgroup]
+2026-10-19T03:31:03.1945701Z {"passed": true, "stage": "complete", "output": "/home/runner/work/_temp/a06-queryabi-candidate"}
+2026-10-19T03:31:03.2088398Z ##[group]Run set -euo pipefail
+2026-10-19T03:31:03.2088653Z [36;1mset -euo pipefail[0m
+2026-10-19T03:31:03.2088869Z [36;1mbash support/build/kernel.sh kernel[0m
+2026-10-19T03:31:03.2089200Z [36;1m# The raw Cargo ELF is not QEMU-loadable for the multiboot protocol.[0m
+2026-10-19T03:31:03.2089586Z [36;1m# OSDK's bundle step emits a .elf copy and rewrites its machine field to[0m
+2026-10-19T03:31:03.2089988Z [36;1m# EM_386 (the QEMU multiboot loader requires that marker for x86_64 guests).[0m
+2026-10-19T03:31:03.2090371Z [36;1mkernel="${CARGO_TARGET_DIR}/osdk/asterinas/asterinas-osdk-bin.elf"[0m
+2026-10-19T03:31:03.2090679Z [36;1mtest -f "$kernel" && test -x "$kernel"[0m
+2026-10-19T03:31:03.2090960Z [36;1mreadelf -h "$kernel" | grep -Eq 'Class:[[:space:]]+ELF64'[0m
+2026-10-19T03:31:03.2091295Z [36;1mreadelf -h "$kernel" | grep -Eq 'Machine:[[:space:]]+Intel 80386'[0m
+2026-10-19T03:31:03.2091631Z [36;1msha256sum "$kernel" | tee "${RUNNER_TEMP}/a06-kernel.sha256"[0m
+2026-10-19T03:31:03.2145155Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-19T03:31:03.2145416Z env:
+2026-10-19T03:31:03.2145576Z   A01_SMP: 2
+2026-10-19T03:31:03.2145772Z   A01_RUN_DIR: /home/runner/work/_temp/a06-kernel-build
+2026-10-19T03:31:03.2146039Z   CARGO_TARGET_DIR: /home/runner/work/_temp/a06-target
+2026-10-19T03:31:03.2146268Z ##[endgroup]
+2026-10-19T03:31:03.6217400Z initramfs: 1107990 bytes, sha256=86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3
+2026-10-19T03:31:03.6339058Z make: Entering directory '/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas'
+2026-10-19T03:31:03.6362038Z /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/support/build/minimal.mk:5: warning: overriding recipe for target 'initramfs'
+2026-10-19T03:31:03.6362825Z Makefile:323: warning: ignoring old recipe for target 'initramfs'
+2026-10-19T03:31:03.6363490Z /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/support/build/minimal.mk:10: warning: overriding recipe for target '/home/runner/.cargo/bin/cargo-osdk'
+2026-10-19T03:31:03.6364151Z Makefile:298: warning: ignoring old recipe for target '/home/runner/.cargo/bin/cargo-osdk'
+2026-10-19T03:31:03.6364763Z /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/support/build/minimal.mk:13: warning: overriding recipe for target 'install_osdk'
+2026-10-19T03:31:03.6365315Z Makefile:291: warning: ignoring old recipe for target 'install_osdk'
+2026-10-19T03:31:03.9115064Z warning: unstable feature specified for `-Ctarget-feature`: `ermsb`
+2026-10-19T03:31:03.9115797Z   |
+2026-10-19T03:31:03.9116256Z   = note: this feature is not stably supported; its behavior can change in the future
+2026-10-19T03:31:03.9116889Z 
+2026-10-19T03:31:03.9117052Z warning: `int-to-c-enum` (lib) generated 1 warning
+2026-10-19T03:31:03.9117563Z warning: `ostd-pod` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9118090Z warning: `id-alloc` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9118632Z warning: `ostd-test` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9119143Z warning: `align_ext` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9119685Z warning: `linux-boot-params` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9120210Z warning: `ostd` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9121557Z warning: `typeflags-util` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9122237Z warning: `component` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9122732Z warning: `aster-rights` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9123212Z warning: `osdk-heap-allocator` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9123553Z warning: `aster-util` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9124451Z warning: `aster-softirq` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9124928Z warning: `dma-pool` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9126214Z warning: `device-id` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9127982Z warning: `aster-console` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9128407Z warning: `io-util` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9128687Z warning: `jhash` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9129654Z warning: `aster-bigtcp` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9130128Z warning: `aster-block` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9130584Z warning: `aster-pci` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9132817Z warning: `aster-network` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9133351Z warning: `aster-systree` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9133850Z warning: `aster-input` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9134336Z warning: `aster-cmdline` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9134820Z warning: `aster-fuse` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9135714Z warning: `aster-framebuffer` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9136241Z warning: `aster-virtio` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9136860Z warning: `aster-device` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9137541Z warning: `aster-logger` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9138024Z warning: `cpio-decoder` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9138510Z warning: `aster-nvme` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9139030Z warning: `osdk-frame-allocator` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9139546Z warning: `aster-time` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9140000Z warning: `xarray` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9140464Z warning: `ring-buffer` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9140939Z warning: `os-control` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9141431Z warning: `logo-ascii-art` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9141939Z warning: `keyable-arc` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9142439Z warning: `sparse-id-alloc` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9142951Z warning: `aster-uart` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9148808Z warning: use of deprecated method `core::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency
+2026-10-19T03:31:03.9149839Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/process/process/mod.rs:339:14
+2026-10-19T03:31:03.9150601Z     |
+2026-10-19T03:31:03.9150968Z 339 |             .fetch_update(Ordering::AcqRel, Ordering::Acquire, |current| {
+2026-10-19T03:31:03.9151397Z     |              ^^^^^^^^^^^^
+2026-10-19T03:31:03.9151661Z     |
+2026-10-19T03:31:03.9151934Z     = note: `#[warn(deprecated)]` on by default
+2026-10-19T03:31:03.9152309Z help: replace the use of the deprecated method
+2026-10-19T03:31:03.9152644Z     |
+2026-10-19T03:31:03.9153004Z 339 -             .fetch_update(Ordering::AcqRel, Ordering::Acquire, |current| {
+2026-10-19T03:31:03.9153579Z 339 +             .try_update(Ordering::AcqRel, Ordering::Acquire, |current| {
+2026-10-19T03:31:03.9154000Z     |
+2026-10-19T03:31:03.9154123Z 
+2026-10-19T03:31:03.9154558Z warning: use of deprecated method `core::sync::atomic::Atomic::<u64>::fetch_update`: renamed to `try_update` for consistency
+2026-10-19T03:31:03.9155627Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/process/process/mod.rs:353:14
+2026-10-19T03:31:03.9156501Z     |
+2026-10-19T03:31:03.9156857Z 353 |             .fetch_update(Ordering::AcqRel, Ordering::Acquire, |current| {
+2026-10-19T03:31:03.9157302Z     |              ^^^^^^^^^^^^
+2026-10-19T03:31:03.9157573Z     |
+2026-10-19T03:31:03.9158026Z help: replace the use of the deprecated method
+2026-10-19T03:31:03.9158365Z     |
+2026-10-19T03:31:03.9158705Z 353 -             .fetch_update(Ordering::AcqRel, Ordering::Acquire, |current| {
+2026-10-19T03:31:03.9159251Z 353 +             .try_update(Ordering::AcqRel, Ordering::Acquire, |current| {
+2026-10-19T03:31:03.9159668Z     |
+2026-10-19T03:31:03.9159796Z 
+2026-10-19T03:31:03.9159965Z warning: variant `InvalidStatus` is never constructed
+2026-10-19T03:31:03.9160807Z   --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:42:5
+2026-10-19T03:31:03.9161588Z    |
+2026-10-19T03:31:03.9161807Z 24 | pub enum Error {
+2026-10-19T03:31:03.9162087Z    |          ----- variant in this enum
+2026-10-19T03:31:03.9162387Z ...
+2026-10-19T03:31:03.9162603Z 42 |     InvalidStatus,
+2026-10-19T03:31:03.9162857Z    |     ^^^^^^^^^^^^^
+2026-10-19T03:31:03.9163091Z    |
+2026-10-19T03:31:03.9163666Z    = note: `Error` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+2026-10-19T03:31:03.9164424Z    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+2026-10-19T03:31:03.9164746Z 
+2026-10-19T03:31:03.9164892Z warning: multiple variants are never constructed
+2026-10-19T03:31:03.9165724Z   --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:79:5
+2026-10-19T03:31:03.9166747Z    |
+2026-10-19T03:31:03.9166964Z 77 | pub enum Status {
+2026-10-19T03:31:03.9167245Z    |          ------ variants in this enum
+2026-10-19T03:31:03.9167574Z 78 |     Ok = 0,
+2026-10-19T03:31:03.9167826Z 79 |     InvalidInput = 1,
+2026-10-19T03:31:03.9168090Z    |     ^^^^^^^^^^^^
+2026-10-19T03:31:03.9168355Z 80 |     PermissionDenied = 2,
+2026-10-19T03:31:03.9168636Z    |     ^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9168899Z 81 |     StaleHandle = 3,
+2026-10-19T03:31:03.9169155Z    |     ^^^^^^^^^^^
+2026-10-19T03:31:03.9169395Z 82 |     Revoked = 4,
+2026-10-19T03:31:03.9169648Z    |     ^^^^^^^
+2026-10-19T03:31:03.9169903Z 83 |     Conflict = 5,
+2026-10-19T03:31:03.9170144Z    |     ^^^^^^^^
+2026-10-19T03:31:03.9170393Z 84 |     ResourceExhausted = 6,
+2026-10-19T03:31:03.9170677Z    |     ^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9170934Z 85 |     Unsupported = 7,
+2026-10-19T03:31:03.9171194Z    |     ^^^^^^^^^^^
+2026-10-19T03:31:03.9171440Z 86 |     Indeterminate = 8,
+2026-10-19T03:31:03.9171701Z    |     ^^^^^^^^^^^^^
+2026-10-19T03:31:03.9171944Z 87 |     Busy = 9,
+2026-10-19T03:31:03.9172172Z    |     ^^^^
+2026-10-19T03:31:03.9172399Z 88 |     OutOfOrder = 10,
+2026-10-19T03:31:03.9172659Z    |     ^^^^^^^^^^
+2026-10-19T03:31:03.9172889Z 89 |     Retired = 11,
+2026-10-19T03:31:03.9173125Z    |     ^^^^^^^
+2026-10-19T03:31:03.9173346Z    |
+2026-10-19T03:31:03.9173918Z    = note: `Status` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+2026-10-19T03:31:03.9174495Z 
+2026-10-19T03:31:03.9174654Z warning: associated function `from_u16` is never used
+2026-10-19T03:31:03.9175512Z   --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:97:18
+2026-10-19T03:31:03.9176289Z    |
+2026-10-19T03:31:03.9176607Z 92 | impl Status {
+2026-10-19T03:31:03.9176928Z    | ----------- associated function in this implementation
+2026-10-19T03:31:03.9177285Z ...
+2026-10-19T03:31:03.9177598Z 97 |     pub const fn from_u16(value: u16) -> Result<Self, Error> {
+2026-10-19T03:31:03.9178002Z    |                  ^^^^^^^^
+2026-10-19T03:31:03.9178175Z 
+2026-10-19T03:31:03.9178374Z warning: function `required_response_frame_len` is never used
+2026-10-19T03:31:03.9179253Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:141:14
+2026-10-19T03:31:03.9180040Z     |
+2026-10-19T03:31:03.9180585Z 141 | pub const fn required_response_frame_len(opcode: Opcode, status: Status) -> usize {
+2026-10-19T03:31:03.9181115Z     |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9181328Z 
+2026-10-19T03:31:03.9181747Z warning: associated items `new`, `encode`, `decode_response_snapshot_for`, and `ensure_response_capacity` are never used
+2026-10-19T03:31:03.9182815Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:155:18
+2026-10-19T03:31:03.9183594Z     |
+2026-10-19T03:31:03.9183814Z 154 | impl Transport {
+2026-10-19T03:31:03.9184141Z     | -------------- associated items in this implementation
+2026-10-19T03:31:03.9184503Z 155 |     pub const fn new(
+2026-10-19T03:31:03.9184773Z     |                  ^^^
+2026-10-19T03:31:03.9185026Z ...
+2026-10-19T03:31:03.9185373Z 188 |     pub fn encode(&self, out: &mut [u8]) -> Result<usize, Error> {
+2026-10-19T03:31:03.9185765Z     |            ^^^^^^
+2026-10-19T03:31:03.9186000Z ...
+2026-10-19T03:31:03.9186258Z 263 |     pub fn decode_response_snapshot_for(
+2026-10-19T03:31:03.9186736Z     |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9187042Z ...
+2026-10-19T03:31:03.9187499Z 286 |     pub fn ensure_response_capacity(&self, opcode: Opcode, _status: Status) -> Result<(), Error> {
+2026-10-19T03:31:03.9188066Z     |            ^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9188444Z 
+2026-10-19T03:31:03.9188796Z warning: variants `Reserved`, `Terminal`, `Retired`, `NotSeen`, and `HistoryLost` are never constructed
+2026-10-19T03:31:03.9189876Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:381:5
+2026-10-19T03:31:03.9190726Z     |
+2026-10-19T03:31:03.9190961Z 380 | pub enum DeliveryState {
+2026-10-19T03:31:03.9191282Z     |          ------------- variants in this enum
+2026-10-19T03:31:03.9191645Z 381 |     Reserved = 0,
+2026-10-19T03:31:03.9191904Z     |     ^^^^^^^^
+2026-10-19T03:31:03.9192283Z 382 |     Terminal = 1,
+2026-10-19T03:31:03.9192880Z     |     ^^^^^^^^
+2026-10-19T03:31:03.9193241Z 383 |     Retired = 2,
+2026-10-19T03:31:03.9193589Z     |     ^^^^^^^
+2026-10-19T03:31:03.9194015Z 384 |     NotSeen = 3,
+2026-10-19T03:31:03.9194380Z     |     ^^^^^^^
+2026-10-19T03:31:03.9194805Z 385 |     HistoryLost = 4,
+2026-10-19T03:31:03.9195223Z     |     ^^^^^^^^^^^
+2026-10-19T03:31:03.9195602Z     |
+2026-10-19T03:31:03.9252078Z     = note: `DeliveryState` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+2026-10-19T03:31:03.9252732Z 
+2026-10-19T03:31:03.9252911Z warning: associated function `from_u16` is never used
+2026-10-19T03:31:03.9253694Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:392:18
+2026-10-19T03:31:03.9254400Z     |
+2026-10-19T03:31:03.9254610Z 388 | impl DeliveryState {
+2026-10-19T03:31:03.9254954Z     | ------------------ associated function in this implementation
+2026-10-19T03:31:03.9255346Z ...
+2026-10-19T03:31:03.9255612Z 392 |     pub const fn from_u16(v: u16) -> Result<Self, Error> {
+2026-10-19T03:31:03.9255962Z     |                  ^^^^^^^^
+2026-10-19T03:31:03.9256129Z 
+2026-10-19T03:31:03.9256626Z warning: variants `Empty`, `ReadUsage`, `InstallBudget`, `QueryDelivery`, and `RetireThrough` are never constructed
+2026-10-19T03:31:03.9257756Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:425:5
+2026-10-19T03:31:03.9258515Z     |
+2026-10-19T03:31:03.9258748Z 423 | pub enum ResponsePayload {
+2026-10-19T03:31:03.9259060Z     |          --------------- variants in this enum
+2026-10-19T03:31:03.9259439Z 424 |     /// Error responses carry no payload on the wire.
+2026-10-19T03:31:03.9259804Z 425 |     Empty,
+2026-10-19T03:31:03.9260010Z     |     ^^^^^
+2026-10-19T03:31:03.9260239Z 426 |     QueryAbi(QueryAbiResponse),
+2026-10-19T03:31:03.9260754Z 427 |     ReadUsage(ReadUsageResponse),
+2026-10-19T03:31:03.9261062Z     |     ^^^^^^^^^
+2026-10-19T03:31:03.9261323Z 428 |     InstallBudget(InstallBudgetResponse),
+2026-10-19T03:31:03.9261633Z     |     ^^^^^^^^^^^^^
+2026-10-19T03:31:03.9261898Z 429 |     QueryDelivery(QueryDeliveryResponse),
+2026-10-19T03:31:03.9262215Z     |     ^^^^^^^^^^^^^
+2026-10-19T03:31:03.9262501Z 430 |     RetireThrough(RetireThroughResponse),
+2026-10-19T03:31:03.9262804Z     |     ^^^^^^^^^^^^^
+2026-10-19T03:31:03.9263019Z     |
+2026-10-19T03:31:03.9263575Z     = note: `ResponsePayload` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+2026-10-19T03:31:03.9264128Z 
+2026-10-19T03:31:03.9264261Z warning: function `parse_request` is never used
+2026-10-19T03:31:03.9265018Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:513:8
+2026-10-19T03:31:03.9265714Z     |
+2026-10-19T03:31:03.9266007Z 513 | pub fn parse_request(bytes: &[u8]) -> Result<Request, Error> {
+2026-10-19T03:31:03.9266530Z     |        ^^^^^^^^^^^^^
+2026-10-19T03:31:03.9266690Z 
+2026-10-19T03:31:03.9266820Z warning: function `encode_request` is never used
+2026-10-19T03:31:03.9267550Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:517:8
+2026-10-19T03:31:03.9268402Z     |
+2026-10-19T03:31:03.9268759Z 517 | pub fn encode_request(request: &Request, out: &mut [u8]) -> Result<usize, Error> {
+2026-10-19T03:31:03.9269201Z     |        ^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9269351Z 
+2026-10-19T03:31:03.9269487Z warning: function `decode_response` is never used
+2026-10-19T03:31:03.9270237Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:544:8
+2026-10-19T03:31:03.9270942Z     |
+2026-10-19T03:31:03.9271241Z 544 | pub fn decode_response(bytes: &[u8]) -> Result<Response, Error> {
+2026-10-19T03:31:03.9271620Z     |        ^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9271779Z 
+2026-10-19T03:31:03.9271930Z warning: function `declared_response_len` is never used
+2026-10-19T03:31:03.9272684Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:636:8
+2026-10-19T03:31:03.9273467Z     |
+2026-10-19T03:31:03.9273816Z 636 | pub fn declared_response_len(bytes: &[u8]) -> Result<usize, Error> {
+2026-10-19T03:31:03.9274265Z     |        ^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9274462Z 
+2026-10-19T03:31:03.9274649Z warning: function `decode_response_prefix` is never used
+2026-10-19T03:31:03.9275535Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:657:8
+2026-10-19T03:31:03.9276271Z     |
+2026-10-19T03:31:03.9276774Z 657 | pub fn decode_response_prefix(bytes: &[u8]) -> Result<(Response, usize), Error> {
+2026-10-19T03:31:03.9277243Z     |        ^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9277428Z 
+2026-10-19T03:31:03.9277605Z warning: function `decode_response_prefix_for` is never used
+2026-10-19T03:31:03.9278418Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:664:8
+2026-10-19T03:31:03.9279132Z     |
+2026-10-19T03:31:03.9279355Z 664 | pub fn decode_response_prefix_for(
+2026-10-19T03:31:03.9279644Z     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9279831Z 
+2026-10-19T03:31:03.9279974Z warning: function `decode_response_for` is never used
+2026-10-19T03:31:03.9280774Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:674:8
+2026-10-19T03:31:03.9281476Z     |
+2026-10-19T03:31:03.9281873Z 674 | pub fn decode_response_for(bytes: &[u8], request: &Request) -> Result<Response, Error> {
+2026-10-19T03:31:03.9282483Z     |        ^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9282651Z 
+2026-10-19T03:31:03.9282791Z warning: function `parse_response` is never used
+2026-10-19T03:31:03.9283560Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:681:8
+2026-10-19T03:31:03.9284280Z     |
+2026-10-19T03:31:03.9284596Z 681 | pub fn parse_response(bytes: &[u8]) -> Result<Response, Error> {
+2026-10-19T03:31:03.9284974Z     |        ^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9285143Z 
+2026-10-19T03:31:03.9285333Z warning: associated items `decode` and `encode` are never used
+2026-10-19T03:31:03.9286159Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:726:12
+2026-10-19T03:31:03.9286959Z     |
+2026-10-19T03:31:03.9287147Z 725 | impl Request {
+2026-10-19T03:31:03.9287424Z     | ------------ associated items in this implementation
+2026-10-19T03:31:03.9287816Z 726 |     pub fn decode(bytes: &[u8]) -> Result<Self, Error> {
+2026-10-19T03:31:03.9288139Z     |            ^^^^^^
+2026-10-19T03:31:03.9288352Z ...
+2026-10-19T03:31:03.9288636Z 729 |     pub fn encode(&self, out: &mut [u8]) -> Result<usize, Error> {
+2026-10-19T03:31:03.9288985Z     |            ^^^^^^
+2026-10-19T03:31:03.9289124Z 
+2026-10-19T03:31:03.9289546Z warning: associated items `decode`, `encode`, `matches_request`, and `validate_for` are never used
+2026-10-19T03:31:03.9290419Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:735:12
+2026-10-19T03:31:03.9291087Z     |
+2026-10-19T03:31:03.9291286Z 734 | impl Response {
+2026-10-19T03:31:03.9291570Z     | ------------- associated items in this implementation
+2026-10-19T03:31:03.9291965Z 735 |     pub fn decode(bytes: &[u8]) -> Result<Self, Error> {
+2026-10-19T03:31:03.9292302Z     |            ^^^^^^
+2026-10-19T03:31:03.9292522Z ...
+2026-10-19T03:31:03.9292810Z 738 |     pub fn encode(&self, out: &mut [u8]) -> Result<usize, Error> {
+2026-10-19T03:31:03.9293182Z     |            ^^^^^^
+2026-10-19T03:31:03.9293402Z ...
+2026-10-19T03:31:03.9293676Z 743 |     pub fn matches_request(&self, request: &Request) -> bool {
+2026-10-19T03:31:03.9294041Z     |            ^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9294277Z ...
+2026-10-19T03:31:03.9294601Z 748 |     pub fn validate_for(&self, request: &Request) -> Result<(), Error> {
+2026-10-19T03:31:03.9295058Z     |            ^^^^^^^^^^^^
+2026-10-19T03:31:03.9295248Z 
+2026-10-19T03:31:03.9295437Z warning: function `install_budget_request_id` is never used
+2026-10-19T03:31:03.9296450Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:843:8
+2026-10-19T03:31:03.9297266Z     |
+2026-10-19T03:31:03.9297600Z 843 | pub fn install_budget_request_id(sequence: u64) -> Result<[u8; 16], Error> {
+2026-10-19T03:31:03.9298022Z     |        ^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9298201Z 
+2026-10-19T03:31:03.9298364Z warning: function `install_budget_sequence` is never used
+2026-10-19T03:31:03.9299132Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:853:8
+2026-10-19T03:31:03.9299854Z     |
+2026-10-19T03:31:03.9300183Z 853 | pub fn install_budget_sequence(id: &[u8; 16]) -> Result<u64, Error> {
+2026-10-19T03:31:03.9300657Z     |        ^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9300837Z 
+2026-10-19T03:31:03.9300973Z warning: function `validate_request` is never used
+2026-10-19T03:31:03.9301694Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:873:4
+2026-10-19T03:31:03.9302295Z     |
+2026-10-19T03:31:03.9302509Z 873 | fn validate_request(request: &Request) -> Result<(), Error> {
+2026-10-19T03:31:03.9302777Z     |    ^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9303036Z 
+2026-10-19T03:31:03.9303145Z warning: function `request_payload_len` is never used
+2026-10-19T03:31:03.9303658Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:918:4
+2026-10-19T03:31:03.9304120Z     |
+2026-10-19T03:31:03.9304330Z 918 | fn request_payload_len(payload: &RequestPayload) -> usize {
+2026-10-19T03:31:03.9304609Z     |    ^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9304724Z 
+2026-10-19T03:31:03.9304840Z warning: function `encode_request_payload` is never used
+2026-10-19T03:31:03.9305369Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:926:4
+2026-10-19T03:31:03.9305847Z     |
+2026-10-19T03:31:03.9306084Z 926 | fn encode_request_payload(payload: &RequestPayload, out: &mut [u8]) {
+2026-10-19T03:31:03.9306543Z     |    ^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9306668Z 
+2026-10-19T03:31:03.9306791Z warning: function `parse_read_usage_response` is never used
+2026-10-19T03:31:03.9307321Z     --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:1035:4
+2026-10-19T03:31:03.9307796Z      |
+2026-10-19T03:31:03.9308059Z 1035 | fn parse_read_usage_response(p: &[u8]) -> Result<ReadUsageResponse, Error> {
+2026-10-19T03:31:03.9308488Z      |    ^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9308612Z 
+2026-10-19T03:31:03.9308732Z warning: function `parse_install_response` is never used
+2026-10-19T03:31:03.9309252Z     --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:1070:4
+2026-10-19T03:31:03.9309714Z      |
+2026-10-19T03:31:03.9309961Z 1070 | fn parse_install_response(p: &[u8]) -> Result<InstallBudgetResponse, Error> {
+2026-10-19T03:31:03.9310261Z      |    ^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9310379Z 
+2026-10-19T03:31:03.9310510Z warning: function `parse_query_delivery_response` is never used
+2026-10-19T03:31:03.9311035Z     --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:1081:4
+2026-10-19T03:31:03.9311491Z      |
+2026-10-19T03:31:03.9311748Z 1081 | fn parse_query_delivery_response(p: &[u8]) -> Result<QueryDeliveryResponse, Error> {
+2026-10-19T03:31:03.9312063Z      |    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9312193Z 
+2026-10-19T03:31:03.9312300Z warning: function `parse_retire_response` is never used
+2026-10-19T03:31:03.9312798Z     --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:1156:4
+2026-10-19T03:31:03.9313253Z      |
+2026-10-19T03:31:03.9313491Z 1156 | fn parse_retire_response(p: &[u8]) -> Result<RetireThroughResponse, Error> {
+2026-10-19T03:31:03.9313785Z      |    ^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9313897Z 
+2026-10-19T03:31:03.9313980Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9314457Z  --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:8:1
+2026-10-19T03:31:03.9314910Z   |
+2026-10-19T03:31:03.9315076Z 8 | pub const HOS2_MAGIC: [u8; 4] = *b"HOS2";
+2026-10-19T03:31:03.9315293Z   | ---^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9315474Z   | |
+2026-10-19T03:31:03.9315668Z   | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9315906Z   |
+2026-10-19T03:31:03.9316095Z   = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9316530Z   = note: requested on the command line with `-W unreachable-pub`
+2026-10-19T03:31:03.9316724Z 
+2026-10-19T03:31:03.9316805Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9317250Z  --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:9:1
+2026-10-19T03:31:03.9317692Z   |
+2026-10-19T03:31:03.9317961Z 9 | pub const HOSR_MAGIC: [u8; 4] = *b"HOSR";
+2026-10-19T03:31:03.9318179Z   | ---^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9318356Z   | |
+2026-10-19T03:31:03.9318547Z   | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9318777Z   |
+2026-10-19T03:31:03.9318953Z   = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9319134Z 
+2026-10-19T03:31:03.9319207Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9319659Z   --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:10:1
+2026-10-19T03:31:03.9320113Z    |
+2026-10-19T03:31:03.9320263Z 10 | pub const HOS2_MAJOR: u16 = 2;
+2026-10-19T03:31:03.9320457Z    | ---^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9320630Z    | |
+2026-10-19T03:31:03.9320821Z    | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9321064Z    |
+2026-10-19T03:31:03.9321248Z    = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9321418Z 
+2026-10-19T03:31:03.9321490Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9321927Z   --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:11:1
+2026-10-19T03:31:03.9322378Z    |
+2026-10-19T03:31:03.9322521Z 11 | pub const HOS2_MINOR: u16 = 0;
+2026-10-19T03:31:03.9322839Z    | ---^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9323008Z    | |
+2026-10-19T03:31:03.9323191Z    | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9323419Z    |
+2026-10-19T03:31:03.9323592Z    = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9323758Z 
+2026-10-19T03:31:03.9323828Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9324259Z   --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:12:1
+2026-10-19T03:31:03.9324699Z    |
+2026-10-19T03:31:03.9324861Z 12 | pub const HEADER_LEN: usize = 64;
+2026-10-19T03:31:03.9325060Z    | ---^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9325236Z    | |
+2026-10-19T03:31:03.9325414Z    | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9325637Z    |
+2026-10-19T03:31:03.9325810Z    = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9325978Z 
+2026-10-19T03:31:03.9326050Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9326618Z   --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:13:1
+2026-10-19T03:31:03.9327207Z    |
+2026-10-19T03:31:03.9327424Z 13 | pub const TRANSPORT_LEN: usize = 32;
+2026-10-19T03:31:03.9327730Z    | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9327990Z    | |
+2026-10-19T03:31:03.9328267Z    | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9328522Z    |
+2026-10-19T03:31:03.9328717Z    = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9328900Z 
+2026-10-19T03:31:03.9328974Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9329432Z   --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:14:1
+2026-10-19T03:31:03.9329884Z    |
+2026-10-19T03:31:03.9330099Z 14 | pub const MAX_PAYLOAD: usize = 65_536;
+2026-10-19T03:31:03.9330402Z    | ---^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9330581Z    | |
+2026-10-19T03:31:03.9330769Z    | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9331000Z    |
+2026-10-19T03:31:03.9331208Z    = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9331376Z 
+2026-10-19T03:31:03.9331454Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9331900Z   --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:15:1
+2026-10-19T03:31:03.9332349Z    |
+2026-10-19T03:31:03.9332675Z 15 | pub const MAX_FRAME: usize = HEADER_LEN + MAX_PAYLOAD;
+2026-10-19T03:31:03.9332924Z    | ---^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9333100Z    | |
+2026-10-19T03:31:03.9333284Z    | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9333511Z    |
+2026-10-19T03:31:03.9333690Z    = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9333861Z 
+2026-10-19T03:31:03.9333936Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9334389Z   --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:16:1
+2026-10-19T03:31:03.9334840Z    |
+2026-10-19T03:31:03.9335003Z 16 | pub const CPU_PERIOD_NS: u64 = 100_000_000;
+2026-10-19T03:31:03.9335218Z    | ---^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9335395Z    | |
+2026-10-19T03:31:03.9335579Z    | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9335803Z    |
+2026-10-19T03:31:03.9335980Z    = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9336145Z 
+2026-10-19T03:31:03.9336221Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9336833Z   --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:24:1
+2026-10-19T03:31:03.9337289Z    |
+2026-10-19T03:31:03.9337537Z 24 | pub enum Error {
+2026-10-19T03:31:03.9337703Z    | ---^^^^^^^^^^^
+2026-10-19T03:31:03.9337855Z    | |
+2026-10-19T03:31:03.9338038Z    | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9338265Z    |
+2026-10-19T03:31:03.9338437Z    = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9338600Z 
+2026-10-19T03:31:03.9338675Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9339108Z   --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:50:1
+2026-10-19T03:31:03.9339550Z    |
+2026-10-19T03:31:03.9339694Z 50 | pub enum Opcode {
+2026-10-19T03:31:03.9339861Z    | ---^^^^^^^^^^^^
+2026-10-19T03:31:03.9340015Z    | |
+2026-10-19T03:31:03.9340196Z    | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9340437Z    |
+2026-10-19T03:31:03.9340624Z    = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9340797Z 
+2026-10-19T03:31:03.9340876Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9341331Z   --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:59:5
+2026-10-19T03:31:03.9341784Z    |
+2026-10-19T03:31:03.9341942Z 59 |     pub const fn as_u16(self) -> u16 {
+2026-10-19T03:31:03.9342157Z    |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9342350Z    |     |
+2026-10-19T03:31:03.9342549Z    |     help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9342734Z 
+2026-10-19T03:31:03.9342810Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9343255Z   --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:63:5
+2026-10-19T03:31:03.9343702Z    |
+2026-10-19T03:31:03.9343898Z 63 |     pub const fn from_u16(value: u16) -> Result<Self, Error> {
+2026-10-19T03:31:03.9344170Z    |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9344383Z    |     |
+2026-10-19T03:31:03.9344574Z    |     help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9344751Z 
+2026-10-19T03:31:03.9344824Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9345257Z   --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:77:1
+2026-10-19T03:31:03.9345712Z    |
+2026-10-19T03:31:03.9345851Z 77 | pub enum Status {
+2026-10-19T03:31:03.9346015Z    | ---^^^^^^^^^^^^
+2026-10-19T03:31:03.9346171Z    | |
+2026-10-19T03:31:03.9346596Z    | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9346836Z    |
+2026-10-19T03:31:03.9347018Z    = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9347190Z 
+2026-10-19T03:31:03.9347262Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9347709Z   --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:93:5
+2026-10-19T03:31:03.9348162Z    |
+2026-10-19T03:31:03.9348318Z 93 |     pub const fn as_u16(self) -> u16 {
+2026-10-19T03:31:03.9348528Z    |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9348713Z    |     |
+2026-10-19T03:31:03.9348902Z    |     help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9349080Z 
+2026-10-19T03:31:03.9349151Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9349588Z   --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:97:5
+2026-10-19T03:31:03.9350161Z    |
+2026-10-19T03:31:03.9350455Z 97 |     pub const fn from_u16(value: u16) -> Result<Self, Error> {
+2026-10-19T03:31:03.9350833Z    |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9351051Z    |     |
+2026-10-19T03:31:03.9351249Z    |     help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9351492Z 
+2026-10-19T03:31:03.9351706Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9352170Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:117:1
+2026-10-19T03:31:03.9352635Z     |
+2026-10-19T03:31:03.9352848Z 117 | pub const fn response_payload_len(opcode: Opcode) -> usize {
+2026-10-19T03:31:03.9353125Z     | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9353337Z     | |
+2026-10-19T03:31:03.9353535Z     | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9353784Z     |
+2026-10-19T03:31:03.9353975Z     = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9354147Z 
+2026-10-19T03:31:03.9354224Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9354676Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:131:1
+2026-10-19T03:31:03.9355127Z     |
+2026-10-19T03:31:03.9355363Z 131 | pub const fn response_frame_len(opcode: Opcode, status: Status) -> usize {
+2026-10-19T03:31:03.9355683Z     | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9355909Z     | |
+2026-10-19T03:31:03.9356101Z     | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9356488Z     |
+2026-10-19T03:31:03.9356681Z     = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9356870Z 
+2026-10-19T03:31:03.9356952Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9357424Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:141:1
+2026-10-19T03:31:03.9357887Z     |
+2026-10-19T03:31:03.9358148Z 141 | pub const fn required_response_frame_len(opcode: Opcode, status: Status) -> usize {
+2026-10-19T03:31:03.9358495Z     | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9358734Z     | |
+2026-10-19T03:31:03.9358929Z     | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9359158Z     |
+2026-10-19T03:31:03.9359338Z     = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9359501Z 
+2026-10-19T03:31:03.9359580Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9360030Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:146:1
+2026-10-19T03:31:03.9360482Z     |
+2026-10-19T03:31:03.9360635Z 146 | pub struct Transport {
+2026-10-19T03:31:03.9360816Z     | ---^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9361092Z     | |
+2026-10-19T03:31:03.9361284Z     | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9361516Z     |
+2026-10-19T03:31:03.9361696Z     = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9361860Z 
+2026-10-19T03:31:03.9361937Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9362383Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:155:5
+2026-10-19T03:31:03.9362829Z     |
+2026-10-19T03:31:03.9362973Z 155 |       pub const fn new(
+2026-10-19T03:31:03.9363155Z     |       ^--
+2026-10-19T03:31:03.9363308Z     |       |
+2026-10-19T03:31:03.9363518Z     |  _____help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9363768Z     | |
+2026-10-19T03:31:03.9363921Z 156 | |         request_addr: u64,
+2026-10-19T03:31:03.9364119Z 157 | |         response_addr: u64,
+2026-10-19T03:31:03.9364326Z 158 | |         request_bytes: u32,
+2026-10-19T03:31:03.9364523Z 159 | |         response_capacity: u32,
+2026-10-19T03:31:03.9364723Z 160 | |     ) -> Self {
+2026-10-19T03:31:03.9364899Z     | |_____________^
+2026-10-19T03:31:03.9364998Z 
+2026-10-19T03:31:03.9365076Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9365529Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:170:5
+2026-10-19T03:31:03.9366143Z     |
+2026-10-19T03:31:03.9366504Z 170 |     pub fn decode(bytes: &[u8]) -> Result<Self, Error> {
+2026-10-19T03:31:03.9366772Z     |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9366984Z     |     |
+2026-10-19T03:31:03.9367193Z     |     help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9367374Z 
+2026-10-19T03:31:03.9367455Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9367917Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:188:5
+2026-10-19T03:31:03.9368442Z     |
+2026-10-19T03:31:03.9368698Z 188 |     pub fn encode(&self, out: &mut [u8]) -> Result<usize, Error> {
+2026-10-19T03:31:03.9368983Z     |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9369199Z     |     |
+2026-10-19T03:31:03.9369394Z     |     help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9369581Z 
+2026-10-19T03:31:03.9369654Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9370105Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:205:5
+2026-10-19T03:31:03.9370558Z     |
+2026-10-19T03:31:03.9370735Z 205 |     pub fn validate(&self) -> Result<(), Error> {
+2026-10-19T03:31:03.9370977Z     |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9371177Z     |     |
+2026-10-19T03:31:03.9371370Z     |     help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9371547Z 
+2026-10-19T03:31:03.9371618Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9372056Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:240:5
+2026-10-19T03:31:03.9372506Z     |
+2026-10-19T03:31:03.9372762Z 240 |     pub fn decode_request_snapshot(&self, snapshot: &[u8]) -> Result<Request, Error> {
+2026-10-19T03:31:03.9373122Z     |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9373363Z     |     |
+2026-10-19T03:31:03.9373567Z     |     help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9373750Z 
+2026-10-19T03:31:03.9373828Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9374289Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:263:5
+2026-10-19T03:31:03.9374751Z     |
+2026-10-19T03:31:03.9375039Z 263 |       pub fn decode_response_snapshot_for(
+2026-10-19T03:31:03.9375267Z     |       ^--
+2026-10-19T03:31:03.9375420Z     |       |
+2026-10-19T03:31:03.9375636Z     |  _____help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9375899Z     | |
+2026-10-19T03:31:03.9376048Z 264 | |         &self,
+2026-10-19T03:31:03.9376225Z 265 | |         snapshot: &[u8],
+2026-10-19T03:31:03.9376561Z 266 | |         request: &Request,
+2026-10-19T03:31:03.9376785Z 267 | |     ) -> Result<(Response, usize), Error> {
+2026-10-19T03:31:03.9377016Z     | |_________________________________________^
+2026-10-19T03:31:03.9377160Z 
+2026-10-19T03:31:03.9377237Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9377713Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:286:5
+2026-10-19T03:31:03.9378174Z     |
+2026-10-19T03:31:03.9378469Z 286 |     pub fn ensure_response_capacity(&self, opcode: Opcode, _status: Status) -> Result<(), Error> {
+2026-10-19T03:31:03.9378860Z     |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9379107Z     |     |
+2026-10-19T03:31:03.9379306Z     |     help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9379489Z 
+2026-10-19T03:31:03.9379561Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9380111Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:291:5
+2026-10-19T03:31:03.9380580Z     |
+2026-10-19T03:31:03.9380843Z 291 |     pub fn ensure_success_response_capacity(&self, opcode: Opcode) -> Result<(), Error> {
+2026-10-19T03:31:03.9381202Z     |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9381439Z     |     |
+2026-10-19T03:31:03.9381629Z     |     help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9381806Z 
+2026-10-19T03:31:03.9381883Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9382329Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:317:1
+2026-10-19T03:31:03.9382777Z     |
+2026-10-19T03:31:03.9382939Z 317 | pub struct InstallBudgetRequest {
+2026-10-19T03:31:03.9383147Z     | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9383336Z     | |
+2026-10-19T03:31:03.9383526Z     | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9383759Z     |
+2026-10-19T03:31:03.9383944Z     = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9384117Z 
+2026-10-19T03:31:03.9384191Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9384631Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:325:1
+2026-10-19T03:31:03.9385077Z     |
+2026-10-19T03:31:03.9385241Z 325 | pub struct DeliveryRequest {
+2026-10-19T03:31:03.9385448Z     | ---^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9385621Z     | |
+2026-10-19T03:31:03.9385809Z     | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9386037Z     |
+2026-10-19T03:31:03.9386215Z     = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9386562Z 
+2026-10-19T03:31:03.9386641Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9387088Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:332:1
+2026-10-19T03:31:03.9387535Z     |
+2026-10-19T03:31:03.9387686Z 332 | pub enum RequestPayload {
+2026-10-19T03:31:03.9387874Z     | ---^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9388041Z     | |
+2026-10-19T03:31:03.9388220Z     | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9388445Z     |
+2026-10-19T03:31:03.9388622Z     = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9388785Z 
+2026-10-19T03:31:03.9388967Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9389408Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:341:1
+2026-10-19T03:31:03.9389856Z     |
+2026-10-19T03:31:03.9390008Z 341 | pub struct Request {
+2026-10-19T03:31:03.9390185Z     | ---^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9390361Z     | |
+2026-10-19T03:31:03.9390547Z     | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9390776Z     |
+2026-10-19T03:31:03.9390955Z     = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9391121Z 
+2026-10-19T03:31:03.9391202Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9391641Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:350:1
+2026-10-19T03:31:03.9392090Z     |
+2026-10-19T03:31:03.9392247Z 350 | pub struct QueryAbiResponse {
+2026-10-19T03:31:03.9392449Z     | ---^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9392628Z     | |
+2026-10-19T03:31:03.9392813Z     | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9393039Z     |
+2026-10-19T03:31:03.9393213Z     = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9393376Z 
+2026-10-19T03:31:03.9393454Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9393993Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:360:1
+2026-10-19T03:31:03.9394443Z     |
+2026-10-19T03:31:03.9394597Z 360 | pub struct ReadUsageResponse {
+2026-10-19T03:31:03.9394801Z     | ---^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9394983Z     | |
+2026-10-19T03:31:03.9395173Z     | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9395402Z     |
+2026-10-19T03:31:03.9395577Z     = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9395740Z 
+2026-10-19T03:31:03.9395822Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9396259Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:372:1
+2026-10-19T03:31:03.9396875Z     |
+2026-10-19T03:31:03.9397042Z 372 | pub struct InstallBudgetResponse {
+2026-10-19T03:31:03.9397258Z     | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9397446Z     | |
+2026-10-19T03:31:03.9397639Z     | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9397879Z     |
+2026-10-19T03:31:03.9398064Z     = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9398234Z 
+2026-10-19T03:31:03.9398313Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9398768Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:380:1
+2026-10-19T03:31:03.9399223Z     |
+2026-10-19T03:31:03.9399373Z 380 | pub enum DeliveryState {
+2026-10-19T03:31:03.9399563Z     | ---^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9399733Z     | |
+2026-10-19T03:31:03.9399916Z     | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9400146Z     |
+2026-10-19T03:31:03.9400321Z     = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9400483Z 
+2026-10-19T03:31:03.9400563Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9401003Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:389:5
+2026-10-19T03:31:03.9401452Z     |
+2026-10-19T03:31:03.9401612Z 389 |     pub const fn as_u16(self) -> u16 {
+2026-10-19T03:31:03.9401826Z     |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9402015Z     |     |
+2026-10-19T03:31:03.9402209Z     |     help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9402392Z 
+2026-10-19T03:31:03.9402470Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9403017Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:392:5
+2026-10-19T03:31:03.9403480Z     |
+2026-10-19T03:31:03.9403674Z 392 |     pub const fn from_u16(v: u16) -> Result<Self, Error> {
+2026-10-19T03:31:03.9403938Z     |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9404152Z     |     |
+2026-10-19T03:31:03.9404345Z     |     help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9404524Z 
+2026-10-19T03:31:03.9404600Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9405051Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:405:1
+2026-10-19T03:31:03.9405511Z     |
+2026-10-19T03:31:03.9405670Z 405 | pub struct QueryDeliveryResponse {
+2026-10-19T03:31:03.9405877Z     | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9406060Z     | |
+2026-10-19T03:31:03.9406250Z     | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9406666Z     |
+2026-10-19T03:31:03.9406847Z     = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9407022Z 
+2026-10-19T03:31:03.9407098Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9407550Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:417:1
+2026-10-19T03:31:03.9408118Z     |
+2026-10-19T03:31:03.9408278Z 417 | pub struct RetireThroughResponse {
+2026-10-19T03:31:03.9408487Z     | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9408668Z     | |
+2026-10-19T03:31:03.9408853Z     | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9409087Z     |
+2026-10-19T03:31:03.9409273Z     = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9409441Z 
+2026-10-19T03:31:03.9409516Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9409967Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:423:1
+2026-10-19T03:31:03.9410425Z     |
+2026-10-19T03:31:03.9410579Z 423 | pub enum ResponsePayload {
+2026-10-19T03:31:03.9410778Z     | ---^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9410963Z     | |
+2026-10-19T03:31:03.9411155Z     | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9411390Z     |
+2026-10-19T03:31:03.9411570Z     = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9411738Z 
+2026-10-19T03:31:03.9411813Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9412259Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:434:1
+2026-10-19T03:31:03.9412715Z     |
+2026-10-19T03:31:03.9412870Z 434 | pub struct Response {
+2026-10-19T03:31:03.9413050Z     | ---^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9413220Z     | |
+2026-10-19T03:31:03.9413408Z     | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9413639Z     |
+2026-10-19T03:31:03.9413820Z     = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9413986Z 
+2026-10-19T03:31:03.9414059Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9414500Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:443:1
+2026-10-19T03:31:03.9414955Z     |
+2026-10-19T03:31:03.9415159Z 443 | pub fn decode_request(bytes: &[u8]) -> Result<Request, Error> {
+2026-10-19T03:31:03.9415449Z     | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9415665Z     | |
+2026-10-19T03:31:03.9415848Z     | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9416076Z     |
+2026-10-19T03:31:03.9416253Z     = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9416581Z 
+2026-10-19T03:31:03.9416655Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9417207Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:513:1
+2026-10-19T03:31:03.9417669Z     |
+2026-10-19T03:31:03.9417874Z 513 | pub fn parse_request(bytes: &[u8]) -> Result<Request, Error> {
+2026-10-19T03:31:03.9418163Z     | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9418385Z     | |
+2026-10-19T03:31:03.9418583Z     | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9418819Z     |
+2026-10-19T03:31:03.9419007Z     = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9419180Z 
+2026-10-19T03:31:03.9419257Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9419710Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:517:1
+2026-10-19T03:31:03.9420163Z     |
+2026-10-19T03:31:03.9420410Z 517 | pub fn encode_request(request: &Request, out: &mut [u8]) -> Result<usize, Error> {
+2026-10-19T03:31:03.9420753Z     | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9420984Z     | |
+2026-10-19T03:31:03.9421173Z     | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9421404Z     |
+2026-10-19T03:31:03.9421584Z     = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9421847Z 
+2026-10-19T03:31:03.9421922Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9422365Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:544:1
+2026-10-19T03:31:03.9422815Z     |
+2026-10-19T03:31:03.9423023Z 544 | pub fn decode_response(bytes: &[u8]) -> Result<Response, Error> {
+2026-10-19T03:31:03.9423316Z     | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9423535Z     | |
+2026-10-19T03:31:03.9423723Z     | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9423952Z     |
+2026-10-19T03:31:03.9424132Z     = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9424300Z 
+2026-10-19T03:31:03.9424372Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9424810Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:636:1
+2026-10-19T03:31:03.9425260Z     |
+2026-10-19T03:31:03.9425477Z 636 | pub fn declared_response_len(bytes: &[u8]) -> Result<usize, Error> {
+2026-10-19T03:31:03.9425779Z     | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9425999Z     | |
+2026-10-19T03:31:03.9426177Z     | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9426537Z     |
+2026-10-19T03:31:03.9426719Z     = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9426891Z 
+2026-10-19T03:31:03.9426965Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9427414Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:657:1
+2026-10-19T03:31:03.9427865Z     |
+2026-10-19T03:31:03.9428114Z 657 | pub fn decode_response_prefix(bytes: &[u8]) -> Result<(Response, usize), Error> {
+2026-10-19T03:31:03.9428449Z     | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9428681Z     | |
+2026-10-19T03:31:03.9428862Z     | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9429091Z     |
+2026-10-19T03:31:03.9429267Z     = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9429434Z 
+2026-10-19T03:31:03.9429506Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9429946Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:664:1
+2026-10-19T03:31:03.9430395Z     |
+2026-10-19T03:31:03.9430695Z 664 |   pub fn decode_response_prefix_for(
+2026-10-19T03:31:03.9430906Z     |   ^--
+2026-10-19T03:31:03.9431052Z     |   |
+2026-10-19T03:31:03.9431247Z     |  _help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9431485Z     | |
+2026-10-19T03:31:03.9431634Z 665 | |     bytes: &[u8],
+2026-10-19T03:31:03.9431812Z 666 | |     request: &Request,
+2026-10-19T03:31:03.9432030Z 667 | | ) -> Result<(Response, usize), Error> {
+2026-10-19T03:31:03.9432252Z     | |_____________________________________^
+2026-10-19T03:31:03.9432446Z     |
+2026-10-19T03:31:03.9432626Z     = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9432795Z 
+2026-10-19T03:31:03.9432875Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9433317Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:674:1
+2026-10-19T03:31:03.9433765Z     |
+2026-10-19T03:31:03.9434020Z 674 | pub fn decode_response_for(bytes: &[u8], request: &Request) -> Result<Response, Error> {
+2026-10-19T03:31:03.9434368Z     | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9434602Z     | |
+2026-10-19T03:31:03.9434786Z     | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9435013Z     |
+2026-10-19T03:31:03.9435190Z     = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9435465Z 
+2026-10-19T03:31:03.9435542Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9435984Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:681:1
+2026-10-19T03:31:03.9436582Z     |
+2026-10-19T03:31:03.9436791Z 681 | pub fn parse_response(bytes: &[u8]) -> Result<Response, Error> {
+2026-10-19T03:31:03.9437079Z     | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9437294Z     | |
+2026-10-19T03:31:03.9437480Z     | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9437705Z     |
+2026-10-19T03:31:03.9437883Z     = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9438051Z 
+2026-10-19T03:31:03.9438128Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9438569Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:685:1
+2026-10-19T03:31:03.9439031Z     |
+2026-10-19T03:31:03.9439289Z 685 | pub fn encode_response(response: &Response, out: &mut [u8]) -> Result<usize, Error> {
+2026-10-19T03:31:03.9439639Z     | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9439874Z     | |
+2026-10-19T03:31:03.9440061Z     | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9440294Z     |
+2026-10-19T03:31:03.9440478Z     = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9440648Z 
+2026-10-19T03:31:03.9440730Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9441181Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:726:5
+2026-10-19T03:31:03.9441636Z     |
+2026-10-19T03:31:03.9441821Z 726 |     pub fn decode(bytes: &[u8]) -> Result<Self, Error> {
+2026-10-19T03:31:03.9442075Z     |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9442287Z     |     |
+2026-10-19T03:31:03.9442487Z     |     help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9442671Z 
+2026-10-19T03:31:03.9442745Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9443195Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:729:5
+2026-10-19T03:31:03.9443645Z     |
+2026-10-19T03:31:03.9443904Z 729 |     pub fn encode(&self, out: &mut [u8]) -> Result<usize, Error> {
+2026-10-19T03:31:03.9444301Z     |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9444527Z     |     |
+2026-10-19T03:31:03.9444721Z     |     help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9444900Z 
+2026-10-19T03:31:03.9444974Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9445413Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:735:5
+2026-10-19T03:31:03.9445879Z     |
+2026-10-19T03:31:03.9446062Z 735 |     pub fn decode(bytes: &[u8]) -> Result<Self, Error> {
+2026-10-19T03:31:03.9446449Z     |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9446696Z     |     |
+2026-10-19T03:31:03.9446894Z     |     help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9447070Z 
+2026-10-19T03:31:03.9447143Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9447585Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:738:5
+2026-10-19T03:31:03.9448040Z     |
+2026-10-19T03:31:03.9448236Z 738 |     pub fn encode(&self, out: &mut [u8]) -> Result<usize, Error> {
+2026-10-19T03:31:03.9448513Z     |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9448730Z     |     |
+2026-10-19T03:31:03.9448916Z     |     help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9449205Z 
+2026-10-19T03:31:03.9449286Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9449731Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:743:5
+2026-10-19T03:31:03.9450183Z     |
+2026-10-19T03:31:03.9450381Z 743 |     pub fn matches_request(&self, request: &Request) -> bool {
+2026-10-19T03:31:03.9450653Z     |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9450870Z     |     |
+2026-10-19T03:31:03.9451073Z     |     help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9451248Z 
+2026-10-19T03:31:03.9451325Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9451766Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:748:5
+2026-10-19T03:31:03.9452214Z     |
+2026-10-19T03:31:03.9452433Z 748 |     pub fn validate_for(&self, request: &Request) -> Result<(), Error> {
+2026-10-19T03:31:03.9452738Z     |     ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9452962Z     |     |
+2026-10-19T03:31:03.9453149Z     |     help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9453327Z 
+2026-10-19T03:31:03.9453403Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9453844Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:843:1
+2026-10-19T03:31:03.9454293Z     |
+2026-10-19T03:31:03.9454529Z 843 | pub fn install_budget_request_id(sequence: u64) -> Result<[u8; 16], Error> {
+2026-10-19T03:31:03.9454846Z     | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9455071Z     | |
+2026-10-19T03:31:03.9455260Z     | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9455496Z     |
+2026-10-19T03:31:03.9455685Z     = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9455858Z 
+2026-10-19T03:31:03.9455936Z warning: unreachable `pub` item
+2026-10-19T03:31:03.9456499Z    --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/../../../../../libs/os-abi/src/lib.rs:853:1
+2026-10-19T03:31:03.9456955Z     |
+2026-10-19T03:31:03.9457176Z 853 | pub fn install_budget_sequence(id: &[u8; 16]) -> Result<u64, Error> {
+2026-10-19T03:31:03.9465270Z     | ---^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-10-19T03:31:03.9465532Z     | |
+2026-10-19T03:31:03.9465910Z     | help: consider restricting its visibility: `pub(crate)`
+2026-10-19T03:31:03.9466166Z     |
+2026-10-19T03:31:03.9466512Z     = help: or consider exporting it for use by other crates
+2026-10-19T03:31:03.9466695Z 
+2026-10-19T03:31:03.9466792Z warning: this lint expectation is unfulfilled
+2026-10-19T03:31:03.9467277Z   --> /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/device/registry/char.rs:92:10
+2026-10-19T03:31:03.9467954Z    |
+2026-10-19T03:31:03.9468149Z 92 | #[expect(dead_code)]
+2026-10-19T03:31:03.9468334Z    |          ^^^^^^^^^
+2026-10-19T03:31:03.9468500Z    |
+2026-10-19T03:31:03.9468702Z    = note: `#[warn(unfulfilled_lint_expectations)]` on by default
+2026-10-19T03:31:03.9468895Z 
+2026-10-19T03:31:03.9469172Z warning: `aster-core` (lib) generated 91 warnings (1 duplicate) (run `cargo fix --lib -p aster-core` to apply 62 suggestions)
+2026-10-19T03:31:03.9469620Z warning: `aster-drm` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9469937Z warning: `aster-i8042` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9470252Z warning: `aster-simpledrm` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9470566Z warning: `asterinas` (lib) generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9470931Z warning: `asterinas-osdk-bin` (bin "asterinas-osdk-bin") generated 1 warning (1 duplicate)
+2026-10-19T03:31:03.9471428Z     Finished `release` profile [optimized] target(s) in 0.10s
+2026-10-19T03:31:03.9525162Z make: Leaving directory '/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas'
+2026-10-19T03:31:03.9530890Z evidence: /home/runner/work/_temp/a06-kernel-build
+2026-10-19T03:31:03.9942592Z f8785d9371f27b1f5e9ccd40da66ea25823ca50bfc7c431a89f20f88a45c4681  /home/runner/work/_temp/a06-target/osdk/asterinas/asterinas-osdk-bin.elf
+2026-10-19T03:31:03.9973796Z ##[group]Run set -euo pipefail
+2026-10-19T03:31:03.9974040Z [36;1mset -euo pipefail[0m
+2026-10-19T03:31:03.9974295Z [36;1msha=$(cut -d' ' -f1 "${RUNNER_TEMP}/a06-kernel.sha256")[0m
+2026-10-19T03:31:03.9974630Z [36;1mpython3 tests/organ_backend/run_candidate_matrix.py \[0m
+2026-10-19T03:31:03.9975002Z [36;1m  --a01-tree "$GITHUB_WORKSPACE" --kernel "$KERNEL" --expected-sha256 "$sha" \[0m
+2026-10-19T03:31:03.9975404Z [36;1m  --out "${RUNNER_TEMP}/a06-probe-1vcpu" --quota-us 1000 --mode leaf \[0m
+2026-10-19T03:31:03.9975755Z [36;1m  --repeat 2 --duration-seconds 1 --max-cpu-percent 3[0m
+2026-10-19T03:31:03.9976086Z [36;1mpython3 tests/organ_backend/smp2/run_parallel_candidate.py \[0m
+2026-10-19T03:31:03.9977007Z [36;1m  --a01-tree "$GITHUB_WORKSPACE" --kernel "$KERNEL" --expected-sha256 "$sha" \[0m
+2026-10-19T03:31:03.9977386Z [36;1m  --out "${RUNNER_TEMP}/a06-probe-2vcpu" --quota-us 1000 --mode leaf \[0m
+2026-10-19T03:31:03.9977748Z [36;1m  --repeat 2 --duration-seconds 1 --max-cpu-percent 3[0m
+2026-10-19T03:31:04.0033143Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-19T03:31:04.0033409Z env:
+2026-10-19T03:31:04.0033683Z   KERNEL: /home/runner/work/_temp/a06-target/osdk/asterinas/asterinas-osdk-bin.elf
+2026-10-19T03:31:04.0034000Z ##[endgroup]
+2026-10-19T03:31:08.0095503Z {"index": 1, "qemu_exit": 33, "guest_complete": true, "panic": false, "policy_rt": false, "cpu_percent": 1.0}
+2026-10-19T03:31:11.5473757Z {"index": 2, "qemu_exit": 33, "guest_complete": true, "panic": false, "policy_rt": false, "cpu_percent": 0.91}
+2026-10-19T03:31:17.2944838Z {"index": 1, "qemu_exit": 33, "guest_complete": true, "panic": false, "policy_rt": false, "cpu_percent": 0.909}
+2026-10-19T03:31:22.6371436Z {"index": 2, "qemu_exit": 33, "guest_complete": true, "panic": false, "policy_rt": false, "cpu_percent": 0.87}
+2026-10-19T03:31:22.6495245Z ##[group]Run actions/upload-artifact@v4
+2026-10-19T03:31:22.6495475Z with:
+2026-10-19T03:31:22.6495656Z   name: a06-exact-kernel-ktest-39194495150
+2026-10-19T03:31:22.6497380Z   path: /home/runner/work/_temp/a06-ktest
+/home/runner/work/_temp/a06-prepared-locks
+/home/runner/work/_temp/a06-queryabi-candidate
+/home/runner/work/_temp/a06-kernel-build
+/home/runner/work/_temp/a06-probe-1vcpu
+/home/runner/work/_temp/a06-probe-2vcpu
+/home/runner/work/_temp/a06-kernel.sha256
+/home/runner/work/_temp/a06-target/osdk/asterinas/asterinas-osdk-bin.elf
+kernel/asterinas/target/osdk/aster-core/aster-core-osdk-bin.elf
+kernel/asterinas/target/osdk/ostd/ostd-osdk-bin.elf
+support/build/ktest/locks
+
+2026-10-19T03:31:22.6498770Z   if-no-files-found: error
+2026-10-19T03:31:22.6498960Z   compression-level: 6
+2026-10-19T03:31:22.6499134Z   overwrite: false
+2026-10-19T03:31:22.6499304Z   include-hidden-files: false
+2026-10-19T03:31:22.6499494Z ##[endgroup]
+2026-10-19T03:31:22.7815647Z (node:11059) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-19T03:31:22.7816416Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-19T03:31:22.7990865Z Multiple search paths detected. Calculating the least common ancestor of all paths
+2026-10-19T03:31:22.7994201Z The least common ancestor is /home/runner/work. This will be the root directory of the artifact
+2026-10-19T03:31:22.7994927Z With the provided path, there will be 76 files uploaded
+2026-10-19T03:31:22.7998854Z Artifact name is valid!
+2026-10-19T03:31:22.7999597Z Root directory input is valid!
+2026-10-19T03:31:23.1592404Z Beginning upload of artifact content to blob storage
+2026-10-19T03:31:23.6197609Z (node:11059) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-19T03:31:24.2818527Z Uploaded bytes 8388608
+2026-10-19T03:31:24.8388580Z Uploaded bytes 16777216
+2026-10-19T03:31:24.9231458Z Uploaded bytes 18334024
+2026-10-19T03:31:24.9799951Z Finished uploading artifact content to blob storage!
+2026-10-19T03:31:24.9800690Z SHA256 digest of uploaded artifact zip is f5d8ac6cad22e90fc1ce3102447b1487eb6962ae95a4971c118edd9513115018
+2026-10-19T03:31:24.9802224Z Finalizing artifact upload
+2026-10-19T03:31:25.2340974Z Artifact a06-exact-kernel-ktest-39194495150.zip successfully finalized. Artifact ID 12161701003
+2026-10-19T03:31:25.2341961Z Artifact a06-exact-kernel-ktest-39194495150 has been successfully uploaded! Final size is 18334024 bytes. Artifact ID is 12161701003
+2026-10-19T03:31:25.2347037Z Artifact download URL: https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39194495150/artifacts/12161701003
+2026-10-19T03:31:25.2553387Z Post job cleanup.
+2026-10-19T03:31:25.3246878Z [command]/usr/bin/git version
+2026-10-19T03:31:25.3271079Z git version 2.55.0
+2026-10-19T03:31:25.3303296Z Temporarily overriding HOME='/home/runner/work/_temp/32a31aef-8eb8-4fc1-959f-73e06ec03c5d' before making global git config changes
+2026-10-19T03:31:25.3304202Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-19T03:31:25.3307863Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop
+2026-10-19T03:31:25.3341070Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-19T03:31:25.3369620Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-19T03:31:25.3582739Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-19T03:31:25.3605520Z http.https://github.com/.extraheader
+2026-10-19T03:31:25.3614781Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-19T03:31:25.3651186Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-19T03:31:25.3869274Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-19T03:31:25.3905205Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-19T03:31:25.4247216Z Cleaning up orphan processes
+2026-10-19T03:31:25.4538086Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

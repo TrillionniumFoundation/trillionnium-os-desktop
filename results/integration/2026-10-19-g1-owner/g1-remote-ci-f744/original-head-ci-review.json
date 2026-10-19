@@ -1,0 +1,388 @@
+{
+  "schema": "r10.g1-pr197.original-head-ci-summary.v1",
+  "frozen_at_utc": "2026-10-19T03:28:37.322544+00:00",
+  "head": "f744fb248a6d264676d0b892d21d6c4582d72d0f",
+  "tree": "4e42c3833746cd2684d0a75020d73286820457e6",
+  "all_relevant_gates_passed": false,
+  "a06": {
+    "gate": "success",
+    "artifact_review": "completed",
+    "blocking_findings": [],
+    "review": {
+      "path": "a06-artifact-review.json",
+      "bytes": 53194,
+      "sha256": "fa7344833f981365d366a080eb65443c08d2b72813184861bf07a9460d82a23e"
+    },
+    "counts": {
+      "reported_ktest_passes": 400,
+      "ktest_soft_skipped": 3,
+      "ktest_execution_lower_bound": 397,
+      "new_g1_ktests": 10,
+      "queryabi_exact_markers": 14,
+      "quota_guests": 4,
+      "total_guest_invocations": 8,
+      "elf_members": 7,
+      "unique_elf_bytes": 6
+    }
+  },
+  "original_head_failures": [
+    {
+      "workflow": "G0 scoped host contracts",
+      "run_id": 39193294519,
+      "job_id": 117870536000,
+      "status": "completed",
+      "conclusion": "failure",
+      "actual_checkout_commit": "0451679b4745e6136a043e0f0605039f0765c653",
+      "checkout_kind": "pull/197/merge",
+      "associated_check_head": "f744fb248a6d264676d0b892d21d6c4582d72d0f",
+      "log": {
+        "path": "g0-job-117870536000.log",
+        "bytes": 58643,
+        "sha256": "db7a4f74a1c5ccd5884c70cc2c5d561394ba17cf8b78980d313cb396962094a6"
+      },
+      "observed_errors": [
+        {
+          "path": "tests/spec/test_a01_ktest_lock_preflight.py",
+          "line": 19,
+          "error": "AttributeError: module 'a01_ktest_locks' has no attribute 'prefetch_locked_upstream'",
+          "log_line": 440
+        },
+        {
+          "path": "tests/spec/test_a06_kernel_output_contract.py",
+          "line": 15,
+          "error": "AssertionError: 3 != 2 : the hash check and probe must consume the generated OSDK ELF",
+          "log_line": 448
+        }
+      ],
+      "failed_step": "Python wire mutations and recovery specification",
+      "within_failing_spec_suite": {
+        "tests_run": 35,
+        "failures": 1,
+        "errors": 1
+      },
+      "not_executed_in_this_job": [
+        "later specification suite",
+        "host A05 wire/ENOTTY",
+        "A05 guest C compilation",
+        "old and new candidate runner host fixture discovery",
+        "Rust/Clippy/portable-spin/cross rlib steps"
+      ],
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-19T03:09:03Z",
+          "completed_at": "2026-10-19T03:09:04Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-19T03:09:04Z",
+          "completed_at": "2026-10-19T03:09:20Z"
+        },
+        {
+          "name": "Verify independent HOS2 golden fixtures",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-19T03:09:20Z",
+          "completed_at": "2026-10-19T03:09:20Z"
+        },
+        {
+          "name": "Verify canonical HOS2 semantic edge corpus and independent generator",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-19T03:09:20Z",
+          "completed_at": "2026-10-19T03:09:20Z"
+        },
+        {
+          "name": "Verify independent native 32-byte HOS2 ioctl transport golden",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-10-19T03:09:20Z",
+          "completed_at": "2026-10-19T03:09:20Z"
+        },
+        {
+          "name": "Python wire mutations and recovery specification",
+          "status": "completed",
+          "conclusion": "failure",
+          "number": 6,
+          "started_at": "2026-10-19T03:09:20Z",
+          "completed_at": "2026-10-19T03:09:22Z"
+        },
+        {
+          "name": "Guest archive safety model (host only, no QEMU)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 7,
+          "started_at": "2026-10-19T03:09:22Z",
+          "completed_at": "2026-10-19T03:09:22Z"
+        },
+        {
+          "name": "Host A05 QueryAbi wire and ENOTTY smoke (no kernel driver)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 8,
+          "started_at": "2026-10-19T03:09:22Z",
+          "completed_at": "2026-10-19T03:09:22Z"
+        },
+        {
+          "name": "Compile native A05 QueryAbi guest probe when present (host compiler only)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 9,
+          "started_at": "2026-10-19T03:09:22Z",
+          "completed_at": "2026-10-19T03:09:22Z"
+        },
+        {
+          "name": "A05 pinned QueryAbi replay host regressions (no QEMU)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 10,
+          "started_at": "2026-10-19T03:09:22Z",
+          "completed_at": "2026-10-19T03:09:22Z"
+        },
+        {
+          "name": "Require canonical Rust crate manifests and install lint components",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 11,
+          "started_at": "2026-10-19T03:09:22Z",
+          "completed_at": "2026-10-19T03:09:22Z"
+        },
+        {
+          "name": "Report real host Rust toolchain and install lint components",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 12,
+          "started_at": "2026-10-19T03:09:22Z",
+          "completed_at": "2026-10-19T03:09:22Z"
+        },
+        {
+          "name": "Host Rust no_std ABI crate",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 13,
+          "started_at": "2026-10-19T03:09:22Z",
+          "completed_at": "2026-10-19T03:09:22Z"
+        },
+        {
+          "name": "Host Rust ABI strict rustfmt and Clippy",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 14,
+          "started_at": "2026-10-19T03:09:22Z",
+          "completed_at": "2026-10-19T03:09:22Z"
+        },
+        {
+          "name": "Host Rust control model",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 15,
+          "started_at": "2026-10-19T03:09:22Z",
+          "completed_at": "2026-10-19T03:09:22Z"
+        },
+        {
+          "name": "Host Rust control strict rustfmt and Clippy",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 16,
+          "started_at": "2026-10-19T03:09:22Z",
+          "completed_at": "2026-10-19T03:09:22Z"
+        },
+        {
+          "name": "Host A03 no_std portable-spin model and strict Clippy (not kernel IRQ)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 17,
+          "started_at": "2026-10-19T03:09:22Z",
+          "completed_at": "2026-10-19T03:09:22Z"
+        },
+        {
+          "name": "Cross-build A03 portable-spin rlib for x86_64-unknown-none (not kernel link)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 18,
+          "started_at": "2026-10-19T03:09:22Z",
+          "completed_at": "2026-10-19T03:09:22Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 36,
+          "started_at": "2026-10-19T03:09:22Z",
+          "completed_at": "2026-10-19T03:09:22Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 37,
+          "started_at": "2026-10-19T03:09:22Z",
+          "completed_at": "2026-10-19T03:09:22Z"
+        }
+      ]
+    },
+    {
+      "workflow": "A03 native Loom and allocation safety",
+      "run_id": 39193294782,
+      "job_id": 117870537020,
+      "status": "completed",
+      "conclusion": "failure",
+      "actual_checkout_commit": "f744fb248a6d264676d0b892d21d6c4582d72d0f",
+      "log": {
+        "path": "a03-job-117870537020.log",
+        "bytes": 54924,
+        "sha256": "928422e73e6bf2d379dcbb3e0fdde22449e2de4b0b58975c5fdd42b00e5033ba"
+      },
+      "actual_pass_before_failure": {
+        "backend": "default_shim",
+        "loom_models": 13,
+        "failed": 0,
+        "ignored": 0,
+        "filtered": 0
+      },
+      "failed_command": "cargo clippy --locked --manifest-path /tmp/os-control-loom-default_shim-9bdofzhf/Cargo.toml --test models -- -D warnings",
+      "observed_error": "error: unexpected `cfg` condition name: `ktest`",
+      "source": "src/resource_state.rs:163:11 in generated os-control-loom package",
+      "log_line": 506,
+      "exit_code": 101,
+      "scope": "The first bounded model execution passed, then strict Clippy failed; later backend scenarios and allocator probe were not completed. No all-A03 success is inferred.",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-10-19T03:09:03Z",
+          "completed_at": "2026-10-19T03:09:03Z"
+        },
+        {
+          "name": "Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-10-19T03:09:03Z",
+          "completed_at": "2026-10-19T03:09:17Z"
+        },
+        {
+          "name": "Check exact HEAD and immutable inputs",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-10-19T03:09:17Z",
+          "completed_at": "2026-10-19T03:09:17Z"
+        },
+        {
+          "name": "Install exact pinned Rust and host lint tools",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-10-19T03:09:17Z",
+          "completed_at": "2026-10-19T03:09:26Z"
+        },
+        {
+          "name": "Execute bounded Loom models on exact A03 source (host only)",
+          "status": "completed",
+          "conclusion": "failure",
+          "number": 5,
+          "started_at": "2026-10-19T03:09:26Z",
+          "completed_at": "2026-10-19T03:09:37Z"
+        },
+        {
+          "name": "Require complete native allocation probe or explicit bootstrap",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 6,
+          "started_at": "2026-10-19T03:09:37Z",
+          "completed_at": "2026-10-19T03:09:37Z"
+        },
+        {
+          "name": "Prove no internal-lock alloc, realloc or free (host only)",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 7,
+          "started_at": "2026-10-19T03:09:37Z",
+          "completed_at": "2026-10-19T03:09:37Z"
+        },
+        {
+          "name": "Upload raw model and allocator evidence even when rejected",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-10-19T03:09:37Z",
+          "completed_at": "2026-10-19T03:09:38Z"
+        },
+        {
+          "name": "Post Run actions/checkout@v4",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16,
+          "started_at": "2026-10-19T03:09:38Z",
+          "completed_at": "2026-10-19T03:09:38Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17,
+          "started_at": "2026-10-19T03:09:38Z",
+          "completed_at": "2026-10-19T03:09:38Z"
+        }
+      ]
+    }
+  ],
+  "review_execution": {
+    "review_script": {
+      "path": "review-a06-artifact.py",
+      "bytes": 28049,
+      "sha256": "a988709ada224941e2b9aa0c4330c1b877265d7188bce7f4452e73412a0084f9"
+    },
+    "artifact_code_executed": false,
+    "rust_cargo_or_qemu_executed": false,
+    "source_checkout_or_target_mutated": false,
+    "notes": [
+      "One initial reviewer pass rejected its own LF-only final-count regex on the raw OSTD CRLF serial. Raw bytes were retained unchanged; reviewer normalization was restricted to parsing, and the corrected full review passed.",
+      "Additional independent fixed-source marker-set, exact cpio injection, ELF program-header and CPU-count assertions also passed. Per-file assertions are evidence checks, not additional kernel tests."
+    ]
+  },
+  "branch_protection_scope": {
+    "observation_files": [
+      "observation-001-031046.json",
+      "observation-002-031202.json"
+    ],
+    "observed_main_protected": false,
+    "rulesets_observed": [],
+    "legacy_status_contexts": 0,
+    "policy": "No protection bypass or merge action taken. Empty legacy status pending is not an actual failed job, and does not excuse the actual G0/A03 failures."
+  },
+  "artifact_download": {
+    "artifact_id": 12161280823,
+    "file": {
+      "path": "a06-exact-kernel-ktest-39193294713.zip",
+      "bytes": 18333821,
+      "sha256": "bf5f89c4ef49d1be7c2e98240737982d9c38e5a3c787dc9428f475ae9f526135"
+    },
+    "connector": "mcp__codex_apps__github_download_workflow_artifact",
+    "transfer": "HTTPS file reference returned by connector; temporary URL omitted",
+    "network_note": "First sandboxed transfer failed URLError; an approved read-only network escalation retrieved the byte-identical GitHub artifact."
+  },
+  "limits": [
+    "This is the actual ordinary GitHub A06 execution at f744, independently reviewed from downloaded bytes; no Rust/Cargo/QEMU or downloaded ELF was executed by this reviewer.",
+    "179 aster-core plus 221 OSTD reported passes contain 3 explicit VMX/EPT soft skips; at least 397 test bodies exercised. Global graph totals 542/240 are not executed-test denominators.",
+    "Ten G1-a tests exercise the existing controller seam; this result does not establish G1-b, complete SMP clock/accounting semantics, production grants, NativeBudget ioctl effects, or Hepta runtime durability.",
+    "The QueryAbi guest contains all original security checks and four valid-shaped disabled operations rejected with EOPNOTSUPP. It does not grant authority or install resource limits through HOS2.",
+    "Three full 5851-file clean-source snapshots bound the ordinary product and QueryAbi interval after ktest. They are not full snapshots around each ktest or after the later four quota guests. Post-checkout Actions cleanup success is not a separate final Git-clean measurement.",
+    "Generated ktest locks are retained as raw bytes and equal prepared/committed copies. Ordinary minimal generated lock is represented by the fixed runner measurement and 204-package Git comparison; its generated raw file is not a separate ZIP member.",
+    "The four short legacy quota guests are leaf-only, two repetitions at each of one and two configured vCPUs; two-vCPU parallel baseline and 3-percent ceiling are verified. They are not broad SMP qualification, sustained-load evidence, or new Hepta authorization tests.",
+    "The GitHub QueryAbi interval did not reproduce the local untracked OSDK residue. Its successful clean gate does not identify the unknown local writer or invalidate the retained local failures.",
+    "Other original-head gates G0 and A03 failed separately. A06 success does not imply PR197 all-gates acceptance or authorization to merge."
+  ]
+}

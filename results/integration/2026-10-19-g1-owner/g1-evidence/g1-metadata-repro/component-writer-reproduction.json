@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "at": "2026-10-19T01:42:51.868422+00:00",
+  "source_head": "be6d8408878dc25fce3188e1fc759aa227bf8678",
+  "source_function": "kernel/libs/comp-sys/component-macro/src/priority.rs:metadata",
+  "checks": [
+    {
+      "name": "component-original-full",
+      "argv": [
+        "cargo",
+        "metadata",
+        "--format-version",
+        "1"
+      ],
+      "cwd": "/workspace/scratch/499c7902de8e/r10-metadata-repro/kernel/asterinas/kernel/core",
+      "exit": 0,
+      "before_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+      "after_sha256": "af94d71680ecf3b9631e21c958263d5e41229033214f88dcff858bb14765a666",
+      "root_lock_unchanged": false,
+      "matches_failed_build_lock": true,
+      "stderr": "     Locking 1 package to latest compatible version\n      Adding os-control v0.1.0 (/workspace/scratch/499c7902de8e/r10-metadata-repro/libs/os-control)\n"
+    },
+    {
+      "name": "component-seed-locked",
+      "argv": [
+        "cargo",
+        "metadata",
+        "--format-version",
+        "1",
+        "--locked"
+      ],
+      "cwd": "/workspace/scratch/499c7902de8e/r10-metadata-repro/kernel/asterinas/kernel/core",
+      "exit": 101,
+      "before_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+      "after_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+      "root_lock_unchanged": true,
+      "matches_failed_build_lock": false,
+      "stderr": "error: cannot update the lock file /workspace/scratch/499c7902de8e/r10-metadata-repro/kernel/asterinas/Cargo.lock because --locked was passed to prevent this\nhelp: to generate the lock file without accessing the network, remove the --locked flag and use --offline instead.\n"
+    },
+    {
+      "name": "component-working-delta-locked",
+      "argv": [
+        "cargo",
+        "metadata",
+        "--format-version",
+        "1",
+        "--locked"
+      ],
+      "cwd": "/workspace/scratch/499c7902de8e/r10-metadata-repro/kernel/asterinas/kernel/core",
+      "exit": 0,
+      "before_sha256": "af94d71680ecf3b9631e21c958263d5e41229033214f88dcff858bb14765a666",
+      "after_sha256": "af94d71680ecf3b9631e21c958263d5e41229033214f88dcff858bb14765a666",
+      "root_lock_unchanged": true,
+      "matches_failed_build_lock": true,
+      "stderr": ""
+    }
+  ],
+  "full_unlocked_and_full_locked_metadata_identical": true,
+  "full_package_count": 226,
+  "original_seed_packages": 234,
+  "declared_working_delta_packages": 235,
+  "changed_package_records": [
+    "aster-core",
+    "os-control"
+  ],
+  "external_tuples_equal": true,
+  "isolated_lock_restored": true,
+  "no_compilation": true
+}
