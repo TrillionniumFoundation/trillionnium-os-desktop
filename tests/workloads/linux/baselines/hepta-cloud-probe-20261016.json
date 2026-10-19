@@ -1,0 +1,153 @@
+{
+  "build": {
+    "binary": {
+      "kind": "codex-hepta-agentd",
+      "loader": "/lib64/ld-linux-x86-64.so.2",
+      "needed": [
+        "libssl.so.3",
+        "libcrypto.so.3",
+        "libgcc_s.so.1",
+        "libm.so.6",
+        "libc.so.6",
+        "ld-linux-x86-64.so.2"
+      ],
+      "resolved_system_paths": {
+        "libc.so.6": "/lib/x86_64-linux-gnu/libc.so.6",
+        "libcrypto.so.3": "/lib/x86_64-linux-gnu/libcrypto.so.3",
+        "libgcc_s.so.1": "/lib/x86_64-linux-gnu/libgcc_s.so.1",
+        "libm.so.6": "/lib/x86_64-linux-gnu/libm.so.6",
+        "libssl.so.3": "/lib/x86_64-linux-gnu/libssl.so.3"
+      },
+      "runtime_library_evidence": {
+        "libc": {
+          "path": "/lib/x86_64-linux-gnu/libc.so.6",
+          "sha256": "511f825ee075610ac9c0f7f91e2c13de2000d0f7b859f6461137e809a0a009d0",
+          "version": "glibc 2.39-0ubuntu8.6"
+        },
+        "libcrypto": {
+          "package": "libssl3t64 3.0.13-0ubuntu3.6",
+          "path": "/lib/x86_64-linux-gnu/libcrypto.so.3",
+          "sha256": "c19c2cf8d7cf91c4f273b1d3bbc56a9d19c91a739bfe57ad630756ee8ede7b77"
+        },
+        "libgcc_s": {
+          "package": "libgcc-s1 14.2.0-4ubuntu2~24.04.1",
+          "path": "/lib/x86_64-linux-gnu/libgcc_s.so.1",
+          "sha256": "d93224d2b0dab4247598be683adca02f5cf00586f99c187579cd7e92058fb7cb"
+        },
+        "libm": {
+          "package": "libc6 2.39-0ubuntu8.6",
+          "path": "/lib/x86_64-linux-gnu/libm.so.6",
+          "sha256": "f06f2ce1f1833df5f41cf13b6447ff07bea993ad9b27297d3428c2f70ab3f0e7"
+        },
+        "libssl": {
+          "package": "libssl3t64 3.0.13-0ubuntu3.6",
+          "path": "/lib/x86_64-linux-gnu/libssl.so.3",
+          "sha256": "63597a81ef19496ad0423cbaaf04d5b0244c7a9e261e331a5a7f3ac0fcdb9590"
+        },
+        "loader": {
+          "path": "/lib64/ld-linux-x86-64.so.2",
+          "sha256": "6222a16be7f2d458d6870efe6e715fc0c8d45766fb79cf7dcc3125538d703e28"
+        }
+      },
+      "sha256": "5c34f4ce5aca36ea2619e42aef2673c092641e0c88891cda9b1147542e844414"
+    },
+    "build_log_sha256": "62f24c3505be945539040ce6499b34da78e981630faa2306abb791e47795b405",
+    "command": "OPENSSL_NO_PKG_CONFIG=1 OPENSSL_DIR=/usr OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu OPENSSL_INCLUDE_DIR=/usr cargo test --locked -p codex-hepta-agentd --test runtime_codex_product_e2e -- --nocapture",
+    "exit_code": 101,
+    "profile": "debug test",
+    "rerun_log_sha256": "efc3f3394e8ae257d1125cac1b92d2d11096f58853b4fe44ac3cca9970bdb2dc",
+    "status": "compiled_then_test_failed"
+  },
+  "captured_utc": "2026-10-17T01:07:16Z",
+  "closure": {
+    "actual_codex_tool_effect": "not_observed",
+    "authenticated_objective_start": "not_qualified",
+    "full_dynamic_runtime_closure": "not_qualified_by_trace",
+    "next_required_environment": [
+      "real fleet identity/registry",
+      "host-owned invocation provider",
+      "provider credentials or controlled provider composition",
+      "ptrace permission or alternate syscall tracing facility"
+    ],
+    "nss_tls_runtime_files": "not_qualified_by_trace",
+    "sqlite_runtime_files": "not_qualified"
+  },
+  "evidence_id": "a04-hepta-cloud-probe-20261016",
+  "execution_environment": {
+    "arch": "x86_64",
+    "cargo": "1.99.1",
+    "code_home_secret_value_recorded": false,
+    "hepta_identity_env_present": {
+      "CODEX_HOME": true,
+      "HEPTA_AGENT_GENERATION": false,
+      "HEPTA_AGENT_HOME": false,
+      "HEPTA_AGENT_ID": false,
+      "HEPTA_AGENT_RUN_ROOT": false,
+      "HEPTA_FLEET_ROOT": false
+    },
+    "pathname_unix_socket_policy": "managed policy exposed allowUnixSockets=[]; no additional socket allowlist",
+    "rustc": "1.99.1"
+  },
+  "fixed_commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+  "ld_debug": {
+    "command": "LD_DEBUG=libs,files timeout 15s codex-hepta-agentd --help",
+    "configuration_error": "invalid agentd configuration: HEPTA_FLEET_ROOT is required",
+    "dynamic_libs_observed": [
+      "libssl.so.3",
+      "libcrypto.so.3",
+      "libgcc_s.so.1",
+      "libm.so.6",
+      "libc.so.6"
+    ],
+    "exit_code": 1,
+    "loader_observed": true,
+    "private_raw_output_retained": false,
+    "status": "loader_and_config_probe_completed"
+  },
+  "repository": "TrillionniumFoundation/hepta-private-ci",
+  "runtime_codex_product_e2e": {
+    "error_class": "host_composition_or_test_harness",
+    "exit_code": 101,
+    "not_kernel_abi_evidence": true,
+    "observed_failure": "Wiremock Responses expectation matched zero requests; no provider request and no terminal receipt.",
+    "rerun_confirmed": true,
+    "status": "failed_before_provider_effect",
+    "terminal_receipt": "not_observed",
+    "test": "runtime_codex_product_caller_commits_one_authorized_terminal_turn",
+    "wiremock_expected_responses_requests": 1,
+    "wiremock_matched_responses_requests": 0
+  },
+  "schema": 1,
+  "source_boundary": {
+    "classification": "host_composition_missing; not kernel ABI failure",
+    "provider_api": "AgentdConfig::with_intelligence_invocation_provider",
+    "provider_attachment_source": "codex-rs/hepta-agentd/src/runtime.rs",
+    "provider_default": "absent",
+    "provider_implementation_search": {
+      "concrete_impl_count": 0,
+      "interpretation": "fixed source exposes a host-owned composition seam but supplies no implementation or standalone CLI attachment",
+      "rg_scope": "codex-rs/hepta-agentd/src + codex-rs/hepta-agentd/tests + workspace codex-rs",
+      "trait_definition_count": 1,
+      "with_intelligence_invocation_provider_call_count": 0
+    },
+    "standalone_main_provider_attachment": "not_present_in_fixed_commit_cli"
+  },
+  "strace": {
+    "command": "strace -ff -ttt -yy -s 256 -o <private>/trace -- codex-hepta-agentd --help",
+    "exit_code": 1,
+    "not_kernel_abi_evidence": true,
+    "observed_error": "PTRACE_TRACEME: Operation not permitted",
+    "status": "blocked_by_managed_sandbox",
+    "trace_files": 1,
+    "trace_syscalls_observed": 0
+  },
+  "trace_script_guard": {
+    "exit_code": 65,
+    "observed_binary_sha256": "5c34f4ce5aca36ea2619e42aef2673c092641e0c88891cda9b1147542e844414",
+    "output_directory_created": false,
+    "profile_expected_sha256": "0a8266635f8dd1b49d5213af4f01aab6c66d7450d9b9e940f71490893ce404ae",
+    "reason": "Hepta ELF sha256 mismatch; debug test artifact is not the profile release receipt",
+    "script": "compat/linux/trace-hepta.sh",
+    "status": "refused_before_execution"
+  }
+}

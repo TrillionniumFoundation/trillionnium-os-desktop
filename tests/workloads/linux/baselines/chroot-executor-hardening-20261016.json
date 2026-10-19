@@ -1,0 +1,65 @@
+{
+  "date": "2026-10-16",
+  "guest_execution_verified": false,
+  "hepta_w1_verified": false,
+  "host": {
+    "arch": "x86_64",
+    "exec": "original Linux kernel, fixed 17-file rootfs, child chroot UID/GID 65534",
+    "kernel": "6.18.44",
+    "os": "Debian GNU/Linux 13"
+  },
+  "inputs": {
+    "fixed_rootfs_ustar_sha256": "df8df2e3cdcd308ef62a59268a4519e2923c9ff78145e46f26a4092725e80797",
+    "linux_reference_sha256": "ea38aa903ead1f72683ab10dcefeb756ec8b1e115dfccf49d8a9823c8a968026",
+    "rootfs_manifest_sha256": "55aa8369d4f912267139ef7626c752814d7dc833e49accc337529f2545fb94cb"
+  },
+  "kind": "a04_original_linux_chroot_executor_cleanup_not_asterinas_guest",
+  "limitations": "No QEMU, Cargo/Rust or strace installed. Chroot is not a PID/network namespace; detached children with closed pipes cannot be proven reaped by process-group cleanup alone.",
+  "negative_scenarios": [
+    "real C ELF emits correct JSON and unexpected stderr: rejected",
+    "duplicated JSON keys/non-finite numbers: rejected",
+    "extra stdout with correct JSON: rejected",
+    "forked child holds pipes after parent timeout: group killed",
+    "detached grandchild holds stdout outside process group: bounded and flagged incomplete; test explicitly kills tracked PID",
+    "stress executor now shares bounded timeout logic with chroot replay"
+  ],
+  "rust_tokio_verified": false,
+  "s1_storage_verified": false,
+  "schema": 1,
+  "source_before_revision": "396e908e5c82bb84a01d338f102709447d93e377",
+  "verification": {
+    "chroot": {
+      "command": "python3 tests/workloads/linux/chroot_replay.py --tar PINNED_ROOTFS.tar --manifest support/rootfs/manifest-debian13-x86_64.json --reference tests/workloads/linux/baselines/linux-debian13-x86_64.json --output UNIQUE_FILE --timeout 12",
+      "failed": 0,
+      "not_run": 4,
+      "passed": 28,
+      "result_sha256": "a25536e0113d9462b023f89a08b818f19f4d307e4044fa99badafefcfbb81ace",
+      "rootfs_verified_files": 17
+    },
+    "normal_unittest": {
+      "command": "python3 -m unittest discover -s tests/workloads/linux -p 'test_*.py' -q",
+      "errors": 0,
+      "failed": 0,
+      "log_sha256": "5aa2d5b96c7df33e070cb510ea749ea3200fcd7e60e60bf23ce190cfd1427831",
+      "passed": 62,
+      "skipped": 0
+    },
+    "optimized_unittest": {
+      "command": "python3 -O -m unittest discover -s tests/workloads/linux -p 'test_*.py' -q",
+      "errors": 0,
+      "failed": 0,
+      "log_sha256": "3c8d479e0dfa300c4e2cfca1b0d6408ae8496b3d545ba69630364966b02b5012",
+      "passed": 62,
+      "skipped": 0
+    },
+    "stress": {
+      "cases_per_round": 18,
+      "command": "python3 tests/workloads/linux/chroot_stress.py --tar PINNED_ROOTFS.tar --manifest support/rootfs/manifest-debian13-x86_64.json --reference tests/workloads/linux/baselines/linux-debian13-x86_64.json --output UNIQUE_FILE --rounds 5 --timeout 12",
+      "executions": 90,
+      "failed": 0,
+      "passed": 90,
+      "result_sha256": "e7dba0b705b4a9132d06d0779c7f709736f6a9a8fd799048ea6c1c6d5dfa06fb",
+      "rounds": 5
+    }
+  }
+}

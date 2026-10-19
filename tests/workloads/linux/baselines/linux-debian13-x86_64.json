@@ -1,0 +1,438 @@
+{
+  "binaries": {
+    "dynamic": {
+      "interpreter": "/lib64/ld-linux-x86-64.so.2",
+      "needed": [
+        "libc.so.6"
+      ],
+      "sha256": "36a021aa7877170aedda535fff2a6ab2fc51cdb4b48d04c8c90ff873a40f4324",
+      "size": 44808
+    },
+    "sqlite_dynamic": {
+      "interpreter": "/lib64/ld-linux-x86-64.so.2",
+      "needed": [
+        "libsqlite3.so.0",
+        "libc.so.6"
+      ],
+      "sha256": "d9c953e2dba4473ac1fad46446bc4768a448063547f32180813a868b3bdb7fc6",
+      "size": 17040
+    },
+    "sqlite_static": {
+      "interpreter": null,
+      "needed": [],
+      "sha256": "2b8ca0007725bbf94856fc559572b1c86c163cca380cdbf6cce38faa69abefa2",
+      "size": 2789544
+    },
+    "static": {
+      "interpreter": null,
+      "needed": [],
+      "sha256": "edd3063a60c3f5c23679de3ab13e71955f7155be619f191468800931d101b078",
+      "size": 935880
+    }
+  },
+  "cases": {
+    "dynamic.async_fd": {
+      "error": null,
+      "exit_code": 0,
+      "facts": {
+        "empty_eventfd_errno": 11,
+        "epoll_edge": true,
+        "eventfd": true,
+        "ok": true,
+        "timerfd": true
+      },
+      "status": "pass"
+    },
+    "dynamic.cloexec": {
+      "error": null,
+      "exit_code": 0,
+      "facts": {
+        "cloexec_closed_on_exec": true,
+        "ok": true,
+        "plain_fd_inherited": true,
+        "wait_reaped": true
+      },
+      "status": "pass"
+    },
+    "dynamic.errno": {
+      "error": null,
+      "exit_code": 0,
+      "facts": {
+        "EBADF": 9,
+        "EEXIST": 17,
+        "ENOENT": 2,
+        "ok": true
+      },
+      "status": "pass"
+    },
+    "dynamic.fd_limit": {
+      "error": null,
+      "exit_code": 0,
+      "facts": {
+        "child_reaped": true,
+        "emfile_errno": 24,
+        "ok": true,
+        "parent_rlimit_unchanged": true
+      },
+      "status": "pass"
+    },
+    "dynamic.file_lock": {
+      "error": null,
+      "exit_code": 0,
+      "facts": {
+        "child_reaped": true,
+        "fcntl_contention": "EACCES_or_EAGAIN",
+        "flock_contention": "EWOULDBLOCK",
+        "ok": true,
+        "post_release_acquire": true
+      },
+      "status": "pass"
+    },
+    "dynamic.ipc_epoll": {
+      "error": null,
+      "exit_code": 0,
+      "facts": {
+        "af_unix": "socketpair",
+        "close_errno": 9,
+        "epoll": "readable",
+        "half_close_eof": true,
+        "ok": true,
+        "payload": "ping"
+      },
+      "status": "pass"
+    },
+    "dynamic.mmap_cow": {
+      "error": null,
+      "exit_code": 0,
+      "facts": {
+        "mapping_released": true,
+        "ok": true,
+        "private_cow": true,
+        "shared_msync": true
+      },
+      "status": "pass"
+    },
+    "dynamic.process": {
+      "error": null,
+      "exit_code": 0,
+      "facts": {
+        "exit_codes": [
+          17,
+          23
+        ],
+        "fork_exec_wait": true,
+        "ok": true,
+        "restarts": 2,
+        "signal_delivered": true
+      },
+      "status": "pass"
+    },
+    "dynamic.robust_owner_death": {
+      "error": null,
+      "exit_code": 0,
+      "facts": {
+        "child_reaped": true,
+        "mutex_reused": true,
+        "ok": true,
+        "recovered_with_consistent": true,
+        "robust_futex_owner_death": true
+      },
+      "status": "pass"
+    },
+    "dynamic.scm_rights": {
+      "error": null,
+      "exit_code": 0,
+      "facts": {
+        "child_reaped": true,
+        "ok": true,
+        "recv_cloexec": true,
+        "scm_rights": true,
+        "shared_offset": true
+      },
+      "status": "pass"
+    },
+    "dynamic.smoke": {
+      "error": null,
+      "exit_code": 0,
+      "facts": {
+        "auxv_page_power_of_two": true,
+        "file_data": "AYNC",
+        "msync": true,
+        "ok": true,
+        "rename_unlink": true
+      },
+      "status": "pass"
+    },
+    "dynamic.threads_futex": {
+      "error": null,
+      "exit_code": 0,
+      "facts": {
+        "futex_mismatch_errno": 11,
+        "ok": true,
+        "threads_created": 4,
+        "threads_joined": 4
+      },
+      "status": "pass"
+    },
+    "dynamic.uds_peercred": {
+      "error": null,
+      "exit_code": 0,
+      "facts": {
+        "accept4_cloexec": true,
+        "child_reaped": true,
+        "ok": true,
+        "so_peercred": true,
+        "socket_unlinked": true,
+        "unix_pathname": true
+      },
+      "status": "pass"
+    },
+    "nss_tls": {
+      "error": null,
+      "exit_code": 0,
+      "facts": {
+        "loopback_tls_verified": true,
+        "nss_localhost": true,
+        "ok": true,
+        "system_ca_bundle_present": true
+      },
+      "status": "pass"
+    },
+    "rust_tokio": {
+      "reason": "cargo unavailable",
+      "status": "not_run"
+    },
+    "sqlite_dynamic.sqlite_wal_elf": {
+      "error": null,
+      "exit_code": 0,
+      "facts": {
+        "checkpoint_busy": 0,
+        "committed_visible": true,
+        "concurrent_commits": 40,
+        "crash_exit_code": 37,
+        "integrity_check": "ok",
+        "journal_mode": "wal",
+        "ok": true,
+        "rows_after_reopen": 41,
+        "uncommitted_visible": false
+      },
+      "status": "pass"
+    },
+    "sqlite_static.sqlite_wal_elf": {
+      "error": null,
+      "exit_code": 0,
+      "facts": {
+        "checkpoint_busy": 0,
+        "committed_visible": true,
+        "concurrent_commits": 40,
+        "crash_exit_code": 37,
+        "integrity_check": "ok",
+        "journal_mode": "wal",
+        "ok": true,
+        "rows_after_reopen": 41,
+        "uncommitted_visible": false
+      },
+      "status": "pass"
+    },
+    "sqlite_wal": {
+      "error": null,
+      "exit_code": 0,
+      "facts": {
+        "checkpoint_busy": 0,
+        "committed_visible": true,
+        "concurrent_commits": 40,
+        "crash_exit_code": 37,
+        "integrity_check": "ok",
+        "journal_mode": "wal",
+        "ok": true,
+        "rows_after_reopen": 41,
+        "uncommitted_visible": false
+      },
+      "status": "pass"
+    },
+    "static.async_fd": {
+      "error": null,
+      "exit_code": 0,
+      "facts": {
+        "empty_eventfd_errno": 11,
+        "epoll_edge": true,
+        "eventfd": true,
+        "ok": true,
+        "timerfd": true
+      },
+      "status": "pass"
+    },
+    "static.cloexec": {
+      "error": null,
+      "exit_code": 0,
+      "facts": {
+        "cloexec_closed_on_exec": true,
+        "ok": true,
+        "plain_fd_inherited": true,
+        "wait_reaped": true
+      },
+      "status": "pass"
+    },
+    "static.errno": {
+      "error": null,
+      "exit_code": 0,
+      "facts": {
+        "EBADF": 9,
+        "EEXIST": 17,
+        "ENOENT": 2,
+        "ok": true
+      },
+      "status": "pass"
+    },
+    "static.fd_limit": {
+      "error": null,
+      "exit_code": 0,
+      "facts": {
+        "child_reaped": true,
+        "emfile_errno": 24,
+        "ok": true,
+        "parent_rlimit_unchanged": true
+      },
+      "status": "pass"
+    },
+    "static.file_lock": {
+      "error": null,
+      "exit_code": 0,
+      "facts": {
+        "child_reaped": true,
+        "fcntl_contention": "EACCES_or_EAGAIN",
+        "flock_contention": "EWOULDBLOCK",
+        "ok": true,
+        "post_release_acquire": true
+      },
+      "status": "pass"
+    },
+    "static.ipc_epoll": {
+      "error": null,
+      "exit_code": 0,
+      "facts": {
+        "af_unix": "socketpair",
+        "close_errno": 9,
+        "epoll": "readable",
+        "half_close_eof": true,
+        "ok": true,
+        "payload": "ping"
+      },
+      "status": "pass"
+    },
+    "static.mmap_cow": {
+      "error": null,
+      "exit_code": 0,
+      "facts": {
+        "mapping_released": true,
+        "ok": true,
+        "private_cow": true,
+        "shared_msync": true
+      },
+      "status": "pass"
+    },
+    "static.process": {
+      "error": null,
+      "exit_code": 0,
+      "facts": {
+        "exit_codes": [
+          17,
+          23
+        ],
+        "fork_exec_wait": true,
+        "ok": true,
+        "restarts": 2,
+        "signal_delivered": true
+      },
+      "status": "pass"
+    },
+    "static.robust_owner_death": {
+      "error": null,
+      "exit_code": 0,
+      "facts": {
+        "child_reaped": true,
+        "mutex_reused": true,
+        "ok": true,
+        "recovered_with_consistent": true,
+        "robust_futex_owner_death": true
+      },
+      "status": "pass"
+    },
+    "static.scm_rights": {
+      "error": null,
+      "exit_code": 0,
+      "facts": {
+        "child_reaped": true,
+        "ok": true,
+        "recv_cloexec": true,
+        "scm_rights": true,
+        "shared_offset": true
+      },
+      "status": "pass"
+    },
+    "static.smoke": {
+      "error": null,
+      "exit_code": 0,
+      "facts": {
+        "auxv_page_power_of_two": true,
+        "file_data": "AYNC",
+        "msync": true,
+        "ok": true,
+        "rename_unlink": true
+      },
+      "status": "pass"
+    },
+    "static.threads_futex": {
+      "error": null,
+      "exit_code": 0,
+      "facts": {
+        "futex_mismatch_errno": 11,
+        "ok": true,
+        "threads_created": 4,
+        "threads_joined": 4
+      },
+      "status": "pass"
+    },
+    "static.uds_peercred": {
+      "error": null,
+      "exit_code": 0,
+      "facts": {
+        "accept4_cloexec": true,
+        "child_reaped": true,
+        "ok": true,
+        "so_peercred": true,
+        "socket_unlinked": true,
+        "unix_pathname": true
+      },
+      "status": "pass"
+    },
+    "uds_path": {
+      "error": null,
+      "exit_code": 0,
+      "facts": {
+        "epoll_accept": true,
+        "named_af_unix": true,
+        "ok": true,
+        "socket_path_released": true
+      },
+      "status": "pass"
+    }
+  },
+  "counts": {
+    "fail": 0,
+    "not_run": 1,
+    "pass": 31
+  },
+  "overall": "partial",
+  "platform": {
+    "gcc": "gcc (Debian 14.2.0-19) 14.2.0",
+    "machine": "x86_64",
+    "python": "3.13.5",
+    "release": "6.18.44",
+    "sqlite": "3.46.1",
+    "system": "Linux"
+  },
+  "schema": 1,
+  "suite": "a04-linux-host-differential",
+  "trace": "not_requested"
+}

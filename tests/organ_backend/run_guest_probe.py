@@ -24,9 +24,10 @@ def require(ok, message):
     if not ok:
         raise ValueError(message)
 
-def unpack(data):
+def unpack(data, *, max_bytes=16 * 1024 * 1024):
     """Parse bounded newc into memory; never extract archive paths on the host."""
-    require(len(data) <= 16 * 1024 * 1024, "archive exceeds limit")
+    require(type(max_bytes) is int and max_bytes > 0, "invalid archive limit")
+    require(len(data) <= max_bytes, "archive exceeds limit")
     entries = []
     pos = 0
     seen = set()

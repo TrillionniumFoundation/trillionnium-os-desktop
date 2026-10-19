@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "kind": "A04_ORIGINAL_LINUX_CHROOT_STRESS_NOT_GUEST",
+  "date": "2026-10-16",
+  "execution": "Debian 13 x86_64 Linux chroot, UID/GID 65534, disposable writable /tmp only",
+  "rounds": 20,
+  "cases_per_round": 18,
+  "total": 360,
+  "passed": 360,
+  "failed": 0,
+  "timeout": 0,
+  "rootfs_files_verified": 17,
+  "rootfs_tar_sha256": "df8df2e3cdcd308ef62a59268a4519e2923c9ff78145e46f26a4092725e80797",
+  "rootfs_manifest_sha256": "55aa8369d4f912267139ef7626c752814d7dc833e49accc337529f2545fb94cb",
+  "full_per_run_json_sha256": "eb03c99e35b867bc7d3f5a60e8d60ce8f397e70d913feb41c798666c5a7dec6e",
+  "full_per_run_json_bytes": 72986,
+  "runner": "python3 tests/workloads/linux/chroot_stress.py --tar /mnt/data/a04-rootfs-next-cases-verify.tar --manifest support/rootfs/manifest-debian13-x86_64.json --reference tests/workloads/linux/baselines/linux-debian13-x86_64.json --output /mnt/data/a04-stress-20round-20261016.json --rounds 20 --timeout 12",
+  "notes": "20 real original-Linux chroot rounds (18 exact ELF/application cases per round), all case facts and exit codes equal fixed Linux reference. This does not test Python/Tokio, Hepta W1, Asterinas guest, or S1 power-loss durability.",
+  "guest_execution_verified": false,
+  "hepta_w1_verified": false,
+  "s1_power_loss_verified": false
+}

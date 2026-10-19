@@ -8,6 +8,8 @@ on:
       - "kernel/asterinas/**"
       - "libs/os-abi/**"
       - "libs/os-control/**"
+      - "compat/linux/**"
+      - "support/rootfs/**"
       - "support/build/kernel.sh"
       - "support/build/verify-source.py"
       - "support/build/minimal/**"
@@ -28,6 +30,8 @@ on:
       - "kernel/asterinas/**"
       - "libs/os-abi/**"
       - "libs/os-control/**"
+      - "compat/linux/**"
+      - "support/rootfs/**"
       - "support/build/kernel.sh"
       - "support/build/verify-source.py"
       - "support/build/minimal/**"
@@ -64,7 +68,9 @@ jobs:
           sudo apt-get update
           sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             build-essential ca-certificates curl git python3 pkg-config libssl-dev \
-            clang lld qemu-system-x86 busybox-static
+            clang lld qemu-system-x86 busybox-static \
+            gcc-13 libc6-dev binutils libsqlite3-dev python3.12 python3.12-minimal \
+            libpython3.12-stdlib openssl tzdata
 
       - name: Install pinned Rust toolchain and verify VDSO input
         shell: bash
@@ -203,6 +209,63 @@ jobs:
             --output "${RUNNER_TEMP}/a04-nofile-linux"
           sha256sum --check "$out/probe.sha256"
 
+      - name: Verify complete Ubuntu full32 runner negative controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          checks="${RUNNER_TEMP}/a04-full-checks"
+          mkdir "$checks"
+          /usr/bin/python3.12 -I -B tests/workloads/linux/test_full_ubuntu_profile.py \
+            > "$checks/runner-tests.log" 2>&1
+          /usr/bin/python3.12 -I -B -O tests/workloads/linux/test_full_ubuntu_profile.py \
+            > "$checks/runner-tests-optimized.log" 2>&1
+
+      - name: Build and freeze the complete Ubuntu full32 workload image
+        id: a04_full_bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          checks="${RUNNER_TEMP}/a04-full-checks"
+          bundle="${RUNNER_TEMP}/a04-full-bundle"
+          source_head=$(git rev-parse HEAD)
+          source_tree=$(git rev-parse HEAD^{tree})
+          cargo +nightly-2026-07-21 fetch --locked \
+            --manifest-path tests/workloads/linux/rust/Cargo.toml \
+            > "$checks/cargo-fetch.log" 2>&1
+          /usr/bin/python3.12 -I -B tests/workloads/linux/run_full_ubuntu_profile.py build \
+            --a01-initramfs support/build/evidence/2026-10-16/artifacts/initramfs.cpio.gz \
+            --qemu /usr/bin/qemu-system-x86_64 \
+            --expected-source-head "$source_head" --expected-source-tree "$source_tree" \
+            --output "$bundle" \
+            > "$checks/build-stage.stdout.log" 2> "$checks/build-stage.stderr.log"
+          (
+            cd "$bundle"
+            sha256sum --check inputs.sha256
+          )
+          # This is the sole digest file, written by build before any workload.
+          # Freeze its value as a step output; later stages never replace it
+          # with a digest newly computed after the Linux or kernel execution.
+          read -r input_sha input_name < "$bundle/inputs.sha256"
+          test "$input_name" = inputs.json
+          [[ "$input_sha" =~ ^[0-9a-f]{64}$ ]]
+          printf 'source_head=%s\nsource_tree=%s\ninput_sha256=%s\n' \
+            "$source_head" "$source_tree" "$input_sha" >> "$GITHUB_OUTPUT"
+
+      - name: Run all 32 original Linux cases from the frozen Ubuntu image
+        shell: bash
+        env:
+          A04_FULL_INPUT_SHA: ${{ steps.a04_full_bundle.outputs.input_sha256 }}
+        run: |
+          set -euo pipefail
+          checks="${RUNNER_TEMP}/a04-full-checks"
+          # Root is used only for this disposable, unmounted chroot. Each
+          # workload runs as UID/GID 65534 with maintained process-group cleanup.
+          sudo /usr/bin/python3.12 -I -B tests/workloads/linux/run_full_ubuntu_profile.py reference \
+            --bundle "${RUNNER_TEMP}/a04-full-bundle" \
+            --expected-input-sha256 "$A04_FULL_INPUT_SHA" \
+            --output "${RUNNER_TEMP}/a04-full-linux" \
+            > "$checks/reference-stage.stdout.log" 2> "$checks/reference-stage.stderr.log"
+
       - name: Build ordinary G1 product and verify QueryAbi with all four disabled operations
         shell: bash
         run: |
@@ -271,6 +334,26 @@ jobs:
             done
           done
 
+      - name: Verify all 32 Ubuntu cases on the same ordinary kernel and frozen image
+        shell: bash
+        env:
+          A04_FULL_INPUT_SHA: ${{ steps.a04_full_bundle.outputs.input_sha256 }}
+          A04_FULL_SOURCE_HEAD: ${{ steps.a04_full_bundle.outputs.source_head }}
+          A04_FULL_SOURCE_TREE: ${{ steps.a04_full_bundle.outputs.source_tree }}
+        run: |
+          set -euo pipefail
+          checks="${RUNNER_TEMP}/a04-full-checks"
+          /usr/bin/python3.12 -I -B tests/workloads/linux/run_full_ubuntu_profile.py guest \
+            --bundle "${RUNNER_TEMP}/a04-full-bundle" \
+            --expected-input-sha256 "$A04_FULL_INPUT_SHA" \
+            --linux-reference "${RUNNER_TEMP}/a04-full-linux" \
+            --product-evidence "${RUNNER_TEMP}/a06-queryabi-candidate" \
+            --expected-source-head "$A04_FULL_SOURCE_HEAD" \
+            --expected-source-tree "$A04_FULL_SOURCE_TREE" \
+            --bios /usr/share/seabios/bios-256k.bin --qemu /usr/bin/qemu-system-x86_64 \
+            --output "${RUNNER_TEMP}/a04-full-guest" \
+            > "$checks/guest-stage.stdout.log" 2> "$checks/guest-stage.stderr.log"
+
       - name: Build exact A06 SMP=2 candidate kernel
         shell: bash
         env:
@@ -310,6 +393,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: a06-exact-kernel-ktest-${{ github.run_id }}
+          # The full32 bundle retains every frozen input, all five workload
+          # ELFs, runtime/image bytes and build logs. Only its regenerable Cargo
+          # target cache is excluded; failed stage evidence remains included.
           path: |
             ${{ runner.temp }}/a06-ktest
             ${{ runner.temp }}/a06-prepared-locks
@@ -322,6 +408,11 @@ jobs:
             ${{ runner.temp }}/a04-nofile-build
             ${{ runner.temp }}/a04-nofile-linux
             ${{ runner.temp }}/a04-nofile-guest
+            ${{ runner.temp }}/a04-full-checks
+            ${{ runner.temp }}/a04-full-bundle
+            ${{ runner.temp }}/a04-full-linux
+            ${{ runner.temp }}/a04-full-guest
+            !${{ runner.temp }}/a04-full-bundle/build/cargo-target/**
             ${{ runner.temp }}/a06-cpu-config-*
             ${{ runner.temp }}/a06-kernel-build
             ${{ runner.temp }}/a06-probe-1vcpu

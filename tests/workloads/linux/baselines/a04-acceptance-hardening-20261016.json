@@ -1,0 +1,108 @@
+{
+  "baseline_commit": "23aaecd36f494aae2024a0de1749d67af814c63c",
+  "branch": "agents/A04-linux-hepta-baseline",
+  "date": "2026-10-16",
+  "external_cross_agent_guest_sources": [
+    {
+      "actual_cpu_ns": 998000000,
+      "not_an_A04_guest_run": true,
+      "observed": "1percent_cpu_max_not_enforced_in_real_QEMU",
+      "owner": "A06",
+      "path": "results/organ-backend/2026-10-16/cpu-probe-02/result.json",
+      "wall_ns": 1000128020
+    },
+    {
+      "current_pinned_kernel_rerun_pending": true,
+      "observed": "older_A01_diagnostic_guest_proc_self_exe_script_path",
+      "owner": "A05",
+      "path": "support/build/evidence/2026-10-16/boot-failure-analysis.md",
+      "raw_qemu_exit": 65,
+      "repeat_init_count": 1139
+    }
+  ],
+  "fixed_linux_reference_sha256": "ea38aa903ead1f72683ab10dcefeb756ec8b1e115dfccf49d8a9823c8a968026",
+  "guest_execution_verified": false,
+  "kind": "A04_ORIGINAL_LINUX_AND_ACCEPTANCE_GATES_NOT_KERNEL_PASS",
+  "locally_retained_evidence_sha256": {
+    "chroot.json": "a25536e0113d9462b023f89a08b818f19f4d307e4044fa99badafefcfbb81ace",
+    "host-strict-diff.json": "92d6e2550aea4900e55161c5ec3908c41f7de314872480c06ef96dffc679522f",
+    "host-strict.json": "ea38aa903ead1f72683ab10dcefeb756ec8b1e115dfccf49d8a9823c8a968026",
+    "qemu-blocked/run-status.json": "7ab955e1e448dcb62e6b489abfbb8b1a9eeed66e04552c37b1610a3899dc305f",
+    "rootfs.tar": "df8df2e3cdcd308ef62a59268a4519e2923c9ff78145e46f26a4092725e80797",
+    "stress.json": "e7dba0b705b4a9132d06d0779c7f709736f6a9a8fd799048ea6c1c6d5dfa06fb",
+    "units-strict-opt.log": "1fbb5ff0d64c065c036cf73fb9cde2e6e29f2ccfb777f2cf1895ffd73879387e",
+    "units-strict.log": "17b26d7304634980ca79f94064a3c530332b38ec5210577ac5f0a6544c22d49d"
+  },
+  "observations": {
+    "chroot_identical_elf": {
+      "failed": 0,
+      "manifest_file_count": 17,
+      "not_run": 4,
+      "passed": 28
+    },
+    "chroot_stress": {
+      "completed": 90,
+      "failed": 0,
+      "passed": 90,
+      "rounds": 5
+    },
+    "hepta_w1": {
+      "reason": "pinned ELF/provider composition/tool effect trace absent",
+      "status": "not_run"
+    },
+    "linux_reference_differential": {
+      "differences": 0,
+      "matched": 31,
+      "verdict": "partial_match"
+    },
+    "normal_unittest": {
+      "failed": 0,
+      "passed": 76,
+      "skipped": 0
+    },
+    "optimized_unittest": {
+      "failed": 0,
+      "passed": 76,
+      "skipped": 0
+    },
+    "original_linux_workloads": {
+      "failed": 0,
+      "not_run": 1,
+      "passed": 31
+    },
+    "qemu_preflight": {
+      "exit_code": 2,
+      "guest_execution_verified": false,
+      "qualification": "blocked_environment_or_input",
+      "reason": "QEMU executable unavailable"
+    },
+    "rust_tokio": {
+      "reason": "cargo and reviewed standalone Cargo.lock absent",
+      "status": "not_run"
+    },
+    "s1_storage": {
+      "reason": "no block/ext2 power-loss/crash durability test",
+      "status": "not_run"
+    }
+  },
+  "original_linux_commands": [
+    "python3 -m unittest discover -s tests/workloads/linux -p 'test_*.py' -q",
+    "python3 -O -m unittest discover -s tests/workloads/linux -p 'test_*.py' -q",
+    "python3 tests/workloads/linux/run.py --rust auto --output NEW/host.json",
+    "python3 compat/linux/compare.py --reference tests/workloads/linux/baselines/linux-debian13-x86_64.json --candidate NEW/host.json --proven-only --output NEW/diff.json",
+    "python3 tests/workloads/linux/chroot_replay.py --tar FIXED/rootfs.tar --manifest support/rootfs/manifest-debian13-x86_64.json --reference tests/workloads/linux/baselines/linux-debian13-x86_64.json --output NEW/chroot.json",
+    "python3 tests/workloads/linux/chroot_stress.py --tar FIXED/rootfs.tar --manifest support/rootfs/manifest-debian13-x86_64.json --reference tests/workloads/linux/baselines/linux-debian13-x86_64.json --output NEW/stress.json --rounds 5 --timeout 12"
+  ],
+  "pinned_A01_qemu_binary_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+  "real_hepta_w1_verified": false,
+  "rootfs_manifest_sha256": "55aa8369d4f912267139ef7626c752814d7dc833e49accc337529f2545fb94cb",
+  "rootfs_tar_sha256": "df8df2e3cdcd308ef62a59268a4519e2923c9ff78145e46f26a4092725e80797",
+  "s1_storage_qualified": false,
+  "schema": 1,
+  "tested_environment": {
+    "arch": "x86_64",
+    "distro": "Debian GNU/Linux 13",
+    "release": "6.18.44",
+    "system": "Linux"
+  }
+}
