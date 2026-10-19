@@ -1,5 +1,15 @@
 # 当前状态
 
+## 2026-10-19 R11：G1-b 内部纳秒记账与完整同核验收已合入
+
+[#205](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/205) 于 **11:34:07 UTC** 正常合入 `b8d5af3f82aa8c262560fd52a79408a18e18bde1`；其 tree `8eb809136a402cc54ba049b1e40dd174308c923f` 与实际执行 head `4d3011cf9f92e25fc1b0d7371e9cdbbd5a8b7930` 完全一致。五项检查全部成功；完整原件与四份独立产物审查见 [本轮全模块报告](../results/integration/2026-10-19-g1b-usage/README.md) 和 [最终源码/合并绑定](../results/integration/2026-10-19-g1b-usage/source-publication/final-state.json)。
+
+原 [A06 run 39240728276](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39240728276) 的 artifact `12182038203` 已逐字核验：7054 源文件身份相符；完整 core **220/220**，OSTD **221 reported / 3 soft skip / 218 执行下界**，两套件合计 **441 reported / 438 实际执行下界**。七个完整220项负控精确检出 **3/4/3/1/4/1/2** 个预期失败。普通内核 QueryAbi14、SCM27、RLIMIT37、Linux32/guest32 逐项同输出、四配置和有界1/2vCPU原门槛通过；本轮普通与1/2vCPU内核ELF相同，SHA256 `1897671a81fab04dc8d5e995b42b62256ec2bd13043ad78a93684d46f60c0fe0`。
+
+实现继续使用唯一原 CpuMax/Process/runqueue owner、原校准 BOOTTIME 纳秒端点及独立 CFS/RT cycles，增加19项内核回归。HOS2 仍仅 QueryAbi；ReadUsage、InstallBudget、QueryDelivery、RetireThrough 四操作关闭。当前验收是内部记账/一致快照切片，未授予可信 Process/exec grant、原 Hepta K↔D、完整 SMP/physical switch、真实 Asterinas W1 或设备/手机资格。下一步固定调用点、锁序、映像不可变性与实施顺序见 [报告第7–10节](../results/integration/2026-10-19-g1b-usage/README.md)。
+
+Hepta 最后状态观察为11:15 main/PR与11:18固定头checks；`43a638d4…` 仍 Draft/open/unmerged/blocked，52项完成（24成功、14失败、8取消、6跳过），两个实际 required 仍失败。[新状态证据](../results/integration/2026-10-19-g1b-usage/hepta-final-status/README.md) 与旧日志分别保存。下方既有轮次保留各自记录时点，早期 WIP 原件缺失、首次 f966 G0 失败、旧环境失败和历史 pending 不改写为当时已成功；本节提供当前完成状态。
+
 ## 2026-10-19 R11 接续：原 CPU owner 纳秒记账候选与本地完整 core
 
 本候选基于已正常合入 #203、#204 的 main `00e2652c62ce6e34337d8f5bc3f3366b089c3d9c`，在原 CpuMax 中统一 BOOTTIME 纳秒窗口与累计计费，保留独立 CFS cycles 游标，接入同一次本地结算和同锁内部 usage 快照；倒退、时钟不可用及累计溢出保留故障，有限 quota 拒绝，合法 `max` 管理恢复不清除故障。技术实现、锁序和错误边界见 [G1-b 技术手册](ASTERINAS_CPU_USAGE_G1B.md)，19 项回归、原七组生产负控和复跑命令见 [G1-b 开发与验证手册](../tests/organ_backend/CPU_USAGE_G1B.md)。

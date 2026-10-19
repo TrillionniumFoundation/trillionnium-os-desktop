@@ -1,0 +1,240 @@
+{
+  "schema_version": 1,
+  "kind": "bounded_historical_pr203_elf_identity_correction",
+  "reviewer": "/root/r10_evidence_docs",
+  "started_at_utc": "2026-10-19T11:46:48.673933+00:00",
+  "completed_at_utc": "2026-10-19T11:46:48.825030+00:00",
+  "source_head": "775061af51e6ee91fce290d5855e24a276292e14",
+  "source_tree": "afeb331293025ca7a63678167211de109e997110",
+  "archive": {
+    "artifact_id": 12172041618,
+    "run_id": 39219341861,
+    "bytes": 153302416,
+    "sha256": "7ec32457b02fe4fa897b32ce937f2c34d9cd0bfae034da4c5f74626ecfc539bf",
+    "member_count": 1172,
+    "uncompressed_bytes": 383208710,
+    "official_api_url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/artifacts/12172041618",
+    "fixed_identity_basis": "Existing byte-identical official archive recovery receipt; this review checks current byte size/member count and the selected member bytes, without claiming a new full-archive hash or CRC sweep.",
+    "recovery_receipt_path": "../pr203-restored-artifact/archive-recovery.json",
+    "recovery_receipt_bytes": 611,
+    "recovery_receipt_sha256": "fe20d22c09406ae394656e2c258ec34d918779d519a27e214577cd022e85337b",
+    "recovered_at_utc": "2026-10-19T10:59:34.843365+00:00",
+    "full_archive_sha256_recomputed_in_this_correction": false,
+    "full_archive_crc_sweep_repeated": false
+  },
+  "selected_original_json_members": [
+    {
+      "archive_member": "_temp/a06-queryabi-candidate/result.json",
+      "published_path": "raw/_temp/a06-queryabi-candidate/result.json",
+      "bytes": 3360,
+      "sha256": "c29666f30207d0bb9bf9d64bbddb0fb51e2b679dd068e64dfc81c61c45b361cc",
+      "zip_crc32": "a8060b39",
+      "raw_bytes_preserved": true
+    },
+    {
+      "archive_member": "_temp/a06-probe-1vcpu/result.json",
+      "published_path": "raw/_temp/a06-probe-1vcpu/result.json",
+      "bytes": 1501,
+      "sha256": "620e4b88f214cac1754bfde5698fe277f4d78e1036977935d33aad6b4802e5e7",
+      "zip_crc32": "43fa389f",
+      "raw_bytes_preserved": true
+    },
+    {
+      "archive_member": "_temp/a06-probe-2vcpu/result.json",
+      "published_path": "raw/_temp/a06-probe-2vcpu/result.json",
+      "bytes": 1529,
+      "sha256": "cf9d8e14b90eef706f8c71bc273706dd0665973b22ed8773309f3570ce2e4428",
+      "zip_crc32": "1a5a2d93",
+      "raw_bytes_preserved": true
+    },
+    {
+      "archive_member": "_temp/a06-cpu-config-100000-read-only/result.json",
+      "published_path": "raw/_temp/a06-cpu-config-100000-read-only/result.json",
+      "bytes": 6192,
+      "sha256": "e0a6eaaf387f2a49cfb7cb32d6b9b10515a05c47921a0c57738b03e38e5f5fc4",
+      "zip_crc32": "57fbd8d1",
+      "raw_bytes_preserved": true
+    },
+    {
+      "archive_member": "_temp/a06-cpu-config-100000-same-value/result.json",
+      "published_path": "raw/_temp/a06-cpu-config-100000-same-value/result.json",
+      "bytes": 6202,
+      "sha256": "ecc284b319741465ebfb6e2bde086541c0595f51d747374241c9557f62dd3b8a",
+      "zip_crc32": "c780ca1d",
+      "raw_bytes_preserved": true
+    },
+    {
+      "archive_member": "_temp/a06-cpu-config-2000-read-only/result.json",
+      "published_path": "raw/_temp/a06-cpu-config-2000-read-only/result.json",
+      "bytes": 6182,
+      "sha256": "cefe5b149e37eb7bf7245f52ca2474bd03f6eebd33e49a6ed6ad7ad8e378c18e",
+      "zip_crc32": "c072940b",
+      "raw_bytes_preserved": true
+    },
+    {
+      "archive_member": "_temp/a06-cpu-config-2000-same-value/result.json",
+      "published_path": "raw/_temp/a06-cpu-config-2000-same-value/result.json",
+      "bytes": 6194,
+      "sha256": "d850e36af6708440e07cdc8a67c9abcafea7ee35b1b3fb40f4cc778e83f4cad6",
+      "zip_crc32": "f9ee2ef3",
+      "raw_bytes_preserved": true
+    }
+  ],
+  "identity_comparison": [
+    {
+      "archive_member": "_temp/a06-queryabi-candidate/result.json",
+      "field": "kernel_elf_sha256",
+      "value": "e1d5ec0f294d0fffe1c887f92e2b564aa9d967753e0d6f815894ca6490c779c5",
+      "equals_streamed_saved_ordinary_elf": true
+    },
+    {
+      "archive_member": "_temp/a06-probe-1vcpu/result.json",
+      "field": "candidate_sha256",
+      "value": "e1d5ec0f294d0fffe1c887f92e2b564aa9d967753e0d6f815894ca6490c779c5",
+      "equals_streamed_saved_ordinary_elf": true,
+      "recorded_smp_qualified": false
+    },
+    {
+      "archive_member": "_temp/a06-probe-2vcpu/result.json",
+      "field": "candidate_sha256",
+      "value": "e1d5ec0f294d0fffe1c887f92e2b564aa9d967753e0d6f815894ca6490c779c5",
+      "equals_streamed_saved_ordinary_elf": true,
+      "recorded_configured_vcpus": 2,
+      "recorded_smp_qualified": false
+    }
+  ],
+  "ordinary_product_elf_stream_review": {
+    "archive_member": "_temp/a06-queryabi-candidate/product-kernel.elf",
+    "bytes": 8288528,
+    "sha256": "e1d5ec0f294d0fffe1c887f92e2b564aa9d967753e0d6f815894ca6490c779c5",
+    "method": "streamed original ZIP member; no ELF execution",
+    "crc_validated_on_full_member_read": true
+  },
+  "shared_target_elf_stream_review": {
+    "archive_member": "trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/target/osdk/aster-core/aster-core-osdk-bin.elf",
+    "bytes": 9842424,
+    "sha256": "5b01239ef330608a6faba9814707a04a34fc0a174eb3ec6cd810446466f197f3",
+    "method": "streamed original ZIP member; no ELF execution",
+    "crc_validated_on_full_member_read": true,
+    "not_the_recorded_probe_candidate": true,
+    "actual_build_origin_assigned": false,
+    "warning": "The shared target ELF is different from the saved ordinary ELF. Its final path alone does not identify which earlier run consumed it; do not substitute it for the kernel identity recorded in either quota receipt. This review does not infer its producer build or execute it."
+  },
+  "correction": {
+    "incorrect_old_wording": "旧 #203 的 SMP2 使用了与普通内核不同的 ELF。",
+    "corrected_wording": "旧 #203 的 1/2 vCPU 原 probe 收据绑定同一 e1d5ec0f… 普通内核；共享 target ELF 不能替代这些原输入记录。这些有限配额结果仍不提供完整 SMP 资格。",
+    "affected_report_sections": [
+      "R11 audit §4 historical kernel paragraph",
+      "R11 audit §5.4 comparison to historical #203"
+    ],
+    "basis": "Both original quota candidate_sha256 values equal the original QueryAbi kernel_elf_sha256 and the newly streamed saved ordinary product-kernel.elf SHA-256.",
+    "separate_smp_build_output_equivalence_proven": false
+  },
+  "old_four_cpu_values_receipt_check": [
+    {
+      "archive_member": "_temp/a06-cpu-config-100000-read-only/result.json",
+      "period_us": 100000,
+      "mode": "read-only",
+      "quota_us": 1000,
+      "configured_duration_seconds": 4,
+      "recorded_wall_ns": 4000493322,
+      "recorded_cpu_ns": 36000000,
+      "recorded_cpu_percent": 0.8998890162376829,
+      "recomputed_from_receipt_sample_percent": 0.8998890162376829,
+      "six_decimal_percent": "0.899889",
+      "original_upper_limit_percent": 1.2,
+      "recorded_kernel_sha256": "e1d5ec0f294d0fffe1c887f92e2b564aa9d967753e0d6f815894ca6490c779c5",
+      "recorded_serial_sha256": "ef67b3802e1a3646812ef2fef5941b055d013d282e8772f9a67500356f1c7604",
+      "recorded_serial_bytes": 95122,
+      "original_receipt_passed": true,
+      "original_qemu_exit": 33,
+      "serial_reparsed_in_this_review": false,
+      "new_runtime_execution": false
+    },
+    {
+      "archive_member": "_temp/a06-cpu-config-100000-same-value/result.json",
+      "period_us": 100000,
+      "mode": "same-value",
+      "quota_us": 1000,
+      "configured_duration_seconds": 4,
+      "recorded_wall_ns": 4099347983,
+      "recorded_cpu_ns": 36000000,
+      "recorded_cpu_percent": 0.8781884375098683,
+      "recomputed_from_receipt_sample_percent": 0.8781884375098683,
+      "six_decimal_percent": "0.878188",
+      "original_upper_limit_percent": 1.2,
+      "recorded_kernel_sha256": "e1d5ec0f294d0fffe1c887f92e2b564aa9d967753e0d6f815894ca6490c779c5",
+      "recorded_serial_sha256": "3ed86b57648b09ba480ed6517f17b51c45d9c15a1bf5cd6007f4cf27dbb208f2",
+      "recorded_serial_bytes": 95180,
+      "original_receipt_passed": true,
+      "original_qemu_exit": 33,
+      "serial_reparsed_in_this_review": false,
+      "new_runtime_execution": false
+    },
+    {
+      "archive_member": "_temp/a06-cpu-config-2000-read-only/result.json",
+      "period_us": 2000,
+      "mode": "read-only",
+      "quota_us": 1000,
+      "configured_duration_seconds": 4,
+      "recorded_wall_ns": 4000285589,
+      "recorded_cpu_ns": 1850000000,
+      "recorded_cpu_percent": 46.24669811293315,
+      "recomputed_from_receipt_sample_percent": 46.24669811293315,
+      "six_decimal_percent": "46.246698",
+      "original_upper_limit_percent": 52.0,
+      "recorded_kernel_sha256": "e1d5ec0f294d0fffe1c887f92e2b564aa9d967753e0d6f815894ca6490c779c5",
+      "recorded_serial_sha256": "5ef7b79162c6363c1d4347b042accce44987287f170b348c816f704daf62f260",
+      "recorded_serial_bytes": 1106219,
+      "original_receipt_passed": true,
+      "original_qemu_exit": 33,
+      "serial_reparsed_in_this_review": false,
+      "new_runtime_execution": false
+    },
+    {
+      "archive_member": "_temp/a06-cpu-config-2000-same-value/result.json",
+      "period_us": 2000,
+      "mode": "same-value",
+      "quota_us": 1000,
+      "configured_duration_seconds": 4,
+      "recorded_wall_ns": 4000156533,
+      "recorded_cpu_ns": 1852000000,
+      "recorded_cpu_percent": 46.29818820142657,
+      "recomputed_from_receipt_sample_percent": 46.29818820142657,
+      "six_decimal_percent": "46.298188",
+      "original_upper_limit_percent": 52.0,
+      "recorded_kernel_sha256": "e1d5ec0f294d0fffe1c887f92e2b564aa9d967753e0d6f815894ca6490c779c5",
+      "recorded_serial_sha256": "60b49aff6ecf3ced07230f98f36e19dbc061c6af873eb1607aa63f4bb4ce152e",
+      "recorded_serial_bytes": 1075602,
+      "original_receipt_passed": true,
+      "original_qemu_exit": 33,
+      "serial_reparsed_in_this_review": false,
+      "new_runtime_execution": false
+    }
+  ],
+  "scope_limits": [
+    "This is a new limited identity correction and recorded-sample arithmetic check, not restoration of the lost old review JSON or a new product run.",
+    "The four old CPU values are checked against the four existing result.json records and their cpu_ns/wall_ns samples only; raw serial marker parsing, timing-oracle reruns and host tool execution were not performed.",
+    "Original smp_qualified=false and hepta_hos2_qualified=false remain false; no full SMP, physical-switch atomicity, strict quota SLA, HOS2 effect or Hepta qualification is created.",
+    "No other historical core/OSTD, negative-control, full32, driver or recovery semantic review is added.",
+    "The large official ZIP and both ELF bodies remain external producer members; this small publication contains only their identities and the seven selected original JSON records.",
+    "No existing frozen package, report or Git worktree was modified."
+  ],
+  "activities": {
+    "new_product_builds": 0,
+    "new_product_executions": 0,
+    "cargo_or_qemu_invocations": 0,
+    "remote_reads": 0,
+    "remote_mutations": 0,
+    "old_packages_modified": 0,
+    "selected_json_members_extracted": 7,
+    "elf_members_stream_hashed": 2
+  },
+  "acceptance": {
+    "scope": "requested identity correction and four recorded percentages only",
+    "three_identity_fields_equal_saved_ordinary_elf": true,
+    "selected_original_json_bytes_preserved": true,
+    "old_four_six_decimal_values_match": true,
+    "blocking": []
+  }
+}

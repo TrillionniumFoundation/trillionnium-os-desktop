@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "recorded_at_utc": "2026-10-19T11:57:46.218000+00:00",
+  "first_attempt": {
+    "path": "source-publication/publication-generation-first-attempt.json",
+    "bytes": 9109,
+    "sha256": "95605761a6ef8ac8138d7c91e17e53e95a6a4894331b15826dcc74c81016acd3",
+    "detected_change": "publication-validation.json",
+    "passed": false
+  },
+  "cause": "Unattributed: the validator recorded one output-path change within its read interval; its result does not identify a writer.",
+  "bounded_followup": "No active validator process observed after the attempt. The independent reviewer confirms its two outputs were external scratch paths at 11:52:35–11:52:38 and 11:54:39–11:54:41 UTC, with no repository writes. This does not prove the absence of every other writer.",
+  "resolution_gate": "Retain this original failure and require the same complete publication checks to pass on stable inputs, then generate and strictly verify the outer manifest. No guard is weakened.",
+  "product_effect": "No product code, tests or CI result changed. This is report assembly validation only."
+}

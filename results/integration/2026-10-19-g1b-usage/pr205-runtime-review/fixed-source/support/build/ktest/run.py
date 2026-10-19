@@ -1,0 +1,134 @@
+#!/usr/bin/env python3
+"""Run real upstream OSDK kernel tests without editing upstream manifests."""
+import argparse
+from datetime import datetime, timezone
+import fcntl
+import hashlib
+import json
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+import tempfile
+
+TOOLCHAIN = "nightly-2026-07-21"
+CRATES = {"ostd": "ostd", "aster-core": "kernel/core"}
+
+
+def digest(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def run(command, cwd, env, log):
+    with log.open("w") as output:
+        result = subprocess.run(command, cwd=cwd, env=env, stdout=output, stderr=subprocess.STDOUT)
+    return result.returncode
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--crate", choices=CRATES, action="append")
+    parser.add_argument("--output", type=Path, help="must not already exist")
+    parser.add_argument("--test-name", help="optional complete test-path suffix, not a substring or crate selector")
+    parser.add_argument("--skip-osdk-install", action="store_true",
+                        help="reuse an already source-built OSDK carrying the explicit-lock patch")
+    args = parser.parse_args()
+    here = Path(__file__).resolve().parent
+    project = here.parents[2]
+    upstream = project / "kernel/asterinas"
+    env = os.environ.copy()
+    env["RUSTUP_TOOLCHAIN"] = TOOLCHAIN
+    cargo_home = Path(env.get("CARGO_HOME", str(Path.home() / ".cargo")))
+    env["PATH"] = str(cargo_home / "bin") + os.pathsep + env.get("PATH", "")
+    env["CARGO_BUILD_JOBS"] = env.get("CARGO_BUILD_JOBS", "2")
+    env["CARGO_NET_GIT_FETCH_WITH_CLI"] = "true"
+    env["OSDK_LOCAL_DEV"] = "1"
+    env["VDSO_LIBRARY_DIR"] = env.get("VDSO_LIBRARY_DIR", str(project / "support/build/out/linux-vdso"))
+    env["NETDEV"], env["ENABLE_KVM"], env["OVMF"] = "none", "0", "off"
+    env["SMP"], env["MEM"], env["CONSOLE"] = "1", "512M", "ttyS0"
+    env["BOOT_METHOD"], env["BOOT_PROTOCOL"], env["QEMU_DISPLAY"] = "vmm-direct", "multiboot", "none"
+    env.pop("OSDK_CARGO_LOCK", None)
+    parent_output = project / "support/build/out"
+    parent_output.mkdir(parents=True, exist_ok=True)
+    if args.output:
+        output = args.output.resolve()
+        output.mkdir(parents=True, exist_ok=False)
+    else:
+        prefix = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ-ktest-")
+        output = Path(tempfile.mkdtemp(prefix=prefix, dir=parent_output))
+    lock = (project / "support/build/out-kernel.lock").open("a")
+    try:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        raise SystemExit("another kernel build/test is using this workspace")
+    # Keep the shared inode in place. Closing the descriptor releases its lock.
+    with lock:
+        verify = [sys.executable, "-I", str(project / "support/build/verify-source.py")]
+        if run(verify, project, env, output / "source-inputs.json"):
+            raise SystemExit(f"source verification failed; see {output}")
+        commands = []
+        if not args.skip_osdk_install:
+            command = ["cargo", f"+{TOOLCHAIN}", "install", "--locked", "cargo-osdk", "--path", "osdk"]
+            commands.append({"argv": command, "cwd": str(upstream)})
+            (output / "commands.json").write_text(json.dumps(commands, indent=2) + "\n")
+            if run(command, upstream, env, output / "osdk-install.log"):
+                raise SystemExit(f"OSDK installation failed; see {output}")
+        osdk = cargo_home / "bin/cargo-osdk"
+        if not osdk.is_file():
+            raise SystemExit("source-built cargo-osdk is missing")
+        version = subprocess.check_output(["rustc", f"+{TOOLCHAIN}", "-Vv"], env=env, text=True)
+        cargo_version = subprocess.check_output(["cargo", f"+{TOOLCHAIN}", "-Vv"], env=env, text=True)
+        environment = {"toolchain": TOOLCHAIN, "rustc": version, "cargo": cargo_version,
+                       "git_head": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=project, text=True).strip(),
+                       "git_status": subprocess.check_output(["git", "status", "--short"], cwd=project, text=True),
+                       "build_inputs_sha256": {
+                           str(path.relative_to(project)): digest(path) for path in sorted([
+                               upstream / "osdk/src/commands/build/mod.rs",
+                               project / "support/build/verify-source.py",
+                               *[path for path in here.rglob("*") if path.is_file() and "__pycache__" not in path.parts],
+                           ])
+                       },
+                       "osdk_sha256": digest(osdk), "vdso_sha256": digest(Path(env["VDSO_LIBRARY_DIR"]) / "vdso_x86_64.so"),
+                       "cargo_build_jobs": env["CARGO_BUILD_JOBS"], "test_name": args.test_name,
+                       "osdk_install_skipped": args.skip_osdk_install}
+        (output / "environment.json").write_text(json.dumps(environment, indent=2) + "\n")
+        env["CARGO_TARGET_DIR"] = str(upstream / "target")
+        results = []
+        for crate in args.crate or CRATES:
+            target = output / crate
+            target.mkdir()
+            lock_path = here / "locks" / f"{crate}.Cargo.lock"
+            if not lock_path.is_file():
+                raise SystemExit("prepare the fixed test-base locks with ktest/prepare-locks.py first")
+            env["OSDK_CARGO_LOCK"] = str(lock_path)
+            env["A01_KTEST_GUESTS"] = str(target / "guests")
+            env["A01_KTEST_CRATE"] = crate
+            command = ["cargo", f"+{TOOLCHAIN}", "osdk", "test", "--release", "--boot-method=vmm-direct",
+                       "--grub-boot-protocol=multiboot", "--qemu-exe=" + str(here / "record-qemu.py"),
+                       "--kcmd-args=loglevel=error", "--kcmd-args=earlycon", "--kcmd-args=console=ttyS0"]
+            if args.test_name:
+                command.append(args.test_name)
+            commands.append({"argv": command, "cwd": str(upstream / CRATES[crate]), "lock_sha256": digest(lock_path)})
+            (output / "commands.json").write_text(json.dumps(commands, indent=2) + "\n")
+            code = run(command, upstream / CRATES[crate], env, target / "osdk-test.log")
+            (target / "osdk-exit-code.txt").write_text(str(code) + "\n")
+            generated = upstream / "target/osdk" / f"{crate}-test-base" / "Cargo.lock"
+            if generated.exists():
+                shutil.copyfile(generated, target / "generated.Cargo.lock")
+            if code:
+                raise SystemExit(f"{crate}: OSDK failed ({code}); retained evidence: {target}")
+            if not generated.is_file() or digest(generated) != digest(lock_path):
+                raise SystemExit(f"{crate}: generated lock differs from the fixed test-base lock")
+            checker = [sys.executable, "-I", str(here / "check.py"), str(target / "guests"), "--crate", crate]
+            if args.test_name:
+                checker.append("--allow-filtered")
+            if run(checker, project, env, target / "result.json"):
+                raise SystemExit(f"{crate}: guest evidence rejected; see {target / 'result.json'}")
+            results.append(json.loads((target / "result.json").read_text()))
+        (output / "result.json").write_text(json.dumps({"passed": True, "crates": results}, indent=2) + "\n")
+    print(f"PASS: real kernel-mode tests; evidence: {output}")
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,282 @@
+{
+  "schema": 1,
+  "frozen_at_utc": "2026-10-19T11:27:11.096049+00:00",
+  "kind": "Independent review of official #205 final A06 artifact; source and runtime receipts, not a new product execution.",
+  "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+  "pr": 205,
+  "head": "4d3011cf9f92e25fc1b0d7371e9cdbbd5a8b7930",
+  "tree": "8eb809136a402cc54ba049b1e40dd174308c923f",
+  "official_artifact": {
+    "id": 12182038203,
+    "name": "a06-exact-kernel-ktest-39240728276",
+    "bytes": 154979607,
+    "sha256": "ef5d93159c1663fb30d3cf8e39e969525bbfa03b4fedc4db10ef4c87b035d655",
+    "created_at": "2026-10-19T11:13:21Z",
+    "expires_at": "2027-01-17T10:53:54Z",
+    "safe_api_url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/artifacts/12182038203",
+    "safe_download_endpoint": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/actions/artifacts/12182038203/zip",
+    "run_id": 39240728276,
+    "run_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39240728276",
+    "job_id": 118020615962,
+    "job_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39240728276/job/118020615962"
+  },
+  "recorded_final_ci": {
+    "observation_started_at": "2026-10-19T11:17:31.162Z",
+    "observation_finished_at": "2026-10-19T11:17:31.701Z",
+    "run_started_at": "2026-10-19T10:53:54Z",
+    "job_started_at": "2026-10-19T10:53:58Z",
+    "job_completed_at": "2026-10-19T11:13:24Z",
+    "job_step_count": 23,
+    "all_job_steps_success": true,
+    "checks": [
+      {
+        "id": 118020953468,
+        "name": "CodeQL",
+        "status": "completed",
+        "conclusion": "success",
+        "completed_at": "2026-10-19T10:54:50Z"
+      },
+      {
+        "id": 118020616014,
+        "name": "host-contracts",
+        "status": "completed",
+        "conclusion": "success",
+        "completed_at": "2026-10-19T10:54:53Z"
+      },
+      {
+        "id": 118020615962,
+        "name": "exact-kernel-ktest",
+        "status": "completed",
+        "conclusion": "success",
+        "completed_at": "2026-10-19T11:13:24Z"
+      },
+      {
+        "id": 118020615740,
+        "name": "host-evidence",
+        "status": "completed",
+        "conclusion": "success",
+        "completed_at": "2026-10-19T10:55:06Z"
+      },
+      {
+        "id": 118020610051,
+        "name": "Analyze (python)",
+        "status": "completed",
+        "conclusion": "success",
+        "completed_at": "2026-10-19T10:54:57Z"
+      }
+    ],
+    "pr_state_at_this_observation": "open",
+    "pr_draft_at_this_observation": false,
+    "pr_merged_at_this_observation": false,
+    "mergeable_state_at_this_observation": "clean",
+    "merging_or_later_pr_status_not_performed_or_inferred": true
+  },
+  "verified": {
+    "source_file_count": 7054,
+    "all_git_blob_mode_sha256_size_equal_final_head": true,
+    "full_source_tree_independently_recomputed": "8eb809136a402cc54ba049b1e40dd174308c923f",
+    "before_after_candidate_source_equal": true,
+    "core": {
+      "reported_passed": 220,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 0
+    },
+    "ostd": {
+      "reported_passed": 221,
+      "failed": 0,
+      "filtered": 0,
+      "soft_skipped": 3,
+      "soft_skip_tests": [
+        {
+          "name": "ostd::arch::vm::vmx::test::multiple_vmx_guards_lifecycle",
+          "outcome": "ok",
+          "soft_skip_reasons": [
+            "VMX unavailable"
+          ]
+        },
+        {
+          "name": "ostd::arch::vm::vmx::vmcs::test::switch_and_reuse_vmcs",
+          "outcome": "ok",
+          "soft_skip_reasons": [
+            "VMX unavailable"
+          ]
+        },
+        {
+          "name": "ostd::vm::gpm_space::test::guest_mapping_lifecycle",
+          "outcome": "ok",
+          "soft_skip_reasons": [
+            "VMX/EPT invalidation unavailable"
+          ]
+        }
+      ]
+    },
+    "reported_passed": 441,
+    "exercised_passed_lower_bound": 438,
+    "new_usage_tests": 19,
+    "complete_green_names_equal_old_201_union_new_19": true,
+    "negative_controls": [
+      {
+        "name": "owner-current-slot",
+        "complete_suite": 220,
+        "passed": 217,
+        "failed": 3,
+        "exact_failed_names": [
+          "aster_core::fs::fs_impls::cgroupfs::controller::cpu::owner_retention_regressions::controller_publication_charges_the_entire_prefix_to_the_old_incarnation",
+          "aster_core::fs::fs_impls::cgroupfs::controller::cpu::owner_retention_regressions::exited_task_resumes_its_retained_incarnation_after_replacement_and_reap",
+          "aster_core::fs::fs_impls::cgroupfs::controller::cpu::owner_retention_regressions::retained_leaf_debits_its_original_ancestor_chain_after_parent_replacement"
+        ],
+        "single_mutated_path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu.rs",
+        "negative_tree": "6e4535c500151682c35ed53454de28b51ddece07"
+      },
+      {
+        "name": "clocksource-drop-fraction",
+        "complete_suite": 220,
+        "passed": 216,
+        "failed": 4,
+        "exact_failed_names": [
+          "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::fragmented_three_ghz_runtime_keeps_absolute_endpoint_precision",
+          "aster_core::vdso::clocksource_regressions::fragmented_refreshes_preserve_fractional_time_and_endpoint_differences",
+          "aster_core::vdso::clocksource_regressions::full_width_vdso_fraction_survives_second_rollover_and_checks_realtime_overflow",
+          "aster_core::vdso::clocksource_regressions::vdso_and_kernel_share_the_fractional_phase_at_the_next_nanosecond"
+        ],
+        "single_mutated_path": "kernel/asterinas/kernel/core/comps/time/src/clocksource.rs",
+        "negative_tree": "8b57bdf1307a9a73165c9760b74271f614c14cfc"
+      },
+      {
+        "name": "vdso-drop-fraction",
+        "complete_suite": 220,
+        "passed": 217,
+        "failed": 3,
+        "exact_failed_names": [
+          "aster_core::vdso::clocksource_regressions::full_width_vdso_fraction_survives_second_rollover_and_checks_realtime_overflow",
+          "aster_core::vdso::clocksource_regressions::mapped_vdso_publishes_the_phase_and_fault_mode_under_the_existing_sequence",
+          "aster_core::vdso::clocksource_regressions::vdso_and_kernel_share_the_fractional_phase_at_the_next_nanosecond"
+        ],
+        "single_mutated_path": "kernel/asterinas/kernel/core/src/vdso.rs",
+        "negative_tree": "d68174218c03f35d901c5d0d8bf9e881156f7a00"
+      },
+      {
+        "name": "vdso-skip-fault-mode",
+        "complete_suite": 220,
+        "passed": 219,
+        "failed": 1,
+        "exact_failed_names": [
+          "aster_core::vdso::clocksource_regressions::mapped_vdso_publishes_the_phase_and_fault_mode_under_the_existing_sequence"
+        ],
+        "single_mutated_path": "kernel/asterinas/kernel/core/src/vdso.rs",
+        "negative_tree": "8774880d5bfba26bf384f3c04d21278b8efe579b"
+      },
+      {
+        "name": "handoff-drop-tail",
+        "complete_suite": 220,
+        "passed": 216,
+        "failed": 4,
+        "exact_failed_names": [
+          "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::exiting_dequeue_retains_its_owner_through_selection_retries",
+          "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::handoff_debits_the_old_window_before_rechecking_a_shared_ancestor",
+          "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::outgoing_tail_ends_at_the_incoming_segment_start",
+          "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::waiting_dequeue_retains_its_owner_through_selection_retries"
+        ],
+        "single_mutated_path": "kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs",
+        "negative_tree": "285761262556efbf6866af469be01f17dc426a69"
+      },
+      {
+        "name": "handoff-eligibility-first",
+        "complete_suite": 220,
+        "passed": 219,
+        "failed": 1,
+        "exact_failed_names": [
+          "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::handoff_debits_the_old_window_before_rechecking_a_shared_ancestor"
+        ],
+        "single_mutated_path": "kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs",
+        "negative_tree": "3d6d71dd34c5c4a5bfde26554ec31a2b85272cb7"
+      },
+      {
+        "name": "dequeue-drop-owner",
+        "complete_suite": 220,
+        "passed": 218,
+        "failed": 2,
+        "exact_failed_names": [
+          "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::exiting_dequeue_retains_its_owner_through_selection_retries",
+          "aster_core::fs::fs_impls::cgroupfs::controller::cpu::scheduler_handoff_regressions::waiting_dequeue_retains_its_owner_through_selection_retries"
+        ],
+        "single_mutated_path": "kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs",
+        "negative_tree": "38c2473f3043152302dbb7d35bed322b30adc66e"
+      }
+    ],
+    "green_ordinary_ostd_elf_members": [
+      {
+        "archive_member": "_temp/a06-owner-negative/green-core-kernel.elf",
+        "bytes": 9883976,
+        "sha256": "4e07b90b1801339349b880f21310eaf0a7552682a7bd998300884a3d03bdb500",
+        "elf_class": 64,
+        "endianness": "little",
+        "e_machine": 3,
+        "purpose": "OSDK QEMU multiboot marker for the x86_64 guest; not a claim of an i386 product."
+      },
+      {
+        "archive_member": "trillionnium-os-desktop/trillionnium-os-desktop/kernel/asterinas/target/osdk/ostd/ostd-osdk-bin.elf",
+        "bytes": 2008952,
+        "sha256": "07ad371f5f1dc29f91439fbebfd87e5e3fcce303dac815a4120f17851f0998f7",
+        "elf_class": 64,
+        "endianness": "little",
+        "e_machine": 3,
+        "purpose": "OSDK QEMU multiboot marker for the x86_64 guest; not a claim of an i386 product."
+      },
+      {
+        "archive_member": "_temp/a06-queryabi-candidate/product-kernel.elf",
+        "bytes": 8388960,
+        "sha256": "1897671a81fab04dc8d5e995b42b62256ec2bd13043ad78a93684d46f60c0fe0",
+        "elf_class": 64,
+        "endianness": "little",
+        "e_machine": 3,
+        "purpose": "OSDK QEMU multiboot marker for the x86_64 guest; not a claim of an i386 product."
+      }
+    ],
+    "negative_elf_members": 14,
+    "ordinary_queryabi": {
+      "receipt_sha256": "eac389ecd38659ff1fdb2413f1169885ff1eea31c5813b67c8a5f3c858cd5ee9",
+      "kernel_sha256": "1897671a81fab04dc8d5e995b42b62256ec2bd13043ad78a93684d46f60c0fe0",
+      "raw_qemu_exit": 33,
+      "serial_sha256": "08f3ce46a90b60f29c94b3859e5fde39c534fc96fa6d7a239882ec2158971850",
+      "each_recorded_marker_exactly_once": true,
+      "disabled_operations": 4,
+      "native_grants": false,
+      "native_resource_effects": false,
+      "hepta_durability": false
+    },
+    "archive_members": 1172,
+    "all_archive_crc_validated": true
+  },
+  "preserved_prior_failure": {
+    "head": "f9669912e2886190429187e14753d62b2060bd5f",
+    "job_id": 118018209972,
+    "observed_raw_result": "36 host spec tests; one stale source-string assertion failed.",
+    "test_name": "test_process_death_path_charges_thread_owned_snapshot",
+    "source_path": "tests/spec/test_a06_final_accounting_source.py",
+    "old_expected_call": "owner.charge(self.bandwidth_accounted_through, now)",
+    "new_typed_call": "owner.charge(from, until)",
+    "final_head_change": "Only that host source guard changed from f966 to 4d; final 4d owns its own successful CI.",
+    "original_tool_response": "api/first-g0-failure-log.json"
+  },
+  "qualification_boundaries": [
+    "The ordinary full32/SCM27/NOFILE37/CPU metrics are assigned to a separate independent reviewer; this report does not decide those semantic results.",
+    "The 19 kernel tests use actual kernel implementations and explicitly scoped fixtures. They do not establish live physical cross-CPU scheduler migration or Hepta authorization.",
+    "The three OSTD VMX soft skips remain excluded from the exercised lower bound. Seven repeated negative runs are not counted as extra unique green tests.",
+    "QueryAbi retains all four disabled operations and native grants/effects/Hepta durability remain false.",
+    "No A10, original Objective/Operations owner, G1-c/d, ARM/mobile device, Debian13 or original Asterinas W1 qualification is created by this evidence.",
+    "Source snapshots, fixed build inputs and raw runtime records bind this CI execution. A separate bit-for-bit reproducible build was not attempted."
+  ],
+  "read_only_review_passed": true,
+  "transport_exclusions": [
+    "original.zip",
+    "*.partial",
+    "api/download-reference-redacted.json",
+    "download-artifact.py",
+    "/tmp/r11-pr205-artifact-private-download.json",
+    "temporary signed download URL",
+    "download file_uri/file_id",
+    "any downloaded ELF/executable"
+  ]
+}

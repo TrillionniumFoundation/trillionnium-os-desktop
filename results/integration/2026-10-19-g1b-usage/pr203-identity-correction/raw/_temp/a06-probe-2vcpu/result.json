@@ -1,0 +1,62 @@
+{
+  "mode": "leaf",
+  "quota_us": 1000,
+  "period_us": 100000,
+  "duration_seconds": 1,
+  "max_cpu_percent": 3.0,
+  "candidate_sha256": "e1d5ec0f294d0fffe1c887f92e2b564aa9d967753e0d6f815894ca6490c779c5",
+  "initramfs_sha256": "d1aced8ef943a8e4d14d01b234b776bcefe11fd959a12b1db662587ef8bb5359",
+  "source_pin": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+  "host_cgroup_modified": false,
+  "guest_only": true,
+  "smp_qualified": false,
+  "configured_vcpus": 2,
+  "parallel_pthreads": 2,
+  "hepta_hos2_qualified": false,
+  "runs": [
+    {
+      "index": 1,
+      "qemu_exit": 33,
+      "guest_complete": true,
+      "panic": false,
+      "policy_rt": false,
+      "cpu_percent": 0.834,
+      "samples": [
+        {
+          "label": "unlimited",
+          "wall_ns": 1014506371,
+          "cpu_ns": 2009000000,
+          "iterations": 0
+        },
+        {
+          "label": "one-percent-configured",
+          "wall_ns": 2398840113,
+          "cpu_ns": 20000000,
+          "iterations": 0
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "qemu_exit": 33,
+      "guest_complete": true,
+      "panic": false,
+      "policy_rt": false,
+      "cpu_percent": 0.87,
+      "samples": [
+        {
+          "label": "unlimited",
+          "wall_ns": 1013615848,
+          "cpu_ns": 2011000000,
+          "iterations": 0
+        },
+        {
+          "label": "one-percent-configured",
+          "wall_ns": 2299629366,
+          "cpu_ns": 20000000,
+          "iterations": 0
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,997 @@
+{
+  "schema": 1,
+  "scope": "Small explicit list only; no ZIP/ELF/download token/partial/cache.",
+  "artifact_id": 12182038203,
+  "artifact_sha256": "ef5d93159c1663fb30d3cf8e39e969525bbfa03b4fedc4db10ef4c87b035d655",
+  "head": "4d3011cf9f92e25fc1b0d7371e9cdbbd5a8b7930",
+  "tree": "8eb809136a402cc54ba049b1e40dd174308c923f",
+  "selection": [
+    {
+      "path": "README.md",
+      "bytes": 3648,
+      "sha256": "f09b6e84154d2a7967d5a04a770f5de7b7fdd005053d1667785287ad5de4de45",
+      "role": "Readable review, source preparation or bounded validation receipt"
+    },
+    {
+      "path": "SUMMARY.json",
+      "bytes": 12939,
+      "sha256": "669c159fb060a8a4c16d3cf796ffd8f14f27270187be9ac90ab78f56b0c1ed46",
+      "role": "Readable review, source preparation or bounded validation receipt"
+    },
+    {
+      "path": "download-receipt.json",
+      "bytes": 930,
+      "sha256": "7c75e67073fc124cddc08ee45c3fef5efd5ddb1df6ecdf02dc525210a12b4a1f",
+      "role": "Readable review, source preparation or bounded validation receipt"
+    },
+    {
+      "path": "download-receipt-sandbox-failure.json",
+      "bytes": 760,
+      "sha256": "19aefc1f92029068f56423bc724fa538f551699e10dd7369b18e69bddb968bd7",
+      "role": "Readable review, source preparation or bounded validation receipt"
+    },
+    {
+      "path": "prepare-source.py",
+      "bytes": 4140,
+      "sha256": "57f754edded00ce7eea0aabb20acb5fb52984c2d69e06415a630d7b7e58c0762",
+      "role": "Readable review, source preparation or bounded validation receipt"
+    },
+    {
+      "path": "review-green-archive.py",
+      "bytes": 13007,
+      "sha256": "e526367ef05afde02d849a7ae98324d326b9c0e0fd94577691d7acb56d8dfee3",
+      "role": "Readable review, source preparation or bounded validation receipt"
+    },
+    {
+      "path": "review-negative-archive.py",
+      "bytes": 23214,
+      "sha256": "81609f09809d5b9f9d638f625a98f86d128b95c014cf66011c4b28eb19c9510e",
+      "role": "Readable review, source preparation or bounded validation receipt"
+    },
+    {
+      "path": "freeze-review.py",
+      "bytes": 15992,
+      "sha256": "f8fabadef3eaaf58b7843d390343f5d486b840281207076b39393fc55ab7711b",
+      "role": "Readable review, source preparation or bounded validation receipt"
+    },
+    {
+      "path": "green-independent-review/review.json",
+      "bytes": 87032,
+      "sha256": "6a5f40808d290ee0d6832e47f7c7062937f2157a3c3dc85251535a355311b718",
+      "role": "Readable review, source preparation or bounded validation receipt"
+    },
+    {
+      "path": "green-independent-review/manifest.json",
+      "bytes": 1631,
+      "sha256": "029bf2501e8ae175afe93f56a372aad1d41195055fbba41ad267781a6306a40c",
+      "role": "Readable review, source preparation or bounded validation receipt"
+    },
+    {
+      "path": "negative-independent-review/review.json",
+      "bytes": 64622,
+      "sha256": "6f1baa30800d674517e4e5a01cdaf2ef391dd16b16e531f4f0ea536e2a6cbe59",
+      "role": "Readable review, source preparation or bounded validation receipt"
+    },
+    {
+      "path": "negative-independent-review/manifest.json",
+      "bytes": 34089,
+      "sha256": "3b08d74be5a62addfd6944333cb7d8962e8357325ede77e83d50f7cdf7fbbf15",
+      "role": "Readable review, source preparation or bounded validation receipt"
+    },
+    {
+      "path": "publication-raw/source-git-map.json.xz",
+      "bytes": 402500,
+      "sha256": "2f8d88eb89671b3688783cc0a97dfdde988ed83c0ddae2d341dcd81038f10844",
+      "role": "Lossless original source/ZIP member identity map"
+    },
+    {
+      "path": "publication-raw/negative-independent-review/archive-member-index.json.xz",
+      "bytes": 19072,
+      "sha256": "f4eebc120b9141c92c7a65ca43adb189583bf9f031567b52e03ca2a77e420169",
+      "role": "Lossless original source/ZIP member identity map"
+    },
+    {
+      "path": "publication-raw/api/final-a01-jobs-first.json.xz",
+      "bytes": 1072,
+      "sha256": "b12c8f33760047d366131a7bc564424a5ed77e89d756ee879407f182178200a3",
+      "role": "Lossless original API, failure or local fixed-host receipt; timestamps and source scopes preserved"
+    },
+    {
+      "path": "publication-raw/api/final-a06-artifacts-completed.json.xz",
+      "bytes": 800,
+      "sha256": "37510a36236662b318c5c78125426e5bfab993f9d3c5cf0d0aa91e7336b6d324",
+      "role": "Lossless original API, failure or local fixed-host receipt; timestamps and source scopes preserved"
+    },
+    {
+      "path": "publication-raw/api/final-a06-jobs-02.json.xz",
+      "bytes": 1572,
+      "sha256": "8115e9e7d0f1504a22b4892f14324c03e220d2ee80917186302b1ee66fe6e90c",
+      "role": "Lossless original API, failure or local fixed-host receipt; timestamps and source scopes preserved"
+    },
+    {
+      "path": "publication-raw/api/final-a06-jobs-03.json.xz",
+      "bytes": 1612,
+      "sha256": "e1c714ed164e41214397c46d09a83fef5ec66206fd512c0f433661437e397d3a",
+      "role": "Lossless original API, failure or local fixed-host receipt; timestamps and source scopes preserved"
+    },
+    {
+      "path": "publication-raw/api/final-a06-jobs-completed.json.xz",
+      "bytes": 1636,
+      "sha256": "a3ad5258f155ad7f151313915baacef93e4b515373d41cac6a8d5ad03cc26a89",
+      "role": "Lossless original API, failure or local fixed-host receipt; timestamps and source scopes preserved"
+    },
+    {
+      "path": "publication-raw/api/final-a06-jobs-first.json.xz",
+      "bytes": 1552,
+      "sha256": "cf3867cc690619d34e9661fb7bba7e83bd5c34047e0f77aefd828f64690e8e49",
+      "role": "Lossless original API, failure or local fixed-host receipt; timestamps and source scopes preserved"
+    },
+    {
+      "path": "publication-raw/api/final-a06-run-completed.json.xz",
+      "bytes": 2044,
+      "sha256": "c199cc728d932b81c18de3df52987bed7452d96408c32ad3e27f19e934e750cb",
+      "role": "Lossless original API, failure or local fixed-host receipt; timestamps and source scopes preserved"
+    },
+    {
+      "path": "publication-raw/api/final-g0-jobs-first.json.xz",
+      "bytes": 1444,
+      "sha256": "d9fdfad0c9ef95b3be7f4bc9b9c072ae1027e564ec64d1e0a1ee0a8270c6092e",
+      "role": "Lossless original API, failure or local fixed-host receipt; timestamps and source scopes preserved"
+    },
+    {
+      "path": "publication-raw/api/final-head-checks-completed.json.xz",
+      "bytes": 2200,
+      "sha256": "869debd30caff5834cf9b6c152f55e24d824cea82f5f6de865da251e919cc22e",
+      "role": "Lossless original API, failure or local fixed-host receipt; timestamps and source scopes preserved"
+    },
+    {
+      "path": "publication-raw/api/final-pr205-completed.json.xz",
+      "bytes": 5212,
+      "sha256": "a62b307781f3ed2dbaf148c03fb976cc2dac48ac6d17abd80da9197c4ed0d395",
+      "role": "Lossless original API, failure or local fixed-host receipt; timestamps and source scopes preserved"
+    },
+    {
+      "path": "publication-raw/api/first-a06-current-job.json.xz",
+      "bytes": 480,
+      "sha256": "6f05ae8657e08fd7dd329fc430abaf7c5759a7735dca01ec3f207cdf9aa49e6f",
+      "role": "Lossless original API, failure or local fixed-host receipt; timestamps and source scopes preserved"
+    },
+    {
+      "path": "publication-raw/api/first-checks.json.xz",
+      "bytes": 2216,
+      "sha256": "90f5c1187a73272bce2611b83731a36e557ad127ef2f837d51c1b6e5c704e544",
+      "role": "Lossless original API, failure or local fixed-host receipt; timestamps and source scopes preserved"
+    },
+    {
+      "path": "publication-raw/api/first-g0-failure-job.json.xz",
+      "bytes": 480,
+      "sha256": "2497c7a21357310bdb8236c887473d8ee25b3814889c7f97830acb22d34ad44a",
+      "role": "Lossless original API, failure or local fixed-host receipt; timestamps and source scopes preserved"
+    },
+    {
+      "path": "publication-raw/api/first-g0-failure-log.json.xz",
+      "bytes": 18292,
+      "sha256": "11b20aa9877f60038878073c2507fe1b23fe1c388938acebd73f84c72cf97eca",
+      "role": "Lossless original API, failure or local fixed-host receipt; timestamps and source scopes preserved"
+    },
+    {
+      "path": "publication-raw/api/first-pr.json.xz",
+      "bytes": 4648,
+      "sha256": "6a15b29bacfa8e4d5c80f3fb5533a69825a5fe2ec9a9a53ade400f6fb7846793",
+      "role": "Lossless original API, failure or local fixed-host receipt; timestamps and source scopes preserved"
+    },
+    {
+      "path": "publication-raw/api/first-runs.json.xz",
+      "bytes": 2424,
+      "sha256": "4809521874e6d06a78184ee28b8349619ef2bd935e697110b0412d27c5fcd9b7",
+      "role": "Lossless original API, failure or local fixed-host receipt; timestamps and source scopes preserved"
+    },
+    {
+      "path": "publication-raw/g0-first/after-seed-organ-backend.log.xz",
+      "bytes": 1188,
+      "sha256": "da4e172e4e2d4c765c6f75a6c3d400cb005243a7a27588158d1110490c594d7d",
+      "role": "Lossless original API, failure or local fixed-host receipt; timestamps and source scopes preserved"
+    },
+    {
+      "path": "publication-raw/g0-first/after-seed-spec.log.xz",
+      "bytes": 1320,
+      "sha256": "e54a8d187047627e9e36907d74e73eb6051b4663834d91305ba957f3ee9cb777",
+      "role": "Lossless original API, failure or local fixed-host receipt; timestamps and source scopes preserved"
+    },
+    {
+      "path": "publication-raw/g0-first/after-seed-tests.json.xz",
+      "bytes": 548,
+      "sha256": "3d8c48d53e179b6a1c2248551dc6cc64ed28df10c7e8e5cc1bc2ba9476ae4fce",
+      "role": "Lossless original API, failure or local fixed-host receipt; timestamps and source scopes preserved"
+    },
+    {
+      "path": "publication-raw/g0-first/fixed-spec-tests.json.xz",
+      "bytes": 452,
+      "sha256": "31fcdb7194508f9bbe6d4a9e2bc29a7b9350b79fd818329ca478c00f52a8af63",
+      "role": "Lossless original API, failure or local fixed-host receipt; timestamps and source scopes preserved"
+    },
+    {
+      "path": "publication-raw/g0-first/fixed-spec-tests.log.xz",
+      "bytes": 1976,
+      "sha256": "c29c7672644d2bf9096e9b72e699d87703c71731ef31e1db8b67e4a11eda15b7",
+      "role": "Lossless original API, failure or local fixed-host receipt; timestamps and source scopes preserved"
+    },
+    {
+      "path": "publication-raw/g0-first/job-118018209972.tool-response.json.xz",
+      "bytes": 18188,
+      "sha256": "22b65e8baf93e4c2d9036251fb4a367236cbe3050741278e8d6f791c08fb32fe",
+      "role": "Lossless original API, failure or local fixed-host receipt; timestamps and source scopes preserved"
+    },
+    {
+      "path": "green-independent-review/selected/_temp/a06-ktest/aster-core/guests/guest-001/qemu.json.xz",
+      "bytes": 1512,
+      "sha256": "ba7b67c60d15fe72ccbc93926a0317aebfb5d19cb28bfee359177918b6da85dd",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "green-independent-review/selected/_temp/a06-ktest/aster-core/guests/guest-001/serial.log.xz",
+      "bytes": 4488,
+      "sha256": "5a7f401234c17ef7bc136130ec2fa48b969e851d1241043e78be9f117c085e79",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "green-independent-review/selected/_temp/a06-ktest/ostd/guests/guest-001/qemu.json.xz",
+      "bytes": 1512,
+      "sha256": "f920f55e8a36f582ee3ca6261508fcb5145317bb54faef66fcfea89687160438",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "green-independent-review/selected/_temp/a06-ktest/ostd/guests/guest-001/serial.log.xz",
+      "bytes": 3552,
+      "sha256": "c53c0fcaab5b4495ef9a1658a2e0d1cfad11d5684281451f8297cbe9aa643c3a",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "green-independent-review/selected/_temp/a06-queryabi-candidate/result.json.xz",
+      "bytes": 1648,
+      "sha256": "ec218c518c88ba0033e9233260f57df92e306d40a3602a6409735f4582977d56",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "green-independent-review/selected/_temp/a06-queryabi-candidate/serial.log.xz",
+      "bytes": 5208,
+      "sha256": "f607d65cb013f3dcdfb085d2d8fe5f874558c23d64d2d7c5f749ded7f5d76b43",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "green-independent-review/selected/_temp/a06-queryabi-candidate/source-before.json.xz",
+      "bytes": 398788,
+      "sha256": "61182db0488f6dc627e4fbe7d3da0b04048474ed69d227808177b8488d3be4c6",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/clocksource-drop-fraction/applied-negative-control.patch.xz",
+      "bytes": 368,
+      "sha256": "80e47a6a52f22d1bd4e2feaffba282ab12032ac4cd20f48dc84425208d540e50",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/clocksource-drop-fraction/command.json.xz",
+      "bytes": 388,
+      "sha256": "a803267daf2ab5d1ba2ed8270d358d1eec48a4a7d7427f5b91641c5d4ca00222",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/clocksource-drop-fraction/declared-negative-control.patch.xz",
+      "bytes": 288,
+      "sha256": "e9492adbbefd0967d57623764366e98db79e6fd82bb01396e6fed1b35d54ef8b",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/clocksource-drop-fraction/gate/aster-core/guests/guest-001/qemu.json.xz",
+      "bytes": 1544,
+      "sha256": "d0c1ac99d8b7b8e0934e8071778ae13bf3b89ad74ae83e695c1aa187be41b582",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/clocksource-drop-fraction/gate/aster-core/guests/guest-001/serial.log.xz",
+      "bytes": 4656,
+      "sha256": "1a0fbf7fbb357259c789cd4785ec55ecd214e0235bf5f72ad73415f0087bd5cf",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/clocksource-drop-fraction/gate/commands.json.xz",
+      "bytes": 396,
+      "sha256": "a100b6fbf698690668d7d91a58ded8a47a9897259a2b2ab45da8209cac361cf4",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/clocksource-drop-fraction/gate/environment.json.xz",
+      "bytes": 1224,
+      "sha256": "6314235290acdcfb98c4d1f4713c5c7eada7cffd2615fde6724babca0523cb5c",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/clocksource-drop-fraction/green-core-validation.json.xz",
+      "bytes": 228,
+      "sha256": "ac455ab4cdd2e18b0406e346479a7ed3d064599a5d1077e2e4a4a9af63b6b4da",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/clocksource-drop-fraction/original-gate-exit.json.xz",
+      "bytes": 80,
+      "sha256": "1944a8b7daa8ad948076adb2d0962b1ea48bad28f2ce392bdc1bf894f9cb80a3",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/clocksource-drop-fraction/result.json.xz",
+      "bytes": 996,
+      "sha256": "a9943e45889f9359fa0cdf90e72edd9fdc5865e0a96f5bdcf6e787e446aba4cb",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/dequeue-drop-owner/applied-negative-control.patch.xz",
+      "bytes": 388,
+      "sha256": "5d98fc6769806a5c13210d1999cf2506dae02af31262a635ab52e2dc6533c124",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/dequeue-drop-owner/command.json.xz",
+      "bytes": 384,
+      "sha256": "41dbf4627afcee20c6a52b92e78d10c9a5cc3978fdaf977f37359399e6d377a2",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/dequeue-drop-owner/declared-negative-control.patch.xz",
+      "bytes": 340,
+      "sha256": "61afbe168beb5b8187cef76aacfb8fd01824068a42f8807fb78e5ac5f26a48e0",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/dequeue-drop-owner/gate/aster-core/guests/guest-001/qemu.json.xz",
+      "bytes": 1540,
+      "sha256": "f9997d8759c1a4d61e887d4e56de2c2cd0342175d626c85a4da12f3b982a4165",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/dequeue-drop-owner/gate/aster-core/guests/guest-001/serial.log.xz",
+      "bytes": 4572,
+      "sha256": "fbeabbee8965344163d31b6db80ed470fc09da501d734c55a9bf662d6f2e1aa8",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/dequeue-drop-owner/gate/commands.json.xz",
+      "bytes": 396,
+      "sha256": "a100b6fbf698690668d7d91a58ded8a47a9897259a2b2ab45da8209cac361cf4",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/dequeue-drop-owner/gate/environment.json.xz",
+      "bytes": 1224,
+      "sha256": "936374b0328ef5b1fc4da2be1f6c7de6a6571f87111e0db185861dd53c8ad3d4",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/dequeue-drop-owner/green-core-validation.json.xz",
+      "bytes": 228,
+      "sha256": "ac455ab4cdd2e18b0406e346479a7ed3d064599a5d1077e2e4a4a9af63b6b4da",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/dequeue-drop-owner/original-gate-exit.json.xz",
+      "bytes": 80,
+      "sha256": "1944a8b7daa8ad948076adb2d0962b1ea48bad28f2ce392bdc1bf894f9cb80a3",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/dequeue-drop-owner/result.json.xz",
+      "bytes": 884,
+      "sha256": "4a8d696c74435715bf2ee8fd65a3b158383cc0b4a242a91c64af1f7a0883310d",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/handoff-drop-tail/applied-negative-control.patch.xz",
+      "bytes": 532,
+      "sha256": "1ff59cf273ac7ab47c9b0907375dad0dff9caeb50ae55184043f1338f1dc8b78",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/handoff-drop-tail/command.json.xz",
+      "bytes": 380,
+      "sha256": "a38863904565cc830c59e03ac54ab7825ba4f593c5fb7d95d1f070818a8d47a6",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/handoff-drop-tail/declared-negative-control.patch.xz",
+      "bytes": 484,
+      "sha256": "b66fa1c88eeaf8b38404d75e1b41c86c1c8ca829efdcf7c3137ed516f62cabba",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/handoff-drop-tail/gate/aster-core/guests/guest-001/qemu.json.xz",
+      "bytes": 1536,
+      "sha256": "f576d0a06eb2e1b1e53784b49f6b3d62aa56177c39ae4c11ee864e23558146b1",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/handoff-drop-tail/gate/aster-core/guests/guest-001/serial.log.xz",
+      "bytes": 4628,
+      "sha256": "0dffb066c40c188623b5ebabd57d1e00ef6596c493edacf5bdfbb185570376a1",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/handoff-drop-tail/gate/commands.json.xz",
+      "bytes": 396,
+      "sha256": "a100b6fbf698690668d7d91a58ded8a47a9897259a2b2ab45da8209cac361cf4",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/handoff-drop-tail/gate/environment.json.xz",
+      "bytes": 1224,
+      "sha256": "0f4df6d0af83008059791ee85d777c462ab157f3505f227d19fbeb314c636fa5",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/handoff-drop-tail/green-core-validation.json.xz",
+      "bytes": 228,
+      "sha256": "ac455ab4cdd2e18b0406e346479a7ed3d064599a5d1077e2e4a4a9af63b6b4da",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/handoff-drop-tail/original-gate-exit.json.xz",
+      "bytes": 80,
+      "sha256": "1944a8b7daa8ad948076adb2d0962b1ea48bad28f2ce392bdc1bf894f9cb80a3",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/handoff-drop-tail/result.json.xz",
+      "bytes": 956,
+      "sha256": "a6e8e927dd11a37231cfe8edb6862ce6a2cd47ea97d539a9481ad3baa9e19d26",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/handoff-eligibility-first/applied-negative-control.patch.xz",
+      "bytes": 592,
+      "sha256": "150a909863642ef24e56dc1b3055aa5e845327b9f0e7e8f2c5590aa6d9344769",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/handoff-eligibility-first/command.json.xz",
+      "bytes": 388,
+      "sha256": "771c4bdf77de5e51aa74ab83c9d58727915c5d320f998be733cf918ca5fdddbf",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/handoff-eligibility-first/declared-negative-control.patch.xz",
+      "bytes": 544,
+      "sha256": "5c43db4e49c90c79d4b9bc7ad4d67a754739957ff836b7f438da953b39ac3c28",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/handoff-eligibility-first/gate/aster-core/guests/guest-001/qemu.json.xz",
+      "bytes": 1544,
+      "sha256": "9303bb6fbaa5659e0108ffd0da09308ef99888064a1d2743b9724dc8ce3b7bd0",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/handoff-eligibility-first/gate/aster-core/guests/guest-001/serial.log.xz",
+      "bytes": 4552,
+      "sha256": "dac45c611cb2fe3f4d8e8df502973a1a43f57c3bbabfa05dc3c859198c52744e",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/handoff-eligibility-first/gate/commands.json.xz",
+      "bytes": 396,
+      "sha256": "a100b6fbf698690668d7d91a58ded8a47a9897259a2b2ab45da8209cac361cf4",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/handoff-eligibility-first/gate/environment.json.xz",
+      "bytes": 1224,
+      "sha256": "76e4ffa4225483f46935bf100002f81abe8224c14722a423316850c76b681ca1",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/handoff-eligibility-first/green-core-validation.json.xz",
+      "bytes": 228,
+      "sha256": "ac455ab4cdd2e18b0406e346479a7ed3d064599a5d1077e2e4a4a9af63b6b4da",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/handoff-eligibility-first/original-gate-exit.json.xz",
+      "bytes": 80,
+      "sha256": "1944a8b7daa8ad948076adb2d0962b1ea48bad28f2ce392bdc1bf894f9cb80a3",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/handoff-eligibility-first/result.json.xz",
+      "bytes": 880,
+      "sha256": "511065a850618685fc2b593a6748352063cea24c61716895254d587bb9b16e48",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/vdso-drop-fraction/applied-negative-control.patch.xz",
+      "bytes": 324,
+      "sha256": "072b48da977ebf1850b4324241cecb70dd08c70be41147f6aec3656e5872a139",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/vdso-drop-fraction/command.json.xz",
+      "bytes": 384,
+      "sha256": "3e343c7e237cf354ab7087a27daeb1dc54433df31bd71263c7d3b2f9d340fef5",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/vdso-drop-fraction/declared-negative-control.patch.xz",
+      "bytes": 208,
+      "sha256": "d276fa715d7aa78a5f52a7e34efcbc2dc4de05c5e44323a7cdf67e97c7ccf6f1",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/vdso-drop-fraction/gate/aster-core/guests/guest-001/qemu.json.xz",
+      "bytes": 1540,
+      "sha256": "42e5cdbd3962e7ad488b06ee02b50af7c0d255fd049e39a40a71601bcc2c977b",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/vdso-drop-fraction/gate/aster-core/guests/guest-001/serial.log.xz",
+      "bytes": 4624,
+      "sha256": "776d947b077d8d4ceff5a655f4b2fb66c0320c0cf77c7d2299b4dabd4cc19854",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/vdso-drop-fraction/gate/commands.json.xz",
+      "bytes": 396,
+      "sha256": "a100b6fbf698690668d7d91a58ded8a47a9897259a2b2ab45da8209cac361cf4",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/vdso-drop-fraction/gate/environment.json.xz",
+      "bytes": 1228,
+      "sha256": "17d1a2fd2c174ef8ddbacf360e4ad2537ecf6a5696cce82d937aa79a7ace3bf0",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/vdso-drop-fraction/green-core-validation.json.xz",
+      "bytes": 228,
+      "sha256": "ac455ab4cdd2e18b0406e346479a7ed3d064599a5d1077e2e4a4a9af63b6b4da",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/vdso-drop-fraction/original-gate-exit.json.xz",
+      "bytes": 80,
+      "sha256": "1944a8b7daa8ad948076adb2d0962b1ea48bad28f2ce392bdc1bf894f9cb80a3",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/vdso-drop-fraction/result.json.xz",
+      "bytes": 928,
+      "sha256": "d0473d5731ba77762f6dfa3112e94d88536db756581df0fc0f7db46552ed5c1a",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/applied-negative-control.patch.xz",
+      "bytes": 324,
+      "sha256": "3a23c5910ee4d7f8f43218fb62d641f4f73e015f663d1394e8f872ad6018ea95",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/command.json.xz",
+      "bytes": 384,
+      "sha256": "68363b0246d8d9eb2ed98872fb15f5f8dbf66b6939dad53c684f681bd64cb961",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/declared-negative-control.patch.xz",
+      "bytes": 244,
+      "sha256": "0147f7820685c54dc7b2c1090fe3cfd6f570513d9f69bdd3317b3380d59193e6",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/gate/aster-core/guests/guest-001/qemu.json.xz",
+      "bytes": 1536,
+      "sha256": "500f678f0f77b4f5fe35768b63e1bc4b71842844eddddf8e028e64c2e7454f69",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/gate/aster-core/guests/guest-001/serial.log.xz",
+      "bytes": 4548,
+      "sha256": "72b7a97a9b815401b6f21bf1afa8e775226b9d8a16f324d73397954170189e53",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/gate/commands.json.xz",
+      "bytes": 396,
+      "sha256": "a100b6fbf698690668d7d91a58ded8a47a9897259a2b2ab45da8209cac361cf4",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/gate/environment.json.xz",
+      "bytes": 1224,
+      "sha256": "792f3054ed5bee757f1b517c24c57e3bf3700cc16d1ee26ec380f7dc3584f0ea",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/green-core-validation.json.xz",
+      "bytes": 228,
+      "sha256": "ac455ab4cdd2e18b0406e346479a7ed3d064599a5d1077e2e4a4a9af63b6b4da",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/original-gate-exit.json.xz",
+      "bytes": 80,
+      "sha256": "1944a8b7daa8ad948076adb2d0962b1ea48bad28f2ce392bdc1bf894f9cb80a3",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-clock-handoff-negative/vdso-skip-fault-mode/result.json.xz",
+      "bytes": 848,
+      "sha256": "0109b4c13616ba846fef9016e3018acd26a33a0d71aecf57e55d0cd0b05f1ea8",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-ktest/commands.json.xz",
+      "bytes": 488,
+      "sha256": "3650c7fc0e8ead23320b586e56be0cb61f1fcf1ede1621135db8dc77de710075",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-ktest/environment.json.xz",
+      "bytes": 1224,
+      "sha256": "73f489850e0a962d4e41555b17246760732d3042f4317ec1abd75392a321faa4",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-ktest/source-inputs.json.xz",
+      "bytes": 956,
+      "sha256": "e1a07e676097736ea559568a1a51981034a9873399181bec85a90569581f1e01",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-owner-negative/applied-negative-control.patch.xz",
+      "bytes": 524,
+      "sha256": "aae2027c2f0221891147448fbb7d890bb97f0762ad9423b21210b6d93060e817",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-owner-negative/command.json.xz",
+      "bytes": 364,
+      "sha256": "163ab7aaf4046a047016f534df827b93b84d5d21386485af19967e617d391eef",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-owner-negative/declared-negative-control.patch.xz",
+      "bytes": 480,
+      "sha256": "8a9e1bf4a0abdfaad5d401cc01a97ee5f37d730474ea7300f435aa831484d427",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-owner-negative/gate/aster-core/guests/guest-001/qemu.json.xz",
+      "bytes": 1520,
+      "sha256": "a90e18d1eded1370ddafbd59d55bf26fd3d29c29af9e0b60cb3921fbf21f46dd",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-owner-negative/gate/aster-core/guests/guest-001/serial.log.xz",
+      "bytes": 4600,
+      "sha256": "267155b44446d27dd59e3231375c2b3ff4d30439f383322dc38cff052ff6ea3d",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-owner-negative/gate/commands.json.xz",
+      "bytes": 396,
+      "sha256": "a100b6fbf698690668d7d91a58ded8a47a9897259a2b2ab45da8209cac361cf4",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-owner-negative/gate/environment.json.xz",
+      "bytes": 1224,
+      "sha256": "0832e47b6f09da06136c40b21f953035729c242d2ba1e5e7bc6c42fddbdd6931",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-owner-negative/green-core-validation.json.xz",
+      "bytes": 228,
+      "sha256": "ac455ab4cdd2e18b0406e346479a7ed3d064599a5d1077e2e4a4a9af63b6b4da",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-owner-negative/original-gate-exit.json.xz",
+      "bytes": 80,
+      "sha256": "1944a8b7daa8ad948076adb2d0962b1ea48bad28f2ce392bdc1bf894f9cb80a3",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "negative-independent-review/selected/_temp/a06-owner-negative/result.json.xz",
+      "bytes": 944,
+      "sha256": "d7141f8858bbb93126f0b27a57f9b8fa49cc5831a18abdae778556e4efea4965",
+      "role": "Original artifact selected raw member compressed losslessly"
+    },
+    {
+      "path": "fixed-source/.github/workflows/a06-kernel.yml",
+      "bytes": 20606,
+      "sha256": "d39cc586aad4d54e75dda1742fd7f6e7b26cf83d673eeecd9f99245440b50c45",
+      "role": "Exact reviewed source from immutable final Git blob"
+    },
+    {
+      "path": "fixed-source/kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native/usage_tests.rs",
+      "bytes": 35603,
+      "sha256": "9199dee49d804bb3b217a417362ed78043bcb6ae7a23f3bb29191d8f7c304dcb",
+      "role": "Exact reviewed source from immutable final Git blob"
+    },
+    {
+      "path": "fixed-source/support/build/ktest/check.py",
+      "bytes": 4623,
+      "sha256": "503fcc6d1ed2f828d3ab9fdbf54f28df2148dea43afbd8d9abae65d34baa1373",
+      "role": "Exact reviewed source from immutable final Git blob"
+    },
+    {
+      "path": "fixed-source/support/build/ktest/record-qemu.py",
+      "bytes": 3496,
+      "sha256": "0db266f115090bdcac0e0b3944b42d2f555c301b30a713314f20af6a6f5a6a2a",
+      "role": "Exact reviewed source from immutable final Git blob"
+    },
+    {
+      "path": "fixed-source/support/build/ktest/run.py",
+      "bytes": 7443,
+      "sha256": "c70096ee2bd5b4e369da4bb45533fb8d8fea2892371678064d9bd55663187c29",
+      "role": "Exact reviewed source from immutable final Git blob"
+    },
+    {
+      "path": "fixed-source/tests/kernel/control/run_queryabi_candidate_guest.py",
+      "bytes": 16239,
+      "sha256": "e02cfa6a786f8016f0fdb4714e539e6949094c32390cf9230a9039b0dd868a6f",
+      "role": "Exact reviewed source from immutable final Git blob"
+    },
+    {
+      "path": "fixed-source/tests/kernel/control/run_queryabi_guest.py",
+      "bytes": 9633,
+      "sha256": "3d981b41ae4905983c67d13d8d7abfbc29318fd6a41b848523eb4c0ac1400268",
+      "role": "Exact reviewed source from immutable final Git blob"
+    },
+    {
+      "path": "fixed-source/tests/organ_backend/clocksource_drop_fraction_negative.patch",
+      "bytes": 560,
+      "sha256": "6aeb53178b4facbe105c7fd4ff3e8086d5a9b57f2715f80781efc2764338a442",
+      "role": "Exact reviewed source from immutable final Git blob"
+    },
+    {
+      "path": "fixed-source/tests/organ_backend/cpu_dequeue_drop_owner_negative.patch",
+      "bytes": 596,
+      "sha256": "b6fc10180e9fe292249409c758151763401dddb39bb4b2851bf53f71b3c959dd",
+      "role": "Exact reviewed source from immutable final Git blob"
+    },
+    {
+      "path": "fixed-source/tests/organ_backend/cpu_handoff_drop_tail_negative.patch",
+      "bytes": 838,
+      "sha256": "2e9a87cdf9044f29dbcb8c932e72079eaf3fc9ecde791c9627b45b9b06257ffc",
+      "role": "Exact reviewed source from immutable final Git blob"
+    },
+    {
+      "path": "fixed-source/tests/organ_backend/cpu_handoff_eligibility_first_negative.patch",
+      "bytes": 1074,
+      "sha256": "8a90266278c3610c337e9ce780130e3a179ccce6942bbd4db05c53cfd805546c",
+      "role": "Exact reviewed source from immutable final Git blob"
+    },
+    {
+      "path": "fixed-source/tests/organ_backend/cpu_owner_current_slot_negative.patch",
+      "bytes": 980,
+      "sha256": "04b19a7a89b8f8591d9a18766390167201e999a9617febcd9d0c70902005f1bd",
+      "role": "Exact reviewed source from immutable final Git blob"
+    },
+    {
+      "path": "fixed-source/tests/organ_backend/run_candidate_matrix.py",
+      "bytes": 10170,
+      "sha256": "76d7712a8e514fc6156c74f44c29d724cd410345db09ce5775d71dc21a19ff39",
+      "role": "Exact reviewed source from immutable final Git blob"
+    },
+    {
+      "path": "fixed-source/tests/organ_backend/run_cpu_config_settlement.py",
+      "bytes": 12455,
+      "sha256": "58b5c0e025f6bcdee172c78076064e6e8c869b0cc74ce769484b237b1df7de5a",
+      "role": "Exact reviewed source from immutable final Git blob"
+    },
+    {
+      "path": "fixed-source/tests/organ_backend/run_cpu_owner_negative.py",
+      "bytes": 19065,
+      "sha256": "2433f1b130997fbbb6b5e0dd4af67e994babae97aac334df33abf0e369c3fbc4",
+      "role": "Exact reviewed source from immutable final Git blob"
+    },
+    {
+      "path": "fixed-source/tests/organ_backend/run_guest_probe.py",
+      "bytes": 7644,
+      "sha256": "fc037a65aaf25fb3425befe8c74220e6ed76ea1767c368ba5d351e90a81f47e2",
+      "role": "Exact reviewed source from immutable final Git blob"
+    },
+    {
+      "path": "fixed-source/tests/organ_backend/smp2/run_parallel_candidate.py",
+      "bytes": 10796,
+      "sha256": "00f7879dbce0b3b6a42ae013af0c7203f713272870ff7c540edb22eec92c111d",
+      "role": "Exact reviewed source from immutable final Git blob"
+    },
+    {
+      "path": "fixed-source/tests/organ_backend/vdso_drop_fraction_negative.patch",
+      "bytes": 329,
+      "sha256": "a1e116c7af6a57add22693b4fa985b8bb45809df3ad6765b52ea8efa979975c9",
+      "role": "Exact reviewed source from immutable final Git blob"
+    },
+    {
+      "path": "fixed-source/tests/organ_backend/vdso_skip_fault_mode_negative.patch",
+      "bytes": 445,
+      "sha256": "da1f7c360136bfe330cba58acef4cf894d423043e1b3b9790958b923d4fcd452",
+      "role": "Exact reviewed source from immutable final Git blob"
+    },
+    {
+      "path": "fixed-source/tests/workloads/linux/run_full_ubuntu_profile.py",
+      "bytes": 43253,
+      "sha256": "f6cbb63ddcb07981af6698955ce22ae63468ebf15fe4eda423fad8dc177eabed",
+      "role": "Exact reviewed source from immutable final Git blob"
+    },
+    {
+      "path": "fixed-source/tests/workloads/linux/run_rlimit_nofile_guest.py",
+      "bytes": 19268,
+      "sha256": "adce5f93bbc8679c6aa0b08162baf0c1f8ae854ef346b78e585525062484ad1c",
+      "role": "Exact reviewed source from immutable final Git blob"
+    },
+    {
+      "path": "fixed-source/tests/workloads/linux/run_scm_rights_cloexec_guest.py",
+      "bytes": 11957,
+      "sha256": "1d501766dd611652797643f047bde8ac6ac2d6e41225e74eca51817d44a7965d",
+      "role": "Exact reviewed source from immutable final Git blob"
+    }
+  ],
+  "selected_count": 138,
+  "selected_bytes": 1482569,
+  "lossless_original_bindings": [
+    {
+      "published_path": "publication-raw/source-git-map.json.xz",
+      "original_path": "source-git-map.json",
+      "original_bytes": 1961541,
+      "original_sha256": "bbe798727d88c8d0fb9300357e574c17bcc9399da74e8a0444b41cccfd05e704"
+    },
+    {
+      "published_path": "publication-raw/negative-independent-review/archive-member-index.json.xz",
+      "original_path": "negative-independent-review/archive-member-index.json",
+      "original_bytes": 204308,
+      "original_sha256": "59b809292920b8a2e932e0089e591cae20dc209b80874800c5da104b804a42c7"
+    },
+    {
+      "published_path": "publication-raw/api/final-a01-jobs-first.json.xz",
+      "original_path": "api/final-a01-jobs-first.json",
+      "original_bytes": 6673,
+      "original_sha256": "d24c9d0e4695c85a139f915c1816ccf3a714d172388a1e668f13c9286c53de6d"
+    },
+    {
+      "published_path": "publication-raw/api/final-a06-artifacts-completed.json.xz",
+      "original_path": "api/final-a06-artifacts-completed.json",
+      "original_bytes": 2857,
+      "original_sha256": "42ce564399f6ba1415d89e9e0bb9623fc29b0e93ea22df4c122ea9406133b39e"
+    },
+    {
+      "published_path": "publication-raw/api/final-a06-jobs-02.json.xz",
+      "original_path": "api/final-a06-jobs-02.json",
+      "original_bytes": 11553,
+      "original_sha256": "6973856b61e9df60d1396ba7f4529eb1283f8333fa2853b3a68e6c6aa7d2eb38"
+    },
+    {
+      "published_path": "publication-raw/api/final-a06-jobs-03.json.xz",
+      "original_path": "api/final-a06-jobs-03.json",
+      "original_bytes": 12043,
+      "original_sha256": "f7ea20a976fc7b96dcc6e30122b6879296ade6be7a11bdea0bc8eddfc26b24af"
+    },
+    {
+      "published_path": "publication-raw/api/final-a06-jobs-completed.json.xz",
+      "original_path": "api/final-a06-jobs-completed.json",
+      "original_bytes": 13335,
+      "original_sha256": "5b938c66b5c5bd3c3b2dfaec6d01f7435921a963c8eb3e68846e7d9bfa57aa70"
+    },
+    {
+      "published_path": "publication-raw/api/final-a06-jobs-first.json.xz",
+      "original_path": "api/final-a06-jobs-first.json",
+      "original_bytes": 11357,
+      "original_sha256": "9d66e08aa49d9c89792c0f3404fdf03317d48ffc5f47682078e83a9ca1649286"
+    },
+    {
+      "published_path": "publication-raw/api/final-a06-run-completed.json.xz",
+      "original_path": "api/final-a06-run-completed.json",
+      "original_bytes": 33541,
+      "original_sha256": "350171e922e0ad0ae063a9c8e7be888e676a84f65d665cd5ba8d7ae02b4ced39"
+    },
+    {
+      "published_path": "publication-raw/api/final-g0-jobs-first.json.xz",
+      "original_path": "api/final-g0-jobs-first.json",
+      "original_bytes": 11792,
+      "original_sha256": "77e581d7b6af11042b1241c934d54a0213e3f94f57ffbfd836966a5fdb6236df"
+    },
+    {
+      "published_path": "publication-raw/api/final-head-checks-completed.json.xz",
+      "original_path": "api/final-head-checks-completed.json",
+      "original_bytes": 39652,
+      "original_sha256": "591e038e433de540874745f8c4b2188348bd260be0d1f10981aec8067177acf9"
+    },
+    {
+      "published_path": "publication-raw/api/final-pr205-completed.json.xz",
+      "original_path": "api/final-pr205-completed.json",
+      "original_bytes": 51473,
+      "original_sha256": "3f802ca1825c04a31e25b2389a5ccf85d476563493e8440f894b314d49b32913"
+    },
+    {
+      "published_path": "publication-raw/api/first-a06-current-job.json.xz",
+      "original_path": "api/first-a06-current-job.json",
+      "original_bytes": 752,
+      "original_sha256": "dee9966d2983b4545973ff9ef79b9f353a5e8ab3bfa6b9998055874b4ef75419"
+    },
+    {
+      "published_path": "publication-raw/api/first-checks.json.xz",
+      "original_path": "api/first-checks.json",
+      "original_bytes": 39583,
+      "original_sha256": "f78c030ee7d8b044338d2cbb702225cbd884e00073ea89f0879fb086eeb4db62"
+    },
+    {
+      "published_path": "publication-raw/api/first-g0-failure-job.json.xz",
+      "original_path": "api/first-g0-failure-job.json",
+      "original_bytes": 751,
+      "original_sha256": "74e56867dac28b7f02873a595a65c28ae919eb426a933dc9782d855151cfd1c8"
+    },
+    {
+      "published_path": "publication-raw/api/first-g0-failure-log.json.xz",
+      "original_path": "api/first-g0-failure-log.json",
+      "original_bytes": 92606,
+      "original_sha256": "bed5cecbf49206c195a57f5b1b70037e08f06d280f51fa8deea03af3efb86aaa"
+    },
+    {
+      "published_path": "publication-raw/api/first-pr.json.xz",
+      "original_path": "api/first-pr.json",
+      "original_bytes": 49230,
+      "original_sha256": "bfbc783c9c7e8923d3b81a03a64386bec522a17bc913f424bcf902ce83cab170"
+    },
+    {
+      "published_path": "publication-raw/api/first-runs.json.xz",
+      "original_path": "api/first-runs.json",
+      "original_bytes": 129921,
+      "original_sha256": "3bb996542186237cbb426db8a0ef4c6a0c868c3ea45137a562e57df234b6cd6b"
+    },
+    {
+      "published_path": "publication-raw/g0-first/after-seed-organ-backend.log.xz",
+      "original_path": "g0-first/after-seed-organ-backend.log",
+      "original_bytes": 4569,
+      "original_sha256": "cdd3c0e90ab36fec1bf9047402671e480ee57da8d7fd744fed0b42554f714bfe"
+    },
+    {
+      "published_path": "publication-raw/g0-first/after-seed-spec.log.xz",
+      "original_path": "g0-first/after-seed-spec.log",
+      "original_bytes": 5558,
+      "original_sha256": "07fcbcfd01172d7a167a2ff3b9fb6d17fa5f044108f6438b00cf95926ed51542"
+    },
+    {
+      "published_path": "publication-raw/g0-first/after-seed-tests.json.xz",
+      "original_path": "g0-first/after-seed-tests.json",
+      "original_bytes": 1143,
+      "original_sha256": "632815c5b842a28cc5ff0ea67d1c3ed529adec34be151c5e3f6b52b5d486eca8"
+    },
+    {
+      "published_path": "publication-raw/g0-first/fixed-spec-tests.json.xz",
+      "original_path": "g0-first/fixed-spec-tests.json",
+      "original_bytes": 603,
+      "original_sha256": "f1e923ee7ac723e19633dcb7a437f1b3e4f5699ad721ca5848ddbfbaa4269001"
+    },
+    {
+      "published_path": "publication-raw/g0-first/fixed-spec-tests.log.xz",
+      "original_path": "g0-first/fixed-spec-tests.log",
+      "original_bytes": 9982,
+      "original_sha256": "573fcfe46c14f25cde8cce4c1a54b6ed671f613a1d421a58251b2b2dd4d8f92b"
+    },
+    {
+      "published_path": "publication-raw/g0-first/job-118018209972.tool-response.json.xz",
+      "original_path": "g0-first/job-118018209972.tool-response.json",
+      "original_bytes": 92295,
+      "original_sha256": "a5e758cce50600df9412420129bf91c8f44de5ebccc5387ed1422073bb8e845c"
+    }
+  ],
+  "excluded": [
+    "original.zip",
+    "*.partial",
+    "api/download-reference-redacted.json",
+    "download-artifact.py",
+    "/tmp/r11-pr205-artifact-private-download.json",
+    "temporary signed download URL",
+    "download file_uri/file_id",
+    "any downloaded ELF/executable"
+  ],
+  "copy_this_selection_file_and_files_manifest_in_addition": true
+}

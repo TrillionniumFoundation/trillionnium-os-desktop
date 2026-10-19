@@ -1,0 +1,174 @@
+{
+  "inputs": {
+    "schema": "a06.cpu-config-settlement.v2",
+    "kernel_sha256": "e1d5ec0f294d0fffe1c887f92e2b564aa9d967753e0d6f815894ca6490c779c5",
+    "original_initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+    "bios_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+    "probe_source_sha256": "f7293d02a6f332588d3397a57d2539079874f81564fa5105eab7db4c8184a85c",
+    "input_files": {
+      "kernel": {
+        "path": "/home/runner/work/_temp/a06-queryabi-candidate/product-kernel.elf",
+        "size": 8288528,
+        "sha256": "e1d5ec0f294d0fffe1c887f92e2b564aa9d967753e0d6f815894ca6490c779c5"
+      },
+      "original_initramfs": {
+        "path": "/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/support/build/evidence/2026-10-16/artifacts/initramfs.cpio.gz",
+        "size": 1107990,
+        "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+      },
+      "bios": {
+        "path": "/usr/share/seabios/bios-256k.bin",
+        "size": 262144,
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+      },
+      "qemu": {
+        "path": "/usr/bin/qemu-system-x86_64",
+        "size": 26415624,
+        "sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854"
+      },
+      "compiler": {
+        "path": "/usr/bin/x86_64-linux-gnu-gcc-13",
+        "size": 1023032,
+        "sha256": "1b99826121ae6682a634e5efe09bd3e3df58ce58e0b28f849114ab5b89139c26"
+      },
+      "probe_source": {
+        "path": "/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/tests/organ_backend/cpu_config_settlement_probe.c",
+        "size": 4711,
+        "sha256": "f7293d02a6f332588d3397a57d2539079874f81564fa5105eab7db4c8184a85c"
+      },
+      "runner": {
+        "path": "/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/tests/organ_backend/run_cpu_config_settlement.py",
+        "size": 12455,
+        "sha256": "58b5c0e025f6bcdee172c78076064e6e8c869b0cc74ce769484b237b1df7de5a"
+      },
+      "archive_helper": {
+        "path": "/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/tests/organ_backend/run_guest_probe.py",
+        "size": 7644,
+        "sha256": "fc037a65aaf25fb3425befe8c74220e6ed76ea1767c368ba5d351e90a81f47e2"
+      },
+      "compiled_source": {
+        "path": "/home/runner/work/_temp/a06-cpu-config-2000-same-value/probe.c",
+        "size": 4761,
+        "sha256": "c4a39350d37e549bf4ab461f94eaa06983d0ff9664b8a42a6a1d737ff72ce005"
+      },
+      "probe": {
+        "path": "/home/runner/work/_temp/a06-cpu-config-2000-same-value/probe",
+        "size": 790008,
+        "sha256": "98791321941565f43f9945cb18a4cdc8e81eac13a1166502b69b0bc190061f57"
+      },
+      "injected_initramfs": {
+        "path": "/home/runner/work/_temp/a06-cpu-config-2000-same-value/initramfs.cpio.gz",
+        "size": 1451649,
+        "sha256": "2ed928f38b39534fd555ee098b7bad7381df5dc65745dd2c245328856f54aa9e"
+      }
+    },
+    "compiled_source_sha256": "c4a39350d37e549bf4ab461f94eaa06983d0ff9664b8a42a6a1d737ff72ce005",
+    "probe_sha256": "98791321941565f43f9945cb18a4cdc8e81eac13a1166502b69b0bc190061f57",
+    "initramfs_sha256": "2ed928f38b39534fd555ee098b7bad7381df5dc65745dd2c245328856f54aa9e",
+    "argv": [
+      "/usr/bin/qemu-system-x86_64",
+      "-kernel",
+      "/home/runner/work/_temp/a06-queryabi-candidate/product-kernel.elf",
+      "-initrd",
+      "/home/runner/work/_temp/a06-cpu-config-2000-same-value/initramfs.cpio.gz",
+      "-append",
+      "earlycon console=ttyS0 loglevel=info SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --",
+      "-machine",
+      "q35",
+      "-accel",
+      "tcg",
+      "-cpu",
+      "max",
+      "-bios",
+      "/usr/share/seabios/bios-256k.bin",
+      "-m",
+      "512M",
+      "-smp",
+      "1",
+      "-nodefaults",
+      "-no-user-config",
+      "-no-reboot",
+      "-nographic",
+      "-display",
+      "none",
+      "-monitor",
+      "none",
+      "-serial",
+      "stdio",
+      "-nic",
+      "none",
+      "-device",
+      "isa-debug-exit,iobase=0xf4,iosize=0x04"
+    ],
+    "qemu_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+    "qemu_version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)\nCopyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers",
+    "compiler_argv": [
+      "/usr/bin/x86_64-linux-gnu-gcc-13",
+      "-std=c11",
+      "-O2",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-static",
+      "/home/runner/work/_temp/a06-cpu-config-2000-same-value/probe.c",
+      "-o",
+      "/home/runner/work/_temp/a06-cpu-config-2000-same-value/probe"
+    ],
+    "period_us": 2000,
+    "quota_us": 1000,
+    "mode": "same-value",
+    "duration_seconds": 4,
+    "max_cpu_percent": 52.0,
+    "minimum_unlimited_percent": 70.0,
+    "max_serial_bytes": 8388608,
+    "single_vcpu": true,
+    "network": false,
+    "data_disks": false,
+    "hos2_qualification": false
+  },
+  "qemu_exit": 33,
+  "timed_out": false,
+  "input_receipt": {
+    "path": "/home/runner/work/_temp/a06-cpu-config-2000-same-value/inputs.json",
+    "size": 4758,
+    "sha256": "3d19ff6cc9fdf93aa38fab314a33f1a5300d8ebc41777b9b21377b88221eee7c"
+  },
+  "serial_sha256": "60b49aff6ecf3ced07230f98f36e19dbc061c6af873eb1607aa63f4bb4ce152e",
+  "serial_bytes": 1075602,
+  "samples": [
+    {
+      "label": "unlimited",
+      "wall_ns": 250000122,
+      "cpu_ns": 248000000,
+      "operations": 437701,
+      "checksum": 14730229085529875841,
+      "cpu_percent": 99.19995159042362
+    },
+    {
+      "label": "same-value",
+      "wall_ns": 4000156533,
+      "cpu_ns": 1852000000,
+      "operations": 3573,
+      "checksum": 15592465860515990913,
+      "cpu_percent": 46.29818820142657
+    }
+  ],
+  "events": [
+    "sample:unlimited",
+    "parameters",
+    "sample:same-value",
+    "stat",
+    "complete",
+    "exit0",
+    "boot"
+  ],
+  "malformed_marker_lines": [],
+  "ordered_exact_markers": true,
+  "measurements_valid": true,
+  "probe_process_exit": 0,
+  "guest_complete": true,
+  "timing_valid": true,
+  "passed": true,
+  "inputs_unchanged": true,
+  "changed_inputs": {}
+}

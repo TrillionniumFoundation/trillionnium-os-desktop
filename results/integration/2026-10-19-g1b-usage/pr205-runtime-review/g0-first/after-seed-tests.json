@@ -1,0 +1,47 @@
+{
+  "head": "f9669912e2886190429187e14753d62b2060bd5f",
+  "dirty_file": "tests/spec/test_a06_final_accounting_source.py",
+  "seed_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+  "runs": [
+    {
+      "utc": "2026-10-19T10:52:20.907795+00:00",
+      "name": "spec",
+      "command": [
+        "python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/spec",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "returncode": 0,
+      "log": "after-seed-spec.log",
+      "bytes": 5558,
+      "sha256": "07fcbcfd01172d7a167a2ff3b9fb6d17fa5f044108f6438b00cf95926ed51542"
+    },
+    {
+      "utc": "2026-10-19T10:52:21.208365+00:00",
+      "name": "organ-backend",
+      "command": [
+        "python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tests/organ_backend",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "returncode": 0,
+      "log": "after-seed-organ-backend.log",
+      "bytes": 4569,
+      "sha256": "cdd3c0e90ab36fec1bf9047402671e480ee57da8d7fd744fed0b42554f714bfe"
+    }
+  ]
+}

@@ -1,0 +1,449 @@
+{
+  "schema_version": 1,
+  "kind": "read_only_next_g1c_design",
+  "reviewer": "/root/r9_g1_contract",
+  "created_at_utc": "2026-10-19T11:05:48.331255+00:00",
+  "source": {
+    "commit": "4d3011cf9f92e25fc1b0d7371e9cdbbd5a8b7930",
+    "tree": "8eb809136a402cc54ba049b1e40dd174308c923f",
+    "repo": "/workspace/scratch/499c7902de8e/r11-g1b-usage"
+  },
+  "status": "Design and fixed-source observations only. No product patch, new authority, syscall activation, test execution or remote write was performed.",
+  "current_g1b_blocking": [],
+  "recommendation": "Make the next implementation a real Process-image authority lifetime and prepared-launch slice on the existing Process/exec/CPU owner. Keep the current HOS2 mask unchanged in that foundation commit. A following bounded trusted-image + resource.observe slice can produce the first genuinely authorized ReadUsage guest; do not present the first commit alone as that positive effect.",
+  "facts": [
+    {
+      "id": "F1",
+      "locations": [
+        {
+          "path": "kernel/asterinas/kernel/core/src/process/process/mod.rs",
+          "lines": [
+            159,
+            162,
+            280,
+            281,
+            321,
+            332,
+            349
+          ]
+        }
+      ],
+      "fact": "Process already owns an AtomicU64 image epoch and a Mutex-protected (epoch,nonce) pair. Lazy open assigns a boot-local checked nonce. The pair is an identity, not a grant table or proof of principal."
+    },
+    {
+      "id": "F2",
+      "locations": [
+        {
+          "path": "kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs",
+          "lines": [
+            52,
+            84,
+            97,
+            107,
+            162,
+            166,
+            183,
+            204,
+            211
+          ]
+        }
+      ],
+      "fact": "The per-open file retains Weak<Process>, namespace and epoch. Exact Arc equality rejects foreign/fork callers, and epoch rejects inherited old-image fd. Session validation precedes bounded user copies. Only QueryAbi is implemented, so current copyout/fault paths have no resource effect."
+    },
+    {
+      "id": "F3",
+      "locations": [
+        {
+          "path": "kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+          "lines": [
+            26,
+            33,
+            42,
+            44,
+            49,
+            75,
+            107,
+            113,
+            117,
+            128
+          ]
+        }
+      ],
+      "fact": "create_init_process builds the actual Process and Task and finishes load_to_vmar before spawn_init_process calls process.run. This is an existing never-run bootstrap window. It currently has no consumed preparation token or authenticated final-image record."
+    },
+    {
+      "id": "F4",
+      "locations": [
+        {
+          "path": "kernel/asterinas/kernel/core/src/process/program_loader/mod.rs",
+          "lines": [
+            124,
+            146,
+            176,
+            198
+          ]
+        },
+        {
+          "path": "kernel/asterinas/kernel/core/src/process/program_loader/elf/load_elf.rs",
+          "lines": [
+            44,
+            55,
+            63,
+            92,
+            98,
+            104,
+            118
+          ]
+        }
+      ],
+      "fact": "ProgramToLoad resolves shebang and ELF loading can resolve PT_INTERP. ElfLoadInfo records only entry_point and user_stack_top; it is not a measurement of final main/interpreter/dependency bytes or mapping immutability. A pathname or initial executable alone cannot establish the final principal."
+    },
+    {
+      "id": "F5",
+      "locations": [
+        {
+          "path": "kernel/asterinas/kernel/core/src/process/execve.rs",
+          "lines": [
+            63,
+            67,
+            69,
+            78,
+            86,
+            98,
+            104,
+            119,
+            200,
+            217,
+            224,
+            235
+          ]
+        },
+        {
+          "path": "kernel/asterinas/kernel/core/src/process/posix_thread/exit.rs",
+          "lines": [
+            63,
+            68,
+            70,
+            88,
+            120
+          ]
+        },
+        {
+          "path": "kernel/asterinas/kernel/core/src/process/exit.rs",
+          "lines": [
+            18,
+            22,
+            36,
+            43
+          ]
+        }
+      ],
+      "fact": "Exec has a real irreversible phase after task_set.start_execve and later fences sessions after successful do_execve_no_return. Exit-group begins under TaskSet and final Process teardown runs later. Once grants exist, delayed Process Drop or success-only epoch change is insufficient as their revocation protocol."
+    },
+    {
+      "id": "F6",
+      "locations": [
+        {
+          "path": "kernel/asterinas/kernel/core/src/process/clone.rs",
+          "lines": [
+            300,
+            303,
+            348,
+            826,
+            836
+          ]
+        },
+        {
+          "path": "kernel/asterinas/kernel/core/src/process/process/mod.rs",
+          "lines": [
+            287,
+            295,
+            297
+          ]
+        }
+      ],
+      "fact": "Threads use the same Process, while child processes call the ordinary Process::new and are run through original paths. New process authority can therefore default to empty without copying parent grants; inherited POSIX fd semantics can remain intact."
+    },
+    {
+      "id": "F7",
+      "locations": [
+        {
+          "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/systree_node.rs",
+          "lines": [
+            152,
+            170,
+            199,
+            209,
+            244,
+            258
+          ]
+        },
+        {
+          "path": "kernel/asterinas/kernel/core/src/process/process/mod.rs",
+          "lines": [
+            871,
+            872
+          ]
+        },
+        {
+          "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs",
+          "lines": [
+            173,
+            180,
+            195,
+            204
+          ]
+        }
+      ],
+      "fact": "Existing membership operations call set_cpu_cgroup_for_tasks, which takes Process.tasks. Internal G1-b observation enters IRQ exclusion/local runqueue and the owner bandwidth lock. A new activation flow must not invert membership -> tasks or take sleeping Process locks from this accounting critical section."
+    },
+    {
+      "id": "F8",
+      "locations": [
+        {
+          "path": "libs/os-control/src/native.rs",
+          "lines": [
+            3,
+            7,
+            29,
+            118,
+            129,
+            153
+          ]
+        },
+        {
+          "path": "libs/os-control/src/management.rs",
+          "lines": [
+            1,
+            4,
+            118,
+            126,
+            160
+          ]
+        }
+      ],
+      "fact": "NativeTarget/NativeGrant constructors bind supplied values and lifetimes but explicitly do not authenticate them. ManagementGrantState expects canonical admission/revocation under the real owner mutation lock. Using those constructors directly on a claimed publisher or UID would not supply kernel authorization."
+    }
+  ],
+  "first_implementable_commit": {
+    "scope": "G1-c process-image and prepared-launch lifecycle foundation; executable kernel regression plus existing ordinary A05 guest, no newly granted userspace operation.",
+    "files": [
+      {
+        "path": "kernel/asterinas/kernel/core/src/process/process/mod.rs",
+        "change": "Replace the anonymous identity tuple with a small named image-state type under the same mutex, preserving the existing checked nonce and epoch behavior. Each new image has empty discoverable authority; no UID/path/PID-based auto-grant."
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/process/native_space.rs (new proposed file)",
+        "change": "Own the image key, one-shot prepared-launch state, bounded handle discovery and closing/closed lifetime. Use Weak<Process> for back references, and strong pins only to actual target objects. Do not add budget/usage or an alternative delivery journal."
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+        "change": "Return an uncloneable PreparedInitialProcess from the existing successful create path and consume it at resume. Bind it to the exact Process Arc, VMAR allocation, main Task, epoch and nonce. Being loaded/never run is a lifecycle fact, not yet image authentication."
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/process/execve.rs",
+        "change": "At irreversible exec admission mark the old image Closing before other old-image threads can be admitted to new operations; drain/fence any real owner grants after releasing TaskSet/image locks. Preserve pre-boundary failed-exec identity and the existing success epoch increment; fatal post-boundary failure never reopens old authority."
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/process/posix_thread/exit.rs and process/exit.rs",
+        "change": "Close image authority when exit_group begins and on final ordinary-thread exit, before removing discovery/VMAR. Keep old CPU accounting leases and retained owner tail-charge lifecycle completely separate from authority revocation."
+      },
+      {
+        "path": "kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs",
+        "change": "Obtain the existing session identity from the named Process state. Keep supported_ops == QueryAbi only and preserve four disabled-operation refusals. Do not infer rights from open or its DAC success."
+      }
+    ],
+    "proposed_api_sketch": [
+      "struct ProcessImageKey { epoch: u64, nonce: u64 } // process/boot allocation identity is retained separately; fields private",
+      "struct PreparedInitialProcess { process: Arc<Process>, image: CommittedImageIdentity, key: ProcessImageKey, /* private, no Clone */ }",
+      "fn begin_image_close(&Process, reason: CloseReason) -> DetachedAuthorityPins; // mark Closing under existing image lock; no owner/runqueue work here",
+      "fn fence_detached_authority(DetachedAuthorityPins) -> CloseReceipt; // after releasing Process/TaskSet locks, acquire original owner lock(s), revoke canonical grant(s), then release pins outside IRQ locks",
+      "fn resume_prepared(PreparedInitialProcess) -> Result<Arc<Process>>; // consume preparation exactly once; initially resumes with an empty authority set",
+      "fn resolve_observation(&Process, ImageSession, Handle) -> Result<PinnedObservation>; // future typed resolver; no user-supplied principal or target identity authority"
+    ],
+    "tests_to_run": [
+      "Actual Process::new has empty authority; two opens share the same nonce/epoch while no grant is created.",
+      "Two threads share one Process image; a separately allocated child Process starts with empty authority and a fresh namespace, even if a POSIX control fd is inherited.",
+      "A consumed PreparedInitialProcess cannot be activated or resumed a second time; another Process/VMAR/epoch/Task is rejected. Kernel tests use actual objects and explicitly report their unstarted-object scope.",
+      "Pre-irreversible invalid exec leaves the old image/session usable; successful real exec rejects an old non-CLOEXEC fd and reopening reports a new namespace, using ordinary guest syscall paths.",
+      "Closing is irreversible on fatal post-boundary exec failure or exit-group; outstanding image pins cannot revive discovery. Keep exact live owner references to verify revocation does not delete final CPU debit state.",
+      "Owner replacement/deletion and stale handles refuse resolution; exhaustion leaves no reused epoch, nonce or handle generation.",
+      "Existing complete core/OSTD and strict QueryAbi14/fork/exec/foreign-process/disabled-op guest remain required. New lifecycle tests do not stand in for a trusted positive userspace ReadUsage test."
+    ]
+  },
+  "following_bounded_positive_slice": {
+    "goal": "One actual kernel-verified boot launch of a fixed static observer/workload image, one current CPU owner, one resource.observe handle, one CPU, original 100ms profile, actual ReadUsage positive guest and explicit refusals. No InstallBudget/QueryDelivery/RetireThrough.",
+    "trusted_input": "An internal boot policy and immutable measured loader input must supply principal, resource stable identity, owner allocation and exact image. The user can select a path for lookup but cannot mint the policy, an activation token or its rights. No PID1, UID0, environment string, repeated open or arbitrary NativeGrant::from_owner call may substitute.",
+    "image_requirement": "For a bounded first case accept only a directly loaded static ELF with no shebang or PT_INTERP. Measure the exact immutable bytes used for segment mappings and bind the resulting VMAR/entry to the consumed preparation; reading a hash and later remapping a mutable inode is insufficient. An Arc<FileLike> alone pins allocation, not contents. Reject any unsupported dependency/mapping shape for authority while preserving ordinary Linux execution without a grant.",
+    "activation_order": [
+      "Prepare/load/measure while no runqueue or bandwidth lock is held.",
+      "Retain the exact original CPU owner under the established membership discipline; create typed canonical identity/observer admission on that owner.",
+      "Install a bounded discoverable handle in the exact Process-image namespace only after all validation succeeds; permit no slot reuse in the first single-handle profile.",
+      "Before first run, set the original Linux budget on that actual owner and verify the configured N0 shape. This preparation is internal trusted configuration; the new image never gets an InstallBudget effect.",
+      "Publish a read-only discovery location containing the handle; discovery confers no authority. Then consume the prepared process and resume once."
+    ],
+    "admission": "After full bounded user input copy, revalidate the actual Process/image and resolve the target handle. Clone only the necessary pins, release Process locks, then use the G1-b local settlement and original bandwidth lock to check canonical live observer grant/lease and copy the snapshot. Existing pre-copy check_session alone is not the future effect admission point.",
+    "revocation": "Process discovery removal is not enough. Mark Closing to stop new resolutions, release Process locks, then revoke under the same original owner lock used for admission. A completed revoke must wait for already-admitted owner critical sections; a stale Arc cannot bypass canonical liveness. Restrict initial positive admission to N0 and keep complete SMP explicitly unqualified.",
+    "additional_boundary": "If a supposedly trusted image remains writable by an untrusted tracer, process_vm, shared mapping or equivalent alias, a measured boot identity alone cannot protect its future authority. The first positive grant must use an already-enforced exclusion or explicitly remain unavailable; this design did not audit every alias or claim that exclusion exists.",
+    "guest_oracles": [
+      "Authorized static image reads actual cumulative/window/revision from the same configured owner before and after work; user values are not copied in as usage.",
+      "Same-process threads and dup keep only existing rights; fork, SCM_RIGHTS to another Process, unrelated UID0 process, wrong slot/generation and old exec fd are refused.",
+      "A failed pre-boundary exec does not spuriously revoke; a successful exec with the same file reopened starts ungranted until a new trusted launch record is supplied.",
+      "ReadUsage failure/response-copy fault creates no grant, write delivery or new budget, and retained state cannot be reopened after close/expiry/replacement.",
+      "Native observation does not alter CPU quota/debt/revision; original ordinary quota, clock-fault and final-debit regressions still pass."
+    ],
+    "contract_transition": "Only this later positive slice may advertise ReadUsage and extend the response capacity to its real 64-byte payload. Preserve historical QueryAbi-only fixtures. Add a separate new current-policy guest with correct advertised mask and unauthorized-ReadUsage refusal, rather than silently reclassifying the prior four EOPNOTSUPP markers as still applicable."
+  },
+  "lock_rules": [
+    "Do not add Process.tasks -> CgroupMembership acquisition: existing migration already establishes CgroupMembership -> Process.tasks. Capture preparation/membership facts under that direction, then release before unrelated stages.",
+    "TaskSet -> image-state is a possible lifecycle order only if no image-state path obtains TaskSet in reverse. Inspection or activation must not hold image mutex and then validate TaskSet.",
+    "No Process/image mutex, user memory fault, loader I/O, allocation, RCU retirement or last-pin destruction inside local runqueue/bandwidth IRQ critical sections.",
+    "Resource admission and canonical grant revoke use the original CPU owner mutation lock. A cached epoch or standalone AtomicBool is not by itself a complete cross-CPU revocation linearization proof.",
+    "Process authority closure never clears CpuMax cumulative/debt/revision or the existing retained charge lease. Management liveness and incurred CPU debit have distinct lifetimes."
+  ],
+  "future_enablement_blockers": [
+    {
+      "id": "G1C-IMAGE",
+      "condition": "Missing final immutable main/interpreter/mapping identity receipt; current ElfLoadInfo cannot authenticate it.",
+      "next_action": "Implement bounded direct-static immutable input receipt first; general dynamic loader/Hepta image authority follows separately."
+    },
+    {
+      "id": "G1C-LIFETIME",
+      "condition": "No canonical actual Process-image grant state or exec/exit close protocol exists yet.",
+      "next_action": "Implement the first lifecycle commit above with real object and ordinary identity guest coverage."
+    },
+    {
+      "id": "G1C-ADMISSION",
+      "condition": "Current check_session is before potentially faulting user copies; value constructors do not prove authorization.",
+      "next_action": "Add post-copy trusted handle resolution and owner-lock admission/revocation together before any new operation is advertised."
+    }
+  ],
+  "inputs": [
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/mod.rs",
+      "blob": "065556c65ef14c989abe17946876d33dfaef7d0e",
+      "bytes": 33769,
+      "sha256": "258b6e24b37446a5e432b63b8cf1f95100904437be30cc17d6b0bbcd2899f6ca"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/process/init_proc.rs",
+      "blob": "145e02d8be6e3fd544490a3dd3125b844ad5804b",
+      "bytes": 4611,
+      "sha256": "96e4f27a20d0e613aaf8420735580fce011717ef69fec378b80fce75f9080169"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/clone.rs",
+      "blob": "c172c82bf53e7c654f1088e174eb95774cae9ef5",
+      "bytes": 31177,
+      "sha256": "ab1af89d855655238ade17835ab2118214e4b04b6a6e1fe3e851b1ab4e9b2c43"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/execve.rs",
+      "blob": "9a89aed0a41be2839821d83cc7f9d91937fbad19",
+      "bytes": 13001,
+      "sha256": "6a2e83f655d7f1fc5a84669d607d0f24e6ffef2598ec95a6f009ca8ddcaaf77f"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/exit.rs",
+      "blob": "c29879578a8ea8402cce00b25aef55d683959fd3",
+      "bytes": 7403,
+      "sha256": "44e3b323b9bd55cd140989dd6d224631b00086066a531157f46db6c5733dcdfd"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/posix_thread/exit.rs",
+      "blob": "474c3468380c3aed6819a40ed850674099283642",
+      "bytes": 6016,
+      "sha256": "c48c21b8e9abc4590f097588b2d16c6072a43b2da0cdd67e426623acfcc26044"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/task_set.rs",
+      "blob": "bdb958f59db9f4e6419cd23e5830ea89967761e9",
+      "bytes": 4252,
+      "sha256": "abba4258a78c27253d210ff5704e96a94e5dffaabccfeb3911a9bc6553c75033"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/program_loader/mod.rs",
+      "blob": "dfde5635b94e68d73d1c494f3c2b4bca69c726a5",
+      "bytes": 7900,
+      "sha256": "3fe0e0cae3d9d127947a2b6ff1480bbd1cc83fd8651ec9d95533bd59f8ffeb1d"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/process/program_loader/elf/load_elf.rs",
+      "blob": "a550d70e1ba660eaae202a40c51b9e359c380625",
+      "bytes": 18566,
+      "sha256": "230e083f73dcbf5d0fc1320189d6287ff3aea7bf6058b3c79d480f0281c0b093"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/thread/mod.rs",
+      "blob": "e09dfd949360de9171c973207501ff9e32df9699",
+      "bytes": 4945,
+      "sha256": "017bf5db8926560f91c64a3b9a5f8d5ff0031726c50d7f4afb60c95c5bcf7147"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/device/misc/hepta_control.rs",
+      "blob": "50394952de7f8fa878fd07e539947ab0cd8d000e",
+      "bytes": 9584,
+      "sha256": "5133419b204d05e769b4a111a6e4285c9f50de482b65be15b5799312203e3979"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/systree_node.rs",
+      "blob": "549b1abdcf927d081d62f08abe39c747c9ce2ead",
+      "bytes": 33180,
+      "sha256": "e9575b3c090dfb64fdceacf5c973f40b4b79a40a9276e939f5c4c6629aad6880"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/fs/fs_impls/cgroupfs/controller/cpu/native.rs",
+      "blob": "0319b01d6d651ea38333974e8a4a3280e3409c9e",
+      "bytes": 8682,
+      "sha256": "1f7fb0e3e3129cc29b62d6ac0858d9e74716575e435d635c353f45b99cca6c2c"
+    },
+    {
+      "path": "kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs",
+      "blob": "a5e1027106fae3d0f280089d3da5e5a530661143",
+      "bytes": 30592,
+      "sha256": "6b0cc85db8c868d9342ce4179f94fa1825420f30d6e8e7e2117495912e64e667"
+    },
+    {
+      "path": "libs/os-control/src/native.rs",
+      "blob": "ecafb78c3e1a27f54eee3d14d69497653770c196",
+      "bytes": 8844,
+      "sha256": "1967c2db5c7292127a5cb4a76c3448a9764710b4c44ebeb40a610dba6e16fd81"
+    },
+    {
+      "path": "libs/os-control/src/management.rs",
+      "blob": "53eec630050871e7e3dd9e76bc38f121fd8f8d20",
+      "bytes": 7125,
+      "sha256": "1b44ed9d89f3bd9aba90c8bcd3aeceb46bcd7332cbdd2bdd3fa40ff200d49340"
+    },
+    {
+      "path": "docs/NATIVE_ABI.md",
+      "blob": "de9f70ba71ff96ca5cf043d0650eca56c875de0e",
+      "bytes": 16969,
+      "sha256": "796ed1f10d2b51067d9b386d29288235656fc91deaef5febcea52c786a7cdd93"
+    },
+    {
+      "path": "docs/agents/PLAN.md",
+      "blob": "7e7a913e2e1c79de588df155ddd07bb4d9260e66",
+      "bytes": 6537,
+      "sha256": "f475400608032b476b6e651114e3c4d5b2646c94bccea2cf5fdc38c26bbc37ad"
+    },
+    {
+      "path": "kernel/asterinas/AGENTS.md",
+      "blob": "4832851335af91840cde7c7c4abe9463952e20c5",
+      "bytes": 4792,
+      "sha256": "e5d9f65c769df1846a48ec4709ed14d55043ecf9fdbcd5a0292a7ec03a867d10"
+    }
+  ],
+  "activities": {
+    "product_source_changes": 0,
+    "builds": 0,
+    "runtime_executions": 0,
+    "remote_writes": 0
+  },
+  "scope_notes": [
+    "All API names in proposed_api_sketch are proposals, not existing callable functions.",
+    "No new approval workflow, broker service, duplicate resource scheduler or Hepta operation ledger is proposed.",
+    "This design is a next bounded implementation plan; none of its planned tests is reported as executed.",
+    "Existing Asterinas Process/exec/loader/owner seams are sufficient to continue this work without evidence for replacing the kernel."
+  ]
+}
