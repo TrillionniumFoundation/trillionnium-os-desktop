@@ -2,7 +2,7 @@
 
 //! Regressions for the final-debit gap left after desktop PR #178.
 //!
-//! These tests call the production scheduler charge entry with real, unstarted
+//! These tests capture the production CPU owner with real, unstarted
 //! Process/Task objects and real membership transitions. They check quota state,
 //! not the separate jiffies-based cpu.stat usage projection. They do not execute
 //! the userspace exit syscall or claim to reproduce scheduler timing in SMP.

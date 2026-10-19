@@ -29,7 +29,7 @@ use super::{
     stats::{SchedulerStats, set_stats_from_scheduler},
 };
 use crate::{
-    fs::cgroupfs::{charge_task_cpu, task_cpu_eligible},
+    fs::cgroupfs::{CpuChargeOwner, task_cpu_eligible},
     thread::{AsThread, Thread},
 };
 
@@ -91,6 +91,41 @@ pub(crate) fn with_current_cpu_bandwidth_settled<R>(apply: impl FnOnce(u64) -> R
     }
 }
 
+/// Publishes a CPU owner binding between two local bandwidth checkpoints.
+///
+/// The caller already holds the membership and any necessary node locks.
+/// `publish` must not acquire a sleeping lock, block, copy user memory, or
+/// recursively change CPU bindings. It runs with IRQs disabled but WITHOUT a
+/// runqueue lock: the existing RCU update registers deferred destruction and
+/// may allocate using OSDK's IRQ-safe heap/frame allocator. It does not wait
+/// for the grace period or execute the registered destructors here.
+///
+/// All execution through the second checkpoint belongs to the retained old
+/// owner; the new segment begins at that checkpoint. No N0 scheduler observer
+/// can see the intermediate publication. Remote CPUs only notice at their
+/// next checkpoint; this is not an SMP migration rendezvous.
+pub(crate) fn with_current_cpu_bandwidth_owner_update<R>(publish: impl FnOnce() -> R) -> R {
+    let irq_guard = disable_local();
+    let Some(scheduler) = CLASS_SCHEDULER.get() else {
+        return publish();
+    };
+    let rq = &scheduler.rqs[irq_guard.current_cpu().as_usize()];
+    {
+        let mut rq = rq.lock();
+        if let Some(((task, _), rt)) = &mut rq.current {
+            rt.settle_bandwidth(task, sched_clock());
+        }
+    }
+    let result = publish();
+    {
+        let mut rq = rq.lock();
+        if let Some(((task, _), rt)) = &mut rq.current {
+            rt.settle_bandwidth(task, sched_clock());
+        }
+    }
+    result
+}
+
 /// Represents the middle layer between scheduling classes and generic scheduler
 /// traits. It consists of all the sets of run queues for CPU cores. Other global
 /// information may also be stored here.
@@ -132,19 +167,23 @@ struct CurrentRuntime {
     // It stores no quota or usage. Configuration must not advance `start`,
     // which is still needed for the next CFS/RT runtime update.
     bandwidth_accounted_through: u64,
+    // Reference only: all accounting remains in the original CpuMax. Resolve
+    // at a segment boundary, never after the interval has already executed.
+    bandwidth_owner: Option<CpuChargeOwner>,
 }
 
 impl CurrentRuntime {
-    fn new() -> Self {
-        Self::new_at(sched_clock())
+    fn new(task: &Task) -> Self {
+        Self::new_at(task, sched_clock())
     }
 
-    fn new_at(now: u64) -> Self {
+    fn new_at(task: &Task, now: u64) -> Self {
         CurrentRuntime {
             start: now,
             delta: 0,
             period_delta: 0,
             bandwidth_accounted_through: now,
+            bandwidth_owner: CpuChargeOwner::for_task(task),
         }
     }
 
@@ -158,11 +197,19 @@ impl CurrentRuntime {
     }
 
     fn settle_bandwidth(&mut self, task: &Task, now: u64) {
-        if now <= self.bandwidth_accounted_through {
-            return;
+        if now > self.bandwidth_accounted_through {
+            if let Some(owner) = &self.bandwidth_owner {
+                owner.charge(self.bandwidth_accounted_through, now);
+            }
+            self.bandwidth_accounted_through = now;
         }
-        charge_task_cpu(task, self.bandwidth_accounted_through, now);
-        self.bandwidth_accounted_through = now;
+
+        // The next interval may belong to a newly published incarnation. An
+        // exited task keeps its original owner even after the Process is
+        // detached or reaped. Re-resolving its node would redirect its tail.
+        if !task.as_thread().is_some_and(|thread| thread.is_exited()) {
+            self.bandwidth_owner = CpuChargeOwner::for_task(task);
+        }
     }
 
     fn with_bandwidth_settled<R>(
@@ -187,9 +234,10 @@ pub(crate) struct CpuRuntimeFixture {
 #[cfg(ktest)]
 impl CpuRuntimeFixture {
     pub(crate) fn new(task: Arc<Task>, now: u64) -> Self {
+        let runtime = CurrentRuntime::new_at(&task, now);
         Self {
             task,
-            runtime: CurrentRuntime::new_at(now),
+            runtime,
         }
     }
 
@@ -201,6 +249,20 @@ impl CpuRuntimeFixture {
         self.runtime.update_at(now);
         self.runtime.settle_bandwidth(&self.task, now);
         (self.runtime.delta, self.runtime.period_delta)
+    }
+
+    /// Runs the production runtime's two checkpoints around a real owner
+    /// publication. No fixture is inserted into the FIFO ktest scheduler.
+    pub(crate) fn publish<R>(
+        &mut self,
+        before: u64,
+        after: u64,
+        publish: impl FnOnce() -> R,
+    ) -> R {
+        self.runtime.settle_bandwidth(&self.task, before);
+        let result = publish();
+        self.runtime.settle_bandwidth(&self.task, after);
+        result
     }
 }
 
@@ -514,7 +576,8 @@ impl LocalRunQueue for PerCpuClassRqSet {
         self.pick_next_entity().and_then(|next| {
             // We guarantee that a task can appear at once in a `PerCpuClassRqSet`. So, the `next` cannot be the same
             // as the current task here.
-            if let Some((old, _)) = self.current.replace((next, CurrentRuntime::new())) {
+            let runtime = CurrentRuntime::new(&next.0);
+            if let Some((old, _)) = self.current.replace((next, runtime)) {
                 if task_cpu_eligible(&old.0, sched_clock()) {
                     self.enqueue_entity(old, None);
                 } else {
@@ -528,7 +591,7 @@ impl LocalRunQueue for PerCpuClassRqSet {
     fn update_current(&mut self, flags: UpdateFlags) -> bool {
         // Settle the running task FIRST. Replenishment invokes
         // task_cpu_eligible() and can advance the same cgroup or a common
-        // ancestor's quota window before charge_task_cpu() sees a tick that
+        // ancestor's quota window before the retained owner sees a tick that
         // straddles the boundary. That loses old-window CPU runtime and
         // defeats positive overrun debt. N0 keeps all these transitions
         // serialized inside the existing IRQ-disabled per-CPU runqueue lock.

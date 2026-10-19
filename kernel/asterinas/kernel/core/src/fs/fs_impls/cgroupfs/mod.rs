@@ -2,7 +2,7 @@
 
 pub(crate) use cgroup_ns::CgroupNamespace;
 pub(crate) use controller::cpu::{
-    CpuStatKind, charge_cpu_time, charge_task_cpu, task_cpu_eligible,
+    CpuChargeOwner, CpuStatKind, charge_cpu_time, task_cpu_eligible,
 };
 use fs::CgroupFsType;
 pub(in crate::fs) use systree_node::CgroupSystem;

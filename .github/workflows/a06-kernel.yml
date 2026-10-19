@@ -110,6 +110,18 @@ jobs:
               raise SystemExit(f"A06 ktest guest crate set is incomplete: {seen!r}")
           PY
 
+      - name: Prove the CPU owner regression fails under the frozen old behavior
+        shell: bash
+        env:
+          A01_KTEST_TIMEOUT: "300"
+        run: |
+          set -euo pipefail
+          python3 -I -B tests/organ_backend/test_cpu_owner_negative.py
+          python3 -I -B tests/organ_backend/run_cpu_owner_negative.py \
+            --green-evidence "${RUNNER_TEMP}/a06-ktest" \
+            --worktree "${RUNNER_TEMP}/a06-owner-negative-source" \
+            --output "${RUNNER_TEMP}/a06-owner-negative"
+
       - name: Freeze one SCM_RIGHTS probe and verify all 27 cases on original Linux
         shell: bash
         run: |
@@ -283,6 +295,8 @@ jobs:
             ${{ runner.temp }}/a06-ktest
             ${{ runner.temp }}/a06-prepared-locks
             ${{ runner.temp }}/a06-queryabi-candidate
+            ${{ runner.temp }}/a06-owner-negative
+            ${{ runner.temp }}/a06-owner-negative-source/kernel/asterinas/target/osdk/aster-core/aster-core-osdk-bin.elf
             ${{ runner.temp }}/a04-scm-linux
             ${{ runner.temp }}/a04-scm-guest
             ${{ runner.temp }}/a04-nofile-build

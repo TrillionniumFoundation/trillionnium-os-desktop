@@ -21,7 +21,7 @@ use ostd::{
 use self::native::CpuBandwidthState;
 use crate::{
     fs::cgroupfs::{
-        CgroupMembership,
+        CgroupMembership, CgroupNode,
         systree_node::{CgroupSysNode, CgroupSystem},
     },
     process::{Process, posix_thread::AsPosixThread},
@@ -578,45 +578,103 @@ pub(crate) fn task_cpu_eligible(task: &Task, now: u64) -> bool {
     }
 }
 
-pub(crate) fn charge_task_cpu(task: &Task, from: u64, until: u64) {
-    let Some(thread) = task.as_posix_thread() else {
-        return;
-    };
-    if let Some(process) = thread.weak_process().upgrade() {
-        // Read the binding before the zombie flag. Observing the root binding
-        // published by exit must also observe the preceding zombie transition.
-        // Preserve a present process binding even before a zombie is detached:
-        // a concurrent migration may not have updated the backup yet.
-        let guard = process.cgroup();
-        if guard.get().is_some() || !process.status().is_zombie() {
-            if let Some(group) = guard.get() {
-                group
-                    .controller()
-                    .cpu
-                    .read_with(&guard)
-                    .charge_bandwidth_hierarchy(from, until);
-            } else {
-                CgroupSystem::singleton()
-                    .controller()
-                    .cpu
-                    .read_with(&guard)
-                    .charge_bandwidth_hierarchy(from, until);
-            }
-            return;
+/// A running segment's reference to the original CPU accounting owner.
+///
+/// This contains no budget, counter, or native authority. Retaining the actual
+/// sub-controller also retains its immutable ancestor chain. A cgroup node
+/// alone is insufficient: its RCU slot may publish a different incarnation
+/// before the scheduler settles the segment. The node lease keeps rmdir from
+/// closing the node while this reference still has an unsettled segment.
+pub(crate) struct CpuChargeOwner {
+    cpu: Arc<super::SubController<CpuController>>,
+    cgroup: Option<Arc<CgroupNode>>,
+}
+
+impl CpuChargeOwner {
+    /// Captures the live binding for the next segment, without allocation.
+    pub(crate) fn for_task(task: &Task) -> Option<Self> {
+        let thread = task.as_posix_thread()?;
+        // An exiting task can be preempted during kernel cleanup and later
+        // resume with a new CurrentRuntime. Preserve its last running owner
+        // across that switch, even if its cgroup was detached or replaced.
+        if task.as_thread().is_some_and(|thread| thread.is_exited())
+            && let Some(owner) = thread.retained_cpu_charge_owner()
+        {
+            return Some(owner);
         }
+        if let Some(process) = thread.weak_process().upgrade() {
+            // Read the binding before the zombie flag. A present binding is
+            // authoritative even if migration has not updated the backup yet.
+            let guard = process.cgroup();
+            if guard.get().is_some() || !process.status().is_zombie() {
+                let owner = Self::from_cgroup(guard.get().map(|cgroup| cgroup.clone()));
+                thread.retain_cpu_charge_owner(owner.clone());
+                return Some(owner);
+            }
+        }
+
+        // The scheduler normally already owns the running segment's exact
+        // incarnation before exit. This fallback preserves the existing
+        // detached/reaped-task binding for callers capturing an exited task.
+        Some(Self::from_cgroup(thread.cpu_cgroup()))
     }
 
-    // exit_process() clears process.cgroup before the scheduler's final
-    // debit, and a parent may still retain the zombie Process Arc. A detached
-    // zombie and an already-reaped process both need the thread-owned lease so
-    // the final [from, until) interval reaches the old leaf and every ancestor.
-    // This settles quota bandwidth/debt; cpu.stat usage has its own tick path.
-    if let Some(cgroup) = thread.cpu_cgroup() {
-        let cpu = cgroup.controller().cpu.read();
-        cpu.get().charge_bandwidth_hierarchy(from, until);
-    } else {
-        let cpu = CgroupSystem::singleton().controller().cpu.read();
-        cpu.get().charge_bandwidth_hierarchy(from, until);
+    fn from_cgroup(cgroup: Option<Arc<CgroupNode>>) -> Self {
+        let cpu = if let Some(group) = &cgroup {
+            group.retain_cpu_charge_lease();
+            group.controller().cpu.read().get().clone()
+        } else {
+            CgroupSystem::singleton()
+                .controller()
+                .cpu
+                .read()
+                .get()
+                .clone()
+        };
+        Self { cpu, cgroup }
+    }
+
+    pub(crate) fn charge(&self, from: u64, until: u64) {
+        // Management closure must not discard CPU time already incurred.
+        // In particular, do not look up the node's current RCU incarnation.
+        self.cpu.charge_bandwidth_hierarchy(from, until);
+    }
+
+    pub(crate) fn belongs_to(&self, cgroup: Option<&Arc<CgroupNode>>) -> bool {
+        match (&self.cgroup, cgroup) {
+            (Some(old), Some(new)) => Arc::ptr_eq(old, new),
+            (None, None) => true,
+            _ => false,
+        }
+    }
+}
+
+impl Clone for CpuChargeOwner {
+    fn clone(&self) -> Self {
+        if let Some(cgroup) = &self.cgroup {
+            cgroup.retain_cpu_charge_lease();
+        }
+        Self {
+            cpu: self.cpu.clone(),
+            cgroup: self.cgroup.clone(),
+        }
+    }
+}
+
+impl Drop for CpuChargeOwner {
+    fn drop(&mut self) {
+        if let Some(cgroup) = &self.cgroup {
+            cgroup.release_cpu_charge_lease();
+        }
+    }
+}
+
+/// Charges an explicit interval in owner tests without a running class task.
+/// Production scheduling retains `CpuChargeOwner` from the segment's start.
+#[cfg(ktest)]
+fn charge_task_cpu(task: &Task, from: u64, until: u64) {
+    if let Some(owner) = CpuChargeOwner::for_task(task) {
+        owner.charge(from, until);
     }
 }
 
@@ -645,6 +703,9 @@ mod final_charge_regressions;
 
 #[cfg(ktest)]
 mod bandwidth_settlement_regressions;
+
+#[cfg(ktest)]
+mod owner_retention_regressions;
 
 #[cfg(ktest)]
 mod quota_debt_regressions {
