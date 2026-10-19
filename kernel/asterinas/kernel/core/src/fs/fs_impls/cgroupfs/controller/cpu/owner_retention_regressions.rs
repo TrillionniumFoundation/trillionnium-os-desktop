@@ -9,7 +9,7 @@
 use alloc::sync::Arc;
 
 use aster_systree::{Error, SysBranchNode, SysNode};
-use ostd::{arch::read_tsc, prelude::ktest, task::Task};
+use ostd::{prelude::ktest, task::Task};
 
 use super::{
     super::{Controller, SubController, SubCtrlType},
@@ -37,6 +37,7 @@ struct Fixture {
 
 impl Fixture {
     fn new(name: &'static str) -> Self {
+        aster_time::init_for_ktest();
         aster_systree::init_for_ktest();
         let root = CgroupSystem::singleton();
         let enabled_root_cpu = !root
@@ -51,8 +52,14 @@ impl Fixture {
         let leaves = ["old", "new"]
             .map(|name| Arc::downcast::<CgroupNode>(parent.create_child(name).unwrap()).unwrap());
         let original_root_budget = budget(&owner(root.controller()));
-        let period = CpuMax::us_to_clocks(100_000).max(1);
-        let start = (read_tsc() / period + 2) * period;
+        let period = CpuMax::us_to_ns(100_000).max(1);
+        let start = (aster_time::try_read_monotonic_sample()
+            .unwrap()
+            .checked_nanos()
+            .unwrap()
+            / period
+            + 2)
+            * period;
         for controller in [
             root.controller(),
             parent.controller(),
@@ -176,13 +183,17 @@ fn reset(owner: &SubController<CpuController>, start: u64) {
         .max = CpuMax {
         quota_usec: 1_000,
         period_usec: 100_000,
-        window_start: start,
-        used_clocks: 0,
-        carry_debt_clocks: 0,
+        window_start_ns: start,
+        used_ns: 0,
+        cumulative_ns: 0,
+        last_observed_ns: 0,
+        accounting_fault: false,
+        native_window_valid_from_ns: Some(0),
+        carry_debt_ns: 0,
         nr_periods: 0,
         nr_throttled: 0,
-        throttled_since: None,
-        throttled_clocks: 0,
+        throttled_since_ns: None,
+        throttled_ns: 0,
     };
 }
 
@@ -202,20 +213,20 @@ fn controller_publication_charges_the_entire_prefix_to_the_old_incarnation() {
     let old = owner(fixture.leaves[0].controller());
     let mut runtime = fixture.runtime(fixture.start);
     runtime.publish(fixture.start + 11, fixture.start + 19, || {
-        assert_eq!(budget(&old).used_clocks, 11);
+        assert_eq!(budget(&old).used_ns, 11);
         fixture.replace_leaf();
         assert_closed(&old, fixture.start + 11);
-        assert_eq!(budget(&old).used_clocks, 11);
+        assert_eq!(budget(&old).used_ns, 11);
     });
     let new = owner(fixture.leaves[0].controller());
     assert!(!Arc::ptr_eq(&old, &new));
-    assert_eq!(budget(&old).used_clocks, 19);
-    assert_eq!(budget(&new).used_clocks, 0);
+    assert_eq!(budget(&old).used_ns, 19);
+    assert_eq!(budget(&new).used_ns, 0);
     assert_eq!(runtime.update(fixture.start + 47), (47, 47));
-    assert_eq!(budget(&old).used_clocks, 19);
-    assert_eq!(budget(&new).used_clocks, 28);
-    assert_eq!(budget(&owner(fixture.parent.controller())).used_clocks, 47);
-    assert_eq!(budget(&owner(fixture.root.controller())).used_clocks, 47);
+    assert_eq!(budget(&old).used_ns, 19);
+    assert_eq!(budget(&new).used_ns, 28);
+    assert_eq!(budget(&owner(fixture.parent.controller())).used_ns, 47);
+    assert_eq!(budget(&owner(fixture.root.controller())).used_ns, 47);
 }
 
 #[ktest]
@@ -232,14 +243,14 @@ fn retained_leaf_debits_its_original_ancestor_chain_after_parent_replacement() {
     let new_leaf = owner(fixture.leaves[0].controller());
     let new_parent = owner(fixture.parent.controller());
     assert!(!Arc::ptr_eq(&old_parent, &new_parent));
-    assert_eq!(budget(&old_leaf).used_clocks, 19);
-    assert_eq!(budget(&old_parent).used_clocks, 19);
+    assert_eq!(budget(&old_leaf).used_ns, 19);
+    assert_eq!(budget(&old_parent).used_ns, 19);
     assert_eq!(runtime.update(fixture.start + 47), (47, 47));
-    assert_eq!(budget(&old_leaf).used_clocks, 19);
-    assert_eq!(budget(&old_parent).used_clocks, 19);
-    assert_eq!(budget(&new_leaf).used_clocks, 28);
-    assert_eq!(budget(&new_parent).used_clocks, 28);
-    assert_eq!(budget(&owner(fixture.root.controller())).used_clocks, 47);
+    assert_eq!(budget(&old_leaf).used_ns, 19);
+    assert_eq!(budget(&old_parent).used_ns, 19);
+    assert_eq!(budget(&new_leaf).used_ns, 28);
+    assert_eq!(budget(&new_parent).used_ns, 28);
+    assert_eq!(budget(&owner(fixture.root.controller())).used_ns, 47);
 }
 
 #[ktest]
@@ -257,8 +268,8 @@ fn live_migration_partitions_leaf_time_and_charges_common_ancestors_once() {
             .unwrap();
     });
     assert_eq!(runtime.update(fixture.start + 29), (29, 29));
-    assert_eq!(budget(&old).used_clocks, 19);
-    assert_eq!(budget(&new).used_clocks, 10);
+    assert_eq!(budget(&old).used_ns, 19);
+    assert_eq!(budget(&new).used_ns, 10);
     runtime.publish(fixture.start + 29, fixture.start + 31, || {
         CgroupMembership::write_lock()
             .move_process_to_node(
@@ -271,10 +282,10 @@ fn live_migration_partitions_leaf_time_and_charges_common_ancestors_once() {
         CgroupMembership::write_lock().move_process_to_root(fixture.process.as_ref().unwrap());
     });
     assert_eq!(runtime.update(fixture.start + 53), (24, 53));
-    assert_eq!(budget(&old).used_clocks, 19);
-    assert_eq!(budget(&new).used_clocks, 22);
-    assert_eq!(budget(&owner(fixture.parent.controller())).used_clocks, 41);
-    assert_eq!(budget(&owner(fixture.root.controller())).used_clocks, 53);
+    assert_eq!(budget(&old).used_ns, 19);
+    assert_eq!(budget(&new).used_ns, 22);
+    assert_eq!(budget(&owner(fixture.parent.controller())).used_ns, 41);
+    assert_eq!(budget(&owner(fixture.root.controller())).used_ns, 53);
 }
 
 #[ktest]
@@ -303,14 +314,11 @@ fn exited_task_resumes_its_retained_incarnation_after_replacement_and_reap() {
     // old leaf/ancestors rather than dereference the node's new RCU slot.
     let mut resumed = fixture.runtime(fixture.start + 29);
     assert_eq!(resumed.update(fixture.start + 41), (12, 12));
-    assert_eq!(budget(&old_leaf).used_clocks, 35);
-    assert_eq!(budget(&old_parent).used_clocks, 35);
-    assert_eq!(
-        budget(&owner(fixture.leaves[0].controller())).used_clocks,
-        0
-    );
-    assert_eq!(budget(&owner(fixture.parent.controller())).used_clocks, 0);
-    assert_eq!(budget(&owner(fixture.root.controller())).used_clocks, 35);
+    assert_eq!(budget(&old_leaf).used_ns, 35);
+    assert_eq!(budget(&old_parent).used_ns, 35);
+    assert_eq!(budget(&owner(fixture.leaves[0].controller())).used_ns, 0);
+    assert_eq!(budget(&owner(fixture.parent.controller())).used_ns, 0);
+    assert_eq!(budget(&owner(fixture.root.controller())).used_ns, 35);
     assert_closed(&old_leaf, fixture.start + 41);
     assert_closed(&old_parent, fixture.start + 41);
 }
@@ -322,17 +330,18 @@ fn zero_length_publication_changes_only_the_next_segment_owner() {
     let mut runtime = fixture.runtime(fixture.start);
     runtime.publish(fixture.start, fixture.start, || fixture.replace_leaf());
     let new = owner(fixture.leaves[0].controller());
-    assert_eq!(budget(&old).used_clocks, 0);
-    assert_eq!(budget(&new).used_clocks, 0);
+    assert_eq!(budget(&old).used_ns, 0);
+    assert_eq!(budget(&new).used_ns, 0);
     assert_eq!(runtime.update(fixture.start + 17), (17, 17));
     assert_eq!(runtime.update(fixture.start + 17), (0, 17));
-    assert_eq!(budget(&old).used_clocks, 0);
-    assert_eq!(budget(&new).used_clocks, 17);
-    assert_eq!(budget(&owner(fixture.root.controller())).used_clocks, 17);
+    assert_eq!(budget(&old).used_ns, 0);
+    assert_eq!(budget(&new).used_ns, 17);
+    assert_eq!(budget(&owner(fixture.root.controller())).used_ns, 17);
 }
 
 #[ktest]
 fn original_owner_reference_keeps_the_node_live_until_its_last_clone_drops() {
+    aster_time::init_for_ktest();
     aster_systree::init_for_ktest();
     let root = CgroupSystem::singleton();
     let name = "g1b-owner-node-lease";

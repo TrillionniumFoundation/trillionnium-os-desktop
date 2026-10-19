@@ -1,16 +1,16 @@
 diff --git a/kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs b/kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs
 --- a/kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs
 +++ b/kernel/asterinas/kernel/core/src/sched/sched_class/mod.rs
-@@ -643,10 +643,12 @@
+@@ -679,10 +679,12 @@
              // The dispatcher still has this original running owner. Close
              // its tail at exactly the next segment's start before dropping
              // the runtime or advancing any shared ancestor to this time.
 +            // NEGATIVE CONTROL: advance the candidate before the outgoing debit.
-+            let candidate_eligible = task_cpu_eligible(&next.0, cut);
++            let candidate_eligible = task_cpu_eligible(&next.0, cut.boottime_ns);
              self.settle_bandwidth(cut);
              // Selection can straddle a window or spend the remaining quota.
              // The candidate must still be eligible after that actual debit.
--            if !task_cpu_eligible(&next.0, cut) {
+-            if !task_cpu_eligible(&next.0, cut.boottime_ns) {
 +            if !candidate_eligible {
                  self.throttled.push(next.0);
                  now = cut;

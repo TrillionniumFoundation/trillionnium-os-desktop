@@ -1,5 +1,13 @@
 # 当前状态
 
+## 2026-10-19 R11 接续：原 CPU owner 纳秒记账候选与本地完整 core
+
+本候选基于已正常合入 #203、#204 的 main `00e2652c62ce6e34337d8f5bc3f3366b089c3d9c`，在原 CpuMax 中统一 BOOTTIME 纳秒窗口与累计计费，保留独立 CFS cycles 游标，接入同一次本地结算和同锁内部 usage 快照；倒退、时钟不可用及累计溢出保留故障，有限 quota 拒绝，合法 `max` 管理恢复不清除故障。技术实现、锁序和错误边界见 [G1-b 技术手册](ASTERINAS_CPU_USAGE_G1B.md)，19 项回归、原七组生产负控和复跑命令见 [G1-b 开发与验证手册](../tests/organ_backend/CPU_USAGE_G1B.md)。
+
+固定工具链下 `wip-core-03` 已执行原完整 core：**220/220，0 failed、0 filtered、0 soft skip，原始 QEMU 33，原 run.py 进程 0**；原始 serial SHA-256 为 `ab7ae20b3dafef9250d74e829fed703698f673061d47950eaa8e96fb12ef705e`。该运行属于上述基头上的本地 WIP，不能转记为最终干净提交或远端 CI。首个 217 项版本的真实 lease 清理 EBUSY 失败和单项过滤诊断继续保留；修复只按原进程/任务寿命释放夹具，删除检查未放宽。最终同一候选的 core/OSTD、七负控、普通 QueryAbi14/SCM27/RLIMIT37/Linux32 与 CPU 配置/配额仍待独立验收。
+
+HOS2 当前仍仅 QueryAbi；可信 Process/exec 授权、四项原生资源操作、Hepta 原 K↔D 持久交付、物理切换原子性和完整 SMP 尚未闭合。本切片不提供手机或物理设备资格。#204 于 08:46:06 UTC 正常合入当前基头，R10 冻结结果字节保留；以下旧状态按各自日期解读。
+
 ## 2026-10-19 R11 收口：时钟与调度修复 #203 已正常合入
 
 [#203](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/203) 于 08:35:37 UTC 正常合入 `5218f67e7d15adabcfcadef041f1cf26b0447e99`；实际执行 head `775061af51e6ee91fce290d5855e24a276292e14` / tree `afeb331293025ca7a63678167211de109e997110` 的五项检查全部成功。[原 A06 run](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39219341861) 的 artifact `12172041618` 经独立字节复核：6,591 个源码输入、core 201/201、OSTD 221 reported（3 项明确 soft skip，实际执行下界218）、七个原生产缺陷控制的精确失败集、完整 Linux32 同输入 stdout、普通内核 QueryAbi14 / SCM27 / RLIMIT37 / 原 CPU 门槛均成立。此处仅资格化时钟相位与逻辑调度交接准备片；原始 TSC 带宽到 BOOTTIME 窗口、同版本 usage、可信授予、四项原生资源操作与完整 Hepta W1 仍在后续切片。

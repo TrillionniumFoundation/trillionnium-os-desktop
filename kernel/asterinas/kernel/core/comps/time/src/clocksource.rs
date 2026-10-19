@@ -174,6 +174,17 @@ impl ClockSource {
     /// A reliable result contains the calculated instant and the exact same
     /// counter observation. Invalid results must not be used for accounting.
     pub fn read_sample(&self) -> ClockSourceSample {
+        let (sample, fault, last_cycles, cycles) = self.read_sample_with_fault();
+        Self::report_fault(fault, last_cycles, cycles);
+        sample
+    }
+
+    /// Reads the same source without logging inside a caller's runqueue lock.
+    pub(crate) fn read_accounting_sample(&self) -> ClockSourceSample {
+        self.read_sample_with_fault().0
+    }
+
+    fn read_sample_with_fault(&self) -> (ClockSourceSample, Option<SampleFault>, u64, u64) {
         let (cycles, last) = {
             let last_record = self.last_record.read();
             (self.read_cycles(), *last_record)
@@ -185,8 +196,7 @@ impl ClockSource {
             // values; only invalidate the current clock's reliability.
             self.last_record.write().reliable = false;
         }
-        Self::report_fault(fault, last.cycles, cycles);
-        sample
+        (sample, fault, last.cycles, cycles)
     }
 
     /// Computes from one locked record; the caller reports faults after unlock.
@@ -247,7 +257,9 @@ impl ClockSource {
         if let Some(fault) = fault {
             ostd::warn!(
                 "Unreliable clock source sample: {:?}, previous cycles {}, observed cycles {}",
-                fault, last_cycles, cycles
+                fault,
+                last_cycles,
+                cycles
             );
         }
     }

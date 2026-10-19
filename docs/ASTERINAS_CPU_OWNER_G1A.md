@@ -1,5 +1,7 @@
 # A06 G1-a：实际 CPU owner 的带宽 revision 与实例寿命
 
+2026-10-19 接续：本文保留 G1-a 原切片的源码与运行边界。后续原账本的 BOOTTIME 纳秒端点、累计使用量和内部一致快照见 [G1-b 技术手册](ASTERINAS_CPU_USAGE_G1B.md) 及其配套开发手册；旧计数与原始 TSC 描述不代表当前新切片的资格。
+
 本切片以 desktop `aab50f347deb53fc79ac13ea3b84f846fefc70a7` 为产品基线，落实
 [G1 owner 工单](agents/R9_G1_OWNER_SEAM.md)中的第一阶段。代码和客体 ktest 已加入；
 新增测试源码及 Cargo metadata 检查不代表客体执行通过，实际资格必须绑定后续同一候选的

@@ -21,7 +21,6 @@ use ostd::{
     },
     util::id_set::Id,
 };
-
 use spin::Once;
 
 use super::{
@@ -33,6 +32,7 @@ use crate::{
     thread::{AsThread, Thread},
 };
 
+mod clock;
 mod policy;
 mod time;
 
@@ -41,7 +41,10 @@ mod idle;
 mod real_time;
 mod stop;
 
-use self::policy::{SchedPolicyKind, SchedPolicyState};
+use self::{
+    clock::CpuClockSample,
+    policy::{SchedPolicyKind, SchedPolicyState},
+};
 pub(crate) use self::{
     policy::{LinuxSchedPolicy, SchedPolicy},
     real_time::{RealTimePolicy, RealTimePriority},
@@ -75,19 +78,19 @@ pub(crate) fn init_on_each_cpu() {
 /// but must not allocate, block, copy user memory, or acquire a runqueue lock.
 /// On N0's single CPU, other tasks have already settled when leaving the CPU.
 /// This is not a rendezvous with tasks running on remote CPUs.
-pub(crate) fn with_current_cpu_bandwidth_settled<R>(apply: impl FnOnce(u64) -> R) -> R {
+pub(crate) fn with_current_cpu_bandwidth_settled<R>(apply: impl FnOnce(Option<u64>) -> R) -> R {
     let irq_guard = disable_local();
     let Some(scheduler) = CLASS_SCHEDULER.get() else {
         // No class-scheduled POSIX task can run before scheduler initialization.
         // This also allows standalone owner ktests using OSTD's FIFO scheduler.
-        return apply(sched_clock());
+        return apply(CpuClockSample::read().boottime_ns);
     };
     let mut rq = scheduler.rqs[irq_guard.current_cpu().as_usize()].lock();
-    let now = sched_clock();
+    let now = CpuClockSample::read();
     if let Some(((task, _), rt)) = rq.bandwidth_segment_mut() {
         rt.with_bandwidth_settled(task, now, apply)
     } else {
-        apply(now)
+        apply(now.boottime_ns)
     }
 }
 
@@ -112,12 +115,12 @@ pub(crate) fn with_current_cpu_bandwidth_owner_update<R>(publish: impl FnOnce() 
     let rq = &scheduler.rqs[irq_guard.current_cpu().as_usize()];
     {
         let mut rq = rq.lock();
-        rq.settle_bandwidth(sched_clock());
+        rq.settle_bandwidth(CpuClockSample::read());
     }
     let result = publish();
     {
         let mut rq = rq.lock();
-        rq.settle_bandwidth(sched_clock());
+        rq.settle_bandwidth(CpuClockSample::read());
     }
     result
 }
@@ -166,34 +169,49 @@ struct CurrentRuntime {
     // This cursor partitions debits to the original cgroup bandwidth owner.
     // It stores no quota or usage. Configuration must not advance `start`,
     // which is still needed for the next CFS/RT runtime update.
-    bandwidth_accounted_through: u64,
+    bandwidth_accounted_through_ns: Option<u64>,
     // Reference only: all accounting remains in the original CpuMax. Resolve
     // at a segment boundary, never after the interval has already executed.
     bandwidth_owner: Option<CpuChargeOwner>,
 }
 
 impl CurrentRuntime {
-    fn new_at(task: &Task, now: u64) -> Self {
+    fn new_at(task: &Task, now: CpuClockSample) -> Self {
         CurrentRuntime {
-            start: now,
+            start: now.cycles,
             delta: 0,
             period_delta: 0,
-            bandwidth_accounted_through: now,
+            bandwidth_accounted_through_ns: now.boottime_ns,
             bandwidth_owner: CpuChargeOwner::for_task(task),
         }
     }
 
     fn update_at(&mut self, now: u64) {
-        self.delta = now - core::mem::replace(&mut self.start, now);
-        self.period_delta += self.delta;
+        // A failed paired sample can retain an older conversion base. Preserve
+        // the CFS/RT high-water mark so recovery cannot replay those cycles;
+        // bandwidth independently fences the unreliable nanosecond interval.
+        self.delta = now.saturating_sub(self.start);
+        self.start = self.start.max(now);
+        self.period_delta = self.period_delta.saturating_add(self.delta);
     }
 
-    fn settle_bandwidth(&mut self, task: &Task, now: u64) {
-        if now > self.bandwidth_accounted_through {
-            if let Some(owner) = &self.bandwidth_owner {
-                owner.charge(self.bandwidth_accounted_through, now);
+    fn settle_bandwidth(&mut self, task: &Task, now: CpuClockSample) {
+        match (self.bandwidth_accounted_through_ns, now.boottime_ns) {
+            (Some(from), Some(until)) if until >= from => {
+                if until > from
+                    && let Some(owner) = &self.bandwidth_owner
+                {
+                    owner.charge(from, until);
+                }
+                self.bandwidth_accounted_through_ns = Some(until);
             }
-            self.bandwidth_accounted_through = now;
+            _ => {
+                if let Some(owner) = &self.bandwidth_owner {
+                    owner.invalidate_accounting();
+                }
+                // A later successful read cannot account for a missing prefix.
+                self.bandwidth_accounted_through_ns = None;
+            }
         }
 
         // The next interval may belong to a newly published incarnation. An
@@ -207,11 +225,11 @@ impl CurrentRuntime {
     fn with_bandwidth_settled<R>(
         &mut self,
         task: &Task,
-        now: u64,
-        apply: impl FnOnce(u64) -> R,
+        now: CpuClockSample,
+        apply: impl FnOnce(Option<u64>) -> R,
     ) -> R {
         self.settle_bandwidth(task, now);
-        apply(now)
+        apply(now.boottime_ns)
     }
 }
 
@@ -226,34 +244,55 @@ pub(crate) struct CpuRuntimeFixture {
 #[cfg(ktest)]
 impl CpuRuntimeFixture {
     pub(crate) fn new(task: Arc<Task>, now: u64) -> Self {
-        let runtime = CurrentRuntime::new_at(&task, now);
-        Self {
-            task,
-            runtime,
-        }
+        let runtime = CurrentRuntime::new_at(&task, CpuClockSample::fixture(now));
+        Self { task, runtime }
     }
 
     pub(crate) fn configure<R>(&mut self, now: u64, apply: impl FnOnce(u64) -> R) -> R {
-        self.runtime.with_bandwidth_settled(&self.task, now, apply)
+        self.runtime
+            .with_bandwidth_settled(&self.task, CpuClockSample::fixture(now), |sample| {
+                apply(sample.unwrap())
+            })
     }
 
     pub(crate) fn update(&mut self, now: u64) -> (u64, u64) {
         self.runtime.update_at(now);
-        self.runtime.settle_bandwidth(&self.task, now);
+        self.runtime
+            .settle_bandwidth(&self.task, CpuClockSample::fixture(now));
         (self.runtime.delta, self.runtime.period_delta)
+    }
+
+    /// Starts the actual runtime using a sample from an original ClockSource.
+    pub(crate) fn new_sample(task: Arc<Task>, sample: aster_time::ClockSourceSample) -> Self {
+        let runtime = CurrentRuntime::new_at(&task, CpuClockSample::from_sample(sample));
+        Self { task, runtime }
+    }
+
+    /// Settles calibrated nanoseconds while preserving the separate CFS cycles.
+    pub(crate) fn update_sample(&mut self, sample: aster_time::ClockSourceSample) -> (u64, u64) {
+        let sample = CpuClockSample::from_sample(sample);
+        self.runtime.update_at(sample.cycles);
+        self.runtime.settle_bandwidth(&self.task, sample);
+        (self.runtime.delta, self.runtime.period_delta)
+    }
+
+    pub(crate) fn configure_sample<R>(
+        &mut self,
+        sample: aster_time::ClockSourceSample,
+        apply: impl FnOnce(Option<u64>) -> R,
+    ) -> R {
+        self.runtime
+            .with_bandwidth_settled(&self.task, CpuClockSample::from_sample(sample), apply)
     }
 
     /// Runs the production runtime's two checkpoints around a real owner
     /// publication. No fixture is inserted into the FIFO ktest scheduler.
-    pub(crate) fn publish<R>(
-        &mut self,
-        before: u64,
-        after: u64,
-        publish: impl FnOnce() -> R,
-    ) -> R {
-        self.runtime.settle_bandwidth(&self.task, before);
+    pub(crate) fn publish<R>(&mut self, before: u64, after: u64, publish: impl FnOnce() -> R) -> R {
+        self.runtime
+            .settle_bandwidth(&self.task, CpuClockSample::fixture(before));
         let result = publish();
-        self.runtime.settle_bandwidth(&self.task, after);
+        self.runtime
+            .settle_bandwidth(&self.task, CpuClockSample::fixture(after));
         result
     }
 }
@@ -270,7 +309,7 @@ impl CpuRunQueueFixture {
         let irq_guard = disable_local();
         let mut rq = PerCpuClassRqSet::new(irq_guard.current_cpu());
         let thread = task.as_thread().unwrap().clone();
-        let runtime = CurrentRuntime::new_at(&task, now);
+        let runtime = CurrentRuntime::new_at(&task, CpuClockSample::fixture(now));
         rq.current = Some(((task, thread), runtime));
         Self { rq }
     }
@@ -287,7 +326,9 @@ impl CpuRunQueueFixture {
         let mut samples = samples.iter();
         let next = self
             .rq
-            .try_pick_next_with_clock(|| *samples.next().expect("unexpected clock read"))
+            .try_pick_next_with_clock(|| {
+                CpuClockSample::fixture(*samples.next().expect("unexpected clock read"))
+            })
             .cloned();
         assert!(samples.next().is_none(), "unused clock sample");
         next
@@ -295,12 +336,13 @@ impl CpuRunQueueFixture {
 
     pub(crate) fn update(&mut self, flags: UpdateFlags, now: u64) -> bool {
         let _irq_guard = disable_local();
-        self.rq.update_current_at(flags, now)
+        self.rq
+            .update_current_at(flags, CpuClockSample::fixture(now))
     }
 
     pub(crate) fn dequeue(&mut self, now: u64) -> Option<Arc<Task>> {
         let _irq_guard = disable_local();
-        self.rq.dequeue_current_at(now)
+        self.rq.dequeue_current_at(CpuClockSample::fixture(now))
     }
 
     pub(crate) fn has_current(&self) -> bool {
@@ -551,20 +593,20 @@ impl PerCpuClassRqSet {
         self.current.as_mut().or(self.dequeued.as_mut())
     }
 
-    fn settle_bandwidth(&mut self, now: u64) {
+    fn settle_bandwidth(&mut self, now: CpuClockSample) {
         if let Some(((task, _), rt)) = self.bandwidth_segment_mut() {
             rt.settle_bandwidth(task, now);
         }
     }
 
-    fn replenish_throttled(&mut self, now: u64) {
+    fn replenish_throttled(&mut self, now: CpuClockSample) {
         // Inspect the existing allocation in place. The former mem::take()
         // discarded its capacity every tick and pushed blocked tasks into a
         // fresh Vec while the IRQ-disabled runqueue spinlock was held.
         // swap_remove leaves capacity intact and never reallocates this Vec.
         let mut index = 0;
         while index < self.throttled.len() {
-            if !task_cpu_eligible(&self.throttled[index], now) {
+            if !task_cpu_eligible(&self.throttled[index], now.boottime_ns) {
                 index += 1;
                 continue;
             }
@@ -577,14 +619,14 @@ impl PerCpuClassRqSet {
         }
     }
 
-    fn pick_next_entity(&mut self, now: u64) -> Option<SchedEntity> {
+    fn pick_next_entity(&mut self, now: CpuClockSample) -> Option<SchedEntity> {
         self.replenish_throttled(now);
         if let Some(task) = self.stop.pick_next() {
             return task.as_thread().cloned().map(|thread| (task, thread));
         }
         for _ in 0..self.real_time.len() {
             let task = self.real_time.pick_next().unwrap();
-            if task_cpu_eligible(&task, now) {
+            if task_cpu_eligible(&task, now.boottime_ns) {
                 let thread = task.as_thread().unwrap().clone();
                 return Some((task, thread));
             }
@@ -592,7 +634,7 @@ impl PerCpuClassRqSet {
         }
         for _ in 0..self.fair.len() {
             let task = self.fair.pick_next().unwrap();
-            if task_cpu_eligible(&task, now) {
+            if task_cpu_eligible(&task, now.boottime_ns) {
                 let thread = task.as_thread().unwrap().clone();
                 return Some((task, thread));
             }
@@ -625,7 +667,7 @@ impl PerCpuClassRqSet {
 
     fn try_pick_next_with_clock(
         &mut self,
-        mut read_clock: impl FnMut() -> u64,
+        mut read_clock: impl FnMut() -> CpuClockSample,
     ) -> Option<&Arc<Task>> {
         // OSTD's might_preempt() can call try_pick_next() directly after a
         // runnable task is enqueued, without a preceding update_current().
@@ -635,7 +677,7 @@ impl PerCpuClassRqSet {
         // eligibility and potentially advances a shared cgroup ancestor.
         let mut now = read_clock();
         if let Some((_, rt)) = &mut self.current {
-            rt.update_at(now);
+            rt.update_at(now.cycles);
         }
         self.settle_bandwidth(now);
         while let Some(next) = self.pick_next_entity(now) {
@@ -646,7 +688,7 @@ impl PerCpuClassRqSet {
             self.settle_bandwidth(cut);
             // Selection can straddle a window or spend the remaining quota.
             // The candidate must still be eligible after that actual debit.
-            if !task_cpu_eligible(&next.0, cut) {
+            if !task_cpu_eligible(&next.0, cut.boottime_ns) {
                 self.throttled.push(next.0);
                 now = cut;
                 continue;
@@ -658,7 +700,7 @@ impl PerCpuClassRqSet {
             // was settled through `cut`; the installed runtime starts there.
             self.dequeued = None;
             if let Some((old, _)) = self.current.replace((next, runtime)) {
-                if task_cpu_eligible(&old.0, cut) {
+                if task_cpu_eligible(&old.0, cut.boottime_ns) {
                     self.enqueue_entity(old, None);
                 } else {
                     self.throttled.push(old.0);
@@ -669,7 +711,7 @@ impl PerCpuClassRqSet {
         None
     }
 
-    fn update_current_at(&mut self, flags: UpdateFlags, now: u64) -> bool {
+    fn update_current_at(&mut self, flags: UpdateFlags, now: CpuClockSample) -> bool {
         // Settle the running task FIRST. Replenishment invokes
         // task_cpu_eligible() and can advance the same cgroup or a common
         // ancestor's quota window before the retained owner sees a tick that
@@ -677,12 +719,12 @@ impl PerCpuClassRqSet {
         // defeats positive overrun debt. N0 keeps all these transitions
         // serialized inside the existing IRQ-disabled per-CPU runqueue lock.
         if let Some((_, rt)) = &mut self.current {
-            rt.update_at(now);
+            rt.update_at(now.cycles);
         }
         self.settle_bandwidth(now);
         let mut quota_exhausted = false;
         let (should_preempt, mut lookahead) = if let Some(((task, cur), rt)) = &mut self.current {
-            quota_exhausted = !task_cpu_eligible(task, now);
+            quota_exhausted = !task_cpu_eligible(task, now.boottime_ns);
             let attr = &cur.sched_attr();
 
             match attr.policy_kind() {
@@ -713,7 +755,7 @@ impl PerCpuClassRqSet {
             || (lookahead >= 4 && !self.idle.is_empty())
     }
 
-    fn dequeue_current_at(&mut self, now: u64) -> Option<Arc<Task>> {
+    fn dequeue_current_at(&mut self, now: CpuClockSample) -> Option<Arc<Task>> {
         self.settle_bandwidth(now);
         let current = self.current.take()?;
         debug_assert!(self.dequeued.is_none());
@@ -730,15 +772,15 @@ impl LocalRunQueue for PerCpuClassRqSet {
     }
 
     fn try_pick_next(&mut self) -> Option<&Arc<Task>> {
-        self.try_pick_next_with_clock(sched_clock)
+        self.try_pick_next_with_clock(CpuClockSample::read)
     }
 
     fn update_current(&mut self, flags: UpdateFlags) -> bool {
-        self.update_current_at(flags, sched_clock())
+        self.update_current_at(flags, CpuClockSample::read())
     }
 
     fn dequeue_current(&mut self) -> Option<Arc<Task>> {
-        self.dequeue_current_at(sched_clock())
+        self.dequeue_current_at(CpuClockSample::read())
     }
 }
 

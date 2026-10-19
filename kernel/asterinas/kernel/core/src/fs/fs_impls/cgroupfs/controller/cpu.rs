@@ -8,8 +8,8 @@ use core::sync::atomic::{AtomicU32, Ordering};
 
 use aster_systree::{Error, MAX_ATTR_SIZE, Result, SysAttrSetBuilder, SysPerms, SysStr};
 use aster_util::{per_cpu_counter::PerCpuCounter, printer::VmPrinter};
+use os_control::CPU_PERIOD_NS;
 use ostd::{
-    arch::{read_tsc, tsc_freq},
     cpu::CpuId,
     mm::{VmReader, VmWriter},
     sync::{LocalIrqDisabled, SpinLock},
@@ -67,74 +67,86 @@ struct CpuControl {
 struct CpuMax {
     quota_usec: u64,
     period_usec: u64,
-    window_start: u64,
-    used_clocks: u64,
+    window_start_ns: u64,
+    used_ns: u64,
+    /// All settled execution of this incarnation, including completed windows.
+    cumulative_ns: u64,
+    /// Latest observed endpoint, not another clock or an execution counter.
+    last_observed_ns: u64,
+    /// A lost or overflowing interval cannot become a successful native sample.
+    accounting_fault: bool,
+    /// A period change can retain consumption from a different window shape.
+    native_window_valid_from_ns: Option<u64>,
     /// Positive overrun from earlier quota windows. Never grants unused credit.
-    carry_debt_clocks: u64,
+    carry_debt_ns: u64,
     nr_periods: u64,
     nr_throttled: u64,
-    throttled_since: Option<u64>,
-    throttled_clocks: u64,
+    throttled_since_ns: Option<u64>,
+    throttled_ns: u64,
 }
 
 impl CpuMax {
-    /// N0 uses a single vCPU and invariant TSC; these fields are not nanoseconds.
-    fn us_to_clocks(us: u64) -> u64 {
-        (u128::from(tsc_freq()) * u128::from(us) / 1_000_000)
-            .try_into()
-            .unwrap_or(u64::MAX)
+    /// Preserves Linux's microsecond configuration, including very large quotas.
+    ///
+    /// An unrepresentable finite quota exceeds every representable nanosecond
+    /// interval. Saturating its enforcement threshold is conservative; native
+    /// N0 snapshots separately require a finite cap no larger than 100ms.
+    fn us_to_ns(us: u64) -> u64 {
+        us.saturating_mul(1_000)
     }
 
-    fn period_clocks(&self) -> u64 {
-        Self::us_to_clocks(self.period_usec).max(1)
+    fn period_ns(&self) -> u64 {
+        Self::us_to_ns(self.period_usec).max(1)
     }
 
     /// Compute the periods visible to a cpu.stat observer WITHOUT closing a
     /// quota window. The running task's interval may not have been charged
     /// yet, so an observational read must not call advance() and erase it.
     fn observed_nr_periods(&self, now: u64) -> u64 {
-        let period = self.period_clocks();
+        let period = self.period_ns();
         let start = now / period * period;
-        if self.window_start == 0 || start <= self.window_start {
+        if self.window_start_ns == 0 || start <= self.window_start_ns {
             self.nr_periods
         } else {
             self.nr_periods
-                .saturating_add((start - self.window_start) / period)
+                .saturating_add((start - self.window_start_ns) / period)
         }
     }
 
     fn advance(&mut self, now: u64) {
-        let period = self.period_clocks();
+        self.last_observed_ns = self.last_observed_ns.max(now);
+        let period = self.period_ns();
         let start = now / period * period;
         // A stale timestamp must not rewind the accounting window and grant
-        // the same CPU quota again. N0's invariant TSC is monotonic, but the
+        // the same CPU quota again. The original BOOTTIME source is monotonic, but the
         // state transition still needs to fail closed on an old observation.
-        if start > self.window_start {
-            if let Some(since) = self.throttled_since.take() {
-                self.throttled_clocks = self
-                    .throttled_clocks
+        if start > self.window_start_ns {
+            if let Some(since) = self.throttled_since_ns.take() {
+                self.throttled_ns = self
+                    .throttled_ns
                     .saturating_add(start.max(since).min(now).saturating_sub(since));
             }
-            if self.window_start != 0 && start > self.window_start {
+            if self.window_start_ns != 0 && start > self.window_start_ns {
                 self.nr_periods = self
                     .nr_periods
-                    .saturating_add((start - self.window_start) / period);
+                    .saturating_add((start - self.window_start_ns) / period);
             }
             // When a 1000Hz tick preempts after a small quota is spent,
             // discarding the overrun on every period would systematically
             // grant another full quota. Repay *positive* debt from elapsed
             // budgets; do not bank unused runtime as transferable credit.
-            let elapsed = start.saturating_sub(self.window_start) / period;
+            let elapsed = start.saturating_sub(self.window_start_ns) / period;
             let allowance = if self.quota_usec == u64::MAX {
                 u64::MAX
             } else {
-                Self::us_to_clocks(self.quota_usec).saturating_mul(elapsed)
+                Self::us_to_ns(self.quota_usec).saturating_mul(elapsed)
             };
-            self.carry_debt_clocks = self.carry_debt_clocks
-                .saturating_add(self.used_clocks)
+            self.carry_debt_ns = self
+                .carry_debt_ns
+                .saturating_add(self.used_ns)
                 .saturating_sub(allowance);
-            self.window_start = start;
-            self.used_clocks = 0;
+            self.window_start_ns = start;
+            self.used_ns = 0;
         }
     }
 
@@ -145,12 +157,12 @@ impl CpuMax {
     /// This is O(1), even if the scheduler reports an unusually long interval.
     /// Empty periods repay existing debt but do not accumulate positive credit.
     fn debt_after_crossing(&self, from: u64, new_start: u64, period: u64) -> u64 {
-        let quota = Self::us_to_clocks(self.quota_usec);
-        let old_end = self.window_start.saturating_add(period);
-        let old_spent = old_end.saturating_sub(from.max(self.window_start));
+        let quota = Self::us_to_ns(self.quota_usec);
+        let old_end = self.window_start_ns.saturating_add(period);
+        let old_spent = old_end.saturating_sub(from.max(self.window_start_ns));
         let mut debt = self
-            .carry_debt_clocks
-            .saturating_add(self.used_clocks)
+            .carry_debt_ns
+            .saturating_add(self.used_ns)
             .saturating_add(old_spent)
             .saturating_sub(quota);
 
@@ -161,8 +173,8 @@ impl CpuMax {
             return debt;
         }
         // Process completely idle periods before the first execution period.
-        let idle_count = (from.max(middle_start).saturating_sub(middle_start) / period)
-            .min(middle_count);
+        let idle_count =
+            (from.max(middle_start).saturating_sub(middle_start) / period).min(middle_count);
         debt = debt.saturating_sub(quota.saturating_mul(idle_count));
         let first_active = middle_start.saturating_add(period.saturating_mul(idle_count));
         if first_active == new_start {
@@ -175,8 +187,7 @@ impl CpuMax {
             .saturating_add(period)
             .saturating_sub(from.max(first_active));
         debt = debt.saturating_add(first_spent).saturating_sub(quota);
-        let full_count = new_start
-            .saturating_sub(first_active.saturating_add(period)) / period;
+        let full_count = new_start.saturating_sub(first_active.saturating_add(period)) / period;
         if period >= quota {
             debt.saturating_add(period.saturating_sub(quota).saturating_mul(full_count))
         } else {
@@ -186,79 +197,100 @@ impl CpuMax {
 
     fn charge(&mut self, from: u64, until: u64) {
         if until < from {
+            self.accounting_fault = true;
             return;
         }
-        let period = self.period_clocks();
+        let elapsed = until - from;
+        if let Some(cumulative) = self.cumulative_ns.checked_add(elapsed) {
+            self.cumulative_ns = cumulative;
+        } else {
+            self.cumulative_ns = u64::MAX;
+            self.accounting_fault = true;
+        }
+        self.last_observed_ns = self.last_observed_ns.max(until);
+        let period = self.period_ns();
         let new_start = until / period * period;
         // Never re-open an earlier accounting window on a backward clock.
-        if new_start < self.window_start {
+        if new_start < self.window_start_ns {
             return;
         }
 
         // Save the true debt from completed periods before the normal advance
-        // updates nr_periods/throttled_usec and resets used_clocks. This avoids
+        // updates nr_periods/throttled_usec and resets used_ns. This avoids
         // counting older idle periods as transferable positive CPU credit.
-        let corrected_debt = if new_start > self.window_start
-            && self.quota_usec != u64::MAX
-        {
+        let corrected_debt = if new_start > self.window_start_ns && self.quota_usec != u64::MAX {
             Some(self.debt_after_crossing(from, new_start, period))
         } else {
             None
         };
         self.advance(until);
         if let Some(debt) = corrected_debt {
-            self.carry_debt_clocks = debt;
+            self.carry_debt_ns = debt;
         }
-        self.used_clocks = self
-            .used_clocks
-            .saturating_add(until.saturating_sub(from.max(self.window_start)));
+        self.used_ns = self
+            .used_ns
+            .saturating_add(until.saturating_sub(from.max(self.window_start_ns)));
     }
 
     fn eligible(&mut self, now: u64) -> bool {
+        // Different CPUs can reach this shared owner in a different order
+        // from their sample capture. Keep the current accounting window and
+        // throttling timestamps; an earlier cut cannot rewind either one.
+        let now = now.max(self.last_observed_ns);
+        if self.accounting_fault {
+            // Ordinary unlimited work and local administrative recovery remain
+            // available; an unknown interval cannot authorize finite bandwidth.
+            return self.quota_usec == u64::MAX;
+        }
         self.advance(now);
         if self.quota_usec == u64::MAX
-            || self.used_clocks.saturating_add(self.carry_debt_clocks)
-                < Self::us_to_clocks(self.quota_usec)
+            || self.used_ns.saturating_add(self.carry_debt_ns) < Self::us_to_ns(self.quota_usec)
         {
-            if let Some(since) = self.throttled_since.take() {
-                self.throttled_clocks = self
-                    .throttled_clocks
-                    .saturating_add(now.saturating_sub(since));
+            if let Some(since) = self.throttled_since_ns.take() {
+                self.throttled_ns = self.throttled_ns.saturating_add(now.saturating_sub(since));
             }
             return true;
         }
-        if self.throttled_since.is_none() {
+        if self.throttled_since_ns.is_none() {
             self.nr_throttled = self.nr_throttled.saturating_add(1);
-            self.throttled_since = Some(now);
+            self.throttled_since_ns = Some(now);
         }
         false
     }
 
     fn reconfigure(&mut self, quota_usec: u64, period_usec: u64, now: u64) {
+        // A cut captured on another CPU may reach this owner after a later
+        // observation. Reconfiguration must never reopen the earlier window.
+        let now = now.max(self.last_observed_ns);
         self.advance(now);
-        let already_used = self.used_clocks;
+        let already_used = self.used_ns;
+        if period_usec != self.period_usec {
+            // The original owner retains already-used CPU through a resize.
+            // Its current bucket may consequently contain an incomplete or
+            // differently shaped native window. Wait for a whole new N0 window
+            // instead of inventing a second fixed-period observation ledger.
+            self.native_window_valid_from_ns = (now / CPU_PERIOD_NS)
+                .checked_add(1)
+                .and_then(|next| next.checked_mul(CPU_PERIOD_NS));
+        }
         self.quota_usec = quota_usec;
         self.period_usec = period_usec;
-        let period = self.period_clocks();
-        self.window_start = now / period * period;
-        self.used_clocks = already_used;
+        let period = self.period_ns();
+        self.window_start_ns = now / period * period;
+        self.used_ns = already_used;
         if quota_usec == u64::MAX {
-            if let Some(since) = self.throttled_since.take() {
-                self.throttled_clocks = self
-                    .throttled_clocks
-                    .saturating_add(now.saturating_sub(since));
+            if let Some(since) = self.throttled_since_ns.take() {
+                self.throttled_ns = self.throttled_ns.saturating_add(now.saturating_sub(since));
             }
         }
     }
 
     fn throttled_usec(&self, now: u64) -> u64 {
-        let clocks = self.throttled_clocks.saturating_add(
-            self.throttled_since
+        let nanos = self.throttled_ns.saturating_add(
+            self.throttled_since_ns
                 .map_or(0, |since| now.saturating_sub(since)),
         );
-        (u128::from(clocks) * 1_000_000 / u128::from(tsc_freq()))
-            .try_into()
-            .unwrap_or(u64::MAX)
+        nanos / 1_000
     }
 }
 
@@ -325,6 +357,26 @@ impl CpuController {
 
         let user_usec = counter_usec(&self.stats.user);
         let system_usec = counter_usec(&self.stats.system);
+        let control_stats = if let Some(control) = &self.control {
+            let now = aster_time::try_read_monotonic_sample()
+                .and_then(|sample| sample.checked_nanos())
+                .ok_or(Error::ResourceUnavailable)?;
+            let state = control.max.lock();
+            let max = &state.max;
+            // A read must not roll a shared cgroup ahead of the running
+            // task's pending scheduler CPU charge. In particular, never
+            // grant a fresh quota merely by reading cpu.stat.
+            Some((
+                max.observed_nr_periods(now),
+                max.nr_throttled,
+                max.throttled_usec(now),
+            ))
+        } else {
+            None
+        };
+
+        // User-memory writes can fault and reschedule. Finish collection and
+        // release the bandwidth lock before writing any part of the result.
         writeln!(
             printer,
             "usage_usec {}",
@@ -332,23 +384,7 @@ impl CpuController {
         )?;
         writeln!(printer, "user_usec {}", user_usec)?;
         writeln!(printer, "system_usec {}", system_usec)?;
-
-        if self.control.is_some() {
-            // User-memory writes can fault and reschedule: never hold the
-            // scheduler's bandwidth lock while writing through VmPrinter.
-            let (nr_periods, nr_throttled, throttled_usec) = {
-                let state = self.control.as_ref().unwrap().max.lock();
-                let max = &state.max;
-                let now = read_tsc();
-                // A read must not roll a shared cgroup ahead of the running
-                // task's pending scheduler CPU charge. In particular, never
-                // grant a fresh quota merely by reading cpu.stat.
-                (
-                    max.observed_nr_periods(now),
-                    max.nr_throttled,
-                    max.throttled_usec(now),
-                )
-            };
+        if let Some((nr_periods, nr_throttled, throttled_usec)) = control_stats {
             writeln!(printer, "nr_periods {}", nr_periods)?;
             writeln!(printer, "nr_throttled {}", nr_throttled)?;
             writeln!(printer, "throttled_usec {}", throttled_usec)?;
@@ -383,13 +419,17 @@ impl CpuControl {
             max: SpinLock::new(CpuBandwidthState::new(CpuMax {
                 quota_usec: DEFAULT_QUOTA_USEC,
                 period_usec: DEFAULT_PERIOD_USEC,
-                window_start: 0,
-                used_clocks: 0,
-                carry_debt_clocks: 0,
+                window_start_ns: 0,
+                used_ns: 0,
+                cumulative_ns: 0,
+                last_observed_ns: 0,
+                accounting_fault: false,
+                native_window_valid_from_ns: Some(0),
+                carry_debt_ns: 0,
                 nr_periods: 0,
                 nr_throttled: 0,
-                throttled_since: None,
-                throttled_clocks: 0,
+                throttled_since_ns: None,
+                throttled_ns: 0,
             })),
         }
     }
@@ -483,7 +523,7 @@ impl super::SubControl for CpuController {
                 // The callback and settlement use the same captured timestamp;
                 // the budget lock is never held while entering the runqueue.
                 crate::sched::with_current_cpu_bandwidth_settled(|now| {
-                    control.max.lock().reconfigure(config, now)
+                    control.max.lock().reconfigure_at(config, now)
                 })?;
 
                 Ok(len)
@@ -508,7 +548,7 @@ impl super::SubControlStatic for CpuController {
 }
 
 impl super::SubController<CpuController> {
-    /// Charges a scheduler TSC interval to this cgroup and all of its ancestors.
+    /// Charges one calibrated BOOTTIME interval to the original ancestor chain.
     fn charge_bandwidth_hierarchy(&self, from: u64, until: u64) {
         let mut node = Some(self);
         while let Some(current) = node {
@@ -519,12 +559,35 @@ impl super::SubController<CpuController> {
         }
     }
 
-    fn bandwidth_available_hierarchy(&self, now: u64) -> bool {
+    fn invalidate_bandwidth_hierarchy(&self) {
+        let mut node = Some(self);
+        while let Some(current) = node {
+            if let Some(control) = current.inner.as_ref().unwrap().control.as_ref() {
+                control.max.lock().max.accounting_fault = true;
+            }
+            node = current.parent.as_deref();
+        }
+    }
+
+    fn bandwidth_available_hierarchy(&self, now: Option<u64>) -> bool {
+        let serialized = ostd::cpu::all_cpus().count() == 1;
         let mut node = Some(self);
         let mut available = true;
         while let Some(current) = node {
             if let Some(control) = current.inner.as_ref().unwrap().control.as_ref() {
-                available &= control.max.lock().max.eligible(now);
+                let mut state = control.max.lock();
+                if let Some(now) = now {
+                    // A local N0 observer cannot legitimately precede this
+                    // owner's last cut. On SMP, capture and lock arrival may
+                    // differ; the shared owner keeps its window high-water mark.
+                    if serialized && now < state.max.last_observed_ns {
+                        state.max.accounting_fault = true;
+                    }
+                    available &= state.max.eligible(now);
+                } else {
+                    state.max.accounting_fault = true;
+                    available &= state.max.quota_usec == u64::MAX;
+                }
             }
             node = current.parent.as_deref();
         }
@@ -552,7 +615,7 @@ impl super::Controller {
 }
 
 /// Uses the existing cgroup controller for both Linux and future HOS callers.
-pub(crate) fn task_cpu_eligible(task: &Task, now: u64) -> bool {
+pub(crate) fn task_cpu_eligible(task: &Task, now: Option<u64>) -> bool {
     let Some(thread) = task.as_posix_thread() else {
         return true;
     };
@@ -640,6 +703,10 @@ impl CpuChargeOwner {
         self.cpu.charge_bandwidth_hierarchy(from, until);
     }
 
+    pub(crate) fn invalidate_accounting(&self) {
+        self.cpu.invalidate_bandwidth_hierarchy();
+    }
+
     pub(crate) fn belongs_to(&self, cgroup: Option<&Arc<CgroupNode>>) -> bool {
         match (&self.cgroup, cgroup) {
             (Some(old), Some(new)) => Arc::ptr_eq(old, new),
@@ -712,32 +779,37 @@ mod scheduler_handoff_regressions;
 
 #[cfg(ktest)]
 mod quota_debt_regressions {
-    use super::CpuMax;
     use ostd::prelude::ktest;
+
+    use super::CpuMax;
 
     fn sample(quota_usec: u64, period_usec: u64, start: u64) -> CpuMax {
         CpuMax {
             quota_usec,
             period_usec,
-            window_start: start,
-            used_clocks: 0,
-            carry_debt_clocks: 0,
+            window_start_ns: start,
+            used_ns: 0,
+            cumulative_ns: 0,
+            last_observed_ns: 0,
+            accounting_fault: false,
+            native_window_valid_from_ns: Some(0),
+            carry_debt_ns: 0,
             nr_periods: 0,
             nr_throttled: 0,
-            throttled_since: None,
-            throttled_clocks: 0,
+            throttled_since_ns: None,
+            throttled_ns: 0,
         }
     }
 
     #[ktest]
     fn cpu_stat_projection_must_not_close_unsettled_quota_window() {
-        let period = CpuMax::us_to_clocks(100_000).max(1);
-        let quota = CpuMax::us_to_clocks(1_000);
+        let period = CpuMax::us_to_ns(100_000).max(1);
+        let quota = CpuMax::us_to_ns(1_000);
         let start = period.saturating_mul(2);
         let mut budget = sample(1_000, 100_000, start);
         budget.nr_periods = 7;
-        budget.used_clocks = quota.saturating_mul(2);
-        budget.throttled_since = Some(start + period / 2);
+        budget.used_ns = quota.saturating_mul(2);
+        budget.throttled_since_ns = Some(start + period / 2);
         let from = start + period - quota / 2;
         let until = start + period + quota / 2;
 
@@ -746,134 +818,136 @@ mod quota_debt_regressions {
         // mutate used clocks, positive debt, throttling or window origin.
         let before = budget;
         assert_eq!(budget.observed_nr_periods(until), 8);
-        assert_eq!(budget.window_start, before.window_start);
+        assert_eq!(budget.window_start_ns, before.window_start_ns);
         assert_eq!(budget.nr_periods, before.nr_periods);
-        assert_eq!(budget.used_clocks, before.used_clocks);
-        assert_eq!(budget.carry_debt_clocks, before.carry_debt_clocks);
-        assert_eq!(budget.throttled_since, before.throttled_since);
+        assert_eq!(budget.used_ns, before.used_ns);
+        assert_eq!(budget.carry_debt_ns, before.carry_debt_ns);
+        assert_eq!(budget.throttled_since_ns, before.throttled_since_ns);
 
         // The later scheduler debit can still account the old-period tail.
         budget.charge(from, until);
-        assert_eq!(budget.window_start, start + period);
-        assert_eq!(budget.used_clocks, quota / 2);
-        assert_eq!(budget.carry_debt_clocks, quota + quota / 2);
+        assert_eq!(budget.window_start_ns, start + period);
+        assert_eq!(budget.used_ns, quota / 2);
+        assert_eq!(budget.carry_debt_ns, quota + quota / 2);
         assert_eq!(budget.nr_periods, 8);
         assert!(!budget.eligible(until));
     }
 
     #[ktest]
     fn cpu_stat_projection_cannot_rewind_accounting_or_mint_credit() {
-        let period = CpuMax::us_to_clocks(100_000).max(1);
-        let quota = CpuMax::us_to_clocks(1_000);
+        let period = CpuMax::us_to_ns(100_000).max(1);
+        let quota = CpuMax::us_to_ns(1_000);
         let start = period.saturating_mul(4);
         let mut budget = sample(1_000, 100_000, start);
         budget.nr_periods = 9;
-        budget.used_clocks = quota;
-        budget.carry_debt_clocks = quota / 2;
+        budget.used_ns = quota;
+        budget.carry_debt_ns = quota / 2;
         assert_eq!(budget.observed_nr_periods(start - period / 2), 9);
         assert_eq!(budget.observed_nr_periods(start + 3 * period + 1), 12);
-        assert_eq!(budget.window_start, start);
-        assert_eq!(budget.used_clocks, quota);
-        assert_eq!(budget.carry_debt_clocks, quota / 2);
+        assert_eq!(budget.window_start_ns, start);
+        assert_eq!(budget.used_ns, quota);
+        assert_eq!(budget.carry_debt_ns, quota / 2);
         // Unlike a statistics read, the real scheduler advances and settles.
         budget.advance(start + 3 * period + 1);
         assert_eq!(budget.nr_periods, 12);
-        assert_eq!(budget.carry_debt_clocks, 0);
+        assert_eq!(budget.carry_debt_ns, 0);
     }
 
     #[ktest]
     fn overrun_must_carry_then_repay_without_refill() {
-        let period = CpuMax::us_to_clocks(100_000).max(1);
-        let quota = CpuMax::us_to_clocks(1_000);
+        let period = CpuMax::us_to_ns(100_000).max(1);
+        let quota = CpuMax::us_to_ns(1_000);
         let start = period.saturating_mul(2);
         let mut budget = sample(1_000, 100_000, start);
-        budget.used_clocks = quota.saturating_mul(2);
+        budget.used_ns = quota.saturating_mul(2);
         budget.advance(start + period);
-        assert_eq!(budget.used_clocks, 0);
-        assert_eq!(budget.carry_debt_clocks, quota);
+        assert_eq!(budget.used_ns, 0);
+        assert_eq!(budget.carry_debt_ns, quota);
         assert!(!budget.eligible(start + period));
         budget.advance(start + period * 2);
-        assert_eq!(budget.carry_debt_clocks, 0);
+        assert_eq!(budget.carry_debt_ns, 0);
         assert!(budget.eligible(start + period * 2));
     }
 
     #[ktest]
     fn unused_budget_must_not_accumulate_as_credit() {
-        let period = CpuMax::us_to_clocks(100_000).max(1);
-        let quota = CpuMax::us_to_clocks(1_000);
+        let period = CpuMax::us_to_ns(100_000).max(1);
+        let quota = CpuMax::us_to_ns(1_000);
         let start = period.saturating_mul(2);
         let mut budget = sample(1_000, 100_000, start);
-        budget.used_clocks = quota / 2;
+        budget.used_ns = quota / 2;
         budget.advance(start + period);
-        assert_eq!(budget.carry_debt_clocks, 0);
-        budget.used_clocks = quota;
+        assert_eq!(budget.carry_debt_ns, 0);
+        budget.used_ns = quota;
         assert!(!budget.eligible(start + period));
     }
 
     #[ktest]
     fn reconfiguration_in_same_window_must_not_refill() {
-        let period = CpuMax::us_to_clocks(100_000).max(1);
-        let quota = CpuMax::us_to_clocks(1_000);
+        let period = CpuMax::us_to_ns(100_000).max(1);
+        let quota = CpuMax::us_to_ns(1_000);
         let start = period.saturating_mul(2);
         let mut budget = sample(1_000, 100_000, start);
-        budget.used_clocks = quota;
-        budget.carry_debt_clocks = quota / 2;
+        budget.used_ns = quota;
+        budget.carry_debt_ns = quota / 2;
         let now = start + period / 2;
         budget.reconfigure(1_000, 100_000, now);
-        assert_eq!(budget.used_clocks, quota);
-        assert_eq!(budget.carry_debt_clocks, quota / 2);
+        assert_eq!(budget.used_ns, quota);
+        assert_eq!(budget.carry_debt_ns, quota / 2);
         assert!(!budget.eligible(now));
     }
 
     #[ktest]
     fn scheduler_runtime_crossing_tick_window_keeps_previous_cpu_charge() {
-        let period = CpuMax::us_to_clocks(100_000).max(1);
-        let quota = CpuMax::us_to_clocks(1_000);
+        let period = CpuMax::us_to_ns(100_000).max(1);
+        let quota = CpuMax::us_to_ns(1_000);
         let start = period.saturating_mul(2);
         let mut budget = sample(1_000, 100_000, start);
         // A non-preemptible interval extends two quotas before the 100ms
         // boundary, and another quarter quota into the next period.
         budget.charge(start + period - quota * 2, start + period + quota / 4);
-        assert_eq!(budget.window_start, start + period);
-        assert_eq!(budget.carry_debt_clocks, quota);
-        assert_eq!(budget.used_clocks, quota / 4);
+        assert_eq!(budget.window_start_ns, start + period);
+        assert_eq!(budget.carry_debt_ns, quota);
+        assert_eq!(budget.used_ns, quota / 4);
         assert!(!budget.eligible(start + period + quota / 4));
     }
 
     #[ktest]
     fn crossing_splits_already_charged_and_new_cpu_without_double_count() {
-        let period = CpuMax::us_to_clocks(100_000).max(1);
-        let quota = CpuMax::us_to_clocks(1_000);
+        let period = CpuMax::us_to_ns(100_000).max(1);
+        let quota = CpuMax::us_to_ns(1_000);
         let start = period.saturating_mul(2);
         let mut budget = sample(1_000, 100_000, start);
-        budget.used_clocks = quota / 2;
+        budget.used_ns = quota / 2;
         budget.charge(start + period - quota * 3, start + period + quota / 2);
-        assert_eq!(budget.carry_debt_clocks, quota * 2 + quota / 2);
-        assert_eq!(budget.used_clocks, quota / 2);
+        assert_eq!(budget.carry_debt_ns, quota * 2 + quota / 2);
+        assert_eq!(budget.used_ns, quota / 2);
     }
 
     #[ktest]
     fn idle_skipped_periods_never_subsidize_late_burst() {
-        let period = CpuMax::us_to_clocks(100_000).max(1);
-        let quota = CpuMax::us_to_clocks(1_000);
+        let period = CpuMax::us_to_ns(100_000).max(1);
+        let quota = CpuMax::us_to_ns(1_000);
         let start = period.saturating_mul(2);
         let mut budget = sample(1_000, 100_000, start);
         let last_completed = start + 6 * period;
-        budget.charge(last_completed + period / 2,
-                      last_completed + period + quota / 2);
-        assert_eq!(budget.window_start, last_completed + period);
+        budget.charge(
+            last_completed + period / 2,
+            last_completed + period + quota / 2,
+        );
+        assert_eq!(budget.window_start_ns, last_completed + period);
         // A suffix beginning at floor(P/2) contains ceil(P/2) clocks.
         // TSC calibration can make P odd; do not discard its final clock.
         let completed_work = period - period / 2;
-        assert_eq!(budget.carry_debt_clocks, completed_work - quota);
-        assert_eq!(budget.used_clocks, quota / 2);
+        assert_eq!(budget.carry_debt_ns, completed_work - quota);
+        assert_eq!(budget.used_ns, quota / 2);
         assert!(!budget.eligible(last_completed + period + quota / 2));
     }
 
     #[ktest]
     fn long_continuous_interval_has_constant_time_bounded_debt_accounting() {
-        let period = CpuMax::us_to_clocks(100_000).max(1);
-        let quota = CpuMax::us_to_clocks(1_000);
+        let period = CpuMax::us_to_ns(100_000).max(1);
+        let quota = CpuMax::us_to_ns(1_000);
         let start = period.saturating_mul(2);
         let mut budget = sample(1_000, 100_000, start);
         budget.charge(start + period / 2, start + 5 * period + quota / 2);
@@ -882,13 +956,13 @@ mod quota_debt_regressions {
         // no per-period heap work or loop is needed in the production path.
         let completed_work = period - period / 2;
         let expected = completed_work - quota + 4 * (period - quota);
-        assert_eq!(budget.carry_debt_clocks, expected);
-        assert_eq!(budget.used_clocks, quota / 2);
+        assert_eq!(budget.carry_debt_ns, expected);
+        assert_eq!(budget.used_ns, quota / 2);
     }
 
     #[ktest]
     fn odd_and_even_completed_periods_preserve_every_clock() {
-        let quota = CpuMax::us_to_clocks(1_000);
+        let quota = CpuMax::us_to_ns(1_000);
         // The crossing helper takes its period explicitly. Exercise both
         // parities regardless of the host's calibrated TSC frequency, while
         // retaining its real quota conversion and completed-window logic.
@@ -921,17 +995,17 @@ mod quota_debt_regressions {
 
     #[ktest]
     fn earlier_clock_value_cannot_reopen_or_refill_previous_period() {
-        let period = CpuMax::us_to_clocks(100_000).max(1);
-        let quota = CpuMax::us_to_clocks(1_000);
+        let period = CpuMax::us_to_ns(100_000).max(1);
+        let quota = CpuMax::us_to_ns(1_000);
         let start = period.saturating_mul(4);
         let mut budget = sample(1_000, 100_000, start);
-        budget.used_clocks = quota;
-        budget.carry_debt_clocks = quota / 2;
+        budget.used_ns = quota;
+        budget.carry_debt_ns = quota / 2;
         budget.advance(start - period / 2);
         budget.charge(start - period / 2, start - 1);
-        assert_eq!(budget.window_start, start);
-        assert_eq!(budget.used_clocks, quota);
-        assert_eq!(budget.carry_debt_clocks, quota / 2);
+        assert_eq!(budget.window_start_ns, start);
+        assert_eq!(budget.used_ns, quota);
+        assert_eq!(budget.carry_debt_ns, quota / 2);
         assert!(!budget.eligible(start));
     }
 
@@ -946,21 +1020,19 @@ mod quota_debt_regressions {
             *seed
         }
 
-        let period = CpuMax::us_to_clocks(100_000).max(1);
+        let period = CpuMax::us_to_ns(100_000).max(1);
         let start = period.saturating_mul(2);
         let mut seed = 0xA03A06_A11CEu64;
         for _ in 0..500 {
             let quota_us = 1_000 + next(&mut seed) % 99_001;
-            let quota = CpuMax::us_to_clocks(quota_us);
+            let quota = CpuMax::us_to_ns(quota_us);
             let mut budget = sample(quota_us, 100_000, start);
             let old_used = next(&mut seed) % period;
             let old_debt = next(&mut seed) % period;
-            budget.used_clocks = old_used;
-            budget.carry_debt_clocks = old_debt;
+            budget.used_ns = old_used;
+            budget.carry_debt_ns = old_debt;
 
-            let from = start
-                + (next(&mut seed) % 10) * period
-                + next(&mut seed) % period;
+            let from = start + (next(&mut seed) % 10) * period + next(&mut seed) % period;
             let until = from + next(&mut seed) % (period * 11);
             let new_start = until / period * period;
             let mut slow_debt = old_debt;
@@ -979,23 +1051,23 @@ mod quota_debt_regressions {
                 until.saturating_sub(from.max(new_start))
             };
             budget.charge(from, until);
-            assert_eq!(budget.window_start, new_start);
-            assert_eq!(budget.used_clocks, slow_used);
-            assert_eq!(budget.carry_debt_clocks, slow_debt);
+            assert_eq!(budget.window_start_ns, new_start);
+            assert_eq!(budget.used_ns, slow_used);
+            assert_eq!(budget.carry_debt_ns, slow_debt);
         }
     }
 
     #[ktest]
     fn skipped_periods_pay_down_debt_but_never_mint_credit() {
-        let period = CpuMax::us_to_clocks(100_000).max(1);
-        let quota = CpuMax::us_to_clocks(1_000);
+        let period = CpuMax::us_to_ns(100_000).max(1);
+        let quota = CpuMax::us_to_ns(1_000);
         let start = period.saturating_mul(2);
         let mut budget = sample(1_000, 100_000, start);
-        budget.used_clocks = quota.saturating_mul(3);
+        budget.used_ns = quota.saturating_mul(3);
         budget.advance(start + period * 4);
-        assert_eq!(budget.carry_debt_clocks, 0);
-        assert_eq!(budget.used_clocks, 0);
-        budget.used_clocks = quota;
+        assert_eq!(budget.carry_debt_ns, 0);
+        assert_eq!(budget.used_ns, 0);
+        budget.used_ns = quota;
         assert!(!budget.eligible(start + period * 4));
     }
 }

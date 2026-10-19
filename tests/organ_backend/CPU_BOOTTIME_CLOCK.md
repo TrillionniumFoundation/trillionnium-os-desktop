@@ -1,5 +1,7 @@
 # G1-b: paired BOOTTIME clock samples
 
+Historical scope: the text and results below describe the clock preparation accepted in PR #203. The subsequent [CPU usage slice](CPU_USAGE_G1B.md) converts the original bandwidth ledger to nanoseconds and adds an internal coherent snapshot; its source and runtime qualification are recorded separately.
+
 This slice preserves the original calibrated clock domain and its fractional
 conversion phase. It prepares a reliable nanosecond endpoint for the original
 CPU bandwidth owner. It does **not** yet convert `CpuMax` to BOOTTIME windows,
