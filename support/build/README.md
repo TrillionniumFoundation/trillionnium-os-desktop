@@ -6,6 +6,37 @@ complete Asterinas **v0.19.0**, commit
 `96605cf64aeae2d34f29b97e85eff9315fe10a8e`. Upstream documentation, attribution,
 and `LICENSE-MPL` are preserved. The project root README stays empty.
 
+## Current main-f9 build and native regressions — 2026-10-19
+
+Published source `7758ffe294bb0e1eab46e20cba60e8af9d8bcd61` incorporates actual
+main `f9e306f76154590e096a42f70ce9de0a7c859e60` as first parent while preserving
+A01 history. The complete fixed Rust kernel passed an absent-target **make kernel**
+in 189.633 seconds, then a real **make run_kernel** retry with raw QEMU **33**.
+Its 8,382,376-byte ELF has SHA256
+`4625a5ddf9e82aee2ce01bdfb23127f88a5200565ce2a0645a09e181073ab6d4`;
+the frozen first build and actual private loaded copy are identical.
+
+Current real kernel-mode suites passed **OSTD 221** (three VMX/EPT soft skips)
+and **aster-core 169**, with zero failures or filters: **390 reported passes,
+387 exercised lower bound**. All nine new CPU configuration regressions completed
+in the guest. Dependencies reuse the actual October 18 private installation and
+were revalidated immediately before this build; no new installation is claimed.
+
+The first boot invocation was refused before make/QEMU because a public manifest
+unexpectedly reappeared. Its error and original bytes are retained. A locked,
+reversible move preceded the successful retry. The manifest reappeared again,
+including after a second move, and remains present in the final observed local
+checkout. Its writer is unknown. All 3,014 selected tracked inputs match the
+producer; that does **not** establish a clean whole worktree. Existing build
+refusal and cleanup guards remain unchanged.
+
+The [current report](evidence/2026-10-19-mainf9/REPORT.md) contains actual artifacts,
+full serial logs, dependency/source receipts and failures, with the
+[A00/A05/A06 handoff](evidence/2026-10-19-mainf9/HANDOFF.md). Independent source
+and native evidence reviews passed 25 and 53 checks respectively. The reporting
+commit is evidence-only, not a separately rebuilt native producer. Earlier
+results below retain their own source identities and acceptance boundaries.
+
 ## Current main cold build, boot and kernel tests — 2026-10-18
 
 Actual main `01225ab0a20a9f25dd8313a7fad7652dd9154e30` is the first parent of

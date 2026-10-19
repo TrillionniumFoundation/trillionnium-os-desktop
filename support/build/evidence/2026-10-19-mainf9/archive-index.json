@@ -1,0 +1,60 @@
+{
+  "created_at": "2026-10-19T01:09:08.428901+00:00",
+  "producer": "7758ffe294bb0e1eab46e20cba60e8af9d8bcd61",
+  "archives": [
+    {
+      "path": "guest-artifacts.tar.xz",
+      "size": 5064144,
+      "sha256": "0df585a1594757224ece130efe6e5e5cdfd3a47fbcb6cd18331154dadecd5cd4",
+      "mode": "0o644",
+      "member_count": 6,
+      "payload_file_count": 5,
+      "roundtrip_all_members_verified": true,
+      "scope": "The actual privately loaded boot ELF/initramfs/BIOS, plus post-test frozen ktest ELFs matched to each prelaunch recorded hash."
+    },
+    {
+      "path": "native-records.tar.xz",
+      "size": 43432,
+      "sha256": "bb5d1b4c28ba1cff05b0fec1d7584f400e487da653de812749430a2816ecb5b5",
+      "mode": "0o644",
+      "member_count": 78,
+      "payload_file_count": 77,
+      "roundtrip_all_members_verified": true,
+      "scope": "Complete command logs, serial streams, source-input checks, environment, generated locks, execution receipts, artifact bindings and all native failure observations. SDK binaries and build caches are omitted."
+    },
+    {
+      "path": "source-records.tar.xz",
+      "size": 362172,
+      "sha256": "74ddcdeb961d254898a58dc89d1607b47c8b9f17891c4724a725c7906c4bc8b5",
+      "mode": "0o644",
+      "member_count": 50,
+      "payload_file_count": 49,
+      "roundtrip_all_members_verified": true,
+      "scope": "Current source captures and fixed-object/owner audits, actual fetch/publication/checkout receipts, disk-cache custody and retained acquisition/auditor diagnostics."
+    },
+    {
+      "path": "dependencies/installation-2026-10-18.tar.gz",
+      "size": 397586,
+      "sha256": "61615a214530b7af47d0206db533c4ebef3298df07bc8d9522b231c2a9f51ca0",
+      "mode": "0o644",
+      "scope": "Actual previous-day private dependency installation; not a new installation for this producer.",
+      "reused_original_archive_bytes": true
+    },
+    {
+      "path": "dependencies/revalidation-2026-10-18.tar.gz",
+      "size": 34350,
+      "sha256": "19a199c405a2a65b458469c4ddb90161192220c922269af3192bbd3c6566a05d",
+      "mode": "0o644",
+      "scope": "Read-only revalidation on October 18.",
+      "reused_original_archive_bytes": true
+    },
+    {
+      "path": "dependencies/revalidation-2026-10-19.tar.gz",
+      "size": 14375,
+      "sha256": "6b03cfaec1713b5730a691ea66da83926883f9b1ff4eec405c1d585911f57c79",
+      "mode": "0o644",
+      "scope": "Read-only revalidation immediately before the October 19 native build.",
+      "reused_original_archive_bytes": true
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+[
+  {
+    "argv": [
+      "cargo",
+      "+nightly-2026-07-21",
+      "install",
+      "--locked",
+      "cargo-osdk",
+      "--path",
+      "osdk",
+      "--root",
+      "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/ktest/osdk"
+    ],
+    "cwd": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas"
+  },
+  {
+    "argv": [
+      "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/ktest/osdk/bin/cargo-osdk",
+      "osdk",
+      "test",
+      "--release",
+      "--boot-method=vmm-direct",
+      "--grub-boot-protocol=multiboot",
+      "--qemu-exe=/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/ktest/record-qemu.py",
+      "--kcmd-args=loglevel=error",
+      "--kcmd-args=earlycon",
+      "--kcmd-args=console=ttyS0"
+    ],
+    "cwd": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/ostd",
+    "lock_sha256": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6"
+  },
+  {
+    "argv": [
+      "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/ktest/osdk/bin/cargo-osdk",
+      "osdk",
+      "test",
+      "--release",
+      "--boot-method=vmm-direct",
+      "--grub-boot-protocol=multiboot",
+      "--qemu-exe=/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/ktest/record-qemu.py",
+      "--kcmd-args=loglevel=error",
+      "--kcmd-args=earlycon",
+      "--kcmd-args=console=ttyS0"
+    ],
+    "cwd": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/kernel/core",
+    "lock_sha256": "159b8682d27a7a21af98885ae48515234445c00fdf5e00b158fdc4aa952ff4ed"
+  }
+]
