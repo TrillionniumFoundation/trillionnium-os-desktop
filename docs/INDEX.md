@@ -1,5 +1,7 @@
 # 开发文档入口
 
+最新接续：[完整 Linux32 已合入的独立证据](../results/compat/2026-10-19-full-linux/README.md)、[CPU owner 已合并的独立证据](../results/organ-backend/2026-10-19-owner-retention/README.md)、[原时钟/调度交接 CI](../tests/organ_backend/CPU_CLOCK_HANDOFF_CI.md)、[当前状态](STATUS.md)。新内核与完整 Linux/Hepta/设备资格各自按实际执行闭合。
+
 文档入口更新于 2026-10-19；ABI 契约文档修订仍为 0.3，HOS2 wire 仍为 2.0。根 README.md 保持 0 字节；开发内容只在 docs 与明确源码/支持目录中。当前实现与执行证据见 [STATUS](STATUS.md)，历史记录只适用于各自固定的源码。
 
 ## 共同原则

@@ -5,7 +5,7 @@ mod sched_class;
 mod stats;
 
 #[cfg(ktest)]
-pub(crate) use self::sched_class::CpuRuntimeFixture;
+pub(crate) use self::sched_class::{CpuRunQueueFixture, CpuRuntimeFixture};
 pub(crate) use self::{
     nice::{AtomicNice, Nice},
     sched_class::{

@@ -1,5 +1,21 @@
 # 当前状态
 
+## 2026-10-19 最新：完整 Linux32 已合入，时钟/交接推进同核组合验收
+
+[#202](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/202) 已独立复核并合并为 main `7947f500848085199be55e8f4e6a2fe24390407b` / tree `dfbbef62e4f5f8e62b1905248a5e02ab5f22dc8f`。[完整 Linux32 原始证据与独立复核](../results/compat/2026-10-19-full-linux/README.md) 绑定最终 head `caa48f6f6525ef361c0ab84659d6970f7692b055` 和 [run 39215501885](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39215501885)：实际 Linux chroot 与普通 guest 各 32/32，所有原始 stdout 字节一致、stderr 为空、guest 进程0/QEMU33，无超时或 panic。6554 源文件、673 个运行时文件、79 个实际 ELF 的解释器/依赖、五个同一 workload ELF、原 boot 内容、输入冻结时点及完整镜像均已独立核实。原 core189、OSTD221 reported/3 skips、三失败 owner 负控和所有原 QueryAbi/SCM27/RLIMIT37/CPU门槛同时通过。
+
+[#203](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/203) 首个 head `a025fab53ddc7057dd54fd4eab8027bbb68cc609` 的 [run 39216594198](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39216594198) 已完成全部原 core201/OSTD、七组独立缺陷负控及普通内核门禁，五项检查成功；原始 artifact `12170287596` 已下载并验证 ZIP 身份，详细独立复核继续进行。本次保留双方全部生产源码，将已合入的完整 Linux32 gate 与时钟/交接 gate 组合；新组合源码仍需自己的完整实际执行，不能继承两次旧运行的结论。纳秒带宽窗口、同版本累计 usage、可信授予和完整 HOS2 effect 仍按各自原 owner 闭合。
+
+UI [#2885](https://github.com/TrillionniumFoundation/hepta-private-ci/pull/2885) 当前 `43a638d4e25ebc5a8b06babcd1c75c9acac53179` 已通过原 Rust/Node 测试与严格 CSP WASM 构建，真实 browser/gateway lane 正在执行；模块扫描辅助器的临时测试仓库依赖遗漏已定位，修复独立冻结，等待本轮实际浏览器终态后接入。原授权/effect owner、S1–S5、旧 Debian13 缺失原 ELF、Android/GPU/XT2363-4 继续明确保留。下方是按原源码和记录时间保留的历史快照。
+
+## 2026-10-19 接续：原 CPU owner 已闭合，推进原时钟和精确调度交接
+
+[#201](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/201) 五项检查全部通过、独立复核后已合入 main `378aa44c6097a1fe62283d10da42055a037e1ba4` / tree `388bc4539217aca074a081ac107733a19cbe2bd4`。[完整 owner 证据](../results/organ-backend/2026-10-19-owner-retention/README.md) 保留 core189、OSTD221 reported/3 skips、精确三失败原 gate 负控、6,461 源文件逐项比对和同一普通内核兼容/配额检查。此结果仅适用于固定执行源码。
+
+本候选接入原 ClockSource 的同次采样与小数余量、原 vDSO 帧的有效性发布，以及原 runqueue 从出队到下一运行段起点的完整旧 owner 计费。新增 8 个时钟/VMO 和 4 个原 runqueue 测试；[精确 CI 契约](../tests/organ_backend/CPU_CLOCK_HANDOFF_CI.md) 要求完整预计201项 core 与 OSTD、七个独立生产缺陷负控、普通内核 QueryAbi/SCM/RLIMIT/配额检查。源码已审、七补丁可用、11项 host 回归/36项原 spec/118保护输入通过；新内核 typecheck 和所有 QEMU 实际执行仍待本候选 CI。纳秒窗口与一致原生 usage 在后续切片，G1-b 尚未整体闭合。
+
+完整 Linux32 的 [#202](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/202) 在并行推进，首轮真实打包失败已通过明确容量参数修复，新 head `caa48f6f6525ef361c0ab84659d6970f7692b055` 等待 Linux/guest 全执行。Hepta UI 主线适配在 [#2885](https://github.com/TrillionniumFoundation/hepta-private-ci/pull/2885)，源码扫描缺陷修复已发布为 `2fbc109f0aaec2503ee65275e6c88f0889a1313d`，实际 Rust/browser 结果仍待 CI。S1–S5、原授权/effect owner、Android/GPU/XT2363-4 保留各自门槛。下节及历史章节按其固定源码和记录时间保留。
+
 ## 2026-10-19 最新接续：CPU owner 已合入，完整 Linux 镜像容量修复复跑
 
 [#201](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/201) 已经五项 checks 全成功、独立复核后合并为 main `378aa44c6097a1fe62283d10da42055a037e1ba4` / tree `388bc4539217aca074a081ac107733a19cbe2bd4`。候选 `c60f01bfe21f30436d5259bfdf33d411459b3404` 的 [run 39212968844](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39212968844) 原 core 189/189、OSTD 221 reported / 3 soft skips / 218 执行下界；6,461 个文件 mode/blob/size/SHA256 与执行快照一致。仅恢复 current-slot 计费的独立生产补丁，在同样 189 项 core 中产生精确 186 pass / 3 指定 fail、原 gate 1、QEMU 65，无超时。独立重放补丁并重建负控 Git tree，确认测试/runner 未改变；普通产品源树随后完整恢复。普通内核 `995b5739b200ab06ed2340d7330e3a55d0c1218154f99d529410da5d33f81cf4` 上 QueryAbi 14、SCM 27、RLIMIT 37、四个固定 CPU 时间判据和 1/2-vCPU 原探针通过。

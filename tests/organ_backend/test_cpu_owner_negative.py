@@ -132,5 +132,37 @@ class CheckoutContract(unittest.TestCase):
         self.assertEqual((self.root / 'cpu.rs').read_text(), 'unexpected edit\n')
 
 
+class OriginalGreenElfContract(unittest.TestCase):
+    def test_shared_target_rebuild_requires_the_verified_original_backup(self):
+        with tempfile.TemporaryDirectory() as directory:
+            target, retained = Path(directory) / 'target.elf', Path(directory) / 'green.elf'
+            original = b'original successful kernel bytes'
+            target.write_bytes(original)
+            record = {'artifacts': {'-kernel': {'path': str(target), 'size': len(original),
+                                               'sha256': NEGATIVE.sha(original)}}}
+            self.assertEqual(NEGATIVE.checked_green_kernel(record), original)
+            retained.write_bytes(NEGATIVE.checked_green_kernel(record))
+            target.write_bytes(b'negative kernel rebuilt in the same original OSDK target')
+            with self.assertRaises(ValueError):
+                NEGATIVE.checked_green_kernel(record)
+            self.assertEqual(NEGATIVE.checked_green_kernel(record, retained), original)
+            retained.write_bytes(target.read_bytes())
+            with self.assertRaises(ValueError):
+                NEGATIVE.checked_green_kernel(record, retained)
+
+    def test_wrong_length_and_missing_backup_cannot_reauthorize_the_original_elf(self):
+        with tempfile.TemporaryDirectory() as directory:
+            retained = Path(directory) / 'green.elf'
+            data = b'original successful kernel bytes'
+            retained.write_bytes(data)
+            record = {'artifacts': {'-kernel': {'path': str(retained), 'size': len(data) + 1,
+                                               'sha256': NEGATIVE.sha(data)}}}
+            with self.assertRaises(ValueError):
+                NEGATIVE.checked_green_kernel(record, retained)
+            retained.unlink()
+            with self.assertRaises(FileNotFoundError):
+                NEGATIVE.checked_green_kernel(record, retained)
+
+
 if __name__ == '__main__':
     unittest.main()

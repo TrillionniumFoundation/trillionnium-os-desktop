@@ -1,0 +1,107 @@
+{
+  "reviewed_head": "c60f01bfe21f30436d5259bfdf33d411459b3404",
+  "reviewed_tree": "388bc4539217aca074a081ac107733a19cbe2bd4",
+  "artifact_id": 12169240176,
+  "artifact_sha256": "a0da02f85b1a86adcbe3114019f513551d977b22b6b87b03c30c59a1025d62be",
+  "source_files_compared": 6461,
+  "all_source_modes_blobs_sizes_sha256_match_git": true,
+  "all_three_snapshots_identical": true,
+  "clean_unfiltered_ktest_source": true,
+  "root_readme_bytes": 0,
+  "kernel_sha256": "995b5739b200ab06ed2340d7330e3a55d0c1218154f99d529410da5d33f81cf4",
+  "ktest": {
+    "aster-core": {
+      "reported": 189,
+      "soft_skipped": 0,
+      "exercised_lower_bound": 189,
+      "raw_qemu_exit": 33,
+      "elf_sha256": "94ff95fda5109325fc8501cbfbe3371ece4ffb11d98b3f07e534cadb1af06699"
+    },
+    "ostd": {
+      "reported": 221,
+      "soft_skipped": 3,
+      "exercised_lower_bound": 218,
+      "raw_qemu_exit": 33,
+      "elf_sha256": "d234927917bd12f8fa745c0492fbe8faebd97a93577067cbfbdbd53b865de3bc"
+    }
+  },
+  "owner_retention_negative": {
+    "head": "7405f50a86dd769d467a76ed31058ed63b79acff",
+    "tree": "49d1dc39c28c9839fcc5b71439c3433b2b60d4f1",
+    "patch_sha256": "96dbb29fec63b3946bcb18a95567a7a2d2191130cc3ec9f7feeafad29e1a28a2",
+    "all_source_files_except_declared_cpu_implementation_identical": true,
+    "independent_patch_application_and_git_tree_reconstruction": true,
+    "same_189_test_names": true,
+    "passed": 186,
+    "failed": [
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::owner_retention_regressions::controller_publication_charges_the_entire_prefix_to_the_old_incarnation",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::owner_retention_regressions::exited_task_resumes_its_retained_incarnation_after_replacement_and_reap",
+      "aster_core::fs::fs_impls::cgroupfs::controller::cpu::owner_retention_regressions::retained_leaf_debits_its_original_ancestor_chain_after_parent_replacement"
+    ],
+    "raw_qemu_exit": 65,
+    "original_gate_exit": 1,
+    "timed_out": false,
+    "green_serial_sha256": "2a70c75dd984da3d7860f93d8b23a3ce7092291593073097d9ed9d6361467466",
+    "negative_serial_sha256": "aef72f0906d650d7dd38e7a054b2fbe30d6cd6d64cf81b1db972525f34c49da4",
+    "green_kernel_sha256": "94ff95fda5109325fc8501cbfbe3371ece4ffb11d98b3f07e534cadb1af06699",
+    "negative_kernel_sha256": "62f34e5dbadf80f5dad15ce16bc756b4b97679ba358b42faee1f93a7454e414a",
+    "same_osdk_compiler_vdso_locks_source_path_and_qemu_profile": true,
+    "original_candidate_source_exactly_restored": true,
+    "product_qualification": false
+  },
+  "linux_and_guest_identical_scm_probe_sha256": "9b80de2bb994d86d32592f5c2a4824c8406b41c1aedc74df299755c807065fb1",
+  "scm_cases_each": 27,
+  "product_raw_exit": 33,
+  "queryabi_raw_exit": 33,
+  "rlimit_cases_each": 37,
+  "rlimit_same_reference_guest_probe_sha256": "44022c467fb52894f8d1401eafa2686ef0bcabe02ab97904f9790618ababfb2d",
+  "rlimit_raw_serial_sha256": "194dd4e3e86668cbbca823f6138c83fe0949ce0d0eeb7c7df0c8578804c5f943",
+  "rlimit_linux_process_exit": 0,
+  "rlimit_guest_probe_exit": 0,
+  "rlimit_raw_qemu_exit": 33,
+  "rlimit_process_group_cleanup_completed": true,
+  "cpu_configuration_cases": [
+    {
+      "period_us": 100000,
+      "mode": "read-only",
+      "cpu_percent": 0.857477096406845,
+      "unlimited_percent": 99.19994484483067,
+      "raw_qemu_exit": 33,
+      "probe_exit": 0
+    },
+    {
+      "period_us": 100000,
+      "mode": "same-value",
+      "cpu_percent": 0.8499842415046586,
+      "unlimited_percent": 99.59992111686248,
+      "raw_qemu_exit": 33,
+      "probe_exit": 0
+    },
+    {
+      "period_us": 2000,
+      "mode": "read-only",
+      "cpu_percent": 45.123363849388504,
+      "unlimited_percent": 99.19329598005942,
+      "raw_qemu_exit": 33,
+      "probe_exit": 0
+    },
+    {
+      "period_us": 2000,
+      "mode": "same-value",
+      "cpu_percent": 46.53967514979818,
+      "unlimited_percent": 99.19989841930402,
+      "raw_qemu_exit": 33,
+      "probe_exit": 0
+    }
+  ],
+  "original_quota_percentages": [
+    1.0,
+    0.91,
+    0.92,
+    0.808
+  ],
+  "unbundled_tools_with_ci_pre_post_hash_only": [
+    "compiler"
+  ],
+  "scope": "Original CPU segment owner retention with exact three-failure negative and same ordinary-kernel compatibility/configuration checks; not full G1-b, Linux/Hepta or device qualification"
+}
