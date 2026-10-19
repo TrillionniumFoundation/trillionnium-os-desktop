@@ -583,7 +583,7 @@ impl Broker {
                     return denied_capability(Capability::CancelEffect);
                 }
                 self.owner_unavailable(request_id, intent, delivery, fence)
-            },
+            }
             Request::Reconcile {
                 intent,
                 delivery,
@@ -616,7 +616,11 @@ impl Broker {
         delivery: BootDelivery,
         fence: GenerationFence,
     ) -> Response {
-        if let Err(error) = intent.validate().and(fence.validate()).and(delivery.validate()) {
+        if let Err(error) = intent
+            .validate()
+            .and(fence.validate())
+            .and(delivery.validate())
+        {
             return invalid_response(error);
         }
         let reply = OperationReply {
@@ -635,11 +639,7 @@ impl Broker {
         match self.remember(request_id, record) {
             Ok((reply, inserted)) => {
                 if inserted {
-                    self.emit(
-                        reply.key.clone(),
-                        reply.state.clone(),
-                        reply.reason.clone(),
-                    );
+                    self.emit(reply.key.clone(), reply.state.clone(), reply.reason.clone());
                 }
                 Response::Operation { reply }
             }
@@ -754,7 +754,8 @@ impl Broker {
                 reply: record.reply.clone(),
             },
         );
-        self.operations.insert(record.intent.key.clone(), record.clone());
+        self.operations
+            .insert(record.intent.key.clone(), record.clone());
         Ok((record.reply, true))
     }
 
