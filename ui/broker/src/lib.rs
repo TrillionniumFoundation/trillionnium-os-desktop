@@ -454,12 +454,10 @@ struct OperationRecord {
 #[derive(Clone, Debug)]
 struct ReplayRecord {
     key: OperationKey,
-    reply: OperationReply,
 }
 
 #[derive(Clone, Debug)]
 struct SessionRecord {
-    identity: PeerIdentity,
     granted: BTreeSet<Capability>,
 }
 
@@ -516,7 +514,6 @@ impl Broker {
         self.sessions.insert(
             id,
             SessionRecord {
-                identity: identity.clone(),
                 granted: granted.clone(),
             },
         );
@@ -689,7 +686,6 @@ impl Broker {
             request_id,
             ReplayRecord {
                 key: record.intent.key.clone(),
-                reply: record.reply.clone(),
             },
         );
         self.operations.insert(record.intent.key.clone(), record);
