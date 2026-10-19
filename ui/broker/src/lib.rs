@@ -226,6 +226,7 @@ impl BootDelivery {
 pub struct GenerationFence {
     pub authority_generation: u64,
     pub body_generation: u64,
+    pub resource_generation: u64,
     pub bridge_generation: u64,
     pub owner_generation: u64,
 }
@@ -234,6 +235,7 @@ impl GenerationFence {
     pub fn validate(&self) -> Result<(), BrokerError> {
         if self.authority_generation == 0
             || self.body_generation == 0
+            || self.resource_generation == 0
             || self.bridge_generation == 0
             || self.owner_generation == 0
         {
@@ -881,6 +883,7 @@ mod tests {
         GenerationFence {
             authority_generation: 1,
             body_generation: 1,
+            resource_generation: 1,
             bridge_generation: 1,
             owner_generation: 1,
         }
