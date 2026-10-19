@@ -163,6 +163,19 @@ refer to this slice's base; if another change adds tests before integration,
 report the actual combined denominator and retain the same failed-name set
 for the negative control.
 
+The first CI attempt exposed an `ArcRef` clone type error; the next candidate
+fixed it and passed the original full core suite (189 tests) and OSTD gate.
+That second attempt stopped before creating the negative checkout because
+the added serial parser incorrectly required each test result on one line.
+The original runner prints a name, invokes the test (which may emit device
+or expected-panic logs), then prints its outcome. The parser now binds one
+terminal outcome to each unique test segment and checks the full denominator.
+Its six host regressions reject missing, repeated, ambiguous, filtered and
+fatal evidence. It was also checked against the actual 189-pass CI stream
+and the preserved earlier 179-pass/4-fail configuration-control stream.
+These parser checks are not a new guest run. The original core gate and
+the three-failure owner control must still complete on the updated candidate.
+
 At source preparation, the new file and all modified Rust files passed the
 fixed nightly rustfmt parser, and `git diff --check` passed. This document does
 not claim a new kernel result: exact candidate RED/GREEN and ordinary guest

@@ -56,17 +56,43 @@ def git(root, *args):
 
 def test_results(serial):
     text = re.sub(r'\x1b\[[0-?]*[ -/]*[@-~]', '', serial.decode()).replace('\r', '')
-    headers = re.findall(r'^running (\d+) tests in crate "aster-core"$', text, re.M)
-    require(len(headers) == 1, 'core header is missing or repeated')
-    tests = re.findall(r'^test (aster_core::[\w:]+) \.\.\. (ok|FAILED)$', text, re.M)
-    require(len(tests) == len({name for name, _ in tests}) == int(headers[0]),
-            'core test names are missing, repeated or incomplete')
-    summaries = re.findall(r'^test result: (ok|FAILED)\. (\d+) passed; (\d+) failed; (\d+) filtered out\.$',
-                           text, re.M)
+    require(len(re.findall(r'\[ktest runner\] running \d+ tests in \d+ crates', text)) == 1,
+            'kernel runner start is missing or repeated')
+    headers = list(re.finditer(r'^running (\d+) tests in crate "([^"]+)"$', text, re.M))
+    require(len(headers) == 1 and headers[0][2] == 'aster-core',
+            'core header is missing, repeated or belongs to another crate')
+    summaries = list(re.finditer(
+        r'^test result: (ok|FAILED)\. (\d+) passed; (\d+) failed; (\d+) filtered out\.$',
+        text, re.M))
     require(len(summaries) == 1, 'kernel summary is missing or repeated')
-    status, passed, failed, filtered = summaries[0]
+    summary = summaries[0]
+    require(headers[0].end() < summary.start(), 'core summary precedes its tests')
+    section = text[headers[0].end():summary.start()]
+    starts = list(re.finditer(r'^test ([\w:]+) \.\.\.', section, re.M))
+    require(len(starts) == len({test[1] for test in starts}) == int(headers[0][1])
+            and all(test[1].startswith('aster_core::') for test in starts),
+            'core test names are missing, repeated or incomplete')
+    tests = []
+    for index, test in enumerate(starts):
+        end = starts[index + 1].start() if index + 1 < len(starts) else len(section)
+        body = section[test.end():end]
+        # The original runner prints the name before invoking the test, then
+        # prints the colored result after it returns. Device and expected-panic
+        # logs may occupy the intervening lines. Require one terminal outcome
+        # in each complete test segment instead of requiring a single line.
+        outcomes = re.findall(r' (ok|FAILED)\n', body)
+        terminal = re.search(r' (ok|FAILED)\n\n*\Z', body)
+        require(len(outcomes) == 1 and terminal is not None
+                and outcomes[0] == terminal[1], 'test outcome is missing or ambiguous: ' + test[1])
+        tests.append((test[1], terminal[1]))
+    status, passed, failed, filtered = summary.groups()
     require(int(filtered) == 0 and int(passed) == sum(result == 'ok' for _, result in tests)
             and int(failed) == sum(result == 'FAILED' for _, result in tests), 'kernel counts differ')
+    require((status == 'ok') == (int(failed) == 0), 'kernel summary status differs from its failures')
+    # The original runner returns immediately after a complete failed crate;
+    # it emits the all-crates marker only when every selected crate succeeded.
+    require(text.count('[ktest runner] All crates tested.') == int(status == 'ok'),
+            'kernel runner completion differs from the original failure path')
     require('[skipped:' not in text, 'core test was skipped')
     require(not any(marker in text for marker in (
         'An uncaught panic occurred:', 'Uncaught panic:', 'unknown panic payload!',

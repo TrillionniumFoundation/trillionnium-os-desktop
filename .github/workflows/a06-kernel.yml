@@ -116,6 +116,7 @@ jobs:
           A01_KTEST_TIMEOUT: "300"
         run: |
           set -euo pipefail
+          python3 -I -B tests/organ_backend/test_cpu_owner_negative.py
           python3 -I -B tests/organ_backend/run_cpu_owner_negative.py \
             --green-evidence "${RUNNER_TEMP}/a06-ktest" \
             --worktree "${RUNNER_TEMP}/a06-owner-negative-source" \
