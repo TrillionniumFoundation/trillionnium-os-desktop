@@ -1,0 +1,1268 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-10-18T10:08:04.407896+00:00",
+  "reviewer": "r9_owner_seam independent static documentation review",
+  "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+  "reviewed_commit": "207ff9da7dac83c57b0cbae46c4b03ecfba3baa9",
+  "reviewed_tree": "8d5de807c41090e3d987764daec9c235ebd022a1",
+  "entry_point": "docs/INDEX.md",
+  "mode": "bounded_static_document_review_no_module_test_execution",
+  "actions": {
+    "source_or_document_mutations": false,
+    "rust_commands": 0,
+    "module_test_runs": 0,
+    "new_runtime_qualification": false,
+    "written_artifact": "r9-evidence/independent-review/module-documentation-review.json"
+  },
+  "method": [
+    "Read immutable Git blobs from the explicit commit, independent of the live worktree HEAD.",
+    "Verify all local targets in the A00-A10 INDEX rows; verify the two table section anchors.",
+    "Read key manual headings plus substantive source/dependency/build/IO/error/owner/evidence passages.",
+    "Check one-hop local Markdown links in the 44 table manuals plus three R9 extension/seam manuals.",
+    "Read A04 external development/technical files via GitHub at the exact fixed candidate ref, and independently inspect PR8 metadata.",
+    "Existing test and CI numbers are descriptions in source-bound documents, not re-executed or newly certified by this review."
+  ],
+  "summary": {
+    "module_count": 11,
+    "index_local_links": 53,
+    "index_local_missing": 0,
+    "index_external_links": 5,
+    "one_hop_manuals": 47,
+    "nested_local_links_checked": 225,
+    "nested_local_missing": 0,
+    "coverage_verdict": "All 11 modules have concrete accessible development/technical/validation entry points, with shared contracts and a material external-candidate exception for A04. This is documentation coverage, not module completion.",
+    "local_candidate_exception": "A04 three linked handbooks are absent from the reviewed tree and exist only at fixed candidate25c681d; PR8 remains open draft and unmerged at the API observation.",
+    "new_runtime_claims": 0
+  },
+  "findings": [
+    {
+      "id": "D1",
+      "category": "source_scope",
+      "severity": "material_qualification",
+      "module": "A04",
+      "finding": "External fixed candidate handbooks must not be described as integrated into207ff9; all three local paths absent.",
+      "action": "Retain candidate commit/PR/source attribution when summarizing documentation coverage."
+    },
+    {
+      "id": "D2",
+      "category": "shared_documentation",
+      "severity": "information",
+      "modules": [
+        "A00",
+        "A01",
+        "A02",
+        "A05",
+        "A06"
+      ],
+      "finding": "Specific documentation exists, but independent per-module developer/technical files are not a universal pattern: shared ABI, architecture and A01 build contracts are intentionally reused.",
+      "action": "Report which role is fulfilled by a shared document instead of giving a binary all-modules-fully-documented claim."
+    },
+    {
+      "id": "D3",
+      "category": "navigation_and_history",
+      "severity": "nonblocking",
+      "modules": [
+        "A03",
+        "A07",
+        "A08",
+        "A10"
+      ],
+      "finding": "Long dated histories retain earlier counts and qualification states. A07 table row chiefly retains R8 while R9 history is linked above the table and in README/RUN.",
+      "action": "Use STATUS top round and exact source identity; do not aggregate historical counts or infer missing newest feature from an older row."
+    },
+    {
+      "id": "D4",
+      "category": "runtime_limits",
+      "severity": "material_qualification",
+      "modules": [
+        "A03",
+        "A05",
+        "A06",
+        "A07",
+        "A08",
+        "A09",
+        "A10"
+      ],
+      "finding": "Host models, source gates, planned probes and limited QEMU/UI evidence are explicitly separated; durable effects/G1/G2/Android guest/hardware/mobile remain incomplete.",
+      "action": "Preserve the documented limitations; this static review adds no runtime pass."
+    }
+  ],
+  "modules": [
+    {
+      "id": "A00",
+      "name": "集成与架构",
+      "index_links": [
+        {
+          "label": "PLAN",
+          "path": "docs/agents/PLAN.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "STATUS",
+          "path": "docs/STATUS.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "ARCHITECTURE",
+          "path": "docs/ARCHITECTURE.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "DECISIONS",
+          "path": "docs/DECISIONS.md",
+          "exists_at_reviewed_commit": true
+        }
+      ],
+      "development_documents": [
+        "docs/agents/PLAN.md",
+        "docs/STATUS.md"
+      ],
+      "dedicated_technical_documents": [],
+      "shared_technical_documents": [
+        "docs/ARCHITECTURE.md",
+        "docs/DECISIONS.md",
+        "docs/NATIVE_ABI.md",
+        "docs/VALIDATION.md"
+      ],
+      "verification_documents": [
+        "docs/STATUS.md",
+        "results/integration/2026-10-18-audit-followthrough/README.md"
+      ],
+      "coverage": {
+        "source_and_dependencies": "PLAN 明列 A00–A10 源码所有权与 G0/G1/G2 依赖；ARCHITECTURE 绑定完整 Asterinas 来源、工具链与实际进程/资源路径。",
+        "build_and_run": "集成按 PLAN 的 consumer 编译、负例与 CI 范围推进；具体可执行构建命令委托 A01 和各模块手册。",
+        "input_output_and_error_semantics": "集成层采用共享 NATIVE_ABI 的请求、响应、未知和恢复语义；A00 本身不是独立 RPC 或可执行库。",
+        "owner_and_authority": "PLAN 给出独占路径及跨 owner 合入职责；ARCHITECTURE 固定原 Hepta K owner 和本 boot 内核 D owner。",
+        "evidence_binding": "STATUS 按轮次保留实际源码、同树发布、失败和未完成 gate；固定207ff9的R9 native仍待执行。",
+        "documentation_completeness": "有具体协调/架构/验收文档；不应描述成 A00 单独拥有一套独立产品开发 API 手册。"
+      },
+      "qualification_limits": [
+        "G1/G2、可信初始化、内核效果与移动端仍是明示未完成项。"
+      ],
+      "documentation_gaps_or_caveats": [
+        "构建运行和错误语义分布在共享/下游文档，INDEX没有一个单独的A00可执行模块手册；这是职责结构差异。"
+      ]
+    },
+    {
+      "id": "A01",
+      "name": "Asterinas 源码、构建与启动",
+      "index_links": [
+        {
+          "label": "构建手册",
+          "path": "support/build/README.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "内核测试入口",
+          "path": "support/build/ktest/README.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "固定来源",
+          "path": "support/upstream-lock.json",
+          "exists_at_reviewed_commit": true
+        }
+      ],
+      "development_documents": [
+        "support/build/README.md",
+        "support/build/ktest/README.md"
+      ],
+      "dedicated_technical_documents": [
+        "support/upstream-lock.json"
+      ],
+      "shared_technical_documents": [
+        "docs/ARCHITECTURE.md"
+      ],
+      "verification_documents": [
+        "support/build/evidence/2026-10-16-boot-binding/REPORT.md",
+        "support/build/evidence/2026-10-16-daemon/acceptance/kernel-tests/result.json"
+      ],
+      "coverage": {
+        "source_and_dependencies": "构建手册绑定 kernel/asterinas 完整导入、v0.19.0 commit/tree、nightly-2026-07-21、vDSO、BusyBox、OSDK 锁与本地 QEMU profile。",
+        "build_and_run": "有 prepare-host、kernel/run_kernel、ktest prepare/run 和原 OSDK host test 命令，输出目录、缓存依赖失败与固定锁语义明确。",
+        "input_output_and_error_semantics": "说明 ELF/initramfs/QEMU输入，序列日志与退出码输出；33/65、timeout、marker、soft-skip 和覆盖分母均有规则。",
+        "owner_and_authority": "A01维护构建工具；明确不改A05进程/ioctl及A06调度owner，source handoff表指向实际符号。",
+        "evidence_binding": "有真实boot、失败、host toolchain和kernel-test收据入口，历史源固定并区分报告pass与真实执行下界。",
+        "documentation_completeness": "开发与技术内容合写在构建手册/ktest手册，加机器可读固定来源；可形成具体交接。"
+      },
+      "qualification_limits": [
+        "最小 x86_64/TCG/QEMU profile 不等于完整上游矩阵、实机、通用SMP控制、Android/GPU或Hepta端到端。",
+        "后续源变更不能继承旧kernel ELF和ktest结果。"
+      ],
+      "documentation_gaps_or_caveats": []
+    },
+    {
+      "id": "A02",
+      "name": "HOS2 Rust codec",
+      "index_links": [
+        {
+          "label": "验收收敛与实际命令",
+          "path": "tests/abi/A02_REVIEW_CLOSURE_2026-10-17.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "证据完整性",
+          "path": "tests/abi/A02_EVIDENCE_INTEGRITY_2026-10-17.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "本轮 pinned 验收",
+          "path": "results/integration/2026-10-18-audit-followthrough/README.md",
+          "exists_at_reviewed_commit": true,
+          "anchor": "a02",
+          "anchor_heading_found": true
+        },
+        {
+          "label": "NATIVE_ABI",
+          "path": "docs/NATIVE_ABI.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "codec 源码",
+          "path": "libs/os-abi/src/lib.rs",
+          "exists_at_reviewed_commit": true
+        }
+      ],
+      "development_documents": [
+        "tests/abi/A02_REVIEW_CLOSURE_2026-10-17.md",
+        "tests/abi/A02_EVIDENCE_INTEGRITY_2026-10-17.md"
+      ],
+      "dedicated_technical_documents": [
+        "libs/os-abi/src/lib.rs"
+      ],
+      "shared_technical_documents": [
+        "docs/NATIVE_ABI.md"
+      ],
+      "verification_documents": [
+        "results/integration/2026-10-18-audit-followthrough/README.md#a02"
+      ],
+      "coverage": {
+        "source_and_dependencies": "实际libs/os-abi源码/manifest存在；验收文档固定编译器和脚本来源，说明compiler wrapper及锁定身份。",
+        "build_and_run": "有统一run_acceptance、独立compiled-mutation、normal/-O、fmt/clippy/no_std命令和超时参数。",
+        "input_output_and_error_semantics": "共享NATIVE_ABI定义五操作、结构/容量/序号/状态字段与错误规则；验收手册解释相关解码和validate_for，不能只检查request ID。",
+        "owner_and_authority": "wire/golden由A02负责；copyin/copyout、CapSpace、scheduler和原Hepta durable owner分别交A05/A06/A07。",
+        "evidence_binding": "最新pinned验收入口与10月17日旧收据分开，保留编译器负例、真实mutant执行、输入哈希和分母。",
+        "documentation_completeness": "开发交接由验收手册、源码API和共享ABI组合提供，有具体内容；没有单独命名的模块开发README并不等于无文档。"
+      },
+      "qualification_limits": [
+        "codec和host mutation通过不证明五操作内核实现或G1/G2；实验HOS2 wire与文档修订版本需区分。"
+      ],
+      "documentation_gaps_or_caveats": []
+    },
+    {
+      "id": "A03",
+      "name": "HOS2 control core",
+      "index_links": [
+        {
+          "label": "验证手册",
+          "path": "tests/control/VALIDATION.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "运行脚本",
+          "path": "tests/control/run-validation.sh",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "本轮双后端与证据复核",
+          "path": "results/integration/2026-10-18-audit-followthrough/README.md",
+          "exists_at_reviewed_commit": true,
+          "anchor": "a03",
+          "anchor_heading_found": true
+        },
+        {
+          "label": "API_CONTRACT",
+          "path": "libs/os-control/API_CONTRACT.md",
+          "exists_at_reviewed_commit": true
+        }
+      ],
+      "development_documents": [
+        "tests/control/VALIDATION.md",
+        "tests/control/run-validation.sh"
+      ],
+      "dedicated_technical_documents": [
+        "libs/os-control/API_CONTRACT.md"
+      ],
+      "shared_technical_documents": [
+        "docs/NATIVE_ABI.md"
+      ],
+      "verification_documents": [
+        "results/integration/2026-10-18-audit-followthrough/README.md#a03"
+      ],
+      "coverage": {
+        "source_and_dependencies": "独立Rust crate、std与portable-spin、allocator/atomics需求和当前native owner接口均有描述；API手册953行。",
+        "build_and_run": "VALIDATION给出定向脚本和两种backend、strict Clippy、bare no_std、负面对照命令；最新执行入口明确。",
+        "input_output_and_error_semantics": "API详述D身份、reserve/execute/query/retire、Conflict/Busy/Unknown、malformed receipt和pending prefix。",
+        "owner_and_authority": "真实ResourceDomain/CapSpace/Hepta owners必须外部绑定；LockBackend不自带IRQ安全或授权，禁止影子ResourceDomain。",
+        "evidence_binding": "225-per-backend/Loom/allocation等只作为既有源绑定的host证据引用；旧113/220/223等不相加或转记。",
+        "documentation_completeness": "专属开发验证手册和细粒度技术契约齐备，覆盖远超占位prompt；文档同时保留较长历史增量。"
+      },
+      "qualification_limits": [
+        "durable K/fsync、真实内核IRQ/抢占/SMP、设备异步效果和G1/G2仍缺运行资格。"
+      ],
+      "documentation_gaps_or_caveats": [
+        "API_CONTRACT较长且追加多轮历史；当前接口须结合开头和最新VALIDATION入口阅读，不能把每段旧计数当当前结果。"
+      ]
+    },
+    {
+      "id": "A04",
+      "name": "Linux / Hepta ELF 兼容候选",
+      "index_links": [
+        {
+          "label": "固定候选开发手册",
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/25c681d944e4efa92f2772cf773e03ae811bc345/tests/workloads/linux/README.md",
+          "scope": "external_reference"
+        },
+        {
+          "label": "rootfs 手册",
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/25c681d944e4efa92f2772cf773e03ae811bc345/support/rootfs/README.md",
+          "scope": "external_reference"
+        },
+        {
+          "label": "LINUX_COMPATIBILITY",
+          "path": "docs/LINUX_COMPATIBILITY.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "候选缺口",
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/25c681d944e4efa92f2772cf773e03ae811bc345/compat/linux/GAPS.md",
+          "scope": "external_reference"
+        },
+        {
+          "label": "Draft #8",
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/8",
+          "scope": "external_reference"
+        }
+      ],
+      "development_documents": [
+        "external:25c681d944e4efa92f2772cf773e03ae811bc345:tests/workloads/linux/README.md",
+        "external:25c681d944e4efa92f2772cf773e03ae811bc345:support/rootfs/README.md"
+      ],
+      "dedicated_technical_documents": [
+        "external:25c681d944e4efa92f2772cf773e03ae811bc345:compat/linux/GAPS.md"
+      ],
+      "shared_technical_documents": [
+        "docs/LINUX_COMPATIBILITY.md"
+      ],
+      "verification_documents": [
+        "external:25c681d944e4efa92f2772cf773e03ae811bc345:tests/workloads/linux/baselines/"
+      ],
+      "coverage": {
+        "source_and_dependencies": "GitHub固定ref读取到三份真实候选手册，包含C/Python/Tokio工作负载、rootfs manifest、ELF和依赖固定身份；这三文件均不在207ff9树。",
+        "build_and_run": "候选手册有host run、staged rootfs、chroot、trace、pack/parse/QEMU differential命令与前置输入检查。",
+        "input_output_and_error_semantics": "工作负载表列输入、状态/errno及资源释放事实；严格输出JSON、timeout、incomplete、blocked和guest pass边界清楚。",
+        "owner_and_authority": "GAPS明确A01构建/原始输入、A05进程及SCM_RIGHTS/RLIMIT、A06调度、A07真实Hepta装配的owner。",
+        "evidence_binding": "文档分别保存原Linux参考、有限guest能力probe和完整pinned rootfs replay未完成状态；本次未重验这些执行收据。",
+        "documentation_completeness": "候选文档具体且可读取，但当前冻结desktop只有共享技术要求与外部入口，不能称全部手册/实现已合入。"
+      },
+      "qualification_limits": [
+        "PR#8在本次API读取时open/draft、merged=false、head25c681d；此状态只属于该候选。",
+        "完整Debian13固定ELF差分、完整Hepta用户态依赖/终态工具效果、S1块存储持久性仍未在候选文档中取得资格。",
+        "候选记录的SCM_RIGHTS close-on-exec和RLIMIT_NOFILE缺口不因其他模块通过而闭合。"
+      ],
+      "documentation_gaps_or_caveats": [
+        "三份开发/技术候选文件在207ff9均缺失；INDEX明确使用固定外部链接，需保留候选来源范围。"
+      ]
+    },
+    {
+      "id": "A05",
+      "name": "内核控制与进程镜像身份",
+      "index_links": [
+        {
+          "label": "实现、构建与调试手册",
+          "path": "docs/agents/handoffs/A05_KERNEL_CONTROL.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "NATIVE_ABI",
+          "path": "docs/NATIVE_ABI.md",
+          "exists_at_reviewed_commit": true
+        }
+      ],
+      "development_documents": [
+        "docs/agents/handoffs/A05_KERNEL_CONTROL.md"
+      ],
+      "dedicated_technical_documents": [
+        "docs/agents/handoffs/A05_KERNEL_CONTROL.md"
+      ],
+      "shared_technical_documents": [
+        "docs/NATIVE_ABI.md",
+        "libs/os-control/API_CONTRACT.md",
+        "support/build/README.md"
+      ],
+      "verification_documents": [
+        "results/kernel/control/a05-main-combined-acceptance-20261017.json",
+        "results/organ-backend/2026-10-17/a05-a06-integrated-acceptance.json"
+      ],
+      "coverage": {
+        "source_and_dependencies": "96行实现手册列hepta_control、sys_ioctl、Process、exec_epoch、nonce与唯一CPU controller的真实路径/符号。",
+        "build_and_run": "固定Asterinas/nightly来源交A01；有source校验、kernel build、host smoke和guest replay/debug步骤。",
+        "input_output_and_error_semantics": "列QueryAbi transport复制边界和ENOTTY/EPERM/ESTALE/ENOSPC/EOVERFLOW等错误；说明copyout失败的当前无写效果范围。",
+        "owner_and_authority": "以实际Process Arc和exec epoch为身份；open不授予能力，未来写操作不得继承只读身份检查作为完整授权证明。",
+        "evidence_binding": "原始组合guest收据和固定历史runner ELF明确分开；文档修订没有重跑QEMU。",
+        "documentation_completeness": "实现、构建、调试、错误与owner有专属手册；字段规格通过共享ABI维护。"
+      },
+      "qualification_limits": [
+        "只有QueryAbi已实现并按既有profile验证；可信grant/init、ReadUsage/InstallBudget/QueryDelivery/RetireThrough未闭合。",
+        "真实SMP/耗尽/完整生命周期仍需独立资格。"
+      ],
+      "documentation_gaps_or_caveats": []
+    },
+    {
+      "id": "A06",
+      "name": "CPU预算与计费owner",
+      "index_links": [
+        {
+          "label": "CPU 实现及客体验证",
+          "path": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "既有集成收据",
+          "path": "results/organ-backend/2026-10-17/a05-a06-integrated-acceptance.json",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "本轮实际执行与来源",
+          "path": "results/integration/2026-10-18-audit-followthrough/README.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "资源 backend 接合",
+          "path": "docs/ASTERINAS_ORGAN_BACKEND.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "#188",
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/188",
+          "scope": "external_reference"
+        },
+        {
+          "label": "#191 奇数周期 oracle",
+          "path": "results/organ-backend/2026-10-18/a06-odd-period-oracle/README.md",
+          "exists_at_reviewed_commit": true
+        }
+      ],
+      "development_documents": [
+        "docs/ASTERINAS_CPU_BANDWIDTH_N0.md"
+      ],
+      "dedicated_technical_documents": [
+        "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+        "docs/ASTERINAS_ORGAN_BACKEND.md"
+      ],
+      "shared_technical_documents": [
+        "support/build/README.md",
+        "support/build/ktest/README.md",
+        "docs/NATIVE_ABI.md",
+        "docs/agents/R9_G1_OWNER_SEAM.md"
+      ],
+      "verification_documents": [
+        "results/organ-backend/2026-10-17/a05-a06-integrated-acceptance.json",
+        "results/integration/2026-10-18-audit-followthrough/README.md",
+        "results/organ-backend/2026-10-18/a06-odd-period-oracle/README.md"
+      ],
+      "coverage": {
+        "source_and_dependencies": "指向实际cgroup CPU controller和共同ClassScheduler；描述TSC quota、jiffies cpu.stat、zombie/reaped/live/migration的owner选择。",
+        "build_and_run": "构建依赖A01，给aster-core ktest和hash固定QEMU matrix命令、quota/parent/RT参数及candidate输入绑定。",
+        "input_output_and_error_semantics": "区分quota配置接受、实际CPU观察、QEMU安全完成和比率门限；记录超支、timeout、最终计费及锁边界。",
+        "owner_and_authority": "Linux cgroup与未来HOS2必须修改同一cgroup owner；不建立第二预算状态，G1 revision/incarnation接缝另有固定源审计。",
+        "evidence_binding": "既有1/2vCPU、负对照、ktest与奇数周期oracle收据明确分源；cfg(ktest)修改不增授新生产ELF/SMP资格。",
+        "documentation_completeness": "CPU开发/技术/复现文档具体，构建工具由A01共享。"
+      },
+      "qualification_limits": [
+        "有限配额场景不等于精确1% SLO、一般迁移/退出交错、IRQ/SMP正确性或Hepta/HOS2授权。",
+        "G1真实共享revision、controller incarnation、trusted init与五操作仍待闭合。"
+      ],
+      "documentation_gaps_or_caveats": []
+    },
+    {
+      "id": "A07",
+      "name": "Hepta用户态客户端与原owner接合",
+      "index_links": [
+        {
+          "label": "client 开发",
+          "path": "services/hepta-os/README.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "只读契约",
+          "path": "services/hepta-os/CONTRACT.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "运行手册",
+          "path": "services/hepta-os/RUN.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "可信 ObjectiveStart / CLI",
+          "path": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "原版 Objective 复跑",
+          "path": "tests/integration/hepta/ORIGINAL_OBJECTIVE.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "原版持续 Session",
+          "path": "tests/integration/hepta/ORIGINAL_SESSION.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "外部锁稳定性",
+          "path": "tests/integration/hepta/PROBE_LOCK_STABILITY.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "本轮实际证据",
+          "path": "results/integration/2026-10-18-objective-desktop/README.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "HEPTA_INTEGRATION",
+          "path": "docs/HEPTA_INTEGRATION.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "S1–S5",
+          "path": "docs/agents/R8_NEXT_SLICE.md",
+          "exists_at_reviewed_commit": true
+        }
+      ],
+      "development_documents": [
+        "services/hepta-os/README.md",
+        "services/hepta-os/RUN.md"
+      ],
+      "dedicated_technical_documents": [
+        "services/hepta-os/CONTRACT.md",
+        "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+        "services/hepta-os/OBJECTIVE_HISTORY.md"
+      ],
+      "shared_technical_documents": [
+        "docs/HEPTA_INTEGRATION.md",
+        "docs/agents/R8_NEXT_SLICE.md"
+      ],
+      "verification_documents": [
+        "tests/integration/hepta/ORIGINAL_OBJECTIVE.md",
+        "tests/integration/hepta/ORIGINAL_SESSION.md",
+        "tests/integration/hepta/PROBE_LOCK_STABILITY.md",
+        "tests/integration/hepta/OBJECTIVE_HISTORY_PROBE.md",
+        "results/integration/2026-10-18-objective-desktop/README.md",
+        "docs/STATUS.md"
+      ],
+      "coverage": {
+        "source_and_dependencies": "README/RUN给crate、精确上游wire/lock契约、Rust1.88、无完整Hepta workspace依赖的开发入口；history手册列客户端/原owner各源文件职责。",
+        "build_and_run": "有observer、default-off submit/history feature、CLI与原进程probe构建运行命令及Linux socket前置条件。",
+        "input_output_and_error_semantics": "三个技术契约具体描述输入信封、端点/UID/PID/spawn/request绑定、有界帧、退出码、unknown、read-only和一次提交/读取。",
+        "owner_and_authority": "原签发与journal/Operations权威不迁入desktop；Session负责观察，Shell不持端点；history保留原请求与trusted covering anchor。",
+        "evidence_binding": "R8真进程/Session记录与R9脚本化socket、原owner单测和计划native probe分别列出；207ff9的STATUS未声称R9 native已经完成。",
+        "documentation_completeness": "专属开发、运行和分功能技术文档齐全；R9新增history入口在INDEX表前及README/RUN中。"
+      },
+      "qualification_limits": [
+        "原owner publication不证明当前run、模型turn、effect terminal或重授权；null/unknown不能生成未准入/NotApplied。",
+        "生产issuer/UI安全投影、Operations效果K↔D、HOS2/设备/Asterinas和移动传输仍未通过。",
+        "历史查询读原owner恢复内存前缀，不做实时磁盘防篡改或共同回滚检测。"
+      ],
+      "documentation_gaps_or_caveats": [
+        "INDEX A07行主要保留R8入口；R9 history的直接链接位于表前。入口可达，但逐行阅读者须跳到顶部R9/STATUS，不把旧S2文字当最终当前状态。"
+      ]
+    },
+    {
+      "id": "A08",
+      "name": "Android兼容与宿主验收工具",
+      "index_links": [
+        {
+          "label": "开发手册",
+          "path": "support/android/README.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "来源绑定与 184 项回归",
+          "path": "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/README.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "main 组合实际验收",
+          "path": "results/integration/a08-host-main-20261017/README.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "ANDROID_COMPATIBILITY",
+          "path": "docs/ANDROID_COMPATIBILITY.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "接口技术契约",
+          "path": "compat/android/INTERFACES.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "内核缺口",
+          "path": "compat/android/kernel-gaps.json",
+          "exists_at_reviewed_commit": true
+        }
+      ],
+      "development_documents": [
+        "support/android/README.md"
+      ],
+      "dedicated_technical_documents": [
+        "compat/android/INTERFACES.md",
+        "compat/android/kernel-gaps.json"
+      ],
+      "shared_technical_documents": [
+        "docs/ANDROID_COMPATIBILITY.md"
+      ],
+      "verification_documents": [
+        "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/README.md",
+        "results/integration/a08-host-main-20261017/README.md"
+      ],
+      "coverage": {
+        "source_and_dependencies": "481行开发手册给AOSP15固定tag/manifest/product/x86_64/4KiB、Soong/Clang/JDK/JNI工具与源码完整性扫描；未得到的image/tool哈希标PENDING。",
+        "build_and_run": "明确prepare/build/host verify、C ABI/Binder/seccomp probe、独立Cuttlefish/APK和Asterinas guest入口；未执行步骤不当结果。",
+        "input_output_and_error_semantics": "详细列source/build/image/init/Binder/ART/graphics/APK等错误阶段，errno/77 BLOCKED/host_passed_only、raw serial/logcat输出和输入身份。",
+        "owner_and_authority": "INTERFACES按A01/A04/A05/A06/A09/A10分owner；Binder UID/MAC/seccomp来自真实内核，A08负责用户态验证。",
+        "evidence_binding": "184 normal/-O与实际JNI Linux host收据绑定源，source-only扫描与fixture QEMU/ADB不冒充Android运行。",
+        "documentation_completeness": "专属开发与接口文档全面；旧日期段落保留原checkpoint，须由最新header与STATUS解释当前资格。"
+      },
+      "qualification_limits": [
+        "Binder driver/transactions、seccomp安装、Android MAC、AOSP镜像/APK实际build、Android guest/ART/CTS和移动设备未取得资格。",
+        "Cuttlefish Linux参考guest不等于Asterinas；未实测字段保持缺项，不能由文件存在补齐。"
+      ],
+      "documentation_gaps_or_caveats": []
+    },
+    {
+      "id": "A09",
+      "name": "硬件、VMM与设备生命周期模型",
+      "index_links": [
+        {
+          "label": "device lifecycle 开发手册",
+          "path": "support/vmm/device_lifecycle/README.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "GATES",
+          "path": "support/vmm/GATES.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "HARDWARE_AND_DRIVERS",
+          "path": "docs/HARDWARE_AND_DRIVERS.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "来源",
+          "path": "support/vmm/PROVENANCE.md",
+          "exists_at_reviewed_commit": true
+        }
+      ],
+      "development_documents": [
+        "support/vmm/device_lifecycle/README.md",
+        "support/vmm/GATES.md"
+      ],
+      "dedicated_technical_documents": [
+        "support/vmm/PROVENANCE.md",
+        "support/vmm/device_lifecycle/README.md"
+      ],
+      "shared_technical_documents": [
+        "docs/HARDWARE_AND_DRIVERS.md"
+      ],
+      "verification_documents": [
+        "support/vmm/GATES.md",
+        "support/vmm/PROVENANCE.md"
+      ],
+      "coverage": {
+        "source_and_dependencies": "专属no_std dependency-free模型说明Rust edition/toolchain与device/group/queue/memory/resource元数据；GATES绑定真实上游VMX/IOMMU入口。",
+        "build_and_run": "有locked/offline host unit/doc/release以及只读kernel join/VFIO preflight命令，失败或需硬件review的退出状态明确。",
+        "input_output_and_error_semantics": "列overflow、跨device/group、代际/ABA、UnknownEffect、queue fence、release refusal和完整输入provenance。",
+        "owner_and_authority": "真实CapSpace/设备身份/完成proof属于A05和driver，预算属于A06，IOMMU/IRQ/quiescence属于A01；Rust元数据不自产生这些证明。",
+        "evidence_binding": "文档区分host模型验证、源gate、Linux CUDA子进程与Rust-host真实VMM/DMA；失败与源码/serial/hash绑定要求明确。",
+        "documentation_completeness": "专属开发与技术契约存在，实际实现范围明确标作元数据模型。"
+      },
+      "qualification_limits": [
+        "未实现实际pin、IOVA映射、MMIO/IRQ、GPU fence/reset或可用Rust-host Linux VMM/GPU passthrough。",
+        "timeout/cancel/元数据fence不能证明DMA停止或允许释放页；无真实硬件/裸机资格。"
+      ],
+      "documentation_gaps_or_caveats": []
+    },
+    {
+      "id": "A10",
+      "name": "Rust桌面、Session与交互原型",
+      "index_links": [
+        {
+          "label": "运行手册",
+          "path": "support/ui/RUN.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "聊天/任务工作区",
+          "path": "support/ui/CHAT_WORKSPACE.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "Session / known-run",
+          "path": "support/ui/HEPTA_OBSERVER.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "run 新鲜度",
+          "path": "ui/shell/OBSERVATION_FRESHNESS.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "真实 Objective 窗口复跑",
+          "path": "tests/ui/ORIGINAL_OBJECTIVE_SHELL.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "字体",
+          "path": "support/ui/CJK_RENDERING.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "XIM",
+          "path": "support/ui/X11_IME.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "本轮实录",
+          "path": "results/integration/2026-10-18-objective-desktop/README.md",
+          "exists_at_reviewed_commit": true
+        },
+        {
+          "label": "DESKTOP_UX",
+          "path": "docs/DESKTOP_UX.md",
+          "exists_at_reviewed_commit": true
+        }
+      ],
+      "development_documents": [
+        "support/ui/RUN.md",
+        "support/ui/CHAT_WORKSPACE.md",
+        "support/ui/HEPTA_OBSERVER.md"
+      ],
+      "dedicated_technical_documents": [
+        "ui/shell/OBSERVATION_FRESHNESS.md",
+        "support/ui/CHAT_WORKSPACE.md",
+        "support/ui/CJK_RENDERING.md",
+        "support/ui/X11_IME.md"
+      ],
+      "shared_technical_documents": [
+        "docs/DESKTOP_UX.md",
+        "services/hepta-os/CONTRACT.md"
+      ],
+      "verification_documents": [
+        "tests/ui/ORIGINAL_OBJECTIVE_SHELL.md",
+        "results/integration/2026-10-18-objective-desktop/README.md",
+        "tests/ui/evidence/2026-10-17-real-xim/README.md"
+      ],
+      "coverage": {
+        "source_and_dependencies": "手册给ui/core/session/shell/app source ownership、Rust1.88/eframe锁、Wayland或X11、Mesa/字体/IME与构建工具依赖。",
+        "build_and_run": "有workspace/CLI build、check-host、headless Weston、真实Session/Shell、字体像素/XIM及三阶段Objective窗口复跑命令。",
+        "input_output_and_error_semantics": "定义本地draft/context、Session snapshot/IPC、来源变代、stale/unknown、7秒总age、字体失败和IME观察的输入输出。",
+        "owner_and_authority": "Session拥有宿主app与观察worker；Shell仅渲染安全投影，聊天draft不签发/提交目标，host task ID不等同Hepta operation。",
+        "evidence_binding": "真实窗口/PNG、旧XIM与软件Wayland分别绑定ELF和harness；scripted布局与真实Agentd运行分别报告，失败/ignored明确。",
+        "documentation_completeness": "专属开发/技术/输入/验证手册具体，包含真实产品流程和公开限制；移动适配不是文档存在即已实现。"
+      },
+      "qualification_limits": [
+        "Linux host原型不是Asterinas GUI/compositor或移动端；typed聊天仍是本地草稿。",
+        "R8英文Runtime卡片资格不外推顶部中文后缀、所有工作区操作、Wayland IME、GPU/实机显示；历史XIM caret定位未过。",
+        "无UI直接history/submit、生产issuer或设备效果资格。"
+      ],
+      "documentation_gaps_or_caveats": []
+    }
+  ],
+  "local_document_manifest": [
+    {
+      "path": "compat/android/INTERFACES.md",
+      "git_blob": "a238f9f6f3a854ebfacd3d08d78a320400c23b44",
+      "sha256": "8729560f4b7edd5f8bb59e412a10984300c3b8562c06998c69e0184444561c21",
+      "bytes": 7406,
+      "line_count": 99,
+      "title": "A08 Android / Rust-kernel interface inventory"
+    },
+    {
+      "path": "compat/android/kernel-gaps.json",
+      "git_blob": "019e2887ea051e715bd0db8038a8ebf738295377",
+      "sha256": "0fadc3646ffb58dea1b941c1f0415d27f2877756760b0d3ba522698d0f12a56d",
+      "bytes": 3558,
+      "line_count": 112,
+      "title": null
+    },
+    {
+      "path": "docs/ANDROID_COMPATIBILITY.md",
+      "git_blob": "aa609b91438b5230f08fd84de76c38191659808f",
+      "sha256": "daecdc2ce896bad8a4f3727d93669a761d75abdecd0a0316012cde1b76428dc4",
+      "bytes": 4714,
+      "line_count": 47,
+      "title": "Android平台接合与APK兼容"
+    },
+    {
+      "path": "docs/ARCHITECTURE.md",
+      "git_blob": "d2427adbbe1c337e416866b39eb33d4e418dae64",
+      "sha256": "0a28073b9e3036f669c887ea80052a9aa6149f5ba7a4029de6c1720613485a4b",
+      "bytes": 8056,
+      "line_count": 66,
+      "title": "系统架构与上游接合"
+    },
+    {
+      "path": "docs/ASTERINAS_CPU_BANDWIDTH_N0.md",
+      "git_blob": "8473d8b7b8d1c2493f2f5a5aa143a885e25d7672",
+      "sha256": "a97b8c30ff8f100722b402ec2690a6fec12e9d1b32e86e7762641b20fda9e225",
+      "bytes": 12394,
+      "line_count": 84,
+      "title": "A06 N0 CPU bandwidth — reproducible implementation evidence"
+    },
+    {
+      "path": "docs/ASTERINAS_ORGAN_BACKEND.md",
+      "git_blob": "72465453dc8897e099d5f9b7f6cb50a89c157310",
+      "sha256": "f00e39a335f5e11fd6fd13894172ec80bce2e2dcf3ac5c733caf1fe5c375cb74",
+      "bytes": 7262,
+      "line_count": 74,
+      "title": "Asterinas 后端：organ 边界与实际验证"
+    },
+    {
+      "path": "docs/DECISIONS.md",
+      "git_blob": "041f2a8c3d643d00a9790b7b81c1f97651ba8883",
+      "sha256": "09a789fded953d0b63d2a0a4ac0e8ee45dd200950fe7f10eeb612639d6dece63",
+      "bytes": 3195,
+      "line_count": 47,
+      "title": "架构决策 0.3"
+    },
+    {
+      "path": "docs/DESKTOP_UX.md",
+      "git_blob": "c738341aa42507c5b89ba29e1364b3f20263f232",
+      "sha256": "57ad08c472fb80cf2dffea7dde2b7a04d48e4d52819cb7eab8d46ddfbe877fdc",
+      "bytes": 23735,
+      "line_count": 101,
+      "title": "Rust桌面与应用协议"
+    },
+    {
+      "path": "docs/HARDWARE_AND_DRIVERS.md",
+      "git_blob": "8d8bf8f87a8e7ebef75e36230ef7b5c208fd57d5",
+      "sha256": "d31ad12248e97ca7cefdb98bc386fe5e0e3158dfbd131a281e6556cdd5bbcad3",
+      "bytes": 4303,
+      "line_count": 47,
+      "title": "硬件、DMA与关键风险"
+    },
+    {
+      "path": "docs/HEPTA_INTEGRATION.md",
+      "git_blob": "4f44884bad43c620b0a601bc0ad325b904e1f6ee",
+      "sha256": "55314b700ba63ef946d3e36609cb20257a66ae3a1b0b05116614449441932de6",
+      "bytes": 9995,
+      "line_count": 80,
+      "title": "Hepta 的实际宿主接合"
+    },
+    {
+      "path": "docs/LINUX_COMPATIBILITY.md",
+      "git_blob": "a9cc4b0aed0276fb4b9d3c998f62dcfd9e738886",
+      "sha256": "15287db6dd59d0c7d0afb0e59367b9ba73b47532d4e1a5f228f21ba22d586e2e",
+      "bytes": 3673,
+      "line_count": 37,
+      "title": "Linux兼容与应用交付"
+    },
+    {
+      "path": "docs/NATIVE_ABI.md",
+      "git_blob": "de9f70ba71ff96ca5cf043d0650eca56c875de0e",
+      "sha256": "796ed1f10d2b51067d9b386d29288235656fc91deaef5febcea52c786a7cdd93",
+      "bytes": 16969,
+      "line_count": 132,
+      "title": "原生控制 ABI 与恢复契约"
+    },
+    {
+      "path": "docs/STATUS.md",
+      "git_blob": "6e72961f4018a5e2a3b920aeb5793a0eaa68f5c9",
+      "sha256": "24c1b07bde4d328a2e6190b967f1c31e7cee4c10799b1d92cff7e89facf9e57a",
+      "bytes": 126420,
+      "line_count": 530,
+      "title": "当前状态"
+    },
+    {
+      "path": "docs/VALIDATION.md",
+      "git_blob": "33dc6e5a3003c8db3c79e04fdb4a9dae48c13d42",
+      "sha256": "5add694562306c2eb694199e6054c83f765b1f99d4743710536e0d8b9aee9500",
+      "bytes": 9799,
+      "line_count": 106,
+      "title": "验证层次、判定器与审计跟踪"
+    },
+    {
+      "path": "docs/agents/PLAN.md",
+      "git_blob": "f6750ece45d34f27619f005798a7b4b8858ed882",
+      "sha256": "b5f4f8f4940c7d53632f6090a143b6ec61ff6b8c0277c2fa02dd7dee92f0dfda",
+      "bytes": 6365,
+      "line_count": 62,
+      "title": "多 Agent 并行开发执行方案（2026-10-16）"
+    },
+    {
+      "path": "docs/agents/R8_NEXT_SLICE.md",
+      "git_blob": "adc5933ad4d7ec022c969a11b4ee1567e9fb9181",
+      "sha256": "3dda71b73010f143b1a66b0d6a43a996794a0ad032c2fed6f9d4aaad81ce0007",
+      "bytes": 20417,
+      "line_count": 138,
+      "title": "R8 之后：可信目标到单任务 CPU 预算的下一切片"
+    },
+    {
+      "path": "docs/agents/R9_G1_OWNER_SEAM.md",
+      "git_blob": "686d3f9a9a8d77c384aca9522edac8b356bff4cb",
+      "sha256": "ec4149438e260bfa545279ed9fc26062ef01a5984ae0514e5ba6012ae8744617",
+      "bytes": 19702,
+      "line_count": 146,
+      "title": "G1 下一内核切片：先固定真实 CPU owner 的 revision 与实例寿命"
+    },
+    {
+      "path": "docs/agents/handoffs/A05_KERNEL_CONTROL.md",
+      "git_blob": "778039922f3ca6c0b3be18121f89287254e35991",
+      "sha256": "a2fcedab3cc7d26c6ed2fde521ce4864d566cd1b36bdd537f46abf6ad2090717",
+      "bytes": 8119,
+      "line_count": 96,
+      "title": "A05 内核控制实现与开发入口"
+    },
+    {
+      "path": "libs/os-abi/src/lib.rs",
+      "git_blob": "276e59ef0de4df46c09b17a792c5c049024d07b3",
+      "sha256": "826e6533bd7ed2f6527db819e9f0400867ca1e607cd0581a03970444c3e4b60f",
+      "bytes": 47272,
+      "line_count": 1443,
+      "title": null
+    },
+    {
+      "path": "libs/os-control/API_CONTRACT.md",
+      "git_blob": "a553feabf21875059ca6023838d4ea1ac136035e",
+      "sha256": "68689e929de4a7709d7107a2991704e3c6e268d5855d48962c290f2acc0d0f54",
+      "bytes": 56355,
+      "line_count": 953,
+      "title": "A03 host-model API contract"
+    },
+    {
+      "path": "results/integration/2026-10-18-audit-followthrough/README.md",
+      "git_blob": "28efa5c6835a1a6b3eb50ec4312fe6da94bf18c2",
+      "sha256": "240fa5082c4dd0d46d8eb40815307a4933946a3fb36ca34ea44dff0a4490593b",
+      "bytes": 17989,
+      "line_count": 132,
+      "title": "2026-10-18 审计后实现、集成与实际验证"
+    },
+    {
+      "path": "results/integration/2026-10-18-objective-desktop/README.md",
+      "git_blob": "0dde86fae4d224bb69063f68553cf2e69f8a433e",
+      "sha256": "f30e60e9e39167e5c157beaba3841786fc871ca0b87fe7528184bd5415b2983b",
+      "bytes": 18803,
+      "line_count": 123,
+      "title": "R8：可信 ObjectiveStart、原版 run 投影与真实桌面"
+    },
+    {
+      "path": "results/integration/a08-host-main-20261017/README.md",
+      "git_blob": "4024c0a9328f4b229ab032e3c439f0ee6660cc1a",
+      "sha256": "576ed89be5111a47c4a3c9a276577de33d2a85928d415b4c64a9d3e437f54e2d",
+      "bytes": 3828,
+      "line_count": 65,
+      "title": "A08 main integration: actual Linux host acceptance"
+    },
+    {
+      "path": "results/kernel/control/a05-main-combined-acceptance-20261017.json",
+      "git_blob": "ee2aacde5a48600ebb479a7895adc69538f295f5",
+      "sha256": "e733457a2d5e92615a21bda5836e36a54d088263ea5b089756cc0d1203b01763",
+      "bytes": 3165,
+      "line_count": 108,
+      "title": null
+    },
+    {
+      "path": "results/organ-backend/2026-10-17/a05-a06-integrated-acceptance.json",
+      "git_blob": "575b2fcebbc396c9aedb25030bc9fd30d86e3ae5",
+      "sha256": "f437b9689a0d62782de86fae8ebf0eee7bfb0c0c0f88062cf63da37c608ffc55",
+      "bytes": 7146,
+      "line_count": 262,
+      "title": null
+    },
+    {
+      "path": "results/organ-backend/2026-10-18/a06-odd-period-oracle/README.md",
+      "git_blob": "c6ddce3ccfaa77ff4b02c08e5825c8d06979a39a",
+      "sha256": "5b3aa6cf6d9048354b6c86fe8004dae485798f3de9a43afac65cc362bb153a2a",
+      "bytes": 6149,
+      "line_count": 48,
+      "title": "A06：奇数 TSC 周期的精确测试判定修复"
+    },
+    {
+      "path": "services/hepta-os/CONTRACT.md",
+      "git_blob": "7492454161a50afad4f1429321c750f8c6242d7c",
+      "sha256": "0ec2d9c0db139c0104a05fedc674887d00e05c2527d041591c174a3a294b5068",
+      "bytes": 13953,
+      "line_count": 208,
+      "title": "Read-only observer technical contract"
+    },
+    {
+      "path": "services/hepta-os/OBJECTIVE_HISTORY.md",
+      "git_blob": "a50f34fffda2b714830132e39e2460b3ba662a4c",
+      "sha256": "75aa92f86005be8df59947ad1f92cb969c1975bab131c3182ca622679721a4f8",
+      "bytes": 13175,
+      "line_count": 202,
+      "title": "已知 Objective 的持久准入历史"
+    },
+    {
+      "path": "services/hepta-os/OBJECTIVE_TRANSPORT.md",
+      "git_blob": "5be218634b427b166a42e3f9ef4446d2f2b33685",
+      "sha256": "ad5b76ea3c937167b06ad293a4772acfcc666ab363e5586bdd6041c293de4b87",
+      "bytes": 23877,
+      "line_count": 345,
+      "title": "Original ObjectiveStart transport contract"
+    },
+    {
+      "path": "services/hepta-os/README.md",
+      "git_blob": "9f0157e0b74048436e5611cf2efd94f99d4279c7",
+      "sha256": "d03b6c1dbd0834ce9a42f9ee0af30044867eda1120a4bb5e5d07c556e9cf0046",
+      "bytes": 9593,
+      "line_count": 104,
+      "title": "Hepta host observer, ObjectiveStart and admission history"
+    },
+    {
+      "path": "services/hepta-os/RUN.md",
+      "git_blob": "aee7270d16f0f8a617a837ae2257fda03591c34a",
+      "sha256": "fb4748152277d443912fb6f3705b59f8da635594ac9e95fbad77206abc64b6f8",
+      "bytes": 12909,
+      "line_count": 239,
+      "title": "Build, run, and validate"
+    },
+    {
+      "path": "support/android/README.md",
+      "git_blob": "c154c2854b1d01e7038b7aecf157a0a5e4702d00",
+      "sha256": "e36a16853a4e6969ea112442f3d48d89069a1372b0f0061fbb63a29fdcd321a9",
+      "bytes": 36597,
+      "line_count": 481,
+      "title": "A08 build and APK evidence"
+    },
+    {
+      "path": "support/build/README.md",
+      "git_blob": "779b8bde16e335d5ec7b7b3ad0d068c36037f25b",
+      "sha256": "b088a13b006b83a7f7f495a7c78e5d06e0a06e173e099e75bea7f529e860bae0",
+      "bytes": 10521,
+      "line_count": 185,
+      "title": "A01: fixed Asterinas source build and QEMU smoke"
+    },
+    {
+      "path": "support/build/evidence/2026-10-16-boot-binding/REPORT.md",
+      "git_blob": "709c762c8c503b2e42d2a883dedc018a5597158c",
+      "sha256": "0ad4053d02ede9a28867183f131c61954e09978d217652f08f06f35d3e841911",
+      "bytes": 7496,
+      "line_count": 119,
+      "title": "A01: bound boot evidence and preserved symbol ELF"
+    },
+    {
+      "path": "support/build/evidence/2026-10-16-daemon/acceptance/kernel-tests/result.json",
+      "git_blob": "e18b910b3c50a974e84a414a5230b33e33929e29",
+      "sha256": "a26e2d598b981429eacf417a9b0cf0223b9798abc860f8b3146d4480b00e4c7a",
+      "bytes": 1005,
+      "line_count": 45,
+      "title": null
+    },
+    {
+      "path": "support/build/ktest/README.md",
+      "git_blob": "1f9d5065332c02027416378d65de5949972da980",
+      "sha256": "2c899f72c68f5f124f2396108dd6f59c8d14fea4a4bbd5dcd5a02ba75af55f7f",
+      "bytes": 3739,
+      "line_count": 64,
+      "title": "Real upstream kernel-mode tests"
+    },
+    {
+      "path": "support/ui/CHAT_WORKSPACE.md",
+      "git_blob": "c25a8872d8d3d8cbb127e3f542173f605acea2a1",
+      "sha256": "2348d85496c32e78ffcec17c01105edca510e97dbf3aa05a23706f64be5daad4",
+      "bytes": 11655,
+      "line_count": 180,
+      "title": "Rust chat workspace and source-bound context"
+    },
+    {
+      "path": "support/ui/CJK_RENDERING.md",
+      "git_blob": "9bbc80e6fe620a497cd014ccbd748b24914d6010",
+      "sha256": "2cae8d32fa65a042f0f0c71f5c702fa9083e1ca8f49f05a9df53555670975d3e",
+      "bytes": 6959,
+      "line_count": 127,
+      "title": "Host Chinese text rendering and input qualification"
+    },
+    {
+      "path": "support/ui/HEPTA_OBSERVER.md",
+      "git_blob": "0bb16b3acdab7ae04150063dc217ceb16b4a3f39",
+      "sha256": "6dcb3b83359cb72085db96f1d62ed44aaf38fc2567c9c1b140f90fd623722490",
+      "bytes": 24367,
+      "line_count": 422,
+      "title": "Host Session → Hepta read-only observer"
+    },
+    {
+      "path": "support/ui/RUN.md",
+      "git_blob": "0481412d0a2b0fe7876ff28297917f76dba01688",
+      "sha256": "c8204e59f72ab218d850a1bce99f9e1e7035d6334b69a245bc131d90b9b1aa1c",
+      "bytes": 17099,
+      "line_count": 281,
+      "title": "A10 Linux host build/run notes"
+    },
+    {
+      "path": "support/ui/X11_IME.md",
+      "git_blob": "e607fe281b28362969a9f8d8cebbbea9bdae1afb",
+      "sha256": "03675d28ed3c142e49d72efccdf8de0beeb2e36759f052114b7df3d17c7b651c",
+      "bytes": 11371,
+      "line_count": 190,
+      "title": "Private Linux X11 / XIM Chinese input probe"
+    },
+    {
+      "path": "support/upstream-lock.json",
+      "git_blob": "11c1a12ebcd1b7c3457806c52ff52916e7835363",
+      "sha256": "beb48f48a77101e5456ca78aa98d3c0f4c3a3f11ca29f422e2d576ff837cc592",
+      "bytes": 4657,
+      "line_count": 102,
+      "title": null
+    },
+    {
+      "path": "support/vmm/GATES.md",
+      "git_blob": "0fae37d95d639f121eccf269e4d5d46cf4ed4d45",
+      "sha256": "ca6ed05f200f498512509afd7cd19662d873c999a2792727afd0c1208a2946e0",
+      "bytes": 7044,
+      "line_count": 93,
+      "title": "A09 VMM gates — fixed Asterinas v0.19.0"
+    },
+    {
+      "path": "support/vmm/PROVENANCE.md",
+      "git_blob": "117983a3a17d5a83fc9849eb27e00f4484d7f264",
+      "sha256": "63d5ba3251f47c02be5d9fb79ac728959eb5d812016dd78407c9d9a11d41c7cb",
+      "bytes": 8418,
+      "line_count": 166,
+      "title": "A09 cross-kernel GPU provenance gate"
+    },
+    {
+      "path": "support/vmm/device_lifecycle/README.md",
+      "git_blob": "f3abbf7f733872467cb5e2d5a7a36c1c244b555e",
+      "sha256": "23f8c49e66ef9bf83e9535dc37d5fe37c0b0b5a101aef0ef9b5d04b203d5d314",
+      "bytes": 12178,
+      "line_count": 192,
+      "title": "A09 no_std device lifecycle transition core (not a kernel driver)"
+    },
+    {
+      "path": "tests/abi/A02_EVIDENCE_INTEGRITY_2026-10-17.md",
+      "git_blob": "7a84eaa0c27fc1dd32cb66542a7ebdbf957df1ae",
+      "sha256": "207c2cc4d702a95d9e16a2bd8805f3dec4b67e1ad19a6468411bf8bc4ed9f942",
+      "bytes": 6279,
+      "line_count": 100,
+      "title": "A02 编译变异证据完整性验收（2026-10-17）"
+    },
+    {
+      "path": "tests/abi/A02_REVIEW_CLOSURE_2026-10-17.md",
+      "git_blob": "bf2d5542f238057d5500003220a12ad5a9babc3d",
+      "sha256": "d988512099957b3d2e102382acc4e9101a4d1ae3f929e9a1e0fa42d7b6a6ee22",
+      "bytes": 7168,
+      "line_count": 106,
+      "title": "A02 review blocker closure — 2026-10-17"
+    },
+    {
+      "path": "tests/control/VALIDATION.md",
+      "git_blob": "93ed812c4b3f7c2905d94bc58f50e80adce38603",
+      "sha256": "95a3283e6c497764926102dc79f56f5e9abd915506e33a45263e511287559a7f",
+      "bytes": 10066,
+      "line_count": 156,
+      "title": "A03 control core acceptance — 2026-10-16"
+    },
+    {
+      "path": "tests/control/run-validation.sh",
+      "git_blob": "7f2d8c303d92204dc0a6a3a6cce5c67b0d1c864a",
+      "sha256": "5aa862a211d226cd5cfc2007a640d52bd20a263652a94dd149d7c2121fde2023",
+      "bytes": 2521,
+      "line_count": 41,
+      "title": "A03-only host validation; no kernel or durable Hepta claims."
+    },
+    {
+      "path": "tests/integration/hepta/OBJECTIVE_HISTORY_PROBE.md",
+      "git_blob": "482d3211d06f89bdb399b3a7325914c3c148b731",
+      "sha256": "25b4eca15166c7076f6c246299cc1094805baeac25f05e887ab95b790df54c2c",
+      "bytes": 8520,
+      "line_count": 135,
+      "title": "Original-owner Objective admission history qualification"
+    },
+    {
+      "path": "tests/integration/hepta/ORIGINAL_OBJECTIVE.md",
+      "git_blob": "06b94b7ec675497bdbd0164ce654deb8d84070ee",
+      "sha256": "002b65a6226339b20f527fc831341b279e9ea8c891d29976c65ffd88e260a4ea",
+      "bytes": 14703,
+      "line_count": 223,
+      "title": "Original signed ObjectiveStart process probe"
+    },
+    {
+      "path": "tests/integration/hepta/ORIGINAL_SESSION.md",
+      "git_blob": "67d854fc1ab692694cec0bae934bedbfcb8128f4",
+      "sha256": "deeb8035c88ebd20f46b2174fffc6d8f71c051d582d8fb60d9309751d23f4dfe",
+      "bytes": 6654,
+      "line_count": 112,
+      "title": "Original Agentd → persistent Session qualification"
+    },
+    {
+      "path": "tests/integration/hepta/PROBE_LOCK_STABILITY.md",
+      "git_blob": "ff1edd643012ff13ce3bdada594d0f0a0c0a0aef",
+      "sha256": "760185ba3b65a31fc3f6ca8ea15958e0c4d5ebb16083ff14f074707dbe5af1e5",
+      "bytes": 5013,
+      "line_count": 84,
+      "title": "External original-library probe lock stability"
+    },
+    {
+      "path": "tests/ui/ORIGINAL_OBJECTIVE_SHELL.md",
+      "git_blob": "c6fae5f4616aedce4e056144b8f4fa0124860962",
+      "sha256": "df434ca840e1aedf000e512646eab427ec18e4252b8296bff3e20611843ac133",
+      "bytes": 7846,
+      "line_count": 133,
+      "title": "One real Rust Shell across an original Objective admission"
+    },
+    {
+      "path": "tests/ui/evidence/2026-10-17-real-xim/README.md",
+      "git_blob": "8f940eef8dc20c13968419e8ae58b59203102aae",
+      "sha256": "c140c49968a053c2df76f9ab715eac0e0b14940778a38754480b4cffbf12a802",
+      "bytes": 13383,
+      "line_count": 183,
+      "title": "Real Linux X11 / XIM Chinese input evidence — 2026-10-17"
+    },
+    {
+      "path": "tests/workloads/android/evidence/2026-10-17-commit-bound-audit/README.md",
+      "git_blob": "73aa0a6a52bfca931bd8b5a791df3767253e29a0",
+      "sha256": "63866c28fd6532994ce5dcff9050945fc085ff9f694437956cbe754c4896ca8f",
+      "bytes": 7907,
+      "line_count": 129,
+      "title": "A08 commit-bound source audit and actual host regression"
+    },
+    {
+      "path": "ui/shell/OBSERVATION_FRESHNESS.md",
+      "git_blob": "a79936bce449d4ac991dba2cc58bf32cc442d583",
+      "sha256": "98302b92b969382930bad272890ac1140dfe37252451a9e0e3153338756fbaa7",
+      "bytes": 7160,
+      "line_count": 120,
+      "title": "Hepta observation freshness before drawing"
+    }
+  ],
+  "external_A04_documents": [
+    {
+      "path": "tests/workloads/linux/README.md",
+      "commit": "25c681d944e4efa92f2772cf773e03ae811bc345",
+      "git_blob": "2785518374a2f0348c616e8e2b3744eff8dd088d",
+      "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/25c681d944e4efa92f2772cf773e03ae811bc345/tests/workloads/linux/README.md",
+      "read_via": "GitHub fetch_file with exact known ref",
+      "exists_at_reviewed_desktop_commit": false
+    },
+    {
+      "path": "support/rootfs/README.md",
+      "commit": "25c681d944e4efa92f2772cf773e03ae811bc345",
+      "git_blob": "13ecda6fe9070e82277616028fdbfae0f03bb8b9",
+      "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/25c681d944e4efa92f2772cf773e03ae811bc345/support/rootfs/README.md",
+      "read_via": "GitHub fetch_file with exact known ref",
+      "exists_at_reviewed_desktop_commit": false
+    },
+    {
+      "path": "compat/linux/GAPS.md",
+      "commit": "25c681d944e4efa92f2772cf773e03ae811bc345",
+      "git_blob": "071b6ab420123146120d64c1e52ee577066ed72e",
+      "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/25c681d944e4efa92f2772cf773e03ae811bc345/compat/linux/GAPS.md",
+      "read_via": "GitHub fetch_file with exact known ref",
+      "exists_at_reviewed_desktop_commit": false
+    }
+  ],
+  "external_PR8_observation": {
+    "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/8",
+    "state": "open",
+    "draft": true,
+    "merged": false,
+    "head_sha": "25c681d944e4efa92f2772cf773e03ae811bc345",
+    "read_via": "GitHub get_pr_info",
+    "scope": "status observation only; no PR change or merge"
+  },
+  "link_check_limit": "225 nested checks cover local target presence, not exhaustive transitive documentation audits, shell execution, external target behavior or every nested heading anchor. The two section anchors in the INDEX module table were checked against exact headings."
+}

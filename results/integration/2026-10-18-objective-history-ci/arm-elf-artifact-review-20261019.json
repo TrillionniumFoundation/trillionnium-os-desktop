@@ -1,0 +1,122 @@
+{
+  "schema": "r10.restored-arm-elf-byte-review.v1",
+  "status": "passed_actual_restored_arm_elf_byte_review",
+  "started_at_utc": "2026-10-19T01:05:41.395312+00:00",
+  "ended_at_utc": "2026-10-19T01:05:43.821953+00:00",
+  "source_run_id": 39115155092,
+  "attempt": 1,
+  "source_job_id": 117655596136,
+  "artifact": {
+    "id": 12135470347,
+    "bytes": 90606774,
+    "sha256": "1a145400d57620ecbcdcf533134ce4f2c45a47d58c5e95735c4192adb993bb63",
+    "digest_verified_by": "arm-elf-recovery-acquisition-20261019.json"
+  },
+  "archive": {
+    "name": "hepta-objective-history-aarch64-linux.tar.gz",
+    "bytes": 91399979,
+    "sha256": "d9d2593d5dc92790a11eeb538d3962466b52936d332f51b3f8b5c2d9c39bc846"
+  },
+  "desktop_commit": "46dcb2d691827f7aa3ad7903dae09d39fd338126",
+  "desktop_tree": "8d5de807c41090e3d987764daec9c235ebd022a1",
+  "upstream": {
+    "commit": "2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5",
+    "tree": "f4ef891d43baf90d6eebd29921a5ed03222ef3ab",
+    "cargo_lock_sha256": "8354b4cbdf14389db7aa5508e2ed5b524fc2d4c4ea0ecb475955c933f8bea389",
+    "clean_checkout": true,
+    "reviewed_files": 36
+  },
+  "report_sha256": "703545addc305db4fb055a801b4b9bfa7b4e5cb088fb8179b92f9b106aef9ca3",
+  "build_receipt_sha256": "732a1f90741f6a3e39bd93e6faf69d0561530d852bb488b8ba852984ca35ddba",
+  "outer_members": 4,
+  "inner_members": 8,
+  "all_zip_crc_and_gzip_footer_validated": true,
+  "all_members_unique_regular_safe_unencrypted": true,
+  "checks": [
+    {
+      "name": "codex-hepta-agentd",
+      "role": "agentd",
+      "kind": "actual_elf_bytes",
+      "bytes": 268457128,
+      "sha256": "622687b607c4f8aa983f082e169b06f2b7a89b12917e16384245965b156c7549",
+      "elf_class_bits": 64,
+      "endianness": "little",
+      "e_machine": 183,
+      "architecture": "AArch64",
+      "elf_type": 3
+    },
+    {
+      "name": "hepta-objective-history-probe",
+      "role": "probe",
+      "kind": "actual_elf_bytes",
+      "bytes": 29411712,
+      "sha256": "22c3b394861c847b551a476bd1924b682363a07097cae9946036f336cefdd665",
+      "elf_class_bits": 64,
+      "endianness": "little",
+      "e_machine": 183,
+      "architecture": "AArch64",
+      "elf_type": 3
+    },
+    {
+      "name": "hepta-observe",
+      "role": "observer",
+      "kind": "actual_elf_bytes",
+      "bytes": 14911296,
+      "sha256": "4da1165dd5bd925dff732edace85b4c2289faf735d640310ff8b1bd408a22f92",
+      "elf_class_bits": 64,
+      "endianness": "little",
+      "e_machine": 183,
+      "architecture": "AArch64",
+      "elf_type": 3
+    },
+    {
+      "name": "hepta-submit",
+      "role": "submitter",
+      "kind": "actual_elf_bytes",
+      "bytes": 14664856,
+      "sha256": "c8e1df3fbc707c368133a2751bb1877b5ce96bd9c24c4322ab8cbc533ccdf5e3",
+      "elf_class_bits": 64,
+      "endianness": "little",
+      "e_machine": 183,
+      "architecture": "AArch64",
+      "elf_type": 3
+    },
+    {
+      "name": "hepta-history",
+      "role": "history",
+      "kind": "actual_elf_bytes",
+      "bytes": 15021288,
+      "sha256": "671abf2c3e73032a7b89c262f8fdea5e00d2251423e52697c5deca47e773c88f",
+      "elf_class_bits": 64,
+      "endianness": "little",
+      "e_machine": 183,
+      "architecture": "AArch64",
+      "elf_type": 3
+    },
+    {
+      "name": "binary-manifest.json",
+      "kind": "identical_metadata",
+      "bytes": 5350,
+      "sha256": "1cec6fd702e47f476665af9548cfcf5f9c5222385dc6883b3bae4eb0c17f6c3b"
+    },
+    {
+      "name": "SHA256SUMS",
+      "kind": "identical_metadata",
+      "bytes": 420,
+      "sha256": "c5f78a09db3bd7f12d2b08bc1022d404dc9e808e4c98514bb0d560a13a89e2e6"
+    },
+    {
+      "name": "report.json",
+      "kind": "identical_metadata",
+      "bytes": 78175,
+      "sha256": "703545addc305db4fb055a801b4b9bfa7b4e5cb088fb8179b92f9b106aef9ca3"
+    }
+  ],
+  "actual_elf_count": 5,
+  "actual_elf_bytes": 342466280,
+  "source_acceptance_report_manifest_and_sums_matched": true,
+  "new_build_or_runtime_executed": false,
+  "binary_extraction_or_execution": false,
+  "recovery_note": "The earlier 2026-10-18 temporary byte-review file was lost. This is a new independently executed data review of the same hash-verified original artifact after the workspace reset, with its own timestamp and identity; it does not recreate the old receipt SHA.",
+  "scope": "Five actual ARM64 Linux ELF bytes tied to the original isolated Objective history qualification, not new Asterinas/device/production/G1/G2 execution."
+}

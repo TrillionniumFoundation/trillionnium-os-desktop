@@ -2,6 +2,8 @@
 
 本目录保存 2026-10-19 UTC 完成的整合验证和对早期固定版本的独立复核。合并输入是已发布 Runtime 修复 `5060ac6976b56b32647c728991e489cdee1cce9d` 与实际 main `aab50f347deb53fc79ac13ea3b84f846fefc70a7`（PR #193）。只有 `docs/INDEX.md`、`docs/STATUS.md` 发生内容冲突；两条实现、默认原版 pin 和各自历史证据均保留。
 
+其后继续普通合并仅含文档与历史证据的 main `0c2bf0fc1ba473325a0266c7bd476b1ddbf66383`（PR #194）。三份文档冲突保留双方新进度，60 个 Rust 输入及两个 Python 修复文件字节/模式均保持不变，见 [整合记录](main194-integration.json) 与 [最终独立复核](reviews/r9-main194-final-merge-review.json)。原目录各固定运行的来源不变。
+
 发布提交用于固定源码与归档。下表分别给出真正执行的源码；旧运行的成功或失败不移记到新的合并 HEAD。新发布 HEAD 的完整 CI 仍须实际执行。
 
 ## 结果与实际输入

@@ -1,0 +1,156 @@
+{
+  "observed_at_utc": "2026-10-18T08:48:00.487194+00:00",
+  "source_base_commit": "4b42af4818a9c4ff96dcc7620904f269b4fbf274",
+  "workflow": "/workspace/scratch/499c7902de8e/r9-history-ci/.github/workflows/hepta-objective-history.yml",
+  "workflow_sha256": "970cbf94ca4e4ef1bf68bb07b14f96cacfcb790638d4e23e60b9035b41e040d8",
+  "workflow_lines": 518,
+  "yaml_version": "6.0.3",
+  "unique_yaml_mappings": true,
+  "bash_syntax_checks": [
+    {
+      "job": "history-transport",
+      "step": "Allocate fresh transport evidence outside the checkout",
+      "exit_code": 0
+    },
+    {
+      "job": "history-transport",
+      "step": "Install the exact desktop compiler and lint components",
+      "exit_code": 0
+    },
+    {
+      "job": "history-transport",
+      "step": "Test the explicit history feature, strict Clippy, default-off build and formatting",
+      "exit_code": 0
+    },
+    {
+      "job": "history-transport",
+      "step": "Preserve transport checkout and step outcomes even on failure",
+      "exit_code": 0
+    },
+    {
+      "job": "original-owner-history",
+      "step": "Allocate fresh native evidence and isolated tool homes",
+      "exit_code": 0
+    },
+    {
+      "job": "original-owner-history",
+      "step": "Read only the exact committed history contract and retain source hashes",
+      "exit_code": 0
+    },
+    {
+      "job": "original-owner-history",
+      "step": "Fetch the fixed owner and enough ancestry to verify its declared base",
+      "exit_code": 0
+    },
+    {
+      "job": "original-owner-history",
+      "step": "Install pinned compilers and original Linux native prerequisites",
+      "exit_code": 0
+    },
+    {
+      "job": "original-owner-history",
+      "step": "Build the exact original Agentd and three desktop CLIs with committed locks",
+      "exit_code": 0
+    },
+    {
+      "job": "original-owner-history",
+      "step": "Build the source-bound probe and execute real isolated history and storage faults",
+      "exit_code": 0
+    },
+    {
+      "job": "original-owner-history",
+      "step": "Preserve final identities and reject changed source even after a failed attempt",
+      "exit_code": 0
+    },
+    {
+      "job": "original-owner-history",
+      "step": "Bind successful runtime receipts to five actual ARM64 ELF files",
+      "exit_code": 0
+    }
+  ],
+  "embedded_python_ast_checks": [
+    {
+      "job": "history-transport",
+      "step": "Test the explicit history feature, strict Clippy, default-off build and formatting",
+      "lines": 59,
+      "sha256": "6e02bcb4f700209a1d4c3a41194a9518fa545d20d9c59ee7946a2fbd4b887753"
+    },
+    {
+      "job": "history-transport",
+      "step": "Preserve transport checkout and step outcomes even on failure",
+      "lines": 13,
+      "sha256": "e079b6c5e68bc399a5ac70f0beec30df038783745e2e7f8c887ad56db60ab5e3"
+    },
+    {
+      "job": "original-owner-history",
+      "step": "Allocate fresh native evidence and isolated tool homes",
+      "lines": 11,
+      "sha256": "e1227d7fb8773204fbcfab613e3e95c354de41297ac91592f1705cf62e69b83c"
+    },
+    {
+      "job": "original-owner-history",
+      "step": "Read only the exact committed history contract and retain source hashes",
+      "lines": 29,
+      "sha256": "75f18158c7c571e71f8e1efc2e6ae2e60465795e4f9d1cd791f68389adb891ab"
+    },
+    {
+      "job": "original-owner-history",
+      "step": "Fetch the fixed owner and enough ancestry to verify its declared base",
+      "lines": 11,
+      "sha256": "4e6c542eb38719f157763f2a74f7ef741dffc6725e89b5062f731440316faf2e"
+    },
+    {
+      "job": "original-owner-history",
+      "step": "Build the exact original Agentd and three desktop CLIs with committed locks",
+      "lines": 41,
+      "sha256": "c5d7bf840d500f64c56ccd8d8b4258cc67a6add867514cea01e4ff7267de4a92"
+    },
+    {
+      "job": "original-owner-history",
+      "step": "Preserve final identities and reject changed source even after a failed attempt",
+      "lines": 34,
+      "sha256": "e979856426d93660f1d221dca692078f5dccc00cc791a88eb80312199539d026"
+    },
+    {
+      "job": "original-owner-history",
+      "step": "Bind successful runtime receipts to five actual ARM64 ELF files",
+      "lines": 74,
+      "sha256": "cfe7c30aee0a1f0cba70199bf8bd892ec8b1020e5695a2f233dd0b8d690f1ade"
+    }
+  ],
+  "pinned_actions": [
+    {
+      "job": "history-transport",
+      "action": "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd"
+    },
+    {
+      "job": "history-transport",
+      "action": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02"
+    },
+    {
+      "job": "original-owner-history",
+      "action": "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd"
+    },
+    {
+      "job": "original-owner-history",
+      "action": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02"
+    },
+    {
+      "job": "original-owner-history",
+      "action": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02"
+    }
+  ],
+  "gate_conditions_use_explicit_exceptions_not_python_assert": true,
+  "old_original_workflow_unchanged": true,
+  "old_original_workflow_sha256": "09f3e468c409c82a9c3fcb34c0a692bd6929a3133f774c1e4c61786e3136cc5a",
+  "runner_source_commit": "de91dc3572163b4c1c7a991081f2f2a1cce88e1e",
+  "source_contract_dependency": "Root will add the exact tracked OBJECTIVE_HISTORY_CONTRACT.json during integration. It is required, with no fallback to the R8 PIN.",
+  "rust_build_executed_by_reviewer": false,
+  "native_runtime_executed_by_reviewer": false,
+  "remote_workflow_executed": false,
+  "workflow_commit": "144b1a3c012aeb47df86b0cbdc7bb20646de2970",
+  "workflow_tree": "4f5ab6e821385476279fe9d0fce8eef78ca2d810",
+  "workflow_blob": "46eaba585b2aed20ce25b9df3b45fb82b5f54b3b",
+  "review_helper_sha256": "3453b6b928b00337a1a57eba19ac0a0de75c2f8eb7ab79d729ccb8aee35f46e1",
+  "worktree_clean_after_commit": true
+}

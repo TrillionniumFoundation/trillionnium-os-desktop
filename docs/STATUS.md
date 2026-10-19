@@ -2,7 +2,7 @@
 
 ## 2026-10-19：整合 Runtime 修复与已合入的原 owner 历史扩展
 
-本分支在已发布 Runtime 修复 `5060ac6976b56b32647c728991e489cdee1cce9d` 上，保留并合入实际 main `aab50f347deb53fc79ac13ea3b84f846fefc70a7`（[PR #193](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/193)）。源码自动合并，冲突仅在本状态页和文档索引；两条实现与历史原始证据均保留。下列两节 R9 记录来自不同执行输入，其测试计数不合并成整合后新 HEAD 的验收。
+本分支在已发布 Runtime 修复 `5060ac6976b56b32647c728991e489cdee1cce9d` 上，保留并合入实际 main `aab50f347deb53fc79ac13ea3b84f846fefc70a7`（[PR #193](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/193)）。源码自动合并，冲突仅在本状态页和文档索引；两条实现与历史原始证据均保留。随后普通合并仅含文档/证据的 main `0c2bf0fc1ba473325a0266c7bd476b1ddbf66383`（[PR #194](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/194)），协调索引、状态与 S1–S5 三份文档；60 个 Rust 输入及本次 Python 修复字节未变。下列两节 R9 记录来自不同执行输入，其测试计数不合并成整合后新 HEAD 的验收。
 
 默认原版 Hepta 仍固定为 f8；新的 Objective 历史客户端仅针对独立 contract 指定的原 owner 扩展，并未替换默认 pin。它读取既有 owner 已恢复前缀中的历史 publication；当前 RunStatus、模型执行和 Operations/设备效果仍分别判断。既有 S1–S5 的在线查询子项按该明确扩展推进，生产请求持久保存、UI 历史投影、K↔D 与 G1/G2 仍需各自实现和实际验证。
 
@@ -15,23 +15,29 @@
 
 完整原始日志、失败、来源绑定、独立审查和两张原图见 [2026-10-19 整合证据](../results/integration/2026-10-19-main-sync/README.md)。新的 Python 修复没有改变上述 60 个 Rust 输入。发布后的实际新 HEAD 仍需重新完成原版 f8、独立 history owner 与 A10 CI；此前成功运行各自保留固定身份。以下章节作为历史记录保留，早期“尚未执行”的描述不覆盖本节新取得的事实。
 
-## 2026-10-18 R9：原 owner 准入历史与 G1 接缝
+## 2026-10-18 R9：原 owner 准入历史实测与 G1 接缝
 
-**本轮将“原请求的持久 publication”从当前 RunStatus 中分开，增加原 Hepta owner 的窄读接口与独立桌面 CLI。** 默认关闭的 `objective-history` 接受原请求 owner 保留的准确签名信封，当前端点身份由可信 launcher 提供；可携带以前保存的 anchor，查询不重投、不授予权限、不恢复 run。模块开发与技术契约见 [OBJECTIVE_HISTORY](../services/hepta-os/OBJECTIVE_HISTORY.md)，真实故障资格入口见 [OBJECTIVE_HISTORY_PROBE](../tests/integration/hepta/OBJECTIVE_HISTORY_PROBE.md)。原 owner 改动作为独立 [PR #2815](https://github.com/TrillionniumFoundation/hepta-private-ci/pull/2815)，原 f8 基线和旧 R8 契约保留。
+**原 Hepta owner 的在线历史查询已分别在 x86_64 与 ARM64 Linux 上通过真实进程验证：受控重启后，即使当前 `RunStatus: null`，仍可核对准确原请求的持久 publication。** 默认关闭的 `objective-history` 接受原请求 owner 保留的准确签名信封，当前端点身份由可信 launcher 提供；可携带以前保存的 anchor，查询不重投、不授予权限、不恢复 run。开发与技术契约见 [OBJECTIVE_HISTORY](../services/hepta-os/OBJECTIVE_HISTORY.md)，复跑入口见 [OBJECTIVE_HISTORY_PROBE](../tests/integration/hepta/OBJECTIVE_HISTORY_PROBE.md)，[R9 实际证据索引](../results/integration/2026-10-18-objective-history/README.md) 保留构建、运行、独立审查和失败尝试。原 owner 改动仍作为独立 [PR #2815](https://github.com/TrillionniumFoundation/hepta-private-ci/pull/2815)，原 f8 基线和旧 R8 契约保留。
 
 | R9 交付 | 已执行结果与当前边界 |
 | --- | --- |
-| 桌面历史客户端 | 产品输入 `c080896189b6d5c1e411a28b7614c8fcdc33b188` / tree `bd80279318682a2a5d0db7e1b8e2315315276d02`：51 项 Rust 测试、严格 all-target Clippy、默认关闭 check、fmt、三个实际 CLI 构建通过。10 项新历史测试覆盖严格 wire、原身份/代际、anchor 及 4096 容量；脚本化 socket 回复不代替原 owner 认证。 |
-| 原 owner 协议与 journal 接口 | 只读匹配原 RunStart 认证/body/profile 和已恢复前缀；原 protocol/ledger 的 `just test` 实际 134 passed、1 既有 production growth skipped，来源 `ee0a2e5eee299fc0f272c3ceb09ef70f2cbfaf73`；Agentd `--lib` 实际 173 passed、0 failed/ignored，来源 `d1d40f64eadd0210f5f6abc003cd479a0e1ee010`，包含 4 项新查询测试。两轮测试各自前后源码一致；307 是两次不同固定源码执行的合计，不是最终发布 HEAD 的完整 suite。原仓库要求的 scoped `just fix` 与 `just fmt --base f8` 已完成；仅对新 Published metadata 做 Box 布局修正，保留 JSON wire，既有无关自动修改已撤回。真实 native 资格仍待执行。 |
-| 真实故障 probe | 新增原 Fleet/Supervisor 与真实 CLI 路径，计划 15 检查、13 history 查询、5 独立 Objective 请求；22 项 synthetic receipt/source-contract 检查通过。尚未执行的 native 场景不计入实际通过数。 |
-| 独立历史 CI | 新增 `.github/workflows/hepta-objective-history.yml`，将桌面传输检查与固定原 owner 的真实 ARM64 构建/故障运行分开，并绑定源码、contract、五个 ELF 和原始收据。YAML、12 个 Bash block、8 个 Python block 和实际 actionlint 1.7.12 校验通过；尚未观测到该新工作流的 GitHub 执行结果。 |
-| Asterinas G1 前置审计 | [R9_G1_OWNER_SEAM](agents/R9_G1_OWNER_SEAM.md) 绑定主干 `01225ab0a20a9f25dd8313a7fad7652dd9154e30` 的实际 owner：先同锁 shared revision + controller incarnation/detached fence，再结算与时钟，随后 trusted init 和五操作。该项是源审计，无新 kernel build、ioctl 或 G1 运行资格。 |
+| 桌面历史客户端 | 产品输入 `c080896189b6d5c1e411a28b7614c8fcdc33b188` / tree `bd80279318682a2a5d0db7e1b8e2315315276d02`：51 项 Rust 测试、严格 all-target Clippy、默认关闭 check、fmt、三个实际 CLI 构建通过。10 项新历史测试覆盖严格 wire、原身份/代际、anchor 及 4096 容量；脚本化 socket 回复不代替原 owner 认证。本轮 native 运行复用了这些有源码绑定的 CLI。 |
+| 原 owner 协议与 journal 接口 | 只读匹配原 RunStart 认证/body/profile 和已恢复前缀；原 protocol/ledger 的 `just test` 实际 134 passed、1 既有 production growth skipped，来源 `ee0a2e5eee299fc0f272c3ceb09ef70f2cbfaf73`；Agentd `--lib` 实际 173 passed、0 failed/ignored，来源 `d1d40f64eadd0210f5f6abc003cd479a0e1ee010`，包含 4 项新查询测试。两轮测试各自前后源码一致；307 是两次不同固定源码执行的合计，不是最终发布 HEAD 的完整 suite。原仓库要求的 scoped `just fix` 与 `just fmt --base f8` 已完成；仅对新 Published metadata 做 Box 布局修正，保留 JSON wire，既有无关自动修改已撤回。最终源码的 native 构建与运行证据另列。 |
+| 最终原 owner 构建 | [native-agentd-05 收据](../results/integration/2026-10-18-objective-history/native-agentd-build.json)：最终 `2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5`，Rust 1.95.0、`--locked --offline --profile dev-small --no-default-features -j1` 实际构建成功；Agentd ELF SHA-256 为 `a8f8aefa2199a2e41c22b8251145f064e3af767ff5357475ddb527beb86761cb`。使用已有 native cache，不是冷构建或最小资源资格；此前 01–04 失败与依赖缓存修复收据保留。 |
+| 真实进程与存储故障 probe | [实际 report](../results/integration/2026-10-18-objective-history/history-runtime.json) 与 [独立复核](../results/integration/2026-10-18-objective-history/history-runtime-independent-review.json) 均 PASS。桌面固定 `207ff9da7dac83c57b0cbae46c4b03ecfba3baa9` / tree `8d5de807c41090e3d987764daec9c235ebd022a1`，最终原 owner `2be5fc05`；真实 x86_64 Linux、隔离测试 issuer、15 检查、13 history 查询、5 次独立 Objective 请求、4 条 durable publication、3 次 Supervisor 重启，恢复重投 0 次。compiled/explicit_abstain、覆盖 anchor、丢回复后查询、发布后提交结果未知、重启投影缺失、实际过期、issuer 撤销和存储故障均按各自判定器通过；model turn、Operations dispatch、设备效果与新 K/D 均为 0。22 项 synthetic receipt/source-contract 检查另计，不充作上述 native 检查。 |
+| 最终提交的远端 CI | desktop `46dcb2d691827f7aa3ad7903dae09d39fd338126` 的 transport job 实际 51 Rust passed（49 可执行 + 2 预期编译失败 doc tests）、22 synthetic checks、严格 Clippy/default-off/fmt 全通过；独立 ARM64 history job 于 **2026-10-18 11:28:46 UTC success**，14 步全通过，真实 15 检查 / 13 查询 / 5 请求 / 4 publication / 3 受控重启 / 0 恢复重投。99 条目原始 ZIP 已归档，五 ARM ELF 的 342,466,280 字节已独立检查。[完整 CI 接续](../results/integration/2026-10-18-objective-history-ci/README.md) 明确原运行与 10-19 恢复复核的不同日期；早先 queued 快照留在原归档。 |
+| 11 模块文档复核 | [固定 207 文档审查](../results/integration/2026-10-18-objective-history/module-documentation-review.json) 实读 A00–A10 的开发、技术与验证入口；53 个表内本地链接、225 个一跳手册本地目标均存在。A00/A01/A02/A05/A06 部分职责由共享架构、ABI 或构建手册承担。A04 的三份详细手册只存在于固定 `25c681d944e4efa92f2772cf773e03ae811bc345` / Draft #8 候选，不在本轮冻结树内；不能宣称本地主干手册全覆盖。该审查未重跑任何模块测试。 |
+| Asterinas G1 前置审计 | [R9_G1_OWNER_SEAM](agents/R9_G1_OWNER_SEAM.md) 绑定主干 `01225ab0a20a9f25dd8313a7fad7652dd9154e30` 的实际 owner：先同锁 shared revision + controller incarnation/detached fence，再结算与时钟，随后 trusted init 和五操作。该项是源审计，无新 kernel build、ioctl、G1 或 G2 运行资格。 |
 
-R9 原 owner 固定为已发布 [`2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5)，tree `f4ef891d43baf90d6eebd29921a5ed03222ef3ab`，与本地最终 `00aa11c961e0046d9027f6757ff03c15762a62ff` 同树。[独立 source contract](../services/hepta-os/OBJECTIVE_HISTORY_CONTRACT.json) 绑定 36 个已审输入、原 Cargo.lock 和 f8 祖先；发布提交不代替运行资格，也不改写旧 f8/R8 契约。
+**2026-10-19 接续：**desktop #193 在七项 checks 全 success 后已普通合入 `aab50f347deb53fc79ac13ea3b84f846fefc70a7`，保留主干先前 #195 的 CPU parser 修复；文档 #194 已改以 main 为基底。Hepta 原 `2be` 的 Architecture required / CodeQL / 合同 / Blob policy 均 success，但 scoped native cancelled 导致 CI required failure，仍按正常流程修复与验收；不能称原 owner PR 已合并。R9 的原本机材料与远端运行证据均固定旧执行源码；新增 merge 不代替再次执行。G1-a 的 CPU owner shared revision / 不可逆实例失效另在独立切片推进，尚无本节新内核运行资格。
 
-**结果语义：**`historical_publication/compiled` 只确认历史编译 publication；原 owner 可在发布后因后续准入检查失败，当前 run 仍不存在。`conflict` 不是准入，`explicit_abstain` 不是效果完成，unknown 或当前 `RunStatus: null` 均不证明未发布。外部 retained anchor 仅约束当前 owner 的已恢复前缀；不检测运行中磁盘篡改或 journal 与 anchor 同时回滚。
+R9 原 owner 固定为已发布 [`2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5)，tree `f4ef891d43baf90d6eebd29921a5ed03222ef3ab`，与本地最终 `00aa11c961e0046d9027f6757ff03c15762a62ff` 同树。[独立 source contract](../services/hepta-os/OBJECTIVE_HISTORY_CONTRACT.json) 绑定 36 个已审输入、原 Cargo.lock 和 f8 祖先；独立运行复核还核对了原 owner 构建、8 个 probe 输入与 12 个 client 编译输入的绑定。native05 构建区间为 10:02:35–10:10:23 UTC，运行 wrapper 区间为 10:10:52–10:16:27 UTC；runner report 的 `recorded_at_utc` 是构建前初始化时间，不能当作运行完成时间。
 
-生产请求/签发 owner 接入、UI 的新安全投影、原 Operations 效果终态与 K↔D、最终使用授权、完整 G1/G2、Android/移动设备控制仍按 [S1–S5](agents/R8_NEXT_SLICE.md) 分项推进。当前源审计继续支持在 Asterinas 真实资源 owner 上增量接合；尚无必须重建 Rust kernel 的可复现反证。下面历史节保留各自实际源码、时间与资格，不覆盖本节结果。
+**实际故障的范围：**丢回复由 qualification harness 使用原协议发送完整请求并丢弃响应，不是 `hepta-submit` CLI 的丢回复故障。另一次真实 `hepta-submit` 的已观测结果是 `submit_unknown / objective_owner_request_rejected`，同请求随后查到第 4 条 compiled publication、`RunStatus: null`；`CapacityExceeded` 仅是固定源码与默认容量路径的推论，未取得该具体原始错误字节。journal 回滚和尾部截断均发生于已确认的 controlled stop 之后，由原 Agentd 在重启时恢复；本轮没有中途 crash、断电或写入中断资格。
+
+**结果语义：**`historical_publication/compiled` 只确认历史编译 publication；原 owner 可在发布后因后续准入检查失败，当前 run 仍不存在。`conflict` 不是准入，`explicit_abstain` 不是效果完成，unknown 或当前 `RunStatus: null` 均不证明未发布。查询必须保留所用 anchor 及其覆盖范围；原 owner 仅比对已恢复的内存前缀，即使携带外部 retained anchor 也不重新读取运行中的磁盘。这里的 anchor 缺失/不匹配测试不证明可检测 journal 与 caller anchor 同时回滚。
+
+生产请求/签发 owner 接入、准确原请求与 anchor 的生产持久保存、UI 的新安全投影、原 Operations 效果终态与 K↔D、最终使用授权、完整 G1/G2、Android/移动设备控制仍按 [S1–S5](agents/R8_NEXT_SLICE.md) 分项推进。当前源审计继续支持在 Asterinas 真实资源 owner 上增量接合；尚无必须重建 Rust kernel 的可复现反证。下面历史节保留各自实际源码、时间与资格，不覆盖本节结果。
 
 ---
 

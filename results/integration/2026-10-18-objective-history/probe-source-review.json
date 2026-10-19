@@ -1,0 +1,73 @@
+{
+  "observed_at_utc": "2026-10-18T09:29:23.944597+00:00",
+  "reviewer": "r9_ci_status",
+  "probe_commit": "de91dc3572163b4c1c7a991081f2f2a1cce88e1e",
+  "root_integration_commit": "207ff9da7dac83c57b0cbae46c4b03ecfba3baa9",
+  "files": [
+    {
+      "path": "tests/integration/hepta/objective_history_probe.rs",
+      "sha256": "10014a30f70f5de47aef8ddca585fd997f57e8bd38bbdf4a35bde553b981c82a",
+      "matches_root_integration": true,
+      "semantically_reviewed_this_pass": true
+    },
+    {
+      "path": "tests/integration/hepta/objective_history_client.rs",
+      "sha256": "cc982282714772dee35e0311cbbd77c00bb296a35975b4864dec0bf8d98f7137",
+      "matches_root_integration": true,
+      "semantically_reviewed_this_pass": true
+    },
+    {
+      "path": "tests/integration/hepta/original_objective_owner.rs",
+      "sha256": "f01310e679872217af747192c3329218f2d6045972c77718d7f358384eb88eda",
+      "matches_root_integration": true,
+      "semantically_reviewed_this_pass": false
+    },
+    {
+      "path": "tests/integration/hepta/original_objective_fixture.rs",
+      "sha256": "4abdcb7ee3a0c3cf8f8302c8af18656f2d2c41bfa4862b137991a6124ef4f272",
+      "matches_root_integration": true,
+      "semantically_reviewed_this_pass": false
+    },
+    {
+      "path": "tests/integration/hepta/original_objective_profile.json",
+      "sha256": "56d81a70d4a7481614a9ebc5494173b08dcf79072230b9b61cd0a9c01454dd02",
+      "matches_root_integration": true,
+      "semantically_reviewed_this_pass": false
+    },
+    {
+      "path": "tests/integration/hepta/run_objective_history.py",
+      "sha256": "a81294b55949931fb30abd9d3c19ba553842c017d0eaf6defb152698c34d9f49",
+      "matches_root_integration": true,
+      "semantically_reviewed_this_pass": true
+    },
+    {
+      "path": "tests/integration/hepta/run_original_objective.py",
+      "sha256": "9ea5d7b2f6801f88240257effe78dbbceb126d63f7132f37b0f2edd7c2486df4",
+      "matches_root_integration": true,
+      "semantically_reviewed_this_pass": false
+    },
+    {
+      "path": "tests/integration/hepta/run_original_agentd.py",
+      "sha256": "21dd4a2e0621240a75f5ce37bad93da0a37352fbaa78554a50e048abe6a45fd0",
+      "matches_root_integration": true,
+      "semantically_reviewed_this_pass": false
+    }
+  ],
+  "result": "NO_NEW_BLOCKING_SOURCE_FINDING",
+  "runtime_executed_by_reviewer": false,
+  "notes": [
+    "Query invokes the actual bounded history CLI, checks full caller/peer/original authentication identity, exact retained anchor, expected exit and unchanged journal bytes.",
+    "Lost response uses a single harness original-protocol write_all plus shutdown/drop, reads zero response bytes and pins owner peer UID/PID. It is explicitly not the hepta-submit CLI lost-reply case. A bounded read-only projection wait allows the prior submission to finish before checking journal read stability.",
+    "Postpublication error binds two admitted nonterminal original runs, a third compiled request with generic SubmitUnknown, no current run, and historical publication sequence four. Specific CapacityExceeded error bytes are not observed; its cause remains a source-backed inference.",
+    "The initial expiry is signed for 25 seconds, admitted before expiry, then queried after a real wall-clock expiry with a 30-second wait bound; the exact old publication must remain equal.",
+    "Original Supervisor restart changes PID/spawn without resuming old projections; queries keep the old body spawn and use current outer spawn.",
+    "Rollback and incomplete-tail faults are injected only after confirmed owner stop. Recovery must match exactly one or three complete frames and retained anchor four must remain Unknown. These are not mid-write process crash or power-loss experiments.",
+    "Revocation changes only the fixture public trust file. Historical read remains equal while a distinct fresh current-spawn submission is rejected with no journal change.",
+    "Receipt validator requires exactly 15 ordered checks, 13 actual CLI query records, four CLI submissions plus one harness loss, four historical publications, no recovery resubmissions, and the embedded exact source binding.",
+    "Co-rollback of caller anchor, production issuer, device/effect reconciliation and kernel G1/G2 remain explicitly not executed."
+  ],
+  "pending": [
+    "Actual compiled-source native runtime report and raw fault/CLI evidence.",
+    "New exact-head remote history workflow result."
+  ]
+}
