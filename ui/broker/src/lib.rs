@@ -261,7 +261,7 @@ impl OfflineDraft {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "snake_case", deny_unknown_fields)]
 pub enum Request {
     Draft { draft: OfflineDraft },
     Submit {
@@ -649,7 +649,7 @@ impl Broker {
             return Err(BrokerError::NotificationLimit);
         }
         let oldest = self.notifications.front().map(|item| item.sequence);
-        let reconcile_required = oldest.is_some_and(|oldest| after_sequence + 1 < oldest)
+        let reconcile_required = oldest.is_some_and(|oldest| after_sequence.saturating_add(1) < oldest)
             || self.dropped_before_sequence.is_some();
         let items = self
             .notifications
