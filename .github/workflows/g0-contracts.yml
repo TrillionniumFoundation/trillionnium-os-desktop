@@ -9,6 +9,7 @@ on:
       - "tests/control/**"
       - "tests/organ_backend/**"
       - "tests/kernel/control/**"
+      - "docs/agents/handoffs/A05_READUSAGE_CONTRACT.md"
       - "libs/os-abi/**"
       - "libs/os-control/**"
       - ".github/workflows/g0-contracts.yml"
@@ -21,6 +22,7 @@ on:
       - "tests/control/**"
       - "tests/organ_backend/**"
       - "tests/kernel/control/**"
+      - "docs/agents/handoffs/A05_READUSAGE_CONTRACT.md"
       - "libs/os-abi/**"
       - "libs/os-control/**"
       - ".github/workflows/g0-contracts.yml"
@@ -75,6 +77,8 @@ jobs:
         run: |
           python3 -m unittest discover -s tests/organ_backend -p 'test_*.py' -v
           python3 -O -m unittest discover -s tests/organ_backend -p 'test_*.py' -v
+      - name: A05 ReadUsage fail-closed source contract
+        run: python3 -I -B -m unittest discover -s tests/kernel/control -p 'test_readusage_contract.py' -v
       - name: Host A05 QueryAbi wire and ENOTTY smoke (no kernel driver)
         run: |
           test -f tests/kernel/control/hos2_queryabi_probe.c
