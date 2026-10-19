@@ -49,6 +49,8 @@ A06 的 [运行段原控制器保留](../tests/organ_backend/CPU_OWNER_RETENTION
 
 A04 的 [RLIMIT_NOFILE 开发与技术手册](../tests/workloads/linux/RLIMIT_NOFILE.md) 说明原 FileTable 的 FD 预约、调用进程 soft limit、并发/错误语义、37 项差分 probe 和严格同 ELF 运行命令；[固定 Linux 成功与旧内核失败归档](../results/compat/2026-10-19-rlimit-nofile/README.md) 保留完整原始字节、实际退出码和早期失败。该新增 profile 与旧 Debian 13 全套资格分别记录，修复后的普通内核必须在同一组合源码上重新验收。
 
+A04 的 [完整 Ubuntu 32 项工作负载](../tests/workloads/linux/FULL_UBUNTU_PROFILE.md) 给出实际运行时打包、动态链接依赖、非特权 Linux chroot、同一固定镜像客体验证及原始输出判据。本候选引入 #8 的 67 个原始源码/资料文件，在单独命名的 Ubuntu 24.04 profile 上保留 28 项 C、3 项 Python 和实际锁定 Tokio 工作负载；历史 Debian profile 与缺失的四个原 ELF 不因此补齐。[27 项门禁回归证据](../tests/workloads/linux/results/ubuntu-full-20261019-gates/README.md) 仅证明判定器边界，实际 Linux 32/32、普通内核 guest 32/32 与 Hepta W1 分别报告。
+
 已合入 R8 的实际集成输入为 `25298f5d87cf3db90deefe9c0405ecd241dc6581`，同树发布 `ca5e7d8473690df1bf7636de0808e58414c40abe` / tree `9584997da412dd10c0960f69011b40a4b26d2862`，[PR #192](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/192) 纳入 #190 工作区候选及 #191 主干修复的完整历史。[R8 实际证据](../results/integration/2026-10-18-objective-desktop/README.md) 记录独立 CLI、两次原版准入运行、后一次的三个 Session/同一 Shell 阶段与三张实际截图；[R8 ARM 完成复核](../results/integration/2026-10-18-runtime-process-boundaries/r8-arm-completion/README.md) 另绑定 `05a7cd23` / run `39106645234` 的实际 success。默认 observer/Session/Shell 继续只读；隔离测试 issuer 的通过不代替生产 issuer 或设备效果。
 
 上一轮 #185/#187/#188/#189 的 A02 完整 pinned 验收、A03 双后端及有界并发、G0 和 A06 客体 1/2 vCPU 有限配置证据见 [audit-followthrough 索引](../results/integration/2026-10-18-audit-followthrough/README.md)。R6 两轮原版只读六阶段窗口属于 2026-10-17 实际运行，见 [R6 历史归档](../tests/integration/hepta/evidence/2026-10-17-r6/README.md)；旧测试计数和源码不转记给本轮。下面保留全部 A00–A10 的当前开发入口、技术契约和各自资格。

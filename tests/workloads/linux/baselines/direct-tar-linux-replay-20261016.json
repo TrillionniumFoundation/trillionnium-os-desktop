@@ -1,0 +1,64 @@
+{
+  "date": "2026-10-16",
+  "environment": "Debian 13 x86_64 original Linux, isolated chroot UID/GID 65534; disposable synthetic data only",
+  "fixed_rootfs_verified_files": 17,
+  "guest_execution_verified": false,
+  "kind": "A04_REAL_ORIGINAL_LINUX_NOT_ASTERINAS",
+  "note": "The complete raw per-execution JSON files are retained as conversation artifacts; this tracked summary includes their SHA-256 and execution counts. No guest or Hepta tools were executed.",
+  "original_linux_results": {
+    "chroot": {
+      "bytes": 10815,
+      "counts": {
+        "fail": 0,
+        "not_run": 4,
+        "pass": 28
+      },
+      "sha256": "a25536e0113d9462b023f89a08b818f19f4d307e4044fa99badafefcfbb81ace"
+    },
+    "host": {
+      "bytes": 9963,
+      "counts": {
+        "fail": 0,
+        "not_run": 1,
+        "pass": 31
+      },
+      "sha256": "ea38aa903ead1f72683ab10dcefeb756ec8b1e115dfccf49d8a9823c8a968026"
+    },
+    "stress": {
+      "bytes": 8236,
+      "counts": null,
+      "executions_completed": 36,
+      "executions_expected": 36,
+      "failed": 0,
+      "passed": 36,
+      "sha256": "2e95932514155e67083772bf98aaed504740c678f8091fa4810bf3a057f75612"
+    }
+  },
+  "pinned_manifest_sha256": "55aa8369d4f912267139ef7626c752814d7dc833e49accc337529f2545fb94cb",
+  "pinned_reference_sha256": "ea38aa903ead1f72683ab10dcefeb756ec8b1e115dfccf49d8a9823c8a968026",
+  "pinned_rootfs_tar_sha256": "df8df2e3cdcd308ef62a59268a4519e2923c9ff78145e46f26a4092725e80797",
+  "qemu_preflight": {
+    "exit_code": 2,
+    "reason": "qemu-system-x86_64 unavailable",
+    "status": "blocked_environment_or_input"
+  },
+  "real_hepta_w1_verified": false,
+  "replay_commands": {
+    "chroot": "python3 tests/workloads/linux/chroot_replay.py --tar FIXED_ROOTFS_TAR --manifest support/rootfs/manifest-debian13-x86_64.json --reference tests/workloads/linux/baselines/linux-debian13-x86_64.json --output NEW_CHROOT_JSON",
+    "host": "python3 tests/workloads/linux/run.py --rust auto --output NEW_HOST_JSON",
+    "stress": "python3 tests/workloads/linux/chroot_stress.py --tar FIXED_ROOTFS_TAR --manifest support/rootfs/manifest-debian13-x86_64.json --reference tests/workloads/linux/baselines/linux-debian13-x86_64.json --output NEW_STRESS_JSON --rounds 2 --timeout 12",
+    "unit": "python3 -m unittest discover -s tests/workloads/linux -p test_*.py -q"
+  },
+  "s1_power_loss_verified": false,
+  "schema": 1,
+  "unit_tests": {
+    "normal": {
+      "failed": 0,
+      "passed": 68
+    },
+    "optimized": {
+      "failed": 0,
+      "passed": 68
+    }
+  }
+}

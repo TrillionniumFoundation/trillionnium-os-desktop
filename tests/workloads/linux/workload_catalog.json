@@ -1,0 +1,888 @@
+{
+  "schema": 1,
+  "profile": "linux-debian13-x86_64",
+  "reference": "baselines/linux-debian13-x86_64.json",
+  "runner": "tests/workloads/linux/run.py",
+  "description": "Machine-readable contract for the A04 Linux userland workload matrix.",
+  "workloads": [
+    {
+      "id": "dynamic.async_fd",
+      "class": "elf",
+      "binary": "dynamic",
+      "operation": "async_fd",
+      "command": [
+        "<binary>",
+        "async_fd",
+        "<scratch>"
+      ],
+      "inputs": [
+        "tests/workloads/linux/probe.c",
+        "dynamic ELF bytes"
+      ],
+      "interfaces": [
+        "eventfd",
+        "timerfd",
+        "epoll",
+        "EAGAIN"
+      ],
+      "release_fact_keys": [
+        "eventfd",
+        "timerfd",
+        "epoll_edge",
+        "empty_eventfd_errno"
+      ]
+    },
+    {
+      "id": "dynamic.cloexec",
+      "class": "elf",
+      "binary": "dynamic",
+      "operation": "cloexec",
+      "command": [
+        "<binary>",
+        "cloexec",
+        "<scratch>"
+      ],
+      "inputs": [
+        "tests/workloads/linux/probe.c",
+        "dynamic ELF bytes"
+      ],
+      "interfaces": [
+        "fork",
+        "execve",
+        "O_CLOEXEC",
+        "waitpid"
+      ],
+      "release_fact_keys": [
+        "cloexec_closed_on_exec",
+        "plain_fd_inherited",
+        "wait_reaped"
+      ]
+    },
+    {
+      "id": "dynamic.errno",
+      "class": "elf",
+      "binary": "dynamic",
+      "operation": "errno",
+      "command": [
+        "<binary>",
+        "errno",
+        "<scratch>"
+      ],
+      "inputs": [
+        "tests/workloads/linux/probe.c",
+        "dynamic ELF bytes"
+      ],
+      "interfaces": [
+        "openat",
+        "errno",
+        "unlink"
+      ],
+      "release_fact_keys": [
+        "ENOENT",
+        "EEXIST",
+        "EBADF"
+      ]
+    },
+    {
+      "id": "dynamic.fd_limit",
+      "class": "elf",
+      "binary": "dynamic",
+      "operation": "fd_limit",
+      "command": [
+        "<binary>",
+        "fd_limit",
+        "<scratch>"
+      ],
+      "inputs": [
+        "tests/workloads/linux/probe.c",
+        "dynamic ELF bytes"
+      ],
+      "interfaces": [
+        "setrlimit",
+        "RLIMIT_NOFILE",
+        "EMFILE",
+        "fork"
+      ],
+      "release_fact_keys": [
+        "emfile_errno",
+        "child_reaped",
+        "parent_rlimit_unchanged"
+      ]
+    },
+    {
+      "id": "dynamic.file_lock",
+      "class": "elf",
+      "binary": "dynamic",
+      "operation": "file_lock",
+      "command": [
+        "<binary>",
+        "file_lock",
+        "<scratch>"
+      ],
+      "inputs": [
+        "tests/workloads/linux/probe.c",
+        "dynamic ELF bytes"
+      ],
+      "interfaces": [
+        "flock",
+        "fcntl_record_lock",
+        "fork",
+        "waitpid"
+      ],
+      "release_fact_keys": [
+        "child_reaped",
+        "post_release_acquire",
+        "flock_contention",
+        "fcntl_contention"
+      ]
+    },
+    {
+      "id": "dynamic.ipc_epoll",
+      "class": "elf",
+      "binary": "dynamic",
+      "operation": "ipc_epoll",
+      "command": [
+        "<binary>",
+        "ipc_epoll",
+        "<scratch>"
+      ],
+      "inputs": [
+        "tests/workloads/linux/probe.c",
+        "dynamic ELF bytes"
+      ],
+      "interfaces": [
+        "AF_UNIX",
+        "socketpair",
+        "epoll",
+        "shutdown",
+        "close"
+      ],
+      "release_fact_keys": [
+        "af_unix",
+        "epoll",
+        "half_close_eof",
+        "close_errno"
+      ]
+    },
+    {
+      "id": "dynamic.mmap_cow",
+      "class": "elf",
+      "binary": "dynamic",
+      "operation": "mmap_cow",
+      "command": [
+        "<binary>",
+        "mmap_cow",
+        "<scratch>"
+      ],
+      "inputs": [
+        "tests/workloads/linux/probe.c",
+        "dynamic ELF bytes"
+      ],
+      "interfaces": [
+        "mmap",
+        "MAP_PRIVATE",
+        "MAP_SHARED",
+        "msync",
+        "munmap"
+      ],
+      "release_fact_keys": [
+        "private_cow",
+        "shared_msync",
+        "mapping_released"
+      ]
+    },
+    {
+      "id": "dynamic.process",
+      "class": "elf",
+      "binary": "dynamic",
+      "operation": "process",
+      "command": [
+        "<binary>",
+        "process",
+        "<scratch>"
+      ],
+      "inputs": [
+        "tests/workloads/linux/probe.c",
+        "dynamic ELF bytes"
+      ],
+      "interfaces": [
+        "signal",
+        "fork",
+        "execve",
+        "waitpid"
+      ],
+      "release_fact_keys": [
+        "signal_delivered",
+        "fork_exec_wait",
+        "restarts",
+        "exit_codes"
+      ]
+    },
+    {
+      "id": "dynamic.robust_owner_death",
+      "class": "elf",
+      "binary": "dynamic",
+      "operation": "robust_owner_death",
+      "command": [
+        "<binary>",
+        "robust_owner_death",
+        "<scratch>"
+      ],
+      "inputs": [
+        "tests/workloads/linux/probe.c",
+        "dynamic ELF bytes"
+      ],
+      "interfaces": [
+        "PTHREAD_MUTEX_ROBUST",
+        "futex",
+        "mmap",
+        "fork",
+        "waitpid"
+      ],
+      "release_fact_keys": [
+        "robust_futex_owner_death",
+        "recovered_with_consistent",
+        "mutex_reused",
+        "child_reaped"
+      ]
+    },
+    {
+      "id": "dynamic.scm_rights",
+      "class": "elf",
+      "binary": "dynamic",
+      "operation": "scm_rights",
+      "command": [
+        "<binary>",
+        "scm_rights",
+        "<scratch>"
+      ],
+      "inputs": [
+        "tests/workloads/linux/probe.c",
+        "dynamic ELF bytes"
+      ],
+      "interfaces": [
+        "AF_UNIX",
+        "SCM_RIGHTS",
+        "sendmsg",
+        "recvmsg",
+        "fcntl"
+      ],
+      "release_fact_keys": [
+        "scm_rights",
+        "recv_cloexec",
+        "shared_offset",
+        "child_reaped"
+      ]
+    },
+    {
+      "id": "dynamic.smoke",
+      "class": "elf",
+      "binary": "dynamic",
+      "operation": "smoke",
+      "command": [
+        "<binary>",
+        "smoke",
+        "<scratch>"
+      ],
+      "inputs": [
+        "tests/workloads/linux/probe.c",
+        "dynamic ELF bytes"
+      ],
+      "interfaces": [
+        "auxv",
+        "mmap",
+        "msync",
+        "fsync",
+        "rename",
+        "unlink"
+      ],
+      "release_fact_keys": [
+        "file_data",
+        "msync",
+        "rename_unlink"
+      ]
+    },
+    {
+      "id": "dynamic.threads_futex",
+      "class": "elf",
+      "binary": "dynamic",
+      "operation": "threads_futex",
+      "command": [
+        "<binary>",
+        "threads_futex",
+        "<scratch>"
+      ],
+      "inputs": [
+        "tests/workloads/linux/probe.c",
+        "dynamic ELF bytes"
+      ],
+      "interfaces": [
+        "pthread_create",
+        "futex",
+        "pthread_join"
+      ],
+      "release_fact_keys": [
+        "threads_created",
+        "threads_joined",
+        "futex_mismatch_errno"
+      ]
+    },
+    {
+      "id": "dynamic.uds_peercred",
+      "class": "elf",
+      "binary": "dynamic",
+      "operation": "uds_peercred",
+      "command": [
+        "<binary>",
+        "uds_peercred",
+        "<scratch>"
+      ],
+      "inputs": [
+        "tests/workloads/linux/probe.c",
+        "dynamic ELF bytes"
+      ],
+      "interfaces": [
+        "AF_UNIX",
+        "bind",
+        "connect",
+        "accept4",
+        "SO_PEERCRED",
+        "shutdown",
+        "unlink"
+      ],
+      "release_fact_keys": [
+        "unix_pathname",
+        "so_peercred",
+        "accept4_cloexec",
+        "socket_unlinked",
+        "child_reaped"
+      ]
+    },
+    {
+      "id": "nss_tls",
+      "class": "python",
+      "binary": null,
+      "operation": "nss_tls",
+      "command": [
+        "python3",
+        "tests/workloads/linux/run.py",
+        "--output",
+        "<report>"
+      ],
+      "inputs": [
+        "tests/workloads/linux/run.py",
+        "glibc NSS",
+        "OpenSSL",
+        "CA trust"
+      ],
+      "interfaces": [
+        "NSS",
+        "getaddrinfo",
+        "TLS",
+        "CA bundle"
+      ],
+      "release_fact_keys": [
+        "nss_localhost",
+        "loopback_tls_verified",
+        "system_ca_bundle_present"
+      ]
+    },
+    {
+      "id": "rust_tokio",
+      "class": "rust",
+      "binary": null,
+      "operation": "rust_tokio",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--release",
+        "--manifest-path",
+        "tests/workloads/linux/rust/Cargo.toml"
+      ],
+      "inputs": [
+        "tests/workloads/linux/rust/src/main.rs",
+        "tests/workloads/linux/rust/Cargo.lock"
+      ],
+      "interfaces": [
+        "Rust",
+        "Tokio",
+        "threads",
+        "AF_UNIX",
+        "async fs"
+      ],
+      "release_fact_keys": [],
+      "qualification_blocker": "Locked build verified; runtime is blocked on this host by pathname AF_UNIX EPERM, and no Asterinas guest runtime has executed."
+    },
+    {
+      "id": "sqlite_dynamic.sqlite_wal_elf",
+      "class": "elf",
+      "binary": "sqlite_dynamic",
+      "operation": "sqlite_wal_elf",
+      "command": [
+        "<binary>",
+        "<scratch>"
+      ],
+      "inputs": [
+        "tests/workloads/linux/sqlite_probe.c",
+        "sqlite_dynamic SQLite ELF bytes"
+      ],
+      "interfaces": [
+        "SQLite",
+        "WAL",
+        "BEGIN IMMEDIATE",
+        "fsync",
+        "crash recovery",
+        "checkpoint"
+      ],
+      "release_fact_keys": [
+        "rows_after_reopen",
+        "uncommitted_visible",
+        "committed_visible",
+        "integrity_check",
+        "checkpoint_busy"
+      ]
+    },
+    {
+      "id": "sqlite_static.sqlite_wal_elf",
+      "class": "elf",
+      "binary": "sqlite_static",
+      "operation": "sqlite_wal_elf",
+      "command": [
+        "<binary>",
+        "<scratch>"
+      ],
+      "inputs": [
+        "tests/workloads/linux/sqlite_probe.c",
+        "sqlite_static SQLite ELF bytes"
+      ],
+      "interfaces": [
+        "SQLite",
+        "WAL",
+        "BEGIN IMMEDIATE",
+        "fsync",
+        "crash recovery",
+        "checkpoint"
+      ],
+      "release_fact_keys": [
+        "rows_after_reopen",
+        "uncommitted_visible",
+        "committed_visible",
+        "integrity_check",
+        "checkpoint_busy"
+      ]
+    },
+    {
+      "id": "sqlite_wal",
+      "class": "python",
+      "binary": null,
+      "operation": "sqlite_wal",
+      "command": [
+        "python3",
+        "tests/workloads/linux/run.py",
+        "--output",
+        "<report>"
+      ],
+      "inputs": [
+        "tests/workloads/linux/run.py",
+        "Python sqlite3 module"
+      ],
+      "interfaces": [
+        "SQLite",
+        "WAL",
+        "BEGIN IMMEDIATE",
+        "fsync",
+        "crash recovery",
+        "checkpoint"
+      ],
+      "release_fact_keys": [
+        "rows_after_reopen",
+        "uncommitted_visible",
+        "committed_visible",
+        "integrity_check",
+        "checkpoint_busy"
+      ]
+    },
+    {
+      "id": "static.async_fd",
+      "class": "elf",
+      "binary": "static",
+      "operation": "async_fd",
+      "command": [
+        "<binary>",
+        "async_fd",
+        "<scratch>"
+      ],
+      "inputs": [
+        "tests/workloads/linux/probe.c",
+        "static ELF bytes"
+      ],
+      "interfaces": [
+        "eventfd",
+        "timerfd",
+        "epoll",
+        "EAGAIN"
+      ],
+      "release_fact_keys": [
+        "eventfd",
+        "timerfd",
+        "epoll_edge",
+        "empty_eventfd_errno"
+      ]
+    },
+    {
+      "id": "static.cloexec",
+      "class": "elf",
+      "binary": "static",
+      "operation": "cloexec",
+      "command": [
+        "<binary>",
+        "cloexec",
+        "<scratch>"
+      ],
+      "inputs": [
+        "tests/workloads/linux/probe.c",
+        "static ELF bytes"
+      ],
+      "interfaces": [
+        "fork",
+        "execve",
+        "O_CLOEXEC",
+        "waitpid"
+      ],
+      "release_fact_keys": [
+        "cloexec_closed_on_exec",
+        "plain_fd_inherited",
+        "wait_reaped"
+      ]
+    },
+    {
+      "id": "static.errno",
+      "class": "elf",
+      "binary": "static",
+      "operation": "errno",
+      "command": [
+        "<binary>",
+        "errno",
+        "<scratch>"
+      ],
+      "inputs": [
+        "tests/workloads/linux/probe.c",
+        "static ELF bytes"
+      ],
+      "interfaces": [
+        "openat",
+        "errno",
+        "unlink"
+      ],
+      "release_fact_keys": [
+        "ENOENT",
+        "EEXIST",
+        "EBADF"
+      ]
+    },
+    {
+      "id": "static.fd_limit",
+      "class": "elf",
+      "binary": "static",
+      "operation": "fd_limit",
+      "command": [
+        "<binary>",
+        "fd_limit",
+        "<scratch>"
+      ],
+      "inputs": [
+        "tests/workloads/linux/probe.c",
+        "static ELF bytes"
+      ],
+      "interfaces": [
+        "setrlimit",
+        "RLIMIT_NOFILE",
+        "EMFILE",
+        "fork"
+      ],
+      "release_fact_keys": [
+        "emfile_errno",
+        "child_reaped",
+        "parent_rlimit_unchanged"
+      ]
+    },
+    {
+      "id": "static.file_lock",
+      "class": "elf",
+      "binary": "static",
+      "operation": "file_lock",
+      "command": [
+        "<binary>",
+        "file_lock",
+        "<scratch>"
+      ],
+      "inputs": [
+        "tests/workloads/linux/probe.c",
+        "static ELF bytes"
+      ],
+      "interfaces": [
+        "flock",
+        "fcntl_record_lock",
+        "fork",
+        "waitpid"
+      ],
+      "release_fact_keys": [
+        "child_reaped",
+        "post_release_acquire",
+        "flock_contention",
+        "fcntl_contention"
+      ]
+    },
+    {
+      "id": "static.ipc_epoll",
+      "class": "elf",
+      "binary": "static",
+      "operation": "ipc_epoll",
+      "command": [
+        "<binary>",
+        "ipc_epoll",
+        "<scratch>"
+      ],
+      "inputs": [
+        "tests/workloads/linux/probe.c",
+        "static ELF bytes"
+      ],
+      "interfaces": [
+        "AF_UNIX",
+        "socketpair",
+        "epoll",
+        "shutdown",
+        "close"
+      ],
+      "release_fact_keys": [
+        "af_unix",
+        "epoll",
+        "half_close_eof",
+        "close_errno"
+      ]
+    },
+    {
+      "id": "static.mmap_cow",
+      "class": "elf",
+      "binary": "static",
+      "operation": "mmap_cow",
+      "command": [
+        "<binary>",
+        "mmap_cow",
+        "<scratch>"
+      ],
+      "inputs": [
+        "tests/workloads/linux/probe.c",
+        "static ELF bytes"
+      ],
+      "interfaces": [
+        "mmap",
+        "MAP_PRIVATE",
+        "MAP_SHARED",
+        "msync",
+        "munmap"
+      ],
+      "release_fact_keys": [
+        "private_cow",
+        "shared_msync",
+        "mapping_released"
+      ]
+    },
+    {
+      "id": "static.process",
+      "class": "elf",
+      "binary": "static",
+      "operation": "process",
+      "command": [
+        "<binary>",
+        "process",
+        "<scratch>"
+      ],
+      "inputs": [
+        "tests/workloads/linux/probe.c",
+        "static ELF bytes"
+      ],
+      "interfaces": [
+        "signal",
+        "fork",
+        "execve",
+        "waitpid"
+      ],
+      "release_fact_keys": [
+        "signal_delivered",
+        "fork_exec_wait",
+        "restarts",
+        "exit_codes"
+      ]
+    },
+    {
+      "id": "static.robust_owner_death",
+      "class": "elf",
+      "binary": "static",
+      "operation": "robust_owner_death",
+      "command": [
+        "<binary>",
+        "robust_owner_death",
+        "<scratch>"
+      ],
+      "inputs": [
+        "tests/workloads/linux/probe.c",
+        "static ELF bytes"
+      ],
+      "interfaces": [
+        "PTHREAD_MUTEX_ROBUST",
+        "futex",
+        "mmap",
+        "fork",
+        "waitpid"
+      ],
+      "release_fact_keys": [
+        "robust_futex_owner_death",
+        "recovered_with_consistent",
+        "mutex_reused",
+        "child_reaped"
+      ]
+    },
+    {
+      "id": "static.scm_rights",
+      "class": "elf",
+      "binary": "static",
+      "operation": "scm_rights",
+      "command": [
+        "<binary>",
+        "scm_rights",
+        "<scratch>"
+      ],
+      "inputs": [
+        "tests/workloads/linux/probe.c",
+        "static ELF bytes"
+      ],
+      "interfaces": [
+        "AF_UNIX",
+        "SCM_RIGHTS",
+        "sendmsg",
+        "recvmsg",
+        "fcntl"
+      ],
+      "release_fact_keys": [
+        "scm_rights",
+        "recv_cloexec",
+        "shared_offset",
+        "child_reaped"
+      ]
+    },
+    {
+      "id": "static.smoke",
+      "class": "elf",
+      "binary": "static",
+      "operation": "smoke",
+      "command": [
+        "<binary>",
+        "smoke",
+        "<scratch>"
+      ],
+      "inputs": [
+        "tests/workloads/linux/probe.c",
+        "static ELF bytes"
+      ],
+      "interfaces": [
+        "auxv",
+        "mmap",
+        "msync",
+        "fsync",
+        "rename",
+        "unlink"
+      ],
+      "release_fact_keys": [
+        "file_data",
+        "msync",
+        "rename_unlink"
+      ]
+    },
+    {
+      "id": "static.threads_futex",
+      "class": "elf",
+      "binary": "static",
+      "operation": "threads_futex",
+      "command": [
+        "<binary>",
+        "threads_futex",
+        "<scratch>"
+      ],
+      "inputs": [
+        "tests/workloads/linux/probe.c",
+        "static ELF bytes"
+      ],
+      "interfaces": [
+        "pthread_create",
+        "futex",
+        "pthread_join"
+      ],
+      "release_fact_keys": [
+        "threads_created",
+        "threads_joined",
+        "futex_mismatch_errno"
+      ]
+    },
+    {
+      "id": "static.uds_peercred",
+      "class": "elf",
+      "binary": "static",
+      "operation": "uds_peercred",
+      "command": [
+        "<binary>",
+        "uds_peercred",
+        "<scratch>"
+      ],
+      "inputs": [
+        "tests/workloads/linux/probe.c",
+        "static ELF bytes"
+      ],
+      "interfaces": [
+        "AF_UNIX",
+        "bind",
+        "connect",
+        "accept4",
+        "SO_PEERCRED",
+        "shutdown",
+        "unlink"
+      ],
+      "release_fact_keys": [
+        "unix_pathname",
+        "so_peercred",
+        "accept4_cloexec",
+        "socket_unlinked",
+        "child_reaped"
+      ]
+    },
+    {
+      "id": "uds_path",
+      "class": "python",
+      "binary": null,
+      "operation": "uds_path",
+      "command": [
+        "python3",
+        "tests/workloads/linux/run.py",
+        "--output",
+        "<report>"
+      ],
+      "inputs": [
+        "tests/workloads/linux/run.py",
+        "Python socket/select modules"
+      ],
+      "interfaces": [
+        "AF_UNIX",
+        "epoll",
+        "bind",
+        "connect",
+        "unlink"
+      ],
+      "release_fact_keys": [
+        "named_af_unix",
+        "epoll_accept",
+        "socket_path_released"
+      ]
+    }
+  ]
+}
