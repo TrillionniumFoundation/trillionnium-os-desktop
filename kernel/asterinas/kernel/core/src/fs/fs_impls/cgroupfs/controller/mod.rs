@@ -411,12 +411,14 @@ impl Controller {
                     let new_controller = Arc::new(new_controller);
                     // Allocate before closing the old incarnation. Its retained
                     // accounting references may still settle CPU time afterward.
-                    previous_controller
-                        .inner
-                        .as_ref()
-                        .unwrap()
-                        .close_native_incarnation(cgroup_membership);
-                    child_node.controller().cpu.update(new_controller);
+                    crate::sched::with_current_cpu_bandwidth_owner_update(|| {
+                        previous_controller
+                            .inner
+                            .as_ref()
+                            .unwrap()
+                            .close_native_incarnation(cgroup_membership);
+                        child_node.controller().cpu.update(new_controller);
+                    });
                 }
                 SubCtrlType::Memory => {
                     let new_controller = Arc::new(SubController::new(Some(parent_controller)));

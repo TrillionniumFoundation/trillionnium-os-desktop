@@ -1,5 +1,22 @@
 # 当前状态
 
+## 2026-10-19 接续：配置结算和 FD 限制已合入，推进原控制器生命周期
+
+本节已合入基线为 main `4e06eb02f19984269f9fac85391fa304619760f1` / tree `1cc9cccb6044a4b177eec0d74c0813eb08d59913`。后文保留之前尚待执行时的快照；以下新证据各自绑定实际执行提交，不能直接授予后续代码同样资格。
+
+| 已闭合增量 | 实际执行与来源 |
+| --- | --- |
+| 本地 CPU 配置前结算 [#199](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/199) | 已合入 `c176263990d13e089817a2f94185f3d8243e5b9d`。候选 `e4c44ef2e13907e16e1205a0439a45b7da124313` 的 [A06 run 39201927479](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39201927479) 完成干净、未筛选原 core 183/183 与 OSTD 221 reported / 3 soft skips / 218 执行下界；原始 QEMU 33、OSDK 0。普通内核 `eaa2fc32150b992c14fbe2a14337240e998503e6f0b9d49cc95a89ad8e780676` 上四个固定判据分别为 0.89990%、0.87806%、45.66368%、45.12406%，低于预先规定的 1.2% / 52.0%。6431 源文件及三份相同快照已独立比对。 |
+| 原 FileTable RLIMIT_NOFILE [#200](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/200) | 已合入本节 main。候选 `907f2f5f96ed66b0ab87008f9287556885fd89f7` 的 [A06 run 39202942411](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39202942411) 和转 main 后 [run 39203860176](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39203860176) 均成功。独立复核 artifact `12164796996`，ZIP SHA256 `9a868ae76a923c6c44135dc25489d68842fb306de6fd21eaa2258daffc0039f5`；6456 源文件 mode/blob/size/SHA256 与本节 tree 一致，三份快照字节相同。普通内核 `63630453ec0f003ad6e45645c9f04ce0edbbcb7f8118f6f99e8d38fda71f5529` 上 Linux 与 guest 使用同一个 CI probe `44022c467fb52894f8d1401eafa2686ef0bcabe02ab97904f9790618ababfb2d`，37/37 各一次，probe 0、QEMU 33，无超时/panic，所有输入前后不变。完整 core/OSTD、27 项 SCM_RIGHTS、四个 CPU 时间判据、普通启动/QueryAbi 同核通过。 |
+
+另用 [原归档](../results/compat/2026-10-19-rlimit-nofile/README.md) 的 ELF `c3533e3b343ffb719e22d736aba4f9bc9c3040826547530f24e0556292b1ea3e` 原样重跑 #200 的上述普通内核，实际 37 PASS / 0 FAIL、probe 0、QEMU 33；旧内核 `1145311a…` 为 0 PASS / 37 FAIL、probe 1、QEMU 33。新完整串口 308940 字节，SHA256 `8c310499128dabbc4f9516a79261c94ba6d381c27a5bd416f5bfec13fd849eb0`；本次实际 QEMU ELF `8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854` 与 CI 相同。两次没有超时；新 CI 构建的 probe 与历史 ELF 身份分别记录。
+
+### 本候选：原 CPU 控制器代际保留，等待新的真实内核门禁
+
+[CPU_OWNER_RETENTION](../tests/organ_backend/CPU_OWNER_RETENTION.md) 在原运行段保留实际 CPU sub-controller 和既有祖先 Arc 链；退出后重调度保留同一计费 owner，非运行时间不计费，迁移/控制器发布通过两个本地检查点划分旧尾段与新段。该引用不持有第二套预算、时钟、revision 或授予权。六个确定性原内核回归、单独源码提交的旧 current-slot 反向控制和 A06 CI 接线已实现；此节写入时尚无新候选 189 项 core 或新 ordinary kernel 的运行资格。
+
+G1-b 的 BOOTTIME 原点/余数与同版本累计使用量、G1-c 的可信授予、G1-d 的五个原 HOS2 操作和 S1–S5 原版 Hepta 效果链继续开放。完整 32 工作负载、固定旧 Debian 13 四 ELF/rootfs、sender-side SCM_RIGHTS in-flight 上限和 XT2363-4/Android/GPU 均需各自实际验证。四个原生效果操作仍默认关闭，根 README 0 字节，原 Asterinas 和 nightly pins 未改。
+
 ## 2026-10-19 接续：原 CPU owner 和 SCM_RIGHTS 已合入，继续同核验收
 
 本节以实际 main `7e859b98c58053b88ea2baabc3e5f645fd38dca5` / tree `354adb549b064c78477932ca943309694eb54356` 为已合入基线。下面分别记录已完成的精确提交验收与正在集成的后续切片；后面的历史节保留各自原始来源和失败，不能用旧计数替代新候选的执行。

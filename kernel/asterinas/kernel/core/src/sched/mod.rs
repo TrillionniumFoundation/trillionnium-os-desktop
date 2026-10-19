@@ -10,7 +10,8 @@ pub(crate) use self::{
     nice::{AtomicNice, Nice},
     sched_class::{
         LinuxSchedPolicy, RealTimePolicy, RealTimePriority, SchedAttr, SchedPolicy, init,
-        init_on_each_cpu, with_current_cpu_bandwidth_settled,
+        init_on_each_cpu, with_current_cpu_bandwidth_owner_update,
+        with_current_cpu_bandwidth_settled,
     },
     stats::{loadavg, nr_queued_and_running},
 };

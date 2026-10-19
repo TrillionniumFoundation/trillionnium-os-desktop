@@ -188,6 +188,7 @@ impl PosixThreadBuilder {
                     process,
                     task: weak_task.clone(),
                     cpu_cgroup: RcuOption::new_none(),
+                    cpu_charge_owner: SpinLock::new(None),
                     tid: AtomicU32::new(tid),
                     name: Mutex::new(thread_name),
                     credentials,

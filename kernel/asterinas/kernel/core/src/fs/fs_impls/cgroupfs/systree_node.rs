@@ -227,7 +227,13 @@ impl CgroupMembership {
                 }
 
                 current_processes.insert(process.pid(), Arc::downgrade(process));
-                process.set_cgroup(Some(new_cgroup.fields.weak_self().upgrade().unwrap()));
+                let cgroup = new_cgroup.fields.weak_self().upgrade().unwrap();
+                // The process map/node lock and its allocation are complete
+                // before IRQs are disabled. Only the nonblocking RCU publish
+                // occurs between the scheduler's local owner checkpoints.
+                crate::sched::with_current_cpu_bandwidth_owner_update(|| {
+                    process.set_cgroup(Some(cgroup));
+                });
             })
             .ok_or(Error::IsDead)?;
 
@@ -243,7 +249,9 @@ impl CgroupMembership {
             return;
         };
 
-        process.set_cgroup(None);
+        crate::sched::with_current_cpu_bandwidth_owner_update(|| {
+            process.set_cgroup(None);
+        });
         // exit_process() marks the process zombie before removing its cgroup.
         // Keep the old snapshot for the deferred scheduler debit of exited
         // tasks; a live explicit migration to root must switch to root.
