@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: MPL-2.0
 
-use ostd::task::Task;
-
 use super::{PtySlave, driver::PtyDriver};
 use crate::{
     device::tty::TtyFlags,
@@ -11,7 +9,7 @@ use crate::{
         devpts::Ptmx,
         file::{
             CreationFlags, InodeMode, OpenArgs, PerOpenFileOps, SettableStatusFlags, StatusFlags,
-            file_table::FdFlags,
+            file_table::{FdFlags, FileTable},
         },
         vfs::{inode::FileOps, path::Path},
     },
@@ -190,19 +188,14 @@ impl PerOpenFileOps for PtyMaster {
                     FdFlags::empty()
                 };
 
+                let reserved = FileTable::reserve_current_fd(fd_flags)?;
                 let slave = {
                     let devpts_root = Path::new_root(path.mount_node().clone());
                     let slave_path = devpts_root.lookup_child(&self.slave.index().to_string())?;
                     Arc::new(slave_path.open(open_args)?)
                 };
 
-                let fd = {
-                    let current_task = Task::current().unwrap();
-                    let thread_local = current_task.as_thread_local().unwrap();
-                    let file_table = thread_local.borrow_file_table();
-                    let mut file_table_locked = file_table.unwrap().write();
-                    file_table_locked.insert(slave, fd_flags)
-                };
+                let fd = reserved.install(slave);
                 return Ok(fd.into());
             }
             cmd @ GetNumBytesToRead => {

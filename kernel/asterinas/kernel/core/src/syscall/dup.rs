@@ -4,7 +4,6 @@ use super::SyscallReturn;
 use crate::{
     fs::file::file_table::{FdFlags, FileDesc, RawFileDesc, get_file_fast},
     prelude::*,
-    process::ResourceType,
 };
 
 pub(super) fn sys_dup(old_fd: RawFileDesc, ctx: &Context) -> Result<SyscallReturn> {
@@ -12,8 +11,12 @@ pub(super) fn sys_dup(old_fd: RawFileDesc, ctx: &Context) -> Result<SyscallRetur
 
     let file_table = ctx.thread_local.borrow_file_table();
     let mut file_table_locked = file_table.unwrap().write();
-    let new_fd =
-        file_table_locked.dup_ceil(old_fd.try_into()?, FileDesc::ZERO, FdFlags::empty())?;
+    let new_fd = file_table_locked.dup_ceil(
+        old_fd.try_into()?,
+        None,
+        FdFlags::empty(),
+        ctx.process.resource_limits(),
+    )?;
 
     Ok(SyscallReturn::Return(new_fd.into()))
 }
@@ -64,20 +67,10 @@ fn do_dup3(
         return_errno!(Errno::EINVAL);
     }
 
-    if u64::from(new_fd)
-        >= ctx
-            .process
-            .resource_limits()
-            .get_rlimit(ResourceType::RLIMIT_NOFILE)
-            .get_cur()
-    {
-        return_errno!(Errno::EBADF);
-    }
-
     let file_table = ctx.thread_local.borrow_file_table();
     let replaced_file = {
         let mut file_table_locked = file_table.unwrap().write();
-        file_table_locked.dup_exact(old_fd, new_fd, flags)?
+        file_table_locked.dup_exact(old_fd, new_fd, flags, ctx.process.resource_limits())?
     };
     drop(replaced_file);
 

@@ -10,7 +10,7 @@ extern crate alloc;
 use alloc::sync::Arc;
 use core::time::Duration;
 
-pub use clocksource::{ClockSource, Instant};
+pub use clocksource::{ClockSource, ClockSourceSample, Instant};
 use component::{ComponentInitError, init_component};
 use rtc::Driver;
 use spin::Once;
@@ -26,7 +26,7 @@ mod clocksource;
 mod rtc;
 mod tsc;
 
-pub static VDSO_DATA_HIGH_RES_UPDATE_FN: Once<fn(Instant, u64)> = Once::new();
+pub static VDSO_DATA_HIGH_RES_UPDATE_FN: Once<fn(ClockSourceSample)> = Once::new();
 
 static RTC_DRIVER: Once<Arc<dyn Driver + Send + Sync>> = Once::new();
 
@@ -77,6 +77,16 @@ pub fn read_start_time() -> SystemTime {
 pub fn read_monotonic_time() -> Duration {
     let instant = tsc::read_instant();
     Duration::new(instant.secs(), instant.nanos())
+}
+
+/// Captures time and cycles from the same calibrated source as CLOCK_BOOTTIME.
+///
+/// Returns `None` before bootstrap initialization, after any invalid observation,
+/// or if the absolute nanosecond endpoint does not fit in u64. No fallback
+/// counter domain or clamped accounting time is substituted.
+pub fn try_read_monotonic_sample() -> Option<ClockSourceSample> {
+    let sample = tsc::CLOCK.get()?.read_sample();
+    sample.checked_nanos().map(|_| sample)
 }
 
 /// Returns the default (TSC) clocksource.

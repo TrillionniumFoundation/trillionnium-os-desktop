@@ -4,7 +4,6 @@ use alloc::format;
 use core::time::Duration;
 
 use inherit_methods_macro::inherit_methods;
-use ostd::task::Task;
 use spin::Once;
 
 use crate::{
@@ -13,7 +12,7 @@ use crate::{
     fs::{
         file::{
             AccessMode, InodeHandle, InodeMode, InodeType, PerOpenFileOps, StatusFlags,
-            file_table::{FdFlags, FileDesc},
+            file_table::{FdFlags, FileDesc, FileTable},
             mkmod,
         },
         pseudofs::{NaivePseudoFs, PseudoInode, PseudoInodeType},
@@ -276,14 +275,11 @@ impl<T: NsCommonOps> FileOps for NsFile<T> {
 
 /// Opens a namespace as a file and returns the file descriptor.
 fn open_ns_as_file<T: NsCommonOps>(ns: &Arc<T>) -> Result<FileDesc> {
+    let reserved = FileTable::reserve_current_fd(FdFlags::CLOEXEC)?;
     let path = ns.get_path();
     let inode_handle = InodeHandle::new(path.clone(), AccessMode::O_RDONLY, StatusFlags::empty())?;
 
-    let current_task = Task::current().unwrap();
-    let thread_local = current_task.as_thread_local().unwrap();
-    let mut file_table_ref = thread_local.borrow_file_table_mut();
-    let mut file_table = file_table_ref.unwrap().write();
-    let fd = file_table.insert(Arc::new(inode_handle), FdFlags::CLOEXEC);
+    let fd = reserved.install(Arc::new(inode_handle));
 
     Ok(fd)
 }

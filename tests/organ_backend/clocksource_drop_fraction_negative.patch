@@ -1,0 +1,11 @@
+diff --git a/kernel/asterinas/kernel/core/comps/time/src/clocksource.rs b/kernel/asterinas/kernel/core/comps/time/src/clocksource.rs
+--- a/kernel/asterinas/kernel/core/comps/time/src/clocksource.rs
++++ b/kernel/asterinas/kernel/core/comps/time/src/clocksource.rs
+@@ -301,3 +301,6 @@
+             let (sample, fault) = self.calculate_sample(*last, cycles);
+-            *last = sample;
++            *last = ClockSourceSample {
++                fractional_numerator: 0,
++                ..sample
++            };
+             (sample, fault, last_cycles, cycles)

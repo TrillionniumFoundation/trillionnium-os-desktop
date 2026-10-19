@@ -1,0 +1,154 @@
+{
+  "candidate_kernel_passed": false,
+  "execution_design": {
+    "agentd": "one process per workspace; fleet manifest and identity must match environment",
+    "app_server": "embedded in Agentd via codex_app_server::run_main_with_transport_options",
+    "objective": "authenticated ObjectiveStart via existing client and state owner",
+    "required_product_inputs": "real Agentd identity, run record, invocation provider, existing authority/runner owners; no generated mock",
+    "tool_effect": "must be independently observed; never inferred from daemon readiness",
+    "transport": "AF_UNIX at identity.app_server_socket; control socket separate"
+  },
+  "execution_status": "elf_built_runtime_not_qualified",
+  "host_artifacts": {
+    "agentd_elf_interpreter": "/lib64/ld-linux-x86-64.so.2",
+    "agentd_sha256": "0a8266635f8dd1b49d5213af4f01aab6c66d7450d9b9e940f71490893ce404ae",
+    "glibc_version": "not captured; direct dependency is libc.so.6",
+    "real_tool_effect_evidence": {
+      "status": "not_observed",
+      "reason": "runtime_codex_product_e2e provider expectation matched 0 requests"
+    },
+    "sqlite_database_files": null,
+    "strace_file_hashes": {
+      "status": "blocked",
+      "reason": "PTRACE_TRACEME returned EPERM in execution sandbox"
+    },
+    "tls_and_nss_effective_files": {
+      "status": "not_resolved",
+      "reason": "no complete runtime trace or authenticated product profile"
+    },
+    "transitive_shared_libraries": {
+      "status": "unqualified",
+      "direct_needed_only": true
+    },
+    "direct_needed": [
+      "libssl.so.3",
+      "libcrypto.so.3",
+      "libgcc_s.so.1",
+      "libm.so.6",
+      "libc.so.6",
+      "/lib64/ld-linux-x86-64.so.2"
+    ]
+  },
+  "id": "W1-agentd-embedded-codex-app-server-tool",
+  "kernel_failure_evidence": [],
+  "linux_reference_passed": false,
+  "not_a_linux_abi_failure": [
+    "Authenticated ObjectiveStart runtime inputs and real invocation provider are not available",
+    "runtime_codex_product_e2e built but Wiremock Responses expectation matched zero requests; no terminal receipt",
+    "ptrace/strace was blocked by the execution sandbox with EPERM",
+    "A01 kernel source and accepted QEMU boot evidence are on main, but A04 workload QEMU replay is not yet executed"
+  ],
+  "required_environment_variables": [
+    "HEPTA_FLEET_ROOT",
+    "HEPTA_AGENT_ID",
+    "HEPTA_AGENT_GENERATION",
+    "HEPTA_AGENT_HOME",
+    "HEPTA_AGENT_RUN_ROOT",
+    "CODEX_HOME"
+  ],
+  "schema": 1,
+  "source_assembly_gate": {
+    "api_for_host_composition": "AgentdConfig::with_intelligence_invocation_provider",
+    "classification": "userland_host_composition_missing_until_real_provider_installed; NOT kernel ABI",
+    "source_evidence": [
+      "codex-rs/hepta-agentd/src/main.rs:112-183",
+      "codex-rs/hepta-agentd/src/config.rs:515-535",
+      "codex-rs/hepta-agentd/src/runtime.rs:80-119"
+    ],
+    "standalone_cli_attaches_product_runner_from_explicit_flags": true,
+    "standalone_cli_installs_intelligence_invocation_provider": false,
+    "warning": "Standalone CLI source check is not a negative runtime test. A separately composed host could attach provider."
+  },
+  "source_verified_code_path": [
+    "codex-rs/hepta-agentd/src/main.rs",
+    "codex-rs/hepta-agentd/src/config.rs",
+    "codex-rs/hepta-agentd/src/runtime.rs",
+    "codex-rs/hepta-agentd/src/app_runtime.rs",
+    "codex-rs/hepta-agentd/src/objective_runtime.rs",
+    "codex-rs/hepta-agentd/src/intelligence_ingress.rs",
+    "codex-rs/hepta-agentd/src/client.rs"
+  ],
+  "upstream": {
+    "cargo_lock_path": "codex-rs/Cargo.lock",
+    "cargo_workspace": "codex-rs/Cargo.toml",
+    "commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+    "expected_binary": "codex-rs/target/release/codex-hepta-agentd",
+    "repository": "TrillionniumFoundation/hepta-private-ci",
+    "build_command": "OPENSSL_NO_PKG_CONFIG=1 OPENSSL_DIR=/usr OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu OPENSSL_INCLUDE_DIR=/usr cargo test --locked -p codex-hepta-agentd --test runtime_codex_product_e2e -- --nocapture",
+    "build_receipt": {
+      "status": "compiled",
+      "binary_kind": "temporary debug dependency artifact; not retained in the repository",
+      "agentd_sha256": "0a8266635f8dd1b49d5213af4f01aab6c66d7450d9b9e940f71490893ce404ae",
+      "build_id": "ca210fdcbf2c256293b0d9c6d1a233ed944889df",
+      "test_binary_sha256": "e4a4274176e48d6e0e12a4317ba7f397971c477f299d8474e30123cd6cbf9598",
+      "release_binary_verified": false,
+      "runtime_test": {
+        "command": "OPENSSL_NO_PKG_CONFIG=1 OPENSSL_DIR=/usr OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu OPENSSL_INCLUDE_DIR=/usr cargo test --locked -p codex-hepta-agentd --test runtime_codex_product_e2e -- --nocapture",
+        "status": "failed",
+        "exit_code": 101,
+        "reason": "Wiremock Responses provider expectation matched 0 requests; no provider terminal receipt"
+      },
+      "trace": {
+        "status": "blocked",
+        "reason": "PTRACE_TRACEME: Operation not permitted"
+      }
+    }
+  },
+  "upstream_ci_observations": {
+    "fixed_commit": "f8c9419df6ddeb36ff8b522a50219981fb8d9345",
+    "evidence_level": "actual GitHub Actions build and lint job logs, NOT an executable Hepta trace",
+    "run": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/38827238622",
+    "checked_on": "2026-10-16",
+    "jobs": [
+      {
+        "id": 116883316040,
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/38827238622/job/116883316040",
+        "target": "x86_64-unknown-linux-gnu",
+        "status": "failure",
+        "exit_code": 101,
+        "evidence": "-D clippy::expect-used: 3 errors in hepta-agentd/tests/plasticity_process_e2e.rs:45,53,62; additional 24 errors in codex-hepta-agentd lib-test sources",
+        "scope": "lint_and_test_build",
+        "proves_release_binary_not_buildable": false
+      },
+      {
+        "id": 116883315953,
+        "url": "https://github.com/TrillionniumFoundation/hepta-private-ci/actions/runs/38827238622/job/116883315953",
+        "target": "x86_64-unknown-linux-gnu",
+        "status": "failure",
+        "exit_code": 101,
+        "evidence": "nextest archive cargo test --no-run failed in linking tests: collect2 ld signal 7 Bus error; LLVM crash emitted",
+        "scope": "test_linker_or_runner",
+        "proves_release_binary_not_buildable": false
+      }
+    ],
+    "impact": "A temporary Agentd ELF was built and its direct loader/libc dependencies were inspected; authenticated ObjectiveStart/tool-effect closure and syscall trace remain unverified. This is not an Asterinas kernel ABI failure."
+  },
+  "runtime_dependency_inventory": {
+    "tokio": "1.52.3",
+    "tokio-util": "0.7.18",
+    "mio": "1.2.0",
+    "socket2": "0.6.3",
+    "sqlx": "0.9.0",
+    "libsqlite3-sys": "0.37.0",
+    "reqwest": "0.12/0.13",
+    "hyper": "1.8.1",
+    "rustls": "0.23.45",
+    "aws-lc-rs": "1.18.1",
+    "native-tls": "0.2.14",
+    "openssl": "0.10.75",
+    "openssl-sys": "0.9.111",
+    "hickory-resolver": "0.25.2",
+    "libc": "0.2.186",
+    "evidence_scope": "cargo tree and ELF symbols from the fixed source build; not a complete runtime closure"
+  }
+}

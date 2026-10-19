@@ -5,7 +5,7 @@ use core::sync::atomic::{AtomicU32, AtomicU64, Ordering};
 use aster_rights::{ReadDupOp, ReadOp, ReadWriteOp};
 use aster_util::fixed_str::FixedCStr;
 use ostd::{
-    sync::{RcuOption, RoArc, RwMutexReadGuard, Waker},
+    sync::{LocalIrqDisabled, RcuOption, RoArc, RwMutexReadGuard, Waker},
     task::Task,
 };
 use spin::Once;
@@ -17,7 +17,7 @@ use super::{
 use crate::{
     events::IoEvents,
     fs::{file::file_table::FileTable, thread_info::ThreadFsInfo},
-    fs::cgroupfs::CgroupNode,
+    fs::cgroupfs::{CgroupNode, CpuChargeOwner},
     prelude::*,
     process::{
         ExitCode, Pid,
@@ -58,6 +58,12 @@ pub struct PosixThread {
     /// reference preserves it after a zombie is detached from its cgroup,
     /// whether or not the parent has reaped the process yet.
     cpu_cgroup: RcuOption<Arc<CpuCgroupLease>>,
+
+    /// Original controller/ancestor references from the last running segment.
+    /// An exited task may be preempted before its kernel cleanup finishes;
+    /// a new runqueue runtime must retain this incarnation when it resumes.
+    /// This has no quota, clock, usage, revision, or native authority.
+    cpu_charge_owner: SpinLock<Option<CpuChargeOwner>, LocalIrqDisabled>,
 
     // Mutable part
     tid: AtomicU32,
@@ -132,7 +138,28 @@ impl PosixThread {
     }
 
     pub(crate) fn set_cpu_cgroup(&self, cgroup: Option<Arc<CgroupNode>>) {
+        {
+            let mut owner = self.cpu_charge_owner.lock();
+            if owner
+                .as_ref()
+                .is_some_and(|owner| !owner.belongs_to(cgroup.as_ref()))
+            {
+                // Non-running tasks have no pending interval to the old
+                // node. The current runtime, if any, has its own reference.
+                // Keep a reference already refreshed at the publication's
+                // second checkpoint; clearing it here would lose exit tails.
+                *owner = None;
+            }
+        }
         self.cpu_cgroup.update(cgroup.map(CpuCgroupLease::new));
+    }
+
+    pub(crate) fn retained_cpu_charge_owner(&self) -> Option<CpuChargeOwner> {
+        self.cpu_charge_owner.lock().clone()
+    }
+
+    pub(crate) fn retain_cpu_charge_owner(&self, owner: CpuChargeOwner) {
+        *self.cpu_charge_owner.lock() = Some(owner);
     }
 
     /// Returns the thread id

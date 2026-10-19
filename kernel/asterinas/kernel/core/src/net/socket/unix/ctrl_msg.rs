@@ -10,7 +10,7 @@ use super::{CUserCred, UnixStreamSocket, cred::SocketCred};
 use crate::{
     fs::file::{
         FileLike,
-        file_table::{FdFlags, get_file_fast},
+        file_table::{FdFlags, FileTable, get_file_fast},
     },
     net::socket::util::{CControlHeader, ControlMessage, RecvFlags},
     prelude::*,
@@ -129,35 +129,50 @@ impl FileMessage {
         if nfiles == 0 {
             return_errno_with_message!(Errno::EINVAL, "the control message buffer is too small");
         }
-        let output_flags = if nfiles < self.files.len() {
-            RecvFlags::MSG_CTRUNC
-        } else {
-            RecvFlags::empty()
-        };
-
-        let header = CControlHeader::new(
-            CSocketOptionLevel::SOL_SOCKET,
-            CControlType::SCM_RIGHTS as i32,
-            nfiles * size_of::<i32>(),
-        );
-        writer.write_val::<CControlHeader>(&header)?;
-
-        let current = Task::current().unwrap();
-        let file_table = current.as_thread_local().unwrap().borrow_file_table();
         let fd_flags = if flags.contains(RecvFlags::MSG_CMSG_CLOEXEC) {
             FdFlags::CLOEXEC
         } else {
             FdFlags::empty()
         };
-        for file in self.files[..nfiles].iter() {
-            // Publish the descriptor with its final flags; setting CLOEXEC after insertion
-            // would allow a concurrent exec to inherit it in between.
-            let fd = file_table.unwrap().write().insert(file.clone(), fd_flags);
-            // Perhaps we should remove the inserted files from the file table if we cannot write
-            // the file descriptor back to user space? However, even Linux cannot handle every
-            // corner case (https://elixir.bootlin.com/linux/v6.15.2/source/net/core/scm.c#L357).
-            writer.write_val::<i32>(&(fd.into()))?;
+        let mut installed = 0;
+        {
+            let mut payload_writer = writer.clone_exclusive();
+            payload_writer.skip(size_of::<CControlHeader>());
+            for file in self.files[..nfiles].iter() {
+                let Ok(reserved) = FileTable::reserve_current_fd(fd_flags) else {
+                    break;
+                };
+                if payload_writer
+                    .write_val::<i32>(&reserved.fd().into())
+                    .is_err()
+                {
+                    break;
+                }
+                // Publish with final flags only after the FD number was copied successfully.
+                reserved.install(file.clone());
+                installed += 1;
+            }
         }
+
+        if installed == 0 {
+            // The outer control-message writer sets MSG_CTRUNC without failing the received
+            // payload. No ancillary header or visible descriptor is produced in this case.
+            return_errno_with_message!(Errno::EMFILE, "no SCM_RIGHTS descriptors were installed");
+        }
+        let output_flags = if installed < self.files.len() {
+            RecvFlags::MSG_CTRUNC
+        } else {
+            RecvFlags::empty()
+        };
+        let header = CControlHeader::new(
+            CSocketOptionLevel::SOL_SOCKET,
+            CControlType::SCM_RIGHTS as i32,
+            installed * size_of::<i32>(),
+        );
+        // Linux writes this header after installing the prefix that fits. A fault in the
+        // header itself can still leave those installed descriptors, as in scm_detach_fds.
+        writer.write_val::<CControlHeader>(&header)?;
+        writer.skip(installed * size_of::<i32>());
 
         Ok((header, output_flags))
     }

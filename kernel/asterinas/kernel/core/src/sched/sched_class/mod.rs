@@ -22,12 +22,14 @@ use ostd::{
     util::id_set::Id,
 };
 
+use spin::Once;
+
 use super::{
     nice::Nice,
     stats::{SchedulerStats, set_stats_from_scheduler},
 };
 use crate::{
-    fs::cgroupfs::{charge_task_cpu, task_cpu_eligible},
+    fs::cgroupfs::{CpuChargeOwner, task_cpu_eligible},
     thread::{AsThread, Thread},
 };
 
@@ -47,11 +49,14 @@ pub(crate) use self::{
 
 type SchedEntity = (Arc<Task>, Arc<Thread>);
 
+static CLASS_SCHEDULER: Once<&'static ClassScheduler> = Once::new();
+
 pub(crate) fn init() {
     let scheduler = Box::leak(Box::new(ClassScheduler::new()));
 
     // Inject the scheduler into the ostd for actual scheduling work.
     inject_scheduler(scheduler);
+    CLASS_SCHEDULER.call_once(|| scheduler);
 
     // Set the scheduler into the system for statistics.
     // We set this after injecting the scheduler into ostd,
@@ -61,6 +66,60 @@ pub(crate) fn init() {
 
 pub(crate) fn init_on_each_cpu() {
     enable_preemption_on_cpu();
+}
+
+/// Settles the current CPU's pending bandwidth interval before an owner update.
+///
+/// The caller must copy and validate inputs first. The callback runs with local
+/// IRQs disabled and the local runqueue locked; it may acquire bandwidth locks,
+/// but must not allocate, block, copy user memory, or acquire a runqueue lock.
+/// On N0's single CPU, other tasks have already settled when leaving the CPU.
+/// This is not a rendezvous with tasks running on remote CPUs.
+pub(crate) fn with_current_cpu_bandwidth_settled<R>(apply: impl FnOnce(u64) -> R) -> R {
+    let irq_guard = disable_local();
+    let Some(scheduler) = CLASS_SCHEDULER.get() else {
+        // No class-scheduled POSIX task can run before scheduler initialization.
+        // This also allows standalone owner ktests using OSTD's FIFO scheduler.
+        return apply(sched_clock());
+    };
+    let mut rq = scheduler.rqs[irq_guard.current_cpu().as_usize()].lock();
+    let now = sched_clock();
+    if let Some(((task, _), rt)) = rq.bandwidth_segment_mut() {
+        rt.with_bandwidth_settled(task, now, apply)
+    } else {
+        apply(now)
+    }
+}
+
+/// Publishes a CPU owner binding between two local bandwidth checkpoints.
+///
+/// The caller already holds the membership and any necessary node locks.
+/// `publish` must not acquire a sleeping lock, block, copy user memory, or
+/// recursively change CPU bindings. It runs with IRQs disabled but WITHOUT a
+/// runqueue lock: the existing RCU update registers deferred destruction and
+/// may allocate using OSDK's IRQ-safe heap/frame allocator. It does not wait
+/// for the grace period or execute the registered destructors here.
+///
+/// All execution through the second checkpoint belongs to the retained old
+/// owner; the new segment begins at that checkpoint. No N0 scheduler observer
+/// can see the intermediate publication. Remote CPUs only notice at their
+/// next checkpoint; this is not an SMP migration rendezvous.
+pub(crate) fn with_current_cpu_bandwidth_owner_update<R>(publish: impl FnOnce() -> R) -> R {
+    let irq_guard = disable_local();
+    let Some(scheduler) = CLASS_SCHEDULER.get() else {
+        return publish();
+    };
+    let rq = &scheduler.rqs[irq_guard.current_cpu().as_usize()];
+    {
+        let mut rq = rq.lock();
+        rq.settle_bandwidth(sched_clock());
+    }
+    let result = publish();
+    {
+        let mut rq = rq.lock();
+        rq.settle_bandwidth(sched_clock());
+    }
+    result
 }
 
 /// Represents the middle layer between scheduling classes and generic scheduler
@@ -87,6 +146,10 @@ struct PerCpuClassRqSet {
     // Runqueue-local parked tasks; no userspace syscall is required to refill.
     throttled: Vec<Arc<Task>>,
     current: Option<(SchedEntity, CurrentRuntime)>,
+    // dequeue_current() changes runnable state before OSTD selects the next
+    // task. Move (not copy) the same accounting segment here until handoff,
+    // including selection retries. It holds no additional budget or usage.
+    dequeued: Option<(SchedEntity, CurrentRuntime)>,
 }
 
 /// Stores the runtime information of the current task.
@@ -100,21 +163,160 @@ struct CurrentRuntime {
     start: u64,
     delta: u64,
     period_delta: u64,
+    // This cursor partitions debits to the original cgroup bandwidth owner.
+    // It stores no quota or usage. Configuration must not advance `start`,
+    // which is still needed for the next CFS/RT runtime update.
+    bandwidth_accounted_through: u64,
+    // Reference only: all accounting remains in the original CpuMax. Resolve
+    // at a segment boundary, never after the interval has already executed.
+    bandwidth_owner: Option<CpuChargeOwner>,
 }
 
 impl CurrentRuntime {
-    fn new() -> Self {
+    fn new_at(task: &Task, now: u64) -> Self {
         CurrentRuntime {
-            start: sched_clock(),
+            start: now,
             delta: 0,
             period_delta: 0,
+            bandwidth_accounted_through: now,
+            bandwidth_owner: CpuChargeOwner::for_task(task),
         }
     }
 
-    fn update(&mut self) {
-        let now = sched_clock();
+    fn update_at(&mut self, now: u64) {
         self.delta = now - core::mem::replace(&mut self.start, now);
         self.period_delta += self.delta;
+    }
+
+    fn settle_bandwidth(&mut self, task: &Task, now: u64) {
+        if now > self.bandwidth_accounted_through {
+            if let Some(owner) = &self.bandwidth_owner {
+                owner.charge(self.bandwidth_accounted_through, now);
+            }
+            self.bandwidth_accounted_through = now;
+        }
+
+        // The next interval may belong to a newly published incarnation. An
+        // exited task keeps its original owner even after the Process is
+        // detached or reaped. Re-resolving its node would redirect its tail.
+        if !task.as_thread().is_some_and(|thread| thread.is_exited()) {
+            self.bandwidth_owner = CpuChargeOwner::for_task(task);
+        }
+    }
+
+    fn with_bandwidth_settled<R>(
+        &mut self,
+        task: &Task,
+        now: u64,
+        apply: impl FnOnce(u64) -> R,
+    ) -> R {
+        self.settle_bandwidth(task, now);
+        apply(now)
+    }
+}
+
+/// Deterministic timestamps on the production runtime and real POSIX owner.
+/// No test task is injected into OSTD's running FIFO test scheduler.
+#[cfg(ktest)]
+pub(crate) struct CpuRuntimeFixture {
+    task: Arc<Task>,
+    runtime: CurrentRuntime,
+}
+
+#[cfg(ktest)]
+impl CpuRuntimeFixture {
+    pub(crate) fn new(task: Arc<Task>, now: u64) -> Self {
+        let runtime = CurrentRuntime::new_at(&task, now);
+        Self {
+            task,
+            runtime,
+        }
+    }
+
+    pub(crate) fn configure<R>(&mut self, now: u64, apply: impl FnOnce(u64) -> R) -> R {
+        self.runtime.with_bandwidth_settled(&self.task, now, apply)
+    }
+
+    pub(crate) fn update(&mut self, now: u64) -> (u64, u64) {
+        self.runtime.update_at(now);
+        self.runtime.settle_bandwidth(&self.task, now);
+        (self.runtime.delta, self.runtime.period_delta)
+    }
+
+    /// Runs the production runtime's two checkpoints around a real owner
+    /// publication. No fixture is inserted into the FIFO ktest scheduler.
+    pub(crate) fn publish<R>(
+        &mut self,
+        before: u64,
+        after: u64,
+        publish: impl FnOnce() -> R,
+    ) -> R {
+        self.runtime.settle_bandwidth(&self.task, before);
+        let result = publish();
+        self.runtime.settle_bandwidth(&self.task, after);
+        result
+    }
+}
+
+/// Exercises the actual class queues without replacing OSTD's ktest scheduler.
+#[cfg(ktest)]
+pub(crate) struct CpuRunQueueFixture {
+    rq: PerCpuClassRqSet,
+}
+
+#[cfg(ktest)]
+impl CpuRunQueueFixture {
+    pub(crate) fn new(task: Arc<Task>, now: u64) -> Self {
+        let irq_guard = disable_local();
+        let mut rq = PerCpuClassRqSet::new(irq_guard.current_cpu());
+        let thread = task.as_thread().unwrap().clone();
+        let runtime = CurrentRuntime::new_at(&task, now);
+        rq.current = Some(((task, thread), runtime));
+        Self { rq }
+    }
+
+    pub(crate) fn enqueue(&mut self, task: Arc<Task>) {
+        let _irq_guard = disable_local();
+        let thread = task.as_thread().unwrap().clone();
+        self.rq
+            .enqueue_entity((task, thread), Some(EnqueueFlags::Spawn));
+    }
+
+    pub(crate) fn pick(&mut self, samples: &[u64]) -> Option<Arc<Task>> {
+        let _irq_guard = disable_local();
+        let mut samples = samples.iter();
+        let next = self
+            .rq
+            .try_pick_next_with_clock(|| *samples.next().expect("unexpected clock read"))
+            .cloned();
+        assert!(samples.next().is_none(), "unused clock sample");
+        next
+    }
+
+    pub(crate) fn update(&mut self, flags: UpdateFlags, now: u64) -> bool {
+        let _irq_guard = disable_local();
+        self.rq.update_current_at(flags, now)
+    }
+
+    pub(crate) fn dequeue(&mut self, now: u64) -> Option<Arc<Task>> {
+        let _irq_guard = disable_local();
+        self.rq.dequeue_current_at(now)
+    }
+
+    pub(crate) fn has_current(&self) -> bool {
+        self.rq.current.is_some()
+    }
+
+    pub(crate) fn cfs_runtime(&self) -> Option<(u64, u64, u64)> {
+        let (_, rt) = self.rq.current.as_ref().or(self.rq.dequeued.as_ref())?;
+        Some((rt.start, rt.delta, rt.period_delta))
+    }
+
+    pub(crate) fn is_throttled(&self, task: &Arc<Task>) -> bool {
+        self.rq
+            .throttled
+            .iter()
+            .any(|queued| Arc::ptr_eq(queued, task))
     }
 }
 
@@ -271,16 +473,7 @@ impl Scheduler for ClassScheduler {
 
 impl ClassScheduler {
     pub(crate) fn new() -> Self {
-        let class_rq = |cpu| {
-            SpinLock::new(PerCpuClassRqSet {
-                stop: stop::StopClassRq::new(),
-                real_time: real_time::RealTimeClassRq::new(cpu),
-                fair: fair::FairClassRq::new(cpu),
-                idle: idle::IdleClassRq::new(),
-                throttled: Vec::new(),
-                current: None,
-            })
-        };
+        let class_rq = |cpu| SpinLock::new(PerCpuClassRqSet::new(cpu));
         ClassScheduler {
             rqs: all_cpus().map(class_rq).collect(),
             last_chosen_cpu: AtomicCpuId::default(),
@@ -341,6 +534,29 @@ impl ClassScheduler {
 }
 
 impl PerCpuClassRqSet {
+    fn new(cpu: CpuId) -> Self {
+        Self {
+            stop: stop::StopClassRq::new(),
+            real_time: real_time::RealTimeClassRq::new(cpu),
+            fair: fair::FairClassRq::new(cpu),
+            idle: idle::IdleClassRq::new(),
+            throttled: Vec::new(),
+            current: None,
+            dequeued: None,
+        }
+    }
+
+    fn bandwidth_segment_mut(&mut self) -> Option<&mut (SchedEntity, CurrentRuntime)> {
+        debug_assert!(self.current.is_none() || self.dequeued.is_none());
+        self.current.as_mut().or(self.dequeued.as_mut())
+    }
+
+    fn settle_bandwidth(&mut self, now: u64) {
+        if let Some(((task, _), rt)) = self.bandwidth_segment_mut() {
+            rt.settle_bandwidth(task, now);
+        }
+    }
+
     fn replenish_throttled(&mut self, now: u64) {
         // Inspect the existing allocation in place. The former mem::take()
         // discarded its capacity every tick and pushed blocked tasks into a
@@ -361,8 +577,7 @@ impl PerCpuClassRqSet {
         }
     }
 
-    fn pick_next_entity(&mut self) -> Option<SchedEntity> {
-        let now = sched_clock();
+    fn pick_next_entity(&mut self, now: u64) -> Option<SchedEntity> {
         self.replenish_throttled(now);
         if let Some(task) = self.stop.pick_next() {
             return task.as_thread().cloned().map(|thread| (task, thread));
@@ -407,52 +622,67 @@ impl PerCpuClassRqSet {
         };
         PerCpuLoadStats { queue_len, is_idle }
     }
-}
 
-impl LocalRunQueue for PerCpuClassRqSet {
-    fn current(&self) -> Option<&Arc<Task>> {
-        self.current.as_ref().map(|((task, _), _)| task)
-    }
-
-    fn try_pick_next(&mut self) -> Option<&Arc<Task>> {
+    fn try_pick_next_with_clock(
+        &mut self,
+        mut read_clock: impl FnMut() -> u64,
+    ) -> Option<&Arc<Task>> {
         // OSTD's might_preempt() can call try_pick_next() directly after a
         // runnable task is enqueued, without a preceding update_current().
         // A switch in that path must not discard the outgoing task's TSC
-        // runtime when CurrentRuntime::new() replaces its old accounting
+        // runtime when a new CurrentRuntime replaces its old accounting
         // state. Charge before pick_next_entity() checks another task's
         // eligibility and potentially advances a shared cgroup ancestor.
-        if let Some(((task, _), rt)) = &mut self.current {
-            let from = rt.start;
-            rt.update();
-            charge_task_cpu(task, from, rt.start);
+        let mut now = read_clock();
+        if let Some((_, rt)) = &mut self.current {
+            rt.update_at(now);
         }
-        self.pick_next_entity().and_then(|next| {
+        self.settle_bandwidth(now);
+        while let Some(next) = self.pick_next_entity(now) {
+            let cut = read_clock();
+            // The dispatcher still has this original running owner. Close
+            // its tail at exactly the next segment's start before dropping
+            // the runtime or advancing any shared ancestor to this time.
+            self.settle_bandwidth(cut);
+            // Selection can straddle a window or spend the remaining quota.
+            // The candidate must still be eligible after that actual debit.
+            if !task_cpu_eligible(&next.0, cut) {
+                self.throttled.push(next.0);
+                now = cut;
+                continue;
+            }
             // We guarantee that a task can appear at once in a `PerCpuClassRqSet`. So, the `next` cannot be the same
             // as the current task here.
-            if let Some((old, _)) = self.current.replace((next, CurrentRuntime::new())) {
-                if task_cpu_eligible(&old.0, sched_clock()) {
+            let runtime = CurrentRuntime::new_at(&next.0, cut);
+            // The old segment, including any dequeue-to-selection retries,
+            // was settled through `cut`; the installed runtime starts there.
+            self.dequeued = None;
+            if let Some((old, _)) = self.current.replace((next, runtime)) {
+                if task_cpu_eligible(&old.0, cut) {
                     self.enqueue_entity(old, None);
                 } else {
                     self.throttled.push(old.0);
                 }
             }
-            self.current.as_ref().map(|((task, _), _)| task)
-        })
+            return self.current.as_ref().map(|((task, _), _)| task);
+        }
+        None
     }
 
-    fn update_current(&mut self, flags: UpdateFlags) -> bool {
+    fn update_current_at(&mut self, flags: UpdateFlags, now: u64) -> bool {
         // Settle the running task FIRST. Replenishment invokes
         // task_cpu_eligible() and can advance the same cgroup or a common
-        // ancestor's quota window before charge_task_cpu() sees a tick that
+        // ancestor's quota window before the retained owner sees a tick that
         // straddles the boundary. That loses old-window CPU runtime and
         // defeats positive overrun debt. N0 keeps all these transitions
         // serialized inside the existing IRQ-disabled per-CPU runqueue lock.
+        if let Some((_, rt)) = &mut self.current {
+            rt.update_at(now);
+        }
+        self.settle_bandwidth(now);
         let mut quota_exhausted = false;
         let (should_preempt, mut lookahead) = if let Some(((task, cur), rt)) = &mut self.current {
-            let from = rt.start;
-            rt.update();
-            charge_task_cpu(task, from, rt.start);
-            quota_exhausted = !task_cpu_eligible(task, rt.start);
+            quota_exhausted = !task_cpu_eligible(task, now);
             let attr = &cur.sched_attr();
 
             match attr.policy_kind() {
@@ -469,7 +699,7 @@ impl LocalRunQueue for PerCpuClassRqSet {
         // exact interval is charged, reconsider throttled tasks and update
         // the available queues without letting an early eligibility check
         // erase the last active cgroup period.
-        self.replenish_throttled(sched_clock());
+        self.replenish_throttled(now);
 
         if matches!(flags, UpdateFlags::Wait | UpdateFlags::Exit) {
             lookahead = 4;
@@ -483,11 +713,32 @@ impl LocalRunQueue for PerCpuClassRqSet {
             || (lookahead >= 4 && !self.idle.is_empty())
     }
 
+    fn dequeue_current_at(&mut self, now: u64) -> Option<Arc<Task>> {
+        self.settle_bandwidth(now);
+        let current = self.current.take()?;
+        debug_assert!(self.dequeued.is_none());
+        current.0.0.schedule_info().cpu.set_to_none();
+        let task = current.0.0.clone();
+        self.dequeued = Some(current);
+        Some(task)
+    }
+}
+
+impl LocalRunQueue for PerCpuClassRqSet {
+    fn current(&self) -> Option<&Arc<Task>> {
+        self.current.as_ref().map(|((task, _), _)| task)
+    }
+
+    fn try_pick_next(&mut self) -> Option<&Arc<Task>> {
+        self.try_pick_next_with_clock(sched_clock)
+    }
+
+    fn update_current(&mut self, flags: UpdateFlags) -> bool {
+        self.update_current_at(flags, sched_clock())
+    }
+
     fn dequeue_current(&mut self) -> Option<Arc<Task>> {
-        self.current.take().map(|((cur_task, _), _)| {
-            cur_task.schedule_info().cpu.set_to_none();
-            cur_task
-        })
+        self.dequeue_current_at(sched_clock())
     }
 }
 

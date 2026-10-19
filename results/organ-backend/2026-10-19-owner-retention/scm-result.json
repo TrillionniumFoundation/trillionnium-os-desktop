@@ -1,0 +1,200 @@
+{
+  "bios_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+  "cases": [
+    {
+      "line": 0,
+      "name": "stream.plain_receive",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "stream.cloexec_multifd",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "stream.peek_cloexec_then_plain",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "stream.peek_plain_then_cloexec",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "stream.truncated_control",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "stream.discarded_control",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "stream.no_control_message",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "stream.credentials_with_rights",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "stream.exec_inheritance",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "datagram.plain_receive",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "datagram.cloexec_multifd",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "datagram.peek_cloexec_then_plain",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "datagram.peek_plain_then_cloexec",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "datagram.truncated_control",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "datagram.discarded_control",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "datagram.no_control_message",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "datagram.credentials_with_rights",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "datagram.exec_inheritance",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "seqpacket.plain_receive",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "seqpacket.cloexec_multifd",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "seqpacket.peek_cloexec_then_plain",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "seqpacket.peek_plain_then_cloexec",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "seqpacket.truncated_control",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "seqpacket.discarded_control",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "seqpacket.no_control_message",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "seqpacket.credentials_with_rights",
+      "result": "PASS"
+    },
+    {
+      "line": 0,
+      "name": "seqpacket.exec_inheritance",
+      "result": "PASS"
+    }
+  ],
+  "cases_complete": true,
+  "cases_passed": true,
+  "cpio_helper_sha256": "4bc5803f32ddc98b59af60f8acc03ff8a13d938f41d7a3b60d64581530867c5a",
+  "elapsed_seconds": 1.1169605030000298,
+  "exact_markers": true,
+  "guest_inputs_unchanged": true,
+  "initramfs_sha256": "aaade96309bb6c5c3427dd1a6b8cb9aa5327fb755715ade6036804e0282f761f",
+  "kernel_sha256": "995b5739b200ab06ed2340d7330e3a55d0c1218154f99d529410da5d33f81cf4",
+  "no_kernel_panic": true,
+  "no_probe_assertion": true,
+  "ordered_completion": true,
+  "original_initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+  "passed": true,
+  "pinned_debian13_qualification": false,
+  "probe_sha256": "9b80de2bb994d86d32592f5c2a4824c8406b41c1aedc74df299755c807065fb1",
+  "product_receipt_sha256": "80c95abc46172811366202d7b03152fb3edec9c8ab3da913001ce48c35f3c873",
+  "qemu_argv": [
+    "/usr/bin/qemu-system-x86_64",
+    "-kernel",
+    "/home/runner/work/_temp/a04-scm-guest/kernel.elf",
+    "-initrd",
+    "/home/runner/work/_temp/a04-scm-guest/initramfs.cpio.gz",
+    "-append",
+    "earlycon console=ttyS0 loglevel=info SHELL=/bin/sh LOGNAME=root HOME=/ USER=root PATH=/bin:/sbin --",
+    "-machine",
+    "q35",
+    "-accel",
+    "tcg",
+    "-cpu",
+    "max",
+    "-bios",
+    "/home/runner/work/_temp/a04-scm-guest/bios.bin",
+    "-m",
+    "512M",
+    "-smp",
+    "1",
+    "-nodefaults",
+    "-no-user-config",
+    "-no-reboot",
+    "-nographic",
+    "-display",
+    "none",
+    "-monitor",
+    "none",
+    "-serial",
+    "stdio",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04"
+  ],
+  "qemu_exit": 33,
+  "qemu_launcher_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+  "qemu_version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)\nCopyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers\n",
+  "runner_sha256": "1d501766dd611652797643f047bde8ac6ac2d6e41225e74eca51817d44a7965d",
+  "schema": "a04.scm-rights-cloexec-guest.v1",
+  "scope": "27 SCM_RIGHTS/CLOEXEC cases on one ordinary x86_64 kernel",
+  "serial_bytes": 118164,
+  "serial_sha256": "65e49665a2f0a2f8b8074aca2ef52ca18f1c5589b21c7949e705c5aca61217d6",
+  "source_head": "c60f01bfe21f30436d5259bfdf33d411459b3404",
+  "source_tree": "388bc4539217aca074a081ac107733a19cbe2bd4",
+  "timed_out": false
+}
