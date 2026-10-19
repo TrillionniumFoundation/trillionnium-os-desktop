@@ -3,6 +3,10 @@
 This contract describes the default `ObserverClient` and CLI. The separately
 enabled, default-off [ObjectiveStart transport](OBJECTIVE_TRANSPORT.md) is not a
 method added to this observer or to `TrustedReadOnlyOrganV1`.
+The independently enabled [Objective admission history](OBJECTIVE_HISTORY.md)
+also uses a dedicated client and a separate original-owner source contract.
+References below to the fixed protocol lacking history apply to `f8c9419d`,
+not to that explicitly versioned extension.
 
 ## Version and provenance
 

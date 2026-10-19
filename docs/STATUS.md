@@ -1,5 +1,25 @@
 # 当前状态
 
+## 2026-10-18 R9：原 owner 准入历史与 G1 接缝
+
+**本轮将“原请求的持久 publication”从当前 RunStatus 中分开，增加原 Hepta owner 的窄读接口与独立桌面 CLI。** 默认关闭的 `objective-history` 接受原请求 owner 保留的准确签名信封，当前端点身份由可信 launcher 提供；可携带以前保存的 anchor，查询不重投、不授予权限、不恢复 run。模块开发与技术契约见 [OBJECTIVE_HISTORY](../services/hepta-os/OBJECTIVE_HISTORY.md)，真实故障资格入口见 [OBJECTIVE_HISTORY_PROBE](../tests/integration/hepta/OBJECTIVE_HISTORY_PROBE.md)。原 owner 改动作为独立 [PR #2815](https://github.com/TrillionniumFoundation/hepta-private-ci/pull/2815)，原 f8 基线和旧 R8 契约保留。
+
+| R9 交付 | 已执行结果与当前边界 |
+| --- | --- |
+| 桌面历史客户端 | 产品输入 `c080896189b6d5c1e411a28b7614c8fcdc33b188` / tree `bd80279318682a2a5d0db7e1b8e2315315276d02`：51 项 Rust 测试、严格 all-target Clippy、默认关闭 check、fmt、三个实际 CLI 构建通过。10 项新历史测试覆盖严格 wire、原身份/代际、anchor 及 4096 容量；脚本化 socket 回复不代替原 owner 认证。 |
+| 原 owner 协议与 journal 接口 | 只读匹配原 RunStart 认证/body/profile 和已恢复前缀；原 protocol/ledger 的 `just test` 实际 134 passed、1 既有 production growth skipped，来源 `ee0a2e5eee299fc0f272c3ceb09ef70f2cbfaf73`；Agentd `--lib` 实际 173 passed、0 failed/ignored，来源 `d1d40f64eadd0210f5f6abc003cd479a0e1ee010`，包含 4 项新查询测试。两轮测试各自前后源码一致；307 是两次不同固定源码执行的合计，不是最终发布 HEAD 的完整 suite。原仓库要求的 scoped `just fix` 与 `just fmt --base f8` 已完成；仅对新 Published metadata 做 Box 布局修正，保留 JSON wire，既有无关自动修改已撤回。真实 native 资格仍待执行。 |
+| 真实故障 probe | 新增原 Fleet/Supervisor 与真实 CLI 路径，计划 15 检查、13 history 查询、5 独立 Objective 请求；22 项 synthetic receipt/source-contract 检查通过。尚未执行的 native 场景不计入实际通过数。 |
+| 独立历史 CI | 新增 `.github/workflows/hepta-objective-history.yml`，将桌面传输检查与固定原 owner 的真实 ARM64 构建/故障运行分开，并绑定源码、contract、五个 ELF 和原始收据。YAML、12 个 Bash block、8 个 Python block 和实际 actionlint 1.7.12 校验通过；尚未观测到该新工作流的 GitHub 执行结果。 |
+| Asterinas G1 前置审计 | [R9_G1_OWNER_SEAM](agents/R9_G1_OWNER_SEAM.md) 绑定主干 `01225ab0a20a9f25dd8313a7fad7652dd9154e30` 的实际 owner：先同锁 shared revision + controller incarnation/detached fence，再结算与时钟，随后 trusted init 和五操作。该项是源审计，无新 kernel build、ioctl 或 G1 运行资格。 |
+
+R9 原 owner 固定为已发布 [`2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/2be5fc052ae7b2e9fb08c68a3ae7e5a218ad37d5)，tree `f4ef891d43baf90d6eebd29921a5ed03222ef3ab`，与本地最终 `00aa11c961e0046d9027f6757ff03c15762a62ff` 同树。[独立 source contract](../services/hepta-os/OBJECTIVE_HISTORY_CONTRACT.json) 绑定 36 个已审输入、原 Cargo.lock 和 f8 祖先；发布提交不代替运行资格，也不改写旧 f8/R8 契约。
+
+**结果语义：**`historical_publication/compiled` 只确认历史编译 publication；原 owner 可在发布后因后续准入检查失败，当前 run 仍不存在。`conflict` 不是准入，`explicit_abstain` 不是效果完成，unknown 或当前 `RunStatus: null` 均不证明未发布。外部 retained anchor 仅约束当前 owner 的已恢复前缀；不检测运行中磁盘篡改或 journal 与 anchor 同时回滚。
+
+生产请求/签发 owner 接入、UI 的新安全投影、原 Operations 效果终态与 K↔D、最终使用授权、完整 G1/G2、Android/移动设备控制仍按 [S1–S5](agents/R8_NEXT_SLICE.md) 分项推进。当前源审计继续支持在 Asterinas 真实资源 owner 上增量接合；尚无必须重建 Rust kernel 的可复现反证。下面历史节保留各自实际源码、时间与资格，不覆盖本节结果。
+
+---
+
 ## 2026-10-18 R8：可信提交、原版 run 与真实桌面
 
 **当前增量已实际完成独立可信 CLI → 原版 ObjectiveStart 准入/journal → 持续 Session → 同一 Rust Shell 三阶段窗口。** 本节绑定实际本地输入 `25298f5d87cf3db90deefe9c0405ecd241dc6581` 与同树发布 [`ca5e7d8473690df1bf7636de0808e58414c40abe`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/ca5e7d8473690df1bf7636de0808e58414c40abe)，tree `9584997da412dd10c0960f69011b40a4b26d2862`；交付 [PR #192](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/192) 完整纳入 #190 工作区候选与 #191 主干修复的开发历史。固定原版 Hepta 仍为 `f8c9419df6ddeb36ff8b522a50219981fb8d9345`，源码、manifest 和 lock 未改。详见 [本轮完整证据](../results/integration/2026-10-18-objective-desktop/README.md)。

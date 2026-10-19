@@ -11,6 +11,8 @@ publish = false
 default = []
 # Independent trusted-host transport; hepta-observe remains read-only.
 objective-transport = ["serde_json/raw_value"]
+# Explicit retained-request history against the separately pinned owner extension.
+objective-history = ["objective-transport"]
 
 [dependencies]
 serde = { version = "=1.0.219", features = ["derive"] }
@@ -27,6 +29,11 @@ path = "src/bin/hepta-observe.rs"
 name = "hepta-submit"
 path = "src/bin/hepta-submit.rs"
 required-features = ["objective-transport"]
+
+[[bin]]
+name = "hepta-history"
+path = "src/bin/hepta-history.rs"
+required-features = ["objective-history"]
 
 [lints.rust]
 unsafe_code = "forbid"

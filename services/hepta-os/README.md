@@ -1,4 +1,4 @@
-# Hepta host observer and optional ObjectiveStart transport
+# Hepta host observer, ObjectiveStart and admission history
 
 `hepta-os-observer` is the first concrete A10 Session → Hepta client slice. It
 speaks the existing, fixed Agentd v2 JSON-over-UDS control wire. Its default API exposes only
@@ -6,7 +6,14 @@ speaks the existing, fixed Agentd v2 JSON-over-UDS control wire. Its default API
 bounded metadata and omits the upstream workspace paths, signing inputs,
 session-ingress address, and arbitrary payloads.
 
-**当前证据（2026-10-18 UTC）：**固定原版 Hepta `f8c9419df6ddeb36ff8b522a50219981fb8d9345` 已实际完成两轮隔离测试 issuer 的签名 ObjectiveStart 进程门禁，每轮执行 7 次明确提交尝试，10 项核心检查通过。后一轮还完成已知 run 的三个持续 Session 阶段：当前 `admitted` 非终态、旧端点失效后的完整 stale 历史、显式替换 Session 后的 `projection_missing`；同一个真实 Rust Shell 保留 3 张 PNG。准入收据与停止 owner 后以只读文件经原始公共 API 校验的 journal 记录绑定，实际源码、ELF、日志与逐图审查见[本轮原版目标与桌面实录](../../results/integration/2026-10-18-objective-desktop/README.md)。这是 Linux host 上测试 issuer 的原版认证与持久准入资格；生产 issuer、在线持久结果核对和设备效果仍未闭合。
+**R9 历史查询接合：**默认关闭的 `objective-history` feature 增加独立
+`ObjectiveHistoryClient` / `hepta-history`，向原 owner 查询已保存请求的持久
+publication，支持调用者保留的 anchor 和 owner 重启后的新端点身份。当前产品
+输入的 51 项 Rust 测试与严格检查通过；真实 owner 的运行资格单独以实际收据为准。
+完整模块开发入口、协议、信任/存储边界、退出码及后续接合见
+[OBJECTIVE_HISTORY](OBJECTIVE_HISTORY.md)。它不推进当前 run 或效果终态。
+
+**R8 已完成证据（2026-10-18 UTC）：**固定原版 Hepta `f8c9419df6ddeb36ff8b522a50219981fb8d9345` 已实际完成两轮隔离测试 issuer 的签名 ObjectiveStart 进程门禁，每轮执行 7 次明确提交尝试，10 项核心检查通过。后一轮还完成已知 run 的三个持续 Session 阶段：当前 `admitted` 非终态、旧端点失效后的完整 stale 历史、显式替换 Session 后的 `projection_missing`；同一个真实 Rust Shell 保留 3 张 PNG。准入收据与停止 owner 后以只读文件经原始公共 API 校验的 journal 记录绑定，实际源码、ELF、日志与逐图审查见[本轮原版目标与桌面实录](../../results/integration/2026-10-18-objective-desktop/README.md)。这是 Linux host 上测试 issuer 的原版认证与持久准入资格；生产 issuer、在线持久结果核对和设备效果仍未闭合。
 
 **R6 历史证据：**Linux host client 的真实 Unix socket fixture、负例和固定协议核验保留各自记录；固定原版 Hepta → 持续 Session worker → 同一个真实 Rust Shell 窗口在 R6 完成两轮六阶段只读运行。每轮保留原版 8 项与 Session 8 项断言、6 张成功 PNG、精确进程/代际来源与逐图审查，见 [R6 完整交付索引](../../tests/integration/hepta/evidence/2026-10-17-r6/README.md)、[持续 Session 实录](../../tests/integration/hepta/evidence/2026-10-17-original-session-runtime/README.md) 和[真实 Shell 窗口归档](../../tests/ui/evidence/2026-10-17-original-hepta-shell/README.md)。独立 ARM gate 及 ARM 持续 Session 的历史记录仍保留自己的架构、被测源码与产物来源。
 
@@ -23,6 +30,7 @@ session-ingress address, and arbitrary payloads.
 | Known run lookup | Existing owner state; an explicitly launcher-selected run has an independent Session/Shell freshness clock, preserves stale history, and distinguishes a missing current projection from non-admission; no task listing |
 | Objective input | UI drafts remain local; a separately trusted caller can provide an already signed envelope to the bounded CLI |
 | Optional `objective-transport` feature | Separate trusted-host, one-attempt UDS API and `hepta-submit` CLI; default disabled and no UI/Session submission command |
+| Optional `objective-history` feature | Separate `hepta-history` read of one retained original request through the separately pinned owner extension; publication, live run and effect remain distinct |
 | Device control/HOS2 | Not provided by this crate |
 | Windows/Android/Asterinas | No qualified transport here; non-Linux builds return `unsupported_platform` |
 
@@ -92,3 +100,5 @@ wire and projection rules, and [UPSTREAM_CONTRACT.json](UPSTREAM_CONTRACT.json)
 for the reviewed source hashes. Root `README.md` remains intentionally empty.
 The optional feature's complete wire, typed outcomes and remaining owner
 integration requirements are in [OBJECTIVE_TRANSPORT.md](OBJECTIVE_TRANSPORT.md).
+The separately pinned history feature has its own complete development and
+technical contract in [OBJECTIVE_HISTORY.md](OBJECTIVE_HISTORY.md).
