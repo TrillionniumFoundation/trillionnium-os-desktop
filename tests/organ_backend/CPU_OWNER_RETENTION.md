@@ -140,8 +140,23 @@ three failures below and raw QEMU 65, and checks both source snapshots,
 compiler/OSDK/VDSO/QEMU/firmware identities and the fixed generated Cargo lock.
 It retains the original gate's nonzero status, logs and ELF; recognizing the
 negative control never turns that original result into a product pass. The
-ordinary product and previous compatibility guests then run in the untouched
-candidate checkout.
+ordinary product and previous compatibility guests then run in the exactly
+restored candidate checkout.
+
+OSDK's original `option_env!("OSDK_LOCAL_DEV")` / `CARGO_MANIFEST_DIR`
+dependencies bind its binary to its compile-time source path. Attempting the
+negative core build from a second path with that same binary produced a real
+Cargo package collision between two `align_ext` paths before QEMU started.
+That failed attempt is retained; it is not the expected negative result.
+The archive worktree still identifies the single-change negative commit, but
+execution now checks out that exact commit at the original source path, runs
+the unchanged gate with the identical OSDK binary, then restores the original
+candidate HEAD/ref in a `finally` scope. Full snapshots bind both negative
+execution and the restored candidate. No force checkout, dependency override,
+gate change or lock relaxation is used. Three additional temporary Git-repo
+regressions verify branch/detached restoration and refusal of a dirty checkout.
+The green core ELF is copied before the shared target is rebuilt; the negative
+ELF is preserved separately, each bound by its original QEMU digest.
 
 The first command is deliberately nonzero after applying the control patch
 in its own checkout. Record the actual dirty source/diff or a distinct local

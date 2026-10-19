@@ -3,10 +3,12 @@
 
 The original full kernel gate runs first in the candidate checkout. This entry
 creates a separate local Git commit containing the one production mutation,
-runs the unchanged original core gate, and preserves its genuine failure. It
-does not convert that gate's result into a product success or alter its checks.
+runs the unchanged original core gate at the original OSDK-bound source path,
+then restores the candidate. It preserves both exact source identities and
+the genuine failure without altering the original gate or its acceptance.
 """
 import argparse
+from contextlib import contextmanager
 import hashlib
 import importlib.util
 import json
@@ -52,6 +54,28 @@ def module(name, path):
 
 def git(root, *args):
     return subprocess.check_output(['git', *args], cwd=root)
+
+
+@contextmanager
+def identified_checkout(root, candidate_head, negative_head):
+    """Use the original OSDK compile-time path and restore a clean candidate."""
+    require(git(root, 'rev-parse', 'HEAD').decode().strip() == candidate_head,
+            'checkout head changed before the negative run')
+    require(not git(root, 'status', '--porcelain', '--untracked-files=all'),
+            'checkout is dirty before the negative run')
+    branch = subprocess.run(['git', 'symbolic-ref', '--quiet', '--short', 'HEAD'],
+                            cwd=root, stdout=subprocess.PIPE, check=False)
+    require(branch.returncode in (0, 1), 'cannot identify original checkout ref')
+    restore = branch.stdout.decode().strip() if branch.returncode == 0 else candidate_head
+    git(root, 'checkout', '--detach', negative_head)
+    try:
+        yield
+    finally:
+        # Never use --force or discard unexpected tracked changes. Failure to
+        # restore is a real gate failure; later product steps cannot proceed.
+        git(root, 'checkout', restore)
+        require(git(root, 'rev-parse', 'HEAD').decode().strip() == candidate_head,
+                'candidate head was not restored after the negative run')
 
 
 def test_results(serial):
@@ -129,6 +153,12 @@ def run(args, out, result):
             'green test denominator lacks the retained-owner regression')
     save(out / 'green-core-validation.json', green_report)
     result['green_serial_sha256'] = sha(green_raw)
+    green_elf = Path(green_record['artifacts']['-kernel']['path'])
+    green_bytes = green_elf.read_bytes()
+    require(sha(green_bytes) == green_record['artifacts']['-kernel']['sha256']
+            and len(green_bytes) == green_record['artifacts']['-kernel']['size'],
+            'green core ELF does not match the original QEMU record')
+    (out / 'green-core-kernel.elf').write_bytes(green_bytes)
 
     negative = args.worktree.absolute()
     require(not negative.exists() and not negative.is_symlink(), 'negative worktree must be new')
@@ -142,27 +172,36 @@ def run(args, out, result):
     negative_tree = git(negative, 'rev-parse', 'HEAD^{tree}').decode().strip()
     result.update(negative_head=negative_head, negative_tree=negative_tree)
     (out / 'applied-negative-control.patch').write_bytes(git(negative, 'diff', head, negative_head))
-    negative_before = candidate.source_snapshot(negative, negative_head, negative_tree)
-    save(out / 'negative-source-before.json', negative_before)
+    archived_negative = candidate.source_snapshot(negative, negative_head, negative_tree)
+    save(out / 'negative-archive-source.json', archived_negative)
     changed = [name for name, record in before['files'].items()
-               if negative_before['files'].get(name) != record]
-    require(set(negative_before['files']) == set(before['files']) and changed == [CPU_PATH],
+               if archived_negative['files'].get(name) != record]
+    require(set(archived_negative['files']) == set(before['files']) and changed == [CPU_PATH],
             'negative source set differs beyond the declared CPU mutation')
 
     env = os.environ.copy()
     env['VDSO_LIBRARY_DIR'] = str(ROOT / 'support/build/out/linux-vdso')
-    command = [sys.executable, '-I', '-B', str(negative / 'support/build/ktest/run.py'),
+    command = [sys.executable, '-I', '-B', str(ROOT / 'support/build/ktest/run.py'),
                '--crate', 'aster-core', '--skip-osdk-install', '--output', str(out / 'gate')]
-    save(out / 'command.json', {'argv': command, 'cwd': str(negative),
+    save(out / 'command.json', {'argv': command, 'cwd': str(ROOT),
+                               'execution_head': negative_head,
+                               'negative_archive_worktree': str(negative),
                                'vdso_library_dir': env['VDSO_LIBRARY_DIR']})
-    with (out / 'gate-wrapper.log').open('wb') as log:
-        completed = subprocess.run(command, cwd=negative, env=env, stdout=log, stderr=subprocess.STDOUT)
-    result['original_gate_exit'] = completed.returncode
-    save(out / 'original-gate-exit.json', {'exit_code': completed.returncode})
-    negative_after = candidate.source_snapshot(negative, negative_head, negative_tree)
-    save(out / 'negative-source-after.json', negative_after)
-    require(negative_before == negative_after, 'negative source changed during execution')
-    require(before == candidate.source_snapshot(ROOT, head, tree), 'candidate changed during the negative gate')
+    with identified_checkout(ROOT, head, negative_head):
+        negative_before = candidate.source_snapshot(ROOT, negative_head, negative_tree)
+        save(out / 'negative-source-before.json', negative_before)
+        require(negative_before['files'] == archived_negative['files'],
+                'negative execution checkout differs from the identified archive')
+        with (out / 'gate-wrapper.log').open('wb') as log:
+            completed = subprocess.run(command, cwd=ROOT, env=env, stdout=log, stderr=subprocess.STDOUT)
+        result['original_gate_exit'] = completed.returncode
+        save(out / 'original-gate-exit.json', {'exit_code': completed.returncode})
+        negative_after = candidate.source_snapshot(ROOT, negative_head, negative_tree)
+        save(out / 'negative-source-after.json', negative_after)
+        require(negative_before == negative_after, 'negative source changed during execution')
+    restored = candidate.source_snapshot(ROOT, head, tree)
+    save(out / 'candidate-source-after.json', restored)
+    require(before == restored, 'candidate was not exactly restored after the negative gate')
     gate = out / 'gate'
     environment = json.loads((gate / 'environment.json').read_text())
     require(environment['git_head'] == negative_head and environment['git_status'] == ''
@@ -197,6 +236,8 @@ def run(args, out, result):
                   total_core_tests=len(green_tests), negative_passed=len(green_tests) - 3,
                   negative_failed=sorted(FAILED_NAMES), raw_qemu_exit=65, timed_out=False,
                   negative_kernel_sha256=sha(data), negative_serial_sha256=sha(raw),
+                  green_kernel_sha256=sha(green_bytes),
+                  same_osdk_binary_and_source_path=True,
                   all_other_source_files_unchanged=True, source_snapshots_unchanged=True)
 
 

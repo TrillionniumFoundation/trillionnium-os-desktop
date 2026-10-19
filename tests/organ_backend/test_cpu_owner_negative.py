@@ -2,6 +2,8 @@
 """Check that interleaved kernel output cannot hide a missing or failed test."""
 import importlib.util
 from pathlib import Path
+import subprocess
+import tempfile
 import unittest
 
 
@@ -76,6 +78,58 @@ class SerialContract(unittest.TestCase):
         ):
             with self.subTest(serial=bad), self.assertRaises(ValueError):
                 NEGATIVE.test_results(bad)
+
+
+class CheckoutContract(unittest.TestCase):
+    def setUp(self):
+        self.temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temporary.cleanup)
+        self.root = Path(self.temporary.name)
+        self.git('init', '-q', '-b', 'candidate')
+        self.git('config', 'user.name', 'Checkout regression')
+        self.git('config', 'user.email', 'checkout@example.invalid')
+        self.git('config', 'commit.gpgsign', 'false')
+        (self.root / 'cpu.rs').write_text('original owner\n')
+        self.git('add', 'cpu.rs')
+        self.git('commit', '-qm', 'candidate')
+        self.head = self.git('rev-parse', 'HEAD')
+        self.git('checkout', '--detach', '-q')
+        (self.root / 'cpu.rs').write_text('negative owner\n')
+        self.git('commit', '-qam', 'negative')
+        self.negative = self.git('rev-parse', 'HEAD')
+        self.git('checkout', '-q', 'candidate')
+
+    def git(self, *args):
+        return subprocess.check_output(['git', *args], cwd=self.root,
+                                       stderr=subprocess.DEVNULL).decode().strip()
+
+    def test_failure_restores_the_original_branch_and_exact_bytes(self):
+        with self.assertRaisesRegex(RuntimeError, 'original gate failed'):
+            with NEGATIVE.identified_checkout(self.root, self.head, self.negative):
+                self.assertEqual(self.git('rev-parse', 'HEAD'), self.negative)
+                self.assertEqual((self.root / 'cpu.rs').read_text(), 'negative owner\n')
+                raise RuntimeError('original gate failed')
+        self.assertEqual(self.git('symbolic-ref', '--short', 'HEAD'), 'candidate')
+        self.assertEqual(self.git('rev-parse', 'HEAD'), self.head)
+        self.assertEqual((self.root / 'cpu.rs').read_text(), 'original owner\n')
+        self.assertEqual(self.git('status', '--porcelain'), '')
+
+    def test_detached_candidate_restores_without_moving_a_branch(self):
+        self.git('checkout', '--detach', '-q', self.head)
+        with NEGATIVE.identified_checkout(self.root, self.head, self.negative):
+            self.assertEqual(self.git('rev-parse', 'HEAD'), self.negative)
+        self.assertEqual(self.git('rev-parse', 'HEAD'), self.head)
+        self.assertEqual(self.git('rev-parse', 'candidate'), self.head)
+        result = subprocess.run(['git', 'symbolic-ref', '--quiet', 'HEAD'], cwd=self.root)
+        self.assertEqual(result.returncode, 1)
+
+    def test_dirty_candidate_is_rejected_without_discarding_work(self):
+        (self.root / 'cpu.rs').write_text('unexpected edit\n')
+        with self.assertRaises(ValueError):
+            with NEGATIVE.identified_checkout(self.root, self.head, self.negative):
+                self.fail('dirty checkout was accepted')
+        self.assertEqual(self.git('rev-parse', 'HEAD'), self.head)
+        self.assertEqual((self.root / 'cpu.rs').read_text(), 'unexpected edit\n')
 
 
 if __name__ == '__main__':
