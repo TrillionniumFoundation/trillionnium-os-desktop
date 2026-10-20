@@ -71,6 +71,9 @@ impl RamFs {
         revalidation_policy: RevalidationPolicy,
     ) -> Arc<Self> {
         let root_dev_id = anon_device_id.id();
+        // A new mount belongs to the caller's filesystem IDs. The helper keeps
+        // root IDs during early boot and for kernel threads without credentials.
+        let (root_uid, root_gid) = utils::current_fs_ids();
         Arc::new_cyclic(move |weak_fs| Self {
             name,
             _anon_device_id: anon_device_id,
@@ -80,8 +83,8 @@ impl RamFs {
                 inner: Inner::new_dir(weak_root.clone(), weak_root.clone()),
                 metadata: SpinLock::new(InodeMeta::new_dir(
                     mkmod!(a+rx, u+w),
-                    Uid::new_root(),
-                    Gid::new_root(),
+                    root_uid,
+                    root_gid,
                 )),
                 ino: ROOT_INO,
                 typ: InodeType::Dir,

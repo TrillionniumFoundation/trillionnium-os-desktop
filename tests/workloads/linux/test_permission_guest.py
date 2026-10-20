@@ -31,6 +31,8 @@ def observation(name):
                     prefix + '_ctime_sec': 1700000000, prefix + '_ctime_nsec': 123})
     if policy.get('ctime_advance'):
         row['after_ctime_sec'] += 1
+    if policy['mount'] == 'mount' and not policy['errno']:
+        row['after_uid'], row['after_gid'] = row['fsuid'], row['fsgid']
     if policy['mount'] is None:
         row.update(marker_before=-1, marker_after=-1)
     else:
@@ -137,6 +139,14 @@ class VerdictTests(unittest.TestCase):
             row['marker_after'] = 1 - row['marker_after']
             with self.subTest(name=name):
                 self.assertFalse(runner.check_observation(row)['passed'])
+
+    def test_new_tmpfs_root_requires_filesystem_ids_and_requested_mode(self):
+        row = observation('mount_sysadmin')
+        self.assertTrue(runner.check_observation(row)['passed'])
+        for key, value in (('after_uid', 0), ('after_gid', 0), ('after_mode', 0o777)):
+            with self.subTest(key=key):
+                changed = dict(row, **{key: value})
+                self.assertFalse(runner.check_observation(changed)['passed'])
 
     def test_missing_duplicate_reordered_and_unknown_markers_fail(self):
         original = valid_lines()

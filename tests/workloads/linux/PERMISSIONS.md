@@ -13,12 +13,23 @@ tests, compilation, historical boot records, and kernel test listings do not
 qualify the profile. Its receipts explicitly leave pinned Debian 13 and Hepta
 HOS2 qualification false.
 
-The candidate kernel carries five upstream permission backports and one
-separate local correction: successful `Path::chown` updates ctime even when
+The candidate kernel carries five upstream permission backports and two
+separate local corrections. Successful `Path::chown` updates ctime even when
 both IDs are omitted and no mode/owner/group setter runs. The local ctime
 change is not attributed to the upstream backports. The 32nd added behavior,
 `chown_nonowner_noop`, verifies it through actual Linux and guest observations;
 its implementation alone is not a qualification result.
+
+New RAMFS/tmpfs roots also inherit the caller's filesystem UID/GID through
+the existing `current_fs_ids` helper, which retains root IDs for early boot
+and kernel threads without userspace credentials. The raw Linux/guest
+comparison from [PR #212's A06 run](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39369677714)
+exposed root IDs `65533:65533` on Linux and `0:0` on the prior Asterinas
+candidate. The existing `mount_sysadmin` case now checks those IDs and mode
+`0755` in both C and the independent Python oracle. Rejudging that retained
+old guest record fails precisely the root UID/GID checks while the retained
+Linux reference still passes. Fresh execution is required for the corrected
+kernel; the historical 32-case pass does not qualify this stronger check.
 
 ### Backport sources
 
@@ -111,7 +122,7 @@ groups, and a regular file starts as owner 65534, group 65534, mode `0644`.
 | `chmod_fsuid_owner` | FSUID is owner, EUID is non-owner, no capabilities | Mode `0600` |
 | `mount_nonroot_denied` | Non-root mounts tmpfs at an existing directory | `EPERM`; underlying marker visible |
 | `mount_root_without_cap_denied` | UID 0 without capabilities mounts tmpfs | `EPERM`; marker visible |
-| `mount_sysadmin` | Non-root, only `CAP_SYS_ADMIN`, mounts tmpfs | Success; marker hidden by new mount |
+| `mount_sysadmin` | Non-root, only `CAP_SYS_ADMIN`, mounts tmpfs | Success; marker hidden; root UID/GID `65533:65533`, mode `0755` |
 | `umount_nonroot_denied` | Non-root unmounts prepared tmpfs | `EPERM`; underlying marker still hidden |
 | `umount_root_without_cap_denied` | UID 0 without capabilities unmounts tmpfs | `EPERM`; marker hidden |
 | `umount_sysadmin` | Non-root, only `CAP_SYS_ADMIN`, unmounts tmpfs | Success; underlying marker visible again |

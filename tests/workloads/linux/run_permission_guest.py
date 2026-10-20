@@ -152,6 +152,10 @@ def check_observation(row):
         after = before if spec['errno'] else (1 if spec['mount'] == 'umount' else 0)
         if (row['marker_before'], row['marker_after']) != (before, after):
             failed.append('underlying_mount_marker_visibility')
+        if spec['mount'] == 'mount' and not spec['errno']:
+            for key, value in (('uid', row['fsuid']), ('gid', row['fsgid']), ('mode', 0o755)):
+                if row['after_' + key] != value:
+                    failed.append('mounted_root_' + key)
     return {'name': row['name'], 'passed': not failed, 'failed_conditions': failed}
 
 
