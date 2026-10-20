@@ -5,6 +5,8 @@ mod native;
 
 #[cfg(feature = "g1c-trusted-observe")]
 pub(crate) use native::{CpuUsageError, NativeCpuObserver};
+#[cfg(feature = "g1d-trusted-control")]
+pub(crate) use native::NativeCpuManager;
 
 use alloc::sync::Arc;
 use core::sync::atomic::{AtomicU32, Ordering};
@@ -69,6 +71,9 @@ struct CpuControl {
 #[derive(Clone, Copy)]
 struct CpuMax {
     quota_usec: u64,
+    /// The sub-microsecond part of this same quota. Linux writes clear it;
+    /// native writes preserve the exact nanosecond cap without another owner.
+    quota_sub_usec_ns: u64,
     period_usec: u64,
     window_start_ns: u64,
     used_ns: u64,
@@ -96,6 +101,19 @@ impl CpuMax {
     /// N0 snapshots separately require a finite cap no larger than 100ms.
     fn us_to_ns(us: u64) -> u64 {
         us.saturating_mul(1_000)
+    }
+
+    fn quota_ns(&self) -> u64 {
+        Self::us_to_ns(self.quota_usec).saturating_add(self.quota_sub_usec_ns)
+    }
+
+    /// The caller has admitted a fixed-period cap under this owner's lock.
+    /// Settle with the old quota first; retain consumption and positive debt.
+    #[cfg(any(ktest, feature = "g1d-trusted-control"))]
+    fn reconfigure_native(&mut self, cap_ns: u64, now: u64) {
+        self.advance(now);
+        self.quota_usec = cap_ns / 1_000;
+        self.quota_sub_usec_ns = cap_ns % 1_000;
     }
 
     fn period_ns(&self) -> u64 {
@@ -142,7 +160,7 @@ impl CpuMax {
             let allowance = if self.quota_usec == u64::MAX {
                 u64::MAX
             } else {
-                Self::us_to_ns(self.quota_usec).saturating_mul(elapsed)
+                self.quota_ns().saturating_mul(elapsed)
             };
             self.carry_debt_ns = self
                 .carry_debt_ns
@@ -160,7 +178,7 @@ impl CpuMax {
     /// This is O(1), even if the scheduler reports an unusually long interval.
     /// Empty periods repay existing debt but do not accumulate positive credit.
     fn debt_after_crossing(&self, from: u64, new_start: u64, period: u64) -> u64 {
-        let quota = Self::us_to_ns(self.quota_usec);
+        let quota = self.quota_ns();
         let old_end = self.window_start_ns.saturating_add(period);
         let old_spent = old_end.saturating_sub(from.max(self.window_start_ns));
         let mut debt = self
@@ -247,7 +265,7 @@ impl CpuMax {
         }
         self.advance(now);
         if self.quota_usec == u64::MAX
-            || self.used_ns.saturating_add(self.carry_debt_ns) < Self::us_to_ns(self.quota_usec)
+            || self.used_ns.saturating_add(self.carry_debt_ns) < self.quota_ns()
         {
             if let Some(since) = self.throttled_since_ns.take() {
                 self.throttled_ns = self.throttled_ns.saturating_add(now.saturating_sub(since));
@@ -277,6 +295,7 @@ impl CpuMax {
                 .and_then(|next| next.checked_mul(CPU_PERIOD_NS));
         }
         self.quota_usec = quota_usec;
+        self.quota_sub_usec_ns = 0;
         self.period_usec = period_usec;
         let period = self.period_ns();
         self.window_start_ns = now / period * period;
@@ -421,6 +440,7 @@ impl CpuControl {
             weight: AtomicU32::new(DEFAULT_WEIGHT),
             max: SpinLock::new(CpuBandwidthState::new(CpuMax {
                 quota_usec: DEFAULT_QUOTA_USEC,
+                quota_sub_usec_ns: 0,
                 period_usec: DEFAULT_PERIOD_USEC,
                 window_start_ns: 0,
                 used_ns: 0,
@@ -789,6 +809,7 @@ mod quota_debt_regressions {
     fn sample(quota_usec: u64, period_usec: u64, start: u64) -> CpuMax {
         CpuMax {
             quota_usec,
+            quota_sub_usec_ns: 0,
             period_usec,
             window_start_ns: start,
             used_ns: 0,

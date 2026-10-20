@@ -206,6 +206,11 @@ static int child_case(const struct test_case *test)
     REQUIRE((mounts ? stat("mountpoint", &before) : fstat(fd, &before)) == 0);
     int before_marker = mounts ? marker_present() : -1;
     REQUIRE(!mounts || before_marker >= 0);
+    if (test->operation == PIVOT_DENIED) {
+        // The marker lookup proves this real directory is searchable after dropping caps.
+        // Linux may resolve both pivot_root paths before checking CAP_SYS_ADMIN.
+        REQUIRE(S_ISDIR(before.st_mode) && before_marker == 1);
+    }
     if (test->ctime_advance) {
         // Separate timestamps even on filesystems with one-second resolution.
         const struct timespec delay = {.tv_sec = 1, .tv_nsec = 100000000};
@@ -224,7 +229,7 @@ static int child_case(const struct test_case *test)
     case UMOUNT_EXISTING: rc = umount2("mountpoint", 0); break;
     case MOUNT_MISSING: rc = mount("none", "missing", "tmpfs", 0, "mode=0755"); break;
     case UMOUNT_MISSING: rc = umount2("missing", 0); break;
-    case PIVOT_DENIED: rc = syscall(SYS_pivot_root, NULL, NULL); break;
+    case PIVOT_DENIED: rc = syscall(SYS_pivot_root, "mountpoint", "mountpoint"); break;
     }
     const int operation_errno = errno;
     REQUIRE((mounts ? stat("mountpoint", &after) : fstat(fd, &after)) == 0);

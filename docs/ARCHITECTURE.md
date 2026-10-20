@@ -47,7 +47,7 @@ cap接在ClassScheduler共同资格/计费路径，不仅修改fair.rs。固定�
 
 基础boot/页表/IRQ/时钟/熵 -> 独立init与恢复资源 -> CreateStoppedTask并归属资源域 -> 最终ELF装载和exec_epoch提交 -> 可信ActivateGrant绑定最终身份 -> 只读启动页交付句柄 -> Resume -> 满足存储要求的Hepta owners和桥。
 
-能力不能在exec前安装然后指望exec撤权后仍然存在；普通exec不自动重授。失败清理未激活任务，桥重启先fence旧管理者，再为新身份激活。该内部启动接合仍需实际源码实现，公开Transfer不是其前提。
+能力不能在exec前安装然后指望exec撤权后仍然存在；普通exec不自动重授。失败清理未激活任务，桥重启先fence旧管理者，再为新身份激活。固定静态映像的 G1-c/G1-d 实验接合见下方；一般动态 runtime 和重启授权仍需实现，公开Transfer不是其前提。
 
 独立OS恢复由基础init/监督进程承担，不以Hepta runtime.supervisor健康为唯一依赖。其CPU/内存/I/O和祖先资源不可被被管理域削减。用户暂停、租约过期与模型不可用按可信原因选择不同回退；具体规则见SECURITY_AND_RECOVERY。
 
@@ -59,7 +59,7 @@ cap接在ClassScheduler共同资格/计费路径，不仅修改fair.rs。固定�
 
 ## 8. 本轮源码边界
 
-`libs/os-abi/` 已由 A02 实现并在宿主验证编解码；主干只读设备复用同一 codec 处理 QueryAbi。五项操作的 codec 覆盖不等于五项内核设备实现，当前 `ReadUsage`、`InstallBudget`、`QueryDelivery`、`RetireThrough` 仍返回 `EOPNOTSUPP`。实际路径和开发入口见 [A05 实现手册](agents/handoffs/A05_KERNEL_CONTROL.md)，当前验收层次见 [STATUS](STATUS.md)。文档检查和规格模型不冒充内核、驱动或独立native应用runtime；保留上游实际目录，不为目录图搬动或复制源码。
+`libs/os-abi/` 已由 A02 实现并在宿主验证编解码；普通构建复用同一 codec 处理 QueryAbi，其 `ReadUsage`、`InstallBudget`、`QueryDelivery`、`RetireThrough` 仍返回 `EOPNOTSUPP`。[G1-c 显式 profile](agents/G1C_TRUSTED_OBSERVE_PROFILE.md) 连接受信初始映像的 ReadUsage；[G1-d 显式 profile](agents/G1D_TRUSTED_CONTROL_PROFILE.md) 连接五操作到原 Process、CPU owner 与 D core，资格 ack 不声称已接 Hepta durable owner。五项 codec、profile 源码与真实客体资格分别报告。通用路径见 [A05 实现手册](agents/handoffs/A05_KERNEL_CONTROL.md)，实际执行见 [STATUS](STATUS.md)。文档检查和规格模型不冒充内核、驱动或独立native应用runtime；保留上游实际目录，不为目录图搬动或复制源码。
 
 ## Organ 后端的执行边界补充
 

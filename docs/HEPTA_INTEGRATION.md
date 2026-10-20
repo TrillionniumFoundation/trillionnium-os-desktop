@@ -1,6 +1,6 @@
 # Hepta 的实际宿主接合
 
-版本0.3。固定上游 `f8c9419df6ddeb36ff8b522a50219981fb8d9345`；运行状态统一见 [STATUS](STATUS.md)。OS 层不复制第二套 Agent、Codex 主链或持久操作账本。
+版本0.4。实际生产 writer 接线路径已按 Hepta 候选 `44d98ca5501188b06c3df63fe57575d62c2ca8dd` 复核；该候选及 OS 接合的运行资格仍须分别看各自云端结果，不能由源码存在推定通过。运行状态统一见 [STATUS](STATUS.md)。OS 层不复制第二套 Agent、Codex 主链或持久操作账本。
 
 ## 1. 已核查源码到产品入口
 
@@ -36,22 +36,34 @@ Hepta topology/body generation 冻结执行主链与资源 envelope；authority 
 
 ## 5. 映射到实际持久操作结构
 
-固定Hepta操作库同时导出参考OperationIntentV1和DurableOperationIntentV1。实际持久路径为codex-rs/hepta-operations/src/durable_model.rs；不要把同名参考模型当作持久宿主。
+### 原宿主与唯一事务 owner
 
-**固定持久 K 与摘要分离（已按固定 Hepta SQL/源码实核）：** 原 `kernel.operations` 的持久记录由 `(scope_id: StableId, operation_id: StableId)` 联合主键索引，见 `codex-rs/hepta-operations/migrations/0001_durable_operations.sql` 的 `PRIMARY KEY (scope_id, operation_id)`；目的端去重额外纳入 `destination`，见 `destination_migrations/0001_operation_dedupe.sql`。原 `OperationIntentV1` 同时持有另一个独立 `payload_digest: Digest32` 字段，`semantic_digest()` 绑定 scope、operation、predecessor、destination 和该摘要。参考态 `model.rs::OperationKey { id: StableId, payload_digest: Digest32 }` 是**另一套参考模型的类型**，不是这个持久账本的联合主键。故 A03 的 K 值传递应无损携带 **两个 StableId**，而 A07 在既有唯一 owner 中另外验证最终 `payload_digest`、`semantic_digest`、最终使用授权及代际；禁止把参考模型类型直接替换持久 K，或将内核 D 当成持久主键。
+实际装配链为 `AgentdProductionOperationRuntimeConfig` → `AgentdProductionWriterHost` → `Arc<ProductionDurableWriter>` → 同一 `CognitiveStore` 中的 `LocalLeaseOutbox`。类型和调用分别位于 [production_writer_host.rs](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/44d98ca5501188b06c3df63fe57575d62c2ca8dd/codex-rs/hepta-agentd/src/production_writer_host.rs) 与 [production_writer.rs](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/44d98ca5501188b06c3df63fe57575d62c2ca8dd/codex-rs/hepta-memory/src/production_writer.rs)。该配置显式接收原 authority/verifier、lease/generation、FinalUse、目的适配器和外部 grant provider；普通启动不会自行签发授权或制造 writer。
 
-| 实际字段 | OS接合规则 |
+`hepta-operations` 的独立 `DurableOperationStore` 仍是该仓库已有 API，但不是上述 Agentd 生产路径实际使用的 journal。版本0.3把它的 `(scope_id, operation_id)` SQL 主键写成了生产宿主接合键，本节纠正这一映射；接合时不能再打开第二个 store 来迁就旧表述。
+
+实际 SQL 是 [hepta-memory/migrations/0011_kernel_operations.sql](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/44d98ca5501188b06c3df63fe57575d62c2ca8dd/codex-rs/hepta-memory/migrations/0011_kernel_operations.sql)：`cognitive_operation_ledger` 在本库以 `operation_id` 为主键，`semantic_sha256` 唯一；`(lease_id, event_id)` 和 `(lease_id, outbox_id)` 唯一且外键关联原 event/outbox。记录不可更新或删除，原 dispatch claim 链继续负责尝试次数、进入边界、代际和 fence。K 的作用域与摘要必须按这个实际 owner 校验，不能把参考类型、SQL 键或内核 D 混成一个值。
+
+| 实际 `ProductionDispatchRequest` 字段 | OS 接合规则 |
 | --- | --- |
-| scope_id | 原owner从已认证主体和既有工作区scope解析，不由OS另建scope数据库 |
-| operation_id | 原逻辑操作ID；进程/boot变化不自动换ID重放 |
-| expected_predecessor | 原owner固定的操作前驱；未决前驱不能伪造Applied来绕过 |
-| destination | 可信资源记录中的稳定object_id所对应的目的身份；不是PID或slot |
-| payload_digest | 不可变语义操作摘要，覆盖目标、动作、cap、资源前提和授权范围 |
-| owner_generation | writer fence，不属于逻辑操作查找键 |
+| `occurrence_key`、`idempotency_key` | 对应原逻辑 `operation_id`；进程或 boot 变化不能自动换 K 重放 |
+| `operation_subject_id`、`operation_scope_sha256` | 原已认证主体和 scope 摘要；OS 不另建主体或 scope 数据库 |
+| `operation_destination_id` | 原稳定目的身份；PID、fd、slot 只是调用时还须验证的句柄 |
+| `payload_json`、`payload_sha256` | 原 outbox 中已持久化的最终操作字节及摘要，完整绑定 D、目标、cap 与资源前提 |
+| `operation_semantic_sha256`、`operation_digest` | 分别沿用原语义意图和 FinalUse 请求摘要；适配器必须从字段重新核对，不能只相信自报 hash |
+| `expected_predecessor_sha256` | **目的端自身状态的 CAS 预期**，不是“前一个 K 已终态”的依赖关系；D 的顺序和未决前驱必须由原 owner 另行明确表达 |
+| `operation_policy_generation` | 原操作策略代际；与 OS resource revision、authority epoch、writer generation 分别校验 |
+| `lease_id`、writer 的 generation/fencing token | 原唯一 writer 的持久所有权；不能当作改变逻辑操作身份的手段 |
 
-semantic_digest与final_use_binding沿用原实现。D、request_id、CapSpace和句柄是另行核验的投递绑定，不因重启而偷偷改变同一逻辑意图。改变cap、目标或语义前提需要新意图及授权。OS资源revision、Hepta body generation、authority epoch和writer generation分别校验。
+### 效果入口和恢复规则
 
-源码依据：[持久模型](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-operations/src/durable_model.rs)及[导出区分](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/f8c9419df6ddeb36ff8b522a50219981fb8d9345/codex-rs/hepta-operations/src/lib.rs)。本表是待接合映射，不是已合并接口；SQL目的端共提交不等于设备效果与SQLite在同一事务内。
+目的端实现原 `FinalUseProductionOutboxTarget`。HOS2 的有界同步 ioctl 必须在 `with_verified_use` 的同步 consumer-entry 闭包中完成，之后才返回 outcome future；把实际 ioctl 放到未 poll 的 future 或后台任务会失去该边界。该 API 的授权线性化点在进入消费者前，闭包执行时并不一直持有签发器锁，不能描述成跨 SQLite、授权服务与内核的一次原子事务。
+
+投递前持久化同 K 的完整 D 和最终请求。复制回复失败、超时、进程退出或仅得到 `QueryDelivery::NotSeen` 都不能自动重发。只有实际同步入口拒绝分支能够证明本次尚未进入目的消费者；如需重新授权，必须在原 claim/event 事务内持久化与精确 Entered head、操作摘要和 fence 绑定的内部证明，并以新的外部授权重取原 K/D。证明提交丢失、owner 变化或并发终态先提交时保持未知。
+
+`observe_terminal` 必须返回与原 D、目标和 revision 匹配的完整终态，普通传输 ACK、当前 cap 相同或裸 `Committed` 标志都不足以许可退役。原 owner 要先持久保存完整连续终态证据，再向持有原 history-ack 能力的恢复器产生退役许可；退役回复丢失后只核对或幂等重取同一前沿。不得伪造前驱终态、用空操作烧掉 D、创建第二 writer，或由 OS 适配器自行签发 FinalUse。
+
+以上是实际宿主映射及接合验收要求。G1-d 的原生管理和内存历史 profile 见 [G1D_TRUSTED_CONTROL_PROFILE](agents/G1D_TRUSTED_CONTROL_PROFILE.md)；其恢复器内存确认不构成 Hepta SQLite 持久确认，真实 Hepta owner 接合与断电恢复仍须单独执行。
 
 ## 6. 历史核对、持续运行和目标收敛
 

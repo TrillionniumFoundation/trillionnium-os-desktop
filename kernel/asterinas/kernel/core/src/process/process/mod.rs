@@ -37,6 +37,12 @@ use crate::{
 };
 
 mod image;
+#[cfg(any(ktest, feature = "g1d-trusted-control"))]
+mod control_lock;
+#[cfg(any(ktest, feature = "g1d-trusted-control"))]
+pub(crate) use control_lock::KernelControlBackend;
+#[cfg(feature = "g1d-trusted-control")]
+mod trusted_control;
 mod init_proc;
 mod job_control;
 mod process_group;

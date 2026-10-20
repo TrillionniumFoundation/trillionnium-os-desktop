@@ -1,0 +1,77 @@
+name: G1-d native CPU management and independent recovery
+
+on:
+  pull_request:
+    paths:
+      - "kernel/asterinas/**"
+      - "libs/os-abi/**"
+      - "libs/os-control/**"
+      - "support/build/**"
+      - "support/upstream-lock.json"
+      - "tests/kernel/control/**"
+      - ".github/workflows/g1d-trusted-control.yml"
+  push:
+    branches: [main]
+    paths:
+      - "kernel/asterinas/**"
+      - "libs/os-abi/**"
+      - "libs/os-control/**"
+      - "support/build/**"
+      - "support/upstream-lock.json"
+      - "tests/kernel/control/**"
+      - ".github/workflows/g1d-trusted-control.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  trusted-initial-control:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Install disposable N0 build and guest dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            build-essential ca-certificates curl git python3 pkg-config libssl-dev \
+            clang lld qemu-system-x86 busybox-static gcc-13 libc6-dev binutils
+          bash support/build/prepare-host.sh
+
+      - name: Verify host verdict negative controls without disabling Python checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          out="${RUNNER_TEMP}/g1d-verdict-tests"
+          mkdir "$out"
+          python3 -I -B -m unittest discover -s tests/kernel/control -p test_g1d_guest.py -v \
+            > "$out/normal.log" 2>&1
+          python3 -I -B -O -m unittest discover -s tests/kernel/control -p test_g1d_guest.py -v \
+            > "$out/optimized.log" 2>&1
+
+      - name: Build the opt-in kernel and qualify real management, recovery and two refused images
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B tests/kernel/control/run_g1d_guest.py \
+            --expected-source-head "$(git rev-parse HEAD)" \
+            --expected-source-tree "$(git rev-parse HEAD^{tree})" \
+            --target-dir "${RUNNER_TEMP}/g1d-target" \
+            --output "${RUNNER_TEMP}/g1d-trusted-control"
+
+      - name: Retain exact source, build inputs, kernel and all guest evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: g1d-trusted-control-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/g1d-verdict-tests
+            ${{ runner.temp }}/g1d-trusted-control
+          if-no-files-found: error

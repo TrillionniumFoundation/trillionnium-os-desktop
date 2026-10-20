@@ -84,6 +84,8 @@ pub(crate) fn do_execve(
     // Terminate all other threads
     sigkill_other_threads(ctx.task, &task_set);
     drop(task_set);
+    #[cfg(feature = "g1d-trusted-control")]
+    ctx.process.revoke_closing_hepta_control();
 
     let former_tid = ctx.posix_thread.tid();
 

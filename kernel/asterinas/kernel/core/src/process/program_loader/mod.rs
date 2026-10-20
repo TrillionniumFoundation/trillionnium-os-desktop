@@ -31,6 +31,11 @@ pub(crate) struct UndetectedExecutable {
 }
 
 impl UndetectedExecutable {
+    #[cfg(feature = "g1d-trusted-control")]
+    pub(in crate::process) fn snapshot_trusted_initial(self) -> Result<elf::TrustedInitialSnapshot> {
+        elf::TrustedInitialSnapshot::read(self.file)
+    }
+
     /// The experimental initial loader consumes the opened input directly.
     /// Ordinary exec and shebang resolution never call this entry point.
     #[cfg(feature = "g1c-trusted-observe")]
