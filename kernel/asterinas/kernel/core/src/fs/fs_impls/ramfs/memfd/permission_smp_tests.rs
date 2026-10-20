@@ -95,7 +95,7 @@ fn permission_attr_smp() {
     let after = file.path().inode().metadata().unwrap();
     let sealed_mode = sealed_mode.load(Ordering::Acquire);
     let seals = file.get_seals().unwrap();
-    println!(
+    ostd::early_println!(
         "\nPERMISSION_SMP_OBSERVATION case=memfd_seal cpu_a={} cpu_b={} entered={} lock_busy={} a_rc={} b_rc={} mode={:o} sealed_mode={:o} seal_exec={}",
         checkpoint.checking_cpu.load(Ordering::Acquire),
         checkpoint.other_cpu.load(Ordering::Acquire),
