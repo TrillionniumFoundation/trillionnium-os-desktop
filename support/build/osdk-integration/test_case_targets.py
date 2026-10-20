@@ -19,7 +19,7 @@ SPEC.loader.exec_module(RUNNER)
 FIRST = "examples_in_book::test_and_run_projects::create_and_run_kernel"
 SECOND = "examples_in_book::work_in_workspace::work_in_workspace"
 CHILD = r'''
-import json,os,sys
+import hashlib,json,os,sys
 from pathlib import Path
 case=sys.argv[2]
 root=Path(os.environ["A01_FIXTURE_FIXED_ROOT"])
@@ -36,7 +36,7 @@ if not manifest.exists():
     manifest.write_text(str(project))
 bound=Path(manifest.read_text())
 out=Path(os.environ["A01_OSDK_CASE_OUTPUT"])
-(out/"child-target.json").write_text(json.dumps({"target":str(target),"project":str(project),"bound":str(bound),"bound_source_exists":(bound/"Cargo.toml").is_file()}))
+(out/"child-target.json").write_text(json.dumps({"target":str(target),"project":str(project),"bound":str(bound),"bound_source_exists":(bound/"Cargo.toml").is_file(),"seed_path":os.environ["OSDK_CARGO_LOCK"],"seed_sha256":hashlib.sha256(Path(os.environ["OSDK_CARGO_LOCK"]).read_bytes()).hexdigest()}))
 if bound!=project or not (bound/"Cargo.toml").is_file():
     print("STALE_SAME_NAME_WORKSPACE",str(bound),flush=True)
     raise SystemExit(1)
@@ -85,6 +85,7 @@ class PublicRunnerTargetsTests(unittest.TestCase):
                         "fixture::unused_" + str(i) for i in range(20)])
                 return "fixture\n"
             actual_command = RUNNER.command
+            actual_seed = RUNNER.prepare_root_seed
             def command(argv, cwd, env, log, timeout):
                 if str(argv[0]) == str(harness):
                     return actual_command(argv, cwd, env, log, timeout)
@@ -101,6 +102,8 @@ class PublicRunnerTargetsTests(unittest.TestCase):
             with mock.patch.dict(os.environ, {"CARGO_HOME": str(root / "cargo"),
                                              "RUSTUP_HOME": str(root / "rustup"),
                                              "A01_FIXTURE_FIXED_ROOT": str(fixed)}), \
+                    mock.patch.object(RUNNER, "prepare_root_seed", side_effect=
+                        lambda _project, _output: actual_seed(HERE.parents[2], _output)), \
                     mock.patch.object(RUNNER, "prepare_harness", side_effect=prepare), \
                     mock.patch.object(RUNNER, "checked_output", side_effect=checked), \
                     mock.patch.object(RUNNER, "command", side_effect=command), \
@@ -113,6 +116,9 @@ class PublicRunnerTargetsTests(unittest.TestCase):
             self.assertNotEqual(child[0]["target"], child[1]["target"])
             self.assertTrue(all(x["bound"] == x["project"] and x["bound_source_exists"] for x in child))
             for item in child:
+                self.assertEqual(item["seed_sha256"], RUNNER.ROOT_SEED_SHA256)
+                self.assertEqual(Path(item["seed_path"]), output / "upstream-root.Cargo.lock")
+                self.assertNotEqual(Path(item["seed_path"]), upstream / "Cargo.lock")
                 case_target = Path(item["target"])
                 self.assertFalse((case_target / "osdk").is_symlink())
                 self.assertTrue((case_target / "osdk/myos-run-base/Cargo.toml").is_file())

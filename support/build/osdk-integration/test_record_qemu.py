@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Pure argument checks for the integration shim; these do not boot guests."""
+"""Argument and owned-child lifecycle checks; these do not boot guests."""
 import importlib.util
 import fcntl
 import hashlib
@@ -227,8 +227,6 @@ class ProfileTests(unittest.TestCase):
             listener.getsockname.return_value = ("127.0.0.1", 54321)
             if occupied:
                 listener.bind.side_effect = OSError(98, "Address already in use")
-            context = MagicMock()
-            context.__enter__.return_value = process
             argv = ["record-qemu.py", "-kernel", str(kernel), "-chardev",
                     "stdio,id=mux,logfile=" + str(incoming_log), "--no-shutdown"]
             if local_tcp:
@@ -236,7 +234,7 @@ class ProfileTests(unittest.TestCase):
                 if paused:
                     argv.append("-S")
             ready = output / "gdb-ready.json"
-            popen = MagicMock(return_value=context)
+            popen = MagicMock(return_value=process)
             with patch.dict(os.environ, {"A01_OSDK_CASE_OUTPUT": str(output),
                                          "A01_OSDK_GUEST_TIMEOUT": "2",
                                          "A01_OSDK_GDB_READY": str(ready) if ready_marker else "",
@@ -560,8 +558,6 @@ class CaptureTests(unittest.TestCase):
             process = MagicMock(returncode=33, pid=12345)
             process.stdout, process.stderr = io.BytesIO(b"guest\n"), io.BytesIO()
             process.wait.side_effect = subprocess.TimeoutExpired(["qemu"], 0.05)
-            context = MagicMock()
-            context.__enter__.return_value = process
             listener = MagicMock()
             listener.fileno.return_value = 71
             listener.getsockname.return_value = ("127.0.0.1", 54321)
@@ -600,7 +596,7 @@ class CaptureTests(unittest.TestCase):
                     patch.object(shim.subprocess, "check_output", return_value="QEMU mock"), \
                     patch.object(shim.sys, "stdout", MagicMock(buffer=io.BytesIO())), \
                     patch.object(shim.sys, "stderr", MagicMock(buffer=io.BytesIO())), \
-                    patch.object(shim.subprocess, "Popen", return_value=context), \
+                    patch.object(shim.subprocess, "Popen", return_value=process), \
                     patch.object(shim, "run_capture", side_effect=capture):
                 self.assertEqual(shim.main(), 33)
             record = json.loads((output / "guests/guest-001/qemu.json").read_text())
@@ -610,6 +606,154 @@ class CaptureTests(unittest.TestCase):
             self.assertTrue(any(item.startswith("isa-debug-exit") for item in record["argv"]))
             marker = json.loads((output / "gdb-ready.json").read_text())
             self.assertEqual(marker["endpoint"]["port"], 34567)
+
+
+READER_START_WORKER = r"""
+import hashlib, importlib.util, io, json, os, subprocess, sys, time
+from pathlib import Path
+from unittest.mock import MagicMock, patch
+source, root, fail_at = Path(sys.argv[1]), Path(sys.argv[2]), int(sys.argv[3])
+spec = importlib.util.spec_from_file_location('recorder_under_test', source)
+recorder = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(recorder)
+output, kernel, bios = root / 'case', root / 'kernel', root / 'bios'
+kernel.write_bytes(b'controlled host fixture kernel bytes; not a guest')
+bios.write_bytes(b'controlled host fixture BIOS bytes; not firmware')
+real_popen, real_start = subprocess.Popen, recorder.threading.Thread.start
+owned, calls = [], 0
+
+def controlled_child(_argv, **kwargs):
+    child = real_popen([sys.executable, '-B', '-I', '-c', 'import time; time.sleep(60)'], **kwargs)
+    owned.append(child)
+    pending = root / 'owned-child.pending'
+    pending.write_text(json.dumps({'pid': child.pid}))
+    pending.rename(root / 'owned-child.json')
+    # Do not begin fault injection until the watchdog owns a pidfd. The
+    # unpolled, unreaped child retains its PID throughout this handshake.
+    deadline = time.monotonic() + 3
+    while not (root / 'pidfd-ready').exists():
+        if time.monotonic() >= deadline:
+            child.kill()
+            child.wait(timeout=2)
+            raise RuntimeError('test watchdog did not pin the owned child')
+        time.sleep(.01)
+    return child
+
+def failing_start(reader):
+    global calls
+    calls += 1
+    if calls == fail_at:
+        raise RuntimeError('injected reader start failure')
+    return real_start(reader)
+
+started = time.monotonic()
+with patch.dict(os.environ, {'A01_OSDK_CASE_OUTPUT': str(output),
+                             'A01_OSDK_GUEST_TIMEOUT': '30',
+                             'A01_OSDK_GDB_READY': '', 'A01_OSDK_LOCAL_TCP': '0',
+                             'A01_OSDK_PROFILE': 'osdk-native-unix-v1',
+                             'A01_OSDK_COVERAGE_GDB': '0',
+                             'A01_QEMU_BIOS': str(bios), 'A01_QEMU_DATA_DIR': str(root)}), \
+        patch.object(recorder.sys, 'argv', ['record-qemu.py', '-kernel', str(kernel)]), \
+        patch.object(recorder, 'FIRMWARE', bios), \
+        patch.object(recorder.shutil, 'which', return_value=sys.executable), \
+        patch.object(recorder.subprocess, 'check_output', return_value='controlled host fixture; no QEMU'), \
+        patch.object(recorder.subprocess, 'Popen', side_effect=controlled_child), \
+        patch.object(recorder.threading.Thread, 'start', new=failing_start), \
+        patch.object(recorder.sys, 'stdout', MagicMock(buffer=io.BytesIO())), \
+        patch.object(recorder.sys, 'stderr', MagicMock(buffer=io.BytesIO())):
+    status = recorder.main()
+elapsed = time.monotonic() - started
+assert len(owned) == 1, (output / 'guests/guest-001/qemu.json').read_text()
+child = owned[0]
+assert child.returncode is not None, 'owned fixture survived recorder return'
+try:
+    os.waitpid(child.pid, os.WNOHANG)
+except ChildProcessError:
+    reaped = True
+else:
+    reaped = False
+# A newly created, independent child must not receive any stale cleanup signal.
+successor = real_popen([sys.executable, '-B', '-I', '-c', 'import time; time.sleep(60)'],
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+try:
+    time.sleep(.1)
+    successor_alive = successor.poll() is None
+finally:
+    successor.kill()
+    successor.wait(timeout=2)
+record = json.loads((output / 'guests/guest-001/qemu.json').read_text())
+(root / 'result.json').write_text(json.dumps({
+    'scope': 'real controlled host children; no QEMU or Rust execution',
+    'source_sha256': hashlib.sha256(source.read_bytes()).hexdigest(),
+    'failure_at_reader': fail_at, 'start_calls': calls, 'status': status,
+    'elapsed_seconds': elapsed, 'owned_child_reaped': reaped,
+    'owned_raw_exit': child.returncode, 'successor_alive': successor_alive,
+    'record': record}, indent=2) + '\n')
+"""
+
+
+class ReaderStartLifecycleTests(unittest.TestCase):
+    """Use real owned host children; mocks alone cannot detect Popen exit hangs."""
+
+    def exercise_start_failure(self, fail_at):
+        import signal
+        import sys
+        import time
+
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            with (root / 'worker.log').open('wb') as log:
+                worker = subprocess.Popen([sys.executable, '-B', '-I', '-c', READER_START_WORKER,
+                                           str(Path(shim.__file__).resolve()), str(root), str(fail_at)],
+                                          stdout=log, stderr=subprocess.STDOUT)
+                descriptor = None
+                try:
+                    deadline = time.monotonic() + 3
+                    owned = root / 'owned-child.json'
+                    while not owned.exists() and worker.poll() is None:
+                        self.assertLess(time.monotonic(), deadline, 'fixture child was never spawned')
+                        time.sleep(.01)
+                    self.assertTrue(owned.exists(), (root / 'worker.log').read_text())
+                    descriptor = os.pidfd_open(json.loads(owned.read_text())['pid'])
+                    (root / 'pidfd-ready').write_text('watchdog pinned owned child before fault\n')
+                    try:
+                        status = worker.wait(timeout=4)
+                    except subprocess.TimeoutExpired:
+                        self.fail('recorder blocked after injected Thread.start failure')
+                    self.assertEqual(status, 0, (root / 'worker.log').read_text())
+                    result = json.loads((root / 'result.json').read_text())
+                    self.assertEqual(result['status'], 125)
+                    self.assertLess(result['elapsed_seconds'], 3)
+                    self.assertEqual(result['start_calls'], fail_at)
+                    self.assertTrue(result['owned_child_reaped'])
+                    self.assertEqual(result['owned_raw_exit'], -signal.SIGKILL)
+                    self.assertTrue(result['successor_alive'])
+                    self.assertEqual(result['record']['raw_exit_code'], -signal.SIGKILL)
+                    self.assertEqual(result['record']['wrapper_exit_code'], 125)
+                    self.assertIn('injected reader start failure', result['record']['error'])
+                    evidence = os.environ.get('A01_READER_START_EVIDENCE')
+                    if evidence:
+                        target = Path(evidence) / f'reader-{fail_at}'
+                        target.mkdir(parents=True, exist_ok=False)
+                        # The controlled fixture output contains no kernel success claim.
+                        import shutil
+                        shutil.copytree(root, target, dirs_exist_ok=True)
+                finally:
+                    if worker.poll() is None:
+                        worker.kill()
+                        worker.wait(timeout=2)
+                    if descriptor is not None:
+                        try:
+                            signal.pidfd_send_signal(descriptor, signal.SIGKILL)
+                        except ProcessLookupError:
+                            pass
+                        os.close(descriptor)
+
+    def test_first_reader_start_failure_reaps_owned_child(self):
+        self.exercise_start_failure(1)
+
+    def test_second_reader_start_failure_joins_only_started_reader(self):
+        self.exercise_start_failure(2)
 
 
 if __name__ == "__main__":

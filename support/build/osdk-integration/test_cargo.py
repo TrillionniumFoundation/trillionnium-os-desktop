@@ -1,4 +1,5 @@
 """Exercise the real Cargo adapter's dependency and path rejection boundaries."""
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -8,14 +9,19 @@ import tempfile
 import unittest
 
 HERE = Path(__file__).resolve().parent
-SEED = HERE.parents[2] / "kernel/asterinas/Cargo.lock"
+SPEC = importlib.util.spec_from_file_location("a01_root_seed_runner", HERE / "run.py")
+RUNNER = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(RUNNER)
 
 
 class CargoAdapterTests(unittest.TestCase):
     def invoke(self, args=("build",), *, drift=False, allowed=True, mutate=False,
-               adapter=None, missing_compiler=False):
+               adapter=None, missing_compiler=False, derived_seed=False):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
+            seed, _ = RUNNER.prepare_root_seed(HERE.parents[2], root)
+            if derived_seed:
+                seed.write_bytes((HERE.parents[2] / "kernel/asterinas/Cargo.lock").read_bytes())
             workspace = root / "generated"
             workspace.mkdir()
             (workspace / "Cargo.toml").write_text('[package]\nname="generated"\nversion="0.0.0"\n')
@@ -50,7 +56,7 @@ class CargoAdapterTests(unittest.TestCase):
             output.mkdir()
             env = os.environ.copy()
             env.update(A01_REAL_CARGO=str(fake), A01_OSDK_CASE_OUTPUT=str(output),
-                       OSDK_CARGO_LOCK=str(SEED),
+                       OSDK_CARGO_LOCK=str(seed),
                        RUSTC="/inherited/wrong-rustc", RUSTDOC="/inherited/wrong-rustdoc",
                        RUSTUP_TOOLCHAIN="unqualified-nightly", RUSTUP_AUTO_INSTALL="1",
                        A01_OSDK_ALLOWED_ROOTS=json.dumps([str(workspace if allowed else root / "other")]))
@@ -70,6 +76,13 @@ class CargoAdapterTests(unittest.TestCase):
         self.assertEqual(result["status"], 0, result["stderr"])
         self.assertIn("--locked", result["actual"])
         self.assertIn("--offline", result["actual"])
+
+    def test_downstream_working_lock_is_rejected_before_normalization(self):
+        result = self.invoke(derived_seed=True)
+        self.assertNotEqual(result["status"], 0)
+        self.assertIn("fixed upstream seed lock hash mismatch", result["stderr"])
+        self.assertIsNone(result["actual"])
+        self.assertFalse(any("metadata" in call["args"] for call in result["calls"]))
 
     def test_new_external_identity_prevents_actual_build(self):
         result = self.invoke(drift=True)

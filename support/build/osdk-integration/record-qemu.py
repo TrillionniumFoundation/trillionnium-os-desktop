@@ -652,28 +652,32 @@ def main():
         destination.write_text(json.dumps(record, indent=2) + "\n")
         stream_paths = {"stdout": guest / "qemu-stdout.log", "stderr": guest / "qemu-stderr.log"}
         stream_errors = []
+        started_readers = []
         with stream_paths["stdout"].open("wb") as stdout_log, \
-                stream_paths["stderr"].open("wb") as stderr_log, \
-                subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                 pass_fds=tuple(stream.fileno() for stream in (gdb_listener, monitor_socket)
-                                                if stream is not None)) as process:
-            record["qemu_pid"] = process.pid
-            if monitor_socket is not None:
-                monitor_socket.close()
-                monitor_socket = None
-                record["monitor_socket"]["parent_copy_closed_after_spawn"] = True
-                record["monitor_socket"]["qemu_pid"] = process.pid
-            if gdb_listener is not None:
-                gdb_listener.close()
-                gdb_listener = None
-                record["gdb_listener"]["parent_copy_closed_after_spawn"] = True
-            readers = [threading.Thread(target=tee_stream, args=(source, destination, sink, stream_errors))
-                       for source, destination, sink in (
-                           (process.stdout, stdout_log, sys.stdout.buffer),
-                           (process.stderr, stderr_log, sys.stderr.buffer))]
-            for reader in readers:
-                reader.start()
+                stream_paths["stderr"].open("wb") as stderr_log:
+            # Own cleanup explicitly: Popen.__exit__ would wait without a
+            # timeout when reader construction or Thread.start fails.
+            process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                       pass_fds=tuple(stream.fileno() for stream in (gdb_listener, monitor_socket)
+                                                      if stream is not None))
             try:
+                record["qemu_pid"] = process.pid
+                if monitor_socket is not None:
+                    monitor_socket.close()
+                    monitor_socket = None
+                    record["monitor_socket"]["parent_copy_closed_after_spawn"] = True
+                    record["monitor_socket"]["qemu_pid"] = process.pid
+                if gdb_listener is not None:
+                    gdb_listener.close()
+                    gdb_listener = None
+                    record["gdb_listener"]["parent_copy_closed_after_spawn"] = True
+                for source, output, sink in (
+                        (process.stdout, stdout_log, sys.stdout.buffer),
+                        (process.stderr, stderr_log, sys.stderr.buffer)):
+                    reader = threading.Thread(target=tee_stream,
+                                              args=(source, output, sink, stream_errors), daemon=True)
+                    reader.start()
+                    started_readers.append((reader, source))
                 if gdb_endpoint:
                     try:
                         early_status = process.wait(timeout=0.05)
@@ -699,20 +703,25 @@ def main():
                 else:
                     status = process.wait(timeout=timeout)
             except subprocess.TimeoutExpired:
-                process.kill()
-                process.wait()
-                status = 124
                 record["timed_out"] = True
+                process.kill()
+                process.wait(timeout=2)
+                status = 124
             except BaseException:
                 process.kill()
-                process.wait()
+                process.wait(timeout=2)
                 raise
             finally:
-                # Both pipes are drained concurrently while QEMU runs. Joining
-                # only after wait/kill avoids either full pipe blocking QEMU.
-                for reader in readers:
-                    reader.join()
                 record["raw_exit_code"] = process.returncode
+                # Only successfully started threads own their pipe. Killing
+                # and reaping the child first releases their blocking reads.
+                for reader, _source in started_readers:
+                    reader.join(timeout=2)
+                    if reader.is_alive():
+                        stream_errors.append("QEMU output reader did not stop within 2 seconds")
+                for source in (process.stdout, process.stderr):
+                    if not any(owned is source for _reader, owned in started_readers):
+                        source.close()
         record["stream_logs"] = {name: file_record(path) for name, path in stream_paths.items()}
         if stream_errors:
             record["stream_errors"] = stream_errors
@@ -736,7 +745,7 @@ def main():
                 raise
         verify_input_snapshots(record, helpers)
         record["snapshot_verification"]["after_qemu"] = True
-    except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError) as error:
+    except (OSError, ValueError, KeyError, TypeError, RuntimeError, subprocess.SubprocessError) as error:
         status = 124 if record["timed_out"] else 125
         record["error"] = f"{type(error).__name__}: {error}"
         print(record["error"], file=sys.stderr)

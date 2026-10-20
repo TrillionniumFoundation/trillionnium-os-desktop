@@ -133,7 +133,8 @@ descendants that leave the group are outside this contract. No numeric group
 signal is sent after leader reap, and ECHILD disarms such signalling.
 
 The production OSDK binary is built directly from `kernel/asterinas/osdk` with
-its original `Cargo.lock` and `--locked`. A separate test-only package copies
+its explicitly approved downstream `Cargo.lock` and `--locked`. Its original
+upstream lock and the exact host-only derivation remain separately verified. A separate test-only package copies
 the upstream tests into the run directory. Its three harness substitutions are:
 
 1. Fixed `/tmp` string prefixes point to a newly created short `/tmp/a01oi-*`
@@ -150,9 +151,18 @@ unchanged. The helper's original relative toolchain include is supported by an
 exact copy of the pinned toolchain file. Existing host `/tmp/myos`,
 `/tmp/myworkspace`, and similar paths are untouched.
 
-The test package's lock is normalized offline from the original OSDK lock.
-For generated kernel/library workspaces, the Cargo shim normalizes the original
-root Asterinas lock offline, verifies every external package's name, version,
+The test package's lock is normalized offline from the approved downstream OSDK
+lock (SHA256 `1011e26a7070708d37f2062a84b309d2c228c177a9e5434bfe63917203c17a18`).
+For generated kernel/library workspaces, the runner extracts `Cargo.lock` from
+Git commit `c4b7ed575b7b32773475b194d2ad41fb6d03765b` into the new run's
+`upstream-root.Cargo.lock`. The SHA256 must be
+`6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316`;
+`root-lock-seed.json` records its Git blob and bytes. The working root lock
+contains downstream dependencies and cannot serve as this upstream seed.
+A missing Git object fails before Cargo; a fresh checkout can obtain the exact
+object with `git fetch https://github.com/asterinas/asterinas.git c4b7ed575b7b32773475b194d2ad41fb6d03765b`.
+The Cargo shim checks the seed again on every request, normalizes that original
+root lock offline, verifies every external package's name, version,
 source and checksum against that seed, then executes the real Cargo command
 with `--locked --offline`. It only writes locks under the run's generated
 directories. Every normalization, lock and command is recorded. A dependency

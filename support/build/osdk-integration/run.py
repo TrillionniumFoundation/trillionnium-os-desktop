@@ -20,6 +20,8 @@ import time
 import tomllib
 
 TOOLCHAIN = "nightly-2026-07-21"
+UPSTREAM_COMMIT = "c4b7ed575b7b32773475b194d2ad41fb6d03765b"
+ROOT_SEED_SHA256 = "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316"
 UPSTREAM_HARNESS_SEED_SHA256 = "99a21f72f6a9f1582553b34f06e80f86e539f38e62eab7a0847afd0906e75be3"
 DERIVED_HARNESS_SEED_SHA256 = "1011e26a7070708d37f2062a84b309d2c228c177a9e5434bfe63917203c17a18"
 UNIX_PROFILE = "osdk-native-unix-v1"
@@ -54,6 +56,39 @@ VM_CASES = {
 
 def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def prepare_root_seed(project, output):
+    """Extract the original root lock; the downstream working lock is not a seed.
+
+    The fixed upstream Git object is also required by verify-source.py. Never
+    substitute a worktree file or fetch a moving ref when that object is absent.
+    Every Cargo adapter invocation independently checks these original bytes.
+    """
+    object_name = UPSTREAM_COMMIT + ":Cargo.lock"
+    try:
+        content = subprocess.check_output(
+            ["git", "cat-file", "blob", object_name], cwd=project,
+            stderr=subprocess.PIPE, timeout=30)
+    except (OSError, subprocess.CalledProcessError, subprocess.TimeoutExpired) as error:
+        raise SystemExit(
+            f"cannot read fixed upstream root lock {object_name}: {error}; "
+            "fetch the pinned Asterinas commit before running this suite") from error
+    sha256 = hashlib.sha256(content).hexdigest()
+    if sha256 != ROOT_SEED_SHA256:
+        raise SystemExit("fixed upstream root lock seed hash mismatch")
+    path = output / "upstream-root.Cargo.lock"
+    # The caller owns a new output directory. Exclusive creation also rejects
+    # preexisting paths and symlinks instead of overwriting another run's input.
+    with path.open("xb") as stream:
+        stream.write(content)
+    record = {"git_commit": UPSTREAM_COMMIT, "path_in_upstream": "Cargo.lock",
+              "git_blob": hashlib.sha1(f"blob {len(content)}\0".encode() + content).hexdigest(),
+              "sha256": sha256, "bytes": len(content), "path": str(path)}
+    with (output / "root-lock-seed.json").open("x") as stream:
+        json.dump(record, stream, indent=2)
+        stream.write("\n")
+    return path, record
 
 
 def external(data):
@@ -634,6 +669,7 @@ def _run_locked(args, here, project, upstream, output, fixed_root):
     env["OSDK_LOCAL_DEV"] = "1"
     env.pop("INTEL_TDX", None)
     env.pop("OSDK_CARGO_LOCK", None)
+    root_seed, root_seed_record = prepare_root_seed(project, output)
     commands = []
     harness_root, fixed_root = prepare_harness(upstream, output, real_cargo, env, args.local_tcp,
                                               fixed_root=fixed_root)
@@ -678,7 +714,7 @@ def _run_locked(args, here, project, upstream, output, fixed_root):
     env["A01_REAL_CARGO"] = str(real_cargo)
     env["A01_REAL_OSDK"] = str(osdk)
     env["CARGO_BIN_EXE_cargo-osdk"] = str(here / "osdk.py")
-    env["OSDK_CARGO_LOCK"] = str(upstream / "Cargo.lock")
+    env["OSDK_CARGO_LOCK"] = str(root_seed)
     env["A01_OSDK_GUEST_TIMEOUT"] = str(min(args.case_timeout, 300))
     environment = {"schema": 1, "started_utc": datetime.now(timezone.utc).isoformat(),
                    "git_head": checked_output(["git", "rev-parse", "HEAD"], project, env,
@@ -698,7 +734,9 @@ def _run_locked(args, here, project, upstream, output, fixed_root):
                    "control_transport": "loopback-tcp" if args.local_tcp else "upstream-unix",
                    "harness_path": str(harness), "harness_sha256": digest(harness),
                    "osdk_path": str(osdk), "osdk_sha256": digest(osdk),
-                   "seed_lock_sha256": digest(upstream / "Cargo.lock"),
+                   "seed_lock_sha256": root_seed_record["sha256"],
+                   "seed_lock_source": root_seed_record,
+                   "working_root_lock_sha256": digest(upstream / "Cargo.lock"),
                    "runner_inputs_sha256": {str(p.relative_to(project)): digest(p)
                        for p in [*sorted(here.rglob("*")), here.parent / "record-qemu.py"]
                        if p.is_file() and "__pycache__" not in p.parts},

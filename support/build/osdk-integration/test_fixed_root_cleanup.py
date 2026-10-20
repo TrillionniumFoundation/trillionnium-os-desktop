@@ -69,7 +69,10 @@ class FixedRootCleanupTests(unittest.TestCase):
                               "unknown-lock": "fixed derived OSDK harness seed lock differs"}
             command = mock.Mock(side_effect=[{"raw_exit_code": 0}, {"raw_exit_code": 1}]) \
                 if mode == "build" else mock.Mock(return_value={"raw_exit_code": 1})
-            with mock.patch.object(RUNNER.tempfile, "mkdtemp", side_effect=allocate), \
+            actual_seed = RUNNER.prepare_root_seed
+            with mock.patch.object(RUNNER, "prepare_root_seed", side_effect=
+                    lambda _project, _output: actual_seed(HERE.parents[2], _output)), \
+                    mock.patch.object(RUNNER.tempfile, "mkdtemp", side_effect=allocate), \
                     mock.patch.object(RUNNER, "checked_output", return_value=
                         "commit-hash: 87e5904f5eb6398af6b22eac2802c78934260c48\n"), \
                     mock.patch.object(RUNNER, "command", command):

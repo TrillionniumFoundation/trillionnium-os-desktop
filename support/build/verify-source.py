@@ -90,11 +90,15 @@ APPROVED_HOST_OSDK_INPUTS = {
 
 
 def inspect_local_dependency_inputs():
-    """Protect local build metadata and record the actual downstream Rust inputs.
+    """Check the actual local crate file set and record every declared input.
 
-    Unlike upstream manifests, project Rust sources may change during development.
-    Record their actual hashes and HEAD relationship without treating HEAD as proof
-    of the bytes consumed by a previous or subsequent compiler invocation.
+    Cargo discovers a package-root build.rs even when it is not named in the
+    manifest. Rust sources may also include data with arbitrary extensions.
+    Enumerating only tracked Rust/manifests therefore cannot establish absence
+    of additional build inputs. Check the filesystem independently of ignore
+    rules; the crate-root target directory is the sole build-output exclusion.
+    Intended new inputs must be committed before this fixed-source build route.
+    Existing Rust/data changes remain recorded without freezing development.
     """
     records, errors = {}, []
     prefix = "libs/os-control/"
@@ -108,15 +112,49 @@ def inspect_local_dependency_inputs():
     for entry in filter(None, entries):
         metadata, raw_name = entry.split(b"\t", 1)
         name = os.fsdecode(raw_name)
-        if name.startswith(prefix) and (name.endswith(".rs") or
-                name.rsplit("/", 1)[-1] in {"Cargo.toml", "Cargo.lock"}):
+        if name.startswith(prefix):
             selected[name] = metadata.decode().split()
     for required in (prefix + "Cargo.toml", prefix + "src/lib.rs"):
         if required not in selected:
             errors.append(f"{required}: required local dependency input is not tracked in HEAD")
+
+    # Do not follow a replaced crate/ancestor directory or any directory symlink.
+    # Missing/unreadable directories must fail closed rather than silently
+    # reducing the set of inputs. The known output exclusion is not allowed to
+    # hide HEAD-tracked inputs under target/.
+    crate = ROOT / "libs/os-control"
+    try:
+        for directory in (ROOT / "libs", crate):
+            if not stat.S_ISDIR(directory.lstat().st_mode):
+                raise ValueError(f"{directory.relative_to(ROOT)} must be a real directory")
+    except (OSError, ValueError) as error:
+        return records, errors + [f"libs/os-control: {error}"]
+    directories, pending = set(), [crate]
+    while pending:
+        directory = pending.pop()
+        try:
+            with os.scandir(directory) as iterator:
+                children = sorted(iterator, key=lambda item: item.name)
+            directories.add(directory)
+            for child in children:
+                path = directory / child.name
+                name = path.relative_to(ROOT).as_posix()
+                info = child.stat(follow_symlinks=False)
+                if stat.S_ISDIR(info.st_mode):
+                    if (name == prefix + "target" and
+                            not any(item.startswith(name + "/") for item in selected)):
+                        continue
+                    pending.append(path)
+                elif name not in selected:
+                    errors.append(f"{name}: undeclared local dependency input (not tracked in HEAD)")
+        except OSError as error:
+            errors.append(f"{directory.relative_to(ROOT)}: cannot inspect actual crate files: {error}")
+
     for name, (mode, kind, expected) in selected.items():
         try:
             path = ROOT / name
+            if path.parent not in directories:
+                raise ValueError("input parent is not a verified real directory")
             info = path.lstat()
             if kind != "blob" or not stat.S_ISREG(info.st_mode):
                 raise ValueError("expected regular file")
@@ -207,9 +245,11 @@ def main():
               "approved_host_osdk_derivations": host_derivations,
               "local_dependency_inputs": local_inputs,
               "local_dependency_input_scope": (
-                  "HEAD-tracked os-control manifests, standalone lock and Rust files; "
-                  "the kernel resolves kernel/asterinas/Cargo.lock. Actual source hashes "
-                  "describe this check only; producer snapshots must include the full crate."
+                  "All HEAD-tracked os-control crate files, with undeclared filesystem "
+                  "inputs rejected independently of Git ignore rules. Only the real crate-root "
+                  "target build-output directory is excluded when it has no tracked inputs. "
+                  "The kernel resolves kernel/asterinas/Cargo.lock. Actual source hashes "
+                  "describe this check only; they are not a compiler-time atomic snapshot."
               ),
               "passed": not errors}
     print(json.dumps(report, indent=2))

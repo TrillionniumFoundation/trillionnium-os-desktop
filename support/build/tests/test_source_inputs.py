@@ -52,9 +52,8 @@ class SourceInputs(unittest.TestCase):
             metadata, raw_name = entry.split(b'\t', 1)
             mode, kind, blob = metadata.decode().split()
             name = os.fsdecode(raw_name)
-            if name.endswith('.rs') or name.rsplit('/', 1)[-1] in {'Cargo.toml', 'Cargo.lock'}:
-                content = subprocess.check_output(['git', 'cat-file', 'blob', blob], cwd=VERIFY.ROOT)
-                cls.local_fixtures[name] = (mode, content)
+            content = subprocess.check_output(['git', 'cat-file', 'blob', blob], cwd=VERIFY.ROOT)
+            cls.local_fixtures[name] = (mode, content)
 
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory(prefix='a01-source-inputs-')
@@ -230,6 +229,89 @@ class SourceInputs(unittest.TestCase):
         status, report = self.check(local_tree=b'')
         self.assertEqual(status, 1)
         self.assertIn('libs/os-control/Cargo.toml: required local dependency input is not tracked in HEAD', report['errors'])
+
+    def test_untracked_implicit_build_script_is_refused(self):
+        path = self.root / 'libs/os-control/build.rs'
+        path.write_text('fn main() {}\n')
+        status, report = self.check()
+        self.assertEqual(status, 1, report)
+        self.assertIn('libs/os-control/build.rs: undeclared local dependency input (not tracked in HEAD)',
+                      report['errors'])
+
+    def test_gitignored_implicit_build_script_is_refused(self):
+        crate = self.root / 'libs/os-control'
+        with (crate / '.gitignore').open('a') as output:
+            output.write('\n/build.rs\n')
+        (crate / 'build.rs').write_text('fn main() {}\n')
+        status, report = self.check()
+        self.assertEqual(status, 1, report)
+        self.assertTrue(any(error.startswith('libs/os-control/build.rs:') for error in report['errors']))
+
+    def test_untracked_included_non_rust_data_is_refused(self):
+        source = self.root / 'libs/os-control/src/lib.rs'
+        with source.open('a') as output:
+            output.write('\nconst _: &[u8] = include_bytes!("rules.data");\n')
+        source.with_name('rules.data').write_bytes(b'new compiler input')
+        status, report = self.check()
+        self.assertEqual(status, 1, report)
+        self.assertTrue(any(error.startswith('libs/os-control/src/rules.data:') for error in report['errors']))
+
+    def test_tracked_non_rust_data_is_recorded(self):
+        name, content = 'libs/os-control/src/rules.data', b'declared compiler input'
+        (self.root / name).write_bytes(content)
+        blob = hashlib.sha1(f'blob {len(content)}\0'.encode() + content).hexdigest()
+        entry = f'100644 blob {blob}\t{name}\0'.encode()
+        status, report = self.check(local_tree=LOCAL_TREE + entry)
+        self.assertEqual(status, 0, report)
+        self.assertEqual(report['local_dependency_inputs'][name]['sha256'],
+                         hashlib.sha256(content).hexdigest())
+        self.assertTrue(report['local_dependency_inputs'][name]['matches_head'])
+
+    def test_generated_crate_target_outputs_are_excluded(self):
+        target = self.root / 'libs/os-control/target/debug/build/fake/out'
+        target.mkdir(parents=True)
+        (target / 'generated.rs').write_bytes(b'ordinary build output')
+        status, report = self.check()
+        self.assertEqual(status, 0, report)
+        self.assertFalse(any('/target/' in name for name in report['local_dependency_inputs']))
+
+    def test_tracked_input_under_target_is_not_hidden_by_output_exclusion(self):
+        name, content = 'libs/os-control/target/declared.data', b'explicit tracked input'
+        (self.root / name).parent.mkdir()
+        (self.root / name).write_bytes(content)
+        blob = hashlib.sha1(f'blob {len(content)}\0'.encode() + content).hexdigest()
+        entry = f'100644 blob {blob}\t{name}\0'.encode()
+        status, report = self.check(local_tree=LOCAL_TREE + entry)
+        self.assertEqual(status, 0, report)
+        self.assertIn(name, report['local_dependency_inputs'])
+
+    def test_replaced_crate_or_source_directory_is_refused(self):
+        for name in ('libs/os-control', 'libs/os-control/src'):
+            with self.subTest(name=name):
+                directory = self.root / name
+                saved = self.root / 'saved-input-directory'
+                directory.rename(saved)
+                directory.symlink_to(saved, target_is_directory=True)
+                try:
+                    status, report = self.check()
+                    self.assertEqual(status, 1, report)
+                    self.assertTrue(any(error.startswith('libs/os-control') for error in report['errors']))
+                finally:
+                    directory.unlink()
+                    saved.rename(directory)
+
+    def test_target_symlink_is_not_treated_as_build_output(self):
+        target = self.root / 'libs/os-control/target'
+        target.symlink_to(self.root, target_is_directory=True)
+        status, report = self.check()
+        self.assertEqual(status, 1, report)
+        self.assertTrue(any(error.startswith('libs/os-control/target:') for error in report['errors']))
+
+    def test_failed_actual_crate_enumeration_is_refused(self):
+        with mock.patch.object(VERIFY.os, 'scandir', side_effect=PermissionError('injected enumeration failure')):
+            status, report = self.check()
+        self.assertEqual(status, 1, report)
+        self.assertTrue(any('cannot inspect actual crate files' in error for error in report['errors']))
 
     def test_root_readme_guard_preserved(self):
         (self.root / 'README.md').write_bytes(b'x')
