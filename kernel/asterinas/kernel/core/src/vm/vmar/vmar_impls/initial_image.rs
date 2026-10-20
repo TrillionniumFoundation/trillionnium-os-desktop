@@ -159,20 +159,20 @@ mod tests {
 }
 
 impl VmarInner {
-    fn intersects_initial_image(&self, range: &Range<Vaddr>) -> bool {
+    pub(super) fn intersects_initial_image(&self, range: &Range<Vaddr>) -> bool {
         self.sealed_initial_ranges.as_ref().is_some_and(|ranges| {
             ranges.iter().any(|sealed| range.start < sealed.end && sealed.start < range.end)
         })
     }
 
-    fn check_initial_image_not_replaced(&self, range: &Range<Vaddr>) -> Result<()> {
+    pub(super) fn check_initial_image_not_replaced(&self, range: &Range<Vaddr>) -> Result<()> {
         if self.intersects_initial_image(range) {
             return_errno_with_message!(Errno::EPERM, "trusted initial image mapping is sealed")
         }
         Ok(())
     }
 
-    fn check_initial_image_no_remap(&self) -> Result<()> {
+    pub(super) fn check_initial_image_no_remap(&self) -> Result<()> {
         if self.sealed_initial_ranges.is_some() {
             return_errno_with_message!(Errno::EPERM, "trusted initial profile does not allow remap aliases")
         }
