@@ -472,6 +472,7 @@ int main(int argc, char **argv) {
     CHECK(getpid() == 1 && argc == 1, "actual_initial_process");
     record("G1C_INIT_STARTED pid=1");
     check_boot_page();
+    CHECK(mount("none", "/dev", "devtmpfs", 0, NULL) == 0, "mount_devtmpfs");
     CHECK(mount("none", "/proc", "proc", 0, NULL) == 0, "mount_proc");
     CHECK(mount("none", "/sys", "sysfs", 0, NULL) == 0, "mount_sysfs");
     CHECK(mount("none", "/sys/fs/cgroup", "cgroup2", 0, NULL) == 0, "mount_cgroup");
