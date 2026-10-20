@@ -23,6 +23,14 @@ grants, A07 Final-use, signer verification, and device authority still require
 the future owner integration. The broker therefore grants only Observe,
 OfflineDraft, and Reconcile; SubmitEffect and CancelEffect are always denied.
 
+Each SessionHandle is bound to the Broker instance that authenticated it.
+Its numeric session_id is a local counter, not a transferable credential.
+Another Broker, including one created after a restart, rejects the old handle
+even when its local counter has the same value. A foreign handle cannot close
+a local session. Clones keep the original session identity; closing that
+session invalidates every clone. This process-local binding does not replace
+transport authentication or grant any effect authority.
+
 The broker operation and replay maps are bounded process caches used to
 remember an indeterminate observation and make notification replay idempotent.
 They are not a second K ledger. The maps are intentionally lost on restart.
@@ -37,4 +45,5 @@ stored by the local draft facility, but cannot submit an effect.
 
 The crate adversarial tests cover protocol version/unknown-field rejection,
 foreign-UID rejection, denied effect capabilities, K/D separation, generation
-fences, unknown reconciliation, bounded notification loss, and replay conflict.
+fences, unknown reconciliation, bounded notification loss, replay conflict,
+foreign/restarted Broker handles, and shared clone invalidation.

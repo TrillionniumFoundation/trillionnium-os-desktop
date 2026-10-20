@@ -13,6 +13,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet, VecDeque};
 use std::fmt;
 use std::io;
+use std::sync::Arc;
 
 pub const PROTOCOL_VERSION: u16 = 1;
 pub const MAX_TOKEN_BYTES: usize = 128;
@@ -143,10 +144,19 @@ pub fn peer_credentials_from_unix(
     })
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug)]
 pub struct SessionHandle {
     id: u64,
+    broker_identity: Arc<()>,
 }
+
+impl PartialEq for SessionHandle {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id && Arc::ptr_eq(&self.broker_identity, &other.broker_identity)
+    }
+}
+
+impl Eq for SessionHandle {}
 
 impl SessionHandle {
     pub fn id(&self) -> u64 {
@@ -504,6 +514,9 @@ struct SessionRecord {
 
 #[derive(Debug)]
 pub struct Broker {
+    // Each instance owns a distinct allocation. Retained handles keep it alive,
+    // so a replacement broker cannot reuse their identity after restart.
+    identity: Arc<()>,
     next_session: u64,
     sessions: BTreeMap<u64, SessionRecord>,
     operations: BTreeMap<OperationKey, OperationRecord>,
@@ -516,6 +529,7 @@ pub struct Broker {
 impl Default for Broker {
     fn default() -> Self {
         Self {
+            identity: Arc::new(()),
             next_session: 1,
             sessions: BTreeMap::new(),
             operations: BTreeMap::new(),
@@ -560,7 +574,10 @@ impl Broker {
             },
         );
         Ok((
-            SessionHandle { id },
+            SessionHandle {
+                id,
+                broker_identity: Arc::clone(&self.identity),
+            },
             SessionInfo {
                 protocol_version: PROTOCOL_VERSION,
                 session_id: id,
@@ -573,11 +590,18 @@ impl Broker {
     }
 
     pub fn close_session(&mut self, session: &SessionHandle) {
-        self.sessions.remove(&session.id);
+        if Arc::ptr_eq(&self.identity, &session.broker_identity) {
+            self.sessions.remove(&session.id);
+        }
     }
 
     pub fn handle(&mut self, session: &SessionHandle, request: Request) -> Response {
-        let Some(record) = self.sessions.get(&session.id).cloned() else {
+        let Some(record) = self
+            .sessions
+            .get(&session.id)
+            .filter(|_| Arc::ptr_eq(&self.identity, &session.broker_identity))
+            .cloned()
+        else {
             return Response::Denied {
                 code: DenialCode::UnauthenticatedSession,
                 detail: BrokerError::SessionUnknown.to_string(),
