@@ -28,18 +28,18 @@
     "verification_evidence": "support/build/evidence/2026-10-16-boot-binding/report.json",
     "acceptance_guard_commit": "2c658089bb90aa5b254ddf336ef3dc1333e755c9",
     "kernel_mode_regression": {
-      "evidence": "support/build/evidence/2026-10-19-mainf9/ktest/result.json",
-      "code_commit": "7758ffe294bb0e1eab46e20cba60e8af9d8bcd61",
-      "source_tree": "98c7b099ff280f0804041dca13d691d431a8caf6",
+      "evidence": "support/build/evidence/2026-10-20-main0c1/report.json",
+      "code_commit": "a927146241a8622affd6172a1584c9555ba3cc6b",
+      "source_tree": "eb297ece2b8e067716d3da389bf342015c2ac2d3",
       "crates": [
         "ostd",
         "aster-core"
       ],
-      "reported_passed": 390,
+      "reported_passed": 468,
       "failed": 0,
       "filtered": 0,
       "soft_skipped": 3,
-      "exercised_passed_lower_bound": 387,
+      "exercised_passed_lower_bound": 465,
       "profile": "x86_64-q35-tcg-1cpu-512MiB",
       "test_base_locks": {
         "ostd": {
@@ -48,12 +48,12 @@
         },
         "aster-core": {
           "path": "support/build/ktest/locks/aster-core.Cargo.lock",
-          "sha256": "159b8682d27a7a21af98885ae48515234445c00fdf5e00b158fdc4aa952ff4ed"
+          "sha256": "85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150"
         }
       },
-      "osdk_code_commit": "7758ffe294bb0e1eab46e20cba60e8af9d8bcd61",
-      "osdk_binary_sha256": "aabd26b7cac06fcc8768303de5a2905c6f48b454d1c5e8ddc5e4478d08461d94",
-      "latest_phase": "2026-10-19-mainf9",
+      "osdk_code_commit": "a927146241a8622affd6172a1584c9555ba3cc6b",
+      "osdk_binary_sha256": "c4a6f2ace00aa25d9da68ccad8217c578e31036c23a4980abaff2eb8c02fde51",
+      "latest_phase": "2026-10-20-main0c1",
       "guests": 2,
       "raw_qemu_exits": [
         33,
@@ -63,8 +63,7 @@
       "target_cache_reused": true,
       "empty_target_rebuild": false,
       "osdk_install_skipped": false,
-      "source_root_bound_sdk_reinstalled": true,
-      "new_cpu_configuration_tests_passed": 9
+      "source_root_bound_sdk_reinstalled": true
     },
     "host_regression": {
       "evidence": "support/build/evidence/2026-10-16-review/host-fixes/monitor/README.md",
@@ -344,50 +343,57 @@
     },
     "artifact_sha256_role": "Original accepted minimal-boot baseline; current source-built products are recorded separately under latest_native_boot and full_kernel_debug.",
     "latest_native_boot": {
-      "code_commit": "7758ffe294bb0e1eab46e20cba60e8af9d8bcd61",
-      "source_tree": "98c7b099ff280f0804041dca13d691d431a8caf6",
-      "derived_tree": "9b400ccf16c275935736e6e2b0b08aecbe20c40e",
-      "integrated_main": "f9e306f76154590e096a42f70ce9de0a7c859e60",
+      "code_commit": "a927146241a8622affd6172a1584c9555ba3cc6b",
+      "source_tree": "eb297ece2b8e067716d3da389bf342015c2ac2d3",
+      "derived_tree": "4ad35974d248e38eb7abc62f2e2c498f39b84e2b",
+      "integrated_main": "0c1de23a3754bc3a6976fed53c7dfa0ec3778e57",
       "source_directory": "kernel/asterinas",
       "source_build_invoked": true,
       "target_cache_reused": true,
       "empty_target_rebuild": false,
       "preceding_kernel_build": {
-        "source_commit": "7758ffe294bb0e1eab46e20cba60e8af9d8bcd61",
+        "source_commit": "a927146241a8622affd6172a1584c9555ba3cc6b",
         "target_absent_before_launch": true,
         "osdk_target_absent_before_launch": true,
-        "compilation_lines": 284,
         "public_exit": 0,
-        "elapsed_seconds": 189.63256157399155,
-        "kernel_sha256": "4625a5ddf9e82aee2ce01bdfb23127f88a5200565ce2a0645a09e181073ab6d4",
-        "kernel_bytes": 8382376,
+        "elapsed_seconds": 289.07554142800655,
+        "kernel_sha256": "87e2d0cccdf2e2224e46bd2c0c4393921d296c66a1af9038d7b9f5aa7d570a98",
+        "kernel_bytes": 8396472,
         "first_produced_bytes_retained": true
       },
-      "original_absent_target_pipeline_commit": "7758ffe294bb0e1eab46e20cba60e8af9d8bcd61",
+      "original_absent_target_pipeline_commit": "a927146241a8622affd6172a1584c9555ba3cc6b",
       "passed": true,
-      "qemu_raw_exit": 33,
-      "boot_sha256": "4625a5ddf9e82aee2ce01bdfb23127f88a5200565ce2a0645a09e181073ab6d4",
-      "boot_size": 8382376,
+      "successful_boots": 2,
+      "qemu_raw_exits": [
+        33,
+        33
+      ],
+      "boot_sha256": "87e2d0cccdf2e2224e46bd2c0c4393921d296c66a1af9038d7b9f5aa7d570a98",
+      "boot_size": 8396472,
       "initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
-      "serial_sha256": "b585103e6b898bbd1c804b554cb66876ab7d2463872247f98d0def6bd3cc057f",
-      "serial_size": 72279,
-      "evidence": "support/build/evidence/2026-10-19-mainf9/REPORT.md",
+      "serial_original_sha256": [
+        "3debbcf50d4bd61459481bb0037ab651497aa88d99e7382538c8fc6846d8b814",
+        "4720dafea55a640c71b7bc54f5fd04a8db9cbe9183c99addfe641e83a27c820f"
+      ],
+      "serial_original_bytes": [
+        72275,
+        72275
+      ],
+      "evidence": "support/build/evidence/2026-10-20-main0c1/REPORT.md",
       "profile": "ordinary x86_64-q35-tcg-max-1cpu-512MiB-SeaBIOS",
       "make_exit": 0,
       "driver_exit": 0,
-      "full_tracked_inputs_checked": 3014,
-      "first_build_equals_loaded": true,
-      "first_attempt_failed_before_qemu": true,
-      "first_attempt_driver_exit": 1,
-      "post_boot_git_status_empty": true,
-      "later_untracked_manifest_observed": true,
-      "late_manifest_quarantined": true,
-      "late_manifest_reappeared_after_quarantine": true,
-      "late_manifest_writer_identified": false,
-      "post_quarantine_git_status_empty": false,
-      "current_public_manifest_present": true,
+      "full_tracked_inputs_checked": 3047,
+      "first_build_equals_both_loaded_copies": true,
+      "first_attempt_qemu_exit": 1,
+      "first_attempt_make_exit": 2,
+      "first_attempt_failure_resolved": true,
+      "failure_correction": "QEMU_MODULE_DIR points to the already installed private TCG module directory; no kernel source change.",
+      "native_boundary_git_status_empty": true,
+      "native_boundary_public_manifest_absent": true,
+      "controlled_manifest_cleanup_verified": true,
       "cross_host_reproducibility_claimed": false,
-      "stage_scope": "One absent-target build; one preflight-refused boot; separate successful cached boot retry. Two manifest custody instants do not establish subsequent absence."
+      "stage_scope": "One cold build, one preserved failed QEMU launch, two successful cached boots; original failed pipeline stays failed."
     },
     "full_kernel_debug_history": [
       {
@@ -687,6 +693,45 @@
         "osdk_install_skipped": false,
         "source_root_bound_sdk_reinstalled": true,
         "kernel_mode_runner_exit": 0
+      },
+      {
+        "evidence": "support/build/evidence/2026-10-19-mainf9/ktest/result.json",
+        "code_commit": "7758ffe294bb0e1eab46e20cba60e8af9d8bcd61",
+        "source_tree": "98c7b099ff280f0804041dca13d691d431a8caf6",
+        "crates": [
+          "ostd",
+          "aster-core"
+        ],
+        "reported_passed": 390,
+        "failed": 0,
+        "filtered": 0,
+        "soft_skipped": 3,
+        "exercised_passed_lower_bound": 387,
+        "profile": "x86_64-q35-tcg-1cpu-512MiB",
+        "test_base_locks": {
+          "ostd": {
+            "path": "support/build/ktest/locks/ostd.Cargo.lock",
+            "sha256": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6"
+          },
+          "aster-core": {
+            "path": "support/build/ktest/locks/aster-core.Cargo.lock",
+            "sha256": "159b8682d27a7a21af98885ae48515234445c00fdf5e00b158fdc4aa952ff4ed"
+          }
+        },
+        "osdk_code_commit": "7758ffe294bb0e1eab46e20cba60e8af9d8bcd61",
+        "osdk_binary_sha256": "aabd26b7cac06fcc8768303de5a2905c6f48b454d1c5e8ddc5e4478d08461d94",
+        "latest_phase": "2026-10-19-mainf9",
+        "guests": 2,
+        "raw_qemu_exits": [
+          33,
+          33
+        ],
+        "kernel_mode_runner_exit": 0,
+        "target_cache_reused": true,
+        "empty_target_rebuild": false,
+        "osdk_install_skipped": false,
+        "source_root_bound_sdk_reinstalled": true,
+        "new_cpu_configuration_tests_passed": 9
       }
     ],
     "native_boot_history": [
@@ -963,6 +1008,52 @@
         "post_quarantine_git_status_empty": true,
         "cross_host_reproducibility_claimed": false,
         "stage_scope": "Fresh absent-target make kernel, preflight-refused first boot, preserved-file quarantine, then successful cached make run_kernel. No second cold build is claimed."
+      },
+      {
+        "code_commit": "7758ffe294bb0e1eab46e20cba60e8af9d8bcd61",
+        "source_tree": "98c7b099ff280f0804041dca13d691d431a8caf6",
+        "derived_tree": "9b400ccf16c275935736e6e2b0b08aecbe20c40e",
+        "integrated_main": "f9e306f76154590e096a42f70ce9de0a7c859e60",
+        "source_directory": "kernel/asterinas",
+        "source_build_invoked": true,
+        "target_cache_reused": true,
+        "empty_target_rebuild": false,
+        "preceding_kernel_build": {
+          "source_commit": "7758ffe294bb0e1eab46e20cba60e8af9d8bcd61",
+          "target_absent_before_launch": true,
+          "osdk_target_absent_before_launch": true,
+          "compilation_lines": 284,
+          "public_exit": 0,
+          "elapsed_seconds": 189.63256157399155,
+          "kernel_sha256": "4625a5ddf9e82aee2ce01bdfb23127f88a5200565ce2a0645a09e181073ab6d4",
+          "kernel_bytes": 8382376,
+          "first_produced_bytes_retained": true
+        },
+        "original_absent_target_pipeline_commit": "7758ffe294bb0e1eab46e20cba60e8af9d8bcd61",
+        "passed": true,
+        "qemu_raw_exit": 33,
+        "boot_sha256": "4625a5ddf9e82aee2ce01bdfb23127f88a5200565ce2a0645a09e181073ab6d4",
+        "boot_size": 8382376,
+        "initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+        "serial_sha256": "b585103e6b898bbd1c804b554cb66876ab7d2463872247f98d0def6bd3cc057f",
+        "serial_size": 72279,
+        "evidence": "support/build/evidence/2026-10-19-mainf9/REPORT.md",
+        "profile": "ordinary x86_64-q35-tcg-max-1cpu-512MiB-SeaBIOS",
+        "make_exit": 0,
+        "driver_exit": 0,
+        "full_tracked_inputs_checked": 3014,
+        "first_build_equals_loaded": true,
+        "first_attempt_failed_before_qemu": true,
+        "first_attempt_driver_exit": 1,
+        "post_boot_git_status_empty": true,
+        "later_untracked_manifest_observed": true,
+        "late_manifest_quarantined": true,
+        "late_manifest_reappeared_after_quarantine": true,
+        "late_manifest_writer_identified": false,
+        "post_quarantine_git_status_empty": false,
+        "current_public_manifest_present": true,
+        "cross_host_reproducibility_claimed": false,
+        "stage_scope": "One absent-target build; one preflight-refused boot; separate successful cached boot retry. Two manifest custody instants do not establish subsequent absence."
       }
     ],
     "kernel_test_lifecycle_regression": {
@@ -1769,44 +1860,41 @@
     },
     "latest_native_validation": {
       "schema": 1,
-      "evidence": "support/build/evidence/2026-10-19-mainf9/REPORT.md",
-      "machine_readable_report": "support/build/evidence/2026-10-19-mainf9/report.json",
-      "handoff": "support/build/evidence/2026-10-19-mainf9/HANDOFF.md",
-      "source_commit": "7758ffe294bb0e1eab46e20cba60e8af9d8bcd61",
-      "project_tree": "98c7b099ff280f0804041dca13d691d431a8caf6",
-      "kernel_tree": "9b400ccf16c275935736e6e2b0b08aecbe20c40e",
-      "base_main": "f9e306f76154590e096a42f70ce9de0a7c859e60",
-      "owner_kernel_ostd_external_abi_equal_base_main": true,
-      "source_manifest": "support/build/evidence/2026-10-19-mainf9/source-summary.json",
+      "evidence": "support/build/evidence/2026-10-20-main0c1/REPORT.md",
+      "machine_readable_report": "support/build/evidence/2026-10-20-main0c1/report.json",
+      "handoff": "support/build/handoffs/A01-2026-10-20-main0c1.md",
+      "source_commit": "a927146241a8622affd6172a1584c9555ba3cc6b",
+      "project_tree": "eb297ece2b8e067716d3da389bf342015c2ac2d3",
+      "kernel_tree": "4ad35974d248e38eb7abc62f2e2c498f39b84e2b",
+      "base_main": "0c1de23a3754bc3a6976fed53c7dfa0ec3778e57",
+      "owner_kernel_ostd_external_abi_and_control_equal_base_main": true,
+      "source_manifest": "support/build/evidence/2026-10-20-main0c1/source-inputs.json",
       "toolchain": "nightly-2026-07-21",
-      "pipeline_passed": true,
+      "acceptance_pipeline_passed_after_environment_fix": true,
+      "original_first_pipeline_passed": false,
       "build_was_incremental": false,
-      "boot_stage_reused_fresh_target": true,
-      "fresh_dependency_installation": false,
-      "dependency_installation_scope": "Reuse the actual 2026-10-18 installation, with preserved original receipts and current 2026-10-19 revalidation.",
-      "current_dependency_commands_passed": 13,
-      "actual_dependency_hashes_matched": 70,
+      "boot_stages_reused_fresh_target": true,
+      "fresh_dependency_installation": true,
+      "dependency_installation_date": "2026-10-20",
+      "installed_native_packages": 30,
+      "installation_checks_passed": 129,
+      "actual_dependency_hashes_matched": 64,
       "qemu_dynamic_libraries_matched": 48,
-      "original_native_packages_verified": 57,
-      "kernel_mode_reported_passed": 390,
+      "kernel_mode_reported_passed": 468,
       "kernel_mode_soft_skipped": 3,
-      "kernel_mode_exercised_passed_lower_bound": 387,
+      "kernel_mode_exercised_passed_lower_bound": 465,
       "kernel_mode_failed": 0,
       "kernel_mode_filtered": 0,
       "ostd_reported_passed": 221,
-      "aster_core_passed": 169,
-      "new_cpu_configuration_tests_passed": 9,
-      "independent_source_checks_passed": 25,
-      "independent_native_evidence_checks_passed": 53,
-      "host_gate_rerun": false,
+      "aster_core_passed": 247,
+      "targeted_host_distinct_tests_passed": 109,
+      "independent_boot_and_ktest_evidence_reviews_passed": true,
       "current_abi_gate_rerun": false,
       "current_osdk_full_matrix_rerun": false,
-      "first_boot_attempt_failed_before_qemu": true,
-      "late_manifest_writer_identified": false,
-      "late_manifest_evidence": "support/build/evidence/2026-10-19-mainf9/failures/",
-      "whole_worktree_current_clean": false,
-      "current_public_manifest_present": true,
-      "full_project_acceptance": false
+      "native_boundary_worktrees_clean": true,
+      "native_boundary_public_manifest_absent": true,
+      "full_project_acceptance": false,
+      "raw_archive_publication": "Original raw archives kept as user downloads; public distribution blocked pending explicit approval. Public package contains separately reviewed summaries and serial logs."
     },
     "native_validation_history": [
       {
@@ -1908,28 +1996,53 @@
         "current_abi_gate_rerun": false,
         "current_osdk_full_matrix_rerun": false,
         "full_project_acceptance": false
+      },
+      {
+        "schema": 1,
+        "evidence": "support/build/evidence/2026-10-19-mainf9/REPORT.md",
+        "machine_readable_report": "support/build/evidence/2026-10-19-mainf9/report.json",
+        "handoff": "support/build/evidence/2026-10-19-mainf9/HANDOFF.md",
+        "source_commit": "7758ffe294bb0e1eab46e20cba60e8af9d8bcd61",
+        "project_tree": "98c7b099ff280f0804041dca13d691d431a8caf6",
+        "kernel_tree": "9b400ccf16c275935736e6e2b0b08aecbe20c40e",
+        "base_main": "f9e306f76154590e096a42f70ce9de0a7c859e60",
+        "owner_kernel_ostd_external_abi_equal_base_main": true,
+        "source_manifest": "support/build/evidence/2026-10-19-mainf9/source-summary.json",
+        "toolchain": "nightly-2026-07-21",
+        "pipeline_passed": true,
+        "build_was_incremental": false,
+        "boot_stage_reused_fresh_target": true,
+        "fresh_dependency_installation": false,
+        "dependency_installation_scope": "Reuse the actual 2026-10-18 installation, with preserved original receipts and current 2026-10-19 revalidation.",
+        "current_dependency_commands_passed": 13,
+        "actual_dependency_hashes_matched": 70,
+        "qemu_dynamic_libraries_matched": 48,
+        "original_native_packages_verified": 57,
+        "kernel_mode_reported_passed": 390,
+        "kernel_mode_soft_skipped": 3,
+        "kernel_mode_exercised_passed_lower_bound": 387,
+        "kernel_mode_failed": 0,
+        "kernel_mode_filtered": 0,
+        "ostd_reported_passed": 221,
+        "aster_core_passed": 169,
+        "new_cpu_configuration_tests_passed": 9,
+        "independent_source_checks_passed": 25,
+        "independent_native_evidence_checks_passed": 53,
+        "host_gate_rerun": false,
+        "current_abi_gate_rerun": false,
+        "current_osdk_full_matrix_rerun": false,
+        "first_boot_attempt_failed_before_qemu": true,
+        "late_manifest_writer_identified": false,
+        "late_manifest_evidence": "support/build/evidence/2026-10-19-mainf9/failures/",
+        "whole_worktree_current_clean": false,
+        "current_public_manifest_present": true,
+        "full_project_acceptance": false
       }
     ],
     "latest_main_source_bridge": {
-      "source_commit": "d9ccc523141ec46baef2a0dfe0afe49e4f97f523",
-      "project_tree": "315b2b84319a88442fb054f434ccc2fdc436e47e",
-      "integrated_main": "4339acedd2d433f838c7b5fd445709c539043a77",
-      "actual_native_producer": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
-      "evidence": "support/build/evidence/2026-10-18-main4339-sync/REPORT.md",
-      "receipt": "support/build/evidence/2026-10-18-main4339-sync/source-bridge.json",
-      "passed": true,
-      "selected_inputs": 3010,
-      "unchanged_inputs": 3008,
-      "metadata_exception_paths": [
-        "support/build/README.md",
-        "support/upstream-lock.json"
-      ],
-      "kernel_and_external_abi_and_build_programs_unchanged": true,
-      "fixed_pin_verification_unchanged": true,
-      "new_kernel_builds": 0,
-      "new_qemu_boots": 0,
-      "late_manifest_writer_identified": false,
-      "full_project_acceptance": false
+      "native_producer": "a927146241a8622affd6172a1584c9555ba3cc6b",
+      "evidence": "support/build/evidence/2026-10-20-main0c1/source-bridge.json",
+      "scope": "Final publication changes only reporting metadata, documentation and new evidence; no separately rebuilt final HEAD claim."
     },
     "latest_abi_validation": {
       "source_commit": "d9ccc523141ec46baef2a0dfe0afe49e4f97f523",
@@ -1950,16 +2063,52 @@
       "new_native_or_a03_execution": false
     },
     "latest_main_source_integration": {
-      "source_commit": "7758ffe294bb0e1eab46e20cba60e8af9d8bcd61",
-      "project_tree": "98c7b099ff280f0804041dca13d691d431a8caf6",
-      "integrated_main": "f9e306f76154590e096a42f70ce9de0a7c859e60",
-      "prior_a01_parent": "71524be19383e2ff98f6abc90668c48988e7c8e2",
-      "method": "ordinary two-parent merge from actual main",
+      "source_commit": "a927146241a8622affd6172a1584c9555ba3cc6b",
+      "project_tree": "eb297ece2b8e067716d3da389bf342015c2ac2d3",
+      "integrated_main": "0c1de23a3754bc3a6976fed53c7dfa0ec3778e57",
+      "prior_a01_parent": "1baefc7dd22f9250d0176e454a4e6aed3a3752ca",
+      "method": "ordinary two-parent merge with actual main as first parent; no forced branch update",
       "native_rebuilt_at_this_producer": true,
-      "owner_kernel_ostd_external_abi_equal_main": true,
-      "source_summary": "support/build/evidence/2026-10-19-mainf9/source-summary.json",
-      "handoff": "support/build/evidence/2026-10-19-mainf9/HANDOFF.md"
-    }
+      "owner_kernel_ostd_external_abi_and_control_equal_main": true,
+      "source_summary": "support/build/evidence/2026-10-20-main0c1/source-retention-summary.json",
+      "handoff": "support/build/handoffs/A01-2026-10-20-main0c1.md"
+    },
+    "main_source_integration_history": [
+      {
+        "source_commit": "7758ffe294bb0e1eab46e20cba60e8af9d8bcd61",
+        "project_tree": "98c7b099ff280f0804041dca13d691d431a8caf6",
+        "integrated_main": "f9e306f76154590e096a42f70ce9de0a7c859e60",
+        "prior_a01_parent": "71524be19383e2ff98f6abc90668c48988e7c8e2",
+        "method": "ordinary two-parent merge from actual main",
+        "native_rebuilt_at_this_producer": true,
+        "owner_kernel_ostd_external_abi_equal_main": true,
+        "source_summary": "support/build/evidence/2026-10-19-mainf9/source-summary.json",
+        "handoff": "support/build/evidence/2026-10-19-mainf9/HANDOFF.md"
+      }
+    ],
+    "main_source_bridge_history": [
+      {
+        "source_commit": "d9ccc523141ec46baef2a0dfe0afe49e4f97f523",
+        "project_tree": "315b2b84319a88442fb054f434ccc2fdc436e47e",
+        "integrated_main": "4339acedd2d433f838c7b5fd445709c539043a77",
+        "actual_native_producer": "40c901c6e189058bdd6f42bb43bf46b3bbcf8ffa",
+        "evidence": "support/build/evidence/2026-10-18-main4339-sync/REPORT.md",
+        "receipt": "support/build/evidence/2026-10-18-main4339-sync/source-bridge.json",
+        "passed": true,
+        "selected_inputs": 3010,
+        "unchanged_inputs": 3008,
+        "metadata_exception_paths": [
+          "support/build/README.md",
+          "support/upstream-lock.json"
+        ],
+        "kernel_and_external_abi_and_build_programs_unchanged": true,
+        "fixed_pin_verification_unchanged": true,
+        "new_kernel_builds": 0,
+        "new_qemu_boots": 0,
+        "late_manifest_writer_identified": false,
+        "full_project_acceptance": false
+      }
+    ]
   },
   "hepta": {
     "repository": "TrillionniumFoundation/hepta-private-ci",
@@ -1980,6 +2129,9 @@
   "boot_firmware_digest": "sha256:1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
   "reproducible_kernel_build_ready": false,
   "native_build_profile_ready": true,
-  "native_build_environment": "support/build/evidence/2026-10-19-mainf9/REPORT.md",
-  "reproducible_kernel_build_note": "The fixed schema4 producer 4e8c7083575cec69efabe8d2250dfdd040c8dee8 now has two observed cloud-instance builds (historical A4 and fresh C4) with byte-identical complete ELF/initramfs/BIOS inputs, equal canonical local descriptors and Cargo producer identities, and raw QEMU33 on both. This is bounded by identical literal toolchain/registry/profile paths and fixed package inputs; arbitrary-host reproduction, provider instance attestation and a complete immutable builder remain unestablished. Ordinary private-SDK source 0a7037fdde1e4c21884ea4f490ff28134082d0a2 independently cold-built and booted; debug a5af455 and kernel tests ff0d09a subsequently passed their real guest runs. See the next-closure report for exact source boundaries and remaining owners."
+  "native_build_environment": "support/build/evidence/2026-10-20-main0c1/REPORT.md",
+  "reproducible_kernel_build_note": "The fixed schema4 producer 4e8c7083575cec69efabe8d2250dfdd040c8dee8 now has two observed cloud-instance builds (historical A4 and fresh C4) with byte-identical complete ELF/initramfs/BIOS inputs, equal canonical local descriptors and Cargo producer identities, and raw QEMU33 on both. This is bounded by identical literal toolchain/registry/profile paths and fixed package inputs; arbitrary-host reproduction, provider instance attestation and a complete immutable builder remain unestablished. Ordinary private-SDK source 0a7037fdde1e4c21884ea4f490ff28134082d0a2 independently cold-built and booted; debug a5af455 and kernel tests ff0d09a subsequently passed their real guest runs. See the next-closure report for exact source boundaries and remaining owners.",
+  "native_build_environment_history": [
+    "support/build/evidence/2026-10-19-mainf9/REPORT.md"
+  ]
 }

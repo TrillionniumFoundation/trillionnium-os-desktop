@@ -1,0 +1,247 @@
+{
+  "schema": 1,
+  "recorded_date": "2026-10-20",
+  "source_commit": "a927146241a8622affd6172a1584c9555ba3cc6b",
+  "project_tree": "eb297ece2b8e067716d3da389bf342015c2ac2d3",
+  "kernel_tree": "4ad35974d248e38eb7abc62f2e2c498f39b84e2b",
+  "base_main": "0c1de23a3754bc3a6976fed53c7dfa0ec3778e57",
+  "prior_a01_parent": "1baefc7dd22f9250d0176e454a4e6aed3a3752ca",
+  "kernel_directory": "kernel/asterinas",
+  "upstream": {
+    "version": "v0.19.0",
+    "commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+    "tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+    "toolchain": "nightly-2026-07-21"
+  },
+  "acceptance": {
+    "source_acquired": true,
+    "dependencies_freshly_installed": true,
+    "rust_cold_build_passed": true,
+    "real_project_kernel_boot_passed": true,
+    "successful_boots": 2,
+    "full_ostd_and_aster_core_invocations": 2,
+    "first_pipeline_original_failed_record_preserved": true,
+    "first_boot_runtime_failure_resolved": true,
+    "full_project_acceptance_claimed": false
+  },
+  "cold_build": {
+    "seconds": 289.07554142800655,
+    "start_utc": "2026-10-20T13:15:39.473438+00:00",
+    "end_utc": "2026-10-20T13:20:28.549742+00:00",
+    "exit_code": 0,
+    "targets_before": {
+      "kernel/asterinas/target": false,
+      "kernel/asterinas/osdk/target": false
+    },
+    "evidence": "native-boot/kernel"
+  },
+  "resolved_first_boot_failure": {
+    "evidence": "native-boot/boot",
+    "qemu_raw_exit": 1,
+    "make_exit": 2,
+    "serial_bytes": 0,
+    "cause": "private QEMU TCG module directory absent from search path",
+    "correction": "runtime-module-fix",
+    "kernel_source_changed": false,
+    "error": "qemu-system-x86_64: fatal: could not load module for type 'tcg-accel-ops'"
+  },
+  "boot_runs": [
+    {
+      "stage": "boot",
+      "execution_seconds": 14.774187964001612,
+      "qemu_seconds": 9.183,
+      "raw_qemu_exit": 33,
+      "serial_bytes": 72275,
+      "serial_sha256": "3debbcf50d4bd61459481bb0037ab651497aa88d99e7382538c8fc6846d8b814",
+      "cold_artifact_match": true,
+      "source_input_set_sha256": "bf6ccef4423f4b778395165bd8350a8530490067f2ec238b4e5f5ba5888a50f2",
+      "selected_files": 3047,
+      "evidence": "native-boot-retry/boot",
+      "artifacts": {
+        "kernel": {
+          "bytes": 8396472,
+          "sha256": "87e2d0cccdf2e2224e46bd2c0c4393921d296c66a1af9038d7b9f5aa7d570a98"
+        },
+        "initrd": {
+          "bytes": 1107990,
+          "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+        },
+        "bios": {
+          "bytes": 262144,
+          "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+        }
+      },
+      "artifact_capture": "Exclusive prelaunch recorder-private copies of kernel, initrd and BIOS; actual loaded bytes checked against cold-built ELF."
+    },
+    {
+      "stage": "boot-repeat",
+      "execution_seconds": 14.218180332994962,
+      "qemu_seconds": 8.97,
+      "raw_qemu_exit": 33,
+      "serial_bytes": 72275,
+      "serial_sha256": "4720dafea55a640c71b7bc54f5fd04a8db9cbe9183c99addfe641e83a27c820f",
+      "cold_artifact_match": true,
+      "source_input_set_sha256": "bf6ccef4423f4b778395165bd8350a8530490067f2ec238b4e5f5ba5888a50f2",
+      "selected_files": 3047,
+      "evidence": "native-boot-retry/boot-repeat",
+      "artifacts": {
+        "kernel": {
+          "bytes": 8396472,
+          "sha256": "87e2d0cccdf2e2224e46bd2c0c4393921d296c66a1af9038d7b9f5aa7d570a98"
+        },
+        "initrd": {
+          "bytes": 1107990,
+          "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+        },
+        "bios": {
+          "bytes": 262144,
+          "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+        }
+      },
+      "artifact_capture": "Exclusive prelaunch recorder-private copies of kernel, initrd and BIOS; actual loaded bytes checked against cold-built ELF."
+    }
+  ],
+  "kernel_tests": [
+    {
+      "crate": "ostd",
+      "checked": {
+        "crate": "ostd",
+        "declared": 221,
+        "passed": 221,
+        "failed": 0,
+        "filtered": 0,
+        "soft_skipped": 3,
+        "soft_skip_reasons": [
+          "VMX unavailable",
+          "VMX unavailable",
+          "VMX/EPT invalidation unavailable"
+        ],
+        "exercised_passed_lower_bound": 218,
+        "observed_test_starts": 221,
+        "raw_qemu_exit": 33,
+        "guest": "guest-001"
+      },
+      "execution_seconds": 66.736077182999,
+      "serial_size": 23028,
+      "serial_sha256": "b0be3ce301380360885f80d55ab6aeb4955213117c72ce7cce7fd267def9aa63",
+      "generated_lock_sha256": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6",
+      "source_input_set_sha256": "bf6ccef4423f4b778395165bd8350a8530490067f2ec238b4e5f5ba5888a50f2",
+      "selected_files": 3047,
+      "evidence": "native-ktest/ostd",
+      "kernel": {
+        "size": 1998976,
+        "sha256": "a62649352a5ff0c2e3afcbbf2992baee6c3010116a5e1eb272c9fd1d82f75039"
+      },
+      "kernel_snapshot_model": "QEMU source-target artifact hash plus post-run harness frozen ELF; no recorder-private kernel copy",
+      "private_sdk": {
+        "sha256": "c4a6f2ace00aa25d9da68ccad8217c578e31036c23a4980abaff2eb8c02fde51",
+        "fresh_install": true,
+        "existing_cargo_compilation_cache_reused": true
+      }
+    },
+    {
+      "crate": "aster-core",
+      "checked": {
+        "crate": "aster-core",
+        "declared": 247,
+        "passed": 247,
+        "failed": 0,
+        "filtered": 0,
+        "soft_skipped": 0,
+        "soft_skip_reasons": [],
+        "exercised_passed_lower_bound": 247,
+        "observed_test_starts": 247,
+        "raw_qemu_exit": 33,
+        "guest": "guest-001"
+      },
+      "execution_seconds": 133.9455537860049,
+      "serial_size": 30845,
+      "serial_sha256": "1ed8da8ddbe14e218257b0cbe6a9c6e8dc4f7f44b7d56ab6f1b808219f86a86a",
+      "generated_lock_sha256": "85ccdcd1283d42af82ee8dca2faac2ee5401631ff150b35e43be46e1fc9c2150",
+      "source_input_set_sha256": "bf6ccef4423f4b778395165bd8350a8530490067f2ec238b4e5f5ba5888a50f2",
+      "selected_files": 3047,
+      "evidence": "native-ktest/core",
+      "kernel": {
+        "size": 9967432,
+        "sha256": "61ef6ea0ade9194e6c860e04310f2048587d5d41c6690956f46d3e80537d1fdf"
+      },
+      "kernel_snapshot_model": "QEMU source-target artifact hash plus post-run harness frozen ELF; no recorder-private kernel copy",
+      "private_sdk": {
+        "sha256": "c4a6f2ace00aa25d9da68ccad8217c578e31036c23a4980abaff2eb8c02fde51",
+        "fresh_install": true,
+        "existing_cargo_compilation_cache_reused": true
+      }
+    }
+  ],
+  "kernel_test_totals": {
+    "passed": 468,
+    "failed": 0,
+    "filtered": 0,
+    "soft_skipped": 3,
+    "exercised_passed_lower_bound": 465
+  },
+  "source_checks": {
+    "selected_files": 3047,
+    "equal_native_boundary_snapshots": 12,
+    "input_set_sha256": "bf6ccef4423f4b778395165bd8350a8530490067f2ec238b4e5f5ba5888a50f2",
+    "full_os_control_tracked_files": 10,
+    "root_readme_bytes": 0,
+    "boundary_worktrees_clean": true,
+    "boundary_public_osdk_manifest_absent": true,
+    "upstream_paths_and_modes_retained": 2938,
+    "unchanged_upstream_contents": 2831,
+    "existing_downstream_contents": 107,
+    "materialized_tracked_kernel_files": 2957,
+    "owner_files_equal_main": 1648,
+    "kernel_differences_vs_main_equal_old_a01": 12,
+    "scope": "All actual stage boundaries and reviewed current producer files; not a filesystem-wide atomic snapshot."
+  },
+  "host_tests": {
+    "source_inputs": 21,
+    "same_source_input_suite_also_passed_optimized": true,
+    "boot_evidence_recorder": 31,
+    "kernel_runner": 42,
+    "kernel_supervisor": 10,
+    "g1c_build_profile": 5,
+    "distinct_tests": 109,
+    "scope": "Host regressions do not constitute guest execution."
+  },
+  "public_evidence": {
+    "source_inputs": "source-inputs.json",
+    "dependencies": "dependencies.json",
+    "commands": "commands.json",
+    "serial_manifest": "serial/redaction-manifest.json",
+    "ordinary_boot_logs": "Full guest log text with exactly the declared hostname/path substitutions; explicitly redacted, not byte-original.",
+    "ktest_logs": "Byte-original complete guest serial logs.",
+    "reporting_commit_is_new_native_producer": false
+  },
+  "raw_archive_publication": {
+    "status": "blocked_pending_explicit_public_distribution_approval",
+    "reason": "Automatic approval review rejected full raw archive public upload because internal logs, host paths and environment information could be sensitive. No raw archive was uploaded or split for upload.",
+    "files": [
+      {
+        "file": "native-evidence.tar.xz",
+        "bytes": 14742708,
+        "sha256": "2e6c410637a31b1bf69f05cf2065c9e9a69ac1a0d8b89fefa1ea09093abd6c7a"
+      },
+      {
+        "file": "verification-evidence.tar.xz",
+        "bytes": 350384,
+        "sha256": "73993db26b50a98f0b7f4e927b0f46a60240bc3c74b8f16a1bb8237d466ec2d6"
+      },
+      {
+        "file": "runtime-installation-2026-10-20.tar.xz",
+        "bytes": 236988,
+        "sha256": "15c57f31187b4a550e69b847e249a547d343ba8d071d83435bb180423f0901d6"
+      }
+    ],
+    "available_as_user_workspace_downloads": true
+  },
+  "limitations": [
+    "Three OSTD VMX/EPT capability soft skips under TCG; no exercised virtualization claim.",
+    "No full POSIX/Linux userspace conformance, dedicated G1-c trusted-initial guest or full G1/G2 acceptance in this run.",
+    "No arbitrary-host bit reproducibility or complete immutable host closure claim.",
+    "Independent reviews validate retained evidence and producer identity; they do not replace actual guest execution.",
+    "Later documentation/evidence commit is not separately rebuilt; source-bridge.json identifies reporting-only differences."
+  ]
+}

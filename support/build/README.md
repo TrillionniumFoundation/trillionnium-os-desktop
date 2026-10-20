@@ -6,7 +6,42 @@ complete Asterinas **v0.19.0**, commit
 `96605cf64aeae2d34f29b97e85eff9315fe10a8e`. Upstream documentation, attribution,
 and `LICENSE-MPL` are preserved. The project root README stays empty.
 
-## Current main-f9 build and native regressions — 2026-10-19
+## Current main-0c1 cold build and two real boots — 2026-10-20
+
+Published source `a927146241a8622affd6172a1584c9555ba3cc6b` incorporates actual
+main `0c1de23a3754bc3a6976fed53c7dfa0ec3778e57` as first parent and preserves
+prior A01 history. A fresh pinned dependency installation and absent-target
+**make kernel** completed in 289.075541 seconds. Two real **make run_kernel**
+boots then passed at raw QEMU **33**, loading the exact first-produced
+8,396,472-byte full Rust kernel ELF, SHA256
+`87e2d0cccdf2e2224e46bd2c0c4393921d296c66a1af9038d7b9f5aa7d570a98`.
+The fixed profile is x86_64/q35/TCG, 1 vCPU, 512M and a 1,107,990-byte initramfs.
+
+Complete target-crate runs reported **OSTD 221** and **aster-core 247** passes,
+zero failures and zero filters. Three OSTD VMX/EPT capability soft skips leave
+an **exercised-pass lower bound of 465 out of 468 reported passes**. A05/A06
+core, OSTD, os-abi and os-control remain byte-identical to main. All 3,047
+producer input files match at 12 native before/after boundaries; controlled
+manifest creation/cleanup completed without a current unexplained reappearance.
+
+The first actual QEMU launch failed before executing the kernel because its
+private TCG module directory was outside the module search path. Its raw exit 1,
+make exit 2, empty serial and failed pipeline remain intact. Setting
+`QEMU_MODULE_DIR` to the installed private directory resolved it without kernel
+changes. Docker, Nix and KVM were unavailable; no installation ISO was required.
+
+The [current report](evidence/2026-10-20-main0c1/REPORT.md),
+[machine-readable results](evidence/2026-10-20-main0c1/report.json) and
+[A00/A05/A06 handoff](handoffs/A01-2026-10-20-main0c1.md) retain exact producer,
+artifact, command and acceptance scope. Public boot serials are explicitly
+redacted only for build-host identity and task paths; ktest serials retain their
+original bytes. Complete originals, environments, traces and artifacts remain
+in three verified user-download archives; automatic approval review blocked
+public distribution of that complete raw bundle pending explicit authorization.
+The final reporting commit is not a separately rebuilt native producer. Earlier
+results below retain their own identities and scope.
+
+## Previous main-f9 build and native regressions — 2026-10-19
 
 Published source `7758ffe294bb0e1eab46e20cba60e8af9d8bcd61` incorporates actual
 main `f9e306f76154590e096a42f70ce9de0a7c859e60` as first parent while preserving
@@ -37,7 +72,7 @@ and native evidence reviews passed 25 and 53 checks respectively. The reporting
 commit is evidence-only, not a separately rebuilt native producer. Earlier
 results below retain their own source identities and acceptance boundaries.
 
-## Current main cold build, boot and kernel tests — 2026-10-18
+## Previous main cold build, boot and kernel tests — 2026-10-18
 
 Actual main `01225ab0a20a9f25dd8313a7fad7652dd9154e30` is the first parent of
 published source producer `b39e154ae5a1e9853f57e23f9bee84712ee8ef7e`; the ordinary
