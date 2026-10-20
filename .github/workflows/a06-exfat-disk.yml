@@ -1,0 +1,168 @@
+name: A06 ExFAT disk and exec qualification
+
+on:
+  pull_request:
+    paths:
+      - "kernel/asterinas/**"
+      - "tests/workloads/linux/**"
+      - "tests/organ_backend/run_guest_probe.py"
+      - "tests/organ_backend/run_cpu_owner_negative.py"
+      - "tests/organ_backend/exfat_synthesized_setid_negative.patch"
+      - "tests/integration/hepta/run_original_agentd.py"
+      - "tests/kernel/control/**"
+      - "support/build/**"
+      - "support/upstream-lock.json"
+      - ".github/workflows/a06-exfat-disk.yml"
+  push:
+    branches: [main]
+    paths:
+      - "kernel/asterinas/**"
+      - "tests/workloads/linux/**"
+      - "tests/organ_backend/run_guest_probe.py"
+      - "tests/organ_backend/run_cpu_owner_negative.py"
+      - "tests/organ_backend/exfat_synthesized_setid_negative.patch"
+      - "tests/integration/hepta/run_original_agentd.py"
+      - "tests/kernel/control/**"
+      - "support/build/**"
+      - "support/upstream-lock.json"
+      - ".github/workflows/a06-exfat-disk.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  exfat-disk-exec:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      EXFAT_DISPOSABLE_CI: "1"
+      EXFAT_SOURCE_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+      CARGO_BUILD_JOBS: "2"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Freeze the exact checkout identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          out="${RUNNER_TEMP}/exfat-build"
+          mkdir "$out"
+          test "$(git rev-parse HEAD)" = "$EXFAT_SOURCE_HEAD"
+          test -z "$(git status --porcelain --untracked-files=all)"
+          git rev-parse HEAD > "$out/source-head.txt"
+          git rev-parse HEAD^{tree} > "$out/source-tree.txt"
+
+      - name: Install the original ordinary-kernel tools and ExFAT formatter
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            build-essential ca-certificates curl git python3 pkg-config libssl-dev \
+            clang lld qemu-system-x86 busybox-static gcc-13 libc6-dev binutils \
+            exfatprogs util-linux
+          bash support/build/prepare-host.sh
+
+      - name: Verify independent evidence acceptance and freeze one static observation ELF
+        shell: bash
+        run: |
+          set -euo pipefail
+          out="${RUNNER_TEMP}/exfat-build"
+          python3 -I -B -m unittest discover -s tests/workloads/linux -p test_exfat_exec_guest.py -v \
+            > "$out/oracle-normal.log" 2>&1
+          python3 -I -B -O -m unittest discover -s tests/workloads/linux -p test_exfat_exec_guest.py -v \
+            > "$out/oracle-optimized.log" 2>&1
+          python3 -I -B - "$out" <<'PY'
+          import hashlib, json, pathlib, shutil, subprocess, sys
+          out = pathlib.Path(sys.argv[1])
+          source = pathlib.Path('tests/workloads/linux/exfat_exec_probe.c')
+          compiler = pathlib.Path(shutil.which('gcc-13'))
+          command = [str(compiler), '-O2', '-std=c11', '-Wall', '-Wextra', '-Werror', '-static',
+                     str(source), '-o', str(out / 'probe.elf')]
+          run = subprocess.run(command, capture_output=True, timeout=60)
+          (out / 'compile.log').write_bytes(run.stdout + run.stderr)
+          version = subprocess.check_output([str(compiler), '--version'], timeout=10).decode()
+          sha = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
+          record = {'command': command, 'exit': run.returncode, 'compiler': str(compiler),
+                    'compiler_sha256': sha(compiler), 'compiler_version': version,
+                    'source_sha256': sha(source),
+                    'probe_sha256': sha(out / 'probe.elf') if run.returncode == 0 else None}
+          (out / 'compile.json').write_text(json.dumps(record, indent=2) + '\n')
+          raise SystemExit(run.returncode)
+          PY
+          sha256sum "$out/probe.elf" > "$out/probe.sha256"
+
+      - name: Populate a fresh private ExFAT image and execute the real Linux reference
+        shell: bash
+        run: |
+          set -euo pipefail
+          build="${RUNNER_TEMP}/exfat-build"
+          probe_sha=$(cut -d' ' -f1 "$build/probe.sha256")
+          set +e
+          sudo env GITHUB_ACTIONS=true EXFAT_DISPOSABLE_CI=1 \
+            python3 -I -B tests/workloads/linux/run_exfat_exec_guest.py reference \
+              --probe-elf "$build/probe.elf" --compile-receipt "$build/compile.json" \
+              --expected-probe-sha256 "$probe_sha" \
+              --expected-source-head "$(cat "$build/source-head.txt")" \
+              --output "${RUNNER_TEMP}/exfat-linux"
+          reference_exit=$?
+          set -e
+          # Only this newly created private evidence tree is returned to its
+          # runner owner. Loop attachment/detachment is checked inside the probe.
+          if test -d "${RUNNER_TEMP}/exfat-linux"; then
+            sudo chown -R -- "$(id -u):$(id -g)" "${RUNNER_TEMP}/exfat-linux"
+          fi
+          test "$reference_exit" -eq 0
+          sha256sum --check "$build/probe.sha256"
+
+      - name: Prove corrected exec and the complete frozen old-mode privilege transition
+        shell: bash
+        run: |
+          set -euo pipefail
+          build="${RUNNER_TEMP}/exfat-build"
+          python3 -I -B tests/workloads/linux/run_exfat_exec_guest.py qualify \
+            --expected-source-head "$(cat "$build/source-head.txt")" \
+            --expected-source-tree "$(cat "$build/source-tree.txt")" \
+            --expected-probe-sha256 "$(cut -d' ' -f1 "$build/probe.sha256")" \
+            --linux-reference "${RUNNER_TEMP}/exfat-linux" \
+            --target-dir "${RUNNER_TEMP}/exfat-target" \
+            --output "${RUNNER_TEMP}/exfat-qualification"
+
+      - name: Require restoration of the exact reviewed source
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          build="${RUNNER_TEMP}/exfat-build"
+          test "$(git rev-parse HEAD)" = "$(cat "$build/source-head.txt")"
+          test "$(git rev-parse HEAD^{tree})" = "$(cat "$build/source-tree.txt")"
+          test -z "$(git status --porcelain --untracked-files=all)"
+
+      - name: Retain raw execution, source identities, both kernels and compressed disk bytes
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: exfat-disk-exec-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 7
+          path: |
+            ${{ runner.temp }}/exfat-build
+            ${{ runner.temp }}/exfat-linux/**/*.json
+            ${{ runner.temp }}/exfat-linux/**/*.log
+            ${{ runner.temp }}/exfat-linux/*.gz
+            ${{ runner.temp }}/exfat-linux/probe.elf
+            ${{ runner.temp }}/exfat-qualification/**/*.json
+            ${{ runner.temp }}/exfat-qualification/**/*.log
+            ${{ runner.temp }}/exfat-qualification/**/*.txt
+            ${{ runner.temp }}/exfat-qualification/**/*.patch
+            ${{ runner.temp }}/exfat-qualification/positive/*.elf
+            ${{ runner.temp }}/exfat-qualification/negative/*.elf
+            ${{ runner.temp }}/exfat-qualification/positive/*.bin
+            ${{ runner.temp }}/exfat-qualification/negative/*.bin
+            ${{ runner.temp }}/exfat-qualification/positive/*.gz
+            ${{ runner.temp }}/exfat-qualification/negative/*.gz
+          if-no-files-found: error
