@@ -30,9 +30,10 @@ pub(super) struct CpuBandwidthState {
 
 /// Internal observation failures; this is not a new public HOS2 operation.
 #[derive(Debug, Eq, PartialEq)]
-pub(super) enum CpuUsageError {
+pub(crate) enum CpuUsageError {
     Unbound,
     Closed,
+    Expired,
     Indeterminate,
     ClockUnavailable,
     UnsupportedProfile,
@@ -169,16 +170,32 @@ impl Controller {
     ///
     /// This private G1-b seam does not authenticate or grant observation rights.
     /// G1-c must supply trusted admission before any native syscall can use it.
-    #[cfg_attr(not(ktest), expect(dead_code))]
+    #[cfg_attr(not(any(ktest, feature = "g1c-trusted-observe")), expect(dead_code))]
     fn read_native_cpu_usage_for_owner(
         &self,
         owner: &Arc<SubController<CpuController>>,
+    ) -> core::result::Result<UsageSnapshot, CpuUsageError> {
+        self.read_native_cpu_usage_for_owner_during(owner, None)
+    }
+
+    fn read_native_cpu_usage_for_owner_during(
+        &self,
+        owner: &Arc<SubController<CpuController>>,
+        lease: Option<(u64, u64)>,
     ) -> core::result::Result<UsageSnapshot, CpuUsageError> {
         if ostd::cpu::all_cpus().count() != 1 {
             return Err(CpuUsageError::UnsupportedProfile);
         }
         crate::sched::with_current_cpu_bandwidth_settled(|now| {
             let now = now.ok_or(CpuUsageError::ClockUnavailable)?;
+            if let Some((issued, expires)) = lease {
+                if now < issued {
+                    return Err(CpuUsageError::Indeterminate);
+                }
+                if now >= expires {
+                    return Err(CpuUsageError::Expired);
+                }
+            }
             // Local IRQ exclusion serializes N0 publication with this check and
             // the owner snapshot. This is not a remote-CPU rendezvous.
             let current = self.cpu.read();
@@ -199,8 +216,9 @@ impl Controller {
     /// Binds trusted identities once to the currently installed, active CPU owner.
     ///
     /// The membership writer excludes replacement and deletion until metadata
-    /// installation completes. Production bootstrap does not call this seam yet.
-    #[cfg_attr(not(ktest), expect(dead_code))]
+    /// installation completes. Only the experimental trusted bootstrap calls
+    /// this seam in production; ordinary Linux creation does not bind a target.
+    #[cfg_attr(not(any(ktest, feature = "g1c-trusted-observe")), expect(dead_code))]
     fn bind_native_cpu_once_for_owner(
         &self,
         owner: &Arc<SubController<CpuController>>,
@@ -225,6 +243,97 @@ impl Controller {
         }
         state.native = Some(metadata);
         Ok(target)
+    }
+}
+
+/// A read-only pin to the original CPU owner. It contains no grant, mutable
+/// accounting, revision or replacement authority. Only the stopped initial
+/// Process transaction may install this pin in its ProcessImageState slot.
+#[cfg(any(ktest, feature = "g1c-trusted-observe"))]
+pub(crate) struct NativeCpuObserver {
+    node: Arc<crate::fs::cgroupfs::CgroupNode>,
+    owner: Arc<SubController<CpuController>>,
+    target: NativeTarget,
+}
+
+#[cfg(any(ktest, feature = "g1c-trusted-observe"))]
+impl NativeCpuObserver {
+    /// Binds a fresh real cgroup leaf and its fixed initial bandwidth before
+    /// the initial task can run. No Process/image lock is held here. The
+    /// existing membership -> runqueue -> bandwidth lock order is preserved.
+    #[cfg(feature = "g1c-trusted-observe")]
+    pub(crate) fn prepare(
+        process: &Arc<crate::process::Process>,
+        image_nonce: u64,
+    ) -> crate::prelude::Result<(Arc<Self>, u64)> {
+        use alloc::format;
+
+        use aster_systree::{Error as TreeError, SysBranchNode, SysNode};
+
+        use crate::{
+            fs::cgroupfs::{CgroupNode, CgroupSysNode, CgroupSystem},
+            prelude::*,
+        };
+
+        if ostd::cpu::all_cpus().count() != 1 || image_nonce == 0 {
+            return_errno_with_message!(Errno::EOPNOTSUPP, "trusted initial observation requires N0")
+        }
+        let root = CgroupSystem::singleton();
+        root.store_attr("cgroup.subtree_control", "+cpu")?;
+        let name = format!("hepta-g1c-{image_nonce}");
+        let node = Arc::downcast::<CgroupNode>(root.create_child(&name)?)
+            .map_err(|_| crate::error::Error::with_message(Errno::EINVAL, "invalid CPU leaf"))?;
+        let owner = node.controller().cpu.read().get().clone();
+        let mut membership = CgroupMembership::write_lock();
+        let target = node.controller().bind_native_cpu_once_for_owner(
+            &owner,
+            ResourceDomainId::from_u128((u128::from(image_nonce) << 64) | 1),
+            StableObjectId::from_u128((u128::from(image_nonce) << 64) | 2),
+            &mut membership,
+        )?;
+        let issued = crate::sched::with_current_cpu_bandwidth_settled(|now| {
+            let now = now.ok_or(TreeError::ResourceUnavailable)?;
+            let control = owner.inner.as_ref().ok_or(TreeError::IsDead)?.control()?;
+            control.max.lock().reconfigure_at(CpuMaxConfig {
+                quota_usec: 50_000,
+                period_usec: Some(100_000),
+            }, Some(now))?;
+            Ok::<u64, TreeError>(now)
+        })?;
+        membership.move_process_to_node(process.clone(), &node)?;
+        drop(membership);
+        Ok((Arc::new(Self { node, owner, target }), issued))
+    }
+
+    #[cfg(ktest)]
+    pub(crate) fn read_usage(&self) -> core::result::Result<UsageSnapshot, CpuUsageError> {
+        use crate::fs::cgroupfs::CgroupSysNode;
+
+        let usage = self.node.controller().read_native_cpu_usage_for_owner(&self.owner)?;
+        if usage.stable_object_id != self.target.stable_object_id() {
+            return Err(CpuUsageError::Closed);
+        }
+        Ok(usage)
+    }
+
+    /// Check the immutable Process-owned lease at the same real BOOTTIME cut
+    /// used to settle and sample this owner. No second clock or mutable policy
+    /// copy is introduced; the Process also rechecks its live slot afterwards.
+    #[cfg(feature = "g1c-trusted-observe")]
+    pub(crate) fn read_usage_during(
+        &self,
+        issued_ns: u64,
+        expires_ns: u64,
+    ) -> core::result::Result<UsageSnapshot, CpuUsageError> {
+        use crate::fs::cgroupfs::CgroupSysNode;
+
+        let usage = self.node.controller().read_native_cpu_usage_for_owner_during(
+            &self.owner, Some((issued_ns, expires_ns)),
+        )?;
+        if usage.stable_object_id != self.target.stable_object_id() {
+            return Err(CpuUsageError::Closed);
+        }
+        Ok(usage)
     }
 }
 

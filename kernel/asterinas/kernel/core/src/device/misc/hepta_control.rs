@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MPL-2.0
 
-//! Read-only HOS2 bootstrap at /dev/hepta-control. No management authority is
-//! granted by open, dup, fork, or this QueryAbi operation. The native resource
-//! effects must be wired to a trusted CapSpace/ResourceDomain before enabling
-//! any additional opcode. This is deliberately an experimental ioctl number.
+//! Read-only HOS2 bootstrap at /dev/hepta-control. Ordinary builds implement
+//! QueryAbi. The explicit G1-c profile also exposes ReadUsage through a slot
+//! installed by the trusted initial-image transaction in the actual Process.
+//! Open, dup, fork and descriptor transfer grant no authority. Management and
+//! history operations remain disabled. The ioctl number is experimental.
 
 use device_id::{DeviceId, MinorId};
 use ostd::mm::VmIo;
@@ -37,7 +38,10 @@ const EXPERIMENTAL_HOS2_IOCTL: u32 = 0xC020_4802;
 // Accept a bounded snapshot for known but disabled opcodes, so that
 // unsupported operations produce EOPNOTSUPP rather than an invented ENOTTY.
 const MAX_KNOWN_REQUEST_BYTES: usize = wire::HEADER_LEN + 40;
-const QUERY_RESPONSE_BYTES: usize = wire::HEADER_LEN + 48;
+#[cfg(feature = "g1c-trusted-observe")]
+const MAX_RESPONSE_BYTES: usize = wire::HEADER_LEN + 64;
+#[cfg(not(feature = "g1c-trusted-observe"))]
+const MAX_RESPONSE_BYTES: usize = wire::HEADER_LEN + 48;
 
 static MAJOR: Once<char::MajorIdOwner> = Once::new();
 static BOOT_ID: Once<[u8; 16]> = Once::new();
@@ -197,31 +201,60 @@ impl PerOpenFileOps for HeptaControlFile {
                 };
                 Error::with_message(code, "invalid HOS2 request/capacity")
             })?;
-        if request.opcode != Opcode::QueryAbi || request.payload != RequestPayload::QueryAbi {
-            return_errno_with_message!(
-                Errno::EOPNOTSUPP,
-                "recognized HOS2 resource operation not implemented"
-            )
-        }
-
-        // The advertised mask has *only* QueryAbi (bit 1). This creates no
-        // grant, does not install a CPU budget and cannot retire delivery.
+        // Capabilities describe this kernel build uniformly, not which caller
+        // happens to hold a grant. Only this optional profile implements usage.
+        let (status, revision, payload) = match request.payload {
+            RequestPayload::QueryAbi => {
+                #[cfg(feature = "g1c-trusted-observe")]
+                let (supported_ops, max_response_payload) = (
+                    (1u64 << Opcode::QueryAbi.as_u16()) | (1u64 << Opcode::ReadUsage.as_u16()), 64,
+                );
+                #[cfg(not(feature = "g1c-trusted-observe"))]
+                let (supported_ops, max_response_payload) = (1u64 << Opcode::QueryAbi.as_u16(), 48);
+                (Status::Ok, 0, ResponsePayload::QueryAbi(QueryAbiResponse {
+                    space_id: self.space_id,
+                    page_size: u32::try_from(PAGE_SIZE).unwrap(),
+                    max_request_payload: 0,
+                    max_response_payload,
+                    supported_ops,
+                    features: 0,
+                }))
+            }
+            #[cfg(feature = "g1c-trusted-observe")]
+            RequestPayload::ReadUsage => {
+                self.check_session()?;
+                let process = self.process.upgrade().ok_or_else(|| {
+                    Error::with_message(Errno::ESTALE, "HOS2 process lifetime ended")
+                })?;
+                match process.read_hepta_initial_usage(
+                    self.image_key, request.target_slot, request.target_generation,
+                ) {
+                    Ok(usage) => (Status::Ok, usage.revision, ResponsePayload::ReadUsage(wire::ReadUsageResponse {
+                        sample_boottime_ns: usage.sample_boottime_ns,
+                        cumulative_cpu_ns: usage.cumulative_cpu_ns,
+                        window_start_ns: usage.window_start_ns,
+                        window_consumed_ns: usage.window_consumed_ns,
+                        active_cap_ns: usage.active_cap_ns,
+                        active_period_ns: usage.active_period_ns,
+                        event_sequence: usage.event_sequence,
+                        dropped_events: usage.dropped_events,
+                    })),
+                    Err(status) => (status, 0, ResponsePayload::Empty),
+                }
+            }
+            _ => return_errno_with_message!(
+                Errno::EOPNOTSUPP, "recognized HOS2 resource operation not implemented"
+            ),
+        };
         let response = Response {
-            opcode: Opcode::QueryAbi,
-            status: Status::Ok,
+            opcode: request.opcode,
+            status,
             request_id: request.request_id,
             boot_id: *BOOT_ID.get().unwrap(),
-            revision: 0,
-            payload: ResponsePayload::QueryAbi(QueryAbiResponse {
-                space_id: self.space_id,
-                page_size: u32::try_from(PAGE_SIZE).unwrap(),
-                max_request_payload: 0,
-                max_response_payload: 48,
-                supported_ops: 1u64 << Opcode::QueryAbi.as_u16(),
-                features: 0,
-            }),
+            revision,
+            payload,
         };
-        let mut output = [0u8; QUERY_RESPONSE_BYTES];
+        let mut output = [0u8; MAX_RESPONSE_BYTES];
         let bytes = wire::encode_response(&response, &mut output)
             .map_err(|_| Error::with_message(Errno::EINVAL, "invalid HOS2 response"))?;
         current_userspace!().write_bytes(response_ptr, &output[..bytes])?;

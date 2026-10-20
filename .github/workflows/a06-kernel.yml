@@ -72,6 +72,40 @@ jobs:
             gcc-13 libc6-dev binutils libsqlite3-dev python3.12 python3.12-minimal \
             libpython3.12-stdlib openssl tzdata
 
+      - name: Freeze the permission probe and verify it in an isolated Linux mount namespace
+        shell: bash
+        run: |
+          set -euo pipefail
+          out="${RUNNER_TEMP}/a04-permission-build"
+          mkdir "$out"
+          python3 -I -B -m unittest discover -s tests/workloads/linux -p 'test_permission_guest.py' -v \
+            > "$out/runner-tests.log" 2>&1
+          python3 -I -B -O -m unittest discover -s tests/workloads/linux -p 'test_permission_guest.py' -v \
+            > "$out/runner-tests-optimized.log" 2>&1
+          cc --version > "$out/compiler-version.txt"
+          uname -a > "$out/linux-version.txt"
+          cc -O2 -std=c11 -Wall -Wextra -Werror -static \
+            tests/workloads/linux/permission_probe.c -o "$out/probe.elf" \
+            > "$out/compile.log" 2>&1
+          sha256sum tests/workloads/linux/permission_probe.c "$out/probe.elf" > "$out/inputs.sha256"
+          sha256sum "$out/probe.elf" > "$out/probe.sha256"
+          probe_sha=$(cut -d' ' -f1 "$out/probe.sha256")
+          # The probe creates a private mount namespace before any mount change;
+          # it never changes the runner's own mounts. Each credential case forks.
+          set +e
+          sudo python3 -I -B tests/workloads/linux/run_permission_guest.py reference \
+            --probe-elf "$out/probe.elf" --expected-probe-sha256 "$probe_sha" \
+            --output "${RUNNER_TEMP}/a04-permission-linux"
+          reference_exit=$?
+          set -e
+          # Restore only this fresh evidence directory to the runner, including
+          # on failure, so guest verification and always-upload can read raw data.
+          if test -d "${RUNNER_TEMP}/a04-permission-linux"; then
+            sudo chown -R -- "$(id -u):$(id -g)" "${RUNNER_TEMP}/a04-permission-linux"
+          fi
+          test "$reference_exit" -eq 0
+          sha256sum --check "$out/probe.sha256"
+
       - name: Install pinned Rust toolchain and verify VDSO input
         shell: bash
         run: |
@@ -276,6 +310,21 @@ jobs:
             --target-dir "${RUNNER_TEMP}/a06-target" \
             --output "${RUNNER_TEMP}/a06-queryabi-candidate"
 
+      - name: Verify the same permission ELF on the exact ordinary kernel
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha256sum --check "${RUNNER_TEMP}/a04-permission-build/probe.sha256"
+          probe_sha=$(cut -d' ' -f1 "${RUNNER_TEMP}/a04-permission-build/probe.sha256")
+          python3 -I -B tests/workloads/linux/run_permission_guest.py guest \
+            --linux-reference "${RUNNER_TEMP}/a04-permission-linux" \
+            --expected-probe-sha256 "$probe_sha" \
+            --product-evidence "${RUNNER_TEMP}/a06-queryabi-candidate" \
+            --expected-source-head "$(git rev-parse HEAD)" \
+            --expected-source-tree "$(git rev-parse HEAD^{tree})" \
+            --a01-initramfs support/build/evidence/2026-10-16/artifacts/initramfs.cpio.gz \
+            --output "${RUNNER_TEMP}/a04-permission-guest"
+
       - name: Verify the same SCM_RIGHTS ELF on the exact ordinary kernel
         shell: bash
         run: |
@@ -408,6 +457,9 @@ jobs:
             ${{ runner.temp }}/a04-nofile-build
             ${{ runner.temp }}/a04-nofile-linux
             ${{ runner.temp }}/a04-nofile-guest
+            ${{ runner.temp }}/a04-permission-build
+            ${{ runner.temp }}/a04-permission-linux
+            ${{ runner.temp }}/a04-permission-guest
             ${{ runner.temp }}/a04-full-checks
             ${{ runner.temp }}/a04-full-bundle
             ${{ runner.temp }}/a04-full-linux

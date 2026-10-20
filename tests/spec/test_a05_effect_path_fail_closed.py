@@ -1,9 +1,10 @@
 """A05 fail-closed source contract for the native effect seam.
 
 This is a source contract only. It deliberately does not claim that any
-resource effect is implemented or that an Asterinas guest has run.  The native
-control device must remain QueryAbi-only until trusted CapSpace, the canonical
-ResourceDomain owner, and the durable Hepta owner are connected.
+resource effect is implemented or that an Asterinas guest has run. Ordinary
+builds remain QueryAbi-only. The explicit G1-c profile may additionally read
+its trusted initial image's existing CPU owner; management and history stay
+disabled until their original owner paths are connected.
 """
 from pathlib import Path
 import re
@@ -18,30 +19,49 @@ INDEX = ROOT / "docs/INDEX.md"
 
 
 class A05EffectPathFailClosedContract(unittest.TestCase):
-    def test_device_advertises_only_queryabi(self):
+    def test_default_device_advertises_only_queryabi(self):
         source = DEVICE.read_text()
-        advertised = re.findall(r"supported_ops:\s*([^,]+),", source)
-        self.assertEqual(
-            advertised,
-            ["1u64 << Opcode::QueryAbi.as_u16()"],
-            "A05 must not advertise an effect opcode before its authority path exists",
+        self.assertRegex(
+            source,
+            r'#\[cfg\(not\(feature = "g1c-trusted-observe"\)\)\]\s*'
+            r'let \(supported_ops, max_response_payload\) = '
+            r'\(1u64 << Opcode::QueryAbi\.as_u16\(\), 48\);',
+            "ordinary A05 must retain QueryAbi-only capabilities",
+        )
+        self.assertRegex(
+            source,
+            r'#\[cfg\(feature = "g1c-trusted-observe"\)\]\s*'
+            r'let \(supported_ops, max_response_payload\) = \(\s*'
+            r'\(1u64 << Opcode::QueryAbi\.as_u16\(\)\) \| '
+            r'\(1u64 << Opcode::ReadUsage\.as_u16\(\)\), 64,\s*\);',
+            "the experimental profile must advertise exactly its two implemented reads",
         )
         self.assertIn("max_request_payload: 0", source)
+        self.assertIn("features: 0", source)
 
-    def test_all_non_query_opcodes_share_eopnotsupp_gate(self):
+    def test_all_disabled_opcodes_share_eopnotsupp_gate(self):
         source = DEVICE.read_text()
         abi = ABI.read_text()
         for opcode in ("ReadUsage", "InstallBudget", "QueryDelivery", "RetireThrough"):
             self.assertRegex(abi, rf"\b{opcode}\s*=\s*[2-5]\s*,")
 
-        gate = (
-            "if request.opcode != Opcode::QueryAbi || request.payload != RequestPayload::QueryAbi"
+        self.assertEqual(
+            re.findall(r"RequestPayload::(\w+)(?:\([^)]*\))?\s*=>", source),
+            ["QueryAbi", "ReadUsage"],
+            "management and history must have no native match arm in this slice",
         )
-        self.assertIn(gate, source)
-        gate_start = source.index(gate)
-        gate_body = source[gate_start : gate_start + 360]
-        self.assertIn("Errno::EOPNOTSUPP", gate_body)
-        self.assertIn("recognized HOS2 resource operation not implemented", gate_body)
+        self.assertRegex(
+            source,
+            r'#\[cfg\(feature = "g1c-trusted-observe"\)\]\s*'
+            r'RequestPayload::ReadUsage =>',
+            "ordinary builds must not compile the ReadUsage arm",
+        )
+        self.assertIn("process.read_hepta_initial_usage(", source)
+        self.assertRegex(
+            source,
+            r'_ => return_errno_with_message!\(\s*Errno::EOPNOTSUPP,\s*'
+            r'"recognized HOS2 resource operation not implemented"\s*\),',
+        )
 
     def test_control_device_does_not_import_ui_or_host_authority(self):
         source = DEVICE.read_text()
@@ -69,9 +89,8 @@ class A05EffectPathFailClosedContract(unittest.TestCase):
     def test_readonly_bootstrap_has_no_effectful_authority_signal(self):
         source = DEVICE.read_text()
         self.assertIn("//! Read-only HOS2 bootstrap", source)
-        self.assertIn("No management authority is", source)
-        self.assertIn("does not install a CPU budget", source)
-        self.assertIn("cannot retire delivery", source)
+        self.assertIn("Management and\n//! history operations remain disabled", source)
+        self.assertIn("Open, dup, fork and descriptor transfer grant no authority", source)
         self.assertNotIn("execute_reserved", source)
         self.assertNotIn("install_budget", source)
         self.assertNotIn("retire_through", source)

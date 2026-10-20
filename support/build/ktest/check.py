@@ -10,6 +10,22 @@ ANSI = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)")
 HEAD = re.compile(r'^running (\d+) tests in crate "([^"]+)"$', re.MULTILINE)
 SUMMARY = re.compile(r'test result: (ok|FAILED)\. (\d+) passed; (\d+) failed; (\d+) filtered out\.')
 
+# The default core gate keeps its 238-test baseline and exercises these nine
+# production-object regressions. Filtered mutation runs retain their existing
+# explicit opt-in; they cannot stand in for a complete core qualification.
+MINIMUM_CORE_TESTS = 247
+REQUIRED_CORE_TESTS = (
+    "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_preserves_bytes_across_mapping_replacement_attempts",
+    "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_allows_relro_but_never_readds_permissions",
+    "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_rechecks_alien_write_using_an_earlier_vmar_pin",
+    "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_does_not_turn_fork_into_a_shared_writable_alias",
+    "aster_core::process::process::image::tests::initial_observe_lease_includes_issue_and_excludes_expiry",
+    "aster_core::process::process::image::tests::initial_observe_lease_does_not_accept_a_pre_issue_clock_cut",
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::initial_observer_pin_rejects_a_replaced_real_cpu_owner",
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::initial_observer_pin_does_not_keep_a_deleted_resource_authorized",
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::initial_owner_lease_check_rejects_before_sampling",
+)
+
 
 def check_guest(guest, crate, allow_filtered=False):
     qemu = json.loads((guest / "qemu.json").read_text())
@@ -45,6 +61,12 @@ def check_guest(guest, crate, allow_filtered=False):
     starts = re.findall(r"^test ([\w:]+) \.\.\.", section, re.MULTILINE)
     if len(starts) != passed + failed or any(not name.startswith(crate.replace('-', '_') + '::') for name in starts):
         raise ValueError("per-test starts do not match the target summary")
+    if crate == "aster-core" and not allow_filtered:
+        missing = [name for name in REQUIRED_CORE_TESTS if starts.count(name) != 1]
+        if missing:
+            raise ValueError("missing or repeated required core tests: " + ", ".join(missing))
+        if passed < MINIMUM_CORE_TESTS:
+            raise ValueError("complete core gate shrank below the retained baseline plus regressions")
     if any(result[1] == "FAILED" or int(result[3]) for result in SUMMARY.finditer(serial)):
         raise ValueError("a tested crate reported failure")
     # Expected-panic tests are valid kernel tests. Do not apply boot's broad

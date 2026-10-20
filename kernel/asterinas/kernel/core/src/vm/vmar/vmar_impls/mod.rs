@@ -2,6 +2,7 @@
 
 mod access_alien;
 mod fork;
+mod initial_image;
 pub(super) mod map;
 pub(super) mod page_fault;
 mod protect;
@@ -200,6 +201,9 @@ struct VmarInner {
     vm_mappings: IntervalSet<Vaddr, VmMapping>,
     /// The total mapped memory in bytes.
     total_vm: usize,
+    /// Immutable mapping restrictions for the experimental trusted initial image.
+    /// This is VM protection metadata, not a capability or a grant liveness flag.
+    sealed_initial_ranges: Option<Vec<Range<Vaddr>>>,
 }
 
 impl VmarInner {
@@ -207,6 +211,7 @@ impl VmarInner {
         Self {
             vm_mappings: IntervalSet::new(),
             total_vm: 0,
+            sealed_initial_ranges: None,
         }
     }
 

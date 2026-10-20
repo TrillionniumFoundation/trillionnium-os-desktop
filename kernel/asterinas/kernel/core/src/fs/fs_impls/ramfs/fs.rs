@@ -22,7 +22,7 @@ use crate::{
         file::{AccessMode, InodeMode, InodeType, PerOpenFileOps, StatusFlags, mkmod},
         pipe::Pipe,
         pseudofs::AnonDeviceId,
-        utils::{CStr256, DirentVisitor},
+        utils::{self, CStr256, DirentVisitor},
         vfs::{
             file_system::{FileSystem, FsEventSubscriberStats, SuperBlock},
             inode::{
@@ -35,8 +35,7 @@ use crate::{
         },
     },
     prelude::*,
-    process::{Gid, Uid, posix_thread::AsPosixThread},
-    thread::Thread,
+    process::{Gid, Uid},
     time::clocks::RealTimeCoarseClock,
     vm::page_cache::{PageCache, Vmo},
 };
@@ -72,6 +71,9 @@ impl RamFs {
         revalidation_policy: RevalidationPolicy,
     ) -> Arc<Self> {
         let root_dev_id = anon_device_id.id();
+        // A new mount belongs to the caller's filesystem IDs. The helper keeps
+        // root IDs during early boot and for kernel threads without credentials.
+        let (root_uid, root_gid) = utils::current_fs_ids();
         Arc::new_cyclic(move |weak_fs| Self {
             name,
             _anon_device_id: anon_device_id,
@@ -81,8 +83,8 @@ impl RamFs {
                 inner: Inner::new_dir(weak_root.clone(), weak_root.clone()),
                 metadata: SpinLock::new(InodeMeta::new_dir(
                     mkmod!(a+rx, u+w),
-                    Uid::new_root(),
-                    Gid::new_root(),
+                    root_uid,
+                    root_gid,
                 )),
                 ino: ROOT_INO,
                 typ: InodeType::Dir,
@@ -910,7 +912,7 @@ impl RamInode {
         }
 
         let fs = self.fs.upgrade().unwrap();
-        let (uid, gid) = current_fs_ids();
+        let (uid, gid) = utils::current_fs_ids();
         let new_inode = match type_ {
             InodeType::File => RamInode::new_file(&fs, mode, uid, gid, to_be_revalidated),
             InodeType::Socket => RamInode::new_socket(&fs, mode, uid, gid, to_be_revalidated),
@@ -961,7 +963,7 @@ impl RamInode {
             return_errno_with_message!(Errno::EEXIST, "entry exists");
         }
 
-        let (uid, gid) = current_fs_ids();
+        let (uid, gid) = utils::current_fs_ids();
         let new_inode = match type_ {
             MknodType::CharDevice(dev_id) | MknodType::BlockDevice(dev_id) => {
                 let dev_type = type_.device_type().unwrap();
@@ -1248,7 +1250,7 @@ impl Inode for RamInode {
         }
 
         let fs = self.fs.upgrade().unwrap();
-        let (uid, gid) = current_fs_ids();
+        let (uid, gid) = utils::current_fs_ids();
         Ok(RamInode::new_tmpfile(
             &fs,
             mode,
@@ -1665,16 +1667,6 @@ fn write_lock_two_direntries_by_ino<'a>(
 
 fn now() -> Duration {
     RealTimeCoarseClock::get().read_time()
-}
-
-fn current_fs_ids() -> (Uid, Gid) {
-    Thread::current()
-        .and_then(|thread| {
-            let posix_thread = thread.as_posix_thread()?;
-            let credentials = posix_thread.credentials();
-            Some((credentials.fsuid(), credentials.fsgid()))
-        })
-        .unwrap_or((Uid::new_root(), Gid::new_root()))
 }
 
 pub(super) struct RamFsType;

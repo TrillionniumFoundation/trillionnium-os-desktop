@@ -83,6 +83,9 @@ cvm_guest = ["dep:tdx-guest", "ostd/cvm_guest", "aster-virtio/cvm_guest"]
 pvh_boot = ["ostd/pvh_boot"]
 # By default we use the Sv48 address translation mode.
 riscv_sv39_mode = ["ostd/riscv_sv39_mode"]
+# Experimental initial-image observation. Requires HEPTA_TRUSTED_INITIAL_ELF
+# at build time; ordinary builds retain the QueryAbi-only device.
+g1c-trusted-observe = []
 
 [lints]
 workspace = true

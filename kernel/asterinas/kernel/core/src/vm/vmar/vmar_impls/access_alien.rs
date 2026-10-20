@@ -57,6 +57,14 @@ impl Vmar {
         vaddr: Vaddr,
         reader: &mut VmReader,
     ) -> Result<usize, (Error, usize)> {
+        // Check at use, not just /proc/mem open or ptrace attach: a descriptor
+        // may already exist or may have been transferred to another Process.
+        // The seal is installed before the initial Process can be discovered;
+        // it never reverts during this VMAR's lifetime. Do not hold `inner`
+        // across page faults, which need to acquire that same lock.
+        if self.has_sealed_initial_image() {
+            return Err((Error::with_message(Errno::EPERM, "alien writes to a trusted initial image are forbidden"), 0));
+        }
         let len = reader.remain();
         let write = |frame: UFrame, skip_offset: usize| {
             let mut writer = frame.writer();
