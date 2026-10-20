@@ -89,6 +89,18 @@ class ExfatEvidenceOracleTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 runner.build_initramfs(original, b'probe', HEAD, common)
 
+    def test_formatter_version_comes_from_successful_format_output(self):
+        # The successful cloud format and the separate failed -V both emitted
+        # this exfatprogs 1.2.2 version header. Only the real format is required.
+        output = (b'exfatprogs version : 1.2.2\n'
+                  b'Creating exFAT filesystem(image.raw, cluster size=32768)\n\n'
+                  b'exFAT format complete!\n')
+        self.assertEqual(runner.formatter_version(output), '1.2.2')
+        for malformed in (b'', b'not exfatprogs\n', b'\n' + output,
+                          b'error\n' + output, output.replace(b'1.2.2', b'1.2.2 extra')):
+            with self.assertRaises(ValueError):
+                runner.formatter_version(malformed)
+
     def test_complete_positive_linux_and_guest(self):
         self.assertTrue(verdict(fixture()))
         self.assertTrue(verdict(fixture(guest=False), guest=False))

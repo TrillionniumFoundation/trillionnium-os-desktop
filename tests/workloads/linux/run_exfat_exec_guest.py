@@ -202,6 +202,15 @@ def evaluate(raw, code, timed_out, source_head, probe_size, *, guest, old=False)
             'raw_sha256': sha(raw), 'raw_bytes': len(raw)}
 
 
+def formatter_version(raw):
+    """Read the version emitted by the formatter that actually succeeded."""
+    lines = raw.splitlines()
+    match = (re.fullmatch(rb'exfatprogs version : ([0-9]+\.[0-9]+\.[0-9]+)', lines[0])
+             if lines else None)
+    require(match is not None, 'formatter version line missing or malformed')
+    return match.group(1).decode('ascii')
+
+
 def bounded_command(command, output, groups, timeout, *, env=None, log_limit=LOG_LIMIT):
     output.mkdir(mode=0o700)
     require(groups.child_anchor_available(), 'waitable process group anchor unavailable')
@@ -273,8 +282,11 @@ def run_reference(args, out, report, shared):
         command[0] = binary
         report[name + '_tool'] = {'path': binary, 'sha256': digest_file(Path(binary))}
         require_command(bounded_command(command, out / name, shared.groups, 60))
-    version = bounded_command(['mkfs.exfat', '-V'], out / 'formatter-version', shared.groups, 10)
-    require_command(version)
+    # exfatprogs 1.2.2 deliberately exits with 1 for -V. Bind version evidence
+    # to the same real formatter invocation whose successful exit was checked.
+    format_stdout = read(out / 'format/stdout.log')
+    report['formatter_version'] = formatter_version(format_stdout)
+    report['formatter_stdout_sha256'] = sha(format_stdout)
     unshare = shutil.which('unshare')
     require(unshare is not None, 'unshare unavailable')
     report['unshare_sha256'] = digest_file(Path(unshare))
@@ -330,6 +342,12 @@ def load_reference(directory, expected, head, shared):
             and report['probe_inputs_unchanged'] is True, 'reference did not qualify')
     require(report['source_inputs'] == source_inputs() and report['source_head'] == head,
             'reference source identity differs')
+    format_stdout = read(directory / 'format/stdout.log')
+    format_receipt = json.loads(read(directory / 'format/result.json'))
+    require_command(format_receipt)
+    require(sha(format_stdout) == report['formatter_stdout_sha256'] == format_receipt['stdout_sha256']
+            and formatter_version(format_stdout) == report['formatter_version'],
+            'successful formatter version evidence changed')
     probe = checked_probe(directory / 'probe.elf', expected, shared)
     require(report['probe_sha256'] == expected and report['probe_bytes'] == len(probe), 'reference ELF differs')
     require(digest_file(directory / 'compile.json') == report['compiler_receipt_sha256']
