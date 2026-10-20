@@ -140,10 +140,9 @@ def evaluate(raw, code, timed_out, source_head, probe_size, *, guest, old=False)
         if any(row is None for row in rows[prefix]):
             failed.append('malformed_' + prefix)
     mount = rows['EXFAT_MOUNT']
-    # The reviewed Asterinas ExfatFs::sb currently exposes BOOT_SIGNATURE,
-    # whereas Linux exposes EXFAT_SUPER_MAGIC. Record this existing ABI gap;
-    # this permission/exec qualification must not silently claim ABI equality.
-    expected_type = 0xAA55 if guest else 0x2011BAB0
+    # Both actual mounts must expose Linux EXFAT_SUPER_MAGIC. The frozen
+    # old-mode negative changes only inode permissions, not filesystem identity.
+    expected_type = 0x2011BAB0
     if (len(mount) != 1 or mount[0] is None or mount[0]['type'] != expected_type
             or mount[0]['flags'] < 0 or mount[0]['flags'] & 15 != 5):
         failed.append('real_exfat_readonly_nodev_with_exec_and_setid_enabled')
@@ -197,7 +196,9 @@ def evaluate(raw, code, timed_out, source_head, probe_size, *, guest, old=False)
     if len(raw) > LOG_LIMIT or not re.fullmatch('[0-9a-f]{40}', source_head) or not 0 < probe_size < 16 * 1024 * 1024:
         failed.append('evidence_bounds')
     return {'passed': not failed, 'failed_conditions': failed, 'observations': rows,
-            'expected_statfs_type': expected_type, 'linux_statfs_type_compatible': not guest,
+            'expected_statfs_type': expected_type,
+            'linux_statfs_type_compatible': (len(mount) == 1 and mount[0] is not None
+                                             and mount[0]['type'] == expected_type),
             'expected_old_behavior': old, 'actual_exec_count': len(rows['EXFAT_CHILD']),
             'raw_sha256': sha(raw), 'raw_bytes': len(raw)}
 

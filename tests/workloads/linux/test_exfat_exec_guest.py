@@ -18,7 +18,7 @@ SIZE = 1000000
 
 def fixture(*, old=False, guest=True):
     lines = [] if guest else ['EXFAT_LOOP readonly=1 autoclear=1 inode=111 device=222']
-    lines.append('EXFAT_MOUNT type=' + ('43605' if guest else '538032816') + ' flags=5')
+    lines.append('EXFAT_MOUNT type=538032816 flags=5')
     mode = '4095' if old else '511'
     for name, kind, inode in (('root', '16384', '2'), ('subject', '32768', '5'), ('directory', '16384', '8')):
         lines.append(f'EXFAT_METADATA object={name} uid=0 gid=0 mode={mode} type={kind} inode={inode} device=7')
@@ -154,13 +154,20 @@ class ExfatEvidenceOracleTests(unittest.TestCase):
                 self.assertFalse(verdict(fixture(old=True).replace(before, after, 1), old=True))
 
     def test_wrong_filesystem_nosuid_or_noexec_cannot_hide_defect(self):
-        for replacement in (b'type=16914836 flags=5', b'type=43605 flags=7',
-                            b'type=43605 flags=13', b'type=43605 flags=4'):
-            self.assertFalse(verdict(fixture().replace(b'type=43605 flags=5', replacement)))
+        for replacement in (b'type=16914836 flags=5', b'type=538032816 flags=7',
+                            b'type=538032816 flags=13', b'type=538032816 flags=4'):
+            self.assertFalse(verdict(fixture().replace(b'type=538032816 flags=5', replacement)))
 
-    def test_existing_statfs_abi_gap_is_not_silently_normalized(self):
-        self.assertFalse(verdict(fixture().replace(b'type=43605', b'type=538032816')))
-        self.assertFalse(verdict(fixture(guest=False).replace(b'type=538032816', b'type=43605'), guest=False))
+    def test_boot_sector_signature_is_not_a_filesystem_type(self):
+        for guest, old in ((True, False), (True, True), (False, False)):
+            raw = fixture(guest=guest, old=old)
+            accepted = runner.evaluate(raw, 33 if guest else 0, False, HEAD, SIZE, guest=guest, old=old)
+            self.assertTrue(accepted['passed'])
+            self.assertTrue(accepted['linux_statfs_type_compatible'])
+            rejected = runner.evaluate(raw.replace(b'type=538032816', b'type=43605'),
+                                       33 if guest else 0, False, HEAD, SIZE, guest=guest, old=old)
+            self.assertFalse(rejected['passed'])
+            self.assertFalse(rejected['linux_statfs_type_compatible'])
 
     def test_wrong_owner_kind_identity_or_duplicate_inode_fails(self):
         for before, after in ((b'uid=0 gid=0', b'uid=1 gid=0'), (b'type=32768', b'type=16384'),
