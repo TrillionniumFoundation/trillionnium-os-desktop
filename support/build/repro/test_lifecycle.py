@@ -50,6 +50,8 @@ class ReproLifecycleTests(unittest.TestCase):
             "module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)\n"
             "# Host model: version metadata is injected; no Rust/Cargo executes.\n"
             "module.fixed_rustc_version=lambda *args: b'rustc host lifecycle model\\n'\n"
+            "# Metadata binding itself is exercised by test_metadata.py's subprocess fixtures.\n"
+            "module.profile.metadata_receipts=lambda *args: {'passed':True,'count':1,'host_model':True}\n"
             "if os.environ.get('A01_REPRO_HOST_POSTCHECK_SIGNAL') == '1':\n"
             " original=module.profile.snapshot\n calls=[0]\n"
             " def snapshot(root):\n"

@@ -3,6 +3,7 @@
 import argparse
 from contextlib import contextmanager
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -15,6 +16,7 @@ import sys
 import time
 
 PROFILE = "osdk-native-local-tcp-gdb-capture-v2"
+UNIX_PROFILE = "osdk-native-unix-gdb-capture-v3"
 SYMBOL = "ostd::arch::power::try_poweroff"
 
 
@@ -41,6 +43,16 @@ def resolved_address(text):
     return next(iter(addresses))
 
 
+def load_unix_helpers():
+    path = Path(__file__).with_name("unix_endpoint.py").resolve()
+    source = path.read_bytes()
+    spec = importlib.util.spec_from_file_location("a01_capture_unix_endpoint", path)
+    helper = importlib.util.module_from_spec(spec)
+    exec(compile(source, str(path), "exec"), helper.__dict__)
+    return helper, {"path": str(path), "size": len(source),
+                    "sha256": hashlib.sha256(source).hexdigest()}
+
+
 def gdb_script(settings):
     payload = repr(json.dumps(settings))
     return '''set pagination off
@@ -50,7 +62,7 @@ set tcp connect-timeout 15
 set remotetimeout 10
 set architecture i386:x86-64
 python
-import gdb, json, os, re, time
+import gdb, hashlib, json, os, re, time
 settings = json.loads(''' + payload + ''')
 result = {"passed": False, "breakpoint": {"symbol": settings["symbol"], "resolved_address": settings["address"]}}
 def persist():
@@ -58,8 +70,25 @@ def persist():
         json.dump(result, output, indent=2)
         output.write("\\n")
 persist()
+def verify_unix_endpoint():
+    if settings.get("transport") != "unix":
+        return
+    helper = settings["unix_helper"]
+    with open(helper["path"], "rb") as source:
+        data = source.read()
+    if len(data) != helper["size"] or hashlib.sha256(data).hexdigest() != helper["sha256"]:
+        raise gdb.GdbError("UNIX endpoint validator bytes changed")
+    namespace = {}
+    exec(compile(data, helper["path"], "exec"), namespace)
+    namespace["verify_endpoint"](settings["unix_endpoint_identity"])
 try:
+    verify_unix_endpoint()
+    if settings.get("transport") == "unix":
+        result["unix_endpoint_verified_before_connect"] = True
     gdb.execute("target remote " + settings["endpoint"])
+    verify_unix_endpoint()
+    if settings.get("transport") == "unix":
+        result["unix_endpoint_verified_after_connect"] = True
     breakpoint = gdb.Breakpoint("*" + settings["address"], type=gdb.BP_HARDWARE_BREAKPOINT, internal=True)
     gdb.execute("continue")
     pc = int(gdb.parse_and_eval("$pc"))
@@ -99,6 +128,9 @@ try:
     breakpoint.enabled = False
     breakpoint.delete()
     gdb.execute("detach")
+    verify_unix_endpoint()
+    if settings.get("transport") == "unix":
+        result["unix_endpoint_verified_after_detach"] = True
     result["resumed_by_detach"] = True
     result["passed"] = True
     persist()
@@ -178,6 +210,9 @@ def main():
 def capture_main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--endpoint", required=True)
+    parser.add_argument("--profile-id", choices=(PROFILE, UNIX_PROFILE), default=PROFILE)
+    parser.add_argument("--transport", choices=("tcp", "unix"), default="tcp")
+    parser.add_argument("--unix-endpoint-record", type=Path)
     parser.add_argument("--symbol-elf", type=Path, required=True)
     parser.add_argument("--serial-log", type=Path, required=True)
     parser.add_argument("--raw-output", type=Path, required=True)
@@ -188,14 +223,32 @@ def capture_main():
     args = parser.parse_args()
     sidecar = args.sidecar.resolve()
     sidecar.parent.mkdir(parents=True, exist_ok=True)
-    record = {"schema": 1, "profile_id": PROFILE, "passed": False, "finalized": False,
+    record = {"schema": 1, "profile_id": args.profile_id, "transport": args.transport, "passed": False, "finalized": False,
               "endpoint": args.endpoint, "kernel_sha256": args.kernel_sha256,
               "guest_record": args.guest_record, "gdb_exit_code": None, "timed_out": False}
     started = time.monotonic()
     try:
-        if not re.fullmatch(r"127\.0\.0\.1:([1-9][0-9]{0,4})", args.endpoint) \
+        unix_helper, unix_identity = None, None
+        if args.transport == "unix":
+            if args.profile_id != UNIX_PROFILE or args.unix_endpoint_record is None:
+                raise ValueError("UNIX capture requires its explicit profile and endpoint identity record")
+            identity_path = args.unix_endpoint_record
+            if not identity_path.is_absolute() or identity_path.is_symlink() \
+                    or identity_path.resolve().parent != sidecar.parent:
+                raise ValueError("UNIX endpoint receipt must belong to this guest's private output")
+            unix_identity = json.loads(identity_path.read_bytes())
+            if unix_identity.get("path") != args.endpoint \
+                    or not isinstance(unix_identity.get("qemu_pid"), int) or unix_identity["qemu_pid"] <= 0:
+                raise ValueError("UNIX endpoint receipt does not name this actual QEMU connection")
+            unix_helper, helper_record = load_unix_helpers()
+            unix_helper.verify_endpoint(unix_identity)
+            record.update({"unix_endpoint_identity": unix_identity,
+                           "unix_endpoint_record": file_record(identity_path),
+                           "unix_helper": helper_record})
+        elif args.profile_id != PROFILE or args.unix_endpoint_record is not None \
+                or not re.fullmatch(r"127\.0\.0\.1:([1-9][0-9]{0,4})", args.endpoint) \
                 or int(args.endpoint.rsplit(":", 1)[1]) > 65535:
-            raise ValueError("GDB capture requires an explicit allocated IPv4 loopback endpoint")
+            raise ValueError("TCP capture requires its explicit allocated IPv4 loopback endpoint/profile")
         if args.timeout <= 0 or not re.fullmatch(r"[0-9a-f]{64}", args.kernel_sha256):
             raise ValueError("invalid capture timeout or kernel digest")
         symbol = args.symbol_elf.resolve()
@@ -219,7 +272,10 @@ def capture_main():
         prefix = sidecar.with_name("capture-serial-prefix.log")
         settings = {"endpoint": args.endpoint, "symbol": SYMBOL, "address": hex(address),
                     "serial": str(args.serial_log.resolve()), "raw": str(raw),
-                    "observations": str(observations), "prefix": str(prefix)}
+                    "observations": str(observations), "prefix": str(prefix),
+                    "transport": args.transport}
+        if unix_identity is not None:
+            settings.update({"unix_endpoint_identity": unix_identity, "unix_helper": helper_record})
         script = sidecar.with_name("capture.gdb")
         script.write_text(gdb_script(settings))
         command = [gdb, "--batch", "-nx", "--quiet", "--se=" + str(symbol), "-x", str(script)]
@@ -246,6 +302,12 @@ def capture_main():
         if record["gdb_exit_code"] != 0 or not record.get("passed") \
                 or record.get("timed_out") or not record.get("resumed_by_detach"):
             raise ValueError("GDB did not complete breakpoint, dump and detach")
+        if unix_helper is not None:
+            unix_helper.verify_endpoint(unix_identity)
+            if not all(record.get(key) is True for key in (
+                    "unix_endpoint_verified_before_connect", "unix_endpoint_verified_after_connect",
+                    "unix_endpoint_verified_after_detach")):
+                raise ValueError("GDB did not verify its actual UNIX endpoint around connection and detach")
         if file_record(symbol) != record["symbol_elf"]:
             raise ValueError("symbol ELF changed during capture")
         record["raw"] = file_record(raw)
@@ -254,7 +316,7 @@ def capture_main():
                                    "sha256": hashlib.sha256(saved_prefix).hexdigest()}
         if record["raw"]["size"] != record["announcement"]["size"]:
             raise ValueError("captured profile size differs from the guest announcement")
-    except (OSError, ValueError, subprocess.SubprocessError, CaptureInterrupted) as error:
+    except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError, CaptureInterrupted) as error:
         record["passed"] = False
         if isinstance(error, CaptureInterrupted):
             record["interrupted_by"] = signal.Signals(error.signum).name

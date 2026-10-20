@@ -97,7 +97,8 @@ class PublicRunnerTargetsTests(unittest.TestCase):
                     (target / "debug/cargo-osdk").write_text("# fake OSDK, never executed\n")
                     log.write_text("build intentionally mocked\n")
                 return {"raw_exit_code": 0, "duration_seconds": 0, "timed_out": False}
-            args = SimpleNamespace(coverage_gdb=False, local_tcp=False, target_dir=None,
+            args = SimpleNamespace(coverage_gdb=False, local_tcp=False,
+                                   upstream_coverage_lifecycle=False, target_dir=None,
                                    case=[FIRST, SECOND], case_timeout=10)
             with mock.patch.dict(os.environ, {"CARGO_HOME": str(root / "cargo"),
                                              "RUSTUP_HOME": str(root / "rustup"),
@@ -248,7 +249,8 @@ class CaseTargetCustodyTests(unittest.TestCase):
             (cache / "debug").symlink_to(foreign, target_is_directory=True)
             output = root / "new-output"
             output.mkdir()
-            args = SimpleNamespace(coverage_gdb=False, local_tcp=False, target_dir=cache,
+            args = SimpleNamespace(coverage_gdb=False, local_tcp=False,
+                                   upstream_coverage_lifecycle=False, target_dir=cache,
                                    case=None, case_timeout=10)
             with mock.patch.object(RUNNER, "checked_output", return_value=
                                    "commit-hash: 87e5904f5eb6398af6b22eac2802c78934260c48\n"), \

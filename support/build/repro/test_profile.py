@@ -454,7 +454,8 @@ class ProjectDependency(unittest.TestCase):
         root = self.virtual.parent
         for i, (checkout, source, _control, _policy) in enumerate((first, second)):
             with patch.object(launcher,"fixed_rustc_version",return_value=b"host-only fixed compiler identity\n"), \
-                    patch.object(launcher,"owned_command",return_value={"exit_code":0,"raw_exit_code":0}):
+                    patch.object(launcher,"owned_command",return_value={"exit_code":0,"raw_exit_code":0}), \
+                    patch.object(launcher.profile,"metadata_receipts",return_value={"passed":True,"count":1,"host_model":True}):
                 self.assertEqual(launcher.run_locked(SimpleNamespace(action="kernel"),checkout,source,root,
                     self.virtual,self.root/str(i),SimpleNamespace(signum=None),0),0)
         policies = [json.loads((self.root/str(i)/"policy.json").read_text()) for i in (0,1)]

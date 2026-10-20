@@ -53,16 +53,20 @@ source root and executable SHA256; the install/test command receipts retain the
 actual arguments. Missing, linked or nonexecutable private SDKs and installation
 failures stop the run without selecting a different SDK.
 
-`--skip-osdk-install` is retained only to provide a clear error: it exits2 before
-creating any output or acquiring the workspace lock. Remove the flag for a new
-run. No global or previous-output SDK reuse is accepted. With `OSDK_LOCAL_DEV=1`,
+`--skip-osdk-install` is a deprecated compatibility option. It emits a warning
+and is ignored: the run still builds and installs its own private source-bound
+OSDK. The environment receipt records `osdk_install_skip_requested: true` for
+this option and always records `osdk_install_skipped: false`; without the option,
+both fields are false. No global or previous-output SDK reuse is accepted.
+With `OSDK_LOCAL_DEV=1`,
 OSDK binds local OSTD and helper paths through compile-time `CARGO_MANIFEST_DIR`;
 runtime environment changes cannot rebind them. Even the same Git commit in a
 different worktree therefore requires its own installation. Rust dependency and
 kernel target caches retain their existing behavior.
 
 `test_sdk_isolation_mock.py` checks prefix/argv/receipts, failure propagation and
-the early deprecated-option guard entirely in-process with `unittest.mock`.
+the deprecated option's warning and mandatory fresh installation entirely
+in-process with `unittest.mock`.
 These tests execute no SDK/helper binary and no Rust or QEMU. The existing
 process lifecycle fixture was statically adjusted to its new private install
 location; its subprocess tests and real kernel-mode suites require separate

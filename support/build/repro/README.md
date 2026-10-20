@@ -56,13 +56,25 @@ target path, compiler remap and explicitly selected embedded builder metadata.
 `--remap-path-prefix` unless that identical flag is already present (before an
 explicit `--` delimiter), and supplies the
 metadata adapter through `CARGO` while compiling proc macros. Only the exact
-`metadata --format-version 1` command used by the pinned component macro is
-projected. Original and projected JSON, graph checks, component membership and
+`metadata --locked --format-version 1` command used by the current fixed component
+macro is projected, and `--locked` is passed unchanged to the real Cargo. Original
+and projected JSON, the executed argv, graph checks, component membership and
 both source/mirror file identities are retained. All package-ID graph references
 are mapped coherently, including a package located at the workspace root with a
 `#name@version` fragment. Simple absolute paths without whitespace, URI escapes,
 `=`, `#` or `@` are required. A virtual prefix containing `src/` or `tests/` is
 rejected because the pinned runtime splits at the first such substring.
+
+A successful launcher result additionally requires at least one complete metadata
+projection with a configured workspace component. The launcher recomputes the
+full projection and membership from the retained original JSON, verifies exact
+mapped bytes and command/source/mirror binding, and rejects missing, partial,
+refused or altered receipts. A cold schema-5 attempt at producer `cc8b72a` retained
+an older unlocked-only command whitelist: the new `--locked` invocation bypassed
+projection, leaving no metadata receipts and causing a real guest
+`NotIncludeAllComponent` panic (QEMU raw 65). Those artifacts remain failed
+evidence. This helper fix requires a fresh profile through its changed code hash;
+it does not change the kernel macro or relax Components validation.
 
 The compiler map is enforced in the wrapper, rather than relying on inherited
 `RUSTFLAGS`. The pinned OSDK CLI appends environment flags to global `config.build`

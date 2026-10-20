@@ -437,7 +437,8 @@ class CaptureTests(unittest.TestCase):
                 "serial_prefix": {"size": len(prefix), "sha256": hashlib.sha256(prefix).hexdigest()}}
         sidecar.write_text(json.dumps(data))
         metadata = {"raw_exit_code": 0, "timed_out": False}
-        record = {"raw_exit_code": 33, "artifacts": {"-kernel": {"sha256": "a" * 64}}}
+        record = {"profile_id": shim.CAPTURE_PROFILE, "raw_exit_code": 33,
+                  "artifacts": {"-kernel": {"sha256": "a" * 64}}}
         return metadata, record, sidecar, serial, raw, symbol, data["guest_record"]
 
     def test_ephemeral_port_is_explicitly_scoped_to_gdb_capture(self):

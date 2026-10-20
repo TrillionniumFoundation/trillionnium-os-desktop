@@ -192,7 +192,7 @@ def main():
     parser.add_argument("--output", type=Path, help="must not already exist")
     parser.add_argument("--test-name", help="optional complete test-path suffix, not a substring or crate selector")
     parser.add_argument("--skip-osdk-install", action="store_true",
-                        help="deprecated and rejected; each run installs its own source-bound private OSDK")
+                        help="deprecated compatibility option, ignored; each run installs its own source-bound private OSDK")
     args = parser.parse_args()
     with interruption_handlers() as shutdown:
         try:
@@ -212,9 +212,8 @@ def main():
 
 def run_main(args, shutdown):
     if getattr(args, "skip_osdk_install", False):
-        print("remove --skip-osdk-install: each ktest run requires a fresh private "
+        print("warning: --skip-osdk-install is deprecated and ignored; installing a fresh private "
               "source-bound OSDK; global or previous-output SDK reuse is unsupported", file=sys.stderr)
-        raise SystemExit(2)
     if "CARGO_ENCODED_RUSTFLAGS" in os.environ:
         print("CARGO_ENCODED_RUSTFLAGS overrides mandatory OSDK kernel flags; "
               "unset CARGO_ENCODED_RUSTFLAGS and retry", file=sys.stderr)
@@ -302,6 +301,7 @@ def run_locked(args, here, project, upstream, env, cargo_home, output):
                    "osdk_install_root": str(osdk_install_root), "osdk_source_root": str(upstream.resolve()),
                    "vdso_sha256": digest(Path(env["VDSO_LIBRARY_DIR"]) / "vdso_x86_64.so"),
                    "cargo_build_jobs": env["CARGO_BUILD_JOBS"], "test_name": args.test_name,
+                   "osdk_install_skip_requested": bool(getattr(args, "skip_osdk_install", False)),
                    "osdk_install_skipped": False}
     (output / "environment.json").write_text(json.dumps(environment, indent=2) + "\n")
     env["CARGO_TARGET_DIR"] = str(upstream / "target")

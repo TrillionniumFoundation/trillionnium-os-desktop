@@ -8,6 +8,7 @@ import re
 import stat
 
 SCHEMA = "a01-component-path-projection/5"
+METADATA_ARGS = ("metadata", "--locked", "--format-version", "1")
 FILES = ("profile.py", "run.py", "rustc-wrapper.py", "cargo-metadata-wrapper.py")
 HELPERS = ("profile.py", "rustc-wrapper.py", "cargo-metadata-wrapper.py")
 
@@ -525,3 +526,44 @@ def project_metadata(data, real, virtual, component_bytes, policy=None):
         checks.append({"name": name, "in_workspace_before": before,
                        "in_workspace_after": after, "listed": name in names})
     return mapped, checks
+
+
+def metadata_receipts(output, policy):
+    """Require completed, coherent component projections from this exact run."""
+    directory = Path(output) / "metadata"
+    names = set(os.listdir(directory))
+    originals = sorted(name for name in names if name.endswith(".original.json"))
+    if not originals:
+        raise ValueError("no completed component metadata projection receipts")
+    source, source_identity = regular(Path(policy["real_root"]) / "Components.toml")
+    mirror, mirror_identity = regular(Path(policy["virtual_root"]) / "Components.toml")
+    if source != mirror or digest(source) != policy["components_sha256"]:
+        raise ValueError("component metadata receipts lost their selected Components input")
+    verify_project_inputs(policy)
+    expected_names, receipts = set(), []
+    for name in originals:
+        prefix = name.removesuffix(".original.json")
+        if not re.fullmatch(r"[0-9]+-[0-9]+", prefix):
+            raise ValueError("unexpected component metadata receipt name")
+        expected_names.update(prefix + suffix for suffix in
+                              (".original.json", ".mapped.json", ".binding.json", ".stderr.log"))
+        original, _ = regular(directory / name)
+        mapped, _ = regular(directory / (prefix + ".mapped.json"))
+        raw_binding, _ = regular(directory / (prefix + ".binding.json"))
+        regular(directory / (prefix + ".stderr.log"))
+        projected, checks = project_metadata(json.loads(original), policy["real_root"],
+                                            policy["virtual_root"], source, policy)
+        if not any(item["in_workspace_before"] and item["listed"] for item in checks):
+            raise ValueError("metadata receipt contains no bound workspace component")
+        expected_mapped = (json.dumps(projected, separators=(",", ":")) + "\n").encode()
+        expected_binding = {"argv": [policy["real_cargo"], *METADATA_ARGS],
+                            "original_sha256": digest(original), "mapped_sha256": digest(mapped),
+                            "component_membership": checks, "source_identity": source_identity,
+                            "mirror_identity": mirror_identity}
+        if mapped != expected_mapped or json.loads(raw_binding) != expected_binding:
+            raise ValueError("component metadata projection or binding receipt is inconsistent")
+        receipts.append({"binding": str(directory / (prefix + ".binding.json")),
+                         "binding_sha256": digest(raw_binding), "components": len(checks)})
+    if names != expected_names:
+        raise ValueError("incomplete, refused or unexpected component metadata receipt files")
+    return {"passed": True, "count": len(receipts), "receipts": receipts}

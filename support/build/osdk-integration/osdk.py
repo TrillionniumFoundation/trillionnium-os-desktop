@@ -11,6 +11,8 @@ import sys
 import tempfile
 
 CAPTURE_PROFILE = "osdk-native-local-tcp-gdb-capture-v2"
+UNIX_CAPTURE_PROFILE = "osdk-native-unix-gdb-capture-v3"
+CAPTURE_PROFILES = (CAPTURE_PROFILE, UNIX_CAPTURE_PROFILE)
 CAPTURE_SYMBOL = "ostd::arch::power::try_poweroff"
 ANSI = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)")
 FATAL_PANICS = (
@@ -60,7 +62,7 @@ def coverage_binding(case_directory, raw_path, profile_id, source_path=None):
                 or serial_records[0].get("sha256") != serial_hash \
                 or serial_records[0].get("size") != len(data):
             raise ValueError("coverage serial bytes do not match the guest record")
-        if profile_id == CAPTURE_PROFILE and any(
+        if profile_id in CAPTURE_PROFILES and any(
                 marker in ANSI.sub("", data.decode(errors="replace")) for marker in FATAL_PANICS):
             raise ValueError("fatal guest panic in GDB coverage capture serial stream")
         announcements = re.findall(rb"^#### Coverage: (0x[0-9a-fA-F]+) (\d+)\r?$", data, re.MULTILINE)
@@ -73,7 +75,7 @@ def coverage_binding(case_directory, raw_path, profile_id, source_path=None):
         if not raw_path.is_file() or raw_path.stat().st_size != length:
             raise ValueError("raw coverage size differs from the guest announcement")
         raw_hash = hashlib.sha256(raw_path.read_bytes()).hexdigest()
-        if profile_id == CAPTURE_PROFILE:
+        if profile_id in CAPTURE_PROFILES:
             capture = record.get("capture", {})
             if capture.get("raw_exit_code") != 0 or capture.get("timed_out") or capture.get("error"):
                 raise ValueError("GDB capture process failed or timed out")
@@ -91,6 +93,44 @@ def coverage_binding(case_directory, raw_path, profile_id, source_path=None):
             if saved.get("kernel_sha256") != kernel or saved.get("serial_sha256") != serial_hash \
                     or saved.get("guest_record") != str(path.relative_to(case_directory)):
                 raise ValueError("GDB capture does not identify this exact guest and serial stream")
+            if profile_id == UNIX_CAPTURE_PROFILE:
+                endpoint = record.get("unix_gdb_endpoint", {})
+                identity = endpoint.get("identity", {})
+                endpoint_file = path.with_name("unix-gdb-endpoint.json")
+                endpoint_bytes = endpoint_file.read_bytes()
+                if record.get("raw_exit_code") != 33 or record.get("wrapper_exit_code") != 33:
+                    raise ValueError("UNIX coverage requires the guest's actual ISA success exit33")
+                if saved.get("transport") != "unix" or saved.get("unix_endpoint_identity") != identity \
+                        or identity.get("qemu_pid") != record.get("qemu_pid") \
+                        or identity.get("transport") != "unix" \
+                        or not saved.get("unix_endpoint_verified_before_connect") \
+                        or not saved.get("unix_endpoint_verified_after_connect") \
+                        or not saved.get("unix_endpoint_verified_after_detach"):
+                    raise ValueError("UNIX coverage endpoint is not bound to this actual guest")
+                expected_endpoint = {"path": str(endpoint_file.resolve()), "size": len(endpoint_bytes),
+                                     "sha256": hashlib.sha256(endpoint_bytes).hexdigest()}
+                if endpoint.get("record") != expected_endpoint \
+                        or saved.get("unix_endpoint_record") != expected_endpoint \
+                        or json.loads(endpoint_bytes) != identity:
+                    raise ValueError("UNIX endpoint identity receipt changed")
+                if record.get("snapshot_verification") != {"before_qemu": True, "after_qemu": True}:
+                    raise ValueError("UNIX coverage requires frozen input verification before/after QEMU")
+                loaded = record["artifacts"]["-kernel"]
+                loaded_path = Path(loaded["path"])
+                loaded_bytes = loaded_path.read_bytes()
+                argv = record.get("argv", [])
+                if argv.count("-kernel") != 1 or argv[argv.index("-kernel") + 1] != str(loaded_path) \
+                        or loaded_path.resolve() != loaded_path or loaded_path.is_symlink() \
+                        or loaded_path.stat().st_mode & 0o222 \
+                        or len(loaded_bytes) != loaded["size"] \
+                        or hashlib.sha256(loaded_bytes).hexdigest() != kernel \
+                        or loaded_bytes[:6] != b"\x7fELF\x02\x01" \
+                        or int.from_bytes(loaded_bytes[18:20], "little") != 3:
+                    raise ValueError("UNIX coverage loaded ELF bytes/argv do not match the frozen QEMU input")
+                original = record.get("artifact_snapshots", {}).get("coverage-symbol", {})
+                if any(original.get(key) != saved.get("symbol_elf", {}).get(key)
+                       for key in ("path", "size", "sha256")):
+                    raise ValueError("UNIX coverage symbols differ from this guest's private frozen symbols")
             point = saved.get("breakpoint", {})
             resolved = int(point.get("resolved_address", "0"), 16)
             actual_pc = int(point.get("actual_pc", "0"), 16)
@@ -148,7 +188,7 @@ def main():
     source = Path.cwd() / "coverage.profraw"
     coverage_preexisted = "--coverage" in args and source.exists()
     command_env = os.environ.copy()
-    capture_requested = os.environ.get("A01_OSDK_PROFILE") == CAPTURE_PROFILE \
+    capture_requested = os.environ.get("A01_OSDK_PROFILE") in CAPTURE_PROFILES \
         and len(args) >= 2 and args[:2] == ["osdk", "run"] and "--coverage" in args
     command_env["A01_OSDK_COVERAGE_GDB"] = "1" if capture_requested else "0"
     if capture_requested:
@@ -191,7 +231,7 @@ def main():
                 validation[key] = int(matched.group(1)) if matched else 0
             validation["passed"] = validation["passed"] \
                 and validation["total_functions"] > 0 and validation["maximum_function_count"] > 0
-            if os.environ.get("A01_OSDK_LOCAL_TCP") == "1":
+            if os.environ.get("A01_OSDK_LOCAL_TCP") == "1" or capture_requested:
                 binding = coverage_binding(Path(os.environ["A01_OSDK_CASE_OUTPUT"]), raw,
                                            os.environ["A01_OSDK_PROFILE"], source_path=source)
                 validation["guest_binding"] = binding

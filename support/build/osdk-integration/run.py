@@ -25,6 +25,7 @@ ROOT_SEED_SHA256 = "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8
 UPSTREAM_HARNESS_SEED_SHA256 = "99a21f72f6a9f1582553b34f06e80f86e539f38e62eab7a0847afd0906e75be3"
 DERIVED_HARNESS_SEED_SHA256 = "1011e26a7070708d37f2062a84b309d2c228c177a9e5434bfe63917203c17a18"
 UNIX_PROFILE = "osdk-native-unix-v1"
+UNIX_CAPTURE_PROFILE = "osdk-native-unix-gdb-capture-v3"
 TCP_PROFILE = "osdk-native-local-tcp-v1"
 CAPTURE_PROFILE = "osdk-native-local-tcp-gdb-capture-v2"
 FIXED_PATHS = {
@@ -553,15 +554,27 @@ def checked_output(argv, cwd, env, output, timeout=30):
     return text
 
 
+def selected_profile(local_tcp=False, coverage_gdb=False, upstream_coverage_lifecycle=False):
+    if upstream_coverage_lifecycle and (local_tcp or coverage_gdb):
+        raise ValueError("--upstream-coverage-lifecycle is exclusive to the original UNIX profile")
+    if coverage_gdb and not local_tcp:
+        raise ValueError("--coverage-gdb requires explicit --local-tcp")
+    if local_tcp:
+        return CAPTURE_PROFILE if coverage_gdb else TCP_PROFILE
+    return UNIX_PROFILE if upstream_coverage_lifecycle else UNIX_CAPTURE_PROFILE
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True, help="must not already exist")
     parser.add_argument("--case", action="append", help="exact upstream test name; default all 22")
     parser.add_argument("--case-timeout", type=int, default=900)
     parser.add_argument("--local-tcp", action="store_true",
-                        help="explicit loopback TCP control profile; original UNIX default stays separate")
+                        help="explicit loopback TCP control profile; default UNIX controls stay separate")
     parser.add_argument("--coverage-gdb", action="store_true",
                         help="explicit v2 coverage capture at the original poweroff breakpoint; requires --local-tcp")
+    parser.add_argument("--upstream-coverage-lifecycle", action="store_true",
+                        help="explicit legacy UNIX v1 lifecycle without the default coverage GDB helper")
     parser.add_argument("--target-dir", type=Path,
                         help="reuse a prior isolated Cargo artifact cache; generated workspaces stay per case")
     args = parser.parse_args()
@@ -571,8 +584,10 @@ def main():
         raise SystemExit(2)
     if args.case_timeout < 1:
         raise SystemExit("--case-timeout must be positive")
-    if args.coverage_gdb and not args.local_tcp:
-        raise SystemExit("--coverage-gdb requires explicit --local-tcp")
+    try:
+        selected_profile(args.local_tcp, args.coverage_gdb, args.upstream_coverage_lifecycle)
+    except ValueError as error:
+        raise SystemExit(str(error)) from error
     here = Path(__file__).resolve().parent
     project = here.parents[2]
     upstream = project / "kernel/asterinas"
@@ -645,7 +660,7 @@ def _run_locked(args, here, project, upstream, output, fixed_root):
     env = os.environ.copy()
     env["RUSTUP_TOOLCHAIN"] = TOOLCHAIN
     env["RUSTUP_AUTO_INSTALL"] = "0"
-    profile_id = CAPTURE_PROFILE if args.coverage_gdb else TCP_PROFILE if args.local_tcp else UNIX_PROFILE
+    profile_id = selected_profile(args.local_tcp, args.coverage_gdb, args.upstream_coverage_lifecycle)
     env["A01_OSDK_LOCAL_TCP"] = "1" if args.local_tcp else "0"
     env["A01_OSDK_PROFILE"] = profile_id
     env["A01_OSDK_COVERAGE_GDB"] = "0"
@@ -731,6 +746,9 @@ def _run_locked(args, here, project, upstream, output, fixed_root):
                    "cargo_artifact_cache_profile": artifact_cache_profile,
                    "case_target_policy": "private generated osdk workspaces; shared debug/release/x86_64-unknown-none artifacts",
                    "profile_id": profile_id,
+                   "coverage_collection": "unix-gdb-before-poweroff" if profile_id == UNIX_CAPTURE_PROFILE
+                       else "tcp-gdb-before-poweroff" if profile_id == CAPTURE_PROFILE
+                       else "upstream-monitor-lifecycle",
                    "control_transport": "loopback-tcp" if args.local_tcp else "upstream-unix",
                    "harness_path": str(harness), "harness_sha256": digest(harness),
                    "osdk_path": str(osdk), "osdk_sha256": digest(osdk),
@@ -816,8 +834,11 @@ def _run_locked(args, here, project, upstream, output, fixed_root):
                                   "profile_id": guest.get("profile_id")})
         report["guests"] = guest_reports
         allowed_exit = (0, 33) if case == "commands::run::coverage_feature::basic_coverage" else (33,)
-        if args.local_tcp and case == "commands::run::coverage_feature::basic_coverage":
-            allowed_exit = (33,) if args.coverage_gdb else (0,)
+        if case == "commands::run::coverage_feature::basic_coverage":
+            if profile_id in (CAPTURE_PROFILE, UNIX_CAPTURE_PROFILE):
+                allowed_exit = (33,)
+            elif args.local_tcp:
+                allowed_exit = (0,)
         if len(guest_reports) != VM_CASES.get(case, 0) or any(
                 guest["timed_out"] or guest["error"] or not guest["serial_valid"]
                 or guest["profile_id"] != profile_id
@@ -851,6 +872,7 @@ def _run_locked(args, here, project, upstream, output, fixed_root):
         print(f"{report['status'].upper()} {case} ({invoked['duration_seconds']}s)", flush=True)
         (output / "result.json").write_text(json.dumps({"schema": 1, "cases": results}, indent=2) + "\n")
     summary = {"schema": 1, "profile_id": profile_id,
+               "coverage_collection": environment["coverage_collection"],
                "control_transport": environment["control_transport"],
                "profile": environment["profile"], "scope": environment["scope"],
                "available_cases": len(available), "selected_cases": len(selected),

@@ -338,6 +338,74 @@ class KernelRunnerTests(unittest.TestCase):
         self.assertEqual(list(foreign.iterdir()), [])
         self.assertEqual(self.sdk_calls()[-1]["binary"], str(self.root / "evidence/osdk/bin/cargo-osdk"))
 
+    def test_g1c_argv_contract_and_exported_private_sdk_root(self):
+        # Exercise the caller's fixed product-build argv contract with actual
+        # GNU Make. Cargo, the initial image and every host binary are fixtures.
+        self.use_sdk_make()
+        real_make = shutil.which("make", path="/usr/bin:/bin")
+        self.write_tool("make", (
+            "#!/usr/bin/python3\nimport json, os, pathlib, sys\n"
+            "if '--version' not in sys.argv:\n"
+            " pathlib.Path(os.environ['MOCK_PROJECT'], 'make-call.json').write_text(json.dumps({"
+            "'argv': sys.argv[1:], 'sdk_root': os.environ.get('A01_OSDK_INSTALL_ROOT'),"
+            "'makeflags': os.environ.get('MAKEFLAGS')}))\n"
+            f"os.execv({real_make!r}, [{real_make!r}, *sys.argv[1:]])\n"
+        ))
+        (self.build / "prepare-trusted-image.py").write_text(
+            "import argparse, pathlib\n"
+            "parser = argparse.ArgumentParser()\n"
+            "for name in ('input', 'output', 'manifest'):\n"
+            " parser.add_argument('--' + name, type=pathlib.Path, required=True)\n"
+            "args = parser.parse_args()\n"
+            "args.output.write_bytes(args.input.read_bytes())\n"
+            "args.manifest.write_text('{}\\n')\n"
+        )
+        image = self.root / "fixture-initial.elf"
+        image.write_bytes(b"host-only initial image fixture")
+        foreign = self.root / "foreign-sdk-prefix"
+        foreign.mkdir()
+        sentinel = foreign / "keep.txt"
+        sentinel.write_text("foreign prefix must remain untouched\n")
+        result = self.run_runner(extra={
+            "HEPTA_G1C_TRUSTED_OBSERVE": "1",
+            "HEPTA_TRUSTED_INITIAL_ELF": str(image),
+            "A01_OSDK_INSTALL_ROOT": str(foreign),
+            "MAKEFLAGS": "n A01_OSDK_INSTALL_ROOT=" + str(foreign),
+        })
+        run = self.root / "evidence"
+        command = shlex.split((run / "command.sh").read_text())
+        expected = ["make", "-C", str(self.kernel.parent), "-f", "Makefile",
+                    "-f", str(self.build / "minimal.mk"), "kernel"]
+        required = {
+            "TARGET_ARCH=x86_64", "SMP=1", "MEM=512M", "ENABLE_KVM=0",
+            "BOOT_PROTOCOL=multiboot", "INITRAMFS=on", "AUTO_TEST=none",
+            "HEPTA_G1C_TRUSTED_OBSERVE=1", "FEATURES=g1c-trusted-observe",
+            "A01_INITRAMFS=" + str(run / "initramfs.cpio.gz"),
+            "A01_QEMU_WRAPPER=" + str(self.build / "record-qemu.py"),
+        }
+        self.assertEqual(command[:8], expected)
+        self.assertEqual(len(command), 20)
+        private_sdk = run / "osdk/bin/cargo-osdk"
+        self.assertEqual(command[8], "CARGO_OSDK=" + str(private_sdk))
+        self.assertEqual(set(command[9:]), required)
+        called = json.loads((self.root / "make-call.json").read_text())
+        self.assertEqual(called["argv"], command[1:], "receipt must match the executed Make argv")
+        self.assertEqual(called["sdk_root"], str(run / "osdk"))
+        self.assertIsNone(called["makeflags"])
+        self.assertEqual(result.returncode, 0, result.stdout)
+        calls = self.sdk_calls()
+        self.assertEqual([row["operation"] for row in calls], ["cargo", "cargo", "sdk"])
+        self.assertEqual(calls[0]["argv"][2:4], ["--root", str(run / "osdk")])
+        self.assertEqual(calls[0]["cwd"], str(self.kernel.parent))
+        self.assertEqual(calls[-1]["binary"], str(private_sdk))
+        self.assertEqual(calls[-1]["source_root"], str(self.kernel.parent))
+        self.assertIn("--features=g1c-trusted-observe", calls[-1]["argv"])
+        self.assertEqual(list(foreign.iterdir()), [sentinel])
+        self.assertEqual(sentinel.read_text(), "foreign prefix must remain untouched\n")
+        self.assertEqual(self.global_sdk.read_bytes(), self.global_sdk_original)
+        self.assertIn("A01_OSDK_INSTALL_ROOT=" + str(run / "osdk"),
+                      (run / "environment.log").read_text())
+
     def test_private_install_failure_stops_before_sdk_and_cleans_owned_manifest(self):
         self.use_sdk_make()
         result = self.run_runner(extra={"MOCK_INSTALL_EXIT": "47"})

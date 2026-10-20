@@ -21,6 +21,8 @@ PROFILE = {"arch": "x86_64", "machine": "q35", "accel": "tcg", "cpu": "max",
            "firmware": str(FIRMWARE)}
 LOCAL_TCP_PROFILE = "osdk-native-local-tcp-v1"
 CAPTURE_PROFILE = "osdk-native-local-tcp-gdb-capture-v2"
+UNIX_CAPTURE_PROFILE = "osdk-native-unix-gdb-capture-v3"
+CAPTURE_PROFILES = (CAPTURE_PROFILE, UNIX_CAPTURE_PROFILE)
 # The default producer name remains a compatibility fixture constant. The
 # inherited handoff is selected by its unique chardev id/reference pair.
 MONITOR_CHARDEV_ID = "osdk-managed-monitor"
@@ -398,6 +400,32 @@ def reserve_gdb_listener(arguments, endpoint):
         raise
 
 
+def unix_helpers():
+    source = Path(__file__).with_name("unix_endpoint.py").resolve()
+    raw = source.read_bytes()
+    spec = importlib.util.spec_from_file_location("a01_recorder_unix_endpoint", source)
+    helper = importlib.util.module_from_spec(spec)
+    exec(compile(raw, str(source), "exec"), helper.__dict__)
+    return helper
+
+
+def reserve_unix_capture(arguments):
+    identifier = "a01-unix-gdb0"
+    if any(item in ("-gdb", "--gdb", "-S") or identifier in item for item in arguments):
+        raise ValueError("UNIX coverage requires its own single paused GDB endpoint")
+    helper = unix_helpers()
+    listener, identity = helper.reserve_endpoint(os.environ.get("TMPDIR", "/tmp"))
+    try:
+        adapted = [*arguments, "-chardev",
+                   f"socket,id={identifier},fd={listener.fileno()},server=on,wait=off",
+                   "-gdb", "chardev:" + identifier, "-S"]
+        return adapted, listener, identity
+    except BaseException:
+        listener.close()
+        helper.release_endpoint(identity)
+        raise
+
+
 def coverage_symbol(cwd):
     configured = os.environ.get("A01_OSDK_COVERAGE_SYMBOL_ELF")
     if configured:
@@ -489,9 +517,21 @@ def finalize_capture(metadata, record, sidecar, serial, raw_path, symbol, guest_
         raise ValueError("coverage sidecar must be an object")
     if record["raw_exit_code"] != 33 or metadata.get("raw_exit_code") != 0 or metadata.get("timed_out"):
         raise ValueError("coverage requires real QEMU exit 33 and capture exit 0")
-    if captured.get("passed") is not True or captured.get("profile_id") != CAPTURE_PROFILE \
+    if record.get("profile_id") not in CAPTURE_PROFILES \
+            or captured.get("passed") is not True or captured.get("profile_id") != record["profile_id"] \
             or captured.get("gdb_exit_code") != 0:
         raise ValueError("coverage capture sidecar did not report a valid GDB capture")
+    if record["profile_id"] == UNIX_CAPTURE_PROFILE:
+        endpoint = record.get("unix_gdb_endpoint", {})
+        identity = endpoint.get("identity", {})
+        if captured.get("transport") != "unix" or captured.get("unix_endpoint_identity") != identity \
+                or identity.get("qemu_pid") != record.get("qemu_pid") \
+                or captured.get("unix_endpoint_record") != endpoint.get("record") \
+                or not all(captured.get(key) is True for key in (
+                    "unix_endpoint_verified_before_connect", "unix_endpoint_verified_after_connect",
+                    "unix_endpoint_verified_after_detach")):
+            raise ValueError("UNIX GDB capture endpoint identity does not match this guest")
+        unix_helpers().verify_endpoint(identity)
     if captured.get("guest_record") != guest_record \
             or captured.get("kernel_sha256") != record["artifacts"]["-kernel"]["sha256"]:
         raise ValueError("coverage capture does not bind this QEMU guest and kernel")
@@ -564,6 +604,7 @@ def main():
     status = 125
     gdb_listener = None
     monitor_socket = None
+    unix_identity = None
     try:
         arguments, logs, removed = transform_args(requested, guest, cwd)
         record["fixed_profile_args"] = list(arguments)
@@ -575,8 +616,9 @@ def main():
         capture_enabled = os.environ.get("A01_OSDK_COVERAGE_GDB") == "1"
         if local_tcp != (profile_id in (LOCAL_TCP_PROFILE, CAPTURE_PROFILE)):
             raise ValueError("local TCP flag and profile id disagree")
-        if capture_enabled and (not local_tcp or profile_id != CAPTURE_PROFILE):
-            raise ValueError("GDB coverage capture requires the explicit v2 local TCP profile")
+        if capture_enabled and profile_id not in CAPTURE_PROFILES:
+            raise ValueError("GDB coverage capture requires an explicit v2 TCP or v3 UNIX profile")
+        unix_capture = capture_enabled and profile_id == UNIX_CAPTURE_PROFILE
         record.update({"profile_id": profile_id,
                        "control_transport": "loopback-tcp" if local_tcp else "upstream-original"})
         allow_gdb_zero = capture_enabled or bool(os.environ.get("A01_OSDK_GDB_READY"))
@@ -586,7 +628,7 @@ def main():
         if monitor_metadata is not None:
             record["monitor_socket"] = monitor_metadata
         gdb_endpoint = next((item for item in controls if item["kind"] == "gdb"), None)
-        if capture_enabled and (gdb_endpoint is None or gdb_endpoint["port"] != 0 or "-S" not in arguments):
+        if capture_enabled and local_tcp and (gdb_endpoint is None or gdb_endpoint["port"] != 0 or "-S" not in arguments):
             raise ValueError("coverage capture requires its own paused GDB listener requested on port 0")
         ready_path = None
         if gdb_endpoint:
@@ -607,6 +649,20 @@ def main():
                     raise ValueError("prebound GDB listener did not resolve a valid ephemeral port")
             record["gdb_listener"] = {"host": gdb_endpoint["host"], "port": actual_endpoint["port"],
                                        "requested_port": gdb_endpoint["port"],
+                                       "fd": gdb_listener.fileno(), "bind_succeeded": True,
+                                       "held_until_qemu_spawn": True, "bind_close_rebind_gap": False,
+                                       "handoff": "prebound-listener-inherited-fd",
+                                       "parent_copy_closed_after_spawn": False}
+        if unix_capture:
+            if os.environ.get("A01_OSDK_GDB_READY"):
+                raise ValueError("coverage-owned UNIX GDB cannot reuse another debugger's readiness marker")
+            arguments, gdb_listener, unix_identity = reserve_unix_capture(arguments)
+            actual_endpoint = {"kind": "gdb", "transport": "unix", "path": unix_identity["path"]}
+            gdb_endpoint = actual_endpoint
+            controls.append(actual_endpoint)
+            record["gdb_readiness"] = {"ready": False, "marker_requested": False,
+                                       "startup_survival_seconds": 0.05}
+            record["gdb_listener"] = {"transport": "unix", "path": unix_identity["path"],
                                        "fd": gdb_listener.fileno(), "bind_succeeded": True,
                                        "held_until_qemu_spawn": True, "bind_close_rebind_gap": False,
                                        "handoff": "prebound-listener-inherited-fd",
@@ -636,12 +692,17 @@ def main():
             sidecar = guest / "coverage-capture.json"
             guest_record = str(destination.relative_to(case))
             capture_command = [sys.executable, "-I", str(Path(__file__).with_name("capture.py")),
-                               "--endpoint", f"127.0.0.1:{actual_endpoint['port']}",
+                               "--endpoint", unix_identity["path"] if unix_capture else f"127.0.0.1:{actual_endpoint['port']}",
+                               "--profile-id", profile_id,
+                               "--transport", "unix" if unix_capture else "tcp",
                                "--symbol-elf", symbol["path"], "--serial-log", str(logs[0]),
                                "--raw-output", str(raw_path), "--sidecar", str(sidecar),
                                "--kernel-sha256", artifacts["-kernel"]["sha256"],
                                "--guest-record", guest_record, "--timeout", "180"]
+            if unix_capture:
+                capture_command += ["--unix-endpoint-record", str(guest / "unix-gdb-endpoint.json")]
             record["capture"] = {"mode": "gdb-before-poweroff", "argv": capture_command,
+                                 "transport": "unix" if unix_capture else "tcp",
                                  "symbol_elf": symbol, "serial_source": str(logs[0]),
                                  "raw_output": str(raw_path), "sidecar_path": str(sidecar),
                                  "raw_exit_code": None, "timed_out": False, "finalized": False}
@@ -662,6 +723,14 @@ def main():
                                                       if stream is not None))
             try:
                 record["qemu_pid"] = process.pid
+                if unix_identity is not None:
+                    unix_identity["qemu_pid"] = process.pid
+                    unix_helpers().verify_endpoint(unix_identity, gdb_listener)
+                    endpoint_record = guest / "unix-gdb-endpoint.json"
+                    with endpoint_record.open("x") as output:
+                        output.write(json.dumps(unix_identity, indent=2) + "\n")
+                    record["unix_gdb_endpoint"] = {"identity": unix_identity,
+                                                   "record": file_record(endpoint_record)}
                 if monitor_socket is not None:
                     monitor_socket.close()
                     monitor_socket = None
@@ -754,6 +823,12 @@ def main():
             gdb_listener.close()
         if monitor_socket is not None:
             monitor_socket.close()
+        if unix_identity is not None:
+            try:
+                record["unix_gdb_cleanup"] = unix_helpers().release_endpoint(unix_identity)
+            except (OSError, ValueError, KeyError, TypeError) as error:
+                status = 125
+                record["error"] = f"UNIX endpoint cleanup refused: {type(error).__name__}: {error}"
     record["wrapper_exit_code"] = status if status >= 0 else 128 - status
     record["duration_seconds"] = round(time.monotonic() - started, 3)
     destination.write_text(json.dumps(record, indent=2) + "\n")

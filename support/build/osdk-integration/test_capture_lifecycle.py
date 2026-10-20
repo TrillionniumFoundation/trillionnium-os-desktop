@@ -63,6 +63,9 @@ def fixture(root, recorder, capture):
     integration.mkdir(parents=True)
     shutil.copyfile(recorder, integration / "record-qemu.py")
     shutil.copyfile(capture, integration / "capture.py")
+    unix_helper = capture.with_name("unix_endpoint.py")
+    if unix_helper.is_file():
+        shutil.copyfile(unix_helper, integration / "unix_endpoint.py")
     shutil.copyfile(HERE.parent / "record-qemu.py", closure / "record-qemu.py")
     recorder, capture = integration / "record-qemu.py", integration / "capture.py"
     tools = root / "tools"
@@ -138,7 +141,8 @@ class CaptureLifecycleTests(unittest.TestCase):
         process = None
         observation = {"kind": "capture_lifecycle_fixture_not_kernel", "mode": mode, "baseline": baseline,
                        "source": {name: hashlib.sha256((source / name).read_bytes()).hexdigest()
-                                  for name in ("record-qemu.py", "capture.py")},
+                                  for name in ("record-qemu.py", "capture.py", "unix_endpoint.py")
+                                  if (source / name).is_file()},
                        "shared_selector_sha256": hashlib.sha256((HERE.parent / "record-qemu.py").read_bytes()).hexdigest(),
                        "real_gdb": str(REAL_GDB)}
         try:

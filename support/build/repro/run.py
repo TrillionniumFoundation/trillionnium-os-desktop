@@ -200,7 +200,12 @@ def run_locked(args, checkout, source, root, virtual, output, shutdown, workspac
         project_ok = profile.project_inputs(checkout, source) == (project_inputs, project_states)
         code_ok = (profile.code_hashes(HERE) == scripts
                    and lifecycle.sha256(lifecycle_path) == lifecycle_sha256)
-        status = result["exit_code"] if result["exit_code"] else (0 if custody_ok and source_ok and project_ok and code_ok else 1)
+        try:
+            metadata = profile.metadata_receipts(output, policy)
+        except (OSError, ValueError, KeyError, TypeError) as error:
+            metadata = {"passed": False, "error": f"{type(error).__name__}: {error}"}
+        status = result["exit_code"] if result["exit_code"] else (
+            0 if custody_ok and source_ok and project_ok and code_ok and metadata["passed"] else 1)
         if shutdown.signum is not None:
             status = 128 + shutdown.signum
         receipt = {"command": command, "started": start,
@@ -209,6 +214,7 @@ def run_locked(args, checkout, source, root, virtual, output, shutdown, workspac
                    "owned_session_cleanup": result.get("group_cleanup"),
                    "profile_custody_unchanged": custody_ok, "source_components_unchanged": source_ok,
                    "profile_code_unchanged": code_ok, "project_inputs_unchanged": project_ok,
+                   "metadata_projection": metadata,
                    "scope": "same-host opt-in path projection; independent-host reproduction not claimed"}
         if shutdown.signum is not None:
             receipt.update(interrupted_by=signal.Signals(shutdown.signum).name,

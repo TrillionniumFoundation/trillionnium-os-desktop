@@ -61,7 +61,8 @@ class FixedRootCleanupTests(unittest.TestCase):
                         "device": identity.st_dev, "inode": identity.st_ino}))
                 os.kill(os.getpid(), signal.SIGTERM)
                 RUNNER._active_shutdown.check()
-            args = SimpleNamespace(coverage_gdb=False, local_tcp=False, target_dir=None,
+            args = SimpleNamespace(coverage_gdb=False, local_tcp=False,
+                                   upstream_coverage_lifecycle=False, target_dir=None,
                                    case=None, case_timeout=1)
             expected_error = {"adaptation": "manifest anchor changed",
                               "normalization": "lock normalization failed",

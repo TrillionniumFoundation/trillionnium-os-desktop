@@ -34,8 +34,35 @@ hash. The runner's source-input table includes that shared dependency. These
 host-path selections do not choose TCP, enable coverage, relax device/control
 validation or change the original upstream test assertions.
 
-The default profile is `osdk-native-unix-v1`. Its original UNIX GDB and monitor
-transports remain separate from the explicit local TCP profile:
+The default profile is `osdk-native-unix-gdb-capture-v3`. It keeps the original
+UNIX debugger and monitor transports and deterministically adds a private UNIX
+GDB helper only to coverage collection. It is selected before execution, not
+as a retry after a failed profile. The original guest, its coverage announcement,
+ISA debug-exit device and test assertions remain unchanged.
+
+| Invocation | Profile | Coverage collection |
+| --- | --- | --- |
+| Default | `osdk-native-unix-gdb-capture-v3` | UNIX GDB stop before original poweroff; raw QEMU exit 33 |
+| `--upstream-coverage-lifecycle` | `osdk-native-unix-v1` | Original unassisted UNIX monitor lifecycle |
+| `--local-tcp` | `osdk-native-local-tcp-v1` | Original monitor lifecycle over explicit TCP |
+| `--local-tcp --coverage-gdb` | `osdk-native-local-tcp-gdb-capture-v2` | Explicit TCP GDB stop before original poweroff; raw QEMU exit 33 |
+
+The legacy flag is exclusive with both TCP flags. It retains a reproducible
+entry for the unassisted upstream lifecycle, including its actual failure when
+ISA debug-exit destroys the guest before the subsequent monitor dump:
+
+```sh
+python3 -I support/build/osdk-integration/run.py --upstream-coverage-lifecycle \
+  --case commands::run::coverage_feature::basic_coverage \
+  --output "$PWD/support/build/out/osdk-upstream-coverage-new"
+```
+
+The default A01 collection entry is repaired by a host helper; this does not
+claim that the unmodified upstream monitor-after-exit lifecycle has been fixed.
+Historical v1 failures remain failed records, and results from different
+profiles must not be combined into a passing full-matrix result.
+
+The explicit local TCP profile remains available:
 
 ```sh
 python3 -I support/build/osdk-integration/run.py --local-tcp \
@@ -62,9 +89,9 @@ retained alongside the other harness adaptations; debugger and guest assertions
 remain unchanged.
 
 Each output records its profile on the environment, cases and guest records.
-Results from the two profiles must be reported separately. The previous default
-20/22 result and its UNIX failures remain historical evidence. Both profiles use
-the same persistent workspace lock to serialize shared Cargo caches, while each
+Results from all profiles must be reported separately. The previous default
+20/22 result and the subsequent complete 21/22 UNIX run with missing coverage
+remain historical evidence. All profiles use the same persistent workspace lock to serialize shared Cargo caches, while each
 run keeps its own normalized dependency locks and scratch roots.
 
 The initial TCP profile deliberately retains ISA debug-exit. A working monitor
@@ -75,16 +102,32 @@ v1 TCP coverage requires OSDK exit 0 and raw QEMU exit 0 after a real monitor du
 profile whose size exactly matches this guest's coverage announcement, matching
 serial and kernel hashes, and valid nonzero pinned LLVM coverage counts.
 
-The independently selected GDB capture profile preserves the original ISA
-poweroff lifecycle:
+The default UNIX capture owns a listener in a new `0700` directory under the
+current case's temporary root. The path must be absolute, short enough for
+AF_UNIX and safe as one GDB target argument. The recorder binds once, keeps the
+listener until QEMU inherits its descriptor, and closes the parent copy after
+spawn. It records the private directory and socket pathname identities
+separately from the socket descriptor identity. QEMU receives the exact inherited
+listener; no bind-close-rebind gap or TCP control endpoint is introduced.
+
+The capture helper and its GDB script verify the same pathname/directory
+identities before connection, after connection and after detach. A changed path
+fails, and cleanup refuses to unlink a replacement. These checks establish the
+owned private-directory lifecycle; they are not an atomic connect-to-inode
+primitive against malicious code with the same UID. `SO_PEERCRED` is not treated
+as the QEMU PID: a listener created before inheritance retains its creator's
+credentials, as exercised by a real Python child fixture in the host tests.
+
+The independently selected TCP GDB capture profile preserves the same original
+ISA poweroff lifecycle:
 
 ```sh
 python3 -I support/build/osdk-integration/run.py --local-tcp --coverage-gdb \
   --output "$PWD/support/build/out/osdk-gdb-capture-new"
 ```
 
-This selects `osdk-native-local-tcp-gdb-capture-v2`. Only the coverage case gains
-a paused GDB server. The recorder allocates and owns its loopback listener and
+This selects `osdk-native-local-tcp-gdb-capture-v2`. Like UNIX v3, only the coverage
+case gains a paused GDB server. The recorder allocates and owns its loopback listener and
 passes the descriptor to QEMU. `capture.py` inspects the original ELF64 x86_64
 symbol artifact with real `nm`, sets a GDB hardware breakpoint at the exact
 `ostd::arch::power::try_poweroff` address, continues, and checks the actual PC.
@@ -93,13 +136,17 @@ reads that same live serial stream and uses `monitor memsave` to a fresh absolut
 path; the dump must exactly match the announced size. It then removes the
 breakpoint and detaches so the original guest can execute ISA debug-exit.
 
-v2 accepts coverage only with actual QEMU exit 33, actual OSDK and capture/GDB
-exit 0, a successful finalized capture sidecar, the exact breakpoint PC, fresh
+Both capture profiles accept coverage only with actual QEMU exit 33, actual OSDK
+and capture/GDB exit 0, a successful finalized capture sidecar, the exact breakpoint PC, fresh
 raw bytes, and the pinned LLVM nonzero-count checks. The sidecar binds the
 original symbol ELF, wrapped boot ELF, paused serial prefix, final serial log,
 raw profile and announcement. Missing, altered, failed or timed-out capture
-evidence is rejected. No OSTD source, poweroff handler or production OSDK
-lifecycle is changed; the default Unix and pure-TCP v1 results remain separate.
+evidence is rejected. UNIX v3 also binds the endpoint identity receipt to the
+actual recorded QEMU PID, the actual `-kernel` argument and read-only loaded
+ELF bytes, the per-guest frozen original symbol ELF, and input verification
+before and after execution. A guest failure exit is never remapped to 33.
+No OSTD source, poweroff handler or production OSDK lifecycle is changed;
+legacy UNIX v1 and pure-TCP v1 results remain separate.
 This is explicitly coverage collected under a debugger, not a claim that the
 unassisted upstream coverage transport/lifecycle passes.
 

@@ -18,7 +18,7 @@ real_cargo = policy["real_cargo"]
 env = os.environ.copy()
 env["CARGO"] = real_cargo
 args = sys.argv[1:]
-if args != ["metadata", "--format-version", "1"]:
+if args != list(profile.METADATA_ARGS):
     os.execve(real_cargo, [real_cargo, *args], env)
 result = subprocess.run([real_cargo, *args], env=env,
                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -53,7 +53,7 @@ mapped, checks = profile.project_metadata(json.loads(result.stdout), policy["rea
                                          policy["virtual_root"], source, policy)
 encoded = (json.dumps(mapped, separators=(",", ":")) + "\n").encode()
 profile.exclusive(prefix.with_suffix(".mapped.json"), encoded)
-receipt = {"original_sha256": profile.digest(result.stdout),
+receipt = {"argv": [real_cargo, *args], "original_sha256": profile.digest(result.stdout),
            "mapped_sha256": profile.digest(encoded), "component_membership": checks,
            "source_identity": source_identity, "mirror_identity": mirror_identity}
 profile.exclusive(prefix.with_suffix(".binding.json"),

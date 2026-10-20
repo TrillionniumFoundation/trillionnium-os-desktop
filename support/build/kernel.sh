@@ -115,6 +115,7 @@ esac
 osdk_install_root="$run_dir/osdk"
 mkdir -m 700 "$osdk_install_root"
 mkdir -m 700 "$osdk_install_root/bin"
+export A01_OSDK_INSTALL_ROOT="$osdk_install_root"
 export PATH="$osdk_install_root/bin:$PATH"
 manifest_file="$kernel_dir/kernel/OSDK.toml"
 manifest_temporary=
@@ -197,7 +198,6 @@ export A01_QEMU_EVIDENCE="$run_dir/qemu.json"
 if [[ "$target" != kernel ]]; then rm -f "$kernel_dir/kernel/qemu.log"; fi
 command=(make -C "$kernel_dir" -f Makefile -f "$build_dir/minimal.mk" "$target"
     "CARGO_OSDK=$osdk_install_root/bin/cargo-osdk"
-    "A01_OSDK_INSTALL_ROOT=$osdk_install_root"
     "A01_INITRAMFS=$run_dir/initramfs.cpio.gz"
     "A01_QEMU_WRAPPER=$build_dir/record-qemu.py" TARGET_ARCH=x86_64 SMP="$A01_SMP" MEM=512M
     ENABLE_KVM=0 BOOT_PROTOCOL=multiboot INITRAMFS=on AUTO_TEST=none)

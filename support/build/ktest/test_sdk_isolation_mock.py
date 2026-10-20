@@ -125,6 +125,7 @@ class SdkIsolationMockTests(unittest.TestCase):
         self.assertEqual(environment['osdk_executable'], str(self.private_sdk))
         self.assertEqual(environment['osdk_install_root'], str(self.output / 'osdk'))
         self.assertEqual(environment['osdk_source_root'], str(self.upstream.resolve()))
+        self.assertFalse(environment['osdk_install_skip_requested'])
         self.assertFalse(environment['osdk_install_skipped'])
         self.assertFalse(self.private_sdk.exists())
         self.assertFalse(self.legacy_path.exists())
@@ -180,18 +181,73 @@ class SdkIsolationMockTests(unittest.TestCase):
         self.assertEqual(sentinel.read_text(), 'existing output data\n')
         self.assertFalse(any('install' in row['argv'] for row in self.calls))
 
-    def test_old_skip_option_stops_before_output_or_lock(self):
-        args = SimpleNamespace(skip_osdk_install=True, output=self.root / 'absent/output')
-        shutdown = SimpleNamespace(output=None)
-        with mock.patch.object(Path, 'open', side_effect=AssertionError('no output or lock open')), \
-                mock.patch.object(Path, 'mkdir', side_effect=AssertionError('no output mkdir')), \
+    def test_legacy_skip_option_warns_but_still_installs_fresh_private_sdk(self):
+        self.args.skip_osdk_install = True
+        self.args.output = self.output
+        self.output.rmdir()  # run_main reserves a new evidence directory.
+        runner_path = self.here / 'run.py'
+        runner_path.write_bytes(SOURCE.read_bytes())
+        shutdown = RUNNER.Shutdown()
+        with mock.patch.object(RUNNER, '__file__', str(runner_path)), \
+                mock.patch.dict(os.environ, self.env, clear=True), \
                 contextlib.redirect_stderr(io.StringIO()) as stderr:
-            with self.assertRaises(SystemExit) as stopped:
-                RUNNER.run_main(args, shutdown)
-        self.assertEqual(stopped.exception.code, 2)
-        self.assertIn('remove --skip-osdk-install', stderr.getvalue())
-        self.assertIsNone(shutdown.output)
-        self.assertEqual(self.calls, [])
+            self.assertEqual(RUNNER.run_main(self.args, shutdown), self.output)
+        self.assertIn('--skip-osdk-install is deprecated and ignored', stderr.getvalue())
+        installs = [row for row in self.calls if 'install' in row['argv']]
+        self.assertEqual(len(installs), 1)
+        self.assertEqual(installs[0], {
+            'argv': ['cargo', '+' + RUNNER.TOOLCHAIN, 'install', '--locked',
+                     'cargo-osdk', '--path', 'osdk', '--root', str(self.output / 'osdk')],
+            'cwd': str(self.upstream),
+        })
+        tests = [row for row in self.calls if 'test' in row['argv'] and 'osdk' in row['argv']]
+        self.assertEqual(len(tests), 1)
+        self.assertLess(self.calls.index(installs[0]), self.calls.index(tests[0]))
+        self.assertEqual(tests[0]['argv'][:3], [str(self.private_sdk), 'osdk', 'test'])
+        self.assertTrue(all(str(self.legacy_path) not in row['argv'] for row in self.calls))
+        environment = json.loads((self.output / 'environment.json').read_text())
+        self.assertTrue(environment['osdk_install_skip_requested'])
+        self.assertFalse(environment['osdk_install_skipped'])
+        self.assertEqual(environment['osdk_executable'], str(self.private_sdk))
+        self.assertEqual(environment['osdk_install_root'], str(self.output / 'osdk'))
+        self.assertEqual(environment['osdk_source_root'], str(self.upstream.resolve()))
+
+    def test_legacy_skip_option_never_falls_back_after_install_or_binary_failure(self):
+        self.args.skip_osdk_install = True
+        cases = [('install_code', 47, 'OSDK installation failed'),
+                 ('private_present', False, 'private.*cargo-osdk'),
+                 ('private_link', True, 'private.*cargo-osdk'),
+                 ('private_executable', False, 'private.*cargo-osdk')]
+        for attribute, value, message in cases:
+            with self.subTest(attribute=attribute):
+                self.output = self.root / attribute
+                self.output.mkdir()
+                self.private_sdk = self.output / 'osdk/bin/cargo-osdk'
+                self.calls.clear()
+                self.metadata.clear()
+                previous = getattr(self, attribute)
+                setattr(self, attribute, value)
+                try:
+                    with self.assertRaisesRegex(SystemExit, message):
+                        self.invoke()
+                finally:
+                    setattr(self, attribute, previous)
+                self.assertEqual(sum('install' in row['argv'] for row in self.calls), 1)
+                self.assertFalse(any('test' in row['argv'] for row in self.calls))
+                self.assertTrue(all(str(self.legacy_path) not in row['argv'] for row in self.calls))
+                self.assertEqual(self.metadata, [])
+                self.assertFalse((self.output / 'environment.json').exists())
+
+    def test_legacy_skip_option_cannot_reuse_an_existing_private_prefix(self):
+        self.args.skip_osdk_install = True
+        prefix = self.output / 'osdk'
+        prefix.mkdir()
+        sentinel = prefix / 'keep.txt'
+        sentinel.write_text('previous output SDK data\n')
+        with self.assertRaises(FileExistsError):
+            self.invoke()
+        self.assertEqual(sentinel.read_text(), 'previous output SDK data\n')
+        self.assertFalse(any('install' in row['argv'] or 'test' in row['argv'] for row in self.calls))
 
     def test_source_verification_failure_never_reserves_sdk_prefix(self):
         self.verify_code = 1
