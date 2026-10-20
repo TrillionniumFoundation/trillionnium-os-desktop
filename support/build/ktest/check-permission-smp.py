@@ -27,6 +27,7 @@ PROFILE = {"arch": "x86_64", "machine": "q35", "accel": "tcg", "cpu": "max",
            "vcpus": 2, "memory_mib": 512, "network": False, "data_disks": False}
 FATAL = ("An uncaught panic occurred:", "Uncaught panic:", "unknown panic payload!",
          "Non-resettable panic!", "The panic handler panicked", "Panicked in `PanicGuard`")
+BOOTSTRAP = "PERMISSION_SMP_BOOTSTRAP scheduler=class runner_cpu=0 runner_thread=true"
 
 
 def require(condition, message):
@@ -43,10 +44,15 @@ def parse_serial(raw, control=None):
     serial = ANSI.sub("", raw.decode()).replace("\r", "")
     require("[skipped:" not in serial, "permission race was soft-skipped")
     require(not any(marker in serial for marker in FATAL), "fatal or uncaught kernel panic")
+    bootstrap = list(re.finditer(r"^" + re.escape(BOOTSTRAP) + r"$", serial, re.M))
+    require(serial.count("PERMISSION_SMP_BOOTSTRAP") == 1 and len(bootstrap) == 1,
+            "class-scheduled real-thread bootstrap is missing, repeated or malformed")
     require(len(re.findall(r"\[ktest runner\] running \d+ tests in \d+ crates", serial)) == 1,
             "kernel runner start is missing or repeated")
     headers = list(re.finditer(r'^running (\d+) tests in crate "([^"]+)"$', serial, re.M))
     require(len(headers) == 1 and headers[0][2] == "aster-core", "unexpected crate header")
+    require(bootstrap[0].end() < serial.index("[ktest runner] running"),
+            "real-thread bootstrap must precede the original test runner")
     summaries = list(re.finditer(
         r"^test result: (ok|FAILED)\. (\d+) passed; (\d+) failed; (\d+) filtered out\.$", serial, re.M))
     require(len(summaries) == 1 and headers[0].end() < summaries[0].start(),

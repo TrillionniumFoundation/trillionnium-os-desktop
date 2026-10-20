@@ -333,9 +333,14 @@ fn add_feature_entries(
         toml::from_str(&content).unwrap()
     };
 
+    let has_permission_test_entry = dep_crate_name == "aster-core"
+        && manifest["dependencies"]
+            .as_table()
+            .unwrap()
+            .contains_key("osdk-test-kernel");
     let mut table = toml::Table::new();
     for (feature, value) in features {
-        let value = if feature != "default" {
+        let mut value = if feature != "default" {
             vec![toml::Value::String(format!(
                 "{}/{}",
                 dep_crate_name, feature
@@ -343,6 +348,11 @@ fn add_feature_entries(
         } else {
             value.as_array().unwrap().clone()
         };
+        // Only aster-core's dedicated test base replaces the default entry.
+        // Run bases and every default/other feature keep their old mapping.
+        if has_permission_test_entry && feature == "permission-attr-smp-ktest" {
+            value.push(toml::Value::String("osdk-test-kernel/external-entry".to_string()));
+        }
         table.insert(feature.clone(), toml::Value::Array(value));
     }
 

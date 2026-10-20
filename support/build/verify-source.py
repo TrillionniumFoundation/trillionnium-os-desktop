@@ -63,6 +63,13 @@ PERMISSION_SMP_FEATURE_ADDITION = (
     b"# Dedicated two-CPU permission ktests; no effect outside cfg(ktest).\n"
     b"permission-attr-smp-ktest = []\n",
 )
+PERMISSION_TEST_RUNNER_FEATURE_ADDITION = (
+    b"[lints]\n",
+    b"[features]\n"
+    b"# The generated test base supplies an entry that calls the same test runner.\n"
+    b"external-entry = []\n\n"
+    b"[lints]\n",
+)
 
 
 def derive_downstream_input(name, original):
@@ -79,6 +86,8 @@ def derive_downstream_input(name, original):
             additions += (G1C_FEATURE_ADDITIONS[name],)
         if name == "kernel/core/Cargo.toml":
             additions += (PERMISSION_SMP_FEATURE_ADDITION,)
+        if name == "osdk/deps/test-kernel/Cargo.toml":
+            additions += (PERMISSION_TEST_RUNNER_FEATURE_ADDITION,)
     derived = original
     for needle, replacement in additions:
         if derived.count(needle) != 1:

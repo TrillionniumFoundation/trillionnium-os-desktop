@@ -7,6 +7,7 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import tomllib
 import unittest
 
 sys.dont_write_bytecode = True
@@ -18,11 +19,14 @@ spec.loader.exec_module(checker)
 full_spec = importlib.util.spec_from_file_location("permission_full_checker", ROOT / "support/build/ktest/check.py")
 full_checker = importlib.util.module_from_spec(full_spec)
 full_spec.loader.exec_module(full_checker)
+prepare_spec = importlib.util.spec_from_file_location("permission_test_locks", ROOT / "support/build/ktest/prepare-locks.py")
+prepare = importlib.util.module_from_spec(prepare_spec)
+prepare_spec.loader.exec_module(prepare)
 
 
 def fixture_serial(control=None):
     failed = checker.FAILURES[control]
-    lines = ['[ktest runner] running 255 tests in 1 crates',
+    lines = [checker.BOOTSTRAP, '[ktest runner] running 255 tests in 1 crates',
              'running 255 tests in crate "aster-core"', '']
     for case, name in checker.TESTS.items():
         busy = "false" if case in failed else "true"
@@ -70,6 +74,13 @@ class SerialOracle(unittest.TestCase):
     def test_rejects_reduced_fabricated_or_incomplete_observations(self):
         good = fixture_serial()
         variants = {
+            'missing_bootstrap': good.replace(checker.BOOTSTRAP.encode(), b''),
+            'duplicate_bootstrap': good + checker.BOOTSTRAP.encode() + b'\n',
+            'fifo_bootstrap': good.replace(b'scheduler=class', b'scheduler=fifo'),
+            'bare_runner': good.replace(b'runner_thread=true', b'runner_thread=false'),
+            'wrong_runner_cpu': good.replace(b'runner_cpu=0', b'runner_cpu=1'),
+            'bootstrap_after_runner': good.replace(checker.BOOTSTRAP.encode() + b'\n', b'')
+                                      + checker.BOOTSTRAP.encode() + b'\n',
             'one_cpu': good.replace(b'cpu_b=1', b'cpu_b=0'),
             'no_real_hook': good.replace(b'entered=1', b'entered=0'),
             'no_owner_lock': good.replace(b'lock_busy=true', b'lock_busy=false'),
@@ -99,6 +110,28 @@ class SerialOracle(unittest.TestCase):
             checker.parse_serial(fixture_serial('ramfs-split-lock'), 'memfd-release-seal')
         with self.assertRaises(ValueError):
             checker.parse_serial(fixture_serial(), 'accept-any-failure')
+
+
+class TestBaseManifest(unittest.TestCase):
+    def test_external_entry_is_enabled_only_by_the_core_smp_feature(self):
+        upstream = ROOT / 'kernel/asterinas'
+        manifest = tomllib.loads(prepare.generated_manifest(upstream, 'aster-core'))
+        self.assertEqual(manifest['features']['permission-attr-smp-ktest'],
+                         ['aster-core/permission-attr-smp-ktest', 'osdk-test-kernel/external-entry'])
+        self.assertNotIn('features', manifest['dependencies']['osdk-test-kernel'])
+        self.assertEqual(manifest['features']['default'], ['cvm_guest'])
+        self.assertEqual(manifest['features']['g1c-trusted-observe'],
+                         ['aster-core/g1c-trusted-observe'])
+        runner = tomllib.loads((upstream / 'osdk/deps/test-kernel/Cargo.toml').read_text())
+        self.assertEqual(runner['features'], {'external-entry': []})
+
+    def test_ostd_test_base_keeps_its_original_entry_and_features(self):
+        upstream = ROOT / 'kernel/asterinas'
+        manifest = tomllib.loads(prepare.generated_manifest(upstream, 'ostd'))
+        self.assertNotIn('permission-attr-smp-ktest', manifest['features'])
+        self.assertNotIn('features', manifest['dependencies']['osdk-test-kernel'])
+        self.assertNotIn('external-entry', json.dumps(manifest['features']))
+        self.assertEqual(manifest['features']['default'], ['cvm_guest'])
 
 
 class GuestOracle(unittest.TestCase):

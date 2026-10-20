@@ -111,8 +111,9 @@ was fixed separately before this change and remains checked by its mount case.
 `permission-attr-smp-ktest` is an empty, default-off Cargo feature. Checkpoints,
 their fields and all three test registrations also require `cfg(ktest)`.
 The original one-CPU full suite never enters a two-CPU rendezvous. The build
-input verifier accepts only the exact reviewed empty feature insertion; no
-dependency, external lock or toolchain pin is relaxed.
+input verifier accepts only the exact reviewed empty feature insertions in
+aster-core and the OSDK test runner; no dependency, external lock or toolchain
+pin is relaxed.
 
 `support/build/ktest/run.py --permission-attr-smp` fixes the crate to
 `aster-core`, the complete test-path suffix to `permission_attr_smp`, and the
@@ -120,6 +121,18 @@ feature to `permission-attr-smp-ktest`. Its independent QEMU profile fixes
 exactly two CPUs with Q35, TCG, `max`, 512 MiB, serial output and the existing
 debug-exit device. It has no network or data disk. Conflicting crate or test
 selection is rejected before building.
+
+The dedicated generated test base maps this feature to the runner's empty
+`external-entry` feature and calls `aster_core::permission_smp_ktest::boot`
+before any task is created. This installs the production `ClassScheduler`,
+starts the original OSDK test-suite function in a real BSP kernel thread, and
+registers an AP entry with a real pinned idle thread. Both CPUs initialize
+their local coarse metadata clock. The ordinary OSDK entry still uses its
+original bare-task FIFO path; setting two QEMU CPUs and `ThreadOptions`
+affinity alone would leave that runner's work on the BSP. The gate requires
+the dedicated bootstrap record before the original runner starts, followed by
+the actual CPU IDs from each production operation. It does not infer working
+SMP from the boot record alone.
 
 Each test asserts the actual CPU count before spawning workers. Worker A is
 pinned to CPU 0; worker B is pinned to CPU 1. After the real production decision,
@@ -171,7 +184,7 @@ the positive and 65 for each expected negative. The compiled test denominator
 must remain at least 255 and match across all three feature builds. Selecting
 the three SMP cases cannot replace the earlier complete 252-test core gate.
 
-Host parser tests deliberately tamper with metadata, CPU IDs, hook counts,
+Host parser tests deliberately tamper with the bootstrap, metadata, CPU IDs, hook counts,
 per-test outcomes, summaries, input hashes and QEMU arguments. They also run
 under Python `-O` to ensure no acceptance condition disappears with assertions.
 These synthetic parser fixtures never execute a kernel and are not guest

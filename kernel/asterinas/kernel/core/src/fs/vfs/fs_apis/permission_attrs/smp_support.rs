@@ -9,7 +9,7 @@
 
 use core::sync::atomic::{AtomicBool, AtomicI32, AtomicUsize, Ordering};
 
-use ostd::cpu::CpuId;
+use ostd::{cpu::CpuId, util::id_set::Id};
 
 use crate::prelude::*;
 
