@@ -34,6 +34,22 @@ DOWNSTREAM_MANIFEST_ADDITIONS = {
         b"miniz_oxide.workspace = true\nos-control.workspace = true\n",
     ),
 }
+# Exact opt-in feature declarations. This adds no package, version, source or
+# lock dependency; every other manifest byte remains pinned to the import.
+G1C_FEATURE_ADDITIONS = {
+    "kernel/Cargo.toml": (
+        b'riscv_sv39_mode = ["aster-core/riscv_sv39_mode"]\n',
+        b'riscv_sv39_mode = ["aster-core/riscv_sv39_mode"]\n'
+        b'g1c-trusted-observe = ["aster-core/g1c-trusted-observe"]\n',
+    ),
+    "kernel/core/Cargo.toml": (
+        b'riscv_sv39_mode = ["ostd/riscv_sv39_mode"]\n',
+        b'riscv_sv39_mode = ["ostd/riscv_sv39_mode"]\n'
+        b'# Experimental initial-image observation. Requires HEPTA_TRUSTED_INITIAL_ELF\n'
+        b'# at build time; ordinary builds retain the QueryAbi-only device.\n'
+        b'g1c-trusted-observe = []\n',
+    ),
+}
 ROOT_LOCK_ADDITIONS = (
     (b' "miniz_oxide",\n "osdk-frame-allocator",\n',
      b' "miniz_oxide",\n "os-control",\n "osdk-frame-allocator",\n'),
@@ -50,7 +66,11 @@ def derive_downstream_input(name, original):
             raise ValueError("original upstream root lock seed changed")
         additions = ROOT_LOCK_ADDITIONS
     else:
-        additions = (DOWNSTREAM_MANIFEST_ADDITIONS[name],)
+        additions = ()
+        if name in DOWNSTREAM_MANIFEST_ADDITIONS:
+            additions += (DOWNSTREAM_MANIFEST_ADDITIONS[name],)
+        if name in G1C_FEATURE_ADDITIONS:
+            additions += (G1C_FEATURE_ADDITIONS[name],)
     derived = original
     for needle, replacement in additions:
         if derived.count(needle) != 1:
@@ -94,14 +114,15 @@ def main():
                 if actual_mode != mode:
                     raise ValueError(f"mode {actual_mode} != {mode}")
                 content = path.read_bytes()
-            if not args.pristine and (name in DOWNSTREAM_MANIFEST_ADDITIONS or name == "Cargo.lock"):
+            if not args.pristine and (name in DOWNSTREAM_MANIFEST_ADDITIONS or name in G1C_FEATURE_ADDITIONS or name == "Cargo.lock"):
                 original = subprocess.check_output(["git", "cat-file", "blob", expected], cwd=ROOT)
                 derived = derive_downstream_input(name, original)
                 downstream[name] = {
                     "upstream_blob": expected,
                     "upstream_sha256": hashlib.sha256(original).hexdigest(),
                     "derived_sha256": hashlib.sha256(derived).hexdigest(),
-                    "local_dependency": "os-control",
+                    "local_dependency": "os-control" if name in DOWNSTREAM_MANIFEST_ADDITIONS or name == "Cargo.lock" else None,
+                    "optional_profile": "g1c-trusted-observe" if name in G1C_FEATURE_ADDITIONS else None,
                 }
                 expected = hashlib.sha1(f"blob {len(derived)}\0".encode() + derived).hexdigest()
             actual = hashlib.sha1(f"blob {len(content)}\0".encode() + content).hexdigest()

@@ -4,6 +4,8 @@ pub(crate) use cgroup_ns::CgroupNamespace;
 pub(crate) use controller::cpu::{
     CpuChargeOwner, CpuStatKind, charge_cpu_time, task_cpu_eligible,
 };
+#[cfg(feature = "g1c-trusted-observe")]
+pub(crate) use controller::cpu::{CpuUsageError, NativeCpuObserver};
 use fs::CgroupFsType;
 pub(in crate::fs) use systree_node::CgroupSystem;
 pub(crate) use systree_node::{CgroupMembership, CgroupNode, CgroupSysNode};

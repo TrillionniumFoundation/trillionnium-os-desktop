@@ -31,6 +31,18 @@ pub(crate) struct UndetectedExecutable {
 }
 
 impl UndetectedExecutable {
+    /// The experimental initial loader consumes the opened input directly.
+    /// Ordinary exec and shebang resolution never call this entry point.
+    #[cfg(feature = "g1c-trusted-observe")]
+    pub(in crate::process) fn load_trusted_initial(
+        self,
+        vmar: Arc<Vmar>,
+        argv: Vec<CString>,
+        envp: Vec<CString>,
+    ) -> Result<(ElfLoadInfo, elf::LoadedInitialImage)> {
+        elf::load_trusted_initial(self.file, vmar, argv, envp)
+    }
+
     /// Opens an executable without detecting its format.
     ///
     /// `script_path` describes whether a shebang interpreter can reopen this file after exec.

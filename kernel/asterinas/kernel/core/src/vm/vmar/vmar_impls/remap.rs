@@ -46,6 +46,7 @@ impl Vmar {
         check_single_mapping: bool,
     ) -> Result<()> {
         let mut inner = self.inner.write();
+        inner.check_initial_image_no_remap()?;
         let mut rss_delta = RssDelta::new(self);
 
         if check_single_mapping {
@@ -94,6 +95,7 @@ impl Vmar {
         debug_assert_eq!(new_size % PAGE_SIZE, 0);
 
         let mut inner = self.inner.write();
+        inner.check_initial_image_no_remap()?;
         let mut rss_delta = RssDelta::new(self);
 
         let Some(old_mapping) = inner.vm_mappings.find_one(&old_addr) else {

@@ -46,6 +46,9 @@ pub(crate) enum AuxKey {
     AT_EXECFN = 31, /* filename of program */
     AT_SYSINFO = 32,
     AT_SYSINFO_EHDR = 33, /* the start address of the page containing the VDSO */
+    /// Experimental read-only discovery page; never an authorization token.
+    #[cfg(feature = "g1c-trusted-observe")]
+    AT_HEPTA_BOOT = 240,
 }
 
 impl AuxKey {
