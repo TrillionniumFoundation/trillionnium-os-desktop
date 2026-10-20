@@ -238,7 +238,7 @@ fn query_observation(observation: DeliveryObservation) -> NativeResult {
     let state = wire::DeliveryState::from_u16(observation.state.hos2_code())
         .map_err(|_| Status::Indeterminate)?;
     Ok((0, ResponsePayload::QueryDelivery(wire::QueryDeliveryResponse {
-        state, saved_status, sequence: observation.id.sequence,
+        state, saved_status, sequence: observation.id.sequence(),
         stable_object_id: observation.stable_object_id.map_or([0; 16], |id| id.bytes()),
         saved_revision: observation.saved_revision.unwrap_or(0),
         previous_revision: observation.previous_revision.unwrap_or(0),

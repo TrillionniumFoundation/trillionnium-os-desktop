@@ -4,7 +4,7 @@
 //! endpoints are explicit fixtures; the dedicated guest supplies syscall,
 //! calibrated clock, first-resume and live scheduler qualification.
 
-use aster_systree::{SysBranchNode, SysNode};
+use aster_systree::{SysBranchNode, SysNode, SysObj};
 use os_control::{
     BootId, CapSpaceId, DeliveryState, NativeDeliveryRequest, OriginalOwnerAuthorityWith,
     OwnerId, ReserveAttemptWith,
@@ -234,12 +234,12 @@ fn native_accounting_fault_cannot_publish_a_successful_budget_receipt() {
 fn native_controlled_leaf_refuses_linux_configuration_and_membership_aliases() {
     let fixture = Fixture::new("g1d-linux-aliases");
     let before = fixture.budget();
-    assert_eq!(fixture.owner.inner.as_ref().unwrap().write_attr("cpu.max",
-        &mut VmReader::from(b"max 100000".as_slice()).to_fallible()), Err(Error::PermissionDenied));
-    assert_eq!(fixture.root.store_attr("cgroup.subtree_control", "-cpu"), Err(Error::PermissionDenied));
+    assert!(matches!(fixture.owner.inner.as_ref().unwrap().write_attr("cpu.max",
+        &mut VmReader::from(b"max 100000".as_slice()).to_fallible()), Err(Error::PermissionDenied)));
+    assert!(matches!(fixture.root.store_attr("cgroup.subtree_control", "-cpu"), Err(Error::PermissionDenied)));
     let sibling = Arc::downcast::<CgroupNode>(fixture.root.create_child("g1d-sibling").unwrap()).unwrap();
-    assert_eq!(CgroupMembership::write_lock().move_process_to_node(
-        fixture.process.as_ref().unwrap().clone(), &sibling), Err(Error::PermissionDenied));
+    assert!(matches!(CgroupMembership::write_lock().move_process_to_node(
+        fixture.process.as_ref().unwrap().clone(), &sibling), Err(Error::PermissionDenied)));
     assert_eq!(fixture.process.as_ref().unwrap().cgroup().get().unwrap().id(), fixture.leaf.id());
     assert_eq!(fixture.budget(), before);
     assert_eq!(fixture.revision(), 1);
