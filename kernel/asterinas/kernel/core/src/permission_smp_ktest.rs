@@ -39,7 +39,7 @@ pub fn boot(run_tests_fn: fn() -> !) {
             assert!(Thread::current().is_some());
             assert_eq!(CpuId::current_racy(), CpuId::bsp());
             ostd::early_println!(
-                "PERMISSION_SMP_BOOTSTRAP scheduler=class runner_cpu=0 runner_thread=true"
+                "\nPERMISSION_SMP_BOOTSTRAP scheduler=class runner_cpu=0 runner_thread=true"
             );
             run_tests_fn();
         })
