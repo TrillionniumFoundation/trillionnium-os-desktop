@@ -90,7 +90,7 @@ fn run_alias_race(
 
     let after = original.inode().metadata().unwrap();
     let through_alias = alias.inode().metadata().unwrap();
-    println!(
+    ostd::early_println!(
         "\nPERMISSION_SMP_OBSERVATION case={} cpu_a={} cpu_b={} entered={} lock_busy={} a_rc={} b_rc={} uid={} mode={:o} alias_uid={} alias_mode={:o}",
         name,
         checkpoint.checking_cpu.load(Ordering::Acquire),
