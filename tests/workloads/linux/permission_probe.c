@@ -269,6 +269,10 @@ static int child_case(const struct test_case *test)
         int expected_marker = test->expected_errno ? before_marker :
             (test->operation == UMOUNT_EXISTING ? 1 : 0);
         REQUIRE(after_marker == expected_marker);
+        if (test->operation == MOUNT_NEW && rc == 0) {
+            REQUIRE(after.st_uid == fsuid && after.st_gid == fsgid);
+            REQUIRE((after.st_mode & 07777) == 0755);
+        }
     }
     return 0;
 }
