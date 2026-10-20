@@ -101,6 +101,8 @@ def run(args, out, result):
     checker = module("permission_smp_checker", ROOT / "support/build/ktest/check-permission-smp.py")
     head = git(ROOT, "rev-parse", "HEAD").decode().strip()
     tree = git(ROOT, "rev-parse", "HEAD^{tree}").decode().strip()
+    (out / "git-status-porcelain.txt").write_bytes(
+        git(ROOT, "status", "--porcelain", "--untracked-files=all"))
     before = candidate.source_snapshot(ROOT, head, tree)
     save(out / "candidate-source-before.json", before)
     result.update(candidate_head=head, candidate_tree=tree)

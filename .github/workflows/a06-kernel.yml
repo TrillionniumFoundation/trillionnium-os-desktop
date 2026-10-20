@@ -428,11 +428,11 @@ jobs:
         run: |
           set -euo pipefail
           sha=$(cut -d' ' -f1 "${RUNNER_TEMP}/a06-kernel.sha256")
-          python3 tests/organ_backend/run_candidate_matrix.py \
+          python3 -B tests/organ_backend/run_candidate_matrix.py \
             --a01-tree "$GITHUB_WORKSPACE" --kernel "$KERNEL" --expected-sha256 "$sha" \
             --out "${RUNNER_TEMP}/a06-probe-1vcpu" --quota-us 1000 --mode leaf \
             --repeat 2 --duration-seconds 1 --max-cpu-percent 3
-          python3 tests/organ_backend/smp2/run_parallel_candidate.py \
+          python3 -B tests/organ_backend/smp2/run_parallel_candidate.py \
             --a01-tree "$GITHUB_WORKSPACE" --kernel "$KERNEL" --expected-sha256 "$sha" \
             --out "${RUNNER_TEMP}/a06-probe-2vcpu" --quota-us 1000 --mode leaf \
             --repeat 2 --duration-seconds 1 --max-cpu-percent 3
