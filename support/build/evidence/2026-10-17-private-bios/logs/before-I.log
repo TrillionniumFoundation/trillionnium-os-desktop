@@ -1,0 +1,63 @@
+test_recorder_explicit_private_bios_with_spaces_uses_selected_snapshot (__main__.BootEvidenceTests.test_recorder_explicit_private_bios_with_spaces_uses_selected_snapshot) ... 
+  test_recorder_explicit_private_bios_with_spaces_uses_selected_snapshot (__main__.BootEvidenceTests.test_recorder_explicit_private_bios_with_spaces_uses_selected_snapshot) (missing_original=False) ... ERROR
+  test_recorder_explicit_private_bios_with_spaces_uses_selected_snapshot (__main__.BootEvidenceTests.test_recorder_explicit_private_bios_with_spaces_uses_selected_snapshot) (missing_original=True) ... FAIL
+test_recorder_rejects_invalid_explicit_bios_before_any_tool_execution (__main__.BootEvidenceTests.test_recorder_rejects_invalid_explicit_bios_before_any_tool_execution) ... 
+  test_recorder_rejects_invalid_explicit_bios_before_any_tool_execution (__main__.BootEvidenceTests.test_recorder_rejects_invalid_explicit_bios_before_any_tool_execution) (value='') ... FAIL
+  test_recorder_rejects_invalid_explicit_bios_before_any_tool_execution (__main__.BootEvidenceTests.test_recorder_rejects_invalid_explicit_bios_before_any_tool_execution) (value='bios.bin') ... FAIL
+  test_recorder_rejects_invalid_explicit_bios_before_any_tool_execution (__main__.BootEvidenceTests.test_recorder_rejects_invalid_explicit_bios_before_any_tool_execution) (value='/workspace/scratch/ae1a8cf05419/round2-bios/before-I-fixtures/test_recorder_rejects_invalid_explicit_bios_before_any_tool_execution/missing-private-bios') ... FAIL
+  test_recorder_rejects_invalid_explicit_bios_before_any_tool_execution (__main__.BootEvidenceTests.test_recorder_rejects_invalid_explicit_bios_before_any_tool_execution) (value='/workspace/scratch/ae1a8cf05419/round2-bios/before-I-fixtures/test_recorder_rejects_invalid_explicit_bios_before_any_tool_execution/inputs') ... FAIL
+
+======================================================================
+ERROR: test_recorder_explicit_private_bios_with_spaces_uses_selected_snapshot (__main__.BootEvidenceTests.test_recorder_explicit_private_bios_with_spaces_uses_selected_snapshot) (missing_original=False)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/tests/test_boot_evidence.py", line 274, in test_recorder_explicit_private_bios_with_spaces_uses_selected_snapshot
+    self.assertEqual(record["bios_selection"], {
+                     ~~~~~~^^^^^^^^^^^^^^^^^^
+KeyError: 'bios_selection'
+
+======================================================================
+FAIL: test_recorder_explicit_private_bios_with_spaces_uses_selected_snapshot (__main__.BootEvidenceTests.test_recorder_explicit_private_bios_with_spaces_uses_selected_snapshot) (missing_original=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/tests/test_boot_evidence.py", line 273, in test_recorder_explicit_private_bios_with_spaces_uses_selected_snapshot
+    self.assertEqual(result.returncode, 33, result.stdout)
+AssertionError: 1 != 33 : QEMU artifact preparation rejected: [Errno 2] No such file or directory: '/workspace/scratch/ae1a8cf05419/round2-bios/before-I-fixtures/test_recorder_explicit_private_bios_with_spaces_uses_selected_snapshot/inputs/bios.bin'
+
+
+======================================================================
+FAIL: test_recorder_rejects_invalid_explicit_bios_before_any_tool_execution (__main__.BootEvidenceTests.test_recorder_rejects_invalid_explicit_bios_before_any_tool_execution) (value='')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/tests/test_boot_evidence.py", line 294, in test_recorder_rejects_invalid_explicit_bios_before_any_tool_execution
+    self.assertEqual(result.returncode, 1, result.stdout)
+AssertionError: 33 != 1 : 
+
+======================================================================
+FAIL: test_recorder_rejects_invalid_explicit_bios_before_any_tool_execution (__main__.BootEvidenceTests.test_recorder_rejects_invalid_explicit_bios_before_any_tool_execution) (value='bios.bin')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/tests/test_boot_evidence.py", line 294, in test_recorder_rejects_invalid_explicit_bios_before_any_tool_execution
+    self.assertEqual(result.returncode, 1, result.stdout)
+AssertionError: 33 != 1 : 
+
+======================================================================
+FAIL: test_recorder_rejects_invalid_explicit_bios_before_any_tool_execution (__main__.BootEvidenceTests.test_recorder_rejects_invalid_explicit_bios_before_any_tool_execution) (value='/workspace/scratch/ae1a8cf05419/round2-bios/before-I-fixtures/test_recorder_rejects_invalid_explicit_bios_before_any_tool_execution/missing-private-bios')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/tests/test_boot_evidence.py", line 294, in test_recorder_rejects_invalid_explicit_bios_before_any_tool_execution
+    self.assertEqual(result.returncode, 1, result.stdout)
+AssertionError: 33 != 1 : 
+
+======================================================================
+FAIL: test_recorder_rejects_invalid_explicit_bios_before_any_tool_execution (__main__.BootEvidenceTests.test_recorder_rejects_invalid_explicit_bios_before_any_tool_execution) (value='/workspace/scratch/ae1a8cf05419/round2-bios/before-I-fixtures/test_recorder_rejects_invalid_explicit_bios_before_any_tool_execution/inputs')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/tests/test_boot_evidence.py", line 294, in test_recorder_rejects_invalid_explicit_bios_before_any_tool_execution
+    self.assertEqual(result.returncode, 1, result.stdout)
+AssertionError: 33 != 1 : 
+
+----------------------------------------------------------------------
+Ran 2 tests in 1.000s
+
+FAILED (failures=5, errors=1)

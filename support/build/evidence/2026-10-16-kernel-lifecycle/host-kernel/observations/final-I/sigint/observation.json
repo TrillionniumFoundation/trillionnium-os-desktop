@@ -1,0 +1,60 @@
+{
+  "kind": "kernel_supervisor_host_fixture_no_kernel_no_vm",
+  "argv": [
+    "bash",
+    "/tmp/a01-runner-test-iy3dw9lz/support/build/kernel.sh",
+    "kernel"
+  ],
+  "signal": "SIGINT",
+  "source_sha256": {
+    "kernel.sh": "67be1710836069b7b84a50ff5c97d5ccf9f190bbc98c99741d30869ec6ea04fd",
+    "kernel-supervisor.py": "d6ccfd00f3eef634ae7032446437039ff88f0935cf0acb3cb589903b57505d61"
+  },
+  "supervisor_pid": 94,
+  "make": {
+    "pid": 130,
+    "group": 98,
+    "child_pid": 132,
+    "address": [
+      "127.0.0.1",
+      37031
+    ]
+  },
+  "lease_child": {
+    "pid": 132,
+    "group": 98,
+    "address": [
+      "127.0.0.1",
+      42755
+    ]
+  },
+  "returncode": 130,
+  "pidfd_exited": {
+    "supervisor": true,
+    "worker": true,
+    "make": true,
+    "lease_child": true
+  },
+  "make_tcp_released": true,
+  "child_tcp_released": true,
+  "manifest_present": false,
+  "stable_lock_inode": true,
+  "workspace_lock_released": true,
+  "supervision_receipt": {
+    "argv": [
+      "bash",
+      "/tmp/a01-runner-test-iy3dw9lz/support/build/kernel.sh",
+      "kernel"
+    ],
+    "exit_code": 130,
+    "external_reap_disarmed": false,
+    "group_owner": "standalone supervisor",
+    "interrupted_by": "SIGINT",
+    "kind": "kernel_worker_group_supervision",
+    "leader_pid": 98,
+    "pass_fds": [],
+    "raw_worker_exit": -15,
+    "worker_reaped": true
+  },
+  "passed": true
+}

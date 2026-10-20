@@ -1,0 +1,235 @@
+{
+  "kind": "existing_A01_host_acceptance_once_per_suite",
+  "execution_head": "b39e154ae5a1e9853f57e23f9bee84712ee8ef7e",
+  "execution_tree": "80ceaa07562dd359572afdc6bfad473aa20d7271",
+  "started_utc": "2026-10-18T08:50:42.445387+00:00",
+  "finished_utc": "2026-10-18T08:51:03.820060+00:00",
+  "input_count": 131,
+  "input_files_unchanged": true,
+  "source_head_tree_and_tracked_inputs_unchanged": true,
+  "before_full_status_clean": false,
+  "after_full_status_clean": false,
+  "full_status_scope_note": "untracked files from parallel native builder are preserved verbatim in source snapshots; selected tracked input comparison is independent",
+  "reported_tests": 81,
+  "suites": [
+    {
+      "name": "source-inputs",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-B",
+        "/workspace/scratch/d7da9e7650f0/a01-current/support/build/tests/test_source_inputs.py"
+      ],
+      "cwd": "/workspace/scratch/d7da9e7650f0/a01-current",
+      "source_path": "support/build/tests/test_source_inputs.py",
+      "source_sha256": "2288d5ae528a323201813bd3c68469703fd04797815adfac133bacfdb6dc33d4",
+      "expected_test_count": 10,
+      "test_methods_in_source": [
+        "test_exact_derived_host_inputs_are_distinguished_from_upstream",
+        "test_other_host_lock_bytes_refused",
+        "test_other_host_manifest_bytes_refused",
+        "test_kernel_lock_still_exact_upstream",
+        "test_kernel_manifest_still_exact_upstream",
+        "test_toolchain_still_exact_upstream",
+        "test_approved_host_lock_symlink_refused",
+        "test_approved_host_manifest_mode_refused",
+        "test_root_readme_guard_preserved",
+        "test_kernel_source_pin_guard_preserved"
+      ],
+      "started_utc": "2026-10-18T08:50:42.541931+00:00",
+      "timeout_seconds": 180,
+      "exit_code": 0,
+      "timed_out": false,
+      "finished_utc": "2026-10-18T08:50:42.857994+00:00",
+      "duration_seconds": 0.315974,
+      "reported_tests": 10,
+      "unittest_summary_matches": [
+        [
+          "10",
+          "0.200"
+        ]
+      ],
+      "unittest_ok": true,
+      "logs": {
+        "stdout.log": {
+          "size": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr.log": {
+          "size": 1221,
+          "sha256": "4881dd08bfa81ebbe313b5b45c797a964f76d135fd52a6945e93160a7b37d48a"
+        }
+      },
+      "passed": true
+    },
+    {
+      "name": "boot-evidence",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-B",
+        "/workspace/scratch/d7da9e7650f0/a01-current/support/build/tests/test_boot_evidence.py"
+      ],
+      "cwd": "/workspace/scratch/d7da9e7650f0/a01-current",
+      "source_path": "support/build/tests/test_boot_evidence.py",
+      "source_sha256": "f39815cb74b99d81cdfef1b1d08dd2398f1a474bb64c50c8cdda7e8e9022a994",
+      "expected_test_count": 29,
+      "test_methods_in_source": [
+        "test_matching_real_raw_serial_passes_in_archive_and_live_modes",
+        "test_archived_verification_does_not_require_original_paths",
+        "test_missing_or_wrong_serial_sha256_is_rejected",
+        "test_appended_harmless_raw_bytes_are_rejected",
+        "test_replaced_or_truncated_serial_is_rejected",
+        "test_inconsistent_recorded_serial_size_is_rejected",
+        "test_missing_exit_or_timeout_result_is_rejected",
+        "test_non_successful_raw_status_and_timeout_are_rejected",
+        "test_missing_complete_boot_markers_are_rejected_with_matching_digest",
+        "test_fatal_kernel_panics_are_rejected_with_matching_digest",
+        "test_missing_artifact_entries_and_hashes_are_rejected_offline",
+        "test_live_artifact_bytes_are_checked_for_all_three_inputs",
+        "test_recorder_binds_complete_actual_chardev_log_and_inputs",
+        "test_recorder_explicit_private_bios_with_spaces_uses_selected_snapshot",
+        "test_recorder_rejects_invalid_explicit_bios_before_any_tool_execution",
+        "test_recorder_explicit_private_data_directory_with_spaces_appends_one_L",
+        "test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools",
+        "test_recorder_missing_selected_log_does_not_use_stale_qemu_log",
+        "test_recorder_timeout_is_rejected_even_with_complete_serial",
+        "test_recorder_snapshots_survive_atomic_replacement_of_all_source_paths",
+        "test_recorder_rejects_missing_duplicate_and_valueless_artifacts_before_version_probe",
+        "test_capture_rejects_in_place_mutation_and_path_replacement_during_fd_read",
+        "test_capture_exclusive_creation_preserves_existing_snapshot_bytes",
+        "test_recorder_rejects_nonregular_source_with_explicit_failure_record",
+        "test_recorder_detects_snapshot_tampering_after_raw_guest_exit_without_source_fallback",
+        "test_recorder_creates_distinct_private_snapshot_directories_without_reuse",
+        "test_recorder_launch_failure_retains_explicit_failure_record_and_snapshots",
+        "test_invalid_timeout_is_rejected_before_any_tool_or_snapshot",
+        "test_positive_integer_timeout_is_parsed_before_launch_and_recorded"
+      ],
+      "started_utc": "2026-10-18T08:50:42.870868+00:00",
+      "timeout_seconds": 180,
+      "exit_code": 0,
+      "timed_out": false,
+      "finished_utc": "2026-10-18T08:50:52.324398+00:00",
+      "duration_seconds": 9.453276,
+      "reported_tests": 29,
+      "unittest_summary_matches": [
+        [
+          "29",
+          "9.282"
+        ]
+      ],
+      "unittest_ok": true,
+      "logs": {
+        "stdout.log": {
+          "size": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr.log": {
+          "size": 5814,
+          "sha256": "cc6c63741a9a43a6a5e48c81fc182f06345fd6d35ce75dae1079051e0d141273"
+        }
+      },
+      "passed": true
+    },
+    {
+      "name": "kernel-runner",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-B",
+        "/workspace/scratch/d7da9e7650f0/a01-current/support/build/tests/test_kernel_runner.py"
+      ],
+      "cwd": "/workspace/scratch/d7da9e7650f0/a01-current",
+      "source_path": "support/build/tests/test_kernel_runner.py",
+      "source_sha256": "bff12ba7b3a2e68d95f626c9be337b0148286a95ec4ba95b1e467d6bb499f47f",
+      "expected_test_count": 42,
+      "test_methods_in_source": [
+        "test_inherited_workspace_lock_survives_supervisor_without_reopening",
+        "test_invalid_or_foreign_inherited_lock_is_rejected_before_output",
+        "test_private_sdk_is_selected_for_every_developer_target",
+        "test_global_sdk_replacement_after_install_does_not_change_private_selection",
+        "test_each_run_installs_its_own_sdk_and_preserves_shared_dependency_cache",
+        "test_inherited_sdk_prefix_cannot_override_private_installation",
+        "test_private_install_failure_stops_before_sdk_and_cleans_owned_manifest",
+        "test_relative_or_empty_cargo_home_is_rejected_before_lock_or_output",
+        "test_unset_cargo_home_explicitly_keeps_default_home_bin_after_private_bin",
+        "test_unset_cargo_home_requires_absolute_default_home_before_output",
+        "test_parent_components_in_cargo_home_are_rejected_before_output",
+        "test_parent_components_in_default_home_are_rejected_before_output",
+        "test_empty_encoded_rustflags_are_rejected_before_output_then_unset_retry",
+        "test_nonempty_encoded_rustflags_are_rejected_before_output_then_unset_retry",
+        "test_inherited_dry_run_touch_and_question_flags_still_execute_real_make_recipes",
+        "test_inherited_ignore_errors_does_not_mask_real_make_recipe_failure",
+        "test_inherited_makefiles_are_not_read_and_normal_retry_can_build",
+        "test_outer_make_state_is_recorded_and_children_establish_normal_recursion",
+        "test_existing_directory_and_stale_success_are_rejected",
+        "test_fresh_make_success_without_qemu_is_not_boot_success",
+        "test_concurrent_runner_refused_and_lock_inode_survives_exit",
+        "test_busy_lock_preserves_explicit_output_path_for_same_command_retry",
+        "test_busy_lock_preserves_default_output_for_same_command_retry",
+        "test_owned_manifest_removed_after_success",
+        "test_signal_immediately_after_manifest_publication_cleans_owned_inode",
+        "test_existing_manifest_is_preserved",
+        "test_manifest_created_during_preparation_is_preserved",
+        "test_manifest_replaced_during_build_is_preserved",
+        "test_fixed_initramfs_argument_overrides_inherited_off",
+        "test_log_write_failure_overrides_successful_make",
+        "test_cleanup_restore_conflict_changes_success_to_failure",
+        "test_cleanup_restore_conflict_preserves_original_make_failure",
+        "test_owned_inode_is_removed_from_private_custody",
+        "test_missing_public_path_is_a_noop",
+        "test_replacement_immediately_before_capture_is_restored",
+        "test_new_public_entry_after_owned_capture_is_untouched",
+        "test_foreign_dangling_symlink_is_restored_without_following",
+        "test_foreign_directory_and_contents_are_restored",
+        "test_restore_conflict_retains_both_foreign_entries",
+        "test_unavailable_noreplace_retains_foreign_candidate",
+        "test_exception_after_capture_preserves_candidate",
+        "test_invalid_anchor_never_moves_public_entry"
+      ],
+      "started_utc": "2026-10-18T08:50:52.337430+00:00",
+      "timeout_seconds": 180,
+      "exit_code": 0,
+      "timed_out": false,
+      "finished_utc": "2026-10-18T08:51:03.759762+00:00",
+      "duration_seconds": 11.422062,
+      "reported_tests": 42,
+      "unittest_summary_matches": [
+        [
+          "42",
+          "11.303"
+        ]
+      ],
+      "unittest_ok": true,
+      "logs": {
+        "stdout.log": {
+          "size": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr.log": {
+          "size": 6696,
+          "sha256": "2c50a52db8dc855bd21aa5a4ecabdf786d006da8d140b582026db8d7b75bbd57"
+        }
+      },
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "actual_kernel_execution": false,
+  "actual_qemu_execution": false,
+  "optimized_top_level_rerun": false,
+  "existing_boot_suite_internal_modes": [
+    "normal",
+    "-O",
+    "-I",
+    "-I -O"
+  ],
+  "archive": {
+    "archive": "host-gate.tar.gz",
+    "size": 387054,
+    "sha256": "42d89e0b97c962d65abecbc5f943689264fb4f25057dea2a67aea7fe5e03eee5",
+    "member_count": 304,
+    "total_uncompressed_file_bytes": 3102866,
+    "all_members_verified": true
+  }
+}

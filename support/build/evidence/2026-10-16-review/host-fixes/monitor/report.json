@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "kind": "host_checks_and_no_kernel_qemu_transport_probe",
+  "source_commit": "f473a2ccc8dfeaed1223e8478a19c79c90b323e4",
+  "host_units": {
+    "passed": 38,
+    "failed": 0,
+    "ignored": 1,
+    "log": "next5-monitor-host-06-final.log"
+  },
+  "recorder_units": {
+    "passed_each_mode": 33,
+    "failed": 0,
+    "modes": [
+      "-I",
+      "-I -O"
+    ],
+    "logs": [
+      "next5-monitor-recorder-04-final.log",
+      "next5-monitor-recorder-05-final-optimized.log"
+    ]
+  },
+  "transport_probe": {
+    "passed": 1,
+    "failed": 0,
+    "raw_qemu_exit": 0,
+    "project_kernel_boot": false,
+    "vcpus": 1,
+    "memory_mib": 64,
+    "result": "probes/probe-03-final.result.json"
+  },
+  "failures_preserved": [
+    {
+      "log": "next5-monitor-host-01.log",
+      "reason": "no library target; corrected invocation to binary target"
+    },
+    {
+      "log": "next5-monitor-host-02.log",
+      "reason": "early concurrent client-first assertion failed; raw partial process output retained"
+    },
+    {
+      "log": "next5-monitor-host-03.log",
+      "reason": "GDB missing from PATH; producer reran with extracted GDB PATH"
+    }
+  ],
+  "prior_transport_probes": [
+    "probes/probe-01.result.json",
+    "probes/probe-02.result.json"
+  ],
+  "counters_are_not_kernel_regressions": true,
+  "final_freeze": "next5-monitor-frozen.json",
+  "independent_review": "next5-monitor-independent-review.json"
+}

@@ -1,0 +1,168 @@
+--- original/tests/commands/new.rs
++++ adapted/tests/commands/new.rs
+@@ -12,7 +12,7 @@
+ 
+ #[test]
+ fn create_kernel_in_workspace() {
+-    const WORKSPACE_NAME: &str = "/tmp/kernel_workspace";
++    const WORKSPACE_NAME: &str = "/tmp/a01oi-56ah_res/kernel_workspace";
+     if Path::new(WORKSPACE_NAME).exists() {
+         remove_dir_all(WORKSPACE_NAME).unwrap();
+     }
+@@ -39,7 +39,7 @@
+ 
+ #[test]
+ fn create_lib_in_workspace() {
+-    const WORKSPACE_NAME: &str = "/tmp/lib_workspace";
++    const WORKSPACE_NAME: &str = "/tmp/a01oi-56ah_res/lib_workspace";
+     if Path::new(WORKSPACE_NAME).exists() {
+         remove_dir_all(WORKSPACE_NAME).unwrap();
+     }
+@@ -53,7 +53,7 @@
+ 
+ #[test]
+ fn create_two_crates_in_workspace() {
+-    const WORKSPACE_NAME: &str = "/tmp/my_workspace";
++    const WORKSPACE_NAME: &str = "/tmp/a01oi-56ah_res/my_workspace";
+     if Path::new(WORKSPACE_NAME).exists() {
+         remove_dir_all(WORKSPACE_NAME).unwrap();
+     }
+--- original/tests/commands/run.rs
++++ adapted/tests/commands/run.rs
+@@ -33,7 +33,7 @@
+     }
+ }
+ 
+-const WORKSPACE: &str = "/tmp/kernel_test_workspace/run_command";
++const WORKSPACE: &str = "/tmp/a01oi-56ah_res/kernel_test_workspace/run_command";
+ 
+ mod workspace {
+     use crate::util::*;
+@@ -139,25 +139,26 @@
+             return;
+         }
+         let workspace = workspace::WorkSpace::new(WORKSPACE, "basic_debug");
+-        let unix_socket = {
+-            let path = Path::new(&workspace.os_dir()).join("qemu-gdb-sock");
+-            path.to_string_lossy().to_string()
+-        };
++        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
++        let gdb_address = listener.local_addr().unwrap().to_string();
++        drop(listener);
+ 
+         let mut instance = cargo_osdk([
+             "run",
+             "--gdb-server",
+-            format!("addr={},wait-client", unix_socket.as_str()).as_str(),
++            format!("addr={},wait-client", gdb_address.as_str()).as_str(),
+         ]);
+         instance.current_dir(workspace.os_dir());
+         instance.timeout(RUN_TIMEOUT);
+ 
+-        let sock = unix_socket.clone();
++        let sock = gdb_address.clone();
+         let cancelled = Arc::new(AtomicBool::new(false));
+         let debugger_cancelled = cancelled.clone();
+         let gdb = std::thread::spawn(move || {
+             wait_for(&debugger_cancelled, || {
+-                Ok(Path::new(&sock).exists().then_some(()))
++                let ready = std::env::var("A01_OSDK_GDB_READY")
++                    .map_err(|error| error.to_string())?;
++                Ok(Path::new(&ready).is_file().then_some(()))
+             })?;
+             gdb_continue_via(&sock, None)
+         });
+@@ -251,6 +252,11 @@
+             let debugger_cancelled = cancelled.clone();
+             let gdb = std::thread::spawn(move || {
+                 let symbols = wait_for(&debugger_cancelled, || launch_symbol_file(&dir))?;
++                wait_for(&debugger_cancelled, || {
++                    let ready = std::env::var("A01_OSDK_GDB_READY")
++                        .map_err(|error| error.to_string())?;
++                    Ok(Path::new(&ready).is_file().then_some(()))
++                })?;
+                 gdb_continue_via(&addr, Some(&symbols))
+             });
+ 
+--- original/tests/examples_in_book/create_os_projects.rs
++++ adapted/tests/examples_in_book/create_os_projects.rs
+@@ -6,7 +6,7 @@
+ 
+ #[test]
+ fn create_a_kernel_project() {
+-    let workdir = "/tmp";
++    let workdir = "/tmp/a01oi-56ah_res";
+     let kernel = "my_foo_os";
+ 
+     let kernel_path = PathBuf::from(workdir).join(kernel);
+@@ -30,7 +30,7 @@
+ 
+ #[test]
+ fn create_a_library_project() {
+-    let workdir = "/tmp";
++    let workdir = "/tmp/a01oi-56ah_res";
+     let module = "my_foo_module";
+ 
+     let module_path = PathBuf::from(workdir).join(module);
+--- original/tests/examples_in_book/test_and_run_projects.rs
++++ adapted/tests/examples_in_book/test_and_run_projects.rs
+@@ -6,7 +6,7 @@
+ 
+ #[test]
+ fn create_and_run_kernel() {
+-    let work_dir = "/tmp";
++    let work_dir = "/tmp/a01oi-56ah_res";
+     let os_name = "myos";
+ 
+     let os_dir = PathBuf::from(work_dir).join(os_name);
+@@ -38,7 +38,7 @@
+ 
+ #[test]
+ fn create_and_test_library() {
+-    let work_dir = "/tmp";
++    let work_dir = "/tmp/a01oi-56ah_res";
+     let module_name = "mylib";
+ 
+     let module_dir = PathBuf::from(work_dir).join(module_name);
+--- original/tests/examples_in_book/work_in_workspace.rs
++++ adapted/tests/examples_in_book/work_in_workspace.rs
+@@ -10,7 +10,7 @@
+ 
+ #[test]
+ fn work_in_workspace() {
+-    let workdir = "/tmp";
++    let workdir = "/tmp/a01oi-56ah_res";
+     let workspace_name = "myworkspace";
+ 
+     // Create workspace and its manifest
+--- original/tests/examples_in_book/write_a_kernel_in_100_lines.rs
++++ adapted/tests/examples_in_book/write_a_kernel_in_100_lines.rs
+@@ -8,7 +8,7 @@
+ 
+ #[test]
+ fn write_a_kernel_in_100_lines() {
+-    let workdir = "/tmp";
++    let workdir = "/tmp/a01oi-56ah_res";
+     let os_name = "kernel_in_100_lines";
+ 
+     let os_dir = PathBuf::from(workdir).join(os_name);
+@@ -48,7 +48,7 @@
+         .unwrap();
+     dependencies.insert(
+         "align_ext".to_string(),
+-        toml::Value::String("0.1.0".to_string()),
++        toml::Value::Table(toml::Table::from_iter([("path".to_string(), toml::Value::String("/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/ostd/libs/align_ext".to_string())),("version".to_string(), toml::Value::String("0.1.0".to_string()))])),
+     );
+ 
+     let new_file_content = manifest.to_string();
+--- original/tests/util/mod.rs
++++ adapted/tests/util/mod.rs
+@@ -107,7 +107,7 @@
+ ///
+ /// Each crate created by `cargo ostd new` should add this patch.
+ pub(crate) fn depends_on_local_ostd(manifest_path: impl AsRef<Path>) {
+-    let crate_dir = env!("CARGO_MANIFEST_DIR");
++    let crate_dir = "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/osdk";
+     let ostd_dir = PathBuf::from(crate_dir)
+         .join("..")
+         .join("ostd")

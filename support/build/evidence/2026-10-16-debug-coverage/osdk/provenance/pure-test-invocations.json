@@ -1,0 +1,84 @@
+{
+  "schema": 1,
+  "executions": [
+    {
+      "label": "v1 all pure tests",
+      "argv": [
+        "python3",
+        "-I",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "support/build/osdk-integration",
+        "-p",
+        "test*.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+      "raw_exit_code": 0,
+      "tests_passed": 40,
+      "source_binding_commit": "c3c80f9a1aac63ca33b6a168deb20d74ca6763b1",
+      "posthoc_invocation_record": true,
+      "source_log": "/workspace/scratch/ae1a8cf05419/next4-osdk-pure-final.log",
+      "source_size": 5672,
+      "source_sha256": "c4c0809e7cd46917108e3ed148a728bcec5e69732b241084ff869ff7d8b68667",
+      "compressed": "v1-pure-40.log.gz",
+      "compressed_sha256": "8a9879184736b405569267ccd0cc14b8433d6634f806cee9e9b91a4fa62a6402",
+      "environment_note": "Python isolated mode; no VM. Invocation transcribed after execution; full inherited environment was not captured."
+    },
+    {
+      "label": "v2 all pure tests before fatal-panic guard",
+      "argv": [
+        "python3",
+        "-I",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "support/build/osdk-integration",
+        "-p",
+        "test*.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+      "raw_exit_code": 0,
+      "tests_passed": 58,
+      "source_binding_commit": "fa9b6cd6be310155b10fa36aafcb8896444e0f6e",
+      "posthoc_invocation_record": true,
+      "source_log": "/workspace/scratch/ae1a8cf05419/next4-osdk-capture-pure-final.log",
+      "source_size": 8390,
+      "source_sha256": "47251de5ae7b27178dfd624ef0153a8e96ac790c0f5cb0f9847af4d72fff8c1c",
+      "compressed": "v2-pure-58.log.gz",
+      "compressed_sha256": "38ce69a3948fdcfad2b2404f8e6b51679e04f14a4b08b1302435ba43b30dfab6",
+      "environment_note": "Python isolated mode; no VM. Invocation transcribed after execution; full inherited environment was not captured."
+    },
+    {
+      "label": "v2 guard-related tests after fatal-panic guard",
+      "argv": [
+        "python3",
+        "-I",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "support/build/osdk-integration",
+        "-p",
+        "test_coverage_binding.py",
+        "-v"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+      "raw_exit_code": 0,
+      "tests_passed": 16,
+      "source_binding_commit": "1cc76b90dfd162e18a946a01e0bcaa31b8e03b4f",
+      "posthoc_invocation_record": true,
+      "source_log": "/workspace/scratch/ae1a8cf05419/next4-osdk-panic-guard-tests.log",
+      "source_size": 2709,
+      "source_sha256": "5eabf57ae84a927f51d8b9d41581bb3fe67a2d864af4bfcb86b5751f374d76ba",
+      "compressed": "guard-related-16.log.gz",
+      "compressed_sha256": "74beeb3da38e6983fd382ab6a87ecefc0442589c500a469e727a34c3e167751c",
+      "environment_note": "Python isolated mode; no VM. Invocation transcribed after execution; full inherited environment was not captured."
+    }
+  ],
+  "scope_note": "The final guard was tested by the 16 related tests and one new real coverage case. The complete 58-test suite and 22-case matrix belong to the earlier v2 source; no complete post-guard matrix is claimed."
+}

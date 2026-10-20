@@ -1,0 +1,76 @@
+{
+  "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+  "final_checks": [
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "support/build/osdk-integration/test_runner_lifecycle.py"
+      ],
+      "log": "lifecycle-frozen.log",
+      "exit_code": 0,
+      "tests": 10,
+      "log_sha256": "908a935027185819161af57bb2ae2d84a434fa54a081aaaf259e523f49140afb"
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "-O",
+        "support/build/osdk-integration/test_runner_lifecycle.py"
+      ],
+      "log": "lifecycle-frozen-optimized.log",
+      "exit_code": 0,
+      "tests": 10,
+      "log_sha256": "e7d0029fa916b5dc7c9a9166e24bbca58bda5df0d87cf99fcea070f5aa82d633"
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "support/build/osdk-integration/test_runner.py"
+      ],
+      "log": "existing-runner-frozen.log",
+      "exit_code": 0,
+      "tests": 1,
+      "log_sha256": "0908d2c0e232f7ff525568313405e23253ee813e2d9d1a18e48d41258dd7f2ec"
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "-O",
+        "support/build/osdk-integration/test_runner.py"
+      ],
+      "log": "existing-runner-frozen-optimized.log",
+      "exit_code": 0,
+      "tests": 1,
+      "log_sha256": "0ed8283285a84fb4c626a8397287aa87a19eb3f93fdd72e9f87a1c98e00d2519"
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "support/build/osdk-integration/test_profiles.py"
+      ],
+      "log": "existing-profiles-final-03.log",
+      "exit_code": 0,
+      "tests": 7,
+      "source_note": "same final runner logic before only stop docstring change",
+      "log_sha256": "83166b089fbcb82fac63f22522fa6ae99bb5e46368cd35d756277fd463dd6346"
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check",
+        "--",
+        "support/build/osdk-integration/run.py",
+        "support/build/osdk-integration/test_runner_lifecycle.py",
+        "support/build/osdk-integration/test_runner.py"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "baseline_invocation": "Load final test_runner_lifecycle.py via importlib, set RunnerLifecycleTests.runner_path to retained before-run.py, execute the four baseline test_names from frozen-report.json with unittest.TextTestRunner(verbosity=2); expected exit1."
+}

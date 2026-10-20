@@ -1,0 +1,126 @@
+{
+  "schema": 1,
+  "kind": "A01 host regression evidence only; no Rust-kernel or QEMU-guest acceptance",
+  "ordinary_accepted_gate": {
+    "passed": 86,
+    "failed": 0,
+    "errors": 0,
+    "suites": [
+      {
+        "suite": "boot_evidence",
+        "passed": 29,
+        "failed": 0,
+        "errors": 0,
+        "log": "review/ordinary-test_boot_evidence.py.log",
+        "receipt": "review/boot-ktest-existing-regression-results.json",
+        "mode": "-B -I",
+        "environment": "default test environment"
+      },
+      {
+        "suite": "ktest_private_inputs",
+        "passed": 5,
+        "failed": 0,
+        "errors": 0,
+        "log": "review/ordinary-test_ktest_private_inputs.py.log",
+        "receipt": "review/boot-ktest-existing-regression-results.json",
+        "mode": "-B -I",
+        "environment": "default test environment"
+      },
+      {
+        "suite": "source_inputs",
+        "passed": 10,
+        "failed": 0,
+        "errors": 0,
+        "log": "review/ordinary-test_source_inputs.py.log",
+        "receipt": "review/ordinary-test_source_inputs.py.json",
+        "mode": "-B -I",
+        "environment": "default test environment"
+      },
+      {
+        "suite": "kernel_runner",
+        "passed": 42,
+        "failed": 0,
+        "errors": 0,
+        "log": "review/escalated-test_kernel_runner.py.log",
+        "receipt": "review/escalated-test_kernel_runner.py.json",
+        "mode": "-B -I",
+        "environment": "tool-approved private loopback sockets"
+      }
+    ],
+    "counting": "Each accepted ordinary suite is counted once; the original restricted runner failure remains separately recorded."
+  },
+  "optimized_separate": {
+    "passed": 34,
+    "suites": [
+      {
+        "suite": "boot_evidence",
+        "passed": 29,
+        "failed": 0,
+        "errors": 0,
+        "mode": "-B -I -O",
+        "log": "review/optimized-test_boot_evidence.py.log",
+        "receipt": "review/boot-ktest-existing-regression-results.json"
+      },
+      {
+        "suite": "ktest_private_inputs",
+        "passed": 5,
+        "failed": 0,
+        "errors": 0,
+        "mode": "-B -I -O",
+        "log": "review/optimized-test_ktest_private_inputs.py.log",
+        "receipt": "review/boot-ktest-existing-regression-results.json"
+      }
+    ],
+    "counting": "Already-started optimized runs are separate and not added to the ordinary 86."
+  },
+  "retained_failed_attempt": {
+    "suite": "kernel_runner",
+    "test_methods": 42,
+    "passed_test_methods": 41,
+    "errors": 1,
+    "returncode": 1,
+    "failed_subtest": "KernelRunnerTests.test_private_sdk_is_selected_for_every_developer_target (target=gdb_server)",
+    "observed_failure": "socket.socket() raised PermissionError: [Errno 1] Operation not permitted before the product GDB path ran",
+    "classification": "default execution sandbox blocked socket creation; complete suite subsequently passed in normally tool-approved escalation",
+    "log": "review/ordinary-test_kernel_runner.py.log",
+    "receipt": "review/ordinary-test_kernel_runner.py.json",
+    "original_preserved": true,
+    "tests_or_host_policy_modified": false
+  },
+  "osdk_host_units": {
+    "source_commit": "c22891b593f77c98ff4ea94d7aecb54f32222651",
+    "source_head_before": "c22891b593f77c98ff4ea94d7aecb54f32222651",
+    "source_head_after": "c22891b593f77c98ff4ea94d7aecb54f32222651",
+    "returncode": 0,
+    "passed": 45,
+    "failed": 0,
+    "ignored": 1,
+    "filtered_out": 0,
+    "ignored_details": [
+      {
+        "name": "bundle::monitor::tests::real_qemu_uses_preconnected_fd_after_rejecting_client_first",
+        "reason": "requires QEMU and A01_MONITOR_PROBE_OUT; transport probe only, no kernel",
+        "declaration": "pre-existing #[ignore] in kernel/asterinas/osdk/src/bundle/monitor.rs",
+        "executed": false
+      }
+    ],
+    "duration_seconds": 52.2,
+    "target_existed_before": false,
+    "log": "review/osdk-unit-c22891b/cargo-test.log",
+    "receipt": "review/osdk-unit-c22891b/result.json",
+    "qualification": "45 exercised passes and one pre-existing ignored real-QEMU transport probe; not 46/46."
+  },
+  "source_binding_scope": {
+    "initial_86_execution_commit_in_raw_receipts": null,
+    "initial_86_execution_state": "pre-commit merge working tree (main b7a8388726b67394398431e74d2e5d2079ff375f plus A01 bb34933fb2f7dc8bceffbce8f42e342799c96e6e)",
+    "initial_86_recorded_inputs": 13,
+    "initial_86_all_recorded_inputs_match_published_commit": "c22891b593f77c98ff4ea94d7aecb54f32222651",
+    "initial_86_entire_repository_bound_by_hashes": false,
+    "equivalence_evidence": "metadata/source-equivalence-c22891b.json",
+    "osdk_recorded_input_files": 137,
+    "osdk_source_manifest_before": "33ffa560fb4430a5db18eeaf91e342710ac67937458995476ee54d766e78bab4",
+    "osdk_source_manifest_after": "33ffa560fb4430a5db18eeaf91e342710ac67937458995476ee54d766e78bab4",
+    "osdk_execution_head_explicitly_recorded": true
+  },
+  "archive_policy": "Only the original review text logs, JSON receipts, shell command and manifests, plus explicitly labeled derived summary/equivalence manifests. No test rerun, source changes, executables or build caches."
+}

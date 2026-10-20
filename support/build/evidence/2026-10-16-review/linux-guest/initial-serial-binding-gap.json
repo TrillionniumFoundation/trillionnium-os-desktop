@@ -1,0 +1,38 @@
+{
+  "action": "Preserve mismatch. Do not call this original run fully bound; rerun all28 with immediate immutable snapshots.",
+  "actual_bytes": 17293,
+  "actual_serial_sha256": "884787830744cd100ccc301f72469806ce1a2154454b50337cba56906a92f251",
+  "case": "static.ipc_epoll",
+  "known_cause": null,
+  "recorded_result": {
+    "case": "static.ipc_epoll",
+    "case_result": {
+      "error": null,
+      "exit_code": 0,
+      "facts": {
+        "af_unix": "socketpair",
+        "close_errno": 9,
+        "epoll": "readable",
+        "half_close_eof": true,
+        "ok": true,
+        "payload": "ping"
+      },
+      "status": "pass"
+    },
+    "elapsed_seconds": 1.1831655502319336,
+    "exact_match": true,
+    "guest_execution_verified": true,
+    "initramfs_sha256": "6bcb2376cab781905fcb059947561b8f20bf9a64a1de7898ffffb648a02e0071",
+    "kernel_sha256": "e884f5e50cf296833276016894a39337cd9ac13bc51f6b1f2dea3cc3a6904b63",
+    "original_suite_qualification": false,
+    "raw_qemu_exit_code": 33,
+    "serial_sha256": "fd069fa90c4db420983703ff02a9abb4473011ae88a56b001daabf4db90a687c",
+    "timed_out": false
+  },
+  "stat": {
+    "ctime_ns": 1792152810874099944,
+    "device": 27,
+    "inode": 132298,
+    "mtime_ns": 1792152807070141851
+  }
+}

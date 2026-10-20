@@ -1,0 +1,13 @@
+--- original-v4
++++ c4
+@@ -12,8 +12,8 @@
+ base = Path('/workspace/scratch/ae1a8cf05419')
+ repo = base / 'trillionnium-os-desktop'
+ source, case = sys.argv[1:]
+-if case not in ('A4', 'B4'):
+-    raise SystemExit('case must be A4 or B4')
++if case != 'C4':
++    raise SystemExit('case must be C4')
+ worktree = Path('/tmp') / ('trillionnium-a01-normalized-' + case)
+ outer = base / 'normalized-cloud'
+ outer.mkdir(exist_ok=True)

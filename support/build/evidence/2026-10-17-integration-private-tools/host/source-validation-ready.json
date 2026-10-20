@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "status": "source-validation-ready",
+  "baseline_commit": "30851677a3b2011789e452d99376bfac2d0bbfd9",
+  "five_files_sha256": {
+    "support/build/osdk-integration/record-qemu.py": "da6b336aa83a9067f336125aaab2decb8c20970d6ebac6a6921c8da8e2ae1446",
+    "support/build/osdk-integration/run.py": "ea23d6278d429873d91f9469a9505a9f6768bcacdb41f22c0aae1e7e5135e3a9",
+    "support/build/osdk-integration/README.md": "5a897e1649e5b3d7982ea007eceb1c39531f005246dc9a20f39c90293ab060cd",
+    "support/build/osdk-integration/test_capture_lifecycle.py": "4aa14e956d2f38b44d0117389da7f70491e60deda2de0a8e1d0056788ee94648",
+    "support/build/osdk-integration/test_private_tools.py": "9f99ba46532e9131a77c86f14dc1e55a28fa788f054ff657a705fa6ededbd017"
+  },
+  "unchanged_shared_source": {
+    "path": "support/build/record-qemu.py",
+    "sha256": "387845415b54f1822c55ce4198586fae8047f7d3ea94008c84e0974871954098"
+  },
+  "full_host_suites": [
+    {
+      "mode": "I",
+      "test_methods": 131,
+      "returncode": 0,
+      "stable_inputs": true,
+      "invocation": "/workspace/scratch/ae1a8cf05419/integration-private-tools/full/I/invocation.json",
+      "console": "/workspace/scratch/ae1a8cf05419/integration-private-tools/full/I/console.log"
+    },
+    {
+      "mode": "IO",
+      "test_methods": 131,
+      "returncode": 0,
+      "stable_inputs": true,
+      "invocation": "/workspace/scratch/ae1a8cf05419/integration-private-tools/full/IO/invocation.json",
+      "console": "/workspace/scratch/ae1a8cf05419/integration-private-tools/full/IO/console.log"
+    }
+  ],
+  "full_passed_test_method_executions": 262,
+  "targeted_preflight_separate": {
+    "methods_each_mode": 6,
+    "executions": 12,
+    "paths": [
+      "/workspace/scratch/ae1a8cf05419/integration-private-tools/targeted/I",
+      "/workspace/scratch/ae1a8cf05419/integration-private-tools/targeted/IO"
+    ]
+  },
+  "expected_red_failures": {
+    "executions": 2,
+    "paths": [
+      "/workspace/scratch/ae1a8cf05419/integration-private-tools/red/I",
+      "/workspace/scratch/ae1a8cf05419/integration-private-tools/red/IO"
+    ]
+  },
+  "independent_review": "/workspace/scratch/ae1a8cf05419/integration-private-tools/independent-review/REPORT.md",
+  "native_GDB_probe": "/workspace/scratch/ae1a8cf05419/integration-private-tools/native-gdb-probe.json",
+  "diff_check_exit": 0,
+  "new_Cargo_Rust_VM_executions": 0,
+  "note": "Native GDB lease lifecycle fixtures execute host GDB; executable fake QEMU fixtures do not boot guests."
+}

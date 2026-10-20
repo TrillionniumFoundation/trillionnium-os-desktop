@@ -1,0 +1,256 @@
+{
+  "schema": 1,
+  "scope": "Public kernel.sh cooperative cancellation and owned worker-group cleanup; debug explicitly reuses outer owner",
+  "base_commit": "692c9cf6ced7660304e2f94e31f034ab478830d6",
+  "observed_head": "873cad772d17230ae77dee3973252c97d517dea0",
+  "source": {
+    "support/build/kernel.sh": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/kernel.sh",
+      "size": 5391,
+      "sha256": "67be1710836069b7b84a50ff5c97d5ccf9f190bbc98c99741d30869ec6ea04fd"
+    },
+    "support/build/kernel-supervisor.py": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/kernel-supervisor.py",
+      "size": 5739,
+      "sha256": "d6ccfd00f3eef634ae7032446437039ff88f0935cf0acb3cb589903b57505d61"
+    },
+    "support/build/tests/test_kernel_runner.py": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/tests/test_kernel_runner.py",
+      "size": 11691,
+      "sha256": "a9ce1498b93a0a94b332958623a7b501d051d7da23d39b2b0ab4dbbdd0d86e7a"
+    },
+    "support/build/tests/test_kernel_supervisor.py": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/tests/test_kernel_supervisor.py",
+      "size": 15814,
+      "sha256": "f73c930f99a57167c6ffa3111c341ca371b36e28bc13a31f01c06e7f7c7c15ff"
+    }
+  },
+  "results": {
+    "I": {
+      "new_supervisor_tests": {
+        "passed": 9,
+        "failed": 0,
+        "log": {
+          "path": "/workspace/scratch/ae1a8cf05419/next6-kernel-supervisor-cooperative-final-I.log",
+          "size": 1474,
+          "sha256": "6a4d07f2bb32019df91359d6899dd337f6d59b7b19b2e8e7ba574492b0943392"
+        },
+        "cases": {
+          "after-reap-disarmed": {
+            "path": "/workspace/scratch/ae1a8cf05419/next6-kernel-supervisor-cooperative-final-I/after-reap-disarmed/observation.json",
+            "size": 127,
+            "sha256": "4196c20a35d0dec1f6a7928acf56376f7dbbe495b9a2d6dd1c05b0f19b814ea7"
+          },
+          "external-reap-disarmed": {
+            "path": "/workspace/scratch/ae1a8cf05419/next6-kernel-supervisor-cooperative-final-I/external-reap-disarmed/observation.json",
+            "size": 126,
+            "sha256": "bfb8717b4870f95990bd39d7d042ba5b80f177021a79125e9d3a6e1ae387f8a8"
+          },
+          "gdb-fd-handoff": {
+            "path": "/workspace/scratch/ae1a8cf05419/next6-kernel-supervisor-cooperative-final-I/gdb-fd-handoff/observation.json",
+            "size": 905,
+            "sha256": "a1119e4d927df3110a897489b38ce62ea946c525aa8c12ae6876ff67ba69df2a"
+          },
+          "normal-cleanup-seam": {
+            "path": "/workspace/scratch/ae1a8cf05419/next6-kernel-supervisor-cooperative-final-I/normal-cleanup-seam/observation.json",
+            "size": 296,
+            "sha256": "ddaa1a29b08c8020bcbeccadc4c0cad5767b2c2b0a0c5e687c1c2c3da4aa81b3"
+          },
+          "normal-descendant": {
+            "path": "/workspace/scratch/ae1a8cf05419/next6-kernel-supervisor-cooperative-final-I/normal-descendant/observation.json",
+            "size": 1335,
+            "sha256": "e704ee677e35fd4bffabc7008daf96f86a4b4eceb72a7d62f0759bc55d2b46d3"
+          },
+          "outer-worker-route": {
+            "path": "/workspace/scratch/ae1a8cf05419/next6-kernel-supervisor-cooperative-final-I/outer-worker-route/observation.json",
+            "size": 112,
+            "sha256": "fa64bc072e39c0960038629d88bd36f4273d22f416c2de77c4b7557878fac496"
+          },
+          "publication-seam": {
+            "path": "/workspace/scratch/ae1a8cf05419/next6-kernel-supervisor-cooperative-final-I/publication-seam/observation.json",
+            "size": 244,
+            "sha256": "07f7639e9466d50b59bd8438ce66b5c298223cc03ea197fc681ca036a23a76d0"
+          },
+          "sigint": {
+            "path": "/workspace/scratch/ae1a8cf05419/next6-kernel-supervisor-cooperative-final-I/sigint/observation.json",
+            "size": 1380,
+            "sha256": "b2f5c45f0d667d38dda81f0b5ea75b5235c2dc58000e2b929e85426baefc6214"
+          },
+          "sigterm": {
+            "path": "/workspace/scratch/ae1a8cf05419/next6-kernel-supervisor-cooperative-final-I/sigterm/observation.json",
+            "size": 1386,
+            "sha256": "64d9bbedfe939433263084e722c726bafe865a8c6ec41dc23116f4dc0217b09e"
+          }
+        }
+      },
+      "existing_wrapper_tests": {
+        "passed": 10,
+        "failed": 0,
+        "log": {
+          "path": "/workspace/scratch/ae1a8cf05419/next6-kernel-runner-cooperative-I.log",
+          "size": 1511,
+          "sha256": "fdafc42cf8413901b30b65f581a8abd7c6b1438506018aa7967978fb38de4b6c"
+        }
+      }
+    },
+    "IO": {
+      "new_supervisor_tests": {
+        "passed": 9,
+        "failed": 0,
+        "log": {
+          "path": "/workspace/scratch/ae1a8cf05419/next6-kernel-supervisor-cooperative-final-IO.log",
+          "size": 1474,
+          "sha256": "19c30f77c8e1031c3f36be97cfd785e71a0289b7f8cd6914ae77fe534e500e4a"
+        },
+        "cases": {
+          "after-reap-disarmed": {
+            "path": "/workspace/scratch/ae1a8cf05419/next6-kernel-supervisor-cooperative-final-IO/after-reap-disarmed/observation.json",
+            "size": 127,
+            "sha256": "4196c20a35d0dec1f6a7928acf56376f7dbbe495b9a2d6dd1c05b0f19b814ea7"
+          },
+          "external-reap-disarmed": {
+            "path": "/workspace/scratch/ae1a8cf05419/next6-kernel-supervisor-cooperative-final-IO/external-reap-disarmed/observation.json",
+            "size": 126,
+            "sha256": "bfb8717b4870f95990bd39d7d042ba5b80f177021a79125e9d3a6e1ae387f8a8"
+          },
+          "gdb-fd-handoff": {
+            "path": "/workspace/scratch/ae1a8cf05419/next6-kernel-supervisor-cooperative-final-IO/gdb-fd-handoff/observation.json",
+            "size": 905,
+            "sha256": "8e1775beb14302bb65802f0404baadd5098c00b1e1c85973cf1e581cafec8182"
+          },
+          "normal-cleanup-seam": {
+            "path": "/workspace/scratch/ae1a8cf05419/next6-kernel-supervisor-cooperative-final-IO/normal-cleanup-seam/observation.json",
+            "size": 296,
+            "sha256": "ddaa1a29b08c8020bcbeccadc4c0cad5767b2c2b0a0c5e687c1c2c3da4aa81b3"
+          },
+          "normal-descendant": {
+            "path": "/workspace/scratch/ae1a8cf05419/next6-kernel-supervisor-cooperative-final-IO/normal-descendant/observation.json",
+            "size": 1335,
+            "sha256": "4bcc58671fcbc933a72ccc629ab7c4edcb85a8d49fbcf76a810db8268430bbae"
+          },
+          "outer-worker-route": {
+            "path": "/workspace/scratch/ae1a8cf05419/next6-kernel-supervisor-cooperative-final-IO/outer-worker-route/observation.json",
+            "size": 112,
+            "sha256": "fa64bc072e39c0960038629d88bd36f4273d22f416c2de77c4b7557878fac496"
+          },
+          "publication-seam": {
+            "path": "/workspace/scratch/ae1a8cf05419/next6-kernel-supervisor-cooperative-final-IO/publication-seam/observation.json",
+            "size": 244,
+            "sha256": "07f7639e9466d50b59bd8438ce66b5c298223cc03ea197fc681ca036a23a76d0"
+          },
+          "sigint": {
+            "path": "/workspace/scratch/ae1a8cf05419/next6-kernel-supervisor-cooperative-final-IO/sigint/observation.json",
+            "size": 1380,
+            "sha256": "fff72e86caac7bef15c6e96d458ad53c1aa121de87249bc8661facffdfe421e3"
+          },
+          "sigterm": {
+            "path": "/workspace/scratch/ae1a8cf05419/next6-kernel-supervisor-cooperative-final-IO/sigterm/observation.json",
+            "size": 1386,
+            "sha256": "b8e0c9629b2ece1c4c44c09ebe5551fd97997f1376af40edfa6b29a046ed6f6b"
+          }
+        }
+      },
+      "existing_wrapper_tests": {
+        "passed": 10,
+        "failed": 0,
+        "log": {
+          "path": "/workspace/scratch/ae1a8cf05419/next6-kernel-runner-cooperative-IO.log",
+          "size": 1511,
+          "sha256": "b04670cd047c44be59128ab116ef3e5b20debd52ecdde1b0aed920277ea1d14d"
+        }
+      }
+    }
+  },
+  "baseline": {
+    "source_kernel_sh_sha256": "ff4315024e5f9a690ce1c7bf8954d46b65d41e44542d5a4ff0d614833914f5e6",
+    "SIGTERM": {
+      "observation": {
+        "path": "/workspace/scratch/ae1a8cf05419/next6-kernel-signal-audit/observation.json",
+        "size": 2906,
+        "sha256": "ae3cbc218d8ba63a177e5ba4672282778ddcb7dd50ed4f48fa007a48494e93c5"
+      },
+      "log": {
+        "path": "/workspace/scratch/ae1a8cf05419/next6-kernel-signal-audit-console.log",
+        "size": 2906,
+        "sha256": "ae3cbc218d8ba63a177e5ba4672282778ddcb7dd50ed4f48fa007a48494e93c5"
+      },
+      "trigger": "pidfd SIGTERM to wrapper alone",
+      "result": "Wrapper exited(-15), make/dummy child remained alive, TCP leases and flock busy, owned fixture manifest removed."
+    },
+    "SIGINT": {
+      "observation": {
+        "path": "/workspace/scratch/ae1a8cf05419/next6-kernel-signal-audit-INT/observation.json",
+        "size": 2881,
+        "sha256": "d48d946e0958d0f49cc77839a847399ec677c0bc1c476c04ae5f435bb1c519b3"
+      },
+      "log": {
+        "path": "/workspace/scratch/ae1a8cf05419/next6-kernel-signal-audit-INT-console.log",
+        "size": 2881,
+        "sha256": "d48d946e0958d0f49cc77839a847399ec677c0bc1c476c04ae5f435bb1c519b3"
+      },
+      "trigger": "pidfd SIGINT to wrapper alone; observed for2seconds",
+      "result": "Wrapper, make, dummy child all remained alive; TCP leases/flock busy and manifest present. The old script generic reproduced field is false because its original predicate required wrapper exit; observed INT hang is explicit in after_direct_runner_SIGINT."
+    },
+    "cleanup": "Both fixture trees cleaned only their owned unreaped-leader group, then all observed pidfds showed exit. Real production manifest only read; hashes unchanged."
+  },
+  "verified_build_inputs": {
+    "source_check": {
+      "path": "/workspace/scratch/ae1a8cf05419/next6-source-check.json",
+      "size": 781,
+      "sha256": "5134613ae9a179a850327beb238d0433f3bb18e14dff8a24a1a0f5abf9db267e"
+    },
+    "checked_files": 118,
+    "errors": 0,
+    "dependency_observation": {
+      "path": "/workspace/scratch/ae1a8cf05419/next6-build-inputs-readonly.json",
+      "size": 961,
+      "sha256": "2b0fa38e82c4e0dc8ca4ea25eeb7883c16209826c2f40304fa316e4b4eee86ce"
+    }
+  },
+  "cooperative_design": [
+    "SIGINT/SIGTERM handlers record first signal only; no async exception and no SIG_IGN transition.",
+    "Popen returns and owner assignment completes before synchronous shutdown check.",
+    "Normal cleanup never checks or raises for shutdown; first-signal mapping is resolved after owned cleanup.",
+    "Public supervisor creates one worker session, retains direct leader with waitid WNOWAIT, TERM/KILLs that group before wait. ECHILD permanently disarms group signals.",
+    "Debug runner explicitly exports A01_KERNEL_WORKER=1 to bypass added session. This is lifecycle routing, not security authorization or PID==PGID inference.",
+    "Inherited GDB listener descriptors are validated >=64 and preserved using pass_fds. Existing shell target/manifest inode/flock logic retained."
+  ],
+  "seam_evidence": [
+    "Real SIGINT then SIGTERM before Popen returns: owner published, first SIGINT retained, worker reaped, mapped130.",
+    "Real SIGINT then SIGTERM at first group signal during normal cleanup: both TERM/KILL group signals complete before reap, first SIGINT retained, mapped130.",
+    "Real full-wrapper SIGINT/SIGTERM plus repeat shutdown: all pidfds exited, TCP leases released, stable lock released, owned fixture manifest absent.",
+    "Normal worker success also kills lingering TERM-ignoring descendant; reaped/external-reap entries never signal numeric group again."
+  ],
+  "independent_review": {
+    "agent": "next5_monitor",
+    "read_only": true,
+    "blocking_findings": [],
+    "suite_rerun_by_reviewer": false,
+    "reviewed_contract": "Current cooperative handler/Popen/WNOWAIT/ECHILD/final mapping/debug worker route/GDB fd path."
+  },
+  "commands": [
+    "A01_KERNEL_LIFECYCLE_OUT=/workspace/scratch/ae1a8cf05419/next6-kernel-supervisor-cooperative-final-I python3 -I -B support/build/tests/test_kernel_supervisor.py",
+    "A01_KERNEL_LIFECYCLE_OUT=/workspace/scratch/ae1a8cf05419/next6-kernel-supervisor-cooperative-final-IO python3 -I -O -B support/build/tests/test_kernel_supervisor.py",
+    "python3 -I -B support/build/tests/test_kernel_runner.py",
+    "python3 -I -O -B support/build/tests/test_kernel_runner.py",
+    "bash -n support/build/kernel.sh",
+    "git diff --check -- support/build/kernel.sh support/build/kernel-supervisor.py support/build/tests/test_kernel_supervisor.py support/build/tests/test_kernel_runner.py"
+  ],
+  "intermediate_artifacts_retained": {
+    "source": {
+      "path": "/workspace/scratch/ae1a8cf05419/next6-kernel-supervisor-intermediate-source.json",
+      "size": 630,
+      "sha256": "97ca6b0a6582f70c0371c95c031b18806cdc9283aad42fe05ca31351f477a288"
+    },
+    "notes": "Initial throwing/IGN implementation passed9+10 in both modes but superseded after parent review; old final-I/IO logs retained unmodified. Additional cooperative preliminary I/IO logs retained; final only adds readable seam receipts in tests."
+  },
+  "limits": [
+    "All workloads are host fixtures, no real Rust build or QEMU/kernel run in this subtask.",
+    "Public supervisor must receive cooperative INT/TERM to clean its private worker session; uncatchable SIGKILL cannot run cleanup.",
+    "Composed debug calls must use the explicit worker route so parent OwnedSession remains sole group owner.",
+    "Group cleanup assumes this supervisor is sole direct-leader reaper; ECHILD fails closed without numeric group guesses.",
+    "No /proc identity heuristics, subreaper, global process kills or core/OSTD changes."
+  ],
+  "new_kernel_runs": 0,
+  "git_writes": false
+}

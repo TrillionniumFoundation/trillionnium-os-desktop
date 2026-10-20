@@ -1,0 +1,156 @@
+{
+  "cases": {
+    "async_fd": {
+      "exit_code": 0,
+      "observed": "eventfd, timerfd, epoll edge-trigger",
+      "status": "pass"
+    },
+    "cloexec": {
+      "exit_code": 0,
+      "observed": "FD_CLOEXEC closed on exec and plain FD inherited",
+      "status": "pass"
+    },
+    "errno": {
+      "exit_code": 0,
+      "observed": "ENOENT/EEXIST/EBADF",
+      "status": "pass"
+    },
+    "fd_limit": {
+      "exit_code": 20,
+      "observed": "Initial RLIMIT_NOFILE cur=1024 max=4096; setrlimit to cur=32 returns 0 and getrlimit reports 32, but 256 opens succeed with errno=0. Focused receipt confirms missing enforcement (expected EMFILE errno=24).",
+      "status": "blocked_kernel_gap"
+    },
+    "file_lock": {
+      "exit_code": 0,
+      "observed": "flock/fcntl contention and release",
+      "status": "pass"
+    },
+    "ipc_epoll": {
+      "exit_code": 0,
+      "observed": "AF_UNIX socketpair, epoll readable, half-close EOF",
+      "status": "pass"
+    },
+    "mmap_cow": {
+      "exit_code": 0,
+      "observed": "MAP_PRIVATE COW and MAP_SHARED msync",
+      "status": "pass"
+    },
+    "process": {
+      "exit_code": 0,
+      "observed": "signal, fork/exec/wait, exit codes 17 and 23",
+      "status": "pass"
+    },
+    "robust_owner_death": {
+      "exit_code": 0,
+      "observed": "robust process-shared mutex owner death and recovery",
+      "status": "pass"
+    },
+    "scm_rights": {
+      "exit_code": 143,
+      "observed": "Focused probe: recvmsg(..., MSG_CMSG_CLOEXEC) returns rc=1 but received_fd has FD_CLOEXEC=0; guest serial warns unsupported flags: MSG_CMSG_CLOEXEC. The original workload then fails its CLOEXEC assertion and blocks waiting for the child ACK.",
+      "status": "blocked_kernel_gap"
+    },
+    "smoke": {
+      "exit_code": 0,
+      "observed": "mmap/msync, rename/unlink, auxv",
+      "status": "pass"
+    },
+    "threads_futex": {
+      "exit_code": 0,
+      "observed": "4 pthreads, futex wake/wait, joins",
+      "status": "pass"
+    },
+    "uds_peercred": {
+      "exit_code": 0,
+      "observed": "AF_UNIX pathname bind/connect, accept4 CLOEXEC, SO_PEERCRED, unlink",
+      "status": "pass"
+    }
+  },
+  "date": "2026-10-17",
+  "execution": {
+    "command_template": "QEMU_MODULE_DIR=/tmp/<qemu-root>/usr/lib/x86_64-linux-gnu/qemu LD_LIBRARY_PATH=/tmp/<qemu-root>/usr/lib/x86_64-linux-gnu:/tmp/<qemu-root>/lib/x86_64-linux-gnu /tmp/<qemu-root>/usr/bin/qemu-system-x86_64 -L /tmp/<qemu-root>/usr/share/qemu -kernel /tmp/a04-kernel.elf -initrd /tmp/a04-guest-probe/a04-kernel-probe-timeout.cpio.gz -append \"earlycon console=ttyS0 loglevel=info --\" -machine q35 -accel tcg -cpu max -bios /tmp/<qemu-root>/usr/share/seabios/bios-256k.bin -m 512M -smp 1 -nodefaults -no-user-config -no-reboot -nographic -display none -monitor none -serial chardev:serial -chardev stdio,id=serial,signal=off -device isa-debug-exit,iobase=0xf4,iosize=0x04",
+    "guest_boot_verified": true,
+    "qemu_version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)",
+    "raw_qemu_exit_code": 33,
+    "serial_bytes": 268357,
+    "serial_sha256": "7f0df548428c45dd43f9dcaa27e9822e1ba9d55e093c526d9d714b47e9b3c4cc",
+    "timed_out": false,
+    "workload_markers": "A04_KERNEL_PROBE_BEGIN and A04_KERNEL_PROBE_END"
+  },
+  "focused_followups": {
+    "af_unix_abstract": {
+      "guest_archive_sha256": "12dca273f1fda9c91e4e2439988540912bbcbab7a0f7d0b8da7b20aac618fd29",
+      "observed": "AF_UNIX abstract bind rc=0, child connect rc=0, accept/read OK, child exit 0",
+      "owner": "A05 regression",
+      "probe_sha256": "9aeaffceccc7eaa8fbf18de3caa5f56cbb5ab23175df203c5071253932260dd4",
+      "raw_qemu_exit_code": 33,
+      "serial_sha256": "55852329d55f538034847d333623c0021c5a60699caf36d205030ea540353e4",
+      "status": "pass"
+    },
+    "fd_limit": {
+      "guest_archive_sha256": "bd1989407e8f9450c2638dd5427ecdfcd9f6f71c6ec5623dbcca6c686bbf1f36",
+      "kernel_compatibility_claimed": false,
+      "observed": {
+        "after_rlimit_nofile": "cur=32 max=4096",
+        "before_rlimit_nofile": "cur=1024 max=4096",
+        "expected": "open should stop near the soft limit with EMFILE (errno=24)",
+        "open_loop": "256 opens succeeded; errno=0",
+        "setrlimit": "rc=0 requested cur=32 max=4096"
+      },
+      "owner": "A05",
+      "probe_sha256": "1be81f3adea151e810844e1c3be09cf4c856690ef440e010fa84e398986f94f0",
+      "probe_source": "temporary focused RLIMIT_NOFILE probe derived from tests/workloads/linux/probe.c behavior",
+      "raw_qemu_exit_code": 33,
+      "serial_sha256": "e6e31f8026ed839c93f175c0e2a7b986bc4efbd4b75672cb9c8bf341540e27fe",
+      "status": "confirmed_kernel_gap"
+    },
+    "scm_rights": {
+      "guest_archive_sha256": "262723175e0a38078d55dd7932e4231990b210c20830b72c9e4c70cb4afdf80a",
+      "kernel_compatibility_claimed": false,
+      "observed": {
+        "expected": "received descriptor must have FD_CLOEXEC set when MSG_CMSG_CLOEXEC is requested",
+        "kernel_warning": "unsupported flags: MSG_CMSG_CLOEXEC",
+        "received_fd": "fd_flags=0; cloexec=0",
+        "recvmsg_msg_cmsg_cloexec": "rc=1 errno=0 msg_flags=0",
+        "sendmsg": "rc=1 errno=0"
+      },
+      "owner": "A05",
+      "probe_sha256": "6732006f9bbe3bc56d26829e2b652c1f6134a43d48d80661048855ffe6897291",
+      "raw_qemu_exit_code": 33,
+      "serial_sha256": "167d52bd369ebda7262f5d4059cf3d7e2411839ce654496fc3df08bb111a98e5",
+      "status": "confirmed_kernel_gap"
+    }
+  },
+  "inputs": {
+    "a01_initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+    "guest_initramfs_sha256": "05826f9d96bf5a4a48210fea2cf8408b0ae3726c1b8933134819d1e3ce39bbd5",
+    "kernel_gzip_sha256": "4138796d664a9e8dcd3453e31ca7953d69f74ef269169f1339416235c5b59a91",
+    "kernel_sha256": "e884f5e50cf296833276016894a39337cd9ac13bc51f6b1f2dea3cc3a6904b63",
+    "probe_compile_command": "gcc -O2 -std=c11 -Wall -Wextra -Werror -pthread -static tests/workloads/linux/probe.c -o /tmp/a04-guest-probe/probe_static",
+    "probe_compiler": "gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0",
+    "probe_sha256": "e37c48504dd731d0ed4e9352c24d2dd8c81ef6abb4104b79383358fb2c6af3bd",
+    "probe_source": "tests/workloads/linux/probe.c",
+    "qemu_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d809ee9b2f5e7c0854",
+    "seabios_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+  },
+  "kernel_compatibility_claimed": false,
+  "kind": "A04_ASTERINAS_GUEST_CAPABILITY_PROBE",
+  "owner_handoff": {
+    "fd_limit": "A05: isolate setrlimit/getrlimit/open EMFILE failure and implement missing RLIMIT_NOFILE behavior if confirmed",
+    "scheduler_futex_signals": "A06: current probe passed; retain as regression in the guest runner",
+    "scm_rights": "A05: implement MSG_CMSG_CLOEXEC ancillary receive flag handling and rerun exact probe"
+  },
+  "purpose": "Run a temporary statically linked probe in the accepted A01 guest to separate guest-kernel behavior from cloud-host seccomp restrictions.",
+  "qualification": "capability_probe_only; not pinned Debian13 ELF compatibility qualification",
+  "raw_log": "/tmp/a04-kernel-probe-timeout-1792196248.log",
+  "safety": {
+    "a01_artifacts_modified": false,
+    "a01_source_modified": false,
+    "acceleration": "TCG only",
+    "block_devices": false,
+    "guest_storage": "volatile initramfs only",
+    "host_system_install": false,
+    "network_devices": false
+  },
+  "schema": 1
+}

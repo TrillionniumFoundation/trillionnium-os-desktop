@@ -1,0 +1,446 @@
+﻿2026-10-16T20:41:45.6611703Z Current runner version: '2.337.0'
+2026-10-16T20:41:45.6626727Z ##[group]Runner Image Provisioner
+2026-10-16T20:41:45.6627323Z Hosted Compute Agent
+2026-10-16T20:41:45.6627661Z Version: 20261012.601
+2026-10-16T20:41:45.6628063Z Commit: f3dc54e1fb89da6852db922499a0233137369e1d
+2026-10-16T20:41:45.6628509Z Build Date: 2026-10-12T17:48:21Z
+2026-10-16T20:41:45.6628884Z Worker ID: {fb51bc01-387f-4544-89bd-77fde1f5e310}
+2026-10-16T20:41:45.6629551Z Region: westus3
+2026-10-16T20:41:45.6629870Z Cloud: Azure
+2026-10-16T20:41:45.6630206Z ##[endgroup]
+2026-10-16T20:41:45.6630997Z ##[group]Operating System
+2026-10-16T20:41:45.6631351Z Ubuntu
+2026-10-16T20:41:45.6631721Z 24.04.5
+2026-10-16T20:41:45.6632018Z LTS
+2026-10-16T20:41:45.6632345Z ##[endgroup]
+2026-10-16T20:41:45.6632701Z ##[group]Runner Image
+2026-10-16T20:41:45.6633038Z Image: ubuntu-24.04
+2026-10-16T20:41:45.6633405Z Version: 20261012.334.1
+2026-10-16T20:41:45.6634118Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-16T20:41:45.6635024Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261012.334
+2026-10-16T20:41:45.6635556Z ##[endgroup]
+2026-10-16T20:41:45.6636222Z ##[group]GITHUB_TOKEN Permissions
+2026-10-16T20:41:45.6637472Z Contents: read
+2026-10-16T20:41:45.6637887Z Metadata: read
+2026-10-16T20:41:45.6638210Z ##[endgroup]
+2026-10-16T20:41:45.6639578Z Secret source: Actions
+2026-10-16T20:41:45.6640189Z Cache mode: write
+2026-10-16T20:41:45.6640583Z Prepare workflow directory
+2026-10-16T20:41:45.6832573Z Prepare all required actions
+2026-10-16T20:41:45.6861204Z Getting action download info
+2026-10-16T20:41:45.9677369Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-16T20:41:46.1366717Z Complete job name: host-contracts
+2026-10-16T20:41:46.1816524Z ##[group]Run actions/checkout@v4
+2026-10-16T20:41:46.1816904Z with:
+2026-10-16T20:41:46.1817200Z   repository: TrillionniumFoundation/trillionnium-os-desktop
+2026-10-16T20:41:46.1819411Z   token: ***
+2026-10-16T20:41:46.1819638Z   ssh-strict: true
+2026-10-16T20:41:46.1819870Z   ssh-user: git
+2026-10-16T20:41:46.1820109Z   persist-credentials: true
+2026-10-16T20:41:46.1820366Z   clean: true
+2026-10-16T20:41:46.1820664Z   sparse-checkout-cone-mode: true
+2026-10-16T20:41:46.1820935Z   fetch-depth: 1
+2026-10-16T20:41:46.1821168Z   fetch-tags: false
+2026-10-16T20:41:46.1821403Z   show-progress: true
+2026-10-16T20:41:46.1821637Z   lfs: false
+2026-10-16T20:41:46.1821856Z   submodules: false
+2026-10-16T20:41:46.1822094Z   set-safe-directory: true
+2026-10-16T20:41:46.1822357Z   allow-unsafe-pr-checkout: false
+2026-10-16T20:41:46.1822721Z ##[endgroup]
+2026-10-16T20:41:46.2463729Z Syncing repository: TrillionniumFoundation/trillionnium-os-desktop
+2026-10-16T20:41:46.2464897Z ##[group]Getting Git version info
+2026-10-16T20:41:46.2465342Z Working directory is '/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop'
+2026-10-16T20:41:46.2465975Z [command]/usr/bin/git version
+2026-10-16T20:41:46.2527648Z git version 2.55.0
+2026-10-16T20:41:46.2541280Z ##[endgroup]
+2026-10-16T20:41:46.2550374Z Temporarily overriding HOME='/home/runner/work/_temp/d7c007e5-9653-48b1-bf77-9ecc8077d9b0' before making global git config changes
+2026-10-16T20:41:46.2551631Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-16T20:41:46.2553902Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop
+2026-10-16T20:41:46.2601243Z Deleting the contents of '/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop'
+2026-10-16T20:41:46.2606072Z ##[group]Initializing the repository
+2026-10-16T20:41:46.2606991Z [command]/usr/bin/git init /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop
+2026-10-16T20:41:46.2702884Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-16T20:41:46.2703627Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-16T20:41:46.2704566Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-16T20:41:46.2705104Z hint: call:
+2026-10-16T20:41:46.2705568Z hint:
+2026-10-16T20:41:46.2705851Z hint: 	git config --global init.defaultBranch <name>
+2026-10-16T20:41:46.2706354Z hint:
+2026-10-16T20:41:46.2706821Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-16T20:41:46.2707607Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-16T20:41:46.2708230Z hint:
+2026-10-16T20:41:46.2708569Z hint: 	git branch -m <name>
+2026-10-16T20:41:46.2708938Z hint:
+2026-10-16T20:41:46.2709554Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-16T20:41:46.2710546Z Initialized empty Git repository in /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/.git/
+2026-10-16T20:41:46.2720236Z [command]/usr/bin/git remote add origin https://github.com/TrillionniumFoundation/trillionnium-os-desktop
+2026-10-16T20:41:46.2756549Z ##[endgroup]
+2026-10-16T20:41:46.2757150Z ##[group]Disabling automatic garbage collection
+2026-10-16T20:41:46.2758621Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-16T20:41:46.2785813Z ##[endgroup]
+2026-10-16T20:41:46.2786420Z ##[group]Setting up auth
+2026-10-16T20:41:46.2790222Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-16T20:41:46.2816175Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-16T20:41:46.3083351Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-16T20:41:46.3109084Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-16T20:41:46.3268711Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-16T20:41:46.3293849Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-16T20:41:46.3458828Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-16T20:41:46.3488602Z ##[endgroup]
+2026-10-16T20:41:46.3489474Z ##[group]Fetching the repository
+2026-10-16T20:41:46.3494721Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +83f5fc7277fe5deb53e57d47813fb8a708de06d8:refs/remotes/pull/18/merge
+2026-10-16T20:41:47.5869740Z From https://github.com/TrillionniumFoundation/trillionnium-os-desktop
+2026-10-16T20:41:47.5871281Z  * [new ref]         83f5fc7277fe5deb53e57d47813fb8a708de06d8 -> pull/18/merge
+2026-10-16T20:41:47.5873790Z ##[endgroup]
+2026-10-16T20:41:47.5874713Z ##[group]Determining the checkout info
+2026-10-16T20:41:47.5875775Z ##[endgroup]
+2026-10-16T20:41:47.5878139Z [command]/usr/bin/git sparse-checkout disable
+2026-10-16T20:41:47.5920535Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-16T20:41:47.5951319Z ##[group]Checking out the ref
+2026-10-16T20:41:47.5952978Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/18/merge
+2026-10-16T20:41:47.7535378Z Note: switching to 'refs/remotes/pull/18/merge'.
+2026-10-16T20:41:47.7536013Z 
+2026-10-16T20:41:47.7536493Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-16T20:41:47.7537653Z changes and commit them, and you can discard any commits you make in this
+2026-10-16T20:41:47.7538796Z state without impacting any branches by switching back to a branch.
+2026-10-16T20:41:47.7539662Z 
+2026-10-16T20:41:47.7540144Z If you want to create a new branch to retain commits you create, you may
+2026-10-16T20:41:47.7541180Z do so (now or later) by using -c with the switch command. Example:
+2026-10-16T20:41:47.7541960Z 
+2026-10-16T20:41:47.7542218Z   git switch -c <new-branch-name>
+2026-10-16T20:41:47.7542694Z 
+2026-10-16T20:41:47.7543038Z Or undo this operation with:
+2026-10-16T20:41:47.7543534Z 
+2026-10-16T20:41:47.7543837Z   git switch -
+2026-10-16T20:41:47.7544271Z 
+2026-10-16T20:41:47.7544858Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-16T20:41:47.7545690Z 
+2026-10-16T20:41:47.7546661Z HEAD is now at 83f5fc7 Merge 57b23ede7e242711ef142b672f04c896383a264a into bc294f75bfb8c03d9963f5a12ea23b9589779d96
+2026-10-16T20:41:47.7552759Z ##[endgroup]
+2026-10-16T20:41:47.7588450Z [command]/usr/bin/git log -1 --format=%H
+2026-10-16T20:41:47.7608962Z 83f5fc7277fe5deb53e57d47813fb8a708de06d8
+2026-10-16T20:41:47.7797278Z ##[group]Run python3 tests/golden/generate_hos2.py --check
+2026-10-16T20:41:47.7798357Z [36;1mpython3 tests/golden/generate_hos2.py --check[0m
+2026-10-16T20:41:47.8001546Z shell: /usr/bin/bash -e {0}
+2026-10-16T20:41:47.8002273Z ##[endgroup]
+2026-10-16T20:41:47.8269903Z 12 golden HOS2 vectors verified
+2026-10-16T20:41:47.8406154Z ##[group]Run set -euo pipefail
+2026-10-16T20:41:47.8406833Z [36;1mset -euo pipefail[0m
+2026-10-16T20:41:47.8407939Z [36;1mfor fixture in tests/golden/generate_transport32.py tests/golden/transport32.hex; do[0m
+2026-10-16T20:41:47.8409165Z [36;1m  if [[ ! -f "$fixture" || -L "$fixture" ]]; then[0m
+2026-10-16T20:41:47.8410478Z [36;1m    echo "Missing or symlinked independent ioctl transport fixture: $fixture" >&2[0m
+2026-10-16T20:41:47.8411545Z [36;1m    exit 1[0m
+2026-10-16T20:41:47.8412080Z [36;1m  fi[0m
+2026-10-16T20:41:47.8412592Z [36;1mdone[0m
+2026-10-16T20:41:47.8413314Z [36;1mpython3 -I tests/golden/generate_transport32.py --check[0m
+2026-10-16T20:41:47.8462998Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-16T20:41:47.8463827Z ##[endgroup]
+2026-10-16T20:41:47.8695395Z 1 independent 32-byte HOS2 transport golden verified
+2026-10-16T20:41:47.8773309Z ##[group]Run python3 -m unittest discover -s tests/abi -p 'test_*.py' -v
+2026-10-16T20:41:47.8774495Z [36;1mpython3 -m unittest discover -s tests/abi -p 'test_*.py' -v[0m
+2026-10-16T20:41:47.8775626Z [36;1mpython3 -m unittest discover -s tests/spec -p 'test_*.py' -v[0m
+2026-10-16T20:41:47.8822413Z shell: /usr/bin/bash -e {0}
+2026-10-16T20:41:47.8823011Z ##[endgroup]
+2026-10-16T20:41:47.9280390Z test_abi_advertisement_rejects_invalid_capabilities_and_bounds (test_dense_boundaries.DenseGoldenBoundaries.test_abi_advertisement_rejects_invalid_capabilities_and_bounds) ... ok
+2026-10-16T20:41:47.9295024Z test_all_golden_prefixes_are_truncated_not_valid_frames (test_dense_boundaries.DenseGoldenBoundaries.test_all_golden_prefixes_are_truncated_not_valid_frames) ... ok
+2026-10-16T20:41:47.9298724Z test_common_version_reserved_and_id_mutations_are_rejected (test_dense_boundaries.DenseGoldenBoundaries.test_common_version_reserved_and_id_mutations_are_rejected) ... ok
+2026-10-16T20:41:47.9302902Z test_delivery_payload_rejects_invalid_terminal_metadata (test_dense_boundaries.DenseGoldenBoundaries.test_delivery_payload_rejects_invalid_terminal_metadata) ... ok
+2026-10-16T20:41:47.9306490Z test_golden_frames_reject_trailing_bytes (test_dense_boundaries.DenseGoldenBoundaries.test_golden_frames_reject_trailing_bytes) ... ok
+2026-10-16T20:41:47.9310335Z test_retirement_frontier_requires_a_strictly_later_next_sequence (test_dense_boundaries.DenseGoldenBoundaries.test_retirement_frontier_requires_a_strictly_later_next_sequence) ... ok
+2026-10-16T20:41:47.9314364Z test_sequence_high_half_is_zero_even_in_error_response (test_dense_boundaries.DenseGoldenBoundaries.test_sequence_high_half_is_zero_even_in_error_response) ... ok
+2026-10-16T20:41:47.9317295Z test_success_apply_and_terminal_history_share_elapsed_cpu_bounds (test_dense_boundaries.DenseGoldenBoundaries.test_success_apply_and_terminal_history_share_elapsed_cpu_bounds) ... ok
+2026-10-16T20:41:47.9320546Z test_usage_payload_rejects_impossible_accounting_without_lowering_consumption (test_dense_boundaries.DenseGoldenBoundaries.test_usage_payload_rejects_impossible_accounting_without_lowering_consumption) ... ok
+2026-10-16T20:41:47.9323161Z test_all_fixtures_frame_layout (test_golden_contract.GoldenContract.test_all_fixtures_frame_layout) ... ok
+2026-10-16T20:41:47.9325366Z test_cap_and_revision_mutations_are_not_idempotent_retransmissions (test_golden_contract.GoldenContract.test_cap_and_revision_mutations_are_not_idempotent_retransmissions) ... ok
+2026-10-16T20:41:47.9327825Z test_install_and_history_share_valid_effect_time (test_golden_contract.GoldenContract.test_install_and_history_share_valid_effect_time) ... ok
+2026-10-16T20:41:47.9330310Z test_install_response_ordered_id_is_checked_for_success_and_error (test_golden_contract.GoldenContract.test_install_response_ordered_id_is_checked_for_success_and_error) ... ok
+2026-10-16T20:41:47.9332986Z test_install_response_requires_existing_revision_and_elapsed_time (test_golden_contract.GoldenContract.test_install_response_requires_existing_revision_and_elapsed_time) ... ok
+2026-10-16T20:41:47.9335391Z test_malformed_requests_rejected_before_effect (test_golden_contract.GoldenContract.test_malformed_requests_rejected_before_effect) ... ok
+2026-10-16T20:41:47.9337331Z test_sample_single_cpu_elapsed_time (test_golden_contract.GoldenContract.test_sample_single_cpu_elapsed_time) ... ok
+2026-10-16T20:41:47.9339340Z test_unknown_status_and_nonempty_error_rejected (test_golden_contract.GoldenContract.test_unknown_status_and_nonempty_error_rejected) ... ok
+2026-10-16T20:41:47.9341626Z test_cap_mutation_same_sequence_and_target_conflicts (test_mutations.InstallBudgetMutationTests.test_cap_mutation_same_sequence_and_target_conflicts) ... ok
+2026-10-16T20:41:47.9343760Z test_expected_revision_is_live_cas (test_mutations.InstallBudgetMutationTests.test_expected_revision_is_live_cas) ... ok
+2026-10-16T20:41:47.9346247Z test_expected_revision_mutation_same_sequence_and_target_conflicts (test_mutations.InstallBudgetMutationTests.test_expected_revision_mutation_same_sequence_and_target_conflicts) ... ok
+2026-10-16T20:41:47.9348900Z test_identical_retry_preserves_original_reservation (test_mutations.InstallBudgetMutationTests.test_identical_retry_preserves_original_reservation) ... ok
+2026-10-16T20:41:47.9351102Z test_mutant_ignoring_cap_is_caught (test_mutations.InstallBudgetMutationTests.test_mutant_ignoring_cap_is_caught) ... ok
+2026-10-16T20:41:47.9353105Z test_mutant_ignoring_revision_cas_is_caught (test_mutations.InstallBudgetMutationTests.test_mutant_ignoring_revision_cas_is_caught) ... ok
+2026-10-16T20:41:47.9355174Z test_mutant_ignoring_revision_is_caught (test_mutations.InstallBudgetMutationTests.test_mutant_ignoring_revision_is_caught) ... ok
+2026-10-16T20:41:47.9357434Z test_mutant_with_per_target_sequence_namespace_is_caught (test_mutations.InstallBudgetMutationTests.test_mutant_with_per_target_sequence_namespace_is_caught) ... ok
+2026-10-16T20:41:47.9360102Z test_same_sequence_different_target_conflicts_in_one_capspace (test_mutations.InstallBudgetMutationTests.test_same_sequence_different_target_conflicts_in_one_capspace) ... ok
+2026-10-16T20:41:47.9539024Z test_independent_generator_matches_committed_edge_bytes (test_semantic_edges_contract.SemanticEdgeContract.test_independent_generator_matches_committed_edge_bytes) ... ok
+2026-10-16T20:41:47.9541967Z test_independent_payload_oracle_accepts_all_edge_vectors (test_semantic_edges_contract.SemanticEdgeContract.test_independent_payload_oracle_accepts_all_edge_vectors) ... ok
+2026-10-16T20:41:47.9545458Z test_descriptor_fields_are_not_memory_native_layout (test_transport32_contract.TransportGoldenContract.test_descriptor_fields_are_not_memory_native_layout) ... ok
+2026-10-16T20:41:47.9547894Z test_fixed_descriptor_is_32_bytes_and_little_endian (test_transport32_contract.TransportGoldenContract.test_fixed_descriptor_is_32_bytes_and_little_endian) ... ok
+2026-10-16T20:41:47.9549178Z 
+2026-10-16T20:41:47.9549591Z ----------------------------------------------------------------------
+2026-10-16T20:41:47.9550412Z Ran 30 tests in 0.027s
+2026-10-16T20:41:47.9550844Z 
+2026-10-16T20:41:47.9551042Z OK
+2026-10-16T20:41:47.9877537Z test_duplicate_result_is_not_second_effect (test_recovery_contract.RecoveryContract.test_duplicate_result_is_not_second_effect) ... ok
+2026-10-16T20:41:47.9880331Z test_full_window_does_not_block_query_or_retire (test_recovery_contract.RecoveryContract.test_full_window_does_not_block_query_or_retire) ... ok
+2026-10-16T20:41:47.9882337Z test_grant_activation_after_final_exec (test_recovery_contract.RecoveryContract.test_grant_activation_after_final_exec) ... ok
+2026-10-16T20:41:47.9884203Z test_history_view_not_old_manage_handle (test_recovery_contract.RecoveryContract.test_history_view_not_old_manage_handle) ... ok
+2026-10-16T20:41:47.9885989Z test_nonfair_class_must_not_bypass (test_recovery_contract.RecoveryContract.test_nonfair_class_must_not_bypass) ... ok
+2026-10-16T20:41:47.9887913Z test_one_namespace_reservation_across_targets (test_recovery_contract.RecoveryContract.test_one_namespace_reservation_across_targets) ... ok
+2026-10-16T20:41:47.9890010Z test_out_of_order_does_not_consume_sequence (test_recovery_contract.RecoveryContract.test_out_of_order_does_not_consume_sequence) ... ok
+2026-10-16T20:41:47.9891848Z test_policy_update_does_not_refill (test_recovery_contract.RecoveryContract.test_policy_update_does_not_refill) ... ok
+2026-10-16T20:41:47.9893670Z test_reserved_rejection_remains_terminal (test_recovery_contract.RecoveryContract.test_reserved_rejection_remains_terminal) ... ok
+2026-10-16T20:41:47.9895665Z test_retirement_is_atomic_over_pending_prefix (test_recovery_contract.RecoveryContract.test_retirement_is_atomic_over_pending_prefix) ... ok
+2026-10-16T20:41:47.9897720Z test_same_observation_cannot_prove_old_effect (test_recovery_contract.RecoveryContract.test_same_observation_cannot_prove_old_effect) ... ok
+2026-10-16T20:41:47.9899956Z test_staleness_rechecked_after_reasoning (test_recovery_contract.RecoveryContract.test_staleness_rechecked_after_reasoning) ... ok
+2026-10-16T20:41:47.9994066Z test_ten_thousand_writes_one_namespace (test_recovery_contract.RecoveryContract.test_ten_thousand_writes_one_namespace) ... ok
+2026-10-16T20:41:47.9995961Z test_user_pause_not_inferred_from_zero_cap (test_recovery_contract.RecoveryContract.test_user_pause_not_inferred_from_zero_cap) ... ok
+2026-10-16T20:41:47.9997022Z 
+2026-10-16T20:41:47.9997371Z ----------------------------------------------------------------------
+2026-10-16T20:41:47.9998131Z Ran 14 tests in 0.012s
+2026-10-16T20:41:47.9998450Z 
+2026-10-16T20:41:47.9998654Z OK
+2026-10-16T20:41:48.0083728Z ##[group]Run python3 -m unittest discover -s tests/organ_backend -p 'test_*.py' -v
+2026-10-16T20:41:48.0084924Z [36;1mpython3 -m unittest discover -s tests/organ_backend -p 'test_*.py' -v[0m
+2026-10-16T20:41:48.0086061Z [36;1mpython3 -O -m unittest discover -s tests/organ_backend -p 'test_*.py' -v[0m
+2026-10-16T20:41:48.0138782Z shell: /usr/bin/bash -e {0}
+2026-10-16T20:41:48.0139445Z ##[endgroup]
+2026-10-16T20:41:48.0513459Z test_duplicate_name (test_archive.ArchiveTests.test_duplicate_name) ... ok
+2026-10-16T20:41:48.0515543Z test_guard_works_without_assert (test_archive.ArchiveTests.test_guard_works_without_assert) ... ok
+2026-10-16T20:41:48.0517473Z test_roundtrip (test_archive.ArchiveTests.test_roundtrip) ... ok
+2026-10-16T20:41:48.0519803Z test_traversal_rejected_without_extraction (test_archive.ArchiveTests.test_traversal_rejected_without_extraction) ... ok
+2026-10-16T20:41:48.0522133Z test_truncated_header (test_archive.ArchiveTests.test_truncated_header) ... ok
+2026-10-16T20:41:48.0523203Z 
+2026-10-16T20:41:48.0523703Z ----------------------------------------------------------------------
+2026-10-16T20:41:48.0524780Z Ran 5 tests in 0.000s
+2026-10-16T20:41:48.0525263Z 
+2026-10-16T20:41:48.0525553Z OK
+2026-10-16T20:41:48.3532108Z test_duplicate_name (test_archive.ArchiveTests.test_duplicate_name) ... ok
+2026-10-16T20:41:48.3533235Z test_guard_works_without_assert (test_archive.ArchiveTests.test_guard_works_without_assert) ... ok
+2026-10-16T20:41:48.3533972Z test_roundtrip (test_archive.ArchiveTests.test_roundtrip) ... ok
+2026-10-16T20:41:48.3534544Z test_traversal_rejected_without_extraction (test_archive.ArchiveTests.test_traversal_rejected_without_extraction) ... ok
+2026-10-16T20:41:48.3535041Z test_truncated_header (test_archive.ArchiveTests.test_truncated_header) ... ok
+2026-10-16T20:41:48.3535219Z 
+2026-10-16T20:41:48.3535337Z ----------------------------------------------------------------------
+2026-10-16T20:41:48.3535554Z Ran 5 tests in 0.000s
+2026-10-16T20:41:48.3535653Z 
+2026-10-16T20:41:48.3535709Z OK
+2026-10-16T20:41:48.3618756Z ##[group]Run test -f tests/kernel/control/hos2_queryabi_probe.c
+2026-10-16T20:41:48.3619041Z [36;1mtest -f tests/kernel/control/hos2_queryabi_probe.c[0m
+2026-10-16T20:41:48.3619432Z [36;1mtest -f tests/kernel/control/run-host-smoke.sh[0m
+2026-10-16T20:41:48.3619655Z [36;1mtest -f tests/kernel/control/fake-ioctl-efault.c[0m
+2026-10-16T20:41:48.3619874Z [36;1msh tests/kernel/control/run-host-smoke.sh[0m
+2026-10-16T20:41:48.3671042Z shell: /usr/bin/bash -e {0}
+2026-10-16T20:41:48.3671202Z ##[endgroup]
+2026-10-16T20:41:48.5457495Z PASS HOS2 QueryAbi transport/header/response + 16 invalid frames (host only)
+2026-10-16T20:41:48.5695246Z PASS Linux /dev/null ENOTTY vs injected EFAULT differentiated (host only)
+2026-10-16T20:41:48.5695753Z PASS real Linux /dev/null ioctl rejected; Asterinas ioctl remains untested
+2026-10-16T20:41:48.5731345Z ##[group]Run set -euo pipefail
+2026-10-16T20:41:48.5731567Z [36;1mset -euo pipefail[0m
+2026-10-16T20:41:48.5731739Z [36;1mtest -f libs/os-abi/Cargo.toml[0m
+2026-10-16T20:41:48.5731930Z [36;1mtest -f libs/os-control/Cargo.toml[0m
+2026-10-16T20:41:48.5783172Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-16T20:41:48.5783382Z ##[endgroup]
+2026-10-16T20:41:48.5866575Z ##[group]Run set -euo pipefail
+2026-10-16T20:41:48.5866768Z [36;1mset -euo pipefail[0m
+2026-10-16T20:41:48.5866922Z [36;1mrustc -Vv[0m
+2026-10-16T20:41:48.5867059Z [36;1mcargo -Vv[0m
+2026-10-16T20:41:48.5867227Z [36;1mrustup component add rustfmt clippy[0m
+2026-10-16T20:41:48.5911452Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-16T20:41:48.5911664Z ##[endgroup]
+2026-10-16T20:41:48.6966683Z rustc 1.99.0 (b940084d7 2026-09-28)
+2026-10-16T20:41:48.6966984Z binary: rustc
+2026-10-16T20:41:48.6967251Z commit-hash: b940084d7eb6a299eb4bfeb8e34901bc051e7ac4
+2026-10-16T20:41:48.6967474Z commit-date: 2026-09-28
+2026-10-16T20:41:48.6967645Z host: x86_64-unknown-linux-gnu
+2026-10-16T20:41:48.6967806Z release: 1.99.0
+2026-10-16T20:41:48.6977771Z LLVM version: 23.1.1
+2026-10-16T20:41:48.7495678Z cargo 1.99.0 (5f94df478 2026-08-27)
+2026-10-16T20:41:48.7495980Z release: 1.99.0
+2026-10-16T20:41:48.7496220Z commit-hash: 5f94df4789f005f9a352888e8355ffc645b7ed0e
+2026-10-16T20:41:48.7496540Z commit-date: 2026-08-27
+2026-10-16T20:41:48.7496801Z host: x86_64-unknown-linux-gnu
+2026-10-16T20:41:48.7497056Z libgit2: 1.9.6 (sys:0.21.0 vendored)
+2026-10-16T20:41:48.7497403Z libcurl: 8.21.0-DEV (sys:0.4.90+curl-8.21.0 vendored ssl:OpenSSL/3.6.3)
+2026-10-16T20:41:48.7497713Z ssl: OpenSSL 3.6.3 9 Jun 2026
+2026-10-16T20:41:48.7497955Z os: Ubuntu 24.4.0 (noble) [64-bit]
+2026-10-16T20:41:48.8019697Z info: component rustfmt is up to date
+2026-10-16T20:41:48.8020048Z info: component clippy is up to date
+2026-10-16T20:41:48.8082582Z ##[group]Run cargo test --manifest-path libs/os-abi/Cargo.toml --verbose
+2026-10-16T20:41:48.8082909Z [36;1mcargo test --manifest-path libs/os-abi/Cargo.toml --verbose[0m
+2026-10-16T20:41:48.8133570Z shell: /usr/bin/bash -e {0}
+2026-10-16T20:41:48.8133736Z ##[endgroup]
+2026-10-16T20:41:48.9552255Z    Compiling hos2-os-abi v0.1.0 (/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/libs/os-abi)
+2026-10-16T20:41:48.9559484Z      Running `/home/runner/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc --crate-name hos2_os_abi --edition=2021 src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C embed-bitcode=no -C debuginfo=2 --cfg 'feature="default"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values("default", "std"))' -C metadata=cbfc2af97a816a63 -C extra-filename=-b4f30edcd1439ac0 --out-dir /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/libs/os-abi/target/debug/deps -L dependency=/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/libs/os-abi/target/debug/deps`
+2026-10-16T20:41:48.9564362Z      Running `/home/runner/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc --crate-name hos2_os_abi --edition=2021 src/lib.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --emit=dep-info,link -C embed-bitcode=no -C debuginfo=2 --test --cfg 'feature="default"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values("default", "std"))' -C metadata=c42a552cd1e2edb9 -C extra-filename=-7978c0448a018eff --out-dir /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/libs/os-abi/target/debug/deps -L dependency=/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/libs/os-abi/target/debug/deps`
+2026-10-16T20:41:49.3541766Z      Running `/home/runner/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc --crate-name golden_vectors --edition=2021 tests/golden_vectors.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --emit=dep-info,link -C embed-bitcode=no -C debuginfo=2 --test --cfg 'feature="default"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values("default", "std"))' -C metadata=d0686e079b49338d -C extra-filename=-50a3670f59da5fed --out-dir /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/libs/os-abi/target/debug/deps -L dependency=/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/libs/os-abi/target/debug/deps --extern hos2_os_abi=/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/libs/os-abi/target/debug/deps/libhos2_os_abi-b4f30edcd1439ac0.rlib`
+2026-10-16T20:41:49.3548178Z      Running `/home/runner/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc --crate-name mutation_kill --edition=2021 tests/mutation_kill.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --emit=dep-info,link -C embed-bitcode=no -C debuginfo=2 --test --cfg 'feature="default"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values("default", "std"))' -C metadata=44d9e355d55fa348 -C extra-filename=-1f5e5944ab5325d3 --out-dir /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/libs/os-abi/target/debug/deps -L dependency=/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/libs/os-abi/target/debug/deps --extern hos2_os_abi=/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/libs/os-abi/target/debug/deps/libhos2_os_abi-b4f30edcd1439ac0.rlib`
+2026-10-16T20:41:49.3554069Z      Running `/home/runner/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc --crate-name transport_preflight --edition=2021 tests/transport_preflight.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --emit=dep-info,link -C embed-bitcode=no -C debuginfo=2 --test --cfg 'feature="default"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values("default", "std"))' -C metadata=29579d6c0a194159 -C extra-filename=-5ab560d4de32a6ab --out-dir /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/libs/os-abi/target/debug/deps -L dependency=/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/libs/os-abi/target/debug/deps --extern hos2_os_abi=/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/libs/os-abi/target/debug/deps/libhos2_os_abi-b4f30edcd1439ac0.rlib`
+2026-10-16T20:41:49.7540061Z      Running `/home/runner/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc --crate-name transport_vectors --edition=2021 tests/transport_vectors.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --emit=dep-info,link -C embed-bitcode=no -C debuginfo=2 --test --cfg 'feature="default"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values("default", "std"))' -C metadata=90372288eef0b560 -C extra-filename=-f1372e18ed30876b --out-dir /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/libs/os-abi/target/debug/deps -L dependency=/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/libs/os-abi/target/debug/deps --extern hos2_os_abi=/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/libs/os-abi/target/debug/deps/libhos2_os_abi-b4f30edcd1439ac0.rlib`
+2026-10-16T20:41:49.7549490Z      Running `/home/runner/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc --crate-name negative_vectors --edition=2021 tests/negative_vectors.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --emit=dep-info,link -C embed-bitcode=no -C debuginfo=2 --test --cfg 'feature="default"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values("default", "std"))' -C metadata=34f268c168699fc7 -C extra-filename=-c2ccb104383b203b --out-dir /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/libs/os-abi/target/debug/deps -L dependency=/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/libs/os-abi/target/debug/deps --extern hos2_os_abi=/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/libs/os-abi/target/debug/deps/libhos2_os_abi-b4f30edcd1439ac0.rlib`
+2026-10-16T20:41:49.7583098Z      Running `/home/runner/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc --crate-name semantic_edges --edition=2021 tests/semantic_edges.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --emit=dep-info,link -C embed-bitcode=no -C debuginfo=2 --test --cfg 'feature="default"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values("default", "std"))' -C metadata=0799e60f1590e066 -C extra-filename=-b6ccaf4e66aa7368 --out-dir /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/libs/os-abi/target/debug/deps -L dependency=/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/libs/os-abi/target/debug/deps --extern hos2_os_abi=/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/libs/os-abi/target/debug/deps/libhos2_os_abi-b4f30edcd1439ac0.rlib`
+2026-10-16T20:41:49.9367802Z     Finished `test` profile [unoptimized + debuginfo] target(s) in 1.11s
+2026-10-16T20:41:49.9390126Z      Running `/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/libs/os-abi/target/debug/deps/hos2_os_abi-7978c0448a018eff`
+2026-10-16T20:41:49.9390712Z 
+2026-10-16T20:41:49.9390796Z running 3 tests
+2026-10-16T20:41:49.9393992Z test tests::malformed_usage_is_rejected ... ok
+2026-10-16T20:41:49.9394332Z test tests::request_header_and_payload_round_trip ... ok
+2026-10-16T20:41:49.9394636Z test tests::transport_explicit_little_endian ... ok
+2026-10-16T20:41:49.9394830Z 
+2026-10-16T20:41:49.9395042Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-10-16T20:41:49.9395336Z 
+2026-10-16T20:41:49.9395424Z 
+2026-10-16T20:41:49.9395499Z running 8 tests
+2026-10-16T20:41:49.9396248Z      Running `/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/libs/os-abi/target/debug/deps/golden_vectors-50a3670f59da5fed`
+2026-10-16T20:41:49.9401569Z test all_known_error_status_codes_accept_empty_error_responses ... ok
+2026-10-16T20:41:49.9410346Z test all_golden_responses_decode_from_larger_copyout_capacity ... ok
+2026-10-16T20:41:49.9410725Z test each_golden_cut_is_rejected_not_just_selected_truncations ... ok
+2026-10-16T20:41:49.9411039Z test encoders_match_independent_golden_bytes_for_all_operations ... ok
+2026-10-16T20:41:49.9411273Z test every_golden_encoder_checks_capacity_before_writing ... ok
+2026-10-16T20:41:49.9411511Z test every_golden_header_refuses_version_reserved_or_zero_id_mutation ... ok
+2026-10-16T20:41:49.9411746Z test fixed_golden_vectors_are_consumed_by_rust_codec ... ok
+2026-10-16T20:41:49.9528785Z test golden_mutation_sweep_never_panics_or_reencodes_accepted_bytes_differently ... ok
+2026-10-16T20:41:49.9529335Z 
+2026-10-16T20:41:49.9529531Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+2026-10-16T20:41:49.9529827Z 
+2026-10-16T20:41:49.9531056Z      Running `/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/libs/os-abi/target/debug/deps/mutation_kill-1f5e5944ab5325d3`
+2026-10-16T20:41:49.9537513Z 
+2026-10-16T20:41:49.9537584Z running 7 tests
+2026-10-16T20:41:49.9540192Z test cap_ignoring_mutant_is_killed_by_same_delivery_oracle ... ok
+2026-10-16T20:41:49.9540878Z test fixed_golden_is_a_real_valid_rust_request ... ok
+2026-10-16T20:41:49.9541262Z test full_low_eight_byte_sequence_is_little_endian_and_high_half_zero ... ok
+2026-10-16T20:41:49.9541599Z test revision_ignoring_mutant_is_killed_by_same_delivery_oracle ... ok
+2026-10-16T20:41:49.9541839Z test same_sequence_and_target_different_revision_is_conflict ... ok
+2026-10-16T20:41:49.9542052Z test same_sequence_across_targets_is_also_conflict ... ok
+2026-10-16T20:41:49.9543121Z test same_sequence_and_target_different_cap_is_conflict ... ok
+2026-10-16T20:41:49.9543334Z 
+2026-10-16T20:41:49.9543543Z test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-10-16T20:41:49.9543832Z 
+2026-10-16T20:41:49.9544182Z      Running `/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/libs/os-abi/target/debug/deps/negative_vectors-c2ccb104383b203b`
+2026-10-16T20:41:49.9550829Z 
+2026-10-16T20:41:49.9550929Z running 21 tests
+2026-10-16T20:41:49.9553176Z test budget_cpu_time_cannot_exceed_elapsed_window_time ... ok
+2026-10-16T20:41:49.9553734Z test correlation_and_capacity_helpers_are_stable ... ok
+2026-10-16T20:41:49.9554142Z test encoders_report_insufficient_output_capacity ... ok
+2026-10-16T20:41:49.9554554Z test fixed_golden_budget_mutations_preserve_delivery_id_but_change_canonical_request ... ok
+2026-10-16T20:41:49.9554890Z test install_revision_mismatch_is_not_an_integer_overflow ... ok
+2026-10-16T20:41:49.9555371Z test install_previous_revision_must_be_a_valid_existing_revision ... ok
+2026-10-16T20:41:49.9555825Z test install_budget_request_rejects_revision_period_cap_and_reserved_mutations ... ok
+2026-10-16T20:41:49.9556111Z test install_response_echo_rejects_unordered_ids_in_success_and_failure ... ok
+2026-10-16T20:41:49.9556386Z test malformed_frame_lengths_are_rejected_before_unknown_opcode_or_status ... ok
+2026-10-16T20:41:49.9557903Z test ordered_sequence_helpers_provide_canonical_little_endian_ids ... ok
+2026-10-16T20:41:49.9558461Z test query_abi_capability_table_rejects_unsupported_feature_combinations ... ok
+2026-10-16T20:41:49.9559299Z test public_request_payload_mismatches_never_write_output ... ok
+2026-10-16T20:41:49.9559833Z test public_response_payload_mismatches_never_write_output ... ok
+2026-10-16T20:41:49.9560328Z test query_delivery_terminal_metadata_and_historical_request_are_checked ... ok
+2026-10-16T20:41:49.9560657Z test response_structure_mutations_are_rejected ... ok
+2026-10-16T20:41:49.9561001Z test read_usage_and_retire_through_reject_impossible_semantic_values ... ok
+2026-10-16T20:41:49.9561353Z test request_structure_mutations_are_rejected ... ok
+2026-10-16T20:41:49.9561731Z test self_consistent_install_response_must_match_the_requested_revision ... ok
+2026-10-16T20:41:49.9562316Z test transport_rejects_wrapping_pointer_ranges_without_access_checks ... ok
+2026-10-16T20:41:49.9562730Z test self_consistent_retirement_must_cover_the_requested_frontier ... ok
+2026-10-16T20:41:49.9563112Z test unknown_minor_and_exact_wire_lengths_are_rejected ... ok
+2026-10-16T20:41:49.9563322Z 
+2026-10-16T20:41:49.9563519Z test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-10-16T20:41:49.9563797Z 
+2026-10-16T20:41:49.9564192Z      Running `/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/libs/os-abi/target/debug/deps/semantic_edges-b6ccaf4e66aa7368`
+2026-10-16T20:41:49.9570263Z 
+2026-10-16T20:41:49.9570362Z running 12 tests
+2026-10-16T20:41:49.9579815Z test all_nonterminal_states_keep_only_the_history_sequence ... ok
+2026-10-16T20:41:49.9580539Z test all_independent_semantic_edge_frames_decode ... ok
+2026-10-16T20:41:49.9581154Z test all_saved_terminal_rejections_preserve_status_without_success_metadata ... ok
+2026-10-16T20:41:49.9581755Z test history_and_read_ids_remain_opaque_including_nonzero_high_bytes ... ok
+2026-10-16T20:41:49.9582671Z test last_write_sequence_and_revision_increment_to_max_are_valid ... ok
+2026-10-16T20:41:49.9583272Z test nonterminal_states_reject_saved_status_and_each_success_metadata_field ... ok
+2026-10-16T20:41:49.9585075Z test one_step_beyond_accepted_write_and_retire_boundaries_is_rejected ... ok
+2026-10-16T20:41:49.9586689Z test retired_frontier_can_reach_last_write_and_leave_next_sequence_max ... ok
+2026-10-16T20:41:49.9589984Z test typed_terminal_rejection_encoders_match_all_independent_saved_status_bytes ... ok
+2026-10-16T20:41:49.9591523Z test every_semantic_edge_encoder_matches_fixed_bytes_and_preserves_unused_capacity ... ok
+2026-10-16T20:41:49.9592863Z test every_terminal_error_rejects_each_nonzero_success_metadata_field ... ok
+2026-10-16T20:41:49.9595985Z test every_semantic_edge_encoder_rejects_each_short_capacity_without_writing ... ok
+2026-10-16T20:41:49.9596284Z 
+2026-10-16T20:41:49.9596495Z test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-10-16T20:41:49.9596802Z 
+2026-10-16T20:41:49.9597904Z      Running `/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/libs/os-abi/target/debug/deps/transport_preflight-5ab560d4de32a6ab`
+2026-10-16T20:41:49.9604748Z 
+2026-10-16T20:41:49.9604832Z running 6 tests
+2026-10-16T20:41:49.9608064Z test descriptor_lengths_must_match_even_otherwise_valid_snapshots ... ok
+2026-10-16T20:41:49.9608476Z test all_five_fixed_requests_pass_the_combined_preflight ... ok
+2026-10-16T20:41:49.9608887Z test malformed_snapshot_is_rejected_before_short_output_capacity ... ok
+2026-10-16T20:41:49.9609358Z test every_opcode_requires_success_capacity_before_admission ... ok
+2026-10-16T20:41:49.9609661Z test overlapping_ranges_are_accepted_and_request_owns_the_snapshot_values ... ok
+2026-10-16T20:41:49.9609909Z test public_descriptor_fields_cannot_bypass_validation ... ok
+2026-10-16T20:41:49.9610047Z 
+2026-10-16T20:41:49.9610174Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-10-16T20:41:49.9610349Z 
+2026-10-16T20:41:49.9611090Z      Running `/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/libs/os-abi/target/debug/deps/transport_vectors-f1372e18ed30876b`
+2026-10-16T20:41:49.9617735Z 
+2026-10-16T20:41:49.9617820Z running 4 tests
+2026-10-16T20:41:49.9619863Z test decode_independent_transport32_bytes_and_reencode_exactly ... ok
+2026-10-16T20:41:49.9620208Z test every_short_transport_descriptor_is_rejected ... ok
+2026-10-16T20:41:49.9620961Z test transport_rejects_reserved_overflow_and_invalid_request_byte_count ... ok
+2026-10-16T20:41:49.9621403Z test transport_reserves_success_capacity_before_processing_semantic_errors ... ok
+2026-10-16T20:41:49.9621678Z 
+2026-10-16T20:41:49.9621877Z test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-10-16T20:41:49.9622169Z 
+2026-10-16T20:41:49.9622888Z    Doc-tests hos2_os_abi
+2026-10-16T20:41:49.9629008Z      Running `/home/runner/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustdoc --edition=2021 --crate-type lib --color auto --crate-name hos2_os_abi --test src/lib.rs --test-run-directory /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/libs/os-abi --extern hos2_os_abi=/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/libs/os-abi/target/debug/deps/libhos2_os_abi-b4f30edcd1439ac0.rlib -L dependency=/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/libs/os-abi/target/debug/deps -C embed-bitcode=no --cfg 'feature="default"' --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values("default", "std"))' --error-format human`
+2026-10-16T20:41:50.3761313Z 
+2026-10-16T20:41:50.3761596Z running 1 test
+2026-10-16T20:41:50.4396321Z test src/lib.rs - Transport::decode_request_snapshot (line 226) ... ok
+2026-10-16T20:41:50.4396568Z 
+2026-10-16T20:41:50.4443328Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+2026-10-16T20:41:50.4443634Z 
+2026-10-16T20:41:50.4564401Z ##[group]Run set -euo pipefail
+2026-10-16T20:41:50.4564582Z [36;1mset -euo pipefail[0m
+2026-10-16T20:41:50.4564759Z [36;1mcargo fmt --manifest-path libs/os-abi/Cargo.toml -- --check[0m
+2026-10-16T20:41:50.4565033Z [36;1mcargo clippy --manifest-path libs/os-abi/Cargo.toml --all-targets -- -D warnings[0m
+2026-10-16T20:41:50.4615335Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-16T20:41:50.4615509Z ##[endgroup]
+2026-10-16T20:41:50.8926924Z     Checking hos2-os-abi v0.1.0 (/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/libs/os-abi)
+2026-10-16T20:41:51.3899974Z error: using `chunks_exact` with a constant chunk size
+2026-10-16T20:41:51.3900395Z   --> tests/transport_preflight.rs:28:22
+2026-10-16T20:41:51.3900630Z    |
+2026-10-16T20:41:51.3900802Z 28 |                     .chunks_exact(2)
+2026-10-16T20:41:51.4360958Z    |                      ^^^^^^^^^^^^^^^ help: consider using `as_chunks` instead: `as_chunks::<2>().0.iter()`
+2026-10-16T20:41:51.4361278Z    |
+2026-10-16T20:41:51.4361604Z    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#chunks_exact_to_as_chunks
+2026-10-16T20:41:51.4361970Z    = note: `-D clippy::chunks-exact-to-as-chunks` implied by `-D warnings`
+2026-10-16T20:41:51.4362261Z    = help: to override `-D warnings` add `#[allow(clippy::chunks_exact_to_as_chunks)]`
+2026-10-16T20:41:51.4362426Z 
+2026-10-16T20:41:51.4362503Z error: using `chunks_exact` with a constant chunk size
+2026-10-16T20:41:51.4362677Z   --> tests/mutation_kill.rs:21:10
+2026-10-16T20:41:51.4362813Z    |
+2026-10-16T20:41:51.4362914Z 21 |         .chunks_exact(2)
+2026-10-16T20:41:51.4363106Z    |          ^^^^^^^^^^^^^^^ help: consider using `as_chunks` instead: `as_chunks::<2>().0.iter()`
+2026-10-16T20:41:51.4363308Z    |
+2026-10-16T20:41:51.4363553Z    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#chunks_exact_to_as_chunks
+2026-10-16T20:41:51.4363893Z    = note: `-D clippy::chunks-exact-to-as-chunks` implied by `-D warnings`
+2026-10-16T20:41:51.4364147Z    = help: to override `-D warnings` add `#[allow(clippy::chunks_exact_to_as_chunks)]`
+2026-10-16T20:41:51.4364306Z 
+2026-10-16T20:41:51.4364439Z error: could not compile `hos2-os-abi` (test "transport_preflight") due to 1 previous error
+2026-10-16T20:41:51.4364697Z warning: build failed, waiting for other jobs to finish...
+2026-10-16T20:41:51.4364933Z error: could not compile `hos2-os-abi` (test "mutation_kill") due to 1 previous error
+2026-10-16T20:41:51.4365166Z error: using `chunks_exact` with a constant chunk size
+2026-10-16T20:41:51.4365334Z   --> tests/transport_vectors.rs:14:32
+2026-10-16T20:41:51.4365467Z    |
+2026-10-16T20:41:51.4365601Z 14 |     for (index, pair) in ascii.chunks_exact(2).enumerate() {
+2026-10-16T20:41:51.4365995Z    |                                ^^^^^^^^^^^^^^^ help: consider using `as_chunks` instead: `as_chunks::<2>().0.iter()`
+2026-10-16T20:41:51.4366245Z    |
+2026-10-16T20:41:51.4366708Z    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#chunks_exact_to_as_chunks
+2026-10-16T20:41:51.4367089Z    = note: `-D clippy::chunks-exact-to-as-chunks` implied by `-D warnings`
+2026-10-16T20:41:51.4367356Z    = help: to override `-D warnings` add `#[allow(clippy::chunks_exact_to_as_chunks)]`
+2026-10-16T20:41:51.4367520Z 
+2026-10-16T20:41:51.4367652Z error: could not compile `hos2-os-abi` (test "transport_vectors") due to 1 previous error
+2026-10-16T20:41:51.4652639Z ##[error]Process completed with exit code 101.
+2026-10-16T20:41:51.4737399Z Post job cleanup.
+2026-10-16T20:41:51.5234232Z [command]/usr/bin/git version
+2026-10-16T20:41:51.5262666Z git version 2.55.0
+2026-10-16T20:41:51.5284830Z Temporarily overriding HOME='/home/runner/work/_temp/35ba7e51-521c-4cd4-bb31-4b1ebd39450a' before making global git config changes
+2026-10-16T20:41:51.5285462Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-16T20:41:51.5289970Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop
+2026-10-16T20:41:51.5316317Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-16T20:41:51.5341232Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-16T20:41:51.5521919Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-16T20:41:51.5543378Z http.https://github.com/.extraheader
+2026-10-16T20:41:51.5551927Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-16T20:41:51.5583789Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-16T20:41:51.5763859Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-16T20:41:51.5790279Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-16T20:41:51.6054677Z Cleaning up orphan processes
+2026-10-16T20:41:51.6224473Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

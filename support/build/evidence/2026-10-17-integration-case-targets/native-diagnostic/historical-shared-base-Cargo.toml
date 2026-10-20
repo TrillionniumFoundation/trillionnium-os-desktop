@@ -1,0 +1,21 @@
+[workspace]
+
+[package]
+name = "myos-osdk-bin"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies.myos]
+path = "/tmp/a01oi-wkf3cxsu/myos"
+default-features = false
+
+[dependencies.osdk-frame-allocator]
+path = "/tmp/trillionnium-a01-native-regressions/kernel/asterinas/osdk/deps/frame-allocator"
+
+[dependencies.osdk-heap-allocator]
+path = "/tmp/trillionnium-a01-native-regressions/kernel/asterinas/osdk/deps/heap-allocator"
+
+[dependencies.ostd]
+path = "/tmp/trillionnium-a01-native-regressions/kernel/asterinas/osdk/../ostd"
+
+[features]

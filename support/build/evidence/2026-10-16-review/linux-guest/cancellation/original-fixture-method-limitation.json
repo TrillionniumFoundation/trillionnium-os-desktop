@@ -1,0 +1,11 @@
+{
+  "no_more_original_fixture_runs": true,
+  "old_fixture_files_preserved": [
+    "cancel-original-sigterm/result.json",
+    "cancel-original-sigterm-stubborn/result.json"
+  ],
+  "old_fixture_result": "not_reproduced_or_inconclusive",
+  "original_commit": "d85b1e091143a9c4f004c024f433a58188455105",
+  "original_entry_sha256": "45c78dc4b4508b3766f8479b260c97068a0a10cbe19564b44c3b8ac3942f0674",
+  "reason": "The fixture wrote PID9, but /proc/9 did not exist even before the signal, demonstrating a mismatched proc PID namespace. Its false alive field cannot establish death or absence of a leaked child. No leak reproduction is claimed. Later validation uses owned Popen receipts and pidfd readiness, without proc numeric identities."
+}

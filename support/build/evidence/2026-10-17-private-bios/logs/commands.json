@@ -1,0 +1,61 @@
+[
+  {
+    "name": "before-I",
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "-I",
+      "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/tests/test_boot_evidence.py",
+      "BootEvidenceTests.test_recorder_explicit_private_bios_with_spaces_uses_selected_snapshot",
+      "BootEvidenceTests.test_recorder_rejects_invalid_explicit_bios_before_any_tool_execution"
+    ],
+    "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+    "selected_environment": {
+      "A01_SNAPSHOT_TEST_OUT": "/workspace/scratch/ae1a8cf05419/round2-bios/before-I-fixtures",
+      "A01_SNAPSHOT_RECORDER_SOURCE": "/workspace/scratch/ae1a8cf05419/round2-bios/baseline-record-qemu.py"
+    },
+    "returncode": 1,
+    "start_unix_ns": 1792196360264684121,
+    "end_unix_ns": 1792196361395215370,
+    "recorder_sha256": "70d2e30bd49bee95e6d588faf2b60bf80183b27fb0cb666d99a1ad77a98fe9fb",
+    "test_source_sha256": "93d51c9e7dd0f59e5cf8ed6960a5d18b6b87dde997900dd38d4bec5998e270d1"
+  },
+  {
+    "name": "after-targeted-I",
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "-I",
+      "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/tests/test_boot_evidence.py",
+      "BootEvidenceTests.test_recorder_explicit_private_bios_with_spaces_uses_selected_snapshot",
+      "BootEvidenceTests.test_recorder_rejects_invalid_explicit_bios_before_any_tool_execution"
+    ],
+    "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+    "selected_environment": {
+      "A01_SNAPSHOT_TEST_OUT": "/workspace/scratch/ae1a8cf05419/round2-bios/after-targeted-I-fixtures",
+      "A01_SNAPSHOT_RECORDER_SOURCE": null
+    },
+    "returncode": 0,
+    "start_unix_ns": 1792196361396001560,
+    "end_unix_ns": 1792196363955630852,
+    "recorder_sha256": "c62c515aedd4f481ed05525dad7bb6acdd22c7a142115e1856df560e16585d58",
+    "test_source_sha256": "93d51c9e7dd0f59e5cf8ed6960a5d18b6b87dde997900dd38d4bec5998e270d1"
+  },
+  {
+    "name": "after-all-I-O",
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "-I",
+      "-O",
+      "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/tests/test_boot_evidence.py"
+    ],
+    "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+    "selected_environment": {
+      "A01_SNAPSHOT_TEST_OUT": "/workspace/scratch/ae1a8cf05419/round2-bios/after-all-I-O-fixtures",
+      "A01_SNAPSHOT_RECORDER_SOURCE": null
+    },
+    "returncode": 0,
+    "start_unix_ns": 1792196363956221858,
+    "end_unix_ns": 1792196407403415652,
+    "recorder_sha256": "c62c515aedd4f481ed05525dad7bb6acdd22c7a142115e1856df560e16585d58",
+    "test_source_sha256": "93d51c9e7dd0f59e5cf8ed6960a5d18b6b87dde997900dd38d4bec5998e270d1"
+  }
+]

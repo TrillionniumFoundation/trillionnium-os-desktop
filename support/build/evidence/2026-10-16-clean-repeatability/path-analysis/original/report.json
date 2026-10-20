@@ -1,0 +1,773 @@
+{
+  "schema": 1,
+  "kind": "read_only_archived_elf_and_fixed_git_comparison",
+  "scope": {
+    "read_current_target": false,
+    "read_current_generated_manifest": false,
+    "cargo_or_rustc_invocations": 0,
+    "vm_invocations": 0,
+    "production_source_edits": false,
+    "only_scratch_created": true
+  },
+  "artifacts": {
+    "baseline": {
+      "source_archive": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-16/artifacts/kernel.elf.gz",
+      "path": "/workspace/scratch/ae1a8cf05419/next8-elf-comparison/baseline.elf",
+      "size": 8297624,
+      "sha256": "e884f5e50cf296833276016894a39337cd9ac13bc51f6b1f2dea3cc3a6904b63"
+    },
+    "current": {
+      "source_archive": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-16-ktest-lifecycle/kernel-public/kernel.elf.gz",
+      "path": "/workspace/scratch/ae1a8cf05419/next8-elf-comparison/current.elf",
+      "size": 8290880,
+      "sha256": "490ca0406593c28e64a22333ba432de6122b9a796b0f7f20352b6b2c55e7df56"
+    }
+  },
+  "immutable_references": {
+    "baseline_kernel_archive": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-16/artifacts/kernel.elf.gz",
+      "bytes": 2570372,
+      "sha256": "4138796d664a9e8dcd3453e31ca7953d69f74ef269169f1339416235c5b59a91"
+    },
+    "baseline_environment": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-16/acceptance/boot/environment.log",
+      "bytes": 2369,
+      "sha256": "c58cf8a2316375449b7312800fb9cedacaffefef1785bcaf4b3c22c80d8e450d"
+    },
+    "baseline_source_inputs": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-16/acceptance/boot/source-inputs.json",
+      "bytes": 781,
+      "sha256": "5134613ae9a179a850327beb238d0433f3bb18e14dff8a24a1a0f5abf9db267e"
+    },
+    "baseline_qemu": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-16/acceptance/boot/qemu.json",
+      "bytes": 2961,
+      "sha256": "f96654496755c4a6307567878aba8a70615603474c0a9a6dd26c652e3c2f7e60"
+    },
+    "baseline_command": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-16/acceptance/boot/command.sh",
+      "bytes": 574,
+      "sha256": "3dc5f88ecc673bc000ab59a0b7c80d88214a571e1ee5592e55f5929cccffdef1"
+    },
+    "current_kernel_archive": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-16-ktest-lifecycle/kernel-public/kernel.elf.gz",
+      "bytes": 2570475,
+      "sha256": "a40053d77332e838172a0f1c27d0d65f83a1333d1fe6d0343f675d7dcb0d3601"
+    },
+    "current_environment": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-16-ktest-lifecycle/kernel-public/environment.log",
+      "bytes": 2836,
+      "sha256": "2765e97abf259324c8c0f6d4aff553484cfcdcd0b284f9042bf14f354fc8c4ac"
+    },
+    "current_source_inputs": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-16-ktest-lifecycle/kernel-public/source-inputs.json",
+      "bytes": 781,
+      "sha256": "5134613ae9a179a850327beb238d0433f3bb18e14dff8a24a1a0f5abf9db267e"
+    },
+    "current_qemu": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-16-ktest-lifecycle/kernel-public/qemu.json",
+      "bytes": 3130,
+      "sha256": "991da01145e26ee813c1df3d036e2a0f8c906e6306eb70ddb2ccdf1b58769262"
+    },
+    "current_command": {
+      "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/evidence/2026-10-16-ktest-lifecycle/kernel-public/command.sh",
+      "bytes": 553,
+      "sha256": "6a874c4e43db35d223040d6bf31ff53def6bc27fc3f94fb58c45e8e8605aa866"
+    }
+  },
+  "source_bindings": {
+    "baseline": {
+      "runtime_commit": "02febdc7316cf945f7002823ad62f617f6d6eedd",
+      "runtime_tree": "59b7adbdfd0b48cd9dcdf14fbe4ec80571ee53d0",
+      "inputs": {
+        "kernel/asterinas/kernel": {
+          "git_object": "51f02c3b0c85fc150737a17d3c1a3681377c78e8",
+          "type": "tree"
+        },
+        "kernel/asterinas/ostd": {
+          "git_object": "5037563c4b9cbfc4826568e5c5c4d56d2891a904",
+          "type": "tree"
+        },
+        "kernel/asterinas/osdk/deps": {
+          "git_object": "1c025f57381f324010df6ceecf86f91ad7c0c8c7",
+          "type": "tree"
+        },
+        "kernel/asterinas/Cargo.toml": {
+          "git_object": "034636c01943abf240547c233803b43f07b0340a",
+          "type": "blob",
+          "sha256": "52c00575e48ccc738efdaacc8f035db77c23d0f9d769b3b519f8fe423d3c1106"
+        },
+        "kernel/asterinas/Cargo.lock": {
+          "git_object": "77d8f4be4cdc7365cd73a2e9f7638d46f3608b40",
+          "type": "blob",
+          "sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316"
+        },
+        "kernel/asterinas/OSDK.toml": {
+          "git_object": "064fd551a285d71ff91ce9bf6fe4264d63b33034",
+          "type": "blob",
+          "sha256": "155af7cb53b4dffc679393b8fc7c2c1719a74134a0ec2b0812f0c4b53a6c609b"
+        },
+        "kernel/asterinas/Makefile": {
+          "git_object": "2a906a643d6c463287ea5d633890250b5a046428",
+          "type": "blob",
+          "sha256": "f7d24eb8e81b58d4cf0342862318cbfcf63cd8cff8d0f6f69fb7656295192af6"
+        },
+        "kernel/asterinas/rust-toolchain.toml": {
+          "git_object": "3ac33bbae32686a33f317f2072734bf6f4e8d610",
+          "type": "blob",
+          "sha256": "b2508d8c9cd57258fad2fc77737e07172846161f6a7dd726cbd8e974de69c6f7"
+        },
+        "support/build/minimal/OSDK.toml": {
+          "git_object": "e2e9a1567d46694cf486ced58e018f3e026be751",
+          "type": "blob",
+          "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f"
+        },
+        "support/build/minimal/Cargo.lock": {
+          "git_object": "8a994bccbd23f7ef488e95cf6a38c817c9a503eb",
+          "type": "blob",
+          "sha256": "b42d8fff136d80a5f8159356882096996991e05975d8da9c81ad9db9bdb06e10"
+        },
+        "support/build/minimal.mk": {
+          "git_object": "3eff4dc2a1f921d591262e2e3c76d25278105d2b",
+          "type": "blob",
+          "sha256": "6bc0aa8124c374b6e1019b7e7497c52e2ef145347c6688e56ce55bef22c386ea"
+        },
+        "kernel/asterinas/osdk/src/cli.rs": {
+          "git_object": "d600f14373c0777636f4428a619057cf8ff4f680",
+          "type": "blob",
+          "sha256": "4aa3017d0719197161793784808b13b70d1b2e6b9db716ec81032d796e18d471"
+        },
+        "kernel/asterinas/osdk/src/commands/build/mod.rs": {
+          "git_object": "43afe7d92a0a1b25e6341aed664e6f95a6e791b4",
+          "type": "blob",
+          "sha256": "6c0aa916f11d65b11709dbebbc93ee9bfe6eaa9f0c4982740ddbbd010e2b5843"
+        },
+        "kernel/asterinas/osdk/src/config/mod.rs": {
+          "git_object": "5d62b0dddb0d7e02dc5463a3a3cd33ed3aa0a995",
+          "type": "blob",
+          "sha256": "c045362c7ab0b70a7570da725115cf86c20efec6c44fb37e2cf44dccdc62a02e"
+        },
+        "kernel/asterinas/osdk/src/config/scheme/action.rs": {
+          "git_object": "796d6b6da74b6e53495f8fb7ae75465099bca077",
+          "type": "blob",
+          "sha256": "4588e00e533b0da8d407933e774cd712f592649b25f7b6a91bb6e9a037ad2729"
+        },
+        "kernel/asterinas/kernel/libs/comp-sys/component-macro/src/priority.rs": {
+          "git_object": "b7d68bc0101cf7daa8b441268eba7e3b8dd7c6ed",
+          "type": "blob",
+          "sha256": "7c89992761844d328e1f57d03f2b02b1d9cd869e80fd1d5279566de1fb4d0761"
+        }
+      }
+    },
+    "current": {
+      "runtime_commit": "a770f31a868d805524065c65a2bcfcbcf10ede2e",
+      "runtime_tree": "af2e1bc4d215ac4dc6eadd0cecc147e1673b1c1e",
+      "inputs": {
+        "kernel/asterinas/kernel": {
+          "git_object": "51f02c3b0c85fc150737a17d3c1a3681377c78e8",
+          "type": "tree"
+        },
+        "kernel/asterinas/ostd": {
+          "git_object": "5037563c4b9cbfc4826568e5c5c4d56d2891a904",
+          "type": "tree"
+        },
+        "kernel/asterinas/osdk/deps": {
+          "git_object": "1c025f57381f324010df6ceecf86f91ad7c0c8c7",
+          "type": "tree"
+        },
+        "kernel/asterinas/Cargo.toml": {
+          "git_object": "034636c01943abf240547c233803b43f07b0340a",
+          "type": "blob",
+          "sha256": "52c00575e48ccc738efdaacc8f035db77c23d0f9d769b3b519f8fe423d3c1106"
+        },
+        "kernel/asterinas/Cargo.lock": {
+          "git_object": "77d8f4be4cdc7365cd73a2e9f7638d46f3608b40",
+          "type": "blob",
+          "sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316"
+        },
+        "kernel/asterinas/OSDK.toml": {
+          "git_object": "064fd551a285d71ff91ce9bf6fe4264d63b33034",
+          "type": "blob",
+          "sha256": "155af7cb53b4dffc679393b8fc7c2c1719a74134a0ec2b0812f0c4b53a6c609b"
+        },
+        "kernel/asterinas/Makefile": {
+          "git_object": "2a906a643d6c463287ea5d633890250b5a046428",
+          "type": "blob",
+          "sha256": "f7d24eb8e81b58d4cf0342862318cbfcf63cd8cff8d0f6f69fb7656295192af6"
+        },
+        "kernel/asterinas/rust-toolchain.toml": {
+          "git_object": "3ac33bbae32686a33f317f2072734bf6f4e8d610",
+          "type": "blob",
+          "sha256": "b2508d8c9cd57258fad2fc77737e07172846161f6a7dd726cbd8e974de69c6f7"
+        },
+        "support/build/minimal/OSDK.toml": {
+          "git_object": "e2e9a1567d46694cf486ced58e018f3e026be751",
+          "type": "blob",
+          "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f"
+        },
+        "support/build/minimal/Cargo.lock": {
+          "git_object": "8a994bccbd23f7ef488e95cf6a38c817c9a503eb",
+          "type": "blob",
+          "sha256": "b42d8fff136d80a5f8159356882096996991e05975d8da9c81ad9db9bdb06e10"
+        },
+        "support/build/minimal.mk": {
+          "git_object": "c32eb7b2080cc43a05763836b09e9a5af0f8fdfc",
+          "type": "blob",
+          "sha256": "0a559e82f2980c5e4e75f466b5eb3346187a720533f8f378878ddd9c04f2c958"
+        },
+        "kernel/asterinas/osdk/src/cli.rs": {
+          "git_object": "8397363d9712a7da190c7c0056b2c1cafb5f0fab",
+          "type": "blob",
+          "sha256": "cc094af376d479bf1572f3f6a97c792e1fde9cb80b5359388af8c20f0ebd8c6a"
+        },
+        "kernel/asterinas/osdk/src/commands/build/mod.rs": {
+          "git_object": "78d625f88894e98ee93f9ed5216758dc22e96303",
+          "type": "blob",
+          "sha256": "806eaae191e38ee5e3945a3532c2dad7cbc01575bec3f9e8f2d87d4ded66eb25"
+        },
+        "kernel/asterinas/osdk/src/config/mod.rs": {
+          "git_object": "c45e2dd033aa65ac08f4149d4b67091e2f2dd5bc",
+          "type": "blob",
+          "sha256": "d852847e1aa9c00983ab8b4e0f3def33bce9c643108abf52f9c084783cdeb2d6"
+        },
+        "kernel/asterinas/osdk/src/config/scheme/action.rs": {
+          "git_object": "796d6b6da74b6e53495f8fb7ae75465099bca077",
+          "type": "blob",
+          "sha256": "4588e00e533b0da8d407933e774cd712f592649b25f7b6a91bb6e9a037ad2729"
+        },
+        "kernel/asterinas/kernel/libs/comp-sys/component-macro/src/priority.rs": {
+          "git_object": "b7d68bc0101cf7daa8b441268eba7e3b8dd7c6ed",
+          "type": "blob",
+          "sha256": "7c89992761844d328e1f57d03f2b02b1d9cd869e80fd1d5279566de1fb4d0761"
+        }
+      }
+    }
+  },
+  "runtime_source_and_key_build_inputs_same": true,
+  "source_diff_names": [
+    "kernel/asterinas/book/src/osdk/reference/commands/run.md",
+    "kernel/asterinas/book/src/osdk/reference/manifest.md",
+    "kernel/asterinas/osdk/src/bundle/mod.rs",
+    "kernel/asterinas/osdk/src/bundle/monitor.rs",
+    "kernel/asterinas/osdk/src/cli.rs",
+    "kernel/asterinas/osdk/src/commands/build/bin.rs",
+    "kernel/asterinas/osdk/src/commands/build/mod.rs",
+    "kernel/asterinas/osdk/src/commands/launch.json.template",
+    "kernel/asterinas/osdk/src/commands/run.rs",
+    "kernel/asterinas/osdk/src/config/mod.rs",
+    "kernel/asterinas/osdk/src/config/scheme/mod.rs",
+    "kernel/asterinas/osdk/src/config/scheme/qemu.rs",
+    "kernel/asterinas/osdk/src/daemon/mod.rs",
+    "kernel/asterinas/osdk/src/daemon/supervisor.rs",
+    "kernel/asterinas/osdk/src/daemon/supervisor/tests.rs",
+    "kernel/asterinas/osdk/src/util.rs",
+    "kernel/asterinas/osdk/tests/commands/run.rs",
+    "support/build/minimal.mk"
+  ],
+  "sections": [
+    {
+      "name": "",
+      "allocated": false,
+      "baseline_size": 0,
+      "current_size": 0,
+      "size_delta_current_minus_baseline": 0,
+      "bytes_equal_sha256": true,
+      "baseline_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "current_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": ".multiboot_header",
+      "allocated": true,
+      "baseline_size": 12,
+      "current_size": 12,
+      "size_delta_current_minus_baseline": 0,
+      "bytes_equal_sha256": true,
+      "baseline_sha256": "7e735557b23c964d976629c8d655e392b8436198247f44824ace26f2fd5bd0c8",
+      "current_sha256": "7e735557b23c964d976629c8d655e392b8436198247f44824ace26f2fd5bd0c8"
+    },
+    {
+      "name": ".multiboot2_header",
+      "allocated": true,
+      "baseline_size": 56,
+      "current_size": 56,
+      "size_delta_current_minus_baseline": 0,
+      "bytes_equal_sha256": true,
+      "baseline_sha256": "c41ca048ee5c9cde8015a53baa400643fbb7adbc5099f16328fcbb61888f3fd9",
+      "current_sha256": "c41ca048ee5c9cde8015a53baa400643fbb7adbc5099f16328fcbb61888f3fd9"
+    },
+    {
+      "name": ".note.Xen",
+      "allocated": true,
+      "baseline_size": 0,
+      "current_size": 0,
+      "size_delta_current_minus_baseline": 0,
+      "bytes_equal_sha256": true,
+      "baseline_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "current_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": ".bsp_boot",
+      "allocated": true,
+      "baseline_size": 32806,
+      "current_size": 32806,
+      "size_delta_current_minus_baseline": 0,
+      "bytes_equal_sha256": false,
+      "baseline_sha256": "c1252929fdd42d306ad38127dfdd20a4a240278f728b0807e5d3d2136bf4a04f",
+      "current_sha256": "8295cf111b7a833f623082e84c5cca4d5c8bd8a94c4781ce16629f59f87b59d1"
+    },
+    {
+      "name": ".bsp_boot.stack",
+      "allocated": true,
+      "baseline_size": 262144,
+      "current_size": 262144,
+      "size_delta_current_minus_baseline": 0,
+      "bytes_equal_sha256": true,
+      "baseline_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "current_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": ".ap_boot",
+      "allocated": true,
+      "baseline_size": 4096,
+      "current_size": 4096,
+      "size_delta_current_minus_baseline": 0,
+      "bytes_equal_sha256": false,
+      "baseline_sha256": "22e77fdeb6e3fb5b0f3010e26208a4a176c63daedf6474b5d5b5f4445de52aeb",
+      "current_sha256": "bfab09b434fff952840ec55e3886590a72330823474621ae1584da3bc501c6b7"
+    },
+    {
+      "name": ".text",
+      "allocated": true,
+      "baseline_size": 4581398,
+      "current_size": 4580470,
+      "size_delta_current_minus_baseline": -928,
+      "bytes_equal_sha256": false,
+      "baseline_sha256": "88ebe1b38fc14ffda94c611ec8d7f248abfcb2a2939ed9ead585f0b132110e75",
+      "current_sha256": "eaccdc6427c2693d28f60d2288a47abf2e052d408b89f4606dbdc9b65e9caf7f"
+    },
+    {
+      "name": ".ex_table",
+      "allocated": true,
+      "baseline_size": 64,
+      "current_size": 64,
+      "size_delta_current_minus_baseline": 0,
+      "bytes_equal_sha256": false,
+      "baseline_sha256": "14b83b471ae671cbbf7eda6f7a857333b9570caeab0a87f8bc90a3e3af21e4da",
+      "current_sha256": "aff7e12a1f6aea5f751d9ec51c919c9f36f77acaf97dd87a5c23f976cde72d05"
+    },
+    {
+      "name": ".ktest_array",
+      "allocated": true,
+      "baseline_size": 0,
+      "current_size": 0,
+      "size_delta_current_minus_baseline": 0,
+      "bytes_equal_sha256": true,
+      "baseline_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "current_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": ".init_array",
+      "allocated": true,
+      "baseline_size": 352,
+      "current_size": 352,
+      "size_delta_current_minus_baseline": 0,
+      "bytes_equal_sha256": false,
+      "baseline_sha256": "cf0c1960d83a4aa80cfd317501614e9bb8d20168c1347b6733d7593bb6f13ab5",
+      "current_sha256": "d9418ee2056f4f0ed281f42e61a43815974ba2a6c068e5cf0eabc450888999fc"
+    },
+    {
+      "name": ".sensitive_io_ports",
+      "allocated": true,
+      "baseline_size": 36,
+      "current_size": 36,
+      "size_delta_current_minus_baseline": 0,
+      "bytes_equal_sha256": true,
+      "baseline_sha256": "e442fbd9ecb12d050604d07f3827625173d8c597aaf6daecedcf15251f9f0758",
+      "current_sha256": "e442fbd9ecb12d050604d07f3827625173d8c597aaf6daecedcf15251f9f0758"
+    },
+    {
+      "name": ".rodata",
+      "allocated": true,
+      "baseline_size": 747488,
+      "current_size": 739968,
+      "size_delta_current_minus_baseline": -7520,
+      "bytes_equal_sha256": false,
+      "baseline_sha256": "9c813a760b891f3600293037a795a1e5acb0dc1f1ed58b3071a98db6ba2447da",
+      "current_sha256": "30602ab5abb189399f430d3537172492a65849b3414a81983ea03f7e511b89f4"
+    },
+    {
+      "name": ".eh_frame_hdr",
+      "allocated": true,
+      "baseline_size": 76388,
+      "current_size": 76332,
+      "size_delta_current_minus_baseline": -56,
+      "bytes_equal_sha256": false,
+      "baseline_sha256": "1dbecd42e34e539dcb39fc9649e7c9f4f218d11e68c182b2ce5160ad13522b6d",
+      "current_sha256": "182b5fe0081b597206bc2f439d8b4d422df69f74f3fdb4d2bb628e5ea5a122a1"
+    },
+    {
+      "name": ".eh_frame",
+      "allocated": true,
+      "baseline_size": 462084,
+      "current_size": 461868,
+      "size_delta_current_minus_baseline": -216,
+      "bytes_equal_sha256": false,
+      "baseline_sha256": "243842dcd07162b7010520592d1a75cfd49ff2b71a25a528fe04139fdb63a0e8",
+      "current_sha256": "236beba7f4c037d63c28077a5bc1cfebceaaa10305f4143092220a448232662c"
+    },
+    {
+      "name": ".gcc_except_table",
+      "allocated": true,
+      "baseline_size": 0,
+      "current_size": 0,
+      "size_delta_current_minus_baseline": 0,
+      "bytes_equal_sha256": true,
+      "baseline_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "current_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": ".data",
+      "allocated": true,
+      "baseline_size": 27736,
+      "current_size": 27736,
+      "size_delta_current_minus_baseline": 0,
+      "bytes_equal_sha256": false,
+      "baseline_sha256": "eb359535df598280467cf46846f3b57182411259a1141bff1f85860691feaddf",
+      "current_sha256": "f66ae4b2478ee5c7d9e5c1cd2d9df67952eff9c66fdedf77d42f3b1b818f059f"
+    },
+    {
+      "name": ".cpu_local_tss",
+      "allocated": true,
+      "baseline_size": 104,
+      "current_size": 104,
+      "size_delta_current_minus_baseline": 0,
+      "bytes_equal_sha256": true,
+      "baseline_sha256": "e1e6f4024a266e59df39a628068a8f988ed4abcee3a81e113d6b5fbdd29b1547",
+      "current_sha256": "e1e6f4024a266e59df39a628068a8f988ed4abcee3a81e113d6b5fbdd29b1547"
+    },
+    {
+      "name": ".cpu_local",
+      "allocated": true,
+      "baseline_size": 2064,
+      "current_size": 2064,
+      "size_delta_current_minus_baseline": 0,
+      "bytes_equal_sha256": false,
+      "baseline_sha256": "283456ea81375e1e7836e790e37a2b3c15ddc4788db973219fd703021d0800b5",
+      "current_sha256": "885fd256ad8bdd799be44b72f5ce5e5d5ef4d9c9195193e5ad16fa72031fc662"
+    },
+    {
+      "name": ".bss",
+      "allocated": true,
+      "baseline_size": 28457,
+      "current_size": 28457,
+      "size_delta_current_minus_baseline": 0,
+      "bytes_equal_sha256": true,
+      "baseline_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "current_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": ".comment",
+      "allocated": false,
+      "baseline_size": 147,
+      "current_size": 147,
+      "size_delta_current_minus_baseline": 0,
+      "bytes_equal_sha256": true,
+      "baseline_sha256": "0beed1bda1571d382150cfb2c9eed6cf555e76a0470faf0f6eb3f03e9b69ef3b",
+      "current_sha256": "0beed1bda1571d382150cfb2c9eed6cf555e76a0470faf0f6eb3f03e9b69ef3b"
+    },
+    {
+      "name": ".symtab",
+      "allocated": false,
+      "baseline_size": 378696,
+      "current_size": 379224,
+      "size_delta_current_minus_baseline": 528,
+      "bytes_equal_sha256": false,
+      "baseline_sha256": "a305835b8cac8bcc278500eb52ef42ad95a5c898e8c31bed6f6a39c56232d602",
+      "current_sha256": "8527023f540f0178105532d12385141b38431d626da1bd5e840d3013e4c83ef3"
+    },
+    {
+      "name": ".shstrtab",
+      "allocated": false,
+      "baseline_size": 266,
+      "current_size": 266,
+      "size_delta_current_minus_baseline": 0,
+      "bytes_equal_sha256": true,
+      "baseline_sha256": "08f477ca1c62fb633257bc36cb8e2ce72021a7fb33a782a3fbd46f0111516320",
+      "current_sha256": "08f477ca1c62fb633257bc36cb8e2ce72021a7fb33a782a3fbd46f0111516320"
+    },
+    {
+      "name": ".strtab",
+      "allocated": false,
+      "baseline_size": 1963312,
+      "current_size": 1964234,
+      "size_delta_current_minus_baseline": 922,
+      "bytes_equal_sha256": false,
+      "baseline_sha256": "fdaa221a5373bda4370e3827c6893bd0eb43d30ce64c5a394ef2886a90fcdd5e",
+      "current_sha256": "401d7e81934dcdf53a8b7c2edc2cb76f85552c14c4f3841136b9d912f736ce1f"
+    }
+  ],
+  "program_headers": {
+    "baseline": [
+      {
+        "type": 1,
+        "flags": 4,
+        "offset": 4096,
+        "vaddr": "0xffffffff88000000",
+        "filesz": 72,
+        "memsz": 72,
+        "sha256": "f8c651b1ca4bcb8bf1bb296488c540e8b0aa8f0caa6783d187beddf2ef139ad6"
+      },
+      {
+        "type": 4,
+        "flags": 4,
+        "offset": 4168,
+        "vaddr": "0xffffffff88000048",
+        "filesz": 0,
+        "memsz": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "type": 1,
+        "flags": 7,
+        "offset": 8192,
+        "vaddr": "0x8001000",
+        "filesz": 32806,
+        "memsz": 299008,
+        "sha256": "c1252929fdd42d306ad38127dfdd20a4a240278f728b0807e5d3d2136bf4a04f"
+      },
+      {
+        "type": 1,
+        "flags": 7,
+        "offset": 45056,
+        "vaddr": "0x8000",
+        "filesz": 4096,
+        "memsz": 4096,
+        "sha256": "22e77fdeb6e3fb5b0f3010e26208a4a176c63daedf6474b5d5b5f4445de52aeb"
+      },
+      {
+        "type": 1,
+        "flags": 5,
+        "offset": 49152,
+        "vaddr": "0xffffffff8804b000",
+        "filesz": 4581398,
+        "memsz": 4581398,
+        "sha256": "88ebe1b38fc14ffda94c611ec8d7f248abfcb2a2939ed9ead585f0b132110e75"
+      },
+      {
+        "type": 1,
+        "flags": 4,
+        "offset": 4632576,
+        "vaddr": "0xffffffff884aa000",
+        "filesz": 1286420,
+        "memsz": 1286420,
+        "sha256": "5c9fbf6ee632ac834951083d005a5ec5c45de5d80ad6e019bf6ced7b9605e98b"
+      },
+      {
+        "type": 1,
+        "flags": 6,
+        "offset": 5922816,
+        "vaddr": "0xffffffff885e5000",
+        "filesz": 30840,
+        "memsz": 59305,
+        "sha256": "5f8c70f18c9cc8f9787c36e0e9bcdab691c59836706f8166788e60b899853d74"
+      }
+    ],
+    "current": [
+      {
+        "type": 1,
+        "flags": 4,
+        "offset": 4096,
+        "vaddr": "0xffffffff88000000",
+        "filesz": 72,
+        "memsz": 72,
+        "sha256": "f8c651b1ca4bcb8bf1bb296488c540e8b0aa8f0caa6783d187beddf2ef139ad6"
+      },
+      {
+        "type": 4,
+        "flags": 4,
+        "offset": 4168,
+        "vaddr": "0xffffffff88000048",
+        "filesz": 0,
+        "memsz": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "type": 1,
+        "flags": 7,
+        "offset": 8192,
+        "vaddr": "0x8001000",
+        "filesz": 32806,
+        "memsz": 299008,
+        "sha256": "8295cf111b7a833f623082e84c5cca4d5c8bd8a94c4781ce16629f59f87b59d1"
+      },
+      {
+        "type": 1,
+        "flags": 7,
+        "offset": 45056,
+        "vaddr": "0x8000",
+        "filesz": 4096,
+        "memsz": 4096,
+        "sha256": "bfab09b434fff952840ec55e3886590a72330823474621ae1584da3bc501c6b7"
+      },
+      {
+        "type": 1,
+        "flags": 5,
+        "offset": 49152,
+        "vaddr": "0xffffffff8804b000",
+        "filesz": 4580470,
+        "memsz": 4580470,
+        "sha256": "eaccdc6427c2693d28f60d2288a47abf2e052d408b89f4606dbdc9b65e9caf7f"
+      },
+      {
+        "type": 1,
+        "flags": 4,
+        "offset": 4632576,
+        "vaddr": "0xffffffff884aa000",
+        "filesz": 1278628,
+        "memsz": 1278628,
+        "sha256": "2796b45fdca386f55c1bcd56e88ededd6245fe7d90210c8abf7719ae88f447b3"
+      },
+      {
+        "type": 1,
+        "flags": 6,
+        "offset": 5914624,
+        "vaddr": "0xffffffff885e3000",
+        "filesz": 30840,
+        "memsz": 59305,
+        "sha256": "6569c999ff13f35bf4b9df66854cc88fa6aa30f3094dcb5f94b6c0cb6877e61d"
+      }
+    ]
+  },
+  "comments": {
+    "baseline": "\nString dump of section '.comment':\n  [     0]  Linker: LLD 22.1.8 (/checkout/src/llvm-project/llvm 52ed14fcd56afc30f9cccd8ca8ce237c2eef7e04)\n  [    5f]  rustc version 1.99.0-nightly (87e5904f5 2026-07-20)\n\n",
+    "current": "\nString dump of section '.comment':\n  [     0]  Linker: LLD 22.1.8 (/checkout/src/llvm-project/llvm 52ed14fcd56afc30f9cccd8ca8ce237c2eef7e04)\n  [    5f]  rustc version 1.99.0-nightly (87e5904f5 2026-07-20)\n\n"
+  },
+  "paths": {
+    "baseline": {
+      "project_root": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+      "root_byte_length": 55,
+      "project_root_occurrences_entire_elf": 931,
+      "project_root_occurrences_rodata": 931,
+      "rustup_root_occurrences_rodata": 31,
+      "cargo_root_occurrences_rodata": 61,
+      "samples": [
+        {
+          "kind": "source_location",
+          "literal": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/kernel/core/src/syscall/clock_gettime.rs",
+          "file_offset": 4637027,
+          "section_offset": 3995,
+          "matched_bytes": 113
+        },
+        {
+          "kind": "component_metadata_literal",
+          "literal": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/kernel/core/comps/block",
+          "file_offset": 4635663,
+          "section_offset": 2631,
+          "matched_bytes": 96
+        },
+        {
+          "kind": "component_metadata_literal",
+          "literal": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/kernel/asterinas/kernel/comps/i8042",
+          "file_offset": 4655776,
+          "section_offset": 22744,
+          "matched_bytes": 91
+        }
+      ]
+    },
+    "current": {
+      "project_root": "/workspace/scratch/ae1a8cf05419/a01-next6-build",
+      "root_byte_length": 47,
+      "project_root_occurrences_entire_elf": 931,
+      "project_root_occurrences_rodata": 931,
+      "rustup_root_occurrences_rodata": 31,
+      "cargo_root_occurrences_rodata": 61,
+      "samples": [
+        {
+          "kind": "source_location",
+          "literal": "/workspace/scratch/ae1a8cf05419/a01-next6-build/kernel/asterinas/kernel/core/src/syscall/clock_gettime.rs",
+          "file_offset": 4685501,
+          "section_offset": 52469,
+          "matched_bytes": 105
+        },
+        {
+          "kind": "component_metadata_literal",
+          "literal": "/workspace/scratch/ae1a8cf05419/a01-next6-build/kernel/asterinas/kernel/core/comps/block",
+          "file_offset": 4640944,
+          "section_offset": 7912,
+          "matched_bytes": 88
+        },
+        {
+          "kind": "component_metadata_literal",
+          "literal": "/workspace/scratch/ae1a8cf05419/a01-next6-build/kernel/asterinas/kernel/comps/i8042",
+          "file_offset": 4639746,
+          "section_offset": 6714,
+          "matched_bytes": 83
+        }
+      ]
+    }
+  },
+  "qemu": {
+    "argv_equal_after_kernel_initrd_path_placeholders": true,
+    "argv_normalized": [
+      "/usr/bin/qemu-system-x86_64",
+      "-kernel",
+      "<kernel>",
+      "-initrd",
+      "<initrd>",
+      "-append",
+      "earlycon console=ttyS0 console=ttyS0 console=ttyS0 loglevel=info loglevel=info loglevel=info SHELL=/bin/sh SHELL=/bin/sh LOGNAME=root LOGNAME=root HOME=/ HOME=/ USER=root USER=root PATH=/bin:/sbin PATH=/bin:/sbin --",
+      "-machine",
+      "q35",
+      "-accel",
+      "tcg",
+      "-cpu",
+      "max",
+      "-bios",
+      "/usr/share/seabios/bios-256k.bin",
+      "-m",
+      "512M",
+      "-smp",
+      "1",
+      "-nodefaults",
+      "-no-user-config",
+      "-no-reboot",
+      "-nographic",
+      "-display",
+      "none",
+      "-monitor",
+      "none",
+      "-serial",
+      "chardev:serial",
+      "-chardev",
+      "stdio,id=serial,signal=off,logfile=qemu.log",
+      "-device",
+      "isa-debug-exit,iobase=0xf4,iosize=0x04"
+    ],
+    "initramfs_hash_equal": true,
+    "bios_artifacts_equal": true,
+    "kernel_raw_exit_codes": {
+      "baseline": 33,
+      "current": 33
+    }
+  },
+  "findings": [
+    "Both normal-boot ELFs lack .debug_* DWARF sections and retain .symtab/.strtab. This is not merely a DWARF difference.",
+    "Five of six PT_LOAD hashes differ; .text is 928 bytes smaller and .rodata is 7520 bytes smaller. Removing debug/symbol sections alone cannot make loaded images equal.",
+    "Each .rodata embeds 931 occurrences of its checkout root (55 vs 47 bytes), plus 31 Rustup-root and 61 Cargo-root occurrences. This proves path dependence in runtime-loaded data.",
+    "Runtime kernel/OSTD/dependency trees, key manifests/locks and compiler/LLD comments match. No controlled rebuild isolated the cause of every changed byte.",
+    "The component macro emits absolute Cargo package paths as ordinary string literals; compiler source remapping does not rewrite these arbitrary literals."
+  ],
+  "config_remedy": {
+    "a01_partial_remap_entry": "If separately authorized, render already-expanded --remap-path-prefix arguments into the owned generated minimal OSDK manifest [build].rustflags. It inherits into run/test. No core/SDK edit proposed.",
+    "environment_only_limit": "cli.rs appends environment RUSTFLAGS to config.build after Config::new, while run/test do_cached_build reads config.run.build/config.test.build.",
+    "toml_variable_limit": "canonicalize_and_eval evaluates only qemu.args; build.rustflags is a plain String. ${VAR} is not expanded.",
+    "full_path_identity_constraint": "Use an explicitly fixed canonical absolute workspace and dependency/tool locations, or coordinate the component-literal issue with the core owner. A symlink alias alone is insufficient evidence.",
+    "next_crosspath_proof": "After root same-host/path two-clean-target builds, compare a controlled two-checkout clean-target pair with identical pinned source/tools/dependencies/environment and explicit remap. Compare effective config, PT_LOAD hashes and absolute-root counts. Measure remaining component literals; do not assume whole-ELF equality."
+  },
+  "limitations": [
+    "Concrete path dependence is established; attributing every changed byte to checkout location is not established.",
+    "OSDK host implementation changed between source receipts although runtime trees and kernel compile function/build manifest match. Environment logs do not retain all effective rustc argv.",
+    "Historical debug-profile evidence retained a stripped boot ELF but not its 111867352-byte DWARF symbol ELF. No reconstructed symbol comparison or debug-to-normal equivalence is claimed.",
+    "No cross-host, cold-build, component-order, username/hostname, or full crosspath determinism proof was performed."
+  ]
+}

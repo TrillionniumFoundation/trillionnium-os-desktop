@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "passed": true,
+  "tar_finalized_by_atomic_replacement_and_reopened": true,
+  "raw_tar_members_verified": 60,
+  "hardened_helper_selected_source_files_verified": 60,
+  "hardened_helper_original_checksums_verified": 61,
+  "all_selected_source_bytes_equal_helper_snapshot": true,
+  "coverage_artifacts_verified": 2,
+  "guest_serial_source_helper_tar_expected_hash_checks": [
+    {
+      "guest_record": "case-01/guests/guest-001/qemu.json",
+      "qemu_pid": 560,
+      "size": 2823,
+      "sha256": "c12528641370309208c1340ec6a7b9080f7855675656f5b486d05714b9c448f2",
+      "source_helper_tar_and_qemu_expected_all_match": true
+    }
+  ],
+  "guest_count": 1,
+  "gdb_loopback_owned_listener_handoffs": 1,
+  "private_connected_monitor_fd_handoffs": 1,
+  "source_hash_matches": 90,
+  "method": "Read actual source files, helper output and reopened tar bytes, compare original expected size/SHA from each QEMU record; verify all archive/coverage indices and capture bindings. No guest rerun and no source file mutation."
+}

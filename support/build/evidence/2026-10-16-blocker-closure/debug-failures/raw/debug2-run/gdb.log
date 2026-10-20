@@ -1,0 +1,37 @@
+0x000000000000fff0 in ?? ()
+Hardware assisted breakpoint 1 at 0xffffffff88422f10: file src/lib.rs, line 21.
+
+Breakpoint 1, asterinas::__ostd_main () at src/lib.rs:21
+21	#[ostd::main]
+Warning: the current language does not match this frame.
+A01_GDB_RUST_ENTRY_HIT pc=0xffffffff88422f10 entry=0xffffffff88422f10
+A01_GDB_RUST_ENTRY_BYTES pc=0xffffffff88422f10 size=32 bytes=50e8ea35f2ff48c7c7e0565488e81e49060048c7c000105f8848c7c178165f88
+#0  asterinas::__ostd_main () at src/lib.rs:21
+#1  0xffffffff88481aab in ostd::boot::start_kernel () at src/boot/mod.rs:195
+#2  0xffffffff884a105b in ostd::arch::boot::multiboot::__multiboot_entry (boot_magic=732803074, boot_params=<optimized out>) at src/arch/x86/boot/multiboot/mod.rs:398
+#3  0xffffffff8849dbad in entry_type_multiboot ()
+#4  0x010ffcfa44ebfcfa in ?? ()
+#5  0x80b9080014f02514 in ?? ()
+#6  0x08000d320fc00000 in ?? ()
+#7  0x48e0200f300f0000 in ?? ()
+#8  0xe0220f000000a00d in ?? ()
+#9  0x80e025048bc03148 in ?? ()
+#10 0x258d48d8220f0000 in ?? ()
+#11 0x001f0fcb00000004 in ?? ()
+#12 0x00000008000080e4 in ?? ()
+#13 0x8016010fd88ec031 in ?? ()
+#14 0x01c88366c0200f80 in ?? ()
+#15 0x0008808ceac0220f in ?? ()
+#16 0x0000000000000000 in ?? ()
+Current source file is src/lib.rs
+Compilation directory is /workspace/scratch/ae1a8cf05419/a01-next9-native/kernel/asterinas/kernel
+Located in /workspace/scratch/ae1a8cf05419/a01-next9-native/kernel/asterinas/kernel/src/lib.rs
+Contains 24 lines.
+Source language is rust.
+Producer is clang LLVM (rustc version 1.99.0-nightly (87e5904f5 2026-07-20)).
+Compiled with DWARF 4 debugging format.
+Does not include preprocessor macro info.
+Line 21 of "src/lib.rs" starts at address 0xffffffff88422f10 <asterinas::__ostd_main> and ends at 0xffffffff88422f11 <asterinas::__ostd_main+1>.
+rip            0xffffffff88422f10  0xffffffff88422f10 <asterinas::__ostd_main>
+[Inferior 1 (process 1) detached]
+A01_GDB_DETACHED

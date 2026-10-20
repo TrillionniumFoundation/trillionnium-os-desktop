@@ -1,0 +1,89 @@
+{
+  "schema": 1,
+  "posthoc_transcribed_from_original_tool_call": true,
+  "controller_was_not_rerun_for_this_supplement": true,
+  "source": "Original functions.exec -> tools.exec_command input and return in this conversation; full heredoc body transcribed after the initial host probe, not contemporaneously saved controller bytes.",
+  "original_workdir": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+  "original_command_file": "/workspace/scratch/ae1a8cf05419/next7-manifest-cleanup-probe-original-command.sh",
+  "controller_file": "/workspace/scratch/ae1a8cf05419/next7-manifest-cleanup-probe-controller.py",
+  "observed_stdout_file": "/workspace/scratch/ae1a8cf05419/next7-manifest-cleanup-probe-controller.stdout.json",
+  "original_probe_report": {
+    "path": "/workspace/scratch/ae1a8cf05419/next7-manifest-cleanup-probe.json",
+    "sha256": "06b46f59a93527824280a36113880a11056cc9844b687a27b8d6690b6874c79e",
+    "unchanged": true
+  },
+  "original_exec_result": {
+    "chunk_id": "88f1da",
+    "wall_time_seconds": 0.329417049,
+    "exit_code": 0,
+    "session_id": null,
+    "stdout_file": "/workspace/scratch/ae1a8cf05419/next7-manifest-cleanup-probe-controller.stdout.json",
+    "stderr": "",
+    "note": "Transcribed from the actual exec_command return. This is a post-hoc receipt, not a second execution or freshly observed old failure."
+  },
+  "original_exec_arguments": {
+    "cmd": "PYTHONDONTWRITEBYTECODE=1 python3 -I - <<'PY'\nimport hashlib,importlib.util,json,os,subprocess,sys,tempfile\nfrom pathlib import Path\nsys.dont_write_bytecode=True\nrepo=Path('/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop');scratch=Path('/workspace/scratch/ae1a8cf05419');tempfile.tempdir=str(scratch)\nspec=importlib.util.spec_from_file_location('manifest_audit_fixture',repo/'support/build/tests/test_kernel_runner.py');module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)\nfixture=module.KernelRunnerTests('test_owned_manifest_removed_after_success');fixture.setUp()\ntry:\n stat_script='''#!/usr/bin/python3\nimport json,os,subprocess,sys\nfrom pathlib import Path\nresult=subprocess.run(['/usr/bin/stat', *sys.argv[1:]], stdout=subprocess.PIPE, stderr=subprocess.PIPE)\npath=Path(sys.argv[-1])\nroot=Path(os.environ['MOCK_PROJECT'])\nif result.returncode==0 and path==root/'kernel/asterinas/kernel/OSDK.toml':\n    owned_identity=result.stdout.decode().strip()\n    replacement=path.with_name('foreign-manifest-stage')\n    replacement.write_text('foreign manifest installed after identity was checked\\\\n')\n    foreign_identity='%s:%s' % (replacement.stat().st_dev,replacement.stat().st_ino)\n    os.replace(replacement,path)\n    (root/'race-proof.json').write_text(json.dumps({'owned_identity_checked':owned_identity,'foreign_identity_installed':foreign_identity,'foreign_bytes':path.read_text()}))\nsys.stdout.buffer.write(result.stdout)\nsys.stderr.buffer.write(result.stderr)\nraise SystemExit(result.returncode)\n'''\n fixture.write_tool('stat',stat_script)\n result=fixture.run_runner()\n proof=json.loads((fixture.root/'race-proof.json').read_text());manifest=fixture.kernel/'OSDK.toml'\n assert proof['owned_identity_checked']!=proof['foreign_identity_installed']\n assert result.returncode==0 and not manifest.exists()\n report={'schema':1,'git_head':subprocess.check_output(['git','rev-parse','HEAD'],cwd=repo,text=True).strip(),'source':'support/build/kernel.sh','source_sha256':hashlib.sha256((repo/'support/build/kernel.sh').read_bytes()).hexdigest(),'issue':'cleanup identity stat followed by pathname unlink permits foreign replacement deletion','code_lines':[45,46,47],'fixture_scope':'Unmodified copied shell runner and supervisor/checker from project; disposable mock project and host tools only; no production manifest, Cargo, kernel build or QEMU','trigger':'stat wrapper returns the actual owned inode identity while atomically replacing the disposable manifest with a different foreign inode before shell rm','probe_stat_wrapper':stat_script,'result':{'runner_exit_code':result.returncode,'runner_stdout':result.stdout,'foreign_manifest_deleted':not manifest.exists(),**proof},'reproduction':'Load KernelRunnerTests fixture read-only, setUp(), override only mock-bin/stat with recorded wrapper, run_runner(), inspect race-proof.json and fixture manifest. Existing test_manifest_replaced_during_build_is_preserved covers replacement before the stat, not this stat/unlink interval.'}\n destination=scratch/'next7-manifest-cleanup-probe.json';destination.write_text(json.dumps(report,indent=2)+'\\n')\n print(json.dumps({'head':report['git_head'],'runner_exit_code':result.returncode,'foreign_manifest_deleted':not manifest.exists(),**proof,'report':str(destination),'report_sha256':hashlib.sha256(destination.read_bytes()).hexdigest()},indent=2))\nfinally:\n fixture.doCleanups()\nPY",
+    "workdir": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+    "max_output_tokens": 2200,
+    "yield_time_ms": 1000
+  },
+  "baseline_sources": [
+    {
+      "source_path": "support/build/kernel.sh",
+      "recovered_commit": "84040737d2263368d254d4b16dabff7afb797ea4",
+      "recovered_path": "/workspace/scratch/ae1a8cf05419/next7-manifest-cleanup-baseline-source/support/build/kernel.sh",
+      "size": 5371,
+      "sha256": "8ba0febef90ae09ca7786604aa6bffee224a0d7e1ef9b5158c582ede759a0cdf",
+      "same_bytes_at_requested_8fcf645": true,
+      "execution_time_individual_digest_recorded": true,
+      "execution_digest_matches_recovered": true
+    },
+    {
+      "source_path": "support/build/kernel-supervisor.py",
+      "recovered_commit": "84040737d2263368d254d4b16dabff7afb797ea4",
+      "recovered_path": "/workspace/scratch/ae1a8cf05419/next7-manifest-cleanup-baseline-source/support/build/kernel-supervisor.py",
+      "size": 5739,
+      "sha256": "d6ccfd00f3eef634ae7032446437039ff88f0935cf0acb3cb589903b57505d61",
+      "same_bytes_at_requested_8fcf645": true,
+      "execution_time_individual_digest_recorded": false
+    },
+    {
+      "source_path": "support/build/check-boot.py",
+      "recovered_commit": "84040737d2263368d254d4b16dabff7afb797ea4",
+      "recovered_path": "/workspace/scratch/ae1a8cf05419/next7-manifest-cleanup-baseline-source/support/build/check-boot.py",
+      "size": 3869,
+      "sha256": "2ee1be040c622b248986efdeacab43eea6b2d730e0bad1a8bc0ba995c1915f80",
+      "same_bytes_at_requested_8fcf645": true,
+      "execution_time_individual_digest_recorded": false
+    },
+    {
+      "source_path": "support/build/tests/test_kernel_runner.py",
+      "recovered_commit": "84040737d2263368d254d4b16dabff7afb797ea4",
+      "recovered_path": "/workspace/scratch/ae1a8cf05419/next7-manifest-cleanup-baseline-source/support/build/tests/test_kernel_runner.py",
+      "size": 11691,
+      "sha256": "a9ce1498b93a0a94b332958623a7b501d051d7da23d39b2b0ab4dbbdd0d86e7a",
+      "same_bytes_at_requested_8fcf645": true,
+      "execution_time_individual_digest_recorded": false
+    }
+  ],
+  "fixture_provenance_note": "The original controller imported support/build/tests/test_kernel_runner.py from the recorded repository and that fixture copied kernel.sh, kernel-supervisor.py and check-boot.py into a disposable scratch project. Only kernel.sh was individually SHA256-recorded at execution. The remaining fixture sources are recovered post hoc from recorded HEAD84040737; they are byte-identical at requested HEAD8fcf645, but no separate execution-time fixture snapshot digest was recorded.",
+  "reproduction_warning": "Do not run the preserved original controller against the now-fixed live repository or overwrite the frozen original report. Reproduce only with baseline recovered files in a new disposable project and distinct outputs; adapt its repository/output paths explicitly. The original temporary fixture was cleaned after the initial observation.",
+  "scope": "Supplement writes scratch only; no controller/probe rerun, repository source modification, current target/manifest access, build or VM.",
+  "supplement_files": [
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/next7-manifest-cleanup-probe-controller.py",
+      "size": 3361,
+      "sha256": "f529d4727da9142234373620c2d3119391b288597004a85c9f51fd519d07f029"
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/next7-manifest-cleanup-probe-original-command.sh",
+      "size": 3410,
+      "sha256": "080e1762e078704dfb239dce8751a15e9ee441c57786b8a987ef0cad0711e2ed"
+    },
+    {
+      "path": "/workspace/scratch/ae1a8cf05419/next7-manifest-cleanup-probe-controller.stdout.json",
+      "size": 452,
+      "sha256": "4b2f47385f8d07c8833661f579ac3cff23fba4283101543600fafff9d2346fde"
+    }
+  ]
+}

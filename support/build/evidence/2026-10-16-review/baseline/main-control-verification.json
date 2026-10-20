@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "main_at_phase_start": "3fe03e725e9afdd76155f03199b8bfff990f00dd",
+  "main_at_final_merge": "ad5a942376116277b466d8eec9d35f47e9d201c2",
+  "changed_files": [
+    "docs/STATUS.md",
+    "libs/os-control/API_CONTRACT.md",
+    "libs/os-control/src/lib.rs",
+    "tests/control/control_conformance.rs"
+  ],
+  "kernel_source_changed": false,
+  "first_attempt": {
+    "exit": 101,
+    "reason": "cargo could not find rustc in PATH; compiler never executed",
+    "log": "main-control-first-missing-rustc.log"
+  },
+  "pinned_retry": {
+    "exit": 0,
+    "unit_passed": 1,
+    "integration_passed": 20,
+    "doc_tests": 0,
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "--manifest-path",
+      "libs/os-control/Cargo.toml",
+      "--target-dir",
+      "/workspace/scratch/ae1a8cf05419/next5-main-control-target"
+    ],
+    "environment": {
+      "RUSTC": "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/rustc",
+      "RUSTDOC": "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/rustdoc",
+      "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo"
+    },
+    "log": "main-control-pinned-test.log"
+  }
+}

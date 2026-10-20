@@ -1,0 +1,31 @@
+{
+  "schema": "trillionnium.a01.evidence-checksum-verification.v1",
+  "started_at_utc": "2026-10-18T09:23:14.926042+00:00",
+  "finished_at_utc": "2026-10-18T09:23:14.934810+00:00",
+  "command": [
+    "sha256sum",
+    "-c",
+    "SHA256SUMS"
+  ],
+  "cwd": "/workspace/scratch/d7da9e7650f0/a01-current/support/build/evidence/2026-10-18-main012-current",
+  "exit_code": 0,
+  "payload_files": 55,
+  "manifest": "SHA256SUMS",
+  "manifest_sha256": "42368d4c2394f96e63a9face96298eab92db0479116749d81bac665d6388ee45",
+  "manifest_exclusions": [
+    "SHA256SUMS",
+    "review/checksum-verification.json"
+  ],
+  "exclusion_reason": "Avoid circular hashes; Git binds the manifest and this receipt.",
+  "stdout": "HANDOFF.md: OK\nREPORT.md: OK\narchive-index.json: OK\nartifact-bindings.json: OK\nboot/command.sh: OK\nboot/manifest-cleanup.json: OK\nboot/qemu.json: OK\nboot/serial.log: OK\nboot/source-inputs.json: OK\nexecutions/boot-summary.json: OK\nexecutions/kernel-execution.json: OK\nexecutions/ktest-execution.json: OK\nexecutions/run_kernel-execution.json: OK\nexecutions/run_kernel_retry01-execution.json: OK\nfailures/post-ktest-manifest/OSDK.toml.observed: OK\nfailures/post-ktest-manifest/closure.json: OK\nfailures/post-ktest-manifest/observation.json: OK\nfailures/post-ktest-manifest/quarantine.json: OK\nfailures/prelaunch-failure/OSDK.toml.observed: OK\nfailures/prelaunch-failure/observation.json: OK\nfailures/prelaunch-failure/quarantine.json: OK\nfailures/prelaunch-failure/run_kernel-driver.log: OK\nguest-artifacts.tar.xz: OK\nhost-gate-summary.json: OK\nhost-gate.tar.gz: OK\nkernel/command.sh: OK\nkernel/first-artifact.json: OK\nkernel/manifest-cleanup.json: OK\nktest/aster-core/guests/guest-001/qemu.json: OK\nktest/aster-core/guests/guest-001/serial.log: OK\nktest/aster-core/result.json: OK\nktest/commands.json: OK\nktest/environment.json: OK\nktest/ostd/guests/guest-001/qemu.json: OK\nktest/ostd/guests/guest-001/serial.log: OK\nktest/ostd/result.json: OK\nktest/result.json: OK\nnative-records.tar.xz: OK\npublication-source-bridge.json: OK\nreport.json: OK\nreview/github-before-publication.json: OK\nreview/late-manifest-self-review.json: OK\nreview/native-review.json: OK\nreview/package-evidence.py: OK\nreview/publication-fixed-inputs.json: OK\nreview/publication-fixed-inputs.stderr.log: OK\nreview/publication-gate.py: OK\nreview/publication-review.json: OK\nreview/publish-report.py: OK\nreview/seal-evidence.py: OK\nruntime-archive-verification.json: OK\nruntime-current.tar.gz: OK\nruntime-summary.json: OK\nsource-records.tar.xz: OK\nsource-summary.json: OK\n",
+  "stderr": "",
+  "stdout_sha256": "b748a6acf114e66ff286e536b419dc192d8065a8e875bb315d66ebf5f1e2806c",
+  "archive_outer_hashes_match": true,
+  "json_documents_parse": true,
+  "local_markdown_links_checked": 24,
+  "publication_review_checks_passed": 33,
+  "source_producer": "b39e154ae5a1e9853f57e23f9bee84712ee8ef7e",
+  "root_readme_bytes": 0,
+  "passed": true,
+  "script_sha256": "aa4b73dfb9950ad02cd3ec864b39257a541ebb66fe88fff27912c797507da184"
+}

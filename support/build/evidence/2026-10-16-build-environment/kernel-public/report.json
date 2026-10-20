@@ -1,0 +1,148 @@
+{
+  "kind": "actual_empty_target_source_build_and_native_boot_with_inherited_make_controls",
+  "source_commit": "ff040c6d5afbc4e26a249022093b8090181f6176",
+  "source_tree": "eb16c5ef5fe8adf3a9249e19a7674cec7b2e359f",
+  "worktree": "/workspace/scratch/ae1a8cf05419/a01-next9-native",
+  "environment": {
+    "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+    "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+    "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+    "CARGO_NET_OFFLINE": "true",
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_TARGET_DIR": "/workspace/scratch/ae1a8cf05419/a01-next9-native/kernel/asterinas/target",
+    "VDSO_LIBRARY_DIR": "/workspace/scratch/ae1a8cf05419/linux-vdso",
+    "A01_QEMU_TIMEOUT": "300",
+    "ASTER_BUILD_TIMESTAMP": "Thu Jan  1 00:00:00 UTC 1970",
+    "SOURCE_DATE_EPOCH": "0",
+    "TZ": "UTC",
+    "LC_ALL": "C",
+    "MAKEFLAGS": "nt",
+    "MFLAGS": "-n",
+    "GNUMAKEFLAGS": "--ignore-errors",
+    "MAKEFILES": "/workspace/scratch/ae1a8cf05419/next9-native/inherited.mk",
+    "MAKEOVERRIDES": "TARGET_ARCH=riscv64",
+    "MAKELEVEL": "73"
+  },
+  "explicitly_unset": [
+    "RUSTFLAGS",
+    "CARGO_ENCODED_RUSTFLAGS"
+  ],
+  "controller_sha256": "1ec5bc6edf626b3698af2f84af114ffcb7f924ae44b93d73e9ab20b241a77a12",
+  "started_utc": "2026-10-16T15:28:31.267824+00:00",
+  "host": {
+    "nodename": "29609d47ba8e",
+    "effective_uid": 0,
+    "username": "root"
+  },
+  "guard_calls": [
+    {
+      "argv": [
+        "support/build/kernel.sh",
+        "kernel"
+      ],
+      "encoded_value": "",
+      "exit": 2,
+      "log": "guard-0.log",
+      "log_sha256": "4365373360e3ce41de85dcd14d2cd8e3d9ff87e63bc2b2219aca2dbd0e344d7e",
+      "output_absent_after": true,
+      "workspace_lock_absent_after": true,
+      "target_absent_after": true
+    },
+    {
+      "argv": [
+        "support/build/kernel.sh",
+        "kernel"
+      ],
+      "encoded_value": "--cfg\u001fnot_allowed",
+      "exit": 2,
+      "log": "guard-1.log",
+      "log_sha256": "4365373360e3ce41de85dcd14d2cd8e3d9ff87e63bc2b2219aca2dbd0e344d7e",
+      "output_absent_after": true,
+      "workspace_lock_absent_after": true,
+      "target_absent_after": true
+    }
+  ],
+  "runs": [
+    {
+      "target": "kernel",
+      "argv": [
+        "support/build/kernel.sh",
+        "kernel"
+      ],
+      "run_output": "/workspace/scratch/ae1a8cf05419/a01-next9-native/support/build/out/next9-kernel",
+      "target_absent_before_launch": true,
+      "target_cache_reused": false,
+      "started_utc": "2026-10-16T15:28:31.276632+00:00",
+      "outer_exit": 0,
+      "entry_pid": 50,
+      "completed_utc": "2026-10-16T15:31:54.355699+00:00",
+      "console_bytes": 20500,
+      "console_sha256": "ad244d40763b6090b561159aaf37f3a6ec069f49a5f2ea3abef791bbc221880b",
+      "compiling_lines": 279,
+      "kernel_sha256": "d90ebc3210e74271252a6d1f75ca22a16a569a8b48a99805d30d3d99124b9306",
+      "kernel_bytes": 8266576,
+      "kernel_gzip_sha256": "ac82e74297ac49bd61ac5abbbeea6b0f9792f1b06b6086d44c3e804cd043063c",
+      "kernel_read_identity": {
+        "st_dev": 27,
+        "st_ino": 1620341,
+        "st_size": 8266576,
+        "st_mtime_ns": 1792164714169182895,
+        "st_ctime_ns": 1792164714169198508
+      },
+      "git_status_after": ""
+    },
+    {
+      "target": "run_kernel",
+      "argv": [
+        "support/build/kernel.sh",
+        "run_kernel"
+      ],
+      "run_output": "/workspace/scratch/ae1a8cf05419/a01-next9-native/support/build/out/next9-run",
+      "target_absent_before_launch": false,
+      "target_cache_reused": true,
+      "started_utc": "2026-10-16T15:31:55.450307+00:00",
+      "outer_exit": 0,
+      "entry_pid": 4963,
+      "completed_utc": "2026-10-16T15:31:57.901149+00:00",
+      "console_bytes": 77135,
+      "console_sha256": "8cf5b2f9b80f208bd54ae1a26e453cd02aed54d32d417ab58f745282a5e47e37",
+      "compiling_lines": 0,
+      "kernel_sha256": "d90ebc3210e74271252a6d1f75ca22a16a569a8b48a99805d30d3d99124b9306",
+      "kernel_bytes": 8266576,
+      "kernel_gzip_sha256": "ac82e74297ac49bd61ac5abbbeea6b0f9792f1b06b6086d44c3e804cd043063c",
+      "kernel_read_identity": {
+        "st_dev": 27,
+        "st_ino": 1618592,
+        "st_size": 8266576,
+        "st_mtime_ns": 1792164716519117943,
+        "st_ctime_ns": 1792164716519136981
+      },
+      "raw_qemu_exit": 33,
+      "serial_sha256": "18f820dba25feb4186b881cd68fb3d44c53b4d129653152bcfccefbce330c357",
+      "initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "git_status_after": ""
+    }
+  ],
+  "cross_path_or_host_reproducibility_claimed": false,
+  "passed": true,
+  "completed_utc": "2026-10-16T15:31:59.030073+00:00",
+  "real_qemu_guests": 1,
+  "empty_target_kernel_compilation_observed": true,
+  "make_controls_ignored_and_recorded": true,
+  "raw_qemu_exits": [
+    33
+  ],
+  "normal_build_and_boot_elf_equal": true,
+  "scope": "Real full Asterinas kernel fresh-target source build followed by one cached real boot under isolated inherited Make controls",
+  "actual_tool_session_id": 47989,
+  "actual_tool_outer_exit": 0,
+  "independent_saved_copy_checks": true,
+  "live_target_or_manifest_read": false,
+  "supervised_workers_reaped": [
+    true,
+    true
+  ],
+  "raw_text_archive_members": 33,
+  "compressed_binary_artifacts_not_nested_in_raw": true,
+  "generated_normal_lock_verified": true
+}

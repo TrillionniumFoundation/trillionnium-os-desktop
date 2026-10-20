@@ -1,0 +1,225 @@
+{
+  "schema": "a01-current-main-host-validation/1",
+  "source_commit": "bc294f75bfb8c03d9963f5a12ea23b9589779d96",
+  "source_tree": "39316103c8a1ee881703a38ad5c50a1cc96c055f",
+  "scope": "Actual exact-main G0 host regressions. No source changes, kernel build, VM, owner-branch operation, component installation or toolchain upgrade. Selected paths exported once into new scratch source.",
+  "overall": "partial",
+  "all_green": false,
+  "actual_original_tool_session": 60513,
+  "actual_original_tool_exit": 0,
+  "subcommand_failures_retained": true,
+  "supplementary_generator_command": "supplementary-command.json",
+  "narrow_diagnostic_commands": "narrow-clippy-commands.json",
+  "counts": {
+    "rust": {
+      "abi-test-all-targets": {
+        "result_summaries": [
+          [
+            3,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            8,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            7,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            21,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            12,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            6,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            4,
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "passed": 61,
+        "failed": 0,
+        "ignored": 0,
+        "filtered": 0
+      },
+      "abi-doc-tests": {
+        "result_summaries": [
+          [
+            1,
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "passed": 1,
+        "failed": 0,
+        "ignored": 0,
+        "filtered": 0
+      },
+      "control-tests": {
+        "result_summaries": [
+          [
+            1,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            20,
+            0,
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        ],
+        "passed": 21,
+        "failed": 0,
+        "ignored": 0,
+        "filtered": 0
+      }
+    },
+    "python": {
+      "python-abi-I": {
+        "passed": 30,
+        "exit": 0
+      },
+      "python-abi-IO": {
+        "passed": 30,
+        "exit": 0
+      },
+      "python-spec-I": {
+        "passed": 14,
+        "exit": 0
+      },
+      "python-spec-IO": {
+        "passed": 14,
+        "exit": 0
+      },
+      "python-organ_backend-I": {
+        "passed": 5,
+        "exit": 0
+      },
+      "python-organ_backend-IO": {
+        "passed": 5,
+        "exit": 0
+      }
+    },
+    "rust_passed_total": 83,
+    "python_passed_total": 98,
+    "host_test_executions_passed": 181,
+    "golden": {
+      "hos2_frames": 12,
+      "semantic_edge_frames": 24,
+      "transport_descriptors": 1,
+      "supported_generator_invocations_passed": 3,
+      "extra_unsupported_isolated_edge_import_failure": 1
+    },
+    "a05_host_smoke_exit": 0,
+    "fmt_exits": {
+      "abi-fmt": 0,
+      "control-fmt": 0
+    },
+    "strict_clippy": {
+      "abi_all_targets_exit": 101,
+      "control_all_targets_exit": 0,
+      "abi_all_targets_first_reported_source": "tests/transport_preflight.rs:28",
+      "narrow_abi_exits": {
+        "abi-strict-clippy-mutation_kill": 101,
+        "abi-strict-clippy-transport_vectors": 101
+      },
+      "narrow_reported_sources": [
+        "tests/mutation_kill.rs:21",
+        "tests/transport_vectors.rs:14"
+      ],
+      "three_test_helper_sources_still_chunks_exact": true,
+      "not_a_pass": true
+    },
+    "all_commands_count": 26,
+    "commands_exit_zero": 22,
+    "commands_nonzero": [
+      {
+        "name": "abi-strict-clippy",
+        "returncode": 101,
+        "log": "abi-strict-clippy.log"
+      },
+      {
+        "name": "golden-generate_hos2_edges",
+        "returncode": 1,
+        "log": "golden-generate_hos2_edges.log"
+      },
+      {
+        "name": "abi-strict-clippy-mutation_kill",
+        "returncode": 101,
+        "log": "abi-strict-clippy-mutation_kill.log"
+      },
+      {
+        "name": "abi-strict-clippy-transport_vectors",
+        "returncode": 101,
+        "log": "abi-strict-clippy-transport_vectors.log"
+      }
+    ]
+  },
+  "source_binding": {
+    "input_files": 45,
+    "all_bytes_and_git_exec_modes_unchanged_after_all_commands": true,
+    "original_mode_comparison_false_retained": true,
+    "correction": "source-integrity-correction.posthoc.json",
+    "final_check": "final-integrity.json",
+    "generated_abi_cargo_lock": "os-abi.Cargo.lock",
+    "tracked_control_lock_unchanged": true
+  },
+  "target": {
+    "path": "/workspace/scratch/ae1a8cf05419/cloud-main-sync-g0-host/target",
+    "new_owned": true,
+    "initially_absent": true,
+    "other_target_cache_reused": false,
+    "actual_regular_file_bytes": 13491345,
+    "limit_bytes": 209715200,
+    "dev_debug": 0,
+    "test_debug": 0,
+    "incremental": false
+  },
+  "dependency_cache_reused": true,
+  "kernel_nightly": "nightly-2026-07-21",
+  "component_install_performed": false,
+  "prior_closure_evidence_not_changed_by_this_task": true,
+  "unsupported_generator_failure": "-I excludes sibling generate_hos2 import. Ordinary supported invocation passed, as did the existing semantic-edge unittest subprocess. No fixture-byte mismatch was observed.",
+  "all_helper_fix_inference_retracted": "One all-target diagnostic does not prove other helpers fixed. Two actual narrow Clippy commands confirm their101 outcomes and unchanged chunks_exact sources.",
+  "main_runtime_or_hos2_acceptance_claimed": false
+}

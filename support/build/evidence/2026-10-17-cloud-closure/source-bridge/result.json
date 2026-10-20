@@ -1,0 +1,709 @@
+{
+  "schema": "a01-cloud-source-bridge/2",
+  "candidate": "8deaf5c1b8211189d90fecf15a4b27b5b6bad72c",
+  "requested_refs": {
+    "projection": "4e8c7083575cec69efabe8d2250dfdd040c8dee8",
+    "normal": "d879a9d2ffae8d0eb0df441370da54f9e3a38431",
+    "matrix": "d879a9d2ffae8d0eb0df441370da54f9e3a38431",
+    "candidate": "8deaf5c1b8211189d90fecf15a4b27b5b6bad72c",
+    "ktest": "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+    "abi": "8f3bb49ab161104063a6ebea25428c40aa884ac0",
+    "control": "40ca002fac0726b366726d3353916637b29adeae"
+  },
+  "resolved_commits": {
+    "projection": "4e8c7083575cec69efabe8d2250dfdd040c8dee8",
+    "normal": "d879a9d2ffae8d0eb0df441370da54f9e3a38431",
+    "matrix": "d879a9d2ffae8d0eb0df441370da54f9e3a38431",
+    "candidate": "8deaf5c1b8211189d90fecf15a4b27b5b6bad72c",
+    "ktest": "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+    "abi": "8f3bb49ab161104063a6ebea25428c40aa884ac0",
+    "control": "40ca002fac0726b366726d3353916637b29adeae"
+  },
+  "script_sha256": "7eda9053b280a14c59b90ee78b3a4bc5acbb4d2de2461cacf0ef174994b8fe29",
+  "scope": "exact Git bytes/modes for listed consumed inputs; whole project trees may differ",
+  "validation_executed_here": false,
+  "host_scope": "Historical ABI/control input identity bridges previously executed checks only; no candidate test/Clippy rerun or G0/G1/G2 acceptance is implied.",
+  "groups": [
+    {
+      "name": "opt-in-path-projected-kernel-build-and-boot",
+      "producer": "4e8c7083575cec69efabe8d2250dfdd040c8dee8",
+      "inputs": [
+        {
+          "path": "kernel/asterinas",
+          "producer": {
+            "mode": "040000",
+            "kind": "tree",
+            "git_object": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da"
+          },
+          "candidate": {
+            "mode": "040000",
+            "kind": "tree",
+            "git_object": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da"
+          },
+          "equal": true
+        },
+        {
+          "path": "support/build/minimal",
+          "producer": {
+            "mode": "040000",
+            "kind": "tree",
+            "git_object": "63d9c50db4a2de2a6ad8cf696b97fa671ddb451c"
+          },
+          "candidate": {
+            "mode": "040000",
+            "kind": "tree",
+            "git_object": "63d9c50db4a2de2a6ad8cf696b97fa671ddb451c"
+          },
+          "equal": true
+        },
+        {
+          "path": "support/build/minimal.mk",
+          "producer": {
+            "mode": "100644",
+            "kind": "blob",
+            "git_object": "c32eb7b2080cc43a05763836b09e9a5af0f8fdfc"
+          },
+          "candidate": {
+            "mode": "100644",
+            "kind": "blob",
+            "git_object": "c32eb7b2080cc43a05763836b09e9a5af0f8fdfc"
+          },
+          "equal": true
+        },
+        {
+          "path": "support/build/kernel.sh",
+          "producer": {
+            "mode": "100755",
+            "kind": "blob",
+            "git_object": "a1911971821c9fad4d444f04426fda8e83a93898"
+          },
+          "candidate": {
+            "mode": "100755",
+            "kind": "blob",
+            "git_object": "a1911971821c9fad4d444f04426fda8e83a93898"
+          },
+          "equal": true
+        },
+        {
+          "path": "support/build/kernel-supervisor.py",
+          "producer": {
+            "mode": "100644",
+            "kind": "blob",
+            "git_object": "58961a4b659732d9f4da122fb17573b052e6ea26"
+          },
+          "candidate": {
+            "mode": "100644",
+            "kind": "blob",
+            "git_object": "58961a4b659732d9f4da122fb17573b052e6ea26"
+          },
+          "equal": true
+        },
+        {
+          "path": "support/build/cleanup-manifest.py",
+          "producer": {
+            "mode": "100644",
+            "kind": "blob",
+            "git_object": "d0c45bf2791d00e9091d11b09ac85e17c10566a9"
+          },
+          "candidate": {
+            "mode": "100644",
+            "kind": "blob",
+            "git_object": "d0c45bf2791d00e9091d11b09ac85e17c10566a9"
+          },
+          "equal": true
+        },
+        {
+          "path": "support/build/verify-source.py",
+          "producer": {
+            "mode": "100644",
+            "kind": "blob",
+            "git_object": "d11dc089a423de677fb3ef9c534230ba266f7915"
+          },
+          "candidate": {
+            "mode": "100644",
+            "kind": "blob",
+            "git_object": "d11dc089a423de677fb3ef9c534230ba266f7915"
+          },
+          "equal": true
+        },
+        {
+          "path": "support/build/record-qemu.py",
+          "producer": {
+            "mode": "100755",
+            "kind": "blob",
+            "git_object": "5326d4acf3919987c381c28a971f763e659747ff"
+          },
+          "candidate": {
+            "mode": "100755",
+            "kind": "blob",
+            "git_object": "5326d4acf3919987c381c28a971f763e659747ff"
+          },
+          "equal": true
+        },
+        {
+          "path": "support/build/check-boot.py",
+          "producer": {
+            "mode": "100644",
+            "kind": "blob",
+            "git_object": "1c01897379dbf5d8fbe309c4a15da1bf25980216"
+          },
+          "candidate": {
+            "mode": "100644",
+            "kind": "blob",
+            "git_object": "1c01897379dbf5d8fbe309c4a15da1bf25980216"
+          },
+          "equal": true
+        },
+        {
+          "path": "support/build/repro/run.py",
+          "producer": {
+            "mode": "100644",
+            "kind": "blob",
+            "git_object": "38ee6186d03ae5910c684228bfd768ab81183238"
+          },
+          "candidate": {
+            "mode": "100644",
+            "kind": "blob",
+            "git_object": "38ee6186d03ae5910c684228bfd768ab81183238"
+          },
+          "equal": true
+        },
+        {
+          "path": "support/build/repro/profile.py",
+          "producer": {
+            "mode": "100644",
+            "kind": "blob",
+            "git_object": "234f518646c1dc74f3b3f3e9b41c12afde2428c4"
+          },
+          "candidate": {
+            "mode": "100644",
+            "kind": "blob",
+            "git_object": "234f518646c1dc74f3b3f3e9b41c12afde2428c4"
+          },
+          "equal": true
+        },
+        {
+          "path": "support/build/repro/rustc-wrapper.py",
+          "producer": {
+            "mode": "100755",
+            "kind": "blob",
+            "git_object": "fce4dbf1928f72d996deaa34120e17d3f1bf3769"
+          },
+          "candidate": {
+            "mode": "100755",
+            "kind": "blob",
+            "git_object": "fce4dbf1928f72d996deaa34120e17d3f1bf3769"
+          },
+          "equal": true
+        },
+        {
+          "path": "support/build/repro/cargo-metadata-wrapper.py",
+          "producer": {
+            "mode": "100755",
+            "kind": "blob",
+            "git_object": "82a50b3819f73353b29e176d5e04969091806532"
+          },
+          "candidate": {
+            "mode": "100755",
+            "kind": "blob",
+            "git_object": "82a50b3819f73353b29e176d5e04969091806532"
+          },
+          "equal": true
+        }
+      ],
+      "all_equal": true
+    },
+    {
+      "name": "ordinary-kernel-build-and-boot",
+      "producer": "d879a9d2ffae8d0eb0df441370da54f9e3a38431",
+      "inputs": [
+        {
+          "path": "kernel/asterinas",
+          "producer": {
+            "mode": "040000",
+            "kind": "tree",
+            "git_object": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da"
+          },
+          "candidate": {
+            "mode": "040000",
+            "kind": "tree",
+            "git_object": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da"
+          },
+          "equal": true
+        },
+        {
+          "path": "support/build/minimal",
+          "producer": {
+            "mode": "040000",
+            "kind": "tree",
+            "git_object": "63d9c50db4a2de2a6ad8cf696b97fa671ddb451c"
+          },
+          "candidate": {
+            "mode": "040000",
+            "kind": "tree",
+            "git_object": "63d9c50db4a2de2a6ad8cf696b97fa671ddb451c"
+          },
+          "equal": true
+        },
+        {
+          "path": "support/build/minimal.mk",
+          "producer": {
+            "mode": "100644",
+            "kind": "blob",
+            "git_object": "c32eb7b2080cc43a05763836b09e9a5af0f8fdfc"
+          },
+          "candidate": {
+            "mode": "100644",
+            "kind": "blob",
+            "git_object": "c32eb7b2080cc43a05763836b09e9a5af0f8fdfc"
+          },
+          "equal": true
+        },
+        {
+          "path": "support/build/kernel.sh",
+          "producer": {
+            "mode": "100755",
+            "kind": "blob",
+            "git_object": "a1911971821c9fad4d444f04426fda8e83a93898"
+          },
+          "candidate": {
+            "mode": "100755",
+            "kind": "blob",
+            "git_object": "a1911971821c9fad4d444f04426fda8e83a93898"
+          },
+          "equal": true
+        },
+        {
+          "path": "support/build/kernel-supervisor.py",
+          "producer": {
+            "mode": "100644",
+            "kind": "blob",
+            "git_object": "58961a4b659732d9f4da122fb17573b052e6ea26"
+          },
+          "candidate": {
+            "mode": "100644",
+            "kind": "blob",
+            "git_object": "58961a4b659732d9f4da122fb17573b052e6ea26"
+          },
+          "equal": true
+        },
+        {
+          "path": "support/build/cleanup-manifest.py",
+          "producer": {
+            "mode": "100644",
+            "kind": "blob",
+            "git_object": "d0c45bf2791d00e9091d11b09ac85e17c10566a9"
+          },
+          "candidate": {
+            "mode": "100644",
+            "kind": "blob",
+            "git_object": "d0c45bf2791d00e9091d11b09ac85e17c10566a9"
+          },
+          "equal": true
+        },
+        {
+          "path": "support/build/verify-source.py",
+          "producer": {
+            "mode": "100644",
+            "kind": "blob",
+            "git_object": "d11dc089a423de677fb3ef9c534230ba266f7915"
+          },
+          "candidate": {
+            "mode": "100644",
+            "kind": "blob",
+            "git_object": "d11dc089a423de677fb3ef9c534230ba266f7915"
+          },
+          "equal": true
+        },
+        {
+          "path": "support/build/record-qemu.py",
+          "producer": {
+            "mode": "100755",
+            "kind": "blob",
+            "git_object": "5326d4acf3919987c381c28a971f763e659747ff"
+          },
+          "candidate": {
+            "mode": "100755",
+            "kind": "blob",
+            "git_object": "5326d4acf3919987c381c28a971f763e659747ff"
+          },
+          "equal": true
+        },
+        {
+          "path": "support/build/check-boot.py",
+          "producer": {
+            "mode": "100644",
+            "kind": "blob",
+            "git_object": "1c01897379dbf5d8fbe309c4a15da1bf25980216"
+          },
+          "candidate": {
+            "mode": "100644",
+            "kind": "blob",
+            "git_object": "1c01897379dbf5d8fbe309c4a15da1bf25980216"
+          },
+          "equal": true
+        }
+      ],
+      "all_equal": true
+    },
+    {
+      "name": "upstream-kernel-mode-regression",
+      "producer": "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+      "inputs": [
+        {
+          "path": "kernel/asterinas",
+          "producer": {
+            "mode": "040000",
+            "kind": "tree",
+            "git_object": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da"
+          },
+          "candidate": {
+            "mode": "040000",
+            "kind": "tree",
+            "git_object": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da"
+          },
+          "equal": true
+        },
+        {
+          "path": "support/build/record-qemu.py",
+          "producer": {
+            "mode": "100755",
+            "kind": "blob",
+            "git_object": "5326d4acf3919987c381c28a971f763e659747ff"
+          },
+          "candidate": {
+            "mode": "100755",
+            "kind": "blob",
+            "git_object": "5326d4acf3919987c381c28a971f763e659747ff"
+          },
+          "equal": true
+        },
+        {
+          "path": "support/build/verify-source.py",
+          "producer": {
+            "mode": "100644",
+            "kind": "blob",
+            "git_object": "d11dc089a423de677fb3ef9c534230ba266f7915"
+          },
+          "candidate": {
+            "mode": "100644",
+            "kind": "blob",
+            "git_object": "d11dc089a423de677fb3ef9c534230ba266f7915"
+          },
+          "equal": true
+        },
+        {
+          "path": "support/build/ktest/run.py",
+          "producer": {
+            "mode": "100755",
+            "kind": "blob",
+            "git_object": "685107ff7ed878dd47acce7643790c9f7a5c45fb"
+          },
+          "candidate": {
+            "mode": "100755",
+            "kind": "blob",
+            "git_object": "685107ff7ed878dd47acce7643790c9f7a5c45fb"
+          },
+          "equal": true
+        },
+        {
+          "path": "support/build/ktest/record-qemu.py",
+          "producer": {
+            "mode": "100755",
+            "kind": "blob",
+            "git_object": "01420c79907b1b4291fc6c877a9e1754b0f54b85"
+          },
+          "candidate": {
+            "mode": "100755",
+            "kind": "blob",
+            "git_object": "01420c79907b1b4291fc6c877a9e1754b0f54b85"
+          },
+          "equal": true
+        },
+        {
+          "path": "support/build/ktest/check.py",
+          "producer": {
+            "mode": "100755",
+            "kind": "blob",
+            "git_object": "eb825678b4196f0f1d953d3e342b69da85e78064"
+          },
+          "candidate": {
+            "mode": "100755",
+            "kind": "blob",
+            "git_object": "eb825678b4196f0f1d953d3e342b69da85e78064"
+          },
+          "equal": true
+        },
+        {
+          "path": "support/build/ktest/locks",
+          "producer": {
+            "mode": "040000",
+            "kind": "tree",
+            "git_object": "e1b9eb819fa6676ca0b44f043d99b87c7d12a56a"
+          },
+          "candidate": {
+            "mode": "040000",
+            "kind": "tree",
+            "git_object": "e1b9eb819fa6676ca0b44f043d99b87c7d12a56a"
+          },
+          "equal": true
+        }
+      ],
+      "all_equal": true
+    },
+    {
+      "name": "upstream-osdk-matrix",
+      "producer": "d879a9d2ffae8d0eb0df441370da54f9e3a38431",
+      "inputs": [
+        {
+          "path": "kernel/asterinas",
+          "producer": {
+            "mode": "040000",
+            "kind": "tree",
+            "git_object": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da"
+          },
+          "candidate": {
+            "mode": "040000",
+            "kind": "tree",
+            "git_object": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da"
+          },
+          "equal": true
+        },
+        {
+          "path": "support/build/record-qemu.py",
+          "producer": {
+            "mode": "100755",
+            "kind": "blob",
+            "git_object": "5326d4acf3919987c381c28a971f763e659747ff"
+          },
+          "candidate": {
+            "mode": "100755",
+            "kind": "blob",
+            "git_object": "5326d4acf3919987c381c28a971f763e659747ff"
+          },
+          "equal": true
+        },
+        {
+          "path": "support/build/osdk-integration/run.py",
+          "producer": {
+            "mode": "100755",
+            "kind": "blob",
+            "git_object": "f78a10a2e2130740553e27c9c36e6ab9d4846ca2"
+          },
+          "candidate": {
+            "mode": "100755",
+            "kind": "blob",
+            "git_object": "f78a10a2e2130740553e27c9c36e6ab9d4846ca2"
+          },
+          "equal": true
+        },
+        {
+          "path": "support/build/osdk-integration/osdk.py",
+          "producer": {
+            "mode": "100755",
+            "kind": "blob",
+            "git_object": "2c8e8b076478871760b30248d31345ebe6faafc3"
+          },
+          "candidate": {
+            "mode": "100755",
+            "kind": "blob",
+            "git_object": "2c8e8b076478871760b30248d31345ebe6faafc3"
+          },
+          "equal": true
+        },
+        {
+          "path": "support/build/osdk-integration/cargo.py",
+          "producer": {
+            "mode": "100755",
+            "kind": "blob",
+            "git_object": "f6e419cab8cf86d91dfd0feaebf3c6638c9edd2e"
+          },
+          "candidate": {
+            "mode": "100755",
+            "kind": "blob",
+            "git_object": "f6e419cab8cf86d91dfd0feaebf3c6638c9edd2e"
+          },
+          "equal": true
+        },
+        {
+          "path": "support/build/osdk-integration/record-qemu.py",
+          "producer": {
+            "mode": "100755",
+            "kind": "blob",
+            "git_object": "29d471956b0c04aaeaeeb07e4f852c95d7a57ba2"
+          },
+          "candidate": {
+            "mode": "100755",
+            "kind": "blob",
+            "git_object": "29d471956b0c04aaeaeeb07e4f852c95d7a57ba2"
+          },
+          "equal": true
+        },
+        {
+          "path": "support/build/osdk-integration/capture.py",
+          "producer": {
+            "mode": "100755",
+            "kind": "blob",
+            "git_object": "98f301cbd2c22865ac0261b5a23e4da253d05444"
+          },
+          "candidate": {
+            "mode": "100755",
+            "kind": "blob",
+            "git_object": "98f301cbd2c22865ac0261b5a23e4da253d05444"
+          },
+          "equal": true
+        },
+        {
+          "path": "support/build/osdk-integration/archive.py",
+          "producer": {
+            "mode": "100755",
+            "kind": "blob",
+            "git_object": "a021bd0f923af160c31099da58323553b2114c2a"
+          },
+          "candidate": {
+            "mode": "100755",
+            "kind": "blob",
+            "git_object": "a021bd0f923af160c31099da58323553b2114c2a"
+          },
+          "equal": true
+        }
+      ],
+      "all_equal": true
+    },
+    {
+      "name": "historical-fixed-nightly-abi-host-input-identity",
+      "producer": "8f3bb49ab161104063a6ebea25428c40aa884ac0",
+      "inputs": [
+        {
+          "path": "libs/os-abi",
+          "producer": {
+            "mode": "040000",
+            "kind": "tree",
+            "git_object": "637e23107ed3eb56e05caf66a29c1c92d902a2f9"
+          },
+          "candidate": {
+            "mode": "040000",
+            "kind": "tree",
+            "git_object": "637e23107ed3eb56e05caf66a29c1c92d902a2f9"
+          },
+          "equal": true
+        },
+        {
+          "path": "tests/abi",
+          "producer": {
+            "mode": "040000",
+            "kind": "tree",
+            "git_object": "bcbc356906e5bbeb5c1ed7ed51721dd589a15579"
+          },
+          "candidate": {
+            "mode": "040000",
+            "kind": "tree",
+            "git_object": "bcbc356906e5bbeb5c1ed7ed51721dd589a15579"
+          },
+          "equal": true
+        },
+        {
+          "path": "tests/golden",
+          "producer": {
+            "mode": "040000",
+            "kind": "tree",
+            "git_object": "71892e23281ef6bfbce62f18e18254369f8bcff6"
+          },
+          "candidate": {
+            "mode": "040000",
+            "kind": "tree",
+            "git_object": "71892e23281ef6bfbce62f18e18254369f8bcff6"
+          },
+          "equal": true
+        }
+      ],
+      "all_equal": true
+    },
+    {
+      "name": "historical-fixed-nightly-control-host-input-identity",
+      "producer": "40ca002fac0726b366726d3353916637b29adeae",
+      "inputs": [
+        {
+          "path": "libs/os-control",
+          "producer": {
+            "mode": "040000",
+            "kind": "tree",
+            "git_object": "03316328317e86df264db57b3a663a9cf18c73c5"
+          },
+          "candidate": {
+            "mode": "040000",
+            "kind": "tree",
+            "git_object": "03316328317e86df264db57b3a663a9cf18c73c5"
+          },
+          "equal": true
+        },
+        {
+          "path": "tests/control",
+          "producer": {
+            "mode": "040000",
+            "kind": "tree",
+            "git_object": "a7084a1aa4f659f09d23445ffc8856368d9f96c4"
+          },
+          "candidate": {
+            "mode": "040000",
+            "kind": "tree",
+            "git_object": "a7084a1aa4f659f09d23445ffc8856368d9f96c4"
+          },
+          "equal": true
+        }
+      ],
+      "all_equal": true
+    }
+  ],
+  "pins": [
+    {
+      "commit": "4e8c7083575cec69efabe8d2250dfdd040c8dee8",
+      "upstream": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+      "upstream_tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+      "toolchain": "nightly-2026-07-21",
+      "fixed_pins_equal": true,
+      "root_readme_bytes": 0
+    },
+    {
+      "commit": "d879a9d2ffae8d0eb0df441370da54f9e3a38431",
+      "upstream": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+      "upstream_tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+      "toolchain": "nightly-2026-07-21",
+      "fixed_pins_equal": true,
+      "root_readme_bytes": 0
+    },
+    {
+      "commit": "8deaf5c1b8211189d90fecf15a4b27b5b6bad72c",
+      "upstream": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+      "upstream_tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+      "toolchain": "nightly-2026-07-21",
+      "fixed_pins_equal": true,
+      "root_readme_bytes": 0
+    },
+    {
+      "commit": "d895dd73a07788f6fc825fb3ca29cca22d93bb07",
+      "upstream": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+      "upstream_tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+      "toolchain": "nightly-2026-07-21",
+      "fixed_pins_equal": true,
+      "root_readme_bytes": 0
+    },
+    {
+      "commit": "8f3bb49ab161104063a6ebea25428c40aa884ac0",
+      "upstream": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+      "upstream_tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+      "toolchain": "nightly-2026-07-21",
+      "fixed_pins_equal": true,
+      "root_readme_bytes": 0
+    },
+    {
+      "commit": "40ca002fac0726b366726d3353916637b29adeae",
+      "upstream": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+      "upstream_tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+      "toolchain": "nightly-2026-07-21",
+      "fixed_pins_equal": true,
+      "root_readme_bytes": 0
+    }
+  ],
+  "source_bridge_passed": true
+}

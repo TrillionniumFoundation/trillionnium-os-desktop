@@ -1,0 +1,13 @@
+# Explicit private BIOS selection
+
+`A01_QEMU_BIOS` permits the existing recorder to use an explicitly selected private firmware file when this project cloud host has no system SeaBIOS path. The value must be nonempty, absolute and name a regular file. Empty, relative, absent-file and directory values fail before QEMU's version probe or launch; no fallback is attempted. Without the variable, original `-bios` selection and existing strict artifact checks remain in effect.
+
+The original `requested_qemu_args` are retained unchanged. `bios_selection` records origin, original requested path and selected path. The selected private file is captured through the existing stable-FD/stat/hash checks, copied into the retained exclusive snapshot, and that snapshot is what QEMU loads. All three artifact option checks, inherited GDB FD checks, snapshot verification, and the unchanged live boot checker remain in force.
+
+The complete production test file passed **25/25 under -I and 25/25 under -I -O**. The two new tests invoke the actual recorder CLI with a disposable fake QEMU: a private path containing spaces, a missing original BIOS path, and four invalid explicit selections are exercised. Invalid selections execute neither fake QEMU version probe nor launch. The candidate also passes the two targeted tests under -I. Against the exact old recorder, those same targeted tests fail with exit1 (five subtest assertion failures and one missing-selection-metadata error). These controls are retained and are not added again to the 50 full-suite executions.
+
+No actual QEMU guest ran in these fixtures. Their serial input is the retained historical kernel serial bytes; this package establishes recorder selection behavior, not a new native boot. Real cloud build/boot results belong in separate native evidence.
+
+`source/` retains the exact base controls (including the unchanged checker and historical serial fixture), exact tested candidate files, patch and source hashes. `logs/` retains complete suite/control output, actual command/environment/exit records and source-validation receipt. `actual-cli-fixtures.tar.gz` retains all raw fixture files with member hashes and modes in `raw-members.json`. Original bytes and line endings are unchanged.
+
+The base commit is `01a344c6a293fd73b158e9e6ca93bd9904b69bbf`. Packaging binds exact tested file hashes to the separately observed source commit; tests ran before that source publication. Only recorder and its test file are changed by this task. Root README and kernel/OSDK sources are untouched. `SHA256SUMS` covers every retained file except itself.

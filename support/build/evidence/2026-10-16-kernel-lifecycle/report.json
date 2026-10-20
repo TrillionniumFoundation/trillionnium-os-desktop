@@ -1,0 +1,230 @@
+{
+  "schema": 1,
+  "phase": "2026-10-16-kernel-lifecycle",
+  "status": "completed; historical failures and expected cancellation remain explicit",
+  "branch": "agents/A01-asterinas-boot",
+  "pull_request": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/22",
+  "fixed_kernel": {
+    "tag": "v0.19.0",
+    "commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+    "tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+    "derived_tree": "6b3cab110aa6d30d5b89f99c4389c9c3e01022da",
+    "toolchain": "nightly-2026-07-21",
+    "root": "kernel/asterinas",
+    "checked_build_inputs": 118,
+    "kernel_directory_changes_this_phase": false,
+    "root_readme_bytes": 0
+  },
+  "main_at_start": "99924da27531876d7c383d490175d06d8f200856",
+  "main_at_last_sync": "f47540fb8165c8cc078d997f009f6f55ff731f06",
+  "code_commits": {
+    "debug_cancellation": "9b381118fe8a1889d4523b4de999bbe45f1b0436",
+    "kernel_supervisor": "4b3153079336ddea244c2ffecea1da0e006769b6",
+    "runner_repeated_signal": "7cf6f7c329361c9828a98b766d1f0d78cf53b58d",
+    "complete_version_output": "22fcd9edeb8d4e1abee7ce2c3109df5d922c8ed5",
+    "main_sync": "ce4f3515c2c83bb602f6d811f102235ce9777c42"
+  },
+  "host_tests": {
+    "debug": {
+      "passed_per_mode": 10,
+      "modes": [
+        "-I",
+        "-I -O"
+      ],
+      "original_sigterm_leak_reproduced": true,
+      "evidence": "host-debug/REPORT.md"
+    },
+    "kernel": {
+      "supervisor_passed_per_mode": 9,
+      "worker_manifest_passed_per_mode": 10,
+      "modes": [
+        "-I",
+        "-I -O"
+      ],
+      "original_sigterm_leak_and_sigint_stall_reproduced": true,
+      "evidence": "host-kernel/README.md"
+    },
+    "runner": {
+      "lifecycle_passed_per_mode": 14,
+      "timeout_passed_per_mode": 1,
+      "profile_passed_per_mode": 7,
+      "modes": [
+        "-I",
+        "-I -O"
+      ],
+      "original_two_cleanup_entry_signal_leaks_reproduced": true,
+      "evidence": "host-runner/REPORT.md"
+    },
+    "main_workflow": {
+      "schema": 1,
+      "main_merged": "f47540fb8165c8cc078d997f009f6f55ff731f06",
+      "merge_commit": "ce4f3515c2c83bb602f6d811f102235ce9777c42",
+      "source_paths": [
+        ".github/workflows/a01-boot-evidence.yml",
+        "docs/STATUS.md",
+        "results/organ-backend/2026-10-16/a05-queryabi-guest-refusal.json"
+      ],
+      "local_workflow_equivalent_only": true,
+      "github_ci_pass_claimed": false,
+      "checks": [
+        {
+          "command": [
+            "python3",
+            "-I",
+            "support/build/tests/test_boot_evidence.py"
+          ],
+          "passed": 15,
+          "exit": 0,
+          "log": "main-ci-boot-I.log"
+        },
+        {
+          "command": [
+            "python3",
+            "-I",
+            "-O",
+            "support/build/tests/test_boot_evidence.py"
+          ],
+          "passed": 15,
+          "exit": 0,
+          "log": "main-ci-boot-IO.log"
+        },
+        {
+          "command": [
+            "python3",
+            "-I",
+            "support/build/tests/test_kernel_runner.py"
+          ],
+          "passed": 10,
+          "exit": 0,
+          "log": "main-ci-worker-I.log"
+        },
+        {
+          "command": [
+            "python3",
+            "-I",
+            "-O",
+            "support/build/tests/test_kernel_runner.py"
+          ],
+          "passed": 10,
+          "exit": 0,
+          "log": "main-ci-worker-IO.log"
+        }
+      ]
+    }
+  },
+  "clean_full_kernel_debug": {
+    "code_commit": "9b381118fe8a1889d4523b4de999bbe45f1b0436",
+    "actual_tool_session": 88997,
+    "actual_tool_exit": 0,
+    "target_preexisted": false,
+    "offline": true,
+    "osdk_installed_from_source": true,
+    "full_kernel_built_from_source": true,
+    "passed": true,
+    "entry_pc": "0xffffffff88422840",
+    "live_entry_bytes": 32,
+    "gdb_detached": true,
+    "qemu_raw_exit": 33,
+    "boot_sha256": "89c7f0bab00172e4a8d038a3d5c38396d952ff44e4ab159bbe8765edbaa16313",
+    "boot_size": 5975720,
+    "symbol_sha256": "855e92c82ac3745d40320fd4451e8862e38e2fbfbf7b2c6e98f60d514018d6a8",
+    "symbol_size": 111709176,
+    "symbol_retained_in_git": false,
+    "serial_sha256": "bbcb07e958137c8fd41674b8b7834266c1fd50bcc7f3e6e146d7b84ef0410e02",
+    "evidence": "kernel-debug-clean/REPORT.md"
+  },
+  "public_kernel_boot": {
+    "code_commit": "7cf6f7c329361c9828a98b766d1f0d78cf53b58d",
+    "actual_tool_session": 2857,
+    "actual_tool_exit": 0,
+    "release_compilation_observed": true,
+    "target_cache_reused_from_clean_debug": true,
+    "passed": true,
+    "qemu_raw_exit": 33,
+    "supervisor_exit": 0,
+    "worker_reaped": true,
+    "boot_sha256": "490ca0406593c28e64a22333ba432de6122b9a796b0f7f20352b6b2c55e7df56",
+    "boot_size": 8290880,
+    "initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+    "serial_sha256": "1b584b5f9e937a6c3f87e27422ef74f29133f29ae4f589388262f1ca12a73239",
+    "evidence": "kernel-public/REPORT.md"
+  },
+  "osdk_full": {
+    "code_commit": "7cf6f7c329361c9828a98b766d1f0d78cf53b58d",
+    "actual_tool_session": 74134,
+    "actual_tool_exit": 0,
+    "profile": "osdk-native-local-tcp-gdb-capture-v2",
+    "selected": 22,
+    "passed": 22,
+    "failed": 0,
+    "blocked": 0,
+    "soft_skipped_vmx": 1,
+    "actual_qemu_guests": 11,
+    "all_raw_qemu_exit": 33,
+    "coverage_profraw_size": 2094456,
+    "coverage_profraw_sha256": "3d90660be68c63941c5884390c3d25ccd77c33a461c95b070147989117cf253d",
+    "coverage_functions": 5696,
+    "coverage_maximum_function_count": 383731,
+    "evidence": "osdk/README.md"
+  },
+  "real_debug_cancellation": {
+    "code_commit": "22fcd9edeb8d4e1abee7ce2c3109df5d922c8ed5",
+    "lifecycle_passed": true,
+    "attempt": 3,
+    "cli_exit": 143,
+    "result_passed": false,
+    "boot_pass_claimed": false,
+    "native_gdb_version": "15.1",
+    "entry_pc": "0xffffffff88422840",
+    "live_entry_bytes": 32,
+    "qemu_and_gdb_pidfd_alive_before_exited_after": true,
+    "debug_port_and_workspace_lock_released": true,
+    "direct_sessions_reaped": true,
+    "qemu_record_finalized": false,
+    "qemu_raw_exit": null,
+    "serial_scope": "post-cancellation pathname snapshot, not a finalized checker serial",
+    "gdb_script_adaptation": "copy generated GDB script and hold in native GDB Python after original live32 marker; no production source or ELF modification",
+    "earlier_attempts": [
+      {
+        "attempt": 1,
+        "driver_exit": 141,
+        "qemu_started": false,
+        "result": "version metadata pipeline failure; fixed by retaining full make/gcc --version output"
+      },
+      {
+        "attempt": 2,
+        "gdb_exit": 1,
+        "cancellation_signal_sent": false,
+        "result": "test shim generated invalid Python newline; original failure retained, controller fixed before attempt3"
+      }
+    ],
+    "evidence": "real-debug-cancel/REPORT.md"
+  },
+  "limits": {
+    "cross_build_bit_reproducibility": false,
+    "artifact_difference_cause_established": false,
+    "generated_manifest_external_rewrite_observed_under_lock": true,
+    "writer_or_cause_known": false,
+    "af_unix_host_probe_errno": 1,
+    "busybox_script_applet_present": false,
+    "script_required_by_minimal_boot": false,
+    "new_kernel_core_or_ostd_changes": false,
+    "a05_hos2_implementation_claimed": false,
+    "a06_quota_candidate_tested_this_phase": false,
+    "full_upstream_userspace_smp_vmx_ept_matrix_claimed": false
+  },
+  "historical_results_unchanged": {
+    "linux_elf_diagnostic": {
+      "code_commit": "d85b1e091143a9c4f004c024f433a58188455105",
+      "matched": 24,
+      "completed_failed": 2,
+      "timed_out": 2,
+      "count": 28,
+      "rerun_this_phase": false,
+      "evidence": "../2026-10-16-review/linux-guest/REPORT.md"
+    },
+    "default_unix_osdk": "20/22 historical; not rerun this phase; current host AF_UNIX bind still errno1",
+    "tcp_v1": "two retained 2/3 pilots",
+    "kernel_mode": "362 reported,3 soft skips,359 exercised lower bound; not rerun this phase"
+  }
+}

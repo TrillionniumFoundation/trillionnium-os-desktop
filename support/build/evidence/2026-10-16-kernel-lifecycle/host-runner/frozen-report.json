@@ -1,0 +1,110 @@
+{
+  "schema": 1,
+  "scope": "host-only deterministic real-signal seam and child cleanup",
+  "vm_executed": false,
+  "baseline_commit": "2eee2c3df5a837e89ae7557510008ce1de37a1ca",
+  "baseline_run_sha256": "31b97ef6d7fbbe675364aaa1c27fdc4e36d328cbce307452434dfc7b9888d929",
+  "source_files_sha256": {
+    "support/build/osdk-integration/run.py": "023df78aeedb663d10c48dad08a3ed0b2670e2c5094de1bf3ac75035b1bca761",
+    "support/build/osdk-integration/test_runner_lifecycle.py": "cf6c0a66df9e65b03af0c2e7a995079098f257d8b5c343e4b8b8205787b62a80"
+  },
+  "baseline_probes": {
+    "path": "run-01/report.json",
+    "sha256": "ba443755676974900e261cf7c1b08a38d3d8b0e2206ce7b5aece3302f90854a1",
+    "one_control_passed": true,
+    "two_real_leaks_reproduced": true
+  },
+  "patched_probes": {
+    "path": "patched/run-01/report.json",
+    "sha256": "8e7f1b9c2abd7a6b5d718287bd697229e9afc5b04f6b17beb8e88151f37bb502",
+    "three_controls_passed": true,
+    "literal_old_handler_setup_removed": true,
+    "first_signal_preserved": true
+  },
+  "tests": [
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "support/build/osdk-integration/test_runner_lifecycle.py"
+      ],
+      "exit_code": 0,
+      "tests": 14,
+      "mode": "normal",
+      "log": "lifecycle-final.log",
+      "log_sha256": "6dd5f00931ffdb29e3b3d0694c4a2a58360b883a5d7d0ef80b02075c5232a2ab"
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "support/build/osdk-integration/test_runner.py"
+      ],
+      "exit_code": 0,
+      "tests": 1,
+      "mode": "normal",
+      "log": "timeout-final.log",
+      "log_sha256": "ddff57e2da8ce895e6e18b54709b05140a40034c781dd4bbed78491a1914699b"
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "support/build/osdk-integration/test_profiles.py"
+      ],
+      "exit_code": 0,
+      "tests": 7,
+      "mode": "normal",
+      "log": "profiles-final.log",
+      "log_sha256": "83166b089fbcb82fac63f22522fa6ae99bb5e46368cd35d756277fd463dd6346"
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "-O",
+        "support/build/osdk-integration/test_runner_lifecycle.py"
+      ],
+      "exit_code": 0,
+      "tests": 14,
+      "mode": "optimized",
+      "log": "lifecycle-final-optimized.log",
+      "log_sha256": "dded5ed7e638feca2ecaaa10eabc99dca2dec68ee5f431821d49ce74b1d4d333"
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "-O",
+        "support/build/osdk-integration/test_runner.py"
+      ],
+      "exit_code": 0,
+      "tests": 1,
+      "mode": "optimized",
+      "log": "timeout-final-optimized.log",
+      "log_sha256": "90e8fa28984015f375e7e18582f0e2ac2076d76e4edea6c017d35a2551ab6aa0"
+    },
+    {
+      "argv": [
+        "python3",
+        "-I",
+        "-O",
+        "support/build/osdk-integration/test_profiles.py"
+      ],
+      "exit_code": 0,
+      "tests": 7,
+      "mode": "optimized",
+      "log": "profiles-final-optimized.log",
+      "log_sha256": "83166b089fbcb82fac63f22522fa6ae99bb5e46368cd35d756277fd463dd6346"
+    }
+  ],
+  "diff_check_exit_code": 0,
+  "patch": "source-change.patch",
+  "unchanged_public_api": "command(command,cwd,env,output,timeout) and RunnerInterrupted.signum",
+  "limitations": [
+    "Original production process group only; escaping descendants not covered.",
+    "Only the direct child is reaped; no subreaper.",
+    "The original seam and patched cleanup-entry/group-signal seams are described separately.",
+    "These host tests do not repeat the full22 Rust/guest integration suite."
+  ]
+}

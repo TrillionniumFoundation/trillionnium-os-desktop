@@ -1,0 +1,92 @@
+{
+  "producer": "7758ffe294bb0e1eab46e20cba60e8af9d8bcd61",
+  "project_tree": "98c7b099ff280f0804041dca13d691d431a8caf6",
+  "kernel_tree": "9b400ccf16c275935736e6e2b0b08aecbe20c40e",
+  "stage": "ktest",
+  "cwd": "/workspace/scratch/d7da9e7650f0/a01-mainf9",
+  "argv": [
+    "bash",
+    "--noprofile",
+    "--norc",
+    "-c",
+    "source \"$1\"; shift; exec \"$@\"",
+    "bash",
+    "/workspace/scratch/d7da9e7650f0/a01-current-runtime/env.sh",
+    "python3",
+    "-B",
+    "-I",
+    "support/build/ktest/run.py",
+    "--output",
+    "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/ktest"
+  ],
+  "selected_environment": {
+    "CARGO_BUILD_JOBS": "2",
+    "A01_SMP": "1",
+    "A01_RUN_DIR": null,
+    "CARGO_TARGET_DIR": null,
+    "CARGO_ENCODED_RUSTFLAGS": null
+  },
+  "runtime_env": {
+    "path": "/workspace/scratch/d7da9e7650f0/a01-current-runtime/env.sh",
+    "exists": true,
+    "mode": "0o100755",
+    "device": 27,
+    "inode": 1594696,
+    "size": 1345,
+    "mtime_ns": 1792312429877033233,
+    "ctime_ns": 1792312429877033233,
+    "sha256": "29a29aaf5ffc301b83ea47c0c545ebc6c2621af314269479e41c3e0c749b797c"
+  },
+  "started_at": "2026-10-19T00:57:39.147493+00:00",
+  "disk_free_before": 12250775552,
+  "target_before": {
+    "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/target",
+    "exists": true,
+    "mode": "0o40755",
+    "device": 27,
+    "inode": 17192,
+    "size": 4096,
+    "mtime_ns": 1792371202072177865,
+    "ctime_ns": 1792371202072177865
+  },
+  "osdk_target_before": {
+    "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/osdk/target",
+    "exists": true,
+    "mode": "0o40755",
+    "device": 27,
+    "inode": 8256,
+    "size": 4096,
+    "mtime_ns": 1792371129909435787,
+    "ctime_ns": 1792371202351287318
+  },
+  "public_manifest_before": {
+    "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/kernel/OSDK.toml",
+    "exists": true,
+    "mode": "0o100600",
+    "device": 27,
+    "inode": 19777,
+    "size": 1019,
+    "mtime_ns": 1792371128713027657,
+    "ctime_ns": 1792371432793208588,
+    "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f"
+  },
+  "source_before": "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/source/ktest-before.json",
+  "git_status_before": "?? kernel/asterinas/kernel/OSDK.toml",
+  "finished_at": "2026-10-19T01:00:00.032181+00:00",
+  "elapsed_seconds": 140.86601254800917,
+  "exit_code": 0,
+  "disk_free_after": 10931740672,
+  "public_manifest_after": {
+    "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/kernel/OSDK.toml",
+    "exists": true,
+    "mode": "0o100600",
+    "device": 27,
+    "inode": 19777,
+    "size": 1019,
+    "mtime_ns": 1792371128713027657,
+    "ctime_ns": 1792371432793208588,
+    "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f"
+  },
+  "git_status_after": "?? kernel/asterinas/kernel/OSDK.toml",
+  "source_after": "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/source/ktest-after.json"
+}

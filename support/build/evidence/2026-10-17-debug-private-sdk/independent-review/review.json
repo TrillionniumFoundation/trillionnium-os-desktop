@@ -1,0 +1,151 @@
+{
+  "passed": true,
+  "scope": "Independent read-only code review and actual public CLI host fixtures; no real SDK/Rust/GDB/QEMU.",
+  "source_sha256": {
+    "run.py": "a09a51368412684fe9dbd4cd91ea7e8c596c1244ad42ba321c12fb07d29fe022",
+    "test_debug.py": "df6dd1c783e07fefef3f08bdd952220d35d8e645a79f65dd4dd0a44a7734cd5c",
+    "README.md": "278049fb4d303641cff4fd2b8a4be2611f315807454a42f9b94f5a65c78138a5"
+  },
+  "git_head_at_test_start": "5e0e4a734a1dc63d9333b8e432ed071f2406b8e9",
+  "checks": {
+    "helper_uses_only_this_boot_private_root": true,
+    "binary_open_is_nofollow_nonblock_regular_executable": true,
+    "single_fd_digest_with_pre_post_fd_and_path_stats": true,
+    "install_receipt_exact_path_and_hash_checked": true,
+    "source_directory_manifest_and_lock_hashes_recorded": true,
+    "no_global_cargo_home_fallback": true,
+    "public_cli_uses_actual_helper_at_qemu_ready": true,
+    "host_fixtures_do_not_replace_helper_under_test": true,
+    "scope_explicitly_excludes_immutable_executed_byte_custody": true,
+    "independent_new_i_and_io_4_tests_each_pass": true,
+    "independent_old_i_and_io_4_failures_each_reproduced": true,
+    "candidate_unchanged_after_independent_checks": true
+  },
+  "actual_case_outcomes": {
+    "new-I": {
+      "global-foreign": {
+        "returncode": 0,
+        "passed": true,
+        "installed_path": "/workspace/scratch/ae1a8cf05419/sdk-debug-independent-review/final/new-I/global-foreign/debug-output/boot/osdk/bin/cargo-osdk",
+        "source_sha256": "a09a51368412684fe9dbd4cd91ea7e8c596c1244ad42ba321c12fb07d29fe022",
+        "error": null
+      },
+      "global-missing": {
+        "returncode": 0,
+        "passed": true,
+        "installed_path": "/workspace/scratch/ae1a8cf05419/sdk-debug-independent-review/final/new-I/global-missing/debug-output/boot/osdk/bin/cargo-osdk",
+        "source_sha256": "a09a51368412684fe9dbd4cd91ea7e8c596c1244ad42ba321c12fb07d29fe022",
+        "error": null
+      },
+      "private-missing": {
+        "returncode": 1,
+        "passed": false,
+        "installed_path": null,
+        "source_sha256": "a09a51368412684fe9dbd4cd91ea7e8c596c1244ad42ba321c12fb07d29fe022",
+        "error": "[Errno 2] No such file or directory: '/workspace/scratch/ae1a8cf05419/sdk-debug-independent-review/final/new-I/private-missing/debug-output/boot/osdk/bin/cargo-osdk'"
+      },
+      "private-receipt-mismatch": {
+        "returncode": 1,
+        "passed": false,
+        "installed_path": null,
+        "source_sha256": "a09a51368412684fe9dbd4cd91ea7e8c596c1244ad42ba321c12fb07d29fe022",
+        "error": "private OSDK differs from this build's installation receipt"
+      }
+    },
+    "new-IO": {
+      "global-foreign": {
+        "returncode": 0,
+        "passed": true,
+        "installed_path": "/workspace/scratch/ae1a8cf05419/sdk-debug-independent-review/final/new-IO/global-foreign/debug-output/boot/osdk/bin/cargo-osdk",
+        "source_sha256": "a09a51368412684fe9dbd4cd91ea7e8c596c1244ad42ba321c12fb07d29fe022",
+        "error": null
+      },
+      "global-missing": {
+        "returncode": 0,
+        "passed": true,
+        "installed_path": "/workspace/scratch/ae1a8cf05419/sdk-debug-independent-review/final/new-IO/global-missing/debug-output/boot/osdk/bin/cargo-osdk",
+        "source_sha256": "a09a51368412684fe9dbd4cd91ea7e8c596c1244ad42ba321c12fb07d29fe022",
+        "error": null
+      },
+      "private-missing": {
+        "returncode": 1,
+        "passed": false,
+        "installed_path": null,
+        "source_sha256": "a09a51368412684fe9dbd4cd91ea7e8c596c1244ad42ba321c12fb07d29fe022",
+        "error": "[Errno 2] No such file or directory: '/workspace/scratch/ae1a8cf05419/sdk-debug-independent-review/final/new-IO/private-missing/debug-output/boot/osdk/bin/cargo-osdk'"
+      },
+      "private-receipt-mismatch": {
+        "returncode": 1,
+        "passed": false,
+        "installed_path": null,
+        "source_sha256": "a09a51368412684fe9dbd4cd91ea7e8c596c1244ad42ba321c12fb07d29fe022",
+        "error": "private OSDK differs from this build's installation receipt"
+      }
+    },
+    "old-I": {
+      "global-foreign": {
+        "returncode": 0,
+        "passed": true,
+        "installed_path": "/workspace/scratch/ae1a8cf05419/sdk-debug-independent-review/final/old-I/global-foreign/cargo-home/bin/cargo-osdk",
+        "source_sha256": "b27992bff212ee2736401892685e6d08bad31b83ee872a3c0dc5d5c89f0a32ea",
+        "error": null
+      },
+      "global-missing": {
+        "returncode": 1,
+        "passed": false,
+        "installed_path": null,
+        "source_sha256": "b27992bff212ee2736401892685e6d08bad31b83ee872a3c0dc5d5c89f0a32ea",
+        "error": "[Errno 2] No such file or directory: '/workspace/scratch/ae1a8cf05419/sdk-debug-independent-review/final/old-I/global-missing/cargo-home/bin/cargo-osdk'"
+      },
+      "private-missing": {
+        "returncode": 0,
+        "passed": true,
+        "installed_path": "/workspace/scratch/ae1a8cf05419/sdk-debug-independent-review/final/old-I/private-missing/cargo-home/bin/cargo-osdk",
+        "source_sha256": "b27992bff212ee2736401892685e6d08bad31b83ee872a3c0dc5d5c89f0a32ea",
+        "error": null
+      },
+      "private-receipt-mismatch": {
+        "returncode": 0,
+        "passed": true,
+        "installed_path": "/workspace/scratch/ae1a8cf05419/sdk-debug-independent-review/final/old-I/private-receipt-mismatch/cargo-home/bin/cargo-osdk",
+        "source_sha256": "b27992bff212ee2736401892685e6d08bad31b83ee872a3c0dc5d5c89f0a32ea",
+        "error": null
+      }
+    },
+    "old-IO": {
+      "global-foreign": {
+        "returncode": 0,
+        "passed": true,
+        "installed_path": "/workspace/scratch/ae1a8cf05419/sdk-debug-independent-review/final/old-IO/global-foreign/cargo-home/bin/cargo-osdk",
+        "source_sha256": "b27992bff212ee2736401892685e6d08bad31b83ee872a3c0dc5d5c89f0a32ea",
+        "error": null
+      },
+      "global-missing": {
+        "returncode": 1,
+        "passed": false,
+        "installed_path": null,
+        "source_sha256": "b27992bff212ee2736401892685e6d08bad31b83ee872a3c0dc5d5c89f0a32ea",
+        "error": "[Errno 2] No such file or directory: '/workspace/scratch/ae1a8cf05419/sdk-debug-independent-review/final/old-IO/global-missing/cargo-home/bin/cargo-osdk'"
+      },
+      "private-missing": {
+        "returncode": 0,
+        "passed": true,
+        "installed_path": "/workspace/scratch/ae1a8cf05419/sdk-debug-independent-review/final/old-IO/private-missing/cargo-home/bin/cargo-osdk",
+        "source_sha256": "b27992bff212ee2736401892685e6d08bad31b83ee872a3c0dc5d5c89f0a32ea",
+        "error": null
+      },
+      "private-receipt-mismatch": {
+        "returncode": 0,
+        "passed": true,
+        "installed_path": "/workspace/scratch/ae1a8cf05419/sdk-debug-independent-review/final/old-IO/private-receipt-mismatch/cargo-home/bin/cargo-osdk",
+        "source_sha256": "b27992bff212ee2736401892685e6d08bad31b83ee872a3c0dc5d5c89f0a32ea",
+        "error": null
+      }
+    }
+  },
+  "limitations": [
+    "The helper records a post-build SDK file observation; it does not prove immutable custody of bytes executed earlier.",
+    "Focused public CLI fixtures replace heavy work explicitly; they are not a kernel build or GDB/QEMU execution."
+  ],
+  "utc": "2026-10-17T04:24:29.093405+00:00"
+}

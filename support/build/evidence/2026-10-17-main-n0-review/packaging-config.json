@@ -1,0 +1,865 @@
+{
+  "schema": 1,
+  "groups": [
+    {
+      "name": "environment",
+      "root": "/workspace/scratch/ae1a8cf05419/env-recovery",
+      "expected_checksum_sha256": "1a29b92fa9c380defe5905e47c4e2f634533c72ab16008cc9c379c3022be021f",
+      "expected_members": 171
+    },
+    {
+      "name": "monitor-review",
+      "root": "/workspace/scratch/ae1a8cf05419/monitor-review/deliverable",
+      "expected_checksum_sha256": "81b484e70b8cbc11866eed005fa9f905f0c560549f196bdc98370034b5166cdc",
+      "expected_members": 92
+    },
+    {
+      "name": "runner-lifecycle",
+      "root": "/workspace/scratch/ae1a8cf05419/runner-lifecycle-review",
+      "expected_checksum_sha256": "825254d5b9cfa407842e80407f70a3282f6dad04580faf22aef4dd0cca52b65f",
+      "expected_members": 337
+    },
+    {
+      "name": "runner-cleanup-grace",
+      "root": "/workspace/scratch/ae1a8cf05419/runner-lifecycle-review/cleanup-grace",
+      "expected_checksum_sha256": "3c105c176a29c9661ffcdbe8c8a52353d67ba99739b6c2a695b3d724e9fc9784",
+      "expected_members": 335
+    },
+    {
+      "name": "qemu-cleanup",
+      "root": "/workspace/scratch/ae1a8cf05419/qemu-cleanup-review",
+      "expected_checksum_sha256": "c6de8e50de0b6e5628957f0161ce469c0ab9ddcc8069705ffca2633a7b5e33b8",
+      "expected_members": 74
+    },
+    {
+      "name": "ci-owner",
+      "root": "/workspace/scratch/ae1a8cf05419/ci-owner-readback",
+      "expected_checksum_sha256": "be5ffe8591ffd39f8d5a0d622c48604fbc032af26a60441f2b87ba610bb5a626",
+      "expected_members": 38
+    },
+    {
+      "name": "main-initial",
+      "root": "/workspace/scratch/ae1a8cf05419/main-integration-review",
+      "expected_checksum_sha256": "d0ede5cba39d0ca648db9e4b30253cf57c8e1ac89ab27a676759b29b9ff8199a",
+      "expected_members": 10
+    },
+    {
+      "name": "main-debit",
+      "root": "/workspace/scratch/ae1a8cf05419/main-integration-review/final-debit-review",
+      "expected_checksum_sha256": "ddd3c41e827cfdc101146dc2c6728b3013513eb6e81aa686c9ab60e722995d46",
+      "expected_members": 23
+    },
+    {
+      "name": "independent-code",
+      "root": "/workspace/scratch/ae1a8cf05419/current-code-independent-review",
+      "expected_checksum_sha256": "b5dfe7056dd6d95384fff2304c1f77b8d1ae7076f16eac239757c59404540940",
+      "expected_members": 63
+    },
+    {
+      "name": "source-bridge",
+      "root": "/workspace/scratch/ae1a8cf05419/current-source-bridge",
+      "expected_checksum_sha256": "87e378ed1d706792b80c9ccb46ef690868a4e878842c5a3559d8da83be4abb66",
+      "expected_members": 1156
+    },
+    {
+      "name": "final-ci-readback",
+      "root": "/workspace/scratch/ae1a8cf05419/current-final-ci-readback",
+      "expected_checksum_sha256": "1ae11000af1470f304b7a1b3edd359baabc7b7b9a3fd8fe81436c1e1d431cafa",
+      "expected_members": 25
+    },
+    {
+      "name": "completed-native-v3",
+      "root": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/completed-native-v3/metadata",
+      "expected_checksum_sha256": "7a3c2ba31e06b306a8484f28235b024bb60ee49329f5da7bd3a2913c5e025996",
+      "expected_members": 132
+    },
+    {
+      "name": "native-ostd-completed",
+      "root": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-ostd-completed/metadata",
+      "expected_checksum_sha256": "ae58da8c622e6d23b85305f399cdca41fe81d12ed852c40e0a833e088c4ad6e2",
+      "expected_members": 12
+    },
+    {
+      "name": "native-ktest-completed",
+      "root": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-ktest-completed/metadata",
+      "expected_checksum_sha256": "3aac41b22df6c4e85831bc0540ec70e145197496cbe3370a81c2efa16ab9eab0",
+      "expected_members": 39
+    },
+    {
+      "name": "native-osdk-completed",
+      "root": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-osdk-completed/metadata",
+      "expected_checksum_sha256": "8475114c05153da08ded1f6c329729ab476fb2f3359b87fd47e1d2072c43143e",
+      "expected_members": 479
+    },
+    {
+      "name": "native-pinned-probes-completed",
+      "root": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-pinned-probes-completed/metadata",
+      "expected_checksum_sha256": "e88a804e79ac5ccc1e018b83af79aac41c6c799ace002ab71cffdd2cf9157da8",
+      "expected_members": 47
+    },
+    {
+      "name": "root-round-controls-completed",
+      "root": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/root-round-controls-completed/metadata",
+      "expected_checksum_sha256": "4625c9a39d88f65c85dca8104637af1341c841ac355d4bd4750f86d241b0d487",
+      "expected_members": 62
+    },
+    {
+      "name": "packager-history-completed",
+      "root": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/packager-history-completed/metadata",
+      "expected_checksum_sha256": "83ed5758500b992c76ffddc749c5de5bd71c82ac117b2be6f3f70b41ebfeae4d",
+      "expected_members": 49
+    },
+    {
+      "name": "post-native-metadata-completed",
+      "root": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/post-native-metadata-completed/metadata",
+      "expected_checksum_sha256": "aa41d5855d65f9544a66b44b40fcba9199e41773c3ff1048306d384508e1a8bf",
+      "expected_members": 10
+    },
+    {
+      "name": "owner-launcher-v1",
+      "root": "/workspace/scratch/ae1a8cf05419/round-current/owner-probe-harness-evidence",
+      "expected_checksum_sha256": "dcf2d6d722308188f90ed1325a02231edfe1316c15b2f54245b4e080f8ad3b2d",
+      "expected_members": 10
+    },
+    {
+      "name": "owner-launcher-v2",
+      "root": "/workspace/scratch/ae1a8cf05419/round-current/owner-probe-v2-harness-evidence",
+      "expected_checksum_sha256": "d3b29dc21b0139280e28ac6744432107f534a729ddb5fcbdceddc3a024bb1b73",
+      "expected_members": 15
+    },
+    {
+      "name": "launcher-independent",
+      "root": "/workspace/scratch/ae1a8cf05419/monitor-review/launcher-independent",
+      "expected_checksum_sha256": "a8f598706a08d6f6f0b51093ff4fd3c06b642730b9dd1d39b01325b1a2591f80",
+      "expected_members": 5
+    },
+    {
+      "name": "native-probes-independent",
+      "root": "/workspace/scratch/ae1a8cf05419/monitor-review/native-probes-independent",
+      "expected_checksum_sha256": "352c685f0a0ee550077529dc547b8a5068b82a0727084a3d278efd8ff6d3b144",
+      "expected_members": 5
+    },
+    {
+      "name": "native-cpu-timeout-review",
+      "root": "/workspace/scratch/ae1a8cf05419/native-cpu-timeout-review",
+      "expected_checksum_sha256": "ede0d9a34611f81579050ac4d4af6193956eabb0afa032a026c64e7d25880a6e",
+      "expected_members": 298
+    },
+    {
+      "name": "metadata-duration-review",
+      "root": "/workspace/scratch/ae1a8cf05419/native-metadata-duration-review",
+      "expected_checksum_sha256": "f6c5a7ff56b9c53ac6561cd7133f36317d7abc4c038b8fa1b3a514eeccd3ce44",
+      "expected_members": 5
+    },
+    {
+      "name": "publication-source-inputs",
+      "root": "/workspace/scratch/ae1a8cf05419/current-publication/newpublication-inputs",
+      "expected_checksum_sha256": "078736f87956a02d09fe3389df5396b9a11aab794c4cfa3aac71596c8376827b",
+      "expected_members": 16
+    },
+    {
+      "name": "final-docs-v4",
+      "root": "/workspace/scratch/ae1a8cf05419/current-final-report-v4",
+      "expected_checksum_sha256": "e227247e6b57ce3b019dd96d9598f1ff954c9f1bf22e240072879cc3d410dada",
+      "expected_members": 7
+    },
+    {
+      "name": "historical-final-docs-v1",
+      "root": "/workspace/scratch/ae1a8cf05419/current-final-report-draft",
+      "expected_checksum_sha256": "162f70df65a6ce423c934e0785ab9ea6df0e97834c2ae8862af0df6e5fe12d28",
+      "expected_members": 5
+    },
+    {
+      "name": "historical-final-docs-v2",
+      "root": "/workspace/scratch/ae1a8cf05419/current-final-report-v2",
+      "expected_checksum_sha256": "64ad74967e82fc002a0c396bd1c38ffa85e27cca1b004a56a0d4048620c77241",
+      "expected_members": 7
+    },
+    {
+      "name": "historical-final-docs-v3",
+      "root": "/workspace/scratch/ae1a8cf05419/current-final-report-v3",
+      "expected_checksum_sha256": "8be6e9d16003a9d7e379f7bf27784bb9c3369ae1cbd6e87e63190a3608172382",
+      "expected_members": 7
+    }
+  ],
+  "artifacts": [
+    {
+      "bytes": 1107990,
+      "capture_observation_source_relative": "native-current/ordinary/build/initramfs.cpio.gz",
+      "capture_scope": "Post-completion stable-FD byte capture; no new prelaunch or immutable-execution claim.",
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-current/ordinary/build/initramfs.cpio.gz",
+      "role": "native-current/ordinary/build/initramfs.cpio.gz",
+      "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/completed-native-v3/payloads/86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+    },
+    {
+      "bytes": 8582328,
+      "capture_observation_source_relative": "native-current/ordinary/build/osdk/bin/cargo-osdk",
+      "capture_scope": "Post-completion stable-FD byte capture; no new prelaunch or immutable-execution claim.",
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-current/ordinary/build/osdk/bin/cargo-osdk",
+      "role": "native-current/ordinary/build/osdk/bin/cargo-osdk",
+      "sha256": "0d7aaf6764ae45cd29da5ca62d4177eab8d50bf0a2ab0c9ca7789d730a9c7fb2",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/completed-native-v3/payloads/0d7aaf6764ae45cd29da5ca62d4177eab8d50bf0a2ab0c9ca7789d730a9c7fb2"
+    },
+    {
+      "bytes": 111763360,
+      "capture_observation_source_relative": "native-isolated/debug/full-symbol.elf",
+      "capture_scope": "Post-completion stable-FD byte capture; no new prelaunch or immutable-execution claim.",
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/debug/full-symbol.elf",
+      "role": "native-isolated/debug/full-symbol.elf",
+      "sha256": "e14bcc8b93ab47c29e9676c5c6f98e717d528780cf3b9cc339b9124ad8f48762",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/completed-native-v3/payloads/e14bcc8b93ab47c29e9676c5c6f98e717d528780cf3b9cc339b9124ad8f48762"
+    },
+    {
+      "bytes": 262144,
+      "capture_observation_source_relative": "native-isolated/debug/run/boot/artifacts-nh37moei/bios.bin",
+      "capture_scope": "Post-completion stable-FD byte capture; no new prelaunch or immutable-execution claim.",
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/debug/run/boot/artifacts-nh37moei/bios.bin",
+      "role": "native-isolated/debug/run/boot/artifacts-nh37moei/bios.bin",
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/completed-native-v3/payloads/1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    {
+      "bytes": 1107990,
+      "capture_observation_source_relative": "native-isolated/debug/run/boot/artifacts-nh37moei/initramfs.cpio.gz",
+      "capture_scope": "Post-completion stable-FD byte capture; no new prelaunch or immutable-execution claim.",
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/debug/run/boot/artifacts-nh37moei/initramfs.cpio.gz",
+      "role": "native-isolated/debug/run/boot/artifacts-nh37moei/initramfs.cpio.gz",
+      "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/completed-native-v3/payloads/86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+    },
+    {
+      "bytes": 5947048,
+      "capture_observation_source_relative": "native-isolated/debug/run/boot/artifacts-nh37moei/kernel.elf",
+      "capture_scope": "Post-completion stable-FD byte capture; no new prelaunch or immutable-execution claim.",
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/debug/run/boot/artifacts-nh37moei/kernel.elf",
+      "role": "native-isolated/debug/run/boot/artifacts-nh37moei/kernel.elf",
+      "sha256": "929c7b652e8bee198e8eca40bc13fd4426e0adff35fa93a69868bca6888b7b73",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/completed-native-v3/payloads/929c7b652e8bee198e8eca40bc13fd4426e0adff35fa93a69868bca6888b7b73"
+    },
+    {
+      "bytes": 1107990,
+      "capture_observation_source_relative": "native-isolated/debug/run/boot/initramfs.cpio.gz",
+      "capture_scope": "Post-completion stable-FD byte capture; no new prelaunch or immutable-execution claim.",
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/debug/run/boot/initramfs.cpio.gz",
+      "role": "native-isolated/debug/run/boot/initramfs.cpio.gz",
+      "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/completed-native-v3/payloads/86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+    },
+    {
+      "bytes": 8582544,
+      "capture_observation_source_relative": "native-isolated/debug/run/boot/osdk/bin/cargo-osdk",
+      "capture_scope": "Post-completion stable-FD byte capture; no new prelaunch or immutable-execution claim.",
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/debug/run/boot/osdk/bin/cargo-osdk",
+      "role": "native-isolated/debug/run/boot/osdk/bin/cargo-osdk",
+      "sha256": "3ae8e9a2edcef2251946faf4557b2b9042e7a17f28e464bddfac3e800db5723f",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/completed-native-v3/payloads/3ae8e9a2edcef2251946faf4557b2b9042e7a17f28e464bddfac3e800db5723f"
+    },
+    {
+      "bytes": 262144,
+      "capture_observation_source_relative": "native-isolated/ordinary/boot/artifacts-cl5e1evk/bios.bin",
+      "capture_scope": "Post-completion stable-FD byte capture; no new prelaunch or immutable-execution claim.",
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/ordinary/boot/artifacts-cl5e1evk/bios.bin",
+      "role": "native-isolated/ordinary/boot/artifacts-cl5e1evk/bios.bin",
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/completed-native-v3/payloads/1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    {
+      "bytes": 1107990,
+      "capture_observation_source_relative": "native-isolated/ordinary/boot/artifacts-cl5e1evk/initramfs.cpio.gz",
+      "capture_scope": "Post-completion stable-FD byte capture; no new prelaunch or immutable-execution claim.",
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/ordinary/boot/artifacts-cl5e1evk/initramfs.cpio.gz",
+      "role": "native-isolated/ordinary/boot/artifacts-cl5e1evk/initramfs.cpio.gz",
+      "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/completed-native-v3/payloads/86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+    },
+    {
+      "bytes": 8266592,
+      "capture_observation_source_relative": "native-isolated/ordinary/boot/artifacts-cl5e1evk/kernel.elf",
+      "capture_scope": "Post-completion stable-FD byte capture; no new prelaunch or immutable-execution claim.",
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/ordinary/boot/artifacts-cl5e1evk/kernel.elf",
+      "role": "native-isolated/ordinary/boot/artifacts-cl5e1evk/kernel.elf",
+      "sha256": "ed469d2ff7636b7d60c52a011b1d9685d8b3096bd79f7c94ef813bdb023e6dc9",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/completed-native-v3/payloads/ed469d2ff7636b7d60c52a011b1d9685d8b3096bd79f7c94ef813bdb023e6dc9"
+    },
+    {
+      "bytes": 1107990,
+      "capture_observation_source_relative": "native-isolated/ordinary/boot/initramfs.cpio.gz",
+      "capture_scope": "Post-completion stable-FD byte capture; no new prelaunch or immutable-execution claim.",
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/ordinary/boot/initramfs.cpio.gz",
+      "role": "native-isolated/ordinary/boot/initramfs.cpio.gz",
+      "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/completed-native-v3/payloads/86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+    },
+    {
+      "bytes": 8582544,
+      "capture_observation_source_relative": "native-isolated/ordinary/boot/osdk/bin/cargo-osdk",
+      "capture_scope": "Post-completion stable-FD byte capture; no new prelaunch or immutable-execution claim.",
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/ordinary/boot/osdk/bin/cargo-osdk",
+      "role": "native-isolated/ordinary/boot/osdk/bin/cargo-osdk",
+      "sha256": "3ae8e9a2edcef2251946faf4557b2b9042e7a17f28e464bddfac3e800db5723f",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/completed-native-v3/payloads/3ae8e9a2edcef2251946faf4557b2b9042e7a17f28e464bddfac3e800db5723f"
+    },
+    {
+      "bytes": 1107990,
+      "capture_observation_source_relative": "native-isolated/ordinary/build/initramfs.cpio.gz",
+      "capture_scope": "Post-completion stable-FD byte capture; no new prelaunch or immutable-execution claim.",
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/ordinary/build/initramfs.cpio.gz",
+      "role": "native-isolated/ordinary/build/initramfs.cpio.gz",
+      "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/completed-native-v3/payloads/86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+    },
+    {
+      "bytes": 8582544,
+      "capture_observation_source_relative": "native-isolated/ordinary/build/osdk/bin/cargo-osdk",
+      "capture_scope": "Post-completion stable-FD byte capture; no new prelaunch or immutable-execution claim.",
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/ordinary/build/osdk/bin/cargo-osdk",
+      "role": "native-isolated/ordinary/build/osdk/bin/cargo-osdk",
+      "sha256": "3ae8e9a2edcef2251946faf4557b2b9042e7a17f28e464bddfac3e800db5723f",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/completed-native-v3/payloads/3ae8e9a2edcef2251946faf4557b2b9042e7a17f28e464bddfac3e800db5723f"
+    },
+    {
+      "bytes": 8266592,
+      "capture_observation_source_relative": "native-isolated/ordinary/first-kernel.elf",
+      "capture_scope": "Post-completion stable-FD byte capture; no new prelaunch or immutable-execution claim.",
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/ordinary/first-kernel.elf",
+      "role": "native-isolated/ordinary/first-kernel.elf",
+      "sha256": "ed469d2ff7636b7d60c52a011b1d9685d8b3096bd79f7c94ef813bdb023e6dc9",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/completed-native-v3/payloads/ed469d2ff7636b7d60c52a011b1d9685d8b3096bd79f7c94ef813bdb023e6dc9"
+    },
+    {
+      "bytes": 1502239,
+      "capture_observation_source_relative": "native-isolated/probes-retry/quota-1cpu/initramfs.cpio.gz",
+      "capture_scope": "Post-completion stable-FD byte capture; no new prelaunch or immutable-execution claim.",
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/probes-retry/quota-1cpu/initramfs.cpio.gz",
+      "role": "native-isolated/probes-retry/quota-1cpu/initramfs.cpio.gz",
+      "sha256": "69f8bb262db4291593a90f8ca62cee2c61f2e29ec76146a7ebcf334386cb6956",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/completed-native-v3/payloads/69f8bb262db4291593a90f8ca62cee2c61f2e29ec76146a7ebcf334386cb6956"
+    },
+    {
+      "bytes": 924512,
+      "capture_observation_source_relative": "native-isolated/probes-retry/quota-1cpu/probe",
+      "capture_scope": "Post-completion stable-FD byte capture; no new prelaunch or immutable-execution claim.",
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/probes-retry/quota-1cpu/probe",
+      "role": "native-isolated/probes-retry/quota-1cpu/probe",
+      "sha256": "5e7931a6ab9a1ba62c9a612d906b0581531d5b8fa045edb79f9865fa85238cac",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/completed-native-v3/payloads/5e7931a6ab9a1ba62c9a612d906b0581531d5b8fa045edb79f9865fa85238cac"
+    },
+    {
+      "bytes": 1502239,
+      "capture_observation_source_relative": "native-isolated/probes/quota-1cpu/initramfs.cpio.gz",
+      "capture_scope": "Post-completion stable-FD byte capture; no new prelaunch or immutable-execution claim.",
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/probes/quota-1cpu/initramfs.cpio.gz",
+      "role": "native-isolated/probes/quota-1cpu/initramfs.cpio.gz",
+      "sha256": "69f8bb262db4291593a90f8ca62cee2c61f2e29ec76146a7ebcf334386cb6956",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/completed-native-v3/payloads/69f8bb262db4291593a90f8ca62cee2c61f2e29ec76146a7ebcf334386cb6956"
+    },
+    {
+      "bytes": 924512,
+      "capture_observation_source_relative": "native-isolated/probes/quota-1cpu/probe",
+      "capture_scope": "Post-completion stable-FD byte capture; no new prelaunch or immutable-execution claim.",
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/probes/quota-1cpu/probe",
+      "role": "native-isolated/probes/quota-1cpu/probe",
+      "sha256": "5e7931a6ab9a1ba62c9a612d906b0581531d5b8fa045edb79f9865fa85238cac",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/completed-native-v3/payloads/5e7931a6ab9a1ba62c9a612d906b0581531d5b8fa045edb79f9865fa85238cac"
+    },
+    {
+      "bytes": 799384,
+      "capture_observation_source_relative": "native-isolated/queryabi-retry/run/hos2-queryabi",
+      "capture_scope": "Post-completion stable-FD byte capture; no new prelaunch or immutable-execution claim.",
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/queryabi-retry/run/hos2-queryabi",
+      "role": "native-isolated/queryabi-retry/run/hos2-queryabi",
+      "sha256": "af3a5f9b079eee5969c34804375c2cc143d84062e62af3ce20c8e3d469a9a953",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/completed-native-v3/payloads/af3a5f9b079eee5969c34804375c2cc143d84062e62af3ce20c8e3d469a9a953"
+    },
+    {
+      "bytes": 1453809,
+      "capture_observation_source_relative": "native-isolated/queryabi-retry/run/initramfs.cpio.gz",
+      "capture_scope": "Post-completion stable-FD byte capture; no new prelaunch or immutable-execution claim.",
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/queryabi-retry/run/initramfs.cpio.gz",
+      "role": "native-isolated/queryabi-retry/run/initramfs.cpio.gz",
+      "sha256": "dafb870861f0a8fa62e9d77f24f4f1dbe617b084bd05ba981d27e3d9332581c9",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/completed-native-v3/payloads/dafb870861f0a8fa62e9d77f24f4f1dbe617b084bd05ba981d27e3d9332581c9"
+    },
+    {
+      "bytes": 799384,
+      "capture_observation_source_relative": "native-isolated/queryabi/run/hos2-queryabi",
+      "capture_scope": "Post-completion stable-FD byte capture; no new prelaunch or immutable-execution claim.",
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/queryabi/run/hos2-queryabi",
+      "role": "native-isolated/queryabi/run/hos2-queryabi",
+      "sha256": "af3a5f9b079eee5969c34804375c2cc143d84062e62af3ce20c8e3d469a9a953",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/completed-native-v3/payloads/af3a5f9b079eee5969c34804375c2cc143d84062e62af3ce20c8e3d469a9a953"
+    },
+    {
+      "bytes": 1453809,
+      "capture_observation_source_relative": "native-isolated/queryabi/run/initramfs.cpio.gz",
+      "capture_scope": "Post-completion stable-FD byte capture; no new prelaunch or immutable-execution claim.",
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/queryabi/run/initramfs.cpio.gz",
+      "role": "native-isolated/queryabi/run/initramfs.cpio.gz",
+      "sha256": "dafb870861f0a8fa62e9d77f24f4f1dbe617b084bd05ba981d27e3d9332581c9",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/completed-native-v3/payloads/dafb870861f0a8fa62e9d77f24f4f1dbe617b084bd05ba981d27e3d9332581c9"
+    },
+    {
+      "bytes": 12987,
+      "capture_observation_source_relative": "round-current/queryabi-generated-cache/control/run_queryabi_guest.cpython-312.pyc",
+      "capture_scope": "Explicit quarantined generated-cache byte evidence from root-authorized preserved paths; retained as SHA-named opaque data, never executed by this packager.",
+      "original_source": "/workspace/scratch/ae1a8cf05419/round-current/queryabi-generated-cache/control/run_queryabi_guest.cpython-312.pyc",
+      "role": "round-current/queryabi-generated-cache/control/run_queryabi_guest.cpython-312.pyc",
+      "sha256": "e2ee7dd04dcfa97eaee14d9f101bcf3e3485c06f6202edcb04a9be8ab62a7726",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/completed-native-v3/payloads/e2ee7dd04dcfa97eaee14d9f101bcf3e3485c06f6202edcb04a9be8ab62a7726"
+    },
+    {
+      "bytes": 12864,
+      "capture_observation_source_relative": "round-current/queryabi-generated-cache/organ_backend/run_guest_probe.cpython-312.pyc",
+      "capture_scope": "Explicit quarantined generated-cache byte evidence from root-authorized preserved paths; retained as SHA-named opaque data, never executed by this packager.",
+      "original_source": "/workspace/scratch/ae1a8cf05419/round-current/queryabi-generated-cache/organ_backend/run_guest_probe.cpython-312.pyc",
+      "role": "round-current/queryabi-generated-cache/organ_backend/run_guest_probe.cpython-312.pyc",
+      "sha256": "4018618b7b1b4f6ec7b1da38bd6cc5937143ee45dc44a19030b4379fa1875275",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/completed-native-v3/payloads/4018618b7b1b4f6ec7b1da38bd6cc5937143ee45dc44a19030b4379fa1875275"
+    },
+    {
+      "bytes": 10937,
+      "capture_observation_source_relative": "round-current/__pycache__/run-native.cpython-312.pyc",
+      "capture_scope": "Explicit quarantined generated-cache byte evidence from root-authorized preserved paths; retained as SHA-named opaque data, never executed by this packager.",
+      "original_source": "/workspace/scratch/ae1a8cf05419/round-current/__pycache__/run-native.cpython-312.pyc",
+      "role": "round-current/__pycache__/run-native.cpython-312.pyc",
+      "sha256": "6a74bd112d02b117ce7e41a968c32963fe701be9f613e4c0c90eebef4efa6326",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/completed-native-v3/payloads/6a74bd112d02b117ce7e41a968c32963fe701be9f613e4c0c90eebef4efa6326"
+    },
+    {
+      "bytes": 7724,
+      "capture_observation_source_relative": "round-current/__pycache__/queryabi-native.cpython-312.pyc",
+      "capture_scope": "Explicit quarantined generated-cache byte evidence from root-authorized preserved paths; retained as SHA-named opaque data, never executed by this packager.",
+      "original_source": "/workspace/scratch/ae1a8cf05419/round-current/__pycache__/queryabi-native.cpython-312.pyc",
+      "role": "round-current/__pycache__/queryabi-native.cpython-312.pyc",
+      "sha256": "8fd3eb7b242b3458b2be390b8a07f420178fa33ea306c1398df1c749d7a62ac1",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/completed-native-v3/payloads/8fd3eb7b242b3458b2be390b8a07f420178fa33ea306c1398df1c749d7a62ac1"
+    },
+    {
+      "bytes": 2004568,
+      "capture_observation": 8,
+      "original_source": "/tmp/trillionnium-a01-native-fd0/kernel/asterinas/target/osdk/ostd/ostd-osdk-bin.elf",
+      "role": "ktest-ostd-loaded-kernel",
+      "sha256": "a1a55815bbb566102cef62e1272b88825be16164f476d454fdfe5318d5476c8f",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-ostd-completed/payloads/a1a55815bbb566102cef62e1272b88825be16164f476d454fdfe5318d5476c8f"
+    },
+    {
+      "bytes": 262144,
+      "capture_observation": 9,
+      "original_source": "/workspace/scratch/ae1a8cf05419/env-recovery/native-tools/root/usr/share/seabios/bios-256k.bin",
+      "role": "ktest-ostd-loaded-bios",
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-ostd-completed/payloads/1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    {
+      "bytes": 2004568,
+      "capture_observation": 35,
+      "original_source": "/tmp/trillionnium-a01-native-fd0/kernel/asterinas/target/osdk/ostd/ostd-osdk-bin.elf",
+      "role": "ktest-complete-ostd-loaded-kernel",
+      "sha256": "a1a55815bbb566102cef62e1272b88825be16164f476d454fdfe5318d5476c8f",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-ktest-completed/payloads/a1a55815bbb566102cef62e1272b88825be16164f476d454fdfe5318d5476c8f"
+    },
+    {
+      "bytes": 262144,
+      "capture_observation": 36,
+      "original_source": "/workspace/scratch/ae1a8cf05419/env-recovery/native-tools/root/usr/share/seabios/bios-256k.bin",
+      "role": "ktest-complete-ostd-loaded-bios",
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-ktest-completed/payloads/1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    {
+      "bytes": 6524672,
+      "capture_observation": 37,
+      "original_source": "/tmp/trillionnium-a01-native-fd0/kernel/asterinas/target/osdk/aster-core/aster-core-osdk-bin.elf",
+      "role": "ktest-complete-aster-core-loaded-kernel",
+      "sha256": "2cfd5e25f2caf62997195fa38a76607f13d9c2e4ca6202b1d5568db87a34a8ed",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-ktest-completed/payloads/2cfd5e25f2caf62997195fa38a76607f13d9c2e4ca6202b1d5568db87a34a8ed"
+    },
+    {
+      "bytes": 262144,
+      "capture_observation": 38,
+      "original_source": "/workspace/scratch/ae1a8cf05419/env-recovery/native-tools/root/usr/share/seabios/bios-256k.bin",
+      "role": "ktest-complete-aster-core-loaded-bios",
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-ktest-completed/payloads/1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    {
+      "bytes": 8582544,
+      "capture_observation": 39,
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/ktest/run/osdk/bin/cargo-osdk",
+      "role": "ktest-complete-private-sdk",
+      "sha256": "3ae8e9a2edcef2251946faf4557b2b9042e7a17f28e464bddfac3e800db5723f",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-ktest-completed/payloads/3ae8e9a2edcef2251946faf4557b2b9042e7a17f28e464bddfac3e800db5723f"
+    },
+    {
+      "bytes": 27777224,
+      "capture_observation": 475,
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/osdk/run/case-01/guests/guest-001/artifacts/kernel.elf",
+      "role": "osdk/case-01/guests/guest-001/qemu.json/kernel",
+      "sha256": "54fd1c331435921cf78c7ed3c123165c718d2bf4f4a46ea56350bb967dbf790f",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-osdk-completed/payloads/54fd1c331435921cf78c7ed3c123165c718d2bf4f4a46ea56350bb967dbf790f"
+    },
+    {
+      "bytes": 262144,
+      "capture_observation": 476,
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/osdk/run/case-01/guests/guest-001/artifacts/bios.bin",
+      "role": "osdk/case-01/guests/guest-001/qemu.json/bios",
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-osdk-completed/payloads/1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    {
+      "bytes": 27777312,
+      "capture_observation": 477,
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/osdk/run/case-02/guests/guest-001/artifacts/kernel.elf",
+      "role": "osdk/case-02/guests/guest-001/qemu.json/kernel",
+      "sha256": "4676c794f659237903ba2452862b6e5e477bfdfcc3456f0ed9684df0d13f27ba",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-osdk-completed/payloads/4676c794f659237903ba2452862b6e5e477bfdfcc3456f0ed9684df0d13f27ba"
+    },
+    {
+      "bytes": 262144,
+      "capture_observation": 478,
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/osdk/run/case-02/guests/guest-001/artifacts/bios.bin",
+      "role": "osdk/case-02/guests/guest-001/qemu.json/bios",
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-osdk-completed/payloads/1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    {
+      "bytes": 27777008,
+      "capture_observation": 479,
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/osdk/run/case-14/guests/guest-001/artifacts/kernel.elf",
+      "role": "osdk/case-14/guests/guest-001/qemu.json/kernel",
+      "sha256": "eeb971a856cd330b1607193904258476722933f72b7466c5ef52800277c94cbb",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-osdk-completed/payloads/eeb971a856cd330b1607193904258476722933f72b7466c5ef52800277c94cbb"
+    },
+    {
+      "bytes": 262144,
+      "capture_observation": 480,
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/osdk/run/case-14/guests/guest-001/artifacts/bios.bin",
+      "role": "osdk/case-14/guests/guest-001/qemu.json/bios",
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-osdk-completed/payloads/1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    {
+      "bytes": 41549072,
+      "capture_observation": 481,
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/osdk/run/case-15/guests/guest-001/artifacts/kernel.elf",
+      "role": "osdk/case-15/guests/guest-001/qemu.json/kernel",
+      "sha256": "95a02664c7446037768fb0b6c4b28fbb55d67db8bab890b42a5eb2b0734b820a",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-osdk-completed/payloads/95a02664c7446037768fb0b6c4b28fbb55d67db8bab890b42a5eb2b0734b820a"
+    },
+    {
+      "bytes": 262144,
+      "capture_observation": 482,
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/osdk/run/case-15/guests/guest-001/artifacts/bios.bin",
+      "role": "osdk/case-15/guests/guest-001/qemu.json/bios",
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-osdk-completed/payloads/1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    {
+      "bytes": 41549072,
+      "capture_observation": 483,
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/osdk/run/case-15/guests/guest-001/artifacts/coverage-symbol.elf",
+      "role": "osdk/case-15/guests/guest-001/qemu.json/coverage-symbol",
+      "sha256": "801b1fb0c2fbaae9e042320fae7ca6a328c1d64b53e341db3fcd4e2acae9523c",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-osdk-completed/payloads/801b1fb0c2fbaae9e042320fae7ca6a328c1d64b53e341db3fcd4e2acae9523c"
+    },
+    {
+      "bytes": 27776888,
+      "capture_observation": 484,
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/osdk/run/case-18/guests/guest-001/artifacts/kernel.elf",
+      "role": "osdk/case-18/guests/guest-001/qemu.json/kernel",
+      "sha256": "cd0ed671409171bde3b95f8a22350b44aa1d81712c59fdce909b9026d86c7457",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-osdk-completed/payloads/cd0ed671409171bde3b95f8a22350b44aa1d81712c59fdce909b9026d86c7457"
+    },
+    {
+      "bytes": 262144,
+      "capture_observation": 485,
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/osdk/run/case-18/guests/guest-001/artifacts/bios.bin",
+      "role": "osdk/case-18/guests/guest-001/qemu.json/bios",
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-osdk-completed/payloads/1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    {
+      "bytes": 39836232,
+      "capture_observation": 486,
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/osdk/run/case-19/guests/guest-001/artifacts/kernel.elf",
+      "role": "osdk/case-19/guests/guest-001/qemu.json/kernel",
+      "sha256": "e952a2f2862c00a5f7b0efb9097048db1cdd351bf51da874555c456c1e69c066",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-osdk-completed/payloads/e952a2f2862c00a5f7b0efb9097048db1cdd351bf51da874555c456c1e69c066"
+    },
+    {
+      "bytes": 262144,
+      "capture_observation": 487,
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/osdk/run/case-19/guests/guest-001/artifacts/bios.bin",
+      "role": "osdk/case-19/guests/guest-001/qemu.json/bios",
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-osdk-completed/payloads/1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    {
+      "bytes": 27798568,
+      "capture_observation": 488,
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/osdk/run/case-20/guests/guest-001/artifacts/kernel.elf",
+      "role": "osdk/case-20/guests/guest-001/qemu.json/kernel",
+      "sha256": "000c11650483688c7d2c7d43f61b4554cb4ef615ffd72119ae346d12a923451e",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-osdk-completed/payloads/000c11650483688c7d2c7d43f61b4554cb4ef615ffd72119ae346d12a923451e"
+    },
+    {
+      "bytes": 262144,
+      "capture_observation": 489,
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/osdk/run/case-20/guests/guest-001/artifacts/bios.bin",
+      "role": "osdk/case-20/guests/guest-001/qemu.json/bios",
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-osdk-completed/payloads/1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    {
+      "bytes": 39837464,
+      "capture_observation": 490,
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/osdk/run/case-20/guests/guest-002/artifacts/kernel.elf",
+      "role": "osdk/case-20/guests/guest-002/qemu.json/kernel",
+      "sha256": "6ae9b88c255465683d6d76b367132733ec2cf8bf3bf55acfaee64e1494e666d2",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-osdk-completed/payloads/6ae9b88c255465683d6d76b367132733ec2cf8bf3bf55acfaee64e1494e666d2"
+    },
+    {
+      "bytes": 262144,
+      "capture_observation": 491,
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/osdk/run/case-20/guests/guest-002/artifacts/bios.bin",
+      "role": "osdk/case-20/guests/guest-002/qemu.json/bios",
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-osdk-completed/payloads/1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    {
+      "bytes": 39837464,
+      "capture_observation": 492,
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/osdk/run/case-20/guests/guest-003/artifacts/kernel.elf",
+      "role": "osdk/case-20/guests/guest-003/qemu.json/kernel",
+      "sha256": "965b1e55ffb3f37301f097426b7263111a37f6496c556c02c1970a75b6f0e779",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-osdk-completed/payloads/965b1e55ffb3f37301f097426b7263111a37f6496c556c02c1970a75b6f0e779"
+    },
+    {
+      "bytes": 262144,
+      "capture_observation": 493,
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/osdk/run/case-20/guests/guest-003/artifacts/bios.bin",
+      "role": "osdk/case-20/guests/guest-003/qemu.json/bios",
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-osdk-completed/payloads/1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    {
+      "bytes": 28387520,
+      "capture_observation": 494,
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/osdk/run/case-21/guests/guest-001/artifacts/kernel.elf",
+      "role": "osdk/case-21/guests/guest-001/qemu.json/kernel",
+      "sha256": "01dbd28a32e8983375ddd53eb71941007fc6c85362c10c27fb745a11c7d2b00e",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-osdk-completed/payloads/01dbd28a32e8983375ddd53eb71941007fc6c85362c10c27fb745a11c7d2b00e"
+    },
+    {
+      "bytes": 262144,
+      "capture_observation": 495,
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/osdk/run/case-21/guests/guest-001/artifacts/bios.bin",
+      "role": "osdk/case-21/guests/guest-001/qemu.json/bios",
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-osdk-completed/payloads/1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    {
+      "bytes": 28159600,
+      "capture_observation": 496,
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/osdk/run/case-22/guests/guest-001/artifacts/kernel.elf",
+      "role": "osdk/case-22/guests/guest-001/qemu.json/kernel",
+      "sha256": "2f04e71cb5893fd15d5c9c1112e3d97f1f40bfa92652347050d305dde0e522b3",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-osdk-completed/payloads/2f04e71cb5893fd15d5c9c1112e3d97f1f40bfa92652347050d305dde0e522b3"
+    },
+    {
+      "bytes": 262144,
+      "capture_observation": 497,
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/osdk/run/case-22/guests/guest-001/artifacts/bios.bin",
+      "role": "osdk/case-22/guests/guest-001/qemu.json/bios",
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-osdk-completed/payloads/1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    {
+      "bytes": 90449800,
+      "capture_observation": 498,
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/osdk/run/target/debug/cargo-osdk",
+      "role": "osdk-actual-sdk",
+      "sha256": "039f795794fe18ef091f7375859bc4bae90edde6a4d9b021bd815feb741a2e70",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-osdk-completed/payloads/039f795794fe18ef091f7375859bc4bae90edde6a4d9b021bd815feb741a2e70"
+    },
+    {
+      "bytes": 29070784,
+      "capture_observation": 499,
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/osdk/run/target/debug/deps/integration-6ff40639aacd57f2",
+      "role": "osdk-actual-host-harness",
+      "sha256": "0964af1f243278e65bc561d58da6e00cad37126a6cae9989063ef21bd577332f",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-osdk-completed/payloads/0964af1f243278e65bc561d58da6e00cad37126a6cae9989063ef21bd577332f"
+    },
+    {
+      "bytes": 2094208,
+      "capture_observation": 500,
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/osdk/run/case-15/coverage/coverage.profraw",
+      "role": "osdk-case15-coverage.profraw",
+      "sha256": "b8efee049a0071dd6d4a9ccfde8c2081c4e01e67b7bc098562ee20ed4c7a55a3",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-osdk-completed/payloads/b8efee049a0071dd6d4a9ccfde8c2081c4e01e67b7bc098562ee20ed4c7a55a3"
+    },
+    {
+      "bytes": 1245424,
+      "capture_observation": 501,
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/osdk/run/case-15/coverage/coverage.profdata",
+      "role": "osdk-case15-coverage.profdata",
+      "sha256": "dbf61c701371f8965da4f81452aa740de62c802e8bdcbc3723b12b823b60a280",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-osdk-completed/payloads/dbf61c701371f8965da4f81452aa740de62c802e8bdcbc3723b12b823b60a280"
+    },
+    {
+      "bytes": 8266592,
+      "capture_observation": 43,
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/ordinary/first-kernel.elf",
+      "role": "pinned-probes-actual-kernel",
+      "sha256": "ed469d2ff7636b7d60c52a011b1d9685d8b3096bd79f7c94ef813bdb023e6dc9",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-pinned-probes-completed/payloads/ed469d2ff7636b7d60c52a011b1d9685d8b3096bd79f7c94ef813bdb023e6dc9"
+    },
+    {
+      "bytes": 262144,
+      "capture_observation": 44,
+      "original_source": "/workspace/scratch/ae1a8cf05419/env-recovery/native-tools/root/usr/share/seabios/bios-256k.bin",
+      "role": "pinned-probes-actual-bios",
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-pinned-probes-completed/payloads/1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    {
+      "bytes": 1502239,
+      "capture_observation": 45,
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/probes-pinned/quota-1cpu/initramfs.cpio.gz",
+      "role": "pinned-probes-quota-1cpu-initramfs",
+      "sha256": "69f8bb262db4291593a90f8ca62cee2c61f2e29ec76146a7ebcf334386cb6956",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-pinned-probes-completed/payloads/69f8bb262db4291593a90f8ca62cee2c61f2e29ec76146a7ebcf334386cb6956"
+    },
+    {
+      "bytes": 924512,
+      "capture_observation": 46,
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/probes-pinned/quota-1cpu/probe",
+      "role": "pinned-probes-quota-1cpu-guest-probe",
+      "sha256": "5e7931a6ab9a1ba62c9a612d906b0581531d5b8fa045edb79f9865fa85238cac",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-pinned-probes-completed/payloads/5e7931a6ab9a1ba62c9a612d906b0581531d5b8fa045edb79f9865fa85238cac"
+    },
+    {
+      "bytes": 1553028,
+      "capture_observation": 47,
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/probes-pinned/quota-2cpu/initramfs.cpio.gz",
+      "role": "pinned-probes-quota-2cpu-initramfs",
+      "sha256": "7e5696a5a4002db2a21e70c893b969a57a47f3a0b7e908bd2f6f38321c9d4125",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-pinned-probes-completed/payloads/7e5696a5a4002db2a21e70c893b969a57a47f3a0b7e908bd2f6f38321c9d4125"
+    },
+    {
+      "bytes": 1028840,
+      "capture_observation": 48,
+      "original_source": "/workspace/scratch/ae1a8cf05419/native-isolated/probes-pinned/quota-2cpu/probe",
+      "role": "pinned-probes-quota-2cpu-guest-probe",
+      "sha256": "570939332f5cba35cd2a3e82f6d089631a3fc5b3a17d869199ead09d6471bd10",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/native-pinned-probes-completed/payloads/570939332f5cba35cd2a3e82f6d089631a3fc5b3a17d869199ead09d6471bd10"
+    }
+  ],
+  "documents": [
+    {
+      "path": "fullpost-native-upstream-lock.json",
+      "source": "/workspace/scratch/ae1a8cf05419/current-evidence-packager/post-native-metadata-completed/metadata/fullpost-native-upstream-lock.json",
+      "sha256": "e87d098480984d482c8638904bda5d98bdd600e9939e2401e8a248f658af3208",
+      "bytes": 67528
+    },
+    {
+      "path": "HANDOFF.md",
+      "source": "/workspace/scratch/ae1a8cf05419/current-final-report-v4/HANDOFF.md",
+      "sha256": "d323de039a581aac0e30548ba1b9d8bbaa7feb893ac8c7532c6cb51cfd6a8669",
+      "bytes": 11131
+    },
+    {
+      "path": "REPORT.md",
+      "source": "/workspace/scratch/ae1a8cf05419/current-final-report-v4/REPORT.md",
+      "sha256": "a400984f34f2a59cab9d0ed6127e1fd7fb7109616c50f703526038c5629009f9",
+      "bytes": 17175
+    },
+    {
+      "path": "actual-ordinary-qemu-command.txt",
+      "source": "/workspace/scratch/ae1a8cf05419/current-final-report-v4/actual-ordinary-qemu-command.txt",
+      "sha256": "8e11057ae913bce551d9e69dad26f25a3d5ad8253d114ff5080ebbad938036e8",
+      "bytes": 949
+    },
+    {
+      "path": "blockers.json",
+      "source": "/workspace/scratch/ae1a8cf05419/current-final-report-v4/blockers.json",
+      "sha256": "12e82797f8b478463a7d7478e99389b099f574fb88cc6b62dd8b722155ab7429",
+      "bytes": 19588
+    },
+    {
+      "path": "draft-state.json",
+      "source": "/workspace/scratch/ae1a8cf05419/current-final-report-v4/draft-state.json",
+      "sha256": "806739c46443b9e76eddd5af881f049c6e715d78127c63d37ffdad835161239a",
+      "bytes": 12963
+    },
+    {
+      "path": "facts.json",
+      "source": "/workspace/scratch/ae1a8cf05419/current-final-report-v4/facts.json",
+      "sha256": "2ed72955b30a8f97bfce20a5cd1c1ea12dd6c401cf5b970df5eaaad04f149e16",
+      "bytes": 1756
+    },
+    {
+      "path": "owner-tests-only-proposal.patch",
+      "source": "/workspace/scratch/ae1a8cf05419/current-final-report-v4/owner-tests-only-proposal.patch",
+      "sha256": "a3b4b3ada40075ecdf4b07736f2b66e2eaf75334376f1d12f4535367f6f24dca",
+      "bytes": 1514
+    }
+  ],
+  "omissions": [
+    {
+      "reason": "Actual cold make kernel returned0, then root controller selected nonexistent release/asterinas and failed before copying an ELF. This freezer never reads any target directory; no initial first-ELF bytes are retained here.",
+      "retained": false,
+      "role": "native-current/ordinary/first-kernel-before-capture-failure"
+    },
+    {
+      "reason": "Owner caught TimeoutExpired and stored sentinel124; actual raw QEMU returncode was not retained.",
+      "retained": false,
+      "role": "native-isolated/probes/actual-raw-qemu-exit"
+    },
+    {
+      "reason": "Owner caught TimeoutExpired and stored sentinel124; actual raw QEMU returncode was not retained.",
+      "retained": false,
+      "role": "native-isolated/probes-retry/run-2/actual-raw-qemu-exit"
+    },
+    {
+      "reason": "Actual adapter launch JSONL contains one record; the second BIOS-timeout run has no corresponding recorded adapter argv. Owner requested argv may be reconstructed from separately retained source, not substituted as an actual launch receipt.",
+      "retained": false,
+      "role": "native-isolated/probes-retry/run-2/actual-adapter-argv"
+    },
+    {
+      "reason": "OSDK test command failed1; runner aborted before producing aster-core/result.json. Full raw serial/QEMU/exit/command logs are retained; no successful checker result exists.",
+      "retained": false,
+      "role": "ktest-aster-core-checker-result"
+    },
+    {
+      "reason": "Root controller exception path after ktest child1 did not execute its final source guard. Missing guard is not clean.",
+      "retained": false,
+      "role": "ktest-complete-post-source-guard"
+    },
+    {
+      "reason": "Compiler caches, incremental/deps products, unused unlaunched build products and temporary work trees are excluded. All 11 actually loaded guest kernel byte identities, BIOS, actual SDK/harness, coverage symbols/raw/profile data and complete runtime logs are explicitly captured.",
+      "retained": false,
+      "role": "osdk-unselected-compiler-caches-and-temp-work"
+    },
+    {
+      "reason": "Original13-command fixture driver bytes were superseded when the15-command Git fixture extension was written. Its actual package/verifier code copies and command/result logs are retained; current15-command driver is retained. No native controller source is missing.",
+      "retained": false,
+      "role": "packager-first-selftest-original-driver-version"
+    }
+  ],
+  "notes": [
+    "FINAL COMPLETE INPUT SET: all authorized completed native/source/host/independent/provenance groups plus v4 root documents and post-native metadata. Source-publication/CI receipts stop before this evidence commit to avoid self-reference. All_project_blockers_closed remains false.",
+    "Actual source producer fd0a5ed/tree676fcaf; final post-native metadata e87d\u2026 is new summary metadata, not the exact tested-producer source file. Removing its one added summary key preserves all prior JSON fields.",
+    "QueryAbi retry phase command0/pass/sourceclean; enclosing tool44537 exited1 because subsequent BIOS probe failed. Earlier frozen prose is superseded by final-capture-clarifications.json.",
+    "Probe duration_seconds1 is a CLI request, not actual fixed1s. Actual restricted walls1CPU1099269967/1000225763ns and2CPU2797054263/1999040082ns;3%diagnostic bound, no strict1%/completeCPU/SMP/finaldebit/G1/G2 claim.",
+    "OSTD221pass/3soft/218lower; aster-core151pass2fail/raw65. Oracle discrepancy is1TSC tick for oddP, not ns or production overcharge. Owner core source unchanged and tests-only proposed patch is not applied.",
+    "OSDK22pass0fail0blocked/1VMX fallback,11actualguest33 is tooling/example acceptance separate from complete Asterinas ordinary/debug; all11distinctloadedELFs plus actual SDK/harness/coverage-symbol/profraw/profdata bytes retained.",
+    "Initial cold-build capture failure, dirty-cache QueryAbi guard, BIOS owner timeout sentinels and unexecuted postguards are separate retained failures. Unknown workspace writer remains unassigned; read-only snapshots are not immutable execution custody.",
+    "Final standalone documents map only v4 seven files plus e87 metadata. Frozen v1/v2/v3 draft documents are historical archive groups, superseded by v4 and final-capture-clarifications; their old errors and checksums remain unchanged."
+  ],
+  "source_bridge": {
+    "group": "source-bridge",
+    "member": "manifest.json"
+  }
+}

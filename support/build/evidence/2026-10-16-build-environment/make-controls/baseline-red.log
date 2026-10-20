@@ -1,0 +1,122 @@
+test_inherited_dry_run_touch_and_question_flags_still_execute_real_make_recipes (runner_tests.KernelRunnerTests.test_inherited_dry_run_touch_and_question_flags_still_execute_real_make_recipes) ... 
+  test_inherited_dry_run_touch_and_question_flags_still_execute_real_make_recipes (runner_tests.KernelRunnerTests.test_inherited_dry_run_touch_and_question_flags_still_execute_real_make_recipes) (name='MAKEFLAGS', flags='n') ... FAIL
+  test_inherited_dry_run_touch_and_question_flags_still_execute_real_make_recipes (runner_tests.KernelRunnerTests.test_inherited_dry_run_touch_and_question_flags_still_execute_real_make_recipes) (name='MAKEFLAGS', flags='t') ... FAIL
+  test_inherited_dry_run_touch_and_question_flags_still_execute_real_make_recipes (runner_tests.KernelRunnerTests.test_inherited_dry_run_touch_and_question_flags_still_execute_real_make_recipes) (name='MAKEFLAGS', flags='q') ... FAIL
+  test_inherited_dry_run_touch_and_question_flags_still_execute_real_make_recipes (runner_tests.KernelRunnerTests.test_inherited_dry_run_touch_and_question_flags_still_execute_real_make_recipes) (name='GNUMAKEFLAGS', flags='--just-print') ... FAIL
+test_inherited_ignore_errors_does_not_mask_real_make_recipe_failure (runner_tests.KernelRunnerTests.test_inherited_ignore_errors_does_not_mask_real_make_recipe_failure) ... FAIL
+test_inherited_makefiles_are_not_read_and_normal_retry_can_build (runner_tests.KernelRunnerTests.test_inherited_makefiles_are_not_read_and_normal_retry_can_build) ... FAIL
+test_outer_make_state_is_recorded_and_children_establish_normal_recursion (runner_tests.KernelRunnerTests.test_outer_make_state_is_recorded_and_children_establish_normal_recursion) ... FAIL
+test_empty_encoded_rustflags_are_rejected_before_output_then_unset_retry (runner_tests.KernelRunnerTests.test_empty_encoded_rustflags_are_rejected_before_output_then_unset_retry) ... FAIL
+test_nonempty_encoded_rustflags_are_rejected_before_output_then_unset_retry (runner_tests.KernelRunnerTests.test_nonempty_encoded_rustflags_are_rejected_before_output_then_unset_retry) ... FAIL
+
+======================================================================
+FAIL: test_inherited_dry_run_touch_and_question_flags_still_execute_real_make_recipes (runner_tests.KernelRunnerTests.test_inherited_dry_run_touch_and_question_flags_still_execute_real_make_recipes) (name='MAKEFLAGS', flags='n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/tests/test_kernel_runner.py", line 179, in test_inherited_dry_run_touch_and_question_flags_still_execute_real_make_recipes
+    self.assertTrue((self.root / "recipe.json").is_file(), result.stdout)
+AssertionError: False is not true : make: Entering directory '/tmp/a01-runner-test-9bu4r0c0/kernel/asterinas'
+python3 -I recipe.py
+make: Leaving directory '/tmp/a01-runner-test-9bu4r0c0/kernel/asterinas'
+evidence: /tmp/a01-runner-test-9bu4r0c0/real-make-0
+A01_KERNEL_SUPERVISOR {"argv": ["bash", "/tmp/a01-runner-test-9bu4r0c0/support/build/kernel.sh", "kernel"], "exit_code": 0, "external_reap_disarmed": false, "group_owner": "standalone supervisor", "kind": "kernel_worker_group_supervision", "leader_pid": 13, "pass_fds": [], "raw_worker_exit": 0, "worker_reaped": true}
+
+
+======================================================================
+FAIL: test_inherited_dry_run_touch_and_question_flags_still_execute_real_make_recipes (runner_tests.KernelRunnerTests.test_inherited_dry_run_touch_and_question_flags_still_execute_real_make_recipes) (name='MAKEFLAGS', flags='t')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/tests/test_kernel_runner.py", line 179, in test_inherited_dry_run_touch_and_question_flags_still_execute_real_make_recipes
+    self.assertTrue((self.root / "recipe.json").is_file(), result.stdout)
+AssertionError: False is not true : make: Entering directory '/tmp/a01-runner-test-9bu4r0c0/kernel/asterinas'
+make: Nothing to be done for 'kernel'.
+make: Leaving directory '/tmp/a01-runner-test-9bu4r0c0/kernel/asterinas'
+evidence: /tmp/a01-runner-test-9bu4r0c0/real-make-1
+A01_KERNEL_SUPERVISOR {"argv": ["bash", "/tmp/a01-runner-test-9bu4r0c0/support/build/kernel.sh", "kernel"], "exit_code": 0, "external_reap_disarmed": false, "group_owner": "standalone supervisor", "kind": "kernel_worker_group_supervision", "leader_pid": 50, "pass_fds": [], "raw_worker_exit": 0, "worker_reaped": true}
+
+
+======================================================================
+FAIL: test_inherited_dry_run_touch_and_question_flags_still_execute_real_make_recipes (runner_tests.KernelRunnerTests.test_inherited_dry_run_touch_and_question_flags_still_execute_real_make_recipes) (name='MAKEFLAGS', flags='q')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/tests/test_kernel_runner.py", line 178, in test_inherited_dry_run_touch_and_question_flags_still_execute_real_make_recipes
+    self.assertEqual(result.returncode, 0, result.stdout)
+AssertionError: 1 != 0 : evidence: /tmp/a01-runner-test-9bu4r0c0/real-make-2
+A01_KERNEL_SUPERVISOR {"argv": ["bash", "/tmp/a01-runner-test-9bu4r0c0/support/build/kernel.sh", "kernel"], "exit_code": 1, "external_reap_disarmed": false, "group_owner": "standalone supervisor", "kind": "kernel_worker_group_supervision", "leader_pid": 87, "pass_fds": [], "raw_worker_exit": 1, "worker_reaped": true}
+
+
+======================================================================
+FAIL: test_inherited_dry_run_touch_and_question_flags_still_execute_real_make_recipes (runner_tests.KernelRunnerTests.test_inherited_dry_run_touch_and_question_flags_still_execute_real_make_recipes) (name='GNUMAKEFLAGS', flags='--just-print')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/tests/test_kernel_runner.py", line 179, in test_inherited_dry_run_touch_and_question_flags_still_execute_real_make_recipes
+    self.assertTrue((self.root / "recipe.json").is_file(), result.stdout)
+AssertionError: False is not true : make: Entering directory '/tmp/a01-runner-test-9bu4r0c0/kernel/asterinas'
+python3 -I recipe.py
+make: Leaving directory '/tmp/a01-runner-test-9bu4r0c0/kernel/asterinas'
+evidence: /tmp/a01-runner-test-9bu4r0c0/real-make-3
+A01_KERNEL_SUPERVISOR {"argv": ["bash", "/tmp/a01-runner-test-9bu4r0c0/support/build/kernel.sh", "kernel"], "exit_code": 0, "external_reap_disarmed": false, "group_owner": "standalone supervisor", "kind": "kernel_worker_group_supervision", "leader_pid": 124, "pass_fds": [], "raw_worker_exit": 0, "worker_reaped": true}
+
+
+======================================================================
+FAIL: test_inherited_ignore_errors_does_not_mask_real_make_recipe_failure (runner_tests.KernelRunnerTests.test_inherited_ignore_errors_does_not_mask_real_make_recipe_failure)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/tests/test_kernel_runner.py", line 188, in test_inherited_ignore_errors_does_not_mask_real_make_recipe_failure
+    self.assertNotEqual(result.returncode, 0, result.stdout)
+AssertionError: 0 == 0 : make: Entering directory '/tmp/a01-runner-test-gqq2c_f_/kernel/asterinas'
+make: [Makefile:3: kernel] Error 42 (ignored)
+make: Leaving directory '/tmp/a01-runner-test-gqq2c_f_/kernel/asterinas'
+evidence: /tmp/a01-runner-test-gqq2c_f_/evidence
+A01_KERNEL_SUPERVISOR {"argv": ["bash", "/tmp/a01-runner-test-gqq2c_f_/support/build/kernel.sh", "kernel"], "exit_code": 0, "external_reap_disarmed": false, "group_owner": "standalone supervisor", "kind": "kernel_worker_group_supervision", "leader_pid": 162, "pass_fds": [], "raw_worker_exit": 0, "worker_reaped": true}
+
+
+======================================================================
+FAIL: test_inherited_makefiles_are_not_read_and_normal_retry_can_build (runner_tests.KernelRunnerTests.test_inherited_makefiles_are_not_read_and_normal_retry_can_build)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/tests/test_kernel_runner.py", line 200, in test_inherited_makefiles_are_not_read_and_normal_retry_can_build
+    self.assertFalse(marker.exists(), "GNU make read a caller-supplied makefile")
+AssertionError: True is not false : GNU make read a caller-supplied makefile
+
+======================================================================
+FAIL: test_outer_make_state_is_recorded_and_children_establish_normal_recursion (runner_tests.KernelRunnerTests.test_outer_make_state_is_recorded_and_children_establish_normal_recursion)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/tests/test_kernel_runner.py", line 219, in test_outer_make_state_is_recorded_and_children_establish_normal_recursion
+    self.assertEqual(json.loads((self.root / "recipe.json").read_text())["makelevel"], "1")
+AssertionError: '74' != '1'
+- 74
++ 1
+
+
+======================================================================
+FAIL: test_empty_encoded_rustflags_are_rejected_before_output_then_unset_retry (runner_tests.KernelRunnerTests.test_empty_encoded_rustflags_are_rejected_before_output_then_unset_retry)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/tests/test_kernel_runner.py", line 163, in test_empty_encoded_rustflags_are_rejected_before_output_then_unset_retry
+    self.check_encoded_rustflags_rejected_before_output_then_unset_retry("")
+  File "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/tests/test_kernel_runner.py", line 152, in check_encoded_rustflags_rejected_before_output_then_unset_retry
+    self.assertEqual(result.returncode, 2, result.stdout)
+AssertionError: 0 != 2 : fixture make completed; no kernel or QEMU was executed
+evidence: /tmp/a01-runner-test-ue8lesmt/new-parent/evidence
+A01_KERNEL_SUPERVISOR {"argv": ["bash", "/tmp/a01-runner-test-ue8lesmt/support/build/kernel.sh", "kernel"], "exit_code": 0, "external_reap_disarmed": false, "group_owner": "standalone supervisor", "kind": "kernel_worker_group_supervision", "leader_pid": 284, "pass_fds": [], "raw_worker_exit": 0, "worker_reaped": true}
+
+
+======================================================================
+FAIL: test_nonempty_encoded_rustflags_are_rejected_before_output_then_unset_retry (runner_tests.KernelRunnerTests.test_nonempty_encoded_rustflags_are_rejected_before_output_then_unset_retry)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/tests/test_kernel_runner.py", line 166, in test_nonempty_encoded_rustflags_are_rejected_before_output_then_unset_retry
+    self.check_encoded_rustflags_rejected_before_output_then_unset_retry("-Cdebuginfo=0")
+  File "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/tests/test_kernel_runner.py", line 152, in check_encoded_rustflags_rejected_before_output_then_unset_retry
+    self.assertEqual(result.returncode, 2, result.stdout)
+AssertionError: 0 != 2 : fixture make completed; no kernel or QEMU was executed
+evidence: /tmp/a01-runner-test-ovy0gz5f/new-parent/evidence
+A01_KERNEL_SUPERVISOR {"argv": ["bash", "/tmp/a01-runner-test-ovy0gz5f/support/build/kernel.sh", "kernel"], "exit_code": 0, "external_reap_disarmed": false, "group_owner": "standalone supervisor", "kind": "kernel_worker_group_supervision", "leader_pid": 321, "pass_fds": [], "raw_worker_exit": 0, "worker_reaped": true}
+
+
+----------------------------------------------------------------------
+Ran 6 tests in 2.879s
+
+FAILED (failures=9)

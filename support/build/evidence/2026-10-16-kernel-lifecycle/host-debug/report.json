@@ -1,0 +1,62 @@
+{
+  "schema": 1,
+  "kind": "host_debug_cancellation_lifecycle_no_build_no_vm",
+  "source_remote_commit": "9b381118fe8a1889d4523b4de999bbe45f1b0436",
+  "source_tree": "af84f6dfedc3db7d8a9dc4498ea1e1681ea6940c",
+  "source": [
+    {
+      "path": "support/build/debug/run.py",
+      "fixed_sha256": "fc5aa7fb949e1312cc8bd96d6b693b7268b065befa23efb1a94021dc3ab955d3",
+      "original_sha256": "edcd1e590cb95240d966fe03890339e005d4f5a72a07fe404be320a7b7fffadb",
+      "fixed_size": 22206,
+      "original_size": 20027
+    },
+    {
+      "path": "support/build/debug/test_debug.py",
+      "fixed_sha256": "9532fb599b1ed19eba8ec1724a04995ed4c07c677dc10e358abc9c55b74e937c",
+      "original_sha256": "d9c85314795c50aa772fd876c7fb8d97abefd3f8d9063d07daad5981a50a9109",
+      "fixed_size": 20229,
+      "original_size": 10108
+    }
+  ],
+  "results": {
+    "original_leak_reproduced": true,
+    "first_fixture_error_preserved": true,
+    "ordinary": {
+      "tests": 10,
+      "passed": 10,
+      "failed": 0
+    },
+    "optimized": {
+      "tests": 10,
+      "passed": 10,
+      "failed": 0
+    },
+    "live_signal_cases_per_mode": [
+      "SIGTERM\u2192143",
+      "SIGINT then SIGTERM\u2192130",
+      "SIGTERM between Popen return and owner publication\u2192143"
+    ],
+    "all_live_cases": "Both owned pidfds exited; both TCP leases and inherited flock released; owned leaders reaped; passed=false and interruption recorded.",
+    "worker_route": "A01_KERNEL_WORKER=1 explicitly avoids nested supervisor ownership; not authorization."
+  },
+  "raw_archive": {
+    "path": "raw-host-fixtures.tar.gz",
+    "size": 90637,
+    "sha256": "654ca717cbf032e8a66858d00a67ae306d16d166aae573511686d9ee3fc6a6dc",
+    "verified_members": 231,
+    "index": "raw-members.json"
+  },
+  "commands": "commands.json",
+  "observations": "observations.json",
+  "recovery_patch": "restore-original.patch",
+  "recovery_receipt": "source-recovery-verification.json",
+  "scope_notes": [
+    "All live checks invoke the actual debug CLI source copied into a disposable fixture project. Driver/tool/source metadata placeholders are explicitly synthetic; they do not build or boot a kernel.",
+    "No /proc lookup, namespace PID inference, subreaper, real kernel output or current parent build directory was used. Test cleanup uses owned Popen/pidfd identities.",
+    "Original default-SIGTERM failure returned -15 and wrote no result; original PIDs/leases/lock remained live before pidfd cleanup.",
+    "First baseline fixture import failure is retained separately and is not described as a passing or completed old-leak reproduction.",
+    "No entire kernel/22-case regression rerun is claimed by host evidence. Parent archives actual clean source build/debug separately.",
+    "Runner second-signal probe is deliberately excluded and belongs to its separate owner."
+  ]
+}

@@ -1,0 +1,625 @@
+{
+  "kind": "independent_read_only_publication_review",
+  "started_at": "2026-10-19T01:16:36.822123+00:00",
+  "native_producer": "7758ffe294bb0e1eab46e20cba60e8af9d8bcd61",
+  "evidence_root": "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/evidence/2026-10-19-mainf9",
+  "checks": [
+    {
+      "name": "all_publication_source_identities_bind_native_producer",
+      "passed": true
+    },
+    {
+      "name": "guest-artifacts.tar.xz_outer_hash_size_mode",
+      "passed": true
+    },
+    {
+      "name": "guest-artifacts.tar.xz_safe_unique_regular_members",
+      "passed": true
+    },
+    {
+      "name": "guest-artifacts.tar.xz_every_payload_matches_manifest_and_original_source",
+      "passed": true,
+      "observed": {
+        "members": 6,
+        "payload_files": 5,
+        "mismatches": []
+      }
+    },
+    {
+      "name": "native-records.tar.xz_outer_hash_size_mode",
+      "passed": true
+    },
+    {
+      "name": "native-records.tar.xz_safe_unique_regular_members",
+      "passed": true
+    },
+    {
+      "name": "native-records.tar.xz_every_payload_matches_manifest_and_original_source",
+      "passed": true,
+      "observed": {
+        "members": 78,
+        "payload_files": 77,
+        "mismatches": []
+      }
+    },
+    {
+      "name": "source-records.tar.xz_outer_hash_size_mode",
+      "passed": true
+    },
+    {
+      "name": "source-records.tar.xz_safe_unique_regular_members",
+      "passed": true
+    },
+    {
+      "name": "source-records.tar.xz_every_payload_matches_manifest_and_original_source",
+      "passed": true,
+      "observed": {
+        "members": 50,
+        "payload_files": 49,
+        "mismatches": []
+      }
+    },
+    {
+      "name": "dependencies/installation-2026-10-18.tar.gz_outer_hash_size_mode",
+      "passed": true
+    },
+    {
+      "name": "dependencies/installation-2026-10-18.tar.gz_safe_unique_regular_members",
+      "passed": true
+    },
+    {
+      "name": "dependencies/installation-2026-10-18.tar.gz_original_archive_bytes_preserved",
+      "passed": true
+    },
+    {
+      "name": "dependencies/installation-2026-10-18.tar.gz_inner_checksums_cover_every_payload",
+      "passed": true,
+      "observed": {
+        "members": 60,
+        "checksummed_payloads": 59,
+        "mismatches": []
+      }
+    },
+    {
+      "name": "dependencies/revalidation-2026-10-18.tar.gz_outer_hash_size_mode",
+      "passed": true
+    },
+    {
+      "name": "dependencies/revalidation-2026-10-18.tar.gz_safe_unique_regular_members",
+      "passed": true
+    },
+    {
+      "name": "dependencies/revalidation-2026-10-18.tar.gz_original_archive_bytes_preserved",
+      "passed": true
+    },
+    {
+      "name": "dependencies/revalidation-2026-10-18.tar.gz_inner_checksums_cover_every_payload",
+      "passed": true,
+      "observed": {
+        "members": 8,
+        "checksummed_payloads": 7,
+        "mismatches": []
+      }
+    },
+    {
+      "name": "dependencies/revalidation-2026-10-19.tar.gz_outer_hash_size_mode",
+      "passed": true
+    },
+    {
+      "name": "dependencies/revalidation-2026-10-19.tar.gz_safe_unique_regular_members",
+      "passed": true
+    },
+    {
+      "name": "dependencies/revalidation-2026-10-19.tar.gz_original_archive_bytes_preserved",
+      "passed": true
+    },
+    {
+      "name": "dependencies/revalidation-2026-10-19.tar.gz_inner_checksums_cover_every_payload",
+      "passed": true,
+      "observed": {
+        "members": 4,
+        "checksummed_payloads": 3,
+        "mismatches": []
+      }
+    },
+    {
+      "name": "all_direct_native_logs_receipts_and_failures_equal_originals",
+      "passed": true,
+      "observed": {
+        "files": 37,
+        "mismatches": []
+      }
+    },
+    {
+      "name": "independent_native_review_and_script_preserved",
+      "passed": true
+    },
+    {
+      "name": "archived_boot_bytes_are_the_actually_loaded_artifacts",
+      "passed": true
+    },
+    {
+      "name": "first_build_and_report_boot_hash_size_argv_bindings",
+      "passed": true
+    },
+    {
+      "name": "ktest_archives_match_prelaunch_hash_and_preserve_snapshot_limitation",
+      "passed": true
+    },
+    {
+      "name": "reported_counts_are_original_full_crate_guest_counts",
+      "passed": true
+    },
+    {
+      "name": "report_current_failures_and_scope_match_original_receipts",
+      "passed": true
+    },
+    {
+      "name": "dependency_date_reuse_and_current_counts_are_accurate",
+      "passed": true
+    },
+    {
+      "name": "publication_bridge_has_exactly_two_metadata_exceptions",
+      "passed": true,
+      "observed": [
+        "support/build/README.md",
+        "support/upstream-lock.json"
+      ]
+    },
+    {
+      "name": "bridge_exception_after_hashes_and_modes_bind_current_files",
+      "passed": true
+    },
+    {
+      "name": "upstream_lock_all_nonreporting_fields_preserved",
+      "passed": true
+    },
+    {
+      "name": "native_boot_history_appends_previous_current_without_rewriting_history",
+      "passed": true
+    },
+    {
+      "name": "native_validation_history_appends_previous_current_without_rewriting_history",
+      "passed": true
+    },
+    {
+      "name": "kernel_mode_regression_history_appends_previous_current_without_rewriting_history",
+      "passed": true
+    },
+    {
+      "name": "lock_latest_source_and_kernel_counts_match_current_report",
+      "passed": true
+    },
+    {
+      "name": "tracked_and_staged_changes_stay_in_A01_scope",
+      "passed": true,
+      "observed": {
+        "tracked_changes": [
+          "support/build/README.md",
+          "support/upstream-lock.json"
+        ],
+        "staged_changes_at_review": []
+      }
+    },
+    {
+      "name": "only_foreign_untracked_manifest_is_outside_proposed_A01_payload",
+      "passed": true,
+      "observed": {
+        "untracked_count": 57,
+        "foreign_manifest_untracked": true
+      }
+    },
+    {
+      "name": "root_README_zero_and_no_kernel_ABI_diff",
+      "passed": true
+    },
+    {
+      "name": "all_key_local_Markdown_links_resolve_with_sparse_history_handling",
+      "passed": true,
+      "observed": {
+        "links": 55,
+        "missing": [],
+        "historical_Git_only_links": 16
+      }
+    },
+    {
+      "name": "read_report_explicitly_preserves_native_acceptance_limits",
+      "passed": true
+    }
+  ],
+  "observations": {
+    "archives": [
+      {
+        "archive": "guest-artifacts.tar.xz",
+        "sha256": "0df585a1594757224ece130efe6e5e5cdfd3a47fbcb6cd18331154dadecd5cd4",
+        "size": 5064144,
+        "members": 6
+      },
+      {
+        "archive": "native-records.tar.xz",
+        "sha256": "bb5d1b4c28ba1cff05b0fec1d7584f400e487da653de812749430a2816ecb5b5",
+        "size": 43432,
+        "members": 78
+      },
+      {
+        "archive": "source-records.tar.xz",
+        "sha256": "74ddcdeb961d254898a58dc89d1607b47c8b9f17891c4724a725c7906c4bc8b5",
+        "size": 362172,
+        "members": 50
+      },
+      {
+        "archive": "dependencies/installation-2026-10-18.tar.gz",
+        "sha256": "61615a214530b7af47d0206db533c4ebef3298df07bc8d9522b231c2a9f51ca0",
+        "size": 397586,
+        "members": 60
+      },
+      {
+        "archive": "dependencies/revalidation-2026-10-18.tar.gz",
+        "sha256": "19a199c405a2a65b458469c4ddb90161192220c922269af3192bbd3c6566a05d",
+        "size": 34350,
+        "members": 8
+      },
+      {
+        "archive": "dependencies/revalidation-2026-10-19.tar.gz",
+        "sha256": "6b03cfaec1713b5730a691ea66da83926883f9b1ff4eec405c1d585911f57c79",
+        "size": 14375,
+        "members": 4
+      }
+    ],
+    "local_links": [
+      {
+        "document": "support/build/evidence/2026-10-19-mainf9/REPORT.md",
+        "target": "report.json",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/evidence/2026-10-19-mainf9/REPORT.md",
+        "target": "source-summary.json",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/evidence/2026-10-19-mainf9/REPORT.md",
+        "target": "artifact-bindings.json",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/evidence/2026-10-19-mainf9/REPORT.md",
+        "target": "archive-index.json",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/evidence/2026-10-19-mainf9/REPORT.md",
+        "target": "HANDOFF.md",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/evidence/2026-10-19-mainf9/REPORT.md",
+        "target": "source-records.tar.xz",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/evidence/2026-10-19-mainf9/REPORT.md",
+        "target": "dependencies/installation-2026-10-18.tar.gz",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/evidence/2026-10-19-mainf9/REPORT.md",
+        "target": "dependencies/current-summary.json",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/evidence/2026-10-19-mainf9/REPORT.md",
+        "target": "dependencies/revalidation-2026-10-19.tar.gz",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/evidence/2026-10-19-mainf9/REPORT.md",
+        "target": "executions/",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/evidence/2026-10-19-mainf9/REPORT.md",
+        "target": "kernel/command.sh",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/evidence/2026-10-19-mainf9/REPORT.md",
+        "target": "boot/command.sh",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/evidence/2026-10-19-mainf9/REPORT.md",
+        "target": "../../README.md",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/evidence/2026-10-19-mainf9/REPORT.md",
+        "target": "kernel/kernel.log",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/evidence/2026-10-19-mainf9/REPORT.md",
+        "target": "boot/qemu.json",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/evidence/2026-10-19-mainf9/REPORT.md",
+        "target": "boot/qemu.command.sh",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/evidence/2026-10-19-mainf9/REPORT.md",
+        "target": "guest-artifacts.tar.xz",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/evidence/2026-10-19-mainf9/REPORT.md",
+        "target": "boot/serial.log",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/evidence/2026-10-19-mainf9/REPORT.md",
+        "target": "ktest/result.json",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/evidence/2026-10-19-mainf9/REPORT.md",
+        "target": "ktest/ostd/guests/guest-001/serial.log",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/evidence/2026-10-19-mainf9/REPORT.md",
+        "target": "ktest/aster-core/guests/guest-001/serial.log",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/evidence/2026-10-19-mainf9/REPORT.md",
+        "target": "review/native-review.json",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/evidence/2026-10-19-mainf9/REPORT.md",
+        "target": "failures/boot-preflight/driver.log",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/evidence/2026-10-19-mainf9/REPORT.md",
+        "target": "failures/boot-preflight/quarantine.json",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/evidence/2026-10-19-mainf9/REPORT.md",
+        "target": "failures/post-boot-manifest/quarantine.json",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/evidence/2026-10-19-mainf9/REPORT.md",
+        "target": "failures/manifest-reappearance/",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/evidence/2026-10-19-mainf9/REPORT.md",
+        "target": "HANDOFF.md",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/evidence/2026-10-19-mainf9/HANDOFF.md",
+        "target": "REPORT.md",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/evidence/2026-10-19-mainf9/HANDOFF.md",
+        "target": "report.json",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/evidence/2026-10-19-mainf9/HANDOFF.md",
+        "target": "boot/qemu.json",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/evidence/2026-10-19-mainf9/HANDOFF.md",
+        "target": "boot/serial.log",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/evidence/2026-10-19-mainf9/HANDOFF.md",
+        "target": "ktest/result.json",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/evidence/2026-10-19-mainf9/HANDOFF.md",
+        "target": "ktest/ostd/guests/guest-001/serial.log",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/evidence/2026-10-19-mainf9/HANDOFF.md",
+        "target": "ktest/aster-core/guests/guest-001/serial.log",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/evidence/2026-10-19-mainf9/HANDOFF.md",
+        "target": "REPORT.md",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/evidence/2026-10-19-mainf9/HANDOFF.md",
+        "target": "report.json",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/README.md",
+        "target": "evidence/2026-10-19-mainf9/REPORT.md",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/README.md",
+        "target": "evidence/2026-10-19-mainf9/HANDOFF.md",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/README.md",
+        "target": "evidence/2026-10-18-main012-current/REPORT.md",
+        "resolved": true,
+        "resolution": "historical_object_in_Git_sparse_checkout"
+      },
+      {
+        "document": "support/build/README.md",
+        "target": "evidence/2026-10-18-main012-current/HANDOFF.md",
+        "resolved": true,
+        "resolution": "historical_object_in_Git_sparse_checkout"
+      },
+      {
+        "document": "support/build/README.md",
+        "target": "evidence/2026-10-18-main4339-sync/REPORT.md",
+        "resolved": true,
+        "resolution": "historical_object_in_Git_sparse_checkout"
+      },
+      {
+        "document": "support/build/README.md",
+        "target": "evidence/2026-10-18-main355-followup/HANDOFF.md",
+        "resolved": true,
+        "resolution": "historical_object_in_Git_sparse_checkout"
+      },
+      {
+        "document": "support/build/README.md",
+        "target": "evidence/2026-10-18-main355-followup/REPORT.md",
+        "resolved": true,
+        "resolution": "historical_object_in_Git_sparse_checkout"
+      },
+      {
+        "document": "support/build/README.md",
+        "target": "evidence/2026-10-18-main355-followup/HANDOFF.md",
+        "resolved": true,
+        "resolution": "historical_object_in_Git_sparse_checkout"
+      },
+      {
+        "document": "support/build/README.md",
+        "target": "evidence/2026-10-18-current-main/REPORT.md",
+        "resolved": true,
+        "resolution": "historical_object_in_Git_sparse_checkout"
+      },
+      {
+        "document": "support/build/README.md",
+        "target": "evidence/2026-10-18-current-main/HANDOFF.md",
+        "resolved": true,
+        "resolution": "historical_object_in_Git_sparse_checkout"
+      },
+      {
+        "document": "support/build/README.md",
+        "target": "evidence/2026-10-17-cloud-closure/REPORT.md",
+        "resolved": true,
+        "resolution": "historical_object_in_Git_sparse_checkout"
+      },
+      {
+        "document": "support/build/README.md",
+        "target": "evidence/2026-10-16-blocker-closure/REPORT.md",
+        "resolved": true,
+        "resolution": "historical_object_in_Git_sparse_checkout"
+      },
+      {
+        "document": "support/build/README.md",
+        "target": "evidence/2026-10-16-clean-repeatability/REPORT.md",
+        "resolved": true,
+        "resolution": "historical_object_in_Git_sparse_checkout"
+      },
+      {
+        "document": "support/build/README.md",
+        "target": "evidence/2026-10-16-build-environment/REPORT.md",
+        "resolved": true,
+        "resolution": "historical_object_in_Git_sparse_checkout"
+      },
+      {
+        "document": "support/build/README.md",
+        "target": "evidence/2026-10-17-native-cloud-final/README.md",
+        "resolved": true,
+        "resolution": "historical_object_in_Git_sparse_checkout"
+      },
+      {
+        "document": "support/build/README.md",
+        "target": "evidence/2026-10-17-native-cloud-before/README.md",
+        "resolved": true,
+        "resolution": "historical_object_in_Git_sparse_checkout"
+      },
+      {
+        "document": "support/build/README.md",
+        "target": "repro/README.md",
+        "resolved": true,
+        "resolution": "actual_local_path"
+      },
+      {
+        "document": "support/build/README.md",
+        "target": "evidence/2026-10-17-repro-cross-path/README.md",
+        "resolved": true,
+        "resolution": "historical_object_in_Git_sparse_checkout"
+      },
+      {
+        "document": "support/build/README.md",
+        "target": "evidence/2026-10-17-cloud-closure/HANDOFF.md",
+        "resolved": true,
+        "resolution": "historical_object_in_Git_sparse_checkout"
+      }
+    ],
+    "reviewed_prose_sha256": {
+      "support/build/evidence/2026-10-19-mainf9/REPORT.md": "43941d9e4c38de87f05edb81ec59c28582b886cc0b9ad8f333a1dabb05856812",
+      "support/build/evidence/2026-10-19-mainf9/HANDOFF.md": "cbe05d34e5f74731e5a16c75855e56160b9b6981aa51310de2b5ef245745bf2a",
+      "support/build/README.md": "ddcbba5bc298be40953f04943661d2e7bb989c07bc4f96b46f80bbbd733f7e94"
+    },
+    "final_checksum_files_at_review": {
+      "SHA256SUMS": false,
+      "review/checksum-verification.json": false
+    },
+    "checksum_ordering": "Intentionally pending until this review joins the payload; root must execute the declared final seal before publication. Not a failed native test or a completed seal."
+  },
+  "new_native_or_host_test_executions": 0,
+  "repository_writes_by_reviewer": false,
+  "ordered_followup_before_publication": [
+    "Root copies this review and its script into the final payload.",
+    "Root generates SHA256SUMS and runs actual sha256sum -c, retaining stdout, exit code and manifest SHA256.",
+    "Root verifies final payload coverage with the documented self-reference exclusions before committing/pushing."
+  ],
+  "finished_at": "2026-10-19T01:16:38.014072+00:00",
+  "script_sha256": "d913a89dfb06be716facd53d41617ce532fe252ef499bf8f3f4db94a7b726ba8",
+  "passed_checks": 42,
+  "failed_checks": 0,
+  "ready_for_final_sealing": true,
+  "final_seal_executed_by_reviewer": false
+}

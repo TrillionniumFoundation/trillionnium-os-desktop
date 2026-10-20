@@ -1,0 +1,152 @@
+{
+  "schema": 1,
+  "status": "frozen",
+  "reviewer": "/root/closure_entry_guards/archive_custody_review",
+  "repo_head_at_both_scans": "e932e49191db61bb4b95d4dbbb891e4793908219",
+  "time_utc": {
+    "first_scan_start": "2026-10-17T01:08:09.080697+00:00",
+    "last_scan_completion": "2026-10-17T01:09:07.629421+00:00",
+    "report_frozen": "2026-10-17T01:10:11.781027+00:00"
+  },
+  "scope": "Read-only tracked project documentation/configuration in this checkout. Credential/key stores, cloud accounts, untracked machine setup and external resources were not searched or probed.",
+  "conclusion": "No documented, already-authorized usable KVM execution endpoint or second dedicated host entry was found in the reviewed repository corpus. This does not establish that no such resource exists outside that corpus.",
+  "findings": [
+    {
+      "claim": "All six configured CI jobs use runs-on: ubuntu-24.04. No self-hosted/dedicated runner label was found in these workflow configurations. This is not KVM capability evidence or authority to provision a cloud host.",
+      "references": [
+        ".github/workflows/a01-boot-evidence.yml:25",
+        ".github/workflows/a02-pinned-host-acceptance.yml:24",
+        ".github/workflows/a09-hardware.yml:20",
+        ".github/workflows/a10-host.yml:24",
+        ".github/workflows/a10-host.yml:77",
+        ".github/workflows/g0-contracts.yml:31"
+      ]
+    },
+    {
+      "claim": "The tracked GPU lab profile is candidate_not_detected_or_authorized_on_accessible_hardware, with physical_host CPU/board/IOMMU/backend null and verified_isolated_machine false; it supplies no usable machine endpoint.",
+      "references": [
+        "support/hardware/rtx4060-lab-profile.json:3",
+        "support/hardware/rtx4060-lab-profile.json:18-24"
+      ]
+    },
+    {
+      "claim": "The repro profile expressly separates selected embedded build identity from actual host identity and forbids using it as evidence of a second host.",
+      "references": [
+        "support/build/repro/README.md:71-77"
+      ]
+    },
+    {
+      "claim": "Hardware/VMM documents retain unqualified or prior container observations, rather than an authorized KVM or second-host connection entry. No runtime capability tests were repeated in this review.",
+      "references": [
+        "support/vmm/GATES.md:6-16",
+        "support/hardware/DECISION.md:5-9",
+        "docs/HARDWARE_AND_DRIVERS.md:35-39"
+      ]
+    }
+  ],
+  "coverage": {
+    "total_read_files": 83,
+    "primary_docs_config_files": 62,
+    "auxiliary_metadata_files_read": 21,
+    "auxiliary_metadata_paths": [
+      "support/build/handoffs/a02-nightly-clippy/evidence/binding.json",
+      "support/build/handoffs/a02-nightly-clippy/evidence/environment.json",
+      "support/build/handoffs/a02-nightly-clippy/evidence/exploratory/before-clippy.json",
+      "support/build/handoffs/a02-nightly-clippy/evidence/exploratory/check-no-std.json",
+      "support/build/handoffs/a02-nightly-clippy/evidence/exploratory/clippy.json",
+      "support/build/handoffs/a02-nightly-clippy/evidence/exploratory/fmt.json",
+      "support/build/handoffs/a02-nightly-clippy/evidence/exploratory/test.json",
+      "support/build/handoffs/a02-nightly-clippy/evidence/logs/after-clippy.json",
+      "support/build/handoffs/a02-nightly-clippy/evidence/logs/after-fmt.json",
+      "support/build/handoffs/a02-nightly-clippy/evidence/logs/after-no-std.json",
+      "support/build/handoffs/a02-nightly-clippy/evidence/logs/after-test.json",
+      "support/build/handoffs/a02-nightly-clippy/evidence/logs/before-clippy.json",
+      "support/build/handoffs/a02-nightly-clippy/evidence/logs/cargo-version.json",
+      "support/build/handoffs/a02-nightly-clippy/evidence/logs/clippy-version.json",
+      "support/build/handoffs/a02-nightly-clippy/evidence/logs/patch-apply.json",
+      "support/build/handoffs/a02-nightly-clippy/evidence/logs/patch-check.json",
+      "support/build/handoffs/a02-nightly-clippy/evidence/logs/rustc-version.json",
+      "support/build/handoffs/a02-nightly-clippy/evidence/logs/rustfmt-version.json",
+      "support/build/handoffs/a02-nightly-clippy/evidence/result.json",
+      "support/build/handoffs/a02-nightly-clippy/evidence/source-after.json",
+      "support/build/handoffs/a02-nightly-clippy/evidence/source-before.json"
+    ],
+    "scope_correction": "The first scan metadata overstates historical-evidence exclusion: its explicit glob excluded support/build/evidence, but 21 tracked JSON metadata records under support/build/handoffs/a02-nightly-clippy/evidence were also read. These records produced no host-entry matches and are not used as authorization evidence. The raw original output and metadata are preserved."
+  },
+  "source_bindings": {
+    ".github/workflows/a01-boot-evidence.yml": {
+      "path": ".github/workflows/a01-boot-evidence.yml",
+      "size": 3974,
+      "sha256": "c28d8ec47ebcde0cf23338c62862ad5ce58d38b01abd8ce2d657fe74092d2d53"
+    },
+    ".github/workflows/a02-pinned-host-acceptance.yml": {
+      "path": ".github/workflows/a02-pinned-host-acceptance.yml",
+      "size": 6440,
+      "sha256": "ece9d4ecc34a020c04e0b237253adb331dd3a653821693126127e334e4c5c306"
+    },
+    ".github/workflows/a09-hardware.yml": {
+      "path": ".github/workflows/a09-hardware.yml",
+      "size": 1143,
+      "sha256": "6b6ef1f309aad1081f38efe0249ed27f05f8f1d0a05cdadf871c92abcfa47ca3"
+    },
+    ".github/workflows/a10-host.yml": {
+      "path": ".github/workflows/a10-host.yml",
+      "size": 5270,
+      "sha256": "1e6b2064eef1208907eb0e5df5a345d5a42086ea90cc09de3859e3ddabc8f59b"
+    },
+    ".github/workflows/g0-contracts.yml": {
+      "path": ".github/workflows/g0-contracts.yml",
+      "size": 3428,
+      "sha256": "464e52ec3390933242a5004f3352b521199cdf24e49a812d9ded27037bbeda97"
+    },
+    "docs/HARDWARE_AND_DRIVERS.md": {
+      "path": "docs/HARDWARE_AND_DRIVERS.md",
+      "size": 4303,
+      "sha256": "d31ad12248e97ca7cefdb98bc386fe5e0e3158dfbd131a281e6556cdd5bbcad3"
+    },
+    "support/build/repro/README.md": {
+      "path": "support/build/repro/README.md",
+      "size": 5136,
+      "sha256": "cacdeaab6fea8bf7a85c6e106b9127f9af26ccd7c03ce6d1bdcd8f1d59a0e0ff"
+    },
+    "support/hardware/DECISION.md": {
+      "path": "support/hardware/DECISION.md",
+      "size": 11378,
+      "sha256": "d59600c17d4145ebdeb349ffa94e7b1c9cfa83a0bec567ff352d28c0f02eed4a"
+    },
+    "support/hardware/rtx4060-lab-profile.json": {
+      "path": "support/hardware/rtx4060-lab-profile.json",
+      "size": 1800,
+      "sha256": "e8a10b9e0dbb58461f3ed9144395b85d6388e3d9f563874cac95b30feed09ffe"
+    },
+    "support/vmm/GATES.md": {
+      "path": "support/vmm/GATES.md",
+      "size": 3078,
+      "sha256": "3ffe2e02c6aa4da993198b331a1ae86fffaba76a40cccbd4fd54117aaa554230"
+    }
+  },
+  "raw_receipts": [
+    "review-host-config.py",
+    "invocation.json",
+    "stdout.log",
+    "stderr.log",
+    "scan.json",
+    "review-host-config-supplement.py",
+    "supplemental-invocation.json",
+    "supplemental-stdout.log",
+    "supplemental-stderr.log",
+    "supplemental-scan.json"
+  ],
+  "limits": {
+    "dev_kvm_probe_repeated": false,
+    "af_unix_probe_repeated": false,
+    "vm_operation": false,
+    "cargo_run": false,
+    "credential_or_key_material_search": false,
+    "cloud_account_discovery": false,
+    "repository_modified": false,
+    "old_evidence_modified": false,
+    "shell": "/bin/bash",
+    "login": false
+  }
+}

@@ -1,0 +1,59 @@
+[
+  {
+    "name": "before-targeted-I",
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "-I",
+      "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/tests/test_boot_evidence.py",
+      "BootEvidenceTests.test_recorder_explicit_private_data_directory_with_spaces_appends_one_L",
+      "BootEvidenceTests.test_recorder_rejects_invalid_or_ambiguous_data_directory_before_tools"
+    ],
+    "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+    "selected_environment": {
+      "A01_SNAPSHOT_TEST_OUT": "/workspace/scratch/ae1a8cf05419/round2-qemu-data/before-targeted-I-fixtures",
+      "A01_SNAPSHOT_RECORDER_SOURCE": "/workspace/scratch/ae1a8cf05419/round2-qemu-data/baseline-record-qemu.py"
+    },
+    "returncode": 1,
+    "start_unix_ns": 1792196694861901714,
+    "end_unix_ns": 1792196696165832201,
+    "recorder_sha256": "c62c515aedd4f481ed05525dad7bb6acdd22c7a142115e1856df560e16585d58",
+    "test_source_sha256": "9a4346cfe9822bdb8b362f90bfcd9aa008e46898027d7e3a61e31bb11e50056d"
+  },
+  {
+    "name": "after-all-I",
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "-I",
+      "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/tests/test_boot_evidence.py"
+    ],
+    "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+    "selected_environment": {
+      "A01_SNAPSHOT_TEST_OUT": "/workspace/scratch/ae1a8cf05419/round2-qemu-data/after-all-I-fixtures",
+      "A01_SNAPSHOT_RECORDER_SOURCE": null
+    },
+    "returncode": 0,
+    "start_unix_ns": 1792196696166335327,
+    "end_unix_ns": 1792196730000340310,
+    "recorder_sha256": "387845415b54f1822c55ce4198586fae8047f7d3ea94008c84e0974871954098",
+    "test_source_sha256": "9a4346cfe9822bdb8b362f90bfcd9aa008e46898027d7e3a61e31bb11e50056d"
+  },
+  {
+    "name": "after-all-I-O",
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "-I",
+      "-O",
+      "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/tests/test_boot_evidence.py"
+    ],
+    "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+    "selected_environment": {
+      "A01_SNAPSHOT_TEST_OUT": "/workspace/scratch/ae1a8cf05419/round2-qemu-data/after-all-I-O-fixtures",
+      "A01_SNAPSHOT_RECORDER_SOURCE": null
+    },
+    "returncode": 0,
+    "start_unix_ns": 1792196730001138198,
+    "end_unix_ns": 1792196769061695868,
+    "recorder_sha256": "387845415b54f1822c55ce4198586fae8047f7d3ea94008c84e0974871954098",
+    "test_source_sha256": "9a4346cfe9822bdb8b362f90bfcd9aa008e46898027d7e3a61e31bb11e50056d"
+  }
+]

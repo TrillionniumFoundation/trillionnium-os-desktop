@@ -1,0 +1,325 @@
+{
+  "schema": 1,
+  "scope": "OSDK example kernels and tooling, not complete Asterinas kernel acceptance",
+  "profile_id": "osdk-native-local-tcp-gdb-capture-v2",
+  "published_commit": "7cf6f7c329361c9828a98b766d1f0d78cf53b58d",
+  "runtime_head": "287a92e65581f193d764f5ff85fbc3631bc0a9ab",
+  "shared_tree": "515cd2babfb8a4372ef29a26f132ff2de19cbe15",
+  "runtime_status": "?? kernel/asterinas/kernel/OSDK.toml\n?? support/build/evidence/2026-10-16-kernel-lifecycle/\n",
+  "selected_cases": 22,
+  "passed": 22,
+  "failed": 0,
+  "blocked": 0,
+  "soft_skip_count": 1,
+  "soft_skips": [
+    {
+      "case": "examples_in_book::write_a_hypervisor_in_100_lines::write_a_hypervisor_in_100_lines",
+      "messages": [
+        "VMX unavailable; hypervisor example accepted upstream fallback"
+      ]
+    }
+  ],
+  "actual_guest_count": 11,
+  "all_guest_raw_exit_33": true,
+  "guests": [
+    {
+      "case": "commands::run::qemu_gdb_feature::basic_debug",
+      "record": "case-01/guests/guest-001/qemu.json",
+      "qemu_pid": 575,
+      "raw_exit_code": 33,
+      "wrapper_exit_code": 33,
+      "serial_logs": [
+        {
+          "source": "case-01/guests/guest-001/serial.log",
+          "size": 2780,
+          "sha256": "aa535c39d008ba5d097409d058bd024f5feeaa733716a64a466d3f3a32ca2627"
+        }
+      ],
+      "kernel": {
+        "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/osdk/basic_debug/basic_debug-osdk-bin.elf",
+        "size": 27792504,
+        "sha256": "19c501a2d93d8e21cf85c7f73abe42bf76f4c3596118bb967d0efb142eef8d88"
+      },
+      "monitor_socket": null,
+      "gdb_listener": {
+        "host": "127.0.0.1",
+        "port": 46231,
+        "requested_port": 46231,
+        "fd": 3,
+        "bind_succeeded": true,
+        "held_until_qemu_spawn": true,
+        "bind_close_rebind_gap": false,
+        "handoff": "prebound-listener-inherited-fd",
+        "parent_copy_closed_after_spawn": true
+      }
+    },
+    {
+      "case": "commands::run::qemu_gdb_feature::vsc::vsc_launch_file",
+      "record": "case-02/guests/guest-001/qemu.json",
+      "qemu_pid": 987,
+      "raw_exit_code": 33,
+      "wrapper_exit_code": 33,
+      "serial_logs": [
+        {
+          "source": "case-02/guests/guest-001/serial.log",
+          "size": 2780,
+          "sha256": "bcfe02619d78821867cbb881a014460945e5965b38c06dbfce2f32d2ad7068db"
+        }
+      ],
+      "kernel": {
+        "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/osdk/vsc_launch_file/vsc_launch_file-osdk-bin.elf",
+        "size": 27792592,
+        "sha256": "c07becdda636da17f3dcfc604aa6c72e55708c569be4367641f257b8c9aa2dbf"
+      },
+      "monitor_socket": null,
+      "gdb_listener": {
+        "host": "127.0.0.1",
+        "port": 41143,
+        "requested_port": 41143,
+        "fd": 3,
+        "bind_succeeded": true,
+        "held_until_qemu_spawn": true,
+        "bind_close_rebind_gap": false,
+        "handoff": "prebound-listener-inherited-fd",
+        "parent_copy_closed_after_spawn": true
+      }
+    },
+    {
+      "case": "commands::run::basic::new_kernel_and_run",
+      "record": "case-14/guests/guest-001/qemu.json",
+      "qemu_pid": 1626,
+      "raw_exit_code": 33,
+      "wrapper_exit_code": 33,
+      "serial_logs": [
+        {
+          "source": "case-14/guests/guest-001/serial.log",
+          "size": 2781,
+          "sha256": "f63a45d062d01bd4c7b801a44bf8ba330f93f1c20abf6ce404ee102141e81d90"
+        }
+      ],
+      "kernel": {
+        "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/osdk/myos/myos-osdk-bin.elf",
+        "size": 27792280,
+        "sha256": "c240d330bd0619cef49dc9310d889e716bb5cade5d6168b2a00e768f08f25e54"
+      },
+      "monitor_socket": null,
+      "gdb_listener": null
+    },
+    {
+      "case": "commands::run::coverage_feature::basic_coverage",
+      "record": "case-15/guests/guest-001/qemu.json",
+      "qemu_pid": 1981,
+      "raw_exit_code": 33,
+      "wrapper_exit_code": 33,
+      "serial_logs": [
+        {
+          "source": "case-15/guests/guest-001/serial.log",
+          "size": 2823,
+          "sha256": "e6998b30baec0d7da585ea8e68f641592b70cad5dfd4c5d4d9706643f9374f7d"
+        }
+      ],
+      "kernel": {
+        "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/osdk/basic_coverage/basic_coverage-osdk-bin.elf",
+        "size": 41563920,
+        "sha256": "fb56d43901288055187bad838943a75330f479b7a98fdeb4e91b4c6d6e9764fc"
+      },
+      "monitor_socket": {
+        "fd": 64,
+        "local": [
+          "127.0.0.1",
+          57552
+        ],
+        "peer": [
+          "127.0.0.1",
+          46649
+        ],
+        "connected": true,
+        "listening": false,
+        "handoff": "private-connected-inherited-fd",
+        "parent_copy_closed_after_spawn": true,
+        "qemu_pid": 1981
+      },
+      "gdb_listener": {
+        "host": "127.0.0.1",
+        "port": 47279,
+        "requested_port": 0,
+        "fd": 3,
+        "bind_succeeded": true,
+        "held_until_qemu_spawn": true,
+        "bind_close_rebind_gap": false,
+        "handoff": "prebound-listener-inherited-fd",
+        "parent_copy_closed_after_spawn": true
+      }
+    },
+    {
+      "case": "examples_in_book::test_and_run_projects::create_and_run_kernel",
+      "record": "case-18/guests/guest-001/qemu.json",
+      "qemu_pid": 2673,
+      "raw_exit_code": 33,
+      "wrapper_exit_code": 33,
+      "serial_logs": [
+        {
+          "source": "case-18/guests/guest-001/serial.log",
+          "size": 2780,
+          "sha256": "b77fec7b7f176557bd4bf9a19f3def0dee42759d145cde7f3b8a0645ec137f72"
+        }
+      ],
+      "kernel": {
+        "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/osdk/myos/myos-osdk-bin.elf",
+        "size": 27792168,
+        "sha256": "9cecd98e83ba22f97fdfa5866e4c45ec5c3a1f0d3bedbe5cd1449a53e76faada"
+      },
+      "monitor_socket": null,
+      "gdb_listener": null
+    },
+    {
+      "case": "examples_in_book::test_and_run_projects::create_and_test_library",
+      "record": "case-19/guests/guest-001/qemu.json",
+      "qemu_pid": 2960,
+      "raw_exit_code": 33,
+      "wrapper_exit_code": 33,
+      "serial_logs": [
+        {
+          "source": "case-19/guests/guest-001/serial.log",
+          "size": 3190,
+          "sha256": "dfc965174cad01d3401f6c64a896f59e07e44d834ca49b84413a63e71563f00f"
+        }
+      ],
+      "kernel": {
+        "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/osdk/mylib/mylib-osdk-bin.elf",
+        "size": 39855912,
+        "sha256": "b3fd99fd367fd194f9971461b5c721d225880520c9ffa2e9b27c22da9e71d7a9"
+      },
+      "monitor_socket": null,
+      "gdb_listener": null
+    },
+    {
+      "case": "examples_in_book::work_in_workspace::work_in_workspace",
+      "record": "case-20/guests/guest-001/qemu.json",
+      "qemu_pid": 3600,
+      "raw_exit_code": 33,
+      "wrapper_exit_code": 33,
+      "serial_logs": [
+        {
+          "source": "case-20/guests/guest-001/serial.log",
+          "size": 2784,
+          "sha256": "b038c57007d131048b1979c9cbddbb3ba9f41d7c4df6976a8627c445c4323473"
+        }
+      ],
+      "kernel": {
+        "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/osdk/myos/myos-osdk-bin.elf",
+        "size": 27813840,
+        "sha256": "83797cebe1ce2e2afdada0ff840fc7f981367d0e5c5f2d3f57ba484b6cc1eed3"
+      },
+      "monitor_socket": null,
+      "gdb_listener": null
+    },
+    {
+      "case": "examples_in_book::work_in_workspace::work_in_workspace",
+      "record": "case-20/guests/guest-002/qemu.json",
+      "qemu_pid": 3879,
+      "raw_exit_code": 33,
+      "wrapper_exit_code": 33,
+      "serial_logs": [
+        {
+          "source": "case-20/guests/guest-002/serial.log",
+          "size": 3190,
+          "sha256": "0788e2f611d4fc9a0feff20a75531a2148eac16e216c688eeceef05dc958267c"
+        }
+      ],
+      "kernel": {
+        "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/osdk/mylib/mylib-osdk-bin.elf",
+        "size": 39857152,
+        "sha256": "4b940154b4ed899c9910056ac24813b353cdfb0fb8088f0cd56fb3456a1f9a4f"
+      },
+      "monitor_socket": null,
+      "gdb_listener": null
+    },
+    {
+      "case": "examples_in_book::work_in_workspace::work_in_workspace",
+      "record": "case-20/guests/guest-003/qemu.json",
+      "qemu_pid": 4088,
+      "raw_exit_code": 33,
+      "wrapper_exit_code": 33,
+      "serial_logs": [
+        {
+          "source": "case-20/guests/guest-003/serial.log",
+          "size": 3082,
+          "sha256": "c008885bb282e0ec432776c39c9f0095de369204f3d0525263c630112f7f53b4"
+        }
+      ],
+      "kernel": {
+        "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/osdk/myos/myos-osdk-bin.elf",
+        "size": 39857144,
+        "sha256": "52806df47243b480df4ee5da7f26227b1e3a3586ecc5da63581a1e7e4578dbe9"
+      },
+      "monitor_socket": null,
+      "gdb_listener": null
+    },
+    {
+      "case": "examples_in_book::write_a_hypervisor_in_100_lines::write_a_hypervisor_in_100_lines",
+      "record": "case-21/guests/guest-001/qemu.json",
+      "qemu_pid": 4480,
+      "raw_exit_code": 33,
+      "wrapper_exit_code": 33,
+      "serial_logs": [
+        {
+          "source": "case-21/guests/guest-001/serial.log",
+          "size": 2788,
+          "sha256": "2effd94d34a39beb81c152eb05ea197813a76649a3a34e56897172bbf31154ed"
+        }
+      ],
+      "kernel": {
+        "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/osdk/hypervisor_in_100_lines/hypervisor_in_100_lines-osdk-bin.elf",
+        "size": 28403072,
+        "sha256": "9b5da7dfcf6adb2fdfac863cd9cdb03d0e49e3f14e6d415630e929ed5f7203cf"
+      },
+      "monitor_socket": null,
+      "gdb_listener": null
+    },
+    {
+      "case": "examples_in_book::write_a_kernel_in_100_lines::write_a_kernel_in_100_lines",
+      "record": "case-22/guests/guest-001/qemu.json",
+      "qemu_pid": 4889,
+      "raw_exit_code": 33,
+      "wrapper_exit_code": 33,
+      "serial_logs": [
+        {
+          "source": "case-22/guests/guest-001/serial.log",
+          "size": 2765,
+          "sha256": "767d3d2f612d39b663127f7de8c267c677c7c99f1116a26b66d7b84ab42074fa"
+        }
+      ],
+      "kernel": {
+        "path": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/out/osdk-capture-v2-02/target/osdk/kernel_in_100_lines/kernel_in_100_lines-osdk-bin.elf",
+        "size": 28175312,
+        "sha256": "0d76b98704dae287fa1c2216df40922294378a6737f11804519e610d9489b069"
+      },
+      "monitor_socket": null,
+      "gdb_listener": null
+    }
+  ],
+  "coverage": {
+    "raw_size": 2094456,
+    "raw_sha256": "3d90660be68c63941c5884390c3d25ccd77c33a461c95b070147989117cf253d",
+    "total_functions": 5696,
+    "maximum_function_count": 383731,
+    "bindings": "coverage/bindings.json",
+    "capture_process_group_matches_outer_harness": true
+  },
+  "hardened_archive": {
+    "payloads": 362,
+    "source_bytes": 15037254,
+    "max_source_bytes": 5496220,
+    "all_payload_bytes_and_manifest_checksums_verified": true
+  },
+  "source_bindings_verified": 90,
+  "adapted_test_inputs_verified": 23,
+  "invocation_recorded_before_launch": true,
+  "explicit_target_cache_reuse": true,
+  "archival_did_not_launch_new_guests": true,
+  "is_full_Asterinas_kernel_acceptance": false,
+  "history": "This is a fresh complete22-case execution on the published lifecycle-hardening source. Prior profiles and runs remain unchanged; target-cache reuse is explicit.",
+  "publisher_receipt": "provenance/publisher-receipt.json",
+  "recorded_environment_note": "Original recorded environment and explicit invocation updates are retained; unrecorded inherited variables are not reconstructed."
+}

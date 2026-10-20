@@ -1,0 +1,65 @@
+[
+  {
+    "name": "before-source-overwrite",
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "-I",
+      "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/osdk-integration/test_input_snapshots.py",
+      "InputSnapshotCliTests.test_sources_replaced_during_version_still_load_original_three_copies",
+      "-v"
+    ],
+    "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+    "returncode": 1,
+    "start_unix_ns": 1792200963657625168,
+    "end_unix_ns": 1792200964023060761,
+    "test_source_sha256": "8fd18f792837b5c4873e3373637f2f0f4ff54139d8ea534f0533113b8249cd82",
+    "recorder_source": "/workspace/scratch/ae1a8cf05419/snapshot-cli-tests/d895dd-record-qemu.py",
+    "recorder_sha256": "da6b336aa83a9067f336125aaab2decb8c20970d6ebac6a6921c8da8e2ae1446",
+    "log_sha256": "713d512e3e07660b0c42ee553dfedf08963d7c2aa3153854caa800b47f7646a5",
+    "selected_environment": {
+      "A01_INPUT_SNAPSHOTS_OUT": "/workspace/scratch/ae1a8cf05419/snapshot-cli-tests/before-source-overwrite-fixtures",
+      "A01_INTEGRATION_RECORDER_SOURCE": "/workspace/scratch/ae1a8cf05419/snapshot-cli-tests/d895dd-record-qemu.py"
+    }
+  },
+  {
+    "name": "after-I",
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "-I",
+      "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/osdk-integration/test_input_snapshots.py",
+      "-v"
+    ],
+    "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+    "returncode": 0,
+    "start_unix_ns": 1792200964023702361,
+    "end_unix_ns": 1792200967310000809,
+    "test_source_sha256": "8fd18f792837b5c4873e3373637f2f0f4ff54139d8ea534f0533113b8249cd82",
+    "recorder_source": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/osdk-integration/record-qemu.py",
+    "recorder_sha256": "bc1225b431a103d7b04bc42054471e77db1a071166c6bdde096e5112da22c590",
+    "log_sha256": "3793b411d3a88297034fb53d422bbf38ee1281c13a856590afc197c3951e4ff5",
+    "selected_environment": {
+      "A01_INPUT_SNAPSHOTS_OUT": "/workspace/scratch/ae1a8cf05419/snapshot-cli-tests/after-I-fixtures"
+    }
+  },
+  {
+    "name": "after-I-O",
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "-I",
+      "-O",
+      "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/osdk-integration/test_input_snapshots.py",
+      "-v"
+    ],
+    "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+    "returncode": 0,
+    "start_unix_ns": 1792200967310630533,
+    "end_unix_ns": 1792200975874893368,
+    "test_source_sha256": "8fd18f792837b5c4873e3373637f2f0f4ff54139d8ea534f0533113b8249cd82",
+    "recorder_source": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop/support/build/osdk-integration/record-qemu.py",
+    "recorder_sha256": "bc1225b431a103d7b04bc42054471e77db1a071166c6bdde096e5112da22c590",
+    "log_sha256": "b55943001f7e213a9b30d2205af679f23703a8f720ed3a9f249d048b831cbeab",
+    "selected_environment": {
+      "A01_INPUT_SNAPSHOTS_OUT": "/workspace/scratch/ae1a8cf05419/snapshot-cli-tests/after-I-O-fixtures"
+    }
+  }
+]

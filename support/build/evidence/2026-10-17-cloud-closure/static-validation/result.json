@@ -1,0 +1,139 @@
+{
+  "passed": true,
+  "commands": [
+    {
+      "name": "source-verification",
+      "argv": [
+        "python3",
+        "-I",
+        "support/build/verify-source.py"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+      "returncode": 0,
+      "output_sha256": "5134613ae9a179a850327beb238d0433f3bb18e14dff8a24a1a0f5abf9db267e"
+    },
+    {
+      "name": "owned-doc-diff-check",
+      "argv": [
+        "git",
+        "diff",
+        "--check",
+        "--",
+        "support/build/README.md",
+        "support/upstream-lock.json"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+      "returncode": 0,
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "kernel-tree-worktree-diff",
+      "argv": [
+        "git",
+        "diff",
+        "--exit-code",
+        "--",
+        "kernel/asterinas"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+      "returncode": 0,
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "cloud-environment-syntax",
+      "argv": [
+        "bash",
+        "-n",
+        "support/build/evidence/2026-10-17-cloud-closure/cloud-replay-env.sh"
+      ],
+      "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+      "returncode": 0,
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "local_markdown_links": [
+    {
+      "document": "support/build/README.md",
+      "target": "evidence/2026-10-17-cloud-closure/REPORT.md",
+      "exists": true
+    },
+    {
+      "document": "support/build/README.md",
+      "target": "evidence/2026-10-16-blocker-closure/REPORT.md",
+      "exists": true
+    },
+    {
+      "document": "support/build/README.md",
+      "target": "evidence/2026-10-16-clean-repeatability/REPORT.md",
+      "exists": true
+    },
+    {
+      "document": "support/build/README.md",
+      "target": "evidence/2026-10-16-build-environment/REPORT.md",
+      "exists": true
+    },
+    {
+      "document": "support/build/README.md",
+      "target": "evidence/2026-10-17-native-cloud-final/README.md",
+      "exists": true
+    },
+    {
+      "document": "support/build/README.md",
+      "target": "evidence/2026-10-17-native-cloud-before/README.md",
+      "exists": true
+    },
+    {
+      "document": "support/build/README.md",
+      "target": "repro/README.md",
+      "exists": true
+    },
+    {
+      "document": "support/build/README.md",
+      "target": "evidence/2026-10-17-repro-cross-path/README.md",
+      "exists": true
+    },
+    {
+      "document": "support/build/README.md",
+      "target": "evidence/2026-10-17-cloud-closure/HANDOFF.md",
+      "exists": true
+    },
+    {
+      "document": "support/build/evidence/2026-10-17-cloud-closure/REPORT.md",
+      "target": "../2026-10-17-native-cloud-normal/README.md",
+      "exists": true
+    },
+    {
+      "document": "support/build/evidence/2026-10-17-cloud-closure/REPORT.md",
+      "target": "../2026-10-17-private-toolchain/REPORT.md",
+      "exists": true
+    },
+    {
+      "document": "support/build/evidence/2026-10-17-cloud-closure/REPORT.md",
+      "target": "../../repro/README.md",
+      "exists": true
+    },
+    {
+      "document": "support/build/evidence/2026-10-17-cloud-closure/REPORT.md",
+      "target": "../2026-10-17-repro-cross-path/README.md",
+      "exists": true
+    },
+    {
+      "document": "support/build/evidence/2026-10-17-cloud-closure/REPORT.md",
+      "target": "../2026-10-17-native-cloud-before/README.md",
+      "exists": true
+    },
+    {
+      "document": "support/build/evidence/2026-10-17-cloud-closure/REPORT.md",
+      "target": "HANDOFF.md",
+      "exists": true
+    },
+    {
+      "document": "support/build/evidence/2026-10-17-cloud-closure/HANDOFF.md",
+      "target": "blockers.json",
+      "exists": true
+    }
+  ],
+  "root_readme_bytes": 0,
+  "new_kernel_builds": 0,
+  "new_guests": 0
+}

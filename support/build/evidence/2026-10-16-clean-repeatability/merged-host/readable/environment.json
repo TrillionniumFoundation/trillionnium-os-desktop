@@ -1,0 +1,58 @@
+{
+  "toolchain": "nightly-2026-07-21",
+  "offline": true,
+  "jobs": 2,
+  "env": {
+    "CARGO_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/cargo",
+    "RUSTUP_HOME": "/workspace/scratch/ae1a8cf05419/toolchains/rustup",
+    "RUSTUP_TOOLCHAIN": "nightly-2026-07-21",
+    "RUSTUP_AUTO_INSTALL": "0",
+    "CARGO_NET_OFFLINE": "true",
+    "CARGO_BUILD_JOBS": "2",
+    "PATH": "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin:/root/.codex/tmp/arg0/codex-arg0XJwRso:/opt/codex/codex-path:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback"
+  },
+  "tools": [
+    {
+      "role": "python",
+      "invoked_path": "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "resolved_path": "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3.12",
+      "sha256": "fa67443527ed9647f760d807e2a38f26340757123e643c4639cf273ed15d5ea7",
+      "bytes": 30894944
+    },
+    {
+      "role": "cargo_proxy",
+      "invoked_path": "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin/cargo",
+      "resolved_path": "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin/rustup",
+      "sha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71",
+      "bytes": 21113232
+    },
+    {
+      "role": "rustup",
+      "invoked_path": "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin/rustup",
+      "resolved_path": "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin/rustup",
+      "sha256": "dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71",
+      "bytes": 21113232
+    },
+    {
+      "role": "cargo",
+      "invoked_path": "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+      "resolved_path": "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/cargo",
+      "sha256": "1e8bffe479c27798861dd7f0a3add4adb898879da0be8431fb48ff8c7cc78c03",
+      "bytes": 40539896
+    },
+    {
+      "role": "rustc",
+      "invoked_path": "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/rustc",
+      "resolved_path": "/workspace/scratch/ae1a8cf05419/toolchains/rustup/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/bin/rustc",
+      "sha256": "752104a1bd1bc3a59e6a2bd8ec02fa7113acf0e5083f9ee59d43e983ecc5d48f",
+      "bytes": 645184
+    }
+  ],
+  "version_receipts": [
+    "version-python.command.json",
+    "version-cargo.command.json",
+    "version-rustc.command.json",
+    "which-cargo.command.json",
+    "which-rustc.command.json"
+  ]
+}

@@ -1,0 +1,1017 @@
+{
+  "kind": "independent_read_only_native_evidence_review",
+  "started_at_utc": "2026-10-18T09:11:42.960607+00:00",
+  "finished_at_utc": "2026-10-18T09:11:43.161894+00:00",
+  "execution_head": "b39e154ae5a1e9853f57e23f9bee84712ee8ef7e",
+  "project_tree": "80ceaa07562dd359572afdc6bfad473aa20d7271",
+  "kernel_tree": "065a20ff147bf1541acbdfd996338ab0267fbfc6",
+  "evidence_root": "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012",
+  "new_builds_tests_or_qemu_executed_by_reviewer": false,
+  "live_checkout_writes_by_reviewer": false,
+  "review_checks": [
+    {
+      "name": "all_stage_source_identities",
+      "passed": true
+    },
+    {
+      "name": "git_source_tree_identities",
+      "passed": true
+    },
+    {
+      "name": "all_source_captures_same_3012_selected_inputs",
+      "passed": true
+    },
+    {
+      "name": "captured_source_git_blobs_match_published_tree",
+      "passed": true
+    },
+    {
+      "name": "clean_after_kernel_and_retry_and_before_ktest",
+      "passed": true
+    },
+    {
+      "name": "after_ktest_late_manifest_status_is_preserved",
+      "passed": true
+    },
+    {
+      "name": "all_fixed_build_input_receipts_118_pass",
+      "passed": true
+    },
+    {
+      "name": "source_verifier_receipts_identical",
+      "passed": true
+    },
+    {
+      "name": "kernel_all_exit_receipts_zero",
+      "passed": true
+    },
+    {
+      "name": "kernel_owned_manifest_cleanup",
+      "passed": true
+    },
+    {
+      "name": "kernel_driver_contains_complete_inner_log",
+      "passed": true
+    },
+    {
+      "name": "kernel_no_fatal_compile_error",
+      "passed": true
+    },
+    {
+      "name": "kernel_upstream_make_target",
+      "passed": true
+    },
+    {
+      "name": "run_kernel_retry01_all_exit_receipts_zero",
+      "passed": true
+    },
+    {
+      "name": "run_kernel_retry01_owned_manifest_cleanup",
+      "passed": true
+    },
+    {
+      "name": "run_kernel_retry01_driver_contains_complete_inner_log",
+      "passed": true
+    },
+    {
+      "name": "run_kernel_retry01_no_fatal_compile_error",
+      "passed": true
+    },
+    {
+      "name": "run_kernel_retry01_upstream_make_target",
+      "passed": true
+    },
+    {
+      "name": "fresh_native_build_recorded",
+      "passed": true
+    },
+    {
+      "name": "first_boot_attempt_rejected_before_make_or_qemu",
+      "passed": true
+    },
+    {
+      "name": "first_unknown_manifest_preserved_in_quarantine",
+      "passed": true
+    },
+    {
+      "name": "first_unknown_manifest_distinct_from_owned_build_inode",
+      "passed": true
+    },
+    {
+      "name": "second_unknown_manifest_preserved_in_separate_quarantine",
+      "passed": true
+    },
+    {
+      "name": "second_unknown_manifest_distinct_from_both_owned_cleanups_and_first_unknown",
+      "passed": true
+    },
+    {
+      "name": "boot_frozen_elf_and_all_actual_loaded_artifact_bytes_match",
+      "passed": true
+    },
+    {
+      "name": "boot_qemu_raw33_not_timed_out_complete",
+      "passed": true
+    },
+    {
+      "name": "boot_profile_actual_argv",
+      "passed": true,
+      "observed": {
+        "observed": {
+          "-machine": "q35",
+          "-accel": "tcg",
+          "-cpu": "max",
+          "-m": "512M",
+          "-smp": "1",
+          "-display": "none",
+          "-monitor": "none",
+          "-serial": "chardev:serial"
+        },
+        "fixed_profile_matches": true,
+        "no_data_disk_or_network_options": true
+      }
+    },
+    {
+      "name": "boot_full_raw_serial_hash_size_and_markers",
+      "passed": true
+    },
+    {
+      "name": "boot_recorder_loads_private_snapshot_paths",
+      "passed": true
+    },
+    {
+      "name": "kernel_small_initramfs_matches_manifest",
+      "passed": true
+    },
+    {
+      "name": "run_kernel_retry01_small_initramfs_matches_manifest",
+      "passed": true
+    },
+    {
+      "name": "both_build_and_retry_initramfs_bytes_identical",
+      "passed": true
+    },
+    {
+      "name": "ktest_runner_exact_code_and_full_target_crate_selection",
+      "passed": true
+    },
+    {
+      "name": "ktest_private_osdk_binary_hash_matches",
+      "passed": true
+    },
+    {
+      "name": "ktest_recorded_runtime_inputs_match",
+      "passed": true
+    },
+    {
+      "name": "all_10_ktest_commands_succeeded_and_direct_leaders_reaped",
+      "passed": true
+    },
+    {
+      "name": "ostd_raw_serial_hash_and_counts",
+      "passed": true
+    },
+    {
+      "name": "ostd_actual_guest_exit_profile_and_artifacts",
+      "passed": true
+    },
+    {
+      "name": "ostd_generated_lock_equals_fixed_lock",
+      "passed": true
+    },
+    {
+      "name": "ostd_original_machine_result_matches_independent_count",
+      "passed": true
+    },
+    {
+      "name": "aster-core_raw_serial_hash_and_counts",
+      "passed": true
+    },
+    {
+      "name": "aster-core_actual_guest_exit_profile_and_artifacts",
+      "passed": true
+    },
+    {
+      "name": "aster-core_generated_lock_equals_fixed_lock",
+      "passed": true
+    },
+    {
+      "name": "aster-core_original_machine_result_matches_independent_count",
+      "passed": true
+    }
+  ],
+  "review_checks_passed": 44,
+  "review_checks_failed": 0,
+  "all_checked_native_evidence_consistent": true,
+  "stage_timing_and_exit": {
+    "kernel": {
+      "started_at_utc": "2026-10-18T08:49:31.749120+00:00",
+      "finished_at_utc": "2026-10-18T08:52:49.014296+00:00",
+      "elapsed_seconds": 197.2651785550006,
+      "driver_exit_code": 0
+    },
+    "run_kernel": {
+      "started_at_utc": "2026-10-18T08:53:39.397913+00:00",
+      "finished_at_utc": "2026-10-18T08:53:39.491939+00:00",
+      "elapsed_seconds": 0.09403800500149373,
+      "driver_exit_code": 1
+    },
+    "run_kernel_retry01": {
+      "started_at_utc": "2026-10-18T08:58:30.833090+00:00",
+      "finished_at_utc": "2026-10-18T08:58:34.030317+00:00",
+      "elapsed_seconds": 3.1971252160001313,
+      "driver_exit_code": 0
+    },
+    "ktest": {
+      "started_at_utc": "2026-10-18T08:58:35.031485+00:00",
+      "finished_at_utc": "2026-10-18T09:00:56.716561+00:00",
+      "elapsed_seconds": 141.68498798699875,
+      "driver_exit_code": 0
+    }
+  },
+  "build_log_observations": {
+    "kernel": {
+      "log-exit-code.txt": "0",
+      "run-exit-code.txt": "0",
+      "make-exit-code.txt": "0",
+      "manifest-cleanup-exit-code.txt": "0",
+      "compiling_lines": 284,
+      "finished_lines": [
+        "    Finished `release` profile [optimized] target(s) in 1m 17s",
+        "    Finished `release` profile [optimized] target(s) in 1m 58s"
+      ],
+      "fatal_compile_errors": []
+    },
+    "run_kernel_retry01": {
+      "log-exit-code.txt": "0",
+      "run-exit-code.txt": "0",
+      "make-exit-code.txt": "0",
+      "manifest-cleanup-exit-code.txt": "0",
+      "compiling_lines": 0,
+      "finished_lines": [
+        "    Finished `release` profile [optimized] target(s) in 0.91s",
+        "    Finished `release` profile [optimized] target(s) in 0.18s"
+      ],
+      "fatal_compile_errors": []
+    }
+  },
+  "source_snapshot_statuses": {
+    "after-kernel.json": {
+      "captured_at_utc": "2026-10-18T08:52:49.443853+00:00",
+      "git_status_porcelain": ""
+    },
+    "after-ktest.json": {
+      "captured_at_utc": "2026-10-18T09:00:57.190460+00:00",
+      "git_status_porcelain": "?? kernel/asterinas/kernel/OSDK.toml\n"
+    },
+    "after-native-quarantine.json": {
+      "captured_at_utc": "2026-10-18T09:03:55.729934+00:00",
+      "git_status_porcelain": ""
+    },
+    "after-run_kernel.json": {
+      "captured_at_utc": "2026-10-18T08:53:39.944064+00:00",
+      "git_status_porcelain": "?? kernel/asterinas/kernel/OSDK.toml\n"
+    },
+    "after-run_kernel_retry01.json": {
+      "captured_at_utc": "2026-10-18T08:58:34.455008+00:00",
+      "git_status_porcelain": ""
+    },
+    "before-ktest.json": {
+      "captured_at_utc": "2026-10-18T08:58:34.952403+00:00",
+      "git_status_porcelain": ""
+    },
+    "before-run_kernel.json": {
+      "captured_at_utc": "2026-10-18T08:53:39.323215+00:00",
+      "git_status_porcelain": "?? kernel/asterinas/kernel/OSDK.toml\n"
+    },
+    "before-run_kernel_retry01.json": {
+      "captured_at_utc": "2026-10-18T08:58:30.760344+00:00",
+      "git_status_porcelain": ""
+    },
+    "before.json": {
+      "captured_at_utc": "2026-10-18T08:49:31.686350+00:00",
+      "git_status_porcelain": ""
+    }
+  },
+  "source_snapshot_count": 9,
+  "native_source_input_count": 3012,
+  "source_files_sha256": "193eb5a9b8a50244ff2f0ae197794b479d3f2c99af64e93b869e6f62dd73d8d0",
+  "cleanup_receipts": {
+    "kernel": {
+      "anchor": {
+        "device": 27,
+        "inode": 1716473,
+        "mode": "100600",
+        "type": "regular"
+      },
+      "candidate": "/workspace/scratch/d7da9e7650f0/a01-current/kernel/asterinas/kernel/.a01-manifest-custody-0_94go32/manifest",
+      "captured": {
+        "device": 27,
+        "inode": 1716473,
+        "mode": "100600",
+        "type": "regular"
+      },
+      "continuous_public_path_occupancy_guaranteed": false,
+      "custody": "/workspace/scratch/d7da9e7650f0/a01-current/kernel/asterinas/kernel/.a01-manifest-custody-0_94go32",
+      "custody_removed": true,
+      "helper_file": "/workspace/scratch/d7da9e7650f0/a01-current/support/build/cleanup-manifest.py",
+      "helper_sha256": "6620d8be088f3602e673397081c5230aa5eb2cad54fd4080f21b3afe370a82c8",
+      "manifest": "/workspace/scratch/d7da9e7650f0/a01-current/kernel/asterinas/kernel/OSDK.toml",
+      "outcome": "owned_removed",
+      "owned_fd": 8,
+      "passed": true,
+      "schema": 1
+    },
+    "run_kernel_retry01": {
+      "anchor": {
+        "device": 27,
+        "inode": 1716473,
+        "mode": "100600",
+        "type": "regular"
+      },
+      "candidate": "/workspace/scratch/d7da9e7650f0/a01-current/kernel/asterinas/kernel/.a01-manifest-custody-08x2g3ag/manifest",
+      "captured": {
+        "device": 27,
+        "inode": 1716473,
+        "mode": "100600",
+        "type": "regular"
+      },
+      "continuous_public_path_occupancy_guaranteed": false,
+      "custody": "/workspace/scratch/d7da9e7650f0/a01-current/kernel/asterinas/kernel/.a01-manifest-custody-08x2g3ag",
+      "custody_removed": true,
+      "helper_file": "/workspace/scratch/d7da9e7650f0/a01-current/support/build/cleanup-manifest.py",
+      "helper_sha256": "6620d8be088f3602e673397081c5230aa5eb2cad54fd4080f21b3afe370a82c8",
+      "manifest": "/workspace/scratch/d7da9e7650f0/a01-current/kernel/asterinas/kernel/OSDK.toml",
+      "outcome": "owned_removed",
+      "owned_fd": 8,
+      "passed": true,
+      "schema": 1
+    }
+  },
+  "first_unknown_manifest_quarantine": {
+    "started_at_utc": "2026-10-18T08:58:30.270337+00:00",
+    "operation": "reversible rename under native workspace lock; no unlink or overwrite",
+    "source_path": "/workspace/scratch/d7da9e7650f0/a01-current/kernel/asterinas/kernel/OSDK.toml",
+    "expected_observation": {
+      "st_dev": 27,
+      "st_ino": 1720253,
+      "st_mode": 33152,
+      "st_size": 1019,
+      "st_mtime_ns": 1792313372260628763,
+      "st_ctime_ns": 1792313575137551663,
+      "st_nlink": 1
+    },
+    "expected_sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f",
+    "writer_identified": false,
+    "destination": "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/prelaunch-failure/quarantine-7hs1xz6n/OSDK.toml",
+    "before": {
+      "st_dev": 27,
+      "st_ino": 1720253,
+      "st_mode": 33152,
+      "st_size": 1019,
+      "st_mtime_ns": 1792313372260628763,
+      "st_ctime_ns": 1792313575137551663,
+      "st_nlink": 1
+    },
+    "after": {
+      "st_dev": 27,
+      "st_ino": 1720253,
+      "st_mode": 33152,
+      "st_size": 1019,
+      "st_mtime_ns": 1792313372260628763,
+      "st_ctime_ns": 1792313910265817434,
+      "st_nlink": 1
+    },
+    "same_inode_mode_size": true,
+    "bytes_unchanged": true,
+    "public_entry_absent": true,
+    "finished_at_utc": "2026-10-18T08:58:30.270949+00:00"
+  },
+  "frozen_first_build_elf": {
+    "path": "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/artifacts-first-build/kernel.elf",
+    "size": 8283136,
+    "sha256": "6518b6472efbc599498b71550ef9761f6f20e74814db0c9a81bff101ab036e55",
+    "matches_recorded_bytes": true
+  },
+  "successful_boot_artifacts": {
+    "-kernel": {
+      "path": "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01/artifacts-0q83efvx/kernel.elf",
+      "size": 8283136,
+      "sha256": "6518b6472efbc599498b71550ef9761f6f20e74814db0c9a81bff101ab036e55",
+      "matches_recorded_bytes": true
+    },
+    "-initrd": {
+      "path": "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01/artifacts-0q83efvx/initramfs.cpio.gz",
+      "size": 1107990,
+      "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "matches_recorded_bytes": true
+    },
+    "-bios": {
+      "path": "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01/artifacts-0q83efvx/bios.bin",
+      "size": 262144,
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "matches_recorded_bytes": true
+    }
+  },
+  "successful_boot_serial": {
+    "size": 72194,
+    "sha256": "0efe9f6156db9aa42574e35ab919c1a3e0aeea30b6a74ff0397e50c362a4ae1e",
+    "marker_counts": {
+      "OSTD initialized. Preparing components.": 1,
+      "TRILLIONNIUM_A01_INIT_BEGIN": 1,
+      "TRILLIONNIUM_A01_CPU_COUNT=1": 1,
+      "Successfully booted.": 1,
+      "TRILLIONNIUM_A01_BOOT_OK": 1
+    }
+  },
+  "ktest_guests": {
+    "ostd": {
+      "declared_headers": [
+        [
+          "221",
+          "ostd"
+        ]
+      ],
+      "observed_test_starts": 221,
+      "summaries": [
+        [
+          "ok",
+          "221",
+          "0",
+          "0"
+        ]
+      ],
+      "soft_skip_reasons": [
+        "VMX unavailable",
+        "VMX unavailable",
+        "VMX/EPT invalidation unavailable"
+      ],
+      "reported_passed": 221,
+      "exercised_passed_lower_bound": 218,
+      "raw_exit_code": 33,
+      "serial_bytes": 23028,
+      "serial_sha256": "b5a80a809cbb672c9e4e3e467c0b9c507a178db8a4178415b03f282dd62f3fa7",
+      "artifacts_live_byte_verification": {
+        "-kernel": {
+          "path": "/workspace/scratch/d7da9e7650f0/a01-current/kernel/asterinas/target/osdk/ostd/ostd-osdk-bin.elf",
+          "size": 2001544,
+          "sha256": "8370730e882d29ef00a9796577ec7aa118292a78fddc098c6b96956ad94c8862",
+          "matches_recorded_bytes": true
+        },
+        "-bios": {
+          "path": "/workspace/scratch/d7da9e7650f0/a01-current-runtime/rootfs/usr/share/seabios/bios-256k.bin",
+          "size": 262144,
+          "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+          "matches_recorded_bytes": true
+        }
+      },
+      "actual_profile": {
+        "observed": {
+          "-machine": "q35",
+          "-accel": "tcg",
+          "-cpu": "max",
+          "-m": "512M",
+          "-smp": "1",
+          "-display": "none",
+          "-monitor": "none",
+          "-serial": "chardev:serial"
+        },
+        "fixed_profile_matches": true,
+        "no_data_disk_or_network_options": true
+      },
+      "actual_qemu_duration_seconds": 0.766,
+      "upstream_requested_config_cwd": "/workspace/scratch/d7da9e7650f0/a01-current/kernel/asterinas",
+      "requested_upstream_device_args_are_not_actual_loaded_devices": true
+    },
+    "aster-core": {
+      "declared_headers": [
+        [
+          "160",
+          "aster-core"
+        ]
+      ],
+      "observed_test_starts": 160,
+      "summaries": [
+        [
+          "ok",
+          "160",
+          "0",
+          "0"
+        ]
+      ],
+      "soft_skip_reasons": [],
+      "reported_passed": 160,
+      "exercised_passed_lower_bound": 160,
+      "raw_exit_code": 33,
+      "serial_bytes": 18059,
+      "serial_sha256": "5ad6adb985afb8ff976db3c78d2ab14793ab86134b97028d6b1cf0309f189856",
+      "artifacts_live_byte_verification": {
+        "-kernel": {
+          "path": "/workspace/scratch/d7da9e7650f0/a01-current/kernel/asterinas/target/osdk/aster-core/aster-core-osdk-bin.elf",
+          "size": 9509024,
+          "sha256": "b0ce473e72406820b57f8469b1a078a5d52d405a286b03b074b95f389c6e4133",
+          "matches_recorded_bytes": true
+        },
+        "-bios": {
+          "path": "/workspace/scratch/d7da9e7650f0/a01-current-runtime/rootfs/usr/share/seabios/bios-256k.bin",
+          "size": 262144,
+          "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+          "matches_recorded_bytes": true
+        }
+      },
+      "actual_profile": {
+        "observed": {
+          "-machine": "q35",
+          "-accel": "tcg",
+          "-cpu": "max",
+          "-m": "512M",
+          "-smp": "1",
+          "-display": "none",
+          "-monitor": "none",
+          "-serial": "chardev:serial"
+        },
+        "fixed_profile_matches": true,
+        "no_data_disk_or_network_options": true
+      },
+      "actual_qemu_duration_seconds": 0.616,
+      "upstream_requested_config_cwd": "/workspace/scratch/d7da9e7650f0/a01-current/kernel/asterinas",
+      "requested_upstream_device_args_are_not_actual_loaded_devices": true
+    }
+  },
+  "ktest_totals": {
+    "reported_passed": 381,
+    "soft_skipped": 3,
+    "exercised_passed_lower_bound": 378,
+    "failed": 0,
+    "filtered_in_requested_crates": 0,
+    "scope": "full OSTD and aster-core target crates only; dependency crates are not separately selected"
+  },
+  "post_ktest_live_manifest_metadata": {
+    "observed_at_utc": "2026-10-18T09:11:43.161655+00:00",
+    "path": "/workspace/scratch/d7da9e7650f0/a01-current/kernel/asterinas/kernel/OSDK.toml",
+    "read_mode": "lstat only; bytes not read or copied",
+    "present": false
+  },
+  "post_ktest_manifest_original_observation": {
+    "schema": "trillionnium.a01.manifest-observation.v1",
+    "started_at_utc": "2026-10-18T09:03:55.256170+00:00",
+    "source_commit": "b39e154ae5a1e9853f57e23f9bee84712ee8ef7e",
+    "full_git_status_before": "?? kernel/asterinas/kernel/OSDK.toml\n",
+    "source_path": "/workspace/scratch/d7da9e7650f0/a01-current/kernel/asterinas/kernel/OSDK.toml",
+    "writer_identified": false,
+    "driver_script_sha256": "01c04e77ca92cd45cc9409f96f44448e913a1a07edc85c27bdecd8656bf8a56a",
+    "classification": "Observed after completed ktests; no writer attribution from inode, bytes or timestamps.",
+    "observed_at_utc": "2026-10-18T09:03:55.294444+00:00",
+    "stat": {
+      "st_dev": 27,
+      "st_ino": 1718453,
+      "st_mode": 33152,
+      "st_size": 1019,
+      "st_mtime_ns": 1792313372260628763,
+      "st_ctime_ns": 1792313921186089829,
+      "st_nlink": 1
+    },
+    "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f",
+    "finished_at_utc": "2026-10-18T09:03:55.294989+00:00",
+    "full_git_status_after": ""
+  },
+  "post_ktest_manifest_root_owned_quarantine": {
+    "operation": "reversible rename under native workspace lock; no unlink or overwrite",
+    "source_path": "/workspace/scratch/d7da9e7650f0/a01-current/kernel/asterinas/kernel/OSDK.toml",
+    "destination": "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/post-ktest-manifest/quarantine-jhqy8nth/OSDK.toml",
+    "before": {
+      "st_dev": 27,
+      "st_ino": 1718453,
+      "st_mode": 33152,
+      "st_size": 1019,
+      "st_mtime_ns": 1792313372260628763,
+      "st_ctime_ns": 1792313921186089829,
+      "st_nlink": 1
+    },
+    "after": {
+      "st_dev": 27,
+      "st_ino": 1718453,
+      "st_mode": 33152,
+      "st_size": 1019,
+      "st_mtime_ns": 1792313372260628763,
+      "st_ctime_ns": 1792314235294670206,
+      "st_nlink": 1
+    },
+    "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f",
+    "same_inode_mode_size": true,
+    "bytes_unchanged": true,
+    "public_entry_absent": true,
+    "finished_at_utc": "2026-10-18T09:03:55.294896+00:00",
+    "writer_identified": false
+  },
+  "ktest_manifest_lifecycle_review": {
+    "code_sha256": {
+      "support/build/ktest/run.py": "8bc8f712e7e1606d5744596bb390b1979b9d9559ca478dde5bba8c8670d1f59c",
+      "kernel/asterinas/osdk/src/config/manifest.rs": "1b72abf33abcbc4d7296f4855f4136645a03001421455b81fc1b0de039a5cda1",
+      "kernel/asterinas/osdk/src/commands/test.rs": "a1f35b4d72e2235cacd368b421bf992a9d58c0537b21882f6f37cb8d1cee23bf",
+      "kernel/asterinas/osdk/src/base_crate/mod.rs": "490aa4fc7a57362e1816c3778690de6d4d1af9508c2d4aec2e2c9524b4a74676"
+    },
+    "runner_creates_or_retains_live_kernel_OSDK_manifest_by_design": false,
+    "runner_scope": "flock covers private OSDK install, per-target-crate osdk test, raw evidence and generated Cargo.lock archival; it neither invokes kernel.sh nor installs minimal/OSDK.toml",
+    "osdk_test_generation_scope": "target/osdk/<crate>-test-base Cargo.toml, src/main.rs and linker scripts; no kernel/OSDK.toml creation",
+    "config_load_scope": "current directory, then actual Cargo workspace root only; it does not search each parent directory",
+    "manifest_consumed_by_recorded_ktest": "upstream kernel/asterinas/OSDK.toml, supported by each recorded QEMU cwd and upstream requested arguments",
+    "evidence_not_systemwide_trace": true,
+    "new_live_manifest_writer_identified": false,
+    "classification": "untracked additional file with unknown writer; not an expected ktest retention artifact",
+    "numeric_inode_reuse_note": "the two independent boot cleanup receipts can legitimately show a recycled inode number; within each invocation a still-open FD anchors ownership. Late manifest inodes differ from those owned at cleanup."
+  },
+  "archive_recommendations": [
+    "Retain original failed first-boot command/driver output, observation and reversible quarantine receipt; do not relabel the first attempt as a QEMU failure or omit it.",
+    "Retain both complete boot/kernel logs, immutable first-build and actually loaded ELF copies, initramfs/firmware hashes, exact QEMU argv and full raw serial.",
+    "Retain all original 10 ktest command receipts, two generated locks, two full serial logs and their qemu.json records. Prefer also preserving the two existing ktest ELFs while their recorded hashes still match; review only read them.",
+    "Keep all 9 captured full source snapshots, including the untracked-manifest after-ktest status and separately captured after-native-quarantine cleanliness. Additional observations must not replace original results.",
+    "Retain the distinct post-ktest manifest observation and root-owned reversible quarantine record; do not identify its writer or mark it as expected runner retention without further evidence.",
+    "Report one fresh full kernel build followed by a cached successful boot retry; the retry had zero Compiling lines and is not another fresh full build.",
+    "Keep source SHA b39e154 as the actual producer even if a later report/lock commit is published."
+  ],
+  "material_limits": [
+    "No general SMP/VMX/EPT/bare-metal/full-userland qualification.",
+    "No new A05 ioctl-effect or A06 production workload probe in this A01 receipt review.",
+    "Ktest artifacts use recorded live source paths, unlike the full boot recorder private snapshots; their bytes currently verify, but historical continuous immutability is not claimed.",
+    "The repeated late manifest writer remains unidentified. Source snapshots prove selected tracked bytes, not absence of all untracked files or all concurrent modifications."
+  ],
+  "read_file_digests": {
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/kernel-execution.json": {
+      "size": 3182,
+      "sha256": "73d1629ebe6b41a78ceb842f6e85935dee4b66548bd464b9a108791efbd79d58"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel-execution.json": {
+      "size": 3235,
+      "sha256": "51cce1dd8b6d42e21b2da2b85312bbb57db114ddd1a7753d7451a82c5ae7e45a"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01-execution.json": {
+      "size": 2022,
+      "sha256": "851c26301112d4acfaa1e0c370f0859170dd728314ec92101ddbf48f18ef8e71"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest-execution.json": {
+      "size": 2132,
+      "sha256": "43fa6e0272afd35b96863ca3ae997c2464d5447a948158e2a9cae861e90c8ce3"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/source/after-kernel.json": {
+      "size": 1340398,
+      "sha256": "cf42a086b3741ece39787422f7754a763df6743f2beaf3aa6ec74c61a14be5de"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/source/after-ktest.json": {
+      "size": 1340436,
+      "sha256": "30c11a198ed965a198037d8c89f7e901d5bdb68b18a5080b39001aaf20a0c50d"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/source/after-native-quarantine.json": {
+      "size": 1340398,
+      "sha256": "220743f5e170da337d5639ba232076365c815d4309f0a19cc5acfcb912d0a929"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/source/after-run_kernel.json": {
+      "size": 1340436,
+      "sha256": "59e7a572f39acae623c574bc6822d13e027eb29f5c0f75aa2d61b88c9d1f6834"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/source/after-run_kernel_retry01.json": {
+      "size": 1340398,
+      "sha256": "f9800f2c6e3ea2ea11398b7258977e51ec2e2bf41b31cf334f8b31143a796c6b"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/source/before-ktest.json": {
+      "size": 1340398,
+      "sha256": "57a872b6504a14d62e19e899a766f36d5ab276e5a0b237b5a3d0880a93025358"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/source/before-run_kernel.json": {
+      "size": 1340436,
+      "sha256": "4d18b417b37e98407d2458bbba52fd78b2144bd4df671eedd4295b422d254b5d"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/source/before-run_kernel_retry01.json": {
+      "size": 1340398,
+      "sha256": "3f04e271804d7d5fa96647bcbff969892c1bbec37ed65e0f5c8a3aa277cf9296"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/source/before.json": {
+      "size": 1340201,
+      "sha256": "d05c59f4a8c5ba36e9834b6ead8cec51674126f06a600a4b11ef50f7362e4789"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/kernel/source-inputs.json": {
+      "size": 1509,
+      "sha256": "eb8b17f849fd0d64f642567433cb09da8ecfbfca3adaacdff675738f1ce300dc"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01/source-inputs.json": {
+      "size": 1509,
+      "sha256": "eb8b17f849fd0d64f642567433cb09da8ecfbfca3adaacdff675738f1ce300dc"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/source-inputs.json": {
+      "size": 1509,
+      "sha256": "eb8b17f849fd0d64f642567433cb09da8ecfbfca3adaacdff675738f1ce300dc"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/kernel/log-exit-code.txt": {
+      "size": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/kernel/run-exit-code.txt": {
+      "size": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/kernel/make-exit-code.txt": {
+      "size": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/kernel/manifest-cleanup-exit-code.txt": {
+      "size": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/kernel/manifest-cleanup.json": {
+      "size": 827,
+      "sha256": "9b4044d943f1beaa20bffed85a14c3ab1c4f6cd7bd9fc966f6f6f70dc3b9df6c"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/kernel/kernel.log": {
+      "size": 63656,
+      "sha256": "12e00383f74398bb0b0c5f75eaef2fa27cec3fc7a7ff41cf732dd9a51b348ad2"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/kernel-driver.log": {
+      "size": 64189,
+      "sha256": "4af3647d940ae66841ca299c13ceb89a89cd4cf33169f4b980686ef7cf0e23ef"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/kernel/command.sh": {
+      "size": 704,
+      "sha256": "badecfdbf3b4c77293ab62d3a85bcfbfce91387818843036ee3ea9054430367f"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01/log-exit-code.txt": {
+      "size": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01/run-exit-code.txt": {
+      "size": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01/make-exit-code.txt": {
+      "size": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01/manifest-cleanup-exit-code.txt": {
+      "size": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01/manifest-cleanup.json": {
+      "size": 827,
+      "sha256": "805a869db88d85499fd96732db6f13a31ac5141a7481963fa669b557762cbb22"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01/run_kernel.log": {
+      "size": 114116,
+      "sha256": "17522ec3a6b53da11d0c8fab6d9622b24065e136c87c358cb0eebd6de5831aa4"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01-driver.log": {
+      "size": 114749,
+      "sha256": "aff528aca58990314b710ec968e4a3d2b2735ace8afe0021d13d6f41421fef27"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01/command.sh": {
+      "size": 744,
+      "sha256": "b79231fc1f2a9f9c035ab1af8b5d66ff1c7c47605be9dba0a39546dbc3f8eea1"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel-driver.log": {
+      "size": 397,
+      "sha256": "d07b6982fffecb73a28ee3eff6ca6bc9452aefb7595f40e1910fc331f5078dda"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/prelaunch-failure/observation.json": {
+      "size": 11477,
+      "sha256": "526dce258a514686605372458bfddb13aac50dd4f2ab2530bfaf5c3acf42a2cf"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/prelaunch-failure/quarantine.json": {
+      "size": 1276,
+      "sha256": "3ef762dae71762fe79bf5444a27bb11c9c62f8254032bf05ad7c7fa0b45c5048"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/prelaunch-failure/OSDK.toml.observed": {
+      "size": 1019,
+      "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/prelaunch-failure/quarantine-7hs1xz6n/OSDK.toml": {
+      "size": 1019,
+      "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/post-ktest-manifest/observation.json": {
+      "size": 1005,
+      "sha256": "5fc1f837f4eb2564f38ebfbceb0fd2a2f712769ff1ba842e9ea2a9f9eb1c5939"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/post-ktest-manifest/quarantine.json": {
+      "size": 998,
+      "sha256": "ae293c26c1687e42edb5ca3e8e0f0400aa4de44d9e8979a8aaf88c2c725f6195"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/post-ktest-manifest/OSDK.toml.observed": {
+      "size": 1019,
+      "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/post-ktest-manifest/quarantine-jhqy8nth/OSDK.toml": {
+      "size": 1019,
+      "sha256": "1ff39174c39411f8b9a7fd328f762268e62d88521b43ebbde384d03d7d9a9f9f"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/artifacts-first-build/capture.json": {
+      "size": 764,
+      "sha256": "64ac0312a201c6517f848ac53ee8d76c91df364950ddec14ecb0634d732acb27"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/artifacts-first-build/kernel.elf": {
+      "size": 8283136,
+      "sha256": "6518b6472efbc599498b71550ef9761f6f20e74814db0c9a81bff101ab036e55"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01/qemu.json": {
+      "size": 8483,
+      "sha256": "be216d2bed34ac6ff871220f864f4cc6929931e1b4b750ffed9e95d7d28792cf"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01/artifacts-0q83efvx/kernel.elf": {
+      "size": 8283136,
+      "sha256": "6518b6472efbc599498b71550ef9761f6f20e74814db0c9a81bff101ab036e55"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01/artifacts-0q83efvx/initramfs.cpio.gz": {
+      "size": 1107990,
+      "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01/artifacts-0q83efvx/bios.bin": {
+      "size": 262144,
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01/serial.log": {
+      "size": 72194,
+      "sha256": "0efe9f6156db9aa42574e35ab919c1a3e0aeea30b6a74ff0397e50c362a4ae1e"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/kernel/initramfs-manifest.json": {
+      "size": 7121,
+      "sha256": "a26dd1a6286d9866eb4a93684fa6b076cfa11d7d6aad80db478cb0942e551f0d"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/kernel/initramfs.cpio.gz": {
+      "size": 1107990,
+      "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01/initramfs-manifest.json": {
+      "size": 7121,
+      "sha256": "a26dd1a6286d9866eb4a93684fa6b076cfa11d7d6aad80db478cb0942e551f0d"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/run_kernel_retry01/initramfs.cpio.gz": {
+      "size": 1107990,
+      "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/result.json": {
+      "size": 1541,
+      "sha256": "e93867b04986fc9934e20a5b3ce4e4100394308df3a57bfcf2dd158de38ca0be"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/environment.json": {
+      "size": 2920,
+      "sha256": "fbca2207f2ffc2b0f50676460c8757c306b1238e31cb31ab91aee5c82e57b517"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/commands.json": {
+      "size": 1623,
+      "sha256": "95bcad44ced1d48bb274460b0d8460db04a5a097ba6dbd5d7785b74e7582791a"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/ktest/run.py": {
+      "size": 15650,
+      "sha256": "8bc8f712e7e1606d5744596bb390b1979b9d9559ca478dde5bba8c8670d1f59c"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/osdk/bin/cargo-osdk": {
+      "size": 8584728,
+      "sha256": "e1efbe048cab438e9f7385243073174dbb7dffde592e91512ca29914e399a731"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/kernel/asterinas/osdk/src/commands/build/mod.rs": {
+      "size": 14267,
+      "sha256": "fe21586c32416e1ab0f06e0d01830f38adfdf37fc24a1e80d11478e54c3a44c8"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/ktest/README.md": {
+      "size": 8096,
+      "sha256": "bb5a415e8939d4b69dc8beca6bda8a8c6a902a296150e9570e10e42720613ced"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/ktest/check.py": {
+      "size": 4623,
+      "sha256": "503fcc6d1ed2f828d3ab9fdbf54f28df2148dea43afbd8d9abae65d34baa1373"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/ktest/locks/aster-core.Cargo.lock": {
+      "size": 41033,
+      "sha256": "159b8682d27a7a21af98885ae48515234445c00fdf5e00b158fdc4aa952ff4ed"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/ktest/locks/aster-core.json": {
+      "size": 19758,
+      "sha256": "93e5dc19968a46980416dc1ea45a77bdf7dfc3b9b1da0cc9f0e8bb9f7f0064e9"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/ktest/locks/ostd.Cargo.lock": {
+      "size": 20185,
+      "sha256": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/ktest/locks/ostd.json": {
+      "size": 10042,
+      "sha256": "179e588d4af8bb4b8f3de492568709a8c4f92594d8b776bbb11698f2a10f5734"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/ktest/prepare-locks.py": {
+      "size": 7551,
+      "sha256": "6abdfa19daabd9090471280d4d3e7e3495e09d0722f34794342813fc81314b3b"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/ktest/record-qemu.py": {
+      "size": 5180,
+      "sha256": "52d50a46ad09be00566292bea64cf4b2b979badb84a11f055b5d06ef39e11c28"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/ktest/test_runner_lifecycle.py": {
+      "size": 21034,
+      "sha256": "9eba5572a9a1b55f1b3b171a54171614f1b8164e3642f92de3be26e986f42981"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/ktest/test_sdk_isolation_mock.py": {
+      "size": 10366,
+      "sha256": "333491922f8f0e4a5128a1930e4c73975203c5d245ed165ca879d8afa9372665"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/record-qemu.py": {
+      "size": 12764,
+      "sha256": "86570f9cd5cc02fc91248f983c61e207020a0edebfb8c9e42a804a99ef3b513e"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/verify-source.py": {
+      "size": 4103,
+      "sha256": "3ae120bc0432937b5069ba7b1c4ed23b38f838b85b0f1b9a2600a15a7b6bc667"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/aster-core/osdk-test.log.command.json": {
+      "size": 813,
+      "sha256": "dc9aa1697cdc15eb7aee0ee291dfc9c2e17f3c0bca22f7aba2f30569dbba98a0"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/aster-core/result.json.command.json": {
+      "size": 682,
+      "sha256": "f0eacd0cd62dd29d8a85f39d5877980b0462e936badd806286515195e4ac86c8"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/cargo-version.log.command.json": {
+      "size": 417,
+      "sha256": "66526438d49faff7a7e1b05ac451feff0f8a6c1259583eaa7221f9dc456216b5"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/git-head.log.command.json": {
+      "size": 406,
+      "sha256": "fbb1492f24e3377a0ef8804c0eb798ac564185231674a7027dae11ca5cdcb548"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/git-status.log.command.json": {
+      "size": 406,
+      "sha256": "d139715c229f42d99407a2eb9f65ea5993a34a9ee0c1a0e189abe2126bb13ae4"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/osdk-install.log.command.json": {
+      "size": 611,
+      "sha256": "c36fa30e0a488f5e4ba1220079569bfa8ae5b98fcf1ed78f56955281225724ed"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/ostd/osdk-test.log.command.json": {
+      "size": 806,
+      "sha256": "8fb53dcba6c7b492198d22a09b788a3cbf647d43770af2518d4a1f58679d1b2c"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/ostd/result.json.command.json": {
+      "size": 670,
+      "sha256": "ef0297ce546103a3b999648ce11a66d6752b236e9f5f665d981b266db9d8fa67"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/rustc-version.log.command.json": {
+      "size": 417,
+      "sha256": "d846866317720a9e9a064defa1a40c6761d1814c13eab022dd00c925175aa3bc"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/source-inputs.json.command.json": {
+      "size": 539,
+      "sha256": "d4c162d5d33a90aeeb993b94c7547553f082772aac85925b318a5636ae83081a"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/ostd/guests/guest-001/qemu.json": {
+      "size": 7032,
+      "sha256": "5cba597f4fe805eaf28c77fd99ecaedd08645bd54482fd7f2fca9944e1a8408b"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/ostd/guests/guest-001/serial.log": {
+      "size": 23028,
+      "sha256": "b5a80a809cbb672c9e4e3e467c0b9c507a178db8a4178415b03f282dd62f3fa7"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/kernel/asterinas/target/osdk/ostd/ostd-osdk-bin.elf": {
+      "size": 2001544,
+      "sha256": "8370730e882d29ef00a9796577ec7aa118292a78fddc098c6b96956ad94c8862"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current-runtime/rootfs/usr/share/seabios/bios-256k.bin": {
+      "size": 262144,
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/ostd/generated.Cargo.lock": {
+      "size": 20185,
+      "sha256": "bd2fa3a12577a44f4730de7228a7ceb1fb77cda68d45835825a219c62e2c5ec6"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/ostd/result.json": {
+      "size": 451,
+      "sha256": "061d15cd72fc6ef8563e04ad5f90b598362bc46c5155321990427f4b55216ee2"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/aster-core/guests/guest-001/qemu.json": {
+      "size": 7116,
+      "sha256": "147b13cddbac77937c5cc9e1c442c7276a187d36c374fe652cd196228d06bcb9"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/aster-core/guests/guest-001/serial.log": {
+      "size": 18059,
+      "sha256": "5ad6adb985afb8ff976db3c78d2ab14793ab86134b97028d6b1cf0309f189856"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/kernel/asterinas/target/osdk/aster-core/aster-core-osdk-bin.elf": {
+      "size": 9509024,
+      "sha256": "b0ce473e72406820b57f8469b1a078a5d52d405a286b03b074b95f389c6e4133"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/aster-core/generated.Cargo.lock": {
+      "size": 41033,
+      "sha256": "159b8682d27a7a21af98885ae48515234445c00fdf5e00b158fdc4aa952ff4ed"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/support/build/out/2026-10-18-main012/ktest/aster-core/result.json": {
+      "size": 353,
+      "sha256": "5ee55d230749d94792d5514ce12ed87b831a09f0da0640401ba1cfce516a262c"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/kernel/asterinas/osdk/src/config/manifest.rs": {
+      "size": 9576,
+      "sha256": "1b72abf33abcbc4d7296f4855f4136645a03001421455b81fc1b0de039a5cda1"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/kernel/asterinas/osdk/src/commands/test.rs": {
+      "size": 3871,
+      "sha256": "a1f35b4d72e2235cacd368b421bf992a9d58c0537b21882f6f37cb8d1cee23bf"
+    },
+    "/workspace/scratch/d7da9e7650f0/a01-current/kernel/asterinas/osdk/src/base_crate/mod.rs": {
+      "size": 12984,
+      "sha256": "490aa4fc7a57362e1816c3778690de6d4d1af9508c2d4aec2e2c9524b4a74676"
+    }
+  }
+}

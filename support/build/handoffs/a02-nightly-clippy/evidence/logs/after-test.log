@@ -1,0 +1,105 @@
+   Compiling hos2-os-abi v0.1.0 (/workspace/scratch/ae1a8cf05419/closure-abi/frozen-validation/source/libs/os-abi)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.54s
+     Running unittests src/lib.rs (/workspace/scratch/ae1a8cf05419/closure-abi/frozen-validation/target/debug/deps/hos2_os_abi-e285e22209df9f81)
+
+running 3 tests
+test tests::malformed_usage_is_rejected ... ok
+test tests::request_header_and_payload_round_trip ... ok
+test tests::transport_explicit_little_endian ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/golden_vectors.rs (/workspace/scratch/ae1a8cf05419/closure-abi/frozen-validation/target/debug/deps/golden_vectors-f9ac9ce0a46b7dd7)
+
+running 8 tests
+test all_known_error_status_codes_accept_empty_error_responses ... ok
+test all_golden_responses_decode_from_larger_copyout_capacity ... ok
+test each_golden_cut_is_rejected_not_just_selected_truncations ... ok
+test encoders_match_independent_golden_bytes_for_all_operations ... ok
+test every_golden_encoder_checks_capacity_before_writing ... ok
+test fixed_golden_vectors_are_consumed_by_rust_codec ... ok
+test every_golden_header_refuses_version_reserved_or_zero_id_mutation ... ok
+test golden_mutation_sweep_never_panics_or_reencodes_accepted_bytes_differently ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/mutation_kill.rs (/workspace/scratch/ae1a8cf05419/closure-abi/frozen-validation/target/debug/deps/mutation_kill-cbb9bc2c97531eee)
+
+running 7 tests
+test fixed_golden_is_a_real_valid_rust_request ... ok
+test cap_ignoring_mutant_is_killed_by_same_delivery_oracle ... ok
+test full_low_eight_byte_sequence_is_little_endian_and_high_half_zero ... ok
+test same_sequence_across_targets_is_also_conflict ... ok
+test revision_ignoring_mutant_is_killed_by_same_delivery_oracle ... ok
+test same_sequence_and_target_different_cap_is_conflict ... ok
+test same_sequence_and_target_different_revision_is_conflict ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/negative_vectors.rs (/workspace/scratch/ae1a8cf05419/closure-abi/frozen-validation/target/debug/deps/negative_vectors-28eda1c1f02d2c8f)
+
+running 21 tests
+test budget_cpu_time_cannot_exceed_elapsed_window_time ... ok
+test correlation_and_capacity_helpers_are_stable ... ok
+test fixed_golden_budget_mutations_preserve_delivery_id_but_change_canonical_request ... ok
+test install_response_echo_rejects_unordered_ids_in_success_and_failure ... ok
+test install_previous_revision_must_be_a_valid_existing_revision ... ok
+test install_budget_request_rejects_revision_period_cap_and_reserved_mutations ... ok
+test encoders_report_insufficient_output_capacity ... ok
+test ordered_sequence_helpers_provide_canonical_little_endian_ids ... ok
+test malformed_frame_lengths_are_rejected_before_unknown_opcode_or_status ... ok
+test query_abi_capability_table_rejects_unsupported_feature_combinations ... ok
+test install_revision_mismatch_is_not_an_integer_overflow ... ok
+test read_usage_and_retire_through_reject_impossible_semantic_values ... ok
+test public_response_payload_mismatches_never_write_output ... ok
+test request_structure_mutations_are_rejected ... ok
+test query_delivery_terminal_metadata_and_historical_request_are_checked ... ok
+test self_consistent_install_response_must_match_the_requested_revision ... ok
+test public_request_payload_mismatches_never_write_output ... ok
+test transport_rejects_wrapping_pointer_ranges_without_access_checks ... ok
+test response_structure_mutations_are_rejected ... ok
+test unknown_minor_and_exact_wire_lengths_are_rejected ... ok
+test self_consistent_retirement_must_cover_the_requested_frontier ... ok
+
+test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/semantic_edges.rs (/workspace/scratch/ae1a8cf05419/closure-abi/frozen-validation/target/debug/deps/semantic_edges-bc2867a3f4227f1c)
+
+running 12 tests
+test all_nonterminal_states_keep_only_the_history_sequence ... ok
+test all_independent_semantic_edge_frames_decode ... ok
+test every_semantic_edge_encoder_matches_fixed_bytes_and_preserves_unused_capacity ... ok
+test all_saved_terminal_rejections_preserve_status_without_success_metadata ... ok
+test history_and_read_ids_remain_opaque_including_nonzero_high_bytes ... ok
+test retired_frontier_can_reach_last_write_and_leave_next_sequence_max ... ok
+test last_write_sequence_and_revision_increment_to_max_are_valid ... ok
+test one_step_beyond_accepted_write_and_retire_boundaries_is_rejected ... ok
+test nonterminal_states_reject_saved_status_and_each_success_metadata_field ... ok
+test typed_terminal_rejection_encoders_match_all_independent_saved_status_bytes ... ok
+test every_terminal_error_rejects_each_nonzero_success_metadata_field ... ok
+test every_semantic_edge_encoder_rejects_each_short_capacity_without_writing ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/transport_preflight.rs (/workspace/scratch/ae1a8cf05419/closure-abi/frozen-validation/target/debug/deps/transport_preflight-5039b2d27c04075f)
+
+running 6 tests
+test descriptor_lengths_must_match_even_otherwise_valid_snapshots ... ok
+test malformed_snapshot_is_rejected_before_short_output_capacity ... ok
+test overlapping_ranges_are_accepted_and_request_owns_the_snapshot_values ... ok
+test all_five_fixed_requests_pass_the_combined_preflight ... ok
+test every_opcode_requires_success_capacity_before_admission ... ok
+test public_descriptor_fields_cannot_bypass_validation ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/transport_vectors.rs (/workspace/scratch/ae1a8cf05419/closure-abi/frozen-validation/target/debug/deps/transport_vectors-36150cbff1fb459a)
+
+running 4 tests
+test decode_independent_transport32_bytes_and_reencode_exactly ... ok
+test every_short_transport_descriptor_is_rejected ... ok
+test transport_reserves_success_capacity_before_processing_semantic_errors ... ok
+test transport_rejects_reserved_overflow_and_invalid_request_byte_count ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

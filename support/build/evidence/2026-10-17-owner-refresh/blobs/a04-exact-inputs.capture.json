@@ -1,0 +1,13 @@
+{
+  "id": "a04-exact-inputs",
+  "path": "tests/workloads/linux/baselines/exact-rootfs-input-recheck-20261017.json",
+  "ref": "da4107f8bf525b773c8b40899f443c292c3e6dbd",
+  "expected_git_blob": "87877fd46d799206a466d810b067d972f661cb80",
+  "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/git/blobs/87877fd46d799206a466d810b067d972f661cb80",
+  "started": "2026-10-17T01:11:24.038Z",
+  "ended": "2026-10-17T01:11:24.384Z",
+  "tool": "mcp__codex_apps__github_fetch",
+  "representation": "connector-unwrapped UTF-8 blob content; not raw GitHub JSON",
+  "isError": false,
+  "content": "{\n  \"schema\": 1,\n  \"kind\": \"A04_EXACT_ROOTFS_INPUT_RECHECK\",\n  \"date\": \"2026-10-17\",\n  \"classification\": \"required_fixed_input_missing; no kernel ABI conclusion\",\n  \"package_inputs\": {\n    \"gcc\": \"14.2.0-1\",\n    \"libc6\": \"2.41-12+deb13u3\",\n    \"libc6-dev\": \"2.41-12+deb13u3\",\n    \"libsqlite3-0\": \"3.46.1-7+deb13u1\",\n    \"libsqlite3-dev\": \"3.46.1-7+deb13u1\"\n  },\n  \"build\": {\n    \"command\": \"gcc-14 --sysroot=<private-debian13-sysroot> -O2 -std=c11 -Wall -Wextra -Werror -pthread [probe|sqlite_probe].c ...\",\n    \"compiler\": \"x86_64-linux-gnu-gcc 14.2.0\",\n    \"system_install_performed\": false,\n    \"system_disk_modified\": false\n  },\n  \"candidate_elf_sha256\": {\n    \"probe_dynamic\": \"d3681897825a38e1a295c144740efc9c8b24bf9b43aeed923e317ea2eb22f852\",\n    \"probe_static\": \"83c118f015c941e9076094295471ecd1dbf1be219d561e961bcc3f43fde1e3a1\",\n    \"sqlite_dynamic\": \"609eab76089f7197acdab9e67a6903181ac93d59a3df987fdfec48e16726439b\",\n    \"sqlite_static\": \"960c3d0d667a378b8ade34fc048b77758f5e49e9017a797e06dfebd96d955b37\"\n  },\n  \"manifest_expected_sha256\": {\n    \"probe_dynamic\": \"36a021aa7877170aedda535fff2a6ab2fc51cdb4b48d04c8c90ff873a40f4324\",\n    \"probe_static\": \"edd3063a60c3f5c23679de3ab13e71955f7155be619f191468800931d101b078\",\n    \"sqlite_dynamic\": \"d9c953e2dba4473ac1fad46446bc4768a448063547f32180813a868b3bdb7fc6\",\n    \"sqlite_static\": \"2b8ca0007725bbf94856fc559572b1c86c163cca380cdbf6cce38faa69abefa2\"\n  },\n  \"result\": {\n    \"exact_elf_match\": false,\n    \"rootfs_tar_created\": false,\n    \"full_replay_eligible\": false,\n    \"reason\": \"reconstructed bytes differ from the fixed manifest; do not substitute them for the pinned Debian13 inputs\"\n  }\n}\n"
+}

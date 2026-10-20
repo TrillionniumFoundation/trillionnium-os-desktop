@@ -1,0 +1,65 @@
+{
+  "argv": [
+    "/usr/bin/qemu-system-x86_64",
+    "-kernel",
+    "/workspace/scratch/ae1a8cf05419/a01-next8-repeat/kernel/asterinas/target/osdk/asterinas/asterinas-osdk-bin.elf",
+    "-initrd",
+    "/workspace/scratch/ae1a8cf05419/a01-next8-repeat/support/build/out/next8-clean-a/initramfs.cpio.gz",
+    "-append",
+    "earlycon console=ttyS0 console=ttyS0 console=ttyS0 loglevel=info loglevel=info loglevel=info SHELL=/bin/sh SHELL=/bin/sh LOGNAME=root LOGNAME=root HOME=/ HOME=/ USER=root USER=root PATH=/bin:/sbin PATH=/bin:/sbin --",
+    "-machine",
+    "q35",
+    "-accel",
+    "tcg",
+    "-cpu",
+    "max",
+    "-bios",
+    "/usr/share/seabios/bios-256k.bin",
+    "-m",
+    "512M",
+    "-smp",
+    "1",
+    "-nodefaults",
+    "-no-user-config",
+    "-no-reboot",
+    "-nographic",
+    "-display",
+    "none",
+    "-monitor",
+    "none",
+    "-serial",
+    "chardev:serial",
+    "-chardev",
+    "stdio,id=serial,signal=off,logfile=qemu.log",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04"
+  ],
+  "shell_command": "/usr/bin/qemu-system-x86_64 -kernel /workspace/scratch/ae1a8cf05419/a01-next8-repeat/kernel/asterinas/target/osdk/asterinas/asterinas-osdk-bin.elf -initrd /workspace/scratch/ae1a8cf05419/a01-next8-repeat/support/build/out/next8-clean-a/initramfs.cpio.gz -append 'earlycon console=ttyS0 console=ttyS0 console=ttyS0 loglevel=info loglevel=info loglevel=info SHELL=/bin/sh SHELL=/bin/sh LOGNAME=root LOGNAME=root HOME=/ HOME=/ USER=root USER=root PATH=/bin:/sbin PATH=/bin:/sbin --' -machine q35 -accel tcg -cpu max -bios /usr/share/seabios/bios-256k.bin -m 512M -smp 1 -nodefaults -no-user-config -no-reboot -nographic -display none -monitor none -serial chardev:serial -chardev stdio,id=serial,signal=off,logfile=qemu.log -device isa-debug-exit,iobase=0xf4,iosize=0x04",
+  "cwd": "/workspace/scratch/ae1a8cf05419/a01-next8-repeat/kernel/asterinas/kernel",
+  "qemu_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+  "qemu_version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)\nCopyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers",
+  "artifacts": {
+    "-kernel": {
+      "path": "/workspace/scratch/ae1a8cf05419/a01-next8-repeat/kernel/asterinas/target/osdk/asterinas/asterinas-osdk-bin.elf",
+      "size": 8288088,
+      "sha256": "6c0c382ec88d2e59b58d50abb0ef3671635f30ce08c3b442d2bdc2204821d040"
+    },
+    "-initrd": {
+      "path": "/workspace/scratch/ae1a8cf05419/a01-next8-repeat/support/build/out/next8-clean-a/initramfs.cpio.gz",
+      "size": 1107990,
+      "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+    },
+    "-bios": {
+      "path": "/usr/share/seabios/bios-256k.bin",
+      "size": 262144,
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+    }
+  },
+  "raw_exit_code": 33,
+  "timed_out": false,
+  "serial_path": "/workspace/scratch/ae1a8cf05419/a01-next8-repeat/kernel/asterinas/kernel/qemu.log",
+  "qemu_pid": 4922,
+  "serial_sha256": "c2ada607f3b5c6c6c9fde912ae52efeeb4fde48ad35ce63426ead70e4c4e9fdb",
+  "serial_size": 72303,
+  "duration_seconds": 0.918
+}

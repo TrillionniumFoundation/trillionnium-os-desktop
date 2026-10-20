@@ -1,0 +1,197 @@
+{
+  "requested_qemu_args": [
+    "-kernel",
+    "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/target/osdk/asterinas/asterinas-osdk-bin.elf",
+    "-initrd",
+    "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/boot-retry/initramfs.cpio.gz",
+    "-append",
+    "earlycon console=ttyS0 console=ttyS0 console=ttyS0 loglevel=info loglevel=info loglevel=info SHELL=/bin/sh SHELL=/bin/sh LOGNAME=root LOGNAME=root HOME=/ HOME=/ USER=root USER=root PATH=/bin:/sbin PATH=/bin:/sbin --",
+    "-machine",
+    "q35",
+    "-accel",
+    "tcg",
+    "-cpu",
+    "max",
+    "-bios",
+    "/usr/share/seabios/bios-256k.bin",
+    "-m",
+    "512M",
+    "-smp",
+    "1",
+    "-nodefaults",
+    "-no-user-config",
+    "-no-reboot",
+    "-nographic",
+    "-display",
+    "none",
+    "-monitor",
+    "none",
+    "-serial",
+    "chardev:serial",
+    "-chardev",
+    "stdio,id=serial,signal=off,logfile=qemu.log",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04"
+  ],
+  "cwd": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/kernel",
+  "artifacts": {
+    "-kernel": {
+      "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/boot-retry/artifacts-571ctgov/kernel.elf",
+      "size": 8382376,
+      "sha256": "4625a5ddf9e82aee2ce01bdfb23127f88a5200565ce2a0645a09e181073ab6d4",
+      "stat": {
+        "dev": 27,
+        "ino": 19763,
+        "mode": 33024,
+        "size": 8382376,
+        "mtime_ns": 1792371430889159512,
+        "ctime_ns": 1792371430889159512
+      },
+      "source": {
+        "requested_path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/target/osdk/asterinas/asterinas-osdk-bin.elf",
+        "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/target/osdk/asterinas/asterinas-osdk-bin.elf",
+        "size": 8382376,
+        "sha256": "4625a5ddf9e82aee2ce01bdfb23127f88a5200565ce2a0645a09e181073ab6d4",
+        "stat": {
+          "dev": 27,
+          "ino": 18664,
+          "mode": 33261,
+          "size": 8382376,
+          "mtime_ns": 1792371430850056067,
+          "ctime_ns": 1792371430850069988
+        }
+      },
+      "creation": "exclusive xb; no overwrite or source-path fallback"
+    },
+    "-initrd": {
+      "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/boot-retry/artifacts-571ctgov/initramfs.cpio.gz",
+      "size": 1107990,
+      "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+      "stat": {
+        "dev": 27,
+        "ino": 19764,
+        "mode": 33024,
+        "size": 1107990,
+        "mtime_ns": 1792371430897101421,
+        "ctime_ns": 1792371430897101421
+      },
+      "source": {
+        "requested_path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/boot-retry/initramfs.cpio.gz",
+        "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/boot-retry/initramfs.cpio.gz",
+        "size": 1107990,
+        "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+        "stat": {
+          "dev": 27,
+          "ino": 19649,
+          "mode": 33188,
+          "size": 1107990,
+          "mtime_ns": 1792371429192662200,
+          "ctime_ns": 1792371430845158378
+        }
+      },
+      "creation": "exclusive xb; no overwrite or source-path fallback"
+    },
+    "-bios": {
+      "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/boot-retry/artifacts-571ctgov/bios.bin",
+      "size": 262144,
+      "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+      "stat": {
+        "dev": 27,
+        "ino": 19765,
+        "mode": 33024,
+        "size": 262144,
+        "mtime_ns": 1792371430899097491,
+        "ctime_ns": 1792371430899097491
+      },
+      "source": {
+        "requested_path": "/workspace/scratch/d7da9e7650f0/a01-current-runtime/rootfs/usr/share/seabios/bios-256k.bin",
+        "path": "/workspace/scratch/d7da9e7650f0/a01-current-runtime/rootfs/usr/share/seabios/bios-256k.bin",
+        "size": 262144,
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+        "stat": {
+          "dev": 27,
+          "ino": 1983693,
+          "mode": 33188,
+          "size": 262144,
+          "mtime_ns": 1701364826000000000,
+          "ctime_ns": 1792312482966331602
+        }
+      },
+      "creation": "exclusive xb; no overwrite or source-path fallback"
+    }
+  },
+  "raw_exit_code": 33,
+  "timed_out": false,
+  "stage": "complete",
+  "timeout_requested": "300",
+  "timeout_seconds": 300,
+  "bios_selection": {
+    "origin": "A01_QEMU_BIOS",
+    "original_requested_path": "/usr/share/seabios/bios-256k.bin",
+    "selected_path": "/workspace/scratch/d7da9e7650f0/a01-current-runtime/rootfs/usr/share/seabios/bios-256k.bin"
+  },
+  "data_selection": {
+    "origin": "A01_QEMU_DATA_DIR",
+    "original_requested_paths": [],
+    "selected_path": "/workspace/scratch/d7da9e7650f0/a01-current-runtime/rootfs/usr/share/qemu",
+    "appended": true
+  },
+  "snapshot_directory": {
+    "path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/boot-retry/artifacts-571ctgov",
+    "stat": {
+      "dev": 27,
+      "ino": 18696,
+      "mode": 16832,
+      "size": 4096,
+      "mtime_ns": 1792371430881159306,
+      "ctime_ns": 1792371430881159306
+    },
+    "ownership": "new private mkdtemp directory; retained as evidence"
+  },
+  "argv": [
+    "/workspace/scratch/d7da9e7650f0/a01-current-runtime/rootfs/usr/bin/qemu-system-x86_64",
+    "-kernel",
+    "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/boot-retry/artifacts-571ctgov/kernel.elf",
+    "-initrd",
+    "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/boot-retry/artifacts-571ctgov/initramfs.cpio.gz",
+    "-append",
+    "earlycon console=ttyS0 console=ttyS0 console=ttyS0 loglevel=info loglevel=info loglevel=info SHELL=/bin/sh SHELL=/bin/sh LOGNAME=root LOGNAME=root HOME=/ HOME=/ USER=root USER=root PATH=/bin:/sbin PATH=/bin:/sbin --",
+    "-machine",
+    "q35",
+    "-accel",
+    "tcg",
+    "-cpu",
+    "max",
+    "-bios",
+    "/workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/boot-retry/artifacts-571ctgov/bios.bin",
+    "-m",
+    "512M",
+    "-smp",
+    "1",
+    "-nodefaults",
+    "-no-user-config",
+    "-no-reboot",
+    "-nographic",
+    "-display",
+    "none",
+    "-monitor",
+    "none",
+    "-serial",
+    "chardev:serial",
+    "-chardev",
+    "stdio,id=serial,signal=off,logfile=qemu.log",
+    "-device",
+    "isa-debug-exit,iobase=0xf4,iosize=0x04",
+    "-L",
+    "/workspace/scratch/d7da9e7650f0/a01-current-runtime/rootfs/usr/share/qemu"
+  ],
+  "shell_command": "/workspace/scratch/d7da9e7650f0/a01-current-runtime/rootfs/usr/bin/qemu-system-x86_64 -kernel /workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/boot-retry/artifacts-571ctgov/kernel.elf -initrd /workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/boot-retry/artifacts-571ctgov/initramfs.cpio.gz -append 'earlycon console=ttyS0 console=ttyS0 console=ttyS0 loglevel=info loglevel=info loglevel=info SHELL=/bin/sh SHELL=/bin/sh LOGNAME=root LOGNAME=root HOME=/ HOME=/ USER=root USER=root PATH=/bin:/sbin PATH=/bin:/sbin --' -machine q35 -accel tcg -cpu max -bios /workspace/scratch/d7da9e7650f0/a01-mainf9/support/build/out/2026-10-19-mainf9/boot-retry/artifacts-571ctgov/bios.bin -m 512M -smp 1 -nodefaults -no-user-config -no-reboot -nographic -display none -monitor none -serial chardev:serial -chardev stdio,id=serial,signal=off,logfile=qemu.log -device isa-debug-exit,iobase=0xf4,iosize=0x04 -L /workspace/scratch/d7da9e7650f0/a01-current-runtime/rootfs/usr/share/qemu",
+  "qemu_sha256": "8a35ccba41582fc6c38b9df85fc9e35fa1d42f414d2d7d8090ee9b2f5e7c0854",
+  "qemu_version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)\nCopyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers",
+  "serial_path": "/workspace/scratch/d7da9e7650f0/a01-mainf9/kernel/asterinas/kernel/qemu.log",
+  "qemu_pid": 503450,
+  "serial_sha256": "b585103e6b898bbd1c804b554cb66876ab7d2463872247f98d0def6bd3cc057f",
+  "serial_size": 72279,
+  "duration_seconds": 1.021,
+  "recorder_exit_code": 33
+}

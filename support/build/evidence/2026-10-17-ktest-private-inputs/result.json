@@ -1,0 +1,73 @@
+{
+  "actual_positive_runs": [
+    {
+      "cli_exit": 33,
+      "fixture": "private-I-fixtures/test_private_paths_with_spaces_load_selected_bios_and_one_data_directory",
+      "system_default_bios_exists_before_call": false
+    },
+    {
+      "cli_exit": 33,
+      "fixture": "private-I-fixtures/test_private_bios_without_data_preserves_optional_initrd_and_fixed_profile",
+      "system_default_bios_exists_before_call": false
+    },
+    {
+      "cli_exit": 33,
+      "fixture": "private-I-O-fixtures/test_private_paths_with_spaces_load_selected_bios_and_one_data_directory",
+      "system_default_bios_exists_before_call": false
+    },
+    {
+      "cli_exit": 33,
+      "fixture": "private-I-O-fixtures/test_private_bios_without_data_preserves_optional_initrd_and_fixed_profile",
+      "system_default_bios_exists_before_call": false
+    }
+  ],
+  "actual_tool_sessions": [
+    50454,
+    68485
+  ],
+  "all_final_suites_exit": 0,
+  "base_commit": "30851677a3b2011789e452d99376bfac2d0bbfd9",
+  "before_control": {
+    "error": "hardcoded system BIOS missing despite valid private BIOS/DATA selections",
+    "exit": 1,
+    "failures": 2,
+    "source": "exact baseline ktest recorder",
+    "tests": 2
+  },
+  "encoded_rustflags_early_guard_unchanged": true,
+  "fixed_profile_guard_retained": true,
+  "full_host_test_executions": 68,
+  "immutable_ktest_snapshots_added": false,
+  "incoming_L_plus_explicit_data_rejected_by_shared_selector": true,
+  "input_digest": "normal capture_artifact stable regular FD for selected BIOS/kernel/optional initrd",
+  "kernel_or_osdk_modified": false,
+  "lifecycle_fixture_change": "one source copy for newly declared normal-selector dependency",
+  "normal_recorder_modified": false,
+  "normal_selector_added_to_runner_environment_input_hashes": true,
+  "original_osdk_and_fixed_arguments_retained": true,
+  "python_modes": [
+    "-I",
+    "-I -O"
+  ],
+  "raw_fixture_archive": "actual-cli-fixtures.tar.gz",
+  "raw_members": 154,
+  "real_kernel_builds_or_vm_runs": 0,
+  "selection_policy": "absolute importlib load of normal select_bios/select_data_directory; no duplicate validation",
+  "shared_selector_sha256": "387845415b54f1822c55ce4198586fae8047f7d3ea94008c84e0974871954098",
+  "source_sha256": {
+    "support/build/ktest/README.md": "334e85e51eb275808b949fb4b0f06925a67747d2f5cad6178704ff914f91a1ff",
+    "support/build/ktest/record-qemu.py": "52d50a46ad09be00566292bea64cf4b2b979badb84a11f055b5d06ef39e11c28",
+    "support/build/ktest/run.py": "41d23752430ad1a8893c8fc6e970cd1ea816d50be5b019ca11b0b27975ce2e56",
+    "support/build/ktest/test_runner_lifecycle.py": "aea57b83ab365f389357c6b57e1503f5a7adae77767bfe469af2c0d730dfc51c",
+    "support/build/tests/test_ktest_private_inputs.py": "e85ffc1f296429dc1d34a4728661cca2cfc589da4a9c7addcf6b41aba73cfe5a"
+  },
+  "status": "ktest_private_inputs_host_validated_pending_real_kernel_tests",
+  "suites_each_mode": {
+    "checker": 12,
+    "private_cli": 5,
+    "runner_lifecycle": 17
+  },
+  "system_default_bios_absent_in_actual_positive_runs": true,
+  "unchanged_checker_sha256": "503fcc6d1ed2f828d3ab9fdbf54f28df2148dea43afbd8d9abae65d34baa1373",
+  "upstream_kernel_regression_pass_claimed": false
+}

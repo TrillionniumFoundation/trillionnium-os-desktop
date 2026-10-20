@@ -1,0 +1,19 @@
+{
+  "from_commit": "0a533b92d4a4df8e8e4643c1b7de00e83ba0fd9d",
+  "patch_member": "original/patched/source-change.patch",
+  "argv": [
+    "patch",
+    "--batch",
+    "--fuzz=0",
+    "-p1"
+  ],
+  "exit_code": 0,
+  "stdout": "patching file support/build/README.md\npatching file support/build/kernel.sh\npatching file support/build/tests/test_kernel_runner.py\n",
+  "stderr": "",
+  "all_3_files_equal_published_bytes": true,
+  "reconstructed_sha256": {
+    "support/build/kernel.sh": "77081012007e4de3f57630dfd6c4811e3dc228dd6aff4c6ce4dd13488a5e9dbb",
+    "support/build/tests/test_kernel_runner.py": "b9838c9a8d08dbe90ddc0e62684298f719ff1a329088fdc47c70f402c76a9c8a",
+    "support/build/README.md": "adeef4e3845ca353c891b2c9daef4643afdf225fee4c6d4b9125a74b39e674fb"
+  }
+}

@@ -1,0 +1,10 @@
+tree 4cedffeb88c3f5fb450beedc37fad4dce0dda1f4
+parent 348bb39ad97179fff1d8f64724107e5d4d1f938c
+author Franksudoman <sunfocapital@gmail.com> 1792211191 +0800
+committer Franksudoman <sunfocapital@gmail.com> 1792211191 +0800
+
+A01: bind debug runs to the validated private OSDK executable
+
+Resolve the source-specific private SDK and verify its receipt before launching the debug build, preserving source-root identity through the TCP GDB flow.
+
+Validation: 16 tests in isolated Python and 16 with optimization, plus independent old-failure/new-success ingress probes. Host checks establish wrapper behavior; real kernel TCP GDB execution is recorded separately.

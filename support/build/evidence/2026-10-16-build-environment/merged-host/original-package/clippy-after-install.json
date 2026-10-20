@@ -1,0 +1,63 @@
+{
+  "utc": "2026-10-16T15:22:24.757790+00:00",
+  "dependency_install": {
+    "argv": [
+      "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin/rustup",
+      "component",
+      "add",
+      "clippy",
+      "--toolchain",
+      "nightly-2026-07-21"
+    ],
+    "returncode": 0,
+    "actual_tool_session_id": 92731,
+    "actual_session_exit": 0,
+    "log": "clippy-install.log",
+    "log_sha256": "08cc3e5ddf8fdac43e355fa0e3215ff51d62897f38c2b9748679f1984a32d562",
+    "toolchain_replaced": false
+  },
+  "versions": {
+    "clippy": {
+      "argv": [
+        "cargo",
+        "clippy",
+        "--version"
+      ],
+      "returncode": 0,
+      "stdout": "clippy 0.1.99 (87e5904f5e 2026-07-20)\n",
+      "stderr": ""
+    },
+    "installed_components": {
+      "argv": [
+        "/workspace/scratch/ae1a8cf05419/toolchains/cargo/bin/rustup",
+        "component",
+        "list",
+        "--toolchain",
+        "nightly-2026-07-21",
+        "--installed"
+      ],
+      "returncode": 0,
+      "stdout": "cargo-x86_64-unknown-linux-gnu\nclippy-x86_64-unknown-linux-gnu\nllvm-tools-x86_64-unknown-linux-gnu\nrust-src\nrust-std-aarch64-unknown-none-softfloat\nrust-std-loongarch64-unknown-none-softfloat\nrust-std-riscv64imac-unknown-none-elf\nrust-std-x86_64-unknown-linux-gnu\nrust-std-x86_64-unknown-none\nrustc-x86_64-unknown-linux-gnu\nrustc-dev-x86_64-unknown-linux-gnu\nrustfmt-x86_64-unknown-linux-gnu\n",
+      "stderr": ""
+    }
+  },
+  "clippy": {
+    "argv": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--manifest-path",
+      "libs/os-abi/Cargo.toml",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "cwd": "/workspace/scratch/ae1a8cf05419/next9-main-host/source",
+    "returncode": 101,
+    "elapsed_seconds": 0.3182075023651123,
+    "log": "cargo-clippy-after-install.log",
+    "log_sha256": "b7dfa48fd21314b6f195e87a283152ed68dd3d4ead3a4392a7e3473fcee7fa78"
+  },
+  "initial_missing_component_failure_retained": true
+}

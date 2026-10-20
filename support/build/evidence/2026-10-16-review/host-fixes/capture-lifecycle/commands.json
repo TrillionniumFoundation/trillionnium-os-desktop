@@ -1,0 +1,40 @@
+{
+  "schema": 1,
+  "kind": "host_only_lifecycle_and_unit_checks_no_kernel",
+  "cwd": "/workspace/scratch/ae1a8cf05419/trillionnium-os-desktop",
+  "published_source": "349a28ff9f78319e497d3fd7b58fe73b6e6e44b5",
+  "commands": [
+    "python3 -I support/build/osdk-integration/test_record_qemu.py",
+    "python3 -I -O support/build/osdk-integration/test_record_qemu.py",
+    "python3 -I support/build/osdk-integration/test_capture.py",
+    "python3 -I -O support/build/osdk-integration/test_capture.py",
+    "A01_CAPTURE_LIFECYCLE_OUT=NEW_DIR A01_GDB_REAL=TASK_GDB LD_LIBRARY_PATH=TASK_GDB_LIB python3 -I support/build/osdk-integration/test_capture_lifecycle.py"
+  ],
+  "selected_environment": {
+    "gdb": {
+      "path": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/bin/gdb",
+      "size": 8920528,
+      "sha256": "3832cc070ae1716e322105d3b39fb398695e5f031c9d39224cf227a8c2b889f6"
+    },
+    "LD_LIBRARY_PATH": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/lib/x86_64-linux-gnu",
+    "python": "Python 3.12.14"
+  },
+  "baseline_mode": {
+    "A01_CAPTURE_EXPECT_ORIGINAL_LEAK": "1",
+    "A01_CAPTURE_SOURCE": "/workspace/scratch/ae1a8cf05419/next5-capture-lifecycle-original",
+    "A01_CAPTURE_LIFECYCLE_OUT": "/workspace/scratch/ae1a8cf05419/next5-capture-lifecycle-baseline",
+    "outer_command_timeout_seconds": 4,
+    "tests_exercised": 1,
+    "tests_skipped": 2,
+    "note": "Original helper timeout leak was the expected test outcome; OK is reproduction success, not a leak-free result."
+  },
+  "final_mode": {
+    "A01_CAPTURE_LIFECYCLE_OUT": "/workspace/scratch/ae1a8cf05419/next5-capture-lifecycle-patched-04-publish",
+    "A01_GDB_REAL": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/bin/gdb",
+    "LD_LIBRARY_PATH": "/workspace/scratch/ae1a8cf05419/a01-host-tools-next-e5ae/root/usr/lib/x86_64-linux-gnu",
+    "tests_exercised": 5,
+    "tests_failed": 0
+  },
+  "generated_case_commands": "Raw tar includes original/final case.command.json and readiness/capture metadata; see per-member index.",
+  "note": "Commands are retained from producer freeze; observation JSON records exact generated outer argv and current working directory."
+}
