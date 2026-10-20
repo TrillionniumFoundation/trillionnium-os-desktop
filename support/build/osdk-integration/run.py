@@ -800,7 +800,13 @@ def _run_locked(args, here, project, upstream, output, fixed_root):
         report["cargo_target_profile"] = target_profile
         case_env["TMPDIR"] = str(temp)
         case_env["A01_OSDK_CASE_OUTPUT"] = str(directory)
-        case_env["A01_OSDK_GDB_READY"] = str(directory / "gdb-ready.json")
+        if profile_id == UNIX_CAPTURE_PROFILE \
+                and case == "commands::run::coverage_feature::basic_coverage":
+            # This case owns its UNIX capture endpoint; even an inherited
+            # debugger marker would make the recorder correctly reject it.
+            case_env.pop("A01_OSDK_GDB_READY", None)
+        else:
+            case_env["A01_OSDK_GDB_READY"] = str(directory / "gdb-ready.json")
         case_env["A01_OSDK_ALLOWED_ROOTS"] = json.dumps([str(output), str(target_dir), str(fixed_root),
                                                        *[str(p) for p in fixed]])
         print(f"RUN {case}", flush=True)

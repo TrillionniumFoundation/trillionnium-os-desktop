@@ -10,7 +10,9 @@ import struct
 import subprocess
 import sys
 import tempfile
+from types import SimpleNamespace
 import unittest
+from unittest import mock
 
 
 HERE = Path(__file__).resolve().parent
@@ -100,6 +102,156 @@ class UnixProfileTests(unittest.TestCase):
                           ["-chardev", "socket,id=a01-unix-gdb0"]):
             with self.subTest(arguments=arguments), self.assertRaises(ValueError):
                 recorder.reserve_unix_capture(arguments)
+
+
+class PublicCoverageEnvironmentTests(unittest.TestCase):
+    """Drive run_locked through a real Python harness, with all builds mocked.
+
+    The child only records its environment. The runner must still report a
+    failed native case because no guest or coverage artifact was produced.
+    """
+
+    COVERAGE = "commands::run::coverage_feature::basic_coverage"
+    DEBUG = "commands::run::qemu_gdb_feature::basic_debug"
+    VSC = "commands::run::qemu_gdb_feature::vsc::vsc_launch_file"
+    BASIC = "commands::run::basic::new_kernel_and_run"
+
+    def observe_child(self, case, *, local_tcp=False, coverage_gdb=False,
+                      upstream_coverage_lifecycle=False, ambient_marker=None):
+        with tempfile.TemporaryDirectory(prefix="a01-env-host-") as temporary:
+            root = Path(temporary)
+            project, output = root / "project", root / "output"
+            here = project / "support/build/osdk-integration"
+            here.mkdir(parents=True)
+            (here / "run.py").write_bytes((HERE / "run.py").read_bytes())
+            (here.parent / "record-qemu.py").write_text("# hashed host fixture only\n")
+            upstream = project / "kernel/asterinas"
+            for name in ("osdk/tests", "osdk/src", "ostd/libs/align_ext"):
+                (upstream / name).mkdir(parents=True)
+            (upstream / "Cargo.lock").write_text("# no native dependencies\n")
+            output.mkdir()
+            harness = output / "fixture-harness"
+            harness.write_text(
+                "#!" + sys.executable + "\n"
+                "import json,os\nfrom pathlib import Path\n"
+                "out=Path(os.environ['A01_OSDK_CASE_OUTPUT'])\n"
+                "(out/'environment-child.json').write_text(json.dumps({"
+                "'fixture':'host-python-environment-only','pid':os.getpid(),"
+                "'profile':os.environ['A01_OSDK_PROFILE'],"
+                "'marker':os.environ.get('A01_OSDK_GDB_READY'),"
+                "'expected_owned_marker':str(out/'gdb-ready.json')}))\n"
+                "print('test result: ok. 1 passed; 0 failed;',flush=True)\n")
+            harness.chmod(0o700)
+            toolbin = root / "rustup/toolchains" / (
+                runner.TOOLCHAIN + "-x86_64-unknown-linux-gnu") / "bin"
+            toolbin.mkdir(parents=True)
+            for name in ("cargo", "rustc"):
+                (toolbin / name).write_text("# hashed only, never executed\n")
+
+            def prepare(_upstream, _output, _cargo, _env, _local, *, fixed_root):
+                harness_root = output / "harness"
+                (harness_root / "tests").mkdir(parents=True)
+                return harness_root, fixed_root
+
+            def seed(_project, _output):
+                path = output / "upstream-root.Cargo.lock"
+                path.write_text("# explicit host fixture; no Rust compilation\n")
+                return path, {"sha256": runner.digest(path)}
+
+            def checked(argv, _cwd, _env, _log):
+                if argv[-1] == "-Vv" and str(argv[0]).endswith("rustc"):
+                    return "commit-hash: 87e5904f5eb6398af6b22eac2802c78934260c48\n"
+                if argv[-1] == "--list":
+                    return "\n".join(name + ": test" for name in [case] + [
+                        "fixture::unused_" + str(i) for i in range(21)])
+                return "explicit host fixture\n"
+
+            actual_command = runner.command
+
+            def command(argv, cwd, env, log, timeout):
+                if str(argv[0]) == str(harness):
+                    return actual_command(argv, cwd, env, log, timeout)
+                if "test" in argv:
+                    log.write_text(json.dumps({"reason": "compiler-artifact",
+                        "executable": str(harness), "target": {"name": "integration"}}) + "\n")
+                else:
+                    (output / "target/debug/cargo-osdk").write_text(
+                        "# fake OSDK fixture; never executed\n")
+                    log.write_text("build intentionally mocked; no native execution\n")
+                return {"raw_exit_code": 0, "duration_seconds": 0, "timed_out": False}
+
+            args = SimpleNamespace(local_tcp=local_tcp, coverage_gdb=coverage_gdb,
+                upstream_coverage_lifecycle=upstream_coverage_lifecycle,
+                target_dir=None, case=[case], case_timeout=10)
+            environment = os.environ.copy()
+            environment.update(CARGO_HOME=str(root / "cargo"), RUSTUP_HOME=str(root / "rustup"))
+            environment.pop("A01_OSDK_GDB_READY", None)
+            if ambient_marker is not None:
+                environment["A01_OSDK_GDB_READY"] = ambient_marker
+            with mock.patch.dict(os.environ, environment, clear=True), \
+                    mock.patch.object(runner, "prepare_root_seed", side_effect=seed), \
+                    mock.patch.object(runner, "prepare_harness", side_effect=prepare), \
+                    mock.patch.object(runner, "checked_output", side_effect=checked), \
+                    mock.patch.object(runner, "command", side_effect=command):
+                status = runner.run_locked(args, here, project, upstream, output)
+            result = json.loads((output / "result.json").read_text())
+            # A Python environment fixture must never be presented as a guest pass.
+            self.assertEqual(status, 1)
+            self.assertEqual(result["failed"], 1)
+            self.assertEqual(result["cases"][0]["raw_exit_code"], 0)
+            self.assertEqual(result["cases"][0]["guests"], [])
+            observed = json.loads((output / "case-01/environment-child.json").read_text())
+            self.assertEqual(observed["fixture"], "host-python-environment-only")
+            self.assertNotEqual(observed["pid"], os.getpid())
+            return observed
+
+    def test_default_unix_coverage_does_not_assign_a_competing_marker(self):
+        observed = self.observe_child(self.COVERAGE)
+        self.assertEqual(observed["profile"], runner.UNIX_CAPTURE_PROFILE)
+        self.assertIsNone(observed["marker"])
+
+    def test_default_unix_coverage_removes_an_ambient_competing_marker(self):
+        observed = self.observe_child(self.COVERAGE, ambient_marker="/tmp/foreign-ready.json")
+        self.assertEqual(observed["profile"], runner.UNIX_CAPTURE_PROFILE)
+        self.assertIsNone(observed["marker"])
+
+    def test_other_case_and_profile_marker_semantics_are_unchanged(self):
+        configurations = [
+            (self.DEBUG, {}), (self.VSC, {}), (self.BASIC, {}),
+            (self.COVERAGE, {"upstream_coverage_lifecycle": True}),
+            (self.COVERAGE, {"local_tcp": True}),
+            (self.COVERAGE, {"local_tcp": True, "coverage_gdb": True}),
+            (self.DEBUG, {"local_tcp": True}),
+            (self.VSC, {"local_tcp": True, "coverage_gdb": True}),
+        ]
+        for case, options in configurations:
+            with self.subTest(case=case, options=options):
+                observed = self.observe_child(case, ambient_marker="/tmp/foreign-ready.json", **options)
+                self.assertEqual(observed["marker"], observed["expected_owned_marker"])
+                self.assertNotEqual(observed["marker"], "/tmp/foreign-ready.json")
+                self.assertEqual(observed["profile"], runner.selected_profile(**options))
+
+    def test_recorder_still_rejects_a_competing_marker_before_endpoint_or_spawn(self):
+        with tempfile.TemporaryDirectory(prefix="a01-env-guard-") as temporary:
+            case = Path(temporary)
+            arguments = ["-bios", str(case / "never-read-bios")]
+            environment = {"A01_OSDK_CASE_OUTPUT": str(case), "A01_OSDK_LOCAL_TCP": "0",
+                "A01_OSDK_PROFILE": runner.UNIX_CAPTURE_PROFILE, "A01_OSDK_COVERAGE_GDB": "1",
+                "A01_OSDK_GDB_READY": str(case / "competing-marker.json")}
+            with mock.patch.dict(os.environ, environment), mock.patch.object(sys, "argv", ["recorder"]), \
+                    mock.patch.object(recorder, "transform_args", return_value=(arguments, [], [])), \
+                    mock.patch.object(recorder, "select_private_inputs", side_effect=lambda value, _record: value), \
+                    mock.patch.object(recorder, "reserve_unix_capture") as reserve, \
+                    mock.patch.object(recorder.subprocess, "Popen") as popen, \
+                    mock.patch.object(recorder.subprocess, "check_output") as version:
+                self.assertEqual(recorder.main(), 125)
+            reserve.assert_not_called()
+            popen.assert_not_called()
+            version.assert_not_called()
+            receipt = json.loads((case / "guests/guest-001/qemu.json").read_text())
+            self.assertIsNone(receipt["raw_exit_code"])
+            self.assertEqual(receipt["error"],
+                "ValueError: coverage-owned UNIX GDB cannot reuse another debugger's readiness marker")
 
 
 class UnixEndpointTests(unittest.TestCase):
