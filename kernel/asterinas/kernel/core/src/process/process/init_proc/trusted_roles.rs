@@ -5,6 +5,9 @@
 //! IDs, argv, UID and pathname never assign a role. This kernel boot plan owns
 //! the three actual allocations and final-image tokens. All resource setup,
 //! grants, page contents and first-run claims precede every Thread::run.
+//! The manager then performs normal first-process device/console startup before
+//! releasing either child. Each child opens its own console descriptors before
+//! userspace; standard I/O initialization never assigns a role or a grant.
 
 use os_control::PublisherId;
 
@@ -43,11 +46,27 @@ pub(super) fn spawn(
         recovery.0.hepta_capspace_session()?];
     let pids = [manager.0.pid(), workload.0.pid(), recovery.0.pid()];
     let spaces = [hepta_image_space_id(keys[0]), hepta_image_space_id(keys[2])];
+    let pending_children = Arc::new(Mutex::new(None::<[Arc<Task>; 2]>));
     let mut prepared = Vec::with_capacity(3);
     for (index, allocation) in [manager, workload, recovery].into_iter().enumerate() {
         let page = boot_page(index as u64 + 1, pids, spaces);
+        let startup: Box<dyn FnOnce(&Context<'_>) + Send> = if index == 0 {
+            let pending_children = pending_children.clone();
+            Box::new(move |_| {
+                // The first-process startup hook has finished. Release the
+                // private boot queue before entering the scheduler; no image,
+                // task-set, file-table or queue lock is held across Thread::run.
+                let children = pending_children.lock().take()
+                    .expect("sealed initial children were not prepared");
+                for task in children {
+                    task.as_thread().unwrap().run();
+                }
+            })
+        } else {
+            Box::new(crate::fs::init_console_file_table)
+        };
         prepared.push(prepare_role(allocation, fs.clone(), &snapshot, &abs_path,
-            argv.clone(), envp.clone(), page)?);
+            argv.clone(), envp.clone(), page, startup)?);
     }
     drop(snapshot);
     let (mut recovery, recovery_image, recovery_entry) = prepared.pop().unwrap();
@@ -71,15 +90,14 @@ pub(super) fn spawn(
     recovery.claim_resume()?;
 
     // Reuse normal parent, process-group and PID-table ownership. No fallible
-    // setup remains after publication; no role has run at this point.
+    // authority setup remains after publication; no role has run at this point.
     set_bootstrap_session_and_group(&manager.process);
     set_parent_and_group(CloneFlags::empty(), &manager.process, &workload.process);
     set_parent_and_group(CloneFlags::empty(), &manager.process, &recovery.process);
     println!("[hepta-g1d] initial control activated: manager={} workload={} recovery={} cap_ns=50000000 period_ns=100000000 lease_ns=300000000000 hepta_durability=false",
         pids[0], pids[1], pids[2]);
     let result = manager.process.clone();
-    workload.task.as_thread().unwrap().run();
-    recovery.task.as_thread().unwrap().run();
+    *pending_children.lock() = Some([workload.task.clone(), recovery.task.clone()]);
     manager.task.as_thread().unwrap().run();
     Ok(result)
 }
@@ -92,6 +110,7 @@ fn prepare_role(
     argv: Vec<CString>,
     envp: Vec<CString>,
     boot: Box<[u8; PAGE_SIZE]>,
+    startup: Box<dyn FnOnce(&Context<'_>) + Send>,
 ) -> Result<(PreparedInitialProcess, LoadedInitialImage, Vaddr)> {
     let loaded_vmar = vmar.clone_arc();
     let (info, image) = snapshot.load(loaded_vmar.clone(), argv, envp, boot)?;
@@ -100,7 +119,8 @@ fn prepare_role(
     user_ctx.set_stack_pointer(info.user_stack_top as _);
     let task = PosixThreadBuilder::new(
         process.pid(), derive_thread_name(abs_path), Box::new(user_ctx), Credentials::new_root(), vmar,
-    ).process(Arc::downgrade(&process)).fs(Arc::new(fs)).build();
+    ).process(Arc::downgrade(&process)).fs(Arc::new(fs))
+        .before_initial_user_run(startup).build();
     process.tasks().lock().insert(task.clone()).unwrap();
     let prepared = PreparedInitialProcess::new(process, loaded_vmar, task)?;
     Ok((prepared, image, info.entry_point))

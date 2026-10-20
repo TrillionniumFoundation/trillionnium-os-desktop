@@ -41,6 +41,8 @@ freezer 在新输出目录创建只读 `trusted-initial.elf`，内核实际 `inc
 
 只有 workload 进入实际 `hepta-g1d-{workload_image_nonce}` leaf。manager、recovery 留在原 root 资源域，其槽不能削减自己的恢复资源。两个管理 delegation 和两个独立 D namespace 建立后，三个原 first-run claim 全部成功，原 parent/process-group/PID 表关系发布，才调用任一 `Thread::run`。workload/recovery 是 manager 的正常子进程；readiness 文件只协调测试顺序。
 
+manager 首先完成原 first-process 的组件、设备和 console 文件表初始化，再由绑定其实际 Task 的一次启动闭包释放两个已准备的 child Task。每个 child 在首条用户指令之前复用同一 console 初始化逻辑，分别打开自己的 fd 0/1/2；三个进程不共享可变文件表。启动闭包不从 fork/exec 继承，不产生角色或 grant。此顺序使 `AT_SECURE=1` 的静态 libc 在进入 `main` 前就能检查标准描述符，不依赖用户态 readiness 文件补做运行库之前的初始化。三次 image/role commit 与 activation 仍必须先于任何 `G1D_BOOT`。
+
 精确输入有三次 loader 的 `trusted initial image committed`，并有下列三条角色记录，均先于 activation 和任何 `G1D_BOOT`：
 
 ```text
