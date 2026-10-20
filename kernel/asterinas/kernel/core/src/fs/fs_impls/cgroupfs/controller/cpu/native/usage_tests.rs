@@ -222,6 +222,7 @@ fn reset(owner: &SubController<CpuController>) {
     with_state(owner, |state| {
         state.max = CpuMax {
             quota_usec: 1_000,
+            quota_sub_usec_ns: 0,
             period_usec: 100_000,
             window_start_ns: 0,
             used_ns: 0,

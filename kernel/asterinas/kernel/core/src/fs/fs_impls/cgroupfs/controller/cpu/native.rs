@@ -4,7 +4,8 @@
 //!
 //! `CpuControl::max` protects this state with its existing IRQ-disabling lock.
 //! Binding and detachment follow membership -> bandwidth lock order. There is
-//! no grant, delivery namespace or second resource ledger here.
+//! no delivery namespace or second resource ledger here. G1-d adds the two
+//! bounded management delegations to this same owner and mutation lock.
 
 use alloc::sync::Arc;
 
@@ -21,11 +22,18 @@ use super::{
 };
 use crate::fs::cgroupfs::CgroupMembership;
 
+#[cfg(any(ktest, feature = "g1d-trusted-control"))]
+mod trusted_control;
+#[cfg(feature = "g1d-trusted-control")]
+pub(crate) use trusted_control::NativeCpuManager;
+
 pub(super) struct CpuBandwidthState {
     pub(super) max: CpuMax,
     native: Option<NativeResourceState>,
     // An unbound old Arc must not become bindable after replacement or deletion.
     is_detached: bool,
+    #[cfg(any(ktest, feature = "g1d-trusted-control"))]
+    trusted_management: Option<[os_control::ManagementGrantState; 2]>,
 }
 
 /// Internal observation failures; this is not a new public HOS2 operation.
@@ -46,12 +54,20 @@ impl CpuBandwidthState {
             max,
             native: None,
             is_detached: false,
+            #[cfg(any(ktest, feature = "g1d-trusted-control"))]
+            trusted_management: None,
         }
     }
 
     pub(super) fn reconfigure(&mut self, config: CpuMaxConfig, now: u64) -> Result<()> {
         if self.is_detached {
             return Err(Error::IsDead);
+        }
+        #[cfg(any(ktest, feature = "g1d-trusted-control"))]
+        if self.trusted_management.is_some() {
+            // A native-controlled leaf has one admitted configuration path.
+            // Linux root does not acquire either management delegation.
+            return Err(Error::PermissionDenied);
         }
         let next_period = config.period_usec.unwrap_or(self.max.period_usec);
         let mutation_fn = &mut || self.max.reconfigure(config.quota_usec, next_period, now);
@@ -111,7 +127,7 @@ impl CpuBandwidthState {
             return Err(CpuUsageError::InconsistentAccounting);
         }
         if max.period_ns() != CPU_PERIOD_NS
-            || max.quota_usec > CPU_PERIOD_NS / 1_000
+            || max.quota_ns() > CPU_PERIOD_NS
             || !max
                 .native_window_valid_from_ns
                 .is_some_and(|start| now >= start)
@@ -138,7 +154,7 @@ impl CpuBandwidthState {
             cumulative_cpu_ns: max.cumulative_ns,
             window_start_ns: max.window_start_ns,
             window_consumed_ns: max.used_ns,
-            active_cap_ns: CpuMax::us_to_ns(max.quota_usec),
+            active_cap_ns: max.quota_ns(),
             active_period_ns: max.period_ns(),
             // This slice has no native event producer or explicit pause owner.
             // Configuration revisions and timer ticks are not event sequences.
@@ -166,6 +182,19 @@ fn configuration_error(error: NativeResourceError) -> Error {
 }
 
 impl Controller {
+    /// Membership/subtree aliases must not replace the admitted native owner.
+    /// Call under the existing membership lock before publishing a change.
+    pub(in crate::fs) fn has_trusted_cpu_management(&self) -> bool {
+        #[cfg(any(ktest, feature = "g1d-trusted-control"))]
+        {
+            let cpu = self.cpu.read();
+            if let Some(control) = cpu.get().inner.as_ref().and_then(|cpu| cpu.control.as_ref()) {
+                return control.max.lock().trusted_management.is_some();
+            }
+        }
+        false
+    }
+
     /// Observes a bound current incarnation after its actual local settlement.
     ///
     /// This private G1-b seam does not authenticate or grant observation rights.
@@ -280,7 +309,8 @@ impl NativeCpuObserver {
         }
         let root = CgroupSystem::singleton();
         root.store_attr("cgroup.subtree_control", "+cpu")?;
-        let name = format!("hepta-g1c-{image_nonce}");
+        let prefix = if cfg!(feature = "g1d-trusted-control") { "hepta-g1d" } else { "hepta-g1c" };
+        let name = format!("{prefix}-{image_nonce}");
         let node = Arc::downcast::<CgroupNode>(root.create_child(&name)?)
             .map_err(|_| crate::error::Error::with_message(Errno::EINVAL, "invalid CPU leaf"))?;
         let owner = node.controller().cpu.read().get().clone();
@@ -319,7 +349,7 @@ impl NativeCpuObserver {
     /// Check the immutable Process-owned lease at the same real BOOTTIME cut
     /// used to settle and sample this owner. No second clock or mutable policy
     /// copy is introduced; the Process also rechecks its live slot afterwards.
-    #[cfg(feature = "g1c-trusted-observe")]
+    #[cfg(any(ktest, feature = "g1c-trusted-observe"))]
     pub(crate) fn read_usage_during(
         &self,
         issued_ns: u64,

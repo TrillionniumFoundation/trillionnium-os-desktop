@@ -1,5 +1,7 @@
 # 开发文档入口
 
+2026-10-20 profile 接续：[G1-c 受信初始映像观察](agents/G1C_TRUSTED_OBSERVE_PROFILE.md) 已随 [#214](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/214) 合入，普通构建继续 QueryAbi-only；新增 [G1-d 开发与技术契约](agents/G1D_TRUSTED_CONTROL_PROFILE.md) 说明三实际角色、五操作、同 CPU/D owner、原锁序、1024 窗口和明确非 Hepta durability 的资格 ack。G1-d 编译/真实执行以其独立候选 CI 为准，不用下列历史测试数代替新验收。下面 R12/R11 的源码与计数保留其冻结时点。
+
 当前 R12：[G1-c 生命周期产品 #207](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/207) 已于 14:15:35 UTC 正常同树合入 `9f664348…`。最终 `10420401…` 的五项检查全绿，完整 core238／OSTD221（3软跳过）、七负控、普通 QueryAbi18、SCM27／RLIMIT37／Ubuntu32 和 CPU 原门槛已独立核验。[本轮审计与实际证据](../results/integration/2026-10-19-g1c-lifecycle/README.md)、[当前 11 模块／64 入口矩阵](../results/integration/2026-10-19-g1c-lifecycle/module-matrix.json)、[具体后续施工](../results/integration/2026-10-19-g1c-lifecycle/NEXT_IMPLEMENTATION.md) 对应实际完成与未完成边界。G1-c 的[技术手册](ASTERINAS_PROCESS_IMAGE_G1C.md)和[开发／验证手册](../tests/kernel/control/PROCESS_IMAGE_G1C.md)已随产品合入。当前仍仅 QueryAbi；不可变映像认证、生产 grant、四资源操作、W1 和设备 profile 各自继续实现。下面 R11 的62个入口和计数保留其冻结时点。
 
 R11 已完成状态（保留当时记录）：[#205](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/205) 已正常合入，实际执行 `4d3011cf…` 的完整 core220/OSTD221（3软跳过）、七完整负控、普通 Linux32 与 CPU 原门槛已独立核实。[全模块审计与内核路线](../results/integration/2026-10-19-g1b-usage/README.md) 给出 **A00–A10 的62个文档／契约／验证入口**、当前主干与历史资格，以及具体 G1-c/d、W1、桌面／Android／设备实施顺序；[机器矩阵](../results/integration/2026-10-19-g1b-usage/module-matrix.json) 固定文档身份和剩余门禁。当前仍只开放 QueryAbi，四项资源操作和生产授权未开放。以下轮次与旧计数保留各自时点，最新运行状态以 [STATUS](STATUS.md) 顶节及本轮报告为准。

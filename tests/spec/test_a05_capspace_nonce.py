@@ -52,10 +52,15 @@ class CapSpaceIdentityContract(unittest.TestCase):
     def test_open_uses_one_locked_image_key_and_no_truncated_ticks(self):
         source = DEVICE.read_text()
         value = source.split("fn process_session_id(", 1)[1].split("\n}", 1)[0]
-        self.assertIn("process.hepta_capspace_session()?", value)
-        self.assertIn("key.nonce().to_le_bytes()", value)
-        self.assertNotIn("start_time()", value)
-        self.assertNotIn("as u32", value)
+        self.assertEqual(value.count("process.hepta_capspace_session()?"), 1)
+        self.assertIn("let key = process.hepta_capspace_session()?", value)
+        self.assertIn("Ok((image_space_id(key), key))", value)
+        identity = source.split("fn image_space_id(key: ProcessImageKey)", 1)[1].split("\n}", 1)[0]
+        self.assertIn("id[..8].copy_from_slice(&BOOT_ID.get().unwrap()[..8])", identity)
+        self.assertIn("id[8..].copy_from_slice(&key.nonce().to_le_bytes())", identity)
+        for method in (value, identity):
+            self.assertNotIn("start_time()", method)
+            self.assertNotIn("as u32", method)
         self.assertIn("let (space_id, image_key) = process_session_id(&process)?", source)
         self.assertIn("Arc::ptr_eq(&owner, &current)", source)
         self.assertIn("current.check_hepta_capspace_session(self.image_key)", source)
