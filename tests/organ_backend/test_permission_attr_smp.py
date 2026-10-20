@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """Adversarial host tests for the SMP evidence parser; these never run a kernel."""
 import copy
+from contextlib import redirect_stdout
+import hashlib
 import importlib.util
+import io
 import json
 from pathlib import Path
 import subprocess
@@ -9,6 +12,7 @@ import sys
 import tempfile
 import tomllib
 import unittest
+from unittest.mock import patch
 
 sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[2]
@@ -22,6 +26,9 @@ full_spec.loader.exec_module(full_checker)
 prepare_spec = importlib.util.spec_from_file_location("permission_test_locks", ROOT / "support/build/ktest/prepare-locks.py")
 prepare = importlib.util.module_from_spec(prepare_spec)
 prepare_spec.loader.exec_module(prepare)
+source_spec = importlib.util.spec_from_file_location("permission_source_verifier", ROOT / "support/build/verify-source.py")
+source_verifier = importlib.util.module_from_spec(source_spec)
+source_spec.loader.exec_module(source_verifier)
 
 
 def fixture_serial(control=None):
@@ -132,6 +139,78 @@ class TestBaseManifest(unittest.TestCase):
         self.assertNotIn('features', manifest['dependencies']['osdk-test-kernel'])
         self.assertNotIn('external-entry', json.dumps(manifest['features']))
         self.assertEqual(manifest['features']['default'], ['cvm_guest'])
+
+
+class SourceVerifierEntry(unittest.TestCase):
+    def test_runner_manifest_dispatch_preserves_exact_and_pristine_checks(self):
+        # Original pinned upstream blob c22fa69cd833a11dd6116a8a8d1963a5d3bdf2f1.
+        # Supply only the two Git reads; main still performs the real file,
+        # mode, dispatch, insertion, blob comparison, and report operations.
+        original = b'''[package]
+name = "osdk-test-kernel"
+description = "The OSTD-based kernel for running unit tests with OSDK."
+readme = "README.md"
+version.workspace = true
+repository.workspace = true
+license.workspace = true
+edition.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+ostd.workspace = true
+owo-colors.workspace = true
+
+[lints]
+workspace = true
+'''
+        upstream_blob = 'c22fa69cd833a11dd6116a8a8d1963a5d3bdf2f1'
+        actual_blob = hashlib.sha1(f'blob {len(original)}\0'.encode() + original).hexdigest()
+        self.assertEqual(actual_blob, upstream_blob)
+        name = 'osdk/deps/test-kernel/Cargo.toml'
+        current = (ROOT / 'kernel/asterinas' / name).read_bytes()
+        with tempfile.TemporaryDirectory(prefix='permission-source-entry-') as directory:
+            root = Path(directory)
+            source = root / 'kernel/asterinas'
+            manifest = source / name
+            manifest.parent.mkdir(parents=True)
+            (root / 'support').mkdir()
+            (root / 'README.md').write_bytes(b'')
+            (root / 'support/upstream-lock.json').write_bytes(
+                (ROOT / 'support/upstream-lock.json').read_bytes())
+
+            def git_read(argv, *, cwd):
+                self.assertEqual(cwd, root)
+                if argv == ['git', 'ls-tree', '-rz', source_verifier.PINNED_TREE]:
+                    return f'100644 blob {upstream_blob}\t{name}\0'.encode()
+                self.assertEqual(argv, ['git', 'cat-file', 'blob', upstream_blob])
+                return original
+
+            cases = ((False, current, True), (False, current + b'\n# unrelated edit\n', False),
+                     (False, original, False), (True, current, False), (True, original, True))
+            for pristine, content, passed in cases:
+                with self.subTest(pristine=pristine, content=content, passed=passed):
+                    manifest.write_bytes(content)
+                    manifest.chmod(0o644)
+                    output = io.StringIO()
+                    argv = ['verify-source.py'] + (['--pristine'] if pristine else [])
+                    with patch.object(source_verifier, 'ROOT', root), \
+                            patch.object(source_verifier, 'SOURCE', source), \
+                            patch.object(sys, 'argv', argv), \
+                            patch.object(source_verifier.subprocess, 'check_output', side_effect=git_read), \
+                            redirect_stdout(output):
+                        status = source_verifier.main()
+                    report = json.loads(output.getvalue())
+                    self.assertEqual(status, 0 if passed else 1)
+                    self.assertEqual(report['passed'], passed)
+                    self.assertEqual(report['checked_files'], int(passed))
+                    if not pristine and passed:
+                        entry = report['downstream_manifests'][name]
+                        self.assertEqual(entry['upstream_blob'], upstream_blob)
+                        self.assertEqual(entry['derived_sha256'], hashlib.sha256(current).hexdigest())
+                    if not passed:
+                        self.assertEqual(len(report['errors']), 1)
+                        self.assertIn(f'{name}: blob ', report['errors'][0])
 
 
 class GuestOracle(unittest.TestCase):

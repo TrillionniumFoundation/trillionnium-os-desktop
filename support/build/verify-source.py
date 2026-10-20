@@ -131,7 +131,11 @@ def main():
                 if actual_mode != mode:
                     raise ValueError(f"mode {actual_mode} != {mode}")
                 content = path.read_bytes()
-            if not args.pristine and (name in DOWNSTREAM_MANIFEST_ADDITIONS or name in G1C_FEATURE_ADDITIONS or name == "Cargo.lock"):
+            if not args.pristine and (
+                name in DOWNSTREAM_MANIFEST_ADDITIONS
+                or name in G1C_FEATURE_ADDITIONS
+                or name in {"Cargo.lock", "osdk/deps/test-kernel/Cargo.toml"}
+            ):
                 original = subprocess.check_output(["git", "cat-file", "blob", expected], cwd=ROOT)
                 derived = derive_downstream_input(name, original)
                 downstream[name] = {
