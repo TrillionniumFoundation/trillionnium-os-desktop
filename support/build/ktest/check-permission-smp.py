@@ -97,9 +97,9 @@ def parse_serial(raw, control=None):
     require(failed == len(expected_failures) and passed == len(TESTS) - failed,
             "kernel counts differ from the three observed tests")
     declared = int(headers[0][1])
-    # The default suite contains at least the original 238 plus five mandatory
-    # transaction tests. This feature adds the three races; only they are selected.
-    require(declared >= 246 and passed + failed + filtered == declared,
+    # The default suite contains the original 238, five permission and nine G1-c
+    # tests. This feature adds the three races; only they are selected here.
+    require(declared >= 255 and passed + failed + filtered == declared,
             "compiled core test denominator was reduced or is inconsistent")
     require(status == ("FAILED" if expected_failures else "ok"), "kernel summary status differs")
     require(serial.count("[ktest runner] All crates tested.") == int(not expected_failures),

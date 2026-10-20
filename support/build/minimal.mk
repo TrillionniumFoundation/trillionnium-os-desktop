@@ -13,3 +13,14 @@ install_osdk:
 	@OSDK_LOCAL_DEV=1 cargo install --locked cargo-osdk --path osdk
 
 override CARGO_OSDK_BUILD_ARGS := --release --boot-method=vmm-direct --grub-boot-protocol=multiboot --initramfs="$(A01_INITRAMFS)" --kcmd-args="loglevel=info" --kcmd-args="earlycon" --kcmd-args="console=ttyS0" --qemu-exe="$(A01_QEMU_WRAPPER)"
+
+# The overlay replaces upstream BUILD_ARGS, including its expansion of COMMON
+# args. Forward this opt-in profile here as well; setting FEATURES alone would
+# silently produce the ordinary QueryAbi-only kernel.
+ifeq ($(HEPTA_G1C_TRUSTED_OBSERVE),1)
+override CARGO_OSDK_BUILD_ARGS += --features=g1c-trusted-observe
+# Preserve the upstream recipe and prerequisites, but retain its actual OSDK
+# argv in kernel.log for this explicitly qualified build profile.
+kernel:
+	cd kernel && cargo osdk build $(CARGO_OSDK_BUILD_ARGS)
+endif

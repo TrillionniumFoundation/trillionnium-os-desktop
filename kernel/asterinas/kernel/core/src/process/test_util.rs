@@ -22,6 +22,16 @@ pub(crate) fn new_unstarted_process() -> (Arc<Process>, Arc<Task>) {
     (process, tasks.pop().unwrap())
 }
 
+/// Initializes the real heap required by the VMAR fork path. Lifecycle-only
+/// fixtures intentionally remain unmapped until a test requests this step.
+pub(crate) fn initialize_heap_for_fork(process: &Process, heap_base: Vaddr) {
+    let locked_vmar = process.lock_vmar();
+    let vmar = locked_vmar.unwrap();
+    vmar.process_vm()
+        .map_and_init_heap(vmar, 0, heap_base)
+        .unwrap();
+}
+
 /// Builds a real task set whose threads all share one Process and VMAR. The
 /// caller owns cleanup; no task is registered in the PID table or scheduled.
 pub(crate) fn new_unstarted_process_with_threads(count: usize) -> (Arc<Process>, Vec<Arc<Task>>) {

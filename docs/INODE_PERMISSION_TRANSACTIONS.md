@@ -89,8 +89,9 @@ and preserving its documented errors, timestamps and delegating wrappers.
 ## Ordinary regression coverage
 
 The default feature set keeps the original one-CPU full OSTD/core gate. Its
-checker requires at least the original 238 core tests plus these five complete
-test names, each observed exactly once without soft skipping:
+checker requires at least 252 tests: the original 238, these five permission
+tests and the nine G1-c regressions. All 14 new complete names must be observed
+exactly once without soft skipping:
 
 | Test leaf | What the real backend must do |
 |---|---|
@@ -167,7 +168,8 @@ OSDK/VDSO/firmware/QEMU identities, and command/exit receipts. The strict oracle
 requires all three exact names, actual CPU IDs 0/1, real operation return codes,
 one hook entry, metadata results, no soft skip, no timeout, raw QEMU exit 33 for
 the positive and 65 for each expected negative. The compiled test denominator
-must remain at least 246 and match across all three feature builds.
+must remain at least 255 and match across all three feature builds. Selecting
+the three SMP cases cannot replace the earlier complete 252-test core gate.
 
 Host parser tests deliberately tamper with metadata, CPU IDs, hook counts,
 per-test outcomes, summaries, input hashes and QEMU arguments. They also run

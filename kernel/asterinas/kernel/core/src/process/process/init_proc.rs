@@ -14,7 +14,6 @@ use crate::{
     process::{
         Credentials, ProcessVm, ShebangScriptPath, UndetectedExecutable, UserNamespace, pid_table,
         posix_thread::{AsPosixThread, PosixThreadBuilder, allocate_posix_tid, derive_thread_name},
-        program_loader::ProgramToLoad,
         rlimit::new_resource_limits_for_init,
         signal::sig_disposition::SigDispositions,
     },
@@ -23,11 +22,21 @@ use crate::{
     vm::vmar::{Vmar, VmarHandle},
 };
 
+#[cfg(not(feature = "g1c-trusted-observe"))]
+use crate::process::program_loader::ProgramToLoad;
+#[cfg(feature = "g1c-trusted-observe")]
+use crate::{
+    fs::cgroupfs::{CgroupMembership, NativeCpuObserver},
+    process::program_loader::elf::LoadedInitialImage,
+};
+
 /// One loaded initial process that has never been scheduled.
 ///
 /// Only `create_init_process`, after the actual loader and task builder succeed,
 /// constructs this value. It is deliberately not Clone. The VMAR pin identifies
-/// the loaded allocation; it does not authenticate immutable executable bytes.
+/// the loaded allocation; alone it does not authenticate executable bytes.
+/// The optional observe profile must additionally consume the private token
+/// produced by final-byte verification and VMAR sealing before activation.
 struct PreparedInitialProcess {
     process: Arc<Process>,
     vmar: Arc<Vmar>,
@@ -37,6 +46,17 @@ struct PreparedInitialProcess {
 }
 
 impl PreparedInitialProcess {
+    #[cfg(feature = "g1c-trusted-observe")]
+    fn activate_observation(&self, loaded: LoadedInitialImage, entry: Vaddr) -> Result<()> {
+        loaded.consume(&self.vmar, entry)?;
+        let (observer, issued) = NativeCpuObserver::prepare(&self.process, self.key.nonce())?;
+        with_initial_image(&self.process, &self.vmar, &self.task, |image| {
+            image.activate_initial_observer(self.key, observer, issued)
+        })?;
+        println!("[hepta-g1c] initial observe activated: slot=1 generation=1 cap_ns=50000000 period_ns=100000000 lease_ns=300000000000");
+        Ok(())
+    }
+
     fn new(process: Arc<Process>, vmar: Arc<Vmar>, task: Arc<Task>) -> Result<Self> {
         let key = with_initial_image(&process, &vmar, &task, |image| image.prepare_initial())?;
         Ok(Self {
@@ -77,6 +97,11 @@ impl Drop for PreparedInitialProcess {
             // Cancel only this still-prepared image. A stale token cannot
             // close a different image or re-enable a consumed first run.
             self.process.hepta_image.lock().cancel_initial(self.key);
+            // This task never ran. Remove its failed bootstrap membership only
+            // after releasing the image mutex; retained accounting owners keep
+            // the original cgroup alive until the task/RCU references retire.
+            #[cfg(feature = "g1c-trusted-observe")]
+            CgroupMembership::write_lock().move_process_to_root(&self.process);
         }
         // Strong Process/Task/VMAR pins are dropped after the image lock.
     }
@@ -159,10 +184,13 @@ fn create_init_process(
     );
 
     let loaded_vmar = vmar.clone_arc();
-    let init_task = create_init_task(pid, &init_proc, fs, vmar, executable_path, argv, envp)?;
-    init_proc.tasks().lock().insert(init_task.clone()).unwrap();
+    let loaded = create_init_task(pid, &init_proc, fs, vmar, executable_path, argv, envp)?;
+    init_proc.tasks().lock().insert(loaded.task.clone()).unwrap();
 
-    PreparedInitialProcess::new(init_proc, loaded_vmar, init_task)
+    let prepared = PreparedInitialProcess::new(init_proc, loaded_vmar, loaded.task)?;
+    #[cfg(feature = "g1c-trusted-observe")]
+    prepared.activate_observation(loaded.image, loaded.entry)?;
+    Ok(prepared)
 }
 
 fn set_bootstrap_session_and_group(process: &Arc<Process>) {
@@ -182,6 +210,14 @@ fn set_bootstrap_session_and_group(process: &Arc<Process>) {
 }
 
 /// Creates the init task from the given executable path.
+struct LoadedInitialTask {
+    task: Arc<Task>,
+    #[cfg(feature = "g1c-trusted-observe")]
+    image: LoadedInitialImage,
+    #[cfg(feature = "g1c-trusted-observe")]
+    entry: Vaddr,
+}
+
 fn create_init_task(
     tid: Tid,
     process: &Arc<Process>,
@@ -190,9 +226,11 @@ fn create_init_task(
     executable_path: Path,
     argv: Vec<CString>,
     envp: Vec<CString>,
-) -> Result<Arc<Task>> {
+) -> Result<LoadedInitialTask> {
     let credentials = Credentials::new_root();
 
+    #[cfg(feature = "g1c-trusted-observe")]
+    let image;
     let (elf_load_info, executable_abs_path) = {
         let path_resolver = fs.resolver().read();
         let executable_abs_path = path_resolver.make_abs_path(&executable_path).into_string();
@@ -200,10 +238,18 @@ fn create_init_task(
             ShebangScriptPath::Accessible(CString::new(executable_abs_path.clone()).unwrap());
 
         let executable = UndetectedExecutable::open(executable_path.clone(), shebang_script_path)?;
-        let program_to_load =
-            ProgramToLoad::from_executable(executable, &path_resolver, argv, envp)?;
-        let vmar = process.lock_vmar();
-        let elf_load_info = program_to_load.load_to_vmar(vmar.unwrap(), &path_resolver)?;
+        #[cfg(not(feature = "g1c-trusted-observe"))]
+        let elf_load_info = {
+            let program_to_load = ProgramToLoad::from_executable(executable, &path_resolver, argv, envp)?;
+            let vmar = process.lock_vmar();
+            program_to_load.load_to_vmar(vmar.unwrap(), &path_resolver)?
+        };
+        #[cfg(feature = "g1c-trusted-observe")]
+        let elf_load_info = {
+            let (info, loaded) = executable.load_trusted_initial(vmar.clone_arc(), argv, envp)?;
+            image = loaded;
+            info
+        };
 
         (elf_load_info, executable_abs_path)
     };
@@ -218,7 +264,13 @@ fn create_init_task(
         PosixThreadBuilder::new(tid, thread_name, Box::new(user_ctx), credentials, vmar)
             .process(Arc::downgrade(process))
             .fs(Arc::new(fs));
-    Ok(thread_builder.build())
+    Ok(LoadedInitialTask {
+        task: thread_builder.build(),
+        #[cfg(feature = "g1c-trusted-observe")]
+        image,
+        #[cfg(feature = "g1c-trusted-observe")]
+        entry: elf_load_info.entry_point,
+    })
 }
 
 #[cfg(ktest)]

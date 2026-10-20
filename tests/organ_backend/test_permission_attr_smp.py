@@ -22,8 +22,8 @@ full_spec.loader.exec_module(full_checker)
 
 def fixture_serial(control=None):
     failed = checker.FAILURES[control]
-    lines = ['[ktest runner] running 246 tests in 1 crates',
-             'running 246 tests in crate "aster-core"', '']
+    lines = ['[ktest runner] running 255 tests in 1 crates',
+             'running 255 tests in crate "aster-core"', '']
     for case, name in checker.TESTS.items():
         busy = "false" if case in failed else "true"
         fields = f"case={case} cpu_a=0 cpu_b=1 entered=1 lock_busy={busy} a_rc=0 b_rc=0"
@@ -39,7 +39,7 @@ def fixture_serial(control=None):
         lines.extend([f"test {name} ...", "PERMISSION_SMP_OBSERVATION " + fields,
                       " FAILED" if case in failed else " ok"])
     status = "FAILED" if failed else "ok"
-    lines.extend(['', f'test result: {status}. {3 - len(failed)} passed; {len(failed)} failed; 243 filtered out.'])
+    lines.extend(['', f'test result: {status}. {3 - len(failed)} passed; {len(failed)} failed; 252 filtered out.'])
     if not failed:
         lines.extend(['', '[ktest runner] All crates tested.'])
     return ('\n'.join(lines) + '\n').encode()
@@ -79,13 +79,13 @@ class SerialOracle(unittest.TestCase):
             'missing_case': good.replace(b'case=owner_alias', b'case=missing'),
             'missing_test': good.replace(checker.TESTS['owner_alias'].encode(), b'aster_core::other'),
             'duplicate_test': good.replace(checker.TESTS['memfd_seal'].encode(), checker.TESTS['owner_alias'].encode()),
-            'reduced_compiled_suite': good.replace(b'246 tests', b'245 tests').replace(b'243 filtered', b'242 filtered'),
-            'filtered_required_test': good.replace(b'3 passed', b'2 passed').replace(b'243 filtered', b'244 filtered'),
+            'reduced_compiled_suite': good.replace(b'255 tests', b'254 tests').replace(b'252 filtered', b'251 filtered'),
+            'filtered_required_test': good.replace(b'3 passed', b'2 passed').replace(b'252 filtered', b'253 filtered'),
             'soft_skip': good.replace(b'case=owner_alias', b'[skipped: SMP unavailable] case=owner_alias'),
             'missing_terminal': good.replace(b' ok\n', b'\n', 1),
             'duplicate_terminal': good.replace(b' ok\n', b' ok\n ok\n', 1),
             'missing_completion': good.replace(b'[ktest runner] All crates tested.', b''),
-            'duplicate_runner': good + b'[ktest runner] running 246 tests in 1 crates\n',
+            'duplicate_runner': good + b'[ktest runner] running 255 tests in 1 crates\n',
             'fatal_panic': good + b'An uncaught panic occurred:\n',
             'observed_outside_test': good + b'PERMISSION_SMP_OBSERVATION case=owner_alias\n',
             'duplicate_field': good.replace(b'cpu_a=0', b'cpu_a=0 cpu_a=0'),
@@ -190,11 +190,12 @@ class ProfileAndFullDenominator(unittest.TestCase):
                     self.assertIn(b'fixes the crate and complete test-name suffix', result.stderr)
                     self.assertFalse(output.exists())
 
-    def test_full_core_requires_original_denominator_and_all_five_names(self):
-        required = sorted(full_checker.PERMISSION_TESTS)
+    def test_full_core_requires_original_denominator_and_all_fourteen_names(self):
+        required = sorted(full_checker.REQUIRED_CORE_TESTS)
+        self.assertEqual(len(required), 14)
         with tempfile.TemporaryDirectory(prefix='permission-full-count-parser-') as directory:
             guest = Path(directory)
-            for count, omit_required in ((243, False), (242, False), (243, True)):
+            for count, omit_required in ((252, False), (251, False), (252, True), (247, False), (243, False)):
                 names = required + [f'aster_core::fixture::case_{index}' for index in range(count - len(required))]
                 if omit_required:
                     names[0] = 'aster_core::fixture::replacement'
@@ -209,8 +210,8 @@ class ProfileAndFullDenominator(unittest.TestCase):
                     'crate': 'aster-core', 'raw_exit_code': 33, 'timed_out': False,
                     'serial_sha256': checker.sha(raw)}))
                 with self.subTest(count=count, omit_required=omit_required):
-                    if count == 243 and not omit_required:
-                        self.assertEqual(full_checker.check_guest(guest, 'aster-core')['passed'], 243)
+                    if count == 252 and not omit_required:
+                        self.assertEqual(full_checker.check_guest(guest, 'aster-core')['passed'], 252)
                     else:
                         with self.assertRaises(ValueError):
                             full_checker.check_guest(guest, 'aster-core')

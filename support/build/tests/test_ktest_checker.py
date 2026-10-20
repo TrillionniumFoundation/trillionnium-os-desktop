@@ -12,7 +12,10 @@ import unittest
 
 
 CHECKER = Path(__file__).resolve().parents[1] / "ktest/check.py"
-check_guest = runpy.run_path(str(CHECKER))["check_guest"]
+CHECKER_MODULE = runpy.run_path(str(CHECKER))
+check_guest = CHECKER_MODULE["check_guest"]
+REQUIRED_CORE_TESTS = CHECKER_MODULE["REQUIRED_CORE_TESTS"]
+MINIMUM_CORE_TESTS = CHECKER_MODULE["MINIMUM_CORE_TESTS"]
 
 
 def serial_log(passed=2, failed=0, filtered=0, skips=0):
@@ -30,6 +33,15 @@ def serial_log(passed=2, failed=0, filtered=0, skips=0):
         f"test result: {status}. {passed} passed; {failed} failed; {filtered} filtered out.",
         "[ktest runner] All crates tested.",
     ))
+    return ("\r\n".join(lines) + "\r\n").encode()
+
+
+def core_serial(names):
+    lines = [f"[ktest runner] running {len(names)} tests in 1 crates",
+             f'running {len(names)} tests in crate "aster-core"']
+    lines.extend(f"test {name} ... ok" for name in names)
+    lines.extend((f"test result: ok. {len(names)} passed; 0 failed; 0 filtered out.",
+                  "[ktest runner] All crates tested."))
     return ("\r\n".join(lines) + "\r\n").encode()
 
 
@@ -141,6 +153,41 @@ class KtestCheckerTests(unittest.TestCase):
         )
         self.assertNotEqual(result.returncode, 0, result.stdout)
         self.assertIn("no real QEMU guest records", result.stdout)
+
+    def test_complete_core_requires_all_fourteen_new_test_names_exactly_once(self):
+        self.assertEqual(len(REQUIRED_CORE_TESTS), 14)
+        self.assertEqual(MINIMUM_CORE_TESTS, 252)
+        baseline = tuple(f"aster_core::fixture::retained_{index}" for index in range(238))
+        names = (*baseline, *REQUIRED_CORE_TESTS)
+        self.evidence(core_serial(names), crate="aster-core")
+        self.assertEqual(check_guest(self.guest, "aster-core")["passed"], MINIMUM_CORE_TESTS)
+        for name in REQUIRED_CORE_TESTS:
+            with self.subTest(missing=name):
+                replaced = tuple("aster_core::fixture::unrelated" if item == name else item for item in names)
+                self.evidence(core_serial(replaced), crate="aster-core")
+                with self.assertRaisesRegex(ValueError, "required core tests"):
+                    check_guest(self.guest, "aster-core")
+            with self.subTest(soft_skipped=name):
+                skipped = core_serial(names).replace(
+                    f"test {name} ... ok".encode(),
+                    f"test {name} ... [skipped: synthetic fixture] ok".encode())
+                self.evidence(skipped, crate="aster-core")
+                with self.assertRaisesRegex(ValueError, "soft-skipped"):
+                    check_guest(self.guest, "aster-core")
+        self.evidence(core_serial((*names, REQUIRED_CORE_TESTS[0])), crate="aster-core")
+        with self.assertRaisesRegex(ValueError, "required core tests"):
+            check_guest(self.guest, "aster-core")
+
+    def test_pre_extension_238_test_success_cannot_pass_current_core_gate(self):
+        names = tuple(f"aster_core::fixture::old_{index}" for index in range(238))
+        self.evidence(core_serial(names), crate="aster-core")
+        with self.assertRaisesRegex(ValueError, "required core tests"):
+            check_guest(self.guest, "aster-core")
+
+    def test_fourteen_new_tests_do_not_replace_the_retained_core_baseline(self):
+        self.evidence(core_serial(REQUIRED_CORE_TESTS), crate="aster-core")
+        with self.assertRaisesRegex(ValueError, "shrank"):
+            check_guest(self.guest, "aster-core")
 
 
 if __name__ == "__main__":
