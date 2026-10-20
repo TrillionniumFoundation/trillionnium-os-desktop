@@ -8,6 +8,9 @@ pub(super) const MAX_CHARSET_SIZE: usize = 6;
 pub(super) const MAX_NAME_LENGTH: usize = 255;
 pub(super) const MAX_VFSNAME_BUF_SIZE: usize = (MAX_NAME_LENGTH + 1) * MAX_CHARSET_SIZE;
 
+// Linux statfs filesystem type, distinct from the on-disk boot signature.
+pub(super) const EXFAT_MAGIC: u64 = 0x2011_BAB0;
+
 pub(super) const BOOT_SIGNATURE: u16 = 0xAA55;
 pub(super) const EXBOOT_SIGNATURE: u32 = 0xAA550000;
 pub(super) const STR_EXFAT: &str = "EXFAT   "; // size should be 8

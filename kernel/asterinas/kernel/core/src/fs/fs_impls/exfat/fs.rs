@@ -434,7 +434,7 @@ impl FileSystem for ExfatFs {
 
     fn sb(&self) -> SuperBlock {
         SuperBlock::new(
-            BOOT_SIGNATURE as u64,
+            EXFAT_MAGIC,
             self.sector_size(),
             MAX_NAME_LENGTH,
             self.block_device.id(),
