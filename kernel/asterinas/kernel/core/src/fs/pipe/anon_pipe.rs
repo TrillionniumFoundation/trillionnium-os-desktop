@@ -14,6 +14,7 @@ use crate::{
             file_system::FileSystem,
             inode::{Extension, FileOps, Inode, Metadata},
             path::Dentry,
+            permission_attrs::PermissionAttrRequest,
         },
     },
     prelude::*,
@@ -77,6 +78,12 @@ impl FileOps for AnonPipeInode {
 
 #[inherit_methods(from = "self.pseudo_inode")]
 impl Inode for AnonPipeInode {
+    fn try_permission_attr_transaction(
+        &self,
+        self_dentry: &Dentry,
+        request: &PermissionAttrRequest,
+    ) -> Option<Result<()>>;
+
     fn size(&self) -> usize;
     fn resize(&self, self_dentry: &Dentry, _new_size: usize) -> Result<()>;
     fn metadata(&self) -> Result<Metadata>;

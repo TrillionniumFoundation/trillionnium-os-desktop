@@ -30,6 +30,10 @@ use crate::{
                 RenameMode, RevalidationPolicy, SymbolicLink,
             },
             path::{Dentry, is_dot, is_dot_or_dotdot, is_dotdot},
+            permission_attrs::{
+                PermissionAttrRequest, PermissionAttrs, PermissionCtimePolicy,
+                PermissionModePolicy,
+            },
             registry::{FsCreationCtx, FsProperties, FsType},
             xattr::{XattrName, XattrNamespace, XattrSetFlags},
         },
@@ -39,6 +43,9 @@ use crate::{
     time::clocks::RealTimeCoarseClock,
     vm::page_cache::{PageCache, Vmo},
 };
+
+#[cfg(ktest)]
+mod permission_tests;
 
 /// A volatile file system whose data and metadata exists only in memory.
 pub(crate) struct RamFs {
@@ -524,6 +531,36 @@ impl DirEntry {
 }
 
 impl RamInode {
+    /// Keeps the permission decision and complete update under the same metadata
+    /// lock used by stat, raw attribute setters, and every hard-link alias.
+    pub(super) fn permission_attr_transaction(
+        &self,
+        request: &PermissionAttrRequest,
+        mode_policy: PermissionModePolicy,
+    ) -> Result<()> {
+        let mut metadata = self.metadata.lock();
+        let update = request.evaluate(PermissionAttrs {
+            type_: self.typ,
+            mode: metadata.mode,
+            uid: metadata.uid,
+            gid: metadata.gid,
+        })?;
+        mode_policy.check(metadata.mode, update.mode)?;
+        if let Some(mode) = update.mode {
+            metadata.mode = mode;
+        }
+        if let Some(uid) = update.uid {
+            metadata.uid = uid;
+        }
+        if let Some(gid) = update.gid {
+            metadata.gid = gid;
+        }
+        if let Some(ctime) = update.ctime(PermissionCtimePolicy::OnAttributeChange) {
+            metadata.set_ctime(ctime);
+        }
+        Ok(())
+    }
+
     fn new_dir(
         fs: &Arc<RamFs>,
         mode: InodeMode,
@@ -1115,6 +1152,14 @@ impl FileOps for RamInode {
 }
 
 impl Inode for RamInode {
+    fn try_permission_attr_transaction(
+        &self,
+        _self_dentry: &Dentry,
+        request: &PermissionAttrRequest,
+    ) -> Option<Result<()>> {
+        Some(self.permission_attr_transaction(request, PermissionModePolicy::Writable))
+    }
+
     fn page_cache(&self) -> Option<Arc<Vmo>> {
         self.inner
             .as_file()

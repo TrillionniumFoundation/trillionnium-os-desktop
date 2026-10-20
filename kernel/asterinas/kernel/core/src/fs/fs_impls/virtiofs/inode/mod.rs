@@ -252,6 +252,16 @@ impl InodeInner {
 }
 
 impl Inode for VirtioFsInode {
+    fn try_permission_attr_transaction(
+        &self,
+        _self_dentry: &Dentry,
+        _request: &crate::fs::vfs::permission_attrs::PermissionAttrRequest,
+    ) -> Option<Result<()>> {
+        // Unported: server-side caller credentials and concurrent host writers
+        // are outside the guest metadata lock. A single SETATTR is not a CAS.
+        None
+    }
+
     fn size(&self) -> usize {
         self.size()
     }

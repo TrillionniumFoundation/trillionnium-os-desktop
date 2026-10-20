@@ -46,6 +46,9 @@ use crate::{
             file_system::{FileSystem, FsEventSubscriberStats, SuperBlock},
             inode::{Extension, FileOps, Inode, Metadata},
             path::Dentry,
+            permission_attrs::{
+                PermissionAttrRequest, PermissionCtimePolicy, PermissionModePolicy,
+            },
         },
     },
     prelude::*,
@@ -200,6 +203,18 @@ pub(crate) struct PseudoInode {
 }
 
 impl PseudoInode {
+    fn permission_attr_transaction(
+        &self,
+        request: &PermissionAttrRequest,
+        mode_policy: PermissionModePolicy,
+    ) -> Result<()> {
+        request.apply_to_metadata(
+            &mut self.metadata.lock(),
+            mode_policy,
+            PermissionCtimePolicy::OnAttributeChange,
+        )
+    }
+
     fn new(
         ino: u64,
         type_: PseudoInodeType,
@@ -266,6 +281,19 @@ impl FileOps for PseudoInode {
 }
 
 impl Inode for PseudoInode {
+    fn try_permission_attr_transaction(
+        &self,
+        _self_dentry: &Dentry,
+        request: &PermissionAttrRequest,
+    ) -> Option<Result<()>> {
+        let mode_policy = if self.is_anon {
+            PermissionModePolicy::Forbidden(Errno::EOPNOTSUPP)
+        } else {
+            PermissionModePolicy::Writable
+        };
+        Some(self.permission_attr_transaction(request, mode_policy))
+    }
+
     fn size(&self) -> usize {
         self.metadata.lock().size
     }

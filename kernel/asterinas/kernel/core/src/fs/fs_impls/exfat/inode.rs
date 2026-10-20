@@ -36,6 +36,7 @@ use crate::{
             file_system::FileSystem,
             inode::{Extension, FileOps, Inode, Metadata, MknodType, RenameMode, SymbolicLink},
             path::Dentry,
+            permission_attrs::PermissionAttrRequest,
         },
     },
     prelude::*,
@@ -1432,6 +1433,16 @@ impl FileOps for ExfatInode {
 }
 
 impl Inode for ExfatInode {
+    fn try_permission_attr_transaction(
+        &self,
+        _self_dentry: &Dentry,
+        _request: &PermissionAttrRequest,
+    ) -> Option<Result<()>> {
+        // Unported: mode/IDs are synthesized from mount options and the existing
+        // setters deliberately succeed without changing them. Preserve that ABI.
+        None
+    }
+
     fn ino(&self) -> u64 {
         self.inner.read().ino
     }

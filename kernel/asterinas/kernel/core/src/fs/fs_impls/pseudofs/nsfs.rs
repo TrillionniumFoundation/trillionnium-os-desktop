@@ -20,6 +20,7 @@ use crate::{
             file_system::FileSystem,
             inode::{Extension, FileOps, Inode, Metadata},
             path::{Dentry, Mount, Path},
+            permission_attrs::{PermissionAttrRequest, PermissionModePolicy},
         },
     },
     prelude::*,
@@ -103,6 +104,19 @@ impl<T: NsCommonOps> NsInode<T> {
 
 #[inherit_methods(from = "self.common")]
 impl<T: NsCommonOps> Inode for NsInode<T> {
+    fn try_permission_attr_transaction(
+        &self,
+        _self_dentry: &Dentry,
+        request: &PermissionAttrRequest,
+    ) -> Option<Result<()>> {
+        // Namespace inodes forbid even same-mode chmod. Do not inherit the
+        // writable-mode policy of their common PseudoInode.
+        Some(self.common.permission_attr_transaction(
+            request,
+            PermissionModePolicy::Forbidden(Errno::EPERM),
+        ))
+    }
+
     fn size(&self) -> usize;
     fn resize(&self, self_dentry: &Dentry, _new_size: usize) -> Result<()>;
     fn metadata(&self) -> Result<Metadata>;

@@ -17,13 +17,48 @@ use crate::{
         file::InodeMode,
         vfs::{
             inode::Metadata,
+            permission_attrs::{
+                PermissionAttrRequest, PermissionAttrs, PermissionCtimePolicy,
+            },
             xattr::{XattrName, XattrNamespace, XattrSetFlags},
         },
     },
     process::{Gid, Uid},
 };
 
+#[cfg(ktest)]
+mod permission_tests;
+
 impl Inode {
+    /// Serializes permission decisions with all users of InodeInner and marks
+    /// changed descriptor fields dirty through their existing setters. This is
+    /// an in-memory critical section, not a crash-atomic filesystem transaction.
+    pub(in ext2) fn permission_attr_transaction(
+        &self,
+        request: &PermissionAttrRequest,
+    ) -> Result<()> {
+        let mut inner = self.inner.write();
+        let update = request.evaluate(PermissionAttrs {
+            type_: self.type_,
+            mode: inner.mode(),
+            uid: Uid::new(inner.uid()),
+            gid: Gid::new(inner.gid()),
+        })?;
+        if let Some(mode) = update.mode {
+            inner.set_mode(mode);
+        }
+        if let Some(uid) = update.uid {
+            inner.set_uid(uid.into());
+        }
+        if let Some(gid) = update.gid {
+            inner.set_gid(gid.into());
+        }
+        if let Some(ctime) = update.ctime(PermissionCtimePolicy::OnAttributeChange) {
+            inner.set_ctime(ctime);
+        }
+        Ok(())
+    }
+
     /// Returns the encoded device ID for special files.
     pub(in ext2) fn device_id(&self) -> u64 {
         debug_assert!(self.type_ == InodeType::CharDevice || self.type_ == InodeType::BlockDevice);

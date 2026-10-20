@@ -9,6 +9,13 @@ import re
 ANSI = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)")
 HEAD = re.compile(r'^running (\d+) tests in crate "([^"]+)"$', re.MULTILINE)
 SUMMARY = re.compile(r'test result: (ok|FAILED)\. (\d+) passed; (\d+) failed; (\d+) filtered out\.')
+PERMISSION_TESTS = {
+    "aster_core::fs::fs_impls::ramfs::fs::permission_tests::permission_rejection_has_no_partial_update",
+    "aster_core::fs::fs_impls::ramfs::fs::permission_tests::permission_noop_chown_updates_ctime",
+    "aster_core::fs::fs_impls::ramfs::fs::permission_tests::permission_alias_observes_new_owner",
+    "aster_core::fs::fs_impls::ext2::inode::attrs::permission_tests::permission_ext2_reject_then_commit",
+    "aster_core::fs::fs_impls::ramfs::memfd::permission_tests::permission_memfd_exec_seal_preserves_attributes_on_error",
+}
 
 
 def check_guest(guest, crate, allow_filtered=False):
@@ -45,6 +52,13 @@ def check_guest(guest, crate, allow_filtered=False):
     starts = re.findall(r"^test ([\w:]+) \.\.\.", section, re.MULTILINE)
     if len(starts) != passed + failed or any(not name.startswith(crate.replace('-', '_') + '::') for name in starts):
         raise ValueError("per-test starts do not match the target summary")
+    if crate == "aster-core" and not allow_filtered:
+        for name in sorted(PERMISSION_TESTS):
+            if starts.count(name) != 1:
+                raise ValueError(f"missing or repeated required permission test: {name}")
+            block = section.split(f"test {name} ...", 1)[1].split("\ntest ", 1)[0]
+            if "[skipped:" in block:
+                raise ValueError(f"required permission test was soft-skipped: {name}")
     if any(result[1] == "FAILED" or int(result[3]) for result in SUMMARY.finditer(serial)):
         raise ValueError("a tested crate reported failure")
     # Expected-panic tests are valid kernel tests. Do not apply boot's broad
@@ -61,6 +75,7 @@ def check_guest(guest, crate, allow_filtered=False):
             "filtered": filtered, "soft_skipped": len(skips), "soft_skip_reasons": skips,
             "exercised_passed_lower_bound": passed - len(skips),
             "observed_test_starts": len(starts),
+            "required_permission_tests": sorted(PERMISSION_TESTS) if crate == "aster-core" and not allow_filtered else [],
             "raw_qemu_exit": 33, "guest": guest.name}
 
 
