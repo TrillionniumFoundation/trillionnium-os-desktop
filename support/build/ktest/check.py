@@ -10,10 +10,10 @@ ANSI = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)")
 HEAD = re.compile(r'^running (\d+) tests in crate "([^"]+)"$', re.MULTILINE)
 SUMMARY = re.compile(r'test result: (ok|FAILED)\. (\d+) passed; (\d+) failed; (\d+) filtered out\.')
 
-# The default core gate keeps its 238-test baseline and exercises these nine
+# The default core gate keeps its 238-test baseline and exercises these eleven
 # production-object regressions. Filtered mutation runs retain their existing
 # explicit opt-in; they cannot stand in for a complete core qualification.
-MINIMUM_CORE_TESTS = 247
+MINIMUM_CORE_TESTS = 249
 REQUIRED_CORE_TESTS = (
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_preserves_bytes_across_mapping_replacement_attempts",
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_allows_relro_but_never_readds_permissions",
@@ -24,6 +24,8 @@ REQUIRED_CORE_TESTS = (
     "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::initial_observer_pin_rejects_a_replaced_real_cpu_owner",
     "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::initial_observer_pin_does_not_keep_a_deleted_resource_authorized",
     "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::initial_owner_lease_check_rejects_before_sampling",
+    "aster_core::fs::fs_impls::exfat::inode::permission_mode_tests::exfat_modes_never_invent_setid_or_sticky",
+    "aster_core::fs::fs_impls::exfat::inode::permission_mode_tests::exfat_modes_keep_file_directory_masks_and_readonly",
 )
 
 
@@ -65,6 +67,10 @@ def check_guest(guest, crate, allow_filtered=False):
         missing = [name for name in REQUIRED_CORE_TESTS if starts.count(name) != 1]
         if missing:
             raise ValueError("missing or repeated required core tests: " + ", ".join(missing))
+        for name in REQUIRED_CORE_TESTS:
+            block = section.split(f"test {name} ...", 1)[1].split("\ntest ", 1)[0]
+            if "[skipped:" in block:
+                raise ValueError("required core test was soft-skipped: " + name)
         if passed < MINIMUM_CORE_TESTS:
             raise ValueError("complete core gate shrank below the retained baseline plus regressions")
     if any(result[1] == "FAILED" or int(result[3]) for result in SUMMARY.finditer(serial)):

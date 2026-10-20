@@ -46,6 +46,9 @@ use crate::{
 /// Inode number
 pub(crate) type Ino = u64;
 
+#[cfg(ktest)]
+mod permission_mode_tests;
+
 bitflags! {
     pub(crate) struct FatAttr : u16{
         /// This inode is read only.
@@ -65,8 +68,10 @@ bitflags! {
 
 impl FatAttr {
     /// Convert attribute bits and a mask to the UNIX mode.
-    fn make_mode(&self, mount_option: ExfatMountOptions, mode: InodeMode) -> InodeMode {
-        let mut ret = mode;
+    fn make_mode(&self, mount_option: ExfatMountOptions) -> InodeMode {
+        // exFAT stores no Unix set-ID or sticky bits. Start from access bits
+        // only, as Linux exfat_fill_inode does, before applying the DOS flags.
+        let mut ret = mkmod!(a+rwx);
         if self.contains(FatAttr::READONLY) && !self.contains(FatAttr::DIRECTORY) {
             ret.remove(mkmod!(a+w));
         }
@@ -257,8 +262,7 @@ impl ExfatInodeInner {
     }
 
     fn make_mode(&self) -> InodeMode {
-        self.attr
-            .make_mode(self.fs().mount_option(), InodeMode::all())
+        self.attr.make_mode(self.fs().mount_option())
     }
 
     fn count_num_sub_inode_and_dir(&self, fs_guard: &MutexGuard<()>) -> Result<(usize, usize)> {
