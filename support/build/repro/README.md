@@ -1,7 +1,7 @@
-# Opt-in component path projection (candidate)
+# Opt-in component path projection
 
-Normal `kernel.sh` behavior is unchanged. This experimental entry builds the
-unchanged pinned kernel from its actual checkout and projects compiler-origin
+Normal `kernel.sh` behavior is unchanged. This opt-in entry builds the kernel
+from its actual checkout and projects compiler-origin
 paths and the pinned component macro's Cargo metadata into one virtual prefix.
 The source files remain at distinct real checkout paths. The virtual directory
 contains only the exact `Components.toml` input, never a second kernel source.
@@ -31,8 +31,51 @@ an additional project package. Full codegen arguments and successful `--extern`
 producer checks continue to apply to the added package and its kernel consumers.
 
 Historical schema-4 byte-equality results belong to their original source
-producer. Schema 5 requires its own exact-source cold builds, complete artifact
-comparisons and real boots before current-kernel reproducibility is accepted.
+producer. Schema 5 now has its own exact-source cold builds, complete artifact
+comparisons and real boots for the producer and prepared host recorded below.
+
+## Verified schema-5 cold builds (2026-10-20)
+
+Two clean, separate worktrees, `repro-c` and `repro-d`, used producer
+`684c4c82bbe770d712da75a199b7f5757ee61191` and tree
+`8dde0a4beb98f6749a529624aeb1d0b7c0f13a98`. Each began with absent kernel and
+OSDK targets and a new run output. C created `repro5-profile-684`; D reused that
+same owned, locked profile after C completed. Both rebuilt OSDK and the Rust
+kernel with `nightly-2026-07-21` and ran `kernel.sh run_kernel` through this
+launcher. Both commands exited 0; both actual QEMU processes exited raw 33,
+without a timeout, and emitted the real initramfs `TRILLIONNIUM_A01_BOOT_OK`
+marker. The elapsed cold runs were 439.446 seconds (C) and 473.830 seconds (D).
+
+The independent audit read and compared the complete frozen files loaded by
+QEMU, including every ELF section. All three pairs were byte-for-byte equal:
+
+| Actual QEMU input | Bytes in each run | SHA256 in both runs |
+| --- | ---: | --- |
+| Kernel ELF | 8,410,560 | `00f3bfb76164fac3890c68115f5347e758820aeeffd42bb9021261900acca508` |
+| Initramfs | 1,107,990 | `86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3` |
+| SeaBIOS | 262,144 | `1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735` |
+
+Each run completed 340 actual Cargo compiler units, with 500 successful
+`--extern` producer bindings and six exact locked Cargo metadata projections,
+each checking 19 Components. Canonical local and unchanged external Cargo unit
+identities matched across the two checkouts, including the actual
+`libs/os-control` unit. Independent before/after inventories verified 3,131
+present tracked files against Git bytes and executable/symlink modes, with no
+source changes. Both executions used q35, TCG, `max`, one vCPU, 512 MiB and the
+same fixed device configuration. Their real serial logs are separately retained;
+serial timestamps need not be byte-identical.
+
+The [published evidence report](../evidence/2026-10-20-blocker-closure/REPORT.md)
+binds the logical runs `repro5-run-c` and `repro5-run-d`, their outer receipts,
+and the retained original `completed-runs-684-audit.json`. Actual private
+storage paths are retained separately. The independent report passed
+855 checks and has SHA256
+`4f4cf8697ec13a7f16fe676c12751356a735a20972e661e9085aa547f5221721`.
+This establishes full-artifact repeatability for these two cold targets on one
+prepared host using the selected profile and dependency inputs. Cross-host,
+hardware and arbitrary-environment reproducibility remain unverified.
+
+## Running the selected profile
 
 ```sh
 python3 -I support/build/repro/run.py \
@@ -72,8 +115,9 @@ mapped bytes and command/source/mirror binding, and rejects missing, partial,
 refused or altered receipts. A cold schema-5 attempt at producer `cc8b72a` retained
 an older unlocked-only command whitelist: the new `--locked` invocation bypassed
 projection, leaving no metadata receipts and causing a real guest
-`NotIncludeAllComponent` panic (QEMU raw 65). Those artifacts remain failed
-evidence. This helper fix requires a fresh profile through its changed code hash;
+`NotIncludeAllComponent` panic (QEMU raw 65). Its `repro5-attempt-a` and
+`repro5-run-a` artifacts remain failed evidence; neither C nor D reused those
+outputs or targets. This helper fix requires a fresh profile through its changed code hash;
 it does not change the kernel macro or relax Components validation.
 
 The compiler map is enforced in the wrapper, rather than relying on inherited
@@ -142,8 +186,9 @@ custom environment-driven code generation are not normalized. Compiler path
 projection recognizes path prefixes and path-valued `=` arguments, leaving
 neighboring directories and arbitrary quoted cfg strings distinct. Source
 checkout paths remain genuinely different; no common staging source tree is
-created. Native test binaries establish mechanism behavior only; the next full
-kernel builds and QEMU boots must independently validate this schema.
+created. Native test binaries establish mechanism behavior only; the completed
+full schema-5 kernel builds and real boots above validate the selected producer
+and prepared-host scope separately.
 
 The complete metadata root is projected along with package IDs. Changing only
 package IDs can bypass the upstream missing-component check and is forbidden.
@@ -168,10 +213,11 @@ entries remain executable. Helper bytes and modes are included in custody checks
 
 `policy.json` separately records actual host username/nodename/UID and the chosen
 embedded build identity. The latter is labelled build metadata and never used
-as evidence of a second host. Until actual full kernel builds, byte comparison
-and QEMU boots pass, a successful native tiny fixture proves only the adapter
-mechanism. No cross-host, hardware or arbitrary-environment reproducibility is
-claimed. The forced fresh target also avoids claiming incremental-cache
+as evidence of a second host. The two full kernel builds, complete byte
+comparison and real QEMU boots above ran on one actual host. A successful native
+tiny fixture alone proves only the adapter mechanism. Cross-host, hardware and
+arbitrary-environment reproducibility remain unverified. The forced fresh target
+also avoids claiming incremental-cache
 correctness for compiler environment overrides.
 
 ```sh

@@ -1,0 +1,3458 @@
+{
+  "schema": 1,
+  "draft": true,
+  "snapshot_utc": "2026-10-20T16:11:58.696921+00:00",
+  "scope": "Completed A01 native continuation evidence with retained failed attempts and separate dated CI/cross-owner status; not an all-blockers-closed report.",
+  "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+  "branch": "agents/A01-asterinas-boot",
+  "pull_request": 22,
+  "upstream": {
+    "version": "v0.19.0",
+    "commit": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
+    "tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+    "toolchain": "nightly-2026-07-21"
+  },
+  "kernel_root": "kernel/asterinas/",
+  "matrix_runs": [
+    {
+      "id": "e37-tcp-v2",
+      "producer": "e37df299075b49302b076ecda5fcce46e315d210",
+      "project_tree": "a322a573118f5d31ea145548c7260e74c416e5a3",
+      "profile_id": "osdk-native-local-tcp-gdb-capture-v2",
+      "status": "passed",
+      "started_utc": "2026-10-20T15:00:14.468506+00:00",
+      "finished_utc": "2026-10-20T15:04:09.565367+00:00",
+      "seconds": 234.97904895099782,
+      "outer_exit": 0,
+      "source_unchanged": true,
+      "source_before": {
+        "sha256": "d9c1a8b864206cb136f2e2dca51738eb603cb8fb94044677d76d47ddc17bb526",
+        "files": 3036,
+        "git_head": "e37df299075b49302b076ecda5fcce46e315d210",
+        "git_status": ""
+      },
+      "source_after": {
+        "sha256": "d9c1a8b864206cb136f2e2dca51738eb603cb8fb94044677d76d47ddc17bb526",
+        "files": 3036,
+        "git_head": "e37df299075b49302b076ecda5fcce46e315d210",
+        "git_status": ""
+      },
+      "totals": {
+        "available_cases": 22,
+        "selected_cases": 22,
+        "passed": 22,
+        "failed": 0,
+        "blocked": 0,
+        "host_blocked_cases": 0,
+        "soft_skip_count": 1
+      },
+      "osdk_sha256": "a753425890c756a94e2255d8762f01261714b98f640edaa1b1f367a08904f036",
+      "harness_sha256": "c65c350457df397525e4f2a35d9849af213b0fdacc65a49d35ab5550556bbd06",
+      "upstream_root_lock_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+      "working_root_lock_sha256": "af94d71680ecf3b9631e21c958263d5e41229033214f88dcff858bb14765a666",
+      "scope": "OSDK example kernels and tooling, not complete Asterinas kernel acceptance",
+      "cases": [
+        {
+          "name": "commands::run::qemu_gdb_feature::basic_debug",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "commands::run::qemu_gdb_feature::vsc::vsc_launch_file",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "cli::cli_build_help_message",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "cli::cli_check_help_message",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "cli::cli_clippy_help_message",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "cli::cli_help_message",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "cli::cli_new_crate_with_hyphen",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "cli::cli_new_help_message",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "cli::cli_run_help_message",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "cli::cli_test_help_message",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "commands::new::create_kernel_in_workspace",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "commands::new::create_lib_in_workspace",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "commands::new::create_two_crates_in_workspace",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "commands::run::basic::new_kernel_and_run",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "commands::run::coverage_feature::basic_coverage",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "examples_in_book::create_os_projects::create_a_kernel_project",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "examples_in_book::create_os_projects::create_a_library_project",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "examples_in_book::test_and_run_projects::create_and_run_kernel",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "examples_in_book::test_and_run_projects::create_and_test_library",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "examples_in_book::work_in_workspace::work_in_workspace",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "examples_in_book::write_a_hypervisor_in_100_lines::write_a_hypervisor_in_100_lines",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [
+            "VMX unavailable; hypervisor example accepted upstream fallback"
+          ],
+          "host_blockers": []
+        },
+        {
+          "name": "examples_in_book::write_a_kernel_in_100_lines::write_a_kernel_in_100_lines",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        }
+      ],
+      "guests": [
+        {
+          "id": "e37-tcp-v2/case-01/guests/guest-001",
+          "case": "commands::run::qemu_gdb_feature::basic_debug",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "e37-tcp-v2/case-01/guests/guest-001/qemu.json",
+            "bytes": 11525,
+            "sha256": "6958181fa0e828f4a4c2f177f789e0753a3a8ce2d01b18e73bf8eda6571c82bc"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 26658848,
+              "sha256": "1a8f0429dba3128f9feba35ebfc6e83dce7002043fa1623b10edb594ea66c9c5"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "e37-tcp-v2/case-01/guests/guest-001/serial-0.log",
+              "bytes": 2780,
+              "sha256": "47181690442520f0525e125e284b08806ecafaace3dc01a84ababdf43a75e0b9"
+            }
+          ]
+        },
+        {
+          "id": "e37-tcp-v2/case-02/guests/guest-001",
+          "case": "commands::run::qemu_gdb_feature::vsc::vsc_launch_file",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "e37-tcp-v2/case-02/guests/guest-001/qemu.json",
+            "bytes": 11569,
+            "sha256": "64b5d1adbf1adc5a9c3c64e137d487ecb02502def10cf9b175913fc60cad6161"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 26658936,
+              "sha256": "510fad45336ad5a10bcf2dd3cfaea9a0799da0d7525c89c0f84acaf1f893de43"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "e37-tcp-v2/case-02/guests/guest-001/serial-0.log",
+              "bytes": 2781,
+              "sha256": "bf4a128b5b4ccb51afe34283db590cb07c6a863ff3b0f7236ec457ef69b99497"
+            }
+          ]
+        },
+        {
+          "id": "e37-tcp-v2/case-14/guests/guest-001",
+          "case": "commands::run::basic::new_kernel_and_run",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "e37-tcp-v2/case-14/guests/guest-001/qemu.json",
+            "bytes": 10332,
+            "sha256": "0c622b6b60274092e941bf912ad24d8f21896b05d5a9463279e4b1c98bb4d6bf"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 26658656,
+              "sha256": "e9586ac7971c717ce076269ae8443a644e823f0b0b92e51fce114ae301cdec9d"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "e37-tcp-v2/case-14/guests/guest-001/serial-0.log",
+              "bytes": 2780,
+              "sha256": "33137d7c8a07a6ce71e4d050ea21d6515b4cc84252501a037acded0c06d2ee90"
+            }
+          ]
+        },
+        {
+          "id": "e37-tcp-v2/case-15/guests/guest-001",
+          "case": "commands::run::coverage_feature::basic_coverage",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "e37-tcp-v2/case-15/guests/guest-001/qemu.json",
+            "bytes": 16567,
+            "sha256": "ec13c2724e2b7920b92d39c877f67621c58533e4d1c268e8304af4768655eb1d"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 40265016,
+              "sha256": "effb7e23f2e6b6b31c6f8a129fdb83a17c6751dde37571a0f99994f8e007cd0b"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "e37-tcp-v2/case-15/guests/guest-001/serial-0.log",
+              "bytes": 2823,
+              "sha256": "908602eb9720548a28e10fdb5b1801d837097197c7200dbbda4177a6eead45a9"
+            }
+          ]
+        },
+        {
+          "id": "e37-tcp-v2/case-18/guests/guest-001",
+          "case": "examples_in_book::test_and_run_projects::create_and_run_kernel",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "e37-tcp-v2/case-18/guests/guest-001/qemu.json",
+            "bytes": 10309,
+            "sha256": "9ac77ce4f8772deb665fa3340b973686f2c19459de115646964f5945f55b10c4"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 26658608,
+              "sha256": "e2619010bed2fafd512049f74b4a5e0e752af924dac90b21956de37a68472a65"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "e37-tcp-v2/case-18/guests/guest-001/serial-0.log",
+              "bytes": 2780,
+              "sha256": "1ede0710f64400a9fd83bf7bb706fe7dda70167ce27c51f9646ccc6b541415aa"
+            }
+          ]
+        },
+        {
+          "id": "e37-tcp-v2/case-19/guests/guest-001",
+          "case": "examples_in_book::test_and_run_projects::create_and_test_library",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "e37-tcp-v2/case-19/guests/guest-001/qemu.json",
+            "bytes": 9930,
+            "sha256": "f9d8924580171a96731c486dea1d32ce3ccf55268078fca291e6d470f28391e6"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 38221080,
+              "sha256": "8a9de98e71d8c3bfb674528cfd7023c832599c74a27da2429ce9720ab3cb3c8f"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "e37-tcp-v2/case-19/guests/guest-001/serial-0.log",
+              "bytes": 3190,
+              "sha256": "1dd0ce4f9b1a795eef60ad2b43763a3c1ddc5f2f2bc90ff57a66d029edbbdd1f"
+            }
+          ]
+        },
+        {
+          "id": "e37-tcp-v2/case-20/guests/guest-001",
+          "case": "examples_in_book::work_in_workspace::work_in_workspace",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "e37-tcp-v2/case-20/guests/guest-001/qemu.json",
+            "bytes": 10316,
+            "sha256": "abebe2f089ce26297b09383561fda67c3240de5a0f4f011ede7c1af08a65457a"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 26678856,
+              "sha256": "42da61f3cc67d96cfb91b6171dabd3e824bb06be1bc152ba7dbf8a56bddfc380"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "e37-tcp-v2/case-20/guests/guest-001/serial-0.log",
+              "bytes": 2784,
+              "sha256": "688719b4b361628e0c6c24dbe28a41b0152fffa259f3c8f03a6a78cc742c7340"
+            }
+          ]
+        },
+        {
+          "id": "e37-tcp-v2/case-20/guests/guest-002",
+          "case": "examples_in_book::work_in_workspace::work_in_workspace",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "e37-tcp-v2/case-20/guests/guest-002/qemu.json",
+            "bytes": 10326,
+            "sha256": "7477fd335ba3d8396244fb0eabcae706b7380499f0630efb5675ac9cb34183d9"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 38233336,
+              "sha256": "e12a7cc7e7f2ea7cdb4deb2e8b4a8f56c754bdb937642d8ec705db7fb5ef8046"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "e37-tcp-v2/case-20/guests/guest-002/serial-0.log",
+              "bytes": 3190,
+              "sha256": "4f06a6e9b9a626f8b475bdee3a3523c9d3e893eec838410fd63617c9c5dd600f"
+            }
+          ]
+        },
+        {
+          "id": "e37-tcp-v2/case-20/guests/guest-003",
+          "case": "examples_in_book::work_in_workspace::work_in_workspace",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "e37-tcp-v2/case-20/guests/guest-003/qemu.json",
+            "bytes": 10316,
+            "sha256": "902cbb5c09286237fba5887b2e7e61a146e1f324a955340e850e9967fc1febba"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 38233320,
+              "sha256": "1b2c7ff86876fc2bf3fee7ac1c65802fe196271d1e9ca7a125d612752fa0e7de"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "e37-tcp-v2/case-20/guests/guest-003/serial-0.log",
+              "bytes": 3082,
+              "sha256": "4d1a10d31425dc55dcc354cb272e276de617ab2794fb523a1bdad7865f51354c"
+            }
+          ]
+        },
+        {
+          "id": "e37-tcp-v2/case-21/guests/guest-001",
+          "case": "examples_in_book::write_a_hypervisor_in_100_lines::write_a_hypervisor_in_100_lines",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "e37-tcp-v2/case-21/guests/guest-001/qemu.json",
+            "bytes": 10109,
+            "sha256": "5b91084d645d389139979328d2e91b18e6138580c13b6d1e8bf0e28a8b47a611"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 27202584,
+              "sha256": "16f7003576c3769c1ffe8cc47d057d44a6cc60c720ba4f08eacd189e0184a913"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "e37-tcp-v2/case-21/guests/guest-001/serial-0.log",
+              "bytes": 2787,
+              "sha256": "0e5c4e2367287980ec2b74251085f55a2fd1ac15d074f4336696fba628bbf0a4"
+            }
+          ]
+        },
+        {
+          "id": "e37-tcp-v2/case-22/guests/guest-001",
+          "case": "examples_in_book::write_a_kernel_in_100_lines::write_a_kernel_in_100_lines",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "e37-tcp-v2/case-22/guests/guest-001/qemu.json",
+            "bytes": 10474,
+            "sha256": "fbafeac2d9b4795f6f3b9f846bbc6c1a58bf90fb203d52001d58b7b8372d5c6d"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 26922544,
+              "sha256": "f5436c8cc45e4fbf1684b3e5176476ffcbecca32e4f2d2f2a75d6f0908806a5d"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "e37-tcp-v2/case-22/guests/guest-001/serial-0.log",
+              "bytes": 2764,
+              "sha256": "09b22137b1cf2f5735cfdbd1a1010b9cf83278f941f94be08bc1f7f70c1ab7c1"
+            }
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "e37-tcp-v2/outer.json",
+          "bytes": 3205,
+          "sha256": "9f1e5f6293a46298878c2b7a9b9390a1d6fe8c15088d0a1fb664f4bbddb5de99"
+        },
+        {
+          "id": "e37-tcp-v2/result.json",
+          "bytes": 68075,
+          "sha256": "3d07083c08ac03c296f0540343594bce02e188058bf033ae4c0db7274e8c0909"
+        },
+        {
+          "id": "e37-tcp-v2/environment.json",
+          "bytes": 17535,
+          "sha256": "22de2c71c5c542e8d7ef837da9ba44b396f5afd1eeb411bbaea2e8025f985f2f"
+        },
+        {
+          "id": "e37-tcp-v2/source-before.json",
+          "bytes": 709040,
+          "sha256": "d9c1a8b864206cb136f2e2dca51738eb603cb8fb94044677d76d47ddc17bb526"
+        },
+        {
+          "id": "e37-tcp-v2/source-after.json",
+          "bytes": 709040,
+          "sha256": "d9c1a8b864206cb136f2e2dca51738eb603cb8fb94044677d76d47ddc17bb526"
+        },
+        {
+          "id": "e37-tcp-v2/outer.log",
+          "bytes": 2501,
+          "sha256": "ebbf01683fd3375177dcbbdec589df17deded16689a9c40e2264e8bab5c3331a"
+        }
+      ],
+      "independent_audit": {
+        "complete": true,
+        "passed": true,
+        "guest_count": 11,
+        "completed_cases": 22,
+        "original": {
+          "id": "e37-tcp-v2/independent-audit.json",
+          "bytes": 97964,
+          "sha256": "cbb44757d5a69a712aa31c1b04922acf9673edd96b1f379bfa7ddb16c67d0e14"
+        }
+      },
+      "actual_guests_started": 11,
+      "recorder_records": 11,
+      "actual_guest_raw33": 11,
+      "coverage": {
+        "passed": true,
+        "source_preexisted": false,
+        "source_osdk_exit_code": 0,
+        "size": 2006216,
+        "sha256": "b6d41b14fbd5c2adc15ca20e6a25488b29ff0e6f84fce786db75bac3d6d1e09f",
+        "total_functions": 5691,
+        "maximum_function_count": 383140,
+        "original": {
+          "id": "e37-tcp-v2/coverage/result.json",
+          "bytes": 2145,
+          "sha256": "b6748f4be149252fe6fb9100812a99b93c0372ef027e5c8ea807e3e71febc733"
+        },
+        "breakpoint": {
+          "symbol": "ostd::arch::power::try_poweroff",
+          "resolved_address": "0xffffffff88109e30",
+          "actual_pc": "0xffffffff88109e30"
+        },
+        "gdb_exit": 0,
+        "announcement": {
+          "address": "0xffff800010400000",
+          "size": 2006216
+        },
+        "resumed_by_detach": true,
+        "symbol_elf": {
+          "size": 40265016,
+          "sha256": "30a482786018f78d129c5efa7754d9dbc9c268989f0eaa5ba1a59ea934932302"
+        },
+        "raw": {
+          "id": "e37-tcp-v2/coverage/coverage.profraw",
+          "bytes": 2006216,
+          "sha256": "b6d41b14fbd5c2adc15ca20e6a25488b29ff0e6f84fce786db75bac3d6d1e09f"
+        },
+        "profdata": {
+          "id": "e37-tcp-v2/coverage/coverage.profdata",
+          "bytes": 1245464,
+          "sha256": "7240b5b1bdeba8b78a328187f6b4f9784c6c65be60e5cf2e1013178d415ea938"
+        },
+        "capture_sidecar": {
+          "id": "e37-tcp-v2/coverage/capture.json",
+          "bytes": 2609,
+          "sha256": "2a33e60ba00a9dcf9d45ea1448f6932bf6970e0ad75d57d4debe6ef4c883de36"
+        }
+      }
+    },
+    {
+      "id": "e37-unix-v1",
+      "producer": "e37df299075b49302b076ecda5fcce46e315d210",
+      "project_tree": "a322a573118f5d31ea145548c7260e74c416e5a3",
+      "profile_id": "osdk-native-unix-v1",
+      "status": "failed",
+      "started_utc": "2026-10-20T15:04:25.153391+00:00",
+      "finished_utc": "2026-10-20T15:08:14.114855+00:00",
+      "seconds": 228.81458114700217,
+      "outer_exit": 1,
+      "source_unchanged": true,
+      "source_before": {
+        "sha256": "d9c1a8b864206cb136f2e2dca51738eb603cb8fb94044677d76d47ddc17bb526",
+        "files": 3036,
+        "git_head": "e37df299075b49302b076ecda5fcce46e315d210",
+        "git_status": ""
+      },
+      "source_after": {
+        "sha256": "d9c1a8b864206cb136f2e2dca51738eb603cb8fb94044677d76d47ddc17bb526",
+        "files": 3036,
+        "git_head": "e37df299075b49302b076ecda5fcce46e315d210",
+        "git_status": ""
+      },
+      "totals": {
+        "available_cases": 22,
+        "selected_cases": 22,
+        "passed": 21,
+        "failed": 1,
+        "blocked": 0,
+        "host_blocked_cases": 0,
+        "soft_skip_count": 1
+      },
+      "osdk_sha256": "a753425890c756a94e2255d8762f01261714b98f640edaa1b1f367a08904f036",
+      "harness_sha256": "3c8d19d91fd6813a327929be28f6e82c8bbaa9c643e51041f51ab643caf31f6f",
+      "upstream_root_lock_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+      "working_root_lock_sha256": "af94d71680ecf3b9631e21c958263d5e41229033214f88dcff858bb14765a666",
+      "scope": "OSDK example kernels and tooling, not complete Asterinas kernel acceptance",
+      "cases": [
+        {
+          "name": "commands::run::qemu_gdb_feature::basic_debug",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "commands::run::qemu_gdb_feature::vsc::vsc_launch_file",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "cli::cli_build_help_message",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "cli::cli_check_help_message",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "cli::cli_clippy_help_message",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "cli::cli_help_message",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "cli::cli_new_crate_with_hyphen",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "cli::cli_new_help_message",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "cli::cli_run_help_message",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "cli::cli_test_help_message",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "commands::new::create_kernel_in_workspace",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "commands::new::create_lib_in_workspace",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "commands::new::create_two_crates_in_workspace",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "commands::run::basic::new_kernel_and_run",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "commands::run::coverage_feature::basic_coverage",
+          "status": "failed",
+          "raw_exit_code": 101,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "examples_in_book::create_os_projects::create_a_kernel_project",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "examples_in_book::create_os_projects::create_a_library_project",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "examples_in_book::test_and_run_projects::create_and_run_kernel",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "examples_in_book::test_and_run_projects::create_and_test_library",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "examples_in_book::work_in_workspace::work_in_workspace",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "examples_in_book::write_a_hypervisor_in_100_lines::write_a_hypervisor_in_100_lines",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [
+            "VMX unavailable; hypervisor example accepted upstream fallback"
+          ],
+          "host_blockers": []
+        },
+        {
+          "name": "examples_in_book::write_a_kernel_in_100_lines::write_a_kernel_in_100_lines",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        }
+      ],
+      "guests": [
+        {
+          "id": "e37-unix-v1/case-01/guests/guest-001",
+          "case": "commands::run::qemu_gdb_feature::basic_debug",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "e37-unix-v1/case-01/guests/guest-001/qemu.json",
+            "bytes": 11408,
+            "sha256": "f9033640ce0fcaf0c526f8d32e1c09a10d644def372202191ae8c5cfc0d4dde6"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 26658856,
+              "sha256": "ef81109ac49a0d83329760bdd62cac04f84471ac3c134729b290ee8b7b053b55"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "e37-unix-v1/case-01/guests/guest-001/serial-0.log",
+              "bytes": 2780,
+              "sha256": "92712952484111b7a5412daf92ded2a99a11f91726ed583dfc6c7172064d9315"
+            }
+          ]
+        },
+        {
+          "id": "e37-unix-v1/case-02/guests/guest-001",
+          "case": "commands::run::qemu_gdb_feature::vsc::vsc_launch_file",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "e37-unix-v1/case-02/guests/guest-001/qemu.json",
+            "bytes": 10791,
+            "sha256": "c639ac58c1cf39d68b4e3103671ce22aeca118bc4ba161eb743fb7a0ea354fdc"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 26658944,
+              "sha256": "8162a655e9f26ebfdb0f3eab4d467e6e40562ec41e3e384081a0a14fd14fa989"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "e37-unix-v1/case-02/guests/guest-001/serial-0.log",
+              "bytes": 2781,
+              "sha256": "2c581c7c352ecaf503f7656412b1b3f0997fdd656078985909811e9ae76e7fc6"
+            }
+          ]
+        },
+        {
+          "id": "e37-unix-v1/case-14/guests/guest-001",
+          "case": "commands::run::basic::new_kernel_and_run",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "e37-unix-v1/case-14/guests/guest-001/qemu.json",
+            "bytes": 10435,
+            "sha256": "6d3deb1608fddc5599a747d050d06645c1923af366a2e9fa79c6610276a651b8"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 26658656,
+              "sha256": "542b18a3ad7a0e3846c2b31499c656817b2432faca7238d7d66d95a900f02127"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "e37-unix-v1/case-14/guests/guest-001/serial-0.log",
+              "bytes": 2780,
+              "sha256": "e7655d60771e193ebf02f8172d1d91e6f13c3b956c39b8a4e2cf8c29f574a90f"
+            }
+          ]
+        },
+        {
+          "id": "e37-unix-v1/case-15/guests/guest-001",
+          "case": "commands::run::coverage_feature::basic_coverage",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "e37-unix-v1/case-15/guests/guest-001/qemu.json",
+            "bytes": 10696,
+            "sha256": "66e299d461decc88e9d2e14f27a4ae7faea5c9658c413414021558954875ef23"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 40265024,
+              "sha256": "c8faf4504a11d0281cc2871918afe427668cb120d99a6fbf7b4148f806407749"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "e37-unix-v1/case-15/guests/guest-001/serial-0.log",
+              "bytes": 2823,
+              "sha256": "9cfe462e56f1ecd17ff00e92b0ec436392d740a59723eadbbec714ca71adb52f"
+            }
+          ]
+        },
+        {
+          "id": "e37-unix-v1/case-18/guests/guest-001",
+          "case": "examples_in_book::test_and_run_projects::create_and_run_kernel",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "e37-unix-v1/case-18/guests/guest-001/qemu.json",
+            "bytes": 10412,
+            "sha256": "52d08ea780c8f9571ba5aedd02f9ce6824ac2ece0368c9fcf450ae6b8a34075a"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 26658616,
+              "sha256": "d1b71a56306ec3c8fa843589cfe019cc7f1fae755bac2fd59d806ba6c7c4cfd7"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "e37-unix-v1/case-18/guests/guest-001/serial-0.log",
+              "bytes": 2780,
+              "sha256": "c3f7d581ac1f6a6f4308318cbf60011ae2bdb2d046f0c91f99ca651e59ede356"
+            }
+          ]
+        },
+        {
+          "id": "e37-unix-v1/case-19/guests/guest-001",
+          "case": "examples_in_book::test_and_run_projects::create_and_test_library",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "e37-unix-v1/case-19/guests/guest-001/qemu.json",
+            "bytes": 10032,
+            "sha256": "ec24b096112fa9fe219955867ab8c179b0bb9625702d9ace2498ef95faa85b35"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 38221080,
+              "sha256": "6ec6c55898bfbd3a6a75bc4a9ce36e62cc6bac38e983eb8300fb16e0e9805422"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "e37-unix-v1/case-19/guests/guest-001/serial-0.log",
+              "bytes": 3190,
+              "sha256": "b5a00e6cce8421ed2b1bcf47c5395eebd87fc719112acc0a56b3f7c4589956bb"
+            }
+          ]
+        },
+        {
+          "id": "e37-unix-v1/case-20/guests/guest-001",
+          "case": "examples_in_book::work_in_workspace::work_in_workspace",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "e37-unix-v1/case-20/guests/guest-001/qemu.json",
+            "bytes": 10419,
+            "sha256": "6fb5594cc46ae1e2583f68fe91c5fd4ec1549ffbaac319a209255a825a6dde85"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 26678864,
+              "sha256": "ce5a7c8f859a896bf8f780eb4e6f3427b70f6b3efec35730a8dce3c483f9379c"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "e37-unix-v1/case-20/guests/guest-001/serial-0.log",
+              "bytes": 2784,
+              "sha256": "def338b1c53f99681e1c896e0c4a4e562f76fdc4dbbd379f1c64736c6045ac15"
+            }
+          ]
+        },
+        {
+          "id": "e37-unix-v1/case-20/guests/guest-002",
+          "case": "examples_in_book::work_in_workspace::work_in_workspace",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "e37-unix-v1/case-20/guests/guest-002/qemu.json",
+            "bytes": 10429,
+            "sha256": "1eac8a008c705a4d8c6910bc9482b2abeceea5e309d96bf6422872648c6f0a68"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 38233336,
+              "sha256": "0c56873a5465f85c1a947856f09b1a9f06d213dd56855d133d82889a6f2f06d3"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "e37-unix-v1/case-20/guests/guest-002/serial-0.log",
+              "bytes": 3190,
+              "sha256": "ad8b0d8f1478b13c85e4ed14a71063b9856cf881adbe49cc0da982c038607eb2"
+            }
+          ]
+        },
+        {
+          "id": "e37-unix-v1/case-20/guests/guest-003",
+          "case": "examples_in_book::work_in_workspace::work_in_workspace",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "e37-unix-v1/case-20/guests/guest-003/qemu.json",
+            "bytes": 10419,
+            "sha256": "9e722cf68c6277079afbf27d10c70213290178c70545a17351114d26ebb9a6e8"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 38233328,
+              "sha256": "7a2cd5e3acd9634f03f0a84d94d9dcd240d0f607e9c184358546b754772f5168"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "e37-unix-v1/case-20/guests/guest-003/serial-0.log",
+              "bytes": 3082,
+              "sha256": "72f3da4187ab98a89f9c05bbe9b24f21f824ada2033e32b70d06300aa411f364"
+            }
+          ]
+        },
+        {
+          "id": "e37-unix-v1/case-21/guests/guest-001",
+          "case": "examples_in_book::write_a_hypervisor_in_100_lines::write_a_hypervisor_in_100_lines",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "e37-unix-v1/case-21/guests/guest-001/qemu.json",
+            "bytes": 10212,
+            "sha256": "84c3f31aa375535e3c192eb8a1e2e18d05f3a52521a69e633c2c35d425b5df80"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 27202592,
+              "sha256": "7793b70abefc5c1cf43cfa0b4872b097f6b09fa5ad67ddca51f8c411fedb79b6"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "e37-unix-v1/case-21/guests/guest-001/serial-0.log",
+              "bytes": 2788,
+              "sha256": "a2ce9ab3a2f1108fe8ec0a94d15c7c5517f6ed683d8e34d2562f9ea8f173c891"
+            }
+          ]
+        },
+        {
+          "id": "e37-unix-v1/case-22/guests/guest-001",
+          "case": "examples_in_book::write_a_kernel_in_100_lines::write_a_kernel_in_100_lines",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "e37-unix-v1/case-22/guests/guest-001/qemu.json",
+            "bytes": 10576,
+            "sha256": "43910df4ee14f8e565dc99366d60491b766bd223811ed0a668f31790f9234ac5"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 26922544,
+              "sha256": "1c457f37e27f0050da0610ed601fa1e2ba77bfa2ee14d0eb6079ef188fd8b1eb"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "e37-unix-v1/case-22/guests/guest-001/serial-0.log",
+              "bytes": 2765,
+              "sha256": "d7584f1cb5e81c9e6e4399c762c5e2123f1ad58d4e7ace6fbca7c76380a98ac0"
+            }
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "e37-unix-v1/outer.json",
+          "bytes": 3227,
+          "sha256": "5882bc1eb7bf369105fdca73c2b3a49b51772dbe8ed36c41500bbb501fc291ce"
+        },
+        {
+          "id": "e37-unix-v1/result.json",
+          "bytes": 66612,
+          "sha256": "f13dfbfdddd3b4ccfc425546c3e35a1a4a46453be963886c7adf8c89b03a4f72"
+        },
+        {
+          "id": "e37-unix-v1/environment.json",
+          "bytes": 17559,
+          "sha256": "80271b78bbaf4a68583938d39223feb38b87ab82b440115fc526aab6c8872edd"
+        },
+        {
+          "id": "e37-unix-v1/source-before.json",
+          "bytes": 709040,
+          "sha256": "d9c1a8b864206cb136f2e2dca51738eb603cb8fb94044677d76d47ddc17bb526"
+        },
+        {
+          "id": "e37-unix-v1/source-after.json",
+          "bytes": 709040,
+          "sha256": "d9c1a8b864206cb136f2e2dca51738eb603cb8fb94044677d76d47ddc17bb526"
+        },
+        {
+          "id": "e37-unix-v1/outer.log",
+          "bytes": 2500,
+          "sha256": "568f5f2ce11f8d52d70ce1087ec78bc137c9563c3f59489162f78044c70b416f"
+        },
+        {
+          "id": "e37-unix-v1/case-15/harness.log",
+          "bytes": 466,
+          "sha256": "6385350a101713aff855eb1195e6a36c995268b53db1acac40d7f4c429980de6"
+        },
+        {
+          "id": "e37-unix-v1/case-15/harness.command.json",
+          "bytes": 639,
+          "sha256": "e807453c555e52696c348ee852448f92b521a75ccdb625f7e84ef8c3d4d13eb0"
+        },
+        {
+          "id": "e37-unix-v1/case-15/result.json",
+          "bytes": 3128,
+          "sha256": "7fe2797a8dbf7a8ac82a82ba04dc42486b26eae5aef0b1069618caf401dbc0c5"
+        },
+        {
+          "id": "e37-unix-v1/case-15/target-profile.json",
+          "bytes": 1470,
+          "sha256": "5e41051f60b843cf76bc952dddf84b461e4ee10f38283eb87ebae91cfa33980c"
+        },
+        {
+          "id": "e37-unix-v1/case-15/guests/guest-001/qemu-stderr.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "id": "e37-unix-v1/case-15/guests/guest-001/qemu-stdout.log",
+          "bytes": 2823,
+          "sha256": "9cfe462e56f1ecd17ff00e92b0ec436392d740a59723eadbbec714ca71adb52f"
+        }
+      ],
+      "independent_audit": {
+        "complete": true,
+        "passed": false,
+        "evidence_integrity_passed": true,
+        "matrix_passed": false,
+        "guest_count": 11,
+        "completed_cases": 22,
+        "original": {
+          "id": "e37-unix-v1/independent-audit.json",
+          "bytes": 102618,
+          "sha256": "d5aa8d095c9346f81477679e6253cc3463e0c91b58dac77f67c8117cf3f8f662"
+        }
+      },
+      "actual_guests_started": 11,
+      "recorder_records": 11,
+      "actual_guest_raw33": 11,
+      "coverage": {
+        "passed": false,
+        "source_preexisted": false,
+        "source_osdk_exit_code": 0,
+        "original": {
+          "id": "e37-unix-v1/coverage/result.json",
+          "bytes": 183,
+          "sha256": "d719c7e18835df185a6648f8e3790e8006ff11b74d3f18e38cab335d760c6c95"
+        },
+        "raw_exists": false,
+        "profdata_exists": false
+      }
+    },
+    {
+      "id": "684-unix-v3-attempt-1",
+      "producer": "684c4c82bbe770d712da75a199b7f5757ee61191",
+      "project_tree": "8dde0a4beb98f6749a529624aeb1d0b7c0f13a98",
+      "profile_id": "osdk-native-unix-gdb-capture-v3",
+      "status": "failed",
+      "started_utc": "2026-10-20T15:40:40.617618+00:00",
+      "finished_utc": "2026-10-20T15:44:25.923648+00:00",
+      "seconds": 225.19709982500353,
+      "outer_exit": 1,
+      "source_unchanged": true,
+      "source_before": {
+        "sha256": "5c52f0a20c4dfafbc0daaa5332ae3c4f6910d9dc88960fc6526753a575380c7a",
+        "files": 3039,
+        "git_head": "684c4c82bbe770d712da75a199b7f5757ee61191",
+        "git_status": ""
+      },
+      "source_after": {
+        "sha256": "5c52f0a20c4dfafbc0daaa5332ae3c4f6910d9dc88960fc6526753a575380c7a",
+        "files": 3039,
+        "git_head": "684c4c82bbe770d712da75a199b7f5757ee61191",
+        "git_status": ""
+      },
+      "totals": {
+        "available_cases": 22,
+        "selected_cases": 22,
+        "passed": 21,
+        "failed": 1,
+        "blocked": 0,
+        "host_blocked_cases": 0,
+        "soft_skip_count": 1
+      },
+      "osdk_sha256": "a753425890c756a94e2255d8762f01261714b98f640edaa1b1f367a08904f036",
+      "harness_sha256": "34e1de4d3ed2db7a763a4b36dc8ff52f6e8ccdad4f91989785c3caca3cac9ef6",
+      "upstream_root_lock_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+      "working_root_lock_sha256": "af94d71680ecf3b9631e21c958263d5e41229033214f88dcff858bb14765a666",
+      "scope": "OSDK example kernels and tooling, not complete Asterinas kernel acceptance",
+      "cases": [
+        {
+          "name": "commands::run::qemu_gdb_feature::basic_debug",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "commands::run::qemu_gdb_feature::vsc::vsc_launch_file",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "cli::cli_build_help_message",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "cli::cli_check_help_message",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "cli::cli_clippy_help_message",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "cli::cli_help_message",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "cli::cli_new_crate_with_hyphen",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "cli::cli_new_help_message",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "cli::cli_run_help_message",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "cli::cli_test_help_message",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "commands::new::create_kernel_in_workspace",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "commands::new::create_lib_in_workspace",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "commands::new::create_two_crates_in_workspace",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "commands::run::basic::new_kernel_and_run",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "commands::run::coverage_feature::basic_coverage",
+          "status": "failed",
+          "raw_exit_code": 101,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "examples_in_book::create_os_projects::create_a_kernel_project",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "examples_in_book::create_os_projects::create_a_library_project",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "examples_in_book::test_and_run_projects::create_and_run_kernel",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "examples_in_book::test_and_run_projects::create_and_test_library",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "examples_in_book::work_in_workspace::work_in_workspace",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "examples_in_book::write_a_hypervisor_in_100_lines::write_a_hypervisor_in_100_lines",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [
+            "VMX unavailable; hypervisor example accepted upstream fallback"
+          ],
+          "host_blockers": []
+        },
+        {
+          "name": "examples_in_book::write_a_kernel_in_100_lines::write_a_kernel_in_100_lines",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        }
+      ],
+      "guests": [
+        {
+          "id": "684-unix-v3-attempt-1/case-01/guests/guest-001",
+          "case": "commands::run::qemu_gdb_feature::basic_debug",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "684-unix-v3-attempt-1/case-01/guests/guest-001/qemu.json",
+            "bytes": 11489,
+            "sha256": "17ff875286740c3db9850a5dd92c0eb7c839f23297cab9ac0c9d96f06b282f50"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 26658856,
+              "sha256": "5b55cd1a7ecd3f7f21263b37c92c06ebc5a36a8d48162370762265dcce85c93e"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "684-unix-v3-attempt-1/case-01/guests/guest-001/serial-0.log",
+              "bytes": 2781,
+              "sha256": "9377ed4ce22962177c01187b9ec23f5d62cd47df1b04c5e000e0bc757a51b703"
+            }
+          ]
+        },
+        {
+          "id": "684-unix-v3-attempt-1/case-02/guests/guest-001",
+          "case": "commands::run::qemu_gdb_feature::vsc::vsc_launch_file",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "684-unix-v3-attempt-1/case-02/guests/guest-001/qemu.json",
+            "bytes": 10872,
+            "sha256": "4836d62c009be5f83c0a5fb5f5eb5edebb0f6b94c39117b7aa173c22b9ee1d16"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 26658944,
+              "sha256": "9dc8f1c606dbbddd3ec5f4007d330bad1781ce5162d8a92e3cc21488040984a1"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "684-unix-v3-attempt-1/case-02/guests/guest-001/serial-0.log",
+              "bytes": 2781,
+              "sha256": "e19bbd467a7858ad1f519df3da5c3654cbfadad8c7f6047d75210290a567c31b"
+            }
+          ]
+        },
+        {
+          "id": "684-unix-v3-attempt-1/case-14/guests/guest-001",
+          "case": "commands::run::basic::new_kernel_and_run",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "684-unix-v3-attempt-1/case-14/guests/guest-001/qemu.json",
+            "bytes": 10516,
+            "sha256": "2f3974559d70e67da7de04f81ddc5c16bca534d0198bb44d8755261e7c6c7018"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 26658664,
+              "sha256": "8226f837e4bc62f430b65b7e2508af7c822fc726e4e977f75b426a6eb7a14edb"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "684-unix-v3-attempt-1/case-14/guests/guest-001/serial-0.log",
+              "bytes": 2780,
+              "sha256": "8ffd482d342ed4abf70d300ce451c9d08a1276ed09b712994b5ed20948adb668"
+            }
+          ]
+        },
+        {
+          "id": "684-unix-v3-attempt-1/case-15/guests/guest-001",
+          "case": "commands::run::coverage_feature::basic_coverage",
+          "launched": false,
+          "raw_qemu_exit": null,
+          "wrapper_exit": 125,
+          "timeout": false,
+          "error": "ValueError: coverage-owned UNIX GDB cannot reuse another debugger's readiness marker",
+          "qemu_record": {
+            "id": "684-unix-v3-attempt-1/case-15/guests/guest-001/qemu.json",
+            "bytes": 3953,
+            "sha256": "18e6571443bdc492fdc2e843a515ac6e62fe9ff173266be02a23930ecd889286"
+          },
+          "artifacts": {},
+          "serial": []
+        },
+        {
+          "id": "684-unix-v3-attempt-1/case-18/guests/guest-001",
+          "case": "examples_in_book::test_and_run_projects::create_and_run_kernel",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "684-unix-v3-attempt-1/case-18/guests/guest-001/qemu.json",
+            "bytes": 10493,
+            "sha256": "690da1eb93ea6f55e9384e2d266422444ac7c131b31cd9e16c09926e7317de83"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 26658616,
+              "sha256": "32e7c17c8a49024fac1f943644dbd7e1493ff9efef4445b9703b5731dd5e842b"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "684-unix-v3-attempt-1/case-18/guests/guest-001/serial-0.log",
+              "bytes": 2781,
+              "sha256": "ac76c49644bc01953679ec7a369028e7c1d609331e9952538f23744e5b226fc0"
+            }
+          ]
+        },
+        {
+          "id": "684-unix-v3-attempt-1/case-19/guests/guest-001",
+          "case": "examples_in_book::test_and_run_projects::create_and_test_library",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "684-unix-v3-attempt-1/case-19/guests/guest-001/qemu.json",
+            "bytes": 10114,
+            "sha256": "ade214fb37ecdd63a4b5e87e623895fe2be34eb21d4c737c5b65ee9c85018e0d"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 38221088,
+              "sha256": "b9cfa223141f40ddc50ef4b6d7427ad5e3d1044a9932e794f226767694851423"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "684-unix-v3-attempt-1/case-19/guests/guest-001/serial-0.log",
+              "bytes": 3190,
+              "sha256": "65c79e8f099a89020a4dfe489fb2bdf17c88db0a8c5df8e3584483a7f2c6cd89"
+            }
+          ]
+        },
+        {
+          "id": "684-unix-v3-attempt-1/case-20/guests/guest-001",
+          "case": "examples_in_book::work_in_workspace::work_in_workspace",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "684-unix-v3-attempt-1/case-20/guests/guest-001/qemu.json",
+            "bytes": 10500,
+            "sha256": "959e9e73d00893897046e885a5c650831ff87094c7ada02e40f711285dc64ee5"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 26678864,
+              "sha256": "c060c6c54d816e55c551b558069d1b7a3cf99d789f8af34ac47aef757cbf4db8"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "684-unix-v3-attempt-1/case-20/guests/guest-001/serial-0.log",
+              "bytes": 2784,
+              "sha256": "ffc9d470770d2beeecd500c231948bce0ce84b8cf9d9ee0bd0beeb13ec93bc14"
+            }
+          ]
+        },
+        {
+          "id": "684-unix-v3-attempt-1/case-20/guests/guest-002",
+          "case": "examples_in_book::work_in_workspace::work_in_workspace",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "684-unix-v3-attempt-1/case-20/guests/guest-002/qemu.json",
+            "bytes": 10510,
+            "sha256": "27202ace922df3c2da83e990788ec2600434a1579d2b3d0a46ffada965cbbfd2"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 38233344,
+              "sha256": "21298f915d88f2362380f9c0e020f550f167dbf7b7b6d5188c1f4f8c8622699b"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "684-unix-v3-attempt-1/case-20/guests/guest-002/serial-0.log",
+              "bytes": 3191,
+              "sha256": "d954ca3c52ca8cea92d42df4f3bc8cadc4e16fc3f2df4b1508286bd7a2ae854c"
+            }
+          ]
+        },
+        {
+          "id": "684-unix-v3-attempt-1/case-20/guests/guest-003",
+          "case": "examples_in_book::work_in_workspace::work_in_workspace",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "684-unix-v3-attempt-1/case-20/guests/guest-003/qemu.json",
+            "bytes": 10500,
+            "sha256": "f2ccf8528446542c1c7847b809b2ab891af8d009d90f08e6daf49f6d84727f4f"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 38233328,
+              "sha256": "e398f1bc66e4c119e10e1b79f8381570d16dcb89d002f3da7011edff6e48e7f7"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "684-unix-v3-attempt-1/case-20/guests/guest-003/serial-0.log",
+              "bytes": 3082,
+              "sha256": "b16bca147f3aec8870f430b722b9d681a0ae5e8ca28b194dfe2affba0c3cdaa7"
+            }
+          ]
+        },
+        {
+          "id": "684-unix-v3-attempt-1/case-21/guests/guest-001",
+          "case": "examples_in_book::write_a_hypervisor_in_100_lines::write_a_hypervisor_in_100_lines",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "684-unix-v3-attempt-1/case-21/guests/guest-001/qemu.json",
+            "bytes": 10291,
+            "sha256": "d36d6e50da6f66dbdb829eee115ad1c6e149ba6a51d242e911938523ca227cb7"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 27202592,
+              "sha256": "58846bed8168d4b93c9580e13428e38d203dd638f0099147b6837220a0f80eff"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "684-unix-v3-attempt-1/case-21/guests/guest-001/serial-0.log",
+              "bytes": 2787,
+              "sha256": "f6269b6b6dc2fe41fa4dd5b5dd5a82c37add3696ec711fd8ee9fe733b3c638e0"
+            }
+          ]
+        },
+        {
+          "id": "684-unix-v3-attempt-1/case-22/guests/guest-001",
+          "case": "examples_in_book::write_a_kernel_in_100_lines::write_a_kernel_in_100_lines",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "684-unix-v3-attempt-1/case-22/guests/guest-001/qemu.json",
+            "bytes": 10658,
+            "sha256": "155b1baf227e833075bd53b4cd64014f575cf7db97135c646a96490e44710f6e"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 26922240,
+              "sha256": "95cebe7ef786fc72f171e794d933aed44ba2226e734c8393b72bccaa1ce1ce35"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "684-unix-v3-attempt-1/case-22/guests/guest-001/serial-0.log",
+              "bytes": 2764,
+              "sha256": "620fe5d6fb110b4629aef87c698175a8dc825f2e432443b1922fd9d2a142f9ad"
+            }
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "684-unix-v3-attempt-1/outer.json",
+          "bytes": 3261,
+          "sha256": "ca890a54afcfd506182a6ed9792130e96c662543f8e22b447c3f5b7540181f6f"
+        },
+        {
+          "id": "684-unix-v3-attempt-1/result.json",
+          "bytes": 67955,
+          "sha256": "175b57949e02f9cd88b5d38d93ce3fc4b8e371595d309e8f75fb0a4d49b42a92"
+        },
+        {
+          "id": "684-unix-v3-attempt-1/environment.json",
+          "bytes": 17898,
+          "sha256": "4ff15734238eaaa86ba4bc27c69e2e28906a3e02cfff3492b4c3196694c4bf9f"
+        },
+        {
+          "id": "684-unix-v3-attempt-1/source-before.json",
+          "bytes": 709687,
+          "sha256": "5c52f0a20c4dfafbc0daaa5332ae3c4f6910d9dc88960fc6526753a575380c7a"
+        },
+        {
+          "id": "684-unix-v3-attempt-1/source-after.json",
+          "bytes": 709687,
+          "sha256": "5c52f0a20c4dfafbc0daaa5332ae3c4f6910d9dc88960fc6526753a575380c7a"
+        },
+        {
+          "id": "684-unix-v3-attempt-1/outer.log",
+          "bytes": 2501,
+          "sha256": "eb3878b9c494fa0a0a7ef401f3a9f04cd7748985700b2d0ef85926af2a262fc7"
+        },
+        {
+          "id": "684-unix-v3-attempt-1/case-15/harness.log",
+          "bytes": 466,
+          "sha256": "6682308fc15699cbf8749c74cbdecf3b921b5e191c67e66fc0850ed461cc377b"
+        },
+        {
+          "id": "684-unix-v3-attempt-1/case-15/harness.command.json",
+          "bytes": 645,
+          "sha256": "7ab03ea61930059fde91b7ecf67266b9c53d90619de2cf1e7f0105df36f4aed0"
+        },
+        {
+          "id": "684-unix-v3-attempt-1/case-15/result.json",
+          "bytes": 3274,
+          "sha256": "677e4a8ac2c1772be652d626ccb5c28d2f550364685ad4d92c327f7869335cd3"
+        },
+        {
+          "id": "684-unix-v3-attempt-1/case-15/target-profile.json",
+          "bytes": 1500,
+          "sha256": "6157c14c69d6b8c05198e1fcc3563c2a66f2f270345673ca122d1fa73fd7b1f5"
+        }
+      ],
+      "independent_audit": {
+        "scope": "Selected original artifact/serial hashes and actual-launch counts verified for this retained failure; a separate complete matrix audit is not claimed."
+      },
+      "actual_guests_started": 10,
+      "recorder_records": 11,
+      "actual_guest_raw33": 10,
+      "coverage": {
+        "passed": false,
+        "source_preexisted": false,
+        "source_osdk_exit_code": 6,
+        "original": {
+          "id": "684-unix-v3-attempt-1/coverage/result.json",
+          "bytes": 183,
+          "sha256": "fd7978c4b7a0dd330cb5d5e8eaecae67f480d0d421db357e91721d59cd2c7e1a"
+        },
+        "raw_exists": false,
+        "profdata_exists": false
+      }
+    },
+    {
+      "id": "876-unix-v3-attempt-2",
+      "producer": "8769a3e224fb97ce6d06fbcb1512281a7427156e",
+      "project_tree": "d18105364f75d4ffacb42c6cf6de793f0e846ccc",
+      "profile_id": "osdk-native-unix-gdb-capture-v3",
+      "status": "passed",
+      "started_utc": "2026-10-20T15:52:28.275430+00:00",
+      "finished_utc": "2026-10-20T15:56:14.213655+00:00",
+      "seconds": 225.81826196300244,
+      "outer_exit": 0,
+      "source_unchanged": true,
+      "source_before": {
+        "sha256": "7f1ede745f5cdb45b78acb346604410ebd540a0eef0264ae29f4712936caf033",
+        "files": 3039,
+        "git_head": "8769a3e224fb97ce6d06fbcb1512281a7427156e",
+        "git_status": ""
+      },
+      "source_after": {
+        "sha256": "7f1ede745f5cdb45b78acb346604410ebd540a0eef0264ae29f4712936caf033",
+        "files": 3039,
+        "git_head": "8769a3e224fb97ce6d06fbcb1512281a7427156e",
+        "git_status": ""
+      },
+      "totals": {
+        "available_cases": 22,
+        "selected_cases": 22,
+        "passed": 22,
+        "failed": 0,
+        "blocked": 0,
+        "host_blocked_cases": 0,
+        "soft_skip_count": 1
+      },
+      "osdk_sha256": "a753425890c756a94e2255d8762f01261714b98f640edaa1b1f367a08904f036",
+      "harness_sha256": "921715b1377d30b9e128c8d17e17289512820f90ab607f4c2dafc61f5db446ff",
+      "upstream_root_lock_sha256": "6b5de5d78a8e794567e1b07f1e7c621079023ff7f03c6c618abb7d5c09d8e316",
+      "working_root_lock_sha256": "af94d71680ecf3b9631e21c958263d5e41229033214f88dcff858bb14765a666",
+      "scope": "OSDK example kernels and tooling, not complete Asterinas kernel acceptance",
+      "cases": [
+        {
+          "name": "commands::run::qemu_gdb_feature::basic_debug",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "commands::run::qemu_gdb_feature::vsc::vsc_launch_file",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "cli::cli_build_help_message",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "cli::cli_check_help_message",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "cli::cli_clippy_help_message",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "cli::cli_help_message",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "cli::cli_new_crate_with_hyphen",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "cli::cli_new_help_message",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "cli::cli_run_help_message",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "cli::cli_test_help_message",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "commands::new::create_kernel_in_workspace",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "commands::new::create_lib_in_workspace",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "commands::new::create_two_crates_in_workspace",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "commands::run::basic::new_kernel_and_run",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "commands::run::coverage_feature::basic_coverage",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "examples_in_book::create_os_projects::create_a_kernel_project",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "examples_in_book::create_os_projects::create_a_library_project",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "examples_in_book::test_and_run_projects::create_and_run_kernel",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "examples_in_book::test_and_run_projects::create_and_test_library",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "examples_in_book::work_in_workspace::work_in_workspace",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        },
+        {
+          "name": "examples_in_book::write_a_hypervisor_in_100_lines::write_a_hypervisor_in_100_lines",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [
+            "VMX unavailable; hypervisor example accepted upstream fallback"
+          ],
+          "host_blockers": []
+        },
+        {
+          "name": "examples_in_book::write_a_kernel_in_100_lines::write_a_kernel_in_100_lines",
+          "status": "passed",
+          "raw_exit_code": 0,
+          "timed_out": false,
+          "soft_skips": [],
+          "host_blockers": []
+        }
+      ],
+      "guests": [
+        {
+          "id": "876-unix-v3-attempt-2/case-01/guests/guest-001",
+          "case": "commands::run::qemu_gdb_feature::basic_debug",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "876-unix-v3-attempt-2/case-01/guests/guest-001/qemu.json",
+            "bytes": 11489,
+            "sha256": "1e3f997c321b7867b4cdbdb3dab025369d1061a4970ebab1129f05d5969a8790"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 26658856,
+              "sha256": "db06388ec5c3738619750c4317ecffc9c27c88a8f6f669c482ad5fcdaa5dcf54"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "876-unix-v3-attempt-2/case-01/guests/guest-001/serial-0.log",
+              "bytes": 2781,
+              "sha256": "de2e2b1221c6d79e8d7d954d6e29041c0dbac7d477348693dd44dc14916a2d99"
+            }
+          ]
+        },
+        {
+          "id": "876-unix-v3-attempt-2/case-02/guests/guest-001",
+          "case": "commands::run::qemu_gdb_feature::vsc::vsc_launch_file",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "876-unix-v3-attempt-2/case-02/guests/guest-001/qemu.json",
+            "bytes": 10872,
+            "sha256": "18725ae0c52e8aa72eab518156a58f7ae0e9f91bd46bd0669a8b8e0faacafd9e"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 26658944,
+              "sha256": "656f025795df43ed4b33427990b684fdef7a0410c8d1e4ed5530bb71f0eb7717"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "876-unix-v3-attempt-2/case-02/guests/guest-001/serial-0.log",
+              "bytes": 2780,
+              "sha256": "d1cf3e75ab6a009f48066135c3ef91126e40efd798d1bdd39b462c807a79e658"
+            }
+          ]
+        },
+        {
+          "id": "876-unix-v3-attempt-2/case-14/guests/guest-001",
+          "case": "commands::run::basic::new_kernel_and_run",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "876-unix-v3-attempt-2/case-14/guests/guest-001/qemu.json",
+            "bytes": 10516,
+            "sha256": "8cdc12861c32401fa5e038a2b26a2f3912cf582374be5d803ec4a0b8af49f1cb"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 26658664,
+              "sha256": "d0753f7731eb0fdd28b86ad445826634b8fa5dc646e37140b7822ac9574842f1"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "876-unix-v3-attempt-2/case-14/guests/guest-001/serial-0.log",
+              "bytes": 2780,
+              "sha256": "9ba9a6bfa16ea2a3e13e8c7581da7b4be798a66d114fe6d52d7e32d1a143b0dd"
+            }
+          ]
+        },
+        {
+          "id": "876-unix-v3-attempt-2/case-15/guests/guest-001",
+          "case": "commands::run::coverage_feature::basic_coverage",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "876-unix-v3-attempt-2/case-15/guests/guest-001/qemu.json",
+            "bytes": 17041,
+            "sha256": "5c71ef8e15d99d9410bd0faf625e005e18ad93f3ea01b018c620ec833e3641e1"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 40265024,
+              "sha256": "c5ccc5b1fac7568112ad5e821aaf6d1c8866015167039bfd5a2c7dd37507c42b"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "876-unix-v3-attempt-2/case-15/guests/guest-001/serial-0.log",
+              "bytes": 2823,
+              "sha256": "acf78ea904fef0e6a722c04dd30f6bf1f2c4162ce544f4eeab633ea66fffd29c"
+            }
+          ]
+        },
+        {
+          "id": "876-unix-v3-attempt-2/case-18/guests/guest-001",
+          "case": "examples_in_book::test_and_run_projects::create_and_run_kernel",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "876-unix-v3-attempt-2/case-18/guests/guest-001/qemu.json",
+            "bytes": 10493,
+            "sha256": "1384f32c688a15a7599dcc455702baa8f6b091e740097db37e7835d5c8e7d448"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 26658616,
+              "sha256": "f04d7059212af685d33ebf593e2069fd2810752f080749e544419bf969dd8c8c"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "876-unix-v3-attempt-2/case-18/guests/guest-001/serial-0.log",
+              "bytes": 2780,
+              "sha256": "a1b930fb30a3f936cbc8fdc3aea5e45fbf71a0084565ac725973a1a57ca25bcb"
+            }
+          ]
+        },
+        {
+          "id": "876-unix-v3-attempt-2/case-19/guests/guest-001",
+          "case": "examples_in_book::test_and_run_projects::create_and_test_library",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "876-unix-v3-attempt-2/case-19/guests/guest-001/qemu.json",
+            "bytes": 10114,
+            "sha256": "f4f0ab27455f7fc25223cc4ff1a622f16dd0f9a4075898a060e02bc385824eec"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 38221088,
+              "sha256": "a2a169b00cac87e1f2d2569eb01ff3d3d9cd386be4138789da072350b086cad4"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "876-unix-v3-attempt-2/case-19/guests/guest-001/serial-0.log",
+              "bytes": 3190,
+              "sha256": "bf6d66f099d26127e54505d4323621f6043471e150f07186b448e12088538ff3"
+            }
+          ]
+        },
+        {
+          "id": "876-unix-v3-attempt-2/case-20/guests/guest-001",
+          "case": "examples_in_book::work_in_workspace::work_in_workspace",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "876-unix-v3-attempt-2/case-20/guests/guest-001/qemu.json",
+            "bytes": 10500,
+            "sha256": "7da6d58ae29fca3a83193d3d98d6bb1577576d17ba72dfbfe0ab84d7c436bf2b"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 26678864,
+              "sha256": "1fdafe875c1f6e756bf8d69768b15989e6e51de2888c23da528bda8fccceba55"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "876-unix-v3-attempt-2/case-20/guests/guest-001/serial-0.log",
+              "bytes": 2784,
+              "sha256": "1f2991a0b3dc1128c22dc6820176f408f799416029960aa3970934a9cb08e9f7"
+            }
+          ]
+        },
+        {
+          "id": "876-unix-v3-attempt-2/case-20/guests/guest-002",
+          "case": "examples_in_book::work_in_workspace::work_in_workspace",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "876-unix-v3-attempt-2/case-20/guests/guest-002/qemu.json",
+            "bytes": 10510,
+            "sha256": "784dec7f47af2acad896975a75a14864d7d11e891d5ea7f80eca2de278083475"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 38233344,
+              "sha256": "d3deae207b7518e051583f49da08cb3fc07153dd0dc1e6386172f904638fd682"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "876-unix-v3-attempt-2/case-20/guests/guest-002/serial-0.log",
+              "bytes": 3190,
+              "sha256": "3e106069dea894e3c283ae815dc714d88cc55d85d0a54902bd4ff2457842bf70"
+            }
+          ]
+        },
+        {
+          "id": "876-unix-v3-attempt-2/case-20/guests/guest-003",
+          "case": "examples_in_book::work_in_workspace::work_in_workspace",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "876-unix-v3-attempt-2/case-20/guests/guest-003/qemu.json",
+            "bytes": 10499,
+            "sha256": "e6744222d4b2ab5458dc82e9e82101455788f4c8271a1ed2d02c78ed2a3d1f13"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 38233328,
+              "sha256": "1c58493daaded9bbf6fed9a0454cae5f34a45544d598c51c745a47e6534eceee"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "876-unix-v3-attempt-2/case-20/guests/guest-003/serial-0.log",
+              "bytes": 3082,
+              "sha256": "4e262062bccae773050344969c3d6f4988a22353dde5271906304d30f7d626ad"
+            }
+          ]
+        },
+        {
+          "id": "876-unix-v3-attempt-2/case-21/guests/guest-001",
+          "case": "examples_in_book::write_a_hypervisor_in_100_lines::write_a_hypervisor_in_100_lines",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "876-unix-v3-attempt-2/case-21/guests/guest-001/qemu.json",
+            "bytes": 10293,
+            "sha256": "22c736227f53baa6186c0b939eb2326576cb06a8a125ea02c106d1708fc24c64"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 27202592,
+              "sha256": "372fc0d4a783d81ac694df38f4bdb56415bc567db96e3087dfdcbe72f9badd3d"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "876-unix-v3-attempt-2/case-21/guests/guest-001/serial-0.log",
+              "bytes": 2788,
+              "sha256": "70d7f3e4ece80e54c6f61bd4b6c68940e854ac66b5e46dc4744632f73b3638bd"
+            }
+          ]
+        },
+        {
+          "id": "876-unix-v3-attempt-2/case-22/guests/guest-001",
+          "case": "examples_in_book::write_a_kernel_in_100_lines::write_a_kernel_in_100_lines",
+          "launched": true,
+          "raw_qemu_exit": 33,
+          "wrapper_exit": 33,
+          "timeout": false,
+          "error": null,
+          "qemu_record": {
+            "id": "876-unix-v3-attempt-2/case-22/guests/guest-001/qemu.json",
+            "bytes": 10658,
+            "sha256": "8fa40e17221f28dd0b19684972bcdb752f6f57c0e1e2b779aed5bade505c10e2"
+          },
+          "artifacts": {
+            "-kernel": {
+              "bytes": 26922552,
+              "sha256": "1b3d872524ac596b4f2c7b80674e1b078ca7c9b9543f656ebc8774541ff18296"
+            },
+            "-bios": {
+              "bytes": 262144,
+              "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+            }
+          },
+          "serial": [
+            {
+              "id": "876-unix-v3-attempt-2/case-22/guests/guest-001/serial-0.log",
+              "bytes": 2764,
+              "sha256": "14bd748911529f3da1c9d9c999c63fe07972e1736a6bf739d0de562a5d2beb91"
+            }
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "876-unix-v3-attempt-2/outer.json",
+          "bytes": 3261,
+          "sha256": "27a37575af9c30de3b8e26d766c748be8098f242e1158e5e07ded700be3a036c"
+        },
+        {
+          "id": "876-unix-v3-attempt-2/result.json",
+          "bytes": 70104,
+          "sha256": "4766e5e5d2bde6433cf348b9d826c219249493d5b2d122f9eeac221f15af95ed"
+        },
+        {
+          "id": "876-unix-v3-attempt-2/environment.json",
+          "bytes": 17898,
+          "sha256": "f92780300347d88cc6a76150b3bb4aaf60c9e7ced5120f70eadc102eadc7eb41"
+        },
+        {
+          "id": "876-unix-v3-attempt-2/source-before.json",
+          "bytes": 709687,
+          "sha256": "7f1ede745f5cdb45b78acb346604410ebd540a0eef0264ae29f4712936caf033"
+        },
+        {
+          "id": "876-unix-v3-attempt-2/source-after.json",
+          "bytes": 709687,
+          "sha256": "7f1ede745f5cdb45b78acb346604410ebd540a0eef0264ae29f4712936caf033"
+        },
+        {
+          "id": "876-unix-v3-attempt-2/outer.log",
+          "bytes": 2503,
+          "sha256": "d744d80cfb1c89283a77cfc79f5b43cee1290bb05b9acea053b04ffc4c33c35a"
+        }
+      ],
+      "independent_audit": {
+        "complete": true,
+        "passed": true,
+        "guest_count": 11,
+        "completed_cases": 22,
+        "original": {
+          "id": "876-unix-v3-attempt-2/independent-audit.json",
+          "bytes": 101953,
+          "sha256": "8a2752e17c7f4c818a59d2f208eb23e4e5d158df24960bbe27c96d4abfab10b1"
+        },
+        "inspected_files": 389,
+        "locked_cargo_requests": 114
+      },
+      "actual_guests_started": 11,
+      "recorder_records": 11,
+      "actual_guest_raw33": 11,
+      "coverage": {
+        "passed": true,
+        "source_preexisted": false,
+        "source_osdk_exit_code": 0,
+        "size": 2006216,
+        "sha256": "bde3df6f0f193f14b3b909af4359d4600d63e1a4a0a56de2346bf7f773a4f253",
+        "total_functions": 5691,
+        "maximum_function_count": 383140,
+        "original": {
+          "id": "876-unix-v3-attempt-2/coverage/result.json",
+          "bytes": 2169,
+          "sha256": "e71794f4f2fce77e391b78a0384b491b383907deb4d3436c8c6ac18c02348a37"
+        },
+        "breakpoint": {
+          "symbol": "ostd::arch::power::try_poweroff",
+          "resolved_address": "0xffffffff88109e30",
+          "actual_pc": "0xffffffff88109e30"
+        },
+        "gdb_exit": 0,
+        "announcement": {
+          "address": "0xffff800010400000",
+          "size": 2006216
+        },
+        "resumed_by_detach": true,
+        "symbol_elf": {
+          "size": 40265024,
+          "sha256": "06e0a4a1b21cf8ff9ad7b56262079a18d132021ae22057ecbd1a6963b8231c29"
+        },
+        "raw": {
+          "id": "876-unix-v3-attempt-2/coverage/coverage.profraw",
+          "bytes": 2006216,
+          "sha256": "bde3df6f0f193f14b3b909af4359d4600d63e1a4a0a56de2346bf7f773a4f253"
+        },
+        "profdata": {
+          "id": "876-unix-v3-attempt-2/coverage/coverage.profdata",
+          "bytes": 1245456,
+          "sha256": "4a4079c063172d095527a9c4efa5417580e99c0dec259f3839025c7520530909"
+        },
+        "capture_sidecar": {
+          "id": "876-unix-v3-attempt-2/coverage/capture.json",
+          "bytes": 3890,
+          "sha256": "51ba4330e149c5f8923d20360bae3ddcfa1804715e01409b824548907fbe4fd0"
+        }
+      }
+    }
+  ],
+  "failed_cold_run": {
+    "id": "cc8-cold-repro-a",
+    "producer": "cc8b72a2f3a4cd52f9c7c978307b5ca6f9e9f148",
+    "project_tree": "4d4338ab795b59571b5e77ae89a5cdcc1f149eca",
+    "status": "failed",
+    "started_utc": "2026-10-20T15:19:47.552739+00:00",
+    "finished_utc": "2026-10-20T15:27:17.478831+00:00",
+    "seconds": 449.75807864599483,
+    "outer_exit": 2,
+    "make_exit": 2,
+    "raw_qemu_exit": 65,
+    "qemu_timed_out": false,
+    "rust_compilation_succeeded": true,
+    "source_unchanged": true,
+    "source_before": {
+      "sha256": "1f108139447d8253bcdb1eba96f21fec9367938d55a2678c19383167c4c984f2",
+      "files": 3048,
+      "git_head": "cc8b72a2f3a4cd52f9c7c978307b5ca6f9e9f148",
+      "git_status": ""
+    },
+    "source_after": {
+      "sha256": "1f108139447d8253bcdb1eba96f21fec9367938d55a2678c19383167c4c984f2",
+      "files": 3048,
+      "git_head": "cc8b72a2f3a4cd52f9c7c978307b5ca6f9e9f148",
+      "git_status": ""
+    },
+    "fresh_kernel_target": true,
+    "fresh_osdk_target": true,
+    "metadata_projection_receipts": 0,
+    "failure": "NotIncludeAllComponent panic during component initialization; not a successful boot",
+    "cause": "Current component macro invoked cargo metadata --locked --format-version 1; old wrapper only projected the unlocked spelling, so component registry paths remained unprojected.",
+    "artifacts": {
+      "-kernel": {
+        "bytes": 8406032,
+        "sha256": "c98ddd313152c7e10c99046dae9f288ff354667deefdc97a8708986293bf0001"
+      },
+      "-initrd": {
+        "bytes": 1107990,
+        "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+      },
+      "-bios": {
+        "bytes": 262144,
+        "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+      }
+    },
+    "evidence": [
+      {
+        "id": "cc8-cold-repro-a/outer.json",
+        "bytes": 3284,
+        "sha256": "6a2cd1a14c76e07f771cdc59e3ea79815b5024cda31eeea9750c0ca82fe5e544"
+      },
+      {
+        "id": "cc8-cold-repro-a/result.json",
+        "bytes": 692,
+        "sha256": "f9a4d25491a7710576d5d20db5668d815b28a57a8e4b4318e49758d2ed0e27e8"
+      },
+      {
+        "id": "cc8-cold-repro-a/qemu.json",
+        "bytes": 7808,
+        "sha256": "69c957c63bd409bd5ba2ab7b5073b0ef462d085c8435e55d10ff7a6acd217ebc"
+      },
+      {
+        "id": "cc8-cold-repro-a/command.sh",
+        "bytes": 594,
+        "sha256": "e1963a4a08f81e6aaafb06f7d7f53fae709d338c5543a7374d286080093968cd"
+      },
+      {
+        "id": "cc8-cold-repro-a/console.log",
+        "bytes": 62049,
+        "sha256": "44239c6610a2492ee66c5e1f6a76a90ad7c6dac59d875c010a95c827c83b1dab"
+      },
+      {
+        "id": "cc8-cold-repro-a/diagnosis.json",
+        "bytes": 7598,
+        "sha256": "9fd73f5c5799d90112591b3462c71ec614e8c2ffad7873f9f2977ba90e19644b"
+      }
+    ],
+    "serial": {
+      "id": "cc8-cold-repro-a/serial.log",
+      "bytes": 4659,
+      "sha256": "f721246782f3f40d0529a83b5fc36cc8fffc590981ef3de2125bce5d9cfd2d71"
+    },
+    "additional_original_evidence": [
+      {
+        "id": "cc8-cold-repro-a/console.log.command.json",
+        "bytes": 421,
+        "sha256": "368cf2e1c70ba31c0c7e61a21df1de74b17fa7a1b7f6c6861ef74b6703eb45ab"
+      },
+      {
+        "id": "cc8-cold-repro-a/console.log",
+        "bytes": 62049,
+        "sha256": "44239c6610a2492ee66c5e1f6a76a90ad7c6dac59d875c010a95c827c83b1dab"
+      },
+      {
+        "id": "cc8-cold-repro-a/rustc-version.log",
+        "bytes": 212,
+        "sha256": "d919107c9907c374b7605930746505ef72ce87cc21b641260c6225a7da9d8212"
+      },
+      {
+        "id": "cc8-cold-repro-a/rustc-version.log.command.json",
+        "bytes": 447,
+        "sha256": "d7d388f51f83888fc7a661d956bd2974d6eaa7da40597a574b21db0cf4cb3c09"
+      },
+      {
+        "id": "cc8-cold-repro-a/rustc.jsonl",
+        "bytes": 2814174,
+        "sha256": "d79fe15a9a0efdd3f4487df6172cf822b2723d11ec539d0caf6865928d921297"
+      },
+      {
+        "id": "cc8-cold-repro-a/compiler-units.jsonl",
+        "bytes": 961145,
+        "sha256": "41637ed052e5332409d1a416fa8bfc0bba4139378c38d40bec992a09e04dad28"
+      },
+      {
+        "id": "cc8-cold-repro-a/kernel-run/command.sh",
+        "bytes": 594,
+        "sha256": "e1963a4a08f81e6aaafb06f7d7f53fae709d338c5543a7374d286080093968cd"
+      },
+      {
+        "id": "cc8-cold-repro-a/kernel-run/environment.log",
+        "bytes": 4577,
+        "sha256": "bce93438063062050fbdee2c95c11a97dbb260fc7ba7bdc06698684997d2fee6"
+      },
+      {
+        "id": "cc8-cold-repro-a/kernel-run/run_kernel.log",
+        "bytes": 61886,
+        "sha256": "9c49ea3aab0e2ec8c3c9887f3d0ee929e3acd3ce46b010967cccb252a6891ced"
+      },
+      {
+        "id": "cc8-cold-repro-a/policy.json",
+        "bytes": 8698,
+        "sha256": "6a5aa03ab31fc2a91319c422c8a0553d315d283fd8d1cfd0c54db68728bd6bd3"
+      }
+    ]
+  },
+  "pending_runs": [],
+  "host_tests": {
+    "producer": "684c4c82bbe770d712da75a199b7f5757ee61191",
+    "distinct_cases": 203,
+    "unix": 121,
+    "repro": 59,
+    "ci_compatibility": 23,
+    "scope": "host-only regressions, not evidence of guest execution"
+  },
+  "limitations": [
+    "Every matrix includes one upstream VMX-unavailable fallback; no exercised VMX claim.",
+    "OSDK example matrices are distinct from complete Asterinas kernel build/boot qualification.",
+    "No full cross-host or arbitrary-host bit reproducibility claim.",
+    "Latest exact-head A01, A06 and G1c CI remained queued at the recorded API observation. New CodeQL run success does not prove an inherited finding was repaired."
+  ],
+  "publication": {
+    "raw_logs_copied_into_public": false,
+    "raw_artifacts_copied_into_public": false,
+    "original_evidence_changed": false,
+    "public_content": "selected facts, hashes, normalized command arrays, complete explicitly redacted C/D serial candidates, and truthful failures/pending outcomes",
+    "private_manifest": "retained separately; not part of public allowlist",
+    "raw_archive_upload": "not performed; previous automatic-review rejection remains respected",
+    "explicitly_redacted_complete_guest_serials": 2
+  },
+  "revision": 2,
+  "source_code_head": "8769a3e224fb97ce6d06fbcb1512281a7427156e",
+  "completed_cold_runs": [
+    {
+      "id": "684-cold-repro-c",
+      "producer": "684c4c82bbe770d712da75a199b7f5757ee61191",
+      "project_tree": "8dde0a4beb98f6749a529624aeb1d0b7c0f13a98",
+      "status": "passed",
+      "started_utc": "2026-10-20T15:44:48.393396+00:00",
+      "finished_utc": "2026-10-20T15:52:07.991667+00:00",
+      "seconds": 439.44627287500043,
+      "outer_exit": 0,
+      "make_exit": 0,
+      "raw_qemu_exit": 33,
+      "qemu_seconds": 1.02,
+      "qemu_timed_out": false,
+      "source_unchanged": true,
+      "source_before": {
+        "sha256": "3bf603e707814af1373f22113751ffae80ef58631336a3d61161126292a2a1cd",
+        "files": 3051,
+        "git_head": "684c4c82bbe770d712da75a199b7f5757ee61191",
+        "git_status": ""
+      },
+      "source_after": {
+        "sha256": "3bf603e707814af1373f22113751ffae80ef58631336a3d61161126292a2a1cd",
+        "files": 3051,
+        "git_head": "684c4c82bbe770d712da75a199b7f5757ee61191",
+        "git_status": ""
+      },
+      "fresh_kernel_target": true,
+      "fresh_osdk_target": true,
+      "repro_schema": "a01-component-path-projection/5",
+      "cargo_build_jobs": 1,
+      "profile_custody_unchanged": true,
+      "source_components_unchanged": true,
+      "profile_code_unchanged": true,
+      "project_inputs_unchanged": true,
+      "metadata_projection": {
+        "passed": true,
+        "count": 6,
+        "components_per_receipt": [
+          19,
+          19,
+          19,
+          19,
+          19,
+          19
+        ],
+        "exact_cargo_argv": [
+          "cargo",
+          "metadata",
+          "--locked",
+          "--format-version",
+          "1"
+        ]
+      },
+      "components_sha256": "26b4b68a8a0f661c6575ec444b3456730110e78fa72b2d03c2a70c4ee46d60f6",
+      "project_input_hashes": {
+        "workspace_manifest_sha256": "153bea9f3a0ec926947f9e7207ab458222453cf162283d88a6d25fdeb837048d",
+        "os-control": {
+          "relative_root": "libs/os-control",
+          "package": "os-control",
+          "version": "0.1.0",
+          "manifest_sha256": "57dbfcb0521f45a62574534da0db7de3db15a8910d81b67b2ccbdc6326d3a20f",
+          "source_sha256": "f164a50b7a50d2c51b69655dd7ee4723de8a81fb90a571774ea55ad861b6d987"
+        }
+      },
+      "helper_hashes": {
+        "profile.py": "8a8825cc3f57ecc258749c948cb7957ce4e783b02f931beaf42df1007a029618",
+        "run.py": "0a9d3bbf35df929e5aa490b215fe5c9a5f338f304cece94b506497543accd0da",
+        "rustc-wrapper.py": "acab1c580b5e1cd82b515d1757bd1e1cca27c9aa8ec462e8ddbf79c2482bda8e",
+        "cargo-metadata-wrapper.py": "f49342cb8a4f94dff0bd782e331691a007f78915a7d2b8189249f6b0d0166b5a"
+      },
+      "artifacts": {
+        "-kernel": {
+          "bytes": 8410560,
+          "sha256": "00f3bfb76164fac3890c68115f5347e758820aeeffd42bb9021261900acca508"
+        },
+        "-initrd": {
+          "bytes": 1107990,
+          "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+        },
+        "-bios": {
+          "bytes": 262144,
+          "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+        }
+      },
+      "evidence": [
+        {
+          "id": "684-cold-repro-c/outer.json",
+          "bytes": 3284,
+          "sha256": "6f99c81e4ef172c0b36ae05e31636f0bdf558a09ac53eec2e8e3837e692fe91f"
+        },
+        {
+          "id": "684-cold-repro-c/result.json",
+          "bytes": 2259,
+          "sha256": "a2f194807a0a44a4dcca9324fe049e7b7615125914226d00d4ac27e08b335b1e"
+        },
+        {
+          "id": "684-cold-repro-c/policy.json",
+          "bytes": 8698,
+          "sha256": "2491bdb75d54a73888e663c6e6f1c30b41407aa3afbfb73b46d5afaedc7aad05"
+        },
+        {
+          "id": "684-cold-repro-c/qemu.json",
+          "bytes": 7808,
+          "sha256": "9d02b6642bbf058c5a74670e6dc1d96e7096d6405586a1f781077cbd91e40faf"
+        },
+        {
+          "id": "684-cold-repro-c/command.sh",
+          "bytes": 512,
+          "sha256": "022f222f5932b0cabc79e4623451ab8a9c1c75a7b76213205236ecab7bd3ebbd"
+        },
+        {
+          "id": "684-cold-repro-c/console.log",
+          "bytes": 129041,
+          "sha256": "296f815cc4185d022c4fe14406b2f098a72a112941e10716631f4a5d77feb119"
+        },
+        {
+          "id": "684-cold-repro-c/source-before.json",
+          "bytes": 712104,
+          "sha256": "3bf603e707814af1373f22113751ffae80ef58631336a3d61161126292a2a1cd"
+        },
+        {
+          "id": "684-cold-repro-c/source-after.json",
+          "bytes": 712104,
+          "sha256": "3bf603e707814af1373f22113751ffae80ef58631336a3d61161126292a2a1cd"
+        },
+        {
+          "id": "684-cold-repro-c/metadata/binding-1.json",
+          "bytes": 3301,
+          "sha256": "8876094c45bb1afba6004f87b2b921d48158b8c8761ac8e58776e58164679694"
+        },
+        {
+          "id": "684-cold-repro-c/metadata/binding-2.json",
+          "bytes": 3301,
+          "sha256": "8876094c45bb1afba6004f87b2b921d48158b8c8761ac8e58776e58164679694"
+        },
+        {
+          "id": "684-cold-repro-c/metadata/binding-3.json",
+          "bytes": 3301,
+          "sha256": "8876094c45bb1afba6004f87b2b921d48158b8c8761ac8e58776e58164679694"
+        },
+        {
+          "id": "684-cold-repro-c/metadata/binding-4.json",
+          "bytes": 3301,
+          "sha256": "8876094c45bb1afba6004f87b2b921d48158b8c8761ac8e58776e58164679694"
+        },
+        {
+          "id": "684-cold-repro-c/metadata/binding-5.json",
+          "bytes": 3301,
+          "sha256": "8876094c45bb1afba6004f87b2b921d48158b8c8761ac8e58776e58164679694"
+        },
+        {
+          "id": "684-cold-repro-c/metadata/binding-6.json",
+          "bytes": 3301,
+          "sha256": "8876094c45bb1afba6004f87b2b921d48158b8c8761ac8e58776e58164679694"
+        },
+        {
+          "id": "684-cold-repro-c/independent-source-before.json",
+          "bytes": 4715812,
+          "sha256": "26c5e3fd0ea0389307d16a82ffffa9b2acfbe206e8be41ff4c1940e70b93a4e2"
+        },
+        {
+          "id": "684-cold-repro-c/independent-source-after.json",
+          "bytes": 4716388,
+          "sha256": "7b8dd2c6c2def05405ae1e935d70904689a7e43b245c485f683f4354de85384e"
+        }
+      ],
+      "scope": "same-host opt-in path projection; independent-host reproduction not claimed",
+      "serial": {
+        "id": "684-cold-repro-c/serial.log",
+        "bytes": 72321,
+        "sha256": "7c029e5e809829a0d083454e667e009ed4f4c6a846f791d97ab6c3144bdbb3ba"
+      },
+      "boot_markers": {
+        "OSTD initialized. Preparing components.": true,
+        "TRILLIONNIUM_A01_INIT_BEGIN": true,
+        "TRILLIONNIUM_A01_CPU_COUNT=1": true,
+        "Successfully booted.": true,
+        "TRILLIONNIUM_A01_BOOT_OK": true
+      },
+      "independent_audit": {
+        "passed": true,
+        "checks": 415,
+        "checks_passed": 415,
+        "original": {
+          "id": "684-cold-repro-c/independent-audit.json",
+          "bytes": 2681991,
+          "sha256": "06ecbb1fb10180201d930cf81860f477507bacefcd2c4d99a45fcbf98464dcc0"
+        }
+      },
+      "public_serial": {
+        "file": "serial/cold-c.redacted.log",
+        "kind": "explicitly_redacted_complete_guest_serial",
+        "original_bytes": 72321,
+        "original_sha256": "7c029e5e809829a0d083454e667e009ed4f4c6a846f791d97ab6c3144bdbb3ba",
+        "delivered_bytes": 72205,
+        "delivered_sha256": "84f068c34f37e7aebdc6bbf7dea6065b11943009b2390fd138258f499625ea94",
+        "replacements": [
+          {
+            "category": "selected_repro_profile_absolute_root",
+            "replacement": "<REPRO_PROFILE_ROOT>",
+            "count": 4,
+            "original_token_bytes": 49,
+            "original_token_sha256": "8ce91ef3eeebe881adad8dedac2d0e0b756f42c2b13e4283de7d569276124a7d"
+          }
+        ],
+        "only_declared_byte_replacements": true,
+        "line_count_preserved": true,
+        "original_unchanged": true,
+        "recorded_qemu_original_hash_matches": true,
+        "deterministic_project_builder_identity_preserved": "a01-repro@a01-fixed-profile is a deliberate profile constant, not the actual host identity"
+      }
+    },
+    {
+      "id": "684-cold-repro-d",
+      "producer": "684c4c82bbe770d712da75a199b7f5757ee61191",
+      "project_tree": "8dde0a4beb98f6749a529624aeb1d0b7c0f13a98",
+      "status": "passed",
+      "started_utc": "2026-10-20T15:57:52.831025+00:00",
+      "finished_utc": "2026-10-20T16:05:47.259839+00:00",
+      "seconds": 473.82969128699915,
+      "outer_exit": 0,
+      "make_exit": 0,
+      "raw_qemu_exit": 33,
+      "qemu_seconds": 1.273,
+      "qemu_timed_out": false,
+      "source_unchanged": true,
+      "source_before": {
+        "sha256": "3bf603e707814af1373f22113751ffae80ef58631336a3d61161126292a2a1cd",
+        "files": 3051,
+        "git_head": "684c4c82bbe770d712da75a199b7f5757ee61191",
+        "git_status": ""
+      },
+      "source_after": {
+        "sha256": "3bf603e707814af1373f22113751ffae80ef58631336a3d61161126292a2a1cd",
+        "files": 3051,
+        "git_head": "684c4c82bbe770d712da75a199b7f5757ee61191",
+        "git_status": ""
+      },
+      "fresh_kernel_target": true,
+      "fresh_osdk_target": true,
+      "repro_schema": "a01-component-path-projection/5",
+      "cargo_build_jobs": 1,
+      "profile_custody_unchanged": true,
+      "source_components_unchanged": true,
+      "profile_code_unchanged": true,
+      "project_inputs_unchanged": true,
+      "metadata_projection": {
+        "passed": true,
+        "count": 6,
+        "components_per_receipt": [
+          19,
+          19,
+          19,
+          19,
+          19,
+          19
+        ],
+        "exact_cargo_argv": [
+          "cargo",
+          "metadata",
+          "--locked",
+          "--format-version",
+          "1"
+        ]
+      },
+      "components_sha256": "26b4b68a8a0f661c6575ec444b3456730110e78fa72b2d03c2a70c4ee46d60f6",
+      "project_input_hashes": {
+        "workspace_manifest_sha256": "153bea9f3a0ec926947f9e7207ab458222453cf162283d88a6d25fdeb837048d",
+        "os-control": {
+          "relative_root": "libs/os-control",
+          "package": "os-control",
+          "version": "0.1.0",
+          "manifest_sha256": "57dbfcb0521f45a62574534da0db7de3db15a8910d81b67b2ccbdc6326d3a20f",
+          "source_sha256": "f164a50b7a50d2c51b69655dd7ee4723de8a81fb90a571774ea55ad861b6d987"
+        }
+      },
+      "helper_hashes": {
+        "profile.py": "8a8825cc3f57ecc258749c948cb7957ce4e783b02f931beaf42df1007a029618",
+        "run.py": "0a9d3bbf35df929e5aa490b215fe5c9a5f338f304cece94b506497543accd0da",
+        "rustc-wrapper.py": "acab1c580b5e1cd82b515d1757bd1e1cca27c9aa8ec462e8ddbf79c2482bda8e",
+        "cargo-metadata-wrapper.py": "f49342cb8a4f94dff0bd782e331691a007f78915a7d2b8189249f6b0d0166b5a"
+      },
+      "artifacts": {
+        "-kernel": {
+          "bytes": 8410560,
+          "sha256": "00f3bfb76164fac3890c68115f5347e758820aeeffd42bb9021261900acca508"
+        },
+        "-initrd": {
+          "bytes": 1107990,
+          "sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3"
+        },
+        "-bios": {
+          "bytes": 262144,
+          "sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735"
+        }
+      },
+      "evidence": [
+        {
+          "id": "684-cold-repro-d/outer.json",
+          "bytes": 3284,
+          "sha256": "b2b688790a1e853e6e42d85102f475aeecaa3d951054b3873d3fc67e043a36e0"
+        },
+        {
+          "id": "684-cold-repro-d/result.json",
+          "bytes": 2259,
+          "sha256": "d46c0df1f00ad617385255dad108c3c6b5b0e60f0ae9117293361a3a91f40c07"
+        },
+        {
+          "id": "684-cold-repro-d/policy.json",
+          "bytes": 8698,
+          "sha256": "5a304ad51de756b3de3f3ea6feb0d08a73ec44b794d5cc29a73291cbab9a8c6f"
+        },
+        {
+          "id": "684-cold-repro-d/qemu.json",
+          "bytes": 7809,
+          "sha256": "357821a3b24a7b7662e14d4fb66c94bb566219ff146e61bf88b41ae4900967f3"
+        },
+        {
+          "id": "684-cold-repro-d/command.sh",
+          "bytes": 512,
+          "sha256": "2c031f6c2516ca08ae4fbd2af22cbdb6b34d8338868bd378fc8e16448dd96e1b"
+        },
+        {
+          "id": "684-cold-repro-d/console.log",
+          "bytes": 129041,
+          "sha256": "e066a904b3aaf6e0b5449595a25988e6b2353f27354bb01beaf6141d5bf13593"
+        },
+        {
+          "id": "684-cold-repro-d/source-before.json",
+          "bytes": 712104,
+          "sha256": "3bf603e707814af1373f22113751ffae80ef58631336a3d61161126292a2a1cd"
+        },
+        {
+          "id": "684-cold-repro-d/source-after.json",
+          "bytes": 712104,
+          "sha256": "3bf603e707814af1373f22113751ffae80ef58631336a3d61161126292a2a1cd"
+        },
+        {
+          "id": "684-cold-repro-d/metadata/binding-1.json",
+          "bytes": 3301,
+          "sha256": "0d3cd4b80ece2c28e5d1853a90bd1f4c909f464767409a5647b6e28733758f3c"
+        },
+        {
+          "id": "684-cold-repro-d/metadata/binding-2.json",
+          "bytes": 3301,
+          "sha256": "0d3cd4b80ece2c28e5d1853a90bd1f4c909f464767409a5647b6e28733758f3c"
+        },
+        {
+          "id": "684-cold-repro-d/metadata/binding-3.json",
+          "bytes": 3301,
+          "sha256": "0d3cd4b80ece2c28e5d1853a90bd1f4c909f464767409a5647b6e28733758f3c"
+        },
+        {
+          "id": "684-cold-repro-d/metadata/binding-4.json",
+          "bytes": 3301,
+          "sha256": "0d3cd4b80ece2c28e5d1853a90bd1f4c909f464767409a5647b6e28733758f3c"
+        },
+        {
+          "id": "684-cold-repro-d/metadata/binding-5.json",
+          "bytes": 3301,
+          "sha256": "0d3cd4b80ece2c28e5d1853a90bd1f4c909f464767409a5647b6e28733758f3c"
+        },
+        {
+          "id": "684-cold-repro-d/metadata/binding-6.json",
+          "bytes": 3301,
+          "sha256": "0d3cd4b80ece2c28e5d1853a90bd1f4c909f464767409a5647b6e28733758f3c"
+        },
+        {
+          "id": "684-cold-repro-d/independent-source-before.json",
+          "bytes": 4715812,
+          "sha256": "24652cf7d7de4754c21c1805f715810560d70b8b0daba700d83dc0bb3bc5de93"
+        },
+        {
+          "id": "684-cold-repro-d/independent-source-after.json",
+          "bytes": 4716388,
+          "sha256": "59eaaa59477795e9a0ceb5cfe27fce1f6a84972ee25a0ef5190fa987e8d1cf8b"
+        }
+      ],
+      "scope": "same-host opt-in path projection; independent-host reproduction not claimed",
+      "serial": {
+        "id": "684-cold-repro-d/serial.log",
+        "bytes": 72321,
+        "sha256": "c05681f00e58b16293c41597e3a31911db16b4ec85dbd6a09ec04ff36f84b15a"
+      },
+      "boot_markers": {
+        "OSTD initialized. Preparing components.": true,
+        "TRILLIONNIUM_A01_INIT_BEGIN": true,
+        "TRILLIONNIUM_A01_CPU_COUNT=1": true,
+        "Successfully booted.": true,
+        "TRILLIONNIUM_A01_BOOT_OK": true
+      },
+      "independent_audit": {
+        "passed": true,
+        "scope": "Run D checks are included in the completed C/D pair audit.",
+        "pair_original": {
+          "id": "684-cold-repro-pair/independent-audit.json",
+          "bytes": 2136554,
+          "sha256": "4f4cf8697ec13a7f16fe676c12751356a735a20972e661e9085aa547f5221721"
+        }
+      },
+      "public_serial": {
+        "file": "serial/cold-d.redacted.log",
+        "kind": "explicitly_redacted_complete_guest_serial",
+        "original_bytes": 72321,
+        "original_sha256": "c05681f00e58b16293c41597e3a31911db16b4ec85dbd6a09ec04ff36f84b15a",
+        "delivered_bytes": 72205,
+        "delivered_sha256": "73c92335d8f49d1169774adc8e63b0c16a33a00576f474678fc7b83dc040bf05",
+        "replacements": [
+          {
+            "category": "selected_repro_profile_absolute_root",
+            "replacement": "<REPRO_PROFILE_ROOT>",
+            "count": 4,
+            "original_token_bytes": 49,
+            "original_token_sha256": "8ce91ef3eeebe881adad8dedac2d0e0b756f42c2b13e4283de7d569276124a7d"
+          }
+        ],
+        "only_declared_byte_replacements": true,
+        "line_count_preserved": true,
+        "original_unchanged": true,
+        "recorded_qemu_original_hash_matches": true,
+        "deterministic_project_builder_identity_preserved": "a01-repro@a01-fixed-profile is a deliberate profile constant, not the actual host identity"
+      }
+    }
+  ],
+  "repro_pair": {
+    "status": "passed",
+    "bit_equal_claimed": true,
+    "independent_audit": {
+      "checks": 855,
+      "checks_passed": 855,
+      "original": {
+        "id": "684-cold-repro-pair/independent-audit.json",
+        "bytes": 2136554,
+        "sha256": "4f4cf8697ec13a7f16fe676c12751356a735a20972e661e9085aa547f5221721"
+      },
+      "started_utc": "2026-10-20T16:06:32.711080+00:00",
+      "finished_utc": "2026-10-20T16:06:35.327598+00:00"
+    },
+    "complete_artifact_bytes_equal": {
+      "-kernel": true,
+      "-initrd": true,
+      "-bios": true
+    },
+    "comparison_method": "Independent audit read and compared all bytes of each frozen artifact, in addition to size/SHA256 equality.",
+    "scope": "Two fresh source checkouts and fresh kernel/OSDK targets on the same host and installed toolchain, using the same selected fixed virtual profile; independent-host or arbitrary-host reproduction is not claimed."
+  },
+  "source_bridge": {
+    "full_kernel_producer": "684c4c82bbe770d712da75a199b7f5757ee61191",
+    "matrix_producer": "8769a3e224fb97ce6d06fbcb1512281a7427156e",
+    "changed_paths": [
+      "support/build/osdk-integration/run.py",
+      "support/build/osdk-integration/test_unix_capture.py"
+    ],
+    "identical_paths": {
+      "kernel/asterinas": {
+        "git_object": "4ad35974d248e38eb7abc62f2e2c498f39b84e2b",
+        "equal": true
+      },
+      "kernel/asterinas/kernel/core": {
+        "git_object": "0899e6a9a454cd606d27a45d5ed8242d3f2f662a",
+        "equal": true
+      },
+      "kernel/asterinas/ostd": {
+        "git_object": "5037563c4b9cbfc4826568e5c5c4d56d2891a904",
+        "equal": true
+      },
+      "support/build/kernel.sh": {
+        "git_object": "f7ac7453a3071c488258e31a9807a0fba207027f",
+        "equal": true
+      },
+      "support/build/repro": {
+        "git_object": "c56bdc8911216738a28ae45f7168f5eafda8e71d",
+        "equal": true
+      },
+      "libs/os-control": {
+        "git_object": "f0f727d9f8ff77187603a163283a07193f17148e",
+        "equal": true
+      },
+      "libs/os-abi": {
+        "git_object": "75a708cc77501ac2b21887840f69cc29c013b846",
+        "equal": true
+      },
+      "support/upstream-lock.json": {
+        "git_object": "13e6c4686f3bb8314bd7422948281eff6672fa1b",
+        "equal": true
+      }
+    },
+    "scope": "Git content identity of selected build/kernel inputs; the two commits remain separate native producers",
+    "root_independent_receipt": {
+      "original": {
+        "id": "684-to-876/source-bridge.json",
+        "bytes": 2405,
+        "sha256": "88c61abee3424bdffb7b67ee0a8da4e29539df83ff4bbe32f90f8ad9f1ae6414"
+      },
+      "identity_checks": [
+        {
+          "path": "kernel/asterinas",
+          "before": "4ad35974d248e38eb7abc62f2e2c498f39b84e2b",
+          "after": "4ad35974d248e38eb7abc62f2e2c498f39b84e2b",
+          "identical": true
+        },
+        {
+          "path": "kernel/asterinas/kernel/core",
+          "before": "0899e6a9a454cd606d27a45d5ed8242d3f2f662a",
+          "after": "0899e6a9a454cd606d27a45d5ed8242d3f2f662a",
+          "identical": true
+        },
+        {
+          "path": "kernel/asterinas/ostd",
+          "before": "5037563c4b9cbfc4826568e5c5c4d56d2891a904",
+          "after": "5037563c4b9cbfc4826568e5c5c4d56d2891a904",
+          "identical": true
+        },
+        {
+          "path": "libs/os-control",
+          "before": "f0f727d9f8ff77187603a163283a07193f17148e",
+          "after": "f0f727d9f8ff77187603a163283a07193f17148e",
+          "identical": true
+        },
+        {
+          "path": "support/build/kernel.sh",
+          "before": "f7ac7453a3071c488258e31a9807a0fba207027f",
+          "after": "f7ac7453a3071c488258e31a9807a0fba207027f",
+          "identical": true
+        },
+        {
+          "path": "support/build/minimal.mk",
+          "before": "b6c155bbccd4abc4e850871746ce59a0cb616895",
+          "after": "b6c155bbccd4abc4e850871746ce59a0cb616895",
+          "identical": true
+        },
+        {
+          "path": "support/build/minimal",
+          "before": "3330ae93e7bcba1c3ed8a5496432274a3b76b473",
+          "after": "3330ae93e7bcba1c3ed8a5496432274a3b76b473",
+          "identical": true
+        },
+        {
+          "path": "support/build/record-qemu.py",
+          "before": "cd0ed9c8568d0f341306b4732f86eeb10e3c64a3",
+          "after": "cd0ed9c8568d0f341306b4732f86eeb10e3c64a3",
+          "identical": true
+        },
+        {
+          "path": "support/build/repro",
+          "before": "c56bdc8911216738a28ae45f7168f5eafda8e71d",
+          "after": "c56bdc8911216738a28ae45f7168f5eafda8e71d",
+          "identical": true
+        },
+        {
+          "path": "support/upstream-lock.json",
+          "before": "13e6c4686f3bb8314bd7422948281eff6672fa1b",
+          "after": "13e6c4686f3bb8314bd7422948281eff6672fa1b",
+          "identical": true
+        }
+      ],
+      "readme_bytes": 0,
+      "working_tree_clean": true
+    }
+  },
+  "retained_incomplete_attempts": [
+    {
+      "id": "e37-tcp-enospc-attempt-1",
+      "producer": "e37df299075b49302b076ecda5fcce46e315d210",
+      "status": "failed_incomplete_evidence",
+      "observed_case_passes": 18,
+      "observed_case_failures": 4,
+      "observed_guests": 5,
+      "cause": "ENOSPC on tmpfs; final aggregate and after-source snapshot writes incomplete",
+      "excluded_from_complete_matrix_claims": true,
+      "originals": [
+        {
+          "id": "e37-tcp-enospc-attempt-1/outer-incomplete.json",
+          "bytes": 2700,
+          "sha256": "8a569dad16a525c71f7d53939d1e473ea4d7902d1b5d9e1ebb12520e62179e3a"
+        },
+        {
+          "id": "e37-tcp-enospc-attempt-1/partial-independent-audit.json",
+          "bytes": 12374,
+          "sha256": "abc7874db0e6df25ee682f7075a5ac068785dad96c18b6e9c0317339f1e4cbf9"
+        },
+        {
+          "id": "e37-tcp-enospc-attempt-1/matrix-attempt-1.log",
+          "bytes": 3781,
+          "sha256": "f19eb427899465364d5b8343f6d67929be01e750f99489ec6f85b7e626e38077"
+        },
+        {
+          "id": "e37-tcp-enospc-attempt-1/matrix-source-before.json",
+          "bytes": 709040,
+          "sha256": "d9c1a8b864206cb136f2e2dca51738eb603cb8fb94044677d76d47ddc17bb526"
+        },
+        {
+          "id": "e37-tcp-enospc-attempt-1/matrix-source-after.json",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "id": "e37-tcp-enospc-attempt-1/matrix-preflight-failure.log",
+          "bytes": 1673,
+          "sha256": "ffbe3bca322fcf1c5cb6c728f8ed39d64a48da09da0160daa20f54e0994958ac"
+        },
+        {
+          "id": "e37-tcp-enospc-attempt-1/run-matrix.py",
+          "bytes": 3537,
+          "sha256": "189c5952911cedad9d59fb9973f7fc83cd6945d95186df4a041d32211894462d"
+        },
+        {
+          "id": "e37-tcp-enospc-attempt-1/run-matrix-before-snapshot-fix.py",
+          "bytes": 3449,
+          "sha256": "35e400259d4656e4521cbdb66319c5672c397a5575cf5c5743e8e9771b82e6cd"
+        }
+      ],
+      "interrupted_outer_record": "Original JSON was not updated after ENOSPC; retained as an incomplete failed attempt, not an active process."
+    }
+  ],
+  "owner_blockers": {
+    "a04_linux_reference": {
+      "status": "owner coordination pending",
+      "failed_source": "cc8b72a2f3a4cd52f9c7c978307b5ca6f9e9f148",
+      "prior_green_source": "e37df299075b49302b076ecda5fcce46e315d210",
+      "same_frozen_elf": true,
+      "same_recorded_source_inputs": true,
+      "actual_c_call": {
+        "path": "tests/workloads/linux/permission_probe.c",
+        "line": 227,
+        "code": "syscall(SYS_pivot_root, NULL, NULL)",
+        "expected_case_line": 109,
+        "expected_errno": "EPERM (1)"
+      },
+      "old_host": {
+        "kernel": "6.17.0-1022-azure",
+        "passed": true,
+        "summary": "PERMISSION_COMPLETE total=32 passed=32 failed=0",
+        "errno": 1
+      },
+      "failed_host": {
+        "kernel": "7.0.0-1017-azure",
+        "passed": false,
+        "summary": "PERMISSION_COMPLETE total=32 passed=31 failed=1",
+        "errno": 14
+      },
+      "private_namespace_created": true,
+      "classification": "Linux reference fixture uses invalid user pointers while asserting capability errno; different actual hosts observe EPERM versus EFAULT. Mount namespace creation succeeded. This failure does not exercise the Asterinas kernel.",
+      "candidate": {
+        "owner_pr": 215,
+        "owner_pr_url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/215",
+        "owner_pr_head": "233e1e998f8e05d51c132e42ca727c2f5c54db98",
+        "owner_pr_open": true,
+        "owner_pr_merged": false,
+        "source_change": "Use existing searchable mountpoint directory strings in pivot_root instead of NULL pointers; assert it is a searchable directory after credentials/capability drop.",
+        "unchanged_contract": "Keep EPERM and all 32 cases; independent Python oracle unchanged.",
+        "verification_limit": "This is a read-only candidate from the current PR head. This agent did not apply it, run it, or independently verify source-specific native artifacts/review approval at that owner head. PR body contains older source identities; it does not establish approval of this current head."
+      },
+      "coordination_comment": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/22#issuecomment-6295094269",
+      "original": {
+        "id": "a04-reference/owner-handoff.json",
+        "bytes": 7644,
+        "sha256": "00ad98db6509d57cef66f494c2b36573834ea4e38b868bcc1ccd2c887675e8c4"
+      }
+    },
+    "inherited_codeql": {
+      "status": "A00 coordination pending; no A01 owner-file repair or alert dismissal",
+      "path": "results/integration/2026-10-19-g1b-usage/source-publication/validate-publication.py",
+      "thread": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/22#discussion_r4325716911",
+      "coordination_comment": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/pull/22#issuecomment-6294838522"
+    },
+    "latest_ci": {
+      "head": "8769a3e224fb97ce6d06fbcb1512281a7427156e",
+      "status": "CodeQL succeeded; A06, G1c and A01 queued at observation",
+      "all_green_claimed": false,
+      "observed_utc": "2026-10-20T16:08:48Z",
+      "observation_source": "Parent agent readback from GitHub API; included as an explicitly dated observation.",
+      "base_main": "0c1de23a3754bc3a6976fed53c7dfa0ec3778e57",
+      "runs": [
+        {
+          "name": "CodeQL",
+          "id": 39452168434,
+          "status": "completed",
+          "conclusion": "success",
+          "updated_utc": "2026-10-20T16:06:59Z",
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39452168434"
+        },
+        {
+          "name": "A06",
+          "id": 39452173755,
+          "status": "queued",
+          "conclusion": null,
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39452173755"
+        },
+        {
+          "name": "G1c",
+          "id": 39452174167,
+          "status": "queued",
+          "conclusion": null,
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39452174167"
+        },
+        {
+          "name": "A01",
+          "id": 39452174269,
+          "status": "queued",
+          "conclusion": null,
+          "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39452174269"
+        }
+      ],
+      "inherited_codeql_finding_resolved_claimed": false
+    }
+  }
+}
