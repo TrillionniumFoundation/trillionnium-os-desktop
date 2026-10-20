@@ -1,5 +1,10 @@
 # A04 Linux user ABI workloads — executable reference and guest replay
 
+The [32-case permission profile](PERMISSIONS.md) adds real non-root and
+capability-scoped chmod/chown/mount observations, a private-mount-namespace
+Linux reference, and replay of the same frozen ELF on the ordinary product
+kernel. It requires fresh passing evidence and does not replace existing gates.
+
 The new [Ubuntu 24.04 complete 32-case profile](FULL_UBUNTU_PROFILE.md) has a
 separate build/reference/guest entry and freezes the full Python/Tokio runtime.
 Its actual CI qualification is recorded separately. The Debian 13 pins and
