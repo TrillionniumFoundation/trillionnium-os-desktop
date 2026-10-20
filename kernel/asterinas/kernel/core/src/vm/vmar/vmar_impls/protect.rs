@@ -23,6 +23,15 @@ impl Vmar {
         let mut protect_mappings = Vec::new();
 
         for vm_mapping in inner.vm_mappings.find(&range) {
+            if inner.sealed_initial_ranges.is_some() {
+                let added = perms - (vm_mapping.perms() & VmPerms::ALL_PERMS);
+                let affected = get_intersected_range(&range, &vm_mapping.range());
+                if added.contains(VmPerms::EXEC)
+                    || (!added.is_empty() && inner.intersects_initial_image(&affected))
+                {
+                    return_errno_with_message!(Errno::EPERM, "trusted initial profile cannot increase image permissions")
+                }
+            }
             protect_mappings.push((vm_mapping.range(), vm_mapping.perms()))
         }
 

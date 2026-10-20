@@ -489,6 +489,81 @@ fn real_owner_wrapper_enforces_the_single_cpu_observation_profile() {
 }
 
 #[ktest]
+fn initial_observer_pin_rejects_a_replaced_real_cpu_owner() {
+    let fixture = Fixture::new("g1c-observe-replace");
+    let observer = super::NativeCpuObserver {
+        node: fixture.leaf.clone(),
+        owner: fixture.owner(),
+        target: fixture.bind(1_300),
+    };
+    let first = observer.read_usage();
+    if ostd::cpu::all_cpus().count() == 1 {
+        let sample = first.unwrap();
+        assert_eq!(sample.stable_object_id, observer.target.stable_object_id());
+        assert_eq!(sample.revision, 1);
+        assert_eq!(sample.cumulative_cpu_ns, 0);
+    } else {
+        assert_eq!(first, Err(CpuUsageError::UnsupportedProfile));
+    }
+    fixture.parent.store_attr("cgroup.subtree_control", "-cpu").unwrap();
+    fixture.parent.store_attr("cgroup.subtree_control", "+cpu").unwrap();
+    assert!(!Arc::ptr_eq(&fixture.owner(), &observer.owner));
+    let expected = if ostd::cpu::all_cpus().count() == 1 {
+        CpuUsageError::Closed
+    } else {
+        CpuUsageError::UnsupportedProfile
+    };
+    assert_eq!(observer.read_usage(), Err(expected));
+}
+
+#[ktest]
+fn initial_observer_pin_does_not_keep_a_deleted_resource_authorized() {
+    let mut fixture = Fixture::new("g1c-observe-delete");
+    let observer = super::NativeCpuObserver {
+        node: fixture.leaf.clone(),
+        owner: fixture.owner(),
+        target: fixture.bind(1_310),
+    };
+    let first = observer.read_usage();
+    if ostd::cpu::all_cpus().count() == 1 {
+        assert_eq!(first.unwrap().revision, 1);
+    } else {
+        assert_eq!(first, Err(CpuUsageError::UnsupportedProfile));
+    }
+    fixture.remove_leaf();
+    let expected = if ostd::cpu::all_cpus().count() == 1 {
+        CpuUsageError::Closed
+    } else {
+        CpuUsageError::UnsupportedProfile
+    };
+    assert_eq!(observer.read_usage(), Err(expected));
+}
+
+#[ktest]
+fn initial_owner_lease_check_rejects_before_sampling() {
+    let fixture = Fixture::new("g1c-observe-lease");
+    let target = fixture.bind(1_320);
+    let owner = fixture.owner();
+    let controller = fixture.leaf.controller();
+    let expired = controller.read_native_cpu_usage_for_owner_during(&owner, Some((0, 0)));
+    if ostd::cpu::all_cpus().count() != 1 {
+        assert_eq!(expired, Err(CpuUsageError::UnsupportedProfile));
+        return;
+    }
+    assert_eq!(expired, Err(CpuUsageError::Expired));
+    assert_eq!(fixture.budget().last_observed_ns, 0);
+    assert_eq!(fixture.budget().cumulative_ns, 0);
+    assert_eq!(
+        controller.read_native_cpu_usage_for_owner_during(&owner, Some((u64::MAX - 1, u64::MAX))),
+        Err(CpuUsageError::Indeterminate)
+    );
+    assert_eq!(fixture.budget().last_observed_ns, 0);
+    let sample = controller.read_native_cpu_usage_for_owner_during(&owner, Some((0, u64::MAX))).unwrap();
+    assert_eq!(sample.stable_object_id, target.stable_object_id());
+    assert_eq!(sample.revision, 1);
+}
+
+#[ktest]
 fn replacement_closes_the_old_snapshot_and_requires_a_new_binding() {
     let fixture = Fixture::new("g1b-usage-replace");
     assert_eq!(fixture.sample(0), Err(CpuUsageError::Unbound));

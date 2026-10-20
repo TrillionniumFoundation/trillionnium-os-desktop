@@ -310,7 +310,7 @@ fn map_segment_vmos(
 
         // After acquiring a suitable range, we can remove the mapping and then
         // map each segment at the desired address.
-        vmar.remove_mapping(aligned_range.clone());
+        vmar.remove_mapping(aligned_range.clone())?;
 
         let start_offset = elf_va_range.start - elf_va_range_aligned.start;
         let end_offset = elf_va_range_aligned.end - elf_va_range.end;
@@ -337,7 +337,7 @@ fn map_segment_vmos(
 
         // After acquiring a suitable range, we can remove the mapping and then
         // map each segment at the desired address.
-        vmar.remove_mapping(elf_va_range_aligned.clone());
+        vmar.remove_mapping(elf_va_range_aligned.clone())?;
 
         elf_va_range.clone()
     };
@@ -453,7 +453,7 @@ fn map_segment_vmo(
     Ok(())
 }
 
-fn init_aux_vec(
+pub(super) fn init_aux_vec(
     elf: &ElfHeaders,
     elf_map_range: &RelocatedRange,
     ldso_base: Option<Vaddr>,
@@ -489,7 +489,7 @@ fn init_aux_vec(
 
 /// Maps the vDSO VMO to the corresponding virtual memory address.
 #[cfg(not(target_arch = "loongarch64"))]
-fn map_vdso_to_vmar(vmar: &Vmar) -> Option<Vaddr> {
+pub(super) fn map_vdso_to_vmar(vmar: &Vmar) -> Option<Vaddr> {
     use crate::vdso::{VDSO_VMO_LAYOUT, vdso_vmo};
 
     let vdso_vmo = vdso_vmo()?;

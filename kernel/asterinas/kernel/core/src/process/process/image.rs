@@ -3,13 +3,42 @@
 //! Process-image lifetime for the read-only HOS2 bootstrap.
 //!
 //! An image key identifies an allocation; it grants no resource authority.
-//! Closing only fences discovery and sessions here. Canonical resource-owner
-//! admission and revocation must be added together before enabling effects.
+//! Closing fences discovery and sessions and drops any initial observe slot.
+//! Management effects and history still require their canonical resource-owner
+//! admission, revocation and delivery transaction before they can be enabled.
 
 use core::sync::atomic::{AtomicU64, Ordering};
 
 use super::Process;
 use crate::prelude::*;
+
+#[cfg(feature = "g1c-trusted-observe")]
+use crate::fs::cgroupfs::{CpuUsageError, NativeCpuObserver};
+#[cfg(any(ktest, feature = "g1c-trusted-observe"))]
+use crate::hos2_os_abi::Status;
+
+#[cfg(any(ktest, feature = "g1c-trusted-observe"))]
+fn check_initial_observe_lease(issued_ns: u64, expires_ns: u64, sample_ns: u64)
+    -> core::result::Result<(), Status>
+{
+    if sample_ns < issued_ns {
+        Err(Status::Indeterminate)
+    } else if sample_ns >= expires_ns {
+        Err(Status::Revoked)
+    } else {
+        Ok(())
+    }
+}
+
+/// The one observe-only slot in this actual initial Process CapSpace. Its
+/// lease and scope have no userspace constructor; slot/generation are merely
+/// discovery. Closing this image removes the only authority record.
+#[cfg(feature = "g1c-trusted-observe")]
+struct InitialObserveGrant {
+    observer: Arc<NativeCpuObserver>,
+    issued_ns: u64,
+    expires_ns: u64,
+}
 
 /// Never reuse a boot-local HOS2 process-image namespace, including after PID
 /// reuse. Zero is reserved for an image that has not opened a session yet.
@@ -51,6 +80,8 @@ pub(super) struct ProcessImageState {
     nonce: u64,
     phase: ImagePhase,
     first_run: FirstRun,
+    #[cfg(feature = "g1c-trusted-observe")]
+    initial_observe: Option<InitialObserveGrant>,
 }
 
 impl ProcessImageState {
@@ -60,6 +91,8 @@ impl ProcessImageState {
             nonce: 0,
             phase: ImagePhase::Live,
             first_run: FirstRun::Unprepared,
+            #[cfg(feature = "g1c-trusted-observe")]
+            initial_observe: None,
         }
     }
 
@@ -97,12 +130,16 @@ impl ProcessImageState {
     }
 
     fn begin_close(&mut self) {
+        #[cfg(feature = "g1c-trusted-observe")]
+        { self.initial_observe = None; }
         if self.phase == ImagePhase::Live {
             self.phase = ImagePhase::Closing;
         }
     }
 
     fn close(&mut self) {
+        #[cfg(feature = "g1c-trusted-observe")]
+        { self.initial_observe = None; }
         self.phase = ImagePhase::Closed;
     }
 
@@ -116,6 +153,8 @@ impl ProcessImageState {
         // End the old image even if no new epoch can be allocated. Neither an
         // error nor a later open may make its old namespace live again.
         self.phase = ImagePhase::Closed;
+        #[cfg(feature = "g1c-trusted-observe")]
+        { self.initial_observe = None; }
         let next = self
             .epoch
             .checked_add(1)
@@ -163,9 +202,78 @@ impl ProcessImageState {
             self.close();
         }
     }
+
+    #[cfg(feature = "g1c-trusted-observe")]
+    pub(super) fn activate_initial_observer(
+        &mut self,
+        key: ProcessImageKey,
+        observer: Arc<NativeCpuObserver>,
+        issued_ns: u64,
+    ) -> Result<()> {
+        self.check_session(key)?;
+        if self.first_run != FirstRun::Prepared || self.initial_observe.is_some() {
+            return_errno_with_message!(Errno::ESTALE, "initial observe slot cannot be reactivated")
+        }
+        let expires_ns = issued_ns.checked_add(300_000_000_000).ok_or_else(|| {
+            Error::with_message(Errno::EOVERFLOW, "initial observe lease overflow")
+        })?;
+        self.initial_observe = Some(InitialObserveGrant { observer, issued_ns, expires_ns });
+        Ok(())
+    }
+
+    #[cfg(feature = "g1c-trusted-observe")]
+    fn initial_observer(&self, key: ProcessImageKey, slot: u64, generation: u64)
+        -> core::result::Result<&InitialObserveGrant, Status>
+    {
+        self.check_session(key).map_err(|_| Status::StaleHandle)?;
+        let grant = self.initial_observe.as_ref().ok_or(Status::PermissionDenied)?;
+        if slot != 1 || generation != 1 {
+            return Err(Status::StaleHandle);
+        }
+        Ok(grant)
+    }
 }
 
 impl Process {
+    /// Attach and writable proc-memory access must not change the initial
+    /// image's registers or data through another Process, even as Linux root.
+    #[cfg(feature = "g1c-trusted-observe")]
+    pub(crate) fn has_initial_observe_authority(&self) -> bool {
+        let image = self.hepta_image.lock();
+        image.phase == ImagePhase::Live && image.initial_observe.is_some()
+    }
+
+    /// Resolves the actual Process-owned slot around a read of the real CPU
+    /// owner. No image mutex spans membership, runqueue or bandwidth locking.
+    /// Because an image key/slot cannot close and then become live again, the
+    /// successful checks bracket a valid read linearization point. A concurrent
+    /// exec/exit loses the observation, without an effect needing rollback.
+    #[cfg(feature = "g1c-trusted-observe")]
+    pub(crate) fn read_hepta_initial_usage(
+        &self,
+        key: ProcessImageKey,
+        slot: u64,
+        generation: u64,
+    ) -> core::result::Result<os_control::UsageSnapshot, Status> {
+        let (observer, issued_ns, expires_ns) = {
+            let image = self.hepta_image.lock();
+            let grant = image.initial_observer(key, slot, generation)?;
+            (grant.observer.clone(), grant.issued_ns, grant.expires_ns)
+        };
+        let usage = observer.read_usage_during(issued_ns, expires_ns).map_err(|error| match error {
+            CpuUsageError::Unbound | CpuUsageError::Closed | CpuUsageError::Expired => Status::Revoked,
+            CpuUsageError::Indeterminate | CpuUsageError::ClockUnavailable
+                | CpuUsageError::UnsupportedProfile | CpuUsageError::InconsistentAccounting => Status::Indeterminate,
+        })?;
+        let image = self.hepta_image.lock();
+        let grant = image.initial_observer(key, slot, generation)?;
+        if !Arc::ptr_eq(&grant.observer, &observer) {
+            return Err(Status::StaleHandle);
+        }
+        check_initial_observe_lease(grant.issued_ns, grant.expires_ns, usage.sample_boottime_ns)?;
+        Ok(usage)
+    }
+
     /// Assigns one checked, boot-local namespace to the current live image.
     /// Two opens share the same key. Closing/closed images cannot allocate one.
     pub(crate) fn hepta_capspace_session(&self) -> Result<ProcessImageKey> {
@@ -205,6 +313,22 @@ mod tests {
 
     use super::*;
     use crate::process::{posix_thread::AsPosixThread, test_util};
+
+    #[ktest]
+    fn initial_observe_lease_includes_issue_and_excludes_expiry() {
+        let issued = 123;
+        let expires = issued + 300_000_000_000;
+        assert_eq!(check_initial_observe_lease(issued, expires, issued), Ok(()));
+        assert_eq!(check_initial_observe_lease(issued, expires, expires - 1), Ok(()));
+        assert_eq!(check_initial_observe_lease(issued, expires, expires), Err(Status::Revoked));
+        assert_eq!(check_initial_observe_lease(issued, expires, expires + 1), Err(Status::Revoked));
+    }
+
+    #[ktest]
+    fn initial_observe_lease_does_not_accept_a_pre_issue_clock_cut() {
+        assert_eq!(check_initial_observe_lease(10, 20, 9), Err(Status::Indeterminate));
+        assert_eq!(check_initial_observe_lease(u64::MAX - 1, u64::MAX, u64::MAX - 2), Err(Status::Indeterminate));
+    }
 
     // These use actual unstarted Process/Task allocations. They do not execute
     // execve/exit syscalls or establish resource grants; the ordinary guest

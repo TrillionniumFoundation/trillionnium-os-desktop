@@ -21,6 +21,11 @@ impl PosixThread {
             return Ok(());
         }
 
+        #[cfg(feature = "g1c-trusted-observe")]
+        if mode.kind() == AlienAccessKind::Attach && self.process().has_initial_observe_authority() {
+            return_errno_with_message!(Errno::EPERM, "alien attachment to the trusted initial image is forbidden")
+        }
+
         lsm_hooks::on_alien_access(lsm_hooks::AlienAccessContext::new(accessor, self, mode))
     }
 }

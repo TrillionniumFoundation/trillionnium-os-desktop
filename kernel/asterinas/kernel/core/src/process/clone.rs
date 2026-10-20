@@ -181,6 +181,13 @@ impl CloneArgs {
         let clone_flags = self.flags;
         clone_flags.check_unsupported_flags()?;
 
+        if clone_flags.contains(CloneFlags::CLONE_VM)
+            && !clone_flags.contains(CloneFlags::CLONE_THREAD)
+            && ctx.user_space().vmar().has_sealed_initial_image()
+        {
+            return_errno_with_message!(Errno::EPERM, "trusted initial image cannot share its VMAR with another Process")
+        }
+
         // This checks the arguments for all clone-related system calls.
         // Reference: <https://elixir.bootlin.com/linux/v6.16.9/source/kernel/fork.c#L1926-L1978>.
 

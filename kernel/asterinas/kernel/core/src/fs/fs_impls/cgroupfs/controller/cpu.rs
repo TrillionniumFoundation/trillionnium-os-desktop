@@ -3,6 +3,9 @@
 mod max_config;
 mod native;
 
+#[cfg(feature = "g1c-trusted-observe")]
+pub(crate) use native::{CpuUsageError, NativeCpuObserver};
+
 use alloc::sync::Arc;
 use core::sync::atomic::{AtomicU32, Ordering};
 

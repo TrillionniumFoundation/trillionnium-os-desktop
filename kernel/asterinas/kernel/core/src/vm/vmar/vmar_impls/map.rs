@@ -268,6 +268,15 @@ impl<'a, 'b> VmarMapOptions<'a, 'b> {
 
         let mut inner = parent.inner.write();
 
+        if inner.sealed_initial_ranges.is_some() {
+            if perms.contains(VmPerms::EXEC) {
+                return_errno_with_message!(Errno::EPERM, "trusted initial profile cannot add executable mappings")
+            }
+            if let VmarMapOffset::FixedReplace(addr) = offset {
+                inner.check_initial_image_not_replaced(&(addr..addr + map_size))?;
+            }
+        }
+
         inner
             .check_extra_size_fits_rlimit(map_size)
             .or_else(|err| {
