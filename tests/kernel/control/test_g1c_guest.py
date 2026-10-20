@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Negative controls for the host evidence verdict; these are not guest runs."""
+import gzip
 import importlib.util
 from pathlib import Path
 import unittest
@@ -9,6 +10,28 @@ SPEC = importlib.util.spec_from_file_location("g1c_guest", SOURCE)
 g1c = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(g1c)
 INFO = {"bytes": 8192, "entry": 0x401000}
+
+
+class InitramfsTests(unittest.TestCase):
+    def test_initial_image_entry_roundtrips_without_changing_the_base(self):
+        init = b"#!/bin/sh\necho original-init\n"
+        entries = [
+            ("init", [1, 0o100755, 0, 0, 1, 123, len(init), 0, 0, 0, 0, 5, 0], init),
+            ("test", [2, 0o40755, 0, 0, 2, 456, 0, 0, 0, 0, 0, 5, 0], b""),
+        ]
+        original = gzip.compress(g1c.replay.pack(entries), mtime=0)
+        probe = bytes(range(256)) * 4
+        for payload in (probe, probe[:-1] + bytes([probe[-1] ^ 1]), probe[:-1]):
+            with self.subTest(size=len(payload), tail=payload[-1]):
+                result = g1c.build_initramfs(original, payload)
+                decoded = g1c.replay.unpack(gzip.decompress(result))
+                self.assertEqual(decoded[:-1], entries)
+                name, fields, data = decoded[-1]
+                self.assertEqual(name, "test/g1c-init")
+                self.assertEqual(fields, [3, 0o100755, 0, 0, 1, 0, len(payload),
+                                          0, 0, 0, 0, len(name.encode()) + 1, 0])
+                self.assertEqual(data, payload)
+                self.assertEqual(g1c.replay.unpack(g1c.replay.pack(decoded)), decoded)
 
 
 def valid_serial():

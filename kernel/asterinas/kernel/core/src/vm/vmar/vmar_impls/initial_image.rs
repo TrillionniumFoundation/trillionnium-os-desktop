@@ -146,7 +146,8 @@ mod tests {
 
     #[ktest]
     fn initial_image_seal_does_not_turn_fork_into_a_shared_writable_alias() {
-        let (_process, _task, vmar) = fixture(VmPerms::READ | VmPerms::EXEC);
+        let (process, _task, vmar) = fixture(VmPerms::READ | VmPerms::EXEC);
+        test_util::initialize_heap_for_fork(&process, BASE + 2 * PAGE_SIZE);
         assert_eq!(byte(&vmar), 0x5a);
         vmar.seal_initial_image(vec![BASE..BASE + PAGE_SIZE]).unwrap();
         let child = Vmar::fork_from(&vmar);

@@ -118,8 +118,9 @@ def build_initramfs(original, probe):
     require(all(name.lstrip("./") != "test/g1c-init" for name, _, _ in entries),
             "initial probe already exists in the base image")
     inode = max(fields[0] for _, fields, _ in entries) + 1
-    fields = [inode, 0o100755, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
-    modified = [*entries, ("test/g1c-init", fields, probe)]
+    name = "test/g1c-init"
+    fields = [inode, 0o100755, 0, 0, 1, 0, len(probe), 0, 0, 0, 0, len(name.encode()) + 1, 0]
+    modified = [*entries, (name, fields, probe)]
     require(replay.unpack(replay.pack(modified)) == modified, "initial-image cpio roundtrip failed")
     # /init remains byte-identical. QEMU rdinit selects the C ELF directly.
     return gzip.compress(replay.pack(modified), mtime=0)
