@@ -26,6 +26,9 @@ use crate::{
     time::clocks::RealTimeCoarseClock,
 };
 
+#[cfg(all(ktest, feature = "permission-attr-smp-ktest"))]
+pub(in crate::fs) mod smp_support;
+
 /// The permission operation, before inspecting the inode's mutable attributes.
 #[derive(Clone, Copy, Debug)]
 pub(crate) enum PermissionAttrOp {
@@ -44,6 +47,8 @@ pub(crate) struct PermissionAttrRequest {
     cap_fowner: Option<Result<()>>,
     cap_fsetid: Option<Result<()>>,
     pending_cap: Cell<Option<PermissionCap>>,
+    #[cfg(all(ktest, feature = "permission-attr-smp-ktest"))]
+    checkpoint: Option<Arc<smp_support::PermissionCheckpoint>>,
 }
 
 impl PermissionAttrRequest {
@@ -72,6 +77,8 @@ impl PermissionAttrRequest {
             cap_fowner: None,
             cap_fsetid: None,
             pending_cap: Cell::new(None),
+            #[cfg(all(ktest, feature = "permission-attr-smp-ktest"))]
+            checkpoint: None,
         };
 
         // A capability hook runs only after a real locked decision needs it.
@@ -240,6 +247,24 @@ impl PermissionAttrRequest {
             cap_fowner: Some(capable(CapSet::FOWNER)),
             cap_fsetid: Some(capable(CapSet::FSETID)),
             pending_cap: Cell::new(None),
+            #[cfg(all(ktest, feature = "permission-attr-smp-ktest"))]
+            checkpoint: None,
+        }
+    }
+
+    #[cfg(all(ktest, feature = "permission-attr-smp-ktest"))]
+    pub(in crate::fs) fn with_checkpoint(
+        mut self,
+        checkpoint: Arc<smp_support::PermissionCheckpoint>,
+    ) -> Self {
+        self.checkpoint = Some(checkpoint);
+        self
+    }
+
+    #[cfg(all(ktest, feature = "permission-attr-smp-ktest"))]
+    pub(in crate::fs) fn after_check_for_test(&self, stage: smp_support::CheckpointStage) {
+        if let Some(checkpoint) = &self.checkpoint {
+            checkpoint.after_check(stage);
         }
     }
 }

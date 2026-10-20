@@ -31,6 +31,9 @@ use crate::{
 #[cfg(ktest)]
 mod permission_tests;
 
+#[cfg(all(ktest, feature = "permission-attr-smp-ktest"))]
+mod permission_smp_tests;
+
 pub(super) fn init() {
     // Touch the mount node to trigger the initialization of all singletons.
     let _ = MemfdTmpFs::mount_node();
@@ -166,6 +169,10 @@ impl Inode for MemfdInode {
         } else {
             PermissionModePolicy::Writable
         };
+        #[cfg(all(ktest, feature = "permission-attr-smp-ktest"))]
+        request.after_check_for_test(
+            crate::fs::vfs::permission_attrs::smp_support::CheckpointStage::MemfdSealDecision,
+        );
         Some(self.inode.permission_attr_transaction(request, mode_policy))
     }
 

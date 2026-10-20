@@ -437,6 +437,27 @@ jobs:
             --out "${RUNNER_TEMP}/a06-probe-2vcpu" --quota-us 1000 --mode leaf \
             --repeat 2 --duration-seconds 1 --max-cpu-percent 3
 
+      - name: Verify inode permission races with two CPUs and two frozen lock defects
+        shell: bash
+        env:
+          A01_KTEST_TIMEOUT: "300"
+        run: |
+          set -euo pipefail
+          checks="${RUNNER_TEMP}/a06-permission-smp-checks"
+          mkdir "$checks"
+          python3 -I -B tests/organ_backend/test_permission_attr_smp.py -v \
+            > "$checks/runner-tests.log" 2>&1
+          python3 -I -B -O tests/organ_backend/test_permission_attr_smp.py -v \
+            > "$checks/runner-tests-optimized.log" 2>&1
+          # The original full suite and all seven CPU controls have completed.
+          # Preserve their original green ELF before this separate test feature
+          # reuses the OSDK target. No original test or acceptance is filtered.
+          python3 -I -B tests/organ_backend/run_permission_attr_smp.py \
+            --full-evidence "${RUNNER_TEMP}/a06-ktest" \
+            --full-kernel "${RUNNER_TEMP}/a06-owner-negative/green-core-kernel.elf" \
+            --worktree-root "${RUNNER_TEMP}/a06-permission-smp-source" \
+            --output "${RUNNER_TEMP}/a06-permission-smp"
+
       - name: Upload exact A06 kernel and raw QEMU evidence
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
@@ -451,6 +472,8 @@ jobs:
             ${{ runner.temp }}/a06-queryabi-candidate
             ${{ runner.temp }}/a06-owner-negative
             ${{ runner.temp }}/a06-clock-handoff-negative
+            ${{ runner.temp }}/a06-permission-smp
+            ${{ runner.temp }}/a06-permission-smp-checks
             ${{ runner.temp }}/a06-owner-negative-source/kernel/asterinas/target/osdk/aster-core/aster-core-osdk-bin.elf
             ${{ runner.temp }}/a04-scm-linux
             ${{ runner.temp }}/a04-scm-guest

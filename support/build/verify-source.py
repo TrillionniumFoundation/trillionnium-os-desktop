@@ -3,8 +3,8 @@
 
 Use --pristine for the initial import. Later kernel development may change
 Rust sources, while the default check continues to protect build input pins.
-The only build-input derivative is the explicitly enumerated G1-a local owner
-metadata dependency; --pristine still accepts only the original upstream tree.
+Build-input derivatives are exact insertions for local owner metadata and the
+default-off permission SMP ktest feature; --pristine still requires upstream.
 """
 import argparse
 import hashlib
@@ -41,6 +41,12 @@ ROOT_LOCK_ADDITIONS = (
      b'[[package]]\nname = "os-control"\nversion = "0.1.0"\ndependencies = [\n "spin",\n]\n\n'
      b'[[package]]\nname = "osdk-frame-allocator"\n'),
 )
+PERMISSION_SMP_FEATURE_ADDITION = (
+    b"[features]\n",
+    b"[features]\n"
+    b"# Dedicated two-CPU permission ktests; no effect outside cfg(ktest).\n"
+    b"permission-attr-smp-ktest = []\n",
+)
 
 
 def derive_downstream_input(name, original):
@@ -51,6 +57,8 @@ def derive_downstream_input(name, original):
         additions = ROOT_LOCK_ADDITIONS
     else:
         additions = (DOWNSTREAM_MANIFEST_ADDITIONS[name],)
+        if name == "kernel/core/Cargo.toml":
+            additions += (PERMISSION_SMP_FEATURE_ADDITION,)
     derived = original
     for needle, replacement in additions:
         if derived.count(needle) != 1:

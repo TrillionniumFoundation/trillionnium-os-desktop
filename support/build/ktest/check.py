@@ -53,6 +53,8 @@ def check_guest(guest, crate, allow_filtered=False):
     if len(starts) != passed + failed or any(not name.startswith(crate.replace('-', '_') + '::') for name in starts):
         raise ValueError("per-test starts do not match the target summary")
     if crate == "aster-core" and not allow_filtered:
+        if declared < 243:
+            raise ValueError("full core suite has fewer than the original 238 plus five permission tests")
         for name in sorted(PERMISSION_TESTS):
             if starts.count(name) != 1:
                 raise ValueError(f"missing or repeated required permission test: {name}")

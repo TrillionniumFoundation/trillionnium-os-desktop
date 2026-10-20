@@ -47,6 +47,9 @@ use crate::{
 #[cfg(ktest)]
 mod permission_tests;
 
+#[cfg(all(ktest, feature = "permission-attr-smp-ktest"))]
+mod permission_smp_tests;
+
 /// A volatile file system whose data and metadata exists only in memory.
 pub(crate) struct RamFs {
     name: &'static str,
@@ -546,6 +549,10 @@ impl RamInode {
             gid: metadata.gid,
         })?;
         mode_policy.check(metadata.mode, update.mode)?;
+        #[cfg(all(ktest, feature = "permission-attr-smp-ktest"))]
+        request.after_check_for_test(
+            crate::fs::vfs::permission_attrs::smp_support::CheckpointStage::InodeDecision,
+        );
         if let Some(mode) = update.mode {
             metadata.mode = mode;
         }
