@@ -109,7 +109,8 @@ def repro_main(shutdown):
     root = profile.safe_root(args.profile_root)
     virtual = root / "virtual-asterinas"
     output = profile.safe_root(args.output)
-    for left, right in ((source, root), (source, output), (root, output)):
+    local = profile.safe_root(checkout / "libs/os-control")
+    for left, right in ((source, root), (source, output), (local, root), (local, output), (root, output)):
         if left == right or left in right.parents or right in left.parents:
             raise ValueError("source, profile and output must be disjoint directories")
     if "src/" in str(virtual) + "/" or "tests/" in str(virtual) + "/":
@@ -128,8 +129,10 @@ def run_locked(args, checkout, source, root, virtual, output, shutdown, workspac
         raise ValueError("kernel target appeared while acquiring the workspace lock")
     raw_components, component_identity = profile.regular(source / "Components.toml")
     scripts = profile.code_hashes(HERE)
+    project_inputs, project_states = profile.project_inputs(checkout, source)
     owner = {"schema": profile.SCHEMA, "profile_root": str(root),
              "components_sha256": profile.digest(raw_components), "code_sha256": scripts,
+             "project_inputs": project_inputs,
              "embedded_builder": {"username": "a01-repro", "hostname": "a01-fixed-profile"}}
     created = False
     try:
@@ -167,6 +170,7 @@ def run_locked(args, checkout, source, root, virtual, output, shutdown, workspac
         lifecycle_path = Path(lifecycle.__file__).resolve()
         lifecycle_sha256 = lifecycle.sha256(lifecycle_path)
         policy = dict(owner, real_root=str(source), virtual_root=str(virtual),
+                      project_root=str(checkout), project_input_states=project_states,
                       output=str(output), real_cargo=real_cargo,
                       rustc_identity=profile.digest(rustc_version), rustc_version=rustc_version.decode(),
                       lifecycle_source={"path": str(lifecycle_path), "sha256": lifecycle_sha256},
@@ -193,9 +197,10 @@ def run_locked(args, checkout, source, root, virtual, output, shutdown, workspac
                                shutdown=shutdown, pass_fds=(workspace_descriptor,))
         custody_ok = profile.snapshot(root) == before
         source_ok = profile.regular(source / "Components.toml") == (raw_components, component_identity)
+        project_ok = profile.project_inputs(checkout, source) == (project_inputs, project_states)
         code_ok = (profile.code_hashes(HERE) == scripts
                    and lifecycle.sha256(lifecycle_path) == lifecycle_sha256)
-        status = result["exit_code"] if result["exit_code"] else (0 if custody_ok and source_ok and code_ok else 1)
+        status = result["exit_code"] if result["exit_code"] else (0 if custody_ok and source_ok and project_ok and code_ok else 1)
         if shutdown.signum is not None:
             status = 128 + shutdown.signum
         receipt = {"command": command, "started": start,
@@ -203,7 +208,7 @@ def run_locked(args, checkout, source, root, virtual, output, shutdown, workspac
                    "child_returncode": result["raw_exit_code"], "returncode": status,
                    "owned_session_cleanup": result.get("group_cleanup"),
                    "profile_custody_unchanged": custody_ok, "source_components_unchanged": source_ok,
-                   "profile_code_unchanged": code_ok,
+                   "profile_code_unchanged": code_ok, "project_inputs_unchanged": project_ok,
                    "scope": "same-host opt-in path projection; independent-host reproduction not claimed"}
         if shutdown.signum is not None:
             receipt.update(interrupted_by=signal.Signals(shutdown.signum).name,

@@ -241,12 +241,232 @@ class CompilerMetadata(unittest.TestCase):
         spec.loader.exec_module(launcher)
         caller = dict(os.environ, CARGO_BUILD_JOBS="2", A01_FIXTURE_UNRELATED="kept")
         effective = launcher.proof_environment(caller)
-        result = subprocess.run([sys.executable, "-I", "-c",
+        result = subprocess.run([sys.executable, "-B", "-I", "-c",
                                  'import json,os;print(json.dumps([os.environ["CARGO_BUILD_JOBS"],os.environ["A01_FIXTURE_UNRELATED"]]))'],
                                 env=effective, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
         self.assertEqual(json.loads(result.stdout), ["1", "kept"])
         self.assertEqual(caller["CARGO_BUILD_JOBS"], "2")
         self.assertEqual(launcher.PROOF_CARGO_JOBS, 1)
+
+
+class ProjectDependency(unittest.TestCase):
+    """Current main's outside-kernel os-control edge; no compiler execution."""
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.virtual = self.root / "profile/virtual-asterinas"
+
+    def fixture(self, name):
+        checkout = self.root / name
+        source, control = checkout / "kernel/asterinas", checkout / "libs/os-control"
+        (source / "kernel/core").mkdir(parents=True)
+        (control / "src").mkdir(parents=True)
+        # This is the current derived workspace's exact path/feature edge.
+        (source / "Cargo.toml").write_text('[workspace.dependencies]\nos-control = '
+            '{ path = "../../libs/os-control", default-features = false, features = ["portable-spin"] }\n')
+        (source / "Components.toml").write_text('[components]\ncore={name="core"}\n')
+        (source / "kernel/core/Cargo.toml").write_text('[package]\nname="core"\nversion="0.1.0"\n')
+        (control / "Cargo.toml").write_text('[package]\nname="os-control"\nversion="0.1.0"\n'
+            '[lib]\npath="src/lib.rs"\n[features]\nportable-spin=[]\n'
+            '[dev-dependencies]\nhos2-os-abi={path="../os-abi"}\n'
+            '[[test]]\nname="control_conformance"\npath="../../tests/control/control_conformance.rs"\n')
+        (control / "src/lib.rs").write_text('// controlled source-identity fixture; never compiled\n')
+        inputs, states = profile.project_inputs(checkout, source)
+        policy = {"project_root": str(checkout), "real_root": str(source),
+                  "virtual_root": str(self.virtual), "project_inputs": inputs,
+                  "project_input_states": states, "rustc_identity": "fixed-rustc-identity"}
+        return checkout, source, control, policy
+
+    def compiler(self, control, source, salt="original"):
+        env = {"CARGO_MANIFEST_DIR": str(control), "CARGO_PKG_NAME": "os-control", "CARGO_PKG_VERSION": "0.1.0"}
+        args = ["rustc", "--crate-name", "os_control", "--crate-type", "lib", "src/lib.rs",
+                "--edition=2021", "--cfg", 'feature="portable-spin"', "--target", "x86_64-unknown-none",
+                "-C", "metadata=" + salt, "-C", "extra-filename=-" + salt,
+                "-C", "panic=abort", "-C", "lto=thin", "--out-dir", str(source / "target/deps")]
+        return args, env
+
+    def project(self, control, source, policy, salt="original", extra=(), env_changes=None, history=()):
+        args, env = self.compiler(control, source, salt)
+        env.update(env_changes or {})
+        effective = profile.compiler_argv(args + list(extra), policy)
+        result, unit = profile.canonical_compiler_metadata(effective, env, str(control), policy, list(history))
+        return effective, result, unit
+
+    def test_current_outside_kernel_dependency_matches_across_two_checkouts(self):
+        first, second = self.fixture("A"), self.fixture("B")
+        outputs = [self.project(control, source, policy, salt=name)
+                   for name, (_checkout, source, control, policy) in zip(("cargo-A", "cargo-B"), (first, second))]
+        self.assertEqual(first[3]["project_inputs"], second[3]["project_inputs"])
+        self.assertNotEqual(first[3]["project_input_states"], second[3]["project_input_states"])
+        self.assertEqual(outputs[0][2]["descriptor"], outputs[1][2]["descriptor"])
+        self.assertEqual(outputs[0][2]["canonical_id"], outputs[1][2]["canonical_id"])
+        for effective, result, unit in outputs:
+            self.assertEqual(unit["scope"], "canonical-local")
+            self.assertEqual(sum(a != b for a, b in zip(effective, result)), 1)
+            self.assertEqual(unit["descriptor"]["manifest"], str(self.virtual.with_name("virtual-os-control")))
+            self.assertIn("source_sha256", unit["descriptor"]["project_source"])
+            self.assertEqual(len([a for a in effective if a.startswith("--remap-path-prefix=")]), 2)
+
+    def test_kernel_consumer_binds_same_successful_control_producer(self):
+        consumers = []
+        for name in ("A", "B"):
+            _checkout, source, control, policy = self.fixture(name)
+            _effective, _result, dependency = self.project(control, source, policy, salt=name)
+            artifact = source / "fixture-control.rlib"
+            artifact.write_bytes(b"controlled artifact identity; no compiler")
+            history = [{"state": "completed", "returncode": 0, "unit": dependency,
+                        "artifacts": {str(artifact): profile.artifact_identity(artifact)}}]
+            args, _env = self.compiler(control, source, salt="core-" + name)
+            args[args.index("os_control")] = "core"
+            args += ["--extern", "os_control=" + str(artifact)]
+            env = {"CARGO_MANIFEST_DIR": str(source / "kernel/core"), "CARGO_PKG_NAME": "core", "CARGO_PKG_VERSION": "0.1.0"}
+            _result, unit = profile.canonical_compiler_metadata(profile.compiler_argv(args, policy), env,
+                str(source / "kernel/core"), policy, history)
+            consumers.append(unit)
+        self.assertEqual(consumers[0]["descriptor"], consumers[1]["descriptor"])
+        self.assertEqual(consumers[0]["canonical_id"], consumers[1]["canonical_id"])
+
+    def test_foreign_registry_and_toolchain_units_keep_original_identity(self):
+        _checkout, source, control, policy = self.fixture("A")
+        for foreign in ("/registry/os-control-0.1.0", "/fixed-toolchain/library/core"):
+            effective, result, unit = self.project(control, source, policy,
+                env_changes={"CARGO_MANIFEST_DIR": foreign})
+            self.assertEqual(result, effective)
+            self.assertEqual(unit["scope"], "cargo-original")
+            self.assertEqual(unit["manifest"], foreign)
+            self.assertEqual(unit["effective_metadata"], "original")
+
+    def test_unknown_checkout_packages_and_nested_manifests_are_refused(self):
+        checkout, source, control, policy = self.fixture("A")
+        for relative in ("libs/os-abi", "libs/foreign", "libs/os-control-neighbor", "libs/os-control/nested"):
+            with self.subTest(relative=relative), self.assertRaisesRegex(ValueError, "undeclared project local"):
+                self.project(control, source, policy, env_changes={"CARGO_MANIFEST_DIR": str(checkout / relative)})
+        with self.assertRaisesRegex(ValueError, "noncanonical manifest"):
+            self.project(control, source, policy, env_changes={"CARGO_MANIFEST_DIR": str(source) + "/../../libs/foreign"})
+
+    def test_package_identity_and_unknown_projection_binding_are_refused(self):
+        _checkout, source, control, policy = self.fixture("A")
+        for change in ({"CARGO_PKG_NAME": "foreign"}, {"CARGO_PKG_VERSION": "9.0.0"}):
+            with self.assertRaisesRegex(ValueError, "declared local package identity"):
+                self.project(control, source, policy, env_changes=change)
+        altered = copy.deepcopy(policy)
+        altered["project_inputs"]["os-control"]["relative_root"] = "libs/foreign"
+        with self.assertRaisesRegex(ValueError, "unknown project local"):
+            self.project(control, source, altered)
+
+    def test_manifest_or_source_change_cannot_reuse_selected_inputs(self):
+        for name in ("Cargo.toml", "src/lib.rs"):
+            _checkout, source, control, policy = self.fixture(name.replace("/", "-"))
+            with (control / name).open("a") as stream:
+                stream.write("\n# changed bytes\n" if name == "Cargo.toml" else "\n// changed bytes\n")
+            with self.assertRaisesRegex(ValueError, "inputs changed"):
+                self.project(control, source, policy)
+
+    def test_new_source_binding_changes_identity_even_with_same_manifest(self):
+        checkout, source, control, policy = self.fixture("A")
+        _effective, _result, before = self.project(control, source, policy)
+        (control / "src/lib.rs").write_text("// different implementation bytes\n")
+        refreshed = dict(policy)
+        refreshed["project_inputs"], refreshed["project_input_states"] = profile.project_inputs(checkout, source)
+        _effective, _result, after = self.project(control, source, refreshed)
+        self.assertNotEqual(before["canonical_id"], after["canonical_id"])
+
+    def test_escape_and_symlink_dependency_roots_are_refused(self):
+        checkout, source, control, _policy = self.fixture("A")
+        (source / "Cargo.toml").write_text('[workspace.dependencies]\nos-control={path="../../foreign"}\n')
+        with self.assertRaisesRegex(ValueError, "exact same-checkout"):
+            profile.project_inputs(checkout, source)
+        checkout, source, control, _policy = self.fixture("B")
+        moved = control.with_name("original-control")
+        control.rename(moved)
+        control.symlink_to(moved, target_is_directory=True)
+        with self.assertRaisesRegex(ValueError, "symlink"):
+            profile.project_inputs(checkout, source)
+
+    def test_extra_root_conflicting_remap_and_codegen_differences_remain_visible(self):
+        _checkout, source, control, policy = self.fixture("A")
+        with self.assertRaisesRegex(ValueError, "conflicting"):
+            self.project(control, source, policy, extra=["--remap-path-prefix=" + str(control / "src") + "=/foreign"])
+        _effective, _result, baseline = self.project(control, source, policy)
+        for extra in (["--cfg", 'feature="other"'], ["-C", "panic=unwind"], ["-C", "lto=fat"],
+                      ["-C", "future-behavior-option=yes"]):
+            _effective, _result, unit = self.project(control, source, policy, extra=extra)
+            self.assertNotEqual(baseline["canonical_id"], unit["canonical_id"])
+        args, env = self.compiler(control, source)
+        args[args.index("x86_64-unknown-none")] = "x86_64-unknown-linux-gnu"
+        _result, unit = profile.canonical_compiler_metadata(profile.compiler_argv(args, policy),env,str(control),policy,[])
+        self.assertNotEqual(baseline["canonical_id"], unit["canonical_id"])
+
+    def metadata(self, checkout, source, control):
+        data = json.loads(json.dumps(fixture()).replace("/actual", str(source)))
+        pid = "path+file://" + str(control) + "#os-control@0.1.0"
+        data["packages"].append({"id": pid, "name": "os-control", "version": "0.1.0", "source": None,
+            "manifest_path": str(control / "Cargo.toml"),
+            "targets": [{"src_path": str(control / "src/lib.rs")},
+                        {"src_path": str(checkout / "tests/control/control_conformance.rs")}],
+            "dependencies": [{"name": "component"}, {"name": "hos2-os-abi", "path": str(checkout / "libs/os-abi"), "kind": "dev"}]})
+        data["resolve"]["nodes"][0]["dependencies"].append(pid)
+        data["resolve"]["nodes"][0]["deps"].append({"pkg": pid})
+        data["resolve"]["nodes"].append({"id": pid, "dependencies": [], "deps": []})
+        return data
+
+    def test_metadata_graph_is_coherent_without_changing_component_membership(self):
+        checkout, source, control, policy = self.fixture("A")
+        data = self.metadata(checkout, source, control)
+        mapped, checks = profile.project_metadata(data, str(source), str(self.virtual),
+            b'[components]\na={name="driver"}\n', policy)
+        original, projected = data["packages"][-1], mapped["packages"][-1]
+        expected = str(self.virtual.with_name("virtual-os-control"))
+        self.assertEqual(projected["id"], "path+file://" + expected + "#os-control@0.1.0")
+        self.assertEqual(mapped["resolve"]["nodes"][0]["deps"][-1]["pkg"], projected["id"])
+        self.assertEqual(projected["targets"][0]["src_path"], expected + "/src/lib.rs")
+        self.assertEqual(projected["targets"][1], original["targets"][1])
+        self.assertEqual(projected["dependencies"][-1], original["dependencies"][-1])
+        self.assertEqual(checks[-1], {"name":"os-control","in_workspace_before":False,
+            "in_workspace_after":False,"listed":False})
+        with self.assertRaisesRegex(ValueError, "missing from"):
+            profile.project_metadata(data, str(source), str(self.virtual), b'[components]\n', policy)
+
+    def test_projected_metadata_rejects_identity_drift_collisions_and_dangling_ids(self):
+        checkout, source, control, policy = self.fixture("A")
+        data = self.metadata(checkout, source, control)
+        for field, value in (("name", "foreign"), ("version", "9.0.0"), ("manifest_path", str(control / "nested/Cargo.toml"))):
+            changed = copy.deepcopy(data);changed["packages"][-1][field] = value
+            with self.assertRaisesRegex(ValueError, "local package|declared manifest"):
+                profile.project_metadata(changed,str(source),str(self.virtual),b'[components]\na={name="driver"}\n',policy)
+        changed = copy.deepcopy(data)
+        changed["packages"].append({"id":"path+file://" + str(self.virtual.with_name("virtual-os-control")) + "#os-control@0.1.0",
+                                   "name":"foreign","dependencies":[]})
+        with self.assertRaisesRegex(ValueError, "duplicate"):
+            profile.project_metadata(changed,str(source),str(self.virtual),b'[components]\na={name="driver"}\n',policy)
+        changed = copy.deepcopy(data);changed["resolve"]["nodes"][-1]["deps"].append({"pkg":"missing"})
+        with self.assertRaisesRegex(ValueError, "dangling"):
+            profile.project_metadata(changed,str(source),str(self.virtual),b'[components]\na={name="driver"}\n',policy)
+
+    def test_real_launcher_owner_reuses_equal_sources_across_checkouts(self):
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        spec = importlib.util.spec_from_file_location("a01_repro_run_project", HERE / "run.py")
+        launcher = importlib.util.module_from_spec(spec);spec.loader.exec_module(launcher)
+        first, second = self.fixture("A"), self.fixture("B")
+        root = self.virtual.parent
+        for i, (checkout, source, _control, _policy) in enumerate((first, second)):
+            with patch.object(launcher,"fixed_rustc_version",return_value=b"host-only fixed compiler identity\n"), \
+                    patch.object(launcher,"owned_command",return_value={"exit_code":0,"raw_exit_code":0}):
+                self.assertEqual(launcher.run_locked(SimpleNamespace(action="kernel"),checkout,source,root,
+                    self.virtual,self.root/str(i),SimpleNamespace(signum=None),0),0)
+        policies = [json.loads((self.root/str(i)/"policy.json").read_text()) for i in (0,1)]
+        self.assertEqual(policies[0]["project_inputs"],policies[1]["project_inputs"])
+        self.assertNotEqual(policies[0]["project_input_states"],policies[1]["project_input_states"])
+        owner = json.loads((root/"owner.json").read_text())
+        self.assertNotIn(str(first[0]),json.dumps(owner));self.assertNotIn(str(second[0]),json.dumps(owner))
+        (second[2]/"src/lib.rs").write_text("// changed after the successful pair\n")
+        with self.assertRaisesRegex(ValueError,"foreign or incompatible"):
+            launcher.run_locked(SimpleNamespace(action="kernel"),second[0],second[1],root,self.virtual,
+                self.root/"changed-output",SimpleNamespace(signum=None),0)
+        self.assertFalse((self.root/"changed-output").exists())
 
 
 class Custody(unittest.TestCase):
@@ -258,7 +478,7 @@ class Custody(unittest.TestCase):
                       f"s=importlib.util.spec_from_file_location('p',{str(HERE / 'profile.py')!r}); "
                       "p=importlib.util.module_from_spec(s); s.loader.exec_module(p); "
                       f"p.regular(Path({str(fifo)!r}))")
-            result = subprocess.run([sys.executable, "-I", "-c", script],
+            result = subprocess.run([sys.executable, "-B", "-I", "-c", script],
                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=2)
             self.assertNotEqual(result.returncode, 0)
             self.assertIn(b"private regular file", result.stderr)
@@ -336,7 +556,7 @@ class Custody(unittest.TestCase):
             target = source / "target"
             target.mkdir()
             output = root / "output"
-            result = subprocess.run([sys.executable, "-I", str(HERE / "run.py"),
+            result = subprocess.run([sys.executable, "-B", "-I", str(HERE / "run.py"),
                                      "--checkout", str(root / "checkout"),
                                      "--profile-root", str(root / "profile"), "--output", str(output)],
                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -352,7 +572,7 @@ class Custody(unittest.TestCase):
             source.mkdir(parents=True)
             (source / "Components.toml").write_bytes(b"[components]\n")
             owned = root / "profile"
-            result = subprocess.run([sys.executable, "-I", str(HERE / "run.py"),
+            result = subprocess.run([sys.executable, "-B", "-I", str(HERE / "run.py"),
                                      "--checkout", str(root / "checkout"),
                                      "--profile-root", str(owned), "--output", str(owned / "nested")],
                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=2)

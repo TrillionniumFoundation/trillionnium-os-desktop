@@ -6,6 +6,34 @@ paths and the pinned component macro's Cargo metadata into one virtual prefix.
 The source files remain at distinct real checkout paths. The virtual directory
 contains only the exact `Components.toml` input, never a second kernel source.
 
+Schema 5 also binds the current project's one approved outside-kernel package,
+`libs/os-control`. The kernel workspace dependency must resolve to that exact
+same-checkout directory and identify package `os-control`. Its manifest, all
+regular crate files (apart from real `target/` build output), and executable
+modes contribute to a stable source digest. Relative names and content hashes
+enter the reusable profile owner; actual paths and file/directory identities
+remain separate in each run's policy. Those identities are checked when the
+package is compiled, during component metadata projection and after the run.
+Changed inputs require a new profile. These are observed source snapshots,
+not an atomic compiler-time or privileged-adversary immutability guarantee.
+
+Only two source-prefix maps are allowed: `kernel/asterinas` to
+`virtual-asterinas`, and `libs/os-control` to the separate sibling
+`virtual-os-control`. No source files or virtual crate are copied to the second
+location. The separate prefix preserves the pinned Components macro's original
+workspace membership test. Only the exact os-control manifest receives this
+additional canonical identity; nested packages and any other actual compiler
+unit inside the project checkout are refused. Registry and toolchain packages
+outside the checkout retain their original Cargo metadata identities.
+Metadata-only dev-dependency declarations such as `libs/os-abi` and os-control's
+external test source paths remain untouched; they do not authorize compiling
+an additional project package. Full codegen arguments and successful `--extern`
+producer checks continue to apply to the added package and its kernel consumers.
+
+Historical schema-4 byte-equality results belong to their original source
+producer. Schema 5 requires its own exact-source cold builds, complete artifact
+comparisons and real boots before current-kernel reproducibility is accepted.
+
 ```sh
 python3 -I support/build/repro/run.py \
   --checkout /absolute/clean-project-worktree \

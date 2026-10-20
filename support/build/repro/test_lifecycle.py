@@ -23,6 +23,7 @@ class ReproLifecycleTests(unittest.TestCase):
         source = checkout / "kernel/asterinas"
         source.mkdir(parents=True)
         (source / "Components.toml").write_text("[components]\n")
+        (source / "Cargo.toml").write_text("[workspace]\n")
         child = ("import os,signal,time;from pathlib import Path;"
                  "signal.signal(signal.SIGTERM,signal.SIG_IGN);"
                  f"Path({str(root / 'descendant.pid')!r}).write_text(str(os.getpid()));time.sleep(60)")
@@ -60,7 +61,7 @@ class ReproLifecycleTests(unittest.TestCase):
             "except (OSError,ValueError,KeyError) as error:\n"
             " print('host repro refusal: '+str(error),file=sys.stderr);raise SystemExit(2)\n")
         output, profile = root / "output", root / "profile"
-        command = [sys.executable, "-I", *( ["-O"] if sys.flags.optimize else []), str(wrapper),
+        command = [sys.executable, "-B", "-I", *( ["-O"] if sys.flags.optimize else []), str(wrapper),
                    "--checkout", str(checkout), "--profile-root", str(profile), "--output", str(output)]
         env = {key: value for key, value in os.environ.items()
                if key not in ("CARGO_ENCODED_RUSTFLAGS", "RUSTC_WRAPPER", "RUSTC_WORKSPACE_WRAPPER", "RUSTFLAGS")}

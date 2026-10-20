@@ -7,7 +7,7 @@ from pathlib import Path
 import re
 import stat
 
-SCHEMA = "a01-component-path-projection/4"
+SCHEMA = "a01-component-path-projection/5"
 FILES = ("profile.py", "run.py", "rustc-wrapper.py", "cargo-metadata-wrapper.py")
 HELPERS = ("profile.py", "rustc-wrapper.py", "cargo-metadata-wrapper.py")
 
@@ -54,6 +54,95 @@ def code_hashes(directory):
     return {name: digest(regular(directory / name)[0]) for name in FILES}
 
 
+
+def project_inputs(checkout, source):
+    """Bind the one approved outside-kernel package without widening the root.
+
+    Stable relative names/content enter the reusable profile owner. Actual file
+    identities stay in each run's policy, never in a cross-checkout descriptor.
+    The ordinary fixed-source verifier separately rejects undeclared inputs.
+    """
+    import tomllib
+    checkout, source = safe_root(checkout), safe_root(source)
+    if source != checkout / "kernel/asterinas":
+        raise ValueError("unexpected project kernel root")
+    raw, observed = regular(source / "Cargo.toml")
+    manifest = tomllib.loads(raw.decode())
+    inputs = {"workspace_manifest_sha256": digest(raw), "os-control": None}
+    states = {"workspace_manifest": observed}
+    dependency = manifest.get("workspace", {}).get("dependencies", {}).get("os-control")
+    if dependency is None:
+        return inputs, states
+    expected = safe_root(checkout / "libs/os-control")
+    if not isinstance(dependency, dict) or not isinstance(dependency.get("path"), str) or \
+            safe_root(source / dependency["path"]) != expected or \
+            dependency.get("package", "os-control") != "os-control":
+        raise ValueError("os-control must name the exact same-checkout libs/os-control package")
+    files, identities = {}, {}
+
+    def visit(directory):
+        directory = safe_root(directory)
+        relative = str(directory.relative_to(expected))
+        before = directory.stat(follow_symlinks=False)
+        if not stat.S_ISDIR(before.st_mode):
+            raise ValueError("local dependency source directory is not real")
+        identities[relative + "/"] = identity(before)
+        for path in sorted(directory.iterdir()):
+            info = path.stat(follow_symlinks=False)
+            if stat.S_ISDIR(info.st_mode):
+                if path == expected / "target":
+                    continue
+                visit(path)
+            else:
+                content, state = regular(path)
+                name = str(path.relative_to(expected))
+                files[name] = {"sha256": digest(content), "executable": bool(state["st_mode"] & 0o111)}
+                identities[name] = state
+        if identity(directory.stat(follow_symlinks=False)) != identity(before):
+            raise ValueError("local dependency directory changed while reading")
+
+    visit(expected)
+    raw, _ = regular(expected / "Cargo.toml")
+    package = tomllib.loads(raw.decode()).get("package", {})
+    if package.get("name") != "os-control" or not isinstance(package.get("version"), str):
+        raise ValueError("local dependency manifest has an unknown package identity")
+    if digest(raw) != files["Cargo.toml"]["sha256"]:
+        raise ValueError("local dependency manifest changed while reading")
+    inputs["os-control"] = {"relative_root": "libs/os-control", "package": package["name"],
+        "version": package["version"], "manifest_sha256": digest(raw),
+        "source_sha256": digest(json.dumps(files, sort_keys=True, separators=(",", ":")).encode())}
+    states["os-control"] = identities
+    return inputs, states
+
+
+def path_maps(policy):
+    pairs = [(policy["real_root"], policy["virtual_root"])]
+    if "project_root" not in policy:
+        if "project_inputs" in policy:
+            raise ValueError("project input binding lacks its checkout root")
+        return pairs
+    checkout = Path(policy["project_root"])
+    virtual = Path(policy["virtual_root"])
+    if str(checkout / "kernel/asterinas") != policy["real_root"] or \
+            virtual.name != "virtual-asterinas":
+        raise ValueError("unexpected project projection roots")
+    binding = policy["project_inputs"]["os-control"]
+    if binding is not None:
+        if binding.get("relative_root") != "libs/os-control" or binding.get("package") != "os-control":
+            raise ValueError("unknown project local dependency binding")
+        pairs.append((str(checkout / "libs/os-control"), str(virtual.with_name("virtual-os-control"))))
+    return pairs
+
+
+def verify_project_inputs(policy):
+    if "project_root" not in policy:
+        return
+    path_maps(policy)
+    inputs, states = project_inputs(Path(policy["project_root"]), Path(policy["real_root"]))
+    if inputs != policy["project_inputs"] or states != policy["project_input_states"]:
+        raise ValueError("project local dependency inputs changed after profile selection")
+
+
 def compiler_argv(incoming, policy):
     """Keep all OSDK/Cargo arguments; enforce the same map used by metadata.
 
@@ -62,7 +151,7 @@ def compiler_argv(incoming, policy):
     """
     if not incoming:
         raise ValueError("missing compiler executable")
-    flag = f"--remap-path-prefix={policy['real_root']}={policy['virtual_root']}"
+    maps = path_maps(policy)
     result = list(incoming)
     delimiter = result.index("--") if "--" in result else len(result)
     options = result[:delimiter]
@@ -75,14 +164,16 @@ def compiler_argv(incoming, policy):
         if value is None:
             continue
         before, separator, after = value.partition("=")
-        real = policy["real_root"]
-        overlaps = before == real or before.startswith(real + "/") or real.startswith(before.rstrip("/") + "/")
-        if separator and overlaps and (before, after) != (real, policy["virtual_root"]):
-            raise ValueError("conflicting compiler path map overlaps this profile's source root")
-    if flag not in options:
-        # Preserve even an explicit end-of-options delimiter and source filename.
-        index = result.index("--") if "--" in result else len(result)
-        result.insert(index, flag)
+        for real, virtual in maps:
+            overlaps = before == real or before.startswith(real + "/") or real.startswith(before.rstrip("/") + "/")
+            if separator and overlaps and (before, after) != (real, virtual):
+                raise ValueError("conflicting compiler path map overlaps this profile's source root")
+    for real, virtual in maps:
+        flag = f"--remap-path-prefix={real}={virtual}"
+        if flag not in options:
+            # Preserve even an explicit end-of-options delimiter and source filename.
+            index = result.index("--") if "--" in result else len(result)
+            result.insert(index, flag)
     return result
 
 
@@ -168,9 +259,24 @@ def canonical_compiler_metadata(arguments, environment, cwd, policy, history):
     unit = compiler_unit(arguments, environment)
     if unit is None:
         return result, None
-    real, virtual = policy["real_root"], policy["virtual_root"]
+    maps = path_maps(policy)
+    real, virtual = maps[0]
+    if "project_root" in policy:
+        if unit["manifest"] != os.path.abspath(unit["manifest"]):
+            raise ValueError("compiler unit has noncanonical manifest provenance")
+        if unit["manifest"] == policy["project_root"] or unit["manifest"].startswith(policy["project_root"] + "/"):
+            safe_root(unit["manifest"])
     local = unit["manifest"] == real or unit["manifest"].startswith(real + "/")
-    if not local:
+    declared = len(maps) == 2 and unit["manifest"] == maps[1][0]
+    if declared:
+        verify_project_inputs(policy)
+        binding = policy["project_inputs"]["os-control"]
+        if (unit["package"], unit["version"]) != (binding["package"], binding["version"]):
+            raise ValueError("compiler unit differs from the declared local package identity")
+    elif not local and "project_root" in policy and \
+            (unit["manifest"] == policy["project_root"] or unit["manifest"].startswith(policy["project_root"] + "/")):
+        raise ValueError("compiler unit belongs to an undeclared project local package")
+    if not local and not declared:
         identity = {key: unit[key] for key in
                     ("manifest", "package", "version", "crate", "crate_type", "target", "incoming_metadata")}
         unit.update(scope="cargo-original", canonical_id=digest(json.dumps(identity, sort_keys=True).encode()),
@@ -180,8 +286,10 @@ def canonical_compiler_metadata(arguments, environment, cwd, policy, history):
     def normalize(value):
         # Only absolute path prefixes and path-valued '=' arguments. Do not
         # rewrite a neighboring directory or arbitrary quoted cfg string.
-        return re.sub(r"(^|=)" + re.escape(real) + r"(?=$|[/=])",
-                      lambda match: match.group(1) + virtual, value)
+        for original, projected in maps:
+            value = re.sub(r"(^|=)" + re.escape(original) + r"(?=$|[/=])",
+                           lambda match: match.group(1) + projected, value)
+        return value
 
     if environment.get("OUT_DIR"):
         raise ValueError("local build-script OUT_DIR inputs are outside this pinned profile")
@@ -257,6 +365,8 @@ def canonical_compiler_metadata(arguments, environment, cwd, policy, history):
                   "package": unit["package"], "version": unit["version"], "crate": unit["crate"],
                   "crate_type": unit["crate_type"], "target": unit["target"],
                   "compiler": policy.get("rustc_identity"), "cwd": normalize(cwd), "arguments": descriptor_args}
+    if declared:
+        descriptor["project_source"] = binding
     canonical = digest(json.dumps(descriptor, sort_keys=True, separators=(",", ":")).encode())
     for entry in history:
         other = entry.get("unit")
@@ -339,19 +449,39 @@ def graph_ids(data):
     return ids
 
 
-def project_metadata(data, real, virtual, component_bytes):
+def project_metadata(data, real, virtual, component_bytes, policy=None):
     import tomllib
     real, virtual = str(real), str(virtual)
     if data["workspace_root"] != real or data.get("version") != 1:
         raise ValueError("unexpected metadata workspace or format")
     graph_ids(data)
+    maps = path_maps(policy) if policy is not None else [(real, virtual)]
+    if maps[0] != (real, virtual):
+        raise ValueError("metadata projection roots differ from the compiler profile")
+    if len(maps) == 2:
+        binding = policy["project_inputs"]["os-control"]
+        for package in data["packages"]:
+            manifest = package.get("manifest_path", "")
+            package_root = package["id"].split("#", 1)[0]
+            if package_root == "path+file://" + maps[1][0] and manifest != maps[1][0] + "/Cargo.toml":
+                raise ValueError("metadata local package ID lacks its declared manifest")
+            if package_root.startswith("path+file://" + maps[1][0] + "/"):
+                raise ValueError("metadata claims an undeclared nested local package")
+            if manifest == maps[1][0] + "/Cargo.toml":
+                if (package["name"], package.get("version")) != (binding["package"], binding["version"]) or \
+                        package.get("source") is not None or \
+                        package["id"].split("#", 1)[0] != "path+file://" + maps[1][0]:
+                    raise ValueError("metadata differs from the declared local package identity")
+            elif manifest.startswith(maps[1][0] + "/"):
+                raise ValueError("metadata claims an undeclared nested local package")
 
     def remap(value):
-        if value == real or value.startswith(real + "/"):
-            return virtual + value[len(real):]
-        prefix = "path+file://" + real
-        if value == prefix or any(value.startswith(prefix + boundary) for boundary in ("/", "#", "@")):
-            return "path+file://" + virtual + value[len(prefix):]
+        for original, projected in maps:
+            if value == original or value.startswith(original + "/"):
+                return projected + value[len(original):]
+            prefix = "path+file://" + original
+            if value == prefix or any(value.startswith(prefix + boundary) for boundary in ("/", "#", "@")):
+                return "path+file://" + projected + value[len(prefix):]
         return value
 
     def walk(value):
@@ -365,7 +495,8 @@ def project_metadata(data, real, virtual, component_bytes):
 
     mapped = walk(data)
     original_ids, mapped_ids = graph_ids(data), graph_ids(mapped)
-    if any(value.startswith("path+file://" + real + boundary) for value in mapped_ids for boundary in ("/", "#", "@")):
+    if any(value.startswith("path+file://" + original + boundary)
+           for value in mapped_ids for original, _projected in maps for boundary in ("/", "#", "@")):
         raise ValueError("unmapped package ID under the real source root")
     if mapped_ids != [remap(value) for value in original_ids]:
         raise ValueError("metadata ID projection is not coherent")

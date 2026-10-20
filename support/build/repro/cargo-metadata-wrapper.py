@@ -48,8 +48,9 @@ source, source_identity = profile.regular(Path(policy["real_root"]) / "Component
 mirror, mirror_identity = profile.regular(Path(policy["virtual_root"]) / "Components.toml")
 if source != mirror or profile.digest(source) != policy["components_sha256"]:
     raise ValueError("virtual Components.toml differs from the actual source input")
+profile.verify_project_inputs(policy)
 mapped, checks = profile.project_metadata(json.loads(result.stdout), policy["real_root"],
-                                         policy["virtual_root"], source)
+                                         policy["virtual_root"], source, policy)
 encoded = (json.dumps(mapped, separators=(",", ":")) + "\n").encode()
 profile.exclusive(prefix.with_suffix(".mapped.json"), encoded)
 receipt = {"original_sha256": profile.digest(result.stdout),
@@ -57,6 +58,7 @@ receipt = {"original_sha256": profile.digest(result.stdout),
            "source_identity": source_identity, "mirror_identity": mirror_identity}
 profile.exclusive(prefix.with_suffix(".binding.json"),
                   (json.dumps(receipt, indent=2) + "\n").encode())
+profile.verify_project_inputs(policy)
 if profile.snapshot(root) != before:
     raise ValueError("profile input changed during metadata projection")
 sys.stderr.buffer.write(result.stderr)
