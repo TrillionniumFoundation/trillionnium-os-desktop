@@ -134,6 +134,23 @@ the dedicated bootstrap record before the original runner starts, followed by
 the actual CPU IDs from each production operation. It does not infer working
 SMP from the boot record alone.
 
+The bootstrap and per-case records use the early serial console because this
+test entry does not initialize the production console. Each record supplies
+its own leading newline: firmware and the test runner may leave an unfinished
+line. The oracle continues to require a complete, uniquely delimited bootstrap
+record before the runner starts.
+
+PR #219 at `5b33f080845a1e408d74a8c8405622847a58167b` exposed the bootstrap
+boundary bug in workflow run `39420405333`: its positive guest completed all
+three cases, but `Booting from ROM..` immediately preceded the bootstrap on
+the same line. The strict oracle correctly rejected that evidence. The
+artifact `12266890959` has SHA256
+`60466e62d00e7b6e6e05063b8bc49a594ad2d43ced325519296f504bd6aef947`.
+The follow-up corrects the kernel's record framing and adds a host regression
+for an unterminated SeaBIOS prefix, retaining both frozen defects and every
+acceptance condition. That earlier guest result does not qualify the follow-up;
+the exact new head still needs the complete original and three SMP guest gates.
+
 Each test asserts the actual CPU count before spawning workers. Worker A is
 pinned to CPU 0; worker B is pinned to CPU 1. After the real production decision,
 A reaches a test-only atomic checkpoint while retaining the relevant owner

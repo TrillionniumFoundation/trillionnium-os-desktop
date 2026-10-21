@@ -38,8 +38,10 @@ pub fn boot(run_tests_fn: fn() -> !) {
         ThreadOptions::new(move || {
             assert!(Thread::current().is_some());
             assert_eq!(CpuId::current_racy(), CpuId::bsp());
+            // Firmware can leave the serial boot message without a newline.
+            // Keep this evidence marker on its own line for the strict oracle.
             ostd::early_println!(
-                "PERMISSION_SMP_BOOTSTRAP scheduler=class runner_cpu=0 runner_thread=true"
+                "\nPERMISSION_SMP_BOOTSTRAP scheduler=class runner_cpu=0 runner_thread=true"
             );
             run_tests_fn();
         })

@@ -63,6 +63,19 @@ class SerialOracle(unittest.TestCase):
                 report = checker.parse_serial(fixture_serial(control), control)
                 self.assertEqual(report['failed'], len(checker.FAILURES[control]))
 
+    def test_bootstrap_requires_line_boundary_after_firmware_output(self):
+        # PR #219's genuine guest reached all three outcomes, but SeaBIOS left
+        # "Booting from ROM.." unterminated. The kernel must delimit its marker;
+        # the oracle must still reject a marker embedded in another line.
+        firmware = b'\x1bc\x1b[?7l\x1b[2J\x1b[0mSeaBIOS\r\nBooting from ROM..'
+        for control in checker.FAILURES:
+            raw = fixture_serial(control)
+            with self.subTest(control=control):
+                with self.assertRaisesRegex(ValueError, 'bootstrap'):
+                    checker.parse_serial(firmware + raw, control)
+                report = checker.parse_serial(firmware + b'\r\n' + raw, control)
+                self.assertEqual(report['failed'], len(checker.FAILURES[control]))
+
     def test_metadata_counterexample_is_required(self):
         for control in ('ramfs-split-lock', 'memfd-release-seal'):
             raw = fixture_serial(control)
