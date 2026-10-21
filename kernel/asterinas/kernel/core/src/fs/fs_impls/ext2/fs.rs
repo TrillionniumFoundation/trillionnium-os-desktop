@@ -527,6 +527,19 @@ impl Ext2 {
         self.sync_metadata()
     }
 
+    /// Persists allocation state needed to reopen a synced inode after a crash.
+    ///
+    /// File data can span groups other than the inode's own group. Flush dirty
+    /// inode/block bitmaps in every group and their descriptor/superblock
+    /// counters, without recursing into cached inode writeback. The caller must
+    /// have released its inode lock and must still flush the device afterwards.
+    pub(super) fn sync_allocation_metadata(&self) -> Result<()> {
+        for group in &self.block_groups {
+            group.sync_metadata(&self.group_descriptors_segment)?;
+        }
+        self.sync_metadata()
+    }
+
     /// Allocates a new inode number.
     fn alloc_ino(&self, parent_ino: Ext2Ino, inode_type: InodeType) -> Result<Ext2Ino> {
         let mut sb = self.super_block.write();
@@ -692,12 +705,15 @@ mod test {
     use super::*;
     use crate::{
         fs::{
+            file::SyncMode,
             fs_impls::ext2::test_utils::{
                 BlockBitmapInit, Ext2FixtureBuilder, Ext2MemoryDisk, InodeBitmapInit,
                 RawInodeBuilder, assert_errno, create_file, default_fixture, make_valid_group_desc,
                 make_valid_super_block,
             },
-            vfs::file_system::FileSystem as FileSystemTrait,
+            vfs::{
+                file_system::FileSystem as FileSystemTrait, inode::Inode as InodeTrait,
+            },
         },
         time::clocks,
     };
@@ -812,6 +828,45 @@ mod test {
                 )
                 .unwrap();
             assert_eq!(backup_desc, primary_desc);
+        }
+    }
+
+    #[ktest]
+    fn inode_sync_preserves_allocation_and_data_across_remount() {
+        for mode in [SyncMode::Full, SyncMode::Data] {
+            let (fixture, root) = default_fixture();
+            let file = create_file(&root, "durable");
+            let payload = vec![0x5au8; BLOCK_SIZE * 13 + 17];
+            let mut reader = VmReader::from(payload.as_slice()).to_fallible();
+            assert_eq!(file.write_at(0, &mut reader).unwrap(), payload.len());
+            let ino = file.ino();
+            InodeTrait::sync(file.as_ref(), mode).unwrap();
+            InodeTrait::sync(root.as_ref(), SyncMode::Full).unwrap();
+            let expected = FileSystemTrait::sb(fixture.ext2.as_ref());
+
+            // Reopen from device bytes, with fresh inode/bitmap/page caches.
+            // Keep the original mount alive; no drop or filesystem-wide sync
+            // may accidentally persist its deferred allocation state for us.
+            let reopened = Ext2::open(fixture.disk.clone(), FsFlags::empty(), None).unwrap();
+            let fresh_root = reopened.root_inode().unwrap();
+            let fresh_file = fresh_root.lookup("durable").unwrap();
+            assert_eq!(fresh_file.ino(), ino);
+            assert_eq!(fresh_file.file_size(), payload.len());
+            let actual = FileSystemTrait::sb(reopened.as_ref());
+            assert_eq!((actual.bfree, actual.ffree), (expected.bfree, expected.ffree));
+
+            // A new allocation must not reuse the persisted file's inode or
+            // blocks. Read the old data only after the new file is written.
+            let other = create_file(&fresh_root, "other");
+            assert_ne!(other.ino(), ino);
+            let replacement = vec![0xc3u8; BLOCK_SIZE * 2];
+            let mut reader = VmReader::from(replacement.as_slice()).to_fallible();
+            assert_eq!(other.write_at(0, &mut reader).unwrap(), replacement.len());
+            InodeTrait::sync(other.as_ref(), SyncMode::Full).unwrap();
+            let mut readback = vec![0u8; payload.len()];
+            let mut writer = VmWriter::from(readback.as_mut_slice()).to_fallible();
+            assert_eq!(fresh_file.read_at(0, &mut writer).unwrap(), payload.len());
+            assert_eq!(readback, payload);
         }
     }
 

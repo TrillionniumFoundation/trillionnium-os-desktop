@@ -18,9 +18,10 @@ PERMISSION_TESTS = {
 }
 
 # The default core gate keeps its 238-test baseline, five permission tests,
-# all seventeen G1-c/G1-d regressions and two ExFAT tests. Filtered runs retain
+# all seventeen G1-c/G1-d regressions, two ExFAT tests and the ext2 fsync remount
+# regression. Filtered runs retain
 # explicit opt-in; they cannot stand in for a complete core qualification.
-MINIMUM_CORE_TESTS = 262
+MINIMUM_CORE_TESTS = 263
 TRUSTED_PROFILE_CORE_TESTS = (
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_preserves_bytes_across_mapping_replacement_attempts",
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_allows_relro_but_never_readds_permissions",
@@ -44,7 +45,11 @@ EXFAT_CORE_TESTS = (
     "aster_core::fs::fs_impls::exfat::inode::permission_mode_tests::exfat_modes_never_invent_setid_or_sticky",
     "aster_core::fs::fs_impls::exfat::inode::permission_mode_tests::exfat_modes_keep_file_directory_masks_and_readonly",
 )
-REQUIRED_CORE_TESTS = (*sorted(PERMISSION_TESTS), *TRUSTED_PROFILE_CORE_TESTS, *EXFAT_CORE_TESTS)
+EXT2_DURABILITY_TESTS = (
+    "aster_core::fs::fs_impls::ext2::fs::test::inode_sync_preserves_allocation_and_data_across_remount",
+)
+REQUIRED_CORE_TESTS = (*sorted(PERMISSION_TESTS), *TRUSTED_PROFILE_CORE_TESTS, *EXFAT_CORE_TESTS,
+                       *EXT2_DURABILITY_TESTS)
 
 
 def check_guest(guest, crate, allow_filtered=False):
