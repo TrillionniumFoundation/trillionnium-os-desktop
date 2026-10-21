@@ -1,25 +1,27 @@
 {
   "schema": "a09.gpu-lab-profile.v1",
-  "state": "candidate_not_detected_or_authorized_on_accessible_hardware",
+  "state": "observed_in_use_not_isolated",
   "base_main": "bc294f75bfb8c03d9963f5a12ea23b9589779d96",
   "kernel_pin": "c4b7ed575b7b32773475b194d2ad41fb6d03765b",
   "selected_route": "linux_guest_driver_exclusive_gpu_passthrough_on_asterinas_vmm",
   "target_gpu": {
     "model": "NVIDIA GeForce RTX 4060",
     "expected_cc_from_vendor": "8.9",
-    "observed_pci_vendor": null,
-    "observed_pci_device": null,
-    "observed_pci_bdf": null,
+    "observed_pci_vendor": "0x10de",
+    "observed_pci_device": "0x2882",
+    "observed_pci_bdf": "0000:02:00.0",
     "observed_firmware": null,
-    "observed_driver": null,
-    "observed_iommu_group": null,
-    "reset_qualified": false
+    "observed_driver": "nvidia",
+    "observed_iommu_group": "44",
+    "reset_qualified": false,
+    "observed_driver_version": "580.178.04",
+    "observed_display_active": true
   },
   "physical_host": {
-    "cpu": null,
+    "cpu": "Intel(R) Xeon(R) CPU E5-2673 v3 @ 2.40GHz",
     "board": null,
-    "iommu": null,
-    "hypervisor_backend": null,
+    "iommu": "DMAR present; group 44 contains GPU and HDA function",
+    "hypervisor_backend": "VMX CPU flag observed; Asterinas VMM unqualified",
     "verified_isolated_machine": false
   },
   "guest": {
@@ -62,8 +64,8 @@
     "prod_reset": false,
     "ollama": false
   },
-  "synced_main": "40ca002fac0726b366726d3353916637b29adeae",
-  "latest_readonly_observation": "tests/hardware/evidence/2026-10-17-sandbox-readonly-pci-034743z.json",
+  "synced_main": "2d2eb42d6d897edf6316e5ad326dcea04e8aa75d",
+  "latest_readonly_observation": "tests/hardware/evidence/2026-10-21-development-host-inventory.json",
   "hardware_blocker_issue": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/issues/96",
   "device_identity_gate": {
     "lab_gpu_model_exact": "NVIDIA GeForce RTX 4060",
