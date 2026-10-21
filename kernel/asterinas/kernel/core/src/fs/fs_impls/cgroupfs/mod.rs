@@ -6,6 +6,8 @@ pub(crate) use controller::cpu::{
 };
 #[cfg(feature = "g1c-trusted-observe")]
 pub(crate) use controller::cpu::{CpuUsageError, NativeCpuObserver};
+#[cfg(feature = "g1d-trusted-control")]
+pub(crate) use controller::cpu::NativeCpuManager;
 use fs::CgroupFsType;
 pub(in crate::fs) use systree_node::CgroupSystem;
 pub(crate) use systree_node::{CgroupMembership, CgroupNode, CgroupSysNode};

@@ -1,10 +1,10 @@
 """A05 fail-closed source contract for the native effect seam.
 
-This is a source contract only. It deliberately does not claim that any
-resource effect is implemented or that an Asterinas guest has run. Ordinary
-builds remain QueryAbi-only. The explicit G1-c profile may additionally read
-its trusted initial image's existing CPU owner; management and history stay
-disabled until their original owner paths are connected.
+This checks source boundaries, not Rust compilation or a successful guest.
+Ordinary builds remain QueryAbi-only. G1-c adds the trusted initial image's
+ReadUsage. G1-d separately connects all five opcodes to the original Process,
+CPU owner and delivery core; this experimental slice does not certify Hepta
+disk durability. Keep the default and G1-c disabled-operation gates intact.
 """
 from pathlib import Path
 import re
@@ -30,13 +30,34 @@ class A05EffectPathFailClosedContract(unittest.TestCase):
         )
         self.assertRegex(
             source,
-            r'#\[cfg\(feature = "g1c-trusted-observe"\)\]\s*'
+            r'#\[cfg\(all\(feature = "g1c-trusted-observe", '
+            r'not\(feature = "g1d-trusted-control"\)\)\)\]\s*'
             r'let \(supported_ops, max_response_payload\) = \(\s*'
             r'\(1u64 << Opcode::QueryAbi\.as_u16\(\)\) \| '
             r'\(1u64 << Opcode::ReadUsage\.as_u16\(\)\), 64,\s*\);',
-            "the experimental profile must advertise exactly its two implemented reads",
+            "G1-c must advertise exactly its two implemented reads",
         )
-        self.assertIn("max_request_payload: 0", source)
+        bit_expression = r'\s*\|\s*'.join(
+            rf'\(1u64 << Opcode::{name}\.as_u16\(\)\)'
+            for name in ("QueryAbi", "ReadUsage", "InstallBudget", "QueryDelivery", "RetireThrough")
+        )
+        self.assertRegex(
+            source,
+            r'#\[cfg\(feature = "g1d-trusted-control"\)\]\s*'
+            r'let \(supported_ops, max_response_payload\) = \(\s*'
+            + bit_expression + r', 64,\s*\);',
+            "G1-d must uniformly declare exactly its five operations",
+        )
+        self.assertRegex(
+            source,
+            r'#\[cfg\(not\(feature = "g1d-trusted-control"\)\)\]\s*'
+            r'let max_request_payload = 0;',
+        )
+        self.assertRegex(
+            source,
+            r'#\[cfg\(feature = "g1d-trusted-control"\)\]\s*'
+            r'let max_request_payload = 40;',
+        )
         self.assertIn("features: 0", source)
 
     def test_all_disabled_opcodes_share_eopnotsupp_gate(self):
@@ -45,20 +66,29 @@ class A05EffectPathFailClosedContract(unittest.TestCase):
         for opcode in ("ReadUsage", "InstallBudget", "QueryDelivery", "RetireThrough"):
             self.assertRegex(abi, rf"\b{opcode}\s*=\s*[2-5]\s*,")
 
-        self.assertEqual(
-            re.findall(r"RequestPayload::(\w+)(?:\([^)]*\))?\s*=>", source),
-            ["QueryAbi", "ReadUsage"],
-            "management and history must have no native match arm in this slice",
-        )
         self.assertRegex(
             source,
             r'#\[cfg\(feature = "g1c-trusted-observe"\)\]\s*'
             r'RequestPayload::ReadUsage =>',
             "ordinary builds must not compile the ReadUsage arm",
         )
-        self.assertIn("process.read_hepta_initial_usage(", source)
         self.assertRegex(
             source,
+            r'#\[cfg\(not\(feature = "g1d-trusted-control"\)\)\]\s*'
+            r'let result =\s*match process\.read_hepta_initial_usage\(',
+            "G1-c must keep its independently qualified observe path",
+        )
+        self.assertRegex(
+            source,
+            r'#\[cfg\(feature = "g1d-trusted-control"\)\]\s*'
+            r'RequestPayload::InstallBudget\(_\) \| RequestPayload::QueryDelivery\(_\)\s*'
+            r'\| RequestPayload::RetireThrough\(_\) =>',
+            "management and history arms require the separate G1-d profile",
+        )
+        self.assertEqual(source.count("process.dispatch_hepta_control(self.image_key, &request)"), 2)
+        self.assertRegex(
+            source,
+            r'#\[cfg\(not\(feature = "g1d-trusted-control"\)\)\]\s*'
             r'_ => return_errno_with_message!\(\s*Errno::EOPNOTSUPP,\s*'
             r'"recognized HOS2 resource operation not implemented"\s*\),',
         )

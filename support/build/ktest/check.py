@@ -10,10 +10,10 @@ ANSI = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)")
 HEAD = re.compile(r'^running (\d+) tests in crate "([^"]+)"$', re.MULTILINE)
 SUMMARY = re.compile(r'test result: (ok|FAILED)\. (\d+) passed; (\d+) failed; (\d+) filtered out\.')
 
-# The default core gate keeps its 238-test baseline and exercises these nine
+# The default core gate keeps its 238-test baseline and exercises these seventeen
 # production-object regressions. Filtered mutation runs retain their existing
 # explicit opt-in; they cannot stand in for a complete core qualification.
-MINIMUM_CORE_TESTS = 247
+MINIMUM_CORE_TESTS = 255
 REQUIRED_CORE_TESTS = (
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_preserves_bytes_across_mapping_replacement_attempts",
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_allows_relro_but_never_readds_permissions",
@@ -24,6 +24,14 @@ REQUIRED_CORE_TESTS = (
     "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::initial_observer_pin_rejects_a_replaced_real_cpu_owner",
     "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::initial_observer_pin_does_not_keep_a_deleted_resource_authorized",
     "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::usage_tests::initial_owner_lease_check_rejects_before_sampling",
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_budget_enforces_sub_microsecond_caps_on_the_original_owner",
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_budget_update_and_replay_preserve_consumption_and_positive_debt",
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_manager_revocation_preserves_recovery_and_saved_history",
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_management_lease_edges_and_clock_absence_do_not_change_budget",
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_ceiling_and_revision_rejections_are_immutable_without_effect",
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_accounting_fault_cannot_publish_a_successful_budget_receipt",
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_controlled_leaf_refuses_linux_configuration_and_membership_aliases",
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_bounded_history_retirement_never_reexecutes_an_old_cpu_delivery",
 )
 
 

@@ -4,7 +4,9 @@
 //! QueryAbi. The explicit G1-c profile also exposes ReadUsage through a slot
 //! installed by the trusted initial-image transaction in the actual Process.
 //! Open, dup, fork and descriptor transfer grant no authority. Management and
-//! history operations remain disabled. The ioctl number is experimental.
+//! history operations remain disabled outside the separate G1-d trusted-control
+//! profile. G1-d resolves all five operations through the original Process and
+//! CPU/D owners. The ioctl number is experimental.
 
 use device_id::{DeviceId, MinorId};
 use ostd::mm::VmIo;
@@ -61,10 +63,18 @@ fn nonzero_random_id() -> [u8; 16] {
 // identity is separately returned in HOSR and included in delivery D.
 fn process_session_id(process: &Process) -> Result<([u8; 16], ProcessImageKey)> {
     let key = process.hepta_capspace_session()?;
+    Ok((image_space_id(key), key))
+}
+
+pub(crate) fn boot_id() -> [u8; 16] {
+    *BOOT_ID.get().unwrap()
+}
+
+pub(crate) fn image_space_id(key: ProcessImageKey) -> [u8; 16] {
     let mut id = [0u8; 16];
     id[..8].copy_from_slice(&BOOT_ID.get().unwrap()[..8]);
     id[8..].copy_from_slice(&key.nonce().to_le_bytes());
-    Ok((id, key))
+    id
 }
 
 #[derive(Debug)]
@@ -180,8 +190,9 @@ impl PerOpenFileOps for HeptaControlFile {
             .map_err(|_| Error::with_message(Errno::EINVAL, "invalid request address"))?;
         let response_ptr = usize::try_from(transport.response_addr)
             .map_err(|_| Error::with_message(Errno::EINVAL, "invalid response address"))?;
-        // Copy the complete bounded request BEFORE interpreting bytes. The
-        // driver has no effectful opcodes, including when copyout later fails.
+        // Copy the complete bounded request BEFORE interpreting bytes. In
+        // G1-d an effect may commit before copyout fails; original D replay
+        // returns its saved result without executing it again.
         let mut input = [0u8; MAX_KNOWN_REQUEST_BYTES];
         current_userspace!().read_bytes(request_ptr, &mut input[..request_len])?;
         let request = transport
@@ -205,16 +216,27 @@ impl PerOpenFileOps for HeptaControlFile {
         // happens to hold a grant. Only this optional profile implements usage.
         let (status, revision, payload) = match request.payload {
             RequestPayload::QueryAbi => {
-                #[cfg(feature = "g1c-trusted-observe")]
+                #[cfg(feature = "g1d-trusted-control")]
+                let (supported_ops, max_response_payload) = (
+                    (1u64 << Opcode::QueryAbi.as_u16()) | (1u64 << Opcode::ReadUsage.as_u16())
+                        | (1u64 << Opcode::InstallBudget.as_u16())
+                        | (1u64 << Opcode::QueryDelivery.as_u16())
+                        | (1u64 << Opcode::RetireThrough.as_u16()), 64,
+                );
+                #[cfg(all(feature = "g1c-trusted-observe", not(feature = "g1d-trusted-control")))]
                 let (supported_ops, max_response_payload) = (
                     (1u64 << Opcode::QueryAbi.as_u16()) | (1u64 << Opcode::ReadUsage.as_u16()), 64,
                 );
                 #[cfg(not(feature = "g1c-trusted-observe"))]
                 let (supported_ops, max_response_payload) = (1u64 << Opcode::QueryAbi.as_u16(), 48);
+                #[cfg(feature = "g1d-trusted-control")]
+                let max_request_payload = 40;
+                #[cfg(not(feature = "g1d-trusted-control"))]
+                let max_request_payload = 0;
                 (Status::Ok, 0, ResponsePayload::QueryAbi(QueryAbiResponse {
                     space_id: self.space_id,
                     page_size: u32::try_from(PAGE_SIZE).unwrap(),
-                    max_request_payload: 0,
+                    max_request_payload,
                     max_response_payload,
                     supported_ops,
                     features: 0,
@@ -226,6 +248,13 @@ impl PerOpenFileOps for HeptaControlFile {
                 let process = self.process.upgrade().ok_or_else(|| {
                     Error::with_message(Errno::ESTALE, "HOS2 process lifetime ended")
                 })?;
+                #[cfg(feature = "g1d-trusted-control")]
+                let result = match process.dispatch_hepta_control(self.image_key, &request) {
+                    Ok((revision, payload)) => (Status::Ok, revision, payload),
+                    Err(status) => (status, 0, ResponsePayload::Empty),
+                };
+                #[cfg(not(feature = "g1d-trusted-control"))]
+                let result =
                 match process.read_hepta_initial_usage(
                     self.image_key, request.target_slot, request.target_generation,
                 ) {
@@ -240,8 +269,22 @@ impl PerOpenFileOps for HeptaControlFile {
                         dropped_events: usage.dropped_events,
                     })),
                     Err(status) => (status, 0, ResponsePayload::Empty),
+                };
+                result
+            }
+            #[cfg(feature = "g1d-trusted-control")]
+            RequestPayload::InstallBudget(_) | RequestPayload::QueryDelivery(_)
+                | RequestPayload::RetireThrough(_) => {
+                self.check_session()?;
+                let process = self.process.upgrade().ok_or_else(|| {
+                    Error::with_message(Errno::ESTALE, "HOS2 process lifetime ended")
+                })?;
+                match process.dispatch_hepta_control(self.image_key, &request) {
+                    Ok((revision, payload)) => (Status::Ok, revision, payload),
+                    Err(status) => (status, 0, ResponsePayload::Empty),
                 }
             }
+            #[cfg(not(feature = "g1d-trusted-control"))]
             _ => return_errno_with_message!(
                 Errno::EOPNOTSUPP, "recognized HOS2 resource operation not implemented"
             ),
@@ -250,7 +293,7 @@ impl PerOpenFileOps for HeptaControlFile {
             opcode: request.opcode,
             status,
             request_id: request.request_id,
-            boot_id: *BOOT_ID.get().unwrap(),
+            boot_id: boot_id(),
             revision,
             payload,
         };
