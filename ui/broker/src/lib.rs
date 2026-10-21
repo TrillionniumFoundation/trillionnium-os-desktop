@@ -16,6 +16,9 @@ use std::io;
 use std::sync::{Arc, Weak};
 use std::time::{Duration, Instant};
 
+#[cfg(target_os = "linux")]
+pub mod host;
+
 pub const PROTOCOL_VERSION: u16 = 1;
 pub const MAX_TOKEN_BYTES: usize = 128;
 pub const MAX_DIGEST_BYTES: usize = 64;
