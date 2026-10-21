@@ -18,7 +18,7 @@ use crate::{
     fs::{
         cgroupfs::NativeCpuManager,
         file::{
-            file_handle::FileLike,
+            FileLike,
             file_table::{FdFlags, FileTable},
         },
     },
