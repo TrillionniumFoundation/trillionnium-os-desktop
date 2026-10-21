@@ -35,6 +35,8 @@ CAP_NS = 50_000_000
 PERIOD_NS = 100_000_000
 LEASE_NS = 300_000_000_000
 COMPLETE = "G1D_COMPLETE native_manage=true history=true hepta_durability=false hardware=false"
+WORKLOAD_ISOLATED = ("G1D_WORKLOAD_LINUX_ISOLATED uid=60001 gid=60001 groups=0 caps=0 nnp=1 securebits=195 "
+                     "signal_cases=10 boundary_cases=17 exec_cases=1")
 MARKERS = (
     "G1D_WORKLOAD_NO_AUTHORITY", "G1D_RECOVERY_READY",
     "G1D_QUERYABI_OK supported_ops=62 max_request=40 max_response=64 features=0",
@@ -48,7 +50,7 @@ MARKERS = (
     "G1D_MANAGER_EXEC_BEGIN sequence=1025",
     "G1D_RECOVERY_RETIRED_AFTER_MANAGER_EXEC through=1025 next=1026",
     "G1D_RECOVERY_STOPPED",
-    "G1D_CHILDREN_REAPED workload_signal=15 recovery_exit=0", COMPLETE,
+    "G1D_CHILDREN_REAPED workload_signal=15 recovery_exit=0", COMPLETE, WORKLOAD_ISOLATED,
 )
 COMMITTED = re.compile(r"^\[hepta-g1d\] trusted initial image committed: bytes=([0-9]+) entry=0x([0-9a-f]+)$")
 ROLE_COMMITTED = re.compile(r"^\[hepta-g1d\] trusted role committed: role=([123]) pid=([0-9]+)$")
@@ -74,7 +76,20 @@ RECOVERY = re.compile(r"^G1D_INDEPENDENT_RECOVERY resumed_total=([0-9]+) revisio
 FULL = re.compile(r"^G1D_FULL_WINDOW capacity=1024 refused_sequence=1025 old_results=retained revision=([0-9]+)$")
 EXEC = re.compile(r"^G1D_EXEC_REVOKED old_fd_errno=116 no_auxv=true own_history=denied "
                   r"recovery_history=terminal sequence=1025$")
-DYNAMIC = (BOOT, APPLY, COPYOUT, ALIAS, ZERO, RECOVERY, FULL, EXEC)
+CREDENTIAL_KEYS = ("pid", "ruid", "euid", "suid", "fsuid", "rgid", "egid", "sgid", "fsgid", "groups",
+                   "effective", "permitted", "inheritable", "bounding", "ambient", "nnp", "securebits", "sid")
+CREDENTIALS = re.compile(r"^G1D_WORKLOAD_CREDS phase=([a-z_]+) "
+                         + " ".join(key + r"=([0-9]+)" for key in CREDENTIAL_KEYS) + r"$")
+WORKLOAD_SIGNAL = re.compile(r"^G1D_WORKLOAD_SIGNAL target=(manager|recovery) signal=([0-9]+) rc=(-?[0-9]+) errno=([0-9]+)$")
+WORKLOAD_BOUNDARY = re.compile(r"^G1D_WORKLOAD_BOUNDARY name=([a-z_]+) rc=(-?[0-9]+) errno=([0-9]+)$")
+SIGNAL_CASES = tuple((target, signal) for signal in (0, 19, 15, 9, 18) for target in ("manager", "recovery"))
+BOUNDARY_CASES = (("setresuid_root", 1), ("setresgid_root", 1), ("setgroups_root", 1),
+                  ("raise_cap_kill", 1), ("raise_ambient_kill", 1), ("clear_no_new_privs", 22),
+                  ("clear_securebits", 1), ("ptrace_attach_manager", 5), ("ptrace_pokedata_manager", 3),
+                  ("proc_mem_manager", 13), ("proc_maps_manager", 13), ("ptrace_attach_recovery", 5),
+                  ("ptrace_pokedata_recovery", 3), ("proc_mem_recovery", 13),
+                  ("proc_maps_recovery", 13), ("rewrite_ready", 13), ("forge_recovery_command", 13))
+DYNAMIC = (BOOT, APPLY, COPYOUT, ALIAS, ZERO, RECOVERY, FULL, EXEC, CREDENTIALS, WORKLOAD_SIGNAL, WORKLOAD_BOUNDARY)
 
 
 def build_initramfs(original, probe):
@@ -99,6 +114,42 @@ def records(lines, pattern):
     return [(index, match) for index, line in enumerate(lines) if (match := pattern.fullmatch(line))]
 
 
+def workload_boundary(lines, pids):
+    creds, signals, boundaries = (records(lines, pattern)
+                                  for pattern in (CREDENTIALS, WORKLOAD_SIGNAL, WORKLOAD_BOUNDARY))
+    rows = [{"phase": match[1], **dict(zip(CREDENTIAL_KEYS, map(int, match.groups()[1:])))}
+            for _, match in creds]
+    credentials_ok = len(pids) == 3 and len(rows) == 3 and [row["phase"] for row in rows] == [
+        "initial", "after_denials", "after_exec"]
+    if credentials_ok:
+        for row in rows:
+            credentials_ok &= (all(row[key] == 60001 for key in CREDENTIAL_KEYS[1:9])
+                               and all(row[key] == 0 for key in ("groups", "effective", "permitted",
+                                                               "inheritable", "bounding", "ambient"))
+                               and row["nnp"] == 1 and row["securebits"] == 195 and row["sid"] == pids[1])
+        credentials_ok &= (rows[0]["pid"] == rows[1]["pid"] == pids[1]
+                           and 1 < rows[2]["pid"] < 1 << 31 and rows[2]["pid"] not in pids)
+    signals_ok = (len(signals) == len(SIGNAL_CASES)
+                  and all((match[1], int(match[2])) == case and int(match[3]) == -1 and int(match[4]) == 1
+                          for (_, match), case in zip(signals, SIGNAL_CASES)))
+    boundaries_ok = (len(boundaries) == len(BOUNDARY_CASES)
+                     and all((match[1], int(match[3])) == case and int(match[2]) == -1
+                             for (_, match), case in zip(boundaries, BOUNDARY_CASES)))
+    ordered = False
+    if credentials_ok and signals_ok and boundaries_ok and lines.count(WORKLOAD_ISOLATED) == 1 \
+            and lines.count("G1D_WORKLOAD_NO_AUTHORITY") == 1:
+        workload_boot = [index for index, match in records(lines, BOOT) if match[1] == "2"]
+        indices = [creds[0][0], *[index for index, _ in signals], *[index for index, _ in boundaries],
+                   creds[1][0], creds[2][0], lines.index(WORKLOAD_ISOLATED), lines.index("G1D_WORKLOAD_NO_AUTHORITY")]
+        ordered = (len(workload_boot) == 1 and workload_boot[0] < indices[0]
+                   and all(left < right for left, right in zip(indices, indices[1:])))
+    return {"passed": bool(credentials_ok and signals_ok and boundaries_ok and ordered),
+            "credential_observations": rows, "nonroot_credentials_survive_setuid_exec": bool(credentials_ok),
+            "cross_role_signals_denied": bool(signals_ok), "linux_boundary_cases_exact": bool(boundaries_ok),
+            "ptrace_attach_profile": "unsupported_EIO; supported_POKEDATA_denied_ESRCH; proc_mem_and_maps_denied_EACCES",
+            "observations_ordered": ordered}
+
+
 def evaluate_positive(raw, code, timed_out, probe_info):
     require(len(raw) <= replay.MAX_SERIAL_BYTES, "G1-d serial exceeds evidence bound")
     text = ordinary.boot_check.ANSI.sub("", raw.decode(errors="replace"))
@@ -120,6 +171,7 @@ def evaluate_positive(raw, code, timed_out, probe_info):
     activation_before_resume = (bootstrap_ok
         and all(images[i][0] < roles[i][0] for i in range(3))
         and max(index for index, _ in images + roles) < activation[0][0] < min(index for index, _ in boots))
+    workload = workload_boundary(lines, pids)
     applied_records = records(lines, APPLY)
     applied = [dict(zip(APPLY_KEYS, map(int, match.groups()))) for _, match in applied_records]
     accounting_ok = len(applied) == len(APPLY_CASES)
@@ -190,9 +242,11 @@ def evaluate_positive(raw, code, timed_out, probe_info):
                   and not any(marker in text for marker in (*ordinary.boot_check.FATAL_PANICS, "Kernel panic"))
                   and not any(line.startswith("G1D_FAIL") for line in lines))
     passed = (type(code) is int and code == 33 and timed_out is False and exact and activation_before_resume
-              and accounting_ok and retry_ok and aliases_ok and history_ok and stopped and resumed and ordered and no_failure)
+              and workload["passed"] and accounting_ok and retry_ok and aliases_ok and history_ok
+              and stopped and resumed and ordered and no_failure)
     return {"passed": bool(passed), "marker_counts": counts, "three_private_bootstraps": bool(bootstrap_ok),
             "manifest_verified_before_any_resume": bool(activation_before_resume), "role_pids": list(pids),
+            "workload_linux_isolation": workload,
             "apply_records": applied, "initial_revision": initial, "native_accounting_preserved": bool(accounting_ok),
             "copyout_replay_exact": bool(retry_ok), "legacy_aliases_denied": aliases_ok,
             "zero_budget_stops_real_workload": bool(stopped), "independent_recovery_resumes_workload": bool(resumed),
@@ -215,6 +269,62 @@ def evaluate_rejection(raw, code, timed_out, reason):
     return {"passed": type(code) is int and code == 65 and timed_out is False and rejected and no_resume and exact_failure,
             "reason": reason, "exact_rejection": rejected, "no_commit_activation_or_guest": no_resume,
             "initial_loader_failure": exact_failure, "raw_serial_sha256": digest(raw), "raw_serial_size": len(raw)}
+
+
+def evaluate_root_workload(raw, code, timed_out, probe_info):
+    """Require the actual old root credentials and two non-destructive signal probes.
+
+    A panic, missing syscall, timeout or an unrelated assertion never qualifies
+    this production mutation. The unmodified probe stops before sending any
+    destructive signal and PID 1 powers off after observing no heartbeat.
+    """
+    positive = evaluate_positive(raw, code, timed_out, probe_info)
+    text = ordinary.boot_check.ANSI.sub("", raw.decode(errors="replace"))
+    lines = text.splitlines()
+    pids = positive["role_pids"]
+    creds = records(lines, CREDENTIALS)
+    rows = positive["workload_linux_isolation"]["credential_observations"]
+    root = len(pids) == 3 and len(rows) == 1 and rows[0]["phase"] == "initial"
+    if root:
+        row = rows[0]
+        root = (row["pid"] == row["sid"] == pids[1]
+                and all(row[key] == 0 for key in CREDENTIAL_KEYS[1:9])
+                and row["groups"] == 1
+                and all(row[key] == (1 << 41) - 1 for key in ("effective", "permitted", "bounding"))
+                and all(row[key] == 0 for key in ("inheritable", "ambient", "nnp", "securebits")))
+    signals = records(lines, WORKLOAD_SIGNAL)
+    signal_access = (len(signals) == 2 and all(match[1] == target and tuple(map(int, match.groups()[1:])) == (0, 0, 0)
+                    for (_, match), target in zip(signals, ("manager", "recovery"))))
+    failure = re.compile(r"^G1D_FAIL at=([a-z_]+) line=([0-9]+) errno=([0-9]+) pid=([0-9]+) role=([123])$")
+    failures = records(lines, failure)
+    expected_failure = (len(pids) == 3 and len(failures) == 2
+        and [(match[1], int(match[4]), int(match[5])) for _, match in failures]
+            == [("workload_privilege_boundary", pids[1], 2), ("workload_really_running", pids[0], 1)]
+        and all(int(match[2]) > 0 for _, match in failures) and int(failures[0][1][3]) == 0)
+    allowed = (BOOT, CREDENTIALS, WORKLOAD_SIGNAL, failure)
+    unexpected = [line for line in lines if line.startswith("G1D_") and line != "G1D_RECOVERY_READY"
+                  and not any(pattern.fullmatch(line) for pattern in allowed)]
+    unknown_kernel = [line for line in lines if line.startswith("[hepta-g1d]")
+                      and not any(pattern.fullmatch(line) for pattern in (COMMITTED, ROLE_COMMITTED, ACTIVATED))]
+    ordered = False
+    if root and signal_access and expected_failure and lines.count("G1D_RECOVERY_READY") == 1:
+        boots = {int(match[1]): index for index, match in records(lines, BOOT)}
+        indices = [boots.get(2, len(lines)), creds[0][0], signals[0][0], signals[1][0],
+                   failures[0][0], failures[1][0]]
+        ordered = (all(left < right for left, right in zip(indices, indices[1:]))
+                   and boots.get(3, len(lines)) < lines.index("G1D_RECOVERY_READY") < failures[1][0])
+    clean_failure = (not unexpected and not unknown_kernel and "rejected initial image" not in text
+                     and not any(marker in text for marker in (*ordinary.boot_check.FATAL_PANICS, "Kernel panic")))
+    passed = (type(code) is int and code == 33 and timed_out is False and not positive["passed"]
+              and positive["manifest_verified_before_any_resume"] and root and signal_access
+              and expected_failure and ordered and clean_failure)
+    return {"passed": bool(passed), "actual_root_credential_observations": rows,
+            "both_cross_role_signal_permission_checks_succeeded": bool(signal_access),
+            "unchanged_positive_oracle_rejected": positive["passed"] is False,
+            "exact_failure_after_unsafe_credentials": bool(expected_failure and ordered),
+            "no_destructive_signal_sent": bool(signal_access and clean_failure),
+            "raw_serial_sha256": digest(raw), "raw_serial_size": len(raw)}
+
 
 def verify_build(directory, snapshot, target, probe):
     for name in ("make-exit-code.txt", "log-exit-code.txt", "run-exit-code.txt"):

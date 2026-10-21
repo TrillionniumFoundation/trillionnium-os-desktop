@@ -5,7 +5,9 @@
 #define _GNU_SOURCE
 #include <errno.h>
 #include <fcntl.h>
+#include <grp.h>
 #include <inttypes.h>
+#include <linux/capability.h>
 #include <limits.h>
 #include <signal.h>
 #include <stdarg.h>
@@ -14,12 +16,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/auxv.h>
+#include <sys/fsuid.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <sys/mount.h>
+#include <sys/prctl.h>
+#include <sys/ptrace.h>
 #include <sys/reboot.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
+#include <sys/syscall.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <time.h>
@@ -33,6 +39,8 @@
 #define WINDOW_CAPACITY 1024U
 #define IPC_MAGIC UINT64_C(0x4731444348414e32)
 #define IPC_DIR "/tmp/g1d"
+#define WORKLOAD_ID 60001U
+#define WORKLOAD_SECUREBITS 195
 
 enum { OK = 0, INVALID = 1, DENIED = 2, STALE = 3, REVOKED = 4,
        CONFLICT = 5, EXHAUSTED = 6, UNSUPPORTED = 7, UNKNOWN = 8,
@@ -278,6 +286,9 @@ static void publish_message(const char *name, const struct message *message) {
     CHECK(snprintf(temporary, sizeof temporary, IPC_DIR "/%s.new", name) > 0, "ipc_temp_name");
     CHECK(snprintf(final, sizeof final, IPC_DIR "/%s", name) > 0, "ipc_final_name");
     write_file(temporary, message, sizeof *message);
+    /* Only the readiness record is public. The workload cannot write the
+     * directory or read/replace the manager/recovery command and reply files. */
+    if (strcmp(name, "ready") == 0) CHECK(chmod(temporary, 0644) == 0, "ready_readonly_mode");
     CHECK(rename(temporary, final) == 0, "ipc_publish");
 }
 static int read_message(const char *name, struct message *message) {
@@ -368,8 +379,114 @@ static uint64_t heartbeat(void) {
     CHECK((n == 0 || n == 8) && close(fd) == 0, "heartbeat_read");
     return n == 8 ? get64(bytes) : 0;
 }
+static int workload_credentials(const char *phase) {
+    uid_t ruid, euid, suid;
+    gid_t rgid, egid, sgid;
+    CHECK(getresuid(&ruid, &euid, &suid) == 0 && getresgid(&rgid, &egid, &sgid) == 0,
+          "workload_read_ids");
+    uid_t fsuid = setfsuid((uid_t)-1);
+    gid_t fsgid = setfsgid((gid_t)-1);
+    int groups = getgroups(0, NULL);
+    struct __user_cap_header_struct header = {_LINUX_CAPABILITY_VERSION_3, 0};
+    struct __user_cap_data_struct caps[2] = {{0}, {0}};
+    CHECK(groups >= 0 && syscall(SYS_capget, &header, caps) == 0, "workload_read_capabilities");
+    uint64_t effective = caps[0].effective | ((uint64_t)caps[1].effective << 32);
+    uint64_t permitted = caps[0].permitted | ((uint64_t)caps[1].permitted << 32);
+    uint64_t inheritable = caps[0].inheritable | ((uint64_t)caps[1].inheritable << 32);
+    uint64_t bounding = 0, ambient = 0;
+    for (unsigned cap = 0; cap <= 40; ++cap) {
+        int bound = prctl(PR_CAPBSET_READ, cap, 0, 0, 0);
+        int raised = prctl(PR_CAP_AMBIENT, PR_CAP_AMBIENT_IS_SET, cap, 0, 0);
+        CHECK((bound == 0 || bound == 1) && (raised == 0 || raised == 1), "workload_read_capset_bit");
+        bounding |= (uint64_t)bound << cap;
+        ambient |= (uint64_t)raised << cap;
+    }
+    int nnp = prctl(PR_GET_NO_NEW_PRIVS, 0, 0, 0, 0);
+    int securebits = prctl(PR_GET_SECUREBITS, 0, 0, 0, 0);
+    pid_t sid = getsid(0);
+    CHECK(nnp >= 0 && securebits >= 0 && sid > 0, "workload_read_privilege_flags");
+    record("G1D_WORKLOAD_CREDS phase=%s pid=%ld ruid=%u euid=%u suid=%u fsuid=%u "
+           "rgid=%u egid=%u sgid=%u fsgid=%u groups=%d effective=%" PRIu64
+           " permitted=%" PRIu64 " inheritable=%" PRIu64 " bounding=%" PRIu64
+           " ambient=%" PRIu64 " nnp=%d securebits=%d sid=%ld",
+           phase, (long)getpid(), ruid, euid, suid, fsuid, rgid, egid, sgid, fsgid,
+           groups, effective, permitted, inheritable, bounding, ambient, nnp, securebits, (long)sid);
+    return ruid == WORKLOAD_ID && euid == WORKLOAD_ID && suid == WORKLOAD_ID && fsuid == WORKLOAD_ID &&
+           rgid == WORKLOAD_ID && egid == WORKLOAD_ID && sgid == WORKLOAD_ID && fsgid == WORKLOAD_ID &&
+           groups == 0 && effective == 0 && permitted == 0 && inheritable == 0 && bounding == 0 && ambient == 0 &&
+           nnp == 1 && securebits == WORKLOAD_SECUREBITS;
+}
+static int workload_signal(const char *target, pid_t pid, int signal) {
+    errno = 0;
+    int result = kill(pid, signal), error = errno;
+    record("G1D_WORKLOAD_SIGNAL target=%s signal=%d rc=%d errno=%d", target, signal, result, error);
+    return result == -1 && error == EPERM;
+}
+static void workload_denial(const char *name, long result, int expected_error) {
+    int error = errno;
+    record("G1D_WORKLOAD_BOUNDARY name=%s rc=%ld errno=%d", name, result, error);
+    CHECK(result == -1 && error == expected_error, "workload_boundary_denial");
+}
+#define WORKLOAD_DENIED(name, call, error) do { errno = 0; workload_denial(name, (call), error); } while (0)
+static void workload_linux_boundary(void) {
+    int credentials_ok = workload_credentials("initial");
+    int manager_denied = workload_signal("manager", manager_pid, 0);
+    int recovery_denied = workload_signal("recovery", recovery_pid, 0);
+    /* A frozen old-root kernel records the real credential/signal failures and
+     * exits here. It never sends a destructive signal in that negative boot. */
+    CHECK(credentials_ok && manager_denied && recovery_denied, "workload_privilege_boundary");
+    CHECK(getsid(0) == workload_pid && getsid(manager_pid) != getsid(0) &&
+          getsid(recovery_pid) != getsid(0), "workload_separate_session");
+    const int signals[] = {SIGSTOP, SIGTERM, SIGKILL, SIGCONT};
+    for (unsigned i = 0; i < sizeof signals / sizeof signals[0]; ++i) {
+        CHECK(workload_signal("manager", manager_pid, signals[i]), "workload_manager_signal_denied");
+        CHECK(workload_signal("recovery", recovery_pid, signals[i]), "workload_recovery_signal_denied");
+    }
+    WORKLOAD_DENIED("setresuid_root", setresuid(0, 0, 0), EPERM);
+    WORKLOAD_DENIED("setresgid_root", setresgid(0, 0, 0), EPERM);
+    gid_t root_group = 0;
+    WORKLOAD_DENIED("setgroups_root", setgroups(1, &root_group), EPERM);
+    struct __user_cap_header_struct header = {_LINUX_CAPABILITY_VERSION_3, 0};
+    struct __user_cap_data_struct raised[2] = {{.effective = 1U << CAP_KILL, .permitted = 1U << CAP_KILL}, {0}};
+    WORKLOAD_DENIED("raise_cap_kill", syscall(SYS_capset, &header, raised), EPERM);
+    WORKLOAD_DENIED("raise_ambient_kill", prctl(PR_CAP_AMBIENT, PR_CAP_AMBIENT_RAISE, CAP_KILL, 0, 0), EPERM);
+    WORKLOAD_DENIED("clear_no_new_privs", prctl(PR_SET_NO_NEW_PRIVS, 0, 0, 0, 0), EINVAL);
+    WORKLOAD_DENIED("clear_securebits", prctl(PR_SET_SECUREBITS, 0, 0, 0, 0), EPERM);
+    CHECK(setfsuid(0) == WORKLOAD_ID && setfsgid(0) == WORKLOAD_ID, "workload_fsids_cannot_return_root");
+    for (unsigned i = 0; i < 2; ++i) {
+        pid_t target = i == 0 ? manager_pid : recovery_pid;
+        const char *name = i == 0 ? "manager" : "recovery";
+        char path[128], label[64];
+        /* This kernel currently rejects PTRACE_ATTACH as unsupported (EIO).
+         * The proc checks below separately exercise its real alien-access policy. */
+        CHECK(snprintf(label, sizeof label, "ptrace_attach_%s", name) > 0, "ptrace_label");
+        WORKLOAD_DENIED(label, ptrace(PTRACE_ATTACH, target, NULL, NULL), EIO);
+        CHECK(snprintf(label, sizeof label, "ptrace_pokedata_%s", name) > 0, "ptrace_pokedata_label");
+        WORKLOAD_DENIED(label, ptrace(PTRACE_POKEDATA, target, NULL, NULL), ESRCH);
+        CHECK(snprintf(path, sizeof path, "/proc/%ld/mem", (long)target) > 0, "proc_mem_path");
+        CHECK(snprintf(label, sizeof label, "proc_mem_%s", name) > 0, "proc_mem_label");
+        WORKLOAD_DENIED(label, open(path, O_RDWR | O_CLOEXEC), EACCES);
+        CHECK(snprintf(path, sizeof path, "/proc/%ld/maps", (long)target) > 0, "proc_maps_path");
+        CHECK(snprintf(label, sizeof label, "proc_maps_%s", name) > 0, "proc_maps_label");
+        WORKLOAD_DENIED(label, open(path, O_RDONLY | O_CLOEXEC), EACCES);
+    }
+    WORKLOAD_DENIED("rewrite_ready", open(IPC_DIR "/ready", O_WRONLY | O_CLOEXEC), EACCES);
+    WORKLOAD_DENIED("forge_recovery_command", open(IPC_DIR "/command.new", O_WRONLY | O_CREAT | O_CLOEXEC, 0600), EACCES);
+    CHECK(workload_credentials("after_denials"), "workload_credentials_changed");
+    pid_t child = fork();
+    CHECK(child >= 0, "workload_setuid_exec_fork");
+    if (child == 0) {
+        execl(IPC_DIR "/setuid-probe", "setuid-probe", "--workload-privexec", NULL);
+        failure("workload_setuid_exec_returned", __LINE__);
+    }
+    int status;
+    CHECK(waitpid(child, &status, 0) == child && WIFEXITED(status) && WEXITSTATUS(status) == 0,
+          "workload_setuid_exec_failed");
+    record("G1D_WORKLOAD_LINUX_ISOLATED uid=60001 gid=60001 groups=0 caps=0 nnp=1 securebits=195 signal_cases=10 boundary_cases=17 exec_cases=1");
+}
 static void workload(void) {
     wait_ready();
+    workload_linux_boundary();
     control_fd = open_control(1); query(control_fd, own_space);
     CHECK(memcmp(own_space, manager_space, 16) != 0 &&
           memcmp(own_space, recovery_space, 16) != 0, "workload_private_capspace");
@@ -378,7 +495,7 @@ static void workload(void) {
     install_request(q, 1, 1, MAX_CAP_NS); put64(q + 40, 2); put64(q + 48, 1);
     empty_response(control_fd, q, 96, DENIED);
     record("G1D_WORKLOAD_NO_AUTHORITY");
-    int fd = open(IPC_DIR "/heartbeat", O_WRONLY | O_CREAT | O_CLOEXEC, 0600);
+    int fd = open(IPC_DIR "/heartbeat", O_WRONLY | O_CLOEXEC);
     CHECK(fd >= 0, "workload_heartbeat_open");
     uint64_t count = 0;
     for (;;) {
@@ -545,7 +662,28 @@ static void start_workload_and_recovery(void) {
     CHECK(mount("none","/proc","proc",0,NULL)==0,"mount_proc");
     CHECK(mount("none","/sys","sysfs",0,NULL)==0,"mount_sysfs");
     CHECK(mount("none","/sys/fs/cgroup","cgroup2",0,NULL)==0,"mount_cgroup");
-    CHECK(mkdir(IPC_DIR,0700)==0,"probe_coordination_directory");
+    CHECK(mkdir(IPC_DIR,0755)==0,"probe_coordination_directory");
+    write_file(IPC_DIR "/heartbeat", "", 0);
+    CHECK(chown(IPC_DIR "/heartbeat",WORKLOAD_ID,WORKLOAD_ID)==0,"workload_heartbeat_owner");
+    CHECK(chmod("/dev/hepta-control",0666)==0,"control_query_device_access");
+    int source=open("/test/g1d-init",O_RDONLY|O_CLOEXEC);
+    int copy=open(IPC_DIR "/setuid-probe",O_WRONLY|O_CREAT|O_EXCL|O_CLOEXEC,0600);
+    CHECK(source>=0 && copy>=0,"setuid_probe_open");
+    unsigned char buffer[4096];
+    for (;;) {
+        ssize_t n=read(source,buffer,sizeof buffer);
+        CHECK(n>=0,"setuid_probe_read");
+        if(n==0)break;
+        ssize_t written=0;
+        while(written<n) {
+            ssize_t count=write(copy,buffer+written,(size_t)(n-written));
+            CHECK(count>0,"setuid_probe_write");written+=count;
+        }
+    }
+    struct stat metadata;
+    CHECK(fchmod(copy,04755)==0 && fstat(copy,&metadata)==0 && metadata.st_uid==0 &&
+          metadata.st_gid==0 && (metadata.st_mode&07777)==04755,"setuid_probe_root_owned_mode");
+    CHECK(close(copy)==0 && close(source)==0,"setuid_probe_close");
     struct message ready={.magic=IPC_MAGIC};
     publish_message("ready",&ready);
     (void)await_message("recovery-ready",0);
@@ -760,6 +898,10 @@ static void manager(void) {
 
 int main(int argc,char **argv) {
     setvbuf(stdout,NULL,_IONBF,0);
+    if(argc==2 && strcmp(argv[1],"--workload-privexec")==0) {
+        CHECK(getauxval(AT_HEPTA_BOOT)==0 && workload_credentials("after_exec"),"workload_privexec_gained_authority");
+        return 0;
+    }
     if(argc>1 && strcmp(argv[1],"--post-exec")==0)post_exec(argc,argv);
     CHECK(argc==1,"initial_argc");
     bootstrap();

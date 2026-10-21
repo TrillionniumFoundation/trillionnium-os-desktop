@@ -28,7 +28,7 @@ permissions:
 jobs:
   trusted-initial-control:
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
         with:
@@ -66,6 +66,18 @@ jobs:
             --target-dir "${RUNNER_TEMP}/g1d-target" \
             --output "${RUNNER_TEMP}/g1d-trusted-control"
 
+      - name: Require the real old-root workload mutation to fail the unchanged guest probe
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B tests/kernel/control/run_g1d_workload_negative.py \
+            --expected-source-head "$(git rev-parse HEAD)" \
+            --expected-source-tree "$(git rev-parse HEAD^{tree})" \
+            --positive-guest "${RUNNER_TEMP}/g1d-trusted-control" \
+            --source-worktree "${RUNNER_TEMP}/g1d-negative-source" \
+            --target-dir "${RUNNER_TEMP}/g1d-negative-target" \
+            --output "${RUNNER_TEMP}/g1d-workload-negative"
+
       - name: Retain exact source, build inputs, kernel and all guest evidence
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
@@ -74,4 +86,5 @@ jobs:
           path: |
             ${{ runner.temp }}/g1d-verdict-tests
             ${{ runner.temp }}/g1d-trusted-control
+            ${{ runner.temp }}/g1d-workload-negative
           if-no-files-found: error
