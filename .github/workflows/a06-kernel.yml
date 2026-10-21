@@ -70,7 +70,26 @@ jobs:
             build-essential ca-certificates curl git python3 pkg-config libssl-dev \
             clang lld qemu-system-x86 busybox-static \
             gcc-13 libc6-dev binutils libsqlite3-dev python3.12 python3.12-minimal \
-            libpython3.12-stdlib openssl tzdata
+            libpython3.12-stdlib openssl tzdata kmod
+          exfat_host="${RUNNER_TEMP}/a06-exfat-host"
+          mkdir "$exfat_host"
+          uname -a > "$exfat_host/linux-version.txt"
+          host_kernel_release=$(uname -r)
+          printf '%s\n' "$host_kernel_release" > "$exfat_host/kernel-release.txt"
+          # Hosted Azure images can omit the running kernel's extra modules.
+          # A userspace formatter cannot provide the kernel ExFAT filesystem.
+          if ! sudo modprobe exfat > "$exfat_host/modprobe-before.stdout.log" \
+              2> "$exfat_host/modprobe-before.stderr.log"; then
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+              "linux-modules-extra-${host_kernel_release}" \
+              > "$exfat_host/install-matching-modules.log" 2>&1
+          fi
+          sudo modprobe exfat > "$exfat_host/modprobe.stdout.log" \
+            2> "$exfat_host/modprobe.stderr.log"
+          modinfo -F filename exfat > "$exfat_host/module-filename.txt"
+          modinfo -F vermagic exfat > "$exfat_host/module-vermagic.txt"
+          cp /proc/filesystems "$exfat_host/filesystems.txt"
+          grep -Eq '^[[:space:]]*exfat$' "$exfat_host/filesystems.txt"
 
       - name: Freeze the permission probe and verify it in an isolated Linux mount namespace
         shell: bash
@@ -566,6 +585,7 @@ jobs:
             ${{ runner.temp }}/a06-probe-2vcpu
             ${{ runner.temp }}/a06-kernel.sha256
             ${{ runner.temp }}/a06-exfat-checks
+            ${{ runner.temp }}/a06-exfat-host
             ${{ runner.temp }}/a06-exfat-bundle
             ${{ runner.temp }}/a06-exfat-linux
             ${{ runner.temp }}/a06-exfat-guest
