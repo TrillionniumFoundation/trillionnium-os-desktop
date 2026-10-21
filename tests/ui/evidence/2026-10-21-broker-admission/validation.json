@@ -1,0 +1,129 @@
+{
+  "schema": "a10.broker-admission-validation.v1",
+  "observed_at": "2026-10-21T09:07:00.437728+00:00",
+  "parent_head": "987d0d992ad5faa522676759a508d2bbdccdf3fa",
+  "baseline_broker_blob": "6b1da02bc04dc09a96d86eb3afa9ca999ef1f80c",
+  "scope": "Linux host broker crate only; no owner grant, kernel, physical desktop, Android or GPU qualification",
+  "toolchain": {
+    "rustc": "rustc 1.88.0 (6b00bc388 2025-06-23)\nbinary: rustc\ncommit-hash: 6b00bc3880198600130e1cf62b8f8a93494488cc\ncommit-date: 2025-06-23\nhost: x86_64-unknown-linux-gnu\nrelease: 1.88.0\nLLVM version: 20.1.5\n",
+    "cargo": "cargo 1.88.0 (873a06493 2025-05-10)\nrelease: 1.88.0\ncommit-hash: 873a0649350c486caf67be772828a4f36bb4734c\ncommit-date: 2025-05-10\nhost: x86_64-unknown-linux-gnu\nlibgit2: 1.9.0 (sys:0.20.0 vendored)\nlibcurl: 8.12.1-DEV (sys:0.4.80+curl-8.12.1 vendored ssl:OpenSSL/3.4.1)\nssl: OpenSSL 3.4.1 11 Feb 2025\nos: Ubuntu 24.4.0 (noble) [64-bit]\n",
+    "build_jobs": 2,
+    "lock_unchanged": true
+  },
+  "baseline": {
+    "command": "cargo test --manifest-path ui/Cargo.toml -p trill-ui-broker --locked --test session_admission -- --test-threads=1",
+    "exit_code": 101,
+    "passed": 1,
+    "failed": 5,
+    "log": "session-admission-baseline.log",
+    "qualification": "same acceptance test file against unmodified owner broker; functional assertion failures, not compiler failure"
+  },
+  "fixed": {
+    "command": "cargo test --manifest-path ui/Cargo.toml -p trill-ui-broker --locked --offline",
+    "exit_code": 0,
+    "unit_passed": 15,
+    "admission_passed": 6,
+    "identity_passed": 5,
+    "failed": 0,
+    "ignored": 0,
+    "filtered_out": 0,
+    "log": "session-admission-fixed.log"
+  },
+  "clippy": {
+    "command": "cargo clippy --manifest-path ui/Cargo.toml -p trill-ui-broker --all-targets --locked --offline -- -D warnings",
+    "exit_code": 0,
+    "log": "session-admission-clippy.log"
+  },
+  "static_checks": [
+    {
+      "command": [
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "ui/Cargo.toml",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "output": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "output": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--exit-code",
+        "HEAD",
+        "--",
+        "ui/Cargo.lock"
+      ],
+      "exit_code": 0,
+      "output": ""
+    }
+  ],
+  "readme_bytes": 0,
+  "source_files": {
+    "ui/broker/src/lib.rs": {
+      "bytes": 46616,
+      "sha256": "570d6c1a1a4a653df059929a9f5a274214ae8826d9ec4773503aa995a9f97fb7",
+      "git_blob_sha1": "0bbadbc5796232700bc9576d38f5ed3f116dcb4d"
+    },
+    "ui/broker/tests/session_admission.rs": {
+      "bytes": 6286,
+      "sha256": "f63f5b5568ea9c9a157162ca1db57e124ccee7cc178701c3c3fb53fce6527c76",
+      "git_blob_sha1": "b26b089f94ecfae89e4774e4c75b14fcfeb4d27e"
+    },
+    "ui/broker/tests/session_identity.rs": {
+      "bytes": 3802,
+      "sha256": "d815d6235357a57fc40a8fca5b710e46dfd0d273f93bcadd8a61026a59777231",
+      "git_blob_sha1": "cf4845512abe2b231f588f790f69489b66a9e483"
+    },
+    "ui/Cargo.toml": {
+      "bytes": 494,
+      "sha256": "17df7aad85ee7246f348e6532f25e84e9b17eef42c0b133e386b298160c0f645",
+      "git_blob_sha1": "313c54c5a08f8fa9714703201b4bb7380c240082"
+    },
+    "ui/Cargo.lock": {
+      "bytes": 83116,
+      "sha256": "801ee026446196202060d6aeae16a5f39f44dd45d32e0e6e9b9391ce9bc53d14",
+      "git_blob_sha1": "41933aa68ff25dabed4d86850ba0f3eed58fa825"
+    },
+    "docs/ORGAN_BROKER.md": {
+      "bytes": 4352,
+      "sha256": "52f05b3b7612862e92a7a372f9dbd5604b2ca82994b866d3349788f24ca7f774",
+      "git_blob_sha1": "25169763dbdea03be7ea3a7a32c5a2a43f639bc2"
+    }
+  },
+  "evidence_files": {
+    "rust188-download-receipts.json": {
+      "bytes": 1307,
+      "sha256": "89ebf7a06c8ba6d75eadecd2985f97922d6fd9cd9db434a464f8f3e8105da712",
+      "git_blob_sha1": "f99d6e8c96574545617e1c2bb134df1d0b6df790"
+    },
+    "session-admission-baseline.log": {
+      "bytes": 3365,
+      "sha256": "feb5c8d482a7f8078a47ec205dc772ca8f6ade8946ce2524345666b4e1bc9bae",
+      "git_blob_sha1": "326dac7afe8416249f55a1a725c87f3ae092643f"
+    },
+    "session-admission-clippy.log": {
+      "bytes": 383,
+      "sha256": "7b3f229afcc8476f4a14c76c727d562755569dfc3b3b69212407d6d97d5203e0",
+      "git_blob_sha1": "3e9a20842adfeb07f6d451a451fdc7b84244dabc"
+    },
+    "session-admission-fixed.log": {
+      "bytes": 2905,
+      "sha256": "957daf15142d8fb71b3ae00249e019df0c70e4741764c2af14594f115e222a09",
+      "git_blob_sha1": "efe373569ca31f19e451fddcd86a788f565ceb68"
+    }
+  },
+  "remaining_gate": "Original A10 Rust 1.88 full workspace/Wayland CI must run on the published exact head before owner integration."
+}
