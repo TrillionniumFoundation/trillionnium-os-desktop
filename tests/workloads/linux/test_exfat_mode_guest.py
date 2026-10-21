@@ -114,6 +114,38 @@ class ObservationTests(unittest.TestCase):
 
 
 class InputOwnershipTests(unittest.TestCase):
+    def test_formatter_version_requires_exact_response_and_retains_the_actual_exit(self):
+        good = b'exfatprogs version : 1.2.2\n'
+        cases = [(1, good, b'', True), (0, good, b'', False), (2, good, b'', False),
+                 (-9, good, b'', False), (1, b'', b'', False),
+                 (1, b'exfatprogs version : 1.2.3\n', b'', False),
+                 (1, good + b'additional error\n', b'', False), (1, good, b'error\n', False)]
+        for code, stdout, stderr, accepted in cases:
+            with self.subTest(code=code, stdout=stdout, stderr=stderr), tempfile.TemporaryDirectory() as directory:
+                out = Path(directory)
+                def response(command, **kwargs):
+                    self.assertEqual(command, ['/reviewed/mkfs.exfat', '-V'])
+                    kwargs['stdout'].write(stdout)
+                    kwargs['stderr'].write(stderr)
+                    return types.SimpleNamespace(returncode=code)
+                with mock.patch.object(runner.subprocess, 'run', side_effect=response):
+                    if accepted:
+                        runner.formatter_version({'path': '/reviewed/mkfs.exfat'}, out)
+                    else:
+                        with self.assertRaises(ValueError):
+                            runner.formatter_version({'path': '/reviewed/mkfs.exfat'}, out)
+                self.assertEqual((out / 'formatter-version.exit-code.txt').read_text(), str(code) + '\n')
+                self.assertEqual((out / 'formatter-version.stdout.log').read_bytes(), stdout)
+                self.assertEqual((out / 'formatter-version.stderr.log').read_bytes(), stderr)
+
+    def test_formatter_version_exception_does_not_admit_a_failed_format_command(self):
+        with tempfile.TemporaryDirectory() as directory:
+            out = Path(directory)
+            with mock.patch.object(runner.subprocess, 'run', return_value=types.SimpleNamespace(returncode=1)):
+                with self.assertRaises(ValueError):
+                    runner.run_logged(['/reviewed/mkfs.exfat', 'owned-blank.raw'], out, 'format')
+            self.assertEqual((out / 'format.exit-code.txt').read_text(), '1\n')
+
     def test_frozen_negative_patch_applies_to_the_actual_production_helper(self):
         original = (runner.ROOT / negative.INODE).read_bytes()
         expected = negative.mutation(original)

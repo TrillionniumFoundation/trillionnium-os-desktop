@@ -94,13 +94,24 @@ def tool_identity(name):
     return {'path': path, 'sha256': sha(Path(path).read_bytes())}
 
 
-def run_logged(command, out, name, *, timeout=60, cwd=None, env=None):
+def run_logged(command, out, name, *, timeout=60, cwd=None, env=None, expected_exit=0):
     save(out / (name + '-command.json'), command)
     with (out / (name + '.stdout.log')).open('xb') as stdout, (out / (name + '.stderr.log')).open('xb') as stderr:
         result = subprocess.run(command, stdin=subprocess.DEVNULL, stdout=stdout, stderr=stderr,
                                 timeout=timeout, check=False, cwd=cwd, env=env)
     (out / (name + '.exit-code.txt')).write_text(str(result.returncode) + '\n')
-    require(result.returncode == 0, name + ' failed; original stdout/stderr retained')
+    require(result.returncode == expected_exit, name + ' failed; original stdout/stderr retained')
+
+
+def formatter_version(formatter, out):
+    # exfatprogs 1.2.2 deliberately exits with EXIT_FAILURE after printing -V:
+    # https://github.com/exfatprogs/exfatprogs/blob/1.2.2/mkfs/mkfs.c#L701-L704
+    # Admit only this complete known response. Actual formatting and every other
+    # command still require zero; arbitrary failures are not version evidence.
+    run_logged([formatter['path'], '-V'], out, 'formatter-version', expected_exit=1)
+    require(common.read_file(out / 'formatter-version.stdout.log') == b'exfatprogs version : 1.2.2\n'
+            and common.read_file(out / 'formatter-version.stderr.log') == b'',
+            'unreviewed formatter version response; original stdout/stderr retained')
 
 
 def prepare(args, out, report):
@@ -112,7 +123,7 @@ def prepare(args, out, report):
     save(out / 'source-before.json', before)
     compiler, formatter = tool_identity(args.cc), tool_identity('mkfs.exfat')
     run_logged([compiler['path'], '--version'], out, 'compiler-version')
-    run_logged([formatter['path'], '-V'], out, 'formatter-version')
+    formatter_version(formatter, out)
     run_logged([compiler['path'], '-O2', '-std=c11', '-Wall', '-Wextra', '-Werror', '-static',
                 str(ROOT / 'tests/workloads/linux/exfat_mode_probe.c'), '-o', str(out / 'probe.elf')],
                out, 'compile')
@@ -139,6 +150,7 @@ def prepare(args, out, report):
                   source_inputs_unchanged=True, probe_sha256=sha(probe), probe_bytes=len(probe),
                   image_sha256=disk_hash(blank), image_bytes=IMAGE_BYTES,
                   compiler=compiler, formatter=formatter,
+                  formatter_version='1.2.2', formatter_version_exit=1,
                   compiler_version_sha256=sha(common.read_file(out / 'compiler-version.stdout.log')),
                   formatter_version_sha256=sha(common.read_file(out / 'formatter-version.stdout.log')))
     save(out / 'inputs.json', report)
