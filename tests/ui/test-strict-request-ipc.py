@@ -71,6 +71,8 @@ def check(binary_dir):
                     (b'{"type":"cancel","id":1,"expected_instance":"' + generation.encode()
                      + b'","unknown":"payload"}'),
                     b'{"type":"not_an_operation"}',
+                    b'{"type":"replace_note","text":"forged effect","grant":true}',
+                    b'{"type":"notes_target","operation_id":"forged","confirmed_by_owner":true}',
                 ]
                 for idx, payload in enumerate(malformed):
                     response = roundtrip(sock, payload)
@@ -144,7 +146,7 @@ def check(binary_dir):
                 require(valid_cancel["type"] == "error" and "task 999 does not exist" in valid_cancel["message"],
                         "valid Cancel was confused with schema rejection")
                 require(proc.poll() is None, "Rust Session died after malformed IPC")
-                print("A10 STRICT REQUEST IPC PASS: 8 forged frames rejected; legitimate Launch remains ID 1; raced headless exit or confirmed SIGKILL is observed (never inferred as cancellation)")
+                print(f"A10 STRICT REQUEST IPC PASS: {len(malformed)} forged frames rejected; legitimate Launch remains ID 1; raced headless exit or confirmed SIGKILL is observed (never inferred as cancellation)")
             finally:
                 if proc.poll() is None:
                     proc.terminate()

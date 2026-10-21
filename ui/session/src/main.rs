@@ -6,6 +6,8 @@ use std::collections::BTreeMap;
 use std::fs::{self, File, OpenOptions, Permissions};
 use std::io::{self, Read};
 use std::os::fd::AsRawFd;
+#[cfg(target_os = "linux")]
+use std::os::fd::OwnedFd;
 use std::os::unix::fs::{DirBuilderExt, FileTypeExt, MetadataExt, OpenOptionsExt, PermissionsExt};
 use std::os::unix::net::{UnixListener, UnixStream};
 use std::os::unix::process::ExitStatusExt;
@@ -14,8 +16,14 @@ use std::process::{Child, Command, ExitStatus, Stdio};
 use std::sync::mpsc::{self, Receiver, Sender};
 
 #[cfg(target_os = "linux")]
+use trill_ui_broker::notes::NotesTarget;
+#[cfg(target_os = "linux")]
 use trill_ui_core::host_peer;
 use trill_ui_core::host_peer::require_same_uid_peer;
+#[cfg(target_os = "linux")]
+use trill_ui_core::notes::{
+    NotesChannelObservation, NotesDestinationObservation, NotesTargetIdentity,
+};
 use trill_ui_core::{
     parse_host_request, read_frame, socket_path, unix_ms, write_frame, AppKind, HostResources,
     HostWaylandObservation, Request, Response, TaskRecord, TaskState, WaylandSocketStatus,
@@ -126,6 +134,10 @@ struct Session {
     next_id: u64,
     tasks: BTreeMap<u64, TaskRecord>,
     children: BTreeMap<u64, Child>,
+    // Private destination handles stay outside all renderer/CLI requests.
+    // Standalone Session installs no Hepta authority or production owner.
+    #[cfg(target_os = "linux")]
+    notes_targets: BTreeMap<u64, NotesTarget>,
     first_frame_tx: Sender<u64>,
     first_frame_rx: Receiver<u64>,
 }
@@ -149,6 +161,8 @@ impl Session {
             next_id: 1,
             tasks: BTreeMap::new(),
             children: BTreeMap::new(),
+            #[cfg(target_os = "linux")]
+            notes_targets: BTreeMap::new(),
             first_frame_tx,
             first_frame_rx,
         })
@@ -179,6 +193,27 @@ impl Session {
             .arg("--task-id")
             .arg(id.to_string());
         command
+    }
+
+    #[cfg(target_os = "linux")]
+    fn prepare_notes_target(&self, id: u64, command: &mut Command) -> io::Result<NotesTarget> {
+        let mut random = [0u8; 16];
+        File::open("/dev/urandom")?.read_exact(&mut random)?;
+        let incarnation: String = random.iter().map(|byte| format!("{byte:02x}")).collect();
+        let identity = NotesTargetIdentity {
+            session_instance: self.instance.clone(),
+            task_id: id,
+            incarnation,
+        };
+        let (parent, child) = UnixStream::pair()?;
+        let target = NotesTarget::from_private_channel(parent, identity.clone())?;
+        command
+            .arg("--notes-session")
+            .arg(&identity.session_instance)
+            .arg("--notes-incarnation")
+            .arg(&identity.incarnation)
+            .stdin(Stdio::from(OwnedFd::from(child)));
+        Ok(target)
     }
 
     /// Only completed/failed/confirmed-cancelled records can be pruned.
@@ -228,18 +263,50 @@ impl Session {
             task.wayland_socket_epoch_at_launch = Some(at_launch.socket_observation_epoch);
         }
         // No arbitrary command strings, shell expansion, user paths or elevated rights.
-        let spawn = self
-            .child_command(id, workspace, app)
+        let mut command = self.child_command(id, workspace, app);
+        command.stdin(Stdio::null());
+        #[cfg(target_os = "linux")]
+        let notes_target = {
+            let enabled = app == AppKind::Notes;
+            #[cfg(test)]
+            let enabled = enabled && self.cancellation_fixture_socket.is_none();
+            if enabled {
+                match self.prepare_notes_target(id, &mut command) {
+                    Ok(target) => Some(target),
+                    Err(_) => {
+                        task.detail =
+                            "Private Notes channel setup failed before child spawn".into();
+                        task.transition(TaskState::Failed);
+                        self.tasks.insert(id, task.clone());
+                        return Response::Task {
+                            task,
+                            session_instance: self.instance.clone(),
+                        };
+                    }
+                }
+            } else {
+                None
+            }
+        };
+        let spawn = command
             .env_remove(hepta::SOCKET_ENV)
             .env_remove(hepta::AGENT_ENV)
             .env_remove(hepta::GENERATION_ENV)
             .env_remove(hepta::PEER_UID_ENV)
             .env_remove(hepta::RUN_ID_ENV)
-            .stdin(Stdio::null())
             .stdout(Stdio::piped()) // private one-frame readiness pipe, not a global text stream
             .spawn();
         match spawn {
             Ok(mut child) => {
+                #[cfg(target_os = "linux")]
+                if let Some(target) = notes_target {
+                    task.notes_destination = Some(NotesDestinationObservation {
+                        incarnation: target.identity().incarnation.clone(),
+                        channel: NotesChannelObservation::PrivateChannelPrepared,
+                        original_owner_registered: false,
+                    });
+                    self.notes_targets.insert(id, target);
+                }
                 if let Some(stdout) = child.stdout.take() {
                     observe_first_frame(id, stdout, self.first_frame_tx.clone());
                 }
@@ -265,6 +332,10 @@ impl Session {
         while let Ok(id) = self.first_frame_rx.try_recv() {
             if let Some(task) = self.tasks.get_mut(&id) {
                 if task.ui_first_frame_unix_ms.is_none() {
+                    #[cfg(target_os = "linux")]
+                    if let Some(notes) = &mut task.notes_destination {
+                        notes.channel = NotesChannelObservation::AppLayoutObserved;
+                    }
                     task.ui_first_frame_unix_ms = Some(unix_ms());
                     task.updated_unix_ms = unix_ms();
                     if !task.state.is_terminal() {
@@ -293,6 +364,17 @@ impl Session {
         }
         for id in reaped {
             self.children.remove(&id);
+            #[cfg(target_os = "linux")]
+            {
+                self.notes_targets.remove(&id);
+                if let Some(notes) = self
+                    .tasks
+                    .get_mut(&id)
+                    .and_then(|task| task.notes_destination.as_mut())
+                {
+                    notes.channel = NotesChannelObservation::ChildExited;
+                }
+            }
         }
     }
 
