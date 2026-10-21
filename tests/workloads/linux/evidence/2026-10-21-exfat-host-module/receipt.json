@@ -1,0 +1,126 @@
+{
+  "schema": "a06.exfat-host-module-prerequisite.v1",
+  "recorded_at": "2026-10-21T12:17:49Z",
+  "parent": "22a3284a14069f79c784e6bf33bb3c6035b9765f",
+  "observed_job": {
+    "run_id": 39590054181,
+    "job_id": 119188464418,
+    "head": "22a3284a14069f79c784e6bf33bb3c6035b9765f",
+    "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39590054181/job/119188464418"
+  },
+  "original_artifact": {
+    "artifact_id": 12343869798,
+    "run_id": 39590054181,
+    "head": "22a3284a14069f79c784e6bf33bb3c6035b9765f",
+    "zip_bytes": 184310071,
+    "zip_sha256": "34518208c61ecd628c15bc8c4c033539b17ea57cb42ac931131d6296feb2999a"
+  },
+  "diagnosis": {
+    "process_exit": 2,
+    "mount_errno": 19,
+    "host_kernel": "6.17.0-1022-azure",
+    "observations": {},
+    "probe_and_image_inputs_unchanged": true,
+    "owned_loop_detach_requested": true,
+    "interpretation": "The original ExFAT mount failed with ENODEV before any case observation. Linux mount(2) documents this for an unavailable filesystem type. The existing workflow installed exfatprogs but did not prepare the running kernel module.",
+    "primary_reference": "https://man7.org/linux/man-pages/man2/mount.2.html"
+  },
+  "official_matching_package_verification": {
+    "source_index": "https://archive.ubuntu.com/ubuntu/dists/noble-updates/main/binary-amd64/Packages.xz",
+    "package_url": "https://archive.ubuntu.com/ubuntu/pool/main/l/linux-azure-6.17/linux-modules-extra-6.17.0-1022-azure_6.17.0-1022.22_amd64.deb",
+    "package": "linux-modules-extra-6.17.0-1022-azure",
+    "version": "6.17.0-1022.22",
+    "bytes": 51005632,
+    "sha256": "11efc255305b0895dbc28e3dcda633d414b86a285529c337062a2a34c45a1599",
+    "digest_matches_official_https_package_index": true,
+    "package_installed_locally": false,
+    "kernel_module_loaded_locally": false,
+    "exfat_module_entries": [
+      {
+        "path": "./lib/modules/6.17.0-1022-azure/kernel/fs/exfat/exfat.ko.zst",
+        "bytes": 57289,
+        "sha256": "b66c331ed969c1955e45cf3cb9b7e95402076eb818d25cde80064fa486e492b9"
+      }
+    ]
+  },
+  "original_decoded_job_log": {
+    "job_id": 119188464418,
+    "run_id": 39590054181,
+    "head": "22a3284a14069f79c784e6bf33bb3c6035b9765f",
+    "observed_at": "2026-10-21T12:08:01.849Z",
+    "provenance": "UTF-8 encoding of exact decoded log string returned by GitHub fetch_workflow_job_logs; not a claim about unobserved HTTP archive bytes",
+    "decoded_bytes": 210898,
+    "decoded_sha256": "c4d0af4039fd7bc592bbbb5721c644835ccf2ad398ec6df5d3fb4d82fe671fd5",
+    "gzip_file": "main22a-kernel-job119188464418.log.gz",
+    "gzip_bytes": 38791,
+    "gzip_sha256": "7452ec5af1986329ce830d8fe1ff3232a19857f666b46a2af6b8db00f30e3f46"
+  },
+  "evidence_files": {
+    "failed-bundle-inputs.json": {
+      "bytes": 2409,
+      "sha256": "f0696a233df601909de47d3468a37949ab15fbe550669b5b32a5c9349a77ba9a"
+    },
+    "failed-reference-input.json": {
+      "bytes": 2586,
+      "sha256": "176aabc3f09bb20e0ce16337c0f5ffd8ec736c6c8797f97b22614ae5c92bd2d3"
+    },
+    "failed-reference.exit-code.txt": {
+      "bytes": 2,
+      "sha256": "53c234e5e8472b6ac51c1ae1cab3fe06fad053beb8ebfd8977b010655bfdd3c3"
+    },
+    "failed-reference.json": {
+      "bytes": 4238,
+      "sha256": "2ed92f1e4e6652a388db6f8128d22eda85e769b91aaf92121494827b040d677d"
+    },
+    "failed-reference.stderr.log": {
+      "bytes": 121,
+      "sha256": "7c89c863af4d7901f892bd93bcd2d52f7a21c046b03520b060596e0631f0da64"
+    },
+    "failed-reference.stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "original-job.log.gz": {
+      "bytes": 38791,
+      "sha256": "7452ec5af1986329ce830d8fe1ff3232a19857f666b46a2af6b8db00f30e3f46"
+    }
+  },
+  "static_validation": {
+    "parent": "22a3284a14069f79c784e6bf33bb3c6035b9765f",
+    "path": ".github/workflows/a06-kernel.yml",
+    "original_sha256": "54c4e767c37b3f3d45212351cf95f3f9c180f208e11a7a0af571ac2906c19e6e",
+    "new_sha256": "6ded534293f2bd5c2bb84b703234e6da39383fabf1a094618d13ce19133e96cd",
+    "duplicate_key_rejecting_yaml_parse": true,
+    "all_bash_run_blocks_syntax_checked": 25,
+    "changed_steps": [
+      {
+        "index": 1,
+        "name": "Install disposable kernel-test host dependencies"
+      },
+      {
+        "index": 26,
+        "name": "Upload exact A06 kernel and raw QEMU evidence"
+      }
+    ],
+    "trigger_permissions_job_identity_unchanged": true,
+    "all_other_original_steps_byte_semantically_unchanged": true,
+    "kernel_and_observer_sources_changed": false,
+    "host_module_install_or_load_run_locally": false,
+    "original_full_ci_required": true
+  },
+  "behavior": {
+    "module_package": "linux-modules-extra-${running_uname_r}, only after an actual modprobe refusal",
+    "required_after_preparation": [
+      "modprobe exfat exits zero",
+      "exact exfat entry in /proc/filesystems"
+    ],
+    "module_identity_and_setup_output_retained": true,
+    "kernel_probe_oracle_formatter_versions_and_native_case_counts_changed": false,
+    "existing_failures_converted_to_success": false
+  },
+  "remaining_qualification": [
+    "The exact new head must run the original complete A06 workflow including Linux reference, guest ExFAT observation and frozen negative control.",
+    "No package installation, module loading, mount or device operation was executed in the local container.",
+    "The original main22a failed run remains failed; successful prior PR runs are not its qualification."
+  ]
+}
