@@ -297,6 +297,9 @@ class InputSnapshotCliTests(unittest.TestCase):
             p=argparse.ArgumentParser()
             for name in ('endpoint','symbol-elf','serial-log','raw-output','sidecar','kernel-sha256','guest-record','timeout'):
                 p.add_argument('--'+name,required=True)
+            p.add_argument('--profile-id',required=True,
+                           choices=('osdk-native-local-tcp-gdb-capture-v2',))
+            p.add_argument('--transport',required=True,choices=('tcp',))
             a=p.parse_args();deadline=time.monotonic()+5
             while not Path(os.environ['FIXTURE_EXECUTION_RECORD']).exists():
                 if time.monotonic()>deadline:raise SystemExit(94)
@@ -309,7 +312,7 @@ class InputSnapshotCliTests(unittest.TestCase):
                 return {'path':str(path),'size':len(raw),'sha256':hashlib.sha256(raw).hexdigest()}
             raw=Path(a.raw_output);raw.write_bytes(b'host fake raw profile\\n')
             serial=Path(a.serial_log).read_bytes()
-            sidecar={'passed':True,'profile_id':'osdk-native-local-tcp-gdb-capture-v2',
+            sidecar={'passed':True,'profile_id':a.profile_id,'transport':a.transport,
                 'gdb_exit_code':0,'guest_record':a.guest_record,'kernel_sha256':a.kernel_sha256,
                 'symbol_elf':record(symbol),'raw':record(raw),
                 'breakpoint':{'symbol':'ostd::arch::power::try_poweroff','resolved_address':'0x2000','actual_pc':'0x2000'},
@@ -329,6 +332,10 @@ class InputSnapshotCliTests(unittest.TestCase):
         self.assertEqual(process.returncode, 33, process.stdout)
         self.assert_copies(record, json.loads(execution.read_text())["loaded"], self.initial)
         captured = record["capture"]
+        for option, value in (("--profile-id", CAPTURE_PROFILE), ("--transport", "tcp")):
+            self.assertEqual(captured["argv"].count(option), 1)
+            self.assertEqual(captured["argv"][captured["argv"].index(option) + 1], value)
+        self.assertEqual(captured["transport"], "tcp")
         private = captured["symbol_elf"]
         self.assertNotEqual(private["path"], str(self.symbol))
         self.assertEqual(Path(private["path"]).read_bytes(), original_symbol)
@@ -342,6 +349,8 @@ class InputSnapshotCliTests(unittest.TestCase):
         self.assertTrue(captured["finalized"])
         sidecar = json.loads(Path(captured["sidecar"]["path"]).read_text())
         self.assertTrue(sidecar["fixture_only_no_real_GDB"])
+        self.assertEqual(sidecar["profile_id"], CAPTURE_PROFILE)
+        self.assertEqual(sidecar["transport"], "tcp")
         self.assertTrue(sidecar["finalized"])
         self.assertEqual(sidecar["symbol_elf"], private)
 

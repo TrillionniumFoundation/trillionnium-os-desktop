@@ -162,7 +162,8 @@ class PrivateToolsTests(unittest.TestCase):
     def test_private_inputs_do_not_enable_capture_or_switch_default_UNIX_profile(self):
         process, record, observation, _ = self.run_cli(updates={"A01_OSDK_COVERAGE_GDB": "1"})
         self.assertEqual(process.returncode, 125, process.stdout)
-        self.assertIn("requires the explicit v2 local TCP profile", record["error"])
+        self.assertEqual(record["error"],
+                         "ValueError: GDB coverage capture requires an explicit v2 TCP or v3 UNIX profile")
         self.assertFalse(observation["version_called"])
         self.assertFalse(observation["QEMU_fixture_executed"])
         process, record, _, _ = self.run_cli(("-gdb", "unix:/tmp/disposable-original-gdb", "-S"))

@@ -3,6 +3,7 @@
 import hashlib
 import importlib.util
 import json
+import math
 import os
 from pathlib import Path
 import shlex
@@ -39,9 +40,15 @@ def main():
                           "vcpus": 1, "memory_mib": 512, "network": False, "data_disks": False},
               "input_selector_source": {"path": str(SELECTOR_PATH), "sha256": digest(SELECTOR_PATH)},
               "artifacts": {}, "raw_exit_code": None, "timed_out": False,
+              "timeout_requested": os.environ.get("A01_KTEST_TIMEOUT", "300"),
+              "timeout_seconds": None,
               "stage": "artifact_preparation"}
     destination = guest / "qemu.json"
     try:
+        timeout = int(record["timeout_requested"])
+        if timeout <= 0 or not math.isfinite(timeout):
+            raise ValueError("A01_KTEST_TIMEOUT must be a finite positive integer")
+        record["timeout_seconds"] = timeout
         arguments = []
         for option in ("-kernel", "-initrd", "-append"):
             positions = [i for i, item in enumerate(requested) if item == option]
@@ -75,7 +82,7 @@ def main():
                 record["artifacts"][option] = {"path": str(path), **SELECTORS.capture_artifact(path)}
         record.update(argv=command, shell_command=shlex.join(command), qemu_sha256=digest(Path(binary)),
                       qemu_version=subprocess.check_output([binary, "--version"], text=True).strip())
-    except (OSError, ValueError, subprocess.SubprocessError) as error:
+    except (OSError, ValueError, OverflowError, subprocess.SubprocessError) as error:
         record.update(stage="artifact_preparation_failed", error=str(error), recorder_exit_code=1)
         destination.write_text(json.dumps(record, indent=2) + "\n")
         print(f"ktest QEMU input preparation rejected: {error}", file=sys.stderr)
@@ -84,7 +91,7 @@ def main():
     destination.write_text(json.dumps(record, indent=2) + "\n")
     started = time.monotonic()
     try:
-        result = subprocess.run(command, timeout=int(os.environ.get("A01_KTEST_TIMEOUT", "300")))
+        result = subprocess.run(command, timeout=timeout)
         record["raw_exit_code"] = result.returncode
     except subprocess.TimeoutExpired:
         record["raw_exit_code"], record["timed_out"] = 124, True

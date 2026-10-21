@@ -13,7 +13,7 @@ BUILD = Path(__file__).resolve().parents[1]
 RECORDER = Path(os.environ.get("A01_KTEST_RECORDER_SOURCE", str(BUILD / "ktest/record-qemu.py")))
 SELECTOR = BUILD / "record-qemu.py"
 FAKE = r'''#!/usr/bin/python3
-import hashlib, json, os, sys
+import hashlib, json, os, sys, time
 from pathlib import Path
 if '--version' in sys.argv:
     Path(os.environ['FIXTURE_VERSION']).write_text('fake version probe\n')
@@ -24,10 +24,11 @@ for option in ('-kernel', '-initrd', '-bios'):
     if option in sys.argv:
         path = Path(sys.argv[sys.argv.index(option)+1]); data = path.read_bytes()
         artifacts[option] = {'path':str(path), 'size':len(data), 'sha256':hashlib.sha256(data).hexdigest()}
-Path(os.environ['FIXTURE_LOADED']).write_text(json.dumps({'argv':sys.argv, 'artifacts':artifacts}))
+Path(os.environ['FIXTURE_LOADED']).write_text(json.dumps({'argv':sys.argv, 'artifacts':artifacts, 'pid':os.getpid()}))
 for arg in sys.argv:
     if arg.startswith('stdio,id=serial,signal=off,logfile='):
         Path(arg.split('logfile=',1)[1]).write_bytes(b'host CLI fixture only; no guest executed\n')
+time.sleep(float(os.environ.get('FIXTURE_SLEEP_SECONDS', '0')))
 raise SystemExit(33)
 '''
 
@@ -56,10 +57,12 @@ class KtestPrivateInputsTests(unittest.TestCase):
         self.request = ["-kernel", str(self.kernel), "-append", "loglevel=error console=ttyS0"]
         self.calls = 0
 
-    def invoke(self, *, bios=None, data=None, arguments=None):
+    def invoke(self, *, bios=None, data=None, arguments=None, timeout_value=None, sleep_seconds=None):
         env = os.environ.copy()
         env.pop("A01_QEMU_BIOS", None)
         env.pop("A01_QEMU_DATA_DIR", None)
+        env.pop("A01_KTEST_TIMEOUT", None)
+        env.pop("FIXTURE_SLEEP_SECONDS", None)
         env.update(PATH=str(self.tools) + os.pathsep + env.get("PATH", ""),
                    A01_KTEST_GUESTS=str(self.root / "guests"), A01_KTEST_CRATE="ostd",
                    FIXTURE_VERSION=str(self.root / "version-started"),
@@ -68,6 +71,10 @@ class KtestPrivateInputsTests(unittest.TestCase):
             env["A01_QEMU_BIOS"] = bios
         if data is not None:
             env["A01_QEMU_DATA_DIR"] = data
+        if timeout_value is not None:
+            env["A01_KTEST_TIMEOUT"] = timeout_value
+        if sleep_seconds is not None:
+            env["FIXTURE_SLEEP_SECONDS"] = str(sleep_seconds)
         argv = [sys.executable, "-I", *(["-O"] if sys.flags.optimize else []), str(RECORDER),
                 *(self.request if arguments is None else arguments)]
         default_bios_exists = Path("/usr/share/seabios/bios-256k.bin").exists()
@@ -129,6 +136,56 @@ class KtestPrivateInputsTests(unittest.TestCase):
         self.assertNotIn("-initrd", record["argv"])
         self.assertFalse(record["data_selection"]["appended"])
         self.assertEqual(record["artifacts"]["-bios"]["path"], str(self.bios))
+
+    def test_invalid_timeout_fails_before_version_probe_or_guest(self):
+        for value in ("invalid", "", "0", "-1", "1.5", "9" * 1000):
+            with self.subTest(value=value):
+                result, record = self.invoke(bios=str(self.bios), timeout_value=value)
+                self.assertEqual(result.returncode, 1, result.stdout)
+                self.assertEqual(record["stage"], "artifact_preparation_failed")
+                self.assertEqual(record["recorder_exit_code"], 1)
+                self.assertEqual(record["timeout_requested"], value)
+                self.assertIsNone(record["timeout_seconds"])
+                self.assertIsNone(record["raw_exit_code"])
+                self.assertIsNone(record.get("qemu_pid"))
+                self.assertFalse(record["timed_out"])
+                self.assertNotIn("argv", record)
+                self.assertNotIn("qemu_version", record)
+                self.assertNotIn("Traceback", result.stdout)
+                self.assertFalse((self.root / "version-started").exists())
+                self.assertFalse((self.root / "loaded.json").exists())
+
+    def test_default_and_positive_timeouts_preserve_guest_exit_and_provenance(self):
+        for value in (None, "2", "90000"):
+            with self.subTest(value=value):
+                result, record = self.invoke(bios=str(self.bios), timeout_value=value)
+                self.assertEqual(result.returncode, 33, result.stdout)
+                self.assertEqual(record["stage"], "complete")
+                self.assertEqual(record["raw_exit_code"], 33)
+                self.assertEqual(record["recorder_exit_code"], 33)
+                self.assertEqual(record["timeout_requested"], "300" if value is None else value)
+                self.assertEqual(record["timeout_seconds"], 300 if value is None else int(value))
+                self.assertFalse(record["timed_out"])
+                loaded = json.loads((self.root / "loaded.json").read_text())
+                self.assertEqual(record["artifacts"]["-bios"]["sha256"], loaded["artifacts"]["-bios"]["sha256"])
+                self.assertEqual(record["qemu_sha256"], hashlib.sha256(self.binary.read_bytes()).hexdigest())
+                self.assertEqual(record["input_selector_source"]["sha256"], hashlib.sha256(SELECTOR.read_bytes()).hexdigest())
+
+    def test_valid_timeout_still_kills_and_reaps_fake_guest(self):
+        result, record = self.invoke(bios=str(self.bios), timeout_value="1", sleep_seconds=30)
+        self.assertEqual(result.returncode, 124, result.stdout)
+        self.assertEqual(record["stage"], "complete")
+        self.assertEqual(record["raw_exit_code"], 124)
+        self.assertEqual(record["recorder_exit_code"], 124)
+        self.assertEqual(record["timeout_requested"], "1")
+        self.assertEqual(record["timeout_seconds"], 1)
+        self.assertTrue(record["timed_out"])
+        self.assertGreaterEqual(record["duration_seconds"], 0.9)
+        loaded = json.loads((self.root / "loaded.json").read_text())
+        with self.assertRaises(ProcessLookupError):
+            os.kill(loaded["pid"], 0)
+        serial = Path(record["argv"][record["argv"].index("-chardev") + 1].split("logfile=", 1)[1])
+        self.assertEqual(record["serial_sha256"], hashlib.sha256(serial.read_bytes()).hexdigest())
 
     def test_four_invalid_bios_values_fail_before_any_qemu_probe(self):
         for value in ("", "relative.bin", str(self.root / "missing-bios"), str(self.data)):
