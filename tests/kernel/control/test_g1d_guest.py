@@ -82,10 +82,16 @@ def valid_serial(boot_order=(3, 1, 2)):
                   fixture_apply(1, 11, 50_000_000, 11, 683_000_000, 8300, 8400, 300, 400),
                   "G1D_SUBMICROSECOND_CAPS_EXACT cases=3",
                   "G1D_FULL_WINDOW capacity=1024 refused_sequence=1025 old_results=retained revision=1025",
-                  fixture_apply(1, 1025, 50_000_000, 1025, 690_000_000, 9000, 9100, 1000, 1100),
+                  fixture_apply(1, 1025, 25_000_000, 1025, 690_000_000, 9000, 9100, 1000, 1100),
                   "G1D_PREFIX_RETIRED through=512 next=1026 old_D=retired manager_ack=denied",
+                  "G1D_USER_STOP_CONFIRMED pid=2 signal=19 sample=691000000 total=9200 heartbeat=31 revision=1026",
                   "G1D_MANAGER_EXEC_BEGIN sequence=1025",
                   "G1D_EXEC_REVOKED old_fd_errno=116 no_auxv=true own_history=denied recovery_history=terminal sequence=1025",
+                  fixture_apply(3, 2, 50_000_000, 1026, 695_000_000, 9200, 9200, 1200, 1200),
+                  "G1D_RECOVERY_PRESERVED_USER_STOP sample_a=696000000 sample_b=916000000 total_a=9200 total_b=9200 "
+                  "heartbeat_a=31 heartbeat_b=31 revision=1027",
+                  "G1D_RECOVERY_SINGLE_USE_DENIED sequence=3 revision=1027 requested_cap=0 status=2",
+                  "G1D_USER_RESUME_REQUIRED total=10000 heartbeat=40 revision=1027 signal=18",
                   "G1D_RECOVERY_RETIRED_AFTER_MANAGER_EXEC through=1025 next=1026",
                   "G1D_RECOVERY_STOPPED", "G1D_CHILDREN_REAPED workload_signal=15 recovery_exit=0",
                   "G1D_COMPLETE native_manage=true history=true hepta_durability=false hardware=false"))
@@ -202,6 +208,27 @@ class VerdictTests(unittest.TestCase):
         for extra in (b"G1D_FAIL at=assertion\n", b"G1D_FORGED_SUCCESS\n", b"Kernel panic\n",
                       b"[hepta-g1d] bypassed image verification\n"):
             self.assertFalse(self.verdict(raw + extra))
+
+    def test_manager_fault_recovery_never_substitutes_for_explicit_user_continue(self):
+        raw = valid_serial()
+        for pattern in (g1d.USER_STOP, g1d.USER_PAUSED, g1d.RECOVERY_USED, g1d.USER_RESUME):
+            line = next(line for line in raw.splitlines() if pattern.fullmatch(line.decode()))
+            for word in line.split()[1:]:
+                key, value = word.split(b"=", 1)
+                changed = key + b"=" + str(int(value) + 1).encode()
+                # Times/counters may vary inside their permitted interval.
+                # Identity, state equality and fixed signal/status fields may not.
+                if key in (b"sample", b"sample_a", b"sample_b", b"total", b"heartbeat"):
+                    continue
+                with self.subTest(pattern=pattern.pattern, field=key):
+                    self.assertFalse(self.verdict(raw.replace(line, line.replace(word, changed, 1), 1)))
+            self.assertFalse(self.verdict(raw.replace(line + b"\n", b"", 1) + line + b"\n"))
+        for old, new in ((b"sample_b=916000000", b"sample_b=895999999"),
+                         (b"total=10000 heartbeat=40", b"total=9200 heartbeat=40"),
+                         (b"total=10000 heartbeat=40", b"total=10000 heartbeat=31"),
+                         (b"sample=691000000", b"sample=689000000"),
+                         (b"sample_a=696000000", b"sample_a=694000000")):
+            self.assertFalse(self.verdict(raw.replace(old, new, 1)), (old, new))
 
     def test_rejected_images_cannot_commit_a_role_or_resume(self):
         for reason in ("manifest-byte-mismatch", "truncated-snapshot"):

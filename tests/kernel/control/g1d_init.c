@@ -48,7 +48,8 @@ enum { OK = 0, INVALID = 1, DENIED = 2, STALE = 3, REVOKED = 4,
 enum { RESERVED_STATE = 0, TERMINAL_STATE = 1, RETIRED_STATE = 2,
        NOT_SEEN_STATE = 3, HISTORY_LOST_STATE = 4 };
 enum { REC_QUERY_MANAGER = 1, REC_RETIRE_MANAGER = 2, REC_INSTALL = 3,
-       REC_QUERY_SELF = 4, REC_STOP = 5 };
+       REC_QUERY_SELF = 4, REC_STOP = 5, REC_CHECK_USER_STOP = 6,
+       REC_REJECT_REUSED_RECOVERY = 7, REC_CHECK_USER_CONTINUE = 8 };
 
 static unsigned char boot_id[16], manager_space[16], recovery_space[16], own_space[16];
 static unsigned char *boot_page;
@@ -534,6 +535,43 @@ static void recovery(void) {
             history(control_fd, recovery_history_slot, recovery_history_gen, recovery_space,
                     message.a, 0, (unsigned)message.expected_status, message.response);
             break;
+        case REC_CHECK_USER_STOP: {
+            struct usage a = usage_read(control_fd, MAX_CAP_NS);
+            uint64_t heartbeat_a = heartbeat();
+            sleep_ms(220);
+            struct usage b = usage_read(control_fd, MAX_CAP_NS);
+            uint64_t heartbeat_b = heartbeat();
+            CHECK(a.cumulative == message.a && b.cumulative == message.a &&
+                  heartbeat_a == message.b && heartbeat_b == message.b && message.b > 0 &&
+                  b.sample >= a.sample + PERIOD_NS * 2 && a.revision == b.revision,
+                  "recovery_must_preserve_user_stop");
+            record("G1D_RECOVERY_PRESERVED_USER_STOP sample_a=%" PRIu64 " sample_b=%" PRIu64
+                   " total_a=%" PRIu64 " total_b=%" PRIu64 " heartbeat_a=%" PRIu64
+                   " heartbeat_b=%" PRIu64 " revision=%" PRIu64,
+                   a.sample,b.sample,a.cumulative,b.cumulative,heartbeat_a,heartbeat_b,b.revision);
+            break;
+        }
+        case REC_REJECT_REUSED_RECOVERY: {
+            struct usage before = usage_read(control_fd, MAX_CAP_NS);
+            unsigned char q[104];
+            install_request(q,++sequence,before.revision,0);
+            empty_response(control_fd,q,96,DENIED);
+            struct usage after = usage_read(control_fd, MAX_CAP_NS);
+            CHECK(before.revision == after.revision && before.cumulative == after.cumulative,
+                  "reused_recovery_changed_budget");
+            record("G1D_RECOVERY_SINGLE_USE_DENIED sequence=%" PRIu64 " revision=%" PRIu64 " requested_cap=0 status=2",
+                   sequence,after.revision);
+            break;
+        }
+        case REC_CHECK_USER_CONTINUE: {
+            struct usage after = usage_read(control_fd, MAX_CAP_NS);
+            uint64_t count = heartbeat();
+            CHECK(after.cumulative > message.a && count > message.b,
+                  "explicit_user_continue_must_resume_workload");
+            record("G1D_USER_RESUME_REQUIRED total=%" PRIu64 " heartbeat=%" PRIu64
+                   " revision=%" PRIu64 " signal=18",after.cumulative,count,after.revision);
+            break;
+        }
         case REC_STOP:
             publish_message("reply", &message);
             record("G1D_RECOVERY_STOPPED");
@@ -704,7 +742,10 @@ static void read_exact_file(const char *path,void *data,size_t size) {
     unsigned char extra;
     CHECK(read(fd,&extra,1)==0 && close(fd)==0,"saved_receipt_size");
 }
-struct saved_terminal { unsigned char receipt[128],stable_object[16]; };
+struct saved_terminal {
+    unsigned char receipt[128],stable_object[16];
+    uint64_t paused_total,paused_heartbeat;
+};
 
 static void post_exec(int argc,char **argv) {
     CHECK(argc==10 && getpid()==1,"post_exec_actual_manager");
@@ -735,6 +776,17 @@ static void post_exec(int argc,char **argv) {
     CHECK(memcmp(query_result.response+80,saved.stable_object,16)==0,"exec_history_stable_owner");
     record("G1D_EXEC_REVOKED old_fd_errno=%d no_auxv=true own_history=denied recovery_history=terminal sequence=%" PRIu64,
            ESTALE,last);
+    struct message restored = recovery_command(REC_INSTALL,get64(saved.receipt+56),UINT64_C(25000000),OK);
+    struct message recovery_history = recovery_command(REC_QUERY_SELF,2,0,OK);
+    history_terminal(recovery_history.response,2,OK,restored.response);
+    CHECK(memcmp(recovery_history.response+80,saved.stable_object,16)==0,"bounded_recovery_same_owner");
+    (void)recovery_command(REC_CHECK_USER_STOP,saved.paused_total,saved.paused_heartbeat,OK);
+    (void)recovery_command(REC_REJECT_REUSED_RECOVERY,0,0,DENIED);
+    CHECK(kill(workload_pid,SIGCONT)==0,"explicit_user_continue");
+    uint64_t deadline=now_ns()+UINT64_C(2000000000);
+    while(heartbeat()<=saved.paused_heartbeat && now_ns()<deadline)sleep_ms(2);
+    CHECK(heartbeat()>saved.paused_heartbeat,"workload_await_user_continue");
+    (void)recovery_command(REC_CHECK_USER_CONTINUE,saved.paused_total,saved.paused_heartbeat,OK);
     struct message retired=recovery_command(REC_RETIRE_MANAGER,last,0,OK);
     CHECK(get64(retired.response+64)==last && get64(retired.response+72)==last+1,
           "post_exec_independent_retirement");
@@ -869,7 +921,7 @@ static void manager(void) {
           "independent_prefix_retirement");
     struct message retired_again=recovery_command(REC_RETIRE_MANAGER,512,0,OK);
     CHECK(memcmp(retired_again.response+64,retired.response+64,16)==0,"idempotent_retirement");
-    u=usage_read(control_fd,MAX_CAP_NS);u=install_ok(1025,u,MAX_CAP_NS,r,1);
+    u=usage_read(control_fd,MAX_CAP_NS);u=install_ok(1025,u,UINT64_C(25000000),r,1);
     struct saved_terminal saved;memcpy(saved.receipt,r,128);memcpy(saved.stable_object,stable_object,16);
     install_request(q,1,initial_revision,UINT64_C(25000000));
     empty_response(control_fd,q,96,RETIRED);
@@ -879,8 +931,17 @@ static void manager(void) {
     history_empty(hist,RETIRED_STATE,3);
     history(control_fd,manager_history_slot,manager_history_gen,manager_space,1024,0,OK,hist);
     CHECK(get16(hist+64)==TERMINAL_STATE && get16(hist+66)==OK,"unretired_suffix_retained");
-    CHECK(usage_read(control_fd,MAX_CAP_NS).revision==u.revision,"retired_D_executed");
+    CHECK(usage_read(control_fd,UINT64_C(25000000)).revision==u.revision,"retired_D_executed");
     record("G1D_PREFIX_RETIRED through=512 next=1026 old_D=retired manager_ack=denied");
+    CHECK(kill(workload_pid,SIGSTOP)==0,"explicit_user_stop");
+    int stopped_status;
+    CHECK(waitpid(workload_pid,&stopped_status,WUNTRACED)==workload_pid && WIFSTOPPED(stopped_status) &&
+          WSTOPSIG(stopped_status)==SIGSTOP,"explicit_user_stop_confirmed");
+    struct usage stopped=usage_read(control_fd,UINT64_C(25000000));
+    saved.paused_total=stopped.cumulative;saved.paused_heartbeat=heartbeat();
+    record("G1D_USER_STOP_CONFIRMED pid=%ld signal=19 sample=%" PRIu64 " total=%" PRIu64
+           " heartbeat=%" PRIu64 " revision=%" PRIu64,
+           (long)workload_pid,stopped.sample,saved.paused_total,saved.paused_heartbeat,stopped.revision);
     write_file(IPC_DIR "/last-terminal",&saved,sizeof saved);
 
     char fd_text[24],boot_text[33],manager_text[33],recovery_text[33],command_text[24],wpid[24],rpid[24];

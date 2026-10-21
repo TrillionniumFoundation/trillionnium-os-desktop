@@ -18,9 +18,9 @@ PERMISSION_TESTS = {
 }
 
 # The default core gate keeps its 238-test baseline, five permission tests,
-# all seventeen G1-c/G1-d regressions and two ExFAT tests. Filtered runs retain
+# all twenty-one G1-c/G1-d regressions and two ExFAT tests. Filtered runs retain
 # explicit opt-in; they cannot stand in for a complete core qualification.
-MINIMUM_CORE_TESTS = 262
+MINIMUM_CORE_TESTS = 266
 TRUSTED_PROFILE_CORE_TESTS = (
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_preserves_bytes_across_mapping_replacement_attempts",
     "aster_core::vm::vmar::vmar_impls::initial_image::tests::initial_image_seal_allows_relro_but_never_readds_permissions",
@@ -34,6 +34,10 @@ TRUSTED_PROFILE_CORE_TESTS = (
     "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_budget_enforces_sub_microsecond_caps_on_the_original_owner",
     "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_budget_update_and_replay_preserve_consumption_and_positive_debt",
     "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_manager_revocation_preserves_recovery_and_saved_history",
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_recovery_expiry_is_finite_single_use_and_replays_original_receipt",
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_recovery_never_infers_resume_from_zero_or_unowned_budget",
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_recovery_first_close_cut_is_not_renewed_and_missing_clock_fences",
+    "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_recovery_refuses_expired_final_cut_and_preserves_accounting_fault",
     "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_management_lease_edges_and_clock_absence_do_not_change_budget",
     "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_ceiling_and_revision_rejections_are_immutable_without_effect",
     "aster_core::fs::fs_impls::cgroupfs::controller::cpu::native::trusted_control::tests::native_accounting_fault_cannot_publish_a_successful_budget_receipt",

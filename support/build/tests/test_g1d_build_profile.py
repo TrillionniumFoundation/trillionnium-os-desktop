@@ -76,6 +76,7 @@ class G1dBuildProfileTests(unittest.TestCase):
             "roles": ["manager", "workload", "recovery"],
             "cap_ns": 50_000_000, "period_ns": 100_000_000,
             "lease_ns": 300_000_000_000,
+            "recovery_grace_ns": 30_000_000_000,
         })
 
     def test_kernel_wrapper_refuses_profile_run_and_ambiguous_selection_before_build(self):

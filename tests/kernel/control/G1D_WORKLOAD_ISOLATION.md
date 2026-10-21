@@ -103,9 +103,9 @@ worktree without force; unexpected edits are retained for diagnosis.
 
 ## Remaining recovery scope
 
-This credential slice preserves the existing two 300-second management leases.
-It does not itself solve recovery after both expire, and expiry does not
-automatically resume a zero-cap workload. Independent recovery beyond that
-boundary needs a bounded, canonical resource-owner transition that preserves
-an explicit user pause. Extending a general management lease indefinitely
-would not establish that contract.
+The ordinary management interval remains 300 seconds. A subsequent
+[bounded recovery slice](G1D_BOUNDED_RECOVERY.md) permits one narrowly defined
+nonzero-budget restoration after manager closure or expiry. It never treats
+an unclassified zero cap as permission to resume, and does not clear a process
+stopped by `SIGSTOP`. Full explicit user-pause intent remains a protocol task;
+the recovery subset does not establish completion of all E isolation work.

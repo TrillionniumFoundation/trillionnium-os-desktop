@@ -165,17 +165,129 @@ fn native_budget_update_and_replay_preserve_consumption_and_positive_debt() {
 #[ktest]
 fn native_manager_revocation_preserves_recovery_and_saved_history() {
     let fixture = Fixture::new("g1d-independent-recovery");
-    let first = fixture.execute(0, 1, 1, 0, Some(100)).unwrap();
+    with_state(&fixture.owner, |state| {
+        state.max.used_ns = 500;
+        state.max.cumulative_ns = 500;
+        state.max.carry_debt_ns = 20;
+    });
+    let first = fixture.execute(0, 1, 1, 1001, Some(1_000)).unwrap();
     assert_eq!(first.status, Some(DeliveryStatus::Ok));
-    fixture.managers[0].revoke();
-    assert_eq!(fixture.execute(0, 2, 2, 50_000_000, Some(100)).unwrap().status,
+    fixture.managers[0].revoke_at(Some(1_000));
+    assert_eq!(fixture.execute(0, 2, 2, 50_000_000, Some(1_000)).unwrap().status,
         Some(DeliveryStatus::Revoked));
-    assert_eq!(fixture.budget().quota_ns(), 0);
-    let recovered = fixture.execute(1, 1, 2, 50_000_000, Some(100)).unwrap();
+    assert_eq!(fixture.budget().quota_ns(), 1001);
+    let recovered = fixture.execute(1, 1, 2, 50_000_000, Some(1_000)).unwrap();
     assert_eq!(recovered.status, Some(DeliveryStatus::Ok));
     assert_eq!(fixture.budget().quota_ns(), 50_000_000);
+    assert_eq!((fixture.budget().used_ns, fixture.budget().cumulative_ns, fixture.budget().carry_debt_ns),
+        (500, 500, 20));
     assert_eq!(fixture.cores[0].query_delivery(&fixture.cores[0].delivery_view(), 1).unwrap(), first);
-    assert_eq!(fixture.execute(0, 1, 1, 0, Some(200)).unwrap(), first);
+    assert_eq!(fixture.execute(0, 1, 1, 1001, Some(2_000)).unwrap(), first);
+}
+
+#[ktest]
+fn native_recovery_expiry_is_finite_single_use_and_replays_original_receipt() {
+    let fixture = Fixture::new("g1d-recovery-expiry");
+    let expiry = 10 + INITIAL_LEASE_NS;
+    let last = expiry + RECOVERY_GRACE_NS - 1;
+    let first = fixture.execute(0, 1, 1, 1001, Some(100)).unwrap();
+    assert_eq!(first.status, Some(DeliveryStatus::Ok));
+    assert_eq!(fixture.execute(0, 2, 2, MAX_INITIAL_CAP_NS, Some(expiry)).unwrap().status,
+        Some(DeliveryStatus::Revoked));
+    assert_eq!(fixture.execute(1, 1, 2, 999, Some(expiry)).unwrap().status,
+        Some(DeliveryStatus::PermissionDenied));
+    assert_eq!(fixture.execute(1, 2, 1, MAX_INITIAL_CAP_NS, Some(expiry)).unwrap().status,
+        Some(DeliveryStatus::Conflict));
+    assert_eq!(fixture.budget().quota_ns(), 1001);
+    assert_eq!(fixture.revision(), 2);
+    let recovered = fixture.execute(1, 3, 2, MAX_INITIAL_CAP_NS, Some(last)).unwrap();
+    assert_eq!(recovered.status, Some(DeliveryStatus::Ok));
+    assert_eq!(fixture.revision(), 3);
+    let before = fixture.budget();
+    assert_eq!(fixture.execute(1, 4, 3, 1001, Some(last)).unwrap().status,
+        Some(DeliveryStatus::PermissionDenied));
+    assert_eq!(fixture.execute(1, 5, 3, MAX_INITIAL_CAP_NS, Some(last + 1)).unwrap().status,
+        Some(DeliveryStatus::Revoked));
+    assert_eq!(fixture.execute(1, 3, 2, MAX_INITIAL_CAP_NS, Some(last + 2)).unwrap(), recovered);
+    assert_eq!(fixture.budget(), before);
+    assert_eq!(fixture.cores[0].query_delivery(&fixture.cores[0].delivery_view(), 1).unwrap(), first);
+    let _irq = disable_local();
+    assert_eq!(fixture.managers[1].read_usage_at(Some(last + 1)), Err(CpuUsageError::Expired));
+}
+
+#[ktest]
+fn native_recovery_never_infers_resume_from_zero_or_unowned_budget() {
+    for (name, source, cap) in [("g1d-recovery-zero", Some(0), 0),
+        ("g1d-recovery-other-source", Some(1), 1001),
+        ("g1d-recovery-initial", None, MAX_INITIAL_CAP_NS),
+        ("g1d-recovery-no-throttle", Some(0), MAX_INITIAL_CAP_NS)]
+    {
+        let fixture = Fixture::new(name);
+        if let Some(source) = source {
+            assert_eq!(fixture.execute(source, 1, 1, cap, Some(100)).unwrap().status,
+                Some(DeliveryStatus::Ok));
+        }
+        fixture.managers[0].revoke_at(Some(100));
+        let before = fixture.budget();
+        let revision = fixture.revision();
+        let next = if source == Some(1) { 2 } else { 1 };
+        assert_eq!(fixture.execute(1, next, revision, MAX_INITIAL_CAP_NS, Some(100)).unwrap().status,
+            Some(DeliveryStatus::PermissionDenied));
+        assert_eq!(fixture.budget(), before);
+        assert_eq!(fixture.revision(), revision);
+        with_state(&fixture.owner, |state| assert!(!state.trusted_management.as_ref().unwrap().recovery_consumed));
+    }
+}
+
+#[ktest]
+fn native_recovery_first_close_cut_is_not_renewed_and_missing_clock_fences() {
+    {
+        let fixture = Fixture::new("g1d-recovery-first-cut");
+        assert_eq!(fixture.execute(0, 1, 1, 1001, Some(100)).unwrap().status, Some(DeliveryStatus::Ok));
+        fixture.managers[0].revoke_at(Some(100));
+        fixture.managers[0].revoke_at(Some(200));
+        let _irq = disable_local();
+        assert!(fixture.managers[1].read_usage_at(Some(100 + RECOVERY_GRACE_NS - 1)).is_ok());
+        assert_eq!(fixture.managers[1].read_usage_at(Some(100 + RECOVERY_GRACE_NS)), Err(CpuUsageError::Expired));
+        drop(_irq);
+        assert_eq!(fixture.execute(1, 1, 2, MAX_INITIAL_CAP_NS, Some(100 + RECOVERY_GRACE_NS)).unwrap().status,
+            Some(DeliveryStatus::Revoked));
+        assert_eq!(fixture.budget().quota_ns(), 1001);
+    }
+    {
+        let fixture = Fixture::new("g1d-recovery-clock-lost");
+        assert_eq!(fixture.execute(0, 1, 1, 1001, Some(100)).unwrap().status, Some(DeliveryStatus::Ok));
+        fixture.managers[0].revoke_at(None);
+        fixture.managers[0].revoke_at(Some(100));
+        let before = fixture.budget();
+        assert_eq!(fixture.execute(1, 1, 2, MAX_INITIAL_CAP_NS, Some(100)).unwrap().status,
+            Some(DeliveryStatus::Indeterminate));
+        assert_eq!(fixture.budget(), before);
+    }
+}
+
+#[ktest]
+fn native_recovery_refuses_expired_final_cut_and_preserves_accounting_fault() {
+    {
+        let fixture = Fixture::new("g1d-recovery-expired-cut");
+        assert_eq!(fixture.execute(0, 1, 1, 1001, Some(100)).unwrap().status, Some(DeliveryStatus::Ok));
+        let before = fixture.budget();
+        assert_eq!(fixture.execute(1, 1, 2, MAX_INITIAL_CAP_NS, Some(10 + INITIAL_LEASE_NS + RECOVERY_GRACE_NS)).unwrap().status,
+            Some(DeliveryStatus::Revoked));
+        assert_eq!(fixture.budget(), before);
+    }
+    {
+        let fixture = Fixture::new("g1d-recovery-bad-accounting");
+        assert_eq!(fixture.execute(0, 1, 1, 1001, Some(100)).unwrap().status, Some(DeliveryStatus::Ok));
+        fixture.managers[0].revoke_at(Some(100));
+        with_state(&fixture.owner, |state| state.max.accounting_fault = true);
+        let before = fixture.budget();
+        assert_eq!(fixture.execute(1, 1, 2, MAX_INITIAL_CAP_NS, Some(100)).unwrap().status,
+            Some(DeliveryStatus::Indeterminate));
+        assert_eq!(fixture.budget(), before);
+        assert_eq!(fixture.revision(), 2);
+        with_state(&fixture.owner, |state| assert!(!state.trusted_management.as_ref().unwrap().recovery_consumed));
+    }
 }
 
 #[ktest]

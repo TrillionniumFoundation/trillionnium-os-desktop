@@ -105,7 +105,7 @@ def parse_serial(raw, control=None):
     declared = int(headers[0][1])
     # Keep the original 238, five permission, seventeen G1-c/G1-d and two
     # ExFAT cases. Three SMP tests are additional; filtering cannot shrink them.
-    require(declared >= 265 and passed + failed + filtered == declared,
+    require(declared >= 269 and passed + failed + filtered == declared,
             "compiled core test denominator was reduced or is inconsistent")
     require(status == ("FAILED" if expected_failures else "ok"), "kernel summary status differs")
     require(serial.count("[ktest runner] All crates tested.") == int(not expected_failures),

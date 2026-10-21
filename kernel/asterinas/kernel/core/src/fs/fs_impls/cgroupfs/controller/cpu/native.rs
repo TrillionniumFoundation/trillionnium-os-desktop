@@ -33,7 +33,7 @@ pub(super) struct CpuBandwidthState {
     // An unbound old Arc must not become bindable after replacement or deletion.
     is_detached: bool,
     #[cfg(any(ktest, feature = "g1d-trusted-control"))]
-    trusted_management: Option<[os_control::ManagementGrantState; 2]>,
+    trusted_management: Option<trusted_control::TrustedCpuManagement>,
 }
 
 /// Internal observation failures; this is not a new public HOS2 operation.
