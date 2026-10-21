@@ -29,6 +29,7 @@ use crate::{
             file_system::{FileSystem, FsFlags},
             inode::{HardLinkability, Inode, Metadata, MknodType, RenameMode},
             notify,
+            permission_attrs::{PermissionAttrOp, PermissionAttrRequest},
             registry::FsAndRoot,
             xattr::{self, XattrName, XattrNamespace, XattrSetFlags},
         },
@@ -830,6 +831,27 @@ impl Path {
     pub(crate) fn chown(&self, uid: Option<Uid>, gid: Option<Gid>, ctx: &Context) -> Result<()> {
         self.check_mount_writable()?;
 
+        if let Some(result) = PermissionAttrRequest::run_for_context(
+            PermissionAttrOp::Chown { uid, gid },
+            &self.dentry,
+            ctx,
+        ) {
+            result?;
+            notify::on_attr_change(self);
+            return Ok(());
+        }
+        self.legacy_chown_split_lock(uid, gid, ctx)
+    }
+
+    /// Compatibility path for backends explicitly returning `None` from the
+    /// transaction interface. Its inode check/update race remains unresolved.
+    fn legacy_chown_split_lock(
+        &self,
+        uid: Option<Uid>,
+        gid: Option<Gid>,
+        ctx: &Context,
+    ) -> Result<()> {
+
         // FIXME: Keep the ownership checks and owner, group, and mode updates in
         // one inode critical section. `metadata()` returns a snapshot, so concurrent
         // attribute changes can invalidate the checks before the updates run.
@@ -902,8 +924,23 @@ impl Path {
     }
 
     /// Changes the mode after checking mount writability and the caller's permissions.
-    pub(crate) fn chmod(&self, mut mode: InodeMode, ctx: &Context) -> Result<()> {
+    pub(crate) fn chmod(&self, mode: InodeMode, ctx: &Context) -> Result<()> {
         self.check_mount_writable()?;
+
+        if let Some(result) = PermissionAttrRequest::run_for_context(
+            PermissionAttrOp::Chmod(mode),
+            &self.dentry,
+            ctx,
+        ) {
+            result?;
+            notify::on_attr_change(self);
+            return Ok(());
+        }
+        self.legacy_chmod_split_lock(mode, ctx)
+    }
+
+    /// Compatibility path; this does not serialize aliases of an unported inode.
+    fn legacy_chmod_split_lock(&self, mut mode: InodeMode, ctx: &Context) -> Result<()> {
 
         // FIXME: Keep the ownership checks and mode update in one inode critical
         // section. `metadata()` returns a snapshot, so a concurrent `chown()` can

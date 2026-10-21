@@ -95,7 +95,7 @@ ReadUsage 成功返回原 owner 的 revision 和八个标准 u64。无观察槽�
 
 ## 验收范围
 
-新增九个默认 ktest 覆盖封存后的替换/减权边界、预先持有 VMAR pin 的写入拒绝、fork COW 隔离、真实 CPU owner 替换与删除、观察租期两端边界，以及 owner 采样前拒绝过期/回退 cut。原 full-core checker 保留全部旧断言，要求至少 247 项且九个新测试名各出现一次；历史 238 项成功输出不能满足当前 gate。它们使用原 VMAR/CPU 对象，但不替代普通用户态 syscall 执行。
+新增九个默认 ktest 覆盖封存后的替换/减权边界、预先持有 VMAR pin 的写入拒绝、fork COW 隔离、真实 CPU owner 替换与删除、观察租期两端边界，以及 owner 采样前拒绝过期/回退 cut。与五个权限事务 ktest 合流后，full-core checker 保留全部旧断言，要求至少 252 项（原 238 + 权限 5 + G1-c 9），14 个新测试名各出现一次且不得软跳过；历史 238、243 或 247 项成功输出不能满足当前 gate。独立双核权限 profile 额外编译三个竞争测试，总数下界为 255；选择这三项不能替代前面的完整 252 项 gate。它们使用原 VMAR/CPU 对象，但不替代普通用户态 syscall 执行。
 
 专用真实 guest 必须证明：初始真实授权成功、无权 fork/SCM/伪启动页、已打开 proc-mem fd 的使用时拒绝、同 Process thread/dup 的预期共享、同一个已授权 PID 最终 exec 后旧 fd 和新槽都不能继续使用，以及同内核的篡改 initramfs 确切拒绝。原普通 Linux、权限、SCM_RIGHTS、NOFILE 和 CPU gates 保留。
 

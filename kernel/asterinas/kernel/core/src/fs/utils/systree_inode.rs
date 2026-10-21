@@ -18,6 +18,7 @@ use crate::{
                 RevalidationPolicy, SymbolicLink,
             },
             path::Dentry as VfsDentry,
+            permission_attrs::PermissionAttrRequest,
         },
     },
     prelude::*,
@@ -402,6 +403,16 @@ impl<KInode: SysTreeInodeTy + Send + Sync + 'static> FileOps for KInode {
 }
 
 impl<KInode: SysTreeInodeTy + Send + Sync + 'static> Inode for KInode {
+    default fn try_permission_attr_transaction(
+        &self,
+        _self_dentry: &VfsDentry,
+        _request: &PermissionAttrRequest,
+    ) -> Option<Result<()>> {
+        // Unported: immutable ownership, a separate mode lock, and intentional
+        // EPERM/no-op setter semantics require a SysTree-specific contract.
+        None
+    }
+
     default fn type_(&self) -> InodeType {
         self.metadata().type_
     }

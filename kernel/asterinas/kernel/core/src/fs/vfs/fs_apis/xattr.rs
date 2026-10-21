@@ -3,7 +3,10 @@
 use crate::{
     fs::{
         file::{InodeMode, InodeType},
-        vfs::path::Dentry,
+        vfs::{
+            path::Dentry,
+            permission_attrs::{PermissionAttrOp, PermissionAttrRequest},
+        },
     },
     prelude::*,
     process::{UserNamespace, credentials::capabilities::CapSet, posix_thread::AsPosixThread},
@@ -33,6 +36,28 @@ pub(in crate::fs) fn clear_file_priv(dentry: &Dentry) -> Result<()> {
 }
 
 fn clear_set_id_bits(dentry: &Dentry) -> Result<()> {
+    let inode = dentry.inode().as_ref();
+    // Keep the existing fast path for internal writes without a POSIX caller.
+    // This operation does not make the subsequent content write and xattr
+    // removal one transaction; it prevents a stale mode RMW on migrated inodes.
+    if !inode.mode()?.intersects(InodeMode::S_ISUID | InodeMode::S_ISGID) {
+        return Ok(());
+    }
+    let current_thread = current_thread!();
+    let posix_thread = current_thread.as_posix_thread().unwrap();
+    if let Some(result) = PermissionAttrRequest::run_for_thread(
+        PermissionAttrOp::ClearSetIdBits,
+        dentry,
+        posix_thread,
+        UserNamespace::get_init_singleton().as_ref(),
+    ) {
+        return result;
+    }
+    legacy_clear_set_id_bits_split_lock(dentry)
+}
+
+/// Compatibility path for explicitly unported backends; the mode RMW can race.
+fn legacy_clear_set_id_bits_split_lock(dentry: &Dentry) -> Result<()> {
     let inode = dentry.inode().as_ref();
     let mut mode = inode.mode()?;
     if !mode.intersects(InodeMode::S_ISUID | InodeMode::S_ISGID) {

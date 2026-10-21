@@ -15,6 +15,7 @@ use crate::{
             file_system::FileSystem,
             inode::{Extension, FileOps, Inode, Metadata, SymbolicLink},
             path::Dentry,
+            permission_attrs::PermissionAttrRequest,
         },
     },
     prelude::*,
@@ -73,6 +74,15 @@ impl<F: ProcFileOps + 'static> FileOps for ProcFile<F> {
 
 #[inherit_methods(from = "self.common")]
 impl<F: ProcFileOps + 'static> Inode for ProcFile<F> {
+    fn try_permission_attr_transaction(
+        &self,
+        _self_dentry: &Dentry,
+        _request: &PermissionAttrRequest,
+    ) -> Option<Result<()>> {
+        // Unported: dynamic owner_thread credentials have a separate owner.
+        None
+    }
+
     fn size(&self) -> usize;
     fn extension(&self) -> &Extension;
     fn ino(&self) -> u64;
