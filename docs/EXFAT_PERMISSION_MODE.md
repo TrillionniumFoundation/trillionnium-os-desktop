@@ -58,21 +58,22 @@ replace null pointers while the original unprivileged EPERM assertion remains.
 The project cloud has verified all 32 cases with that exact probe under Linux
 and the guest; this candidate still requires its own unchanged full CI.
 
-## Fixed disk guest qualification plan
+## Fixed disk guest qualification
 
 The mode correction is applied to merged main commit
 `0c1de23a3754bc3a6976fed53c7dfa0ec3778e57`, tree
 `0337884b57bf67350f27b22eb6af326fa19dcb7d`. The original four G1-c changes
-and all original workflows remain present. This preparation does not copy
+and all original workflow gates remain present. This preparation does not copy
 unmerged permission-transaction interfaces into main. Fresh runs must identify
 the final reviewed descendant commit and every source byte before and after
-execution. The disk profile below remains pending until implemented and run.
+execution. The implemented disk profile is appended after every original A06
+step. Its cloud execution and raw-evidence verification remain pending.
 
 1. Keep the existing no-disk, one-CPU full gate and the original two-CPU
    CPU gate unchanged. Add a separate ExFAT evidence profile.
 2. In the authorized disposable project CI environment, compile one static
    observation ELF and inspect its ELF identity. Create a fresh ExFAT image
-   using the existing `mkfs.exfat` image path, record the formatter binary,
+   using the original 512 MiB `mkfs.exfat` image recipe, record the formatter binary,
    command and version, then freeze the image and ELF hashes before any run.
 3. Use only disposable copies of that image. The Linux reference may attach
    its own image to a temporary loop device inside a private mount namespace;
@@ -83,8 +84,11 @@ execution. The disk profile below remains pending until implemented and run.
    the disposable image. Do not enable NICs or host filesystem sharing.
 5. The same ELF verifies actual ExFAT `statfs`, root/regular-file/directory
    `stat` mode and IDs. Separate forked children clear supplementary groups,
-   use UID/GID 65534, clear every capability set and read all credentials
-   back before `execve` of the copied file on ExFAT. The executed file reports
+   use UID/GID 65534, clear effective/permitted/inheritable/ambient and bounding
+   capability sets, and read all credentials
+   back before `execve` of the copied file on ExFAT. Each child enters the
+   already mounted directory before dropping its identity; private evidence
+   parent directories remain `0700`. The executed file reports
    real/effective/saved/filesystem IDs, capability sets and `no_new_privs`.
    A companion execution with `no_new_privs=1` must remain unprivileged.
 6. Run a frozen one-production-line negative patch that restores the old
@@ -98,6 +102,38 @@ execution. The disk profile below remains pending until implemented and run.
    and the independently evaluated results. Keep the mutation under an
    identified temporary source checkout and restore the reviewed tree without
    force before returning.
+
+The implementation is in `tests/workloads/linux/exfat_mode_probe.c`,
+`run_exfat_mode_guest.py`, `exfat_mode_evidence.py` and
+`run_exfat_mode_negative.py`. `test_exfat_mode_guest.py` checks malformed,
+missing, reordered and contradictory evidence, every recorded identity and
+capability field, the held loop descriptor's backing inode, and the exact
+one-path mutation. These host checks do not execute a kernel.
+
+The Linux runner creates its own image copy and loop attachment. It retains
+the block descriptor and verifies `LOOP_GET_STATUS64` against the fresh image's
+device/inode before execution and before clearing that attachment. The actual
+probe runs under a private mount namespace with anchored process-group cleanup.
+The guest has one fixed modern virtio block device and the original Q35, TCG,
+one-CPU, 512 MiB profile. Its ordinary product ELF comes from the unchanged
+build-and-QueryAbi gate.
+
+The negative builder creates an owned detached worktree, applies only the
+frozen `InodeMode::all()` patch, and records a local diagnostic commit whose
+sole parent is the reviewed positive head. Full source inventories must differ
+at exactly the ExFAT inode path; the probe, tests, formatter input, build pins
+and evidence oracle remain identical. It invokes the same original ordinary
+build-and-QueryAbi entry point before the negative disk boot. Only the five
+specified observations qualify: old modes on all three inode types, changed
+normal-exec IDs, and unchanged `no_new_privs` IDs. All capability sets remain
+zero in both exec cases, including the negative. No privileged command or
+external effect is performed by the executed observation program.
+
+The A06 artifact retains `a06-exfat-checks`, `a06-exfat-bundle`,
+`a06-exfat-linux`, `a06-exfat-guest` and `a06-exfat-negative`, including complete
+raw logs, image pre/post hashes, the frozen ELF/image, both kernel ELFs,
+source snapshots, patch bytes and process exits. A successful helper test,
+Linux reference or build alone does not close the disk qualification.
 
 All Rust/C builds, kernel tests and guest execution occur in the project's
 authorized GitHub Actions environment. Local work for this candidate is

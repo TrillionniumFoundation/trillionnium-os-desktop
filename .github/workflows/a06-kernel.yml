@@ -437,6 +437,78 @@ jobs:
             --out "${RUNNER_TEMP}/a06-probe-2vcpu" --quota-us 1000 --mode leaf \
             --repeat 2 --duration-seconds 1 --max-cpu-percent 3
 
+      - name: Freeze one ExFAT observer and a fresh formatted disk image
+        id: exfat_bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          checks="${RUNNER_TEMP}/a06-exfat-checks"
+          mkdir "$checks"
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends exfatprogs \
+            > "$checks/formatter-install.log" 2>&1
+          python3 -I -B -m unittest discover -s tests/workloads/linux -p 'test_exfat_mode_guest.py' -v \
+            > "$checks/runner-tests.log" 2>&1
+          python3 -I -B -O -m unittest discover -s tests/workloads/linux -p 'test_exfat_mode_guest.py' -v \
+            > "$checks/runner-tests-optimized.log" 2>&1
+          python3 -I -B tests/workloads/linux/run_exfat_mode_guest.py prepare \
+            --expected-source-head "$(git rev-parse HEAD)" \
+            --expected-source-tree "$(git rev-parse HEAD^{tree})" \
+            --output "${RUNNER_TEMP}/a06-exfat-bundle"
+          read -r exfat_input_sha exfat_input_name < "${RUNNER_TEMP}/a06-exfat-bundle/inputs.sha256"
+          test "$exfat_input_name" = inputs.json
+          [[ "$exfat_input_sha" =~ ^[0-9a-f]{64}$ ]]
+          printf 'input_sha256=%s\n' "$exfat_input_sha" >> "$GITHUB_OUTPUT"
+
+      - name: Observe ExFAT modes and exec identities in a private Linux mount namespace
+        shell: bash
+        env:
+          EXFAT_INPUT_SHA: ${{ steps.exfat_bundle.outputs.input_sha256 }}
+        run: |
+          set -euo pipefail
+          set +e
+          sudo python3 -I -B tests/workloads/linux/run_exfat_mode_guest.py reference \
+            --bundle "${RUNNER_TEMP}/a06-exfat-bundle" --expected-input-sha256 "$EXFAT_INPUT_SHA" \
+            --output "${RUNNER_TEMP}/a06-exfat-linux"
+          exfat_reference_exit=$?
+          set -e
+          if test -d "${RUNNER_TEMP}/a06-exfat-linux"; then
+            sudo chown -R -- "$(id -u):$(id -g)" "${RUNNER_TEMP}/a06-exfat-linux"
+          fi
+          test "$exfat_reference_exit" -eq 0
+
+      - name: Verify the same ExFAT observer on the exact ordinary kernel and a disposable virtio disk
+        shell: bash
+        env:
+          EXFAT_INPUT_SHA: ${{ steps.exfat_bundle.outputs.input_sha256 }}
+        run: |
+          set -euo pipefail
+          python3 -I -B tests/workloads/linux/run_exfat_mode_guest.py guest \
+            --bundle "${RUNNER_TEMP}/a06-exfat-bundle" --expected-input-sha256 "$EXFAT_INPUT_SHA" \
+            --linux-reference "${RUNNER_TEMP}/a06-exfat-linux" \
+            --product-evidence "${RUNNER_TEMP}/a06-queryabi-candidate" \
+            --expected-source-head "$(git rev-parse HEAD)" \
+            --expected-source-tree "$(git rev-parse HEAD^{tree})" \
+            --a01-initramfs support/build/evidence/2026-10-16/artifacts/initramfs.cpio.gz \
+            --output "${RUNNER_TEMP}/a06-exfat-guest"
+
+      - name: Require the frozen ExFAT old behavior to fail with the actual recorded identity transition
+        shell: bash
+        env:
+          EXFAT_INPUT_SHA: ${{ steps.exfat_bundle.outputs.input_sha256 }}
+        run: |
+          set -euo pipefail
+          python3 -I -B tests/workloads/linux/run_exfat_mode_negative.py \
+            --bundle "${RUNNER_TEMP}/a06-exfat-bundle" --expected-input-sha256 "$EXFAT_INPUT_SHA" \
+            --linux-reference "${RUNNER_TEMP}/a06-exfat-linux" \
+            --positive-guest "${RUNNER_TEMP}/a06-exfat-guest" \
+            --product-evidence "${RUNNER_TEMP}/a06-queryabi-candidate" \
+            --expected-source-head "$(git rev-parse HEAD)" \
+            --expected-source-tree "$(git rev-parse HEAD^{tree})" \
+            --a01-initramfs support/build/evidence/2026-10-16/artifacts/initramfs.cpio.gz \
+            --source-worktree "${RUNNER_TEMP}/a06-exfat-negative-source" \
+            --target-dir "${RUNNER_TEMP}/a06-exfat-negative-target" \
+            --output "${RUNNER_TEMP}/a06-exfat-negative"
+
       - name: Upload exact A06 kernel and raw QEMU evidence
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
@@ -470,6 +542,11 @@ jobs:
             ${{ runner.temp }}/a06-probe-1vcpu
             ${{ runner.temp }}/a06-probe-2vcpu
             ${{ runner.temp }}/a06-kernel.sha256
+            ${{ runner.temp }}/a06-exfat-checks
+            ${{ runner.temp }}/a06-exfat-bundle
+            ${{ runner.temp }}/a06-exfat-linux
+            ${{ runner.temp }}/a06-exfat-guest
+            ${{ runner.temp }}/a06-exfat-negative
             ${{ runner.temp }}/a06-target/osdk/asterinas/asterinas-osdk-bin.elf
             kernel/asterinas/target/osdk/aster-core/aster-core-osdk-bin.elf
             kernel/asterinas/target/osdk/ostd/ostd-osdk-bin.elf
