@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/TrillionniumFoundation/hepta-private-ci",
+  "commit": "f27c14641753e0b03ceaa0e76031c6d19b1efbfb",
+  "pull_request": 2966,
+  "owner": "ProductionDurableWriter / LocalLeaseOutbox / CognitiveStore",
+  "operation_key": "OperationIntentV1.operation_id",
+  "scope": "scope_digest constraint; no scope_id conversion",
+  "canonical_payload_type": "Hos2InstallBudgetV1",
+  "payload_schema_version": 1,
+  "payload_max_bytes": 1024,
+  "payload_digest": "SHA256(canonical UTF-8 payload_json)",
+  "scope_digest": "SHA256(domain || boot[16] || space[16] || manage_slot_le64 || manage_generation_le64)",
+  "scope_domain": "hepta.hos2.cpu-budget.scope.v1\u0000",
+  "semantic_type": "codex_hepta_operations::model::OperationIntentV1",
+  "expected_predecessor": "None, required by production HOS2 target",
+  "native_delivery_id": "boot_id + space_id + 16 lowercase hex u64 sequence",
+  "effect_entry": "not provided by this OS read-only adapter",
+  "files": [
+    {
+      "path": "codex-rs/hepta-memory/src/production_hos2.rs",
+      "git_blob": "7e3ea376f749ea270a1507d9603607d162f85799",
+      "sha256": "dad3d8f409364c3ae2b0203c1967d363a298dfc6d1c4b9161c31684e4f239f28"
+    },
+    {
+      "path": "codex-rs/hepta-memory/src/local_hos2_ordering.rs",
+      "git_blob": "815e1a08e70223045b5fbaac9ef8db8c73e19c64",
+      "sha256": "66fdb9df823f3341fb414fd31e2345d9c275a9f5002861eca1115f1dfa393e9d"
+    },
+    {
+      "path": "codex-rs/hepta-memory/src/production_hos2_owner.rs",
+      "git_blob": "459e0402ca95dfcfca717f0e80d5c23c9716c26f",
+      "sha256": "3ca6597e9161f61bdbe084f0c86b0a8815a5e1e8b44a9958012175565cc143c2"
+    },
+    {
+      "path": "codex-rs/hepta-memory/src/production_hos2_terminal.rs",
+      "git_blob": "b0942af7c17d40590726972d5b2f892200c35cc2",
+      "sha256": "4c381dab28468f3743cce5312dc5ffe1efd106ff58f048fcecdbf4be595e87c7"
+    },
+    {
+      "path": "codex-rs/hepta-memory/src/local_lease_outbox.rs",
+      "git_blob": "9118df09f1ec2f569b037aa1dda18131c7ae1fe0",
+      "sha256": "d6b5943a4476ae634badbcd8cca72d75faea08e12a5c86ca8fc06c88cb2ddc8c"
+    },
+    {
+      "path": "codex-rs/hepta-memory/migrations/0016_operation_pre_boundary_rejections.sql",
+      "git_blob": "02a520702c523ef8e4fe39c2212027dbfb9a79f5",
+      "sha256": "4a814face1584b7f067e0708a9ef6396800d7e54e153637afcf60c885ab4b3ae"
+    },
+    {
+      "path": "codex-rs/hepta-agentd/src/hos2_device.rs",
+      "git_blob": "bbb5a582bc724a133530bc285dd4bc5a810b0252",
+      "sha256": "c200c47bdab5bfef393dad29ac116ab2feb0481d17d9a95f4f838173baf30c70"
+    },
+    {
+      "path": "codex-rs/hepta-operations/src/model.rs",
+      "git_blob": "d952060c81eca0d64d7091ebca928c8740c00ed7",
+      "sha256": "d1c01d91d09a3dc7f8a4a8fede07c2f6f6b5666ab14b97578e80ced65f24b57a"
+    },
+    {
+      "path": "codex-rs/hepta-types/src/identity.rs",
+      "git_blob": "d57e5c9d0ebe8dced59c096a3586830d52e3df4f",
+      "sha256": "5e73c7848a46cd72f22fed856890ff4978204a6a0d2a0088dfe4a974796515f3"
+    },
+    {
+      "path": "codex-rs/hepta-types/src/digest.rs",
+      "git_blob": "4b6fe231f9faa717067818f509ebb4b150dbfbce",
+      "sha256": "8bfa9aa8424a4a60d4f2f7044099a080a07e9bf3cff958690c3a4e9046a4b4e2"
+    }
+  ]
+}
