@@ -220,18 +220,20 @@ impl EfiInfo {
 ///
 /// Originally defined in the linux source tree:
 /// `linux/arch/x86/include/asm/e820/types.h`
-#[repr(u32)]
+#[repr(transparent)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub enum E820Type {
-    Ram = 1,
-    Reserved = 2,
-    Acpi = 3,
-    Nvs = 4,
-    Unusable = 5,
-    Pmem = 7,
-    Pram = 12,
-    SoftReserved = 0xefffffff,
-    ReservedKern = 128,
+pub struct E820Type(pub u32);
+
+impl E820Type {
+    pub const RAM: Self = Self(1);
+    pub const RESERVED: Self = Self(2);
+    pub const ACPI: Self = Self(3);
+    pub const NVS: Self = Self(4);
+    pub const UNUSABLE: Self = Self(5);
+    pub const PMEM: Self = Self(7);
+    pub const PRAM: Self = Self(12);
+    pub const SOFT_RESERVED: Self = Self(0xefffffff);
+    pub const RESERVED_KERN: Self = Self(128);
 }
 
 #[repr(C, packed)]
@@ -271,9 +273,49 @@ const EDDMAXNR: usize = 6;
 
 #[cfg(test)]
 mod tests {
-    use core::mem::offset_of;
+    use core::mem::{MaybeUninit, align_of, offset_of};
 
     use super::*;
+
+    #[test]
+    fn zero_initialized_boot_params_are_valid() {
+        // SAFETY: Every field of BootParams is an integer, an integer newtype,
+        // or an aggregate of those. In particular, E820Type accepts zero.
+        let params = unsafe { MaybeUninit::<BootParams>::zeroed().assume_init() };
+        assert_eq!(params.e820_entries, 0);
+        for entry in params.e820_table {
+            let typ = entry.typ;
+            assert_eq!(typ, E820Type(0));
+        }
+    }
+
+    #[test]
+    fn firmware_e820_types_preserve_unknown_values_and_layout() {
+        assert_eq!(size_of::<E820Type>(), 4);
+        assert_eq!(align_of::<E820Type>(), align_of::<u32>());
+        assert_eq!(size_of::<BootE820Entry>(), 20);
+        assert_eq!(offset_of!(BootE820Entry, typ), 16);
+        assert_eq!(size_of::<BootParams>(), 4096);
+
+        let values = [0u32, 6, 0xffff_ffff, E820Type::SOFT_RESERVED.0];
+        let mut bytes = [0u8; size_of::<BootParams>()];
+        bytes[offset_of!(BootParams, e820_entries)] = values.len() as u8;
+        for (index, value) in values.iter().enumerate() {
+            let offset = offset_of!(BootParams, e820_table)
+                + index * size_of::<BootE820Entry>()
+                + offset_of!(BootE820Entry, typ);
+            bytes[offset..offset + 4].copy_from_slice(&value.to_le_bytes());
+        }
+        // SAFETY: The fully initialized buffer has the complete BootParams
+        // layout, all bit patterns are valid for its fields, and read_unaligned
+        // does not require the byte buffer to have BootParams alignment.
+        let params = unsafe { bytes.as_ptr().cast::<BootParams>().read_unaligned() };
+        assert_eq!(params.e820_entries as usize, values.len());
+        for (entry, value) in params.e820_table.into_iter().zip(values) {
+            let typ = entry.typ;
+            assert_eq!(typ.0, value);
+        }
+    }
 
     #[test]
     fn screen_info_offsets() {

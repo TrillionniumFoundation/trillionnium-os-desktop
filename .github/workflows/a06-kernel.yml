@@ -112,6 +112,18 @@ jobs:
           set -euo pipefail
           bash support/build/prepare-host.sh
 
+      - name: Check firmware boot-parameter layout and zero initialization
+        shell: bash
+        run: |
+          set -euo pipefail
+          out="${RUNNER_TEMP}/a06-boot-params"
+          mkdir "$out"
+          CARGO_TARGET_DIR="${RUNNER_TEMP}/a06-boot-params-target" \
+            cargo +nightly-2026-07-21 test --locked \
+            --manifest-path kernel/asterinas/ostd/libs/linux-bzimage/boot-params/Cargo.toml \
+            --target x86_64-unknown-linux-gnu \
+            > "$out/host-tests.log" 2>&1
+
       - name: Prepare fixed OSDK test locks
         shell: bash
         run: |
@@ -465,8 +477,12 @@ jobs:
           set -euo pipefail
           checks="${RUNNER_TEMP}/a06-exfat-checks"
           mkdir "$checks"
-          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends exfatprogs \
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends exfatprogs kmod \
             > "$checks/formatter-install.log" 2>&1
+          python3 -I -B -m unittest discover -s tests/workloads/linux -p 'test_exfat_kernel_support.py' -v \
+            > "$checks/kernel-support-tests.log" 2>&1
+          python3 -I -B -O -m unittest discover -s tests/workloads/linux -p 'test_exfat_kernel_support.py' -v \
+            > "$checks/kernel-support-tests-optimized.log" 2>&1
           python3 -I -B -m unittest discover -s tests/workloads/linux -p 'test_exfat_mode_guest.py' -v \
             > "$checks/runner-tests.log" 2>&1
           python3 -I -B -O -m unittest discover -s tests/workloads/linux -p 'test_exfat_mode_guest.py' -v \
@@ -486,6 +502,15 @@ jobs:
           EXFAT_INPUT_SHA: ${{ steps.exfat_bundle.outputs.input_sha256 }}
         run: |
           set -euo pipefail
+          set +e
+          sudo python3 -I -B tests/workloads/linux/exfat_kernel_support.py --disposable-ci \
+            --output "${RUNNER_TEMP}/a06-exfat-kernel-support"
+          exfat_support_exit=$?
+          set -e
+          if test -d "${RUNNER_TEMP}/a06-exfat-kernel-support"; then
+            sudo chown -R -- "$(id -u):$(id -g)" "${RUNNER_TEMP}/a06-exfat-kernel-support"
+          fi
+          test "$exfat_support_exit" -eq 0
           set +e
           sudo python3 -I -B tests/workloads/linux/run_exfat_mode_guest.py reference \
             --bundle "${RUNNER_TEMP}/a06-exfat-bundle" --expected-input-sha256 "$EXFAT_INPUT_SHA" \
@@ -539,6 +564,8 @@ jobs:
           # ELFs, runtime/image bytes and build logs. Only its regenerable Cargo
           # target cache is excluded; failed stage evidence remains included.
           path: |
+            ${{ runner.temp }}/a06-boot-params
+            ${{ runner.temp }}/a06-exfat-kernel-support
             ${{ runner.temp }}/a06-ktest
             ${{ runner.temp }}/a06-prepared-locks
             ${{ runner.temp }}/a06-queryabi-candidate
