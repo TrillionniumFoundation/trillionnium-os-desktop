@@ -27,11 +27,13 @@ use crate::{
         credentials::{Gid, SecureBits, Uid, capabilities::CapSet},
         process::trusted_control::TrustedControlSlots,
         program_loader::elf::TrustedInitialSnapshot,
+        rlimit::{ResourceType, new_resource_limits_for_initial_workload},
     },
 };
 
 const BOOT_PAGE_BYTES: u64 = 192;
 const WORKLOAD_ID: u32 = 60001;
+const WORKLOAD_AS_BYTES: u64 = 256 * 1024 * 1024;
 
 pub(super) fn spawn(
     path_resolver: PathResolver,
@@ -48,9 +50,10 @@ pub(super) fn spawn(
     // Exactly one bounded read of the input. No role loads from a later inode
     // snapshot, and the compiled manifest is not replaced for negative boots.
     let snapshot = executable.snapshot_trusted_initial()?;
-    let manager = allocate_initial_process(&executable_path);
-    let workload = allocate_initial_process(&executable_path);
-    let recovery = allocate_initial_process(&executable_path);
+    let manager = allocate_initial_process(&executable_path, new_resource_limits_for_init());
+    let workload = allocate_initial_process(&executable_path,
+        new_resource_limits_for_initial_workload(WORKLOAD_AS_BYTES));
+    let recovery = allocate_initial_process(&executable_path, new_resource_limits_for_init());
     let keys = [manager.0.hepta_capspace_session()?, workload.0.hepta_capspace_session()?,
         recovery.0.hepta_capspace_session()?];
     let pids = [manager.0.pid(), workload.0.pid(), recovery.0.pid()];
@@ -169,6 +172,14 @@ fn prepare_role(
 ) -> Result<(PreparedInitialProcess, LoadedInitialImage, Vaddr)> {
     let loaded_vmar = vmar.clone_arc();
     let (info, image) = snapshot.load(loaded_vmar.clone(), argv, envp, boot)?;
+    // Initial loading runs in a kernel task, so generic VMAR admission may
+    // have no current userspace Process. Check this actual stopped allocation
+    // against its own original limit before attaching or releasing its task.
+    if loaded_vmar.get_mappings_total_size() as u64
+        > process.resource_limits().get_rlimit(ResourceType::RLIMIT_AS).get_cur()
+    {
+        return_errno_with_message!(Errno::ENOMEM, "initial image exceeds its address-space limit");
+    }
     let mut user_ctx = UserContext::default();
     user_ctx.set_instruction_pointer(info.entry_point as _);
     user_ctx.set_stack_pointer(info.user_stack_top as _);

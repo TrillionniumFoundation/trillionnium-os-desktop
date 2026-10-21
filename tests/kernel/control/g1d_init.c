@@ -23,6 +23,7 @@
 #include <sys/prctl.h>
 #include <sys/ptrace.h>
 #include <sys/reboot.h>
+#include <sys/resource.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/syscall.h>
@@ -41,6 +42,7 @@
 #define IPC_DIR "/tmp/g1d"
 #define WORKLOAD_ID 60001U
 #define WORKLOAD_SECUREBITS 195
+#define WORKLOAD_AS_BYTES UINT64_C(268435456)
 
 enum { OK = 0, INVALID = 1, DENIED = 2, STALE = 3, REVOKED = 4,
        CONFLICT = 5, EXHAUSTED = 6, UNSUPPORTED = 7, UNKNOWN = 8,
@@ -429,6 +431,35 @@ static void workload_denial(const char *name, long result, int expected_error) {
     CHECK(result == -1 && error == expected_error, "workload_boundary_denial");
 }
 #define WORKLOAD_DENIED(name, call, error) do { errno = 0; workload_denial(name, (call), error); } while (0)
+static void workload_address_space(const char *phase) {
+    struct rlimit before,after;
+    CHECK(getrlimit(RLIMIT_AS,&before)==0,"workload_read_address_limit");
+    errno=0;
+    void *oversized=mmap(NULL,WORKLOAD_AS_BYTES,PROT_NONE,MAP_PRIVATE|MAP_ANONYMOUS,-1,0);
+    int oversized_rc=oversized==MAP_FAILED ? -1 : 0, oversized_errno=errno;
+    if(oversized!=MAP_FAILED)CHECK(munmap(oversized,WORKLOAD_AS_BYTES)==0,"workload_unmap_unexpected_large");
+    struct rlimit raised={WORKLOAD_AS_BYTES,WORKLOAD_AS_BYTES+PAGE_BYTES};
+    errno=0;int raise_rc=setrlimit(RLIMIT_AS,&raised),raise_errno=errno;
+    struct rlimit invalid={WORKLOAD_AS_BYTES+PAGE_BYTES,WORKLOAD_AS_BYTES};
+    errno=0;int invalid_rc=setrlimit(RLIMIT_AS,&invalid),invalid_errno=errno;
+    CHECK(getrlimit(RLIMIT_AS,&after)==0,"workload_reread_address_limit");
+    volatile unsigned char *page=mmap(NULL,PAGE_BYTES,PROT_READ|PROT_WRITE,MAP_PRIVATE|MAP_ANONYMOUS,-1,0);
+    CHECK(page!=MAP_FAILED,"workload_small_mapping_available");
+    page[0]=0x5a;page[PAGE_BYTES-1]=0xa5;
+    int roundtrip=page[0]==0x5a && page[PAGE_BYTES-1]==0xa5;
+    CHECK(munmap((void *)page,PAGE_BYTES)==0,"workload_small_mapping_release");
+    record("G1D_WORKLOAD_ADDRESS_SPACE phase=%s pid=%ld soft=%" PRIu64 " hard=%" PRIu64
+           " after_soft=%" PRIu64 " after_hard=%" PRIu64 " oversized_bytes=%" PRIu64
+           " oversized_rc=%d oversized_errno=%d raise_hard_rc=%d raise_hard_errno=%d"
+           " invalid_soft_rc=%d invalid_soft_errno=%d mapped_page_bytes=4096 page_roundtrip=%d",
+           phase,(long)getpid(),(uint64_t)before.rlim_cur,(uint64_t)before.rlim_max,
+           (uint64_t)after.rlim_cur,(uint64_t)after.rlim_max,WORKLOAD_AS_BYTES,
+           oversized_rc,oversized_errno,raise_rc,raise_errno,invalid_rc,invalid_errno,roundtrip);
+    CHECK(before.rlim_cur==WORKLOAD_AS_BYTES && before.rlim_max==WORKLOAD_AS_BYTES &&
+          after.rlim_cur==WORKLOAD_AS_BYTES && after.rlim_max==WORKLOAD_AS_BYTES &&
+          oversized_rc==-1 && oversized_errno==ENOMEM && raise_rc==-1 && raise_errno==EPERM &&
+          invalid_rc==-1 && invalid_errno==EINVAL && roundtrip,"workload_address_space_boundary");
+}
 static void workload_linux_boundary(void) {
     int credentials_ok = workload_credentials("initial");
     int manager_denied = workload_signal("manager", manager_pid, 0);
@@ -474,9 +505,11 @@ static void workload_linux_boundary(void) {
     WORKLOAD_DENIED("rewrite_ready", open(IPC_DIR "/ready", O_WRONLY | O_CLOEXEC), EACCES);
     WORKLOAD_DENIED("forge_recovery_command", open(IPC_DIR "/command.new", O_WRONLY | O_CREAT | O_CLOEXEC, 0600), EACCES);
     CHECK(workload_credentials("after_denials"), "workload_credentials_changed");
+    workload_address_space("initial");
     pid_t child = fork();
     CHECK(child >= 0, "workload_setuid_exec_fork");
     if (child == 0) {
+        workload_address_space("after_fork");
         execl(IPC_DIR "/setuid-probe", "setuid-probe", "--workload-privexec", NULL);
         failure("workload_setuid_exec_returned", __LINE__);
     }
@@ -961,6 +994,7 @@ int main(int argc,char **argv) {
     setvbuf(stdout,NULL,_IONBF,0);
     if(argc==2 && strcmp(argv[1],"--workload-privexec")==0) {
         CHECK(getauxval(AT_HEPTA_BOOT)==0 && workload_credentials("after_exec"),"workload_privexec_gained_authority");
+        workload_address_space("after_exec");
         return 0;
     }
     if(argc>1 && strcmp(argv[1],"--post-exec")==0)post_exec(argc,argv);

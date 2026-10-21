@@ -37,6 +37,37 @@ reopen the root-only device or inherit later manager descriptors. File offsets
 and the console object may be shared; mutable descriptor tables are separate.
 No file-table/queue lock is held while starting a child task.
 
+## Per-process virtual address-space limit
+
+The same stopped bootstrap allocates the workload with an original
+`RLIMIT_AS` soft and hard limit of **268,435,456 bytes (256 MiB)**. Manager and
+recovery keep their original limits. The generic initial allocator takes the
+already-created `ResourceLimits`; it does not temporarily attach unlimited
+limits to a running workload. Because initial loading happens in a kernel
+task, the trusted loader also checks the actual loaded VMAR mapping total
+against that workload's own limit before constructing or releasing its task.
+
+Enforcement reuses `VmarInner::check_extra_size_fits_rlimit`, and hard-limit
+changes use the original capability check for `CAP_SYS_RESOURCE`. No duplicate
+mapping counter or new syscall is introduced. Existing Process limits are
+copied by fork and retained by exec. The exact build manifest records
+`workload_address_space_bytes=268435456`.
+
+The real probe records the complete soft/hard pair before and after refused
+changes in its initial workload, fork child and exec child. In all three it
+requires an additional 256 MiB `PROT_NONE` mapping to fail with `ENOMEM`, raising
+the hard limit to fail with `EPERM`, and setting soft above hard to fail with
+`EINVAL`. A normal 4 KiB read/write mapping must still succeed and retain writes
+at both endpoints before being unmapped. The runner binds all three records
+to the actual workload and fork/exec PIDs and their causal ordering.
+
+This is a **per-process virtual mapping bound**. It is not resident-memory
+accounting, `memory.max`, an aggregate process-tree memory budget, or a fork
+limit. A set of forked processes can still consume more total memory than one
+address-space limit, so recovery-resource survival under aggregate memory
+exhaustion remains unqualified. `RLIMIT_NPROC` is not used as an asserted fork
+limit because the current clone path does not enforce it.
+
 ## Actual syscall observations
 
 The static C image runs the isolation checks in the workload itself. The runner
@@ -55,7 +86,7 @@ CPU-management results:
 | Privileged executable | Workload forks and execs a real root-owned mode-04755 copy of the static probe; its child still reports the complete unprivileged credential state and no bootstrap auxv |
 
 There are seventeen named denial observations in addition to ten signal checks,
-three full credential observations and one privileged-file exec. The runner
+three full credential observations, three address-space observations and one privileged-file exec. The runner
 requires every record once, exact return values/errnos, actual distinct PIDs,
 and causal ordering. `PTRACE_ATTACH` is not implemented by this kernel; its
 `EIO` is recorded as an unsupported operation, **not** claimed as an exercised

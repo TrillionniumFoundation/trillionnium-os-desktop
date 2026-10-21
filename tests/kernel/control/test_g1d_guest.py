@@ -33,8 +33,19 @@ def fixture_workload():
     lines.extend(f"G1D_WORKLOAD_SIGNAL target={target} signal={signal} rc=-1 errno=1"
                  for target, signal in g1d.SIGNAL_CASES)
     lines.extend(f"G1D_WORKLOAD_BOUNDARY name={name} rc=-1 errno={error}" for name, error in g1d.BOUNDARY_CASES)
-    lines.extend((fixture_credentials("after_denials"), fixture_credentials("after_exec", pid=4), g1d.WORKLOAD_ISOLATED))
+    lines.extend((fixture_credentials("after_denials"), fixture_address_space("initial", 2),
+                  fixture_address_space("after_fork", 4), fixture_credentials("after_exec", pid=4),
+                  fixture_address_space("after_exec", 4), g1d.WORKLOAD_ISOLATED))
     return lines
+
+
+def fixture_address_space(phase, pid):
+    values = dict(pid=pid, soft=g1d.WORKLOAD_AS_BYTES, hard=g1d.WORKLOAD_AS_BYTES,
+                  after_soft=g1d.WORKLOAD_AS_BYTES, after_hard=g1d.WORKLOAD_AS_BYTES,
+                  oversized_bytes=g1d.WORKLOAD_AS_BYTES, oversized_rc=-1, oversized_errno=12,
+                  raise_hard_rc=-1, raise_hard_errno=1, invalid_soft_rc=-1, invalid_soft_errno=22,
+                  mapped_page_bytes=4096, page_roundtrip=1)
+    return "G1D_WORKLOAD_ADDRESS_SPACE phase=" + phase + " " + " ".join(key + "=" + str(values[key]) for key in g1d.ADDRESS_KEYS)
 
 
 def fixture_apply(role, sequence, cap, previous, sample, before, after, used_before=None, used_after=None):
@@ -188,6 +199,19 @@ class VerdictTests(unittest.TestCase):
                     self.assertFalse(self.verdict(raw.replace(line, prefix + b"errno=" + str(int(error) + 1).encode(), 1)))
         initial = next(line for line in raw.splitlines() if line.startswith(b"G1D_WORKLOAD_CREDS phase=initial"))
         self.assertFalse(self.verdict(initial + b"\n" + raw.replace(initial + b"\n", b"", 1)))
+
+    def test_address_limit_actual_enforcement_and_fork_exec_inheritance_are_required(self):
+        raw = valid_serial()
+        for line in raw.splitlines():
+            if not line.startswith(b"G1D_WORKLOAD_ADDRESS_SPACE"):
+                continue
+            for word in line.split()[2:]:
+                key, value = word.split(b"=", 1)
+                changed = key + b"=" + str(int(value) + 1).encode()
+                with self.subTest(phase=line.split()[1], field=key):
+                    self.assertFalse(self.verdict(raw.replace(line, line.replace(word, changed, 1), 1)))
+            self.assertFalse(self.verdict(raw.replace(line + b"\n", b"", 1) + line + b"\n"))
+        self.assertFalse(self.verdict(raw.replace(b"ADDRESS_SPACE phase=after_fork", b"ADDRESS_SPACE phase=initial", 1)))
 
     def test_receipts_history_and_old_linux_aliases_fail_closed(self):
         raw = valid_serial()

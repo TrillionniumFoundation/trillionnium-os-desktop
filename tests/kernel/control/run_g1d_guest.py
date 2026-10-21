@@ -35,6 +35,7 @@ CAP_NS = 50_000_000
 PERIOD_NS = 100_000_000
 LEASE_NS = 300_000_000_000
 RECOVERY_GRACE_NS = 30_000_000_000
+WORKLOAD_AS_BYTES = 256 * 1024 * 1024
 COMPLETE = "G1D_COMPLETE native_manage=true history=true hepta_durability=false hardware=false"
 WORKLOAD_ISOLATED = ("G1D_WORKLOAD_LINUX_ISOLATED uid=60001 gid=60001 groups=0 caps=0 nnp=1 securebits=195 "
                      "signal_cases=10 boundary_cases=17 exec_cases=1")
@@ -90,6 +91,11 @@ CREDENTIALS = re.compile(r"^G1D_WORKLOAD_CREDS phase=([a-z_]+) "
                          + " ".join(key + r"=([0-9]+)" for key in CREDENTIAL_KEYS) + r"$")
 WORKLOAD_SIGNAL = re.compile(r"^G1D_WORKLOAD_SIGNAL target=(manager|recovery) signal=([0-9]+) rc=(-?[0-9]+) errno=([0-9]+)$")
 WORKLOAD_BOUNDARY = re.compile(r"^G1D_WORKLOAD_BOUNDARY name=([a-z_]+) rc=(-?[0-9]+) errno=([0-9]+)$")
+ADDRESS_KEYS = ("pid", "soft", "hard", "after_soft", "after_hard", "oversized_bytes", "oversized_rc",
+                "oversized_errno", "raise_hard_rc", "raise_hard_errno", "invalid_soft_rc", "invalid_soft_errno",
+                "mapped_page_bytes", "page_roundtrip")
+ADDRESS_SPACE = re.compile(r"^G1D_WORKLOAD_ADDRESS_SPACE phase=([a-z_]+) "
+    + " ".join(key + (r"=(-?[0-9]+)" if key.endswith("_rc") else r"=([0-9]+)") for key in ADDRESS_KEYS) + r"$")
 SIGNAL_CASES = tuple((target, signal) for signal in (0, 19, 15, 9, 18) for target in ("manager", "recovery"))
 BOUNDARY_CASES = (("setresuid_root", 1), ("setresgid_root", 1), ("setgroups_root", 1),
                   ("raise_cap_kill", 1), ("raise_ambient_kill", 1), ("clear_no_new_privs", 22),
@@ -99,6 +105,7 @@ BOUNDARY_CASES = (("setresuid_root", 1), ("setresgid_root", 1), ("setgroups_root
                   ("proc_maps_recovery", 13), ("rewrite_ready", 13), ("forge_recovery_command", 13))
 DYNAMIC = (BOOT, APPLY, COPYOUT, ALIAS, ZERO, RECOVERY, FULL, EXEC, CREDENTIALS, WORKLOAD_SIGNAL, WORKLOAD_BOUNDARY,
            USER_STOP, USER_PAUSED, RECOVERY_USED, USER_RESUME)
+DYNAMIC += (ADDRESS_SPACE,)
 
 
 def build_initramfs(original, probe):
@@ -128,6 +135,9 @@ def workload_boundary(lines, pids):
                                   for pattern in (CREDENTIALS, WORKLOAD_SIGNAL, WORKLOAD_BOUNDARY))
     rows = [{"phase": match[1], **dict(zip(CREDENTIAL_KEYS, map(int, match.groups()[1:])))}
             for _, match in creds]
+    memory = records(lines, ADDRESS_SPACE)
+    memory_rows = [{"phase": match[1], **dict(zip(ADDRESS_KEYS, map(int, match.groups()[1:])))}
+                   for _, match in memory]
     credentials_ok = len(pids) == 3 and len(rows) == 3 and [row["phase"] for row in rows] == [
         "initial", "after_denials", "after_exec"]
     if credentials_ok:
@@ -144,18 +154,30 @@ def workload_boundary(lines, pids):
     boundaries_ok = (len(boundaries) == len(BOUNDARY_CASES)
                      and all((match[1], int(match[3])) == case and int(match[2]) == -1
                              for (_, match), case in zip(boundaries, BOUNDARY_CASES)))
+    memory_ok = credentials_ok and len(memory_rows) == 3 and [row["phase"] for row in memory_rows] == [
+        "initial", "after_fork", "after_exec"]
+    if memory_ok:
+        expected = {key: WORKLOAD_AS_BYTES for key in ("soft", "hard", "after_soft", "after_hard", "oversized_bytes")}
+        expected.update(oversized_rc=-1, oversized_errno=12, raise_hard_rc=-1, raise_hard_errno=1,
+                        invalid_soft_rc=-1, invalid_soft_errno=22, mapped_page_bytes=4096, page_roundtrip=1)
+        memory_ok = (all(row[key] == value for row in memory_rows for key, value in expected.items())
+                     and memory_rows[0]["pid"] == pids[1]
+                     and memory_rows[1]["pid"] == memory_rows[2]["pid"] == rows[2]["pid"])
     ordered = False
-    if credentials_ok and signals_ok and boundaries_ok and lines.count(WORKLOAD_ISOLATED) == 1 \
+    if credentials_ok and signals_ok and boundaries_ok and memory_ok and lines.count(WORKLOAD_ISOLATED) == 1 \
             and lines.count("G1D_WORKLOAD_NO_AUTHORITY") == 1:
         workload_boot = [index for index, match in records(lines, BOOT) if match[1] == "2"]
         indices = [creds[0][0], *[index for index, _ in signals], *[index for index, _ in boundaries],
-                   creds[1][0], creds[2][0], lines.index(WORKLOAD_ISOLATED), lines.index("G1D_WORKLOAD_NO_AUTHORITY")]
+                   creds[1][0], memory[0][0], memory[1][0], creds[2][0], memory[2][0],
+                   lines.index(WORKLOAD_ISOLATED), lines.index("G1D_WORKLOAD_NO_AUTHORITY")]
         ordered = (len(workload_boot) == 1 and workload_boot[0] < indices[0]
                    and all(left < right for left, right in zip(indices, indices[1:])))
-    return {"passed": bool(credentials_ok and signals_ok and boundaries_ok and ordered),
+    return {"passed": bool(credentials_ok and signals_ok and boundaries_ok and memory_ok and ordered),
             "credential_observations": rows, "nonroot_credentials_survive_setuid_exec": bool(credentials_ok),
             "cross_role_signals_denied": bool(signals_ok), "linux_boundary_cases_exact": bool(boundaries_ok),
             "ptrace_attach_profile": "unsupported_EIO; supported_POKEDATA_denied_ESRCH; proc_mem_and_maps_denied_EACCES",
+            "per_process_address_space_inherited_and_enforced": bool(memory_ok),
+            "address_space_observations": memory_rows,
             "observations_ordered": ordered}
 
 
@@ -385,7 +407,7 @@ def verify_build(directory, snapshot, target, probe):
                          "supported_ops": 62, "features": 0, "bootstrap_version": 2, "bootstrap_bytes": 192,
                          "roles": ["manager", "workload", "recovery"],
                          "cap_ns": CAP_NS, "period_ns": PERIOD_NS, "lease_ns": LEASE_NS,
-                         "recovery_grace_ns": RECOVERY_GRACE_NS}
+                         "recovery_grace_ns": RECOVERY_GRACE_NS, "workload_address_space_bytes": WORKLOAD_AS_BYTES}
     require(set(manifest) == set(expected_manifest) | {"source"}
             and all(manifest.get(key) == value for key, value in expected_manifest.items()), "trusted build manifest differs")
     require(Path(manifest["source"]).read_bytes() == probe, "input changed after the build snapshot")

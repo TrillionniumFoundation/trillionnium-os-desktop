@@ -60,6 +60,7 @@ def main():
             "bootstrap_bytes": 192,
             "roles": ["manager", "workload", "recovery"],
             "recovery_grace_ns": 30_000_000_000,
+            "workload_address_space_bytes": 256 * 1024 * 1024,
         })
         # Role-specific slots are defined by the sealed v2 bootstrap page.
         del manifest["slot"]
