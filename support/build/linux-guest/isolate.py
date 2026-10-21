@@ -73,6 +73,10 @@ def main():
     args = ap.parse_args()
     if not 1 <= args.timeout <= 180 or not 1 <= args.jobs <= 2:
         ap.error("timeout must be 1..180 and jobs must be 1..2")
+    # Evidence must not change the rootfs between verification and guest.pack.
+    # Resolve existing symlink parents as well as relative path components.
+    if args.out_dir.resolve().is_relative_to(args.rootfs.resolve()):
+        ap.error("output directory must be outside the verified rootfs")
     root = args.a04_source_root.resolve()
     source = verified_source(root)
     q = imported("a04_isolated_qemu", root / "tests/workloads/linux/replay_qemu.py")

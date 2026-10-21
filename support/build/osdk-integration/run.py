@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Run the real upstream OSDK integration harness with a native TCG profile."""
 import argparse
+import ctypes
 from contextlib import contextmanager
 from datetime import datetime, timezone
 import difflib
@@ -10,6 +11,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import secrets
 import shutil
 import signal
 import stat
@@ -596,14 +598,188 @@ def main():
         return run_locked(args, here, project, upstream, output)
 
 
-@contextmanager
-def owned_fixed_root(output):
-    """Clear the original temporary root through its FD on every exit.
 
-    Keep its empty directory inode: unlinking the named root after an inode
-    comparison would race a replacement. A foreign path replacement is never
-    traversed or removed by cleanup.
+def clear_owned_directory(descriptor):
+    """Clear an already pinned directory; never unlink its mutable public name."""
+    def retain_root(function, path, error):
+        if function is os.rmdir and path == "." and error[1].errno == errno.EINVAL:
+            return
+        raise error[1]
+    shutil.rmtree(".", dir_fd=descriptor, onerror=retain_root)
+    if os.listdir(descriptor):
+        raise RuntimeError("owned directory is not empty after cleanup")
+
+
+def rename_no_replace(source, destination, source_fd, destination_fd):
+    """Move one entry atomically between pinned parents, without overwriting."""
+    libc = ctypes.CDLL(None, use_errno=True)
+    try:
+        renameat2 = libc.renameat2
+    except AttributeError as error:
+        raise OSError(errno.ENOSYS, "renameat2(RENAME_NOREPLACE) is unavailable") from error
+    renameat2.argtypes = [ctypes.c_int, ctypes.c_char_p, ctypes.c_int,
+                         ctypes.c_char_p, ctypes.c_uint]
+    renameat2.restype = ctypes.c_int
+    if renameat2(source_fd, os.fsencode(source), destination_fd,
+                 os.fsencode(destination), 1) != 0:
+        number = ctypes.get_errno()
+        raise OSError(number, os.strerror(number), os.fspath(source))
+
+
+def cleanup_case_directory(path, fixed_root, custody):
+    """Capture a case entry, verify its inode, then clear only its pinned FD.
+
+    The empty captured inode stays under a fresh name after the suite exits;
+    no rmdir of an inode-checked mutable name can remove a foreign replacement.
+    Any uncertain ownership stops the suite and prevents outer recursive cleanup.
     """
+    path, fixed_root = Path(path), Path(fixed_root)
+    record = {"path": str(path), "removed": False, "passed": False}
+    descriptors, parents = [], []
+    captured = None
+    root_fd = custody["descriptor"]
+    custody["case_cleanup_mode"] = True
+    retained = custody.setdefault("retained_directories", {})
+    flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC
+
+    def same(named, descriptor):
+        held = os.fstat(descriptor)
+        return stat.S_ISDIR(named.st_mode) and \
+            (named.st_dev, named.st_ino) == (held.st_dev, held.st_ino)
+
+    def verify_parents():
+        if not same(fixed_root.lstat(), root_fd):
+            raise ValueError("fixed root pathname changed; replacement preserved")
+        for parent_fd, name, child_fd in parents:
+            if not same(os.stat(name, dir_fd=parent_fd, follow_symlinks=False), child_fd):
+                raise ValueError("case parent pathname changed; replacement preserved")
+
+    try:
+        parts = path.relative_to(fixed_root).parts
+        if not parts or any(part in ("", ".", "..") for part in parts):
+            raise ValueError("case cleanup must name a child of its owned fixed root")
+        verify_parents()
+        parent_fd = root_fd
+        for depth, name in enumerate(parts[:-1], 1):
+            try:
+                observed = os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
+            except FileNotFoundError:
+                verify_parents()
+                record.update(passed=True, reason="absent")
+                return record
+            if not stat.S_ISDIR(observed.st_mode):
+                raise ValueError("case parent is not a real directory; preserved")
+            child_fd = os.open(name, flags, dir_fd=parent_fd)
+            descriptors.append(child_fd)
+            if not same(observed, child_fd):
+                raise ValueError("case parent changed before FD custody; preserved")
+            parents.append((parent_fd, name, child_fd))
+            retained["/".join(parts[:depth])] = {
+                "device": observed.st_dev, "inode": observed.st_ino}
+            parent_fd = child_fd
+        name = parts[-1]
+        try:
+            observed = os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
+        except FileNotFoundError:
+            verify_parents()
+            record.update(passed=True, reason="absent")
+            return record
+        if not stat.S_ISDIR(observed.st_mode):
+            raise ValueError("case entry is not a real directory; preserved")
+        owned_fd = os.open(name, flags, dir_fd=parent_fd)
+        descriptors.append(owned_fd)
+        if not same(observed, owned_fd):
+            raise ValueError("case entry changed before FD custody; preserved")
+        record.update(device=observed.st_dev, inode=observed.st_ino)
+        verify_parents()
+        captured = ".a01-case-custody-" + secrets.token_hex(16)
+        record["custody_path"] = str(fixed_root / captured)
+        rename_no_replace(name, captured, parent_fd, root_fd)
+        entry = os.stat(captured, dir_fd=root_fd, follow_symlinks=False)
+        if not same(entry, owned_fd):
+            try:
+                rename_no_replace(captured, name, root_fd, parent_fd)
+                record["foreign_restored"] = True
+                captured = None
+            except OSError as error:
+                record["restore_error"] = f"{type(error).__name__}: {error}"
+                record["retained_path"] = str(fixed_root / captured)
+            raise ValueError("captured case identity differs from owned FD; preserved")
+        clear_owned_directory(owned_fd)
+        verify_parents()
+        if not same(os.stat(captured, dir_fd=root_fd, follow_symlinks=False), owned_fd):
+            raise ValueError("case custody pathname changed; replacement preserved")
+        try:
+            os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
+        except FileNotFoundError:
+            pass
+        else:
+            raise ValueError("case pathname was replaced after capture; preserved")
+        retained[captured] = {"device": observed.st_dev, "inode": observed.st_ino}
+        record.update(passed=True, removed=True, contents_removed=True,
+                      retained_empty_custody=True)
+        return record
+    except (OSError, ValueError, RuntimeError) as error:
+        record["reason"] = f"{type(error).__name__}: {error}"
+        return record
+    finally:
+        if not record["passed"]:
+            custody["preserve_contents"] = True
+            custody.setdefault("preservation_reasons", []).append(
+                {"path": str(path), "reason": record.get("reason", "cleanup interrupted"),
+                 "custody_path": record.get("custody_path")})
+        for descriptor in reversed(descriptors):
+            os.close(descriptor)
+
+
+def validate_retained_directories(descriptor, retained):
+    """Inspect only known empty custody/scaffold inodes; never remove entries.
+
+    A public case name must stay absent after its captured contents are cleared.
+    The finalizer must not recursively clean that name if it appears again after
+    the helper's last check. Unknown entries therefore remain intact and fail
+    this final inventory check. This is not protection from arbitrary same-UID
+    mutations inside the originally owned directory while it is being cleared.
+    """
+    children = {(): {}}
+    for path, identity in retained.items():
+        parts = tuple(path.split("/"))
+        children.setdefault(parts[:-1], {})[parts[-1]] = identity
+        children.setdefault(parts, {})
+    flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC
+
+    def inspect(parent_fd, parts):
+        expected = children[parts]
+        actual = set(os.listdir(parent_fd))
+        if actual != set(expected):
+            raise ValueError("fixed-root inventory changed; entries preserved: " +
+                             str({"parent": "/".join(parts),
+                                  "unexpected": sorted(actual - set(expected)),
+                                  "missing": sorted(set(expected) - actual)}))
+        for name, identity in expected.items():
+            child = os.open(name, flags, dir_fd=parent_fd)
+            try:
+                opened = os.fstat(child)
+                named = os.stat(name, dir_fd=parent_fd, follow_symlinks=False)
+                if not stat.S_ISDIR(named.st_mode) or \
+                        (named.st_dev, named.st_ino) != (opened.st_dev, opened.st_ino) or \
+                        (opened.st_dev, opened.st_ino) != (identity["device"], identity["inode"]):
+                    raise ValueError("retained directory identity changed; replacement preserved")
+                inspect(child, (*parts, name))
+            finally:
+                os.close(child)
+    inspect(descriptor, ())
+
+
+@contextmanager
+def owned_fixed_root(output, *, custody=None):
+    """Retain custody of the temporary root through every exit.
+
+    Preparation failures clear the original root FD and keep its empty inode.
+    Once cases start, only individually captured case/TMPDIR FDs are cleared;
+    the outer finalizer never revisits their released public names recursively.
+    """
+    custody = {} if custody is None else custody
     fixed = Path(tempfile.mkdtemp(prefix="a01oi-", dir="/tmp"))
     created = fixed.lstat()
     descriptor = os.open(fixed, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
@@ -612,17 +788,12 @@ def owned_fixed_root(output):
             (created.st_dev, created.st_ino) != (identity.st_dev, identity.st_ino):
         os.close(descriptor)
         raise ValueError("owned fixed root identity changed before FD custody; replacement preserved")
+    custody.update(descriptor=descriptor, preserve_contents=False, preservation_reasons=[],
+                   case_cleanup_mode=False, retained_directories={})
     record = {"path": str(fixed), "device": identity.st_dev, "inode": identity.st_ino,
               "removed_after_run": False, "contents_removed": False,
               "cleanup_policy": "clear original pinned directory FD; retain empty root inode"}
     receipt = output / "fixed-root.json"
-
-    def retain_root(function, path, error):
-        # rmtree operates on the pinned directory itself. Its final rmdir('.')
-        # is deliberately ineligible; no pathname is used to unlink the root.
-        if function is os.rmdir and path == "." and error[1].errno == errno.EINVAL:
-            return
-        raise error[1]
 
     try:
         receipt.write_text(json.dumps(record, indent=2) + "\n")
@@ -638,11 +809,31 @@ def owned_fixed_root(output):
             except FileNotFoundError:
                 record["named_root_identity_matches"] = False
                 record["named_root_missing"] = True
-            shutil.rmtree(".", dir_fd=descriptor, onerror=retain_root)
-            if os.listdir(descriptor):
-                raise RuntimeError("owned fixed root is not empty after cleanup")
-            record["contents_removed"] = True
-            record["retained_empty_root"] = True
+            if custody["case_cleanup_mode"] and not custody["preserve_contents"]:
+                try:
+                    if not record.get("named_root_identity_matches"):
+                        raise ValueError("fixed root pathname changed; replacement preserved")
+                    validate_retained_directories(descriptor, custody["retained_directories"])
+                except (OSError, ValueError) as error:
+                    custody["preserve_contents"] = True
+                    custody["preservation_reasons"].append(
+                        {"path": str(fixed), "reason": f"{type(error).__name__}: {error}"})
+            if custody["preserve_contents"]:
+                record.update(contents_preserved_for_recovery=True, retained_empty_root=False,
+                              preservation_reasons=custody["preservation_reasons"],
+                              cleanup_error="case cleanup ownership uncertain; root contents preserved")
+            elif custody["case_cleanup_mode"]:
+                record.update(
+                    cleanup_policy="clear captured case/TMPDIR FDs; retain empty custody/scaffold inodes",
+                    case_contents_removed=True,
+                    retained_empty_root=not custody["retained_directories"],
+                    contents_removed=not custody["retained_directories"],
+                    retained_directories=custody["retained_directories"],
+                    retained_directory_count=len(custody["retained_directories"]))
+            else:
+                clear_owned_directory(descriptor)
+                record["contents_removed"] = True
+                record["retained_empty_root"] = True
         except BaseException as error:
             record["cleanup_error"] = f"{type(error).__name__}: {error}"
             raise
@@ -652,11 +843,24 @@ def owned_fixed_root(output):
 
 
 def run_locked(args, here, project, upstream, output):
-    with owned_fixed_root(output) as fixed_root:
-        return _run_locked(args, here, project, upstream, output, fixed_root)
+    custody = {}
+    with owned_fixed_root(output, custody=custody) as fixed_root:
+        status = _run_locked(args, here, project, upstream, output, fixed_root, custody)
+    # The non-destructive final inventory can detect a replacement installed
+    # after a case's last absence check. Preserve that late failure in the
+    # aggregate as well as the root receipt and process exit code.
+    result_path = output / "result.json"
+    summary = json.loads(result_path.read_text())
+    summary["fixed_root_cleanup"] = json.loads((output / "fixed-root.json").read_text())
+    summary["cleanup_blocked"] = custody["preserve_contents"]
+    summary["runner_exit_code"] = int(bool(status or custody["preserve_contents"]))
+    result_path.write_text(json.dumps(summary, indent=2) + "\n")
+    if custody["preserve_contents"]:
+        print("BLOCKED fixed-root cleanup: uncertain entries preserved", file=sys.stderr)
+    return summary["runner_exit_code"]
 
 
-def _run_locked(args, here, project, upstream, output, fixed_root):
+def _run_locked(args, here, project, upstream, output, fixed_root, custody):
     env = os.environ.copy()
     env["RUSTUP_TOOLCHAIN"] = TOOLCHAIN
     env["RUSTUP_AUTO_INSTALL"] = "0"
@@ -770,6 +974,7 @@ def _run_locked(args, here, project, upstream, output, fixed_root):
                    "scope": "OSDK example kernels and tooling, not complete Asterinas kernel acceptance"}
     (output / "environment.json").write_text(json.dumps(environment, indent=2) + "\n")
     results = []
+    custody["case_cleanup_mode"] = True
     for index, case in enumerate(selected, 1):
         directory = output / f"case-{index:02d}"
         directory.mkdir()
@@ -780,9 +985,12 @@ def _run_locked(args, here, project, upstream, output, fixed_root):
                   "preexisting_paths": occupied, "status": "blocked" if occupied else "running"}
         (directory / "result.json").write_text(json.dumps(report, indent=2) + "\n")
         if occupied:
+            custody["preserve_contents"] = True
+            custody["preservation_reasons"].append(
+                {"paths": occupied, "reason": "preexisting case paths; preserved"})
             results.append(report)
             print(f"BLOCKED {case}: preexisting {occupied}", flush=True)
-            continue
+            break
         work = directory / "work"
         work.mkdir()
         temp = fixed_root / f"case-{index:02d}-tmp"
@@ -860,28 +1068,27 @@ def _run_locked(args, here, project, upstream, output, fixed_root):
             report["status"] = "failed"
             report["coverage"] = {"passed": False, "error": "no validated coverage artifact"}
         report["cleanup"] = []
-        # Only paths absent before this exact case are eligible; never touch preexisting paths.
-        for path in fixed:
-            if not os.path.lexists(path):
-                continue
-            stat = path.lstat()
-            if path.is_symlink() or not path.is_dir():
-                report["cleanup"].append({"path": str(path), "removed": False,
-                                          "reason": "unexpected type; preserved"})
+        # Only paths absent before this exact case are eligible. Anchor every
+        # parent to the original fixed-root FD; never recurse through the name.
+        for path in [*fixed, temp]:
+            cleaned = cleanup_case_directory(path, fixed_root, custody)
+            report["cleanup"].append(cleaned)
+            if not cleaned["passed"]:
                 report["status"] = "failed"
-                continue
-            shutil.rmtree(path)
-            report["cleanup"].append({"path": str(path), "removed": True,
-                                      "device": stat.st_dev, "inode": stat.st_ino})
+                break
         (directory / "result.json").write_text(json.dumps(report, indent=2) + "\n")
         results.append(report)
         print(f"{report['status'].upper()} {case} ({invoked['duration_seconds']}s)", flush=True)
         (output / "result.json").write_text(json.dumps({"schema": 1, "cases": results}, indent=2) + "\n")
+        if custody["preserve_contents"]:
+            break
     summary = {"schema": 1, "profile_id": profile_id,
+               "cleanup_blocked": custody["preserve_contents"],
                "coverage_collection": environment["coverage_collection"],
                "control_transport": environment["control_transport"],
                "profile": environment["profile"], "scope": environment["scope"],
                "available_cases": len(available), "selected_cases": len(selected),
+               "completed_cases": len(results), "not_run_cases": len(selected) - len(results),
                "passed": sum(r["status"] == "passed" for r in results),
                "failed": sum(r["status"] == "failed" for r in results),
                "blocked": sum(r["status"] == "blocked" for r in results),
