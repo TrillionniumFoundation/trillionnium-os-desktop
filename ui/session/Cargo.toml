@@ -6,6 +6,10 @@ license.workspace = true
 rust-version.workspace = true
 
 [dependencies]
+trill-ui-broker.workspace = true
 trill-ui-core.workspace = true
 serde_json.workspace = true
 hepta-os-observer = { path = "../../services/hepta-os" }
+
+[dev-dependencies]
+socket2 = "=0.6.5"

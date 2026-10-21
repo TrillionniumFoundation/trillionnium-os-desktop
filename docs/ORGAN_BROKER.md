@@ -69,3 +69,49 @@ fences, unknown reconciliation, bounded notification loss, replay conflict,
 foreign/restarted Broker handles, shared clone invalidation, global and
 cross-peer admission limits, failed-admission ID preservation, last-clone
 reclamation, and deterministic idle-timeout boundaries and refresh.
+
+## Linux Session transport
+
+The existing `trill-session` process owns one Broker and now consumes it on
+`$XDG_RUNTIME_DIR/trillionnium-ui/organ.sock`. The existing host lifecycle socket
+remains `session.sock`. Both listeners use the original Session instance lock,
+the same checked, same-UID 0700 runtime/socket directories, and 0600 sockets.
+Neither listener is an Agentd socket or an HOS2 device endpoint.
+
+Each Organ connection carries one compact newline-delimited JSON
+`ExchangeRequest` containing `hello: ClientHello` and `request: Request`.
+After writing the line, the client must shut down its write half. The server
+reads through EOF before admitting a session. It refuses missing terminators,
+additional lines, trailing non-whitespace data, unknown or duplicate fields, and
+frames over 64 KiB. Typed decoding starts directly from the original frame
+bytes; it does not normalize through a JSON map that could erase duplicates.
+
+The server reads the connected socket's real SO_PEERCRED before reading the
+hello. Client-supplied IDs, roles, UID/PID values, and numeric session counters
+cannot substitute for those credentials. An accepted exchange calls the same
+Broker's `open_session`, `handle`, and `close_session`; close happens before a
+reply write. A reply's session counter is diagnostic and cannot be presented
+on another connection as a credential. Every new connection authenticates
+again. Pull/reconcile still carries the existing explicit notification cursor
+and K/D/fence objects; disconnect does not create a new operation or retry.
+
+Session handles one active connection at a time and polls each listener once
+per loop. Both host and Organ request/response I/O use a single 500 ms deadline,
+including partial reads and writes. Incoming progress never resets that
+deadline. The Organ client helper also bounds its connect, write, and reply
+read within one two-second deadline; it uses the already locked socket2
+0.6.5 implementation for nonblocking connect, including a full Unix-listener
+backlog. An I/O error is an uncertain response outcome and causes no automatic
+retry, rollback, or invented non-submission receipt.
+
+Startup uses that bounded connect helper to probe an existing socket while
+holding the original instance lock. Only an actual ConnectionRefused result
+permits the original stale-socket removal. A full backlog, timeout, unconnected
+descriptor, or other error refuses startup and preserves the existing socket.
+
+The transport grants only the original broker's observe, local-draft, and
+reconcile capabilities. Submit and Cancel remain denied. Reconciliation
+without the original owner's authenticated receipt remains unknown. This
+host IPC integration supplies no application identity, A05 CapSpace grant,
+Final-use verifier, durable K/D owner, or physical-device qualification and
+does not close issue #111's production integration conditions.

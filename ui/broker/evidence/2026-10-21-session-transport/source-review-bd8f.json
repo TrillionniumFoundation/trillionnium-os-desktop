@@ -1,0 +1,53 @@
+{
+  "reviewed_at_utc": "2026-10-21T12:53:28.056337+00:00",
+  "reviewer": "dependency_closure",
+  "source_head": "bd8fb8f2f84825c302da262f4f4919ef5897d81f",
+  "parent": "0e4a0025c8bac8a70db861cb3fe2bde70752094f",
+  "tree": "6138e039d4b881dafd301df1a35d9f8a17ed01bc",
+  "previous_review": "os-session-broker-independent-review-0e4a.json",
+  "source_only": true,
+  "compiled_by_reviewer": false,
+  "files": [
+    {
+      "path": "ui/broker/src/host.rs",
+      "bytes": 7367,
+      "sha256": "53ea353eaba96993666806817e8f9ef7b0b83ba500913b0d5dc6238b67f3c93e"
+    },
+    {
+      "path": "ui/broker/tests/host_transport.rs",
+      "bytes": 9440,
+      "sha256": "d69e956fc64e22f37d81c9523bb3539d6bcf07ea321d37dc571dc6f0322b521d"
+    },
+    {
+      "path": "ui/session/tests/organ_broker.rs",
+      "bytes": 10356,
+      "sha256": "a4cee46c39bb1c049a4cd66e79e6cb20bd769ccb82f2e2db5e78e927e9a4b6bf"
+    }
+  ],
+  "verified_unchanged": [
+    "ui/session/src/main.rs",
+    "ui/Cargo.lock",
+    "ui/broker/Cargo.toml",
+    "ui/session/Cargo.toml"
+  ],
+  "finding": {
+    "status": "fixed_in_source_pending_exact_native_gate",
+    "issue": "socket2 0.6.5 direct conversions to std UnixStream and UnixListener require its all feature; a combined build can hide the missing independent-package requirement through feature unification.",
+    "original_compile_failure": "Owner reports actual unchanged 0e4a cargo check -p broker exit 101; a prior negative-control compile failure is not a semantic negative-control success.",
+    "primary_source": {
+      "file": "/workspace/scratch/337c309bc660/dependency-cache/cargo-home/registry/src/index.crates.io-1949cf8c6b5b557f/socket2-0.6.5/src/sys/unix.rs",
+      "sha256": "5193fd8c91103f8c73c03c0237c2a493aba911a2995c3750ffb13b054f5c9433",
+      "direct_stream_conversion_line": 3070,
+      "direct_listener_conversion_line": 3072
+    },
+    "resolution": "All three sites now move Socket into OwnedFd and then into the standard Unix socket type. From<Socket> for OwnedFd does not require the all feature. Descriptor ownership transfers exactly once; no dup, raw pointer ownership change, extra syscall, feature addition or protocol change is introduced."
+  },
+  "unchanged_boundaries": [
+    "connect_timeout uses the original absolute deadline",
+    "peer_addr rejects an unconnected descriptor",
+    "only ConnectionRefused can cause stale-socket unlink",
+    "same original socket descriptor underlies the transport or listener fixture",
+    "native and negative-control gates must run on the corrected exact source"
+  ],
+  "blocking_findings_remaining_in_reviewed_source": []
+}
