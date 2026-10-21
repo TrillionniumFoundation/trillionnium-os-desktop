@@ -3,9 +3,11 @@
 import copy
 import gzip
 import importlib.util
+import json
 from pathlib import Path
 import struct
 import subprocess
+import sys
 import tempfile
 import types
 import unittest
@@ -48,6 +50,86 @@ def evaluate(lines, *, guest=True, old=False, code=None, timeout=False, stderr=b
     return runner.oracle.evaluate(('\n'.join(lines) + '\n').encode(), guest=guest, negative=old,
                                    process_exit=(33 if guest else 0) if code is None else code,
                                    timed_out=timeout, probe_bytes=800000, stderr=stderr)
+
+
+class FormatterVersionTests(unittest.TestCase):
+    @staticmethod
+    def tool(directory, stdout, stderr, code):
+        path = directory / 'mkfs.exfat'
+        path.write_text('#!' + sys.executable + '\nimport sys\n'
+                        + 'sys.stdout.buffer.write(' + repr(stdout) + ')\n'
+                        + 'sys.stderr.buffer.write(' + repr(stderr) + ')\n'
+                        + 'raise SystemExit(' + str(code) + ')\n')
+        path.chmod(0o700)
+        return path
+
+    def test_prepare_accepts_observed_122_version_exit_and_preserves_original_logs(self):
+        class ReachedCompile(Exception):
+            pass
+        original = runner.run_logged
+        def stop_before_compile(command, out, name, **kwargs):
+            if name == 'compile':
+                raise ReachedCompile
+            return original(command, out, name, **kwargs)
+        with tempfile.TemporaryDirectory(prefix='exfat-version-') as directory:
+            root = Path(directory)
+            path = self.tool(root, b'exfatprogs version : 1.2.2\n', b'', 1)
+            out = root / 'evidence'
+            out.mkdir()
+            args = types.SimpleNamespace(cc='compiler', expected_source_head='fixed-head',
+                                         expected_source_tree='fixed-tree')
+            def identity(name):
+                return {'path': str(path) if name == 'mkfs.exfat' else sys.executable,
+                        'sha256': 'fixed-test-identity'}
+            with mock.patch.object(runner.product, 'source_snapshot', return_value={'fixed': True}), \
+                 mock.patch.object(runner, 'tool_identity', side_effect=identity), \
+                 mock.patch.object(runner, 'run_logged', side_effect=stop_before_compile):
+                with self.assertRaises(ReachedCompile):
+                    runner.prepare(args, out, {})
+            self.assertEqual(json.loads((out / 'formatter-version-command.json').read_text()),
+                             [str(path), '-V'])
+            self.assertEqual((out / 'formatter-version.exit-code.txt').read_bytes(), b'1\n')
+            self.assertEqual((out / 'formatter-version.stdout.log').read_bytes(),
+                             b'exfatprogs version : 1.2.2\n')
+            self.assertEqual((out / 'formatter-version.stderr.log').read_bytes(), b'')
+            self.assertFalse((out / 'blank.raw').exists())
+
+    def test_version_probe_accepts_a_normal_zero_exit_and_records_the_version(self):
+        with tempfile.TemporaryDirectory(prefix='exfat-version-') as directory:
+            out = Path(directory)
+            path = self.tool(out, b'exfatprogs version : 1.2.3\n', b'', 0)
+            self.assertEqual(runner.run_formatter_version(str(path), out),
+                             {'version': '1.2.3', 'exit_code': 0})
+
+    def test_version_exception_rejects_unrelated_status_usage_stderr_and_other_versions(self):
+        banner = b'exfatprogs version : 1.2.2\n'
+        cases = ((banner, b'', 2), (banner, b'', 65),
+                 (b'exfatprogs version : 1.2.3\n', b'', 1),
+                 (banner, b'warning\n', 1), (banner, b'warning\n', 0),
+                 (b'usage: mkfs.exfat\n', b'', 1),
+                 (b'usage: mkfs.exfat\n', b'', 0),
+                 (banner + b'usage: mkfs.exfat\n', b'', 1),
+                 (b'', b'', 1), (b'', b'', 0))
+        for stdout, stderr, code in cases:
+            with self.subTest(stdout=stdout, stderr=stderr, code=code), \
+                 tempfile.TemporaryDirectory(prefix='exfat-version-') as directory:
+                out = Path(directory)
+                path = self.tool(out, stdout, stderr, code)
+                with self.assertRaises(ValueError):
+                    runner.run_formatter_version(str(path), out)
+                self.assertEqual((out / 'formatter-version.stdout.log').read_bytes(), stdout)
+                self.assertEqual((out / 'formatter-version.stderr.log').read_bytes(), stderr)
+                self.assertEqual((out / 'formatter-version.exit-code.txt').read_text(), str(code) + '\n')
+
+    def test_actual_format_still_rejects_nonzero_even_with_the_version_banner(self):
+        with tempfile.TemporaryDirectory(prefix='exfat-version-') as directory:
+            out = Path(directory)
+            path = self.tool(out, b'exfatprogs version : 1.2.2\n', b'', 1)
+            command = [str(path), str(out / 'blank.raw')]
+            with self.assertRaisesRegex(ValueError, 'format failed'):
+                runner.run_logged(command, out, 'format')
+            self.assertEqual(json.loads((out / 'format-command.json').read_text()), command)
+            self.assertEqual((out / 'format.exit-code.txt').read_text(), '1\n')
 
 
 class ObservationTests(unittest.TestCase):

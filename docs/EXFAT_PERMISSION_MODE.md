@@ -61,6 +61,17 @@ and the guest; this candidate still requires its own unchanged full CI.
 
 ## Fixed disk guest qualification
 
+The formatter version probe records its exact command, stdout, stderr and exit
+status. The original [combined run 39523168077](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/actions/runs/39523168077)
+stopped before formatting: `/usr/sbin/mkfs.exfat -V` emitted exactly
+`exfatprogs version : 1.2.2` with a newline, empty stderr and exit 1.
+[exfatprogs 1.2.2](https://github.com/exfatprogs/exfatprogs/blob/1.2.2/mkfs/mkfs.c#L701-L703)
+deliberately uses `EXIT_FAILURE` after printing that version-only response.
+The probe accepts this specific version/status combination, or a well-formed
+version response with exit 0; usage text, stderr, other nonzero statuses and
+other versions with exit 1 fail. The actual format command still requires
+exit 0. This compatibility fix does not qualify any disk or guest execution.
+
 The mode correction is applied to merged main commit
 `0c1de23a3754bc3a6976fed53c7dfa0ec3778e57`, tree
 `0337884b57bf67350f27b22eb6af326fa19dcb7d`. The original four G1-c changes
