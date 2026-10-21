@@ -124,7 +124,7 @@ exec/exit 在 TaskSet → image 下标记 Closing，释放二者后等待 operat
 
 ## 验收和范围
 
-默认 core gate 保留历史238及 G1-c 9项具名回归，追加8项实际 owner 回归，最低255，17个 required names 各出现一次。新测试用原 cgroup/production OSTD D backend，覆盖精确纳秒资格、消费/正债务保持、拒绝/replay、独立撤销恢复、lease/clock/fault、Linux 别名、1024 窗口/退役。显式时间 cut 是 fixture，不替代 calibrated clock/真实 syscall。
+默认 core gate 保留历史238及权限事务5项、G1-c 9项、G1-d 8项和 ExFAT 2项具名回归，组合候选最低262，24个 required names 各出现一次且不得软跳过。G1-d 的8项测试用原 cgroup/production OSTD D backend，覆盖精确纳秒资格、消费/正债务保持、拒绝/replay、独立撤销恢复、lease/clock/fault、Linux 别名、1024 窗口/退役。显式时间 cut 是 fixture，不替代 calibrated clock/真实 syscall。
 
 [g1d_init.c](../../tests/kernel/control/g1d_init.c) 在真实 guest 验证三角色、用量/heartbeat、D1..D11、实际 copyout EFAULT、replay/conflict、cap=0 停止并独立恢复、1/999/1001ns、四条 Linux 别名、1024窗口、部分/最终退役、fork/SCM 与同一个已授权 PID 最终 exec。仅有一个有效 manage target，不能把无效 slot 当作两个有效资源间冲突证明；原 core 跨目标测试保留。
 

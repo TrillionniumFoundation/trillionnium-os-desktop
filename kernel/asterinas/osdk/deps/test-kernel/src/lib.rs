@@ -31,25 +31,34 @@ pub enum KtestResult {
 }
 
 /// The entry point of the test runner.
+#[cfg(not(feature = "external-entry"))]
 #[ostd::ktest::main]
 fn main() {
     use ostd::task::TaskOptions;
 
-    let test_task = move || {
-        use alloc::string::ToString;
+    TaskOptions::new(|| {
+        run_ktests_and_exit();
+    })
+    .data(())
+    .spawn()
+    .unwrap();
+}
 
-        use ostd::power::{ExitCode, poweroff};
+/// Runs the original selected tests and powers off with their aggregate result.
+///
+/// An external entry must initialize its scheduler and call this in a task.
+pub fn run_ktests_and_exit() -> ! {
+    use alloc::string::ToString;
 
-        match run_ktests(
-            get_ktest_test_whitelist().map(|s| s.iter().map(|s| s.to_string())),
-            get_ktest_crate_whitelist(),
-        ) {
-            KtestResult::Ok => poweroff(ExitCode::Success),
-            KtestResult::Failed => poweroff(ExitCode::Failure),
-        };
-    };
+    use ostd::power::{ExitCode, poweroff};
 
-    TaskOptions::new(test_task).data(()).spawn().unwrap();
+    match run_ktests(
+        get_ktest_test_whitelist().map(|s| s.iter().map(|s| s.to_string())),
+        get_ktest_crate_whitelist(),
+    ) {
+        KtestResult::Ok => poweroff(ExitCode::Success),
+        KtestResult::Failed => poweroff(ExitCode::Failure),
+    }
 }
 
 #[ostd::ktest::panic_handler]

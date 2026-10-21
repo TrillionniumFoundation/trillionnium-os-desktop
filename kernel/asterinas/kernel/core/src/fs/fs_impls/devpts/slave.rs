@@ -14,6 +14,9 @@ use crate::{
             file_system::FileSystem,
             inode::{Extension, FileOps, Inode, Metadata},
             path::Dentry,
+            permission_attrs::{
+                PermissionAttrRequest, PermissionCtimePolicy, PermissionModePolicy,
+            },
         },
     },
     prelude::*,
@@ -71,6 +74,18 @@ impl FileOps for PtySlaveInode {
 }
 
 impl Inode for PtySlaveInode {
+    fn try_permission_attr_transaction(
+        &self,
+        _self_dentry: &Dentry,
+        request: &PermissionAttrRequest,
+    ) -> Option<Result<()>> {
+        Some(request.apply_to_metadata(
+            &mut self.metadata.write(),
+            PermissionModePolicy::Writable,
+            PermissionCtimePolicy::OnChown,
+        ))
+    }
+
     fn size(&self) -> usize {
         self.metadata.read().size
     }

@@ -1,0 +1,12 @@
+diff --git a/kernel/asterinas/kernel/core/src/fs/fs_impls/exfat/inode.rs b/kernel/asterinas/kernel/core/src/fs/fs_impls/exfat/inode.rs
+--- a/kernel/asterinas/kernel/core/src/fs/fs_impls/exfat/inode.rs
++++ b/kernel/asterinas/kernel/core/src/fs/fs_impls/exfat/inode.rs
+@@ -72,7 +72,7 @@ impl FatAttr {
+     fn make_mode(&self, mount_option: ExfatMountOptions) -> InodeMode {
+         // exFAT stores no Unix set-ID or sticky bits. Start from access bits
+         // only, as Linux exfat_fill_inode does, before applying the DOS flags.
+-        let mut ret = mkmod!(a+rwx);
++        let mut ret = InodeMode::all();
+         if self.contains(FatAttr::READONLY) && !self.contains(FatAttr::DIRECTORY) {
+             ret.remove(mkmod!(a+w));
+         }

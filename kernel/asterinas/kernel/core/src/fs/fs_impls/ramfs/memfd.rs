@@ -19,6 +19,7 @@ use crate::{
             file_system::FileSystem,
             inode::{Extension, FallocMode, FileOps, Inode, Metadata},
             path::{Dentry, Mount, Path},
+            permission_attrs::{PermissionAttrRequest, PermissionModePolicy},
             xattr::{XattrName, XattrNamespace, XattrSetFlags},
         },
     },
@@ -26,6 +27,12 @@ use crate::{
     process::{Gid, Uid},
     vm::{page_cache::Vmo, perms::VmPerms},
 };
+
+#[cfg(ktest)]
+mod permission_tests;
+
+#[cfg(all(ktest, feature = "permission-attr-smp-ktest"))]
+mod permission_smp_tests;
 
 pub(super) fn init() {
     // Touch the mount node to trigger the initialization of all singletons.
@@ -148,6 +155,27 @@ impl FileOps for MemfdInode {
 
 #[inherit_methods(from = "self.inode")]
 impl Inode for MemfdInode {
+    fn try_permission_attr_transaction(
+        &self,
+        _self_dentry: &Dentry,
+        request: &PermissionAttrRequest,
+    ) -> Option<Result<()>> {
+        // Keep the existing order shared with add_seals and raw set_mode:
+        // seals -> RamInode metadata. The seal cannot change between checking
+        // executable bits and committing any owner/group/mode/ctime field.
+        let seals = self.seals.lock();
+        let mode_policy = if seals.contains(FileSeals::F_SEAL_EXEC) {
+            PermissionModePolicy::PreserveExecutableBits
+        } else {
+            PermissionModePolicy::Writable
+        };
+        #[cfg(all(ktest, feature = "permission-attr-smp-ktest"))]
+        request.after_check_for_test(
+            crate::fs::vfs::permission_attrs::smp_support::CheckpointStage::MemfdSealDecision,
+        );
+        Some(self.inode.permission_attr_transaction(request, mode_policy))
+    }
+
     fn metadata(&self) -> Result<Metadata>;
     fn size(&self) -> usize;
     fn atime(&self) -> Duration;

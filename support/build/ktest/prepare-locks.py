@@ -71,7 +71,10 @@ def generated_manifest(upstream, crate):
         text.append('')
     text.append('[features]')
     for name, values in target.get("features", {}).items():
-        text.append(f'{name} = {atom(values if name == "default" else [crate + "/" + name])}')
+        forwarded = values if name == "default" else [crate + "/" + name]
+        if crate == "aster-core" and name == "permission-attr-smp-ktest":
+            forwarded.append("osdk-test-kernel/external-entry")
+        text.append(f'{name} = {atom(forwarded)}')
     return '\n'.join(text) + '\n'
 
 
