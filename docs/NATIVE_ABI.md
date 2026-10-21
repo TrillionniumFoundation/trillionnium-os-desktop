@@ -12,6 +12,8 @@
 
 open(`/dev/hepta-control`,O_CLOEXEC)创建绑定process-start/exec_epoch/boot/CapSpace的会话，不签发新权限。QueryAbi自举使用固定transport及HOS2头。资源域和观察命名空间由可信启动记录建立，不允许请求体自报workspace获得权限。
 
+固定初始静态映像已有两个独立实验 profile：[G1-c](agents/G1C_TRUSTED_OBSERVE_PROFILE.md) 只连接 QueryAbi/ReadUsage；[G1-d](agents/G1D_TRUSTED_CONTROL_PROFILE.md) 用同一嵌入 ELF 的三个实际进程连接五操作、原 CPU owner 和有界历史。普通构建仍仅 QueryAbi。G1-d 的 ack holder 是明确不宣称 Hepta 磁盘持久性的资格角色，不能替代下面生产 durable owner 的退役前置条件。编译/真实运行资格以对应源码与原始证据为准。
+
 ## 2. 单一对象与生命周期
 
 所有native/Linux/Android入口落到同一个底层对象策略；DAC、MAC、能力和资源上限取交集。普通POSIX文件打开沿用该对象既有访问权，不要求未使用HOS控制的Linux程序额外提交新wire句柄。兼容域UID0不等于机器所有者。设备别名、调试、process_vm、/proc fd、Binder/cgroup入口均不能绕过边界。
@@ -103,7 +105,9 @@ history查询独立于旧管理句柄；管理权撤销/slot重用后，合法De
 
 ## 8. K、D与恢复目标
 
-持久逻辑操作使用原Hepta scope_id/operation_id，其principal/workspace由原owner解析；摘要在记录中，不在查找键里。D=(boot,CapSpace,sequence)仅表示一次内核投递。稳定资源object_id来自可信启动/资源owner，与slot/generation不同。授权对象必须解析到该稳定身份。
+持久逻辑操作 K 必须沿实际编译的 Hepta owner 定义。已核 [ProductionDurableWriter](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/35262405b92b4108bb0f42ee07ae6acb32e6f96e/codex-rs/hepta-memory/src/production_writer.rs) 主路调用原 LocalLeaseOutbox，使用 `model::OperationIntentV1` 的 `operation_id`、`scope_digest` 和语义绑定，落在原 CognitiveStore 的 `cognitive_operation_ledger`/outbox 同一事务；该表以 `operation_id` 为主键，scope/semantic 摘要是绑定字段。另一个 `durable_model` / `DurableOperationStore` 路线使用 `(scope_id, operation_id)`，不能把两种同名类型或 owner 混为当前生产主路，不能把 scope digest 硬转换成虚构的 scope_id。
+
+principal/workspace/当前 generation 由实际原 owner 解析并核对；完整 typed payload 可在原 admission 中持久关联 D，必要索引须依附同一迁移/恢复 lineage，不能为接合另建账本。D=(boot,CapSpace,sequence)仅表示一次内核投递，wire 不携带 K。稳定资源 object_id 来自可信启动/资源 owner，与 slot/generation 不同；授权对象必须解析到该稳定身份。
 
 旧K效果未知时，当前cap/revision相同不构成历史证明。先fence旧管理者、读取当前对象并取得新授权，可建立**新目标收敛操作**，在语义记录中关联旧K但不把旧K改成Applied/NotApplied。新操作的前驱与资源revision重新固定，由原owner处理未决前驱；不伪造原操作终态来绕过该约束。无法在现有owner契约表达时，报告上游接合缺口，不创建第二账本。
 

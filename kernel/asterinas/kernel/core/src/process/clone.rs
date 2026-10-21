@@ -856,7 +856,11 @@ fn create_child_process(
     child_proc
 }
 
-fn set_parent_and_group(clone_flags: CloneFlags, parent: &Arc<Process>, child: &Arc<Process>) {
+pub(in crate::process) fn set_parent_and_group(
+    clone_flags: CloneFlags,
+    parent: &Arc<Process>,
+    child: &Arc<Process>,
+) {
     loop {
         let real_parent = clone_parent(clone_flags, parent);
 

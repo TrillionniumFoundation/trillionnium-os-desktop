@@ -36,6 +36,8 @@ pub(crate) use namespace::{
 };
 pub(crate) use pid_file::PidFile;
 pub use process::Process;
+#[cfg(any(ktest, feature = "g1d-trusted-control"))]
+pub(crate) use process::KernelControlBackend;
 pub(crate) use process::{
     ExitCode, INIT_PROCESS_PID, JobControl, Pgid, Pid, ProcessGroup, ProcessImageKey,
     ReapedChildrenStats, Session, Sid, Terminal, broadcast_signal_async, enqueue_signal_async,

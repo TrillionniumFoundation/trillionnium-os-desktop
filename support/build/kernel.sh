@@ -92,22 +92,26 @@ else
     run_dir=$(mktemp -d "$build_dir/out/$(date -u +%Y%m%dT%H%M%SZ)-$target-XXXXXX")
 fi
 run_dir=$(cd "$run_dir" && pwd)
-case "${HEPTA_G1C_TRUSTED_OBSERVE:-0}" in
-    0) ;;
-    1)
-        if [[ "$target" != kernel ]]; then
-            echo "G1-c uses the dedicated guest runner; kernel.sh run_kernel retains the ordinary boot gate" >&2
-            exit 2
-        fi
-        : "${HEPTA_TRUSTED_INITIAL_ELF:?G1-c requires the reviewed static initial ELF}"
-        python3 "$build_dir/prepare-trusted-image.py" \
-            --input "$HEPTA_TRUSTED_INITIAL_ELF" \
-            --output "$run_dir/trusted-initial.elf" \
-            --manifest "$run_dir/trusted-initial-manifest.json"
-        export HEPTA_TRUSTED_INITIAL_ELF="$run_dir/trusted-initial.elf"
-        ;;
-    *) echo "HEPTA_G1C_TRUSTED_OBSERVE must be 0 or 1" >&2; exit 2 ;;
+trusted_profile=
+case "${HEPTA_G1C_TRUSTED_OBSERVE:-0}:${HEPTA_G1D_TRUSTED_CONTROL:-0}" in
+    0:0) ;;
+    1:0) trusted_profile=g1c-trusted-observe ;;
+    0:1) trusted_profile=g1d-trusted-control ;;
+    *) echo "trusted profile flags must be 0 or 1; select at most one G1-c/G1-d profile" >&2; exit 2 ;;
 esac
+if [[ -n "$trusted_profile" ]]; then
+    if [[ "$target" != kernel ]]; then
+        echo "$trusted_profile uses its dedicated guest runner; kernel.sh run_kernel retains the ordinary boot gate" >&2
+        exit 2
+    fi
+    : "${HEPTA_TRUSTED_INITIAL_ELF:?trusted profile requires the reviewed static initial ELF}"
+    python3 "$build_dir/prepare-trusted-image.py" \
+        --input "$HEPTA_TRUSTED_INITIAL_ELF" \
+        --output "$run_dir/trusted-initial.elf" \
+        --manifest "$run_dir/trusted-initial-manifest.json" \
+        --profile "$trusted_profile"
+    export HEPTA_TRUSTED_INITIAL_ELF="$run_dir/trusted-initial.elf"
+fi
 # OSDK_LOCAL_DEV embeds its source root at compile time. A global installed
 # SDK may belong to another checkout, even when its mtime is newer here.
 # Cargo honors PATH order only when its own home/bin is explicitly present;
@@ -203,6 +207,8 @@ command=(make -C "$kernel_dir" -f Makefile -f "$build_dir/minimal.mk" "$target"
     ENABLE_KVM=0 BOOT_PROTOCOL=multiboot INITRAMFS=on AUTO_TEST=none)
 if [[ ${HEPTA_G1C_TRUSTED_OBSERVE:-0} == 1 ]]; then
     command+=(HEPTA_G1C_TRUSTED_OBSERVE=1 FEATURES=g1c-trusted-observe)
+elif [[ ${HEPTA_G1D_TRUSTED_CONTROL:-0} == 1 ]]; then
+    command+=(HEPTA_G1D_TRUSTED_CONTROL=1 FEATURES=g1d-trusted-control)
 fi
 if [[ "$target" == gdb_server ]]; then command+=("A01_GDB_PORT=$A01_GDB_PORT"); fi
 printf '%q ' "${command[@]}" > "$run_dir/command.sh"

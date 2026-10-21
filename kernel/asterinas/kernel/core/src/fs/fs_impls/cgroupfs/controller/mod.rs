@@ -372,6 +372,9 @@ impl Controller {
             {
                 return Err(Error::InvalidOperation);
             }
+            if ctrl_type == SubCtrlType::Cpu && cgroup_child.controller().has_trusted_cpu_management() {
+                return Err(Error::PermissionDenied);
+            }
         }
 
         active_set.remove_type(ctrl_type);

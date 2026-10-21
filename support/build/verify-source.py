@@ -3,7 +3,7 @@
 
 Use --pristine for the initial import. Later kernel development may change
 Rust sources, while the default check continues to protect build input pins.
-Default checks accept only the enumerated downstream owner-metadata and G1c
+Default checks accept only the enumerated downstream owner-metadata and G1c/G1d
 feature insertions plus the exact host OSDK FD-preservation inputs. The original
 upstream lock remains independently pinned. --pristine accepts no derivations.
 """
@@ -51,6 +51,19 @@ G1C_FEATURE_ADDITIONS = {
         b'g1c-trusted-observe = []\n',
     ),
 }
+G1D_FEATURE_ADDITIONS = {
+    "kernel/Cargo.toml": (
+        b'g1c-trusted-observe = ["aster-core/g1c-trusted-observe"]\n',
+        b'g1c-trusted-observe = ["aster-core/g1c-trusted-observe"]\n'
+        b'g1d-trusted-control = ["aster-core/g1d-trusted-control"]\n',
+    ),
+    "kernel/core/Cargo.toml": (
+        b'g1c-trusted-observe = []\n',
+        b'g1c-trusted-observe = []\n'
+        b'# G1-d reuses the exact-byte initial-image and VMAR sealing prerequisites.\n'
+        b'g1d-trusted-control = ["g1c-trusted-observe"]\n',
+    ),
+}
 ROOT_LOCK_ADDITIONS = (
     (b' "miniz_oxide",\n "osdk-frame-allocator",\n',
      b' "miniz_oxide",\n "os-control",\n "osdk-frame-allocator",\n'),
@@ -72,6 +85,8 @@ def derive_downstream_input(name, original):
             additions += (DOWNSTREAM_MANIFEST_ADDITIONS[name],)
         if name in G1C_FEATURE_ADDITIONS:
             additions += (G1C_FEATURE_ADDITIONS[name],)
+        if name in G1D_FEATURE_ADDITIONS:
+            additions += (G1D_FEATURE_ADDITIONS[name],)
     derived = original
     for needle, replacement in additions:
         if derived.count(needle) != 1:
@@ -208,7 +223,7 @@ def main():
                 if actual_mode != mode:
                     raise ValueError(f"mode {actual_mode} != {mode}")
                 content = path.read_bytes()
-            if not args.pristine and (name in DOWNSTREAM_MANIFEST_ADDITIONS or name in G1C_FEATURE_ADDITIONS or name == "Cargo.lock"):
+            if not args.pristine and (name in DOWNSTREAM_MANIFEST_ADDITIONS or name in G1C_FEATURE_ADDITIONS or name in G1D_FEATURE_ADDITIONS or name == "Cargo.lock"):
                 original = subprocess.check_output(["git", "cat-file", "blob", expected], cwd=ROOT)
                 derived_content = derive_downstream_input(name, original)
                 downstream[name] = {
@@ -217,6 +232,10 @@ def main():
                     "derived_sha256": hashlib.sha256(derived_content).hexdigest(),
                     "local_dependency": "os-control" if name in DOWNSTREAM_MANIFEST_ADDITIONS or name == "Cargo.lock" else None,
                     "optional_profile": "g1c-trusted-observe" if name in G1C_FEATURE_ADDITIONS else None,
+                    "optional_profiles": [profile for additions, profile in (
+                        (G1C_FEATURE_ADDITIONS, "g1c-trusted-observe"),
+                        (G1D_FEATURE_ADDITIONS, "g1d-trusted-control"),
+                    ) if name in additions],
                 }
                 expected = hashlib.sha1(f"blob {len(derived_content)}\0".encode() + derived_content).hexdigest()
             actual = hashlib.sha1(f"blob {len(content)}\0".encode() + content).hexdigest()

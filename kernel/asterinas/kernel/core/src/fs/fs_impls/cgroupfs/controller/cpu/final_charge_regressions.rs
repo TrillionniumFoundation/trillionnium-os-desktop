@@ -69,6 +69,7 @@ impl Hierarchy {
                 controller,
                 CpuMax {
                     quota_usec: 1_000,
+                    quota_sub_usec_ns: 0,
                     period_usec: 100_000,
                     window_start_ns: start,
                     used_ns: 0,

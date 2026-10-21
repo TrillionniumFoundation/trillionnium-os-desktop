@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Freeze the reviewed initial ELF as an explicit input to the G1-c kernel.
+"""Freeze the reviewed initial ELF as an explicit trusted-profile build input.
 
 This records build input provenance only. The kernel independently compares its
 actual opened init snapshot to the embedded bytes and verifies final mappings.
@@ -20,6 +20,8 @@ def main():
     parser.add_argument("--input", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--manifest", type=Path, required=True)
+    parser.add_argument("--profile", choices=("g1c-trusted-observe", "g1d-trusted-control"),
+                        default="g1c-trusted-observe")
     args = parser.parse_args()
     source = args.input.resolve(strict=True)
     if not source.is_file():
@@ -37,7 +39,7 @@ def main():
     args.output.chmod(0o444)
     manifest = {
         "schema": "hepta-g1c-trusted-initial-v1",
-        "profile": "g1c-trusted-observe",
+        "profile": args.profile,
         "source": str(source),
         "embedded_input": str(args.output.resolve()),
         "bytes": len(content),
@@ -50,6 +52,17 @@ def main():
         "period_ns": 100_000_000,
         "lease_ns": 300_000_000_000,
     }
+    if args.profile == "g1d-trusted-control":
+        manifest.update({
+            "schema": "hepta-g1d-trusted-initial-v1",
+            "supported_ops": 62,
+            "bootstrap_version": 2,
+            "bootstrap_bytes": 192,
+            "roles": ["manager", "workload", "recovery"],
+        })
+        # Role-specific slots are defined by the sealed v2 bootstrap page.
+        del manifest["slot"]
+        del manifest["generation"]
     with args.manifest.open("x") as stream:
         stream.write(json.dumps(manifest, sort_keys=True, indent=2) + "\n")
 

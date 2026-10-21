@@ -339,6 +339,12 @@ class KernelRunnerTests(unittest.TestCase):
         self.assertEqual(self.sdk_calls()[-1]["binary"], str(self.root / "evidence/osdk/bin/cargo-osdk"))
 
     def test_g1c_argv_contract_and_exported_private_sdk_root(self):
+        self.check_trusted_argv_contract("HEPTA_G1C_TRUSTED_OBSERVE", "g1c-trusted-observe")
+
+    def test_g1d_argv_contract_and_exported_private_sdk_root(self):
+        self.check_trusted_argv_contract("HEPTA_G1D_TRUSTED_CONTROL", "g1d-trusted-control")
+
+    def check_trusted_argv_contract(self, flag, profile):
         # Exercise the caller's fixed product-build argv contract with actual
         # GNU Make. Cargo, the initial image and every host binary are fixtures.
         self.use_sdk_make()
@@ -352,13 +358,15 @@ class KernelRunnerTests(unittest.TestCase):
             f"os.execv({real_make!r}, [{real_make!r}, *sys.argv[1:]])\n"
         ))
         (self.build / "prepare-trusted-image.py").write_text(
-            "import argparse, pathlib\n"
+            "import argparse, json, pathlib\n"
             "parser = argparse.ArgumentParser()\n"
             "for name in ('input', 'output', 'manifest'):\n"
             " parser.add_argument('--' + name, type=pathlib.Path, required=True)\n"
+            "parser.add_argument('--profile', choices=('g1c-trusted-observe', 'g1d-trusted-control'),\n"
+            "                    default='g1c-trusted-observe')\n"
             "args = parser.parse_args()\n"
             "args.output.write_bytes(args.input.read_bytes())\n"
-            "args.manifest.write_text('{}\\n')\n"
+            "args.manifest.write_text(json.dumps({'profile': args.profile}) + '\\n')\n"
         )
         image = self.root / "fixture-initial.elf"
         image.write_bytes(b"host-only initial image fixture")
@@ -367,19 +375,22 @@ class KernelRunnerTests(unittest.TestCase):
         sentinel = foreign / "keep.txt"
         sentinel.write_text("foreign prefix must remain untouched\n")
         result = self.run_runner(extra={
-            "HEPTA_G1C_TRUSTED_OBSERVE": "1",
+            "HEPTA_G1C_TRUSTED_OBSERVE": "1" if flag == "HEPTA_G1C_TRUSTED_OBSERVE" else "0",
+            "HEPTA_G1D_TRUSTED_CONTROL": "1" if flag == "HEPTA_G1D_TRUSTED_CONTROL" else "0",
             "HEPTA_TRUSTED_INITIAL_ELF": str(image),
             "A01_OSDK_INSTALL_ROOT": str(foreign),
             "MAKEFLAGS": "n A01_OSDK_INSTALL_ROOT=" + str(foreign),
         })
         run = self.root / "evidence"
+        self.assertEqual(json.loads((run / "trusted-initial-manifest.json").read_text()),
+                         {"profile": profile})
         command = shlex.split((run / "command.sh").read_text())
         expected = ["make", "-C", str(self.kernel.parent), "-f", "Makefile",
                     "-f", str(self.build / "minimal.mk"), "kernel"]
         required = {
             "TARGET_ARCH=x86_64", "SMP=1", "MEM=512M", "ENABLE_KVM=0",
             "BOOT_PROTOCOL=multiboot", "INITRAMFS=on", "AUTO_TEST=none",
-            "HEPTA_G1C_TRUSTED_OBSERVE=1", "FEATURES=g1c-trusted-observe",
+            flag + "=1", "FEATURES=" + profile,
             "A01_INITRAMFS=" + str(run / "initramfs.cpio.gz"),
             "A01_QEMU_WRAPPER=" + str(self.build / "record-qemu.py"),
         }
@@ -399,7 +410,7 @@ class KernelRunnerTests(unittest.TestCase):
         self.assertEqual(calls[0]["cwd"], str(self.kernel.parent))
         self.assertEqual(calls[-1]["binary"], str(private_sdk))
         self.assertEqual(calls[-1]["source_root"], str(self.kernel.parent))
-        self.assertIn("--features=g1c-trusted-observe", calls[-1]["argv"])
+        self.assertIn("--features=" + profile, calls[-1]["argv"])
         self.assertEqual(list(foreign.iterdir()), [sentinel])
         self.assertEqual(sentinel.read_text(), "foreign prefix must remain untouched\n")
         self.assertEqual(self.global_sdk.read_bytes(), self.global_sdk_original)
