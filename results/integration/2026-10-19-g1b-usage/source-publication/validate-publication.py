@@ -61,7 +61,7 @@ def link_destinations(markdown):
     for match in re.finditer(r'^\s{0,3}\[([^\]\n]+)\]:\s*(?:<([^>\n]+)>|(\S+))', text, re.M):
         references[' '.join(match[1].lower().split())] = match[2] or match[3]
     found = []
-    inline = re.compile(r'!?\[([^\]\n]*)\]\(\s*(<[^>\n]+>|(?:\\.|[^\s)\\]|\([^\n)]*\))+)(?:\s+[\"\'][^\n]*?[\"\'])?\s*\)')
+    inline = re.compile(r'!?\[([^\]\n]*)\]\(\s*(<[^>\n]+>|(?:\\.|[^\s()\\]|\([^\n)]*\))+)(?:\s+[\"\'][^\n]*?[\"\'])?\s*\)')
     for match in inline.finditer(text):
         found.append(match[2].strip('<>'))
     for match in re.finditer(r'!?\[([^\]\n]+)\]\[([^\]\n]*)\]', text):
