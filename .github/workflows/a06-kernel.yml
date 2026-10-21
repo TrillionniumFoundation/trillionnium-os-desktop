@@ -70,7 +70,16 @@ jobs:
             build-essential ca-certificates curl git python3 pkg-config libssl-dev \
             clang lld qemu-system-x86 busybox-static \
             gcc-13 libc6-dev binutils libsqlite3-dev python3.12 python3.12-minimal \
-            libpython3.12-stdlib openssl tzdata
+            libpython3.12-stdlib openssl tzdata kmod
+          set +e
+          sudo python3 -I -B tests/workloads/linux/exfat_kernel_support.py --disposable-ci \
+            --output "${RUNNER_TEMP}/a06-exfat-kernel-support"
+          exfat_support_exit=$?
+          set -e
+          if test -d "${RUNNER_TEMP}/a06-exfat-kernel-support"; then
+            sudo chown -R -- "$(id -u):$(id -g)" "${RUNNER_TEMP}/a06-exfat-kernel-support"
+          fi
+          test "$exfat_support_exit" -eq 0
 
       - name: Freeze the permission probe and verify it in an isolated Linux mount namespace
         shell: bash
@@ -502,15 +511,6 @@ jobs:
           EXFAT_INPUT_SHA: ${{ steps.exfat_bundle.outputs.input_sha256 }}
         run: |
           set -euo pipefail
-          set +e
-          sudo python3 -I -B tests/workloads/linux/exfat_kernel_support.py --disposable-ci \
-            --output "${RUNNER_TEMP}/a06-exfat-kernel-support"
-          exfat_support_exit=$?
-          set -e
-          if test -d "${RUNNER_TEMP}/a06-exfat-kernel-support"; then
-            sudo chown -R -- "$(id -u):$(id -g)" "${RUNNER_TEMP}/a06-exfat-kernel-support"
-          fi
-          test "$exfat_support_exit" -eq 0
           set +e
           sudo python3 -I -B tests/workloads/linux/run_exfat_mode_guest.py reference \
             --bundle "${RUNNER_TEMP}/a06-exfat-bundle" --expected-input-sha256 "$EXFAT_INPUT_SHA" \

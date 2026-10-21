@@ -1,0 +1,118 @@
+{
+  "bundle_sha256": "f0696a233df601909de47d3468a37949ab15fbe550669b5b32a5c9349a77ba9a",
+  "command": [
+    "/usr/bin/unshare",
+    "--mount",
+    "--propagation",
+    "private",
+    "--",
+    "/home/runner/work/_temp/a06-exfat-bundle/probe.elf",
+    "--device",
+    "/dev/loop0",
+    "--mountpoint",
+    "/home/runner/work/_temp/a06-exfat-linux/mount"
+  ],
+  "elapsed_seconds": 3.0106938700000683,
+  "frozen_input_sha256": "176aabc3f09bb20e0ce16337c0f5ffd8ec736c6c8797f97b22614ae5c92bd2d3",
+  "hepta_hos2_qualification": false,
+  "host_arch": "x86_64",
+  "host_kernel": "6.17.0-1022-azure",
+  "image_after_sha256": "97645366acdce7d2ff6f2dea211caeb129c0c466caeab9bf8fb8e4cbc6714c85",
+  "image_before_sha256": "97645366acdce7d2ff6f2dea211caeb129c0c466caeab9bf8fb8e4cbc6714c85",
+  "image_bytes": 536870912,
+  "inputs_unchanged": true,
+  "loop_binding": {
+    "backing_device": 66305,
+    "backing_inode": 9782947,
+    "flags": 0,
+    "number": 0,
+    "offset": 0,
+    "size_limit": 0
+  },
+  "losetup": {
+    "path": "/usr/sbin/losetup",
+    "sha256": "44ccbcc5573aee3bd40fd3171ec368d62ba373f45263ac1d026c612ed86f0f02"
+  },
+  "owned_loop_detach_requested": true,
+  "passed": false,
+  "physical_device_qualification": false,
+  "private_mount_namespace": true,
+  "probe_sha256": "e02d392210bbcb253ac525ddfbdedd490593ab3b095471d31c6c22073270b239",
+  "process_exit": 2,
+  "process_group_cleanup_completed": true,
+  "schema": "a06.exfat-reference.v1",
+  "source_inputs": {
+    "tests/integration/hepta/run_original_agentd.py": {
+      "bytes": 30487,
+      "sha256": "22a27a8fbe4386187b3bf9716a6a40b0d4416fc706d1fd99a4f9eee8b55b98a8"
+    },
+    "tests/kernel/control/run_queryabi_candidate_guest.py": {
+      "bytes": 16498,
+      "sha256": "7d7a9f92110c5d5ea4a312fddd7ca5061f82bcb7106fa89c7a13161d7d8891a5"
+    },
+    "tests/organ_backend/run_guest_probe.py": {
+      "bytes": 7644,
+      "sha256": "fc037a65aaf25fb3425befe8c74220e6ed76ea1767c368ba5d351e90a81f47e2"
+    },
+    "tests/workloads/linux/exfat_mode_evidence.py": {
+      "bytes": 6484,
+      "sha256": "17c78350eee1b03ee6f0bc79cb367cae6f5dd35b25c53339c7b9b9274c275c4f"
+    },
+    "tests/workloads/linux/exfat_mode_probe.c": {
+      "bytes": 12664,
+      "sha256": "c99d9589bc94b03ba8f9942851d2dcb40cba2fa8b3d1ec6d7103695c4c2f2b42"
+    },
+    "tests/workloads/linux/run_exfat_mode_guest.py": {
+      "bytes": 24044,
+      "sha256": "0ba690fd6388cee7e194527b52f9752927071d52777fbb4dc25be631ab065962"
+    },
+    "tests/workloads/linux/run_rlimit_nofile_guest.py": {
+      "bytes": 19268,
+      "sha256": "adce5f93bbc8679c6aa0b08162baf0c1f8ae854ef346b78e585525062484ad1c"
+    },
+    "tests/workloads/linux/run_scm_rights_cloexec_guest.py": {
+      "bytes": 11957,
+      "sha256": "1d501766dd611652797643f047bde8ac6ac2d6e41225e74eca51817d44a7965d"
+    }
+  },
+  "stderr_sha256": "7c89c863af4d7901f892bd93bcd2d52f7a21c046b03520b060596e0631f0da64",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "timed_out": false,
+  "unshare": {
+    "path": "/usr/bin/unshare",
+    "sha256": "a23c8863860669003dc4660039fe642f5795c8c2195898ebc5d01afa1ac3d11c"
+  },
+  "verdict": {
+    "expected_cases": [
+      "root_mode",
+      "file_mode",
+      "directory_mode",
+      "exec_normal",
+      "exec_nnp"
+    ],
+    "failed_conditions": [
+      "missing_duplicate_or_unknown_marker",
+      "malformed_or_reordered_fs",
+      "malformed_or_reordered_copy",
+      "malformed_or_reordered_root_mode_stat",
+      "malformed_or_reordered_root_mode_case",
+      "malformed_or_reordered_file_mode_stat",
+      "malformed_or_reordered_file_mode_case",
+      "malformed_or_reordered_directory_mode_stat",
+      "malformed_or_reordered_directory_mode_case",
+      "malformed_or_reordered_exec_normal_before",
+      "malformed_or_reordered_exec_normal_after",
+      "malformed_or_reordered_exec_normal_case",
+      "malformed_or_reordered_exec_nnp_before",
+      "malformed_or_reordered_exec_nnp_after",
+      "malformed_or_reordered_exec_nnp_case",
+      "malformed_or_reordered_complete",
+      "reference_extra_output_or_stderr",
+      "process_failed_or_timed_out"
+    ],
+    "guest": false,
+    "negative_control": false,
+    "observations": {},
+    "passed": false
+  }
+}
